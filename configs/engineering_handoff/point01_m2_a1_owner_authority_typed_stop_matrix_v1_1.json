@@ -1,0 +1,75 @@
+{
+  "schema_version": "finsight_point01_m2_a1_owner_authority_typed_stop_matrix_v1_1",
+  "scope": "M2_A1_design_package_repair_only",
+  "status": "design_package_repaired_pending_independent_review",
+  "design_execution_counts": {"compiler_or_shadow_fixture_runs": 0, "model_calls": 0, "network_requests": 0, "external_tool_calls": 0, "provider_calls": 0, "store_open_attempts": 0, "store_read_opens": 0, "store_writes": 0, "transport_constructor_attempts": 0, "business_case_mutations": 0, "legacy_authority_mutations": 0},
+  "fixed_store_fingerprints": {
+    "fixed_approval_store": {"path": ".runtime_control/point01_m6_3_5_nvda_sec_document_parser_repaired_global_approval/canonical.sqlite", "sha256": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4", "access": "future_actual_canary_must_reject_open_read_or_write"},
+    "canonical_or_business_store_absence_manifest": {"status": "explicit_absence_no_M2_A1_fixed_canonical_or_business_store_registered", "registered_paths": [], "enforcement": "future_actual_canary_must_reject_every_nonallowlisted_store_path_or_ambient_resolution"}
+  },
+  "future_actual_authority": {
+    "external_package_admission_ref": "point01-m2-a1-total-reviewer-package-admission:v2",
+    "external_package_admission_required": true,
+    "single_use_execution_receipt_required": true,
+    "actual_probes_currently_authorized": false,
+    "legacy_taskrun": "authoritative",
+    "decision_surface": "shadow_only",
+    "runtime_cutover": "forbidden",
+    "model_execution": "forbidden",
+    "evidence_writer_full_chain": "forbidden",
+    "future_actual_requires_executable_package_refreeze": true
+  },
+  "future_execution_topology": {
+    "actual_runner": {"planned_ref": "scripts/engineering/run_point01_m2_a1_actual_audit.py", "allowed_inputs": ["exact_admitted_synthetic_input_corpus", "exact_policy_and_pack_sources", "explicit_temporary_sqlite_root"], "forbidden_inputs": ["expected_cell_oracle", "oracle_digest", "reviewer_expected_values"], "terminalization": "write_immutable_actual_result_then_compute_actual_result_digest_before_oracle_evaluator_starts"},
+    "oracle_evaluator": {"planned_ref": "scripts/engineering/run_point01_m2_a1_independent_oracle_evaluator.py", "allowed_inputs": ["immutable_actual_result_ref", "immutable_actual_result_digest", "expected_cell_oracle"], "forbidden_operations": ["compiler_execution", "shadow_execution", "actual_result_mutation", "pack_or_policy_mutation"], "start_condition": "actual_result_digest_committed"},
+    "reviewer_gate": {"planned_ref": "scripts/engineering/run_point01_m2_a1_reviewer_gate.py", "requires": ["actual_result_digest", "oracle_evaluation_digest", "canary_counts", "package_admission", "single_use_execution_receipt"], "rejects": ["missing_actual_digest", "oracle_read_by_actual", "oracle_mutation_changes_actual", "nonzero_fixed_or_ambient_access", "unadmitted_package"]},
+    "package_boundary": "This design package is not an executable audit package. Before any actual probe, a newly refrozen package must bind the actual runner, independent oracle evaluator, canaries, tests, exact staged bytes, corpus/oracle/matrix digests and fresh external admission."
+  },
+  "future_actual_canary_contract": {
+    "oracle_access_canary": {"interface": "M2A1OracleAccessCanary(forbidden_paths, forbidden_digests)", "counters": ["path_resolution_attempt_count", "read_attempt_count", "hash_attempt_count", "import_attempt_count"], "expected_stop": "oracle_leakage_detected"},
+    "store_access_canary": {"interface": "M2A1StoreAccessCanary(allowlisted_temporary_roots, fixed_paths, ambient_resolvers)", "counters": ["open_attempt_count", "read_open_count", "write_open_count", "ambient_resolution_attempt_count"], "expected_stop": "test_runtime_isolation_violation"},
+    "transport_constructor_canary": {"interface": "M2A1TransportConstructorCanary(blocked_client_constructors)", "counters": ["provider_constructor_attempt_count", "network_transport_constructor_attempt_count", "tool_transport_constructor_attempt_count"], "expected_stop": "shadow_scope_violation"},
+    "model_admission_canary": {"interface": "M2A1ModelAdmissionCanary(feature_flag, admission, provider_preflight, budget_preflight)", "counters": ["feature_flag_read_count", "admission_lookup_count", "model_constructor_attempt_count"], "expected_stop": "model_adapter_shadow_run_not_admitted"},
+    "invariant": "Any nonzero forbidden access attempt is a typed stop. A fixed-store fingerprint before/after equality supplements, but never replaces, access counters."
+  },
+  "probes": [
+    {
+      "probe_id": "A0-M2-P01",
+      "owner": "m2_compiler_serializer_owner",
+      "closeout_gate": "M2-A1_compiler_oracle_separation_gate",
+      "scenarios": [
+        {"scenario_id": "p01-baseline-separated-input", "input_ref": "m2-a1-ai-semis-input", "mutation": "none", "expected_typed_stop": "none", "owner": "m2_compiler_serializer_owner", "actual_assertions": ["actual_runner_receives_corpus_case_only", "actual_result_digest_is_emitted_before_oracle_evaluator"], "oracle_assertions": ["oracle_evaluator_reads_actual_by_digest_only", "expected_selection_and_cell_contract_is_compared_post_execution"]},
+        {"scenario_id": "p01-oracle-path-access", "input_ref": "m2-a1-saas-input", "mutation": "actual_runner_requests_oracle_path", "expected_typed_stop": "oracle_leakage_detected", "owner": "m2_test_isolation_owner", "actual_assertions": ["oracle_access_canary_path_resolution_attempt_count_equals_1", "compiler_not_started"], "oracle_assertions": ["no_actual_result_digest_exists"]},
+        {"scenario_id": "p01-oracle-hash-access", "input_ref": "m2-a1-healthcare-input", "mutation": "actual_runner_requests_oracle_digest_or_hash", "expected_typed_stop": "oracle_leakage_detected", "owner": "m2_test_isolation_owner", "actual_assertions": ["oracle_access_canary_hash_attempt_count_equals_1", "compiler_not_started"], "oracle_assertions": ["oracle_not_received_by_actual"]},
+        {"scenario_id": "p01-oracle-mutation-invariance", "input_ref": "m2-a1-banks-input", "mutation": "mutate_reviewer_oracle_after_actual_terminalization", "expected_typed_stop": "none", "owner": "m2_compiler_serializer_owner", "actual_assertions": ["actual_result_digest_before_equals_after", "actual_bytes_unchanged"], "oracle_assertions": ["mutated_oracle_evaluation_can_differ", "actual_digest_must_not_change"]}
+      ]
+    },
+    {
+      "probe_id": "A0-M2-P02",
+      "owner": "m2_pack_policy_owner",
+      "closeout_gate": "M2-A1_package_lineage_replay_gate",
+      "scenarios": [
+        {"scenario_id": "p02-valid-versioned-baseline", "input_ref": "m2-a1-ai-semis-input", "mutation": "none", "expected_typed_stop": "none", "owner": "m2_pack_policy_owner", "actual_assertions": ["all_selected_pack_refs_are_versioned", "resolution_digest_is_recorded", "artifact_envelope_replay_digest_is_stable"], "oracle_assertions": ["required_pack_versions_match_case_oracle"]},
+        {"scenario_id": "p02-unversioned-pack-ref", "input_ref": "m2-a1-saas-input", "mutation": "replace_sector_pack_ref_with_pack-sector-saas", "expected_typed_stop": "pack_version_or_lineage_mismatch", "owner": "m2_pack_policy_owner", "actual_assertions": ["pack_registry_rejects_unversioned_ref", "no_artifact_envelope"], "oracle_assertions": ["no_expected_cell_comparison_after_typed_stop"]},
+        {"scenario_id": "p02-stale-or-superseded-pack", "input_ref": "m2-a1-healthcare-input", "mutation": "replace_sector_pack_ref_with_superseded_or_stale_version", "expected_typed_stop": "superseded_pack_version_or_pack_not_fresh", "owner": "m2_pack_policy_owner", "actual_assertions": ["pack_registry_read_exact_fails_closed", "no_shadow_artifact"], "oracle_assertions": ["typed_stop_is_reviewer_visible"]},
+        {"scenario_id": "p02-parent-or-digest-mismatch", "input_ref": "m2-a1-banks-input", "mutation": "alter_pack_parent_or_payload_digest_after_resolution", "expected_typed_stop": "pack_lineage_digest_mismatch", "owner": "m2_pack_policy_owner", "actual_assertions": ["serializer_lineage_validator_rejects", "artifact_envelope_not_terminalized"], "oracle_assertions": ["no_cell_oracle_evaluation"]},
+        {"scenario_id": "p02-selector-conflict", "input_ref": "m2-a1-ai-semis-input", "mutation": "declare_sector_banks_while_query_and_pack_ref_are_ai_semis", "expected_typed_stop": "explicit_sector_conflicts_query_or_selector_conflict", "owner": "m2_pack_policy_owner", "actual_assertions": ["selection_engine_returns_conflict", "no_pack_resolution"], "oracle_assertions": ["forbidden_sector_pack_is_not_accepted"]},
+        {"scenario_id": "p02-artifact-envelope-replay-mismatch", "input_ref": "m2-a1-saas-input", "mutation": "alter_serialized_envelope_after_actual_digest", "expected_typed_stop": "artifact_envelope_replay_mismatch", "owner": "m2_compiler_serializer_owner", "actual_assertions": ["readback_or_replay_validator_fails_closed", "original_actual_result_remains_immutable"], "oracle_assertions": ["replay_tamper_is_not_masked_by_expected_oracle"]}
+      ]
+    },
+    {
+      "probe_id": "A0-M2-P03",
+      "owner": "m2_shadow_admission_owner",
+      "closeout_gate": "M2-A1_shadow_runtime_boundary_gate",
+      "scenarios": [
+        {"scenario_id": "p03-feature-off", "input_ref": "m2-a1-ai-semis-input", "mutation": "feature_flag_disabled", "expected_typed_stop": "shadow_scope_violation", "owner": "m2_shadow_admission_owner", "actual_assertions": ["shadow_entrypoint_not_started", "model_constructor_attempt_count_equals_0"], "oracle_assertions": ["no_expected_cell_comparison_after_typed_stop"]},
+        {"scenario_id": "p03-model-denied", "input_ref": "m2-a1-saas-input", "mutation": "model_admission_missing", "expected_typed_stop": "model_adapter_shadow_run_not_admitted", "owner": "m2_shadow_admission_owner", "actual_assertions": ["model_admission_canary_records_lookup", "model_constructor_attempt_count_equals_0"], "oracle_assertions": ["no_model_output_can_reach_oracle"]},
+        {"scenario_id": "p03-fixed-store-path", "input_ref": "m2-a1-healthcare-input", "mutation": "attempt_open_fixed_approval_store_path", "expected_typed_stop": "test_runtime_isolation_violation", "owner": "m2_test_isolation_owner", "actual_assertions": ["store_open_attempt_count_equals_1", "store_read_open_count_equals_0", "store_write_open_count_equals_0"], "oracle_assertions": ["fixed_store_fingerprint_before_equals_after"]},
+        {"scenario_id": "p03-ambient-resolver", "input_ref": "m2-a1-banks-input", "mutation": "invoke_ambient_store_resolver", "expected_typed_stop": "test_runtime_isolation_violation", "owner": "m2_test_isolation_owner", "actual_assertions": ["ambient_resolution_attempt_count_equals_1", "no_store_open"], "oracle_assertions": ["canonical_business_absence_manifest_is_preserved"]},
+        {"scenario_id": "p03-provider-constructor", "input_ref": "m2-a1-ai-semis-input", "mutation": "instantiate_provider_client", "expected_typed_stop": "shadow_scope_violation", "owner": "m2_shadow_admission_owner", "actual_assertions": ["provider_constructor_attempt_count_equals_1", "network_transport_constructor_attempt_count_equals_0"], "oracle_assertions": ["no_actual_result_digest_exists"]},
+        {"scenario_id": "p03-network-tool-transport", "input_ref": "m2-a1-saas-input", "mutation": "instantiate_network_or_tool_transport", "expected_typed_stop": "shadow_scope_violation", "owner": "m2_shadow_admission_owner", "actual_assertions": ["network_or_tool_transport_constructor_attempt_count_equals_1", "network_requests_equals_0", "external_tool_calls_equals_0"], "oracle_assertions": ["no_oracle_evaluation_starts"]}
+      ]
+    }
+  ],
+  "boundary": "The matrix freezes future scenario semantics, counters and typed stops only. It does not import, invoke or authorize M2 compiler/shadow runtime, model, network, tool, provider, store or mutation paths."
+}

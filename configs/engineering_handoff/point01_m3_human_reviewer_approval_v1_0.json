@@ -1,0 +1,20 @@
+{
+  "approval_version": "finsight_point01_m3_human_reviewer_approval_v1_0",
+  "scope": "Point01_M3_shadow_comparison_calibration",
+  "status": "approved",
+  "approver_type": "human",
+  "approver_identity": "current-thread human reviewer",
+  "approved_at": "2026-07-12T21:00:00+08:00",
+  "reviewed_artifacts": [
+    "data/manifests/point01_m3_design_lint_result_v1_0.json",
+    "data/manifests/point01_m3_calibration_fixture_result_v1_0.json",
+    "data/manifests/point01_m3_closeout_gate_result_v1_0.json"
+  ],
+  "decision": "approve_m3_shadow_calibration_only",
+  "notes": "Current-thread human reviewer approved deterministic M3 shadow calibration and authorized planning/implementation entry into M4. This approval does not by itself cut over any lane, invoke a provider, enable Evidence/Writer runtime, or allow full-chain.",
+  "authority_boundary_acknowledged": {
+    "legacy_task_run": "authoritative",
+    "canonical_lane": "shadow_only",
+    "cutover": "forbidden"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "policy_version": "finsight_point01_m6_5_receipt_bound_parser_numeric_stop_policy_v1_0",
+  "policy_ref": "point01-m6-5-receipt-bound-parser-numeric-stop-policy-v1",
+  "approval_ref": "approve_m6_2_5_real_bounded_sec_metadata_pilot_only",
+  "scope": "only_record_no_parser_no_numeric_outcome_for_exact_m6_3_m6_4_terminal_receipt_chain",
+  "candidate_bundle_table": "canonical_candidate_bundle_versions",
+  "repair_ticket_table": "canonical_repair_ticket_versions",
+  "receipt_table": "canonical_tool_invocation_receipt_versions",
+  "parser_stop_table": "canonical_parser_numeric_stop_versions",
+  "required_bundle_persistence_scope": "m6_3_receipt_bound_synthetic_pilot_only",
+  "required_ticket_persistence_scope": "m6_4_receipt_bound_synthetic_pilot_only",
+  "required_gap_codes": [
+    "required_context_kind_missing:period_binding",
+    "required_context_kind_missing:neighbor_section",
+    "required_context_kind_missing:table_context"
+  ],
+  "required_terminal_gap_code": "pilot_tool_call_budget_exhausted",
+  "stop_code": "candidate_bundle_has_no_verified_table_context",
+  "authority_boundary": {
+    "parser_execution": "forbidden_without_verified_table_context",
+    "numeric_fact_or_trace_creation": "forbidden",
+    "new_tool_or_network_call": "forbidden",
+    "fallback_or_retry": "forbidden",
+    "evidence_promotion": "not_admitted",
+    "writer_domain_judgment_full_chain": "forbidden"
+  }
+}

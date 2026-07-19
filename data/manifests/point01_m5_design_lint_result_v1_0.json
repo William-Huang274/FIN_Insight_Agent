@@ -1,0 +1,27 @@
+{
+  "authority_boundary": {
+    "canonical_runtime": "durable_harness_control_plane_only",
+    "decision_surface": "case_scoped_planning_pilot_proven_only",
+    "evidence_writer_full_chain": "not_admitted",
+    "legacy_task_run": "authoritative_execution_history_owner",
+    "model_execution": "not_admitted"
+  },
+  "boundary": "This is an M5.0 design-freeze lint only. A pass does not approve M5.1 execution or admit a worker, queue service, external tool, provider, Evidence/Writer, full-chain, business Case mutation, legacy authority change, or global cutover.",
+  "child_contract_count": 9,
+  "errors": [],
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m5_cross_owner_design_review_v1_0.json": "aaca566ac0726477a3d7517508e4b94c8173609054c9fedf0936e35103ea3aaf",
+    "configs/engineering_handoff/point01_m5_design_freeze_manifest_v1_0.json": "198be0baaed21065382dae346b22bab7388267ab7999616a8120b0980aebadd9",
+    "configs/engineering_handoff/point01_m5_human_ops_security_review_v1_0.json": "ed40489d7a3db3a250bcaaa894124fe2b8f812035adeb120a2516e64e21b0377",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "875ebe893d8b14b4894856af3d27b0e9367d6d885ae20e99f58cd173744f95f1",
+    "scripts/engineering/run_point01_m5_design_lint.py": "be06024c3fa822e0cc0c3d7dfb72bbb7ba4083003686ffeb1066fd6218395996"
+  },
+  "generated_at": "2026-07-13T03:06:30.736791+00:00",
+  "human_ops_security_review_status": "approved_m5_design_freeze_only",
+  "manifest_status": "frozen_human_ops_security_approved",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m5_design_lint_result_v1_0",
+  "scope": "Point01_M5_durable_harness",
+  "status": "pass"
+}

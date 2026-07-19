@@ -1,0 +1,15 @@
+{
+  "manifest_version": "finsight_point01_m2_closeout_gate_manifest_v1_0",
+  "scope": "Point01_M2_shadow_compiler_only",
+  "required_children": ["M2.1", "M2.2", "M2.3", "M2.4", "M2.5", "M2.6", "M2.7", "M2.8", "M2.9"],
+  "required_positive_calibration": ["ai_semis", "saas", "healthcare", "banks"],
+  "required_negative_controls": ["pack_resolution_or_lineage_loss", "evidence_policy_or_typed_gap_loss", "legacy_semantic_mapping_or_direct_equivalence"],
+  "lead_boundary": {
+    "lead_can_retrieve": false,
+    "lead_can_supplement": false,
+    "lead_can_write_conclusion": false,
+    "model_execution_permitted": false,
+    "external_call_count": 0
+  },
+  "authority_boundary": "M2 closeout recognizes only the deterministic DecisionSurface Planning Shadow. It does not change legacy TaskRun authority, admit a model run, invoke Evidence/Writer, run full-chain or allow M3/M4 cutover."
+}

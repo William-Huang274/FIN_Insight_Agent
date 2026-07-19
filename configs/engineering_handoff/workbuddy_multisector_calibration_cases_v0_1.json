@@ -1,0 +1,87 @@
+{
+  "schema_version": "finsight_workbuddy_multisector_calibration_cases_v0_1",
+  "audit_id": "workbuddy_multisector_calibration_20260711_v0_1",
+  "workbuddy_version": "2.106.4",
+  "model": "deepseek-v4-pro",
+  "model_strength_classification": "non_strong_calibration_model",
+  "maturity_inference_allowed": false,
+  "default_pattern_disposition": "requires_improvement_or_rejection_review",
+  "universal_required_surfaces": [
+    "sources",
+    "data_gap",
+    "risk_or_counterevidence",
+    "what_would_change"
+  ],
+  "cases": [
+    {"case_id":"WB-S01","task_dir":"2026-07-11-20-54-48","html_file":"enterprise-ai-saas-deep-research.html","sector":"technology_software_services","mechanism":"subscription_platform_monetization","report_type":"company_comparison","required_surfaces":["decision_surface","product_to_financial_bridge","valuation"]},
+    {"case_id":"WB-S02","task_dir":"2026-07-11-20-55-08","html_file":"US-Banks-Deep-Research-20260711.html","sector":"banks_financials","mechanism":"balance_sheet_rate_credit_capital","report_type":"company_comparison","required_surfaces":["decision_surface","deposit_nim_credit_capital","valuation"]},
+    {"case_id":"WB-S03","task_dir":"2026-07-11-20-55-22","html_file":"GLP1_LLY_NVO_Deep_Research_20260711.html","sector":"healthcare_pharma_medtech","mechanism":"regulatory_access_supply_adoption","report_type":"company_comparison","required_surfaces":["decision_surface","clinical_regulatory_commercial_separation","valuation"]},
+    {"case_id":"WB-S04","task_dir":"2026-07-11-20-55-40","html_file":"WMT_TGT_COST_零售深度分析_20260711.html","sector":"retail_consumer","mechanism":"traffic_ticket_price_mix_inventory_margin","report_type":"company_comparison","required_surfaces":["decision_surface","sales_decomposition","inventory_margin"]},
+    {"case_id":"WB-S05","task_dir":"2026-07-11-20-56-42","html_file":"oil_supermajors_analysis.html","sector":"energy","mechanism":"commodity_volume_unit_cost_capital_return","report_type":"company_comparison","required_surfaces":["decision_surface","scenario_sensitivity","cash_return_bridge"]},
+    {"case_id":"WB-S06","task_dir":"2026-07-11-20-57-00","html_file":"NEE-VST-SO-DUK-电力投研分析-20260711.html","sector":"utilities_power","mechanism":"load_rate_base_financing_regulatory_return","report_type":"company_comparison","required_surfaces":["decision_surface","load_to_rate_base_bridge","regulated_vs_merchant"]},
+    {"case_id":"WB-S07","task_dir":"2026-07-11-20-57-16","html_file":"industrial-cycle-deep-research-20260711.html","sector":"industrials","mechanism":"orders_backlog_delivery_margin_cash","report_type":"company_comparison","required_surfaces":["decision_surface","order_to_cash_bridge","cycle_sensitivity"]},
+    {"case_id":"WB-S08","task_dir":"2026-07-11-20-58-24","html_file":"cybersecurity-platform-analysis-20260711.html","sector":"cybersecurity","mechanism":"platform_adoption_arr_sales_efficiency","report_type":"company_comparison","required_surfaces":["decision_surface","product_to_arr_bridge","incident_and_competition"]},
+    {"case_id":"WB-T01","task_dir":"2026-07-11-21-09-59","html_file":"WMT_TGT_Q1FY27_Earnings_Update.html","sector":"retail_consumer","mechanism":"earnings_delta_expectation_gap","report_type":"earnings_event_update","required_surfaces":["before_after_thesis","expectation_gap","monitoring_panel"]},
+    {"case_id":"WB-T02","task_dir":"2026-07-11-21-10-10","html_file":"LLY_NVO_Valuation_Decision_Surface_20260711.html","sector":"healthcare_pharma_medtech","mechanism":"fundamental_vs_price_in","report_type":"valuation_price_in","required_surfaces":["implied_expectations","scenario_sensitivity","price_in"]},
+    {"case_id":"WB-T03","task_dir":"2026-07-11-21-12-08","html_file":"auto_tariff_policy_analysis.html","sector":"auto_mobility","mechanism":"policy_supply_chain_cost_demand","report_type":"policy_shock","required_surfaces":["policy_authority_ladder","transmission_graph","scenario_sensitivity"]},
+    {"case_id":"WB-T04","task_dir":"2026-07-11-21-19-59","html_file":"cybersecurity-platform-counterevidence-20260711.html","sector":"cybersecurity","mechanism":"thesis_falsification","report_type":"counter_thesis","required_surfaces":["hypothesis_tree","support_vs_counterevidence","falsifier_panel"]}
+  ],
+  "duplicate_or_incomplete_runs": [
+    {"task_dir":"2026-07-11-21-12-24","html_file":"cybersecurity_platform_counter_thesis.html","classification":"duplicate_completed_comparison","preferred_case_id":"WB-T04"},
+    {"task_dir":"2026-07-11-21-00-01","classification":"incomplete_no_html","preferred_case_id":null}
+  ],
+  "surface_patterns": {
+    "sources": ["来源", "sources", "references", "参考"],
+    "data_gap": ["数据缺口", "data gap", "商业数据", "无法取得"],
+    "risk_or_counterevidence": ["风险", "反证", "counterevidence", "bear case"],
+    "what_would_change": ["what would change", "what-would-change", "改变判断", "falsifier"],
+    "decision_surface": ["decision surface", "决策矩阵", "判断矩阵"],
+    "product_to_financial_bridge": ["arr", "rpo", "现金流"],
+    "valuation": ["估值", "valuation", "price-in"],
+    "deposit_nim_credit_capital": ["存款", "nim", "cet1"],
+    "clinical_regulatory_commercial_separation": ["临床", "监管", "商业"],
+    "sales_decomposition": ["流量", "客单价", "同店"],
+    "inventory_margin": ["库存", "毛利率"],
+    "scenario_sensitivity": ["情景", "敏感性", "scenario"],
+    "cash_return_bridge": ["自由现金流", "股东回报"],
+    "load_to_rate_base_bridge": ["rate base", "负荷", "监管回报"],
+    "regulated_vs_merchant": ["受监管", "市场化电力"],
+    "order_to_cash_bridge": ["订单", "backlog", "现金流"],
+    "cycle_sensitivity": ["周期", "cycle"],
+    "product_to_arr_bridge": ["模块采用", "arr", "rpo"],
+    "incident_and_competition": ["事故", "microsoft", "竞争"],
+    "before_after_thesis": ["before vs after", "投资论点对照"],
+    "expectation_gap": ["预期差", "什么变了"],
+    "monitoring_panel": ["监控面板", "下一次财报"],
+    "implied_expectations": ["隐含预期", "reverse dcf"],
+    "price_in": ["price-in", "crowding"],
+    "policy_authority_ladder": ["正式法规", "公众人物发言", "公司表态"],
+    "transmission_graph": ["传导路径", "传导图"],
+    "hypothesis_tree": ["假设树", "hypothesis tree"],
+    "support_vs_counterevidence": ["支持证据", "反证矩阵", "counterevidence matrix"],
+    "falsifier_panel": ["falsifier", "what-would-change"]
+  },
+  "spot_checks": [
+    {"check_id":"may_2026_cpi_4_2","case_ids":["WB-S04"],"status":"verified_primary","source_url":"https://www.bls.gov/news.release/archives/cpi_06102026.htm","boundary":"Verifies the cited May 2026 CPI figure only."},
+    {"check_id":"walmart_q1_fy27_growth","case_ids":["WB-S04","WB-T01"],"status":"verified_primary","source_url":"https://corporate.walmart.com/news/2026/05/21/walmart-releases-q1-fy27-earnings","boundary":"Verifies 7.3% growth and 4.1% comparable-sales figures only."},
+    {"check_id":"target_q1_2026_growth","case_ids":["WB-S04","WB-T01"],"status":"verified_primary","source_url":"https://corporate.target.com/press/release/2026/05/target-corporation-reports-first-quarter-earnings","boundary":"Verifies 6.7% net-sales and 5.6% comparable-sales figures only."},
+    {"check_id":"lilly_2025_revenue","case_ids":["WB-S03","WB-T02"],"status":"verified_primary","source_url":"https://investor.lilly.com/static-files/70c644f5-d894-471a-a4c5-6464848ca393","boundary":"Verifies 2025 revenue of USD 65.179 billion only."},
+    {"check_id":"novo_2025_sales","case_ids":["WB-S03","WB-T02"],"status":"verified_primary","source_url":"https://annualreport.novonordisk.com/2025/strategic-aspirations/financial-performance.html","boundary":"Verifies 2025 net sales of DKK 309.064 billion only; USD conversion remains separate."},
+    {"check_id":"panw_q3_fy26_ngs_arr","case_ids":["WB-S08","WB-T04"],"status":"verified_primary","source_url":"https://investors.paloaltonetworks.com/news-releases/news-release-details/palo-alto-networks-reports-fiscal-third-quarter-2026-financial","boundary":"Verifies 60% reported NGS ARR growth and USD 1.6 billion acquired ARR; organic growth requires transcript context."}
+  ],
+  "visual_qa_observation": {
+    "viewport": "1440x900",
+    "browser": "local Microsoft Edge via Playwright",
+    "sample_case_ids": ["WB-S02", "WB-S03", "WB-T03", "WB-T04"],
+    "horizontal_overflow_case_count": 0,
+    "console_error_count": 0,
+    "rendered_canvas_counts": {"WB-S02": 13, "WB-S03": 5, "WB-T03": 0, "WB-T04": 1},
+    "static_table_counts": {"WB-S02": 10, "WB-S03": 9, "WB-T03": 17, "WB-T04": 8},
+    "assessment": "desktop_visual_pass_representative_sample; policy report is intentionally static-table-heavy"
+  },
+  "privacy_boundary": {
+    "raw_reasoning_may_exist_in_workbuddy_project_logs": true,
+    "raw_reasoning_must_not_be_copied_to_repo": true,
+    "audit_may_store_aggregate_trace_metrics": true
+  }
+}

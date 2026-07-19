@@ -1,0 +1,10 @@
+{
+  "policy_version": "finsight_point01_m2_2_full_serializer_policy_v1_0",
+  "policy_ref": "point01-m2-2-full-serializer-policy-v1",
+  "envelope_version": "finsight_point01_decision_surface_artifact_envelope_v1",
+  "artifact_type": "decision_surface_artifact_envelope",
+  "require_case_delta_lineage": true,
+  "require_selection_reasons": true,
+  "require_legacy_information_loss_review": true,
+  "authority_boundary": "The full serializer writes only a canonical shadow artifact through the M1 atomic transaction boundary. It never changes legacy TaskRun authority, invokes a model, retrieves evidence or permits cutover."
+}

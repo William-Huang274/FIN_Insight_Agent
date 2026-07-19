@@ -1,0 +1,16 @@
+{
+  "mapping_version": "finsight_point01_m6_3r_2_fixture_api_owner_mapping_v1_0",
+  "point": "M6.3R.2",
+  "execution_stage": "fixture_repaired_pending_total_reviewer_audit",
+  "upstream_authority": "M6.3R.1 skeleton_independently_accepted_non_authoritative",
+  "contracts": [
+    {"contract": "LocalRetrievalFixtureAdmissionPolicy", "owner": "M6.3R fixture policy owner", "input": "reviewed static admission policy plus pinned R.1 SQL policy artifact", "write_authority": "ephemeral deterministic fixture admission only", "persistence": "not_authorized"},
+    {"contract": "LocalRetrievalFixtureCorpus/Entry", "owner": "M6.3R fixture corpus owner", "input": "sanitized immutable metadata only; no expected outcome", "write_authority": "in-memory corpus package only", "persistence": "not_authorized"},
+    {"contract": "LocalRetrievalFixtureOracle", "owner": "M6.3R fixture audit owner", "input": "corpus-bound post-evaluation expected status/reason records", "write_authority": "independent audit comparison only; evaluator cannot read it", "persistence": "reviewed manifest artifact only"},
+    {"contract": "LocalRetrievalFixtureHarness/Evaluation", "owner": "M6.3R fixture evaluation owner", "input": "exact request/topK/snapshot/query plus supplied candidates", "write_authority": "ephemeral CandidateBundleProjection/EvidenceGateCandidateProjection only; fixed classifier, directional neighbors, post-filter diversity and rerank-derived Gate set", "persistence": "not_authorized"},
+    {"contract": "SqlFixturePolicyPin", "owner": "M6.3R SQL fixture authority boundary", "input": "fixed path/ref/version/canonical digest/raw SHA-256 of reviewed R.1 policy", "write_authority": "admit only exact pinned policy", "persistence": "not_authorized"}
+  ],
+  "fixture_matrix": ["BM25 narrative", "ObjectBM25 document/table metadata", "relationship graph metadata", "exact-value SQL-row metadata", "independent oracle", "directional section/table/page/row neighbor", "post-filter source-family diversity", "rerank-derived Gate subset", "typed zero-result and context exhaustion"],
+  "residual_risk": "A self-signed R.1 ExactValueSqlBindingPolicy can resolve at non-authoritative skeleton level. R.2 rejects it as not_fixture_admitted; R.3 must use separately approved canonical registry/admission resolution before an adapter read.",
+  "prohibitions": ["adapter/index/graph/SQL/source read", "ToolInvocation", "receipt registration", "network", "model/provider", "parser/numeric", "Evidence promotion", "SourceHunter", "Context", "Writer", "full-chain", "production or approval store write", "business Case mutation", "legacy authority cutover", "M6.3R.3 execution"]
+}

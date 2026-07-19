@@ -1,0 +1,44 @@
+{
+  "schema_version": "finsight_point01_p01_g2_1_operational_execution_policy_v1_0",
+  "status": "externally_authorized_single_operational_baseline_plus_three_pre_authority_probes",
+  "purpose": "Execute the exact P01-G2.0 v1.1 operational qualification tranche through the existing v2.10 lifecycle kernel without expanding authority.",
+  "baseline": {
+    "case_id": "g2-baseline",
+    "scenario_id": "p01-baseline-separated-input",
+    "input_ref": "m2-a1-ai-semis-input",
+    "mutation": "none",
+    "reviewer_identity": "william/003/total_reviewer",
+    "actor_id": "003",
+    "decision": "approved_single_operational_baseline_only",
+    "decision_source": "p01_g2_1_independent_total_reviewer_disposition",
+    "admission_ttl_minutes": 30,
+    "receipt_ttl_minutes": 15,
+    "single_use": true,
+    "retry_replay_renewal": "forbidden"
+  },
+  "case_order": [
+    "g2-baseline",
+    "g2-wrong-package-or-approval",
+    "g2-stale-input-version-drift",
+    "g2-unauthorized-transport"
+  ],
+  "negative_cases": {
+    "g2-wrong-package-or-approval": "pre_authority_typed_deny:package_or_approval_mismatch",
+    "g2-stale-input-version-drift": "typed_stop:superseded_pack_version_or_pack_not_fresh",
+    "g2-unauthorized-transport": "typed_stop:shadow_scope_violation"
+  },
+  "prohibitions": [
+    "retry",
+    "replay",
+    "renewal",
+    "paid_llm",
+    "full_chain",
+    "network_success",
+    "tool_success",
+    "model_provider_success",
+    "commercial_data",
+    "business_case_mutation",
+    "production_cutover",
+    "legacy_global_authority_change"
+  ]
+}

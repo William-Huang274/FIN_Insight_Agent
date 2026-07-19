@@ -1,0 +1,1979 @@
+{
+  "adversarial_errors": {
+    "dependency_missing": "dependency_merge_key_missing:core_1:missing_merge_key",
+    "merge_conflict": "merge_contract_conflict:core_0",
+    "pack_missing": "archetype_pack_not_selected:sector-banks-merge-core-0"
+  },
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "external_call_count": 0,
+    "legacy_task_run": "authoritative",
+    "model_call_count": 0
+  },
+  "boundary": "Composition transforms selected shadow pack templates into deterministic candidate cells only. It does not resolve live evidence, call a model, write legacy state or change authority.",
+  "checks": {
+    "adversarial_dependency_missing": true,
+    "adversarial_merge_conflict": true,
+    "adversarial_pack_missing": true,
+    "all_positive_cases_have_ten_material_cells": true,
+    "fact_to_slot_mapping_present": true,
+    "four_positive_cases": true,
+    "merge_split_dedupe_trace": true,
+    "model_free": true
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m2_5_cell_composition_policy_v1_0.json": "36e3b521cf20367bcfbbc7c05dff73e82b2f7ff8aec4997fb0c17109093b396c",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "e7d1ddb2fc2b06ae36a123b184521093afb7d9a4dcfcb268aa1e0269dbbbe998",
+    "scripts/engineering/run_point01_m2_5_cell_composition_fixture.py": "c51dea2b7f41736442b16f0ae1073c5a1d5e67d4eefe7101891d960a503120d7",
+    "src/sec_agent/canonical_runtime/cell_composition.py": "3bfa4031e56f335a70e02239777309298ee90ea032ef273fc905f1803c4f5ace"
+  },
+  "positive_cases": {
+    "ai_semis": {
+      "case_id": "case-ai_semis",
+      "cells": [
+        {
+          "cell_key": "ai_semis_1",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "ai_semis_fact_1": [
+              "sector_slot_1"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-ai_semis:v1"
+          ],
+          "seed": {
+            "cell_key": "ai_semis_1",
+            "decision_question": "ai_semis material question 1",
+            "dependency_cell_keys": [
+              "core_4"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "ai_semis_fact_1"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "fundamental_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "ai_semis_driver_1"
+          ]
+        },
+        {
+          "cell_key": "ai_semis_2",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "ai_semis_fact_2": [
+              "sector_slot_2"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-ai_semis:v1"
+          ],
+          "seed": {
+            "cell_key": "ai_semis_2",
+            "decision_question": "ai_semis material question 2",
+            "dependency_cell_keys": [
+              "ai_semis_1"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "ai_semis_fact_2"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "product_industry_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "ai_semis_driver_2"
+          ]
+        },
+        {
+          "cell_key": "ai_semis_3",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "ai_semis_fact_3": [
+              "sector_slot_3"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-ai_semis:v1"
+          ],
+          "seed": {
+            "cell_key": "ai_semis_3",
+            "decision_question": "ai_semis material question 3",
+            "dependency_cell_keys": [
+              "ai_semis_2"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "ai_semis_fact_3"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "capital_market_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "ai_semis_driver_3"
+          ]
+        },
+        {
+          "cell_key": "ai_semis_4__demand",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "ai_semis_fact_4": [
+              "sector_slot_4"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-ai_semis:v1"
+          ],
+          "seed": {
+            "cell_key": "ai_semis_4__demand",
+            "decision_question": "ai_semis material question 4 [demand]",
+            "dependency_cell_keys": [
+              "ai_semis_3"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "ai_semis_fact_4"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "risk_counterevidence_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "ai_semis_driver_4"
+          ]
+        },
+        {
+          "cell_key": "ai_semis_4__monetization",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "ai_semis_fact_4": [
+              "sector_slot_4"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-ai_semis:v1"
+          ],
+          "seed": {
+            "cell_key": "ai_semis_4__monetization",
+            "decision_question": "ai_semis material question 4 [monetization]",
+            "dependency_cell_keys": [
+              "ai_semis_3"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "ai_semis_fact_4"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "risk_counterevidence_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "ai_semis_driver_4"
+          ]
+        },
+        {
+          "cell_key": "core_0",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "ai_semis_extension_fact": [
+              "sector_extension_slot"
+            ],
+            "universal_fact_0": [
+              "universal_slot_0"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-ai_semis:v1",
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_0",
+            "decision_question": "Universal material question 0",
+            "dependency_cell_keys": [],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "ai_semis_extension_fact"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "official_first"
+              },
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_0"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "research_lead",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_0"
+          ]
+        },
+        {
+          "cell_key": "core_1",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_1": [
+              "universal_slot_1"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_1",
+            "decision_question": "Universal material question 1",
+            "dependency_cell_keys": [
+              "core_0"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_1"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "fundamental_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_1"
+          ]
+        },
+        {
+          "cell_key": "core_2",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_2": [
+              "universal_slot_2"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_2",
+            "decision_question": "Universal material question 2",
+            "dependency_cell_keys": [
+              "core_1"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_2"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "product_industry_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_2"
+          ]
+        },
+        {
+          "cell_key": "core_3",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_3": [
+              "universal_slot_3"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_3",
+            "decision_question": "Universal material question 3",
+            "dependency_cell_keys": [
+              "core_2"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_3"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "capital_market_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_3"
+          ]
+        },
+        {
+          "cell_key": "core_4",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_4": [
+              "universal_slot_4"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_4",
+            "decision_question": "Universal material question 4",
+            "dependency_cell_keys": [
+              "core_3"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_4"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "risk_counterevidence_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_4"
+          ]
+        }
+      ],
+      "composition_digest": "11a0911bdbdc1740faa584a93eb4a21629ec29bc41f940b03642e56e8d25ac74",
+      "external_call_count": 0,
+      "merged_archetype_ids": [
+        "sector-ai_semis-merge-core-0",
+        "universal-ai_semis-0"
+      ],
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "split_cell_keys": [
+        "ai_semis_4__demand",
+        "ai_semis_4__monetization"
+      ]
+    },
+    "banks": {
+      "case_id": "case-banks",
+      "cells": [
+        {
+          "cell_key": "banks_1",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "banks_fact_1": [
+              "sector_slot_1"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-banks:v1"
+          ],
+          "seed": {
+            "cell_key": "banks_1",
+            "decision_question": "banks material question 1",
+            "dependency_cell_keys": [
+              "core_4"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "banks_fact_1"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "fundamental_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "banks_driver_1"
+          ]
+        },
+        {
+          "cell_key": "banks_2",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "banks_fact_2": [
+              "sector_slot_2"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-banks:v1"
+          ],
+          "seed": {
+            "cell_key": "banks_2",
+            "decision_question": "banks material question 2",
+            "dependency_cell_keys": [
+              "banks_1"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "banks_fact_2"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "product_industry_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "banks_driver_2"
+          ]
+        },
+        {
+          "cell_key": "banks_3",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "banks_fact_3": [
+              "sector_slot_3"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-banks:v1"
+          ],
+          "seed": {
+            "cell_key": "banks_3",
+            "decision_question": "banks material question 3",
+            "dependency_cell_keys": [
+              "banks_2"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "banks_fact_3"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "capital_market_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "banks_driver_3"
+          ]
+        },
+        {
+          "cell_key": "banks_4__demand",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "banks_fact_4": [
+              "sector_slot_4"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-banks:v1"
+          ],
+          "seed": {
+            "cell_key": "banks_4__demand",
+            "decision_question": "banks material question 4 [demand]",
+            "dependency_cell_keys": [
+              "banks_3"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "banks_fact_4"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "risk_counterevidence_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "banks_driver_4"
+          ]
+        },
+        {
+          "cell_key": "banks_4__monetization",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "banks_fact_4": [
+              "sector_slot_4"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-banks:v1"
+          ],
+          "seed": {
+            "cell_key": "banks_4__monetization",
+            "decision_question": "banks material question 4 [monetization]",
+            "dependency_cell_keys": [
+              "banks_3"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "banks_fact_4"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "risk_counterevidence_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "banks_driver_4"
+          ]
+        },
+        {
+          "cell_key": "core_0",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "banks_extension_fact": [
+              "sector_extension_slot"
+            ],
+            "universal_fact_0": [
+              "universal_slot_0"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-banks:v1",
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_0",
+            "decision_question": "Universal material question 0",
+            "dependency_cell_keys": [],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "banks_extension_fact"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "official_first"
+              },
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_0"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "research_lead",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_0"
+          ]
+        },
+        {
+          "cell_key": "core_1",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_1": [
+              "universal_slot_1"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_1",
+            "decision_question": "Universal material question 1",
+            "dependency_cell_keys": [
+              "core_0"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_1"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "fundamental_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_1"
+          ]
+        },
+        {
+          "cell_key": "core_2",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_2": [
+              "universal_slot_2"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_2",
+            "decision_question": "Universal material question 2",
+            "dependency_cell_keys": [
+              "core_1"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_2"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "product_industry_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_2"
+          ]
+        },
+        {
+          "cell_key": "core_3",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_3": [
+              "universal_slot_3"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_3",
+            "decision_question": "Universal material question 3",
+            "dependency_cell_keys": [
+              "core_2"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_3"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "capital_market_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_3"
+          ]
+        },
+        {
+          "cell_key": "core_4",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_4": [
+              "universal_slot_4"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_4",
+            "decision_question": "Universal material question 4",
+            "dependency_cell_keys": [
+              "core_3"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_4"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "risk_counterevidence_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_4"
+          ]
+        }
+      ],
+      "composition_digest": "ae536df9efba223a062e6966e9e6e505c5118a9e703f25c26d80122ccf908aac",
+      "external_call_count": 0,
+      "merged_archetype_ids": [
+        "sector-banks-merge-core-0",
+        "universal-banks-0"
+      ],
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "split_cell_keys": [
+        "banks_4__demand",
+        "banks_4__monetization"
+      ]
+    },
+    "healthcare": {
+      "case_id": "case-healthcare",
+      "cells": [
+        {
+          "cell_key": "core_0",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "healthcare_extension_fact": [
+              "sector_extension_slot"
+            ],
+            "universal_fact_0": [
+              "universal_slot_0"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-healthcare:v1",
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_0",
+            "decision_question": "Universal material question 0",
+            "dependency_cell_keys": [],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "healthcare_extension_fact"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "official_first"
+              },
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_0"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "research_lead",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_0"
+          ]
+        },
+        {
+          "cell_key": "core_1",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_1": [
+              "universal_slot_1"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_1",
+            "decision_question": "Universal material question 1",
+            "dependency_cell_keys": [
+              "core_0"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_1"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "fundamental_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_1"
+          ]
+        },
+        {
+          "cell_key": "core_2",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_2": [
+              "universal_slot_2"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_2",
+            "decision_question": "Universal material question 2",
+            "dependency_cell_keys": [
+              "core_1"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_2"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "product_industry_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_2"
+          ]
+        },
+        {
+          "cell_key": "core_3",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_3": [
+              "universal_slot_3"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_3",
+            "decision_question": "Universal material question 3",
+            "dependency_cell_keys": [
+              "core_2"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_3"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "capital_market_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_3"
+          ]
+        },
+        {
+          "cell_key": "core_4",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_4": [
+              "universal_slot_4"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_4",
+            "decision_question": "Universal material question 4",
+            "dependency_cell_keys": [
+              "core_3"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_4"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "risk_counterevidence_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_4"
+          ]
+        },
+        {
+          "cell_key": "healthcare_1",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "healthcare_fact_1": [
+              "sector_slot_1"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-healthcare:v1"
+          ],
+          "seed": {
+            "cell_key": "healthcare_1",
+            "decision_question": "healthcare material question 1",
+            "dependency_cell_keys": [
+              "core_4"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "healthcare_fact_1"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "fundamental_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "healthcare_driver_1"
+          ]
+        },
+        {
+          "cell_key": "healthcare_2",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "healthcare_fact_2": [
+              "sector_slot_2"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-healthcare:v1"
+          ],
+          "seed": {
+            "cell_key": "healthcare_2",
+            "decision_question": "healthcare material question 2",
+            "dependency_cell_keys": [
+              "healthcare_1"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "healthcare_fact_2"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "product_industry_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "healthcare_driver_2"
+          ]
+        },
+        {
+          "cell_key": "healthcare_3",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "healthcare_fact_3": [
+              "sector_slot_3"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-healthcare:v1"
+          ],
+          "seed": {
+            "cell_key": "healthcare_3",
+            "decision_question": "healthcare material question 3",
+            "dependency_cell_keys": [
+              "healthcare_2"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "healthcare_fact_3"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "capital_market_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "healthcare_driver_3"
+          ]
+        },
+        {
+          "cell_key": "healthcare_4__demand",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "healthcare_fact_4": [
+              "sector_slot_4"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-healthcare:v1"
+          ],
+          "seed": {
+            "cell_key": "healthcare_4__demand",
+            "decision_question": "healthcare material question 4 [demand]",
+            "dependency_cell_keys": [
+              "healthcare_3"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "healthcare_fact_4"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "risk_counterevidence_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "healthcare_driver_4"
+          ]
+        },
+        {
+          "cell_key": "healthcare_4__monetization",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "healthcare_fact_4": [
+              "sector_slot_4"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-healthcare:v1"
+          ],
+          "seed": {
+            "cell_key": "healthcare_4__monetization",
+            "decision_question": "healthcare material question 4 [monetization]",
+            "dependency_cell_keys": [
+              "healthcare_3"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "healthcare_fact_4"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "risk_counterevidence_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "healthcare_driver_4"
+          ]
+        }
+      ],
+      "composition_digest": "00986e36073f6f086ad4e08bceb84c428d1c00e349474d5430b4dda235c01f9a",
+      "external_call_count": 0,
+      "merged_archetype_ids": [
+        "sector-healthcare-merge-core-0",
+        "universal-healthcare-0"
+      ],
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "split_cell_keys": [
+        "healthcare_4__demand",
+        "healthcare_4__monetization"
+      ]
+    },
+    "saas": {
+      "case_id": "case-saas",
+      "cells": [
+        {
+          "cell_key": "core_0",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "saas_extension_fact": [
+              "sector_extension_slot"
+            ],
+            "universal_fact_0": [
+              "universal_slot_0"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-saas:v1",
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_0",
+            "decision_question": "Universal material question 0",
+            "dependency_cell_keys": [],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "saas_extension_fact"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "official_first"
+              },
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_0"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "research_lead",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_0"
+          ]
+        },
+        {
+          "cell_key": "core_1",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_1": [
+              "universal_slot_1"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_1",
+            "decision_question": "Universal material question 1",
+            "dependency_cell_keys": [
+              "core_0"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_1"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "fundamental_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_1"
+          ]
+        },
+        {
+          "cell_key": "core_2",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_2": [
+              "universal_slot_2"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_2",
+            "decision_question": "Universal material question 2",
+            "dependency_cell_keys": [
+              "core_1"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_2"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "product_industry_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_2"
+          ]
+        },
+        {
+          "cell_key": "core_3",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_3": [
+              "universal_slot_3"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_3",
+            "decision_question": "Universal material question 3",
+            "dependency_cell_keys": [
+              "core_2"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_3"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "capital_market_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_3"
+          ]
+        },
+        {
+          "cell_key": "core_4",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "universal_fact_4": [
+              "universal_slot_4"
+            ]
+          },
+          "origin_pack_refs": [
+            "universal-core:v1"
+          ],
+          "seed": {
+            "cell_key": "core_4",
+            "decision_question": "Universal material question 4",
+            "dependency_cell_keys": [
+              "core_3"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "universal_fact_4"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "risk_counterevidence_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "universal_driver_4"
+          ]
+        },
+        {
+          "cell_key": "saas_1",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "saas_fact_1": [
+              "sector_slot_1"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-saas:v1"
+          ],
+          "seed": {
+            "cell_key": "saas_1",
+            "decision_question": "saas material question 1",
+            "dependency_cell_keys": [
+              "core_4"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "saas_fact_1"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "fundamental_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "saas_driver_1"
+          ]
+        },
+        {
+          "cell_key": "saas_2",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "saas_fact_2": [
+              "sector_slot_2"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-saas:v1"
+          ],
+          "seed": {
+            "cell_key": "saas_2",
+            "decision_question": "saas material question 2",
+            "dependency_cell_keys": [
+              "saas_1"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "saas_fact_2"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "product_industry_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "saas_driver_2"
+          ]
+        },
+        {
+          "cell_key": "saas_3",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "saas_fact_3": [
+              "sector_slot_3"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-saas:v1"
+          ],
+          "seed": {
+            "cell_key": "saas_3",
+            "decision_question": "saas material question 3",
+            "dependency_cell_keys": [
+              "saas_2"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "saas_fact_3"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "capital_market_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "saas_driver_3"
+          ]
+        },
+        {
+          "cell_key": "saas_4__demand",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "saas_fact_4": [
+              "sector_slot_4"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-saas:v1"
+          ],
+          "seed": {
+            "cell_key": "saas_4__demand",
+            "decision_question": "saas material question 4 [demand]",
+            "dependency_cell_keys": [
+              "saas_3"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "saas_fact_4"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "risk_counterevidence_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "saas_driver_4"
+          ]
+        },
+        {
+          "cell_key": "saas_4__monetization",
+          "counterevidence_owner_role": "risk_counterevidence_analyst",
+          "fact_to_slot_keys": {
+            "saas_fact_4": [
+              "sector_slot_4"
+            ]
+          },
+          "origin_pack_refs": [
+            "sector-saas:v1"
+          ],
+          "seed": {
+            "cell_key": "saas_4__monetization",
+            "decision_question": "saas material question 4 [monetization]",
+            "dependency_cell_keys": [
+              "saas_3"
+            ],
+            "evidence_slots": [
+              {
+                "acceptance_role": "primary",
+                "entity_scope": [
+                  "AAA"
+                ],
+                "evidence_role": "issuer_metric",
+                "forbidden_substitutions": [
+                  "unbounded_proxy",
+                  "relationship_graph_only"
+                ],
+                "metric_scope": [
+                  "saas_fact_4"
+                ],
+                "period_scope": "latest_fiscal_period",
+                "required": true,
+                "source_policy_ref": "issuer_first"
+              }
+            ],
+            "materiality": "high",
+            "origin_type": "pack_composition",
+            "owner_role": "risk_counterevidence_analyst",
+            "stop_rule": "accepted primary route or typed gap"
+          },
+          "what_would_change": [
+            "saas_driver_4"
+          ]
+        }
+      ],
+      "composition_digest": "5482f2d2b05be0771db6f1e1bdf9aa2e596aad557a5e622443b3ee1c953ebd26",
+      "external_call_count": 0,
+      "merged_archetype_ids": [
+        "sector-saas-merge-core-0",
+        "universal-saas-0"
+      ],
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "split_cell_keys": [
+        "saas_4__demand",
+        "saas_4__monetization"
+      ]
+    }
+  },
+  "result_version": "finsight_point01_m2_5_cell_composition_fixture_result_v1_0",
+  "scope": "Point01_M2_5_cell_composition",
+  "status": "pass"
+}

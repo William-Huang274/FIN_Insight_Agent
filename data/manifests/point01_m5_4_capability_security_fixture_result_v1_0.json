@@ -1,0 +1,33 @@
+{
+  "boundary": "This fixture proves M5.4 admission only. It executes no network/path/tool/provider action: the sole protected mutation is the existing temporary-store checkpoint write. It admits no worker/service, Evidence/Writer, full-chain, business Case mutation or legacy authority change.",
+  "errors": [],
+  "evidence": {
+    "allowed_checkpoint_ref": [
+      "checkpoint-secure:v1"
+    ],
+    "audit_allowed_count": 2,
+    "audit_denied_count": 6,
+    "canonical_checkpoint_artifact_count": 1,
+    "denials": {
+      "network_scope": "network_scope_denied",
+      "path_scope": "path_scope_denied",
+      "privacy_scope": "privacy_classification_denied",
+      "tenant_cross_read": "tenant_cross_read_denied",
+      "unknown_capability": "unknown_capability"
+    },
+    "expired_grant_blocked": true,
+    "persisted_grant_authority_survives_restart": true
+  },
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m5_4_capability_security_policy_v1_0.json": "cbfd2c28660ccf97c12896629cc7f9090c17814b44378e69433f689bb388efa9",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "875ebe893d8b14b4894856af3d27b0e9367d6d885ae20e99f58cd173744f95f1",
+    "scripts/engineering/run_point01_m5_4_capability_security_fixtures.py": "7fe403a23873c33d5cd7501edd3a6f20589d9eca89aeca3d405814dba9c16d9e"
+  },
+  "generated_at": "2026-07-13T03:06:24.208710+00:00",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m5_4_capability_security_fixture_result_v1_0",
+  "scope": "Point01_M5_4_capability_security_sandbox_control_plane_only",
+  "status": "pass",
+  "worker_started": false
+}

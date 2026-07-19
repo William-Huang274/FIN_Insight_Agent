@@ -1,0 +1,12 @@
+{
+  "policy_version": "finsight_point01_m2_8_model_admission_policy_v1_0",
+  "policy_ref": "point01-m2-8-model-admission-policy-v1",
+  "allowed_provider_families": ["deepseek", "openai_compatible"],
+  "model_execution_permitted": false,
+  "require_feature_flag": true,
+  "require_explicit_approved_scoped_node": true,
+  "require_provider_preflight": true,
+  "require_budget_preflight": true,
+  "require_permission_snapshot": true,
+  "authority_boundary": "M2.8 records a provider-neutral admission decision, prompt-context digest and repair trace only. Model execution remains disabled until a future explicit approved scoped node, provider/budget preflight and policy revision; this artifact never writes legacy authority."
+}

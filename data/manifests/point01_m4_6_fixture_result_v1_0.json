@@ -1,0 +1,30 @@
+{
+  "boundary": "Deterministic temporary-store M4 cutover fixture; no production lane, Evidence/Writer/provider/full-chain runtime, or legacy TaskRun authority change.",
+  "canonical_lane_scope": "case_scoped_fixture_only",
+  "external_call_count": 0,
+  "generated_at": "2026-07-12T12:08:46.933039+00:00",
+  "legacy_task_run_authority": "authoritative",
+  "model_call_count": 0,
+  "payload": {
+    "recovery": {
+      "authority": "legacy",
+      "case_id": "case-m4-fixture",
+      "decision_count": 1,
+      "errors": [],
+      "event_types": [
+        "PLANNING_CUTOVER_REQUESTED",
+        "PLANNING_CUTOVER_DECIDED",
+        "PLANNING_AUTHORITY_CHANGED",
+        "PLANNING_ROLLBACK_EXECUTED"
+      ],
+      "status": "pass",
+      "store_recovery_status": "pass"
+    },
+    "rollback_status": "rolled_back",
+    "runtime_facade_authority": "legacy",
+    "status": "pass"
+  },
+  "point_id": "M4.6",
+  "result_version": "finsight_point01_m4_6_fixture_result_v1_0",
+  "status": "pass"
+}

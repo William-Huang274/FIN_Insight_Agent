@@ -1,0 +1,60 @@
+{
+  "manifest_version": "finsight_point01_m0_test_manifest_v1_0",
+  "status": "required_before_m0_closeout",
+  "paid_or_full_chain_required": false,
+  "test_profile": "fast_contract",
+  "suites": [
+    {
+      "suite_id": "schema_contract",
+      "required": true,
+      "cases": [
+        "all_15_registry_objects_have_pydantic_models",
+        "json_schema_export_is_deterministic",
+        "unknown_fields_are_rejected",
+        "timestamps_require_timezone_aware_utc",
+        "stable_ids_and_version_numbers_are_validated"
+      ]
+    },
+    {
+      "suite_id": "store_conformance",
+      "required": true,
+      "cases": [
+        "logical_tables_and_migrations_exist",
+        "foreign_keys_and_unique_constraints_hold",
+        "event_and_version_rows_are_append_only",
+        "compare_and_swap_rejects_stale_write",
+        "transaction_rolls_back_on_object_store_failure",
+        "event_sequence_and_outbox_commit_atomically"
+      ]
+    },
+    {
+      "suite_id": "runtime_facade",
+      "required": true,
+      "cases": [
+        "create_and_bind_case_is_idempotent",
+        "same_idempotency_key_with_different_payload_conflicts",
+        "work_unit_attempt_state_machine_rejects_illegal_transition",
+        "decision_surface_bundle_commits_atomically",
+        "shadow_authority_cannot_feed_forbidden_consumers",
+        "replay_performs_no_external_call"
+      ]
+    },
+    {
+      "suite_id": "rollback_and_boundary",
+      "required": true,
+      "cases": [
+        "feature_flag_defaults_off",
+        "kill_switch_stops_new_canonical_writes",
+        "legacy_authority_is_preserved_after_rollback",
+        "canonical_audit_history_is_not_deleted",
+        "writer_evidence_numeric_judgment_review_and_monitoring_commands_are_absent"
+      ]
+    }
+  ],
+  "closeout_commands": [
+    "python -m pytest -q -m fast_contract tests/contract",
+    "python -m compileall -q src/sec_agent/canonical_runtime",
+    "git diff --check"
+  ],
+  "pass_rule": "all required cases pass; no xfail or paid/full-chain substitution"
+}

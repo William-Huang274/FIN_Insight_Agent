@@ -1,0 +1,28 @@
+{
+  "candidate_digest": "bba3ce4bc30467b4997e2be71803e8bf01608411dae6dc0a27a60f6a02ac75f9",
+  "candidate_ref": "point01-p01-g2-1-final-ai-semis-operational-baseline-candidate-v1",
+  "execution_counts": {
+    "admission": 0,
+    "baseline": 0,
+    "fixed_business_store_write": 0,
+    "formal_namespace": 0,
+    "human_approval": 0,
+    "model_success": 0,
+    "negative_case": 0,
+    "network_success": 0,
+    "provider_success": 0,
+    "receipt": 0,
+    "runtime": 0,
+    "tool_success": 0
+  },
+  "gate_digest": "755c2decbe0aaf808d19f0e4a13e076ebc5e4b95afbb91a09a1dd5c814235c33",
+  "manifest_digest": "bda9f0abb3efb56b65ab1868982ed92a677df62d1e8dc6eed6a6660e250fa1e4",
+  "next_step": "independent_exact_digest_approval_required_no_authority_created",
+  "preflight_digest": "e9c24dae75f2ecc9f50c431365ad3ec8f2efbdc37ee06297977d730dbb2e643b",
+  "schema_version": "finsight_point01_p01_g2_1_final_baseline_candidate_gate_v1_0",
+  "status": "pass",
+  "verification": {
+    "errors": [],
+    "status": "pass"
+  }
+}

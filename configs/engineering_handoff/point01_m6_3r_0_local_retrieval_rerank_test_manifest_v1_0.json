@@ -1,0 +1,25 @@
+{
+  "manifest_version": "finsight_point01_m6_3r_0_local_retrieval_rerank_test_manifest_v1_1_topk_sql_inventory_repair",
+  "stage": "design_repair_independently_accepted",
+  "test_paths": ["tests/contract/test_point01_m6_3r_0_local_retrieval_rerank_design.py"],
+  "lint_runner": "scripts/engineering/run_point01_m6_3r_0_local_retrieval_rerank_design_lint.py",
+  "required_static_gates": [
+    "request_bound_topk_policy_not_global_constant",
+    "TECH_02_default_and_allowed_topk_bounds",
+    "evidence_gate_candidate_cap_one_to_five",
+    "explicit_source_role_lowering_and_no_agent_raise",
+    "topk_audit_projection_and_bundle_gate_name_separation",
+    "zero_model_reranker_profile_and_future_model_boundary",
+    "source_diversity_and_single_source_exception",
+    "all_neighbor_coordinate_types_and_stop_rule",
+    "typed_retrieval_exhaustion_without_fallback",
+    "exact_value_ledger_sql_candidate_boundary",
+    "mcp_contract_receipt_and_direct_handler_fallback_rejection",
+    "d_series_governance_context_and_fact_selection_rejection",
+    "no_second_state_model_and_zero_execution_counts",
+    "future_sql_lane_skeleton_fixture_full_calibrated_sequence",
+    "slot_level_precision_recall_sql_negative_corpus"
+  ],
+  "forbidden_commands": ["pytest broad M6 suite", "adapter execution", "network", "provider or model execution", "parser or numeric execution", "canonical store mutation"],
+  "expected_counts": {"network_request_count": 0, "external_tool_call_count": 0, "model_call_count": 0, "canonical_store_write_count": 0, "adapter_execution_count": 0}
+}

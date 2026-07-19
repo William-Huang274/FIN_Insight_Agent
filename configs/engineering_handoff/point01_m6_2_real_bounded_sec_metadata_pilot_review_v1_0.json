@@ -1,0 +1,65 @@
+{
+  "review_version": "finsight_point01_m6_2_real_bounded_sec_metadata_pilot_review_v1_0",
+  "scope": "isolated_temporary_sqlite_synthetic_case_nvda_sec_submissions_metadata_only",
+  "status": "user_approved_implementation_live_precondition_pending",
+  "review_method": "codex_structured_role_separation_with_explicit_current_thread_human_approval",
+  "independent_human_or_multi_person_signoff": false,
+  "user_confirmation": {
+    "approver_id": "current_thread_human_approver",
+    "decision": "approve_m6_2_5_real_bounded_sec_metadata_pilot_only",
+    "confirmation_note": "Approval permits exactly one public NVDA SEC submissions metadata request after M5.4/M5.5 gates. It does not authorize a fallback, other source/issuer, Evidence promotion, Writer, models or full-chain."
+  },
+  "reviewer_lenses": [
+    {
+      "lens": "runtime_transaction_owner",
+      "result": "pass_with_durable_external_boundary",
+      "checks": [
+        "receipt v1 is persisted before send",
+        "receipt v2 is append-only terminal state",
+        "event state_version follows receipt state 0->1->2",
+        "prepared receipt cannot be retried automatically"
+      ]
+    },
+    {
+      "lens": "m5_security_budget_owner",
+      "result": "pass_with_execute_time_recheck",
+      "checks": [
+        "capability grant/tool/network/path/public classification are admitted before prepare",
+        "grant is read and re-admitted immediately before the single send",
+        "denial before send refunds the exact reservation",
+        "any post-send outcome uncertainty consumes one call and stops"
+      ]
+    },
+    {
+      "lens": "source_authority_and_evidence_owner",
+      "result": "pass_with_metadata_only_boundary",
+      "checks": [
+        "only data.sec.gov/submissions/CIK0001045810.json is executable",
+        "response is reduced to issuer and filing headers without raw body/document content",
+        "receipt output is not a CandidateBundle, NumericFact or formal Evidence"
+      ]
+    },
+    {
+      "lens": "operations_and_safety_owner",
+      "result": "pass_with_live_precondition_blocker",
+      "checks": [
+        "live run requires a nonempty SEC_USER_AGENT environment variable",
+        "no placeholder or fabricated contact identity is used",
+        "missing identity is fail_closed with zero store write and zero external call"
+      ]
+    }
+  ],
+  "open_blockers": [
+    "Current execution environment has no SEC_USER_AGENT; the approved live call has not been sent.",
+    "M6.3 real CandidateBundle conversion is blocked until a successful exact receipt exists.",
+    "M6.4-M6.5 remain fixture-only until the M6.3 real metadata boundary is separately realized from that receipt."
+  ],
+  "authority_boundary": {
+    "provider_or_model_execution": "forbidden",
+    "fallback_or_retry": "forbidden",
+    "formal_evidence_promotion": "forbidden",
+    "writer_domain_judgment_full_chain": "forbidden",
+    "business_case_mutation": "forbidden",
+    "legacy_authority_change": "forbidden"
+  }
+}

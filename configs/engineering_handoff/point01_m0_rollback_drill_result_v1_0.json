@@ -1,0 +1,23 @@
+{
+  "result_version": "finsight_point01_m0_rollback_drill_result_v1_0",
+  "executed_at": "2026-07-12T00:00:00+08:00",
+  "status": "pass",
+  "fixture": "tests/contract/test_point01_runtime_facade.py::test_replay_is_deterministic_and_kill_switch_preserves_history",
+  "checks": {
+    "feature_flag_default_off": true,
+    "shadow_bundle_committed_before_kill": true,
+    "kill_switch_fail_closed": true,
+    "legacy_task_run_authority_preserved": true,
+    "canonical_audit_history_preserved": true,
+    "projection_replay_digest_stable": true,
+    "shadow_writer_eligibility": false,
+    "external_model_web_or_tool_call_count": 0
+  },
+  "verification": {
+    "command": "python -m pytest -q -m fast_contract tests/contract tests/test_runtime_bridge_contracts.py tests/test_r53_r60_runtime_task_spine.py",
+    "passed": 31,
+    "failed": 0,
+    "duration_seconds": 2.2
+  },
+  "boundary": "Deterministic M0 foundation rollback proof only; no migration, canonical authority cutover, paid model, full-chain, Evidence, Writer, release, or monitoring runtime."
+}

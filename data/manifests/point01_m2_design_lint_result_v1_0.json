@@ -1,0 +1,25 @@
+{
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "cutover": "forbidden",
+    "legacy_task_run": "authoritative"
+  },
+  "boundary": "This lint freezes M2 child contracts only. It does not implement any child, admit a model, run a compiler, alter legacy authority, or advance to M3/M4.",
+  "child_contract_count": 10,
+  "cross_owner_design_review_status": "user_confirmed_calibration_accepted",
+  "dependency_edge_count": 31,
+  "errors": [],
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m2_cross_owner_design_review_v1_0.json": "30623bedcd57f0546d4604e206c10018cc33600a8b830b2e84014d24d847fb2b",
+    "configs/engineering_handoff/point01_m2_design_freeze_manifest_v1_0.json": "86b897d7215727bfa0a36da8262f02308bffb20bdf22c7c146f9ec11e1ecf995",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "e7d1ddb2fc2b06ae36a123b184521093afb7d9a4dcfcb268aa1e0269dbbbe998",
+    "scripts/engineering/run_point01_m2_design_lint.py": "1ccea3d427fd9df965d27061b9a031bde197d1d101509afc734674adc51ce05e"
+  },
+  "generated_at": "2026-07-12T09:56:14.167374+00:00",
+  "model_execution_permitted": false,
+  "owner_count": 10,
+  "result_version": "finsight_point01_m2_design_lint_result_v1_0",
+  "scope": "Point01_M2_0_design_freeze_only",
+  "status": "pass"
+}

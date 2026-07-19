@@ -1,0 +1,34 @@
+{
+  "policy_version": "finsight_point01_m5_4_capability_security_policy_v1_0",
+  "scope": "Point01_M5_4_capability_security_sandbox_control_plane_only",
+  "status": "approved_for_deterministic_implementation",
+  "dependencies": {
+    "m5_1_scheduler_attempt_lease": "full_implemented_deterministic_temporary_store_fixture",
+    "m5_3_checkpoint_artifact": "full_implemented_deterministic_temporary_store_fixture",
+    "p32_mcp_tool_gateway_boundary": "active_registry_ready_runtime_alignment_only"
+  },
+  "required_controls": [
+    "unknown capability and unknown tool fail closed",
+    "grant binds exact tenant project optional case and permission snapshot",
+    "grant expiry or revocation prevents protected control-plane mutation",
+    "tool manifest plus grant jointly constrain tool id, path root, network host and data classification",
+    "sandbox decision includes deterministic trace and denial reason without invoking external tools",
+    "no ambient credential or implicit tool admission exists"
+  ],
+  "protected_control_plane_operations": [
+    "checkpoint.write"
+  ],
+  "trace_persistence_boundary": "M5.4 returns an in-process deterministic admission trace. Durable correlation/metrics/event streaming belongs to M5.8 and is not claimed here.",
+  "forbidden_admissions": [
+    "ambient_credentials",
+    "implicit_tool_admission",
+    "background_worker_service",
+    "external_tool_execution",
+    "provider_execution",
+    "evidence_runtime",
+    "writer_runtime",
+    "full_chain",
+    "business_case_mutation",
+    "legacy_taskrun_authority_change"
+  ]
+}

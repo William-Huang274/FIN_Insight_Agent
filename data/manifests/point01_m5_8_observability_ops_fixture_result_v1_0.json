@@ -1,0 +1,25 @@
+{
+  "boundary": "This fixture proves a store-backed event stream, redacted trace projection, threshold alert and admin inspection only. It uses no external observability service and starts no worker/service/provider/tool/Evidence/Writer/full-chain/business Case mutation/legacy authority change.",
+  "errors": [],
+  "evidence": {
+    "initial_event_count": 4,
+    "open_alert_count": 1,
+    "raw_reasoning_persisted": false,
+    "raw_reasoning_rejected": true,
+    "reconnect_event_count": 2,
+    "reconnect_has_no_duplicate": true,
+    "trace_span_count": 4
+  },
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m5_8_observability_ops_policy_v1_0.json": "9a0d248de0007e462d0823d42f352281779e6897eba492ba2015b79e1b1b4fc4",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "875ebe893d8b14b4894856af3d27b0e9367d6d885ae20e99f58cd173744f95f1",
+    "scripts/engineering/run_point01_m5_8_observability_ops_fixtures.py": "3a3e44474e270c32256d3a07bb34214db3a67350007448b385cf8b98e6c482b7"
+  },
+  "generated_at": "2026-07-13T03:06:27.320341+00:00",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m5_8_observability_ops_fixture_result_v1_0",
+  "scope": "Point01_M5_8_observability_operations_control_plane_only",
+  "status": "pass",
+  "worker_started": false
+}

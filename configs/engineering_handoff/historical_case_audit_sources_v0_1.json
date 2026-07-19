@@ -1,0 +1,102 @@
+{
+  "schema_version": "finsight_historical_case_audit_sources_v0_1",
+  "audit_id": "historical_case_performance_audit_20260711_v0_1",
+  "catalog_sources": [
+    {"source_id": "vnext_50", "path": "tests/fixtures/fin_agent_vnext_50_case_catalog_v0_1.json", "format": "json", "rows_key": "cases", "evidence_level": "catalog_only"},
+    {"source_id": "full_chain_multiturn_17", "path": "tests/fixtures/fin_agent_full_chain_multiturn_cases_v0_1.jsonl", "format": "jsonl", "evidence_level": "catalog_only"},
+    {"source_id": "real_llm_chain_10", "path": "tests/fixtures/multi_agent_real_llm_chain_cases_v0_1.jsonl", "format": "jsonl", "evidence_level": "catalog_only"},
+    {"source_id": "layered_agent_quality_9", "path": "tests/fixtures/multi_agent_layered_agent_quality_cases_v0_2.jsonl", "format": "jsonl", "evidence_level": "catalog_only"},
+    {"source_id": "retrieval_ab_12", "path": "tests/fixtures/fin_agent_retrieval_ab_cases_v0_1.jsonl", "format": "jsonl", "evidence_level": "catalog_only"},
+    {"source_id": "lane_v1", "path": "tests/fixtures/v1_semiconductors_ai_infrastructure_lane_cases_v0_1.json", "format": "json", "rows_key": "cases", "evidence_level": "fixture_defined"},
+    {"source_id": "lane_v2", "path": "tests/fixtures/v2_consumer_hardware_devices_lane_cases_v0_1.json", "format": "json", "rows_key": "cases", "evidence_level": "fixture_defined"},
+    {"source_id": "lane_v3", "path": "tests/fixtures/v3_software_cloud_developer_products_lane_cases_v0_1.json", "format": "json", "rows_key": "cases", "evidence_level": "fixture_defined"},
+    {"source_id": "lane_v4", "path": "tests/fixtures/v4_pharma_biotech_medtech_lane_cases_v0_1.json", "format": "json", "rows_key": "cases", "evidence_level": "fixture_defined"},
+    {"source_id": "lane_v5", "path": "tests/fixtures/v5_auto_mobility_transport_lane_cases_v0_1.json", "format": "json", "rows_key": "cases", "evidence_level": "fixture_defined"},
+    {"source_id": "lane_v6", "path": "tests/fixtures/v6_banks_financials_capital_markets_lane_cases_v0_1.json", "format": "json", "rows_key": "cases", "evidence_level": "fixture_defined"},
+    {"source_id": "lane_v7", "path": "tests/fixtures/v7_energy_utilities_industrials_materials_lane_cases_v0_1.json", "format": "json", "rows_key": "cases", "evidence_level": "fixture_defined"},
+    {"source_id": "lane_v8", "path": "tests/fixtures/v8_retail_cpg_restaurants_travel_lane_cases_v0_1.json", "format": "json", "rows_key": "cases", "evidence_level": "fixture_defined"}
+  ],
+  "readiness_sources": [
+    {"source_id": "p33_multicase_readiness", "path": "docs/project_os/p33_multicase_goldset_readiness_v0_1.json", "rows_key": "case_results", "authority_rank": 20},
+    {"source_id": "p34_multicase_readiness", "path": "docs/project_os/p34_multicase_goldset_readiness_v0_1.json", "rows_key": "case_results", "authority_rank": 30},
+    {"source_id": "p33_multicase_no_paid_audit", "path": "docs/project_os/p33_multicase_goldset_no_paid_audit_v0_1.json", "rows_key": "case_results", "authority_rank": 40, "adapter": "no_paid_multicase_audit"}
+  ],
+  "run_evidence_sources": [
+    {
+      "run_evidence_id": "legacy_sec_cross_industry10_20260520",
+      "runtime_generation": "legacy_sec_benchmark_pipeline",
+      "scope": "10 cross-industry SEC cases",
+      "result_class": "diagnostic_pass",
+      "case_count": 10,
+      "mean_score_pct": 0.88,
+      "artifact_path": "reports/quality/cloud_v2_cross_industry10_pipeline_bge_m3_judgment_plan_qwen9b_5090_post_gates/sec_benchmark_post_gates_summary.json",
+      "worklog_path": "docs/worklog/120_sec_benchmark_v2_cross_industry10_bge_m3_qwen9b_cloud_audit.md",
+      "claim_boundary": "Proves legacy SEC retrieval, exact-value grounding, Judgment Plan and bounded synthesis diagnostics; does not prove current multi-agent DecisionSurface or agentic-research runtime."
+    },
+    {
+      "run_evidence_id": "legacy_sec_combined40_20260521",
+      "runtime_generation": "legacy_sec_benchmark_pipeline",
+      "scope": "40 mixed SEC cases including 4 traps",
+      "result_class": "diagnostic_pass",
+      "case_count": 40,
+      "mean_score_pct": 0.884,
+      "artifact_path": "reports/quality/cloud_v2_combined40_qwen9b_raw_replay_company_alias_fix_post_gates/sec_benchmark_post_gates_summary.json",
+      "worklog_path": "docs/worklog/121_sec_benchmark_v2_combined40_cloud_gates_and_efficiency.md",
+      "claim_boundary": "Valid legacy regression baseline with deterministic gates; not a current full-chain research-agent or client-ready report proof."
+    },
+    {
+      "run_evidence_id": "p20_ai_infra_full_chain_20260630",
+      "runtime_generation": "pre_decision_surface_multi_agent",
+      "scope": "1 AI infrastructure full-chain dogfood case",
+      "result_class": "diagnostic_pass_after_gate_repair",
+      "case_count": 1,
+      "worklog_path": "docs/worklog/product_strategy/044_p20_deepseek_real_llm_dogfood_gate_repair.md",
+      "claim_boundary": "Real-model AI-infrastructure dogfood only; later review corrected diagnostic/smoke completion language and requested a fresh case."
+    },
+    {
+      "run_evidence_id": "p30_ai_semis_two_case_20260701",
+      "runtime_generation": "pre_decision_surface_multi_agent",
+      "scope": "2 AI/Semis full-chain smoke cases",
+      "result_class": "diagnostic_pass_with_material_defects",
+      "case_count": 2,
+      "worklog_path": "docs/worklog/product_strategy/063_p30_ai_semis_full_chain_product_experience_smoke.md",
+      "claim_boundary": "Both CLI gates passed with diagnostic_only=true, while memo correctness, core-ticker evidence, token cost and Workbench projection defects remained."
+    },
+    {
+      "run_evidence_id": "p33_single_gold_paid_attempt_20260705",
+      "runtime_generation": "pre_decision_surface_multi_agent",
+      "scope": "1 scoped paid AI/Semis case",
+      "result_class": "failed_writer_verifier",
+      "case_count": 1,
+      "worklog_path": "docs/worklog/product_strategy/083_p33_single_gold_case_risk_dimension_and_writer_cost_root_cause.md",
+      "claim_boundary": "Research Lead, reflection and specialist quality passed, but writer/verifier failed; no accepted gold workpaper."
+    },
+    {
+      "run_evidence_id": "p36_codex_manual_11_node_dogfood_20260708",
+      "runtime_generation": "manual_codex_as_paid_model",
+      "scope": "11-node manual AI infrastructure dogfood",
+      "result_class": "manual_observation_complete_runtime_fail",
+      "case_count": 1,
+      "worklog_path": "docs/worklog/product_strategy/117_p36_codex_as_paid_model_manual_full_chain_dogfood.md",
+      "claim_boundary": "Manual chain completed, but supervisor supplements are not runtime evidence and the result explicitly fails as runtime capability."
+    }
+  ],
+  "maturity_order": [
+    "catalog_only",
+    "fixture_defined",
+    "contract_ready",
+    "exemplar_artifact_backed",
+    "live_artifact_backed",
+    "fresh_specialist_fixture_proven",
+    "node_level_proven",
+    "full_chain_proven",
+    "human_accepted"
+  ],
+  "promotion_policy": {
+    "catalog_membership_never_proves_runtime_quality": true,
+    "unlinked_output_files_never_promote_maturity": true,
+    "fresh_specialist_requires_explicit_pass": true,
+    "full_chain_requires_explicit_case_level_gate": true,
+    "human_accepted_requires_explicit_reviewer_record": true
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "review_version": "finsight_point01_m6_1_cross_owner_design_review_v1_0",
+  "scope": "Point01_M6_1_cell_slot_to_evidence_request_compiler",
+  "status": "user_confirmed_structured_cross_owner_review_accepted_for_m6_1",
+  "review_method": "codex_single_agent_structured_role_separation_with_explicit_user_implementation_authorization",
+  "reviewer_identity": "current_thread_codex",
+  "independent_human_or_multi_person_signoff": false,
+  "limitation": "The architecture review separates responsibilities within one Codex agent and is not represented as independent human or multi-person signoff. The user explicitly authorized M6.1 implementation after the review gate was stated.",
+  "user_confirmation": {
+    "status": "accepted",
+    "approver_id": "current_thread_human_reviewer",
+    "approver_type": "human",
+    "confirmed_at": "2026-07-13T11:28:02.7173886+08:00",
+    "decision": "approve_m6_1_deterministic_cell_slot_request_compiler_only",
+    "confirmation_note": "User explicitly stated: 继续做M6.1。The authorization is limited to deterministic Cell/Slot -> EvidenceRequest compilation and its fixture/tests."
+  },
+  "reviewer_lenses": [
+    {
+      "lens": "planning_contract_owner",
+      "result": "pass_after_contract_binding",
+      "checks": ["compiler accepts exact Contract/Cell/Slot version objects only", "Cell parent Contract and Slot parent Cell are verified", "request id and digest bind the exact version refs rather than a latest read"]
+    },
+    {
+      "lens": "evidence_policy_and_research_quality_owner",
+      "result": "pass_after_role_separation",
+      "checks": ["M2 acceptance_role is not confused with TECH_02 accepted_evidence_role", "issuer numeric requests carry exact numeric/metadata binding requirements", "relationship signals remain bounded context and commercial metrics remain typed gap evidence"]
+    },
+    {
+      "lens": "parser_metadata_owner",
+      "result": "pass_with_downstream_boundary",
+      "checks": ["M6.1 declares document/section/table and numeric row/unit/period requirements", "M6.1 does not parse, normalize, recompute or promote evidence", "TECH_03/TECH_04 own later candidate, metadata and numeric outputs"]
+    },
+    {
+      "lens": "tool_security_and_budget_owner",
+      "result": "pass_with_no_execution_boundary",
+      "checks": ["route, top-k and budget fields are declarative request constraints", "no Tool Registry lookup, capability admission, network, provider or external tool call occurs", "M6.2 remains the sole future ToolRegistrySnapshot and ToolSelectionPlan writer"]
+    },
+    {
+      "lens": "runtime_replay_and_acceptance_owner",
+      "result": "pass_with_fixture_only_calibration",
+      "checks": ["compiler is deterministic and store-write free", "four-sector positive corpus plus lineage/policy/requester negative cases are required", "M6.1 does not permit Evidence Gate, judgment, context injection, Writer or full-chain"]
+    }
+  ],
+  "resolved_findings": [
+    {
+      "finding_id": "M6.1R-001",
+      "severity": "high",
+      "finding": "A free-text search request could bypass the DecisionSurface Cell/Slot contract and reintroduce evidence-dump behavior.",
+      "repair": "The compiler input contains only exact Contract/Cell/Slot objects and bounded typed overrides; no free-query field exists."
+    },
+    {
+      "finding_id": "M6.1R-002",
+      "severity": "high",
+      "finding": "The existing M2 acceptance_role labels primary/bounded_context are not the same vocabulary as TECH_02 fact/numeric_fact/context/gap_evidence roles.",
+      "repair": "A versioned M6.1 role policy maps the two independently and rejects unapproved source-policy or acceptance-role combinations."
+    },
+    {
+      "finding_id": "M6.1R-003",
+      "severity": "high",
+      "finding": "An exact numeric request without row/unit/period/source-coordinate requirements could later be promoted from an ambiguous table value.",
+      "repair": "Issuer metric requests always carry numeric and metadata binding requirements; M6.1 only declares them and leaves parsing/promotion to M6.5/M6.6."
+    },
+    {
+      "finding_id": "M6.1R-004",
+      "severity": "medium",
+      "finding": "Route and budget fields could be mistaken for Tool Registry execution admission.",
+      "repair": "The request records declarative constraints only; M6.2 is still unimplemented and M6.1 has no tool, provider, network, store-write or admission API."
+    }
+  ],
+  "open_followups": [
+    "M6.2 must independently implement and review ToolRegistrySnapshot, capability admission and bounded planner state before any route can execute.",
+    "M6.3-M6.6 remain responsible for candidate retrieval, parsing, numeric trace and evidence promotion; no M6.1 request is evidence itself.",
+    "No paid model, provider, external tool/network, Evidence/Writer runtime, full-chain, business Case mutation or legacy authority change is admitted."
+  ],
+  "overall_result": "pass_with_resolved_design_findings_user_confirmed_m6_1_only",
+  "authority_boundary": {
+    "legacy_task_run": "authoritative",
+    "decision_surface_input": "read_only_exact_version",
+    "evidence_request": "deterministic_ephemeral_contract_only",
+    "tool_registry_and_execution": "M6_2_not_implemented",
+    "evidence_promotion": "M6_6_not_implemented",
+    "writer_and_full_chain": "forbidden"
+  }
+}

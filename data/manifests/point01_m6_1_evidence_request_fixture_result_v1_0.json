@@ -1,0 +1,153 @@
+{
+  "authority_boundary": {
+    "decision_surface_input": "read_only_exact_version",
+    "evidence_promotion": "M6_6_not_implemented",
+    "evidence_request_persistence": "not_admitted",
+    "external_call_count": 0,
+    "external_tool_execution": false,
+    "legacy_task_run": "authoritative",
+    "model_call_count": 0,
+    "provider_execution": false,
+    "store_write_count": 0,
+    "tool_registry_execution": "not_admitted",
+    "writer_full_chain": "not_admitted"
+  },
+  "boundary": "M6.1 compiles deterministic request contracts only. It does not persist EvidenceRequest, retrieve candidates, select or execute tools, call a provider, parse/promote evidence, write a report, mutate a business Case or change legacy authority.",
+  "checks": {
+    "exact_version_replay": true,
+    "four_sector_positive_corpus": true,
+    "lineage_and_policy_negatives": true,
+    "no_execution": true,
+    "numeric_and_metadata_contract": true,
+    "relationship_context_only": true
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m6_1_cross_owner_design_review_v1_0.json": "859d3bdd37012629ecdad2f374e0c95b037d7e5b1c409c5e61859c81bede9b2d",
+    "configs/engineering_handoff/point01_m6_1_evidence_request_policy_v1_0.json": "1f2fcab353ca9a1bc30885e695b40fa3edcebd1172dd79cad7ba667ae004fca0",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "b6821d7c97ec226b700008a32860e27eb29ece3114ab6850cb05a1fdeeac4662",
+    "scripts/engineering/run_point01_m6_1_evidence_request_fixture.py": "b1c6fb11f1334cbfb4ce0f2d8467de7e3319bf3d161a0efcc67714249df667db",
+    "src/sec_agent/canonical_runtime/evidence_request.py": "55134832f1d19da517705f070f979776c5075ed879987e2ced5c1365a9c7d0ca"
+  },
+  "generated_at": "2026-07-13T05:47:34.726819+00:00",
+  "negative": {
+    "bad_parent": "slot_parent_cell_version_mismatch",
+    "invalid_source": "source_policy_not_allowed:news_first",
+    "missing_forbidden": "required_forbidden_substitution_missing:relationship_graph_only",
+    "wrong_requester": "requester_role_must_match_cell_owner"
+  },
+  "positive": {
+    "ai_semis": {
+      "accepted_evidence_role": "numeric_fact",
+      "numeric_binding_requirements": [
+        "row_label",
+        "unit",
+        "period",
+        "source_coordinate"
+      ],
+      "replay_digest_match": true,
+      "request_digest": "14ed8f362d98ebb4ef106b9288478bfb71b87e67b7e2db07ef64b3eb1837cb42",
+      "request_id": "evidence_request_14ed8f362d98ebb4ef10"
+    },
+    "banks": {
+      "accepted_evidence_role": "numeric_fact",
+      "numeric_binding_requirements": [
+        "row_label",
+        "unit",
+        "period",
+        "source_coordinate"
+      ],
+      "replay_digest_match": true,
+      "request_digest": "bc7e04489789950f274f3fd99434e28964f20f2825f1debe2f159d8bcb257d14",
+      "request_id": "evidence_request_bc7e04489789950f274f"
+    },
+    "healthcare": {
+      "accepted_evidence_role": "numeric_fact",
+      "numeric_binding_requirements": [
+        "row_label",
+        "unit",
+        "period",
+        "source_coordinate"
+      ],
+      "replay_digest_match": true,
+      "request_digest": "6d5fab48a1698de8cb0d8dc1b833cc1ab1799007a48f69ee5c6f5202454428ab",
+      "request_id": "evidence_request_6d5fab48a1698de8cb0d"
+    },
+    "saas": {
+      "accepted_evidence_role": "numeric_fact",
+      "numeric_binding_requirements": [
+        "row_label",
+        "unit",
+        "period",
+        "source_coordinate"
+      ],
+      "replay_digest_match": true,
+      "request_digest": "6e2fd090a46c8b2370ce11155e28b778c6b221feac5824d57dbf959f77312dff",
+      "request_id": "evidence_request_6e2fd090a46c8b2370ce"
+    }
+  },
+  "relationship_context_request": {
+    "acceptable_proxy": [
+      "bounded_relationship_lead"
+    ],
+    "accepted_evidence_role": "context",
+    "budget": {
+      "elapsed_seconds_limit": 60,
+      "tool_call_limit": 2
+    },
+    "case_id": "case-m6-1-relationship",
+    "cell_id": "cell_4ec9db2f15ae3ce53170",
+    "cell_version_id": "cell_4ec9db2f15ae3ce53170:v1",
+    "compiled_from_refs": [
+      "contract_8cfee5b23ff0b2eaae03:v1",
+      "cell_4ec9db2f15ae3ce53170:v1",
+      "slot_014af23bc64f3b76bf54:v1",
+      "point01-m6-1-evidence-request-policy-v1"
+    ],
+    "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+    "decision_surface_contract_version_id": "contract_8cfee5b23ff0b2eaae03:v1",
+    "decision_surface_id": "contract_8cfee5b23ff0b2eaae03",
+    "evidence_domain": "relationship_graph",
+    "evidence_slot_id": "slot_014af23bc64f3b76bf54",
+    "evidence_slot_version_id": "slot_014af23bc64f3b76bf54:v1",
+    "execution_admission": "not_admitted",
+    "fallback_routes": [],
+    "forbidden_substitutions": [
+      "issuer_metric_substitute"
+    ],
+    "granularity": "cell_slot",
+    "metadata_binding_requirements": [
+      "relationship_edge_ref",
+      "source_authority",
+      "confidence_boundary"
+    ],
+    "metric_intent": [],
+    "numeric_binding_requirements": [],
+    "planning_authority": "shadow",
+    "preferred_routes": [
+      "relationship_graph_metadata_route"
+    ],
+    "product_intent": [],
+    "project_id": "project-m6-1-fixture",
+    "request_digest": "f1c1b8fd93fac8a94fe14e21ac954f3c659392592be4df01c589b34530d522a8",
+    "request_id": "evidence_request_f1c1b8fd93fac8a94fe1",
+    "requester_role": "fundamental_analyst",
+    "required": true,
+    "source_policy": "relationship_graph_only",
+    "stop_condition": "accepted primary route or typed gap",
+    "target_entities": [
+      "AAA"
+    ],
+    "target_periods": [
+      "latest_fiscal_period"
+    ],
+    "tenant_id": "tenant-m6-1-fixture",
+    "topk_policy": {
+      "candidate_limit": 12,
+      "top_k": 5
+    },
+    "unit": null
+  },
+  "result_version": "finsight_point01_m6_1_evidence_request_fixture_result_v1_0",
+  "scope": "Point01_M6_1_deterministic_cell_slot_to_evidence_request",
+  "status": "pass"
+}

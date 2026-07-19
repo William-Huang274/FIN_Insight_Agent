@@ -1,0 +1,60 @@
+{
+  "authority_boundary": {
+    "canonical_lane": "case_scoped_planning_only_after_approval",
+    "cutover": "m4_case_scoped_only",
+    "legacy_task_run": "authoritative"
+  },
+  "authority_events": [
+    "PLANNING_AUTHORITY_CHANGED",
+    "PLANNING_CUTOVER_DECIDED",
+    "PLANNING_CUTOVER_REQUESTED",
+    "PLANNING_ROLLBACK_EXECUTED"
+  ],
+  "boundary": "M4 closeout can authorize only an explicitly approved case-scoped planning pilot. It cannot change legacy TaskRun authority or admit sector/global cutover, Evidence/Writer, provider/model or full-chain runtime.",
+  "design_review_status": "user_confirmed_calibration_accepted",
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m4_closeout_gate_manifest_v1_0.json": "e4a921ef7ad908a46c4d9259db87563dabcaf5b287d0bbca8ccc1107a3055f62",
+    "configs/engineering_handoff/point01_m4_human_pilot_approval_v1_0.json": "749cf579343a0d95f53523cceeb46dd14e6a72bb86aedbcc3bf03c1551e36592",
+    "configs/engineering_handoff/point01_m4_pilot_execution_evidence_v1_0.json": "426c12e72d91c8d4c4e36307ee745e1b287f5a3c20584a3957607e7372cff96a",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "e3051cf0e7418961ddfb74c210c349e5511ff89e7a1ad7d632393e6dc57ac261",
+    "scripts/engineering/run_point01_m4_closeout_gate.py": "a2b9488185b77aa147e76afb59357a225ce8012fdf78ec9f4603771b1ece7ffe"
+  },
+  "forbidden_admissions": [
+    "sector_cutover",
+    "tenant_cutover",
+    "global_cutover",
+    "legacy_taskrun_authority_change",
+    "evidence_runtime",
+    "writer_runtime",
+    "provider_execution",
+    "full_chain"
+  ],
+  "generated_at": "2026-07-12T12:59:24.203339+00:00",
+  "human_pilot_approval_status": "not_authorized",
+  "milestone": "M4_closeout_pending",
+  "model_call_count": 0,
+  "pilot_execution_status": "not_started",
+  "required_point_statuses": {
+    "M4.0": "pass",
+    "M4.1": "pass",
+    "M4.2": "pass",
+    "M4.3": "pass",
+    "M4.4": "pass",
+    "M4.5": "pass",
+    "M4.6": "pass",
+    "M4.7": "pass"
+  },
+  "result_version": "finsight_point01_m4_closeout_gate_result_v1_0",
+  "scope": "Point01_M4_case_scoped_planning_cutover_closeout",
+  "status": "fail_closed",
+  "store_backed_pilot_verification": {
+    "status": "not_attempted",
+    "verification_mode": "persistent_store_backed"
+  },
+  "unmet_conditions": [
+    "human_pilot_approval_pending",
+    "real_case_pilot_execution_pending",
+    "store_backed_pilot_verification_pending"
+  ]
+}

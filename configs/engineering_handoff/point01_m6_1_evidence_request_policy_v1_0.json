@@ -1,0 +1,65 @@
+{
+  "policy_version": "finsight_point01_m6_1_evidence_request_policy_v1_0",
+  "policy_ref": "point01-m6-1-evidence-request-policy-v1",
+  "scope": "Point01_M6_1_deterministic_cell_slot_request_compiler_only",
+  "authorization": "user_approved_m6_1_deterministic_cell_slot_request_compiler_only",
+  "role_rules": {
+    "issuer_metric": {
+      "accepted_evidence_role": "numeric_fact",
+      "evidence_domain": "issuer_disclosure",
+      "allowed_source_policy_refs": ["issuer_first", "filing_first", "official_first"],
+      "allowed_acceptance_roles": ["primary", "primary_or_bounded_context"],
+      "required_forbidden_substitutions": ["relationship_graph_only"],
+      "metadata_binding_requirements": ["document_id", "document_version", "section_or_table_ref", "source_authority"],
+      "numeric_binding_requirements": ["row_label", "unit", "period", "source_coordinate"],
+      "acceptable_proxy": [],
+      "preferred_routes": ["issuer_disclosure_metadata_route"],
+      "fallback_routes": ["official_company_commentary_metadata_route"],
+      "top_k": 3,
+      "candidate_limit": 12,
+      "tool_call_limit": 3,
+      "elapsed_seconds_limit": 90
+    },
+    "relationship_signal": {
+      "accepted_evidence_role": "context",
+      "evidence_domain": "relationship_graph",
+      "allowed_source_policy_refs": ["relationship_graph_only"],
+      "allowed_acceptance_roles": ["bounded_context_only"],
+      "required_forbidden_substitutions": ["issuer_metric_substitute"],
+      "metadata_binding_requirements": ["relationship_edge_ref", "source_authority", "confidence_boundary"],
+      "numeric_binding_requirements": [],
+      "acceptable_proxy": ["bounded_relationship_lead"],
+      "preferred_routes": ["relationship_graph_metadata_route"],
+      "fallback_routes": [],
+      "top_k": 5,
+      "candidate_limit": 12,
+      "tool_call_limit": 2,
+      "elapsed_seconds_limit": 60
+    },
+    "commercial_tracker_metric": {
+      "accepted_evidence_role": "gap_evidence",
+      "evidence_domain": "commercial_data_boundary",
+      "allowed_source_policy_refs": ["commercial_gap"],
+      "allowed_acceptance_roles": ["primary_or_bounded_context"],
+      "required_forbidden_substitutions": ["public_proxy_as_exact"],
+      "metadata_binding_requirements": ["licensed_source_requirement", "source_authority"],
+      "numeric_binding_requirements": [],
+      "acceptable_proxy": [],
+      "preferred_routes": ["commercial_gap_record_route"],
+      "fallback_routes": [],
+      "top_k": 1,
+      "candidate_limit": 1,
+      "tool_call_limit": 0,
+      "elapsed_seconds_limit": 30
+    }
+  },
+  "authority_boundary": {
+    "decision_surface_contract_cell_slot": "read_only_exact_version",
+    "evidence_request_persistence": "not_admitted",
+    "tool_registry_lookup_or_execution": "not_admitted",
+    "provider_or_network_execution": "not_admitted",
+    "candidate_retrieval": "M6_3_not_implemented",
+    "parser_numeric_promotion": "M6_5_M6_6_not_implemented",
+    "writer_full_chain": "not_admitted"
+  }
+}

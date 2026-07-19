@@ -1,0 +1,16 @@
+{
+  "review_version": "finsight_point01_m4_cross_owner_design_review_v1_0",
+  "status": "accepted_by_current_thread_user",
+  "review_method": "codex_single_agent_structured_role_separation",
+  "independent_human_or_multi_person_signoff": false,
+  "reviewer_lenses": ["authority_and_legacy_compatibility", "transaction_replay_and_rollback", "security_tenant_permission_and_kill_switch", "workbench_read_only_surface", "release_governance_and_pilot_scope"],
+  "findings": [
+    {"finding_id": "M4-DR-01", "status": "resolved", "finding": "ResearchCase identity does not own planning authority.", "resolution": "Authority is versioned on CaseControlSummaryVersion; ResearchCase status only reflects the lane state."},
+    {"finding_id": "M4-DR-02", "status": "resolved", "finding": "A kill switch could prevent the very rollback it needs to trigger.", "resolution": "Only PlanningLaneCutoverService rollback uses a bounded rollback_control transaction; ordinary writes remain denied."},
+    {"finding_id": "M4-DR-03", "status": "resolved", "finding": "A cutover approval could be replayed against changed schema/policy/artifact/comparison inputs.", "resolution": "Approval receipt and request bind all four digests and expiry before request persistence."},
+    {"finding_id": "M4-DR-04", "status": "resolved", "finding": "Legacy compatibility could reintroduce a dual authoritative writer.", "resolution": "Projection is immutable/read-only and contains explicit information-loss tags; no legacy mutation API exists."},
+    {"finding_id": "M4-DR-05", "status": "resolved", "finding": "Case-scoped pilot logic could accidentally extend to sector/global scope.", "resolution": "Feature flag and eligibility schema allow only scope_kind=case; sector/tenant/global are forbidden admissions."}
+  ],
+  "overall_result": "pass_with_resolved_design_findings_user_confirmed",
+  "user_confirmation": {"status": "accepted", "approver_type": "human", "timestamp": "2026-07-12T21:30:00+08:00", "notes": "Current-thread human reviewer explicitly approved the M4.0 design review. This approval prepares, but does not execute, a case-scoped pilot cutover."}
+}

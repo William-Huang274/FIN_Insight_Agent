@@ -1,0 +1,38 @@
+{
+  "manifest_version": "finsight_point01_m4_design_freeze_v1_0",
+  "scope": "Point01_M4_0_design_freeze_only",
+  "authority_boundary": {
+    "legacy_task_run": "authoritative",
+    "canonical_lane": "case_scoped_planning_only_after_approval",
+    "cutover": "m4_case_scoped_only"
+  },
+  "enforced_boundaries": [
+    "no_global_or_sector_cutover",
+    "no_legacy_taskrun_authority_change",
+    "no_dual_authoritative_write",
+    "legacy_projection_read_only_only",
+    "no_evidence_writer_provider_or_full_chain_admission",
+    "approval_must_bind_schema_policy_artifact_comparison_hash",
+    "kill_switch_allows_only_rollback_control_transaction"
+  ],
+  "design_review": {
+    "status": "user_confirmed_calibration_accepted",
+    "required_for_m4_0_calibration": true,
+    "evidence_path": "configs/engineering_handoff/point01_m4_cross_owner_design_review_v1_0.json"
+  },
+  "external_contracts": {
+    "M3CloseoutResult": {"provider": "M3.8", "authority_boundary": "calibration_required_not_cutover_authority"},
+    "M1PostgreSQLConformance": {"provider": "M1.1", "authority_boundary": "logical_conformance_evidence_only"},
+    "LegacyTaskRun": {"provider": "legacy", "authority_boundary": "authoritative_execution_and_history"}
+  },
+  "child_contracts": [
+    {"point_id": "M4.1", "owner": "lane_eligibility_owner", "owned_objects": ["CutoverScope", "LaneEligibilityPolicy", "LaneEligibilityRecord"], "input_contracts": ["M3CloseoutResult", "ConsumerInventory"], "output_contracts": ["LaneEligibilityRecord"], "dependencies": [], "acceptance_boundary": ["case_scope_only", "ineligible_lane_denied", "no_global_scope"]},
+    {"point_id": "M4.2", "owner": "cutover_approval_owner", "owned_objects": ["LaneCutoverRequest", "CutoverApprovalReceipt", "LaneCutoverDecision"], "input_contracts": ["LaneEligibilityRecord"], "output_contracts": ["RequestedLaneCutoverDecision"], "dependencies": ["M4.1"], "acceptance_boundary": ["append_only", "approval_hash_binding", "missing_or_stale_approval_denied"]},
+    {"point_id": "M4.3", "owner": "canonical_read_compatibility_owner", "owned_objects": ["PlanningAuthorityReadModel", "LegacyRequiredItemProjection"], "input_contracts": ["RequestedLaneCutoverDecision"], "output_contracts": ["CanonicalPlanningRead", "ReadOnlyLegacyProjection"], "dependencies": ["M4.2"], "acceptance_boundary": ["canonical_read_case_only", "legacy_projection_read_only", "loss_tags_required"]},
+    {"point_id": "M4.4", "owner": "authority_switch_transaction_owner", "owned_objects": ["PlanningLaneCutoverService", "AuthorityProjection", "PLANNING_AUTHORITY_CHANGED"], "input_contracts": ["RequestedLaneCutoverDecision"], "output_contracts": ["ExecutedLaneCutoverDecision"], "dependencies": ["M4.2"], "acceptance_boundary": ["atomic_decision_authority_event_outbox", "single_writer", "stale_duplicate_split_brain_denied"]},
+    {"point_id": "M4.5", "owner": "workbench_cutover_read_model_owner", "owned_objects": ["WorkbenchDecisionSurfaceProjection"], "input_contracts": ["CanonicalPlanningRead"], "output_contracts": ["ReadOnlyWorkbenchDecisionSurface"], "dependencies": ["M4.3", "M4.4"], "acceptance_boundary": ["authority_label_visible", "cell_slot_gap_version_visible", "no_mutation_endpoint"]},
+    {"point_id": "M4.6", "owner": "cutover_rollback_recovery_owner", "owned_objects": ["CutoverRecoveryReport", "PLANNING_ROLLBACK_EXECUTED"], "input_contracts": ["ExecutedLaneCutoverDecision"], "output_contracts": ["RollbackLaneCutoverDecision", "CutoverRecoveryReport"], "dependencies": ["M4.4"], "acceptance_boundary": ["new_version_not_delete", "kill_switch_revert", "audit_history_preserved"]},
+    {"point_id": "M4.7", "owner": "cutover_security_postgresql_owner", "owned_objects": ["CutoverSecurityConsistencyReport"], "input_contracts": ["CutoverRecoveryReport", "M1PostgreSQLConformance"], "output_contracts": ["CutoverSecurityConsistencyReport"], "dependencies": ["M4.6"], "acceptance_boundary": ["tenant_scope_isolation", "postgresql_conformance_ref", "backup_recovery_check"]},
+    {"point_id": "M4.8", "owner": "m4_closeout_gate_owner", "owned_objects": ["M4CloseoutManifest", "M4AggregateGate", "M4PilotApprovalRecord"], "input_contracts": ["M4_1_to_M4_7_GateEvidence", "M4HumanPilotApproval"], "output_contracts": ["M4CloseoutResult"], "dependencies": ["M4.1", "M4.2", "M4.3", "M4.4", "M4.5", "M4.6", "M4.7"], "acceptance_boundary": ["all_children_pass", "approved_case_scoped_pilot_only", "rollback_accepted"]}
+  ]
+}

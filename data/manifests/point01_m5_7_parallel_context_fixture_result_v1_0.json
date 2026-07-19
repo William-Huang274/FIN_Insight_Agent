@@ -1,0 +1,29 @@
+{
+  "boundary": "This fixture proves persistent immutable parallel snapshots and selective invalidation only. It starts no parallel worker or service, and admits no provider, external tool, Evidence/Writer, full-chain, business Case mutation or legacy authority change.",
+  "errors": [],
+  "evidence": {
+    "ambiguous_receipt_verified": true,
+    "cancel_state": "cancelled",
+    "forged_ambiguous_receipt_rejected": true,
+    "irrelevant_action": "continue",
+    "rebase_context_recompile_requested": true,
+    "rebase_requested_state": "rebase_required",
+    "recompiled_context": {
+      "eps": 2
+    },
+    "recompiled_snapshot_state": "active",
+    "snapshot_isolated": true
+  },
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m5_7_parallel_context_policy_v1_0.json": "50772e749a8060a4e81e6eaaedd8d8ed0bb91623ba7c9a505ed2cce1b90b0917",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "875ebe893d8b14b4894856af3d27b0e9367d6d885ae20e99f58cd173744f95f1",
+    "scripts/engineering/run_point01_m5_7_parallel_context_fixtures.py": "dec191a9624d25c3fc19112049c0e8ff652d3d2666871668368bc9212f774753"
+  },
+  "generated_at": "2026-07-13T03:06:26.632903+00:00",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m5_7_parallel_context_fixture_result_v1_0",
+  "scope": "Point01_M5_7_parallel_snapshot_selective_invalidation_control_plane_only",
+  "status": "pass",
+  "worker_started": false
+}

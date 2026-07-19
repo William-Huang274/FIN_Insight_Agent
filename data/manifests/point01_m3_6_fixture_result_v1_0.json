@@ -1,0 +1,51 @@
+{
+  "boundary": "Deterministic M3 calibration fixture only; no model, provider, retrieval, Evidence/Writer runtime, legacy write, or authority cutover was invoked.",
+  "canonical_lane": "shadow_only",
+  "external_call_count": 0,
+  "fixture_status": "pass",
+  "generated_at": "2026-07-12T10:20:39.213162+00:00",
+  "model_call_count": 0,
+  "payload": {
+    "adjudication_digest": "cc769d96efeca46234e9701f7cfe92f6cc9ca5aeba076d1766677262357afb77",
+    "adjudications": [
+      {
+        "candidate_id": "wb_prompt_structure_rejected",
+        "final_disposition": "reject",
+        "promotion_scope": "none",
+        "reason": "prompt_required_structure_is_not_independent_discovery",
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "wb_saas_adoption_mechanism_candidate",
+        "final_disposition": "sector_candidate",
+        "promotion_scope": "reviewed_runtime_candidate",
+        "reason": "reviewer_confirmed_independently_observed_candidate",
+        "status": "promotable"
+      },
+      {
+        "candidate_id": "reviewer_inferred_rejected",
+        "final_disposition": "reject",
+        "promotion_scope": "none",
+        "reason": "reviewer_inference_requires_independent_observation",
+        "status": "rejected"
+      }
+    ],
+    "canonical_lane": "shadow_only",
+    "direct_workbuddy_pack_promotion_count": 0,
+    "external_call_count": 0,
+    "model_call_count": 0,
+    "planning_authority": "legacy",
+    "promotable_candidate_ids": [
+      "wb_saas_adoption_mechanism_candidate"
+    ],
+    "rejected_candidate_ids": [
+      "reviewer_inferred_rejected",
+      "wb_prompt_structure_rejected"
+    ],
+    "status": "pass"
+  },
+  "planning_authority": "legacy",
+  "point_id": "M3.6",
+  "result_version": "finsight_point01_m3_6_fixture_result_v1_0",
+  "status": "pass"
+}

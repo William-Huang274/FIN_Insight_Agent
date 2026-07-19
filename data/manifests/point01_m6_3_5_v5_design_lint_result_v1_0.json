@@ -1,0 +1,20 @@
+{
+  "boundary": "This pass freezes an approval-pending design only. It does not register a receipt, perform a network request, read a document, create a candidate/parser/fact/trace, promote Evidence, execute M6.4 SourceHunter, enter M6.7, run a model, run Writer/full-chain, mutate a business Case, or change legacy authority.",
+  "design_status": "immutable_runtime_contract_external_total_reviewer_decision_required",
+  "errors": [],
+  "evidence_promotion_count": 0,
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_pilot_design_v1_0.json": "6e2ca081676c80ebb8d4afb7aaa47b9deef76a1feae77eabca9f7cd4ebc5fc57",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "bff206ae143aa37b8b1b59c3adf934411691b555190a2993a688eb9d79d7e083",
+    "scripts/engineering/run_point01_m6_3_5_positive_sec_document_pilot_design_lint.py": "917075f80dcfe553f3d996ef101e2f6b7d0c54f8a238587276bf030e808e0e0d"
+  },
+  "generated_at": "2026-07-13T13:56:36.498197+00:00",
+  "model_call_count": 0,
+  "numeric_fact_count": 0,
+  "parser_execution_count": 0,
+  "result_version": "finsight_point01_m6_3_5_positive_sec_document_pilot_design_lint_result_v1_0",
+  "scope": "Point01_M6_3_M6_5_single_document_positive_retrieval_parser_design_only",
+  "status": "pass",
+  "tool_invocation_count": 0
+}

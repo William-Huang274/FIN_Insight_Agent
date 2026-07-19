@@ -1,0 +1,38 @@
+{
+  "mapping_version": "finsight_point01_m6_3r_1_skeleton_api_owner_mapping_v1_0",
+  "point": "M6.3R.1",
+  "execution_stage": "skeleton_independently_accepted_non_authoritative",
+  "design_input": "M6.3R.0 design_repair_independently_accepted",
+  "repair_scope": [
+    "agent profile selection forbidden",
+    "full immutable M6.1 request plus frozen mapping registry",
+    "SHA-256 and owned-digest replay verification",
+    "candidate and Evidence Gate scope binding",
+    "exact-value SQL request/plan -> filter -> receipt execution-scope binding"
+  ],
+  "contracts": [
+    {"contract": "TopKPolicyRequest/Profile/Resolution/Audit", "designated_owner": "M6.3R retrieval contract owner", "input_owner": "M6.1 EvidenceRequest compiler plus injected mapping registry", "write_authority": "ephemeral deterministic construction only; agent profile/role/source selection forbidden", "persistence": "not_authorized"},
+    {"contract": "LegacyEvidenceRequestTopKAdapter + LegacyTopKMappingRegistry", "designated_owner": "M6.3R compatibility boundary", "input_owner": "complete immutable M6.1 EvidenceRequest, compiler-policy digest and frozen registry", "write_authority": "none; exact versioned mapping only", "persistence": "not_authorized"},
+    {"contract": "ExactValueSqlBindingPolicy + ExactValueSqlExecutionScope", "designated_owner": "M6.3R exact-value SQL authority boundary", "input_owner": "immutable M6.1 request, typed ToolSelectionPlanScopeReference, immutable adapter snapshot and versioned SQL binding policy", "write_authority": "ephemeral deterministic request/plan -> exact filters construction only; registry_not_read and execution_not_admitted", "persistence": "not_authorized"},
+    {"contract": "ToolInvocationReceiptReference", "designated_owner": "future M6.2 ToolRegistry receipt boundary", "input_owner": "exact request, typed plan, snapshot and execution-scope digests", "write_authority": "reference validation only; no receipt/store read or invocation", "persistence": "not_authorized"},
+    {"contract": "LocalAdapterSnapshot/LocalRetrievalQuery", "designated_owner": "M6.3R retrieval contract owner", "input_owner": "future M6.3R.3 snapshot admission and M6.2 ToolRegistry", "write_authority": "ephemeral deterministic construction only", "persistence": "not_authorized"},
+    {"contract": "ReadOnlyLocalAdapter protocols", "designated_owner": "future M6.3R.3 bounded local retrieval owner", "input_owner": "injected fake/read-only adapter only", "write_authority": "none", "persistence": "not_authorized"},
+    {"contract": "CandidateBundleProjection", "designated_owner": "M6.3R retrieval contract owner", "input_owner": "scope-bound fixture-supplied LocalRecallCandidate metadata only", "write_authority": "ephemeral projection; replay digest and query scope must verify; maps only to existing CandidateBundle", "persistence": "not_authorized"},
+    {"contract": "EvidenceGateCandidateProjection", "designated_owner": "M6.3R projection boundary", "input_owner": "stable unique eligible CandidateBundleProjection subset <=5", "write_authority": "non-promoted future gate input only; replay digest and ordered subset required", "persistence": "not_authorized; M6.6 remains owner of any future formal decision"}
+  ],
+  "sql_lane_boundary": {
+    "future_execution_point": "M6.3R.3",
+    "requires": [
+      "pinned immutable snapshot digest",
+      "exact immutable M6.1 request metric/unit mapping through a versioned SQL binding policy",
+      "typed ToolSelectionPlanScopeReference with selected route and plan digest",
+      "exact entity/period/form/source-tier/unit/scale/row-selector filters derived from request and plan, never bare caller fields",
+      "ToolInvocationReceipt reference bound to request/plan/snapshot/execution-scope/filter-selector digests",
+      "no relaxed-filter fallback"
+    ],
+    "registry_resolution_in_R1": "explicitly_not_read; typed refs are not treated as verified live plans or receipts",
+    "direct_ledger_or_mcp_handler_import_in_R1": "forbidden",
+    "evidence_promotion": "forbidden"
+  },
+  "prohibitions": ["local index/graph/SQL read", "ToolInvocation", "network", "model/provider", "store write", "parser/numeric", "Evidence Gate promotion", "SourceHunter", "Context", "Writer", "full-chain", "receipt creation", "production store", "business Case mutation", "legacy authority cutover"]
+}

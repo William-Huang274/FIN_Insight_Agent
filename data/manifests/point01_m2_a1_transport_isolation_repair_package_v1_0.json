@@ -1,0 +1,89 @@
+{
+  "authority_boundary": "no_admission_no_receipt_no_baseline_rerun_no_network_tool_model_provider_or_fixed_store_write",
+  "authority_status": {
+    "admission_or_receipt_authorized": false,
+    "baseline_rerun_authorized": false,
+    "next_step": "independent_review_then_phase_b_fresh_baseline_authority_decision_only",
+    "old_admission_or_receipt_replay": "permanently_forbidden",
+    "phase": "A"
+  },
+  "before_after_behavior": {
+    "clean_baseline_transport_delta": {},
+    "negative_control_counts": {
+      "http_connect_attempt_count": 0,
+      "network_request_attempt_count": 2,
+      "network_request_success_count": 0,
+      "socket_connect_attempt_count": 1,
+      "transport_constructor_attempt_count": 1
+    },
+    "negative_controls_blocked": [
+      "requests_session_constructor",
+      "socket_connect",
+      "urlopen_request"
+    ],
+    "planning_transport_delta_after_repair": {}
+  },
+  "classification_digest": "537801860ceb455c1ce035621776128c3d8647e2d3af00e66b02d27e8b1e0b71",
+  "classification_schema_version": "finsight_point01_rc_p38_024_root_cause_classification_v1_0",
+  "fixed_store_fingerprint": {
+    "access": "fingerprint_only_no_open_or_mutation",
+    "path": ".runtime_control/point01_m6_3_5_nvda_sec_document_parser_repaired_global_approval/canonical.sqlite",
+    "sha256": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4"
+  },
+  "historical_before_repair": {
+    "canonical_planning_transport_module_loaded_count": 97,
+    "evidence_kind": "phase_a_fresh_python_isolated_import_probe_before_lazy_export_patch",
+    "import_chain": "canonical_runtime.__init__ -> receipt_bound_candidate_bundle -> bounded_sec_metadata_execution -> requests",
+    "interpretation": "production_bootstrap_import_ownership_not_network_use",
+    "network_request_attempt_count": 0,
+    "network_request_success_count": 0,
+    "socket_or_http_connect_attempt_count": 0,
+    "transport_constructor_attempt_count": 0
+  },
+  "input_bytes_source": "git_index",
+  "input_file_sha256": {
+    "configs/engineering_handoff/point01_m2_a1_execution_ready_scenario_matrix_v2_1.json": "4c6d23c7c24017ed40c5e9871449f31ab2d1f9581422a9017f806265f35fc65d",
+    "configs/engineering_handoff/point01_m2_a1_transport_isolation_repair_policy_v1_0.json": "bd5ec5fec64a1ca3ad65b3250d9ea513fcff549b948b49a30ac554b94a91df79",
+    "data/manifests/point01_m2_a1_rc_p38_024_root_cause_classification_v1_0.json": "9be306a1a7bf34c9b33d5dcb9425259917d8c581ed92c0d9e80c8d1091ed2b3a",
+    "scripts/engineering/run_point01_m2_a1_actual_audit.py": "698ec72e0d57e7603d7c5a41b0ff175a35570c35a8d6b8dd94d0fb7ac3503f5d",
+    "scripts/engineering/run_point01_m2_a1_actual_audit_clean_child.py": "a52d77bf7758d59d013b065acda1c37be823f59a13094d96b6481508a817f58f",
+    "scripts/engineering/run_point01_m2_a1_transport_isolation_bisect.py": "2abfe1bb12bbb66bf9930329a54aa2ae2b4972ff9d743c182991ee422fc4fe23",
+    "scripts/engineering/run_point01_m2_a1_transport_isolation_repair_freeze.py": "42cd112baaf8282b62694cb3e6e8d0688db2d586cb9ec0b42c7ebb987fb13010",
+    "src/sec_agent/canonical_runtime/__init__.py": "2945d1475032e3573ba92d7e3b585df2871b1d5a68b5f9a32a7fc257d985e1c5",
+    "src/sec_agent/canonical_runtime/legacy_objective_adapter.py": "a9f90e9e1af6ee7e0f8c146919b19fa6d088d5604ceef1953cab2ad9638064c2",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_canary.py": "1965ff52eca8f80bab9a877f6783c33eb7951042ea628c82d4dca5575b5981bb",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_harness.py": "e26c8b9099a7a1042497f8df1c245109f4e204a271232238e6c48b5b40b943d4",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_oracle.py": "70487712b9852fc80e69a426914d2f6ddbfbe2815f5c04ed80d62e82b5ecbb87",
+    "src/sec_agent/canonical_runtime/m2_a1_execution_receipt.py": "e77898247d76f1f82a0f306fc074b96c41b01e5dabdc6c7e7d7490af694cfcde",
+    "src/sec_agent/canonical_runtime/planning_service.py": "20ccf383a76ed91ae2e337e1c3fb05d9983bf73d78dbf16d7b1039e2eaa4a22e",
+    "tests/contract/test_point01_m2_a1_assembly_harness.py": "c5eba6a5103dc4a5c4f0032a6b8025abf2362c17e119cb20f843a79f8b7574a9",
+    "tests/contract/test_point01_m2_a1_execution_ready_boundaries.py": "d3a5e0e79323a3734e37b1ca515cab729c48ed7d8cb14c3e1e06796fa0ae88fc",
+    "tests/contract/test_point01_m2_a1_execution_ready_package_static.py": "d2cae625fc982b6cac0dcd1a3d8d558a27c421dd64540a2d4ba33d5a11605241",
+    "tests/contract/test_point01_m2_a1_receipt_lifecycle.py": "33e07642d7ce2230e4a4f404664b2cf73c9d44ac8e4e5e271cc2671de927bd4b",
+    "tests/contract/test_point01_m2_a1_transport_isolation_repair.py": "890f237ed6b31d327d9521ae1dbde40627ace3e9dc2165fff24d03fc8dccad45"
+  },
+  "operational_status": {
+    "m2_milestone_scope_status": "complete_deterministic_shadow",
+    "m2_operational_qualification_status": "fail_closed_pending_transport_isolation_repair_review",
+    "m3_operational_status": "scoped_closeout_retained_adversarial_operational_requalification_pending",
+    "m4_operational_status": "scoped_closeout_retained_adversarial_operational_requalification_pending",
+    "m5_operational_status": "scoped_closeout_retained_adversarial_operational_requalification_pending"
+  },
+  "package_digest": "11f4cd9267e56e9c6c33eaeb32119194731d76dbe0040e34b441e6daf66bd7cd",
+  "package_ref": "point01-m2-a1-rc-p38-024-transport-isolation-repair-package-v1",
+  "prior_fail_closed_actual_digest": "934fb16b76f1e1b19371603f0d69c2e3e25c9357c8427c84e1e626b1247795d7",
+  "root_cause_id": "RC-P38-024",
+  "schema_version": "finsight_point01_m2_a1_transport_isolation_repair_package_v1_0",
+  "scope": "RC_P38_024_phase_a_root_cause_repair_and_package_freeze_only",
+  "zero_side_effect_counters": {
+    "baseline_rerun_count": 0,
+    "external_tool_call_count": 0,
+    "fixed_canonical_or_business_store_open_count": 0,
+    "fixed_canonical_or_business_store_write_count": 0,
+    "model_or_provider_call_count": 0,
+    "network_request_success_count": 0,
+    "new_admission_count": 0,
+    "new_receipt_count": 0,
+    "receipt_consumption_count": 0
+  }
+}

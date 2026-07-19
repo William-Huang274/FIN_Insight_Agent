@@ -1,0 +1,29 @@
+{
+  "schema_version": "finsight_point01_m2_a1_execution_proof_policy_v2_10",
+  "status": "B0.7_repaired_refrozen_pending_independent_review",
+  "scope": "authority_classification_same_graph_synthetic_proof_and_terminal_artifact_order_only",
+  "production_authority": {
+    "schema_version": "finsight_point01_m2_a1_production_human_jit_window_approval_v2_10",
+    "authority_class": "production_human_total_reviewer",
+    "reviewer_identity": "william/003/total_reviewer",
+    "required_provenance": ["review_receipt_id", "review_receipt_digest", "actor_id", "decision_source", "resolved_package_external_reviewer_decision_receipt"],
+    "reject_approval_refs": ["test_*", "*synthetic*", "*nonhuman*"]
+  },
+  "synthetic_authority": {
+    "schema_version": "finsight_point01_m2_a1_synthetic_nonhuman_authority_v2_10",
+    "authority_class": "synthetic_nonhuman_fixture",
+    "production_cli_accepted": false,
+    "temporary_root_only": true
+  },
+  "shared_core": {
+    "input": "ValidatedAuthorityContext_only_after_reviewer_receipt_resolution",
+    "single_package_bound_lifecycle_kernel": "register_consume_child_actual_oracle_reviewer_terminal",
+    "production_and_synthetic_adapters_interchangeable": false,
+    "required_branches": ["happy", "corrupt_actual", "reviewer_fail", "post_consume_child_exit"],
+    "prohibited": ["formal_baseline", "remaining_scenarios", "network", "model", "tool", "provider", "fixed_or_secret_store_write"]
+  },
+  "terminal_order": ["actual_validation", "oracle_artifact_write_readback_digest", "reviewer_artifact_write_readback_digest", "terminal_append", "idempotent_closeout"],
+  "post_consume_exception": "outcome_unknown_no_replay_except_BaseException",
+  "sqlite_append_only_boundary": "application_controlled_sqlite_append_only_plus_payload_digest_not_malicious_admin_proof",
+  "execution_counts": {"formal_namespace": 0, "baseline": 0, "external": 0, "network": 0, "model": 0, "tool": 0, "provider": 0, "fixed_store_write": 0}
+}

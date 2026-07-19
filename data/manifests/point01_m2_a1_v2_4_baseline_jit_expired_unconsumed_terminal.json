@@ -1,0 +1,27 @@
+{
+  "admission_digest": "1906d86bb5a419cceaa3a83cf27ef5ca5cd85e23b263a6818db322d22c7f054c",
+  "expired_terminal_digest": "adf5a8f229e70f5aa6f7e27e31b2fb9699bcf470f64fd8ee2a6a3c3fadcedef6",
+  "forbidden_actions": [
+    "consume",
+    "renew",
+    "replay",
+    "delete",
+    "payload_overwrite",
+    "expiry_mutation"
+  ],
+  "incident_digest": "a59076a127c0b76902dc362aee94980427660fbc695b47e9c94fd73228cb9a18",
+  "package_digest": "615a73da64eff69a56a13b42d6c59c892820f15c4de7dc3a2be3c425d2aee68e",
+  "receipt_digest": "596fcf570a7abc1d4344ec6db354a4670e1c8a59e48f97396d5bf27c2401b870",
+  "receipt_id": "point01-m2-a1-v2-4-baseline-fe9658d04ca515924c568123",
+  "runtime_output_actual_oracle_reviewer": {
+    "actual": 0,
+    "oracle": 0,
+    "output": 0,
+    "reviewer": 0,
+    "runtime": 0
+  },
+  "schema_version": "finsight_point01_m2_a1_v2_4_expired_unconsumed_terminal_v1",
+  "status": "expired_unconsumed",
+  "terminal_event_digest": "5063a93c5b91050b32970d1ffc59a9e98f765df56bbcff67670a2beab6f95c74",
+  "terminal_write_scope": "one_exact_existing_authority_ledger_only"
+}

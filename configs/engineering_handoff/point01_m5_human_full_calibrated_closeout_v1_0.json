@@ -1,0 +1,11 @@
+{
+  "review_version": "finsight_point01_m5_human_full_calibrated_closeout_v1_0",
+  "scope": "Point01_M5_full_calibrated_temporary_store_closeout_only",
+  "status": "accepted_m5_full_calibrated_closeout_only",
+  "required_decision": "approve_m5_full_calibrated_temporary_store_closeout_only",
+  "reviewer_identity": "william (employee_id=003)",
+  "reviewed_at": "2026-07-13T11:06:03.2939439+08:00",
+  "decision": "approve_m5_full_calibrated_temporary_store_closeout_only",
+  "closeout_package_digest": "d4f5dd41cc1ed98ddcb9d9a03ce383d009868f59acd9881039b2d08f147568e2",
+  "notes": "Independent human total reviewer william (employee_id=003) accepts only the exact digest-bound temporary-store M5 full/calibrated closeout. This supersedes the stale fixture-tranche receipt and the stale 79315bb57afd74c7f23db80cbc6c76cf80360ea97ffdfef942b34bee3854801f and 5282e9798a20ec54d43b47ae85a55a03591fa4d28689ebb1139b4e8e0f473dcb receipts. It does not authorize a production durable service, resident worker, provider or external tool execution, Evidence/Writer, full-chain, business Case mutation, legacy authority change, PostgreSQL production canonical runtime, or any broader cutover."
+}

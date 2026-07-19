@@ -1,0 +1,2769 @@
+{
+  "admission_policy": {
+    "diversity_selection_policy": "first_pass_per_source_family_then_ranked_fill",
+    "domain_judgment_eligible": false,
+    "execution_admission": "not_admitted",
+    "fixture_provenance": "sanitized_immutable_fixture_only",
+    "max_candidates_per_identical_content_digest": 1,
+    "max_candidates_per_source_artifact": 2,
+    "max_neighbor_expansions_total": 32,
+    "persistence_authorized": false,
+    "policy_digest": "ea687b51a654a787f8d0265fe86939880daf7d2af460e9315e41b1501c89cab8",
+    "policy_ref": "point01-m6-3r-2-fixture-admission-policy",
+    "policy_version": "v1",
+    "promotion_authorized": false,
+    "sql_fixture_policy_pin": {
+      "execution_admission": "not_admitted",
+      "policy_canonical_digest": "75fff84e1d4684aa47eb7b6dc9d2cef2ff50333f27bbce8e3cda17d5a6ef820f",
+      "policy_path": "configs/engineering_handoff/point01_m6_3r_1_exact_value_sql_binding_policy_v1_0.json",
+      "policy_raw_sha256": "9695941aac154d1d5ae8744742156af9ee8b0b80b7792dc909ebcf6c746573a6",
+      "policy_ref": "point01-m6-3r-1-exact-value-sql-binding-policy",
+      "policy_version": "v1",
+      "registry_read_status": "registry_not_read"
+    },
+    "writer_citable": false
+  },
+  "corpus_digest": "abb410357234d4abc6871eb8b1ba84d2370dd675908cd671a3478ffaa956608b",
+  "corpus_id": "local_retrieval_fixture_corpus_abb410357234d4abc687",
+  "corpus_provenance": "sanitized_immutable_fixture_only",
+  "entries": [
+    {
+      "adapter_snapshot_digest": "d8333987090f8d0f7e517ca8b7fe1dce1afdeaa7dcdc92e72e6eb684fd7c7b9b",
+      "adapter_snapshot_id": "fixture-snapshot-bm25-issuer:v1",
+      "candidates": [
+        {
+          "adapter_id": "fixture-adapter-bm25-issuer",
+          "adapter_kind": "bm25",
+          "adapter_snapshot_digest": "d8333987090f8d0f7e517ca8b7fe1dce1afdeaa7dcdc92e72e6eb684fd7c7b9b",
+          "adapter_snapshot_id": "fixture-snapshot-bm25-issuer:v1",
+          "candidate_id": "bm25-narrative-seed",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "a8a58880ae608d68d2fbe07f8557a6070cbacceb2532ad39479d7c55ad9054c0",
+          "content_ref": "sanitized-content:bm25-narrative-seed",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:bm25-narrative-seed",
+          "metadata_rank": 0,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": "section:narrative-next",
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "section:narrative-seed",
+          "source_artifact_digest": "b0d9eab033db472722e42c9c3c733f13b611da2e9b27a51a750786e414260b6c",
+          "source_artifact_ref": "sanitized-source:bm25-narrative",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        },
+        {
+          "adapter_id": "fixture-adapter-bm25-issuer",
+          "adapter_kind": "bm25",
+          "adapter_snapshot_digest": "d8333987090f8d0f7e517ca8b7fe1dce1afdeaa7dcdc92e72e6eb684fd7c7b9b",
+          "adapter_snapshot_id": "fixture-snapshot-bm25-issuer:v1",
+          "candidate_id": "bm25-narrative-neighbor",
+          "candidate_kind": "neighbor_section",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "67b98f7c9c57ae576c7740e866c748681f654ec26c30412cd2d925f8d9c2f049",
+          "content_ref": "sanitized-content:bm25-narrative-neighbor",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:bm25-narrative-neighbor",
+          "metadata_rank": 1,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "section:narrative-next",
+          "source_artifact_digest": "b0d9eab033db472722e42c9c3c733f13b611da2e9b27a51a750786e414260b6c",
+          "source_artifact_ref": "sanitized-source:bm25-narrative",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        },
+        {
+          "adapter_id": "fixture-adapter-bm25-issuer",
+          "adapter_kind": "bm25",
+          "adapter_snapshot_digest": "d8333987090f8d0f7e517ca8b7fe1dce1afdeaa7dcdc92e72e6eb684fd7c7b9b",
+          "adapter_snapshot_id": "fixture-snapshot-bm25-issuer:v1",
+          "candidate_id": "bm25-narrative-second-source-family",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "3a508158614ec4521ac615af27404b8186223e1fc8c862da24a0a41ceeff1179",
+          "content_ref": "sanitized-content:bm25-narrative-second-source-family",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:bm25-narrative-second-source-family",
+          "metadata_rank": 2,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 0.95,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "section:seed",
+          "source_artifact_digest": "0784a81933b07cbe4adaeb18d7359ca9f5520421e66cdf38aa84a65415ccae27",
+          "source_artifact_ref": "sanitized-source:bm25-issuer-ir",
+          "source_authority_rank": 90,
+          "source_family": "issuer_ir",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        },
+        {
+          "adapter_id": "fixture-adapter-bm25-issuer",
+          "adapter_kind": "bm25",
+          "adapter_snapshot_digest": "d8333987090f8d0f7e517ca8b7fe1dce1afdeaa7dcdc92e72e6eb684fd7c7b9b",
+          "adapter_snapshot_id": "fixture-snapshot-bm25-issuer:v1",
+          "candidate_id": "bm25-narrative-duplicate-content",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "a8a58880ae608d68d2fbe07f8557a6070cbacceb2532ad39479d7c55ad9054c0",
+          "content_ref": "sanitized-content:bm25-narrative-seed",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:bm25-narrative-duplicate-content",
+          "metadata_rank": 3,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "section:seed",
+          "source_artifact_digest": "eaf5dc3926d33bf1a34162766c385c1a3518c7f626c8fc0b6c1b8c4129e1864e",
+          "source_artifact_ref": "sanitized-source:bm25-narrative-duplicate",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        },
+        {
+          "adapter_id": "fixture-adapter-bm25-issuer",
+          "adapter_kind": "bm25",
+          "adapter_snapshot_digest": "d8333987090f8d0f7e517ca8b7fe1dce1afdeaa7dcdc92e72e6eb684fd7c7b9b",
+          "adapter_snapshot_id": "fixture-snapshot-bm25-issuer:v1",
+          "candidate_id": "bm25-narrative-source-artifact-cap",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "6042d260af7b802f198ca8191e8d06ca06e17ebf3ed45ab26d251e40b585a155",
+          "content_ref": "sanitized-content:bm25-narrative-source-artifact-cap",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:bm25-narrative-source-artifact-cap",
+          "metadata_rank": 4,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "section:seed",
+          "source_artifact_digest": "b0d9eab033db472722e42c9c3c733f13b611da2e9b27a51a750786e414260b6c",
+          "source_artifact_ref": "sanitized-source:bm25-narrative",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        },
+        {
+          "adapter_id": "fixture-adapter-bm25-issuer",
+          "adapter_kind": "bm25",
+          "adapter_snapshot_digest": "d8333987090f8d0f7e517ca8b7fe1dce1afdeaa7dcdc92e72e6eb684fd7c7b9b",
+          "adapter_snapshot_id": "fixture-snapshot-bm25-issuer:v1",
+          "candidate_id": "bm25-narrative-wrong-entity",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "f028b5d502fd3b1621aa34833a3b0461191f0dc8be05cac7b2d340ee1bd7f973",
+          "content_ref": "sanitized-content:bm25-narrative-wrong-entity",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "WRONG",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:bm25-narrative-wrong-entity",
+          "metadata_rank": 5,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "section:seed",
+          "source_artifact_digest": "0a1fa7a008ae5154610cac0e89d16a6337c81dd6b7efeb20c5ce07ed4ddf3218",
+          "source_artifact_ref": "sanitized-source:bm25-wrong-entity",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        }
+      ],
+      "domain_judgment_eligible": false,
+      "execution_admission": "not_admitted",
+      "fixture_id": "fixture-bm25-narrative-positive",
+      "fixture_kind": "bm25_narrative",
+      "fixture_provenance": "sanitized_immutable_fixture_only",
+      "neighbor_references": [
+        {
+          "expected_coordinate_ref": "section:narrative-next",
+          "neighbor_candidate_id": "bm25-narrative-neighbor",
+          "relation": "next_section",
+          "required": true,
+          "seed_candidate_id": "bm25-narrative-seed"
+        }
+      ],
+      "persistence_authorized": false,
+      "promotion_authorized": false,
+      "query": {
+        "adapter_snapshot": {
+          "adapter_id": "fixture-adapter-bm25-issuer",
+          "adapter_kind": "bm25",
+          "admission_state": "not_admitted",
+          "execution_authorized": false,
+          "immutable": true,
+          "read_only": true,
+          "snapshot_digest": "d8333987090f8d0f7e517ca8b7fe1dce1afdeaa7dcdc92e72e6eb684fd7c7b9b",
+          "snapshot_id": "fixture-snapshot-bm25-issuer:v1",
+          "snapshot_registry_ref": "point01-m6-3r-2-fixture-snapshot-registry",
+          "snapshot_registry_version": "v1",
+          "source_type": "local_bm25"
+        },
+        "adapter_snapshot_digest": "d8333987090f8d0f7e517ca8b7fe1dce1afdeaa7dcdc92e72e6eb684fd7c7b9b",
+        "allow_relaxed_filter_fallback": false,
+        "eligible_candidate_kinds": [
+          "top_k_seed",
+          "neighbor_section",
+          "table_context"
+        ],
+        "evidence_role": "numeric_fact",
+        "exact_value_execution_scope": null,
+        "execution_admission": "not_admitted",
+        "persistence_authorized": false,
+        "query_digest": "63409c934fd605bde8032d48fd22bf699ddcfa8d6ed407042e52bad787b8e4c1",
+        "query_id": "local_retrieval_query_63409c934fd605bde803",
+        "selected_route_id": "issuer_disclosure_metadata_route",
+        "source_policy_ref": "issuer_first",
+        "source_role": "issuer_filing",
+        "source_type": "local_bm25",
+        "target_entities": [
+          "NVDA"
+        ],
+        "target_periods": [
+          "2025-01-26"
+        ],
+        "tool_invocation_receipt_ref": null,
+        "tool_selection_plan_digest": "b30c81cbfdc728280f7b81b39abb649683c4fa322dd3a237cbfcefca848c053e",
+        "tool_selection_plan_id": "fixture-plan-bm25-issuer:v1",
+        "topk_audit": {
+          "audit_digest": "c6465b94062052b78cf313f584909d0f1eae2d3a2ffe7da0998a537a993d5f98",
+          "audit_id": "topk_policy_audit_c6465b94062052b78cf3",
+          "clamp_or_reject_reason": "none",
+          "request": {
+            "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "evidence_request": {
+              "acceptable_proxy": [],
+              "accepted_evidence_role": "numeric_fact",
+              "budget": {
+                "elapsed_seconds_limit": 30,
+                "tool_call_limit": 0
+              },
+              "case_id": "case-m6-3r-2-fixture",
+              "cell_id": "cell-issuer",
+              "cell_version_id": "cell-issuer:v1",
+              "compiled_from_refs": [
+                "contract:v1",
+                "cell:v1",
+                "slot:v1",
+                "point01-m6-1-evidence-request-policy-v1"
+              ],
+              "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+              "decision_surface_contract_version_id": "surface-m6-3r-2-fixture:v1",
+              "decision_surface_id": "surface-m6-3r-2-fixture",
+              "evidence_domain": "issuer_disclosure",
+              "evidence_slot_id": "slot-issuer",
+              "evidence_slot_version_id": "slot-issuer:v1",
+              "execution_admission": "not_admitted",
+              "fallback_routes": [],
+              "forbidden_substitutions": [
+                "relationship_graph_only"
+              ],
+              "granularity": "cell_slot",
+              "metadata_binding_requirements": [
+                "document_id",
+                "document_version",
+                "section_or_table_ref",
+                "source_authority"
+              ],
+              "metric_intent": [
+                "revenue"
+              ],
+              "numeric_binding_requirements": [
+                "row_label",
+                "unit",
+                "period",
+                "source_coordinate"
+              ],
+              "planning_authority": "shadow",
+              "preferred_routes": [
+                "issuer_disclosure_metadata_route"
+              ],
+              "product_intent": [],
+              "project_id": "project-m6-3r-2-fixture",
+              "request_digest": "6069e3f3ff816fb6f828f452fe534aa00e06466ebb86c9da8540b5c0bfc761a7",
+              "request_id": "evidence_request_6069e3f3ff816fb6f828",
+              "requester_role": "research_lead",
+              "required": true,
+              "source_policy": "issuer_first",
+              "stop_condition": "sanitized_fixture_stop",
+              "target_entities": [
+                "NVDA"
+              ],
+              "target_periods": [
+                "2025-01-26"
+              ],
+              "tenant_id": "tenant-m6-3r-2-fixture",
+              "topk_policy": {
+                "candidate_limit": 12,
+                "top_k": 3
+              },
+              "unit": "USD_millions"
+            },
+            "policy_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+            "policy_registry_ref": "point01-m6-3r-1-legacy-topk-mapping-registry",
+            "policy_registry_version": "v1",
+            "request_origin": "legacy_evidence_request"
+          },
+          "resolution": {
+            "resolved_profile": {
+              "accepted_evidence_role": "numeric_fact",
+              "allowed_candidate_kinds": [
+                "top_k_seed",
+                "neighbor_section",
+                "table_context"
+              ],
+              "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+              "lowering_profile": true,
+              "policy_ref": "point01-m6-3r-topk-policy-v1",
+              "profile_id": "legacy-issuer_first-local_bm25",
+              "profile_version": "v1",
+              "quantities": {
+                "candidate_bundle_top_k": 12,
+                "evidence_gate_candidate_top_k": 3,
+                "rerank_top_k": 8
+              },
+              "selected_route_id": "issuer_disclosure_metadata_route",
+              "source_policy": "issuer_first",
+              "source_role": "issuer_filing",
+              "source_type": "local_bm25"
+            },
+            "resolved_quantities": {
+              "candidate_bundle_top_k": 12,
+              "evidence_gate_candidate_top_k": 3,
+              "rerank_top_k": 8
+            },
+            "status": "resolved",
+            "terminal_reason": null
+          }
+        }
+      },
+      "request_digest": "6069e3f3ff816fb6f828f452fe534aa00e06466ebb86c9da8540b5c0bfc761a7",
+      "request_id": "evidence_request_6069e3f3ff816fb6f828",
+      "required_candidate_kinds": [
+        "top_k_seed",
+        "neighbor_section"
+      ],
+      "sql_policy_pin": null,
+      "topk_policy_audit_digest": "c6465b94062052b78cf313f584909d0f1eae2d3a2ffe7da0998a537a993d5f98",
+      "topk_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+      "writer_citable": false
+    },
+    {
+      "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+      "adapter_snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+      "candidates": [
+        {
+          "adapter_id": "fixture-adapter-object_bm25-issuer",
+          "adapter_kind": "object_bm25",
+          "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+          "adapter_snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+          "candidate_id": "object-table-seed",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "9460ad6c8e7ee8e98264da113cdca58e23bf34eb894f331a729256a046bd2dc7",
+          "content_ref": "sanitized-content:object-table-seed",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:object-table-seed",
+          "metadata_rank": 0,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "table:income-statement",
+          "source_artifact_digest": "cabcc130bba12b29b4959e2bf52199beecb1fa9c5e70ac339cf5b2bffbb41ff6",
+          "source_artifact_ref": "sanitized-source:object-table",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        },
+        {
+          "adapter_id": "fixture-adapter-object_bm25-issuer",
+          "adapter_kind": "object_bm25",
+          "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+          "adapter_snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+          "candidate_id": "object-table-context",
+          "candidate_kind": "table_context",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "864bf137554efb228b5f7abf9bd9fe6608e5a83e99102276a6796bbe1a9f4e36",
+          "content_ref": "sanitized-content:object-table-context",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:object-table-context",
+          "metadata_rank": 1,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "table:income-statement",
+          "source_artifact_digest": "cabcc130bba12b29b4959e2bf52199beecb1fa9c5e70ac339cf5b2bffbb41ff6",
+          "source_artifact_ref": "sanitized-source:object-table",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        }
+      ],
+      "domain_judgment_eligible": false,
+      "execution_admission": "not_admitted",
+      "fixture_id": "fixture-object-bm25-table-positive",
+      "fixture_kind": "object_bm25_document_table",
+      "fixture_provenance": "sanitized_immutable_fixture_only",
+      "neighbor_references": [
+        {
+          "expected_coordinate_ref": "table:income-statement",
+          "neighbor_candidate_id": "object-table-context",
+          "relation": "table",
+          "required": true,
+          "seed_candidate_id": "object-table-seed"
+        }
+      ],
+      "persistence_authorized": false,
+      "promotion_authorized": false,
+      "query": {
+        "adapter_snapshot": {
+          "adapter_id": "fixture-adapter-object_bm25-issuer",
+          "adapter_kind": "object_bm25",
+          "admission_state": "not_admitted",
+          "execution_authorized": false,
+          "immutable": true,
+          "read_only": true,
+          "snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+          "snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+          "snapshot_registry_ref": "point01-m6-3r-2-fixture-snapshot-registry",
+          "snapshot_registry_version": "v1",
+          "source_type": "local_bm25"
+        },
+        "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+        "allow_relaxed_filter_fallback": false,
+        "eligible_candidate_kinds": [
+          "top_k_seed",
+          "neighbor_section",
+          "table_context"
+        ],
+        "evidence_role": "numeric_fact",
+        "exact_value_execution_scope": null,
+        "execution_admission": "not_admitted",
+        "persistence_authorized": false,
+        "query_digest": "f461feef4f20192265896ea76ccec03cf1d8a43105431d18d9cbd211211c5101",
+        "query_id": "local_retrieval_query_f461feef4f2019226589",
+        "selected_route_id": "issuer_disclosure_metadata_route",
+        "source_policy_ref": "issuer_first",
+        "source_role": "issuer_filing",
+        "source_type": "local_bm25",
+        "target_entities": [
+          "NVDA"
+        ],
+        "target_periods": [
+          "2025-01-26"
+        ],
+        "tool_invocation_receipt_ref": null,
+        "tool_selection_plan_digest": "f59527bfdbbebcee48488ebebb04580bb715b5190c6cacabe9bd5882b1b7c881",
+        "tool_selection_plan_id": "fixture-plan-object_bm25-issuer:v1",
+        "topk_audit": {
+          "audit_digest": "c6465b94062052b78cf313f584909d0f1eae2d3a2ffe7da0998a537a993d5f98",
+          "audit_id": "topk_policy_audit_c6465b94062052b78cf3",
+          "clamp_or_reject_reason": "none",
+          "request": {
+            "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "evidence_request": {
+              "acceptable_proxy": [],
+              "accepted_evidence_role": "numeric_fact",
+              "budget": {
+                "elapsed_seconds_limit": 30,
+                "tool_call_limit": 0
+              },
+              "case_id": "case-m6-3r-2-fixture",
+              "cell_id": "cell-issuer",
+              "cell_version_id": "cell-issuer:v1",
+              "compiled_from_refs": [
+                "contract:v1",
+                "cell:v1",
+                "slot:v1",
+                "point01-m6-1-evidence-request-policy-v1"
+              ],
+              "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+              "decision_surface_contract_version_id": "surface-m6-3r-2-fixture:v1",
+              "decision_surface_id": "surface-m6-3r-2-fixture",
+              "evidence_domain": "issuer_disclosure",
+              "evidence_slot_id": "slot-issuer",
+              "evidence_slot_version_id": "slot-issuer:v1",
+              "execution_admission": "not_admitted",
+              "fallback_routes": [],
+              "forbidden_substitutions": [
+                "relationship_graph_only"
+              ],
+              "granularity": "cell_slot",
+              "metadata_binding_requirements": [
+                "document_id",
+                "document_version",
+                "section_or_table_ref",
+                "source_authority"
+              ],
+              "metric_intent": [
+                "revenue"
+              ],
+              "numeric_binding_requirements": [
+                "row_label",
+                "unit",
+                "period",
+                "source_coordinate"
+              ],
+              "planning_authority": "shadow",
+              "preferred_routes": [
+                "issuer_disclosure_metadata_route"
+              ],
+              "product_intent": [],
+              "project_id": "project-m6-3r-2-fixture",
+              "request_digest": "6069e3f3ff816fb6f828f452fe534aa00e06466ebb86c9da8540b5c0bfc761a7",
+              "request_id": "evidence_request_6069e3f3ff816fb6f828",
+              "requester_role": "research_lead",
+              "required": true,
+              "source_policy": "issuer_first",
+              "stop_condition": "sanitized_fixture_stop",
+              "target_entities": [
+                "NVDA"
+              ],
+              "target_periods": [
+                "2025-01-26"
+              ],
+              "tenant_id": "tenant-m6-3r-2-fixture",
+              "topk_policy": {
+                "candidate_limit": 12,
+                "top_k": 3
+              },
+              "unit": "USD_millions"
+            },
+            "policy_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+            "policy_registry_ref": "point01-m6-3r-1-legacy-topk-mapping-registry",
+            "policy_registry_version": "v1",
+            "request_origin": "legacy_evidence_request"
+          },
+          "resolution": {
+            "resolved_profile": {
+              "accepted_evidence_role": "numeric_fact",
+              "allowed_candidate_kinds": [
+                "top_k_seed",
+                "neighbor_section",
+                "table_context"
+              ],
+              "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+              "lowering_profile": true,
+              "policy_ref": "point01-m6-3r-topk-policy-v1",
+              "profile_id": "legacy-issuer_first-local_bm25",
+              "profile_version": "v1",
+              "quantities": {
+                "candidate_bundle_top_k": 12,
+                "evidence_gate_candidate_top_k": 3,
+                "rerank_top_k": 8
+              },
+              "selected_route_id": "issuer_disclosure_metadata_route",
+              "source_policy": "issuer_first",
+              "source_role": "issuer_filing",
+              "source_type": "local_bm25"
+            },
+            "resolved_quantities": {
+              "candidate_bundle_top_k": 12,
+              "evidence_gate_candidate_top_k": 3,
+              "rerank_top_k": 8
+            },
+            "status": "resolved",
+            "terminal_reason": null
+          }
+        }
+      },
+      "request_digest": "6069e3f3ff816fb6f828f452fe534aa00e06466ebb86c9da8540b5c0bfc761a7",
+      "request_id": "evidence_request_6069e3f3ff816fb6f828",
+      "required_candidate_kinds": [
+        "top_k_seed",
+        "table_context"
+      ],
+      "sql_policy_pin": null,
+      "topk_policy_audit_digest": "c6465b94062052b78cf313f584909d0f1eae2d3a2ffe7da0998a537a993d5f98",
+      "topk_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+      "writer_citable": false
+    },
+    {
+      "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+      "adapter_snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+      "candidates": [
+        {
+          "adapter_id": "fixture-adapter-object_bm25-issuer",
+          "adapter_kind": "object_bm25",
+          "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+          "adapter_snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+          "candidate_id": "object-page-seed",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "4154e2f3964c4deefa15f8196123f0544dd151b3a1d728fedf3d8f52c32bd78c",
+          "content_ref": "sanitized-content:object-page-seed",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:object-page-seed",
+          "metadata_rank": 2,
+          "metric_ref": null,
+          "next_page_ref": "page:12",
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": "page:12",
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "section:page-seed",
+          "source_artifact_digest": "2df396e6895f27724170347104ce4090ef59d385a9f61178c799c5c7a33cc292",
+          "source_artifact_ref": "sanitized-source:object-page",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        },
+        {
+          "adapter_id": "fixture-adapter-object_bm25-issuer",
+          "adapter_kind": "object_bm25",
+          "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+          "adapter_snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+          "candidate_id": "object-page-neighbor",
+          "candidate_kind": "neighbor_section",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "daf6e3a3ebaa41e778bf89864fedf38b1454bf5a2db1de283a41e6a0df3bb5b4",
+          "content_ref": "sanitized-content:object-page-neighbor",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:object-page-neighbor",
+          "metadata_rank": 3,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "page:12",
+          "source_artifact_digest": "2df396e6895f27724170347104ce4090ef59d385a9f61178c799c5c7a33cc292",
+          "source_artifact_ref": "sanitized-source:object-page",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        },
+        {
+          "adapter_id": "fixture-adapter-object_bm25-issuer",
+          "adapter_kind": "object_bm25",
+          "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+          "adapter_snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+          "candidate_id": "object-row-seed",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "64f83c3560b49de7c98058a9a0182eb535ad4e77c87840e57782662baf77ffbd",
+          "content_ref": "sanitized-content:object-row-seed",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:object-row-seed",
+          "metadata_rank": 4,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": "row:4",
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": "row:4",
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "section:row-seed",
+          "source_artifact_digest": "c2c3b303d4373958a4fdacfcba392392d5541bb3061ac92a0fcd94ec1b207b13",
+          "source_artifact_ref": "sanitized-source:object-row",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        },
+        {
+          "adapter_id": "fixture-adapter-object_bm25-issuer",
+          "adapter_kind": "object_bm25",
+          "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+          "adapter_snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+          "candidate_id": "object-row-neighbor",
+          "candidate_kind": "neighbor_section",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "2c34930084b681843fea903318d560d7d624008106cea6545a688e9608bf9d74",
+          "content_ref": "sanitized-content:object-row-neighbor",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:object-row-neighbor",
+          "metadata_rank": 5,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "row:4",
+          "source_artifact_digest": "c2c3b303d4373958a4fdacfcba392392d5541bb3061ac92a0fcd94ec1b207b13",
+          "source_artifact_ref": "sanitized-source:object-row",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        }
+      ],
+      "domain_judgment_eligible": false,
+      "execution_admission": "not_admitted",
+      "fixture_id": "fixture-object-bm25-page-row-positive",
+      "fixture_kind": "object_bm25_document_table",
+      "fixture_provenance": "sanitized_immutable_fixture_only",
+      "neighbor_references": [
+        {
+          "expected_coordinate_ref": "page:12",
+          "neighbor_candidate_id": "object-page-neighbor",
+          "relation": "next_page",
+          "required": true,
+          "seed_candidate_id": "object-page-seed"
+        },
+        {
+          "expected_coordinate_ref": "row:4",
+          "neighbor_candidate_id": "object-row-neighbor",
+          "relation": "next_row",
+          "required": true,
+          "seed_candidate_id": "object-row-seed"
+        }
+      ],
+      "persistence_authorized": false,
+      "promotion_authorized": false,
+      "query": {
+        "adapter_snapshot": {
+          "adapter_id": "fixture-adapter-object_bm25-issuer",
+          "adapter_kind": "object_bm25",
+          "admission_state": "not_admitted",
+          "execution_authorized": false,
+          "immutable": true,
+          "read_only": true,
+          "snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+          "snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+          "snapshot_registry_ref": "point01-m6-3r-2-fixture-snapshot-registry",
+          "snapshot_registry_version": "v1",
+          "source_type": "local_bm25"
+        },
+        "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+        "allow_relaxed_filter_fallback": false,
+        "eligible_candidate_kinds": [
+          "top_k_seed",
+          "neighbor_section",
+          "table_context"
+        ],
+        "evidence_role": "numeric_fact",
+        "exact_value_execution_scope": null,
+        "execution_admission": "not_admitted",
+        "persistence_authorized": false,
+        "query_digest": "f461feef4f20192265896ea76ccec03cf1d8a43105431d18d9cbd211211c5101",
+        "query_id": "local_retrieval_query_f461feef4f2019226589",
+        "selected_route_id": "issuer_disclosure_metadata_route",
+        "source_policy_ref": "issuer_first",
+        "source_role": "issuer_filing",
+        "source_type": "local_bm25",
+        "target_entities": [
+          "NVDA"
+        ],
+        "target_periods": [
+          "2025-01-26"
+        ],
+        "tool_invocation_receipt_ref": null,
+        "tool_selection_plan_digest": "f59527bfdbbebcee48488ebebb04580bb715b5190c6cacabe9bd5882b1b7c881",
+        "tool_selection_plan_id": "fixture-plan-object_bm25-issuer:v1",
+        "topk_audit": {
+          "audit_digest": "c6465b94062052b78cf313f584909d0f1eae2d3a2ffe7da0998a537a993d5f98",
+          "audit_id": "topk_policy_audit_c6465b94062052b78cf3",
+          "clamp_or_reject_reason": "none",
+          "request": {
+            "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "evidence_request": {
+              "acceptable_proxy": [],
+              "accepted_evidence_role": "numeric_fact",
+              "budget": {
+                "elapsed_seconds_limit": 30,
+                "tool_call_limit": 0
+              },
+              "case_id": "case-m6-3r-2-fixture",
+              "cell_id": "cell-issuer",
+              "cell_version_id": "cell-issuer:v1",
+              "compiled_from_refs": [
+                "contract:v1",
+                "cell:v1",
+                "slot:v1",
+                "point01-m6-1-evidence-request-policy-v1"
+              ],
+              "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+              "decision_surface_contract_version_id": "surface-m6-3r-2-fixture:v1",
+              "decision_surface_id": "surface-m6-3r-2-fixture",
+              "evidence_domain": "issuer_disclosure",
+              "evidence_slot_id": "slot-issuer",
+              "evidence_slot_version_id": "slot-issuer:v1",
+              "execution_admission": "not_admitted",
+              "fallback_routes": [],
+              "forbidden_substitutions": [
+                "relationship_graph_only"
+              ],
+              "granularity": "cell_slot",
+              "metadata_binding_requirements": [
+                "document_id",
+                "document_version",
+                "section_or_table_ref",
+                "source_authority"
+              ],
+              "metric_intent": [
+                "revenue"
+              ],
+              "numeric_binding_requirements": [
+                "row_label",
+                "unit",
+                "period",
+                "source_coordinate"
+              ],
+              "planning_authority": "shadow",
+              "preferred_routes": [
+                "issuer_disclosure_metadata_route"
+              ],
+              "product_intent": [],
+              "project_id": "project-m6-3r-2-fixture",
+              "request_digest": "6069e3f3ff816fb6f828f452fe534aa00e06466ebb86c9da8540b5c0bfc761a7",
+              "request_id": "evidence_request_6069e3f3ff816fb6f828",
+              "requester_role": "research_lead",
+              "required": true,
+              "source_policy": "issuer_first",
+              "stop_condition": "sanitized_fixture_stop",
+              "target_entities": [
+                "NVDA"
+              ],
+              "target_periods": [
+                "2025-01-26"
+              ],
+              "tenant_id": "tenant-m6-3r-2-fixture",
+              "topk_policy": {
+                "candidate_limit": 12,
+                "top_k": 3
+              },
+              "unit": "USD_millions"
+            },
+            "policy_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+            "policy_registry_ref": "point01-m6-3r-1-legacy-topk-mapping-registry",
+            "policy_registry_version": "v1",
+            "request_origin": "legacy_evidence_request"
+          },
+          "resolution": {
+            "resolved_profile": {
+              "accepted_evidence_role": "numeric_fact",
+              "allowed_candidate_kinds": [
+                "top_k_seed",
+                "neighbor_section",
+                "table_context"
+              ],
+              "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+              "lowering_profile": true,
+              "policy_ref": "point01-m6-3r-topk-policy-v1",
+              "profile_id": "legacy-issuer_first-local_bm25",
+              "profile_version": "v1",
+              "quantities": {
+                "candidate_bundle_top_k": 12,
+                "evidence_gate_candidate_top_k": 3,
+                "rerank_top_k": 8
+              },
+              "selected_route_id": "issuer_disclosure_metadata_route",
+              "source_policy": "issuer_first",
+              "source_role": "issuer_filing",
+              "source_type": "local_bm25"
+            },
+            "resolved_quantities": {
+              "candidate_bundle_top_k": 12,
+              "evidence_gate_candidate_top_k": 3,
+              "rerank_top_k": 8
+            },
+            "status": "resolved",
+            "terminal_reason": null
+          }
+        }
+      },
+      "request_digest": "6069e3f3ff816fb6f828f452fe534aa00e06466ebb86c9da8540b5c0bfc761a7",
+      "request_id": "evidence_request_6069e3f3ff816fb6f828",
+      "required_candidate_kinds": [
+        "top_k_seed",
+        "neighbor_section"
+      ],
+      "sql_policy_pin": null,
+      "topk_policy_audit_digest": "c6465b94062052b78cf313f584909d0f1eae2d3a2ffe7da0998a537a993d5f98",
+      "topk_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+      "writer_citable": false
+    },
+    {
+      "adapter_snapshot_digest": "22f5b62aff65fa8cec62fe48cbf23b353941ea687c1f7eb51b7862d9ee0e5d92",
+      "adapter_snapshot_id": "fixture-snapshot-relationship_graph-relationship:v1",
+      "candidates": [
+        {
+          "adapter_id": "fixture-adapter-relationship_graph-relationship",
+          "adapter_kind": "relationship_graph",
+          "adapter_snapshot_digest": "22f5b62aff65fa8cec62fe48cbf23b353941ea687c1f7eb51b7862d9ee0e5d92",
+          "adapter_snapshot_id": "fixture-snapshot-relationship_graph-relationship:v1",
+          "candidate_id": "graph-relationship-seed",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "06e4b16216935facb10f5cc159094e0a2eb919791cbccbd29b4f26ebd9cf1aab",
+          "content_ref": "sanitized-content:graph-relationship-seed",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "context",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:graph-relationship-seed",
+          "metadata_rank": 0,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "relationship_graph_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "relationship:customer-supplier",
+          "source_artifact_digest": "6ba084076a877edee096771dac118a30e52a6f9d42edcd7d7501253490d3cc33",
+          "source_artifact_ref": "sanitized-source:relationship-graph",
+          "source_authority_rank": 100,
+          "source_family": "relationship_graph",
+          "source_policy_ref": "relationship_graph_only",
+          "source_role": "relationship_graph",
+          "source_tier": "primary_sec",
+          "source_type": "relationship_graph",
+          "unit_ref": null
+        }
+      ],
+      "domain_judgment_eligible": false,
+      "execution_admission": "not_admitted",
+      "fixture_id": "fixture-relationship-graph-positive",
+      "fixture_kind": "relationship_graph",
+      "fixture_provenance": "sanitized_immutable_fixture_only",
+      "neighbor_references": [],
+      "persistence_authorized": false,
+      "promotion_authorized": false,
+      "query": {
+        "adapter_snapshot": {
+          "adapter_id": "fixture-adapter-relationship_graph-relationship",
+          "adapter_kind": "relationship_graph",
+          "admission_state": "not_admitted",
+          "execution_authorized": false,
+          "immutable": true,
+          "read_only": true,
+          "snapshot_digest": "22f5b62aff65fa8cec62fe48cbf23b353941ea687c1f7eb51b7862d9ee0e5d92",
+          "snapshot_id": "fixture-snapshot-relationship_graph-relationship:v1",
+          "snapshot_registry_ref": "point01-m6-3r-2-fixture-snapshot-registry",
+          "snapshot_registry_version": "v1",
+          "source_type": "relationship_graph"
+        },
+        "adapter_snapshot_digest": "22f5b62aff65fa8cec62fe48cbf23b353941ea687c1f7eb51b7862d9ee0e5d92",
+        "allow_relaxed_filter_fallback": false,
+        "eligible_candidate_kinds": [
+          "top_k_seed",
+          "neighbor_section"
+        ],
+        "evidence_role": "context",
+        "exact_value_execution_scope": null,
+        "execution_admission": "not_admitted",
+        "persistence_authorized": false,
+        "query_digest": "f4fd1f41983d38b0c8fe7d42b13be45ac5bd99de7859047e3a391f5c60e863ee",
+        "query_id": "local_retrieval_query_f4fd1f41983d38b0c8fe",
+        "selected_route_id": "relationship_graph_metadata_route",
+        "source_policy_ref": "relationship_graph_only",
+        "source_role": "relationship_graph",
+        "source_type": "relationship_graph",
+        "target_entities": [
+          "NVDA"
+        ],
+        "target_periods": [
+          "2025-01-26"
+        ],
+        "tool_invocation_receipt_ref": null,
+        "tool_selection_plan_digest": "930dfdee2e9a28a2a144e22871e00a348661729040df6072883f08ac552824ac",
+        "tool_selection_plan_id": "fixture-plan-relationship_graph-relationship:v1",
+        "topk_audit": {
+          "audit_digest": "9aa19907d236f9b1107985beac5cd0b920207ce4ee604a9d8b210e12fc53ea4a",
+          "audit_id": "topk_policy_audit_9aa19907d236f9b11079",
+          "clamp_or_reject_reason": "none",
+          "request": {
+            "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "evidence_request": {
+              "acceptable_proxy": [],
+              "accepted_evidence_role": "context",
+              "budget": {
+                "elapsed_seconds_limit": 30,
+                "tool_call_limit": 0
+              },
+              "case_id": "case-m6-3r-2-fixture",
+              "cell_id": "cell-relationship",
+              "cell_version_id": "cell-relationship:v1",
+              "compiled_from_refs": [
+                "contract:v1",
+                "cell:v1",
+                "slot:v1",
+                "point01-m6-1-evidence-request-policy-v1"
+              ],
+              "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+              "decision_surface_contract_version_id": "surface-m6-3r-2-fixture:v1",
+              "decision_surface_id": "surface-m6-3r-2-fixture",
+              "evidence_domain": "relationship_graph",
+              "evidence_slot_id": "slot-relationship",
+              "evidence_slot_version_id": "slot-relationship:v1",
+              "execution_admission": "not_admitted",
+              "fallback_routes": [],
+              "forbidden_substitutions": [
+                "issuer_metric_substitute"
+              ],
+              "granularity": "cell_slot",
+              "metadata_binding_requirements": [
+                "document_id",
+                "document_version",
+                "section_or_table_ref",
+                "source_authority"
+              ],
+              "metric_intent": [],
+              "numeric_binding_requirements": [],
+              "planning_authority": "shadow",
+              "preferred_routes": [
+                "relationship_graph_metadata_route"
+              ],
+              "product_intent": [],
+              "project_id": "project-m6-3r-2-fixture",
+              "request_digest": "9732a6883aec1c12ff4134376c23bc34edbd8f08663e907319c2d89fa5ea1ffc",
+              "request_id": "evidence_request_9732a6883aec1c12ff41",
+              "requester_role": "research_lead",
+              "required": true,
+              "source_policy": "relationship_graph_only",
+              "stop_condition": "sanitized_fixture_stop",
+              "target_entities": [
+                "NVDA"
+              ],
+              "target_periods": [
+                "2025-01-26"
+              ],
+              "tenant_id": "tenant-m6-3r-2-fixture",
+              "topk_policy": {
+                "candidate_limit": 12,
+                "top_k": 5
+              },
+              "unit": null
+            },
+            "policy_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+            "policy_registry_ref": "point01-m6-3r-1-legacy-topk-mapping-registry",
+            "policy_registry_version": "v1",
+            "request_origin": "legacy_evidence_request"
+          },
+          "resolution": {
+            "resolved_profile": {
+              "accepted_evidence_role": "context",
+              "allowed_candidate_kinds": [
+                "top_k_seed",
+                "neighbor_section"
+              ],
+              "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+              "lowering_profile": true,
+              "policy_ref": "point01-m6-3r-topk-policy-v1",
+              "profile_id": "legacy-relationship_graph_only-relationship_graph",
+              "profile_version": "v1",
+              "quantities": {
+                "candidate_bundle_top_k": 12,
+                "evidence_gate_candidate_top_k": 5,
+                "rerank_top_k": 8
+              },
+              "selected_route_id": "relationship_graph_metadata_route",
+              "source_policy": "relationship_graph_only",
+              "source_role": "relationship_graph",
+              "source_type": "relationship_graph"
+            },
+            "resolved_quantities": {
+              "candidate_bundle_top_k": 12,
+              "evidence_gate_candidate_top_k": 5,
+              "rerank_top_k": 8
+            },
+            "status": "resolved",
+            "terminal_reason": null
+          }
+        }
+      },
+      "request_digest": "9732a6883aec1c12ff4134376c23bc34edbd8f08663e907319c2d89fa5ea1ffc",
+      "request_id": "evidence_request_9732a6883aec1c12ff41",
+      "required_candidate_kinds": [
+        "top_k_seed"
+      ],
+      "sql_policy_pin": null,
+      "topk_policy_audit_digest": "9aa19907d236f9b1107985beac5cd0b920207ce4ee604a9d8b210e12fc53ea4a",
+      "topk_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+      "writer_citable": false
+    },
+    {
+      "adapter_snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+      "adapter_snapshot_id": "fixture-snapshot-exact_value_sql-issuer:v1",
+      "candidates": [
+        {
+          "adapter_id": "fixture-adapter-exact_value_sql-issuer",
+          "adapter_kind": "exact_value_sql",
+          "adapter_snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+          "adapter_snapshot_id": "fixture-snapshot-exact_value_sql-issuer:v1",
+          "candidate_id": "sql-revenue-row-seed",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "7ea42f1a3a26fb724de15a0e9275fc529d2e5578f9357018207d40e22e108591",
+          "content_ref": "sanitized-content:sql-revenue-row-seed",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:sql-revenue-row-seed",
+          "metadata_rank": 0,
+          "metric_ref": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+          "next_page_ref": null,
+          "next_ref": "table:income-statement",
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": "row:consolidated_income_revenue",
+          "scale_ref": "millions",
+          "section_or_table_ref": "table:income-statement",
+          "source_artifact_digest": "e2d5cef54a40638feead0cabd46574b9e1a1387c6cb2075414993ad310c9545c",
+          "source_artifact_ref": "sanitized-source:sql-revenue-row",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "official_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "exact_value_sql",
+          "unit_ref": "USD"
+        },
+        {
+          "adapter_id": "fixture-adapter-exact_value_sql-issuer",
+          "adapter_kind": "exact_value_sql",
+          "adapter_snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+          "adapter_snapshot_id": "fixture-snapshot-exact_value_sql-issuer:v1",
+          "candidate_id": "sql-revenue-table-context",
+          "candidate_kind": "table_context",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "8613d1061a57a4ae79ca5c2a6edc1ff02de0c0cbe8fe93c16de27fb78d6a5941",
+          "content_ref": "sanitized-content:sql-revenue-table-context",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:sql-revenue-table-context",
+          "metadata_rank": 1,
+          "metric_ref": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": "row:consolidated_income_revenue",
+          "scale_ref": "millions",
+          "section_or_table_ref": "table:income-statement",
+          "source_artifact_digest": "e2d5cef54a40638feead0cabd46574b9e1a1387c6cb2075414993ad310c9545c",
+          "source_artifact_ref": "sanitized-source:sql-revenue-row",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "official_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "exact_value_sql",
+          "unit_ref": "USD"
+        }
+      ],
+      "domain_judgment_eligible": false,
+      "execution_admission": "not_admitted",
+      "fixture_id": "fixture-exact-value-sql-row-positive",
+      "fixture_kind": "exact_value_sql_row",
+      "fixture_provenance": "sanitized_immutable_fixture_only",
+      "neighbor_references": [
+        {
+          "expected_coordinate_ref": "table:income-statement",
+          "neighbor_candidate_id": "sql-revenue-table-context",
+          "relation": "table",
+          "required": true,
+          "seed_candidate_id": "sql-revenue-row-seed"
+        }
+      ],
+      "persistence_authorized": false,
+      "promotion_authorized": false,
+      "query": {
+        "adapter_snapshot": {
+          "adapter_id": "fixture-adapter-exact_value_sql-issuer",
+          "adapter_kind": "exact_value_sql",
+          "admission_state": "not_admitted",
+          "execution_authorized": false,
+          "immutable": true,
+          "read_only": true,
+          "snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+          "snapshot_id": "fixture-snapshot-exact_value_sql-issuer:v1",
+          "snapshot_registry_ref": "point01-m6-3r-2-fixture-snapshot-registry",
+          "snapshot_registry_version": "v1",
+          "source_type": "exact_value_sql"
+        },
+        "adapter_snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+        "allow_relaxed_filter_fallback": false,
+        "eligible_candidate_kinds": [
+          "top_k_seed",
+          "neighbor_section",
+          "table_context"
+        ],
+        "evidence_role": "numeric_fact",
+        "exact_value_execution_scope": {
+          "adapter_snapshot": {
+            "adapter_id": "fixture-adapter-exact_value_sql-issuer",
+            "adapter_kind": "exact_value_sql",
+            "admission_state": "not_admitted",
+            "execution_authorized": false,
+            "immutable": true,
+            "read_only": true,
+            "snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+            "snapshot_id": "fixture-snapshot-exact_value_sql-issuer:v1",
+            "snapshot_registry_ref": "point01-m6-3r-2-fixture-snapshot-registry",
+            "snapshot_registry_version": "v1",
+            "source_type": "exact_value_sql"
+          },
+          "binding_policy": {
+            "accepted_evidence_role": "numeric_fact",
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "execution_admission": "not_admitted",
+            "form_type": "10-K",
+            "metric_bindings": [
+              {
+                "metric_intent": "revenue",
+                "metric_ref": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax"
+              }
+            ],
+            "policy_digest": "75fff84e1d4684aa47eb7b6dc9d2cef2ff50333f27bbce8e3cda17d5a6ef820f",
+            "policy_ref": "point01-m6-3r-1-exact-value-sql-binding-policy",
+            "policy_version": "v1",
+            "registry_read_status": "registry_not_read",
+            "row_selector_ref": "row:consolidated_income_revenue",
+            "selected_route_id": "issuer_disclosure_metadata_route",
+            "source_policy": "official_first",
+            "source_tier": "primary_sec",
+            "source_type": "exact_value_sql",
+            "unit_scale_bindings": [
+              {
+                "request_unit": "USD_millions",
+                "scale_ref": "millions",
+                "unit_ref": "USD"
+              }
+            ]
+          },
+          "evidence_request": {
+            "acceptable_proxy": [],
+            "accepted_evidence_role": "numeric_fact",
+            "budget": {
+              "elapsed_seconds_limit": 30,
+              "tool_call_limit": 0
+            },
+            "case_id": "case-m6-3r-2-fixture",
+            "cell_id": "cell-issuer",
+            "cell_version_id": "cell-issuer:v1",
+            "compiled_from_refs": [
+              "contract:v1",
+              "cell:v1",
+              "slot:v1",
+              "point01-m6-1-evidence-request-policy-v1"
+            ],
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "decision_surface_contract_version_id": "surface-m6-3r-2-fixture:v1",
+            "decision_surface_id": "surface-m6-3r-2-fixture",
+            "evidence_domain": "issuer_disclosure",
+            "evidence_slot_id": "slot-issuer",
+            "evidence_slot_version_id": "slot-issuer:v1",
+            "execution_admission": "not_admitted",
+            "fallback_routes": [],
+            "forbidden_substitutions": [
+              "relationship_graph_only"
+            ],
+            "granularity": "cell_slot",
+            "metadata_binding_requirements": [
+              "document_id",
+              "document_version",
+              "section_or_table_ref",
+              "source_authority"
+            ],
+            "metric_intent": [
+              "revenue"
+            ],
+            "numeric_binding_requirements": [
+              "row_label",
+              "unit",
+              "period",
+              "source_coordinate"
+            ],
+            "planning_authority": "shadow",
+            "preferred_routes": [
+              "issuer_disclosure_metadata_route"
+            ],
+            "product_intent": [],
+            "project_id": "project-m6-3r-2-fixture",
+            "request_digest": "aa1f8093a1b7f747f46e901d8ea89b34a55d01a707b7e67f33441400806230f8",
+            "request_id": "evidence_request_aa1f8093a1b7f747f46e",
+            "requester_role": "research_lead",
+            "required": true,
+            "source_policy": "official_first",
+            "stop_condition": "sanitized_fixture_stop",
+            "target_entities": [
+              "NVDA"
+            ],
+            "target_periods": [
+              "2025-01-26"
+            ],
+            "tenant_id": "tenant-m6-3r-2-fixture",
+            "topk_policy": {
+              "candidate_limit": 12,
+              "top_k": 3
+            },
+            "unit": "USD_millions"
+          },
+          "exact_filter_selector_contract_digest": "e68da3481f3e149c51db109c37b8fde5b644f5dc7a9087d62d39058e8756d487",
+          "execution_admission": "not_admitted",
+          "execution_scope_digest": "59cecb662fb5a4981d7da3193c34dd850f2bc7fb45f1a382b37558c41053f421",
+          "execution_scope_id": "exact_value_sql_execution_scope_59cecb662fb5a4981d7d",
+          "filters": {
+            "entity_ref": "NVDA",
+            "form_type": "10-K",
+            "metric_ref": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+            "period_ref": "2025-01-26",
+            "row_selector_ref": "row:consolidated_income_revenue",
+            "scale_ref": "millions",
+            "source_tier": "primary_sec",
+            "unit_ref": "USD"
+          },
+          "persistence_authorized": false,
+          "registry_read_status": "registry_not_read",
+          "tool_selection_plan": {
+            "execution_admission": "not_admitted",
+            "plan_policy_digest": "ed3b9f7a4771e67a7d879b50d2892e5659e207a38d84a0414ee1ab8b2e7ef107",
+            "plan_policy_ref": "point01-m6-2-tool-selection-plan-policy",
+            "plan_policy_version": "v1",
+            "registry_read_status": "registry_not_read",
+            "selected_route_id": "issuer_disclosure_metadata_route",
+            "tool_selection_plan_digest": "155d954155c04993ff15043cc719dfcd88a5df24e0e50e69e4793277539b0eaf",
+            "tool_selection_plan_id": "fixture-plan-exact-value-sql:v1"
+          }
+        },
+        "execution_admission": "not_admitted",
+        "persistence_authorized": false,
+        "query_digest": "a9e84e25c73b2c2d7be5486525f8b4af5688ce25a25bcf1cab13e3b78d81c870",
+        "query_id": "local_retrieval_query_a9e84e25c73b2c2d7be5",
+        "selected_route_id": "issuer_disclosure_metadata_route",
+        "source_policy_ref": "official_first",
+        "source_role": "issuer_filing",
+        "source_type": "exact_value_sql",
+        "target_entities": [
+          "NVDA"
+        ],
+        "target_periods": [
+          "2025-01-26"
+        ],
+        "tool_invocation_receipt_ref": {
+          "adapter_snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+          "adapter_snapshot_id": "fixture-snapshot-exact_value_sql-issuer:v1",
+          "admission_status": "required_not_invoked",
+          "exact_filter_selector_contract_digest": "e68da3481f3e149c51db109c37b8fde5b644f5dc7a9087d62d39058e8756d487",
+          "execution_scope_digest": "59cecb662fb5a4981d7da3193c34dd850f2bc7fb45f1a382b37558c41053f421",
+          "execution_scope_id": "exact_value_sql_execution_scope_59cecb662fb5a4981d7d",
+          "receipt_digest": "3800e3b75b5fed31f987a7ab61277bbfcb92fca2f69c230b1dbc986e3b42a01d",
+          "receipt_id": "fixture-tool-receipt:not-invoked:v1",
+          "receipt_version": 1,
+          "registry_read_status": "registry_not_read",
+          "request_digest": "aa1f8093a1b7f747f46e901d8ea89b34a55d01a707b7e67f33441400806230f8",
+          "request_id": "evidence_request_aa1f8093a1b7f747f46e",
+          "tool_selection_plan_digest": "155d954155c04993ff15043cc719dfcd88a5df24e0e50e69e4793277539b0eaf",
+          "tool_selection_plan_id": "fixture-plan-exact-value-sql:v1"
+        },
+        "tool_selection_plan_digest": "155d954155c04993ff15043cc719dfcd88a5df24e0e50e69e4793277539b0eaf",
+        "tool_selection_plan_id": "fixture-plan-exact-value-sql:v1",
+        "topk_audit": {
+          "audit_digest": "f4cc09c28b2d0ff19f70a7419d364e61030852d17f92957f0bc3943ab96d1f36",
+          "audit_id": "topk_policy_audit_f4cc09c28b2d0ff19f70",
+          "clamp_or_reject_reason": "none",
+          "request": {
+            "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "evidence_request": {
+              "acceptable_proxy": [],
+              "accepted_evidence_role": "numeric_fact",
+              "budget": {
+                "elapsed_seconds_limit": 30,
+                "tool_call_limit": 0
+              },
+              "case_id": "case-m6-3r-2-fixture",
+              "cell_id": "cell-issuer",
+              "cell_version_id": "cell-issuer:v1",
+              "compiled_from_refs": [
+                "contract:v1",
+                "cell:v1",
+                "slot:v1",
+                "point01-m6-1-evidence-request-policy-v1"
+              ],
+              "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+              "decision_surface_contract_version_id": "surface-m6-3r-2-fixture:v1",
+              "decision_surface_id": "surface-m6-3r-2-fixture",
+              "evidence_domain": "issuer_disclosure",
+              "evidence_slot_id": "slot-issuer",
+              "evidence_slot_version_id": "slot-issuer:v1",
+              "execution_admission": "not_admitted",
+              "fallback_routes": [],
+              "forbidden_substitutions": [
+                "relationship_graph_only"
+              ],
+              "granularity": "cell_slot",
+              "metadata_binding_requirements": [
+                "document_id",
+                "document_version",
+                "section_or_table_ref",
+                "source_authority"
+              ],
+              "metric_intent": [
+                "revenue"
+              ],
+              "numeric_binding_requirements": [
+                "row_label",
+                "unit",
+                "period",
+                "source_coordinate"
+              ],
+              "planning_authority": "shadow",
+              "preferred_routes": [
+                "issuer_disclosure_metadata_route"
+              ],
+              "product_intent": [],
+              "project_id": "project-m6-3r-2-fixture",
+              "request_digest": "aa1f8093a1b7f747f46e901d8ea89b34a55d01a707b7e67f33441400806230f8",
+              "request_id": "evidence_request_aa1f8093a1b7f747f46e",
+              "requester_role": "research_lead",
+              "required": true,
+              "source_policy": "official_first",
+              "stop_condition": "sanitized_fixture_stop",
+              "target_entities": [
+                "NVDA"
+              ],
+              "target_periods": [
+                "2025-01-26"
+              ],
+              "tenant_id": "tenant-m6-3r-2-fixture",
+              "topk_policy": {
+                "candidate_limit": 12,
+                "top_k": 3
+              },
+              "unit": "USD_millions"
+            },
+            "policy_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+            "policy_registry_ref": "point01-m6-3r-1-legacy-topk-mapping-registry",
+            "policy_registry_version": "v1",
+            "request_origin": "legacy_evidence_request"
+          },
+          "resolution": {
+            "resolved_profile": {
+              "accepted_evidence_role": "numeric_fact",
+              "allowed_candidate_kinds": [
+                "top_k_seed",
+                "neighbor_section",
+                "table_context"
+              ],
+              "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+              "lowering_profile": true,
+              "policy_ref": "point01-m6-3r-topk-policy-v1",
+              "profile_id": "legacy-official_first-exact_value_sql",
+              "profile_version": "v1",
+              "quantities": {
+                "candidate_bundle_top_k": 12,
+                "evidence_gate_candidate_top_k": 3,
+                "rerank_top_k": 8
+              },
+              "selected_route_id": "issuer_disclosure_metadata_route",
+              "source_policy": "official_first",
+              "source_role": "issuer_filing",
+              "source_type": "exact_value_sql"
+            },
+            "resolved_quantities": {
+              "candidate_bundle_top_k": 12,
+              "evidence_gate_candidate_top_k": 3,
+              "rerank_top_k": 8
+            },
+            "status": "resolved",
+            "terminal_reason": null
+          }
+        }
+      },
+      "request_digest": "aa1f8093a1b7f747f46e901d8ea89b34a55d01a707b7e67f33441400806230f8",
+      "request_id": "evidence_request_aa1f8093a1b7f747f46e",
+      "required_candidate_kinds": [
+        "top_k_seed",
+        "table_context"
+      ],
+      "sql_policy_pin": {
+        "execution_admission": "not_admitted",
+        "policy_canonical_digest": "75fff84e1d4684aa47eb7b6dc9d2cef2ff50333f27bbce8e3cda17d5a6ef820f",
+        "policy_path": "configs/engineering_handoff/point01_m6_3r_1_exact_value_sql_binding_policy_v1_0.json",
+        "policy_raw_sha256": "9695941aac154d1d5ae8744742156af9ee8b0b80b7792dc909ebcf6c746573a6",
+        "policy_ref": "point01-m6-3r-1-exact-value-sql-binding-policy",
+        "policy_version": "v1",
+        "registry_read_status": "registry_not_read"
+      },
+      "topk_policy_audit_digest": "f4cc09c28b2d0ff19f70a7419d364e61030852d17f92957f0bc3943ab96d1f36",
+      "topk_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+      "writer_citable": false
+    },
+    {
+      "adapter_snapshot_digest": "d8333987090f8d0f7e517ca8b7fe1dce1afdeaa7dcdc92e72e6eb684fd7c7b9b",
+      "adapter_snapshot_id": "fixture-snapshot-bm25-issuer:v1",
+      "candidates": [],
+      "domain_judgment_eligible": false,
+      "execution_admission": "not_admitted",
+      "fixture_id": "fixture-typed-empty-exhaustion",
+      "fixture_kind": "typed_exhaustion",
+      "fixture_provenance": "sanitized_immutable_fixture_only",
+      "neighbor_references": [],
+      "persistence_authorized": false,
+      "promotion_authorized": false,
+      "query": {
+        "adapter_snapshot": {
+          "adapter_id": "fixture-adapter-bm25-issuer",
+          "adapter_kind": "bm25",
+          "admission_state": "not_admitted",
+          "execution_authorized": false,
+          "immutable": true,
+          "read_only": true,
+          "snapshot_digest": "d8333987090f8d0f7e517ca8b7fe1dce1afdeaa7dcdc92e72e6eb684fd7c7b9b",
+          "snapshot_id": "fixture-snapshot-bm25-issuer:v1",
+          "snapshot_registry_ref": "point01-m6-3r-2-fixture-snapshot-registry",
+          "snapshot_registry_version": "v1",
+          "source_type": "local_bm25"
+        },
+        "adapter_snapshot_digest": "d8333987090f8d0f7e517ca8b7fe1dce1afdeaa7dcdc92e72e6eb684fd7c7b9b",
+        "allow_relaxed_filter_fallback": false,
+        "eligible_candidate_kinds": [
+          "top_k_seed",
+          "neighbor_section",
+          "table_context"
+        ],
+        "evidence_role": "numeric_fact",
+        "exact_value_execution_scope": null,
+        "execution_admission": "not_admitted",
+        "persistence_authorized": false,
+        "query_digest": "63409c934fd605bde8032d48fd22bf699ddcfa8d6ed407042e52bad787b8e4c1",
+        "query_id": "local_retrieval_query_63409c934fd605bde803",
+        "selected_route_id": "issuer_disclosure_metadata_route",
+        "source_policy_ref": "issuer_first",
+        "source_role": "issuer_filing",
+        "source_type": "local_bm25",
+        "target_entities": [
+          "NVDA"
+        ],
+        "target_periods": [
+          "2025-01-26"
+        ],
+        "tool_invocation_receipt_ref": null,
+        "tool_selection_plan_digest": "b30c81cbfdc728280f7b81b39abb649683c4fa322dd3a237cbfcefca848c053e",
+        "tool_selection_plan_id": "fixture-plan-bm25-issuer:v1",
+        "topk_audit": {
+          "audit_digest": "c6465b94062052b78cf313f584909d0f1eae2d3a2ffe7da0998a537a993d5f98",
+          "audit_id": "topk_policy_audit_c6465b94062052b78cf3",
+          "clamp_or_reject_reason": "none",
+          "request": {
+            "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "evidence_request": {
+              "acceptable_proxy": [],
+              "accepted_evidence_role": "numeric_fact",
+              "budget": {
+                "elapsed_seconds_limit": 30,
+                "tool_call_limit": 0
+              },
+              "case_id": "case-m6-3r-2-fixture",
+              "cell_id": "cell-issuer",
+              "cell_version_id": "cell-issuer:v1",
+              "compiled_from_refs": [
+                "contract:v1",
+                "cell:v1",
+                "slot:v1",
+                "point01-m6-1-evidence-request-policy-v1"
+              ],
+              "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+              "decision_surface_contract_version_id": "surface-m6-3r-2-fixture:v1",
+              "decision_surface_id": "surface-m6-3r-2-fixture",
+              "evidence_domain": "issuer_disclosure",
+              "evidence_slot_id": "slot-issuer",
+              "evidence_slot_version_id": "slot-issuer:v1",
+              "execution_admission": "not_admitted",
+              "fallback_routes": [],
+              "forbidden_substitutions": [
+                "relationship_graph_only"
+              ],
+              "granularity": "cell_slot",
+              "metadata_binding_requirements": [
+                "document_id",
+                "document_version",
+                "section_or_table_ref",
+                "source_authority"
+              ],
+              "metric_intent": [
+                "revenue"
+              ],
+              "numeric_binding_requirements": [
+                "row_label",
+                "unit",
+                "period",
+                "source_coordinate"
+              ],
+              "planning_authority": "shadow",
+              "preferred_routes": [
+                "issuer_disclosure_metadata_route"
+              ],
+              "product_intent": [],
+              "project_id": "project-m6-3r-2-fixture",
+              "request_digest": "6069e3f3ff816fb6f828f452fe534aa00e06466ebb86c9da8540b5c0bfc761a7",
+              "request_id": "evidence_request_6069e3f3ff816fb6f828",
+              "requester_role": "research_lead",
+              "required": true,
+              "source_policy": "issuer_first",
+              "stop_condition": "sanitized_fixture_stop",
+              "target_entities": [
+                "NVDA"
+              ],
+              "target_periods": [
+                "2025-01-26"
+              ],
+              "tenant_id": "tenant-m6-3r-2-fixture",
+              "topk_policy": {
+                "candidate_limit": 12,
+                "top_k": 3
+              },
+              "unit": "USD_millions"
+            },
+            "policy_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+            "policy_registry_ref": "point01-m6-3r-1-legacy-topk-mapping-registry",
+            "policy_registry_version": "v1",
+            "request_origin": "legacy_evidence_request"
+          },
+          "resolution": {
+            "resolved_profile": {
+              "accepted_evidence_role": "numeric_fact",
+              "allowed_candidate_kinds": [
+                "top_k_seed",
+                "neighbor_section",
+                "table_context"
+              ],
+              "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+              "lowering_profile": true,
+              "policy_ref": "point01-m6-3r-topk-policy-v1",
+              "profile_id": "legacy-issuer_first-local_bm25",
+              "profile_version": "v1",
+              "quantities": {
+                "candidate_bundle_top_k": 12,
+                "evidence_gate_candidate_top_k": 3,
+                "rerank_top_k": 8
+              },
+              "selected_route_id": "issuer_disclosure_metadata_route",
+              "source_policy": "issuer_first",
+              "source_role": "issuer_filing",
+              "source_type": "local_bm25"
+            },
+            "resolved_quantities": {
+              "candidate_bundle_top_k": 12,
+              "evidence_gate_candidate_top_k": 3,
+              "rerank_top_k": 8
+            },
+            "status": "resolved",
+            "terminal_reason": null
+          }
+        }
+      },
+      "request_digest": "6069e3f3ff816fb6f828f452fe534aa00e06466ebb86c9da8540b5c0bfc761a7",
+      "request_id": "evidence_request_6069e3f3ff816fb6f828",
+      "required_candidate_kinds": [],
+      "sql_policy_pin": null,
+      "topk_policy_audit_digest": "c6465b94062052b78cf313f584909d0f1eae2d3a2ffe7da0998a537a993d5f98",
+      "topk_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+      "writer_citable": false
+    },
+    {
+      "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+      "adapter_snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+      "candidates": [
+        {
+          "adapter_id": "fixture-adapter-object_bm25-issuer",
+          "adapter_kind": "object_bm25",
+          "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+          "adapter_snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+          "candidate_id": "object-table-seed",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "9460ad6c8e7ee8e98264da113cdca58e23bf34eb894f331a729256a046bd2dc7",
+          "content_ref": "sanitized-content:object-table-seed",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:object-table-seed",
+          "metadata_rank": 0,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "table:income-statement",
+          "source_artifact_digest": "cabcc130bba12b29b4959e2bf52199beecb1fa9c5e70ac339cf5b2bffbb41ff6",
+          "source_artifact_ref": "sanitized-source:object-table",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "local_bm25",
+          "unit_ref": null
+        }
+      ],
+      "domain_judgment_eligible": false,
+      "execution_admission": "not_admitted",
+      "fixture_id": "fixture-table-context-missing",
+      "fixture_kind": "typed_exhaustion",
+      "fixture_provenance": "sanitized_immutable_fixture_only",
+      "neighbor_references": [],
+      "persistence_authorized": false,
+      "promotion_authorized": false,
+      "query": {
+        "adapter_snapshot": {
+          "adapter_id": "fixture-adapter-object_bm25-issuer",
+          "adapter_kind": "object_bm25",
+          "admission_state": "not_admitted",
+          "execution_authorized": false,
+          "immutable": true,
+          "read_only": true,
+          "snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+          "snapshot_id": "fixture-snapshot-object_bm25-issuer:v1",
+          "snapshot_registry_ref": "point01-m6-3r-2-fixture-snapshot-registry",
+          "snapshot_registry_version": "v1",
+          "source_type": "local_bm25"
+        },
+        "adapter_snapshot_digest": "caf1caf4f214bd5e176b3251b8129ef669c9445125add027ce52f4e6216b1c7a",
+        "allow_relaxed_filter_fallback": false,
+        "eligible_candidate_kinds": [
+          "top_k_seed",
+          "neighbor_section",
+          "table_context"
+        ],
+        "evidence_role": "numeric_fact",
+        "exact_value_execution_scope": null,
+        "execution_admission": "not_admitted",
+        "persistence_authorized": false,
+        "query_digest": "f461feef4f20192265896ea76ccec03cf1d8a43105431d18d9cbd211211c5101",
+        "query_id": "local_retrieval_query_f461feef4f2019226589",
+        "selected_route_id": "issuer_disclosure_metadata_route",
+        "source_policy_ref": "issuer_first",
+        "source_role": "issuer_filing",
+        "source_type": "local_bm25",
+        "target_entities": [
+          "NVDA"
+        ],
+        "target_periods": [
+          "2025-01-26"
+        ],
+        "tool_invocation_receipt_ref": null,
+        "tool_selection_plan_digest": "f59527bfdbbebcee48488ebebb04580bb715b5190c6cacabe9bd5882b1b7c881",
+        "tool_selection_plan_id": "fixture-plan-object_bm25-issuer:v1",
+        "topk_audit": {
+          "audit_digest": "c6465b94062052b78cf313f584909d0f1eae2d3a2ffe7da0998a537a993d5f98",
+          "audit_id": "topk_policy_audit_c6465b94062052b78cf3",
+          "clamp_or_reject_reason": "none",
+          "request": {
+            "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "evidence_request": {
+              "acceptable_proxy": [],
+              "accepted_evidence_role": "numeric_fact",
+              "budget": {
+                "elapsed_seconds_limit": 30,
+                "tool_call_limit": 0
+              },
+              "case_id": "case-m6-3r-2-fixture",
+              "cell_id": "cell-issuer",
+              "cell_version_id": "cell-issuer:v1",
+              "compiled_from_refs": [
+                "contract:v1",
+                "cell:v1",
+                "slot:v1",
+                "point01-m6-1-evidence-request-policy-v1"
+              ],
+              "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+              "decision_surface_contract_version_id": "surface-m6-3r-2-fixture:v1",
+              "decision_surface_id": "surface-m6-3r-2-fixture",
+              "evidence_domain": "issuer_disclosure",
+              "evidence_slot_id": "slot-issuer",
+              "evidence_slot_version_id": "slot-issuer:v1",
+              "execution_admission": "not_admitted",
+              "fallback_routes": [],
+              "forbidden_substitutions": [
+                "relationship_graph_only"
+              ],
+              "granularity": "cell_slot",
+              "metadata_binding_requirements": [
+                "document_id",
+                "document_version",
+                "section_or_table_ref",
+                "source_authority"
+              ],
+              "metric_intent": [
+                "revenue"
+              ],
+              "numeric_binding_requirements": [
+                "row_label",
+                "unit",
+                "period",
+                "source_coordinate"
+              ],
+              "planning_authority": "shadow",
+              "preferred_routes": [
+                "issuer_disclosure_metadata_route"
+              ],
+              "product_intent": [],
+              "project_id": "project-m6-3r-2-fixture",
+              "request_digest": "6069e3f3ff816fb6f828f452fe534aa00e06466ebb86c9da8540b5c0bfc761a7",
+              "request_id": "evidence_request_6069e3f3ff816fb6f828",
+              "requester_role": "research_lead",
+              "required": true,
+              "source_policy": "issuer_first",
+              "stop_condition": "sanitized_fixture_stop",
+              "target_entities": [
+                "NVDA"
+              ],
+              "target_periods": [
+                "2025-01-26"
+              ],
+              "tenant_id": "tenant-m6-3r-2-fixture",
+              "topk_policy": {
+                "candidate_limit": 12,
+                "top_k": 3
+              },
+              "unit": "USD_millions"
+            },
+            "policy_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+            "policy_registry_ref": "point01-m6-3r-1-legacy-topk-mapping-registry",
+            "policy_registry_version": "v1",
+            "request_origin": "legacy_evidence_request"
+          },
+          "resolution": {
+            "resolved_profile": {
+              "accepted_evidence_role": "numeric_fact",
+              "allowed_candidate_kinds": [
+                "top_k_seed",
+                "neighbor_section",
+                "table_context"
+              ],
+              "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+              "lowering_profile": true,
+              "policy_ref": "point01-m6-3r-topk-policy-v1",
+              "profile_id": "legacy-issuer_first-local_bm25",
+              "profile_version": "v1",
+              "quantities": {
+                "candidate_bundle_top_k": 12,
+                "evidence_gate_candidate_top_k": 3,
+                "rerank_top_k": 8
+              },
+              "selected_route_id": "issuer_disclosure_metadata_route",
+              "source_policy": "issuer_first",
+              "source_role": "issuer_filing",
+              "source_type": "local_bm25"
+            },
+            "resolved_quantities": {
+              "candidate_bundle_top_k": 12,
+              "evidence_gate_candidate_top_k": 3,
+              "rerank_top_k": 8
+            },
+            "status": "resolved",
+            "terminal_reason": null
+          }
+        }
+      },
+      "request_digest": "6069e3f3ff816fb6f828f452fe534aa00e06466ebb86c9da8540b5c0bfc761a7",
+      "request_id": "evidence_request_6069e3f3ff816fb6f828",
+      "required_candidate_kinds": [
+        "top_k_seed",
+        "table_context"
+      ],
+      "sql_policy_pin": null,
+      "topk_policy_audit_digest": "c6465b94062052b78cf313f584909d0f1eae2d3a2ffe7da0998a537a993d5f98",
+      "topk_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+      "writer_citable": false
+    },
+    {
+      "adapter_snapshot_digest": "22f5b62aff65fa8cec62fe48cbf23b353941ea687c1f7eb51b7862d9ee0e5d92",
+      "adapter_snapshot_id": "fixture-snapshot-relationship_graph-relationship:v1",
+      "candidates": [
+        {
+          "adapter_id": "fixture-adapter-relationship_graph-relationship",
+          "adapter_kind": "relationship_graph",
+          "adapter_snapshot_digest": "22f5b62aff65fa8cec62fe48cbf23b353941ea687c1f7eb51b7862d9ee0e5d92",
+          "adapter_snapshot_id": "fixture-snapshot-relationship_graph-relationship:v1",
+          "candidate_id": "graph-relationship-seed",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "06e4b16216935facb10f5cc159094e0a2eb919791cbccbd29b4f26ebd9cf1aab",
+          "content_ref": "sanitized-content:graph-relationship-seed",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "context",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:graph-relationship-seed",
+          "metadata_rank": 0,
+          "metric_ref": null,
+          "next_page_ref": null,
+          "next_ref": null,
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "relationship_graph_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": null,
+          "scale_ref": null,
+          "section_or_table_ref": "relationship:customer-supplier",
+          "source_artifact_digest": "6ba084076a877edee096771dac118a30e52a6f9d42edcd7d7501253490d3cc33",
+          "source_artifact_ref": "sanitized-source:relationship-graph",
+          "source_authority_rank": 100,
+          "source_family": "relationship_graph",
+          "source_policy_ref": "relationship_graph_only",
+          "source_role": "relationship_graph",
+          "source_tier": "primary_sec",
+          "source_type": "relationship_graph",
+          "unit_ref": null
+        }
+      ],
+      "domain_judgment_eligible": false,
+      "execution_admission": "not_admitted",
+      "fixture_id": "fixture-boundary-context-missing",
+      "fixture_kind": "typed_exhaustion",
+      "fixture_provenance": "sanitized_immutable_fixture_only",
+      "neighbor_references": [],
+      "persistence_authorized": false,
+      "promotion_authorized": false,
+      "query": {
+        "adapter_snapshot": {
+          "adapter_id": "fixture-adapter-relationship_graph-relationship",
+          "adapter_kind": "relationship_graph",
+          "admission_state": "not_admitted",
+          "execution_authorized": false,
+          "immutable": true,
+          "read_only": true,
+          "snapshot_digest": "22f5b62aff65fa8cec62fe48cbf23b353941ea687c1f7eb51b7862d9ee0e5d92",
+          "snapshot_id": "fixture-snapshot-relationship_graph-relationship:v1",
+          "snapshot_registry_ref": "point01-m6-3r-2-fixture-snapshot-registry",
+          "snapshot_registry_version": "v1",
+          "source_type": "relationship_graph"
+        },
+        "adapter_snapshot_digest": "22f5b62aff65fa8cec62fe48cbf23b353941ea687c1f7eb51b7862d9ee0e5d92",
+        "allow_relaxed_filter_fallback": false,
+        "eligible_candidate_kinds": [
+          "top_k_seed",
+          "neighbor_section"
+        ],
+        "evidence_role": "context",
+        "exact_value_execution_scope": null,
+        "execution_admission": "not_admitted",
+        "persistence_authorized": false,
+        "query_digest": "f4fd1f41983d38b0c8fe7d42b13be45ac5bd99de7859047e3a391f5c60e863ee",
+        "query_id": "local_retrieval_query_f4fd1f41983d38b0c8fe",
+        "selected_route_id": "relationship_graph_metadata_route",
+        "source_policy_ref": "relationship_graph_only",
+        "source_role": "relationship_graph",
+        "source_type": "relationship_graph",
+        "target_entities": [
+          "NVDA"
+        ],
+        "target_periods": [
+          "2025-01-26"
+        ],
+        "tool_invocation_receipt_ref": null,
+        "tool_selection_plan_digest": "930dfdee2e9a28a2a144e22871e00a348661729040df6072883f08ac552824ac",
+        "tool_selection_plan_id": "fixture-plan-relationship_graph-relationship:v1",
+        "topk_audit": {
+          "audit_digest": "9aa19907d236f9b1107985beac5cd0b920207ce4ee604a9d8b210e12fc53ea4a",
+          "audit_id": "topk_policy_audit_9aa19907d236f9b11079",
+          "clamp_or_reject_reason": "none",
+          "request": {
+            "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "evidence_request": {
+              "acceptable_proxy": [],
+              "accepted_evidence_role": "context",
+              "budget": {
+                "elapsed_seconds_limit": 30,
+                "tool_call_limit": 0
+              },
+              "case_id": "case-m6-3r-2-fixture",
+              "cell_id": "cell-relationship",
+              "cell_version_id": "cell-relationship:v1",
+              "compiled_from_refs": [
+                "contract:v1",
+                "cell:v1",
+                "slot:v1",
+                "point01-m6-1-evidence-request-policy-v1"
+              ],
+              "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+              "decision_surface_contract_version_id": "surface-m6-3r-2-fixture:v1",
+              "decision_surface_id": "surface-m6-3r-2-fixture",
+              "evidence_domain": "relationship_graph",
+              "evidence_slot_id": "slot-relationship",
+              "evidence_slot_version_id": "slot-relationship:v1",
+              "execution_admission": "not_admitted",
+              "fallback_routes": [],
+              "forbidden_substitutions": [
+                "issuer_metric_substitute"
+              ],
+              "granularity": "cell_slot",
+              "metadata_binding_requirements": [
+                "document_id",
+                "document_version",
+                "section_or_table_ref",
+                "source_authority"
+              ],
+              "metric_intent": [],
+              "numeric_binding_requirements": [],
+              "planning_authority": "shadow",
+              "preferred_routes": [
+                "relationship_graph_metadata_route"
+              ],
+              "product_intent": [],
+              "project_id": "project-m6-3r-2-fixture",
+              "request_digest": "9732a6883aec1c12ff4134376c23bc34edbd8f08663e907319c2d89fa5ea1ffc",
+              "request_id": "evidence_request_9732a6883aec1c12ff41",
+              "requester_role": "research_lead",
+              "required": true,
+              "source_policy": "relationship_graph_only",
+              "stop_condition": "sanitized_fixture_stop",
+              "target_entities": [
+                "NVDA"
+              ],
+              "target_periods": [
+                "2025-01-26"
+              ],
+              "tenant_id": "tenant-m6-3r-2-fixture",
+              "topk_policy": {
+                "candidate_limit": 12,
+                "top_k": 5
+              },
+              "unit": null
+            },
+            "policy_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+            "policy_registry_ref": "point01-m6-3r-1-legacy-topk-mapping-registry",
+            "policy_registry_version": "v1",
+            "request_origin": "legacy_evidence_request"
+          },
+          "resolution": {
+            "resolved_profile": {
+              "accepted_evidence_role": "context",
+              "allowed_candidate_kinds": [
+                "top_k_seed",
+                "neighbor_section"
+              ],
+              "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+              "lowering_profile": true,
+              "policy_ref": "point01-m6-3r-topk-policy-v1",
+              "profile_id": "legacy-relationship_graph_only-relationship_graph",
+              "profile_version": "v1",
+              "quantities": {
+                "candidate_bundle_top_k": 12,
+                "evidence_gate_candidate_top_k": 5,
+                "rerank_top_k": 8
+              },
+              "selected_route_id": "relationship_graph_metadata_route",
+              "source_policy": "relationship_graph_only",
+              "source_role": "relationship_graph",
+              "source_type": "relationship_graph"
+            },
+            "resolved_quantities": {
+              "candidate_bundle_top_k": 12,
+              "evidence_gate_candidate_top_k": 5,
+              "rerank_top_k": 8
+            },
+            "status": "resolved",
+            "terminal_reason": null
+          }
+        }
+      },
+      "request_digest": "9732a6883aec1c12ff4134376c23bc34edbd8f08663e907319c2d89fa5ea1ffc",
+      "request_id": "evidence_request_9732a6883aec1c12ff41",
+      "required_candidate_kinds": [
+        "top_k_seed",
+        "neighbor_section"
+      ],
+      "sql_policy_pin": null,
+      "topk_policy_audit_digest": "9aa19907d236f9b1107985beac5cd0b920207ce4ee604a9d8b210e12fc53ea4a",
+      "topk_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+      "writer_citable": false
+    },
+    {
+      "adapter_snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+      "adapter_snapshot_id": "fixture-snapshot-exact_value_sql-issuer:v1",
+      "candidates": [
+        {
+          "adapter_id": "fixture-adapter-exact_value_sql-issuer",
+          "adapter_kind": "exact_value_sql",
+          "adapter_snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+          "adapter_snapshot_id": "fixture-snapshot-exact_value_sql-issuer:v1",
+          "candidate_id": "sql-revenue-row-seed",
+          "candidate_kind": "top_k_seed",
+          "candidate_provenance": "fixture_supplied_not_retrieved",
+          "content_digest": "7ea42f1a3a26fb724de15a0e9275fc529d2e5578f9357018207d40e22e108591",
+          "content_ref": "sanitized-content:sql-revenue-row-seed",
+          "document_id": "sanitized-nvda-2025",
+          "document_version": "sanitized:v1",
+          "entity_ref": "NVDA",
+          "evidence_role": "numeric_fact",
+          "form_type": "10-K",
+          "index_or_graph_coordinate": "fixture-coordinate:sql-revenue-row-seed",
+          "metadata_rank": 0,
+          "metric_ref": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+          "next_page_ref": null,
+          "next_ref": "table:income-statement",
+          "next_row_ref": null,
+          "page_ref": null,
+          "parent_section_ref": null,
+          "parser_artifact_digest": "d181780dbc6464379f2cd60272098fa21a7a1a43619e1eb70d5fea8f6bec0a0a",
+          "parser_artifact_ref": "sanitized-parser:metadata-only:v1",
+          "period_ref": "2025-01-26",
+          "previous_page_ref": null,
+          "previous_ref": null,
+          "previous_row_ref": null,
+          "recall_score": 1.0,
+          "route_id": "issuer_disclosure_metadata_route",
+          "row_ref": null,
+          "row_selector_ref": "row:consolidated_income_revenue",
+          "scale_ref": "millions",
+          "section_or_table_ref": "table:income-statement",
+          "source_artifact_digest": "e2d5cef54a40638feead0cabd46574b9e1a1387c6cb2075414993ad310c9545c",
+          "source_artifact_ref": "sanitized-source:sql-revenue-row",
+          "source_authority_rank": 100,
+          "source_family": "sec",
+          "source_policy_ref": "official_first",
+          "source_role": "issuer_filing",
+          "source_tier": "primary_sec",
+          "source_type": "exact_value_sql",
+          "unit_ref": "USD"
+        }
+      ],
+      "domain_judgment_eligible": false,
+      "execution_admission": "not_admitted",
+      "fixture_id": "fixture-exact-value-sql-alternate-self-signed-policy",
+      "fixture_kind": "exact_value_sql_row",
+      "fixture_provenance": "sanitized_immutable_fixture_only",
+      "neighbor_references": [],
+      "persistence_authorized": false,
+      "promotion_authorized": false,
+      "query": {
+        "adapter_snapshot": {
+          "adapter_id": "fixture-adapter-exact_value_sql-issuer",
+          "adapter_kind": "exact_value_sql",
+          "admission_state": "not_admitted",
+          "execution_authorized": false,
+          "immutable": true,
+          "read_only": true,
+          "snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+          "snapshot_id": "fixture-snapshot-exact_value_sql-issuer:v1",
+          "snapshot_registry_ref": "point01-m6-3r-2-fixture-snapshot-registry",
+          "snapshot_registry_version": "v1",
+          "source_type": "exact_value_sql"
+        },
+        "adapter_snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+        "allow_relaxed_filter_fallback": false,
+        "eligible_candidate_kinds": [
+          "top_k_seed",
+          "neighbor_section",
+          "table_context"
+        ],
+        "evidence_role": "numeric_fact",
+        "exact_value_execution_scope": {
+          "adapter_snapshot": {
+            "adapter_id": "fixture-adapter-exact_value_sql-issuer",
+            "adapter_kind": "exact_value_sql",
+            "admission_state": "not_admitted",
+            "execution_authorized": false,
+            "immutable": true,
+            "read_only": true,
+            "snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+            "snapshot_id": "fixture-snapshot-exact_value_sql-issuer:v1",
+            "snapshot_registry_ref": "point01-m6-3r-2-fixture-snapshot-registry",
+            "snapshot_registry_version": "v1",
+            "source_type": "exact_value_sql"
+          },
+          "binding_policy": {
+            "accepted_evidence_role": "numeric_fact",
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "execution_admission": "not_admitted",
+            "form_type": "10-K",
+            "metric_bindings": [
+              {
+                "metric_intent": "revenue",
+                "metric_ref": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax"
+              }
+            ],
+            "policy_digest": "75fff84e1d4684aa47eb7b6dc9d2cef2ff50333f27bbce8e3cda17d5a6ef820f",
+            "policy_ref": "point01-m6-3r-1-exact-value-sql-binding-policy",
+            "policy_version": "v1",
+            "registry_read_status": "registry_not_read",
+            "row_selector_ref": "row:consolidated_income_revenue",
+            "selected_route_id": "issuer_disclosure_metadata_route",
+            "source_policy": "official_first",
+            "source_tier": "primary_sec",
+            "source_type": "exact_value_sql",
+            "unit_scale_bindings": [
+              {
+                "request_unit": "USD_millions",
+                "scale_ref": "millions",
+                "unit_ref": "USD"
+              }
+            ]
+          },
+          "evidence_request": {
+            "acceptable_proxy": [],
+            "accepted_evidence_role": "numeric_fact",
+            "budget": {
+              "elapsed_seconds_limit": 30,
+              "tool_call_limit": 0
+            },
+            "case_id": "case-m6-3r-2-fixture",
+            "cell_id": "cell-issuer",
+            "cell_version_id": "cell-issuer:v1",
+            "compiled_from_refs": [
+              "contract:v1",
+              "cell:v1",
+              "slot:v1",
+              "point01-m6-1-evidence-request-policy-v1"
+            ],
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "decision_surface_contract_version_id": "surface-m6-3r-2-fixture:v1",
+            "decision_surface_id": "surface-m6-3r-2-fixture",
+            "evidence_domain": "issuer_disclosure",
+            "evidence_slot_id": "slot-issuer",
+            "evidence_slot_version_id": "slot-issuer:v1",
+            "execution_admission": "not_admitted",
+            "fallback_routes": [],
+            "forbidden_substitutions": [
+              "relationship_graph_only"
+            ],
+            "granularity": "cell_slot",
+            "metadata_binding_requirements": [
+              "document_id",
+              "document_version",
+              "section_or_table_ref",
+              "source_authority"
+            ],
+            "metric_intent": [
+              "revenue"
+            ],
+            "numeric_binding_requirements": [
+              "row_label",
+              "unit",
+              "period",
+              "source_coordinate"
+            ],
+            "planning_authority": "shadow",
+            "preferred_routes": [
+              "issuer_disclosure_metadata_route"
+            ],
+            "product_intent": [],
+            "project_id": "project-m6-3r-2-fixture",
+            "request_digest": "aa1f8093a1b7f747f46e901d8ea89b34a55d01a707b7e67f33441400806230f8",
+            "request_id": "evidence_request_aa1f8093a1b7f747f46e",
+            "requester_role": "research_lead",
+            "required": true,
+            "source_policy": "official_first",
+            "stop_condition": "sanitized_fixture_stop",
+            "target_entities": [
+              "NVDA"
+            ],
+            "target_periods": [
+              "2025-01-26"
+            ],
+            "tenant_id": "tenant-m6-3r-2-fixture",
+            "topk_policy": {
+              "candidate_limit": 12,
+              "top_k": 3
+            },
+            "unit": "USD_millions"
+          },
+          "exact_filter_selector_contract_digest": "e68da3481f3e149c51db109c37b8fde5b644f5dc7a9087d62d39058e8756d487",
+          "execution_admission": "not_admitted",
+          "execution_scope_digest": "59cecb662fb5a4981d7da3193c34dd850f2bc7fb45f1a382b37558c41053f421",
+          "execution_scope_id": "exact_value_sql_execution_scope_59cecb662fb5a4981d7d",
+          "filters": {
+            "entity_ref": "NVDA",
+            "form_type": "10-K",
+            "metric_ref": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+            "period_ref": "2025-01-26",
+            "row_selector_ref": "row:consolidated_income_revenue",
+            "scale_ref": "millions",
+            "source_tier": "primary_sec",
+            "unit_ref": "USD"
+          },
+          "persistence_authorized": false,
+          "registry_read_status": "registry_not_read",
+          "tool_selection_plan": {
+            "execution_admission": "not_admitted",
+            "plan_policy_digest": "ed3b9f7a4771e67a7d879b50d2892e5659e207a38d84a0414ee1ab8b2e7ef107",
+            "plan_policy_ref": "point01-m6-2-tool-selection-plan-policy",
+            "plan_policy_version": "v1",
+            "registry_read_status": "registry_not_read",
+            "selected_route_id": "issuer_disclosure_metadata_route",
+            "tool_selection_plan_digest": "155d954155c04993ff15043cc719dfcd88a5df24e0e50e69e4793277539b0eaf",
+            "tool_selection_plan_id": "fixture-plan-exact-value-sql:v1"
+          }
+        },
+        "execution_admission": "not_admitted",
+        "persistence_authorized": false,
+        "query_digest": "a9e84e25c73b2c2d7be5486525f8b4af5688ce25a25bcf1cab13e3b78d81c870",
+        "query_id": "local_retrieval_query_a9e84e25c73b2c2d7be5",
+        "selected_route_id": "issuer_disclosure_metadata_route",
+        "source_policy_ref": "official_first",
+        "source_role": "issuer_filing",
+        "source_type": "exact_value_sql",
+        "target_entities": [
+          "NVDA"
+        ],
+        "target_periods": [
+          "2025-01-26"
+        ],
+        "tool_invocation_receipt_ref": {
+          "adapter_snapshot_digest": "09be6a721c3c1c2b33bdb9370c3ba5ba3ca226ee64d42dea72ac8be6089247ff",
+          "adapter_snapshot_id": "fixture-snapshot-exact_value_sql-issuer:v1",
+          "admission_status": "required_not_invoked",
+          "exact_filter_selector_contract_digest": "e68da3481f3e149c51db109c37b8fde5b644f5dc7a9087d62d39058e8756d487",
+          "execution_scope_digest": "59cecb662fb5a4981d7da3193c34dd850f2bc7fb45f1a382b37558c41053f421",
+          "execution_scope_id": "exact_value_sql_execution_scope_59cecb662fb5a4981d7d",
+          "receipt_digest": "3800e3b75b5fed31f987a7ab61277bbfcb92fca2f69c230b1dbc986e3b42a01d",
+          "receipt_id": "fixture-tool-receipt:not-invoked:v1",
+          "receipt_version": 1,
+          "registry_read_status": "registry_not_read",
+          "request_digest": "aa1f8093a1b7f747f46e901d8ea89b34a55d01a707b7e67f33441400806230f8",
+          "request_id": "evidence_request_aa1f8093a1b7f747f46e",
+          "tool_selection_plan_digest": "155d954155c04993ff15043cc719dfcd88a5df24e0e50e69e4793277539b0eaf",
+          "tool_selection_plan_id": "fixture-plan-exact-value-sql:v1"
+        },
+        "tool_selection_plan_digest": "155d954155c04993ff15043cc719dfcd88a5df24e0e50e69e4793277539b0eaf",
+        "tool_selection_plan_id": "fixture-plan-exact-value-sql:v1",
+        "topk_audit": {
+          "audit_digest": "f4cc09c28b2d0ff19f70a7419d364e61030852d17f92957f0bc3943ab96d1f36",
+          "audit_id": "topk_policy_audit_f4cc09c28b2d0ff19f70",
+          "clamp_or_reject_reason": "none",
+          "request": {
+            "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+            "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+            "evidence_request": {
+              "acceptable_proxy": [],
+              "accepted_evidence_role": "numeric_fact",
+              "budget": {
+                "elapsed_seconds_limit": 30,
+                "tool_call_limit": 0
+              },
+              "case_id": "case-m6-3r-2-fixture",
+              "cell_id": "cell-issuer",
+              "cell_version_id": "cell-issuer:v1",
+              "compiled_from_refs": [
+                "contract:v1",
+                "cell:v1",
+                "slot:v1",
+                "point01-m6-1-evidence-request-policy-v1"
+              ],
+              "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+              "decision_surface_contract_version_id": "surface-m6-3r-2-fixture:v1",
+              "decision_surface_id": "surface-m6-3r-2-fixture",
+              "evidence_domain": "issuer_disclosure",
+              "evidence_slot_id": "slot-issuer",
+              "evidence_slot_version_id": "slot-issuer:v1",
+              "execution_admission": "not_admitted",
+              "fallback_routes": [],
+              "forbidden_substitutions": [
+                "relationship_graph_only"
+              ],
+              "granularity": "cell_slot",
+              "metadata_binding_requirements": [
+                "document_id",
+                "document_version",
+                "section_or_table_ref",
+                "source_authority"
+              ],
+              "metric_intent": [
+                "revenue"
+              ],
+              "numeric_binding_requirements": [
+                "row_label",
+                "unit",
+                "period",
+                "source_coordinate"
+              ],
+              "planning_authority": "shadow",
+              "preferred_routes": [
+                "issuer_disclosure_metadata_route"
+              ],
+              "product_intent": [],
+              "project_id": "project-m6-3r-2-fixture",
+              "request_digest": "aa1f8093a1b7f747f46e901d8ea89b34a55d01a707b7e67f33441400806230f8",
+              "request_id": "evidence_request_aa1f8093a1b7f747f46e",
+              "requester_role": "research_lead",
+              "required": true,
+              "source_policy": "official_first",
+              "stop_condition": "sanitized_fixture_stop",
+              "target_entities": [
+                "NVDA"
+              ],
+              "target_periods": [
+                "2025-01-26"
+              ],
+              "tenant_id": "tenant-m6-3r-2-fixture",
+              "topk_policy": {
+                "candidate_limit": 12,
+                "top_k": 3
+              },
+              "unit": "USD_millions"
+            },
+            "policy_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+            "policy_registry_ref": "point01-m6-3r-1-legacy-topk-mapping-registry",
+            "policy_registry_version": "v1",
+            "request_origin": "legacy_evidence_request"
+          },
+          "resolution": {
+            "resolved_profile": {
+              "accepted_evidence_role": "numeric_fact",
+              "allowed_candidate_kinds": [
+                "top_k_seed",
+                "neighbor_section",
+                "table_context"
+              ],
+              "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+              "lowering_profile": true,
+              "policy_ref": "point01-m6-3r-topk-policy-v1",
+              "profile_id": "legacy-official_first-exact_value_sql",
+              "profile_version": "v1",
+              "quantities": {
+                "candidate_bundle_top_k": 12,
+                "evidence_gate_candidate_top_k": 3,
+                "rerank_top_k": 8
+              },
+              "selected_route_id": "issuer_disclosure_metadata_route",
+              "source_policy": "official_first",
+              "source_role": "issuer_filing",
+              "source_type": "exact_value_sql"
+            },
+            "resolved_quantities": {
+              "candidate_bundle_top_k": 12,
+              "evidence_gate_candidate_top_k": 3,
+              "rerank_top_k": 8
+            },
+            "status": "resolved",
+            "terminal_reason": null
+          }
+        }
+      },
+      "request_digest": "aa1f8093a1b7f747f46e901d8ea89b34a55d01a707b7e67f33441400806230f8",
+      "request_id": "evidence_request_aa1f8093a1b7f747f46e",
+      "required_candidate_kinds": [
+        "top_k_seed"
+      ],
+      "sql_policy_pin": {
+        "execution_admission": "not_admitted",
+        "policy_canonical_digest": "7cbfbed896cc5f8b5193524c2204802798b3c56ad4c0b6761b4dad478c4a22d5",
+        "policy_path": "configs/engineering_handoff/point01_m6_3r_1_exact_value_sql_binding_policy_v1_0.json",
+        "policy_raw_sha256": "9695941aac154d1d5ae8744742156af9ee8b0b80b7792dc909ebcf6c746573a6",
+        "policy_ref": "self-signed-unapproved-fixture-policy",
+        "policy_version": "v1",
+        "registry_read_status": "registry_not_read"
+      },
+      "topk_policy_audit_digest": "f4cc09c28b2d0ff19f70a7419d364e61030852d17f92957f0bc3943ab96d1f36",
+      "topk_registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+      "writer_citable": false
+    }
+  ],
+  "execution_admission": "not_admitted",
+  "persistence_authorized": false
+}

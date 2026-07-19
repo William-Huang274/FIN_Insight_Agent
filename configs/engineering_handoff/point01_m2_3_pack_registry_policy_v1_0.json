@@ -1,0 +1,8 @@
+{
+  "policy_version": "finsight_point01_m2_3_pack_registry_policy_v1_0",
+  "policy_ref": "point01-m2-3-pack-registry-policy-v1",
+  "allowed_scope_kinds": ["universal", "sector", "report_type", "case_delta"],
+  "allowed_promotion_statuses": ["reviewed_runtime_candidate", "provisional_case_delta"],
+  "require_fresh_until": true,
+  "authority_boundary": "Registry holds versioned shadow planning contracts only. It rejects document-only promotion, never writes legacy TaskRun and never grants DecisionSurface authority."
+}

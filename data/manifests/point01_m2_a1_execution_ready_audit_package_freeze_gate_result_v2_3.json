@@ -1,0 +1,56 @@
+{
+  "actual_admission_status": "package_admission_required",
+  "boundary": "Static refreeze only. It packages ledger-backed consumption grants, post-consume staged-byte verification and future actual code but does not execute compiler/shadow, external/model/tool/provider, store or mutation paths.",
+  "execution_counts": {
+    "a0_m2_actual_probes": 0,
+    "business_case_mutations": 0,
+    "compiler_or_shadow_fixture_runs": 0,
+    "external_tool_calls": 0,
+    "fixed_or_production_store_opens": 0,
+    "legacy_authority_mutations": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "provider_calls": 0,
+    "receipt_consumptions": 0,
+    "receipt_registrations": 0,
+    "store_writes": 0
+  },
+  "failures": [],
+  "gate_digest": "904d1030c7110281acc4963ec0a615da3db0b0ce9e4a68b0d6aaf80971549243",
+  "next_step_requires_total_reviewer": "Independent review of this exact v2.3 receipt-invariants package only. No admission, receipt registration or actual scenario is created by this freeze.",
+  "package_digest": "ff5476b9a8c4d9a82a11b163039e118922b09c945a0d53ff9df031b7c268b318",
+  "package_ref": "point01-m2-a1-receipt-invariants-adversarial-audit-package-v2-3",
+  "package_verify": {
+    "calculated_package_digest": "ff5476b9a8c4d9a82a11b163039e118922b09c945a0d53ff9df031b7c268b318",
+    "mismatches": [],
+    "policy_checks": {
+      "authoritative_receipt_required": true,
+      "execution_matrix_exact_sixteen_scenarios": true,
+      "execution_matrix_runtime_oracle_separation": true,
+      "execution_matrix_schema": true,
+      "external_admission_mode": true,
+      "instrumentation_is_concrete": true,
+      "lifecycle_contract_exact": true,
+      "policy_schema": true,
+      "prewrite_execution_preflight": true,
+      "real_runtime_path_complete": true
+    },
+    "schema_errors": [],
+    "status": "pass"
+  },
+  "policy_checks": {
+    "authoritative_receipt_required": true,
+    "execution_matrix_exact_sixteen_scenarios": true,
+    "execution_matrix_runtime_oracle_separation": true,
+    "execution_matrix_schema": true,
+    "external_admission_mode": true,
+    "instrumentation_is_concrete": true,
+    "lifecycle_contract_exact": true,
+    "policy_schema": true,
+    "prewrite_execution_preflight": true,
+    "real_runtime_path_complete": true
+  },
+  "result_version": "finsight_point01_m2_a1_execution_ready_audit_package_freeze_gate_result_v2_3",
+  "scope": "M2_A1_exact_admission_gated_future_actual_only",
+  "status": "receipt_invariants_repaired_package_frozen_pending_exact_admission"
+}

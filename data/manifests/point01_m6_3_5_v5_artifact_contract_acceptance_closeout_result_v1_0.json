@@ -1,0 +1,130 @@
+{
+  "canonical_store_write_count": 0,
+  "checks": {
+    "decision_digest_exact": true,
+    "package_stable_before_after_receipt_validation": true,
+    "package_values_match_audited_v5": true,
+    "receipt_binds_exact_audited_values": true,
+    "receipt_contains_no_secret_keys": true,
+    "receipt_is_package_external": true,
+    "receipt_is_read_only_not_execution_authority": true,
+    "restricted_original_still_separate": true,
+    "reviewer_identity_exact": true,
+    "secret_scan_pass": true
+  },
+  "execution_state": "remediated_v5_artifact_contract_independently_accepted_no_downstream_authority",
+  "external_call_count": 0,
+  "model_call_count": 0,
+  "network_request_count": 0,
+  "package_stability": {
+    "after": {
+      "file_sha256": {
+        "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_global_one_shot_authority_policy_v1_0.json": "4ed44152a31bd933b160885801d4462dd8a7f71586f00586fa6cb31326d85d83",
+        "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_package_manifest_v1_0.json": "272eb312f635e88da37254b6853b15709a18cdb8ec9cade66541b6fc269b3faa",
+        "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_pilot_design_v1_0.json": "6e2ca081676c80ebb8d4afb7aaa47b9deef76a1feae77eabca9f7cd4ebc5fc57",
+        "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_pilot_policy_v1_0.json": "52b1e7c8c5cfd9c974edc9c5733459e04fe43a01cab0ccd22ea3c6d05459766c",
+        "configs/engineering_handoff/point01_m6_3_5_restricted_live_artifact_policy_v1_0.json": "6785bb42f4d49b1cb4ac27419c5bf4c8dd1f27fe10c11ec10cac1f517b1cc241",
+        "data/manifests/point01_m6_3_5_v5_sanitized_authorized_live_audit_projection_v1_0.json": "27e4b30b086ded648c26b6fbf20ca0c1e811297755c0328fa4f7338d72d7dbbe",
+        "scripts/engineering/record_point01_m6_3_5_positive_sec_document_human_receipt.py": "877cf42a31728c69a230ef4211af56d3b28f696dfdd2d34a1874d5ff65547a75",
+        "scripts/engineering/run_point01_m6_3_5_actual_shape_parser_gate.py": "cf46c1ceacf72a9f5b2c4363eeeaf2a2b7241cf6d773f3285d52dc23e927c4b5",
+        "scripts/engineering/run_point01_m6_3_5_artifact_secret_scan.py": "ad1743785d80d2f3c3fa827f838ed2cdae6d90dfe13eb31b0effa277af50c62b",
+        "scripts/engineering/run_point01_m6_3_5_positive_sec_document_pilot.py": "db737113ee48dbf0991d9dea5dfbed3104e28c7a28ef62719c9f5ebe57d50ed0",
+        "scripts/engineering/run_point01_m6_3_5_positive_sec_document_pilot_design_lint.py": "917075f80dcfe553f3d996ef101e2f6b7d0c54f8a238587276bf030e808e0e0d",
+        "scripts/engineering/run_point01_m6_3_5_positive_sec_document_receipt_preflight.py": "e0a891809f28b290d3b07125f6c505021dc8cffe3cbbf1e5375b2ed7889a3016",
+        "scripts/engineering/run_point01_m6_3_5_restricted_live_artifact_sanitization.py": "2e2b35deeae5d6d325f075e5ee39b587044a905c260a2d6c836a06a74e310435",
+        "src/sec_agent/canonical_runtime/bounded_sec_document_execution.py": "1771ae7f5326255897466f68b5ca362d17dc92273dc3fdd94c17d0173b3a8d77",
+        "src/sec_agent/canonical_runtime/budget_control.py": "42cae08ff0ff9de40951df420da0fe58411bc8b2185c1a3702c3ed464609b25c",
+        "src/sec_agent/canonical_runtime/capability_security.py": "433eb90bf5db82223d7794a7d5c0fedbbf06e8c35c6b415bf9c07c1da7be90e6",
+        "src/sec_agent/canonical_runtime/m6_pilot_global_approval.py": "d9c7e999ce3d852d5059e382652f8b62695dc36ed1037ce42551563d0b19adab",
+        "src/sec_agent/canonical_runtime/m6_pilot_package.py": "0992796528e352b9bef3bebb56050d918f0b424887a27d1e1e3623d8fcb9b49f",
+        "src/sec_agent/canonical_runtime/store.py": "a237b93f53f83df9f30873631826f632e33515bf4db4b9dca186e679fa499f31",
+        "tests/contract/test_point01_m6_3_5_actual_shape_parser_gate.py": "bf5ec0807d0ad9e7b4582811c4623a97d9aba7dd7f58a6f51aa0bbb2f1fc084a",
+        "tests/contract/test_point01_m6_3_5_live_artifact_contract_security.py": "e74d21bdf8a51141e42af16cf30dfaa4806acad29459fbc8e9ba55678b3547b3",
+        "tests/contract/test_point01_m6_3_5_positive_sec_document_execution.py": "b39d023dc4b44efdcfee2c2726714e5812960d38aba35ecc93647c8c3458483b",
+        "tests/contract/test_point01_m6_3_5_positive_sec_document_pilot_design.py": "89eacce33cb7d016f875f6fae6ca47203c98c231542b5ee2ec2d90813bfef3ab",
+        "tests/contract/test_point01_m6_3_5_positive_sec_document_receipt_preflight.py": "900e3d8a5a20d9c966394d7e597ff0379cf74b1f445ffd11d4e70dd86f2e20dc",
+        "tests/fixtures/point01_m6_3_5_incident_transport_isolation_fixture.json": "e777253996a38c98e057f9a57a397e18b4ed2a94dec2973fd64a95d10073c952",
+        "tests/fixtures/point01_m6_3_5_nvda_10k_actual_shape_sanitized.html": "54fc9e3a10259431e4760f861756b3df11f8d3005384ad8b679553482dadb0f9"
+      },
+      "manifest_digest": "272eb312f635e88da37254b6853b15709a18cdb8ec9cade66541b6fc269b3faa",
+      "package_digest": "a8210e702e2a7147513537916c505baec92dc0ff7526139c7eb557f19cdfbd23",
+      "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v5-artifact-contract-remediation-refreeze"
+    },
+    "before": {
+      "file_sha256": {
+        "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_global_one_shot_authority_policy_v1_0.json": "4ed44152a31bd933b160885801d4462dd8a7f71586f00586fa6cb31326d85d83",
+        "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_package_manifest_v1_0.json": "272eb312f635e88da37254b6853b15709a18cdb8ec9cade66541b6fc269b3faa",
+        "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_pilot_design_v1_0.json": "6e2ca081676c80ebb8d4afb7aaa47b9deef76a1feae77eabca9f7cd4ebc5fc57",
+        "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_pilot_policy_v1_0.json": "52b1e7c8c5cfd9c974edc9c5733459e04fe43a01cab0ccd22ea3c6d05459766c",
+        "configs/engineering_handoff/point01_m6_3_5_restricted_live_artifact_policy_v1_0.json": "6785bb42f4d49b1cb4ac27419c5bf4c8dd1f27fe10c11ec10cac1f517b1cc241",
+        "data/manifests/point01_m6_3_5_v5_sanitized_authorized_live_audit_projection_v1_0.json": "27e4b30b086ded648c26b6fbf20ca0c1e811297755c0328fa4f7338d72d7dbbe",
+        "scripts/engineering/record_point01_m6_3_5_positive_sec_document_human_receipt.py": "877cf42a31728c69a230ef4211af56d3b28f696dfdd2d34a1874d5ff65547a75",
+        "scripts/engineering/run_point01_m6_3_5_actual_shape_parser_gate.py": "cf46c1ceacf72a9f5b2c4363eeeaf2a2b7241cf6d773f3285d52dc23e927c4b5",
+        "scripts/engineering/run_point01_m6_3_5_artifact_secret_scan.py": "ad1743785d80d2f3c3fa827f838ed2cdae6d90dfe13eb31b0effa277af50c62b",
+        "scripts/engineering/run_point01_m6_3_5_positive_sec_document_pilot.py": "db737113ee48dbf0991d9dea5dfbed3104e28c7a28ef62719c9f5ebe57d50ed0",
+        "scripts/engineering/run_point01_m6_3_5_positive_sec_document_pilot_design_lint.py": "917075f80dcfe553f3d996ef101e2f6b7d0c54f8a238587276bf030e808e0e0d",
+        "scripts/engineering/run_point01_m6_3_5_positive_sec_document_receipt_preflight.py": "e0a891809f28b290d3b07125f6c505021dc8cffe3cbbf1e5375b2ed7889a3016",
+        "scripts/engineering/run_point01_m6_3_5_restricted_live_artifact_sanitization.py": "2e2b35deeae5d6d325f075e5ee39b587044a905c260a2d6c836a06a74e310435",
+        "src/sec_agent/canonical_runtime/bounded_sec_document_execution.py": "1771ae7f5326255897466f68b5ca362d17dc92273dc3fdd94c17d0173b3a8d77",
+        "src/sec_agent/canonical_runtime/budget_control.py": "42cae08ff0ff9de40951df420da0fe58411bc8b2185c1a3702c3ed464609b25c",
+        "src/sec_agent/canonical_runtime/capability_security.py": "433eb90bf5db82223d7794a7d5c0fedbbf06e8c35c6b415bf9c07c1da7be90e6",
+        "src/sec_agent/canonical_runtime/m6_pilot_global_approval.py": "d9c7e999ce3d852d5059e382652f8b62695dc36ed1037ce42551563d0b19adab",
+        "src/sec_agent/canonical_runtime/m6_pilot_package.py": "0992796528e352b9bef3bebb56050d918f0b424887a27d1e1e3623d8fcb9b49f",
+        "src/sec_agent/canonical_runtime/store.py": "a237b93f53f83df9f30873631826f632e33515bf4db4b9dca186e679fa499f31",
+        "tests/contract/test_point01_m6_3_5_actual_shape_parser_gate.py": "bf5ec0807d0ad9e7b4582811c4623a97d9aba7dd7f58a6f51aa0bbb2f1fc084a",
+        "tests/contract/test_point01_m6_3_5_live_artifact_contract_security.py": "e74d21bdf8a51141e42af16cf30dfaa4806acad29459fbc8e9ba55678b3547b3",
+        "tests/contract/test_point01_m6_3_5_positive_sec_document_execution.py": "b39d023dc4b44efdcfee2c2726714e5812960d38aba35ecc93647c8c3458483b",
+        "tests/contract/test_point01_m6_3_5_positive_sec_document_pilot_design.py": "89eacce33cb7d016f875f6fae6ca47203c98c231542b5ee2ec2d90813bfef3ab",
+        "tests/contract/test_point01_m6_3_5_positive_sec_document_receipt_preflight.py": "900e3d8a5a20d9c966394d7e597ff0379cf74b1f445ffd11d4e70dd86f2e20dc",
+        "tests/fixtures/point01_m6_3_5_incident_transport_isolation_fixture.json": "e777253996a38c98e057f9a57a397e18b4ed2a94dec2973fd64a95d10073c952",
+        "tests/fixtures/point01_m6_3_5_nvda_10k_actual_shape_sanitized.html": "54fc9e3a10259431e4760f861756b3df11f8d3005384ad8b679553482dadb0f9"
+      },
+      "manifest_digest": "272eb312f635e88da37254b6853b15709a18cdb8ec9cade66541b6fc269b3faa",
+      "package_digest": "a8210e702e2a7147513537916c505baec92dc0ff7526139c7eb557f19cdfbd23",
+      "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v5-artifact-contract-remediation-refreeze"
+    },
+    "receipt_excluded_from_manifest": true
+  },
+  "restricted_original_status": "preserved_quarantined_not_exported_not_downstream_input",
+  "result_version": "finsight_point01_m6_3_5_v5_artifact_contract_acceptance_closeout_result_v1_0",
+  "reviewer_acceptance_receipt": {
+    "path": "data/manifests/point01_m6_3_5_v5_artifact_contract_total_reviewer_acceptance_receipt_v1_0.json",
+    "receipt_type": "package_external_total_reviewer_read_only_acceptance_not_execution_authority",
+    "sha256": "50b7440680b2339d6bf9749aaa310bdaa891eb12736d65e80e58ec61fce82e87"
+  },
+  "secret_scan": {
+    "external_call_count": 0,
+    "model_call_count": 0,
+    "network_request_count": 0,
+    "restricted_source_sha256": "de3ca1c2d841242faac29c67d29f0a836632d18a9b55d0941b14743d8074bdd5",
+    "result_version": "finsight_point01_m6_3_5_artifact_secret_scan_result_v1_0",
+    "scanned_exportable_artifacts": [
+      {
+        "forbidden_keys": [],
+        "path": "data/manifests/point01_m6_3_5_v5_sanitized_authorized_live_audit_projection_v1_0.json",
+        "raw_nonce_present": false,
+        "sha256": "27e4b30b086ded648c26b6fbf20ca0c1e811297755c0328fa4f7338d72d7dbbe",
+        "user_agent_plaintext_present": false
+      },
+      {
+        "forbidden_keys": [],
+        "path": "data/manifests/point01_m6_3_5_v5_artifact_contract_refreeze_result_v1_0.json",
+        "raw_nonce_present": false,
+        "sha256": "414a20ef9d7b20e3873fba8dc295f22c4c7c1c280d3387a27facbc3aa00a2f63",
+        "user_agent_plaintext_present": false
+      },
+      {
+        "forbidden_keys": [],
+        "path": "data/manifests/point01_m6_3_5_v5_artifact_contract_total_reviewer_acceptance_receipt_v1_0.json",
+        "raw_nonce_present": false,
+        "sha256": "50b7440680b2339d6bf9749aaa310bdaa891eb12736d65e80e58ec61fce82e87",
+        "user_agent_plaintext_present": false
+      }
+    ],
+    "status": "pass",
+    "tool_invocation_count": 0,
+    "violations": []
+  },
+  "status": "pass",
+  "tool_invocation_count": 0
+}

@@ -1,0 +1,34 @@
+{
+  "policy_version": "finsight_point01_m6_3_5_restricted_live_artifact_policy_v1_0",
+  "policy_ref": "point01-m6-3-5-v4-live-artifact-restricted-retention-and-v5-sanitized-projection",
+  "scope": "single_authorized_nvda_10k_live_artifact_offline_contract_repair_only",
+  "restricted_inputs": [
+    {
+      "path": "data/manifests/point01_m6_3_5_v4_single_fixed_nvda_10k_live_pilot_result_v1_0.json",
+      "classification": "restricted_quarantined_audit_input",
+      "git_publish": false,
+      "workbench_export": false,
+      "downstream_consumption": false,
+      "retention": "preserve_locally_append_only_until_total_reviewer_retention_decision",
+      "forget": "no_automated_delete_or_rewrite; human-approved_secure_disposal_only"
+    },
+    {
+      "path": ".tmp_point01_m6_3_5_v4_single_fixed_nvda_10k_live_pilot/",
+      "classification": "restricted_quarantined_runtime_store",
+      "git_publish": false,
+      "workbench_export": false,
+      "downstream_consumption": false,
+      "retention": "preserve_locally_append_only_until_total_reviewer_retention_decision",
+      "forget": "no_automated_delete_or_rewrite; human-approved_secure_disposal_only"
+    }
+  ],
+  "sanitized_projection": {
+    "result_version": "finsight_point01_m6_3_5_live_terminal_audit_projection_v1_0",
+    "allowed_terminal_execution_state": "approved_single_live_pilot_succeeded",
+    "raw_nonce": "forbidden",
+    "raw_user_agent": "forbidden",
+    "raw_document": "forbidden",
+    "execution_identity": "superseding_digest_bound_execution_instance_required",
+    "candidate_parser_fact_trace": "unpromoted_non_citable_downstream_firewall_required"
+  }
+}

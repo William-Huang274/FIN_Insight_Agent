@@ -1,0 +1,32 @@
+{
+  "policy_version": "finsight_point01_m5_3_checkpoint_artifact_policy_v1_0",
+  "scope": "Point01_M5_3_checkpoint_artifact_versioning_control_plane_only",
+  "status": "approved_for_deterministic_implementation",
+  "dependencies": {
+    "m1_object_store_boundary": "complete",
+    "m5_1_scheduler_attempt_lease": "full_implemented_deterministic_temporary_store_fixture",
+    "m5_2_recovery_consumer": "full_implemented_deterministic_temporary_store_fixture"
+  },
+  "required_controls": [
+    "checkpoint write requires a current leased running Attempt and current WorkUnit state version",
+    "checkpoint id is versioned append-only and expected checkpoint version rejects stale writes",
+    "checkpoint artifact row and CHECKPOINT_VERSION_CREATED event are committed in one canonical transaction",
+    "checkpoint payload is content-addressed and recovery read requires exact artifact version plus digest verification",
+    "superseding version must name the immediate prior exact artifact version and prior versions remain readable",
+    "checkpoint metadata records schema ref, snapshot digest, producer Attempt and input head"
+  ],
+  "atomicity_boundary": "SQLite canonical artifact row, event and idempotency receipt are atomic. A content-addressed object written before a later transaction abort can be physically unreferenced, but never gains canonical checkpoint identity or recovery visibility.",
+  "maximum_serialized_snapshot_bytes": 262144,
+  "forbidden_admissions": [
+    "unbounded_context_persistence",
+    "checkpoint_compaction_or_garbage_collection",
+    "background_worker_service",
+    "provider_execution",
+    "external_tool_execution",
+    "evidence_runtime",
+    "writer_runtime",
+    "full_chain",
+    "business_case_mutation",
+    "legacy_taskrun_authority_change"
+  ]
+}

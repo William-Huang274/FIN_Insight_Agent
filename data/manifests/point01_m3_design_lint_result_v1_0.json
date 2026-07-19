@@ -1,0 +1,23 @@
+{
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "cutover": "forbidden",
+    "legacy_task_run": "authoritative"
+  },
+  "boundary": "This lint freezes M3 contracts. It neither accepts human reviewer approval nor changes legacy authority, cutover, evidence, writer, provider, or full-chain admission.",
+  "child_contract_count": 8,
+  "design_review_status": "codex_structured_design_review_completed_pending_user_confirmation",
+  "errors": [],
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m3_cross_owner_design_review_v1_0.json": "1be47f9f1b645bbe142d8b62744987288afd8d346726092a717904b1840910c0",
+    "configs/engineering_handoff/point01_m3_design_freeze_manifest_v1_0.json": "ad69b31207940384b211ab895776faaae83ccc4d77d77e4e4c6e97bf08306796",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "cd79ca1a14a2d8bd35c3164ecf398d8740dae610beb160006f4cb72c9b90aa16",
+    "scripts/engineering/run_point01_m3_design_lint.py": "07fc5d8177554ea46a2fd33d7d9750cdd3ba46780d153f6fbb3ec197871ae351"
+  },
+  "generated_at": "2026-07-12T10:20:38.797219+00:00",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m3_design_lint_result_v1_0",
+  "scope": "Point01_M3_0_design_freeze_only",
+  "status": "pass"
+}

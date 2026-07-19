@@ -1,0 +1,118 @@
+{
+  "approval_id": "approval-point01-synthetic-persistent-pilot-v1",
+  "approval_registry_ref": "configs/engineering_handoff/point01_m4_synthetic_pilot_approval_v1_0.json",
+  "approved_read_contract_version_id": "contract-synthetic-pilot:v1",
+  "artifact_digest": "d4c7dc0395f0171742a209b8adb8bbd4668bb2b16567e2131068825b99d79f0d",
+  "artifact_version_id": "artifact-synthetic-pilot:v1",
+  "authority_after_cutover": "canonical_for_lane",
+  "authority_after_rollback": "legacy",
+  "authority_before": "legacy",
+  "authority_event_types": [
+    "PLANNING_CUTOVER_REQUESTED",
+    "PLANNING_CUTOVER_DECIDED",
+    "PLANNING_AUTHORITY_CHANGED",
+    "PLANNING_ROLLBACK_EXECUTED"
+  ],
+  "authority_event_versions": [
+    {
+      "after": 1,
+      "before": 0,
+      "event_type": "PLANNING_CUTOVER_REQUESTED"
+    },
+    {
+      "after": 2,
+      "before": 1,
+      "event_type": "PLANNING_CUTOVER_DECIDED"
+    },
+    {
+      "after": 2,
+      "before": 1,
+      "event_type": "PLANNING_AUTHORITY_CHANGED"
+    },
+    {
+      "after": 3,
+      "before": 2,
+      "event_type": "PLANNING_ROLLBACK_EXECUTED"
+    }
+  ],
+  "backup_baseline_content_fingerprint": "0a6a31050f0722bde80f30e663a33172866c886144541469f354c2d93dbc9d70",
+  "backup_baseline_cutover_event_count": 0,
+  "backup_baseline_event_count": 9,
+  "backup_restore_mode": "pre_mutation_baseline",
+  "backup_snapshot_sha256": "518ab05fbf159e73422127a697b01e661269e362ac4622aaab3bbd3c9609ad6e",
+  "case_id": "case-point01-synthetic-pilot",
+  "comparison_digest": "15523c8dec3f78db54fb430c273efc4085de069debb2371167aa52be89c275f6",
+  "comparison_id": "comparison-synthetic-pilot",
+  "contract_digest": "cac4c39abaf404be1fa7d0f82b37beef51dcdbe07134b9d2091b95696c74a28f",
+  "contract_version_id": "contract-synthetic-pilot:v1",
+  "cutover_decision_ref": "cutover-point01-synthetic-persistent-pilot-v1:v2",
+  "cutover_id": "cutover-point01-synthetic-persistent-pilot-v1",
+  "downstream_consumer_count": 0,
+  "evidence_version": "finsight_point01_m4_synthetic_pilot_execution_evidence_v1_0",
+  "executed_status": "executed",
+  "forbidden_actions_not_run": [
+    "business_case_mutation",
+    "evidence_runtime",
+    "writer_runtime",
+    "provider_execution",
+    "full_chain"
+  ],
+  "impact_scope": "case_scoped_planning_only",
+  "kill_switch_state": "off_before_cutover",
+  "lane_id": "planning",
+  "mutation_performed": true,
+  "newer_contract_version_id": "contract-synthetic-pilot:v2",
+  "persistent_store_identity": "e7a44c6164b92545eb528011130ff15dbecbfedcc1367aede219ae4f05dc3dee",
+  "pilot_kind": "isolated_nonproduction_synthetic_persistent_case",
+  "pinned_read_contract_version_id": "contract-synthetic-pilot:v1",
+  "post_rollback_content_fingerprint": "8467e46076c25db4c07dc6a8c07b61e86bfff6db178c0fae7d9af51378465be7",
+  "project_id": "project-point01-synthetic-pilot",
+  "recovery": {
+    "authority": "legacy",
+    "case_id": "case-point01-synthetic-pilot",
+    "decision_count": 1,
+    "errors": [],
+    "event_types": [
+      "PLANNING_CUTOVER_REQUESTED",
+      "PLANNING_CUTOVER_DECIDED",
+      "PLANNING_AUTHORITY_CHANGED",
+      "PLANNING_ROLLBACK_EXECUTED"
+    ],
+    "status": "pass",
+    "store_recovery_status": "pass"
+  },
+  "request_digest": "f467b2dbab17c46bc1d806576fb5e41bc73b6362733d4ff08c1ddd5ad8d1a0c3",
+  "requested_status": "requested",
+  "rollback_decision_ref": "cutover-point01-synthetic-persistent-pilot-v1:v3",
+  "rollback_window": "30m",
+  "rolled_back_status": "rolled_back",
+  "scope": "Point01_M4_isolated_synthetic_persistent_planning_cutover_pilot",
+  "status": "pass",
+  "store_backed_errors": [],
+  "store_backed_verification": {
+    "backup_restore_mode": "pre_mutation_baseline",
+    "backup_snapshot_sha256": "518ab05fbf159e73422127a697b01e661269e362ac4622aaab3bbd3c9609ad6e",
+    "restored_baseline_cutover_event_count": 0,
+    "restored_content_fingerprint": "0a6a31050f0722bde80f30e663a33172866c886144541469f354c2d93dbc9d70",
+    "restored_content_fingerprint_match": false,
+    "restored_matches_expected_baseline": true,
+    "restored_store_identity": "4d9bf221b3b1137058216909c21bdc7ecb3d2dbec05d69cef4492be243596b69",
+    "restored_store_integrity_check": {
+      "database_integrity": "ok",
+      "missing_outbox_count": 0,
+      "orphan_outbox_count": 0,
+      "status": "pass"
+    },
+    "source_content_fingerprint": "8467e46076c25db4c07dc6a8c07b61e86bfff6db178c0fae7d9af51378465be7",
+    "source_store_identity": "e7a44c6164b92545eb528011130ff15dbecbfedcc1367aede219ae4f05dc3dee",
+    "source_store_integrity_check": {
+      "database_integrity": "ok",
+      "missing_outbox_count": 0,
+      "orphan_outbox_count": 0,
+      "status": "pass"
+    },
+    "status": "pass",
+    "verification_mode": "persistent_store_backed"
+  },
+  "tenant_id": "tenant-point01-synthetic-pilot"
+}

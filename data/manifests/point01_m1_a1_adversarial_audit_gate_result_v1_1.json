@@ -1,0 +1,128 @@
+{
+  "access_canary": {
+    "status": "not_run_package_identity_preflight_fail_closed"
+  },
+  "boundary": "No M1 actual probe, scoped regression, fixed-store open, external source, M2/M6/R3 entry, or authority expansion runs without an exact external total-reviewer package admission.",
+  "disposition": "M1_A1_audit_rejected_pending_package_identity_repair",
+  "execution_stage": "M1_A1_audit_rejected_pending_package_identity_repair",
+  "external_execution_counts": {
+    "model": 0,
+    "network": 0,
+    "postgresql_schema_write": 0,
+    "provider": 0,
+    "real_transport": 0,
+    "tool": 0
+  },
+  "failures": [
+    "package_admission_required"
+  ],
+  "fixed_approval_store_sha256_after": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4",
+  "fixed_approval_store_sha256_before": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4",
+  "gate_status": "fail_closed",
+  "generated_at": "2026-07-13T18:51:45.051070+00:00",
+  "historical_m1_claim": "not_redeclared_by_A1",
+  "input_snapshot": {
+    "a0_design_digest": "75a76e24a3a730b82942b9861b9d203a5ec0e735a936dbc229d1c68681ff250d",
+    "authority_boundary": "temporary_explicit_sqlite_only_no_postgresql_write_no_fixed_store_open_no_network_tool_model_or_business_mutation",
+    "fixed_store_fingerprints": {
+      "canonical_or_business_store_absence_manifest": {
+        "enforcement": "access_canary_rejects_every_nonallowlisted_store_path",
+        "registered_paths": [],
+        "status": "explicit_absence_no_M1_fixed_canonical_or_business_store_registered"
+      },
+      "fixed_approval_store": {
+        "path": ".runtime_control/point01_m6_3_5_nvda_sec_document_parser_repaired_global_approval/canonical.sqlite",
+        "sha256": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4"
+      }
+    },
+    "fixture_corpus_digest": "1a6c71b33c74c7fcd461fd0945622a4677215c7b18d7a66fac478e85607ba519",
+    "input_bytes_source": "git_index",
+    "input_file_sha256": {
+      "configs/engineering_handoff/point01_generated_json_schemas_v1_0.json": "491a68d8bd684e76909dee0274c31a4a1ff10485f82fda482250726dcffb8f1f",
+      "configs/engineering_handoff/point01_m1_a1_adversarial_fixture_corpus_v1_0.json": "3be9ee9bc18e5e8756d8a40d31dd5ba551c8fa94ef54968cc7c6478d5547a363",
+      "configs/engineering_handoff/point01_m1_a1_adversarial_oracle_policy_v1_0.json": "4a3cec3c83e291f5587d956a1bed85aaf3bf8d30e0f79a108b0c780872ebbc14",
+      "configs/engineering_handoff/point01_m1_closeout_gate_manifest_v1_0.json": "830a2318ce198afd08211cc1a002ab5d852d4366ab364b2e9d5ec64fdb2b238d",
+      "configs/engineering_handoff/point01_m1_human_reviewer_approval_v1_0.json": "4eb0eb65d40da6ff85689bc649e848f346f55f7c81d0f8dcbe06a45592a038bc",
+      "configs/engineering_handoff/point01_m1_m5_adversarial_retro_audit_design_freeze_v1_0.json": "a9b14ad90e8209bd531c2094a880fab07cac64ceb63ca2b4820703ccc29abf2d",
+      "configs/engineering_handoff/point01_m1_rollback_recovery_drill_result_v1_0.json": "81609fd0df79cd631961f14baebcf1490f307fcb2a26b4f584959dc3bb77ba7a",
+      "data/manifests/point01_m1_closeout_gate_result_v1_0.json": "aed64b0419eeb6c2ddf63d429e62c8183451065cab9c4b1dd7461183cd524b8f",
+      "data/manifests/point01_m1_postgresql_conformance_sample_result_v1_0.json": "d5475f98f930f868df167eb798c22c44302bb92f9cb98da7b38ce2a7c5ec25b7",
+      "scripts/engineering/run_point01_m1_a1_adversarial_audit.py": "0ae47c77003a5523ccd6bae4867e46820df9c75003b38ef18027167d61ca046d",
+      "src/sec_agent/canonical_runtime/facade.py": "d0d7ca722a9249317bff48b520b1a97523fbcf146a362b57dc925824f0db5e7c",
+      "src/sec_agent/canonical_runtime/feature_flags.py": "d0b3100f4dbf37fba9767915a87c8f4db51a6eabf47745fdb704b2721574610d",
+      "src/sec_agent/canonical_runtime/m1_a1_audit_package.py": "c70588d65b8a1c372740cf9044447b7ef958fc4f19e41c14969af6f21b349217",
+      "src/sec_agent/canonical_runtime/m1_adversarial_audit.py": "592e9164cf1c4965f2a769f216104fb1dd9ca85d4ccdf9420de3d6ea9a3b8213",
+      "src/sec_agent/canonical_runtime/m1_adversarial_audit_canary.py": "b3b5c312f1f9d96ae8bdbfae6c2a03a4b0f92b945131bcfa9dbba24d05d62b42",
+      "src/sec_agent/canonical_runtime/m1_adversarial_audit_oracle.py": "b9f38c2c6302dd1369c196eb9c88f6cf651e87ce48596587ea6626565595a864",
+      "src/sec_agent/canonical_runtime/models.py": "1af127d23f8139d36fff687b5c63e4c5d5952e27ce6eaa2d3a4bea02220c2cf9",
+      "src/sec_agent/canonical_runtime/object_store.py": "2bd611f90bc07c4ef55ff54c75c619dbf505e7c9740ad2ed2b8e4eb9b6369718",
+      "src/sec_agent/canonical_runtime/store.py": "a237b93f53f83df9f30873631826f632e33515bf4db4b9dca186e679fa499f31",
+      "tests/contract/test_point01_canonical_models.py": "f95700be91ce90c0525fbd34a9f4fbcb10c4299b82b251b06b3c760af4030c28",
+      "tests/contract/test_point01_legacy_objective_adapter.py": "82e601336efe8b7538eab904c10f62f75b20df64d7142475fce672c614fed879",
+      "tests/contract/test_point01_m1_a1_adversarial_audit.py": "2b54ada314fe84ad819f05dd733cdf9018628ed862f0614fdf72969fe148efd3",
+      "tests/contract/test_point01_runtime_facade.py": "66118e03956cc8b86d63db5f284fdfd2c6900481e2e4742a4c4fe8a19507ebab",
+      "tests/contract/test_point01_sqlite_store.py": "3ef587d498fbc8e8bd2d091825ad2245ecd119dbd4d0221ce6e0c482c4142e43"
+    },
+    "oracle_policy_digest": "045f7ad381eae1133b6b48f9a7f2d09e653c65e578b5b7b992a1d90fe22a2ba0",
+    "package_admission_ref": "point01-m1-a1-total-reviewer-package-admission:v1",
+    "package_admission_required": true,
+    "package_digest": "c5169899e84a8eb0d99e49b3dbaa3dca0b963d9423364816605df8a49775bcf7",
+    "package_ref": "point01-m1-a1-isolated-adversarial-audit-package-v2-identity-bound",
+    "schema_version": "finsight_point01_m1_a1_adversarial_audit_package_manifest_v1_1",
+    "scope": "M1_A1_independent_adversarial_audit_only"
+  },
+  "oracle": {
+    "status": "not_run_package_identity_preflight_fail_closed"
+  },
+  "package_admission_after": {
+    "admission_digest": null,
+    "status": "package_admission_required"
+  },
+  "package_admission_before": {
+    "admission_digest": null,
+    "status": "package_admission_required"
+  },
+  "package_current_verify_after": {
+    "calculated_package_digest": "c5169899e84a8eb0d99e49b3dbaa3dca0b963d9423364816605df8a49775bcf7",
+    "execution_working_tree_differs_from_staged": [],
+    "historical_evidence_working_tree_differs_from_staged": [
+      "configs/engineering_handoff/point01_generated_json_schemas_v1_0.json",
+      "data/manifests/point01_m1_closeout_gate_result_v1_0.json",
+      "data/manifests/point01_m1_postgresql_conformance_sample_result_v1_0.json"
+    ],
+    "manifest_digest": "03ef489300660c6871b1dc35ce4e3b7af7257619b1d2de437aa10a9fe7ac4c67",
+    "mismatches": [],
+    "schema_errors": [],
+    "status": "pass",
+    "verification_source": "git_index_bytes_for_all_inputs_only"
+  },
+  "package_current_verify_before": {
+    "calculated_package_digest": "c5169899e84a8eb0d99e49b3dbaa3dca0b963d9423364816605df8a49775bcf7",
+    "execution_working_tree_differs_from_staged": [],
+    "historical_evidence_working_tree_differs_from_staged": [
+      "configs/engineering_handoff/point01_generated_json_schemas_v1_0.json",
+      "data/manifests/point01_m1_closeout_gate_result_v1_0.json",
+      "data/manifests/point01_m1_postgresql_conformance_sample_result_v1_0.json"
+    ],
+    "manifest_digest": "03ef489300660c6871b1dc35ce4e3b7af7257619b1d2de437aa10a9fe7ac4c67",
+    "mismatches": [],
+    "schema_errors": [],
+    "status": "pass",
+    "verification_source": "git_index_bytes_for_all_inputs_only"
+  },
+  "package_digest": "c5169899e84a8eb0d99e49b3dbaa3dca0b963d9423364816605df8a49775bcf7",
+  "package_digest_after": "c5169899e84a8eb0d99e49b3dbaa3dca0b963d9423364816605df8a49775bcf7",
+  "package_ref": "point01-m1-a1-isolated-adversarial-audit-package-v2-identity-bound",
+  "package_stable": false,
+  "postgresql_conformance": "historical_sample_read_only_not_rerun_no_schema_write_authorized",
+  "probes": [],
+  "result_version": "finsight_point01_m1_a1_adversarial_audit_gate_result_v1_1",
+  "scope": "M1_A1_independent_adversarial_audit_only",
+  "scoped_m1_regression": {
+    "failed_count": 0,
+    "passed_count": 0,
+    "paths": [],
+    "returncode": 0,
+    "status": "not_run_package_identity_preflight_fail_closed"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "checks": {
+    "baseline_first_checkpoint": true,
+    "current_artifact_execution_unused": true,
+    "execution_counts_zero": true,
+    "group_coverage_4_6_6": true,
+    "inputs_exact": true,
+    "just_in_time_only": true,
+    "plan_digest_exact": true,
+    "plan_status_and_scope": true,
+    "runtime_namespace_absent": true,
+    "sixteen_fixed_scenarios": true,
+    "unique_pair_strategy": true
+  },
+  "execution_counts": {
+    "a0_m2_actual_probes": 0,
+    "business_case_mutations": 0,
+    "compiler_or_shadow_fixture_runs": 0,
+    "external_tool_calls": 0,
+    "fixed_or_production_store_opens": 0,
+    "future_admissions_created": 0,
+    "future_receipts_created": 0,
+    "legacy_authority_mutations": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "provider_calls": 0,
+    "receipt_consumptions": 0,
+    "receipt_registrations": 0,
+    "runtime_namespaces_created": 0,
+    "store_writes": 0
+  },
+  "gate_digest": "7e6ab5fc460678a506e7f5cd7cf71d7ff1f5c826b5abc1e6589a4c38e1878fa1",
+  "next_step": "Stop. Only approve a just-in-time baseline scenario authority pair after independent review of this plan.",
+  "plan_digest": "9a0e16878bb899b853e2d91d84a5771d69b4b7d49cd37a490cc20d2de7ca4f5a",
+  "result_version": "finsight_point01_m2_a1_receipt_execution_plan_freeze_gate_v1_0",
+  "scenario_group_coverage": {
+    "P01": 4,
+    "P02": 6,
+    "P03": 6
+  },
+  "status": "pass"
+}

@@ -1,0 +1,27 @@
+{
+  "policy_version": "finsight_point01_m6_3_candidate_bundle_policy_v1_0",
+  "policy_ref": "point01-m6-3-candidate-bundle-policy-v1",
+  "scope": "Point01_M6_3_deterministic_metadata_candidate_bundle_only",
+  "authorization": "user_approved_m6_3_deterministic_metadata_candidate_bundle_only",
+  "minimum_source_authority_rank_by_evidence_role": {
+    "numeric_fact": 4,
+    "context": 1,
+    "gap_evidence": 0
+  },
+  "required_candidate_kinds_by_evidence_role": {
+    "numeric_fact": ["top_k_seed", "neighbor_section", "table_context"],
+    "context": ["top_k_seed", "neighbor_section"],
+    "gap_evidence": []
+  },
+  "allowed_candidate_kinds": ["top_k_seed", "neighbor_section", "table_context"],
+  "allowed_bundle_statuses": ["metadata_fixture_compiled", "retrieval_exhausted", "not_attempted_typed_stop"],
+  "authority_boundary": {
+    "candidate_snapshot": "fixture_only_immutable_metadata",
+    "candidate_bundle_persistence": "not_admitted",
+    "rag_sql_graph_retrieval": "not_admitted",
+    "tool_invocation_receipt": "not_admitted",
+    "provider_network_external_tool": "not_admitted",
+    "parser_numeric_promotion": "not_admitted",
+    "writer_full_chain": "not_admitted"
+  }
+}

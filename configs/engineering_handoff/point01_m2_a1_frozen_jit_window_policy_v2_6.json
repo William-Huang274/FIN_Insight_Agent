@@ -1,0 +1,40 @@
+{
+  "schema_version": "finsight_point01_m2_a1_frozen_jit_window_policy_v2_6",
+  "status": "frozen_entry_pending_external_human_jit_window_approval",
+  "approval_schema_version": "finsight_point01_m2_a1_human_jit_window_approval_v1",
+  "only_scenario": "p01-baseline-separated-input",
+  "admission_ttl_minutes": 30,
+  "receipt_ttl_minutes": 15,
+  "single_use": true,
+  "no_retry_replay_or_renewal": true,
+  "default_command": "do_not_invoke",
+  "active_command": "execute_approved_window_only",
+  "sequence": [
+    "verify_approval",
+    "issue_admission",
+    "verify",
+    "register",
+    "preflight",
+    "consume",
+    "reverify",
+    "grant",
+    "materialize",
+    "parent_clean_child_execute",
+    "immutable_actual",
+    "independent_oracle",
+    "reviewer",
+    "closeout"
+  ],
+  "forbidden_before_external_approval": [
+    "admission",
+    "receipt",
+    "authority_ledger",
+    "namespace",
+    "runtime",
+    "actual",
+    "network",
+    "model",
+    "tool",
+    "provider"
+  ]
+}

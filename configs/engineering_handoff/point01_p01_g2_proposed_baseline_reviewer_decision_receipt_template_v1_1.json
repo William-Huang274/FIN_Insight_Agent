@@ -1,0 +1,72 @@
+{
+  "schema_version": "finsight_point01_p01_g2_proposed_baseline_reviewer_decision_receipt_v1_1",
+  "state": "unresolved_not_active",
+  "purpose": "Package-external future reviewer decision template for the single eligible P01-G2 baseline only. It cannot authorize a negative pre-authority probe and cannot be registered, consumed or passed to an execution entry.",
+  "eligible_case_id": "g2-baseline",
+  "eligible_source_matrix_scenario_id": "p01-baseline-separated-input",
+  "canonical_digest_inputs": {
+    "required_exact_bindings": [
+      "tranche_digest",
+      "tranche_gate_digest",
+      "v2_10_package_digest",
+      "v2_10_package_gate_digest",
+      "v2_10_plan_digest",
+      "v2_10_plan_gate_digest",
+      "v2_10_blueprint_digest",
+      "v2_10_blueprint_gate_digest",
+      "trigger_ddl_digest",
+      "fixed_store_sha256",
+      "scenario_id",
+      "input_ref",
+      "mutation",
+      "scope",
+      "authority_boundary",
+      "reviewer_identity",
+      "actor_id",
+      "decision",
+      "decision_source",
+      "single_use",
+      "ttl_policy"
+    ],
+    "required_values_at_future_issue": {
+      "scenario_id": "p01-baseline-separated-input",
+      "input_ref": "m2-a1-ai-semis-input",
+      "mutation": "none",
+      "reviewer_identity": "william/003/total_reviewer",
+      "actor_id": "003",
+      "decision": "approved_single_operational_baseline_only",
+      "decision_source": "total_reviewer_recorded_decision",
+      "single_use": true,
+      "admission_ttl_minutes": 30,
+      "receipt_ttl_minutes": 15,
+      "retry_replay_renewal": false
+    }
+  },
+  "unresolved_fields": [
+    "review_receipt_id",
+    "review_receipt_digest",
+    "approval_id",
+    "approval_digest",
+    "issued_at_utc",
+    "expires_at_utc",
+    "nonce_digest",
+    "admission_digest",
+    "execution_receipt_digest"
+  ],
+  "do_not_invoke": true,
+  "execution_counts": {
+    "active_approval": 0,
+    "admission": 0,
+    "receipt": 0,
+    "formal_namespace": 0,
+    "runtime": 0,
+    "baseline": 0,
+    "external": 0,
+    "network_success": 0,
+    "tool_success": 0,
+    "model": 0,
+    "provider": 0,
+    "fixed_store_write": 0,
+    "legacy_authority_change": 0
+  }
+}

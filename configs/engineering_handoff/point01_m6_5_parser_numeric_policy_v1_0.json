@@ -1,0 +1,9 @@
+{
+  "policy_version": "finsight_point01_m6_5_parser_numeric_policy_v1_0",
+  "policy_ref": "point01-m6-5-parser-numeric-policy-v1",
+  "scope": "Point01_M6_5_deterministic_fixture_parser_numeric_trace_only",
+  "authorization": "user_approved_m6_remaining_deterministic_contracts_only",
+  "allowed_units": ["USD_millions", "percent", "units"],
+  "allowed_scales": [1, 1000000],
+  "authority_boundary": {"document_content_read": "fixture_input_only", "live_parser_or_ocr": "not_admitted", "numeric_fact_persistence": "not_admitted", "evidence_promotion": "M6_6_not_implemented", "provider_network_external_tool": "not_admitted", "writer_full_chain": "not_admitted"}
+}

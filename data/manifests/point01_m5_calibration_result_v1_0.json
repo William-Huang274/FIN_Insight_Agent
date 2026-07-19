@@ -1,0 +1,42 @@
+{
+  "boundary": "This local synthetic calibration starts short-lived child processes only to prove SQLite reopen, lease reclaim/fencing and uncommitted-transaction crash atomicity. It starts no worker service and admits no provider, external tool, Evidence/Writer, full-chain, business Case mutation or legacy authority change.",
+  "errors": [],
+  "evidence": {
+    "budget_artifact_committed_before_reconcile": true,
+    "budget_crash_exit_code": 74,
+    "budget_crash_process_started": true,
+    "budget_reservation_reconciled_consumed": true,
+    "partial_row_absent_after_process_crash": true,
+    "reclaimed_state_versions": [
+      1,
+      2
+    ],
+    "recovered_fencing_token": 2,
+    "source_store_integrity": {
+      "database_integrity": "ok",
+      "missing_outbox_count": 0,
+      "orphan_outbox_count": 0,
+      "status": "pass"
+    },
+    "stale_worker_fenced": true,
+    "transaction_crash_exit_code": 73,
+    "transaction_crash_process_started": true,
+    "worker_a_exit_code": 71,
+    "worker_a_process_started": true,
+    "worker_b_process_started": true,
+    "worker_b_reclaimed": true,
+    "worker_loss_observed": true
+  },
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m5_calibration_policy_v1_0.json": "f6a288ab5e1eca29ebe077a22b9d727005d9cc4339f402d26d1c412467f93050",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "875ebe893d8b14b4894856af3d27b0e9367d6d885ae20e99f58cd173744f95f1",
+    "scripts/engineering/run_point01_m5_calibration_drills.py": "a461266571828e4dd059677e0b59aab3dbc0ccd1df1be032e6581f2d3a392b0d"
+  },
+  "generated_at": "2026-07-13T03:06:29.999419+00:00",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m5_local_synthetic_calibration_result_v1_1",
+  "scope": "Point01_M5_local_synthetic_real_child_process_restart_worker_loss_transaction_atomicity_only",
+  "status": "pass",
+  "worker_started": false
+}

@@ -1,0 +1,38 @@
+{
+  "boundary": "This fixture proves only a temporary-store M5.1 scheduler control plane. It starts no worker/service and admits no provider, external tool, Evidence/Writer, full-chain, business Case mutation or legacy authority change.",
+  "errors": [],
+  "evidence": {
+    "claim_projection_refs": [
+      "wu-high",
+      "attempt-high"
+    ],
+    "queue_counts": {
+      "cancelled": 1,
+      "lease_expired": 0,
+      "leased": 1,
+      "queued": 0,
+      "retryable_failed": 0,
+      "terminal": 0
+    },
+    "reclaimed_lease_fencing_token": 2,
+    "reclaimed_lease_owner_ref": "worker-b",
+    "replay_event_count": 9,
+    "scheduler_event_types": [
+      "SCHEDULER_LEASE_ACQUIRED",
+      "SCHEDULER_LEASE_HEARTBEAT_RECORDED",
+      "SCHEDULER_LEASE_RECLAIMED"
+    ]
+  },
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m5_1_scheduler_policy_v1_0.json": "a1c0318901947151978075dbe5a9b7c1648477085ba03612ba97e7d5be5eed53",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "875ebe893d8b14b4894856af3d27b0e9367d6d885ae20e99f58cd173744f95f1",
+    "scripts/engineering/run_point01_m5_1_scheduler_fixtures.py": "0a30e339db65f73153520cdbc5274db09122ac5f7037211ba30c595e16646988"
+  },
+  "generated_at": "2026-07-13T03:06:21.903517+00:00",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m5_1_scheduler_fixture_result_v1_0",
+  "scope": "Point01_M5_1_durable_scheduler_control_plane_only",
+  "status": "pass",
+  "worker_started": false
+}

@@ -1,0 +1,34 @@
+{
+  "authority_model": "package_external_exact_human_jit_window_approval",
+  "default_command": "do_not_invoke_without_exact_active_approval",
+  "execution_sequence": [
+    "approval_preflight",
+    "issue_v2_9_admission_and_receipt",
+    "register",
+    "preflight",
+    "consume",
+    "grant_verify",
+    "materialize",
+    "exact_bounded_actual_child",
+    "immutable_actual_validation",
+    "independent_oracle",
+    "preterminal_reviewer",
+    "terminal_append"
+  ],
+  "forbidden_in_b0_6": [
+    "active_human_approval",
+    "baseline_execution",
+    "remaining_scenarios",
+    "step2_or_later",
+    "network_model_tool_provider",
+    "fixed_or_business_store_write",
+    "production_cutover"
+  ],
+  "ledger_boundary": "application_controlled_sqlite_append_only_triggers_and_payload_digest_read_closure_not_malicious_administrator_resistance",
+  "synthetic_fixture_boundary": "synthetic_nonhuman_fixture_is_separate_from_human_approval_and_cannot_activate_production_entry",
+  "supersedes": {
+    "v2_8_package_digest": "36d39bf4d7d3cf39c32bc96d8027c922514f54d0eb7e4ef64ea0b98bd9f17ac8",
+    "v2_8_authority_disposition": "synthetic_proof_only_non_replayable"
+  },
+  "status": "B0.6_repaired_refrozen_pending_independent_review"
+}

@@ -1,0 +1,54 @@
+{
+  "after_digests": {
+    "manifest_digest": "18f510b0a0adb20b9e56b6f4d55498728dea0928f9b0f0c3cb3537085fc7e6ea",
+    "package_digest": "724bb947df735fc5392c038a978bdc6135a434baad66538b747b43279fe2cd0c",
+    "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v4-incident-isolation-refreeze",
+    "scope_digest": "db2da6cf08a16d69636f61c680263440a6b7d7bd2d1f5f1a3c72d11b0362faf6"
+  },
+  "before_digests": {
+    "manifest_digest": "18f510b0a0adb20b9e56b6f4d55498728dea0928f9b0f0c3cb3537085fc7e6ea",
+    "package_digest": "724bb947df735fc5392c038a978bdc6135a434baad66538b747b43279fe2cd0c",
+    "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v4-incident-isolation-refreeze",
+    "scope_digest": "db2da6cf08a16d69636f61c680263440a6b7d7bd2d1f5f1a3c72d11b0362faf6"
+  },
+  "digest_stability": true,
+  "execution_state": "receipt_registered_preflight_only_live_send_separately_pending",
+  "expected_package": {
+    "manifest_digest": "18f510b0a0adb20b9e56b6f4d55498728dea0928f9b0f0c3cb3537085fc7e6ea",
+    "package_digest": "724bb947df735fc5392c038a978bdc6135a434baad66538b747b43279fe2cd0c",
+    "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v4-incident-isolation-refreeze",
+    "scope_digest": "db2da6cf08a16d69636f61c680263440a6b7d7bd2d1f5f1a3c72d11b0362faf6"
+  },
+  "external_call_count": 0,
+  "fixed_approval_store_identity": "a62079db4293d7430a2c912fdb5cbec0446cf2eb442a1e5c623d64ac545ddd01",
+  "generated_at": "2026-07-13T13:11:05.906260+00:00",
+  "live_send_performed": false,
+  "network_request_count": 0,
+  "one_shot_unconsumed": true,
+  "reason": "active_exact_unconsumed_receipt_preflight_passed",
+  "receipt": {
+    "approval_id": "approval_point01_m6_3_5_nvda_10k_incident_isolation_refreeze_global_one_shot",
+    "approval_state": "active",
+    "expires_at_utc": "2026-07-13T13:40:55+00:00",
+    "manifest_digest": "18f510b0a0adb20b9e56b6f4d55498728dea0928f9b0f0c3cb3537085fc7e6ea",
+    "nonce_summary": {
+      "prefix": "69a86fc7…",
+      "sha256": "5c6d235a71510cfc928920887d61b5b27da5e9a275cc6a2dec48d3014c5ea511"
+    },
+    "package_digest": "724bb947df735fc5392c038a978bdc6135a434baad66538b747b43279fe2cd0c",
+    "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v4-incident-isolation-refreeze",
+    "receipt_identity": "approval_point01_m6_3_5_nvda_10k_incident_isolation_refreeze_global_one_shot:v1",
+    "reviewer": {
+      "employee_id": "003",
+      "name": "william",
+      "role": "total_reviewer"
+    },
+    "scope_digest": "db2da6cf08a16d69636f61c680263440a6b7d7bd2d1f5f1a3c72d11b0362faf6"
+  },
+  "result_version": "finsight_point01_m6_3_5_positive_sec_document_receipt_preflight_result_v1_0",
+  "scope_exact": true,
+  "status": "pass",
+  "store_write_count": 0,
+  "tool_invocation_count": 0,
+  "user_agent_plaintext_persisted": false
+}

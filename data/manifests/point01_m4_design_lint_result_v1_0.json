@@ -1,0 +1,22 @@
+{
+  "authority_boundary": {
+    "canonical_lane": "case_scoped_planning_only_after_approval",
+    "cutover": "m4_case_scoped_only",
+    "legacy_task_run": "authoritative"
+  },
+  "boundary": "M4 design lint freezes case-scoped cutover contracts only. It does not execute a pilot cutover, change legacy TaskRun authority, or admit downstream/model/full-chain runtime.",
+  "child_contract_count": 8,
+  "design_review_status": "user_confirmed_calibration_accepted",
+  "errors": [],
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m4_cross_owner_design_review_v1_0.json": "3aae16ab1acaa8b7684786b602b4663af1fa73e9558331ab006669a2e50f7bb9",
+    "configs/engineering_handoff/point01_m4_design_freeze_manifest_v1_0.json": "edcb7e9ee40b110ee8039ab3baefaadae585507b1dcb8c524fc5f7655519275a",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "694752dedc9252d3fac8d680cedd83c73df394b842f5d47358455a54dceb177f",
+    "scripts/engineering/run_point01_m4_design_lint.py": "ba143b367fff9d10869297e5f7afd3e11b2923f5408cf236a61dcbd91b9609e4"
+  },
+  "generated_at": "2026-07-12T12:08:45.987479+00:00",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m4_design_lint_result_v1_0",
+  "status": "pass"
+}

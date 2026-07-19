@@ -1,0 +1,64 @@
+{
+  "policy_version": "finsight_point01_m6_3_5_positive_sec_document_pilot_policy_v1_2",
+  "policy_ref": "point01-m6-3-5-positive-sec-document-pilot-policy-v5-artifact-contract-remediation-refreeze",
+  "approval_ref": "approve_m6_3_5_single_sec_document_positive_retrieval_parser_pilot_only",
+  "approved_execution_scope": "single_sec_document_positive_retrieval_parser_pilot_only",
+  "tool_id": "issuer_filing_document_table_tool",
+  "route_id": "issuer_filing_document_table_route",
+  "capability": "evidence.document.read",
+  "required_registry_snapshot_id": "point01-m6-3-5-positive-sec-document-registry:v1",
+  "allowed_network_host": "www.sec.gov",
+  "exact_path": "/Archives/edgar/data/1045810/000104581025000023/nvda-20250126.htm",
+  "allowed_cik": "0001045810",
+  "accession_number": "0001045810-25-000023",
+  "form_type": "10-K",
+  "report_period": "2025-01-26",
+  "target_table_selector": {
+    "table_heading_normalized": "CONSOLIDATED STATEMENTS OF INCOME",
+    "unit_caption_normalized": "In millions, except per share data",
+    "row_label_normalized": "Revenue",
+    "column_period_normalized": "Year Ended January 26, 2025",
+    "xbrl_concept_hint": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+    "financial_statement_role": "consolidated_primary_financial_statement"
+  },
+  "source_authority_rank": 4,
+  "max_external_calls": 1,
+  "max_fallback_calls": 0,
+  "max_retry_calls": 0,
+  "timeout_seconds": 20,
+  "user_agent_environment_variable": "SEC_USER_AGENT",
+  "user_agent_scope_confirmation_environment_variable": "M6_3_5_SEC_USER_AGENT_SCOPE_CONFIRMATION",
+  "user_agent_min_length": 20,
+  "forbidden_user_agent_values": [
+    "x",
+    "placeholder",
+    "your-app your-email@example.com",
+    "app contact@example.com"
+  ],
+  "authority_boundary": {
+    "raw_document_persistence": "forbidden",
+    "candidate_parser_fact_trace": "unpromoted_non_citable_only",
+    "reviewer_blind_oracle": "not_runtime_input",
+    "sourcehunter": "not_admitted",
+    "evidence_promotion": "forbidden",
+    "writer_domain_judgment_m6_7_full_chain": "forbidden"
+  },
+  "parser_repair_contract": {
+    "package_disposition": "immutable_parser_contract_v2",
+    "table_context": "heading_and_unit_must_be_independent_table_local_blocks",
+    "statement_role": "consolidated_primary_financial_statement_required",
+    "period_normalization": "month_name_or_abbreviation_to_iso_date_required",
+    "period_value_binding": "currency_marker_and_single_decimal_must_share_semantic_period_group",
+    "xbrl_concept_hint": "auxiliary_only_never_a_table_role_or_value_substitute",
+    "reviewer_blind_oracle": "not_runtime_input"
+  },
+  "incident_remediation_isolation": {
+    "importable_package_builder": "no_fixed_authority_store_or_transport_access",
+    "library_execution": "explicit_authority_service_and_client_injection_required",
+    "default_transport": "fail_closed_no_network",
+    "real_transport": "explicit_cli_live_entrypoint_only_after_exact_active_receipt_preflight",
+    "contract_fixture_authority": "temporary_injected_store_only",
+    "contract_fixture_transport": "injected_non_network_client_only",
+    "production_store_during_contract_suite": "state_and_fingerprint_must_remain_unchanged"
+  }
+}

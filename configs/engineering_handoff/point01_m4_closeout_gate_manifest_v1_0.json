@@ -1,0 +1,14 @@
+{
+  "manifest_version": "finsight_point01_m4_closeout_gate_v1_0",
+  "scope": "Point01_M4_case_scoped_planning_cutover_closeout",
+  "required_points": ["M4.0", "M4.1", "M4.2", "M4.3", "M4.4", "M4.5", "M4.6", "M4.7"],
+  "required_authority_events": ["PLANNING_CUTOVER_REQUESTED", "PLANNING_CUTOVER_DECIDED", "PLANNING_AUTHORITY_CHANGED", "PLANNING_ROLLBACK_EXECUTED"],
+  "human_pilot_approval_path": "configs/engineering_handoff/point01_m4_human_pilot_approval_v1_0.json",
+  "pilot_execution_evidence_path": "configs/engineering_handoff/point01_m4_pilot_execution_evidence_v1_0.json",
+  "authority_boundary": {
+    "legacy_task_run": "authoritative",
+    "canonical_lane": "case_scoped_planning_only_after_approval",
+    "cutover": "m4_case_scoped_only"
+  },
+  "forbidden_admissions": ["sector_cutover", "tenant_cutover", "global_cutover", "legacy_taskrun_authority_change", "evidence_runtime", "writer_runtime", "provider_execution", "full_chain"]
+}

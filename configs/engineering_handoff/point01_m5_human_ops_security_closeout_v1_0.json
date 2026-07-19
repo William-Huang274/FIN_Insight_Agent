@@ -1,0 +1,11 @@
+{
+  "review_version": "finsight_point01_m5_human_ops_security_closeout_v1_0",
+  "scope": "Point01_M5_deterministic_temporary_store_fixture_tranche_only",
+  "status": "accepted_m5_fixture_tranche_only",
+  "required_decision": "accept_m5_deterministic_temporary_store_fixture_tranche_only",
+  "reviewer_identity": "current_thread_human_reviewer",
+  "reviewed_at": "2026-07-12T18:00:00+00:00",
+  "decision": "accept_m5_deterministic_temporary_store_fixture_tranche_only",
+  "closeout_package_digest": "4511a3396238c05e7d5dffb5a50a928e625690b1c430859f5b4a51868bb6f41a",
+  "notes": "User accepts M5.0-M5.8 deterministic control-plane fixture tranche only, bound to the recorded closeout package digest. This is not M5 complete, full/calibrated closeout or authority expansion."
+}

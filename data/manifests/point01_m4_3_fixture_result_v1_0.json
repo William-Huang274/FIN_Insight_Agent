@@ -1,0 +1,17 @@
+{
+  "boundary": "Deterministic temporary-store M4 cutover fixture; no production lane, Evidence/Writer/provider/full-chain runtime, or legacy TaskRun authority change.",
+  "canonical_lane_scope": "case_scoped_fixture_only",
+  "external_call_count": 0,
+  "generated_at": "2026-07-12T12:08:46.932061+00:00",
+  "legacy_task_run_authority": "authoritative",
+  "model_call_count": 0,
+  "payload": {
+    "authority": "canonical_for_lane",
+    "legacy_projection_read_only": true,
+    "runtime_facade_authority": "canonical_for_lane",
+    "status": "pass"
+  },
+  "point_id": "M4.3",
+  "result_version": "finsight_point01_m4_3_fixture_result_v1_0",
+  "status": "pass"
+}

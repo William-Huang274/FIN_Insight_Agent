@@ -1,0 +1,41 @@
+{
+  "boundary": "This fixture proves only a temporary-store M5.2 recovery control plane. It creates no checkpoint storage lifecycle, starts no worker/service and admits no provider, external tool, Evidence/Writer, full-chain, business Case mutation or legacy authority change.",
+  "errors": [],
+  "evidence": {
+    "budget_terminated_state": "failed",
+    "dead_letter_records": [
+      {
+        "dead_letter_reason": "retry_budget_exhausted",
+        "dead_lettered_at": "2026-07-12T14:15:04Z",
+        "forked_from_attempt_id": null,
+        "forked_from_work_unit_id": null,
+        "recovery_checkpoint_ref": null,
+        "state_version": 5,
+        "work_unit_id": "wu-recovery"
+      }
+    ],
+    "recovery_event_types": [
+      "RECOVERY_RESUME_SCHEDULED",
+      "RECOVERY_DEAD_LETTERED"
+    ],
+    "replay_event_count": 14,
+    "resume_checkpoint_ref": "checkpoint-1:v1",
+    "resume_projection_refs": [
+      "wu-recovery",
+      "attempt-2"
+    ],
+    "retry_after_budget_blocked": true
+  },
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m5_2_recovery_lifecycle_policy_v1_0.json": "9a4fcfb123d25d02b1c7d746b535efbb5cd915a4bd8060a704b9ae2a5d9ce9a6",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "875ebe893d8b14b4894856af3d27b0e9367d6d885ae20e99f58cd173744f95f1",
+    "scripts/engineering/run_point01_m5_2_recovery_lifecycle_fixtures.py": "b13ee02da53cce248ea2f4740d33b609763ae7ed89cea179238fe3abf3021ec3"
+  },
+  "generated_at": "2026-07-13T03:06:22.782636+00:00",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m5_2_recovery_lifecycle_fixture_result_v1_0",
+  "scope": "Point01_M5_2_recovery_lifecycle_control_plane_only",
+  "status": "pass",
+  "worker_started": false
+}

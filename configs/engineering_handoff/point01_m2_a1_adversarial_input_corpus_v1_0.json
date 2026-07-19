@@ -1,0 +1,48 @@
+{
+  "schema_version": "finsight_point01_m2_a1_adversarial_input_corpus_v1_0",
+  "scope": "M2_A1_independent_audit_future_actual_inputs_only",
+  "runtime_access": "future_actual_may_receive_this_corpus_but_may_not_read_the_separate_oracle",
+  "source_class": "sanitized_synthetic_calibration_input_not_business_case",
+  "cases": [
+    {
+      "case_id": "m2-a1-ai-semis-input",
+      "sector": "ai_semis",
+      "report_type": "issuer_research",
+      "compiler_input_contracts": ["CaseScope", "CompilerInputSeed", "LegacyResearchObjective", "PackVersionMetadata"],
+      "oracle_case_ref": "m2-a1-ai-semis-oracle",
+      "authority": "legacy_taskrun_authoritative_shadow_only"
+    },
+    {
+      "case_id": "m2-a1-saas-input",
+      "sector": "saas",
+      "report_type": "issuer_research",
+      "compiler_input_contracts": ["CaseScope", "CompilerInputSeed", "LegacyResearchObjective", "PackVersionMetadata"],
+      "oracle_case_ref": "m2-a1-saas-oracle",
+      "authority": "legacy_taskrun_authoritative_shadow_only"
+    },
+    {
+      "case_id": "m2-a1-healthcare-input",
+      "sector": "healthcare",
+      "report_type": "issuer_research",
+      "compiler_input_contracts": ["CaseScope", "CompilerInputSeed", "LegacyResearchObjective", "PackVersionMetadata"],
+      "oracle_case_ref": "m2-a1-healthcare-oracle",
+      "authority": "legacy_taskrun_authoritative_shadow_only"
+    },
+    {
+      "case_id": "m2-a1-banks-input",
+      "sector": "banks",
+      "report_type": "issuer_research",
+      "compiler_input_contracts": ["CaseScope", "CompilerInputSeed", "LegacyResearchObjective", "PackVersionMetadata"],
+      "oracle_case_ref": "m2-a1-banks-oracle",
+      "authority": "legacy_taskrun_authoritative_shadow_only"
+    }
+  ],
+  "negative_input_vectors": [
+    "unversioned_pack_ref",
+    "stale_pack_lineage",
+    "legacy_fact_direct_cell_equivalence",
+    "feature_flag_or_model_admission_boundary_violation"
+  ],
+  "forbidden_fields": ["expected_cells", "expected_output", "oracle_disposition", "reviewer_answer"],
+  "boundary": "No source bytes, business Case identifiers, production/fixed store reference, expected compiler output or calibration verdict is present in the actual-input corpus."
+}

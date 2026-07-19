@@ -1,0 +1,290 @@
+{
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "external_call_count": 0,
+    "legacy_task_run": "authoritative",
+    "model_call_count": 0,
+    "runtime_cutover": false
+  },
+  "boundary": "M2.9 composes deterministic shadow-only M1/M2 artifacts. Feature flag off prevents writes; denied model admission prevents model calls; no legacy authority change, Evidence/Writer, paid/full-chain or cutover occurs.",
+  "checks": {
+    "admitted_model_boundary_rejected_before_write": true,
+    "feature_flag_off_skips_all_writes": true,
+    "four_sector_shadow_compilations_pass": true,
+    "model_free": true,
+    "workunit_attempt_artifact_and_replay_integrated": true
+  },
+  "feature_flag_off_result": {
+    "attempt_trace": {
+      "artifact_version_id": null,
+      "attempt_id": "not-created",
+      "case_id": "case-ai-semiconductor",
+      "envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+      "error_code": null,
+      "event_ids": [],
+      "external_call_count": 0,
+      "model_admission_decision_digest": "1ca28a1ac89f0ac6920df0a0921a0b83ba7a5b3f655395adf26a260451b270dc",
+      "model_call_count": 0,
+      "status": "skipped_feature_flag_off",
+      "work_unit_id": "not-created"
+    },
+    "external_call_count": 0,
+    "model_call_count": 0,
+    "planning_authority": "legacy",
+    "readback_report": null,
+    "repair_projection": {
+      "affected_contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+      "next_action": "enable approved shadow feature flag before creating a WorkUnit attempt",
+      "reason": "shadow_feature_flag_off",
+      "repair_attempt_count": 0,
+      "status": "not_required"
+    },
+    "replay_report": null,
+    "status": "skipped_feature_flag_off"
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m2_9_shadow_orchestration_policy_v1_0.json": "c0f3421ef62f67ad2ce90266e1997809b0c227ed88090f46ae0beba0c15e1e22",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "e7d1ddb2fc2b06ae36a123b184521093afb7d9a4dcfcb268aa1e0269dbbbe998",
+    "scripts/engineering/run_point01_m2_9_shadow_orchestration_fixture.py": "b39090fd0acfa07ec85cd404ed723506fccb89cf4a7a91ebce7ab987883f255d",
+    "src/sec_agent/canonical_runtime/full_serializer.py": "d4f304417ee4e3775f8a64a7453ad59e494b4281591110d2e60f8862d519b42a",
+    "src/sec_agent/canonical_runtime/model_admission.py": "dc4acf867e61d8081ec4aac760046a60c330382a281b73bcae0b0bc22d5aa645",
+    "src/sec_agent/canonical_runtime/shadow_orchestration.py": "02fecee6bd302c4985f248eb7f4ca881ab80ea00867f7aafe52c90030997e050"
+  },
+  "model_admission_violation_result": {
+    "attempt_trace": {
+      "artifact_version_id": null,
+      "attempt_id": "not-created",
+      "case_id": "case-ai-semiconductor",
+      "envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+      "error_code": "model_admission_boundary_violation",
+      "event_ids": [],
+      "external_call_count": 0,
+      "model_admission_decision_digest": "1ca28a1ac89f0ac6920df0a0921a0b83ba7a5b3f655395adf26a260451b270dc",
+      "model_call_count": 0,
+      "status": "failed",
+      "work_unit_id": "not-created"
+    },
+    "external_call_count": 0,
+    "model_call_count": 0,
+    "planning_authority": "legacy",
+    "readback_report": null,
+    "repair_projection": {
+      "affected_contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+      "next_action": "restore denied no-model admission policy before shadow compilation",
+      "reason": "model_admission_boundary_violation",
+      "repair_attempt_count": 0,
+      "status": "required"
+    },
+    "replay_report": null,
+    "status": "fail"
+  },
+  "result_version": "finsight_point01_m2_9_shadow_orchestration_fixture_result_v1_0",
+  "scope": "Point01_M2_9_shadow_orchestration_four_sector_replay",
+  "sector_results": {
+    "ai_semis": {
+      "attempt_trace": {
+        "artifact_version_id": "artifact-m2-9-ai_semis:v1",
+        "attempt_id": "attempt-m2-9-ai_semis",
+        "case_id": "case-ai-semiconductor",
+        "envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+        "error_code": null,
+        "event_ids": [
+          "event_13378bc934114723a1bdbb29080876da",
+          "event_2893f4eecf7e4494a8756e405dc3348e",
+          "event_68a8adfdf7a94ec5a3d3a257db4f008a",
+          "event_efa16742aa2b49b4a0d85b076be6894c"
+        ],
+        "external_call_count": 0,
+        "model_admission_decision_digest": "1ca28a1ac89f0ac6920df0a0921a0b83ba7a5b3f655395adf26a260451b270dc",
+        "model_call_count": 0,
+        "status": "succeeded",
+        "work_unit_id": "wu-m2-9-ai_semis"
+      },
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "planning_authority": "legacy",
+      "readback_report": {
+        "artifact_version_id": "artifact-m2-9-ai_semis:v1",
+        "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+        "errors": [],
+        "expected_envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+        "external_call_count": 0,
+        "model_call_count": 0,
+        "observed_envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+        "planning_authority": "legacy",
+        "replay_digest": "bbb048acc8a6df2c897c4d9c18f7043631c5dabdd5d8cf760acd3ed8b544c683",
+        "status": "pass"
+      },
+      "repair_projection": {
+        "affected_contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+        "next_action": "none",
+        "reason": "shadow_compile_committed",
+        "repair_attempt_count": 0,
+        "status": "not_required"
+      },
+      "replay_report": {
+        "artifact_version_id": "artifact-m2-9-ai_semis:v1",
+        "attempt_state": "succeeded",
+        "external_call_count": 0,
+        "projection_digest": "bbb048acc8a6df2c897c4d9c18f7043631c5dabdd5d8cf760acd3ed8b544c683",
+        "status": "pass",
+        "work_unit_state": "succeeded"
+      },
+      "status": "pass"
+    },
+    "banks": {
+      "attempt_trace": {
+        "artifact_version_id": "artifact-m2-9-banks:v1",
+        "attempt_id": "attempt-m2-9-banks",
+        "case_id": "case-banks",
+        "envelope_digest": "45877141f427a9186bc93112b1ba49d9227c7871bbf4a003eb4b3ff5560ccee3",
+        "error_code": null,
+        "event_ids": [
+          "event_6816b0d8e1ab490999e14bb38901712e",
+          "event_c2f0d8d8131e4453b85c9753362e4536",
+          "event_828649bd58da42a187529cbaee4b5fd7",
+          "event_0b1476a8fbab47468513584cc472f553"
+        ],
+        "external_call_count": 0,
+        "model_admission_decision_digest": "971b3a57c95cf27a1fbd176e93b7ad0256c642833f026a311ae58356b45b3414",
+        "model_call_count": 0,
+        "status": "succeeded",
+        "work_unit_id": "wu-m2-9-banks"
+      },
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "planning_authority": "legacy",
+      "readback_report": {
+        "artifact_version_id": "artifact-m2-9-banks:v1",
+        "contract_version_id": "contract-m2-2-case-banks:v1",
+        "errors": [],
+        "expected_envelope_digest": "45877141f427a9186bc93112b1ba49d9227c7871bbf4a003eb4b3ff5560ccee3",
+        "external_call_count": 0,
+        "model_call_count": 0,
+        "observed_envelope_digest": "45877141f427a9186bc93112b1ba49d9227c7871bbf4a003eb4b3ff5560ccee3",
+        "planning_authority": "legacy",
+        "replay_digest": "8d121f0d1681841151d3d021a6d2157ee00e4c9e30c24ec16ae06bf4565b39ba",
+        "status": "pass"
+      },
+      "repair_projection": {
+        "affected_contract_version_id": "contract-m2-2-case-banks:v1",
+        "next_action": "none",
+        "reason": "shadow_compile_committed",
+        "repair_attempt_count": 0,
+        "status": "not_required"
+      },
+      "replay_report": {
+        "artifact_version_id": "artifact-m2-9-banks:v1",
+        "attempt_state": "succeeded",
+        "external_call_count": 0,
+        "projection_digest": "8d121f0d1681841151d3d021a6d2157ee00e4c9e30c24ec16ae06bf4565b39ba",
+        "status": "pass",
+        "work_unit_state": "succeeded"
+      },
+      "status": "pass"
+    },
+    "healthcare": {
+      "attempt_trace": {
+        "artifact_version_id": "artifact-m2-9-healthcare:v1",
+        "attempt_id": "attempt-m2-9-healthcare",
+        "case_id": "case-healthcare",
+        "envelope_digest": "6637d833496d390dd36acd03ff609fc0d6776ed2d7aaf6b4a00dc8591efe4302",
+        "error_code": null,
+        "event_ids": [
+          "event_fc1cc817dc164b6fab533261fef98ff2",
+          "event_4168a9c53dcb452fb47fed7d17558abd",
+          "event_9d72ffc8601347588ba299f7c7e479f4",
+          "event_5baf83c6baa140248dd5f235a5105c7e"
+        ],
+        "external_call_count": 0,
+        "model_admission_decision_digest": "4e467eb332f60b646fd7e815d4f85356e7192641bebe97addba8835a81f564d1",
+        "model_call_count": 0,
+        "status": "succeeded",
+        "work_unit_id": "wu-m2-9-healthcare"
+      },
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "planning_authority": "legacy",
+      "readback_report": {
+        "artifact_version_id": "artifact-m2-9-healthcare:v1",
+        "contract_version_id": "contract-m2-2-case-healthcare:v1",
+        "errors": [],
+        "expected_envelope_digest": "6637d833496d390dd36acd03ff609fc0d6776ed2d7aaf6b4a00dc8591efe4302",
+        "external_call_count": 0,
+        "model_call_count": 0,
+        "observed_envelope_digest": "6637d833496d390dd36acd03ff609fc0d6776ed2d7aaf6b4a00dc8591efe4302",
+        "planning_authority": "legacy",
+        "replay_digest": "2521803fb4ad9ff16fb55c4caee4591bfb2024a1e359922cf997cea0dc8e84eb",
+        "status": "pass"
+      },
+      "repair_projection": {
+        "affected_contract_version_id": "contract-m2-2-case-healthcare:v1",
+        "next_action": "none",
+        "reason": "shadow_compile_committed",
+        "repair_attempt_count": 0,
+        "status": "not_required"
+      },
+      "replay_report": {
+        "artifact_version_id": "artifact-m2-9-healthcare:v1",
+        "attempt_state": "succeeded",
+        "external_call_count": 0,
+        "projection_digest": "2521803fb4ad9ff16fb55c4caee4591bfb2024a1e359922cf997cea0dc8e84eb",
+        "status": "pass",
+        "work_unit_state": "succeeded"
+      },
+      "status": "pass"
+    },
+    "saas": {
+      "attempt_trace": {
+        "artifact_version_id": "artifact-m2-9-saas:v1",
+        "attempt_id": "attempt-m2-9-saas",
+        "case_id": "case-saas",
+        "envelope_digest": "776084223e37d16975c7e5a46c187521091bd3f62861e773344f1a49657a33c6",
+        "error_code": null,
+        "event_ids": [
+          "event_462f3e9ba6af4b7b9fac431f9127ed93",
+          "event_ff622384a2dd44c3b34512d74c339e3e",
+          "event_af5142d9cf3f488ea45cd56e71100156",
+          "event_d8bb3caa28e44a5fa9e3404f2215be26"
+        ],
+        "external_call_count": 0,
+        "model_admission_decision_digest": "2bd25f2ab2e3cfb0d09e6c26f19bceca67b587553ea6258782dc5d3a0a3ffcd0",
+        "model_call_count": 0,
+        "status": "succeeded",
+        "work_unit_id": "wu-m2-9-saas"
+      },
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "planning_authority": "legacy",
+      "readback_report": {
+        "artifact_version_id": "artifact-m2-9-saas:v1",
+        "contract_version_id": "contract-m2-2-case-saas:v1",
+        "errors": [],
+        "expected_envelope_digest": "776084223e37d16975c7e5a46c187521091bd3f62861e773344f1a49657a33c6",
+        "external_call_count": 0,
+        "model_call_count": 0,
+        "observed_envelope_digest": "776084223e37d16975c7e5a46c187521091bd3f62861e773344f1a49657a33c6",
+        "planning_authority": "legacy",
+        "replay_digest": "e854064051116c6a3d1269d38b9028e1fc5a67a1376217836c7b46ff8f6f28f0",
+        "status": "pass"
+      },
+      "repair_projection": {
+        "affected_contract_version_id": "contract-m2-2-case-saas:v1",
+        "next_action": "none",
+        "reason": "shadow_compile_committed",
+        "repair_attempt_count": 0,
+        "status": "not_required"
+      },
+      "replay_report": {
+        "artifact_version_id": "artifact-m2-9-saas:v1",
+        "attempt_state": "succeeded",
+        "external_call_count": 0,
+        "projection_digest": "e854064051116c6a3d1269d38b9028e1fc5a67a1376217836c7b46ff8f6f28f0",
+        "status": "pass",
+        "work_unit_state": "succeeded"
+      },
+      "status": "pass"
+    }
+  },
+  "status": "pass"
+}

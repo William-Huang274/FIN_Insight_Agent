@@ -1,0 +1,45 @@
+{
+  "policy_version": "finsight_point01_m6_2_real_bounded_sec_metadata_pilot_policy_v1_0",
+  "policy_ref": "point01-m6-2-real-bounded-sec-metadata-pilot-policy-v1",
+  "approval_ref": "approve_m6_2_5_real_bounded_sec_metadata_pilot_only",
+  "approved_execution_scope": "real_bounded_sec_metadata_pilot_only",
+  "scope": "isolated_temporary_sqlite_synthetic_case_nvda_sec_submissions_metadata_only",
+  "tool_id": "issuer_disclosure_metadata_tool",
+  "route_id": "issuer_disclosure_metadata_route",
+  "capability": "evidence.metadata.read",
+  "required_registry_snapshot_id": "point01-m6-2-tool-registry:v1",
+  "allowed_network_host": "data.sec.gov",
+  "allowed_endpoint_path_prefix": "/submissions/",
+  "allowed_cik": "0001045810",
+  "max_external_calls": 1,
+  "max_fallback_calls": 0,
+  "timeout_seconds": 20,
+  "metadata_filing_limit": 3,
+  "user_agent_environment_variable": "SEC_USER_AGENT",
+  "user_agent_min_length": 20,
+  "forbidden_user_agent_values": [
+    "x",
+    "placeholder",
+    "your-app your-email@example.com",
+    "app contact@example.com"
+  ],
+  "authorization": {
+    "user_approved": true,
+    "approved_by": "current_thread_human_approver",
+    "approval_note": "Only one public SEC submissions metadata request for synthetic NVDA CIK 0001045810. M5.4 admission, M5.5 reservation and append-only ToolInvocationReceipt are mandatory.",
+    "not_authorized": [
+      "retry_or_fallback_invocation",
+      "any_other_issuer_or_host",
+      "provider_or_model_execution",
+      "raw_document_or_filing_html_download",
+      "evidence_promotion_or_formal_evidence_persistence",
+      "writer_domain_judgment_or_full_chain",
+      "business_case_mutation_or_legacy_authority_change"
+    ]
+  },
+  "failure_policy": {
+    "before_send_denial": "refund_full_reservation_and_record_blocked_before_send",
+    "after_send_transport_or_response_failure": "record_outcome_unknown_consume_exactly_one_call_no_retry",
+    "prepared_receipt_after_crash": "fail_closed_requires_explicit_reconciliation_no_retry"
+  }
+}

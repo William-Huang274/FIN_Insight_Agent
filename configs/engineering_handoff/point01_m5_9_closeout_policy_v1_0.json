@@ -1,0 +1,20 @@
+{
+  "policy_version": "finsight_point01_m5_9_closeout_policy_v1_0",
+  "scope": "Point01_M5_fixture_tranche_and_full_calibrated_closeout",
+  "status": "approved_for_deterministic_closeout_gate_implementation",
+  "required_child_points": ["M5.1", "M5.2", "M5.3", "M5.4", "M5.5", "M5.6", "M5.7", "M5.8"],
+  "required_machine_gates": ["all_child_fixtures_pass", "m5_design_lint_pass", "m5_explicit_pytest_manifest_pass", "compileall_pass", "m1_fixed_hash_closeout_pass", "closeout_package_digest"],
+  "required_fixture_tranche_decision": "accept_m5_deterministic_temporary_store_fixture_tranche_only",
+  "required_full_calibrated_closeout_decision": "approve_m5_full_calibrated_temporary_store_closeout_only",
+  "required_full_calibrated_closeout_conditions": ["persistent_budget_security_hitl_authority", "process_restart_worker_loss_crash_matrix", "concurrent_budget_reservation_and_security_drill", "hitl_interruption_drill", "semantic_impact_context_rebase_drill", "observability_incident_drill", "separate_full_calibrated_human_review"],
+  "machine_calibration_validators": {
+    "persistent_budget_security_hitl_authority": "persistent_authority_v1",
+    "process_restart_worker_loss_crash_matrix": "real_child_process_crash_matrix_v2",
+    "concurrent_budget_reservation_and_security_drill": "concurrency_security_outcomes_v1",
+    "hitl_interruption_drill": "hitl_restart_revocation_v1",
+    "semantic_impact_context_rebase_drill": "semantic_rebase_authoritative_receipt_v2",
+    "observability_incident_drill": "observability_incident_semantics_v1"
+  },
+  "forbidden_admissions": ["worker_service", "provider_execution", "external_tool_execution", "Evidence_runtime", "Writer_runtime", "full_chain", "business_case_mutation", "legacy_taskrun_authority_change", "sector_tenant_global_cutover"],
+  "milestone_boundary": "Fixture tranche acceptance is not M5 complete. Any future full/calibrated closeout cannot broaden runtime authority."
+}

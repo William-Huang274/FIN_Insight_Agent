@@ -1,0 +1,96 @@
+{
+  "review_version": "finsight_point01_m6_3_cross_owner_design_review_v1_0",
+  "scope": "Point01_M6_3_metadata_first_candidate_bundle_contract",
+  "status": "user_confirmed_structured_cross_owner_review_accepted_for_m6_3",
+  "review_method": "codex_single_agent_structured_role_separation_with_explicit_user_implementation_authorization",
+  "reviewer_identity": "current_thread_codex",
+  "independent_human_or_multi_person_signoff": false,
+  "limitation": "This review separates responsibilities within one Codex agent. It is not an independent human or multi-person signoff. The user's instruction to complete the remaining M6 tasks authorizes only the deterministic M6.3 metadata-fixture implementation described here.",
+  "user_confirmation": {
+    "status": "accepted",
+    "approver_id": "current_thread_human_reviewer",
+    "approver_type": "human",
+    "decision": "approve_m6_3_deterministic_metadata_candidate_bundle_only",
+    "confirmation_note": "User explicitly stated: 继续，你直接完成M6剩余任务，需要我审批事项就发给我. This approval is bounded to deterministic CandidateBundle compilation from a supplied metadata snapshot; it does not authorize retrieval execution or evidence promotion."
+  },
+  "reviewer_lenses": [
+    {
+      "lens": "retrieval_metadata_owner",
+      "result": "pass_with_snapshot_boundary",
+      "checks": [
+        "Candidate metadata is supplied as an immutable digest-bound snapshot, not obtained through a RAG, SQL, graph or network call.",
+        "The compiler binds request and selection-plan ids/digests and rejects a candidate route or source policy not selected by the plan.",
+        "Top-K seed, neighbor section and table context are separate candidate kinds, so contextual expansion cannot be mistaken for an exact numeric fact."
+      ]
+    },
+    {
+      "lens": "source_authority_and_evidence_quality_owner",
+      "result": "pass_with_no_promotion_boundary",
+      "checks": [
+        "Candidate authority rank is filtered before deterministic metadata rank ordering.",
+        "Numeric requests require table context and relationship requests remain context-only.",
+        "Missing metadata or a required context kind becomes a typed retrieval exhaustion, never a synthetic substitute."
+      ]
+    },
+    {
+      "lens": "tool_security_budget_owner",
+      "result": "pass_with_nonexecution_boundary",
+      "checks": [
+        "The input ToolSelectionPlan remains not_executed and no ToolInvocationReceipt is created.",
+        "The compiler performs no M5.4 admission, M5.5 reservation, tool, provider, network or database operation.",
+        "Candidate count is bounded by the exact EvidenceRequest candidate limit and top-K policy."
+      ]
+    },
+    {
+      "lens": "parser_numeric_owner",
+      "result": "pass_with_downstream_boundary",
+      "checks": [
+        "CandidateBundle retains only metadata references and coordinates; it does not parse a section/table, normalize a value or compute a numeric trace.",
+        "M6.5 remains the sole owner of ParserCandidate, NormalizedNumericFact and NumericProgramTrace."
+      ]
+    },
+    {
+      "lens": "runtime_replay_and_acceptance_owner",
+      "result": "pass_with_fixture_only_calibration",
+      "checks": [
+        "Replay digest is stable for the same request, plan, policy and snapshot.",
+        "Wrong request-plan linkage, duplicate metadata id, source policy bypass and missing required expansion all fail closed.",
+        "No Evidence Gate, judgment, context injection, writer, business Case mutation or legacy authority change is admitted."
+      ]
+    }
+  ],
+  "resolved_findings": [
+    {
+      "finding_id": "M6.3R-001",
+      "severity": "high",
+      "finding": "A raw candidate list could bypass the bounded ToolSelectionPlan and silently mix source routes.",
+      "repair": "Each metadata row must carry a selected route and exact request source policy; the compiler accepts only plan-selected routes."
+    },
+    {
+      "finding_id": "M6.3R-002",
+      "severity": "high",
+      "finding": "Top-K output could lose the table or neighboring section needed to interpret an exact numeric row.",
+      "repair": "Policy names required candidate kinds by evidence role and reports typed retrieval exhaustion when a required kind is absent."
+    },
+    {
+      "finding_id": "M6.3R-003",
+      "severity": "high",
+      "finding": "Metadata fixture construction could be misrepresented as a successful external retrieval.",
+      "repair": "Candidate snapshots are explicitly fixture_only and the result counters report zero retrieval, provider, external, model and store-write calls."
+    }
+  ],
+  "open_followups": [
+    "M6.2 execution still requires a separately approved executor that performs M5.4/M5.5 checks in the real invocation transaction.",
+    "M6.3 full metadata-first RAG/DB recall, rerank and slot-level precision/recall calibration require an approved source corpus and a separate execution gate.",
+    "M6.4-M6.8 own repair, parsing, promotion, judgment and context contracts; a CandidateBundle is not promoted evidence."
+  ],
+  "overall_result": "pass_with_resolved_design_findings_user_confirmed_m6_3_only",
+  "authority_boundary": {
+    "candidate_bundle": "deterministic_ephemeral_metadata_fixture_only",
+    "tool_invocation": "not_executed",
+    "rag_sql_graph_retrieval": "not_admitted",
+    "provider_network_external_tool": "not_admitted",
+    "parser_numeric_promotion": "M6_5_M6_6_not_implemented",
+    "writer_full_chain": "not_admitted"
+  }
+}

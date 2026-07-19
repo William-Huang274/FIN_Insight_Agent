@@ -1,0 +1,17 @@
+{
+  "fixture_version": "finsight_point01_m6_3_5_incident_transport_isolation_fixture_v1_0",
+  "incident_ref": "RC-P38-010-point01-m6-global-receipt-regression-isolation",
+  "production_authority": "must_not_be_resolved_by_importable_builder_or_contract_fixture",
+  "default_transport": "fail_closed_no_network",
+  "library_dependencies": {
+    "authority_service": "explicit_injection_required",
+    "document_client": "explicit_injection_required"
+  },
+  "canary_contract": {
+    "authority_store": "temporary_injected_store_only",
+    "transport": "fake_non_network_client_only",
+    "expected_external_call_count": 0,
+    "production_store_mutation": "forbidden"
+  },
+  "real_transport": "explicit_cli_live_entrypoint_only_after_active_exact_receipt_preflight"
+}

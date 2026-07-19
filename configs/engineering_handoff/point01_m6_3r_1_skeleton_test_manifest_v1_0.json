@@ -1,0 +1,17 @@
+{
+  "manifest_version": "finsight_point01_m6_3r_1_skeleton_test_manifest_v1_0",
+  "point": "M6.3R.1",
+  "execution_stage": "skeleton_independently_accepted_non_authoritative",
+  "test_paths": ["tests/contract/test_point01_m6_3r_1_local_retrieval_skeleton.py", "tests/contract/test_point01_canonical_models.py", "tests/contract/test_point01_m6_3r_0_local_retrieval_rerank_design.py"],
+  "contract_gate_runner": "scripts/engineering/run_point01_m6_3r_1_local_retrieval_skeleton_gate.py",
+  "frozen_legacy_mapping_registry": "configs/engineering_handoff/point01_m6_3r_1_legacy_topk_mapping_registry_v1_0.json",
+  "frozen_exact_value_sql_binding_policy": "configs/engineering_handoff/point01_m6_3r_1_exact_value_sql_binding_policy_v1_0.json",
+  "binding_coverage": {
+    "request_plan_to_filter": "M6.1 request metric/unit plus typed plan route and versioned SQL policy deterministically derive metric/unit/scale/row/form/source-tier filters.",
+    "candidate_to_filter": "fixture-supplied candidate fields and parser/source lineage must exactly match the immutable derived filters.",
+    "receipt_to_execution_scope": "receipt reference must bind request, plan, snapshot, execution-scope and filter-selector contract digests."
+  },
+  "required_regressions": ["canonical serialization/digest/replay and model_validate tamper", "complete immutable M6.1 request mapping without digest mutation", "real issuer 3/12, relationship 5/12 and commercial 1/1 mapping/terminal behavior", "agent origin/profile/role/source spoof rejection", "registry/compiler digest mismatch", "all SHA-256 ref validation", "wrong adapter/snapshot/entity/period/source-policy/route/role/kind candidate scope", "request/plan -> SQL filter metric/unit/scale/row-selector/form/source-tier derivation", "candidate -> SQL filter and source+parser lineage", "receipt plan/snapshot/execution-scope/filter-selector digest mismatch", "missing metric/unit policy mapping typed terminal", "stable unique eligible Evidence Gate subset <=5", "fixture_supplied_not_retrieved provenance", "second state/persistence attempt", "import/constructor side effects", "adapter/network/tool/model/store counts zero"],
+  "expected_counts": {"adapter_execution_count": 0, "network_request_count": 0, "external_tool_call_count": 0, "tool_invocation_count": 0, "model_call_count": 0, "provider_call_count": 0, "canonical_store_write_count": 0, "evidence_promotion_count": 0, "parser_numeric_execution_count": 0, "sourcehunter_attempt_count": 0},
+  "r2_fixture_plan": {"status": "not_implemented_pending_separate_approval", "scope": ["sanitized immutable candidate, neighbor and exact-value SQL-row fixtures", "Top-K/diversity/exhaustion fixture matrix", "no adapter invocation"], "prohibitions": ["local index/graph/SQL read", "ToolInvocation", "network", "promotion", "parser/numeric", "SourceHunter", "Context/Writer", "model/full-chain"]}
+}

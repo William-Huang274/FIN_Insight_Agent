@@ -1,0 +1,18 @@
+{
+  "admission_digest": "1906d86bb5a419cceaa3a83cf27ef5ca5cd85e23b263a6818db322d22c7f054c",
+  "approval_id": "point01-m2-a1-v2-4-baseline-20260716T133740Z",
+  "executable_package_digest": "615a73da64eff69a56a13b42d6c59c892820f15c4de7dc3a2be3c425d2aee68e",
+  "execution_staging_namespace_id": "point01_m2_a1_exact_admitted_runs_v2_4",
+  "expires_at": "2026-07-16T13:52:40.255129Z",
+  "nonce_sha256": "fe9658d04ca515924c568123c720cb1875aa58eae3237ebce4dc2a6ab2e123eb",
+  "package_ref": "point01-m2-a1-operational-qualification-adversarial-audit-package-v2-4",
+  "receipt_digest": "596fcf570a7abc1d4344ec6db354a4670e1c8a59e48f97396d5bf27c2401b870",
+  "receipt_id": "point01-m2-a1-v2-4-baseline-fe9658d04ca515924c568123",
+  "receipt_version": 1,
+  "reviewer_identity": "william/003/total_reviewer",
+  "scenario_id": "p01-baseline-separated-input",
+  "schema_version": "finsight_point01_m2_a1_single_use_execution_receipt_v2_4",
+  "scope": "M2_A1_exact_admission_gated_future_actual_only",
+  "single_use": true,
+  "state": "active_unconsumed"
+}

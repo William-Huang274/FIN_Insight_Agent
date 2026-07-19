@@ -1,0 +1,452 @@
+{
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "external_call_count": 0,
+    "legacy_task_run": "authoritative",
+    "model_call_count": 0
+  },
+  "boundary": "This fixture creates an auditable semantic mapping plan only. It does not mutate legacy state, treat legacy facts as DecisionCells, call a model or change authority.",
+  "cases": {
+    "ai_semis": {
+      "external_call_count": 0,
+      "information_loss_review": [
+        {
+          "action": "split",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_question_split_into_mechanism_cells"
+          ],
+          "legacy_required_item_id": "legacy_unit_economics",
+          "target_cell_keys": [
+            "demand_signal",
+            "margin_signal"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_not_direct_cell_equivalence"
+          ],
+          "legacy_required_item_id": "legacy_revenue",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_merged_with_financial_quality"
+          ],
+          "legacy_required_item_id": "legacy_cashflow",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "downgrade",
+          "downgrade_reason": "legacy fact lookup is not an independent material DecisionCell",
+          "information_loss_tags": [
+            "legacy_fact_search_becomes_bounded_context"
+          ],
+          "legacy_required_item_id": "legacy_fact_search",
+          "target_cell_keys": []
+        }
+      ],
+      "legacy_identity_preserved": true,
+      "legacy_input_digest": "60c31fa77d9ad3abbd27dafad56f08a3859458f0a2555f7b7bed96f761ca0d44",
+      "legacy_required_item_ids": [
+        "legacy_unit_economics",
+        "legacy_revenue",
+        "legacy_cashflow",
+        "legacy_fact_search"
+      ],
+      "mappings": [
+        {
+          "action": "split",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_question_split_into_mechanism_cells"
+          ],
+          "legacy_required_item_id": "legacy_unit_economics",
+          "target_cell_keys": [
+            "demand_signal",
+            "margin_signal"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_not_direct_cell_equivalence"
+          ],
+          "legacy_required_item_id": "legacy_revenue",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_merged_with_financial_quality"
+          ],
+          "legacy_required_item_id": "legacy_cashflow",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "downgrade",
+          "downgrade_reason": "legacy fact lookup is not an independent material DecisionCell",
+          "information_loss_tags": [
+            "legacy_fact_search_becomes_bounded_context"
+          ],
+          "legacy_required_item_id": "legacy_fact_search",
+          "target_cell_keys": []
+        }
+      ],
+      "model_call_count": 0,
+      "one_to_one_equivalence_count": 0,
+      "planning_authority": "legacy",
+      "policy_ref": "point01-m2-7-legacy-semantic-mapping-policy-v1"
+    },
+    "banks": {
+      "external_call_count": 0,
+      "information_loss_review": [
+        {
+          "action": "split",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_question_split_into_mechanism_cells"
+          ],
+          "legacy_required_item_id": "legacy_unit_economics",
+          "target_cell_keys": [
+            "demand_signal",
+            "margin_signal"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_not_direct_cell_equivalence"
+          ],
+          "legacy_required_item_id": "legacy_revenue",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_merged_with_financial_quality"
+          ],
+          "legacy_required_item_id": "legacy_cashflow",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "downgrade",
+          "downgrade_reason": "legacy fact lookup is not an independent material DecisionCell",
+          "information_loss_tags": [
+            "legacy_fact_search_becomes_bounded_context"
+          ],
+          "legacy_required_item_id": "legacy_fact_search",
+          "target_cell_keys": []
+        }
+      ],
+      "legacy_identity_preserved": true,
+      "legacy_input_digest": "89f2ad33ab7a9095203c4af5deddb7403d918fe5168999456a81b2a5c899921b",
+      "legacy_required_item_ids": [
+        "legacy_unit_economics",
+        "legacy_revenue",
+        "legacy_cashflow",
+        "legacy_fact_search"
+      ],
+      "mappings": [
+        {
+          "action": "split",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_question_split_into_mechanism_cells"
+          ],
+          "legacy_required_item_id": "legacy_unit_economics",
+          "target_cell_keys": [
+            "demand_signal",
+            "margin_signal"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_not_direct_cell_equivalence"
+          ],
+          "legacy_required_item_id": "legacy_revenue",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_merged_with_financial_quality"
+          ],
+          "legacy_required_item_id": "legacy_cashflow",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "downgrade",
+          "downgrade_reason": "legacy fact lookup is not an independent material DecisionCell",
+          "information_loss_tags": [
+            "legacy_fact_search_becomes_bounded_context"
+          ],
+          "legacy_required_item_id": "legacy_fact_search",
+          "target_cell_keys": []
+        }
+      ],
+      "model_call_count": 0,
+      "one_to_one_equivalence_count": 0,
+      "planning_authority": "legacy",
+      "policy_ref": "point01-m2-7-legacy-semantic-mapping-policy-v1"
+    },
+    "healthcare": {
+      "external_call_count": 0,
+      "information_loss_review": [
+        {
+          "action": "split",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_question_split_into_mechanism_cells"
+          ],
+          "legacy_required_item_id": "legacy_unit_economics",
+          "target_cell_keys": [
+            "demand_signal",
+            "margin_signal"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_not_direct_cell_equivalence"
+          ],
+          "legacy_required_item_id": "legacy_revenue",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_merged_with_financial_quality"
+          ],
+          "legacy_required_item_id": "legacy_cashflow",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "downgrade",
+          "downgrade_reason": "legacy fact lookup is not an independent material DecisionCell",
+          "information_loss_tags": [
+            "legacy_fact_search_becomes_bounded_context"
+          ],
+          "legacy_required_item_id": "legacy_fact_search",
+          "target_cell_keys": []
+        }
+      ],
+      "legacy_identity_preserved": true,
+      "legacy_input_digest": "d060e87cd37bd064134ec90fe52c2901d2662f03dbec7c11bf6c598b8f7bce53",
+      "legacy_required_item_ids": [
+        "legacy_unit_economics",
+        "legacy_revenue",
+        "legacy_cashflow",
+        "legacy_fact_search"
+      ],
+      "mappings": [
+        {
+          "action": "split",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_question_split_into_mechanism_cells"
+          ],
+          "legacy_required_item_id": "legacy_unit_economics",
+          "target_cell_keys": [
+            "demand_signal",
+            "margin_signal"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_not_direct_cell_equivalence"
+          ],
+          "legacy_required_item_id": "legacy_revenue",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_merged_with_financial_quality"
+          ],
+          "legacy_required_item_id": "legacy_cashflow",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "downgrade",
+          "downgrade_reason": "legacy fact lookup is not an independent material DecisionCell",
+          "information_loss_tags": [
+            "legacy_fact_search_becomes_bounded_context"
+          ],
+          "legacy_required_item_id": "legacy_fact_search",
+          "target_cell_keys": []
+        }
+      ],
+      "model_call_count": 0,
+      "one_to_one_equivalence_count": 0,
+      "planning_authority": "legacy",
+      "policy_ref": "point01-m2-7-legacy-semantic-mapping-policy-v1"
+    },
+    "saas": {
+      "external_call_count": 0,
+      "information_loss_review": [
+        {
+          "action": "split",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_question_split_into_mechanism_cells"
+          ],
+          "legacy_required_item_id": "legacy_unit_economics",
+          "target_cell_keys": [
+            "demand_signal",
+            "margin_signal"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_not_direct_cell_equivalence"
+          ],
+          "legacy_required_item_id": "legacy_revenue",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_merged_with_financial_quality"
+          ],
+          "legacy_required_item_id": "legacy_cashflow",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "downgrade",
+          "downgrade_reason": "legacy fact lookup is not an independent material DecisionCell",
+          "information_loss_tags": [
+            "legacy_fact_search_becomes_bounded_context"
+          ],
+          "legacy_required_item_id": "legacy_fact_search",
+          "target_cell_keys": []
+        }
+      ],
+      "legacy_identity_preserved": true,
+      "legacy_input_digest": "3f855d30cd9f942effd9613c51aab5c45e7a666450830b91e975ef041e8d21c3",
+      "legacy_required_item_ids": [
+        "legacy_unit_economics",
+        "legacy_revenue",
+        "legacy_cashflow",
+        "legacy_fact_search"
+      ],
+      "mappings": [
+        {
+          "action": "split",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_question_split_into_mechanism_cells"
+          ],
+          "legacy_required_item_id": "legacy_unit_economics",
+          "target_cell_keys": [
+            "demand_signal",
+            "margin_signal"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_not_direct_cell_equivalence"
+          ],
+          "legacy_required_item_id": "legacy_revenue",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "merge",
+          "downgrade_reason": null,
+          "information_loss_tags": [
+            "legacy_metric_merged_with_financial_quality"
+          ],
+          "legacy_required_item_id": "legacy_cashflow",
+          "target_cell_keys": [
+            "financial_quality"
+          ]
+        },
+        {
+          "action": "downgrade",
+          "downgrade_reason": "legacy fact lookup is not an independent material DecisionCell",
+          "information_loss_tags": [
+            "legacy_fact_search_becomes_bounded_context"
+          ],
+          "legacy_required_item_id": "legacy_fact_search",
+          "target_cell_keys": []
+        }
+      ],
+      "model_call_count": 0,
+      "one_to_one_equivalence_count": 0,
+      "planning_authority": "legacy",
+      "policy_ref": "point01-m2-7-legacy-semantic-mapping-policy-v1"
+    }
+  },
+  "checks": {
+    "four_case_parity": true,
+    "information_loss_review_present": true,
+    "invalid_action_rejected": true,
+    "merge_split_downgrade_present": true,
+    "missing_mapping_rejected": true,
+    "model_free": true
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m2_7_legacy_semantic_mapping_policy_v1_0.json": "54df3ba73201ecef526dbcd57254928fce7a0736e6361ef40fb165833f533229",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "e7d1ddb2fc2b06ae36a123b184521093afb7d9a4dcfcb268aa1e0269dbbbe998",
+    "scripts/engineering/run_point01_m2_7_legacy_semantic_mapping_fixture.py": "e8000902724650adf310a8f95daf82f2a6ca9d8ce5b26607f85d76ce96e958bb",
+    "src/sec_agent/canonical_runtime/legacy_objective_adapter.py": "a9f90e9e1af6ee7e0f8c146919b19fa6d088d5604ceef1953cab2ad9638064c2"
+  },
+  "negative_errors": {
+    "invalid_action": "legacy_mapping_action_not_allowed",
+    "missing_mapping": "legacy_mapping_coverage_invalid"
+  },
+  "result_version": "finsight_point01_m2_7_legacy_semantic_mapping_fixture_result_v1_0",
+  "scope": "Point01_M2_7_legacy_objective_semantic_migration",
+  "status": "pass"
+}

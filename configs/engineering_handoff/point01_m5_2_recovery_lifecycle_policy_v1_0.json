@@ -1,0 +1,28 @@
+{
+  "policy_version": "finsight_point01_m5_2_recovery_lifecycle_policy_v1_0",
+  "scope": "Point01_M5_2_recovery_lifecycle_control_plane_only",
+  "status": "approved_for_deterministic_implementation",
+  "dependencies": {
+    "m5_1_scheduler": "full_implemented_deterministic_temporary_store_fixture",
+    "checkpoint_owner": "M5.3_not_implemented_existing_exact_artifact_refs_only"
+  },
+  "recovery_controls": [
+    "retry may claim only a retryable_failed WorkUnit and preserves immutable Attempt history",
+    "retry budget or maximum Attempt exhaustion becomes terminal and can be dead-lettered",
+    "poison failure is never retried and can be dead-lettered",
+    "resume and fork require an exact artifact version ref produced by the declared parent Attempt",
+    "replay plan is read-only, digest-bound and contains no external calls",
+    "fork creates a new WorkUnit with immutable lineage and never changes the source WorkUnit"
+  ],
+  "forbidden_admissions": [
+    "checkpoint_creation_or_compaction",
+    "background_worker_service",
+    "provider_execution",
+    "external_tool_execution",
+    "evidence_runtime",
+    "writer_runtime",
+    "full_chain",
+    "business_case_mutation",
+    "legacy_taskrun_authority_change"
+  ]
+}

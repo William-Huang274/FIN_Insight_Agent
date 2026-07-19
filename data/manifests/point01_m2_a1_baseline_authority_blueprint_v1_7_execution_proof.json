@@ -1,0 +1,58 @@
+{
+  "all_other_scenarios": {
+    "authority_issue_forbidden": true,
+    "count": 15
+  },
+  "blueprint_digest": "20244a5b289507b492299e449bbfede881d420926921132395e2ad752cbe7cac",
+  "command_contracts": {
+    "executor": "do_not_invoke",
+    "orchestrator": "do_not_invoke",
+    "registrar": "do_not_invoke"
+  },
+  "exact_binding": {
+    "authority_boundary": "no_actual_a0_m2_probe_without_fresh_exact_external_admission_and_single_use_receipt_no_model_network_tool_provider_fixed_production_business_or_legacy_mutation",
+    "b0_6_policy_digest": "047f729c100b84acd3f965318fbd537190bf8514981ed2e6969c85ad058824a2",
+    "b0_7_policy_digest": "26be5efc879195038992f762fec8274be1ebb3d6e48b217ef64586c7f857f03d",
+    "execution_staging_namespace_id": "point01_m2_a1_exact_admitted_runs_v2_10",
+    "input_ref": "m2-a1-ai-semis-input",
+    "mutation": "none",
+    "package_digest": "789684d17a1e928f829869db60b2ef2ce4eac49d0dbee7cff377edc879b72e02",
+    "package_gate_digest": "52d388be0666e25f23587129059c8edb1b9a323ad86d88768b030b69c5fd82b3",
+    "plan_digest": "5ad5fcd297fde6c9dc9dfc43b19c8caade50ceb523dda77014d8b439a1a6f2fa",
+    "plan_gate_digest": "98a5d7eceabc84808023a44e34af6b3f8a3c085a1f888205dfc7bec2c58209b4",
+    "scenario_id": "p01-baseline-separated-input",
+    "trigger_ddl_digest": "346e369dcf91e9b169fb4d0452c57993e219b052377223ca71bfe8756c41ff58"
+  },
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "approval": 0,
+    "external": 0,
+    "ledger": 0,
+    "namespace": 0,
+    "receipt": 0,
+    "store_write": 0
+  },
+  "schema_version": "finsight_point01_m2_a1_baseline_authority_blueprint_v1_7_execution_proof",
+  "status": "B0.7_repaired_refrozen_pending_independent_review",
+  "templates": {
+    "production_human_jit_window_approval_v2_10": {
+      "authority_class": "production_human_total_reviewer",
+      "provenance": "requires_resolved_reviewer_decision_receipt",
+      "schema_version": "finsight_point01_m2_a1_production_human_jit_window_approval_v2_10",
+      "state": "unresolved_not_active"
+    },
+    "production_reviewer_decision_receipt_v2_10": {
+      "package_external": true,
+      "schema_version": "finsight_point01_m2_a1_production_reviewer_decision_receipt_v2_10",
+      "state": "unresolved_not_active"
+    },
+    "synthetic_nonhuman_authority_v2_10": {
+      "authority_class": "synthetic_nonhuman_fixture",
+      "production_cli_accepted": false,
+      "schema_version": "finsight_point01_m2_a1_synthetic_nonhuman_authority_v2_10"
+    },
+    "v2_10_admission": "unresolved_not_active",
+    "v2_10_receipt": "unresolved_not_active"
+  }
+}

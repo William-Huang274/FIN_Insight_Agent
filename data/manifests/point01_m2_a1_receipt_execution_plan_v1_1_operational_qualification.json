@@ -1,0 +1,191 @@
+{
+  "authority_rules": {
+    "JIT_only": true,
+    "admission_and_receipt_expiry": "discard_and_seek_new_review_never_mutate_old_timestamps_or_digests",
+    "all_other_scenarios_blocked_until_prior_checkpoint": true,
+    "independent_pair_per_scenario": true,
+    "no_batch_pre_generation": true
+  },
+  "baseline_first": "p01-baseline-separated-input",
+  "compatibility": {
+    "group_counts": {
+      "P01": 4,
+      "P02": 6,
+      "P03": 6
+    },
+    "matrix_digest": "f7268d3cdb19e529f15eca86d490c6046672be0283a7d159a278a98903abcb14",
+    "new_plan_required": true,
+    "scenario_count": 16,
+    "semantic_change": "p03_transport_assertions_now_distinguish_module_context_from_constructor_connect_request"
+  },
+  "exact_package": {
+    "authority_boundary": "no_actual_a0_m2_probe_without_fresh_exact_external_admission_and_single_use_receipt_no_model_network_tool_provider_fixed_production_business_or_legacy_mutation",
+    "execution_staging_namespace_id": "point01_m2_a1_exact_admitted_runs_v2_4",
+    "package_digest": "615a73da64eff69a56a13b42d6c59c892820f15c4de7dc3a2be3c425d2aee68e",
+    "package_gate_digest": "14b09fe4900b7cfddc6c2862449ba308094c58e9556ae3d6c154833560e273f8",
+    "package_ref": "point01-m2-a1-operational-qualification-adversarial-audit-package-v2-4",
+    "scope": "M2_A1_exact_admission_gated_future_actual_only"
+  },
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "external": 0,
+    "ledger": 0,
+    "namespace": 0,
+    "receipt": 0,
+    "store_write": 0
+  },
+  "group_checkpoints": [
+    {
+      "action": "independent_oracle_and_reviewer_checkpoint_required",
+      "after_sequence": 4,
+      "group": "P01"
+    },
+    {
+      "action": "independent_oracle_and_reviewer_checkpoint_required",
+      "after_sequence": 10,
+      "group": "P02"
+    },
+    {
+      "action": "independent_oracle_and_reviewer_checkpoint_required",
+      "after_sequence": 16,
+      "group": "P03"
+    }
+  ],
+  "phase_a_digests": {
+    "classification": "537801860ceb455c1ce035621776128c3d8647e2d3af00e66b02d27e8b1e0b71",
+    "repair_gate": "52cd13eda74affc99352a14a3ffff322e96b992b252c40d9dd6335d9f9e181fe",
+    "repair_package": "11f4cd9267e56e9c6c33eaeb32119194731d76dbe0040e34b441e6daf66bd7cd"
+  },
+  "plan_digest": "b10ccce186912fb1a34f8c714269e813d07929f1d1ac0457b207ab6c709f9b15",
+  "runner_isolation": {
+    "actual_runner_never_reads": [
+      "oracle",
+      "reviewer_expectation",
+      "expected_typed_stop"
+    ],
+    "oracle_reads_only_after_immutable_actual_terminalization": true,
+    "reviewer_reads_actual_oracle_receipt_counter_and_fingerprint": true
+  },
+  "scenario_execution_order": [
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P01",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p01-baseline-separated-input",
+      "sequence": 1
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P01",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p01-oracle-path-access",
+      "sequence": 2
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P01",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p01-oracle-hash-access",
+      "sequence": 3
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P01",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p01-oracle-mutation-invariance",
+      "sequence": 4
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P02",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p02-valid-versioned-baseline",
+      "sequence": 5
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P02",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p02-unversioned-pack-ref",
+      "sequence": 6
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P02",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p02-stale-or-superseded-pack",
+      "sequence": 7
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P02",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p02-parent-or-digest-mismatch",
+      "sequence": 8
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P02",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p02-selector-conflict",
+      "sequence": 9
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P02",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p02-artifact-envelope-replay-mismatch",
+      "sequence": 10
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P03",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p03-feature-off",
+      "sequence": 11
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P03",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p03-model-denied",
+      "sequence": 12
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P03",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p03-fixed-store-path",
+      "sequence": 13
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P03",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p03-ambient-resolver",
+      "sequence": 14
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P03",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p03-provider-constructor",
+      "sequence": 15
+    },
+    {
+      "future_authority": "independent_admission_plus_single_use_receipt_JIT_only",
+      "group": "P03",
+      "on_failure": "fail_fast_no_retry_no_replay_no_next_authority",
+      "scenario_id": "p03-network-tool-transport",
+      "sequence": 16
+    }
+  ],
+  "schema_version": "finsight_point01_m2_a1_receipt_execution_plan_v1_1_operational_qualification",
+  "scope": "M2_A1_receipt_execution_plan_compatibility_only_no_admission_receipt_ledger_namespace_or_actual",
+  "status": "compatibility_assessed_pending_independent_review_no_authority",
+  "supersedes": {
+    "prior_plan_digest": "9a0e16878bb899b853e2d91d84a5771d69b4b7d49cd37a490cc20d2de7ca4f5a",
+    "status": "prior_plan_not_valid_for_v2_4_execution"
+  }
+}

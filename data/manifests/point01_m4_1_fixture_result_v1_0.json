@@ -1,0 +1,31 @@
+{
+  "boundary": "Deterministic temporary-store M4 cutover fixture; no production lane, Evidence/Writer/provider/full-chain runtime, or legacy TaskRun authority change.",
+  "canonical_lane_scope": "case_scoped_fixture_only",
+  "external_call_count": 0,
+  "generated_at": "2026-07-12T12:08:46.932061+00:00",
+  "legacy_task_run_authority": "authoritative",
+  "model_call_count": 0,
+  "payload": {
+    "eligible_scope": {
+      "consumer_inventory_complete": true,
+      "eligibility_digest": "0b9b659e9b4eb2dedeaa7a4695e7644c2ca6dcb2819539f95d093ce235cf7a5d",
+      "legacy_projection_ready": true,
+      "reasons": [],
+      "scope": {
+        "case_id": "case-m4-fixture",
+        "feature_flag_id": "decision_surface_planning_cutover_v1_0",
+        "feature_flag_mode": "case_scoped",
+        "lane_id": "planning",
+        "project_id": "project-m4-fixture",
+        "scope_kind": "case",
+        "tenant_id": "tenant-m4-fixture"
+      },
+      "status": "eligible"
+    },
+    "ineligible_lane_denied": true,
+    "status": "pass"
+  },
+  "point_id": "M4.1",
+  "result_version": "finsight_point01_m4_1_fixture_result_v1_0",
+  "status": "pass"
+}

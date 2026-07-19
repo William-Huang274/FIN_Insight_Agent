@@ -1,0 +1,46 @@
+{
+  "execution_counts": {
+    "active_approval": 0,
+    "admission": 0,
+    "baseline": 0,
+    "external": 0,
+    "fixed_store_write": 0,
+    "formal_namespace": 0,
+    "legacy_authority_change": 0,
+    "model": 0,
+    "network_success": 0,
+    "provider": 0,
+    "receipt": 0,
+    "runtime": 0,
+    "tool_success": 0
+  },
+  "gate_digest": "32cc169081b9e4158894925d4fb207824c28bc17e408190e6cce900de950b7a5",
+  "next_step": "independent_execution_authority_review_required_baseline_only_no_negative_case_authority",
+  "schema_version": "finsight_point01_p01_g2_operational_tranche_gate_v1_1",
+  "status": "pass",
+  "tranche_digest": "aeeccb1525d693f1dc19eb42a6f9666fed3ebf4a3b3f578f73fd8dc22678f861",
+  "tranche_id": "P01-G2.0-minimum-operational-qualification-tranche-v1-1-authority-coverage-repair",
+  "verification": {
+    "deferred_original_count": 13,
+    "errors": [],
+    "execution_counts": {
+      "active_approval": 0,
+      "admission": 0,
+      "baseline": 0,
+      "external": 0,
+      "fixed_store_write": 0,
+      "formal_namespace": 0,
+      "legacy_authority_change": 0,
+      "model": 0,
+      "network_success": 0,
+      "provider": 0,
+      "receipt": 0,
+      "runtime": 0,
+      "tool_success": 0
+    },
+    "selected_original_count": 3,
+    "status": "pass",
+    "supplemental_case_count": 1,
+    "tranche_digest": "aeeccb1525d693f1dc19eb42a6f9666fed3ebf4a3b3f578f73fd8dc22678f861"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "corpus_digest": "abb410357234d4abc6871eb8b1ba84d2370dd675908cd671a3478ffaa956608b",
+  "corpus_id": "local_retrieval_fixture_corpus_abb410357234d4abc687",
+  "execution_admission": "not_admitted",
+  "oracle_digest": "bfd970d8da45be53c9282d2bac131319c521c8b778d006214ed0ae5c5fb0191c",
+  "oracle_id": "local_retrieval_fixture_oracle_bfd970d8da45be53c928",
+  "oracle_provenance": "independent_post_evaluation_fixture_oracle",
+  "persistence_authorized": false,
+  "records": [
+    {
+      "expected_status": "accepted_fixture_projection",
+      "fixture_id": "fixture-bm25-narrative-positive",
+      "required_reason_codes": [
+        "fixture_projection_nonexecuting"
+      ]
+    },
+    {
+      "expected_status": "accepted_fixture_projection",
+      "fixture_id": "fixture-object-bm25-table-positive",
+      "required_reason_codes": [
+        "fixture_projection_nonexecuting"
+      ]
+    },
+    {
+      "expected_status": "accepted_fixture_projection",
+      "fixture_id": "fixture-object-bm25-page-row-positive",
+      "required_reason_codes": [
+        "fixture_projection_nonexecuting"
+      ]
+    },
+    {
+      "expected_status": "accepted_fixture_projection",
+      "fixture_id": "fixture-relationship-graph-positive",
+      "required_reason_codes": [
+        "fixture_projection_nonexecuting"
+      ]
+    },
+    {
+      "expected_status": "accepted_fixture_projection",
+      "fixture_id": "fixture-exact-value-sql-row-positive",
+      "required_reason_codes": [
+        "fixture_projection_nonexecuting"
+      ]
+    },
+    {
+      "expected_status": "typed_exhaustion",
+      "fixture_id": "fixture-typed-empty-exhaustion",
+      "required_reason_codes": [
+        "retrieval_exhausted_no_metadata_match"
+      ]
+    },
+    {
+      "expected_status": "typed_exhaustion",
+      "fixture_id": "fixture-table-context-missing",
+      "required_reason_codes": [
+        "table_context_missing"
+      ]
+    },
+    {
+      "expected_status": "typed_exhaustion",
+      "fixture_id": "fixture-boundary-context-missing",
+      "required_reason_codes": [
+        "boundary_context_missing"
+      ]
+    },
+    {
+      "expected_status": "not_fixture_admitted",
+      "fixture_id": "fixture-exact-value-sql-alternate-self-signed-policy",
+      "required_reason_codes": [
+        "exact_value_sql_policy_not_fixture_admitted"
+      ]
+    }
+  ]
+}

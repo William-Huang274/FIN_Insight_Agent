@@ -1,0 +1,19 @@
+{
+  "review_version": "finsight_point01_m6_6_cross_owner_design_review_v1_0",
+  "scope": "Point01_M6_6_deterministic_fixture_evidence_gate_only",
+  "status": "user_confirmed_structured_cross_owner_review_accepted_for_m6_6",
+  "review_method": "codex_single_agent_structured_role_separation_with_explicit_human_scope_approval",
+  "reviewer_identity": "current_thread_codex",
+  "independent_human_or_multi_person_signoff": false,
+  "limitation": "This is a single-agent role-separated review. The user approved only a deterministic fixture gate; no actual Evidence promotion, Lead/Human approval, persistence, source read, model, tool, network or downstream consumption is authorized.",
+  "user_confirmation": {"status": "accepted", "approver_id": "current_thread_human_reviewer", "approver_type": "human", "decision": "approve_m6_6_deterministic_evidence_gate_contract_only", "confirmation_note": "Approval explicitly requires fixture_only/unpromoted inputs, non-authoritative decision flags, hard-rule non-overridable rejection, and an M6.6 audit return before M6.7."},
+  "reviewer_lenses": [
+    {"lens": "evidence_gate_owner", "result": "pass_with_nonpromotion_output", "checks": ["The schema does not permit a bare accepted decision.", "Every decision has deterministic_fixture_only scope and all runtime/citation/judgment/persistence flags false.", "Hard failures use rejection or typed-gap states only."]},
+    {"lens": "lineage_numeric_source_owner", "result": "pass_after_exact_binding", "checks": ["Request, bundle, parser candidate, normalized fact and numeric trace ids/digests are rechecked.", "Entity, period, unit, scale, authority, trace and forbidden-substitution rules are hard gates.", "Conflicting table candidates cannot be silently selected."]},
+    {"lens": "semantic_and_hitl_governance_owner", "result": "pass_with_suggestion_only", "checks": ["Semantic output is an inert classification_suggestion.", "Hard rejection cannot be overridden by semantic suggestion, Lead or fixture reviewer.", "Lead/Human state is approval_required_not_executed; no receipt can be fabricated."]},
+    {"lens": "downstream_consumer_owner", "result": "pass_with_consumer_deny", "checks": ["Writer and DomainJudgment consumption guards fail closed.", "M6.7 cannot treat a fixture gate decision as formal evidence.", "No context injection or promotion persistence is exposed."]},
+    {"lens": "security_replay_owner", "result": "pass_with_fixture_only_calibration", "checks": ["Only fixture-only, unpromoted inputs are accepted.", "All tests remain execution-free and deterministic.", "No M5 admission/budget, tool, provider, network, store write, Case or legacy authority mutation occurs."]}
+  ],
+  "overall_result": "pass_with_user_scoped_m6_6_fixture_gate_approval",
+  "authority_boundary": {"formal_evidence_promotion": "not_admitted", "lead_human_approval": "approval_required_not_executed", "persistence": "not_admitted", "writer_domain_judgment_consumption": "forbidden", "provider_network_tool_model": "not_admitted", "m6_7": "not_admitted"}
+}

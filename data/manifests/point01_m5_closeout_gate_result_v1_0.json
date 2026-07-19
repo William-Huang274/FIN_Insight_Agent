@@ -1,0 +1,315 @@
+{
+  "authority_boundary": {
+    "Evidence_runtime": false,
+    "Writer_runtime": false,
+    "business_case_mutation": false,
+    "external_tool_execution": false,
+    "full_chain": false,
+    "legacy_authority_change": false,
+    "legacy_task_run": "authoritative",
+    "provider_execution": false,
+    "worker_started": false
+  },
+  "boundary": "This gate may close only a digest-bound temporary-store M5 tranche after an independent full/calibrated human review. It cannot authorize provider/tool execution, business Case mutation, legacy authority change or broader runtime cutover.",
+  "closeout_package": {
+    "digest": "d4f5dd41cc1ed98ddcb9d9a03ce383d009868f59acd9881039b2d08f147568e2",
+    "path_count": 92,
+    "paths": [
+      "configs/engineering_handoff/point01_generated_json_schemas_v1_0.json",
+      "configs/engineering_handoff/point01_m5_1_scheduler_policy_v1_0.json",
+      "configs/engineering_handoff/point01_m5_2_recovery_lifecycle_policy_v1_0.json",
+      "configs/engineering_handoff/point01_m5_3_checkpoint_artifact_policy_v1_0.json",
+      "configs/engineering_handoff/point01_m5_4_capability_security_policy_v1_0.json",
+      "configs/engineering_handoff/point01_m5_5_budget_stop_policy_v1_0.json",
+      "configs/engineering_handoff/point01_m5_6_hitl_governance_policy_v1_0.json",
+      "configs/engineering_handoff/point01_m5_7_parallel_context_policy_v1_0.json",
+      "configs/engineering_handoff/point01_m5_8_observability_ops_policy_v1_0.json",
+      "configs/engineering_handoff/point01_m5_9_closeout_gate_manifest_v1_0.json",
+      "configs/engineering_handoff/point01_m5_9_closeout_policy_v1_0.json",
+      "configs/engineering_handoff/point01_m5_calibration_policy_v1_0.json",
+      "configs/engineering_handoff/point01_m5_concurrency_security_policy_v1_0.json",
+      "configs/engineering_handoff/point01_m5_cross_owner_design_review_v1_0.json",
+      "configs/engineering_handoff/point01_m5_design_freeze_manifest_v1_0.json",
+      "configs/engineering_handoff/point01_m5_human_ops_security_review_v1_0.json",
+      "data/manifests/point01_m1_closeout_gate_result_v1_0.json",
+      "data/manifests/point01_m1_postgresql_conformance_sample_result_v1_0.json",
+      "data/manifests/point01_m5_1_scheduler_fixture_result_v1_0.json",
+      "data/manifests/point01_m5_2_recovery_lifecycle_fixture_result_v1_0.json",
+      "data/manifests/point01_m5_3_checkpoint_artifact_fixture_result_v1_0.json",
+      "data/manifests/point01_m5_4_capability_security_fixture_result_v1_0.json",
+      "data/manifests/point01_m5_5_budget_stop_fixture_result_v1_0.json",
+      "data/manifests/point01_m5_6_hitl_governance_fixture_result_v1_0.json",
+      "data/manifests/point01_m5_7_parallel_context_fixture_result_v1_0.json",
+      "data/manifests/point01_m5_8_observability_ops_fixture_result_v1_0.json",
+      "data/manifests/point01_m5_calibration_result_v1_0.json",
+      "data/manifests/point01_m5_concurrency_security_result_v1_0.json",
+      "data/manifests/point01_m5_design_lint_result_v1_0.json",
+      "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md",
+      "scripts/engineering/run_point01_m5_1_scheduler_fixtures.py",
+      "scripts/engineering/run_point01_m5_2_recovery_lifecycle_fixtures.py",
+      "scripts/engineering/run_point01_m5_3_checkpoint_artifact_fixtures.py",
+      "scripts/engineering/run_point01_m5_4_capability_security_fixtures.py",
+      "scripts/engineering/run_point01_m5_5_budget_stop_fixtures.py",
+      "scripts/engineering/run_point01_m5_6_hitl_governance_fixtures.py",
+      "scripts/engineering/run_point01_m5_7_parallel_context_fixtures.py",
+      "scripts/engineering/run_point01_m5_8_observability_ops_fixtures.py",
+      "scripts/engineering/run_point01_m5_calibration_drills.py",
+      "scripts/engineering/run_point01_m5_closeout_gate.py",
+      "scripts/engineering/run_point01_m5_concurrency_security_drills.py",
+      "scripts/engineering/run_point01_m5_design_lint.py",
+      "src/sec_agent/canonical_runtime/__init__.py",
+      "src/sec_agent/canonical_runtime/budget_control.py",
+      "src/sec_agent/canonical_runtime/capability_security.py",
+      "src/sec_agent/canonical_runtime/cell_composition.py",
+      "src/sec_agent/canonical_runtime/checkpoint_artifacts.py",
+      "src/sec_agent/canonical_runtime/durable_scheduler.py",
+      "src/sec_agent/canonical_runtime/evidence_policy.py",
+      "src/sec_agent/canonical_runtime/facade.py",
+      "src/sec_agent/canonical_runtime/feature_flags.py",
+      "src/sec_agent/canonical_runtime/full_serializer.py",
+      "src/sec_agent/canonical_runtime/hitl_governance.py",
+      "src/sec_agent/canonical_runtime/legacy_objective_adapter.py",
+      "src/sec_agent/canonical_runtime/model_admission.py",
+      "src/sec_agent/canonical_runtime/models.py",
+      "src/sec_agent/canonical_runtime/object_store.py",
+      "src/sec_agent/canonical_runtime/observability_ops.py",
+      "src/sec_agent/canonical_runtime/pack_registry.py",
+      "src/sec_agent/canonical_runtime/pack_selection.py",
+      "src/sec_agent/canonical_runtime/parallel_context.py",
+      "src/sec_agent/canonical_runtime/planning_cutover.py",
+      "src/sec_agent/canonical_runtime/planning_service.py",
+      "src/sec_agent/canonical_runtime/protocols.py",
+      "src/sec_agent/canonical_runtime/recovery_lifecycle.py",
+      "src/sec_agent/canonical_runtime/schema_export.py",
+      "src/sec_agent/canonical_runtime/shadow_calibration.py",
+      "src/sec_agent/canonical_runtime/shadow_comparison.py",
+      "src/sec_agent/canonical_runtime/shadow_compiler.py",
+      "src/sec_agent/canonical_runtime/shadow_orchestration.py",
+      "src/sec_agent/canonical_runtime/shadow_review.py",
+      "src/sec_agent/canonical_runtime/store.py",
+      "tests/contract/test_point01_m5_budget_control.py",
+      "tests/contract/test_point01_m5_budget_fixture_runner.py",
+      "tests/contract/test_point01_m5_calibration_drills.py",
+      "tests/contract/test_point01_m5_capability_security.py",
+      "tests/contract/test_point01_m5_capability_security_fixture_runner.py",
+      "tests/contract/test_point01_m5_checkpoint_artifacts.py",
+      "tests/contract/test_point01_m5_checkpoint_fixture_runner.py",
+      "tests/contract/test_point01_m5_closeout_gate.py",
+      "tests/contract/test_point01_m5_concurrency_security_drills.py",
+      "tests/contract/test_point01_m5_design_freeze.py",
+      "tests/contract/test_point01_m5_durable_scheduler.py",
+      "tests/contract/test_point01_m5_hitl_fixture_runner.py",
+      "tests/contract/test_point01_m5_hitl_governance.py",
+      "tests/contract/test_point01_m5_observability_fixture_runner.py",
+      "tests/contract/test_point01_m5_observability_ops.py",
+      "tests/contract/test_point01_m5_parallel_context.py",
+      "tests/contract/test_point01_m5_parallel_fixture_runner.py",
+      "tests/contract/test_point01_m5_recovery_fixture_runner.py",
+      "tests/contract/test_point01_m5_recovery_lifecycle.py",
+      "tests/contract/test_point01_m5_scheduler_fixture_runner.py"
+    ]
+  },
+  "completed_machine_calibrations": [
+    "concurrent_budget_reservation_and_security_drill",
+    "hitl_interruption_drill",
+    "observability_incident_drill",
+    "persistent_budget_security_hitl_authority",
+    "process_restart_worker_loss_crash_matrix",
+    "semantic_impact_context_rebase_drill"
+  ],
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m5_9_closeout_gate_manifest_v1_0.json": "d942f836c788cded114857ecc97cf4c18e091586fc79e1680178cc5b9c3c57f1",
+    "configs/engineering_handoff/point01_m5_9_closeout_policy_v1_0.json": "aea3ea65d956ddda97b9be66b8a7bdefb2d8f14f849fad3c085a4a8c8f94b05a",
+    "configs/engineering_handoff/point01_m5_human_full_calibrated_closeout_v1_0.json": "f13788de2b99bbac8b34101aa150b5f9931e31d5943cd803e7815fd5c711d814",
+    "configs/engineering_handoff/point01_m5_human_ops_security_closeout_v1_0.json": "a86955757141912e82585fbeec5405cb65a1f7182daf90fb0b9b085c7e6049a2",
+    "scripts/engineering/run_point01_m5_closeout_gate.py": "286aa2d14aab2937946aaa31fb9680ed150c3ff91e17a62b8339781d7cc306de"
+  },
+  "fixture_results": {
+    "M5.1": {
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "status": "pass",
+      "worker_started": false
+    },
+    "M5.2": {
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "status": "pass",
+      "worker_started": false
+    },
+    "M5.3": {
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "status": "pass",
+      "worker_started": false
+    },
+    "M5.4": {
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "status": "pass",
+      "worker_started": false
+    },
+    "M5.5": {
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "status": "pass",
+      "worker_started": false
+    },
+    "M5.6": {
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "status": "pass",
+      "worker_started": false
+    },
+    "M5.7": {
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "status": "pass",
+      "worker_started": false
+    },
+    "M5.8": {
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "status": "pass",
+      "worker_started": false
+    },
+    "M5.calibration": {
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "status": "pass",
+      "worker_started": false
+    },
+    "M5.concurrency": {
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "status": "pass",
+      "worker_started": false
+    }
+  },
+  "fixture_runs": {
+    "M5.1": {
+      "output_tail": "{\"status\": \"pass\", \"output\": \"D:\\\\FIN_Insight_Agent\\\\data\\\\manifests\\\\point01_m5_1_scheduler_fixture_result_v1_0.json\", \"errors\": []}\n",
+      "returncode": 0
+    },
+    "M5.2": {
+      "output_tail": "{\"status\": \"pass\", \"output\": \"D:\\\\FIN_Insight_Agent\\\\data\\\\manifests\\\\point01_m5_2_recovery_lifecycle_fixture_result_v1_0.json\", \"errors\": []}\n",
+      "returncode": 0
+    },
+    "M5.3": {
+      "output_tail": "{\"status\": \"pass\", \"output\": \"D:\\\\FIN_Insight_Agent\\\\data\\\\manifests\\\\point01_m5_3_checkpoint_artifact_fixture_result_v1_0.json\", \"errors\": []}\n",
+      "returncode": 0
+    },
+    "M5.4": {
+      "output_tail": "{\"status\": \"pass\", \"output\": \"D:\\\\FIN_Insight_Agent\\\\data\\\\manifests\\\\point01_m5_4_capability_security_fixture_result_v1_0.json\", \"errors\": []}\n",
+      "returncode": 0
+    },
+    "M5.5": {
+      "output_tail": "{\"status\": \"pass\", \"output\": \"D:\\\\FIN_Insight_Agent\\\\data\\\\manifests\\\\point01_m5_5_budget_stop_fixture_result_v1_0.json\", \"errors\": []}\n",
+      "returncode": 0
+    },
+    "M5.6": {
+      "output_tail": "{\"status\": \"pass\", \"output\": \"D:\\\\FIN_Insight_Agent\\\\data\\\\manifests\\\\point01_m5_6_hitl_governance_fixture_result_v1_0.json\", \"errors\": []}\n",
+      "returncode": 0
+    },
+    "M5.7": {
+      "output_tail": "{\"status\": \"pass\", \"output\": \"D:\\\\FIN_Insight_Agent\\\\data\\\\manifests\\\\point01_m5_7_parallel_context_fixture_result_v1_0.json\", \"errors\": []}\n",
+      "returncode": 0
+    },
+    "M5.8": {
+      "output_tail": "{\"status\": \"pass\", \"output\": \"D:\\\\FIN_Insight_Agent\\\\data\\\\manifests\\\\point01_m5_8_observability_ops_fixture_result_v1_0.json\", \"errors\": []}\n",
+      "returncode": 0
+    },
+    "M5.calibration": {
+      "output_tail": "{\"status\": \"pass\", \"output\": \"D:\\\\FIN_Insight_Agent\\\\data\\\\manifests\\\\point01_m5_calibration_result_v1_0.json\", \"errors\": []}\n",
+      "returncode": 0
+    },
+    "M5.concurrency": {
+      "output_tail": "{\"status\": \"pass\", \"output\": \"D:\\\\FIN_Insight_Agent\\\\data\\\\manifests\\\\point01_m5_concurrency_security_result_v1_0.json\", \"errors\": []}\n",
+      "returncode": 0
+    }
+  },
+  "fixture_tranche_status": "full_calibrated_review_accepted",
+  "gate_status": "pass",
+  "generated_at": "2026-07-13T03:06:44.457748+00:00",
+  "human_review": {
+    "fixture_tranche": {
+      "bound_package_digest": "4511a3396238c05e7d5dffb5a50a928e625690b1c430859f5b4a51868bb6f41a",
+      "decision": "accept_m5_deterministic_temporary_store_fixture_tranche_only",
+      "required_decision": "accept_m5_deterministic_temporary_store_fixture_tranche_only",
+      "status": "accepted_m5_fixture_tranche_only"
+    },
+    "full_calibrated": {
+      "bound_package_digest": "d4f5dd41cc1ed98ddcb9d9a03ce383d009868f59acd9881039b2d08f147568e2",
+      "decision": "approve_m5_full_calibrated_temporary_store_closeout_only",
+      "required_decision": "approve_m5_full_calibrated_temporary_store_closeout_only",
+      "status": "accepted_m5_full_calibrated_closeout_only"
+    }
+  },
+  "machine_calibration_validation": {
+    "concurrent_budget_reservation_and_security_drill": {
+      "status": "pass",
+      "validator": "concurrency_security_outcomes_v1"
+    },
+    "hitl_interruption_drill": {
+      "status": "pass",
+      "validator": "hitl_restart_revocation_v1"
+    },
+    "observability_incident_drill": {
+      "status": "pass",
+      "validator": "observability_incident_semantics_v1"
+    },
+    "persistent_budget_security_hitl_authority": {
+      "status": "pass",
+      "validator": "persistent_authority_v1"
+    },
+    "process_restart_worker_loss_crash_matrix": {
+      "status": "pass",
+      "validator": "real_child_process_crash_matrix_v2"
+    },
+    "semantic_impact_context_rebase_drill": {
+      "status": "pass",
+      "validator": "semantic_rebase_authoritative_receipt_v2"
+    }
+  },
+  "machine_checks": {
+    "compileall": {
+      "output_tail": "",
+      "returncode": 0
+    },
+    "m1_fixed_hash_closeout_status": "pass",
+    "m5_design_lint": {
+      "output_tail": "{\"status\": \"pass\", \"output\": \"D:\\\\FIN_Insight_Agent\\\\data\\\\manifests\\\\point01_m5_design_lint_result_v1_0.json\", \"errors\": []}\n",
+      "returncode": 0
+    },
+    "m5_test_manifest": {
+      "output_tail": "................................................................         [100%]\n64 passed in 12.12s\n",
+      "paths": [
+        "tests/contract/test_point01_m5_budget_control.py",
+        "tests/contract/test_point01_m5_budget_fixture_runner.py",
+        "tests/contract/test_point01_m5_calibration_drills.py",
+        "tests/contract/test_point01_m5_capability_security.py",
+        "tests/contract/test_point01_m5_capability_security_fixture_runner.py",
+        "tests/contract/test_point01_m5_checkpoint_artifacts.py",
+        "tests/contract/test_point01_m5_checkpoint_fixture_runner.py",
+        "tests/contract/test_point01_m5_closeout_gate.py",
+        "tests/contract/test_point01_m5_concurrency_security_drills.py",
+        "tests/contract/test_point01_m5_design_freeze.py",
+        "tests/contract/test_point01_m5_durable_scheduler.py",
+        "tests/contract/test_point01_m5_hitl_fixture_runner.py",
+        "tests/contract/test_point01_m5_hitl_governance.py",
+        "tests/contract/test_point01_m5_observability_fixture_runner.py",
+        "tests/contract/test_point01_m5_observability_ops.py",
+        "tests/contract/test_point01_m5_parallel_context.py",
+        "tests/contract/test_point01_m5_parallel_fixture_runner.py",
+        "tests/contract/test_point01_m5_recovery_fixture_runner.py",
+        "tests/contract/test_point01_m5_recovery_lifecycle.py",
+        "tests/contract/test_point01_m5_scheduler_fixture_runner.py"
+      ],
+      "returncode": 0
+    }
+  },
+  "milestone_status": "M5_complete_temporary_store_full_calibrated_reviewed",
+  "result_version": "finsight_point01_m5_closeout_gate_result_v1_3",
+  "scope": "Point01_M5_fixture_tranche_and_full_calibrated_closeout_gate",
+  "unmet_closeout_conditions": []
+}

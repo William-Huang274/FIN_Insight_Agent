@@ -1,0 +1,31 @@
+{
+  "boundary": "Deterministic M3 calibration fixture only; no model, provider, retrieval, Evidence/Writer runtime, legacy write, or authority cutover was invoked.",
+  "canonical_lane": "shadow_only",
+  "external_call_count": 0,
+  "fixture_status": "pass",
+  "generated_at": "2026-07-12T10:20:39.213162+00:00",
+  "model_call_count": 0,
+  "payload": {
+    "audit_digest": "a644f55e4d213683d965cee14325884cf0e52256a855df307e8c90c9121608e4",
+    "canonical_lane": "shadow_only",
+    "case_id": "ai_semis_dell_nvda_anchor_v0_1",
+    "dependency_issue_cell_keys": [],
+    "duplicate_cell_keys": [],
+    "external_call_count": 0,
+    "generic_dimension_cell_keys": [],
+    "lookup_cell_keys": [],
+    "materiality_weighted_coverage": 1.0,
+    "missing_counterevidence_owner_cell_keys": [],
+    "missing_wwc_cell_keys": [],
+    "model_call_count": 0,
+    "ownerless_cell_keys": [],
+    "planning_authority": "legacy",
+    "policy_ref": "point01_m3_2_cell_audit_policy_v1_0",
+    "status": "pass",
+    "unanswerable_cell_keys": []
+  },
+  "planning_authority": "legacy",
+  "point_id": "M3.2",
+  "result_version": "finsight_point01_m3_2_fixture_result_v1_0",
+  "status": "pass"
+}

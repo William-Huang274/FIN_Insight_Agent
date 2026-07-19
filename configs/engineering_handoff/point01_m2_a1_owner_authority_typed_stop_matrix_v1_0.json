@@ -1,0 +1,60 @@
+{
+  "schema_version": "finsight_point01_m2_a1_owner_authority_typed_stop_matrix_v1_0",
+  "scope": "M2_A1_design_and_package_freeze_only",
+  "design_execution_counts": {
+    "compiler_or_shadow_fixture_runs": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "external_tool_calls": 0,
+    "provider_calls": 0,
+    "fixed_or_production_store_opens": 0,
+    "fixed_or_production_store_writes": 0,
+    "business_case_mutations": 0,
+    "legacy_authority_mutations": 0
+  },
+  "probes": [
+    {
+      "probe_id": "A0-M2-P01",
+      "owner": "m2_compiler_serializer_owner",
+      "staged_input_domains": ["compiler_input", "serializer", "pack_registry", "pack_selection", "cell_composition", "evidence_policy", "legacy_mapping"],
+      "oracle_boundary": "expected_cell_oracle_post_execution_only_and_canary_forbidden_to_actual",
+      "expected_typed_stop": "oracle_leakage_detected",
+      "closeout_gate": "M2-A1_compiler_oracle_separation_gate"
+    },
+    {
+      "probe_id": "A0-M2-P02",
+      "owner": "m2_pack_policy_owner",
+      "staged_input_domains": ["pack_registry", "pack_selection", "serializer", "evidence_policy", "artifact_envelope"],
+      "oracle_boundary": "independent_lineage_replay_oracle_post_execution_only",
+      "expected_typed_stop": "pack_version_or_lineage_mismatch_or_policy_upgrade_required",
+      "closeout_gate": "M2-A1_package_lineage_replay_gate"
+    },
+    {
+      "probe_id": "A0-M2-P03",
+      "owner": "m2_shadow_admission_owner",
+      "staged_input_domains": ["model_admission", "feature_flags", "shadow_compiler", "shadow_orchestration"],
+      "oracle_boundary": "four_sector_calibration_and_store_canary_are_external_to_actual",
+      "expected_typed_stop": "shadow_scope_violation_or_test_runtime_isolation_violation",
+      "closeout_gate": "M2-A1_shadow_runtime_boundary_gate"
+    }
+  ],
+  "future_actual_authority": {
+    "external_package_admission_ref": "point01-m2-a1-total-reviewer-package-admission:v1",
+    "external_package_admission_required": true,
+    "single_use_execution_receipt_required": true,
+    "actual_probes_currently_authorized": false,
+    "legacy_taskrun": "authoritative",
+    "decision_surface": "shadow_only",
+    "runtime_cutover": "forbidden",
+    "model_execution": "forbidden",
+    "evidence_writer_full_chain": "forbidden"
+  },
+  "required_canaries_for_future_actual": [
+    "expected_cell_oracle_access",
+    "fixed_store_path_or_open",
+    "ambient_store_resolution",
+    "model_constructor_or_provider_client",
+    "network_or_tool_transport"
+  ],
+  "boundary": "This matrix is a design-time typed-stop and ownership contract. It does not execute compiler, shadow, fixture, model, transport, store or business authority paths."
+}

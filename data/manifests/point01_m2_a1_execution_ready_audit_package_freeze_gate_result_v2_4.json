@@ -1,0 +1,40 @@
+{
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "ledger": 0,
+    "model": 0,
+    "namespace": 0,
+    "network": 0,
+    "provider": 0,
+    "receipt": 0,
+    "store_write": 0,
+    "tool": 0
+  },
+  "fixed_store_fingerprint": {
+    "access": "fingerprint_only_no_open_or_mutation",
+    "path": ".runtime_control/point01_m6_3_5_nvda_sec_document_parser_repaired_global_approval/canonical.sqlite",
+    "sha256": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4"
+  },
+  "gate_digest": "14b09fe4900b7cfddc6c2862449ba308094c58e9556ae3d6c154833560e273f8",
+  "next_step": "independent_review_required_no_authority_issued",
+  "package_digest": "615a73da64eff69a56a13b42d6c59c892820f15c4de7dc3a2be3c425d2aee68e",
+  "package_ref": "point01-m2-a1-operational-qualification-adversarial-audit-package-v2-4",
+  "result_version": "finsight_point01_m2_a1_execution_ready_package_gate_v1_1",
+  "status": "pass",
+  "target_digest": "615a73da64eff69a56a13b42d6c59c892820f15c4de7dc3a2be3c425d2aee68e",
+  "verification": {
+    "calculated_package_digest": "615a73da64eff69a56a13b42d6c59c892820f15c4de7dc3a2be3c425d2aee68e",
+    "failures": [],
+    "production_preflight": {
+      "side_effects": {
+        "authority": 0,
+        "namespace": 0,
+        "receipt": 0,
+        "runtime": 0
+      },
+      "status": "package_admission_required"
+    },
+    "status": "pass"
+  }
+}

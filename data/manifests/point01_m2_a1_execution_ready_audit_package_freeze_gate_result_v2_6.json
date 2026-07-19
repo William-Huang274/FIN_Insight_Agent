@@ -1,0 +1,38 @@
+{
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "approval": 0,
+    "ledger": 0,
+    "model": 0,
+    "namespace": 0,
+    "network": 0,
+    "provider": 0,
+    "receipt": 0,
+    "store_write": 0,
+    "tool": 0
+  },
+  "fixed_store_sha256": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4",
+  "gate_digest": "a07b44b7c0bc4970730abc57d61ba9978119fa34cbe1c29a237af909eef329c7",
+  "next_step": "independent_review_required_no_human_jit_window_approval_issued",
+  "package_digest": "e85ceffb0922ceda99e105b519a7f2dac19d5e5bdcea357925ee451d066ad4ed",
+  "package_ref": "point01-m2-a1-operational-qualification-adversarial-audit-package-v2-6-frozen-jit-entry",
+  "result_version": "finsight_point01_m2_a1_v2_6_package_freeze_gate_v1",
+  "status": "pass",
+  "target_digest": "e85ceffb0922ceda99e105b519a7f2dac19d5e5bdcea357925ee451d066ad4ed",
+  "verification": {
+    "calculated_package_digest": "e85ceffb0922ceda99e105b519a7f2dac19d5e5bdcea357925ee451d066ad4ed",
+    "failures": [],
+    "input_hash_count": 68,
+    "orchestrator_missing_approval": {
+      "actual": 0,
+      "namespace": 0,
+      "new_admission": 0,
+      "new_receipt": 0,
+      "runtime": 0,
+      "status": "m2_a1_frozen_jit_json_input_unreadable"
+    },
+    "production_preflight": "package_admission_required",
+    "status": "pass"
+  }
+}

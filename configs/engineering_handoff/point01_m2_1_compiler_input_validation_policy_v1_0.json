@@ -1,0 +1,18 @@
+{
+  "policy_version": "finsight_point01_m2_1_compiler_input_validation_policy_v1_0",
+  "policy_ref": "point01-m2-1-compiler-policy-v1",
+  "minimum_material_cells": 10,
+  "maximum_material_cells": 20,
+  "allowed_owner_roles": [
+    "research_lead",
+    "fundamental_analyst",
+    "product_industry_analyst",
+    "capital_market_analyst",
+    "risk_counterevidence_analyst"
+  ],
+  "allowed_materialities": ["critical", "high", "medium"],
+  "allowed_source_policy_refs": ["issuer_first", "filing_first", "official_first", "market_context_only", "commercial_gap"],
+  "allowed_acceptance_roles": ["primary", "primary_or_bounded_context", "bounded_context_only"],
+  "require_forbidden_substitutions": true,
+  "authority_boundary": "Policy validates compiler shape only; it does not select packs, call a model, retrieve evidence, write legacy state or change authority."
+}

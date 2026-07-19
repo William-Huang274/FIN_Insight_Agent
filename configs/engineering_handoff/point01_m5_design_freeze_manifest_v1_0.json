@@ -1,0 +1,150 @@
+{
+  "manifest_version": "finsight_point01_m5_design_freeze_v1_0",
+  "scope": "Point01_M5_durable_harness",
+  "point_id": "M5.0",
+  "status": "frozen_human_ops_security_approved",
+  "prerequisites": {
+    "m1_status": "M1_complete",
+    "m4_status": "M4_complete_nonproduction_synthetic_pilot",
+    "legacy_task_run_authority": "authoritative"
+  },
+  "authority_boundary": {
+    "legacy_task_run": "authoritative_execution_history_owner",
+    "canonical_runtime": "durable_harness_control_plane_only",
+    "decision_surface": "case_scoped_planning_pilot_proven_only",
+    "model_execution": "not_admitted",
+    "evidence_writer_full_chain": "not_admitted"
+  },
+  "global_invariants": [
+    "all state-changing commands are idempotent and append-only",
+    "lease ownership and fencing are verified before every mutation",
+    "retry, fork and resume preserve immutable causation and input snapshot refs",
+    "checkpoint and artifact reads are exact-version and stale-write protected",
+    "capability, tenant, budget and approval checks fail closed before tool or worker admission",
+    "parallel execution uses snapshot isolation and selective invalidation rather than shared mutable context",
+    "events are ordered, correlation/causation-bound and replayable without external calls",
+    "raw model reasoning is never persisted as an audit substitute"
+  ],
+  "external_pattern_adoptions": [
+    "temporal_durable_workflow",
+    "langgraph_checkpoint_interrupt_resume",
+    "p32_durable_hil_task_event_contract",
+    "mcp_tool_gateway",
+    "opentelemetry_langfuse_phoenix_eval_trace"
+  ],
+  "children": [
+    {
+      "point_id": "M5.1",
+      "owner": "durable_scheduler_owner",
+      "responsibility": "queue, lease, heartbeat and cancellation propagation",
+      "inputs": ["WorkUnit", "Attempt", "CapabilityGrant", "queue policy", "worker identity"],
+      "outputs": ["lease receipt", "heartbeat event", "cancellation state", "fencing token"],
+      "dependencies": [],
+      "external_dependencies": ["M1 WorkUnit/Attempt append-only store"],
+      "acceptance": ["duplicate worker is fenced", "expired lease is reclaimable", "cancel reaches active and queued work", "worker loss is observable"],
+      "non_goals": ["provider execution", "legacy TaskRun authority change"]
+    },
+    {
+      "point_id": "M5.2",
+      "owner": "recovery_lifecycle_owner",
+      "responsibility": "retry, resume, replay, fork and dead-letter causality",
+      "inputs": ["Attempt failure taxonomy", "retry policy", "lease receipt", "checkpoint ref"],
+      "outputs": ["next attempt", "resume/fork lineage", "dead-letter record", "replay plan"],
+      "dependencies": ["M5.1"],
+      "external_dependencies": ["M1 immutable Attempt history"],
+      "acceptance": ["poison work cannot retry", "retry budget terminates", "resume uses exact checkpoint", "dead letter is inspectable"],
+      "non_goals": ["automatic business-case cutover"]
+    },
+    {
+      "point_id": "M5.3",
+      "owner": "checkpoint_artifact_owner",
+      "responsibility": "transactional checkpoint and artifact-version lifecycle",
+      "inputs": ["attempt snapshot", "artifact envelope", "checkpoint policy"],
+      "outputs": ["immutable checkpoint", "supersession edge", "stale-write rejection", "recovery read model"],
+      "dependencies": ["M5.1"],
+      "external_dependencies": ["M1 object/store boundary"],
+      "acceptance": ["checkpoint is atomic with event", "stale write fails", "supersession retains prior version", "restart can recover exact snapshot"],
+      "non_goals": ["unbounded context persistence"]
+    },
+    {
+      "point_id": "M5.4",
+      "owner": "capability_security_owner",
+      "responsibility": "capability grants, sandbox, tenant/privacy and tool-scope enforcement",
+      "inputs": ["CapabilityGrant", "permission snapshot", "tenant policy", "tool manifest"],
+      "outputs": ["admission decision", "sandbox trace", "denial reason", "permission snapshot binding"],
+      "dependencies": ["M5.1", "M5.3"],
+      "external_dependencies": ["P32 MCP/tool gateway boundary"],
+      "acceptance": ["unknown capability denied", "tenant cross-read denied", "network/path/tool scope denied", "grant expiry revokes execution"],
+      "non_goals": ["ambient credentials", "implicit tool admission"]
+    },
+    {
+      "point_id": "M5.5",
+      "owner": "budget_slo_owner",
+      "responsibility": "hierarchical budget reservation, refund and typed stop behavior",
+      "inputs": ["case/workunit/attempt budget", "time budget", "tool quota", "reservation policy"],
+      "outputs": ["budget ledger", "typed stop", "reservation/refund event", "SLO observation"],
+      "dependencies": ["M5.1"],
+      "external_dependencies": ["Project OS token-budget policy"],
+      "acceptance": ["budget is reserved before admission", "terminal stop prevents retry", "refund is traceable", "no overrun by fallback"],
+      "non_goals": ["paid model admission"]
+    },
+    {
+      "point_id": "M5.6",
+      "owner": "hitl_governance_owner",
+      "responsibility": "durable approval, pause/resume and approval invalidation",
+      "inputs": ["approval receipt", "scope digest", "checkpoint", "revocation registry"],
+      "outputs": ["paused state", "resume command", "invalidation event", "review queue projection"],
+      "dependencies": ["M5.1", "M5.3", "M5.4"],
+      "external_dependencies": ["M4 approval/registry contract"],
+      "acceptance": ["expired/revoked approval fails closed", "pause survives restart", "resume requires exact scope digest", "review action is append-only"],
+      "non_goals": ["self-approval"]
+    },
+    {
+      "point_id": "M5.7",
+      "owner": "parallel_context_owner",
+      "responsibility": "parallel snapshots, dependency impact and selective invalidation",
+      "inputs": ["snapshot refs", "dependency graph", "delta classification", "lease state"],
+      "outputs": ["isolated branch", "impact decision", "rebase/cancel command", "context recompilation request"],
+      "dependencies": ["M5.1", "M5.2", "M5.3", "M5.4"],
+      "external_dependencies": ["ContextEngine stale-memory invalidation contract"],
+      "acceptance": ["irrelevant delta does not cancel", "relevant delta invalidates dependent branch", "shared mutable context is rejected", "causality is retained"],
+      "non_goals": ["cross-tenant shared state"]
+    },
+    {
+      "point_id": "M5.8",
+      "owner": "observability_ops_owner",
+      "responsibility": "ordered event stream, trace, metrics, alerts and admin inspection",
+      "inputs": ["event envelope", "correlation/causation refs", "SLO policy", "redaction policy"],
+      "outputs": ["idempotent stream", "trace projection", "metric/alert", "admin inspection read model"],
+      "dependencies": ["M5.1", "M5.2", "M5.3", "M5.4", "M5.5", "M5.6", "M5.7"],
+      "external_dependencies": ["OpenTelemetry-style trace contract"],
+      "acceptance": ["reconnect does not duplicate", "events retain ordering", "redaction is enforced", "incident replay is inspectable"],
+      "non_goals": ["raw reasoning capture"]
+    },
+    {
+      "point_id": "M5.9",
+      "owner": "durable_harness_milestone_owner",
+      "responsibility": "M5 aggregate closeout and crash/security/cost/HITL acceptance",
+      "inputs": ["M5.1-M5.8 evidence", "human ops/security review", "rollback/recovery evidence"],
+      "outputs": ["fixed-hash closeout result", "known-boundary record", "M5 milestone decision"],
+      "dependencies": ["M5.1", "M5.2", "M5.3", "M5.4", "M5.5", "M5.6", "M5.7", "M5.8"],
+      "external_dependencies": ["M1-M4 accepted prerequisites"],
+      "acceptance": ["all child points pass", "crash/security/cost/HITL suites pass", "human ops/security acceptance recorded", "no forbidden runtime admission"],
+      "non_goals": ["M6 Evidence/Repair migration"]
+    }
+  ],
+  "forbidden_admissions": [
+    "business_case_mutation",
+    "legacy_taskrun_authority_change",
+    "provider_execution",
+    "evidence_runtime",
+    "writer_runtime",
+    "full_chain",
+    "sector_tenant_global_cutover"
+  ],
+  "human_review_requirement": {
+    "status": "pending_human_ops_security_review",
+    "required_decision": "approve_m5_durable_harness_design_freeze_only",
+    "scope": "M5 design only; it cannot authorize M5.1 worker execution or later runtime admission"
+  }
+}

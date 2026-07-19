@@ -1,0 +1,45 @@
+{
+  "historical_child_execution_observation": {
+    "capture_status": "not_persisted_pre_r1",
+    "observation_digest": "9343b1ff3d5b0766c9f24b27766b0dfd60ceffe86b7babbbf088ccdc30d737ba",
+    "returncode": null,
+    "root_cause_status": "not_determined_no_historical_stream_envelope",
+    "schema_version": "finsight_point01_child_execution_incident_observation_v1_0",
+    "source_attempt_ref": "g2-baseline",
+    "source_receipt_state": "consumed_non_replayable",
+    "stage": "production_actual_clean_child",
+    "stderr": {
+      "capture_status": "not_captured_pre_r1",
+      "digest": null,
+      "excerpt": ""
+    },
+    "stdout": {
+      "capture_status": "not_captured_pre_r1",
+      "digest": null,
+      "excerpt": ""
+    }
+  },
+  "historical_counts": {
+    "actual_artifact_count": 0,
+    "baseline_attempt_count": 1,
+    "baseline_success_count": 0,
+    "negative_case_execution_count": 0,
+    "receipt_consume_count": 1,
+    "receipt_registration_count": 1,
+    "runtime_materialization_count": 1,
+    "terminal_outcome_unknown_count": 1
+  },
+  "historical_ledger_sequence": [
+    "REGISTERED",
+    "CONSUMED_BEFORE_RUN",
+    "TERMINAL:outcome_unknown"
+  ],
+  "historical_result_digest": "58de7732bfeffee09d80f93fb997aa898727c7ea84e29d8c844f7607b92a858b",
+  "historical_terminal_digest": "13785b7d5d0bdee2459842d1eaa7137eccdbd747aa969f36aa309970194daf8c",
+  "incident_link_method": "independent_immutable_reconciliation_artifact",
+  "reconciliation_digest": "7913ee3d38ef3ffd2d28eaf8f5fb2cf4b19545f72deb9dca8d003a032597939a",
+  "remaining_rule": "static_review_may_record_hypothesis_only; root_cause_requires_deterministic_fixture_proof",
+  "schema_version": "finsight_point01_p01_g2_1_r1_historical_incident_reconciliation_v1_0",
+  "status": "historical_terminal_immutable_reconciled_pending_independent_review",
+  "why_terminal_not_rewritten": "the prior append-only TERMINAL(outcome_unknown) predates R1 and the consumed receipt must remain immutable"
+}

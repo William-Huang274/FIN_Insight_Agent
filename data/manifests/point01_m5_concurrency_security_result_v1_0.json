@@ -1,0 +1,30 @@
+{
+  "boundary": "This local synthetic drill exercises only concurrent temporary-store reservations and security admission/revocation. It starts no worker/service and admits no provider, external tool, Evidence/Writer, full-chain, business Case mutation or legacy authority change.",
+  "errors": [],
+  "evidence": {
+    "budget_outcomes": [
+      "reserved",
+      "terminal_stop"
+    ],
+    "budget_reserved_count": 1,
+    "budget_terminal_stop_count": 1,
+    "revoked_grant_denial_code": "capability_grant_revoked",
+    "security_decision_count": 3,
+    "security_outcomes": [
+      "allowed",
+      "denied"
+    ]
+  },
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m5_concurrency_security_policy_v1_0.json": "be2c0b0ff002d715fd7bd3827e1f49ddba24f86847882cc5e1c62d6cc6995a74",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "875ebe893d8b14b4894856af3d27b0e9367d6d885ae20e99f58cd173744f95f1",
+    "scripts/engineering/run_point01_m5_concurrency_security_drills.py": "d67855a6f690859e65e5ea559bf5d46d7f36834b1b213dd1a6d87a10f15ae74f"
+  },
+  "generated_at": "2026-07-13T03:06:30.620200+00:00",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m5_concurrency_security_result_v1_0",
+  "scope": "Point01_M5_local_synthetic_concurrent_budget_reservation_and_security_admission_only",
+  "status": "pass",
+  "worker_started": false
+}

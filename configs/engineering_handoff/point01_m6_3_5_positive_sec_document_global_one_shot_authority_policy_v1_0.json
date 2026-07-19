@@ -1,0 +1,31 @@
+{
+  "policy_version": "finsight_point01_m6_3_5_positive_sec_document_global_one_shot_authority_policy_v1_2",
+  "policy_ref": "point01-m6-3-5-positive-sec-document-global-one-shot-authority-policy-v5-artifact-contract-remediation-refreeze",
+  "fixed_approval_store_relative_path": ".runtime_control/point01_m6_3_5_nvda_sec_document_parser_repaired_global_approval",
+  "receipt_table": "canonical_m6_global_one_shot_approval_versions",
+  "approval_id": "approval_point01_m6_3_5_nvda_10k_artifact_contract_remediation_global_one_shot",
+  "receipt_registration_authority": "requires_external_exact_digest_total_reviewer_decision",
+  "package_manifest_ref": "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_package_manifest_v1_0.json",
+  "required_reviewer": {
+    "name": "william",
+    "employee_id": "003",
+    "role": "total_reviewer"
+  },
+  "authority_boundary": {
+    "approval_store": "fixed_canonical_path_only",
+    "local_store_can_grant_execution": false,
+    "one_shot_nonce": "registration_input_only_sha256_persisted_atomically_consumed_before_send",
+    "receipt_expiry_and_scope": "new_exact_values_required",
+    "receipt_package_digest": "new_exact_values_required",
+    "old_m6_2_receipt_or_user_agent_authority": "not_inherited",
+    "any_new_or_copied_local_store": "cannot_restore_approval",
+    "prior_package_authority": "none",
+    "receipt_authority_object": "package_external_append_only_exact_receipt",
+    "live_send": "requires_active_exact_receipt_in_fixed_approval_store",
+    "prior_v3_receipt": "consumed_incident_evidence_only_not_reusable",
+    "prior_v4_receipt": "consumed_restricted_artifact_evidence_only_not_reusable",
+    "nonce_persistence": "sha256_only_no_raw_nonce_in_authority_or_execution_lineage",
+    "test_and_fixture_isolation": "must_inject_temporary_authority_store_and_non_network_transport",
+    "production_store_access": "explicit_cli_preflight_or_live_entrypoint_only"
+  }
+}

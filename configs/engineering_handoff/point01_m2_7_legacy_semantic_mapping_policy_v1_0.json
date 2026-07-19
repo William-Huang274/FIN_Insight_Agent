@@ -1,0 +1,7 @@
+{
+  "policy_version": "finsight_point01_m2_7_legacy_semantic_mapping_policy_v1_0",
+  "policy_ref": "point01-m2-7-legacy-semantic-mapping-policy-v1",
+  "allowed_actions": ["merge", "split", "downgrade"],
+  "require_information_loss_tags": true,
+  "authority_boundary": "Legacy TaskRun and its required items remain authoritative input/history. Mappings preserve identity and information-loss review; no legacy fact or required item is treated as one-to-one DecisionCell equivalence."
+}

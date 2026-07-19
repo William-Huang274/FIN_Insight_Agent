@@ -1,0 +1,58 @@
+{
+  "registry_version": "finsight_point01_feature_flags_v1_0",
+  "default_deny": true,
+  "flags": [
+    {
+      "flag_id": "decision_surface_shadow_v0_1",
+      "default_mode": "off",
+      "allowed_modes": ["off", "shadow"],
+      "canonical_authority_allowed": false,
+      "scope_keys": ["tenant_id", "project_id", "case_id"],
+      "required_capability_grants": ["point01.shadow.write"],
+      "allowed_consumers": [
+        "point01_shadow_compiler",
+        "point01_shadow_comparator",
+        "point01_reviewer_report"
+      ],
+      "forbidden_consumers": [
+        "evidence_runtime",
+        "numeric_runtime",
+        "specialist_judgment",
+        "memo_writer",
+        "release_pipeline",
+        "monitoring_runtime"
+      ],
+      "kill_switch": {
+        "enabled": true,
+        "fail_closed": true,
+        "preserve_audit_rows": true
+      }
+    },
+    {
+      "flag_id": "decision_surface_planning_cutover_v1_0",
+      "default_mode": "off",
+      "allowed_modes": ["off", "case_scoped"],
+      "canonical_authority_allowed": "case_scoped_only_after_m4_gate",
+      "scope_keys": ["tenant_id", "project_id", "case_id", "lane_id"],
+      "required_capability_grants": ["point01.cutover.execute"],
+      "allowed_consumers": [
+        "planning_authority_cutover",
+        "planning_authority_read_projection"
+      ],
+      "forbidden_consumers": [
+        "evidence_runtime",
+        "numeric_runtime",
+        "specialist_judgment",
+        "memo_writer",
+        "release_pipeline",
+        "monitoring_runtime"
+      ],
+      "kill_switch": {
+        "enabled": true,
+        "fail_closed": true,
+        "rollback_control_transaction_only": true,
+        "preserve_audit_rows": true
+      }
+    }
+  ]
+}

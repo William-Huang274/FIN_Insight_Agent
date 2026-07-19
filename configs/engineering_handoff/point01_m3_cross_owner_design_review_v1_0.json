@@ -1,0 +1,52 @@
+{
+  "review_version": "finsight_point01_m3_cross_owner_design_review_v1_0",
+  "status": "accepted_by_current_thread_user",
+  "review_method": "codex_single_agent_structured_role_separation",
+  "independent_human_or_multi_person_signoff": false,
+  "reviewer_lenses": [
+    "legacy_authority_and_semantic_mapping",
+    "cell_granularity_and_evidence_policy",
+    "calibration_and_negative_control",
+    "provenance_and_candidate_promotion",
+    "review_surface_and_closeout_governance"
+  ],
+  "findings": [
+    {
+      "finding_id": "M3-DR-01",
+      "status": "resolved",
+      "finding": "Structural count parity could be read as semantic comparison quality.",
+      "resolution": "M3.1 reports only merge/split/downgrade semantic coverage and declares count parity non-authoritative."
+    },
+    {
+      "finding_id": "M3-DR-02",
+      "status": "resolved",
+      "finding": "P36 supervisor supplements could be mistaken for accepted runtime evidence.",
+      "resolution": "M3.3 consumes the frozen rubric only and records the supplement/runtime boundary."
+    },
+    {
+      "finding_id": "M3-DR-03",
+      "status": "resolved",
+      "finding": "WorkBuddy prompt-required structures could be directly promoted as FIN packs.",
+      "resolution": "M3.6 rejects prompt_required and uncorroborated WorkBuddy candidates before registry promotion."
+    },
+    {
+      "finding_id": "M3-DR-04",
+      "status": "resolved",
+      "finding": "A reviewer action could accidentally imply a planning authority switch.",
+      "resolution": "M3.7 produces a shadow read model and append-only action trace; M3.8 retains explicit human approval and still forbids M4 cutover."
+    },
+    {
+      "finding_id": "M3-DR-05",
+      "status": "resolved",
+      "finding": "Cross-sector positives could hide source-policy or negative-control failures.",
+      "resolution": "M3.4 requires sector/source-policy deltas and M3.5 independently requires relationship, parser and commercial fail-closed controls."
+    }
+  ],
+  "overall_result": "pass_with_resolved_design_findings_user_confirmed",
+  "user_confirmation": {
+    "status": "accepted",
+    "approver_type": "human",
+    "timestamp": "2026-07-12T21:00:00+08:00",
+    "notes": "Current-thread human reviewer explicitly approved M3 and authorized progression to M4. No authority change is approved by this review itself."
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "manifest_version": "finsight_point01_m6_0_migration_design_freeze_v1_0",
+  "scope": "Point01_M6_Evidence_Repair_downstream_design_only",
+  "point_id": "M6.0",
+  "status": "design_frozen_deterministic_no_runtime_implementation",
+  "authorization": "user_approved_m6_0_design_freeze_only_after_M5_closeout",
+  "prerequisites": {
+    "m5_status": "M5_complete_temporary_store_full_calibrated_reviewed",
+    "legacy_task_run_authority": "authoritative_execution_history_owner",
+    "decision_surface_authority": "planning_pilot_only_read_contract"
+  },
+  "source_tech_contracts": [
+    "TECH_02_agentic_search_evidence_toolgateway_sourcehunter",
+    "TECH_03_document_metadata_rag_knowledge_layer",
+    "TECH_04_numeric_program_trace_parser_promotion",
+    "TECH_05_domain_evidence_operator_decision_surface_projection",
+    "TECH_07_context_engine_skills_compaction_governance",
+    "TECH_08_subagents_as_tools_handoff_contract"
+  ],
+  "authority_boundary": {
+    "legacy_task_run": "authoritative_execution_history_owner",
+    "decision_surface_contract_cell_slot": "read_only_m6_input",
+    "m6_artifact_writes": "not_admitted_in_m6_0",
+    "provider_execution": "not_admitted",
+    "external_tool_or_network_execution": "not_admitted",
+    "evidence_runtime": "not_admitted",
+    "writer_runtime": "not_admitted",
+    "full_chain": "not_admitted",
+    "business_case_mutation": "not_admitted",
+    "legacy_authority_change": "not_admitted"
+  },
+  "input_contracts": [
+    {
+      "artifact": "DecisionSurfaceContract",
+      "owner": "M2_planning_shadow",
+      "access": "read_only_exact_version"
+    },
+    {
+      "artifact": "DecisionSurfaceCell",
+      "owner": "M2_planning_shadow",
+      "access": "read_only_exact_version"
+    },
+    {
+      "artifact": "EvidenceSlot",
+      "owner": "M2_planning_shadow",
+      "access": "read_only_exact_version"
+    },
+    {
+      "artifact": "GapRecord",
+      "owner": "M2_planning_shadow",
+      "access": "read_only_exact_version"
+    },
+    {
+      "artifact": "ContextSnapshot",
+      "owner": "M5_parallel_context",
+      "access": "read_only_exact_version"
+    }
+  ],
+  "artifact_catalog": [
+    {
+      "artifact": "EvidenceRequest",
+      "write_owner": "M6.1_evidence_request_compiler",
+      "required_refs": ["cell_ref", "slot_ref", "entity_ref", "period_ref", "policy_ref", "forbidden_claims", "request_digest"]
+    },
+    {
+      "artifact": "ToolRegistrySnapshot",
+      "write_owner": "M6.2_tool_registry_planner",
+      "required_refs": ["registry_version", "tool_manifest_refs", "capability_policy_ref", "route_policy_ref"]
+    },
+    {
+      "artifact": "ToolSelectionPlan",
+      "write_owner": "M6.2_tool_registry_planner",
+      "required_refs": ["evidence_request_ref", "tool_registry_version", "capability_scope", "budget_ref", "stop_policy_ref"]
+    },
+    {
+      "artifact": "ToolInvocationReceipt",
+      "write_owner": "M6.2_tool_registry_planner",
+      "required_refs": ["tool_selection_plan_ref", "admission_receipt_ref", "request_digest", "outcome"]
+    },
+    {
+      "artifact": "CandidateBundle",
+      "write_owner": "M6.3_candidate_context_expansion",
+      "required_refs": ["evidence_request_ref", "retrieval_policy_ref", "candidate_refs", "exhaustion_status"]
+    },
+    {
+      "artifact": "RepairTicket",
+      "write_owner": "M6.4_source_repair_owner",
+      "required_refs": ["origin_evidence_request_ref", "gap_ref", "attempt_budget_ref", "stop_reason", "routing_scope"]
+    },
+    {
+      "artifact": "RepairAttempt",
+      "write_owner": "M6.4_source_repair_owner",
+      "required_refs": ["repair_ticket_ref", "source_policy_ref", "attempt_no", "outcome", "stop_reason"]
+    },
+    {
+      "artifact": "ParserCandidate",
+      "write_owner": "M6.5_parser_numeric_owner",
+      "required_refs": ["candidate_bundle_ref", "source_ref", "table_or_section_ref", "parse_policy_ref"]
+    },
+    {
+      "artifact": "NormalizedNumericFact",
+      "write_owner": "M6.5_parser_numeric_owner",
+      "required_refs": ["parser_candidate_ref", "unit", "period", "row_label", "normalization_policy_ref"]
+    },
+    {
+      "artifact": "NumericProgramTrace",
+      "write_owner": "M6.5_parser_numeric_owner",
+      "required_refs": ["normalized_fact_refs", "metric_definition_ref", "input_digest", "trace_digest"]
+    },
+    {
+      "artifact": "EvidencePromotionDecision",
+      "write_owner": "M6.6_evidence_gate_owner",
+      "required_refs": ["evidence_request_ref", "candidate_or_numeric_ref", "decision", "typed_gap_or_rejection", "policy_ref"]
+    },
+    {
+      "artifact": "DomainJudgmentPack",
+      "write_owner": "M6.7_domain_operator_owner",
+      "required_refs": ["promotion_decision_refs", "mechanism", "counterevidence", "confidence", "cell_ref"]
+    },
+    {
+      "artifact": "ContextRequirement",
+      "write_owner": "M6.8_lead_context_handoff_owner",
+      "required_refs": ["consumer_role", "cell_or_claim_scope", "dependency_refs", "snapshot_ref", "budget_ref"]
+    },
+    {
+      "artifact": "ContextInjectionPlan",
+      "write_owner": "M6.8_lead_context_handoff_owner",
+      "required_refs": ["context_requirement_ref", "approved_artifact_refs", "provenance_refs", "injection_digest"]
+    },
+    {
+      "artifact": "LeadRepairDecision",
+      "write_owner": "M6.8_lead_context_handoff_owner",
+      "required_refs": ["repair_ticket_ref", "action", "scope_digest", "handoff_ref", "reason"]
+    }
+  ],
+  "children": [
+    {"point_id": "M6.1", "owner": "M6.1_evidence_request_compiler", "status": "not_implemented", "responsibility": "compile an exact read-only DecisionSurface Cell and EvidenceSlot into a typed EvidenceRequest", "writes": ["EvidenceRequest"], "dependencies": []},
+    {"point_id": "M6.2", "owner": "M6.2_tool_registry_planner", "status": "not_implemented", "responsibility": "own a versioned Tool Registry snapshot, select a bounded registry route and record a tool invocation receipt", "writes": ["ToolRegistrySnapshot", "ToolSelectionPlan", "ToolInvocationReceipt"], "dependencies": ["M6.1"]},
+    {"point_id": "M6.3", "owner": "M6.3_candidate_context_expansion", "status": "not_implemented", "responsibility": "produce metadata-first candidate and context expansion bundles", "writes": ["CandidateBundle"], "dependencies": ["M6.1", "M6.2"]},
+    {"point_id": "M6.4", "owner": "M6.4_source_repair_owner", "status": "not_implemented", "responsibility": "route bounded source repair from a typed gap without changing the originating request", "writes": ["RepairTicket", "RepairAttempt"], "dependencies": ["M6.1", "M6.2", "M6.3"]},
+    {"point_id": "M6.5", "owner": "M6.5_parser_numeric_owner", "status": "not_implemented", "responsibility": "parse, normalize and trace numeric facts without promoting them", "writes": ["ParserCandidate", "NormalizedNumericFact", "NumericProgramTrace"], "dependencies": ["M6.3", "M6.4"]},
+    {"point_id": "M6.6", "owner": "M6.6_evidence_gate_owner", "status": "not_implemented", "responsibility": "make a policy-bound evidence promotion, context-only or typed-gap decision", "writes": ["EvidencePromotionDecision"], "dependencies": ["M6.1", "M6.3", "M6.5"]},
+    {"point_id": "M6.7", "owner": "M6.7_domain_operator_owner", "status": "not_implemented", "responsibility": "derive evidence-to-mechanism-to-judgment packs with counterevidence", "writes": ["DomainJudgmentPack"], "dependencies": ["M6.6"]},
+    {"point_id": "M6.8", "owner": "M6.8_lead_context_handoff_owner", "status": "not_implemented", "responsibility": "create exact context requirements, provenance-bound injection and lead repair decisions", "writes": ["ContextRequirement", "ContextInjectionPlan", "LeadRepairDecision"], "dependencies": ["M6.4", "M6.6", "M6.7"]},
+    {"point_id": "M6.9", "owner": "M6.9_downstream_calibration_owner", "status": "not_implemented", "responsibility": "evaluate an admitted downstream chain only after all preceding points pass", "writes": [], "dependencies": ["M6.1", "M6.2", "M6.3", "M6.4", "M6.5", "M6.6", "M6.7", "M6.8"]},
+    {"point_id": "M6.10", "owner": "M6.10_milestone_closeout_owner", "status": "blocked_pending_m6_1_to_m6_9", "responsibility": "close M6 only from complete child evidence and independent acceptance", "writes": [], "dependencies": ["M6.1", "M6.2", "M6.3", "M6.4", "M6.5", "M6.6", "M6.7", "M6.8", "M6.9"]}
+  ],
+  "dataflow": [
+    {"from": "DecisionSurfaceCell", "to": "EvidenceRequest", "mode": "read_only_compile"},
+    {"from": "EvidenceSlot", "to": "EvidenceRequest", "mode": "read_only_compile"},
+    {"from": "EvidenceRequest", "to": "ToolSelectionPlan", "mode": "derive"},
+    {"from": "ToolRegistrySnapshot", "to": "ToolSelectionPlan", "mode": "read_only_policy_input"},
+    {"from": "ToolSelectionPlan", "to": "ToolInvocationReceipt", "mode": "derive"},
+    {"from": "ToolSelectionPlan", "to": "CandidateBundle", "mode": "bounded_input"},
+    {"from": "CandidateBundle", "to": "RepairTicket", "mode": "typed_gap_only"},
+    {"from": "RepairTicket", "to": "ToolSelectionPlan", "mode": "bounded_feedback", "required_controls": ["origin_evidence_request_ref", "attempt_budget_ref", "stop_reason"]},
+    {"from": "CandidateBundle", "to": "ParserCandidate", "mode": "derive"},
+    {"from": "ParserCandidate", "to": "NormalizedNumericFact", "mode": "derive"},
+    {"from": "NormalizedNumericFact", "to": "NumericProgramTrace", "mode": "derive"},
+    {"from": "NumericProgramTrace", "to": "EvidencePromotionDecision", "mode": "policy_decision"},
+    {"from": "CandidateBundle", "to": "EvidencePromotionDecision", "mode": "policy_decision"},
+    {"from": "EvidencePromotionDecision", "to": "DomainJudgmentPack", "mode": "accepted_or_context_only_input"},
+    {"from": "EvidencePromotionDecision", "to": "ContextRequirement", "mode": "accepted_or_context_only_input"},
+    {"from": "DomainJudgmentPack", "to": "ContextRequirement", "mode": "read_only_scope"},
+    {"from": "ContextRequirement", "to": "ContextInjectionPlan", "mode": "derive"},
+    {"from": "RepairTicket", "to": "LeadRepairDecision", "mode": "read_only_governance"}
+  ],
+  "no_compound_writer_contract": {
+    "status": "required",
+    "rule": "Each artifact has exactly one designated write owner. A consumer may derive only its own listed outputs and must not patch, merge, promote or overwrite another owner's artifact.",
+    "prohibited_patterns": ["compound_writer", "cross_owner_upsert", "direct_cell_or_slot_mutation", "implicit_evidence_promotion", "writer_side_evidence_merge", "provider_side_contract_mutation"],
+    "repair_loop_rule": "RepairTicket feedback may create a new bounded ToolSelectionPlan only; it cannot mutate EvidenceRequest, CandidateBundle, parser facts, promotion decisions, judgment packs or planning inputs."
+  },
+  "implementation_admission": {
+    "status": "no_runtime_implementation_admitted",
+    "allowed_in_m6_0": ["contract documentation", "static design lint", "deterministic negative lint tests"],
+    "requires_before_m6_1": ["independent cross-owner review of exact manifest version", "explicit user authorization for M6.1", "M6.1 request schema and deterministic fixture admission"],
+    "forbidden_admissions": ["provider_execution", "external_tool_execution", "network_execution", "evidence_runtime", "writer_runtime", "full_chain", "business_case_mutation", "legacy_authority_change", "compound_writer", "paid_model_run"]
+  },
+  "cross_owner_design_review": {
+    "status": "structured_local_design_review_complete",
+    "lenses": ["planning_contract_owner", "evidence_safety_owner", "retrieval_metadata_owner", "parser_numeric_owner", "domain_judgment_owner", "context_handoff_owner"],
+    "implementation_gate": "independent_cross_owner_review_and_explicit_user_authorization_required_before_M6_1"
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "design_version": "finsight_point01_m6_3_5_positive_sec_document_pilot_design_v1_0",
+  "scope": "Point01_M6_3_M6_5_single_document_positive_retrieval_parser_design_only",
+  "status": "immutable_runtime_contract_external_total_reviewer_decision_required",
+  "authorization": {
+    "design_authorization": "immutable_runtime_contract_only",
+    "external_execution": "requires_active_exact_receipt_in_fixed_approval_store",
+    "receipt_registration": "requires_external_exact_digest_total_reviewer_decision",
+    "required_human_approval_ref": "approve_m6_3_5_single_sec_document_positive_retrieval_parser_pilot_only",
+    "prior_m6_2_one_shot_receipt": "consumed_and_not_reusable"
+  },
+  "prerequisites": {
+    "m6_1_evidence_request": "exact_version_and_digest_required",
+    "m6_2_global_approval_store": "fixed_canonical_store_required_for_new_receipt",
+    "m6_2_metadata_receipt": "tool_invocation_a80a2cc063561dcca1c1e3c6:v4_consumed_not_reusable",
+    "m6_3_5_terminal_chain": "real_no_invention_terminal_chain_complete",
+    "target_document_locator": "approved_nvda_10k_exact_locator_v1"
+  },
+  "target_document": {
+    "issuer": "NVIDIA",
+    "ticker": "NVDA",
+    "cik": "0001045810",
+    "accession_number": "0001045810-25-000023",
+    "form_type": "10-K",
+    "report_period": "2025-01-26",
+    "exact_path": "/Archives/edgar/data/1045810/000104581025000023/nvda-20250126.htm",
+    "exact_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581025000023/nvda-20250126.htm",
+    "target_table_selector": {
+      "table_heading_normalized": "CONSOLIDATED STATEMENTS OF INCOME",
+      "unit_caption_normalized": "In millions, except per share data",
+      "row_label_normalized": "Revenue",
+      "column_period_normalized": "Year Ended January 26, 2025",
+      "xbrl_concept_hint": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+      "financial_statement_role": "consolidated_primary_financial_statement"
+    },
+    "reviewer_blind_oracle": {
+      "allowed_runtime_use": false,
+      "allowed_post_execution_use": true,
+      "value_oracle_injected_into_retrieval_parser": false
+    }
+  },
+  "new_receipt_requirements": {
+    "approval_id": "new_unique_approval_id_required",
+    "approval_nonce": "new_unique_one_shot_nonce_required",
+    "expires_at_utc": "new_future_utc_expiry_required",
+    "reviewer": "william_003_required",
+    "package_digest": "exact_positive_pilot_package_digest_required",
+    "scope_digest": "exact_document_locator_and_policy_digest_required",
+    "atomic_consume_before_send": true,
+    "receipt_reuse": "forbidden"
+  },
+  "source_boundary": {
+    "allowed_host": "www.sec.gov",
+    "allowed_path_prefix": "/Archives/edgar/data/",
+    "max_external_calls": 1,
+    "max_fallback_calls": 0,
+    "max_retry_calls": 0,
+    "directory_listing": "forbidden",
+    "web_search": "forbidden",
+    "issuer_or_host_substitution": "forbidden",
+    "document_locator_fields": [
+      "cik",
+      "accession_number",
+      "primary_document_path",
+      "form_type",
+      "report_period",
+      "target_table_selector"
+    ],
+    "document_content_digest": "must_be_recorded_after_single_fetch_before_candidate_or_parser_write",
+    "raw_document_git_persistence": "forbidden",
+    "raw_document_retention": "isolated_temporary_store_only",
+    "reviewer_local_compatibility": "read_only_hash_and_post_parse_output_only"
+  },
+  "execution_boundary": {
+    "case_scope": "isolated_nonproduction_synthetic_case_only",
+    "capability_readmission_in_send_transaction": true,
+    "budget_reservation": "one_call_exact_reservation_required",
+    "send_boundary": "prepared_to_send_authorized_to_send_started_to_terminal_or_outcome_unknown",
+    "restart_reconciliation": "no_resend_after_send_started",
+    "user_agent": "compliant_process_local_value_only_redacted_fingerprint_in_receipt"
+  },
+  "incident_remediation_isolation": {
+    "incident_disposition": "v3_consumed_receipt_and_http_200_quarantined_not_retrospectively_authorized",
+    "importable_package_builder": "no_fixed_authority_store_or_transport_access",
+    "library_execution": "explicit_authority_service_and_client_injection_required",
+    "default_transport": "fail_closed_no_network",
+    "real_transport": "explicit_cli_live_entrypoint_only_after_exact_active_receipt_preflight",
+    "contract_fixture_authority": "temporary_injected_store_only",
+    "contract_fixture_transport": "injected_non_network_client_only",
+    "production_store_during_contract_suite": "state_and_fingerprint_must_remain_unchanged"
+  },
+  "artifact_boundary": {
+    "candidate_bundle": "real_source_coordinate_candidate_allowed_but_unpromoted",
+    "parser_candidate": "real_bounded_table_parse_allowed_but_unpromoted",
+    "normalized_numeric_fact": "real_single_table_fact_allowed_but_unpromoted",
+    "numeric_program_trace": "exact_source_coordinate_unit_scale_period_trace_required",
+    "evidence_promotion": "forbidden",
+    "writer_citable": false,
+    "domain_judgment_eligible": false,
+    "formal_evidence_persistence": "forbidden",
+    "writer_domain_judgment_full_chain": "forbidden",
+    "table_selection": "table_local_exact_heading_and_unit_with_primary_statement_role_required",
+    "period_semantics": "month_token_normalized_to_iso_date_with_year_ended_group",
+    "currency_numeric_binding": "same_period_group_currency_marker_and_single_numeric_cell_required",
+    "xbrl_concept_hint": "auxiliary_only_never_primary_selection_authority"
+  },
+  "m6_4_repair_boundary": {
+    "successful_primary_candidate": "no_repair_ticket_or_sourcehunter_execution",
+    "retrieval_or_parse_failure": "typed_terminal_stop_only",
+    "repair_attempt_budget": 0,
+    "sourcehunter": "not_admitted"
+  },
+  "acceptance_contract": {
+    "positive_required": [
+      "exact_locator_and_receipt_scope_match",
+      "one_terminal_tool_receipt_with_redacted_user_agent_fingerprint",
+      "one_candidate_with_exact_table_coordinate_and_source_digest",
+      "one_parser_candidate_with_layout_and_table_lineage",
+      "one_unpromoted_numeric_fact_with_unit_scale_iso_period",
+      "one_numeric_program_trace_bound_to_all_parent_digests"
+    ],
+    "negative_required": [
+      "wrong_cik_accession_or_path_fails_before_send",
+      "locator_scope_or_package_digest_mismatch_fails_before_send",
+      "second_send_or_retry_fails_closed",
+      "missing_table_selector_or_source_coordinate_fails_closed",
+      "unit_scale_period_mismatch_fails_closed",
+      "promotion_or_writer_consumer_fails_closed",
+      "send_started_crash_reconciles_without_resend",
+      "wrong_table_with_same_revenue_is_rejected",
+      "duplicate_primary_statement_is_ambiguous",
+      "malformed_colspan_cannot_shift_period_group",
+      "month_abbreviation_normalizes_without_literal_month_match",
+      "currency_only_cell_cannot_be_promoted_as_numeric",
+      "importable_package_builder_cannot_open_production_authority_or_real_transport",
+      "missing_injected_authority_or_client_fails_before_receipt_or_runtime_access",
+      "active_temporary_canary_receipt_uses_only_fake_transport_and_temporary_store",
+      "production_authority_state_and_fingerprint_unchanged_across_contract_suite"
+    ]
+  },
+  "parser_compatibility_gate": {
+    "sanitized_actual_shape_fixture": "tests/fixtures/point01_m6_3_5_nvda_10k_actual_shape_sanitized.html",
+    "reviewer_local_source": "read_only_not_runtime_input_or_git_artifact",
+    "required_output": "unique_primary_statement_coordinate_usd_millions_iso_period_post_parse_oracle_only",
+    "package_disposition": "immutable_parser_contract_v2"
+  },
+  "prohibited": [
+    "generic_external_execution",
+    "additional_sec_metadata_request",
+    "directory_listing",
+    "web_search",
+    "rag_sql_graph_recall",
+    "sourcehunter_execution",
+    "evidence_promotion",
+    "writer_runtime",
+    "domain_judgment",
+    "m6_7_execution",
+    "full_chain",
+    "provider_or_paid_model",
+    "business_case_mutation",
+    "legacy_authority_change",
+    "compound_writer"
+  ]
+}

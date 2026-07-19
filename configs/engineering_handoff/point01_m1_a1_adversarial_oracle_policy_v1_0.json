@@ -1,0 +1,11 @@
+{
+  "schema_version": "finsight_point01_m1_a1_adversarial_oracle_policy_v1_2",
+  "scope": "M1_A1_post_execution_independent_oracle_only",
+  "required_actual_assertions": {
+    "A0-M1-P01": {"actual_status": "pass", "package_tamper_stop": "package_digest_mismatch", "event_payload_digest_tamper": "IntegrityError", "artifact_tamper_stop": "ArtifactValidationError", "replay_tamper_stop": "UnknownEventSchema"},
+    "A0-M1-P02": {"actual_status": "pass", "duplicate_idempotent": true, "idempotency_conflict_stop": "IdempotencyConflict", "stale_state_stop": "StaleStateVersion", "stale_attempt_terminal_stop": "IllegalStateTransition", "retry_budget_stop": "IllegalStateTransition", "stale_fencing_stop": "LeaseValidationError", "retry_terminal_state": "failed"},
+    "A0-M1-P03": {"actual_status": "pass", "fixed_store_open_stop": "AuditAccessViolation:audit_fixed_store_path_forbidden", "ambient_store_open_stop": "AuditAccessViolation:audit_store_path_not_allowlisted", "transport_constructor_stop": "AuditTransportViolation:audit_transport_constructor_forbidden"},
+    "A0-M1-P04": {"actual_status": "pass", "legacy_binding_authority_before": "authoritative", "legacy_binding_authority_after": "authoritative", "cross_case_legacy_binding_stop": "LegacyBindingConflict", "event_sequence_tamper": "IntegrityError", "recovery_status": "pass", "recovery_projection_matches": true}
+  },
+  "oracle_boundary": "post_execution_only_no_import_of_actual_probe_module_no_runtime_expected_disposition_access"
+}

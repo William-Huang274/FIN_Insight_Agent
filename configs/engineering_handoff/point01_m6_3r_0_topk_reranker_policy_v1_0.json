@@ -1,0 +1,33 @@
+{
+  "policy_version": "finsight_point01_m6_3r_0_topk_reranker_policy_v1_0",
+  "point": "M6.3R.0",
+  "stage": "design_repair_independently_accepted",
+  "request_binding": {
+    "request_source": "EvidenceRequest.topk_policy",
+    "required_context": ["evidence_request_digest", "evidence_role", "source_type", "profile_id", "profile_version"],
+    "agent_free_parameterization": "forbidden",
+    "runtime_status": "not_implemented_or_authorized_at_design_point"
+  },
+  "default_profile": {
+    "profile_id": "local_retrieval_default",
+    "profile_version": "v1",
+    "authority": "TECH_02_default_request_bound_policy",
+    "defaults": {"candidate_bundle_top_k": 50, "rerank_top_k": 20, "evidence_gate_candidate_top_k": 5},
+    "allowed_bounds": {"candidate_bundle_top_k": {"minimum": 20, "maximum": 50}, "rerank_top_k": {"minimum": 8, "maximum": 20}, "evidence_gate_candidate_top_k": {"minimum": 1, "maximum": 5}},
+    "request_capacity_rule": "A request whose topk_policy lacks capacity for this profile must be rejected or use an explicitly versioned lowering profile; it may never be silently enlarged."
+  },
+  "source_role_lowering_profiles": [
+    {
+      "profile_id": "local_relationship_context_low_volume",
+      "profile_version": "v1",
+      "matches": {"evidence_role": "relationship_context", "source_type": "local_graph"},
+      "resolved_values": {"candidate_bundle_top_k": 16, "rerank_top_k": 8, "evidence_gate_candidate_top_k": 3},
+      "lowering_authority": "explicit_source_role_profile_only",
+      "note": "This is a documented lower-volume exception; it may not be selected or enlarged by an agent."
+    }
+  ],
+  "increase_policy": {"current_status": "not_authorized", "requires": ["explicit_profile_id", "explicit_profile_version", "authority_reference", "package_review"], "hard_maxima_remain": true},
+  "audit_projection_required": ["requested_topk_policy", "resolved_topk_policy", "resolver_profile_id", "resolver_profile_version", "source_type_and_evidence_role", "clamp_or_reject_reason", "candidate_bundle_candidate_ids", "evidence_gate_candidate_ids"],
+  "candidate_role_separation": {"candidate_bundle_candidate_ids": "retrieval/rerank output capacity; never evidence acceptance", "evidence_gate_candidate_ids": "at most five designated candidates for a future Evidence Gate input; never promotion at M6.3R.0"},
+  "reranker_profiles": {"local_lexical_metadata_reranker:v1": {"kind": "deterministic_zero_model_baseline", "model_call_count": 0, "components": ["lexical", "metadata", "authority", "coordinate_completeness", "stable_tie_break"]}, "future_model_reranker": {"status": "separate_authorization_required", "cannot_share_execution_route": true}}
+}

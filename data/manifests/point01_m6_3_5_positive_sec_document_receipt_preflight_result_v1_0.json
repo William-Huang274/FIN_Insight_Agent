@@ -1,0 +1,54 @@
+{
+  "after_digests": {
+    "manifest_digest": "8970c0aae48d9059ed11d8ec8efc54882a8cbc74e32ee4f29f5932c792b714f3",
+    "package_digest": "7d2a5b40ad765a8de655c1d0fbd73e82130ed58e1be659cb5899aa5871054ca5",
+    "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v3-immutable-authority-boundary",
+    "scope_digest": "ad5df001105162f36528c217457464df65ff5e4e1778c55134412a50296ee1b0"
+  },
+  "before_digests": {
+    "manifest_digest": "8970c0aae48d9059ed11d8ec8efc54882a8cbc74e32ee4f29f5932c792b714f3",
+    "package_digest": "7d2a5b40ad765a8de655c1d0fbd73e82130ed58e1be659cb5899aa5871054ca5",
+    "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v3-immutable-authority-boundary",
+    "scope_digest": "ad5df001105162f36528c217457464df65ff5e4e1778c55134412a50296ee1b0"
+  },
+  "digest_stability": true,
+  "execution_state": "receipt_registered_preflight_only_live_send_separately_pending",
+  "expected_package": {
+    "manifest_digest": "8970c0aae48d9059ed11d8ec8efc54882a8cbc74e32ee4f29f5932c792b714f3",
+    "package_digest": "7d2a5b40ad765a8de655c1d0fbd73e82130ed58e1be659cb5899aa5871054ca5",
+    "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v3-immutable-authority-boundary",
+    "scope_digest": "ad5df001105162f36528c217457464df65ff5e4e1778c55134412a50296ee1b0"
+  },
+  "external_call_count": 0,
+  "fixed_approval_store_identity": "a62079db4293d7430a2c912fdb5cbec0446cf2eb442a1e5c623d64ac545ddd01",
+  "generated_at": "2026-07-13T12:29:04.367704+00:00",
+  "live_send_performed": false,
+  "network_request_count": 0,
+  "one_shot_unconsumed": true,
+  "reason": "active_exact_unconsumed_receipt_preflight_passed",
+  "receipt": {
+    "approval_id": "approval_point01_m6_3_5_nvda_10k_revenue_parser_repaired_global_one_shot",
+    "approval_state": "active",
+    "expires_at_utc": "2026-07-13T12:53:53+00:00",
+    "manifest_digest": "8970c0aae48d9059ed11d8ec8efc54882a8cbc74e32ee4f29f5932c792b714f3",
+    "nonce_summary": {
+      "prefix": "86d0623f…",
+      "sha256": "373f2994a26519a76b72ad980759340d10f00e917c4f13e0cb899b3629257b92"
+    },
+    "package_digest": "7d2a5b40ad765a8de655c1d0fbd73e82130ed58e1be659cb5899aa5871054ca5",
+    "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v3-immutable-authority-boundary",
+    "receipt_identity": "approval_point01_m6_3_5_nvda_10k_revenue_parser_repaired_global_one_shot:v1",
+    "reviewer": {
+      "employee_id": "003",
+      "name": "william",
+      "role": "total_reviewer"
+    },
+    "scope_digest": "ad5df001105162f36528c217457464df65ff5e4e1778c55134412a50296ee1b0"
+  },
+  "result_version": "finsight_point01_m6_3_5_positive_sec_document_receipt_preflight_result_v1_0",
+  "scope_exact": true,
+  "status": "pass",
+  "store_write_count": 0,
+  "tool_invocation_count": 0,
+  "user_agent_plaintext_persisted": false
+}

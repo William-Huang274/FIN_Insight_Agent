@@ -1,0 +1,130 @@
+{
+  "manifest_version": "finsight_point01_m2_design_freeze_v1_0",
+  "scope": "Point01_M2_0_design_freeze_only",
+  "authority_boundary": {
+    "legacy_task_run": "authoritative",
+    "canonical_lane": "shadow_only",
+    "cutover": "forbidden"
+  },
+  "design_review": {
+    "status": "user_confirmed_calibration_accepted",
+    "required_for_m2_0_calibration": true,
+    "not_a_gate_for_child_spec_lint": true,
+    "evidence_path": "configs/engineering_handoff/point01_m2_cross_owner_design_review_v1_0.json"
+  },
+  "external_contracts": {
+    "BudgetPreflight": {"provider": "runtime_budget_governance", "authority_boundary": "admission_input_only"},
+    "CaseScope": {"provider": "M1_canonical_runtime", "authority_boundary": "shadow_case_scope_only"},
+    "CompilerInputSeed": {"provider": "case_request_adapter", "authority_boundary": "untrusted_input_must_be_validated"},
+    "LeadBoundaryAudit": {"provider": "M2_acceptance_fixture", "authority_boundary": "lead_cannot_retrieve_supplement_or_write_conclusion"},
+    "LegacyResearchObjective": {"provider": "legacy_task_run", "authority_boundary": "legacy_authoritative_input_only"},
+    "M2_1_to_M2_9_GateEvidence": {"provider": "M2_child_gate_artifacts", "authority_boundary": "evidence_aggregate_not_runtime_authority"},
+    "PackPublicationRequest": {"provider": "pack_governance_workflow", "authority_boundary": "versioned_publication_request_only"},
+    "PackVersionMetadata": {"provider": "pack_governance_workflow", "authority_boundary": "must_be_versioned_and_freshness_checked"},
+    "PermissionSnapshot": {"provider": "M1_canonical_runtime", "authority_boundary": "immutable_admission_input_only"},
+    "PositiveAndNegativeCalibrationCorpus": {"provider": "M2_acceptance_fixture", "authority_boundary": "calibration_only_not_live_research_output"},
+    "ProviderPreflight": {"provider": "provider_governance", "authority_boundary": "admission_input_only"},
+    "WorkUnitAttemptContext": {"provider": "M1_canonical_runtime", "authority_boundary": "shadow_attempt_context_only"}
+  },
+  "enforced_boundaries": [
+    "no_m3_shadow_comparison_or_reviewer_decision",
+    "no_m4_authority_cutover",
+    "no_paid_model_or_full_chain",
+    "no_evidence_or_writer_runtime",
+    "legacy_task_run_remains_authoritative",
+    "decision_surface_remains_shadow_only"
+  ],
+  "child_contracts": [
+    {
+      "point_id": "M2.1",
+      "owner": "decision_surface_schema_owner",
+      "owned_objects": ["CompilerInputContract", "DecisionCellPolicyValidator", "EvidenceSlotPolicyValidator", "CompilerInputValidationReport"],
+      "input_contracts": ["CaseScope", "CompilerInputSeed"],
+      "output_contracts": ["ValidatedCompilerInput", "CompilerInputValidationReport", "NormalizedIntentProfile"],
+      "dependencies": [],
+      "acceptance_boundary": ["enforce 10_to_20_cell_policy", "reject cycles, missing owners, invalid slots, stop/source/forbidden policy violations", "do_not_generate_cells_from_model"]
+    },
+    {
+      "point_id": "M2.2",
+      "owner": "decision_surface_assembly_owner",
+      "owned_objects": ["DecisionSurfaceBundleAssembler", "DecisionSurfaceArtifactSerializer", "DecisionSurfaceReadbackVerifier"],
+      "input_contracts": ["ValidatedCompilerInput", "PackResolution", "ExplainedPackSelectionDecision", "ComposedDecisionCellSet", "CellCompositionTrace", "CompiledEvidenceSlotSet", "EvidenceSourcePolicyTrace", "TypedCompileGapSet", "LegacyMigrationPlan"],
+      "output_contracts": ["DecisionSurfaceBundle", "DecisionSurfaceArtifactEnvelope", "DecisionSurfaceReadbackReport"],
+      "dependencies": ["M2.1", "M2.3", "M2.4", "M2.5", "M2.6", "M2.7"],
+      "acceptance_boundary": ["preserve case_delta, pack_refs, observations, lineage and gaps", "atomic_commit_and_readback", "do_not_drop_unknown_fields"]
+    },
+    {
+      "point_id": "M2.3",
+      "owner": "planning_pack_registry_owner",
+      "owned_objects": ["PlanningPackVersion", "PlanningPackRegistry", "PlanningPackFreshnessPolicy", "PlanningPackSupersessionLedger"],
+      "input_contracts": ["PackPublicationRequest", "PackVersionMetadata", "CaseScope"],
+      "output_contracts": ["PackResolution", "PackLifecycleEvent", "PackFreshnessReport", "ResolvedSourceAuthorityPolicySet"],
+      "dependencies": ["M2.1"],
+      "acceptance_boundary": ["support universal, sector, report_type and case_delta lifecycles", "resolve exact_version, freshness and supersession", "do_not_promote_document_only_pack_to_runtime"]
+    },
+    {
+      "point_id": "M2.4",
+      "owner": "planning_pack_selection_owner",
+      "owned_objects": ["PackSelectionEngine", "PackSelectionIntentClassifier", "PackSelectionReason", "PackSelectionConflict"],
+      "input_contracts": ["ValidatedCompilerInput", "NormalizedIntentProfile", "PackResolution"],
+      "output_contracts": ["ExplainedPackSelectionDecision", "PackSelectionIntentProfile", "PackSelectionRejectionSet"],
+      "dependencies": ["M2.1", "M2.3"],
+      "acceptance_boundary": ["selection must retain reason, rejection and conflict", "resolve no pack from unversioned label", "do_not_write_legacy_taskrun"]
+    },
+    {
+      "point_id": "M2.5",
+      "owner": "decision_cell_composition_owner",
+      "owned_objects": ["CellCompositionEngine", "CellMergeSplitPolicy", "WhatWouldChangeResponsibility"],
+      "input_contracts": ["ValidatedCompilerInput", "ExplainedPackSelectionDecision", "PackResolution"],
+      "output_contracts": ["ComposedDecisionCellSet", "CellCompositionTrace"],
+      "dependencies": ["M2.1", "M2.3", "M2.4"],
+      "acceptance_boundary": ["produce 10_to_20_material_judgment_cells", "retain dependencies, owner and counterevidence responsibility", "do_not_replace cells with generic legacy facts"]
+    },
+    {
+      "point_id": "M2.6",
+      "owner": "evidence_slot_policy_owner",
+      "owned_objects": ["SectorEvidenceOntology", "EvidenceSlotPolicyCompiler", "CommercialGapPolicy"],
+      "input_contracts": ["ComposedDecisionCellSet", "PackResolution", "ResolvedSourceAuthorityPolicySet"],
+      "output_contracts": ["CompiledEvidenceSlotSet", "EvidenceSourcePolicyTrace", "TypedCompileGapSet"],
+      "dependencies": ["M2.1", "M2.3", "M2.5"],
+      "acceptance_boundary": ["resolve required slot, period, entity, source and forbidden substitution", "emit typed parser, relationship and commercial gaps", "do_not_treat proxy as exact authority"]
+    },
+    {
+      "point_id": "M2.7",
+      "owner": "legacy_objective_migration_owner",
+      "owned_objects": ["LegacyObjectiveSemanticMapper", "LegacyInformationLossReview", "LegacyDowngradeMapping"],
+      "input_contracts": ["LegacyResearchObjective", "ComposedDecisionCellSet", "CompiledEvidenceSlotSet"],
+      "output_contracts": ["LegacyMigrationPlan", "LegacyInformationLossReport"],
+      "dependencies": ["M2.5", "M2.6"],
+      "acceptance_boundary": ["preserve identity and input history", "allow semantic merge, split and downgrade", "forbid one_to_one_legacy_fact_as_cell_equivalence"]
+    },
+    {
+      "point_id": "M2.8",
+      "owner": "compiler_model_admission_owner",
+      "owned_objects": ["CompilerModelAdapterProtocol", "CompilerPromptContextSnapshot", "StructuredOutputRepairTrace", "ModelAdmissionDecision"],
+      "input_contracts": ["ValidatedCompilerInput", "DecisionSurfaceArtifactEnvelope", "ProviderPreflight", "BudgetPreflight", "PermissionSnapshot"],
+      "output_contracts": ["ModelCompilationProposal", "ModelAdmissionDecision", "ModelAdmissionAuditTrace"],
+      "dependencies": ["M2.1", "M2.2"],
+      "model_run_admission": {"model_execution_permitted": false, "requires_explicit_approved_scoped_node": true, "requires_feature_flag": true, "requires_provider_preflight": true, "requires_budget_preflight": true},
+      "acceptance_boundary": ["keep DeepSeek_first_GPT_ready_protocol_only", "denied_path_is_deterministic_fixture", "no_model_call_without_explicit_approved_scoped_node"]
+    },
+    {
+      "point_id": "M2.9",
+      "owner": "shadow_compiler_orchestration_owner",
+      "owned_objects": ["ShadowCompilerOrchestrator", "ShadowCompilationAttemptTrace", "ShadowRepairProjection"],
+      "input_contracts": ["DecisionSurfaceBundle", "LegacyMigrationPlan", "ModelAdmissionDecision", "WorkUnitAttemptContext"],
+      "output_contracts": ["ShadowCompilationResult", "ShadowReplayReport"],
+      "dependencies": ["M2.2", "M2.7", "M2.8"],
+      "acceptance_boundary": ["integrate workunit, attempt, event, artifact, error and repair", "feature_flag_off_and_shadow_semantics", "do_not_enable_legacy_write_or_authority_change"]
+    },
+    {
+      "point_id": "M2.10",
+      "owner": "m2_closeout_gate_owner",
+      "owned_objects": ["M2CloseoutManifest", "M2AggregateGate", "M2CalibrationEvidenceIndex"],
+      "input_contracts": ["M2_1_to_M2_9_GateEvidence", "PositiveAndNegativeCalibrationCorpus", "LeadBoundaryAudit"],
+      "output_contracts": ["M2CloseoutResult", "M2UnmetConditionSet"],
+      "dependencies": ["M2.1", "M2.2", "M2.3", "M2.4", "M2.5", "M2.6", "M2.7", "M2.8", "M2.9"],
+      "acceptance_boundary": ["all required M2 children full_implemented", "four positive and three negative cases accepted", "lead_does_not_retrieve_supplement_or_write_conclusion"]
+    }
+  ]
+}

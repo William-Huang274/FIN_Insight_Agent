@@ -1,0 +1,36 @@
+{
+  "exact_package": {
+    "authority_boundary": "no_actual_a0_m2_probe_without_fresh_exact_external_admission_and_single_use_receipt_no_model_network_tool_provider_fixed_production_business_or_legacy_mutation",
+    "execution_staging_namespace_id": "point01_m2_a1_candidate_bound_final_baseline_v2_10",
+    "package_digest": "4ca222da5dd5ab7991d258d49eb30a377e6c8f82e1a0885d8912567324d3d5e8",
+    "package_gate_digest": "a2cc8659f44f3bcd04bbcb293b23801c248b7fd27c5aaf7a67383c8eb237808e",
+    "package_ref": "point01-m2-a1-v2-10-p01-g2-candidate-bound-baseline-executable",
+    "scope": "M2_A1_exact_admission_gated_future_actual_only",
+    "trigger_ddl_digest": "346e369dcf91e9b169fb4d0452c57993e219b052377223ca71bfe8756c41ff58"
+  },
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "approval": 0,
+    "external": 0,
+    "ledger": 0,
+    "namespace": 0,
+    "receipt": 0,
+    "store_write": 0
+  },
+  "negative_cases": {
+    "authorization": "not_authorized",
+    "enabled": false
+  },
+  "plan_digest": "ca3c90badb2f18c1f297985d879fbf69e2826a4489302c2250b3565be9f90f5c",
+  "scenario_execution_order": [
+    {
+      "future_authority": "single_exact_human_approval_admission_receipt_JIT_only",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p01-baseline-separated-input",
+      "sequence": 1
+    }
+  ],
+  "schema_version": "finsight_point01_m2_a1_receipt_execution_plan_v1_7_execution_proof",
+  "status": "P01_G2_FINAL_BASELINE_EXECUTABLE_BRIDGE_REFREEZE_PENDING_INDEPENDENT_REVIEW"
+}

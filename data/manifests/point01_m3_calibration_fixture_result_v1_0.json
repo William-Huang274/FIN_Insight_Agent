@@ -1,0 +1,27 @@
+{
+  "canonical_lane": "shadow_only",
+  "external_call_count": 0,
+  "generated_at": "2026-07-12T10:20:39.217254+00:00",
+  "model_call_count": 0,
+  "outputs": {
+    "M3.1": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m3_1_fixture_result_v1_0.json",
+    "M3.2": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m3_2_fixture_result_v1_0.json",
+    "M3.3": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m3_3_fixture_result_v1_0.json",
+    "M3.4": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m3_4_fixture_result_v1_0.json",
+    "M3.5": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m3_5_fixture_result_v1_0.json",
+    "M3.6": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m3_6_fixture_result_v1_0.json",
+    "M3.7": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m3_7_fixture_result_v1_0.json"
+  },
+  "planning_authority": "legacy",
+  "point_statuses": {
+    "M3.1": "pass",
+    "M3.2": "pass",
+    "M3.3": "pass",
+    "M3.4": "pass",
+    "M3.5": "pass",
+    "M3.6": "pass",
+    "M3.7": "pass"
+  },
+  "result_version": "finsight_point01_m3_calibration_fixture_result_v1_0",
+  "status": "pass"
+}

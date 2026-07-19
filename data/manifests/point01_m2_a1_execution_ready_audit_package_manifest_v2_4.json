@@ -1,0 +1,248 @@
+{
+  "actual_execution_authorized_by_package": false,
+  "authority_boundary": "no_actual_a0_m2_probe_without_fresh_exact_external_admission_and_single_use_receipt_no_model_network_tool_provider_fixed_production_business_or_legacy_mutation",
+  "corpus_digest": "a11e0498c7befadf8c9a54db5fb0f3106956bfe9e6fea4edc6dda10af7e6581d",
+  "cross_gate_contract": {
+    "blueprint_must_bind_package_and_plan_gate_digests": true,
+    "phase_a_exact_digests_required": true,
+    "plan_must_bind_package_gate_digest": true
+  },
+  "execution_eligibility": "fresh_exact_admission_and_receipt_required",
+  "execution_mode": "external_admission_gated",
+  "execution_policy_digest": "6f80bcf6fd734d29d0f7c4aa42e9a4372b7450ecf488ef9a035943486e831313",
+  "execution_preflight": {
+    "caller_path_override": "forbidden",
+    "clean_child_required": true,
+    "execution_staging_namespace_id": "point01_m2_a1_exact_admitted_runs_v2_4",
+    "execution_staging_namespace_path": "D:/temp/FIN_Insight_Agent/point01_m2_a1_exact_admitted_runs_v2_4",
+    "prewrite_order": [
+      "package_and_staged_input_validate",
+      "exact_external_admission_validate",
+      "existing_ledger_open_no_create",
+      "atomic_receipt_consume",
+      "staged_tree_reverify",
+      "ledger_backed_grant_verify",
+      "runtime_output_materialize",
+      "canary_before_harness_import"
+    ],
+    "runtime_inputs": {
+      "corpus": {
+        "canonical_digest": "a11e0498c7befadf8c9a54db5fb0f3106956bfe9e6fea4edc6dda10af7e6581d",
+        "relative_path": "configs/engineering_handoff/point01_m2_a1_adversarial_input_corpus_v1_1.json"
+      },
+      "execution_policy": {
+        "canonical_digest": "6f80bcf6fd734d29d0f7c4aa42e9a4372b7450ecf488ef9a035943486e831313",
+        "relative_path": "configs/engineering_handoff/point01_m2_a1_operational_qualification_policy_v2_4.json"
+      },
+      "scenario_matrix": {
+        "canonical_digest": "f7268d3cdb19e529f15eca86d490c6046672be0283a7d159a278a98903abcb14",
+        "relative_path": "configs/engineering_handoff/point01_m2_a1_execution_ready_scenario_matrix_v2_1.json"
+      }
+    }
+  },
+  "fixed_store_fingerprints": {
+    "canonical_or_business_store_absence_manifest": {
+      "enforcement": "clean_child_canary_rejects_open_read_write_or_ambient_resolution",
+      "registered_paths": [],
+      "status": "explicit_absence_no_M2_A1_fixed_canonical_or_business_store_registered"
+    },
+    "fixed_approval_store": {
+      "access": "fingerprint_only_no_open_or_mutation",
+      "path": ".runtime_control/point01_m6_3_5_nvda_sec_document_parser_repaired_global_approval/canonical.sqlite",
+      "sha256": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4"
+    }
+  },
+  "fresh_external_admission_required": true,
+  "input_bytes_source": "git_index",
+  "input_file_sha256": {
+    "configs/engineering_handoff/point01_m1_m5_adversarial_retro_audit_design_freeze_v1_0.json": "a9b14ad90e8209bd531c2094a880fab07cac64ceb63ca2b4820703ccc29abf2d",
+    "configs/engineering_handoff/point01_m2_1_compiler_input_validation_policy_v1_0.json": "6bcf5837859bf806d950e5a993a8d6b1b8a5b4ed0da8f434e81afc7519c86d63",
+    "configs/engineering_handoff/point01_m2_2_full_serializer_policy_v1_0.json": "62bebccbeb2bbfb1c4001c9cf488d4dec3e2685d9586b541da1c4cc6be05c9c4",
+    "configs/engineering_handoff/point01_m2_3_pack_registry_policy_v1_0.json": "d739bbdfc2292894869881fef8f544f3d8ffe28b407c17a22eb2fb5951f40132",
+    "configs/engineering_handoff/point01_m2_4_pack_selection_policy_v1_0.json": "1837287b4e08dc2505bde9f0922e206f8dc5cf154347db3a7c3d3c256f9ff868",
+    "configs/engineering_handoff/point01_m2_8_model_admission_policy_v1_0.json": "fd63e269e9e1b7d594a672252096589e17b4b9c50d2d1c61ecf9d815c9d24207",
+    "configs/engineering_handoff/point01_m2_a1_adversarial_input_corpus_v1_1.json": "9c89dc4bea75f36882751e167bdd7975c66bae6e5c3a89fbbdfad9bcf496b37d",
+    "configs/engineering_handoff/point01_m2_a1_execution_ready_scenario_matrix_v2_1.json": "4c6d23c7c24017ed40c5e9871449f31ab2d1f9581422a9017f806265f35fc65d",
+    "configs/engineering_handoff/point01_m2_a1_independent_expected_cell_oracle_v1_1.json": "eed535f2c84f79dc9b7f3091d741338ffebf4d1b6d45b01e390c4f376145e8b2",
+    "configs/engineering_handoff/point01_m2_a1_operational_qualification_policy_v2_4.json": "736519ae2e80348fea54a131de5c55e6662234797eca4a5584bc838671b5cfbe",
+    "configs/runtime/point01_feature_flags_v1_0.json": "51b481aa7317bc53e93dc5fe7a9918a1afd7e8516285c40ee319193c480090bd",
+    "data/manifests/point01_m2_a1_adversarial_audit_package_manifest_v1_1.json": "cfc4d9432e015102656e1b8ac13202da9dfa77791f7770dcf1436dec89659fff",
+    "data/manifests/point01_m2_a1_rc_p38_024_root_cause_classification_v1_0.json": "9be306a1a7bf34c9b33d5dcb9425259917d8c581ed92c0d9e80c8d1091ed2b3a",
+    "data/manifests/point01_m2_a1_transport_isolation_repair_gate_v1_0.json": "b3f55d7339f5baf7ab2c14fdb83e4c72d1ac52e6a3da8b8d62d3481e94a1b6de",
+    "data/manifests/point01_m2_a1_transport_isolation_repair_package_v1_0.json": "03ee86541f4cea4742c9417ba285afaa7f794b6cb29984dc0313e8dcee35549b",
+    "scripts/engineering/run_point01_m2_a1_actual_audit.py": "698ec72e0d57e7603d7c5a41b0ff175a35570c35a8d6b8dd94d0fb7ac3503f5d",
+    "scripts/engineering/run_point01_m2_a1_actual_audit_clean_child.py": "a52d77bf7758d59d013b065acda1c37be823f59a13094d96b6481508a817f58f",
+    "scripts/engineering/run_point01_m2_a1_actual_audit_clean_child_v2_4.py": "8bf50c5983f0b6695d1b185abdc311f80c6562a6c6cd3785d8ebca447cdb08ea",
+    "scripts/engineering/run_point01_m2_a1_actual_audit_v2_4.py": "dd433e1197a55e6f17d042f68271fcaf03283655228eeb21f1bda1acdbbb9936",
+    "scripts/engineering/run_point01_m2_a1_execution_ready_package_freeze.py": "42f1996a750b72998e798f29d32886272cf29b8db561805a9205538a95023326",
+    "scripts/engineering/run_point01_m2_a1_operational_qualification_v2_4_refreeze.py": "a1b1aee42156e07d7a43d7efaae9051cbb837e29f92680c5c7c5c3718c3c801b",
+    "scripts/engineering/run_point01_m2_a1_receipt_registrar.py": "cfc785c3a30eeef0ebeb04e775853343d2aeca1b9da17e6441737cc3bfaee627",
+    "scripts/engineering/run_point01_m2_a1_receipt_registrar_v2_4.py": "6f75654d73a258de87e6dd960d50191c4ce74486dc89f55d7c03fd09ff45f01a",
+    "scripts/engineering/run_point01_m2_a1_transport_isolation_bisect.py": "2abfe1bb12bbb66bf9930329a54aa2ae2b4972ff9d743c182991ee422fc4fe23",
+    "scripts/engineering/run_point01_m2_a1_transport_isolation_repair_freeze.py": "42cd112baaf8282b62694cb3e6e8d0688db2d586cb9ec0b42c7ebb987fb13010",
+    "src/sec_agent/canonical_runtime/__init__.py": "2945d1475032e3573ba92d7e3b585df2871b1d5a68b5f9a32a7fc257d985e1c5",
+    "src/sec_agent/canonical_runtime/cell_composition.py": "3bfa4031e56f335a70e02239777309298ee90ea032ef273fc905f1803c4f5ace",
+    "src/sec_agent/canonical_runtime/evidence_policy.py": "f66afe1bd6a843208028eec3f1567ac3348a19f99ecef06515a001834404c266",
+    "src/sec_agent/canonical_runtime/facade.py": "d0d7ca722a9249317bff48b520b1a97523fbcf146a362b57dc925824f0db5e7c",
+    "src/sec_agent/canonical_runtime/feature_flags.py": "d0b3100f4dbf37fba9767915a87c8f4db51a6eabf47745fdb704b2721574610d",
+    "src/sec_agent/canonical_runtime/full_serializer.py": "d4f304417ee4e3775f8a64a7453ad59e494b4281591110d2e60f8862d519b42a",
+    "src/sec_agent/canonical_runtime/legacy_objective_adapter.py": "a9f90e9e1af6ee7e0f8c146919b19fa6d088d5604ceef1953cab2ad9638064c2",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_canary.py": "1965ff52eca8f80bab9a877f6783c33eb7951042ea628c82d4dca5575b5981bb",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_harness.py": "e26c8b9099a7a1042497f8df1c245109f4e204a271232238e6c48b5b40b943d4",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_oracle.py": "70487712b9852fc80e69a426914d2f6ddbfbe2815f5c04ed80d62e82b5ecbb87",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_result.py": "4f38238228f45120b69b08e5884b4443d17eaf92675d457799a6569fcb152cab",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_reviewer_gate.py": "9b6ded1e592b3094571e8851f03646141ae2d35355808278fa415b72bde228e5",
+    "src/sec_agent/canonical_runtime/m2_a1_execution_receipt.py": "6cc8832f48d5a24bc1c524e8b0a12bac3cdf24e4d706667ab805b18939ec8fb9",
+    "src/sec_agent/canonical_runtime/model_admission.py": "dc4acf867e61d8081ec4aac760046a60c330382a281b73bcae0b0bc22d5aa645",
+    "src/sec_agent/canonical_runtime/models.py": "1af127d23f8139d36fff687b5c63e4c5d5952e27ce6eaa2d3a4bea02220c2cf9",
+    "src/sec_agent/canonical_runtime/object_store.py": "2bd611f90bc07c4ef55ff54c75c619dbf505e7c9740ad2ed2b8e4eb9b6369718",
+    "src/sec_agent/canonical_runtime/pack_registry.py": "8d62228ee4146db50bf7cc787e53d71cd06526ecc1cb0127a0e21af090cfd59d",
+    "src/sec_agent/canonical_runtime/pack_selection.py": "f9e4d36a50999bb91c3c224500670b27998356f511934ba819175f700f7b0f7b",
+    "src/sec_agent/canonical_runtime/planning_service.py": "20ccf383a76ed91ae2e337e1c3fb05d9983bf73d78dbf16d7b1039e2eaa4a22e",
+    "src/sec_agent/canonical_runtime/shadow_compiler.py": "a94844721bc8022126112aeff8c3685eaca713a2294f52f8b0b828323c47bf31",
+    "src/sec_agent/canonical_runtime/shadow_orchestration.py": "02fecee6bd302c4985f248eb7f4ca881ab80ea00867f7aafe52c90030997e050",
+    "src/sec_agent/canonical_runtime/store.py": "a237b93f53f83df9f30873631826f632e33515bf4db4b9dca186e679fa499f31",
+    "tests/contract/test_point01_m2_a1_assembly_harness.py": "c5eba6a5103dc4a5c4f0032a6b8025abf2362c17e119cb20f843a79f8b7574a9",
+    "tests/contract/test_point01_m2_a1_baseline_authority_blueprint.py": "9aa048b8a17214779859098f49148a4b5e69f942fc69b4428b6af538ddb23f92",
+    "tests/contract/test_point01_m2_a1_design_package_static.py": "6068f35c9b70fd61921f1e075990a8693760ff124ebb6035b3bc00fbfb43e563",
+    "tests/contract/test_point01_m2_a1_executable_package_static.py": "ee624f015ea30acd7136ceec308b11ddb255f3e723a236783b3f2d3c0f515847",
+    "tests/contract/test_point01_m2_a1_execution_ready_boundaries.py": "d3a5e0e79323a3734e37b1ca515cab729c48ed7d8cb14c3e1e06796fa0ae88fc",
+    "tests/contract/test_point01_m2_a1_execution_ready_package_static.py": "d2cae625fc982b6cac0dcd1a3d8d558a27c421dd64540a2d4ba33d5a11605241",
+    "tests/contract/test_point01_m2_a1_external_admission_artifact.py": "081c754b78e2013eb1f68413eea6c51fdec01591ff6a0208d8c8707c20c5f835",
+    "tests/contract/test_point01_m2_a1_harness_boundaries.py": "1ab9b4f63ffc1f9aadfc541e3f8c2c48ce5985190fafda39c0e5fe487d37bbc4",
+    "tests/contract/test_point01_m2_a1_operational_qualification_v2_4.py": "68d8905a0072235667d11b41b6ba73638b46928440d7364b8c447298172f9000",
+    "tests/contract/test_point01_m2_a1_operational_qualification_v2_4_production_preflight.py": "2c130dd238b626ccf7e50639d9287aa997f2fc5d510d4155e7d89a9b2bec333a",
+    "tests/contract/test_point01_m2_a1_receipt_execution_plan.py": "1adf7936b8bcf1f5f43b2c06d809fc6db322764f49563462b2af19148cbee63c",
+    "tests/contract/test_point01_m2_a1_receipt_lifecycle.py": "33e07642d7ce2230e4a4f404664b2cf73c9d44ac8e4e5e271cc2671de927bd4b",
+    "tests/contract/test_point01_m2_a1_transport_isolation_repair.py": "890f237ed6b31d327d9521ae1dbde40627ace3e9dc2165fff24d03fc8dccad45"
+  },
+  "oracle_digest": "9dc32c4d02c5b2313a8a4b7bd35cd806672cf963a62a8191128333425a2d4e87",
+  "package_digest": "615a73da64eff69a56a13b42d6c59c892820f15c4de7dc3a2be3c425d2aee68e",
+  "package_ref": "point01-m2-a1-operational-qualification-adversarial-audit-package-v2-4",
+  "phase_a_artifacts": {
+    "classification": {
+      "digest": "537801860ceb455c1ce035621776128c3d8647e2d3af00e66b02d27e8b1e0b71",
+      "digest_field": "classification_digest",
+      "relative_path": "data/manifests/point01_m2_a1_rc_p38_024_root_cause_classification_v1_0.json"
+    },
+    "repair_gate": {
+      "digest": "52cd13eda74affc99352a14a3ffff322e96b992b252c40d9dd6335d9f9e181fe",
+      "digest_field": "gate_digest",
+      "relative_path": "data/manifests/point01_m2_a1_transport_isolation_repair_gate_v1_0.json"
+    },
+    "repair_package": {
+      "digest": "11f4cd9267e56e9c6c33eaeb32119194731d76dbe0040e34b441e6daf66bd7cd",
+      "digest_field": "package_digest",
+      "relative_path": "data/manifests/point01_m2_a1_transport_isolation_repair_package_v1_0.json"
+    }
+  },
+  "phase_a_digests": {
+    "classification": "537801860ceb455c1ce035621776128c3d8647e2d3af00e66b02d27e8b1e0b71",
+    "repair_gate": "52cd13eda74affc99352a14a3ffff322e96b992b252c40d9dd6335d9f9e181fe",
+    "repair_package": "11f4cd9267e56e9c6c33eaeb32119194731d76dbe0040e34b441e6daf66bd7cd"
+  },
+  "receipt_lifecycle": {
+    "crash_recovery": "consumed_without_terminal_outcome_unknown",
+    "execution_eligibility": "fresh_exact_admission_and_receipt_required",
+    "executor": "open_existing_consume_reverify_verify_grant_before_runtime",
+    "post_consume": "materialize_runtime_then_import_m2",
+    "registrar": "authority_only_register_exact_package_and_scenario"
+  },
+  "scenario_matrix_digest": "f7268d3cdb19e529f15eca86d490c6046672be0283a7d159a278a98903abcb14",
+  "scenario_matrix_summary": {
+    "groups": {
+      "P01": [
+        "p01-baseline-separated-input",
+        "p01-oracle-path-access",
+        "p01-oracle-hash-access",
+        "p01-oracle-mutation-invariance"
+      ],
+      "P02": [
+        "p02-valid-versioned-baseline",
+        "p02-unversioned-pack-ref",
+        "p02-stale-or-superseded-pack",
+        "p02-parent-or-digest-mismatch",
+        "p02-selector-conflict",
+        "p02-artifact-envelope-replay-mismatch"
+      ],
+      "P03": [
+        "p03-feature-off",
+        "p03-model-denied",
+        "p03-fixed-store-path",
+        "p03-ambient-resolver",
+        "p03-provider-constructor",
+        "p03-network-tool-transport"
+      ]
+    },
+    "matrix_digest": "f7268d3cdb19e529f15eca86d490c6046672be0283a7d159a278a98903abcb14",
+    "scenario_ids": [
+      "p01-baseline-separated-input",
+      "p01-oracle-path-access",
+      "p01-oracle-hash-access",
+      "p01-oracle-mutation-invariance",
+      "p02-valid-versioned-baseline",
+      "p02-unversioned-pack-ref",
+      "p02-stale-or-superseded-pack",
+      "p02-parent-or-digest-mismatch",
+      "p02-selector-conflict",
+      "p02-artifact-envelope-replay-mismatch",
+      "p03-feature-off",
+      "p03-model-denied",
+      "p03-fixed-store-path",
+      "p03-ambient-resolver",
+      "p03-provider-constructor",
+      "p03-network-tool-transport"
+    ]
+  },
+  "schema_version": "finsight_point01_m2_a1_execution_ready_audit_package_manifest_v2_4",
+  "scope": "M2_A1_exact_admission_gated_future_actual_only",
+  "single_use_execution_receipt_required": true,
+  "supersedes": {
+    "authority_disposition": "historical_only_expired_consumed_or_non_replayable",
+    "prior_failed_actual_digest": "934fb16b76f1e1b19371603f0d69c2e3e25c9357c8427c84e1e626b1247795d7",
+    "v2_3_blueprint_digest": "683f3df509735466c33394e3771dded3c0c1bb129ab1c53462902f7b6b5e485f",
+    "v2_3_package_digest": "ff5476b9a8c4d9a82a11b163039e118922b09c945a0d53ff9df031b7c268b318"
+  },
+  "transport_isolation": {
+    "constructor_connect_request": "hard_fail",
+    "module_presence": "context_only",
+    "parent": "stdlib_clean_child_supervisor",
+    "parent_preload": "cannot_contaminate_python_I_child",
+    "public_exports": "lazy",
+    "runtime_hash_bindings": {
+      "canary": {
+        "relative_path": "src/sec_agent/canonical_runtime/m2_a1_audit_canary.py",
+        "sha256": "1965ff52eca8f80bab9a877f6783c33eb7951042ea628c82d4dca5575b5981bb"
+      },
+      "clean_child": {
+        "relative_path": "scripts/engineering/run_point01_m2_a1_actual_audit_clean_child_v2_4.py",
+        "sha256": "8bf50c5983f0b6695d1b185abdc311f80c6562a6c6cd3785d8ebca447cdb08ea"
+      },
+      "parent_runner": {
+        "relative_path": "scripts/engineering/run_point01_m2_a1_actual_audit_v2_4.py",
+        "sha256": "dd433e1197a55e6f17d042f68271fcaf03283655228eeb21f1bda1acdbbb9936"
+      },
+      "registrar": {
+        "relative_path": "scripts/engineering/run_point01_m2_a1_receipt_registrar_v2_4.py",
+        "sha256": "6f75654d73a258de87e6dd960d50191c4ce74486dc89f55d7c03fd09ff45f01a"
+      }
+    }
+  },
+  "zero_execution_counts": {
+    "actual_probe": 0,
+    "business_case_mutation": 0,
+    "compiler_or_shadow": 0,
+    "fixed_or_business_store_open": 0,
+    "legacy_authority_mutation": 0,
+    "model": 0,
+    "network_success": 0,
+    "new_admission": 0,
+    "new_receipt": 0,
+    "provider": 0,
+    "receipt_consumption": 0,
+    "receipt_registration": 0,
+    "runtime_namespace": 0,
+    "store_write": 0,
+    "tool": 0
+  }
+}

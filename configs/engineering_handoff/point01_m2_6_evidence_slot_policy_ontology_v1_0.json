@@ -1,0 +1,10 @@
+{
+  "ontology_version": "finsight_point01_m2_6_evidence_slot_policy_ontology_v1_0",
+  "sectors": ["ai_semis", "saas", "healthcare", "banks"],
+  "evidence_role_rules": {
+    "issuer_metric": {"allowed_source_policy_refs": ["issuer_first", "filing_first", "official_first"], "allowed_acceptance_roles": ["primary", "primary_or_bounded_context"], "required_forbidden_substitutions": ["relationship_graph_only"], "parser_required": true},
+    "relationship_signal": {"allowed_source_policy_refs": ["relationship_graph_only"], "allowed_acceptance_roles": ["bounded_context_only"], "required_forbidden_substitutions": ["issuer_metric_substitute"], "relationship_scope_only": true},
+    "commercial_tracker_metric": {"allowed_source_policy_refs": ["commercial_gap"], "allowed_acceptance_roles": ["primary_or_bounded_context"], "required_forbidden_substitutions": ["public_proxy_as_exact"], "commercial_gap_role": true}
+  },
+  "authority_boundary": "Ontology compiles source/stop/forbidden policy and typed gaps only. Relationship scope cannot become exact issuer authority; commercial gaps cannot be replaced by an unlicensed proxy."
+}

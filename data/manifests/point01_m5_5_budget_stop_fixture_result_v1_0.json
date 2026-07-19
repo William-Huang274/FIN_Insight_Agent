@@ -1,0 +1,35 @@
+{
+  "boundary": "This fixture proves deterministic M5.5 reservation/refund/typed stop only. It executes no provider or external tool, starts no worker/service, and admits no paid model, Evidence/Writer, full-chain, business Case mutation or legacy authority change.",
+  "errors": [],
+  "evidence": {
+    "budget_ledger_actions": [
+      "reserved",
+      "consumed",
+      "reserved",
+      "terminal_stop",
+      "refunded",
+      "terminal_stop"
+    ],
+    "budget_ledger_survives_restart": true,
+    "checkpoint_ref": [
+      "checkpoint-budget:v1"
+    ],
+    "fallback_blocked": true,
+    "refund_count": 1,
+    "retry_blocked": true,
+    "terminal_stop_applied": true,
+    "work_unit_state": "failed"
+  },
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m5_5_budget_stop_policy_v1_0.json": "9279f9d84ee6134d69ab18b230757b3e6c3e5629cab055056bd2e417fa9cd4d6",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "875ebe893d8b14b4894856af3d27b0e9367d6d885ae20e99f58cd173744f95f1",
+    "scripts/engineering/run_point01_m5_5_budget_stop_fixtures.py": "26ff7dae7f87b7ce85b1fcc6599e3ce7933c76732d59d44f5bcd6937a99d2e36"
+  },
+  "generated_at": "2026-07-13T03:06:24.879826+00:00",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m5_5_budget_stop_fixture_result_v1_0",
+  "scope": "Point01_M5_5_budget_stop_control_plane_only",
+  "status": "pass",
+  "worker_started": false
+}

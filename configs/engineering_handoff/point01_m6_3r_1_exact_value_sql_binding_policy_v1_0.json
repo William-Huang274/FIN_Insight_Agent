@@ -1,0 +1,28 @@
+{
+  "policy_ref": "point01-m6-3r-1-exact-value-sql-binding-policy",
+  "policy_version": "v1",
+  "policy_digest": "75fff84e1d4684aa47eb7b6dc9d2cef2ff50333f27bbce8e3cda17d5a6ef820f",
+  "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+  "accepted_evidence_role": "numeric_fact",
+  "source_policy": "official_first",
+  "selected_route_id": "issuer_disclosure_metadata_route",
+  "source_type": "exact_value_sql",
+  "row_selector_ref": "row:consolidated_income_revenue",
+  "form_type": "10-K",
+  "source_tier": "primary_sec",
+  "metric_bindings": [
+    {
+      "metric_intent": "revenue",
+      "metric_ref": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax"
+    }
+  ],
+  "unit_scale_bindings": [
+    {
+      "request_unit": "USD_millions",
+      "unit_ref": "USD",
+      "scale_ref": "millions"
+    }
+  ],
+  "registry_read_status": "registry_not_read",
+  "execution_admission": "not_admitted"
+}

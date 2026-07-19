@@ -1,0 +1,888 @@
+{
+  "baseline_gate": {
+    "failure_action": "stop_all_remaining_scenarios_and_do_not_issue_next_authority",
+    "required_before_next_authority": [
+      "actual_terminal_and_immutable_digest",
+      "independent_oracle_pass",
+      "reviewer_gate_pass",
+      "fixed_fingerprint_unchanged",
+      "all_counters_within_authorized_zero_or_expected_typed_stop_contract"
+    ],
+    "scenario_id": "p01-baseline-separated-input"
+  },
+  "current_admission_artifact_disposition": {
+    "authority_artifact_digest": "ff483ea47a72a5738bd60227ca360cca7d372efa0c274087bc142e127a4a8fec",
+    "execution_receipt_forbidden": true,
+    "expiry_policy": "never_extend_or_reuse_old_expiry_nonce_or_digest; after expiry mark expired_for_execution and seek a new exact external admission artifact",
+    "runtime_admission_digest": "3b15556e5d71f7ad69725af4794703578115c9ed376b2ab0e010a1e57943fdef",
+    "status": "artifact_integrity_accepted_execution_unused_expiry_pending_or_expired",
+    "verification_digest": "4e09d56e47cfc6ea73929ac120dabb186f0701eae3be8f2cfd575e550633e468"
+  },
+  "exact_package": {
+    "authority_boundary": "no_actual_a0_m2_probe_without_exact_external_admission_and_single_use_receipt_no_model_network_tool_provider_fixed_production_business_or_legacy_mutation",
+    "execution_staging_namespace_id": "point01_m2_a1_exact_admitted_runs_v2_3",
+    "package_digest": "ff5476b9a8c4d9a82a11b163039e118922b09c945a0d53ff9df031b7c268b318",
+    "package_gate_digest": "904d1030c7110281acc4963ec0a615da3db0b0ce9e4a68b0d6aaf80971549243",
+    "package_ref": "point01-m2-a1-receipt-invariants-adversarial-audit-package-v2-3",
+    "reviewer_identity": "william/003/total_reviewer",
+    "scope": "M2_A1_exact_admission_gated_future_actual_only"
+  },
+  "execution_counts": {
+    "a0_m2_actual_probes": 0,
+    "business_case_mutations": 0,
+    "compiler_or_shadow_fixture_runs": 0,
+    "external_tool_calls": 0,
+    "fixed_or_production_store_opens": 0,
+    "future_admissions_created": 0,
+    "future_receipts_created": 0,
+    "legacy_authority_mutations": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "provider_calls": 0,
+    "receipt_consumptions": 0,
+    "receipt_registrations": 0,
+    "runtime_namespaces_created": 0,
+    "store_writes": 0
+  },
+  "fail_fast": {
+    "on_actual_or_oracle_or_reviewer_or_lineage_or_counter_or_fingerprint_failure": "terminal_stop_no_retry_no_replay_no_next_authority",
+    "on_admission_or_receipt_expiry": "discard_for_execution_and_seek_new_exact_review"
+  },
+  "group_checkpoints": [
+    {
+      "after_scenario_id": "p01-oracle-mutation-invariance",
+      "failure_action": "stop_this_group_and_all_later_groups_no_retry_or_replay",
+      "group_id": "P01",
+      "required_gate": "independent_oracle_reviewer_checkpoint",
+      "sequences": [
+        1,
+        4
+      ]
+    },
+    {
+      "after_scenario_id": "p02-artifact-envelope-replay-mismatch",
+      "failure_action": "stop_this_group_and_all_later_groups_no_retry_or_replay",
+      "group_id": "P02",
+      "required_gate": "lineage_replay_independent_oracle_reviewer_checkpoint",
+      "sequences": [
+        5,
+        10
+      ]
+    },
+    {
+      "after_scenario_id": "p03-network-tool-transport",
+      "failure_action": "stop_this_group_and_all_later_groups_no_retry_or_replay",
+      "group_id": "P03",
+      "required_gate": "isolation_counter_fingerprint_independent_oracle_reviewer_checkpoint",
+      "sequences": [
+        11,
+        16
+      ]
+    }
+  ],
+  "just_in_time_authority": {
+    "authorization_renewal": "new_external_review_and_new_digests_only; never mutate_expiry_or_reuse_old_digest",
+    "baseline_first": "p01-baseline-separated-input",
+    "no_batch_pre_generation_of_active_admissions_or_receipts": true,
+    "only_current_scenario_pair_may_be_issued_or_registered": true
+  },
+  "ledger_constraint": {
+    "chosen_strategy": "independent_future_admission_and_single_use_receipt_pair_per_scenario",
+    "consequence": "one_admission_can_register_only_one_receipt_and_one_scenario",
+    "forbidden_strategy": "one_admission_plus_sixteen_receipts",
+    "known_constraint": "point01_m2_a1_execution_receipts.admission_digest_is_unique",
+    "schema_migration": "not_authorized_by_this_plan"
+  },
+  "plan_digest": "9a0e16878bb899b853e2d91d84a5771d69b4b7d49cd37a490cc20d2de7ca4f5a",
+  "retention_and_cleanup": {
+    "authority_runtime_output": "immutable_retained_until_independent_closeout_policy",
+    "cleanup_after_closeout": "separate_policy_and_audit_required",
+    "cleanup_before_closeout": "forbidden"
+  },
+  "runner_isolation": {
+    "actual_runner_forbidden_input": [
+      "reviewer_oracle",
+      "reviewer_expected_values",
+      "ambient_store",
+      "fixed_store",
+      "provider_or_network_client"
+    ],
+    "actual_runner_input": [
+      "exact_package",
+      "preflight_bound_corpus_case",
+      "scenario_id",
+      "input_ref",
+      "mutation",
+      "current_exact_admission_and_receipt"
+    ],
+    "oracle_evaluator_input": [
+      "immutable_actual_result_after_terminalization",
+      "reviewer_oracle",
+      "scenario_oracle_assertions"
+    ],
+    "reviewer_gate_input": [
+      "actual_digest",
+      "oracle_digest",
+      "receipt_event_sequence",
+      "counter_snapshot",
+      "fixed_fingerprint_before_after"
+    ]
+  },
+  "scenario_execution_order": [
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "none",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p01-baseline-separated-input-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p01-baseline-separated-input-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P01",
+      "input_ref": "m2-a1-ai-semis-input",
+      "mutation": "none",
+      "owner": "m2_compiler_serializer_owner",
+      "scenario_id": "p01-baseline-separated-input",
+      "sequence": 1
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "oracle_leakage_detected",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p01-oracle-path-access-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p01-oracle-path-access-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P01",
+      "input_ref": "m2-a1-saas-input",
+      "mutation": "actual_runner_requests_oracle_path",
+      "owner": "m2_test_isolation_owner",
+      "scenario_id": "p01-oracle-path-access",
+      "sequence": 2
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "oracle_leakage_detected",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p01-oracle-hash-access-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p01-oracle-hash-access-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P01",
+      "input_ref": "m2-a1-healthcare-input",
+      "mutation": "actual_runner_requests_oracle_digest_or_hash",
+      "owner": "m2_test_isolation_owner",
+      "scenario_id": "p01-oracle-hash-access",
+      "sequence": 3
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "none",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p01-oracle-mutation-invariance-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p01-oracle-mutation-invariance-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P01",
+      "input_ref": "m2-a1-banks-input",
+      "mutation": "mutate_reviewer_oracle_after_actual_terminalization",
+      "owner": "m2_compiler_serializer_owner",
+      "scenario_id": "p01-oracle-mutation-invariance",
+      "sequence": 4
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "none",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p02-valid-versioned-baseline-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p02-valid-versioned-baseline-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P02",
+      "input_ref": "m2-a1-ai-semis-input",
+      "mutation": "none",
+      "owner": "m2_pack_policy_owner",
+      "scenario_id": "p02-valid-versioned-baseline",
+      "sequence": 5
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "pack_version_or_lineage_mismatch",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p02-unversioned-pack-ref-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p02-unversioned-pack-ref-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P02",
+      "input_ref": "m2-a1-saas-input",
+      "mutation": "replace_sector_pack_ref_with_pack-sector-saas",
+      "owner": "m2_pack_policy_owner",
+      "scenario_id": "p02-unversioned-pack-ref",
+      "sequence": 6
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "superseded_pack_version_or_pack_not_fresh",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p02-stale-or-superseded-pack-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p02-stale-or-superseded-pack-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P02",
+      "input_ref": "m2-a1-healthcare-input",
+      "mutation": "replace_sector_pack_ref_with_superseded_or_stale_version",
+      "owner": "m2_pack_policy_owner",
+      "scenario_id": "p02-stale-or-superseded-pack",
+      "sequence": 7
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "pack_lineage_digest_mismatch",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p02-parent-or-digest-mismatch-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p02-parent-or-digest-mismatch-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P02",
+      "input_ref": "m2-a1-banks-input",
+      "mutation": "alter_pack_parent_or_payload_digest_after_resolution",
+      "owner": "m2_pack_policy_owner",
+      "scenario_id": "p02-parent-or-digest-mismatch",
+      "sequence": 8
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "explicit_sector_conflicts_query_or_selector_conflict",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p02-selector-conflict-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p02-selector-conflict-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P02",
+      "input_ref": "m2-a1-ai-semis-input",
+      "mutation": "declare_sector_banks_while_query_and_pack_ref_are_ai_semis",
+      "owner": "m2_pack_policy_owner",
+      "scenario_id": "p02-selector-conflict",
+      "sequence": 9
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "artifact_envelope_replay_mismatch",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p02-artifact-envelope-replay-mismatch-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p02-artifact-envelope-replay-mismatch-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P02",
+      "input_ref": "m2-a1-saas-input",
+      "mutation": "alter_serialized_envelope_after_actual_digest",
+      "owner": "m2_compiler_serializer_owner",
+      "scenario_id": "p02-artifact-envelope-replay-mismatch",
+      "sequence": 10
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "shadow_scope_violation",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p03-feature-off-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p03-feature-off-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P03",
+      "input_ref": "m2-a1-ai-semis-input",
+      "mutation": "feature_flag_disabled",
+      "owner": "m2_shadow_admission_owner",
+      "scenario_id": "p03-feature-off",
+      "sequence": 11
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "model_adapter_shadow_run_not_admitted",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p03-model-denied-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p03-model-denied-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P03",
+      "input_ref": "m2-a1-saas-input",
+      "mutation": "model_admission_missing",
+      "owner": "m2_shadow_admission_owner",
+      "scenario_id": "p03-model-denied",
+      "sequence": 12
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "test_runtime_isolation_violation",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p03-fixed-store-path-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p03-fixed-store-path-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P03",
+      "input_ref": "m2-a1-healthcare-input",
+      "mutation": "attempt_open_fixed_approval_store_path",
+      "owner": "m2_test_isolation_owner",
+      "scenario_id": "p03-fixed-store-path",
+      "sequence": 13
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "test_runtime_isolation_violation",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p03-ambient-resolver-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p03-ambient-resolver-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P03",
+      "input_ref": "m2-a1-banks-input",
+      "mutation": "invoke_ambient_store_resolver",
+      "owner": "m2_test_isolation_owner",
+      "scenario_id": "p03-ambient-resolver",
+      "sequence": 14
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "shadow_scope_violation",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p03-provider-constructor-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p03-provider-constructor-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P03",
+      "input_ref": "m2-a1-ai-semis-input",
+      "mutation": "instantiate_provider_client",
+      "owner": "m2_shadow_admission_owner",
+      "scenario_id": "p03-provider-constructor",
+      "sequence": 15
+    },
+    {
+      "after_evidence": [
+        "receipt_event_sequence",
+        "runtime_and_output_path_inventory",
+        "immutable_actual_digest",
+        "independent_oracle_digest",
+        "reviewer_gate_result",
+        "network_model_tool_provider_store_counters"
+      ],
+      "before_evidence": [
+        "staged_package_bytes_and_working_index_drift",
+        "fixed_approval_db_fingerprint",
+        "namespace_and_derived_run_root_absent",
+        "exact_admission_and_receipt_active_unconsumed"
+      ],
+      "expected_typed_stop": "shadow_scope_violation",
+      "future_authority_pair": {
+        "admission_id_template": "point01-m2-a1-v2-3-p03-network-tool-transport-admission:future_exact_review",
+        "admission_ttl_minutes": 30,
+        "bind_exact": [
+          "package_ref",
+          "package_digest",
+          "package_gate_digest",
+          "scenario_id",
+          "reviewer_identity",
+          "scope",
+          "authority_boundary",
+          "execution_staging_namespace_id",
+          "admission_id_and_digest",
+          "receipt_id_and_nonce_sha256",
+          "expiry",
+          "receipt_register_consume_terminal_state"
+        ],
+        "pre_generated": false,
+        "receipt_id_template": "point01-m2-a1-v2-3-p03-network-tool-transport-receipt:future_single_use",
+        "receipt_ttl_minutes": 15,
+        "strategy": "independent_future_admission_and_single_use_receipt_pair",
+        "unique_admission_digest": "required_at_just_in_time_issue",
+        "unique_receipt_nonce_sha256": "required_at_just_in_time_issue"
+      },
+      "group_id": "P03",
+      "input_ref": "m2-a1-saas-input",
+      "mutation": "instantiate_network_or_tool_transport",
+      "owner": "m2_shadow_admission_owner",
+      "scenario_id": "p03-network-tool-transport",
+      "sequence": 16
+    }
+  ],
+  "schema_version": "finsight_point01_m2_a1_receipt_execution_plan_v1_0",
+  "scope": "M2_A1_receipt_plan_design_only_no_admission_receipt_ledger_namespace_or_actual",
+  "status": "receipt_execution_plan_design_frozen_pending_baseline_authority_approval"
+}

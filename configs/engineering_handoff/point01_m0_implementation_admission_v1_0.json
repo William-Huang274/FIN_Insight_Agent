@@ -1,0 +1,44 @@
+{
+  "admission_version": "finsight_point01_m0_implementation_admission_v1_0",
+  "decided_at": "2026-07-12T00:00:00+08:00",
+  "status": "admitted_for_m0_foundation_only",
+  "scope": [
+    "canonical_pydantic_schemas",
+    "deterministic_json_schema_export",
+    "canonical_repository_ports",
+    "sqlite_wal_adapter",
+    "content_addressed_object_store_port",
+    "minimal_runtime_facade",
+    "feature_flag_and_kill_switch",
+    "contract_tests_and_rollback_drill"
+  ],
+  "excluded_scope": [
+    "paid_model",
+    "full_chain",
+    "decision_surface_model_compiler",
+    "evidence_execution_or_promotion",
+    "sourcehunter",
+    "numeric_program",
+    "domain_judgment",
+    "writer_or_deliverable",
+    "review_release_oa",
+    "monitoring_runtime",
+    "global_taskrun_cutover"
+  ],
+  "authority": {
+    "legacy_task_run": "authoritative",
+    "canonical_lane": "shadow_only",
+    "decision_surface": "not_authoritative",
+    "feature_flag_default": "off"
+  },
+  "required_inputs": [
+    "configs/engineering_handoff/point01_prerequisite_contract_freeze_manifest_v1_0.json",
+    "docs/architecture/agent_graph_vnext/ADR_01_point01_m0_canonical_control_kernel.zh-CN.md",
+    "configs/engineering_handoff/point01_m0_test_manifest_v1_0.json",
+    "configs/runtime/point01_feature_flags_v1_0.json",
+    "docs/architecture/agent_graph_vnext/RUNBOOK_01_point01_m0_rollback_drill.zh-CN.md"
+  ],
+  "implementation_root": "src/sec_agent/canonical_runtime",
+  "closeout_gate": "all required test manifest cases pass and rollback drill is recorded",
+  "runtime_capability_claim_allowed": false
+}

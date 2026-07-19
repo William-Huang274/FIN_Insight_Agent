@@ -1,0 +1,11 @@
+{
+  "schema_version": "finsight_point01_m1_a1_adversarial_fixture_corpus_v1_0",
+  "scope": "M1_A1_isolated_temporary_sqlite_only_actual_inputs",
+  "fixtures": [
+    {"probe_id": "A0-M1-P01", "case": "package_event_artifact_replay_tamper", "runtime_input": "isolated_bundle_and_unknown_event", "expected_disposition_is_not_runtime_input": true},
+    {"probe_id": "A0-M1-P02", "case": "retry_idempotency_stale_state_scheduler_fence", "runtime_input": "bounded_timeout_and_expired_lease", "expected_disposition_is_not_runtime_input": true},
+    {"probe_id": "A0-M1-P03", "case": "explicit_temporary_store_path", "runtime_input": "m1-a1-isolated_only", "expected_disposition_is_not_runtime_input": true},
+    {"probe_id": "A0-M1-P04", "case": "legacy_binding_sequence_recovery", "runtime_input": "two_isolated_cases_and_reopen", "expected_disposition_is_not_runtime_input": true}
+  ],
+  "forbidden": ["ambient_store_resolution", "fixed_store_open_for_mutation", "postgresql_schema_write", "network", "tool", "model", "provider", "business_case_mutation", "legacy_authority_mutation"]
+}

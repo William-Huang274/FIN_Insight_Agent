@@ -1,0 +1,187 @@
+{
+  "boundary": "Deterministic M3 calibration fixture only; no model, provider, retrieval, Evidence/Writer runtime, legacy write, or authority cutover was invoked.",
+  "canonical_lane": "shadow_only",
+  "external_call_count": 0,
+  "fixture_status": "pass",
+  "generated_at": "2026-07-12T10:20:39.213162+00:00",
+  "model_call_count": 0,
+  "payload": {
+    "actions": [
+      {
+        "action": "needs_source",
+        "action_id": "fixture_needs_source",
+        "actor_type": "fixture_reviewer",
+        "affected_cell_keys": [
+          "accelerator_economics"
+        ],
+        "reason": "exercise review lifecycle",
+        "supersedes_action_id": null
+      },
+      {
+        "action": "supersede",
+        "action_id": "fixture_supersede",
+        "actor_type": "fixture_reviewer",
+        "affected_cell_keys": [
+          "accelerator_economics"
+        ],
+        "reason": "slot policy boundary recorded",
+        "supersedes_action_id": "fixture_needs_source"
+      }
+    ],
+    "canonical_lane": "shadow_only",
+    "case_id": "ai_semis_dell_nvda_anchor_v0_1",
+    "contract_version_id": "contract_p36_ai_infrastructure:v1",
+    "external_call_count": 0,
+    "model_call_count": 0,
+    "planning_authority": "legacy",
+    "status": "pass",
+    "surface_digest": "23f45b18fbac2f013d6808dbc88cc3f721195e23812ac3fc99f107d31bb56274",
+    "traces": [
+      {
+        "audit_status": "pass",
+        "cell_key": "accelerator_economics",
+        "contract_version_id": "contract_p36_ai_infrastructure:v1",
+        "evidence_roles": [
+          "reported_accelerator_economics"
+        ],
+        "mapping_status": "covered",
+        "query_ref": "p36_ai_infrastructure_query_v1",
+        "source_policy_refs": [
+          "official_issuer_primary"
+        ],
+        "trace_id": "trace_cdfcf8a549c0b1522bc9"
+      },
+      {
+        "audit_status": "pass",
+        "cell_key": "capex_sustainability",
+        "contract_version_id": "contract_p36_ai_infrastructure:v1",
+        "evidence_roles": [
+          "hyperscaler_capex"
+        ],
+        "mapping_status": "covered",
+        "query_ref": "p36_ai_infrastructure_query_v1",
+        "source_policy_refs": [
+          "official_issuer_primary"
+        ],
+        "trace_id": "trace_d80afac227e19a69f18c"
+      },
+      {
+        "audit_status": "pass",
+        "cell_key": "counter_thesis",
+        "contract_version_id": "contract_p36_ai_infrastructure:v1",
+        "evidence_roles": [
+          "counterevidence"
+        ],
+        "mapping_status": "canonical_only_cell",
+        "query_ref": "p36_ai_infrastructure_query_v1",
+        "source_policy_refs": [
+          "official_issuer_primary"
+        ],
+        "trace_id": "trace_6d42bc47c5ef46e3ad4b"
+      },
+      {
+        "audit_status": "pass",
+        "cell_key": "cross_chain_price_in",
+        "contract_version_id": "contract_p36_ai_infrastructure:v1",
+        "evidence_roles": [
+          "valuation_price_in"
+        ],
+        "mapping_status": "covered",
+        "query_ref": "p36_ai_infrastructure_query_v1",
+        "source_policy_refs": [
+          "official_issuer_primary"
+        ],
+        "trace_id": "trace_7565cb9ead84b2e79751"
+      },
+      {
+        "audit_status": "pass",
+        "cell_key": "foundry_packaging_capture",
+        "contract_version_id": "contract_p36_ai_infrastructure:v1",
+        "evidence_roles": [
+          "reported_foundry_economics"
+        ],
+        "mapping_status": "covered",
+        "query_ref": "p36_ai_infrastructure_query_v1",
+        "source_policy_refs": [
+          "official_issuer_primary"
+        ],
+        "trace_id": "trace_e75df8392725798f40f6"
+      },
+      {
+        "audit_status": "pass",
+        "cell_key": "hbm_bottleneck_capture",
+        "contract_version_id": "contract_p36_ai_infrastructure:v1",
+        "evidence_roles": [
+          "reported_hbm_economics"
+        ],
+        "mapping_status": "covered",
+        "query_ref": "p36_ai_infrastructure_query_v1",
+        "source_policy_refs": [
+          "official_issuer_primary"
+        ],
+        "trace_id": "trace_772a0d0752ae8c1a571a"
+      },
+      {
+        "audit_status": "pass",
+        "cell_key": "semicap_readthrough",
+        "contract_version_id": "contract_p36_ai_infrastructure:v1",
+        "evidence_roles": [
+          "reported_semicap_economics"
+        ],
+        "mapping_status": "covered",
+        "query_ref": "p36_ai_infrastructure_query_v1",
+        "source_policy_refs": [
+          "official_issuer_primary"
+        ],
+        "trace_id": "trace_55c869a4ee98a9da5f20"
+      },
+      {
+        "audit_status": "pass",
+        "cell_key": "server_oem_capture",
+        "contract_version_id": "contract_p36_ai_infrastructure:v1",
+        "evidence_roles": [
+          "reported_server_margin"
+        ],
+        "mapping_status": "covered",
+        "query_ref": "p36_ai_infrastructure_query_v1",
+        "source_policy_refs": [
+          "official_issuer_primary"
+        ],
+        "trace_id": "trace_459da9db074e1b8071e6"
+      },
+      {
+        "audit_status": "pass",
+        "cell_key": "supply_chain_constraints",
+        "contract_version_id": "contract_p36_ai_infrastructure:v1",
+        "evidence_roles": [
+          "supply_chain_constraint"
+        ],
+        "mapping_status": "covered",
+        "query_ref": "p36_ai_infrastructure_query_v1",
+        "source_policy_refs": [
+          "official_issuer_primary"
+        ],
+        "trace_id": "trace_d5aaf0a45a6604030c65"
+      },
+      {
+        "audit_status": "pass",
+        "cell_key": "valuation_risk",
+        "contract_version_id": "contract_p36_ai_infrastructure:v1",
+        "evidence_roles": [
+          "valuation_risk"
+        ],
+        "mapping_status": "canonical_only_cell",
+        "query_ref": "p36_ai_infrastructure_query_v1",
+        "source_policy_refs": [
+          "official_issuer_primary"
+        ],
+        "trace_id": "trace_367954b194aa558c113b"
+      }
+    ],
+    "unresolved_action_ids": []
+  },
+  "planning_authority": "legacy",
+  "point_id": "M3.7",
+  "result_version": "finsight_point01_m3_7_fixture_result_v1_0",
+  "status": "pass"
+}

@@ -1,0 +1,53 @@
+{
+  "admission_digest": "1906d86bb5a419cceaa3a83cf27ef5ca5cd85e23b263a6818db322d22c7f054c",
+  "admission_expiry": "2026-07-16T14:07:40.255129Z",
+  "authority_artifact_digest": "07757f63f73d0084271352a0a10a4ef0b0d3c68087bc581cad67dc8bd3ea565a",
+  "blueprint_digest": "09ee9176a8090f1c42885fb2fab33c118a2d7b41cab2b66d694e478ff0b873a8",
+  "blueprint_gate_digest": "42814b706de7095ca42e3016fd12f3e36dbd8ae8fd0e6bff81139478cb501e22",
+  "dispatch_failure": {
+    "child_entrypoint": "scripts/engineering/run_point01_m2_a1_actual_audit_clean_child_v2_4.py",
+    "direct_child_fallback": "forbidden_by_approved_window",
+    "invocation_shape": "parent receives a -- delimiter; argparse.REMAINDER retains it; child rejects the delimiter before execute-admitted dispatch",
+    "parent_entrypoint": "scripts/engineering/run_point01_m2_a1_actual_audit_v2_4.py",
+    "typed_stop": "parent_cli_dispatch_arguments_unrecognized_preconsume"
+  },
+  "execution_counts": {
+    "actual": 0,
+    "admission": 1,
+    "business_or_legacy_mutation": 0,
+    "fixed_store_open": 0,
+    "model": 0,
+    "network_success": 0,
+    "oracle": 0,
+    "provider": 0,
+    "receipt_consumed": 0,
+    "receipt_created": 1,
+    "receipt_registered": 1,
+    "reviewer_gate": 0,
+    "runtime_namespace_created": 1,
+    "runtime_or_output_materialized": 0,
+    "tool": 0
+  },
+  "fixed_store_sha256_before_after": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4",
+  "incident_digest": "a59076a127c0b76902dc362aee94980427660fbc695b47e9c94fd73228cb9a18",
+  "issued_at": "2026-07-16T13:37:40.255129Z",
+  "ledger_event_types": [
+    "REGISTERED"
+  ],
+  "next_step": "independent_review_and_owned_parent_dispatch_repair_or_expiry_disposition_required_no_retry_replay_or_direct_child_execution",
+  "package_digest": "615a73da64eff69a56a13b42d6c59c892820f15c4de7dc3a2be3c425d2aee68e",
+  "package_gate_digest": "14b09fe4900b7cfddc6c2862449ba308094c58e9556ae3d6c154833560e273f8",
+  "phase_a_digests": {
+    "classification": "537801860ceb455c1ce035621776128c3d8647e2d3af00e66b02d27e8b1e0b71",
+    "repair_gate": "52cd13eda74affc99352a14a3ffff322e96b992b252c40d9dd6335d9f9e181fe",
+    "repair_package": "11f4cd9267e56e9c6c33eaeb32119194731d76dbe0040e34b441e6daf66bd7cd"
+  },
+  "plan_digest": "b10ccce186912fb1a34f8c714269e813d07929f1d1ac0457b207ab6c709f9b15",
+  "plan_gate_digest": "d7d88be750dd82b18316e3e1528b4f0abe9ecdc5aaddcb3de09b1da504b66a76",
+  "receipt_digest": "596fcf570a7abc1d4344ec6db354a4670e1c8a59e48f97396d5bf27c2401b870",
+  "receipt_expiry": "2026-07-16T13:52:40.255129Z",
+  "receipt_id": "point01-m2-a1-v2-4-baseline-fe9658d04ca515924c568123",
+  "receipt_status": "registered_active_unconsumed_quarantined_no_replay_pending_expiry_or_repair",
+  "schema_version": "finsight_point01_m2_a1_v2_4_baseline_jit_dispatch_incident_v1",
+  "status": "fail_closed_parent_cli_dispatch_preconsume_no_retry"
+}

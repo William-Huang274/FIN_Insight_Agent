@@ -1,0 +1,30 @@
+{
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "approval": 0,
+    "ledger": 0,
+    "model": 0,
+    "namespace": 0,
+    "network": 0,
+    "provider": 0,
+    "receipt": 0,
+    "store_write": 0,
+    "tool": 0
+  },
+  "gate_digest": "94141daa3125caebb3aac0eaff946603bad37727fdf3fd22d83e7728a847e3e9",
+  "next_step": "independent_review_required_no_active_authority",
+  "package_digest": "0335e114950db227ac67d8dbb16e554626fec194d8acb8c84d0f29f90ccd1367",
+  "package_ref": "point01-m2-a1-approval-lineage-preterminal-terminal-package-v2-7",
+  "result_version": "finsight_point01_m2_a1_v2_7_package_freeze_gate_v1",
+  "status": "pass",
+  "target_digest": "0335e114950db227ac67d8dbb16e554626fec194d8acb8c84d0f29f90ccd1367",
+  "verification": {
+    "calculated_package_digest": "0335e114950db227ac67d8dbb16e554626fec194d8acb8c84d0f29f90ccd1367",
+    "external_call_count": 0,
+    "failures": [],
+    "input_hash_count": 70,
+    "status": "pass",
+    "store_write_count": 0
+  }
+}

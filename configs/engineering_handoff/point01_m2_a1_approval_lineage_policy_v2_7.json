@@ -1,0 +1,31 @@
+{
+  "schema_version": "finsight_point01_m2_a1_approval_lineage_policy_v2_7",
+  "status": "B0_4_repaired_refrozen_pending_independent_review",
+  "scope": "M2_A1_B0_4_authority_lineage_and_preterminal_terminal_order_only",
+  "authority_chain": [
+    "HumanJITWindowApproval.approval_digest",
+    "M2A1ExternalPackageAdmission.human_approval_digest",
+    "M2A1ExecutionReceipt.human_approval_digest",
+    "REGISTERED.human_approval_digest",
+    "CONSUMED_BEFORE_RUN.human_approval_digest",
+    "TERMINAL.human_approval_digest"
+  ],
+  "terminal_sequence": [
+    "immutable_actual_validated",
+    "independent_oracle",
+    "preterminal_reviewer",
+    "terminal_append"
+  ],
+  "fail_closed": {
+    "missing_or_wrong_human_approval_digest": "reject_before_authority_or_runtime_materialization",
+    "actual_or_oracle_or_reviewer_failure": "outcome_unknown_no_succeeded_terminal",
+    "post_consume_exception": "outcome_unknown_no_retry_no_replay"
+  },
+  "forbidden": [
+    "active_human_approval",
+    "baseline_execution",
+    "fixed_or_business_store_write",
+    "network_model_tool_provider",
+    "M3_to_M7_execution"
+  ]
+}

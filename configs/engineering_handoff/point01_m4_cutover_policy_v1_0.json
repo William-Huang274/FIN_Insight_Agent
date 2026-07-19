@@ -1,0 +1,17 @@
+{
+  "policy_version": "finsight_point01_m4_cutover_policy_v1_0",
+  "policy_ref": "point01_m4_case_scoped_cutover_policy_v1_0",
+  "feature_flag_id": "decision_surface_planning_cutover_v1_0",
+  "feature_flag_mode": "case_scoped",
+  "scope_kind": "case",
+  "required_gate_evidence": ["schema_digest", "policy_digest", "artifact_digest", "comparison_digest"],
+  "required_approval_decision": "approve_case_scoped_planning_cutover_only",
+  "legacy_authority_boundary": "legacy_task_run_remains_authoritative",
+  "legacy_compatibility_projection": "read_only_only",
+  "forbidden_admissions": ["sector_cutover", "tenant_cutover", "global_cutover", "evidence_runtime", "writer_runtime", "provider_execution", "full_chain"],
+  "rollback": {
+    "requires_reason": true,
+    "kill_switch_allows_only_rollback_control_transaction": true,
+    "history_deletion_forbidden": true
+  }
+}

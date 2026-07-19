@@ -1,0 +1,8 @@
+{
+  "policy_version": "finsight_point01_m2_9_shadow_orchestration_policy_v1_0",
+  "policy_ref": "point01-m2-9-shadow-orchestration-policy-v1",
+  "required_mode": "shadow",
+  "require_denied_model_admission": true,
+  "required_calibration_cases": ["ai_semis", "saas", "healthcare", "banks"],
+  "authority_boundary": "Orchestration may commit only a validated DecisionSurfaceArtifactEnvelope through the canonical shadow RuntimeFacade. Feature flag off skips all writes; denied model admission is required; legacy TaskRun authority, Evidence/Writer, paid/full-chain and cutover remain prohibited."
+}

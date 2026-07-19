@@ -1,0 +1,16 @@
+{
+  "admission_digest": "1906d86bb5a419cceaa3a83cf27ef5ca5cd85e23b263a6818db322d22c7f054c",
+  "admission_id": "point01-m2-a1-v2-4-baseline-20260716T133740Z",
+  "admission_ref": "approve_m2_a1_v2_4_single_fresh_baseline_jit_window_only",
+  "admission_version": 1,
+  "authority_boundary": "no_actual_a0_m2_probe_without_fresh_exact_external_admission_and_single_use_receipt_no_model_network_tool_provider_fixed_production_business_or_legacy_mutation",
+  "decision": "admitted",
+  "executable_package_digest": "615a73da64eff69a56a13b42d6c59c892820f15c4de7dc3a2be3c425d2aee68e",
+  "execution_mode": "external_admission_gated",
+  "execution_staging_namespace_id": "point01_m2_a1_exact_admitted_runs_v2_4",
+  "expires_at": "2026-07-16T14:07:40.255129Z",
+  "package_ref": "point01-m2-a1-operational-qualification-adversarial-audit-package-v2-4",
+  "reviewer_identity": "william/003/total_reviewer",
+  "schema_version": "finsight_point01_m2_a1_external_package_admission_v2_4",
+  "scope": "M2_A1_exact_admission_gated_future_actual_only"
+}

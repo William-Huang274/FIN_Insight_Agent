@@ -1,0 +1,16 @@
+{
+  "manifest_version": "finsight_point01_m6_3r_2_fixture_test_manifest_v1_0",
+  "point": "M6.3R.2",
+  "execution_stage": "fixture_repaired_pending_total_reviewer_audit",
+  "runtime_contract": "src/sec_agent/canonical_runtime/local_retrieval_fixture.py",
+  "oracle_contract": "src/sec_agent/canonical_runtime/local_retrieval_fixture_oracle.py",
+  "fixture_runner": "scripts/engineering/run_point01_m6_3r_2_local_retrieval_fixture_gate.py",
+  "fixture_admission_policy": "configs/engineering_handoff/point01_m6_3r_2_fixture_admission_policy_v1_0.json",
+  "pinned_sql_policy": {"path": "configs/engineering_handoff/point01_m6_3r_1_exact_value_sql_binding_policy_v1_0.json", "canonical_digest": "75fff84e1d4684aa47eb7b6dc9d2cef2ff50333f27bbce8e3cda17d5a6ef820f", "raw_sha256": "9695941aac154d1d5ae8744742156af9ee8b0b80b7792dc909ebcf6c746573a6", "registry_read_status": "registry_not_read", "execution_admission": "not_admitted"},
+  "test_paths": ["tests/contract/test_point01_m6_3r_2_local_retrieval_fixture.py", "tests/contract/test_point01_m6_3r_1_local_retrieval_skeleton.py", "tests/contract/test_point01_canonical_models.py", "tests/contract/test_point01_m6_3r_0_local_retrieval_rerank_design.py"],
+  "fixture_outputs": ["data/manifests/point01_m6_3r_2_sanitized_local_retrieval_fixture_corpus_v1_0.json", "data/manifests/point01_m6_3r_2_local_retrieval_fixture_oracle_v1_0.json", "data/manifests/point01_m6_3r_2_local_retrieval_fixture_package_manifest_v1_0.json", "data/manifests/point01_m6_3r_2_local_retrieval_fixture_gate_result_v1_0.json"],
+  "required_matrix": ["issuer 3/12 -> 12/8/3", "relationship 5/12 -> 12/8/5", "commercial 1/1 typed terminal", "metadata hard filtering", "stable deterministic rerank", "independent oracle artifact", "oracle mutation cannot change actual evaluation", "per-source artifact cap=2", "identical content cap=1", "first-pass source-family diversity over post-filter eligible pool", "single-family/capacity-one non-applicable diversity", "directional section/table/page/row lineage", "required neighbor typed exhaustion", "rerank-to-Gate set preservation", "typed empty/table/boundary exhaustion", "alternate self-signed SQL policy not_fixture_admitted", "replay and over-cap negatives"],
+  "expected_counts": {"adapter_execution_count": 0, "network_request_count": 0, "external_tool_call_count": 0, "tool_invocation_count": 0, "model_call_count": 0, "provider_call_count": 0, "canonical_store_write_count": 0, "evidence_promotion_count": 0, "parser_numeric_execution_count": 0, "sourcehunter_attempt_count": 0},
+  "r3_proposed_plan_only": ["review fixed snapshot and canonical registry/admission boundary", "authorize injected read-only adapter execution separately", "retain no-promotion/non-citable firewall until M6.6 calibration"],
+  "prohibitions": ["real adapter/index/graph/SQL/source read", "ToolInvocation", "receipt registration", "network/model/provider", "parser/numeric", "promotion", "SourceHunter", "Context/Writer/full-chain", "production store/approval store write", "business Case mutation", "legacy cutover"]
+}

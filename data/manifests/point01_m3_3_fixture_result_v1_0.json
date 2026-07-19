@@ -1,0 +1,70 @@
+{
+  "boundary": "Deterministic M3 calibration fixture only; no model, provider, retrieval, Evidence/Writer runtime, legacy write, or authority cutover was invoked.",
+  "canonical_lane": "shadow_only",
+  "external_call_count": 0,
+  "fixture_status": "pass",
+  "generated_at": "2026-07-12T10:20:39.213162+00:00",
+  "model_call_count": 0,
+  "payload": {
+    "canonical_lane": "shadow_only",
+    "case_id": "ai_semis_dell_nvda_anchor_v0_1",
+    "evaluation_digest": "1b76d0f20291e21828ca4c8d7b62946027cd986ec3aecf48f629fba45c5bdcc6",
+    "external_call_count": 0,
+    "findings": [
+      {
+        "chain_id": "accelerator",
+        "failure_attribution": [],
+        "missing_cell_keys": [],
+        "missing_counterevidence_cell_keys": [],
+        "missing_evidence_roles": [],
+        "missing_wwc_cell_keys": [],
+        "status": "pass"
+      },
+      {
+        "chain_id": "server_oem",
+        "failure_attribution": [],
+        "missing_cell_keys": [],
+        "missing_counterevidence_cell_keys": [],
+        "missing_evidence_roles": [],
+        "missing_wwc_cell_keys": [],
+        "status": "pass"
+      },
+      {
+        "chain_id": "foundry_packaging",
+        "failure_attribution": [],
+        "missing_cell_keys": [],
+        "missing_counterevidence_cell_keys": [],
+        "missing_evidence_roles": [],
+        "missing_wwc_cell_keys": [],
+        "status": "pass"
+      },
+      {
+        "chain_id": "hbm",
+        "failure_attribution": [],
+        "missing_cell_keys": [],
+        "missing_counterevidence_cell_keys": [],
+        "missing_evidence_roles": [],
+        "missing_wwc_cell_keys": [],
+        "status": "pass"
+      },
+      {
+        "chain_id": "semicap",
+        "failure_attribution": [],
+        "missing_cell_keys": [],
+        "missing_counterevidence_cell_keys": [],
+        "missing_evidence_roles": [],
+        "missing_wwc_cell_keys": [],
+        "status": "pass"
+      }
+    ],
+    "material_omission_ids": [],
+    "model_call_count": 0,
+    "planning_authority": "legacy",
+    "policy_ref": "point01_m3_3_p36_five_chain_policy_v1_0",
+    "status": "pass"
+  },
+  "planning_authority": "legacy",
+  "point_id": "M3.3",
+  "result_version": "finsight_point01_m3_3_fixture_result_v1_0",
+  "status": "pass"
+}

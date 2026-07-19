@@ -1,0 +1,57 @@
+{
+  "boundary": "This closes M4 only as a human-accepted non-production synthetic technical pilot. Business Case mutation, legacy TaskRun authority change, sector/tenant/global cutover, Evidence/Writer/provider/full-chain remain forbidden.",
+  "business_case_mutation": false,
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m4_synthetic_pilot_approval_v1_0.json": "e216d1bfde63c86c9ef04f9af160f9670900d9aa027b021c572d8eadda9666ee",
+    "configs/engineering_handoff/point01_m4_synthetic_pilot_human_acceptance_v1_0.json": "47f6cfbf78ec739f8a1afaebc450a380ba2f9598207ad3013a291b278ffeaab2",
+    "data/manifests/point01_m4_synthetic_persistent_mutation_pilot_result_v1_0.json": "ea749c7d334a2563129bf7f12741de4fdf08771d7d4ad4a806536e662ad6cae9",
+    "data/manifests/point01_m4_synthetic_pilot_execution_evidence_v1_0.json": "8a64a28fcbb9a170e279f1a8eb83e57a9f160e624ad48c633b6676d78247dc55",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "3dfa50723ae5371b0296f814d412a254976614f8b07639f5c56fe56b320c9bc7",
+    "scripts/engineering/run_point01_m4_synthetic_closeout_gate.py": "a97e01198c61a56f8bfe64e6c607a8675c9e77a9d4f074ac584661fbcc28ec57"
+  },
+  "generated_at": "2026-07-12T13:13:32.324868+00:00",
+  "human_acceptance_status": "accepted",
+  "milestone": "M4_complete_nonproduction_synthetic_pilot",
+  "model_call_count": 0,
+  "pilot_execution_status": "pass",
+  "required_point_statuses": {
+    "M4.0": "pass",
+    "M4.1": "pass",
+    "M4.2": "pass",
+    "M4.3": "pass",
+    "M4.4": "pass",
+    "M4.5": "pass",
+    "M4.6": "pass",
+    "M4.7": "pass"
+  },
+  "result_version": "finsight_point01_m4_synthetic_closeout_gate_result_v1_0",
+  "scope": "Point01_M4_nonproduction_synthetic_persistent_technical_pilot",
+  "status": "pass",
+  "store_backed_pilot_verification": {
+    "backup_restore_mode": "pre_mutation_baseline",
+    "backup_snapshot_sha256": "518ab05fbf159e73422127a697b01e661269e362ac4622aaab3bbd3c9609ad6e",
+    "restored_baseline_cutover_event_count": 0,
+    "restored_content_fingerprint": "0a6a31050f0722bde80f30e663a33172866c886144541469f354c2d93dbc9d70",
+    "restored_content_fingerprint_match": false,
+    "restored_matches_expected_baseline": true,
+    "restored_store_identity": "ab4d1d1c2da74f114b20f02f1f7ab9ea1dcc5ec5e581edb8fc699c3a181065ae",
+    "restored_store_integrity_check": {
+      "database_integrity": "ok",
+      "missing_outbox_count": 0,
+      "orphan_outbox_count": 0,
+      "status": "pass"
+    },
+    "source_content_fingerprint": "8467e46076c25db4c07dc6a8c07b61e86bfff6db178c0fae7d9af51378465be7",
+    "source_store_identity": "e7a44c6164b92545eb528011130ff15dbecbfedcc1367aede219ae4f05dc3dee",
+    "source_store_integrity_check": {
+      "database_integrity": "ok",
+      "missing_outbox_count": 0,
+      "orphan_outbox_count": 0,
+      "status": "pass"
+    },
+    "status": "pass",
+    "verification_mode": "persistent_store_backed"
+  },
+  "unmet_conditions": []
+}

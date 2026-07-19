@@ -1,0 +1,38 @@
+{
+  "review_version": "finsight_point01_m4_synthetic_pilot_human_acceptance_v1_0",
+  "scope": "Point01_M4_isolated_synthetic_persistent_planning_cutover_pilot",
+  "status": "accepted",
+  "eligible_decision": "accept_m4_nonproduction_synthetic_persistent_pilot",
+  "reviewer_identity": "current_thread_human_reviewer",
+  "reviewed_at": "2026-07-12T13:10:00+00:00",
+  "decision": "accept_m4_nonproduction_synthetic_persistent_pilot",
+  "reviewed_artifacts": {
+    "approval": {
+      "path": "configs/engineering_handoff/point01_m4_synthetic_pilot_approval_v1_0.json",
+      "sha256": "e216d1bfde63c86c9ef04f9af160f9670900d9aa027b021c572d8eadda9666ee"
+    },
+    "execution_evidence": {
+      "path": "data/manifests/point01_m4_synthetic_pilot_execution_evidence_v1_0.json",
+      "sha256": "8a64a28fcbb9a170e279f1a8eb83e57a9f160e624ad48c633b6676d78247dc55"
+    },
+    "pilot_result": {
+      "path": "data/manifests/point01_m4_synthetic_persistent_mutation_pilot_result_v1_0.json",
+      "sha256": "ea749c7d334a2563129bf7f12741de4fdf08771d7d4ad4a806536e662ad6cae9"
+    }
+  },
+  "required_observations": [
+    "isolated non-production synthetic scope with zero downstream consumers",
+    "legacy -> canonical_for_lane -> legacy authority trace",
+    "request/execute/rollback decision v1/v2/v3 and ordered four authority events",
+    "approved v1 read remains pinned after a v2 contract is inserted",
+    "pre-mutation backup restores to the recorded baseline fingerprint with zero pilot cutover events",
+    "business Case mutation, Evidence/Writer/provider/full-chain remain absent"
+  ],
+  "non_goals": [
+    "business Case authority mutation",
+    "sector, tenant or global cutover",
+    "legacy TaskRun authority change",
+    "Evidence/Writer/provider/full-chain admission"
+  ],
+  "notes": "The current-thread user approved execution of the isolated synthetic pilot. This review record is deliberately separate: accepting the execution result is required before M4 can be considered for non-production technical closeout."
+}

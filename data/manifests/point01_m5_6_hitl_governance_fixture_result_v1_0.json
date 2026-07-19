@@ -1,0 +1,35 @@
+{
+  "boundary": "This fixture proves deterministic persistent-in-temporary-store HITL receipt/pause/resume/revocation only. It starts no worker/service and admits no provider, external tool, Evidence/Writer, full-chain, business Case mutation or legacy authority change.",
+  "errors": [],
+  "evidence": {
+    "event_types": [
+      "WORK_UNIT_CREATED",
+      "WORK_UNIT_STARTED",
+      "ATTEMPT_STARTED",
+      "SCHEDULER_LEASE_ACQUIRED",
+      "CHECKPOINT_VERSION_CREATED",
+      "HITL_APPROVAL_RECORDED",
+      "HITL_WORK_UNIT_PAUSED",
+      "HITL_WORK_UNIT_RESUMED"
+    ],
+    "invalidation_event_count": 1,
+    "pause_event_count": 2,
+    "pause_survived_restart": true,
+    "persisted_registry_authority_survives_restart": true,
+    "resume_event_count": 1,
+    "resumed_fencing_token": 2,
+    "revoked_resume_blocked": true
+  },
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m5_6_hitl_governance_policy_v1_0.json": "f78a3680b8d0bbdec222bb6c99cf1e0e347bc9aa0ebe308f149bc4b3390bec1c",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "875ebe893d8b14b4894856af3d27b0e9367d6d885ae20e99f58cd173744f95f1",
+    "scripts/engineering/run_point01_m5_6_hitl_governance_fixtures.py": "d98acab28d7e9154f9f95962a464263a840127960a05af9c4a4ed7b066aab8dc"
+  },
+  "generated_at": "2026-07-13T03:06:25.682713+00:00",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m5_6_hitl_governance_fixture_result_v1_0",
+  "scope": "Point01_M5_6_durable_hitl_approval_control_plane_only",
+  "status": "pass",
+  "worker_started": false
+}

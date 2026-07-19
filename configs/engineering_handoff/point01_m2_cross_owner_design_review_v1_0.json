@@ -1,0 +1,87 @@
+{
+  "review_version": "finsight_point01_m2_cross_owner_design_review_v1_0",
+  "scope": "Point01_M2_0_child_contract_design_review",
+  "status": "accepted_by_current_thread_user",
+  "review_method": "codex_single_agent_structured_role_separation",
+  "reviewer_identity": "current_thread_codex",
+  "independent_human_or_multi_person_signoff": false,
+  "limitation": "This is a structured review through separate responsibility lenses performed by one Codex agent at the user's request. It is not represented as independent human or multi-person approval; user confirmation remains the calibration disposition.",
+  "user_confirmation": {
+    "status": "accepted",
+    "approver_id": "current_thread_human_reviewer",
+    "approver_type": "human",
+    "confirmed_at": "2026-07-12T18:00:00+08:00",
+    "confirmation_note": "User explicitly stated: 接受，继续往下做。This accepts the M2.0 review conclusion as the calibration disposition."
+  },
+  "reviewer_lenses": [
+    {
+      "lens": "schema_and_contract_owner",
+      "result": "pass_after_repair",
+      "checks": ["every internal input has a named producer or declared external provider", "outputs have a single child owner", "full serializer receives pack, selection, composition, slot, gap and legacy-migration contracts"]
+    },
+    {
+      "lens": "runtime_lifecycle_and_replay_owner",
+      "result": "pass_after_repair",
+      "checks": ["M2.9 consumes M1 WorkUnitAttemptContext without changing legacy authority", "M2.2 preserves assembled lineage before orchestration", "shadow replay remains a declared M2.9 output"]
+    },
+    {
+      "lens": "authority_security_and_model_admission_owner",
+      "result": "pass",
+      "checks": ["legacy TaskRun remains authoritative", "cutover remains forbidden", "M2.8 remains model_execution_permitted=false and requires explicit scoped approval, feature flag, provider and budget preflights"]
+    },
+    {
+      "lens": "research_quality_and_evidence_policy_owner",
+      "result": "pass_after_repair",
+      "checks": ["M2.3 owns resolved source-authority policy sets", "M2.6 consumes that policy and retains typed gaps", "M2.5 cannot replace material cells with generic legacy facts"]
+    },
+    {
+      "lens": "acceptance_and_calibration_owner",
+      "result": "pass_with_open_followup",
+      "checks": ["M2.10 aggregates M2.1-M2.9", "positive/negative calibration corpus and Lead boundary audit stay explicit external acceptance inputs", "cross-owner review has no false claim of independent signoff"]
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "M2R-001",
+      "severity": "high",
+      "status": "resolved_in_design_manifest",
+      "finding": "M2.2 required PackResolution but depended only on M2.1, so the serializer could be scheduled before the registry lifecycle produced versioned pack resolution.",
+      "repair": "M2.2 now depends on M2.3-M2.7 and consumes the resulting resolved pack, selection, composition, slot/policy/gap and legacy-migration contracts."
+    },
+    {
+      "finding_id": "M2R-002",
+      "severity": "high",
+      "status": "resolved_in_design_manifest",
+      "finding": "M2.4 consumed query/sector/report/case intent objects without an explicit producer, leaving selection classification ownership ambiguous.",
+      "repair": "M2.1 now produces NormalizedIntentProfile; M2.4 owns PackSelectionIntentClassifier and consumes validated input plus that profile."
+    },
+    {
+      "finding_id": "M2R-003",
+      "severity": "high",
+      "status": "resolved_in_design_manifest",
+      "finding": "M2.6 needed source-authority policy but no M2 child owned its resolution, risking policy labels without versioned pack provenance.",
+      "repair": "M2.3 now outputs ResolvedSourceAuthorityPolicySet; M2.6 consumes it alongside PackResolution."
+    },
+    {
+      "finding_id": "M2R-004",
+      "severity": "high",
+      "status": "resolved_in_design_manifest",
+      "finding": "M2.9 required a ModelCompilationProposal even though M2.8 correctly denies model execution by default, making deterministic shadow orchestration semantically dependent on a forbidden path.",
+      "repair": "M2.9 now consumes ModelAdmissionDecision and DecisionSurfaceBundle; a denied admission is an explicit deterministic-shadow route, not an implicit fallback or model call."
+    },
+    {
+      "finding_id": "M2R-005",
+      "severity": "medium",
+      "status": "resolved_in_design_lint",
+      "finding": "The initial lint checked owner uniqueness and cycles but not whether every consumed contract had a producer reachable through the declared dependency graph.",
+      "repair": "The lint now validates external-provider declarations, single output ownership and transitive producer-to-consumer dependency closure."
+    }
+  ],
+  "open_followups": [
+    "User reviews this structured result and decides whether to treat it as the M2.0 calibration disposition.",
+    "M2.1 implementation must turn the frozen schema/validator contracts into code and deterministic positive/negative corpus tests.",
+    "No model, M3/M4, authority cutover, Evidence/Writer runtime or full-chain action is admitted by this review."
+  ],
+  "overall_result": "pass_with_resolved_design_findings_user_confirmed",
+  "authority_boundary": {"legacy_task_run": "authoritative", "canonical_lane": "shadow_only", "cutover": "forbidden"}
+}

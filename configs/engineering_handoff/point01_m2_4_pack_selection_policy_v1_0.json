@@ -1,0 +1,16 @@
+{
+  "policy_version": "finsight_point01_m2_4_pack_selection_policy_v1_0",
+  "policy_ref": "point01-m2-4-pack-selection-policy-v1",
+  "sector_keywords": {
+    "ai_semis": ["semiconductor", "accelerator", "hbm"],
+    "saas": ["saas", "subscription", "software"],
+    "healthcare": ["clinical", "drug", "therapeutic"],
+    "banks": ["bank", "net interest", "deposit"]
+  },
+  "report_type_keywords": {
+    "initiation": ["initiation", "initiate"],
+    "event_update": ["event update", "earnings update"],
+    "valuation_price_in": ["valuation", "price in", "price-in"]
+  },
+  "authority_boundary": "Selection is deterministic and shadow-only. It records reasons, rejections and conflicts; it cannot invoke a model, retrieve evidence, write legacy TaskRun or change authority."
+}

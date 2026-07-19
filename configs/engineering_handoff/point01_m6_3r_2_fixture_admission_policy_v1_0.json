@@ -1,0 +1,24 @@
+{
+  "policy_ref": "point01-m6-3r-2-fixture-admission-policy",
+  "policy_version": "v1",
+  "policy_digest": "ea687b51a654a787f8d0265fe86939880daf7d2af460e9315e41b1501c89cab8",
+  "sql_fixture_policy_pin": {
+    "policy_path": "configs/engineering_handoff/point01_m6_3r_1_exact_value_sql_binding_policy_v1_0.json",
+    "policy_ref": "point01-m6-3r-1-exact-value-sql-binding-policy",
+    "policy_version": "v1",
+    "policy_canonical_digest": "75fff84e1d4684aa47eb7b6dc9d2cef2ff50333f27bbce8e3cda17d5a6ef820f",
+    "policy_raw_sha256": "9695941aac154d1d5ae8744742156af9ee8b0b80b7792dc909ebcf6c746573a6",
+    "registry_read_status": "registry_not_read",
+    "execution_admission": "not_admitted"
+  },
+  "max_candidates_per_source_artifact": 2,
+  "max_candidates_per_identical_content_digest": 1,
+  "max_neighbor_expansions_total": 32,
+  "diversity_selection_policy": "first_pass_per_source_family_then_ranked_fill",
+  "fixture_provenance": "sanitized_immutable_fixture_only",
+  "execution_admission": "not_admitted",
+  "persistence_authorized": false,
+  "promotion_authorized": false,
+  "writer_citable": false,
+  "domain_judgment_eligible": false
+}

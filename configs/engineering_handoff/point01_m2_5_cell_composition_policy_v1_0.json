@@ -1,0 +1,8 @@
+{
+  "policy_version": "finsight_point01_m2_5_cell_composition_policy_v1_0",
+  "policy_ref": "point01-m2-5-cell-composition-policy-v1",
+  "minimum_material_cells": 10,
+  "maximum_material_cells": 20,
+  "allowed_owner_roles": ["research_lead", "fundamental_analyst", "product_industry_analyst", "capital_market_analyst", "risk_counterevidence_analyst"],
+  "authority_boundary": "Composition transforms selected shadow-pack archetypes into deterministic candidate cells only. It cannot invoke a model, retrieve facts, write legacy TaskRun or change authority."
+}

@@ -1,0 +1,45 @@
+{
+  "execution_counts": {
+    "active_approval": 0,
+    "admission": 0,
+    "baseline": 0,
+    "external": 0,
+    "fixed_store_write": 0,
+    "formal_namespace": 0,
+    "legacy_authority_change": 0,
+    "model": 0,
+    "network_success": 0,
+    "provider": 0,
+    "receipt": 0,
+    "runtime": 0,
+    "tool_success": 0
+  },
+  "gate_digest": "cfe1f33f2c06b109561fcda349dc1a7e06e249b3ceb7804ef7d81faf76c14a87",
+  "next_step": "independent_execution_authority_review_required_no_receipt_or_scenario_execution",
+  "schema_version": "finsight_point01_p01_g2_operational_tranche_gate_v1_0",
+  "status": "pass",
+  "tranche_digest": "8df521fcc321c6c5dfa30f6ae7a3ad377a0be223c21091525ef741d9208a047f",
+  "tranche_id": "P01-G2.0-minimum-operational-qualification-tranche",
+  "verification": {
+    "deferred_backlog_count": 12,
+    "errors": [],
+    "execution_counts": {
+      "active_approval": 0,
+      "admission": 0,
+      "baseline": 0,
+      "external": 0,
+      "fixed_store_write": 0,
+      "formal_namespace": 0,
+      "legacy_authority_change": 0,
+      "model": 0,
+      "network_success": 0,
+      "provider": 0,
+      "receipt": 0,
+      "runtime": 0,
+      "tool_success": 0
+    },
+    "selected_case_count": 4,
+    "status": "pass",
+    "tranche_digest": "8df521fcc321c6c5dfa30f6ae7a3ad377a0be223c21091525ef741d9208a047f"
+  }
+}

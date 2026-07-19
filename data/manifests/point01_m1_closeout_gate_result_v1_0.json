@@ -1,0 +1,151 @@
+{
+  "acceptance_gates": [
+    {
+      "evidence_path": "configs/engineering_handoff/point01_m1_rollback_recovery_drill_result_v1_0.json",
+      "evidence_status": "pass",
+      "gate_id": "rollback_recovery_drill",
+      "gate_pass": true,
+      "status": "conditional_on_local_contract_suite"
+    },
+    {
+      "evidence_path": "configs/engineering_handoff/point01_m1_human_reviewer_approval_v1_0.json",
+      "evidence_status": "approved",
+      "gate_id": "human_reviewer_approval",
+      "gate_pass": true,
+      "status": "external_required"
+    }
+  ],
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "cutover": "forbidden",
+    "legacy_task_run": "authoritative"
+  },
+  "boundary": "No authority cutover, model compiler, paid model, full-chain, Evidence, Writer, release, OA, or Monitoring runtime is exercised by this gate.",
+  "execution_points": [
+    {
+      "calibration_required": false,
+      "design_maturity": "frozen",
+      "gate_pass": true,
+      "implementation_maturity": "full_implemented",
+      "point_id": "M1.0",
+      "status_source": "point01_design_freeze"
+    },
+    {
+      "calibration_required": true,
+      "calibration_status": "calibrated",
+      "design_maturity": "frozen",
+      "gate_pass": true,
+      "implementation_maturity": "full_implemented",
+      "point_id": "M1.1",
+      "required_cases": [
+        "SQLite DB_01 parent and scope constraints",
+        "transaction/outbox/version semantics",
+        "ephemeral PostgreSQL logical conformance sample"
+      ]
+    },
+    {
+      "calibration_required": true,
+      "calibration_status": "calibrated",
+      "design_maturity": "frozen",
+      "gate_pass": true,
+      "implementation_maturity": "full_implemented",
+      "point_id": "M1.2",
+      "required_cases": [
+        "legacy binding survives SQLite restart",
+        "recovery check verifies integrity and event/outbox parity",
+        "replay stays external-call free after recovery",
+        "retry attempt can continue after recovery"
+      ]
+    },
+    {
+      "calibration_required": true,
+      "calibration_status": "calibrated",
+      "design_maturity": "frozen",
+      "gate_pass": true,
+      "implementation_maturity": "full_implemented",
+      "point_id": "M1.3",
+      "required_cases": [
+        "transient failure creates immutable Attempt N+1",
+        "permanent failure is terminal",
+        "poison failure is terminal",
+        "retry budget and max attempts stop further retry"
+      ]
+    },
+    {
+      "calibration_required": true,
+      "calibration_status": "calibrated",
+      "design_maturity": "frozen",
+      "gate_pass": true,
+      "implementation_maturity": "full_implemented",
+      "point_id": "M1.4",
+      "required_cases": [
+        "concurrent stale winner/loser",
+        "SQLite lock timeout is transaction_conflict",
+        "stale input head and expired lease reject commit",
+        "bounded SQLite independent-work-unit load"
+      ]
+    }
+  ],
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_generated_json_schemas_v1_0.json": "b86d278db1e68c3bd675e76a4d1d98220957fc017f4ba41e871b58feb7a084f9",
+    "configs/engineering_handoff/point01_m1_closeout_gate_manifest_v1_0.json": "830a2318ce198afd08211cc1a002ab5d852d4366ab364b2e9d5ec64fdb2b238d",
+    "configs/engineering_handoff/point01_m1_human_reviewer_approval_v1_0.json": "4eb0eb65d40da6ff85689bc649e848f346f55f7c81d0f8dcbe06a45592a038bc",
+    "configs/engineering_handoff/point01_m1_rollback_recovery_drill_result_v1_0.json": "81609fd0df79cd631961f14baebcf1490f307fcb2a26b4f584959dc3bb77ba7a",
+    "data/manifests/point01_m1_postgresql_conformance_sample_result_v1_0.json": "1cc694c819ed1167a3d17b9f4ebed20d0e6aad31b22c5bc2cd11dc193cf40e21",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "7af9e09f7ee097a25fecbf6e450557a63f61a78884b0d0e93c49697dc84a5118",
+    "scripts/engineering/run_point01_m1_closeout_gate.py": "d068ba61a059d5b200772a71a4a74484b41a5e38a858a32e906a3f746a645c6d",
+    "scripts/engineering/run_point01_postgresql_conformance_sample.py": "e20c64666b2858ee660940bf26c7ef8558203340d1713fcfc0c29897cb66ae13",
+    "src/sec_agent/canonical_runtime/facade.py": "d0d7ca722a9249317bff48b520b1a97523fbcf146a362b57dc925824f0db5e7c",
+    "src/sec_agent/canonical_runtime/models.py": "1af127d23f8139d36fff687b5c63e4c5d5952e27ce6eaa2d3a4bea02220c2cf9",
+    "src/sec_agent/canonical_runtime/store.py": "a237b93f53f83df9f30873631826f632e33515bf4db4b9dca186e679fa499f31",
+    "tests/contract/test_point01_runtime_facade.py": "66118e03956cc8b86d63db5f284fdfd2c6900481e2e4742a4c4fe8a19507ebab",
+    "tests/contract/test_point01_sqlite_store.py": "3ef587d498fbc8e8bd2d091825ad2245ecd119dbd4d0221ce6e0c482c4142e43"
+  },
+  "gate_status": "pass",
+  "generated_at": "2026-07-13T12:09:05.366124+00:00",
+  "machine_checks": {
+    "compileall": {
+      "command": [
+        "python",
+        "-m",
+        "compileall",
+        "-q",
+        "src/sec_agent/canonical_runtime",
+        "tests/contract"
+      ],
+      "output_tail": "",
+      "passed_count": 0,
+      "returncode": 0
+    },
+    "postgresql_conformance": {
+      "command": [
+        "python",
+        "scripts/engineering/run_point01_postgresql_conformance_sample.py"
+      ],
+      "output_tail": "{\"status\": \"pass\", \"output\": \"D:\\\\FIN_Insight_Agent\\\\data\\\\manifests\\\\point01_m1_postgresql_conformance_sample_result_v1_0.json\"}",
+      "passed_count": 0,
+      "returncode": 0
+    },
+    "pytest": {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "-m",
+        "fast_contract",
+        "tests/contract",
+        "tests/test_runtime_bridge_contracts.py",
+        "tests/test_r53_r60_runtime_task_spine.py"
+      ],
+      "output_tail": "........................................................................ [ 26%]\n........................................................................ [ 52%]\n........................................................................ [ 79%]\n.........................................................                [100%]\n273 passed in 112.41s (0:01:52)",
+      "passed_count": 273,
+      "returncode": 0
+    }
+  },
+  "machine_checks_pass": true,
+  "milestone_status": "M1_complete",
+  "result_version": "finsight_point01_m1_closeout_gate_result_v1_0",
+  "scope": "Point01_M1_only",
+  "unmet_closeout_conditions": []
+}

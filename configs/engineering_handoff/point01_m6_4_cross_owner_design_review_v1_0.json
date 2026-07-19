@@ -1,0 +1,25 @@
+{
+  "review_version": "finsight_point01_m6_4_cross_owner_design_review_v1_0",
+  "scope": "Point01_M6_4_deterministic_repair_ticket_and_attempt_contract",
+  "status": "user_confirmed_structured_cross_owner_review_accepted_for_m6_4",
+  "review_method": "codex_single_agent_structured_role_separation_with_explicit_user_implementation_authorization",
+  "reviewer_identity": "current_thread_codex",
+  "independent_human_or_multi_person_signoff": false,
+  "limitation": "This review is structured role separation by one Codex agent, not independent human or multi-person signoff. The user's authorization to complete the remaining M6 tasks is interpreted only as permission for this deterministic repair-routing contract.",
+  "user_confirmation": {"status": "accepted", "approver_id": "current_thread_human_reviewer", "approver_type": "human", "decision": "approve_m6_4_deterministic_repair_ticket_attempt_contract_only", "confirmation_note": "The user authorized continued M6 work while requiring explicit escalation for any approval-gated expansion. This implementation remains execution-free."},
+  "reviewer_lenses": [
+    {"lens": "repair_owner_and_lineage_owner", "result": "pass_after_exact_binding", "checks": ["RepairTicket binds exact origin EvidenceRequest and CandidateBundle ids/digests.", "Repair routing cannot mutate a request, bundle, parser fact, promotion decision, judgment pack or planning input.", "A RepairAttempt is append-style immutable planning evidence and carries an exact ticket digest."]},
+    {"lens": "source_authority_owner", "result": "pass_with_official_first_boundary", "checks": ["Internal metadata/context gaps may only reuse the request's declared preferred/fallback routes.", "No free-search route, public proxy or source-policy replacement is generated.", "External source exhaustion and commercial-license boundaries are terminal typed stops."]},
+    {"lens": "tool_security_budget_owner", "result": "pass_with_no_execution_boundary", "checks": ["Ticket attempt budget is policy bounded.", "Planned attempts are not execution and do not call M5.4/M5.5, a tool, provider, network or SourceHunter adapter.", "A router cannot create or overwrite a ToolSelectionPlan; M6.2 remains its sole write owner."]},
+    {"lens": "evidence_gate_and_numeric_owner", "result": "pass_with_downstream_boundary", "checks": ["A repair ticket is neither evidence nor promotion.", "Parser/Numeric and Evidence Gate owners remain M6.5/M6.6.", "Commercial gaps cannot be disguised as exact public evidence."]},
+    {"lens": "replay_acceptance_owner", "result": "pass_with_fixture_only_calibration", "checks": ["Internal, external and commercial typed-gap fixtures are deterministic.", "Wrong request/bundle linkage, terminal-ticket attempt and over-budget attempt fail closed.", "No persistence, case mutation, legacy authority change, writer or full-chain is admitted."]}
+  ],
+  "resolved_findings": [
+    {"finding_id": "M6.4R-001", "severity": "high", "finding": "A repair loop could change its originating request or re-open an unbounded search.", "repair": "Ticket carries exact immutable request/bundle refs, bounded declared route scope and an explicit stop reason; no planner writer is exposed."},
+    {"finding_id": "M6.4R-002", "severity": "high", "finding": "Commercial or exhausted external source gaps could silently fall back to public proxy evidence.", "repair": "Policy returns terminal commercial_license_required or external_source_exhausted stops with attempt budget zero."},
+    {"finding_id": "M6.4R-003", "severity": "medium", "finding": "A planned repair attempt could be misrepresented as a live SourceHunter attempt.", "repair": "The only M6.4 attempt state is planned_not_executed and result counters remain zero for tool/network/provider/store writes."}
+  ],
+  "open_followups": ["Actual SourceHunter/official-source attempt execution requires a separate M6.2 executor, M5.4/M5.5 transaction-bound admission and explicit user approval.", "M6.5 owns parser/numeric outputs; M6.6 owns promotion; neither can be inferred from a ticket.", "M6.8 later owns Lead repair governance and context handoff."],
+  "overall_result": "pass_with_resolved_design_findings_user_confirmed_m6_4_only",
+  "authority_boundary": {"repair_ticket": "deterministic_ephemeral_contract_only", "repair_attempt": "planned_not_executed_only", "sourcehunter_network_tool_execution": "not_admitted", "tool_selection_plan_write": "M6_2_owner_only", "evidence_promotion": "M6_6_not_implemented", "writer_full_chain": "not_admitted"}
+}

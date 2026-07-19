@@ -1,0 +1,33 @@
+{
+  "policy_version": "finsight_point01_m5_1_scheduler_policy_v1_0",
+  "scope": "Point01_M5_1_durable_scheduler_control_plane_only",
+  "status": "approved_for_deterministic_implementation",
+  "queue_policy": {
+    "default_queue_name": "point01.default",
+    "priority_order": "descending_queue_priority_then_queued_at_then_work_unit_id",
+    "lease_duration_seconds": {
+      "minimum": 1,
+      "maximum": 3600,
+      "default": 60
+    },
+    "worker_process_started": false
+  },
+  "required_controls": [
+    "claim is atomic within canonical store transaction",
+    "scheduler-managed lease requires worker identity and fencing token for heartbeat or mutation",
+    "expired lease may be reclaimed through a new append-only Attempt version without M5.2 retry/fork semantics",
+    "queued and active cancellation use existing append-only WorkUnit cancellation",
+    "queue view is read-only and worker-loss observable",
+    "legacy TaskRun remains authoritative execution/history owner"
+  ],
+  "forbidden_admissions": [
+    "background_worker_service",
+    "provider_execution",
+    "external_tool_execution",
+    "evidence_runtime",
+    "writer_runtime",
+    "full_chain",
+    "business_case_mutation",
+    "legacy_taskrun_authority_change"
+  ]
+}

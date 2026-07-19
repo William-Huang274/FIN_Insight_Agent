@@ -1,0 +1,36 @@
+{
+  "template_version": "finsight_point01_m6_3_5_positive_sec_document_human_receipt_template_v1_1",
+  "approval_ref": "approve_m6_3_5_single_sec_document_positive_retrieval_parser_pilot_only",
+  "approval_state": "template_not_an_authority_object",
+  "approval_id": "approval_point01_m6_3_5_nvda_10k_artifact_contract_remediation_global_one_shot",
+  "required_runtime_values": [
+    "new_unique_approval_nonce",
+    "new_future_utc_expiry",
+    "exact_package_ref",
+    "exact_package_digest",
+    "exact_package_manifest_digest",
+    "exact_scope_digest",
+    "fixed_approval_store_identity",
+    "process_local_SEC_USER_AGENT_use_confirmation"
+  ],
+  "persistence_contract": {
+    "approval_nonce": "registration_input_only",
+    "persisted_nonce_representation": "sha256_only",
+    "human_audit_export": "nonce_sha256_only"
+  },
+  "reviewer": {
+    "name": "william",
+    "employee_id": "003",
+    "role": "total_reviewer"
+  },
+  "prohibitions": [
+    "receipt_registration_before_exact_package_digest",
+    "receipt_registration_without_external_exact_digest_total_reviewer_decision",
+    "receipt_registration_before_process_local_user_agent_confirmation",
+    "old_m6_2_receipt_reuse",
+    "old_user_agent_authorization_reuse",
+    "live_send_before_active_receipt",
+    "retry_or_fallback",
+    "evidence_promotion_writer_domain_judgment_m6_7_full_chain"
+  ]
+}

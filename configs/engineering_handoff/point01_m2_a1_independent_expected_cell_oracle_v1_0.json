@@ -1,0 +1,38 @@
+{
+  "schema_version": "finsight_point01_m2_a1_independent_expected_cell_oracle_v1_0",
+  "scope": "M2_A1_post_execution_independent_oracle_only",
+  "runtime_input_forbidden": true,
+  "access_rule": "actual_compiler_must_not_import_read_hash_or_receive_this_oracle",
+  "oracle_cases": [
+    {
+      "oracle_case_id": "m2-a1-ai-semis-oracle",
+      "sector": "ai_semis",
+      "expected_cell_invariants": ["material_cell_count_10_to_20", "versioned_pack_lineage", "evidence_slot_policy", "counterevidence_responsibility", "legacy_semantic_loss_trace"],
+      "expected_authority": "shadow_only_legacy_authoritative"
+    },
+    {
+      "oracle_case_id": "m2-a1-saas-oracle",
+      "sector": "saas",
+      "expected_cell_invariants": ["material_cell_count_10_to_20", "versioned_pack_lineage", "evidence_slot_policy", "counterevidence_responsibility", "legacy_semantic_loss_trace"],
+      "expected_authority": "shadow_only_legacy_authoritative"
+    },
+    {
+      "oracle_case_id": "m2-a1-healthcare-oracle",
+      "sector": "healthcare",
+      "expected_cell_invariants": ["material_cell_count_10_to_20", "versioned_pack_lineage", "evidence_slot_policy", "counterevidence_responsibility", "legacy_semantic_loss_trace"],
+      "expected_authority": "shadow_only_legacy_authoritative"
+    },
+    {
+      "oracle_case_id": "m2-a1-banks-oracle",
+      "sector": "banks",
+      "expected_cell_invariants": ["material_cell_count_10_to_20", "versioned_pack_lineage", "evidence_slot_policy", "counterevidence_responsibility", "legacy_semantic_loss_trace"],
+      "expected_authority": "shadow_only_legacy_authoritative"
+    }
+  ],
+  "oracle_tamper_controls": [
+    "changing_oracle_must_not_change_actual_compiler_result",
+    "actual_oracle_path_or_digest_access_must_typed_stop_oracle_leakage_detected",
+    "four_sector_calibration_is_post_execution_comparison_only"
+  ],
+  "boundary": "This oracle is a reviewer-side expected-cell contract. It is not a pack, compiler input, model prompt, shadow input, or runtime authority object."
+}

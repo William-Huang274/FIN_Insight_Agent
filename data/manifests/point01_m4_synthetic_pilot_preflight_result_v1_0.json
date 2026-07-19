@@ -1,0 +1,82 @@
+{
+  "authority_before_after": {
+    "after": "legacy",
+    "before": "legacy"
+  },
+  "backup_restore_drill": {
+    "content_fingerprint_match": true,
+    "exact_bindings_match": true,
+    "restored_authority": "legacy",
+    "restored_content_fingerprint": "61bc335036683cae71fe81875760e80d0fe15fd7d2e59bb6fef5236732b407a9",
+    "restored_exact_bindings": {
+      "artifact_digest": "80e6ee8452ab8762a325a360ac556783ca8a58c9c9c4ca52748520c926f9cf07",
+      "artifact_version_id": "artifact-synthetic-pilot:v1",
+      "comparison_digest": "472b1c08da5e52f10301cf87e82f2537f1a7a8b0e14d3d9c5bc4d72afb3b35d6",
+      "comparison_id": "comparison-synthetic-pilot",
+      "contract_digest": "d5f906f48ad5440fdbf8adc0e537ab8920fbc539cbfbebffea5a46301a37955e",
+      "contract_version_id": "contract-synthetic-pilot:v1"
+    },
+    "restored_store_identity": "4887c138a8bfcea1f8b51d32ec9da47ef27be176ecc5bce148be3bec44a7826c",
+    "restored_store_integrity_check": {
+      "database_integrity": "ok",
+      "missing_outbox_count": 0,
+      "orphan_outbox_count": 0,
+      "status": "pass"
+    },
+    "source_authority": "legacy",
+    "source_content_fingerprint": "61bc335036683cae71fe81875760e80d0fe15fd7d2e59bb6fef5236732b407a9",
+    "source_exact_bindings": {
+      "artifact_digest": "80e6ee8452ab8762a325a360ac556783ca8a58c9c9c4ca52748520c926f9cf07",
+      "artifact_version_id": "artifact-synthetic-pilot:v1",
+      "comparison_digest": "472b1c08da5e52f10301cf87e82f2537f1a7a8b0e14d3d9c5bc4d72afb3b35d6",
+      "comparison_id": "comparison-synthetic-pilot",
+      "contract_digest": "d5f906f48ad5440fdbf8adc0e537ab8920fbc539cbfbebffea5a46301a37955e",
+      "contract_version_id": "contract-synthetic-pilot:v1"
+    },
+    "source_store_identity": "374f6b45224eb3be4211eb4a8ecec8cc2a74f831491f3bdc214096955a2838e3",
+    "status": "pass"
+  },
+  "backup_snapshot_sha256": "465827693c8d404880f873933b83eb7f616b2a3b0e687e168c5cdfbc4111cea4",
+  "downstream_consumer_count": 0,
+  "downstream_consumer_ids": [],
+  "exact_bindings": {
+    "artifact_digest": "80e6ee8452ab8762a325a360ac556783ca8a58c9c9c4ca52748520c926f9cf07",
+    "artifact_version_id": "artifact-synthetic-pilot:v1",
+    "comparison_digest": "472b1c08da5e52f10301cf87e82f2537f1a7a8b0e14d3d9c5bc4d72afb3b35d6",
+    "comparison_id": "comparison-synthetic-pilot",
+    "contract_digest": "d5f906f48ad5440fdbf8adc0e537ab8920fbc539cbfbebffea5a46301a37955e",
+    "contract_version_id": "contract-synthetic-pilot:v1"
+  },
+  "forbidden_actions": [
+    "request_cutover",
+    "execute_cutover",
+    "rollback_cutover",
+    "evidence_runtime",
+    "writer_runtime",
+    "provider_execution",
+    "full_chain"
+  ],
+  "generated_at": "2026-07-12T12:43:11.253401+00:00",
+  "kill_switch_state": "off",
+  "mutation_performed": false,
+  "pilot_kind": "isolated_nonproduction_synthetic_persistent_case",
+  "result_version": "finsight_point01_m4_synthetic_pilot_preflight_result_v1_0",
+  "rollback_window": "not_opened_read_only_preflight_only",
+  "scope": {
+    "case_id": "case-point01-synthetic-pilot",
+    "feature_flag_id": "decision_surface_planning_cutover_v1_0",
+    "feature_flag_mode": "case_scoped",
+    "lane_id": "planning",
+    "project_id": "project-point01-synthetic-pilot",
+    "scope_kind": "case",
+    "tenant_id": "tenant-point01-synthetic-pilot"
+  },
+  "source_store_integrity_check": {
+    "database_integrity": "ok",
+    "missing_outbox_count": 0,
+    "orphan_outbox_count": 0,
+    "status": "pass"
+  },
+  "status": "pass",
+  "store_identity": "374f6b45224eb3be4211eb4a8ecec8cc2a74f831491f3bdc214096955a2838e3"
+}

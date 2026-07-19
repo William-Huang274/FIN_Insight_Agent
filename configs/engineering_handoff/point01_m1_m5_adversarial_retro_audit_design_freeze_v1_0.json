@@ -1,0 +1,123 @@
+{
+  "schema_version": "finsight_point01_m1_m5_adversarial_retro_audit_design_freeze_v1_0",
+  "scope": "Point01_M1_to_M5_A0_adversarial_retro_audit_design_freeze_only",
+  "status": "design_frozen_pending_total_reviewer_audit",
+  "design_digest": "75a76e24a3a730b82942b9861b9d203a5ec0e735a936dbc229d1c68681ff250d",
+  "execution_authority": {
+    "runtime_test_execution": "forbidden_in_A0",
+    "database_or_store_open": "forbidden_in_A0",
+    "network_tool_model_provider": "forbidden_in_A0",
+    "canonical_store_write": "forbidden_in_A0",
+    "business_case_or_legacy_authority_mutation": "forbidden_in_A0",
+    "m6_3r_3": "held_pending_M1_to_M5_adversarial_reaudit"
+  },
+  "historical_claim_disposition_before_A1": "historical_claim_retained_pending_independent_adversarial_reaudit",
+  "milestones": [
+    {
+      "milestone": "M1",
+      "canonical_claim": "M1_complete control-kernel lifecycle, retry/recovery, event/artifact replay and PostgreSQL logical conformance",
+      "maturity_limited_scope": "full_calibrated_sqlite_first_postgresql_compatible_control_slice",
+      "authority_boundary": "legacy_taskrun_authoritative_no_compiler_or_cutover",
+      "evidence_refs": [
+        "data/manifests/point01_m1_closeout_gate_result_v1_0.json",
+        "data/manifests/point01_m1_postgresql_conformance_sample_result_v1_0.json",
+        "docs/worklog/product_strategy/138_p38_point01_m1_reviewer_approved_closeout.md",
+        "docs/worklog/product_strategy/170_p38_point01_m1_postgresql_conformance_rerun.md"
+      ],
+      "self_certification_risks": ["fixed_hash_coverage_drift", "replay_oracle_leakage", "ambient_store_test_access", "retry_fencing_self_assertion"],
+      "initial_disposition": "retained_pending_M1_A1"
+    },
+    {
+      "milestone": "M2",
+      "canonical_claim": "M2_complete no-model deterministic DecisionSurface Planning Shadow compiler and pack pipeline",
+      "maturity_limited_scope": "full_calibrated_deterministic_shadow_only",
+      "authority_boundary": "legacy_authoritative_decision_surface_shadow_only",
+      "evidence_refs": [
+        "data/manifests/point01_m2_closeout_gate_result_v1_0.json",
+        "configs/engineering_handoff/point01_m2_design_freeze_manifest_v1_0.json",
+        "docs/worklog/product_strategy/151_p38_point01_m2_deterministic_shadow_closeout.md"
+      ],
+      "self_certification_risks": ["expected_cell_oracle_leakage", "pack_lineage_digest_drift", "fixture_runtime_scope_conflation", "legacy_mapping_self_equivalence"],
+      "initial_disposition": "retained_pending_M2_A1"
+    },
+    {
+      "milestone": "M3",
+      "canonical_claim": "M3_complete deterministic shadow comparison and calibration",
+      "maturity_limited_scope": "full_calibrated_deterministic_shadow_comparison_only",
+      "authority_boundary": "no_cutover_no_evidence_writer_provider_or_model_execution",
+      "evidence_refs": [
+        "data/manifests/point01_m3_closeout_gate_result_v1_0.json",
+        "docs/worklog/product_strategy/152_p38_point01_m3_shadow_comparison_calibration.md"
+      ],
+      "self_certification_risks": ["comparison_expected_result_leakage", "shared_input_projection", "cross_case_contamination", "reviewer_trace_authority_gap"],
+      "initial_disposition": "retained_pending_M3_A1"
+    },
+    {
+      "milestone": "M4",
+      "canonical_claim": "M4_complete_nonproduction_synthetic_pilot store-backed case-scoped cutover, rollback and restore",
+      "maturity_limited_scope": "full_calibrated_isolated_nonproduction_synthetic_persistent_pilot",
+      "authority_boundary": "business_case_mutation_forbidden_legacy_authority_retained",
+      "evidence_refs": [
+        "data/manifests/point01_m4_synthetic_persistent_mutation_pilot_result_v1_0.json",
+        "data/manifests/point01_m4_synthetic_closeout_gate_result_v1_0.json",
+        "docs/worklog/product_strategy/157_p38_point01_m4_synthetic_store_backed_closeout.md"
+      ],
+      "self_certification_risks": ["hand_authored_execution_evidence", "backup_restore_non_equivalence", "approval_expiry_or_revocation_gap", "synthetic_to_business_scope_leak"],
+      "initial_disposition": "retained_pending_M4_A1"
+    },
+    {
+      "milestone": "M5",
+      "canonical_claim": "M5_complete_temporary_store_full_calibrated_reviewed durable harness control planes and local calibration",
+      "maturity_limited_scope": "full_calibrated_local_temporary_store_harness_only",
+      "authority_boundary": "no_resident_worker_production_service_provider_tool_evidence_writer_or_legacy_change",
+      "evidence_refs": [
+        "configs/engineering_handoff/point01_m5_human_full_calibrated_closeout_v1_0.json",
+        "data/manifests/point01_m5_closeout_gate_result_v1_0.json",
+        "data/manifests/point01_m5_calibration_result_v1_0.json",
+        "docs/worklog/product_strategy/173_p38_point01_m5_full_closeout_and_m6_design_freeze.md"
+      ],
+      "self_certification_risks": ["package_receipt_self_invalidation", "same_process_crash_substitution", "hitl_or_budget_authority_bypass", "test_induced_fixed_store_access"],
+      "initial_disposition": "retained_pending_M5_A1"
+    }
+  ],
+  "probe_matrix": [
+    {"id":"A0-M1-P01","owner":"m1_canonical_store_and_facade_owner","snapshot":"m1_closeout_manifest_postgresql_sample_sqlite_schema_event_artifact","allowed_counts":{"network":0,"tool":0,"model":0,"canonical_write":0},"coverage":["digest_package_binding","snapshot_replay"],"expected_typed_stop":"input_snapshot_mismatch_or_digest_or_replay_tamper_detected","closeout_gate":"M1-A1_package_and_replay_independent_verifier"},
+    {"id":"A0-M1-P02","owner":"m1_lifecycle_transaction_owner","snapshot":"retryable_failure_attempt_n_n_plus_1_lease_fencing_idempotency","allowed_counts":{"network":0,"tool":0,"model":0,"canonical_write":0},"coverage":["retry_multi_attempt","transaction_idempotency","stale_write_fencing"],"expected_typed_stop":"stale_write_fenced_or_idempotency_conflict_or_retry_budget_exhausted","closeout_gate":"M1-A1_transaction_idempotency_fencing_verifier"},
+    {"id":"A0-M1-P03","owner":"m1_test_isolation_owner","snapshot":"injected_temp_store_and_fingerprinted_fixed_store_canary","allowed_counts":{"network":0,"tool":0,"model":0,"fixed_or_production_write":0},"coverage":["test_induced_production_access"],"expected_typed_stop":"test_runtime_isolation_violation","closeout_gate":"M1-A1_test_isolation_fingerprint_gate"},
+    {"id":"A0-M1-P04","owner":"m1_legacy_bridge_owner","snapshot":"legacy_binding_recovery_outbox_artifact_replay","allowed_counts":{"network":0,"tool":0,"model":0,"legacy_authority_mutation":0},"coverage":["snapshot_replay","legacy_authority"],"expected_typed_stop":"legacy_binding_mismatch_or_replay_integrity_failure","closeout_gate":"M1-A1_legacy_authority_recovery_gate"},
+    {"id":"A0-M2-P01","owner":"m2_compiler_serializer_owner","snapshot":"compiler_policy_source_packs_legacy_objective_full_bundle_independent_oracle","allowed_counts":{"network":0,"tool":0,"model":0,"canonical_write":0},"coverage":["oracle_expected_leakage","fixture_runtime_gap"],"expected_typed_stop":"oracle_leakage_detected","closeout_gate":"M2-A1_compiler_oracle_separation_gate"},
+    {"id":"A0-M2-P02","owner":"m2_pack_policy_owner","snapshot":"versioned_pack_registry_selection_trace_evidence_policy_artifact_envelope","allowed_counts":{"network":0,"tool":0,"model":0,"persistence":0},"coverage":["digest_package_binding","snapshot_replay"],"expected_typed_stop":"pack_version_or_lineage_mismatch_or_policy_upgrade_required","closeout_gate":"M2-A1_package_lineage_replay_gate"},
+    {"id":"A0-M2-P03","owner":"m2_shadow_admission_owner","snapshot":"four_sector_feature_off_and_model_admission_fixtures_fixed_store_fingerprint","allowed_counts":{"network":0,"tool":0,"model":0,"fixed_or_production_write":0},"coverage":["fixture_runtime_gap","test_induced_production_access"],"expected_typed_stop":"shadow_scope_violation_or_test_runtime_isolation_violation","closeout_gate":"M2-A1_shadow_runtime_boundary_gate"},
+    {"id":"A0-M3-P01","owner":"m3_comparator_calibration_owner","snapshot":"legacy_canonical_pair_independent_oracle_mapping_provenance_reviewer_trace","allowed_counts":{"network":0,"tool":0,"model":0,"persistence":0},"coverage":["oracle_expected_leakage","snapshot_replay"],"expected_typed_stop":"oracle_leakage_detected","closeout_gate":"M3-A1_independent_comparison_oracle_gate"},
+    {"id":"A0-M3-P02","owner":"m3_semantic_mapping_owner","snapshot":"four_sector_five_chain_positive_negative_corpus_case_source_snapshots","allowed_counts":{"network":0,"tool":0,"model":0,"legacy_authority_mutation":0},"coverage":["cross_case_calibration","legacy_authority"],"expected_typed_stop":"cross_case_contamination_or_non_independent_comparison_input","closeout_gate":"M3-A1_cross_case_provenance_gate"},
+    {"id":"A0-M3-P03","owner":"m3_reviewer_trace_owner","snapshot":"reviewer_trace_receipt_mapping_comparison_digests_threshold_policy","allowed_counts":{"network":0,"tool":0,"model":0,"store_write":0},"coverage":["digest_package_binding","hitl_revocation_expiry"],"expected_typed_stop":"reviewer_trace_not_authoritative","closeout_gate":"M3-A1_reviewer_trace_replay_gate"},
+    {"id":"A0-M4-P01","owner":"m4_cutover_state_machine_owner","snapshot":"isolated_synthetic_store_authority_events_decision_versions_approval_scope","allowed_counts":{"network":0,"tool":0,"model":0,"business_or_fixed_store_write":0},"coverage":["transaction_idempotency","stale_write_fencing","hitl_revocation_expiry"],"expected_typed_stop":"approval_not_active_or_state_version_conflict","closeout_gate":"M4-A1_persistent_state_transition_verifier"},
+    {"id":"A0-M4-P02","owner":"m4_rollback_recovery_owner","snapshot":"pre_mutation_backup_source_restore_fingerprint_exact_refs_killswitch_receipt","allowed_counts":{"network":0,"tool":0,"model":0,"business_write":0},"coverage":["rollback_kill_switch","digest_package_binding"],"expected_typed_stop":"backup_restore_mismatch_or_rollback_not_proven","closeout_gate":"M4-A1_backup_restore_killswitch_gate"},
+    {"id":"A0-M4-P03","owner":"m4_tenancy_authority_owner","snapshot":"two_synthetic_tenants_cases_lanes_legacy_authority_read_lock","allowed_counts":{"network":0,"tool":0,"model":0,"business_or_legacy_authority_mutation":0},"coverage":["cross_case_calibration","legacy_authority"],"expected_typed_stop":"tenant_or_case_scope_violation_or_legacy_authority_change_forbidden","closeout_gate":"M4-A1_cross_case_legacy_authority_gate"},
+    {"id":"A0-M5-P01","owner":"m5_closeout_package_owner","snapshot":"92_file_package_full_receipt_semantic_calibration_stable_digest_rules","allowed_counts":{"network":0,"tool":0,"model":0,"fixed_approval_store_write":0},"coverage":["digest_package_binding","oracle_expected_leakage"],"expected_typed_stop":"package_digest_mismatch_or_receipt_not_exact_or_stable","closeout_gate":"M5-A1_package_receipt_stability_verifier"},
+    {"id":"A0-M5-P02","owner":"m5_scheduler_recovery_owner","snapshot":"child_process_worker_loss_crash_lease_fencing_checkpoint_artifact_sqlite","allowed_counts":{"network":0,"tool":0,"model":0,"production_write":0},"coverage":["fixture_runtime_gap","transaction_idempotency","stale_write_fencing"],"expected_typed_stop":"process_evidence_invalid_or_stale_write_fenced_or_partial_transaction_detected","closeout_gate":"M5-A1_child_process_crash_recovery_gate"},
+    {"id":"A0-M5-P03","owner":"m5_security_budget_hitl_owner","snapshot":"persisted_grant_reservation_hitl_registry_checkpoint_scope_expiry_revocation","allowed_counts":{"network":0,"tool":0,"model":0,"production_write":0},"coverage":["hitl_revocation_expiry","transaction_idempotency"],"expected_typed_stop":"grant_revoked_or_expired_or_hitl_receipt_not_authoritative_or_budget_reconciliation_required","closeout_gate":"M5-A1_transaction_bound_admission_hitl_budget_gate"},
+    {"id":"A0-M5-P04","owner":"m5_context_observability_owner","snapshot":"immutable_snapshot_delta_rebase_receipt_trace_alert_cursor_temp_store_context","allowed_counts":{"network":0,"tool":0,"model":0,"fixed_or_production_write":0},"coverage":["snapshot_replay","test_induced_production_access","hitl_revocation_expiry"],"expected_typed_stop":"snapshot_or_receipt_mismatch_or_observability_redaction_violation_or_test_runtime_isolation_violation","closeout_gate":"M5-A1_replay_observability_isolation_gate"}
+  ],
+  "required_coverage": [
+    "oracle_expected_leakage",
+    "digest_package_binding",
+    "fixture_runtime_gap",
+    "test_induced_production_access",
+    "retry_multi_attempt",
+    "transaction_idempotency",
+    "stale_write_fencing",
+    "snapshot_replay",
+    "hitl_revocation_expiry",
+    "rollback_kill_switch",
+    "cross_case_calibration",
+    "legacy_authority"
+  ],
+  "disposition_rules": {
+    "pass": "historical_claim_retained_after_adversarial_reaudit_without_authority_expansion",
+    "evidence_gap": "historical_claim_provisional_pending_evidence_repair",
+    "owned_defect_or_bypass": "reject_and_repair_earliest_owned_layer"
+  },
+  "ordered_execution": ["M1-A1", "stop_for_total_reviewer", "M2-A1", "stop_for_total_reviewer", "M3-A1", "stop_for_total_reviewer", "M4-A1", "stop_for_total_reviewer", "M5-A1", "stop_for_total_reviewer", "reconsider_M6_3R_3_only_after_all_dispositions"],
+  "A0_closeout_requires": ["matrix_and_document_consistency", "all_required_coverage_present", "per_milestone_owner_snapshot_count_typed_stop_gate_present", "ordered_stop_rule_present", "zero_runtime_execution_in_A0"]
+}

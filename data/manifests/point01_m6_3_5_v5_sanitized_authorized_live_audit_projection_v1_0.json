@@ -1,0 +1,144 @@
+{
+  "artifact_classification": "sanitized_superseding_audit_projection_non_citable",
+  "downstream_firewall": {
+    "context_ingestion_authorized": false,
+    "domain_judgment_eligible": false,
+    "evidence_promotion_authorized": false,
+    "m6_4_sourcehunter_authorized": false,
+    "m6_6_authoritative_gate_authorized": false,
+    "m6_7_judgment_authorized": false,
+    "writer_citable": false
+  },
+  "execution_authorization_snapshot": {
+    "approval_nonce_sha256": "5c6d235a71510cfc928920887d61b5b27da5e9a275cc6a2dec48d3014c5ea511",
+    "authority_store_identity": "a62079db4293d7430a2c912fdb5cbec0446cf2eb442a1e5c623d64ac545ddd01",
+    "authorization_kind": "fixed_store_exact_one_shot_receipt",
+    "execution_instance_id": "sec_document_execution_3c3b66f7de8d0771befa60fd",
+    "live_send_authorized_by_exact_receipt": true,
+    "receipt_digest": "8cf9788382c8fd2e6e9ab1292573279f38be85140336335a8694ae3133bafb0b",
+    "receipt_identity": "approval_point01_m6_3_5_nvda_10k_incident_isolation_refreeze_global_one_shot:consumed",
+    "receipt_state": "consumed"
+  },
+  "execution_counts": {
+    "external_call_count": 1,
+    "fallback_count": 0,
+    "model_call_count": 0,
+    "network_request_count": 1,
+    "retry_count": 0,
+    "tool_invocation_count": 1
+  },
+  "execution_outcome": {
+    "downstream_status": "positive_chain_persisted",
+    "execution_status": "positive_chain_persisted",
+    "external_call_count": 1,
+    "fallback_call_count": 0,
+    "invocation_state": "succeeded",
+    "model_call_count": 0,
+    "raw_document_persisted": false,
+    "response_status_code": 200,
+    "retry_call_count": 0,
+    "source_document_sha256": "dae19486be264fd26eb00a7f920dc641041a261c81bc8c03b678eea947de4856",
+    "tool_invocation_count": 1
+  },
+  "execution_state": "approved_single_live_pilot_succeeded",
+  "lineage": {
+    "execution_instance_id": "sec_document_execution_3c3b66f7de8d0771befa60fd",
+    "receipt_version_ref": "sec_document_execution_3c3b66f7de8d0771befa60fd:restricted_superseding_projection",
+    "request_digest": "e83770a65b15b0c1f068d5e58ce84991fb6dadf2782cf7415d177de1e383a0d2",
+    "request_id": "evidence_request_e83770a65b15b0c1f068",
+    "tool_selection_plan_digest": "b3c8fadec20f85efa0804927baddc83bc0c9cde5f41b2a0a4133d6b28877ce06",
+    "tool_selection_plan_id": "tool_selection_plan_b3c8fadec20f85efa080"
+  },
+  "package_authority_boundary": {
+    "evidence_promotion": false,
+    "live_send_requires_separate_exact_receipt": true,
+    "manifest_digest": "18f510b0a0adb20b9e56b6f4d55498728dea0928f9b0f0c3cb3537085fc7e6ea",
+    "package_digest": "724bb947df735fc5392c038a978bdc6135a434baad66538b747b43279fe2cd0c",
+    "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v4-incident-isolation-refreeze",
+    "writer_domain_judgment_m6_7_full_chain": false
+  },
+  "restricted_original": {
+    "classification": "restricted_quarantined_audit_input",
+    "downstream_consumption": false,
+    "git_publish": false,
+    "original_invocation_id_sha256": "be9f7f47de171551cda1df3fa9aa36c046182fb24de69a378d2760f7547eb617",
+    "path": "data/manifests/point01_m6_3_5_v4_single_fixed_nvda_10k_live_pilot_result_v1_0.json",
+    "retention_policy_ref": "point01-m6-3-5-v4-live-artifact-restricted-retention-and-v5-sanitized-projection",
+    "sha256": "de3ca1c2d841242faac29c67d29f0a836632d18a9b55d0941b14743d8074bdd5"
+  },
+  "result_version": "finsight_point01_m6_3_5_live_terminal_audit_projection_v1_0",
+  "status": "pass",
+  "unpromoted_lineage": {
+    "candidate": {
+      "candidate_id": "sec_document_candidate_2b5303c63717bc8944e5",
+      "domain_judgment_eligible": false,
+      "execution_instance_id": "sec_document_execution_3c3b66f7de8d0771befa60fd",
+      "financial_statement_role": "consolidated_primary_financial_statement",
+      "kind": "candidate",
+      "normalized_period": "2025-01-26",
+      "promotion_status": "unpromoted",
+      "restricted_original_content_digest": "c3352166c7cce4b015fbe13775db6af6eb2c09e85bc3bf47e25948aeb025dbd4",
+      "restricted_original_receipt_digest": "dcb8a277b52b40fc61d052b0cd39512ca93c2d0af1a684a88096113e8b6c3106",
+      "row_label_normalized": "Revenue",
+      "source_document_sha256": "dae19486be264fd26eb00a7f920dc641041a261c81bc8c03b678eea947de4856",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581025000023/nvda-20250126.htm",
+      "superseding_receipt_version_ref": "sec_document_execution_3c3b66f7de8d0771befa60fd:restricted_superseding_projection",
+      "table_coordinate": "table[21]/row[3]/period_group[3:9]/value_column[4]",
+      "table_heading_normalized": "CONSOLIDATED STATEMENTS OF INCOME",
+      "unit_caption_normalized": "In millions, except per share data",
+      "writer_citable": false
+    },
+    "fact": {
+      "domain_judgment_eligible": false,
+      "execution_instance_id": "sec_document_execution_3c3b66f7de8d0771befa60fd",
+      "kind": "fact",
+      "normalized_fact_id": "sec_document_numeric_fact_79ebbd453b4612a6ebcd",
+      "normalized_value": "130497",
+      "period": "2025-01-26",
+      "promotion_status": "unpromoted",
+      "restricted_original_content_digest": "d40a9a2525e1ea7f24890724ccdf2a66fed5a45c03f604bb5bd905eafe700ecf",
+      "restricted_original_receipt_digest": "dcb8a277b52b40fc61d052b0cd39512ca93c2d0af1a684a88096113e8b6c3106",
+      "scale_multiplier": 1000000,
+      "source_coordinate": "table[21]/row[3]/period_group[3:9]/value_column[4]",
+      "superseding_receipt_version_ref": "sec_document_execution_3c3b66f7de8d0771befa60fd:restricted_superseding_projection",
+      "unit": "USD_millions",
+      "writer_citable": false
+    },
+    "parser": {
+      "domain_judgment_eligible": false,
+      "execution_instance_id": "sec_document_execution_3c3b66f7de8d0771befa60fd",
+      "kind": "parser",
+      "parse_status": "parsed_unpromoted",
+      "parsed_table_digest": "54df0d83e82f4d619e02a8f3a21bf06982fbcffb4fa7c138aa3bfed3fb91203c",
+      "parser_candidate_id": "sec_document_parser_db47d7c57a31eb7f4bbe",
+      "promotion_status": "unpromoted",
+      "restricted_original_content_digest": "4cd1d508ca303c6b920954056656c6943a38df3b92d035a00ae97b1875b09257",
+      "restricted_original_receipt_digest": "dcb8a277b52b40fc61d052b0cd39512ca93c2d0af1a684a88096113e8b6c3106",
+      "superseding_receipt_version_ref": "sec_document_execution_3c3b66f7de8d0771befa60fd:restricted_superseding_projection",
+      "table_coordinate": "table[21]/row[3]/period_group[3:9]/value_column[4]",
+      "writer_citable": false
+    },
+    "trace": {
+      "domain_judgment_eligible": false,
+      "execution_instance_id": "sec_document_execution_3c3b66f7de8d0771befa60fd",
+      "input_digest": "8684c05ab89e1fa6b75382a93ce1cff952ad0f546b577d58b83231fcff8184f9",
+      "kind": "trace",
+      "numeric_trace_id": "sec_document_numeric_trace_d5f6a7eef319d2f06bb1",
+      "output_value": "130497",
+      "program_steps": [
+        "html_table_parse",
+        "table_local_heading_unit_bind",
+        "primary_statement_role_bind",
+        "semantic_period_group_iso_normalization",
+        "currency_numeric_cell_bind",
+        "decimal_parse",
+        "unit_caption_scale_preserved"
+      ],
+      "promotion_status": "unpromoted",
+      "restricted_original_content_digest": "8750cc45efeea384f4b0d50f3d13a97bfb32b0c7c81d6a229681d93a7f852d8d",
+      "restricted_original_receipt_digest": "dcb8a277b52b40fc61d052b0cd39512ca93c2d0af1a684a88096113e8b6c3106",
+      "superseding_receipt_version_ref": "sec_document_execution_3c3b66f7de8d0771befa60fd:restricted_superseding_projection",
+      "writer_citable": false
+    }
+  }
+}

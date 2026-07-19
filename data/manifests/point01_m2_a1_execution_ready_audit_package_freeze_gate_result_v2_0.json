@@ -1,0 +1,56 @@
+{
+  "actual_admission_status": "package_admission_required",
+  "boundary": "Static refreeze only. It packages future actual code and instrumentation but does not execute compiler/shadow, external/model/tool/provider, store or mutation paths.",
+  "execution_counts": {
+    "a0_m2_actual_probes": 0,
+    "business_case_mutations": 0,
+    "compiler_or_shadow_fixture_runs": 0,
+    "external_tool_calls": 0,
+    "fixed_or_production_store_opens": 0,
+    "legacy_authority_mutations": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "provider_calls": 0,
+    "receipt_consumptions": 0,
+    "receipt_registrations": 0,
+    "store_writes": 0
+  },
+  "failures": [],
+  "gate_digest": "7b28f0655a0d5b44d965827acdcdb9162062d0f82de7da6a6655304024136d42",
+  "next_step_requires_total_reviewer": "Independent review of this exact v2 execution-ready package only. No admission, receipt registration or actual scenario is created by this freeze.",
+  "package_digest": "453088e5015a612a3859d6b925f25133f6a05df7e52b85936958796b4bd69314",
+  "package_ref": "point01-m2-a1-execution-ready-adversarial-audit-package-v2",
+  "package_verify": {
+    "calculated_package_digest": "453088e5015a612a3859d6b925f25133f6a05df7e52b85936958796b4bd69314",
+    "mismatches": [],
+    "policy_checks": {
+      "authoritative_receipt_required": true,
+      "execution_matrix_exact_sixteen_scenarios": true,
+      "execution_matrix_runtime_oracle_separation": true,
+      "execution_matrix_schema": true,
+      "external_admission_mode": true,
+      "immutable_projection_complete": true,
+      "instrumentation_is_concrete": true,
+      "policy_schema": true,
+      "real_runtime_path_complete": true,
+      "reviewer_gate_is_semantic": true
+    },
+    "schema_errors": [],
+    "status": "pass"
+  },
+  "policy_checks": {
+    "authoritative_receipt_required": true,
+    "execution_matrix_exact_sixteen_scenarios": true,
+    "execution_matrix_runtime_oracle_separation": true,
+    "execution_matrix_schema": true,
+    "external_admission_mode": true,
+    "immutable_projection_complete": true,
+    "instrumentation_is_concrete": true,
+    "policy_schema": true,
+    "real_runtime_path_complete": true,
+    "reviewer_gate_is_semantic": true
+  },
+  "result_version": "finsight_point01_m2_a1_execution_ready_audit_package_freeze_gate_result_v2_0",
+  "scope": "M2_A1_exact_admission_gated_future_actual_only",
+  "status": "execution_ready_package_frozen_pending_exact_admission"
+}

@@ -1,0 +1,56 @@
+{
+  "boundary": "Deterministic M3 calibration fixture only; no model, provider, retrieval, Evidence/Writer runtime, legacy write, or authority cutover was invoked.",
+  "canonical_lane": "shadow_only",
+  "external_call_count": 0,
+  "fixture_status": "pass",
+  "generated_at": "2026-07-12T10:20:39.213162+00:00",
+  "model_call_count": 0,
+  "payload": {
+    "calibration_digest": "c10ff874136fd0f600cdc0827adf5b912e6c3f8d697a9ccbffac1f52370d7177",
+    "canonical_lane": "shadow_only",
+    "external_call_count": 0,
+    "findings": [
+      {
+        "case_id": "ai_semis_dell_nvda_anchor_v0_1",
+        "failures": [],
+        "mechanism_coverage": 1.0,
+        "report_type": "initiation",
+        "sector": "ai_semis",
+        "status": "pass"
+      },
+      {
+        "case_id": "v3_software_cloud_developer_products_financial_product_bridge_001",
+        "failures": [],
+        "mechanism_coverage": 1.0,
+        "report_type": "event_update",
+        "sector": "saas",
+        "status": "pass"
+      },
+      {
+        "case_id": "v4_pharma_biotech_medtech_financial_product_bridge_001",
+        "failures": [],
+        "mechanism_coverage": 1.0,
+        "report_type": "initiation",
+        "sector": "healthcare",
+        "status": "pass"
+      },
+      {
+        "case_id": "v6_banks_financials_capital_markets_financial_product_bridge_001",
+        "failures": [],
+        "mechanism_coverage": 1.0,
+        "report_type": "valuation_price_in",
+        "sector": "banks",
+        "status": "pass"
+      }
+    ],
+    "missing_sectors": [],
+    "model_call_count": 0,
+    "planning_authority": "legacy",
+    "policy_ref": "point01_m3_4_multi_sector_policy_v1_0",
+    "status": "pass"
+  },
+  "planning_authority": "legacy",
+  "point_id": "M3.4",
+  "result_version": "finsight_point01_m3_4_fixture_result_v1_0",
+  "status": "pass"
+}

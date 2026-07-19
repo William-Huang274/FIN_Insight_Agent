@@ -1,0 +1,30 @@
+{
+  "policy_version": "finsight_point01_m5_5_budget_stop_policy_v1_0",
+  "scope": "Point01_M5_5_budget_stop_control_plane_only",
+  "status": "approved_for_deterministic_implementation",
+  "dependencies": {
+    "m5_1_scheduler_attempt_lease": "full_implemented_deterministic_temporary_store_fixture",
+    "m5_2_terminal_retry_semantics": "full_implemented_deterministic_temporary_store_fixture",
+    "m5_3_checkpoint_write": "full_implemented_deterministic_temporary_store_fixture"
+  },
+  "required_controls": [
+    "case work-unit and attempt limits are checked before protected admission",
+    "token-unit tool-quota and time reservations are bounded hierarchically",
+    "refund records retain reservation identity and cannot exceed remaining reservation",
+    "budget exhaustion produces a typed terminal stop and prevents retry",
+    "fallback reservations use the same remaining budget and cannot overrun it",
+    "SLO observation reports deterministic reservation/refund/stop counts without model or tool execution"
+  ],
+  "trace_persistence_boundary": "M5.5 keeps deterministic in-process budget ledger/SLO observations. Durable metrics, alerting and event streaming remain M5.8 responsibilities.",
+  "forbidden_admissions": [
+    "paid_model_admission",
+    "provider_execution",
+    "external_tool_execution",
+    "background_worker_service",
+    "evidence_runtime",
+    "writer_runtime",
+    "full_chain",
+    "business_case_mutation",
+    "legacy_taskrun_authority_change"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "boundary": "This fixture proves only temporary-store M5.3 checkpoint artifact versioning. It starts no worker/service, performs no checkpoint compaction, and admits no provider, external tool, Evidence/Writer, full-chain, business Case mutation or legacy authority change.",
+  "errors": [],
+  "evidence": {
+    "checkpoint_artifact_count": 2,
+    "checkpoint_event_count": 2,
+    "checkpoint_refs": [
+      "checkpoint-fixture:v1",
+      "checkpoint-fixture:v2"
+    ],
+    "replay_event_count": 7,
+    "restart_snapshot_matches_v2": true,
+    "stale_write_blocked": true,
+    "v1_cursor": "phase-1",
+    "v2_cursor": "phase-2"
+  },
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m5_3_checkpoint_artifact_policy_v1_0.json": "180f292e3688c7de533dcdbcb1023e7f18504f863078cbd79e938b3cacd02ab2",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "875ebe893d8b14b4894856af3d27b0e9367d6d885ae20e99f58cd173744f95f1",
+    "scripts/engineering/run_point01_m5_3_checkpoint_artifact_fixtures.py": "e2fd6c53bbe065f2ea1e15f3c86362527d59a0cc444187e2e03776ba62ee0138"
+  },
+  "generated_at": "2026-07-13T03:06:23.491220+00:00",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m5_3_checkpoint_artifact_fixture_result_v1_0",
+  "scope": "Point01_M5_3_checkpoint_artifact_versioning_control_plane_only",
+  "status": "pass",
+  "worker_started": false
+}

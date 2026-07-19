@@ -1,0 +1,45 @@
+{
+  "candidate_digest": "bba3ce4bc30467b4997e2be71803e8bf01608411dae6dc0a27a60f6a02ac75f9",
+  "candidate_input_hash_count": 100,
+  "candidate_input_hash_match_count": 100,
+  "candidate_ref": "point01-p01-g2-1-final-ai-semis-operational-baseline-candidate-v1",
+  "candidate_working_index_match_count": 100,
+  "execution_counts": {
+    "admission": 0,
+    "baseline": 0,
+    "fixed_business_store_write": 0,
+    "formal_namespace": 0,
+    "human_approval": 0,
+    "model_success": 0,
+    "negative_case": 0,
+    "network_success": 0,
+    "provider_success": 0,
+    "receipt": 0,
+    "runtime": 0,
+    "tool_success": 0
+  },
+  "fixed_store_sha256_actual": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4",
+  "fixed_store_sha256_expected": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4",
+  "historical_v2_input_drift_count": 8,
+  "historical_v2_input_drift_replaced_by_candidate": [
+    "configs/engineering_handoff/point01_m2_a1_adversarial_input_corpus_v1_1.json",
+    "src/sec_agent/canonical_runtime/legacy_objective_adapter.py",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_harness.py",
+    "src/sec_agent/canonical_runtime/m2_a1_execution_receipt.py",
+    "src/sec_agent/canonical_runtime/m2_a1_v2_10_execution_proof.py",
+    "src/sec_agent/canonical_runtime/pack_registry.py",
+    "tests/contract/test_point01_m2_a1_assembly_harness.py",
+    "tests/contract/test_point01_m2_a1_v2_10_execution_proof.py"
+  ],
+  "manifest_digest": "bda9f0abb3efb56b65ab1868982ed92a677df62d1e8dc6eed6a6660e250fa1e4",
+  "next_step": "independent_exact_digest_approval_required_no_authority_created",
+  "preflight_digest": "e9c24dae75f2ecc9f50c431365ad3ec8f2efbdc37ee06297977d730dbb2e643b",
+  "schema_version": "finsight_point01_p01_g2_1_final_baseline_candidate_preflight_v1_0",
+  "status": "pass",
+  "verification": {
+    "candidate_digest": "bba3ce4bc30467b4997e2be71803e8bf01608411dae6dc0a27a60f6a02ac75f9",
+    "errors": [],
+    "manifest_digest": "bda9f0abb3efb56b65ab1868982ed92a677df62d1e8dc6eed6a6660e250fa1e4",
+    "status": "pass"
+  }
+}

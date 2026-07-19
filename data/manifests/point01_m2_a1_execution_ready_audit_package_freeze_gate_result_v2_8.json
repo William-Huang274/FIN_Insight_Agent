@@ -1,0 +1,31 @@
+{
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "approval": 0,
+    "ledger": 0,
+    "model": 0,
+    "namespace": 0,
+    "network": 0,
+    "provider": 0,
+    "receipt": 0,
+    "store_write": 0,
+    "tool": 0
+  },
+  "gate_digest": "f928dc473ff3d402b54b759ddb5b1bde5994956a1081a7708c80f44f60719f96",
+  "next_step": "independent_review_required_no_active_authority",
+  "package_digest": "36d39bf4d7d3cf39c32bc96d8027c922514f54d0eb7e4ef64ea0b98bd9f17ac8",
+  "package_ref": "point01-m2-a1-b0-5-operational-proof-package-v2-8",
+  "result_version": "finsight_point01_m2_a1_v2_8_package_freeze_gate_v1",
+  "status": "pass",
+  "target_digest": "36d39bf4d7d3cf39c32bc96d8027c922514f54d0eb7e4ef64ea0b98bd9f17ac8",
+  "verification": {
+    "calculated_package_digest": "36d39bf4d7d3cf39c32bc96d8027c922514f54d0eb7e4ef64ea0b98bd9f17ac8",
+    "external_call_count": 0,
+    "failures": [],
+    "input_hash_count": 72,
+    "package_current_verify": "pass",
+    "status": "pass",
+    "store_write_count": 0
+  }
+}

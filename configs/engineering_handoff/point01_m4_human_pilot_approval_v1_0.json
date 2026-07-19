@@ -1,0 +1,43 @@
+{
+  "approval_version": "finsight_point01_m4_human_pilot_approval_v1_0",
+  "scope": "Point01_M4_case_scoped_planning_cutover_pilot",
+  "status": "not_authorized",
+  "authorization_decision": "rejected_pending_repair",
+  "implementation_repair_status": "passed",
+  "synthetic_preflight_status": "passed",
+  "pilot_approval_status": "not_authorized",
+  "pilot_execution_status": "not_started",
+  "milestone_status": "M4_closeout_pending",
+  "approval_id": null,
+  "approval_registry_ref": null,
+  "approver_type": null,
+  "approver_identity": null,
+  "approved_at": null,
+  "decision": null,
+  "approved_case_scope": null,
+  "approved_lane_id": null,
+  "approved_store_identity": null,
+  "approved_contract_version_id": null,
+  "approved_contract_digest": null,
+  "approved_artifact_version_id": null,
+  "approved_artifact_digest": null,
+  "approved_comparison_id": null,
+  "approved_comparison_digest": null,
+  "backup_snapshot_sha256": null,
+  "rollback_window": null,
+  "kill_switch_state": null,
+  "impact_scope": null,
+  "approval_revocation_registry_ref": null,
+  "reviewed_artifacts": [
+    "data/manifests/point01_m4_design_lint_result_v1_0.json",
+    "data/manifests/point01_m4_cutover_fixture_result_v1_0.json",
+    "data/manifests/point01_m4_closeout_gate_result_v1_0.json"
+  ],
+  "authority_boundary_acknowledged": {
+    "legacy_task_run": "authoritative",
+    "canonical_lane": "case_scoped_planning_only_after_approval",
+    "cutover": "m4_case_scoped_only"
+  },
+  "rollback_acknowledged": true,
+  "notes": "Implementation repair and synthetic read-only restore drill have passed, but no pilot authority is granted. A future approval must bind one exact persistent-store Case, immutable contract/artifact/comparison refs and digests, backup snapshot, rollback window, kill-switch state, impact scope, unique approval_id and authoritative approval_registry_ref. This record cannot authorize sector/tenant/global cutover, legacy TaskRun authority change, Evidence/Writer runtime, provider execution or full-chain."
+}

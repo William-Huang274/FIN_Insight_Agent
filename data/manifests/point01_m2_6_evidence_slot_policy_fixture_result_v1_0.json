@@ -1,0 +1,211 @@
+{
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "external_call_count": 0,
+    "legacy_task_run": "authoritative",
+    "model_call_count": 0
+  },
+  "boundary": "Policy compilation returns ready slots or typed gaps only. It does not retrieve evidence, promote a relationship signal, call a model, write legacy state or change authority.",
+  "checks": {
+    "commercial_gap_typed": true,
+    "four_sector_ready_slots": true,
+    "model_free": true,
+    "parser_gap_typed": true,
+    "relationship_overreach_rejected": true
+  },
+  "commercial_gap": {
+    "compilation_digest": "9754b50c09afe5abba2947c7f689d80215a8dacb55647b0a43de1e0242df140d",
+    "compiled_slots": [
+      {
+        "acceptance_role": "primary_or_bounded_context",
+        "cell_key": "cell-1",
+        "evidence_role": "commercial_tracker_metric",
+        "forbidden_substitutions": [
+          "public_proxy_as_exact"
+        ],
+        "resolution_status": "typed_gap",
+        "slot_key": "commercial-slot",
+        "source_policy_ref": "commercial_gap"
+      }
+    ],
+    "errors": [],
+    "external_call_count": 0,
+    "gaps": [
+      {
+        "cell_key": "cell-1",
+        "gap_type": "commercial_data_gap",
+        "materiality": "high",
+        "next_action": "record commercial-data gap or obtain an approved licensed source",
+        "owner_suggestion": "research_lead",
+        "reason": "commercial-only metric has no approved public substitution",
+        "slot_key": "commercial-slot"
+      }
+    ],
+    "model_call_count": 0,
+    "planning_authority": "shadow",
+    "sector": "healthcare",
+    "status": "pass_with_typed_gaps"
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m2_6_evidence_slot_policy_ontology_v1_0.json": "9b3859811e14f73ece44452c016551504324244313aeeb072eedeef90db23cc9",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "e7d1ddb2fc2b06ae36a123b184521093afb7d9a4dcfcb268aa1e0269dbbbe998",
+    "scripts/engineering/run_point01_m2_6_evidence_slot_policy_fixture.py": "9e4c95a0f66544a7be3fb8f87ae687f66da14c11db9fce51894a98d499d26496",
+    "src/sec_agent/canonical_runtime/evidence_policy.py": "f66afe1bd6a843208028eec3f1567ac3348a19f99ecef06515a001834404c266"
+  },
+  "parser_gap": {
+    "compilation_digest": "d88a7b09956a37906e9fdd1908a0d4012fcb71d3b5ad002d669ab6da942511e4",
+    "compiled_slots": [
+      {
+        "acceptance_role": "primary",
+        "cell_key": "cell-1",
+        "evidence_role": "issuer_metric",
+        "forbidden_substitutions": [
+          "relationship_graph_only"
+        ],
+        "resolution_status": "typed_gap",
+        "slot_key": "parser-slot",
+        "source_policy_ref": "filing_first"
+      }
+    ],
+    "errors": [],
+    "external_call_count": 0,
+    "gaps": [
+      {
+        "cell_key": "cell-1",
+        "gap_type": "parser_gap",
+        "materiality": "high",
+        "next_action": "repair or add parser route before accepting an exact fact",
+        "owner_suggestion": "fundamental_analyst",
+        "reason": "parser unavailable for filing_first",
+        "slot_key": "parser-slot"
+      }
+    ],
+    "model_call_count": 0,
+    "planning_authority": "shadow",
+    "sector": "ai_semis",
+    "status": "pass_with_typed_gaps"
+  },
+  "positive_sectors": {
+    "ai_semis": {
+      "compilation_digest": "e4a70ff6b1ea7758ac3b5960ed66baf6b009f72f49af385b5c3d74acc4d8f513",
+      "compiled_slots": [
+        {
+          "acceptance_role": "primary",
+          "cell_key": "cell-1",
+          "evidence_role": "issuer_metric",
+          "forbidden_substitutions": [
+            "relationship_graph_only"
+          ],
+          "resolution_status": "ready",
+          "slot_key": "issuer-slot",
+          "source_policy_ref": "issuer_first"
+        }
+      ],
+      "errors": [],
+      "external_call_count": 0,
+      "gaps": [],
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "sector": "ai_semis",
+      "status": "pass"
+    },
+    "banks": {
+      "compilation_digest": "f03b43e73394cf54502ee877cec292816f2b0dcba2e6332b862dcb4e4209d3ae",
+      "compiled_slots": [
+        {
+          "acceptance_role": "primary",
+          "cell_key": "cell-1",
+          "evidence_role": "issuer_metric",
+          "forbidden_substitutions": [
+            "relationship_graph_only"
+          ],
+          "resolution_status": "ready",
+          "slot_key": "issuer-slot",
+          "source_policy_ref": "issuer_first"
+        }
+      ],
+      "errors": [],
+      "external_call_count": 0,
+      "gaps": [],
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "sector": "banks",
+      "status": "pass"
+    },
+    "healthcare": {
+      "compilation_digest": "6dc7f3608bf32591dd242d3becc0c033da38fde72fc3880c8b3e9fc8af19a3eb",
+      "compiled_slots": [
+        {
+          "acceptance_role": "primary",
+          "cell_key": "cell-1",
+          "evidence_role": "issuer_metric",
+          "forbidden_substitutions": [
+            "relationship_graph_only"
+          ],
+          "resolution_status": "ready",
+          "slot_key": "issuer-slot",
+          "source_policy_ref": "issuer_first"
+        }
+      ],
+      "errors": [],
+      "external_call_count": 0,
+      "gaps": [],
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "sector": "healthcare",
+      "status": "pass"
+    },
+    "saas": {
+      "compilation_digest": "a904e68ccc529564f834ad6303b920781d6186e94cf27f1045a57a4e1df41870",
+      "compiled_slots": [
+        {
+          "acceptance_role": "primary",
+          "cell_key": "cell-1",
+          "evidence_role": "issuer_metric",
+          "forbidden_substitutions": [
+            "relationship_graph_only"
+          ],
+          "resolution_status": "ready",
+          "slot_key": "issuer-slot",
+          "source_policy_ref": "issuer_first"
+        }
+      ],
+      "errors": [],
+      "external_call_count": 0,
+      "gaps": [],
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "sector": "saas",
+      "status": "pass"
+    }
+  },
+  "relationship_overreach": {
+    "compilation_digest": "be0a2e1a77aa9f221184e1bc86cb8ce91254d95e9edc58eeee796e86fa92a290",
+    "compiled_slots": [
+      {
+        "acceptance_role": "primary",
+        "cell_key": "cell-1",
+        "evidence_role": "relationship_signal",
+        "forbidden_substitutions": [
+          "issuer_metric_substitute"
+        ],
+        "resolution_status": "ready",
+        "slot_key": "relationship-slot",
+        "source_policy_ref": "relationship_graph_only"
+      }
+    ],
+    "errors": [
+      "acceptance_role_not_allowed:relationship-slot",
+      "relationship_scope_overreach:relationship-slot"
+    ],
+    "external_call_count": 0,
+    "gaps": [],
+    "model_call_count": 0,
+    "planning_authority": "shadow",
+    "sector": "saas",
+    "status": "fail"
+  },
+  "result_version": "finsight_point01_m2_6_evidence_slot_policy_fixture_result_v1_0",
+  "scope": "Point01_M2_6_evidence_slot_stop_source_policy",
+  "status": "pass"
+}

@@ -1,0 +1,26 @@
+{
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "approval": 0,
+    "ledger": 0,
+    "model": 0,
+    "namespace": 0,
+    "network": 0,
+    "provider": 0,
+    "receipt": 0,
+    "store_write": 0,
+    "tool": 0
+  },
+  "gate_digest": "146a87afdb6654da8c06b150eb4927b3a8cb3b1c2746c2fb2d0a9635abe3d147",
+  "next_step": "independent_review_required_no_active_authority",
+  "package_digest": "0335e114950db227ac67d8dbb16e554626fec194d8acb8c84d0f29f90ccd1367",
+  "package_ref": "point01-m2-a1-approval-lineage-preterminal-terminal-package-v2-7",
+  "result_version": "finsight_point01_m2_a1_v2_7_blueprint_freeze_gate_v1",
+  "status": "pass",
+  "target_digest": "dc05bd0d537c0dc88e47b2e9669f0bb338099720e89109d0584e51f759c58aa2",
+  "verification": {
+    "calculated_blueprint_digest": "dc05bd0d537c0dc88e47b2e9669f0bb338099720e89109d0584e51f759c58aa2",
+    "status": "pass"
+  }
+}

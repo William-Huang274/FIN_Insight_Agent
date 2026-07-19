@@ -1,0 +1,83 @@
+{
+  "approved_read_contract_version_id": "contract-synthetic-pilot:v1",
+  "authority_event_types": [
+    "PLANNING_CUTOVER_REQUESTED",
+    "PLANNING_CUTOVER_DECIDED",
+    "PLANNING_AUTHORITY_CHANGED",
+    "PLANNING_ROLLBACK_EXECUTED"
+  ],
+  "authorization_ref": "configs/engineering_handoff/point01_m4_synthetic_pilot_approval_v1_0.json",
+  "baseline_backup_sha256": "518ab05fbf159e73422127a697b01e661269e362ac4622aaab3bbd3c9609ad6e",
+  "baseline_content_fingerprint": "0a6a31050f0722bde80f30e663a33172866c886144541469f354c2d93dbc9d70",
+  "boundary": "One user-approved, isolated synthetic persistent Case pilot. This result is not human acceptance of M4 closeout and cannot authorize a business Case or broader runtime admission.",
+  "business_case_mutation": false,
+  "executed_status": "executed",
+  "execution_evidence_path": "data/manifests/point01_m4_synthetic_pilot_execution_evidence_v1_0.json",
+  "external_call_count": 0,
+  "forbidden_actions_not_run": [
+    "business_case_mutation",
+    "evidence_runtime",
+    "writer_runtime",
+    "provider_execution",
+    "full_chain"
+  ],
+  "generated_at": "2026-07-12T12:54:42.157935+00:00",
+  "model_call_count": 0,
+  "newer_contract_version_id": "contract-synthetic-pilot:v2",
+  "pilot_kind": "isolated_nonproduction_synthetic_persistent_case",
+  "pinned_read_contract_version_id": "contract-synthetic-pilot:v1",
+  "post_rollback_content_fingerprint": "8467e46076c25db4c07dc6a8c07b61e86bfff6db178c0fae7d9af51378465be7",
+  "recovery": {
+    "authority": "legacy",
+    "case_id": "case-point01-synthetic-pilot",
+    "decision_count": 1,
+    "errors": [],
+    "event_types": [
+      "PLANNING_CUTOVER_REQUESTED",
+      "PLANNING_CUTOVER_DECIDED",
+      "PLANNING_AUTHORITY_CHANGED",
+      "PLANNING_ROLLBACK_EXECUTED"
+    ],
+    "status": "pass",
+    "store_recovery_status": "pass"
+  },
+  "requested_status": "requested",
+  "result_version": "finsight_point01_m4_synthetic_persistent_mutation_pilot_result_v1_0",
+  "rolled_back_status": "rolled_back",
+  "scope": {
+    "case_id": "case-point01-synthetic-pilot",
+    "feature_flag_id": "decision_surface_planning_cutover_v1_0",
+    "feature_flag_mode": "case_scoped",
+    "lane_id": "planning",
+    "project_id": "project-point01-synthetic-pilot",
+    "scope_kind": "case",
+    "tenant_id": "tenant-point01-synthetic-pilot"
+  },
+  "status": "pass",
+  "store_backed_errors": [],
+  "store_backed_verification": {
+    "backup_restore_mode": "pre_mutation_baseline",
+    "backup_snapshot_sha256": "518ab05fbf159e73422127a697b01e661269e362ac4622aaab3bbd3c9609ad6e",
+    "restored_baseline_cutover_event_count": 0,
+    "restored_content_fingerprint": "0a6a31050f0722bde80f30e663a33172866c886144541469f354c2d93dbc9d70",
+    "restored_content_fingerprint_match": false,
+    "restored_matches_expected_baseline": true,
+    "restored_store_identity": "4d9bf221b3b1137058216909c21bdc7ecb3d2dbec05d69cef4492be243596b69",
+    "restored_store_integrity_check": {
+      "database_integrity": "ok",
+      "missing_outbox_count": 0,
+      "orphan_outbox_count": 0,
+      "status": "pass"
+    },
+    "source_content_fingerprint": "8467e46076c25db4c07dc6a8c07b61e86bfff6db178c0fae7d9af51378465be7",
+    "source_store_identity": "e7a44c6164b92545eb528011130ff15dbecbfedcc1367aede219ae4f05dc3dee",
+    "source_store_integrity_check": {
+      "database_integrity": "ok",
+      "missing_outbox_count": 0,
+      "orphan_outbox_count": 0,
+      "status": "pass"
+    },
+    "status": "pass",
+    "verification_mode": "persistent_store_backed"
+  }
+}

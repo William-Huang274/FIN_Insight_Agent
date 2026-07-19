@@ -1,0 +1,55 @@
+{
+  "schema_version": "finsight_point01_p01_g2_1_candidate_execution_bridge_policy_v1_0",
+  "status": "P01_G2_FINAL_BASELINE_EXECUTABLE_BRIDGE_REFREEZE_PENDING_INDEPENDENT_REVIEW",
+  "purpose": "Bridge the already-approved final AI-semis candidate freeze into the existing v2.10 production execution contract without changing any candidate artifact bytes or creating authority.",
+  "bridge_mode": "candidate_bound_baseline_only_v2_10",
+  "candidate_contract": {
+    "manifest_digest": "bda9f0abb3efb56b65ab1868982ed92a677df62d1e8dc6eed6a6660e250fa1e4",
+    "candidate_digest": "bba3ce4bc30467b4997e2be71803e8bf01608411dae6dc0a27a60f6a02ac75f9",
+    "preflight_digest": "e9c24dae75f2ecc9f50c431365ad3ec8f2efbdc37ee06297977d730dbb2e643b",
+    "gate_digest": "755c2decbe0aaf808d19f0e4a13e076ebc5e4b95afbb91a09a1dd5c814235c33",
+    "input_hash_count": 100,
+    "case_instance_pack_ref": "pack-case-m2-a1-ai-semis-no-override:v1",
+    "case_instance_pack_payload_digest": "71d9a25e7973db55ec0a99295e90d51d9acb2ed87c988b548d4e8089d00d28b9"
+  },
+  "baseline": {
+    "case_id": "g2-baseline",
+    "scenario_id": "p01-baseline-separated-input",
+    "input_ref": "m2-a1-ai-semis-input",
+    "mutation": "none",
+    "single_use": true,
+    "no_retry_replay_or_renewal": true
+  },
+  "negative_cases": {
+    "enabled": false,
+    "authorization": "not_authorized",
+    "reason": "This bridge may only derive the remaining final baseline executable package; the prior negative tranche is not reopened."
+  },
+  "authority_boundary": {
+    "candidate_artifacts_immutable": true,
+    "new_human_approval_created": false,
+    "new_admission_created": false,
+    "new_receipt_created": false,
+    "baseline_executed": false,
+    "negative_executed": false,
+    "network_tool_model_provider_execution": false,
+    "fixed_or_business_store_write": false,
+    "legacy_authority": "retained",
+    "production_readiness": "not_admitted"
+  },
+  "prohibitions": [
+    "candidate_artifact_rewrite",
+    "case_instance_pack_redesign",
+    "new_runtime_kernel",
+    "new_external_runner",
+    "human_approval_creation",
+    "admission_or_receipt_creation",
+    "baseline_or_negative_execution",
+    "network_tool_model_provider_execution",
+    "fixed_or_business_store_write",
+    "paid_llm",
+    "full_chain",
+    "production_cutover",
+    "business_case_mutation"
+  ]
+}

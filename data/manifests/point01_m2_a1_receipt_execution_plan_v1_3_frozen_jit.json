@@ -1,0 +1,182 @@
+{
+  "baseline_first": "p01-baseline-separated-input",
+  "exact_package": {
+    "authority_boundary": "no_actual_a0_m2_probe_without_fresh_exact_external_admission_and_single_use_receipt_no_model_network_tool_provider_fixed_production_business_or_legacy_mutation",
+    "execution_staging_namespace_id": "point01_m2_a1_exact_admitted_runs_v2_6",
+    "package_digest": "e85ceffb0922ceda99e105b519a7f2dac19d5e5bdcea357925ee451d066ad4ed",
+    "package_gate_digest": "a07b44b7c0bc4970730abc57d61ba9978119fa34cbe1c29a237af909eef329c7",
+    "package_ref": "point01-m2-a1-operational-qualification-adversarial-audit-package-v2-6-frozen-jit-entry",
+    "scope": "M2_A1_exact_admission_gated_future_actual_only"
+  },
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "approval": 0,
+    "external": 0,
+    "ledger": 0,
+    "namespace": 0,
+    "receipt": 0,
+    "store_write": 0
+  },
+  "group_counts": {
+    "P01": 4,
+    "P02": 6,
+    "P03": 6
+  },
+  "incident_binding": {
+    "expired_terminal_digest": "adf5a8f229e70f5aa6f7e27e31b2fb9699bcf470f64fd8ee2a6a3c3fadcedef6",
+    "expired_terminal_relative_path": "data/manifests/point01_m2_a1_v2_4_baseline_jit_expired_unconsumed_terminal.json",
+    "incident_digest": "a59076a127c0b76902dc362aee94980427660fbc695b47e9c94fd73228cb9a18",
+    "relative_path": "data/manifests/point01_m2_a1_v2_4_baseline_jit_dispatch_incident.json"
+  },
+  "jit_window_contract": {
+    "active_command": "execute_approved_window_only",
+    "approval_required_before_issue": true,
+    "approval_schema_version": "finsight_point01_m2_a1_human_jit_window_approval_v1",
+    "default_command": "do_not_invoke",
+    "dry_run": "approval_validate_only_no_admission_receipt_namespace_or_write",
+    "execute_sequence": [
+      "verify_approval",
+      "issue_admission",
+      "verify",
+      "register",
+      "preflight",
+      "consume",
+      "reverify",
+      "grant",
+      "materialize",
+      "parent_clean_child_execute",
+      "immutable_actual",
+      "independent_oracle",
+      "reviewer",
+      "closeout"
+    ],
+    "orchestrator": {
+      "relative_path": "scripts/engineering/run_point01_m2_a1_v2_6_frozen_jit_window.py",
+      "sha256": "844798063ba054277cb8b98f1f288e8e5eabaf2ef1d90c0fc9e06dfe43dfc72a"
+    },
+    "supersedes_v2_5_package_digest": "a23dac3931164b4910a6182b97fa37e10d788e893991e4bc1d079e78439ebe6a"
+  },
+  "phase_a_digests": {
+    "classification": "537801860ceb455c1ce035621776128c3d8647e2d3af00e66b02d27e8b1e0b71",
+    "repair_gate": "52cd13eda74affc99352a14a3ffff322e96b992b252c40d9dd6335d9f9e181fe",
+    "repair_package": "11f4cd9267e56e9c6c33eaeb32119194731d76dbe0040e34b441e6daf66bd7cd"
+  },
+  "plan_digest": "4f50ef334f594aba5d073fab6e11caefafa91b1391b4a9b96da959b1e44c0c4e",
+  "scenario_execution_order": [
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P01",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p01-baseline-separated-input",
+      "sequence": 1
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P01",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p01-oracle-path-access",
+      "sequence": 2
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P01",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p01-oracle-hash-access",
+      "sequence": 3
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P01",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p01-oracle-mutation-invariance",
+      "sequence": 4
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P02",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p02-valid-versioned-baseline",
+      "sequence": 5
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P02",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p02-unversioned-pack-ref",
+      "sequence": 6
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P02",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p02-stale-or-superseded-pack",
+      "sequence": 7
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P02",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p02-parent-or-digest-mismatch",
+      "sequence": 8
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P02",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p02-selector-conflict",
+      "sequence": 9
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P02",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p02-artifact-envelope-replay-mismatch",
+      "sequence": 10
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P03",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p03-feature-off",
+      "sequence": 11
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P03",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p03-model-denied",
+      "sequence": 12
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P03",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p03-fixed-store-path",
+      "sequence": 13
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P03",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p03-ambient-resolver",
+      "sequence": 14
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P03",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p03-provider-constructor",
+      "sequence": 15
+    },
+    {
+      "future_authority": "independent_human_jit_approval_admission_receipt_JIT_only",
+      "group": "P03",
+      "on_failure": "fail_fast_no_retry_no_replay",
+      "scenario_id": "p03-network-tool-transport",
+      "sequence": 16
+    }
+  ],
+  "schema_version": "finsight_point01_m2_a1_receipt_execution_plan_v1_3_frozen_jit",
+  "status": "frozen_jit_entry_refrozen_pending_independent_review_no_authority"
+}

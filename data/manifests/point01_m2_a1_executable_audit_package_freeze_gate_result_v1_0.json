@@ -1,0 +1,46 @@
+{
+  "actual_admission_status": "package_admission_required",
+  "boundary": "Static package freeze only. The harness/unit tests may validate assembly/canary/oracle contracts but this gate does not execute A0-M2-P01/P02/P03 or compiler/shadow runtime.",
+  "execution_counts": {
+    "a0_m2_actual_probes": 0,
+    "business_case_mutations": 0,
+    "compiler_or_shadow_fixture_runs": 0,
+    "external_tool_calls": 0,
+    "fixed_or_production_store_opens": 0,
+    "legacy_authority_mutations": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "provider_calls": 0,
+    "store_writes": 0
+  },
+  "failures": [],
+  "gate_digest": "294a2206001bd552fc75644e089636297fb87ffa0102d54c41dcf5db4b2d70e7",
+  "harness_policy_checks": {
+    "actual_probes_not_authorized": true,
+    "actual_runner_inputs_and_no_execution": true,
+    "explicit_adapter_seed_assembly": true,
+    "immutable_actual_before_oracle": true,
+    "policy_schema": true,
+    "receipt_non_authoritative": true
+  },
+  "next_step_requires_total_reviewer": "Register an exact package-external admission only after reviewing this executable package. A separate single-use receipt is required before a future actual run; no receipt is created here.",
+  "package_digest": "1a51d745f14751a19add0d0f72d5296879fdab95d0ee84f837b481ddd9cf2061",
+  "package_ref": "point01-m2-a1-executable-audit-harness-package-v1",
+  "package_verify": {
+    "calculated_package_digest": "1a51d745f14751a19add0d0f72d5296879fdab95d0ee84f837b481ddd9cf2061",
+    "harness_policy_checks": {
+      "actual_probes_not_authorized": true,
+      "actual_runner_inputs_and_no_execution": true,
+      "explicit_adapter_seed_assembly": true,
+      "immutable_actual_before_oracle": true,
+      "policy_schema": true,
+      "receipt_non_authoritative": true
+    },
+    "mismatches": [],
+    "schema_errors": [],
+    "status": "pass"
+  },
+  "result_version": "finsight_point01_m2_a1_executable_audit_package_freeze_gate_result_v1_0",
+  "scope": "M2_A1_executable_harness_package_freeze_only",
+  "status": "executable_package_frozen_pending_exact_admission"
+}

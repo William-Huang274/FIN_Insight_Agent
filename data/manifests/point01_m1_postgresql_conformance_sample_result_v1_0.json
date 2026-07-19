@@ -1,0 +1,9 @@
+{
+  "container_engine": "docker",
+  "container_persisted": false,
+  "generated_at": "2026-07-13T12:09:01.722916+00:00",
+  "image": "postgres:16-alpine",
+  "result_version": "finsight_point01_m1_postgresql_conformance_sample_result_v1_0",
+  "sql_output": "CREATE TABLE\nCREATE TABLE\nCREATE TABLE\nCREATE TABLE\nCREATE TABLE\nCREATE TABLE\nCREATE TABLE\nCREATE TABLE\nCREATE INDEX\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nBEGIN\nINSERT 0 1\nINSERT 0 1\nCOMMIT\nINSERT 0 1\nDO\nDO\npostgres_conformance_pass|0|1",
+  "status": "pass"
+}

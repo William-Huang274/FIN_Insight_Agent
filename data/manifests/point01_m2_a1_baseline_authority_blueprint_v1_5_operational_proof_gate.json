@@ -1,0 +1,26 @@
+{
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "approval": 0,
+    "ledger": 0,
+    "model": 0,
+    "namespace": 0,
+    "network": 0,
+    "provider": 0,
+    "receipt": 0,
+    "store_write": 0,
+    "tool": 0
+  },
+  "gate_digest": "2f9c4f76fcfcb4be99bffdef1d7f567af3ca79186428400812449ae7e8fdc9ba",
+  "next_step": "independent_review_required_no_active_authority",
+  "package_digest": "36d39bf4d7d3cf39c32bc96d8027c922514f54d0eb7e4ef64ea0b98bd9f17ac8",
+  "package_ref": "point01-m2-a1-b0-5-operational-proof-package-v2-8",
+  "result_version": "finsight_point01_m2_a1_v2_8_blueprint_freeze_gate_v1",
+  "status": "pass",
+  "target_digest": "a73dea79c0baad0c939a671f1bc9179e0be6b11f951e5fb4f7d9d505e855f89d",
+  "verification": {
+    "calculated_blueprint_digest": "a73dea79c0baad0c939a671f1bc9179e0be6b11f951e5fb4f7d9d505e855f89d",
+    "status": "pass"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "manifest_version": "finsight_point01_m5_9_closeout_gate_manifest_v1_0",
+  "scope": "Point01_M5_durable_harness_temporary_store_closeout_only",
+  "required_fixture_scripts": {
+    "M5.1": "scripts/engineering/run_point01_m5_1_scheduler_fixtures.py",
+    "M5.2": "scripts/engineering/run_point01_m5_2_recovery_lifecycle_fixtures.py",
+    "M5.3": "scripts/engineering/run_point01_m5_3_checkpoint_artifact_fixtures.py",
+    "M5.4": "scripts/engineering/run_point01_m5_4_capability_security_fixtures.py",
+    "M5.5": "scripts/engineering/run_point01_m5_5_budget_stop_fixtures.py",
+    "M5.6": "scripts/engineering/run_point01_m5_6_hitl_governance_fixtures.py",
+    "M5.7": "scripts/engineering/run_point01_m5_7_parallel_context_fixtures.py",
+    "M5.8": "scripts/engineering/run_point01_m5_8_observability_ops_fixtures.py",
+    "M5.calibration": "scripts/engineering/run_point01_m5_calibration_drills.py",
+    "M5.concurrency": "scripts/engineering/run_point01_m5_concurrency_security_drills.py"
+  },
+  "required_fixture_results": {
+    "M5.1": "data/manifests/point01_m5_1_scheduler_fixture_result_v1_0.json",
+    "M5.2": "data/manifests/point01_m5_2_recovery_lifecycle_fixture_result_v1_0.json",
+    "M5.3": "data/manifests/point01_m5_3_checkpoint_artifact_fixture_result_v1_0.json",
+    "M5.4": "data/manifests/point01_m5_4_capability_security_fixture_result_v1_0.json",
+    "M5.5": "data/manifests/point01_m5_5_budget_stop_fixture_result_v1_0.json",
+    "M5.6": "data/manifests/point01_m5_6_hitl_governance_fixture_result_v1_0.json",
+    "M5.7": "data/manifests/point01_m5_7_parallel_context_fixture_result_v1_0.json",
+    "M5.8": "data/manifests/point01_m5_8_observability_ops_fixture_result_v1_0.json",
+    "M5.calibration": "data/manifests/point01_m5_calibration_result_v1_0.json",
+    "M5.concurrency": "data/manifests/point01_m5_concurrency_security_result_v1_0.json"
+  }
+}

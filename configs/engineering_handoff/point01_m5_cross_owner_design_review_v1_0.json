@@ -1,0 +1,25 @@
+{
+  "review_version": "finsight_point01_m5_cross_owner_design_review_v1_0",
+  "scope": "Point01_M5_durable_harness_design_freeze",
+  "status": "structured_internal_review_complete_human_ops_security_pending",
+  "review_lenses": [
+    {"lens": "state_machine", "finding": "M5.1/M5.2/M5.3 separate lease, attempt causality and checkpoint ownership; no shared mutable state owner."},
+    {"lens": "security", "finding": "M5.4 and M5.6 require grants, tenant scope, digest-bound approvals and revocation before execution/resume."},
+    {"lens": "reliability", "finding": "M5.1/M5.2/M5.3 define fencing, restart, retry, dead-letter and stale-write boundaries."},
+    {"lens": "operations", "finding": "M5.5/M5.8 make budget and observability first-class before scale-up; no paid/model route is admitted."},
+    {"lens": "concurrency", "finding": "M5.7 owns snapshots, impact and selective invalidation; M5.1 owns only scheduling/leases."},
+    {"lens": "governance", "finding": "M5.9 cannot close without all child evidence and human ops/security acceptance."}
+  ],
+  "resolved_gaps": [
+    "separated approval invalidation from scheduler cancellation",
+    "made checkpoint exact-version binding a prerequisite for resume/fork",
+    "forbade raw reasoning as trace evidence",
+    "made budget stop terminal rather than a retryable fallback",
+    "required no shared mutable context for parallel branches"
+  ],
+  "remaining_human_review": [
+    "ops owner validates lease/failover and incident thresholds",
+    "security owner validates capability, tenant/privacy and redaction policy",
+    "human approval is design-only and cannot admit provider/Evidence/Writer/full-chain"
+  ]
+}

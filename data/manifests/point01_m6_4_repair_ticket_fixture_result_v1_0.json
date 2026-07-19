@@ -1,0 +1,107 @@
+{
+  "authority_boundary": {
+    "evidence_promotion": "M6_6_not_implemented",
+    "external_call_count": 0,
+    "model_call_count": 0,
+    "repair_attempt_execution": false,
+    "repair_ticket_persistence": "not_admitted",
+    "sourcehunter_network_provider_tool": false,
+    "store_write_count": 0,
+    "tool_invocation_count": 0,
+    "tool_selection_plan_write": "M6_2_owner_only",
+    "writer_full_chain": "not_admitted"
+  },
+  "boundary": "M6.4 only creates deterministic RepairTicket and planned_not_executed RepairAttempt contracts from typed CandidateBundle gaps. It does not invoke SourceHunter, a tool/provider/network, M5 admission/budget, parser/numeric/promotion, persistence, Writer/full-chain, Case mutation or legacy authority change.",
+  "checks": {
+    "commercial_gap_is_terminal_stop": true,
+    "execution_free": true,
+    "external_source_is_terminal_stop": true,
+    "internal_gap_bound_to_origin_and_official_first_routes": true,
+    "planned_attempt_is_not_executed": true,
+    "replay_digest_match": true
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m6_4_cross_owner_design_review_v1_0.json": "0c006e39e0b0407519a20b65e186e26c7f5191e919cc85a882c924eb9fd62c7c",
+    "configs/engineering_handoff/point01_m6_4_repair_ticket_policy_v1_0.json": "1ca226c13388fd38ced79f9289786d53367e46f58b78e89841e528d2f6fec67f",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "b6821d7c97ec226b700008a32860e27eb29ece3114ab6850cb05a1fdeeac4662",
+    "scripts/engineering/run_point01_m6_4_repair_ticket_fixture.py": "9e9a0851c5349266380246c7132b389bf655df7b12b695085f17f28e65485b87",
+    "src/sec_agent/canonical_runtime/candidate_bundle.py": "b3cba2ff38cf565e5c2d469ad21f4692ab2bd55c0121e3eb8e968635e13c52c1",
+    "src/sec_agent/canonical_runtime/repair_ticket.py": "b175d0972f58eccef7917182b4393a77861f2ad89cae0e8a03f261ef3a64bf55"
+  },
+  "generated_at": "2026-07-13T05:47:36.645627+00:00",
+  "planned_attempt": {
+    "attempt_no": 1,
+    "attempt_state": "planned_not_executed",
+    "execution_admission": "not_admitted",
+    "next_owner": "M6_2_tool_registry_planner",
+    "outcome": "not_executed",
+    "persistence_admission": "not_admitted",
+    "repair_attempt_digest": "ab1505ac17e6739f4fd1d6f0028130cc765429cd10f4ac657447024914bc347b",
+    "repair_attempt_id": "repair_attempt_ab1505ac17e6739f4fd1",
+    "repair_ticket_digest": "dbc0a60eaa996d68d80a187f83c1c3736a1e9491729cdd0ae39067813a7f7166",
+    "repair_ticket_id": "repair_ticket_dbc0a60eaa996d68d80a",
+    "route_id": "issuer_disclosure_metadata_route"
+  },
+  "result_version": "finsight_point01_m6_4_repair_ticket_fixture_result_v1_0",
+  "scope": "Point01_M6_4_deterministic_repair_ticket_attempt_contract",
+  "status": "pass",
+  "tickets": {
+    "commercial": {
+      "attempt_budget": 0,
+      "candidate_bundle_digest": "72f5e03b810b53bb97e1ec385dcedf902a2755fd88b3ea225012df53ba026905",
+      "candidate_bundle_id": "candidate_bundle_72f5e03b810b53bb97e1",
+      "classification": "commercial_license_required",
+      "execution_admission": "not_admitted",
+      "gap_code": "commercial_gap_stop_rule",
+      "origin_evidence_request_digest": "4a9f563cbb6e4f5baf0a4d91ad104d95310b88516e00c647088e6e83ca26de2a",
+      "origin_evidence_request_id": "evidence_request_4a9f563cbb6e4f5baf0a",
+      "permitted_route_scope": [],
+      "persistence_admission": "not_admitted",
+      "repair_policy_ref": "point01-m6-4-repair-ticket-policy-v1",
+      "repair_ticket_digest": "901eff71b9cb0def7da8d19ec5d88358ecf52206053f9c32c0819c2e9b7d058c",
+      "repair_ticket_id": "repair_ticket_901eff71b9cb0def7da8",
+      "source_policy_ref": "commercial_gap",
+      "stop_reason": "commercial_gap_stop_rule",
+      "terminal": true
+    },
+    "external": {
+      "attempt_budget": 0,
+      "candidate_bundle_digest": "external-bundle-digest",
+      "candidate_bundle_id": "external-bundle",
+      "classification": "external_source_exhausted",
+      "execution_admission": "not_admitted",
+      "gap_code": "external_source_unavailable",
+      "origin_evidence_request_digest": "78a39d990c785aa061d86c5c77a88be497f7ecb8cbc84e3995bc7dbdf1638189",
+      "origin_evidence_request_id": "evidence_request_78a39d990c785aa061d8",
+      "permitted_route_scope": [],
+      "persistence_admission": "not_admitted",
+      "repair_policy_ref": "point01-m6-4-repair-ticket-policy-v1",
+      "repair_ticket_digest": "0981aee57caefa42ce400d12333a9712b4c2d5b3f435a7f4f5d6b58aeda686e1",
+      "repair_ticket_id": "repair_ticket_0981aee57caefa42ce40",
+      "source_policy_ref": "issuer_first",
+      "stop_reason": "external_source_exhausted_stop_rule",
+      "terminal": true
+    },
+    "internal": {
+      "attempt_budget": 1,
+      "candidate_bundle_digest": "076eeceaa5c581d28c9712a404529aeb201861940491ab221023aabd8682e3cb",
+      "candidate_bundle_id": "candidate_bundle_076eeceaa5c581d28c97",
+      "classification": "internal_metadata_gap",
+      "execution_admission": "not_admitted",
+      "gap_code": "candidate_metadata_absent",
+      "origin_evidence_request_digest": "78a39d990c785aa061d86c5c77a88be497f7ecb8cbc84e3995bc7dbdf1638189",
+      "origin_evidence_request_id": "evidence_request_78a39d990c785aa061d8",
+      "permitted_route_scope": [
+        "issuer_disclosure_metadata_route",
+        "official_company_commentary_metadata_route"
+      ],
+      "persistence_admission": "not_admitted",
+      "repair_policy_ref": "point01-m6-4-repair-ticket-policy-v1",
+      "repair_ticket_digest": "dbc0a60eaa996d68d80a187f83c1c3736a1e9491729cdd0ae39067813a7f7166",
+      "repair_ticket_id": "repair_ticket_dbc0a60eaa996d68d80a",
+      "source_policy_ref": "issuer_first",
+      "stop_reason": "bounded_official_first_metadata_repair_required",
+      "terminal": false
+    }
+  }
+}

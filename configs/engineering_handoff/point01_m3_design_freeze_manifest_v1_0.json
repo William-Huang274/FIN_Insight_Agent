@@ -1,0 +1,111 @@
+{
+  "manifest_version": "finsight_point01_m3_design_freeze_v1_0",
+  "scope": "Point01_M3_0_design_freeze_only",
+  "authority_boundary": {
+    "legacy_task_run": "authoritative",
+    "canonical_lane": "shadow_only",
+    "cutover": "forbidden"
+  },
+  "enforced_boundaries": [
+    "no_m4_authority_cutover",
+    "no_paid_model_or_full_chain",
+    "no_evidence_or_writer_runtime",
+    "legacy_task_run_remains_authoritative",
+    "decision_surface_remains_shadow_only",
+    "workbuddy_prompt_required_structure_is_not_independent_discovery",
+    "review_actions_do_not_grant_cutover_authority"
+  ],
+  "design_review": {
+    "status": "user_confirmed_calibration_accepted",
+    "required_for_m3_0_calibration": true,
+    "evidence_path": "configs/engineering_handoff/point01_m3_cross_owner_design_review_v1_0.json"
+  },
+  "external_contracts": {
+    "LegacyMigrationPlan": {
+      "provider": "M2.7",
+      "authority_boundary": "legacy_required_items_remain_authoritative_history"
+    },
+    "DecisionSurfaceArtifactEnvelope": {
+      "provider": "M2.2",
+      "authority_boundary": "shadow_artifact_only"
+    },
+    "WorkBuddySemanticTrajectoryAudit": {
+      "provider": "P38",
+      "authority_boundary": "candidate_input_only_no_direct_pack_promotion"
+    }
+  },
+  "child_contracts": [
+    {
+      "point_id": "M3.1",
+      "owner": "legacy_semantic_comparison_owner",
+      "owned_objects": ["LegacyRequiredItemComparator", "SemanticMappingRow", "LegacyRequiredItemComparisonReport"],
+      "input_contracts": ["LegacyMigrationPlan", "DecisionSurfaceArtifactEnvelope"],
+      "output_contracts": ["LegacyRequiredItemComparisonReport"],
+      "dependencies": [],
+      "acceptance_boundary": ["semantic_merge_split_downgrade_only", "never_use_count_parity_as_quality", "legacy_remains_authoritative"]
+    },
+    {
+      "point_id": "M3.2",
+      "owner": "cell_calibration_audit_owner",
+      "owned_objects": ["CellCoverageGranularityAuditor", "CellCoverageAuditReport"],
+      "input_contracts": ["LegacyRequiredItemComparisonReport", "DecisionSurfaceArtifactEnvelope"],
+      "output_contracts": ["CellCoverageAuditReport"],
+      "dependencies": ["M3.1"],
+      "acceptance_boundary": ["materiality_weighted_coverage", "reject_ownerless_lookup_duplicate_unanswerable_cells", "generic_dimension_not_cell"]
+    },
+    {
+      "point_id": "M3.3",
+      "owner": "p36_five_chain_evaluator_owner",
+      "owned_objects": ["P36FiveChainEvaluator", "FiveChainCalibrationReport", "FiveChainFinding"],
+      "input_contracts": ["CellCoverageAuditReport", "LegacyRequiredItemComparisonReport"],
+      "output_contracts": ["FiveChainCalibrationReport"],
+      "dependencies": ["M3.1", "M3.2"],
+      "acceptance_boundary": ["five_chain_cell_slot_wwc_counterevidence_coverage", "failure_attribution_required", "supervisor_supplement_not_runtime_evidence"]
+    },
+    {
+      "point_id": "M3.4",
+      "owner": "multi_sector_calibration_owner",
+      "owned_objects": ["MultiSectorCalibrationMatrix", "MultiSectorCalibrationReport", "SectorCalibrationCase"],
+      "input_contracts": ["FiveChainCalibrationReport", "CellCoverageAuditReport"],
+      "output_contracts": ["MultiSectorCalibrationReport"],
+      "dependencies": ["M3.2", "M3.3"],
+      "acceptance_boundary": ["ai_semis_saas_healthcare_banks_required", "sector_ontology_and_source_policy_delta_required", "no_new_paid_full_chain_for_calibration"]
+    },
+    {
+      "point_id": "M3.5",
+      "owner": "negative_control_owner",
+      "owned_objects": ["NegativeControlVerifier", "NegativeControlReport"],
+      "input_contracts": ["DecisionSurfaceArtifactEnvelope"],
+      "output_contracts": ["NegativeControlReport"],
+      "dependencies": [],
+      "acceptance_boundary": ["relationship_parser_commercial_controls_required", "zero_material_escape_target", "typed_gap_must_preserve_boundary"]
+    },
+    {
+      "point_id": "M3.6",
+      "owner": "pattern_provenance_adjudication_owner",
+      "owned_objects": ["PatternCandidateAdjudicator", "PatternCandidate", "CandidateAdjudicationReport"],
+      "input_contracts": ["WorkBuddySemanticTrajectoryAudit", "MultiSectorCalibrationReport"],
+      "output_contracts": ["CandidateAdjudicationReport"],
+      "dependencies": ["M3.4"],
+      "acceptance_boundary": ["prompt_required_not_independent_discovery", "workbuddy_requires_independent_corroboration", "candidate_only_no_direct_pack_promotion"]
+    },
+    {
+      "point_id": "M3.7",
+      "owner": "shadow_review_surface_owner",
+      "owned_objects": ["ShadowComparisonReviewService", "ShadowReviewSurface", "ReviewerAction"],
+      "input_contracts": ["LegacyRequiredItemComparisonReport", "CellCoverageAuditReport", "CandidateAdjudicationReport"],
+      "output_contracts": ["ShadowReviewSurface"],
+      "dependencies": ["M3.1", "M3.2", "M3.6"],
+      "acceptance_boundary": ["query_contract_cell_slot_trace_required", "append_only_reasoned_review_actions", "review_action_does_not_change_authority"]
+    },
+    {
+      "point_id": "M3.8",
+      "owner": "m3_closeout_gate_owner",
+      "owned_objects": ["M3CloseoutManifest", "M3AggregateGate", "M3ReviewApprovalRecord"],
+      "input_contracts": ["M3_1_to_M3_7_GateEvidence", "HumanReviewerApprovalRecord"],
+      "output_contracts": ["M3CloseoutResult", "M3UnmetConditionSet"],
+      "dependencies": ["M3.1", "M3.2", "M3.3", "M3.4", "M3.5", "M3.6", "M3.7"],
+      "acceptance_boundary": ["all_children_must_pass", "human_reviewer_approval_required", "no_m4_cutover_or_writer_admission"]
+    }
+  ]
+}

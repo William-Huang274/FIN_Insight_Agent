@@ -1,0 +1,37 @@
+{
+  "blueprint_digest": "683f3df509735466c33394e3771dded3c0c1bb129ab1c53462902f7b6b5e485f",
+  "checks": {
+    "baseline_only": true,
+    "blueprint_digest_exact": true,
+    "exact_binding": true,
+    "jit_order_and_commands_noninvocable": true,
+    "old_admission_expired_unused": true,
+    "receipt_ttl_bounded": true,
+    "staged_inputs_exact": true,
+    "templates_runtime_field_compatible": true,
+    "templates_unresolved_not_active": true,
+    "zero_execution_counts": true
+  },
+  "execution_counts": {
+    "active_admissions_created": 0,
+    "active_receipts_created": 0,
+    "actual_probes": 0,
+    "business_case_mutations": 0,
+    "compiler_shadow_runs": 0,
+    "fixed_or_production_store_open": 0,
+    "ledgers_created": 0,
+    "legacy_authority_mutations": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "receipt_consumptions": 0,
+    "receipt_registrations": 0,
+    "runtime_namespaces_created": 0,
+    "store_writes": 0,
+    "tool": 0
+  },
+  "gate_digest": "4554d3082da20a1e04ba4d04125808a6ea9c935c918f022a8f84e366c813702e",
+  "next_step": "Stop. An independent reviewer must approve one just-in-time baseline admission/receipt issue-register-execute window; this blueprint itself cannot issue authority.",
+  "result_version": "finsight_point01_m2_a1_baseline_authority_blueprint_freeze_gate_v1_0",
+  "status": "pass"
+}

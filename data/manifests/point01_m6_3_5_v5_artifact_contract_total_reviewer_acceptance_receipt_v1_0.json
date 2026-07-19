@@ -1,0 +1,46 @@
+{
+  "accepted_artifacts": {
+    "manifest_digest": "272eb312f635e88da37254b6853b15709a18cdb8ec9cade66541b6fc269b3faa",
+    "package_digest": "a8210e702e2a7147513537916c505baec92dc0ff7526139c7eb557f19cdfbd23",
+    "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v5-artifact-contract-remediation-refreeze",
+    "sanitized_projection_path": "data/manifests/point01_m6_3_5_v5_sanitized_authorized_live_audit_projection_v1_0.json",
+    "sanitized_projection_sha256": "27e4b30b086ded648c26b6fbf20ca0c1e811297755c0328fa4f7338d72d7dbbe",
+    "scope_digest": "bcec5108da71785c7b21c52ea8d671ef8f18e330c962324bc3f44f0935545236"
+  },
+  "accepted_scope": [
+    "RC-P38-011 v5 offline artifact-contract and provenance remediation",
+    "sanitized projection as non-citable, audit-only output",
+    "v4 behavior recorded only as single authorized source/parser behavior observed"
+  ],
+  "approval_boundary": {
+    "business_case_mutation_authorized": false,
+    "context_or_writer_authorized": false,
+    "evidence_promotion_authorized": false,
+    "execution_or_live_receipt_created": false,
+    "live_send_authorized": false,
+    "m6_3_or_m6_5_full_or_calibrated": false,
+    "m6_complete": false,
+    "model_or_full_chain_authorized": false,
+    "new_sec_get_authorized": false,
+    "nonce_or_user_agent_material_present": false,
+    "reviewer_acceptance_read_only": true,
+    "sourcehunter_m6_4_authorized": false
+  },
+  "decision": {
+    "decision_id": "conditional_approve_m6_3_5_v5_artifact_contract_remediation_audit_only",
+    "decision_text": "conditional_approve_m6_3_5_v5_artifact_contract_remediation_audit_only; accepts RC-P38-011 v5 repair and its sanitized projection solely as a non-citable audit projection; grants no execution, network, downstream, promotion, or milestone authority.",
+    "decision_text_sha256": "d8104040bd2b637e8bedc6323a997882b994eebd43d366272d54d83d80df97e2"
+  },
+  "receipt_type": "package_external_total_reviewer_read_only_acceptance_not_execution_authority",
+  "receipt_version": "finsight_point01_m6_3_5_v5_artifact_contract_total_reviewer_acceptance_receipt_v1_0",
+  "remaining_gaps": [
+    "M6.3 and M6.5 remain partial real single-document observation, not full or calibrated",
+    "M6.3R.0 local retrieval/rerank/context-expansion is design-freeze-only and still requires audit",
+    "M6.4, M6.6, M6.7, Writer, Context ingestion, models and full-chain remain unauthorized"
+  ],
+  "reviewer": {
+    "employee_id": "003",
+    "name": "william",
+    "role": "total_reviewer"
+  }
+}

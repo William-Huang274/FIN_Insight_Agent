@@ -1,0 +1,41 @@
+{
+  "boundary": "Static staged-byte validation only. This runner does not import or invoke M2 compiler/shadow runtime, model, network, tool, provider, transport, store or business authority paths.",
+  "design_contract_verify": {
+    "checks": {
+      "actual_oracle_topology_frozen": true,
+      "actual_still_not_authorized": true,
+      "future_access_canaries_and_zero_counts_frozen": true,
+      "scenario_level_p01_p02_p03_matrix": true,
+      "sector_specific_independent_oracle": true,
+      "synthetic_compiler_consumable_four_sector_inputs": true
+    },
+    "errors": [],
+    "status": "pass"
+  },
+  "execution_counts": {
+    "business_case_mutations": 0,
+    "compiler_or_shadow_fixture_runs": 0,
+    "external_tool_calls": 0,
+    "legacy_authority_mutations": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "provider_calls": 0,
+    "store_open_attempts": 0,
+    "store_writes": 0
+  },
+  "failures": [],
+  "future_actual_admission_status": "package_admission_required",
+  "gate_digest": "02d83a8cdce1dbb983efae05a0982a5229802f5e72136e84f7c015b87d5c7ee8",
+  "next_step_requires_total_reviewer": "Review the repaired M2-A1 design package only. Any actual A0-M2-P01/P02/P03 run requires a newly refrozen executable package, exact external admission and a single-use execution receipt.",
+  "package_digest": "34a6877a084bc85aa28d160082661db7d1fc9ca04f44d576afe6bb5d5acc5d89",
+  "package_ref": "point01-m2-a1-independent-adversarial-audit-package-v2-full-contract",
+  "package_verify": {
+    "calculated_package_digest": "34a6877a084bc85aa28d160082661db7d1fc9ca04f44d576afe6bb5d5acc5d89",
+    "mismatches": [],
+    "schema_errors": [],
+    "status": "pass"
+  },
+  "result_version": "finsight_point01_m2_a1_design_package_repair_freeze_gate_result_v1_1",
+  "scope": "M2_A1_design_and_package_repair_only",
+  "status": "design_package_repaired_pending_independent_review"
+}

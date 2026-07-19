@@ -1,0 +1,42 @@
+{
+  "all_other_scenarios": {
+    "authority_issue_forbidden": true,
+    "count": 15
+  },
+  "blueprint_digest": "d3a2b4e96aff1eb90384c72bd51a1ef441e27cbe316ccbb4bd405e15939e9655",
+  "command_contracts": {
+    "executor": "do_not_invoke",
+    "orchestrator": "do_not_invoke",
+    "registrar": "do_not_invoke"
+  },
+  "exact_binding": {
+    "authority_boundary": "no_actual_a0_m2_probe_without_fresh_exact_external_admission_and_single_use_receipt_no_model_network_tool_provider_fixed_production_business_or_legacy_mutation",
+    "b0_5_policy_digest": "9bf2dcfcfdd5b402594b2b1c6e242b8322114914c915d7edcfdf01634e8335d3",
+    "b0_6_policy_digest": "047f729c100b84acd3f965318fbd537190bf8514981ed2e6969c85ad058824a2",
+    "execution_staging_namespace_id": "point01_m2_a1_exact_admitted_runs_v2_9",
+    "input_ref": "m2-a1-ai-semis-input",
+    "mutation": "none",
+    "package_digest": "5a107d4b1b7f66a3028609f3d419106e6ba2c5664db9781f3b1e2243a391251b",
+    "package_gate_digest": "0d9500bc69f5d80030933dc086b5cefc388613baabb625e4e9ccc6b2d07ea7b0",
+    "plan_digest": "98c618ee8c0fe6a3fe9ac2a7eeb760327911521f1bd0593e9ceecf9dffbdb5e7",
+    "plan_gate_digest": "5c73aab9b1287948251a9f3167cccc399eb16ff61584c6c62904947c34d77143",
+    "scenario_id": "p01-baseline-separated-input"
+  },
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "approval": 0,
+    "external": 0,
+    "ledger": 0,
+    "namespace": 0,
+    "receipt": 0,
+    "store_write": 0
+  },
+  "schema_version": "finsight_point01_m2_a1_baseline_authority_blueprint_v1_6_executable_authority",
+  "status": "B0.6_repaired_refrozen_pending_independent_review",
+  "templates": {
+    "human_jit_window_approval": "unresolved_not_active",
+    "v2_9_admission": "unresolved_not_active",
+    "v2_9_receipt": "unresolved_not_active"
+  }
+}

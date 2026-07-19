@@ -1,0 +1,64 @@
+{
+  "schema_version": "finsight_point01_p01_g2_1_final_baseline_candidate_policy_v1_0",
+  "status": "candidate_freeze_only_pending_exact_digest_approval",
+  "purpose": "Freeze one current-staged-input candidate for the remaining AI-semis Foundation Alpha operational baseline without creating authority or executing any case.",
+  "future_scope": "single_ai_semis_operational_baseline_only",
+  "baseline": {
+    "case_id": "g2-baseline",
+    "scenario_id": "p01-baseline-separated-input",
+    "input_ref": "m2-a1-ai-semis-input",
+    "mutation": "none",
+    "single_use": true,
+    "no_retry_replay_or_renewal": true
+  },
+  "case_instance_pack": {
+    "pack_version_id": "pack-case-m2-a1-ai-semis-no-override:v1",
+    "payload_digest": "71d9a25e7973db55ec0a99295e90d51d9acb2ed87c988b548d4e8089d00d28b9",
+    "case_id": "m2-a1-ai-semis-input",
+    "override_mode": "no_override"
+  },
+  "authority_boundary": {
+    "exact_digest_approval_required": true,
+    "historical_consumed_receipts_non_replayable": true,
+    "no_authority_artifact_created": true,
+    "no_network_tool_model_provider_execution": true,
+    "no_fixed_or_business_store_write": true,
+    "legacy_authority": "retained",
+    "production_readiness": "not_admitted"
+  },
+  "execution_counts": {
+    "human_approval": 0,
+    "admission": 0,
+    "receipt": 0,
+    "baseline": 0,
+    "negative_case": 0,
+    "formal_namespace": 0,
+    "runtime": 0,
+    "network_success": 0,
+    "tool_success": 0,
+    "model_success": 0,
+    "provider_success": 0,
+    "fixed_business_store_write": 0
+  },
+  "deferred_backlog": [
+    {
+      "backlog_id": "P2-pack-registry-case-delta-payload-hardening",
+      "severity": "P2",
+      "description": "The generic registry may still accept a payload-less case_delta; this baseline assembly path rejects it, and generic hardening is deferred without expanding the current freeze."
+    }
+  ],
+  "prohibitions": [
+    "human_approval_creation",
+    "authoritative_admission_creation",
+    "single_use_receipt_creation_or_registration",
+    "baseline_execution",
+    "negative_case_execution",
+    "historical_consumed_receipt_reuse",
+    "network_tool_model_provider_execution",
+    "fixed_or_business_store_write",
+    "paid_llm",
+    "full_chain",
+    "production_cutover",
+    "business_case_mutation"
+  ]
+}

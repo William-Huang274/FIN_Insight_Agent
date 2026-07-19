@@ -1,0 +1,19 @@
+{
+  "result_version": "finsight_point01_m1_rollback_recovery_drill_result_v1_0",
+  "executed_at": "2026-07-12T16:45:00+08:00",
+  "status": "pass",
+  "fixture": "tests/contract/test_point01_runtime_facade.py::test_m1_rollback_recovery_drill_preserves_legacy_authority_and_audit_history",
+  "checks": {
+    "restart_recovery_integrity": true,
+    "kill_switch_blocks_new_mutation": true,
+    "canonical_audit_history_preserved": true,
+    "legacy_task_run_authority_preserved": true,
+    "replay_external_call_count_zero": true
+  },
+  "verification": {
+    "command": "python -m pytest -q -m fast_contract tests/contract tests/test_runtime_bridge_contracts.py tests/test_r53_r60_runtime_task_spine.py",
+    "passed": 55,
+    "failed": 0
+  },
+  "boundary": "Deterministic M1 rollback/recovery drill only; human reviewer approval remains a separate M1.5 condition."
+}

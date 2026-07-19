@@ -1,0 +1,14 @@
+{
+  "policy_version": "finsight_point01_m5_8_observability_ops_policy_v1_0",
+  "scope": "Point01_M5_8_observability_operations_control_plane_only",
+  "status": "approved_for_deterministic_implementation",
+  "dependencies": ["M5.1", "M5.2", "M5.3", "M5.4", "M5.5", "M5.6", "M5.7"],
+  "required_invariants": [
+    "canonical events remain the ordered source of truth and reconnect cursor never replays earlier events",
+    "trace spans retain source event, correlation and causation references",
+    "raw reasoning, prompts and secrets are redacted or rejected before durable trace persistence",
+    "metric projection and threshold alert are inspectable through an admin read model",
+    "trace materialization is idempotent for the same command"
+  ],
+  "forbidden_admissions": ["external_observability_service", "provider_execution", "external_tool_execution", "raw_reasoning_capture", "Evidence_runtime", "Writer_runtime", "full_chain", "business_case_mutation", "legacy_taskrun_authority_change"]
+}

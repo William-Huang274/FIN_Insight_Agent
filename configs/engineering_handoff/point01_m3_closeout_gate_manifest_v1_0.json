@@ -1,0 +1,14 @@
+{
+  "manifest_version": "finsight_point01_m3_closeout_gate_v1_0",
+  "scope": "Point01_M3_shadow_comparison_calibration_closeout",
+  "required_points": ["M3.0", "M3.1", "M3.2", "M3.3", "M3.4", "M3.5", "M3.6", "M3.7"],
+  "required_positive_sectors": ["ai_semis", "saas", "healthcare", "banks"],
+  "required_negative_families": ["relationship", "parser", "commercial"],
+  "human_approval_path": "configs/engineering_handoff/point01_m3_human_reviewer_approval_v1_0.json",
+  "authority_boundary": {
+    "legacy_task_run": "authoritative",
+    "canonical_lane": "shadow_only",
+    "cutover": "forbidden"
+  },
+  "forbidden_admissions": ["m4_cutover", "paid_model", "provider_execution", "evidence_runtime", "writer_runtime", "full_chain"]
+}

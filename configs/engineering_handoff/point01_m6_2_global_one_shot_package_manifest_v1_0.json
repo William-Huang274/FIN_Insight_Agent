@@ -1,0 +1,27 @@
+{
+  "package_version": "finsight_point01_m6_2_global_one_shot_package_manifest_v1_0",
+  "package_ref": "point01-m6-2-nvda-sec-metadata-global-one-shot-package-v1",
+  "included_paths": [
+    "configs/engineering_handoff/point01_m6_2_real_bounded_sec_metadata_pilot_policy_v1_0.json",
+    "configs/engineering_handoff/point01_m6_2_global_one_shot_authority_policy_v1_0.json",
+    "configs/engineering_handoff/point01_m6_2_tool_registry_policy_v1_0.json",
+    "src/sec_agent/canonical_runtime/bounded_sec_metadata_execution.py",
+    "src/sec_agent/canonical_runtime/evidence_request.py",
+    "src/sec_agent/canonical_runtime/tool_planner.py",
+    "src/sec_agent/canonical_runtime/durable_scheduler.py",
+    "src/sec_agent/canonical_runtime/m6_pilot_global_approval.py",
+    "src/sec_agent/canonical_runtime/m6_pilot_package.py",
+    "src/sec_agent/canonical_runtime/budget_control.py",
+    "src/sec_agent/canonical_runtime/capability_security.py",
+    "src/sec_agent/canonical_runtime/facade.py",
+    "src/sec_agent/canonical_runtime/feature_flags.py",
+    "src/sec_agent/canonical_runtime/models.py",
+    "src/sec_agent/canonical_runtime/object_store.py",
+    "src/sec_agent/canonical_runtime/store.py",
+    "scripts/engineering/run_point01_m6_2_real_bounded_sec_metadata_pilot.py",
+    "scripts/engineering/run_point01_m6_2_global_one_shot_preflight.py",
+    "scripts/engineering/record_point01_m6_2_global_one_shot_human_receipt.py",
+    "tests/contract/test_point01_m6_2_real_bounded_sec_metadata_execution.py",
+    "tests/contract/test_point01_m6_2_global_one_shot_approval.py"
+  ]
+}

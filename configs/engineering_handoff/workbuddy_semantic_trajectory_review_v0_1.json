@@ -1,0 +1,181 @@
+{
+  "schema_version": "finsight_workbuddy_semantic_trajectory_review_config_v0_1",
+  "audit_id": "workbuddy_12case_semantic_trajectory_reaudit_20260711_v0_1",
+  "expert_variant_registry_ref": "configs/engineering_handoff/workbuddy_expert_variant_review_v0_1.json",
+  "model_boundary": {
+    "model": "deepseek-v4-pro",
+    "classification": "non_strong_calibration_model",
+    "maturity_inference_allowed": false
+  },
+  "score_scale": {"1":"materially_defective","2":"weak","3":"usable_with_review","4":"strong_candidate_not_promoted","5":"reviewer_ready_for_dimension_only"},
+  "required_score_dimensions": [
+    "sector_mechanism", "decision_cell_semantics", "evidence_binding", "numeric_integrity",
+    "counterevidence_and_gaps", "valuation_or_scenario_method", "artifact_usability",
+    "trajectory_planning", "tool_grounding", "repair_reflection", "context_efficiency", "repeatability"
+  ],
+  "critical_systemic_findings": [
+    "12/12 reports have zero claim-local links in numeric table cells; detached source lists cannot support claim-level review.",
+    "Multi-step tool activity is present, but no subagent/handoff execution or claim-to-observation lineage is visible in any case.",
+    "WebSearch-heavy cases consume result snippets without source-open verification; structured financial queries also lack row/source lineage in final reports.",
+    "Material scale and category errors recur: roughly 10x market-cap errors, product revenue annualization errors, and acquisition value/ARR confusion.",
+    "Cross-case consistency is not governed: S04 says Target comparable sales were not disclosed while T01 correctly uses 5.6% from the same quarter.",
+    "Artifact syntax checks occur after writing, but semantic, numeric, citation, chart-data, and narrative-consistency verification does not.",
+    "Task lists are planning aids, not subagents; completion states can coexist with hidden output errors or a terminal agent trace error.",
+    "High cached context reduces marginal token cost but does not prove information efficiency; useful claim yield and duplicate-context rate were not controlled.",
+    "Report-type structures are often useful, but the current claims, rankings, probabilities, valuations, and company scores cannot be inherited.",
+    "No WorkBuddy report is eligible for direct pack promotion; only independently corroborated and redesigned mechanisms are candidates."
+  ],
+  "official_verification_samples": [
+    {"check_id":"target_q1_2026_comp_sales","case_ids":["WB-S04","WB-T01"],"finding":"Official Target release reports 5.6% comparable sales; S04's not-disclosed claim is false while T01 is directionally correct.","source_url":"https://corporate.target.com/press/release/2026/05/target-corporation-reports-first-quarter-earnings"},
+    {"check_id":"wells_fargo_asset_cap","case_ids":["WB-S02"],"finding":"The Federal Reserve removed the Wells Fargo asset growth restriction on 2025-06-03; the report's active-cap transmission is stale.","source_url":"https://www.federalreserve.gov/newsevents/pressreleases/enforcement20250603a.htm"},
+    {"check_id":"lilly_q1_2026_mounjaro","case_ids":["WB-S03","WB-T02"],"finding":"Official Q1 2026 Mounjaro revenue is about USD8.7B; T02's USD86.6B annualized statement is a material scale error.","source_url":"https://investor.lilly.com/news-releases/news-release-details/lilly-reports-first-quarter-2026-financial-results-raises-full"},
+    {"check_id":"panw_cyberark_transaction","case_ids":["WB-S08","WB-T04"],"finding":"PANW disclosed approximately USD25B equity value for CyberArk; CyberArk is not USD16.3B of ARR. The report mixes transaction/product metrics.","source_url":"https://investors.paloaltonetworks.com/news-releases/news-release-details/palo-alto-networks-announces-agreement-acquire-cyberark-identity"},
+    {"check_id":"market_cap_scale_sample","case_ids":["WB-S05","WB-S07","WB-T03","WB-S08"],"finding":"Current market data confirms repeated scale failures: XOM about USD575.7B not USD5,757B; CAT about USD443.6B not USD4,387B; GM about USD72.1B not USD702B; CRWD about USD48.3B not USD190.6B."}
+  ],
+  "cases": [
+    {
+      "case_id":"WB-S01","disposition":"redesign","material_defect_severity":"high",
+      "scores":{"sector_mechanism":4,"decision_cell_semantics":4,"evidence_binding":1,"numeric_integrity":1,"counterevidence_and_gaps":3,"valuation_or_scenario_method":2,"artifact_usability":4,"trajectory_planning":2,"tool_grounding":1,"repair_reflection":1,"context_efficiency":1,"repeatability":2},
+      "semantic_findings":["Product adoption to ARR/RPO/revenue/margin/FCF is a useful SaaS mechanism","Many values are labeled verified without claim-local primary evidence","Cross-company ARR/ACV/NRR definitions are not normalized and some product metrics appear incomparable","Company scoring and valuation conclusions outrun evidence quality"],
+      "trajectory_findings":["Twelve broad WebSearch calls but no source-open verification","No structured financial tool or subagent handoff","Report was written without post-write research or semantic repair","Cumulative context is large relative to unverifiable claim output"],
+      "retain_candidates":["SaaS product-adoption to financial-capture mechanism","Seat versus consumption pricing distinction","SBC/FCF and sales-efficiency counterchecks"],
+      "improve_or_redesign_candidates":["Normalize ARR/RPO/NRR definitions and periods","Require issuer-first product KPI slots and numeric trace","Separate reported AI revenue from adoption proxy"],
+      "reject_patterns":["verified labels based on search snippets","unsupported moat scores","cross-company ranking from non-comparable metrics"]
+    },
+    {
+      "case_id":"WB-S02","disposition":"redesign","material_defect_severity":"high",
+      "scores":{"sector_mechanism":5,"decision_cell_semantics":4,"evidence_binding":2,"numeric_integrity":2,"counterevidence_and_gaps":4,"valuation_or_scenario_method":3,"artifact_usability":4,"trajectory_planning":3,"tool_grounding":2,"repair_reflection":1,"context_efficiency":1,"repeatability":2},
+      "semantic_findings":["Deposit franchise to funding cost/NIM/NII/credit/CET1 is the correct bank ontology","Wells Fargo asset-cap mechanism is stale after the June 2025 removal","Quarterly, annual and estimated figures are mixed without period lineage","Primary-source clickthrough is absent despite many exact values"],
+      "trajectory_findings":["Financial tools and methodology skills were used, but shell-query rows are opaque in the report","No official filing/source-open verification","No semantic reconciliation after gathering","Task completion does not establish bank metric comparability"],
+      "retain_candidates":["Bank balance-sheet and credit transmission chain","Deposit beta and asset-liability sensitivity cells","CET1/capital return and fee-income diversification cells"],
+      "improve_or_redesign_candidates":["Add bank metric ontology and period normalization","Bind regulatory changes and enforcement status by as-of date","Separate reported, estimated and calculated NIM/credit figures"],
+      "reject_patterns":["stale regulatory constraints as current mechanism","unlabeled annual/quarterly mixing","letter-grade rankings without trace"]
+    },
+    {
+      "case_id":"WB-S03","disposition":"improve","material_defect_severity":"medium_high",
+      "scores":{"sector_mechanism":5,"decision_cell_semantics":5,"evidence_binding":3,"numeric_integrity":2,"counterevidence_and_gaps":4,"valuation_or_scenario_method":2,"artifact_usability":4,"trajectory_planning":3,"tool_grounding":2,"repair_reflection":1,"context_efficiency":1,"repeatability":2},
+      "semantic_findings":["Clinical/regulatory/access/supply/prescription/revenue separation is strong","Official links are present but exact figures remain detached from citations","USD conversion, product estimates and annualization need program trace","Valuation price-in discussion is descriptive rather than executable"],
+      "trajectory_findings":["Combines finance tools and six searches but does not open and reconcile each primary source","No parser/numeric verification step","No post-write evidence repair","No specialist handoff despite multiple domains"],
+      "retain_candidates":["Healthcare milestone and commercialization mechanism","Patient-demand to recognized-revenue funnel","Supply/API/fill-finish and reimbursement constraints","Clinical versus commercial evidence separation"],
+      "improve_or_redesign_candidates":["Bind trial endpoint, approval and label claims to primary documents","Add currency/product revenue normalization","Route valuation to deterministic engine"],
+      "reject_patterns":["estimated product panels as exact facts","probability labels without calibration","valuation conclusions without executable trace"]
+    },
+    {
+      "case_id":"WB-S04","disposition":"redesign","material_defect_severity":"critical",
+      "scores":{"sector_mechanism":4,"decision_cell_semantics":4,"evidence_binding":1,"numeric_integrity":1,"counterevidence_and_gaps":3,"valuation_or_scenario_method":2,"artifact_usability":4,"trajectory_planning":3,"tool_grounding":2,"repair_reflection":1,"context_efficiency":1,"repeatability":1},
+      "semantic_findings":["Traffic/ticket/price/mix/inventory/margin is the right retail mechanism","Report has zero external links","It incorrectly says Target comparable sales were not disclosed; official Q1 release reports 5.6%","Cross-case contradiction with T01 proves no shared accepted-fact memory","Several Costco and inventory values are estimates without row lineage"],
+      "trajectory_findings":["Nine opaque financial queries and no WebSearch/source-open verification","No conflict check against official earnings release","Artifact validation is syntax-only","No repair after factual inconsistency"],
+      "retain_candidates":["Retail sales decomposition","Inventory/promotion/gross-margin transmission","Alternative profit pools such as ads, membership and marketplace"],
+      "improve_or_redesign_candidates":["Issuer filing/release must precede aggregator data","Create shared accepted fact and contradiction check","Separate comp sales, total sales and new-store/non-merchandise contribution"],
+      "reject_patterns":["zero-source report with exact numbers","false disclosure-gap claim","star ratings and ranking without evidence gate"]
+    },
+    {
+      "case_id":"WB-S05","disposition":"redesign","material_defect_severity":"critical",
+      "scores":{"sector_mechanism":5,"decision_cell_semantics":5,"evidence_binding":2,"numeric_integrity":1,"counterevidence_and_gaps":4,"valuation_or_scenario_method":1,"artifact_usability":4,"trajectory_planning":2,"tool_grounding":1,"repair_reflection":1,"context_efficiency":1,"repeatability":2},
+      "semantic_findings":["Volume/realized price/differential/unit cost/capex/FCF is a strong energy mechanism","Market caps are about 10x overstated","Scenario probabilities and cash-flow sensitivities are unsupported calculations","Current-event and hedge/MTM claims are not bound to filings","Estimated sustaining capex and breakevens are presented too confidently"],
+      "trajectory_findings":["Eleven searches and no source-open verification","No structured numeric program for oil-price sensitivities","No post-write research or challenge","Syntax validation does not test chart assumptions"],
+      "retain_candidates":["Energy price-to-cash transmission","Realized price versus benchmark/differential/hedge distinction","Sustaining versus growth capex","Integrated downstream/chemical cycle offset"],
+      "improve_or_redesign_candidates":["Use filing-based production/cost/capex facts","Execute scenario model with assumptions and reconciliation","Add reserve and project lineage"],
+      "reject_patterns":["current market cap and valuation rows","untraceable scenario probabilities","unsupported OCF/FCF sensitivity tables","estimated breakeven as exact fact"]
+    },
+    {
+      "case_id":"WB-S06","disposition":"improve","material_defect_severity":"high",
+      "scores":{"sector_mechanism":5,"decision_cell_semantics":5,"evidence_binding":2,"numeric_integrity":2,"counterevidence_and_gaps":4,"valuation_or_scenario_method":2,"artifact_usability":4,"trajectory_planning":3,"tool_grounding":1,"repair_reflection":1,"context_efficiency":1,"repeatability":2},
+      "semantic_findings":["Load to approved project/capex/rate base/ROE/EPS/cash financing is a strong utility mechanism","Regulated versus merchant distinction is decision-useful","Many load pipeline, fuel mix, debt and ROE values are estimated or jurisdiction-specific without docket lineage","Valuation and data-center price-in claims lack reproducible calculations"],
+      "trajectory_findings":["Twelve searches but no direct source-open verification","No regulatory docket or EIA structured tool","No numeric financing/credit model","No post-write repair"],
+      "retain_candidates":["Utility load-to-rate-base mechanism","Regulated versus merchant operator split","Approval/interconnection/equipment/financing bottleneck cells"],
+      "improve_or_redesign_candidates":["Bind rate cases to jurisdiction/docket/effective period","Separate signed load, advanced discussion and speculative queue","Add debt/equity financing and credit trace"],
+      "reject_patterns":["aggregate load-interest as committed demand","untraceable fuel mix estimates","valuation premiums without scenario trace"]
+    },
+    {
+      "case_id":"WB-S07","disposition":"redesign","material_defect_severity":"critical",
+      "scores":{"sector_mechanism":5,"decision_cell_semantics":5,"evidence_binding":2,"numeric_integrity":1,"counterevidence_and_gaps":4,"valuation_or_scenario_method":1,"artifact_usability":4,"trajectory_planning":3,"tool_grounding":2,"repair_reflection":1,"context_efficiency":1,"repeatability":1},
+      "semantic_findings":["Orders/book-to-bill/backlog/cancellation/delivery/price-cost/cash is a strong industrial mechanism","Market caps are about 10x overstated","Backlog and book-to-bill values mix reported and inferred data","Cycle-stage labels and target-price scenarios are subjective without model trace"],
+      "trajectory_findings":["Trace terminates with agent error despite completed artifact","Six searches plus financial queries but no claim-source reconciliation","No recovery event explains terminal state","Syntax check does not address numeric defects"],
+      "retain_candidates":["Industrial order-to-cash mechanism","Backlog quality and cancellation cells","Aftermarket/service cycle stabilizer","Dealer/customer inventory separation"],
+      "improve_or_redesign_candidates":["Require reported versus inferred book-to-bill flags","Add backlog conversion and cancellation trace","Model price-cost and working-capital bridge"],
+      "reject_patterns":["market cap/valuation rows","subjective cycle labels as facts","price targets without valuation engine","artifact-complete equals trajectory-pass"]
+    },
+    {
+      "case_id":"WB-S08","disposition":"redesign","material_defect_severity":"critical",
+      "scores":{"sector_mechanism":4,"decision_cell_semantics":4,"evidence_binding":2,"numeric_integrity":1,"counterevidence_and_gaps":4,"valuation_or_scenario_method":1,"artifact_usability":4,"trajectory_planning":2,"tool_grounding":1,"repair_reflection":1,"context_efficiency":1,"repeatability":1},
+      "semantic_findings":["Module adoption to ARR/RPO/retention/SBC/FCF is useful","CyberArk acquisition/product metrics are category-confused","CRWD market cap and split-adjustment logic are materially wrong","Organic and acquired ARR are not consistently separated","Most citations are secondary and detached"],
+      "trajectory_findings":["Twelve WebSearch calls and no source-open verification","Single task provides little decomposition","No numeric/category sanity gate","No post-write factual repair"],
+      "retain_candidates":["Cybersecurity platform adoption mechanism","Organic versus acquired ARR requirement","SBC/GAAP/FCF quality cells","Outage and platform-concentration risk"],
+      "improve_or_redesign_candidates":["Normalize ARR and acquisition contribution","Bind module/adoption metrics to issuer evidence","Separate product coverage from financial contribution"],
+      "reject_patterns":["CyberArk value labeled as ARR","incorrect market cap/split adjustments","secondary-source rankings","module count as automatic retention proof"]
+    },
+    {
+      "case_id":"WB-T01","disposition":"improve","material_defect_severity":"medium_high",
+      "scores":{"sector_mechanism":4,"decision_cell_semantics":5,"evidence_binding":3,"numeric_integrity":3,"counterevidence_and_gaps":4,"valuation_or_scenario_method":3,"artifact_usability":5,"trajectory_planning":3,"tool_grounding":2,"repair_reflection":2,"context_efficiency":1,"repeatability":2},
+      "semantic_findings":["Pre-expectation/actual delta/one-off versus persistent/thesis revision is the strongest report-type structure","Target official operating facts are mostly aligned","Consensus expectations and price-reaction windows lack authoritative binding","Explicit data-gap surface is missing","Management statement source labels are not fully auditable"],
+      "trajectory_findings":["Eleven searches but no source-open verification","TaskUpdate returned EPERM inside an ok span and later succeeded","Artifact receives syntax checks only","No post-write source or expectation reconciliation"],
+      "retain_candidates":["Earnings event delta pack","Before-versus-after thesis table","Management explanation versus actuals","Monitoring panel with next catalyst"],
+      "improve_or_redesign_candidates":["Bind consensus vendor/as-of and reaction window","Separate GAAP/adjusted and one-time items","Always emit explicit gaps and unresolved expectation data"],
+      "reject_patterns":["consensus values without source/as-of","management quote labels without exact reference","forecast changes without executable model"]
+    },
+    {
+      "case_id":"WB-T02","disposition":"reject_as_reference","material_defect_severity":"critical",
+      "scores":{"sector_mechanism":3,"decision_cell_semantics":4,"evidence_binding":2,"numeric_integrity":1,"counterevidence_and_gaps":3,"valuation_or_scenario_method":1,"artifact_usability":4,"trajectory_planning":3,"tool_grounding":2,"repair_reflection":2,"context_efficiency":1,"repeatability":1},
+      "semantic_findings":["Facts versus assumptions and implied-expectation framing are useful","Mounjaro USD86.6B annualized is a material scale error versus official quarterly revenue around USD8.7B","Reverse-DCF sensitivity is not linked to an executable cash-flow model","Crowding claims rely on unavailable data while still influencing conclusions","Valuation outputs are not reproducible"],
+      "trajectory_findings":["Only one WebSearch plus opaque finance queries","Memory Edit error is operationally repaired but research defects are not","No valuation calculation tool or formula trace","No post-write numerical audit"],
+      "retain_candidates":["Facts-versus-assumptions table concept","Implied-expectation question","Fundamental-correct but return-limited scenario"],
+      "improve_or_redesign_candidates":["Move all valuation math to deterministic engine","Require share count/currency/period/unit binding","Treat crowding as commercial gap when data absent"],
+      "reject_patterns":["all current valuation outputs","reverse DCF without NumericProgramTrace","revenue annualization values","crowding heatmap without position data"]
+    },
+    {
+      "case_id":"WB-T03","disposition":"redesign","material_defect_severity":"critical",
+      "scores":{"sector_mechanism":5,"decision_cell_semantics":5,"evidence_binding":2,"numeric_integrity":1,"counterevidence_and_gaps":4,"valuation_or_scenario_method":1,"artifact_usability":4,"trajectory_planning":2,"tool_grounding":1,"repair_reflection":1,"context_efficiency":1,"repeatability":2},
+      "semantic_findings":["Policy authority ladder and transmission through footprint/sourcing/pricing/mix/capex is strong","GM market cap is about 10x overstated","Many current policy dates/rates and EPS sensitivities require official legal verification","Public statements are usefully separated from formal policy but evidence grades are not enforced","Explicit data-gap surface is missing"],
+      "trajectory_findings":["Thirteen searches with no source-open verification despite legal/policy sensitivity","Single task and no specialist/legal handoff","No scenario or EPS calculation trace","No post-write authority reconciliation"],
+      "retain_candidates":["Policy authority ladder","Policy transmission graph","Statement-versus-law conflict panel","Company exposure by footprint/sourcing/product mix"],
+      "improve_or_redesign_candidates":["Official law/regulation first with effective-date and jurisdiction binding","Separate enacted/proposed/litigated/statement states","Use deterministic tariff/EPS bridge"],
+      "reject_patterns":["current policy facts based on search snippets","market cap rows","untraceable EPS sensitivity","probability-free scenario rankings"]
+    },
+    {
+      "case_id":"WB-T04","disposition":"improve","material_defect_severity":"high",
+      "scores":{"sector_mechanism":5,"decision_cell_semantics":5,"evidence_binding":2,"numeric_integrity":1,"counterevidence_and_gaps":5,"valuation_or_scenario_method":1,"artifact_usability":4,"trajectory_planning":2,"tool_grounding":1,"repair_reflection":1,"context_efficiency":1,"repeatability":1},
+      "semantic_findings":["Hypothesis tree/support-versus-counterevidence/falsifier structure is the strongest counter-thesis pattern","Evidence quality labels are useful but not backed by claim lineage","Zero primary links and material valuation/category errors remain","Same-prompt source-domain Jaccard around 4.4% shows weak research reproducibility","Counterevidence sometimes relies on low-authority opinion"],
+      "trajectory_findings":["Fourteen searches and no source-open verification","No source-independence or contradiction tool","No semantic repair after artifact creation","Repeated run changes source universe materially"],
+      "retain_candidates":["Counter-thesis hypothesis tree","Support/counterevidence matrix","Falsifier and unavailable-data panel","Source independence requirement"],
+      "improve_or_redesign_candidates":["Require primary evidence for factual branches","Separate disproof from uncertainty","Add same-prompt material-claim repeatability gate"],
+      "reject_patterns":["current valuation/downside tables","evidence grades without lineage","opinion articles as disproof","structure stability as research stability"]
+    }
+  ],
+  "pack_candidate_matrix": [
+    {"candidate_id":"universal_research_responsibility_skeleton_v0_1","layer":"universal","owner":"TECH_01","decision":"retain_with_independent_evidence","source_case_ids":["WB-S01","WB-S02","WB-S03","WB-S04","WB-S05","WB-S06","WB-S07","WB-S08","WB-T01","WB-T02","WB-T03","WB-T04"],"content":["user judgment question","business mechanism","financial capture","price-in","counterevidence","what-would-change","gap disclosure"],"required_improvements":["keep responsibilities rather than fixed headings","bind every cell to owner/evidence/stop rule"],"forbidden_carryover":["WorkBuddy headings","company rankings","report facts"]},
+    {"candidate_id":"mechanism_to_financial_capture_archetype_v0_1","layer":"universal","owner":"TECH_01_TECH_05","decision":"retain_with_independent_evidence","source_case_ids":["WB-S01","WB-S02","WB-S03","WB-S04","WB-S05","WB-S06","WB-S07","WB-S08"],"content":["operating signal","conversion mechanism","recognized financial outcome","cash/capital consequence","failure point"],"required_improvements":["sector-specific metric ontology","evidence slot and numeric trace per edge"],"forbidden_carryover":["generic narrative arrows without evidence","proxy treated as revenue"]},
+    {"candidate_id":"active_what_would_change_program_v0_1","layer":"universal","owner":"TECH_05_TECH_11","decision":"redesign_then_pack","source_case_ids":["WB-S03","WB-S05","WB-S06","WB-S08","WB-T01","WB-T02","WB-T03","WB-T04"],"content":["hypothesis","threshold","current value","direction","evidence route","last checked","owner","action on breach"],"required_improvements":["replace prose wish-list with executable monitor","keep outside main conclusion until triggered"],"forbidden_carryover":["unquantified trigger","unsupported probability"]},
+    {"candidate_id":"counterevidence_falsification_program_v0_1","layer":"universal","owner":"TECH_05","decision":"retain_with_independent_evidence","source_case_ids":["WB-S02","WB-S03","WB-S05","WB-S06","WB-S07","WB-S08","WB-T04"],"content":["main hypothesis","supporting evidence","counterevidence","source independence","disproof threshold","unresolved uncertainty"],"required_improvements":["distinguish disproof from weak evidence","claim-local provenance and authority gate"],"forbidden_carryover":["secondary opinion as factual disproof","evidence grade without lineage"]},
+    {"candidate_id":"gap_boundary_program_v0_1","layer":"universal","owner":"TECH_01_TECH_02","decision":"redesign_then_pack","source_case_ids":["WB-S01","WB-S02","WB-S03","WB-S04","WB-S05","WB-S06","WB-S07","WB-S08","WB-T02","WB-T04"],"content":["typed gap","commercial gap","forbidden substitution","attempt history","impact on judgment","next action"],"required_improvements":["do not infer source absence from retrieval failure","require explicit surface in every report type"],"forbidden_carryover":["generic data unavailable note","gap contradicted by official disclosure"]},
+    {"candidate_id":"peer_comparison_report_type_pack_v0_1","layer":"report_type","owner":"TECH_01","decision":"retain_with_independent_evidence","source_case_ids":["WB-S01","WB-S02","WB-S03","WB-S04","WB-S05","WB-S06","WB-S07","WB-S08"],"content":["shared mechanism rows","normalized peer metrics","company-specific deltas","comparability exceptions","relative price-in and counterevidence"],"required_improvements":["same definition/period/unit","no score unless traceable rubric"],"forbidden_carryover":["star ratings","non-comparable metric ranking"]},
+    {"candidate_id":"earnings_event_update_report_type_pack_v0_1","layer":"report_type","owner":"TECH_01_TECH_05","decision":"redesign_then_pack","source_case_ids":["WB-T01"],"content":["pre-event expectation","actual versus consensus delta","one-off versus persistent driver","management explanation versus actuals","before/after thesis","reaction window","next monitor"],"required_improvements":["bind consensus source/as-of","GAAP/non-GAAP reconciliation","explicit gap section"],"forbidden_carryover":["unsourced consensus","forecast rewrite without model"]},
+    {"candidate_id":"valuation_price_in_report_type_pack_v0_1","layer":"report_type","owner":"TECH_01_TECH_04","decision":"redesign_then_pack","source_case_ids":["WB-T02","WB-S01","WB-S03","WB-S04","WB-S05","WB-S06","WB-S07","WB-S08"],"content":["facts versus assumptions","implied expectations","scenario/sensitivity","multiple normalization","fundamental-right return-limited conditions","commercial positioning gap"],"required_improvements":["deterministic valuation engine","share-count/currency/unit/period trace","market-data freshness"],"forbidden_carryover":["all WorkBuddy valuation outputs","reverse DCF without program trace","crowding without data"]},
+    {"candidate_id":"policy_shock_report_type_pack_v0_1","layer":"report_type","owner":"TECH_01_TECH_05","decision":"redesign_then_pack","source_case_ids":["WB-T03"],"content":["authority ladder","enacted/proposed/litigated/statement state","effective date/jurisdiction","transmission graph","company exposure","scenario and falsifier"],"required_improvements":["official legal source first","deterministic exposure bridge","conflict between statement and fact"],"forbidden_carryover":["search snippet as law","public figure statement as fact","untraceable EPS impact"]},
+    {"candidate_id":"counter_thesis_report_type_pack_v0_1","layer":"report_type","owner":"TECH_01_TECH_05","decision":"redesign_then_pack","source_case_ids":["WB-T04"],"content":["hypothesis tree","support/counter matrix","source independence","falsifiers","data boundaries","residual uncertainty"],"required_improvements":["primary-first factual branches","repeatability and contradiction gate"],"forbidden_carryover":["current cyber claims/valuation","opinion as disproof"]},
+    {"candidate_id":"saas_ai_sector_pack_v0_1","layer":"sector","owner":"TECH_05","decision":"redesign_then_pack","source_case_ids":["WB-S01"],"content":["adoption to ARR/RPO/revenue","seat versus consumption pricing","NRR/GRR","gross margin/inference cost","sales efficiency/SBC/FCF","platform competition"],"required_improvements":["metric definition normalization","reported AI revenue versus proxy"],"forbidden_carryover":["current values and company scores"]},
+    {"candidate_id":"banks_sector_pack_v0_1","layer":"sector","owner":"TECH_05","decision":"redesign_then_pack","source_case_ids":["WB-S02"],"content":["deposit franchise/funding cost","NIM/NII sensitivity","loan growth/mix","credit cost/reserves","CET1/capital return","fee income"],"required_improvements":["regulatory status freshness","bank metric/period ontology"],"forbidden_carryover":["stale WFC asset-cap thesis","current rankings"]},
+    {"candidate_id":"healthcare_pharma_sector_pack_v0_1","layer":"sector","owner":"TECH_05","decision":"redesign_then_pack","source_case_ids":["WB-S03","WB-T02"],"content":["clinical endpoint","approval/label","access/reimbursement","capacity/supply","prescription to revenue","R&D/capex/margin","LOE/pipeline"],"required_improvements":["trial/regulatory primary binding","currency/product normalization"],"forbidden_carryover":["current estimates and valuation outputs"]},
+    {"candidate_id":"retail_consumer_sector_pack_v0_1","layer":"sector","owner":"TECH_05","decision":"redesign_then_pack","source_case_ids":["WB-S04","WB-T01"],"content":["traffic/ticket/price/mix/new stores","comparable versus total sales","inventory/promotion/gross margin","ads/membership/marketplace","working capital/FCF"],"required_improvements":["issuer-first disclosure selector","shared fact contradiction gate"],"forbidden_carryover":["S04 Target disclosure claims","star ratings"]},
+    {"candidate_id":"energy_sector_pack_v0_1","layer":"sector","owner":"TECH_05_TECH_04","decision":"redesign_then_pack","source_case_ids":["WB-S05"],"content":["production/volume","realized price/differential/hedge","unit cost","sustaining/growth capex","reserve/project quality","FCF/dividend/buyback","integrated cycle offset"],"required_improvements":["filing facts and executable commodity scenarios"],"forbidden_carryover":["all current market cap/scenario tables"]},
+    {"candidate_id":"utilities_power_sector_pack_v0_1","layer":"sector","owner":"TECH_05","decision":"redesign_then_pack","source_case_ids":["WB-S06"],"content":["load stage","interconnection/approval","capex to rate base","allowed ROE","EPS/cash/debt/equity","regulated versus merchant","equipment/fuel bottleneck"],"required_improvements":["docket/jurisdiction binding","signed versus speculative load separation"],"forbidden_carryover":["interest pipeline as committed load","current valuation outputs"]},
+    {"candidate_id":"industrials_sector_pack_v0_1","layer":"sector","owner":"TECH_05","decision":"redesign_then_pack","source_case_ids":["WB-S07"],"content":["orders/book-to-bill","backlog quality/cancellation","delivery/price-cost","dealer/customer inventory","aftermarket","working capital/FCF"],"required_improvements":["reported versus inferred flags","backlog conversion model"],"forbidden_carryover":["current market cap/targets/cycle scores"]},
+    {"candidate_id":"cybersecurity_sector_pack_v0_1","layer":"sector","owner":"TECH_05","decision":"redesign_then_pack","source_case_ids":["WB-S08","WB-T04"],"content":["module/platform adoption","organic/acquired ARR","retention/expansion","sales efficiency/SBC/GAAP/FCF","outage/platform concentration","bundling competition"],"required_improvements":["ARR/category normalization","issuer-primary evidence","source-independent counterevidence"],"forbidden_carryover":["CyberArk/CRWD metrics","current valuation tables"]},
+    {"candidate_id":"auto_policy_transmission_sector_delta_v0_1","layer":"sector_delta","owner":"TECH_05","decision":"redesign_then_pack","source_case_ids":["WB-T03"],"content":["manufacturing footprint","parts/battery origin","tariff eligibility","pricing pass-through","product mix","localization capex"],"required_improvements":["official tariff/legal state","company filing exposure","deterministic cost bridge"],"forbidden_carryover":["current policy and EPS numbers"]},
+    {"candidate_id":"decision_surface_presentation_pack_v0_1","layer":"presentation","owner":"TECH_09","decision":"redesign_then_pack","source_case_ids":["WB-S01","WB-S02","WB-S03","WB-S04","WB-S05","WB-S06","WB-S07","WB-S08","WB-T01","WB-T02","WB-T03","WB-T04"],"content":["answer-first summary","decision matrix","mechanism table","scenario panel","counterevidence panel","WWC monitor","source/gap panel"],"required_improvements":["claim-local citations","artifact consistency graph","responsive/accessible charts","no nested unsupported dashboard numbers"],"forbidden_carryover":["current HTML facts","detached bibliography as provenance"]}
+  ],
+  "global_reject_patterns": [
+    "Search-result snippets treated as accepted evidence without opening the source.",
+    "Detached source bibliography used as a substitute for claim-level lineage.",
+    "Verified/official labels without Evidence Gate promotion.",
+    "Market cap, product revenue, acquisition value, unit, period or currency values without numeric sanity checks.",
+    "Reverse DCF, target price, scenario probability or EPS sensitivity without executable NumericProgramTrace.",
+    "Star scores, letter grades and ordinal company rankings without a versioned rubric and comparable inputs.",
+    "Management/public-figure statements treated as facts when they conflict with formal evidence.",
+    "TaskCreate/TaskUpdate lists represented as subagent collaboration or independent context.",
+    "Artifact syntax success represented as semantic, numeric, citation or trajectory success.",
+    "A completed HTML represented as a healthy trajectory when terminal or hidden tool errors exist.",
+    "Same-prompt structural similarity represented as research reproducibility.",
+    "Any WorkBuddy report fact, valuation or ranking copied into FIN runtime evidence or pack fixtures."
+  ]
+}

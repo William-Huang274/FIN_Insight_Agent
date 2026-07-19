@@ -1,0 +1,39 @@
+{
+  "historical_capture_status": "not_persisted_pre_r1",
+  "historical_counts": {
+    "actual_artifact_count": 0,
+    "baseline_attempt_count": 1,
+    "baseline_success_count": 0,
+    "negative_case_execution_count": 0,
+    "receipt_consume_count": 1,
+    "receipt_registration_count": 1,
+    "runtime_materialization_count": 1,
+    "terminal_outcome_unknown_count": 1
+  },
+  "historical_ledger_sequence": [
+    "REGISTERED",
+    "CONSUMED_BEFORE_RUN",
+    "TERMINAL:outcome_unknown"
+  ],
+  "historical_result_digest": "58de7732bfeffee09d80f93fb997aa898727c7ea84e29d8c844f7607b92a858b",
+  "historical_terminal_digest": "13785b7d5d0bdee2459842d1eaa7137eccdbd747aa969f36aa309970194daf8c",
+  "incident_link_method": "independent_immutable_reconciliation_artifact",
+  "reconciliation_digest": "74bd8df676f895b621f09c24158b1b5570a6685e12cd8d72bcf33df044280688",
+  "root_cause_status": "not_determined_no_historical_stream_envelope",
+  "sanitization_contract": {
+    "argv_shape": "flag_names_and_argument_categories_only_no_values",
+    "excerpt": "bounded_supported_shape_sanitizer_not_universal_secret_removal",
+    "max_excerpt_characters": 512,
+    "raw_stream_persistence": "forbidden",
+    "source_refs": "strict_exact_schema_pre_child_validation_only",
+    "unsupported_or_unsafe_line": "replace_whole_line"
+  },
+  "schema_version": "finsight_point01_p01_g2_1_r1_1_sanitization_reconciliation_v1_0",
+  "status": "historical_terminal_immutable_reconciled_r1_1_sanitization_pending_independent_review",
+  "supersedes": {
+    "r1_gate_digest": "d91fb8c06679f98dbec09326633937fafc55a9375840a5f84901662bfabd75db",
+    "r1_reconciliation_digest": "7913ee3d38ef3ffd2d28eaf8f5fb2cf4b19545f72deb9dca8d003a032597939a",
+    "r1_repair_package_digest": "3e9114adfde081240311228ebebf2de1b3f03f94570714c0d834022f60e46c9a",
+    "reason": "r1_sanitization_contract_rejected_before_closeout"
+  }
+}

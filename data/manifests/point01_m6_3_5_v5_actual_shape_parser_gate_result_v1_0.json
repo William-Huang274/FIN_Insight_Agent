@@ -1,0 +1,27 @@
+{
+  "external_call_count": 0,
+  "generated_at": "2026-07-13T13:56:37.175534+00:00",
+  "parser_execution_count": 1,
+  "post_parse_output": {
+    "column_index": 2,
+    "column_period_normalized": "Year Ended January 26, 2025",
+    "financial_statement_role": "consolidated_primary_financial_statement",
+    "normalized_period": "2025-01-26",
+    "parsed_value": "130497",
+    "raw_value": "$ 130,497",
+    "row_index": 2,
+    "row_label_normalized": "Revenue",
+    "table_coordinate": "table[1]/row[2]/period_group[1:4]/value_column[2]",
+    "table_heading_normalized": "CONSOLIDATED STATEMENTS OF INCOME",
+    "table_index": 1,
+    "unit": "USD_millions",
+    "unit_caption_normalized": "In millions, except per share data"
+  },
+  "raw_source_persisted": false,
+  "result_version": "finsight_point01_m6_3_5_actual_shape_parser_gate_result_v1_0",
+  "reviewer_blind_oracle_runtime_input": false,
+  "source_document_sha256": "54fc9e3a10259431e4760f861756b3df11f8d3005384ad8b679553482dadb0f9",
+  "source_kind": "sanitized_fixture",
+  "status": "pass",
+  "store_write_count": 0
+}

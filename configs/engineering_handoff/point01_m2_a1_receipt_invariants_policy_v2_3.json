@@ -1,0 +1,39 @@
+{
+  "schema_version": "finsight_point01_m2_a1_receipt_invariants_policy_v2_3",
+  "scope": "M2_A1_receipt_invariants_repair_and_refreeze_only",
+  "status": "receipt_invariants_repair_pending_refreeze_no_actual_probe",
+  "execution_matrix_ref": "configs/engineering_handoff/point01_m2_a1_execution_ready_scenario_matrix_v2_1.json",
+  "execution_mode": "external_admission_gated",
+  "execution_preflight": {
+    "module": "src/sec_agent/canonical_runtime/m2_a1_execution_receipt.py::preflight_exact_execution",
+    "before": ["authority_root_mkdir_for_registrar_only", "existing_ledger_open_for_executor_only", "atomic_consume", "staged_byte_reverify", "ledger_backed_consumption_grant_verify", "runtime_output_mkdir_after_atomic_consume_only", "M2_runtime_import_after_atomic_consume_only"],
+    "requires": ["strict_package_schema", "canonical_package_digest", "git_index_input_hashes", "crlf_tolerant_working_index_equivalence", "exact_external_admission", "fixed_store_fingerprint", "package_bound_corpus_matrix_policy"],
+    "execution_staging_namespace_id": "point01_m2_a1_exact_admitted_runs_v2_3",
+    "execution_staging_namespace_path": "D:/temp/FIN_Insight_Agent/point01_m2_a1_exact_admitted_runs_v2_3",
+    "path_rule": "derive_sha256_run_root_from_package_admission_and_receipt_id_no_cli_override_no_symlink_or_reparse_escape",
+    "caller_path_override": "forbidden",
+    "derived_paths": ["authority/m2_a1_execution_receipts.sqlite", "runtime", "output/{scenario_id}.actual_result.json"],
+    "forbidden_cli_paths": ["corpus", "case_id", "scenario_matrix", "package", "temporary_root", "receipt_ledger", "output"]
+  },
+  "receipt_lifecycle": {
+    "registrar": "authority_only_register_exact_package_and_scenario",
+    "executor": "open_existing_consume_reverify_verify_grant_before_runtime",
+    "post_consume": "materialize_runtime_then_import_m2",
+    "crash_recovery": "consumed_without_terminal_outcome_unknown",
+    "registration": {"creates": ["derived_run_root", "authority_root", "ledger"], "forbids": ["runtime_root", "output_root", "M2_import"]},
+    "execution": {"ledger_open": "sqlite_mode_rw_no_create", "consumption_grant": "ledger_event_backed_exact_preflight_binding", "receipt_replay": "fail_closed_before_runtime_output_or_M2_import", "terminal_event_required": true}
+  },
+  "actual_runner": {
+    "module": "src/sec_agent/canonical_runtime/m2_a1_audit_harness.py::M2A1ActualRunner.execute_consumed_scenario",
+    "cli": "scripts/engineering/run_point01_m2_a1_actual_audit.py --execute-admitted --admission --receipt-id --scenario-id",
+    "registrar_cli": "scripts/engineering/run_point01_m2_a1_receipt_registrar.py --register-exact-receipt --admission --receipt --scenario-id",
+    "allowed_inputs": ["preflight_bound_sanitized_corpus_case", "preflight_stripped_runtime_scenario", "exact_package", "package_external_admission", "preflight_derived_authoritative_single_use_receipt_ledger", "preflight_derived_temporary_runtime_root"],
+    "forbidden_inputs": ["expected_cell_oracle", "oracle_digest", "reviewer_expected_values", "ambient_store", "fixed_store", "provider_client", "transport_client", "caller_chosen_path"],
+    "pre_send_order": ["ExecutionAdmissionPreflight", "registrar_authority_only_register", "executor_open_existing_ledger", "atomic_consume_single_use_receipt", "staged_byte_reverify", "verify_ledger_backed_consumption_grant", "materialize_runtime_output", "activate_constructor_instrumentation", "import_and_run_real_M2_path"],
+    "actual_probe_execution_currently_authorized": false
+  },
+  "real_runtime_path": ["adapt_legacy_research_objective", "PlanningPackRegistry", "PackSelectionEngine", "DecisionSurfacePlanningService", "DeterministicShadowCompiler", "DecisionSurfaceBundleAssembler", "ShadowCompilerOrchestrator"],
+  "instrumentation": {"mode": "context_manager_patch_constructors_and_accessors", "intercepts": ["SQLiteCanonicalStore.__init__", "sqlite3.connect", "FileCanonicalObjectStore.__init__", "Path.open", "Path.read_text", "Path.read_bytes", "builtins.open", "os.getenv", "importlib/builtins provider_or_oracle_import", "socket.create_connection", "socket.socket.connect", "http.client.HTTPConnection.connect", "urllib.request.urlopen", "subprocess.Popen", "preloaded_transport_provider_module_load_gate"], "allowed": "only_preflight_derived_runtime_root", "blocked": ["oracle_path_read_hash_import", "fixed_or_ambient_store", "provider_or_model_constructor", "preloaded_transport_or_provider_alias", "network_transport", "tool_transport"], "count_contract": ["attempt", "success", "read", "write", "constructor", "request"]},
+  "receipt_authority": {"package_external": true, "ledger": "M2A1ReceiptLedger", "required_binding": ["package_ref", "package_digest", "scope", "authority_boundary", "reviewer_identity", "admission_digest", "nonce_sha256", "expiry", "execution_staging_namespace_id", "scenario_id", "preflight_digest", "run_root"], "register_before_executor": true, "consume_before_runtime_import": true, "terminal_event_required": true, "receipt_replay": "fail_closed", "fixed_approval_store_write": "forbidden"},
+  "authority_boundary": "No M2-A1 actual probe is authorized by this receipt-invariants repair/refreeze point. No model, network, tool, provider, fixed/production/business/legacy store mutation, business Case mutation, legacy authority change, M3, M6/R3, Evidence, Writer or full-chain is authorized."
+}

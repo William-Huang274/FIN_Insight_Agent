@@ -1,0 +1,83 @@
+{
+  "approval_package": {
+    "file_sha256": {
+      "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_global_one_shot_authority_policy_v1_0.json": "a90010daf54b011a8ee2fd838a002e47f676271d225c536dea5d24b21ebe92ec",
+      "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_package_manifest_v1_0.json": "18f510b0a0adb20b9e56b6f4d55498728dea0928f9b0f0c3cb3537085fc7e6ea",
+      "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_pilot_design_v1_0.json": "6e2ca081676c80ebb8d4afb7aaa47b9deef76a1feae77eabca9f7cd4ebc5fc57",
+      "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_pilot_policy_v1_0.json": "d6d1ea1f53584b656628317836683b7323ec104864a1d0e13717676128cabd3f",
+      "scripts/engineering/record_point01_m6_3_5_positive_sec_document_human_receipt.py": "877cf42a31728c69a230ef4211af56d3b28f696dfdd2d34a1874d5ff65547a75",
+      "scripts/engineering/run_point01_m6_3_5_actual_shape_parser_gate.py": "cf46c1ceacf72a9f5b2c4363eeeaf2a2b7241cf6d773f3285d52dc23e927c4b5",
+      "scripts/engineering/run_point01_m6_3_5_positive_sec_document_pilot.py": "834da1f1280fb1b99e1daca4de06c821af5c3b6d871aa91739cbfa546844098b",
+      "scripts/engineering/run_point01_m6_3_5_positive_sec_document_pilot_design_lint.py": "917075f80dcfe553f3d996ef101e2f6b7d0c54f8a238587276bf030e808e0e0d",
+      "scripts/engineering/run_point01_m6_3_5_positive_sec_document_receipt_preflight.py": "c7475bc703014658faf94dcbb633912856774e65a00847c7a3ae0aecac487aa3",
+      "src/sec_agent/canonical_runtime/bounded_sec_document_execution.py": "4306390fc3e7549ed770e5583503f1294f5cd910247cca6daff55264ae8045f0",
+      "src/sec_agent/canonical_runtime/budget_control.py": "42cae08ff0ff9de40951df420da0fe58411bc8b2185c1a3702c3ed464609b25c",
+      "src/sec_agent/canonical_runtime/capability_security.py": "433eb90bf5db82223d7794a7d5c0fedbbf06e8c35c6b415bf9c07c1da7be90e6",
+      "src/sec_agent/canonical_runtime/m6_pilot_global_approval.py": "7f0b2fbc5b25df7778a1a45256d6be05e2ae4f4cffa92fd10ca3f16b17fea452",
+      "src/sec_agent/canonical_runtime/m6_pilot_package.py": "0992796528e352b9bef3bebb56050d918f0b424887a27d1e1e3623d8fcb9b49f",
+      "src/sec_agent/canonical_runtime/store.py": "a237b93f53f83df9f30873631826f632e33515bf4db4b9dca186e679fa499f31",
+      "tests/contract/test_point01_m6_3_5_actual_shape_parser_gate.py": "bf5ec0807d0ad9e7b4582811c4623a97d9aba7dd7f58a6f51aa0bbb2f1fc084a",
+      "tests/contract/test_point01_m6_3_5_positive_sec_document_execution.py": "4a82ab2d67a26c3b193fd374dc0e5076e63d4494c05dbad24c0bd1370374d1d2",
+      "tests/contract/test_point01_m6_3_5_positive_sec_document_pilot_design.py": "89eacce33cb7d016f875f6fae6ca47203c98c231542b5ee2ec2d90813bfef3ab",
+      "tests/contract/test_point01_m6_3_5_positive_sec_document_receipt_preflight.py": "8adc06018cd48c1ae25d93c2114b949cf066dd133bef2606cf70049e02b3a792",
+      "tests/fixtures/point01_m6_3_5_incident_transport_isolation_fixture.json": "e777253996a38c98e057f9a57a397e18b4ed2a94dec2973fd64a95d10073c952",
+      "tests/fixtures/point01_m6_3_5_nvda_10k_actual_shape_sanitized.html": "54fc9e3a10259431e4760f861756b3df11f8d3005384ad8b679553482dadb0f9"
+    },
+    "manifest_digest": "18f510b0a0adb20b9e56b6f4d55498728dea0928f9b0f0c3cb3537085fc7e6ea",
+    "package_digest": "724bb947df735fc5392c038a978bdc6135a434baad66538b747b43279fe2cd0c",
+    "package_ref": "point01-m6-3-5-nvda-10k-positive-retrieval-parser-package-v4-incident-isolation-refreeze"
+  },
+  "approval_ref": "approve_m6_3_5_single_sec_document_positive_retrieval_parser_pilot_only",
+  "authority_boundary": {
+    "business_case_mutation": false,
+    "evidence_promotion": false,
+    "legacy_authority_change": false,
+    "live_send_authorized": false,
+    "max_external_calls": 1,
+    "max_fallback_calls": 0,
+    "max_retry_calls": 0,
+    "old_m6_2_receipt_reusable": false,
+    "old_user_agent_authority_reusable": false,
+    "raw_document_persistence": false,
+    "reviewer_blind_oracle_runtime_input": false,
+    "writer_domain_judgment_m6_7_full_chain": false
+  },
+  "execution_state": "incident_remediated_refrozen_pending_total_reviewer",
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_global_one_shot_authority_policy_v1_0.json": "a90010daf54b011a8ee2fd838a002e47f676271d225c536dea5d24b21ebe92ec",
+    "configs/engineering_handoff/point01_m6_3_5_positive_sec_document_pilot_policy_v1_0.json": "d6d1ea1f53584b656628317836683b7323ec104864a1d0e13717676128cabd3f",
+    "scripts/engineering/run_point01_m6_3_5_positive_sec_document_pilot.py": "834da1f1280fb1b99e1daca4de06c821af5c3b6d871aa91739cbfa546844098b",
+    "src/sec_agent/canonical_runtime/bounded_sec_document_execution.py": "4306390fc3e7549ed770e5583503f1294f5cd910247cca6daff55264ae8045f0"
+  },
+  "fixed_target": {
+    "accession_number": "0001045810-25-000023",
+    "cik": "0001045810",
+    "exact_path": "/Archives/edgar/data/1045810/000104581025000023/nvda-20250126.htm",
+    "form_type": "10-K",
+    "report_period": "2025-01-26",
+    "selector_digest": "5c6a409341adf449fd2cdd29ce374f8fa92716600d026c42fb080e088914f689"
+  },
+  "generated_at": "2026-07-13T12:49:42.630050+00:00",
+  "global_approval_id": "approval_point01_m6_3_5_nvda_10k_incident_isolation_refreeze_global_one_shot",
+  "global_approval_store_relative_path": ".runtime_control/point01_m6_3_5_nvda_sec_document_parser_repaired_global_approval",
+  "numeric_fact_count": 0,
+  "parser_execution_count": 0,
+  "plan": {
+    "plan_digest": "b3c8fadec20f85efa0804927baddc83bc0c9cde5f41b2a0a4133d6b28877ce06",
+    "plan_id": "tool_selection_plan_b3c8fadec20f85efa080",
+    "registry_snapshot_digest": "9341d50c06eb7706517fb32fac7dbd46637399ed70b22ecb8ad1146f83c7103c",
+    "registry_snapshot_id": "point01-m6-3-5-positive-sec-document-registry:v1"
+  },
+  "reason": "deterministic_package_freeze_no_authority_store_or_transport_access",
+  "request": {
+    "request_digest": "e83770a65b15b0c1f068d5e58ce84991fb6dadf2782cf7415d177de1e383a0d2",
+    "request_id": "evidence_request_e83770a65b15b0c1f068"
+  },
+  "result_version": "finsight_point01_m6_3_5_positive_sec_document_package_freeze_result_v1_0",
+  "scope": "single_exact_nvda_10k_sec_archives_document_incident_isolation_refreeze_only",
+  "scope_digest": "db2da6cf08a16d69636f61c680263440a6b7d7bd2d1f5f1a3c72d11b0362faf6",
+  "status": "incident_remediated_refrozen_pending_total_reviewer",
+  "store_write_count": 0,
+  "tool_invocation_count": 0
+}

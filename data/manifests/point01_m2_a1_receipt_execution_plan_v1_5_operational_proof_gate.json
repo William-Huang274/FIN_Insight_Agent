@@ -1,0 +1,27 @@
+{
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "approval": 0,
+    "ledger": 0,
+    "model": 0,
+    "namespace": 0,
+    "network": 0,
+    "provider": 0,
+    "receipt": 0,
+    "store_write": 0,
+    "tool": 0
+  },
+  "gate_digest": "ebf6d5ce24386f8bd521a51f00575931a213c7a3233a90adbfd8cf199a0aaeb0",
+  "next_step": "independent_review_required_no_active_authority",
+  "package_digest": "36d39bf4d7d3cf39c32bc96d8027c922514f54d0eb7e4ef64ea0b98bd9f17ac8",
+  "package_ref": "point01-m2-a1-b0-5-operational-proof-package-v2-8",
+  "result_version": "finsight_point01_m2_a1_v2_8_plan_freeze_gate_v1",
+  "status": "pass",
+  "target_digest": "f2cff5864bdc993d93f61b302df13921dc80a20127226b7716b51c472ee56627",
+  "verification": {
+    "calculated_plan_digest": "f2cff5864bdc993d93f61b302df13921dc80a20127226b7716b51c472ee56627",
+    "scenario_count": 16,
+    "status": "pass"
+  }
+}

@@ -1,0 +1,3484 @@
+{
+  "assemblies": {
+    "v1": {
+      "bundle_validation_status": "pass",
+      "cell_count": 10,
+      "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+      "envelope": {
+        "bundle": {
+          "cells": [
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_190936130b470ed27e14",
+              "cell_version": 1,
+              "cell_version_id": "cell_190936130b470ed27e14:v1",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "Universal material question 4",
+              "dependency_cell_ids": [
+                "cell_4bcbe6a520b953e06077"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "risk_counterevidence_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_29d7d185fbb303a5f364",
+              "cell_version": 1,
+              "cell_version_id": "cell_29d7d185fbb303a5f364:v1",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "ai_semis material question 2",
+              "dependency_cell_ids": [
+                "cell_ffa41e3fa35d5850ea36"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "product_industry_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_2e273ce3018cdc27e42b",
+              "cell_version": 1,
+              "cell_version_id": "cell_2e273ce3018cdc27e42b:v1",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "ai_semis material question 4 [monetization]",
+              "dependency_cell_ids": [
+                "cell_8d92328d1f56ab45bfe6"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "risk_counterevidence_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_2ef88aa2f6741a3d0756",
+              "cell_version": 1,
+              "cell_version_id": "cell_2ef88aa2f6741a3d0756:v1",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "Universal material question 0",
+              "dependency_cell_ids": [],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "research_lead",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_4bcbe6a520b953e06077",
+              "cell_version": 1,
+              "cell_version_id": "cell_4bcbe6a520b953e06077:v1",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "Universal material question 3",
+              "dependency_cell_ids": [
+                "cell_59f77092c55c886d6a9e"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "capital_market_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_59f77092c55c886d6a9e",
+              "cell_version": 1,
+              "cell_version_id": "cell_59f77092c55c886d6a9e:v1",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "Universal material question 2",
+              "dependency_cell_ids": [
+                "cell_6632bbd9c5d6ce0e633f"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "product_industry_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_6632bbd9c5d6ce0e633f",
+              "cell_version": 1,
+              "cell_version_id": "cell_6632bbd9c5d6ce0e633f:v1",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "Universal material question 1",
+              "dependency_cell_ids": [
+                "cell_2ef88aa2f6741a3d0756"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "fundamental_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_8d92328d1f56ab45bfe6",
+              "cell_version": 1,
+              "cell_version_id": "cell_8d92328d1f56ab45bfe6:v1",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "ai_semis material question 3",
+              "dependency_cell_ids": [
+                "cell_29d7d185fbb303a5f364"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "capital_market_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_aa9c1fca23bee988e74b",
+              "cell_version": 1,
+              "cell_version_id": "cell_aa9c1fca23bee988e74b:v1",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "ai_semis material question 4 [demand]",
+              "dependency_cell_ids": [
+                "cell_8d92328d1f56ab45bfe6"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "risk_counterevidence_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_ffa41e3fa35d5850ea36",
+              "cell_version": 1,
+              "cell_version_id": "cell_ffa41e3fa35d5850ea36:v1",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "ai_semis material question 1",
+              "dependency_cell_ids": [
+                "cell_190936130b470ed27e14"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "fundamental_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            }
+          ],
+          "compiler_observations": [
+            {
+              "message": "M2.2 deterministic envelope assembled without model, external evidence retrieval or authority change.",
+              "observation_type": "full_serializer",
+              "refs": [
+                "5f3047095c394c70181078d1f22d82ae6812658b9d8b2f1681744b51e598ef55",
+                "f19c9d57b8bd4137e88e061ab541edd765139fb4dcac01370e129a2add18818c",
+                "e86c304bd86ed86e10c720dfc2d162e143ebdc4b37d2b9b429a2df3eb8874eae",
+                "873ee52c89631857792e54ed0f21e88640e4aa542dc2a01c1ab30fe3664373df"
+              ]
+            }
+          ],
+          "contract": {
+            "actor_snapshot_ref": "actor-m2-2",
+            "as_of": "2026-07-12T00:00:00Z",
+            "case_id": "case-ai-semiconductor",
+            "causation_event_id": null,
+            "compiler_policy_ref": "point01-m2-1-compiler-policy-v1",
+            "content_digest": "",
+            "contract_id": "contract-m2-2-case-ai-semiconductor",
+            "contract_version": 1,
+            "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+            "correlation_id": "correlation-m2-2-ai_semis",
+            "created_at": "2026-07-12T00:00:00Z",
+            "current_status": "shadow_created",
+            "data_classification": "internal",
+            "language": "en",
+            "permission_snapshot_ref": "permission-m2-2",
+            "policy_config_refs": [
+              "point01-m2-1-compiler-policy-v1",
+              "point01-m2-2-full-serializer-policy-v1"
+            ],
+            "project_id": "project-m2-2",
+            "query": "Semiconductor accelerator initiation",
+            "recorded_at": "2026-07-12T00:00:00Z",
+            "report_type_pack_refs": [
+              "report-initiation:v1"
+            ],
+            "required_cell_ids": [
+              "cell_ffa41e3fa35d5850ea36",
+              "cell_29d7d185fbb303a5f364",
+              "cell_8d92328d1f56ab45bfe6",
+              "cell_aa9c1fca23bee988e74b",
+              "cell_2e273ce3018cdc27e42b",
+              "cell_2ef88aa2f6741a3d0756",
+              "cell_6632bbd9c5d6ce0e633f",
+              "cell_59f77092c55c886d6a9e",
+              "cell_4bcbe6a520b953e06077",
+              "cell_190936130b470ed27e14"
+            ],
+            "retention_class": "institutional_audit",
+            "schema_version": "finsight_point01_canonical_runtime_v1_0",
+            "sector_pack_refs": [
+              "sector-ai_semis:v1"
+            ],
+            "supersedes_version_id": null,
+            "tenant_id": "tenant-m2-2",
+            "universal_pack_refs": [
+              "universal-core:v1"
+            ],
+            "universe": [
+              "AAA"
+            ]
+          },
+          "gaps": [
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_2ef88aa2f6741a3d0756:v1",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "gap_id": "gap_64dda04a7073427b80b1",
+              "gap_type": "parser_gap",
+              "gap_version": 1,
+              "gap_version_id": "gap_64dda04a7073427b80b1:v1",
+              "materiality": "high",
+              "next_action": "repair or add parser route before accepting an exact fact",
+              "owner_suggestion": "fundamental_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "reason": "parser unavailable for official_first",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version_id": "slot_9120b1acd0fc627e786b:v1",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            }
+          ],
+          "slots": [
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_8d92328d1f56ab45bfe6:v1",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_076d695d242591b2a5fd",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "ai_semis_fact_3"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 1,
+              "slot_version_id": "slot_076d695d242591b2a5fd:v1",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_190936130b470ed27e14:v1",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_0b720e7c926f6ad9bb91",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "universal_fact_4"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 1,
+              "slot_version_id": "slot_0b720e7c926f6ad9bb91:v1",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_2e273ce3018cdc27e42b:v1",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_0c2c0c3b8443ad72c071",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "ai_semis_fact_4"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 1,
+              "slot_version_id": "slot_0c2c0c3b8443ad72c071:v1",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_6632bbd9c5d6ce0e633f:v1",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_42e4eb3094afb0302bb2",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "universal_fact_1"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 1,
+              "slot_version_id": "slot_42e4eb3094afb0302bb2:v1",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_4bcbe6a520b953e06077:v1",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_45fe528c20a4c803538b",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "universal_fact_3"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 1,
+              "slot_version_id": "slot_45fe528c20a4c803538b:v1",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_2ef88aa2f6741a3d0756:v1",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_48d291be90f2ba125177",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "universal_fact_0"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 1,
+              "slot_version_id": "slot_48d291be90f2ba125177:v1",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_aa9c1fca23bee988e74b:v1",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_7f979a13a91457dc65b6",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "ai_semis_fact_4"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 1,
+              "slot_version_id": "slot_7f979a13a91457dc65b6:v1",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_29d7d185fbb303a5f364:v1",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_813f60671cf4fda0e33a",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "ai_semis_fact_2"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 1,
+              "slot_version_id": "slot_813f60671cf4fda0e33a:v1",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_2ef88aa2f6741a3d0756:v1",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_9120b1acd0fc627e786b",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "ai_semis_extension_fact"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 1,
+              "slot_version_id": "slot_9120b1acd0fc627e786b:v1",
+              "source_policy_ref": "official_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_ffa41e3fa35d5850ea36:v1",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_a49fead818086a688c28",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "ai_semis_fact_1"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 1,
+              "slot_version_id": "slot_a49fead818086a688c28:v1",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_59f77092c55c886d6a9e:v1",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_cdb1a139c4461227c748",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "universal_fact_2"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 1,
+              "slot_version_id": "slot_cdb1a139c4461227c748:v1",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            }
+          ]
+        },
+        "composition": {
+          "case_id": "case-ai-semiconductor",
+          "cells": [
+            {
+              "cell_key": "ai_semis_1",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "ai_semis_fact_1": [
+                  "sector_slot_1"
+                ]
+              },
+              "origin_pack_refs": [
+                "sector-ai_semis:v1"
+              ],
+              "seed": {
+                "cell_key": "ai_semis_1",
+                "decision_question": "ai_semis material question 1",
+                "dependency_cell_keys": [
+                  "core_4"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "ai_semis_fact_1"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "fundamental_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "ai_semis_driver_1"
+              ]
+            },
+            {
+              "cell_key": "ai_semis_2",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "ai_semis_fact_2": [
+                  "sector_slot_2"
+                ]
+              },
+              "origin_pack_refs": [
+                "sector-ai_semis:v1"
+              ],
+              "seed": {
+                "cell_key": "ai_semis_2",
+                "decision_question": "ai_semis material question 2",
+                "dependency_cell_keys": [
+                  "ai_semis_1"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "ai_semis_fact_2"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "product_industry_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "ai_semis_driver_2"
+              ]
+            },
+            {
+              "cell_key": "ai_semis_3",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "ai_semis_fact_3": [
+                  "sector_slot_3"
+                ]
+              },
+              "origin_pack_refs": [
+                "sector-ai_semis:v1"
+              ],
+              "seed": {
+                "cell_key": "ai_semis_3",
+                "decision_question": "ai_semis material question 3",
+                "dependency_cell_keys": [
+                  "ai_semis_2"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "ai_semis_fact_3"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "capital_market_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "ai_semis_driver_3"
+              ]
+            },
+            {
+              "cell_key": "ai_semis_4__demand",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "ai_semis_fact_4": [
+                  "sector_slot_4"
+                ]
+              },
+              "origin_pack_refs": [
+                "sector-ai_semis:v1"
+              ],
+              "seed": {
+                "cell_key": "ai_semis_4__demand",
+                "decision_question": "ai_semis material question 4 [demand]",
+                "dependency_cell_keys": [
+                  "ai_semis_3"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "ai_semis_fact_4"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "risk_counterevidence_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "ai_semis_driver_4"
+              ]
+            },
+            {
+              "cell_key": "ai_semis_4__monetization",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "ai_semis_fact_4": [
+                  "sector_slot_4"
+                ]
+              },
+              "origin_pack_refs": [
+                "sector-ai_semis:v1"
+              ],
+              "seed": {
+                "cell_key": "ai_semis_4__monetization",
+                "decision_question": "ai_semis material question 4 [monetization]",
+                "dependency_cell_keys": [
+                  "ai_semis_3"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "ai_semis_fact_4"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "risk_counterevidence_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "ai_semis_driver_4"
+              ]
+            },
+            {
+              "cell_key": "core_0",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "ai_semis_extension_fact": [
+                  "sector_extension_slot"
+                ],
+                "universal_fact_0": [
+                  "universal_slot_0"
+                ]
+              },
+              "origin_pack_refs": [
+                "sector-ai_semis:v1",
+                "universal-core:v1"
+              ],
+              "seed": {
+                "cell_key": "core_0",
+                "decision_question": "Universal material question 0",
+                "dependency_cell_keys": [],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "ai_semis_extension_fact"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "official_first"
+                  },
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "universal_fact_0"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "research_lead",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "universal_driver_0"
+              ]
+            },
+            {
+              "cell_key": "core_1",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "universal_fact_1": [
+                  "universal_slot_1"
+                ]
+              },
+              "origin_pack_refs": [
+                "universal-core:v1"
+              ],
+              "seed": {
+                "cell_key": "core_1",
+                "decision_question": "Universal material question 1",
+                "dependency_cell_keys": [
+                  "core_0"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "universal_fact_1"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "fundamental_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "universal_driver_1"
+              ]
+            },
+            {
+              "cell_key": "core_2",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "universal_fact_2": [
+                  "universal_slot_2"
+                ]
+              },
+              "origin_pack_refs": [
+                "universal-core:v1"
+              ],
+              "seed": {
+                "cell_key": "core_2",
+                "decision_question": "Universal material question 2",
+                "dependency_cell_keys": [
+                  "core_1"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "universal_fact_2"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "product_industry_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "universal_driver_2"
+              ]
+            },
+            {
+              "cell_key": "core_3",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "universal_fact_3": [
+                  "universal_slot_3"
+                ]
+              },
+              "origin_pack_refs": [
+                "universal-core:v1"
+              ],
+              "seed": {
+                "cell_key": "core_3",
+                "decision_question": "Universal material question 3",
+                "dependency_cell_keys": [
+                  "core_2"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "universal_fact_3"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "capital_market_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "universal_driver_3"
+              ]
+            },
+            {
+              "cell_key": "core_4",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "universal_fact_4": [
+                  "universal_slot_4"
+                ]
+              },
+              "origin_pack_refs": [
+                "universal-core:v1"
+              ],
+              "seed": {
+                "cell_key": "core_4",
+                "decision_question": "Universal material question 4",
+                "dependency_cell_keys": [
+                  "core_3"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "universal_fact_4"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "risk_counterevidence_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "universal_driver_4"
+              ]
+            }
+          ],
+          "composition_digest": "f19c9d57b8bd4137e88e061ab541edd765139fb4dcac01370e129a2add18818c",
+          "external_call_count": 0,
+          "merged_archetype_ids": [
+            "sector-ai_semis-merge-core-0",
+            "universal-ai_semis-0"
+          ],
+          "model_call_count": 0,
+          "planning_authority": "shadow",
+          "split_cell_keys": [
+            "ai_semis_4__demand",
+            "ai_semis_4__monetization"
+          ]
+        },
+        "envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+        "envelope_version": "finsight_point01_decision_surface_artifact_envelope_v1",
+        "evidence_policy": {
+          "compilation_digest": "e86c304bd86ed86e10c720dfc2d162e143ebdc4b37d2b9b429a2df3eb8874eae",
+          "compiled_slots": [
+            {
+              "acceptance_role": "primary",
+              "cell_key": "ai_semis_1",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "sector_slot_1",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "ai_semis_2",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "sector_slot_2",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "ai_semis_3",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "sector_slot_3",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "ai_semis_4__demand",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "sector_slot_4",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "ai_semis_4__monetization",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "sector_slot_4",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "core_0",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "typed_gap",
+              "slot_key": "sector_extension_slot",
+              "source_policy_ref": "official_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "core_0",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "universal_slot_0",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "core_1",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "universal_slot_1",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "core_2",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "universal_slot_2",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "core_3",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "universal_slot_3",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "core_4",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "universal_slot_4",
+              "source_policy_ref": "issuer_first"
+            }
+          ],
+          "errors": [],
+          "external_call_count": 0,
+          "gaps": [
+            {
+              "cell_key": "core_0",
+              "gap_type": "parser_gap",
+              "materiality": "high",
+              "next_action": "repair or add parser route before accepting an exact fact",
+              "owner_suggestion": "fundamental_analyst",
+              "reason": "parser unavailable for official_first",
+              "slot_key": "sector_extension_slot"
+            }
+          ],
+          "model_call_count": 0,
+          "planning_authority": "shadow",
+          "sector": "ai_semis",
+          "status": "pass_with_typed_gaps"
+        },
+        "external_call_count": 0,
+        "legacy_migration_plan": {
+          "external_call_count": 0,
+          "information_loss_review": [
+            {
+              "action": "split",
+              "downgrade_reason": null,
+              "information_loss_tags": [
+                "legacy_question_split_into_mechanism_cells"
+              ],
+              "legacy_required_item_id": "legacy_unit_economics",
+              "target_cell_keys": [
+                "core_0",
+                "core_1"
+              ]
+            },
+            {
+              "action": "merge",
+              "downgrade_reason": null,
+              "information_loss_tags": [
+                "legacy_metric_not_direct_cell_equivalence"
+              ],
+              "legacy_required_item_id": "legacy_revenue",
+              "target_cell_keys": [
+                "core_2"
+              ]
+            },
+            {
+              "action": "merge",
+              "downgrade_reason": null,
+              "information_loss_tags": [
+                "legacy_metric_merged_with_financial_quality"
+              ],
+              "legacy_required_item_id": "legacy_cashflow",
+              "target_cell_keys": [
+                "core_2"
+              ]
+            },
+            {
+              "action": "downgrade",
+              "downgrade_reason": "legacy fact lookup is not an independent material DecisionCell",
+              "information_loss_tags": [
+                "legacy_fact_search_becomes_bounded_context"
+              ],
+              "legacy_required_item_id": "legacy_fact_search",
+              "target_cell_keys": []
+            }
+          ],
+          "legacy_identity_preserved": true,
+          "legacy_input_digest": "873ee52c89631857792e54ed0f21e88640e4aa542dc2a01c1ab30fe3664373df",
+          "legacy_required_item_ids": [
+            "legacy_unit_economics",
+            "legacy_revenue",
+            "legacy_cashflow",
+            "legacy_fact_search"
+          ],
+          "mappings": [
+            {
+              "action": "split",
+              "downgrade_reason": null,
+              "information_loss_tags": [
+                "legacy_question_split_into_mechanism_cells"
+              ],
+              "legacy_required_item_id": "legacy_unit_economics",
+              "target_cell_keys": [
+                "core_0",
+                "core_1"
+              ]
+            },
+            {
+              "action": "merge",
+              "downgrade_reason": null,
+              "information_loss_tags": [
+                "legacy_metric_not_direct_cell_equivalence"
+              ],
+              "legacy_required_item_id": "legacy_revenue",
+              "target_cell_keys": [
+                "core_2"
+              ]
+            },
+            {
+              "action": "merge",
+              "downgrade_reason": null,
+              "information_loss_tags": [
+                "legacy_metric_merged_with_financial_quality"
+              ],
+              "legacy_required_item_id": "legacy_cashflow",
+              "target_cell_keys": [
+                "core_2"
+              ]
+            },
+            {
+              "action": "downgrade",
+              "downgrade_reason": "legacy fact lookup is not an independent material DecisionCell",
+              "information_loss_tags": [
+                "legacy_fact_search_becomes_bounded_context"
+              ],
+              "legacy_required_item_id": "legacy_fact_search",
+              "target_cell_keys": []
+            }
+          ],
+          "model_call_count": 0,
+          "one_to_one_equivalence_count": 0,
+          "planning_authority": "legacy",
+          "policy_ref": "point01-m2-7-legacy-semantic-mapping-policy-v1"
+        },
+        "lineage_digest": "578f984a2e303d85219dc3427212b0a74258c1db3e8807c2737176c9a4aa4797",
+        "model_call_count": 0,
+        "pack_resolution_snapshot": {
+          "as_of": "2026-07-12T00:00:00Z",
+          "case_delta_pack_refs": [
+            "case-ai-semiconductor:v1"
+          ],
+          "report_type_pack_refs": [
+            "report-initiation:v1"
+          ],
+          "resolution_digest": "1d22da2c3107e8d0a58a2ded7e15704e6d3ad1da07c9a301964997c7e7425c76",
+          "resolved_source_authority_policy_refs": [
+            "case_delta_authority_policy",
+            "report_type_authority_policy",
+            "sector_authority_policy",
+            "universal_authority_policy"
+          ],
+          "sector_pack_refs": [
+            "sector-ai_semis:v1"
+          ],
+          "universal_pack_refs": [
+            "universal-core:v1"
+          ]
+        },
+        "pack_selection_decision": {
+          "conflicts": [],
+          "decision_digest": "5f3047095c394c70181078d1f22d82ae6812658b9d8b2f1681744b51e598ef55",
+          "model_call_count": 0,
+          "planning_authority": "shadow",
+          "reasons": [
+            {
+              "code": "explicit_sector",
+              "detail": "ai_semis"
+            },
+            {
+              "code": "explicit_report_type",
+              "detail": "initiation"
+            },
+            {
+              "code": "versioned_pack_resolution_selected",
+              "detail": "1d22da2c3107e8d0a58a2ded7e15704e6d3ad1da07c9a301964997c7e7425c76"
+            }
+          ],
+          "rejections": [],
+          "resolution": {
+            "as_of": "2026-07-12T00:00:00Z",
+            "case_delta_pack_refs": [
+              "case-ai-semiconductor:v1"
+            ],
+            "report_type_pack_refs": [
+              "report-initiation:v1"
+            ],
+            "resolution_digest": "1d22da2c3107e8d0a58a2ded7e15704e6d3ad1da07c9a301964997c7e7425c76",
+            "resolved_source_authority_policy_refs": [
+              "case_delta_authority_policy",
+              "report_type_authority_policy",
+              "sector_authority_policy",
+              "universal_authority_policy"
+            ],
+            "sector_pack_refs": [
+              "sector-ai_semis:v1"
+            ],
+            "universal_pack_refs": [
+              "universal-core:v1"
+            ]
+          },
+          "selected_report_type": "initiation",
+          "selected_sector": "ai_semis",
+          "status": "selected"
+        },
+        "planning_authority": "shadow",
+        "serializer_policy_ref": "point01-m2-2-full-serializer-policy-v1"
+      },
+      "external_call_count": 0,
+      "gap_count": 1,
+      "input_validation_status": "pass",
+      "model_call_count": 0,
+      "slot_count": 11
+    },
+    "v2": {
+      "bundle_validation_status": "pass",
+      "cell_count": 10,
+      "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+      "envelope": {
+        "bundle": {
+          "cells": [
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_190936130b470ed27e14",
+              "cell_version": 2,
+              "cell_version_id": "cell_190936130b470ed27e14:v2",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "Universal material question 4",
+              "dependency_cell_ids": [
+                "cell_4bcbe6a520b953e06077"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "risk_counterevidence_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_29d7d185fbb303a5f364",
+              "cell_version": 2,
+              "cell_version_id": "cell_29d7d185fbb303a5f364:v2",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "ai_semis material question 2",
+              "dependency_cell_ids": [
+                "cell_ffa41e3fa35d5850ea36"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "product_industry_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_2e273ce3018cdc27e42b",
+              "cell_version": 2,
+              "cell_version_id": "cell_2e273ce3018cdc27e42b:v2",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "ai_semis material question 4 [monetization]",
+              "dependency_cell_ids": [
+                "cell_8d92328d1f56ab45bfe6"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "risk_counterevidence_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_2ef88aa2f6741a3d0756",
+              "cell_version": 2,
+              "cell_version_id": "cell_2ef88aa2f6741a3d0756:v2",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "Universal material question 0",
+              "dependency_cell_ids": [],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "research_lead",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_4bcbe6a520b953e06077",
+              "cell_version": 2,
+              "cell_version_id": "cell_4bcbe6a520b953e06077:v2",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "Universal material question 3",
+              "dependency_cell_ids": [
+                "cell_59f77092c55c886d6a9e"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "capital_market_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_59f77092c55c886d6a9e",
+              "cell_version": 2,
+              "cell_version_id": "cell_59f77092c55c886d6a9e:v2",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "Universal material question 2",
+              "dependency_cell_ids": [
+                "cell_6632bbd9c5d6ce0e633f"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "product_industry_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_6632bbd9c5d6ce0e633f",
+              "cell_version": 2,
+              "cell_version_id": "cell_6632bbd9c5d6ce0e633f:v2",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "Universal material question 1",
+              "dependency_cell_ids": [
+                "cell_2ef88aa2f6741a3d0756"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "fundamental_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_8d92328d1f56ab45bfe6",
+              "cell_version": 2,
+              "cell_version_id": "cell_8d92328d1f56ab45bfe6:v2",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "ai_semis material question 3",
+              "dependency_cell_ids": [
+                "cell_29d7d185fbb303a5f364"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "capital_market_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_aa9c1fca23bee988e74b",
+              "cell_version": 2,
+              "cell_version_id": "cell_aa9c1fca23bee988e74b:v2",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "ai_semis material question 4 [demand]",
+              "dependency_cell_ids": [
+                "cell_8d92328d1f56ab45bfe6"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "risk_counterevidence_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_id": "cell_ffa41e3fa35d5850ea36",
+              "cell_version": 2,
+              "cell_version_id": "cell_ffa41e3fa35d5850ea36:v2",
+              "content_digest": "",
+              "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "decision_question": "ai_semis material question 1",
+              "dependency_cell_ids": [
+                "cell_190936130b470ed27e14"
+              ],
+              "materiality": "high",
+              "origin_type": "pack_composition",
+              "owner_role": "fundamental_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "stop_rule": "accepted primary route or typed gap",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            }
+          ],
+          "compiler_observations": [
+            {
+              "message": "M2.2 deterministic envelope assembled without model, external evidence retrieval or authority change.",
+              "observation_type": "full_serializer",
+              "refs": [
+                "5f3047095c394c70181078d1f22d82ae6812658b9d8b2f1681744b51e598ef55",
+                "f19c9d57b8bd4137e88e061ab541edd765139fb4dcac01370e129a2add18818c",
+                "e86c304bd86ed86e10c720dfc2d162e143ebdc4b37d2b9b429a2df3eb8874eae",
+                "873ee52c89631857792e54ed0f21e88640e4aa542dc2a01c1ab30fe3664373df"
+              ]
+            }
+          ],
+          "contract": {
+            "actor_snapshot_ref": "actor-m2-2",
+            "as_of": "2026-07-12T00:00:00Z",
+            "case_id": "case-ai-semiconductor",
+            "causation_event_id": null,
+            "compiler_policy_ref": "point01-m2-1-compiler-policy-v1",
+            "content_digest": "",
+            "contract_id": "contract-m2-2-case-ai-semiconductor",
+            "contract_version": 2,
+            "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+            "correlation_id": "correlation-m2-2-ai_semis",
+            "created_at": "2026-07-12T00:00:00Z",
+            "current_status": "shadow_created",
+            "data_classification": "internal",
+            "language": "en",
+            "permission_snapshot_ref": "permission-m2-2",
+            "policy_config_refs": [
+              "point01-m2-1-compiler-policy-v1",
+              "point01-m2-2-full-serializer-policy-v1"
+            ],
+            "project_id": "project-m2-2",
+            "query": "Semiconductor accelerator initiation",
+            "recorded_at": "2026-07-12T00:00:00Z",
+            "report_type_pack_refs": [
+              "report-initiation:v1"
+            ],
+            "required_cell_ids": [
+              "cell_ffa41e3fa35d5850ea36",
+              "cell_29d7d185fbb303a5f364",
+              "cell_8d92328d1f56ab45bfe6",
+              "cell_aa9c1fca23bee988e74b",
+              "cell_2e273ce3018cdc27e42b",
+              "cell_2ef88aa2f6741a3d0756",
+              "cell_6632bbd9c5d6ce0e633f",
+              "cell_59f77092c55c886d6a9e",
+              "cell_4bcbe6a520b953e06077",
+              "cell_190936130b470ed27e14"
+            ],
+            "retention_class": "institutional_audit",
+            "schema_version": "finsight_point01_canonical_runtime_v1_0",
+            "sector_pack_refs": [
+              "sector-ai_semis:v1"
+            ],
+            "supersedes_version_id": null,
+            "tenant_id": "tenant-m2-2",
+            "universal_pack_refs": [
+              "universal-core:v1"
+            ],
+            "universe": [
+              "AAA"
+            ]
+          },
+          "gaps": [
+            {
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_2ef88aa2f6741a3d0756:v2",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "gap_id": "gap_64dda04a7073427b80b1",
+              "gap_type": "parser_gap",
+              "gap_version": 2,
+              "gap_version_id": "gap_64dda04a7073427b80b1:v2",
+              "materiality": "high",
+              "next_action": "repair or add parser route before accepting an exact fact",
+              "owner_suggestion": "fundamental_analyst",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "reason": "parser unavailable for official_first",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version_id": "slot_9120b1acd0fc627e786b:v2",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            }
+          ],
+          "slots": [
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_8d92328d1f56ab45bfe6:v2",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_076d695d242591b2a5fd",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "ai_semis_fact_3"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 2,
+              "slot_version_id": "slot_076d695d242591b2a5fd:v2",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_190936130b470ed27e14:v2",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_0b720e7c926f6ad9bb91",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "universal_fact_4"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 2,
+              "slot_version_id": "slot_0b720e7c926f6ad9bb91:v2",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_2e273ce3018cdc27e42b:v2",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_0c2c0c3b8443ad72c071",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "ai_semis_fact_4"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 2,
+              "slot_version_id": "slot_0c2c0c3b8443ad72c071:v2",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_6632bbd9c5d6ce0e633f:v2",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_42e4eb3094afb0302bb2",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "universal_fact_1"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 2,
+              "slot_version_id": "slot_42e4eb3094afb0302bb2:v2",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_4bcbe6a520b953e06077:v2",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_45fe528c20a4c803538b",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "universal_fact_3"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 2,
+              "slot_version_id": "slot_45fe528c20a4c803538b:v2",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_2ef88aa2f6741a3d0756:v2",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_48d291be90f2ba125177",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "universal_fact_0"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 2,
+              "slot_version_id": "slot_48d291be90f2ba125177:v2",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_aa9c1fca23bee988e74b:v2",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_7f979a13a91457dc65b6",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "ai_semis_fact_4"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 2,
+              "slot_version_id": "slot_7f979a13a91457dc65b6:v2",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_29d7d185fbb303a5f364:v2",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_813f60671cf4fda0e33a",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "ai_semis_fact_2"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 2,
+              "slot_version_id": "slot_813f60671cf4fda0e33a:v2",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_2ef88aa2f6741a3d0756:v2",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_9120b1acd0fc627e786b",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "ai_semis_extension_fact"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 2,
+              "slot_version_id": "slot_9120b1acd0fc627e786b:v2",
+              "source_policy_ref": "official_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_ffa41e3fa35d5850ea36:v2",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_a49fead818086a688c28",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "ai_semis_fact_1"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 2,
+              "slot_version_id": "slot_a49fead818086a688c28:v2",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            },
+            {
+              "acceptance_role": "primary",
+              "actor_snapshot_ref": "actor-m2-2",
+              "case_id": "case-ai-semiconductor",
+              "causation_event_id": null,
+              "cell_version_id": "cell_59f77092c55c886d6a9e:v2",
+              "content_digest": "",
+              "correlation_id": "correlation-m2-2-ai_semis",
+              "created_at": "2026-07-12T00:00:00Z",
+              "current_status": "shadow_created",
+              "data_classification": "internal",
+              "entity_scope": [
+                "AAA"
+              ],
+              "evidence_role": "issuer_metric",
+              "evidence_slot_id": "slot_cdb1a139c4461227c748",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "metric_scope": [
+                "universal_fact_2"
+              ],
+              "period_scope": "latest_fiscal_period",
+              "permission_snapshot_ref": "permission-m2-2",
+              "policy_config_refs": [
+                "point01-m2-1-compiler-policy-v1",
+                "point01-m2-2-full-serializer-policy-v1"
+              ],
+              "project_id": "project-m2-2",
+              "recorded_at": "2026-07-12T00:00:00Z",
+              "required": true,
+              "retention_class": "institutional_audit",
+              "schema_version": "finsight_point01_canonical_runtime_v1_0",
+              "slot_version": 2,
+              "slot_version_id": "slot_cdb1a139c4461227c748:v2",
+              "source_policy_ref": "issuer_first",
+              "supersedes_version_id": null,
+              "tenant_id": "tenant-m2-2"
+            }
+          ]
+        },
+        "composition": {
+          "case_id": "case-ai-semiconductor",
+          "cells": [
+            {
+              "cell_key": "ai_semis_1",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "ai_semis_fact_1": [
+                  "sector_slot_1"
+                ]
+              },
+              "origin_pack_refs": [
+                "sector-ai_semis:v1"
+              ],
+              "seed": {
+                "cell_key": "ai_semis_1",
+                "decision_question": "ai_semis material question 1",
+                "dependency_cell_keys": [
+                  "core_4"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "ai_semis_fact_1"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "fundamental_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "ai_semis_driver_1"
+              ]
+            },
+            {
+              "cell_key": "ai_semis_2",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "ai_semis_fact_2": [
+                  "sector_slot_2"
+                ]
+              },
+              "origin_pack_refs": [
+                "sector-ai_semis:v1"
+              ],
+              "seed": {
+                "cell_key": "ai_semis_2",
+                "decision_question": "ai_semis material question 2",
+                "dependency_cell_keys": [
+                  "ai_semis_1"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "ai_semis_fact_2"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "product_industry_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "ai_semis_driver_2"
+              ]
+            },
+            {
+              "cell_key": "ai_semis_3",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "ai_semis_fact_3": [
+                  "sector_slot_3"
+                ]
+              },
+              "origin_pack_refs": [
+                "sector-ai_semis:v1"
+              ],
+              "seed": {
+                "cell_key": "ai_semis_3",
+                "decision_question": "ai_semis material question 3",
+                "dependency_cell_keys": [
+                  "ai_semis_2"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "ai_semis_fact_3"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "capital_market_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "ai_semis_driver_3"
+              ]
+            },
+            {
+              "cell_key": "ai_semis_4__demand",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "ai_semis_fact_4": [
+                  "sector_slot_4"
+                ]
+              },
+              "origin_pack_refs": [
+                "sector-ai_semis:v1"
+              ],
+              "seed": {
+                "cell_key": "ai_semis_4__demand",
+                "decision_question": "ai_semis material question 4 [demand]",
+                "dependency_cell_keys": [
+                  "ai_semis_3"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "ai_semis_fact_4"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "risk_counterevidence_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "ai_semis_driver_4"
+              ]
+            },
+            {
+              "cell_key": "ai_semis_4__monetization",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "ai_semis_fact_4": [
+                  "sector_slot_4"
+                ]
+              },
+              "origin_pack_refs": [
+                "sector-ai_semis:v1"
+              ],
+              "seed": {
+                "cell_key": "ai_semis_4__monetization",
+                "decision_question": "ai_semis material question 4 [monetization]",
+                "dependency_cell_keys": [
+                  "ai_semis_3"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "ai_semis_fact_4"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "risk_counterevidence_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "ai_semis_driver_4"
+              ]
+            },
+            {
+              "cell_key": "core_0",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "ai_semis_extension_fact": [
+                  "sector_extension_slot"
+                ],
+                "universal_fact_0": [
+                  "universal_slot_0"
+                ]
+              },
+              "origin_pack_refs": [
+                "sector-ai_semis:v1",
+                "universal-core:v1"
+              ],
+              "seed": {
+                "cell_key": "core_0",
+                "decision_question": "Universal material question 0",
+                "dependency_cell_keys": [],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "ai_semis_extension_fact"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "official_first"
+                  },
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "universal_fact_0"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "research_lead",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "universal_driver_0"
+              ]
+            },
+            {
+              "cell_key": "core_1",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "universal_fact_1": [
+                  "universal_slot_1"
+                ]
+              },
+              "origin_pack_refs": [
+                "universal-core:v1"
+              ],
+              "seed": {
+                "cell_key": "core_1",
+                "decision_question": "Universal material question 1",
+                "dependency_cell_keys": [
+                  "core_0"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "universal_fact_1"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "fundamental_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "universal_driver_1"
+              ]
+            },
+            {
+              "cell_key": "core_2",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "universal_fact_2": [
+                  "universal_slot_2"
+                ]
+              },
+              "origin_pack_refs": [
+                "universal-core:v1"
+              ],
+              "seed": {
+                "cell_key": "core_2",
+                "decision_question": "Universal material question 2",
+                "dependency_cell_keys": [
+                  "core_1"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "universal_fact_2"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "product_industry_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "universal_driver_2"
+              ]
+            },
+            {
+              "cell_key": "core_3",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "universal_fact_3": [
+                  "universal_slot_3"
+                ]
+              },
+              "origin_pack_refs": [
+                "universal-core:v1"
+              ],
+              "seed": {
+                "cell_key": "core_3",
+                "decision_question": "Universal material question 3",
+                "dependency_cell_keys": [
+                  "core_2"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "universal_fact_3"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "capital_market_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "universal_driver_3"
+              ]
+            },
+            {
+              "cell_key": "core_4",
+              "counterevidence_owner_role": "risk_counterevidence_analyst",
+              "fact_to_slot_keys": {
+                "universal_fact_4": [
+                  "universal_slot_4"
+                ]
+              },
+              "origin_pack_refs": [
+                "universal-core:v1"
+              ],
+              "seed": {
+                "cell_key": "core_4",
+                "decision_question": "Universal material question 4",
+                "dependency_cell_keys": [
+                  "core_3"
+                ],
+                "evidence_slots": [
+                  {
+                    "acceptance_role": "primary",
+                    "entity_scope": [
+                      "AAA"
+                    ],
+                    "evidence_role": "issuer_metric",
+                    "forbidden_substitutions": [
+                      "unbounded_proxy",
+                      "relationship_graph_only"
+                    ],
+                    "metric_scope": [
+                      "universal_fact_4"
+                    ],
+                    "period_scope": "latest_fiscal_period",
+                    "required": true,
+                    "source_policy_ref": "issuer_first"
+                  }
+                ],
+                "materiality": "high",
+                "origin_type": "pack_composition",
+                "owner_role": "risk_counterevidence_analyst",
+                "stop_rule": "accepted primary route or typed gap"
+              },
+              "what_would_change": [
+                "universal_driver_4"
+              ]
+            }
+          ],
+          "composition_digest": "f19c9d57b8bd4137e88e061ab541edd765139fb4dcac01370e129a2add18818c",
+          "external_call_count": 0,
+          "merged_archetype_ids": [
+            "sector-ai_semis-merge-core-0",
+            "universal-ai_semis-0"
+          ],
+          "model_call_count": 0,
+          "planning_authority": "shadow",
+          "split_cell_keys": [
+            "ai_semis_4__demand",
+            "ai_semis_4__monetization"
+          ]
+        },
+        "envelope_digest": "2f61cb80e34b72a76279d3c9a1b617ac98d09fd80ee4779b189f66a1509ce0f2",
+        "envelope_version": "finsight_point01_decision_surface_artifact_envelope_v1",
+        "evidence_policy": {
+          "compilation_digest": "e86c304bd86ed86e10c720dfc2d162e143ebdc4b37d2b9b429a2df3eb8874eae",
+          "compiled_slots": [
+            {
+              "acceptance_role": "primary",
+              "cell_key": "ai_semis_1",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "sector_slot_1",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "ai_semis_2",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "sector_slot_2",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "ai_semis_3",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "sector_slot_3",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "ai_semis_4__demand",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "sector_slot_4",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "ai_semis_4__monetization",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "sector_slot_4",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "core_0",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "typed_gap",
+              "slot_key": "sector_extension_slot",
+              "source_policy_ref": "official_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "core_0",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "universal_slot_0",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "core_1",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "universal_slot_1",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "core_2",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "universal_slot_2",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "core_3",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "universal_slot_3",
+              "source_policy_ref": "issuer_first"
+            },
+            {
+              "acceptance_role": "primary",
+              "cell_key": "core_4",
+              "evidence_role": "issuer_metric",
+              "forbidden_substitutions": [
+                "unbounded_proxy",
+                "relationship_graph_only"
+              ],
+              "resolution_status": "ready",
+              "slot_key": "universal_slot_4",
+              "source_policy_ref": "issuer_first"
+            }
+          ],
+          "errors": [],
+          "external_call_count": 0,
+          "gaps": [
+            {
+              "cell_key": "core_0",
+              "gap_type": "parser_gap",
+              "materiality": "high",
+              "next_action": "repair or add parser route before accepting an exact fact",
+              "owner_suggestion": "fundamental_analyst",
+              "reason": "parser unavailable for official_first",
+              "slot_key": "sector_extension_slot"
+            }
+          ],
+          "model_call_count": 0,
+          "planning_authority": "shadow",
+          "sector": "ai_semis",
+          "status": "pass_with_typed_gaps"
+        },
+        "external_call_count": 0,
+        "legacy_migration_plan": {
+          "external_call_count": 0,
+          "information_loss_review": [
+            {
+              "action": "split",
+              "downgrade_reason": null,
+              "information_loss_tags": [
+                "legacy_question_split_into_mechanism_cells"
+              ],
+              "legacy_required_item_id": "legacy_unit_economics",
+              "target_cell_keys": [
+                "core_0",
+                "core_1"
+              ]
+            },
+            {
+              "action": "merge",
+              "downgrade_reason": null,
+              "information_loss_tags": [
+                "legacy_metric_not_direct_cell_equivalence"
+              ],
+              "legacy_required_item_id": "legacy_revenue",
+              "target_cell_keys": [
+                "core_2"
+              ]
+            },
+            {
+              "action": "merge",
+              "downgrade_reason": null,
+              "information_loss_tags": [
+                "legacy_metric_merged_with_financial_quality"
+              ],
+              "legacy_required_item_id": "legacy_cashflow",
+              "target_cell_keys": [
+                "core_2"
+              ]
+            },
+            {
+              "action": "downgrade",
+              "downgrade_reason": "legacy fact lookup is not an independent material DecisionCell",
+              "information_loss_tags": [
+                "legacy_fact_search_becomes_bounded_context"
+              ],
+              "legacy_required_item_id": "legacy_fact_search",
+              "target_cell_keys": []
+            }
+          ],
+          "legacy_identity_preserved": true,
+          "legacy_input_digest": "873ee52c89631857792e54ed0f21e88640e4aa542dc2a01c1ab30fe3664373df",
+          "legacy_required_item_ids": [
+            "legacy_unit_economics",
+            "legacy_revenue",
+            "legacy_cashflow",
+            "legacy_fact_search"
+          ],
+          "mappings": [
+            {
+              "action": "split",
+              "downgrade_reason": null,
+              "information_loss_tags": [
+                "legacy_question_split_into_mechanism_cells"
+              ],
+              "legacy_required_item_id": "legacy_unit_economics",
+              "target_cell_keys": [
+                "core_0",
+                "core_1"
+              ]
+            },
+            {
+              "action": "merge",
+              "downgrade_reason": null,
+              "information_loss_tags": [
+                "legacy_metric_not_direct_cell_equivalence"
+              ],
+              "legacy_required_item_id": "legacy_revenue",
+              "target_cell_keys": [
+                "core_2"
+              ]
+            },
+            {
+              "action": "merge",
+              "downgrade_reason": null,
+              "information_loss_tags": [
+                "legacy_metric_merged_with_financial_quality"
+              ],
+              "legacy_required_item_id": "legacy_cashflow",
+              "target_cell_keys": [
+                "core_2"
+              ]
+            },
+            {
+              "action": "downgrade",
+              "downgrade_reason": "legacy fact lookup is not an independent material DecisionCell",
+              "information_loss_tags": [
+                "legacy_fact_search_becomes_bounded_context"
+              ],
+              "legacy_required_item_id": "legacy_fact_search",
+              "target_cell_keys": []
+            }
+          ],
+          "model_call_count": 0,
+          "one_to_one_equivalence_count": 0,
+          "planning_authority": "legacy",
+          "policy_ref": "point01-m2-7-legacy-semantic-mapping-policy-v1"
+        },
+        "lineage_digest": "578f984a2e303d85219dc3427212b0a74258c1db3e8807c2737176c9a4aa4797",
+        "model_call_count": 0,
+        "pack_resolution_snapshot": {
+          "as_of": "2026-07-12T00:00:00Z",
+          "case_delta_pack_refs": [
+            "case-ai-semiconductor:v1"
+          ],
+          "report_type_pack_refs": [
+            "report-initiation:v1"
+          ],
+          "resolution_digest": "1d22da2c3107e8d0a58a2ded7e15704e6d3ad1da07c9a301964997c7e7425c76",
+          "resolved_source_authority_policy_refs": [
+            "case_delta_authority_policy",
+            "report_type_authority_policy",
+            "sector_authority_policy",
+            "universal_authority_policy"
+          ],
+          "sector_pack_refs": [
+            "sector-ai_semis:v1"
+          ],
+          "universal_pack_refs": [
+            "universal-core:v1"
+          ]
+        },
+        "pack_selection_decision": {
+          "conflicts": [],
+          "decision_digest": "5f3047095c394c70181078d1f22d82ae6812658b9d8b2f1681744b51e598ef55",
+          "model_call_count": 0,
+          "planning_authority": "shadow",
+          "reasons": [
+            {
+              "code": "explicit_sector",
+              "detail": "ai_semis"
+            },
+            {
+              "code": "explicit_report_type",
+              "detail": "initiation"
+            },
+            {
+              "code": "versioned_pack_resolution_selected",
+              "detail": "1d22da2c3107e8d0a58a2ded7e15704e6d3ad1da07c9a301964997c7e7425c76"
+            }
+          ],
+          "rejections": [],
+          "resolution": {
+            "as_of": "2026-07-12T00:00:00Z",
+            "case_delta_pack_refs": [
+              "case-ai-semiconductor:v1"
+            ],
+            "report_type_pack_refs": [
+              "report-initiation:v1"
+            ],
+            "resolution_digest": "1d22da2c3107e8d0a58a2ded7e15704e6d3ad1da07c9a301964997c7e7425c76",
+            "resolved_source_authority_policy_refs": [
+              "case_delta_authority_policy",
+              "report_type_authority_policy",
+              "sector_authority_policy",
+              "universal_authority_policy"
+            ],
+            "sector_pack_refs": [
+              "sector-ai_semis:v1"
+            ],
+            "universal_pack_refs": [
+              "universal-core:v1"
+            ]
+          },
+          "selected_report_type": "initiation",
+          "selected_sector": "ai_semis",
+          "status": "selected"
+        },
+        "planning_authority": "shadow",
+        "serializer_policy_ref": "point01-m2-2-full-serializer-policy-v1"
+      },
+      "external_call_count": 0,
+      "gap_count": 1,
+      "input_validation_status": "pass",
+      "model_call_count": 0,
+      "slot_count": 11
+    }
+  },
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "external_call_count": 0,
+    "legacy_task_run": "authoritative",
+    "model_call_count": 0,
+    "runtime_cutover": false
+  },
+  "boundary": "M2.2 serializes and commits a deterministic shadow artifact only. It does not invoke a model, retrieve evidence, write legacy TaskRun, run full-chain or change planning authority.",
+  "checks": {
+    "atomic_commit_and_readback": true,
+    "full_envelope_preserves_case_delta_and_all_lineage": true,
+    "legacy_direct_equivalence_rejected": true,
+    "model_free": true,
+    "multi_version_snapshot_replay": true,
+    "object_store_failure_leaves_no_canonical_artifact": true,
+    "selection_mismatch_rejected": true,
+    "typed_gap_drop_rejected": true
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m2_2_full_serializer_policy_v1_0.json": "62bebccbeb2bbfb1c4001c9cf488d4dec3e2685d9586b541da1c4cc6be05c9c4",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "e7d1ddb2fc2b06ae36a123b184521093afb7d9a4dcfcb268aa1e0269dbbbe998",
+    "scripts/engineering/run_point01_m2_2_full_serializer_fixture.py": "35329af30a88c1bf920ea8f475d1f225de8c360c5fe80c02be90c77d7dbe9052",
+    "src/sec_agent/canonical_runtime/facade.py": "47da8647e17a5715990b9c0dba672674cae73b37971532cc3bc2ce8b23443f30",
+    "src/sec_agent/canonical_runtime/full_serializer.py": "d4f304417ee4e3775f8a64a7453ad59e494b4281591110d2e60f8862d519b42a",
+    "src/sec_agent/canonical_runtime/planning_service.py": "20ccf383a76ed91ae2e337e1c3fb05d9983bf73d78dbf16d7b1039e2eaa4a22e",
+    "src/sec_agent/canonical_runtime/store.py": "3424b7b066b3c715380b72d6f9c441d6eb31f22a972a392e8121971fb32bc0dd"
+  },
+  "negative_errors": {
+    "atomic_failure": "fixture_full_serializer_object_store_failure",
+    "legacy_direct_equivalence": "legacy_direct_equivalence_forbidden",
+    "selection_mismatch": "pack_resolution_mismatch",
+    "typed_gap_dropped": "typed_gap_lineage_dropped_or_unexpected"
+  },
+  "readback_reports": {
+    "v1": {
+      "artifact_version_id": "artifact-m2-2-v1:v1",
+      "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+      "errors": [],
+      "expected_envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "observed_envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+      "planning_authority": "legacy",
+      "replay_digest": "277f9cb8b436f5aae80fccd845d8d67e6350387d64c32c5c30f29a179d3bc4fe",
+      "status": "pass"
+    },
+    "v1_after_v2": {
+      "artifact_version_id": "artifact-m2-2-v1:v1",
+      "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+      "errors": [],
+      "expected_envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "observed_envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+      "planning_authority": "legacy",
+      "replay_digest": "e8d8525382de527bd943741c3bc820f48bad35b1382530ba8c96f2ad82a17b44",
+      "status": "pass"
+    },
+    "v2": {
+      "artifact_version_id": "artifact-m2-2-v2:v1",
+      "contract_version_id": "contract-m2-2-case-ai-semiconductor:v2",
+      "errors": [],
+      "expected_envelope_digest": "2f61cb80e34b72a76279d3c9a1b617ac98d09fd80ee4779b189f66a1509ce0f2",
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "observed_envelope_digest": "2f61cb80e34b72a76279d3c9a1b617ac98d09fd80ee4779b189f66a1509ce0f2",
+      "planning_authority": "legacy",
+      "replay_digest": "e8d8525382de527bd943741c3bc820f48bad35b1382530ba8c96f2ad82a17b44",
+      "status": "pass"
+    }
+  },
+  "result_version": "finsight_point01_m2_2_full_serializer_fixture_result_v1_0",
+  "scope": "Point01_M2_2_full_serializer_atomic_readback_replay",
+  "status": "pass"
+}

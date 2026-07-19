@@ -1,0 +1,184 @@
+{
+  "schema_version": "finsight_point01_canonical_object_registry_v0_2",
+  "contract_version": "1.0",
+  "status": "frozen_for_point01_m0_m2_no_runtime_cutover",
+  "supersedes_for_point01_scope": "finsight_canonical_object_registry_v0_1",
+  "scope": {
+    "included_milestones": ["M0", "M1", "M2"],
+    "legacy_task_run_authority": true,
+    "decision_surface_authority": "shadow_until_m4",
+    "excluded_runtime_domains": [
+      "evidence_request_execution",
+      "evidence_promotion",
+      "numeric_program_runtime",
+      "domain_judgment_runtime",
+      "institutional_memory_registry",
+      "review_release_oa",
+      "monitoring_r4"
+    ]
+  },
+  "global_invariants": {
+    "single_business_writer": true,
+    "immutable_versions": true,
+    "append_only_events": true,
+    "current_head_is_projection": true,
+    "shadow_not_writer_eligible": true,
+    "sqlite_first_postgresql_compatible": true,
+    "large_payloads_use_object_store": true
+  },
+  "objects": [
+    {
+      "object_id": "p01_research_case",
+      "object_name": "InstitutionalResearchCase",
+      "business_writer": "TECH_01",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["case_id"],
+      "version_fields": ["case_version", "schema_version"],
+      "logical_table": "canonical_research_cases",
+      "authority": "canonical_identity_only"
+    },
+    {
+      "object_id": "p01_case_control_summary",
+      "object_name": "CaseControlSummaryVersion",
+      "business_writer": "TECH_01",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["case_id", "summary_version_id"],
+      "version_fields": ["summary_version", "schema_version"],
+      "logical_table": "canonical_case_control_versions",
+      "authority": "canonical_shadow"
+    },
+    {
+      "object_id": "p01_legacy_task_binding",
+      "object_name": "LegacyTaskRunBinding",
+      "business_writer": "TECH_06",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["binding_id", "legacy_system", "legacy_task_id", "legacy_run_id"],
+      "version_fields": ["binding_version", "schema_version"],
+      "logical_table": "canonical_task_run_bindings",
+      "authority": "binding_only_legacy_task_authoritative"
+    },
+    {
+      "object_id": "p01_work_unit",
+      "object_name": "WorkUnit",
+      "business_writer": "TECH_06",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["work_unit_id"],
+      "version_fields": ["work_unit_version", "state_version", "schema_version"],
+      "logical_table": "canonical_work_units",
+      "authority": "canonical_shadow_lane_execution"
+    },
+    {
+      "object_id": "p01_attempt",
+      "object_name": "Attempt",
+      "business_writer": "TECH_06",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["attempt_id"],
+      "version_fields": ["attempt_no", "schema_version"],
+      "logical_table": "canonical_attempts",
+      "authority": "canonical_execution"
+    },
+    {
+      "object_id": "p01_actor_snapshot",
+      "object_name": "ActorSnapshot",
+      "business_writer": "TECH_06",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["actor_snapshot_id"],
+      "version_fields": ["snapshot_version", "schema_version"],
+      "logical_table": "canonical_actor_snapshots",
+      "authority": "canonical_execution_identity"
+    },
+    {
+      "object_id": "p01_event_envelope",
+      "object_name": "EventEnvelope",
+      "business_writer": "TECH_06",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["event_id"],
+      "version_fields": ["sequence_no", "state_version_after", "schema_version"],
+      "logical_table": "canonical_events",
+      "authority": "canonical_append_only_event"
+    },
+    {
+      "object_id": "p01_artifact_envelope",
+      "object_name": "ArtifactVersionEnvelope",
+      "business_writer": "TECH_06",
+      "payload_business_writer_by_type": true,
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["artifact_id", "artifact_version_id"],
+      "version_fields": ["artifact_version", "schema_version"],
+      "logical_table": "canonical_artifact_versions",
+      "authority": "canonical_immutable_envelope"
+    },
+    {
+      "object_id": "p01_decision_surface_contract",
+      "object_name": "DecisionSurfaceContractVersion",
+      "business_writer": "TECH_01",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["contract_id", "contract_version_id"],
+      "version_fields": ["contract_version", "schema_version"],
+      "logical_table": "canonical_decision_surface_contract_versions",
+      "authority": "shadow_until_m4"
+    },
+    {
+      "object_id": "p01_decision_surface_cell",
+      "object_name": "DecisionSurfaceCellVersion",
+      "business_writer": "TECH_01",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["cell_id", "cell_version_id"],
+      "version_fields": ["cell_version", "schema_version"],
+      "logical_table": "canonical_decision_surface_cell_versions",
+      "authority": "shadow_until_m4"
+    },
+    {
+      "object_id": "p01_evidence_slot",
+      "object_name": "EvidenceSlotVersion",
+      "business_writer": "TECH_01",
+      "future_consumer": "TECH_02",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["evidence_slot_id", "slot_version_id"],
+      "version_fields": ["slot_version", "schema_version"],
+      "logical_table": "canonical_evidence_slot_versions",
+      "authority": "shadow_planning_requirement"
+    },
+    {
+      "object_id": "p01_compile_gap",
+      "object_name": "CompileTimeGapVersion",
+      "business_writer": "TECH_01",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["gap_id", "gap_version_id"],
+      "version_fields": ["gap_version", "schema_version"],
+      "logical_table": "canonical_compile_gap_versions",
+      "authority": "shadow_planning_gap_only"
+    },
+    {
+      "object_id": "p01_shadow_comparison",
+      "object_name": "ShadowComparisonRecord",
+      "business_writer": "TECH_10",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["comparison_id"],
+      "version_fields": ["comparison_version", "schema_version"],
+      "logical_table": "canonical_shadow_comparisons",
+      "authority": "comparison_only"
+    },
+    {
+      "object_id": "p01_lane_cutover_decision",
+      "object_name": "LaneCutoverDecision",
+      "business_writer": "TECH_10",
+      "execution_owner": "TECH_06",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["cutover_id"],
+      "version_fields": ["decision_version", "schema_version"],
+      "logical_table": "canonical_lane_cutover_decisions",
+      "authority": "inactive_until_m4"
+    },
+    {
+      "object_id": "p01_identity_map",
+      "object_name": "LegacyCanonicalIdentityMap",
+      "business_writer": "TECH_06",
+      "persistence_owner": "TECH_06",
+      "identity_fields": ["mapping_id"],
+      "version_fields": ["mapping_version", "schema_version"],
+      "logical_table": "canonical_legacy_identity_map",
+      "authority": "canonical_migration_metadata"
+    }
+  ]
+}

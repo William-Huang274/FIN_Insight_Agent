@@ -1,0 +1,27 @@
+{
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "approval": 0,
+    "ledger": 0,
+    "model": 0,
+    "namespace": 0,
+    "network": 0,
+    "provider": 0,
+    "receipt": 0,
+    "store_write": 0,
+    "tool": 0
+  },
+  "gate_digest": "a2cc8659f44f3bcd04bbcb293b23801c248b7fd27c5aaf7a67383c8eb237808e",
+  "next_step": "independent_exact_digest_review_required_no_authority_created",
+  "package_digest": "4ca222da5dd5ab7991d258d49eb30a377e6c8f82e1a0885d8912567324d3d5e8",
+  "package_ref": "point01-m2-a1-v2-10-p01-g2-candidate-bound-baseline-executable",
+  "result_version": "finsight_point01_m2_a1_candidate_bound_v2_10_package_gate_v1",
+  "status": "pass",
+  "target_digest": "4ca222da5dd5ab7991d258d49eb30a377e6c8f82e1a0885d8912567324d3d5e8",
+  "verification": {
+    "input_hash_count": 100,
+    "production_schema": "v2_10",
+    "status": "pass"
+  }
+}

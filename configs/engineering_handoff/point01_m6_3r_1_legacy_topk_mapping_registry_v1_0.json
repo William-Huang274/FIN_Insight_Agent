@@ -1,0 +1,122 @@
+{
+  "registry_ref": "point01-m6-3r-1-legacy-topk-mapping-registry",
+  "registry_version": "v1",
+  "registry_digest": "6506a1f1efb2923b9955e363297a8e5a8f871dc3b9df4a3bd526f32f845d4e5b",
+  "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+  "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+  "entries": [
+    {
+      "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+      "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+      "accepted_evidence_role": "numeric_fact",
+      "source_policy": "issuer_first",
+      "required_preferred_route_id": "issuer_disclosure_metadata_route",
+      "legacy_top_k": 3,
+      "legacy_candidate_limit": 12,
+      "terminal_status": "resolved",
+      "terminal_reason": "explicit_legacy_issuer_metric_mapping",
+      "profile": {
+        "profile_id": "legacy-issuer_first-local_bm25",
+        "profile_version": "v1",
+        "accepted_evidence_role": "numeric_fact",
+        "source_policy": "issuer_first",
+        "selected_route_id": "issuer_disclosure_metadata_route",
+        "source_type": "local_bm25",
+        "source_role": "issuer_filing",
+        "allowed_candidate_kinds": ["top_k_seed", "neighbor_section", "table_context"],
+        "quantities": {"candidate_bundle_top_k": 12, "rerank_top_k": 8, "evidence_gate_candidate_top_k": 3},
+        "lowering_profile": true,
+        "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+        "policy_ref": "point01-m6-3r-topk-policy-v1"
+      }
+    },
+    {
+      "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+      "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+      "accepted_evidence_role": "numeric_fact",
+      "source_policy": "filing_first",
+      "required_preferred_route_id": "issuer_disclosure_metadata_route",
+      "legacy_top_k": 3,
+      "legacy_candidate_limit": 12,
+      "terminal_status": "resolved",
+      "terminal_reason": "explicit_legacy_issuer_metric_mapping",
+      "profile": {
+        "profile_id": "legacy-filing_first-local_bm25",
+        "profile_version": "v1",
+        "accepted_evidence_role": "numeric_fact",
+        "source_policy": "filing_first",
+        "selected_route_id": "issuer_disclosure_metadata_route",
+        "source_type": "local_bm25",
+        "source_role": "issuer_filing",
+        "allowed_candidate_kinds": ["top_k_seed", "neighbor_section", "table_context"],
+        "quantities": {"candidate_bundle_top_k": 12, "rerank_top_k": 8, "evidence_gate_candidate_top_k": 3},
+        "lowering_profile": true,
+        "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+        "policy_ref": "point01-m6-3r-topk-policy-v1"
+      }
+    },
+    {
+      "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+      "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+      "accepted_evidence_role": "numeric_fact",
+      "source_policy": "official_first",
+      "required_preferred_route_id": "issuer_disclosure_metadata_route",
+      "legacy_top_k": 3,
+      "legacy_candidate_limit": 12,
+      "terminal_status": "resolved",
+      "terminal_reason": "explicit_legacy_issuer_metric_mapping",
+      "profile": {
+        "profile_id": "legacy-official_first-exact_value_sql",
+        "profile_version": "v1",
+        "accepted_evidence_role": "numeric_fact",
+        "source_policy": "official_first",
+        "selected_route_id": "issuer_disclosure_metadata_route",
+        "source_type": "exact_value_sql",
+        "source_role": "issuer_filing",
+        "allowed_candidate_kinds": ["top_k_seed", "neighbor_section", "table_context"],
+        "quantities": {"candidate_bundle_top_k": 12, "rerank_top_k": 8, "evidence_gate_candidate_top_k": 3},
+        "lowering_profile": true,
+        "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+        "policy_ref": "point01-m6-3r-topk-policy-v1"
+      }
+    },
+    {
+      "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+      "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+      "accepted_evidence_role": "context",
+      "source_policy": "relationship_graph_only",
+      "required_preferred_route_id": "relationship_graph_metadata_route",
+      "legacy_top_k": 5,
+      "legacy_candidate_limit": 12,
+      "terminal_status": "resolved",
+      "terminal_reason": "explicit_legacy_relationship_context_mapping",
+      "profile": {
+        "profile_id": "legacy-relationship_graph_only-relationship_graph",
+        "profile_version": "v1",
+        "accepted_evidence_role": "context",
+        "source_policy": "relationship_graph_only",
+        "selected_route_id": "relationship_graph_metadata_route",
+        "source_type": "relationship_graph",
+        "source_role": "relationship_graph",
+        "allowed_candidate_kinds": ["top_k_seed", "neighbor_section"],
+        "quantities": {"candidate_bundle_top_k": 12, "rerank_top_k": 8, "evidence_gate_candidate_top_k": 5},
+        "lowering_profile": true,
+        "lowering_authority_ref": "point01-m6-3r-legacy-mapping-lowering-authority-v1",
+        "policy_ref": "point01-m6-3r-topk-policy-v1"
+      }
+    },
+    {
+      "compiler_policy_ref": "point01-m6-1-evidence-request-policy-v1",
+      "compiler_policy_digest": "9d914a8da34d48aab925dccb50f3257d6c361113f510e9126a87de53cea204ec",
+      "accepted_evidence_role": "gap_evidence",
+      "source_policy": "commercial_gap",
+      "required_preferred_route_id": "commercial_gap_record_route",
+      "legacy_top_k": 1,
+      "legacy_candidate_limit": 1,
+      "terminal_status": "typed_commercial_gap",
+      "terminal_reason": "commercial_gap_not_retrieval",
+      "profile": null
+    }
+  ],
+  "admission_state": "compiler_policy_bound_not_resolved"
+}

@@ -1,0 +1,590 @@
+{
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "external_call_count": 0,
+    "legacy_task_run": "authoritative",
+    "model_call_count": 0
+  },
+  "boundary": "This fixture selects versioned shadow packs with reasons/rejections/conflicts only. It does not compile cells, call a model, retrieve evidence, write legacy state or change authority.",
+  "checks": {
+    "conflict_recorded": true,
+    "model_free": true,
+    "multi_sector_report_type_grid": true,
+    "rejection_recorded": true,
+    "selection_reasons_present": true
+  },
+  "conflict": {
+    "conflicts": [
+      {
+        "code": "query_sector_ambiguous",
+        "detail": "banks,saas"
+      }
+    ],
+    "decision_digest": "0c3d153fe27464b8e75cb1da5b252eff132ed036b435745ea145469e216d831d",
+    "model_call_count": 0,
+    "planning_authority": "shadow",
+    "reasons": [
+      {
+        "code": "explicit_report_type",
+        "detail": "initiation"
+      }
+    ],
+    "rejections": [],
+    "resolution": null,
+    "selected_report_type": null,
+    "selected_sector": null,
+    "status": "conflict"
+  },
+  "decisions": {
+    "ai_semis:event_update": {
+      "conflicts": [],
+      "decision_digest": "ae09cca3bb0d491cb204d6bafa597b950837222a48e0f97f68967ab3ffe32282",
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "reasons": [
+        {
+          "code": "explicit_sector",
+          "detail": "ai_semis"
+        },
+        {
+          "code": "explicit_report_type",
+          "detail": "event_update"
+        },
+        {
+          "code": "versioned_pack_resolution_selected",
+          "detail": "0b2e0ac6480ee941eec4201b2c52a22a9a4489ffdea1ade56f3db1ee732a076e"
+        }
+      ],
+      "rejections": [],
+      "resolution": {
+        "as_of": "2026-07-12T00:00:00Z",
+        "case_delta_pack_refs": [],
+        "report_type_pack_refs": [
+          "report-event_update:v1"
+        ],
+        "resolution_digest": "0b2e0ac6480ee941eec4201b2c52a22a9a4489ffdea1ade56f3db1ee732a076e",
+        "resolved_source_authority_policy_refs": [
+          "report_type_authority_policy",
+          "sector_authority_policy",
+          "universal_authority_policy"
+        ],
+        "sector_pack_refs": [
+          "sector-ai_semis:v1"
+        ],
+        "universal_pack_refs": [
+          "universal-core:v1"
+        ]
+      },
+      "selected_report_type": "event_update",
+      "selected_sector": "ai_semis",
+      "status": "selected"
+    },
+    "ai_semis:initiation": {
+      "conflicts": [],
+      "decision_digest": "54aa66955eb193597a2c028da90fb9bf829c898a88f604fd2f08c05fbe8bd8af",
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "reasons": [
+        {
+          "code": "explicit_sector",
+          "detail": "ai_semis"
+        },
+        {
+          "code": "explicit_report_type",
+          "detail": "initiation"
+        },
+        {
+          "code": "versioned_pack_resolution_selected",
+          "detail": "09b506ffd9ea116abbd284bde5c4b6df860c66a3bb73a143ce4293ea94a511b7"
+        }
+      ],
+      "rejections": [],
+      "resolution": {
+        "as_of": "2026-07-12T00:00:00Z",
+        "case_delta_pack_refs": [],
+        "report_type_pack_refs": [
+          "report-initiation:v1"
+        ],
+        "resolution_digest": "09b506ffd9ea116abbd284bde5c4b6df860c66a3bb73a143ce4293ea94a511b7",
+        "resolved_source_authority_policy_refs": [
+          "report_type_authority_policy",
+          "sector_authority_policy",
+          "universal_authority_policy"
+        ],
+        "sector_pack_refs": [
+          "sector-ai_semis:v1"
+        ],
+        "universal_pack_refs": [
+          "universal-core:v1"
+        ]
+      },
+      "selected_report_type": "initiation",
+      "selected_sector": "ai_semis",
+      "status": "selected"
+    },
+    "ai_semis:valuation_price_in": {
+      "conflicts": [],
+      "decision_digest": "82204994390f573851c354d7d88fc253b41eb76894bc636e44352e72c678e81c",
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "reasons": [
+        {
+          "code": "explicit_sector",
+          "detail": "ai_semis"
+        },
+        {
+          "code": "explicit_report_type",
+          "detail": "valuation_price_in"
+        },
+        {
+          "code": "versioned_pack_resolution_selected",
+          "detail": "822505abc4e5385266d045d1fb4adc29d3c41a32fc70eb5f9322bf561dc4554a"
+        }
+      ],
+      "rejections": [],
+      "resolution": {
+        "as_of": "2026-07-12T00:00:00Z",
+        "case_delta_pack_refs": [],
+        "report_type_pack_refs": [
+          "report-valuation_price_in:v1"
+        ],
+        "resolution_digest": "822505abc4e5385266d045d1fb4adc29d3c41a32fc70eb5f9322bf561dc4554a",
+        "resolved_source_authority_policy_refs": [
+          "report_type_authority_policy",
+          "sector_authority_policy",
+          "universal_authority_policy"
+        ],
+        "sector_pack_refs": [
+          "sector-ai_semis:v1"
+        ],
+        "universal_pack_refs": [
+          "universal-core:v1"
+        ]
+      },
+      "selected_report_type": "valuation_price_in",
+      "selected_sector": "ai_semis",
+      "status": "selected"
+    },
+    "banks:event_update": {
+      "conflicts": [],
+      "decision_digest": "1c2d6ce71030b8bb3410e4d0bb847b477a3beef9cb57a5db8c3f1fac976fa28c",
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "reasons": [
+        {
+          "code": "explicit_sector",
+          "detail": "banks"
+        },
+        {
+          "code": "explicit_report_type",
+          "detail": "event_update"
+        },
+        {
+          "code": "versioned_pack_resolution_selected",
+          "detail": "86ffa3931d89f7b761f88cd2318e7c24fd8fe3cc1022ed5e1da673884a51f0c5"
+        }
+      ],
+      "rejections": [],
+      "resolution": {
+        "as_of": "2026-07-12T00:00:00Z",
+        "case_delta_pack_refs": [],
+        "report_type_pack_refs": [
+          "report-event_update:v1"
+        ],
+        "resolution_digest": "86ffa3931d89f7b761f88cd2318e7c24fd8fe3cc1022ed5e1da673884a51f0c5",
+        "resolved_source_authority_policy_refs": [
+          "report_type_authority_policy",
+          "sector_authority_policy",
+          "universal_authority_policy"
+        ],
+        "sector_pack_refs": [
+          "sector-banks:v1"
+        ],
+        "universal_pack_refs": [
+          "universal-core:v1"
+        ]
+      },
+      "selected_report_type": "event_update",
+      "selected_sector": "banks",
+      "status": "selected"
+    },
+    "banks:initiation": {
+      "conflicts": [],
+      "decision_digest": "cf6c50a028a9a066a607dcf2ce72dec939b3acc7768aad80a8876d2d6c586059",
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "reasons": [
+        {
+          "code": "explicit_sector",
+          "detail": "banks"
+        },
+        {
+          "code": "explicit_report_type",
+          "detail": "initiation"
+        },
+        {
+          "code": "versioned_pack_resolution_selected",
+          "detail": "f78356447bb00190e6342810ab7cf58147fd857d5da58bd752f54693d778de91"
+        }
+      ],
+      "rejections": [],
+      "resolution": {
+        "as_of": "2026-07-12T00:00:00Z",
+        "case_delta_pack_refs": [],
+        "report_type_pack_refs": [
+          "report-initiation:v1"
+        ],
+        "resolution_digest": "f78356447bb00190e6342810ab7cf58147fd857d5da58bd752f54693d778de91",
+        "resolved_source_authority_policy_refs": [
+          "report_type_authority_policy",
+          "sector_authority_policy",
+          "universal_authority_policy"
+        ],
+        "sector_pack_refs": [
+          "sector-banks:v1"
+        ],
+        "universal_pack_refs": [
+          "universal-core:v1"
+        ]
+      },
+      "selected_report_type": "initiation",
+      "selected_sector": "banks",
+      "status": "selected"
+    },
+    "banks:valuation_price_in": {
+      "conflicts": [],
+      "decision_digest": "e61032e9e435f14dbcdd4a9331b9a620925a0efe0107a488f96adf79f6e110c6",
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "reasons": [
+        {
+          "code": "explicit_sector",
+          "detail": "banks"
+        },
+        {
+          "code": "explicit_report_type",
+          "detail": "valuation_price_in"
+        },
+        {
+          "code": "versioned_pack_resolution_selected",
+          "detail": "39fe2ff317bb653b62daa62d8005071048fe68dd71d8b952cf94ebe937375f01"
+        }
+      ],
+      "rejections": [],
+      "resolution": {
+        "as_of": "2026-07-12T00:00:00Z",
+        "case_delta_pack_refs": [],
+        "report_type_pack_refs": [
+          "report-valuation_price_in:v1"
+        ],
+        "resolution_digest": "39fe2ff317bb653b62daa62d8005071048fe68dd71d8b952cf94ebe937375f01",
+        "resolved_source_authority_policy_refs": [
+          "report_type_authority_policy",
+          "sector_authority_policy",
+          "universal_authority_policy"
+        ],
+        "sector_pack_refs": [
+          "sector-banks:v1"
+        ],
+        "universal_pack_refs": [
+          "universal-core:v1"
+        ]
+      },
+      "selected_report_type": "valuation_price_in",
+      "selected_sector": "banks",
+      "status": "selected"
+    },
+    "healthcare:event_update": {
+      "conflicts": [],
+      "decision_digest": "28d8ec586ed7ad59d02227fc1ee03da461115f91636a2e2d4ed9f72afc528f48",
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "reasons": [
+        {
+          "code": "explicit_sector",
+          "detail": "healthcare"
+        },
+        {
+          "code": "explicit_report_type",
+          "detail": "event_update"
+        },
+        {
+          "code": "versioned_pack_resolution_selected",
+          "detail": "2fef77c3d99338b48ce1d10e2de7fd22aa4af24e55a562059d2ecae05be2ffe6"
+        }
+      ],
+      "rejections": [],
+      "resolution": {
+        "as_of": "2026-07-12T00:00:00Z",
+        "case_delta_pack_refs": [],
+        "report_type_pack_refs": [
+          "report-event_update:v1"
+        ],
+        "resolution_digest": "2fef77c3d99338b48ce1d10e2de7fd22aa4af24e55a562059d2ecae05be2ffe6",
+        "resolved_source_authority_policy_refs": [
+          "report_type_authority_policy",
+          "sector_authority_policy",
+          "universal_authority_policy"
+        ],
+        "sector_pack_refs": [
+          "sector-healthcare:v1"
+        ],
+        "universal_pack_refs": [
+          "universal-core:v1"
+        ]
+      },
+      "selected_report_type": "event_update",
+      "selected_sector": "healthcare",
+      "status": "selected"
+    },
+    "healthcare:initiation": {
+      "conflicts": [],
+      "decision_digest": "a2a7984c362c191fd480e716ca49e8109637791806c86064bbbd41aaad40f58c",
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "reasons": [
+        {
+          "code": "explicit_sector",
+          "detail": "healthcare"
+        },
+        {
+          "code": "explicit_report_type",
+          "detail": "initiation"
+        },
+        {
+          "code": "versioned_pack_resolution_selected",
+          "detail": "5342dd0b2b944e430940709b68a79fa5685802cceffc5aa24ec7c5b97f980b4c"
+        }
+      ],
+      "rejections": [],
+      "resolution": {
+        "as_of": "2026-07-12T00:00:00Z",
+        "case_delta_pack_refs": [],
+        "report_type_pack_refs": [
+          "report-initiation:v1"
+        ],
+        "resolution_digest": "5342dd0b2b944e430940709b68a79fa5685802cceffc5aa24ec7c5b97f980b4c",
+        "resolved_source_authority_policy_refs": [
+          "report_type_authority_policy",
+          "sector_authority_policy",
+          "universal_authority_policy"
+        ],
+        "sector_pack_refs": [
+          "sector-healthcare:v1"
+        ],
+        "universal_pack_refs": [
+          "universal-core:v1"
+        ]
+      },
+      "selected_report_type": "initiation",
+      "selected_sector": "healthcare",
+      "status": "selected"
+    },
+    "healthcare:valuation_price_in": {
+      "conflicts": [],
+      "decision_digest": "5c25aa2e27843c186705e9bcaf514b42f176970452d049b9e89207ebe37b179f",
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "reasons": [
+        {
+          "code": "explicit_sector",
+          "detail": "healthcare"
+        },
+        {
+          "code": "explicit_report_type",
+          "detail": "valuation_price_in"
+        },
+        {
+          "code": "versioned_pack_resolution_selected",
+          "detail": "879ae0ca3d554b9b97ef7a7c981eb692aeb3741c0b72bf0c12851c897f84918b"
+        }
+      ],
+      "rejections": [],
+      "resolution": {
+        "as_of": "2026-07-12T00:00:00Z",
+        "case_delta_pack_refs": [],
+        "report_type_pack_refs": [
+          "report-valuation_price_in:v1"
+        ],
+        "resolution_digest": "879ae0ca3d554b9b97ef7a7c981eb692aeb3741c0b72bf0c12851c897f84918b",
+        "resolved_source_authority_policy_refs": [
+          "report_type_authority_policy",
+          "sector_authority_policy",
+          "universal_authority_policy"
+        ],
+        "sector_pack_refs": [
+          "sector-healthcare:v1"
+        ],
+        "universal_pack_refs": [
+          "universal-core:v1"
+        ]
+      },
+      "selected_report_type": "valuation_price_in",
+      "selected_sector": "healthcare",
+      "status": "selected"
+    },
+    "saas:event_update": {
+      "conflicts": [],
+      "decision_digest": "ccda15789559e3f772e41fbf4eeefa0f6228a2215ad7bea0a732b0002cf7ff0b",
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "reasons": [
+        {
+          "code": "explicit_sector",
+          "detail": "saas"
+        },
+        {
+          "code": "explicit_report_type",
+          "detail": "event_update"
+        },
+        {
+          "code": "versioned_pack_resolution_selected",
+          "detail": "25a0f76eaaebebeefd4b4691dc0fc5dc4eb01707c34bac53951a6338a618a61a"
+        }
+      ],
+      "rejections": [],
+      "resolution": {
+        "as_of": "2026-07-12T00:00:00Z",
+        "case_delta_pack_refs": [],
+        "report_type_pack_refs": [
+          "report-event_update:v1"
+        ],
+        "resolution_digest": "25a0f76eaaebebeefd4b4691dc0fc5dc4eb01707c34bac53951a6338a618a61a",
+        "resolved_source_authority_policy_refs": [
+          "report_type_authority_policy",
+          "sector_authority_policy",
+          "universal_authority_policy"
+        ],
+        "sector_pack_refs": [
+          "sector-saas:v1"
+        ],
+        "universal_pack_refs": [
+          "universal-core:v1"
+        ]
+      },
+      "selected_report_type": "event_update",
+      "selected_sector": "saas",
+      "status": "selected"
+    },
+    "saas:initiation": {
+      "conflicts": [],
+      "decision_digest": "6e0c66202b876546ff451b4722b51feba325ed52a13bf459b6d9595687afbcc4",
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "reasons": [
+        {
+          "code": "explicit_sector",
+          "detail": "saas"
+        },
+        {
+          "code": "explicit_report_type",
+          "detail": "initiation"
+        },
+        {
+          "code": "versioned_pack_resolution_selected",
+          "detail": "1d41e107b8524ef666f55d1a7fd8d50a20c5bf36f9895826bcae75ca99660679"
+        }
+      ],
+      "rejections": [],
+      "resolution": {
+        "as_of": "2026-07-12T00:00:00Z",
+        "case_delta_pack_refs": [],
+        "report_type_pack_refs": [
+          "report-initiation:v1"
+        ],
+        "resolution_digest": "1d41e107b8524ef666f55d1a7fd8d50a20c5bf36f9895826bcae75ca99660679",
+        "resolved_source_authority_policy_refs": [
+          "report_type_authority_policy",
+          "sector_authority_policy",
+          "universal_authority_policy"
+        ],
+        "sector_pack_refs": [
+          "sector-saas:v1"
+        ],
+        "universal_pack_refs": [
+          "universal-core:v1"
+        ]
+      },
+      "selected_report_type": "initiation",
+      "selected_sector": "saas",
+      "status": "selected"
+    },
+    "saas:valuation_price_in": {
+      "conflicts": [],
+      "decision_digest": "eda5f5c41ef8a2cdf4837c04a0780bfbf72227e02496fd794a74fb0d6f899311",
+      "model_call_count": 0,
+      "planning_authority": "shadow",
+      "reasons": [
+        {
+          "code": "explicit_sector",
+          "detail": "saas"
+        },
+        {
+          "code": "explicit_report_type",
+          "detail": "valuation_price_in"
+        },
+        {
+          "code": "versioned_pack_resolution_selected",
+          "detail": "55bcc81a70fd020d16366ba03e0ce8328f742e7533d92814ae39d6e0808b79fd"
+        }
+      ],
+      "rejections": [],
+      "resolution": {
+        "as_of": "2026-07-12T00:00:00Z",
+        "case_delta_pack_refs": [],
+        "report_type_pack_refs": [
+          "report-valuation_price_in:v1"
+        ],
+        "resolution_digest": "55bcc81a70fd020d16366ba03e0ce8328f742e7533d92814ae39d6e0808b79fd",
+        "resolved_source_authority_policy_refs": [
+          "report_type_authority_policy",
+          "sector_authority_policy",
+          "universal_authority_policy"
+        ],
+        "sector_pack_refs": [
+          "sector-saas:v1"
+        ],
+        "universal_pack_refs": [
+          "universal-core:v1"
+        ]
+      },
+      "selected_report_type": "valuation_price_in",
+      "selected_sector": "saas",
+      "status": "selected"
+    }
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m2_3_pack_registry_policy_v1_0.json": "d739bbdfc2292894869881fef8f544f3d8ffe28b407c17a22eb2fb5951f40132",
+    "configs/engineering_handoff/point01_m2_4_pack_selection_policy_v1_0.json": "1837287b4e08dc2505bde9f0922e206f8dc5cf154347db3a7c3d3c256f9ff868",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "e7d1ddb2fc2b06ae36a123b184521093afb7d9a4dcfcb268aa1e0269dbbbe998",
+    "scripts/engineering/run_point01_m2_4_pack_selection_fixture.py": "6484b2e62174871905502fc44d8a9d6b97f3a83bc4081bc2eea6ab36c046e1ae",
+    "src/sec_agent/canonical_runtime/pack_registry.py": "8d62228ee4146db50bf7cc787e53d71cd06526ecc1cb0127a0e21af090cfd59d",
+    "src/sec_agent/canonical_runtime/pack_selection.py": "f9e4d36a50999bb91c3c224500670b27998356f511934ba819175f700f7b0f7b"
+  },
+  "generated_at": "2026-07-12T09:56:16.158178+00:00",
+  "rejection": {
+    "conflicts": [],
+    "decision_digest": "0a69917378efd5d72d2d078c95283289085f6a72fa471b26e3a3e167167310e3",
+    "model_call_count": 0,
+    "planning_authority": "shadow",
+    "reasons": [
+      {
+        "code": "explicit_report_type",
+        "detail": "initiation"
+      }
+    ],
+    "rejections": [
+      {
+        "code": "sector_intent_missing",
+        "detail": "no explicit or query-derived intent"
+      }
+    ],
+    "resolution": null,
+    "selected_report_type": null,
+    "selected_sector": null,
+    "status": "rejected"
+  },
+  "result_version": "finsight_point01_m2_4_pack_selection_fixture_result_v1_0",
+  "scope": "Point01_M2_4_pack_selection_engine",
+  "status": "pass"
+}

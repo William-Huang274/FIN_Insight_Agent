@@ -1,0 +1,115 @@
+{
+  "manifest_version": "finsight_point01_m1_closeout_gate_v1_0",
+  "scope": "Point01_M1_only",
+  "authority_boundary": {
+    "legacy_task_run": "authoritative",
+    "canonical_lane": "shadow_only",
+    "cutover": "forbidden"
+  },
+  "verification": {
+    "pytest": [
+      "python",
+      "-m",
+      "pytest",
+      "-q",
+      "-m",
+      "fast_contract",
+      "tests/contract",
+      "tests/test_runtime_bridge_contracts.py",
+      "tests/test_r53_r60_runtime_task_spine.py"
+    ],
+    "compileall": [
+      "python",
+      "-m",
+      "compileall",
+      "-q",
+      "src/sec_agent/canonical_runtime",
+      "tests/contract"
+    ],
+    "postgresql_conformance": [
+      "python",
+      "scripts/engineering/run_point01_postgresql_conformance_sample.py"
+    ]
+  },
+  "execution_points": [
+    {
+      "point_id": "M1.0",
+      "design_maturity": "frozen",
+      "implementation_maturity": "full_implemented",
+      "calibration_required": false,
+      "status_source": "point01_design_freeze"
+    },
+    {
+      "point_id": "M1.1",
+      "design_maturity": "frozen",
+      "implementation_maturity": "full_implemented",
+      "calibration_required": true,
+      "calibration_status": "conditional_on_local_contract_suite",
+      "required_cases": [
+        "SQLite DB_01 parent and scope constraints",
+        "transaction/outbox/version semantics",
+        "ephemeral PostgreSQL logical conformance sample"
+      ]
+    },
+    {
+      "point_id": "M1.2",
+      "design_maturity": "frozen",
+      "implementation_maturity": "conditional_on_local_contract_suite",
+      "calibration_required": true,
+      "calibration_status": "conditional_on_local_contract_suite",
+      "required_cases": [
+        "legacy binding survives SQLite restart",
+        "recovery check verifies integrity and event/outbox parity",
+        "replay stays external-call free after recovery",
+        "retry attempt can continue after recovery"
+      ]
+    },
+    {
+      "point_id": "M1.3",
+      "design_maturity": "frozen",
+      "implementation_maturity": "conditional_on_local_contract_suite",
+      "calibration_required": true,
+      "calibration_status": "conditional_on_local_contract_suite",
+      "required_cases": [
+        "transient failure creates immutable Attempt N+1",
+        "permanent failure is terminal",
+        "poison failure is terminal",
+        "retry budget and max attempts stop further retry"
+      ]
+    },
+    {
+      "point_id": "M1.4",
+      "design_maturity": "frozen",
+      "implementation_maturity": "conditional_on_local_contract_suite",
+      "calibration_required": true,
+      "calibration_status": "conditional_on_local_contract_suite",
+      "required_cases": [
+        "concurrent stale winner/loser",
+        "SQLite lock timeout is transaction_conflict",
+        "stale input head and expired lease reject commit",
+        "bounded SQLite independent-work-unit load"
+      ]
+    }
+  ],
+  "required_closeout_conditions": [
+    "all required points full_implemented",
+    "all required calibration points calibrated",
+    "all local machine checks pass",
+    "rollback/recovery drill accepted",
+    "human reviewer approval recorded",
+    "fixed source/config/code hashes recorded"
+  ],
+  "acceptance_gates": [
+    {
+      "gate_id": "rollback_recovery_drill",
+      "status": "conditional_on_local_contract_suite",
+      "evidence_path": "configs/engineering_handoff/point01_m1_rollback_recovery_drill_result_v1_0.json"
+    },
+    {
+      "gate_id": "human_reviewer_approval",
+      "status": "external_required",
+      "evidence_path": "configs/engineering_handoff/point01_m1_human_reviewer_approval_v1_0.json"
+    }
+  ],
+  "output": "data/manifests/point01_m1_closeout_gate_result_v1_0.json"
+}

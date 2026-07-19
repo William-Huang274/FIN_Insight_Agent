@@ -1,0 +1,114 @@
+{
+  "schema_version": "point01_foundation_alpha_scope_closeout_decision_v1_0",
+  "decision_id": "POINT01-FOUNDATION-ALPHA-SCOPE-CLOSEOUT-20260718",
+  "decision": "POINT01_FOUNDATION_ALPHA_CONTRACT_RUNTIME_PROOF_COMPLETE",
+  "decision_scope": "foundation_alpha_contract_runtime_proof_only",
+  "supersedes": {
+    "forbidden_prior_terminal": "POINT01_FOUNDATION_ALPHA_COMPLETE",
+    "reason": "A single operational attempt was consumed and terminalized outcome_unknown; Foundation Alpha contractual/runtime proof is retained while operational qualification is deferred to REL-PROD-001 RG1."
+  },
+  "state_axes": {
+    "contract_maturity": "foundation_alpha_contract_runtime_proof_complete",
+    "runtime_proof": "deterministic_shadow_and_bounded_fail_closed_proof_retained",
+    "operational_qualification": "not_qualified_deferred_to_REL_PROD_001_RG1",
+    "production_readiness": "not_admitted",
+    "legacy_global_authority": "retained"
+  },
+  "p01_gate_disposition": {
+    "P01-G1": "historical_contract_runtime_proof_retained",
+    "P01-G2": "failed_single_operational_attempt_consumed_and_deferred_to_REL_PROD_001_RG1",
+    "P01-G3": "handoff_manifest_complete_only",
+    "P01-G4": "state_axes_test_profile_and_deferred_debt_complete_only",
+    "P01-G5": "narrow_scope_closeout_issued_not_POINT01_FOUNDATION_ALPHA_COMPLETE"
+  },
+  "failed_operational_evidence": {
+    "reviewer_decision_canonical_digest": "fcc59334cbe11dd65808dce34a0b792d03989f297031e430ce7ec07c603de640",
+    "human_approval_canonical_digest": "d71a11583c1be136cb611d59a9f387bf8dc7c765945f1297a5d5d79fa2b9cadc",
+    "terminal_digest": "728d9ebd2e5c215f0c782f258c22e154658f316286e3c058ce43c379b99f0342",
+    "incident_canonical_digest": "1cc0532137f2704966bf364017caa31da271e25be91cf6fc1b4b87449d08653e",
+    "event_sequence": [
+      "REGISTERED",
+      "CONSUMED_BEFORE_RUN",
+      "TERMINAL(outcome_unknown)"
+    ],
+    "receipt_lifecycle": "consumed_permanently_nonreplayable_nonrenewable_nonreplaceable"
+  },
+  "identity_propagation_debt": {
+    "observed_static_gap": "candidate-bound top-level runner accepted an explicit package, while production clean-child leaf retained a historical v2.10 PACKAGE_PATH.",
+    "confirmed_scope": "entry_to_leaf identity propagation was not covered end-to-end by the prior bridge acceptance.",
+    "not_confirmed": "The truncated redacted stderr does not establish one unique dynamic child exception root cause.",
+    "release_owner": "REL-PROD-001 RG1_vertical_path"
+  },
+  "development_admission": {
+    "P02.0": "fixture_shadow_internal_development_only",
+    "not_a_release_admission": true,
+    "forbidden": [
+      "operational_retry_or_replay",
+      "new_authority_or_receipt",
+      "paid_or_full_chain",
+      "production_cutover",
+      "real_business_case_mutation"
+    ]
+  },
+  "release_hard_blocker": {
+    "release_id": "REL-PROD-001",
+    "gate": "RG1_vertical_path",
+    "required_before_P07_5": [
+      "exact_package_entry_to_adapter_to_subprocess_to_clean_child_identity_invariant",
+      "one_bounded_operational_vertical_run",
+      "persisted_actual_oracle_reviewer_and_workbench_results"
+    ],
+    "bypass_forbidden": true
+  },
+  "test_profile_contract": {
+    "fast_and_component": "allowed_for_contract_fixture_shadow_development",
+    "operational": "not_qualified_deferred_to_REL_PROD_001_RG1",
+    "release": "P07.5_after_RG1_to_RG5_only",
+    "current_forbidden": [
+      "consumed_receipt_replay_retry_renewal_or_replacement",
+      "Point01_operational_baseline_or_negative_tranche",
+      "production_cutover"
+    ]
+  },
+  "active_contract_bindings": {
+    "release_contract": {
+      "path": "configs/releases/fin_ia_0_1_release_contract_v1_2.json",
+      "canonical_digest": "be7aec37c3020f6e679ef047b37fbaa6c8b1105eb8b825498bd9d15175f520ba"
+    },
+    "detailed_execution_backlog": {
+      "path": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_1.json",
+      "canonical_digest": "a35c772ca2acd358fbe8e20f2e9dd5ac271049e7c515c706a930224fadb0463b"
+    },
+    "schema": {
+      "path": "configs/engineering_handoff/point01_generated_json_schemas_v1_0.json",
+      "file_sha256": "ed1410ec4201da8b3c523457d119c8e39a10d5f233d279ace5fd35f5f8b0cfb9"
+    },
+    "api": {
+      "path": "src/sec_agent/canonical_runtime/facade.py",
+      "file_sha256": "d0d7ca722a9249317bff48b520b1a97523fbcf146a362b57dc925824f0db5e7c"
+    },
+    "policy": {
+      "path": "configs/engineering_handoff/point01_m2_a1_execution_proof_policy_v2_10.json",
+      "file_sha256": "6ad1a9e6b18414fe59350835f9a589b72cc14ddf92b36802a5e3ea24bddfff01"
+    },
+    "feature_scope": {
+      "path": "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_0.json",
+      "file_sha256": "a7afc254a264d1c930ca9ee9d3355da21fab35a81dc740b799f424e4e3a11740",
+      "change": "none"
+    }
+  },
+  "rollback_boundary": "REL-FND-001_with_legacy_global_authority_retained",
+  "execution_counts": {
+    "authority": 0,
+    "approval": 0,
+    "receipt": 0,
+    "baseline": 0,
+    "negative": 0,
+    "network": 0,
+    "tool": 0,
+    "model": 0,
+    "provider": 0,
+    "fixed_business_write": 0
+  },
+  "manifest_digest": "f95aeefec9c21726896baf6cf40f3fdcfd4d6c34699f92fbeceabd705ca3902e"
+}

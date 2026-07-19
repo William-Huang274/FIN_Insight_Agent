@@ -1,0 +1,17 @@
+{
+  "receipt_version": "finsight_point01_m6_2_global_one_shot_human_receipt_v1_0",
+  "approval_id": "approval_point01_m6_2_nvda_sec_metadata_global_one_shot",
+  "approval_state": "approved",
+  "approval_nonce": "a38c87c6-06e6-427a-9ff3-62df8ba75df6",
+  "package_ref": "point01-m6-2-nvda-sec-metadata-global-one-shot-package-v1",
+  "package_digest": "3f3d004dd6893b99da993b5b1a73d7230a2d9e16d7fcbc066c0bd80b508d6942",
+  "package_manifest_digest": "454b6693fbce8a33a399a8dc797aee2360d560db6abb9092ba162c31862d2cb3",
+  "scope_digest": "a944b3016d8244dd1b0d61a2b98b084e5f8967c33382d12b4b7c85fba7a46218",
+  "reviewer": {
+    "name": "william",
+    "employee_id": "003",
+    "role": "total_reviewer"
+  },
+  "expires_at": "2026-07-13T08:00:00Z",
+  "approval_note": "Approved by total reviewer william（工号003）for the exact package/scope above. The nonce is single-use and the receipt expires at 2026-07-13T08:00:00Z, which is 2026-07-13 16:00 Beijing time. Registration does not authorize setting SEC_USER_AGENT or sending a request beyond the separately gated live-pilot command."
+}

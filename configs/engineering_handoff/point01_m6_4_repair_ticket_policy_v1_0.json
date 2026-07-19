@@ -1,0 +1,15 @@
+{
+  "policy_version": "finsight_point01_m6_4_repair_ticket_policy_v1_0",
+  "policy_ref": "point01-m6-4-repair-ticket-policy-v1",
+  "scope": "Point01_M6_4_deterministic_typed_gap_repair_routing_only",
+  "authorization": "user_approved_m6_4_deterministic_repair_ticket_attempt_contract_only",
+  "max_internal_repair_attempts": 1,
+  "gap_routes": {
+    "candidate_metadata_absent": {"classification": "internal_metadata_gap", "terminal": false, "stop_reason": "bounded_official_first_metadata_repair_required"},
+    "required_context_kind_missing": {"classification": "internal_context_expansion_gap", "terminal": false, "stop_reason": "bounded_official_first_context_expansion_required"},
+    "external_source_unavailable": {"classification": "external_source_exhausted", "terminal": true, "stop_reason": "external_source_exhausted_stop_rule"},
+    "commercial_gap_stop_rule": {"classification": "commercial_license_required", "terminal": true, "stop_reason": "commercial_gap_stop_rule"},
+    "candidate_route_not_selected": {"classification": "input_contract_violation", "terminal": true, "stop_reason": "candidate_route_not_selected_stop_rule"}
+  },
+  "authority_boundary": {"repair_ticket_persistence": "not_admitted", "repair_attempt_execution": "not_admitted", "sourcehunter_network_provider_tool": "not_admitted", "free_search_or_proxy": "forbidden", "tool_selection_plan_write": "M6_2_owner_only", "parser_numeric_promotion": "not_admitted", "writer_full_chain": "not_admitted"}
+}

@@ -1,0 +1,118 @@
+{
+  "schema_version": "finsight_sector_report_archetype_sources_v0_1",
+  "audit_id": "sector_report_archetype_audit_20260711_v0_1",
+  "sources": [
+    {
+      "source_id": "workbuddy_ai_infra_9_sample_set",
+      "sector": "semiconductors_ai_infrastructure",
+      "report_type": "sector_or_thematic",
+      "title": "WorkBuddy AI infrastructure local report sample set",
+      "local_manifest_path": "docs/project_os/p35_ai_infra_current_system_gap_audit_v0_1.json",
+      "sample_count": 9,
+      "authority": "local_product_comparison_not_fact_authority",
+      "observed_sections": ["market_map", "demand_driver", "supply_constraint", "value_capture", "company_comparison", "risk", "visual_dashboard"],
+      "decision_mechanisms": ["hyperscaler_capex_to_demand_pool", "accelerator_demand_to_hbm_and_packaging", "server_orders_to_oem_revenue_and_margin", "capacity_bottleneck_to_rent_capture", "semicap_orders_to_lagged_cycle", "power_constraint_to_deployment"],
+      "key_metrics": ["hyperscaler_capex", "accelerator_shipments", "hbm_mix", "advanced_packaging_capacity", "server_orders", "server_backlog", "oem_margin", "semicap_orders", "power_capacity"],
+      "evidence_families": ["company_disclosure", "official_product_surface", "industry_news", "government_policy", "social_statement_context", "commercial_tracker_gap"],
+      "audit_note": "Useful for decision-surface, source-hunting and visual-delivery calibration; not an authority source for the facts inside the reports."
+    },
+    {
+      "source_id": "workbuddy_multisector_12_sample_set",
+      "sector": "cross_sector_calibration",
+      "report_type": "mixed_company_event_valuation_policy_counter_thesis",
+      "title": "WorkBuddy multi-sector 12-case calibration set",
+      "local_manifest_path": "data/manifests/workbuddy_multisector_calibration_audit_v0_1.json",
+      "sample_count": 12,
+      "authority": "local_product_comparison_not_fact_authority",
+      "observed_sections": ["decision_surface", "company_comparison", "scenario_and_sensitivity", "price_in", "counterevidence", "what_would_change", "data_gap", "visual_dashboard"],
+      "decision_mechanisms": ["subscription_platform_monetization", "balance_sheet_rate_credit_capital", "regulatory_access_supply_adoption", "traffic_ticket_inventory_margin", "commodity_volume_unit_cost_capital_return", "load_rate_base_financing_regulatory_return", "orders_backlog_delivery_margin_cash", "platform_adoption_arr_sales_efficiency", "earnings_delta_expectation_gap", "fundamental_vs_price_in", "policy_supply_chain_cost_demand", "thesis_falsification"],
+      "key_metrics": ["arr", "rpo", "nim", "cet1", "product_revenue", "same_store_sales", "inventory", "unit_cost", "free_cash_flow", "rate_base", "backlog", "implied_expectations"],
+      "evidence_families": ["company_disclosure", "government_and_regulator", "financial_search_tool", "web_search", "industry_secondary", "market_aggregator", "commercial_data_gap"],
+      "audit_note": "Proves cross-sector bounded ReAct and report-surface variety; source authority, claim lineage, numeric promotion and repeatability remain calibration gaps."
+    },
+    {
+      "source_id": "cfa_student_preparation",
+      "sector": "cross_sector",
+      "report_type": "research_report_guidance",
+      "title": "CFA Institute Research Challenge Student Preparation",
+      "url": "https://www.cfainstitute.org/insights/events/research-challenge/student-preparation",
+      "authority": "official_professional_body",
+      "observed_sections": ["investment_recommendation", "company_analysis", "industry_analysis", "financial_analysis", "valuation", "risk", "ethics_and_disclosure"],
+      "decision_mechanisms": ["evidence_to_recommendation", "valuation_to_target_price", "risk_balanced_thesis"],
+      "key_metrics": [],
+      "evidence_families": ["company_disclosure", "industry_context", "market_data"],
+      "audit_note": "General report skeleton only; it does not prove a sector-specific cell pack."
+    },
+    {
+      "source_id": "cfa_2020_cba_bank",
+      "sector": "banks_financials",
+      "report_type": "company_initiation",
+      "title": "Commonwealth Bank of Australia Equity Research Report",
+      "url": "https://www.cfainstitute.org/sites/default/files/-/media/documents/support/research-challenge/challenge/rc-2020-winning-report-university-of-sydney.pdf",
+      "authority": "official_cfa_hosted_report",
+      "observed_sections": ["investment_summary", "business_model", "industry_and_market_share", "financial_analysis", "valuation", "governance_and_regulation", "risk", "scenario_and_sensitivity"],
+      "decision_mechanisms": ["funding_mix_to_nim", "asset_pricing_to_nim", "credit_cost_to_roe", "capital_requirement_to_distribution", "channel_growth_to_volume_margin_tradeoff"],
+      "key_metrics": ["net_interest_margin", "deposit_mix", "loan_growth", "credit_loss", "capital_ratio", "roe", "price_to_book", "price_to_earnings"],
+      "evidence_families": ["bank_disclosure", "prudential_regulator", "central_bank", "market_data", "peer_financials"],
+      "audit_note": "Banks require a balance-sheet-first ontology and equity valuation; generic EV/EBITDA is not the main frame."
+    },
+    {
+      "source_id": "cfa_2021_vestas_energy_industrial",
+      "sector": "energy_utilities_industrials",
+      "report_type": "company_initiation",
+      "title": "Vestas Wind Systems Equity Research Report",
+      "url": "https://www.cfainstitute.org/sites/default/files/-/media/documents/support/research-challenge/challenge/rc-2021-winning-report-bi-norwegian-business-school.pdf",
+      "authority": "official_cfa_hosted_report",
+      "observed_sections": ["investment_summary", "industry_outlook", "competitive_position", "technology_and_product", "financial_analysis", "valuation", "risk", "scenario_and_sensitivity"],
+      "decision_mechanisms": ["auction_economics_to_order_quality", "lcoe_to_demand", "capacity_and_supply_chain_to_margin", "installed_base_to_service_revenue", "policy_to_project_pipeline"],
+      "key_metrics": ["order_intake", "backlog", "capacity", "lcoe", "service_mix", "ebit_margin", "free_cash_flow", "roic"],
+      "evidence_families": ["company_disclosure", "energy_agency", "auction_and_tender_data", "policy_and_regulator", "supply_chain_context"],
+      "audit_note": "Project economics, policy, physical capacity and service installed base are first-class cells."
+    },
+    {
+      "source_id": "cfa_2016_canadian_tire_retail",
+      "sector": "retail_consumer",
+      "report_type": "company_initiation",
+      "title": "Canadian Tire Equity Research Report",
+      "url": "https://www.cfainstitute.org/sites/default/files/-/media/documents/support/research-challenge/challenge/rc-2016-winning-rpt-univ-of-waterloo.pdf",
+      "authority": "official_cfa_hosted_report",
+      "observed_sections": ["executive_summary", "investment_thesis", "industry_outlook", "business_and_brand", "financial_analysis", "sum_of_the_parts_valuation", "risk", "monte_carlo"],
+      "decision_mechanisms": ["traffic_ticket_to_same_store_sales", "price_mix_promotion_to_gross_margin", "inventory_to_markdown_risk", "store_ramp_to_return", "loyalty_credit_real_estate_to_ecosystem_value"],
+      "key_metrics": ["same_store_sales", "traffic", "ticket", "gross_margin", "inventory_turns", "store_count", "sales_per_store", "segment_value"],
+      "evidence_families": ["company_disclosure", "retail_statistics", "channel_and_store_observation", "consumer_macro", "peer_financials"],
+      "audit_note": "Retail needs operating decomposition; revenue growth alone cannot prove demand or margin quality."
+    },
+    {
+      "source_id": "cfa_italy_recordati_healthcare",
+      "sector": "healthcare_pharma_medtech",
+      "report_type": "company_initiation",
+      "title": "Recordati Equity Research Report",
+      "url": "https://cfasi.it/Assets/Store/1299_Report_Politecnico_di_Milano.pdf",
+      "authority": "official_cfa_society_hosted_report",
+      "observed_sections": ["investment_summary", "business_segments", "product_and_therapeutic_area", "industry_and_regulation", "financial_analysis", "valuation", "risk", "pipeline_and_patent"],
+      "decision_mechanisms": ["clinical_and_regulatory_status_to_addressable_market", "reimbursement_to_access", "patent_expiry_to_erosion", "product_mix_to_margin", "sales_channel_to_adoption"],
+      "key_metrics": ["product_revenue", "rd_spend", "pipeline_stage", "patent_expiry", "market_access", "gross_margin", "operating_margin"],
+      "evidence_families": ["company_disclosure", "drug_regulator", "trial_registry", "reimbursement_authority", "scientific_publication", "commercial_tracker_gap"],
+      "audit_note": "Regulatory eligibility, reimbursement and commercial adoption must remain separate decision cells."
+    },
+    {
+      "source_id": "cfa_2022_motorola_technology",
+      "sector": "technology_software_services",
+      "report_type": "company_initiation",
+      "title": "Motorola Solutions Equity Research Report",
+      "url": "https://www.cfainstitute.org/sites/default/files/-/media/documents/support/research-challenge/challenge/rc-2022-winning-written-report-northern-illinois-univ.pdf",
+      "authority": "official_cfa_hosted_report",
+      "observed_sections": ["investment_summary", "business_mix", "industry_and_moat", "acquisition_strategy", "financial_analysis", "dcf_valuation", "risk", "scenario_and_sensitivity"],
+      "decision_mechanisms": ["recurring_mix_to_revenue_quality", "mission_critical_moat_to_retention", "acquisition_to_growth_and_leverage", "margin_assumption_to_fcf", "product_adoption_to_monetization"],
+      "key_metrics": ["recurring_revenue_mix", "backlog", "organic_growth", "operating_margin", "free_cash_flow", "net_debt", "roic"],
+      "evidence_families": ["company_disclosure", "official_product_surface", "customer_and_contract_context", "peer_financials", "market_data"],
+      "audit_note": "Technology reports still require product-to-monetization and capital allocation bridges, not a generic product summary."
+    }
+  ],
+  "report_type_archetypes": [
+    {"report_type": "company_initiation", "required_surfaces": ["thesis", "business_model", "industry", "financials", "valuation", "risk", "what_would_change"]},
+    {"report_type": "earnings_or_event_update", "required_surfaces": ["event_delta", "expectation_gap", "estimate_bridge", "price_in", "risk", "what_would_change"]},
+    {"report_type": "sector_or_thematic", "required_surfaces": ["market_map", "demand_driver", "supply_constraint", "value_capture", "winner_loser_matrix", "risk", "what_would_change"]},
+    {"report_type": "peer_comparison", "required_surfaces": ["comparable_scope", "metric_normalization", "relative_quality", "valuation", "risk", "what_would_change"]}
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "artifact_owner_count": 15,
+  "authority_boundary": {
+    "business_case_mutation": "not_admitted",
+    "decision_surface_contract_cell_slot": "read_only_m6_input",
+    "evidence_runtime": "not_admitted",
+    "external_tool_or_network_execution": "not_admitted",
+    "full_chain": "not_admitted",
+    "legacy_authority_change": "not_admitted",
+    "legacy_task_run": "authoritative_execution_history_owner",
+    "m6_artifact_writes": "not_admitted_in_m6_0",
+    "provider_execution": "not_admitted",
+    "writer_runtime": "not_admitted"
+  },
+  "boundary": "This M6.0 pass freezes only downstream ownership and dataflow. It does not implement M6.1, admit providers, external tools or network execution, Evidence/Writer runtime, full-chain, business Case mutation, legacy authority change, a compound writer, or paid model execution.",
+  "child_contract_count": 10,
+  "errors": [],
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m6_0_migration_design_freeze_manifest_v1_0.json": "7696407b2b8d5ea74daf411891cae5b02069cf1d816b0fee85adc018e3f96da3",
+    "docs/architecture/agent_graph_vnext/TECH_02_agentic_search_evidence_toolgateway_sourcehunter.zh-CN.md": "221b710151c3520588d0fef564b9083d9fe5425a5462564f0c3b4e2a6e90c637",
+    "docs/architecture/agent_graph_vnext/TECH_03_document_metadata_rag_knowledge_layer.zh-CN.md": "cf8c861114d4cd480d02a43bdabef66b5327eceb9510ef5e465579c9e4fb08d5",
+    "docs/architecture/agent_graph_vnext/TECH_04_numeric_program_trace_parser_promotion.zh-CN.md": "205ad9e9dbaab3e7135ba5dbfdb68af934f16c0affb36dcdacb6b60c683daef9",
+    "docs/architecture/agent_graph_vnext/TECH_05_domain_evidence_operator_decision_surface_projection.zh-CN.md": "b0afe447fb4438f8384401d677d5c7eaf2e25370cff5fd0f65bd411f05c032a9",
+    "docs/architecture/agent_graph_vnext/TECH_07_context_engine_skills_compaction_governance.zh-CN.md": "3fd6846d670a1688002fb116213d6576eb787314a9fc8d983b2600e32928df16",
+    "docs/architecture/agent_graph_vnext/TECH_08_subagents_as_tools_handoff_contract.zh-CN.md": "5db5bab05b3354c41c1495b3e25d2554123bfde6aa8e1bb4f726a50ac9473366",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "df3fda11ce98a9312486f3bc4389ba6a1da11808faf7ec2a8ed8abeb641166ee",
+    "scripts/engineering/run_point01_m6_0_design_lint.py": "161e2f6675eae21ddb379155095b323e6ca87458692f7f3034c07d8e6d302492"
+  },
+  "generated_at": "2026-07-13T06:41:23.447882+00:00",
+  "manifest_status": "design_frozen_deterministic_no_runtime_implementation",
+  "model_call_count": 0,
+  "result_version": "finsight_point01_m6_0_design_lint_result_v1_0",
+  "runtime_implementation_count": 0,
+  "scope": "Point01_M6_Evidence_Repair_downstream_design_only",
+  "status": "pass"
+}

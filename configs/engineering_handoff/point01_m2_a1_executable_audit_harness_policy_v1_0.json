@@ -1,0 +1,33 @@
+{
+  "schema_version": "finsight_point01_m2_a1_executable_audit_harness_policy_v1_0",
+  "scope": "M2_A1_executable_harness_and_package_freeze_only",
+  "status": "executable_harness_implemented_actual_probes_not_authorized",
+  "actual_runner": {
+    "module": "src/sec_agent/canonical_runtime/m2_a1_audit_harness.py::M2A1ActualRunner",
+    "allowed_inputs": ["one_sanitized_corpus_case", "exact_compiler_policy_ref", "exact_pack_registry_policy_ref", "explicit_temporary_root", "injected_M2A1AuditCanary"],
+    "forbidden_inputs": ["expected_cell_oracle", "oracle_digest", "reviewer_expected_values", "ambient_store", "fixed_store", "provider_client", "transport_client"],
+    "actual_probe_entrypoint": "M2A1ActualRunner.execute_actual_probes",
+    "current_behavior": "always_raises_m2_a1_actual_probes_not_authorized"
+  },
+  "assembly_contract": {
+    "adapter": "adapt_legacy_research_objective",
+    "adapter_output_pack_selection": "must_be_empty_before_explicit_merge",
+    "seed_pack_selection": "must_be_versioned_and_exactly_metadata_bound",
+    "required_exact_fields": ["tenant_id", "project_id", "case_id", "query", "as_of", "universe", "language", "compiler_policy_ref", "required_cells", "pack_selection"],
+    "forbidden_shortcut": "compiler_input_seed_must_not_be_treated_as_already_assembled_CompilerInputContract"
+  },
+  "terminalization_and_oracle": {
+    "immutable_actual_result": "M2A1ImmutableActualResult",
+    "oracle_evaluator": "evaluate_independent_oracle",
+    "ordering": ["actual_terminalize", "actual_result_digest", "independent_oracle_evaluate", "reviewer_gate"],
+    "oracle_runner_access": "forbidden"
+  },
+  "canaries": ["M2A1AuditCanary.reject_oracle_path_read_hash_import", "M2A1AuditCanary.reject_store_open_and_ambient_resolution", "M2A1AuditCanary.reject_transport_constructor", "M2A1AuditCanary.reject_model_constructor"],
+  "receipt_wrapper": {
+    "module": "src/sec_agent/canonical_runtime/m2_a1_execution_receipt.py",
+    "persistent_registration": "forbidden_in_this_execution_point",
+    "current_behavior": "validate_only_actual_execution_not_authorized",
+    "future_requirement": "package_external_exact_admission_and_fixed_store_append_only_single_use_consumption"
+  },
+  "authority_boundary": "No A0-M2-P01/P02/P03 actual probe, compiler/shadow fixture, model/network/tool/provider, fixed_or_production_store, business Case or legacy authority mutation is authorized."
+}

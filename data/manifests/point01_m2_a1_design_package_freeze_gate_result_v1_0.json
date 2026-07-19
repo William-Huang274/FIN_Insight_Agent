@@ -1,0 +1,36 @@
+{
+  "boundary": "This runner reads staged files and emits a static package manifest only. It does not import or invoke compiler/shadow runtime, tests, model, network, tool, provider or store paths.",
+  "checks": {
+    "design_execution_counts_zero": true,
+    "expected_output_absent_from_actual_corpus": true,
+    "four_independent_sector_inputs": true,
+    "future_actual_requires_external_admission_and_receipt": true,
+    "no_mutable_governance_docs_in_package": true,
+    "oracle_runtime_access_forbidden": true,
+    "package_binds_required_domains": true,
+    "typed_stop_matrix_complete": true
+  },
+  "execution_counts": {
+    "business_case_mutations": 0,
+    "compiler_or_shadow_fixture_runs": 0,
+    "external_tool_calls": 0,
+    "legacy_authority_mutations": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "provider_calls": 0,
+    "store_writes": 0
+  },
+  "failures": [],
+  "gate_digest": "968b5bd0e557c61312976a4e55930722fcb39e688bdc2041a95c44531e64871d",
+  "next_step_requires_total_reviewer": "Review M2-A1 design/package only. Actual A0-M2-P01/P02/P03 requires a separate exact external admission and single-use execution receipt.",
+  "package_digest": "5e464a22aa77723cc15febb8d5a80357d4bc3fac1137da54dbdf25c49ae2a35c",
+  "package_verify": {
+    "mismatches": [],
+    "missing_or_extra_fields": [],
+    "package_digest_valid": true,
+    "status": "pass"
+  },
+  "result_version": "finsight_point01_m2_a1_design_package_freeze_gate_result_v1_0",
+  "scope": "M2_A1_design_and_package_freeze_only",
+  "status": "design_package_frozen_pending_independent_review"
+}

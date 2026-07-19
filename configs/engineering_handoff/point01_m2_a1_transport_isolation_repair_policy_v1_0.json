@@ -1,0 +1,34 @@
+{
+  "schema_version": "finsight_point01_m2_a1_transport_isolation_repair_policy_v1_0",
+  "policy_ref": "point01-m2-a1-rc-p38-024-transport-isolation-repair-policy-v1",
+  "scope": "RC-P38-024_phase_a_root_cause_repair_package_freeze_only",
+  "authority_boundary": "no_admission_no_receipt_no_baseline_rerun_no_network_tool_model_provider_or_fixed_store_write",
+  "required_import_boundary_probes": [
+    "clean_python_baseline",
+    "canonical_planning_local_compile",
+    "legacy_bridge_runtime_facade_import",
+    "actual_audit_bootstrap_import",
+    "canary_constructor_connect_request_negative"
+  ],
+  "transport_observation_contract": {
+    "transport_module_loaded": "context_only_not_capability_use",
+    "preloaded_alias": "context_only_not_capability_use",
+    "transport_constructor_attempt": "hard_fail",
+    "socket_or_http_connect_or_request_attempt": "hard_fail",
+    "network_request_success": "must_equal_zero"
+  },
+  "repair_requirements": [
+    "canonical_runtime_public_exports_must_be_lazy",
+    "actual_runner_supervisor_must_use_clean_isolated_subprocess",
+    "canary_must_install_before_runtime_harness_import",
+    "actual_runner_must_not_read_oracle_or_reviewer_expectation",
+    "old_admission_and_receipt_are_non_replayable"
+  ],
+  "m2_status_after_phase_a": {
+    "milestone_scope_status": "complete_deterministic_shadow",
+    "operational_qualification_status": "fail_closed_pending_transport_isolation_repair_review"
+  },
+  "m3_m5_status_after_phase_a": "scoped_closeout_retained_adversarial_operational_requalification_pending",
+  "package_input_bytes_source": "git_index",
+  "actual_authorized": false
+}

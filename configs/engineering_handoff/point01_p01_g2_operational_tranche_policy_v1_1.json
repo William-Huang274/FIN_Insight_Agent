@@ -1,0 +1,44 @@
+{
+  "schema_version": "finsight_point01_p01_g2_operational_tranche_policy_v1_1",
+  "status": "P01_G2_0_TRANCHE_FROZEN_PENDING_INDEPENDENT_EXECUTION_AUTHORITY",
+  "purpose": "Repair P01-G2.0 authority and original-matrix coverage accounting without issuing authority or executing a scenario.",
+  "source_matrix_ref": "configs/engineering_handoff/point01_m2_a1_execution_ready_scenario_matrix_v2_1.json",
+  "selected_original_source_matrix_scenario_ids": [
+    "p01-baseline-separated-input",
+    "p02-stale-or-superseded-pack",
+    "p03-network-tool-transport"
+  ],
+  "supplemental_pre_authority_case": {
+    "case_id": "g2-wrong-package-or-approval",
+    "source_matrix_scenario_id": null,
+    "purpose": "Reject wrong package or approval before any admission, receipt, namespace, path, runtime or lifecycle write. This is supplemental and is not an original 16-scenario matrix row."
+  },
+  "authority_policy": {
+    "baseline": "only p01-baseline-separated-input may request a future independent exact reviewer decision, admission and single-use receipt under the existing B0.7 blueprint",
+    "negative_cases": "wrong package/approval, stale input/version drift and unauthorized transport are pre-authority probes only; they must not receive an admission, receipt, namespace, runtime materialization or terminal lifecycle write",
+    "shared_nonce_or_receipt": "forbidden",
+    "retry_replay_renewal": "forbidden",
+    "issuance_mode": "just_in_time_only_after_independent_execution_authority_review"
+  },
+  "coverage_policy": {
+    "original_matrix_count": 16,
+    "selected_original_count": 3,
+    "deferred_original_count": 13,
+    "supplemental_case_count": 1,
+    "oracle_path_access_must_remain_in_deferred_original_backlog": true
+  },
+  "freeze_prohibitions": [
+    "operational_execution",
+    "active_approval_admission_or_receipt",
+    "formal_namespace",
+    "network_model_provider_or_tool_success",
+    "paid_or_full_chain",
+    "production_cutover",
+    "commercial_data",
+    "secret_persistence",
+    "business_case_mutation",
+    "legacy_global_authority_change"
+  ],
+  "production_readiness": "not_admitted",
+  "legacy_authority": "retained"
+}

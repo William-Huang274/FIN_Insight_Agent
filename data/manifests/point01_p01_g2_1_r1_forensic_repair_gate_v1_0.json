@@ -1,0 +1,23 @@
+{
+  "execution_counts": {
+    "baseline": 0,
+    "fixed_store_write": 0,
+    "model": 0,
+    "negative_case": 0,
+    "network": 0,
+    "operational_authority": 0,
+    "provider": 0,
+    "receipt": 0,
+    "tool": 0
+  },
+  "gate_digest": "d91fb8c06679f98dbec09326633937fafc55a9375840a5f84901662bfabd75db",
+  "incident_input_digest": "5e4fbf4e8279c6cfde219cdf5c72e52881093579f7440542bd3e9595b73e3eb2",
+  "next_step": "independent_review_only_no_fresh_operational_receipt",
+  "package_current_verify": "pass",
+  "reconciliation_digest": "7913ee3d38ef3ffd2d28eaf8f5fb2cf4b19545f72deb9dca8d003a032597939a",
+  "repair_package_digest": "3e9114adfde081240311228ebebf2de1b3f03f94570714c0d834022f60e46c9a",
+  "repair_ref": "point01-p01-g2-1-r1-child-failure-forensic-repair-v1",
+  "schema_version": "finsight_point01_p01_g2_1_r1_forensic_repair_gate_v1_0",
+  "status": "pass",
+  "validation_errors": []
+}

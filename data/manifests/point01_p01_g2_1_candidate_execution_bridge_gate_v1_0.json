@@ -1,0 +1,29 @@
+{
+  "bridge_manifest_digest": "d7904fb4ec7da8578abd7d47914c5ce073fa55d7035e6c58703ca29829525a6d",
+  "execution_counts": {
+    "admission": 0,
+    "baseline": 0,
+    "fixed_business_store_write": 0,
+    "formal_namespace": 0,
+    "human_approval": 0,
+    "model_success": 0,
+    "negative_case": 0,
+    "network_success": 0,
+    "provider_success": 0,
+    "receipt": 0,
+    "runtime": 0,
+    "tool_success": 0
+  },
+  "gate_digest": "cf35d48b1200d1d3b7df661add38335f89f77a6158d1115a6bcf1df4244a2b38",
+  "next_step": "independent_review_required_no_authority_or_baseline_execution",
+  "package_digest": "06a3ef6b5f1d8677e79e81676131ae3b8e83fcd87f9ccaeb9ed911100360f879",
+  "package_ref": "point01-p01-g2-1-final-ai-semis-candidate-bound-executable-baseline-v1",
+  "preflight_digest": "0ad2c6f8e5c3d157dc0cf2adbbe7d7fadf1f8f894be4c755e2e33cd8e8fad659",
+  "schema_version": "finsight_point01_p01_g2_1_candidate_execution_bridge_gate_v1_0",
+  "status": "pass",
+  "verification": {
+    "errors": [],
+    "package_digest": "06a3ef6b5f1d8677e79e81676131ae3b8e83fcd87f9ccaeb9ed911100360f879",
+    "status": "pass"
+  }
+}

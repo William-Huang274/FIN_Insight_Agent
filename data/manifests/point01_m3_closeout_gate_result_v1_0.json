@@ -1,0 +1,42 @@
+{
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "cutover": "forbidden",
+    "legacy_task_run": "authoritative"
+  },
+  "boundary": "M3 closeout can only validate deterministic shadow comparison. It does not authorize M4 cutover, provider/model execution, Evidence/Writer runtime, or full-chain.",
+  "design_review_status": "user_confirmed_calibration_accepted",
+  "external_call_count": 0,
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m3_closeout_gate_manifest_v1_0.json": "fcbe43be22042ceffd1ee6e208a0676fc8764f05369e4bf1f711073667ad7613",
+    "configs/engineering_handoff/point01_m3_human_reviewer_approval_v1_0.json": "33e666f00c82ec668237de2c3a557b60573b54296dd96bb7e325817b90e79955",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "694752dedc9252d3fac8d680cedd83c73df394b842f5d47358455a54dceb177f",
+    "scripts/engineering/run_point01_m3_closeout_gate.py": "ac0f89744b83062faa1066635d70b343df63c8ce3175804ad69f16a99f11955b"
+  },
+  "forbidden_admissions": [
+    "m4_cutover",
+    "paid_model",
+    "provider_execution",
+    "evidence_runtime",
+    "writer_runtime",
+    "full_chain"
+  ],
+  "generated_at": "2026-07-12T12:08:45.783980+00:00",
+  "human_reviewer_approval_status": "approved",
+  "milestone": "M3_complete",
+  "model_call_count": 0,
+  "required_point_statuses": {
+    "M3.0": "pass",
+    "M3.1": "pass",
+    "M3.2": "pass",
+    "M3.3": "pass",
+    "M3.4": "pass",
+    "M3.5": "pass",
+    "M3.6": "pass",
+    "M3.7": "pass"
+  },
+  "result_version": "finsight_point01_m3_closeout_gate_result_v1_0",
+  "scope": "Point01_M3_shadow_comparison_calibration_closeout",
+  "status": "pass",
+  "unmet_conditions": []
+}

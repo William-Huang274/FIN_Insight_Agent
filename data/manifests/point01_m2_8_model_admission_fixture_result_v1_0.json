@@ -1,0 +1,184 @@
+{
+  "adapter_call_count": 0,
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "external_call_count": 0,
+    "legacy_task_run": "authoritative",
+    "model_call_count": 0,
+    "model_execution_permitted": false
+  },
+  "boundary": "This is M2.8 denied-path evidence only. No provider adapter is invoked, no model output is created and no legacy or planning authority changes.",
+  "checks": {
+    "adapter_not_invoked": true,
+    "denied_path_records_all_missing_admission_inputs": true,
+    "model_free": true,
+    "policy_stays_denied_even_when_other_inputs_are_ready": true,
+    "prompt_snapshot_and_repair_trace_are_recorded": true
+  },
+  "denied_audit": {
+    "admission_decision": {
+      "decision_digest": "a4c897beee427fc7cc86751f5e65540ef78ad8f3812a463e9486406d9df5fa82",
+      "denial_reasons": [
+        "budget_preflight_not_pass",
+        "explicit_approved_scoped_node_missing",
+        "feature_flag_not_enabled",
+        "permission_snapshot_missing",
+        "policy_model_execution_disabled",
+        "provider_preflight_not_pass"
+      ],
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "model_execution_permitted": false,
+      "permission_snapshot_ref": null,
+      "planning_authority": "shadow",
+      "provider_family": "deepseek",
+      "status": "denied"
+    },
+    "audit_digest": "7577c8d022903190373d4407990b42e26bf08d7f43108ebc594c1bbe898499a8",
+    "external_call_count": 0,
+    "model_call_count": 0,
+    "policy_ref": "point01-m2-8-model-admission-policy-v1",
+    "prompt_context_snapshot": {
+      "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+      "envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+      "policy_config_refs": [
+        "point01-m2-1-compiler-policy-v1",
+        "point01-m2-2-full-serializer-policy-v1",
+        "point01-m2-8-model-admission-policy-v1"
+      ],
+      "prompt_body_included": false,
+      "prompt_context_digest": "8611478ebbb3442b2224cf28070c1bfc70354df4daeb73e676f580a6a62fd16b",
+      "provider_family": "deepseek",
+      "snapshot_version": "finsight_point01_compiler_prompt_context_snapshot_v1"
+    },
+    "proposal_status": "not_created_admission_denied"
+  },
+  "denied_proposal": {
+    "admission_decision": {
+      "decision_digest": "a4c897beee427fc7cc86751f5e65540ef78ad8f3812a463e9486406d9df5fa82",
+      "denial_reasons": [
+        "budget_preflight_not_pass",
+        "explicit_approved_scoped_node_missing",
+        "feature_flag_not_enabled",
+        "permission_snapshot_missing",
+        "policy_model_execution_disabled",
+        "provider_preflight_not_pass"
+      ],
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "model_execution_permitted": false,
+      "permission_snapshot_ref": null,
+      "planning_authority": "shadow",
+      "provider_family": "deepseek",
+      "status": "denied"
+    },
+    "external_call_count": 0,
+    "model_call_count": 0,
+    "planning_authority": "shadow",
+    "prompt_context_snapshot": {
+      "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+      "envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+      "policy_config_refs": [
+        "point01-m2-1-compiler-policy-v1",
+        "point01-m2-2-full-serializer-policy-v1",
+        "point01-m2-8-model-admission-policy-v1"
+      ],
+      "prompt_body_included": false,
+      "prompt_context_digest": "8611478ebbb3442b2224cf28070c1bfc70354df4daeb73e676f580a6a62fd16b",
+      "provider_family": "deepseek",
+      "snapshot_version": "finsight_point01_compiler_prompt_context_snapshot_v1"
+    },
+    "proposal_payload": null,
+    "status": "not_created_admission_denied",
+    "structured_output_repair_trace": {
+      "input_digest": "8611478ebbb3442b2224cf28070c1bfc70354df4daeb73e676f580a6a62fd16b",
+      "output_digest": null,
+      "reason": "admission_denied",
+      "repair_attempt_count": 0,
+      "status": "not_attempted"
+    }
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m2_8_model_admission_policy_v1_0.json": "fd63e269e9e1b7d594a672252096589e17b4b9c50d2d1c61ecf9d815c9d24207",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "e7d1ddb2fc2b06ae36a123b184521093afb7d9a4dcfcb268aa1e0269dbbbe998",
+    "scripts/engineering/run_point01_m2_8_model_admission_fixture.py": "6120c197001e5ff8b09d69aa72b3092bf04731c79a2ae289828b81b627d7deb6",
+    "src/sec_agent/canonical_runtime/full_serializer.py": "d4f304417ee4e3775f8a64a7453ad59e494b4281591110d2e60f8862d519b42a",
+    "src/sec_agent/canonical_runtime/model_admission.py": "dc4acf867e61d8081ec4aac760046a60c330382a281b73bcae0b0bc22d5aa645"
+  },
+  "otherwise_ready_but_policy_denied_audit": {
+    "admission_decision": {
+      "decision_digest": "601e88b9c4b65a324f2174071852d3d493a326ef4c2b505efee102343e4c4c1d",
+      "denial_reasons": [
+        "policy_model_execution_disabled"
+      ],
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "model_execution_permitted": false,
+      "permission_snapshot_ref": "permission-m2-8",
+      "planning_authority": "shadow",
+      "provider_family": "deepseek",
+      "status": "denied"
+    },
+    "audit_digest": "d9b431bdfd3d49782bc928000fc2647806ecb104c7dafeb265dcd20f8e2638a5",
+    "external_call_count": 0,
+    "model_call_count": 0,
+    "policy_ref": "point01-m2-8-model-admission-policy-v1",
+    "prompt_context_snapshot": {
+      "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+      "envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+      "policy_config_refs": [
+        "point01-m2-1-compiler-policy-v1",
+        "point01-m2-2-full-serializer-policy-v1",
+        "point01-m2-8-model-admission-policy-v1"
+      ],
+      "prompt_body_included": false,
+      "prompt_context_digest": "8611478ebbb3442b2224cf28070c1bfc70354df4daeb73e676f580a6a62fd16b",
+      "provider_family": "deepseek",
+      "snapshot_version": "finsight_point01_compiler_prompt_context_snapshot_v1"
+    },
+    "proposal_status": "not_created_admission_denied"
+  },
+  "otherwise_ready_but_policy_denied_proposal": {
+    "admission_decision": {
+      "decision_digest": "601e88b9c4b65a324f2174071852d3d493a326ef4c2b505efee102343e4c4c1d",
+      "denial_reasons": [
+        "policy_model_execution_disabled"
+      ],
+      "external_call_count": 0,
+      "model_call_count": 0,
+      "model_execution_permitted": false,
+      "permission_snapshot_ref": "permission-m2-8",
+      "planning_authority": "shadow",
+      "provider_family": "deepseek",
+      "status": "denied"
+    },
+    "external_call_count": 0,
+    "model_call_count": 0,
+    "planning_authority": "shadow",
+    "prompt_context_snapshot": {
+      "contract_version_id": "contract-m2-2-case-ai-semiconductor:v1",
+      "envelope_digest": "51c524074c8893d5af7072760205574bd00e150e63cf607948e7bafdb249f16c",
+      "policy_config_refs": [
+        "point01-m2-1-compiler-policy-v1",
+        "point01-m2-2-full-serializer-policy-v1",
+        "point01-m2-8-model-admission-policy-v1"
+      ],
+      "prompt_body_included": false,
+      "prompt_context_digest": "8611478ebbb3442b2224cf28070c1bfc70354df4daeb73e676f580a6a62fd16b",
+      "provider_family": "deepseek",
+      "snapshot_version": "finsight_point01_compiler_prompt_context_snapshot_v1"
+    },
+    "proposal_payload": null,
+    "status": "not_created_admission_denied",
+    "structured_output_repair_trace": {
+      "input_digest": "8611478ebbb3442b2224cf28070c1bfc70354df4daeb73e676f580a6a62fd16b",
+      "output_digest": null,
+      "reason": "admission_denied",
+      "repair_attempt_count": 0,
+      "status": "not_attempted"
+    }
+  },
+  "result_version": "finsight_point01_m2_8_model_admission_fixture_result_v1_0",
+  "scope": "Point01_M2_8_model_adapter_admission_denied_path",
+  "status": "pass"
+}

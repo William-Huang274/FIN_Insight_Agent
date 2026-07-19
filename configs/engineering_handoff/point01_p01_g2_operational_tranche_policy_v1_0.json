@@ -1,0 +1,39 @@
+{
+  "schema_version": "finsight_point01_p01_g2_operational_tranche_policy_v1_0",
+  "status": "P01_G2_0_TRANCHE_FROZEN_PENDING_INDEPENDENT_EXECUTION_AUTHORITY",
+  "purpose": "Freeze the smallest operational-qualification tranche after B0.7 L2 proof; do not issue authority or execute scenarios.",
+  "source_matrix_ref": "configs/engineering_handoff/point01_m2_a1_execution_ready_scenario_matrix_v2_1.json",
+  "selected_source_matrix_scenario_ids": [
+    "p01-baseline-separated-input",
+    "p01-oracle-path-access",
+    "p02-stale-or-superseded-pack",
+    "p03-network-tool-transport"
+  ],
+  "selection_rationale": {
+    "baseline": "One exact compiler/shadow operational baseline is necessary to prove the production actual leaf after the synthetic shared-kernel proof.",
+    "wrong_package_or_approval": "The selected P01 security slot is overridden at the pre-authority boundary: invalid package or approval must deny before any receipt, namespace, path or write. The original oracle-path subcheck remains an explicitly named future regression subcheck, not a compiler behavior claim for this tranche.",
+    "stale_input_version_drift": "Use the existing p02-stale-or-superseded-pack contract to test exact version/lineage denial.",
+    "unauthorized_transport": "Use the existing p03-network-tool-transport contract to prove the canary/permission boundary with zero network or tool success."
+  },
+  "authority_policy": {
+    "each_executable_case_requires": "independent_future_external_reviewer_decision_admission_and_single_use_receipt",
+    "shared_nonce_or_receipt": "forbidden",
+    "retry_replay_renewal": "forbidden",
+    "wrong_package_or_approval": "must_not_issue_valid_authority_or_consume_baseline_receipt",
+    "issuance_mode": "just_in_time_only_after_independent_execution_authority_review"
+  },
+  "freeze_prohibitions": [
+    "operational_execution",
+    "active_approval_admission_or_receipt",
+    "formal_namespace",
+    "network_model_provider_or_tool_success",
+    "paid_or_full_chain",
+    "production_cutover",
+    "commercial_data",
+    "secret_persistence",
+    "business_case_mutation",
+    "legacy_global_authority_change"
+  ],
+  "production_readiness": "not_admitted",
+  "legacy_authority": "retained"
+}

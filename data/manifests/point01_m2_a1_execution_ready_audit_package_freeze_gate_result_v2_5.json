@@ -1,0 +1,29 @@
+{
+  "execution_counts": {
+    "actual": 0,
+    "model": 0,
+    "network": 0,
+    "new_admission": 0,
+    "new_receipt": 0,
+    "provider": 0,
+    "receipt_consumption": 0,
+    "receipt_registration": 0,
+    "store_write": 0,
+    "tool": 0
+  },
+  "fixed_store_sha256": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4",
+  "gate_digest": "cd507c7dd55932866c954cd6001b2d33aa0b63801cec5d8168236fdcaae65de4",
+  "next_step": "independent_review_required_no_authority_or_baseline",
+  "package_digest": "a23dac3931164b4910a6182b97fa37e10d788e893991e4bc1d079e78439ebe6a",
+  "package_ref": "point01-m2-a1-operational-qualification-adversarial-audit-package-v2-5-dispatch-repair",
+  "result_version": "finsight_point01_m2_a1_v2_5_package_freeze_gate_v1",
+  "status": "pass",
+  "target_digest": "a23dac3931164b4910a6182b97fa37e10d788e893991e4bc1d079e78439ebe6a",
+  "verification": {
+    "calculated_package_digest": "a23dac3931164b4910a6182b97fa37e10d788e893991e4bc1d079e78439ebe6a",
+    "failures": [],
+    "input_hash_count": 65,
+    "production_preflight": "package_admission_required",
+    "status": "pass"
+  }
+}

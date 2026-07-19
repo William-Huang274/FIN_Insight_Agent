@@ -1,0 +1,488 @@
+{
+  "authority_boundary": {
+    "active_authority_forbidden": true,
+    "formal_namespace_must_remain_absent": true,
+    "legacy_authority": "retained",
+    "no_paid_full_chain_network_model_provider_or_tool_success": true,
+    "operational_execution_authorized": false,
+    "production_readiness": "not_admitted"
+  },
+  "baseline_failure_halts_all_remaining_cases": true,
+  "deferred_operational_regression_backlog": [
+    {
+      "disposition": "deferred_named_operational_regression_after_g2_baseline_and_independent_authority_review",
+      "expected_typed_stop": "oracle_leakage_detected",
+      "owner": "m2_test_isolation_owner",
+      "scenario_id": "p01-oracle-hash-access"
+    },
+    {
+      "disposition": "deferred_named_operational_regression_after_g2_baseline_and_independent_authority_review",
+      "expected_typed_stop": "none",
+      "owner": "m2_compiler_serializer_owner",
+      "scenario_id": "p01-oracle-mutation-invariance"
+    },
+    {
+      "disposition": "deferred_named_operational_regression_after_g2_baseline_and_independent_authority_review",
+      "expected_typed_stop": "artifact_envelope_replay_mismatch",
+      "owner": "m2_compiler_serializer_owner",
+      "scenario_id": "p02-artifact-envelope-replay-mismatch"
+    },
+    {
+      "disposition": "deferred_named_operational_regression_after_g2_baseline_and_independent_authority_review",
+      "expected_typed_stop": "pack_lineage_digest_mismatch",
+      "owner": "m2_pack_policy_owner",
+      "scenario_id": "p02-parent-or-digest-mismatch"
+    },
+    {
+      "disposition": "deferred_named_operational_regression_after_g2_baseline_and_independent_authority_review",
+      "expected_typed_stop": "explicit_sector_conflicts_query_or_selector_conflict",
+      "owner": "m2_pack_policy_owner",
+      "scenario_id": "p02-selector-conflict"
+    },
+    {
+      "disposition": "deferred_named_operational_regression_after_g2_baseline_and_independent_authority_review",
+      "expected_typed_stop": "pack_version_or_lineage_mismatch",
+      "owner": "m2_pack_policy_owner",
+      "scenario_id": "p02-unversioned-pack-ref"
+    },
+    {
+      "disposition": "deferred_named_operational_regression_after_g2_baseline_and_independent_authority_review",
+      "expected_typed_stop": "none",
+      "owner": "m2_pack_policy_owner",
+      "scenario_id": "p02-valid-versioned-baseline"
+    },
+    {
+      "disposition": "deferred_named_operational_regression_after_g2_baseline_and_independent_authority_review",
+      "expected_typed_stop": "test_runtime_isolation_violation",
+      "owner": "m2_test_isolation_owner",
+      "scenario_id": "p03-ambient-resolver"
+    },
+    {
+      "disposition": "deferred_named_operational_regression_after_g2_baseline_and_independent_authority_review",
+      "expected_typed_stop": "shadow_scope_violation",
+      "owner": "m2_shadow_admission_owner",
+      "scenario_id": "p03-feature-off"
+    },
+    {
+      "disposition": "deferred_named_operational_regression_after_g2_baseline_and_independent_authority_review",
+      "expected_typed_stop": "test_runtime_isolation_violation",
+      "owner": "m2_test_isolation_owner",
+      "scenario_id": "p03-fixed-store-path"
+    },
+    {
+      "disposition": "deferred_named_operational_regression_after_g2_baseline_and_independent_authority_review",
+      "expected_typed_stop": "model_adapter_shadow_run_not_admitted",
+      "owner": "m2_shadow_admission_owner",
+      "scenario_id": "p03-model-denied"
+    },
+    {
+      "disposition": "deferred_named_operational_regression_after_g2_baseline_and_independent_authority_review",
+      "expected_typed_stop": "shadow_scope_violation",
+      "owner": "m2_shadow_admission_owner",
+      "scenario_id": "p03-provider-constructor"
+    }
+  ],
+  "freeze_execution_counts": {
+    "active_approval": 0,
+    "admission": 0,
+    "baseline": 0,
+    "external": 0,
+    "fixed_store_write": 0,
+    "formal_namespace": 0,
+    "legacy_authority_change": 0,
+    "model": 0,
+    "network_success": 0,
+    "provider": 0,
+    "receipt": 0,
+    "runtime": 0,
+    "tool_success": 0
+  },
+  "proposed_reviewer_decision_receipt": {
+    "canonical_digest_inputs": {
+      "family_binding": {
+        "blueprint_digest": "20244a5b289507b492299e449bbfede881d420926921132395e2ad752cbe7cac",
+        "blueprint_gate_digest": "89109d721a457874df243b0775db458c5552fb11d27c20799ed5268651f47d96",
+        "fixed_store_sha256": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4",
+        "package_digest": "789684d17a1e928f829869db60b2ef2ce4eac49d0dbee7cff377edc879b72e02",
+        "package_gate_digest": "52d388be0666e25f23587129059c8edb1b9a323ad86d88768b030b69c5fd82b3",
+        "plan_digest": "5ad5fcd297fde6c9dc9dfc43b19c8caade50ceb523dda77014d8b439a1a6f2fa",
+        "plan_gate_digest": "98a5d7eceabc84808023a44e34af6b3f8a3c085a1f888205dfc7bec2c58209b4",
+        "trigger_ddl_digest": "346e369dcf91e9b169fb4d0452c57993e219b052377223ca71bfe8756c41ff58"
+      },
+      "future_dynamic_fields_are_unresolved": [
+        "review_receipt_id",
+        "review_receipt_digest",
+        "approval_id",
+        "approval_digest",
+        "issued_at_utc",
+        "expires_at_utc",
+        "nonce_digest",
+        "admission_digest",
+        "execution_receipt_digest"
+      ],
+      "template_required_exact_bindings": [
+        "tranche_digest",
+        "tranche_gate_digest",
+        "v2_10_package_digest",
+        "v2_10_package_gate_digest",
+        "v2_10_plan_digest",
+        "v2_10_plan_gate_digest",
+        "v2_10_blueprint_digest",
+        "v2_10_blueprint_gate_digest",
+        "trigger_ddl_digest",
+        "fixed_store_sha256",
+        "scenario_id",
+        "scope",
+        "authority_boundary",
+        "reviewer_identity",
+        "actor_id",
+        "decision",
+        "decision_source",
+        "single_use",
+        "ttl_policy"
+      ],
+      "tranche_binding": [
+        "tranche_digest",
+        "tranche_gate_digest"
+      ]
+    },
+    "do_not_invoke": true,
+    "schema_version": "finsight_point01_p01_g2_proposed_reviewer_decision_receipt_v1_0",
+    "state": "unresolved_not_active",
+    "template_digest": "2f0644fcf96321ac2d955c4e099e4921e3fe99216b4466d5fd2dab8b2edff21f",
+    "template_ref": "configs/engineering_handoff/point01_p01_g2_proposed_reviewer_decision_receipt_template_v1_0.json"
+  },
+  "purpose": "Freeze the smallest operational-qualification tranche after B0.7 L2 proof; do not issue authority or execute scenarios.",
+  "schema_version": "finsight_point01_p01_g2_operational_tranche_manifest_v1_0",
+  "selected_cases": [
+    {
+      "artifact_refs": [
+        "package_external_reviewer_decision_receipt_digest_only",
+        "external_admission_digest_only",
+        "single_use_execution_receipt_digest_only",
+        "append_only_ledger_event_sequence",
+        "immutable_actual_or_pre_authority_deny_artifact",
+        "independent_oracle_artifact_when_actual_terminal",
+        "reviewer_gate_artifact_when_actual_terminal"
+      ],
+      "case_id": "g2-baseline",
+      "expected_post_counts": {
+        "baseline_execution_count": 1,
+        "fixed_store_write": 0,
+        "formal_namespace_count": 1,
+        "legacy_authority_change": 0,
+        "model_success": 0,
+        "network_success": 0,
+        "provider_success": 0,
+        "receipt_consume_count": 1,
+        "receipt_registration_count": 1,
+        "runtime_materialization_count": 1,
+        "terminal": "succeeded",
+        "terminal_event_count": 1,
+        "tool_success": 0,
+        "valid_authority_issue_count": 1
+      },
+      "expected_pre_counts": {
+        "active_approval": 0,
+        "admission": 0,
+        "baseline": 0,
+        "external": 0,
+        "fixed_store_write": 0,
+        "formal_namespace": 0,
+        "legacy_authority_change": 0,
+        "model": 0,
+        "network_success": 0,
+        "provider": 0,
+        "receipt": 0,
+        "runtime": 0,
+        "tool_success": 0
+      },
+      "expected_terminal": "succeeded",
+      "rollback_cleanup": {
+        "authority_and_artifacts": "append_only_retain_until_independent_closeout",
+        "cleanup": "only_after_closeout_under_separate_retention_policy",
+        "receipt": "no_retry_no_replay_no_renewal"
+      },
+      "sequence": 1,
+      "single_use_authority_receipt": "independent_per_case_no_shared_nonce_receipt_retry_replay_or_renewal",
+      "source_matrix_scenario_id": "p01-baseline-separated-input",
+      "source_override": null,
+      "stop_rule": "fail_fast_stop_all_remaining_cases",
+      "valid_authority_must_not_issue": false
+    },
+    {
+      "artifact_refs": [
+        "package_external_reviewer_decision_receipt_digest_only",
+        "external_admission_digest_only",
+        "single_use_execution_receipt_digest_only",
+        "append_only_ledger_event_sequence",
+        "immutable_actual_or_pre_authority_deny_artifact",
+        "independent_oracle_artifact_when_actual_terminal",
+        "reviewer_gate_artifact_when_actual_terminal"
+      ],
+      "case_id": "g2-wrong-package-or-approval",
+      "expected_post_counts": {
+        "baseline_execution_count": 0,
+        "fixed_store_write": 0,
+        "formal_namespace_count": 0,
+        "legacy_authority_change": 0,
+        "model_success": 0,
+        "network_success": 0,
+        "provider_success": 0,
+        "receipt_consume_count": 0,
+        "receipt_registration_count": 0,
+        "runtime_materialization_count": 0,
+        "terminal": "pre_authority_typed_deny:package_or_approval_mismatch",
+        "terminal_event_count": 0,
+        "tool_success": 0,
+        "valid_authority_issue_count": 0
+      },
+      "expected_pre_counts": {
+        "active_approval": 0,
+        "admission": 0,
+        "baseline": 0,
+        "external": 0,
+        "fixed_store_write": 0,
+        "formal_namespace": 0,
+        "legacy_authority_change": 0,
+        "model": 0,
+        "network_success": 0,
+        "provider": 0,
+        "receipt": 0,
+        "runtime": 0,
+        "tool_success": 0
+      },
+      "expected_terminal": "pre_authority_typed_deny:package_or_approval_mismatch",
+      "rollback_cleanup": {
+        "authority_and_artifacts": "append_only_retain_until_independent_closeout",
+        "cleanup": "only_after_closeout_under_separate_retention_policy",
+        "receipt": "no_retry_no_replay_no_renewal"
+      },
+      "sequence": 2,
+      "single_use_authority_receipt": "independent_per_case_no_shared_nonce_receipt_retry_replay_or_renewal",
+      "source_matrix_scenario_id": "p01-oracle-path-access",
+      "source_override": "P01-G2 pre-authority package/approval mismatch; original oracle-path mutation remains an explicitly deferred subcheck",
+      "stop_rule": "stop_case_no_receipt_namespace_path_or_write",
+      "valid_authority_must_not_issue": true
+    },
+    {
+      "artifact_refs": [
+        "package_external_reviewer_decision_receipt_digest_only",
+        "external_admission_digest_only",
+        "single_use_execution_receipt_digest_only",
+        "append_only_ledger_event_sequence",
+        "immutable_actual_or_pre_authority_deny_artifact",
+        "independent_oracle_artifact_when_actual_terminal",
+        "reviewer_gate_artifact_when_actual_terminal"
+      ],
+      "case_id": "g2-stale-input-version-drift",
+      "expected_post_counts": {
+        "baseline_execution_count": 0,
+        "fixed_store_write": 0,
+        "formal_namespace_count": 1,
+        "legacy_authority_change": 0,
+        "model_success": 0,
+        "network_success": 0,
+        "provider_success": 0,
+        "receipt_consume_count": 1,
+        "receipt_registration_count": 1,
+        "runtime_materialization_count": 1,
+        "terminal": "typed_stop:superseded_pack_version_or_pack_not_fresh",
+        "terminal_event_count": 1,
+        "tool_success": 0,
+        "valid_authority_issue_count": 1
+      },
+      "expected_pre_counts": {
+        "active_approval": 0,
+        "admission": 0,
+        "baseline": 0,
+        "external": 0,
+        "fixed_store_write": 0,
+        "formal_namespace": 0,
+        "legacy_authority_change": 0,
+        "model": 0,
+        "network_success": 0,
+        "provider": 0,
+        "receipt": 0,
+        "runtime": 0,
+        "tool_success": 0
+      },
+      "expected_terminal": "typed_stop:superseded_pack_version_or_pack_not_fresh",
+      "rollback_cleanup": {
+        "authority_and_artifacts": "append_only_retain_until_independent_closeout",
+        "cleanup": "only_after_closeout_under_separate_retention_policy",
+        "receipt": "no_retry_no_replay_no_renewal"
+      },
+      "sequence": 3,
+      "single_use_authority_receipt": "independent_per_case_no_shared_nonce_receipt_retry_replay_or_renewal",
+      "source_matrix_scenario_id": "p02-stale-or-superseded-pack",
+      "source_override": null,
+      "stop_rule": "stop_case_no_retry_replay_or_auto_repair",
+      "valid_authority_must_not_issue": false
+    },
+    {
+      "artifact_refs": [
+        "package_external_reviewer_decision_receipt_digest_only",
+        "external_admission_digest_only",
+        "single_use_execution_receipt_digest_only",
+        "append_only_ledger_event_sequence",
+        "immutable_actual_or_pre_authority_deny_artifact",
+        "independent_oracle_artifact_when_actual_terminal",
+        "reviewer_gate_artifact_when_actual_terminal"
+      ],
+      "case_id": "g2-unauthorized-transport",
+      "expected_post_counts": {
+        "baseline_execution_count": 0,
+        "fixed_store_write": 0,
+        "formal_namespace_count": 1,
+        "legacy_authority_change": 0,
+        "model_success": 0,
+        "network_success": 0,
+        "provider_success": 0,
+        "receipt_consume_count": 1,
+        "receipt_registration_count": 1,
+        "runtime_materialization_count": 1,
+        "terminal": "typed_stop:shadow_scope_violation",
+        "terminal_event_count": 1,
+        "tool_success": 0,
+        "valid_authority_issue_count": 1
+      },
+      "expected_pre_counts": {
+        "active_approval": 0,
+        "admission": 0,
+        "baseline": 0,
+        "external": 0,
+        "fixed_store_write": 0,
+        "formal_namespace": 0,
+        "legacy_authority_change": 0,
+        "model": 0,
+        "network_success": 0,
+        "provider": 0,
+        "receipt": 0,
+        "runtime": 0,
+        "tool_success": 0
+      },
+      "expected_terminal": "typed_stop:shadow_scope_violation",
+      "rollback_cleanup": {
+        "authority_and_artifacts": "append_only_retain_until_independent_closeout",
+        "cleanup": "only_after_closeout_under_separate_retention_policy",
+        "receipt": "no_retry_no_replay_no_renewal"
+      },
+      "sequence": 4,
+      "single_use_authority_receipt": "independent_per_case_no_shared_nonce_receipt_retry_replay_or_renewal",
+      "source_matrix_scenario_id": "p03-network-tool-transport",
+      "source_override": null,
+      "stop_rule": "stop_case_no_network_or_tool_success_no_retry_replay",
+      "valid_authority_must_not_issue": false
+    }
+  ],
+  "status": "P01_G2_0_TRANCHE_FROZEN_PENDING_INDEPENDENT_EXECUTION_AUTHORITY",
+  "tranche_digest": "8df521fcc321c6c5dfa30f6ae7a3ad377a0be223c21091525ef741d9208a047f",
+  "tranche_freeze_input_binding": {
+    "input_file_sha256": {
+      "configs/engineering_handoff/point01_p01_g2_operational_tranche_policy_v1_0.json": "c32c39df0cdedfd38b91fb73a9b2c580ded30b870e3d10a30c384390b16290a6",
+      "configs/engineering_handoff/point01_p01_g2_proposed_reviewer_decision_receipt_template_v1_0.json": "8dc8f92cd9dd369c61820d29e12f36ad143b7003bd56eb134d4fb6a972796666",
+      "scripts/engineering/run_point01_p01_g2_operational_tranche_freeze.py": "9bd698e8db593b1a7b9eed1b80e14c843ea20718f35242175fee5f2185187f87",
+      "src/sec_agent/canonical_runtime/p01_g2_operational_tranche.py": "d0a768554d8c5e921c2cfe64fa3d9743e9934b43dc2afd84e82056a12744e674",
+      "tests/contract/test_point01_p01_g2_operational_tranche_freeze.py": "48823b74ecc2248bcfd77f78bbec1d992cc5df5a9b768b83ea782af633c3de72"
+    },
+    "input_hash_count": 5,
+    "input_hashes_digest": "406820a8f03d53f7a57a29a32032dcc509b31557d1a340c59ce86a410127ebd0"
+  },
+  "tranche_id": "P01-G2.0-minimum-operational-qualification-tranche",
+  "v2_10_family": {
+    "blueprint_digest": "20244a5b289507b492299e449bbfede881d420926921132395e2ad752cbe7cac",
+    "blueprint_gate_digest": "89109d721a457874df243b0775db458c5552fb11d27c20799ed5268651f47d96",
+    "fixed_store_sha256": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4",
+    "package_digest": "789684d17a1e928f829869db60b2ef2ce4eac49d0dbee7cff377edc879b72e02",
+    "package_gate_digest": "52d388be0666e25f23587129059c8edb1b9a323ad86d88768b030b69c5fd82b3",
+    "plan_digest": "5ad5fcd297fde6c9dc9dfc43b19c8caade50ceb523dda77014d8b439a1a6f2fa",
+    "plan_gate_digest": "98a5d7eceabc84808023a44e34af6b3f8a3c085a1f888205dfc7bec2c58209b4",
+    "trigger_ddl_digest": "346e369dcf91e9b169fb4d0452c57993e219b052377223ca71bfe8756c41ff58"
+  },
+  "v2_10_staged_input_binding": {
+    "input_file_sha256": {
+      "configs/engineering_handoff/point01_m1_m5_adversarial_retro_audit_design_freeze_v1_0.json": "a9b14ad90e8209bd531c2094a880fab07cac64ceb63ca2b4820703ccc29abf2d",
+      "configs/engineering_handoff/point01_m2_1_compiler_input_validation_policy_v1_0.json": "6bcf5837859bf806d950e5a993a8d6b1b8a5b4ed0da8f434e81afc7519c86d63",
+      "configs/engineering_handoff/point01_m2_2_full_serializer_policy_v1_0.json": "62bebccbeb2bbfb1c4001c9cf488d4dec3e2685d9586b541da1c4cc6be05c9c4",
+      "configs/engineering_handoff/point01_m2_3_pack_registry_policy_v1_0.json": "d739bbdfc2292894869881fef8f544f3d8ffe28b407c17a22eb2fb5951f40132",
+      "configs/engineering_handoff/point01_m2_4_pack_selection_policy_v1_0.json": "1837287b4e08dc2505bde9f0922e206f8dc5cf154347db3a7c3d3c256f9ff868",
+      "configs/engineering_handoff/point01_m2_8_model_admission_policy_v1_0.json": "fd63e269e9e1b7d594a672252096589e17b4b9c50d2d1c61ecf9d815c9d24207",
+      "configs/engineering_handoff/point01_m2_a1_adversarial_input_corpus_v1_1.json": "9c89dc4bea75f36882751e167bdd7975c66bae6e5c3a89fbbdfad9bcf496b37d",
+      "configs/engineering_handoff/point01_m2_a1_approval_lineage_policy_v2_7.json": "5bb5d8238226e5df8ae011a0de2ca011f0016b458f0fc930c41745083f10da4e",
+      "configs/engineering_handoff/point01_m2_a1_executable_authority_policy_v2_9.json": "68516bf8b64119b66ab5c97ee7292314509ae5e942857b55696d1c78f2cfb65b",
+      "configs/engineering_handoff/point01_m2_a1_execution_proof_policy_v2_10.json": "6ad1a9e6b18414fe59350835f9a589b72cc14ddf92b36802a5e3ea24bddfff01",
+      "configs/engineering_handoff/point01_m2_a1_execution_ready_scenario_matrix_v2_1.json": "4c6d23c7c24017ed40c5e9871449f31ab2d1f9581422a9017f806265f35fc65d",
+      "configs/engineering_handoff/point01_m2_a1_frozen_jit_window_policy_v2_6.json": "41d8a56888292464c8423015a722a52a3408e28287cd5f8f7cade187f1f7cf08",
+      "configs/engineering_handoff/point01_m2_a1_independent_expected_cell_oracle_v1_1.json": "eed535f2c84f79dc9b7f3091d741338ffebf4d1b6d45b01e390c4f376145e8b2",
+      "configs/engineering_handoff/point01_m2_a1_operational_proof_policy_v2_8.json": "771bde35ba36c7becee4f6cccb181e78a135414a6ad851be4069520579636539",
+      "configs/engineering_handoff/point01_m2_a1_operational_qualification_policy_v2_4.json": "736519ae2e80348fea54a131de5c55e6662234797eca4a5584bc838671b5cfbe",
+      "configs/runtime/point01_feature_flags_v1_0.json": "51b481aa7317bc53e93dc5fe7a9918a1afd7e8516285c40ee319193c480090bd",
+      "data/manifests/point01_m2_a1_adversarial_audit_package_manifest_v1_1.json": "cfc4d9432e015102656e1b8ac13202da9dfa77791f7770dcf1436dec89659fff",
+      "data/manifests/point01_m2_a1_rc_p38_024_root_cause_classification_v1_0.json": "9be306a1a7bf34c9b33d5dcb9425259917d8c581ed92c0d9e80c8d1091ed2b3a",
+      "data/manifests/point01_m2_a1_transport_isolation_repair_gate_v1_0.json": "b3f55d7339f5baf7ab2c14fdb83e4c72d1ac52e6a3da8b8d62d3481e94a1b6de",
+      "data/manifests/point01_m2_a1_transport_isolation_repair_package_v1_0.json": "03ee86541f4cea4742c9417ba285afaa7f794b6cb29984dc0313e8dcee35549b",
+      "data/manifests/point01_m2_a1_v2_4_baseline_jit_dispatch_incident.json": "0b0ce54f89a64fc8c28582d20455724a2b9233389df3b93f443a34fa34054847",
+      "data/manifests/point01_m2_a1_v2_4_baseline_jit_expired_unconsumed_terminal.json": "3a161e54f54b12ebbb379c6f53869ae5618801596a0b7d4117daef463ff790a1",
+      "scripts/engineering/run_point01_m2_a1_actual_audit.py": "698ec72e0d57e7603d7c5a41b0ff175a35570c35a8d6b8dd94d0fb7ac3503f5d",
+      "scripts/engineering/run_point01_m2_a1_actual_audit_clean_child.py": "a52d77bf7758d59d013b065acda1c37be823f59a13094d96b6481508a817f58f",
+      "scripts/engineering/run_point01_m2_a1_actual_audit_clean_child_v2_10.py": "9e7774618bbf3a349775f9b9b4e9a2ccee3c2fa5c7b0fff648ad04d0f30d45e9",
+      "scripts/engineering/run_point01_m2_a1_actual_audit_clean_child_v2_7.py": "c61809c9ce17e948bbf96c811d7301ba025a4e67f70084473a0d6909ee843ca1",
+      "scripts/engineering/run_point01_m2_a1_actual_audit_v2_10.py": "e6012291e8035ae6fbf700b8f881ce216f404cf3d0a9c055e521a97ac648916b",
+      "scripts/engineering/run_point01_m2_a1_actual_audit_v2_7.py": "e05ec7274c88b25311505b5b2916c55a034058f0635681a5b90802921290e424",
+      "scripts/engineering/run_point01_m2_a1_execution_ready_package_freeze.py": "42f1996a750b72998e798f29d32886272cf29b8db561805a9205538a95023326",
+      "scripts/engineering/run_point01_m2_a1_expire_v2_4_baseline_unconsumed_receipt.py": "c995fe5877da0f9b6d8fc71d4b098148ff3ad686135997b489f646c2c96a9726",
+      "scripts/engineering/run_point01_m2_a1_operational_qualification_v2_10_refreeze.py": "02f3d1342f9bd6d1967e6450712fd13cfb083137becdaca389c96d547c7b5746",
+      "scripts/engineering/run_point01_m2_a1_receipt_registrar.py": "cfc785c3a30eeef0ebeb04e775853343d2aeca1b9da17e6441737cc3bfaee627",
+      "scripts/engineering/run_point01_m2_a1_receipt_registrar_v2_10.py": "e888bd2baeb208dc4b713d6534b63acd9b6ec9f7ebda4a140e734a5c2ea9093c",
+      "scripts/engineering/run_point01_m2_a1_receipt_registrar_v2_7.py": "98f04ce0fdba733a0eb206acdd68965ca44638372aa77da05152fd7284560af6",
+      "scripts/engineering/run_point01_m2_a1_transport_isolation_bisect.py": "2abfe1bb12bbb66bf9930329a54aa2ae2b4972ff9d743c182991ee422fc4fe23",
+      "scripts/engineering/run_point01_m2_a1_transport_isolation_repair_freeze.py": "42cd112baaf8282b62694cb3e6e8d0688db2d586cb9ec0b42c7ebb987fb13010",
+      "scripts/engineering/run_point01_m2_a1_v2_10_frozen_jit_window.py": "2875109c40953177a53d38316a3b49e6b225cbf252ff1cad1a857247686b40eb",
+      "scripts/engineering/run_point01_m2_a1_v2_8_synthetic_operational_child.py": "542e9f8004659abf0f3b471fe02db3cb21cbaca7694766a95739cb37e0d6add6",
+      "src/sec_agent/canonical_runtime/__init__.py": "2945d1475032e3573ba92d7e3b585df2871b1d5a68b5f9a32a7fc257d985e1c5",
+      "src/sec_agent/canonical_runtime/cell_composition.py": "3bfa4031e56f335a70e02239777309298ee90ea032ef273fc905f1803c4f5ace",
+      "src/sec_agent/canonical_runtime/evidence_policy.py": "f66afe1bd6a843208028eec3f1567ac3348a19f99ecef06515a001834404c266",
+      "src/sec_agent/canonical_runtime/facade.py": "d0d7ca722a9249317bff48b520b1a97523fbcf146a362b57dc925824f0db5e7c",
+      "src/sec_agent/canonical_runtime/feature_flags.py": "d0b3100f4dbf37fba9767915a87c8f4db51a6eabf47745fdb704b2721574610d",
+      "src/sec_agent/canonical_runtime/full_serializer.py": "d4f304417ee4e3775f8a64a7453ad59e494b4281591110d2e60f8862d519b42a",
+      "src/sec_agent/canonical_runtime/legacy_objective_adapter.py": "a9f90e9e1af6ee7e0f8c146919b19fa6d088d5604ceef1953cab2ad9638064c2",
+      "src/sec_agent/canonical_runtime/m2_a1_audit_canary.py": "1965ff52eca8f80bab9a877f6783c33eb7951042ea628c82d4dca5575b5981bb",
+      "src/sec_agent/canonical_runtime/m2_a1_audit_harness.py": "de31eb22929f3a09f0e8a32285001aed7462e8b2b8d9f39fc1f52d0dc3bcbb60",
+      "src/sec_agent/canonical_runtime/m2_a1_audit_oracle.py": "70487712b9852fc80e69a426914d2f6ddbfbe2815f5c04ed80d62e82b5ecbb87",
+      "src/sec_agent/canonical_runtime/m2_a1_audit_result.py": "4f38238228f45120b69b08e5884b4443d17eaf92675d457799a6569fcb152cab",
+      "src/sec_agent/canonical_runtime/m2_a1_audit_reviewer_gate.py": "5a2ecad0153f6f7576da482ad6d75540c5a62378f6623bb85bd8e33ec853ef5e",
+      "src/sec_agent/canonical_runtime/m2_a1_execution_receipt.py": "42898671d1076cff2d37257ebc83a2953d8990bdaa578c66646aa064dd71cef8",
+      "src/sec_agent/canonical_runtime/m2_a1_frozen_jit.py": "4dd03119a3cdf036e9ea26dd178dbaa948f7390cd38e4da494a9619f22cac10c",
+      "src/sec_agent/canonical_runtime/m2_a1_v2_10_execution_proof.py": "52cb4a7947869129584831dce4d15553c88b3cde797f816f9c98d46bc35a5f66",
+      "src/sec_agent/canonical_runtime/m2_a1_v2_8_operational_proof.py": "d275e54d6f4a011df596924e87e7a34211d5a97703710368921d4b7097943a3a",
+      "src/sec_agent/canonical_runtime/model_admission.py": "dc4acf867e61d8081ec4aac760046a60c330382a281b73bcae0b0bc22d5aa645",
+      "src/sec_agent/canonical_runtime/models.py": "1af127d23f8139d36fff687b5c63e4c5d5952e27ce6eaa2d3a4bea02220c2cf9",
+      "src/sec_agent/canonical_runtime/object_store.py": "2bd611f90bc07c4ef55ff54c75c619dbf505e7c9740ad2ed2b8e4eb9b6369718",
+      "src/sec_agent/canonical_runtime/pack_registry.py": "8d62228ee4146db50bf7cc787e53d71cd06526ecc1cb0127a0e21af090cfd59d",
+      "src/sec_agent/canonical_runtime/pack_selection.py": "f9e4d36a50999bb91c3c224500670b27998356f511934ba819175f700f7b0f7b",
+      "src/sec_agent/canonical_runtime/planning_service.py": "20ccf383a76ed91ae2e337e1c3fb05d9983bf73d78dbf16d7b1039e2eaa4a22e",
+      "src/sec_agent/canonical_runtime/shadow_compiler.py": "a94844721bc8022126112aeff8c3685eaca713a2294f52f8b0b828323c47bf31",
+      "src/sec_agent/canonical_runtime/shadow_orchestration.py": "02fecee6bd302c4985f248eb7f4ca881ab80ea00867f7aafe52c90030997e050",
+      "src/sec_agent/canonical_runtime/store.py": "a237b93f53f83df9f30873631826f632e33515bf4db4b9dca186e679fa499f31",
+      "tests/contract/test_point01_m2_a1_assembly_harness.py": "c5eba6a5103dc4a5c4f0032a6b8025abf2362c17e119cb20f843a79f8b7574a9",
+      "tests/contract/test_point01_m2_a1_baseline_authority_blueprint.py": "9aa048b8a17214779859098f49148a4b5e69f942fc69b4428b6af538ddb23f92",
+      "tests/contract/test_point01_m2_a1_design_package_static.py": "6068f35c9b70fd61921f1e075990a8693760ff124ebb6035b3bc00fbfb43e563",
+      "tests/contract/test_point01_m2_a1_executable_package_static.py": "ee624f015ea30acd7136ceec308b11ddb255f3e723a236783b3f2d3c0f515847",
+      "tests/contract/test_point01_m2_a1_execution_ready_boundaries.py": "d3a5e0e79323a3734e37b1ca515cab729c48ed7d8cb14c3e1e06796fa0ae88fc",
+      "tests/contract/test_point01_m2_a1_execution_ready_package_static.py": "d2cae625fc982b6cac0dcd1a3d8d558a27c421dd64540a2d4ba33d5a11605241",
+      "tests/contract/test_point01_m2_a1_external_admission_artifact.py": "081c754b78e2013eb1f68413eea6c51fdec01591ff6a0208d8c8707c20c5f835",
+      "tests/contract/test_point01_m2_a1_harness_boundaries.py": "1ab9b4f63ffc1f9aadfc541e3f8c2c48ce5985190fafda39c0e5fe487d37bbc4",
+      "tests/contract/test_point01_m2_a1_operational_qualification_v2_4.py": "68d8905a0072235667d11b41b6ba73638b46928440d7364b8c447298172f9000",
+      "tests/contract/test_point01_m2_a1_operational_qualification_v2_4_production_preflight.py": "2c130dd238b626ccf7e50639d9287aa997f2fc5d510d4155e7d89a9b2bec333a",
+      "tests/contract/test_point01_m2_a1_receipt_execution_plan.py": "1adf7936b8bcf1f5f43b2c06d809fc6db322764f49563462b2af19148cbee63c",
+      "tests/contract/test_point01_m2_a1_receipt_lifecycle.py": "33e07642d7ce2230e4a4f404664b2cf73c9d44ac8e4e5e271cc2671de927bd4b",
+      "tests/contract/test_point01_m2_a1_transport_isolation_repair.py": "890f237ed6b31d327d9521ae1dbde40627ace3e9dc2165fff24d03fc8dccad45",
+      "tests/contract/test_point01_m2_a1_v2_10_execution_proof.py": "a40ae2f8fcb33c886a5b422cfa438b779adf9b83379fa51163468ab02ed8e6f9",
+      "tests/contract/test_point01_m2_a1_v2_5_dispatch_and_expiry.py": "3c095b83c008505ad7bb95f4fbdca69c37b940f539831cee5b134c74770768d6",
+      "tests/contract/test_point01_m2_a1_v2_8_operational_proof.py": "b142a599d75855e3214a2e3dd44ac0f53d07d714ad840d634cc43103eaa69713"
+    },
+    "input_hash_count": 79,
+    "input_hashes_digest": "c756e69b1671a3cc3bbeabd4e84b350b5211b234e2d98bfc58c36d58b1f49403"
+  }
+}

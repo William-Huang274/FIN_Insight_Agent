@@ -1,0 +1,17 @@
+{
+  "approval_version": "finsight_point01_m1_human_reviewer_approval_v1_0",
+  "status": "approved",
+  "scope": "Point01_M1_5_closeout",
+  "required_review": [
+    "M1.5 gate result has M1.0-M1.4 machine gate_pass=true",
+    "PostgreSQL conformance sample is pass and container is non-persistent",
+    "rollback/recovery drill is pass and legacy authority remains authoritative",
+    "no model compiler, paid model, full-chain, cutover, Evidence or Writer scope was introduced"
+  ],
+  "decision_options": ["approved", "rejected"],
+  "approver_id": "current_thread_human_reviewer",
+  "approver_type": "human",
+  "approved_at": "2026-07-12T17:10:00+08:00",
+  "review_notes": "User explicitly stated: 人工审批通过。Approval is recorded from the current Codex thread; no personal name was supplied.",
+  "boundary": "Human approval was supplied in the current thread. Codex did not self-approve M1.5."
+}

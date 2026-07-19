@@ -1,0 +1,49 @@
+{
+  "schema_version": "finsight_point01_m2_a1_execution_ready_audit_policy_v2_0",
+  "scope": "M2_A1_future_actual_runner_implementation_and_package_refreeze_only",
+  "status": "execution_ready_package_implementation_pending_refreeze_no_actual_probe",
+  "execution_matrix_ref": "configs/engineering_handoff/point01_m2_a1_execution_ready_scenario_matrix_v2_0.json",
+  "execution_mode": "external_admission_gated",
+  "actual_runner": {
+    "module": "src/sec_agent/canonical_runtime/m2_a1_audit_harness.py::M2A1ActualRunner.execute_admitted_scenario",
+    "cli": "scripts/engineering/run_point01_m2_a1_actual_audit.py --execute-admitted",
+    "allowed_inputs": ["one_sanitized_corpus_case", "one_frozen_scenario", "exact_package", "package_external_admission", "authoritative_single_use_receipt_ledger", "explicit_temporary_sqlite_and_object_root"],
+    "forbidden_inputs": ["expected_cell_oracle", "oracle_digest", "reviewer_expected_values", "ambient_store", "fixed_store", "provider_client", "transport_client"],
+    "pre_send_order": ["verify_external_package_admission", "atomic_consume_single_use_receipt", "activate_constructor_instrumentation", "import_and_run_real_M2_path"],
+    "actual_probe_execution_currently_authorized": false
+  },
+  "assembly_contract": {
+    "adapter": "adapt_legacy_research_objective",
+    "adapter_output_pack_selection": "must_be_empty_before_explicit_merge",
+    "seed_pack_selection": "must_be_versioned_and_exactly_metadata_bound",
+    "required_exact_fields": ["tenant_id", "project_id", "case_id", "query", "as_of", "universe", "language", "compiler_policy_ref", "required_cells", "pack_selection"],
+    "forbidden_shortcut": "compiler_input_seed_must_not_be_treated_as_already_assembled_CompilerInputContract"
+  },
+  "real_runtime_path": ["adapt_legacy_research_objective", "PlanningPackRegistry", "PackSelectionEngine", "DecisionSurfacePlanningService", "DeterministicShadowCompiler", "DecisionSurfaceBundleAssembler", "ShadowCompilerOrchestrator"],
+  "instrumentation": {
+    "mode": "context_manager_patch_constructors_and_accessors",
+    "intercepts": ["SQLiteCanonicalStore.__init__", "sqlite3.connect", "FileCanonicalObjectStore.__init__", "Path.open", "Path.read_text", "Path.read_bytes", "builtins.open", "importlib/builtins provider_or_oracle_import", "socket.create_connection", "urllib.request.urlopen", "subprocess.Popen"],
+    "allowed": "only_explicit_temporary_root",
+    "blocked": ["oracle_path_read_hash_import", "fixed_or_ambient_store", "provider_or_model_constructor", "network_transport", "tool_transport"],
+    "count_contract": ["attempt", "success", "read", "write", "constructor", "request"]
+  },
+  "receipt_authority": {
+    "package_external": true,
+    "ledger": "M2A1ReceiptLedger",
+    "required_binding": ["package_ref", "package_digest", "scope", "authority_boundary", "reviewer_identity", "admission_digest", "nonce_sha256", "expiry"],
+    "consume_before_runtime_import": true,
+    "terminal_event_required": true,
+    "receipt_replay": "fail_closed",
+    "fixed_approval_store_write": "forbidden"
+  },
+  "actual_projection": {
+    "required_fields": ["scenario_id", "actual_status", "selected_pack_lineage", "cell_owner_and_evidence_slots", "semantic_loss_mapping", "artifact_envelope_and_replay_digest", "typed_stop", "canary_snapshot", "payload_digest"],
+    "oracle_order": ["actual_terminalize", "actual_result_digest", "independent_oracle_evaluate", "reviewer_gate"],
+    "oracle_runner_access": "forbidden"
+  },
+  "reviewer_gate": {
+    "requires": ["all_expected_scenarios_covered", "immutable_actual_digest_valid", "oracle_status_pass_or_exact_expected_typed_stop_match", "receipt_consumed_before_run", "receipt_terminal_event", "no_network_success"],
+    "rejects": ["oracle_mismatch", "typed_stop_not_scored", "missing_scenario", "invalid_actual_digest", "unexpected_canary_count", "receipt_replay", "fixed_or_ambient_store_success"]
+  },
+  "authority_boundary": "No M2-A1 actual probe is authorized by this implementation/refreeze point. No model, network, tool, provider, fixed/production/business/legacy store mutation, business Case mutation, legacy authority change, M3, M6/R3, Evidence, Writer or full-chain is authorized."
+}

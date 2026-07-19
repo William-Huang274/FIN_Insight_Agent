@@ -1,0 +1,51 @@
+{
+  "manifest_version": "finsight_point01_prerequisite_contract_freeze_v1_0",
+  "frozen_at": "2026-07-12T00:00:00+08:00",
+  "status": "frozen_alignment_audit_pass_implementation_not_admitted",
+  "scope": ["Point01_M0", "Point01_M1", "Point01_M2", "M4_cutover_contract_only"],
+  "implementation_admitted": false,
+  "runtime_changed": false,
+  "migration_executed": false,
+  "paid_or_full_chain_run": false,
+  "hash_algorithm": "sha256",
+  "artifacts": [
+    {
+      "role": "schema_contract",
+      "path": "docs/architecture/agent_graph_vnext/SCHEMA_01_point01_canonical_object_registry.zh-CN.md",
+      "sha256": "7302cf7c523c45c8295c8336662895c52dc6bb1952fae6fdd31d0c48f5dc109b",
+      "size_bytes": 7095
+    },
+    {
+      "role": "store_contract",
+      "path": "docs/architecture/agent_graph_vnext/DB_01_point01_canonical_store_transaction_boundary.zh-CN.md",
+      "sha256": "99a79e6775e61c63e8d48ff0ec59573bff26c58cd473b0777a3f13af4c13d437",
+      "size_bytes": 7186
+    },
+    {
+      "role": "api_contract",
+      "path": "docs/architecture/agent_graph_vnext/API_01_point01_runtime_command_event_contract.zh-CN.md",
+      "sha256": "9d63e778639903386ad35aa3d38cb95d4bca27be83d1c09083a012942eeb0b58",
+      "size_bytes": 5460
+    },
+    {
+      "role": "migration_contract",
+      "path": "docs/architecture/agent_graph_vnext/MIGRATION_01_point01_legacy_canonical_cutover.zh-CN.md",
+      "sha256": "f46b53e0357c2fe58c5656d1c2008dfb7fa08c7ab5ea5c5acb44a445f27f8dd3",
+      "size_bytes": 6528
+    },
+    {
+      "role": "machine_schema_registry",
+      "path": "configs/engineering_handoff/point01_canonical_object_registry_v0_2.json",
+      "sha256": "39bcb01fd62d54811b6dbded3e781781cd8ea54460fa15467cb37e42c427fd9e",
+      "size_bytes": 6986
+    },
+    {
+      "role": "machine_legacy_mapping",
+      "path": "configs/engineering_handoff/point01_legacy_mapping_matrix_v0_2.json",
+      "sha256": "9558626f53833b61dfd1bac4aa2029d9948c80c410ab02aee22f83d3f78bb3e6",
+      "size_bytes": 6593
+    }
+  ],
+  "alignment_audit": "docs/architecture/repository/POINT01_TECH_PRD_SPLIT_ALIGNMENT_AUDIT_20260712.zh-CN.md",
+  "change_policy": "Any artifact hash change requires manifest v1.1+, a new alignment audit result, and explicit implementation impact review."
+}

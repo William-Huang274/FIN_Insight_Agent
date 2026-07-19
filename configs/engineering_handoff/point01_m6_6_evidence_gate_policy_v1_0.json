@@ -1,0 +1,10 @@
+{
+  "policy_version": "finsight_point01_m6_6_evidence_gate_policy_v1_0",
+  "policy_ref": "point01-m6-6-evidence-gate-policy-v1",
+  "scope": "Point01_M6_6_deterministic_fixture_gate_simulation_only",
+  "authorization": "approve_m6_6_deterministic_evidence_gate_contract_only",
+  "allowed_decisions": ["fixture_accepted_for_gate_simulation", "context_only", "rejected", "typed_gap", "commercial_gap"],
+  "minimum_source_authority_rank_by_evidence_role": {"numeric_fact": 4, "context": 1},
+  "hard_rules": ["fixture_only", "unpromoted", "lineage_digest", "entity", "period", "unit", "scale", "source_authority", "numeric_trace", "forbidden_substitution", "candidate_conflict"],
+  "authority_boundary": {"decision_scope": "deterministic_fixture_only", "runtime_promotion_authorized": false, "writer_citable": false, "domain_judgment_eligible": false, "persistence_authorized": false, "lead_human_status": "approval_required_not_executed", "semantic_override": "forbidden", "writer_domain_consumer": "forbidden"}
+}

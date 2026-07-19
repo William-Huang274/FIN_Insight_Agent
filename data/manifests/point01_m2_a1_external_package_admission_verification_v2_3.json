@@ -1,0 +1,43 @@
+{
+  "authority_artifact_digest": "ff483ea47a72a5738bd60227ca360cca7d372efa0c274087bc142e127a4a8fec",
+  "checks": {
+    "authority_artifact_digest_exact": true,
+    "authority_binding_exact": true,
+    "execution_counts_zero": true,
+    "expiry_active_short_utc": true,
+    "fixed_fingerprint_exact_not_opened": true,
+    "nonce_digest_only": true,
+    "package_staged_bytes_exact": true,
+    "runtime_admission_binding_exact": true,
+    "runtime_admission_digest_exact": true,
+    "runtime_namespace_absent": true
+  },
+  "execution_counts": {
+    "a0_m2_actual_probes": 0,
+    "admission_artifact_writes": 2,
+    "business_case_mutations": 0,
+    "compiler_or_shadow_fixture_runs": 0,
+    "execution_receipts_created": 0,
+    "external_tool_calls": 0,
+    "fixed_or_production_store_opens": 0,
+    "legacy_authority_mutations": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "provider_calls": 0,
+    "receipt_consumptions": 0,
+    "receipt_registrations": 0,
+    "runtime_namespaces_created": 0,
+    "store_writes": 0,
+    "verification_artifact_writes": 1
+  },
+  "expires_at": "2026-07-13T23:45:32.089653Z",
+  "next_step": "Stop. A separate receipt-plan approval is required before any receipt creation, registration or actual execution.",
+  "package_digest": "ff5476b9a8c4d9a82a11b163039e118922b09c945a0d53ff9df031b7c268b318",
+  "package_gate_digest": "904d1030c7110281acc4963ec0a615da3db0b0ce9e4a68b0d6aaf80971549243",
+  "package_ref": "point01-m2-a1-receipt-invariants-adversarial-audit-package-v2-3",
+  "result_version": "finsight_point01_m2_a1_external_package_admission_verification_v2_3",
+  "reviewer_identity": "william/003/total_reviewer",
+  "runtime_admission_digest": "3b15556e5d71f7ad69725af4794703578115c9ed376b2ab0e010a1e57943fdef",
+  "status": "pass",
+  "verification_digest": "4e09d56e47cfc6ea73929ac120dabb186f0701eae3be8f2cfd575e550633e468"
+}

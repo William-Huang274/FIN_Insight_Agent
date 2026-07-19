@@ -1,0 +1,70 @@
+{
+  "artifacts": {
+    "normalized_fact": {
+      "normalized_fact_digest": "67e8ae277845d5984b3f6547aeec8b340e9804fc0af1a8f9ed32120d83aaa852",
+      "normalized_fact_id": "normalized_numeric_fact_67e8ae277845d5984b3f",
+      "normalized_value": "1234.50",
+      "parser_candidate_digest": "f3bf36a825b2dcf0a61caecbc6b64ae08250e998f40191fb27e4cfbe3ffaab39",
+      "parser_candidate_id": "parser_candidate_f3bf36a825b2dcf0a61c",
+      "period": "latest_fiscal_period",
+      "promotion_status": "unpromoted",
+      "row_label": "Segment revenue",
+      "scale_multiplier": 1000000,
+      "source_coordinate": "SegmentRevenueTable:r12c4",
+      "unit": "USD_millions"
+    },
+    "parser_candidate": {
+      "candidate_bundle_digest": "9e626a4adfea16c03812133a395f05ae40e743288890cc824ee37bdff0244681",
+      "candidate_bundle_id": "candidate_bundle_9e626a4adfea16c03812",
+      "candidate_id": "candidate-filing-table",
+      "fixture_only": true,
+      "parse_policy_ref": "point01-m6-5-parser-numeric-policy-v1",
+      "parse_status": "parsed_unpromoted",
+      "parser_candidate_digest": "f3bf36a825b2dcf0a61caecbc6b64ae08250e998f40191fb27e4cfbe3ffaab39",
+      "parser_candidate_id": "parser_candidate_f3bf36a825b2dcf0a61c",
+      "source_ref": "object://fixture/issuer-10q#segment-revenue",
+      "table_or_section_ref": "SegmentRevenueTable"
+    },
+    "trace": {
+      "input_digest": "16cf49a7e8818d1b3cb1cd10e33a8a5d7d5b1aa61832d76ba96931ea0e33c8e2",
+      "metric_definition_ref": "metric:segment_revenue:v1",
+      "normalized_fact_digest": "67e8ae277845d5984b3f6547aeec8b340e9804fc0af1a8f9ed32120d83aaa852",
+      "normalized_fact_id": "normalized_numeric_fact_67e8ae277845d5984b3f",
+      "numeric_trace_id": "numeric_trace_1fa31e2e446bac4fd647",
+      "output_value": "1234.50",
+      "program_steps": [
+        "decimal_parse",
+        "unit_preserved",
+        "scale_preserved"
+      ],
+      "promotion_status": "unpromoted",
+      "trace_digest": "1fa31e2e446bac4fd647d9fec63f1e8ba3ab1e0751ab03248ab25534157eb9ba"
+    }
+  },
+  "authority_boundary": {
+    "document_content_read": "fixture_only",
+    "evidence_promotion": "M6_6_not_implemented",
+    "external_call_count": 0,
+    "live_parser_or_ocr": false,
+    "model_call_count": 0,
+    "numeric_fact_persistence": "not_admitted",
+    "store_write_count": 0,
+    "writer_full_chain": "not_admitted"
+  },
+  "boundary": "M6.5 parses a supplied fixture observation against a CandidateBundle table-context ref only. It does not read documents, call parser/OCR/network/provider, persist facts, promote evidence, write output or mutate authority.",
+  "checks": {
+    "exact_table_row_unit_period_trace": true,
+    "execution_free": true,
+    "replay_digest_match": true
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m6_5_cross_owner_design_review_v1_0.json": "5e2b276fbd822d571fe9b23f37f608de1ffc174b54dd6218d22735cc667f99a2",
+    "configs/engineering_handoff/point01_m6_5_parser_numeric_policy_v1_0.json": "b26767e1c263597f2477276f4b7d929808ff2579f4699e17b14845329c22eca1",
+    "scripts/engineering/run_point01_m6_5_parser_numeric_fixture.py": "3fadcb30fd09f9a2ac59d705e6c3073223307a678ee68fa955f21ad71ccb5873",
+    "src/sec_agent/canonical_runtime/parser_numeric.py": "10ab7230508ae8a12e9a91b4dad8439f458ec3c7a1c424edcb9290f5642abf5d"
+  },
+  "generated_at": "2026-07-13T05:47:37.311654+00:00",
+  "result_version": "finsight_point01_m6_5_parser_numeric_fixture_result_v1_0",
+  "scope": "Point01_M6_5_deterministic_fixture_parser_numeric_trace",
+  "status": "pass"
+}

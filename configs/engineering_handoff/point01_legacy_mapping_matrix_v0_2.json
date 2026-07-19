@@ -1,0 +1,115 @@
+{
+  "schema_version": "finsight_point01_legacy_mapping_matrix_v0_2",
+  "contract_version": "1.0",
+  "status": "frozen_no_migration_executed",
+  "target_registry": "finsight_point01_canonical_object_registry_v0_2",
+  "authority_policy": {
+    "legacy_task_run_authoritative_through_m4": true,
+    "canonical_planning_shadow_through_m3": true,
+    "m4_cutover_scope": "case_scoped_decision_surface_planning_only",
+    "dual_authoritative_write_forbidden": true,
+    "rollback_is_new_decision_not_destructive_down_migration": true
+  },
+  "mappings": [
+    {
+      "mapping_id": "p01_lm_task_identity",
+      "legacy_object": "r53_r60 task_runs and graph run identity",
+      "legacy_refs": ["src/sec_agent/r53_r60_runtime_task_spine.py", "src/sec_agent/langgraph_orchestrator.py"],
+      "canonical_object_ids": ["p01_research_case", "p01_legacy_task_binding", "p01_identity_map"],
+      "migration_mode": "identity_binding",
+      "authority": "legacy_task_run_authoritative",
+      "information_loss": "legacy task identity does not provide stable ResearchCase version or accountable owner",
+      "cutover_gate": "stable idempotent binding and identity conflict audit"
+    },
+    {
+      "mapping_id": "p01_lm_node_to_work_unit",
+      "legacy_object": "node execution and graph node invocation",
+      "legacy_refs": ["src/sec_agent/r53_r60_runtime_task_spine.py", "src/sec_agent/multi_agent_runtime.py"],
+      "canonical_object_ids": ["p01_work_unit"],
+      "migration_mode": "semantic_split",
+      "authority": "canonical_shadow_execution",
+      "information_loss": "legacy node execution may conflate logical work and physical execution",
+      "cutover_gate": "one WorkUnit version owns multiple immutable Attempts and exact input refs"
+    },
+    {
+      "mapping_id": "p01_lm_retry_to_attempt",
+      "legacy_object": "node retry counters and model/tool invocation attempts",
+      "legacy_refs": ["src/sec_agent/multi_agent_runtime.py", "src/sec_agent/memo_llm.py"],
+      "canonical_object_ids": ["p01_attempt"],
+      "migration_mode": "merge_adapter",
+      "authority": "canonical_shadow_execution",
+      "information_loss": "legacy retry causation, input version and terminal reason are inconsistent",
+      "cutover_gate": "attempt number, causation, input digest and terminal reason parity"
+    },
+    {
+      "mapping_id": "p01_lm_events",
+      "legacy_object": "task events, Workpaper events, tool ledgers and trace spans",
+      "legacy_refs": ["src/sec_agent/r53_r60_runtime_task_spine.py", "src/sec_agent/r53_r60_tool_sandbox_spine.py"],
+      "canonical_object_ids": ["p01_actor_snapshot", "p01_event_envelope"],
+      "migration_mode": "merge_adapter",
+      "authority": "canonical_shadow_event_ledger",
+      "information_loss": "legacy actor, permission, causation and state versions are incomplete",
+      "cutover_gate": "append-only sequence and projection replay parity with explicit synthesized-field provenance"
+    },
+    {
+      "mapping_id": "p01_lm_artifacts",
+      "legacy_object": "artifact refs, planner outputs and reviewer reports",
+      "legacy_refs": ["src/sec_agent/r53_r60_runtime_task_spine.py", "src/sec_agent/r53_r60_deliverable_studio_dashboard.py"],
+      "canonical_object_ids": ["p01_artifact_envelope"],
+      "migration_mode": "merge_adapter",
+      "authority": "canonical_immutable_shadow_artifact",
+      "information_loss": "some legacy artifacts lack immutable version, exact input set or content hash",
+      "cutover_gate": "artifact hash, producer attempt, input refs and supersession parity"
+    },
+    {
+      "mapping_id": "p01_lm_research_objective",
+      "legacy_object": "research objective contract and required-item plan",
+      "legacy_refs": ["src/sec_agent/r53_r60_workpaper_lead_review_workflow.py", "docs/project_os/p35_ai_infra_decision_surface_framework_v0_1.json"],
+      "canonical_object_ids": ["p01_case_control_summary", "p01_decision_surface_contract"],
+      "migration_mode": "shadow_projection",
+      "authority": "legacy_planning_authoritative_through_m3",
+      "information_loss": "legacy objectives do not uniformly carry Case identity, pack origin or stop conditions",
+      "cutover_gate": "query/scope/as-of/universe/pack/cell identity parity and reviewer acceptance"
+    },
+    {
+      "mapping_id": "p01_lm_dimensions_to_cells",
+      "legacy_object": "analysis dimensions, memo slots and required items",
+      "legacy_refs": ["src/sec_agent/multi_agent_contracts.py", "src/sec_agent/memo_logic_plan.py"],
+      "canonical_object_ids": ["p01_decision_surface_cell"],
+      "migration_mode": "semantic_split",
+      "authority": "legacy_planning_authoritative_through_m3",
+      "information_loss": "legacy dimensions may be fact lookups or prose sections rather than adjudicable questions",
+      "cutover_gate": "10-20 core cells with owner, origin, dependency, slot and stop rule"
+    },
+    {
+      "mapping_id": "p01_lm_evidence_slots",
+      "legacy_object": "P34 evidence-slot mapping and source requirements",
+      "legacy_refs": ["docs/project_os/p34_ai_semis_evidence_slot_contract_mapping_v0_1.json"],
+      "canonical_object_ids": ["p01_evidence_slot"],
+      "migration_mode": "shadow_projection",
+      "authority": "planning_requirement_only",
+      "information_loss": "legacy slots need stable cell, entity, period, source role and forbidden substitution binding",
+      "cutover_gate": "slot binding and acceptance-role parity without Evidence execution"
+    },
+    {
+      "mapping_id": "p01_lm_planning_gaps",
+      "legacy_object": "planning ambiguity, missing required item route and compiler validation gaps",
+      "legacy_refs": ["src/sec_agent/r53_r60_workpaper_lead_review_workflow.py", "src/sec_agent/lead_supervision.py"],
+      "canonical_object_ids": ["p01_compile_gap"],
+      "migration_mode": "shadow_projection",
+      "authority": "compile_time_gap_only",
+      "information_loss": "legacy gap stores also contain runtime evidence/parser/judgment gaps outside Point 01 scope",
+      "cutover_gate": "only compile-time gaps admitted; downstream gap types rejected from first-slice store"
+    },
+    {
+      "mapping_id": "p01_new_shadow_control",
+      "legacy_object": "no exact legacy equivalent",
+      "legacy_refs": [],
+      "canonical_object_ids": ["p01_shadow_comparison", "p01_lane_cutover_decision"],
+      "migration_mode": "new_control_record",
+      "authority": "comparison_only_until_m4_decision",
+      "information_loss": "not applicable",
+      "cutover_gate": "TECH_10 quality decision, human approval and rollback drill"
+    }
+  ]
+}

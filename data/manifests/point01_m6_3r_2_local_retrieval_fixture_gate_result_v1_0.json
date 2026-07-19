@@ -1,0 +1,144 @@
+{
+  "checks": {
+    "all_fixture_candidates_are_supplied_only": true,
+    "all_fixture_projections_non_authoritative": true,
+    "alternate_self_signed_policy_is_not_fixture_admitted": true,
+    "commercial_1_1_is_terminal_not_retrieval": true,
+    "neighbor_relation_direction_binding_verified": true,
+    "oracle_binds_exact_corpus": true,
+    "oracle_evaluation_set_matches_corpus": true,
+    "oracle_expected_statuses_match_actual": true,
+    "oracle_record_set_matches_corpus": true,
+    "oracle_required_reason_codes_match_actual": true,
+    "rerank_to_gate_set_preserved": true,
+    "source_family_diversity_selection_verified": true,
+    "sql_policy_pin_matches_exact_reviewed_artifact": true
+  },
+  "corpus_digest": "abb410357234d4abc6871eb8b1ba84d2370dd675908cd671a3478ffaa956608b",
+  "corpus_id": "local_retrieval_fixture_corpus_abb410357234d4abc687",
+  "evaluation_digests": {
+    "fixture-bm25-narrative-positive": "c93935b6efc5ece918a7fe9ea0a64c4ac318c8097b895d5da9734c694f9cf479",
+    "fixture-boundary-context-missing": "c0cef06530fa40c5bb18d3fd9ee4522f087ca6ea851564ac596b5e8b2f91c7cf",
+    "fixture-exact-value-sql-alternate-self-signed-policy": "00408138f30d39425b6513907df3ff3f47522757222781bc08b37715b7d7640b",
+    "fixture-exact-value-sql-row-positive": "57d21acac6665f2e50b7c516dff98b3ee2ae966291f7ce72854b487b50630fa5",
+    "fixture-object-bm25-page-row-positive": "44443c54e98ebf389ab171984f9e1468915fedfdaa181302f6a1472b8c4edf63",
+    "fixture-object-bm25-table-positive": "3544d31f30e1094d5fdbb67f214b67890cd90e72c9d99bb153bc1734fd571c24",
+    "fixture-relationship-graph-positive": "8595d4411080c6d9cf868b623bf33ef04d4fdff5df2651fa016c5b4ea049304b",
+    "fixture-table-context-missing": "9c73682b0ad647bfd49a74da62a883a43572dae7e551135a44f1ab16d0f3d4f0",
+    "fixture-typed-empty-exhaustion": "a90e5ba7a9fe107d43b0b90afee64b0750024e22fc23c84ce0e9e658f2adbf90"
+  },
+  "execution_stage": "M6_3R_2_fixture_repaired_pending_total_reviewer_audit",
+  "fixture_admission_policy_digest": "ea687b51a654a787f8d0265fe86939880daf7d2af460e9315e41b1501c89cab8",
+  "fixture_package_digest": "c24154688f5fa01cca7a46cab8b7acc70e4f27cdd5c12722679313fd1da4db14",
+  "fixture_package_manifest": {
+    "corpus_digest": "abb410357234d4abc6871eb8b1ba84d2370dd675908cd671a3478ffaa956608b",
+    "corpus_id": "local_retrieval_fixture_corpus_abb410357234d4abc687",
+    "execution_admission": "not_admitted",
+    "execution_stage": "M6_3R_2_fixture_repaired_pending_total_reviewer_audit",
+    "fixture_admission_policy_digest": "ea687b51a654a787f8d0265fe86939880daf7d2af460e9315e41b1501c89cab8",
+    "input_file_sha256": {
+      "configs/engineering_handoff/point01_m6_3r_2_fixture_admission_policy_v1_0.json": "de938749c551390c54aac107a0b054440513c36cdf3580c90c874a303afba82b",
+      "configs/engineering_handoff/point01_m6_3r_2_fixture_api_owner_mapping_v1_0.json": "552fb4d5b570330a10a8be258cd41d6faaf02b807f87cfacabd8a0ef8a3692dd",
+      "configs/engineering_handoff/point01_m6_3r_2_fixture_test_manifest_v1_0.json": "14aa2cda25763ec4a1a666504b3628fbfc5da5c228ea496359eb40c8f02923e6",
+      "scripts/engineering/run_point01_m6_3r_2_local_retrieval_fixture_gate.py": "b58d0861c5bca0b41fa204e4650292f37d056af0d5d2c5af84cf127cd46664c3",
+      "src/sec_agent/canonical_runtime/local_retrieval_fixture.py": "c41721a307e9017b1d6b2af48f42f2ee74c71d6980541e46caa9604dbc1fadc8",
+      "src/sec_agent/canonical_runtime/local_retrieval_fixture_oracle.py": "a2baea353b294cbc319a6b5b949e423156f7849f2032cf51d212ff4875537845",
+      "src/sec_agent/canonical_runtime/local_retrieval_skeleton.py": "33e08307b6354b2b970ee6358d24c623a0e9c76b6d41b1ebe298b2bc06d430cc",
+      "src/sec_agent/canonical_runtime/schema_export.py": "983cbdddbed5b1fa7129b0ffcdf146269448413e3f1736098a20e814e8c57fc3",
+      "tests/contract/test_point01_m6_3r_2_local_retrieval_fixture.py": "e6c9f56d00f4dbc30033d5ceead4e3a03f31bb7818213dd7f0196390e44f5540"
+    },
+    "oracle_digest": "bfd970d8da45be53c9282d2bac131319c521c8b778d006214ed0ae5c5fb0191c",
+    "oracle_id": "local_retrieval_fixture_oracle_bfd970d8da45be53c928",
+    "package_digest": "c24154688f5fa01cca7a46cab8b7acc70e4f27cdd5c12722679313fd1da4db14",
+    "package_version": "finsight_point01_m6_3r_2_fixture_package_v1_0",
+    "persistence_authorized": false,
+    "pinned_sql_policy_digest": "75fff84e1d4684aa47eb7b6dc9d2cef2ff50333f27bbce8e3cda17d5a6ef820f",
+    "promotion_authorized": false
+  },
+  "matrix_coverage": {
+    "adapter_kinds": [
+      "bm25",
+      "exact_value_sql",
+      "object_bm25",
+      "relationship_graph"
+    ],
+    "diversity_applicable_fixture_count": 1,
+    "entries_by_adapter_kind": {
+      "bm25": 2,
+      "exact_value_sql": 2,
+      "object_bm25": 3,
+      "relationship_graph": 2
+    },
+    "entries_by_kind": {
+      "bm25_narrative": 1,
+      "exact_value_sql_row": 2,
+      "object_bm25_document_table": 2,
+      "relationship_graph": 1,
+      "typed_exhaustion": 3
+    },
+    "evaluations_by_status": {
+      "accepted_fixture_projection": 5,
+      "not_fixture_admitted": 1,
+      "typed_exhaustion": 3
+    },
+    "negative_fixture_count": 4,
+    "neighbor_relations": [
+      "next_page",
+      "next_row",
+      "next_section",
+      "table"
+    ],
+    "positive_fixture_count": 5,
+    "rerank_to_gate_set_preserved_fixture_count": 5,
+    "supplied_candidates_by_kind": {
+      "neighbor_section": 3,
+      "table_context": 2,
+      "top_k_seed": 13
+    },
+    "topk_profiles": [
+      "legacy-issuer_first-local_bm25",
+      "legacy-official_first-exact_value_sql",
+      "legacy-relationship_graph_only-relationship_graph"
+    ],
+    "topk_terminal_cases": {
+      "commercial_1_1": "typed_commercial_gap"
+    },
+    "typed_exhaustion_fixture_count": 3,
+    "typed_exhaustion_reasons": [
+      "boundary_context_missing",
+      "retrieval_exhausted_no_metadata_match",
+      "table_context_missing"
+    ]
+  },
+  "note": "All corpus rows are sanitized immutable metadata fixtures. No adapter/index/graph/SQL/source read, ToolInvocation, receipt registration, network/model/provider, parser/numeric, promotion, persistence, Context, Writer or full-chain execution occurred.",
+  "oracle_digest": "bfd970d8da45be53c9282d2bac131319c521c8b778d006214ed0ae5c5fb0191c",
+  "oracle_id": "local_retrieval_fixture_oracle_bfd970d8da45be53c928",
+  "pinned_sql_policy": {
+    "execution_admission": "not_admitted",
+    "policy_canonical_digest": "75fff84e1d4684aa47eb7b6dc9d2cef2ff50333f27bbce8e3cda17d5a6ef820f",
+    "policy_path": "configs/engineering_handoff/point01_m6_3r_1_exact_value_sql_binding_policy_v1_0.json",
+    "policy_raw_sha256": "9695941aac154d1d5ae8744742156af9ee8b0b80b7792dc909ebcf6c746573a6",
+    "policy_ref": "point01-m6-3r-1-exact-value-sql-binding-policy",
+    "policy_version": "v1",
+    "registry_read_status": "registry_not_read"
+  },
+  "r3_proposed_plan_only": [
+    "separately authorize injected read-only adapter access only after fixed snapshot/admission review",
+    "bind any SQL execution to canonical plan/receipt registry resolution rather than R.1 self-contained policy objects",
+    "retain no-promotion/non-citable firewall until later M6.6 authority calibration"
+  ],
+  "result_version": "finsight_point01_m6_3r_2_local_retrieval_fixture_gate_result_v1_1",
+  "status": "pass",
+  "zero_execution_counts": {
+    "adapter_execution_count": 0,
+    "canonical_store_write_count": 0,
+    "evidence_promotion_count": 0,
+    "external_tool_call_count": 0,
+    "model_call_count": 0,
+    "network_request_count": 0,
+    "parser_numeric_execution_count": 0,
+    "provider_call_count": 0,
+    "sourcehunter_attempt_count": 0,
+    "tool_invocation_count": 0
+  }
+}

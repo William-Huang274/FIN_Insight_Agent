@@ -1,0 +1,79 @@
+{
+  "schema_version": "finsight_point01_m2_a1_independent_expected_cell_oracle_v1_1",
+  "scope": "M2_A1_post_actual_independent_oracle_only",
+  "runtime_input_forbidden": true,
+  "access_rule": "future_actual_runner_must_not_import_read_hash_receive_or_resolve_this_oracle_before_its_immutable_actual_result_digest_is_written",
+  "oracle_evaluation_order": ["future_actual_runner_receives_only_corpus", "actual_result_is_serialized_and_immutable_digest_recorded", "independent_oracle_evaluator_receives_actual_result_ref_and_this_oracle", "reviewer_gate_compares_actual_and_oracle"],
+  "oracle_cases": [
+    {
+      "oracle_case_id": "m2-a1-ai-semis-oracle",
+      "input_case_ref": "m2-a1-ai-semis-input",
+      "sector": "ai_semis",
+      "expected_selection": {"sector_pack_family": "ai_accelerator_supply_demand", "required_pack_version_ids": ["pack-universal-research:v1", "pack-sector-ai-semis:v3", "pack-report-initiation:v2"], "forbidden_pack_version_ids": ["pack-sector-saas:v3", "pack-sector-healthcare:v3", "pack-sector-banks:v3"]},
+      "expected_archetype_families": ["demand_driver", "supply_constraint", "margin_sensitivity", "counterevidence"],
+      "required_cells": [
+        {"cell_key": "ai-demand", "owner_role": "fundamental_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": ["commercial_tracker_metric"], "required": true},
+        {"cell_key": "ai-supply", "owner_role": "product_industry_analyst", "required_evidence_roles": ["issuer_metric", "relationship_signal"], "forbidden_evidence_roles": ["commercial_tracker_metric"], "required": true},
+        {"cell_key": "ai-margin", "owner_role": "fundamental_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": ["relationship_signal"], "required": true},
+        {"cell_key": "ai-counterevidence", "owner_role": "risk_counterevidence_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": [], "required": true}
+      ],
+      "forbidden_cells": ["bank-credit", "hc-regulatory", "saas-retention"],
+      "cell_count_range": {"minimum": 10, "maximum": 20},
+      "legacy_semantic_loss_expectations": [{"legacy_required_item_id": "ai-hbm", "allowed_actions": ["downgrade", "split"], "required_information_loss_tags": ["relationship_context_not_exact_issuer_fact"]}, {"legacy_required_item_id": "ai-counterevidence", "allowed_actions": ["merge", "split"], "required_information_loss_tags": ["counterevidence_route_preserved"]}],
+      "must_not_assert": ["one_to_one_legacy_item_to_decision_cell_equivalence", "legacy_fact_is_accepted_evidence", "planning_authority_is_canonical"]
+    },
+    {
+      "oracle_case_id": "m2-a1-saas-oracle",
+      "input_case_ref": "m2-a1-saas-input",
+      "sector": "saas",
+      "expected_selection": {"sector_pack_family": "subscription_retention_unit_economics", "required_pack_version_ids": ["pack-universal-research:v1", "pack-sector-saas:v3", "pack-report-initiation:v2"], "forbidden_pack_version_ids": ["pack-sector-ai-semis:v3", "pack-sector-healthcare:v3", "pack-sector-banks:v3"]},
+      "expected_archetype_families": ["recurring_growth", "retention_quality", "pricing_power", "cash_conversion", "counterevidence"],
+      "required_cells": [
+        {"cell_key": "saas-arr", "owner_role": "fundamental_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": ["commercial_tracker_metric"], "required": true},
+        {"cell_key": "saas-retention", "owner_role": "fundamental_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": ["relationship_signal"], "required": true},
+        {"cell_key": "saas-pricing", "owner_role": "product_industry_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": ["commercial_tracker_metric"], "required": true},
+        {"cell_key": "saas-counterevidence", "owner_role": "risk_counterevidence_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": [], "required": true}
+      ],
+      "forbidden_cells": ["ai-hbm", "bank-nii", "hc-clinical"],
+      "cell_count_range": {"minimum": 10, "maximum": 20},
+      "legacy_semantic_loss_expectations": [{"legacy_required_item_id": "saas-seat", "allowed_actions": ["downgrade", "split"], "required_information_loss_tags": ["relationship_context_not_exact_issuer_fact"]}, {"legacy_required_item_id": "saas-sales", "allowed_actions": ["merge", "split"], "required_information_loss_tags": ["valuation_context_separated_from_operating_fact"]}],
+      "must_not_assert": ["one_to_one_legacy_item_to_decision_cell_equivalence", "commercial_proxy_as_exact_retention", "planning_authority_is_canonical"]
+    },
+    {
+      "oracle_case_id": "m2-a1-healthcare-oracle",
+      "input_case_ref": "m2-a1-healthcare-input",
+      "sector": "healthcare",
+      "expected_selection": {"sector_pack_family": "clinical_regulatory_launch", "required_pack_version_ids": ["pack-universal-research:v1", "pack-sector-healthcare:v3", "pack-report-initiation:v2"], "forbidden_pack_version_ids": ["pack-sector-ai-semis:v3", "pack-sector-saas:v3", "pack-sector-banks:v3"]},
+      "expected_archetype_families": ["clinical_validation", "regulatory_milestone", "launch_execution", "reimbursement", "counterevidence"],
+      "required_cells": [
+        {"cell_key": "hc-clinical", "owner_role": "fundamental_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": ["commercial_tracker_metric"], "required": true},
+        {"cell_key": "hc-regulatory", "owner_role": "risk_counterevidence_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": ["relationship_signal"], "required": true},
+        {"cell_key": "hc-reimbursement", "owner_role": "capital_market_analyst", "required_evidence_roles": ["relationship_signal"], "forbidden_evidence_roles": ["commercial_tracker_metric"], "required": true},
+        {"cell_key": "hc-counterevidence", "owner_role": "risk_counterevidence_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": [], "required": true}
+      ],
+      "forbidden_cells": ["ai-supply", "bank-deposit", "saas-arr"],
+      "cell_count_range": {"minimum": 10, "maximum": 20},
+      "legacy_semantic_loss_expectations": [{"legacy_required_item_id": "hc-reimbursement", "allowed_actions": ["downgrade", "split"], "required_information_loss_tags": ["relationship_context_not_exact_issuer_fact"]}, {"legacy_required_item_id": "hc-valuation", "allowed_actions": ["downgrade"], "required_information_loss_tags": ["valuation_context_not_clinical_evidence"]}],
+      "must_not_assert": ["one_to_one_legacy_item_to_decision_cell_equivalence", "relationship_context_promoted_to_clinical_fact", "planning_authority_is_canonical"]
+    },
+    {
+      "oracle_case_id": "m2-a1-banks-oracle",
+      "input_case_ref": "m2-a1-banks-input",
+      "sector": "banks",
+      "expected_selection": {"sector_pack_family": "balance_sheet_spread_credit", "required_pack_version_ids": ["pack-universal-research:v1", "pack-sector-banks:v3", "pack-report-initiation:v2"], "forbidden_pack_version_ids": ["pack-sector-ai-semis:v3", "pack-sector-saas:v3", "pack-sector-healthcare:v3"]},
+      "expected_archetype_families": ["net_interest_income", "deposit_funding", "credit_cost", "capital_buffer", "counterevidence"],
+      "required_cells": [
+        {"cell_key": "bank-nii", "owner_role": "fundamental_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": ["commercial_tracker_metric"], "required": true},
+        {"cell_key": "bank-deposit", "owner_role": "fundamental_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": ["relationship_signal"], "required": true},
+        {"cell_key": "bank-credit", "owner_role": "risk_counterevidence_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": ["commercial_tracker_metric"], "required": true},
+        {"cell_key": "bank-counterevidence", "owner_role": "risk_counterevidence_analyst", "required_evidence_roles": ["issuer_metric"], "forbidden_evidence_roles": [], "required": true}
+      ],
+      "forbidden_cells": ["ai-hbm", "hc-pipeline", "saas-retention"],
+      "cell_count_range": {"minimum": 10, "maximum": 20},
+      "legacy_semantic_loss_expectations": [{"legacy_required_item_id": "bank-rate", "allowed_actions": ["downgrade", "split"], "required_information_loss_tags": ["macro_context_not_exact_issuer_fact"]}, {"legacy_required_item_id": "bank-valuation", "allowed_actions": ["downgrade"], "required_information_loss_tags": ["valuation_context_not_operating_fact"]}],
+      "must_not_assert": ["one_to_one_legacy_item_to_decision_cell_equivalence", "macro_context_promoted_to_issuer_fact", "planning_authority_is_canonical"]
+    }
+  ],
+  "oracle_tamper_controls": ["oracle_mutation_must_not_change_frozen_actual_result_digest", "actual_path_or_hash_access_to_oracle_must_be_intercepted_by_canary", "oracle_evaluator_must_only_read_actual_by_immutable_digest_after_actual_terminalization", "four_sector_expected_values_are_reviewer_side_post_execution_comparison_only"],
+  "boundary": "This is an independent reviewer-side expected-cell contract. It is not a pack, compiler input, model prompt, shadow input or runtime authority object."
+}

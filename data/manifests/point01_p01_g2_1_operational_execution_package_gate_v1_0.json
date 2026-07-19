@@ -1,0 +1,27 @@
+{
+  "execution_counts": {
+    "active_authority": 0,
+    "admission": 0,
+    "baseline": 0,
+    "fixed_store_write": 0,
+    "formal_namespace": 0,
+    "model_success": 0,
+    "negative_probe": 0,
+    "network_success": 0,
+    "provider_success": 0,
+    "receipt": 0,
+    "runtime": 0,
+    "tool_success": 0
+  },
+  "gate_digest": "6bf29f9397d82d1e2b540c2520cb1f85f9f51c2886e28ba77169e5c23668340d",
+  "next_step": "execute_exact_g2_1_once_after_total_reviewer_authority_only",
+  "package_digest": "7ded46ddadb54a697877e3426bab8b9ab868bab0ceb7c2cd735a7349b15339e1",
+  "package_ref": "point01-p01-g2-1-exact-operational-tranche-execution-package-v1",
+  "schema_version": "finsight_point01_p01_g2_1_operational_execution_package_gate_v1_0",
+  "status": "pass",
+  "verification": {
+    "errors": [],
+    "package_digest": "7ded46ddadb54a697877e3426bab8b9ab868bab0ceb7c2cd735a7349b15339e1",
+    "status": "pass"
+  }
+}

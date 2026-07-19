@@ -1,0 +1,65 @@
+{
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "external_call_count": 0,
+    "legacy_task_run": "authoritative",
+    "model_call_count": 0
+  },
+  "boundary": "This fixture validates compiler input and assembled Cell/Slot/Gap shape only. It does not select a pack, call a model, retrieve evidence, write legacy state or change authority.",
+  "checks": {
+    "external_calls": true,
+    "negative_cell_count": true,
+    "negative_gap": true,
+    "negative_policy_and_cycle": true,
+    "positive_bundle": true,
+    "positive_input": true
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m2_1_compiler_input_validation_policy_v1_0.json": "6bcf5837859bf806d950e5a993a8d6b1b8a5b4ed0da8f434e81afc7519c86d63",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "e7d1ddb2fc2b06ae36a123b184521093afb7d9a4dcfcb268aa1e0269dbbbe998",
+    "scripts/engineering/run_point01_m2_1_compiler_validation_fixture.py": "601e17ba149f0fc72afd4833fc642168925de8a6e530c9a289b50d28ab24c756",
+    "src/sec_agent/canonical_runtime/planning_service.py": "20ccf383a76ed91ae2e337e1c3fb05d9983bf73d78dbf16d7b1039e2eaa4a22e"
+  },
+  "generated_at": "2026-07-12T09:56:14.575265+00:00",
+  "negative": {
+    "gap_errors": [
+      "gap_reason_blank:gap-invalid"
+    ],
+    "policy_cycle_errors": [
+      "dependency_cycle",
+      "duplicate_cell_key",
+      "forbidden_substitutions_required:cell_2:1",
+      "owner_role_not_allowed:cell_0",
+      "source_policy_not_allowed:cell_2:1",
+      "unknown_cell_dependency:cell_8"
+    ],
+    "short_input_errors": [
+      "material_cell_count_out_of_range:9"
+    ]
+  },
+  "positive": {
+    "bundle": {
+      "cell_count": 10,
+      "contract_version_id": "contract_d9ea02cc7354b9141681:v1",
+      "errors": [],
+      "external_call_count": 0,
+      "gap_count": 0,
+      "planning_authority": "shadow",
+      "policy_ref": "point01-m2-1-compiler-policy-v1",
+      "slot_count": 10,
+      "status": "pass",
+      "validation_mode": "full"
+    },
+    "input": {
+      "cell_count": 10,
+      "errors": [],
+      "external_call_count": 0,
+      "policy_ref": "point01-m2-1-compiler-policy-v1",
+      "status": "pass",
+      "validation_mode": "full"
+    }
+  },
+  "result_version": "finsight_point01_m2_1_compiler_validation_fixture_result_v1_0",
+  "scope": "Point01_M2_1_compiler_input_cell_slot_gap_full_validation",
+  "status": "pass"
+}

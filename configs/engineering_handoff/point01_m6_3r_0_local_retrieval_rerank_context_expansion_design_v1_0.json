@@ -1,0 +1,124 @@
+{
+  "design_version": "finsight_point01_m6_3r_0_local_retrieval_rerank_context_expansion_design_v1_1_topk_sql_inventory_repair",
+  "point": "M6.3R.0",
+  "execution_stage": "design_repair_independently_accepted",
+  "scope": "local_existing_kb_sql_graph_adapter_to_metadata_filter_recall_rerank_neighbor_section_table_expansion_to_candidatebundle_contract",
+  "input_contract": {
+    "required": [
+      "exact EvidenceRequest id and digest",
+      "exact selected ToolSelectionPlan id and digest",
+      "immutable LocalAdapterSnapshot id and digest",
+      "EvidenceRequest.topk_policy plus approved source-role profile/version",
+      "entity, period, form, source-policy and authority filters"
+    ],
+    "forbidden": [
+      "ambient environment path selection",
+      "unversioned index or graph access",
+      "agent-supplied raw top-k expansion",
+      "raw document persistence",
+      "caller-supplied accepted candidate ids"
+    ]
+  },
+  "topk_resolution_contract": {
+    "policy_file": "configs/engineering_handoff/point01_m6_3r_0_topk_reranker_policy_v1_0.json",
+    "source_of_request": "EvidenceRequest.topk_policy is an input to resolution, never a global constant or agent-controlled free parameter.",
+    "default_profile": "local_retrieval_default:v1",
+    "default_resolved_values": {
+      "candidate_bundle_top_k": 50,
+      "rerank_top_k": 20,
+      "evidence_gate_candidate_top_k": 5
+    },
+    "hard_bounds": {
+      "candidate_bundle_top_k": {"minimum": 20, "maximum": 50},
+      "rerank_top_k": {"minimum": 8, "maximum": 20},
+      "evidence_gate_candidate_top_k": {"minimum": 1, "maximum": 5}
+    },
+    "lowering_rule": "An explicitly versioned source-type/evidence-role profile may lower a quantity; the resolver must record that profile and reason. It may not raise a value, and an agent may not choose a larger value.",
+    "raising_rule": "Any future increase requires an explicit approved profile/version/authority and remains bounded by the hard maxima; no current execution route is authorized to perform it.",
+    "capacity_rule": "If exact EvidenceRequest.topk_policy cannot support the selected profile, resolution emits topk_policy_capacity_insufficient or topk_policy_rejected rather than silently clamping upward.",
+    "audit_projection_required": [
+      "requested_topk_policy",
+      "resolved_topk_policy",
+      "resolver_profile_id",
+      "resolver_profile_version",
+      "source_type_and_evidence_role",
+      "clamp_or_reject_reason",
+      "candidate_bundle_candidate_ids",
+      "evidence_gate_candidate_ids"
+    ]
+  },
+  "proposed_ephemeral_contracts": {
+    "LocalRetrievalQuery": ["request_ref", "plan_ref", "adapter_snapshot_ref", "metadata_filters", "requested_topk_policy", "resolved_topk_policy"],
+    "LocalRecallCandidate": ["candidate_id", "adapter_id", "adapter_snapshot_digest", "source_artifact_ref", "source_artifact_digest", "parser_artifact_ref", "index_or_graph_coordinate", "entity_ref", "period_ref", "source_authority_rank", "source_family", "document_id", "chunk_id", "section_id", "table_id", "page_ref", "row_ref", "parent_section_ref", "previous_ref", "next_ref", "recall_score"],
+    "DeterministicRerankDecision": ["candidate_id", "reranker_profile_id", "reranker_profile_version", "filter_pass", "rerank_score", "score_components", "tie_break_key", "exclusion_reason"],
+    "NeighborExpansionPlan": ["seed_candidate_id", "previous_section_ref", "next_section_ref", "parent_section_ref", "table_ref", "previous_page_ref", "next_page_ref", "previous_row_refs", "next_row_refs", "stop_reason"],
+    "CandidateBundleProjection": ["candidate_bundle_candidate_ids", "candidate_bundle_top_k", "retrieval_exhausted", "typed_gap_codes", "lineage_digest", "non_persistent", "unpromoted", "non_citable"],
+    "EvidenceGateCandidateProjection": ["evidence_gate_candidate_ids", "evidence_gate_candidate_top_k", "selection_from_bundle_digest", "not_an_evidence_promotion", "not_authorized_in_M6_3R_0"]
+  },
+  "reranker_profile_contract": {
+    "current_profile": {"profile_id": "local_lexical_metadata_reranker", "profile_version": "v1", "kind": "deterministic_zero_model_baseline", "model_call_count": 0},
+    "baseline_components": ["metadata_filter_pass", "lexical_score", "source_authority_rank", "coordinate_completeness", "stable_tie_break"],
+    "future_model_profile_boundary": "A model reranker must have a separate profile id/version, model-resource authority, budget, package approval and execution route. It cannot share the deterministic baseline route or be introduced by configuration alone."
+  },
+  "no_second_state_model": {
+    "rule": "The above are immutable in-memory projections. Future M6.3R execution may emit the existing canonical_runtime.CandidateBundle only; it may not introduce a retrieval database, context store, evidence table, approval registry or writer-facing object.",
+    "persistence": "not_authorized",
+    "promotion": "not_authorized",
+    "context_injection": "not_authorized"
+  },
+  "pipeline": [
+    "validate exact request/plan/adapter snapshot lineage and resolve the request-bound TopKPolicy",
+    "metadata-first filter by entity, period, form, source policy, source family, authority and immutable snapshot",
+    "bounded local recall to resolved candidate_bundle_top_k",
+    "deterministic zero-model rerank to resolved rerank_top_k",
+    "source-diversity selection to the separately named evidence_gate_candidate_top_k (at most five)",
+    "same-document neighbor/section/table/page/row expansion under fixed caps",
+    "produce existing CandidateBundle-compatible nonpersistent projection or a typed retrieval_exhausted result"
+  ],
+  "neighbor_diversity_limits": {
+    "max_candidates_per_source_artifact": 2,
+    "max_candidates_per_identical_content_digest": 1,
+    "require_two_source_families_when_available": true,
+    "max_previous_next_sections_per_seed": 1,
+    "max_parent_sections_per_seed": 1,
+    "max_tables_per_seed": 1,
+    "max_previous_next_pages_per_seed": 1,
+    "max_previous_next_rows_per_seed": 2,
+    "max_neighbor_expansions_total": 32
+  },
+  "diversity_and_ties": {
+    "selection_order": ["authority_rank_desc", "rerank_score_desc", "source_artifact_diversity", "source_family_diversity", "candidate_id_asc"],
+    "single_source_exception": "If fewer than two eligible source families exist after metadata filtering, retain the bounded single-source result and emit typed code diversity_not_applicable_single_source.",
+    "duplicate_rule": "Same source artifact and identical content digest cannot silently occupy more than their caps. Excluded rows retain deterministic exclusion reasons in the ephemeral audit projection."
+  },
+  "neighbor_expansion": {
+    "same_document_and_snapshot_required": true,
+    "allowed_refs": ["previous_section_ref", "next_section_ref", "parent_section_ref", "table_ref", "previous_page_ref", "next_page_ref", "previous_row_refs", "next_row_refs"],
+    "coordinate_lineage_rule": "Every expanded reference must retain document, parser, source artifact, index-or-graph coordinate and adapter snapshot digest. Missing coordinates are excluded rather than inferred.",
+    "stop_rules": [
+      "stop when max_neighbor_expansions_total is reached",
+      "stop when a requested neighbor is absent, cross-document, stale, unversioned or authority-incompatible",
+      "stop after one deterministic lookup per permitted relation; no recursive expansion",
+      "stop without external repair, retry, fallback or synthetic coordinate"
+    ]
+  },
+  "typed_exhaustion": {
+    "statuses": ["retrieval_exhausted", "context_expansion_partial", "input_contract_violation"],
+    "codes": ["retrieval_exhausted_no_metadata_match", "retrieval_exhausted_no_recall_hit", "retrieval_exhausted_no_authority_eligible_candidate", "context_expansion_partial_no_neighbor", "context_expansion_partial_coordinate_missing", "adapter_snapshot_unavailable", "adapter_lineage_unbound", "diversity_not_applicable_single_source", "topk_policy_capacity_insufficient", "topk_policy_rejected"],
+    "prohibition": "Typed exhaustion never invokes SourceHunter, network, fallback retrieval, parser, numeric normalization, Evidence Gate or Writer."
+  },
+  "authority_and_count_gates": {"network_request_count": 0, "external_tool_call_count": 0, "model_call_count": 0, "provider_call_count": 0, "canonical_store_write_count": 0, "evidence_promotion_count": 0, "parser_numeric_execution_count": 0, "sourcehunter_attempt_count": 0, "context_writer_execution_count": 0, "adapter_execution_count": 0},
+  "future_execution_points": [
+    {"point": "M6.3R.1", "stage": "skeleton", "scope": "typed schemas, request-bound TopK resolver and injected read-only adapter seams; no local index, graph, SQL or tool read"},
+    {"point": "M6.3R.2", "stage": "fixture", "scope": "sanitized immutable candidate/neighbor/SQL-row fixtures and deterministic diversity, TopK and exhaustion tests"},
+    {"point": "M6.3R.3", "stage": "full", "scope": "bounded local read-only BM25/ObjectBM25/graph execution plus a bounded exact-value ledger SQL lane. The SQL lane requires a pinned immutable ledger snapshot, M6.2 ToolRegistry/ToolInvocationReceipt admission, exact entity/period/unit/form/source-tier/lineage validation, no relaxed-filter fallback and no promotion."},
+    {"point": "M6.3R.4", "stage": "calibrated", "scope": "slot-level precision/recall, diversity, SQL false-positive, expansion-stop and typed-exhaustion corpus calibration"}
+  ],
+  "calibration_corpus_plan": {
+    "unit_of_eval": "EvidenceRequest slot with versioned gold candidate ids and eligible-neighbor coordinates",
+    "coverage_buckets": ["SEC 10-K/10-Q narrative", "SEC primary statement/table", "8-K earnings commentary", "issuer IR PDF", "non-US disclosure", "relationship graph", "exact-value ledger SQL", "public-context negative controls"],
+    "metrics": ["recall_at_bundle_top_k", "rerank_recall_at_resolved_top_k", "precision_at_evidence_gate_top_k", "source_diversity_rate", "neighbor_coordinate_precision", "table_context_recall", "sql_exact_row_precision", "typed_exhaustion_precision"],
+    "negative_cases": ["wrong entity", "wrong period", "wrong form", "stale snapshot", "unbound source lineage", "authority below role minimum", "duplicate content", "cross-document neighbor", "missing table/page/row coordinate", "single-source diversity exception", "SQL row without unit or source tier", "MCP relaxed-filter fallback", "no candidate must not trigger fallback"]
+  },
+  "prohibited_execution": ["local adapter invocation", "network or SEC call", "SourceHunter or repair attempt", "provider, embedding, reranker model or paid model", "Evidence promotion or persistence", "parser or numeric execution", "Context or Writer ingestion", "business Case mutation or legacy authority change"]
+}

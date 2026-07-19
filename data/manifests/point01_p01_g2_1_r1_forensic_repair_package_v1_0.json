@@ -1,0 +1,66 @@
+{
+  "execution_counts": {
+    "baseline": 0,
+    "fixed_store_write": 0,
+    "model": 0,
+    "negative_case": 0,
+    "network": 0,
+    "operational_authority": 0,
+    "provider": 0,
+    "receipt": 0,
+    "tool": 0
+  },
+  "future_nonzero_child_contract": {
+    "incident_envelope_schema": "finsight_point01_child_execution_incident_envelope_v1_0",
+    "instrumentation_failure": "fail_closed",
+    "persist_before_parent_return": true,
+    "raw_stdout_stderr_persistence": "forbidden",
+    "redaction_and_bound": "required",
+    "terminal_outcome_unknown_links_envelope": true
+  },
+  "historical_bindings": {
+    "baseline_result_digest": "58de7732bfeffee09d80f93fb997aa898727c7ea84e29d8c844f7607b92a858b",
+    "execution_gate_digest": "6bf29f9397d82d1e2b540c2520cb1f85f9f51c2886e28ba77169e5c23668340d",
+    "execution_package_digest": "7ded46ddadb54a697877e3426bab8b9ab868bab0ceb7c2cd735a7349b15339e1",
+    "fixed_approval_store_sha256": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4",
+    "incident_input_digest": "5e4fbf4e8279c6cfde219cdf5c72e52881093579f7440542bd3e9595b73e3eb2",
+    "reconciliation_digest": "7913ee3d38ef3ffd2d28eaf8f5fb2cf4b19545f72deb9dca8d003a032597939a",
+    "terminal_digest": "13785b7d5d0bdee2459842d1eaa7137eccdbd747aa969f36aa309970194daf8c"
+  },
+  "input_bytes_source": "git_index",
+  "input_file_sha256": {
+    "configs/engineering_handoff/point01_p01_g2_1_r1_forensic_repair_policy_v1_0.json": "5707e7ca577e62590d5e32d9d0ff6b4e3003ec3db0fced330584d4f1d1d05a26",
+    "data/manifests/point01_p01_g2_1_operational_execution_package_gate_v1_0.json": "3d09e6008d3a7f018cfbb2ea2bb4bfec61f6f8763adf17af1cb02b33077e0728",
+    "data/manifests/point01_p01_g2_1_operational_execution_package_manifest_v1_0.json": "a250ea34f60df7bcc7553cf9a0b8590481e2fbf2aaca9a0aaccbee1704170893",
+    "scripts/engineering/run_point01_p01_g2_1_r1_forensic_repair_freeze.py": "ea96b1e9fff86634ff6fe87be0d4c6126074212d204aa8ceefda90528d93abf6",
+    "src/sec_agent/canonical_runtime/m2_a1_execution_receipt.py": "b1610cb7e2c8e8964b982abe58d64ba480e6fdab5db69bd2ac4431da0c66531d",
+    "src/sec_agent/canonical_runtime/m2_a1_v2_10_execution_proof.py": "90cb614ed957d427b2b8ffcf82ee1733b710d9c121ea8f588d2def5cb11a7866",
+    "src/sec_agent/canonical_runtime/p01_g2_1_forensic_repair.py": "21507c30e0e754db5f9f919ff2b16e5678cf72084114c43fb759b018f70343f8",
+    "tests/contract/test_point01_p01_g2_1_r1_forensic_repair.py": "facd878160b6cb49c1fbc177990d9baf95559bbf9159f9e0a27b9ba55248a722"
+  },
+  "input_hash_count": 8,
+  "input_hashes_digest": "e624543bdf307a1c8290496943869a4d2ea5b2870f3cab937a5ae703cd65b480",
+  "prohibitions": [
+    "fresh_operational_authority",
+    "admission_issue",
+    "receipt_registration",
+    "receipt_replay",
+    "baseline_rerun",
+    "negative_probe_execution",
+    "network_success",
+    "tool_success",
+    "model_provider_success",
+    "fixed_store_open_or_write",
+    "formal_namespace_open",
+    "business_case_mutation",
+    "legacy_authority_change",
+    "paid_llm",
+    "full_chain"
+  ],
+  "repair_package_digest": "3e9114adfde081240311228ebebf2de1b3f03f94570714c0d834022f60e46c9a",
+  "repair_ref": "point01-p01-g2-1-r1-child-failure-forensic-repair-v1",
+  "root_cause_status": "hypothesis_only_no_historical_stdout_stderr; deterministic_fixture_proof_required",
+  "schema_version": "finsight_point01_p01_g2_1_r1_forensic_repair_package_v1_0",
+  "scope": "P01_G2_1_R1_FORENSIC_REPAIR_ONLY",
+  "status": "P01_G2_1_R1_FORENSIC_REPAIR_PENDING_INDEPENDENT_REVIEW"
+}

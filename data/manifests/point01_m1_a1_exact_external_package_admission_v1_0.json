@@ -1,0 +1,11 @@
+{
+  "schema_version": "finsight_point01_m1_a1_external_package_admission_v1_0",
+  "admission_ref": "point01-m1-a1-total-reviewer-package-admission:v1",
+  "reviewer_identity": "william/003/total_reviewer",
+  "decision": "admitted",
+  "package_manifest_schema_version": "finsight_point01_m1_a1_adversarial_audit_package_manifest_v1_1",
+  "package_ref": "point01-m1-a1-isolated-adversarial-audit-package-v2-identity-bound",
+  "package_digest": "c5169899e84a8eb0d99e49b3dbaa3dca0b963d9423364816605df8a49775bcf7",
+  "scope": "M1_A1_independent_adversarial_audit_only",
+  "authority_boundary": "temporary_explicit_sqlite_only_no_postgresql_write_no_fixed_store_open_no_network_tool_model_or_business_mutation"
+}

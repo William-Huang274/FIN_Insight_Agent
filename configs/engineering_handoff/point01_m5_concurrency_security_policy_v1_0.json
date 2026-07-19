@@ -1,0 +1,20 @@
+{
+  "policy_version": "finsight_point01_m5_concurrent_budget_security_policy_v1_0",
+  "status": "approved_for_deterministic_implementation",
+  "scope": "Point01_M5_local_synthetic_concurrent_budget_reservation_and_security_admission_only",
+  "required_drills": [
+    "two_work_units_contend_for_one_case_budget",
+    "concurrent_allowed_and_denied_security_admissions_are_audited",
+    "persisted_grant_revocation_blocks_later_admission"
+  ],
+  "forbidden_admissions": [
+    "worker_service",
+    "provider_execution",
+    "external_tool_execution",
+    "Evidence_runtime",
+    "Writer_runtime",
+    "full_chain",
+    "business_case_mutation",
+    "legacy_taskrun_authority_change"
+  ]
+}

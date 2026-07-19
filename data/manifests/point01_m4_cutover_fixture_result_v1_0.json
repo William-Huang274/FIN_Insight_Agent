@@ -1,0 +1,27 @@
+{
+  "canonical_lane_scope": "case_scoped_fixture_only",
+  "external_call_count": 0,
+  "generated_at": "2026-07-12T12:08:46.934034+00:00",
+  "legacy_task_run_authority": "authoritative",
+  "model_call_count": 0,
+  "outputs": {
+    "M4.1": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m4_1_fixture_result_v1_0.json",
+    "M4.2": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m4_2_fixture_result_v1_0.json",
+    "M4.3": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m4_3_fixture_result_v1_0.json",
+    "M4.4": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m4_4_fixture_result_v1_0.json",
+    "M4.5": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m4_5_fixture_result_v1_0.json",
+    "M4.6": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m4_6_fixture_result_v1_0.json",
+    "M4.7": "D:\\FIN_Insight_Agent\\data\\manifests\\point01_m4_7_fixture_result_v1_0.json"
+  },
+  "point_statuses": {
+    "M4.1": "pass",
+    "M4.2": "pass",
+    "M4.3": "pass",
+    "M4.4": "pass",
+    "M4.5": "pass",
+    "M4.6": "pass",
+    "M4.7": "pass"
+  },
+  "result_version": "finsight_point01_m4_cutover_fixture_result_v1_0",
+  "status": "pass"
+}

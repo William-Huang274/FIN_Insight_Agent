@@ -1,0 +1,15 @@
+{
+  "policy_version": "finsight_point01_m5_7_parallel_context_policy_v1_0",
+  "scope": "Point01_M5_7_parallel_snapshot_selective_invalidation_control_plane_only",
+  "status": "approved_for_deterministic_implementation",
+  "dependencies": ["M5.1", "M5.2", "M5.3", "M5.4"],
+  "required_invariants": [
+    "branch context is copied and digest-bound at snapshot creation; shared mutable context is prohibited",
+    "snapshot is bound to exact checkpoint, WorkUnit, Attempt and dependency set",
+    "irrelevant dependency delta records continue and cannot cancel a branch",
+    "semantic assessments classify relevant deltas as material, immaterial or ambiguous; ambiguous impact enters explicit review rather than silently rebasing",
+    "affected context blocks are calculated from ContextRequirement dependency coverage",
+    "approved material rebase compiles replacement refs and context blocks into a new immutable snapshot; this slice does not execute agents"
+  ],
+  "forbidden_admissions": ["parallel_worker_execution", "provider_execution", "external_tool_execution", "Evidence_runtime", "Writer_runtime", "full_chain", "cross_tenant_shared_context", "business_case_mutation", "legacy_taskrun_authority_change"]
+}

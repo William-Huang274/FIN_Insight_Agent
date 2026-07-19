@@ -1,0 +1,42 @@
+{
+  "checks": {
+    "concrete_negative_controls_blocked": true,
+    "constructor_connect_request_distinguished": true,
+    "fixed_fingerprint_pinned": true,
+    "fresh_process_clean_baseline": true,
+    "historical_root_cause_recorded": true,
+    "no_phase_a_authority_expansion": true,
+    "package_current_verify": true,
+    "pure_local_planning_transport_free": true,
+    "zero_side_effects": true
+  },
+  "execution_counts": {
+    "baseline_rerun_count": 0,
+    "external_tool_call_count": 0,
+    "fixed_canonical_or_business_store_open_count": 0,
+    "fixed_canonical_or_business_store_write_count": 0,
+    "model_or_provider_call_count": 0,
+    "network_request_success_count": 0,
+    "new_admission_count": 0,
+    "new_receipt_count": 0,
+    "receipt_consumption_count": 0
+  },
+  "fixed_store_fingerprint": {
+    "access": "fingerprint_only_no_open_or_mutation",
+    "path": ".runtime_control/point01_m6_3_5_nvda_sec_document_parser_repaired_global_approval/canonical.sqlite",
+    "sha256": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4"
+  },
+  "gate_digest": "52cd13eda74affc99352a14a3ffff322e96b992b252c40d9dd6335d9f9e181fe",
+  "next_step": "independent_phase_a_review_required; fresh_baseline_authority_is_not_issued_by_this_gate",
+  "package_digest": "11f4cd9267e56e9c6c33eaeb32119194731d76dbe0040e34b441e6daf66bd7cd",
+  "package_ref": "point01-m2-a1-rc-p38-024-transport-isolation-repair-package-v1",
+  "package_verify": {
+    "calculated_package_digest": "11f4cd9267e56e9c6c33eaeb32119194731d76dbe0040e34b441e6daf66bd7cd",
+    "mismatches": [],
+    "package_current_verify": "pass",
+    "status": "pass"
+  },
+  "result_version": "finsight_point01_m2_a1_transport_isolation_repair_gate_v1_0",
+  "scope": "RC_P38_024_phase_a_root_cause_repair_and_package_freeze_only",
+  "status": "repair_package_frozen_pending_independent_review_phase_b_blocked"
+}

@@ -1,0 +1,41 @@
+{
+  "boundary": "Deterministic M3 calibration fixture only; no model, provider, retrieval, Evidence/Writer runtime, legacy write, or authority cutover was invoked.",
+  "canonical_lane": "shadow_only",
+  "external_call_count": 0,
+  "fixture_status": "pass",
+  "generated_at": "2026-07-12T10:20:39.213162+00:00",
+  "model_call_count": 0,
+  "payload": {
+    "canonical_lane": "shadow_only",
+    "control_digest": "8f99399bc2d826f2b461e986e217126337ba6058a49972844a9a45040345cf55",
+    "external_call_count": 0,
+    "findings": [
+      {
+        "control_id": "negative_relationship_graph_not_financial_fact_v0_1",
+        "escape_detected": false,
+        "failures": [],
+        "status": "pass"
+      },
+      {
+        "control_id": "negative_parser_gap_not_public_source_absent_v0_1",
+        "escape_detected": false,
+        "failures": [],
+        "status": "pass"
+      },
+      {
+        "control_id": "negative_commercial_tracker_boundary_v0_1",
+        "escape_detected": false,
+        "failures": [],
+        "status": "pass"
+      }
+    ],
+    "material_escape_count": 0,
+    "model_call_count": 0,
+    "planning_authority": "legacy",
+    "status": "pass"
+  },
+  "planning_authority": "legacy",
+  "point_id": "M3.5",
+  "result_version": "finsight_point01_m3_5_fixture_result_v1_0",
+  "status": "pass"
+}

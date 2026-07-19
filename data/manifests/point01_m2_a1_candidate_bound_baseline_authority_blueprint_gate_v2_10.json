@@ -1,0 +1,27 @@
+{
+  "execution_counts": {
+    "actual": 0,
+    "admission": 0,
+    "approval": 0,
+    "ledger": 0,
+    "model": 0,
+    "namespace": 0,
+    "network": 0,
+    "provider": 0,
+    "receipt": 0,
+    "store_write": 0,
+    "tool": 0
+  },
+  "gate_digest": "f85e8228e9fdf10ed4d3edc6c0e3b9d3cf052d95a376805e0afda62aeea919dc",
+  "next_step": "independent_exact_digest_review_required_no_authority_created",
+  "package_digest": "4ca222da5dd5ab7991d258d49eb30a377e6c8f82e1a0885d8912567324d3d5e8",
+  "package_ref": "point01-m2-a1-v2-10-p01-g2-candidate-bound-baseline-executable",
+  "result_version": "finsight_point01_m2_a1_candidate_bound_v2_10_blueprint_gate_v1",
+  "status": "pass",
+  "target_digest": "4fa5ca3dbe0354d53484d17ba8094974606ae9202bd3f68c75c1c8b0ec997b5b",
+  "verification": {
+    "all_other_scenarios_blocked": true,
+    "baseline_only": true,
+    "status": "pass"
+  }
+}

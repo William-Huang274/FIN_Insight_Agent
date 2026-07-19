@@ -1,0 +1,37 @@
+{
+  "review_version": "finsight_point01_m6_2_cross_owner_design_review_v1_0",
+  "scope": "Point01_M6_2_tool_registry_and_bounded_planner",
+  "status": "user_confirmed_structured_cross_owner_review_accepted_for_m6_2",
+  "review_method": "codex_single_agent_structured_role_separation_with_explicit_user_implementation_authorization",
+  "reviewer_identity": "current_thread_codex",
+  "independent_human_or_multi_person_signoff": false,
+  "limitation": "This is role-separated review by one Codex agent, not independent human or multi-person signoff. The user explicitly continued after M6.1 and that authorization is limited to deterministic registry/selection-plan construction.",
+  "user_confirmation": {
+    "status": "accepted",
+    "approver_id": "current_thread_human_reviewer",
+    "approver_type": "human",
+    "confirmed_at": "2026-07-13T11:35:42.0789664+08:00",
+    "decision": "approve_m6_2_deterministic_tool_registry_and_selection_plan_only",
+    "confirmation_note": "User explicitly stated: 继续。The authorization does not permit Tool Registry execution, provider/network calls, candidate retrieval or Evidence Gate promotion."
+  },
+  "reviewer_lenses": [
+    {"lens": "registry_schema_and_source_authority_owner", "result": "pass_after_contract_binding", "checks": ["every tool declares capability/source role/authority/support/cannot-support/cost/latency/failure/fallback/permission/forbidden claims", "source authority rank is independent from cost", "registry snapshot digest is immutable and duplicate tool ids fail closed"]},
+    {"lens": "m5_security_budget_owner", "result": "pass_with_execution_deferral", "checks": ["selection plan carries required capability and M5.4 admission requirement but does not perform admission", "planning allowlist is not authority", "planned tool-call count is bounded by request and planner policy without reserving or consuming budget"]},
+    {"lens": "research_evidence_quality_owner", "result": "pass_after_role_boundary", "checks": ["numeric requests prefer issuer authority over lower-authority leads", "relationship requests remain context-only", "commercial gap requests stop instead of searching for an unlicensed proxy"]},
+    {"lens": "runtime_state_machine_owner", "result": "pass_with_nonexecuting_states", "checks": ["M6.2 emits SELECT_TOOL/FALLBACK_OR_STOP plan steps only", "ToolInvocationReceipt is not fabricated before execution", "plan terminal state is await_execution_admission, budget stop, route exhaustion or commercial gap"]},
+    {"lens": "acceptance_and_calibration_owner", "result": "pass_with_fixture_only_calibration", "checks": ["issuer/relationship/commercial/permission cases are deterministic", "registry or planner bypasses fail closed", "M6.3 retrieval, M6.6 promotion and downstream judgment/writer remain out of scope"]}
+  ],
+  "resolved_findings": [
+    {"finding_id": "M6.2R-001", "severity": "high", "finding": "A route string alone could select a cheap but low-authority source for an exact numeric request.", "repair": "Planner filters by role-specific minimum authority before cost-aware deterministic ordering."},
+    {"finding_id": "M6.2R-002", "severity": "high", "finding": "A planner could treat an in-memory allowlist as a real execution authorization.", "repair": "The plan marks every selected step execution_admission=required_m5_4_capability_check; no admission or invocation API exists in M6.2."},
+    {"finding_id": "M6.2R-003", "severity": "high", "finding": "Commercial gaps and exhausted routes might silently fall back to a public proxy or unbounded search.", "repair": "Zero call budget/commercial gap is terminal; missing eligible routes return typed route_exhausted rather than a free search."},
+    {"finding_id": "M6.2R-004", "severity": "medium", "finding": "A planner could fabricate ToolInvocationReceipt without a tool call.", "repair": "M6.2 creates ToolSelectionPlan steps only; invocation receipts remain absent until a separately admitted executor exists."}
+  ],
+  "open_followups": [
+    "M6.3 owns CandidateBundle retrieval/reranking and must separately prove metadata/neighbor/table behavior.",
+    "Any future M6.2 executor must call M5.4/M5.5 in its actual mutation/invocation transaction; a selection plan alone is not authorization.",
+    "No provider, network, external tool, Evidence Gate, parser, Writer/full-chain, business Case mutation or legacy authority change is admitted."
+  ],
+  "overall_result": "pass_with_resolved_design_findings_user_confirmed_m6_2_only",
+  "authority_boundary": {"tool_registry": "deterministic_snapshot_only", "tool_selection": "nonexecuting_plan_only", "m5_admission": "required_later_not_invoked", "evidence_promotion": "M6_6_not_implemented", "writer_full_chain": "forbidden"}
+}

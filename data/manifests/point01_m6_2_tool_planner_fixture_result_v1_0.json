@@ -1,0 +1,157 @@
+{
+  "authority_boundary": {
+    "candidate_retrieval": "M6_3_not_implemented",
+    "evidence_promotion": "M6_6_not_implemented",
+    "external_call_count": 0,
+    "external_tool_execution": false,
+    "model_call_count": 0,
+    "provider_execution": false,
+    "store_write_count": 0,
+    "tool_invocation_count": 0,
+    "tool_registry_persistence": "not_admitted",
+    "tool_selection_persistence": "not_admitted",
+    "writer_full_chain": "not_admitted"
+  },
+  "boundary": "M6.2 creates only a deterministic ToolRegistrySnapshot and nonexecuting ToolSelectionPlan. It does not persist registry/plans, perform M5.4 admission, reserve/consume budget, invoke a tool/provider/network, retrieve candidates, promote evidence, write a report, mutate a business Case or change legacy authority.",
+  "checks": {
+    "commercial_gap_stops": true,
+    "fallback_and_budget_bounded": true,
+    "issuer_authority_before_cost": true,
+    "issuer_primary_and_bounded_fallback": true,
+    "no_execution": true,
+    "permission_stop": true,
+    "relationship_context_route": true,
+    "replay_digest_match": true
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m6_2_cross_owner_design_review_v1_0.json": "7791893283bde752a681b68a7ecdeec062786d07aef7ed91f27339af75587014",
+    "configs/engineering_handoff/point01_m6_2_tool_registry_policy_v1_0.json": "b52c3be8f3ab5de4d196f6e7f4cad8d857d0fb8d39e474419c5e18849fc75297",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "b6821d7c97ec226b700008a32860e27eb29ece3114ab6850cb05a1fdeeac4662",
+    "scripts/engineering/run_point01_m6_2_tool_planner_fixture.py": "e2f91d9db8d86046be8c56629de3f40cc544cc0a6696bade52b2a0ef42f86857",
+    "src/sec_agent/canonical_runtime/evidence_request.py": "55134832f1d19da517705f070f979776c5075ed879987e2ced5c1365a9c7d0ca",
+    "src/sec_agent/canonical_runtime/tool_planner.py": "ab5e8391df42f8e94bfc5cf84cd57dfd60d5f7bc4a1f7bd4b276ef4860531317"
+  },
+  "generated_at": "2026-07-13T05:47:35.307376+00:00",
+  "plans": {
+    "commercial": {
+      "execution_admission": "required_m5_4_capability_check",
+      "permission_snapshot_ref": "permission-m6-2-fixture",
+      "persistence_admission": "not_admitted",
+      "plan_digest": "570a747af4eecf1e2c5517bc9806002178a5ff26f22d33acf6cb08db0484690b",
+      "plan_id": "tool_selection_plan_570a747af4eecf1e2c55",
+      "planned_tool_call_count": 0,
+      "planner_policy_ref": "point01-m6-2-bounded-planner-policy-v1",
+      "registry_snapshot_digest": "d34edafd7c4320059464081df36d4baf16625561c8752bfab3debb40f152eafa",
+      "registry_snapshot_id": "point01-m6-2-tool-registry:v1",
+      "remaining_tool_call_budget": 0,
+      "request_digest": "4a9f563cbb6e4f5baf0a4d91ad104d95310b88516e00c647088e6e83ca26de2a",
+      "request_id": "evidence_request_4a9f563cbb6e4f5baf0a",
+      "status": "stopped",
+      "steps": [],
+      "stop_reason": "commercial_gap_stop_rule"
+    },
+    "issuer": {
+      "execution_admission": "required_m5_4_capability_check",
+      "permission_snapshot_ref": "permission-m6-2-fixture",
+      "persistence_admission": "not_admitted",
+      "plan_digest": "724de043f8fe9d8d1a48a01a461bb135f033bb077c3e78c757e9f5699a8c7814",
+      "plan_id": "tool_selection_plan_724de043f8fe9d8d1a48",
+      "planned_tool_call_count": 2,
+      "planner_policy_ref": "point01-m6-2-bounded-planner-policy-v1",
+      "registry_snapshot_digest": "d34edafd7c4320059464081df36d4baf16625561c8752bfab3debb40f152eafa",
+      "registry_snapshot_id": "point01-m6-2-tool-registry:v1",
+      "remaining_tool_call_budget": 1,
+      "request_digest": "78a39d990c785aa061d86c5c77a88be497f7ecb8cbc84e3995bc7dbdf1638189",
+      "request_id": "evidence_request_78a39d990c785aa061d8",
+      "status": "await_execution_admission",
+      "steps": [
+        {
+          "budget_after": 2,
+          "budget_before": 3,
+          "execution_admission": "required_m5_4_capability_check",
+          "fallback_if_fail": "official_company_commentary_metadata_route",
+          "invocation_status": "not_executed",
+          "planner_step_id": "evidence_request_78a39d990c785aa061d8:step:1",
+          "request_id": "evidence_request_78a39d990c785aa061d8",
+          "required_capability": "evidence.metadata.read",
+          "selected_route_id": "issuer_disclosure_metadata_route",
+          "selected_tool_id": "issuer_disclosure_metadata_tool",
+          "selection_rationale": "authority_rank=5;cost_rank=2;route=issuer_disclosure_metadata_route",
+          "state": "SELECT_TOOL"
+        },
+        {
+          "budget_after": 1,
+          "budget_before": 2,
+          "execution_admission": "required_m5_4_capability_check",
+          "fallback_if_fail": null,
+          "invocation_status": "not_executed",
+          "planner_step_id": "evidence_request_78a39d990c785aa061d8:step:2",
+          "request_id": "evidence_request_78a39d990c785aa061d8",
+          "required_capability": "evidence.metadata.read",
+          "selected_route_id": "official_company_commentary_metadata_route",
+          "selected_tool_id": "official_company_commentary_metadata_tool",
+          "selection_rationale": "authority_rank=4;cost_rank=1;route=official_company_commentary_metadata_route",
+          "state": "FALLBACK_OR_STOP"
+        }
+      ],
+      "stop_reason": null
+    },
+    "permission_denied": {
+      "execution_admission": "required_m5_4_capability_check",
+      "permission_snapshot_ref": "permission-m6-2-fixture",
+      "persistence_admission": "not_admitted",
+      "plan_digest": "d17e6c3e47e553105015fdf242b6d9b9e3e50e7ddfa5e3d0656e433bc9711aa6",
+      "plan_id": "tool_selection_plan_d17e6c3e47e553105015",
+      "planned_tool_call_count": 0,
+      "planner_policy_ref": "point01-m6-2-bounded-planner-policy-v1",
+      "registry_snapshot_digest": "d34edafd7c4320059464081df36d4baf16625561c8752bfab3debb40f152eafa",
+      "registry_snapshot_id": "point01-m6-2-tool-registry:v1",
+      "remaining_tool_call_budget": 3,
+      "request_digest": "78a39d990c785aa061d86c5c77a88be497f7ecb8cbc84e3995bc7dbdf1638189",
+      "request_id": "evidence_request_78a39d990c785aa061d8",
+      "status": "stopped",
+      "steps": [],
+      "stop_reason": "permission_scope_stop_rule"
+    },
+    "relationship": {
+      "execution_admission": "required_m5_4_capability_check",
+      "permission_snapshot_ref": "permission-m6-2-fixture",
+      "persistence_admission": "not_admitted",
+      "plan_digest": "ee32bc7072ad4bc1fa7a0c9b4a2a00c736395cdb5c4277e06bf65d2250d6b310",
+      "plan_id": "tool_selection_plan_ee32bc7072ad4bc1fa7a",
+      "planned_tool_call_count": 1,
+      "planner_policy_ref": "point01-m6-2-bounded-planner-policy-v1",
+      "registry_snapshot_digest": "d34edafd7c4320059464081df36d4baf16625561c8752bfab3debb40f152eafa",
+      "registry_snapshot_id": "point01-m6-2-tool-registry:v1",
+      "remaining_tool_call_budget": 1,
+      "request_digest": "f1c1b8fd93fac8a94fe14e21ac954f3c659392592be4df01c589b34530d522a8",
+      "request_id": "evidence_request_f1c1b8fd93fac8a94fe1",
+      "status": "await_execution_admission",
+      "steps": [
+        {
+          "budget_after": 1,
+          "budget_before": 2,
+          "execution_admission": "required_m5_4_capability_check",
+          "fallback_if_fail": null,
+          "invocation_status": "not_executed",
+          "planner_step_id": "evidence_request_f1c1b8fd93fac8a94fe1:step:1",
+          "request_id": "evidence_request_f1c1b8fd93fac8a94fe1",
+          "required_capability": "relationship.metadata.read",
+          "selected_route_id": "relationship_graph_metadata_route",
+          "selected_tool_id": "relationship_graph_metadata_tool",
+          "selection_rationale": "authority_rank=2;cost_rank=3;route=relationship_graph_metadata_route",
+          "state": "SELECT_TOOL"
+        }
+      ],
+      "stop_reason": null
+    }
+  },
+  "registry": {
+    "snapshot_digest": "d34edafd7c4320059464081df36d4baf16625561c8752bfab3debb40f152eafa",
+    "snapshot_id": "point01-m6-2-tool-registry:v1",
+    "tool_count": 3
+  },
+  "result_version": "finsight_point01_m6_2_tool_planner_fixture_result_v1_0",
+  "scope": "Point01_M6_2_deterministic_tool_registry_and_nonexecuting_planner",
+  "status": "pass"
+}

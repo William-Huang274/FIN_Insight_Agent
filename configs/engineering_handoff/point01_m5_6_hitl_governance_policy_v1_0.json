@@ -1,0 +1,16 @@
+{
+  "policy_version": "finsight_point01_m5_6_hitl_governance_policy_v1_0",
+  "scope": "Point01_M5_6_durable_hitl_approval_control_plane_only",
+  "status": "approved_for_deterministic_implementation",
+  "dependencies": ["M5.1", "M5.3", "M5.4", "M4_approval_registry_contract"],
+  "required_invariants": [
+    "approval receipt is append-only and bound to exact case/work-unit/attempt/checkpoint/permission scope digest",
+    "pause releases the prior scheduler lease and restart reconstructs the review queue from the store",
+    "resume rechecks authoritative registry identity, expiry and revocation before state mutation",
+    "resume creates a new fenced lease and old worker mutations fail closed",
+    "registry revocation creates an append-only invalidation receipt and blocks resume",
+    "no local receipt can self-approve"
+  ],
+  "forbidden_admissions": ["worker_service", "provider_execution", "external_tool_execution", "Evidence_runtime", "Writer_runtime", "full_chain", "business_case_mutation", "legacy_taskrun_authority_change"],
+  "trace_persistence": "M5.8 owns durable stream/metric/alert projection; M5.6 persists only approval and control events."
+}

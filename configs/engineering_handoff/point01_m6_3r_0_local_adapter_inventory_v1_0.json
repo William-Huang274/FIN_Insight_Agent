@@ -1,0 +1,118 @@
+{
+  "inventory_version": "finsight_point01_m6_3r_0_local_adapter_inventory_v1_1_sql_exact_value_audit",
+  "scope": "static_inventory_only_no_adapter_execution",
+  "canonical_state_rule": "No adapter may create a second candidate, graph, context, approval, or evidence state model. Future execution projects immutable read-only results into the existing M6.3 CandidateBundle contract only.",
+  "adapters": [
+    {
+      "adapter_id": "legacy_retrieval_plan_metadata",
+      "path": "src/sec_agent/retrieval_plan.py",
+      "disposition": "reuse_metadata_planning_only",
+      "permitted_future_use": "derive deterministic route, issuer, period, form and source-policy filters before any local recall",
+      "blocking_gap": "does not return versioned candidates, retrieval coordinates, index lineage or authority-normalized scores"
+    },
+    {
+      "adapter_id": "retrieval_index_registry_lineage",
+      "path": "src/sec_agent/retrieval_index_registry.py",
+      "disposition": "read_only_inventory_adapter_candidate",
+      "permitted_future_use": "pin an immutable local index snapshot and validate source/parser/index lineage before opening a future read-only adapter",
+      "blocking_gap": "registry discovery is broad filesystem inventory, not a request-scoped CandidateBundle producer"
+    },
+    {
+      "adapter_id": "bm25_sqlite_fts",
+      "path": "src/retrieval/bm25_retriever.py",
+      "disposition": "read_only_adapter_candidate",
+      "permitted_future_use": "future lexical recall against one explicitly registered SQLite FTS or immutable record snapshot",
+      "blocking_gap": "index path, record snapshot digest, authority fields and coordinate lineage must be bound by a M6.3R adapter contract"
+    },
+    {
+      "adapter_id": "object_bm25_sqlite_fts",
+      "path": "src/retrieval/object_bm25_retriever.py",
+      "disposition": "read_only_adapter_candidate",
+      "permitted_future_use": "future structured-object/table-context lexical recall against one registered immutable snapshot",
+      "blocking_gap": "result rows need canonical source/parser/chunk/table/page/row provenance before they can enter M6.3"
+    },
+    {
+      "adapter_id": "relationship_graph_lookup",
+      "path": "src/sec_agent/relationship_graph.py",
+      "disposition": "read_only_adapter_candidate",
+      "permitted_future_use": "bounded relationship/neighbor recall from an explicitly pinned graph artifact and allowed universe",
+      "blocking_gap": "current lookup is research-scope oriented; M6.3R must add exact artifact digest, authority, coordinate and no-fact-promotion projection"
+    },
+    {
+      "adapter_id": "exact_value_ledger_query",
+      "path": "src/sec_agent/ledger_store.py::query_ledger_facts",
+      "disposition": "read_only_exact_value_sql_candidate",
+      "observed_behavior": "Uses DuckDB read_only=True and filters ledger_facts by object id, ticker, fiscal year, form type, source tier, metric family and period role before returning hydrated rows.",
+      "permitted_future_use": "M6.3R.3 only: produce a bounded SQL/TableCandidate or candidate row from one pinned immutable ledger snapshot through a receipt-bound tool route.",
+      "mandatory_downstream_validation": ["exact entity", "exact period", "unit and scale", "form", "source tier", "source and parser lineage", "row/column selector", "numeric trace or later M6.5 gate"],
+      "prohibited_claim": "A returned ledger row is never direct Evidence promotion, accepted evidence or Writer-citable evidence."
+    },
+    {
+      "adapter_id": "mcp_exact_value_ledger_contract",
+      "path": "src/sec_agent/mcp_contracts.py::sec_query_exact_value_ledger",
+      "disposition": "reuse_typed_tool_boundary_only_future_receipt_required",
+      "observed_behavior": "Typed primary-SEC exact-value contract declares ticker/year/form/metric/period-role/source-tier inputs and returns ledger rows plus artifact references; it prohibits adjacent-text/model-memory inference and period-role ambiguity.",
+      "permitted_future_use": "M6.3R.3 may reuse this typed boundary only after M6.2 ToolRegistry admission and a ToolInvocationReceipt bind the exact immutable ledger snapshot, request and policy.",
+      "blocking_gap": "The existing contract alone does not provide Point01 ToolInvocationReceipt/admission, immutable snapshot binding, selector/numeric lineage validation or promotion authority."
+    },
+    {
+      "adapter_id": "mcp_tool_registry_exact_value_handler",
+      "path": "src/sec_agent/mcp_tool_registry.py::_invoke_ledger and invoke_mcp_tool",
+      "disposition": "reject_direct_handler_reuse_receipt_bypass",
+      "observed_behavior": "The registry can directly dispatch _invoke_ledger and contains relaxed filing-type/period-role fallback queries when no rows are found.",
+      "permitted_future_use": "Only a future receipt-bound M6.2 tool route may wrap the typed MCP contract after separate authorization; it must prohibit relaxed-filter fallback for an exact request.",
+      "blocking_gap": "Direct handler reuse would bypass ToolInvocationReceipt/admission and its fallback behavior conflicts with exact request-bound retrieval."
+    },
+    {
+      "adapter_id": "d_series_governance_readers",
+      "path": "src/sec_agent/d_series_database_store.py::read_d1_d2_d9_governance_counts,read_d_series_governance_counts,read_claim_gap_gate_research_context,read_d_series_research_context",
+      "disposition": "governance_history_context_only_not_exact_fact_adapter",
+      "observed_behavior": "Returns governance counts, claim/gap/gate history, source provenance and historical research context. Its shared connection helper is not an immutable read-only adapter contract.",
+      "permitted_future_use": "At most future governance/history candidate context after a separately pinned read-only snapshot adapter; never issuer exact-value recall.",
+      "prohibited_claim": "May not enter Evidence Gate as a numeric candidate, substitute for issuer source, override source authority or establish an exact fact."
+    },
+    {
+      "adapter_id": "d_series_governed_fact_selection",
+      "path": "src/sec_agent/d_series_fact_selection.py::build_pre_memo_fact_selection",
+      "disposition": "reject_as_downstream_governed_selection",
+      "observed_behavior": "Selects reconciled, gate-passing memo-eligible facts after D6/D9/D10 governance.",
+      "permitted_future_use": "None as an M6.3R retrieval adapter.",
+      "blocking_gap": "It is downstream governed selection, not recall; using it to fill or rank retrieval candidates would leak selection authority backward."
+    },
+    {
+      "adapter_id": "research_graph_store_builder",
+      "path": "src/sec_agent/research_graph_store.py",
+      "disposition": "reject_direct_runtime_reuse",
+      "permitted_future_use": "only a separately built, immutable graph snapshot may later be read through a dedicated adapter",
+      "blocking_gap": "module owns graph construction and SQLite/JSON write paths, so it cannot be called by a read-only M6.3R retrieval runtime"
+    },
+    {
+      "adapter_id": "runtime_source_context_store",
+      "path": "src/sec_agent/runtime_source_context_store.py",
+      "disposition": "reject_direct_runtime_reuse",
+      "permitted_future_use": "reference metadata and source-family filters only",
+      "blocking_gap": "mutates broader graph state, uses environment-gated path discovery and belongs to downstream Context ownership"
+    },
+    {
+      "adapter_id": "hybrid_rrf_dense",
+      "path": "src/retrieval/hybrid_rrf_retriever.py",
+      "disposition": "defer_until_separate_model_resource_authority",
+      "permitted_future_use": "none in M6.3R.0 through M6.3R.3",
+      "blocking_gap": "composes DenseRetriever and can invoke an embedding model; the current point permits zero model calls"
+    },
+    {
+      "adapter_id": "dense_numpy_retriever",
+      "path": "src/retrieval/dense_retriever.py",
+      "disposition": "defer_until_separate_model_resource_authority",
+      "permitted_future_use": "none in M6.3R.0 through M6.3R.3",
+      "blocking_gap": "query embedding uses model.encode and is outside the zero-model local deterministic tranche"
+    },
+    {
+      "adapter_id": "archived_facet_retriever",
+      "path": "archive/code/v0_1_retrieval_prototypes/facet_aware_retriever.py",
+      "disposition": "rejected_archived_prototype",
+      "permitted_future_use": "algorithm-history reference only",
+      "blocking_gap": "archived outside packaged runtime and explicitly lacks current ownership"
+    }
+  ]
+}

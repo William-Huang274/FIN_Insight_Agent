@@ -1,0 +1,20 @@
+{
+  "policy_version": "finsight_point01_m5_local_synthetic_calibration_policy_v1_0",
+  "status": "approved_for_deterministic_implementation",
+  "scope": "Point01_M5_local_synthetic_real_child_process_restart_worker_loss_transaction_atomicity_only",
+  "forbidden_admissions": [
+    "worker_service",
+    "provider_execution",
+    "external_tool_execution",
+    "Evidence_runtime",
+    "Writer_runtime",
+    "full_chain",
+    "business_case_mutation",
+    "legacy_taskrun_authority_change"
+  ],
+  "required_drills": [
+    "worker_a_child_process_claim_then_abnormal_exit",
+    "worker_b_child_process_reopen_reclaim_and_stale_fencing",
+    "uncommitted_transaction_os_exit_rolls_back_without_partial_row"
+  ]
+}

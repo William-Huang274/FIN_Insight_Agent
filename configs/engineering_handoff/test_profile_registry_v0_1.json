@@ -1,0 +1,75 @@
+{
+  "schema_version": "finsight_test_profile_registry_v0_1",
+  "default_profile": "fast_contract",
+  "policy": {
+    "default_pytest_behavior_changed": false,
+    "exactly_one_execution_profile_per_item": true,
+    "paid_model_requires_explicit_marker_and_credentials": true,
+    "full_chain_requires_explicit_marker": true,
+    "local_data_tests_must_not_define_contract_truth": true
+  },
+  "profiles": [
+    {"profile_id": "fast_contract", "hermetic": true, "default_ci_candidate": true},
+    {"profile_id": "fixture_integration", "hermetic": true, "default_ci_candidate": true},
+    {"profile_id": "local_data_integration", "hermetic": false, "default_ci_candidate": false},
+    {"profile_id": "frontend_e2e", "hermetic": true, "default_ci_candidate": false},
+    {"profile_id": "full_chain", "hermetic": false, "default_ci_candidate": false},
+    {"profile_id": "paid_model", "hermetic": false, "default_ci_candidate": false}
+  ],
+  "rules": [
+    {
+      "rule_id": "java_python_bridge",
+      "nodeid_glob": "tests/test_runtime_bridge_java_python_smoke.py::*",
+      "profile": "fixture_integration",
+      "requirements": ["requires_subprocess", "requires_java", "requires_network"]
+    },
+    {
+      "rule_id": "streaming_script_fixture",
+      "nodeid_glob": "tests/test_build_evidence_store_streaming.py::*",
+      "profile": "fixture_integration",
+      "requirements": ["requires_subprocess"]
+    },
+    {
+      "rule_id": "market_manifest_script_fixture",
+      "nodeid_glob": "tests/test_market_industry_expansion_manifests.py::*",
+      "profile": "fixture_integration",
+      "requirements": ["requires_subprocess"]
+    },
+    {
+      "rule_id": "public_source_plan_script_fixture",
+      "nodeid_glob": "tests/test_public_source_access_plan.py::*",
+      "profile": "fixture_integration",
+      "requirements": ["requires_subprocess"]
+    },
+    {
+      "rule_id": "frontend_product_journey",
+      "nodeid_glob": "tests/test_r53_r60_product_dogfood_frontend_e2e.py::*",
+      "profile": "frontend_e2e",
+      "requirements": []
+    },
+    {
+      "rule_id": "chain_performance_gate",
+      "nodeid_glob": "tests/test_multi_agent_chain_performance_eval.py::*",
+      "profile": "full_chain",
+      "requirements": []
+    },
+    {
+      "rule_id": "specialist_local_source_family_selection",
+      "nodeid_glob": "tests/test_multi_agent_specialist_llm.py::test_agent_data_view_source_family_bundle_selects_role_specific_rows*",
+      "profile": "local_data_integration",
+      "requirements": ["requires_local_data"]
+    },
+    {
+      "rule_id": "specialist_local_public_web_binding",
+      "nodeid_glob": "tests/test_multi_agent_specialist_llm.py::test_specialist_request_preserves_public_web_entity_binding_metadata*",
+      "profile": "local_data_integration",
+      "requirements": ["requires_local_data"]
+    },
+    {
+      "rule_id": "specialist_local_prompt_ref_selection",
+      "nodeid_glob": "tests/test_multi_agent_specialist_llm.py::test_specialist_prompt_filters_role_specific_refs_before_fingerprinting*",
+      "profile": "local_data_integration",
+      "requirements": ["requires_local_data"]
+    }
+  ]
+}

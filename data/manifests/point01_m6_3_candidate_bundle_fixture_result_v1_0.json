@@ -1,0 +1,279 @@
+{
+  "authority_boundary": {
+    "candidate_bundle_persistence": "not_admitted",
+    "external_call_count": 0,
+    "external_tool_execution": false,
+    "model_call_count": 0,
+    "parser_numeric_promotion": "M6_5_M6_6_not_implemented",
+    "provider_execution": false,
+    "rag_sql_graph_retrieval": false,
+    "retrieval_call_count": 0,
+    "store_write_count": 0,
+    "tool_invocation_count": 0,
+    "writer_full_chain": "not_admitted"
+  },
+  "boundary": "M6.3 compiles an ephemeral CandidateBundle from supplied fixture-only metadata. It does not invoke a tool, perform RAG/SQL/graph retrieval, read document content, parse/normalize a number, promote evidence, persist a bundle, write a report, mutate a business Case or change legacy authority.",
+  "bundles": {
+    "commercial": {
+      "bundle_digest": "ee4e9fbb48e3e161830e1630baca9a0ab847b839b49e482220be6b675655a7b1",
+      "bundle_id": "candidate_bundle_ee4e9fbb48e3e161830e",
+      "candidate_count": 0,
+      "candidates": [],
+      "execution_admission": "not_admitted",
+      "exhaustion_status": "not_attempted",
+      "metadata_snapshot_digest": "c1738ada16bddc037700bcfb9a7f8a140479a2fbc7389de759dd35b5a00c5f20",
+      "metadata_snapshot_id": "empty-metadata-fixture-v1",
+      "neighbor_candidate_ids": [],
+      "persistence_admission": "not_admitted",
+      "request_digest": "4a9f563cbb6e4f5baf0a4d91ad104d95310b88516e00c647088e6e83ca26de2a",
+      "request_id": "evidence_request_4a9f563cbb6e4f5baf0a",
+      "retrieval_policy_ref": "point01-m6-3-candidate-bundle-policy-v1",
+      "status": "not_attempted_typed_stop",
+      "table_context_candidate_ids": [],
+      "tool_selection_plan_digest": "570a747af4eecf1e2c5517bc9806002178a5ff26f22d33acf6cb08db0484690b",
+      "tool_selection_plan_id": "tool_selection_plan_570a747af4eecf1e2c55",
+      "top_k_candidate_ids": [],
+      "typed_gap_codes": [
+        "commercial_gap_stop_rule"
+      ]
+    },
+    "empty": {
+      "bundle_digest": "a6cd62750e6ecda9068a6c1cb1fdc865ea4e9dab184870a73ad7ccf1226b1a31",
+      "bundle_id": "candidate_bundle_a6cd62750e6ecda9068a",
+      "candidate_count": 0,
+      "candidates": [],
+      "execution_admission": "not_admitted",
+      "exhaustion_status": "metadata_candidate_absent",
+      "metadata_snapshot_digest": "c1738ada16bddc037700bcfb9a7f8a140479a2fbc7389de759dd35b5a00c5f20",
+      "metadata_snapshot_id": "empty-metadata-fixture-v1",
+      "neighbor_candidate_ids": [],
+      "persistence_admission": "not_admitted",
+      "request_digest": "78a39d990c785aa061d86c5c77a88be497f7ecb8cbc84e3995bc7dbdf1638189",
+      "request_id": "evidence_request_78a39d990c785aa061d8",
+      "retrieval_policy_ref": "point01-m6-3-candidate-bundle-policy-v1",
+      "status": "retrieval_exhausted",
+      "table_context_candidate_ids": [],
+      "tool_selection_plan_digest": "724de043f8fe9d8d1a48a01a461bb135f033bb077c3e78c757e9f5699a8c7814",
+      "tool_selection_plan_id": "tool_selection_plan_724de043f8fe9d8d1a48",
+      "top_k_candidate_ids": [],
+      "typed_gap_codes": [
+        "candidate_metadata_absent"
+      ]
+    },
+    "issuer": {
+      "bundle_digest": "9e626a4adfea16c03812133a395f05ae40e743288890cc824ee37bdff0244681",
+      "bundle_id": "candidate_bundle_9e626a4adfea16c03812",
+      "candidate_count": 3,
+      "candidates": [
+        {
+          "candidate_id": "candidate-filing-seed",
+          "candidate_kind": "top_k_seed",
+          "content_ref": "object://fixture/issuer-10q#mdna",
+          "document_id": "issuer-10q",
+          "document_version": "2026q1",
+          "entity_ref": "AAA",
+          "metadata_rank": 1,
+          "period_ref": "latest_fiscal_period",
+          "route_id": "issuer_disclosure_metadata_route",
+          "section_or_table_ref": "MD&A",
+          "source_authority_rank": 5,
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_disclosure",
+          "source_snapshot_ref": "fixture-source-snapshot-1"
+        },
+        {
+          "candidate_id": "candidate-filing-neighbor",
+          "candidate_kind": "neighbor_section",
+          "content_ref": "object://fixture/issuer-10q#results",
+          "document_id": "issuer-10q",
+          "document_version": "2026q1",
+          "entity_ref": "AAA",
+          "metadata_rank": 2,
+          "period_ref": "latest_fiscal_period",
+          "route_id": "issuer_disclosure_metadata_route",
+          "section_or_table_ref": "ResultsOfOperations",
+          "source_authority_rank": 5,
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_disclosure",
+          "source_snapshot_ref": "fixture-source-snapshot-1"
+        },
+        {
+          "candidate_id": "candidate-filing-table",
+          "candidate_kind": "table_context",
+          "content_ref": "object://fixture/issuer-10q#segment-revenue",
+          "document_id": "issuer-10q",
+          "document_version": "2026q1",
+          "entity_ref": "AAA",
+          "metadata_rank": 3,
+          "period_ref": "latest_fiscal_period",
+          "route_id": "issuer_disclosure_metadata_route",
+          "section_or_table_ref": "SegmentRevenueTable",
+          "source_authority_rank": 5,
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_disclosure",
+          "source_snapshot_ref": "fixture-source-snapshot-1"
+        }
+      ],
+      "execution_admission": "not_admitted",
+      "exhaustion_status": "not_exhausted",
+      "metadata_snapshot_digest": "05c61845738c79ace942c46b287147a9a771f8ee91850521b58f01568626109f",
+      "metadata_snapshot_id": "candidate-metadata-fixture-v1",
+      "neighbor_candidate_ids": [
+        "candidate-filing-neighbor"
+      ],
+      "persistence_admission": "not_admitted",
+      "request_digest": "78a39d990c785aa061d86c5c77a88be497f7ecb8cbc84e3995bc7dbdf1638189",
+      "request_id": "evidence_request_78a39d990c785aa061d8",
+      "retrieval_policy_ref": "point01-m6-3-candidate-bundle-policy-v1",
+      "status": "metadata_fixture_compiled",
+      "table_context_candidate_ids": [
+        "candidate-filing-table"
+      ],
+      "tool_selection_plan_digest": "724de043f8fe9d8d1a48a01a461bb135f033bb077c3e78c757e9f5699a8c7814",
+      "tool_selection_plan_id": "tool_selection_plan_724de043f8fe9d8d1a48",
+      "top_k_candidate_ids": [
+        "candidate-filing-seed"
+      ],
+      "typed_gap_codes": []
+    },
+    "missing_table": {
+      "bundle_digest": "3984b10b56cd5dfd005c40c5225a764735fed02c48df1deed8d7d24bb69a4b8f",
+      "bundle_id": "candidate_bundle_3984b10b56cd5dfd005c",
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "candidate_id": "candidate-filing-seed",
+          "candidate_kind": "top_k_seed",
+          "content_ref": "object://fixture/issuer-10q#mdna",
+          "document_id": "issuer-10q",
+          "document_version": "2026q1",
+          "entity_ref": "AAA",
+          "metadata_rank": 1,
+          "period_ref": "latest_fiscal_period",
+          "route_id": "issuer_disclosure_metadata_route",
+          "section_or_table_ref": "MD&A",
+          "source_authority_rank": 5,
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_disclosure",
+          "source_snapshot_ref": "fixture-source-snapshot-1"
+        },
+        {
+          "candidate_id": "candidate-filing-neighbor",
+          "candidate_kind": "neighbor_section",
+          "content_ref": "object://fixture/issuer-10q#results",
+          "document_id": "issuer-10q",
+          "document_version": "2026q1",
+          "entity_ref": "AAA",
+          "metadata_rank": 2,
+          "period_ref": "latest_fiscal_period",
+          "route_id": "issuer_disclosure_metadata_route",
+          "section_or_table_ref": "ResultsOfOperations",
+          "source_authority_rank": 5,
+          "source_policy_ref": "issuer_first",
+          "source_role": "issuer_disclosure",
+          "source_snapshot_ref": "fixture-source-snapshot-1"
+        }
+      ],
+      "execution_admission": "not_admitted",
+      "exhaustion_status": "required_context_expansion_missing",
+      "metadata_snapshot_digest": "26a8b1ad2ac8db77e98ee07fd1217f42d791895e607393df30419a27ffbff117",
+      "metadata_snapshot_id": "candidate-metadata-fixture-v1",
+      "neighbor_candidate_ids": [
+        "candidate-filing-neighbor"
+      ],
+      "persistence_admission": "not_admitted",
+      "request_digest": "78a39d990c785aa061d86c5c77a88be497f7ecb8cbc84e3995bc7dbdf1638189",
+      "request_id": "evidence_request_78a39d990c785aa061d8",
+      "retrieval_policy_ref": "point01-m6-3-candidate-bundle-policy-v1",
+      "status": "retrieval_exhausted",
+      "table_context_candidate_ids": [],
+      "tool_selection_plan_digest": "724de043f8fe9d8d1a48a01a461bb135f033bb077c3e78c757e9f5699a8c7814",
+      "tool_selection_plan_id": "tool_selection_plan_724de043f8fe9d8d1a48",
+      "top_k_candidate_ids": [
+        "candidate-filing-seed"
+      ],
+      "typed_gap_codes": [
+        "required_context_kind_missing:table_context"
+      ]
+    },
+    "relationship": {
+      "bundle_digest": "0f4376ed4f4eeb9ff90d1f2e3b14c5579fcb78c8208ad11b46fbad620a3b178a",
+      "bundle_id": "candidate_bundle_0f4376ed4f4eeb9ff90d",
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "candidate_id": "relationship-seed",
+          "candidate_kind": "top_k_seed",
+          "content_ref": "object://fixture/relationship#edge",
+          "document_id": "relationship-edge",
+          "document_version": "v1",
+          "entity_ref": "AAA",
+          "metadata_rank": 1,
+          "period_ref": "latest_fiscal_period",
+          "route_id": "relationship_graph_metadata_route",
+          "section_or_table_ref": "edge",
+          "source_authority_rank": 2,
+          "source_policy_ref": "relationship_graph_only",
+          "source_role": "relationship_graph",
+          "source_snapshot_ref": "relationship-snapshot-v1"
+        },
+        {
+          "candidate_id": "relationship-neighbor",
+          "candidate_kind": "neighbor_section",
+          "content_ref": "object://fixture/relationship#neighbor",
+          "document_id": "relationship-edge",
+          "document_version": "v1",
+          "entity_ref": "AAA",
+          "metadata_rank": 2,
+          "period_ref": "latest_fiscal_period",
+          "route_id": "relationship_graph_metadata_route",
+          "section_or_table_ref": "neighbor-edge",
+          "source_authority_rank": 2,
+          "source_policy_ref": "relationship_graph_only",
+          "source_role": "relationship_graph",
+          "source_snapshot_ref": "relationship-snapshot-v1"
+        }
+      ],
+      "execution_admission": "not_admitted",
+      "exhaustion_status": "not_exhausted",
+      "metadata_snapshot_digest": "194f8ee96b7b1a0b5091bce0145a12bf4ce69126831659ae36ddb90195a65f04",
+      "metadata_snapshot_id": "relationship-metadata-fixture-v1",
+      "neighbor_candidate_ids": [
+        "relationship-neighbor"
+      ],
+      "persistence_admission": "not_admitted",
+      "request_digest": "f1c1b8fd93fac8a94fe14e21ac954f3c659392592be4df01c589b34530d522a8",
+      "request_id": "evidence_request_f1c1b8fd93fac8a94fe1",
+      "retrieval_policy_ref": "point01-m6-3-candidate-bundle-policy-v1",
+      "status": "metadata_fixture_compiled",
+      "table_context_candidate_ids": [],
+      "tool_selection_plan_digest": "ee32bc7072ad4bc1fa7a0c9b4a2a00c736395cdb5c4277e06bf65d2250d6b310",
+      "tool_selection_plan_id": "tool_selection_plan_ee32bc7072ad4bc1fa7a",
+      "top_k_candidate_ids": [
+        "relationship-seed"
+      ],
+      "typed_gap_codes": []
+    }
+  },
+  "checks": {
+    "commercial_stop_is_not_retrieval": true,
+    "empty_metadata_is_typed_exhaustion": true,
+    "execution_free": true,
+    "issuer_topk_neighbor_table_metadata_bundle": true,
+    "missing_table_is_typed_exhaustion": true,
+    "relationship_context_bundle_has_no_table_requirement": true,
+    "replay_digest_match": true
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m6_3_candidate_bundle_policy_v1_0.json": "b706def2756e313052b18c833f71bb370b330b29a5521f3839bed150a7251645",
+    "configs/engineering_handoff/point01_m6_3_cross_owner_design_review_v1_0.json": "0ce572879fb58cd095ba9f6d3848dd78499fb8aebaf209b87822ea295976bd59",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "b6821d7c97ec226b700008a32860e27eb29ece3114ab6850cb05a1fdeeac4662",
+    "scripts/engineering/run_point01_m6_3_candidate_bundle_fixture.py": "cae8662f3856d2a01848f0f3ae7cbe6d93c4de6a438dd02ee3a9ec73a724c3d1",
+    "src/sec_agent/canonical_runtime/candidate_bundle.py": "b3cba2ff38cf565e5c2d469ad21f4692ab2bd55c0121e3eb8e968635e13c52c1",
+    "src/sec_agent/canonical_runtime/tool_planner.py": "ab5e8391df42f8e94bfc5cf84cd57dfd60d5f7bc4a1f7bd4b276ef4860531317"
+  },
+  "generated_at": "2026-07-13T05:47:35.969434+00:00",
+  "result_version": "finsight_point01_m6_3_candidate_bundle_fixture_result_v1_0",
+  "scope": "Point01_M6_3_deterministic_metadata_candidate_bundle",
+  "status": "pass"
+}

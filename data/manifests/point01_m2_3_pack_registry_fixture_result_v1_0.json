@@ -1,0 +1,130 @@
+{
+  "authority_boundary": {
+    "canonical_lane": "shadow_only",
+    "external_call_count": 0,
+    "legacy_task_run": "authoritative",
+    "model_call_count": 0
+  },
+  "boundary": "This fixture exercises an in-memory shadow planning registry and deterministic snapshot replay only. It does not write a production registry, legacy TaskRun, evidence runtime, model or cutover path.",
+  "case_resolution": {
+    "as_of": "2026-07-12T00:00:00Z",
+    "case_delta_pack_refs": [
+      "case-ai-semiconductor:v1"
+    ],
+    "report_type_pack_refs": [
+      "report-initiation:v1"
+    ],
+    "resolution_digest": "1d22da2c3107e8d0a58a2ded7e15704e6d3ad1da07c9a301964997c7e7425c76",
+    "resolved_source_authority_policy_refs": [
+      "case_delta_authority_policy",
+      "report_type_authority_policy",
+      "sector_authority_policy",
+      "universal_authority_policy"
+    ],
+    "sector_pack_refs": [
+      "sector-ai_semis:v1"
+    ],
+    "universal_pack_refs": [
+      "universal-core:v1"
+    ]
+  },
+  "checks": {
+    "all_sector_resolutions_have_universal_sector_report": true,
+    "case_delta_resolution": true,
+    "current_ai_uses_v2": true,
+    "document_only_rejected": true,
+    "four_sector_coverage": true,
+    "snapshot_replay_deterministic": true,
+    "stale_exact_rejected": true,
+    "superseded_exact_rejected": true
+  },
+  "fixed_input_sha256": {
+    "configs/engineering_handoff/point01_m2_3_pack_registry_policy_v1_0.json": "d739bbdfc2292894869881fef8f544f3d8ffe28b407c17a22eb2fb5951f40132",
+    "docs/architecture/repository/POINT_01_CONTROL_DECISION_SURFACE_RUNTIME_MIGRATION_FULL_PLAN_DRAFT_20260711.zh-CN.md": "e7d1ddb2fc2b06ae36a123b184521093afb7d9a4dcfcb268aa1e0269dbbbe998",
+    "scripts/engineering/run_point01_m2_3_pack_registry_fixture.py": "0b11530b6fe4e0947578c7530d2d50889f2babdf73942be90706ba5a34d1d277",
+    "src/sec_agent/canonical_runtime/pack_registry.py": "8d62228ee4146db50bf7cc787e53d71cd06526ecc1cb0127a0e21af090cfd59d"
+  },
+  "generated_at": "2026-07-12T09:56:15.741622+00:00",
+  "lifecycle_event_count": 10,
+  "result_version": "finsight_point01_m2_3_pack_registry_fixture_result_v1_0",
+  "scope": "Point01_M2_3_pack_registry_resolution_lifecycle",
+  "sector_resolutions": {
+    "ai_semis": {
+      "as_of": "2026-07-12T00:00:00Z",
+      "case_delta_pack_refs": [],
+      "report_type_pack_refs": [
+        "report-initiation:v1"
+      ],
+      "resolution_digest": "09b506ffd9ea116abbd284bde5c4b6df860c66a3bb73a143ce4293ea94a511b7",
+      "resolved_source_authority_policy_refs": [
+        "report_type_authority_policy",
+        "sector_authority_policy",
+        "universal_authority_policy"
+      ],
+      "sector_pack_refs": [
+        "sector-ai_semis:v1"
+      ],
+      "universal_pack_refs": [
+        "universal-core:v1"
+      ]
+    },
+    "banks": {
+      "as_of": "2026-07-12T00:00:00Z",
+      "case_delta_pack_refs": [],
+      "report_type_pack_refs": [
+        "report-initiation:v1"
+      ],
+      "resolution_digest": "f78356447bb00190e6342810ab7cf58147fd857d5da58bd752f54693d778de91",
+      "resolved_source_authority_policy_refs": [
+        "report_type_authority_policy",
+        "sector_authority_policy",
+        "universal_authority_policy"
+      ],
+      "sector_pack_refs": [
+        "sector-banks:v1"
+      ],
+      "universal_pack_refs": [
+        "universal-core:v1"
+      ]
+    },
+    "healthcare": {
+      "as_of": "2026-07-12T00:00:00Z",
+      "case_delta_pack_refs": [],
+      "report_type_pack_refs": [
+        "report-initiation:v1"
+      ],
+      "resolution_digest": "5342dd0b2b944e430940709b68a79fa5685802cceffc5aa24ec7c5b97f980b4c",
+      "resolved_source_authority_policy_refs": [
+        "report_type_authority_policy",
+        "sector_authority_policy",
+        "universal_authority_policy"
+      ],
+      "sector_pack_refs": [
+        "sector-healthcare:v1"
+      ],
+      "universal_pack_refs": [
+        "universal-core:v1"
+      ]
+    },
+    "saas": {
+      "as_of": "2026-07-12T00:00:00Z",
+      "case_delta_pack_refs": [],
+      "report_type_pack_refs": [
+        "report-initiation:v1"
+      ],
+      "resolution_digest": "1d41e107b8524ef666f55d1a7fd8d50a20c5bf36f9895826bcae75ca99660679",
+      "resolved_source_authority_policy_refs": [
+        "report_type_authority_policy",
+        "sector_authority_policy",
+        "universal_authority_policy"
+      ],
+      "sector_pack_refs": [
+        "sector-saas:v1"
+      ],
+      "universal_pack_refs": [
+        "universal-core:v1"
+      ]
+    }
+  },
+  "status": "pass"
+}

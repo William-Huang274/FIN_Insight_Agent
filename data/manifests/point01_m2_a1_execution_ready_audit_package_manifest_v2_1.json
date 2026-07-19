@@ -1,0 +1,103 @@
+{
+  "a0_design_digest": "75a76e24a3a730b82942b9861b9d203a5ec0e735a936dbc229d1c68681ff250d",
+  "actual_execution_authorized_by_package": false,
+  "authority_boundary": "no_actual_a0_m2_probe_without_exact_external_admission_and_single_use_receipt_no_model_network_tool_provider_fixed_production_business_or_legacy_mutation",
+  "compiler_shadow_execution_authorized_by_package": false,
+  "corpus_digest": "a11e0498c7befadf8c9a54db5fb0f3106956bfe9e6fea4edc6dda10af7e6581d",
+  "design_package_digest": "34a6877a084bc85aa28d160082661db7d1fc9ca04f44d576afe6bb5d5acc5d89",
+  "execution_mode": "external_admission_gated",
+  "execution_preflight": {
+    "caller_path_override": "forbidden",
+    "execution_staging_namespace_id": "point01_m2_a1_exact_admitted_runs_v2_1",
+    "execution_staging_namespace_path": "D:/temp/FIN_Insight_Agent/point01_m2_a1_exact_admitted_runs_v2_1",
+    "path_derivation": "sha256(package_digest:admission_digest:receipt_id)",
+    "prewrite_order": [
+      "package_validate",
+      "input_verify",
+      "admission_validate",
+      "fixed_fingerprint",
+      "bound_json_verify",
+      "derive_paths",
+      "then_and_only_then_mkdir_or_sqlite"
+    ],
+    "runtime_inputs": {
+      "corpus": {
+        "canonical_digest": "a11e0498c7befadf8c9a54db5fb0f3106956bfe9e6fea4edc6dda10af7e6581d",
+        "relative_path": "configs/engineering_handoff/point01_m2_a1_adversarial_input_corpus_v1_1.json"
+      },
+      "execution_policy": {
+        "canonical_digest": "1ce4bf4712d02043c41eaf864a5b56d816f3e1eba010bd9ec53f5529bdb4ff62",
+        "relative_path": "configs/engineering_handoff/point01_m2_a1_execution_ready_audit_policy_v2_1.json"
+      },
+      "scenario_matrix": {
+        "canonical_digest": "79367f5029d711f3be6878cad8e21a23c51bd824d0759a5674fa27e177cae580",
+        "relative_path": "configs/engineering_handoff/point01_m2_a1_execution_ready_scenario_matrix_v2_1.json"
+      }
+    },
+    "working_tree_equivalence": "git_index_bytes_with_crlf_normalisation_only"
+  },
+  "execution_ready_policy_digest": "1ce4bf4712d02043c41eaf864a5b56d816f3e1eba010bd9ec53f5529bdb4ff62",
+  "external_package_admission_ref": "point01-m2-a1-total-reviewer-execution-ready-package-admission:v1",
+  "external_package_admission_required": true,
+  "fixed_store_fingerprints": {
+    "canonical_or_business_store_absence_manifest": {
+      "enforcement": "instrumentation_rejects_every_nonallowlisted_store_path_or_ambient_resolution",
+      "registered_paths": [],
+      "status": "explicit_absence_no_M2_A1_fixed_canonical_or_business_store_registered"
+    },
+    "fixed_approval_store": {
+      "access": "instrumentation_rejects_open_read_or_write",
+      "path": ".runtime_control/point01_m6_3_5_nvda_sec_document_parser_repaired_global_approval/canonical.sqlite",
+      "sha256": "ae48eea1eec25ae96143a49266c991365fe9974d1c282d3d5579ccd56ab561f4"
+    }
+  },
+  "input_bytes_source": "git_index",
+  "input_file_sha256": {
+    "configs/engineering_handoff/point01_m1_m5_adversarial_retro_audit_design_freeze_v1_0.json": "a9b14ad90e8209bd531c2094a880fab07cac64ceb63ca2b4820703ccc29abf2d",
+    "configs/engineering_handoff/point01_m2_1_compiler_input_validation_policy_v1_0.json": "6bcf5837859bf806d950e5a993a8d6b1b8a5b4ed0da8f434e81afc7519c86d63",
+    "configs/engineering_handoff/point01_m2_2_full_serializer_policy_v1_0.json": "62bebccbeb2bbfb1c4001c9cf488d4dec3e2685d9586b541da1c4cc6be05c9c4",
+    "configs/engineering_handoff/point01_m2_3_pack_registry_policy_v1_0.json": "d739bbdfc2292894869881fef8f544f3d8ffe28b407c17a22eb2fb5951f40132",
+    "configs/engineering_handoff/point01_m2_4_pack_selection_policy_v1_0.json": "1837287b4e08dc2505bde9f0922e206f8dc5cf154347db3a7c3d3c256f9ff868",
+    "configs/engineering_handoff/point01_m2_8_model_admission_policy_v1_0.json": "fd63e269e9e1b7d594a672252096589e17b4b9c50d2d1c61ecf9d815c9d24207",
+    "configs/engineering_handoff/point01_m2_a1_adversarial_input_corpus_v1_1.json": "9c89dc4bea75f36882751e167bdd7975c66bae6e5c3a89fbbdfad9bcf496b37d",
+    "configs/engineering_handoff/point01_m2_a1_execution_ready_audit_policy_v2_1.json": "766ed2cf2c215e5dfa8d8b3c06c738eaae0e955a117dcc0c4bb0f752b2f2bade",
+    "configs/engineering_handoff/point01_m2_a1_execution_ready_scenario_matrix_v2_1.json": "53844f4f8dc651130ff4502047027172a8f5b383f14a877abad0c21bd8ffc392",
+    "configs/engineering_handoff/point01_m2_a1_independent_expected_cell_oracle_v1_1.json": "eed535f2c84f79dc9b7f3091d741338ffebf4d1b6d45b01e390c4f376145e8b2",
+    "configs/runtime/point01_feature_flags_v1_0.json": "51b481aa7317bc53e93dc5fe7a9918a1afd7e8516285c40ee319193c480090bd",
+    "data/manifests/point01_m2_a1_adversarial_audit_package_manifest_v1_1.json": "cfc4d9432e015102656e1b8ac13202da9dfa77791f7770dcf1436dec89659fff",
+    "scripts/engineering/run_point01_m2_a1_actual_audit.py": "9b68b99b4db7c9a0df17d8fd47dbfa6a74bb98ded5b3b6069f9a64342e8223de",
+    "scripts/engineering/run_point01_m2_a1_execution_ready_package_freeze.py": "d420bacca2fd929603675ae54d7d327365b9854f14e997decc351e85795cf736",
+    "src/sec_agent/canonical_runtime/cell_composition.py": "3bfa4031e56f335a70e02239777309298ee90ea032ef273fc905f1803c4f5ace",
+    "src/sec_agent/canonical_runtime/evidence_policy.py": "f66afe1bd6a843208028eec3f1567ac3348a19f99ecef06515a001834404c266",
+    "src/sec_agent/canonical_runtime/facade.py": "d0d7ca722a9249317bff48b520b1a97523fbcf146a362b57dc925824f0db5e7c",
+    "src/sec_agent/canonical_runtime/feature_flags.py": "d0b3100f4dbf37fba9767915a87c8f4db51a6eabf47745fdb704b2721574610d",
+    "src/sec_agent/canonical_runtime/full_serializer.py": "d4f304417ee4e3775f8a64a7453ad59e494b4281591110d2e60f8862d519b42a",
+    "src/sec_agent/canonical_runtime/legacy_objective_adapter.py": "a9f90e9e1af6ee7e0f8c146919b19fa6d088d5604ceef1953cab2ad9638064c2",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_canary.py": "267a0efcec2452d78a76f09550f63e79289e3e935f770fee3fa7be520bc9fd22",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_harness.py": "bad7ef79c6f4838cc5054aec8bf3f54692291ca4bc104aa58b9a5583b9ccbf8f",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_oracle.py": "3f3e669b6746e952ec4baddf1f2356cd58cb7dc5329d3cc1aabda262ca0069e2",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_result.py": "4f38238228f45120b69b08e5884b4443d17eaf92675d457799a6569fcb152cab",
+    "src/sec_agent/canonical_runtime/m2_a1_audit_reviewer_gate.py": "9b6ded1e592b3094571e8851f03646141ae2d35355808278fa415b72bde228e5",
+    "src/sec_agent/canonical_runtime/m2_a1_execution_receipt.py": "ebab8213bdabeed091898ce0c4466f2e4f2a3dc27567bebd6a2cf8ced418377f",
+    "src/sec_agent/canonical_runtime/model_admission.py": "dc4acf867e61d8081ec4aac760046a60c330382a281b73bcae0b0bc22d5aa645",
+    "src/sec_agent/canonical_runtime/models.py": "1af127d23f8139d36fff687b5c63e4c5d5952e27ce6eaa2d3a4bea02220c2cf9",
+    "src/sec_agent/canonical_runtime/object_store.py": "2bd611f90bc07c4ef55ff54c75c619dbf505e7c9740ad2ed2b8e4eb9b6369718",
+    "src/sec_agent/canonical_runtime/pack_registry.py": "8d62228ee4146db50bf7cc787e53d71cd06526ecc1cb0127a0e21af090cfd59d",
+    "src/sec_agent/canonical_runtime/pack_selection.py": "f9e4d36a50999bb91c3c224500670b27998356f511934ba819175f700f7b0f7b",
+    "src/sec_agent/canonical_runtime/planning_service.py": "20ccf383a76ed91ae2e337e1c3fb05d9983bf73d78dbf16d7b1039e2eaa4a22e",
+    "src/sec_agent/canonical_runtime/shadow_compiler.py": "a94844721bc8022126112aeff8c3685eaca713a2294f52f8b0b828323c47bf31",
+    "src/sec_agent/canonical_runtime/shadow_orchestration.py": "02fecee6bd302c4985f248eb7f4ca881ab80ea00867f7aafe52c90030997e050",
+    "src/sec_agent/canonical_runtime/store.py": "a237b93f53f83df9f30873631826f632e33515bf4db4b9dca186e679fa499f31",
+    "tests/contract/test_point01_m2_a1_execution_ready_boundaries.py": "f53b80f726f3e13d680bafe8f0fe7064764161a57690b811d8890fd58a8ef413",
+    "tests/contract/test_point01_m2_a1_execution_ready_package_static.py": "3dee1c1fd7343a616438d8db8fba22a30e22a970dd94284b97a3660d36710598"
+  },
+  "oracle_digest": "9dc32c4d02c5b2313a8a4b7bd35cd806672cf963a62a8191128333425a2d4e87",
+  "package_digest": "7773472a998c2559a95f68110dc7cd708bba96b985efcb01a942371a79818f50",
+  "package_ref": "point01-m2-a1-execution-preflight-adversarial-audit-package-v2-1",
+  "receipt_authority_ledger_required": true,
+  "scenario_matrix_digest": "79367f5029d711f3be6878cad8e21a23c51bd824d0759a5674fa27e177cae580",
+  "schema_version": "finsight_point01_m2_a1_execution_ready_audit_package_manifest_v2_1",
+  "scope": "M2_A1_exact_admission_gated_future_actual_only",
+  "single_use_execution_receipt_required": true,
+  "supersedes_rejected_package_digest": "453088e5015a612a3859d6b925f25133f6a05df7e52b85936958796b4bd69314"
+}

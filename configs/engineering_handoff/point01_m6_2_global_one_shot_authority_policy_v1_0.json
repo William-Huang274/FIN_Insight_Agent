@@ -1,0 +1,21 @@
+{
+  "policy_version": "finsight_point01_m6_2_global_one_shot_authority_policy_v1_0",
+  "policy_ref": "point01-m6-2-global-one-shot-authority-policy-v1",
+  "fixed_approval_store_relative_path": ".runtime_control/point01_m6_2_nvda_sec_metadata_global_approval",
+  "receipt_table": "canonical_m6_global_one_shot_approval_versions",
+  "approval_id": "approval_point01_m6_2_nvda_sec_metadata_global_one_shot",
+  "package_manifest_ref": "configs/engineering_handoff/point01_m6_2_global_one_shot_package_manifest_v1_0.json",
+  "required_reviewer": {
+    "name": "william",
+    "employee_id": "003",
+    "role": "total_reviewer"
+  },
+  "authority_boundary": {
+    "approval_store": "fixed_canonical_path_only",
+    "local_store_can_grant_execution": false,
+    "one_shot_nonce": "atomically_consumed_before_send",
+    "receipt_expiry_and_scope": "required",
+    "receipt_package_digest": "required",
+    "any_new_or_copied_local_store": "cannot_restore_approval"
+  }
+}

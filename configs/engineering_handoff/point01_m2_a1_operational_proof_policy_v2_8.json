@@ -1,0 +1,42 @@
+{
+  "schema_version": "finsight_point01_m2_a1_operational_proof_policy_v2_8",
+  "status": "B0.5_repaired_refrozen_pending_independent_review",
+  "scope": "M2_A1_v2_8_operational_proof_only",
+  "event_authority": {
+    "source_of_truth": "point01_m2_a1_execution_receipt_events",
+    "receipt_projection": "mutable_lifecycle_projection_not_authoritative_history",
+    "append_only_enforcement": [
+      "sqlite_before_update_raise_abort",
+      "sqlite_before_delete_raise_abort",
+      "schema_validation_requires_exact_trigger_semantics"
+    ],
+    "payload_integrity": "canonical_payload_digest_recomputed_on_registered_consumed_terminal_read"
+  },
+  "integration_proof": {
+    "entry": "frozen_dependency_injected_v2_8_execute_core",
+    "fixture_authority": "synthetic_nonhuman_fixture_only",
+    "child_process": "local_deterministic_no_network",
+    "required_branches": [
+      "happy_path",
+      "corrupted_actual",
+      "reviewer_failure",
+      "post_consume_child_exit"
+    ],
+    "success_terminal_requires": [
+      "verified_immutable_actual",
+      "real_independent_oracle",
+      "real_preterminal_reviewer",
+      "exact_event_lineage"
+    ]
+  },
+  "prohibitions": [
+    "active_human_approval",
+    "baseline_execution",
+    "network",
+    "model",
+    "tool",
+    "provider",
+    "fixed_or_business_store_open",
+    "step_2_or_later"
+  ]
+}

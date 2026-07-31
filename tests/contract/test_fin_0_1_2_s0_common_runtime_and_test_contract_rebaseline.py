@@ -133,7 +133,7 @@ def test_s0_decision_bindings_and_gates_are_honest() -> None:
     assert set(decision["observed_counts"].values()) == {0}
 
 
-def test_current_projection_consumes_s0_handoff_and_advances_to_s1_t03() -> None:
+def test_current_projection_preserves_s0_handoff_and_closes_s1_honestly() -> None:
     decision = _load(DECISION)
     stage_plan = _load(S1_STAGE_PLAN)
     stage_capsule = _load(S1_STAGE_CAPSULE)
@@ -146,13 +146,16 @@ def test_current_projection_consumes_s0_handoff_and_advances_to_s1_t03() -> None
     assert stage_plan["status"] == (
         "S1_stage_plan_G0_pass_implementation_not_started"
     )
-    assert stage_capsule["status"] == "S1_T02_G1_pass_T03_ready"
+    assert stage_capsule["status"] == (
+        "S1_closed_honest_block_G2_not_proven_S2_entry_blocked"
+    )
     assert program["next_action"]["item_id"] == stage_capsule["next_action"]
     assert s4["current_next_action"] == stage_capsule["next_action"]
     assert program["current_truth"]["FIN_0_1_2_S0_status"] == "closed_G4_G5_pass"
     assert program["current_truth"]["FIN_0_1_2_S1_status"] == (
-        "T02_G1_pass_T03_ready"
+        "closed_honest_block_G2_not_proven_S2_entry_blocked"
     )
+    assert program["current_truth"]["FIN_0_1_2_S2_entry_authorized"] is False
     assert program["current_truth"]["FIN_0_1_release_qualified"] is False
     assert program["version"] == "FIN_0_1_1_INTERNAL_HONEST_BLOCK"
     assert program["current_truth"]["FIN_0_1_1_status"] == "frozen_internal_honest_block"

@@ -1,0 +1,101 @@
+{
+  "schema_version": "fin_ia_active_test_suite_manifest_v1_0",
+  "manifest_id": "FIN-0.1.2-S1-T04-INDEPENDENT-ASSESSMENT-MANIFEST-R1",
+  "created_at": "2026-07-31T23:45:00+08:00",
+  "status": "S1_T04_single_independent_hermetic_assessment_selected",
+  "historical_failures_are_ignored": false,
+  "suites": [
+    {
+      "suite_id": "immutable_fin_0_1_2_s1_plan_and_T03_failure_evidence",
+      "proof_class": "immutable_event",
+      "selected": true,
+      "gates_current_release": false,
+      "assertion_surfaces": ["frozen_stage_plan_hash", "retained_T03_failure_package"],
+      "test_paths": ["tests/contract/test_fin_0_1_2_s1_independent_hermetic_assessment.py"]
+    },
+    {
+      "suite_id": "current_fin_0_1_2_s1_T04_projection",
+      "proof_class": "current_projection",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": ["current_next_action", "single_closeout_package_budget"],
+      "test_paths": ["tests/contract/test_fin_0_1_2_s1_independent_hermetic_assessment.py"]
+    },
+    {
+      "suite_id": "current_fin_0_1_2_s1_deterministic_vertical",
+      "proof_class": "current_runtime",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": ["three_case_full_fake", "mutation", "permutation", "collect_all", "failure_retention"],
+      "test_paths": ["tests/contract/test_fin_0_1_2_s1_realistic_three_case_deterministic_proof.py"]
+    },
+    {
+      "suite_id": "historical_fin_0_1_fixture_and_T03_collection_visibility",
+      "proof_class": "historical_audit",
+      "selected": true,
+      "gates_current_release": false,
+      "assertion_surfaces": ["NVDA_compatibility_fixture_boundary", "T03_collection_failure_not_hidden"],
+      "test_paths": ["tests/contract/test_fin_0_1_2_s1_independent_hermetic_assessment.py"]
+    },
+    {
+      "suite_id": "current_fin_0_1_2_s1_closeout_gate",
+      "proof_class": "release_gate",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": ["S1_only", "product_truth_noninflation", "S2_entry_or_honest_block"],
+      "test_paths": ["tests/contract/test_fin_0_1_2_s1_independent_hermetic_assessment.py"]
+    }
+  ],
+  "runner_policy": {
+    "manifest_selection_is_authoritative": true,
+    "unlisted_historical_test_failure_is_visible_but_not_implicitly_current": true,
+    "listed_current_test_failure_is_blocking": true,
+    "bulk_relax_historical_assertions_for_green_forbidden": true,
+    "runner_migration_completed": true
+  },
+  "hermetic_package_policy": {
+    "repository_inventory": "manifest_selected_dependency_closure_from_current_worktree_bytes",
+    "required_runner_files": [
+      "src/sec_agent/hermetic_test_capture.py",
+      "src/sec_agent/hermetic_test_runner.py",
+      "scripts/engineering/run_fin_0_1_2_s0_active_suite.py"
+    ],
+    "capture_plugin_path": "src/sec_agent/hermetic_test_capture.py",
+    "repository_seed_paths": [
+      "pyproject.toml",
+      "configs/releases/fin_ia_0_1_2_s1_t03_deterministic_proof_manifest_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_s1_t04_independent_assessment_manifest_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_s1_realistic_three_case_deterministic_vertical_stage_plan_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_s1_stage_capsule_v1_0.json",
+      "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+      "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0.json"
+    ],
+    "repository_prefixes": [
+      {"path": "src", "suffixes": [".py"]},
+      {"path": "apps/workbench/backend", "suffixes": [".py"]},
+      {"path": "tests/contract", "suffixes": [".py"]},
+      {"path": "tests/fixtures", "suffixes": [".json", ".jsonl", ".yaml", ".yml"]},
+      {"path": "configs", "suffixes": [".json", ".jsonl", ".yaml", ".yml", ".toml"]}
+    ],
+    "complete_per_test_stdout_stderr_required": true,
+    "content_addressed_object_readback_required": true,
+    "disposable_runtime_count": 2,
+    "semantic_parity_required": true,
+    "provider_credential_environment_removed": true,
+    "external_read_only_bindings": [
+      {
+        "binding_id": "fin_0_1_2_s1_t03_failed_hermetic_package",
+        "binding_manifest": "configs/releases/fin_ia_0_1_2_s1_stage_capsule_v1_0.json",
+        "binding_object_field": "t03_hermetic_proof_package",
+        "files": [
+          {"relative_path": "package_manifest.json", "sha256_field": "package_manifest_sha256"},
+          {"relative_path": "verification.json", "sha256_field": "verification_sha256"},
+          {"relative_path": "runs/disposable_a/terminal_result.json", "sha256_field": "disposable_a_terminal_result_sha256"},
+          {"relative_path": "runs/disposable_b/terminal_result.json", "sha256_field": "disposable_b_terminal_result_sha256"}
+        ]
+      }
+    ]
+  },
+  "next_action_on_pass": "FIN-0.1.2-S2-CHANGED-CONTRACT-FAMILY-NATURAL-CAPABILITY-ENVELOPE-STAGE-PLAN",
+  "next_action_on_failure": "FIN-0.1.2-S1-HONEST-BLOCK-CLOSEOUT"
+}

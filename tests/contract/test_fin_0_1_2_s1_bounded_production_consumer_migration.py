@@ -164,9 +164,16 @@ def test_default_binding_closes_all_ten_actual_consumers() -> None:
 def test_stage_capsule_records_g1_without_product_or_compiler_inflation() -> None:
     capsule = _load_json(CAPSULE_PATH)
     binding = load_fin_0_1_2_runtime_contract_binding()
-    assert capsule["status"] == "S1_T02_G1_pass_T03_ready"
+    assert capsule["status"] == (
+        "S1_closed_honest_block_G2_not_proven_S2_entry_blocked"
+    )
     assert capsule["gates"]["G1_contract_closure"].startswith("pass_")
-    assert capsule["gates"]["G2_deterministic_proof"] == "pending_S1_T03"
+    assert capsule["gates"]["G2_deterministic_proof"].startswith(
+        "fail_not_hermetically_proven"
+    )
+    assert capsule["gates"]["G6_assessment_and_closeout"] == (
+        "closed_honest_block"
+    )
     recorded = capsule["runtime_contract_family_binding"]
     assert recorded["source_file_sha256"] == binding.source_file_sha256
     assert recorded["source_canonical_digest"] == binding.source_digest
@@ -191,7 +198,7 @@ def test_stage_capsule_records_g1_without_product_or_compiler_inflation() -> Non
     ]
 
 
-def test_stage_capsule_is_the_current_t03_projection() -> None:
+def test_stage_capsule_is_the_current_honest_block_projection() -> None:
     capsule = _load_json(CAPSULE_PATH)
     program = _load_json(PROGRAM_BACKLOG)
     s4 = _load_json(S4_BACKLOG)
@@ -206,6 +213,7 @@ def test_stage_capsule_is_the_current_t03_projection() -> None:
     ] == capsule_sha
     context = CONTEXT_PATH.read_text(encoding="utf-8")
     assert f"current next=`{capsule['next_action']}`" in context
+    assert capsule["product_truth"]["S2_entry_authorized"] is False
 
 
 @pytest.mark.parametrize(

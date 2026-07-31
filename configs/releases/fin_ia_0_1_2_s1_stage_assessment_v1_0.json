@@ -1,0 +1,125 @@
+{
+  "schema_version": "fin_ia_0_1_2_s1_stage_assessment_v1_0",
+  "assessment_id": "FIN-0.1.2-S1-STAGE-ASSESSMENT-R1",
+  "recorded_at": "2026-07-31T23:55:00+08:00",
+  "status": "honest_block_G2_not_hermetically_proven",
+  "authority": {
+    "source": "FIN-0.1.2 S1 frozen T01 through T04 StagePlan",
+    "fixed_task_ids": ["S1-T01", "S1-T02", "S1-T03", "S1-T04"],
+    "additional_S1_task_or_proof_package_authorized": false,
+    "model_provider_network_or_paid_execution_authorized": false,
+    "S2_entry_authorized": false
+  },
+  "frozen_stage_plan": {
+    "ref": "configs/releases/fin_ia_0_1_2_s1_realistic_three_case_deterministic_vertical_stage_plan_v1_0.json",
+    "sha256": "a51d241e56417ad6005ca1fecb4495a9b899945d8f50bfb595045934d88a77b7",
+    "rewritten": false
+  },
+  "task_results": {
+    "S1-T01": {
+      "status": "pass",
+      "result": "StagePlan and ownership frozen; G0 passed."
+    },
+    "S1-T02": {
+      "status": "pass",
+      "result": "The bounded judgment-atom family is mandatorily bound through admission and all ten actual production consumers; G1 passed."
+    },
+    "S1-T03": {
+      "status": "failed_hermetic_collection_no_tests_executed",
+      "host_result": "32 passed",
+      "package_result": "Both disposable runtimes stopped during collection because the manifest omitted transitive src/retrieval and src/evidence dependencies.",
+      "automatic_rerun_forbidden": true
+    },
+    "S1-T04": {
+      "status": "failed_current_gate_hermetic_resource_closure_incomplete",
+      "host_preflight": "36 passed",
+      "disposable_a": {"passed": 25, "failed": 11, "collection_errors": 0},
+      "disposable_b": {"passed": 25, "failed": 11, "collection_errors": 0},
+      "identical_failure_nodeids": true,
+      "automatic_rerun_forbidden": true
+    }
+  },
+  "gate_assessment": {
+    "G0_scope_and_owner": "pass",
+    "G1_contract_closure": "pass",
+    "G2_deterministic_proof": "fail_not_hermetically_proven",
+    "G3_natural_canary": "not_run_not_owned_by_S1",
+    "G4_quarantined_diagnostic": "shape_and_complete_failure_capture_pass_output_nonpromotable",
+    "G5_formal_product_proof": "not_run_not_owned_by_S1",
+    "G6_assessment_and_closeout": "honest_block"
+  },
+  "T03_package": {
+    "path": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_2_s1_t03_deterministic_proof_20260731T224002+0800_head_48566f24",
+    "package_manifest_sha256": "1351837da074fd29d1d92d51b32cd3f9a5264638c260c9254d758596ae64410f",
+    "package_semantic_digest": "aeedc14e84f75c8b370e55cb844daf405753815c305f8263a0e0015e5b0df42f",
+    "verification_sha256": "6fbb8cb51a1930f433120e349756de3dd0e73c91ef6dbb7a1850e6268613011b",
+    "disposable_a_terminal_result_sha256": "6587afddfcbf7867af8172c13f088d2f7cdf90091766678b9e01b654233e4acc",
+    "disposable_b_terminal_result_sha256": "60afb791907b36ff67adeae221035b459eefa9dad3264e558bf31e78526c57c3"
+  },
+  "T04_package": {
+    "path": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_2_s1_t04_independent_assessment_20260731T224645+0800_head_48566f24",
+    "package_manifest_sha256": "de304e0730c99358011fb7f0053408c661b24f09ecf2361d9b4cda8a7b2fa2e1",
+    "package_semantic_digest": "c778ebdb8e86bcac9429e8d8db01cf3b215cf81ca15bf3e292a15b1bc305666f",
+    "verification_sha256": "391f17006599ebec6853c50e36f89aeadc1585a5b0487806b452c7a77b58520c",
+    "disposable_a_terminal_result_sha256": "fc69f03f638039dc396ebb4e6128e53b88e11fa2ef1200873f7765305ec92282",
+    "disposable_b_terminal_result_sha256": "d9a6122b915307dbd1c0644ab4a8438238e0f4b984a288b4f20e45e38b19d617",
+    "repository_file_count": 1584,
+    "external_dependency_count": 4,
+    "repository_unchanged": true,
+    "complete_per_test_and_process_output_content_addressed": true,
+    "failed_output_business_promotable": false
+  },
+  "failure_classification": {
+    "primary": [
+      {
+        "failure_class": "untracked_host_local_realistic_fixture_dependency",
+        "affected_case": "MU",
+        "affected_test_count": 9,
+        "missing_dependency": ".codex_runtime/.../exact-input-heads/.../290e82aec53d6d3078eb0c8bac94e022bde7cc17a77b72d2315af118ced4958e.json",
+        "finding": "The realistic MU fixture is loaded from ignored host-local state and therefore is absent from a disposable package."
+      },
+      {
+        "failure_class": "non_python_runtime_resource_not_in_package_inventory",
+        "affected_cases": ["DELL", "NVDA"],
+        "affected_test_count": 2,
+        "missing_dependency_example": "src/sec_agent/prompts/skills/shared_evidence_boundary_skill_v0_1.md",
+        "finding": "The T04 manifest included src Python files but omitted Markdown prompt and skill resources read by the runtime."
+      }
+    ],
+    "secondary": {
+      "failure_class": "disposable_path_text_not_normalized_before_semantic_parity_digest",
+      "effect": "The two runtimes had identical counts and failure nodeids, but parity digests differed because failure details contain different temporary root paths."
+    },
+    "runtime_L1_failure_established": false,
+    "financial_method_failure_established": false,
+    "model_or_provider_fault_established": false,
+    "DeepSeek_instruction_failure_established": false
+  },
+  "fixed_budget_consumption": {
+    "T02_implementation_packages": [1, 1],
+    "T03_proof_packages": [1, 1],
+    "T04_assessment_packages": [1, 1],
+    "remaining_S1_packages": 0
+  },
+  "product_truth": {
+    "DELL_R2": false,
+    "MU_R2": false,
+    "post_transfer_NVDA_exact_product": false,
+    "NVDA_R3": false,
+    "FIN_0_1_release_qualified": false,
+    "S1_product_acceptance": false
+  },
+  "disposition": {
+    "S1": "close_honest_block",
+    "S2_entry": false,
+    "S1_T05_or_R_number": "forbidden",
+    "waive_hermeticity": false,
+    "next_decision": "FIN-0.1.2-S1-TO-S2-HERMETIC-FIXTURE-RESOURCE-BLOCKER-DISPOSITION",
+    "required_before_any_rebaseline_proof": [
+      "materialize the MU realistic exact input as a tracked immutable repository fixture",
+      "inventory and package non-Python runtime prompt and skill resources",
+      "normalize disposable-root paths before semantic parity comparison",
+      "freeze a new bounded stage or gate decision instead of silently rerunning T03 or T04"
+    ]
+  }
+}

@@ -215,7 +215,7 @@ def test_root_causes_are_allocated_to_the_earliest_stage_without_product_inflati
     assert rows["RC-P36-084"]["semantic_rubric_owner"] == "FIN_0_1_2_S4"
 
 
-def test_current_projection_advances_to_realistic_three_case_proof() -> None:
+def test_current_projection_closes_S1_honestly_before_S2() -> None:
     capsule = _load(CAPSULE_PATH)
     next_action = capsule["next_action"]
     program = _load(PROGRAM_BACKLOG)
@@ -226,7 +226,7 @@ def test_current_projection_advances_to_realistic_three_case_proof() -> None:
         _sha256(CAPSULE_PATH)
     )
     assert program["current_truth"]["FIN_0_1_2_S1_status"] == (
-        "T02_G1_pass_T03_ready"
+        "closed_honest_block_G2_not_proven_S2_entry_blocked"
     )
     assert program["current_truth"][
         "FIN_0_1_2_S1_production_consumer_migration_complete"
@@ -234,6 +234,7 @@ def test_current_projection_advances_to_realistic_three_case_proof() -> None:
     assert not program["current_truth"][
         "FIN_0_1_2_S1_deterministic_proof_complete"
     ]
+    assert not program["current_truth"]["FIN_0_1_2_S2_entry_authorized"]
     assert s4["current_next_action"] == next_action
     assert s4["FIN_0_1_2_S1_stage_plan"]["plan_ref"] == str(
         PLAN_PATH.relative_to(ROOT)

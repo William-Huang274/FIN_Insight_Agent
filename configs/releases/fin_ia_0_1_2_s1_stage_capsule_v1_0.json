@@ -1,11 +1,16 @@
 {
   "schema_version": "fin_ia_0_1_2_s1_stage_capsule_v1_0",
   "capsule_id": "FIN-0.1.2-S1-STAGE-CAPSULE-R1",
-  "recorded_at": "2026-07-31T23:10:00+08:00",
-  "status": "S1_T02_G1_pass_T03_ready",
+  "recorded_at": "2026-07-31T23:59:00+08:00",
+  "status": "S1_closed_honest_block_G2_not_proven_S2_entry_blocked",
   "authority": {
     "user_instruction": "继续往下做0.1.2",
     "S1_T02_zero_call_implementation_authorized": true,
+    "S1_T03_single_zero_call_proof_package_authorized": true,
+    "S1_T04_independent_assessment_authorized_by_program_continuation": true,
+    "S1_fixed_package_budgets_consumed": true,
+    "additional_S1_package_or_rerun_authorized": false,
+    "S2_entry_authorized": false,
     "model_provider_network_or_paid_execution_authorized": false,
     "product_acceptance_release_or_production_authorized": false
   },
@@ -27,23 +32,23 @@
     },
     {
       "task_id": "S1-T03",
-      "status": "ready_not_started",
-      "result": "One realistic three-case mutation, collect-all and full-fake proof package remains."
+      "status": "failed_hermetic_collection_no_tests_executed",
+      "result": "Host proof passed 32 tests, but the one T03 hermetic package omitted the transitive src/retrieval dependency and both disposable runtimes stopped during collection before any test executed. The failed package is retained and will not be rerun as T03."
     },
     {
       "task_id": "S1-T04",
-      "status": "not_started",
-      "result": "Independent hermetic assessment and S1 closeout remain."
+      "status": "failed_current_gate_hermetic_resource_closure_incomplete",
+      "result": "The one independent package executed 36 tests in each disposable runtime: 25 passed and 11 failed with identical nodeids. Nine failures require an ignored host-local MU exact-input fixture and two require non-Python prompt or skill resources omitted by the package manifest. S1 closes honestly blocked; no automatic rerun is allowed."
     }
   ],
   "gates": {
     "G0_scope_and_owner": "pass",
     "G1_contract_closure": "pass_all_ten_actual_consumers_one_contract_version_and_canonical_source_digest",
-    "G2_deterministic_proof": "pending_S1_T03",
+    "G2_deterministic_proof": "fail_not_hermetically_proven_host_32_pass_T03_collection_failed_T04_25_pass_11_fail_each",
     "G3_natural_canary": "not_run_not_owned_by_S1",
-    "G4_quarantined_diagnostic": "shape_only_zero_call_fixture_no_promotion",
+    "G4_quarantined_diagnostic": "pass_complete_content_addressed_failure_capture_no_promotion",
     "G5_formal_product_proof": "not_run_not_owned_by_S1",
-    "G6_assessment_and_closeout": "pending_S1_T04"
+    "G6_assessment_and_closeout": "closed_honest_block"
   },
   "runtime_contract_family_binding": {
     "binding_ref": "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1",
@@ -111,6 +116,60 @@
       "disposition": "both_bound_and_distinguished_frozen_T01_plan_unchanged"
     }
   ],
+  "t03_hermetic_proof_package": {
+    "path": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_2_s1_t03_deterministic_proof_20260731T224002+0800_head_48566f24",
+    "status": "failed_collection_no_tests_executed",
+    "failure_class": "hermetic_dependency_inventory_incomplete",
+    "missing_module": "retrieval",
+    "missing_repository_prefix": "src",
+    "disposable_runtime_count": 2,
+    "disposable_failure_parity": true,
+    "tests_collected": 0,
+    "package_manifest_sha256": "1351837da074fd29d1d92d51b32cd3f9a5264638c260c9254d758596ae64410f",
+    "package_semantic_digest": "aeedc14e84f75c8b370e55cb844daf405753815c305f8263a0e0015e5b0df42f",
+    "verification_sha256": "6fbb8cb51a1930f433120e349756de3dd0e73c91ef6dbb7a1850e6268613011b",
+    "disposable_a_terminal_result_sha256": "6587afddfcbf7867af8172c13f088d2f7cdf90091766678b9e01b654233e4acc",
+    "disposable_b_terminal_result_sha256": "60afb791907b36ff67adeae221035b459eefa9dad3264e558bf31e78526c57c3",
+    "runtime_L1_failure_established": false,
+    "model_or_provider_fault_established": false,
+    "business_output_promotable": false,
+    "automatic_T03_reproof_forbidden": true
+  },
+  "t04_independent_assessment_package": {
+    "path": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_2_s1_t04_independent_assessment_20260731T224645+0800_head_48566f24",
+    "status": "failed_current_gate",
+    "failure_class": "hermetic_realistic_fixture_and_nonpython_runtime_resource_closure_incomplete",
+    "disposable_runtime_count": 2,
+    "tests_passed_each": 25,
+    "tests_failed_each": 11,
+    "collection_errors_each": 0,
+    "identical_failure_nodeids": true,
+    "disposable_parity": false,
+    "parity_difference_class": "temporary_disposable_root_path_text_not_normalized",
+    "repository_file_count": 1584,
+    "external_dependency_count": 4,
+    "repository_unchanged": true,
+    "complete_per_test_and_process_output_content_addressed": true,
+    "package_manifest_sha256": "de304e0730c99358011fb7f0053408c661b24f09ecf2361d9b4cda8a7b2fa2e1",
+    "package_semantic_digest": "c778ebdb8e86bcac9429e8d8db01cf3b215cf81ca15bf3e292a15b1bc305666f",
+    "verification_sha256": "391f17006599ebec6853c50e36f89aeadc1585a5b0487806b452c7a77b58520c",
+    "disposable_a_terminal_result_sha256": "fc69f03f638039dc396ebb4e6128e53b88e11fa2ef1200873f7765305ec92282",
+    "disposable_b_terminal_result_sha256": "d9a6122b915307dbd1c0644ab4a8438238e0f4b984a288b4f20e45e38b19d617",
+    "runtime_L1_failure_established": false,
+    "model_or_provider_fault_established": false,
+    "business_output_promotable": false,
+    "automatic_T04_reproof_forbidden": true
+  },
+  "stage_assessment": {
+    "ref": "configs/releases/fin_ia_0_1_2_s1_stage_assessment_v1_0.json",
+    "sha256": "f4487ad883f911862a47b10946afa73b694755049671edd65bed6fb3228c7c9e",
+    "verdict": "honest_block_G2_not_hermetically_proven"
+  },
+  "stage_closeout": {
+    "ref": "configs/releases/fin_ia_0_1_2_s1_stage_closeout_v1_0.json",
+    "sha256": "91fa819f69aebb95dcfe3303031aba0a7f46553c0049bc528ced67c6a5fe0a5c",
+    "status": "closed_honest_block_G2_not_proven_S2_entry_blocked"
+  },
   "verification": {
     "focused_consumer_migration": "18 passed",
     "historical_behavioral_regression_excluding_immutable_snapshot_assertion": "39 passed, 1 deselected",
@@ -122,6 +181,18 @@
       "diagnostic_artifacts": 9
     },
     "post_provider_failure_capture_and_typed_failure_receipts": true,
+    "T03_host_realistic_three_case_proof": "32 passed",
+    "T03_host_proof_scope": "candidate_0_1_3_6_7_22_76_permutation_alias_date_numeric_identity_lineage_collect_all_three_case_6_12_12_9_and_downstream_failure_retention",
+    "T03_hermetic_package": "failed_during_collection_in_both_disposable_runtimes_before_tests",
+    "T03_hermetic_failure_root_cause": "manifest_packaged_src/sec_agent_but_not_transitive_src/retrieval_and_src/evidence_modules_imported_by_application_runtime",
+    "T04_host_preflight": "36 passed",
+    "T04_hermetic_package_each": "25 passed, 11 failed, 0 collection errors",
+    "T04_identical_failure_nodeids": true,
+    "T04_primary_root_causes": [
+      "MU realistic exact input is loaded from ignored host-local .codex_runtime state",
+      "runtime-read Markdown prompt and skill resources were omitted by the Python-only src package inventory"
+    ],
+    "T04_secondary_parity_finding": "temporary disposable root paths were not normalized before parity digest",
     "python_compile": "pass",
     "historical_snapshot_finding": {
       "test": "test_persisted_v2_implementation_binds_current_runtime_and_scope",
@@ -132,11 +203,12 @@
     }
   },
   "root_cause_progress": {
-    "RC-P36-067": "bounded_numeric_correspondence_and_local_rendering_contract_bound_T03_mutation_proof_pending",
-    "RC-P36-068": "bounded_case_identity_contract_bound_T03_cross_case_mutation_pending",
-    "RC-P36-080": "bounded_provider_surface_and_local_material_truth_contract_bound_T03_proof_pending",
+    "RC-P36-067": "bounded_numeric_correspondence_and_local_rendering_host_mutation_pass_hermetic_G2_not_proven",
+    "RC-P36-068": "bounded_case_identity_host_cross_case_mutation_pass_hermetic_G2_not_proven",
+    "RC-P36-080": "bounded_provider_surface_and_local_material_truth_host_pass_hermetic_G2_not_proven",
     "RC-P36-083": "current_bounded_family_regression_protected_generalized_compiler_remains_FIN_0_2",
-    "RC-P36-084": "typed_L1_failure_and_capture_path_bound_T03_delivery_shape_mutation_pending"
+    "RC-P36-084": "typed_L1_failure_and_capture_path_host_proven_hermetic_G2_not_proven_no_new_runtime_L1",
+    "RC-P36-085": "open_FIN_0_1_2_S1_closed_honest_block_untracked_MU_fixture_and_nonpython_runtime_resources_block_S2_entry"
   },
   "observed_counts": {
     "credential_reads_or_probes": 0,
@@ -154,7 +226,11 @@
     "post_transfer_NVDA_exact_product": false,
     "NVDA_R3": false,
     "FIN_0_1_release_qualified": false,
-    "S1_T02_is_product_acceptance": false
+    "S1_T02_is_product_acceptance": false,
+    "S1_T03_is_product_acceptance": false,
+    "S1_T04_is_product_acceptance": false,
+    "S1_closed_honest_block": true,
+    "S2_entry_authorized": false
   },
-  "next_action": "FIN-0.1.2-S1-REALISTIC-THREE-CASE-FIXTURE-MUTATION-COLLECT-ALL-FULL-FAKE-ZERO-CALL-PROOF"
+  "next_action": "FIN-0.1.2-S1-TO-S2-HERMETIC-FIXTURE-RESOURCE-BLOCKER-DISPOSITION"
 }

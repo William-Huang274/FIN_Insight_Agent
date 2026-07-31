@@ -6,11 +6,11 @@
 
 ## 当前恢复锚点
 
-FIN 0.1 的 `1,128` 个 dirty paths 已在 owner 授权下先写入并回验离仓内容寻址恢复包，再按 8 个 exact-path slices 重建提交链；恢复后的 14 个本地提交现已推送到远端分支。S4-T10 随后按 immutable evidence 终态收口为 honest block，FIN 0.1 仍不具备 release 资格；S5 只允许 decision-only handoff，尚未在本记录中执行 release candidate、tag 或 release。
+FIN 0.1 的 `1,128` 个 dirty paths 已在 owner 授权下先写入并回验离仓内容寻址恢复包，再按 8 个 exact-path slices 重建提交链；恢复后的 14 个本地提交现已推送到远端分支。S4-T10 已按 immutable evidence 终态 honest block，S5 decision-only 也已关闭为 no-release-candidate；FIN 0.1 仍不具备 release 资格。
 
 历史契约测试必须区分 immutable event proof 和 mutable current projection。恢复阶段保留 S3/S4 historical-suite 非绿项与 T07 honest-block，不以批量修改旧断言制造全绿。
 
-当前下一项：`S5-DECISION-ONLY-HONEST-BLOCK-HANDOFF-AND-RELEASE-DECISION`。
+当前下一项：`FIN-0.1.1-INTERNAL-HONEST-BLOCK-BASELINE-FREEZE`。
 
 ## 文件职责
 

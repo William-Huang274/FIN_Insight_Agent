@@ -88,10 +88,8 @@ def test_backlogs_record_terminal_t10_without_release_inflation() -> None:
     assert program_s4["status"] == expected
     assert program_t10["status"] == expected
     assert s4_t10["status"] == expected
-    assert program_s5["status"] == "decision_only_honest_block_handoff_ready_not_entered"
+    assert program_s5["status"] == "closed_honestly_blocked_decision_only_no_release_candidate"
     assert s4["non_inflation"]["S4_passed"] is False
     assert s4["non_inflation"]["S5_entry_ready"] is True
     assert s4["non_inflation"]["Alpha_release_or_production"] is False
-    assert s4["current_next_action"] == (
-        "S5-DECISION-ONLY-HONEST-BLOCK-HANDOFF-AND-RELEASE-DECISION"
-    )
+    assert program["next_action"]["item_id"] == s4["current_next_action"]

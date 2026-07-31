@@ -134,10 +134,6 @@ def test_T09_event_truth_is_preserved_after_current_program_advances() -> None:
     assert s4_t09["status"].startswith("closed_owner_evidence_review_complete")
     expected = "S4-T10-S4-PASS-OR-HONEST-BLOCK-CLOSEOUT-SCOPE-DECISION"
     assert disposition["next_action"] == expected
-    assert program["next_action"]["item_id"] == (
-        "S5-DECISION-ONLY-HONEST-BLOCK-HANDOFF-AND-RELEASE-DECISION"
-    )
-    assert s4["current_next_action"] == (
-        "S5-DECISION-ONLY-HONEST-BLOCK-HANDOFF-AND-RELEASE-DECISION"
-    )
+    assert program["next_action"]["item_id"] == s4["current_next_action"]
+    assert program["next_action"]["item_id"] != expected
     assert "not_qualified" in program["status"]

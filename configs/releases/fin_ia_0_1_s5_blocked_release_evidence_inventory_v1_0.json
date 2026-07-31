@@ -1,0 +1,125 @@
+{
+  "schema_version": "fin_ia_0_1_s5_blocked_release_evidence_inventory_v1_0",
+  "inventory_id": "FIN-0.1-S5-BLOCKED-RELEASE-EVIDENCE-INVENTORY-R1",
+  "captured_at": "2026-07-31T19:25:00+08:00",
+  "status": "complete_for_decision_only_honest_block_not_complete_for_release_candidate_execution",
+  "authority": {
+    "user_instruction": "按这个顺序做",
+    "S5_decision_only_inventory_authorized": true,
+    "release_candidate_execution_or_paid_reproof_authorized": false,
+    "model_provider_network_source_or_external_tool_authorized": false
+  },
+  "source_bindings": [
+    {
+      "role": "S4_terminal_closeout",
+      "ref": "configs/releases/fin_ia_0_1_s4_t10_s4_honest_block_closeout_decision_v1_0.json",
+      "sha256": "217eccfe72fa2d4f2d5b959513154ddfebe807d826ac6c46c637de766c984750"
+    },
+    {
+      "role": "S4_to_S5_carry_forward",
+      "ref": "configs/releases/fin_ia_0_1_s4_to_s5_honest_block_carry_forward_and_revalidation_manifest_v1_0.json",
+      "sha256": "bbd9dfdfc684f14bbdbfc39d14d0248668d66098502c573bfb35bd853fa69424"
+    },
+    {
+      "role": "release_contract",
+      "ref": "configs/releases/fin_ia_0_1_release_contract_v1_3.json",
+      "sha256": "317c4c27d944cbda076c6177e035daecec256e649b5a1b31596dca22df69117f"
+    },
+    {
+      "role": "repository_inventory",
+      "ref": "configs/releases/fin_ia_0_1_repository_evidence_freeze_and_safe_classification_inventory_v1_0.json",
+      "sha256": "ab4c2a129d229f94f15e1f890d564c975d5d1a5666b72254a35b89d76d479f29"
+    },
+    {
+      "role": "version_lineage_authority",
+      "ref": "configs/releases/fin_ia_0_1_repository_recovery_s0_to_s4_audit_and_0_1_1_0_1_2_version_lineage_scope_decision_v1_0.json",
+      "sha256": "055fe4f2f94214007efd0effc707d8ae177920a73f639d0d3cbd76ef067990b5"
+    }
+  ],
+  "repository_and_recovery": {
+    "branch": "codex/layered-data-source-expansion",
+    "S5_inventory_parent_HEAD": "c7ed17adbe3c44e2746cc5874e9584e9b459818d",
+    "last_remote_pushed_HEAD": "10fb4aee05f31d1db5ae5c1867d69f5ace698d8c",
+    "ahead_of_remote_at_inventory": 1,
+    "recovery_package_path": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_repo_recovery_20260731T163800+0800_head_54d2e072",
+    "recovery_manifest_file_sha256": "46f5670c13c2ef5efb51d33634aa92e5afbcdf644c214b4f7798a25176985c6b",
+    "recovery_semantic_manifest_digest": "ca8edba1599f782f9c661ff81a4b056c65564be0d3ab22798101ca632a5ad12a",
+    "recovery_verification_file_sha256": "8d4d29f1ad3d8b573a57b12b4716e07faee7a2fd75bc25ab545766c9e614770a",
+    "manifest_entries_unique_objects_source_versions": [1128, 1255, 1929],
+    "recovery_readback_status": "pass_full_object_payload_source_and_repository_readback",
+    "potential_plaintext_secret_paths": 0,
+    "intentional_non_secret_credential_test_fixture_paths": 2,
+    "force_push_history_rewrite_or_delete": [0, 0, 0]
+  },
+  "product_evidence": {
+    "NVDA": {
+      "maturity": "historical_S3_R2_owner_accepted",
+      "accepted_artifacts": 9,
+      "post_transfer_exact_product": false,
+      "qualified_senior_R3": false
+    },
+    "DELL": {
+      "maturity": "transfer_diagnostic_not_R2",
+      "coherent_agent_artifacts_observed": 9,
+      "paired_agent_gain_observed": true,
+      "L1_pass": false,
+      "owner_product_acceptance": false
+    },
+    "MU": {
+      "maturity": "transfer_diagnostic_not_R2",
+      "coherent_agent_artifacts_observed": 9,
+      "paired_agent_gain_observed": true,
+      "L1_pass": false,
+      "owner_product_acceptance": false
+    },
+    "three_case_coherent_success_runs_calls_tokens_cost_usd": [3, 36, 212618, 0.08207367],
+    "agent_artifacts_observed_total": 27,
+    "agent_artifacts_accepted_total": 9,
+    "failed_or_quarantined_artifacts_promoted": 0
+  },
+  "capture_and_failure_inventory": {
+    "typed_terminal_failure_materialization_available": true,
+    "capture_v2_request_and_final_output_retention_available_for_later_formal_runs": true,
+    "credentials_private_reasoning_and_raw_provider_envelopes_persisted": false,
+    "failed_output_business_promotion_allowed": false,
+    "complete_content_addressed_stdout_stderr_for_every_historical_proof": false,
+    "incomplete_reason_issue_id": "RC-P36-085-s4-independent-proof-disposable-runtime-hermeticity-and-failure-observability",
+    "decision_only_use": "sufficient_to_explain_and_preserve_the_block_not_sufficient_to_claim_hermetic_release_reproducibility"
+  },
+  "test_inventory": {
+    "S3_historical_pass_fail": [582, 64],
+    "S3_current_acceptance_core_pass": 30,
+    "S4_historical_pass_fail_skip": [676, 126, 1],
+    "S4_current_T07_to_T10_core_pass_before_new_S5_tests": 33,
+    "T07_frozen_regression_collected_passed_failed": [97, 93, 4],
+    "historical_suite_all_green": false,
+    "current_runtime_all_green_proven": false,
+    "test_contract_issue_id": "RC-P36-086-s4-t07-legacy-fixture-and-current-next-regression-baseline-drift",
+    "decision_only_disposition": "record_current_and_historical_sets_separately_then_rebuild_active_suite_contract_in_FIN_0_1_2_S0"
+  },
+  "release_gate_inputs": {
+    "three_case_R2": false,
+    "NVDA_qualified_senior_R3": false,
+    "complete_hermetic_reproducibility": false,
+    "complete_release_candidate": false,
+    "repository_recoverability": true,
+    "rollback_evidence": true,
+    "secret_safe_inventory": true,
+    "release_qualification": false
+  },
+  "rollback_boundary": {
+    "safe_reference_parent": "10fb4aee05f31d1db5ae5c1867d69f5ace698d8c",
+    "T10_commit": "c7ed17adbe3c44e2746cc5874e9584e9b459818d",
+    "preferred_recovery": "create_a_new_branch_from_the_named_commit_or_use_non_destructive_git_revert_after_review",
+    "reset_hard_checkout_clean_force_push_or_recursive_delete_prescribed": false
+  },
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_or_source_calls": 0,
+    "new_admissions_runs_or_business_artifacts": 0,
+    "release_candidates": 0
+  },
+  "next_action": "S5-DECISION-ONLY-HONEST-BLOCK-RELEASE-GATE-RECONCILIATION"
+}

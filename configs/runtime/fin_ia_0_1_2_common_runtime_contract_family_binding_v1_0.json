@@ -1,0 +1,60 @@
+{
+  "schema_version": "fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0",
+  "binding_ref": "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1",
+  "status": "S1_T02_bounded_production_binding",
+  "source_ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+  "source_file_sha256": "b9a0e990dbf01ce11e76012c246240494cf38029b11b2c289008ae490fc2283f",
+  "source_canonical_digest": "e2b87e45d60319de0c10616daec2435d65976fd83befa7f7fe43ad9f405e7cd9",
+  "contract_id": "fin_0_1_2.common_runtime.judgment_atom_family",
+  "contract_version": "v1.0.0",
+  "compiled_contract_ref": "fin_0_1_2.common_runtime.judgment_atom_family:v1.0.0",
+  "actual_consumers": [
+    {
+      "consumer_id": "prompt",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.provider_system_instruction"
+    },
+    {
+      "consumer_id": "server_schema",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.wire_schema"
+    },
+    {
+      "consumer_id": "local_validator",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.assemble"
+    },
+    {
+      "consumer_id": "fake_provider",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.fake_provider_output"
+    },
+    {
+      "consumer_id": "selector",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.assemble"
+    },
+    {
+      "consumer_id": "renderer",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.assemble"
+    },
+    {
+      "consumer_id": "capacity",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.capacity_declaration"
+    },
+    {
+      "consumer_id": "budget",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.assert_rendered_capacity"
+    },
+    {
+      "consumer_id": "typed_failure",
+      "runtime_owner": "BoundedAgentExecutionError"
+    },
+    {
+      "consumer_id": "capture_index",
+      "runtime_owner": "DeepSeekS3ThreeCellNodeExecutor._provider_interaction_capture"
+    }
+  ],
+  "compatibility": {
+    "historical_S4_contract_refs_remain_supported": true,
+    "FIN_0_1_2_binding_is_mandatory_for_new_contract_ref": true,
+    "admission_optional_activation_forbidden": true,
+    "case_specific_consumer_branch_forbidden": true,
+    "generalized_cross_family_compiler_claimed": false
+  }
+}

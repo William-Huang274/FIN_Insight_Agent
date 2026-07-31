@@ -21,6 +21,18 @@ from .fact_candidate_pool_planner import (
     FactCandidatePoolPlan,
     FactCandidatePoolPlanner,
 )
+from .fin_0_1_2_runtime_contract_binding import (
+    FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+    Fin012RuntimeContractFamilyBinding,
+    Fin012RuntimeContractBindingError,
+    load_fin_0_1_2_runtime_contract_binding,
+)
+
+
+DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS = (
+    *S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS,
+    FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+)
 
 
 class DeterministicJudgmentAtomCompiledContract:
@@ -33,6 +45,7 @@ class DeterministicJudgmentAtomCompiledContract:
         "what_would_change_atoms",
     )
     provider_output_max_utf8_bytes = 4800
+    local_rendered_max_utf8_bytes = 16384
     provider_candidate_maximum = 6
     fact_selected_maximum = 3
     claim_selected_maximum = 2
@@ -148,14 +161,50 @@ class DeterministicJudgmentAtomCompiledContract:
             S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REF
         ),
         research_profile_ref: str | None = None,
+        runtime_contract_family_binding_ref: str | None = None,
+        runtime_contract_family_source_digest: str | None = None,
     ) -> None:
         if contract_ref not in (
-            S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS
+            DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS
         ):
             raise ValueError(
                 "s4_compiled_judgment_atom_contract_unsupported"
             )
         self.contract_ref = contract_ref
+        self.runtime_contract_binding: (
+            Fin012RuntimeContractFamilyBinding | None
+        ) = None
+        if (
+            contract_ref
+            == FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+        ):
+            binding = load_fin_0_1_2_runtime_contract_binding()
+            binding.assert_admission_binding(
+                binding_ref=runtime_contract_family_binding_ref,
+                source_digest=runtime_contract_family_source_digest,
+            )
+            binding.assert_runtime_compatibility(
+                provider_candidate_maximum=self.provider_candidate_maximum,
+                selected_maxima=(
+                    self.fact_selected_maximum,
+                    self.claim_selected_maximum,
+                    self.wwc_selected_maximum,
+                ),
+                provider_output_max_utf8_bytes=(
+                    self.provider_output_max_utf8_bytes
+                ),
+                local_rendered_max_utf8_bytes=(
+                    self.local_rendered_max_utf8_bytes
+                ),
+            )
+            self.runtime_contract_binding = binding
+        elif (
+            runtime_contract_family_binding_ref is not None
+            or runtime_contract_family_source_digest is not None
+        ):
+            raise Fin012RuntimeContractBindingError(
+                "fin012_runtime_contract_binding_requires_fin012_contract_ref"
+            )
         self.cell_input = dict(cell_input)
         self.validated_segments = {
             str(key): dict(value)
@@ -184,8 +233,35 @@ class DeterministicJudgmentAtomCompiledContract:
     def claim_epistemic_support_role_v2(self) -> bool:
         return (
             self.contract_ref
-            == S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_V2_REF
+            in {
+                S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_V2_REF,
+                FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+            }
         )
+
+    def _consumer_binding(
+        self,
+        consumer_id: str,
+    ) -> dict[str, Any] | None:
+        if self.runtime_contract_binding is None:
+            return None
+        return self.runtime_contract_binding.consumer_receipt(consumer_id)
+
+    def runtime_contract_binding_receipt(self) -> dict[str, Any] | None:
+        binding = self.runtime_contract_binding
+        if binding is None:
+            return None
+        return {
+            "binding_ref": binding.binding_ref,
+            "source_ref": binding.source_ref,
+            "source_file_sha256": binding.source_file_sha256,
+            "source_digest": binding.source_digest,
+            "contract_id": binding.contract_id,
+            "contract_version": binding.contract_version,
+            "compiled_contract_ref": binding.compiled_contract_ref,
+            "local_truth_fields": list(binding.local_truth_fields),
+            "provider_surface": binding.provider_surface,
+        }
 
     def claim_kind_support_role_contract(self) -> dict[str, Any]:
         """Single source for the v2 Claim kind/support cross-field invariant."""
@@ -412,6 +488,7 @@ class DeterministicJudgmentAtomCompiledContract:
         )
 
     def model_visible_contract(self, segment_id: str) -> dict[str, Any]:
+        prompt_binding = self._consumer_binding("prompt")
         family = self.family_id(segment_id)
         contract: dict[str, Any] = {
             "contract_ref": self.contract_ref,
@@ -432,6 +509,15 @@ class DeterministicJudgmentAtomCompiledContract:
                 "lineage",
             ],
         }
+        if prompt_binding is not None:
+            contract["runtime_contract_family_binding"] = {
+                **dict(prompt_binding),
+                "provider_surface": (
+                    self.runtime_contract_binding.provider_surface
+                    if self.runtime_contract_binding is not None
+                    else ""
+                ),
+            }
         if family == self.family_ids[0]:
             candidate_catalog = self._provider_fact_catalog()
             candidate_plan = self.fact_candidate_pool_plan()
@@ -544,6 +630,7 @@ class DeterministicJudgmentAtomCompiledContract:
         return contract
 
     def wire_schema(self, segment_id: str) -> dict[str, Any]:
+        self._consumer_binding("server_schema")
         family = self.family_id(segment_id)
         if family == self.family_ids[0]:
             return {
@@ -613,6 +700,7 @@ class DeterministicJudgmentAtomCompiledContract:
         }
 
     def provider_system_instruction(self, segment_id: str) -> str:
+        self._consumer_binding("prompt")
         instruction = (
             "Return exactly one native JSON object matching "
             "required_output_schema. Emit only exact request-local aliases "
@@ -732,9 +820,17 @@ class DeterministicJudgmentAtomCompiledContract:
                         "candidate_profile_digest_bound": True,
                     }
                 )
+        if self.runtime_contract_binding is not None:
+            surface["runtime_contract_family_binding"] = (
+                self.runtime_contract_binding_receipt()
+            )
+            surface["compiled_consumer_bindings"] = (
+                self.runtime_contract_binding.all_consumer_receipts()
+            )
         return surface
 
     def capacity_declaration(self, segment_id: str) -> dict[str, Any]:
+        self._consumer_binding("capacity")
         family = self.family_id(segment_id)
         local_text: list[str] = []
         if family == self.family_ids[0]:
@@ -754,7 +850,7 @@ class DeterministicJudgmentAtomCompiledContract:
             raise ValueError(
                 "s4_compiled_atom_bound_catalog_item_capacity_exceeded"
             )
-        return {
+        declaration = {
             "provider_raw_output_max_utf8_bytes": (
                 self.provider_output_max_utf8_bytes
             ),
@@ -764,6 +860,14 @@ class DeterministicJudgmentAtomCompiledContract:
             "bound_catalog_worst_case_unicode_characters": worst,
             "provider_and_local_capacity_are_separate": True,
         }
+        if self.runtime_contract_binding is not None:
+            declaration["local_rendered_max_utf8_bytes"] = (
+                self.local_rendered_max_utf8_bytes
+            )
+            declaration["consumer_binding"] = self._consumer_binding(
+                "capacity"
+            )
+        return declaration
 
     @staticmethod
     def _exact_mapping(
@@ -1252,6 +1356,14 @@ class DeterministicJudgmentAtomCompiledContract:
         *,
         provider_output_utf8_bytes: int,
     ) -> dict[str, Any]:
+        for consumer_id in (
+            "local_validator",
+            "selector",
+            "renderer",
+            "capacity",
+            "budget",
+        ):
+            self._consumer_binding(consumer_id)
         if (
             type(provider_output_utf8_bytes) is not int
             or provider_output_utf8_bytes <= 0
@@ -1275,6 +1387,8 @@ class DeterministicJudgmentAtomCompiledContract:
         *,
         post_local_expansion_limit_utf8_bytes: int,
     ) -> None:
+        self._consumer_binding("capacity")
+        self._consumer_binding("budget")
         self.capacity_declaration(segment_id)
         serialized = json.dumps(
             dict(output),
@@ -1282,7 +1396,13 @@ class DeterministicJudgmentAtomCompiledContract:
             sort_keys=True,
             separators=(",", ":"),
         ).encode("utf-8")
-        if len(serialized) > post_local_expansion_limit_utf8_bytes:
+        effective_limit = post_local_expansion_limit_utf8_bytes
+        if self.runtime_contract_binding is not None:
+            effective_limit = min(
+                effective_limit,
+                self.local_rendered_max_utf8_bytes,
+            )
+        if len(serialized) > effective_limit:
             raise ValueError(
                 "s4_compiled_atom_local_rendered_segment_capacity_exceeded"
             )
@@ -1308,6 +1428,7 @@ class DeterministicJudgmentAtomCompiledContract:
         return found
 
     def fake_provider_output(self, segment_id: str) -> dict[str, Any]:
+        self._consumer_binding("fake_provider")
         family = self.family_id(segment_id)
         if family == self.family_ids[0]:
             catalog = self._provider_fact_catalog()

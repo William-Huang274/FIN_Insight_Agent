@@ -14,6 +14,9 @@ PLAN_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_2_s1_realistic_three_case_"
     "deterministic_vertical_stage_plan_v1_0.json"
 )
+CAPSULE_PATH = ROOT / (
+    "configs/releases/fin_ia_0_1_2_s1_stage_capsule_v1_0.json"
+)
 S0_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_2_s0_common_runtime_and_"
     "test_contract_rebaseline_v1_0.json"
@@ -212,19 +215,25 @@ def test_root_causes_are_allocated_to_the_earliest_stage_without_product_inflati
     assert rows["RC-P36-084"]["semantic_rubric_owner"] == "FIN_0_1_2_S4"
 
 
-def test_current_projection_advances_to_bounded_consumer_migration() -> None:
-    plan = _load(PLAN_PATH)
-    next_action = plan["next_action"]
+def test_current_projection_advances_to_realistic_three_case_proof() -> None:
+    capsule = _load(CAPSULE_PATH)
+    next_action = capsule["next_action"]
     program = _load(PROGRAM_BACKLOG)
     s4 = _load(S4_BACKLOG)
     context = CONTEXT.read_text(encoding="utf-8")
     assert program["next_action"]["item_id"] == next_action
-    assert program["next_action"]["FIN_0_1_2_S1_stage_plan_sha256"] == (
-        _sha256(PLAN_PATH)
+    assert program["next_action"]["FIN_0_1_2_S1_stage_capsule_sha256"] == (
+        _sha256(CAPSULE_PATH)
     )
     assert program["current_truth"]["FIN_0_1_2_S1_status"] == (
-        "stage_plan_G0_pass_implementation_not_started"
+        "T02_G1_pass_T03_ready"
     )
+    assert program["current_truth"][
+        "FIN_0_1_2_S1_production_consumer_migration_complete"
+    ]
+    assert not program["current_truth"][
+        "FIN_0_1_2_S1_deterministic_proof_complete"
+    ]
     assert s4["current_next_action"] == next_action
     assert s4["FIN_0_1_2_S1_stage_plan"]["plan_ref"] == str(
         PLAN_PATH.relative_to(ROOT)
@@ -232,6 +241,12 @@ def test_current_projection_advances_to_bounded_consumer_migration() -> None:
     assert s4["FIN_0_1_2_S1_stage_plan"]["plan_sha256"] == _sha256(
         PLAN_PATH
     )
+    assert s4["FIN_0_1_2_S1_stage_plan"]["stage_capsule_ref"] == str(
+        CAPSULE_PATH.relative_to(ROOT)
+    ).replace("\\", "/")
+    assert s4["FIN_0_1_2_S1_stage_plan"][
+        "stage_capsule_sha256"
+    ] == _sha256(CAPSULE_PATH)
     assert f"current next=`{next_action}`" in context
 
 

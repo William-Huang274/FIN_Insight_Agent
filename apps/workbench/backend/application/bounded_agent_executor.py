@@ -52,7 +52,6 @@ from .bounded_agent_contract_policies import (
     S4_CASE_NUMERIC_AUTHORITY_POLICY_REF,
     S4_CASE_NUMERIC_AUTHORITY_POLICY_REFS,
     S4_CASE_RUNTIME_MANDATORY_MATERIAL_TRUTH_IDENTITY_SAFETY_REF,
-    S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS,
     S4FinalArtifactSafetyViolation,
     S4_NON_AUTHORITATIVE_NARRATIVE_SHELL_REF,
     S4_OPENAI_STRUCTURED_OUTPUTS_SUBSET_COMPILER_REF,
@@ -75,9 +74,16 @@ from .bounded_agent_contract_policies import (
     specialist_transport_refs,
 )
 from .deterministic_judgment_atom_contract import (
+    DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS,
     DeterministicJudgmentAtomCompiledContract,
 )
 from .fact_candidate_pool_planner import FactCandidatePoolPlannerError
+from .fin_0_1_2_runtime_contract_binding import (
+    FIN_0_1_2_COMMON_RUNTIME_BINDING_REF,
+    FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+    Fin012RuntimeContractBindingError,
+    load_fin_0_1_2_runtime_contract_binding,
+)
 from .bounded_agent_identity_policies import (
     CellScopedResearchIdentityPolicy,
     CellScopedResearchRef,
@@ -651,6 +657,8 @@ class S3ThreeCellBoundedAgentAdmission(BaseModel):
     task_claim_link_policy_ref: str | None = None
     wwc_judgment_atom_policy_ref: str | None = None
     judgment_atom_compiled_contract_ref: str | None = None
+    runtime_contract_family_binding_ref: str | None = None
+    runtime_contract_family_source_digest: str | None = None
     case_numeric_authority_policy_ref: str | None = None
     case_delivery_identity_policy_ref: str | None = None
     strict_truth_kernel_policy_ref: str | None = None
@@ -810,7 +818,7 @@ class S3ThreeCellBoundedAgentAdmission(BaseModel):
         if self.judgment_atom_compiled_contract_ref is not None:
             if (
                 self.judgment_atom_compiled_contract_ref
-                not in S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS
+                not in DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS
                 or self.output_contract_ref
                 != S3_THREE_CELL_BOUNDED_AGENT_OUTPUT_CONTRACT_V4_REF
                 or transport_contract is None
@@ -829,6 +837,32 @@ class S3ThreeCellBoundedAgentAdmission(BaseModel):
                     "s4_bounded_admission_compiled_judgment_atom_"
                     "capability_binding_required"
                 )
+        fin012_binding_fields = (
+            self.runtime_contract_family_binding_ref,
+            self.runtime_contract_family_source_digest,
+        )
+        if (
+            self.judgment_atom_compiled_contract_ref
+            == FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+        ):
+            try:
+                load_fin_0_1_2_runtime_contract_binding().assert_admission_binding(
+                    binding_ref=self.runtime_contract_family_binding_ref,
+                    source_digest=self.runtime_contract_family_source_digest,
+                )
+            except Fin012RuntimeContractBindingError as exc:
+                raise ValueError(exc.code) from exc
+            if (
+                self.provider_output_capture_policy_ref
+                != S4_PROVIDER_INTERACTION_AUDIT_CAPTURE_POLICY_REF
+            ):
+                raise ValueError(
+                    "fin012_runtime_contract_capture_v2_binding_required"
+                )
+        elif any(value is not None for value in fin012_binding_fields):
+            raise ValueError(
+                "fin012_runtime_contract_binding_requires_fin012_contract_ref"
+            )
         case_policy_refs = (
             self.case_numeric_authority_policy_ref,
             self.case_delivery_identity_policy_ref,
@@ -1167,6 +1201,10 @@ class S3ThreeCellBoundedAgentAdmission(BaseModel):
             payload.pop("wwc_judgment_atom_policy_ref", None)
         if "judgment_atom_compiled_contract_ref" not in self.model_fields_set:
             payload.pop("judgment_atom_compiled_contract_ref", None)
+        if "runtime_contract_family_binding_ref" not in self.model_fields_set:
+            payload.pop("runtime_contract_family_binding_ref", None)
+        if "runtime_contract_family_source_digest" not in self.model_fields_set:
+            payload.pop("runtime_contract_family_source_digest", None)
         if "case_numeric_authority_policy_ref" not in self.model_fields_set:
             payload.pop("case_numeric_authority_policy_ref", None)
         if "case_delivery_identity_policy_ref" not in self.model_fields_set:
@@ -1202,6 +1240,36 @@ def compile_s4_case_runtime_mandatory_safety_admission(
     compiled = source_admission.model_copy(
         update=compiled_updates
     )
+    compiled.assert_profile_admissible()
+    return compiled
+
+
+def compile_fin_0_1_2_common_runtime_admission(
+    source_admission: S3ThreeCellBoundedAgentAdmission,
+    *,
+    updates: Mapping[str, Any] | None = None,
+) -> S3ThreeCellBoundedAgentAdmission:
+    """Bind a capable historical admission to the FIN 0.1.2 family source."""
+
+    binding = load_fin_0_1_2_runtime_contract_binding()
+    compiled_updates = dict(updates or {})
+    compiled_updates.setdefault(
+        "judgment_atom_compiled_contract_ref",
+        FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+    )
+    compiled_updates.setdefault(
+        "runtime_contract_family_binding_ref",
+        FIN_0_1_2_COMMON_RUNTIME_BINDING_REF,
+    )
+    compiled_updates.setdefault(
+        "runtime_contract_family_source_digest",
+        binding.source_digest,
+    )
+    compiled_updates.setdefault(
+        "provider_output_capture_policy_ref",
+        S4_PROVIDER_INTERACTION_AUDIT_CAPTURE_POLICY_REF,
+    )
+    compiled = source_admission.model_copy(update=compiled_updates)
     compiled.assert_profile_admissible()
     return compiled
 
@@ -2334,6 +2402,34 @@ def _upgrade_s3_post_provider_failure_error(
         }
     )
     error.provider_output_captures = list(captures_by_call.values())
+    runtime_bindings = {
+        json.dumps(
+            row["runtime_contract_family_binding"],
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        for row in error.provider_output_captures
+        if isinstance(row.get("runtime_contract_family_binding"), Mapping)
+    }
+    if len(runtime_bindings) > 1:
+        raise Fin012RuntimeContractBindingError(
+            "fin012_runtime_contract_failure_capture_binding_drift"
+        )
+    if runtime_bindings:
+        observed_binding = json.loads(next(iter(runtime_bindings)))
+        binding = load_fin_0_1_2_runtime_contract_binding()
+        binding.assert_admission_binding(
+            binding_ref=observed_binding.get("binding_ref"),
+            source_digest=observed_binding.get("source_digest"),
+        )
+        observation["runtime_contract_family_binding"] = {
+            "binding_ref": binding.binding_ref,
+            "source_digest": binding.source_digest,
+            "contract_id": binding.contract_id,
+            "contract_version": binding.contract_version,
+            "consumer_binding": binding.consumer_receipt("typed_failure"),
+        }
 
 
 def build_bounded_agent_input_pack(
@@ -8658,7 +8754,7 @@ class DeepSeekS3ThreeCellNodeExecutor:
             "base_url": str(admission.base_url or ""),
             "request_path": request_path,
         }
-        return {
+        capture = {
             "capture_policy_ref": (
                 S4_PROVIDER_INTERACTION_AUDIT_CAPTURE_POLICY_REF
             ),
@@ -8691,6 +8787,27 @@ class DeepSeekS3ThreeCellNodeExecutor:
             "private_reasoning_included": False,
             "credentials_included": False,
         }
+        if (
+            admission.judgment_atom_compiled_contract_ref
+            == FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+        ):
+            binding = load_fin_0_1_2_runtime_contract_binding()
+            binding.assert_admission_binding(
+                binding_ref=admission.runtime_contract_family_binding_ref,
+                source_digest=(
+                    admission.runtime_contract_family_source_digest
+                ),
+            )
+            capture["runtime_contract_family_binding"] = {
+                "binding_ref": binding.binding_ref,
+                "source_digest": binding.source_digest,
+                "contract_id": binding.contract_id,
+                "contract_version": binding.contract_version,
+                "consumer_binding": binding.consumer_receipt(
+                    "capture_index"
+                ),
+            }
+        return capture
 
     def _call_strict_truth_kernel(
         self,
@@ -10331,6 +10448,12 @@ class DeepSeekS3ThreeCellNodeExecutor:
                         judgment_atom_compiled_contract_ref=(
                             admission.judgment_atom_compiled_contract_ref
                         ),
+                        runtime_contract_family_binding_ref=(
+                            admission.runtime_contract_family_binding_ref
+                        ),
+                        runtime_contract_family_source_digest=(
+                            admission.runtime_contract_family_source_digest
+                        ),
                         case_numeric_authority_policy_ref=(
                             admission.case_numeric_authority_policy_ref
                         ),
@@ -10426,7 +10549,7 @@ class DeepSeekS3ThreeCellNodeExecutor:
             try:
                 compiled_atom_contract = (
                     admission.judgment_atom_compiled_contract_ref
-                    in S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS
+                    in DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS
                 )
                 if compiled_atom_contract:
                     output = DeterministicJudgmentAtomCompiledContract(
@@ -10435,6 +10558,12 @@ class DeepSeekS3ThreeCellNodeExecutor:
                         as_of=str(admission.as_of or ""),
                         contract_ref=str(
                             admission.judgment_atom_compiled_contract_ref
+                        ),
+                        runtime_contract_family_binding_ref=(
+                            admission.runtime_contract_family_binding_ref
+                        ),
+                        runtime_contract_family_source_digest=(
+                            admission.runtime_contract_family_source_digest
                         ),
                         research_profile_ref=(
                             research_profile.profile_ref
@@ -10524,6 +10653,12 @@ class DeepSeekS3ThreeCellNodeExecutor:
                     research_profile=research_profile,
                     judgment_atom_compiled_contract_ref=(
                         admission.judgment_atom_compiled_contract_ref
+                    ),
+                    runtime_contract_family_binding_ref=(
+                        admission.runtime_contract_family_binding_ref
+                    ),
+                    runtime_contract_family_source_digest=(
+                        admission.runtime_contract_family_source_digest
                     ),
                     as_of=str(admission.as_of or ""),
                 )
@@ -10740,6 +10875,8 @@ class DeepSeekS3ThreeCellNodeExecutor:
         task_claim_link_policy_ref: str | None = None,
         wwc_judgment_atom_policy_ref: str | None = None,
         judgment_atom_compiled_contract_ref: str | None = None,
+        runtime_contract_family_binding_ref: str | None = None,
+        runtime_contract_family_source_digest: str | None = None,
         case_numeric_authority_policy_ref: str | None = None,
         as_of: str = "",
     ) -> tuple[str, dict[str, Any], dict[str, str]]:
@@ -11072,7 +11209,7 @@ class DeepSeekS3ThreeCellNodeExecutor:
         if judgment_atom_compiled_contract_ref is not None:
             if (
                 judgment_atom_compiled_contract_ref
-                not in S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS
+                not in DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS
             ):
                 raise ValueError(
                     "s4_compiled_judgment_atom_contract_unsupported"
@@ -11083,6 +11220,12 @@ class DeepSeekS3ThreeCellNodeExecutor:
                 as_of=as_of,
                 contract_ref=judgment_atom_compiled_contract_ref,
                 research_profile_ref=profile.profile_ref,
+                runtime_contract_family_binding_ref=(
+                    runtime_contract_family_binding_ref
+                ),
+                runtime_contract_family_source_digest=(
+                    runtime_contract_family_source_digest
+                ),
             )
             compiled_surface = compiled_policy.compiled_surface(segment_id)
             identity_projection = payload.get(
@@ -11137,6 +11280,27 @@ class DeepSeekS3ThreeCellNodeExecutor:
                     compiled_surface["model_visible_contract"][
                         "contract_digest"
                     ]
+                ),
+                **(
+                    {
+                        "runtime_contract_family_binding_ref": str(
+                            compiled_surface[
+                                "runtime_contract_family_binding"
+                            ]["binding_ref"]
+                        ),
+                        "runtime_contract_family_source_digest": str(
+                            compiled_surface[
+                                "runtime_contract_family_binding"
+                            ]["source_digest"]
+                        ),
+                        "runtime_contract_family_version": str(
+                            compiled_surface[
+                                "runtime_contract_family_binding"
+                            ]["contract_version"]
+                        ),
+                    }
+                    if "runtime_contract_family_binding" in compiled_surface
+                    else {}
                 ),
                 **(
                     {
@@ -11610,6 +11774,8 @@ class DeepSeekS3ThreeCellNodeExecutor:
         transport_ref: str = S3_OWNER_GRADE_SEGMENTED_SPECIALIST_TRANSPORT_REF,
         research_profile: BoundedResearchProfile | None = None,
         judgment_atom_compiled_contract_ref: str | None = None,
+        runtime_contract_family_binding_ref: str | None = None,
+        runtime_contract_family_source_digest: str | None = None,
         as_of: str = "",
     ) -> None:
         transport_contract = specialist_transport_contract(transport_ref)
@@ -11662,7 +11828,7 @@ class DeepSeekS3ThreeCellNodeExecutor:
                 raise ValueError("s3_bounded_specialist_output_byte_budget_exceeded")
         if (
             judgment_atom_compiled_contract_ref
-            in S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS
+            in DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS
         ):
             DeterministicJudgmentAtomCompiledContract(
                 cell_input=cell_input,
@@ -11670,6 +11836,12 @@ class DeepSeekS3ThreeCellNodeExecutor:
                 as_of=as_of,
                 contract_ref=str(judgment_atom_compiled_contract_ref),
                 research_profile_ref=profile.profile_ref,
+                runtime_contract_family_binding_ref=(
+                    runtime_contract_family_binding_ref
+                ),
+                runtime_contract_family_source_digest=(
+                    runtime_contract_family_source_digest
+                ),
             ).assert_rendered_capacity(
                 segment_id,
                 output,

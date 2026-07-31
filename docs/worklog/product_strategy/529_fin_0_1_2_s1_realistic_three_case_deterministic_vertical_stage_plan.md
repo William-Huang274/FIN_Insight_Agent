@@ -1,7 +1,7 @@
 # 529 FIN 0.1.2 S1 realistic three-case deterministic vertical StagePlan
 
 日期：2026-07-31
-状态：`completed_stage_plan_only`
+状态：`S1_T02_G1_pass_T03_ready`
 
 ## 本轮结果
 
@@ -35,4 +35,17 @@ StagePlan 专项 `12 passed`；与 S0 current manifest、T10/S5/0.1.1 immutable 
 
 ## 下一项
 
-`FIN-0.1.2-S1-BOUNDED-PRODUCTION-CONSUMER-MIGRATION-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.2-S1-REALISTIC-THREE-CASE-FIXTURE-MUTATION-COLLECT-ALL-FULL-FAKE-ZERO-CALL-PROOF`
+
+## S1-T02 有界生产 consumer 迁移
+
+T02 已完成唯一实现包，没有拆出逐字段补丁，也没有建立新的 T05 或 R-number 家族。新增 mandatory family binding，把 FIN 0.1.2 contract ID、version、规范化 source digest 和十个 consumer receipt 同时注入 admission、模型可见 prompt contract、server schema、local validator、fake provider、selector、renderer、capacity、budget、typed failure 与 capture index。历史 S4 contract refs 仍兼容，但不得混入 FIN 0.1.2 binding 字段；新 ref 若省略或漂移 binding/digest，会在 consumer 使用前 fail closed。
+
+实现审计确认两处 T01 计划表述需要在当前证据层校正，但不应重写已冻结的 StagePlan：
+
+1. `capture_index` 的实际方法 owner 是 `DeepSeekS3ThreeCellNodeExecutor._provider_interaction_capture`，不是计划里的概念名 `BoundedAgentExecutor._provider_interaction_capture`。binding manifest 和 Runtime 已按真实 owner 绑定。
+2. StagePlan 中 `source_digest_must_equal=b9a0...283f` 实际是源文件物理 SHA-256；Runtime admission/consumer 使用的规范化语义 digest 是 `e2b8...7cd9`。两者现在同时留存并明确区分。
+
+专项测试为 `18 passed`，覆盖 source file/canonical digest/contract ID/version/十 consumer owner、omission、drift、旧新 ref 混用、case-specific owner、budget、DELL/MU/NVDA full-fake、post-Provider failure capture/typed-failure receipt、StageCapsule 与 current projection。三案当前各达到测试内存路径 `6 nodes / 12 interactions / 12 captures / 9 diagnostic Artifacts`；这些不是 business Run 或产品 Artifacts。历史行为回归为 `39 passed, 1 deselected`；被排除的一项是历史 v2 implementation artifact 对旧代码字节 hash 的 immutable snapshot 断言，当前行为没有失败，历史 artifact/test 也未为求绿而改写。T01/S0/T07/T10/S5/0.1.1 current-boundary 与 T02 合并回归最终为 `54 passed`。
+
+StageCapsule：`configs/releases/fin_ia_0_1_2_s1_stage_capsule_v1_0.json`。G1 已通过，G2 留给唯一 T03 realistic three-case proof package；G3/G5 仍不属于 S1，G6 留给 T04。credential/model/provider/business-network/admission/Run/business Artifact/paid reproof 均为 0，DELL/MU R2、post-transfer NVDA、NVDA R3 与 FIN 0.1 release truth 均未改变。

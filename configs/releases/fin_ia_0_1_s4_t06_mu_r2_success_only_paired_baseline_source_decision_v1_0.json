@@ -1,0 +1,49 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_r2_success_only_paired_baseline_source_decision_v1_0",
+  "decision_id": "S4-T06-MU-R2-SUCCESS-ONLY-PAIRED-BASELINE-SOURCE-DECISION-R1",
+  "decided_at": "2026-07-29T19:10:00+08:00",
+  "status": "agent_success_bound_deterministic_baseline_preparation_authorized",
+  "authority": {
+    "user_instruction": "继续",
+    "success_only_paired_assessment_authorized": true,
+    "deterministic_baseline_materialization_authorized": true,
+    "agent_rerun_authorized": false,
+    "model_provider_source_or_tool_execution_authorized": false,
+    "owner_acceptance_write_authorized": false,
+    "S4_T07_or_later_authorized": false
+  },
+  "input_binding": {
+    "source_live_result_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_r2_exact_live_execution_success_result_v1_0.json",
+    "source_live_result_sha256": "d4ac5502ed6d87a43de853877511a0c61f9bfc42b6a5ec17f56dfe38a5d95e1b",
+    "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t06_mu_fact_presence_local_materialization_r2_live_execution_result.json",
+    "runtime_result_sha256": "aa38a0f62c559dbebdd0c3381510f5a316322409004a58ee12cea8243b346e01",
+    "source_agent_admission_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_fresh_exact_admission_r2.json",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "s4_case_ticker": "MU",
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_version": 1,
+    "analysis_as_of": "2026-07-26T00:00:00Z",
+    "decision_surface_ref": "p02_decision_surface_dd094559ce4c0f79d242e852:v1",
+    "research_run_id": "research_run_fin01_1920b03b8205e9861dfb5676",
+    "attempt_id": "attempt_fin01_217f2f2aaaa051080a540f2a",
+    "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+    "input_head_digest": "d0bb8780877914737b68fc1cfd763932c56f496758d9be62e5194d4c648179f2",
+    "paired_input_head_digest": "4023ee74d3c54a8583203ba6b994eea55083aa1e68c1efc7786d819fbd64d247",
+    "agent_profile_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+    "agent_artifact_count": 9
+  },
+  "paired_baseline_contract": {
+    "contract_ref": "fin01.s4.paired_case_local_deterministic_baseline:v1",
+    "baseline_profile_ref": "fin01.execution_profile.p36_local_deterministic:v1",
+    "same_case_version_as_of_decision_surface_and_input_head_required": true,
+    "distinct_work_unit_attempt_run_and_artifacts_required": true,
+    "automatic_fallback_allowed": false,
+    "baseline_output_body_exposed_to_agent": false,
+    "model_provider_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "agent_reruns": 0,
+    "owner_acceptance_writes": 0
+  },
+  "next_action": "S4-T06-MU-R2-DETERMINISTIC-BASELINE-PROSPECTIVE-DOUBLE-PREPARE"
+}

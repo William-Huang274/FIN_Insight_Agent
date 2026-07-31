@@ -1,0 +1,47 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r10_success_only_paired_baseline_source_decision_v1_0",
+  "decision_id": "S4-T05-DELL-R10-SUCCESS-ONLY-PAIRED-BASELINE-SOURCE-DECISION-R1",
+  "decided_at": "2026-07-28T12:00:00+08:00",
+  "status": "agent_success_bound_deterministic_baseline_preparation_authorized",
+  "authority": {
+    "user_instruction": "继续",
+    "success_only_paired_assessment_authorized": true,
+    "deterministic_baseline_materialization_authorized": true,
+    "agent_rerun_authorized": false,
+    "model_provider_source_or_tool_execution_authorized": false,
+    "owner_acceptance_write_authorized": false,
+    "S4_T06_release_or_production_authorized": false
+  },
+  "input_binding": {
+    "source_live_result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_profile_aware_artifact_lineage_exact_live_execution_success_result_v1_0.json",
+    "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_r10_profile_aware_artifact_lineage_r10_r1_live_execution_result.json",
+    "source_agent_admission_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_profile_aware_artifact_lineage_fresh_exact_admission_r10.json",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "s4_case_ticker": "DELL",
+    "case_id": "case_7b5c2042bef3825b8df71a96",
+    "case_version": 1,
+    "analysis_as_of": "2026-07-26T00:00:00Z",
+    "decision_surface_ref": "p02_decision_surface_d31fd75b31ad8385e9d8376a:v1",
+    "research_run_id": "research_run_fin01_b90b55b0fdb0ddc69d166303",
+    "attempt_id": "attempt_fin01_318b5e7a5748bb1433aa0a47",
+    "input_digest": "f9868c5d7daa051adfccba1c1d2de9c1209d6781bfa76c4569aee76d640e230d",
+    "input_head_digest": "ee76a3570f857bfd3341f21a6e3531d47d2d68581694a2bdbe2917a8de171c40",
+    "paired_input_head_digest": "8f95f74c3b6094ca18a143e615ffa33b75d92d9327af0758117a200b83f46c83",
+    "agent_profile_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+    "agent_artifact_count": 9
+  },
+  "paired_baseline_contract": {
+    "contract_ref": "fin01.s4.paired_case_local_deterministic_baseline:v1",
+    "baseline_profile_ref": "fin01.execution_profile.p36_local_deterministic:v1",
+    "same_case_version_as_of_decision_surface_and_input_head_required": true,
+    "distinct_work_unit_attempt_run_and_artifacts_required": true,
+    "automatic_fallback_allowed": false,
+    "baseline_output_body_exposed_to_agent": false,
+    "model_provider_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "agent_reruns": 0,
+    "owner_acceptance_writes": 0
+  },
+  "next_action": "S4-T05-DELL-R10-DETERMINISTIC-BASELINE-PROSPECTIVE-DOUBLE-PREPARE"
+}

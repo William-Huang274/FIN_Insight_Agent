@@ -1,0 +1,17 @@
+{
+  "schema_version": "fin_insight_project_os_full_chain_preflight_v0_1",
+  "status": "pass",
+  "policy": "fail_closed_on_open_project_os_blockers_v0_1",
+  "project_root": "D:\\FIN_Insight_Agent",
+  "project_os_dir": "D:\\FIN_Insight_Agent\\docs\\project_os",
+  "run_scope": "S4_T06_MU_WWC_STABLE_TOP3_REPLACEMENT_EXACT_LIVE_R1",
+  "allow_open_blockers": false,
+  "missing_files": [],
+  "missing_capabilities": [],
+  "open_full_chain_blockers": [],
+  "capability_count": 407,
+  "root_cause_issue_count": 673,
+  "checklist_count": 6,
+  "errors": [],
+  "next_action": "Project OS preflight passed. Continue to token budget, provider, evidence-mode, AIE, and data-script preflights."
+}

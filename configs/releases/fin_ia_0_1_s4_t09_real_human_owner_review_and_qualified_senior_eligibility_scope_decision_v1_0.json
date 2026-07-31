@@ -1,0 +1,128 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t09_real_human_owner_review_and_qualified_senior_eligibility_scope_decision_v1_0",
+  "decision_id": "S4-T09-REAL-HUMAN-OWNER-REVIEW-AND-QUALIFIED-SENIOR-ELIGIBILITY-SCOPE-DECISION",
+  "decided_at": "2026-07-31T13:49:08+08:00",
+  "status": "pass_scope_frozen_owner_evidence_review_eligible_qualified_senior_R3_ineligible_pending_real_Human_disposition",
+  "authority": {
+    "user_instruction": "继续",
+    "instruction_interpretation": "authorize_zero_call_T09_scope_and_review_packet_preparation_not_owner_acceptance_or_qualified_senior_attestation",
+    "T09_scope_and_eligibility_decision_authorized": true,
+    "Human_review_packet_preparation_authorized": true,
+    "owner_acceptance_or_rejection_inferred": false,
+    "qualified_senior_identity_or_attestation_inferred": false,
+    "credential_model_provider_network_source_or_external_tool_authorized": false,
+    "new_admission_run_product_or_business_artifact_authorized": false,
+    "T05_T06_T07_or_T08_reopen_authorized": false
+  },
+  "source_bindings": [
+    {
+      "evidence_role": "stage_boundary_authority",
+      "ref": "configs/releases/fin_ia_0_1_s1_to_s4_t06_stage_boundary_and_task_ownership_rebaseline_v1_0.json",
+      "sha256": "73981b143b4a92f37063e4a950d5634c0d04825dc3eaf19366fbb6070c233017"
+    },
+    {
+      "evidence_role": "T08_scope",
+      "ref": "configs/releases/fin_ia_0_1_s4_t08_read_only_three_case_calibration_and_workbench_product_value_scope_decision_v1_0.json",
+      "sha256": "7eb40210182189d92f9c6d79d7111c92eb947257f8e4084d1f8904f1be4417dd"
+    },
+    {
+      "evidence_role": "T08_calibration_result",
+      "ref": "configs/releases/fin_ia_0_1_s4_t08_read_only_three_case_calibration_and_workbench_product_value_result_v1_0.json",
+      "sha256": "be8f97a984f01290554937ab7f17b23bfb387407c5d6f0cab636334ecbf9dceb"
+    },
+    {
+      "evidence_role": "historical_NVDA_R2_owner_review_precedent",
+      "ref": "configs/releases/fin_ia_0_1_s3_t10_owner_review_nvda_r2_and_s3_closeout_v1_0.json",
+      "sha256": "b7cdb5bf00b31581b26b6e66b3194f8c913a3d78ff1c84a59db2eee1d284a8b2"
+    },
+    {
+      "evidence_role": "DELL_blocked_paired_product_evidence",
+      "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_success_only_paired_assessment_and_owner_acceptance_decision_v1_0.json",
+      "sha256": "502be154addb75b3c4a27ae918d3785b173176f071c231771a1a4ec56241de7e"
+    },
+    {
+      "evidence_role": "MU_blocked_paired_product_evidence",
+      "ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r2_success_only_paired_assessment_result_v1_0.json",
+      "sha256": "fe31c95f92ac9a2e41be6ace784498084839edf16c300f4006e6f6ac11414fa1"
+    },
+    {
+      "evidence_role": "T07_no_post_transfer_NVDA_candidate_result",
+      "ref": "configs/releases/fin_ia_0_1_s4_t07_current_worktree_three_case_zero_call_regression_failure_result_v1_0.json",
+      "sha256": "9ee8e454b9c8eea14f7eeab93b5050b7a85fce006c5c42d25139f1a0aaab59d1"
+    }
+  ],
+  "review_tracks": {
+    "owner_product_and_program_evidence_review": {
+      "eligibility": "eligible",
+      "reviewer_authority_required": "real_project_owner_or_delegated_real_Human_product_owner",
+      "review_subjects": [
+        "T08_three_case_calibration_accuracy_and_non_inflation",
+        "Agent_actionability_gain_versus_L1_product_admissibility_boundary",
+        "Workbench_internal_trace_debug_value_and_missing_user_metrics",
+        "DELL_MU_R2_and_NVDA_post_transfer_R3_absence",
+        "recommendation_to_T10_pass_or_honest_block_closeout"
+      ],
+      "allowed_dispositions": [
+        "accept_evidence_and_recommend_T10_honest_block",
+        "defer_pending_named_evidence_correction",
+        "reject_scope_and_return_to_program_rebaseline"
+      ],
+      "machine_or_Codex_may_sign": false
+    },
+    "qualified_senior_NVDA_R3_review": {
+      "eligibility": "ineligible",
+      "blocking_reasons": [
+        "no_post_transfer_NVDA_exact_product_exists",
+        "no_current_NVDA_R3_review_candidate_exists",
+        "no_real_qualified_senior_reviewer_identity_or_relevant_experience_attestation_is_bound"
+      ],
+      "historical_NVDA_R2_owner_acceptance_reusable_as_R3": false,
+      "machine_Verifier_Codex_owner_self_review_or_shadow_review_substitution": false,
+      "future_reentry_condition": "a_new_exact_NVDA_candidate_must_exist_and_a_real_qualified_senior_must_bind_identity_experience_exact_Run_and_artifact_digests"
+    }
+  },
+  "eligibility_result": {
+    "owner_review_packet_may_be_presented": true,
+    "owner_disposition_record_may_be_created_only_after_explicit_Human_choice": true,
+    "qualified_senior_R3_attestation_may_be_created_now": false,
+    "T09_full_pass_possible_now": false,
+    "T09_honest_block_recommendation_possible_now": true,
+    "T10_may_start_before_explicit_owner_disposition": false,
+    "S4_pass_possible_from_current_evidence": false
+  },
+  "Human_review_record_requirements": {
+    "required_fields": [
+      "reviewer_role",
+      "explicit_disposition",
+      "reviewed_evidence_refs_and_digests",
+      "accepted_or_disputed_findings",
+      "quality_and_product_value_boundary",
+      "recommended_T10_path",
+      "recorded_at"
+    ],
+    "forbidden_inferences": [
+      "continue_means_accept",
+      "owner_review_means_qualified_senior_R3",
+      "historical_NVDA_R2_means_post_transfer_product",
+      "Agent_gain_means_L1_pass",
+      "T08_pass_means_S4_pass"
+    ],
+    "dispute_rule": "defer_or_reject_must_name_the_evidence_ref_finding_and_requested_correction_without_automatically_reopening_live_or_runtime_work"
+  },
+  "hard_budgets": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_work_units_attempts_or_research_runs": 0,
+    "new_business_artifacts": 0,
+    "exact_live_runs": 0,
+    "paired_assessments": 0,
+    "owner_acceptance_records": 0,
+    "qualified_senior_attestations": 0
+  },
+  "next_action": "S4-T09-REAL-HUMAN-OWNER-EVIDENCE-REVIEW-AND-HONEST-BLOCK-RECOMMENDATION"
+}

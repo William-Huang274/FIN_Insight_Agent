@@ -1,0 +1,120 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_exact_r2_execution_failure_result_v1_0",
+  "result_id": "S4-T05-DELL-EXACT-R2-EXECUTION-FAILURE-R1",
+  "recorded_at": "2026-07-26T20:13:54+08:00",
+  "status": "terminal_failed_pre_provider_evidence_role_taxonomy_runtime_plan_mismatch",
+  "authority_decision_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_exact_r2_execution_and_paired_assessment_authority_decision_v1_0.json",
+  "authority_decision_sha256": "49ea59d1fc35348e5964e942d4db91525e5586bb32a84749f9532eaf54314068",
+  "exact_identity": {
+    "admission_id": "fin01-s4-t04-dell-fresh-exact-admission-r1",
+    "admission_digest": "da035e71d9eee81e9c76c5243a396bafaacfc29cd1f01e66eb1a66b8b757a60f",
+    "admission_consumed": true,
+    "case_id": "case_7b5c2042bef3825b8df71a96",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_d31fd75b31ad8385e9d8376a:v1",
+    "input_digest": "3499c03470c5bec5168dc87a2974802869da389f2ef588f41021731828d09e96",
+    "work_unit_id": "wu_p02_5_2ebc452430c3eac0db8de47c",
+    "attempt_id": "attempt_fin01_87e5480ea908aff63ffe9e1f",
+    "research_run_id": "research_run_fin01_2eced17671df87082b95db9a"
+  },
+  "terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_consistent": true,
+    "terminal_reason": "bounded_agent_profile_error:EvidenceServiceError",
+    "artifact_count": 0,
+    "orphaned_run": false,
+    "runner_exit_code": 0,
+    "typed_unhandled_runner_failure": false,
+    "automatic_retry_fallback_replay_relaunch_rerun_counts": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "observed_counts": {
+    "canonical_work_units": 1,
+    "canonical_attempts": 1,
+    "canonical_research_run_versions": 1,
+    "canonical_artifact_versions": 0,
+    "semantic_model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "provider_output_captures": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "estimated_cost_usd": 0
+  },
+  "failure_reproduction": {
+    "reproduction_mode": "disposable_runtime_clone_with_pre_failure_running_work_unit_state",
+    "reproduced_exception_type": "EvidenceServiceError",
+    "reproduced_failure_code": "s3_required_evidence_role_slot_missing",
+    "http_status": 409,
+    "model_or_provider_involved": false,
+    "required_runtime_evidence_roles": [
+      "demand_signal",
+      "revenue_capture",
+      "thesis_counterevidence"
+    ],
+    "available_DELL_case_evidence_roles": [
+      "issuer_demand_or_order_signal",
+      "issuer_revenue_conversion",
+      "official_customer_or_deployment_corroboration",
+      "pull_forward_or_channel_counterevidence",
+      "issuer_financial_statement",
+      "issuer_segment_or_product_disclosure",
+      "working_capital_balance_sheet_rows",
+      "cash_flow_rows",
+      "cross_chain_profit_capture_comparison",
+      "official_supply_or_component_constraint",
+      "channel_inventory_or_order_quality_counterevidence",
+      "pricing_and_competitive_counterevidence",
+      "working_capital_or_cash_stress",
+      "independent_official_followup"
+    ],
+    "required_role_match_count": 0
+  },
+  "root_cause": {
+    "issue_id": "RC-P36-058-s4-case-specific-evidence-role-to-runtime-plan-taxonomy-gap",
+    "classification": "project_owned_runtime_contract_gap_not_model_failure",
+    "earliest_owner": "apps/workbench/backend/application/evidence_service.py::_s3_runtime_context",
+    "upstream_contract_owner": "FIN01_S3_PROGRAM_CELL_CONTRACTS evidence_role taxonomy",
+    "symptom": "The actual shared Runtime compiles the historical S3 evidence route plan before entering the S4 adapter. It requires one slot for each generic S3 role, while the accepted DELL DecisionSurface contains fourteen case-specific roles and none of the three generic role names.",
+    "why_preflight_did_not_catch_it": "The S4 exact prepare path directly compiled the source-grounded bounded-agent input and did not exercise compile_s3_three_cell_runtime_evidence_plan. The deterministic S4 node fixture likewise proved case-pack injection but not the actual pre-adapter evidence-plan taxonomy bridge.",
+    "required_disposition": "Select one explicit case-local role-mapping contract consumed by both actual runtime planning and preflight. Do not rename historical source roles, add DELL special-case fallbacks, synthesize missing slots, or rerun before deterministic actual-dispatch proof.",
+    "full_chain_blocker": true,
+    "external_boundary": false
+  },
+  "evidence_refs": {
+    "runtime_preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_exact_r2_r1_live_execution_preflight.json",
+    "runtime_preflight_sha256": "9bc9c77700c458f48c14434d90b0e6b917f1c730866c0e31c1fe00e210810e63",
+    "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_exact_r2_r1_live_execution_result.json",
+    "runtime_result_sha256": "51cca2977f91ba68086ba536a806a438b6e0cd15d27d7f60fdb49ba0e57dee0a",
+    "terminal_inspection_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_exact_r2_r1_live_execution_terminal_inspection.json",
+    "terminal_inspection_sha256": "e6965d5af811978212ab6d226db61be9a9e9e0cdb1b52598def39c5213c3e6fd",
+    "supervision_launch_ref": ".codex_runtime/fin01-s4-t05-dell-exact-r2-supervision-r1/launch_receipt.json",
+    "supervision_launch_sha256": "34e425acb89a68b58a5c4b1a6cb68070980381e67ef92a756177ab14394a2232",
+    "supervision_exit_ref": ".codex_runtime/fin01-s4-t05-dell-exact-r2-supervision-r1/exit_receipt.json",
+    "supervision_exit_sha256": "05b8ab3ddc7b4bc7000858f690daaa97f39bb5a569f9140b807507c697ec6b38",
+    "canonical_database_logical_digest_after": "fb73f7768ae73d020fe7a48660aa30f4e8a651975fe1a96f156588631519d4c3",
+    "gateway_event_log_sha256_unchanged_historical_log": "76f95275f3cb989d0cd61c0ae0e7771f6062a7bd406d9b19c448dab2642dc1b6"
+  },
+  "paired_assessment": {
+    "authorized_only_after_terminal_success": true,
+    "performed": false,
+    "reason": "No coherent nine-Artifact terminal success exists."
+  },
+  "stage_decision": {
+    "S4_T05": "honestly_blocked_project_owned_pre_provider_runtime_contract_gap",
+    "DELL_R2": "not_proven",
+    "MU_R2": "not_started",
+    "NVDA_R3": "not_started",
+    "S4_pass": false
+  },
+  "next_action": "S4-T05-DELL-EVIDENCE-ROLE-TAXONOMY-TO-RUNTIME-PLAN-ALIGNMENT-ZERO-CALL-ROOT-CAUSE-DISPOSITION-DECISION"
+}

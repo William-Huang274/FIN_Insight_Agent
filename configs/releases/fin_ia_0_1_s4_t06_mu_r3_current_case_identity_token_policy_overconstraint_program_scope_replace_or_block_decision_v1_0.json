@@ -1,0 +1,233 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_r3_current_case_identity_token_policy_overconstraint_program_scope_replace_or_block_decision_v1_0",
+  "recorded_at": "2026-07-29T18:00:38+08:00",
+  "work_item_id": "S4-T06-MU-R3-CURRENT-CASE-IDENTITY-TOKEN-POLICY-OVERCONSTRAINT-AND-FIXTURE-BLIND-SPOT-PROGRAM-SCOPE-REPLACE-OR-BLOCK-DECISION",
+  "status": "scope_replace_selected_one_current_case_aware_identity_boundary_zero_call_replacement_bundle_pending_separate_authority",
+  "decision_label": "scope_replace",
+  "authority_boundary": {
+    "program_scope_replace_or_block_decision_authorized": true,
+    "replacement_contract_design_authorized": true,
+    "runtime_or_business_code_change_authorized": false,
+    "replacement_implementation_authorized": false,
+    "fixture_change_authorized": false,
+    "credential_read_probe_or_configuration_authorized": false,
+    "model_or_provider_execution_authorized": false,
+    "fresh_agent_proof_authorized": false,
+    "admission_issuance_authorized": false,
+    "R4_exact_live_execution_authorized": false,
+    "paired_assessment_authorized": false,
+    "owner_acceptance_authorized": false,
+    "S4_T07_authorized": false,
+    "provider_hopping_or_model_switch_authorized": false
+  },
+  "source_evidence": {
+    "R3_failure_result": {
+      "ref": "configs/releases/fin_ia_0_1_s4_t06_mu_mandatory_material_truth_identity_safety_closure_r3_exact_live_execution_failure_result_v1_0.json",
+      "sha256": "c28dd369fcda613451ce25527d3bc1e9ddc216a72dde0fae69c4df6ff838d9a1"
+    },
+    "safety_closure_implementation": {
+      "ref": "configs/releases/fin_ia_0_1_s4_t06_mu_case_runtime_mandatory_material_truth_identity_safety_closure_minimum_zero_call_implementation_v1_0.json",
+      "sha256": "9e8675c537d908e666aaccedbda8856ee22779d547a8091967299f55f25554aa",
+      "implementation_bundles_consumed": 1
+    },
+    "policy_code_observation": {
+      "ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+      "sha256_at_decision": "5b9b991f38b738492c081c48eb7f5c613531ed0e967b7d80ec82f5a564fb3d34",
+      "owner": "CaseDeliveryIdentityPolicy.provider_narrative_has_entity_token",
+      "observed_rule": "reject_any_occurrence_of_DELL_MU_or_NVDA_without_excluding_the_current_case"
+    },
+    "executor_gate_observation": {
+      "ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "sha256_at_decision": "311c70aadd15b1321a844c0e035a61dec073bac2e75bca7df65971022b9cb8e0",
+      "failure_code": "s4_case_delivery_identity_provider_narrative_invalid",
+      "gate_position": "post_provider_pre_node_acceptance"
+    },
+    "fixture_observation": {
+      "ref": "tests/contract/test_fin_0_1_s4_t05_case_numeric_authority_and_delivery_identity_zero_call_implementation.py",
+      "sha256_at_decision": "5db7abf79b97d1e0d0671ac2e4e2b673a66aa6e7c2c1b6fbe92bc87eea1c171a",
+      "observed_rule": "positive_fake_replaces_DELL_MU_NVDA_in_narrative_fields_with_a_generic_issuer_label"
+    },
+    "R3_content_free_identity_counts": {
+      "current_case": "MU",
+      "current_case_occurrences": 4,
+      "nonlocal_occurrences": {
+        "DELL": 0,
+        "NVDA": 0
+      },
+      "cross_case_identity_pollution_observed": false
+    }
+  },
+  "root_cause_disposition": {
+    "issue_id": "RC-P36-079-s4-t06-current-case-identity-token-policy-overconstraint-and-fixture-blind-spot",
+    "classification": "project_owned_identity_authority_boundary_overconstraint_and_fixture_live_path_parity_gap",
+    "proximate_model_behavior": "DeepSeek repeated the correct MU ticker despite the exact request prohibiting every ticker token.",
+    "model_general_instruction_noncompliance_established": false,
+    "transport_network_credential_source_or_truncation_fault": false,
+    "earliest_faulty_owned_artifact": "CaseDeliveryIdentityPolicy.provider_narrative_has_entity_token",
+    "decision": "replace_the_blanket_provider_identity_token_ban_once_with_a_current_case_aware_nonlocal_contamination_boundary",
+    "reason": "Correct current-case identity is legitimate narrative context and cannot change canonical delivery identity because title, workpaper, review, manifest and final identity surfaces are locally assembled and independently recomputed. Nonlocal registered-case identity remains an L1 hard failure."
+  },
+  "option_assessment": {
+    "continue_blanket_hard_ban": {
+      "selected": false,
+      "reason": "It turns a correct local identity mention into a terminal false positive and depends on brittle lexical omission rather than the actual delivery authority boundary."
+    },
+    "deterministically_delete_or_rewrite_provider_tokens": {
+      "selected": false,
+      "reason": "Silent narrative mutation would conceal contamination and make captured Provider output differ from the accepted analytical text."
+    },
+    "downgrade_all_identity_tokens_to_quality_findings": {
+      "selected": false,
+      "reason": "Nonlocal case contamination is an L1 identity defect and must remain fail-closed."
+    },
+    "block_agent_delivery_scope_now": {
+      "selected": false,
+      "reason": "A bounded structural replacement can preserve local deterministic delivery ownership and hard-reject nonlocal contamination without weakening L1."
+    },
+    "scope_replace_current_case_aware_boundary": {
+      "selected": true,
+      "reason": "It aligns the validator with the actual authority boundary, closes fixture/live parity, and avoids another field-by-field prompt patch."
+    }
+  },
+  "replacement_contract": {
+    "prospective_contract_ref": "fin01.s4.case_delivery_identity_current_case_aware_provider_boundary:v2",
+    "architecture": "provider_narrative_identity_classification_plus_local_deterministic_delivery_identity_assembly_plus_independent_final_L1",
+    "identity_classification": {
+      "current_case_identity_source": "exact_case_delivery_identity_projection",
+      "registered_nonlocal_identity_source": "case_identity_registry_minus_the_exact_current_case_identity_set",
+      "hardcoded_DELL_MU_NVDA_tuple_as_policy_owner_forbidden": true,
+      "current_case_ticker_in_provider_narrative": "allowed_as_non_authoritative_narrative_context",
+      "registered_nonlocal_case_ticker_in_provider_narrative": "L1_hard_failure",
+      "mixed_current_and_nonlocal_case_tokens": "L1_hard_failure",
+      "unknown_unregistered_entity_resolution": "out_of_scope_no_generic_NER_expansion_in_this_bundle"
+    },
+    "delivery_authority": {
+      "provider_may_author_title_or_delivery_identity_fields": false,
+      "title_zh_cn_owner": "local_case_delivery_identity_projection",
+      "workpaper_entity_label_owner": "local_case_delivery_identity_projection",
+      "review_surface_entity_label_owner": "local_case_delivery_identity_projection",
+      "manifest_case_ticker_owner": "local_case_delivery_identity_projection",
+      "runtime_identity_owner": "local_case_binding",
+      "final_nine_artifact_identity_recomputation_required": true,
+      "model_verifier_cannot_substitute_for_independent_L1": true
+    },
+    "failure_contract": {
+      "failure_code_family": "s4_case_delivery_identity_provider_narrative_invalid",
+      "required_failure_subtype": "provider_narrative_nonlocal_registered_case_identity_token",
+      "acceptance_layer": "L1_hard_integrity",
+      "raw_text_persisted_in_business_result": false,
+      "private_reasoning_persisted": false,
+      "content_free_fields": [
+        "current_case_identity_digest",
+        "registered_nonlocal_match_count",
+        "failing_field_count",
+        "provider_phase",
+        "segment_id"
+      ],
+      "receipts_and_restricted_captures_preserved_on_failure": true
+    },
+    "historical_immutability": {
+      "existing_v1_admissions_and_consumed_runs_reinterpreted": false,
+      "R3_failure_reclassified_as_success": false,
+      "new_admission_must_explicitly_bind_v2": true
+    }
+  },
+  "replacement_bundle_acceptance": {
+    "cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "positive_fixtures": [
+      "each_case_naturally_mentions_its_current_ticker_in_every_provider_phase_and_reaches_6_nodes_12_callbacks_12_captures_9_artifacts",
+      "multiple_current_case_ticker_mentions_are_accepted_without_rewriting",
+      "locally_assembled_title_workpaper_review_manifest_and_runtime_identity_equal_the_exact_current_case_projection"
+    ],
+    "negative_fixtures": [
+      "each_provider_phase_rejects_each_registered_nonlocal_case_ticker",
+      "mixed_current_and_nonlocal_case_tokens_fail_closed",
+      "wrong_title_mutation_is_rejected_by_independent_final_L1",
+      "wrong_workpaper_entity_label_is_rejected_by_independent_final_L1",
+      "wrong_review_surface_entity_label_is_rejected_by_independent_final_L1",
+      "wrong_manifest_case_ticker_is_rejected_by_independent_final_L1",
+      "numeric_projection_and_canonical_numeric_fact_mutations_remain_rejected"
+    ],
+    "fixture_live_parity": {
+      "positive_fake_may_sanitize_current_case_identity_tokens": false,
+      "fake_provider_must_generate_request_conformant_natural_current_case_mentions": true,
+      "provider_request_policy_validator_fake_and_mutation_rubric_share_one_versioned_contract_owner": true
+    },
+    "non_goals": [
+      "generic_named_entity_recognition",
+      "company_alias_ontology_expansion",
+      "numeric_authority_redesign",
+      "research_lead_dependency_or_conflict_atomization",
+      "prompt_style_or_narrative_quality_tuning",
+      "provider_switching",
+      "R3_replay_or_reclassification"
+    ],
+    "actual_allowed_counts_for_the_bundle": {
+      "model_calls": 0,
+      "provider_calls": 0,
+      "execution_network_calls": 0,
+      "source_network_calls": 0,
+      "external_tool_calls": 0,
+      "credential_reads_or_probes": 0,
+      "admissions_issued": 0,
+      "work_units_created": 0,
+      "attempts_created": 0,
+      "research_runs_created": 0,
+      "business_artifacts_created": 0,
+      "paired_assessments": 0,
+      "human_reviews": 0
+    }
+  },
+  "anti_loop_ceiling": {
+    "replacement_zero_call_implementation_bundles_maximum": 1,
+    "replacement_bundle_requires_separate_authority": true,
+    "automatic_follow_on_repair_bundles": 0,
+    "field_by_field_prompt_regex_or_token_allowlist_patch_iterations": 0,
+    "replacement_bundle_failure_disposition": "block_the_affected_agent_delivery_scope_keep_S4_T06_blocked_no_second_replacement_bundle",
+    "fresh_agent_proof_after_replacement_requires_separate_authority": true,
+    "fresh_admission_after_proof_requires_separate_authority": true,
+    "R4_exact_live_execution_maximum_after_fresh_proof_and_admission": 1,
+    "R4_requires_separate_authority": true,
+    "R4_first_new_L1_failure_disposition": "stop_and_return_to_program_level_block_no_R5",
+    "provider_hopping_or_model_switch_iterations": 0
+  },
+  "root_cause_status": {
+    "RC-P36-067-s4-R10-numeric-reference-value-correspondence-false-negative": "blocked_pending_scope_replacement_and_future_live_final_L1_proof",
+    "RC-P36-068-s4-R10-case-identity-title-contract-hardcoded-NVDA": "blocked_pending_scope_replacement_and_future_live_writer_final_L1_proof",
+    "RC-P36-079-s4-t06-current-case-identity-token-policy-overconstraint-and-fixture-blind-spot": "scope_replace_selected_one_current_case_aware_identity_boundary_replacement_bundle_pending"
+  },
+  "stage_disposition": {
+    "S4_T05": "blocked_not_passed_not_owner_accepted_no_R12",
+    "S4_T06": "blocked_R3_failed_scope_replacement_pending",
+    "MU_R3": "terminal_failed_immutable",
+    "MU_R4": "not_authorized_not_prepared",
+    "paired_assessment": "not_eligible_not_performed",
+    "owner_acceptance": "not_eligible_not_performed",
+    "S4_T07_T10": "blocked",
+    "S5": "blocked",
+    "release": "not_ready",
+    "production": "not_ready"
+  },
+  "observed_counts": {
+    "actual_model_calls": 0,
+    "actual_provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "credential_reads_or_probes": 0,
+    "admissions_issued": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "business_artifacts_created": 0,
+    "paired_assessments": 0,
+    "human_reviews": 0
+  },
+  "next_action": "S4-T06-MU-CURRENT-CASE-AWARE-DELIVERY-IDENTITY-BOUNDARY-SCOPE-REPLACEMENT-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "next_action_authorized": false,
+  "known_boundary": "This record selects one structural scope replacement and does not implement it. It does not modify runtime or fixtures, read credentials, call DeepSeek, issue an admission, prepare or execute R4, perform paired assessment or owner acceptance, close S4-T06, enter T07, release, or production."
+}

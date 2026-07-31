@@ -1,0 +1,151 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_wwc_numeric_authority_surface_zero_call_root_cause_disposition_v1_0",
+  "decision_id": "S4-T05-DELL-WWC-NUMERIC-AUTHORITY-SURFACE-ZERO-CALL-ROOT-CAUSE-DISPOSITION-R1",
+  "recorded_at": "2026-07-27T03:30:00+08:00",
+  "status": "pass_zero_call_root_cause_disposed_minimum_shared_WWC_authority_policy_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "S4-T05-DELL-WWC-NUMERIC-AUTHORITY-SURFACE-ZERO-CALL-ROOT-CAUSE-DISPOSITION-DECISION",
+    "runtime_patch_authorized": false,
+    "admission_issuance_or_consumption_authorized": false,
+    "model_provider_network_or_source_calls_authorized": false,
+    "fourth_DELL_execution_authorized": false,
+    "paired_assessment_authorized": false,
+    "S4_T06_or_later_authorized": false
+  },
+  "source_failure": {
+    "issue_id": "RC-P36-060-s4-WWC-numeric-authority-surface-drift",
+    "result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_task_claim_link_policy_r3_exact_live_execution_failure_result_v1_0.json",
+    "result_sha256": "1f6ca37ad255cd697ffa5d74f97836266bc58e0a41ad84a36c5084029ed66cb2",
+    "exact_input_object_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/canonical-runtime/objects/fin01/s4/exact-input-heads/61/29/61293b24558b856f67c7826c7218852e064c47f5e69c607f5a0d291ae9221954.json",
+    "exact_input_object_sha256": "61293b24558b856f67c7826c7218852e064c47f5e69c607f5a0d291ae9221954",
+    "failure_code": "s3_owner_grade_WWC_task_incomplete",
+    "terminal_states": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "artifact_count": 0,
+    "fact_support_numeric_ref_count": 6,
+    "legacy_WWC_numeric_ref_count": 0,
+    "first_task_exact_numeric_ref_count": 6,
+    "model_or_provider_fault": false
+  },
+  "audited_implementation": {
+    "contract_policy_ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+    "contract_policy_sha256": "bdfd055a45f2bfd8a516ecb89d52aec0161925bdb1771c9d1137af1f727c913d",
+    "executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "executor_sha256": "e1b6dbc0e4d194f5e38e28cb3bb105bd2ff1e7a367412e94b7f7ecdcbc0ce805",
+    "fact_membership_source": "cell_input.authority_refs.accepted_evidence_refs_and_numeric_refs",
+    "WWC_evidence_candidate_and_graph_membership_source": "cell_input.authority_refs",
+    "WWC_numeric_membership_source": "cell_input.numeric_input.selected_financial_rows_and_derived_metrics",
+    "confirmed_defect": "WWC_numeric_membership_has_a_second_reconstructed_owner_and_can_drift_from_the_canonical_closed_authority_refs_surface"
+  },
+  "selected_minimum_implementation_contract": {
+    "contract_ref": "fin01.s3.what_would_change_authority_policy:v1",
+    "field_id": "what_would_change.authority_refs",
+    "single_machine_native_membership_owner": "cell_input.authority_refs",
+    "allowed_refs_by_authority_class": {
+      "Evidence": "accepted_evidence_refs",
+      "Numeric": "numeric_refs",
+      "Candidate": "candidate_refs_not_evidence",
+      "Graph": "graph_context_refs_not_evidence"
+    },
+    "provider_request_must_expose_the_exact_closed_field_local_surface": true,
+    "local_validator_must_consume_the_same_policy_instance_or_canonical_projection": true,
+    "output_authority_refs_must_be_a_nonempty_exact_subset": true,
+    "cross_cell_or_outside_surface_refs_allowed": false,
+    "normalization_trim_casefold_fuzzy_match_remap_drop_or_relink_allowed": false,
+    "DELL_or_ticker_specific_branch_allowed": false,
+    "numeric_input_role_after_repair": "scope_and_cannot_support_metadata_only_not_membership_authority",
+    "legacy_numeric_reconstruction_union_allowed": false,
+    "task_claim_link_policy_ref_unchanged": "fin01.s3.task_claim_link_policy:v1",
+    "claim_scope_and_lineage_gates_unchanged": true,
+    "L1_fail_closed_unchanged": true,
+    "blocker_specific_safe_failure": {
+      "failure_code": "s3_owner_grade_WWC_task_authority_invalid",
+      "closed_subtypes": [
+        "authority_refs_not_nonempty_string_array",
+        "authority_ref_outside_current_cell_closed_surface"
+      ],
+      "content_free_telemetry_only": true,
+      "raw_ref_digest_index_arbitrary_key_or_private_reasoning_persisted": false,
+      "complete_WWC_failure_taxonomy_claimed": false
+    }
+  },
+  "rejected_alternatives": [
+    {
+      "alternative": "union_authority_refs_numeric_refs_with_legacy_numeric_input_reconstruction",
+      "reason": "retains_two_membership_owners_and_preserves_future_drift"
+    },
+    {
+      "alternative": "DELL_specific_allowlist_or_captured_output_patch",
+      "reason": "repairs_one_observation_without_repairing_the_shared_contract"
+    },
+    {
+      "alternative": "downgrade_unknown_authority_membership_to_quality_finding",
+      "reason": "authority_and_lineage_membership_is_L1_hard_integrity"
+    },
+    {
+      "alternative": "require_WWC_to_reference_only_prior_Fact_ids",
+      "reason": "changes_task_semantics_and_lineage_beyond_the_current_blocker"
+    },
+    {
+      "alternative": "redesign_deterministic_task_identity_complete_WWC_taxonomy_or_cross_stage_identity",
+      "reason": "belongs_to_the_already_deferred_later_sequence"
+    }
+  ],
+  "implementation_acceptance": {
+    "shared_policy_positive_matrix": [
+      "Evidence_exact_subset",
+      "Numeric_exact_subset_including_the_six_R3_refs",
+      "Candidate_exact_subset",
+      "Graph_exact_subset",
+      "mixed_current_cell_exact_subset"
+    ],
+    "negative_matrix": [
+      "non_array_empty_blank_or_non_string_ref",
+      "outside_current_cell_ref",
+      "cross_cell_ref",
+      "numeric_ref_present_only_in_legacy_numeric_input",
+      "normalization_or_fuzzy_variant"
+    ],
+    "historical_R3_failure_and_capture_immutable": true,
+    "fake_provider_and_contract_regression_required": true,
+    "fresh_agent_proof_admission_and_exact_live_require_later_separate_authorities": true
+  },
+  "sequence_boundary": {
+    "current_sequence": "RC_P36_060_minimum_shared_WWC_authority_policy_only",
+    "deferred_to_S4_T10_to_S5": [
+      "deterministic_locally_assembled_task_identity",
+      "complete_typed_WWC_failure_taxonomy"
+    ],
+    "deferred_to_S5_or_later": [
+      "cross_stage_unified_claim_task_identity_redesign"
+    ]
+  },
+  "observed_counts": {
+    "real_model_calls": 0,
+    "real_provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_Artifacts": 0,
+    "paired_comparisons": 0,
+    "Human_Reviews": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_060": "root_cause_disposed_minimum_shared_WWC_authority_policy_selected_implementation_pending",
+    "S4_T05": "blocked_pending_separately_authorized_zero_call_implementation",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "S5": "blocked_by_S4",
+    "release_admission": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S4-T05-DELL-WWC-NUMERIC-AUTHORITY-SURFACE-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

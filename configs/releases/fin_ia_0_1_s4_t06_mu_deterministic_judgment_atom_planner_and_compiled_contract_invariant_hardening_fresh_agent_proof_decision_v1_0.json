@@ -1,0 +1,216 @@
+{
+  "authority": {
+    "R7_admission_issuance_authorized": false,
+    "R7_exact_live_authorized": false,
+    "changed_family_canaries_authorized": false,
+    "model_provider_network_calls_authorized": false,
+    "proof_step_authorized": true,
+    "user_instruction": "继续"
+  },
+  "decision_id": "S4-T06-MU-DETERMINISTIC-JUDGMENT-ATOM-PLANNER-AND-COMPILED-CONTRACT-INVARIANT-HARDENING-FRESH-AGENT-PROOF-DECISION",
+  "double_prepare": {
+    "clone_execution_counts_after": {
+      "canonical_artifact_versions": 13,
+      "canonical_attempts": 7,
+      "canonical_research_run_versions": 7,
+      "canonical_work_units": 7
+    },
+    "clone_execution_counts_before": {
+      "canonical_artifact_versions": 13,
+      "canonical_attempts": 7,
+      "canonical_research_run_versions": 7,
+      "canonical_work_units": 7
+    },
+    "equal": true,
+    "prepared_payload_digest": "1984d4a75069d92973cec16307ee019c6b0407107746b0c42d69297efa56212a"
+  },
+  "fresh_identity": {
+    "attempt_id": "attempt_fin01_f4705d1ce2ebfa9d01cb98ed",
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_dd094559ce4c0f79d242e852:v1",
+    "evidence_alignment_digest": "92baf3feb394161af33d1d676ed9f61e10cfab9fd91b887547e1e2fc79ffa9e9",
+    "evidence_dispatch_digest": "11ab422af285c052a88504c4a12ed8105d281f2f1a60cf735ca5fa6a6a38d38f",
+    "execution_identity": "fin01-s4-t06-mu-judgment-atom-compiled-contract-final-exact-live-r7",
+    "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+    "preparation_digest": "9d92ccd610a5dca2dcf252eed511b0cf20b1456d5767a8d8bd00ae38de0a7d66",
+    "research_run_id": "research_run_fin01_112b220420c8b54907465112",
+    "role_group_mapping_digest": "d11857d2c3c6d3262a156255bb546996c878e171dddde3d9f30430ba39fb94e0",
+    "work_unit_id": "wu_p02_5_f9068c5b7844123569d0178e"
+  },
+  "future_changed_family_canary_contract": {
+    "automatic_retry": false,
+    "families": [
+      "specialist_fact_atoms",
+      "claim_candidate_atoms",
+      "what_would_change_atoms"
+    ],
+    "full_chain_canary": false,
+    "maximum_calls_per_family": 1,
+    "maximum_total_calls": 3,
+    "provider_hopping": false,
+    "requires_separate_authority": true
+  },
+  "future_success_contract": {
+    "independent_final_artifact_L1_required": true,
+    "logical_artifact_families": 9,
+    "logical_nodes": 6,
+    "owner_acceptance_only_after_L1_pass_and_agent_gain": true,
+    "paired_L1_to_L4_required": true,
+    "provider_calls": 12,
+    "provider_output_captures": 12,
+    "terminal_state": "succeeded"
+  },
+  "hard_boundaries": {
+    "T07_entries": 0,
+    "admissions_consumed": 0,
+    "admissions_issued": 0,
+    "exact_live_runs": 0,
+    "external_tool_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "owner_acceptances": 0,
+    "paired_assessments": 0,
+    "provider_calls": 0,
+    "source_network_calls": 0,
+    "target_canonical_writes": 0,
+    "target_object_writes": 0
+  },
+  "implementation_reaudit": {
+    "compiled_contract_ref": "fin01.s4.deterministic_judgment_atom_planner_and_compiled_contract_invariants:v1",
+    "exact_code_bindings": {
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py": "0515af6c07154e813fe481dbf2db4461abebd8934afa9a413a4cab89921eb798",
+      "apps/workbench/backend/application/bounded_agent_executor.py": "528102ec26ec08c9b023586aa1443825bed56a8b6b9cfbf5ce917a55831a7aa7",
+      "apps/workbench/backend/application/deterministic_judgment_atom_contract.py": "98e1b17d1e0ca555d2ee59ca0435d0658f1d703d23731239d9c863ff18ecc1cf",
+      "tests/contract/test_fin_0_1_s4_t06_mu_deterministic_judgment_atom_planner_compiled_contract_implementation.py": "8ec73a553d9d7dd73ae5e5cf4b22e5678b07056c5ff31786213ee7c49b382e88"
+    },
+    "implementation_sha256": "8641492cdd484e7e96aef76a69553cb08ffb6268fe1869b2d010684f51fe6ad7"
+  },
+  "independent_fixture_reproof": {
+    "R6_capture_v2_rejected_by_new_atom_wire": true,
+    "arbitrary_provider_narrative_fail_closed": true,
+    "candidate_permutation_stable": true,
+    "compiled_contract_ref": "fin01.s4.deterministic_judgment_atom_planner_and_compiled_contract_invariants:v1",
+    "material_numeric_value_rendered_only_from_bound_alias": true,
+    "mixed_scope_leading_candidate_rejected": true,
+    "multibyte_prompt_not_priced_as_utf8_bytes": true,
+    "post_provider_fault_preserves_capture": true,
+    "single_policy_generated_surface_count": 10,
+    "three_case_positive_nodes_callbacks_captures_artifacts": {
+      "DELL": [
+        6,
+        12,
+        12,
+        9
+      ],
+      "MU": [
+        6,
+        12,
+        12,
+        9
+      ],
+      "NVDA": [
+        6,
+        12,
+        12,
+        9
+      ]
+    },
+    "unknown_calendar_alias_fail_closed": true,
+    "unknown_cross_case_alias_fail_closed": true,
+    "valid_lower_priority_candidate_selected": true
+  },
+  "next_action": "S4-T06-MU-CHANGED-CONTRACT-FAMILY-SINGLE-NODE-NATURAL-OUTPUT-CANARIES-AUTHORITY-DECISION",
+  "next_action_authorized": false,
+  "proof_generator": {
+    "independent_invocations": 2,
+    "independent_outputs_equal": true,
+    "ref": "scripts/releases/prepare_fin_ia_0_1_s4_t06_mu_judgment_atom_compiled_contract_fresh_proof.py",
+    "sha256": "665c8921f0209ad0b04a7322841110e967e94a92584d37e1502646f6641542e1"
+  },
+  "prospective_R7_admission": {
+    "compiled_contract_bound": true,
+    "consumed": false,
+    "digest": "07c25f81095b8c82f75bfc320a3313976a093f5baf39754966f3b720858d18ed",
+    "execution_started": false,
+    "issued": false,
+    "payload": {
+      "admission_id": "fin01-s4-t06-mu-judgment-atom-compiled-contract-fresh-exact-admission-r7",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "as_of": "2026-07-26T00:00:00Z",
+      "base_url": "https://api.deepseek.com/beta",
+      "case_delivery_identity_policy_ref": "fin01.s4.case_delivery_identity_current_case_aware_provider_boundary:v2",
+      "case_id": "case_ec7da8015386e7bfeda92c61",
+      "case_numeric_authority_policy_ref": "fin01.s4.case_numeric_authority_projection_and_deterministic_rendering:v1",
+      "case_version": 1,
+      "claim_fact_link_policy_ref": "fin01.s3.claim_fact_link_policy:v1",
+      "company": "MU",
+      "execution_enabled": true,
+      "execution_mode": "exact_live_s4_mu_judgment_atom_compiled_contract_final_r7",
+      "execution_profile_version_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+      "external_tool_calls_allowed": false,
+      "input_cache_hit_usd_per_million": 0.003625,
+      "input_cache_miss_usd_per_million": 0.435,
+      "input_contract_ref": "fin01.s3.bounded_agent_three_cell_input:v1",
+      "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+      "judgment_atom_compiled_contract_ref": "fin01.s4.deterministic_judgment_atom_planner_and_compiled_contract_invariants:v1",
+      "lead_max_output_tokens": 1800,
+      "live_business_case_head_writes_allowed": false,
+      "max_network_calls": 12,
+      "max_provider_calls": 12,
+      "max_semantic_model_calls": 12,
+      "max_total_cost_usd": 0.1,
+      "max_transport_attempts_per_call": 1,
+      "maximum_cell_count": 3,
+      "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+      "model": "deepseek-v4-pro",
+      "model_ref": "deepseek:deepseek-v4-pro",
+      "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+      "output_usd_per_million": 0.87,
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "provider": "deepseek",
+      "provider_output_capture_policy_ref": "fin01.runtime.provider_interaction_audit_capture:v2",
+      "reasoning_effort": "none",
+      "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v7",
+      "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+      "retry_budget": 0,
+      "scoped_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+      "source_network_calls_allowed": false,
+      "specialist_max_output_tokens": 4200,
+      "task_claim_link_policy_ref": "fin01.s3.task_claim_link_policy:v1",
+      "timeout_seconds": 120,
+      "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v8",
+      "verifier_max_output_tokens": 1000,
+      "writer_max_output_tokens": 1400,
+      "wwc_judgment_atom_policy_ref": "fin01.s4.specialist_WWC_judgment_atom_deterministic_temporal_authority:v2"
+    },
+    "prospective_admission_file": "configs/releases/fin_ia_0_1_s4_t06_mu_deterministic_judgment_atom_planner_and_compiled_contract_invariant_hardening_fresh_exact_admission_r7.json",
+    "prospective_admission_file_absent_at_proof": true
+  },
+  "recorded_at": "2026-07-30T16:02:52+08:00",
+  "schema_version": "fin_ia_0_1_s4_t06_mu_deterministic_judgment_atom_planner_compiled_contract_fresh_agent_proof_decision_v1_0",
+  "source_refs": {
+    "canonical_preparation": "configs/releases/fin_ia_0_1_s4_t06_mu_canonical_case_surface_and_fresh_exact_admission_preparation_zero_call_proof_v1_0.json",
+    "immutable_R6_failure": "configs/releases/fin_ia_0_1_s4_t06_mu_temporal_authority_terminal_result_r6_exact_live_execution_failure_result_v1_0.json",
+    "immutable_consumed_R6_admission": "configs/releases/fin_ia_0_1_s4_t06_mu_action_planning_temporal_authority_and_capture_v2_terminal_result_materialization_fresh_exact_admission_r6.json",
+    "implementation": "configs/releases/fin_ia_0_1_s4_t06_mu_deterministic_judgment_atom_planner_and_compiled_contract_invariant_hardening_minimum_zero_call_implementation_v1_0.json"
+  },
+  "status": "pass_zero_call_double_disposable_runtime_fresh_proof_changed_family_canaries_not_authorized",
+  "stop_rule": {
+    "R7_admission_and_exact_live_require_later_separate_authority": true,
+    "automatic_R8": false,
+    "changed_family_canaries_require_separate_authority": true,
+    "new_L1_after_future_exact_live_stops_T06_repair_loop": true,
+    "second_structural_implementation_bundle_allowed": false
+  },
+  "target_read_only_audit": {
+    "canonical_database_sha256": "203d6d0615dc1a9a00b8bda560e760454508777bf8af079c4301e43028470d20",
+    "canonical_object_tree_sha256": "d524d754c32e7a5b9f186da703b7ae4d80dd0d929fe35214542c4072b773d292",
+    "logical_snapshot_digest": "3ec10f2eaaba7cf2d55cb31f321fbd0228864c4322730153cf4118b133ada0fb",
+    "target_state_unchanged": true
+  }
+}

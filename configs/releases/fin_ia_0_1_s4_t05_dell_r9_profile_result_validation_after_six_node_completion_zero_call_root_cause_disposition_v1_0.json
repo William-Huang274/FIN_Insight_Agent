@@ -1,0 +1,285 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r9_profile_result_validation_after_six_node_completion_zero_call_root_cause_disposition_v1_0",
+  "decision_id": "S4-T05-DELL-R9-PROFILE-RESULT-VALIDATION-AFTER-SIX-NODE-COMPLETION-ZERO-CALL-ROOT-CAUSE-DISPOSITION-R1",
+  "decided_at": "2026-07-28T05:30:00+08:00",
+  "status": "pass_zero_call_root_cause_disposed_profile_aware_lineage_validation_and_typed_subtype_implementation_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "S4-T05-DELL-R9-PROFILE-RESULT-VALIDATION-AFTER-SIX-NODE-COMPLETION-FIRST-CREDIBLE-FAILURE-ZERO-CALL-ROOT-CAUSE-DISPOSITION-DECISION",
+    "zero_call_code_contract_and_deterministic_fixture_audit_authorized": true,
+    "restricted_provider_output_or_capture_read_authorized": false,
+    "runtime_repair_or_validator_change_authorized": false,
+    "new_admission_model_provider_network_source_or_external_tool_call_authorized": false,
+    "R9_rerun_paired_assessment_Human_review_S4_T06_S5_release_or_production_authorized": false
+  },
+  "source_failure": {
+    "issue_id": "RC-P36-066-s4-R9-profile-result-validation-failure-after-complete-six-node-execution",
+    "result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r9_specialist_validated_segment_union_capacity_exact_live_execution_failure_result_v1_0.json",
+    "result_sha256": "3508fb3d068768e03d430a42b2b3f136a0b2b6d86a4ba401513a9c392e36226a",
+    "admission_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r9_specialist_validated_segment_union_capacity_fresh_exact_admission_r9.json",
+    "admission_file_sha256": "05592e970cd1646a31c43a5e37ed0896eb2733dc818266859dc91c283241bb2c",
+    "research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v3",
+    "canonical_states": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "artifact_count": 0,
+    "completed_logical_nodes": 6,
+    "model_provider_network_calls": [
+      12,
+      12,
+      12
+    ],
+    "all_provider_calls_ok_stop": true,
+    "usage_receipts_restricted_captures": [
+      12,
+      12
+    ],
+    "persisted_lifecycle_phase": "profile_result_validation",
+    "persisted_failure_code": "s3_bounded_profile_result_validation_failed",
+    "persisted_specific_profile_validation_subtype": false,
+    "restricted_R9_text_read_in_this_decision": false,
+    "retry_fallback_replay_relaunch_rerun": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "zero_call_code_audit": {
+    "bounded_executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "bounded_executor_sha256": "a7f4f145f622e720232ba7a4e8a2fecc20e71124fd921d9bcddd73002d77a0de",
+    "research_runtime_ref": "apps/workbench/backend/application/research_runtime.py",
+    "research_runtime_sha256": "592e1255f9c4ef962495b01cb9f8a770ffbf2c8e03999a47ce69b926486c73fb",
+    "s4_case_runtime_ref": "src/sec_agent/s4_case_runtime.py",
+    "s4_case_runtime_sha256": "98ba0973765321b98a12bb092fbb007e7e5657179e1b5d7c0fe6fad6125350a2",
+    "s4_input_builder_lineage_keys": [
+      "S4_T02_case_pack",
+      "S4_T02_method_contract",
+      "S4_T03_runtime_binding",
+      "S4_T04_source_grounded_input",
+      "S4_research_profile_overlay"
+    ],
+    "s4_profile_overlay_required_for_R9": true,
+    "trace_artifact_lineage_source": "locally_compiled_input_pack.lineage",
+    "provider_can_modify_trace_lineage": false,
+    "current_profile_validator_expected_lineage_keys": [
+      "T02_runtime_plan",
+      "T03_evidence_route_plan",
+      "T04_financial_pack",
+      "T05_graph_pack",
+      "T06_judgment_contract",
+      "T07_presentation_contract"
+    ],
+    "current_validator_dispatches_by_S3_or_S4_lineage_family": false,
+    "current_validator_requires_exact_old_S3_key_tuple_for_all_three_cell_results": true,
+    "adapter_artifact_order_and_binding_are_deterministic_before_lineage_gate": true
+  },
+  "deterministic_reconstruction": {
+    "method": "rebuild_R9_profile_v3_S4_lineage_from_public_admission_binding_and_source_pack_then_validate_a_synthetic_content_free_nine_artifact_shape",
+    "provider_output_or_restricted_capture_used": false,
+    "model_provider_network_source_external_tool_calls": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "canonical_writes": 0,
+    "reconstructed_lineage_keys": [
+      "S4_T02_case_pack",
+      "S4_T02_method_contract",
+      "S4_T03_runtime_binding",
+      "S4_T04_source_grounded_input",
+      "S4_research_profile_overlay"
+    ],
+    "current_validator_exception_type": "ValueError",
+    "current_validator_exact_subtype": "s3_bounded_agent_T02_T07_lineage_missing",
+    "reconstruction_reaches_all_earlier_profile_result_gates": true,
+    "reconstruction_failure_is_independent_of_specialist_lead_writer_or_verifier_text": true,
+    "audit_harness_non_business_failures_before_final_reconstruction": [
+      "repository_import_path_not_injected",
+      "uninitialized_runtime_receiver_used"
+    ],
+    "audit_harness_failures_created_business_state_or_calls": false
+  },
+  "root_cause_disposition": {
+    "immediate_failure": "the R9 S4 trace carries the correct five-key S4 lineage including the profile-v3 overlay, but the post-Verifier validator requires the legacy six-key S3 T02-through-T07 lineage tuple",
+    "earliest_faulty_contract": "Fin01ResearchRuntime._validate_s3_three_cell_bounded_agent_result hard-codes one S3 lineage family while build_s4_source_grounded_bounded_agent_input and the trace artifact deterministically emit the S4 lineage family",
+    "structural_root_cause": "artifact lineage validation is selected only by the shared three-cell execution profile and is not dispatched by the actual S3-versus-S4 input lineage contract or research-profile overlay state",
+    "secondary_observability_gap": "the typed post-provider envelope preserves only the generic profile_result_validation code and drops the already content-free validator subtype",
+    "classification": "L1_project_owned_profile_aware_lineage_schema_and_typed_validation_subtype_drift",
+    "model_instruction_noncompliance_established": false,
+    "provider_transport_credential_network_or_source_failure": false,
+    "R9_provider_output_field_fault_established": false,
+    "R7_historical_failure_reclassified": false,
+    "R7_consistency_note": "R7 is consistent with the same reachable validator drift but its immutable evidence did not persist an exact subtype, so this decision does not rewrite R7 attribution"
+  },
+  "selected_minimum_implementation_contract": {
+    "contract_ref": "fin01.bounded_agent.profile_aware_artifact_lineage_validation:v1",
+    "scope": "locally compiled bounded-agent input lineage, trace Artifact projection, post-Verifier profile-result validation, and safe typed failure subtype only",
+    "lineage_family_dispatch": {
+      "legacy_S3_without_s4_case_runtime": {
+        "exact_keys": [
+          "T02_runtime_plan",
+          "T03_evidence_route_plan",
+          "T04_financial_pack",
+          "T05_graph_pack",
+          "T06_judgment_contract",
+          "T07_presentation_contract"
+        ],
+        "historical_contract_unchanged": true
+      },
+      "S4_base_case_runtime_without_overlay": {
+        "exact_keys": [
+          "S4_T02_case_pack",
+          "S4_T02_method_contract",
+          "S4_T03_runtime_binding",
+          "S4_T04_source_grounded_input"
+        ]
+      },
+      "S4_versioned_research_profile_with_overlay": {
+        "exact_keys": [
+          "S4_T02_case_pack",
+          "S4_T02_method_contract",
+          "S4_T03_runtime_binding",
+          "S4_T04_source_grounded_input",
+          "S4_research_profile_overlay"
+        ],
+        "overlay_key_required_iff_effective_profile_differs_from_base_binding": true
+      }
+    },
+    "deterministic_projection_and_validation": {
+      "shared_policy_generates_expected_lineage_family_and_keys": true,
+      "manifest_stamps_lineage_contract_ref_and_canonical_lineage_digest_locally": true,
+      "trace_lineage_digest_must_equal_manifest_lineage_digest": true,
+      "S4_runtime_binding_method_contract_and_research_profile_refs_and_digests_must_match_lineage": true,
+      "unknown_missing_extra_duplicate_or_cross_family_lineage_is_hard_failure": true,
+      "Provider_never_selects_or_emits_lineage_contract_keys_or_digests": true
+    },
+    "typed_safe_failure_subtype": {
+      "profile_validation_failures_use_allowlisted_content_free_subtypes": true,
+      "required_safe_fields": [
+        "validation_contract_ref",
+        "validation_subtype",
+        "artifact_type",
+        "lineage_family",
+        "raw_output_persisted",
+        "private_reasoning_persisted",
+        "credential_persisted",
+        "stack_persisted"
+      ],
+      "allowlisted_subtypes": [
+        "bounded_agent_profile_lineage_contract_mismatch",
+        "bounded_agent_profile_lineage_digest_mismatch",
+        "bounded_agent_profile_lineage_overlay_mismatch"
+      ],
+      "raw_exception_message_field_value_provider_text_or_stack_persisted": false,
+      "existing_usage_receipts_captures_and_completed_node_receipts_preserved": true
+    },
+    "terminal_semantics": {
+      "lineage_integrity_remains_L1_hard_fail_closed": true,
+      "existing_semantic_authority_identity_financial_and_Verifier_gates_weakened": false,
+      "historical_R9_admission_result_or_restricted_capture_rewritten": false,
+      "automatic_normalization_fallback_retry_or_rerun": false,
+      "new_Specialist_Lead_Writer_or_Verifier_transport_version_required": false
+    }
+  },
+  "minimum_implementation_acceptance": {
+    "current_unmodified_R9_profile_v3_reconstruction_reproduces_s3_bounded_agent_T02_T07_lineage_missing": true,
+    "legacy_S3_exact_T02_T07_lineage_fixture_still_passes": true,
+    "S4_base_and_profile_v2_v3_lineage_families_have_positive_fixtures": true,
+    "S4_profile_v3_requires_and_validates_S4_research_profile_overlay": true,
+    "missing_extra_wrong_family_wrong_digest_and_overlay_mismatch_each_fail_with_typed_safe_subtype": true,
+    "full_fake_S4_chain_passes_executor_adapter_artifact_binding_and_profile_validation_with_6_nodes_12_callbacks_and_9_Artifacts": true,
+    "post_verifier_lineage_fault_fixture_preserves_12_usage_receipts_12_restricted_captures_6_completed_node_receipts_and_0_business_Artifacts": true,
+    "raw_provider_text_private_reasoning_credentials_stack_and_unbounded_exception_message_absent": true,
+    "model_provider_network_source_external_tool_and_canonical_business_writes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "historical_S3_S4_admissions_and_failed_runs_remain_immutable": true,
+    "fresh_agent_proof_and_any_future_exact_live_require_separate_decisions": true
+  },
+  "rejected_and_deferred_alternatives": [
+    {
+      "option": "delete_the_lineage_gate_or_accept_any_mapping_for_S4",
+      "decision": "rejected",
+      "reason": "lineage is an L1 traceability and research-integrity contract, not a presentation preference"
+    },
+    {
+      "option": "rewrite_the_S4_trace_to_fake_legacy_S3_T02_T07_keys",
+      "decision": "rejected",
+      "reason": "that would erase the actual S4 case-pack method binding source-pack and research-profile provenance"
+    },
+    {
+      "option": "add_a_DELL_R9_specific_bypass_or_company_branch",
+      "decision": "rejected",
+      "reason": "the defect is a general S3-versus-S4 lineage-family dispatch mismatch"
+    },
+    {
+      "option": "inspect_restricted_R9_provider_text_or_patch_a_model_output_field",
+      "decision": "rejected_as_unnecessary_and_unauthorized",
+      "reason": "trace lineage is generated locally and the exact failure reproduces without any Provider output"
+    },
+    {
+      "option": "downgrade_lineage_mismatch_to_a_layered_quality_finding",
+      "decision": "rejected",
+      "reason": "wrong or ambiguous provenance must remain a hard integrity failure"
+    },
+    {
+      "option": "atomize_dependency_conflict_Writer_Verifier_or_redesign_all_node_outputs_in_T05",
+      "decision": "deferred_to_S4_T10_to_S5",
+      "reason": "those improvements do not own the current post-Verifier lineage blocker"
+    }
+  ],
+  "R9_and_sequence_disposition": {
+    "R9_admission": "consumed_immutable_not_rerunnable",
+    "R9_failure_result": "immutable",
+    "R9_second_execution_allowed": false,
+    "RC_P36_064_status": "closed_live_positive_observability_through_post_verifier_profile_validation_failure",
+    "RC_P36_065_status": "closed_live_path_positive_evidence_before_new_downstream_failure",
+    "RC_P36_066_status": "root_cause_disposed_profile_aware_lineage_validation_and_typed_subtype_implementation_pending",
+    "DELL_R2": "not_proven",
+    "paired_assessment": "not_authorized_after_failed_R9",
+    "S4_T06": "not_entered",
+    "deferred_sequence_items": [
+      "dependency_and_conflict_deterministic_assembly",
+      "Writer_and_Verifier_atomization",
+      "general_cross_node_judgment_atom_framework",
+      "cross_provider_strict_server_side_schema_matrix"
+    ]
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "restricted_capture_reads": 0,
+    "runtime_code_changes": 0,
+    "new_admissions": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_assessments": 0,
+    "Human_Reviews": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_066": "root_cause_disposed_profile_aware_lineage_validation_and_typed_subtype_implementation_pending",
+    "S4_T05": "blocked_pending_separately_authorized_minimum_zero_call_implementation",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "S5": "blocked_by_S4",
+    "release_admission": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S4-T05-DELL-R9-PROFILE-AWARE-ARTIFACT-LINEAGE-VALIDATION-AND-TYPED-SUBTYPE-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

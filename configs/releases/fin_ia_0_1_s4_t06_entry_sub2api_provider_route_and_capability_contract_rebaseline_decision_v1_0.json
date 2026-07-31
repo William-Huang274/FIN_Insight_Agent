@@ -1,0 +1,104 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_entry_sub2api_provider_route_and_capability_contract_rebaseline_decision_v1_0",
+  "recorded_at": "2026-07-28T23:17:07+08:00",
+  "work_item_id": "S4-T06-ENTRY-SUB2API-PROVIDER-ROUTE-AND-CAPABILITY-CONTRACT-REBASELINE-DECISION",
+  "status": "completed_route_observed_capability_partial_plain_http_credential_transport_blocked",
+  "decision_label": "bind_user_supplied_sub2api_route_but_block_credentialed_calls_over_plain_http",
+  "input_evidence": {
+    "source_type": "user_supplied_connection_example_screenshot",
+    "source_filename": "codex-clipboard-13bf0784-2a39-46b4-a67c-6b2f7fb22644.png",
+    "source_sha256": "a99f42b35ed04be24ebac9015ef96fdffb79ee1bbc8344ab95aa59be13fda161",
+    "source_dimensions_px": [
+      1314,
+      924
+    ],
+    "source_copied_into_repository": false,
+    "credential_material_present_in_source": false
+  },
+  "observed_connection_contract": {
+    "configuration_surface": "Codex_compatibility_mode_config_toml",
+    "provider_label": "OpenAI",
+    "provider_label_is_compatibility_alias_not_official_provider_proof": true,
+    "base_url": "http://43.135.174.27:8080",
+    "base_url_includes_v1_path": false,
+    "wire_api": "responses",
+    "requires_openai_auth": true,
+    "advertised_model_alias": "gpt-5.5",
+    "advertised_review_model_alias": "gpt-5.5",
+    "reasoning_effort_example": "xhigh",
+    "disable_response_storage_example": true
+  },
+  "derived_project_route_contract": {
+    "provider_family": "self_hosted_Sub2API",
+    "api_dialect": "OpenAI_compatible_Responses_advertised_not_live_proven",
+    "base_url": "http://43.135.174.27:8080",
+    "endpoint_path": "/responses",
+    "candidate_request_url": "http://43.135.174.27:8080/responses",
+    "append_v1_to_base_url": false,
+    "candidate_model_alias": "gpt-5.5",
+    "prior_official_model_alias_gpt_5_6_sol_applies": false,
+    "project_credential_env_name": "SUB2API_API_KEY",
+    "reuse_official_OPENAI_API_KEY_for_Sub2API": false
+  },
+  "capability_classification": {
+    "responses_wire_advertised_by_operator_configuration": true,
+    "responses_endpoint_live_reachable": "not_evaluated",
+    "authentication_accepted": "not_evaluated",
+    "models_endpoint_supported": "not_advertised_not_evaluated",
+    "chat_completions_supported": "not_advertised_not_evaluated",
+    "gpt_5_5_alias_resolves_to_upstream_model": "not_evaluated",
+    "strict_json_schema_supported": "not_advertised_not_evaluated",
+    "reasoning_effort_xhigh_supported_by_upstream": "not_evaluated",
+    "response_storage_disable_semantics_supported": "advertised_for_Codex_not_live_evaluated",
+    "rate_quota_and_cost_state": "not_evaluated"
+  },
+  "transport_security_gate": {
+    "scheme": "http",
+    "remote_host_is_loopback": false,
+    "authentication_required": true,
+    "credential_confidentiality_in_transit_established": false,
+    "credentialed_request_admissible": false,
+    "accepted_future_transport_options": [
+      "operator_supplied_https_base_url_with_valid_TLS",
+      "encrypted_tunnel_terminating_on_local_loopback_with_a_local_base_url"
+    ],
+    "plain_http_public_ip_override_authorized": false
+  },
+  "zero_call_execution_accounting": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "credential_reads": 0,
+    "credential_writes": 0,
+    "runtime_or_runner_changes": 0,
+    "probe_or_canary_issued": false
+  },
+  "issue_disposition": {
+    "RC_P36_070": "Sub2API_gpt_5_5_responses_and_strict_schema_live_capability_unproven",
+    "RC_P36_071": "closed_official_OpenAI_credential_scope_only_not_Sub2API_evidence",
+    "RC_P36_072": "superseded_official_endpoint_only_not_applicable_to_Sub2API",
+    "RC_P36_073": "route_source_bound_runner_and_authority_implementation_blocked_by_secure_transport",
+    "RC_P36_074": "open_external_plain_HTTP_authenticated_Sub2API_transport_security_boundary"
+  },
+  "program_disposition": {
+    "route_rebaseline_completed": true,
+    "runtime_route_implementation_authorized": false,
+    "credential_binding_authorized": false,
+    "metadata_probe_authorized": false,
+    "strict_schema_canary_authorized": false,
+    "S4_T06": "not_entered",
+    "MU_T06": "blocked",
+    "DELL_R12": "forbidden",
+    "S5_release_production": "blocked"
+  },
+  "next_action": "S4-T06-ENTRY-SUB2API-SECURE-TRANSPORT-ENDPOINT-CONFIRMATION",
+  "next_action_authorized": false,
+  "next_action_preconditions": {
+    "user_supplies_https_base_url_or_local_encrypted_tunnel_base_url": true,
+    "do_not_send_any_credential_to_current_plain_http_public_ip": true,
+    "do_not_reuse_official_OPENAI_API_KEY": true,
+    "preserve_candidate_model_alias_as_gpt_5_5_until_live_metadata_or_operator_contract_proves_otherwise": true,
+    "no_provider_call_before_new_authority": true
+  },
+  "known_boundary": "The screenshot is sufficient to bind the advertised route shape and gpt-5.5 alias, but it is not live capability evidence. Because the route is authenticated plain HTTP to a non-loopback public IP, no credentialed probe or canary is admissible until HTTPS or an encrypted local tunnel endpoint is confirmed."
+}

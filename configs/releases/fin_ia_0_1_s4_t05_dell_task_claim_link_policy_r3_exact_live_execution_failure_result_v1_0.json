@@ -1,0 +1,162 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_task_claim_link_policy_r3_exact_live_execution_failure_result_v1_0",
+  "result_id": "S4-T05-DELL-TASK-CLAIM-LINK-POLICY-R3-EXACT-LIVE-EXECUTION-FAILURE-R1",
+  "recorded_at": "2026-07-27T02:56:01+08:00",
+  "status": "terminal_failed_WWC_numeric_authority_surface_mismatch_admission_consumed_no_retry",
+  "authority_decision_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_task_claim_link_policy_r3_exact_live_execution_and_paired_assessment_authority_decision_v1_0.json",
+  "authority_decision_sha256": "816e78ee50f84f6e0dbffe47aa23994de7f4a710fcc7d8b03abbc7aaaed6d7ec",
+  "admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_task_claim_link_policy_fresh_exact_admission_r3.json",
+    "admission_file_sha256": "244722f28cc96d217e39c42265561c57b0a500ae4b5c180f5256d4a23959d880",
+    "admission_id": "fin01-s4-t05-dell-task-claim-link-policy-fresh-exact-admission-r3",
+    "admission_digest": "4be4fa99479da78547bfc9266c708478aa524d459db97c7341799b2724a7f29d",
+    "issued": true,
+    "consumed": true,
+    "execution_started": true,
+    "second_R3_execution_authorized": false
+  },
+  "identity": {
+    "case_id": "case_7b5c2042bef3825b8df71a96",
+    "case_version": 1,
+    "as_of": "2026-07-26T00:00:00Z",
+    "input_digest": "3499c03470c5bec5168dc87a2974802869da389f2ef588f41021731828d09e96",
+    "preparation_digest": "be99a4cdcd8ddaf2ec7c59dfbfd341e4313ef4a9ff7d11f0798494561ab67b05",
+    "work_unit_id": "wu_p02_5_4e861814210bbc43c8632e22",
+    "attempt_id": "attempt_fin01_ed9ba7af7a2805527b0d7cb1",
+    "research_run_id": "research_run_fin01_8905466e65d6259e54d42f6c"
+  },
+  "terminal_result": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:domain_specialist:demand_authenticity_and_sustainability",
+    "artifact_count": 0,
+    "event_count": 7,
+    "orphaned_run": false,
+    "runner_exit_code": 0,
+    "typed_unhandled_failure_code": null
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "completed_provider_responses": 3,
+    "model_calls": 3,
+    "provider_calls": 3,
+    "execution_network_calls": 3,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "input_tokens": 12851,
+    "output_tokens": 1857,
+    "total_tokens": 14708,
+    "estimated_cost_usd": 0.00543886,
+    "provider_latency_ms_sum": 23913,
+    "finish_reason_stop_count": 3,
+    "provider_output_capture_count": 3,
+    "restricted_readback_count": 3,
+    "raw_provider_body_in_result": false,
+    "assistant_output_text_in_result": false
+  },
+  "live_policy_observation": {
+    "RC_P36_059_recurred": false,
+    "task_claim_link_policy_ref": "fin01.s3.task_claim_link_policy:v1",
+    "first_cell_policy_live_path_reached": true,
+    "returned_claim_aliases": [
+      "Q001",
+      "Q002"
+    ],
+    "local_expanded_claim_ids": [
+      "claim_1",
+      "claim_2"
+    ],
+    "unknown_claim_alias_count": 0,
+    "raw_claim_id_in_provider_task_output_count": 0,
+    "specialist_segments_called": 3,
+    "research_lead_called": false,
+    "memo_writer_called": false,
+    "verifier_called": false
+  },
+  "first_credible_failure": {
+    "failure_code": "s3_bounded_segmented_specialist_contract_invalid:demand_authenticity_and_sustainability:actionable_what_would_change_tasks:s3_owner_grade_wwc_task_incomplete",
+    "program_cell_id": "demand_authenticity_and_sustainability",
+    "segment_id": "actionable_what_would_change_tasks",
+    "layer": "L1_authority_and_lineage_hard_integrity",
+    "returned_task_count": 2,
+    "shape_complete_task_count": 2,
+    "known_claim_link_count": 2,
+    "unknown_claim_link_count": 0,
+    "first_task_id": "task_weaker_conversion",
+    "first_task_numeric_authority_ref_count": 6,
+    "first_task_unknown_under_fact_support_policy_count": 0,
+    "first_task_unknown_under_WWC_validator_count": 6,
+    "second_task_evidence_authority_ref_count": 2,
+    "second_task_unknown_authority_ref_count": 0,
+    "validator_disposition": "correctly_fail_closed_against_its_implemented_surface_but_implemented_surface_is_incomplete",
+    "direct_response_fault": null
+  },
+  "authority_surface_replay": {
+    "exact_input_object_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/canonical-runtime/objects/fin01/s4/exact-input-heads/61/29/61293b24558b856f67c7826c7218852e064c47f5e69c607f5a0d291ae9221954.json",
+    "exact_input_object_sha256": "61293b24558b856f67c7826c7218852e064c47f5e69c607f5a0d291ae9221954",
+    "cell_authority_refs": {
+      "accepted_evidence_ref_count": 4,
+      "numeric_ref_count": 6,
+      "candidate_ref_count": 0,
+      "graph_context_ref_count": 4
+    },
+    "fact_support_authority_policy_numeric_ref_count": 6,
+    "legacy_WWC_owner_grade_authority_surface_numeric_ref_count": 0,
+    "missing_from_WWC_surface": [
+      "s4_dell_numeric_ai_server_backlog_01_fca0ac1b25e9",
+      "s4_dell_numeric_ai_server_backlog_02_56c43b0a5800",
+      "s4_dell_numeric_ai_server_orders_01_784295ebd586",
+      "s4_dell_numeric_ai_server_orders_02_fad88d8990cc",
+      "s4_dell_numeric_ai_server_revenue_01_fbfb3fa7ad5d",
+      "s4_dell_numeric_ai_server_shipments_01_c3664ffec490"
+    ],
+    "mismatch": "FactSupportAuthorityPolicy_reads_authority_refs.numeric_refs_but_WWC_validator_reconstructs_numeric_authority_only_from_numeric_input_selected_rows_and_derived_metrics"
+  },
+  "root_cause_classification": {
+    "closed_issue_id": "RC-P36-059-s4-WWC-task-to-claim-open-identity-surface",
+    "closed_issue_status": "closed_live_path_positive_evidence_before_new_owned_failure",
+    "new_issue_id": "RC-P36-060-s4-WWC-numeric-authority-surface-drift",
+    "new_issue_status": "open_zero_call_root_cause_disposition_pending",
+    "immediate_failure_owner": "project_runtime_validator_authority_surface",
+    "model_or_provider_fault": false,
+    "not_a_task_claim_alias_failure": true,
+    "not_a_role_group_mapping_recurrence": true,
+    "not_a_source_data_credential_or_transport_failure": true,
+    "not_safely_downgradable_to_L2_or_L3": true,
+    "repair_not_authorized": true,
+    "sequence_boundary": "current_T05_blocker_only; deterministic_task_identity_complete_WWC_taxonomy_and_cross_stage_identity_redesign_remain_deferred"
+  },
+  "stop_contract_observation": {
+    "first_credible_failure_stopped_chain": true,
+    "automatic_retry_count": 0,
+    "fallback_count": 0,
+    "replay_count": 0,
+    "relaunch_count": 0,
+    "rerun_count": 0,
+    "monitor_mutations": 0,
+    "signals_sent": 0,
+    "paired_assessment_performed": false,
+    "paired_assessment_allowed_after_failure": false,
+    "DELL_R2_proven": false
+  },
+  "runtime_evidence": {
+    "project_os_preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_task_claim_link_policy_r3_r1_project_os_preflight.json",
+    "project_os_preflight_sha256": "8178382eece3fc0bb744adf7c18ba338513b4678770f6a037646600c837d05d4",
+    "preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_task_claim_link_policy_r3_r1_live_execution_preflight.json",
+    "preflight_sha256": "f5545a7f5e91a441e720c44ade8dc178927340eb9d8bfa4257dfd9eb846f94ec",
+    "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_task_claim_link_policy_r3_r1_live_execution_result.json",
+    "runtime_result_sha256": "433e2771fd3ddd8610010d468cab87b5f3bc3726d71b45882d0a6f39138f3bcd",
+    "terminal_inspection_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_task_claim_link_policy_r3_r1_live_execution_terminal_inspection.json",
+    "terminal_inspection_sha256": "f43ed156256738813a1e4eda3e939f4774832fae3b908cfbce5f524e0d823cc7",
+    "launch_receipt_ref": ".codex_runtime/fin01-s4-t05-dell-task-claim-link-policy-r3-supervision-r1/launch_receipt.json",
+    "launch_receipt_sha256": "af3f21ac1511849a3fde1921455fc7201b264654f6121220045c8deef7b464f0",
+    "exit_receipt_ref": ".codex_runtime/fin01-s4-t05-dell-task-claim-link-policy-r3-supervision-r1/exit_receipt.json",
+    "exit_receipt_sha256": "d05e34b0c9f8a2e7ba85d330a0169323e336fce1dd458cd12766c3fefe8ab394",
+    "facts_capture_object_digest": "b9cea0c3f040ecfbe913dab586629bceb0da4ef1d9c645d301c72a2414ab40e7",
+    "claim_capture_object_digest": "2360eebedab1fd3d25591285267f4f5dbab6e2539c1079c9f2ea69233fa37357",
+    "WWC_capture_object_digest": "2aacefeed0498dfb28d37fd4b259cd2e1eccdd2612175fe44d6db34f3cd7a6c3"
+  },
+  "next_action": "S4-T05-DELL-WWC-NUMERIC-AUTHORITY-SURFACE-ZERO-CALL-ROOT-CAUSE-DISPOSITION-DECISION"
+}

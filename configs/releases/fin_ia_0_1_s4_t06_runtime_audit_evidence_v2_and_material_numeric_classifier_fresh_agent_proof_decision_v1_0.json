@@ -1,0 +1,223 @@
+{
+  "authority": {
+    "R5_admission_issuance_authorized": false,
+    "R5_exact_live_authorized": false,
+    "model_provider_network_calls_authorized": false,
+    "proof_step_authorized": true,
+    "user_instruction": "继续"
+  },
+  "decision_id": "S4-T06-RUNTIME-AUDIT-EVIDENCE-V2-AND-MATERIAL-NUMERIC-CLASSIFIER-FRESH-AGENT-PROOF-DECISION",
+  "double_prepare": {
+    "clone_execution_counts_after": {
+      "canonical_artifact_versions": 13,
+      "canonical_attempts": 5,
+      "canonical_research_run_versions": 5,
+      "canonical_work_units": 5
+    },
+    "clone_execution_counts_before": {
+      "canonical_artifact_versions": 13,
+      "canonical_attempts": 5,
+      "canonical_research_run_versions": 5,
+      "canonical_work_units": 5
+    },
+    "equal": true,
+    "prepared_payload_digest": "9c6a42153c85a26b208073a5540d99b9a689174c4f3c304efb115f970405740e"
+  },
+  "fresh_identity": {
+    "attempt_id": "attempt_fin01_5677c30ed62a0e051441d087",
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_dd094559ce4c0f79d242e852:v1",
+    "evidence_alignment_digest": "92baf3feb394161af33d1d676ed9f61e10cfab9fd91b887547e1e2fc79ffa9e9",
+    "evidence_dispatch_digest": "03e4b532ee55937b7c50f1e67b737d1570783d644da7df899c96b73804828045",
+    "execution_identity": "fin01-s4-t06-mu-runtime-audit-evidence-v2-material-numeric-classifier-exact-live-r5",
+    "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+    "preparation_digest": "17d086a465920563439f2172ad4f83376cb72c4b6ea1ae425d3ef972c80b3add",
+    "research_run_id": "research_run_fin01_0b20402c2f8d5e5674626760",
+    "role_group_mapping_digest": "d11857d2c3c6d3262a156255bb546996c878e171dddde3d9f30430ba39fb94e0",
+    "work_unit_id": "wu_p02_5_9bc50ffc937ad6ff1daf1069"
+  },
+  "future_success_contract": {
+    "independent_final_artifact_L1_required": true,
+    "logical_artifact_families": 9,
+    "logical_nodes": 6,
+    "owner_acceptance_only_after_L1_pass_and_agent_gain": true,
+    "paired_L1_to_L4_required": true,
+    "provider_calls": 12,
+    "provider_output_captures": 12,
+    "terminal_state": "succeeded"
+  },
+  "hard_boundaries": {
+    "T07_entries": 0,
+    "admissions_consumed": 0,
+    "admissions_issued": 0,
+    "external_tool_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "owner_acceptances": 0,
+    "paired_assessments": 0,
+    "provider_calls": 0,
+    "source_network_calls": 0,
+    "target_canonical_writes": 0,
+    "target_object_writes": 0
+  },
+  "implementation_reaudit": {
+    "capture_v2_ref": "fin01.runtime.provider_interaction_audit_capture:v2",
+    "current_case_identity_v2_ref": "fin01.s4.case_delivery_identity_current_case_aware_provider_boundary:v2",
+    "exact_code_bindings": {
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py": "daafec9c0d7f70abfca3871600fc6ad718e694117b2b753e03d598f5de787080",
+      "apps/workbench/backend/application/bounded_agent_executor.py": "0b0b5ae05181be1dd4f2443ff17a51e24e301b9336e961ea189cfd3a4e5a8db8",
+      "src/sec_agent/canonical_runtime/facade.py": "21b948f9f21da6aa3e99764f390e13460896d62c0d256ef8f4ed185192e26220",
+      "src/sec_agent/canonical_runtime/failure_observation_policy.py": "d18da960128406c5f30fa3063705aec2d59a985de61add4a7841f152fd9ee813"
+    },
+    "implementation_sha256": "3cd1d82013ef521789657764845e609bd5992e08286cf6fe73099bdd9ee2f6ee",
+    "material_numeric_classifier_v2_ref": "fin01.s4.case_numeric_authority_projection_and_deterministic_rendering:v2"
+  },
+  "independent_fixture_reproof": {
+    "R4_safe_paths": [
+      "$.fact_layer[0].statement",
+      "$.explanation_layer[0]"
+    ],
+    "R4_semantic_class": "reporting_period_label",
+    "R4_terminal": false,
+    "capture_v2_atomic_replay_and_nonpromotion": true,
+    "credential_bearing_request_rejected_before_terminal_write": true,
+    "historical_v1_semantics_immutable": true,
+    "material_numeric_semantic_classes_terminal": [
+      "financial_amount",
+      "material_numeric_value",
+      "measurement",
+      "percentage",
+      "unknown_reporting_period_label"
+    ],
+    "three_case_negative_callbacks_captures_artifacts": {
+      "DELL": [
+        1,
+        1,
+        0
+      ],
+      "MU": [
+        1,
+        1,
+        0
+      ],
+      "NVDA": [
+        1,
+        1,
+        0
+      ]
+    },
+    "three_case_positive_nodes_callbacks_captures_artifacts": {
+      "DELL": [
+        6,
+        12,
+        12,
+        9
+      ],
+      "MU": [
+        6,
+        12,
+        12,
+        9
+      ],
+      "NVDA": [
+        6,
+        12,
+        12,
+        9
+      ]
+    }
+  },
+  "next_action": "S4-T06-MU-RUNTIME-AUDIT-EVIDENCE-V2-AND-MATERIAL-NUMERIC-CLASSIFIER-FRESH-EXACT-ADMISSION-R5-AUTHORITY-DECISION",
+  "next_action_authorized": false,
+  "proof_generator": {
+    "independent_invocations": 2,
+    "independent_outputs_equal": true,
+    "ref": "scripts/releases/prepare_fin_ia_0_1_s4_t06_runtime_audit_evidence_v2_and_material_numeric_classifier_fresh_proof.py",
+    "sha256": "8748590027b7da12f8d4d99a20e74c11fcb33524e54bd91a3fb157bb2ed1d126"
+  },
+  "prospective_R5_admission": {
+    "capture_v2_and_numeric_classifier_v2_bound": true,
+    "consumed": false,
+    "current_case_identity_v2_preserved": true,
+    "digest": "3457fded0bd72b4df5d1fd6a1529bf7bfb8055681c388808b5d3e01a5dbbd6e8",
+    "execution_started": false,
+    "issued": false,
+    "payload": {
+      "admission_id": "fin01-s4-t06-mu-runtime-audit-evidence-v2-material-numeric-classifier-fresh-exact-admission-r5",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "as_of": "2026-07-26T00:00:00Z",
+      "base_url": "https://api.deepseek.com/beta",
+      "case_delivery_identity_policy_ref": "fin01.s4.case_delivery_identity_current_case_aware_provider_boundary:v2",
+      "case_id": "case_ec7da8015386e7bfeda92c61",
+      "case_numeric_authority_policy_ref": "fin01.s4.case_numeric_authority_projection_and_deterministic_rendering:v2",
+      "case_version": 1,
+      "claim_fact_link_policy_ref": "fin01.s3.claim_fact_link_policy:v1",
+      "company": "MU",
+      "execution_enabled": true,
+      "execution_mode": "exact_live_s4_mu_runtime_audit_evidence_v2_material_numeric_classifier_r5",
+      "execution_profile_version_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+      "external_tool_calls_allowed": false,
+      "input_cache_hit_usd_per_million": 0.003625,
+      "input_cache_miss_usd_per_million": 0.435,
+      "input_contract_ref": "fin01.s3.bounded_agent_three_cell_input:v1",
+      "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+      "lead_max_output_tokens": 1800,
+      "live_business_case_head_writes_allowed": false,
+      "max_network_calls": 12,
+      "max_provider_calls": 12,
+      "max_semantic_model_calls": 12,
+      "max_total_cost_usd": 0.1,
+      "max_transport_attempts_per_call": 1,
+      "maximum_cell_count": 3,
+      "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+      "model": "deepseek-v4-pro",
+      "model_ref": "deepseek:deepseek-v4-pro",
+      "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+      "output_usd_per_million": 0.87,
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "provider": "deepseek",
+      "provider_output_capture_policy_ref": "fin01.runtime.provider_interaction_audit_capture:v2",
+      "reasoning_effort": "none",
+      "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v7",
+      "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+      "retry_budget": 0,
+      "scoped_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+      "source_network_calls_allowed": false,
+      "specialist_max_output_tokens": 4200,
+      "timeout_seconds": 120,
+      "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+      "verifier_max_output_tokens": 1000,
+      "writer_max_output_tokens": 1400
+    },
+    "prospective_admission_file": "configs/releases/fin_ia_0_1_s4_t06_mu_runtime_audit_evidence_v2_and_material_numeric_classifier_fresh_exact_admission_r5.json",
+    "prospective_admission_file_absent_at_proof": true,
+    "research_lead_v7_preserved": true,
+    "specialist_v7_preserved": true
+  },
+  "recorded_at": "2026-07-30T03:30:00+08:00",
+  "schema_version": "fin_ia_0_1_s4_t06_runtime_audit_evidence_v2_and_material_numeric_classifier_fresh_agent_proof_decision_v1_0",
+  "source_refs": {
+    "canonical_preparation": "configs/releases/fin_ia_0_1_s4_t06_mu_canonical_case_surface_and_fresh_exact_admission_preparation_zero_call_proof_v1_0.json",
+    "immutable_R4_failure": "configs/releases/fin_ia_0_1_s4_t06_mu_current_case_aware_delivery_identity_boundary_r4_exact_live_execution_failure_result_v1_0.json",
+    "immutable_consumed_R4_admission": "configs/releases/fin_ia_0_1_s4_t06_mu_current_case_aware_delivery_identity_boundary_fresh_exact_admission_r4.json",
+    "implementation": "configs/releases/fin_ia_0_1_s4_t06_runtime_audit_evidence_v2_and_material_numeric_classifier_minimum_zero_call_implementation_v1_0.json"
+  },
+  "status": "pass_zero_call_double_disposable_runtime_fresh_proof_R5_admission_not_authorized",
+  "stop_rule": {
+    "R5_admission_requires_separate_authority_decision": true,
+    "R5_exact_live_requires_separate_authority": true,
+    "automatic_R6": false,
+    "first_new_L1_failure_stops_without_R6": true
+  },
+  "target_read_only_audit": {
+    "canonical_database_sha256": "bc59faadf6e7644132529878cb87ca018b5dd6a40d1b6372c4e0d46025f33049",
+    "canonical_object_tree_sha256": "a12dd3287e46076994ae07fb6cde765dc0693655b9ac1554c7dcb2ff18a74be6",
+    "logical_snapshot_digest": "467c1d57ecbeb77d108234ebf792e07800fc426329947c6c5b7611672f939adf",
+    "target_state_unchanged": true
+  }
+}

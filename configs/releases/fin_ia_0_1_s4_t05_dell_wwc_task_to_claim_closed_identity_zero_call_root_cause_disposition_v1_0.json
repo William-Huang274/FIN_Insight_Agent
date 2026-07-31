@@ -1,0 +1,203 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_wwc_task_to_claim_closed_identity_zero_call_root_cause_disposition_v1_0",
+  "decision_id": "S4-T05-DELL-WWC-TASK-TO-CLAIM-CLOSED-IDENTITY-ZERO-CALL-ROOT-CAUSE-DISPOSITION-DECISION",
+  "decided_at": "2026-07-27T00:53:27+08:00",
+  "status": "pass_zero_call_minimum_task_claim_closed_alias_repair_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "这里还是注意s3之前的问题：不要把单任务序列的问题做无限扩展，如果属于下一序列的任务就传递到下一阶段再做",
+    "zero_call_root_cause_disposition_authorized": true,
+    "current_sequence_scope_control_authorized": true,
+    "runtime_code_prompt_schema_validator_or_telemetry_implementation_authorized": false,
+    "fresh_proof_admission_or_third_DELL_execution_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "paired_assessment_Human_review_S4_T06_S5_release_or_production_authorized": false
+  },
+  "source_failure": {
+    "issue_id": "RC-P36-059-s4-WWC-task-to-claim-open-identity-surface",
+    "result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_replacement_exact_r2_execution_failure_result_v1_0.json",
+    "result_sha256": "f77f5fcfe95278dfc25e99f77cec6e673e39e5731b9ecb7c7e0e5e8591efb8bb",
+    "research_run_id": "research_run_fin01_9756044e7d7f23b3ff9fb395",
+    "failure_code": "s3_bounded_segmented_specialist_contract_invalid:bottleneck_counterevidence_and_what_would_change:actionable_what_would_change_tasks:s3_owner_grade_wwc_task_incomplete",
+    "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+    "validated_claim_ids": [
+      "C1",
+      "C2"
+    ],
+    "returned_task_claim_ids": [
+      "C1",
+      "C2",
+      "C3"
+    ],
+    "unknown_task_claim_ids": [
+      "C3"
+    ],
+    "shape_complete_task_count": 3,
+    "direct_model_response_fault_confirmed": true,
+    "project_owned_open_identity_surface_confirmed": true,
+    "current_L1_fail_closed_disposition_correct": true,
+    "RC_P36_058_recurred": false
+  },
+  "root_cause_disposition": {
+    "earliest_owned_surface": "actionable_what_would_change_tasks_provider_visible_claim_link_and_local_exact_expansion_contract",
+    "hard_integrity_failure_confirmed": true,
+    "ordinary_style_quality_or_source_gap": false,
+    "cannot_be_downgraded_to_L2_or_L3": true,
+    "cannot_silently_relink_drop_normalize_or_rewrite": true,
+    "minimum_generalized_repair_selected": true,
+    "DELL_specific_prompt_patch_selected": false,
+    "full_identity_system_redesign_selected": false,
+    "reason": "The current sequence only needs to prevent a WWC task from naming a Claim outside the already validated current-Cell Claim set. A closed request-local alias plus exact local expansion repairs that identity surface without expanding T05 into unrelated task-identity or telemetry programs."
+  },
+  "alternatives": [
+    {
+      "option": "rewrite_C3_to_C1_or_C2_drop_the_third_task_or_relax_the_validator",
+      "decision": "rejected",
+      "reason": "would fabricate lineage or hide a valid L1 failure"
+    },
+    {
+      "option": "add_DELL_or_third_Cell_specific_prompt_examples",
+      "decision": "rejected",
+      "reason": "would create case-specific behavior and would not close the shared identity surface"
+    },
+    {
+      "option": "redesign_all_task_ids_all_failure_subtypes_and_all_cross_stage_identity_now",
+      "decision": "deferred_to_later_sequence",
+      "reason": "these changes are not required to remove the current Task-to-Claim blocker and would repeat the S3 single-task expansion pattern"
+    },
+    {
+      "option": "minimum_shared_TaskClaimLinkPolicy_closed_alias_and_local_exact_expansion",
+      "decision": "selected",
+      "reason": "closes the exact current L1 identity gap while preserving the shared runtime and a bounded T05 implementation surface"
+    }
+  ],
+  "selected_minimum_contract": {
+    "contract_ref": "fin01.s3.task_claim_link_policy:v1",
+    "policy_name": "TaskClaimLinkPolicy",
+    "contract_owner": "shared_specialist_WWC_claim_link_prompt_schema_local_assembler_and_validator",
+    "applies_only_to_segment": "actionable_what_would_change_tasks",
+    "request_local_claim_alias_prefix": "Q",
+    "request_local_claim_alias_examples": [
+      "Q001",
+      "Q002"
+    ],
+    "alias_table_source": "already_validated_current_Cell_owner_grade_claim_cards",
+    "alias_generation": "deterministic_closed_request_local_order_independent_of_provider",
+    "provider_visible_claim_surface": [
+      "claim_alias",
+      "statement",
+      "epistemic_status",
+      "locally_assembled_scope_summary"
+    ],
+    "provider_hidden_claim_identity_surface": [
+      "raw_local_claim_id",
+      "CellScopedResearchRef",
+      "canonical_object_ref",
+      "cross_Cell_claim_ref"
+    ],
+    "provider_response_field": "claim_alias",
+    "local_canonical_output_field": "claim_id",
+    "local_expansion": "expand_only_exact_alias_membership_to_the_original_validated_current_Cell_claim_id_before_existing_task_shape_authority_and_identity_validation",
+    "request_alias_persisted_as_authoritative_identity": false,
+    "task_id_behavior_in_this_slice": "retain_existing_provider_generated_nonblank_unique_within_Cell_validation",
+    "minimum_new_failure_subtype": "task_claim_alias_unknown",
+    "existing_non_claim_task_validation_retained": true,
+    "fuzzy_match_trim_casefold_prefix_guess_nearest_claim_silent_relink_task_drop_or_answer_rewrite_allowed": false,
+    "historical_failed_answer_or_consumed_Run_mutated": false,
+    "capability_binding_required_for_future_admission": true,
+    "one_shared_runtime_preserved": true
+  },
+  "current_sequence_implementation_boundary": {
+    "in_scope": [
+      "typed TaskClaimLinkPolicy contract and capability binding",
+      "WWC prompt schema uses only closed request-local Claim aliases",
+      "local exact alias expansion restores the original current-Cell claim_id",
+      "unknown alias fails closed with content-free task_claim_alias_unknown subtype",
+      "legacy profile behavior and consumed Runs remain immutable",
+      "deterministic positive and adversarial fixtures for the current Claim-link surface"
+    ],
+    "explicit_non_goals": [
+      "local generation or global redesign of task_id",
+      "complete decomposition of every s3_owner_grade_WWC_task_incomplete predicate",
+      "cross-stage task identity migration",
+      "new Artifact schema",
+      "Lead Writer Verifier or Workbench redesign",
+      "new Case-specific Runtime",
+      "DELL-specific fallback",
+      "model tuning prompt example proliferation or provider switch"
+    ],
+    "implementation_authorized_in_this_decision": false,
+    "fresh_proof_or_paid_execution_authorized_in_this_decision": false
+  },
+  "deferred_cross_sequence_items": [
+    {
+      "item": "deterministic_locally_assembled_task_identity",
+      "target": "S4-T10-to-S5-carry-forward",
+      "reentry_condition": "a later accepted requirement needs runtime-owned stable task identity or live evidence shows provider task_id instability",
+      "blocks_current_T05": false
+    },
+    {
+      "item": "complete_typed_WWC_failure_taxonomy",
+      "target": "S4-T10-to-S5-carry-forward",
+      "reentry_condition": "diagnostic ambiguity remains material after the minimum unknown-alias subtype is implemented",
+      "blocks_current_T05": false
+    },
+    {
+      "item": "cross_stage_unified_claim_task_identity_redesign",
+      "target": "S5-or-later-architecture-sequence",
+      "reentry_condition": "a downstream multi-case or persisted-task workflow demonstrates a concrete identity requirement",
+      "blocks_current_T05": false
+    }
+  ],
+  "future_zero_call_implementation_acceptance": {
+    "positive_fixtures": [
+      "two validated current-Cell Claims become exactly Q001 and Q002 and valid task aliases expand back to the original claim_id values",
+      "a non-DELL Cell uses the same policy without ticker Cell-name or period branching",
+      "the existing provider-generated task_id remains nonblank and unique within the Cell",
+      "assembled Specialist output and downstream fake-Provider Artifacts contain canonical claim_id values and zero Q-alias residue"
+    ],
+    "negative_fixtures": [
+      "Q003 when only Q001 and Q002 exist fails closed as task_claim_alias_unknown",
+      "raw claim_id CellScopedResearchRef wrong-Cell ref blank duplicate or malformed alias cannot be silently normalized or relinked",
+      "the historical failed answer still replays to its original C3 hard failure under its immutable consumed admission",
+      "implementation cannot add DELL ticker conditionals deterministic task IDs or a full failure-taxonomy refactor"
+    ],
+    "required_regression": [
+      "ClaimFactLinkPolicy remains unchanged",
+      "CellScopedResearchIdentityPolicy remains unchanged",
+      "S4 role-group mapping and actual dispatch remain unchanged",
+      "legacy admissions without TaskClaimLinkPolicy retain their frozen digest and behavior"
+    ],
+    "model_provider_network_source_external_tool_calls_allowed": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "admission_Run_or_business_Artifact_creation_allowed": false,
+    "implementation_pass_does_not_prove_DELL_R2": true
+  },
+  "exact_code_audit": {
+    "apps/workbench/backend/application/bounded_agent_executor.py": "6001eebdaaaf32248910be1c54fb263ee7773daa6a58ba8e972472f1070ba638",
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "45e9fccc125c2c15d88fee6689724492d4524d251c8d843f94daeccc77cb37d2"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "work_units_attempts_runs_or_artifacts_created": 0,
+    "canonical_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_059": "root_cause_disposed_minimum_shared_TaskClaimLinkPolicy_selected_implementation_pending",
+    "S4_T05": "blocked_pending_bounded_zero_call_implementation_and_separately_authorized_future_proof",
+    "DELL_R2": "not_proven",
+    "S4_T06_or_later": "not_entered",
+    "S5_release_or_production": "not_authorized"
+  },
+  "next_action": "S4-T05-DELL-WWC-TASK-TO-CLAIM-CLOSED-IDENTITY-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

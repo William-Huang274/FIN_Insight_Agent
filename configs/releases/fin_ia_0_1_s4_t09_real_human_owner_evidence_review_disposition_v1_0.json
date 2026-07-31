@@ -1,0 +1,99 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t09_real_human_owner_evidence_review_disposition_v1_0",
+  "disposition_id": "S4-T09-REAL-HUMAN-OWNER-EVIDENCE-REVIEW-DISPOSITION-A-R1",
+  "recorded_at": "2026-07-31T13:57:09+08:00",
+  "status": "terminal_owner_evidence_review_complete_accept_evidence_recommend_T10_honest_block_R3_not_attested",
+  "authority": {
+    "explicit_owner_response": "A",
+    "reviewer_role": "real_project_owner",
+    "scope_decision_ref": "configs/releases/fin_ia_0_1_s4_t09_real_human_owner_review_and_qualified_senior_eligibility_scope_decision_v1_0.json",
+    "scope_decision_sha256": "1779201421f2fb1fca23565eac8a59b2ea3f2a3855989a71b8d05f5b877df1a4",
+    "review_packet_ref": "configs/releases/fin_ia_0_1_s4_t09_real_human_owner_evidence_review_packet_v1_0.json",
+    "review_packet_sha256": "e201c4589b5b76c408cf467e1b119f73281d1918d3b2167a9830c22402a4ca34",
+    "selected_option_id": "A",
+    "selected_disposition": "accept_evidence_and_recommend_T10_honest_block",
+    "T09_owner_evidence_disposition_authorized": true,
+    "T10_honest_block_recommendation_authorized": true,
+    "qualified_senior_R3_attestation_authorized_or_inferred": false,
+    "S4_pass_release_or_production_authorized_or_inferred": false,
+    "runtime_repair_model_provider_network_or_live_authorized_or_inferred": false
+  },
+  "reviewed_findings": {
+    "accepted_finding_ids": [
+      "T09-F01-one-case-accepted-two-case-transfer-blocked",
+      "T09-F02-agent-gain-repeats-but-is-not-always-admissible",
+      "T09-F03-shared-transfer-integrity-not-established",
+      "T09-F04-workbench-value-boundary",
+      "T09-F05-no-current-R3-candidate",
+      "T09-F06-current-S4-path"
+    ],
+    "disputed_finding_ids": [],
+    "accepted_finding_count": 6,
+    "disputed_finding_count": 0,
+    "owner_comment": null
+  },
+  "owner_accepted_evidence_boundary": {
+    "NVDA": "historical_S3_R2_owner_accepted_not_post_transfer_R3",
+    "DELL": "R2_not_proven_L1_numeric_authority_and_case_identity_fail",
+    "MU": "R2_not_proven_L1_numeric_authority_and_case_identity_fail",
+    "Agent_gain": "repeatable_actionability_and_cross_cell_signal_but_only_NVDA_admissible",
+    "Workbench": "internal_trace_review_debug_value_proven_end_user_three_case_value_not_fully_measured",
+    "T07": "honestly_blocked_no_post_transfer_NVDA_exact_product_or_R3_candidate",
+    "S4": "not_passed",
+    "FIN_0_1_release": "not_qualified"
+  },
+  "qualified_senior_track": {
+    "status": "ineligible_no_post_transfer_NVDA_candidate",
+    "qualified_senior_attestation_created": false,
+    "historical_NVDA_R2_reused_as_R3": false,
+    "owner_review_substituted_for_R3": false,
+    "machine_Verifier_Codex_or_shadow_review_substituted_for_R3": false
+  },
+  "T09_disposition": {
+    "owner_evidence_review": "complete_accept",
+    "owner_product_acceptance_for_DELL_or_MU": false,
+    "qualified_senior_NVDA_R3": false,
+    "T09_full_pass": false,
+    "T09_terminal_branch": "honest_block_recommendation_complete",
+    "T10_entry": "ready_for_separate_pass_or_honest_block_closeout_scope_decision",
+    "T10_recommended_outcome": "S4_honestly_blocked_FIN_0_1_not_qualified",
+    "T05_T06_T07_reopen": false,
+    "additional_paid_live": false
+  },
+  "carry_forward_recommendation": {
+    "S5_entry_mode": "decision_only_honest_block_after_T10",
+    "S5_scope": [
+      "immutable_evidence_manifest",
+      "Git_and_rollback_slice",
+      "secret_safe_release_evidence",
+      "RC_P36_085_and_RC_P36_086_release_test_governance",
+      "RG1_to_RG5_blocked_decision_reconciliation"
+    ],
+    "FIN_0_2_scope": [
+      "complete_single_source_contract_compiler",
+      "DELL_and_MU_transfer_completion_and_R2_reproof",
+      "machine_Verifier_numeric_identity_conflict_and_delivery_semantics",
+      "optional_provider_and_strict_schema_qualification_when_external_contract_is_complete"
+    ],
+    "release_requirements_weakened": false
+  },
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_work_units": 0,
+    "new_attempts": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0,
+    "exact_live_runs": 0,
+    "paired_assessments": 0,
+    "owner_evidence_disposition_records": 1,
+    "owner_product_acceptance_records": 0,
+    "qualified_senior_attestations": 0
+  },
+  "next_action": "S4-T10-S4-PASS-OR-HONEST-BLOCK-CLOSEOUT-SCOPE-DECISION"
+}

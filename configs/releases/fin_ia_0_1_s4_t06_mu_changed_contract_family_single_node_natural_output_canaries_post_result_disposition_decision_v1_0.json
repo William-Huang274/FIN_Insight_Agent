@@ -1,0 +1,216 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_changed_contract_family_single_node_natural_output_canaries_post_result_disposition_decision_v1_0",
+  "decision_id": "S4-T06-MU-CHANGED-CONTRACT-FAMILY-SINGLE-NODE-NATURAL-OUTPUT-CANARIES-POST-RESULT-DISPOSITION-DECISION",
+  "decided_at": "2026-07-30T17:05:58+08:00",
+  "status": "zero_call_root_cause_confirmed_claim_compiled_contract_v2_implementation_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "zero_call_post_result_disposition_authorized": true,
+    "restricted_claim_capture_read_authorized": true,
+    "runtime_implementation_authorized_in_this_turn": false,
+    "model_provider_network_or_source_call_authorized": false,
+    "claim_retry_authorized": false,
+    "WWC_makeup_run_authorized": false,
+    "new_single_node_canary_authorized": false,
+    "R7_admission_or_formal_exact_live_authorized": false,
+    "paired_assessment_authorized": false,
+    "owner_acceptance_authorized": false,
+    "S4_T07_or_later_authorized": false
+  },
+  "source_evidence": {
+    "authority_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_changed_contract_family_single_node_natural_output_canaries_authority_decision_v1_0.json",
+    "authority_sha256": "e6f10a50d796d22bf03c48012442dbae1196be58984159cd4ef194053f124498",
+    "execution_result_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_changed_contract_family_single_node_natural_output_canaries_exact_once_execution_result_v1_0.json",
+    "execution_result_sha256": "410051c4dc94eb94c8d2f06fbc601e57dfc5b8e759cb6a938bbc17d99d7ae9bb",
+    "claim_capture_ref": ".codex_runtime/s4_t06_mu_changed_contract_family_single_node_canaries_exact_once_r1/captures/02_claim_candidate_atoms_e13a113e7c8ead1583ca60562c96d1a5e6cfa2b723d53415cd725d230ef56b17.json",
+    "claim_capture_digest": "e13a113e7c8ead1583ca60562c96d1a5e6cfa2b723d53415cd725d230ef56b17",
+    "claim_exact_request_sha256": "405738388536cba288ddd46a3af5b51952bcc5f35adb76cc0b9241b4cc0cc24f",
+    "claim_provider_status": "ok",
+    "claim_finish_reason": "stop",
+    "claim_native_json_parse": "pass",
+    "claim_provider_atom_count": 1,
+    "claim_restricted_raw_content_copied_to_public_decision": false,
+    "deterministic_judgment_atom_contract_sha256": "98e1b17d1e0ca555d2ee59ca0435d0658f1d703d23731239d9c863ff18ecc1cf",
+    "bounded_agent_contract_policies_sha256": "0515af6c07154e813fe481dbf2db4461abebd8934afa9a413a4cab89921eb798"
+  },
+  "zero_call_reproduction": {
+    "program_cell_id": "demand_authenticity_and_sustainability",
+    "allowed_fact_alias_count": 1,
+    "selected_aliases": [
+      "F001"
+    ],
+    "selected_alias_membership": "exact_current_request_alias",
+    "selected_alias_scope_summary": {
+      "entity": "unknown",
+      "business_scope_kind": "unknown",
+      "business_scope": "unknown",
+      "period": "unknown",
+      "attribution_level": "unknown"
+    },
+    "unknown_alias_count": 0,
+    "cross_case_alias_count": 0,
+    "mixed_scope_field_count": 0,
+    "cross_alias_scope_conflict_count": 0,
+    "provider_claim_kind": "insufficient_evidence",
+    "provider_direction": "unknown",
+    "provider_support_alias_count": 1,
+    "first_rejecting_rule": "insufficient_evidence_requires_exactly_empty_support_fact_aliases",
+    "failure_code_reproduced": "s4_compiled_claim_atom_no_valid_scope_compatible_subset",
+    "seed_is_satisfiable": true,
+    "request_capture_digest_readback": "pass",
+    "exact_request_matches_frozen_template": true
+  },
+  "cross_layer_contract_audit": {
+    "selector_contains_conditional_claim_kind_support_rule": true,
+    "model_visible_contract_contains_conditional_claim_kind_support_rule": false,
+    "wire_schema_contains_conditional_claim_kind_support_rule": false,
+    "system_instruction_contains_conditional_claim_kind_support_rule": false,
+    "fake_provider_covers_boundary_backed_non_cannot_infer_route": true,
+    "fake_provider_covers_supportless_insufficient_evidence_route": false,
+    "negative_fixture_covers_insufficient_evidence_with_nonempty_support": false,
+    "single_policy_semantic_parity_proven_for_this_cross_field_rule": false
+  },
+  "zero_call_counterfactuals": [
+    {
+      "variant_id": "boundary_backed_evidence_direction",
+      "changed_fields": [
+        "claim_kind"
+      ],
+      "claim_kind": "evidence_direction",
+      "direction": "unknown",
+      "support_alias_count": 1,
+      "downstream_strict_validation": "pass",
+      "canonical_epistemic_status": "bounded_inference",
+      "canonical_support_fact_id_count": 1,
+      "canonical_cannot_support_count": 1,
+      "interpretation": "A bound fact and its limitation remain traceable while the claim stays explicitly bounded."
+    },
+    {
+      "variant_id": "supportless_insufficient_evidence",
+      "changed_fields": [
+        "support_fact_aliases"
+      ],
+      "claim_kind": "insufficient_evidence",
+      "direction": "unknown",
+      "support_alias_count": 0,
+      "downstream_strict_validation": "pass",
+      "canonical_epistemic_status": "cannot_infer",
+      "canonical_support_fact_id_count": 0,
+      "canonical_cannot_support_count": 1,
+      "interpretation": "A true no-support state remains a canonical cannot_infer claim."
+    }
+  ],
+  "root_cause_disposition": {
+    "earliest_owned_fault": "claim_kind_to_support_role_conditional_semantics_exist_only_in_local_selector_and_are_absent_from_the_model_visible_compiled_contract",
+    "secondary_owned_fault": "fake_and_mutation_matrix_did_not_cover_both_legal_epistemic_routes_or_the_cross_field_conflict",
+    "seed_fault_established": false,
+    "scope_compatibility_fault_established": false,
+    "unknown_or_cross_case_alias_fault_established": false,
+    "transport_or_JSON_fault_established": false,
+    "model_or_provider_fault_established": false,
+    "general_DeepSeek_unusable_claimed": false,
+    "natural_output_semantically_plausible_under_visible_contract": true,
+    "RC_P36_083": "reopened_live_semantic_parity_recurrence",
+    "RC_P36_080": "remains_open_until_final_formal_nine_Artifact_L1_reproof"
+  },
+  "selected_bounded_repair": {
+    "contract_ref": "fin01.s4.deterministic_judgment_atom_planner_and_compiled_contract_invariants:v2",
+    "scope": "claim_candidate_atoms_only_cross_field_epistemic_support_role_compilation",
+    "maximum_zero_call_implementation_bundles": 1,
+    "automatic_follow_on_implementation_bundles": 0,
+    "required_contract_rules": {
+      "insufficient_evidence": {
+        "support_fact_aliases": "exactly_empty_array",
+        "local_epistemic_status": "cannot_infer",
+        "local_support_fact_ids": "exactly_empty_array",
+        "local_cannot_support": "one_or_more_deterministically_rendered_boundaries"
+      },
+      "evidence_direction_economic_mechanism_counterevidence": {
+        "support_fact_aliases": "one_or_more_unique_exact_allowed_fact_aliases",
+        "local_epistemic_status": "fact_supported_or_bounded_inference_by_direction",
+        "local_support_fact_ids": "exact_alias_expansion",
+        "local_cannot_support": "deterministically_rendered_selected_fact_boundaries"
+      }
+    },
+    "single_source_surfaces_that_must_share_the_rule": [
+      "model-visible contract",
+      "wire schema description",
+      "system instruction",
+      "local eligibility validator",
+      "fake Provider fixtures",
+      "mutation fixtures",
+      "typed failure descriptor"
+    ],
+    "canonical_claim_schema_change_allowed": false,
+    "silent_claim_kind_rewrite_allowed": false,
+    "silent_support_alias_drop_allowed": false,
+    "validator_weakening_allowed": false,
+    "quality_finding_downgrade_allowed": false,
+    "prompt_only_retry_allowed": false,
+    "current_failed_canary_reinterpreted_as_pass": false
+  },
+  "required_zero_call_proof": {
+    "positive_fixtures": [
+      "boundary-backed evidence_direction with exact F alias",
+      "supportless insufficient_evidence",
+      "economic_mechanism with one or more scope-compatible aliases",
+      "counterevidence with one or more scope-compatible aliases"
+    ],
+    "negative_fixtures": [
+      "insufficient_evidence with nonempty support aliases",
+      "non-insufficient claim kind with empty support aliases",
+      "duplicate support aliases",
+      "unknown or cross-case alias",
+      "mixed or conflicting concrete scopes"
+    ],
+    "three_case_full_fake_required": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "per_case_required_nodes_callbacks_captures_artifacts": [
+      6,
+      12,
+      12,
+      9
+    ],
+    "independent_fresh_agent_proof_required_after_implementation": true,
+    "new_single_node_canary_after_implementation": false,
+    "reason_no_second_claim_canary": "The previously frozen one-canary-per-family quota is consumed; v2 must be proven deterministically and then tested only by the one remaining formal exact-live ceiling.",
+    "maximum_remaining_formal_MU_exact_lives": 1,
+    "new_L1_after_remaining_formal_exact_live": "stop_project_level_no_R8_or_new_patch_loop"
+  },
+  "stage_disposition": {
+    "changed_family_canary": "immutable_terminal_failed_no_retry",
+    "Fact_family": "natural_compliance_positive_evidence_retained",
+    "Claim_family": "blocked_by_project_owned_compiled_conditional_semantic_omission",
+    "WWC_family": "not_called_and_not_makeup_run_eligible",
+    "S4_T06": "blocked_pending_one_zero_call_claim_contract_v2_bundle_and_independent_proof",
+    "R7": "not_created_not_authorized",
+    "paired_assessment": "not_eligible",
+    "owner_acceptance": "not_eligible",
+    "S4_T07": "not_entered",
+    "S4": "not_passed",
+    "S5": "blocked",
+    "release": "blocked",
+    "production": "blocked"
+  },
+  "observed_counts_this_disposition": {
+    "runtime_code_changes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "new_admissions": 0,
+    "new_work_units": 0,
+    "new_attempts": 0,
+    "new_research_runs": 0,
+    "business_artifacts": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0,
+    "T07_operations": 0
+  },
+  "next_action": "S4-T06-MU-CLAIM-EPISTEMIC-SUPPORT-ROLE-COMPILED-CONTRACT-V2-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "next_action_authorized": false,
+  "known_boundary": "This disposition diagnoses and bounds one project-owned compiled-contract recurrence. It does not implement v2, retry Claim, call WWC, issue R7, run the remaining formal exact-live, perform paired assessment, or accept T06."
+}

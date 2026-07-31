@@ -1,0 +1,153 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_replacement_fresh_engineering_proof_and_provider_capability_binding_decision_v1_0",
+  "recorded_at": "2026-07-28T17:35:00+08:00",
+  "work_item_id": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-REPLACEMENT-FRESH-ENGINEERING-PROOF-AND-PROVIDER-CAPABILITY-BINDING-DECISION",
+  "status": "pass_documented_request_contract_binding_single_node_canary_authority_decision_pending",
+  "decision_label": "bind_documented_request_contract_for_canary_candidate",
+  "authority_boundary": {
+    "replacement_fresh_engineering_proof_authorized": true,
+    "official_provider_documentation_lookup_authorized": true,
+    "credential_read_probe_or_configuration_authorized": false,
+    "model_or_provider_execution_authorized": false,
+    "single_node_canary_authorized": false,
+    "admission_issuance_authorized": false,
+    "MU_T06_execution_authorized": false,
+    "DELL_R12_authorized": false,
+    "additional_replacement_bundle_authorized": false
+  },
+  "source_implementation": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_server_subset_conformant_replacement_minimum_zero_call_implementation_v1_0.json",
+    "sha256": "54012a8f7e2ede6206f711516ac669d4dcdb33046d8e6d2192c5382db6e48618",
+    "source_decision_ref": "configs/releases/fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_post_proof_program_scope_replace_decision_v1_0.json",
+    "source_decision_sha256": "da48871624cebb068d23f3b34087bf9772dcd39b58d4eb4c0914b5fec2f94ad8",
+    "replacement_zero_call_implementation_bundles_consumed": 1,
+    "automatic_follow_on_repair_bundles_allowed": 0
+  },
+  "fresh_engineering_proof": {
+    "frozen_code_bindings_match": true,
+    "exact_code_bindings": {
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py": "1049c7182a78662eb44c3f108fbed11816f0469376bb9bbe610b62936d5f6396",
+      "apps/workbench/backend/application/bounded_agent_executor.py": "14da78cd02f0fc0e21652b060665cffab7f6487b27f707512b762ecb2bd508f6",
+      "src/sec_agent/canonical_runtime/failure_observation_policy.py": "30c752e59bcfba5315998aa342764599aaebed0a1e3799307f65456fc1acc011",
+      "src/sec_agent/canonical_runtime/facade.py": "c78cdb70340643662eca9f75b8ff5c49f02c4b29c7436b35947a70cf225058c0",
+      "tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_minimum_zero_call_implementation.py": "367b4a2f26fbfcfbc8fc18263f4a19ee6cb0c222502ec6b7e6ec49acfd86dc12",
+      "tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_server_subset_conformant_replacement_minimum_zero_call_implementation.py": "6bb6f9f4137dc939f8fa71adf134d0fb50e9af12ed7cdc246d230325a131249d"
+    },
+    "independent_focused_runs": [
+      "33 passed in 23.95s",
+      "33 passed in 24.15s"
+    ],
+    "case_server_schema_recomputation": {
+      "DELL": {
+        "schema_sha256": "24cdd015fd3c6b393c1d1013ffa065eb0a2a266c691720e981c01e6db9004938"
+      },
+      "MU": {
+        "schema_sha256": "9c2138b16a8d04968f875c5739567f90ea929caf0718a18fb99169b101fe0879"
+      },
+      "NVDA": {
+        "schema_sha256": "3a4f560fa0e75accf346c59cc3cbc1597c6e4d4ccb7b64eeabe21ec42d0c5cc7"
+      }
+    },
+    "schema_common_checks": {
+      "root_type_object": true,
+      "all_object_properties_required": true,
+      "all_objects_additionalProperties_false": true,
+      "only_frozen_compiler_keywords_present": true,
+      "array_minItems_and_maxItems_only": true,
+      "server_uniqueItems_absent": true,
+      "semantic_uniqueItems_preserved_for_local_validation": true,
+      "provider_wire_alias_matches_server_schema": true
+    }
+  },
+  "official_provider_capability_evidence": {
+    "documentation_route": {
+      "openai_developer_docs_mcp_available": false,
+      "fallback": "official_OpenAI_developer_documentation_only"
+    },
+    "structured_outputs_guide": {
+      "url": "https://developers.openai.com/api/docs/guides/structured-outputs",
+      "responses_wire_contract": "text.format.type=json_schema with strict=true and schema",
+      "schema_adherence_documented": true,
+      "root_must_be_object": true,
+      "all_object_fields_required": true,
+      "additionalProperties_false_required": true,
+      "documented_supported_array_keywords": [
+        "minItems",
+        "maxItems"
+      ],
+      "current_server_schema_inside_documented_subset": true
+    },
+    "model_page": {
+      "url": "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
+      "model_id": "gpt-5.6-sol",
+      "responses_endpoint_supported": true,
+      "chat_completions_endpoint_supported": true,
+      "structured_outputs_supported": true,
+      "fine_tuning_supported": false
+    }
+  },
+  "prospective_exact_provider_binding": {
+    "provider": "openai",
+    "base_url": "https://api.openai.com/v1",
+    "model": "gpt-5.6-sol",
+    "model_ref": "openai:gpt-5.6-sol",
+    "api_key_env_contract": "OPENAI_API_KEY",
+    "truth_kernel_endpoint": "/responses",
+    "truth_kernel_response_contract": "text.format.json_schema.strict",
+    "remaining_node_endpoint": "/chat/completions",
+    "remaining_node_response_contract": "json_object_and_local_validation",
+    "model_level_capability_established_by_official_docs": true,
+    "request_schema_subset_compatibility_established": true,
+    "provider_capability_ref_documented_request_bound": true,
+    "credential_presence_or_access_established": false,
+    "exact_endpoint_acceptance_established": false,
+    "provider_capability_ref_live_bound": false,
+    "single_node_canary_authority_decision_admissible": true
+  },
+  "root_cause": {
+    "issue_id": "RC-P36-070-s4-t06-strict-schema-unsupported-uniqueItems",
+    "classification": "project_owned_request_schema_contract_gap",
+    "model_fault": false,
+    "provider_outage_or_access_fault": false,
+    "credential_fault": "not_evaluated",
+    "status": "documented_request_contract_bound_single_node_canary_live_proof_pending",
+    "reason": "The replacement server compiler removes the local-only uniqueItems marker, preserves uniqueness in the local semantic validator, and emits only the exact frozen keyword subset documented for Structured Outputs. Static request compatibility is now established; endpoint acceptance and credentials remain intentionally untested."
+  },
+  "program_disposition": {
+    "S4_T05": "blocked_not_passed_not_owner_accepted",
+    "S4_T06": "not_entered",
+    "single_node_canary": "not_authorized_but_eligible_for_separate_authority_decision",
+    "MU_T06": "blocked_pending_live_canary_and_separate_authority",
+    "DELL_R12": "forbidden",
+    "additional_replacement_bundle": "forbidden",
+    "provider_hopping": "forbidden",
+    "admission": "not_issued",
+    "decision": "allow_only_a_separate_zero_call_single_node_canary_authority_decision"
+  },
+  "canary_failure_disposition": {
+    "stop_immediately": true,
+    "retry": 0,
+    "provider_hopping": false,
+    "full_chain_execution": false,
+    "automatic_repair": false,
+    "return_to_program_level_blocked_decision": true
+  },
+  "observed_counts": {
+    "actual_model_calls": 0,
+    "actual_provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "credential_reads_or_probes": 0,
+    "admissions_issued": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "business_artifacts_created": 0,
+    "paired_assessments": 0,
+    "human_reviews": 0
+  },
+  "next_action": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-SINGLE-NODE-STRICT-SCHEMA-CANARY-AUTHORITY-DECISION",
+  "next_action_authorized": false,
+  "known_boundary": "This decision proves a documented model and request-schema candidate only. It does not prove credential access, endpoint acceptance, live semantics, or canary success; it does not authorize the canary, issue an admission, enter MU T06, qualify DELL R2, pass S4, enter S5, release, or production."
+}

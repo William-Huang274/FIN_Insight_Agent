@@ -1,0 +1,163 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_fresh_engineering_proof_and_provider_capability_binding_decision_v1_0",
+  "recorded_at": "2026-07-28T23:40:00+08:00",
+  "work_item_id": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-FRESH-ENGINEERING-PROOF-AND-PROVIDER-CAPABILITY-BINDING-DECISION",
+  "status": "blocked_before_canary_official_strict_schema_subset_not_satisfied_program_scope_replace_or_stop_decision_pending",
+  "decision_label": "block_before_canary",
+  "authority_boundary": {
+    "fresh_engineering_proof_authorized": true,
+    "official_provider_documentation_lookup_authorized": true,
+    "credential_read_probe_or_configuration_authorized": false,
+    "model_or_provider_execution_authorized": false,
+    "single_node_canary_authorized": false,
+    "admission_issuance_authorized": false,
+    "MU_T06_execution_authorized": false,
+    "DELL_R12_authorized": false,
+    "second_zero_call_implementation_bundle_authorized": false
+  },
+  "source_implementation": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_minimum_zero_call_implementation_v1_0.json",
+    "sha256": "7c4debbed32f952266110889fce69a4bf863daa750ba39c0baf7478471d175a3",
+    "source_disposition_ref": "configs/releases/fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_disposition_v1_0.json",
+    "source_disposition_sha256": "38aa09992a90b11092128e967ee3e7be591fe039baf75fe0eb025c84eef07489",
+    "zero_call_implementation_bundles_consumed": 1,
+    "automatic_follow_on_repair_bundles_allowed": 0
+  },
+  "fresh_engineering_proof": {
+    "frozen_code_bindings_match": true,
+    "exact_code_bindings": {
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py": "a4de6c622afb6ca93bedea67a1af6d1cbcaf6637bbc78e2127bbc228ac61ed4d",
+      "apps/workbench/backend/application/bounded_agent_executor.py": "b11de021ec949aae5e1b8d1f5c0a1f0713b171255ed6680b8ae616bc609bdd5e",
+      "src/sec_agent/canonical_runtime/failure_observation_policy.py": "21696e97c6cd1b21cf372771aacd44b012e63643b4ee4bcea1edb4d05440ec80",
+      "src/sec_agent/canonical_runtime/facade.py": "c78cdb70340643662eca9f75b8ff5c49f02c4b29c7436b35947a70cf225058c0",
+      "tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_minimum_zero_call_implementation.py": "39100065c3017773406224d00ac447733f2b1b83e0d626af5ed442682de2f523"
+    },
+    "independent_focused_runs": [
+      "18 passed in 22.29s",
+      "18 passed in 21.77s"
+    ],
+    "combined_regression": "52 passed in 90.81s",
+    "decision_contract_test": "3 passed in 2.11s",
+    "implementation_and_decision_regression": "21 passed in 17.54s",
+    "case_schema_recomputation": {
+      "DELL": {
+        "projection_digest": "44e454e88a6894e714ae152a77c9a4a731efa59931b2a8ab8a431ec7b7d07238",
+        "schema_sha256": "bb2962b24dea46910c9f15afc2093a23f89aae89f421b8dc915094675e56f059"
+      },
+      "MU": {
+        "projection_digest": "484d639011d5a5dc99f38b92c68128cfae26a68ca332102516a643a2d15394bd",
+        "schema_sha256": "04d12c1f3401cd51c8f415270ca7124eac3bdaf8b72b79588219ad4d33f690d4"
+      },
+      "NVDA": {
+        "projection_digest": "ee891754d1cc668ec267be930870a82e5cc188cc90cea2c8c87ac41a351857de",
+        "schema_sha256": "25f104e202c97e3caf4b9625fda65f4b48a48cc2db28704cc4b21f384f563dc5"
+      }
+    },
+    "schema_common_positive_checks": {
+      "root_type_object": true,
+      "root_all_properties_required": true,
+      "root_additionalProperties_false": true,
+      "nested_object_all_properties_required": true,
+      "nested_object_additionalProperties_false": true,
+      "array_minItems_and_maxItems_present": true
+    },
+    "schema_common_blocker": {
+      "keyword": "uniqueItems",
+      "path": "$.properties.fact_judgments.items.properties.counterevidence_aliases.uniqueItems",
+      "present_in_cases": [
+        "DELL",
+        "MU",
+        "NVDA"
+      ],
+      "official_support_status": "not_in_the_documented_supported_array_keyword_subset",
+      "binding_effect": "strict_schema_request_compatibility_not_established_fail_closed_before_canary"
+    }
+  },
+  "official_provider_capability_evidence": {
+    "documentation_route": {
+      "openai_developer_docs_mcp_available": false,
+      "mcp_install_attempt_result": "codex_executable_access_denied",
+      "fallback": "official_OpenAI_domains_only"
+    },
+    "latest_model_resolver": {
+      "model": "gpt-5.6-sol",
+      "model_slug": "gpt-5p6-sol",
+      "migration_guide_url": "https://developers.openai.com/api/docs/guides/upgrading-to-gpt-5p6-sol.md",
+      "prompting_guide_url": "https://developers.openai.com/api/docs/guides/prompt-guidance-gpt-5p6.md"
+    },
+    "structured_outputs_guide": {
+      "url": "https://developers.openai.com/api/docs/guides/structured-outputs",
+      "responses_wire_contract": "text.format.type=json_schema with strict=true and schema",
+      "schema_adherence_documented": true,
+      "all_object_fields_required": true,
+      "additionalProperties_false_required": true,
+      "documented_supported_array_keywords": [
+        "minItems",
+        "maxItems"
+      ],
+      "uniqueItems_documented_as_supported": false
+    },
+    "model_page": {
+      "url": "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
+      "model_id": "gpt-5.6-sol",
+      "responses_endpoint_supported": true,
+      "chat_completions_endpoint_supported": true,
+      "structured_outputs_supported": true,
+      "free_tier_supported": false
+    }
+  },
+  "prospective_exact_provider_binding": {
+    "provider": "openai",
+    "base_url": "https://api.openai.com/v1",
+    "model": "gpt-5.6-sol",
+    "model_ref": "openai:gpt-5.6-sol",
+    "api_key_env_contract": "OPENAI_API_KEY",
+    "truth_kernel_endpoint": "/responses",
+    "truth_kernel_response_contract": "text.format.json_schema.strict",
+    "remaining_node_endpoint": "/chat/completions",
+    "remaining_node_response_contract": "json_object_and_local_validation",
+    "model_level_capability_established_by_official_docs": true,
+    "credential_presence_or_access_established": false,
+    "request_schema_subset_compatibility_established": false,
+    "exact_live_capability_binding_admissible": false,
+    "provider_capability_ref_live_bound": false
+  },
+  "root_cause": {
+    "issue_id": "RC-P36-070-s4-t06-strict-schema-unsupported-uniqueItems",
+    "classification": "project_owned_request_schema_contract_gap",
+    "model_fault": false,
+    "provider_outage_or_access_fault": false,
+    "credential_fault": "not_evaluated",
+    "earliest_faulty_owned_artifact": "StrictTruthKernelPolicy.json_schema",
+    "reason": "The frozen fixture accepts and locally validates uniqueItems, but the official OpenAI strict Structured Outputs supported array subset documents minItems and maxItems only. A capability binding must be based on documented request compatibility, so the canary is inadmissible without a new program-level contract decision."
+  },
+  "program_disposition": {
+    "S4_T05": "blocked_not_passed_not_owner_accepted",
+    "S4_T06": "not_entered",
+    "single_node_canary": "not_authorized_and_not_admissible",
+    "MU_T06": "blocked",
+    "DELL_R12": "forbidden",
+    "second_implementation_bundle": "forbidden_under_current_gate",
+    "provider_hopping": "forbidden_under_current_gate",
+    "admission": "not_issued",
+    "decision": "return_once_to_program_level_scope_replace_or_stop_without_local_patch_loop"
+  },
+  "observed_counts": {
+    "actual_model_calls": 0,
+    "actual_provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "credential_reads_or_probes": 0,
+    "admissions_issued": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "business_artifacts_created": 0,
+    "paired_assessments": 0,
+    "human_reviews": 0
+  },
+  "next_action": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-POST-PROOF-PROGRAM-SCOPE-REPLACE-OR-STOP-DECISION",
+  "next_action_authorized": false,
+  "known_boundary": "This decision establishes a documented model-level candidate but rejects the current request-level binding. It does not prove credential access, execute a canary, authorize a repair, enter MU T06, qualify DELL R2, pass S4, enter S5, release, or production."
+}

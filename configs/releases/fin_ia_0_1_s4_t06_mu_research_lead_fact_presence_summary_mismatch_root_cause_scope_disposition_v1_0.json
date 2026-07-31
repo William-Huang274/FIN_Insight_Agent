@@ -1,0 +1,192 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_summary_mismatch_root_cause_scope_disposition_v1_0",
+  "decision_id": "S4-T06-MU-RESEARCH-LEAD-FACT-PRESENCE-SUMMARY-MISMATCH-FIRST-CREDIBLE-FAILURE-ROOT-CAUSE-OR-SCOPE-DISPOSITION-DECISION",
+  "decided_at": "2026-07-29T12:47:10+08:00",
+  "status": "pass_project_owned_dual_ownership_confirmed_local_deterministic_materialization_selected_one_bundle_max_implementation_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "instruction_context": "User continued after the MU R1 exact-live failure was terminalized and the next action was explicitly limited to this zero-call root-cause or scope disposition.",
+    "zero_call_root_cause_or_scope_disposition_authorized": true,
+    "runtime_prompt_validator_or_transport_implementation_authorized": false,
+    "new_admission_issuance_or_consumption_authorized": false,
+    "model_provider_network_source_or_tool_execution_authorized": false,
+    "MU_R2_exact_live_or_paired_assessment_authorized": false,
+    "T07_T10_S5_release_or_production_authorized": false
+  },
+  "source_refs": {
+    "MU_R1_failure_result": "configs/releases/fin_ia_0_1_s4_t06_mu_fresh_exact_live_execution_failure_result_v1_0.json",
+    "MU_R1_failure_result_sha256": "ac048a27964330f776e0452f0fe7fff3d064805b5e6fadccb695d2460ee5a930",
+    "historical_scope_decision": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_v2_conflict_fact_presence_scope_root_cause_decision_v1_0.json",
+    "historical_scope_decision_sha256": "2e65f783258e4be353d154c1cd61445f1b9385434ed2e5911ae77551f0c6d57b",
+    "runtime_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "runtime_owner_sha256": "6dcd64f18c695e8f27173ba4d0e61f51223efb24de62d82faada16e754af3890",
+    "root_cause_issue": "RC-P36-078-s4-t06-mu-research-lead-deterministic-fact-presence-summary-model-ownership-recurrence"
+  },
+  "confirmed_earliest_owned_fault": {
+    "MU_R1_research_lead_provider_call_status": "ok_stop",
+    "MU_R1_local_failure_code": "s3_bounded_research_lead_v3_semantic_fact_presence_summary_mismatch",
+    "research_lead_v5_provider_schema_requires_fact_presence_summary": true,
+    "research_lead_v5_local_row_assembly_preserves_provider_fact_presence_summary": true,
+    "existing_local_helper_deterministically_derives_expected_summary": true,
+    "research_lead_v5_local_validator_recomputes_and_hard_compares_summary": true,
+    "canonical_output_validator_recomputes_and_hard_compares_summary": true,
+    "same_material_fact_has_provider_and_local_owners": true,
+    "historical_RC_P36_041_fixed_scope_but_retained_provider_generation": true,
+    "failure_is_credential_network_HTTP_JSON_parse_capacity_or_truncation": false,
+    "failure_is_external_provider_only": false,
+    "failure_is_project_contract_ownership_recurrence": true
+  },
+  "bounded_failure_observation": {
+    "failing_field": "conflict_adjudications.fact_presence_summary",
+    "failing_item_count": 1,
+    "specialist_segments_completed": 9,
+    "research_lead_provider_call_completed": true,
+    "writer_calls": 0,
+    "verifier_calls": 0,
+    "business_artifacts": 0,
+    "raw_provider_answer_persisted_in_decision": false,
+    "claim_or_fact_ids_persisted_in_decision": false,
+    "private_reasoning_persisted": false
+  },
+  "disposition_options": [
+    {
+      "option": "continue_provider_generation_plus_local_hard_compare",
+      "decision": "reject",
+      "reason": "This preserves dual ownership and uses paid full-chain runs to rediscover a deterministic mismatch."
+    },
+    {
+      "option": "prompt_emphasis_or_larger_token_budget",
+      "decision": "reject",
+      "reason": "The v3 and v5 request already provide the exact all-none-some truth table; the failure is not missing instruction or capacity."
+    },
+    {
+      "option": "remove_ignore_or_quality_downgrade_the_summary",
+      "decision": "reject",
+      "reason": "The summary is an L1 auditability field and must remain canonical and fail-closed."
+    },
+    {
+      "option": "silent_repair_of_a_provider_emitted_summary",
+      "decision": "reject",
+      "reason": "Accepting then overwriting a contradictory Provider value would conceal model-contract divergence."
+    },
+    {
+      "option": "local_deterministic_materialization_with_provider_field_removed",
+      "decision": "select",
+      "reason": "The model should select involved Claim aliases; the existing direct-support truth table then uniquely determines the canonical summary."
+    },
+    {
+      "option": "stop_or_replace_T06_scope_without_implementation",
+      "decision": "defer_as_fallback",
+      "reason": "A bounded shared-runtime repair is available and does not require new facts, model routing, financial-method expansion, or a paid diagnostic."
+    }
+  ],
+  "selected_contract": {
+    "policy_ref": "fin01.s3.research_lead.conflict_fact_presence_local_materialization:v1",
+    "selected_future_research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v7",
+    "transport_lineage": "research_lead_v5_wire_plus_local_fact_presence_materialization_only",
+    "provider_owned_fields": [
+      "conflict_adjudications.involved_claim_ids",
+      "conflict_adjudications.terminal_state_summary",
+      "conflict_adjudications.resolution_status",
+      "conflict_adjudications.statement"
+    ],
+    "locally_owned_field": "conflict_adjudications.fact_presence_summary",
+    "local_source": "each_conflict_involved_claim_aliases_resolved_to_validated_Claim_Cards_direct_support_fact_ids",
+    "truth_table": [
+      {
+        "condition": "every_involved_claim_has_at_least_one_direct_support_fact_id",
+        "canonical_value": "facts_present"
+      },
+      {
+        "condition": "no_involved_claim_has_any_direct_support_fact_id",
+        "canonical_value": "no_facts_present"
+      },
+      {
+        "condition": "some_but_not_all_involved_claims_have_direct_support_fact_ids",
+        "canonical_value": "mixed_fact_presence"
+      }
+    ],
+    "provider_wire_requires_fact_presence_summary": false,
+    "provider_wire_allows_fact_presence_summary": false,
+    "canonical_output_requires_fact_presence_summary": true,
+    "local_and_canonical_validators_remain_fail_closed": true,
+    "provider_summary_normalization_overwrite_or_repair_allowed": false,
+    "provider_model_change_selected": false,
+    "token_or_byte_budget_change_selected": false
+  },
+  "version_and_scope_boundary": {
+    "MU_R1_consumed_admission_and_terminal_Run_immutable": true,
+    "historical_research_lead_v1_through_v6_immutable": true,
+    "historical_RC_P36_041_remains_closed_for_scope_semantics": true,
+    "RC_P36_078_remains_open_until_fixture_and_fresh_proof": true,
+    "output_contract_v4_retained": true,
+    "research_lead_v6_gap_atom_projection_adopted_into_this_repair": false,
+    "specialist_writer_verifier_contracts_changed": false,
+    "financial_evidence_graph_or_method_scope_changed": false,
+    "strict_schema_transport_reactivated": false,
+    "T05_reopened": false,
+    "T07_or_later_sequence_entered": false
+  },
+  "future_minimum_zero_call_implementation_contract": {
+    "maximum_implementation_bundles": 1,
+    "automatic_follow_on_repair_bundles": 0,
+    "request_builder": [
+      "compile_fact_presence_ownership_from_one_versioned_policy",
+      "remove_fact_presence_summary_from_v7_provider_required_output_schema",
+      "remove_provider_self_derivation_instruction_for_v7_without_mutating_v3_v5_or_v6_requests",
+      "explicitly_forbid_the_field_on_the_v7_wire"
+    ],
+    "local_assembly": [
+      "validate_nonempty_unique_kind_correct_involved_claim_aliases",
+      "resolve_aliases_only_to_validated_Claim_Cards",
+      "derive_summary_with_the_existing_conflict_local_direct_support_helper",
+      "insert_the_summary_before_v3_semantic_and_canonical_output_validation",
+      "preserve_local_row_ids_scoped_identity_lineage_and_content_free_failure_telemetry"
+    ],
+    "required_deterministic_fixtures": [
+      "v7_provider_schema_omits_fact_presence_summary",
+      "provider_attempt_to_emit_fact_presence_summary_fails_as_unexpected_field",
+      "all_supported_claims_materialize_facts_present",
+      "no_supported_claims_materialize_no_facts_present",
+      "some_supported_claims_materialize_mixed_fact_presence",
+      "unrelated_global_or_same_cell_facts_do_not_change_summary",
+      "duplicate_unknown_wrong_kind_or_cross_scope_claim_alias_fails_closed",
+      "canonical_validator_recomputes_and_matches_local_materialization",
+      "historical_v3_v5_v6_request_and_validation_behavior_remains_unchanged",
+      "MU_source_grounded_full_fake_completes_6_nodes_12_callbacks_9_Artifacts"
+    ],
+    "stop_condition": "If one bounded implementation bundle cannot preserve historical transport behavior, exact alias lineage, canonical output-v4 compatibility, and MU zero-call full-fake completion, keep T06 blocked and require a separate stop-or-scope-replace decision. Do not add a second automatic repair bundle.",
+    "next_proof_after_implementation": "separately_authorized_zero_call_fresh_agent_proof_only",
+    "new_admission_or_paid_execution_after_implementation": "not_automatic_and_requires_separate_decisions"
+  },
+  "experiment_governance": {
+    "hypothesis": "Removing the deterministic summary from the Provider wire and materializing it locally from model-selected involved Claim aliases eliminates RC-P36-078 without weakening conflict auditability or expanding T06.",
+    "decision_target": "One zero-call implementation bundle proves exact all-none-some materialization, invalid-alias fail-closed behavior, historical transport immutability, and one MU 6-node 12-callback 9-Artifact full-fake path.",
+    "stop_condition": "Any need to alter financial evidence, add prompt-only repair, change provider or model, broaden to dependency or gap atomization, weaken L1, or run a paid diagnostic stops the bundle.",
+    "decision_label": "proceed_to_one_separately_authorized_minimum_zero_call_implementation_bundle"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "canonical_runs_created": 0,
+    "canonical_artifacts_created": 0,
+    "paired_assessments": 0,
+    "human_review_writes": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_078": "root_cause_confirmed_local_deterministic_materialization_selected_implementation_pending",
+    "S4_T06": "blocked_pending_one_bounded_zero_call_implementation_bundle",
+    "MU_R2": "not_created",
+    "paired_assessment": "not_eligible",
+    "owner_acceptance": "not_eligible",
+    "T07_T10": "not_entered",
+    "S4": "not_passed",
+    "S5": "blocked"
+  },
+  "next_action": "S4-T06-MU-RESEARCH-LEAD-CONFLICT-FACT-PRESENCE-LOCAL-DETERMINISTIC-MATERIALIZATION-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

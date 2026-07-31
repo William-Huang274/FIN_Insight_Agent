@@ -1,0 +1,139 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r8_specialist_validated_segment_union_capacity_and_safe_byte_telemetry_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T05-DELL-R8-SPECIALIST-VALIDATED-SEGMENT-UNION-CAPACITY-AND-SAFE-BYTE-TELEMETRY-MINIMUM-ZERO-CALL-IMPLEMENTATION-R1",
+  "recorded_at": "2026-07-28T03:00:00+08:00",
+  "status": "pass_zero_call_profile_v3_shared_capacity_resolver_safe_telemetry_and_high_density_12_call_9_artifact_fake_chain_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "minimum_zero_call_implementation_authorized": true,
+    "fault_injection_and_fake_provider_authorized": true,
+    "fresh_agent_proof_admission_or_exact_live_in_this_task": false,
+    "historical_R8_relaunch_capture_read_or_rewrite": false,
+    "model_provider_execution_network_source_or_external_tool_calls": false
+  },
+  "source_disposition": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r8_specialist_assembled_output_byte_budget_zero_call_root_cause_disposition_v1_0.json",
+    "sha256": "27def4dfe9e3bf3996cb01976d2a34cb9fa888aaa161614c600bc5fcb39d0c39",
+    "issue_id": "RC-P36-065-s4-R8-bottleneck-specialist-assembled-output-byte-budget-exceeded",
+    "selected_contract_ref": "fin01.s3.specialist_local_assembly_capacity.validated_segment_union_upper_bound:v1"
+  },
+  "implementation": {
+    "research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v3",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.specialist_owner_grade_segmented:v8",
+    "specialist_transport_v9_created": false,
+    "shared_capacity_resolver_consumers": [
+      "post_local_expansion_segment_validation",
+      "inner_validated_segment_union_assembly",
+      "executor_post_node_specialist_validation"
+    ],
+    "three_level_capacity": {
+      "provider_raw_segment_limit_utf8_bytes": 6000,
+      "post_local_expansion_segment_limit_utf8_bytes": 8192,
+      "validated_segment_count": 3,
+      "whole_union_limit_formula": "validated_segment_count * post_local_expansion_segment_limit_utf8_bytes",
+      "whole_union_limit_utf8_bytes": 24576
+    },
+    "unchanged_contracts": {
+      "provider_schema": true,
+      "specialist_v8_wire": true,
+      "WWC_atom_limit_utf8_bytes": 4800,
+      "WWC_output_tokens": 1800,
+      "specialist_stage_tokens": 4600,
+      "aggregate_output_tokens": 18000,
+      "maximum_total_cost_usd": 0.1,
+      "semantic_authority_identity_lineage_validators": true
+    },
+    "typed_failure_telemetry": {
+      "family": "specialist_local_assembly_capacity",
+      "failure_code": "s3_bounded_specialist_output_byte_budget_exceeded",
+      "failure_classification": "L1_hard_capacity_fail_closed",
+      "safe_fields": [
+        "contract_ref",
+        "segment_count",
+        "provider_raw_segment_limit_utf8_bytes",
+        "post_local_expansion_segment_limit_utf8_bytes",
+        "whole_union_limit_utf8_bytes",
+        "observed_validated_segment_utf8_bytes",
+        "observed_whole_union_utf8_bytes",
+        "failure_phase"
+      ],
+      "raw_text_private_reasoning_credentials_stack_or_exception_message_persisted": false,
+      "restricted_capture_policy_changed": false
+    }
+  },
+  "deterministic_acceptance": {
+    "DELL_profile_v3_registered": true,
+    "case_runtime_profile_overlay_generation": "pass",
+    "legacy_profile_payloads_modified": false,
+    "maximum_cardinality_high_density_fake": {
+      "fact_count_per_cell": 3,
+      "claim_count_per_cell": 2,
+      "WWC_atom_count_per_cell": 3,
+      "fact_claim_narrative_characters": 320,
+      "WWC_atom_narrative_characters": 160,
+      "logical_nodes": 6,
+      "provider_callbacks": 12,
+      "business_artifacts": 9,
+      "terminal_reason": "s3_bounded_agent_three_cell_execution_succeeded"
+    },
+    "one_byte_over_union_limit": {
+      "observed_whole_union_utf8_bytes": 24577,
+      "terminal": true,
+      "typed_telemetry": true,
+      "raw_text_persisted": false
+    },
+    "fault_injection": {
+      "failure_after_provider_callbacks": 9,
+      "preserved_usage_receipts": 9,
+      "preserved_restricted_captures": 9,
+      "retry_fallback_replay_relaunch_rerun": [0, 0, 0, 0, 0]
+    }
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "df61bca9a614c7157727576adc7b4e0fb37ed10f1dc1fd04ff417c95eaa73e1a",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "a7f4f145f622e720232ba7a4e8a2fecc20e71124fd921d9bcddd73002d77a0de",
+    "tests/contract/test_fin_0_1_s4_t05_dell_r8_specialist_validated_segment_union_capacity_zero_call_implementation.py": "eb4697f531de9bf9f612ff8515a8f7a600fdeffba491674d45f1b344572c2634",
+    "tests/contract/test_fin_0_1_s4_t05_dell_r8_specialist_assembled_output_byte_budget_root_cause_disposition.py": "f8d4e266b7fa7b4322781b54dc1560f9a0cd5b2f270de04ebede0fbadb20c0a9"
+  },
+  "verification": {
+    "focused_command": "python -m pytest -q tests/contract/test_fin_0_1_s4_t05_dell_r8_specialist_validated_segment_union_capacity_zero_call_implementation.py",
+    "focused_result": "5 passed",
+    "adjacent_command": "python -m pytest -q tests/contract/test_fin_0_1_s3_t09_owner_grade_v3_segmented_transport_v5_assembly_budget.py tests/contract/test_fin_0_1_s4_t05_specialist_wwc_judgment_atom_deterministic_assembly_zero_call_implementation.py tests/contract/test_fin_0_1_s4_t05_typed_post_provider_failure_envelope_zero_call_implementation.py tests/contract/test_fin_0_1_s4_t05_dell_r8_specialist_assembled_output_byte_budget_root_cause_disposition.py tests/contract/test_fin_0_1_s4_t05_dell_r8_specialist_validated_segment_union_capacity_zero_call_implementation.py",
+    "adjacent_result": "31 passed",
+    "project_os_full_chain_preflight": "pass_open_blockers_0",
+    "full_historical_S4_T05_suite": "not_used_as_this_implementation_gate_due_to_known_stale_current_pointer_and_historical_admission_hash_assertions"
+  },
+  "observed_counts": {
+    "real_model_calls": 0,
+    "real_provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "restricted_R8_capture_reads": 0,
+    "new_admissions": 0,
+    "new_work_units": 0,
+    "new_attempts": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0,
+    "paired_assessments": 0,
+    "human_reviews": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_065": "minimum_zero_call_implementation_complete_fixture_proven_fresh_agent_proof_pending",
+    "S4_T05": "blocked_pending_independent_fresh_agent_proof_and_later_new_admission_exact_live_paired_assessment",
+    "DELL_R2": "not_proven",
+    "paired_assessment": "not_eligible",
+    "owner_acceptance": "not_eligible",
+    "S4_T06": "not_entered",
+    "S5": "blocked_by_S4",
+    "release_admission": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "deferred_to_S4_T10_to_S5": [
+    "dependency_and_conflict_atomization",
+    "Writer_and_Verifier_atomization",
+    "general_cross_node_judgment_atom_framework",
+    "cross_provider_strict_server_side_schema_matrix"
+  ],
+  "next_action": "S4-T05-DELL-R8-SPECIALIST-VALIDATED-SEGMENT-UNION-CAPACITY-FRESH-AGENT-PROOF-DECISION"
+}

@@ -1,0 +1,114 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_deepseek_mainline_fresh_exact_admission_preparation_zero_call_proof_v1_0",
+  "decision_id": "fin01-s4-t06-mu-deepseek-mainline-fresh-exact-admission-preparation-zero-call-proof-r1",
+  "recorded_at": "2026-07-29T09:37:34+08:00",
+  "status": "blocked_zero_call_before_admission_missing_MU_source_grounded_input_pack",
+  "authority": {
+    "source": "user",
+    "instruction": "主线回到ds然后往下做s4/t06",
+    "scope": "DeepSeek mainline MU exact-admission preparation and zero-call proof only"
+  },
+  "selected_mainline": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_tier": "pro_not_flash",
+    "base_url": "https://api.deepseek.com/beta",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "credential_presence_only": true,
+    "credential_present": true,
+    "credential_value_read_or_printed": false
+  },
+  "MU_contract_proof": {
+    "case_ticker": "MU",
+    "legal_name": "Micron Technology, Inc.",
+    "issuer_identifier": "CIK0000723125",
+    "case_pack_ref": "configs/releases/fin_ia_0_1_s4_t02_mu_hbm_exact_case_pack_v1_0.json",
+    "case_pack_sha256": "0de20e119e3ab78b273b96895f7fb7070da24b6c35122daa53d94d522edb2612",
+    "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+    "research_profile_company": "MU",
+    "maximum_cell_count": 3,
+    "program_cell_ids": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "method_id": "s4_mu_hbm_supply_pricing_and_cycle_playbook",
+    "runtime_binding_digest": "6ae688875e74d6dc0eb6bf1786b3b07eee76e106f6eedb706f72fec42e7da00e",
+    "profile_aggregate_output_token_ceiling": 16800
+  },
+  "deterministic_fixture_repair_and_proof": {
+    "first_credible_failure": "bounded_agent_profile_lineage_contract_mismatch",
+    "root_cause": "The fact-empty T03 case fixture predated the mandatory S4_T04_source_grounded_input lineage row and source_grounded_input runtime payload.",
+    "minimum_fix": "Add one explicit fixture-only zero-fact zero-network source payload and its deterministic S4_T04 lineage digest to the shared fixture builder.",
+    "runtime_or_business_truth_changed": false,
+    "fact_rows_added": 0,
+    "source_network_calls_added": 0,
+    "fixture_only_marker_required": true,
+    "DELL_and_MU_six_node_nine_artifact_fixture_restored": true,
+    "focused_lineage_and_current_proof_tests": "22 passed",
+    "S4_T06_transition_tests": "100 passed"
+  },
+  "exact_input_preflight": {
+    "source_grounded_pack_registry_supports": [
+      "DELL"
+    ],
+    "source_grounded_pack_registry_supports_MU": false,
+    "exact_failure_code": "s4_source_grounded_input_case_unsupported",
+    "MU_source_pack_ref": null,
+    "exact_input_compiled": false,
+    "input_digest_frozen": false,
+    "preparation_digest_frozen": false,
+    "fresh_identity_frozen": false,
+    "prospective_admission_frozen": false,
+    "admission_issuance_admissible": false,
+    "exact_live_execution_admissible": false
+  },
+  "required_in_scope_substep": {
+    "item_id": "S4-T06-MU-SOURCE-GROUNDED-INPUT-MATERIALIZATION-AND-FRESH-PROOF",
+    "requirements": [
+      "materialize one issuer-bound MU source pack at the frozen case as-of",
+      "preserve HBM supply pricing customer concentration inventory cycle and cannot-infer boundaries",
+      "bind every Evidence Numeric derived metric Graph context typed gap and route receipt to MU and an exact program Cell",
+      "register the MU pack in the shared source-grounded loader",
+      "run no-paid cross-case mutation and exact-value validation before compiling any admission",
+      "reuse the existing DeepSeek pro runner and do not introduce a new Provider transport"
+    ],
+    "forbidden": [
+      "copying DELL facts or numeric rows",
+      "using supervisor_supplement_only rows as accepted runtime evidence without promotion proof",
+      "inventing HBM-specific revenue margin customer concentration or cycle values",
+      "issuing or consuming an admission before exact input and identity parity pass",
+      "model_provider_or_network_call_in_this_proof",
+      "DELL_R12",
+      "strict_schema_transport_reactivation"
+    ]
+  },
+  "code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_executor.py": "6dcd64f18c695e8f27173ba4d0e61f51223efb24de62d82faada16e754af3890",
+    "src/sec_agent/s4_case_runtime.py": "98ba0973765321b98a12bb092fbb007e7e5657179e1b5d7c0fe6fad6125350a2",
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "1049c7182a78662eb44c3f108fbed11816f0469376bb9bbe610b62936d5f6396"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "credential_value_reads": 0,
+    "admissions_issued": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "business_artifacts_created": 0,
+    "human_acceptances": 0
+  },
+  "stage_acceptance": {
+    "S4_T05": "honestly_blocked_after_R11_no_R12_not_passed_not_owner_accepted",
+    "DELL_R2": "not_proven",
+    "S4_T06": "in_progress_zero_call_pre_admission_blocked_by_MU_source_pack",
+    "MU_R2": "not_started",
+    "S4_pass": false,
+    "S5": "blocked"
+  },
+  "current_action_remains": "S4-T06-MU-DEEPSEEK-MAINLINE-FRESH-EXACT-ADMISSION-PREPARATION-AND-ZERO-CALL-PROOF"
+}

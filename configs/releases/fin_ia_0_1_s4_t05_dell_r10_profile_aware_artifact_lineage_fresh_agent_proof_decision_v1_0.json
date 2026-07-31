@@ -1,0 +1,127 @@
+{
+  "decision_id": "S4-T05-DELL-R10-PROFILE-AWARE-ARTIFACT-LINEAGE-FRESH-AGENT-PROOF-R1",
+  "fresh_identity": {
+    "attempt_id": "attempt_fin01_318b5e7a5748bb1433aa0a47",
+    "case_id": "case_7b5c2042bef3825b8df71a96",
+    "execution_identity": "fin01-s4-t05-dell-r10-profile-aware-artifact-lineage-exact-live-r10",
+    "input_digest": "f9868c5d7daa051adfccba1c1d2de9c1209d6781bfa76c4569aee76d640e230d",
+    "preparation_digest": "0074e2d675b254e018ebdb78a168b466c7c78841a998d9e8497011f89a40d184",
+    "research_run_id": "research_run_fin01_b90b55b0fdb0ddc69d166303",
+    "work_unit_id": "wu_p02_5_462d23952b01658dee1c524a"
+  },
+  "future_exact_live": {
+    "S4_T06_authorized": false,
+    "exact_once": true,
+    "maximum_model_provider_network_calls": [
+      12,
+      12,
+      12
+    ],
+    "paired_assessment_authorized": false,
+    "retry_count": 0,
+    "stop_at_first_credible_terminal_result": true,
+    "success_artifact_count": 9
+  },
+  "next_action": "S4-T05-DELL-R10-PROFILE-AWARE-ARTIFACT-LINEAGE-FRESH-EXACT-ADMISSION-ISSUANCE",
+  "proof": {
+    "canonical_writes": 0,
+    "clone_counts_after": {
+      "canonical_artifact_versions": 0,
+      "canonical_attempts": 8,
+      "canonical_research_run_versions": 8,
+      "canonical_work_units": 8
+    },
+    "clone_counts_before": {
+      "canonical_artifact_versions": 0,
+      "canonical_attempts": 8,
+      "canonical_research_run_versions": 8,
+      "canonical_work_units": 8
+    },
+    "create_app_wiring_passed": true,
+    "double_prepare_equal": true,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "target_counts_before": {
+      "canonical_artifact_versions": 0,
+      "canonical_attempts": 8,
+      "canonical_research_run_versions": 8,
+      "canonical_work_units": 8
+    }
+  },
+  "proof_generator": {
+    "independent_invocations": 2,
+    "ref": "scripts/releases/prepare_fin_ia_0_1_s4_t05_dell_r10_profile_aware_artifact_lineage_fresh_proof.py",
+    "sha256": "55d0dff013f008e1c88578a06e65a8385a1414c475174f79871c30a3514f022c"
+  },
+  "prospective_admission": {
+    "consumed": false,
+    "digest": "04a2227b3f7721bf9e8fe6a3efa57e775e51f616da99dc877aa9db14e063cddc",
+    "issued": false,
+    "payload": {
+      "admission_id": "fin01-s4-t05-dell-r10-profile-aware-artifact-lineage-fresh-exact-admission-r10",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "as_of": "2026-07-26T00:00:00Z",
+      "base_url": "https://api.deepseek.com/beta",
+      "case_id": "case_7b5c2042bef3825b8df71a96",
+      "case_version": 1,
+      "claim_fact_link_policy_ref": "fin01.s3.claim_fact_link_policy:v1",
+      "company": "DELL",
+      "execution_enabled": true,
+      "execution_mode": "exact_live_s4_dell_r10_profile_aware_artifact_lineage_r10",
+      "execution_profile_version_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+      "external_tool_calls_allowed": false,
+      "input_cache_hit_usd_per_million": 0.003625,
+      "input_cache_miss_usd_per_million": 0.435,
+      "input_contract_ref": "fin01.s3.bounded_agent_three_cell_input:v1",
+      "input_digest": "f9868c5d7daa051adfccba1c1d2de9c1209d6781bfa76c4569aee76d640e230d",
+      "lead_max_output_tokens": 1800,
+      "live_business_case_head_writes_allowed": false,
+      "max_network_calls": 12,
+      "max_provider_calls": 12,
+      "max_semantic_model_calls": 12,
+      "max_total_cost_usd": 0.1,
+      "max_transport_attempts_per_call": 1,
+      "maximum_cell_count": 3,
+      "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+      "model": "deepseek-v4-pro",
+      "model_ref": "deepseek:deepseek-v4-pro",
+      "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+      "output_usd_per_million": 0.87,
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "provider": "deepseek",
+      "provider_output_capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+      "reasoning_effort": "none",
+      "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v6",
+      "research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v3",
+      "retry_budget": 0,
+      "scoped_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+      "source_network_calls_allowed": false,
+      "specialist_max_output_tokens": 4600,
+      "task_claim_link_policy_ref": "fin01.s3.task_claim_link_policy:v1",
+      "timeout_seconds": 120,
+      "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v8",
+      "verifier_max_output_tokens": 1000,
+      "writer_max_output_tokens": 1400,
+      "wwc_judgment_atom_policy_ref": "fin01.s3.specialist_WWC_judgment_atom_deterministic_assembly:v1"
+    },
+    "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_profile_aware_artifact_lineage_fresh_exact_admission_r10.json"
+  },
+  "recorded_at": "2026-07-28T10:30:00+08:00",
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r10_profile_aware_artifact_lineage_fresh_agent_proof_decision_v1_0",
+  "source_refs": {
+    "immutable_R9_admission": "configs/releases/fin_ia_0_1_s4_t05_dell_r9_specialist_validated_segment_union_capacity_fresh_exact_admission_r9.json",
+    "immutable_R9_failure": "configs/releases/fin_ia_0_1_s4_t05_dell_r9_specialist_validated_segment_union_capacity_exact_live_execution_failure_result_v1_0.json",
+    "implementation": "configs/releases/fin_ia_0_1_s4_t05_dell_r9_profile_aware_artifact_lineage_validation_and_typed_subtype_minimum_zero_call_implementation_v1_0.json",
+    "implementation_sha256": "ef85ac6697818e8d2a15732ef413bb425c44f17390288fdd2d4f1214a4d06e3a"
+  },
+  "stage_acceptance": {
+    "DELL_R2": "not_proven",
+    "RC_P36_066": "fresh_proof_pass_R10_admission_issuance_pending",
+    "S4_T06": "not_entered"
+  },
+  "status": "pass_zero_call_fresh_agent_proof_R10_admission_issuance_pending"
+}

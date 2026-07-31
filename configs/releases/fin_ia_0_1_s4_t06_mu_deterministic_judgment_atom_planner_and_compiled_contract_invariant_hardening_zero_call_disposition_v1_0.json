@@ -1,0 +1,342 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_deterministic_judgment_atom_planner_and_compiled_contract_invariant_hardening_zero_call_disposition_v1_0",
+  "decision_id": "S4-T06-MU-DETERMINISTIC-JUDGMENT-ATOM-PLANNER-AND-COMPILED-CONTRACT-INVARIANT-HARDENING-ZERO-CALL-DISPOSITION",
+  "decided_at": "2026-07-30T15:00:00+08:00",
+  "status": "structural_disposition_complete_one_zero_call_implementation_bundle_pending",
+  "authority": {
+    "user_instruction": "按这个顺序做",
+    "zero_call_structural_disposition_authorized": true,
+    "runtime_implementation_authorized_in_this_turn": false,
+    "model_provider_network_or_source_call_authorized": false,
+    "single_node_canary_authorized": false,
+    "new_admission_or_formal_exact_live_authorized": false,
+    "paired_assessment_authorized": false,
+    "owner_acceptance_authorized": false,
+    "S4_T07_or_later_authorized": false
+  },
+  "source_evidence": {
+    "formal_R6_failure_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_temporal_authority_terminal_result_r6_exact_live_execution_failure_result_v1_0.json",
+    "formal_R6_failure_sha256": "9be9a675d02814c528cbac8cdbe289b43fdf9618e44975d070726decc985c991",
+    "quarantined_diagnostic_decision_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r6_quarantined_diagnostic_continuation_and_aggregate_defect_surface_decision_v1_0.json",
+    "quarantined_diagnostic_decision_sha256": "c599212748433acfd5ee4d2af59133e6eb79eecee12879ef692be2b181c80ec6",
+    "quarantined_diagnostic_aggregate_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r6_quarantined_diagnostic_aggregate_defect_and_proof_strategy_result_v1_0.json",
+    "quarantined_diagnostic_aggregate_sha256": "acc631d9c3408ef0c41b534ca7f35e410746c4654f735d033bbb983fa8b4f15e",
+    "formal_R6_mutated": false,
+    "diagnostic_interactions": 12,
+    "diagnostic_repair_findings": 10,
+    "diagnostic_runtime_projections": 2,
+    "diagnostic_quarantined_artifacts": 9,
+    "diagnostic_business_artifact_promotions": 0
+  },
+  "root_cause_disposition": {
+    "field_by_field_bug_count_used_for_planning": 0,
+    "L1_structural_clusters": [
+      {
+        "cluster_id": "truth_ownership_surface_too_wide",
+        "owned_by_project": true,
+        "provider_noncompliance_observed": true,
+        "scope": [
+          "material numeric fact narrative",
+          "material numeric explanation",
+          "free threshold narrative",
+          "unbound calendar or measurement narrative"
+        ],
+        "disposition": "remove material truth and final financial prose from Provider ownership"
+      },
+      {
+        "cluster_id": "candidate_generation_and_final_selection_conflated",
+        "owned_by_project": true,
+        "provider_noncompliance_observed": true,
+        "scope": [
+          "candidate cardinality",
+          "scope-compatible final selection",
+          "stable ordering"
+        ],
+        "disposition": "Provider proposes bounded atoms; local runtime performs validity-aware selection and ordering"
+      },
+      {
+        "cluster_id": "cross_layer_contract_invariants_not_compiled_together",
+        "owned_by_project": true,
+        "provider_noncompliance_observed": false,
+        "scope": [
+          "prompt",
+          "wire schema",
+          "local validator",
+          "fake Provider",
+          "selector",
+          "renderer",
+          "capacity",
+          "budget units",
+          "failure descriptor"
+        ],
+        "disposition": "compile all surfaces from one typed contract and prove cross-layer invariants"
+      }
+    ],
+    "L2_to_L4_quality_cluster": {
+      "issue_id": "RC-P36-084-s4-t06-machine-verifier-semantic-and-delivery-quality-gap",
+      "T06_full_chain_blocker": false,
+      "deferred_to": [
+        "S4-T08",
+        "S4-T09",
+        "S4-T10",
+        "S5"
+      ],
+      "T06_scope_expansion_for_prose_polish": "forbidden"
+    },
+    "general_DeepSeek_unusable_claimed": false,
+    "current_model_contract_combination_noncompliance_established": true
+  },
+  "selected_structural_bundle": {
+    "bundle_ref": "fin01.s4.deterministic_judgment_atom_planner_and_compiled_contract_invariants:v1",
+    "maximum_zero_call_implementation_bundles": 1,
+    "automatic_follow_on_implementation_bundles": 0,
+    "provider_contract_families": [
+      {
+        "family_id": "specialist_fact_atoms",
+        "provider_may_return": [
+          "request-local evidence aliases",
+          "request-local numeric aliases",
+          "finite epistemic status enum",
+          "finite causal relation enum",
+          "finite materiality enum",
+          "finite confidence enum"
+        ],
+        "provider_must_not_return": [
+          "material numeric clause",
+          "amount",
+          "percentage",
+          "measurement",
+          "period text",
+          "threshold text",
+          "final fact sentence"
+        ]
+      },
+      {
+        "family_id": "claim_candidate_atoms",
+        "provider_may_return": [
+          "request-local fact aliases",
+          "finite claim-kind enum",
+          "finite direction enum",
+          "finite confidence enum",
+          "bounded candidate priority enum"
+        ],
+        "provider_must_not_own": [
+          "final cardinality",
+          "scope compatibility",
+          "final ordering",
+          "canonical Claim ID",
+          "ClaimFactLink",
+          "final rendered Claim text"
+        ]
+      },
+      {
+        "family_id": "what_would_change_atoms",
+        "provider_may_return": [
+          "request-local evidence or numeric aliases",
+          "finite trigger enum",
+          "finite direction enum",
+          "finite review cadence enum",
+          "admission-bound calendar alias"
+        ],
+        "provider_must_not_return": [
+          "free numeric threshold",
+          "free exact date",
+          "material financial prose",
+          "final monitoring sentence"
+        ]
+      }
+    ],
+    "local_deterministic_planner_owns": [
+      "validity-aware candidate filtering",
+      "scope-compatible subset selection",
+      "stable ordering and tie-breaks",
+      "final cardinality",
+      "all material numeric value period unit scale comparator sign and precision",
+      "all threshold and calendar rendering",
+      "case identity",
+      "canonical IDs",
+      "ClaimFactLink",
+      "lineage",
+      "final material fact claim and monitoring clauses"
+    ],
+    "selector_policy": {
+      "eligible_candidate_requires_all_request_local_aliases": true,
+      "eligible_candidate_requires_one_locally_derivable_scope": true,
+      "mixed_scope_candidate_disposition": "reject_before_final_selection",
+      "over_cardinality_disposition": "select_best_valid_subset_not_naive_truncation",
+      "ordering_keys": [
+        "contract priority",
+        "evidence authority",
+        "materiality enum",
+        "request-local alias tuple"
+      ],
+      "tie_break_is_deterministic": true,
+      "empty_valid_subset_disposition": "typed_gap_or_terminal_L1_according_to_requiredness_not_free_text_fallback"
+    },
+    "compiled_contract_invariants": {
+      "single_policy_source_generates": [
+        "model-visible contract",
+        "wire JSON schema",
+        "local semantic validator",
+        "fake Provider fixture",
+        "deterministic selector",
+        "deterministic renderer",
+        "capacity declaration",
+        "budget estimator units",
+        "typed failure descriptor",
+        "capture safe-index semantic classes"
+      ],
+      "provider_text_capacity_and_local_render_capacity_are_separate": true,
+      "local_structured_rendering_must_not_inherit_provider_narrative_max_length": true,
+      "worst_case_render_capacity_must_be_computed_from_bound_alias_catalog": true,
+      "final_artifact_capacity_must_be_proven_before_execution": true,
+      "projected_input_cost_unit": "estimated_input_tokens",
+      "projected_output_cost_unit": "reserved_output_tokens",
+      "utf8_bytes_may_be_used_as_pricing_tokens": false,
+      "actual_post_call_usage_cost_hard_cap_retained": true,
+      "projected_and_actual_cost_receipts_use_explicit_units": true
+    }
+  },
+  "deterministic_acceptance_matrix": {
+    "unit_tests": [
+      "each Provider family accepts only request-local aliases and finite enums",
+      "invalid alias unknown enum and arbitrary narrative fail closed",
+      "selector rejects mixed-scope candidates and chooses a valid subset",
+      "renderer owns all material numbers dates thresholds identity and final clauses",
+      "cost projection uses token units and retains actual-cost hard cap"
+    ],
+    "property_tests": [
+      "permutation of equivalent candidates produces one stable ordered subset",
+      "all locally rendered aliases remain value period unit scope and sign correspondent",
+      "worst-case bound alias sets remain within declared final Artifact capacity",
+      "compiled prompt schema validator fake and failure descriptor share one policy version"
+    ],
+    "mutation_tests": [
+      "cross-case alias contamination",
+      "unknown numeric alias",
+      "numeric value or period mutation",
+      "free threshold or exact date mutation",
+      "candidate over-cardinality with invalid leading candidates",
+      "UTF-8 multibyte prompt does not become a byte-as-token budget false positive"
+    ],
+    "three_case_full_fake": {
+      "cases": [
+        "DELL",
+        "MU",
+        "NVDA"
+      ],
+      "per_case_required": {
+        "logical_nodes": 6,
+        "provider_callbacks": 12,
+        "restricted_captures": 12,
+        "business_artifacts": 9
+      },
+      "final_artifact_L1_recomputation_required": true
+    },
+    "failure_and_replay": {
+      "zero_call_fault_injection_required": true,
+      "R6_capture_v2_cached_replay_required": true,
+      "typed_terminal_result_and_receipt_preservation_required": true,
+      "failed_or_repaired_diagnostic_output_business_promotion_allowed": false
+    },
+    "paid_live_per_individual_fix": false
+  },
+  "future_provider_canary_policy": {
+    "requires_zero_call_bundle_and_independent_fresh_proof_pass": true,
+    "changed_contract_families": [
+      "specialist_fact_atoms",
+      "claim_candidate_atoms",
+      "what_would_change_atoms"
+    ],
+    "maximum_natural_output_single_node_canaries_per_family": 1,
+    "maximum_total_single_node_canaries": 3,
+    "full_chain_canary": false,
+    "automatic_retry": false,
+    "provider_hopping": false,
+    "field_level_canary": false,
+    "canary_failure_disposition": "block that Provider-authored family and move its final surface to the local deterministic planner; do not patch one field or launch the formal chain"
+  },
+  "formal_acceptance_sequence": [
+    {
+      "order": 1,
+      "item": "S4-T06-MU-DETERMINISTIC-JUDGMENT-ATOM-PLANNER-AND-COMPILED-CONTRACT-INVARIANT-HARDENING-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+      "calls": 0,
+      "authority_required": "separate user authority",
+      "maximum_bundles": 1
+    },
+    {
+      "order": 2,
+      "item": "S4-T06-MU-DETERMINISTIC-JUDGMENT-ATOM-PLANNER-AND-COMPILED-CONTRACT-INVARIANT-HARDENING-INDEPENDENT-FRESH-AGENT-PROOF",
+      "calls": 0,
+      "authority_required": "separate user authority"
+    },
+    {
+      "order": 3,
+      "item": "S4-T06-MU-CHANGED-CONTRACT-FAMILY-SINGLE-NODE-NATURAL-OUTPUT-CANARIES",
+      "maximum_model_calls": 3,
+      "authority_required": "separate explicit user authority after proof"
+    },
+    {
+      "order": 4,
+      "item": "S4-T06-MU-FINAL-FRESH-EXACT-ADMISSION-AND-ONE-FORMAL-EXACT-LIVE",
+      "maximum_formal_exact_lives": 1,
+      "authority_required": "separate exact authority after canaries"
+    },
+    {
+      "order": 5,
+      "item": "S4-T06-MU-INDEPENDENT-L1-PAIRED-ASSESSMENT-AND-OWNER-ACCEPTANCE",
+      "eligibility": "only after coherent formal success with 12 receipts 12 captures and 9 Artifacts"
+    }
+  ],
+  "anti_infinite_repair_governance": {
+    "maximum_zero_call_implementation_bundles": 1,
+    "automatic_follow_on_bundles": 0,
+    "maximum_single_node_canaries_per_changed_contract_family": 1,
+    "maximum_final_MU_formal_exact_lives": 1,
+    "automatic_R8_or_equivalent": false,
+    "prompt_only_retry": false,
+    "field_by_field_allowlist_patch_loop": false,
+    "character_limit_expansion_without_compiled_capacity_proof": false,
+    "L1_downgrade_to_quality_finding": false,
+    "new_L1_after_final_exact_live": "stop and open one project-level blocker or deterministic surface scope replacement; no automatic new run",
+    "L2_to_L4_after_final_exact_live": "record and transfer to T08-T10 or S5 without reopening T06"
+  },
+  "issue_disposition": {
+    "RC_P36_067": "open_until_final_formal_nine_Artifact_numeric_L1_reproof",
+    "RC_P36_068": "open_until_final_formal_case_identity_L1_reproof",
+    "RC_P36_080": "open_structural_truth_ownership_repair_selected",
+    "RC_P36_082": "closed_live_terminal_result_and_final_log_digest_reproof_pass",
+    "RC_P36_083": "open_disposition_complete_one_structural_zero_call_bundle_pending",
+    "RC_P36_084": "open_non_blocking_deferred_to_T08_T10_and_S5"
+  },
+  "stage_disposition": {
+    "formal_R6": "immutable_failed",
+    "quarantined_diagnostic": "complete_non_promotable",
+    "S4_T06": "blocked_structural_implementation_and_proof_pending",
+    "paired_assessment": "not_eligible_not_performed",
+    "owner_acceptance": "not_eligible_not_performed",
+    "S4_T07": "not_entered",
+    "S4": "not_passed",
+    "S5": "blocked",
+    "release": "blocked",
+    "production": "blocked"
+  },
+  "observed_counts_this_disposition": {
+    "runtime_code_changes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "new_admissions": 0,
+    "new_work_units": 0,
+    "new_attempts": 0,
+    "new_research_runs": 0,
+    "business_artifacts": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0,
+    "T07_operations": 0
+  },
+  "next_action": "S4-T06-MU-DETERMINISTIC-JUDGMENT-ATOM-PLANNER-AND-COMPILED-CONTRACT-INVARIANT-HARDENING-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "next_action_authorized": false,
+  "known_boundary": "This decision freezes one structural L1 bundle and its proof ceiling. It does not implement the bundle, call DeepSeek, authorize canaries or admit a new formal MU run."
+}

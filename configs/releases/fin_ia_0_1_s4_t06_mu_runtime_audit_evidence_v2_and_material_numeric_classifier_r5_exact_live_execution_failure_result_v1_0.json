@@ -1,0 +1,170 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_runtime_audit_evidence_v2_and_material_numeric_classifier_r5_exact_live_execution_failure_result_v1_0",
+  "result_id": "S4-T06-MU-RUNTIME-AUDIT-EVIDENCE-V2-AND-MATERIAL-NUMERIC-CLASSIFIER-R5-EXACT-LIVE-EXECUTION-FAILURE-RESULT",
+  "executed_at": "2026-07-30T10:44:37+08:00",
+  "terminalized_at": "2026-07-30T10:45:01+08:00",
+  "recorded_at": "2026-07-30T12:00:00+08:00",
+  "status": "terminal_failed_admission_consumed_no_retry_no_artifact_runner_result_materialization_failed",
+  "source_authority": {
+    "execution_authority_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_runtime_audit_evidence_v2_and_material_numeric_classifier_r5_exact_live_execution_and_success_only_paired_assessment_authority_decision_v1_0.json",
+    "execution_authority_sha256": "89296d86f073124cf24d9fb574f74a0a74815833ab2791d802dcf537425511d0",
+    "admission_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_runtime_audit_evidence_v2_and_material_numeric_classifier_fresh_exact_admission_r5.json",
+    "admission_sha256": "1f49070ddce794ebf097abed4cd07cec2675d85822a0d7a8547236460c5fbff7",
+    "admission_digest": "3457fded0bd72b4df5d1fd6a1529bf7bfb8055681c388808b5d3e01a5dbbd6e8",
+    "issuance_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_runtime_audit_evidence_v2_and_material_numeric_classifier_fresh_exact_admission_r5_issuance_v1_0.json",
+    "issuance_sha256": "c91136b3478fe04a1e2a3ca7e863ac8cbb9d3f99446a0c6b0db884fa3a59fe05"
+  },
+  "execution_identity": {
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "supervision_root": ".codex_runtime/fin01-s4-t06-mu-runtime-audit-numeric-classifier-r5-supervision-r1",
+    "output_prefix": "s4_t06_mu_runtime_audit_numeric_classifier_r5",
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_version": 1,
+    "case_ticker": "MU",
+    "as_of": "2026-07-26T00:00:00Z",
+    "work_unit_id": "wu_p02_5_9bc50ffc937ad6ff1daf1069",
+    "attempt_id": "attempt_fin01_5677c30ed62a0e051441d087",
+    "research_run_id": "research_run_fin01_0b20402c2f8d5e5674626760",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  "terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_states_consistent": true,
+    "attempt_failure_type": "bounded_agent_profile_execution_failed",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:domain_specialist:demand_authenticity_and_sustainability",
+    "retryable": false,
+    "retry_count": 0,
+    "same_case_distinct_work_unit_attempt_run_artifact_counts_after": [
+      6,
+      6,
+      6,
+      13
+    ],
+    "target_run_artifacts": 0,
+    "completed_logical_nodes": 0
+  },
+  "first_credible_failure": {
+    "stage": "domain_specialist:demand_authenticity_and_sustainability:actionable_what_would_change_tasks",
+    "failure_code": "s4_case_numeric_authority_provider_narrative_invalid",
+    "failure_subtype": "provider_authored_material_numeric_token",
+    "acceptance_layer_at_runtime": "L1_hard_integrity",
+    "validator_rule_code": "material_numeric_provider_narrative_boundary_v2",
+    "capture_sequence": 3,
+    "failing_item_count": 2,
+    "field_id": "deadline_or_review_date",
+    "match_paths": [
+      "$.what_would_change[0].time_window.deadline_or_review_date",
+      "$.what_would_change[1].time_window.deadline_or_review_date"
+    ],
+    "semantic_classes": [
+      "unknown_reporting_period_label"
+    ],
+    "provider_authored_values_under_restricted_audit": [
+      "2026-09-30",
+      "2026-09-30"
+    ],
+    "request_allowed_reporting_period_labels": [
+      "2026-06-24",
+      "2026-07-26",
+      "FQ3_2026",
+      "Q1 2026"
+    ],
+    "provider_instruction": "Provider-authored narrative may repeat only exact reporting-period labels and request-local identifiers already present in the bound contract.",
+    "provider_compliance_observation": "The model returned valid JSON with status ok and finish_reason stop, but authored an exact calendar date that was absent from the closed allowed label set in two required planning-deadline fields.",
+    "financial_fact_error_established": false,
+    "planning_deadline_authority_violation_established": true,
+    "raw_provider_body_persisted": false,
+    "assistant_final_output_preserved_in_restricted_capture_v2": true
+  },
+  "usage_and_budget": {
+    "semantic_model_calls": 3,
+    "provider_calls": 3,
+    "network_calls": 3,
+    "transport_attempts": 3,
+    "input_tokens": 14122,
+    "output_tokens": 1406,
+    "total_tokens": 15528,
+    "estimated_cost_usd": 0.00736628,
+    "latency_ms_sum": 23526,
+    "maximum_semantic_model_calls": 12,
+    "maximum_provider_calls": 12,
+    "maximum_network_calls": 12,
+    "maximum_output_tokens": 16800,
+    "maximum_total_cost_usd": 0.1,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "replay_count": 0,
+    "relaunch_count": 0,
+    "rerun_count": 0
+  },
+  "capture_v2_evidence": {
+    "policy_ref": "fin01.runtime.provider_interaction_audit_capture:v2",
+    "capture_count": 3,
+    "restricted_readback_count": 3,
+    "model_visible_request_present_count": 3,
+    "assistant_final_output_present_count": 3,
+    "credentials_persisted_count": 0,
+    "private_reasoning_persisted_count": 0,
+    "raw_provider_response_persisted_count": 0,
+    "content_addressed_digest_matches": 3,
+    "capture_object_digests": [
+      "d6f880183a28adeb6fc3e05f104bf979c04fd27bd401eb1c6ff652c525c5f860",
+      "3674ab2a432dd632df2b15400a2a61151000ebfc635c5259d8ca71eeb11e530f",
+      "3943dd2f1730333cf31928fa249c461d73b1f0d3e98225d44482d540f8183661"
+    ],
+    "capture_sequences": [
+      1,
+      2,
+      3
+    ],
+    "validator_match_index_count_on_failure_capture": 4,
+    "terminal_match_count_on_failure_capture": 2,
+    "failed_output_promoted_to_business_artifact": false
+  },
+  "supervision_and_runner_observation": {
+    "contract_ref": "fin01.s3.exact_run_supervision:v2",
+    "runner_pid": 37216,
+    "launch_receipt_ref": ".codex_runtime/fin01-s4-t06-mu-runtime-audit-numeric-classifier-r5-supervision-r1/launch_receipt.json",
+    "launch_receipt_sha256": "3d08759ebde8c4263a3c293490b3393a231bef08c6d580b0c16ae913f6a8275c",
+    "exit_receipt_ref": ".codex_runtime/fin01-s4-t06-mu-runtime-audit-numeric-classifier-r5-supervision-r1/exit_receipt.json",
+    "exit_receipt_sha256": "f530df95cc21c08de18ea72bf5ea0b6012c2a50cfaadf1b89dfe354421493b12",
+    "runner_exit_code": 1,
+    "typed_unhandled_failure_code": "unhandled_RuntimeError",
+    "runtime_result_ref": null,
+    "post_terminal_exception": "s3_t09_provider_output_capture_policy_mismatch",
+    "post_terminal_exception_owner": "runner hard-codes the legacy capture-v1 policy when capture refs exist instead of validating the admission-bound capture policy",
+    "canonical_failure_preceded_runner_exception": true,
+    "canonical_usage_receipts_and_capture_v2_preserved": true,
+    "runner_result_materialized": false,
+    "exit_receipt_stderr_digest_matches_final_stderr": false,
+    "exit_receipt_stderr_bytes": 299,
+    "final_stderr_bytes": 1073,
+    "exit_receipt_stderr_sha256": "3d4761ce60f9ca2e769128f22a9551c773b4542455dd06879878ef9df5365d20",
+    "final_stderr_sha256": "56f9d671a1a85fc2b1d7e115979e3d64f37574f61e43f82605876215e72c99f0",
+    "supervisor_monitor_mutations": 0,
+    "supervisor_signals_sent": 0
+  },
+  "acceptance_disposition": {
+    "coherent_terminal_success": false,
+    "independent_final_artifact_L1_eligible": false,
+    "paired_assessment_eligible": false,
+    "paired_assessment_performed": false,
+    "owner_acceptance_eligible": false,
+    "owner_acceptance_performed": false,
+    "MU_R5_passed": false,
+    "S4_T06_passed": false,
+    "S4_T07_entered": false,
+    "automatic_R6_authorized_or_performed": false,
+    "strict_schema_transport_reactivated": false
+  },
+  "stop_contract_observation": {
+    "admission_consumed_exactly_once": true,
+    "first_credible_failure_stopped_execution": true,
+    "automatic_retry_fallback_replay_relaunch_patch_or_rerun": false,
+    "historical_R4_or_R5_output_rewritten": false,
+    "next_action": "S4-T06-MU-R5-FIRST-CREDIBLE-FAILURE-ROOT-CAUSE-OR-SCOPE-DISPOSITION-DECISION"
+  }
+}

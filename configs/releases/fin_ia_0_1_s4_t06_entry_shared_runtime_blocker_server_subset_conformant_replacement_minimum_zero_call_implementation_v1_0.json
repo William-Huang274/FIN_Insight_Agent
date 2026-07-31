@@ -1,0 +1,216 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_server_subset_conformant_replacement_minimum_zero_call_implementation_v1_0",
+  "recorded_at": "2026-07-29T00:20:00+08:00",
+  "work_item_id": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-SERVER-SUBSET-CONFORMANT-REPLACEMENT-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "status": "pass_zero_call_replacement_implementation_fixture_proven_fresh_engineering_proof_pending",
+  "decision_label": "pass_one_time_scope_replacement_implementation",
+  "source_decision": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_post_proof_program_scope_replace_decision_v1_0.json",
+    "sha256": "da48871624cebb068d23f3b34087bf9772dcd39b58d4eb4c0914b5fec2f94ad8",
+    "decision_label": "scope_replace"
+  },
+  "replacement_contract": {
+    "server_schema_compiler_ref": "fin01.provider.openai_structured_outputs_supported_subset:v1",
+    "semantic_truth_kernel_ref": "fin01.s4.strict_truth_kernel.numeric_judgment_selection:v2",
+    "local_validator_ref": "fin01.s4.strict_truth_kernel.local_semantic_validator:v1",
+    "prospective_provider_model": "openai:gpt-5.6-sol",
+    "architecture": "one_semantic_policy_owner_with_explicit_provider_subset_compiler_and_independent_local_semantic_validation",
+    "server_wire_schema": {
+      "wire": "responses.text.format.type=json_schema; strict=true; schema=<compiled_subset_schema>",
+      "allowed_keywords": [
+        "type",
+        "properties",
+        "required",
+        "additionalProperties",
+        "items",
+        "minItems",
+        "maxItems",
+        "enum"
+      ],
+      "object_rules": {
+        "all_properties_required": true,
+        "additionalProperties_false": true
+      },
+      "array_rules": {
+        "items_required": true,
+        "minItems_and_maxItems_allowed": true,
+        "uniqueItems_forbidden_on_server_wire": true
+      },
+      "material_numeric_or_identity_fields_forbidden": true,
+      "arbitrary_free_text_forbidden": true
+    },
+    "local_semantic_validator": {
+      "exact_top_level_and_nested_key_sets_required": true,
+      "numeric_alias_case_scope_required": true,
+      "numeric_alias_uniqueness_required": true,
+      "counterevidence_alias_case_scope_required": true,
+      "counterevidence_alias_uniqueness_required": true,
+      "closed_enum_membership_required": true,
+      "cross_case_replay_rejected": true,
+      "local_material_rendering_and_independent_L1_recomputation_required": true,
+      "failure_before_business_artifact_commit": true
+    },
+    "single_owner_generation": {
+      "prompt_contract": true,
+      "server_wire_schema": true,
+      "local_validator": true,
+      "fake_provider": true,
+      "rubric_and_mutation_fixtures": true
+    },
+    "provider_neutrality_boundary": "The semantic policy remains provider-neutral, while each exact provider binding must use an explicit documented-subset compiler. This decision freezes only the OpenAI Structured Outputs subset compiler and does not authorize provider hopping."
+  },
+  "implemented_contracts": {
+    "semantic_truth_kernel": "fin01.s4.strict_truth_kernel.numeric_judgment_selection:v2",
+    "server_schema_compiler": "fin01.provider.openai_structured_outputs_supported_subset:v1",
+    "local_semantic_validator": "fin01.s4.strict_truth_kernel.local_semantic_validator:v1",
+    "provider_capability": "fin01.provider.capability.strict_json_schema:v1",
+    "non_authoritative_narrative_shell": "fin01.s4.non_authoritative_narrative_shell:v1",
+    "atomic_failure_terminal": "fin01.bounded_agent.atomic_failure_terminal_core_and_registered_observation:v1",
+    "registered_failure_observation": "fin01.bounded_agent.failure_observation_descriptor:v1"
+  },
+  "implementation_scope": {
+    "semantic_schema": [
+      "retains_local_uniqueItems_semantic_marker",
+      "retains_alias_and_closed_enum_shape",
+      "contains_no_material_numeric_identity_or_free_text_field"
+    ],
+    "server_subset_compiler": [
+      "explicit_keyword_allowlist",
+      "removes_only_registered_local_uniqueItems_marker",
+      "rejects_unknown_schema_keyword",
+      "requires_all_object_properties",
+      "requires_additionalProperties_false",
+      "requires_array_items",
+      "validates_minItems_maxItems_bounds"
+    ],
+    "local_validator": [
+      "exact_key_sets",
+      "numeric_alias_scope_and_uniqueness",
+      "counterevidence_alias_scope_and_uniqueness",
+      "closed_enum_membership",
+      "cross_case_replay_rejection",
+      "local_material_rendering",
+      "independent_L1_recomputation"
+    ],
+    "runtime_wiring": [
+      "responses_text_format_uses_server_json_schema",
+      "prompt_required_output_schema_uses_server_json_schema",
+      "prompt_exposes_compiler_and_local_validator_refs",
+      "strict_failure_descriptor_uses_truth_kernel_v2"
+    ],
+    "explicitly_not_changed": [
+      "case_numeric_projection_values",
+      "case_delivery_identity",
+      "atomic_terminal_core",
+      "facade_persistence",
+      "legacy_S2_S3_admission_payloads",
+      "historical_Run_or_Artifact",
+      "provider_or_model",
+      "credential_configuration"
+    ]
+  },
+  "fixture_proof": {
+    "cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "per_case_nodes_callbacks_captures_artifacts": [
+      6,
+      12,
+      12,
+      9
+    ],
+    "per_case_strict_responses_callbacks": 3,
+    "per_case_chat_callbacks": 9,
+    "server_schema_checks": [
+      "uniqueItems_absent",
+      "all_emitted_keywords_in_allowlist",
+      "all_object_properties_required",
+      "all_objects_additionalProperties_false",
+      "material_numeric_identity_and_free_text_fields_absent"
+    ],
+    "negative_fixtures": [
+      "unknown_server_schema_keyword",
+      "invalid_object_required_contract",
+      "wrong_numeric_alias",
+      "cross_case_numeric_alias",
+      "numeric_projection_mutation",
+      "extra_text",
+      "invalid_enum",
+      "duplicate_numeric_alias",
+      "duplicate_counterevidence_alias",
+      "missing_strict_capability_pre_provider",
+      "registered_failure_observation_atomic_terminalization",
+      "unknown_secret_like_failure_extension_atomic_terminalization"
+    ],
+    "failure_state_triplet": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "failure_usage_receipts_preserved": 12,
+    "failure_provider_output_captures_preserved": 12,
+    "failure_artifact_count": 0,
+    "failure_attempt_count": 1
+  },
+  "verification": {
+    "focused_pre_record_command": "python -m pytest tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_minimum_zero_call_implementation.py tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_fresh_engineering_proof_and_provider_capability_binding_decision.py tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_post_proof_program_scope_replace_decision.py tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_server_subset_conformant_replacement_minimum_zero_call_implementation.py -q -k 'not implementation_record_binds_current_code_and_zero_call_boundary'",
+    "focused_pre_record_result": "32 passed, 1 deselected",
+    "adjacent_regression_pre_record_command": "python -m pytest tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_minimum_zero_call_implementation.py tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_server_subset_conformant_replacement_minimum_zero_call_implementation.py tests/contract/test_fin_0_1_s4_t05_case_numeric_authority_and_delivery_identity_zero_call_implementation.py tests/contract/test_fin_0_1_s4_t05_typed_post_provider_failure_envelope_zero_call_implementation.py tests/contract/test_fin_0_1_s3_t09_provider_output_capture_persistence.py -q -k 'not implementation_record_binds_current_code_and_zero_call_boundary'",
+    "adjacent_regression_pre_record_result": "60 passed, 1 deselected",
+    "focused_final_result": "33 passed",
+    "adjacent_regression_final_result": "61 passed",
+    "python_compile": "pass",
+    "legacy_admission_digest_preservation": true,
+    "legacy_S2_S3_runtime_mutation": false
+  },
+  "observed_counts": {
+    "actual_model_calls": 0,
+    "actual_provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "credential_reads_or_probes": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "business_artifacts_created": 0,
+    "paired_assessments": 0,
+    "human_reviews": 0
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "1049c7182a78662eb44c3f108fbed11816f0469376bb9bbe610b62936d5f6396",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "14da78cd02f0fc0e21652b060665cffab7f6487b27f707512b762ecb2bd508f6",
+    "src/sec_agent/canonical_runtime/failure_observation_policy.py": "30c752e59bcfba5315998aa342764599aaebed0a1e3799307f65456fc1acc011",
+    "src/sec_agent/canonical_runtime/facade.py": "c78cdb70340643662eca9f75b8ff5c49f02c4b29c7436b35947a70cf225058c0",
+    "tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_minimum_zero_call_implementation.py": "367b4a2f26fbfcfbc8fc18263f4a19ee6cb0c222502ec6b7e6ec49acfd86dc12",
+    "tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_server_subset_conformant_replacement_minimum_zero_call_implementation.py": "6bb6f9f4137dc939f8fa71adf134d0fb50e9af12ed7cdc246d230325a131249d"
+  },
+  "historical_state": {
+    "S4_T05": "blocked_not_passed_not_owner_accepted",
+    "DELL_R11": "immutable_failed",
+    "DELL_R12": "forbidden",
+    "RC-P36-067": "replacement_fixture_proven_future_live_requalification_pending",
+    "RC-P36-068": "carried_open_future_next_case_live_proof",
+    "RC-P36-069": "closed_remains_closed",
+    "RC-P36-070": "replacement_fixture_proven_fresh_engineering_proof_pending",
+    "S4_T06": "not_entered"
+  },
+  "scope_limit": {
+    "replacement_zero_call_implementation_bundles_maximum": 1,
+    "replacement_zero_call_implementation_bundles_consumed": 1,
+    "automatic_follow_on_repair_bundles": 0,
+    "field_by_field_prompt_regex_allowlist_patch_iterations": 0,
+    "fresh_engineering_proof_requires_separate_authority": true,
+    "maximum_single_node_canaries_after_fresh_proof": 1,
+    "canary_requires_separate_authority": true,
+    "canary_failure_action": "stop_without_retry_provider_hopping_or_full_chain",
+    "DELL_R12": false
+  },
+  "next_action": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-REPLACEMENT-FRESH-ENGINEERING-PROOF-AND-PROVIDER-CAPABILITY-BINDING-DECISION",
+  "next_action_authorized": false,
+  "known_boundary": "The one-time replacement is runtime-injected and fixture-proven only. It does not establish exact endpoint acceptance, credential access, semantic live quality, a canary, admission, MU T06, DELL R2, S4 pass, S5, release, or production."
+}

@@ -1,0 +1,1113 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t04_source_grounded_input_pack_v1_0",
+  "contract_ref": "fin01.s4.source_grounded_case_input:v1",
+  "pack_id": "FIN-IA-0.1-S4-T06-MU-SOURCE-GROUNDED-INPUT-R1",
+  "frozen_at": "2026-07-29T10:30:00+08:00",
+  "status": "source_routes_executed_issuer_bound_input_head_ready",
+  "case_ticker": "MU",
+  "legal_name": "Micron Technology, Inc.",
+  "issuer_identifier": "CIK0000723125",
+  "as_of": "2026-07-26T00:00:00Z",
+  "source_snapshots": [
+    {
+      "source_id": "mu_q3_fy26_results_release",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "title": "Micron Technology, Inc. Reports Record Results for the Third Quarter of Fiscal 2026",
+      "published_at": "2026-06-24",
+      "retrieval_channel": "official_ir_html_table_and_statement_parser",
+      "fetch_status": "success",
+      "locator": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "normalized_extract": "FQ3-26 revenue USD41,456m, GAAP gross profit USD35,056m, GAAP operating income USD33,318m, GAAP net income USD28,243m and operating cash flow USD25,388m. Net capital expenditures were USD7,084m and adjusted free cash flow was USD18,304m. HBM4 was in high-volume shipment for a lead customer platform with qualification samples to multiple end-customers.",
+      "full_document_sha256": null,
+      "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+      "normalized_locator_snapshot_digest": "26a2051b3d75f176957367bbbde66ee06d3b5752ae0e327cc4059786ef8ed439"
+    },
+    {
+      "source_id": "mu_q3_fy26_prepared_remarks",
+      "source_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "title": "Micron Fiscal Q3 2026 Earnings Call Prepared Remarks",
+      "published_at": "2026-06-24",
+      "retrieval_channel": "direct_http_pdf_text_and_page_locator",
+      "fetch_status": "success",
+      "locator": "PDF pages 1-10; SCA pages 1-3, supply pages 4-5, financials pages 7-9",
+      "normalized_extract": "Micron disclosed 16 strategic customer agreements, usually five-year terms, tight DRAM and NAND conditions beyond calendar 2027, FQ3 DRAM revenue about USD31.3bn, company and business-unit results, USD8.6bn ending inventory and 120 inventory days.",
+      "full_document_sha256": "a3ce62b84a059e35fae80c2bfd5c89f9af334193fd6aceff698fc3008e7d4c27",
+      "source_snapshot_ref": "s4_mu_source_snapshot_07be5bac884fb7bbafcdefa7",
+      "normalized_locator_snapshot_digest": "07be5bac884fb7bbafcdefa7d2a3a40d2f049f9c12b4829766317aa1b6d6bad2"
+    },
+    {
+      "source_id": "mu_q3_fy26_earnings_deck",
+      "source_url": "https://investors.micron.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+      "title": "Micron Fiscal Q3 2026 Earnings Presentation",
+      "published_at": "2026-06-24",
+      "retrieval_channel": "direct_http_pdf_text_and_page_locator",
+      "fetch_status": "success",
+      "locator": "PDF pages 3-7 and financial appendix; demand, supply and HBM trade-ratio statements",
+      "normalized_extract": "The deck states DRAM and NAND demand exceeded supply, tightness was expected beyond 2027, greenfield constraints limit supply, and each HBM generation increases trade ratio and pressure on non-HBM supply.",
+      "full_document_sha256": "29468a786fa4a9c7728735ea8e3ad5853bb1375a297c636e86e6a4dd3b155929",
+      "source_snapshot_ref": "s4_mu_source_snapshot_153e38525dff2e9970a4552f",
+      "normalized_locator_snapshot_digest": "153e38525dff2e9970a4552f735ded40e43aba8490162dbace28928566094e3b"
+    },
+    {
+      "source_id": "mu_q3_fy26_10q",
+      "source_url": "https://investors.micron.com/static-files/e18b3c93-8b84-411b-94eb-517b018d9dab",
+      "title": "Micron Technology Fiscal Q3 2026 Form 10-Q",
+      "published_at": "2026-06-30",
+      "retrieval_channel": "official_filing_pdf_table_and_risk_parser",
+      "fetch_status": "success",
+      "locator": "PDF consolidated statements and risk factors, especially page 6 HBM demand and manufacturing intensity",
+      "normalized_extract": "The filing provides issuer GAAP statements and cautions that long-term generative-AI/HBM demand may fluctuate; HBM requires more wafers and cleanroom space per bit than conventional DRAM and capacity can be shifted if HBM demand weakens.",
+      "full_document_sha256": "713a12cd52689640bcc0df9e131d31c3db8c26b794cd2e8219fd727cf4cbd45a",
+      "source_snapshot_ref": "s4_mu_source_snapshot_800bba97ed88306ee3f5f370",
+      "normalized_locator_snapshot_digest": "800bba97ed88306ee3f5f37058a3796073e2d8b571b695f834ede91827592b9e"
+    },
+    {
+      "source_id": "mu_hbm4_high_volume_release",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-high-volume-production-hbm4-designed-nvidia-vera-rubin",
+      "title": "Micron in High-Volume Production of HBM4 Designed for NVIDIA Vera Rubin",
+      "published_at": "2026-03-16",
+      "retrieval_channel": "official_ir_product_release_html_parser",
+      "fetch_status": "success",
+      "locator": "lines 285-300 and footnotes 327-333",
+      "normalized_extract": "Micron began volume shipment of HBM4 36GB 12H in calendar Q1 2026, designed for NVIDIA Vera Rubin, with over 11 Gb/s pin speed, more than 2.8 TB/s bandwidth and greater than 20% power-efficiency improvement versus HBM3E under the stated test boundary.",
+      "full_document_sha256": null,
+      "source_snapshot_ref": "s4_mu_source_snapshot_06bf0eb22fcb4faba1bbb929",
+      "normalized_locator_snapshot_digest": "06bf0eb22fcb4faba1bbb92989757f44cdb3bf3fb283ab4307167e22a7faee6b"
+    },
+    {
+      "source_id": "mu_hbm_product_page",
+      "source_url": "https://www.micron.com/products/memory/hbm",
+      "title": "Micron High-Bandwidth Memory Product Page",
+      "published_at": "2026-07-26",
+      "retrieval_channel": "official_product_page_context_parser",
+      "fetch_status": "success",
+      "locator": "HBM4 high-volume-production section, lines 332-348",
+      "normalized_extract": "The product page identifies HBM4 36GB 12H as in high-volume production and states more than 11 Gb/s pin speed, greater than 2.8 TB/s bandwidth and greater than 20% power efficiency improvement versus HBM3E.",
+      "full_document_sha256": null,
+      "source_snapshot_ref": "s4_mu_source_snapshot_12b184b999dabf2d64caa5f9",
+      "normalized_locator_snapshot_digest": "12b184b999dabf2d64caa5f910ba3a6280dd8024b9c692e4e21177f79847c91c"
+    }
+  ],
+  "route_execution_receipts": [
+    {
+      "route_id": "p34_route::mu_hbm4_shipment_and_qualification::01::issuer_earnings_release_statement_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "fetch_status": "success",
+      "parser_status": "executed_promoted_issuer_evidence",
+      "row_count": 1,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+      "route_execution_status": "executed_promoted_issuer_evidence",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-29T10:30:00+08:00",
+      "route_receipt_ref": "s4_mu_route_receipt_96f7a8d274aa5f57722e97c1"
+    },
+    {
+      "route_id": "p34_route::mu_hbm4_product_generation_and_platform::01::official_product_release_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://investors.micron.com/news-releases/news-release-details/micron-high-volume-production-hbm4-designed-nvidia-vera-rubin",
+      "fetch_status": "success",
+      "parser_status": "executed_promoted_issuer_evidence_and_context",
+      "row_count": 3,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_mu_source_snapshot_06bf0eb22fcb4faba1bbb929",
+      "route_execution_status": "executed_promoted_issuer_evidence_and_context",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-29T10:30:00+08:00",
+      "route_receipt_ref": "s4_mu_route_receipt_c24f26c4cefb9c781909d406"
+    },
+    {
+      "route_id": "p34_route::mu_strategic_customer_agreements_and_supply::01::official_prepared_remarks_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "fetch_status": "success",
+      "parser_status": "executed_promoted_issuer_evidence",
+      "row_count": 2,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_mu_source_snapshot_07be5bac884fb7bbafcdefa7",
+      "route_execution_status": "executed_promoted_issuer_evidence",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-29T10:30:00+08:00",
+      "route_receipt_ref": "s4_mu_route_receipt_f6f3df5f8f1baf8488987c9e"
+    },
+    {
+      "route_id": "p34_route::mu_gaap_company_and_business_unit_financials::01::issuer_earnings_release_table_adapter",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "fetch_status": "success",
+      "parser_status": "executed_promoted_issuer_evidence_and_numeric",
+      "row_count": 14,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+      "route_execution_status": "executed_promoted_issuer_evidence_and_numeric",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-29T10:30:00+08:00",
+      "route_receipt_ref": "s4_mu_route_receipt_6a90de044746f2f0328bf2a5"
+    },
+    {
+      "route_id": "p34_route::mu_pricing_mix_inventory_and_cash::01::official_prepared_remarks_numeric_adapter",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "fetch_status": "success",
+      "parser_status": "executed_promoted_issuer_evidence_and_numeric",
+      "row_count": 4,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_mu_source_snapshot_07be5bac884fb7bbafcdefa7",
+      "route_execution_status": "executed_promoted_issuer_evidence_and_numeric",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-29T10:30:00+08:00",
+      "route_receipt_ref": "s4_mu_route_receipt_e1fc9e497bdc1e4e52180ee8"
+    },
+    {
+      "route_id": "p34_route::mu_gaap_filing_and_hbm_risk::01::official_filing_table_and_risk_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://investors.micron.com/static-files/e18b3c93-8b84-411b-94eb-517b018d9dab",
+      "fetch_status": "success",
+      "parser_status": "executed_promoted_issuer_evidence_and_counterevidence",
+      "row_count": 2,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_mu_source_snapshot_800bba97ed88306ee3f5f370",
+      "route_execution_status": "executed_promoted_issuer_evidence_and_counterevidence",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-29T10:30:00+08:00",
+      "route_receipt_ref": "s4_mu_route_receipt_b9d2cb292f615890792ddebe"
+    },
+    {
+      "route_id": "p34_route::mu_memory_supply_constraints_and_hbm_trade_ratio::01::official_earnings_deck_statement_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://investors.micron.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+      "fetch_status": "success",
+      "parser_status": "executed_promoted_issuer_counterevidence",
+      "row_count": 1,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_mu_source_snapshot_153e38525dff2e9970a4552f",
+      "route_execution_status": "executed_promoted_issuer_counterevidence",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-29T10:30:00+08:00",
+      "route_receipt_ref": "s4_mu_route_receipt_0dd015b0d3bd960602401551"
+    },
+    {
+      "route_id": "p34_route::mu_hbm4_product_context::01::official_product_page_context_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://www.micron.com/products/memory/hbm",
+      "fetch_status": "success",
+      "parser_status": "executed_context_only_product_scope",
+      "row_count": 1,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_mu_source_snapshot_12b184b999dabf2d64caa5f9",
+      "route_execution_status": "executed_context_only_product_scope",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-29T10:30:00+08:00",
+      "route_receipt_ref": "s4_mu_route_receipt_b80a96d6b0b8331087508006"
+    }
+  ],
+  "evidence_rows": [
+    {
+      "entity_ref": "MU",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "evidence_role": "issuer_HBM_shipment_and_qualification_signal",
+      "statement": "Micron stated that HBM4 was in high-volume shipments for its lead customer's platform and that qualification samples had shipped to multiple end-customers.",
+      "period_or_version": "2026-06-24",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "citation": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser",
+        "normalized_extract_digest": "26a2051b3d75f176957367bbbde66ee06d3b5752ae0e327cc4059786ef8ed439"
+      },
+      "authority_scope": "issuer_product_status_statement",
+      "claim_boundary": "Supports shipment and qualification status only; no named customer, HBM revenue, margin or customer share.",
+      "evidence_ref": "s4_mu_evidence_hbm4_shipment_qualification_a9e43988eecfa12aabf6be32"
+    },
+    {
+      "entity_ref": "MU",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "evidence_role": "official_HBM_product_generation_and_platform_signal",
+      "statement": "Micron stated that it began volume shipment of HBM4 36GB 12H in calendar Q1 2026 and that the product was designed for NVIDIA Vera Rubin.",
+      "period_or_version": "calendar_Q1_2026",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-high-volume-production-hbm4-designed-nvidia-vera-rubin",
+      "citation": "lines 285-300 and footnotes 327-333",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_06bf0eb22fcb4faba1bbb929",
+        "adapter": "official_ir_product_release_html_parser",
+        "normalized_extract_digest": "06bf0eb22fcb4faba1bbb92989757f44cdb3bf3fb283ab4307167e22a7faee6b"
+      },
+      "authority_scope": "issuer_product_release",
+      "claim_boundary": "Product and platform context only; does not prove NVIDIA purchase volume, revenue attribution or exclusivity.",
+      "evidence_ref": "s4_mu_evidence_hbm4_volume_vera_rubin_68cc52f6e80b260f97675786"
+    },
+    {
+      "entity_ref": "MU",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "evidence_role": "issuer_customer_commitment_and_supply_signal",
+      "statement": "Micron disclosed 16 strategic customer agreements, typically with five-year terms through calendar 2030, to provide customers contracted supply assurance.",
+      "period_or_version": "FQ3_2026",
+      "source_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "citation": "PDF pages 1-10; SCA pages 1-3, supply pages 4-5, financials pages 7-9",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_07be5bac884fb7bbafcdefa7",
+        "adapter": "direct_http_pdf_text_and_page_locator",
+        "normalized_extract_digest": "07be5bac884fb7bbafcdefa7d2a3a40d2f049f9c12b4829766317aa1b6d6bad2"
+      },
+      "authority_scope": "issuer_company_level_customer_agreement_statement",
+      "claim_boundary": "The agreements are company-level and cannot be attributed to HBM, a named customer, product generation or margin.",
+      "evidence_ref": "s4_mu_evidence_company_sca_supply_assurance_65d30d13e6523c0b2b062cb6"
+    },
+    {
+      "entity_ref": "MU",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "evidence_role": "memory_cycle_supply_counterevidence",
+      "statement": "Micron stated that DRAM and NAND demand exceeded supply, tight conditions were expected beyond calendar 2027, and HBM trade-ratio growth pressures non-HBM supply.",
+      "period_or_version": "2026-06-24",
+      "source_url": "https://investors.micron.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+      "citation": "PDF pages 3-7 and financial appendix; demand, supply and HBM trade-ratio statements",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_153e38525dff2e9970a4552f",
+        "adapter": "direct_http_pdf_text_and_page_locator",
+        "normalized_extract_digest": "153e38525dff2e9970a4552f735ded40e43aba8490162dbace28928566094e3b"
+      },
+      "authority_scope": "issuer_industry_outlook_and_supply_statement",
+      "claim_boundary": "Forward-looking issuer outlook; does not establish realized future pricing, HBM demand durability or competitor supply.",
+      "evidence_ref": "s4_mu_evidence_memory_supply_cycle_7776ca0dac6fd31e0de7211d"
+    },
+    {
+      "entity_ref": "MU",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "evidence_role": "issuer_financial_statement",
+      "statement": "Micron reported FQ3-26 company GAAP revenue, gross profit, operating income, net income and operating cash flow, plus business-unit revenue and margin tables.",
+      "period_or_version": "FQ3_2026",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "citation": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser",
+        "normalized_extract_digest": "26a2051b3d75f176957367bbbde66ee06d3b5752ae0e327cc4059786ef8ed439"
+      },
+      "authority_scope": "issuer_exact_financial_table",
+      "claim_boundary": "Company and disclosed business-unit scope only; none is an HBM-specific revenue or profit row.",
+      "evidence_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885"
+    },
+    {
+      "entity_ref": "MU",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "evidence_role": "official_pricing_mix_inventory_and_cash_disclosure",
+      "statement": "Micron attributed FQ3 DRAM and business-unit changes to pricing, bit shipments and mix, and disclosed USD8.6bn ending inventory with 120 inventory days.",
+      "period_or_version": "FQ3_2026",
+      "source_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "citation": "PDF pages 1-10; SCA pages 1-3, supply pages 4-5, financials pages 7-9",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_07be5bac884fb7bbafcdefa7",
+        "adapter": "direct_http_pdf_text_and_page_locator",
+        "normalized_extract_digest": "07be5bac884fb7bbafcdefa7d2a3a40d2f049f9c12b4829766317aa1b6d6bad2"
+      },
+      "authority_scope": "issuer_prepared_remarks_with_scope_labels",
+      "claim_boundary": "Does not permit an HBM-specific price-volume-mix decomposition or product profit allocation.",
+      "evidence_ref": "s4_mu_evidence_pricing_mix_inventory_c2e719256bac19f9facc2ff1"
+    },
+    {
+      "entity_ref": "MU",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "evidence_role": "official_HBM_demand_and_manufacturing_counterevidence",
+      "statement": "Micron cautioned that the long-term trajectory of generative-AI/HBM demand is unknown and may fluctuate, while HBM requires more wafers and cleanroom space per bit than conventional DRAM.",
+      "period_or_version": "FQ3_2026_10Q",
+      "source_url": "https://investors.micron.com/static-files/e18b3c93-8b84-411b-94eb-517b018d9dab",
+      "citation": "PDF consolidated statements and risk factors, especially page 6 HBM demand and manufacturing intensity",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_800bba97ed88306ee3f5f370",
+        "adapter": "official_filing_pdf_table_and_risk_parser",
+        "normalized_extract_digest": "800bba97ed88306ee3f5f37058a3796073e2d8b571b695f834ede91827592b9e"
+      },
+      "authority_scope": "issuer_regulatory_filing_risk_factor",
+      "claim_boundary": "Risk mechanism and uncertainty boundary; it does not quantify probability, impact, yield or future capacity.",
+      "evidence_ref": "s4_mu_evidence_hbm_demand_manufacturing_risk_e2f9a5304a450f4aec04c537"
+    }
+  ],
+  "numeric_rows": [
+    {
+      "entity_ref": "MU",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "revenue",
+      "value": "41456",
+      "comparison_operator": "equal",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_coordinate": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_revenue_b84181d93c2a319996dcabfd"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "gross_profit",
+      "value": "35056",
+      "comparison_operator": "equal",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_coordinate": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_gross_profit_cf5ab5713fd2cd90aa0d565e"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "operating_income",
+      "value": "33318",
+      "comparison_operator": "equal",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_coordinate": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_operating_income_f0409e13aab10c80ca197b70"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "net_income",
+      "value": "28243",
+      "comparison_operator": "equal",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_coordinate": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_net_income_af7dbf45dc7ae88601003115"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "operating_cash_flow",
+      "value": "25388",
+      "comparison_operator": "equal",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_coordinate": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_operating_cash_flow_e5cc1d87317215f5915f059b"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "gaap_gross_margin",
+      "value": "84.6",
+      "comparison_operator": "equal",
+      "currency": null,
+      "unit": "percent",
+      "scale_multiplier": 1,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_coordinate": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_gaap_gross_margin_e0c0841a994986eb117443e3"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "capital_expenditures_net",
+      "value": "7084",
+      "comparison_operator": "equal",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_coordinate": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "gross_PPE_additions_without_reconciliation",
+        "HBM_specific_capex",
+        "HBM_specific_free_cash_flow"
+      ],
+      "numeric_ref": "s4_mu_numeric_capital_expenditures_net_59a0b3f5c8d4253fd38e5e8b"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "adjusted_free_cash_flow",
+      "value": "18304",
+      "comparison_operator": "equal",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_coordinate": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "GAAP_free_cash_flow_label",
+        "HBM_specific_cash_flow"
+      ],
+      "numeric_ref": "s4_mu_numeric_adjusted_free_cash_flow_5e8c0665e6671de586434c3d"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "inventory",
+      "value": "8567",
+      "comparison_operator": "equal",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "2026-05-28",
+      "source_ref": "s4_mu_evidence_pricing_mix_inventory_c2e719256bac19f9facc2ff1",
+      "source_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "source_coordinate": "PDF pages 1-10; SCA pages 1-3, supply pages 4-5, financials pages 7-9",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_07be5bac884fb7bbafcdefa7",
+        "adapter": "direct_http_pdf_text_and_page_locator"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_inventory_c8062326a68976d6aa427cc5"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "inventory_days",
+      "value": "120",
+      "comparison_operator": "equal",
+      "currency": null,
+      "unit": "days",
+      "scale_multiplier": 1,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_pricing_mix_inventory_c2e719256bac19f9facc2ff1",
+      "source_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "source_coordinate": "PDF pages 1-10; SCA pages 1-3, supply pages 4-5, financials pages 7-9",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_07be5bac884fb7bbafcdefa7",
+        "adapter": "direct_http_pdf_text_and_page_locator"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_inventory_days_8040db14e616c71f78cd57a4"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "Cloud_Memory_Business_Unit",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "revenue",
+      "value": "13769",
+      "comparison_operator": "equal",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_coordinate": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_revenue_1e9ab6860161ef6deef6f2ad"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "Cloud_Memory_Business_Unit",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "gross_margin",
+      "value": "83",
+      "comparison_operator": "equal",
+      "currency": null,
+      "unit": "percent",
+      "scale_multiplier": 1,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_coordinate": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_gross_margin_3ccbe5995da3925e2a7ce4ca"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "Core_Data_Center_Business_Unit",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "revenue",
+      "value": "11524",
+      "comparison_operator": "equal",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_coordinate": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_revenue_625bd2926f6539746ddc2917"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "Core_Data_Center_Business_Unit",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "gross_margin",
+      "value": "87",
+      "comparison_operator": "equal",
+      "currency": null,
+      "unit": "percent",
+      "scale_multiplier": 1,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_gaap_and_business_unit_financials_c99966ca0eccc78d9b494885",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "source_coordinate": "lines 285-310, 298-346 and GAAP/non-GAAP financial tables",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+        "adapter": "official_ir_html_table_and_statement_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_gross_margin_3b131c8aa847d1c54b6e6b67"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "DRAM",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "dram_revenue",
+      "value": "31300",
+      "comparison_operator": "approximately_equal",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_pricing_mix_inventory_c2e719256bac19f9facc2ff1",
+      "source_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "source_coordinate": "PDF pages 1-10; SCA pages 1-3, supply pages 4-5, financials pages 7-9",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_07be5bac884fb7bbafcdefa7",
+        "adapter": "direct_http_pdf_text_and_page_locator"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_dram_revenue_a6f1d36d1227e4cd48132b1a"
+    },
+    {
+      "entity_ref": "MU",
+      "segment_ref": "DRAM",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "dram_revenue_share",
+      "value": "76",
+      "comparison_operator": "equal",
+      "currency": null,
+      "unit": "percent",
+      "scale_multiplier": 1,
+      "period": "FQ3_2026",
+      "source_ref": "s4_mu_evidence_pricing_mix_inventory_c2e719256bac19f9facc2ff1",
+      "source_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "source_coordinate": "PDF pages 1-10; SCA pages 1-3, supply pages 4-5, financials pages 7-9",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_mu_source_snapshot_07be5bac884fb7bbafcdefa7",
+        "adapter": "direct_http_pdf_text_and_page_locator"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "HBM_specific_revenue_or_profit",
+        "named_customer_allocation_or_concentration"
+      ],
+      "numeric_ref": "s4_mu_numeric_dram_revenue_share_8712e5d2f0ea8a7f15878ccd"
+    }
+  ],
+  "derived_metrics": [
+    {
+      "metric": "gaap_gross_margin_recomputed",
+      "value": "84.56",
+      "unit": "percent",
+      "formula": "gross_profit/revenue*100",
+      "input_numeric_refs": [
+        "s4_mu_numeric_gross_profit_cf5ab5713fd2cd90aa0d565e",
+        "s4_mu_numeric_revenue_b84181d93c2a319996dcabfd"
+      ],
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "scope": "MU_company_FQ3_2026_GAAP",
+      "cannot_support": [
+        "HBM_specific_gross_margin"
+      ],
+      "derived_metric_ref": "s4_mu_derived_9306163f6b63300b2eac47ed"
+    },
+    {
+      "metric": "gaap_operating_margin_recomputed",
+      "value": "80.37",
+      "unit": "percent",
+      "formula": "operating_income/revenue*100",
+      "input_numeric_refs": [
+        "s4_mu_numeric_operating_income_f0409e13aab10c80ca197b70",
+        "s4_mu_numeric_revenue_b84181d93c2a319996dcabfd"
+      ],
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "scope": "MU_company_FQ3_2026_GAAP",
+      "cannot_support": [
+        "HBM_specific_operating_margin"
+      ],
+      "derived_metric_ref": "s4_mu_derived_eaba62aae05516bc13dcf075"
+    },
+    {
+      "metric": "adjusted_free_cash_flow_recomputed",
+      "value": "18304",
+      "unit": "USD_millions",
+      "formula": "operating_cash_flow-capital_expenditures_net",
+      "input_numeric_refs": [
+        "s4_mu_numeric_operating_cash_flow_e5cc1d87317215f5915f059b",
+        "s4_mu_numeric_capital_expenditures_net_59a0b3f5c8d4253fd38e5e8b"
+      ],
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "scope": "MU_company_FQ3_2026_non_GAAP_reconciliation",
+      "cannot_support": [
+        "GAAP_free_cash_flow_label",
+        "HBM_specific_cash_flow"
+      ],
+      "derived_metric_ref": "s4_mu_derived_6cac78922ae846e103ec1333"
+    },
+    {
+      "metric": "net_capital_intensity_recomputed",
+      "value": "17.09",
+      "unit": "percent",
+      "formula": "capital_expenditures_net/revenue*100",
+      "input_numeric_refs": [
+        "s4_mu_numeric_capital_expenditures_net_59a0b3f5c8d4253fd38e5e8b",
+        "s4_mu_numeric_revenue_b84181d93c2a319996dcabfd"
+      ],
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "scope": "MU_company_FQ3_2026",
+      "cannot_support": [
+        "HBM_specific_capital_intensity"
+      ],
+      "derived_metric_ref": "s4_mu_derived_dfad113ba787f694bec5c7af"
+    }
+  ],
+  "graph_edges": [
+    {
+      "entity_ref": "MU",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "from_ref": "MU",
+      "to_ref": "HBM4_36GB_12H",
+      "edge_semantics": "product_platform",
+      "direction": "from_to",
+      "as_of": "2026-07-26",
+      "source_ref": "s4_mu_source_snapshot_06bf0eb22fcb4faba1bbb929",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-high-volume-production-hbm4-designed-nvidia-vera-rubin",
+      "boundary": "Issuer product context; no HBM financial attribution.",
+      "graph_edge_is_direct_evidence": false,
+      "inferred_edge": false,
+      "graph_edge_ref": "s4_mu_graph_edge_ff6042babd29be7c9a1a331e"
+    },
+    {
+      "entity_ref": "MU",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "from_ref": "HBM4_36GB_12H",
+      "to_ref": "NVIDIA_Vera_Rubin",
+      "edge_semantics": "designed_for_platform",
+      "direction": "from_to",
+      "as_of": "2026-07-26",
+      "source_ref": "s4_mu_source_snapshot_06bf0eb22fcb4faba1bbb929",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-high-volume-production-hbm4-designed-nvidia-vera-rubin",
+      "boundary": "Designed-for relationship only; no named purchase volume, revenue, exclusivity or qualification conclusion.",
+      "graph_edge_is_direct_evidence": false,
+      "inferred_edge": false,
+      "graph_edge_ref": "s4_mu_graph_edge_d7b20b91bc343cb41ae1d8c8"
+    },
+    {
+      "entity_ref": "MU",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "from_ref": "MU_HBM4",
+      "to_ref": "anonymous_lead_customer_platform",
+      "edge_semantics": "high_volume_shipment_status",
+      "direction": "from_to",
+      "as_of": "2026-07-26",
+      "source_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "boundary": "Customer remains unnamed; no identity, concentration, volume or economics may be inferred.",
+      "graph_edge_is_direct_evidence": false,
+      "inferred_edge": false,
+      "graph_edge_ref": "s4_mu_graph_edge_4390c023dd4e6c0451e38949"
+    },
+    {
+      "entity_ref": "MU",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "from_ref": "MU_HBM4",
+      "to_ref": "multiple_unnamed_end_customers",
+      "edge_semantics": "qualification_sample_status",
+      "direction": "from_to",
+      "as_of": "2026-07-26",
+      "source_ref": "s4_mu_source_snapshot_26a2051b3d75f176957367bb",
+      "source_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "boundary": "Qualification-sample context only; no conversion, timing, share or revenue inference.",
+      "graph_edge_is_direct_evidence": false,
+      "inferred_edge": false,
+      "graph_edge_ref": "s4_mu_graph_edge_e0d5e0421965f657efd7d9e9"
+    }
+  ],
+  "typed_gaps": [
+    {
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "value_and_profit_capture"
+      ],
+      "gap_code": "cannot_infer_HBM_specific_revenue",
+      "gap_type": "issuer_scope_not_disclosed",
+      "reason": "Company, DRAM and business-unit revenue are not HBM product revenue.",
+      "followup_ref": "issuer_disclosed_HBM_revenue_with_period_and_scope",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_mu_gap_55732823688b44d0fcf49c47"
+    },
+    {
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "gap_code": "cannot_infer_HBM_specific_gross_or_operating_profit",
+      "gap_type": "issuer_scope_not_disclosed",
+      "reason": "Company and business-unit margins do not identify HBM revenue, cost or profit.",
+      "followup_ref": "issuer_disclosed_HBM_profitability_bridge",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_mu_gap_aa1ef7440c781f916c6e159c"
+    },
+    {
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "gap_code": "cannot_infer_customer_identity_or_concentration",
+      "gap_type": "customer_identity_withheld",
+      "reason": "The lead platform and multiple end-customers are not named in the shipment and qualification statement.",
+      "followup_ref": "issuer_or_customer_named_HBM_contract_disclosure",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_mu_gap_a7eecbb2ec0a284cf96dedbd"
+    },
+    {
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "gap_code": "cannot_infer_SCA_HBM_attribution",
+      "gap_type": "scope_bridge_absent",
+      "reason": "Sixteen strategic customer agreements are company-level and are not identified as HBM agreements.",
+      "followup_ref": "issuer_SCA_product_scope_and_value_bridge",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_mu_gap_ca8198e670799dc24fcae3e9"
+    },
+    {
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "gap_code": "cannot_infer_HBM_price_volume_mix_decomposition",
+      "gap_type": "product_inputs_absent",
+      "reason": "DRAM pricing, bits and mix do not isolate HBM price, volume or mix.",
+      "followup_ref": "issuer_HBM_price_volume_mix_inputs",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_mu_gap_4344a0cf41056a6e9ffe49a0"
+    },
+    {
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "gap_code": "cannot_infer_HBM_demand_durability",
+      "gap_type": "forward_demand_uncertain",
+      "reason": "The 10-Q explicitly states that long-term AI/HBM demand may fluctuate.",
+      "followup_ref": "period_comparable_HBM_shipments_and_inventory",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_mu_gap_7b633fce8d099610bc9145c1"
+    },
+    {
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "gap_code": "cannot_infer_HBM_capacity_yield_probability_and_impact",
+      "gap_type": "quantified_capacity_inputs_absent",
+      "reason": "Manufacturing intensity is disclosed, but capacity, yield, probability and financial impact are not quantified.",
+      "followup_ref": "issuer_HBM_capacity_yield_and_capex_bridge",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_mu_gap_bdf10e0accee00253419ce8c"
+    },
+    {
+      "program_cell_ids": [
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "gap_code": "cannot_infer_export_control_impact",
+      "gap_type": "case_specific_regulatory_bridge_absent",
+      "reason": "The selected source set does not quantify HBM-specific export-control exposure or financial impact.",
+      "followup_ref": "official_case_specific_export_control_assessment",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_mu_gap_ec44b9716d83a803f36a9e28"
+    },
+    {
+      "program_cell_ids": [
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "gap_code": "cannot_infer_independent_counterevidence",
+      "gap_type": "independent_official_followup_pending",
+      "reason": "Current accepted fact authority is issuer-official; an independent official customer, supplier or regulator followup remains absent.",
+      "followup_ref": "independent_official_HBM_counterevidence_route",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_mu_gap_e95a881c35dfbe278123d3ff"
+    }
+  ],
+  "cannot_infer_boundaries": [
+    "No company, DRAM, CMBU or CDBU revenue or profit is allocated to HBM.",
+    "No strategic customer agreement is attributed to HBM or a named customer.",
+    "No HBM customer identity, concentration, share, revenue or margin is inferred.",
+    "No forward supply, pricing, demand durability, capacity or yield probability is promoted as realized fact.",
+    "Product and platform graph rows are context-only and never direct Evidence."
+  ],
+  "authority_boundary": {
+    "evidence": "issuer filing, earnings release, prepared remarks or official product release with exact locator and lineage",
+    "numeric": "exact issuer, disclosed segment, period, currency, unit and source coordinate",
+    "graph": "context_only_not_direct_evidence",
+    "model_output_is_source_authority": false,
+    "HBM_economics_require_exact_issuer_product_rows": true,
+    "quality_findings_are_nonterminal_unless_truth_or_lineage_breaks": true
+  },
+  "observed_counts": {
+    "source_snapshots": 6,
+    "route_execution_receipts": 8,
+    "evidence_rows": 7,
+    "numeric_rows": 16,
+    "derived_metrics": 4,
+    "graph_edges": 4,
+    "typed_gaps": 9,
+    "source_network_calls": 14,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "paid_calls": 0
+  },
+  "source_pack_digest": "5fff74f742b038ead1718e449e3e4dafc4f04b55587256d98e619d05cf6c263d"
+}

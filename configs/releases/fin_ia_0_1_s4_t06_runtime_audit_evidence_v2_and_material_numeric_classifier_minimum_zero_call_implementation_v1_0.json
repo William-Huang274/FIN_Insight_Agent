@@ -1,0 +1,120 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_runtime_audit_evidence_v2_and_material_numeric_classifier_minimum_zero_call_implementation_v1_0",
+  "release_id": "fin_ia_0_1",
+  "task_id": "S4-T06-RUNTIME-AUDIT-EVIDENCE-V2-AND-MATERIAL-NUMERIC-CLASSIFIER-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "status": "pass_zero_call_runtime_injected_three_case_fixture_proven_fresh_agent_proof_pending_no_R5",
+  "implemented_at": "2026-07-30T01:05:30+08:00",
+  "source_disposition": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r4_numeric_classifier_false_positive_and_audit_evidence_separation_disposition_v1_0.json",
+    "sha256": "360c3e85468f8b1a83d1bc6acd91ab7f221fea92e6e37dea4e5b268d165de192"
+  },
+  "contracts": {
+    "audit_governance_ref": "fin01.runtime.audit_evidence_retention_and_promotion_separation:v1",
+    "historical_capture_v1_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+    "provider_interaction_audit_capture_v2_ref": "fin01.runtime.provider_interaction_audit_capture:v2",
+    "historical_numeric_authority_v1_ref": "fin01.s4.case_numeric_authority_projection_and_deterministic_rendering:v1",
+    "material_numeric_classifier_v2_ref": "fin01.s4.case_numeric_authority_projection_and_deterministic_rendering:v2",
+    "historical_v1_semantics_rewritten": false
+  },
+  "runtime_implementation": {
+    "capture_v2": {
+      "exact_model_visible_request_retained": true,
+      "assistant_final_output_retained": true,
+      "complete_allowlisted_nonsecret_inference_arguments_retained": true,
+      "provider_model_and_route_identity_retained": true,
+      "content_addressed_immutable_object_ref": true,
+      "validator_safe_match_index_on_capture_ref": true,
+      "credential_authorization_cookie_and_private_reasoning_excluded": true,
+      "raw_provider_envelope_excluded": true,
+      "atomic_failure_terminalization_preserved": true,
+      "failed_output_business_artifact_promotion": false,
+      "automatic_replay": false
+    },
+    "material_numeric_classifier_v2": {
+      "exact_bound_reporting_period_labels": "non_authoritative_nonterminal",
+      "request_local_identifiers": "non_authoritative_nonterminal",
+      "financial_amounts": "L1_terminal",
+      "percentages": "L1_terminal",
+      "measurements": "L1_terminal",
+      "unknown_reporting_period_labels": "L1_terminal",
+      "unclassified_numeric_values": "L1_terminal",
+      "local_deterministic_numeric_rendering_owner_preserved": true
+    }
+  },
+  "fixture_proof": {
+    "three_cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "positive_path_per_case_nodes_callbacks_captures_artifacts": [
+      6,
+      12,
+      12,
+      9
+    ],
+    "negative_material_numeric_path_per_case_stops_at_first_capture": true,
+    "R4_two_safe_paths_replayed": [
+      "$.fact_layer[0].statement",
+      "$.explanation_layer[0]"
+    ],
+    "R4_safe_semantic_class": "reporting_period_label",
+    "R4_v2_terminal": false,
+    "v1_compatibility_proven": true,
+    "credential_bearing_request_rejected_before_terminal_write": true,
+    "failed_capture_replayable_and_not_promoted": true,
+    "focused_tests": "15 passed",
+    "focused_plus_v1_capture_regression": "21 passed",
+    "S4_T06_regression": "223 passed"
+  },
+  "historical_exact_binding_supersession": {
+    "reason": "versioned audit capture v2 and material numeric classifier v2 are the current shared-runtime successor; prior run and admission artifacts remain immutable",
+    "allowed_changed_paths": [
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+      "apps/workbench/backend/application/bounded_agent_executor.py",
+      "src/sec_agent/canonical_runtime/facade.py",
+      "src/sec_agent/canonical_runtime/failure_observation_policy.py",
+      "tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_replacement_fresh_engineering_proof_and_provider_capability_binding_decision.py",
+      "tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_server_subset_conformant_replacement_minimum_zero_call_implementation.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_current_case_aware_delivery_identity_boundary_zero_call_implementation.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_deepseek_pre_admission_zero_call_proof.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_fresh_exact_admission_issuance.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_fresh_exact_live_execution_and_success_only_paired_assessment_authority_decision.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_fresh_agent_proof_decision.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_r2_exact_live_execution_and_success_only_paired_assessment_authority_decision.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_zero_call_implementation.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_source_grounded_input_materialization.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_source_grounded_input_materialization_fresh_proof.py"
+    ]
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "daafec9c0d7f70abfca3871600fc6ad718e694117b2b753e03d598f5de787080",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "0b0b5ae05181be1dd4f2443ff17a51e24e301b9336e961ea189cfd3a4e5a8db8",
+    "src/sec_agent/canonical_runtime/facade.py": "21b948f9f21da6aa3e99764f390e13460896d62c0d256ef8f4ed185192e26220",
+    "src/sec_agent/canonical_runtime/failure_observation_policy.py": "d18da960128406c5f30fa3063705aec2d59a985de61add4a7841f152fd9ee813"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "business_artifacts_created": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0
+  },
+  "authority": {
+    "zero_call_implementation_bundles_maximum": 1,
+    "zero_call_implementation_bundles_consumed": 1,
+    "automatic_follow_on_repair_bundles": 0,
+    "R5_authorized": false,
+    "T07_authorized": false
+  },
+  "known_boundary": "Runtime and deterministic fixtures do not prove a fresh exact admission, paid DeepSeek behavior, final nine-Artifact L1, paired assessment or owner acceptance. MU R4 remains immutable failed with zero Artifacts.",
+  "next_action": "S4-T06-RUNTIME-AUDIT-EVIDENCE-V2-AND-MATERIAL-NUMERIC-CLASSIFIER-FRESH-AGENT-PROOF-DECISION",
+  "next_action_authorized": false
+}

@@ -1,0 +1,135 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_current_case_aware_delivery_identity_boundary_scope_replacement_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T06-MU-CURRENT-CASE-AWARE-DELIVERY-IDENTITY-BOUNDARY-SCOPE-REPLACEMENT-MINIMUM-ZERO-CALL-IMPLEMENTATION-R1",
+  "implemented_at": "2026-07-29T23:01:06+08:00",
+  "status": "pass_single_zero_call_replacement_bundle_fixture_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "按这个顺序继续做T06，看看这轮t06 exact-live做完后效果如何",
+    "source_decision_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r3_current_case_identity_token_policy_overconstraint_program_scope_replace_or_block_decision_v1_0.json",
+    "source_decision_sha256": "d15dd5af7cc9cdbff1d451f11978d92bc2f29c1ff2d3b8d0ab53a5f0df77a394",
+    "maximum_zero_call_implementation_bundles": 1,
+    "implementation_bundles_consumed": 1,
+    "automatic_follow_on_repair_bundles": 0,
+    "fresh_agent_proof_admission_and_one_exact_live_authorized_in_sequence": true,
+    "maximum_exact_live_attempts_after_fresh_admission": 1
+  },
+  "implemented_contract": {
+    "contract_ref": "fin01.s4.case_delivery_identity_current_case_aware_provider_boundary:v2",
+    "registry_ref": "fin01.s4.case_delivery_identity_registry:v1",
+    "registered_release_cases": [
+      "NVDA",
+      "DELL",
+      "MU"
+    ],
+    "provider_narrative": {
+      "current_case_ticker_allowed": true,
+      "current_case_ticker_authoritative": false,
+      "registered_nonlocal_case_ticker_L1_hard_failure": true,
+      "delivery_title_provider_owned": false
+    },
+    "deterministic_local_owners": [
+      "title_zh_cn",
+      "workpaper_entity_label",
+      "review_surface_entity_label",
+      "manifest_case_ticker",
+      "final_9_artifact_identity_envelope"
+    ],
+    "new_admission_compiler_default": "v2",
+    "historical_v1_projection_parse_and_semantics_preserved": true,
+    "typed_failure_subtype": "provider_narrative_nonlocal_registered_case_identity_token",
+    "telemetry_contains_raw_narrative_or_private_reasoning": false,
+    "strict_schema_transport_or_model_selection_changed": false
+  },
+  "fixture_proof": {
+    "new_boundary_tests": "11 passed",
+    "three_case_full_fake": {
+      "cases": [
+        "DELL",
+        "MU",
+        "NVDA"
+      ],
+      "per_case_provider_callbacks_captures_artifacts": [
+        12,
+        12,
+        9
+      ],
+      "natural_current_case_ticker_in_narrative_callbacks": 11,
+      "passing_typed_verifier_free_narrative_fields": 0
+    },
+    "negative_nonlocal_identity_mutations": [
+      "specialist",
+      "research_lead",
+      "memo_writer",
+      "verifier"
+    ],
+    "final_delivery_identity_mutation_rejected": true,
+    "canonical_registered_failure_observation": true,
+    "historical_v1_immutable": true
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "6fefa74fc6e8fa2bc483b0ff27cea57cc01bf5ed617ebe760d3a4d9970cb4bf8",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "cc338f2ddd59b1db74ce49657fcdef7daf5fda60d28a9d706176d892060d7a37",
+    "src/sec_agent/canonical_runtime/failure_observation_policy.py": "291fe5e7a2a90252ff91f28ab1db3b2d6946c1a2ccb36d7d3d64cb25ed5e17e5",
+    "tests/contract/test_fin_0_1_s4_t05_case_numeric_authority_and_delivery_identity_zero_call_implementation.py": "5db7abf79b97d1e0d0671ac2e4e2b673a66aa6e7c2c1b6fbe92bc87eea1c171a",
+    "tests/contract/test_fin_0_1_s4_t06_mu_case_runtime_mandatory_material_truth_identity_safety_closure_zero_call_implementation.py": "0dcaf10949c5b850981d258aa6c7977db7728e511ec7b79a6b474ab00d27aa5e",
+    "tests/contract/test_fin_0_1_s4_t06_mu_current_case_aware_delivery_identity_boundary_zero_call_implementation.py": "2a38b012c26c07c324c4e34c53d53787dab1c6f7e95a70389e7bb17287120a60",
+    "tests/contract/test_fin_0_1_s4_t06_entry_credential_requalified_fresh_strict_schema_canary_authority_decision.py": "9acf7573f5855ede02045795da310526ec217435d6b3056124f907678874c6c9",
+    "tests/contract/test_fin_0_1_s4_t06_entry_credential_requalified_strict_schema_canary_http_429_result.py": "f65425ad460ddfc1406dc68690bb5a9f0bdcc1dfa1ee06e4bdb2d442ac0ebc9e",
+    "tests/contract/test_fin_0_1_s4_t06_entry_openai_credential_requalification_authority_decision.py": "be4bcd7288a67cc5211c0e359888d5126f69aef27e7534b9ad7675271fc173a1",
+    "tests/contract/test_fin_0_1_s4_t06_entry_openai_credential_requalification_metadata_probe_result.py": "ee8f5fdf531e1b1eaa9e0c249f75c1d86574d6b065ad0956fdec6cdaec3a4809",
+    "tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_disposition.py": "42496586d6eb4cc70dfb6deb44457ac791f50196f93d6e2b8ac9cdf8597175b3",
+    "tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_replacement_fresh_engineering_proof_and_provider_capability_binding_decision.py": "6f3fa55a62db7e24e3e4de0d0671b26a95c0ffa0c520b53b40131048ad6c6082",
+    "tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_server_subset_conformant_replacement_minimum_zero_call_implementation.py": "b6f6145a888b6bb9e8d9e2d596cfb527ee8f8b0cfd74973b560443fab98c60a1",
+    "tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_single_node_strict_schema_canary_authority_decision.py": "0d354ce1b73b4339d2dc4c7d1f1f96e919944ffe0f0c5254a0a8747f75910193",
+    "tests/contract/test_fin_0_1_s4_t06_entry_sub2api_api_key_mode_auth_reclassification_and_diagnostic_boundary.py": "cd2263caba0006e30a45f29cd402e583085b717dd8a1f062058266ae3daab798",
+    "tests/contract/test_fin_0_1_s4_t06_entry_sub2api_provider_route_and_capability_contract_rebaseline_decision.py": "9829fe77d7be95de34b204f776257710c576cdfa75da70d290fb96955a57557f",
+    "tests/contract/test_fin_0_1_s4_t06_entry_sub2api_public_nonsensitive_diagnostic_canary_authority_decision.py": "5556915163e81eafbff2094ab1abaa131a776baef091197a545289d15a86dfc4",
+    "tests/contract/test_fin_0_1_s4_t06_entry_sub2api_public_nonsensitive_diagnostic_canary_http401_result.py": "722b73545c6965ead43dc135e051af31e278c260709b1fd589358d350d2f18dc",
+    "tests/contract/test_fin_0_1_s4_t06_entry_sub2api_route_correction_and_http429_reclassification.py": "f1dfb170ee36cd204b2744144daf4e1b94ea30a02255e289399461583ee2c414",
+    "tests/contract/test_fin_0_1_s4_t06_entry_strict_schema_canary_http_401_closeout.py": "baa071d4d81ba931ae30b50df1ea2883266ac9ff88fb40180ad5f45510af4014",
+    "tests/contract/test_fin_0_1_s4_t06_mu_deepseek_pre_admission_zero_call_proof.py": "6a3fe3b5e79e6d11416031a48a0dd31ee4903acc7fb9ede81da6c6a57523ffd2",
+    "tests/contract/test_fin_0_1_s4_t06_mu_fresh_exact_admission_issuance.py": "1610b410389a02f681ff2183c605f4546284f4492cdeca3cc8d3319cfc2fbdbb",
+    "tests/contract/test_fin_0_1_s4_t06_mu_fresh_exact_live_execution_and_success_only_paired_assessment_authority_decision.py": "409a27f32340fa10154fc955c0bb31234e38cd6797ce9e6c122260506d6ac1a7",
+    "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_fresh_agent_proof_decision.py": "f19a8f2e897e52817179ad516c344cc67aeac428680de0cfc90e0e118308bc31",
+    "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_r2_exact_live_execution_and_success_only_paired_assessment_authority_decision.py": "031b0ac75d85ba9efc3ad5ab71497c21a2c286adb8ac49b2ae9e23d46c8b1152",
+    "tests/contract/test_fin_0_1_s4_t06_mu_source_grounded_input_materialization_fresh_proof.py": "b6834c48b28f7f4770a229ae100afa6df4fcddff0615def6ca7481a61bf7eb90",
+    "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_zero_call_implementation.py": "266422220506d58fdd6c8197c47d69c4c41033424ac3954dcaf99b3deb7342b4",
+    "tests/contract/test_fin_0_1_s4_t06_mu_r2_exact_live_success_and_paired_assessment.py": "ae78e592e4ef2c2279cd96d48b8f606caba64a7c5653676acc2aef2492f53bec",
+    "tests/contract/test_fin_0_1_s4_t06_mu_r2_l1_numeric_identity_live_recurrence_root_cause_scope_disposition.py": "36477124f4e809dc803ae78fa6b98339cf0b0b549539bcb76ace9042f701fc84",
+    "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_summary_mismatch_root_cause_scope_disposition.py": "34d05af6f63fe67d01c981ac0e5cc13d5c38c307832f07a6a9e9289c323497a3",
+    "tests/contract/test_fin_0_1_s4_t06_sub2api_park_and_deepseek_mainline_rebaseline.py": "57e1dde9010916d805ecc374d3ce1e15c94a622e55bc648d06bd5ab05904d954"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_assessments": 0,
+    "Human_reviews": 0
+  },
+  "stage_decision": {
+    "RC_P36_079": "runtime_scope_replacement_fixture_proven_live_reproof_pending",
+    "MU_R3": "immutable_L1_failure",
+    "MU_R4": "not_issued_not_started",
+    "S4_T06": "blocked_pending_fresh_agent_proof_then_new_admission_then_one_exact_live",
+    "S4_T07_or_later": "not_entered",
+    "strict_schema_transport": "parked_unrelated"
+  },
+  "stop_rule": {
+    "single_replacement_bundle_complete": true,
+    "second_repair_bundle_allowed": false,
+    "fresh_proof_must_recompute_current_code_input_three_case_and_mutation_bindings": true,
+    "new_admission_must_be_issued_only_after_fresh_proof_pass": true,
+    "MU_R4_exact_live_maximum_attempts": 1,
+    "new_L1_in_R4_stops_without_R5": true,
+    "L2_to_L4_findings_do_not_reopen_this_identity_boundary": true
+  },
+  "next_action": "S4-T06-MU-CURRENT-CASE-AWARE-DELIVERY-IDENTITY-BOUNDARY-FRESH-AGENT-PROOF-DECISION"
+}

@@ -1,0 +1,120 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_mandatory_material_truth_identity_safety_closure_r3_exact_live_execution_failure_result_v1_0",
+  "result_id": "S4-T06-MU-MANDATORY-MATERIAL-TRUTH-AND-IDENTITY-SAFETY-CLOSURE-R3-EXACT-LIVE-EXECUTION-FAILURE",
+  "recorded_at": "2026-07-29T23:59:00+08:00",
+  "status": "terminal_failed_first_specialist_identity_policy_overconstraint_no_retry_no_paired_assessment",
+  "authority": {
+    "user_instruction": "按这个顺序往下做，我授权你做1-6点",
+    "continuous_sequence_authority": true,
+    "exact_once_execution_authorized": true,
+    "success_only_paired_assessment_authorized": true,
+    "owner_acceptance_only_after_L1_pass_and_agent_gain": true,
+    "retry_fallback_replay_relaunch_patch_or_R4_authorized": false
+  },
+  "source_bindings": {
+    "proof_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_mandatory_material_truth_identity_safety_closure_fresh_agent_proof_decision_v1_0.json",
+    "proof_sha256": "aae7a34e991bfd5a267c5cab9944a99ed06d543e95aedd629692d9d56a6952b0",
+    "issuance_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_mandatory_material_truth_identity_safety_closure_fresh_exact_admission_issuance_v1_0.json",
+    "issuance_sha256": "8a8fe21cd782b50e964c1b94e56719125ec0b3a95bd94e5382359bf8d7bd24b5",
+    "admission_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_mandatory_material_truth_identity_safety_closure_fresh_exact_admission_r3.json",
+    "admission_sha256": "c075352f84433466af39d32fe98939cf3a2c38928b5ff7bc4a22b0a99f11fbc6",
+    "admission_digest": "da4c91eb69499ab197332e2f263556f5528b66e451c33be54e925b20924632a5",
+    "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t06_mu_mandatory_safety_closure_r3_live_execution_result.json",
+    "runtime_result_sha256": "5d7eae326ebff63f285146ba09884ea88b43c8e96f08eb0c3f12a417526d2d54",
+    "supervision_launch_ref": ".codex_runtime/fin01-s4-t06-mu-mandatory-safety-closure-r3-supervision-r1/launch_receipt.json",
+    "supervision_launch_sha256": "fca202baa5057785eb6358bc3850993d5da0d8ef49edc2efbd0a426a9718c3bd",
+    "supervision_exit_ref": ".codex_runtime/fin01-s4-t06-mu-mandatory-safety-closure-r3-supervision-r1/exit_receipt.json",
+    "supervision_exit_sha256": "fde1dd82c6c88715401837e56efd20d03126959502a0870d9daf7738d0d1c2ed"
+  },
+  "identity": {
+    "case_ticker": "MU",
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "work_unit_id": "wu_p02_5_ff897ab60270fb1478bc76b3",
+    "attempt_id": "attempt_fin01_a1387fcdfc3381ada67b6708",
+    "research_run_id": "research_run_fin01_127b1095bc816030ba5755fc",
+    "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+    "preparation_digest": "9724bf1c2bb201e409400748ee49aefa60dcf0a613f25a84e7225b967adc6b73"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_consistent": true,
+    "orphaned_run": false,
+    "artifact_count": 0,
+    "event_count": 7,
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:domain_specialist:demand_authenticity_and_sustainability"
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "semantic_model_calls": 1,
+    "provider_calls": 1,
+    "network_calls": 1,
+    "usage_receipts": 1,
+    "restricted_captures": 1,
+    "restricted_readbacks": 1,
+    "input_tokens": 3994,
+    "output_tokens": 494,
+    "total_tokens": 4488,
+    "estimated_cost_usd": 0.00216717,
+    "finish_reason": "stop",
+    "transport_attempt_count": 1,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "replay_count": 0,
+    "relaunch_count": 0,
+    "rerun_count": 0
+  },
+  "first_credible_failure": {
+    "stage": "domain_specialist:demand_authenticity_and_sustainability",
+    "segment": "facts_explanation_and_terminal",
+    "lifecycle_phase": "node_envelope_accounting",
+    "failure_code": "s4_case_delivery_identity_provider_narrative_invalid",
+    "failure_family": "case_delivery_identity",
+    "failure_subtype": "provider_authored_case_entity_token",
+    "acceptance_layer": "L1_hard_integrity",
+    "raw_text_persisted_in_result": false,
+    "private_reasoning_persisted": false,
+    "credential_persisted": false
+  },
+  "restricted_content_free_reaudit": {
+    "current_case_ticker_occurrences": 4,
+    "nonlocal_known_ticker_occurrences": {
+      "DELL": 0,
+      "NVDA": 0
+    },
+    "provider_response_finish_reason_stop": true,
+    "numeric_failure_observed": false,
+    "cross_case_identity_pollution_observed": false,
+    "conclusion": "The output used the correct local MU identity only; the runtime rejected it because provider_narrative_has_entity_token forbids every known ticker including the current case ticker."
+  },
+  "root_cause_classification": {
+    "issue_id": "RC-P36-079-s4-t06-current-case-identity-token-policy-overconstraint-and-fixture-blind-spot",
+    "proximate_model_behavior": "The model repeated the correct MU ticker despite the provider-narrative identity-token prohibition.",
+    "earliest_controllable_project_fault": "The policy encodes cross-case contamination prevention as a blanket ban on all known ticker tokens, including the correct current-case identity. The positive fake sanitizes entity tokens, so proof parity did not cover the natural correct-ticker narrative path.",
+    "model_general_instruction_noncompliance_established": false,
+    "transport_network_credential_or_source_fault": false,
+    "existing_final_artifact_numeric_and_identity_L1_reached": false,
+    "second_runtime_repair_bundle_allowed": false,
+    "required_disposition": "program_scope_replace_or_block_decision"
+  },
+  "sequence_disposition": {
+    "fresh_agent_proof": "passed",
+    "fresh_admission_issuance": "passed",
+    "exact_live": "terminal_failed",
+    "nine_artifacts": "not_generated",
+    "paired_L1_to_L4_assessment": "not_eligible_not_performed",
+    "owner_acceptance": "not_eligible_not_performed",
+    "S4_T06": "blocked",
+    "S4_T07": "not_entered",
+    "S5": "blocked"
+  },
+  "stop_rule": {
+    "sequence_stopped_at_first_new_L1_failure": true,
+    "automatic_R4_or_micro_patch_performed": false,
+    "provider_hopping_or_model_switch_performed": false,
+    "paired_or_owner_write_performed": false
+  },
+  "next_action": "S4-T06-MU-R3-CURRENT-CASE-IDENTITY-TOKEN-POLICY-OVERCONSTRAINT-AND-FIXTURE-BLIND-SPOT-PROGRAM-SCOPE-REPLACE-OR-BLOCK-DECISION"
+}

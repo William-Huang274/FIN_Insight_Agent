@@ -1,0 +1,69 @@
+{
+  "authority_decision_digest": "7789999fb9e00f353a00337ece72361d0a30fcdec5d239068e1695da83b79446",
+  "call_id_digest": "8a8460e1175c74f480c49e87c74ba25a0a7de0247b220dd15e18f2c288708eca",
+  "canary_id": "fin01-s4-t06-entry-openai-strict-schema-dell-demand-r1",
+  "content_free_output_shape": {},
+  "credential_persisted": false,
+  "exact_request_digests": {
+    "canonical_request_sha256": "f861b0b1b7e630ff5302d5fd4383f1944896f4b2282d9b9fde9c0e99285832cc",
+    "exact_request_template_sha256": "b92911d0bb9755c3e46fc0d4cac87cb0d07486d8fba8177ca69f2785ee443d7e",
+    "input_digest": "f023c6b2139b288bf0637db25e64a40587c3bf6824c154c7eecffc32a584dacf",
+    "server_schema_sha256": "24cdd015fd3c6b393c1d1013ffa065eb0a2a266c691720e981c01e6db9004938",
+    "system_prompt_sha256": "72c7ea37f14214c4828f924f22a09c5474b4ba97fe05377bdf560a08a9f8484b",
+    "text_format_sha256": "70646778e75bb8611dd56ffc41c181c9e102543b7fd2e4dcb976b6d595ea2da1",
+    "user_payload_sha256": "6e2d3ad6804e7735e54a832d9e9ab5d806ee5f868141c45f94f172b24ccfe97c"
+  },
+  "failure_class": "model_or_endpoint_access_rejected",
+  "headers_persisted": false,
+  "latency_ms": 1462,
+  "local_semantic_validation_and_rendering_pass": false,
+  "next_action": "return_to_program_level_blocked_decision",
+  "observed_counts": {
+    "business_artifact_writes": 0,
+    "canonical_work_unit_attempt_run_writes": 0,
+    "chat_completions_calls": 0,
+    "external_tool_calls": 0,
+    "network_calls": 1,
+    "provider_calls": 1,
+    "semantic_model_calls": 1,
+    "source_network_calls": 0,
+    "transport_attempts": 1
+  },
+  "private_reasoning_persisted": false,
+  "provider_contract": {
+    "base_url": "https://api.openai.com/v1",
+    "endpoint": "/responses",
+    "max_output_tokens": 512,
+    "model": "gpt-5.6-sol",
+    "provider": "openai",
+    "reasoning_effort": "none",
+    "timeout_seconds": 120
+  },
+  "provider_output_text_persisted": false,
+  "provider_status": "provider_error",
+  "raw_provider_response_persisted": false,
+  "recorded_at": "2026-07-28T13:23:39.143149+00:00",
+  "response_status": "",
+  "result_is_not_research_or_product_acceptance": true,
+  "result_is_only_live_provider_capability_evidence": true,
+  "sanitized_failure_detail": "HTTP 401",
+  "schema_version": "fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_single_node_strict_schema_canary_exact_once_execution_result_v1_0",
+  "stack_trace_persisted": false,
+  "status": "terminal_failed_no_retry",
+  "strict_schema_parse_pass": false,
+  "transport_attempt_count": 1,
+  "usage": {
+    "cached_input_tokens": 0,
+    "estimated_cost_usd": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "pricing_usd_per_million": {
+      "cached_input": 0.5,
+      "input": 5.0,
+      "output": 30.0
+    },
+    "total_tokens": 0,
+    "uncached_input_tokens": 0
+  },
+  "work_item_id": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-SINGLE-NODE-STRICT-SCHEMA-CANARY-EXACT-ONCE-EXECUTION"
+}

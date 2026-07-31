@@ -1,0 +1,105 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_exact_r2_execution_and_paired_assessment_authority_decision_v1_0",
+  "decision_id": "S4-T05-DELL-EXACT-R2-EXECUTION-AND-PAIRED-ASSESSMENT-AUTHORITY-DECISION-R1",
+  "decided_at": "2026-07-26T20:05:41+08:00",
+  "status": "authorized_exact_once_and_conditional_read_only_paired_assessment",
+  "authority": {
+    "user_instruction": "继续",
+    "S4_T05_authorized": true,
+    "admission_exact_once_consumption_authorized": true,
+    "DELL_exact_live_execution_authorized": true,
+    "paired_assessment_authorized_only_after_coherent_terminal_success": true,
+    "automatic_retry_fallback_replay_relaunch_patch_or_rerun_authorized": false,
+    "Human_review_or_owner_acceptance_authorized": false,
+    "S4_T06_or_later_authorized": false
+  },
+  "source_authority": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s4_t04_dell_fresh_exact_admission_v1_0.json",
+    "admission_file_sha256": "26739c9e21c58e42bd5c3ce761cd7f19a70bedeca5c4e96a3738e762ad806e76",
+    "admission_id": "fin01-s4-t04-dell-fresh-exact-admission-r1",
+    "admission_digest": "da035e71d9eee81e9c76c5243a396bafaacfc29cd1f01e66eb1a66b8b757a60f",
+    "issuance_ref": "configs/releases/fin_ia_0_1_s4_t04_dell_fresh_exact_admission_issuance_v1_0.json",
+    "issuance_file_sha256": "d70d24ec684332abeec619b90d9c6ef463d169e17f83ef422d8f0cb43b350ec5",
+    "host_capability_receipt_ref": ".codex_runtime/fin01-s3-t09-supervision-v2-final-host-capability-r1/host_capability_receipt.json",
+    "host_capability_receipt_sha256": "79199d2c39ab59f98b951e396d62a854834b7b6e9ad8c809da14a1f1a8862d1d"
+  },
+  "exact_execution_target": {
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "supervision_root": ".codex_runtime/fin01-s4-t05-dell-exact-r2-supervision-r1",
+    "output_prefix": "s4_t05_dell_exact_r2_r1",
+    "case_id": "case_7b5c2042bef3825b8df71a96",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_d31fd75b31ad8385e9d8376a:v1",
+    "input_digest": "3499c03470c5bec5168dc87a2974802869da389f2ef588f41021731828d09e96",
+    "preparation_digest": "a293b64b958ea31f900173609e771ca3d5cfea21e693f9bb057a8e3d07e6f9e3",
+    "work_unit_id": "wu_p02_5_2ebc452430c3eac0db8de47c",
+    "attempt_id": "attempt_fin01_87e5480ea908aff63ffe9e1f",
+    "research_run_id": "research_run_fin01_2eced17671df87082b95db9a",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "maximum_semantic_model_calls": 12,
+    "maximum_provider_calls": 12,
+    "maximum_network_calls": 12,
+    "maximum_output_tokens": 16800,
+    "maximum_total_cost_usd": 0.1,
+    "transport_retry_count": 0,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false
+  },
+  "pre_execution_verification": {
+    "project_os_full_chain_preflight": "pass",
+    "open_full_chain_blocker_count": 0,
+    "exact_runner_zero_call_preflight": "pass_exact_zero_call_execution_preflight",
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "provider_health_probe_performed": false,
+    "exact_code_binding_count": 6,
+    "exact_code_bindings_match": true,
+    "host_supervision_capability_valid": true,
+    "fresh_supervision_root_absent": true,
+    "canonical_work_unit_attempt_run_artifact_counts_before": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "model_provider_network_source_tool_calls_before": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "success_contract": {
+    "terminal_states": [
+      "succeeded",
+      "succeeded",
+      "succeeded"
+    ],
+    "coherent_research_run_count": 1,
+    "logical_node_count": 6,
+    "semantic_model_call_count": 12,
+    "artifact_count": 9,
+    "required_layered_acceptance": [
+      "L1_hard_integrity_pass",
+      "L2_protocol_pass_or_safely_recoverable",
+      "L3_agent_materially_improves_actionability",
+      "L4_user_adaptation_findings_recorded"
+    ],
+    "paired_baseline_must_use_same_case_version_as_of_and_input_head": true,
+    "DELL_mechanisms_must_remain_case_local_and_distinct_from_NVDA": true
+  },
+  "stop_contract": {
+    "first_credible_failure": "terminal_fail_closed_stop",
+    "failure_disposition": "honestly_block_DELL_R2_and_open_earliest_owner_root_cause_decision",
+    "paired_assessment_after_failure_allowed": false,
+    "silent_output_rewrite_or_cross_run_evidence_assembly_allowed": false,
+    "automatic_second_execution_allowed": false
+  },
+  "conditional_next_action": {
+    "on_terminal_success_and_paired_assessment_pass": "S4-T06-MU-FRESH-EXACT-R2-EXECUTION-AND-PAIRED-ASSESSMENT-AUTHORITY-DECISION",
+    "on_terminal_failure_or_hard_integrity_failure": "S4-T05-DELL-EXACT-R2-FIRST-CREDIBLE-FAILURE-ROOT-CAUSE-DISPOSITION-DECISION"
+  }
+}

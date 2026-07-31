@@ -1,0 +1,254 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r6_research_profile_v2_case_runtime_binding_mismatch_zero_call_root_cause_disposition_v1_0",
+  "decision_id": "S4-T05-DELL-R6-RESEARCH-PROFILE-V2-CASE-RUNTIME-BINDING-MISMATCH-ZERO-CALL-ROOT-CAUSE-DISPOSITION-R1",
+  "decided_at": "2026-07-27T22:30:00+08:00",
+  "status": "pass_zero_call_root_cause_disposed_versioned_profile_overlay_and_create_app_preflight_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "S4-T05-DELL-R6-RESEARCH-PROFILE-V2-CASE-RUNTIME-BINDING-MISMATCH-FIRST-CREDIBLE-FAILURE-ROOT-CAUSE-DISPOSITION-DECISION",
+    "zero_call_root_cause_disposition_authorized": true,
+    "runtime_binding_overlay_or_preflight_implementation_authorized": false,
+    "frozen_case_pack_or_historical_binding_rewrite_authorized": false,
+    "R6_admission_mutation_consumption_relaunch_or_reclassification_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "replacement_admission_exact_live_or_paired_assessment_authorized": false,
+    "Human_review_S4_T06_S5_release_or_production_authorized": false
+  },
+  "source_failure": {
+    "issue_id": "RC-P36-063-s4-R6-research-profile-v2-case-runtime-binding-drift",
+    "result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_specialist_wwc_judgment_atom_r6_exact_live_execution_pre_admission_failure_result_v1_0.json",
+    "result_sha256": "a07fa25b6dacb6a0d766ec0f7ccedb54e59f1eb5ab0c23c8c56958eddb9489c7",
+    "failure_code": "s4_admission_research_profile_binding_mismatch",
+    "failed_stage": "create_app:Fin01ResearchRuntime.__init__",
+    "base_case_runtime_research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v1",
+    "exact_admission_research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v2",
+    "admission_issued_consumed_canonical_execution": [
+      true,
+      false,
+      false
+    ],
+    "work_unit_attempt_research_run_created": [
+      false,
+      false,
+      false
+    ],
+    "model_provider_network_source_tool_calls": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "artifact_count": 0,
+    "retry_fallback_replay_relaunch_rerun": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "zero_call_artifact_and_code_audit": {
+    "DELL_case_pack_ref": "configs/releases/fin_ia_0_1_s4_t02_dell_oem_exact_case_pack_v1_0.json",
+    "DELL_case_pack_sha256": "71e7fb3ba56275760f0d2b84006d30fd192a15ad9be234740dc336cd4a15217e",
+    "DELL_case_pack_frozen_research_profile_target_ref": "fin01.s4.research_profile.dell_oem_three_cell:v1",
+    "T03_base_runtime_binding_contract_ref": "fin01.s4.case_runtime_binding:v1",
+    "T03_base_runtime_binding_digest": "78755ee3afa99ae5d33a170ee8184ef073fc895377ff1f668bfaf100358cf187",
+    "R6_admission_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_specialist_wwc_judgment_atom_fresh_exact_admission_r6.json",
+    "R6_admission_sha256": "90f0905ef4cf323998b1a4c86cfabf50bf204037f9e63d4a3784a4dba5988acd",
+    "R6_admission_digest": "ac44bff5dda2911465859dc48dfbce44aefaa22533b74321c96fedc816a4b265",
+    "R6_input_digest": "3499c03470c5bec5168dc87a2974802869da389f2ef588f41021731828d09e96",
+    "case_runtime_ref": "src/sec_agent/s4_case_runtime.py",
+    "case_runtime_sha256": "4b2e49e1b2360831438f1751d39eb5af1d8619f6d2dd346f78bec5b2c3834c20",
+    "research_runtime_ref": "apps/workbench/backend/application/research_runtime.py",
+    "research_runtime_sha256": "6b2b8ca54faedb387c056cc86cb917f42103a4cdb421db3c69b4f6535d6a46fb",
+    "contract_policy_ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+    "contract_policy_sha256": "5d45061ca8f3ab530b86cda7a7f21c0cd6ed7a9add3b387249d22e5f531b1ba0",
+    "bounded_executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "bounded_executor_sha256": "c84c43a8848dde23a49424ede6953a1364a207686aae298ffd03e7a64945b2f6",
+    "exact_runner_ref": "scripts/releases/run_fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution.py",
+    "exact_runner_sha256": "468923d3700fc1b25766863fc5cf48f0712ed5986aa4399c23db89b66e35966c",
+    "binding_compilation_source": "the frozen T02 Case Pack shared_runtime_contract.research_profile_target_ref",
+    "R6_preparation_behavior": "the exact input and its digest were compiled with the base v1 case binding, then the prospective admission alone was updated to research profile v2",
+    "runtime_guard_behavior": "Fin01ResearchRuntime independently reloaded the base v1 binding and correctly rejected its inequality with the R6 admission before any canonical or Provider action",
+    "preflight_coverage_gap": "the runner preflight rebuilt the exact input with the same base v1 binding and checked input parity but did not instantiate or invoke the application runtime admission-binding resolver"
+  },
+  "root_cause_disposition": {
+    "immediate_failure": "application runtime equality gate rejected base case binding profile v1 versus admission profile v2",
+    "earliest_project_owned_faulty_artifact": "R6 prospective admission preparation changed research_profile_ref to v2 after the S4 exact input had already been compiled from the frozen v1 case binding",
+    "structural_root_cause": "immutable case and method content binding is coupled to a mutable versioned execution-capacity research profile without an explicit overlay lineage contract",
+    "secondary_control_gap": "runner zero-call preflight and application runtime use different binding-validation depths",
+    "classification": "L1_exact_runtime_binding_integrity_fail_closed",
+    "model_or_provider_fault": false,
+    "runtime_guard_should_be_removed_or_weakened": false,
+    "frozen_T02_case_pack_should_be_mutated_in_place": false,
+    "historical_T03_binding_digest_should_be_rewritten": false,
+    "R6_admission_or_failure_truth_should_be_mutated": false
+  },
+  "selected_minimum_implementation_contract": {
+    "contract_ref": "fin01.s4.case_runtime_research_profile_overlay:v1",
+    "scope": "DELL S4 exact-admission binding resolution and preflight only",
+    "base_binding": {
+      "source": "unchanged frozen T02 Case Pack and T03 case runtime binding",
+      "case_pack_ref": "fin01.s4.case_profile.dell_oem_three_cell:v1",
+      "base_research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v1",
+      "base_runtime_binding_digest": "78755ee3afa99ae5d33a170ee8184ef073fc895377ff1f668bfaf100358cf187",
+      "historical_default_loader_behavior_preserved": true
+    },
+    "versioned_profile_overlay": {
+      "requested_research_profile_ref_source": "exact admission",
+      "allowed_profile_source": "registered BoundedResearchProfile only",
+      "required_scope_checks": [
+        "company_equals_case_ticker",
+        "program_cell_ids_equal_base_binding",
+        "maximum_cell_count_equals_base_binding_cell_count",
+        "profile_ref_is_registered_and_exact"
+      ],
+      "lineage_fields": [
+        "overlay_contract_ref",
+        "base_runtime_binding_digest",
+        "base_case_pack_sha256",
+        "research_profile_ref",
+        "research_profile_contract_digest",
+        "effective_runtime_binding_digest"
+      ],
+      "arbitrary_profile_string_or_company_specific_hidden_override_allowed": false,
+      "base_binding_or_case_pack_mutation_allowed": false
+    },
+    "effective_exact_binding": {
+      "research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v2",
+      "recompute_effective_runtime_binding_digest": true,
+      "recompute_all_seven_consumer_injection_digests": true,
+      "recompute_role_group_mapping_alignment_dispatch_input_and_preparation_digests": true,
+      "exact_input_admission_runtime_and_executor_must_share_same_effective_binding": true,
+      "silent_reuse_of_R6_input_digest_or_identity": false
+    },
+    "shared_resolver": {
+      "required_functional_owner": "one pure admission-to-effective-S4-binding resolver consumed by both runner preflight and Fin01ResearchRuntime",
+      "runner_preflight_must_resolve_before_credential_or_process_launch": true,
+      "application_runtime_must_reuse_same_resolver": true,
+      "executor_input_binding_and_admission_profile_equality_remains_fail_closed": true,
+      "duplicate_partial_binding_logic_allowed": false
+    },
+    "create_app_or_equivalent_preflight": {
+      "disposable_clone_only": true,
+      "must_instantiate_or_equivalently_execute_the_same_application_runtime_binding_path": true,
+      "provider_callback_forbidden": true,
+      "canonical_write_forbidden": true,
+      "credential_value_read_forbidden": true,
+      "must_fail_before_launch_on_profile_binding_drift": true,
+      "must_pass_for_one_coherent_effective_v2_binding": true
+    }
+  },
+  "R6_and_future_admission_disposition": {
+    "R6_status": "issued_unconsumed_invalid_for_relaunch_due_to_internal_exact_binding_inconsistency",
+    "R6_admission_file_preserved_immutable": true,
+    "R6_failure_result_preserved_immutable": true,
+    "R6_consumption_relaunch_or_in_place_rebinding_allowed": false,
+    "R6_identity_reuse_allowed": false,
+    "future_admission_label": "R7_or_later_fresh_exact_admission",
+    "future_admission_requires_new_input_preparation_and_digest": true,
+    "future_admission_requires_new_WorkUnit_Attempt_ResearchRun_identity": true,
+    "future_admission_requires_independent_fresh_agent_proof": true,
+    "future_admission_issuance_and_execution_require_later_separate_authorities": true
+  },
+  "rejected_and_deferred_alternatives": [
+    {
+      "option": "edit_the_frozen_T02_DELL_case_pack_profile_ref_from_v1_to_v2",
+      "decision": "rejected",
+      "reason": "would rewrite the frozen Case Pack SHA base binding digest seven consumer injections and historical T03 evidence"
+    },
+    {
+      "option": "downgrade_R6_admission_from_profile_v2_to_v1",
+      "decision": "rejected",
+      "reason": "would remove the Specialist-v8 WWC capacity contract and mutate an issued exact admission"
+    },
+    {
+      "option": "remove_or_relax_the_runtime_profile_equality_guard",
+      "decision": "rejected",
+      "reason": "would allow prompt budget and exact input lineage to diverge silently"
+    },
+    {
+      "option": "patch_only_Fin01ResearchRuntime_to_accept_v2_without_repreparing_input",
+      "decision": "rejected",
+      "reason": "R6 input and injection digests still encode the base v1 binding"
+    },
+    {
+      "option": "reuse_R6_identity_and_relaunch_after_local_patch",
+      "decision": "rejected",
+      "reason": "the identity is bound to the internally inconsistent R6 exact input and admission digest"
+    },
+    {
+      "option": "redesign_all_case_pack_execution_profile_or_multi_case_versioning_now",
+      "decision": "deferred_to_S4_T10_to_S5",
+      "reason": "the current blocker only requires a provider-neutral versioned profile overlay and shared preflight resolver"
+    }
+  ],
+  "minimum_implementation_acceptance": {
+    "T02_case_pack_SHA_and_T03_base_binding_digest_unchanged": true,
+    "MU_default_binding_and_historical_DELL_v1_loader_behavior_unchanged": true,
+    "registered_DELL_v2_profile_overlay_produces_byte_stable_effective_binding_and_lineage": true,
+    "unknown_wrong_company_wrong_cell_or_unregistered_profile_fails_closed": true,
+    "effective_v2_binding_recomputes_all_dependent_digests": true,
+    "runner_preflight_and_application_runtime_resolve_identical_effective_binding": true,
+    "disposable_create_app_or_equivalent_preflight_reaches_binding_resolution_with_zero_provider_and_canonical_calls": true,
+    "old_R6_input_or_identity_reuse_is_rejected": true,
+    "new_R7_prospective_input_admission_and_identity_are_reproducible_on_two_disposable_clones": true,
+    "historical_R1_through_R6_admissions_runs_failures_and_captures_immutable": true,
+    "fresh_proof_admission_issuance_execution_and_paired_assessment_require_later_separate_authorities": true
+  },
+  "historical_exact_binding_supersession": {
+    "reason": "historical implementation tests recognize the RC-P36-063 disposition as the latest current-state pointer without changing their frozen runtime behavior",
+    "allowed_changed_paths": [
+      "tests/contract/test_fin_0_1_s4_t05_specialist_wwc_judgment_atom_deterministic_assembly_zero_call_implementation.py",
+      "tests/contract/test_fin_0_1_s4_t05_task_claim_link_policy_minimum_zero_call_implementation.py",
+      "tests/contract/test_fin_0_1_s4_t05_wwc_numeric_authority_surface_minimum_zero_call_implementation.py"
+    ],
+    "current_sha256": {
+      "tests/contract/test_fin_0_1_s4_t05_specialist_wwc_judgment_atom_deterministic_assembly_zero_call_implementation.py": "ff905e884a3c1ed0408e7e77c32ec03984a116ea7b1ed0f0cc9b469b3c8678ef",
+      "tests/contract/test_fin_0_1_s4_t05_task_claim_link_policy_minimum_zero_call_implementation.py": "08bd1474644626b2f192d29fc21198fe4cfa7ff854f6c0eea2fda9e966ddae2a",
+      "tests/contract/test_fin_0_1_s4_t05_wwc_numeric_authority_surface_minimum_zero_call_implementation.py": "c7c3d6702558a273f634ac52f81ba906d296b282d6feed9b6edf9616a6364128"
+    }
+  },
+  "sequence_boundary": {
+    "current_sequence": "RC_P36_063_profile_binding_disposition_only",
+    "implementation_in_this_decision": false,
+    "model_provider_network_source_tool_admission_run_artifact_or_paired_actions_in_this_decision": false,
+    "RC_P36_062_status_unchanged": "R6_launch_failed_before_v8_live_observation",
+    "RC_P36_061_status_unchanged": "R5_consumed_failed_upstream_projection_live_observation_unproven",
+    "deferred_to_S4_T10_to_S5": [
+      "general_multi_case_execution_profile_versioning_framework",
+      "all_node_general_judgment_atom_framework",
+      "dependency_and_conflict_deterministic_assembly",
+      "Writer_and_Verifier_atomization",
+      "cross_provider_strict_server_side_schema_capability_matrix"
+    ]
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "runtime_code_changes": 0,
+    "new_admissions": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_assessments": 0,
+    "Human_Reviews": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_063": "root_cause_disposed_versioned_profile_overlay_and_create_app_preflight_selected_implementation_pending",
+    "RC_P36_062": "R6_launch_failed_before_v8_live_observation",
+    "RC_P36_061": "R5_consumed_failed_upstream_projection_live_observation_unproven",
+    "S4_T05": "blocked_pending_separately_authorized_minimum_zero_call_implementation",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "S5": "blocked_by_S4",
+    "release_admission": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S4-T05-DELL-R7-PROFILE-V2-VERSIONED-CASE-RUNTIME-BINDING-AND-CREATE-APP-PREFLIGHT-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

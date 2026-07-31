@@ -1,0 +1,211 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_changed_contract_family_single_node_natural_output_canaries_authority_decision_v1_0",
+  "decision_id": "S4-T06-MU-CHANGED-CONTRACT-FAMILY-SINGLE-NODE-NATURAL-OUTPUT-CANARIES-AUTHORITY-DECISION",
+  "recorded_at": "2026-07-30T16:23:20+08:00",
+  "status": "pass_zero_call_exact_three_family_canary_authority_execution_not_started",
+  "decision_label": "authorize_three_sequential_isolated_single_node_natural_output_canaries",
+  "authority": {
+    "user_instruction": "继续",
+    "current_turn_model_or_provider_execution_authorized": false,
+    "future_exact_once_three_family_canary_execution_authorized": true,
+    "credential_read_or_probe_authorized_in_current_turn": false,
+    "full_chain_execution_authorized": false,
+    "R7_admission_issuance_authorized": false,
+    "R7_exact_live_authorized": false,
+    "paired_assessment_or_owner_acceptance_authorized": false,
+    "S4_T07_or_later_authorized": false
+  },
+  "source_bindings": {
+    "fresh_proof_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_deterministic_judgment_atom_planner_and_compiled_contract_invariant_hardening_fresh_agent_proof_decision_v1_0.json",
+    "fresh_proof_sha256": "8acf72d26509ca426dc7ac14acb50e5f9263ac70d81bb845a68649c7bc2145bb",
+    "implementation_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_deterministic_judgment_atom_planner_and_compiled_contract_invariant_hardening_minimum_zero_call_implementation_v1_0.json",
+    "implementation_sha256": "8641492cdd484e7e96aef76a69553cb08ffb6268fe1869b2d010684f51fe6ad7",
+    "compiled_contract_ref": "fin01.s4.deterministic_judgment_atom_planner_and_compiled_contract_invariants:v1",
+    "MU_exact_input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+    "prospective_R7_admission_digest": "07c25f81095b8c82f75bfc320a3313976a093f5baf39754966f3b720858d18ed",
+    "prospective_R7_admission_file_absent": true,
+    "formal_R6_immutable_failed": true,
+    "quarantined_diagnostic_non_promotable": true
+  },
+  "provider_route": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "wire_api": "chat_completions_json_object",
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "reasoning_effort": "none",
+    "timeout_seconds_per_call": 120,
+    "stream": false,
+    "provider_hopping": false
+  },
+  "canary_isolation_contract": {
+    "case": "MU",
+    "program_cell_id": "demand_authenticity_and_sustainability",
+    "execution_order": [
+      "specialist_fact_atoms",
+      "claim_candidate_atoms",
+      "what_would_change_atoms"
+    ],
+    "each_family_has_one_fresh_call_identity": true,
+    "claim_and_WWC_prior_segments_are_local_deterministic_seed_fixtures": true,
+    "natural_output_from_one_family_is_not_input_to_another_family": true,
+    "full_chain_canary": false,
+    "canonical_WorkUnit_Attempt_Run_or_Artifact_write_allowed": false,
+    "business_artifact_promotion_allowed": false
+  },
+  "exact_canary_requests": [
+    {
+      "family_id": "specialist_fact_atoms",
+      "segment_id": "facts_explanation_and_terminal",
+      "system_prompt_sha256": "41cbf957193957b9c385a31ccb2f70f257866a4f2665a8992de09491e9116298",
+      "user_payload_sha256": "5805ab1b7315bf4a28ed68da20eb567ca4f08445ffbd6e2824afd1e18463f8df",
+      "canonical_request_sha256": "f96285fd64912b39b57e7f3c104186e2941fd0e61cbcf40a0888fb4591c404e1",
+      "compiled_contract_digest": "12847ddfdf81009da24062d95fa5ac56b4adc0cbae3fa344d6f3406c4e09bb81",
+      "wire_schema_sha256": "3e53e733b684b8a5718665f391287b66e79c0b9bf49d9b2fc8458154a96da739",
+      "required_top_level_keys": [
+        "program_cell_id",
+        "fact_atoms",
+        "terminal_class"
+      ],
+      "allowed_alias_counts": {
+        "supports": 5,
+        "facts": 0,
+        "claims": 0,
+        "authorities": 0,
+        "dates": 0
+      },
+      "input_utf8_bytes": 12722,
+      "estimated_input_tokens": 6352,
+      "maximum_output_tokens": 1600
+    },
+    {
+      "family_id": "claim_candidate_atoms",
+      "segment_id": "owner_grade_claim_cards",
+      "system_prompt_sha256": "41cbf957193957b9c385a31ccb2f70f257866a4f2665a8992de09491e9116298",
+      "user_payload_sha256": "78ca5f3f7803c5c0fff3128832eb9e8d21f3addd828a487bebb2515de37dfd0d",
+      "canonical_request_sha256": "405738388536cba288ddd46a3af5b51952bcc5f35adb76cc0b9241b4cc0cc24f",
+      "compiled_contract_digest": "3dc236e2588ddf970056687caee3bd9f2a0553d2f01eaca040b8e218034927a9",
+      "wire_schema_sha256": "37260dde629892458355c94583936aa23837c75c6b2b25a8095317039e2e9446",
+      "required_top_level_keys": [
+        "program_cell_id",
+        "claim_candidate_atoms"
+      ],
+      "allowed_alias_counts": {
+        "supports": 0,
+        "facts": 1,
+        "claims": 0,
+        "authorities": 0,
+        "dates": 0
+      },
+      "input_utf8_bytes": 11609,
+      "estimated_input_tokens": 5768,
+      "maximum_output_tokens": 1200
+    },
+    {
+      "family_id": "what_would_change_atoms",
+      "segment_id": "actionable_what_would_change_tasks",
+      "system_prompt_sha256": "41cbf957193957b9c385a31ccb2f70f257866a4f2665a8992de09491e9116298",
+      "user_payload_sha256": "c02fd3fec0f1c545b019d0cf3830aee85b2e085b5b499dd7fbf31883d889c228",
+      "canonical_request_sha256": "b643c574623d1ce4dfe4d0815d3f389b5b9ec0b8bf226a91e13c03818dc48f26",
+      "compiled_contract_digest": "f9737f3177c300fbd578be8d58206651e62d8f33e1dd0a14c8c65f3b4ab7c486",
+      "wire_schema_sha256": "49248d3e4412645e6515e71a7b9fc25d7928ff700076f102be0ed2e10db7e56f",
+      "required_top_level_keys": [
+        "program_cell_id",
+        "what_would_change_atoms"
+      ],
+      "allowed_alias_counts": {
+        "supports": 0,
+        "facts": 0,
+        "claims": 1,
+        "authorities": 9,
+        "dates": 2
+      },
+      "input_utf8_bytes": 15322,
+      "estimated_input_tokens": 7575,
+      "maximum_output_tokens": 1400
+    }
+  ],
+  "hard_budget": {
+    "maximum_semantic_model_calls": 3,
+    "maximum_provider_calls": 3,
+    "maximum_network_calls": 3,
+    "maximum_transport_attempts": 3,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "fallback_budget": 0,
+    "replay_or_relaunch_budget": 0,
+    "maximum_output_tokens_total": 4200,
+    "maximum_total_cost_usd": 0.03,
+    "maximum_wall_clock_seconds": 360,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_work_unit_attempt_run_writes": 0,
+    "business_artifact_writes": 0
+  },
+  "capture_and_validation_contract": {
+    "capture_policy_ref": "fin01.runtime.provider_interaction_audit_capture:v2",
+    "capture_before_local_validation_or_stop": true,
+    "preserve_exact_model_visible_request": true,
+    "preserve_final_assistant_output": true,
+    "preserve_allowlisted_inference_arguments_and_usage": true,
+    "credential_headers_cookies_and_private_reasoning_persisted": false,
+    "raw_provider_envelope_persisted": false,
+    "result_record_contains_only_capture_refs_digests_and_content_free_shape": true,
+    "native_JSON_object_required": true,
+    "finish_reason_stop_required": true,
+    "compiled_wire_shape_and_alias_enum_validation_required": true,
+    "local_deterministic_assembly_required": true,
+    "arbitrary_narrative_material_number_date_threshold_identity_or_raw_ref_allowed": false,
+    "failed_output_business_promotion_allowed": false
+  },
+  "failure_contract": {
+    "first_credible_failure": "terminal_stop",
+    "remaining_family_calls_after_failure": 0,
+    "retry": 0,
+    "fallback": 0,
+    "provider_hopping": false,
+    "field_level_patch": false,
+    "prompt_only_retry": false,
+    "full_chain_after_failure": false,
+    "R7_admission_after_failure": false,
+    "automatic_surface_scope_replacement": false,
+    "required_next_step_after_any_result": "separate_zero_call_post_result_disposition"
+  },
+  "success_contract": {
+    "all_three_family_calls_status_ok": true,
+    "all_three_finish_reason_stop": true,
+    "all_three_capture_v2_objects_present": true,
+    "all_three_compiled_wire_and_local_assembly_pass": true,
+    "provider_authored_forbidden_surface_count": 0,
+    "success_does_not_authorize_R7_admission_or_exact_live": true,
+    "required_next_step": "separate_zero_call_post_result_disposition"
+  },
+  "current_turn_observed_counts": {
+    "actual_model_calls": 0,
+    "actual_provider_calls": 0,
+    "execution_network_calls": 0,
+    "credential_reads_or_probes": 0,
+    "canary_executions": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "exact_live_runs": 0,
+    "business_artifacts_created": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0,
+    "T07_entries": 0
+  },
+  "stage_disposition": {
+    "RC_P36_080": "open_canary_execution_and_formal_live_reproof_pending",
+    "RC_P36_083": "closed",
+    "S4_T06": "blocked_canary_execution_and_one_formal_MU_exact_live_pending",
+    "paired_assessment": "not_eligible_not_performed",
+    "owner_acceptance": "not_eligible_not_performed",
+    "S4_T07": "not_entered",
+    "S4": "not_passed",
+    "S5": "blocked"
+  },
+  "next_action": "S4-T06-MU-CHANGED-CONTRACT-FAMILY-SINGLE-NODE-NATURAL-OUTPUT-CANARIES-EXACT-ONCE-EXECUTION",
+  "next_action_authorized": true,
+  "known_boundary": "This authority decision freezes three isolated single-node DeepSeek Pro requests and their stop contract. It does not read credentials, execute any canary, issue or consume an admission, run full-chain, produce business Artifacts, perform paired assessment, owner acceptance, or enter T07."
+}

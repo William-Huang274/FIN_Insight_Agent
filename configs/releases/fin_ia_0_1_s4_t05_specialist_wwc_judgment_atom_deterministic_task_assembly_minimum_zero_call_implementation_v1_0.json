@@ -1,0 +1,204 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_specialist_wwc_judgment_atom_deterministic_task_assembly_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T05-DELL-SPECIALIST-WWC-JUDGMENT-ATOM-AND-DETERMINISTIC-TASK-ASSEMBLY-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-27T17:20:00+08:00",
+  "status": "pass_zero_call_implementation_fixture_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "bounded_zero_call_runtime_prompt_schema_validator_assembler_fake_provider_profile_and_telemetry_implementation_authorized": true,
+    "fresh_agent_proof_admission_or_exact_execution_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "sixth_DELL_execution_paired_assessment_Human_review_S4_T06_or_later_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "source_decision": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_specialist_v7_wwc_segment_output_truncation_zero_call_root_cause_disposition_v1_0.json",
+    "sha256": "6b8e43ebc82c1972f98fc8761c1fd78ecd4dd1fc405c2d488f6a854069ca8d96"
+  },
+  "implemented_contract": {
+    "policy_ref": "fin01.s3.specialist_WWC_judgment_atom_deterministic_assembly:v1",
+    "logical_transport_family_ref": "fin01.s3.bounded_agent.specialist_owner_grade_segmented:v8",
+    "runtime_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v8",
+    "research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v2",
+    "provider_top_level_field": "what_would_change_judgment_atoms",
+    "provider_atom_cardinality": "1..3",
+    "provider_atom_fields": [
+      "claim_alias",
+      "primary_authority_alias",
+      "authority_aliases",
+      "metric_or_observation",
+      "rule_type",
+      "comparator_or_condition",
+      "threshold_or_observation",
+      "start_or_trigger",
+      "deadline_or_review_date",
+      "expected_claim_transition",
+      "fallback_stop_condition"
+    ],
+    "provider_forbidden_fields": [
+      "task_id",
+      "claim_id",
+      "source_target",
+      "decision_rule",
+      "time_window",
+      "authority_refs",
+      "raw authority refs"
+    ],
+    "closed_rule_types": [
+      "threshold_cross",
+      "event_occurs",
+      "trend_persists",
+      "evidence_confirmation"
+    ],
+    "closed_expected_claim_transitions": [
+      "strengthen",
+      "weaken",
+      "resolve_cannot_infer",
+      "invalidate",
+      "no_change"
+    ],
+    "local_deterministic_ownership": [
+      "task_id",
+      "claim_alias_to_exact_claim_id",
+      "authority_alias_to_exact_current_Cell_ref",
+      "authority_kind_validation",
+      "source_target_from_frozen_authority_metadata",
+      "exact_admission_as_of",
+      "canonical_decision_rule_and_time_window_nesting",
+      "expected_claim_transition_text",
+      "ordering",
+      "identity",
+      "lineage"
+    ],
+    "canonical_downstream_task_shape_changed": false,
+    "provider_alias_residue_allowed_in_canonical_artifacts": false,
+    "v1_through_v7_capabilities_and_requests_changed": false,
+    "DELL_ticker_branch_in_prompt_validator_or_assembler_added": false
+  },
+  "capacity_contract": {
+    "WWC_segment_output_tokens": 1800,
+    "specialist_stage_output_tokens": 4600,
+    "three_Cell_full_chain_maximum_output_tokens": 18000,
+    "provider_atom_narrative_maximum_unicode_characters": 160,
+    "provider_atom_serialized_maximum_utf8_bytes": 4800,
+    "maximum_shape_fixture": "three_atoms_each_with_six_160_character_narrative_fields",
+    "maximum_shape_fits_provider_byte_envelope": true,
+    "capacity_or_invalid_JSON_acceptance_layer": "L1_hard_integrity_fail_closed",
+    "silent_truncation_or_partial_output_salvage_allowed": false
+  },
+  "authority_and_identity_contract": {
+    "claim_alias_source": "validated_current_Cell_claims_sorted_by_exact_claim_id",
+    "authority_alias_source": "current_Cell_authority_refs_plus_frozen_evidence_numeric_candidate_and_graph_metadata",
+    "authority_classes": [
+      "Evidence",
+      "Numeric",
+      "Candidate",
+      "Graph"
+    ],
+    "raw_authority_surface_repeated_in_v8_WWC_request": false,
+    "primary_authority_owns_source_target": true,
+    "cross_Cell_alias_selection_allowed": false,
+    "normalization_trim_casefold_prefix_guess_fuzzy_match_remap_or_silent_drop_allowed": false
+  },
+  "safe_failure_contract": {
+    "invalid_or_truncated_JSON": "hard_fail_closed_before_assembly",
+    "provider_output_over_4800_utf8_bytes": "typed_hard_fail_closed",
+    "atom_cardinality_outside_1_to_3": "typed_hard_fail_closed",
+    "malformed_blank_overlong_or_unknown_enum_atom": "typed_hard_fail_closed",
+    "unknown_wrong_kind_or_cross_Cell_claim_or_authority_alias": "typed_hard_fail_closed",
+    "duplicate_or_primary_missing_authority_alias_array": "typed_hard_fail_closed",
+    "missing_local_authority_metadata_or_exact_as_of": "hard_fail_closed_before_provider_or_assembly",
+    "valid_atoms": "deterministically_assemble_then_run_unchanged_canonical_validators"
+  },
+  "fixture_proof": {
+    "focused_contract_tests": "11 passed",
+    "max_shape_three_atoms_with_160_character_narratives": "pass_below_4800_utf8_bytes",
+    "closed_negative_matrix": "pass",
+    "content_free_typed_telemetry": "pass",
+    "full_fake_provider_logical_nodes": 6,
+    "full_fake_provider_callbacks": 12,
+    "full_fake_provider_logical_artifacts": 9,
+    "canonical_atom_surface_residue": 0,
+    "canonical_Q_or_A_alias_residue": 0,
+    "real_model_provider_network_source_tool_calls": 0
+  },
+  "historical_exact_binding_supersession": {
+    "reason": "The shared Specialist policy and executor files advanced under the separately authorized RC-P36-062 minimum implementation. Historical decisions admissions Runs captures R5 failure truth and business evidence remain immutable; current-file verification resolves through this implementation for the explicitly changed runtime paths.",
+    "allowed_changed_paths": [
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+      "apps/workbench/backend/application/bounded_agent_executor.py",
+      "tests/contract/test_fin_0_1_s4_t05_research_lead_gap_atom_deterministic_projection_zero_call_implementation.py",
+      "tests/contract/test_fin_0_1_s4_t05_task_claim_link_policy_minimum_zero_call_implementation.py",
+      "tests/contract/test_fin_0_1_s4_t05_wwc_numeric_authority_surface_minimum_zero_call_implementation.py"
+    ],
+    "superseded_binding_contracts": {
+      "configs/releases/fin_ia_0_1_s4_t04_dell_provider_canary_need_and_fresh_agent_proof_decision_v1_0.json": "0c2cf1a84fb78c3e3dc86f2dd10bd93c37ff4c6321a2825d2b686773c2ce289c"
+    },
+    "superseded_latest_implementation_ref": "configs/releases/fin_ia_0_1_s4_t05_research_lead_gap_atom_deterministic_projection_minimum_zero_call_implementation_v1_0.json",
+    "unaffected_historical_exact_bindings_still_required": true,
+    "historical_R5_failure_capture_admission_Run_or_terminal_state_rewritten": false,
+    "historical_business_evidence_reinterpreted": false
+  },
+  "deferred_cross_sequence_items": [
+    {
+      "item": "dependency_conflict_variant_and_all_node_atom_framework",
+      "target": "S4-T10-to-S5-carry-forward",
+      "blocks_current_T05": false
+    },
+    {
+      "item": "Writer_and_Verifier_atomization",
+      "target": "S4-T10-to-S5-carry-forward",
+      "blocks_current_T05": false
+    },
+    {
+      "item": "cross_provider_strict_server_schema_capability_matrix",
+      "target": "S4-T10-to-S5-carry-forward",
+      "blocks_current_T05": false
+    },
+    {
+      "item": "cross_stage_unified_claim_task_identity_redesign",
+      "target": "S5-or-later-architecture-sequence",
+      "blocks_current_T05": false
+    }
+  ],
+  "verification": {
+    "focused_WWC_atom_request_assembly_failure_and_fake_provider": "11 passed",
+    "python_compile": "pass",
+    "adjacent_v7_task_claim_numeric_authority_gap_projection_and_v8": "69 passed",
+    "S4_T05_contract_regression": "180 passed",
+    "full_S4_contract_regression": "221 passed",
+    "Project_OS_next_fresh_proof_scope_preflight": "pass_open_full_chain_blockers_0"
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "5d45061ca8f3ab530b86cda7a7f21c0cd6ed7a9add3b387249d22e5f531b1ba0",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "c84c43a8848dde23a49424ede6953a1364a207686aae298ffd03e7a64945b2f6",
+    "tests/contract/test_fin_0_1_s4_t05_specialist_wwc_judgment_atom_deterministic_assembly_zero_call_implementation.py": "f812fc0fc3934a1e03153553043f6a0a9386cee48187ecb87627230e2847a645",
+    "tests/contract/test_fin_0_1_s4_t05_research_lead_gap_atom_deterministic_projection_zero_call_implementation.py": "40d873965ee6b063f22ca8505a96559067dcc4a5a3afb23d300b9f5c14dff594",
+    "tests/contract/test_fin_0_1_s4_t05_task_claim_link_policy_minimum_zero_call_implementation.py": "c6d1b4aee596d7d802653dce07e96700a0f784ded0f1d102ab7b323d228169f9",
+    "tests/contract/test_fin_0_1_s4_t05_wwc_numeric_authority_surface_minimum_zero_call_implementation.py": "3893be63d4d893e5cf67bdf310f21e70b3246ab79e0dca96810ab372190c5a66"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_comparisons": 0,
+    "Human_Reviews": 0
+  },
+  "stage_decision": {
+    "RC_P36_062": "implementation_fixture_proven_fresh_agent_proof_pending",
+    "RC_P36_061": "R5_consumed_failed_upstream_projection_live_observation_unproven",
+    "S4_T05": "blocked_pending_separately_authorized_fresh_agent_proof_and_later_exact_admission",
+    "DELL_R2": "not_proven",
+    "S4_T06_or_later": "not_entered",
+    "S5_release_or_production": "not_authorized"
+  },
+  "next_action": "S4-T05-DELL-SPECIALIST-WWC-JUDGMENT-ATOM-AND-DETERMINISTIC-TASK-ASSEMBLY-FRESH-AGENT-PROOF-DECISION"
+}

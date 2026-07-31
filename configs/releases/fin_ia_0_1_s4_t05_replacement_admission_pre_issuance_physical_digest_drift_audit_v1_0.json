@@ -1,0 +1,42 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_replacement_admission_pre_issuance_physical_digest_drift_audit_v1_0",
+  "audited_at": "2026-07-27T00:04:00+08:00",
+  "status": "pass_benign_sqlite_physical_digest_drift_logical_identity_and_object_tree_unchanged",
+  "trigger": {
+    "stage": "S4_T05_replacement_exact_admission_issuance_zero_call_preflight",
+    "failure_code": "s4_t05_frozen_proof_reprepare_mismatch_target_read_only_audit",
+    "admission_file_created": false,
+    "issuance_file_created": false,
+    "admission_consumed": false,
+    "model_provider_network_source_or_tool_calls": 0
+  },
+  "classification": {
+    "prior_canonical_database_sha256": "2be1674dd1b8564aeffbfb113cf4c8a3fdb602ed9b72059b3a92087e8c55a280",
+    "current_canonical_database_sha256": "c94cba96f322f2b7a77b8fa34fea6531ce56f9733d378610f3fd2ef9d2af3586",
+    "canonical_object_tree_sha256_unchanged": true,
+    "canonical_object_tree_sha256": "3b2a7260578c87d2dcf3b60a109aa8b49213eeed3a1b9d65b4630b096037973b",
+    "logical_snapshot_digest_unchanged": true,
+    "logical_snapshot_digest": "a3070cb273582934f137197d9719b2bc22f7dda36ffc2b86976a7f753e4ef8f3",
+    "prospective_identity_rows": [
+      0,
+      0,
+      0
+    ],
+    "fresh_prepare_identity_equal": true,
+    "fresh_prepare_double_prepare_equal": true,
+    "fresh_prepare_mapping_alignment_dispatch_digests_equal": true,
+    "fresh_prepare_prospective_admission_digest_equal": true,
+    "canonical_sqlite_wal_byte_size": 0,
+    "research_or_execution_logical_state_drift_observed": false,
+    "likely_cause": "SQLite WAL checkpoint or physical page-layout normalization caused by historical target-runtime service initialization; no logical row, object, fresh identity, input, dispatch or admission contract changed"
+  },
+  "disposition": {
+    "frozen_unissued_proof_rewritten": false,
+    "physical_drift_audit_must_be_bound_into_issuance": true,
+    "new_execution_identity_or_admission_payload_required": false,
+    "replacement_admission_issuance_may_continue": true,
+    "admission_consumption_or_live_execution_authorized": false,
+    "automatic_model_retry_fallback_patch_or_rerun": false
+  },
+  "next_action": "S4-T05-DELL-EVIDENCE-ROLE-GROUP-MAPPING-REPAIR-FRESH-EXACT-ADMISSION-ISSUANCE-DECISION"
+}

@@ -1,0 +1,306 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_disposition_v1_0",
+  "decision_id": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-DISPOSITION-R1",
+  "decided_at": "2026-07-28T20:00:00+08:00",
+  "status": "bounded_T06_entry_blocker_disposition_complete_zero_call_implementation_pending_separate_authority",
+  "authority": {
+    "user_instruction": "可以，按你说的做S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-DISPOSITION，不要又陷入在同一环节无限修复的问题就行",
+    "program_level_zero_call_disposition_authorized": true,
+    "runtime_implementation_authorized": false,
+    "credential_configuration_or_provider_availability_probe_authorized": false,
+    "model_provider_or_network_call_authorized": false,
+    "new_admission_or_full_chain_execution_authorized": false,
+    "R12_authorized": false,
+    "paired_assessment_or_owner_acceptance_authorized": false,
+    "S4_T06_or_later_execution_authorized": false
+  },
+  "source_evidence": {
+    "global_audit_ref": "configs/releases/fin_ia_0_1_s0_to_s4_t05_full_chain_global_audit_and_forward_plan_v1_0.json",
+    "global_audit_sha256": "6a00836e8b2a799e17eecad103982a35d8e4956069b63a5b9248adfb1e0ae451",
+    "R11_failure_result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r11_numeric_identity_exact_live_execution_failure_result_v1_0.json",
+    "R11_failure_result_sha256": "f52ed7bc144eb27d06032bfa4999310ce40c6ba06eb584cb71dc466d259fdf78",
+    "R11_primary_failure_code": "s4_case_numeric_authority_provider_narrative_invalid",
+    "R11_secondary_failure_code": "research_run_failure_observation_not_secret_safe",
+    "R11_terminal_states_after_zero_call_closeout": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "R11_artifact_count": 0,
+    "R11_paired_assessment_performed": false,
+    "automatic_R12_allowed_by_global_audit": false,
+    "historical_deepseek_strict_transport_pivot_ref": "configs/releases/fin_ia_0_1_s2_t03_post_r2_provider_transport_pivot_decision_v1_0.json",
+    "historical_deepseek_strict_transport_pivot_sha256": "e6e4b473dcc5d71a8ccc4bb2cecf25012b89615cca5357137e96950591dd6599",
+    "historical_deepseek_beta_strict_attempts": 2,
+    "historical_deepseek_beta_strict_closed_outputs": 0,
+    "provider_neutral_native_json_schema_adapter_ref": "configs/releases/fin_ia_0_1_s2_t03_native_json_schema_transport_adapter_implementation_v1_0.json",
+    "provider_neutral_native_json_schema_adapter_sha256": "0fbba796c82d6f4b699dbb43cc36b64b68d3ac5c23f029d6aa2b41ab32a07acd",
+    "provider_neutral_native_json_schema_adapter_fixture_proven": true,
+    "historical_openai_native_route_result_ref": "configs/releases/fin_ia_0_1_s2_t03_gpt_5_6_sol_native_live_validation_r2_result_v1_0.json",
+    "historical_openai_native_route_result_sha256": "8be3a2b26b5b501d8ac2d6c5a7eaf0df3b88967f73f186cb611374903476126b",
+    "historical_openai_native_route_schema_evaluated": false,
+    "historical_openai_native_route_boundary": "HTTP_401_before_generation"
+  },
+  "official_provider_capability_evidence": [
+    {
+      "provider": "deepseek",
+      "title": "JSON Output",
+      "url": "https://api-docs.deepseek.com/guides/json_mode",
+      "observed_contract": "response_format json_object guarantees valid JSON text but still relies on prompt examples for the desired shape and may occasionally return empty content",
+      "disposition": "not_sufficient_for_L1_truth_kernel"
+    },
+    {
+      "provider": "deepseek",
+      "title": "Tool Calls strict mode",
+      "url": "https://api-docs.deepseek.com/guides/tool_calls",
+      "observed_contract": "Beta strict tool calls validate a supported JSON Schema subset and require the beta base URL; string pattern and enum are supported while minLength and maxLength are not",
+      "disposition": "not_selected_for_current_mainline_after_two_consumed_project_attempts_without_closed_output"
+    },
+    {
+      "provider": "openai",
+      "title": "Structured Outputs",
+      "url": "https://openai.com/index/introducing-structured-outputs-in-the-api/",
+      "observed_contract": "strict JSON Schema structured outputs use constrained decoding; schema conformance does not replace semantic truth validation and refusal or incomplete states remain typed boundaries",
+      "disposition": "preferred_first_strict_schema_binding_candidate_after_separate_credential_and_model_availability_gate"
+    }
+  ],
+  "program_disposition": {
+    "decision_label": "pivot",
+    "T05_result": "blocked_after_R11_new_L1_not_passed_not_owner_accepted",
+    "T05_paid_execution_series_closed": true,
+    "R11_remains_immutable": true,
+    "R12_or_relabelled_same_contract_rerun": "forbidden",
+    "temporary_H01_label_retracted": true,
+    "temporary_H01_label_was_executed": false,
+    "new_phase_or_task_family_created": false,
+    "scope_selected": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER",
+    "scope_swap_is_cross_case_shared_runtime_work": true,
+    "scope_swap_is_not_a_T05_field_patch": true,
+    "scope_is_T06_entry_readiness_work_not_T06_case_execution": true,
+    "S4_T06": "not_entered_until_entry_blocker_is_cleared",
+    "S4_T07_T08_T09_T10_and_S5": "blocked",
+    "DELL_R2": "not_proven"
+  },
+  "anti_infinite_repair_governance": {
+    "maximum_zero_call_implementation_bundles_under_this_entry_gate": 1,
+    "automatic_follow_on_repair_bundles": 0,
+    "automatic_prompt_field_or_allowlist_patch_iterations": 0,
+    "maximum_single_node_provider_canaries_after_zero_call_acceptance": 1,
+    "provider_canary_requires_separate_explicit_authority": true,
+    "provider_canary_automatic_retry_or_provider_hopping": false,
+    "DELL_R12_or_equivalent_full_chain_reproof": "forbidden",
+    "T06_MU_exact_execution_is_part_of_this_gate": false,
+    "broader_executor_refactor_provider_matrix_narrative_quality_and_cross_stage_identity_work": "defer_to_T10_or_S5",
+    "zero_call_bundle_failure_disposition": "keep_T06_blocked_and_return_once_to_program_level_scope_replace_or_stop_decision_without_local_patch_loop",
+    "single_node_canary_failure_disposition": "keep_T06_blocked_and_stop_without_retry_provider_hopping_or_full_chain",
+    "single_node_canary_pass_disposition": "request_separate_T06_MU_exact_execution_authority_without_DELL_R12"
+  },
+  "selected_contracts": {
+    "strict_truth_kernel": {
+      "contract_ref": "fin01.s4.strict_truth_kernel.numeric_judgment_selection:v1",
+      "purpose": "separate model judgment selection from all material numeric and entity rendering",
+      "provider_wire_allowed_values": [
+        "request_local_evidence_aliases",
+        "request_local_numeric_aliases",
+        "request_local_claim_aliases",
+        "finite_direction_enum",
+        "finite_materiality_enum",
+        "finite_confidence_enum",
+        "finite_causal_relation_enum",
+        "finite_interpretation_catalog_codes",
+        "finite_counterevidence_aliases"
+      ],
+      "provider_wire_forbidden_values": [
+        "arbitrary_free_text",
+        "provider_authored_material_numeric_value",
+        "currency_amount",
+        "percentage",
+        "period_label",
+        "entity_or_ticker_label",
+        "canonical_id",
+        "lineage_digest",
+        "rendered_fact_or_memo_sentence"
+      ],
+      "all_string_values_must_be_schema_enums_or_schema_patterns_bound_to_request_local_alias_space": true,
+      "local_runtime_owns": [
+        "numeric_value",
+        "comparison_operator",
+        "sign",
+        "currency",
+        "unit",
+        "scale",
+        "period",
+        "entity_and_business_scope",
+        "derived_formula_and_inputs",
+        "material_fact_clause",
+        "case_identity",
+        "canonical_identity",
+        "ordering",
+        "lineage"
+      ],
+      "model_verifier_is_truth_owner": false,
+      "independent_local_L1_recomputation_required": true
+    },
+    "provider_capability_routing": {
+      "contract_ref": "fin01.provider.capability.strict_json_schema:v1",
+      "required_for_truth_kernel_nodes": true,
+      "provider_neutral_internal_adapter_required": true,
+      "preflight_fails_before_provider_call_when_strict_schema_capability_is_unbound": true,
+      "first_binding_candidate": "openai_responses_native_json_schema",
+      "exact_provider_model_and_credential_binding": "deferred_to_separate_availability_and_authority_gate",
+      "deepseek_json_object_truth_kernel_binding": "rejected",
+      "deepseek_beta_strict_tool_current_mainline_binding": "rejected_after_two_historical_attempts_without_closed_output",
+      "deepseek_non_authoritative_narrative_use": "may_be_evaluated_later_but_cannot_own_L1_truth_or_block_truth_kernel_materialization"
+    },
+    "narrative_shell": {
+      "contract_ref": "fin01.s4.non_authoritative_narrative_shell:v1",
+      "required_for_L1_success": false,
+      "material_numeric_and_identity_clauses_are_local_injections": true,
+      "provider_draft_is_never_a_canonical_fact_or_numeric_authority": true,
+      "invalid_provider_draft_disposition": "retain_restricted_rejected_candidate_record_L3_finding_and_materialize_only_the_deterministic_truth_shell",
+      "silent_rewrite_or_presentation_as_original_provider_output_allowed": false
+    },
+    "atomic_failure_terminalization": {
+      "contract_ref": "fin01.bounded_agent.atomic_failure_terminal_core_and_registered_observation:v1",
+      "terminal_core_required_fields": [
+        "work_unit_id",
+        "attempt_id",
+        "research_run_id",
+        "failure_type",
+        "terminal_reason",
+        "stage",
+        "failure_codes",
+        "observed_counts",
+        "private_reasoning_persisted",
+        "raw_provider_response_persisted"
+      ],
+      "terminal_core_and_state_transition_are_atomic": true,
+      "optional_failure_observation_extension_may_veto_terminal_state": false,
+      "unknown_or_invalid_optional_extension_disposition": "discard_untrusted_extension_persist_content_free_observation_rejected_code_and_terminalize_failed",
+      "raw_rejected_extension_persisted": false,
+      "prompt_schema_validator_fake_provider_failure_telemetry_and_canonical_registry_share_one_versioned_descriptor": true,
+      "adding_one_facade_allowlist_branch_only": "rejected_as_insufficient"
+    }
+  },
+  "minimum_zero_call_implementation_acceptance": {
+    "truth_kernel_schema_has_no_arbitrary_free_text_fields": true,
+    "truth_kernel_schema_values_are_request_local_aliases_or_finite_enums_only": true,
+    "prompt_schema_local_validator_fake_provider_renderer_and_failure_descriptor_are_compiled_from_one_policy_source": true,
+    "DELL_MU_NVDA_positive_full_fake_each_nodes_callbacks_artifacts": [
+      6,
+      12,
+      9
+    ],
+    "wrong_alias_cross_case_alias_numeric_mutation_and_provider_extra_text_fail_before_artifact_commit": true,
+    "local_renderer_and_independent_L1_validator_recompute_from_authority_not_provider_text": true,
+    "strict_schema_capability_absence_fails_preflight_with_zero_provider_calls": true,
+    "known_failure_telemetry_family_terminalizes_failed_failed_failed": true,
+    "unknown_extra_or_secret_like_failure_extension_terminalizes_failed_failed_failed_without_persisting_the_extension": true,
+    "usage_receipts_restricted_captures_and_completed_node_receipts_remain_core_owned_and_are_not_lost_by_extension_rejection": true,
+    "failure_creates_zero_business_artifacts_and_zero_retry": true,
+    "legacy_S2_S3_contracts_remain_immutable": true,
+    "model_provider_network_source_tool_calls": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "future_authority_sequence": [
+    {
+      "order": 1,
+      "item": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+      "authority_required": "separate_user_authority",
+      "paid_calls": 0,
+      "maximum_bundles": 1,
+      "automatic_follow_on_repairs": 0
+    },
+    {
+      "order": 2,
+      "item": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-INDEPENDENT-ENGINEERING-PROOF-AND-PROVIDER-CAPABILITY-BINDING-DECISION",
+      "authority_required": "separate_user_authority",
+      "paid_calls": 0
+    },
+    {
+      "order": 3,
+      "item": "S4-T06-ENTRY-SINGLE-NODE-STRICT-SCHEMA-PROVIDER-CANARY",
+      "authority_required": "separate_explicit_user_authority_after_credential_and_model_availability_gate",
+      "full_chain": false,
+      "maximum_canaries": 1,
+      "automatic_retry": false,
+      "alternate_provider_hopping": false
+    },
+    {
+      "order": 4,
+      "item": "S4-T06-MU-EXACT-EXECUTION-AUTHORITY-DECISION",
+      "authority_required": "separate_user_authority",
+      "automatic_DELL_full_chain": false,
+      "automatic_R12": false,
+      "requires_entry_canary_pass": true
+    }
+  ],
+  "rejected_options": [
+    {
+      "option": "increase_prompt_emphasis_and_retry_R12",
+      "decision": "rejected",
+      "reason": "R11 proved direct contract noncompliance and the global audit forbids automatic R12"
+    },
+    {
+      "option": "continue_deepseek_json_object_for_L1_truth_kernel",
+      "decision": "rejected",
+      "reason": "official JSON Output guarantees valid JSON rather than the exact schema and the project already uses fail-closed local shape validation"
+    },
+    {
+      "option": "third_deepseek_beta_strict_tool_full_chain_attempt",
+      "decision": "rejected",
+      "reason": "two historical attempts produced no closed output and a third same-route attempt was already forbidden"
+    },
+    {
+      "option": "add_case_numeric_authority_to_the_facade_allowlist_only",
+      "decision": "rejected_as_incomplete",
+      "reason": "another telemetry family could orphan the next run; terminal truth must not depend on optional enrichment"
+    },
+    {
+      "option": "strip_or_rewrite_provider_numeric_text_and_present_it_as_original",
+      "decision": "rejected",
+      "reason": "this violates immutable output truth and the layered acceptance standard"
+    },
+    {
+      "option": "immediate_openai_provider_switch_and_full_chain",
+      "decision": "rejected_without_separate_gate",
+      "reason": "the provider-neutral adapter is fixture-proven but historical live evidence stopped at HTTP 401 before schema generation and no current credential model budget or admission authority exists"
+    },
+    {
+      "option": "enter_MU_T06_while_DELL_truth_kernel_is_unqualified",
+      "decision": "rejected",
+      "reason": "this would move an unresolved cross-case L1 contract into the next case"
+    }
+  ],
+  "observed_counts_this_decision": {
+    "runtime_code_changes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "credentials_read_or_configured": 0,
+    "new_admissions": 0,
+    "new_work_units": 0,
+    "new_attempts": 0,
+    "new_research_runs": 0,
+    "business_artifacts": 0,
+    "paired_assessments": 0,
+    "owner_reviews": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_067": "T06_entry_blocker_truth_kernel_implementation_pending_one_bundle_max",
+    "RC_P36_068": "carried_open_exact_live_unproven_no_DELL_R12",
+    "RC_P36_069": "T06_entry_blocker_atomic_terminal_core_implementation_pending_one_bundle_max",
+    "S4_T05": "blocked_after_R11_not_passed_not_closed_as_success",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "S5": "blocked"
+  },
+  "next_action": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

@@ -1,0 +1,146 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_case_runtime_mandatory_material_truth_identity_safety_closure_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T06-MU-CASE-RUNTIME-MANDATORY-MATERIAL-TRUTH-AND-IDENTITY-SAFETY-CLOSURE-MINIMUM-ZERO-CALL-IMPLEMENTATION-R1",
+  "implemented_at": "2026-07-29T23:20:00+08:00",
+  "status": "pass_single_zero_call_bundle_fixture_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "source_decision_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r2_l1_numeric_identity_live_recurrence_root_cause_scope_disposition_v1_0.json",
+    "source_decision_sha256": "c6c2e4b5248e3cfe1c144b9942c3db718b7ec90124481dfbff92f4cc9e48febc",
+    "maximum_zero_call_implementation_bundles": 1,
+    "implementation_bundles_consumed": 1,
+    "automatic_follow_on_repair_bundles": 0,
+    "fresh_agent_proof_admission_or_exact_live_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false
+  },
+  "implemented_contract": {
+    "safety_profile_ref": "fin01.s4.case_runtime_mandatory_material_truth_and_identity_safety_closure:v1",
+    "mandatory_on_any_s4_case_runtime_input": true,
+    "pre_provider_failure_when_policy_pair_absent": "s4_case_runtime_mandatory_material_truth_and_identity_safety_profile_required",
+    "numeric_authority_policy_ref": "fin01.s4.case_numeric_authority_projection_and_deterministic_rendering:v1",
+    "delivery_identity_policy_ref": "fin01.s4.case_delivery_identity_projection:v1",
+    "admission_compiler": "compile_s4_case_runtime_mandatory_safety_admission",
+    "lead_compatibility_owner": "explicit_transport_capability_not_exact_version",
+    "lead_v7_safety_composable": true,
+    "lead_v7_gap_atom_projection_inherited": false,
+    "shared_lead_request_binding_applies_to": [
+      "research_lead_v6",
+      "research_lead_v7"
+    ],
+    "s4_writer_missing_identity_projection_behavior": "hard_failure_no_NVDA_fallback",
+    "final_artifact_L1_envelope": {
+      "independent_of_model_verifier": true,
+      "artifact_count": 9,
+      "checks": [
+        "mandatory manifest policy and profile markers",
+        "numeric projection digest and exact row correspondence",
+        "canonical numeric Fact local-rendering correspondence",
+        "judgment workpaper numeric artifact projection parity",
+        "report exact numeric prefix and nonlocal numeric-token exclusion",
+        "report title workpaper review and runtime case identity",
+        "verification nonlocal numeric and identity-token exclusion"
+      ],
+      "typed_failure_contract_ref": "fin01.s4.case_runtime_mandatory_material_truth_and_identity_safety_closure:v1",
+      "acceptance_layer": "L1_hard_integrity"
+    },
+    "strict_schema_sub2api_model_provider_source_and_narrative_quality_changed": false
+  },
+  "fixture_proof": {
+    "focused_tests": "47 passed",
+    "consumed_MU_R2_without_policy_pair": "fails_before_provider_with_zero_callbacks",
+    "lead_v7_capability_composition": "pass_without_v6_gap_atom_inheritance",
+    "three_case_final_path_parity": {
+      "cases": [
+        "DELL",
+        "MU",
+        "NVDA"
+      ],
+      "per_case_nodes_callbacks_captures_artifacts": [
+        6,
+        12,
+        12,
+        9
+      ],
+      "manifest_safety_profile_marker_present": true
+    },
+    "MU_source_grounded_v7_full_fake": {
+      "logical_nodes": 6,
+      "provider_callbacks": 12,
+      "provider_output_captures": 12,
+      "logical_artifacts": 9,
+      "final_title": "MU 三单元内部研究备忘录",
+      "all_artifact_runtime_case_tickers": "MU"
+    },
+    "negative_mutations_rejected": [
+      "missing_safety_profile_marker",
+      "numeric_projection_exact_value_mutation",
+      "cross_case_report_title",
+      "nonlocal_report_numeric_token",
+      "cross_case_review_label",
+      "canonical_numeric_fact_statement_mutation"
+    ],
+    "python_compile": "pass"
+  },
+  "historical_exact_binding_supersession": {
+    "reason": "The separately authorized mandatory S4 safety closure advances current runtime and compatibility fixtures while preserving consumed admissions Runs captures and historical decisions as immutable evidence.",
+    "allowed_changed_paths": [
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+      "apps/workbench/backend/application/bounded_agent_executor.py",
+      "tests/contract/test_fin_0_1_s4_t05_case_numeric_authority_and_delivery_identity_zero_call_implementation.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_zero_call_implementation.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_source_grounded_input_materialization.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_case_runtime_mandatory_material_truth_identity_safety_closure_zero_call_implementation.py"
+    ],
+    "historical_artifacts_rewritten": false,
+    "consumed_MU_R2_reopened_or_reinterpreted": false
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "5b9b991f38b738492c081c48eb7f5c613531ed0e967b7d80ec82f5a564fb3d34",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "311c70aadd15b1321a844c0e035a61dec073bac2e75bca7df65971022b9cb8e0",
+    "tests/contract/test_fin_0_1_s4_t05_case_numeric_authority_and_delivery_identity_zero_call_implementation.py": "5db7abf79b97d1e0d0671ac2e4e2b673a66aa6e7c2c1b6fbe92bc87eea1c171a",
+    "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_zero_call_implementation.py": "fe0b9542f405a89e0ddad6892a1a555eb2af99df5c5bcc1fbd43072895ff6d34",
+    "tests/contract/test_fin_0_1_s4_t06_mu_source_grounded_input_materialization.py": "6fa49e6a7fd0d20d6613849c74fec3365f940c188985733f6faaf4936e372116",
+    "tests/contract/test_fin_0_1_s4_t06_mu_case_runtime_mandatory_material_truth_identity_safety_closure_zero_call_implementation.py": "845ff07ea7ec2c073aa6ce91ecd13d0c367c457b1445769053f1131720d4b286"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_assessments": 0,
+    "Human_reviews": 0
+  },
+  "verification": {
+    "focused_implementation_and_path_parity": "47 passed",
+    "S4_T06_full_regression": "204 passed",
+    "python_compile": "pass",
+    "json_and_jsonl_parse": "pass",
+    "git_diff_check": "pass_with_CRLF_normalization_warnings_only",
+    "new_external_or_model_activity_during_verification": false
+  },
+  "stage_decision": {
+    "RC_P36_067_numeric_authority": "runtime_and_fixture_closure_pass_live_reproof_pending",
+    "RC_P36_068_case_identity": "runtime_and_fixture_closure_pass_live_reproof_pending",
+    "S4_T06": "blocked_pending_separately_authorized_fresh_agent_proof_and_later_new_admission",
+    "MU_R2": "immutable_L1_failure",
+    "MU_R3": "not_authorized_not_started",
+    "S4_T07_or_later": "not_entered",
+    "strict_schema_transport": "parked_unrelated"
+  },
+  "stop_rule": {
+    "single_implementation_bundle_complete": true,
+    "second_repair_bundle_allowed": false,
+    "fresh_proof_must_recompute_current_code_input_and_all_mutation_bindings": true,
+    "new_admission_requires_separate_authority_after_proof": true,
+    "exact_live_requires_separate_authority_after_new_admission": true,
+    "bundle_failure_requires_scope_replacement_not_micro_patch": true
+  },
+  "next_action": "S4-T06-MU-CASE-RUNTIME-MANDATORY-MATERIAL-TRUTH-AND-IDENTITY-SAFETY-CLOSURE-FRESH-AGENT-PROOF-DECISION"
+}

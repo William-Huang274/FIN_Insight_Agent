@@ -1,0 +1,181 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_r6_quarantined_diagnostic_aggregate_defect_and_proof_strategy_result_v1_0",
+  "result_id": "S4-T06-MU-R6-QUARANTINED-DIAGNOSTIC-AGGREGATE-DEFECT-AND-PROOF-STRATEGY-RESULT",
+  "recorded_at": "2026-07-30T14:50:00+08:00",
+  "status": "diagnostic_complete_nine_quarantined_artifacts_not_acceptance_eligible",
+  "authority_boundary": {
+    "formal_R6_mutated": false,
+    "formal_T06_pass_claimed": false,
+    "paired_assessment_performed": false,
+    "owner_acceptance_performed": false,
+    "T07_entered": false,
+    "business_artifact_promotion_count": 0
+  },
+  "evidence": {
+    "decision_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r6_quarantined_diagnostic_continuation_and_aggregate_defect_surface_decision_v1_0.json",
+    "decision_sha256": "c599212748433acfd5ee4d2af59133e6eb79eecee12879ef692be2b181c80ec6",
+    "runner_ref": "scripts/releases/run_fin_ia_0_1_s4_t06_mu_r6_quarantined_diagnostic_continuation.py",
+    "runner_sha256": "3551c723e376ead5d3329d9bcbb530052ca99b29eb0dc646df169a4294a7fec7",
+    "result_ref": ".codex_runtime/fin01-s4-t06-mu-r6-quarantined-diagnostic-continuation-r1/result.json",
+    "result_sha256": "51a00d656fbea0aa0cb4556d18c79502520ec866a21bd000b9b175a009f58997",
+    "quarantined_artifacts_ref": ".codex_runtime/fin01-s4-t06-mu-r6-quarantined-diagnostic-continuation-r1/restricted_quarantined_artifacts.json",
+    "quarantined_artifacts_sha256": "6d8d362a47b579585c1dde549ce78b58141f279ef2e8f03a0f3afd0fcc450c2f",
+    "project_os_preflight_status": "diagnostic_override",
+    "zero_call_preflight_status": "pass_diagnostic_only_zero_call_preflight"
+  },
+  "execution_summary": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "logical_nodes_completed": 6,
+    "unique_interactions": 12,
+    "immutable_R6_interactions_replayed": 4,
+    "new_live_interactions_acquired_and_cached": 8,
+    "usage_receipts": 12,
+    "new_live_input_tokens": 147880,
+    "new_live_output_tokens": 4252,
+    "new_live_total_tokens": 152132,
+    "new_live_cost_usd": 0.06802704,
+    "transport_retries": 0,
+    "provider_fallbacks": 0,
+    "quarantined_artifacts": 9,
+    "source_runtime_unchanged": true
+  },
+  "aggregate_defects": [
+    {
+      "defect_id": "QD-01",
+      "root_cause_cluster": "provider_surface_too_wide_for_material_truth",
+      "symptom": "The model authored material numbers in three value-and-profit Numeric Fact statements and one explanation even though exact request-local aliases were selected and local rendering was mandatory.",
+      "observed_fields": 4,
+      "model_contract_noncompliance": true,
+      "project_design_contribution": "The model still owns arbitrary narrative fields adjacent to high-stakes alias selection.",
+      "acceptance_layer": "L1",
+      "formal_disposition": "keep_RC_P36_080_open_and_remove_material_numeric_narrative_from_provider_ownership"
+    },
+    {
+      "defect_id": "QD-02",
+      "root_cause_cluster": "provider_surface_too_wide_for_material_truth",
+      "symptom": "The bottleneck Cell authored one unbound calendar year, one inventory measurement under Evidence support, one percentage Numeric Fact narrative, and two free-text percentage thresholds.",
+      "observed_fields": 5,
+      "model_contract_noncompliance": true,
+      "project_design_contribution": "Temporal aliases close dates, but free threshold text and Evidence statements still permit material numeric leakage.",
+      "acceptance_layer": "L1",
+      "formal_disposition": "model_returns_only_numeric_or_threshold_aliases_and_closed_judgment_enums"
+    },
+    {
+      "defect_id": "QD-03",
+      "root_cause_cluster": "candidate_generation_and_deterministic_selection_not_separated",
+      "symptom": "The value-and-profit claim stage returned six candidates against a one-to-two contract. Stable truncation selected a mixed-scope Fact and caused local scope ambiguity; a locally assemblable existing subset was required.",
+      "observed_candidates": 6,
+      "allowed_candidates": 2,
+      "model_contract_noncompliance": true,
+      "project_design_contribution": "The model was asked to both generate and obey final delivery cardinality, while the runtime lacked a validity-aware selector.",
+      "acceptance_layer": "L1",
+      "formal_disposition": "provider_generates_bounded_atoms_runtime_selects_and_orders_with_scope_validity"
+    },
+    {
+      "defect_id": "QD-04",
+      "root_cause_cluster": "cross_layer_contract_invariants_not_compiled_together",
+      "symptom": "Exact local numeric expansion produced three Fact statements longer than the legacy 320-character Provider narrative limit; the longest was 490 characters.",
+      "model_contract_noncompliance": false,
+      "project_owned": true,
+      "acceptance_layer": "L1",
+      "formal_disposition": "separate_provider_text_limits_from_structured_local_rendering_and_prove_worst_case_capacity"
+    },
+    {
+      "defect_id": "QD-05",
+      "root_cause_cluster": "cross_layer_contract_invariants_not_compiled_together",
+      "symptom": "The pre-call cost estimator priced UTF-8 bytes as if each byte were one input token and blocked the Verifier even though actual cumulative cost remained inside the USD 0.10 hard cap.",
+      "model_contract_noncompliance": false,
+      "project_owned": true,
+      "acceptance_layer": "runtime_governance",
+      "formal_disposition": "use_token_estimate_units_for_projection_and_keep_actual_post_call_cost_hard_cap"
+    },
+    {
+      "defect_id": "QD-06",
+      "root_cause_cluster": "semantic_and_delivery_quality_underweighted",
+      "symptom": "The machine Verifier returned four passes and accept_for_internal_review although the report retained mechanical English numeric clauses, treated complementary evidence gaps as conflicts, and repeated an inventory-data absence claim beside exact company inventory data.",
+      "model_contract_noncompliance": false,
+      "project_owned": true,
+      "acceptance_layer": "L2_L4",
+      "formal_disposition": "record_for_T08_T10_and_S5_rubric_calibration_not_T06_L1_expansion"
+    }
+  ],
+  "root_cause_clusters": [
+    {
+      "cluster": "A_truth_ownership",
+      "defects": ["QD-01", "QD-02"],
+      "cause": "Prompt prohibitions are being used where the runtime should own material numbers, thresholds, dates and final narrative rendering.",
+      "structural_fix": "Reduce Provider output to request-local aliases and finite judgment atoms; render material truth locally."
+    },
+    {
+      "cluster": "B_generation_selection_conflation",
+      "defects": ["QD-03"],
+      "cause": "One model response is expected to generate alternatives, rank them, satisfy exact cardinality and remain locally scope-assemblable.",
+      "structural_fix": "Accept bounded candidate atoms and perform deterministic validity-aware selection and ordering."
+    },
+    {
+      "cluster": "C_contract_compilation_gap",
+      "defects": ["QD-04", "QD-05"],
+      "cause": "Prompt, schema, local renderer, text capacity and budget estimator are versioned separately without compile-time cross-invariants.",
+      "structural_fix": "Generate surfaces from one typed contract and add worst-case render-size and unit-consistent budget invariants."
+    },
+    {
+      "cluster": "D_quality_gate_gap",
+      "defects": ["QD-06"],
+      "cause": "The current Verifier is strong on shape, lineage, identity and numeric correspondence but weak on conflict semantics, decision usefulness and delivery quality.",
+      "structural_fix": "Keep L1 deterministic and calibrate L2-L4 with cached-output rubrics, paired baselines and owner review in T08-T10/S5."
+    }
+  ],
+  "artifact_assessment": {
+    "L1_structural_evidence_identity_numeric": "pass_only_after_diagnostic_repairs_and_not_formal_evidence",
+    "correct_case_identity": "MU",
+    "correct_report_title": "MU 三单元内部研究备忘录",
+    "machine_verifier_decision": "accept_for_internal_review",
+    "machine_verifier_four_layers": ["pass", "pass", "pass", "pass"],
+    "L2_semantic_fidelity": "mixed_conflict_and_gap_semantics_need_calibration",
+    "L3_analysis_quality": "bounded_but_overly_negative_and_missing_business_unit_claim_due_candidate_projection",
+    "L4_delivery_quality": "not_owner_grade_mechanical_local_numeric_clauses_and_mixed_language",
+    "agent_gain_vs_baseline": "not_assessed",
+    "owner_acceptance": "not_performed"
+  },
+  "proof_strategy": [
+    {
+      "change_family": "deterministic_contract_compiler_renderer_selector_budget",
+      "required_proof": "unit_property_mutation_tests_plus_DELL_MU_NVDA_full_fake",
+      "paid_live_per_individual_fix": false
+    },
+    {
+      "change_family": "provider_fact_claim_or_WWC_atom_contract",
+      "required_proof": "one_natural_output_single_node_canary_per_changed_contract_family_after_zero_call_proof",
+      "paid_live_per_field": false
+    },
+    {
+      "change_family": "capture_terminalization_and_failure_envelope",
+      "required_proof": "zero_call_fault_injection_and_cached_replay",
+      "paid_live_per_fix": false
+    },
+    {
+      "change_family": "semantic_and_delivery_quality_rubric",
+      "required_proof": "offline_cached_output_rubric_and_paired_golden_cases_before_any_new_live",
+      "paid_live_per_finding": false
+    },
+    {
+      "change_family": "final_integrated_T06_candidate",
+      "required_proof": "one_fresh_MU_exact_live_then_independent_L1_paired_assessment_and_owner_acceptance",
+      "paid_live_per_individual_fix": false
+    }
+  ],
+  "decision": {
+    "one_by_one_full_live_required": false,
+    "formal_exact_live_remains_fail_fast": true,
+    "diagnostic_collect_all_remains_quarantined_and_cache_backed": true,
+    "T06_scope_ceiling": "one_structural_L1_bundle_then_targeted_node_canaries_then_one_final_exact_live",
+    "defer_to_T08_T10_or_S5": [
+      "conflict_semantics",
+      "narrative_polish",
+      "owner_grade_delivery_rubric",
+      "broader_cross_case_calibration"
+    ],
+    "current_next": "S4-T06-MU-DETERMINISTIC-JUDGMENT-ATOM-PLANNER-AND-COMPILED-CONTRACT-INVARIANT-HARDENING-ZERO-CALL-DISPOSITION"
+  }
+}

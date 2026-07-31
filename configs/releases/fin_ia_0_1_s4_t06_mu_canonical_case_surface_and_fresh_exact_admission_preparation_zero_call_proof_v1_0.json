@@ -1,0 +1,173 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_canonical_case_surface_and_fresh_exact_admission_preparation_zero_call_proof_v1_0",
+  "decision_id": "S4-T06-MU-CANONICAL-CASE-SURFACE-AND-FRESH-EXACT-ADMISSION-PREPARATION-ZERO-CALL-PROOF-R1",
+  "decided_at": "2026-07-29T13:00:00+08:00",
+  "status": "pass_MU_canonical_case_surface_exact_input_materialized_fresh_admission_frozen_unissued_zero_call",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "S4-T06 MU canonical Case, DecisionSurface, exact-input materialization and fresh admission preparation only",
+    "model_or_provider_calls_authorized": false,
+    "admission_issuance_authorized": false,
+    "exact_live_authorized": false
+  },
+  "selected_mainline": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_tier": "pro_not_flash",
+    "base_url": "https://api.deepseek.com/beta",
+    "api_key_env": "DEEPSEEK_API_KEY"
+  },
+  "source_execution": {
+    "source_pack_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_source_grounded_input_pack_v1_0.json",
+    "source_pack_sha256": "c97add3afee69278084c090b05e114436f426266c40d91c8e4ce916774e33d09",
+    "source_pack_digest": "5fff74f742b038ead1718e449e3e4dafc4f04b55587256d98e619d05cf6c263d",
+    "source_snapshot_count": 6,
+    "route_receipt_count": 8,
+    "evidence_row_count": 7,
+    "numeric_row_count": 16,
+    "derived_metric_count": 4,
+    "context_only_graph_edge_count": 4,
+    "typed_gap_count": 9
+  },
+  "planning_profile": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t06_mu_canonical_planning_profile_v1_0.json",
+    "sha256": "4a187ca1570c7126bb7214e66a0b763c92bb0c42679cf62ab8763dc5c3695e0b",
+    "compiler_policy_ref": "fin01.s4.mu_three_cell:v1",
+    "pack_selection_ref": "fin01.s4.mu_hbm_source_grounded:v1",
+    "cell_count": 3,
+    "evidence_slot_count": 14
+  },
+  "canonical_materialization": {
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "database_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/canonical-runtime/canonical.sqlite",
+    "database_sha256_before": "dbfac4b4bd2a2c5aaee8fc7121f40ca1a7c12210831fc282adceee6135ef5a01",
+    "database_sha256_after": "54e1e2adb7c203d1af94ef0bd938b01c0e455ca8e5d70d223e79443f9955a405",
+    "database_sha256_after_first_materialization": "d10d10a82f3e26c798305b5e759b6f8fd659aba8569b02965d865d28ff703cbf",
+    "logical_digest_after_first_materialization": "d3cca765e931212e93b90d76a100b94495e744c4e1eff31aacd01389836c52b0",
+    "logical_digest_after_second_materialization": "d3cca765e931212e93b90d76a100b94495e744c4e1eff31aacd01389836c52b0",
+    "idempotent_second_materialization": true,
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_dd094559ce4c0f79d242e852:v1",
+    "planning_checkpoint_status": "accepted",
+    "planning_cell_count": 3,
+    "input_head_digest": "4023ee74d3c54a8583203ba6b994eea55083aa1e68c1efc7786d819fbd64d247",
+    "input_object_ref": {
+      "object_key": "fin01/s4/exact-input-heads/29/0e/290e82aec53d6d3078eb0c8bac94e022bde7cc17a77b72d2315af118ced4958e.json",
+      "digest": "290e82aec53d6d3078eb0c8bac94e022bde7cc17a77b72d2315af118ced4958e",
+      "byte_size": 196647,
+      "media_type": "application/json",
+      "artifact_type": "mu_source_grounded_prepared_input"
+    },
+    "logical_counts": {
+      "canonical_research_cases": 1,
+      "canonical_case_control_versions": 1,
+      "canonical_decision_surface_contract_versions": 1,
+      "canonical_decision_surface_cell_versions": 3,
+      "canonical_evidence_slot_versions": 14,
+      "canonical_planning_checkpoint_versions": 2,
+      "canonical_work_units": 0,
+      "canonical_attempts": 0,
+      "canonical_research_run_versions": 0,
+      "canonical_artifact_versions": 0
+    }
+  },
+  "fresh_agent_proof": {
+    "decision": "frozen_unissued_unconsumed",
+    "execution_identity": "fin01-s4-t06-mu-fresh-exact-live-r1",
+    "work_unit_id": "wu_p02_5_fbe7fa234fce9f4c54403c56",
+    "attempt_id": "attempt_fin01_e4473dd705631f215159fe76",
+    "research_run_id": "research_run_fin01_c94013e1c3666739c35ff00c",
+    "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+    "preparation_digest": "5d506da117962a8174ab23cae9e857f67a12126884098cb81e23acf0f0ff363a",
+    "freshness_and_nonreuse": {
+      "work_unit_absent": true,
+      "attempt_absent": true,
+      "research_run_absent": true
+    },
+    "double_prepare_parity": true,
+    "prospective_admission": {
+      "payload": {
+        "admission_id": "fin01-s4-t06-mu-fresh-exact-admission-r1",
+        "execution_profile_version_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+        "input_contract_ref": "fin01.s3.bounded_agent_three_cell_input:v1",
+        "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+        "execution_enabled": true,
+        "execution_mode": "exact_live_s4_mu_source_grounded_three_cell_r1",
+        "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+        "company": "MU",
+        "program_cell_ids": [
+          "demand_authenticity_and_sustainability",
+          "value_and_profit_capture",
+          "bottleneck_counterevidence_and_what_would_change"
+        ],
+        "maximum_cell_count": 3,
+        "case_id": "case_ec7da8015386e7bfeda92c61",
+        "case_version": 1,
+        "as_of": "2026-07-26T00:00:00Z",
+        "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+        "provider": "deepseek",
+        "model": "deepseek-v4-pro",
+        "model_ref": "deepseek:deepseek-v4-pro",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "base_url": "https://api.deepseek.com/beta",
+        "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+        "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v5",
+        "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+        "scoped_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+        "claim_fact_link_policy_ref": "fin01.s3.claim_fact_link_policy:v1",
+        "provider_output_capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+        "reasoning_effort": "none",
+        "max_semantic_model_calls": 12,
+        "max_provider_calls": 12,
+        "max_network_calls": 12,
+        "max_total_cost_usd": 0.1,
+        "specialist_max_output_tokens": 4200,
+        "lead_max_output_tokens": 1800,
+        "writer_max_output_tokens": 1400,
+        "verifier_max_output_tokens": 1000,
+        "timeout_seconds": 120,
+        "input_cache_hit_usd_per_million": 0.003625,
+        "input_cache_miss_usd_per_million": 0.435,
+        "output_usd_per_million": 0.87,
+        "max_transport_attempts_per_call": 1,
+        "retry_budget": 0,
+        "source_network_calls_allowed": false,
+        "external_tool_calls_allowed": false,
+        "live_business_case_head_writes_allowed": false
+      },
+      "digest": "56005ffb1227e9ec1ead1b73b780342dfeaeef06bbdb0eff01592d7cdc19c891",
+      "prospective_admission_file": "configs/releases/fin_ia_0_1_s4_t06_mu_fresh_exact_admission_r1.json",
+      "prospective_admission_file_absent": true,
+      "issued": false,
+      "consumed": false,
+      "execution_started": false
+    }
+  },
+  "truth_and_scope_boundaries": {
+    "HBM_specific_revenue_or_profit_inferred": false,
+    "customer_concentration_or_identity_inferred": false,
+    "forward_demand_or_capacity_realized_as_fact": false,
+    "graph_promoted_to_direct_evidence": false,
+    "strict_schema_transport_reactivated": false
+  },
+  "hard_boundaries": {
+    "new_source_network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "paid_calls": 0,
+    "admission_files_written": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "business_artifacts_created": 0,
+    "human_acceptance_completed": false
+  },
+  "stage_acceptance": {
+    "S4_T06": "in_progress_pre_admission_zero_call_proof_passed",
+    "MU_R2": "not_started",
+    "S4_pass": false,
+    "S5": "blocked"
+  },
+  "next_action": "S4-T06-MU-FRESH-EXACT-ADMISSION-ISSUANCE"
+}

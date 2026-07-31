@@ -1,0 +1,301 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t04_dell_canonical_planning_profile_v1_0",
+  "profile_id": "FIN-IA-0.1-S4-T04-DELL-CANONICAL-PLANNING-R1",
+  "status": "source_grounded_three_cell_planning_profile_ready",
+  "planning_profile": {
+    "compiler_policy_ref": "fin01.s4.dell_three_cell:v1",
+    "pack_selection_ref": "fin01.s4.dell_oem_source_grounded:v1",
+    "exact_cell_count": 3,
+    "cells": [
+      {
+        "cell_key": "demand_authenticity_and_sustainability",
+        "decision_question": "Are DELL infrastructure and server demand signals company-specific, convertible into recognized revenue, and durable rather than pull-forward or channel accumulation?",
+        "owner_role": "industry_analyst",
+        "materiality": "high",
+        "dependency_cell_keys": [],
+        "stop_rule": "Stop before a durable-demand judgment if no issuer or company-bound official signal and no independent counterindicator are both available.",
+        "what_would_change": "weaker_company_specific_order_to_revenue_conversion; material_channel_or_customer_inventory_accumulation; order_cancellation_or_pull_forward_evidence; official_deployment_or backlog evidence that contradicts the current boundary",
+        "evidence_slots": [
+          {
+            "evidence_role": "issuer_demand_or_order_signal",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "issuer_demand_or_order_signal"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "industry_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "issuer_revenue_conversion",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "issuer_revenue_conversion"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "industry_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "official_customer_or_deployment_corroboration",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "official_customer_or_deployment_corroboration"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "industry_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "pull_forward_or_channel_counterevidence",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "pull_forward_or_channel_counterevidence"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "industry_analyst",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "value_and_profit_capture",
+        "decision_question": "How much revenue, gross profit, operating profit, working-capital burden and cash conversion can be attributed to DELL at company or exact issuer-disclosed segment scope?",
+        "owner_role": "financial_analyst",
+        "materiality": "high",
+        "dependency_cell_keys": [
+          "demand_authenticity_and_sustainability"
+        ],
+        "stop_rule": "Do not allocate company-total or broad segment economics to AI servers, products or customers without exact issuer-bound rows and period/unit scope.",
+        "what_would_change": "issuer_disclosed_product_or_segment_economics; gross_margin or operating_margin mix shift; working_capital absorption or release; cash conversion divergence from reported earnings",
+        "evidence_slots": [
+          {
+            "evidence_role": "issuer_financial_statement",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "issuer_financial_statement"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "financial_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "issuer_segment_or_product_disclosure",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "issuer_segment_or_product_disclosure"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "financial_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "working_capital_balance_sheet_rows",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "working_capital_balance_sheet_rows"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "financial_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "cash_flow_rows",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "cash_flow_rows"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "financial_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "cross_chain_profit_capture_comparison",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "cross_chain_profit_capture_comparison"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "financial_analyst",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "bottleneck_counterevidence_and_what_would_change",
+        "decision_question": "Which component, supply, channel, competitive, customer and working-capital mechanisms could break or qualify the DELL transfer thesis?",
+        "owner_role": "risk_reviewer",
+        "materiality": "high",
+        "dependency_cell_keys": [
+          "demand_authenticity_and_sustainability"
+        ],
+        "stop_rule": "Do not close the Case without at least one company-bound counterevidence route and one independent official followup target.",
+        "what_would_change": "credible component supply release or constraint; channel inventory normalization or deterioration; pricing pressure or mix evidence; working capital and cash conversion inflection",
+        "evidence_slots": [
+          {
+            "evidence_role": "official_supply_or_component_constraint",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "official_supply_or_component_constraint"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          },
+          {
+            "evidence_role": "channel_inventory_or_order_quality_counterevidence",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "channel_inventory_or_order_quality_counterevidence"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          },
+          {
+            "evidence_role": "pricing_and_competitive_counterevidence",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "pricing_and_competitive_counterevidence"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          },
+          {
+            "evidence_role": "working_capital_or_cash_stress",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "working_capital_or_cash_stress"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          },
+          {
+            "evidence_role": "independent_official_followup",
+            "entity_scope": [
+              "DELL"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "independent_official_followup"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          }
+        ]
+      }
+    ]
+  }
+}

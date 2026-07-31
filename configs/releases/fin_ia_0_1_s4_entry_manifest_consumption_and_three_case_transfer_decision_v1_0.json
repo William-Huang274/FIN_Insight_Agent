@@ -1,0 +1,213 @@
+{
+  "schema_version": "fin_ia_0_1_s4_entry_manifest_consumption_and_three_case_transfer_decision_v1_0",
+  "decision_id": "S4-ENTRY-CARRY-FORWARD-MANIFEST-CONSUMPTION-AND-THREE-CASE-TRANSFER-DECISION-R1",
+  "decided_at": "2026-07-26T15:41:14+08:00",
+  "status": "pass_zero_call_manifest_consumed_S4_T01_complete_T02_next",
+  "authority": {
+    "user_instruction": "认可",
+    "instruction_context": "User accepted the proposed S4 plan after being told that the immediate action would only be the zero-call S4 entry decision detailed task breakdown and manifest consumption.",
+    "authorized_scope": [
+      "consume_frozen_S3_to_S4_manifest",
+      "freeze_S4_detailed_backlog",
+      "record_case_sequence_budget_stop_rules_and_acceptance"
+    ],
+    "not_authorized": [
+      "S4_T02_or_later_execution",
+      "model_provider_network_source_or_external_tool_calls",
+      "new_case_Run_or_business_Artifact",
+      "qualified_senior_attestation",
+      "S5_release_candidate",
+      "Alpha_release_or_production"
+    ]
+  },
+  "consumed_manifest": {
+    "manifest_ref": "configs/releases/fin_ia_0_1_s3_to_s4_early_delivery_carry_forward_manifest_v1_0.json",
+    "expected_sha256": "0b429dea6e796cfbc5e9de847396d48f16b64969cd7e93e307a6c4ff84e72108",
+    "observed_sha256": "0b429dea6e796cfbc5e9de847396d48f16b64969cd7e93e307a6c4ff84e72108",
+    "digest_equal": true,
+    "status_before_consumption": "final_frozen_by_S3_T10_owner_review_and_closeout",
+    "item_count": 8,
+    "consumption_completed": true,
+    "historical_manifest_rewritten": false
+  },
+  "detailed_backlog": {
+    "ref": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+    "sha256": "9d54045aa8091d4338d5b4e9460442b1bb5a9d6c2046a683f25ac6d18b38ede3",
+    "task_count": 10,
+    "current_passed_task": "S4-T01",
+    "current_next_task": "S4-T02"
+  },
+  "capability_dispositions": [
+    {
+      "capability_id": "s3_t09_provider_output_contract_and_transport",
+      "capability_domain": "provider_output_contract_and_transport",
+      "source_maturity": "live_complete",
+      "S4_disposition": "revalidate_for_new_case_or_candidate",
+      "S4_action": "reuse shared output-v4 profile-v4 contract generation and transport unchanged; revalidate exact shape and capacity against DELL and MU case-local inputs",
+      "rebuild_allowed_now": false,
+      "rebuild_trigger": [
+        "changed_requirement",
+        "new_failure",
+        "new_evidence"
+      ]
+    },
+    {
+      "capability_id": "s3_t09_atomic_terminalization_usage_and_capture",
+      "capability_domain": "terminalization_usage_and_restricted_answer_capture",
+      "source_maturity": "live_complete",
+      "S4_disposition": "reuse_as_is",
+      "S4_action": "reuse exact-once supervision canonical atomic terminalization usage receipts and restricted capture for each separately authorized case",
+      "rebuild_allowed_now": false,
+      "rebuild_trigger": [
+        "new_host_failure",
+        "new_atomicity_failure",
+        "changed_operational_requirement"
+      ]
+    },
+    {
+      "capability_id": "s3_t09_epistemic_fact_support_and_context_authority",
+      "capability_domain": "epistemic_state_fact_support_and_context_authority",
+      "source_maturity": "owner_accepted",
+      "S4_disposition": "revalidate_for_new_case_or_candidate",
+      "S4_action": "preserve typed cannot-infer and context non-authority; establish DELL and MU case-local evidence and policy calibration without copying NVDA facts",
+      "rebuild_allowed_now": false,
+      "rebuild_trigger": [
+        "case_specific_policy_gap",
+        "false_promotion_fixture",
+        "over_conservative_fixture",
+        "new_live_failure"
+      ]
+    },
+    {
+      "capability_id": "s3_t09_cell_scoped_identity_and_alias_expansion",
+      "capability_domain": "cell_scoped_identity_alias_and_local_typed_expansion",
+      "source_maturity": "live_complete",
+      "S4_disposition": "revalidate_for_new_case_or_candidate",
+      "S4_action": "reuse policy code but regenerate closed local identities and aliases for every Case and Cell; prove no cross-case or cross-Cell collision",
+      "rebuild_allowed_now": false,
+      "rebuild_trigger": [
+        "identity_collision",
+        "unknown_ref_failure",
+        "changed_identity_requirement"
+      ]
+    },
+    {
+      "capability_id": "s3_t09_capacity_and_layered_quality_policy",
+      "capability_domain": "token_byte_aggregate_and_per_field_capacity",
+      "source_maturity": "live_complete",
+      "S4_disposition": "extend",
+      "S4_action": "retain hard transport storage and safety envelopes; add a fact-preserving delivery concision and Chinese normalization layer as L4 quality treatment",
+      "rebuild_allowed_now": false,
+      "extension_boundary": "presentation_quality_only_no_claim_fact_scope_or_epistemic_change"
+    },
+    {
+      "capability_id": "s3_t09_failure_telemetry_and_root_cause_lineage",
+      "capability_domain": "failure_telemetry_replay_and_root_cause_lineage",
+      "source_maturity": "live_complete",
+      "S4_disposition": "reuse_as_is",
+      "S4_action": "preserve immutable failures typed root-cause lineage and restricted replay; do not synthesize business Artifacts from captures",
+      "rebuild_allowed_now": false,
+      "rebuild_trigger": [
+        "new_failure_fingerprint",
+        "changed_governance_requirement"
+      ]
+    },
+    {
+      "capability_id": "s3_t09_writer_verifier_and_nine_artifact_lineage",
+      "capability_domain": "writer_verifier_and_artifact_lineage",
+      "source_maturity": "owner_accepted",
+      "S4_disposition": "extend",
+      "S4_action": "reuse nine Artifact families digest validation Writer no-source and layered Verifier; extend reviewer binding and Workbench three-case projection through versioned contracts",
+      "rebuild_allowed_now": false,
+      "extension_boundary": "review_and_projection_only_unless_a_new_case_exposes_a_contract_failure"
+    },
+    {
+      "capability_id": "s3_t09_paired_baseline_owner_review_and_quality_findings",
+      "capability_domain": "paired_baseline_owner_review_and_quality_findings",
+      "source_maturity": "owner_accepted",
+      "S4_disposition": "revalidate_for_new_case_or_candidate",
+      "S4_action": "materialize a distinct same-input-head deterministic baseline per Case; keep baseline body hidden from Agent; add owner task metrics and qualified-senior exact review",
+      "rebuild_allowed_now": false,
+      "rebuild_trigger": [
+        "new_case_baseline_gap",
+        "changed_Human_review_requirement",
+        "new_quality_finding"
+      ]
+    }
+  ],
+  "method_to_runtime_gap": {
+    "status": "open_preexecution_owned_gap",
+    "model_quality_issue": false,
+    "DELL": {
+      "current_state": "product_and_architecture_scope_documented_but_no_frozen_exact_case_pack_or_named_runtime_consumption_proof",
+      "required_before_full_chain": [
+        "contract_translated",
+        "fixture_proven",
+        "runtime_injected",
+        "node_level_consumed"
+      ]
+    },
+    "MU": {
+      "current_state": "semiconductor_cycle_method_registry_exists_but_is only active_registry_ready_feature_flagged and no S4 exact case pack or node-level consumption proof is frozen",
+      "required_before_full_chain": [
+        "contract_translated",
+        "fixture_proven",
+        "runtime_injected",
+        "node_level_consumed"
+      ]
+    },
+    "prohibited_shortcut": "do_not_use_paid_full_chain_to_discover_a_known_case_pack_or_method_injection_gap"
+  },
+  "case_execution_decision": {
+    "sequence": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "reason": "DELL is the maximum-distance transfer test and should expose accelerator hardcoding first; MU then tests semiconductor-cycle specificity; NVDA runs last so R3 binds the latest post-transfer runtime",
+    "current_execution_authorized": false,
+    "fresh_authority_required_per_gate": [
+      "case_pack_and_method_contract_work",
+      "deterministic_and_node_level_preflight",
+      "fresh_proof_and_admission",
+      "exact_live_consumption",
+      "Human_review_and_attestation"
+    ]
+  },
+  "S4_exit_contract": {
+    "all_cases_R2": [
+      "NVDA",
+      "DELL",
+      "MU"
+    ],
+    "NVDA_exact_qualified_senior_R3": true,
+    "same_runtime_no_parallel_case_implementation": true,
+    "no_case_fact_or_mechanism_hardcode_leakage": true,
+    "SaaS_and_Bank_structural_regression_without_fact_leakage": true,
+    "owner_task_baseline_and_cost_latency_calibration": true,
+    "owner_and_qualified_senior_reviews_bind_exact_artifacts": true,
+    "S3_to_S4_manifest_consumption_recorded": true
+  },
+  "stage_decision": {
+    "S4": "started_entry_only",
+    "S4_T01": "pass",
+    "S4_T02": "next_pending_separate_authority",
+    "DELL_R2": "not_started",
+    "MU_R2": "not_started",
+    "NVDA_R3": "not_started",
+    "S4_pass": false,
+    "S5": "blocked_by_S4",
+    "Alpha_release_or_production": "not_claimed_not_authorized"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0,
+    "human_reviews": 0
+  },
+  "next_action": "S4-T02-DELL-MU-CASE-PACK-AND-FINANCIAL-METHOD-TO-RUNTIME-CONTRACT-DECISION"
+}

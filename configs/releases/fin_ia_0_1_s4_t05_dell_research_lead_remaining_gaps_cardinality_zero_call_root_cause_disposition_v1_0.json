@@ -1,0 +1,248 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_research_lead_remaining_gaps_cardinality_zero_call_root_cause_disposition_v1_0",
+  "decision_id": "S4-T05-DELL-RESEARCH-LEAD-REMAINING-GAPS-CARDINALITY-ZERO-CALL-ROOT-CAUSE-DISPOSITION-R1",
+  "decided_at": "2026-07-27T11:29:55+08:00",
+  "status": "pass_zero_call_root_cause_disposed_versioned_gap_atom_deterministic_projection_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "可以，按你说的做",
+    "authorized_scope": "S4-T05-DELL-WWC-NUMERIC-AUTHORITY-SURFACE-R4-FIRST-CREDIBLE-FAILURE-ROOT-CAUSE-DISPOSITION-DECISION",
+    "zero_call_root_cause_disposition_authorized": true,
+    "runtime_prompt_schema_validator_telemetry_or_fake_provider_implementation_authorized": false,
+    "historical_capture_rewrite_or_failed_run_reclassification_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "replacement_admission_or_fifth_DELL_execution_authorized": false,
+    "paired_assessment_Human_review_S4_T06_S5_release_or_production_authorized": false
+  },
+  "source_failure": {
+    "issue_id": "RC-P36-061-s4-research-lead-remaining-gaps-cardinality-nonconformance",
+    "result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_wwc_numeric_authority_r4_exact_live_execution_failure_result_v1_0.json",
+    "result_sha256": "85c1206404d844993e98bdc776d4890217570e736715e3df1519b2a239f96827",
+    "research_run_id": "research_run_fin01_9f2cc1412a2fd495db65b8b4",
+    "failure_code": "s3_bounded_research_lead_v3_cardinality_above_maximum",
+    "field_id": "remaining_gaps",
+    "request_and_validator_cardinality": [
+      1,
+      4
+    ],
+    "excess_item_count": 4,
+    "inferred_observed_item_count": 8,
+    "provider_status": "ok",
+    "provider_finish_reason": "stop",
+    "provider_output_tokens_and_limit": [
+      965,
+      1800
+    ],
+    "request_validator_schema_drift": false,
+    "direct_model_output_contract_nonconformance": true,
+    "historical_terminal_states": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "historical_artifact_count": 0
+  },
+  "zero_call_code_audit": {
+    "executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "executor_sha256": "89c08005aeeaedb90a1a7547afc8309c0a489f00d67c2475405d067f32c5de3d",
+    "contract_policy_ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+    "contract_policy_sha256": "c17db0f0be2ac824bf187eb0bd1c24d3682cda56441c29cef904cece0963047f",
+    "current_provider_transport": "deepseek_json_object_not_server_enforced_json_schema",
+    "current_request_visible_remaining_gaps_cardinality": "1..4",
+    "current_local_validator_remaining_gaps_cardinality": "1..4",
+    "current_validation_order": "list_type_then_cardinality_then_item_shape_text_authority_and_semantics",
+    "historical_eight_items_individually_shape_authority_or_semantic_validated": false,
+    "historical_output_safe_to_retroactively_project": false,
+    "confirmed_runtime_alignment_gap": "The active Research Lead path still terminalizes a parseable cardinality-only deviation even though the accepted layered standard classifies safely repairable cardinality as L2 recoverable protocol."
+  },
+  "layered_acceptance_disposition": {
+    "acceptance_standard_ref": "configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json",
+    "acceptance_standard_sha256": "2f4ffb82f7cc18ac97c7265fd968e004a4b64d5ad8244d79c0a0a0b86c466703",
+    "immediate_model_fault": "direct_remaining_gaps_maximum_cardinality_nonconformance",
+    "earliest_project_owned_surface": "research_lead_provider_candidate_to_canonical_gap_projection_and_L2_recoverable_protocol_route",
+    "classification": "L2_recoverable_protocol_only_when_every_candidate_individually_passes_shape_text_authority_identity_semantic_and_hard_capacity_validation",
+    "not_classified_as_L3_quality_only": true,
+    "reason": "Cardinality is explicitly an L2 protocol concern. It may continue only when deterministic projection changes no research fact identity authority or lineage and all hard envelopes remain satisfied.",
+    "historical_run_remains_terminal_failed": true,
+    "historical_capture_remains_immutable": true
+  },
+  "selected_minimum_implementation_contract": {
+    "contract_ref": "fin01.s3.research_lead_gap_atom_deterministic_projection:v1",
+    "scope": "Research Lead remaining-gap overflow only",
+    "provider_surface": {
+      "field_id": "remaining_gap_atoms",
+      "minimum_candidate_count": 1,
+      "independent_semantic_maximum_candidate_count": null,
+      "hard_bound_owner": "existing provider raw wire byte and node output token envelopes",
+      "atom_fields": [
+        "statement",
+        "claim_ids",
+        "what_would_change_task_ids"
+      ],
+      "provider_emits_gap_id": false,
+      "provider_emits_canonical_rank": false,
+      "provider_emits_free_form_score": false
+    },
+    "pre_projection_validation": {
+      "validate_every_candidate_before_selection": true,
+      "exact_shape_required": true,
+      "nonblank_string_and_existing_narrative_policy_required": true,
+      "claim_and_what_would_change_alias_kind_membership_required": true,
+      "duplicate_alias_within_reference_list_allowed": false,
+      "wire_byte_token_security_and_storage_envelopes_unchanged": true,
+      "any_invalid_candidate_can_be_silently_dropped": false,
+      "identity_authority_fact_or_numeric_guessing_allowed": false
+    },
+    "deterministic_ranking": {
+      "canonical_output_maximum": 4,
+      "ranking_tuple_in_order": [
+        "has_nonempty_what_would_change_task_ids_desc",
+        "maximum_linked_claim_uncertainty_rank_desc",
+        "distinct_linked_program_cell_count_desc",
+        "distinct_linked_claim_count_desc",
+        "canonical_atom_digest_ascending",
+        "provider_ordinal_ascending"
+      ],
+      "linked_claim_uncertainty_rank": {
+        "cannot_infer": 4,
+        "hypothesis": 3,
+        "bounded_inference": 2,
+        "fact_supported": 1
+      },
+      "ranking_inputs_owned_by": "already_validated_specialist_claims_tasks_scoped_alias_table_and_exact_candidate_atom",
+      "model_generated_priority_score_used": false,
+      "ticker_case_or_provider_specific_branch_allowed": false,
+      "fuzzy_semantic_dedup_normalization_or_rewrite_allowed": false
+    },
+    "local_canonical_projection": {
+      "canonical_field_id": "remaining_gaps",
+      "canonical_cardinality": [
+        1,
+        4
+      ],
+      "selected_atom_count": "min(valid_candidate_count,4)",
+      "gap_id_owner": "local_deterministic_ordinal_after_selection",
+      "claim_and_task_ref_expansion_owner": "existing_local_exact_alias_expansion",
+      "writer_and_verifier_receive_only_canonical_selected_gaps": true,
+      "selected_statements_or_refs_rewritten": false
+    },
+    "recoverable_protocol_telemetry": {
+      "code": "research_lead_gap_atom_overflow_deterministically_projected",
+      "layer": "L2_recoverable_protocol",
+      "terminal": false,
+      "required_fields": [
+        "candidate_count",
+        "selected_count",
+        "overflow_count",
+        "projection_policy_ref",
+        "selected_candidate_ordinals",
+        "selected_candidate_digests",
+        "overflow_candidate_digests"
+      ],
+      "raw_statement_or_reference_text_persisted_in_telemetry": false,
+      "provider_nonconformance_hidden": false
+    }
+  },
+  "hard_and_recoverable_boundary": {
+    "overflow_only_after_all_candidate_validation": "L2_recoverable_continue",
+    "one_to_four_valid_candidates": "pass_without_overflow_finding",
+    "zero_candidates": "L2_unrecoverable_required_semantic_output_missing",
+    "malformed_blank_or_non_string_candidate": "fail_closed_no_silent_drop",
+    "unknown_wrong_kind_cross_cell_or_out_of_surface_ref": "L1_hard_integrity_fail_closed",
+    "truncated_or_invalid_JSON": "L2_unrecoverable_or_L1_capacity_fail_closed",
+    "provider_wire_storage_security_or_token_capacity_exhausted": "L1_hard_capacity_fail_closed",
+    "ranking_inputs_missing_or_inconsistent": "fail_closed_no_guessing",
+    "historical_failed_capture_repair": "forbidden"
+  },
+  "rejected_and_deferred_alternatives": [
+    {
+      "option": "increase_remaining_gaps_maximum_from_four_to_eight",
+      "decision": "rejected",
+      "reason": "moves the arbitrary threshold to the latest observation and does not create a closed projection owner"
+    },
+    {
+      "option": "retain_hard_maximum_and_only_reprompt_or_change_provider",
+      "decision": "rejected",
+      "reason": "may improve conformance probability but keeps a safely recoverable L2 deviation as whole-chain terminal failure"
+    },
+    {
+      "option": "silently_keep_the_first_four_or_rewrite_the_historical_capture",
+      "decision": "rejected",
+      "reason": "hides nonconformance provides no stable quality rule and rewrites an immutable failed execution"
+    },
+    {
+      "option": "downgrade_all_cardinality_and_item_errors_to_L3_quality",
+      "decision": "rejected",
+      "reason": "cardinality is L2 and invalid identity authority semantics or hard capacity remain fail-closed"
+    },
+    {
+      "option": "atomize_and_rebuild_dependency_conflict_variant_writer_and_verifier_contracts_in_the_same_sequence",
+      "decision": "deferred_to_S4_T10_to_S5",
+      "reason": "not required to remove the current remaining-gap-only blocker and would expand one T05 sequence into a general agent redesign"
+    },
+    {
+      "option": "switch_DELL_or_DeepSeek_to_a_special_case_path",
+      "decision": "rejected",
+      "reason": "the repair must be shared provider-neutral and replayable"
+    }
+  ],
+  "minimum_implementation_acceptance": {
+    "one_versioned_source_generates_prompt_candidate_validator_projector_fake_provider_and_typed_telemetry": true,
+    "fixture_valid_candidate_counts": [
+      1,
+      4,
+      8
+    ],
+    "eight_valid_candidate_expectation": {
+      "canonical_gap_count": 4,
+      "overflow_count": 4,
+      "terminal": false,
+      "L2_finding_persisted": true
+    },
+    "malformed_or_unknown_ref_in_eight_candidate_fixture_fails_before_selection": true,
+    "ranking_is_byte_stable_for_identical_validated_input": true,
+    "canonical_gap_ids_and_alias_expansion_are_local": true,
+    "existing_one_to_four_candidate_behavior_and_downstream_shape_are_preserved": true,
+    "existing_hard_byte_token_identity_authority_numeric_lineage_and_permission_gates_are_preserved": true,
+    "historical_R4_result_capture_and_terminal_truth_are_immutable": true,
+    "fake_provider_full_chain_regression_required": true,
+    "single_research_lead_real_canary_before_any_future_full_exact_live": true,
+    "fresh_proof_admission_and_future_live_execution_require_later_separate_authorities": true
+  },
+  "sequence_boundary": {
+    "current_sequence": "RC_P36_061_remaining_gap_overflow_disposition_only",
+    "implementation_in_this_decision": false,
+    "model_provider_network_source_tool_admission_run_artifact_or_paired_actions_in_this_decision": false,
+    "deferred_to_S4_T10_to_S5": [
+      "all_node_general_judgment_atom_framework",
+      "dependency_and_conflict_deterministic_assembly",
+      "cross_provider_strict_server_side_schema_capability_matrix"
+    ],
+    "deferred_to_S5_or_later": [
+      "global_cross_stage_research_gap_identity_and_semantic_deduplication"
+    ]
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_assessments": 0,
+    "Human_Reviews": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_061": "root_cause_disposed_versioned_gap_atom_deterministic_projection_selected_implementation_pending",
+    "S4_T05": "blocked_pending_separately_authorized_minimum_zero_call_implementation",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "S5": "blocked_by_S4",
+    "release_admission": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S4-T05-DELL-RESEARCH-LEAD-REMAINING-GAP-ATOM-DETERMINISTIC-PROJECTION-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

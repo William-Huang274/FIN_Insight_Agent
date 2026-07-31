@@ -1,0 +1,182 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_post_proof_program_scope_replace_decision_v1_0",
+  "recorded_at": "2026-07-28T23:55:00+08:00",
+  "work_item_id": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-POST-PROOF-PROGRAM-SCOPE-REPLACE-OR-STOP-DECISION",
+  "status": "scope_replace_selected_one_server_subset_conformant_zero_call_implementation_bundle_pending_separate_authority",
+  "decision_label": "scope_replace",
+  "authority_boundary": {
+    "program_scope_replace_decision_authorized": true,
+    "replacement_contract_design_authorized": true,
+    "runtime_or_business_code_change_authorized": false,
+    "replacement_implementation_authorized": false,
+    "credential_read_probe_or_configuration_authorized": false,
+    "model_or_provider_execution_authorized": false,
+    "single_node_canary_authorized": false,
+    "admission_issuance_authorized": false,
+    "MU_T06_execution_authorized": false,
+    "DELL_R12_authorized": false,
+    "provider_hopping_authorized": false
+  },
+  "source_decision": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_fresh_engineering_proof_and_provider_capability_binding_decision_v1_0.json",
+    "sha256": "84b1efd2ddd59daf8940beab713c1674df0f502ab75dd6c23b491351961a27f0",
+    "decision_label": "block_before_canary",
+    "issue_id": "RC-P36-070-s4-t06-strict-schema-unsupported-uniqueItems"
+  },
+  "source_implementation": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_minimum_zero_call_implementation_v1_0.json",
+    "sha256": "7c4debbed32f952266110889fce69a4bf863daa750ba39c0baf7478471d175a3",
+    "zero_call_implementation_bundles_consumed_under_prior_scope": 1,
+    "runtime_code_changed_in_this_decision": false,
+    "business_code_changed_in_this_decision": false
+  },
+  "root_cause_disposition": {
+    "issue_id": "RC-P36-070-s4-t06-strict-schema-unsupported-uniqueItems",
+    "classification": "project_owned_provider_wire_contract_and_local_semantic_contract_not_separated",
+    "model_fault": false,
+    "provider_outage_or_access_fault": false,
+    "credential_fault": "not_evaluated",
+    "earliest_faulty_owned_artifact": "StrictTruthKernelPolicy.json_schema",
+    "decision": "replace_the_program_contract_once_instead_of_patching_or_stopping",
+    "reason": "The server request schema currently carries local duplicate-alias semantics through uniqueItems even though the documented strict Structured Outputs array subset lists minItems and maxItems only. Duplicate aliases are already rejected independently by the local validator, so the program can preserve the L1 rule while compiling a provider-wire schema from the documented subset."
+  },
+  "replacement_contract": {
+    "server_schema_compiler_ref": "fin01.provider.openai_structured_outputs_supported_subset:v1",
+    "semantic_truth_kernel_ref": "fin01.s4.strict_truth_kernel.numeric_judgment_selection:v2",
+    "local_validator_ref": "fin01.s4.strict_truth_kernel.local_semantic_validator:v1",
+    "prospective_provider_model": "openai:gpt-5.6-sol",
+    "architecture": "one_semantic_policy_owner_with_explicit_provider_subset_compiler_and_independent_local_semantic_validation",
+    "server_wire_schema": {
+      "wire": "responses.text.format.type=json_schema; strict=true; schema=<compiled_subset_schema>",
+      "allowed_keywords": [
+        "type",
+        "properties",
+        "required",
+        "additionalProperties",
+        "items",
+        "minItems",
+        "maxItems",
+        "enum"
+      ],
+      "object_rules": {
+        "all_properties_required": true,
+        "additionalProperties_false": true
+      },
+      "array_rules": {
+        "items_required": true,
+        "minItems_and_maxItems_allowed": true,
+        "uniqueItems_forbidden_on_server_wire": true
+      },
+      "material_numeric_or_identity_fields_forbidden": true,
+      "arbitrary_free_text_forbidden": true
+    },
+    "local_semantic_validator": {
+      "exact_top_level_and_nested_key_sets_required": true,
+      "numeric_alias_case_scope_required": true,
+      "numeric_alias_uniqueness_required": true,
+      "counterevidence_alias_case_scope_required": true,
+      "counterevidence_alias_uniqueness_required": true,
+      "closed_enum_membership_required": true,
+      "cross_case_replay_rejected": true,
+      "local_material_rendering_and_independent_L1_recomputation_required": true,
+      "failure_before_business_artifact_commit": true
+    },
+    "single_owner_generation": {
+      "prompt_contract": true,
+      "server_wire_schema": true,
+      "local_validator": true,
+      "fake_provider": true,
+      "rubric_and_mutation_fixtures": true
+    },
+    "provider_neutrality_boundary": "The semantic policy remains provider-neutral, while each exact provider binding must use an explicit documented-subset compiler. This decision freezes only the OpenAI Structured Outputs subset compiler and does not authorize provider hopping."
+  },
+  "replacement_bundle_acceptance": {
+    "cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "server_schema_checks": [
+      "every_emitted_keyword_is_in_the_frozen_allowlist",
+      "all_object_properties_are_required",
+      "all_objects_set_additionalProperties_false",
+      "uniqueItems_is_absent",
+      "material_numeric_identity_and_arbitrary_text_fields_are_absent"
+    ],
+    "local_validator_mutations": [
+      "duplicate_numeric_alias_rejected_before_artifact",
+      "duplicate_counterevidence_alias_rejected_before_artifact",
+      "wrong_or_cross_case_alias_rejected_before_artifact",
+      "invalid_enum_rejected_before_artifact",
+      "numeric_projection_mutation_rejected_before_artifact"
+    ],
+    "preserve_prior_proof": [
+      "DELL_MU_NVDA_positive_full_fake_6_nodes_12_callbacks_9_artifacts",
+      "atomic_failure_terminalization_failed_failed_failed",
+      "12_receipts_and_12_captures_on_post_provider_failure",
+      "legacy_admission_digest_and_historical_run_immutability",
+      "case_local_identity_and_lineage_ownership"
+    ],
+    "actual_allowed_counts_for_the_bundle": {
+      "model_calls": 0,
+      "provider_calls": 0,
+      "execution_network_calls": 0,
+      "source_network_calls": 0,
+      "external_tool_calls": 0,
+      "credential_reads_or_probes": 0,
+      "admissions_issued": 0,
+      "work_units_created": 0,
+      "attempts_created": 0,
+      "research_runs_created": 0,
+      "business_artifacts_created": 0,
+      "paired_assessments": 0,
+      "human_reviews": 0
+    }
+  },
+  "anti_loop_ceiling": {
+    "replacement_zero_call_implementation_bundles_maximum": 1,
+    "replacement_bundle_requires_separate_authority": true,
+    "automatic_follow_on_repair_bundles": 0,
+    "field_by_field_prompt_regex_allowlist_patch_iterations": 0,
+    "replacement_bundle_failure_disposition": "stop_T06_remains_blocked_return_to_program_level_blocked_decision_no_third_bundle",
+    "fresh_engineering_proof_after_replacement_requires_separate_authority": true,
+    "single_node_canary_after_fresh_proof_maximum": 1,
+    "single_node_canary_requires_separate_authority": true,
+    "single_node_canary_failure_disposition": "stop_no_retry_no_provider_hopping_no_full_chain",
+    "DELL_R12": false
+  },
+  "root_cause_status": {
+    "RC-P36-067-s4-R10-numeric-reference-value-correspondence-false-negative": "blocked_pending_replacement_and_future_live_proof",
+    "RC-P36-068-s4-R10-case-identity-title-contract-hardcoded-NVDA": "carried_open_future_next_case_live_proof_no_DELL_R12",
+    "RC-P36-069-s4-R11-case-numeric-failure-telemetry-not-allowlisted": "closed_remains_closed",
+    "RC-P36-070-s4-t06-strict-schema-unsupported-uniqueItems": "scope_replace_selected_implementation_pending_one_replacement_bundle_max"
+  },
+  "stage_disposition": {
+    "S4_T05": "blocked_not_passed_not_owner_accepted",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "MU_T06": "blocked",
+    "S4_T07_T10": "blocked",
+    "S5": "blocked",
+    "release": "not_ready",
+    "production": "not_ready"
+  },
+  "observed_counts": {
+    "actual_model_calls": 0,
+    "actual_provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "credential_reads_or_probes": 0,
+    "admissions_issued": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "business_artifacts_created": 0,
+    "paired_assessments": 0,
+    "human_reviews": 0
+  },
+  "next_action": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-SERVER-SUBSET-CONFORMANT-REPLACEMENT-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "next_action_authorized": false,
+  "known_boundary": "This record selects a one-time program-scope contract replacement. It does not implement the replacement, bind credentials or an exact live request, run a canary, issue an admission, enter MU T06, requalify DELL R2, pass S4, enter S5, release, or production."
+}

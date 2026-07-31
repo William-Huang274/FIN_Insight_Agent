@@ -1,0 +1,92 @@
+{
+  "exact_binding": {
+    "capacity_contract_ref": "fin01.s3.specialist_local_assembly_capacity.validated_segment_union_upper_bound:v1",
+    "case_id": "case_7b5c2042bef3825b8df71a96",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_d31fd75b31ad8385e9d8376a:v1",
+    "effective_runtime_binding_digest": "789ffa18ab6d4c994117fd2a196a455d3979ccab18e2eec7cd60723644a1711d",
+    "evidence_alignment_digest": "8db0433bb2bc5a6eff33828ce700af185b2f9b6ce964711d909c7ebc751a5ed0",
+    "evidence_dispatch_digest": "5aa30a0bcb9d0ae888a8829c4df43fde37d46603d0b63a598c7b604aa71e7025",
+    "input_digest": "f9868c5d7daa051adfccba1c1d2de9c1209d6781bfa76c4569aee76d640e230d",
+    "overlay_digest": "15915cd181d6ccf05521792770ccea8faf0fadba82ac0d061f4898d9e4465a25",
+    "predicted_attempt_id": "attempt_fin01_ad16ed80b2ed788d3924c614",
+    "predicted_research_run_id": "research_run_fin01_6566beb727cded66f3d54ead",
+    "predicted_work_unit_id": "wu_p02_5_0f6c8d74d2a47a5a98ffe58b",
+    "preparation_digest": "f66fa068e430674450bb45056ccf3eb6e3c6c5ce5f13942790a42a83e3faaea1",
+    "provider_local_segment_whole_caps": [
+      6000,
+      8192,
+      24576
+    ],
+    "research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v3",
+    "role_group_mapping_digest": "d9a0d31cde63182d80b3008870c854bc35288610e6fb4b910e192147a74abf72"
+  },
+  "execution_envelope": {
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "maximum_network_calls": 12,
+    "maximum_output_tokens_total": 18000,
+    "maximum_provider_calls": 12,
+    "maximum_semantic_model_calls": 12,
+    "maximum_total_cost_usd": 0.1,
+    "model": "deepseek-v4-pro",
+    "provider": "deepseek",
+    "source_network_calls_allowed": false,
+    "transport_retry_count": 0
+  },
+  "issuance_boundary": {
+    "S4_T06_entered": false,
+    "admission_consumed": false,
+    "admission_issued": true,
+    "execution_started": false,
+    "model_or_provider_call_started": false,
+    "paired_assessment_performed": false
+  },
+  "issuance_id": "S4-T05-DELL-R9-SPECIALIST-VALIDATED-SEGMENT-UNION-CAPACITY-FRESH-EXACT-ADMISSION-ISSUANCE-R1",
+  "issued_admission": {
+    "admission_digest": "e7b98ed203087c926e33e7e71f3e5d4d0fe5cc16df57307105fdb85679491b43",
+    "admission_id": "fin01-s4-t05-dell-r9-specialist-validated-segment-union-capacity-fresh-exact-admission-r9",
+    "admission_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r9_specialist_validated_segment_union_capacity_fresh_exact_admission_r9.json",
+    "consumed": false,
+    "execution_started": false,
+    "issued": true,
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s4-t05-dell-r9-specialist-validated-segment-union-capacity-exact-live-r9"
+  },
+  "issued_at": "2026-07-28T04:00:00+08:00",
+  "next_action": "S4-T05-DELL-R9-SPECIALIST-VALIDATED-SEGMENT-UNION-CAPACITY-EXACT-LIVE-EXECUTION-AND-SUCCESS-ONLY-PAIRED-ASSESSMENT-AUTHORITY-DECISION",
+  "observed_counts": {
+    "admission_consumptions": 0,
+    "artifacts_created": 0,
+    "attempts_created": 0,
+    "execution_network_calls": 0,
+    "external_tool_calls": 0,
+    "model_calls": 0,
+    "new_admissions": 1,
+    "provider_calls": 0,
+    "research_runs_created": 0,
+    "source_network_calls": 0,
+    "work_units_created": 0
+  },
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r9_specialist_validated_segment_union_capacity_fresh_exact_admission_issuance_v1_0",
+  "source_proof_decision_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r8_specialist_validated_segment_union_capacity_fresh_agent_proof_decision_v1_0.json",
+  "source_proof_decision_sha256": "9eebbacff223481f72be37651761e56ff758c7f98a0e23ddbbbb9e06ee50bb56",
+  "stage_acceptance": {
+    "DELL_R2": "not_proven",
+    "RC_P36_065": "R9_admission_issued_unconsumed_exact_live_authority_decision_pending",
+    "S4_T06": "not_entered",
+    "owner_acceptance": "not_eligible",
+    "paired_assessment": "not_eligible"
+  },
+  "status": "issued_unconsumed_zero_call_preflight_pass",
+  "zero_call_preflight": {
+    "admission_schema_and_profile_valid": true,
+    "capacity_resolver_recomputed": true,
+    "executor_factory_constructed": true,
+    "fresh_identity_absent": true,
+    "fresh_proof_reproduced": true,
+    "provider_callback_calls": 0,
+    "target_database_unchanged": true,
+    "target_object_tree_unchanged": true
+  }
+}

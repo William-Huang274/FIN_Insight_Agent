@@ -1,0 +1,114 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_r2_source_grounded_deterministic_baseline_materialization_decision_v1_0",
+  "decision_id": "S4-T06-MU-R2-SOURCE-GROUNDED-DETERMINISTIC-BASELINE-MATERIALIZATION-DECISION-R1",
+  "decided_at": "2026-07-29T19:15:00+08:00",
+  "status": "pass_exact_same_input_source_grounded_baseline_materialization_contract_decided",
+  "authority": {
+    "user_instruction": "继续",
+    "success_only_paired_assessment_authorized": true,
+    "deterministic_baseline_materialization_authorized": true,
+    "agent_rerun_authorized": false,
+    "model_provider_source_or_tool_execution_authorized": false,
+    "owner_acceptance_write_authorized": false,
+    "S4_T07_or_later_authorized": false
+  },
+  "source_binding": {
+    "contract_ref": "fin01.s4.paired_case_local_deterministic_baseline:v1",
+    "source_decision_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r2_success_only_paired_baseline_source_decision_v1_0.json",
+    "source_decision_sha256": "5243fe0baf57ee437a427720714cee65e8c900aec1cf7296fbd05c10e6afdcff",
+    "source_agent_result_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_r2_exact_live_execution_success_result_v1_0.json",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_version": 1,
+    "analysis_as_of": "2026-07-26T00:00:00Z",
+    "decision_surface_ref": "p02_decision_surface_dd094559ce4c0f79d242e852:v1",
+    "input_head_digest": "d0bb8780877914737b68fc1cfd763932c56f496758d9be62e5194d4c648179f2",
+    "paired_input_head_digest": "4023ee74d3c54a8583203ba6b994eea55083aa1e68c1efc7786d819fbd64d247",
+    "agent_profile_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+    "agent_research_run_id": "research_run_fin01_1920b03b8205e9861dfb5676"
+  },
+  "prospective_baseline": {
+    "baseline_variant": "s4_source_grounded_case_local",
+    "execution_identity": "fin01-s3-t09-paired-deterministic-baseline-materialization-r1",
+    "execution_profile_version_ref": "fin01.execution_profile.p36_local_deterministic:v1",
+    "work_unit_id": "wu_p02_5_b7e302b67e326511be069250",
+    "attempt_id": "attempt_fin01_519fb331fd798ef6f769a0e2",
+    "research_run_id": "research_run_fin01_7d6adea8b1b4788a7842e914",
+    "program_cell_ids": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "artifact_refs": {
+      "deterministic_research_result": "artifact_fin01_e7b972dc50ec40067a281524:v1",
+      "s3_three_cell_workpaper": "artifact_fin01_413831487f01fb8ad7e46587:v1",
+      "s3_three_cell_report": "artifact_fin01_31d0b55ac8728ae74abed085:v1",
+      "s3_three_cell_trace_review": "artifact_fin01_9247fa45aec1abab9bf06a02:v1"
+    },
+    "double_prepare_equal": true,
+    "prospective_payload_digest": "c02beb76792489456bb7eab63a4a8bbdefa9306155037d5a98234b87019de6d4",
+    "all_identities_absent_and_distinct_from_agent": true,
+    "materialized": false
+  },
+  "materialization_contract": {
+    "must_match_agent": [
+      "case_id",
+      "case_version",
+      "decision_surface_ref",
+      "analysis_as_of",
+      "input_head_digest",
+      "paired_input_head_digest",
+      "program_cell_ids"
+    ],
+    "must_be_distinct_from_agent": [
+      "work_unit_id",
+      "attempt_id",
+      "research_run_id",
+      "artifact_refs",
+      "execution_profile_version_ref"
+    ],
+    "exact_artifact_types": [
+      "deterministic_research_result",
+      "s3_three_cell_workpaper",
+      "s3_three_cell_report",
+      "s3_three_cell_trace_review"
+    ],
+    "source_grounding_required": {
+      "case_ticker": "MU",
+      "source_pack_digest": "5fff74f742b038ead1718e449e3e4dafc4f04b55587256d98e619d05cf6c263d",
+      "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+      "legacy_P36_NVDA_preview_forbidden": true
+    },
+    "maximum_attempts": 1,
+    "retry_budget": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "evidence_promotions": 0,
+    "live_case_head_writes": 0,
+    "agent_reruns": 0,
+    "owner_acceptance_writes": 0
+  },
+  "preflight_safety": {
+    "project_os_scoped_preflight": "pass_zero_open_blockers",
+    "prospective_double_prepare": "pass_equal",
+    "target_database_sha256_before_and_after": "2a5377e0159789072ab3dc72bd978a555e3e439ff4aa1d2d89ca7c348277d248",
+    "target_object_tree_sha256_before_and_after": "a7225b2f6e2390eba036be6c86d3a4963bf2217a48e061ea19cb8c972fb12fb2",
+    "target_logical_snapshot_unchanged": true,
+    "target_canonical_writes": 0,
+    "target_object_writes": 0
+  },
+  "observed_counts": {
+    "baseline_materializations": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "agent_reruns": 0,
+    "owner_acceptance_writes": 0
+  },
+  "next_action": "S4-T06-MU-R2-SOURCE-GROUNDED-DETERMINISTIC-BASELINE-EXACT-ONCE-MATERIALIZATION"
+}

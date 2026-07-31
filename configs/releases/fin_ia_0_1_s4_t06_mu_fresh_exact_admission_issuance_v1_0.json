@@ -1,0 +1,148 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_fresh_exact_admission_issuance_v1_0",
+  "issuance_id": "S4-T06-MU-FRESH-EXACT-ADMISSION-ISSUANCE-R1",
+  "issued_at": "2026-07-29T11:09:08+08:00",
+  "status": "issued_unconsumed_zero_call_preflight_pass",
+  "authority": {
+    "user_instruction": "继续",
+    "fresh_exact_admission_issuance_authorized": true,
+    "admission_consumption_or_exact_live_execution_authorized": false,
+    "automatic_retry_fallback_patch_or_rerun_authorized": false,
+    "paired_comparison_or_Human_review_authorized": false,
+    "S4_T07_or_later_authorized": false
+  },
+  "source_decision_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_canonical_case_surface_and_fresh_exact_admission_preparation_zero_call_proof_v1_0.json",
+  "source_decision_sha256": "6db5be1f9f10cb44b37d994e4936fee933cefbfc4a6a74e4838b81e2e1e75d86",
+  "source_pack_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_source_grounded_input_pack_v1_0.json",
+  "source_pack_sha256": "c97add3afee69278084c090b05e114436f426266c40d91c8e4ce916774e33d09",
+  "issued_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_fresh_exact_admission_r1.json",
+    "admission_id": "fin01-s4-t06-mu-fresh-exact-admission-r1",
+    "admission_digest": "56005ffb1227e9ec1ead1b73b780342dfeaeef06bbdb0eff01592d7cdc19c891",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s4-t06-mu-fresh-exact-live-r1",
+    "fresh_identity": true,
+    "execution_enabled": true,
+    "consumed": false,
+    "execution_started": false
+  },
+  "exact_binding": {
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_dd094559ce4c0f79d242e852:v1",
+    "as_of": "2026-07-26T00:00:00Z",
+    "input_head_digest": "4023ee74d3c54a8583203ba6b994eea55083aa1e68c1efc7786d819fbd64d247",
+    "input_object_ref": {
+      "object_key": "fin01/s4/exact-input-heads/29/0e/290e82aec53d6d3078eb0c8bac94e022bde7cc17a77b72d2315af118ced4958e.json",
+      "digest": "290e82aec53d6d3078eb0c8bac94e022bde7cc17a77b72d2315af118ced4958e",
+      "byte_size": 196647,
+      "media_type": "application/json",
+      "artifact_type": "mu_source_grounded_prepared_input"
+    },
+    "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+    "preparation_digest": "5d506da117962a8174ab23cae9e857f67a12126884098cb81e23acf0f0ff363a",
+    "predicted_work_unit_id": "wu_p02_5_fbe7fa234fce9f4c54403c56",
+    "predicted_attempt_id": "attempt_fin01_e4473dd705631f215159fe76",
+    "predicted_research_run_id": "research_run_fin01_c94013e1c3666739c35ff00c",
+    "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v5",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+    "scoped_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+    "claim_fact_link_policy_ref": "fin01.s3.claim_fact_link_policy:v1",
+    "provider_output_capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1"
+  },
+  "execution_envelope": {
+    "maximum_semantic_model_calls": 12,
+    "maximum_provider_calls": 12,
+    "maximum_network_calls": 12,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "maximum_output_tokens_total": 16800,
+    "maximum_total_cost_usd": 0.1,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "automatic_retry_repair_fallback_or_rerun_allowed": false,
+    "first_credible_failure": "terminal_fail_closed_stop"
+  },
+  "proof_reverification": {
+    "generator_rerun_before_materialization": true,
+    "frozen_and_regenerated_decision_byte_equal": true,
+    "double_prepare_equal": true,
+    "source_pack_digest_equal": true,
+    "canonical_logical_digest": "d3cca765e931212e93b90d76a100b94495e744c4e1eff31aacd01389836c52b0",
+    "canonical_execution_counts": {
+      "canonical_research_cases": 1,
+      "canonical_case_control_versions": 1,
+      "canonical_decision_surface_contract_versions": 1,
+      "canonical_decision_surface_cell_versions": 3,
+      "canonical_evidence_slot_versions": 14,
+      "canonical_planning_checkpoint_versions": 2,
+      "canonical_work_units": 0,
+      "canonical_attempts": 0,
+      "canonical_research_run_versions": 0,
+      "canonical_artifact_versions": 0
+    },
+    "freshness_and_nonreuse": {
+      "work_unit_absent": true,
+      "attempt_absent": true,
+      "research_run_absent": true
+    },
+    "exact_code_bindings": {
+      "src/sec_agent/s4_case_runtime.py": "54496f3d4fbd87bc8cd746ac90495ee96a0b4dcd86914658eed52596de4154d6",
+      "apps/workbench/backend/application/bounded_agent_executor.py": "6dcd64f18c695e8f27173ba4d0e61f51223efb24de62d82faada16e754af3890",
+      "apps/workbench/backend/application/research_runtime.py": "09acc8a6dc8aa0e3dfaf16ccc351dff470d6c39fc1cdd0e62e4afb6ec308396c",
+      "scripts/releases/prepare_fin_ia_0_1_s4_t06_mu_canonical_case_surface_and_fresh_exact_admission_preparation.py": "87a733619b8fdb699e1aa008aaaed9995fd6dc2f6fa1fef4c125f6809464edb9",
+      "scripts/releases/run_fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution.py": "6ad66d922b9b38246601e08993cbe5d6da92fb11624389f8c7c48a45636b0eee",
+      "scripts/releases/issue_fin_ia_0_1_s4_t06_mu_fresh_exact_admission.py": "e36a1fd0a1c7925a4dd16c5d178ecb9e1607f1eebdec7d5160fd444061ebd0b2"
+    },
+    "exact_code_binding_count": 6,
+    "runtime_dispatch_consumes_source_grounded_S4_pack": true,
+    "runner_preflight_dispatches_to_S4_exact_prepare": true
+  },
+  "zero_call_preflight": {
+    "provider_callback_invoked": false,
+    "credential_presence_checked": false,
+    "credential_value_read_output_or_persisted": false,
+    "transport_retry_environment_zero": true,
+    "exact_live_execution_precondition": "LLM_GATEWAY_TRANSPORT_RETRIES must equal 0 and the configured provider credential must be present"
+  },
+  "issuance_boundary": {
+    "admission_issued": true,
+    "admission_consumed": false,
+    "execution_started": false,
+    "supervisor_launched": false,
+    "model_or_provider_call_started": false,
+    "business_artifact_materialization_performed": false,
+    "paired_comparison_performed": false,
+    "human_review_performed": false
+  },
+  "observed_counts": {
+    "new_admissions": 1,
+    "admission_consumptions": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "artifacts_created": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0
+  },
+  "truth_and_scope_boundaries": {
+    "HBM_specific_revenue_or_profit_inferred": false,
+    "customer_concentration_or_identity_inferred": false,
+    "forward_demand_or_capacity_realized_as_fact": false,
+    "graph_promoted_to_direct_evidence": false,
+    "strict_schema_transport_reactivated": false
+  },
+  "next_action": "S4-T06-MU-FRESH-EXACT-LIVE-EXECUTION-AND-SUCCESS-ONLY-PAIRED-ASSESSMENT-AUTHORITY-DECISION"
+}

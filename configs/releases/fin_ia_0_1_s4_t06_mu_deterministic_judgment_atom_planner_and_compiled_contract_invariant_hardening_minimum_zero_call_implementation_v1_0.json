@@ -1,0 +1,141 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_deterministic_judgment_atom_planner_and_compiled_contract_invariant_hardening_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T06-MU-DETERMINISTIC-JUDGMENT-ATOM-PLANNER-AND-COMPILED-CONTRACT-INVARIANT-HARDENING-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-30T15:42:25+08:00",
+  "status": "pass_single_zero_call_structural_bundle_runtime_injected_three_case_fixture_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "source_disposition_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_deterministic_judgment_atom_planner_and_compiled_contract_invariant_hardening_zero_call_disposition_v1_0.json",
+    "source_disposition_sha256": "d8c101e68a5f3db31b74dbe40a1ae745ee08f1ca2e50585c7dddc6065ad154a0",
+    "implementation_bundles_allowed": 1,
+    "implementation_bundles_consumed": 1,
+    "automatic_follow_on_implementation_bundles": 0,
+    "model_provider_network_or_source_call_authorized": false,
+    "single_node_canary_authorized": false,
+    "new_admission_or_formal_exact_live_authorized": false,
+    "paired_assessment_or_owner_acceptance_authorized": false,
+    "S4_T07_or_later_authorized": false
+  },
+  "implemented_contract": {
+    "contract_ref": "fin01.s4.deterministic_judgment_atom_planner_and_compiled_contract_invariants:v1",
+    "admission_binding_field": "judgment_atom_compiled_contract_ref",
+    "historical_admission_semantics_changed": false,
+    "provider_contract_families": [
+      "specialist_fact_atoms",
+      "claim_candidate_atoms",
+      "what_would_change_atoms"
+    ],
+    "provider_owned_surface": [
+      "request-local aliases",
+      "finite causal relation enum",
+      "finite materiality enum",
+      "finite confidence enum",
+      "finite candidate priority enum",
+      "finite trigger and review cadence enums",
+      "admission-bound calendar aliases"
+    ],
+    "local_deterministic_surface": [
+      "validity-aware candidate filtering",
+      "mixed-scope rejection before final selection",
+      "stable ordering and tie-breaks",
+      "final cardinality",
+      "material numeric value period unit scale comparator sign and precision",
+      "threshold and calendar rendering",
+      "case identity",
+      "canonical Fact Claim and task IDs",
+      "ClaimFactLink",
+      "lineage",
+      "final material fact Claim and monitoring clauses"
+    ],
+    "compiled_from_one_policy": [
+      "model-visible contract",
+      "wire schema",
+      "local semantic validator",
+      "fake Provider fixture",
+      "deterministic selector",
+      "deterministic renderer",
+      "capacity declaration",
+      "budget estimator units",
+      "typed failure descriptor",
+      "capture safe-index semantic classes"
+    ],
+    "provider_and_local_capacity_separated": true,
+    "local_structured_rendering_inherits_provider_narrative_limit": false,
+    "projected_input_cost_unit": "estimated_input_tokens",
+    "projected_output_cost_unit": "reserved_output_tokens",
+    "utf8_bytes_used_as_pricing_tokens": false,
+    "actual_post_call_usage_hard_cap_retained": true
+  },
+  "runtime_changes": {
+    "policy_ref_and_token_estimator": {
+      "ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+      "sha256": "0515af6c07154e813fe481dbf2db4461abebd8934afa9a413a4cab89921eb798"
+    },
+    "compiled_contract": {
+      "ref": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py",
+      "sha256": "98e1b17d1e0ca555d2ee59ca0435d0658f1d703d23731239d9c863ff18ecc1cf"
+    },
+    "executor_injection": {
+      "ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "sha256": "528102ec26ec08c9b023586aa1443825bed56a8b6b9cfbf5ce917a55831a7aa7"
+    },
+    "implementation_test": {
+      "ref": "tests/contract/test_fin_0_1_s4_t06_mu_deterministic_judgment_atom_planner_compiled_contract_implementation.py",
+      "sha256": "8ec73a553d9d7dd73ae5e5cf4b22e5678b07056c5ff31786213ee7c49b382e88"
+    }
+  },
+  "verification": {
+    "focused_implementation_and_disposition_tests": "17 passed",
+    "three_case_full_fake": {
+      "DELL": [6, 12, 12, 9],
+      "MU": [6, 12, 12, 9],
+      "NVDA": [6, 12, 12, 9],
+      "aggregate_nodes_callbacks_captures_artifacts": [18, 36, 36, 27]
+    },
+    "mutation_and_property_results": {
+      "unknown_or_cross_case_alias_fails_closed": true,
+      "arbitrary_provider_narrative_field_fails_closed": true,
+      "material_numeric_value_rendered_only_from_bound_alias": true,
+      "mixed_scope_leading_candidate_rejected_before_selection": true,
+      "valid_lower_priority_candidate_selected": true,
+      "candidate_permutation_stable": true,
+      "unknown_calendar_alias_fails_closed": true,
+      "multibyte_prompt_not_priced_as_one_token_per_utf8_byte": true,
+      "post_provider_fault_preserves_capture": true,
+      "R6_capture_v2_cached_replay_rejected_by_new_atom_wire": true
+    },
+    "legacy_chain_regression": {
+      "passed": 45,
+      "failed": 1,
+      "failure_classification": "historical_phase_snapshot_current_next_allowlist_stale",
+      "runtime_behavior_regression_established": false,
+      "historical_test_rewritten": false
+    },
+    "python_compile": "pass",
+    "git_diff_check": "pass",
+    "ruff": "not_installed_in_workspace_runtime",
+    "model_provider_network_source_external_tool_calls": [0, 0, 0, 0, 0],
+    "new_admissions": 0,
+    "formal_exact_live_runs": 0,
+    "business_artifact_promotions": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0,
+    "S4_T07_entries": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_067": "open_final_formal_numeric_L1_reproof_pending",
+    "RC_P36_068": "open_final_formal_identity_L1_reproof_pending",
+    "RC_P36_080": "open_runtime_replacement_fixture_proven_fresh_and_live_reproof_pending",
+    "RC_P36_082": "closed",
+    "RC_P36_083": "open_runtime_injected_fixture_proven_independent_fresh_proof_pending",
+    "RC_P36_084": "open_nonblocking_deferred_T08_T10_S5",
+    "S4_T06": "blocked_independent_fresh_proof_changed_family_canaries_and_one_formal_MU_exact_live_pending",
+    "paired_assessment": "not_eligible_not_performed",
+    "owner_acceptance": "not_eligible_not_performed",
+    "S4_T07": "not_entered",
+    "S4": "not_passed",
+    "S5": "blocked"
+  },
+  "next_action": "S4-T06-MU-DETERMINISTIC-JUDGMENT-ATOM-PLANNER-AND-COMPILED-CONTRACT-INVARIANT-HARDENING-FRESH-AGENT-PROOF-DECISION",
+  "known_boundary": "This is runtime implementation and deterministic fixture proof, not independent disposable-runtime proof, natural DeepSeek output compliance, a new admission, formal exact-live, final L1, paired quality, or owner acceptance. Formal R6 remains immutable failed and the diagnostic remains quarantined."
+}

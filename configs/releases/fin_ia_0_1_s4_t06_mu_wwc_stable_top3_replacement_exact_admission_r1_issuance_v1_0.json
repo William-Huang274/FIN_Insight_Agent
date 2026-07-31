@@ -1,0 +1,98 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_wwc_stable_top3_replacement_exact_admission_r1_issuance_v1_0",
+  "issuance_id": "S4-T06-MU-WWC-STABLE-TOP3-REPLACEMENT-EXACT-ADMISSION-R1-ISSUANCE",
+  "issued_at": "2026-07-31T00:41:22.951666+08:00",
+  "status": "issued_unconsumed_zero_call_preflight_pass",
+  "authority": {
+    "user_instruction": "按照这个顺序修",
+    "sequence_authorizes_one_replacement_exact_live": true,
+    "automatic_second_replacement_or_R8_R9_loop_authorized": false,
+    "new_L1_authorizes_one_project_level_disposition_only": true,
+    "L2_to_L4_findings_carry_forward_without_blocking_T06": true
+  },
+  "source_proof_decision_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_wwc_stable_top3_replacement_independent_fresh_agent_proof_decision_v1_0.json",
+  "source_proof_decision_sha256": "3c24187d1813d95b98f953fc3259b10996d70e96a88b404c5348b513849ec7f9",
+  "issued_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_wwc_stable_top3_replacement_exact_admission_r1.json",
+    "admission_id": "fin01-s4-t06-mu-wwc-stable-top3-replacement-exact-admission-r1",
+    "admission_digest": "8efb005c4c0e519ff805c3b6c8d997cd146a7c8ed5ec6f6335ea167ba4033f40",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s4-t06-mu-wwc-stable-top3-replacement-exact-live-r1",
+    "fresh_identity": true,
+    "execution_enabled": true,
+    "consumed": false,
+    "execution_started": false
+  },
+  "exact_binding": {
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_dd094559ce4c0f79d242e852:v1",
+    "as_of": "2026-07-26T00:00:00Z",
+    "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+    "preparation_digest": "760e26abbcc456efa352c147c422b953cc53229a74987ac63f71b51f8ece7ad3",
+    "predicted_work_unit_id": "wu_p02_5_854d3d886521cd866c1dee8a",
+    "predicted_attempt_id": "attempt_fin01_3a48b0a3a2208f03a90a9cb4",
+    "predicted_research_run_id": "research_run_fin01_aed3c2494f0c5650d5c71931",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+    "judgment_atom_compiled_contract_ref": "fin01.s4.deterministic_judgment_atom_planner_and_compiled_contract_invariants:v2",
+    "wwc_judgment_atom_policy_ref": "fin01.s4.specialist_WWC_judgment_atom_deterministic_temporal_authority:v2",
+    "provider_output_capture_policy_ref": "fin01.runtime.provider_interaction_audit_capture:v2"
+  },
+  "execution_envelope": {
+    "maximum_semantic_model_calls": 12,
+    "maximum_provider_calls": 12,
+    "maximum_network_calls": 12,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "maximum_output_tokens_total": 16800,
+    "maximum_total_cost_usd": 0.1,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "automatic_retry_fallback_replay_relaunch_allowed": false
+  },
+  "proof_reverification": {
+    "proof_status_match": true,
+    "implementation_and_runtime_bindings_match": true,
+    "three_case_fixture_reproof_match": true,
+    "double_prepare_equal": true,
+    "target_runtime_read_only": true,
+    "admission_schema_profile_and_digest_match": true,
+    "issuance_scope_project_os_preflight": "pass_open_blockers_0",
+    "fresh_identity_rows": {
+      "work_units": 0,
+      "attempts": 0,
+      "research_runs": 0
+    },
+    "target_database_sha256": "95fa65861b0822e8d0defb73fa08d542d0365e0557ab56a5c1bc89c0dac687c5",
+    "target_object_tree_sha256": "a20cafc806f04f2136b03c9fc0f5e9685b0d7aa9c436badf41391986d4528dfd",
+    "target_logical_snapshot_digest": "240324d1cf635b33b56441f1a11aa333b626162c35521ae23abba4fe98855923"
+  },
+  "zero_call_preflight": {
+    "provider_callback_invoked": false,
+    "credential_value_read": false,
+    "provider_health_probe_performed": false,
+    "model_provider_network_source_tool_calls": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "issuance_boundary": {
+    "admission_issued": true,
+    "admission_consumed": false,
+    "execution_started": false,
+    "supervisor_launched": false,
+    "paired_assessment_performed": false,
+    "owner_acceptance_performed": false,
+    "S4_T07_entered": false
+  },
+  "next_action": "S4-T06-MU-WWC-STABLE-TOP3-REPLACEMENT-EXACT-LIVE-R1"
+}

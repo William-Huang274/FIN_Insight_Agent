@@ -1,0 +1,252 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r8_specialist_assembled_output_byte_budget_zero_call_root_cause_disposition_v1_0",
+  "decision_id": "S4-T05-DELL-R8-SPECIALIST-ASSEMBLED-OUTPUT-BYTE-BUDGET-ZERO-CALL-ROOT-CAUSE-DISPOSITION-R1",
+  "decided_at": "2026-07-27T22:15:00+08:00",
+  "status": "pass_zero_call_root_cause_disposed_three_level_validated_segment_union_capacity_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "按照这个顺序往下做；继续",
+    "authorized_scope": "S4-T05-DELL-R8-BOTTLENECK-SPECIALIST-ASSEMBLED-OUTPUT-BYTE-BUDGET-FIRST-CREDIBLE-FAILURE-ZERO-CALL-ROOT-CAUSE-DISPOSITION-DECISION",
+    "zero_call_root_cause_disposition_authorized": true,
+    "runtime_profile_prompt_schema_validator_telemetry_or_fake_provider_implementation_authorized": false,
+    "restricted_provider_output_or_capture_read_authorized": false,
+    "historical_R8_capture_run_or_terminal_rewrite_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "new_admission_R9_execution_or_paired_assessment_authorized": false,
+    "Human_review_S4_T06_S5_release_or_production_authorized": false
+  },
+  "source_failure": {
+    "issue_id": "RC-P36-065-s4-R8-bottleneck-specialist-assembled-output-byte-budget-exceeded",
+    "result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r8_typed_failure_envelope_exact_live_execution_failure_result_v1_0.json",
+    "result_sha256": "4a6bfe8539d259d8365bc18b6c57d18d7f9e45691da931e1aa703577b67ce389",
+    "research_run_id": "research_run_fin01_5c760354a6d2b009e5ce8acb",
+    "failed_logical_node": "domain_specialist:bottleneck_counterevidence_and_what_would_change",
+    "failure_lifecycle_phase": "node_envelope_accounting",
+    "failure_code": "s3_bounded_segmented_specialist_assembly_invalid:bottleneck_counterevidence_and_what_would_change:s3_bounded_specialist_output_byte_budget_exceeded:bottleneck_counterevidence_and_what_would_change",
+    "provider_segment_calls_completed_ok_stop": 9,
+    "usage_receipts_and_restricted_captures_preserved": [
+      9,
+      9
+    ],
+    "completed_logical_specialist_nodes": 2,
+    "exact_R8_assembled_utf8_byte_count_persisted": false,
+    "restricted_R8_text_read_in_this_decision": false,
+    "model_noncompliance_established": false,
+    "historical_terminal_states": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "historical_artifact_count": 0,
+    "retry_fallback_replay_relaunch_rerun_counts": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "zero_call_code_audit": {
+    "contract_policy_ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+    "contract_policy_sha256": "843e641c7ef37c71813ea59221394b373e7059ac5d489b0f805b8a898c3989cf",
+    "executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "executor_sha256": "08cc4a0cae56c7fa05499b88f6a9b9d8d040b07550340d9477c60ac728ac8a03",
+    "current_research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v2",
+    "current_specialist_transport_ref": "fin01.s3.bounded_agent.specialist_owner_grade_segmented:v8",
+    "specialist_segment_count": 3,
+    "provider_general_segment_max_utf8_bytes": 6000,
+    "WWC_provider_atom_max_utf8_bytes": 4800,
+    "post_local_expansion_segment_max_utf8_bytes": 8192,
+    "whole_specialist_output_max_utf8_bytes": 8192,
+    "current_capacity_owner_collision": "specialist_assembly_max_utf8_bytes is used both as the maximum for each locally expanded valid segment and again as the maximum for the union of all three segments",
+    "DELL_profile_v2_changes": "WWC output tokens 1400 to 1800, Specialist stage tokens 4200 to 4600, aggregate tokens 16800 to 18000",
+    "DELL_profile_v2_inherited_whole_output_capacity_without_recalculation": true,
+    "current_profile_post_init_only_requires_whole_cap_not_less_than_provider_segment_cap": true,
+    "current_profile_post_init_proves_three_segment_union_closure": false,
+    "existing_WWC_max_shape_fixture_scope": "proves three 160-character atoms fit the 4800-byte Provider wire and locally assemble to valid canonical WWC tasks",
+    "existing_full_fake_chain_WWC_narrative_characters": 32,
+    "existing_full_fake_chain_proves_contract_maximum_whole_output_closure": false
+  },
+  "deterministic_capacity_audit": {
+    "fixture_basis": "public deterministic DELL input, current v8 policy, maximum declared cardinalities, 320-character Facts/Claims narratives, and three 160-character WWC atoms; no live or restricted output",
+    "all_semantic_authority_identity_and_canonical_validators_pass_before_whole_cap": true,
+    "all_provider_visible_segments_under_6000_bytes": true,
+    "per_cell_measurements": [
+      {
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "facts_segment_utf8_bytes": 4822,
+        "claim_segment_utf8_bytes": 2745,
+        "WWC_provider_atom_utf8_bytes": 3945,
+        "WWC_locally_expanded_segment_utf8_bytes": 4906,
+        "whole_canonical_specialist_utf8_bytes": 12353,
+        "excess_over_current_whole_cap_utf8_bytes": 4161
+      },
+      {
+        "program_cell_id": "value_and_profit_capture",
+        "facts_segment_utf8_bytes": 4796,
+        "claim_segment_utf8_bytes": 2731,
+        "WWC_provider_atom_utf8_bytes": 3931,
+        "WWC_locally_expanded_segment_utf8_bytes": 4843,
+        "whole_canonical_specialist_utf8_bytes": 12278,
+        "excess_over_current_whole_cap_utf8_bytes": 4086
+      },
+      {
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "facts_segment_utf8_bytes": 4841,
+        "claim_segment_utf8_bytes": 2755,
+        "WWC_provider_atom_utf8_bytes": 3955,
+        "WWC_locally_expanded_segment_utf8_bytes": 4949,
+        "whole_canonical_specialist_utf8_bytes": 12405,
+        "excess_over_current_whole_cap_utf8_bytes": 4213
+      }
+    ],
+    "current_valid_state_space_closed_under_whole_assembly": false,
+    "static_root_cause_confirmed_without_R8_exact_byte_count": true,
+    "R8_exact_overage_or_field_contribution_inferred": false
+  },
+  "layered_acceptance_disposition": {
+    "acceptance_standard_ref": "configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json",
+    "acceptance_standard_sha256": "2f4ffb82f7cc18ac97c7265fd968e004a4b64d5ad8244d79c0a0a0b86c466703",
+    "classification": "L1_hard_capacity_contract_remains_fail_closed",
+    "earliest_project_owned_surface": "Specialist profile capacity semantics and deterministic three-segment union closure",
+    "model_or_provider_fault_classification": "not_established",
+    "why_not_L2_or_L3": "A real storage or resource envelope remains a hard boundary; the repair is to make the admitted segment state space close under deterministic assembly, not to ignore an actual overflow.",
+    "historical_R8_run_remains_terminal_failed": true,
+    "historical_R8_capture_remains_immutable": true
+  },
+  "selected_minimum_implementation_contract": {
+    "contract_ref": "fin01.s3.specialist_local_assembly_capacity.validated_segment_union_upper_bound:v1",
+    "scope": "Specialist v8 three-level capacity semantics and content-free byte telemetry only",
+    "versioning": {
+      "new_DELL_research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v3",
+      "new_specialist_transport_v9_required": false,
+      "reason": "Provider schema, aliases, token budgets, WWC atom policy and canonical output shape do not change; only local profile capacity semantics change.",
+      "historical_profiles_v1_v2_immutable": true,
+      "historical_specialist_transports_v1_through_v8_immutable": true
+    },
+    "three_level_capacity": {
+      "provider_raw_segment_limit_utf8_bytes": 6000,
+      "WWC_provider_atom_limit_utf8_bytes": 4800,
+      "post_local_expansion_segment_limit_utf8_bytes": 8192,
+      "validated_segment_count": 3,
+      "whole_union_limit_formula": "validated_segment_count * post_local_expansion_segment_limit_utf8_bytes",
+      "whole_union_limit_utf8_bytes": 24576,
+      "formula_is_upper_bound_not_target_size": true,
+      "provider_output_token_caps_changed": false,
+      "aggregate_output_token_or_cost_cap_changed": false
+    },
+    "runtime_ownership": {
+      "one_shared_capacity_resolver_consumed_by_inner_segment_and_outer_whole_validators": true,
+      "each_segment_must_pass_shape_text_authority_identity_semantic_and_local_capacity_before_union": true,
+      "whole_union_above_derived_limit_remains_terminal": true,
+      "whole_union_within_derived_limit_bypasses_no_semantic_validator": true,
+      "ticker_provider_or_field_specific_capacity_branch_allowed": false
+    },
+    "content_free_failure_telemetry": {
+      "required_contract_ref": "fin01.s3.specialist_local_assembly_capacity.validated_segment_union_upper_bound:v1",
+      "required_fields": [
+        "segment_count",
+        "provider_raw_segment_limit_utf8_bytes",
+        "post_local_expansion_segment_limit_utf8_bytes",
+        "whole_union_limit_utf8_bytes",
+        "observed_validated_segment_utf8_bytes",
+        "observed_whole_union_utf8_bytes",
+        "failure_phase"
+      ],
+      "raw_text_private_reasoning_credentials_stack_or_exception_message_persisted": false,
+      "restricted_capture_policy_changed": false
+    }
+  },
+  "rejected_and_deferred_alternatives": [
+    {
+      "option": "raise_8192_to_the_next_number_observed_in_R8",
+      "decision": "rejected",
+      "reason": "R8 exact bytes were not persisted and observation-driven headroom would repeat the same non-closing contract."
+    },
+    {
+      "option": "truncate_compress_drop_or_rewrite_valid_Facts_Claims_or_WWC_tasks",
+      "decision": "rejected",
+      "reason": "silently changes financial analysis identity authority lineage or decision content."
+    },
+    {
+      "option": "downgrade_whole_output_capacity_to_quality_finding",
+      "decision": "rejected",
+      "reason": "true capacity remains an L1 hard boundary."
+    },
+    {
+      "option": "tighten_one_prompt_field_or_reduce_narrative_limits_until_R8_fits",
+      "decision": "rejected",
+      "reason": "field-by-field patching does not prove the admitted three-segment state space closes under assembly."
+    },
+    {
+      "option": "increase_model_output_tokens_or_total_cost",
+      "decision": "rejected",
+      "reason": "R8 completed all nine Provider calls with ok/stop; the failure occurred after deterministic local assembly."
+    },
+    {
+      "option": "atomize_Facts_Claims_dependency_conflict_Writer_and_Verifier_in_T05",
+      "decision": "deferred_to_S4_T10_to_S5",
+      "reason": "not required to close the current Specialist capacity owner and would expand one T05 sequence into a general framework rewrite."
+    }
+  ],
+  "minimum_implementation_acceptance": {
+    "one_versioned_profile_contract_generates_capacity_resolver_inner_outer_validators_fake_provider_and_safe_telemetry": true,
+    "public_deterministic_maximum_cardinality_fixture_passes_all_three_cells": true,
+    "fixture_whole_output_sizes_at_least": [
+      12353,
+      12278,
+      12405
+    ],
+    "all_fixture_provider_visible_segments_remain_within_existing_wire_limits": true,
+    "derived_whole_union_limit_is_24576_bytes": true,
+    "one_byte_over_derived_whole_union_limit_fails_closed": true,
+    "existing_provider_raw_segment_WWC_atom_token_cost_identity_authority_and_lineage_gates_unchanged": true,
+    "full_fake_provider_chain_uses_contract_maximum_cardinality_and_high_narrative_density_not_only_32_character_WWC_atoms": true,
+    "full_fake_provider_chain_expectation": {
+      "logical_nodes": 6,
+      "provider_callbacks": 12,
+      "business_artifacts": 9
+    },
+    "failure_fixture_preserves_all_completed_usage_receipts_and_restricted_captures": true,
+    "historical_R8_admission_run_capture_and_terminal_truth_are_immutable": true,
+    "fresh_agent_proof_admission_and_future_exact_live_require_later_separate_authorities": true
+  },
+  "sequence_boundary": {
+    "current_sequence": "RC_P36_065_specialist_three_level_capacity_disposition_only",
+    "implementation_in_this_decision": false,
+    "model_provider_network_source_tool_admission_run_artifact_paired_or_Human_actions_in_this_decision": false,
+    "next_sequence_limited_to": "three_level_capacity_resolver_profile_v3_safe_telemetry_and_deterministic_fixture_implementation",
+    "deferred_to_S4_T10_to_S5": [
+      "dependency_and_conflict_atomization",
+      "Writer_and_Verifier_atomization",
+      "general_cross_node_judgment_atom_framework",
+      "cross_provider_strict_server_side_schema_matrix"
+    ]
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "restricted_provider_output_reads": 0,
+    "new_admissions": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_assessments": 0,
+    "Human_Reviews": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_065": "root_cause_disposed_three_level_validated_segment_union_capacity_selected_implementation_pending",
+    "S4_T05": "blocked_pending_separately_authorized_minimum_zero_call_implementation",
+    "DELL_R2": "not_proven",
+    "paired_assessment": "not_eligible",
+    "owner_acceptance": "not_eligible",
+    "S4_T06": "not_entered",
+    "S5": "blocked_by_S4",
+    "release_admission": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S4-T05-DELL-R8-SPECIALIST-VALIDATED-SEGMENT-UNION-CAPACITY-AND-SAFE-BYTE-TELEMETRY-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

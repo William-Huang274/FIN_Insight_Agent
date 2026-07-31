@@ -1,0 +1,173 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_research_lead_gap_atom_deterministic_projection_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T05-DELL-RESEARCH-LEAD-REMAINING-GAP-ATOM-DETERMINISTIC-PROJECTION-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-27T16:30:00+08:00",
+  "status": "pass_zero_call_implementation_fixture_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "bounded_zero_call_runtime_prompt_schema_validator_projector_fake_provider_and_telemetry_implementation_authorized": true,
+    "fresh_agent_proof_admission_or_exact_execution_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "fifth_DELL_execution_paired_assessment_Human_review_S4_T06_or_later_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "source_decision": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_research_lead_remaining_gaps_cardinality_zero_call_root_cause_disposition_v1_0.json",
+    "sha256": "3c52834d09f424d967cc3dec4a2a3194d11c2e79516e36fb26667db288be444e"
+  },
+  "implemented_contract": {
+    "transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v6",
+    "projection_policy_ref": "fin01.s3.research_lead_gap_atom_deterministic_projection:v1",
+    "provider_field_id": "remaining_gap_atoms",
+    "provider_atom_fields": [
+      "statement",
+      "claim_ids",
+      "what_would_change_task_ids"
+    ],
+    "provider_emits_gap_id_rank_score_or_canonical_position": false,
+    "independent_semantic_candidate_maximum": null,
+    "hard_candidate_envelopes": [
+      "existing_provider_raw_wire_utf8_bytes",
+      "existing_node_output_tokens"
+    ],
+    "all_candidates_validated_before_selection": true,
+    "invalid_overflow_candidate_may_be_dropped": false,
+    "canonical_output_field_id": "remaining_gaps",
+    "canonical_output_cardinality": "1..4",
+    "local_gap_id_generation": true,
+    "local_exact_alias_expansion": true,
+    "ranking_tuple": [
+      "has_nonempty_what_would_change_task_ids_desc",
+      "maximum_linked_claim_uncertainty_rank_desc",
+      "distinct_linked_program_cell_count_desc",
+      "distinct_linked_claim_count_desc",
+      "canonical_atom_digest_ascending",
+      "provider_ordinal_ascending"
+    ],
+    "claim_uncertainty_ranks": {
+      "cannot_infer": 4,
+      "hypothesis": 3,
+      "bounded_inference": 2,
+      "fact_supported": 1
+    },
+    "v1_through_v5_request_validator_and_failure_behavior_unchanged": true,
+    "DELL_DeepSeek_ticker_or_case_specific_branch_added": false
+  },
+  "recoverable_protocol_finding": {
+    "finding_code": "research_lead_gap_atom_overflow_deterministically_projected",
+    "acceptance_layer": "L2_recoverable_protocol",
+    "terminal": false,
+    "persisted_in": [
+      "bounded_agent_manifest.recoverable_protocol_findings",
+      "bounded_agent_judgment.recoverable_protocol_findings"
+    ],
+    "content_free_fields": [
+      "candidate_count",
+      "selected_count",
+      "overflow_count",
+      "projection_policy_ref",
+      "selected_candidate_ordinals",
+      "selected_candidate_digests",
+      "overflow_candidate_digests"
+    ],
+    "raw_statement_or_reference_text_persisted": false,
+    "provider_nonconformance_hidden": false
+  },
+  "safe_failure_contract": {
+    "zero_candidates": "hard_below_minimum",
+    "malformed_blank_nonstring_candidate": "hard_fail_closed",
+    "unknown_wrong_kind_cross_cell_or_out_of_surface_ref": "L1_hard_integrity",
+    "invalid_json_truncation_or_real_capacity_exhaustion": "unrecoverable_or_hard",
+    "missing_or_inconsistent_ranking_input": "hard_fail_closed",
+    "one_through_four_valid_candidates": "normal_success_without_overflow_finding",
+    "more_than_four_all_valid_candidates": "L2_recoverable_deterministic_projection"
+  },
+  "fixture_proof": {
+    "request_schema_uses_remaining_gap_atoms": "pass",
+    "v5_historical_request_digest_unchanged": "pass",
+    "one_and_four_candidate_paths_without_finding": "pass",
+    "eight_valid_candidates_deterministic_top_four": "pass",
+    "invalid_eighth_candidate_rejected_before_projection": "pass",
+    "v5_five_gap_rows_still_hard_fail": "pass",
+    "full_fake_provider_callbacks": 12,
+    "full_fake_provider_logical_artifacts": 9,
+    "manifest_and_judgment_L2_finding_equal": true,
+    "canonical_remaining_gap_count": 4
+  },
+  "historical_exact_binding_supersession": {
+    "reason": "The shared contract-policy and executor files advanced under the separately authorized Research Lead gap-atom projection implementation. Historical decisions, admissions, Runs, captures, R4 failure truth and business evidence remain immutable; current-file verification resolves through this implementation only for the two explicitly changed runtime paths.",
+    "allowed_changed_paths": [
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+      "apps/workbench/backend/application/bounded_agent_executor.py"
+    ],
+    "superseded_binding_contracts": {
+      "configs/releases/fin_ia_0_1_s4_t04_dell_provider_canary_need_and_fresh_agent_proof_decision_v1_0.json": "0c2cf1a84fb78c3e3dc86f2dd10bd93c37ff4c6321a2825d2b686773c2ce289c",
+      "configs/releases/fin_ia_0_1_s4_t04_dell_fresh_exact_admission_issuance_v1_0.json": "d70d24ec684332abeec619b90d9c6ef463d169e17f83ef422d8f0cb43b350ec5",
+      "configs/releases/fin_ia_0_1_s4_t05_evidence_role_group_mapping_actual_dispatch_preflight_zero_call_implementation_v1_0.json": "4b7823da7d65998d79bbc8f9ad5803b20cb766c31ddfea9b0712429369486624",
+      "configs/releases/fin_ia_0_1_s4_t05_evidence_role_group_mapping_repair_fresh_agent_proof_decision_v1_0.json": "6833437d0ae707031ef1c0976454e1edb790d5391ac70b9f21f77b33b3a53e2b",
+      "configs/releases/fin_ia_0_1_s4_t05_evidence_role_group_mapping_repair_fresh_exact_admission_issuance_v1_0.json": "04f498f4d393345c3145f50f5aac667f52453e9f787b350efc5b491b8853295b",
+      "configs/releases/fin_ia_0_1_s4_t05_task_claim_link_policy_minimum_zero_call_implementation_v1_0.json": "ba6e3af28c2a7deaab355e105710a1e50839957b9152272db77a26ea5d0e52f9",
+      "configs/releases/fin_ia_0_1_s4_t05_task_claim_link_policy_fresh_agent_proof_decision_v1_0.json": "cc5de889fff7a708afb000d4baae42cefed571cb2f0eb5fdd624f81676bf2b5d",
+      "configs/releases/fin_ia_0_1_s4_t05_task_claim_link_policy_fresh_exact_admission_issuance_v1_0.json": "74667c005dd2aeefc3b8a6d92368ed0631caacd3b7a516e8a40b21eb0a241b6a",
+      "configs/releases/fin_ia_0_1_s4_t05_dell_task_claim_link_policy_r3_exact_live_execution_and_paired_assessment_authority_decision_v1_0.json": "816e78ee50f84f6e0dbffe47aa23994de7f4a710fcc7d8b03abbc7aaaed6d7ec",
+      "configs/releases/fin_ia_0_1_s4_t05_wwc_numeric_authority_surface_minimum_zero_call_implementation_v1_0.json": "7278f59d2d9227321e863a75a318d93235aa8f0936a9505159467aad9403940a",
+      "configs/releases/fin_ia_0_1_s4_t05_dell_research_lead_remaining_gaps_cardinality_zero_call_root_cause_disposition_v1_0.json": "3c52834d09f424d967cc3dec4a2a3194d11c2e79516e36fb26667db288be444e"
+    },
+    "unaffected_historical_exact_bindings_still_required": true,
+    "historical_R4_failure_capture_admission_Run_or_terminal_state_rewritten": false,
+    "historical_business_evidence_reinterpreted": false
+  },
+  "deferred_cross_sequence_items": [
+    {
+      "item": "dependency_conflict_variant_and_all_node_atom_framework",
+      "target": "S4-T10-to-S5-carry-forward",
+      "blocks_current_T05": false
+    },
+    {
+      "item": "cross_provider_strict_server_schema_capability_matrix",
+      "target": "S4-T10-to-S5-carry-forward",
+      "blocks_current_T05": false
+    },
+    {
+      "item": "cross_stage_gap_identity_and_semantic_deduplication",
+      "target": "S5-or-later-architecture-sequence",
+      "blocks_current_T05": false
+    }
+  ],
+  "verification": {
+    "focused_gap_atom_request_projection_failure_and_fake_provider": "9 passed",
+    "related_v5_layered_acceptance_and_disposition_regression": "43 passed",
+    "S4_T05_full_regression": "141 passed",
+    "full_S4_regression": "178 passed",
+    "python_compile": "pass",
+    "Project_OS_next_fresh_proof_scope_preflight": "pass_open_blockers_0"
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "c43d1f80ebc9290372d701b37ca77656390f371279ef8e95c0adb8b1b6eb3f9c",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "73973c70fa82a003abbc9ebbcfcc392ecc034902b598894f9e0cacc4e447be6f",
+    "tests/contract/test_fin_0_1_s4_t05_research_lead_gap_atom_deterministic_projection_zero_call_implementation.py": "f40430bf6453d5ab9646d7eba87a9448d2173a09b28501ab0eb6aa3a738bb86e"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_comparisons": 0,
+    "Human_Reviews": 0
+  },
+  "stage_decision": {
+    "RC_P36_061": "implementation_fixture_proven_fresh_agent_proof_pending",
+    "S4_T05": "blocked_pending_separately_authorized_fresh_agent_proof_and_later_exact_admission",
+    "DELL_R2": "not_proven",
+    "S4_T06_or_later": "not_entered",
+    "S5_release_or_production": "not_authorized"
+  },
+  "next_action": "S4-T05-DELL-RESEARCH-LEAD-GAP-ATOM-DETERMINISTIC-PROJECTION-FRESH-AGENT-PROOF-DECISION"
+}

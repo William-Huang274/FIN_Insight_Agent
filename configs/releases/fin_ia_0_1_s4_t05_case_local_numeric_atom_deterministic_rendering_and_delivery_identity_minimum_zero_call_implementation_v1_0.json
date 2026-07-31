@@ -1,0 +1,153 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_case_local_numeric_atom_deterministic_rendering_and_delivery_identity_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T05-DELL-CASE-LOCAL-NUMERIC-ATOM-DETERMINISTIC-RENDERING-AND-DELIVERY-IDENTITY-MINIMUM-ZERO-CALL-IMPLEMENTATION-R1",
+  "implemented_at": "2026-07-28T14:30:00+08:00",
+  "status": "pass_zero_call_implementation_fixture_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "按这个顺序做",
+    "sequence": [
+      "T05 final zero-call convergence",
+      "DELL MU NVDA positive negative and full fake proof",
+      "one DELL R11 exact-live",
+      "paired assessment and owner decision",
+      "T06 T07 T08-T10 S5"
+    ],
+    "new_exact_live_calls_in_this_implementation": 0,
+    "historical_admissions_runs_artifacts_or_business_evidence_rewritten": false
+  },
+  "scope_boundary": {
+    "included": [
+      "case-local numeric authority projection",
+      "provider selection of request-local numeric aliases",
+      "local exact numeric expansion and deterministic rendering",
+      "independent canonical numeric validation",
+      "case-local delivery identity projection",
+      "local report title and artifact entity labels",
+      "content-free typed L1 failure telemetry",
+      "DELL MU NVDA compatibility fixtures"
+    ],
+    "excluded_and_carried_forward": [
+      "general dependency conflict and gap atomization beyond existing contracts",
+      "new source acquisition",
+      "MU exact-live",
+      "NVDA exact-live",
+      "L2-L4 narrative quality expansion",
+      "release or production authorization"
+    ]
+  },
+  "implemented_contracts": {
+    "numeric_policy_ref": "fin01.s4.case_numeric_authority_projection_and_deterministic_rendering:v1",
+    "delivery_identity_policy_ref": "fin01.s4.case_delivery_identity_projection:v1",
+    "provider_numeric_write_authority": false,
+    "provider_delivery_identity_write_authority": false,
+    "provider_output": [
+      "request-local numeric aliases",
+      "qualitative judgment atoms",
+      "closed scoped references"
+    ],
+    "local_runtime_output": [
+      "exact authority refs",
+      "exact numeric clauses",
+      "scale currency unit and formula lineage",
+      "case ticker",
+      "report title",
+      "workpaper manifest and verification entity labels"
+    ],
+    "prompt_schema_validator_and_fake_provider_share_one_projection_contract": true,
+    "historical_unbound_admission_behavior_preserved": true,
+    "WWC_atom_capacity_is_independently_versioned_not_required_by_numeric_identity_contract": true
+  },
+  "fixture_proof": {
+    "targeted_tests": "23 passed",
+    "positive_projection": {
+      "DELL_raw_financial_rows": 22,
+      "DELL_derived_metrics": 2,
+      "exact_prompt_projection_round_trip": "pass",
+      "local_alias_expansion": "pass",
+      "independent_canonical_revalidation": "pass"
+    },
+    "negative_projection_mutations_rejected": [
+      "entity_ref",
+      "business_scope_ref",
+      "period",
+      "metric_family",
+      "comparison_operator",
+      "exact_value",
+      "currency",
+      "unit",
+      "scale_multiplier",
+      "formula",
+      "input_numeric_refs"
+    ],
+    "provider_phase_injection_proof": {
+      "domain_specialist": "typed_L1_failure_with_1_receipt_and_capture",
+      "research_lead": "typed_L1_failure_with_10_receipts_and_captures",
+      "memo_writer": "typed_L1_failure_with_11_receipts_and_captures",
+      "verifier": "typed_L1_failure_with_12_receipts_and_captures",
+      "cross_case_entity_pollution": "typed_L1_case_delivery_identity_failure"
+    },
+    "complete_fake_chains": {
+      "DELL": {
+        "logical_nodes": 6,
+        "provider_callbacks": 12,
+        "artifacts": 9,
+        "case_local_title_and_labels": "pass"
+      },
+      "MU": {
+        "logical_nodes": 6,
+        "provider_callbacks": 12,
+        "artifacts": 9,
+        "case_local_title_and_labels": "pass_compatibility_fixture_not_source_or_live_proof"
+      },
+      "NVDA": {
+        "logical_nodes": 6,
+        "provider_callbacks": 12,
+        "artifacts": 9,
+        "case_local_title_and_labels": "pass_compatibility_fixture_not_live_proof"
+      }
+    },
+    "combined_targeted_regression": "37 passed 1 historical hash test deselected pending this record",
+    "python_compile": "pass"
+  },
+  "historical_exact_binding_supersession": {
+    "reason": "new case-local numeric and delivery identity implementation supersedes historical runtime hashes without rewriting historical results",
+    "allowed_changed_paths": [
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+      "apps/workbench/backend/application/bounded_agent_executor.py",
+      "tests/contract/test_fin_0_1_s4_t05_research_lead_gap_atom_deterministic_projection_zero_call_implementation.py"
+    ]
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "e98f1f06dd2fa4d23c18d907512922d2848f2bdb93e7608c06a3c2dd8665a7f7",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "bb5196ac7ef9f7b9a618803063ff1ba8b4dae564623a02fc8cc06b26f560fe57",
+    "tests/contract/test_fin_0_1_s4_t05_case_numeric_authority_and_delivery_identity_zero_call_implementation.py": "53097518b5f78c1693d06611aeb1844993ce8f4da580a1d74d96e659f7eee2a7",
+    "tests/contract/test_fin_0_1_s4_t05_research_lead_gap_atom_deterministic_projection_zero_call_implementation.py": "5451277a824522c557d0eae5bf6ca7fa6c70324affdaa36e604591a0015166bc"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_exact_admissions": 0,
+    "new_work_units": 0,
+    "new_attempts": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0,
+    "paired_assessments": 0,
+    "human_reviews": 0
+  },
+  "stop_rule": {
+    "R11_is_the_only_next_exact_live_attempt": true,
+    "new_L1_failure": "stop_without_R12_and_escalate_to_project_level_block_scope_replacement_or_shared_runtime_hardening_decision",
+    "L2_to_L4_only": "record_and_carry_to_T08_T10_or_S5_without_reopening_T05",
+    "R11_L1_pass_and_agent_gain_preserved": "complete_paired_assessment_owner_decision_and_close_T05"
+  },
+  "stage_acceptance": {
+    "RC_P36_067": "zero_call_implementation_fixture_closed_live_reproof_pending",
+    "RC_P36_068": "zero_call_implementation_fixture_closed_live_reproof_pending",
+    "S4_T05": "zero_call_convergence_fixture_proven_R11_not_yet_executed",
+    "S4_T06": "not_entered"
+  },
+  "next_action": "S4-T05-DELL-R11-FRESH-AGENT-PROOF-EXACT-ADMISSION-AND-SINGLE-EXACT-LIVE-EXECUTION"
+}

@@ -1,0 +1,113 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r10_source_grounded_deterministic_baseline_materialization_decision_v1_0",
+  "decision_id": "S4-T05-DELL-R10-SOURCE-GROUNDED-DETERMINISTIC-BASELINE-MATERIALIZATION-DECISION-R1",
+  "decided_at": "2026-07-28T12:20:00+08:00",
+  "status": "pass_exact_same_input_source_grounded_baseline_materialization_contract_decided",
+  "authority": {
+    "user_instruction": "继续",
+    "success_only_paired_assessment_authorized": true,
+    "deterministic_baseline_materialization_authorized": true,
+    "agent_rerun_authorized": false,
+    "model_provider_source_or_tool_execution_authorized": false,
+    "owner_acceptance_write_authorized": false,
+    "S4_T06_release_or_production_authorized": false
+  },
+  "source_binding": {
+    "contract_ref": "fin01.s4.paired_case_local_deterministic_baseline:v1",
+    "source_decision_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_success_only_paired_baseline_source_decision_v1_0.json",
+    "source_agent_result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_profile_aware_artifact_lineage_exact_live_execution_success_result_v1_0.json",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "case_id": "case_7b5c2042bef3825b8df71a96",
+    "case_version": 1,
+    "analysis_as_of": "2026-07-26T00:00:00Z",
+    "decision_surface_ref": "p02_decision_surface_d31fd75b31ad8385e9d8376a:v1",
+    "input_head_digest": "ee76a3570f857bfd3341f21a6e3531d47d2d68581694a2bdbe2917a8de171c40",
+    "paired_input_head_digest": "8f95f74c3b6094ca18a143e615ffa33b75d92d9327af0758117a200b83f46c83",
+    "agent_profile_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+    "agent_research_run_id": "research_run_fin01_b90b55b0fdb0ddc69d166303"
+  },
+  "prospective_baseline": {
+    "baseline_variant": "s4_source_grounded_case_local",
+    "execution_identity": "fin01-s3-t09-paired-deterministic-baseline-materialization-r1",
+    "execution_profile_version_ref": "fin01.execution_profile.p36_local_deterministic:v1",
+    "work_unit_id": "wu_p02_5_31213a6e278215bff698b928",
+    "attempt_id": "attempt_fin01_5c465b4892b6b9e2efb70ed7",
+    "research_run_id": "research_run_fin01_fd8aa2814905b7e138444ee9",
+    "program_cell_ids": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "artifact_refs": {
+      "deterministic_research_result": "artifact_fin01_a358907b6fd9f70b6377ed69:v1",
+      "s3_three_cell_workpaper": "artifact_fin01_c9473812681dbc42744b50ea:v1",
+      "s3_three_cell_report": "artifact_fin01_3fdafdba2bd955c1925d9d35:v1",
+      "s3_three_cell_trace_review": "artifact_fin01_1defdbf79694fdcf0825ee0b:v1"
+    },
+    "double_prepare_equal": true,
+    "prospective_payload_digest": "e6a8d35919b3dfab0a3c0ca3b804019170a1ef747ffe4954a7c63db6efebb4a4",
+    "all_identities_absent_and_distinct_from_agent": true,
+    "materialized": false
+  },
+  "materialization_contract": {
+    "must_match_agent": [
+      "case_id",
+      "case_version",
+      "decision_surface_ref",
+      "analysis_as_of",
+      "input_head_digest",
+      "paired_input_head_digest",
+      "program_cell_ids"
+    ],
+    "must_be_distinct_from_agent": [
+      "work_unit_id",
+      "attempt_id",
+      "research_run_id",
+      "artifact_refs",
+      "execution_profile_version_ref"
+    ],
+    "exact_artifact_types": [
+      "deterministic_research_result",
+      "s3_three_cell_workpaper",
+      "s3_three_cell_report",
+      "s3_three_cell_trace_review"
+    ],
+    "source_grounding_required": {
+      "case_ticker": "DELL",
+      "source_pack_digest": "27842233fdc469d5824bdc30ba21b752e35948781254c20adb1fed38df3fe639",
+      "research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v3",
+      "legacy_P36_NVDA_preview_forbidden": true
+    },
+    "maximum_attempts": 1,
+    "retry_budget": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "evidence_promotions": 0,
+    "live_case_head_writes": 0,
+    "agent_reruns": 0,
+    "owner_acceptance_writes": 0
+  },
+  "preflight_safety": {
+    "project_os_scoped_preflight": "pass_zero_open_blockers",
+    "prospective_double_prepare": "pass_equal",
+    "target_database_sha256_before_and_after": "d365268831f7f5b46da53c9dd4e3d8c13e30c53679f4fa98877aef3d0cca611b",
+    "target_object_tree_sha256_before_and_after": "f4854420125961393f4f3f7de016e9fda8c95736d53937416243e2f9d96bce60",
+    "target_logical_snapshot_unchanged": true,
+    "target_canonical_writes": 0,
+    "target_object_writes": 0
+  },
+  "observed_counts": {
+    "baseline_materializations": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "agent_reruns": 0,
+    "owner_acceptance_writes": 0
+  },
+  "next_action": "S4-T05-DELL-R10-SOURCE-GROUNDED-DETERMINISTIC-BASELINE-EXACT-ONCE-MATERIALIZATION"
+}

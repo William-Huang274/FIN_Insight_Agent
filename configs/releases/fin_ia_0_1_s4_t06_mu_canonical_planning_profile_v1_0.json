@@ -1,0 +1,301 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_canonical_planning_profile_v1_0",
+  "profile_id": "FIN-IA-0.1-S4-T06-MU-CANONICAL-PLANNING-R1",
+  "status": "source_grounded_three_cell_planning_profile_ready",
+  "planning_profile": {
+    "compiler_policy_ref": "fin01.s4.mu_three_cell:v1",
+    "pack_selection_ref": "fin01.s4.mu_hbm_source_grounded:v1",
+    "exact_cell_count": 3,
+    "cells": [
+      {
+        "cell_key": "demand_authenticity_and_sustainability",
+        "decision_question": "Are MU HBM demand signals company-specific, convertible into recognized revenue, and durable after separating structural AI demand from memory-cycle and inventory effects?",
+        "owner_role": "industry_analyst",
+        "materiality": "high",
+        "dependency_cell_keys": [],
+        "stop_rule": "Stop before a durable-demand judgment if official company-bound HBM evidence and a memory-cycle or inventory counterindicator are not both available.",
+        "what_would_change": "official HBM qualification shipment or capacity change; inventory correction or demand digestion; customer deployment or concentration evidence; pricing or product mix change that alters conversion",
+        "evidence_slots": [
+          {
+            "evidence_role": "issuer_HBM_demand_or_capacity_signal",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "issuer_HBM_demand_or_capacity_signal"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "industry_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "issuer_shipment_revenue_or_mix_disclosure",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "issuer_shipment_revenue_or_mix_disclosure"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "industry_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "official_customer_or_qualification_corroboration",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "official_customer_or_qualification_corroboration"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "industry_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "memory_cycle_inventory_or_demand_counterevidence",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "memory_cycle_inventory_or_demand_counterevidence"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "industry_analyst",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "value_and_profit_capture",
+        "decision_question": "How much revenue, pricing, mix, gross profit, operating leverage and cash economics can be attributed to MU at company or exact issuer-disclosed product or segment scope?",
+        "owner_role": "financial_analyst",
+        "materiality": "high",
+        "dependency_cell_keys": [
+          "demand_authenticity_and_sustainability"
+        ],
+        "stop_rule": "Do not allocate company-total or broad memory economics to HBM, a generation, customer or shipment cohort without exact issuer-bound rows and period/unit scope.",
+        "what_would_change": "issuer_disclosed_HBM_or_product_economics; pricing volume or mix disclosure; gross margin and operating leverage inflection; inventory capex and cash conversion change",
+        "evidence_slots": [
+          {
+            "evidence_role": "issuer_financial_statement",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "issuer_financial_statement"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "financial_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "issuer_product_or_segment_disclosure",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "issuer_product_or_segment_disclosure"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "financial_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "official_pricing_volume_or_mix_disclosure",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "official_pricing_volume_or_mix_disclosure"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "financial_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "inventory_capex_and_cash_flow_rows",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "inventory_capex_and_cash_flow_rows"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "financial_analyst",
+            "required": true
+          },
+          {
+            "evidence_role": "cross_value_chain_profit_capture_comparison",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "cross_value_chain_profit_capture_comparison"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "financial_analyst",
+            "required": true
+          }
+        ]
+      },
+      {
+        "cell_key": "bottleneck_counterevidence_and_what_would_change",
+        "decision_question": "Which capacity, yield, customer-concentration, technology-ramp, export-control and memory-cycle mechanisms could break or qualify the MU HBM thesis?",
+        "owner_role": "risk_reviewer",
+        "materiality": "high",
+        "dependency_cell_keys": [
+          "demand_authenticity_and_sustainability"
+        ],
+        "stop_rule": "Do not close the Case without at least one company-bound cycle or capacity counterevidence route and one independent official followup target.",
+        "what_would_change": "capacity expansion delay acceleration or yield change; customer qualification concentration or digestion change; memory pricing inventory or cycle reversal; technology transition competitive or regulatory change",
+        "evidence_slots": [
+          {
+            "evidence_role": "official_capacity_yield_or_technology_ramp_signal",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "official_capacity_yield_or_technology_ramp_signal"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          },
+          {
+            "evidence_role": "customer_concentration_or_qualification_counterevidence",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "customer_concentration_or_qualification_counterevidence"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          },
+          {
+            "evidence_role": "memory_cycle_pricing_or_inventory_counterevidence",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "memory_cycle_pricing_or_inventory_counterevidence"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          },
+          {
+            "evidence_role": "export_control_or_regulatory_counterevidence",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "export_control_or_regulatory_counterevidence"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          },
+          {
+            "evidence_role": "independent_official_followup",
+            "entity_scope": [
+              "MU"
+            ],
+            "period_scope": "through_2026-07-26",
+            "metric_scope": [
+              "independent_official_followup"
+            ],
+            "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+            "forbidden_substitutions": [
+              "cross_issuer_fact",
+              "graph_edge_as_evidence",
+              "model_output_as_source"
+            ],
+            "acceptance_role": "risk_reviewer",
+            "required": true
+          }
+        ]
+      }
+    ]
+  }
+}

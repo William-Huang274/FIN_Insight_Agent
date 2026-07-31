@@ -1,0 +1,110 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r7_profile_v2_binding_exact_live_execution_authority_decision_v1_0",
+  "decision_id": "S4-T05-DELL-R7-PROFILE-V2-BINDING-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION-R1",
+  "decided_at": "2026-07-27T23:50:00+08:00",
+  "status": "authorized_R7_exact_once_execution_not_started",
+  "authority": {
+    "user_instruction": "继续，一直做到exact-live结束",
+    "R7_admission_exact_once_consumption_authorized": true,
+    "DELL_R7_exact_live_execution_authorized": true,
+    "automatic_retry_fallback_replay_relaunch_patch_or_rerun_authorized": false,
+    "paired_assessment_authorized_in_this_turn": false,
+    "human_review_or_owner_acceptance_authorized": false,
+    "S4_T06_or_later_authorized": false
+  },
+  "source_authority": {
+    "fresh_proof_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r7_profile_v2_binding_fresh_agent_proof_decision_v1_0.json",
+    "fresh_proof_sha256": "b46cafcb2efb60012d756be95664a66b6d237e796d087325fa37520dfcd0194d",
+    "admission_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r7_profile_v2_binding_fresh_exact_admission_r7.json",
+    "admission_file_sha256": "f14223aee3c804f5272f22ac48d0c31cb257b0aab6273839cd2b69a57c3d2d06",
+    "admission_id": "fin01-s4-t05-dell-r7-profile-v2-binding-fresh-exact-admission-r7",
+    "admission_digest": "2fe22c9769d84662d9344a5cf18d6500dc6d9e1f9b19f8f81084b080a8f957dc",
+    "issuance_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r7_profile_v2_binding_fresh_exact_admission_issuance_v1_0.json",
+    "issuance_file_sha256": "0637c9bf79b467a47cb5bc943e28f2fdd8792a3ce7c8f4a2a717ddb80c03a29c",
+    "project_os_preflight_ref": ".codex_runtime/s4_t05_dell_r7_execution_authority_project_os_preflight.json",
+    "project_os_preflight_sha256": "49a276ad6ebf009ad2682f0160cb308ea07cc3d85c7d4bd1554fea4e6d01d51b",
+    "runner_preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_r7_profile_v2_binding_r7_r1_live_execution_preflight.json",
+    "runner_preflight_sha256": "33119d54fc3dc2fe0de4c542e49a542f652a7ccd3a4e7892e02012260d4a7c64",
+    "host_capability_receipt_ref": ".codex_runtime/fin01-s3-t09-supervision-v2-final-host-capability-r1/host_capability_receipt.json",
+    "host_capability_receipt_sha256": "79199d2c39ab59f98b951e396d62a854834b7b6e9ad8c809da14a1f1a8862d1d"
+  },
+  "exact_execution_target": {
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "supervision_root": ".codex_runtime/fin01-s4-t05-dell-r7-profile-v2-binding-supervision-r1",
+    "output_prefix": "s4_t05_dell_r7_profile_v2_binding_r7_r1",
+    "case_id": "case_7b5c2042bef3825b8df71a96",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_d31fd75b31ad8385e9d8376a:v1",
+    "input_digest": "affb9eb031b9b8f85573fc7077f69a09b35e88a3ab6687dcd85f921b68b983a0",
+    "preparation_digest": "5acfa300fa7e5aff944455135d33902331f9b498ec04ccfc4522644ec00d510c",
+    "work_unit_id": "wu_p02_5_60a289c44e6b3b4c66c409bc",
+    "attempt_id": "attempt_fin01_edd02d2209af026b6fce532d",
+    "research_run_id": "research_run_fin01_32fda07ef9f6d273b30a1732",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "maximum_semantic_model_calls": 12,
+    "maximum_provider_calls": 12,
+    "maximum_network_calls": 12,
+    "maximum_output_tokens": 18000,
+    "maximum_total_cost_usd": 0.1,
+    "transport_retry_count": 0,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false
+  },
+  "pre_execution_verification": {
+    "project_os_full_chain_preflight": "pass",
+    "open_full_chain_blocker_count": 0,
+    "exact_runner_zero_call_preflight": "pass_exact_zero_call_execution_preflight",
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "provider_health_probe_performed": false,
+    "transport_retry_environment_zero": true,
+    "create_app_profile_overlay_preflight_passed": true,
+    "fresh_identity_absent": true,
+    "canonical_total_work_unit_attempt_run_artifact_counts_before": [
+      5,
+      5,
+      5,
+      0
+    ],
+    "exact_code_bindings": {
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py": "843e641c7ef37c71813ea59221394b373e7059ac5d489b0f805b8a898c3989cf",
+      "apps/workbench/backend/application/bounded_agent_executor.py": "774ae41e51e64bbbf9edf10f54d0ad7bfe19723e377de03bed2086afba4ecd74",
+      "apps/workbench/backend/application/evidence_service.py": "dab666d0d165589054c8e93ef7ec903952e9205e2c9d6e158c46a69407dfd078",
+      "apps/workbench/backend/application/research_runtime.py": "42512c3b8dfa6d0042d7f81d5175f863eff517ddf63a354c76f5a4aaa000e08d",
+      "src/sec_agent/s4_case_runtime.py": "98ba0973765321b98a12bb092fbb007e7e5657179e1b5d7c0fe6fad6125350a2",
+      "scripts/releases/run_fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution.py": "6ad66d922b9b38246601e08993cbe5d6da92fb11624389f8c7c48a45636b0eee",
+      "scripts/releases/supervise_fin_ia_0_1_s3_t09_exact_live_execution.py": "460245b87be6f17ede10b7afa89aac80b2a2a11d58deedf5089b0d8e8019ee92"
+    }
+  },
+  "success_contract": {
+    "terminal_states": [
+      "succeeded",
+      "succeeded",
+      "succeeded"
+    ],
+    "logical_node_count": 6,
+    "semantic_model_call_count": 12,
+    "artifact_count": 9,
+    "all_three_specialist_WWC_segments_consume_v8_atom_policy": true,
+    "research_lead_v6_and_gap_projection_live_observed": true,
+    "provider_atom_or_alias_residue_in_canonical_artifacts": 0,
+    "layered_acceptance_required_for_later_paired_assessment": true
+  },
+  "stop_contract": {
+    "first_credible_failure": "terminal_fail_closed_stop",
+    "paired_assessment_after_failure_allowed": false,
+    "automatic_second_execution_allowed": false,
+    "failure_disposition": "record_exact_live_terminal_result_and_stop"
+  },
+  "decision_boundary": {
+    "admission_consumed": false,
+    "execution_started": false,
+    "supervisor_launched": false,
+    "model_or_provider_call_started": false,
+    "paired_assessment_performed": false,
+    "S4_T06_entered": false
+  },
+  "next_action": "S4-T05-DELL-R7-PROFILE-V2-BINDING-EXACT-LIVE-EXECUTION"
+}

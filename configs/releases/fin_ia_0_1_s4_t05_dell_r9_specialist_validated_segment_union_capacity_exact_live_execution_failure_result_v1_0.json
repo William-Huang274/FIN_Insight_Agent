@@ -1,0 +1,176 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r9_specialist_validated_segment_union_capacity_exact_live_execution_failure_result_v1_0",
+  "result_id": "S4-T05-DELL-R9-SPECIALIST-VALIDATED-SEGMENT-UNION-CAPACITY-EXACT-LIVE-EXECUTION-FAILURE-RESULT-R1",
+  "recorded_at": "2026-07-28T05:00:00+08:00",
+  "status": "terminal_failed_after_complete_six_node_execution_at_profile_result_validation_no_retry_no_pairing",
+  "authority": {
+    "decision_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r9_specialist_validated_segment_union_capacity_exact_live_execution_and_paired_assessment_authority_decision_v1_0.json",
+    "decision_sha256": "c37828b968d30d9ebdeb03a91253a636300f79b536c09a1fb18579dfe8c127de",
+    "user_instruction": "继续",
+    "R9_exact_once_execution_authorized": true,
+    "success_only_paired_assessment_authorized": true,
+    "paired_assessment_performed": false,
+    "paired_assessment_not_performed_reason": "no coherent successful nine-Artifact Agent run exists",
+    "retry_fallback_replay_relaunch_patch_or_rerun_authorized_or_performed": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "admission": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r9_specialist_validated_segment_union_capacity_fresh_exact_admission_r9.json",
+    "file_sha256": "05592e970cd1646a31c43a5e37ed0896eb2733dc818266859dc91c283241bb2c",
+    "issuance_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r9_specialist_validated_segment_union_capacity_fresh_exact_admission_issuance_v1_0.json",
+    "issuance_sha256": "08ac58341f15683471c1ad35ba159c5ece3cd3ece7adbbe927fa5d2c65499b25",
+    "admission_id": "fin01-s4-t05-dell-r9-specialist-validated-segment-union-capacity-fresh-exact-admission-r9",
+    "admission_digest": "e7b98ed203087c926e33e7e71f3e5d4d0fe5cc16df57307105fdb85679491b43",
+    "issued": true,
+    "consumed": true,
+    "execution_started": true,
+    "execution_completed": true
+  },
+  "identity": {
+    "case_id": "case_7b5c2042bef3825b8df71a96",
+    "case_version": 1,
+    "input_digest": "f9868c5d7daa051adfccba1c1d2de9c1209d6781bfa76c4569aee76d640e230d",
+    "work_unit_id": "wu_p02_5_0f6c8d74d2a47a5a98ffe58b",
+    "attempt_id": "attempt_fin01_ad16ed80b2ed788d3924c614",
+    "research_run_id": "research_run_fin01_6566beb727cded66f3d54ead"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:profile_result_validation",
+    "terminal_consistent": true,
+    "event_count": 7,
+    "orphaned_run": false,
+    "artifact_count": 0,
+    "artifact_types": []
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_calls": 12,
+    "provider_calls": 12,
+    "network_calls": 12,
+    "all_completed_status": "ok",
+    "all_completed_finish_reason": "stop",
+    "transport_attempt_count": 12,
+    "input_tokens": 68854,
+    "output_tokens": 6574,
+    "total_tokens": 75428,
+    "estimated_cost_usd": 0.02832713,
+    "summed_provider_latency_ms": 82730,
+    "usage_receipt_count": 12,
+    "restricted_capture_count": 12,
+    "restricted_capture_readback_count": 12,
+    "assistant_output_text_in_tracked_result": false,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_case_head_writes": 0,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "replay_count": 0,
+    "relaunch_count": 0,
+    "rerun_count": 0
+  },
+  "completed_node_evidence": {
+    "completed_logical_node_receipt_count": 6,
+    "completed_nodes": [
+      "domain_specialist:demand_authenticity_and_sustainability",
+      "domain_specialist:value_and_profit_capture",
+      "domain_specialist:bottleneck_counterevidence_and_what_would_change",
+      "research_lead",
+      "memo_writer",
+      "verifier"
+    ],
+    "all_three_specialist_nodes_completed_under_profile_v3_capacity": true,
+    "research_lead_v6_completed": true,
+    "memo_writer_v3_completed": true,
+    "verifier_provider_call_completed_ok_stop": true,
+    "node_output_digests_persisted": true,
+    "canonical_business_artifacts_materialized": false
+  },
+  "first_credible_failure": {
+    "issue_id": "RC-P36-066-s4-R9-profile-result-validation-failure-after-complete-six-node-execution",
+    "stage": "profile_result_validation",
+    "lifecycle_phase": "profile_result_validation",
+    "failure_code": "s3_bounded_profile_result_validation_failed",
+    "classification": "typed_post_provider_profile_result_validation_failure_root_cause_unresolved",
+    "failed_after_all_six_logical_nodes_completed": true,
+    "specific_profile_subtype_persisted": false,
+    "specific_offending_artifact_or_field_persisted": false,
+    "model_instruction_noncompliance_established": false,
+    "project_owned_validation_or_assembly_fault_established": false,
+    "provider_transport_credential_or_network_failure": false,
+    "root_cause_disposition_completed": false
+  },
+  "typed_failure_envelope_result": {
+    "contract_ref": "fin01.bounded_agent.post_provider_failure_envelope:v1",
+    "RC_P36_064_live_positive_observability_proven_through_post_verifier_profile_validation": true,
+    "usage_receipts_preserved": 12,
+    "restricted_captures_preserved": 12,
+    "completed_logical_node_receipts_preserved": 6,
+    "observed_model_provider_network_counts": [
+      12,
+      12,
+      12
+    ],
+    "raw_provider_response_persisted_in_failure_observation": false,
+    "private_reasoning_persisted": false,
+    "credential_value_persisted": false,
+    "stack_or_raw_exception_message_persisted": false
+  },
+  "supervision": {
+    "contract_ref": "fin01.s3.exact_run_supervision:v2",
+    "launch_receipt_ref": ".codex_runtime/fin01-s4-t05-dell-r9-specialist-validated-segment-union-capacity-supervision-r1/launch_receipt.json",
+    "launch_receipt_sha256": "0a2ffa33c995a8a80c2a75d431d680e23e5d2c7deb7b4764b45fcb5543acd0af",
+    "exit_receipt_ref": ".codex_runtime/fin01-s4-t05-dell-r9-specialist-validated-segment-union-capacity-supervision-r1/exit_receipt.json",
+    "exit_receipt_sha256": "89c50f9bfb384ee53951bb3892e3bebf6e631a2abdae63bde4399cd6a4a7d878",
+    "runner_exit_code": 0,
+    "typed_unhandled_failure_code": null,
+    "self_finalized": true,
+    "monitor_mutations": 0,
+    "signals_sent": 0,
+    "automatic_retry_count": 0,
+    "fallback_count": 0,
+    "replay_count": 0,
+    "relaunch_count": 0
+  },
+  "runtime_evidence": {
+    "result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_r9_specialist_validated_segment_union_capacity_r9_r1_live_execution_result.json",
+    "result_sha256": "3f27db200959a8612aa90a5791a888d120929b0f197f76b2eb31afddecc2dfb2",
+    "terminal_inspection_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_r9_specialist_validated_segment_union_capacity_r9_r1_live_execution_terminal_inspection.json",
+    "terminal_inspection_sha256": "6bf9bd463a32ad2c08e625c49f90953d2f154796feedb42aea0b1e88e4f2658e",
+    "additional_inspection_model_provider_network_calls": [
+      0,
+      0,
+      0
+    ]
+  },
+  "root_cause_progress": {
+    "RC_P36_064": "closed_live_positive_observability_through_post_verifier_profile_validation_failure",
+    "RC_P36_065": "closed_live_path_positive_evidence_before_new_downstream_failure",
+    "RC_P36_066": "open_zero_call_root_cause_disposition_pending"
+  },
+  "stage_acceptance": {
+    "S4_T05": "blocked_no_coherent_success_no_nine_Artifacts",
+    "DELL_R2": "not_proven",
+    "paired_assessment": "not_performed_success_condition_false",
+    "owner_acceptance": "not_eligible",
+    "S4_T06": "not_entered",
+    "release_admission": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "deferred_sequence_items": [
+    "dependency_and_conflict_deterministic_assembly",
+    "Writer_and_Verifier_atomization",
+    "general_cross_node_judgment_atom_framework",
+    "cross_provider_strict_server_side_schema_matrix"
+  ],
+  "next_action": "S4-T05-DELL-R9-PROFILE-RESULT-VALIDATION-AFTER-SIX-NODE-COMPLETION-FIRST-CREDIBLE-FAILURE-ZERO-CALL-ROOT-CAUSE-DISPOSITION-DECISION"
+}

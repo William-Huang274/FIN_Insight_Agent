@@ -1,0 +1,199 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_r2_l1_numeric_identity_live_recurrence_root_cause_scope_disposition_v1_0",
+  "decision_id": "S4-T06-MU-R2-L1-NUMERIC-AUTHORITY-AND-CASE-IDENTITY-LIVE-RECURRENCE-ROOT-CAUSE-OR-SCOPE-DISPOSITION-DECISION-R1",
+  "recorded_at": "2026-07-29T20:30:00+08:00",
+  "status": "pass_zero_call_root_cause_confirmed_single_shared_runtime_safety_closure_bundle_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "decision_only": true,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "runtime_implementation_authorized": false,
+    "new_admission_or_exact_live_authorized": false,
+    "R3_owner_acceptance_or_S4_T07_authorized": false
+  },
+  "source_evidence": {
+    "paired_assessment_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r2_success_only_paired_assessment_result_v1_0.json",
+    "paired_assessment_sha256": "fe31c95f92ac9a2e41be6ace784498084839edf16c300f4006e6f6ac11414fa1",
+    "consumed_MU_R2_admission_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_fresh_exact_admission_r2.json",
+    "consumed_MU_R2_admission_sha256": "da4be08131d1115507e3fb0ad440d26a2e17d8fdc42a8e3479a061dea5aee365",
+    "reference_DELL_R11_admission_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r11_numeric_identity_fresh_exact_admission_r11.json",
+    "reference_DELL_R11_admission_sha256": "e88cdbf35d885ed998c0f7d0a0fd839b5235391004509e71461b6c95c48717c0",
+    "historical_numeric_identity_implementation_ref": "configs/releases/fin_ia_0_1_s4_t05_case_local_numeric_atom_deterministic_rendering_and_delivery_identity_minimum_zero_call_implementation_v1_0.json",
+    "historical_numeric_identity_implementation_sha256": "23fedcf1a96c48711278a201baab8c5cb30b2cd6a0c48b6aa1cdcaece975028d",
+    "MU_R2_fresh_proof_generator_ref": "scripts/releases/prepare_fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_fresh_proof.py",
+    "MU_R2_fresh_proof_generator_sha256": "4deeac8d4b157e745cd3014da16275de8c5324c2bbcbbc373a5ca581745de68a",
+    "executor_sha256": "76c5fe40dbbb523f6429158c1c1df530de534f9cbf1ada7da29f90a0fe43416d",
+    "contract_policies_sha256": "1fda11363c094b5e80db90ba10db0fbb8df459cfbc3a616a39e907d9311c9faa"
+  },
+  "confirmed_root_cause": {
+    "classification": "project_owned_cross_stage_admission_capability_binding_and_final_L1_parity_gap",
+    "not_source_pack_fault": true,
+    "not_provider_transport_or_network_fault": true,
+    "model_behavior": "DeepSeek authored material numeric statements that did not match the frozen MU Numeric authority, but the mandatory local numeric contract was absent from the consumed admission and therefore never constrained or replaced those statements.",
+    "earliest_owner": "S4 admission capability composition and admissibility closure before any Provider request",
+    "causal_chain": [
+      {
+        "order": 1,
+        "owner": "MU R1 admission lineage",
+        "finding": "The source MU R1 admission never bound case_numeric_authority_policy_ref or case_delivery_identity_policy_ref."
+      },
+      {
+        "order": 2,
+        "owner": "MU R2 fresh-proof admission derivation",
+        "finding": "The prospective R2 admission was created by model_copy from MU R1 while changing only admission identity, execution mode, input digest and Research Lead v7; the missing S4 numeric and identity policies were silently preserved as missing."
+      },
+      {
+        "order": 3,
+        "owner": "admission admissibility",
+        "finding": "The admission validator checks the numeric and identity policy pair only when either optional field is present, so an S4 case admission with both protections absent remains admissible."
+      },
+      {
+        "order": 4,
+        "owner": "transport compatibility gate",
+        "finding": "When the policy pair is present, the admissibility contract requires Research Lead v6 by exact version equality; it cannot express the independently valid Lead-v7 fact-presence capability together with numeric and identity safety."
+      },
+      {
+        "order": 5,
+        "owner": "runtime activation",
+        "finding": "CaseNumericAuthorityPolicy alias expansion, Provider numeric-token guards, CaseDeliveryIdentityPolicy projection, pre-Artifact numeric revalidation and local MU title assembly activate only when the admission binds the missing pair."
+      },
+      {
+        "order": 6,
+        "owner": "live delivery",
+        "finding": "With the pair inactive, Specialist free narrative retained stale material values and Memo Writer v3 had no identity projection, so its compatibility fallback emitted NVDA for the MU report."
+      },
+      {
+        "order": 7,
+        "owner": "proof and final acceptance parity",
+        "finding": "The MU full-fake and fresh proof asserted six nodes, twelve callbacks and nine Artifacts but did not require the S4 safety refs, manifest policy markers, final MU title or final-Artifact numeric correspondence; the machine Verifier then repeated the false negative."
+      }
+    ],
+    "RC_P36_067_disposition": "root_cause_confirmed_policy_bundle_not_bound_and_final_artifact_L1_parity_missing",
+    "RC_P36_068_disposition": "root_cause_confirmed_identity_projection_not_bound_compatibility_fallback_reached",
+    "duplicate_issue_created": false
+  },
+  "selected_single_implementation_bundle": {
+    "bundle_ref": "fin01.s4.case_runtime_mandatory_material_truth_and_identity_safety_closure:v1",
+    "maximum_zero_call_implementation_bundles": 1,
+    "automatic_follow_on_repair_bundles": 0,
+    "required_changes": [
+      {
+        "area": "mandatory_S4_admission_profile",
+        "contract": "Any input with s4_case_runtime must fail before Provider execution unless both fin01.s4.case_numeric_authority_projection_and_deterministic_rendering:v1 and fin01.s4.case_delivery_identity_projection:v1 are bound."
+      },
+      {
+        "area": "capability_based_transport_composition",
+        "contract": "Replace exact Research Lead v6 equality with explicit required capability predicates so Lead-v7 can compose with numeric and identity safety without silently inheriting Lead-v6 gap-atom behavior."
+      },
+      {
+        "area": "admission_derivation",
+        "contract": "Fresh admissions must be compiled from the current S4 mandatory safety profile, not cloned from an older consumed admission as the source of cumulative policy truth."
+      },
+      {
+        "area": "local_truth_ownership",
+        "contract": "Retain request-local numeric aliases, Provider numeric-token prohibition, local exact clause rendering, local case identity projection and content-free typed L1 failures from the existing policies."
+      },
+      {
+        "area": "final_Artifact_L1_envelope",
+        "contract": "Before commit, independently traverse every numeric- or identity-bearing final Artifact payload and prove exact value, unit, period, segment, sign and case identity correspondence without trusting the model Verifier or intermediate node validation."
+      },
+      {
+        "area": "fallback_removal",
+        "contract": "On the bound S4 path, missing identity projection is a typed L1 failure; no NVDA or other ticker compatibility fallback may be reachable."
+      },
+      {
+        "area": "proof_path_parity",
+        "contract": "DELL, MU and NVDA full-fake proofs must use the exact final nine-Artifact assembly path and assert policy refs, projection digests, local titles and independent L1 results. Removing either policy or mutating one final numeric or identity field must fail before acceptance."
+      }
+    ],
+    "scope_boundary": {
+      "included": [
+        "S4 admission safety-profile closure",
+        "numeric authority and case identity capability composition",
+        "final nine-Artifact L1 numeric and identity enforcement",
+        "DELL MU NVDA exact path-parity fixtures",
+        "typed zero-call failure telemetry"
+      ],
+      "excluded_and_carried_forward": [
+        "general dependency conflict gap or all-node atomization",
+        "L2 to L4 narrative quality work",
+        "strict-schema Sub2API transport",
+        "model or Provider replacement",
+        "new financial sources or source-pack edits",
+        "T07 through T10 and S5"
+      ]
+    }
+  },
+  "implementation_acceptance": {
+    "zero_model_provider_network_source_tool_calls": true,
+    "S4_input_without_numeric_identity_pair_fails_before_node_execution": true,
+    "Lead_v7_plus_existing_numeric_identity_policies_is_admissible_by_capability_not_exact_version": true,
+    "Lead_v7_does_not_implicitly_inherit_Lead_v6_gap_atom_projection": true,
+    "MU_exact_input_full_fake_completes_6_nodes_12_callbacks_9_Artifacts_with_MU_title": true,
+    "DELL_MU_NVDA_final_Artifact_path_parity_proven": true,
+    "all_final_numeric_surfaces_recompute_exact_authority_correspondence": true,
+    "machine_Verifier_green_cannot_override_independent_L1_failure": true,
+    "historical_consumed_admissions_Runs_and_Artifacts_remain_immutable": true,
+    "fresh_agent_proof_admission_issuance_exact_live_paired_and_owner_acceptance_require_separate_decisions": true
+  },
+  "stop_and_scope_replacement_rule": {
+    "one_bundle_only": true,
+    "if_bundle_cannot_close_all_acceptance_items": "stop_without_second_repair_bundle_and_replace_the_affected_product_scope_with_deterministic_numeric_and_identity_core_plus_Agent_qualitative_overlay_only_or_block_Agent_delivery",
+    "automatic_MU_R3": false,
+    "automatic_paid_reproof": false,
+    "T05_reopened": false
+  },
+  "rejected_alternatives": [
+    {
+      "option": "add_the_two_missing_fields_only_to_a_new_MU_admission",
+      "decision": "rejected",
+      "reason": "It would leave optional S4 safety, exact-version composition and proof parity defects available to recur in the next admission."
+    },
+    {
+      "option": "prompt_DeepSeek_to_copy_numbers_more_carefully",
+      "decision": "rejected",
+      "reason": "Material numeric truth and case identity are local L1 responsibilities and the consumed request did not activate their existing contracts."
+    },
+    {
+      "option": "switch_models_or_restore_strict_schema_transport",
+      "decision": "rejected_for_this_scope",
+      "reason": "The first failure is local admission composition; changing providers cannot close an absent project safety profile."
+    },
+    {
+      "option": "downgrade_the_findings_or_control_edit_immutable_R2_Artifacts",
+      "decision": "rejected",
+      "reason": "Numeric truth and issuer identity remain L1 hard integrity and historical Artifacts are immutable."
+    },
+    {
+      "option": "start_MU_R3_or_enter_T07",
+      "decision": "rejected",
+      "reason": "No implementation, fresh proof, new admission or exact-live authority exists."
+    }
+  ],
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "runtime_code_changes": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_assessments": 0,
+    "Human_reviews": 0
+  },
+  "stage_decision": {
+    "RC_P36_067": "root_cause_confirmed_single_shared_runtime_safety_closure_bundle_pending",
+    "RC_P36_068": "root_cause_confirmed_single_shared_runtime_safety_closure_bundle_pending",
+    "MU_R2": "failed_L1_immutable",
+    "S4_T06": "blocked_pending_separately_authorized_single_zero_call_implementation_bundle",
+    "owner_acceptance": "not_eligible",
+    "S4_T07": "blocked",
+    "S5": "blocked"
+  },
+  "next_action": "S4-T06-MU-CASE-RUNTIME-MANDATORY-MATERIAL-TRUTH-AND-IDENTITY-SAFETY-CLOSURE-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

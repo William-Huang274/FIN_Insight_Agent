@@ -1,0 +1,128 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T06-MU-RESEARCH-LEAD-CONFLICT-FACT-PRESENCE-LOCAL-DETERMINISTIC-MATERIALIZATION-MINIMUM-ZERO-CALL-IMPLEMENTATION-R1",
+  "implemented_at": "2026-07-29T16:30:00+08:00",
+  "status": "pass_zero_call_implementation_fixture_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "source_decision_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_summary_mismatch_root_cause_scope_disposition_v1_0.json",
+    "source_decision_sha256": "cb7e5210909f69c34038ba41a0ee4f668bd94d5d09e26fc8f07e8c3a9945b8f4",
+    "maximum_implementation_bundles": 1,
+    "implementation_bundles_consumed": 1,
+    "automatic_follow_on_repair_bundles": 0,
+    "fresh_agent_proof_admission_or_exact_live_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false
+  },
+  "implemented_contract": {
+    "transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v7",
+    "lineage": "research_lead_v5_plus_local_conflict_fact_presence_materialization_only",
+    "materialization_policy_ref": "fin01.s3.research_lead.conflict_fact_presence_local_materialization:v1",
+    "provider_owned_fields": [
+      "involved_claim_ids",
+      "terminal_state_summary",
+      "resolution_status",
+      "statement"
+    ],
+    "provider_emits_fact_presence_summary": false,
+    "canonical_output_requires_fact_presence_summary": true,
+    "local_source": "validated involved Claim Card direct support_fact_ids only",
+    "truth_table": {
+      "all_involved_claims_supported": "facts_present",
+      "no_involved_claims_supported": "no_facts_present",
+      "some_involved_claims_supported": "mixed_fact_presence"
+    },
+    "pre_materialization_alias_checks": [
+      "nonempty",
+      "unique",
+      "exact_case_sensitive_alias",
+      "claim_kind",
+      "scoped_surface_membership"
+    ],
+    "provider_attempt_to_emit_runtime_owned_field": "hard_shape_failure",
+    "silent_overwrite_or_repair_of_provider_value": false,
+    "v3_semantic_and_output_v4_canonical_validators_retained": true,
+    "v1_through_v6_request_and_runtime_behavior_preserved": true,
+    "lead_v6_gap_atom_projection_inherited": false,
+    "specialist_writer_verifier_financial_graph_method_provider_model_and_budget_changed": false
+  },
+  "fixture_proof": {
+    "focused_tests": "11 passed",
+    "all_supported": "facts_present",
+    "none_supported_despite_unrelated_specialist_facts": "no_facts_present",
+    "partially_supported": "mixed_fact_presence",
+    "repeated_assembly_digest_stable": true,
+    "unknown_claim_alias": "hard_scoped_identity_failure",
+    "wrong_kind_alias": "hard_scoped_identity_failure",
+    "duplicate_claim_alias": "hard_scoped_identity_failure",
+    "provider_owned_field_injection": "hard_item_schema_failure",
+    "v5_request_digest_unchanged_across_v7_compilation": true,
+    "v6_request_digest_unchanged_across_v7_compilation": true,
+    "MU_source_grounded_input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+    "MU_source_grounded_full_fake": {
+      "logical_nodes": 6,
+      "provider_callbacks": 12,
+      "provider_output_captures": 12,
+      "logical_artifacts": 9,
+      "manifest_recoverable_protocol_findings": 0,
+      "canonical_fact_presence_summary": "facts_present",
+      "provider_request_schema_contains_fact_presence_summary": false
+    },
+    "python_compile": "pass"
+  },
+  "historical_exact_binding_supersession": {
+    "reason": "The separately authorized Lead-v7 implementation advances the shared policy and executor while preserving all historical decisions admissions Runs captures failure truth and v1-v6 request behavior.",
+    "allowed_changed_paths": [
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+      "apps/workbench/backend/application/bounded_agent_executor.py",
+      "tests/contract/test_fin_0_1_s4_t05_research_lead_gap_atom_deterministic_projection_zero_call_implementation.py"
+    ],
+    "historical_artifacts_rewritten": false,
+    "consumed_MU_R1_reopened_or_reinterpreted": false
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "1fda11363c094b5e80db90ba10db0fbb8df459cfbc3a616a39e907d9311c9faa",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "76c5fe40dbbb523f6429158c1c1df530de534f9cbf1ada7da29f90a0fe43416d",
+    "tests/contract/test_fin_0_1_s4_t05_research_lead_gap_atom_deterministic_projection_zero_call_implementation.py": "2af44c8c4ee62fcaa06e2035d7527b174dc1b89eed7f5135338b2845e26fecae",
+    "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_zero_call_implementation.py": "2f5af9c1edb1fb7b7d421a6582318d80041de4459b145fc4e33d7577d3a2d1dc"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_assessments": 0,
+    "Human_reviews": 0
+  },
+  "verification": {
+    "focused_implementation": "11 passed",
+    "v3_v5_v6_disposition_and_v7_adjacent_regression": "65 passed",
+    "S4_T06_full_regression": "150 passed",
+    "python_compile": "pass",
+    "ruff": "not_run_module_not_installed",
+    "new_external_or_model_activity_during_verification": false,
+    "next_fresh_agent_proof_project_os_preflight": "pass_open_blockers_0",
+    "next_fresh_agent_proof_project_os_preflight_ref": ".codex_runtime/s4_t06_mu_fact_presence_local_materialization_fresh_agent_proof_project_os_preflight.json"
+  },
+  "stage_decision": {
+    "RC_P36_078": "minimum_zero_call_implementation_complete_fixture_proven_fresh_agent_proof_pending",
+    "S4_T06": "blocked_pending_separately_authorized_fresh_agent_proof_and_later_new_admission",
+    "MU_R1": "immutable_terminal_failure",
+    "MU_R2": "not_authorized_not_started",
+    "S4_T07_or_later": "not_entered",
+    "strict_schema_transport": "parked_unrelated"
+  },
+  "stop_rule": {
+    "fresh_proof_must_recompute_code_and_zero_call_fixture_bindings": true,
+    "new_admission_requires_separate_authority_after_proof": true,
+    "exact_live_requires_separate_authority_after_new_admission": true,
+    "implementation_failure_would_require_scope_decision_not_second_patch_bundle": true
+  },
+  "next_action": "S4-T06-MU-RESEARCH-LEAD-CONFLICT-FACT-PRESENCE-LOCAL-MATERIALIZATION-FRESH-AGENT-PROOF-DECISION"
+}

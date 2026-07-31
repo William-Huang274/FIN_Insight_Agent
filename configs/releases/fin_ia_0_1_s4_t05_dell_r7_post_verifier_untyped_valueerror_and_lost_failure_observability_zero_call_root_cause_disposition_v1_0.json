@@ -1,0 +1,211 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r7_post_verifier_untyped_valueerror_and_lost_failure_observability_zero_call_root_cause_disposition_v1_0",
+  "decision_id": "S4-T05-DELL-R7-POST-VERIFIER-UNTYPED-VALUEERROR-AND-LOST-FAILURE-OBSERVABILITY-ZERO-CALL-ROOT-CAUSE-DISPOSITION-R1",
+  "decided_at": "2026-07-27T23:59:30+08:00",
+  "status": "pass_zero_call_root_cause_disposed_typed_post_provider_failure_envelope_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "可以",
+    "authorized_scope": "S4-T05-DELL-R7-POST-VERIFIER-UNTYPED-VALUEERROR-AND-LOST-FAILURE-OBSERVABILITY-FIRST-CREDIBLE-FAILURE-ROOT-CAUSE-DISPOSITION-DECISION",
+    "zero_call_audit_and_disposition_authorized": true,
+    "runtime_repair_authorized": false,
+    "new_admission_or_R7_relaunch_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "restricted_capture_replay_authorized": false,
+    "paired_assessment_Human_review_S4_T06_S5_release_or_production_authorized": false
+  },
+  "source_failure": {
+    "issue_id": "RC-P36-064-s4-R7-post-verifier-untyped-valueerror-and-lost-failure-observability",
+    "result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r7_profile_v2_binding_exact_live_execution_failure_result_v1_0.json",
+    "result_sha256": "04f5dfc0b5cb1190ffe56966a9725045b50e3cbf87df929ad33a0ea783b0ffcf",
+    "research_run_id": "research_run_fin01_32fda07ef9f6d273b30a1732",
+    "canonical_states": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "terminal_reason": "bounded_agent_profile_error:ValueError",
+    "artifact_count": 0,
+    "gateway_completed_ok_stop_calls": 12,
+    "gateway_total_tokens": 76355,
+    "runtime_failure_observation": {},
+    "runtime_usage_receipt_count": 0,
+    "runtime_provider_output_capture_count": 0,
+    "raw_ValueError_message_persisted": false,
+    "retry_fallback_replay_relaunch_rerun": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "zero_call_evidence_audit": {
+    "bounded_executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "bounded_executor_sha256": "774ae41e51e64bbbf9edf10f54d0ad7bfe19723e377de03bed2086afba4ecd74",
+    "research_runtime_ref": "apps/workbench/backend/application/research_runtime.py",
+    "research_runtime_sha256": "42512c3b8dfa6d0042d7f81d5175f863eff517ddf63a354c76f5a4aaa000e08d",
+    "exact_runner_ref": "scripts/releases/run_fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution.py",
+    "exact_runner_sha256": "6ad66d922b9b38246601e08993cbe5d6da92fb11624389f8c7c48a45636b0eee",
+    "canonical_sqlite_access_mode": "direct_sqlite_uri_mode_ro",
+    "canonical_event_count": 7,
+    "canonical_failure_event_observation": {},
+    "verifier_provider_completion_proven": true,
+    "verifier_local_output_validation_failure_excluded": true,
+    "verifier_local_output_validation_exclusion_reason": "validate_post_node converts verifier output ValueError into BoundedAgentExecutionError with accumulated usage receipts and provider output captures, which is inconsistent with the observed bare ValueError terminal type and empty observation",
+    "remaining_reachable_bare_ValueError_families": [
+      "executor_post_verifier_exact_call_cardinality",
+      "adapter_artifact_set_validation",
+      "runtime_profile_result_and_cross_artifact_validation",
+      "runtime_trace_event_validation"
+    ],
+    "exact_throw_site_recoverable_from_immutable_evidence": false,
+    "non_recoverability_reason": "the runtime persisted only type(exc).__name__ for an untyped exception and did not persist an allowlisted failure code, stage, accumulated receipts, captures, or a safe traceback fingerprint",
+    "field_level_patch_evidence_sufficient": false
+  },
+  "root_cause_disposition": {
+    "immediate_failure": "a project-owned bare ValueError escaped after all 12 Provider calls had completed and before successful canonical completion",
+    "first_proven_project_fault": "post-provider failure observability ownership is split across executor exception attributes and the runtime catch, so untyped downstream exceptions discard already accumulated execution receipts and captures",
+    "structural_root_cause": "the bounded execution lifecycle has typed terminal envelopes for selected node validators but no total typed failure boundary covering post-node accounting, Artifact assembly, adapter conversion, runtime result validation, and trace recording",
+    "secondary_control_gap": "terminal_reason preserves only the Python exception class for untyped failures and therefore cannot distinguish an allowlisted invariant code or lifecycle phase",
+    "classification": "L1_project_owned_typed_failure_envelope_and_canonical_observability_gap",
+    "exact_R7_throw_site": "not_recoverable_without_forbidden_guess_or_new_execution",
+    "model_instruction_noncompliance_established": false,
+    "provider_transport_or_credential_failure": false,
+    "gateway_ledger_or_runner_reporting_is_primary_root_cause": false,
+    "verifier_schema_or_model_patch_selected": false
+  },
+  "selected_minimum_implementation_contract": {
+    "contract_ref": "fin01.bounded_agent.post_provider_failure_envelope:v1",
+    "scope": "bounded executor through adapter and runtime pre-commit lifecycle only",
+    "single_lifecycle_phase_enum": [
+      "node_envelope_accounting",
+      "post_node_validation",
+      "post_verifier_call_accounting",
+      "execution_artifact_assembly",
+      "adapter_output_conversion",
+      "profile_artifact_ref_binding",
+      "profile_result_validation",
+      "profile_trace_recording"
+    ],
+    "typed_terminal_envelope_required_after_first_provider_receipt": true,
+    "required_safe_fields": [
+      "contract_ref",
+      "lifecycle_phase",
+      "failure_code",
+      "observed_counts",
+      "usage_receipts",
+      "estimated_cost_usd",
+      "provider_output_captures",
+      "completed_node_receipts",
+      "raw_output_persisted",
+      "private_reasoning_persisted"
+    ],
+    "failure_code_policy": {
+      "allowlisted_content_free_codes_only": true,
+      "raw_exception_message_or_stack_persisted": false,
+      "unknown_exception_code": "bounded_agent_unclassified_local_failure",
+      "unknown_exception_must_preserve_lifecycle_phase_and_accumulated_observation": true
+    },
+    "observation_ownership": {
+      "executor_or_shared_lifecycle_context_owns_accumulator": true,
+      "adapter_and_runtime_may_extend_but_not_replace_observation": true,
+      "runtime_must_not_depend_on_optional_exception_attributes_as_the_only_receipt_source": true,
+      "canonical_RESEARCH_RUN_FAILED_must_receive_the_safe_envelope": true,
+      "runner_must_continue_to_derive_failure_summary_from_canonical_truth": true
+    },
+    "terminal_semantics": {
+      "Artifact_commit_on_failure": false,
+      "automatic_retry_fallback_replay_relaunch_or_rerun": false,
+      "existing_hard_invariants_weakened": false,
+      "layered_quality_findings_reclassified": false,
+      "historical_R7_failure_or_admission_rewritten": false
+    }
+  },
+  "minimum_implementation_acceptance": {
+    "deterministic_fault_injection_phases": [
+      "post_verifier_call_accounting",
+      "execution_artifact_assembly",
+      "adapter_output_conversion",
+      "profile_result_validation",
+      "profile_trace_recording"
+    ],
+    "each_fault_terminalizes_once_with_typed_phase_and_allowlisted_code": true,
+    "twelve_call_fault_fixture_preserves_12_usage_receipts_and_12_restricted_captures": true,
+    "canonical_observed_counts_equal_accumulated_receipts": true,
+    "raw_provider_text_private_reasoning_credentials_and_stack_trace_absent": true,
+    "failure_creates_zero_business_Artifacts_and_zero_retry": true,
+    "success_fixture_still_materializes_6_logical_nodes_12_calls_and_9_Artifacts": true,
+    "historical_zero_call_and_failure_contracts_remain_immutable": true,
+    "no_new_live_execution_until_implementation_and_fresh_proof_are_separately_accepted": true
+  },
+  "rejected_and_deferred_alternatives": [
+    {
+      "option": "assume_the_exact_call_cardinality_check_was_the_R7_throw_site_and_patch_only_that_raise",
+      "decision": "rejected",
+      "reason": "the concrete ValueError message was not persisted and multiple downstream bare ValueError sites remain reachable"
+    },
+    {
+      "option": "log_str_exc_or_full_traceback_in_terminal_reason",
+      "decision": "rejected",
+      "reason": "unbounded messages and stack data are not a stable secret-safe institutional contract"
+    },
+    {
+      "option": "recover_observation_only_from_gateway_events_after_failure",
+      "decision": "rejected_as_primary_contract",
+      "reason": "the gateway is corroborating evidence but does not own canonical node receipts, cache allocation, lifecycle phase, or local invariant codes"
+    },
+    {
+      "option": "weaken_Verifier_artifact_or_profile_validators_to_force_R7_success",
+      "decision": "rejected",
+      "reason": "no exact failing invariant has been proven and fail-closed research integrity must remain unchanged"
+    },
+    {
+      "option": "generalize_all_runtime_exception_taxonomies_or distributed tracing now",
+      "decision": "deferred_to_S4_T10_to_S5",
+      "reason": "the current blocker requires one bounded lifecycle envelope and deterministic phase fault tests, not a platform-wide observability redesign"
+    }
+  ],
+  "R7_and_sequence_disposition": {
+    "R7_admission": "consumed_immutable_not_relaunchable",
+    "R7_failure_result": "immutable",
+    "R7_second_execution_allowed": false,
+    "RC_P36_062_status": "R7_specialist_v8_completed_all_9_segments_ok_stop_no_truncation_recurrence",
+    "RC_P36_061_status": "R7_research_lead_v6_completed_ok_stop_but_success_artifacts_not_materialized",
+    "RC_P36_064_status": "root_cause_disposed_typed_failure_envelope_implementation_pending",
+    "DELL_R2": "not_proven",
+    "paired_assessment": "not_authorized_after_failed_R7",
+    "S4_T06": "not_entered",
+    "deferred_sequence_items": [
+      "dependency_and_conflict_deterministic_assembly",
+      "Writer_and_Verifier_atomization",
+      "general_multi_case_failure_taxonomy",
+      "cross_provider_strict_schema_capability_matrix"
+    ]
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "restricted_capture_reads": 0,
+    "runtime_code_changes": 0,
+    "new_admissions": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_assessments": 0,
+    "Human_Reviews": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_064": "root_cause_disposed_typed_post_provider_failure_envelope_selected_implementation_pending",
+    "S4_T05": "blocked_pending_separately_authorized_minimum_zero_call_implementation",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "S5": "blocked_by_S4",
+    "release_admission": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S4-T05-DELL-R7-TYPED-POST-PROVIDER-FAILURE-ENVELOPE-AND-CANONICAL-OBSERVABILITY-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

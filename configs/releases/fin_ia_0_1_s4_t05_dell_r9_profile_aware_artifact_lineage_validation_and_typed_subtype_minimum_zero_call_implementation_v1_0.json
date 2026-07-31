@@ -1,0 +1,94 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r9_profile_aware_artifact_lineage_validation_and_typed_subtype_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T05-DELL-R9-PROFILE-AWARE-ARTIFACT-LINEAGE-VALIDATION-AND-TYPED-SUBTYPE-ZERO-CALL-R1",
+  "implemented_at": "2026-07-28T10:10:00+08:00",
+  "status": "pass_zero_call_implementation_full_fake_s4_chain_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "你直接一直做，做到这轮的exact live跑完再返回我结果",
+    "implementation_fresh_proof_new_admission_and_exact_once_live_authorized": true,
+    "paired_assessment_owner_acceptance_S4_T06_or_broader_redesign_authorized": false
+  },
+  "source_disposition": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r9_profile_result_validation_after_six_node_completion_zero_call_root_cause_disposition_v1_0.json",
+    "sha256": "b520fecd4b68dbc77bfe78e0e5d1191a0b6c2a113607c0e3db9a5f98e28d8b21",
+    "issue_id": "RC-P36-066-s4-R9-profile-result-validation-failure-after-complete-six-node-execution"
+  },
+  "contract_ref": "fin01.bounded_agent.profile_aware_artifact_lineage_validation:v1",
+  "implementation": {
+    "lineage_families": {
+      "legacy_s3": 6,
+      "s4_base": 4,
+      "s4_research_profile_overlay": 5
+    },
+    "manifest_stamps_contract_family_and_canonical_lineage_digest": true,
+    "trace_digest_must_equal_manifest": true,
+    "s4_case_method_runtime_source_and_overlay_refs_and_digests_align": true,
+    "all_nine_artifacts_share_one_s4_projection": true,
+    "unknown_missing_extra_cross_family_digest_or_overlay_mismatch_is_L1_hard": true,
+    "provider_selects_lineage_keys_or_digests": false,
+    "new_specialist_lead_writer_or_verifier_transport_version": false
+  },
+  "typed_failure": {
+    "telemetry_family": "profile_artifact_lineage",
+    "allowlisted_subtypes": [
+      "bounded_agent_profile_lineage_contract_mismatch",
+      "bounded_agent_profile_lineage_digest_mismatch",
+      "bounded_agent_profile_lineage_overlay_mismatch"
+    ],
+    "required_safe_fields": [
+      "validation_contract_ref",
+      "validation_subtype",
+      "artifact_type",
+      "lineage_family",
+      "raw_output_persisted",
+      "private_reasoning_persisted",
+      "credential_persisted",
+      "stack_persisted"
+    ],
+    "raw_provider_output_field_value_exception_message_private_reasoning_credential_or_stack_persisted": false
+  },
+  "code_bindings": {
+    "policy_ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+    "policy_sha256": "29bc933b3dc37021712bb14775f04d6f72d2cfaf7f4190de6b22e27ba8156cb6",
+    "executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "executor_sha256": "dbe20dd605d379f54cd9fdc6f52a76cffd86edf2c696c3864dcb83a5b0935253",
+    "runtime_ref": "apps/workbench/backend/application/research_runtime.py",
+    "runtime_sha256": "b5a09e7559de6bf166e8beefcc7245dea6f4cec938ac99f4f35f48f8ce45fb9d",
+    "canonical_facade_ref": "src/sec_agent/canonical_runtime/facade.py",
+    "canonical_facade_sha256": "d3e238452305489d898af634081080aacd2df064efd0dab36b59c90f1c89e01c"
+  },
+  "fixture_proof": {
+    "legacy_s3_s4_base_s4_profile_v2_and_v3_positive": true,
+    "missing_extra_wrong_digest_and_overlay_mismatch_negative": true,
+    "full_fake_provider_logical_nodes": 6,
+    "full_fake_provider_callbacks": 12,
+    "full_fake_provider_logical_artifacts": 9,
+    "adapter_artifact_binding_and_profile_validation_passed": true,
+    "fault_usage_receipts_restricted_captures_completed_node_receipts": [12, 12, 6],
+    "fault_business_artifacts": 0,
+    "test_ref": "tests/contract/test_fin_0_1_s4_t05_dell_r9_profile_aware_artifact_lineage_validation_and_typed_subtype_minimum_zero_call_implementation.py",
+    "test_sha256": "8ce794a523ccae1fed2ad7bbb9493fc3641c15d64a3c559c485ea33e34f2f1b7"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_business_writes": 0
+  },
+  "historical_immutability": {
+    "R9_admission_or_result_rewritten": false,
+    "R9_second_execution": false,
+    "automatic_retry_fallback_replay_or_rerun": false
+  },
+  "stage_acceptance": {
+    "RC_P36_066": "zero_call_implementation_fixture_proven_fresh_agent_proof_pending",
+    "S4_T05": "blocked_pending_fresh_proof_new_admission_and_exact_live",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "release_admission": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S4-T05-DELL-R10-PROFILE-AWARE-ARTIFACT-LINEAGE-FRESH-AGENT-PROOF-DECISION"
+}

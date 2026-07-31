@@ -1,0 +1,136 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_evidence_role_group_mapping_actual_dispatch_preflight_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T05-DELL-EVIDENCE-ROLE-GROUP-MAPPING-AND-ACTUAL-DISPATCH-PREFLIGHT-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-26T23:09:43+08:00",
+  "status": "pass_zero_call_implementation_fixture_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "zero_call_runtime_schema_dispatch_and_preflight_implementation_authorized": true,
+    "replacement_admission_or_exact_execution_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "paired_assessment_Human_review_S4_T06_or_later_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "implemented_contracts": {
+    "role_group_mapping_ref": "fin01.s4.case_evidence_role_group_mapping:v1",
+    "slot_alignment_ref": "fin01.s4.case_evidence_slot_alignment:v1",
+    "cross_case_semantic_axis": "program_cell_id",
+    "slot_resolution_key": [
+      "program_cell_id",
+      "exact_evidence_role"
+    ],
+    "mapping_source": "S4CaseRuntimeBinding.program_cell_contracts.required_evidence_roles",
+    "mapping_is_derived_not_ticker_authored": true,
+    "runtime_plan_carries_mapping_digest": true,
+    "actual_Runtime_and_exact_preflight_share_dispatcher": "compile_profile_evidence_dispatch",
+    "legacy_S3_fixture_route_path_preserved": true,
+    "S4_fixture_candidate_fallback_present": false
+  },
+  "case_coverage": {
+    "DELL": {
+      "program_cell_count": 3,
+      "role_group_counts": [
+        4,
+        5,
+        5
+      ],
+      "exact_role_count": 14,
+      "all_roles_resolved_once": true
+    },
+    "MU": {
+      "program_cell_count": 3,
+      "role_group_counts": [
+        4,
+        5,
+        5
+      ],
+      "exact_role_count": 14,
+      "all_roles_resolved_once": true
+    }
+  },
+  "fail_closed_matrix": {
+    "missing_role": "pass",
+    "extra_role": "pass",
+    "duplicate_role": "pass",
+    "unknown_cell": "pass",
+    "wrong_cell": "pass_via_exact_cell_role_set_mismatch",
+    "wrong_acceptance_owner": "pass",
+    "wrong_entity_scope": "pass",
+    "duplicate_cell_owner": "pass",
+    "runtime_plan_mapping_digest_tamper": "pass",
+    "ticker_specific_mapping_branch_absent": true,
+    "synthetic_generic_slot_absent": true,
+    "S4_fixture_candidate_fallback_absent": true
+  },
+  "runtime_preflight_parity": {
+    "case_ticker": "DELL",
+    "target_runtime_mutated": false,
+    "disposable_clone_used": true,
+    "same_execution_identity_used": true,
+    "actual_Runtime_reached_shared_dispatch_before_executor": true,
+    "role_group_mapping_digest_equal": true,
+    "slot_alignment_digest_equal": true,
+    "evidence_dispatch_digest_equal": true,
+    "actual_Runtime_test_uses_intentionally_incomplete_static_artifact_fixture": true,
+    "actual_Runtime_test_terminal_completion_claimed": false
+  },
+  "full_fake_provider_fixture": {
+    "case_ticker": "DELL",
+    "logical_nodes": 6,
+    "local_fake_provider_callbacks": 12,
+    "provider_output_captures": 12,
+    "logical_artifacts": 9,
+    "terminal_reason": "s3_bounded_agent_three_cell_execution_succeeded",
+    "real_model_calls": 0,
+    "real_provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_writes": 0
+  },
+  "historical_contract_disposition": {
+    "S4_T04_issued_admission_consumed_and_failed": true,
+    "historical_exact_code_hash_binding_still_equal_to_current_code": false,
+    "reason": "this separately authorized implementation intentionally supersedes the code bytes frozen by the consumed S4-T04 admission",
+    "historical_admission_or_Run_rewritten": false,
+    "fresh_proof_required_before_any_replacement_admission": true
+  },
+  "verification": {
+    "focused_implementation_tests": "14 passed",
+    "adjacent_initial_regression": "32 passed",
+    "adjacent_extended_regression": "30 passed",
+    "historical_S4_T04_non_hash_checks": "5 passed",
+    "historical_S4_T04_hash_check": "expected_supersession_detected",
+    "legacy_live_runner_regression": "inconclusive_local_timeout_no_test_result",
+    "python_compileall": "pass",
+    "Project_OS_implementation_scope_preflight": "pass"
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_executor.py": "6001eebdaaaf32248910be1c54fb263ee7773daa6a58ba8e972472f1070ba638",
+    "apps/workbench/backend/application/evidence_service.py": "dab666d0d165589054c8e93ef7ec903952e9205e2c9d6e158c46a69407dfd078",
+    "apps/workbench/backend/application/research_runtime.py": "6b2b8ca54faedb387c056cc86cb917f42103a4cdb421db3c69b4f6535d6a46fb",
+    "src/sec_agent/s4_case_runtime.py": "4b2e49e1b2360831438f1751d39eb5af1d8619f6d2dd346f78bec5b2c3834c20",
+    "scripts/releases/run_fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution.py": "468923d3700fc1b25766863fc5cf48f0712ed5986aa4399c23db89b66e35966c",
+    "scripts/releases/prepare_fin_ia_0_1_s4_t04_dell_source_grounded_input_and_fresh_proof.py": "dd00ef3ee6e3fe1a28993abedaf30f029af529a21964ec89311393529a12a886",
+    "tests/contract/test_fin_0_1_s4_t05_evidence_role_group_mapping_actual_dispatch_preflight_implementation.py": "75c143cb7aef9eaf15087c033e70fe7bd940efea68f1a4b5abfccf9bd3393247"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "target_work_units_attempts_runs_or_artifacts_created": 0,
+    "target_canonical_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_058": "implementation_fixture_proven_fresh_agent_proof_pending",
+    "S4_T05": "blocked_pending_fresh_agent_proof_and_later_separate_replacement_admission",
+    "DELL_R2": "not_proven",
+    "S4_T06_or_later": "not_authorized",
+    "release_or_production": "not_authorized"
+  },
+  "next_action": "S4-T05-DELL-EVIDENCE-ROLE-GROUP-MAPPING-REPAIR-FRESH-AGENT-PROOF-DECISION"
+}

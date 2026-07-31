@@ -1,0 +1,147 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t04_dell_provider_canary_need_and_fresh_agent_proof_decision_v1_0",
+  "decision_id": "S4-T04-DELL-PROVIDER-CANARY-NEED-AND-FRESH-AGENT-PROOF-DECISION-R1",
+  "decided_at": "2026-07-26T18:24:10+08:00",
+  "status": "blocked_zero_call_canary_omitted_source_grounded_exact_input_head_missing_no_fresh_proof_or_admission",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "S4-T04 zero-call canary-need and fresh-proof decision only",
+    "not_authorized_or_executed": [
+      "source_route_execution_or_fact_retrieval",
+      "canonical_DELL_Case_or_DecisionSurface_write",
+      "model_provider_or_paid_call",
+      "exact_admission_issuance_or_consumption",
+      "exact_live_or_business_Artifact",
+      "paired_assessment_or_Human_review",
+      "S4_T05_or_later"
+    ]
+  },
+  "source_refs": {
+    "DELL_case_pack": {
+      "ref": "configs/releases/fin_ia_0_1_s4_t02_dell_oem_exact_case_pack_v1_0.json",
+      "sha256": "71e7fb3ba56275760f0d2b84006d30fd192a15ad9be234740dc336cd4a15217e"
+    },
+    "S4_T03_decision": {
+      "ref": "configs/releases/fin_ia_0_1_s4_t03_case_runtime_injection_and_leakage_preflight_v1_0.json",
+      "sha256": "a2a187558ae8b1c1f3b29221ab83d2b972121dcbb1fda9ddaa22823f46a3a812"
+    },
+    "P34_source_route_plan": {
+      "ref": "docs/project_os/p34_ai_semis_source_route_plan_v0_1.json",
+      "sha256": "e46d13ec77381e9c28e9c98dc41bfa6fa7ac8e85f7c3a1175676eb306981e52e"
+    }
+  },
+  "provider_only_canary_decision": {
+    "decision": "omit",
+    "named_provider_only_risk": null,
+    "reason": "DELL changes case identity, research profile and method context only; provider, model, endpoint, response schema, transport, capture, supervision, retry-zero and terminal contracts are unchanged. A one-node canary would not prove six-node cross-Cell product coherence.",
+    "unchanged_provider_surfaces": [
+      "provider_deepseek",
+      "model_deepseek_v4_pro",
+      "beta_endpoint",
+      "specialist_transport_v7",
+      "research_lead_transport_v5",
+      "memo_writer_transport_v3",
+      "output_contract_v4",
+      "verifier_state_machine_v2",
+      "provider_output_capture_policy_v1",
+      "exact_run_supervision_v2",
+      "retry_fallback_replay_relaunch_rerun_zero"
+    ],
+    "changed_non_provider_surfaces": [
+      "issuer_identity_NVDA_to_DELL",
+      "case_profile_and_research_profile",
+      "case_local_method_context",
+      "case_local_input_head"
+    ],
+    "paid_canary_calls_authorized_or_performed": 0
+  },
+  "upstream_exact_input_readiness": {
+    "DELL_case_pack_fact_counts": {
+      "evidence_rows": 0,
+      "numeric_rows": 0,
+      "graph_edges": 0,
+      "claims": 0,
+      "judgments": 0,
+      "preaccepted_conclusions": 0
+    },
+    "canonical_CaseVersion_id": null,
+    "DELL_source_route_count": 11,
+    "DELL_routes_planned_not_executed": 11,
+    "DELL_routes_promotable_without_execution": 0,
+    "parser_backed_promotable_DELL_evidence_rows": 0,
+    "source_grounded_exact_input_head_available": false,
+    "canonical_runtime_audit": {
+      "available": true,
+      "database_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/canonical-runtime/canonical.sqlite",
+      "database_sha256": "c9d801f05b15a0693afddad9e488d8176261b02020caea08c5781d4c71787fe5",
+      "DELL_rows": {
+        "canonical_research_cases": 0,
+        "canonical_decision_surface_contract_versions": 0,
+        "canonical_work_units": 0,
+        "canonical_attempts": 0,
+        "canonical_research_run_versions": 0
+      },
+      "table_totals": {
+        "canonical_research_cases": 1,
+        "canonical_decision_surface_contract_versions": 1,
+        "canonical_work_units": 72,
+        "canonical_attempts": 48,
+        "canonical_research_run_versions": 48
+      },
+      "all_DELL_rows_absent": true,
+      "read_only": true,
+      "database_unchanged": true
+    }
+  },
+  "fresh_agent_proof": {
+    "decision": "not_frozen_fail_closed",
+    "reason": "A runnable exact proof cannot bind a non-existent source-grounded DELL input head or canonical CaseVersion.",
+    "work_unit_id": null,
+    "attempt_id": null,
+    "research_run_id": null,
+    "input_digest": null,
+    "preparation_digest": null,
+    "prospective_admission": null,
+    "admission_issued": false,
+    "admission_consumed": false,
+    "execution_started": false
+  },
+  "exact_code_bindings": {
+    "src/sec_agent/s4_case_runtime.py": "5a2b2788de249cc78c4f25127953cea16b56d2c7b9bdb6e5a4ec68b51cb51965",
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "45e9fccc125c2c15d88fee6689724492d4524d251c8d843f94daeccc77cb37d2",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "b46b830be83131b9a3f1d0e832913d82b2b23cc08d2a7c77fed9c389455c5323",
+    "scripts/releases/run_fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution.py": "3398a833fbae31a27a868f373b43797b5f471b035ebd30deafb238979433c76e",
+    "scripts/releases/supervise_fin_ia_0_1_s3_t09_exact_live_execution.py": "460245b87be6f17ede10b7afa89aac80b2a2a11d58deedf5089b0d8e8019ee92"
+  },
+  "root_cause_disposition": {
+    "issue_id": "RC-P36-056-s4-dell-source-grounded-exact-input-head-and-canonical-case-gap",
+    "status": "open_owned_pre_admission_source_grounded_input_gap",
+    "full_chain_blocker": true,
+    "model_quality_issue": false,
+    "earliest_faulty_artifact": "S4 detailed flow advances from fact-empty T03 fixture to fresh exact admission without a source-grounded DELL CaseVersion and input-head materialization step.",
+    "required_fix": "Execute and parse bounded official DELL routes, admit only issuer-bound Evidence/Numeric/Graph rows, materialize the canonical DELL CaseVersion and exact input head, then rerun fresh nonreuse proof before any admission issuance."
+  },
+  "observed_counts": {
+    "source_route_execution_calls": 0,
+    "source_fact_retrieval_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "paid_calls": 0,
+    "canonical_case_writes": 0,
+    "canonical_run_writes": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "business_artifacts": 0,
+    "human_reviews": 0
+  },
+  "stage_decision": {
+    "S4": "in_progress",
+    "S4_T04_canary_decision": "pass_omit",
+    "S4_T04_fresh_proof": "blocked_owned_upstream_input_gap",
+    "S4_T04_complete": false,
+    "S4_T05": "blocked",
+    "DELL_R2": "not_started",
+    "S4_pass": false
+  },
+  "next_action": "S4-T04-DELL-SOURCE-GROUNDED-EXACT-INPUT-HEAD-MATERIALIZATION-AND-FRESH-PROOF-REPAIR"
+}

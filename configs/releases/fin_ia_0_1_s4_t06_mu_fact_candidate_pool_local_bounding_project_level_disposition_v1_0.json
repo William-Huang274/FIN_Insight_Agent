@@ -1,0 +1,137 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_fact_candidate_pool_local_bounding_project_level_disposition_v1_0",
+  "decision_id": "S4-T06-MU-FACT-CANDIDATE-POOL-LOCAL-BOUNDING-PROJECT-LEVEL-DISPOSITION",
+  "recorded_at": "2026-07-31T01:00:00+08:00",
+  "status": "project_level_disposition_complete_T06_live_product_blocked_no_second_replacement",
+  "authority": {
+    "user_instruction": "按照这个顺序修",
+    "authorized_sequence": [
+      "independent_fresh_zero_call_reproof",
+      "one_replacement_exact_live",
+      "success_only_paired_and_owner_acceptance",
+      "new_L1_one_project_level_disposition_only",
+      "no_R8_R9_field_patch_loop"
+    ],
+    "sequence_observed": true
+  },
+  "source_result": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t06_mu_wwc_stable_top3_replacement_r1_exact_live_failure_result_v1_0.json",
+    "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t06_mu_wwc_stable_top3_replacement_r1_live_execution_result.json",
+    "runtime_result_sha256": "1d70bc89c04c59bcb5033b98a09b2afd4a61b3d0b7c7cf751898daeb5990715f",
+    "restricted_failure_capture_digest": "8c27b67bb82a7bb4717d2963cda9bc796a9adabc4d2db096aff20b2689f740a2"
+  },
+  "root_cause": {
+    "issue_id": "RC-P36-084-s4-t06-fact-candidate-pool-cardinality-model-surface",
+    "layer": "shared_runtime_fact_candidate_generation_and_selection_boundary",
+    "symptom": "DeepSeek returned all twenty-two visible legal fact support aliases although the request declared provider_candidate_maximum=6.",
+    "direct_failure": "s4_compiled_fact_atom_shape_invalid",
+    "model_cardinality_instruction_noncompliance_established": true,
+    "project_owned_robustness_gap_established": true,
+    "project_owned_robustness_gap": "The system made one-shot model list cardinality compliance a hard precondition while exposing a much larger legal alias catalog.",
+    "not_caused_by": [
+      "transport_failure",
+      "invalid_JSON",
+      "finish_reason_length",
+      "output_byte_overflow",
+      "credential_or_endpoint_failure",
+      "numeric_authority_false_positive",
+      "WWC_candidate_selected_cardinality_drift"
+    ]
+  },
+  "options_considered": [
+    {
+      "option": "increase_or_remove_fact_candidate_maximum",
+      "selected": false,
+      "reason": "weakens focus and can amplify downstream cost and quality variance"
+    },
+    {
+      "option": "silently_truncate_provider_output_to_six",
+      "selected": false,
+      "reason": "makes Provider ordering an implicit unvalidated selector and hides contract violations"
+    },
+    {
+      "option": "prompt_only_emphasis_or_retry",
+      "selected": false,
+      "reason": "repeats the one-shot compliance dependency and violates the no-loop stop rule"
+    },
+    {
+      "option": "locally_bound_fact_candidate_pool_before_provider_call",
+      "selected": true,
+      "reason": "removes cardinality ownership from the model while preserving model judgment over a small request-local alias set"
+    }
+  ],
+  "selected_structural_boundary": {
+    "contract_family": "specialist_fact_atoms",
+    "provider_candidate_generation_blocked": true,
+    "local_candidate_pool_owner": "deterministic_fact_candidate_pool_planner",
+    "local_candidate_pool_maximum": 6,
+    "provider_visible_allowed_support_maximum": 6,
+    "provider_output_accepted_minimum": 1,
+    "provider_output_accepted_maximum": 6,
+    "local_final_selected_maximum": 3,
+    "local_preselection_inputs": [
+      "program_cell_decision_question",
+      "mandatory_judgment_chain",
+      "accepted_evidence_roles",
+      "case_local_numeric_authority_rows",
+      "typed_gaps",
+      "materiality_and_scope",
+      "stable_alias_tie_break"
+    ],
+    "provider_owns": [
+      "causal_relation_enum",
+      "materiality_enum",
+      "confidence_enum",
+      "priority_enum"
+    ],
+    "local_runtime_owns": [
+      "candidate_pool_generation",
+      "candidate_pool_cardinality",
+      "request_local_alias_membership",
+      "all_candidate_validation",
+      "final_selection_and_ordering",
+      "material_numeric_rendering",
+      "case_identity",
+      "canonical_ids_and_lineage"
+    ],
+    "silent_truncation_allowed": false,
+    "validator_weakening_allowed": false,
+    "provider_retry_for_cardinality_allowed": false
+  },
+  "scope_boundary": {
+    "T06_additional_field_repairs": 0,
+    "T06_additional_exact_live_runs": 0,
+    "automatic_R8_R9_or_equivalent": false,
+    "paired_assessment": "not_eligible_no_artifacts",
+    "owner_acceptance": "not_eligible_no_artifacts",
+    "S4_T06": "engineering_pass_live_product_blocked",
+    "S4_T07": "not_entered",
+    "L2_to_L4": "none_observed_before_L1_stop",
+    "implementation_in_this_disposition": false
+  },
+  "successor_work_item": {
+    "item_id": "S4-SHARED-RUNTIME-DETERMINISTIC-FACT-CANDIDATE-POOL-PLANNER",
+    "stage_ownership": "shared_runtime_hardening_not_T06_field_patch",
+    "maximum_zero_call_structural_bundles": 1,
+    "required_zero_call_proof": [
+      "candidate_catalog_counts_0_1_3_6_22",
+      "stable_preselection_under_permutation",
+      "DELL_MU_NVDA_case_local_candidate_pools",
+      "unknown_duplicate_cross_case_and_scope_mutations",
+      "three_case_full_fake_6_12_12_9",
+      "final_artifact_numeric_identity_lineage_mutations"
+    ],
+    "future_live_policy": "no_live_is_authorized_by_this_disposition",
+    "release_policy": "T06_remains_blocked_until_shared_runtime_successor_is_separately_authorized_implemented_and_proven"
+  },
+  "observed_counts": {
+    "disposition_model_calls": 0,
+    "disposition_provider_calls": 0,
+    "disposition_network_calls": 0,
+    "additional_exact_live_runs": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0,
+    "T07_entries": 0
+  },
+  "next_action": "S4-SHARED-RUNTIME-DETERMINISTIC-FACT-CANDIDATE-POOL-PLANNER-SEPARATE-AUTHORITY"
+}

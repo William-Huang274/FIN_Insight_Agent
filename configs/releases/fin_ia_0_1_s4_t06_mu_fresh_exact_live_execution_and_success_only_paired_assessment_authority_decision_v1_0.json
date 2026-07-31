@@ -1,0 +1,167 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_fresh_exact_live_execution_and_success_only_paired_assessment_authority_decision_v1_0",
+  "decision_id": "S4-T06-MU-FRESH-EXACT-LIVE-EXECUTION-AND-SUCCESS-ONLY-PAIRED-ASSESSMENT-AUTHORITY-DECISION-R1",
+  "decided_at": "2026-07-29T11:19:30+08:00",
+  "status": "authorized_MU_exact_once_and_conditional_read_only_paired_assessment_execution_not_started",
+  "authority": {
+    "user_instruction": "继续",
+    "S4_T06_execution_authorized": true,
+    "MU_admission_exact_once_consumption_authorized": true,
+    "MU_exact_live_execution_authorized": true,
+    "paired_assessment_authorized_only_after_coherent_terminal_success": true,
+    "automatic_retry_fallback_replay_relaunch_patch_or_rerun_authorized": false,
+    "Human_review_or_owner_acceptance_authorized": false,
+    "S4_T07_or_later_authorized": false,
+    "strict_schema_transport_reactivation_authorized": false
+  },
+  "source_authority": {
+    "fresh_proof_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_canonical_case_surface_and_fresh_exact_admission_preparation_zero_call_proof_v1_0.json",
+    "fresh_proof_sha256": "6db5be1f9f10cb44b37d994e4936fee933cefbfc4a6a74e4838b81e2e1e75d86",
+    "admission_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_fresh_exact_admission_r1.json",
+    "admission_file_sha256": "f0e47e2ec44341bfa4b60df878d1a866f87e2d055dfa296d438c93157cdebb89",
+    "admission_id": "fin01-s4-t06-mu-fresh-exact-admission-r1",
+    "admission_digest": "56005ffb1227e9ec1ead1b73b780342dfeaeef06bbdb0eff01592d7cdc19c891",
+    "issuance_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_fresh_exact_admission_issuance_v1_0.json",
+    "issuance_file_sha256": "555dd25a5b638628fcbf82036e0ec73c7cf461dd116596b837a4737881da4d83",
+    "project_os_preflight_ref": ".codex_runtime/s4_t06_mu_exact_execution_authority_project_os_preflight.json",
+    "project_os_preflight_sha256": "af22ad521c363bf1af9a1728f4318b8ef80dd546744e004e6e182a4b6d0d2c8b",
+    "runner_preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t06_mu_fresh_exact_r1_live_execution_preflight.json",
+    "runner_preflight_sha256": "d8cc66a5c29b505719bf115fb1b2ef5ab603073cc52929c284bbebd3f1d12a47",
+    "host_capability_receipt_ref": ".codex_runtime/fin01-s3-t09-supervision-v2-final-host-capability-r1/host_capability_receipt.json",
+    "host_capability_receipt_sha256": "79199d2c39ab59f98b951e396d62a854834b7b6e9ad8c809da14a1f1a8862d1d"
+  },
+  "exact_execution_target": {
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "supervision_root": ".codex_runtime/fin01-s4-t06-mu-fresh-exact-r1-supervision-r1",
+    "output_prefix": "s4_t06_mu_fresh_exact_r1",
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_version": 1,
+    "as_of": "2026-07-26T00:00:00Z",
+    "decision_surface_contract_ref": "p02_decision_surface_dd094559ce4c0f79d242e852:v1",
+    "input_head_digest": "4023ee74d3c54a8583203ba6b994eea55083aa1e68c1efc7786d819fbd64d247",
+    "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+    "preparation_digest": "5d506da117962a8174ab23cae9e857f67a12126884098cb81e23acf0f0ff363a",
+    "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+    "work_unit_id": "wu_p02_5_fbe7fa234fce9f4c54403c56",
+    "attempt_id": "attempt_fin01_e4473dd705631f215159fe76",
+    "research_run_id": "research_run_fin01_c94013e1c3666739c35ff00c",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "maximum_semantic_model_calls": 12,
+    "maximum_provider_calls": 12,
+    "maximum_network_calls": 12,
+    "maximum_output_tokens": 16800,
+    "maximum_total_cost_usd": 0.1,
+    "transport_retry_count": 0,
+    "maximum_transport_attempts_per_call": 1,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false
+  },
+  "pre_execution_verification": {
+    "project_os_full_chain_preflight": "pass",
+    "open_full_chain_blocker_count": 0,
+    "exact_runner_zero_call_preflight": "pass_exact_zero_call_execution_preflight",
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "provider_health_probe_performed": false,
+    "transport_retry_environment_zero_during_preflight": true,
+    "host_supervision_capability_valid": true,
+    "fresh_supervision_root_absent": true,
+    "fresh_identity_absent": true,
+    "canonical_target_work_unit_attempt_run_artifact_counts_before": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "canonical_target_work_unit_attempt_run_artifact_counts_after": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "exact_code_bindings": {
+      "apps/workbench/backend/application/bounded_agent_executor.py": "6dcd64f18c695e8f27173ba4d0e61f51223efb24de62d82faada16e754af3890",
+      "apps/workbench/backend/application/evidence_service.py": "dab666d0d165589054c8e93ef7ec903952e9205e2c9d6e158c46a69407dfd078",
+      "apps/workbench/backend/application/research_runtime.py": "09acc8a6dc8aa0e3dfaf16ccc351dff470d6c39fc1cdd0e62e4afb6ec308396c",
+      "src/sec_agent/s4_case_runtime.py": "54496f3d4fbd87bc8cd746ac90495ee96a0b4dcd86914658eed52596de4154d6",
+      "scripts/releases/run_fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution.py": "6ad66d922b9b38246601e08993cbe5d6da92fb11624389f8c7c48a45636b0eee",
+      "scripts/releases/supervise_fin_ia_0_1_s3_t09_exact_live_execution.py": "460245b87be6f17ede10b7afa89aac80b2a2a11d58deedf5089b0d8e8019ee92"
+    },
+    "exact_code_binding_count": 6
+  },
+  "success_contract": {
+    "terminal_states": [
+      "succeeded",
+      "succeeded",
+      "succeeded"
+    ],
+    "coherent_research_run_count": 1,
+    "logical_node_count": 6,
+    "semantic_model_call_count": 12,
+    "provider_call_count": 12,
+    "usage_receipt_count": 12,
+    "restricted_capture_count": 12,
+    "artifact_count": 9,
+    "typed_verifier_success_required": true,
+    "manifest_receipt_capture_and_artifact_parity_required": true,
+    "required_layered_acceptance": [
+      "L1_hard_integrity_pass",
+      "L2_protocol_pass_or_safely_recoverable",
+      "L3_agent_materially_improves_actionability",
+      "L4_user_adaptation_findings_recorded"
+    ],
+    "paired_baseline_must_use_same_case_version_as_of_and_input_head": true,
+    "paired_assessment_must_remain_read_only": true,
+    "MU_HBM_mechanisms_must_remain_case_local_and_distinct_from_DELL_and_NVDA": true,
+    "HBM_specific_revenue_profit_customer_identity_concentration_or_forward_realization_must_not_be_inferred_without_direct_evidence": true,
+    "graph_must_remain_context_only": true
+  },
+  "stop_contract": {
+    "first_credible_failure": "terminal_fail_closed_stop",
+    "failure_disposition": "record_exact_typed_failure_with_available_receipts_and_captures_then_open_bounded_MU_root_cause_or_scope_disposition",
+    "paired_assessment_after_failure_allowed": false,
+    "silent_output_rewrite_or_cross_run_evidence_assembly_allowed": false,
+    "automatic_second_execution_allowed": false,
+    "new_patch_or_scope_expansion_after_failure_allowed": false
+  },
+  "decision_boundary": {
+    "admission_consumed": false,
+    "execution_started": false,
+    "supervisor_launched": false,
+    "model_or_provider_call_started": false,
+    "business_artifact_materialization_performed": false,
+    "paired_assessment_performed": false,
+    "human_review_performed": false,
+    "S4_T07_entered": false,
+    "strict_schema_transport_reactivated": false
+  },
+  "observed_counts": {
+    "admission_consumptions": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "artifacts_created": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "paired_assessments": 0
+  },
+  "deferred_out_of_scope": [
+    "strict_schema_transport_api_handoff_until_a_compatible_standalone_API_is_available",
+    "cross_provider_strict_server_side_schema_matrix",
+    "S4_T07_NVDA_regression",
+    "S4_T08_to_T10_cross_case_calibration",
+    "S5_release_candidate"
+  ],
+  "conditional_next_action": {
+    "on_authority_decision_complete": "S4-T06-MU-FRESH-EXACT-LIVE-EXECUTION-AND-SUCCESS-ONLY-PAIRED-ASSESSMENT",
+    "on_terminal_success_and_paired_assessment_pass": "S4-T06-MU-OWNER-ACCEPTANCE-DECISION",
+    "on_terminal_failure_or_hard_integrity_failure": "S4-T06-MU-FIRST-CREDIBLE-FAILURE-ROOT-CAUSE-OR-SCOPE-DISPOSITION-DECISION"
+  },
+  "next_action": "S4-T06-MU-FRESH-EXACT-LIVE-EXECUTION-AND-SUCCESS-ONLY-PAIRED-ASSESSMENT"
+}

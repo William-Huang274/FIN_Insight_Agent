@@ -1,0 +1,255 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_evidence_role_taxonomy_runtime_plan_alignment_zero_call_root_cause_disposition_v1_0",
+  "decision_id": "S4-T05-DELL-EVIDENCE-ROLE-TAXONOMY-TO-RUNTIME-PLAN-ALIGNMENT-ZERO-CALL-ROOT-CAUSE-DISPOSITION-DECISION",
+  "decided_at": "2026-07-26T22:10:27+08:00",
+  "status": "pass_zero_call_program_cell_keyed_case_role_group_mapping_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "可以，继续下一步",
+    "zero_call_root_cause_disposition_authorized": true,
+    "runtime_code_schema_or_dispatch_implementation_authorized": false,
+    "replacement_admission_or_second_exact_execution_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "paired_assessment_Human_review_S4_T06_or_later_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "source_evidence": {
+    "issue_id": "RC-P36-058-s4-case-specific-evidence-role-to-runtime-plan-taxonomy-gap",
+    "failed_execution_result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_exact_r2_execution_failure_result_v1_0.json",
+    "failed_execution_result_sha256": "6a90ea5f0018b104ce19df26f60d972f4e32d8499c3551468d7778ffd5063005",
+    "failure_code": "s3_required_evidence_role_slot_missing",
+    "actual_runtime_call_chain": [
+      "Fin01ResearchRuntime.execute creates the historical S3 three-cell runtime plan",
+      "EvidenceService.compile_s3_three_cell_runtime_evidence_plan resolves slots by the historical scalar evidence_role",
+      "the bounded-agent S4 adapter is entered only after that pre-adapter plan succeeds"
+    ],
+    "historical_S3_generic_roles": [
+      "demand_signal",
+      "revenue_capture",
+      "thesis_counterevidence"
+    ],
+    "accepted_DELL_case_specific_role_count": 14,
+    "exact_role_name_intersection_count": 0,
+    "model_fault_confirmed": false,
+    "external_data_boundary_confirmed": false,
+    "project_owned_contract_composition_gap_confirmed": true
+  },
+  "identity_decomposition": {
+    "confirmed_ambiguity": "the current scalar evidence_role is simultaneously used as the cross-case three-cell semantic axis, Canonical EvidenceSlot identity, and historical S3 fixture route key",
+    "cross_case_semantic_axis": "program_cell_id",
+    "canonical_source_slot_identity": [
+      "case_id",
+      "decision_surface_contract_ref",
+      "cell_version_id",
+      "evidence_role"
+    ],
+    "historical_fixture_route_identity": [
+      "legacy_S3_evidence_role",
+      "tool_id",
+      "route_id"
+    ],
+    "these_identity_layers_must_remain_distinct": true,
+    "generic_role_name_may_join_S4_canonical_slots": false
+  },
+  "alternatives": [
+    {
+      "option": "rename_or_duplicate_S4_Canonical_slots_to_S3_generic_roles",
+      "decision": "rejected",
+      "reason": "breaks source-role lineage and creates synthetic slots that never existed in the accepted DecisionSurface"
+    },
+    {
+      "option": "choose_one_representative_case_role_per_cell",
+      "decision": "rejected",
+      "reason": "silently drops required order conversion working-capital cash and counterevidence coverage"
+    },
+    {
+      "option": "add_DELL_ticker_conditionals_or_fallbacks_in_EvidenceService",
+      "decision": "rejected",
+      "reason": "creates a Case-specific parallel path and guarantees the same failure shape will recur for MU or later Cases"
+    },
+    {
+      "option": "skip_all_pre_adapter_evidence_alignment_for_S4",
+      "decision": "rejected",
+      "reason": "removes the only runtime gate proving that the accepted DecisionSurface and source-grounded input cover the Case contract"
+    },
+    {
+      "option": "program_cell_keyed_case_role_group_mapping_with_exact_local_resolution",
+      "decision": "selected",
+      "reason": "preserves every source role and lineage while giving the shared Runtime one profile-neutral semantic join key"
+    }
+  ],
+  "selected_contract": {
+    "contract_ref": "fin01.s4.case_evidence_role_group_mapping:v1",
+    "contract_owner": "shared_three_cell_runtime_planning",
+    "authoritative_group_key": "program_cell_id",
+    "mapping_source": "S4CaseRuntimeBinding.program_cell_contracts.required_evidence_roles",
+    "mapping_is_derived_not_hand_authored_by_ticker": true,
+    "source_role_order_is_frozen_from_case_pack": true,
+    "resolution_key": [
+      "program_cell_id",
+      "exact_evidence_role"
+    ],
+    "coverage_rule": "every required Case role resolves to exactly one accepted Canonical EvidenceSlot in the same program Cell and every resolved slot is represented exactly once",
+    "owner_rule": "Cell owner_role and EvidenceSlot acceptance_role must equal the Case contract owner_role",
+    "source_grounding_rule": "the source-grounded pack must provide issuer-bound evidence or a typed cannot-infer boundary for each required role group without promoting graph context to evidence",
+    "legacy_compatibility_rule": "S3 and NVDA continue using the existing singleton generic-role path and immutable historical contracts",
+    "forbidden_behaviors": [
+      "role_rename",
+      "synthetic_generic_slot",
+      "representative_role_selection",
+      "ticker_conditional_mapping",
+      "silent_missing_role_drop",
+      "cross_Cell_role_resolution",
+      "owner_role_coercion",
+      "graph_context_promotion",
+      "fallback_to_S3_fixture_candidates_for_S4",
+      "consumed_Run_patch_or_replay"
+    ]
+  },
+  "case_role_groups": {
+    "DELL": [
+      {
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "owner_role": "industry_analyst",
+        "legacy_S3_compatibility_role": "demand_signal",
+        "source_evidence_roles": [
+          "issuer_demand_or_order_signal",
+          "issuer_revenue_conversion",
+          "official_customer_or_deployment_corroboration",
+          "pull_forward_or_channel_counterevidence"
+        ]
+      },
+      {
+        "program_cell_id": "value_and_profit_capture",
+        "owner_role": "financial_analyst",
+        "legacy_S3_compatibility_role": "revenue_capture",
+        "source_evidence_roles": [
+          "issuer_financial_statement",
+          "issuer_segment_or_product_disclosure",
+          "working_capital_balance_sheet_rows",
+          "cash_flow_rows",
+          "cross_chain_profit_capture_comparison"
+        ]
+      },
+      {
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "owner_role": "risk_reviewer",
+        "legacy_S3_compatibility_role": "thesis_counterevidence",
+        "source_evidence_roles": [
+          "official_supply_or_component_constraint",
+          "channel_inventory_or_order_quality_counterevidence",
+          "pricing_and_competitive_counterevidence",
+          "working_capital_or_cash_stress",
+          "independent_official_followup"
+        ]
+      }
+    ],
+    "MU": [
+      {
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "owner_role": "industry_analyst",
+        "legacy_S3_compatibility_role": "demand_signal",
+        "source_evidence_roles": [
+          "issuer_HBM_demand_or_capacity_signal",
+          "issuer_shipment_revenue_or_mix_disclosure",
+          "official_customer_or_qualification_corroboration",
+          "memory_cycle_inventory_or_demand_counterevidence"
+        ]
+      },
+      {
+        "program_cell_id": "value_and_profit_capture",
+        "owner_role": "financial_analyst",
+        "legacy_S3_compatibility_role": "revenue_capture",
+        "source_evidence_roles": [
+          "issuer_financial_statement",
+          "issuer_product_or_segment_disclosure",
+          "official_pricing_volume_or_mix_disclosure",
+          "inventory_capex_and_cash_flow_rows",
+          "cross_value_chain_profit_capture_comparison"
+        ]
+      },
+      {
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "owner_role": "risk_reviewer",
+        "legacy_S3_compatibility_role": "thesis_counterevidence",
+        "source_evidence_roles": [
+          "official_capacity_yield_or_technology_ramp_signal",
+          "customer_concentration_or_qualification_counterevidence",
+          "memory_cycle_pricing_or_inventory_counterevidence",
+          "export_control_or_regulatory_counterevidence",
+          "independent_official_followup"
+        ]
+      }
+    ]
+  },
+  "implementation_boundary": {
+    "shared_dispatch_entrypoint_required": true,
+    "actual_Runtime_and_exact_preflight_must_call_same_dispatcher": true,
+    "S4_runtime_plan_must_carry_role_group_digest": true,
+    "S4_evidence_alignment_receipt_must_bind": [
+      "case_id",
+      "decision_surface_contract_ref",
+      "runtime_binding_digest",
+      "case_role_group_mapping_digest",
+      "program_cell_id",
+      "resolved_Canonical_EvidenceSlot_refs"
+    ],
+    "historical_S3_fixture_route_compiler_remains_unchanged_for_legacy_profiles": true,
+    "S4_source_grounded_path_may_use_S3_fixture_candidate_sets": false,
+    "one_shared_Runtime_preserved": true,
+    "new_Case_specific_Runtime_allowed": false,
+    "implementation_authorized_in_this_decision": false
+  },
+  "future_implementation_acceptance": {
+    "positive_fixtures": [
+      "DELL resolves three Cell groups and all fourteen exact source roles once",
+      "MU resolves three Cell groups and all fourteen exact source roles once",
+      "legacy NVDA and historical S3 singleton role behavior remains byte and digest compatible where frozen",
+      "actual Runtime pre-adapter dispatch and exact runner preflight produce the same mapping and alignment digests",
+      "DELL full fake Provider path reaches six logical nodes twelve calls and nine logical Artifacts without model network source or tool calls"
+    ],
+    "negative_fixtures": [
+      "missing extra duplicate or unknown source role fails closed",
+      "right role in the wrong Cell fails closed",
+      "owner or acceptance-role mismatch fails closed",
+      "runtime-binding mapping or DecisionSurface digest mismatch fails closed",
+      "ticker-specific branch representative-role selection or synthetic generic slot is rejected",
+      "S4 dispatch attempting historical fixture candidates is rejected"
+    ],
+    "target_runtime_mutation_allowed": false,
+    "model_provider_network_source_external_tool_calls_allowed": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "replacement_admission_allowed": false,
+    "implementation_pass_does_not_prove_DELL_R2": true
+  },
+  "exact_code_audit": {
+    "apps/workbench/backend/application/evidence_service.py": "1d6e2fae1236c53ef6d66329d11414bde3e45f378a87a1323e1ae03c5ebbcfd8",
+    "apps/workbench/backend/application/research_runtime.py": "ea2c5a43a4d68ae9a1e375cce9e65c37144e9431577571bf79101c66b33f8ce5",
+    "src/sec_agent/canonical_runtime/planning_service.py": "ea9ab79bfeb0caf417cc82bd870e9b7d19512e4310897851322a516d076eabab",
+    "src/sec_agent/s4_case_runtime.py": "aaeff9ab16a0aad874f18d503e2117f8eacfdb3b7b7c246570f90e14c9b73e47",
+    "scripts/releases/run_fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution.py": "62c1eba5cd18c4b1d5116d897bd1a981f63109b3972c4ae542a1e3da07a60f84"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "work_units_attempts_runs_or_artifacts_created": 0,
+    "canonical_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_058": "root_cause_disposed_program_cell_keyed_case_role_group_mapping_selected_implementation_pending",
+    "S4_T05": "blocked_pending_zero_call_runtime_alignment_implementation_and_new_fresh_proof",
+    "DELL_R2": "not_proven",
+    "S4_T06_or_later": "not_authorized",
+    "release_or_production": "not_authorized"
+  },
+  "next_action": "S4-T05-DELL-EVIDENCE-ROLE-GROUP-MAPPING-AND-ACTUAL-DISPATCH-PREFLIGHT-ZERO-CALL-IMPLEMENTATION"
+}

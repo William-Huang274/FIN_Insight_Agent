@@ -1,0 +1,141 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_r4_numeric_classifier_false_positive_and_audit_evidence_separation_disposition_v1_0",
+  "decision_id": "S4-T06-MU-R4-NUMERIC-CLASSIFIER-FALSE-POSITIVE-AND-AUDIT-EVIDENCE-SEPARATION-DISPOSITION",
+  "recorded_at": "2026-07-30T00:14:01+08:00",
+  "status": "zero_call_root_cause_reclassified_audit_contract_frozen_runtime_v2_implementation_pending_no_R5",
+  "authority": {
+    "user_instruction": "按照你说的做",
+    "authorized_scope": [
+      "replay_existing_R4_restricted_capture",
+      "correct_RC_P36_080_root_cause",
+      "freeze_machine_readable_audit_evidence_retention_and_promotion_separation_contract",
+      "update_project_ledgers_source_backlogs_model_run_and_worklog",
+      "run_zero_call_deterministic_tests"
+    ],
+    "not_authorized": [
+      "R5_or_any_model_provider_network_call",
+      "retry_fallback_replay_as_inference_relaunch_or_rerun",
+      "rewrite_consumed_R4_execution_or_capture",
+      "promote_failed_output_to_business_Artifact",
+      "paired_assessment_owner_acceptance_or_T07",
+      "credential_or_private_reasoning_persistence"
+    ]
+  },
+  "source_evidence": {
+    "immutable_R4_result_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_current_case_aware_delivery_identity_boundary_r4_exact_live_execution_failure_result_v1_0.json",
+    "immutable_R4_result_sha256": "b49c9c784733e0364a384f8bfa525360321736f352c2cddbe1b6e7fb587bef94",
+    "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t06_mu_identity_v2_r4_live_execution_result.json",
+    "runtime_result_sha256": "9eafde73b067cd9340179f1fd59cea0d917704624b86d65849844919e24e6d0a",
+    "restricted_capture_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/canonical-runtime/objects/fin01/provider-output-captures/62/23/6223bfc2f55ccb8e83733622b071c6e756bf731adbd36aa2f869ea69a12d3c79.json",
+    "restricted_capture_sha256": "6223bfc2f55ccb8e83733622b071c6e756bf731adbd36aa2f869ea69a12d3c79",
+    "capture_sequence": 4,
+    "stage": "domain_specialist:value_and_profit_capture:facts_explanation_and_terminal",
+    "call_id": "llm_1785339303884681500_domain_specialist_value_and_profit_capture_facts_explanation",
+    "access_class": "internal_restricted_run_audit",
+    "retention_class": "follow_research_run_retention",
+    "assistant_final_output_persisted": true,
+    "raw_provider_envelope_persisted": false,
+    "private_reasoning_persisted": false,
+    "credential_persisted": false
+  },
+  "R4_reclassification": {
+    "historical_terminal_result_changed": false,
+    "historical_failure_code_changed": false,
+    "literal_no_digit_surface_contract_noncompliance_observed": true,
+    "material_financial_numeric_hallucination_established": false,
+    "material_numeric_value_mismatch_established": false,
+    "general_model_instruction_noncompliance_established": false,
+    "model_or_provider_financial_integrity_fault_established": false,
+    "owned_project_classifier_false_positive_established": true,
+    "matched_narrative_value_count": 2,
+    "matched_field_paths": [
+      "$.fact_layer[0].statement",
+      "$.explanation_layer[0]"
+    ],
+    "shared_matched_surface": "FQ3 2026",
+    "semantic_class": "reporting_period_label",
+    "material_value_currency_percentage_or_measurement": false,
+    "why_previous_interpretation_was_wrong": "failure telemetry recorded only the alphabetically first field_id and the number of matching narrative values. It did not mean that two material financial numbers were emitted. The separately retained restricted assistant output proves that the two matched values were a fact statement and an explanation containing the same reporting-period label.",
+    "earliest_owned_fault": "CaseNumericAuthorityPolicy uses one broad digit regex across all designated narrative strings and does not classify reporting-period labels, identifiers, material financial values, percentages, currency amounts or measurement tokens separately.",
+    "corrected_issue_class": "numeric_narrative_classifier_false_positive_and_failure_telemetry_capture_index_gap"
+  },
+  "audit_contract": {
+    "contract_ref": "fin01.runtime.audit_evidence_retention_and_promotion_separation:v1",
+    "principle": "validation rejection blocks promotion but must not destroy auditable evidence",
+    "required_restricted_evidence": [
+      "exact_model_visible_system_and_user_request",
+      "exact_assistant_final_output",
+      "nonsecret_inference_arguments",
+      "provider_model_and_endpoint_route_identity_without_credentials",
+      "finish_reason_status_usage_latency_and_transport_attempt_count",
+      "Run_Attempt_Call_stage_and_capture_sequence_bindings",
+      "content_digest_and_immutable_object_reference",
+      "validator_rule_code_match_field_path_and_safe_match_class"
+    ],
+    "never_persist": [
+      "api_keys_bearer_tokens_authorization_headers_cookies_or_passwords",
+      "provider_private_reasoning_or_hidden_chain_of_thought",
+      "unfiltered_response_headers",
+      "unfiltered_stack_or_exception_payloads_that_may_contain_secrets"
+    ],
+    "promotion_boundary": {
+      "restricted_failed_output_may_be_used_for_audit": true,
+      "restricted_failed_output_may_become_business_Artifact": false,
+      "restricted_failed_output_may_become_financial_fact": false,
+      "restricted_failed_output_may_be_replayed_as_inference_automatically": false,
+      "paired_or_owner_acceptance_from_failed_output": false
+    },
+    "atomicity": {
+      "capture_before_or_with_terminal_failure": true,
+      "failure_telemetry_must_not_veto_core_capture_or_terminal_truth": true,
+      "terminal_event_must_bind_capture_refs_and_digests": true,
+      "telemetry_is_index_not_evidence_body": true
+    },
+    "retention_and_access": {
+      "content_addressed": true,
+      "immutable": true,
+      "access_class": "internal_restricted_run_audit",
+      "retention_class": "follow_research_run_retention",
+      "business_surface_default_visibility": false
+    }
+  },
+  "current_runtime_conformance": {
+    "assistant_final_output_restricted_capture": "implemented_and_R4_replay_proven",
+    "capture_content_addressing_and_Run_Attempt_Call_binding": "implemented_and_R4_replay_proven",
+    "terminal_event_capture_refs_and_digest_binding": "implemented_and_R4_replay_proven",
+    "failed_output_business_Artifact_separation": "implemented_and_R4_zero_Artifact_proven",
+    "credential_private_reasoning_and_raw_provider_envelope_exclusion": "implemented_and_R4_replay_proven",
+    "exact_model_visible_request_capture": "not_implemented_runtime_gap",
+    "nonsecret_inference_argument_capture": "partial_receipt_only_runtime_gap",
+    "safe_rule_match_path_and_semantic_class_index": "not_implemented_runtime_gap",
+    "contract_maturity": "contract_translated_and_existing_output_capture_fixture_proven_runtime_v2_gap_open"
+  },
+  "project_disposition": {
+    "RC_P36_080": "open_reclassified_project_classifier_false_positive_runtime_fix_pending",
+    "new_audit_gap_issue_id": "RC-P36-081-s4-runtime-model-visible-request-and-safe-rule-match-audit-capture-gap",
+    "S4_T06": "blocked",
+    "MU_R4": "failed_immutable",
+    "R5": "not_authorized",
+    "paired_assessment": "not_eligible_not_performed",
+    "owner_acceptance": "not_eligible_not_performed",
+    "S4_T07": "not_entered",
+    "maximum_next_zero_call_implementation_bundles": 1,
+    "automatic_follow_on_bundles": 0
+  },
+  "verification": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "external_tool_calls": 0,
+    "admission_or_Run_created": 0,
+    "business_Artifacts_created": 0,
+    "historical_capture_rewritten": false,
+    "focused_capture_and_disposition_tests": "15 passed",
+    "full_S4_T06_contract_regression": "208 passed / 1771 deselected",
+    "JSON_JSONL_and_python_compile": "pass",
+    "historical_next_action_compatibility_updates_only": true,
+    "project_OS_broad_full_chain_preflight": "blocked_expected_on_4_open_root_cause_blockers"
+  },
+  "next_action": "S4-T06-RUNTIME-AUDIT-EVIDENCE-V2-AND-MATERIAL-NUMERIC-CLASSIFIER-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

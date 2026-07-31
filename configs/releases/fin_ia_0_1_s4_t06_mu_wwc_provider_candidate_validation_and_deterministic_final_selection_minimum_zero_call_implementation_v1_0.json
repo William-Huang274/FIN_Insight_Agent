@@ -1,0 +1,148 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_wwc_provider_candidate_validation_and_deterministic_final_selection_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T06-MU-WWC-PROVIDER-CANDIDATE-VALIDATION-AND-DETERMINISTIC-FINAL-SELECTION-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-30T23:18:00+08:00",
+  "status": "pass_WWC_candidate_validation_stable_top3_and_zero_call_full_chain_proven_independent_fresh_proof_pending",
+  "authority": {
+    "user_instruction": "按你这里说的做",
+    "source_disposition_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r7_wwc_provider_candidate_local_selection_scope_disposition_v1_0.json",
+    "source_disposition_sha256": "71dcead5069b8c8bb2a66e2806a26ddd242ddbc71909aa7cf0570b33019d0bf5",
+    "maximum_zero_call_implementation_bundles": 1,
+    "implementation_bundles_consumed": 1,
+    "automatic_follow_on_implementation_bundles": 0,
+    "model_provider_network_or_source_call_authorized": false,
+    "new_admission_R8_or_replacement_exact_live_authorized": false,
+    "paired_assessment_or_owner_acceptance_authorized": false,
+    "S4_T07_or_later_authorized": false
+  },
+  "implemented_contract": {
+    "contract_ref": "fin01.s4.WWC_provider_candidate_validation_and_deterministic_final_selection:v1",
+    "provider_candidate_cardinality": {
+      "minimum": 1,
+      "maximum": 6
+    },
+    "final_selected_cardinality": {
+      "minimum": 1,
+      "maximum": 3
+    },
+    "all_candidates_validated_before_selection": true,
+    "invalid_candidate_silent_drop": false,
+    "exact_duplicate_candidate_fail_closed": true,
+    "permutation_stable_selection": true,
+    "ranking_tuple": [
+      "claim_epistemic_priority_ascending",
+      "authority_specificity_rank_ascending",
+      "trigger_actionability_rank_ascending",
+      "review_cadence_rank_ascending",
+      "expected_transition_rank_ascending",
+      "canonical_candidate_digest_ascending",
+      "provider_ordinal_ascending"
+    ],
+    "provider_ordinal_can_break_nonduplicate_tie": false,
+    "local_owners": [
+      "final cardinality and ordering",
+      "task IDs",
+      "Claim and Authority ref expansion",
+      "material dates and time windows",
+      "decision-rule transition and stop text",
+      "case identity",
+      "lineage"
+    ],
+    "provider_free_material_narrative_allowed": false,
+    "canonical_WWC_schema_changed": false,
+    "financial_numeric_temporal_or_identity_gate_weakened": false
+  },
+  "runtime_changes": {
+    "compiled_contract": {
+      "ref": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py",
+      "sha256": "a4e6c8b7c521a282acd432ec019d49987cccb0ad0a5da5d82a57c79ee1be66b5"
+    },
+    "final_artifact_lineage_recomputation": {
+      "ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "sha256": "e406e356ccb2e643eb5aa853d7c2c422cafb041edd928610f1c21d1e8731f904"
+    },
+    "WWC_and_downstream_capture_tests": {
+      "ref": "tests/contract/test_fin_0_1_s4_t06_mu_deterministic_judgment_atom_planner_compiled_contract_implementation.py",
+      "sha256": "99b48f7779775a507a157e18cc01488d17f79600f3215f6f0984df7375ca287d"
+    },
+    "final_artifact_numeric_identity_lineage_mutation_tests": {
+      "ref": "tests/contract/test_fin_0_1_s4_t06_mu_case_runtime_mandatory_material_truth_identity_safety_closure_zero_call_implementation.py",
+      "sha256": "6b47ed19920aec5b6f268a4e984f33f8f1468904327a7fac1e8a7ff9acf13609"
+    },
+    "terminal_result_materialization_test": {
+      "ref": "tests/contract/test_fin_0_1_s4_t06_mu_temporal_authority_and_terminal_result_zero_call_implementation.py",
+      "sha256": "5e975ea788645cba02314aa07807b8366016f239c1e0c5e73a33d00afac4a451"
+    }
+  },
+  "verification": {
+    "candidate_boundaries": {
+      "zero": "typed_shape_failure",
+      "one": "one_selected",
+      "three": "three_selected",
+      "six": "three_selected_after_all_six_validate",
+      "seven": "typed_shape_failure"
+    },
+    "negative_fixtures": [
+      "one invalid candidate among six",
+      "unknown or cross-case Claim alias",
+      "unknown or cross-case Authority alias",
+      "invalid trigger enum",
+      "unbound date alias",
+      "exact semantic duplicate",
+      "provider-order permutation"
+    ],
+    "three_case_full_fake": {
+      "DELL": [6, 12, 12, 9],
+      "MU": [6, 12, 12, 9],
+      "NVDA": [6, 12, 12, 9]
+    },
+    "WWC_provider_candidates_per_cell": 6,
+    "WWC_final_selected_tasks_per_cell": 3,
+    "downstream_failure_capture_sequences": {
+      "Research_Lead": 10,
+      "Writer": 11,
+      "Verifier": 12
+    },
+    "terminal_failure_result_materialized": true,
+    "final_nine_artifact_L1_mutations_rejected": [
+      "numeric projection and rendered numeric truth",
+      "case identity title and entity labels",
+      "manifest lineage digest",
+      "trace lineage payload"
+    ],
+    "focused_WWC_full_chain_tests": "23 passed",
+    "focused_final_artifact_and_terminal_result_tests": "2 passed",
+    "adjacent_safety_and_terminal_suite": "15 passed",
+    "python_compile": "pass",
+    "runtime_behavior_regression_established": false
+  },
+  "observed_counts": {
+    "runtime_code_changes": 2,
+    "test_code_changes": 2,
+    "model_provider_network_source_calls": [0, 0, 0, 0],
+    "new_admissions": 0,
+    "new_work_units": 0,
+    "new_attempts": 0,
+    "new_research_runs": 0,
+    "business_artifacts": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0,
+    "T07_operations": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_083": "WWC_runtime_injected_current_zero_call_full_chain_proven_independent_fresh_proof_pending",
+    "RC_P36_080": "open_final_formal_nine_Artifact_L1_reproof_pending",
+    "R7": "immutable_terminal_failed_consumed_no_retry",
+    "remaining_formal_MU_exact_live_ceiling": 0,
+    "R8_or_replacement_exact_live": "not_authorized",
+    "S4_T06": "blocked_pending_independent_current_binding_fresh_proof_and_separate_project_level_live_disposition",
+    "paired_assessment": "not_eligible",
+    "owner_acceptance": "not_eligible",
+    "S4_T07": "not_entered",
+    "S4": "not_passed",
+    "S5": "blocked"
+  },
+  "next_action": "S4-T06-MU-WWC-PROVIDER-CANDIDATE-VALIDATION-AND-DETERMINISTIC-FINAL-SELECTION-INDEPENDENT-FRESH-AGENT-PROOF-DECISION",
+  "next_action_authorized": false,
+  "known_boundary": "This is a zero-call runtime implementation and current-worktree deterministic full-chain proof. It is not an independent disposable-runtime proof, a new admission, R8 or replacement exact-live, final formal L1 product proof, paired assessment, owner acceptance, T06 closeout, or T07 entry."
+}

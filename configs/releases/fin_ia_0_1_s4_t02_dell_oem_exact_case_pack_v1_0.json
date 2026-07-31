@@ -1,0 +1,347 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t02_exact_case_pack_v1_0",
+  "case_pack_id": "FIN-0.1-S4-DELL-OEM-EXACT-CASE-PACK-R1",
+  "case_profile_ref": "fin01.s4.case_profile.dell_oem_three_cell:v1",
+  "frozen_at": "2026-07-26T15:58:08+08:00",
+  "status": "contract_translated_exact_case_pack_frozen_T03_fixture_and_runtime_injection_pending",
+  "authority": {
+    "user_instruction": "授权",
+    "authorized_scope": "S4-T02 DELL OEM Case Pack and financial method contract translation only",
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "canonical_CaseVersion_Run_admission_or_business_Artifact_authorized": false,
+    "S4_T03_or_later_authorized": false
+  },
+  "case_identity": {
+    "ticker": "DELL",
+    "legal_name": "Dell Technologies Inc.",
+    "canonical_entity_ref": "DELL",
+    "research_position": "server_OEM_transfer_case",
+    "as_of": "2026-07-26T00:00:00Z",
+    "analysis_language": "en",
+    "delivery_language": "zh-CN",
+    "canonical_CaseVersion_id": null,
+    "canonical_CaseVersion_creation": "deferred_to_separately_authorized_S4_T03_or_later_fixture",
+    "issuer_identifier_resolution": "official_source_adapter_must_resolve_and_bind_before_any_source_or_numeric_row_is_accepted"
+  },
+  "shared_runtime_contract": {
+    "runtime_family": "Fin01ResearchRuntime",
+    "execution_profile_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+    "input_contract_ref": "fin01.s3.bounded_agent_three_cell_input:v1",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+    "research_profile_target_ref": "fin01.s4.research_profile.dell_oem_three_cell:v1",
+    "program_cell_ids": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "same_runtime_no_parallel_implementation": true,
+    "case_and_Cell_local_identity_regeneration_required": true,
+    "S3_NVDA_fact_identity_alias_or_artifact_reuse_allowed": false
+  },
+  "program_cells": [
+    {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "owner_role": "industry_analyst",
+      "decision_question": "Are DELL infrastructure and server demand signals company-specific, convertible into recognized revenue, and durable rather than pull-forward or channel accumulation?",
+      "mandatory_judgment_chain": [
+        "official_order_backlog_or_deployment_signal",
+        "company_specificity",
+        "order_or_backlog_to_revenue_conversion",
+        "channel_and_customer_durability",
+        "counterindicator",
+        "typed_cannot_infer"
+      ],
+      "required_evidence_roles": [
+        "issuer_demand_or_order_signal",
+        "issuer_revenue_conversion",
+        "official_customer_or_deployment_corroboration",
+        "pull_forward_or_channel_counterevidence"
+      ],
+      "numeric_questions": [
+        "issuer_reported_revenue_direction_for_exact_company_or_disclosed_segment_scope",
+        "order_or_backlog_conversion_only_when_both_numerator_and_denominator_are_exact_period_comparable_rows"
+      ],
+      "graph_context_questions": [
+        "customer_deployment_path",
+        "server_platform_and_component_path",
+        "channel_or_supplier_followup_path"
+      ],
+      "typed_cannot_infer_codes": [
+        "cannot_infer_missing_authoritative_order_backlog_or_deployment_evidence",
+        "cannot_infer_order_or_backlog_to_revenue_conversion",
+        "cannot_infer_demand_durability_or_pull_forward",
+        "cannot_infer_customer_or_channel_concentration"
+      ],
+      "stop_rule": "Stop before a durable-demand judgment if no issuer or company-bound official signal and no independent counterindicator are both available.",
+      "what_would_change_targets": [
+        "weaker_company_specific_order_to_revenue_conversion",
+        "material_channel_or_customer_inventory_accumulation",
+        "order_cancellation_or_pull_forward_evidence",
+        "official_deployment_or backlog evidence that contradicts the current boundary"
+      ]
+    },
+    {
+      "program_cell_id": "value_and_profit_capture",
+      "owner_role": "financial_analyst",
+      "decision_question": "How much revenue, gross profit, operating profit, working-capital burden and cash conversion can be attributed to DELL at company or exact issuer-disclosed segment scope?",
+      "mandatory_judgment_chain": [
+        "demand_transmission",
+        "exact_company_or_issuer_segment_scope",
+        "revenue_and_margin",
+        "working_capital_components",
+        "cash_conversion",
+        "unattributed_AI_server_or_product_scope"
+      ],
+      "required_evidence_roles": [
+        "issuer_financial_statement",
+        "issuer_segment_or_product_disclosure",
+        "working_capital_balance_sheet_rows",
+        "cash_flow_rows",
+        "cross_chain_profit_capture_comparison"
+      ],
+      "numeric_questions": [
+        "company_total_revenue_gross_margin_and_operating_margin",
+        "issuer_disclosed_infrastructure_or_server_segment_revenue_and_profit_only_if_exact_rows_exist",
+        "inventory_receivables_payables_and_operating_cash_flow_changes",
+        "free_cash_flow_only_from exact operating_cash_flow and capital_expenditure rows"
+      ],
+      "graph_context_questions": [
+        "OEM_component_supplier_path",
+        "server_platform_customer_path",
+        "channel_and_competitor_path"
+      ],
+      "typed_cannot_infer_codes": [
+        "cannot_infer_AI_or_server_specific_revenue",
+        "cannot_infer_AI_or_server_specific_gross_or_operating_profit",
+        "cannot_infer_working_capital_driver_without_period_comparable_rows",
+        "cannot_infer_cash_conversion_without_exact_cash_flow_and_balance_sheet_scope",
+        "cannot_infer_incremental_profit_capture"
+      ],
+      "stop_rule": "Do not allocate company-total or broad segment economics to AI servers, products or customers without exact issuer-bound rows and period/unit scope.",
+      "what_would_change_targets": [
+        "issuer_disclosed_product_or_segment_economics",
+        "gross_margin or operating_margin mix shift",
+        "working_capital absorption or release",
+        "cash conversion divergence from reported earnings"
+      ]
+    },
+    {
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "owner_role": "risk_reviewer",
+      "decision_question": "Which component, supply, channel, competitive, customer and working-capital mechanisms could break or qualify the DELL transfer thesis?",
+      "mandatory_judgment_chain": [
+        "strongest_counterevidence",
+        "mechanism",
+        "company_specific_observation",
+        "probability_and_impact_boundary",
+        "what_would_change",
+        "typed_stop"
+      ],
+      "required_evidence_roles": [
+        "official_supply_or_component_constraint",
+        "channel_inventory_or_order_quality_counterevidence",
+        "pricing_and_competitive_counterevidence",
+        "working_capital_or_cash_stress",
+        "independent_official_followup"
+      ],
+      "numeric_questions": [
+        "inventory_receivables_payables_and_cash_flow_stress_indicators",
+        "margin_sensitivity_only_when_exact issuer rows support the comparison"
+      ],
+      "graph_context_questions": [
+        "component_supply_constraint_path",
+        "customer_channel_concentration_path",
+        "competitive_price_pressure_path"
+      ],
+      "typed_cannot_infer_codes": [
+        "cannot_infer_bottleneck_probability_or_impact",
+        "cannot_infer_channel_inventory_or_order_quality",
+        "cannot_infer_customer_concentration",
+        "cannot_infer_independent_counterevidence"
+      ],
+      "stop_rule": "Do not close the Case without at least one company-bound counterevidence route and one independent official followup target.",
+      "what_would_change_targets": [
+        "credible component supply release or constraint",
+        "channel inventory normalization or deterioration",
+        "pricing pressure or mix evidence",
+        "working capital and cash conversion inflection"
+      ]
+    }
+  ],
+  "source_authority_policy": {
+    "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+    "as_of_rule": "every source published_at or effective_at must be less than or equal to case as_of",
+    "accepted_fact_authority": [
+      "issuer_filing_or_official_financial_statement",
+      "issuer_earnings_release_or_prepared_remarks",
+      "issuer_official_product_or_segment_disclosure",
+      "official_customer_supplier_or_regulatory_source_with_explicit_DELL_binding"
+    ],
+    "accepted_numeric_authority": [
+      "local_gold_SQL_row_with_exact_issuer_period_currency_unit_and_source_ref",
+      "local_official_filing_table_address_with_exact_row_lineage"
+    ],
+    "context_only_not_fact_authority": [
+      "Candidate",
+      "GraphObservation",
+      "peer_or_industry_row",
+      "product_spec_without_financial_scope",
+      "search_snippet",
+      "model_output"
+    ],
+    "route_order_by_cell": {
+      "demand_authenticity_and_sustainability": [
+        "local_object_bm25_official_disclosure",
+        "local_materialized_customer_deployment_context"
+      ],
+      "value_and_profit_capture": [
+        "local_gold_sql_financial_table",
+        "local_official_filing_table_address"
+      ],
+      "bottleneck_counterevidence_and_what_would_change": [
+        "local_relationship_graph_navigation",
+        "local_official_counterevidence_source_followup"
+      ]
+    },
+    "source_network_calls_in_T02": 0,
+    "sourcehunter_execution_in_T02": false
+  },
+  "numeric_policy": {
+    "entity_ref_must_equal": "DELL",
+    "segment_policy": "use __company_total__ or an exact issuer-disclosed segment_ref resolved from the source row; no prefilled segment name is authoritative",
+    "period_policy": [
+      "preserve exact issuer fiscal label",
+      "do not compare unequal duration periods",
+      "distinguish point_in_time balance sheet rows from duration flow rows"
+    ],
+    "currency_and_unit_policy": "every row and formula input must carry exact currency and unit; conversion requires a separate explicit rate authority",
+    "required_metric_families_if_available": [
+      "revenue",
+      "cost_of_revenue",
+      "gross_profit",
+      "operating_income",
+      "inventory",
+      "accounts_receivable",
+      "accounts_payable",
+      "operating_cash_flow",
+      "capital_expenditure"
+    ],
+    "allowed_formula_contracts": [
+      {
+        "metric": "gross_margin",
+        "formula": "gross_profit/revenue*100",
+        "required_scope": "same_entity_segment_period_currency_unit"
+      },
+      {
+        "metric": "operating_margin",
+        "formula": "operating_income/revenue*100",
+        "required_scope": "same_entity_segment_period_currency_unit"
+      },
+      {
+        "metric": "free_cash_flow",
+        "formula": "operating_cash_flow-capital_expenditure",
+        "required_scope": "same_entity_period_currency_unit_and_verified_capex_sign"
+      },
+      {
+        "metric": "inventory_days",
+        "formula": "average_inventory/cost_of_revenue*days_in_period",
+        "required_scope": "same_entity_segment_currency_unit_with_begin_end_inventory_and_exact_period_days"
+      }
+    ],
+    "forbidden_numeric_inference": [
+      "allocate_company_total_or_broad_segment_profit_to_AI_server_or_product",
+      "derive_order_or_backlog_conversion_without_exact numerator denominator and period",
+      "derive_customer_share_from unnamed or aggregate disclosure",
+      "create_synthetic_cash_conversion_score_when_inputs_are_missing"
+    ],
+    "narrative_fill_authorized": false
+  },
+  "graph_policy": {
+    "allowed_edge_semantics": [
+      "customer_deployment",
+      "supplier_component",
+      "product_platform",
+      "channel",
+      "competitor",
+      "geography_or_regulation"
+    ],
+    "each_edge_requires": [
+      "source_ref_or_typed_source_followup",
+      "as_of",
+      "direction",
+      "boundary",
+      "company_or_counterpart_scope"
+    ],
+    "graph_edge_is_direct_Evidence": false,
+    "inferred_edge_is_hypothesis_only": true,
+    "naked_stale_or_conflicting_edge_must_fail_or_remain_context": true
+  },
+  "judgment_atom_contract": {
+    "model_should_return_judgment_atoms_not_case_pack_structure": true,
+    "required_fields": [
+      "program_cell_id",
+      "epistemic_status",
+      "direct_answer_atom",
+      "support_fact_refs",
+      "context_refs",
+      "counterevidence_atom",
+      "boundary_atom",
+      "what_would_change_refs"
+    ],
+    "local_runtime_owns": [
+      "Case_Cell_and_local_ids",
+      "ClaimFactLink",
+      "scope_assembly",
+      "cross_Cell_lineage",
+      "Artifact_manifest_and_digests"
+    ],
+    "epistemic_states": [
+      "fact_supported",
+      "context_supported",
+      "candidate_only",
+      "cannot_infer",
+      "stopped_by_material_conflict"
+    ],
+    "cannot_infer_requires": [
+      "typed_gap_code",
+      "missing_authority_or_input",
+      "source_targeted_what_would_change"
+    ]
+  },
+  "method_bindings": [
+    "s4_dell_oem_order_to_revenue_and_working_capital_playbook",
+    "three_statement_peer_panel",
+    "customer_supplier_readthrough",
+    "bounded_leading_signal_promotion",
+    "thesis_path_first_research",
+    "p32_thesis_led_memo_output"
+  ],
+  "factual_content_boundary": {
+    "evidence_rows": [],
+    "numeric_rows": [],
+    "graph_edges": [],
+    "claims": [],
+    "judgments": [],
+    "preaccepted_conclusions": [],
+    "case_pack_contains_questions_policies_and_typed_boundaries_only": true
+  },
+  "T03_acceptance_required": [
+    "official_issuer_identifier_and_local_source_routes_resolved",
+    "deterministic_case_pack_schema_and_digest_fixture",
+    "named_method_runtime_injection",
+    "node_level_consumption",
+    "cross_case_and_cross_Cell_identity_collision_regression",
+    "SaaS_and_Bank_structural_fact_leakage_regression",
+    "zero_paid_calls"
+  ],
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_case_writes": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0
+  }
+}

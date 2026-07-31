@@ -1,0 +1,250 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_r7_wwc_provider_candidate_local_selection_scope_disposition_v1_0",
+  "decision_id": "S4-T06-MU-R7-FIRST-CREDIBLE-FAILURE-PROJECT-BLOCK-OR-DETERMINISTIC-PLANNER-SCOPE-DISPOSITION-DECISION",
+  "decided_at": "2026-07-30T22:08:00+08:00",
+  "status": "zero_call_scope_disposed_deterministic_WWC_candidate_validation_and_final_selection_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "zero_call_project_level_disposition_authorized": true,
+    "restricted_capture_read_authorized": false,
+    "runtime_implementation_authorized_in_this_turn": false,
+    "model_provider_network_or_source_call_authorized": false,
+    "R7_retry_replay_or_reclassification_authorized": false,
+    "R8_or_replacement_exact_live_authorized": false,
+    "paired_assessment_authorized": false,
+    "owner_acceptance_authorized": false,
+    "S4_T07_or_later_authorized": false
+  },
+  "source_failure": {
+    "result_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_claim_support_role_v2_r7_exact_live_execution_failure_result_v1_0.json",
+    "result_sha256": "02bcc68fb93e51dfa62bacb889cd589734377e8c7baa3bf3cc6834c3ef328a18",
+    "result_test_ref": "tests/contract/test_fin_0_1_s4_t06_mu_claim_support_role_v2_r7_exact_live_execution_failure_result.py",
+    "result_test_sha256": "0d8a5aceadbc94ea47941a0ea44c4bd6e4247c0eef91393f3a5a61adeca403cb",
+    "execution_id": "fin01-s4-t06-mu-claim-support-role-v2-final-exact-live-r7",
+    "work_unit_id": "wu_p02_5_b1ba05e5d4200026121136da",
+    "attempt_id": "attempt_fin01_200b7d2e9df3174d116ac3df",
+    "research_run_id": "research_run_fin01_0a14c336e71a863ca383784b",
+    "terminal_states": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "failure_stage": "domain_specialist:demand_authenticity_and_sustainability:actionable_what_would_change_tasks",
+    "failure_code": "s4_compiled_wwc_atom_shape_invalid",
+    "provider_output_native_JSON": true,
+    "provider_returned_candidate_count": 6,
+    "model_visible_provider_candidate_maximum": 6,
+    "executed_local_input_maximum": 3,
+    "local_selection_ran_before_rejection": false,
+    "model_instruction_noncompliance_established": false,
+    "project_owned_contract_drift_established": true,
+    "R7_consumed_and_immutable": true,
+    "R7_retry_or_R8_performed": false,
+    "paired_owner_T07_performed": false
+  },
+  "zero_call_code_audit": {
+    "compiled_contract_ref": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py",
+    "compiled_contract_sha256": "610b05158a9933955dd83ce5d1c0743a2068fbb02b970371c59fda2489c5e75e",
+    "policy_ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+    "policy_sha256": "718f50e043251f0d26d2f6ae1099017ebca935f1ad9ebebe1bdf02df15576639",
+    "provider_candidate_maximum": 6,
+    "fact_final_selected_maximum": 3,
+    "claim_final_selected_maximum": 2,
+    "WWC_final_selected_maximum": 3,
+    "fact_path_accepts_candidate_maximum_before_local_selection": true,
+    "claim_path_accepts_candidate_maximum_before_local_selection": true,
+    "WWC_path_accepts_candidate_maximum_before_local_selection": false,
+    "WWC_path_current_rejecting_constant": "fact_selected_maximum",
+    "WWC_candidate_atoms_are_alias_and_finite_enum_only": true,
+    "WWC_provider_free_material_narrative_allowed": false,
+    "existing_WWC_local_truth_owners": [
+      "canonical task IDs",
+      "claim ID expansion",
+      "authority ref expansion",
+      "material dates",
+      "time window",
+      "decision rule text",
+      "expected transition text",
+      "fallback stop condition",
+      "lineage"
+    ],
+    "earliest_owned_fault": "WWC input cardinality validation uses the final-selected maximum before the already-declared local deterministic selection stage",
+    "cross_case_or_alias_fault_established": false,
+    "transport_JSON_finish_truncation_or_credential_fault_established": false
+  },
+  "option_disposition": [
+    {
+      "option_id": "block_provider_authored_WWC_surface",
+      "decision": "rejected_for_current_scope",
+      "reason": "The current Provider surface is already bounded to request-local aliases and finite enums, while local code owns all material values, dates, identity and final clauses. Removing the surface would discard useful claim-authority-trigger prioritization and broaden T06 beyond the earliest cardinality fault.",
+      "future_trigger": "Only reconsider if a correctly compiled and independently proven selector still produces a new L1 attributable to Provider choice rather than project contract drift."
+    },
+    {
+      "option_id": "validate_up_to_six_then_deterministically_select_up_to_three",
+      "decision": "selected",
+      "reason": "This restores the candidate-generation/final-selection separation already implemented by the Fact and Claim families, preserves bounded Agent judgment, and keeps material truth ownership local.",
+      "scope_effect": "one shared provider-neutral zero-call WWC contract implementation bundle"
+    },
+    {
+      "option_id": "raise_final_WWC_maximum_to_six",
+      "decision": "rejected",
+      "reason": "It changes the product output budget to match one observed response instead of repairing the declared candidate-to-final projection."
+    },
+    {
+      "option_id": "silently_take_first_three_or_drop_invalid_candidates",
+      "decision": "rejected",
+      "reason": "Provider order is not a stable quality policy and invalid aliases, enum values, dates, duplicates or cross-case references must remain fail-closed."
+    },
+    {
+      "option_id": "retry_R7_reprompt_or_switch_model",
+      "decision": "rejected",
+      "reason": "R7 is consumed and the model complied with the visible cardinality contract; another paid call would test an unfixed project defect."
+    }
+  ],
+  "selected_minimum_implementation_contract": {
+    "contract_ref": "fin01.s4.WWC_provider_candidate_validation_and_deterministic_final_selection:v1",
+    "scope": "what_would_change_atoms candidate validation stable local selection and canonical rendering only",
+    "maximum_zero_call_implementation_bundles": 1,
+    "automatic_follow_on_implementation_bundles": 0,
+    "provider_candidate_contract": {
+      "minimum_candidate_count": 1,
+      "maximum_candidate_count": 6,
+      "exact_atom_shape_required": true,
+      "request_local_claim_alias_required": true,
+      "request_local_authority_aliases_required": true,
+      "finite_trigger_direction_cadence_and_transition_enums_required": true,
+      "bound_date_alias_semantics_required": true,
+      "provider_free_material_narrative_allowed": false,
+      "provider_emits_task_id_or_canonical_rank": false
+    },
+    "pre_selection_validation": {
+      "validate_every_candidate_before_selection": true,
+      "candidate_count_zero": "typed_required_output_missing_failure",
+      "candidate_count_one_to_six": "continue_to_validation_and_selection",
+      "candidate_count_above_six": "typed_candidate_cardinality_failure",
+      "invalid_candidate_can_be_silently_dropped": false,
+      "unknown_cross_case_or_wrong_kind_alias": "L1_hard_integrity_fail_closed",
+      "malformed_duplicate_or_invalid_enum": "fail_closed",
+      "unbound_or_conflicting_date_alias": "L1_hard_temporal_authority_fail_closed",
+      "truncated_or_invalid_JSON": "fail_closed",
+      "provider_byte_token_storage_and_security_envelopes_unchanged": true
+    },
+    "deterministic_selection": {
+      "final_selected_maximum": 3,
+      "selected_count": "min(valid_candidate_count,3)",
+      "ranking_tuple_in_order": [
+        "claim_epistemic_priority_ascending",
+        "authority_specificity_rank_ascending",
+        "trigger_actionability_rank_ascending",
+        "review_cadence_rank_ascending",
+        "expected_transition_rank_ascending",
+        "canonical_candidate_digest_ascending",
+        "provider_ordinal_ascending"
+      ],
+      "ranking_inputs_owned_by": "validated request-local claim authority temporal policy and exact candidate atom",
+      "model_generated_score_or_free_form_rank_used": false,
+      "ticker_case_or_provider_specific_branch_allowed": false,
+      "permutation_stability_required": true,
+      "exact_duplicate_candidate_handling": "fail_closed_before_selection"
+    },
+    "local_canonical_rendering": {
+      "canonical_field_id": "what_would_change",
+      "task_id_owner": "local_deterministic_ordinal_after_selection",
+      "claim_and_authority_ref_expansion_owner": "local_exact_alias_expansion",
+      "date_and_time_window_owner": "local_temporal_authority_policy",
+      "decision_rule_transition_and_stop_text_owner": "local_deterministic_renderer",
+      "selected_candidate_content_rewritten": false,
+      "downstream_receives_only_validated_selected_canonical_tasks": true
+    },
+    "single_source_surfaces": [
+      "model-visible output constraints",
+      "wire schema array bounds and descriptions",
+      "compiled system instruction",
+      "local candidate validator",
+      "deterministic selector",
+      "canonical renderer",
+      "fake Provider",
+      "mutation fixtures",
+      "capacity declaration",
+      "typed failure descriptor"
+    ],
+    "canonical_WWC_schema_change_allowed": false,
+    "material_numeric_or_temporal_gate_weakening_allowed": false,
+    "historical_R7_capture_or_terminal_truth_rewrite_allowed": false
+  },
+  "minimum_implementation_acceptance": {
+    "boundary_candidate_counts": {
+      "zero": "typed failure",
+      "one": "one selected task",
+      "three": "three selected tasks",
+      "six": "three deterministically selected tasks",
+      "seven": "typed candidate cardinality failure"
+    },
+    "all_candidates_validate_before_selection": true,
+    "one_invalid_candidate_among_six_fails_before_selection": true,
+    "unknown_or_cross_case_alias_fails_before_selection": true,
+    "duplicate_candidate_fails_before_selection": true,
+    "unbound_date_alias_fails_before_selection": true,
+    "permutation_stability_for_same_valid_candidate_set": true,
+    "stable_tie_break_by_digest_then_provider_ordinal": true,
+    "DELL_MU_NVDA_full_fake_required": true,
+    "per_case_required_nodes_callbacks_captures_artifacts": [
+      6,
+      12,
+      12,
+      9
+    ],
+    "terminal_failure_capture_preservation_required": true,
+    "independent_fresh_agent_proof_required_after_implementation": true,
+    "single_node_canary_after_implementation_authorized": false,
+    "remaining_formal_MU_exact_live_ceiling": 0,
+    "R8_or_replacement_live_requires_new_project_level_authority_after_implementation_and_fresh_proof": true
+  },
+  "sequence_boundary": {
+    "current_sequence": "S4_T06_R7_first_credible_failure_WWC_candidate_selected_cardinality_disposition_only",
+    "implementation_in_this_decision": false,
+    "model_provider_network_source_admission_run_artifact_paired_owner_or_T07_actions_in_this_decision": false,
+    "deferred_to_T08_T10_or_S5": [
+      "general dependency and conflict atomization",
+      "cross-provider model quality calibration",
+      "narrative style and density optimization",
+      "global WWC semantic deduplication across cells"
+    ],
+    "not_reopened_in_T06": [
+      "Claim epistemic-support-role v2",
+      "material numeric truth ownership",
+      "case delivery identity ownership",
+      "capture-v2 terminal result materialization"
+    ]
+  },
+  "stage_disposition": {
+    "RC_P36_083": "root_cause_disposed_deterministic_WWC_candidate_validation_and_final_selection_selected_implementation_pending",
+    "RC_P36_080": "remains_open_final_nine_Artifact_L1_not_reached",
+    "R7": "immutable_terminal_failed_consumed_no_retry",
+    "S4_T06": "blocked_pending_one_zero_call_WWC_implementation_bundle_and_independent_fresh_proof",
+    "R8_or_replacement_exact_live": "not_authorized",
+    "paired_assessment": "not_eligible",
+    "owner_acceptance": "not_eligible",
+    "S4_T07": "not_entered",
+    "S4": "not_passed",
+    "S5_release_production": "blocked"
+  },
+  "observed_counts_this_disposition": {
+    "runtime_code_changes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "new_admissions": 0,
+    "new_work_units": 0,
+    "new_attempts": 0,
+    "new_research_runs": 0,
+    "business_artifacts": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0,
+    "T07_operations": 0
+  },
+  "next_action": "S4-T06-MU-WWC-PROVIDER-CANDIDATE-VALIDATION-AND-DETERMINISTIC-FINAL-SELECTION-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "next_action_authorized": false,
+  "known_boundary": "This decision selects one bounded zero-call runtime repair. It does not implement the selector, reinterpret or rerun R7, authorize R8 or another live run, perform paired assessment, accept T06, or enter T07."
+}

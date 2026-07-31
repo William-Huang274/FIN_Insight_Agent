@@ -1,0 +1,113 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r7_typed_post_provider_failure_envelope_and_canonical_observability_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T05-DELL-R7-TYPED-POST-PROVIDER-FAILURE-ENVELOPE-AND-CANONICAL-OBSERVABILITY-MINIMUM-ZERO-CALL-IMPLEMENTATION-R1",
+  "recorded_at": "2026-07-28T00:45:00+08:00",
+  "status": "pass_zero_call_typed_post_provider_failure_envelope_canonical_terminalization_and_12_call_9_artifact_fake_full_chain_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "按照这个顺序往下做",
+    "implementation_authorized": true,
+    "zero_call_fault_injection_authorized": true,
+    "fake_provider_full_chain_authorized": true,
+    "new_live_execution_in_this_implementation": false,
+    "historical_R7_relaunch_or_rewrite": false
+  },
+  "source_disposition": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r7_post_verifier_untyped_valueerror_and_lost_failure_observability_zero_call_root_cause_disposition_v1_0.json",
+    "issue_id": "RC-P36-064-s4-R7-post-verifier-untyped-valueerror-and-lost-failure-observability",
+    "selected_contract_ref": "fin01.bounded_agent.post_provider_failure_envelope:v1"
+  },
+  "implementation": {
+    "lifecycle_owner": "S3ThreeCellBoundedAgentExecutor shared execution observation extended by adapter and runtime",
+    "typed_after_first_provider_receipt": true,
+    "lifecycle_phases": [
+      "node_envelope_accounting",
+      "post_node_validation",
+      "post_verifier_call_accounting",
+      "execution_artifact_assembly",
+      "adapter_output_conversion",
+      "profile_artifact_ref_binding",
+      "profile_result_validation",
+      "profile_trace_recording"
+    ],
+    "safe_failure_fields": [
+      "contract_ref",
+      "lifecycle_phase",
+      "failure_code",
+      "observed_counts",
+      "usage_receipts",
+      "estimated_cost_usd",
+      "completed_node_receipts"
+    ],
+    "restricted_provider_output_captures_are_terminalized_separately": true,
+    "raw_exception_message_stack_private_reasoning_or_credentials_in_failure_observation": false,
+    "existing_hard_validation_invariants_weakened": false,
+    "automatic_retry_fallback_replay_relaunch_or_rerun_added": false
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_executor.py": "08cc4a0cae56c7fa05499b88f6a9b9d8d040b07550340d9477c60ac728ac8a03",
+    "apps/workbench/backend/application/research_runtime.py": "592e1255f9c4ef962495b01cb9f8a770ffbf2c8e03999a47ce69b926486c73fb",
+    "src/sec_agent/canonical_runtime/facade.py": "e82109377b0c4872d7379cff97900db0fbb44c9b69c2f187cee9dc4324267a4e",
+    "tests/contract/test_fin_0_1_s4_t05_typed_post_provider_failure_envelope_zero_call_implementation.py": "d4eaced6171224268ca5be131845a4156c3745178518ffba5ebb920609c2afe5",
+    "tests/contract/test_fin_0_1_s4_t05_dell_r7_post_verifier_untyped_valueerror_and_lost_failure_observability_root_cause_disposition.py": "8af3d681ec191ccc2988675235714235b2b22abdcd29ca2916d5dc716d60c3f3"
+  },
+  "deterministic_acceptance": {
+    "fault_injection_phases": [
+      "post_verifier_call_accounting",
+      "execution_artifact_assembly",
+      "adapter_output_conversion",
+      "profile_result_validation",
+      "profile_trace_recording"
+    ],
+    "each_fault_has_typed_phase_and_allowlisted_code": true,
+    "twelve_call_fault_preserves_12_usage_receipts": true,
+    "twelve_call_fault_preserves_12_restricted_captures": true,
+    "completed_logical_node_receipts": 6,
+    "canonical_observed_model_provider_network_calls": [
+      12,
+      12,
+      12
+    ],
+    "canonical_failure_artifact_count": 0,
+    "canonical_failure_retry_count": 0,
+    "success_fake_provider_callbacks": 12,
+    "success_artifact_count": 9,
+    "success_artifact_type_set_exact": true
+  },
+  "verification": {
+    "focused_command": "python -m pytest -q tests/contract/test_fin_0_1_s4_t05_typed_post_provider_failure_envelope_zero_call_implementation.py tests/contract/test_fin_0_1_s4_t05_dell_r7_post_verifier_untyped_valueerror_and_lost_failure_observability_root_cause_disposition.py",
+    "focused_result": "10 passed",
+    "full_fake_success_regression": "passed",
+    "canonical_failure_terminalization": "passed",
+    "historical_R7_failure_result_immutable": true
+  },
+  "observed_counts": {
+    "real_model_calls": 0,
+    "real_provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "restricted_capture_reads": 0,
+    "new_admissions": 0,
+    "new_work_units": 0,
+    "new_attempts": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0,
+    "paired_assessments": 0,
+    "human_reviews": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_064": "minimum_zero_call_implementation_complete_fresh_agent_proof_pending",
+    "S4_T05": "blocked_pending_fresh_proof_new_admission_and_one_exact_live",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "release_admission": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "deferred_sequence_items": [
+    "dependency_and_conflict_deterministic_assembly",
+    "Writer_and_Verifier_atomization",
+    "general_multi_case_failure_taxonomy",
+    "cross_provider_strict_schema_capability_matrix"
+  ],
+  "next_action": "S4-T05-DELL-R8-TYPED-FAILURE-ENVELOPE-FRESH-AGENT-PROOF-DECISION"
+}

@@ -1,0 +1,610 @@
+{
+  "schema_version": "fin_ia_0_1_s4_fact_candidate_pool_profiles_v1_0",
+  "contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+  "profile_set_id": "FIN-IA-0.1-S4-FACT-CANDIDATE-POOL-PROFILES-R1",
+  "profile_set_digest": "fff9cd2858d52e382fc93c4418005b4750d652b02f6730dc212184caf3bf7f52",
+  "profiles": [
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v3",
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "coverage_slots": [
+        {
+          "coverage_slot_id": "issuer_demand_signal",
+          "coverage_slot_priority": 10,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_demand_or_order_signal"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "issuer_revenue_conversion",
+          "coverage_slot_priority": 20,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_revenue_conversion"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "issuer_counterevidence",
+          "coverage_slot_priority": 30,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_counterevidence"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "orders",
+          "coverage_slot_priority": 40,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["ai_server_orders"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "backlog",
+          "coverage_slot_priority": 45,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["ai_server_backlog"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "revenue_and_shipments",
+          "coverage_slot_priority": 50,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["ai_server_revenue", "ai_server_shipments"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 2
+        }
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v3",
+      "program_cell_id": "value_and_profit_capture",
+      "coverage_slots": [
+        {
+          "coverage_slot_id": "issuer_disclosure",
+          "coverage_slot_priority": 10,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_counterevidence", "issuer_segment_or_product_disclosure", "issuer_financial_statement"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "revenue_and_reported_profitability",
+          "coverage_slot_priority": 20,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["company_revenue", "revenue", "ai_server_revenue", "company_operating_income", "operating_income", "operating_margin"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["segment", "company_total", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "bounded_aggregate_anchor",
+          "coverage_slot_priority": 15,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["isg_operating_margin_recomputed"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["segment", "company_total", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "working_capital",
+          "coverage_slot_priority": 40,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["accounts_payable", "accounts_receivable", "inventory"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "cash_conversion",
+          "coverage_slot_priority": 50,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["operating_cash_flow", "free_cash_flow", "free_cash_flow_recomputed"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "investment",
+          "coverage_slot_priority": 60,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["capital_expenditure_and_capitalized_software"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        }
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v3",
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "coverage_slots": [
+        {
+          "coverage_slot_id": "issuer_counterevidence",
+          "coverage_slot_priority": 10,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_counterevidence"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "issuer_financial_boundary",
+          "coverage_slot_priority": 20,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_financial_statement"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "bounded_aggregate_anchor",
+          "coverage_slot_priority": 15,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["isg_operating_margin_recomputed"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["segment", "company_total", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "working_capital",
+          "coverage_slot_priority": 40,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["accounts_payable", "accounts_receivable", "inventory"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "cash_and_reported_profitability",
+          "coverage_slot_priority": 50,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["operating_cash_flow", "free_cash_flow", "free_cash_flow_recomputed", "operating_income", "operating_margin"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "investment",
+          "coverage_slot_priority": 60,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["capital_expenditure_and_capitalized_software"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        }
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "coverage_slots": [
+        {
+          "coverage_slot_id": "issuer_commitment_and_supply",
+          "coverage_slot_priority": 10,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_customer_commitment_and_supply_signal"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "shipment_and_qualification",
+          "coverage_slot_priority": 20,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_HBM_shipment_and_qualification_signal"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "product_generation",
+          "coverage_slot_priority": 30,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["official_HBM_product_generation_and_platform_signal"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "demand_counterevidence",
+          "coverage_slot_priority": 40,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["official_HBM_demand_and_manufacturing_counterevidence"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "memory_cycle_counterevidence",
+          "coverage_slot_priority": 50,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["memory_cycle_supply_counterevidence"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        }
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+      "program_cell_id": "value_and_profit_capture",
+      "coverage_slots": [
+        {
+          "coverage_slot_id": "issuer_disclosure",
+          "coverage_slot_priority": 10,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_financial_statement", "official_pricing_mix_inventory_and_cash_disclosure"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "revenue_and_mix",
+          "coverage_slot_priority": 20,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["revenue", "dram_revenue", "dram_revenue_share"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["segment", "company_total", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "profitability",
+          "coverage_slot_priority": 30,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["gaap_gross_margin_recomputed", "gaap_operating_margin_recomputed", "gaap_gross_margin", "gross_margin", "gross_profit", "operating_income", "net_income"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["segment", "company_total", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "inventory",
+          "coverage_slot_priority": 40,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["inventory", "inventory_days"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "bounded_aggregate_anchor",
+          "coverage_slot_priority": 15,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["adjusted_free_cash_flow_recomputed"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "cash_and_investment",
+          "coverage_slot_priority": 60,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["operating_cash_flow", "adjusted_free_cash_flow", "capital_expenditures_net", "net_capital_intensity_recomputed"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        }
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "coverage_slots": [
+        {
+          "coverage_slot_id": "issuer_company_signals",
+          "coverage_slot_priority": 10,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_customer_commitment_and_supply_signal", "issuer_financial_statement", "issuer_HBM_shipment_and_qualification_signal"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "platform_and_generation",
+          "coverage_slot_priority": 20,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["official_HBM_product_generation_and_platform_signal", "official_pricing_mix_inventory_and_cash_disclosure"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "cycle_and_demand_counterevidence",
+          "coverage_slot_priority": 30,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["official_HBM_demand_and_manufacturing_counterevidence", "memory_cycle_supply_counterevidence"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "revenue_and_mix",
+          "coverage_slot_priority": 40,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["revenue", "dram_revenue", "dram_revenue_share"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["segment", "company_total", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "profitability_and_balance",
+          "coverage_slot_priority": 50,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["gaap_gross_margin_recomputed", "gaap_operating_margin_recomputed", "gaap_gross_margin", "gross_margin", "gross_profit", "operating_income", "net_income", "inventory", "inventory_days", "operating_cash_flow", "adjusted_free_cash_flow", "capital_expenditures_net", "net_capital_intensity_recomputed"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["segment", "company_total", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "bounded_aggregate_anchor",
+          "coverage_slot_priority": 35,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["adjusted_free_cash_flow_recomputed"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        }
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v4",
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "coverage_slots": [
+        {
+          "coverage_slot_id": "issuer_demand_signal",
+          "coverage_slot_priority": 10,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_demand_or_order_signal"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "issuer_revenue_conversion",
+          "coverage_slot_priority": 20,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_revenue_conversion"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "issuer_counterevidence",
+          "coverage_slot_priority": 30,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_counterevidence"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "orders",
+          "coverage_slot_priority": 40,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["ai_server_orders"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "backlog",
+          "coverage_slot_priority": 45,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["ai_server_backlog"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "revenue_and_shipments",
+          "coverage_slot_priority": 50,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["ai_server_revenue", "ai_server_shipments"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 2
+        }
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v4",
+      "program_cell_id": "value_and_profit_capture",
+      "coverage_slots": [
+        {
+          "coverage_slot_id": "issuer_disclosure",
+          "coverage_slot_priority": 10,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_counterevidence", "issuer_segment_or_product_disclosure", "issuer_financial_statement"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "revenue_and_reported_profitability",
+          "coverage_slot_priority": 20,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["company_revenue", "revenue", "ai_server_revenue", "company_operating_income", "operating_income", "operating_margin"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["segment", "company_total", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "bounded_aggregate_anchor",
+          "coverage_slot_priority": 15,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["isg_operating_margin_recomputed"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["segment", "company_total", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "working_capital",
+          "coverage_slot_priority": 40,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["accounts_payable", "accounts_receivable", "inventory"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "cash_conversion",
+          "coverage_slot_priority": 50,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["operating_cash_flow", "free_cash_flow", "free_cash_flow_recomputed"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "investment",
+          "coverage_slot_priority": 60,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["capital_expenditure_and_capitalized_software"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        }
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v4",
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "coverage_slots": [
+        {
+          "coverage_slot_id": "issuer_counterevidence",
+          "coverage_slot_priority": 10,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_counterevidence"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "issuer_financial_boundary",
+          "coverage_slot_priority": 20,
+          "eligible_support_kinds": ["Evidence"],
+          "eligible_semantic_roles": ["issuer_financial_statement"],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "bounded_aggregate_anchor",
+          "coverage_slot_priority": 15,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["isg_operating_margin_recomputed"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["segment", "company_total", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "working_capital",
+          "coverage_slot_priority": 40,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["accounts_payable", "accounts_receivable", "inventory"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "cash_and_reported_profitability",
+          "coverage_slot_priority": 50,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["operating_cash_flow", "free_cash_flow", "free_cash_flow_recomputed", "operating_income", "operating_margin"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        },
+        {
+          "coverage_slot_id": "investment",
+          "coverage_slot_priority": 60,
+          "eligible_support_kinds": ["Numeric"],
+          "eligible_semantic_roles": ["capital_expenditure_and_capitalized_software"],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 1
+        }
+      ],
+      "audit_only_rules": []
+    }
+  ]
+}

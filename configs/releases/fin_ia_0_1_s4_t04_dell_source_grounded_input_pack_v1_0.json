@@ -1,0 +1,1289 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t04_source_grounded_input_pack_v1_0",
+  "contract_ref": "fin01.s4.source_grounded_case_input:v1",
+  "pack_id": "FIN-IA-0.1-S4-T04-DELL-SOURCE-GROUNDED-INPUT-R1",
+  "frozen_at": "2026-07-26T18:45:00+08:00",
+  "status": "source_routes_executed_issuer_bound_input_head_ready",
+  "case_ticker": "DELL",
+  "legal_name": "Dell Technologies Inc.",
+  "issuer_identifier": "CIK0001571996",
+  "as_of": "2026-07-26T00:00:00Z",
+  "source_snapshots": [
+    {
+      "source_id": "dell_fy26_results_pdf",
+      "source_url": "https://investors.delltechnologies.com/node/19176/pdf",
+      "title": "Dell Technologies Fourth Quarter and Full-Year Fiscal 2026 Results",
+      "published_at": "2026-02-26",
+      "retrieval_channel": "direct_http_pdf_pdfplumber_and_visual_page_check",
+      "fetch_status": "success",
+      "locator": "PDF pages 1-2; headline paragraph and Operating Segments Results table",
+      "normalized_extract": "FY26: more than USD64bn AI-optimized server orders, more than USD25bn shipped, USD43bn ending backlog; Q4 AI-optimized server revenue USD8,952m; FY26 USD24,683m; Q4 ISG revenue USD19,602m and operating income USD2,900m; FY26 ISG revenue USD60,826m and operating income USD7,111m.",
+      "full_document_sha256": "17be3981929167a2c6033a75abe24159e4de624bbbb7261b66fd8b189680e2f9",
+      "source_snapshot_ref": "s4_dell_source_snapshot_0bb7baffa5ec1c2b1c616a24",
+      "normalized_locator_snapshot_digest": "0bb7baffa5ec1c2b1c616a24648a1effd5948148fe449552426827e81dbd7e89"
+    },
+    {
+      "source_id": "dell_q1_fy27_earnings_exhibit_pdf",
+      "source_url": "https://investors.delltechnologies.com/static-files/05af7a65-5059-4955-a4b3-7f79494b664c",
+      "title": "Dell Technologies First Quarter Fiscal 2027 Earnings Exhibit",
+      "published_at": "2026-05-28",
+      "retrieval_channel": "direct_http_pdf_pdfplumber_and_visual_page_check",
+      "fetch_status": "success",
+      "locator": "PDF pages 1 and 4; summary and Segment Information table",
+      "normalized_extract": "Q1 FY27: USD24.4bn AI orders and USD16.1bn AI server revenue; AI-optimized server revenue USD16,132m; total ISG revenue USD29,009m; ISG operating income USD3,055m and margin 10.5%; company revenue USD43,842m, operating income USD3,656m and cash from operating activities USD4,081m.",
+      "full_document_sha256": "e8e41fb7b68d730f9c966f1213adb1838cd30aaf3a4a6ad745b57f7e9e30cb9e",
+      "source_snapshot_ref": "s4_dell_source_snapshot_498a54f03e96316e37d4a7ba",
+      "normalized_locator_snapshot_digest": "498a54f03e96316e37d4a7ba4a536b9c5f44cc6bde18445d9656a33384683818"
+    },
+    {
+      "source_id": "dell_q1_fy27_earnings_transcript",
+      "source_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "title": "DELL Q1 2027 Earnings Call",
+      "published_at": "2026-05-28",
+      "retrieval_channel": "official_ir_document_web_content_parser",
+      "fetch_status": "success",
+      "locator": "prepared remarks, Q1 AI demand paragraph",
+      "normalized_extract": "Q1 FY27 AI orders USD24.4bn, AI server revenue USD16.1bn, ending AI backlog USD51.3bn; demand exceeded supply with memory described as the primary constraint; customer count surpassed 5,000 across neocloud, sovereign and enterprise.",
+      "full_document_sha256": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_0fd234a22faefefb615c3189",
+      "normalized_locator_snapshot_digest": "0fd234a22faefefb615c3189256d77b8affbc58683e40216aaca177b4bc06506"
+    },
+    {
+      "source_id": "dell_q1_fy27_10q",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "title": "Dell Technologies Form 10-Q for quarter ended May 1, 2026",
+      "published_at": "2026-06-09",
+      "retrieval_channel": "sec_official_web_content_parser",
+      "fetch_status": "success",
+      "locator": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "normalized_extract": "At May 1, 2026: accounts receivable USD25,854m, inventories USD15,052m, accounts payable USD45,261m. At January 30, 2026: USD17,585m, USD10,437m, USD33,630m respectively. Q1 cash from operations USD4,081m; capex and capitalized software USD963m; free cash flow USD3,118m. AI-optimized server revenue USD16,132m; ISG revenue USD29,009m and operating income USD3,055m.",
+      "full_document_sha256": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+      "normalized_locator_snapshot_digest": "f317992a601c9666b4881a69c4f86b93c7595dc75e39236cab3f1317a5a05a50"
+    },
+    {
+      "source_id": "dell_fy26_10k",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000008/dell-20260130.htm",
+      "title": "Dell Technologies Form 10-K for fiscal year ended January 30, 2026",
+      "published_at": "2026-03-16",
+      "retrieval_channel": "sec_official_web_content_parser",
+      "fetch_status": "success",
+      "locator": "MD&A lines 1170-1202 and ISG discussion lines 1328-1335",
+      "normalized_extract": "Dell reports inherent non-linearity between AI demand and shipments, a lower gross margin rate from mix shifting toward AI-optimized servers, and working-capital effects including higher inventory, receivables and payables.",
+      "full_document_sha256": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_18501f693947c093203bc4de",
+      "normalized_locator_snapshot_digest": "18501f693947c093203bc4dee9996ab6b9681c9e595e80079de68fdcf6607e6a"
+    },
+    {
+      "source_id": "dell_poweredge_xe9712_product",
+      "source_url": "https://www.dell.com/en-us/shop/ipovw/poweredge-xe9712",
+      "title": "Dell PowerEdge XE9712 product page",
+      "published_at": "2026-07-26",
+      "retrieval_channel": "official_product_web_content_parser",
+      "fetch_status": "success",
+      "locator": "technical specifications: accelerator, memory, power and cooling",
+      "normalized_extract": "PowerEdge XE9712 is a rack-scale AI system; the current product page describes Blackwell accelerators, NVLink CPU-GPU interconnect, HBM3e, IR9048 power shelf and direct liquid cooling.",
+      "full_document_sha256": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_28e736b05dd016c21c8c780f",
+      "normalized_locator_snapshot_digest": "28e736b05dd016c21c8c780f3bd9aed0c01611cd99d68b8487c3d7093208bd1d"
+    },
+    {
+      "source_id": "dell_coreweave_xe9712_deployment",
+      "source_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~12~dell-cw-customer-announce.htm",
+      "title": "CoreWeave and Dell Technologies Extend Relationship to Deliver AI at Scale",
+      "published_at": "2024-12-09",
+      "retrieval_channel": "official_customer_deployment_news_web_content_parser",
+      "fetch_status": "success",
+      "locator": "lines 53-68",
+      "normalized_extract": "Dell disclosed first shipment of liquid-cooled PowerEdge XE9712 racks with NVIDIA GB200 NVL72 to CoreWeave, integrated in Dell IR7000 racks with Dell professional services.",
+      "full_document_sha256": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_d2d941c3e5a8036659c9f17a",
+      "normalized_locator_snapshot_digest": "d2d941c3e5a8036659c9f17af60d07ef4c581a697451fb32d407975056e2631a"
+    },
+    {
+      "source_id": "dell_xe9712_support_manual",
+      "source_url": "https://www.dell.com/support/manuals/en-us/poweredge-xe9712/xe9712_ism/system-battery-specifications",
+      "title": "Dell PowerEdge XE9712 Installation and Service Manual",
+      "published_at": "2026-04-25",
+      "retrieval_channel": "official_product_document_web_content_parser",
+      "fetch_status": "success",
+      "locator": "system configuration and technical specifications navigation",
+      "normalized_extract": "Dell support manual identifies the PowerEdge XE9712 system configuration and technical specification sections.",
+      "full_document_sha256": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_2ab783dc9d39f2b063d8cb81",
+      "normalized_locator_snapshot_digest": "2ab783dc9d39f2b063d8cb8195e50603df570be04625fca7f340a7dd919d11a1"
+    },
+    {
+      "source_id": "dell_global_xe9712_deployment",
+      "source_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~06~the-dell-ai-factory-with-nvidia-advances-supercomputing-class-infrastructure-powering-the-next-generation-of-hpc-and-ai.htm",
+      "title": "Dell AI Factory with NVIDIA Advances HPC and AI Infrastructure",
+      "published_at": "2026-06-22",
+      "retrieval_channel": "official_deployment_news_web_content_parser",
+      "fetch_status": "success",
+      "locator": "lines 79-83",
+      "normalized_extract": "Dell disclosed that Monash University's MAVERIC system uses liquid-cooled Dell PowerRack systems with PowerEdge XE9712 servers and NVIDIA GB200 NVL72 architecture.",
+      "full_document_sha256": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_9b203a315b4aff7829822642",
+      "normalized_locator_snapshot_digest": "9b203a315b4aff78298226427aefad25f8c00918c7cae5dfdc46d56bdb3542a0"
+    }
+  ],
+  "route_execution_receipts": [
+    {
+      "route_id": "p34_route::dell_ai_server_orders_shipments_backlog::01::sec_8k_earnings_release_table_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability"
+      ],
+      "attempted_url_or_query": "https://investors.delltechnologies.com/node/19176/pdf",
+      "fetch_status": "success",
+      "parser_status": "executed_promoted_issuer_evidence_and_numeric",
+      "row_count": 3,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_0bb7baffa5ec1c2b1c616a24",
+      "route_execution_status": "executed_promoted_issuer_evidence_and_numeric",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-26T18:45:00+08:00",
+      "route_receipt_ref": "s4_dell_route_receipt_94a1bffe0c503eae3b7ec29c"
+    },
+    {
+      "route_id": "p34_route::dell_ai_server_orders_shipments_backlog::02::investor_deck_pdf_table_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability"
+      ],
+      "attempted_url_or_query": "https://investors.delltechnologies.com/node/19176/pdf",
+      "fetch_status": "success",
+      "parser_status": "executed_promoted_issuer_evidence_and_numeric",
+      "row_count": 3,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_0bb7baffa5ec1c2b1c616a24",
+      "route_execution_status": "executed_promoted_issuer_evidence_and_numeric",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-26T18:45:00+08:00",
+      "route_receipt_ref": "s4_dell_route_receipt_854c0f579a10a665a8e25b30"
+    },
+    {
+      "route_id": "p34_route::dell_isg_revenue_margin_baseline::01::sec_8k_earnings_release_table_adapter",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://investors.delltechnologies.com/static-files/05af7a65-5059-4955-a4b3-7f79494b664c",
+      "fetch_status": "success",
+      "parser_status": "executed_promoted_issuer_evidence_and_numeric",
+      "row_count": 5,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_498a54f03e96316e37d4a7ba",
+      "route_execution_status": "executed_promoted_issuer_evidence_and_numeric",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-26T18:45:00+08:00",
+      "route_receipt_ref": "s4_dell_route_receipt_be527eade7f7ed869b2aa067"
+    },
+    {
+      "route_id": "p34_route::dell_isg_revenue_margin_baseline::02::investor_deck_pdf_table_adapter",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://investors.delltechnologies.com/node/19176/pdf",
+      "fetch_status": "success",
+      "parser_status": "executed_promoted_issuer_evidence_and_numeric",
+      "row_count": 5,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_0bb7baffa5ec1c2b1c616a24",
+      "route_execution_status": "executed_promoted_issuer_evidence_and_numeric",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-26T18:45:00+08:00",
+      "route_receipt_ref": "s4_dell_route_receipt_c9d0f75401b40f855a9a8104"
+    },
+    {
+      "route_id": "p34_route::dell_nvidia_poweredge_ai_factory_product_path::01::official_product_spec_page_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://www.dell.com/en-us/shop/ipovw/poweredge-xe9712",
+      "fetch_status": "success",
+      "parser_status": "executed_context_only_product_scope",
+      "row_count": 1,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_28e736b05dd016c21c8c780f",
+      "route_execution_status": "executed_context_only_product_scope",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-26T18:45:00+08:00",
+      "route_receipt_ref": "s4_dell_route_receipt_4c79405e6cb1ce2189491231"
+    },
+    {
+      "route_id": "p34_route::dell_nvidia_poweredge_ai_factory_product_path::02::customer_deployment_news_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~12~dell-cw-customer-announce.htm",
+      "fetch_status": "success",
+      "parser_status": "executed_context_only_deployment_scope",
+      "row_count": 1,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_d2d941c3e5a8036659c9f17a",
+      "route_execution_status": "executed_context_only_deployment_scope",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-26T18:45:00+08:00",
+      "route_receipt_ref": "s4_dell_route_receipt_e0150c156819e32c5b6e485f"
+    },
+    {
+      "route_id": "p34_route::dell_nvidia_poweredge_ai_factory_product_path::03::oem_configuration_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~12~dell-cw-customer-announce.htm",
+      "fetch_status": "success",
+      "parser_status": "executed_context_only_configuration_scope",
+      "row_count": 1,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_d2d941c3e5a8036659c9f17a",
+      "route_execution_status": "executed_context_only_configuration_scope",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-26T18:45:00+08:00",
+      "route_receipt_ref": "s4_dell_route_receipt_5c32bb3834a1ed497892b91a"
+    },
+    {
+      "route_id": "p34_route::dell_nvidia_poweredge_ai_factory_product_path::04::official_product_docs_or_pdf_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://www.dell.com/support/manuals/en-us/poweredge-xe9712/xe9712_ism/system-battery-specifications",
+      "fetch_status": "success",
+      "parser_status": "executed_context_only_document_scope",
+      "row_count": 1,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_2ab783dc9d39f2b063d8cb81",
+      "route_execution_status": "executed_context_only_document_scope",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-26T18:45:00+08:00",
+      "route_receipt_ref": "s4_dell_route_receipt_44eaa88bacd2724b2dbcbad6"
+    },
+    {
+      "route_id": "p34_route::dell_xe9712_gb200_oem_system_config::01::official_product_spec_page_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://www.dell.com/en-us/shop/ipovw/poweredge-xe9712",
+      "fetch_status": "success",
+      "parser_status": "executed_context_only_product_scope",
+      "row_count": 1,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_28e736b05dd016c21c8c780f",
+      "route_execution_status": "executed_context_only_product_scope",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-26T18:45:00+08:00",
+      "route_receipt_ref": "s4_dell_route_receipt_1077672dfa16db9a7b332187"
+    },
+    {
+      "route_id": "p34_route::dell_xe9712_gb200_oem_system_config::02::oem_configuration_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~12~dell-cw-customer-announce.htm",
+      "fetch_status": "success",
+      "parser_status": "executed_context_only_configuration_scope",
+      "row_count": 1,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_d2d941c3e5a8036659c9f17a",
+      "route_execution_status": "executed_context_only_configuration_scope",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-26T18:45:00+08:00",
+      "route_receipt_ref": "s4_dell_route_receipt_ad3487547037ebdcede0334e"
+    },
+    {
+      "route_id": "p34_route::dell_xe9712_gb200_oem_system_config::03::official_product_docs_or_pdf_adapter",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "attempted_url_or_query": "https://www.dell.com/support/manuals/en-us/poweredge-xe9712/xe9712_ism/system-battery-specifications",
+      "fetch_status": "success",
+      "parser_status": "executed_context_only_document_scope",
+      "row_count": 1,
+      "failure_reason": null,
+      "source_snapshot_ref": "s4_dell_source_snapshot_2ab783dc9d39f2b063d8cb81",
+      "route_execution_status": "executed_context_only_document_scope",
+      "promotion_without_execution_allowed": false,
+      "executed_at": "2026-07-26T18:45:00+08:00",
+      "route_receipt_ref": "s4_dell_route_receipt_592db44dda9dc75f7f551d37"
+    }
+  ],
+  "evidence_rows": [
+    {
+      "entity_ref": "DELL",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability"
+      ],
+      "evidence_role": "issuer_demand_or_order_signal",
+      "statement": "FY26 disclosed more than USD64bn AI-optimized server orders, more than USD25bn shipped, and USD43bn ending backlog.",
+      "period_or_version": "2026-02-26",
+      "source_url": "https://investors.delltechnologies.com/node/19176/pdf",
+      "citation": "PDF pages 1-2; headline paragraph and Operating Segments Results table",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_0bb7baffa5ec1c2b1c616a24",
+        "adapter": "direct_http_pdf_pdfplumber_and_visual_page_check",
+        "normalized_extract_digest": "0bb7baffa5ec1c2b1c616a24648a1effd5948148fe449552426827e81dbd7e89"
+      },
+      "authority_scope": "issuer_exact_statement_with_explicit_boundary",
+      "claim_boundary": "Supports issuer-level demand visibility; does not prove AI-server gross margin, customer allocation or future conversion.",
+      "evidence_ref": "s4_dell_evidence_orders_shipments_backlog_fy26_e6c70720edab25b9"
+    },
+    {
+      "entity_ref": "DELL",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability"
+      ],
+      "evidence_role": "issuer_revenue_conversion",
+      "statement": "Q1 FY27 disclosed USD24.4bn AI orders, USD16.1bn AI-server revenue and USD51.3bn ending AI backlog.",
+      "period_or_version": "2026-05-28",
+      "source_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "citation": "prepared remarks, Q1 AI demand paragraph",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_0fd234a22faefefb615c3189",
+        "adapter": "official_ir_document_web_content_parser",
+        "normalized_extract_digest": "0fd234a22faefefb615c3189256d77b8affbc58683e40216aaca177b4bc06506"
+      },
+      "authority_scope": "issuer_exact_statement_with_explicit_boundary",
+      "claim_boundary": "Orders, revenue and backlog are separately disclosed issuer measures; no conversion ratio is inferred.",
+      "evidence_ref": "s4_dell_evidence_orders_revenue_backlog_q1_fy27_01c3625a7bf669b0"
+    },
+    {
+      "entity_ref": "DELL",
+      "program_cell_ids": [
+        "value_and_profit_capture"
+      ],
+      "evidence_role": "issuer_segment_or_product_disclosure",
+      "statement": "Q1 FY27 disclosed AI-optimized server revenue of USD16,132m, total ISG revenue of USD29,009m and ISG operating income of USD3,055m.",
+      "period_or_version": "2026-05-28",
+      "source_url": "https://investors.delltechnologies.com/static-files/05af7a65-5059-4955-a4b3-7f79494b664c",
+      "citation": "PDF pages 1 and 4; summary and Segment Information table",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_498a54f03e96316e37d4a7ba",
+        "adapter": "direct_http_pdf_pdfplumber_and_visual_page_check",
+        "normalized_extract_digest": "498a54f03e96316e37d4a7ba4a536b9c5f44cc6bde18445d9656a33384683818"
+      },
+      "authority_scope": "issuer_exact_statement_with_explicit_boundary",
+      "claim_boundary": "Supports exact product revenue and broad ISG economics; does not allocate ISG profit to AI servers.",
+      "evidence_ref": "s4_dell_evidence_isg_and_ai_server_q1_fy27_f33430d94f4282d6"
+    },
+    {
+      "entity_ref": "DELL",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "evidence_role": "issuer_financial_statement",
+      "statement": "Q1 FY27 filing reports receivables, inventory, payables, operating cash flow and capital expenditures with exact period scope.",
+      "period_or_version": "2026-06-09",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "citation": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+        "adapter": "sec_official_web_content_parser",
+        "normalized_extract_digest": "f317992a601c9666b4881a69c4f86b93c7595dc75e39236cab3f1317a5a05a50"
+      },
+      "authority_scope": "issuer_exact_statement_with_explicit_boundary",
+      "claim_boundary": "Supports company-level working-capital and cash analysis only; product-specific cash conversion remains unavailable.",
+      "evidence_ref": "s4_dell_evidence_working_capital_and_cash_q1_fy27_39b1bd369737504f"
+    },
+    {
+      "entity_ref": "DELL",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "evidence_role": "issuer_counterevidence",
+      "statement": "Dell reports non-linear demand-to-shipment timing and lower gross-margin rate from a business mix shift toward AI-optimized servers.",
+      "period_or_version": "2026-03-16",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000008/dell-20260130.htm",
+      "citation": "MD&A lines 1170-1202 and ISG discussion lines 1328-1335",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_18501f693947c093203bc4de",
+        "adapter": "sec_official_web_content_parser",
+        "normalized_extract_digest": "18501f693947c093203bc4dee9996ab6b9681c9e595e80079de68fdcf6607e6a"
+      },
+      "authority_scope": "issuer_exact_statement_with_explicit_boundary",
+      "claim_boundary": "Supports a company-bound counterevidence mechanism; does not quantify AI-server product margin or cancellation risk.",
+      "evidence_ref": "s4_dell_evidence_ai_mix_margin_and_timing_counterevidence_eef167db2244fcc2"
+    },
+    {
+      "entity_ref": "DELL",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "evidence_role": "issuer_counterevidence",
+      "statement": "Dell described memory as the primary supply constraint while demand exceeded supply and backlog remained material.",
+      "period_or_version": "2026-05-28",
+      "source_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "citation": "prepared remarks, Q1 AI demand paragraph",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_0fd234a22faefefb615c3189",
+        "adapter": "official_ir_document_web_content_parser",
+        "normalized_extract_digest": "0fd234a22faefefb615c3189256d77b8affbc58683e40216aaca177b4bc06506"
+      },
+      "authority_scope": "issuer_exact_statement_with_explicit_boundary",
+      "claim_boundary": "Management commentary identifies a constraint; probability, duration and financial impact remain unquantified.",
+      "evidence_ref": "s4_dell_evidence_memory_supply_and_working_capital_counterevidence_7d40aae9ca73f2b0"
+    }
+  ],
+  "numeric_rows": [
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability"
+      ],
+      "metric_family": "ai_server_orders",
+      "value": "64000",
+      "comparison_operator": "greater_than",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "FY2026",
+      "source_ref": "s4_dell_evidence_orders_shipments_backlog_fy26_e6c70720edab25b9",
+      "source_url": "https://investors.delltechnologies.com/node/19176/pdf",
+      "source_coordinate": "PDF pages 1-2; headline paragraph and Operating Segments Results table",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_0bb7baffa5ec1c2b1c616a24",
+        "adapter": "direct_http_pdf_pdfplumber_and_visual_page_check"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_ai_server_orders_01_784295ebd586"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability"
+      ],
+      "metric_family": "ai_server_shipments",
+      "value": "25000",
+      "comparison_operator": "greater_than",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "FY2026",
+      "source_ref": "s4_dell_evidence_orders_shipments_backlog_fy26_e6c70720edab25b9",
+      "source_url": "https://investors.delltechnologies.com/node/19176/pdf",
+      "source_coordinate": "PDF pages 1-2; headline paragraph and Operating Segments Results table",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_0bb7baffa5ec1c2b1c616a24",
+        "adapter": "direct_http_pdf_pdfplumber_and_visual_page_check"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_ai_server_shipments_01_c3664ffec490"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability"
+      ],
+      "metric_family": "ai_server_backlog",
+      "value": "43000",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "2026-01-30",
+      "source_ref": "s4_dell_evidence_orders_shipments_backlog_fy26_e6c70720edab25b9",
+      "source_url": "https://investors.delltechnologies.com/node/19176/pdf",
+      "source_coordinate": "PDF pages 1-2; headline paragraph and Operating Segments Results table",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_0bb7baffa5ec1c2b1c616a24",
+        "adapter": "direct_http_pdf_pdfplumber_and_visual_page_check"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_ai_server_backlog_01_fca0ac1b25e9"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability"
+      ],
+      "metric_family": "ai_server_orders",
+      "value": "24400",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "Q1_FY2027",
+      "source_ref": "s4_dell_evidence_orders_revenue_backlog_q1_fy27_01c3625a7bf669b0",
+      "source_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "source_coordinate": "prepared remarks, Q1 AI demand paragraph",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_0fd234a22faefefb615c3189",
+        "adapter": "official_ir_document_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_ai_server_orders_02_fad88d8990cc"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "ISG_AI_optimized_servers",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "value_and_profit_capture"
+      ],
+      "metric_family": "ai_server_revenue",
+      "value": "16132",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "Q1_FY2027_three_months_ended_2026-05-01",
+      "source_ref": "s4_dell_evidence_isg_and_ai_server_q1_fy27_f33430d94f4282d6",
+      "source_url": "https://investors.delltechnologies.com/static-files/05af7a65-5059-4955-a4b3-7f79494b664c",
+      "source_coordinate": "PDF pages 1 and 4; summary and Segment Information table",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_498a54f03e96316e37d4a7ba",
+        "adapter": "direct_http_pdf_pdfplumber_and_visual_page_check"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin_from_revenue_only",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_ai_server_revenue_01_fbfb3fa7ad5d"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability"
+      ],
+      "metric_family": "ai_server_backlog",
+      "value": "51300",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "2026-05-01",
+      "source_ref": "s4_dell_evidence_orders_revenue_backlog_q1_fy27_01c3625a7bf669b0",
+      "source_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "source_coordinate": "prepared remarks, Q1 AI demand paragraph",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_0fd234a22faefefb615c3189",
+        "adapter": "official_ir_document_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_ai_server_backlog_02_56c43b0a5800"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "ISG",
+      "program_cell_ids": [
+        "value_and_profit_capture"
+      ],
+      "metric_family": "revenue",
+      "value": "29009",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "Q1_FY2027_three_months_ended_2026-05-01",
+      "source_ref": "s4_dell_evidence_isg_and_ai_server_q1_fy27_f33430d94f4282d6",
+      "source_url": "https://investors.delltechnologies.com/static-files/05af7a65-5059-4955-a4b3-7f79494b664c",
+      "source_coordinate": "PDF pages 1 and 4; summary and Segment Information table",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_498a54f03e96316e37d4a7ba",
+        "adapter": "direct_http_pdf_pdfplumber_and_visual_page_check"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_revenue_01_cd1ee21d9ae8"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "ISG",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "operating_income",
+      "value": "3055",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "Q1_FY2027_three_months_ended_2026-05-01",
+      "source_ref": "s4_dell_evidence_isg_and_ai_server_q1_fy27_f33430d94f4282d6",
+      "source_url": "https://investors.delltechnologies.com/static-files/05af7a65-5059-4955-a4b3-7f79494b664c",
+      "source_coordinate": "PDF pages 1 and 4; summary and Segment Information table",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_498a54f03e96316e37d4a7ba",
+        "adapter": "direct_http_pdf_pdfplumber_and_visual_page_check"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_operating_income_01_e8548e8c67e0"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "ISG",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "operating_margin",
+      "value": "10.5",
+      "comparison_operator": "exact",
+      "currency": "",
+      "unit": "percent",
+      "scale_multiplier": 1,
+      "period": "Q1_FY2027_three_months_ended_2026-05-01",
+      "source_ref": "s4_dell_evidence_isg_and_ai_server_q1_fy27_f33430d94f4282d6",
+      "source_url": "https://investors.delltechnologies.com/static-files/05af7a65-5059-4955-a4b3-7f79494b664c",
+      "source_coordinate": "PDF pages 1 and 4; summary and Segment Information table",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_498a54f03e96316e37d4a7ba",
+        "adapter": "direct_http_pdf_pdfplumber_and_visual_page_check"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_operating_margin_01_8a26faba130b"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture"
+      ],
+      "metric_family": "company_revenue",
+      "value": "43842",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "Q1_FY2027_three_months_ended_2026-05-01",
+      "source_ref": "s4_dell_evidence_isg_and_ai_server_q1_fy27_f33430d94f4282d6",
+      "source_url": "https://investors.delltechnologies.com/static-files/05af7a65-5059-4955-a4b3-7f79494b664c",
+      "source_coordinate": "PDF pages 1 and 4; summary and Segment Information table",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_498a54f03e96316e37d4a7ba",
+        "adapter": "direct_http_pdf_pdfplumber_and_visual_page_check"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_company_revenue_01_67a181a523c7"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture"
+      ],
+      "metric_family": "company_operating_income",
+      "value": "3656",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "Q1_FY2027_three_months_ended_2026-05-01",
+      "source_ref": "s4_dell_evidence_isg_and_ai_server_q1_fy27_f33430d94f4282d6",
+      "source_url": "https://investors.delltechnologies.com/static-files/05af7a65-5059-4955-a4b3-7f79494b664c",
+      "source_coordinate": "PDF pages 1 and 4; summary and Segment Information table",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_498a54f03e96316e37d4a7ba",
+        "adapter": "direct_http_pdf_pdfplumber_and_visual_page_check"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_company_operating_income_01_49c90f5f762e"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "accounts_receivable",
+      "value": "25854",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "2026-05-01",
+      "source_ref": "s4_dell_evidence_working_capital_and_cash_q1_fy27_39b1bd369737504f",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "source_coordinate": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+        "adapter": "sec_official_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_accounts_receivable_01_af6f9fb101eb"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "inventory",
+      "value": "15052",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "2026-05-01",
+      "source_ref": "s4_dell_evidence_working_capital_and_cash_q1_fy27_39b1bd369737504f",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "source_coordinate": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+        "adapter": "sec_official_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_inventory_01_d8485cb8ab73"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "accounts_payable",
+      "value": "45261",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "2026-05-01",
+      "source_ref": "s4_dell_evidence_working_capital_and_cash_q1_fy27_39b1bd369737504f",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "source_coordinate": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+        "adapter": "sec_official_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_accounts_payable_01_2b156f3811de"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "accounts_receivable",
+      "value": "17585",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "2026-01-30",
+      "source_ref": "s4_dell_evidence_working_capital_and_cash_q1_fy27_39b1bd369737504f",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "source_coordinate": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+        "adapter": "sec_official_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_accounts_receivable_02_e7aa565793af"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "inventory",
+      "value": "10437",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "2026-01-30",
+      "source_ref": "s4_dell_evidence_working_capital_and_cash_q1_fy27_39b1bd369737504f",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "source_coordinate": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+        "adapter": "sec_official_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_inventory_02_307fd6ace1c8"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "accounts_payable",
+      "value": "33630",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "2026-01-30",
+      "source_ref": "s4_dell_evidence_working_capital_and_cash_q1_fy27_39b1bd369737504f",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "source_coordinate": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+        "adapter": "sec_official_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_accounts_payable_02_2302ce4b2ba3"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "operating_cash_flow",
+      "value": "4081",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "Q1_FY2027_three_months_ended_2026-05-01",
+      "source_ref": "s4_dell_evidence_working_capital_and_cash_q1_fy27_39b1bd369737504f",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "source_coordinate": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+        "adapter": "sec_official_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_operating_cash_flow_01_1165db352ab9"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "capital_expenditure_and_capitalized_software",
+      "value": "963",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions_outflow",
+      "scale_multiplier": 1000000,
+      "period": "Q1_FY2027_three_months_ended_2026-05-01",
+      "source_ref": "s4_dell_evidence_working_capital_and_cash_q1_fy27_39b1bd369737504f",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "source_coordinate": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+        "adapter": "sec_official_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_capital_expenditure_and_capitalized_software_01_e4dbb88b625f"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "free_cash_flow",
+      "value": "3118",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "Q1_FY2027_three_months_ended_2026-05-01",
+      "source_ref": "s4_dell_evidence_working_capital_and_cash_q1_fy27_39b1bd369737504f",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "source_coordinate": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+        "adapter": "sec_official_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_free_cash_flow_01_8a80e2ea804a"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "operating_cash_flow",
+      "value": "2796",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions",
+      "scale_multiplier": 1000000,
+      "period": "Q1_FY2026_three_months_ended_2025-05-02",
+      "source_ref": "s4_dell_evidence_working_capital_and_cash_q1_fy27_39b1bd369737504f",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "source_coordinate": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+        "adapter": "sec_official_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_operating_cash_flow_02_1b02db5bd429"
+    },
+    {
+      "entity_ref": "DELL",
+      "segment_ref": "__company_total__",
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "metric_family": "capital_expenditure_and_capitalized_software",
+      "value": "568",
+      "comparison_operator": "exact",
+      "currency": "USD",
+      "unit": "USD_millions_outflow",
+      "scale_multiplier": 1000000,
+      "period": "Q1_FY2026_three_months_ended_2025-05-02",
+      "source_ref": "s4_dell_evidence_working_capital_and_cash_q1_fy27_39b1bd369737504f",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm",
+      "source_coordinate": "Statements of Financial Position lines 167-194; Cash Flows lines 309-336; ISG table lines 2267-2290",
+      "parser_lineage": {
+        "source_snapshot_ref": "s4_dell_source_snapshot_f317992a601c9666b4881a69",
+        "adapter": "sec_official_web_content_parser"
+      },
+      "exact_value_authority": true,
+      "cannot_support": [
+        "AI_server_gross_or_operating_margin",
+        "customer_allocation"
+      ],
+      "numeric_ref": "s4_dell_numeric_capital_expenditure_and_capitalized_software_02_c1c9a46aad58"
+    }
+  ],
+  "derived_metrics": [
+    {
+      "metric": "isg_operating_margin_recomputed",
+      "value": "10.53",
+      "unit": "percent",
+      "formula": "ISG_operating_income/ISG_revenue*100",
+      "input_numeric_refs": [
+        "s4_dell_numeric_operating_income_01_e8548e8c67e0",
+        "s4_dell_numeric_revenue_01_cd1ee21d9ae8"
+      ],
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "scope": "DELL_ISG_Q1_FY2027",
+      "cannot_support": [
+        "AI_server_specific_margin"
+      ],
+      "derived_metric_ref": "s4_dell_derived_b3168498119027a68a0e"
+    },
+    {
+      "metric": "free_cash_flow_recomputed",
+      "value": "3118",
+      "unit": "USD_millions",
+      "formula": "operating_cash_flow-capital_expenditure_outflow",
+      "input_numeric_refs": [
+        "s4_dell_numeric_operating_cash_flow_01_1165db352ab9",
+        "s4_dell_numeric_capital_expenditure_and_capitalized_software_01_e4dbb88b625f"
+      ],
+      "program_cell_ids": [
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "scope": "DELL_company_total_Q1_FY2027",
+      "cannot_support": [
+        "AI_server_specific_cash_conversion"
+      ],
+      "derived_metric_ref": "s4_dell_derived_dd3e351200dd80b09c5f"
+    }
+  ],
+  "graph_edges": [
+    {
+      "entity_ref": "DELL",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "from_ref": "DELL",
+      "to_ref": "PowerEdge_XE9712",
+      "edge_semantics": "product_platform",
+      "direction": "from_to",
+      "as_of": "2026-07-26",
+      "source_ref": "s4_dell_source_snapshot_28e736b05dd016c21c8c780f",
+      "source_url": "https://www.dell.com/en-us/shop/ipovw/poweredge-xe9712",
+      "boundary": "Current official product configuration context only; no financial implication.",
+      "graph_edge_is_direct_evidence": false,
+      "inferred_edge": false,
+      "graph_edge_ref": "s4_dell_graph_edge_803971725720643f2d04"
+    },
+    {
+      "entity_ref": "DELL",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "from_ref": "PowerEdge_XE9712",
+      "to_ref": "NVIDIA_GB200_NVL72",
+      "edge_semantics": "product_platform",
+      "direction": "from_to",
+      "as_of": "2024-12-09",
+      "source_ref": "s4_dell_source_snapshot_d2d941c3e5a8036659c9f17a",
+      "source_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~12~dell-cw-customer-announce.htm",
+      "boundary": "Dell's 2024 CoreWeave deployment disclosure binds this configuration; it is not a current order-volume measure.",
+      "graph_edge_is_direct_evidence": false,
+      "inferred_edge": false,
+      "graph_edge_ref": "s4_dell_graph_edge_d496bf1546ebfe5b8c2d"
+    },
+    {
+      "entity_ref": "DELL",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "from_ref": "CoreWeave",
+      "to_ref": "DELL_PowerEdge_XE9712",
+      "edge_semantics": "customer_deployment",
+      "direction": "from_to",
+      "as_of": "2024-12-09",
+      "source_ref": "s4_dell_source_snapshot_d2d941c3e5a8036659c9f17a",
+      "source_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2024~12~dell-cw-customer-announce.htm",
+      "boundary": "Official Dell deployment context; order value, margin and customer concentration cannot be inferred.",
+      "graph_edge_is_direct_evidence": false,
+      "inferred_edge": false,
+      "graph_edge_ref": "s4_dell_graph_edge_8a542d97db5ae24804ee"
+    },
+    {
+      "entity_ref": "DELL",
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "from_ref": "Monash_University",
+      "to_ref": "DELL_PowerEdge_XE9712_GB200_NVL72",
+      "edge_semantics": "customer_deployment",
+      "direction": "from_to",
+      "as_of": "2026-06-22",
+      "source_ref": "s4_dell_source_snapshot_9b203a315b4aff7829822642",
+      "source_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~06~the-dell-ai-factory-with-nvidia-advances-supercomputing-class-infrastructure-powering-the-next-generation-of-hpc-and-ai.htm",
+      "boundary": "Official Dell deployment context; financial contribution and shipment volume cannot be inferred.",
+      "graph_edge_is_direct_evidence": false,
+      "inferred_edge": false,
+      "graph_edge_ref": "s4_dell_graph_edge_762a4b577a5cd602e211"
+    }
+  ],
+  "typed_gaps": [
+    {
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability"
+      ],
+      "gap_code": "cannot_infer_order_or_backlog_to_revenue_conversion",
+      "gap_type": "source_absent_after_attempt",
+      "reason": "Order, backlog and revenue definitions are not a common cohort or denominator.",
+      "followup_ref": "official quarterly cohort/definition bridge",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_dell_gap_db8d2c8d6961bb9aa83c"
+    },
+    {
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability"
+      ],
+      "gap_code": "cannot_infer_demand_durability_or_pull_forward",
+      "gap_type": "source_absent_after_attempt",
+      "reason": "Issuer disclosures show demand and timing non-linearity but do not prove durable end demand.",
+      "followup_ref": "subsequent-period cancellation, deployment and channel checks",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_dell_gap_e7e0a85e6a9da70060b5"
+    },
+    {
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability"
+      ],
+      "gap_code": "cannot_infer_customer_or_channel_concentration",
+      "gap_type": "source_absent_after_attempt",
+      "reason": "Customer count and named deployments do not provide revenue concentration.",
+      "followup_ref": "issuer concentration disclosure or exact customer allocation",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_dell_gap_f7eedc6a9d34c1c6da8e"
+    },
+    {
+      "program_cell_ids": [
+        "value_and_profit_capture"
+      ],
+      "gap_code": "cannot_infer_AI_or_server_specific_gross_or_operating_profit",
+      "gap_type": "source_absent_after_attempt",
+      "reason": "Only AI-server revenue and broad ISG profit are disclosed.",
+      "followup_ref": "issuer-disclosed AI-server profit or exact product cost rows",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_dell_gap_1636a0d66993cf3db243"
+    },
+    {
+      "program_cell_ids": [
+        "value_and_profit_capture"
+      ],
+      "gap_code": "cannot_infer_incremental_profit_capture",
+      "gap_type": "source_absent_after_attempt",
+      "reason": "ISG and company economics cannot be allocated to incremental AI-server profit.",
+      "followup_ref": "exact mix, pass-through cost and product profit bridge",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_dell_gap_a34005028fcbcd275f73"
+    },
+    {
+      "program_cell_ids": [
+        "value_and_profit_capture"
+      ],
+      "gap_code": "cannot_infer_AI_server_specific_cash_conversion",
+      "gap_type": "source_absent_after_attempt",
+      "reason": "Working-capital and cash rows are company total.",
+      "followup_ref": "product-scoped receivable, inventory, payable and cash rows",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_dell_gap_7df99b084ff64d3e6c29"
+    },
+    {
+      "program_cell_ids": [
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "gap_code": "cannot_infer_bottleneck_probability_or_impact",
+      "gap_type": "source_absent_after_attempt",
+      "reason": "Memory is identified as a constraint but duration and impact are not quantified.",
+      "followup_ref": "supplier-side official capacity and delivery evidence",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_dell_gap_9d534643ba8a45045ed7"
+    },
+    {
+      "program_cell_ids": [
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "gap_code": "cannot_infer_channel_inventory_or_order_quality",
+      "gap_type": "source_absent_after_attempt",
+      "reason": "No exact cancellation, channel inventory or customer readiness cohort is disclosed.",
+      "followup_ref": "channel inventory and cancellation follow-up",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_dell_gap_1c99e023e6631eb7f95b"
+    },
+    {
+      "program_cell_ids": [
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "gap_code": "cannot_infer_independent_counterevidence",
+      "gap_type": "source_absent_after_attempt",
+      "reason": "Current counterevidence is issuer-bound; an independent official follow-up remains required.",
+      "followup_ref": "supplier, customer or regulator primary-source follow-up",
+      "terminal_for_truthful_boundary": true,
+      "gap_ref": "s4_dell_gap_5de86149af282f9837e1"
+    }
+  ],
+  "cannot_infer_boundaries": [
+    "No company or ISG profit is allocated to AI servers.",
+    "No order-to-revenue conversion ratio is derived from non-cohort measures.",
+    "No customer order value, shipment volume, concentration or margin is inferred from product/deployment context.",
+    "Graph rows are context-only and never direct Evidence."
+  ],
+  "authority_boundary": {
+    "evidence": "issuer filing, earnings release or prepared remarks with exact locator and parser lineage",
+    "numeric": "exact issuer, segment, period, currency, unit and source coordinate",
+    "graph": "context_only_not_direct_evidence",
+    "model_output_is_source_authority": false,
+    "quality_findings_are_nonterminal_unless_truth_or_lineage_breaks": true
+  },
+  "observed_counts": {
+    "source_snapshots": 9,
+    "route_execution_receipts": 11,
+    "evidence_rows": 6,
+    "numeric_rows": 22,
+    "derived_metrics": 2,
+    "graph_edges": 4,
+    "typed_gaps": 9,
+    "source_network_calls": 13,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "paid_calls": 0
+  },
+  "source_pack_digest": "27842233fdc469d5824bdc30ba21b752e35948781254c20adb1fed38df3fe639"
+}

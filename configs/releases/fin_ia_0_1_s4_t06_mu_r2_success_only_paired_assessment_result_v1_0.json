@@ -1,0 +1,235 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_r2_success_only_paired_assessment_result_v1_0",
+  "assessment_id": "S4-T06-MU-R2-SUCCESS-ONLY-PAIRED-ASSESSMENT-R1",
+  "assessed_at": "2026-07-29T19:30:00+08:00",
+  "status": "fail_L1_numeric_authority_and_case_identity_integrity_owner_acceptance_ineligible",
+  "authority": {
+    "user_instruction": "继续",
+    "success_only_paired_assessment_authorized": true,
+    "deterministic_baseline_materialization_authorized": true,
+    "read_only_artifact_comparison_authorized": true,
+    "owner_acceptance_write_authorized": false,
+    "agent_rerun_patch_or_R3_authorized": false,
+    "model_provider_source_or_tool_execution_authorized": false,
+    "S4_T07_or_later_authorized": false
+  },
+  "source_evidence": {
+    "agent_result_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_r2_exact_live_execution_success_result_v1_0.json",
+    "agent_result_sha256": "d4ac5502ed6d87a43de853877511a0c61f9bfc42b6a5ec17f56dfe38a5d95e1b",
+    "agent_runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t06_mu_fact_presence_local_materialization_r2_live_execution_result.json",
+    "agent_runtime_result_sha256": "aa38a0f62c559dbebdd0c3381510f5a316322409004a58ee12cea8243b346e01",
+    "baseline_result_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r2_source_grounded_deterministic_baseline_materialization_v1_0.json",
+    "baseline_result_sha256": "3e2ecff47959236aaf1cea09dd33cc598e39cf4e8527565a63c577790c512932",
+    "source_pack_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_source_grounded_input_pack_v1_0.json",
+    "source_pack_sha256": "c97add3afee69278084c090b05e114436f426266c40d91c8e4ce916774e33d09",
+    "source_pack_digest": "5fff74f742b038ead1718e449e3e4dafc4f04b55587256d98e619d05cf6c263d",
+    "acceptance_standard_ref": "configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json",
+    "acceptance_standard_sha256": "2f4ffb82f7cc18ac97c7265fd968e004a4b64d5ad8244d79c0a0a0b86c466703"
+  },
+  "paired_identity": {
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_ticker": "MU",
+    "case_version": 1,
+    "analysis_as_of": "2026-07-26T00:00:00Z",
+    "decision_surface_ref": "p02_decision_surface_dd094559ce4c0f79d242e852:v1",
+    "canonical_input_head_digest": "d0bb8780877914737b68fc1cfd763932c56f496758d9be62e5194d4c648179f2",
+    "paired_input_head_digest": "4023ee74d3c54a8583203ba6b994eea55083aa1e68c1efc7786d819fbd64d247",
+    "agent_research_run_id": "research_run_fin01_1920b03b8205e9861dfb5676",
+    "baseline_research_run_id": "research_run_fin01_7d6adea8b1b4788a7842e914",
+    "runs_and_artifacts_distinct": true,
+    "baseline_body_exposed_to_agent": false,
+    "automatic_fallback_or_agent_substitution": false
+  },
+  "artifact_sets": {
+    "agent": {
+      "artifact_count": 9,
+      "terminal_states": [
+        "succeeded",
+        "succeeded",
+        "succeeded"
+      ],
+      "machine_verifier_decision": "accept_for_internal_review",
+      "model_provider_network_calls": [
+        12,
+        12,
+        12
+      ]
+    },
+    "deterministic_baseline": {
+      "artifact_count": 4,
+      "terminal_states": [
+        "succeeded",
+        "succeeded",
+        "succeeded"
+      ],
+      "model_provider_network_calls": [
+        0,
+        0,
+        0
+      ],
+      "source_grounding": "MU_only_no_legacy_NVDA_preview"
+    }
+  },
+  "four_layer_assessment": {
+    "L1_hard_integrity": {
+      "status": "fail",
+      "finding_count": 2,
+      "findings": [
+        {
+          "finding_id": "agent_numeric_statements_do_not_equal_bound_MU_numeric_authority",
+          "severity": "critical",
+          "earliest_owner": "shared_case_numeric_alias_projection_local_rendering_and_independent_L1_validator",
+          "affected_artifacts": [
+            "bounded_agent_numeric",
+            "bounded_agent_judgment",
+            "bounded_agent_workpaper",
+            "bounded_agent_report",
+            "bounded_agent_verification"
+          ],
+          "mismatched_agent_numeric_fact_count": 5,
+          "examples": [
+            {
+              "agent_statement": "MU company-total revenue $8,709M, GAAP gross margin 26.1%, operating income $1,534M",
+              "bound_numeric_authority": "FQ3-26 GAAP revenue 41,456 USD_millions, gross margin 84.6 percent, operating income 33,318 USD_millions",
+              "support_refs": [
+                "s4_mu_numeric_revenue_b84181d93c2a319996dcabfd",
+                "s4_mu_numeric_gaap_gross_margin_e0c0841a994986eb117443e3",
+                "s4_mu_numeric_operating_income_f0409e13aab10c80ca197b70"
+              ]
+            },
+            {
+              "agent_statement": "DRAM revenue $5,344M, 61% of revenue, gross margin 30.2%",
+              "bound_numeric_authority": "FQ3-26 DRAM revenue approximately 31,300 USD_millions and 76 percent of total revenue; the cited gross-margin ref is Cloud Memory Business Unit 83 percent, not DRAM gross margin",
+              "support_refs": [
+                "s4_mu_numeric_dram_revenue_a6f1d36d1227e4cd48132b1a",
+                "s4_mu_numeric_dram_revenue_share_8712e5d2f0ea8a7f15878ccd",
+                "s4_mu_numeric_gross_margin_3ccbe5995da3925e2a7ce4ca"
+              ]
+            },
+            {
+              "agent_statement": "Inventory $8,663M, 160 days; capex net $3,138M; adjusted free cash flow -$1,149M",
+              "bound_numeric_authority": "Inventory 8,567 USD_millions, inventory days 120, capex net 7,084 USD_millions, adjusted free cash flow positive 18,304 USD_millions",
+              "support_refs": [
+                "s4_mu_numeric_inventory_c8062326a68976d6aa427cc5",
+                "s4_mu_numeric_inventory_days_8040db14e616c71f78cd57a4",
+                "s4_mu_numeric_capital_expenditures_net_59a0b3f5c8d4253fd38e5e8b",
+                "s4_mu_numeric_adjusted_free_cash_flow_5e8c0665e6671de586434c3d"
+              ]
+            }
+          ],
+          "official_source_cross_check": {
+            "status": "source_pack_values_confirmed",
+            "press_release_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+            "prepared_remarks_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+            "confirmed_values": [
+              "FQ3-26 revenue 41,456 USD_millions",
+              "GAAP gross margin 84.6 percent",
+              "GAAP operating income 33,318 USD_millions",
+              "DRAM revenue approximately 31,300 USD_millions and 76 percent of total revenue",
+              "capex approximately 7,100 USD_millions",
+              "adjusted free cash flow approximately 18,300 USD_millions",
+              "inventory approximately 8,600 USD_millions and 120 days"
+            ]
+          },
+          "disposition": "terminal_acceptance_blocker_no_silent_rewrite"
+        },
+        {
+          "finding_id": "MU_report_title_declares_NVDA",
+          "severity": "critical",
+          "earliest_owner": "memo_writer_local_case_delivery_identity_projection",
+          "affected_artifact": "bounded_agent_report.report.title_zh_cn",
+          "observed": "NVDA 三单元内部研究备忘录",
+          "required_scope": "MU",
+          "model_owned_field": false,
+          "disposition": "identity_integrity_blocker_no_controlled_edit_of_immutable_agent_artifact"
+        }
+      ],
+      "machine_verifier_false_negative_confirmed": true
+    },
+    "L2_recoverable_protocol": {
+      "status": "pass",
+      "recoverable_protocol_finding_count": 0,
+      "quality_finding": {
+        "finding_code": "research_lead_variant_view_narrative_target_exceeded",
+        "acceptance_layer": "L4_user_fit_and_delivery",
+        "observed_unicode_characters": 378,
+        "target_unicode_characters": 320,
+        "quality_ceiling_unicode_characters": 512,
+        "terminal": false
+      }
+    },
+    "L3_analytical_quality": {
+      "status": "material_gain_present_but_not_admissible_while_L1_fails",
+      "agent_gain_over_baseline": {
+        "specialist_claims": 6,
+        "what_would_change_tasks": 8,
+        "cross_cell_dependencies": 3,
+        "conflict_adjudications": 3,
+        "selected_cross_cell_gaps": 4,
+        "strength": "materially_more_actionable_than_the_non_inferential_deterministic_floor"
+      },
+      "baseline_floor": {
+        "program_cells": 3,
+        "issuer_bound_evidence_row_occurrences": 14,
+        "exact_numeric_row_occurrences": 32,
+        "derived_metric_occurrences": 8,
+        "typed_gap_occurrences": 16,
+        "causal_or_forward_looking_judgments": 0
+      },
+      "limitation": "unsupported material numeric values contaminate financial and cycle conclusions even though the HBM cannot-infer boundaries are generally preserved"
+    },
+    "L4_user_fit_and_delivery": {
+      "status": "fail_due_to_wrong_entity_title_numeric_reconciliation_burden_and_dense_summary",
+      "findings": [
+        "wrong-company NVDA title is an immediate delivery defect for the MU case",
+        "the user would need to re-check every rendered number against the exact MU authority",
+        "the executive summary is a six-clause semicolon chain rather than an owner-ready hierarchy",
+        "the recorded variant_view narrative exceeds its 320-character quality target but stays below the 512-character ceiling"
+      ]
+    }
+  },
+  "paired_comparison": {
+    "status": "completed_read_only",
+    "truth_and_scope_safety": "deterministic_baseline_better_than_agent",
+    "actionability": "agent_better_than_baseline",
+    "cross_cell_synthesis": "agent_better_than_baseline",
+    "concision": "deterministic_baseline_better_than_agent",
+    "overall": "material_agent_gain_not_admissible_because_L1_numeric_and_case_identity_fail",
+    "comparison_body_written_back_to_agent_artifact": false,
+    "canonical_business_or_human_review_writes": 0
+  },
+  "root_cause_updates": {
+    "RC-P36-078-s4-t06-mu-research-lead-deterministic-fact-presence-summary-model-ownership-recurrence": {
+      "status": "closed_exact_live_Lead_v7_local_materialization_proven",
+      "live_evidence": "Research Lead-v7 completed and the full six-node chain materialized nine Artifacts without fact_presence_summary recurrence",
+      "does_not_close": [
+        "MU_R2",
+        "S4_T06",
+        "owner_acceptance"
+      ]
+    },
+    "RC-P36-067-s4-R10-numeric-reference-value-correspondence-false-negative": {
+      "status": "reopened_live_MU_recurrence_shared_numeric_local_rendering_not_effective",
+      "model_behavior": "the Provider emitted numeric statements that do not match the exact MU Numeric rows",
+      "project_control_failure": "the paid mainline still persisted model-authored material numeric statements and the machine Verifier accepted ref membership without exact value unit period segment sign correspondence"
+    },
+    "RC-P36-068-s4-R10-case-identity-title-contract-hardcoded-NVDA": {
+      "status": "reopened_live_MU_recurrence_case_identity_projection_not_effective",
+      "model_behavior": "not applicable because the model does not own the title field",
+      "project_control_failure": "the Writer local assembler still persisted the hard-coded NVDA title for an MU case despite the fixture-level case identity proof"
+    }
+  },
+  "stage_decision": {
+    "S4_T06": "blocked_after_honest_MU_R2_paired_assessment",
+    "MU_R2": "not_proven",
+    "RC_P36_078": "closed_live_proven",
+    "owner_acceptance": "not_eligible_while_L1_fails",
+    "owner_acceptance_written": false,
+    "S4_T07_unblocked": false,
+    "S4_T07_entered": false,
+    "agent_artifacts_remain_immutable": true,
+    "baseline_artifacts_remain_distinct": true
+  },
+  "machine_recommendation": "do_not_accept_MU_R2_and_do_not_enter_S4_T07",
+  "next_action": "S4-T06-MU-R2-L1-NUMERIC-AUTHORITY-AND-CASE-IDENTITY-LIVE-RECURRENCE-ROOT-CAUSE-OR-SCOPE-DISPOSITION-DECISION"
+}

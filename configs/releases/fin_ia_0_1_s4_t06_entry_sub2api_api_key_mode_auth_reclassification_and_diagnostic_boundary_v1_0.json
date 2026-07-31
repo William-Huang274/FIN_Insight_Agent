@@ -1,0 +1,99 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_entry_sub2api_api_key_mode_auth_reclassification_and_diagnostic_boundary_v1_0",
+  "recorded_at": "2026-07-28T23:53:41+08:00",
+  "work_item_id": "S4-T06-ENTRY-SUB2API-SECURE-TRANSPORT-ENDPOINT-CONFIRMATION",
+  "status": "completed_openai_bearer_auth_disabled_static_client_marker_observed_plain_http_diagnostic_only",
+  "decision_label": "reclassify_from_credential_exposure_block_to_plain_http_payload_and_server_identity_boundary",
+  "input_evidence": {
+    "source_type": "user_supplied_API_Key_Mode_Windows_connection_screenshot",
+    "source_filename": "codex-clipboard-9cf9452f-5a84-4c79-b9ae-ed98a7111dcf.png",
+    "source_sha256": "a2658164654d1d2e2ed221d560ab25408039cac67280af87b5c91979443231de",
+    "source_dimensions_px": [
+      1323,
+      1083
+    ],
+    "source_copied_into_repository": false,
+    "credential_value_visible_or_persisted": false
+  },
+  "observed_API_Key_Mode_contract": {
+    "platform_tab": "Windows",
+    "base_url": "http://43.135.174.27:8080",
+    "base_url_includes_v1_path": false,
+    "wire_api": "responses",
+    "model_alias": "gpt-5.5",
+    "review_model_alias": "gpt-5.5",
+    "requires_openai_auth": false,
+    "custom_actor_authorization_header_present": true,
+    "custom_header_value_class": "fixed_client_marker_shown_by_operator_UI",
+    "custom_header_value_persisted": false,
+    "config_requires_client_restart_and_new_task": true
+  },
+  "auth_reclassification": {
+    "official_OPENAI_API_KEY_should_be_sent": false,
+    "Sub2API_API_key_should_be_sent_as_OpenAI_Bearer": false,
+    "OpenAI_Authorization_header_enabled_by_snippet": false,
+    "credential_exposure_over_HTTP_established": false,
+    "prior_requires_openai_auth_true_assumption_superseded_for_API_Key_Mode": true,
+    "service_access_control_mechanism_beyond_fixed_client_marker": "not_evaluated"
+  },
+  "remaining_plain_HTTP_boundary": {
+    "prompt_and_response_confidentiality_established": false,
+    "server_identity_authenticated_by_TLS": false,
+    "response_integrity_protected_by_TLS": false,
+    "public_or_synthetic_payload_diagnostic_admissible_after_separate_authority": true,
+    "private_financial_data_or_credentials_admissible": false,
+    "mainline_T06_acceptance_evidence_admissible": false,
+    "release_or_production_transport_admissible": false
+  },
+  "diagnostic_candidate": {
+    "purpose": "route_model_alias_responses_wire_and_strict_schema_compatibility_diagnostic_only",
+    "base_url": "http://43.135.174.27:8080",
+    "endpoint_path": "/responses",
+    "model_alias": "gpt-5.5",
+    "authentication_mode": "no_OpenAI_Bearer_static_client_marker_only",
+    "input_class": "synthetic_or_already_public_non_sensitive_fixture_only",
+    "maximum_provider_requests": 1,
+    "retry_budget": 0,
+    "credential_reads_or_writes": 0,
+    "business_Run_or_Artifact_writes": 0,
+    "result_classification": "diagnostic_only_never_T06_acceptance"
+  },
+  "zero_call_execution_accounting": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "credential_reads": 0,
+    "credential_writes": 0,
+    "runner_or_runtime_changes": 0,
+    "diagnostic_canary_authorized": false,
+    "diagnostic_canary_started": false
+  },
+  "issue_disposition": {
+    "RC_P36_070": "gpt_5_5_responses_and_strict_schema_diagnostic_authority_pending",
+    "RC_P36_073": "API_Key_Mode_route_and_auth_shape_bound_diagnostic_runner_not_implemented",
+    "RC_P36_074": "reclassified_plain_HTTP_payload_confidentiality_server_identity_and_integrity_boundary",
+    "credential_transport_block": "not_established_under_requires_openai_auth_false",
+    "mainline_transport_block": "remains_open"
+  },
+  "program_disposition": {
+    "route_and_auth_rebaseline_completed": true,
+    "diagnostic_canary_authority_admissible": true,
+    "diagnostic_canary_authorized": false,
+    "runtime_implementation_authorized": false,
+    "full_chain_or_MU_execution_authorized": false,
+    "S4_T06": "not_entered",
+    "DELL_R12": "forbidden",
+    "S5_release_production": "blocked"
+  },
+  "next_action": "S4-T06-ENTRY-SUB2API-PUBLIC-NON-SENSITIVE-DIAGNOSTIC-CANARY-AUTHORITY-DECISION",
+  "next_action_authorized": false,
+  "next_action_preconditions": {
+    "user_explicitly_authorizes_diagnostic_only_plain_HTTP_risk": true,
+    "request_contains_no_private_financial_data_or_credentials": true,
+    "official_and_Sub2API_keys_are_not_read_or_sent": true,
+    "custom_fixed_client_marker_is_bound_from_operator_contract_without_logging_secret_material": true,
+    "one_request_no_retry_and_no_full_chain": true,
+    "result_cannot_close_RC_P36_074_or_admit_T06": true
+  },
+  "known_boundary": "API Key Mode disables OpenAI Bearer authentication in the shown config, so the prior API-key-over-HTTP exposure conclusion does not apply to this mode. Plain HTTP still lacks TLS confidentiality, server authentication, and integrity for prompts and responses; therefore only a separately authorized public/synthetic diagnostic canary is admissible, never mainline T06 acceptance."
+}

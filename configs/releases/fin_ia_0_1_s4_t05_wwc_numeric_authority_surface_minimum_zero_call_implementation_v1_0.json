@@ -1,0 +1,142 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_wwc_numeric_authority_surface_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T05-DELL-WWC-NUMERIC-AUTHORITY-SURFACE-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-27T04:20:00+08:00",
+  "status": "pass_zero_call_implementation_fixture_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "bounded_zero_call_runtime_prompt_schema_validator_and_telemetry_implementation_authorized": true,
+    "fresh_agent_proof_admission_or_exact_execution_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "fourth_DELL_execution_paired_assessment_Human_review_S4_T06_or_later_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "source_decision": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_wwc_numeric_authority_surface_zero_call_root_cause_disposition_v1_0.json",
+    "sha256": "3b477609a3f37091945283d332359e3889f07d7c02cb518c99ea2ba14b7a1fa1"
+  },
+  "implemented_contract": {
+    "contract_ref": "fin01.s3.what_would_change_authority_policy:v1",
+    "policy_name": "WhatWouldChangeAuthorityPolicy",
+    "canonical_projection_name": "CellAuthoritySurface",
+    "field_id": "what_would_change.authority_refs",
+    "single_machine_native_membership_owner": "cell_input.authority_refs",
+    "allowed_refs_by_authority_class": {
+      "Evidence": "accepted_evidence_refs",
+      "Numeric": "numeric_refs",
+      "Candidate": "candidate_refs_not_evidence",
+      "Graph": "graph_context_refs_not_evidence"
+    },
+    "fact_and_WWC_policy_share_the_same_canonical_projection": true,
+    "provider_request_and_local_validator_share_the_same_policy": true,
+    "output_rule": "nonempty_exact_subset_of_the_current_Cell_four_class_union",
+    "cross_class_selection_allowed": true,
+    "cross_cell_selection_allowed": false,
+    "normalization_trim_casefold_fuzzy_match_remap_drop_or_relink_allowed": false,
+    "numeric_input_role": "scope_and_cannot_support_metadata_only_not_WWC_membership",
+    "legacy_numeric_reconstruction_union_allowed": false,
+    "DELL_or_ticker_specific_branch_added": false,
+    "TaskClaimLinkPolicy_behavior_retained": true,
+    "Claim_scope_and_lineage_gates_retained": true
+  },
+  "capability_binding": {
+    "transport_capability": "field_local_what_would_change_authority",
+    "enabled_transport": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "v1_through_v6_provider_request_behavior_unchanged": true,
+    "admission_schema_or_historical_admission_rewritten": false
+  },
+  "safe_failure_contract": {
+    "failure_code": "s3_owner_grade_WWC_task_authority_invalid",
+    "closed_subtypes": [
+      "authority_refs_not_nonempty_string_array",
+      "authority_ref_outside_current_cell_closed_surface"
+    ],
+    "telemetry_family": "segmented_specialist_what_would_change_authority",
+    "content_free": true,
+    "raw_ref_digest_item_index_arbitrary_key_or_private_reasoning_persisted": false,
+    "complete_WWC_failure_taxonomy_claimed": false
+  },
+  "fixture_proof": {
+    "positive_Evidence_Numeric_Candidate_Graph_and_mixed_exact_subsets": "pass",
+    "negative_nonarray_empty_blank_nonstring_outside_cross_Cell_legacy_only_and_normalized_variants": "pass",
+    "R3_DELL_capture_replay": "pass",
+    "R3_DELL_numeric_ref_count": 6,
+    "R3_DELL_numeric_refs_accepted_without_special_case": true,
+    "typed_content_free_failure_telemetry": "pass",
+    "historical_v6_request_contract_unchanged": "pass",
+    "full_fake_provider_callbacks": 12,
+    "full_fake_provider_logical_artifacts": 9
+  },
+  "historical_exact_binding_supersession": {
+    "reason": "The shared contract-policy and executor files advanced under the separately authorized WWC authority implementation. Historical decisions, admissions, Runs, captures and business evidence remain immutable; current-file verification resolves through this implementation only for the two explicitly changed runtime paths.",
+    "allowed_changed_paths": [
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+      "apps/workbench/backend/application/bounded_agent_executor.py"
+    ],
+    "superseded_binding_contracts": {
+      "configs/releases/fin_ia_0_1_s4_t04_dell_provider_canary_need_and_fresh_agent_proof_decision_v1_0.json": "0c2cf1a84fb78c3e3dc86f2dd10bd93c37ff4c6321a2825d2b686773c2ce289c",
+      "configs/releases/fin_ia_0_1_s4_t04_dell_fresh_exact_admission_issuance_v1_0.json": "d70d24ec684332abeec619b90d9c6ef463d169e17f83ef422d8f0cb43b350ec5",
+      "configs/releases/fin_ia_0_1_s4_t05_evidence_role_group_mapping_actual_dispatch_preflight_zero_call_implementation_v1_0.json": "4b7823da7d65998d79bbc8f9ad5803b20cb766c31ddfea9b0712429369486624",
+      "configs/releases/fin_ia_0_1_s4_t05_evidence_role_group_mapping_repair_fresh_agent_proof_decision_v1_0.json": "6833437d0ae707031ef1c0976454e1edb790d5391ac70b9f21f77b33b3a53e2b",
+      "configs/releases/fin_ia_0_1_s4_t05_evidence_role_group_mapping_repair_fresh_exact_admission_issuance_v1_0.json": "04f498f4d393345c3145f50f5aac667f52453e9f787b350efc5b491b8853295b",
+      "configs/releases/fin_ia_0_1_s4_t05_task_claim_link_policy_minimum_zero_call_implementation_v1_0.json": "ba6e3af28c2a7deaab355e105710a1e50839957b9152272db77a26ea5d0e52f9",
+      "configs/releases/fin_ia_0_1_s4_t05_task_claim_link_policy_fresh_agent_proof_decision_v1_0.json": "cc5de889fff7a708afb000d4baae42cefed571cb2f0eb5fdd624f81676bf2b5d",
+      "configs/releases/fin_ia_0_1_s4_t05_task_claim_link_policy_fresh_exact_admission_issuance_v1_0.json": "74667c005dd2aeefc3b8a6d92368ed0631caacd3b7a516e8a40b21eb0a241b6a",
+      "configs/releases/fin_ia_0_1_s4_t05_dell_task_claim_link_policy_r3_exact_live_execution_and_paired_assessment_authority_decision_v1_0.json": "816e78ee50f84f6e0dbffe47aa23994de7f4a710fcc7d8b03abbc7aaaed6d7ec"
+    },
+    "unaffected_historical_exact_bindings_still_required": true,
+    "historical_R3_failure_capture_admission_or_Run_rewritten": false,
+    "historical_business_evidence_reinterpreted": false
+  },
+  "deferred_cross_sequence_items": [
+    {
+      "item": "deterministic_locally_assembled_task_identity",
+      "target": "S4-T10-to-S5-carry-forward",
+      "blocks_current_T05": false
+    },
+    {
+      "item": "complete_typed_WWC_failure_taxonomy",
+      "target": "S4-T10-to-S5-carry-forward",
+      "blocks_current_T05": false
+    },
+    {
+      "item": "cross_stage_unified_claim_task_identity_redesign",
+      "target": "S5-or-later-architecture-sequence",
+      "blocks_current_T05": false
+    }
+  ],
+  "verification": {
+    "focused_WWC_authority_contract_matrix_replay_and_fake_provider": "19 passed",
+    "prior_task_claim_policy_behavior_without_historical_binding_assertion": "13 passed",
+    "S4_full_regression": "144 passed",
+    "python_compile": "pass",
+    "Project_OS_implementation_scope_preflight": "pass"
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "c17db0f0be2ac824bf187eb0bd1c24d3682cda56441c29cef904cece0963047f",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "89c08005aeeaedb90a1a7547afc8309c0a489f00d67c2475405d067f32c5de3d"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_comparisons": 0,
+    "Human_Reviews": 0
+  },
+  "stage_decision": {
+    "RC_P36_060": "implementation_fixture_proven_fresh_agent_proof_pending",
+    "S4_T05": "blocked_pending_separately_authorized_fresh_agent_proof_and_later_exact_admission",
+    "DELL_R2": "not_proven",
+    "S4_T06_or_later": "not_entered",
+    "S5_release_or_production": "not_authorized"
+  },
+  "next_action": "S4-T05-DELL-WWC-NUMERIC-AUTHORITY-SURFACE-FRESH-AGENT-PROOF-DECISION"
+}

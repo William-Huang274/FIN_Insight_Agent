@@ -1,0 +1,102 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r10_source_grounded_deterministic_baseline_materialization_v1_0",
+  "result_id": "S4-T05-DELL-R10-SOURCE-GROUNDED-DETERMINISTIC-BASELINE-MATERIALIZATION-R1",
+  "recorded_at": "2026-07-28T12:35:00+08:00",
+  "status": "pass_exact_once_source_grounded_deterministic_baseline_materialized_and_read_only_verified",
+  "source_binding": {
+    "source_agent_result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_profile_aware_artifact_lineage_exact_live_execution_success_result_v1_0.json",
+    "source_agent_result_sha256": "c7f4acd3ad09e62f5b987026acab668aa7002bc8068fbeae525b6de4582621e5",
+    "source_decision_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_success_only_paired_baseline_source_decision_v1_0.json",
+    "source_decision_sha256": "43ee5326f840da6ad2eafa6fd2d2f54fa2b88b039ac0a99b64e5c04a0ebbcb4c",
+    "materialization_decision_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_source_grounded_deterministic_baseline_materialization_decision_v1_0.json",
+    "materialization_decision_sha256": "03a3c5646bf74175cb73e62be8ea69618c6a133c0005cdc0b170033e83ebd117",
+    "case_id": "case_7b5c2042bef3825b8df71a96",
+    "case_version": 1,
+    "analysis_as_of": "2026-07-26T00:00:00Z",
+    "decision_surface_ref": "p02_decision_surface_d31fd75b31ad8385e9d8376a:v1",
+    "canonical_input_head_digest": "ee76a3570f857bfd3341f21a6e3531d47d2d68581694a2bdbe2917a8de171c40",
+    "paired_input_head_digest": "8f95f74c3b6094ca18a143e615ffa33b75d92d9327af0758117a200b83f46c83"
+  },
+  "root_cause_repair": {
+    "observed_pre_repair_failure": "legacy deterministic profile required S3 generic evidence roles and resolved P36 preview rows that were not DELL case-local",
+    "classification": "project_owned_cross_case_deterministic_baseline_dispatch_gap",
+    "repair": "route the deterministic profile through the S4 exact role-group alignment and compose the comparison floor exclusively from the frozen issuer-bound source pack and effective research-profile overlay",
+    "legacy_P36_NVDA_preview_used": false,
+    "case_ticker": "DELL",
+    "source_pack_digest": "27842233fdc469d5824bdc30ba21b752e35948781254c20adb1fed38df3fe639",
+    "research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v3",
+    "prospective_double_prepare_equal": true,
+    "prospective_payload_digest": "e6a8d35919b3dfab0a3c0ca3b804019170a1ef747ffe4954a7c63db6efebb4a4"
+  },
+  "identity": {
+    "execution_identity": "fin01-s3-t09-paired-deterministic-baseline-materialization-r1",
+    "execution_profile_version_ref": "fin01.execution_profile.p36_local_deterministic:v1",
+    "work_unit_id": "wu_p02_5_31213a6e278215bff698b928",
+    "attempt_id": "attempt_fin01_5c465b4892b6b9e2efb70ed7",
+    "research_run_id": "research_run_fin01_fd8aa2814905b7e138444ee9",
+    "distinct_from_agent_research_run_id": "research_run_fin01_b90b55b0fdb0ddc69d166303"
+  },
+  "terminal_truth": {
+    "work_unit_state": "succeeded",
+    "attempt_state": "succeeded",
+    "research_run_state": "succeeded",
+    "attempt_no": 1,
+    "maximum_attempts": 1,
+    "retry_budget": 0,
+    "exact_deterministic_run_cardinality": 1,
+    "artifact_count": 4,
+    "source_agent_artifact_count": 9
+  },
+  "artifact_manifest": {
+    "deterministic_research_result": {
+      "artifact_ref": "artifact_fin01_a358907b6fd9f70b6377ed69:v1",
+      "object_digest": "ee027580719ea76a0e9b897ab6a7bd71c956b62ee86e24f1af07f2a75b7028a7"
+    },
+    "s3_three_cell_workpaper": {
+      "artifact_ref": "artifact_fin01_c9473812681dbc42744b50ea:v1",
+      "object_digest": "adc0ca47100e579b2008cb2017915d92f5e207e0014c250c5979808de91aa72e"
+    },
+    "s3_three_cell_report": {
+      "artifact_ref": "artifact_fin01_3fdafdba2bd955c1925d9d35:v1",
+      "object_digest": "46a7f96bf18041dfe392f02135edff463b0c4db462087a99ad418ff9e2058c65"
+    },
+    "s3_three_cell_trace_review": {
+      "artifact_ref": "artifact_fin01_1defdbf79694fdcf0825ee0b:v1",
+      "object_digest": "9dfebc0a2e74b63fbbcc994e0e37eb2e06b4c8de2b2329be35b3ed0735f971b5"
+    }
+  },
+  "canonical_delta": {
+    "new_work_units": 1,
+    "new_attempts": 1,
+    "new_research_runs": 1,
+    "new_artifacts": 4,
+    "existing_logical_objects_unchanged": true,
+    "existing_object_payloads_unchanged": true,
+    "source_agent_run_and_artifacts_unchanged": true,
+    "database_sha256_before": "d365268831f7f5b46da53c9dd4e3d8c13e30c53679f4fa98877aef3d0cca611b",
+    "database_sha256_after": "34f2b9863a68389e8e234a228997d305779ddcba78d5d02c566d8dbf41fde767",
+    "object_tree_sha256_before": "f4854420125961393f4f3f7de016e9fda8c95736d53937416243e2f9d96bce60",
+    "object_tree_sha256_after": "1542b304e7d831c204a802184377a92d01fd6b3bb5f14ed764698a2ebf12a1d4"
+  },
+  "observed_counts": {
+    "baseline_materializations": 1,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "evidence_promotions": 0,
+    "live_case_head_writes": 0,
+    "agent_reruns": 0,
+    "owner_acceptance_writes": 0
+  },
+  "boundary": {
+    "automatic_fallback_or_agent_substitution": false,
+    "baseline_output_body_exposed_to_agent": false,
+    "baseline_labeled_as_agent_output": false,
+    "paired_comparison_performed": false,
+    "owner_acceptance_signed": false,
+    "S4_T06_entered": false
+  },
+  "next_action": "S4-T05-DELL-R10-SUCCESS-ONLY-PAIRED-ASSESSMENT"
+}

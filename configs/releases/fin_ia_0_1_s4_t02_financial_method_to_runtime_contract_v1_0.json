@@ -1,0 +1,311 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t02_financial_method_to_runtime_contract_v1_0",
+  "contract_id": "FIN-0.1-S4-T02-DELL-MU-FINANCIAL-METHOD-TO-RUNTIME-R1",
+  "contract_ref": "fin01.s4.financial_method_to_runtime.dell_mu:v1",
+  "frozen_at": "2026-07-26T15:58:08+08:00",
+  "status": "contract_translated_T03_runtime_injection_and_node_consumption_pending",
+  "authority": {
+    "user_instruction": "授权",
+    "authorized_scope": "S4-T02 method translation and named runtime consumer freeze",
+    "runtime_code_or_fixture_implementation_authorized": false,
+    "model_provider_network_source_or_tool_execution_authorized": false,
+    "S4_T03_or_later_authorized": false
+  },
+  "source_refs": [
+    "configs/releases/fin_ia_0_1_s4_t02_dell_oem_exact_case_pack_v1_0.json",
+    "configs/releases/fin_ia_0_1_s4_t02_mu_hbm_exact_case_pack_v1_0.json",
+    "configs/releases/fin_ia_0_1_s3_t03_evidence_route_promotion_sourcehunter_v1_0.json",
+    "configs/releases/fin_ia_0_1_s3_t04_financial_numeric_fundamental_pack_v1_0.json",
+    "configs/releases/fin_ia_0_1_s3_t05_bounded_graph_decision_cell_pack_v1_0.json",
+    "configs/releases/fin_ia_0_1_s3_t06_specialist_lead_cross_cell_synthesis_v1_0.json",
+    "docs/project_os/financial_research_method_registry.jsonl"
+  ],
+  "runtime_consumer_registry": [
+    {
+      "consumer_id": "evidence_route_plan",
+      "source_ref": "apps/workbench/backend/application/evidence_service.py",
+      "symbol": "S3ThreeCellEvidenceRoutePlanVersion",
+      "consume_symbol": "consume_s3_three_cell_evidence_route_plan",
+      "S4_extension_owner": "apps/workbench/backend/application/evidence_service.py",
+      "consumes": [
+        "case_local_source_authority",
+        "cell_evidence_roles",
+        "route_order",
+        "candidate_context_evidence_boundary",
+        "typed_source_followup"
+      ]
+    },
+    {
+      "consumer_id": "financial_numeric_pack",
+      "source_ref": "src/sec_agent/canonical_runtime/parser_numeric.py",
+      "symbol": "S3FinancialNumericAndFundamentalPackVersion",
+      "consume_symbol": "consume_s3_financial_numeric_and_fundamental_pack",
+      "S4_extension_owner": "src/sec_agent/canonical_runtime/parser_numeric.py",
+      "consumes": [
+        "entity_segment_period_currency_unit_selector",
+        "allowed_formula_contracts",
+        "typed_numeric_availability",
+        "cannot_support_boundary"
+      ]
+    },
+    {
+      "consumer_id": "bounded_graph_pack",
+      "source_ref": "src/sec_agent/research_graph_store.py",
+      "symbol": "S3BoundedGraphDecisionCellPackVersion",
+      "consume_symbol": "consume_s3_bounded_graph_decision_cell_pack",
+      "S4_extension_owner": "src/sec_agent/research_graph_store.py",
+      "consumes": [
+        "case_local_edge_semantics",
+        "source_followup",
+        "as_of_direction_boundary",
+        "context_only_graph_authority"
+      ]
+    },
+    {
+      "consumer_id": "specialist_and_research_lead",
+      "source_ref": "src/sec_agent/langgraph_orchestrator.py",
+      "symbol": "S3SpecialistLeadCrossCellPackVersion",
+      "consume_symbol": "consume_s3_specialist_lead_cross_cell_pack",
+      "S4_extension_owner": "src/sec_agent/langgraph_orchestrator.py",
+      "consumes": [
+        "method_tag",
+        "case_specific_mandatory_judgment_chain",
+        "counterevidence",
+        "typed_gap",
+        "cross_Cell_dependency_conflict_and_variant_view"
+      ]
+    },
+    {
+      "consumer_id": "bounded_agent_input_and_execution",
+      "source_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "symbol": "build_s3_three_cell_bounded_agent_input_pack",
+      "execute_symbol": "S3ThreeCellBoundedAgentExecutor",
+      "S4_extension_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "consumes": [
+        "case_profile_ref",
+        "method_contract_ref_and_digest",
+        "case_and_Cell_local_identity",
+        "judgment_atom_schema",
+        "source_fact_context_and_numeric_authority"
+      ]
+    },
+    {
+      "consumer_id": "writer_verifier_and_review_surface",
+      "source_ref": "src/sec_agent/memo_llm.py",
+      "symbol": "S3ThreeCellPresentationPackVersion",
+      "consume_symbol": "consume_s3_three_cell_presentation_pack",
+      "S4_extension_owner": "src/sec_agent/memo_llm.py",
+      "consumes": [
+        "answer_first_thesis_led_output",
+        "ClaimFactLink_and_scope",
+        "typed_gap_and_WWC",
+        "review_binding_without_new_source_authority"
+      ]
+    },
+    {
+      "consumer_id": "workbench_projection",
+      "source_ref": "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx",
+      "symbol": "WorkbenchNext",
+      "S4_extension_owner": "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx",
+      "consumes": [
+        "Case_and_Cell_exact_refs",
+        "Evidence_Numeric_Graph_boundary",
+        "method_tag_and_typed_gap",
+        "review_findings_and_repair_targets"
+      ]
+    }
+  ],
+  "shared_judgment_atom_schema": {
+    "schema_ref": "fin01.s4.case_local_judgment_atom:v1",
+    "Provider_owned_fields": [
+      "epistemic_status",
+      "direct_answer_atom",
+      "counterevidence_atom",
+      "boundary_atom",
+      "selected_fact_aliases",
+      "selected_context_aliases",
+      "selected_WWC_aliases"
+    ],
+    "local_runtime_owned_fields": [
+      "CaseVersion_id",
+      "program_cell_id",
+      "Claim_and_Fact_local_ids",
+      "ClaimFactLink",
+      "canonical_scope",
+      "lineage_and_digests",
+      "Artifact_versions"
+    ],
+    "allowed_epistemic_states": [
+      "fact_supported",
+      "context_supported",
+      "candidate_only",
+      "cannot_infer",
+      "stopped_by_material_conflict"
+    ],
+    "narrative_is_primary_structural_owner": false,
+    "local_deterministic_assembly_required": true
+  },
+  "methods": [
+    {
+      "method_id": "s4_dell_oem_order_to_revenue_and_working_capital_playbook",
+      "case_scope": [
+        "DELL"
+      ],
+      "research_domain": "server_OEM_equity_research",
+      "S4_T02_state": "contract_translated",
+      "problem": "OEM demand signals can look strong while low margins working capital or channel pull-forward limit economic capture.",
+      "required_inputs": [
+        "issuer_order_backlog_or_deployment_signal_or_typed_gap",
+        "issuer_revenue_and_margin_rows",
+        "inventory_receivables_payables_and_cash_flow_rows_or_typed_gap",
+        "company_bound_counterevidence",
+        "graph_source_followup_paths"
+      ],
+      "required_outputs": [
+        "order_or_backlog_to_revenue_boundary",
+        "company_or_segment_profit_capture_boundary",
+        "working_capital_and_cash_conversion_boundary",
+        "pull_forward_channel_or_customer_counterevidence",
+        "source_targeted_WWC"
+      ],
+      "injection_points": [
+        "evidence_route_plan",
+        "financial_numeric_pack",
+        "bounded_graph_pack",
+        "specialist_and_research_lead",
+        "bounded_agent_input_and_execution",
+        "writer_verifier_and_review_surface"
+      ],
+      "forbidden_shortcuts": [
+        "treat_order_or_backlog_as_revenue",
+        "allocate_company_total_or_broad_segment_profit_to_AI_server",
+        "infer_customer_concentration_from_generic_graph_context",
+        "replace_missing_working_capital_inputs_with_narrative"
+      ],
+      "T03_required_proof": [
+        "DELL_case_local_fixture",
+        "method_contract_digest_in_input",
+        "each_named_consumer_receives_method_fields",
+        "node_level_judgment_atom_consumed",
+        "negative_NVDA_fact_leakage_test"
+      ]
+    },
+    {
+      "method_id": "s4_mu_hbm_supply_pricing_and_cycle_playbook",
+      "case_scope": [
+        "MU"
+      ],
+      "research_domain": "HBM_memory_cycle_equity_research",
+      "S4_T02_state": "contract_translated",
+      "problem": "Structural HBM demand can coexist with memory-cycle inventory pricing capacity yield and customer-concentration risks that must remain separately observable.",
+      "required_inputs": [
+        "issuer_HBM_demand_capacity_qualification_or_typed_gap",
+        "issuer_revenue_margin_product_mix_or_typed_gap",
+        "inventory_capex_and_cash_flow_rows_or_typed_gap",
+        "company_bound_cycle_capacity_customer_or_regulatory_counterevidence",
+        "graph_source_followup_paths"
+      ],
+      "required_outputs": [
+        "company_specific_HBM_demand_boundary",
+        "price_volume_mix_and_profit_attribution_boundary",
+        "capacity_yield_inventory_and_cycle_boundary",
+        "customer_concentration_and_regulatory_counterevidence",
+        "source_targeted_WWC"
+      ],
+      "injection_points": [
+        "evidence_route_plan",
+        "financial_numeric_pack",
+        "bounded_graph_pack",
+        "specialist_and_research_lead",
+        "bounded_agent_input_and_execution",
+        "writer_verifier_and_review_surface"
+      ],
+      "forbidden_shortcuts": [
+        "treat_industry_HBM_growth_as_MU_revenue",
+        "allocate_company_total_or_broad_memory_profit_to_HBM",
+        "infer_capacity_yield shipment or customer share from capex or peer context",
+        "suppress_memory_cycle_counterevidence",
+        "replace_missing_price_volume_mix_inputs_with_narrative"
+      ],
+      "T03_required_proof": [
+        "MU_case_local_fixture",
+        "method_contract_digest_in_input",
+        "each_named_consumer_receives_method_fields",
+        "node_level_judgment_atom_consumed",
+        "negative_NVDA_and_DELL_fact_leakage_test"
+      ]
+    }
+  ],
+  "inherited_method_revalidation": [
+    {
+      "method_id": "three_statement_peer_panel",
+      "S3_proven_boundary": "runtime_injected_and_node_consumed_for_company_total_income_statement_subset_only",
+      "S4_required_extension": "DELL and MU balance_sheet_cash_flow_working_capital_inventory_and_capex rows remain T03 fixture and node-level work",
+      "S4_T02_state": "contract_translated_extension_pending"
+    },
+    {
+      "method_id": "customer_supplier_readthrough",
+      "S3_proven_boundary": "bounded Graph and route contracts exist for NVDA",
+      "S4_required_extension": "case-local DELL customer_channel_supplier and MU qualification_capacity_equipment paths with official source followup",
+      "S4_T02_state": "contract_translated_revalidation_pending"
+    },
+    {
+      "method_id": "p32_semis_cycle_value_chain_playbook",
+      "S3_proven_boundary": "NVDA deterministic Graph and Specialist Lead contracts reached runtime and exact paid Artifact only within the S3 case",
+      "S4_required_extension": "MU-specific cycle capacity yield customer and product attribution semantics",
+      "S4_T02_state": "contract_translated_revalidation_pending"
+    },
+    {
+      "method_id": "thesis_path_first_research",
+      "S3_proven_boundary": "NVDA three-Cell Lead synthesis and owner-accepted R2",
+      "S4_required_extension": "distinct DELL and MU method chains without conclusion template copying",
+      "S4_T02_state": "contract_translated_revalidation_pending"
+    },
+    {
+      "method_id": "p32_thesis_led_memo_output",
+      "S3_proven_boundary": "NVDA exact Writer Verifier nine-Artifact product owner accepted with L4 debt",
+      "S4_required_extension": "case-local answer-first output and fact-preserving Chinese normalization",
+      "S4_T02_state": "contract_translated_revalidation_pending"
+    }
+  ],
+  "cross_case_leakage_contract": {
+    "case_fact_namespaces_are_disjoint": true,
+    "case_identity_alias_tables_are_regenerated": true,
+    "method_schema_may_be_shared": true,
+    "facts_numeric_rows_graph_edges_claims_judgments_and_conclusions_may_be_shared": false,
+    "negative_fixture_matrix_required_in_T03": [
+      "NVDA_fact_in_DELL_rejected",
+      "NVDA_fact_in_MU_rejected",
+      "DELL_fact_in_MU_rejected",
+      "MU_fact_in_DELL_rejected",
+      "three_case_fact_in_SaaS_structural_fixture_rejected",
+      "three_case_fact_in_Bank_structural_fixture_rejected"
+    ]
+  },
+  "T03_implementation_contract": {
+    "status": "pending_separate_authority",
+    "required_changes_or_proofs": [
+      "load_and_validate_case_pack_schema_and_digest",
+      "resolve official issuer identifiers and local source routes",
+      "derive case-local research profiles and identities from the same shared runtime",
+      "inject method contract ref digest and selected method fields into named consumers",
+      "prove node-level consumption and judgment atom output",
+      "prove full fake Provider six logical nodes and nine Artifact shape",
+      "run cross-case cross-Cell SaaS and Bank leakage regressions",
+      "run Project OS full-chain preflight at zero paid calls"
+    ],
+    "paid_canary_admission_or_exact_live_allowed": false,
+    "method_state_after_T02": "contract_translated_not_runtime_capability"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "runtime_code_changes": 0,
+    "fixture_runs": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0
+  }
+}

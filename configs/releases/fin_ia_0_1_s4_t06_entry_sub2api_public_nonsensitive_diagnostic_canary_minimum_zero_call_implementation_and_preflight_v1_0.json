@@ -1,0 +1,86 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_entry_sub2api_public_nonsensitive_diagnostic_canary_minimum_zero_call_implementation_and_preflight_v1_0",
+  "recorded_at": "2026-07-29T00:29:37+08:00",
+  "work_item_id": "S4-T06-ENTRY-SUB2API-PUBLIC-NON-SENSITIVE-DIAGNOSTIC-CANARY-MINIMUM-ZERO-CALL-IMPLEMENTATION-AND-PREFLIGHT",
+  "status": "pass_isolated_runner_exact_wire_fake_transport_and_sanitized_result_preflight",
+  "authority": {
+    "user_instruction": "授权，然后做一次真实 diagnostic",
+    "authority_decision_ref": "configs/releases/fin_ia_0_1_s4_t06_entry_sub2api_public_nonsensitive_diagnostic_canary_authority_decision_v1_0.json",
+    "authority_decision_sha256": "5d08c4755a811764c404f1445edda097b97d3e3f2b4f02fad971501cb995fdba",
+    "zero_call_implementation_and_preflight_authorized": true,
+    "future_exact_once_execution_authorized": true,
+    "current_implementation_step_network_or_provider_call_authorized": false,
+    "retry_fallback_provider_hopping_or_repair_authorized": false,
+    "mainline_T06_full_chain_DELL_R12_S5_release_or_production_authorized": false
+  },
+  "implementation": {
+    "runner_ref": "scripts/releases/run_fin_ia_0_1_s4_t06_entry_sub2api_public_nonsensitive_diagnostic_canary.py",
+    "runner_sha256": "d580502f28f5758a6ffd15baddded6bc79dc129ec8c112b13367a5ee5a242b29",
+    "runner_isolated_from_historical_official_OpenAI_runners": true,
+    "provider_route": "http://43.135.174.27:8080/responses",
+    "provider_model_alias": "gpt-5.5",
+    "wire_api": "responses",
+    "OpenAI_Authorization_or_Bearer_header_present": false,
+    "credential_environment_or_dotenv_access_present": false,
+    "fixed_client_marker_header_bound": true,
+    "direct_no_proxy_transport": true,
+    "redirect_following_allowed": false,
+    "maximum_response_bytes": 1000000,
+    "exclusive_result_create_once": true,
+    "raw_output_headers_marker_stack_or_business_content_persisted": false
+  },
+  "exact_request_digests": {
+    "request_url_sha256": "3a2562a2344ec4740f0c8d5674398ef0501455fa879f8d121345e1ea9152a9eb",
+    "request_body_sha256": "46d152134ccefa133dbd44d90a047d02d8a6a86fe57eed4daf458a49bbf36c06",
+    "strict_schema_sha256": "041d8306aa9d3ed5b2741dd0ae19b56280d5b8bd2f36ecd673a999712d7d76d9",
+    "system_input_sha256": "8f387b59d7b0940ed2ed2a24693a01bfa25530a5f61374f1ea4545c9a845d110",
+    "user_input_sha256": "fcdcb8de259f8a4c7116e6db61d89d1302e847f2e3bcd15f51f9f90eb2fc4fe4",
+    "non_marker_header_name_shape_sha256": "b035a40bf10fa0302913e3caae7675086d9222b34c6b97047b43fd0dad338728"
+  },
+  "hard_budget": {
+    "future_semantic_provider_network_transport_request_ceiling": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "maximum_output_tokens": 128,
+    "timeout_seconds": 30,
+    "retry_budget": 0,
+    "credential_reads_writes": [
+      0,
+      0
+    ],
+    "source_tool_chat_completion_calls": [
+      0,
+      0,
+      0
+    ],
+    "work_unit_attempt_run_artifact_business_writes": 0
+  },
+  "verification": {
+    "focused_contract_tests": "9 passed",
+    "python_syntax": "pass",
+    "zero_call_cli_preflight": "pass",
+    "fake_transport_exact_wire_parse_and_value_validation": "pass",
+    "result_ref_absent": true,
+    "credential_pattern_or_access_scan": "pass",
+    "model_provider_network_calls": [
+      0,
+      0,
+      0
+    ],
+    "transport_attempts": 0
+  },
+  "stage_disposition": {
+    "RC_P36_070": "exact_once_public_diagnostic_execution_ready_strict_schema_live_compatibility_unproven",
+    "RC_P36_073": "isolated_runner_and_preflight_pass_exact_execution_pending",
+    "RC_P36_074": "plain_HTTP_mainline_blocker_remains_open_diagnostic_execution_only",
+    "S4_T05": "blocked_after_R11_not_passed",
+    "S4_T06": "not_entered",
+    "S5": "blocked"
+  },
+  "next_action": "S4-T06-ENTRY-SUB2API-PUBLIC-NON-SENSITIVE-DIAGNOSTIC-CANARY-EXACT-ONCE-EXECUTION",
+  "next_action_authorized": true,
+  "known_boundary": "The runner and preflight prove only the local exact request, one-attempt transport guard, strict parsing, exact-value validation, and sanitized result path. No live endpoint capability or mainline T06 acceptance is proven until the separately bounded exact-once diagnostic executes, and even success cannot close RC-P36-074."
+}

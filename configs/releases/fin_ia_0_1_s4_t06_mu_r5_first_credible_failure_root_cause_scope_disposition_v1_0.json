@@ -1,0 +1,163 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_r5_first_credible_failure_root_cause_scope_disposition_v1_0",
+  "decision_id": "S4-T06-MU-R5-FIRST-CREDIBLE-FAILURE-ROOT-CAUSE-OR-SCOPE-DISPOSITION-DECISION",
+  "decided_at": "2026-07-30T12:15:00+08:00",
+  "status": "blocked_no_R6_one_zero_call_temporal_authority_and_failure_materialization_scope_replacement_selected",
+  "authority": {
+    "user_instruction": "继续",
+    "source_execution_authority_stop_contract_applies": true,
+    "failure_result_materialization_authorized": true,
+    "bounded_zero_call_root_cause_and_scope_disposition_authorized": true,
+    "runtime_patch_authorized_in_this_turn": false,
+    "new_admission_or_paid_execution_authorized": false,
+    "automatic_R6_authorized": false,
+    "paired_assessment_authorized": false,
+    "owner_acceptance_authorized": false,
+    "S4_T07_or_later_authorized": false
+  },
+  "source_failure": {
+    "failure_result_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_runtime_audit_evidence_v2_and_material_numeric_classifier_r5_exact_live_execution_failure_result_v1_0.json",
+    "failure_result_sha256": "9662458edd0cfcddd4c999bbd2cb6374ade88b20fad473c7d432697a2ef6790f",
+    "research_run_id": "research_run_fin01_0b20402c2f8d5e5674626760",
+    "canonical_terminal_states": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "first_failure_code": "s4_case_numeric_authority_provider_narrative_invalid",
+    "runner_post_terminal_exception": "s3_t09_provider_output_capture_policy_mismatch",
+    "model_provider_network_calls": [
+      3,
+      3,
+      3
+    ],
+    "usage_receipts": 3,
+    "capture_v2_objects": 3,
+    "artifacts": 0
+  },
+  "root_cause_hierarchy": {
+    "provider_proximate_cause": {
+      "established": true,
+      "finding": "DeepSeek returned two exact 2026-09-30 planning deadlines although the closed contract allowed only 2026-06-24, 2026-07-26, FQ3_2026 and Q1 2026.",
+      "scope": "field_level_instruction_noncompliance_in_actionable_what_would_change_tasks",
+      "not_established": [
+        "general DeepSeek instruction noncompliance",
+        "financial amount fabrication",
+        "provider transport failure",
+        "invalid JSON",
+        "truncation"
+      ]
+    },
+    "earliest_project_owned_contract_cause": {
+      "established": true,
+      "finding": "deadline_or_review_date is a required Provider-authored free-text planning field, while the only numeric boundary is a financial/reporting-period classifier with no separate planning-calendar authority or closed relative-time vocabulary.",
+      "effect": "A calendar control date is classified as unknown_reporting_period_label and escalated through the financial numeric L1 family instead of being owned by a typed temporal planning contract.",
+      "fixture_gap": "The accepted DELL/MU/NVDA fake chain used nonnumeric filler for deadline_or_review_date and did not exercise a plausible ISO calendar date in the exact WWC path."
+    },
+    "project_owned_result_materialization_cause": {
+      "established": true,
+      "finding": "The runner validates every nonempty capture set against the legacy capture-v1 constant even when the admission and canonical failure event correctly bind capture-v2.",
+      "effect": "Canonical terminal failure, receipts and captures are preserved, but the runner raises an unhandled RuntimeError and does not write the declared runtime-result JSON."
+    },
+    "project_owned_supervision_receipt_cause": {
+      "established": true,
+      "finding": "The self-finalized exit receipt hashes stderr before the final Python traceback is flushed.",
+      "effect": "The immutable exit receipt records 299 stderr bytes while the final stderr is 1073 bytes; monitoring did not classify the digest drift."
+    }
+  },
+  "layered_acceptance_reclassification": {
+    "unsupported_exact_planning_date": {
+      "current_runtime_layer": "L1_hard_integrity",
+      "future_owner": "typed_local_temporal_planning_authority",
+      "future_disposition": "hard_fail_only_when_an_exact_date_claims authority without a bound issuer calendar or approved review schedule; relative schedule atoms remain locally renderable"
+    },
+    "material_financial_numeric_boundary": {
+      "status": "retain_hard_fail_closed",
+      "date_field_exception_without_temporal_contract_allowed": false
+    },
+    "runner_and_supervision_result_integrity": {
+      "layer": "L1_reconstructability_and_terminal_truth",
+      "status": "project_owned_blocker"
+    }
+  },
+  "selected_scope_replacement": {
+    "contract_ref": "fin01.s4.action_planning_temporal_authority_and_terminal_result_materialization:v1",
+    "maximum_zero_call_implementation_bundles": 1,
+    "provider_output": [
+      "closed relative trigger enum",
+      "closed review cadence enum",
+      "optional exact calendar alias selected only from an admission-bound calendar allowlist"
+    ],
+    "local_deterministic_ownership": [
+      "as_of",
+      "known issuer event date",
+      "approved review date",
+      "relative-label rendering",
+      "unscheduled or unknown date state"
+    ],
+    "classifier_boundary": [
+      "financial amounts percentages measurements units signs periods and precision remain under the material numeric hard gate",
+      "calendar planning fields are accepted only through the temporal authority contract",
+      "no blanket ISO-date allowlist and no field-name-only bypass"
+    ],
+    "fixture_requirements": [
+      "DELL MU and NVDA exact WWC paths with natural ISO dates",
+      "bound date alias pass",
+      "unbound future date fail",
+      "relative reporting-cycle enum pass",
+      "financial number in a planning field fail",
+      "three-case full fake 6 nodes 12 callbacks 12 capture-v2 objects and 9 Artifacts",
+      "failure path retains three receipts and capture-v2 objects"
+    ],
+    "result_materialization_requirements": [
+      "runner validates the exact admission-bound capture policy rather than a global legacy constant",
+      "canonical terminal failure always yields one typed runtime-result without rewriting canonical truth",
+      "capture-v1 historical runs remain immutable",
+      "capture-v2 success and failure readback are both supported",
+      "final stderr digest is observed only after process exit or a separate verified post-exit receipt records the final log digest"
+    ],
+    "anti_loop": [
+      "no automatic R6",
+      "no Prompt-only retry",
+      "no broader character or numeric bypass",
+      "no Provider hopping",
+      "no paired assessment after this failed Run",
+      "no second implementation bundle if the one bounded package cannot close its deterministic acceptance"
+    ],
+    "failure_of_selected_scope_replacement": "Block the Agent-authored WWC temporal delivery surface and retain a deterministic local planner or source-grounded baseline; do not reopen a second repair chain."
+  },
+  "issue_disposition": {
+    "RC_P36_067": "open_R5_did_not_reach_final_numeric_Artifact_L1",
+    "RC_P36_068": "open_R5_did_not_reach_final_identity_Artifact_L1",
+    "RC_P36_080": "open_R5_live_recurrence_temporal_planning_date_taxonomy_and_authority_gap",
+    "RC_P36_081": "close_failure_path_live_capture_v2_request_output_safe_index_and_nonpromotion_proven",
+    "RC_P36_082": "open_runner_capture_v2_result_materialization_and_supervision_final_log_digest_gap"
+  },
+  "stage_disposition": {
+    "MU_R5": "terminal_failed_immutable_no_R6",
+    "S4_T06": "blocked",
+    "paired_assessment": "not_eligible_not_performed",
+    "owner_acceptance": "not_eligible_not_performed",
+    "S4_T07": "not_entered",
+    "S4": "not_passed",
+    "S5": "blocked",
+    "release": "blocked",
+    "production": "blocked"
+  },
+  "observed_counts_in_disposition_turn": {
+    "runtime_code_changes": 0,
+    "new_admissions": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "tool_calls": 0,
+    "artifacts": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0,
+    "T07_operations": 0
+  },
+  "next_action": "S4-T06-MU-ACTION-PLANNING-TEMPORAL-AUTHORITY-AND-CAPTURE-V2-TERMINAL-RESULT-MATERIALIZATION-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "next_action_authorized": false,
+  "known_boundary": "R5 is immutable failed and cannot be rerun. One future zero-call shared-runtime scope replacement may be separately authorized. It must not imply R6, paired assessment, owner acceptance or T07."
+}

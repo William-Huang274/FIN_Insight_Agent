@@ -1,0 +1,289 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_specialist_v7_wwc_segment_output_truncation_zero_call_root_cause_disposition_v1_0",
+  "decision_id": "S4-T05-DELL-SPECIALIST-V7-WWC-SEGMENT-OUTPUT-TRUNCATION-ZERO-CALL-ROOT-CAUSE-DISPOSITION-R1",
+  "decided_at": "2026-07-27T14:10:00+08:00",
+  "status": "pass_zero_call_root_cause_disposed_WWC_judgment_atom_deterministic_assembly_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "S4-T05-DELL-RESEARCH-LEAD-GAP-ATOM-DETERMINISTIC-PROJECTION-R5-FIRST-CREDIBLE-FAILURE-ROOT-CAUSE-DISPOSITION-DECISION",
+    "zero_call_restricted_capture_request_contract_and_budget_audit_authorized": true,
+    "runtime_prompt_schema_validator_fake_provider_or_transport_implementation_authorized": false,
+    "historical_capture_rewrite_or_failed_run_reclassification_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "retry_replay_relaunch_rerun_or_replacement_admission_authorized": false,
+    "paired_assessment_Human_review_S4_T06_S5_release_or_production_authorized": false
+  },
+  "source_failure": {
+    "issue_id": "RC-P36-062-s4-specialist-v7-WWC-segment-output-truncation-recurrence",
+    "result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_research_lead_gap_atom_projection_r5_exact_live_execution_failure_result_v1_0.json",
+    "result_sha256": "8150b7ba502599b4911652fb0b52ac652fe83f0032669968f5985b44d6f98e10",
+    "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_research_lead_gap_atom_projection_r5_r1_live_execution_result.json",
+    "runtime_result_sha256": "63d9295df5b26533dc05d2b9e9c69a1f6483e8399a81f6698ee81442fddc55e6",
+    "research_run_id": "research_run_fin01_3ce365aa075bacbc2cc31346",
+    "failed_stage": "domain_specialist:demand_authenticity_and_sustainability",
+    "failed_segment": "actionable_what_would_change_tasks",
+    "failure_code": "s3_bounded_node_output_truncated",
+    "provider_finish_reason": "length",
+    "provider_output_tokens_and_limit": [
+      1400,
+      1400
+    ],
+    "provider_input_tokens": 4969,
+    "terminal_states": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "artifact_count": 0,
+    "research_lead_called": false,
+    "retry_fallback_replay_relaunch_rerun": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "restricted_zero_call_audit": {
+    "raw_assistant_text_printed_or_persisted_by_audit": false,
+    "restricted_capture_object_sha256": "6a7fdde0aae5e1ea162b25ba1507f8e654405b5e841f0770d4b5d012ad0168ff",
+    "capture_utf8_bytes": 5258,
+    "capture_starts_with_object": true,
+    "capture_ends_with_object": false,
+    "json_error": "unterminated_string_at_byte_position_5249",
+    "markdown_fence_or_private_reasoning_marker_observed": false,
+    "raw_forbidden_claim_id_observed": false,
+    "observed_task_id_count": 3,
+    "observed_claim_alias_count": 3,
+    "observed_source_target_count": 3,
+    "observed_decision_rule_count": 3,
+    "observed_time_window_count": 3,
+    "last_observed_schema_key": "deadline_or_review_date",
+    "structural_inference": "The Provider attempted all three requested tasks and was truncated inside the third task time-window string; this is not evidence of broad JSON or instruction-following failure."
+  },
+  "request_and_capacity_audit": {
+    "executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "executor_sha256": "73973c70fa82a003abbc9ebbcfcc392ecc034902b598894f9e0cacc4e447be6f",
+    "contract_policy_ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+    "contract_policy_sha256": "c43d1f80ebc9290372d701b37ca77656390f371279ef8e95c0adb8b1b6eb3f9c",
+    "provider_visible_system_bytes": 1539,
+    "provider_visible_request_bytes": 15356,
+    "largest_request_surfaces_bytes": {
+      "analysis_input": 8381,
+      "validated_prior_segments": 2907,
+      "raw_authority_contract": 1251,
+      "required_output_schema": 1226,
+      "task_claim_alias_contract": 1080
+    },
+    "current_provider_task_cardinality": [
+      1,
+      3
+    ],
+    "narrative_fields_per_task": 13,
+    "narrative_field_max_chars": 320,
+    "segment_output_token_cap": 1400,
+    "segment_serialized_byte_cap": 6000,
+    "maximum_shape_bytes_for_three_tasks_at_field_maximum": 12826,
+    "observed_output_bytes_at_token_cap": 5258,
+    "token_and_byte_envelope_aligned_with_stable_headroom": false,
+    "repeated_authority_and_prior_surface_present": true
+  },
+  "historical_comparison": {
+    "R3": {
+      "result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_task_claim_link_policy_r3_exact_live_execution_failure_result_v1_0.json",
+      "result_sha256": "1f6ca37ad255cd697ffa5d74f97836266bc58e0a41ad84a36c5084029ed66cb2",
+      "WWC_valid_json": true,
+      "task_count": 2,
+      "serialized_bytes": 3193,
+      "output_tokens": 830,
+      "finish_reason": "stop"
+    },
+    "R4": {
+      "result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_wwc_numeric_authority_r4_exact_live_execution_failure_result_v1_0.json",
+      "result_sha256": "85c1206404d844993e98bdc776d4890217570e736715e3df1519b2a239f96827",
+      "same_DELL_input_digest_and_current_segmented_path": true,
+      "WWC_valid_json": true,
+      "task_count": 3,
+      "serialized_bytes": 4084,
+      "output_tokens": 1050,
+      "finish_reason": "stop"
+    },
+    "R5": {
+      "same_DELL_input_digest_and_current_segmented_path": true,
+      "attempted_task_count": 3,
+      "serialized_bytes_before_truncation": 5258,
+      "output_tokens": 1400,
+      "finish_reason": "length"
+    },
+    "conclusion": "The current contract is sometimes representable but has no stable generation headroom under ordinary output-length variability. DeepSeek route incapability is not the earliest demonstrated cause."
+  },
+  "historical_root_cause_boundary": {
+    "related_issue_id": "RC-P36-035",
+    "historical_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_first_node_truncation_repair_decision_v1_0.json",
+    "historical_decision_sha256": "83bc59f1119e0fb6c5fd8036cb35434c6d29170654a2caf586e31727112c6c17",
+    "relationship": "same_capacity_and_information_architecture_family_but_current_v7_WWC_wire_contract_recurrence_has_distinct_owner",
+    "reopen_RC_P36_035": false,
+    "RC_P36_062_owns_current_recurrence": true
+  },
+  "layered_acceptance_disposition": {
+    "acceptance_standard_ref": "configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json",
+    "acceptance_standard_sha256": "2f4ffb82f7cc18ac97c7265fd968e004a4b64d5ad8244d79c0a0a0b86c466703",
+    "immediate_failure": "provider_output_hit_exact_segment_token_cap_before_valid_JSON_completion",
+    "earliest_project_owned_root_cause": "denormalized_WWC_provider_wire_contract_repeats_canonical_structure_and_authority_surface_without_a_stably_representable_token_byte_envelope",
+    "classification": "L1_hard_capacity_fail_closed",
+    "downgrade_to_L3_quality_finding_allowed": false,
+    "provider_route_or_model_is_first_demonstrated_cause": false,
+    "historical_run_and_capture_remain_immutable": true
+  },
+  "selected_minimum_implementation_contract": {
+    "contract_ref": "fin01.s3.specialist_WWC_judgment_atom_deterministic_assembly:v1",
+    "new_transport_ref": "fin01.s3.bounded_agent.specialist_owner_grade_segmented:v8",
+    "scope": "Specialist actionable_what_would_change_tasks segment only",
+    "provider_surface": {
+      "field_id": "what_would_change_judgment_atoms",
+      "cardinality": [
+        1,
+        3
+      ],
+      "atom_fields": [
+        "claim_alias",
+        "primary_authority_alias",
+        "authority_aliases",
+        "metric_or_observation",
+        "rule_type",
+        "comparator_or_condition",
+        "threshold_or_observation",
+        "start_or_trigger",
+        "deadline_or_review_date",
+        "expected_claim_transition",
+        "fallback_stop_condition"
+      ],
+      "closed_rule_type_enum_required": true,
+      "closed_claim_transition_enum_or_bounded_compact_value_required": true,
+      "narrative_field_max_chars": 160,
+      "provider_atom_serialized_byte_cap": 4800,
+      "provider_emits_task_id": false,
+      "provider_emits_source_target": false,
+      "provider_emits_as_of": false,
+      "provider_emits_nested_canonical_decision_rule_or_time_window": false
+    },
+    "local_deterministic_assembly": {
+      "owns_task_id": true,
+      "owns_exact_claim_alias_expansion": true,
+      "owns_authority_alias_expansion_and_kind_validation": true,
+      "owns_source_target_from_primary_authority_metadata": true,
+      "owns_time_window_as_of_from_exact_input": true,
+      "owns_canonical_decision_rule_and_time_window_nesting": true,
+      "owns_expected_claim_transition_template_when_enum_used": true,
+      "owns_ordering_identity_and_lineage": true,
+      "silent_atom_drop_allowed": false,
+      "ticker_case_or_provider_specific_branch_allowed": false,
+      "canonical_downstream_shape_preserved": true
+    },
+    "bounded_headroom": {
+      "WWC_segment_output_token_cap": 1800,
+      "per_cell_specialist_segment_token_cap_sum": 4600,
+      "three_cell_full_chain_maximum_output_tokens": 18000,
+      "increment_over_R5_full_chain_maximum_output_tokens": 1200,
+      "maximum_output_only_cost_increment_usd_at_0_87_per_million": 0.001044,
+      "blind_future_cap_increase_allowed": false,
+      "exhaustive_max_shape_fixture_must_fit_atom_byte_and_token_envelopes": true
+    },
+    "single_source_contract_generation": [
+      "provider_prompt_schema",
+      "local_validator",
+      "deterministic_assembler",
+      "fake_provider_fixture",
+      "typed_failure_telemetry"
+    ]
+  },
+  "hard_boundary": {
+    "truncated_or_invalid_JSON": "L1_hard_capacity_fail_closed",
+    "unknown_wrong_kind_cross_cell_or_out_of_surface_alias": "L1_hard_integrity_fail_closed",
+    "zero_or_more_than_three_atoms": "fail_closed",
+    "malformed_blank_overlong_or_unknown_enum_atom": "fail_closed_no_silent_drop",
+    "missing_local_assembly_authority_or_exact_as_of": "fail_closed_no_guessing",
+    "one_to_three_valid_atoms_within_envelope": "deterministically_assemble_and_continue",
+    "historical_capture_repair_or_partial_parse_projection": "forbidden"
+  },
+  "rejected_and_deferred_alternatives": [
+    {
+      "option": "increase_only_the_WWC_token_cap",
+      "decision": "rejected",
+      "reason": "does not remove denormalized generation ownership or prove a stable representable envelope"
+    },
+    {
+      "option": "prompt_only_be_more_concise",
+      "decision": "rejected",
+      "reason": "style instruction is not a deterministic capacity contract"
+    },
+    {
+      "option": "downgrade_truncation_to_quality_finding_and_keep_partial_output",
+      "decision": "rejected",
+      "reason": "invalid JSON and incomplete decision rules remain hard capacity and integrity failures"
+    },
+    {
+      "option": "retry_rerun_switch_provider_or_add_DELL_special_case",
+      "decision": "rejected",
+      "reason": "does not repair the shared project-owned wire contract and exceeds current authority"
+    },
+    {
+      "option": "atomize_dependency_conflict_writer_verifier_and_all_agent_nodes_now",
+      "decision": "deferred_to_S4_T10_to_S5",
+      "reason": "not required to remove the current WWC-only blocker and would expand one task sequence into a general redesign"
+    }
+  ],
+  "minimum_implementation_acceptance": {
+    "versioned_v8_transport_preserves_v1_through_v7_historical_behavior": true,
+    "single_source_generates_prompt_schema_validator_assembler_fake_provider_and_telemetry": true,
+    "fixture_atom_counts": [
+      1,
+      3
+    ],
+    "exhaustive_three_atom_max_shape_fits_selected_byte_and_token_envelopes": true,
+    "three_valid_atoms_assemble_to_exact_existing_canonical_task_shape": true,
+    "task_ids_alias_expansion_source_target_as_of_order_and_lineage_are_local_and_byte_stable": true,
+    "malformed_unknown_cross_cell_or_overlong_atom_fails_before_assembly": true,
+    "silent_drop_truncation_recovery_or_provider_specific_branch_absent": true,
+    "R3_R4_R5_results_and_restricted_captures_immutable": true,
+    "fake_provider_full_chain_regression_required": true,
+    "fresh_agent_proof_admission_and_any_future_live_execution_require_later_separate_authorities": true
+  },
+  "sequence_boundary": {
+    "current_sequence": "RC_P36_062_specialist_WWC_capacity_disposition_only",
+    "implementation_in_this_decision": false,
+    "model_provider_network_source_tool_admission_run_artifact_or_paired_actions_in_this_decision": false,
+    "RC_P36_061_status_unchanged": "R5_consumed_failed_upstream_projection_live_observation_unproven",
+    "deferred_to_S4_T10_to_S5": [
+      "all_node_general_judgment_atom_framework",
+      "dependency_and_conflict_deterministic_assembly",
+      "Writer_and_Verifier_atomization",
+      "cross_provider_strict_server_side_schema_capability_matrix"
+    ]
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_assessments": 0,
+    "Human_Reviews": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_062": "root_cause_disposed_WWC_judgment_atom_deterministic_assembly_selected_implementation_pending",
+    "RC_P36_061": "R5_consumed_failed_upstream_projection_live_observation_unproven",
+    "S4_T05": "blocked_pending_separately_authorized_minimum_zero_call_implementation",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "S5": "blocked_by_S4",
+    "release_admission": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S4-T05-DELL-SPECIALIST-WWC-JUDGMENT-ATOM-AND-DETERMINISTIC-TASK-ASSEMBLY-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

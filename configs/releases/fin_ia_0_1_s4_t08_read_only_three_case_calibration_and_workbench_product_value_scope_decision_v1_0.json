@@ -1,0 +1,145 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t08_read_only_three_case_calibration_and_workbench_product_value_scope_decision_v1_0",
+  "decision_id": "S4-T08-READ-ONLY-THREE-CASE-CALIBRATION-AND-WORKBENCH-PRODUCT-VALUE-SCOPE-DECISION",
+  "decided_at": "2026-07-31T13:35:59+08:00",
+  "status": "pass_scope_frozen_read_only_immutable_evidence_calibration_authorized_no_product_promotion",
+  "authority": {
+    "user_instruction": "继续",
+    "source_boundary_ref": "configs/releases/fin_ia_0_1_s1_to_s4_t06_stage_boundary_and_task_ownership_rebaseline_v1_0.json",
+    "T08_read_only_calibration_authorized": true,
+    "credential_presence_or_value_read_authorized": false,
+    "model_provider_network_source_or_external_tool_call_authorized": false,
+    "admission_run_or_business_artifact_creation_authorized": false,
+    "failed_or_quarantined_artifact_promotion_authorized": false,
+    "paired_pass_owner_acceptance_or_R3_creation_authorized": false,
+    "T05_T06_or_T07_reopen_authorized": false
+  },
+  "immutable_evidence_bindings": [
+    {
+      "evidence_role": "NVDA_exact_live_and_paired_assessment",
+      "ref": "configs/releases/fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_final_exact_live_and_paired_assessment_v1_0.json",
+      "sha256": "2ee18e79fed173b1f5d6120bd0860a8d8227c67b8c9b904c47c3319982b37f92",
+      "promotion_boundary": "historical_owner_accepted_R2_evidence_only_not_post_transfer_R3"
+    },
+    {
+      "evidence_role": "NVDA_owner_acceptance",
+      "ref": "configs/releases/fin_ia_0_1_s3_t10_owner_review_nvda_r2_and_s3_closeout_v1_0.json",
+      "sha256": "b7cdb5bf00b31581b26b6e66b3194f8c913a3d78ff1c84a59db2eee1d284a8b2",
+      "promotion_boundary": "preserve_exact_historical_acceptance_without_reuse_as_T09_or_R3"
+    },
+    {
+      "evidence_role": "DELL_latest_coherent_nine_artifact_exact_live",
+      "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_profile_aware_artifact_lineage_exact_live_execution_success_result_v1_0.json",
+      "sha256": "c7f4acd3ad09e62f5b987026acab668aa7002bc8068fbeae525b6de4582621e5",
+      "promotion_boundary": "audit_only_until_independent_L1_paired_result_is_applied"
+    },
+    {
+      "evidence_role": "DELL_independent_paired_L1_failure",
+      "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_success_only_paired_assessment_and_owner_acceptance_decision_v1_0.json",
+      "sha256": "502be154addb75b3c4a27ae918d3785b173176f071c231771a1a4ec56241de7e",
+      "promotion_boundary": "failed_product_evidence_audit_only"
+    },
+    {
+      "evidence_role": "DELL_latest_exact_attempt_failure",
+      "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r11_numeric_identity_exact_live_execution_failure_result_v1_0.json",
+      "sha256": "f52ed7bc144eb27d06032bfa4999310ce40c6ba06eb584cb71dc466d259fdf78",
+      "promotion_boundary": "failure_diagnostic_only_no_product_or_cost_imputation"
+    },
+    {
+      "evidence_role": "MU_latest_coherent_nine_artifact_exact_live",
+      "ref": "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_r2_exact_live_execution_success_result_v1_0.json",
+      "sha256": "d4ac5502ed6d87a43de853877511a0c61f9bfc42b6a5ec17f56dfe38a5d95e1b",
+      "promotion_boundary": "audit_only_until_independent_L1_paired_result_is_applied"
+    },
+    {
+      "evidence_role": "MU_independent_paired_L1_failure",
+      "ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r2_success_only_paired_assessment_result_v1_0.json",
+      "sha256": "fe31c95f92ac9a2e41be6ace784498084839edf16c300f4006e6f6ac11414fa1",
+      "promotion_boundary": "failed_product_evidence_audit_only"
+    },
+    {
+      "evidence_role": "MU_latest_replacement_exact_attempt_failure",
+      "ref": "configs/releases/fin_ia_0_1_s4_t06_mu_wwc_stable_top3_replacement_r1_exact_live_failure_result_v1_0.json",
+      "sha256": "440ff8aaab9db8c7012b1bb35857ae81f1e21b3eb88773c72ca25ad35fc3cc4f",
+      "promotion_boundary": "failure_diagnostic_only_no_product_promotion"
+    },
+    {
+      "evidence_role": "T07_current_worktree_regression_terminal_result",
+      "ref": "configs/releases/fin_ia_0_1_s4_t07_current_worktree_three_case_zero_call_regression_failure_result_v1_0.json",
+      "sha256": "9ee8e454b9c8eea14f7eeab93b5050b7a85fce006c5c42d25139f1a0aaab59d1",
+      "promotion_boundary": "engineering_compatibility_signal_only_not_live_product"
+    },
+    {
+      "evidence_role": "prior_global_Workbench_value_boundary",
+      "ref": "configs/releases/fin_ia_0_1_s0_to_s4_t05_full_chain_global_audit_and_forward_plan_v1_0.json",
+      "sha256": "6a00836e8b2a799e17eecad103982a35d8e4956069b63a5b9248adfb1e0ae451",
+      "promotion_boundary": "bounded_internal_surfaces_only_exact_user_value_not_previously_calibrated"
+    }
+  ],
+  "comparison_contract": {
+    "case_order": [
+      "NVDA",
+      "DELL",
+      "MU"
+    ],
+    "required_dimensions": [
+      "evidence_maturity",
+      "latest_coherent_exact_product_shape",
+      "latest_attempt_terminal_state",
+      "L1_hard_integrity",
+      "L2_recoverable_protocol",
+      "L3_agent_gain",
+      "L4_user_fit_and_delivery",
+      "model_calls_tokens_cost_and_latency",
+      "evidence_and_actionability_yield",
+      "owner_or_human_review_status"
+    ],
+    "Workbench_dimensions": [
+      "task_time",
+      "edit_burden",
+      "trust",
+      "continue_use",
+      "trace_and_debug_value"
+    ],
+    "allowed_evidence_states": [
+      "measured",
+      "qualitative_evidence_only",
+      "not_measured"
+    ],
+    "missing_measurement_rule": "record_not_measured_without_zero_fill_estimation_or_cross_case_imputation",
+    "agent_gain_rule": "analytical_gain_may_be_recorded_even_when_L1_fails_but_it_is_not_admissible_product_value",
+    "failure_promotion_rule": "failed_or_quarantined_output_may_support_failure_taxonomy_and_review_burden_only_never_product_truth_or_paired_pass"
+  },
+  "non_goals": [
+    "call_a_model_or_provider",
+    "read_or_probe_a_credential",
+    "repair_or_rerun_DELL_MU_or_NVDA",
+    "create_a_new_exact_product_or_business_Artifact",
+    "reinterpret_machine_Verifier_acceptance_as_owner_acceptance",
+    "reuse_historical_NVDA_R2_as_post_transfer_NVDA_product_or_R3",
+    "invent_task_time_edit_burden_trust_or_continue_use_scores",
+    "declare_three_case_R2_S4_pass_release_or_production_readiness"
+  ],
+  "hard_budgets": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_work_units_attempts_or_research_runs": 0,
+    "new_business_artifacts": 0,
+    "exact_live_runs": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0,
+    "qualified_senior_reviews": 0
+  },
+  "progression_rule": {
+    "T08_completion_is_S4_pass": false,
+    "T08_completion_is_owner_or_qualified_senior_review": false,
+    "T08_output": "read_only_calibration_matrix_and_product_value_boundary",
+    "next_stage_requirement": "separate_real_Human_T09_scope_and_eligibility_decision"
+  },
+  "next_action": "S4-T08-READ-ONLY-THREE-CASE-CALIBRATION-AND-WORKBENCH-PRODUCT-VALUE-RESULT"
+}

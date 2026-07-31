@@ -1,0 +1,323 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_r10_numeric_authority_and_case_identity_false_negative_zero_call_root_cause_disposition_v1_0",
+  "decision_id": "S4-T05-DELL-R10-NUMERIC-AUTHORITY-AND-CASE-IDENTITY-FALSE-NEGATIVE-ZERO-CALL-ROOT-CAUSE-DISPOSITION-R1",
+  "decided_at": "2026-07-28T14:20:00+08:00",
+  "status": "pass_zero_call_root_cause_disposed_structured_numeric_rendering_and_case_delivery_identity_implementation_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "S4-T05-DELL-R10-NUMERIC-AUTHORITY-AND-CASE-IDENTITY-FALSE-NEGATIVE-ZERO-CALL-ROOT-CAUSE-DISPOSITION-DECISION",
+    "zero_call_code_contract_artifact_and_registry_audit_authorized": true,
+    "runtime_repair_transport_version_admission_or_execution_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "R10_artifact_rewrite_owner_acceptance_R11_exact_live_S4_T06_or_later_authorized": false
+  },
+  "source_evidence": {
+    "R10_exact_live_result_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_profile_aware_artifact_lineage_exact_live_execution_success_result_v1_0.json",
+    "R10_exact_live_result_sha256": "c7f4acd3ad09e62f5b987026acab668aa7002bc8068fbeae525b6de4582621e5",
+    "paired_assessment_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_success_only_paired_assessment_and_owner_acceptance_decision_v1_0.json",
+    "paired_assessment_sha256": "502be154addb75b3c4a27ae918d3785b173176f071c231771a1a4ec56241de7e",
+    "source_grounded_input_pack_ref": "configs/releases/fin_ia_0_1_s4_t04_dell_source_grounded_input_pack_v1_0.json",
+    "source_grounded_input_pack_sha256": "1a173ac6097195bdc6d2dd0f3d43544a947069d6848786f4fe9ca9eb805c8ec9",
+    "DELL_case_pack_ref": "configs/releases/fin_ia_0_1_s4_t02_dell_oem_exact_case_pack_v1_0.json",
+    "DELL_case_pack_sha256": "71e7fb3ba56275760f0d2b84006d30fd192a15ad9be234740dc336cd4a15217e",
+    "layered_acceptance_ref": "configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json",
+    "layered_acceptance_sha256": "2f4ffb82f7cc18ac97c7265fd968e004a4b64d5ad8244d79c0a0a0b86c466703",
+    "R10_agent_terminal_states": [
+      "succeeded",
+      "succeeded",
+      "succeeded"
+    ],
+    "R10_agent_artifact_count": 9,
+    "R10_machine_verifier_decision": "accept_for_internal_review",
+    "paired_L1_status": "fail",
+    "owner_acceptance_eligible": false,
+    "R10_or_baseline_artifact_body_rewritten": false
+  },
+  "zero_call_code_audit": {
+    "bounded_executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "bounded_executor_sha256": "dbe20dd605d379f54cd9fdc6f52a76cffd86edf2c696c3864dcb83a5b0935253",
+    "bounded_contract_policies_ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+    "bounded_contract_policies_sha256": "29bc933b3dc37021712bb14775f04d6f72d2cfaf7f4190de6b22e27ba8156cb6",
+    "exact_numeric_authority_exists_in_raw_s4_cell_input": true,
+    "numeric_authority_arrives_in_specialist_model_view": false,
+    "raw_s4_to_legacy_model_view_schema_drift": {
+      "raw_s4_row_fields": [
+        "numeric_ref",
+        "entity_ref",
+        "segment_ref",
+        "period",
+        "metric_family",
+        "value",
+        "comparison_operator",
+        "currency",
+        "unit",
+        "scale_multiplier"
+      ],
+      "model_view_selector_expects": [
+        "financial_row_id",
+        "normalized_value",
+        "authority_scope",
+        "nested_selector"
+      ],
+      "observed_model_view_row_fields": [
+        "scale_multiplier",
+        "empty_selector"
+      ],
+      "opaque_numeric_refs_still_visible_only_in_authority_refs": true
+    },
+    "first_project_owned_numeric_drift_surface": "S4_flat_numeric_row_to_legacy_selected_financial_row_model_view_and_authority_projection_adapter",
+    "provider_numeric_context_at_first_drift": [
+      "opaque_numeric_ref_membership",
+      "scale_multiplier",
+      "no_bound_metric_value_period_operator_currency_or_unit"
+    ],
+    "first_provider_owned_numeric_drift_surface": "facts_explanation_and_terminal.fact_layer.statement",
+    "fact_validator_checks": [
+      "shape",
+      "support_type",
+      "support_ref_exact_membership",
+      "same_Cell_authority",
+      "cardinality",
+      "text_length",
+      "serialized_capacity"
+    ],
+    "fact_validator_does_not_check": [
+      "metric_to_statement_correspondence",
+      "value_to_statement_correspondence",
+      "comparison_operator_to_statement_correspondence",
+      "period_to_statement_correspondence",
+      "currency_unit_scale_to_statement_correspondence",
+      "sign_to_statement_correspondence"
+    ],
+    "claim_surface_free_numeric_drift_possible": true,
+    "claim_validator_scope_check_is_not_value_check": true,
+    "writer_v3_provider_output_is_only_claim_ref_and_analysis_text": true,
+    "writer_v3_provider_does_not_emit_title": true,
+    "writer_v3_local_assembler_hardcodes_NVDA_title": true,
+    "writer_v3_local_validator_requires_NVDA_title": true,
+    "generic_fake_or_legacy_writer_schema_also_hardcodes_NVDA_title": true,
+    "verifier_authority_surface_retains_numeric_value_operator_currency_unit_or_scale": false,
+    "verifier_local_validation_checks_state_machine_refs_and_digests_but_not_numeric_value_correspondence": true,
+    "current_prompt_validator_and_fake_provider_share_one_numeric_value_rendering_contract": false
+  },
+  "root_cause_disposition": {
+    "RC_P36_067": {
+      "issue_id": "RC-P36-067-s4-R10-numeric-reference-value-correspondence-false-negative",
+      "immediate_model_fault": "the model emitted material numeric statements that contradict the exact Numeric refs named as support",
+      "earliest_project_control_fault": "the S4 flat numeric row schema uses numeric_ref value comparison_operator and direct scope fields, while the shared model-view and verifier projection still expect legacy financial_row_id normalized_value and nested selector fields; the exact value-bearing row is reduced to scale_multiplier plus an empty selector",
+      "first_provider_fault": "after receiving only opaque Numeric refs without their bound values the model still emits unrestricted numeric-bearing Fact statements instead of preserving cannot-infer",
+      "propagation_fault": "FactSupportAuthorityPolicy validates only exact ref membership, and Claim plus Writer free-text surfaces can restate numeric content without a structured numeric projection or local-only rendering owner",
+      "verifier_false_negative_fault": "the local verifier authority projection is empty for the S4 numeric refs because financial_row_id is absent; it therefore cannot recompute any rendered value and the validator checks only state machine refs and digests",
+      "classification": "L1_project_owned_S4_numeric_schema_adapter_projection_and_deterministic_correspondence_gap_with_confirmed_model_unsupported_precision",
+      "model_instruction_noncompliance_established": true,
+      "provider_transport_or_network_failure": false
+    },
+    "RC_P36_068": {
+      "issue_id": "RC-P36-068-s4-R10-case-identity-title-contract-hardcoded-NVDA",
+      "immediate_fault": "the local memo-writer v3 assembler emits NVDA 三单元内部研究备忘录 for every case",
+      "earliest_project_control_fault": "the report delivery identity is not derived from S3ThreeCellBoundedAgentInputPack.company or the S4 case-runtime binding",
+      "validator_false_negative_fault": "the local writer validator treats the hard-coded NVDA title as the only valid value, so a DELL title mismatch is positively enforced",
+      "classification": "L1_project_owned_case_delivery_identity_projection_gap",
+      "model_instruction_noncompliance_established": false,
+      "provider_title_generation_in_R10": false
+    }
+  },
+  "selected_minimum_implementation_contracts": {
+    "numeric_contract": {
+      "contract_ref": "fin01.s4.case_numeric_authority_projection_and_deterministic_rendering:v1",
+      "purpose": "make exact Numeric authority the only producer of material numeric values in canonical Agent Artifacts",
+      "canonical_projection_by_numeric_ref": {
+        "must_normalize_flat_S4_rows_and_legacy_rows_into_one_versioned_shape_before_any_model_view": true,
+        "required_fields": [
+          "numeric_ref",
+          "authority_kind",
+          "entity_ref",
+          "business_scope_ref",
+          "period",
+          "metric_family",
+          "comparison_operator",
+          "exact_value",
+          "currency",
+          "unit",
+          "scale_multiplier",
+          "source_or_formula_lineage",
+          "cannot_support",
+          "projection_digest"
+        ],
+        "derived_metric_additions": [
+          "formula",
+          "input_numeric_refs",
+          "rounding_rule"
+        ],
+        "unknown_missing_cross_Cell_or_duplicate_ref": "L1_hard_fail_closed",
+        "implicit_conversion_or_model_selected_rounding_allowed": false
+      },
+      "provider_wire": {
+        "numeric_bearing_facts_and_claims_use_exact_numeric_aliases_and_bounded_interpretation_atoms": true,
+        "provider_authored_material_numeric_values_currency_amounts_percentages_or_signs_in_free_narrative_allowed": false,
+        "period_metric_comparator_value_unit_scale_and_display_precision_selected_by_provider": false,
+        "existing qualitative_judgment_counterevidence_boundary_and_WWC_authority_remain_model_owned": true,
+        "general_dependency_conflict_gap_or_all_node_atomization_required": false
+      },
+      "local_deterministic_ownership": {
+        "expand_request_local_numeric_aliases_to_exact_refs": true,
+        "render_numeric_clauses_from_projection_only": true,
+        "bind_each_rendered_clause_to_projection_digest_and_support_fact_or_claim": true,
+        "render_period_metric_comparator_value_currency_unit_scale_and_sign": true,
+        "assemble_report_numeric_blocks_from_validated_upstream_projections": true,
+        "canonical_ID_lineage_and_ordering_remain_local": true
+      },
+      "independent_L1_validation": {
+        "run_after_each_numeric_capable_node_and_before_artifact_commit": true,
+        "recompute_projection_and_rendering_without_trusting_provider_or_model_verifier": true,
+        "validate_metric_value_operator_period_entity_scope_currency_unit_scale_sign_and_formula_inputs": true,
+        "detect_provider_authored_material_numeric_tokens_outside_structured_projection": true,
+        "false_negative_or_ambiguous_parse_disposition": "terminal_fail_closed_with_content_free_typed_subtype",
+        "model_Verifier_is_not_the_numeric_truth_owner": true
+      },
+      "single_contract_generation": {
+        "provider_schema": true,
+        "local_validator": true,
+        "fake_provider_fixture": true,
+        "telemetry_subtype_vocabulary": true
+      }
+    },
+    "delivery_identity_contract": {
+      "contract_ref": "fin01.s4.case_delivery_identity_projection:v1",
+      "purpose": "derive every entity-bearing delivery field from the case-local input and runtime binding",
+      "inputs": [
+        "input_pack.company",
+        "s4_case_runtime.binding.case_ticker_when_present",
+        "case_identity_namespace",
+        "case_profile_ref",
+        "delivery_language"
+      ],
+      "locally_derived_fields": [
+        "report.title_zh_cn",
+        "workpaper.entity_label",
+        "review_surface.entity_label",
+        "manifest.case_ticker",
+        "any_entity_bearing_heading_or_export_label"
+      ],
+      "title_rule": "{case_ticker} 三单元内部研究备忘录",
+      "provider_title_write_authority": false,
+      "ticker_specific_conditional_or_NVDA_DELL_MU_literal_branch_allowed": false,
+      "writer_request_assembler_validator_fake_provider_and_artifact_profile_share_one_projection": true,
+      "input_binding_or_rendered_identity_mismatch": "L1_hard_fail_closed"
+    },
+    "versioning_and_binding": {
+      "historical_R10_and_prior_transports_immutable": true,
+      "new_specialist_numeric_atom_capability_requires_versioned_transport_or_policy_binding": true,
+      "new_writer_numeric_safe_and_case_identity_capability_requires_versioned_transport_or_policy_binding": true,
+      "new_admission_must_bind_both_contract_refs": true,
+      "silent_activation_for_historical_admissions": false
+    }
+  },
+  "minimum_zero_call_implementation_acceptance": {
+    "current_R10_three_numeric_mismatches_and_S4_to_legacy_projection_drift_reproduce_as_typed_L1_failures_without_model_calls": true,
+    "exact_positive_fixtures_cover_all_22_DELL_numeric_rows_and_2_derived_metrics": true,
+    "value_operator_period_entity_scope_currency_unit_scale_sign_and_formula_input_mutations_each_fail_closed": true,
+    "same_value_wrong_ref_wrong_period_wrong_unit_wrong_scale_wrong_sign_and_cross_Cell_negative_fixtures_exist": true,
+    "provider_free_text_numeric_injection_in_Specialist_Lead_Writer_and_Verifier_visible_narrative_fails_closed": true,
+    "DELL_MU_NVDA_titles_are_derived_from_case_identity_in_positive_fixtures": true,
+    "DELL_input_with_NVDA_title_MU_input_with_DELL_title_and_missing_case_identity_each_fail_closed": true,
+    "prompt_schema_local_validator_fake_provider_and_telemetry_are_generated_from_the_same_policy_objects": true,
+    "full_fake_DELL_chain_completes_6_nodes_12_callbacks_and_9_Artifacts_with_zero_provider_authored_numeric_values_in_canonical_narratives": true,
+    "baseline_R10_historical_artifacts_and_consumed_admissions_remain_immutable": true,
+    "model_provider_network_source_external_tool_admission_Run_Artifact_or_Human_writes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "fresh_agent_proof_admission_issuance_single_node_canary_full_exact_live_paired_and_owner_acceptance_require_separate_decisions": true
+  },
+  "rejected_and_deferred_alternatives": [
+    {
+      "option": "add_more_prompt_emphasis_that_numbers_must_match_refs",
+      "decision": "rejected",
+      "reason": "R10 already received exact rows and an explicit no-invent-numeric-precision instruction; prompt emphasis cannot own L1 truth"
+    },
+    {
+      "option": "regex_compare_arbitrary_free_text_against_every_numeric_row_as_the_primary_contract",
+      "decision": "rejected_as_primary_owner",
+      "reason": "free-language parsing is ambiguous across currency scale period comparator derived metrics and Chinese rendering; token detection may remain only as a negative guard"
+    },
+    {
+      "option": "silently_replace_wrong_numbers_or_the_NVDA_title_in_R10",
+      "decision": "rejected",
+      "reason": "immutable model and local output history cannot be rewritten and presented as original"
+    },
+    {
+      "option": "downgrade_numeric_or_entity_identity_mismatch_to_L2_L3_or_L4",
+      "decision": "rejected",
+      "reason": "numeric truth and issuer identity are explicit L1 hard-integrity gates"
+    },
+    {
+      "option": "switch_models_before_fixing_the_local_false_negative",
+      "decision": "rejected",
+      "reason": "a different model does not remove the project's missing deterministic correspondence and identity contracts"
+    },
+    {
+      "option": "atomize_dependency_conflict_gap_WWC_and_every_other narrative structure in_T05",
+      "decision": "deferred_to_S4_T10_to_S5",
+      "reason": "the selected numeric-only local rendering boundary closes the current L1 gap without reopening the full general agent architecture"
+    },
+    {
+      "option": "enter_MU_or_S4_T06_and_carry_the_L1_gap_forward",
+      "decision": "rejected",
+      "reason": "missing L1 truth integrity cannot be carried as quality debt"
+    }
+  ],
+  "R10_and_sequence_disposition": {
+    "R10_admission": "consumed_immutable_not_rerunnable",
+    "R10_agent_artifacts": "immutable_failed_owner_acceptance",
+    "R10_deterministic_baseline": "immutable_distinct_comparison_floor",
+    "R10_paired_assessment": "completed_L1_failed",
+    "owner_acceptance": "not_eligible_while_L1_fails",
+    "RC_P36_067_status": "root_cause_disposed_structured_numeric_rendering_implementation_pending",
+    "RC_P36_068_status": "root_cause_disposed_case_delivery_identity_implementation_pending",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "deferred_sequence_items": [
+      "general_all_node_judgment_atom_framework",
+      "dependency_and_conflict_deterministic_assembly",
+      "cross_provider_strict_server_side_schema_matrix",
+      "cross_stage_unified_claim_task_identity_redesign"
+    ]
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "restricted_capture_reads": 0,
+    "runtime_code_changes": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_business_Artifacts": 0,
+    "paired_assessments": 0,
+    "Human_Reviews": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_067": "root_cause_disposed_structured_numeric_rendering_implementation_pending",
+    "RC_P36_068": "root_cause_disposed_case_delivery_identity_implementation_pending",
+    "S4_T05": "blocked_pending_separately_authorized_minimum_zero_call_implementation",
+    "DELL_R2": "not_proven",
+    "owner_acceptance": "not_eligible",
+    "S4_T06": "not_entered",
+    "S5": "blocked_by_S4",
+    "release_admission": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S4-T05-DELL-CASE-LOCAL-NUMERIC-ATOM-DETERMINISTIC-RENDERING-AND-DELIVERY-IDENTITY-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

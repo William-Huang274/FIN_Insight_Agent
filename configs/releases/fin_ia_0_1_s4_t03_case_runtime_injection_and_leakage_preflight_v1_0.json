@@ -1,0 +1,186 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t03_case_runtime_injection_and_leakage_preflight_v1_0",
+  "decision_id": "S4-T03-CASE-RUNTIME-INJECTION-AND-LEAKAGE-PREFLIGHT-R1",
+  "decided_at": "2026-07-26T17:32:44+08:00",
+  "status": "pass_zero_paid_shared_runtime_injected_node_consumed_and_leakage_preflight",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "S4-T03 only",
+    "completed_scope": [
+      "frozen_Case_Pack_and_method_contract_loading_and_validation",
+      "same_shared_Runtime_injection_into_seven_named_consumers",
+      "DELL_and_MU_zero_paid_fake_six_node_nine_Artifact_shape",
+      "case_Cell_and_industry_template_leakage_rejection",
+      "local_judgment_atom_identity_scope_lineage_assembly",
+      "Workbench_read_only_runtime_projection",
+      "Project_OS_preflight_tests_and_frontend_build"
+    ],
+    "not_authorized_or_executed": [
+      "S4-T04_canary_need_or_fresh_admission_decision",
+      "model_provider_or_paid_calls",
+      "source_fact_retrieval",
+      "canonical_Case_Run_admission_or_business_Artifact_writes",
+      "paid_canary_or_exact_live",
+      "Human_review_or_qualified_senior_R3",
+      "S5_Alpha_release_or_production"
+    ]
+  },
+  "runtime_contract": {
+    "contract_ref": "fin01.s4.case_runtime_binding:v1",
+    "implementation_ref": "src/sec_agent/s4_case_runtime.py",
+    "same_existing_executor": "apps/workbench/backend/application/bounded_agent_executor.py:S3ThreeCellBoundedAgentExecutor",
+    "same_program_cells": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "named_consumer_count": 7,
+    "named_consumers": [
+      "evidence_route_plan",
+      "financial_numeric_pack",
+      "bounded_graph_pack",
+      "specialist_and_research_lead",
+      "bounded_agent_input_and_execution",
+      "writer_verifier_and_review_surface",
+      "workbench_projection"
+    ],
+    "parallel_case_specific_runtime_added": false
+  },
+  "case_bindings": {
+    "DELL": {
+      "official_issuer_identity": {
+        "ticker": "DELL",
+        "legal_name": "Dell Technologies Inc.",
+        "cik": "0001571996",
+        "official_source_ref": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000024/0001571996-26-000024-index.htm"
+      },
+      "case_pack_ref": "configs/releases/fin_ia_0_1_s4_t02_dell_oem_exact_case_pack_v1_0.json",
+      "case_pack_sha256": "71e7fb3ba56275760f0d2b84006d30fd192a15ad9be234740dc336cd4a15217e",
+      "case_profile_ref": "fin01.s4.case_profile.dell_oem_three_cell:v1",
+      "research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v1",
+      "method_id": "s4_dell_oem_order_to_revenue_and_working_capital_playbook",
+      "binding_digest": "78755ee3afa99ae5d33a170ee8184ef073fc895377ff1f668bfaf100358cf187",
+      "identity_namespace": "s4:DELL:CIK0001571996:55a2876f938222c7544a",
+      "consumer_injection_digests": {
+        "evidence_route_plan": "3049cf501b9c8a9d540e3648687ff9cb4f0c8758336c64b8f22acba2b4bd766f",
+        "financial_numeric_pack": "df9ab59f5c472a7d5102a29157264969ec9784a9980143dca3be2e38193e8723",
+        "bounded_graph_pack": "5e7365daf551d00b0c3e2ae531f84fc3d0df59aa1a7265fa55860c6ac021661a",
+        "specialist_and_research_lead": "9027b0efdaccbc6ec6ab536da9344ad1bd654dfca9bd9c3f210c6e5261bbd0c2",
+        "bounded_agent_input_and_execution": "e11aaedbf47e28cdc8a1ab6a9738c5e3520b23526ad52d0b67bffb3d398bdcd1",
+        "writer_verifier_and_review_surface": "575d817c778b60b0d64327b897a03c9f611292b83fc9fbf8c2d104fb62603db8",
+        "workbench_projection": "df46df210f3a244cb9c574fbd9982da69537f93936feaf31a8a1595865384bab"
+      }
+    },
+    "MU": {
+      "official_issuer_identity": {
+        "ticker": "MU",
+        "legal_name": "Micron Technology, Inc.",
+        "cik": "0000723125",
+        "official_source_ref": "https://www.sec.gov/Archives/edgar/data/723125/000196922326000605/0001969223-26-000605-index.htm"
+      },
+      "case_pack_ref": "configs/releases/fin_ia_0_1_s4_t02_mu_hbm_exact_case_pack_v1_0.json",
+      "case_pack_sha256": "0de20e119e3ab78b273b96895f7fb7070da24b6c35122daa53d94d522edb2612",
+      "case_profile_ref": "fin01.s4.case_profile.mu_hbm_three_cell:v1",
+      "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+      "method_id": "s4_mu_hbm_supply_pricing_and_cycle_playbook",
+      "binding_digest": "6ae688875e74d6dc0eb6bf1786b3b07eee76e106f6eedb706f72fec42e7da00e",
+      "identity_namespace": "s4:MU:CIK0000723125:76d0fc42d702327b2106",
+      "consumer_injection_digests": {
+        "evidence_route_plan": "ad0c637265928cd4f62b8d73add2e311f03108d4a0dba17fae03c8e6888c2f0c",
+        "financial_numeric_pack": "052d4510e3e2b8fdeb68173490cb46c2af3727e555d77ad8074cf38870e9a9ba",
+        "bounded_graph_pack": "cecfcb5ce23e120b74929d6831480b3f5a56c52bec966a7219281f1f1376d08d",
+        "specialist_and_research_lead": "b8e01b4f89aec5f386ffd886d4b2e21e304f3976b431d0070cb563a236cfced6",
+        "bounded_agent_input_and_execution": "4f3e2b7edeee2387b8ae5454216861060ea8b3e967d021571a72a2f370bb34d0",
+        "writer_verifier_and_review_surface": "6e052494c5563674f3a49875bcd49a0e448b7f68f4296b7795a01162dc662a78",
+        "workbench_projection": "e31216ce2677f0cc1f0c616ada3f3f33236900153268e7d032706b447f84850b"
+      }
+    }
+  },
+  "method_contract_binding": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t02_financial_method_to_runtime_contract_v1_0.json",
+    "sha256": "740d3da108e4bf0082eeea47cb9fdbf84d0e992fe20b3db86967dc3336cc5c53",
+    "prior_lifecycle_state": "contract_translated",
+    "new_lifecycle_state": "fixture_proven_runtime_injected_node_level_consumed",
+    "paid_artifact_proven": false,
+    "Human_accepted": false
+  },
+  "deterministic_execution_proof": {
+    "case_count": 2,
+    "per_case_logical_nodes": 6,
+    "per_case_logical_artifacts": 9,
+    "per_case_prefilled_fact_rows": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "paid_calls": 0,
+    "source_routes_resolved_but_not_executed": true,
+    "case_binding_and_all_seven_injection_digests_checked_before_first_node": true,
+    "first_invalid_binding_stops_before_first_node": true,
+    "model_returns_small_judgment_atoms_only": true,
+    "local_runtime_owns_ids_scope_ClaimFactLink_and_lineage": true
+  },
+  "leakage_preflight": {
+    "same_local_alias_across_three_cells_scoped_distinctly": "pass",
+    "DELL_fact_in_MU_or_NVDA_scope": "rejected",
+    "MU_fact_in_DELL_or_NVDA_scope": "rejected",
+    "NVDA_fact_in_DELL_or_MU_scope": "rejected",
+    "SaaS_structural_fixture_as_case_fact": "rejected",
+    "Bank_structural_fixture_as_case_fact": "rejected",
+    "Graph_context_as_direct_Evidence": "rejected",
+    "cannot_infer_with_fact_support": "rejected"
+  },
+  "verification": {
+    "focused_T03_contract_tests": {
+      "status": "pass",
+      "passed": 8
+    },
+    "adjacent_contract_regression": {
+      "status": "pass",
+      "passed": 72
+    },
+    "frontend_production_build": {
+      "status": "pass",
+      "runtime": "bundled_Node",
+      "warning": "standard_Vite_chunk_size_warning_only"
+    },
+    "project_os_full_chain_preflight": {
+      "status": "pass",
+      "run_scope": "S4_T03_three_case_identity_leakage_and_node_level_deterministic_preflight_implementation",
+      "open_blockers_for_scope": 0
+    }
+  },
+  "root_cause_disposition": {
+    "issue_id": "RC-P36-055-s4-dell-mu-case-pack-and-financial-method-to-runtime-gap",
+    "prior_status": "case_packs_and_method_contracts_frozen_T03_runtime_injection_and_node_consumption_pending",
+    "new_status": "closed_S4_T03_case_runtime_injected_node_consumed_and_leakage_preflight_pass",
+    "full_chain_blocker": false,
+    "closed": true,
+    "model_quality_issue": false,
+    "remaining_boundary": "paid_case_business_artifacts_and_Human_acceptance_remain_unproven_and_are governed by S4-T04 onward"
+  },
+  "observed_counts": {
+    "official_identifier_source_queries": 2,
+    "source_fact_retrieval_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "paid_calls": 0,
+    "canonical_case_writes": 0,
+    "new_research_runs": 0,
+    "new_admissions": 0,
+    "new_business_artifacts": 0,
+    "human_reviews": 0
+  },
+  "stage_decision": {
+    "S4": "in_progress",
+    "S4_T01": "pass",
+    "S4_T02": "pass",
+    "S4_T03": "pass_zero_paid_deterministic",
+    "S4_T04": "next_pending_separate_authority",
+    "DELL_R2": "not_started",
+    "MU_R2": "not_started",
+    "NVDA_R3": "not_started",
+    "S4_pass": false,
+    "S5": "blocked_by_S4",
+    "Alpha_release_or_production": "not_claimed_not_authorized"
+  },
+  "next_action": "S4-T04-DELL-PROVIDER-CANARY-NEED-AND-FRESH-AGENT-PROOF-DECISION"
+}

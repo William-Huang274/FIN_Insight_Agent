@@ -1,0 +1,144 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_source_grounded_input_materialization_and_fresh_proof_v1_0",
+  "decision_id": "fin01-s4-t06-mu-source-grounded-input-materialization-and-fresh-proof-r1",
+  "recorded_at": "2026-07-29T10:44:57+08:00",
+  "status": "pass_MU_source_pack_materialized_registered_exact_input_and_zero_call_full_fake_proven_canonical_case_and_admission_preparation_pending",
+  "authority": {
+    "source": "user",
+    "instruction": "继续",
+    "scope": "S4-T06 MU source-grounded input materialization and fresh proof",
+    "model_provider_or_paid_execution_authorized": false,
+    "admission_issuance_or_exact_live_authorized": false
+  },
+  "root_cause_disposition": {
+    "issue_id": "RC-P36-076-s4-t06-mu-source-grounded-input-pack-unregistered",
+    "earliest_faulty_contract": "src/sec_agent/s4_case_runtime.py::S4SourceGroundedInputPack",
+    "prior_faults": [
+      "MU source pack path absent from the shared registry",
+      "case_ticker and issuer_identifier constrained to DELL only",
+      "route receipt minimum and exact cardinality fixed at 11",
+      "route prefix fixed at p34_route::dell_"
+    ],
+    "selected_fix": "shared schema with case-specific identity route-prefix and exact-cardinality constraints",
+    "DELL_guarantee_weakened": false,
+    "DELL_exact_route_count_preserved": 11,
+    "MU_exact_route_count": 8,
+    "new_status": "source_pack_and_shared_contract_repaired_canonical_case_materialization_pending"
+  },
+  "source_pack": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t06_mu_source_grounded_input_pack_v1_0.json",
+    "sha256": "c97add3afee69278084c090b05e114436f426266c40d91c8e4ce916774e33d09",
+    "source_pack_digest": "5fff74f742b038ead1718e449e3e4dafc4f04b55587256d98e619d05cf6c263d",
+    "case_ticker": "MU",
+    "issuer_identifier": "CIK0000723125",
+    "as_of": "2026-07-26T00:00:00Z",
+    "counts": {
+      "source_snapshots": 6,
+      "route_execution_receipts": 8,
+      "evidence_rows": 7,
+      "numeric_rows": 16,
+      "derived_metrics": 4,
+      "graph_edges": 4,
+      "typed_gaps": 9,
+      "source_network_calls": 14
+    },
+    "pdf_sha256": {
+      "q3_10q": "713a12cd52689640bcc0df9e131d31c3db8c26b794cd2e8219fd727cf4cbd45a",
+      "q3_earnings_deck": "29468a786fa4a9c7728735ea8e3ad5853bb1375a297c636e86e6a4dd3b155929",
+      "q3_prepared_remarks": "a3ce62b84a059e35fae80c2bfd5c89f9af334193fd6aceff698fc3008e7d4c27"
+    }
+  },
+  "financial_truth_proof": {
+    "company_GAAP_rows": {
+      "revenue_USD_millions": "41456",
+      "gross_profit_USD_millions": "35056",
+      "operating_income_USD_millions": "33318",
+      "net_income_USD_millions": "28243",
+      "operating_cash_flow_USD_millions": "25388"
+    },
+    "non_GAAP_or_management_rows": {
+      "capital_expenditures_net_USD_millions": "7084",
+      "adjusted_free_cash_flow_USD_millions": "18304",
+      "inventory_days": "120"
+    },
+    "independently_recomputed": {
+      "gaap_gross_margin_percent": "84.56",
+      "gaap_operating_margin_percent": "80.37",
+      "adjusted_free_cash_flow_USD_millions": "18304",
+      "net_capital_intensity_percent": "17.09"
+    },
+    "first_local_failure_and_fix": {
+      "failure": "net_capital_intensity_expected_17_09_observed_17_08",
+      "disposition": "generator_corrected_and_pack_regenerated_before_acceptance"
+    },
+    "HBM_specific_revenue_or_profit_rows": 0,
+    "HBM_specific_customer_identity_or_concentration_rows": 0,
+    "context_only_graph_rows": 4,
+    "typed_cannot_infer_gap_count": 9
+  },
+  "exact_input_fresh_proof": {
+    "proof_case_id": "case_fin01_s4_t06_mu_source_grounded_proof_r1",
+    "proof_case_is_canonical_materialized": false,
+    "proof_decision_surface_contract_ref": "decision_surface_fin01_s4_t06_mu_source_grounded_proof_r1",
+    "proof_decision_surface_is_canonical_materialized": false,
+    "double_compile_parity": true,
+    "input_digest": "a6b9df3320b56d3a6ba47f67557ef490c20d81fae2ff407270e403152da56682",
+    "company": "MU",
+    "program_cell_count": 3,
+    "source_lineage_digest_equal": true,
+    "DELL_CIK_or_local_ref_present": false,
+    "cross_case_binding_mutation_rejected": true
+  },
+  "zero_call_full_fake_proof": {
+    "nodes": 6,
+    "artifacts": 9,
+    "case_ticker_in_all_artifacts": "MU",
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls_during_fake_execution": 0,
+    "external_tool_calls": 0,
+    "paid_calls": 0,
+    "business_artifacts_created": 0,
+    "fixture_artifacts_only": true
+  },
+  "negative_proof": {
+    "wrong_issuer_identifier": "rejected",
+    "DELL_route_prefix_in_MU_pack": "rejected",
+    "missing_MU_route": "rejected",
+    "MU_pack_with_DELL_binding": "rejected",
+    "DELL_pack_still_requires_11_unique_DELL_prefixed_routes": true
+  },
+  "code_bindings": {
+    "src/sec_agent/s4_case_runtime.py": "54496f3d4fbd87bc8cd746ac90495ee96a0b4dcd86914658eed52596de4154d6",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "6dcd64f18c695e8f27173ba4d0e61f51223efb24de62d82faada16e754af3890",
+    "scripts/releases/prepare_fin_ia_0_1_s4_t06_mu_source_grounded_input_pack.py": "e1a9ef272743eb1de7197f4928c38e5c1a9792ff93b7d174f7dd5d8bd7b26c9c",
+    "tests/contract/test_fin_0_1_s4_t06_mu_source_grounded_input_materialization.py": "e09169be446e36355c67394c7d462cca5663a41d4a48af674b78868d4695ab8e"
+  },
+  "verification": {
+    "focused_materialization_tests": "7 passed",
+    "focused_adjacent_tests": "21 passed",
+    "combined_current_proof_tests": "24 passed",
+    "S4_T06_transition_tests": "110 passed",
+    "release_json_valid": true,
+    "model_or_provider_inference_run": false
+  },
+  "stage_acceptance": {
+    "RC_P36_076": "source_pack_and_loader_contract_repaired_canonical_materialization_pending",
+    "S4_T06": "in_progress_source_grounded_input_fixture_proven_pre_admission",
+    "MU_R2": "not_started",
+    "S4": "not_passed",
+    "S5": "blocked"
+  },
+  "hard_boundaries": {
+    "canonical_MU_Case_created": false,
+    "canonical_MU_decision_surface_created": false,
+    "fresh_WorkUnit_Attempt_ResearchRun_identity_frozen": false,
+    "admission_issued": false,
+    "exact_live_started": false,
+    "paired_assessment_started": false,
+    "owner_acceptance_started": false,
+    "DeepSeek_calls": 0
+  },
+  "next_action": "S4-T06-MU-CANONICAL-CASE-SURFACE-AND-FRESH-EXACT-ADMISSION-PREPARATION-ZERO-CALL-PROOF"
+}

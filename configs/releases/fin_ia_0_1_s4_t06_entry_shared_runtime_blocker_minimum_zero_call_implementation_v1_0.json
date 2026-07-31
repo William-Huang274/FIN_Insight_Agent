@@ -1,0 +1,141 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_minimum_zero_call_implementation_v1_0",
+  "recorded_at": "2026-07-28T23:10:00+08:00",
+  "work_item_id": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "status": "pass_zero_call_implementation_fixture_proven_engineering_proof_and_provider_capability_binding_decision_pending",
+  "decision_label": "pass_bounded_implementation",
+  "source_disposition": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t06_entry_shared_runtime_blocker_disposition_v1_0.json",
+    "sha256": "38aa09992a90b11092128e967ee3e7be591fe039baf75fe0eb025c84eef07489"
+  },
+  "implemented_contracts": {
+    "strict_truth_kernel": "fin01.s4.strict_truth_kernel.numeric_judgment_selection:v1",
+    "provider_capability": "fin01.provider.capability.strict_json_schema:v1",
+    "non_authoritative_narrative_shell": "fin01.s4.non_authoritative_narrative_shell:v1",
+    "atomic_failure_terminal": "fin01.bounded_agent.atomic_failure_terminal_core_and_registered_observation:v1",
+    "registered_failure_observation": "fin01.bounded_agent.failure_observation_descriptor:v1"
+  },
+  "implementation_scope": {
+    "strict_truth_kernel_node": "facts_explanation_and_terminal",
+    "provider_output_ownership": [
+      "case_projection_scoped_numeric_alias",
+      "case_projection_scoped_evidence_alias",
+      "direction_enum",
+      "materiality_enum",
+      "confidence_enum",
+      "interpretation_catalog_enum",
+      "counterevidence_aliases",
+      "terminal_class_enum"
+    ],
+    "local_runtime_ownership": [
+      "material_numeric_clause",
+      "canonical_fact_identity",
+      "scope",
+      "case_delivery_identity",
+      "ordering",
+      "lineage",
+      "independent_L1_recomputation"
+    ],
+    "failure_terminalization": [
+      "terminal_core_and_state_transition_are_not_vetoed_by_optional_observation",
+      "registered_observation_is_persisted_content_free",
+      "unknown_invalid_or_secret_like_extension_is_dropped",
+      "observation_rejection_is_recorded_as_content_free_failure_code"
+    ],
+    "explicitly_deferred": [
+      "research_lead_atomization",
+      "memo_writer_atomization",
+      "verifier_atomization",
+      "all_node_narrative_redesign",
+      "provider_or_model_switch",
+      "credential_probe",
+      "single_node_canary",
+      "MU_T06_exact_execution",
+      "DELL_R12_or_equivalent_rerun",
+      "S5"
+    ]
+  },
+  "fixture_proof": {
+    "cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "per_case_logical_nodes": 6,
+    "per_case_provider_callbacks": 12,
+    "per_case_strict_responses_callbacks": 3,
+    "per_case_chat_callbacks": 9,
+    "per_case_provider_output_captures": 12,
+    "per_case_logical_artifacts": 9,
+    "negative_fixtures": [
+      "wrong_alias",
+      "cross_case_alias",
+      "numeric_mutation",
+      "extra_text",
+      "invalid_enum",
+      "duplicate_alias",
+      "missing_strict_capability_pre_provider",
+      "registered_failure_observation_atomic_terminalization",
+      "unknown_secret_like_failure_extension_atomic_terminalization"
+    ],
+    "failure_state_triplet": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "failure_usage_receipts_preserved": 12,
+    "failure_provider_output_captures_preserved": 12,
+    "failure_artifact_count": 0,
+    "failure_attempt_count": 1
+  },
+  "verification": {
+    "focused_test_command": "python -m pytest -q tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_minimum_zero_call_implementation.py --disable-warnings --maxfail=1",
+    "focused_test_result": "18 passed",
+    "regression_test_command": "python -m pytest -q tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_minimum_zero_call_implementation.py tests/contract/test_fin_0_1_s4_t05_case_numeric_authority_and_delivery_identity_zero_call_implementation.py tests/contract/test_fin_0_1_s4_t05_typed_post_provider_failure_envelope_zero_call_implementation.py tests/contract/test_fin_0_1_s3_t09_provider_output_capture_persistence.py --disable-warnings --maxfail=1",
+    "regression_test_result": "52 passed",
+    "python_compile": "pass",
+    "ruff": "not_available_in_environment",
+    "legacy_admission_digest_preservation": true,
+    "legacy_S2_S3_runtime_mutation": false
+  },
+  "observed_counts": {
+    "actual_model_calls": 0,
+    "actual_provider_calls": 0,
+    "actual_network_calls": 0,
+    "actual_source_calls": 0,
+    "actual_external_tool_calls": 0,
+    "actual_admissions_issued": 0,
+    "actual_admissions_consumed": 0,
+    "actual_work_units_created": 0,
+    "actual_attempts_created": 0,
+    "actual_research_runs_created": 0,
+    "actual_business_artifacts_created": 0,
+    "paired_assessments": 0,
+    "human_reviews": 0
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "a4de6c622afb6ca93bedea67a1af6d1cbcaf6637bbc78e2127bbc228ac61ed4d",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "b11de021ec949aae5e1b8d1f5c0a1f0713b171255ed6680b8ae616bc609bdd5e",
+    "src/sec_agent/canonical_runtime/failure_observation_policy.py": "21696e97c6cd1b21cf372771aacd44b012e63643b4ee4bcea1edb4d05440ec80",
+    "src/sec_agent/canonical_runtime/facade.py": "c78cdb70340643662eca9f75b8ff5c49f02c4b29c7436b35947a70cf225058c0",
+    "tests/contract/test_fin_0_1_s4_t06_entry_shared_runtime_blocker_minimum_zero_call_implementation.py": "39100065c3017773406224d00ac447733f2b1b83e0d626af5ed442682de2f523"
+  },
+  "historical_state": {
+    "S4_T05": "blocked_not_passed_not_owner_accepted",
+    "DELL_R11": "immutable_failed",
+    "DELL_R12": "forbidden",
+    "S4_T06": "not_entered",
+    "S4_H01": "retracted_unexecuted"
+  },
+  "scope_limit": {
+    "maximum_zero_call_implementation_bundles": 1,
+    "zero_call_implementation_bundles_consumed": 1,
+    "automatic_follow_on_repair_bundles": 0,
+    "maximum_single_node_canaries": 1,
+    "canary_requires_separate_authority": true,
+    "canary_failure_action": "stop_without_retry_provider_hopping_or_full_chain"
+  },
+  "next_action": "S4-T06-ENTRY-SHARED-RUNTIME-BLOCKER-FRESH-ENGINEERING-PROOF-AND-PROVIDER-CAPABILITY-BINDING-DECISION",
+  "next_action_authorized": false,
+  "known_boundary": "The bounded shared-runtime implementation is fixture-proven only. It does not establish credential or model availability, native strict-schema live behavior, MU T06 R2, owner acceptance, S4 pass, S5, release, or production."
+}

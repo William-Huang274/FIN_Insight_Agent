@@ -1,0 +1,145 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t07_entry_current_worktree_three_case_regression_and_nvda_post_transfer_exact_revalidation_scope_decision_v1_0",
+  "decision_id": "S4-T07-ENTRY-CURRENT-WORKTREE-THREE-CASE-REGRESSION-AND-NVDA-POST-TRANSFER-EXACT-REVALIDATION-SCOPE-DECISION",
+  "decided_at": "2026-07-31T12:46:44+08:00",
+  "status": "pass_scope_frozen_one_zero_call_regression_package_authorized_not_executed_NVDA_exact_live_not_authorized",
+  "authority": {
+    "user_instruction": "可以。继续往下做",
+    "source_boundary_ref": "configs/releases/fin_ia_0_1_s1_to_s4_t06_stage_boundary_and_task_ownership_rebaseline_v1_0.json",
+    "source_boundary_sha256": "73981b143b4a92f37063e4a950d5634c0d04825dc3eaf19366fbb6070c233017",
+    "T05_or_T06_reopen_authorized": false,
+    "T07_entry_scope_and_zero_call_regression_authorized": true,
+    "credential_presence_or_value_read_authorized": false,
+    "model_provider_network_source_or_external_tool_call_authorized": false,
+    "admission_issuance_or_consumption_authorized": false,
+    "NVDA_exact_live_authorized": false,
+    "paired_assessment_owner_acceptance_or_R3_authorized": false
+  },
+  "accepted_NVDA_anchor": {
+    "S3_closeout_ref": "configs/releases/fin_ia_0_1_s3_t10_owner_review_nvda_r2_and_s3_closeout_v1_0.json",
+    "S3_closeout_sha256": "b7cdb5bf00b31581b26b6e66b3194f8c913a3d78ff1c84a59db2eee1d284a8b2",
+    "accepted_research_run_id": "research_run_fin01_5322ebc0e99fe4c5f00f3526",
+    "maturity": "R2_owner_accepted_not_R3",
+    "historical_owner_acceptance_reuse_as_R3": false,
+    "historical_artifact_rewrite": false
+  },
+  "current_worktree_bindings": {
+    "bounded_agent_executor": {
+      "ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "sha256": "176112a1bdfdc3b1001480acdefb39e2044836283bbc8ac554fbf2271eb2d7fc"
+    },
+    "compiled_judgment_atom_contract": {
+      "ref": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py",
+      "sha256": "0afcedf8c7cc0cbd259ef397384c78326708e20164a681307dbc0393cecc61ec"
+    },
+    "fact_candidate_pool_planner": {
+      "ref": "apps/workbench/backend/application/fact_candidate_pool_planner.py",
+      "sha256": "8d7ae41af9a243fc1bdc0c5ee05533e4eb2e618527358b4d9a65a09beba6834b"
+    },
+    "S4_case_runtime": {
+      "ref": "src/sec_agent/s4_case_runtime.py",
+      "sha256": "54496f3d4fbd87bc8cd746ac90495ee96a0b4dcd86914658eed52596de4154d6"
+    },
+    "fact_candidate_pool_profiles": {
+      "ref": "configs/releases/fin_ia_0_1_s4_fact_candidate_pool_profiles_v1_0.json",
+      "sha256": "ce904db2fc8911e4dddab2ee72fbe679d5a52c7f8e3ce396cbed6529bf6ef838"
+    }
+  },
+  "authorized_regression_package": {
+    "maximum_packages": 1,
+    "packages_executed": 0,
+    "automatic_follow_on_packages": 0,
+    "collected_test_count": 97,
+    "test_files": [
+      {
+        "ref": "tests/contract/test_fin_0_1_s4_shared_runtime_deterministic_fact_candidate_pool_planner_minimum_zero_call_implementation.py",
+        "sha256": "9c34639a9bdb4d45cb53e5bab54140b06f3ee6fa8e7ed1b8b90c8947d88ea50c"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_s4_t03_case_runtime_injection_and_leakage_preflight.py",
+        "sha256": "f613c453cc2780200b8eba1f79d1d9e79fd6dd85020e2d9b2966f359c4c57220"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_s4_t05_case_numeric_authority_and_delivery_identity_zero_call_implementation.py",
+        "sha256": "5db7abf79b97d1e0d0671ac2e4e2b673a66aa6e7c2c1b6fbe92bc87eea1c171a"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_s4_t06_mu_current_case_aware_delivery_identity_boundary_zero_call_implementation.py",
+        "sha256": "6e9fab2cba3d745f6ea22b4d135650f297faf863f9342b30d83df61964e6cf99"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_s4_t06_mu_deterministic_judgment_atom_planner_compiled_contract_implementation.py",
+        "sha256": "99b48f7779775a507a157e18cc01488d17f79600f3215f6f0984df7375ca287d"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_s4_t06_mu_case_runtime_mandatory_material_truth_identity_safety_closure_zero_call_implementation.py",
+        "sha256": "6b47ed19920aec5b6f268a4e984f33f8f1468904327a7fac1e8a7ff9acf13609"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_s4_t06_mu_temporal_authority_and_terminal_result_zero_call_implementation.py",
+        "sha256": "5e975ea788645cba02314aa07807b8366016f239c1e0c5e73a33d00afac4a451"
+      }
+    ],
+    "expected_three_case_full_fake": {
+      "DELL": [6, 12, 12, 9],
+      "MU": [6, 12, 12, 9],
+      "NVDA": [6, 12, 12, 9]
+    },
+    "required_positive_invariants": [
+      "accepted_NVDA_path_uses_current_shared_runtime_without_case_specific_branch",
+      "Fact_Claim_WWC_Lead_Writer_Verifier_chain_completes",
+      "candidate_pool_is_bounded_before_Provider_and_final_selection_is_local",
+      "important_numeric_identity_temporal_and_lineage_surfaces_are_locally_owned",
+      "all_twelve_fake_provider_outputs_have_restricted_captures",
+      "all_nine_business_Artifact_types_are_materialized"
+    ],
+    "required_negative_and_mutation_matrix": [
+      "cross_case_and_structural_fixture_fact_leakage_fail_closed",
+      "unknown_hidden_duplicate_and_seventh_candidate_fail_closed",
+      "candidate_permutation_is_stable",
+      "material_numeric_projection_and_rendered_value_mutations_fail_closed",
+      "current_case_delivery_identity_mutation_fails_closed",
+      "unknown_temporal_alias_fails_closed",
+      "manifest_and_trace_lineage_mutations_fail_closed",
+      "Research_Lead_Writer_and_Verifier_failures_preserve_prior_and_failing_capture",
+      "terminal_failure_result_is_materialized"
+    ]
+  },
+  "non_goals": [
+    "repair_the_independent_disposable_proof_harness",
+    "repair_or_reaccept_DELL_or_MU",
+    "rewrite_the_complete_contract_compiler",
+    "qualify_Sub2API_OpenAI_or_an_alternate_provider",
+    "change_prompt_schema_validator_fake_selector_renderer_or_budget_contracts",
+    "issue_or_consume_an_NVDA_admission",
+    "run_NVDA_exact_live",
+    "perform_paired_assessment_owner_acceptance_or_qualified_senior_R3"
+  ],
+  "stop_and_progression_rule": {
+    "any_regression_test_failure": "stop_T07_regression_package_record_exact_failure_no_runtime_repair_and_no_NVDA_exact_live_authority",
+    "all_97_tests_pass": "record_current_worktree_engineering_regression_pass_and_make_a_separate_zero_call_NVDA_exact_live_authority_decision",
+    "regression_pass_is_product_pass": false,
+    "regression_pass_is_R3": false,
+    "new_L1_in_future_exact_live": "close_T07_honestly_blocked_without_repair_live_loop_and_transfer_structural_repair_to_FIN_0_2"
+  },
+  "hard_budgets": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "external_tool_calls": 0,
+    "credential_reads_or_probes": 0,
+    "new_admissions": 0,
+    "new_work_units_attempts_or_research_runs": 0,
+    "new_business_artifacts": 0,
+    "NVDA_exact_live_runs": 0
+  },
+  "observed_counts": {
+    "regression_packages_executed": 0,
+    "model_provider_network_source_external_tool_calls": [0, 0, 0, 0, 0],
+    "credential_reads_or_probes": 0,
+    "new_admissions": 0,
+    "new_work_units_attempts_research_runs_or_business_artifacts": 0
+  },
+  "next_action": "S4-T07-CURRENT-WORKTREE-DELL-MU-NVDA-97-TEST-ZERO-CALL-REGRESSION"
+}

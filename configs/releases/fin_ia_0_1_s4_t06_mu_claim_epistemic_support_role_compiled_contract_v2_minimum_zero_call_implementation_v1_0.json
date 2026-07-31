@@ -1,0 +1,151 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_claim_epistemic_support_role_compiled_contract_v2_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T06-MU-CLAIM-EPISTEMIC-SUPPORT-ROLE-COMPILED-CONTRACT-V2-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-30T17:31:37+08:00",
+  "status": "pass_claim_contract_v2_runtime_injected_three_case_fixture_proven_independent_fresh_proof_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "source_disposition_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_changed_contract_family_single_node_natural_output_canaries_post_result_disposition_decision_v1_0.json",
+    "source_disposition_sha256": "5b30ba5969493945f4c57a4fb6918a83e87351490502a9b2b8fe7ed21c396745",
+    "maximum_zero_call_implementation_bundles": 1,
+    "implementation_bundles_consumed": 1,
+    "automatic_follow_on_implementation_bundles": 0,
+    "model_provider_network_or_source_call_authorized": false,
+    "second_claim_family_canary_authorized": false,
+    "new_admission_or_formal_exact_live_authorized": false,
+    "paired_assessment_or_owner_acceptance_authorized": false,
+    "S4_T07_or_later_authorized": false
+  },
+  "implemented_contract": {
+    "contract_ref": "fin01.s4.deterministic_judgment_atom_planner_and_compiled_contract_invariants:v2",
+    "scope": "claim_candidate_atoms_only",
+    "historical_v1_semantics_changed": false,
+    "canonical_claim_schema_changed": false,
+    "single_rule_id": "claim_kind_support_fact_aliases_epistemic_role:v1",
+    "rules": {
+      "insufficient_evidence": {
+        "support_fact_aliases": "exactly_zero",
+        "local_epistemic_status": "cannot_infer",
+        "local_support_fact_ids": "exactly_zero_after_alias_expansion",
+        "local_cannot_support": "one_or_more"
+      },
+      "evidence_direction_economic_mechanism_counterevidence": {
+        "support_fact_aliases": "one_or_more_unique_exact_allowed_aliases",
+        "local_epistemic_status": "fact_supported_or_bounded_inference_by_direction",
+        "local_support_fact_ids": "exact_alias_expansion",
+        "local_cannot_support": "bound_fact_boundaries"
+      },
+      "boundary_backed_limitation": {
+        "claim_kind": "evidence_direction",
+        "direction": "unknown_or_mixed",
+        "support_fact_aliases": "one_or_more_unique",
+        "insufficient_evidence_with_support": "forbidden"
+      }
+    },
+    "single_source_surfaces": [
+      "model-visible contract",
+      "wire schema description",
+      "compiled system instruction",
+      "local semantic validator",
+      "validity-aware selector",
+      "fake Provider positive fixtures",
+      "negative mutation fixtures",
+      "typed failure descriptor"
+    ],
+    "typed_failure_code": "s4_compiled_claim_atom_epistemic_support_role_invalid",
+    "silent_claim_kind_rewrite": false,
+    "silent_support_alias_drop": false,
+    "validator_weakening": false,
+    "quality_finding_downgrade": false
+  },
+  "runtime_changes": {
+    "policy_refs": {
+      "ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+      "sha256": "718f50e043251f0d26d2f6ae1099017ebca935f1ad9ebebe1bdf02df15576639"
+    },
+    "compiled_contract": {
+      "ref": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py",
+      "sha256": "610b05158a9933955dd83ce5d1c0743a2068fbb02b970371c59fda2489c5e75e"
+    },
+    "executor_injection": {
+      "ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "sha256": "bb4d6b651f9dc4ce7f3d27a506fb0b33bbbccad6ff4994a277fbb14dd43d3af7"
+    },
+    "v1_fixture_compatibility_helper": {
+      "ref": "tests/contract/test_fin_0_1_s4_t06_mu_deterministic_judgment_atom_planner_compiled_contract_implementation.py",
+      "sha256": "529768fd8b832db7c72af5c232737b182ca005d274942955ddb6704829f7bb28"
+    },
+    "v2_implementation_test": {
+      "ref": "tests/contract/test_fin_0_1_s4_t06_mu_claim_epistemic_support_role_compiled_contract_v2_minimum_zero_call_implementation.py",
+      "sha256": "24b9f813b3c2dc6493ca2c8cb2430075c1e66772ef410d001ae5acc5c9eeab15"
+    }
+  },
+  "verification": {
+    "v1_compatibility": {
+      "default_contract_ref_unchanged": true,
+      "model_visible_claim_rule_absent": true,
+      "wire_description_unchanged": true,
+      "compiled_system_instruction_unchanged": true
+    },
+    "positive_fixtures": [
+      "boundary-backed evidence_direction plus exact support alias becomes bounded_inference",
+      "supportless insufficient_evidence becomes cannot_infer",
+      "economic_mechanism plus exact support alias becomes fact_supported",
+      "counterevidence plus exact support alias becomes fact_supported"
+    ],
+    "negative_fixtures": [
+      "insufficient_evidence with nonempty support aliases",
+      "non-insufficient claim kind with empty support aliases",
+      "duplicate support aliases",
+      "unknown or cross-case alias",
+      "mixed scope",
+      "conflicting concrete scopes"
+    ],
+    "typed_runtime_failure_preserves_terminal_capture": true,
+    "three_case_full_fake": {
+      "DELL": [6, 12, 12, 9],
+      "MU": [6, 12, 12, 9],
+      "NVDA": [6, 12, 12, 9]
+    },
+    "focused_v2_and_v1_tests": "29 passed",
+    "focused_and_adjacent_current_chain_tests": "46 passed",
+    "full_S4_T06_historical_regression": "275 passed / 55 failed / 1771 deselected",
+    "full_S4_T06_failure_classification": [
+      "historical_current_next_allowlists_do_not_include_later_phase_actions",
+      "historical_whole_file_SHA_proofs_detect_the_versioned_shared_source_extension",
+      "historical_fresh_identity_absence_assertions_are_false_after_later_exact_runs_materialized_those_identities"
+    ],
+    "python_compile": "pass",
+    "historical_v1_fresh_proof_file_hash_tests": "expected_stale_two_failures_after_shared_source_v2_extension",
+    "historical_v1_semantic_compatibility_regression": "pass",
+    "runtime_behavior_regression_established": false
+  },
+  "observed_counts": {
+    "runtime_code_changes": 3,
+    "test_code_changes": 2,
+    "model_provider_network_source_calls": [0, 0, 0, 0],
+    "new_admissions": 0,
+    "new_work_units": 0,
+    "new_attempts": 0,
+    "new_research_runs": 0,
+    "business_artifacts": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0,
+    "T07_operations": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_083": "runtime_v2_injected_three_case_fixture_proven_independent_fresh_proof_pending",
+    "RC_P36_080": "open_final_formal_nine_Artifact_L1_reproof_pending",
+    "S4_T06": "blocked_pending_independent_v2_fresh_proof_and_one_final_formal_MU_exact_live",
+    "second_claim_canary": "forbidden_consumed_quota",
+    "R7": "not_created_not_authorized",
+    "paired_assessment": "not_eligible",
+    "owner_acceptance": "not_eligible",
+    "S4_T07": "not_entered",
+    "S4": "not_passed",
+    "S5": "blocked"
+  },
+  "next_action": "S4-T06-MU-CLAIM-EPISTEMIC-SUPPORT-ROLE-COMPILED-CONTRACT-V2-INDEPENDENT-FRESH-AGENT-PROOF-DECISION",
+  "next_action_authorized": false,
+  "known_boundary": "This is a zero-call runtime implementation and deterministic fixture proof. It is not a second Claim canary, a new admission, final formal exact-live, final L1 product proof, paired assessment, owner acceptance, T06 closeout, or T07 entry."
+}

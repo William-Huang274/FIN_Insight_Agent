@@ -1,0 +1,131 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t02_dell_mu_case_pack_and_financial_method_to_runtime_contract_decision_v1_0",
+  "decision_id": "S4-T02-DELL-MU-CASE-PACK-AND-FINANCIAL-METHOD-TO-RUNTIME-CONTRACT-DECISION-R1",
+  "decided_at": "2026-07-26T15:58:08+08:00",
+  "status": "pass_zero_call_case_packs_and_method_contract_translated_T03_pending",
+  "authority": {
+    "user_instruction": "授权",
+    "authorized_scope": "S4-T02 only",
+    "completed_scope": [
+      "DELL_OEM_exact_Case_Pack_contract",
+      "MU_HBM_exact_Case_Pack_contract",
+      "financial_method_to_named_runtime_consumer_contract",
+      "method_registry_update",
+      "source_backlog_Project_OS_and_tests"
+    ],
+    "not_authorized_or_executed": [
+      "S4-T03_runtime_or_fixture_implementation",
+      "model_provider_network_source_or_external_tool_calls",
+      "canonical Case Run admission or business Artifact",
+      "paid canary_or_exact_live",
+      "Human_review_or_qualified_senior_R3",
+      "S5_Alpha_release_or_production"
+    ]
+  },
+  "case_pack_bindings": {
+    "DELL": {
+      "ref": "configs/releases/fin_ia_0_1_s4_t02_dell_oem_exact_case_pack_v1_0.json",
+      "sha256": "71e7fb3ba56275760f0d2b84006d30fd192a15ad9be234740dc336cd4a15217e",
+      "case_profile_ref": "fin01.s4.case_profile.dell_oem_three_cell:v1",
+      "as_of": "2026-07-26T00:00:00Z",
+      "maturity": "contract_translated",
+      "factual_evidence_numeric_graph_claim_judgment_rows": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "MU": {
+      "ref": "configs/releases/fin_ia_0_1_s4_t02_mu_hbm_exact_case_pack_v1_0.json",
+      "sha256": "0de20e119e3ab78b273b96895f7fb7070da24b6c35122daa53d94d522edb2612",
+      "case_profile_ref": "fin01.s4.case_profile.mu_hbm_three_cell:v1",
+      "as_of": "2026-07-26T00:00:00Z",
+      "maturity": "contract_translated",
+      "factual_evidence_numeric_graph_claim_judgment_rows": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "method_contract_binding": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t02_financial_method_to_runtime_contract_v1_0.json",
+    "sha256": "740d3da108e4bf0082eeea47cb9fdbf84d0e992fe20b3db86967dc3336cc5c53",
+    "contract_ref": "fin01.s4.financial_method_to_runtime.dell_mu:v1",
+    "new_method_ids": [
+      "s4_dell_oem_order_to_revenue_and_working_capital_playbook",
+      "s4_mu_hbm_supply_pricing_and_cycle_playbook"
+    ],
+    "named_runtime_consumer_count": 7,
+    "current_lifecycle_state": "contract_translated",
+    "fixture_proven": false,
+    "runtime_injected": false,
+    "node_level_consumed": false,
+    "paid_artifact_proven": false,
+    "Human_accepted": false
+  },
+  "case_pack_acceptance": {
+    "same_program_cell_order": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "company_scope_as_of_period_currency_unit_and_formula_rules_explicit": true,
+    "official_source_and_context_authority_separated": true,
+    "Graph_is_context_not_direct_Evidence": true,
+    "Candidate_peer_industry_search_snippet_and_model_output_are_not_fact_authority": true,
+    "missing_evidence_is_typed_cannot_infer_with_source_targeted_WWC": true,
+    "case_fact_rows_prefilled": false,
+    "NVDA_fact_or_conclusion_copy": false,
+    "same_runtime_no_parallel_implementation": true,
+    "model_returns_small_judgment_atoms_and_local_runtime_owns_identity_scope_and_lineage": true
+  },
+  "method_to_runtime_acceptance": {
+    "DELL_OEM_method_contract_translated": true,
+    "MU_HBM_method_contract_translated": true,
+    "each_method_has_named_runtime_consumers": true,
+    "existing_shared_S3_consumers_reused": true,
+    "new_runtime_family_or_store_added": false,
+    "method_registry_active_label_used_as_runtime_proof": false,
+    "T03_must_prove_fixture_runtime_injection_and_node_consumption": true
+  },
+  "root_cause_disposition": {
+    "issue_id": "RC-P36-055-s4-dell-mu-case-pack-and-financial-method-to-runtime-gap",
+    "prior_status": "open_zero_call_preexecution_contract_decision_pending",
+    "new_status": "case_packs_and_method_contracts_frozen_T03_runtime_injection_and_node_consumption_pending",
+    "full_chain_blocker": true,
+    "closed": false,
+    "remaining_gap": "S4 shared runtime does not yet load validate inject or deterministically consume either Case Pack and no case-local fixture exists",
+    "model_quality_issue": false
+  },
+  "stage_decision": {
+    "S4": "in_progress",
+    "S4_T01": "pass",
+    "S4_T02": "pass_zero_call_contract_translated",
+    "S4_T03": "next_pending_separate_authority",
+    "DELL_R2": "not_started",
+    "MU_R2": "not_started",
+    "NVDA_R3": "not_started",
+    "S4_pass": false,
+    "S5": "blocked_by_S4",
+    "Alpha_release_or_production": "not_claimed_not_authorized"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "runtime_code_changes": 0,
+    "fixture_runs": 0,
+    "canonical_case_writes": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0,
+    "human_reviews": 0
+  },
+  "next_action": "S4-T03-THREE-CASE-IDENTITY-LEAKAGE-AND-NODE-LEVEL-DETERMINISTIC-PREFLIGHT-IMPLEMENTATION"
+}

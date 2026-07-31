@@ -1,0 +1,199 @@
+{
+  "authority": {
+    "continuous_sequence_authority": true,
+    "proof_step_model_provider_network_calls_authorized": false,
+    "user_instruction": "按这个顺序往下做，我授权你做1-6点"
+  },
+  "decision_id": "S4-T06-MU-CASE-RUNTIME-MANDATORY-MATERIAL-TRUTH-AND-IDENTITY-SAFETY-CLOSURE-FRESH-AGENT-PROOF-DECISION",
+  "double_prepare": {
+    "clone_execution_counts_after": {
+      "canonical_artifact_versions": 13,
+      "canonical_attempts": 3,
+      "canonical_research_run_versions": 3,
+      "canonical_work_units": 3
+    },
+    "clone_execution_counts_before": {
+      "canonical_artifact_versions": 13,
+      "canonical_attempts": 3,
+      "canonical_research_run_versions": 3,
+      "canonical_work_units": 3
+    },
+    "equal": true,
+    "prepared_payload_digest": "fe06199432de681632ad74277b72056f5f3a7bbd6c027127a63901235590a823"
+  },
+  "fresh_identity": {
+    "attempt_id": "attempt_fin01_a1387fcdfc3381ada67b6708",
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_dd094559ce4c0f79d242e852:v1",
+    "evidence_alignment_digest": "92baf3feb394161af33d1d676ed9f61e10cfab9fd91b887547e1e2fc79ffa9e9",
+    "evidence_dispatch_digest": "598fa155d747b800dfd264ec05e83c8df4828b829c9da99a438893ca3f1db2d1",
+    "execution_identity": "fin01-s4-t06-mu-mandatory-material-truth-identity-safety-closure-exact-live-r3",
+    "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+    "preparation_digest": "9724bf1c2bb201e409400748ee49aefa60dcf0a613f25a84e7225b967adc6b73",
+    "research_run_id": "research_run_fin01_127b1095bc816030ba5755fc",
+    "role_group_mapping_digest": "d11857d2c3c6d3262a156255bb546996c878e171dddde3d9f30430ba39fb94e0",
+    "work_unit_id": "wu_p02_5_ff897ab60270fb1478bc76b3"
+  },
+  "future_success_contract": {
+    "independent_final_artifact_L1_required": true,
+    "logical_artifact_families": 9,
+    "logical_nodes": 6,
+    "owner_acceptance_only_after_L1_pass_and_agent_gain": true,
+    "paired_L1_to_L4_required": true,
+    "provider_calls": 12,
+    "provider_output_captures": 12,
+    "terminal_state": "succeeded"
+  },
+  "hard_boundaries": {
+    "admissions_consumed": 0,
+    "admissions_issued": 0,
+    "external_tool_calls": 0,
+    "human_reviews": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "paired_assessments": 0,
+    "provider_calls": 0,
+    "source_network_calls": 0,
+    "target_canonical_writes": 0,
+    "target_object_writes": 0
+  },
+  "implementation_reaudit": {
+    "delivery_identity_policy_ref": "fin01.s4.case_delivery_identity_projection:v1",
+    "exact_code_bindings": {
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py": "5b9b991f38b738492c081c48eb7f5c613531ed0e967b7d80ec82f5a564fb3d34",
+      "apps/workbench/backend/application/bounded_agent_executor.py": "311c70aadd15b1321a844c0e035a61dec073bac2e75bca7df65971022b9cb8e0",
+      "tests/contract/test_fin_0_1_s4_t05_case_numeric_authority_and_delivery_identity_zero_call_implementation.py": "5db7abf79b97d1e0d0671ac2e4e2b673a66aa6e7c2c1b6fbe92bc87eea1c171a",
+      "tests/contract/test_fin_0_1_s4_t06_mu_case_runtime_mandatory_material_truth_identity_safety_closure_zero_call_implementation.py": "845ff07ea7ec2c073aa6ce91ecd13d0c367c457b1445769053f1131720d4b286",
+      "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_zero_call_implementation.py": "fe0b9542f405a89e0ddad6892a1a555eb2af99df5c5bcc1fbd43072895ff6d34",
+      "tests/contract/test_fin_0_1_s4_t06_mu_source_grounded_input_materialization.py": "6fa49e6a7fd0d20d6613849c74fec3365f940c188985733f6faaf4936e372116"
+    },
+    "implementation_sha256": "9e8675c537d908e666aaccedbda8856ee22779d547a8091967299f55f25554aa",
+    "lead_v7_gap_atom_inherited": false,
+    "lead_v7_safety_composable": true,
+    "numeric_authority_policy_ref": "fin01.s4.case_numeric_authority_projection_and_deterministic_rendering:v1",
+    "safety_profile_ref": "fin01.s4.case_runtime_mandatory_material_truth_and_identity_safety_closure:v1"
+  },
+  "independent_fixture_reproof": {
+    "lead_v7_capability_composition_recomputed": true,
+    "mandatory_safety_marker_recomputed": true,
+    "negative_mutations_rejected": [
+      "missing_safety_profile_marker",
+      "numeric_projection_exact_value_mutation",
+      "cross_case_report_title",
+      "nonlocal_report_numeric_token",
+      "cross_case_review_label",
+      "canonical_numeric_fact_statement_mutation"
+    ],
+    "three_case_final_path": {
+      "DELL": [
+        6,
+        12,
+        12,
+        9
+      ],
+      "MU": [
+        6,
+        12,
+        12,
+        9
+      ],
+      "NVDA": [
+        6,
+        12,
+        12,
+        9
+      ]
+    }
+  },
+  "next_action": "S4-T06-MU-MANDATORY-MATERIAL-TRUTH-AND-IDENTITY-SAFETY-CLOSURE-FRESH-EXACT-ADMISSION-ISSUANCE",
+  "proof_generator": {
+    "independent_invocations": 2,
+    "independent_outputs_equal": true,
+    "ref": "scripts/releases/prepare_fin_ia_0_1_s4_t06_mu_mandatory_material_truth_identity_safety_fresh_proof.py",
+    "sha256": "7a9076f42418bef9586a6979ed74fa80ace3f1c83a7d32bee86589033bdfc125"
+  },
+  "prospective_admission": {
+    "consumed": false,
+    "digest": "da4c91eb69499ab197332e2f263556f5528b66e451c33be54e925b20924632a5",
+    "execution_started": false,
+    "issued": false,
+    "payload": {
+      "admission_id": "fin01-s4-t06-mu-mandatory-material-truth-identity-safety-closure-fresh-exact-admission-r3",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "as_of": "2026-07-26T00:00:00Z",
+      "base_url": "https://api.deepseek.com/beta",
+      "case_delivery_identity_policy_ref": "fin01.s4.case_delivery_identity_projection:v1",
+      "case_id": "case_ec7da8015386e7bfeda92c61",
+      "case_numeric_authority_policy_ref": "fin01.s4.case_numeric_authority_projection_and_deterministic_rendering:v1",
+      "case_version": 1,
+      "claim_fact_link_policy_ref": "fin01.s3.claim_fact_link_policy:v1",
+      "company": "MU",
+      "execution_enabled": true,
+      "execution_mode": "exact_live_s4_mu_mandatory_material_truth_identity_safety_closure_r3",
+      "execution_profile_version_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+      "external_tool_calls_allowed": false,
+      "input_cache_hit_usd_per_million": 0.003625,
+      "input_cache_miss_usd_per_million": 0.435,
+      "input_contract_ref": "fin01.s3.bounded_agent_three_cell_input:v1",
+      "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+      "lead_max_output_tokens": 1800,
+      "live_business_case_head_writes_allowed": false,
+      "max_network_calls": 12,
+      "max_provider_calls": 12,
+      "max_semantic_model_calls": 12,
+      "max_total_cost_usd": 0.1,
+      "max_transport_attempts_per_call": 1,
+      "maximum_cell_count": 3,
+      "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+      "model": "deepseek-v4-pro",
+      "model_ref": "deepseek:deepseek-v4-pro",
+      "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+      "output_usd_per_million": 0.87,
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "provider": "deepseek",
+      "provider_output_capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+      "reasoning_effort": "none",
+      "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v7",
+      "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+      "retry_budget": 0,
+      "scoped_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+      "source_network_calls_allowed": false,
+      "specialist_max_output_tokens": 4200,
+      "timeout_seconds": 120,
+      "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+      "verifier_max_output_tokens": 1000,
+      "writer_max_output_tokens": 1400
+    },
+    "prospective_admission_file": "configs/releases/fin_ia_0_1_s4_t06_mu_mandatory_material_truth_identity_safety_closure_fresh_exact_admission_r3.json",
+    "prospective_admission_file_absent_at_proof": true,
+    "research_lead_v7_bound": true,
+    "safety_pair_bound": true,
+    "specialist_v7_preserved": true
+  },
+  "recorded_at": "2026-07-29T23:45:00+08:00",
+  "schema_version": "fin_ia_0_1_s4_t06_mu_mandatory_material_truth_identity_safety_closure_fresh_agent_proof_decision_v1_0",
+  "source_refs": {
+    "canonical_preparation": "configs/releases/fin_ia_0_1_s4_t06_mu_canonical_case_surface_and_fresh_exact_admission_preparation_zero_call_proof_v1_0.json",
+    "immutable_R2_paired_L1_failure": "configs/releases/fin_ia_0_1_s4_t06_mu_r2_success_only_paired_assessment_result_v1_0.json",
+    "immutable_R2_success": "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_r2_exact_live_execution_success_result_v1_0.json",
+    "immutable_consumed_R2_admission": "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_fresh_exact_admission_r2.json",
+    "implementation": "configs/releases/fin_ia_0_1_s4_t06_mu_case_runtime_mandatory_material_truth_identity_safety_closure_minimum_zero_call_implementation_v1_0.json"
+  },
+  "status": "pass_zero_call_independent_fresh_proof_contract_frozen_admission_issuance_authorized_by_user",
+  "stop_rule": {
+    "automatic_R4_or_micro_patch_allowed": false,
+    "first_new_L1_failure_stops_sequence": true,
+    "second_runtime_repair_bundle_allowed": false
+  },
+  "target_read_only_audit": {
+    "canonical_database_sha256": "315b44b6d7f0dd25640f4599c7815702a600778e9cb1ae3bdee2742b85f69591",
+    "canonical_object_tree_sha256": "49dd0e2403c93643c624b4a704faeed3cd7f881407d57d4519ba4744c8f20dcb",
+    "logical_snapshot_digest": "9f0b29755c50578a2d0034d7b87617f172b18c984dd695515b44fac0bbe82354",
+    "target_state_unchanged": true
+  }
+}

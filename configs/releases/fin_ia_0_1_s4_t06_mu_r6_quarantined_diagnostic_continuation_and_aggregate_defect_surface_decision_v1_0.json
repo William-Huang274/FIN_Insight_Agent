@@ -1,0 +1,77 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_r6_quarantined_diagnostic_continuation_and_aggregate_defect_surface_decision_v1_0",
+  "decision_id": "S4-T06-MU-R6-QUARANTINED-DIAGNOSTIC-CONTINUATION-AND-AGGREGATE-DEFECT-SURFACE-DECISION",
+  "decided_at": "2026-07-30T14:30:00+08:00",
+  "status": "authorized_diagnostic_only_non_promotable_collect_all_continuation",
+  "authority": {
+    "user_instruction": "Concentrate and aggregate the remaining problems first, then analyze common causes and decide whether every repair requires its own live test.",
+    "formal_R6_status_mutation_authorized": false,
+    "formal_exact_live_acceptance_authorized": false,
+    "diagnostic_shadow_execution_authorized": true,
+    "new_external_model_calls_authorized": true,
+    "success_only_paired_assessment_authorized": false,
+    "owner_acceptance_authorized": false,
+    "T07_entry_authorized": false
+  },
+  "source_truth": {
+    "R6_failure_result_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_temporal_authority_terminal_result_r6_exact_live_execution_failure_result_v1_0.json",
+    "R6_failure_result_sha256": "9be9a675d02814c528cbac8cdbe289b43fdf9618e44975d070726decc985c991",
+    "R6_runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t06_mu_temporal_authority_terminal_result_r6_live_execution_result.json",
+    "R6_admission_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_action_planning_temporal_authority_and_capture_v2_terminal_result_materialization_fresh_exact_admission_r6.json",
+    "R6_admission_sha256": "f5f031b5a470c6df2ee0aad6496f1277132b175da7ff4ce5c2fcb938ec607e17",
+    "R6_admission_digest": "a30d6977df984f1002ec95992c3e6d3bf8e7a7271dd54a626bb5271315bb2ac3",
+    "R6_issuance_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_action_planning_temporal_authority_and_capture_v2_terminal_result_materialization_fresh_exact_admission_r6_issuance_v1_0.json",
+    "R6_immutable": true
+  },
+  "diagnostic_contract": {
+    "contract_ref": "fin01.s4.quarantined_collect_all_diagnostic_continuation:v1",
+    "execution_identity": "fin01-s4-t06-mu-r6-quarantined-diagnostic-continuation-r1",
+    "runtime_mode": "disposable_clone_in_memory_no_canonical_target_writes",
+    "seeded_R6_interactions": 4,
+    "maximum_new_live_model_calls": 8,
+    "maximum_total_unique_interactions": 12,
+    "maximum_live_output_tokens": 12800,
+    "maximum_new_live_cost_usd": 0.1,
+    "transport_retry_count": 0,
+    "provider_fallback_count": 0,
+    "provider_hopping_allowed": false,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_case_head_writes_allowed": false,
+    "canonical_work_unit_attempt_run_writes_allowed": false,
+    "business_artifact_promotion_allowed": false,
+    "quarantined_artifacts_allowed": true
+  },
+  "repair_policy": {
+    "original_model_visible_request_and_assistant_output_preserved_restricted": true,
+    "repair_manifest_required": true,
+    "original_and_repaired_content_digests_required": true,
+    "allowed_deterministic_repairs": [
+      "replace_provider_numeric_narrative_with_non_authoritative_placeholder_only_when_exact_numeric_aliases_remain_selected",
+      "replace_other_material_numeric_narrative_string_with_diagnostic_placeholder",
+      "replace_registered_nonlocal_case_ticker_with_diagnostic_nonlocal_marker",
+      "prune_unrequested_top_level_keys",
+      "select_an_existing_locally_scope_assemblable_subset_when_model_returns_over_cardinality_candidates",
+      "project_over_limit_narrative_to_bounded_diagnostic_text",
+      "diagnostic_only_lift_when_exact_local_numeric_rendering_alone_exceeds_legacy_segment_text_limit",
+      "diagnostic_only_byte_to_token_projected_cost_correction_while_actual_cost_hard_cap_remains"
+    ],
+    "forbidden_repairs": [
+      "invent_numeric_alias",
+      "invent_evidence_or_fact",
+      "change_source_authority",
+      "repair_credential_permission_or_authenticity_failure",
+      "promote_failed_or_repaired_output_to_business_truth",
+      "hide_repair_or_original_failure"
+    ],
+    "unrepairable_failure_behavior": "stop_and_report_without_additional_retry"
+  },
+  "acceptance_boundary": {
+    "diagnostic_completion_is_formal_T06_pass": false,
+    "diagnostic_nine_artifacts_are_owner_review_eligible": false,
+    "diagnostic_output_is_paired_assessment_eligible": false,
+    "diagnostic_output_is_release_or_production_eligible": false,
+    "required_final_output": "aggregate defect inventory with root-cause clusters and a proof matrix separating deterministic tests node-level live canaries and one final formal exact-live"
+  },
+  "next_action": "IMPLEMENT_AND_PREFLIGHT_ONE_QUARANTINED_DIAGNOSTIC_CONTINUATION_HARNESS"
+}

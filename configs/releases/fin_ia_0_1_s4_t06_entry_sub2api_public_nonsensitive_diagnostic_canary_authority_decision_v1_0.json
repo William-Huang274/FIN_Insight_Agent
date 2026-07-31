@@ -1,0 +1,229 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_entry_sub2api_public_nonsensitive_diagnostic_canary_authority_decision_v1_0",
+  "recorded_at": "2026-07-29T00:10:41+08:00",
+  "work_item_id": "S4-T06-ENTRY-SUB2API-PUBLIC-NON-SENSITIVE-DIAGNOSTIC-CANARY-AUTHORITY-DECISION",
+  "status": "authorized_exact_once_public_synthetic_no_credential_diagnostic_not_started",
+  "decision_label": "authorize_one_plain_HTTP_diagnostic_request_without_mainline_acceptance",
+  "authority": {
+    "user_instruction": "同意",
+    "current_zero_call_authority_decision_authorized": true,
+    "future_exact_once_diagnostic_execution_authorized": true,
+    "minimum_zero_call_runner_implementation_and_preflight_authorized": true,
+    "current_turn_model_provider_or_network_execution_authorized": false,
+    "credential_read_write_or_presence_probe_authorized": false,
+    "automatic_retry_fallback_replay_relaunch_or_rerun_authorized": false,
+    "provider_hopping_authorized": false,
+    "private_or_nonpublic_payload_authorized": false,
+    "full_chain_execution_authorized": false,
+    "admission_issuance_authorized": false,
+    "MU_T06_execution_authorized": false,
+    "DELL_R12_authorized": false,
+    "S5_release_or_production_authorized": false
+  },
+  "source_authority": {
+    "auth_reclassification_ref": "configs/releases/fin_ia_0_1_s4_t06_entry_sub2api_api_key_mode_auth_reclassification_and_diagnostic_boundary_v1_0.json",
+    "auth_reclassification_sha256": "503813c2ebb0482c78b151886472714f7c8151c5d23fc564b843f59db5d638cc",
+    "source_screenshot_sha256": "a2658164654d1d2e2ed221d560ab25408039cac67280af87b5c91979443231de",
+    "project_os_preflight_scope": "S4_T06_entry_Sub2API_public_non_sensitive_diagnostic_canary_authority_decision",
+    "project_os_preflight_status": "pass",
+    "open_full_chain_blocker_count": 0
+  },
+  "exact_diagnostic_canary": {
+    "canary_id": "fin01-s4-t06-entry-sub2api-gpt-5p5-responses-strict-schema-public-diagnostic-r1",
+    "result_ref": "configs/releases/fin_ia_0_1_s4_t06_entry_sub2api_public_nonsensitive_diagnostic_canary_exact_once_execution_result_v1_0.json",
+    "purpose": "route_model_alias_responses_wire_and_strict_schema_compatibility_diagnostic_only",
+    "input_class": "fully_synthetic_public_non_sensitive_no_company_no_financial_data",
+    "input_contains_real_company_or_financial_data": false,
+    "input_contains_credentials_or_private_data": false,
+    "result_classification": "diagnostic_only_never_T06_acceptance",
+    "result_ref_must_be_absent_before_execution": true,
+    "canary_id_must_be_unconsumed_before_execution": true
+  },
+  "provider_contract": {
+    "provider_family": "self_hosted_Sub2API",
+    "base_url": "http://43.135.174.27:8080",
+    "base_url_includes_v1_path": false,
+    "endpoint_path": "/responses",
+    "full_request_url": "http://43.135.174.27:8080/responses",
+    "wire_api": "responses",
+    "model": "gpt-5.5",
+    "requires_openai_auth": false,
+    "OpenAI_Authorization_or_Bearer_header_enabled": false,
+    "credential_environment_variable": null,
+    "credential_file_read_or_write": false,
+    "static_client_marker": {
+      "header_name": "x-openai-actor-authorization",
+      "header_value": "local-image-extension",
+      "classification": "operator_UI_fixed_client_marker_not_API_credential",
+      "allowed_only_for_this_exact_diagnostic_route": true,
+      "raw_header_logging_or_result_persistence": false
+    },
+    "stream": false,
+    "timeout_seconds": 30
+  },
+  "exact_request_contract": {
+    "system_input": "Return one JSON object that exactly matches the provided schema. This is a synthetic transport diagnostic. Do not add facts or prose.",
+    "user_input": "Synthetic public diagnostic: select alias N001, set judgment to confirmed, and note_code to synthetic_ok. No real company or financial data is present.",
+    "text_format": {
+      "type": "json_schema",
+      "name": "fin01_sub2api_public_diagnostic_v1",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "selected_alias": {
+            "type": "string",
+            "enum": [
+              "N001"
+            ]
+          },
+          "judgment": {
+            "type": "string",
+            "enum": [
+              "confirmed"
+            ]
+          },
+          "note_code": {
+            "type": "string",
+            "enum": [
+              "synthetic_ok"
+            ]
+          }
+        },
+        "required": [
+          "selected_alias",
+          "judgment",
+          "note_code"
+        ]
+      }
+    },
+    "maximum_output_tokens": 128,
+    "store": false,
+    "stream": false,
+    "expected_exact_values": {
+      "selected_alias": "N001",
+      "judgment": "confirmed",
+      "note_code": "synthetic_ok"
+    }
+  },
+  "hard_budget": {
+    "maximum_semantic_model_calls": 1,
+    "maximum_provider_calls": 1,
+    "maximum_network_calls": 1,
+    "maximum_transport_attempts": 1,
+    "maximum_output_tokens": 128,
+    "retry_budget": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "chat_completions_calls": 0,
+    "credential_reads": 0,
+    "credential_writes": 0,
+    "canonical_work_unit_attempt_run_writes": 0,
+    "business_artifact_writes": 0,
+    "live_business_case_head_writes": 0,
+    "billing_and_cost_state": "not_evaluated_one_request_ceiling_is_the_only_cost_guard"
+  },
+  "future_implementation_and_execution_preconditions": {
+    "isolated_new_diagnostic_runner_only": true,
+    "historical_official_OpenAI_runners_and_results_immutable": true,
+    "authority_request_and_schema_digests_must_be_frozen_and_recomputed": true,
+    "fake_transport_exact_wire_strict_parse_and_sanitized_result_preflight_must_pass": true,
+    "project_os_preflight_must_pass_for_exact_execution_scope": true,
+    "open_full_chain_blocker_count_must_equal": 0,
+    "no_environment_key_or_dotenv_access": true,
+    "result_ref_must_be_absent": true,
+    "canary_id_must_be_unconsumed": true,
+    "any_precondition_failure_disposition": "stop_before_network_or_provider_call"
+  },
+  "success_contract": {
+    "exact_provider_calls": 1,
+    "exact_network_calls": 1,
+    "exact_transport_attempts": 1,
+    "response_status": "completed",
+    "strict_schema_parse_pass": true,
+    "local_exact_value_validation_pass": true,
+    "raw_provider_response_persisted": false,
+    "headers_persisted": false,
+    "private_reasoning_persisted": false,
+    "credential_persisted": false,
+    "result_is_diagnostic_only": true,
+    "result_closes_RC_P36_074": false,
+    "result_admits_T06_or_full_chain": false
+  },
+  "failure_contract": {
+    "first_credible_failure": "terminal_stop",
+    "failure_classes": [
+      "route_or_connection_failed",
+      "HTTP_status_not_success",
+      "model_or_endpoint_access_rejected",
+      "strict_schema_request_rejected_or_unsupported",
+      "transport_error_or_timeout",
+      "provider_envelope_invalid",
+      "response_not_completed",
+      "strict_schema_parse_failed",
+      "local_exact_value_validation_failed",
+      "transport_attempt_count_not_one",
+      "output_token_budget_exceeded"
+    ],
+    "retry": 0,
+    "provider_hopping": false,
+    "full_chain_after_failure": false,
+    "automatic_repair": false,
+    "failure_disposition": "persist_one_sanitized_terminal_diagnostic_result_and_return_to_program_decision"
+  },
+  "result_persistence_contract": {
+    "allowed": [
+      "canary_id",
+      "authority_decision_digest",
+      "exact_request_and_schema_digests",
+      "sanitized_provider_model_endpoint",
+      "sanitized_status_HTTP_status_and_failure_class",
+      "call_id_digest",
+      "usage_and_latency_if_returned",
+      "transport_attempt_count",
+      "strict_schema_parse_status",
+      "local_exact_value_validation_status",
+      "content_free_output_shape"
+    ],
+    "forbidden": [
+      "credential_value",
+      "raw_provider_response",
+      "private_reasoning",
+      "request_or_response_headers",
+      "static_client_marker_value",
+      "stack_trace",
+      "provider_output_text",
+      "company_or_financial_content",
+      "canonical_research_claim_or_business_artifact"
+    ]
+  },
+  "current_turn_observed_counts": {
+    "actual_model_calls": 0,
+    "actual_provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "credential_reads": 0,
+    "credential_writes": 0,
+    "diagnostic_executions": 0,
+    "runner_or_runtime_changes": 0,
+    "admissions_issued": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "business_artifacts_created": 0
+  },
+  "stage_disposition": {
+    "RC_P36_070": "public_diagnostic_authorized_not_started_strict_schema_compatibility_unproven",
+    "RC_P36_073": "diagnostic_authority_issued_isolated_runner_implementation_and_preflight_pending",
+    "RC_P36_074": "plain_HTTP_mainline_blocker_remains_open_public_diagnostic_authorized_not_started",
+    "S4_T05": "blocked_after_R11_not_passed",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "S5": "blocked"
+  },
+  "next_action": "S4-T06-ENTRY-SUB2API-PUBLIC-NON-SENSITIVE-DIAGNOSTIC-CANARY-MINIMUM-ZERO-CALL-IMPLEMENTATION-AND-PREFLIGHT",
+  "next_action_authorized": true,
+  "known_boundary": "This record authorizes one future synthetic no-credential diagnostic request over the operator-supplied plain-HTTP route. It does not execute the request, authenticate the server, protect payload confidentiality or integrity, close RC-P36-074, admit T06, issue an admission, execute MU or full chain, authorize DELL R12, enter S5, release, or production."
+}

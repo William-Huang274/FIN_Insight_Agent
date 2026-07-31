@@ -1,0 +1,356 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t02_exact_case_pack_v1_0",
+  "case_pack_id": "FIN-0.1-S4-MU-HBM-EXACT-CASE-PACK-R1",
+  "case_profile_ref": "fin01.s4.case_profile.mu_hbm_three_cell:v1",
+  "frozen_at": "2026-07-26T15:58:08+08:00",
+  "status": "contract_translated_exact_case_pack_frozen_T03_fixture_and_runtime_injection_pending",
+  "authority": {
+    "user_instruction": "授权",
+    "authorized_scope": "S4-T02 MU HBM Case Pack and financial method contract translation only",
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "canonical_CaseVersion_Run_admission_or_business_Artifact_authorized": false,
+    "S4_T03_or_later_authorized": false
+  },
+  "case_identity": {
+    "ticker": "MU",
+    "legal_name": "Micron Technology, Inc.",
+    "canonical_entity_ref": "MU",
+    "research_position": "HBM_memory_cycle_transfer_case",
+    "as_of": "2026-07-26T00:00:00Z",
+    "analysis_language": "en",
+    "delivery_language": "zh-CN",
+    "canonical_CaseVersion_id": null,
+    "canonical_CaseVersion_creation": "deferred_to_separately_authorized_S4_T03_or_later_fixture",
+    "issuer_identifier_resolution": "official_source_adapter_must_resolve_and_bind_before_any_source_or_numeric_row_is_accepted"
+  },
+  "shared_runtime_contract": {
+    "runtime_family": "Fin01ResearchRuntime",
+    "execution_profile_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+    "input_contract_ref": "fin01.s3.bounded_agent_three_cell_input:v1",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+    "research_profile_target_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+    "program_cell_ids": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "same_runtime_no_parallel_implementation": true,
+    "case_and_Cell_local_identity_regeneration_required": true,
+    "S3_NVDA_or_DELL_fact_identity_alias_or_artifact_reuse_allowed": false
+  },
+  "program_cells": [
+    {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "owner_role": "industry_analyst",
+      "decision_question": "Are MU HBM demand signals company-specific, convertible into recognized revenue, and durable after separating structural AI demand from memory-cycle and inventory effects?",
+      "mandatory_judgment_chain": [
+        "official_HBM_demand_capacity_or_qualification_signal",
+        "company_specificity",
+        "shipment_or_revenue_conversion_boundary",
+        "structural_demand_vs_memory_cycle",
+        "customer_and_inventory_counterindicator",
+        "typed_cannot_infer"
+      ],
+      "required_evidence_roles": [
+        "issuer_HBM_demand_or_capacity_signal",
+        "issuer_shipment_revenue_or_mix_disclosure",
+        "official_customer_or_qualification_corroboration",
+        "memory_cycle_inventory_or_demand_counterevidence"
+      ],
+      "numeric_questions": [
+        "company_total_or_exact issuer product segment revenue direction",
+        "HBM shipment revenue or mix only if exact issuer-bound rows exist",
+        "inventory and demand indicators with exact period comparability"
+      ],
+      "graph_context_questions": [
+        "customer_qualification_and_deployment_path",
+        "memory_product_generation_path",
+        "equipment_capacity_and_supply_path"
+      ],
+      "typed_cannot_infer_codes": [
+        "cannot_infer_company_specific_HBM_demand",
+        "cannot_infer_HBM_shipment_or_revenue_conversion",
+        "cannot_infer_structural_demand_vs_cycle_or_inventory",
+        "cannot_infer_customer_qualification_or_concentration"
+      ],
+      "stop_rule": "Stop before a durable-demand judgment if official company-bound HBM evidence and a memory-cycle or inventory counterindicator are not both available.",
+      "what_would_change_targets": [
+        "official HBM qualification shipment or capacity change",
+        "inventory correction or demand digestion",
+        "customer deployment or concentration evidence",
+        "pricing or product mix change that alters conversion"
+      ]
+    },
+    {
+      "program_cell_id": "value_and_profit_capture",
+      "owner_role": "financial_analyst",
+      "decision_question": "How much revenue, pricing, mix, gross profit, operating leverage and cash economics can be attributed to MU at company or exact issuer-disclosed product or segment scope?",
+      "mandatory_judgment_chain": [
+        "demand_transmission",
+        "exact_company_product_or_segment_scope",
+        "price_volume_mix_boundary",
+        "revenue_and_margin",
+        "inventory_capex_and_cash_conversion",
+        "unattributed_HBM_scope"
+      ],
+      "required_evidence_roles": [
+        "issuer_financial_statement",
+        "issuer_product_or_segment_disclosure",
+        "official_pricing_volume_or_mix_disclosure",
+        "inventory_capex_and_cash_flow_rows",
+        "cross_value_chain_profit_capture_comparison"
+      ],
+      "numeric_questions": [
+        "company_total_revenue_gross_margin_and_operating_margin",
+        "HBM_or_memory_product_revenue_and_profit_only_if exact issuer rows exist",
+        "inventory_days_and capital_intensity only with complete exact inputs",
+        "operating_cash_flow and free_cash_flow with exact sign and period scope"
+      ],
+      "graph_context_questions": [
+        "memory_value_chain_position",
+        "customer_qualification_and_product_generation",
+        "equipment_supplier_and_capacity_path"
+      ],
+      "typed_cannot_infer_codes": [
+        "cannot_infer_HBM_specific_revenue",
+        "cannot_infer_HBM_specific_gross_or_operating_profit",
+        "cannot_infer_price_volume_mix_decomposition",
+        "cannot_infer_operating_leverage_without_period_comparable_inputs",
+        "cannot_infer_incremental_profit_capture"
+      ],
+      "stop_rule": "Do not allocate company-total or broad memory economics to HBM, a generation, customer or shipment cohort without exact issuer-bound rows and period/unit scope.",
+      "what_would_change_targets": [
+        "issuer_disclosed_HBM_or_product_economics",
+        "pricing volume or mix disclosure",
+        "gross margin and operating leverage inflection",
+        "inventory capex and cash conversion change"
+      ]
+    },
+    {
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "owner_role": "risk_reviewer",
+      "decision_question": "Which capacity, yield, customer-concentration, technology-ramp, export-control and memory-cycle mechanisms could break or qualify the MU HBM thesis?",
+      "mandatory_judgment_chain": [
+        "strongest_counterevidence",
+        "capacity_yield_cycle_or_customer_mechanism",
+        "company_specific_observation",
+        "probability_and_impact_boundary",
+        "what_would_change",
+        "typed_stop"
+      ],
+      "required_evidence_roles": [
+        "official_capacity_yield_or_technology_ramp_signal",
+        "customer_concentration_or_qualification_counterevidence",
+        "memory_cycle_pricing_or_inventory_counterevidence",
+        "export_control_or_regulatory_counterevidence",
+        "independent_official_followup"
+      ],
+      "numeric_questions": [
+        "inventory_days_capex_intensity_margin_and_cash_stress_indicators",
+        "supply_or pricing sensitivity only when exact issuer rows support the comparison"
+      ],
+      "graph_context_questions": [
+        "capacity_and_equipment_supplier_path",
+        "customer_qualification_and_concentration_path",
+        "technology_generation_and_competitor_path",
+        "geography_and_export_control_path"
+      ],
+      "typed_cannot_infer_codes": [
+        "cannot_infer_capacity_or_yield_probability_and_impact",
+        "cannot_infer_customer_concentration_or_qualification",
+        "cannot_infer_memory_cycle_timing_or_severity",
+        "cannot_infer_export_control_impact",
+        "cannot_infer_independent_counterevidence"
+      ],
+      "stop_rule": "Do not close the Case without at least one company-bound cycle or capacity counterevidence route and one independent official followup target.",
+      "what_would_change_targets": [
+        "capacity expansion delay acceleration or yield change",
+        "customer qualification concentration or digestion change",
+        "memory pricing inventory or cycle reversal",
+        "technology transition competitive or regulatory change"
+      ]
+    }
+  ],
+  "source_authority_policy": {
+    "source_policy_ref": "fin01.s4.public_local_official_case_pack:v1",
+    "as_of_rule": "every source published_at or effective_at must be less than or equal to case as_of",
+    "accepted_fact_authority": [
+      "issuer_filing_or_official_financial_statement",
+      "issuer_earnings_release_or_prepared_remarks",
+      "issuer_official_HBM_memory_product_capacity_or_segment_disclosure",
+      "official_customer_supplier_or_regulatory_source_with_explicit_MU_binding"
+    ],
+    "accepted_numeric_authority": [
+      "local_gold_SQL_row_with_exact_issuer_period_currency_unit_and_source_ref",
+      "local_official_filing_table_address_with_exact_row_lineage"
+    ],
+    "context_only_not_fact_authority": [
+      "Candidate",
+      "GraphObservation",
+      "peer_or_industry_row",
+      "product_or_technology_spec_without_financial_scope",
+      "search_snippet",
+      "model_output"
+    ],
+    "route_order_by_cell": {
+      "demand_authenticity_and_sustainability": [
+        "local_object_bm25_official_disclosure",
+        "local_materialized_customer_deployment_context"
+      ],
+      "value_and_profit_capture": [
+        "local_gold_sql_financial_table",
+        "local_official_filing_table_address"
+      ],
+      "bottleneck_counterevidence_and_what_would_change": [
+        "local_relationship_graph_navigation",
+        "local_official_counterevidence_source_followup"
+      ]
+    },
+    "source_network_calls_in_T02": 0,
+    "sourcehunter_execution_in_T02": false
+  },
+  "numeric_policy": {
+    "entity_ref_must_equal": "MU",
+    "segment_policy": "use __company_total__ or an exact issuer-disclosed product_or_segment_ref resolved from the source row; no prefilled product generation or segment name is authoritative",
+    "period_policy": [
+      "preserve exact issuer fiscal label",
+      "do not compare unequal duration periods",
+      "distinguish point_in_time balance sheet rows from duration flow rows"
+    ],
+    "currency_and_unit_policy": "every row and formula input must carry exact currency and unit; conversion requires a separate explicit rate authority",
+    "required_metric_families_if_available": [
+      "revenue",
+      "cost_of_revenue",
+      "gross_profit",
+      "operating_income",
+      "inventory",
+      "operating_cash_flow",
+      "capital_expenditure"
+    ],
+    "allowed_formula_contracts": [
+      {
+        "metric": "gross_margin",
+        "formula": "gross_profit/revenue*100",
+        "required_scope": "same_entity_product_or_segment_period_currency_unit"
+      },
+      {
+        "metric": "operating_margin",
+        "formula": "operating_income/revenue*100",
+        "required_scope": "same_entity_product_or_segment_period_currency_unit"
+      },
+      {
+        "metric": "free_cash_flow",
+        "formula": "operating_cash_flow-capital_expenditure",
+        "required_scope": "same_entity_period_currency_unit_and_verified_capex_sign"
+      },
+      {
+        "metric": "inventory_days",
+        "formula": "average_inventory/cost_of_revenue*days_in_period",
+        "required_scope": "same_entity_product_or_segment_currency_unit_with_begin_end_inventory_and_exact_period_days"
+      },
+      {
+        "metric": "capital_intensity",
+        "formula": "capital_expenditure/revenue*100",
+        "required_scope": "same_entity_period_currency_unit_and_verified_capex_sign"
+      }
+    ],
+    "forbidden_numeric_inference": [
+      "allocate_company_total_or_broad_memory_profit_to_HBM_product_generation_or_customer",
+      "decompose_price_volume_mix_without exact issuer inputs",
+      "derive_customer_share_from unnamed or aggregate disclosure",
+      "infer_capacity_yield or shipment from capex alone",
+      "create_synthetic_cycle_score_when_inputs_are_missing"
+    ],
+    "narrative_fill_authorized": false
+  },
+  "graph_policy": {
+    "allowed_edge_semantics": [
+      "customer_qualification",
+      "technology_generation",
+      "supply_capacity",
+      "equipment_supplier",
+      "competitor",
+      "geography_or_regulation"
+    ],
+    "each_edge_requires": [
+      "source_ref_or_typed_source_followup",
+      "as_of",
+      "direction",
+      "boundary",
+      "company_or_counterpart_scope"
+    ],
+    "graph_edge_is_direct_Evidence": false,
+    "inferred_edge_is_hypothesis_only": true,
+    "peer_membership_is_company_specific_proof": false,
+    "naked_stale_or_conflicting_edge_must_fail_or_remain_context": true
+  },
+  "judgment_atom_contract": {
+    "model_should_return_judgment_atoms_not_case_pack_structure": true,
+    "required_fields": [
+      "program_cell_id",
+      "epistemic_status",
+      "direct_answer_atom",
+      "support_fact_refs",
+      "context_refs",
+      "counterevidence_atom",
+      "boundary_atom",
+      "what_would_change_refs"
+    ],
+    "local_runtime_owns": [
+      "Case_Cell_and_local_ids",
+      "ClaimFactLink",
+      "scope_assembly",
+      "cross_Cell_lineage",
+      "Artifact_manifest_and_digests"
+    ],
+    "epistemic_states": [
+      "fact_supported",
+      "context_supported",
+      "candidate_only",
+      "cannot_infer",
+      "stopped_by_material_conflict"
+    ],
+    "cannot_infer_requires": [
+      "typed_gap_code",
+      "missing_authority_or_input",
+      "source_targeted_what_would_change"
+    ]
+  },
+  "method_bindings": [
+    "s4_mu_hbm_supply_pricing_and_cycle_playbook",
+    "p32_semis_cycle_value_chain_playbook",
+    "product_to_financial_bridge",
+    "customer_supplier_readthrough",
+    "three_statement_peer_panel",
+    "thesis_path_first_research",
+    "p32_thesis_led_memo_output"
+  ],
+  "factual_content_boundary": {
+    "evidence_rows": [],
+    "numeric_rows": [],
+    "graph_edges": [],
+    "claims": [],
+    "judgments": [],
+    "preaccepted_conclusions": [],
+    "case_pack_contains_questions_policies_and_typed_boundaries_only": true
+  },
+  "T03_acceptance_required": [
+    "official_issuer_identifier_and_local_source_routes_resolved",
+    "deterministic_case_pack_schema_and_digest_fixture",
+    "named_method_runtime_injection",
+    "node_level_consumption",
+    "cross_case_and_cross_Cell_identity_collision_regression",
+    "SaaS_and_Bank_structural_fact_leakage_regression",
+    "zero_paid_calls"
+  ],
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_case_writes": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0
+  }
+}

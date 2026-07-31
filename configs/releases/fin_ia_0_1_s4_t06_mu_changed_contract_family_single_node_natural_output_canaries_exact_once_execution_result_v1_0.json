@@ -1,0 +1,154 @@
+{
+  "R7_admission_or_exact_live": false,
+  "authority_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_changed_contract_family_single_node_natural_output_canaries_authority_decision_v1_0.json",
+  "authority_sha256": "e6f10a50d796d22bf03c48012442dbae1196be58984159cd4ef194053f124498",
+  "budget": {
+    "maximum_cost_usd": 0.03,
+    "maximum_model_provider_network_calls": [
+      3,
+      3,
+      3
+    ],
+    "maximum_output_tokens_total": 4200,
+    "maximum_wall_clock_seconds": 360,
+    "retry_fallback_replay_provider_hopping": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "business_artifact_promotions": 0,
+  "canary_run_id": "20260730_mu_single_node_changed_contract_natural_output_deepseek_pro_r1",
+  "canonical_work_unit_attempt_run_or_artifact_writes": 0,
+  "completed_at": "2026-07-30T08:45:35.880969+00:00",
+  "completed_families": [
+    "specialist_fact_atoms",
+    "claim_candidate_atoms"
+  ],
+  "credential_present_value_persisted": [
+    true,
+    false
+  ],
+  "execution_order": [
+    "specialist_fact_atoms",
+    "claim_candidate_atoms",
+    "what_would_change_atoms"
+  ],
+  "family_results": [
+    {
+      "business_promotion": false,
+      "canonical_request_sha256": "f96285fd64912b39b57e7f3c104186e2941fd0e61cbcf40a0888fb4591c404e1",
+      "capture_digest": "4be51ad32e34508e9558a70bc8029307568205ed05d4ea86542da30602124435",
+      "capture_persisted_before_local_validation": true,
+      "capture_policy_ref": "fin01.runtime.provider_interaction_audit_capture:v2",
+      "capture_ref": ".codex_runtime/s4_t06_mu_changed_contract_family_single_node_canaries_exact_once_r1/captures/01_specialist_fact_atoms_4be51ad32e34508e9558a70bc8029307568205ed05d4ea86542da30602124435.json",
+      "family_id": "specialist_fact_atoms",
+      "finish_reason": "stop",
+      "provider_status": "ok",
+      "raw_provider_envelope_persisted": false,
+      "segment_id": "facts_explanation_and_terminal",
+      "sequence": 1,
+      "status": "pass",
+      "usage_receipt": {
+        "call_id": "llm_1785401129178892100_domain_specialist_demand_authenticity_and_sustainability_fac",
+        "estimated_cost_usd": 0.00196924,
+        "finish_reason": "stop",
+        "input_cache_hit_tokens": 0,
+        "input_cache_miss_tokens": 3983,
+        "input_tokens": 3983,
+        "latency_ms": 3754,
+        "model": "deepseek-v4-pro",
+        "output_tokens": 272,
+        "provider": "deepseek",
+        "stage": "changed_contract_canary:specialist_fact_atoms",
+        "status": "ok",
+        "total_tokens": 4255,
+        "transport_attempt_count": 1
+      },
+      "validation": {
+        "compiled_wire_pass": true,
+        "local_deterministic_assembly_pass": true,
+        "local_rendered_digest": "f38bf6a100fe8bf8d6bfbbf637311647ca8f4e43c64e5bb417decf39a518e814",
+        "provider_item_count": 5,
+        "provider_output_utf8_bytes": 972,
+        "top_level_keys": [
+          "fact_atoms",
+          "program_cell_id",
+          "terminal_class"
+        ]
+      }
+    },
+    {
+      "business_promotion": false,
+      "canonical_request_sha256": "405738388536cba288ddd46a3af5b51952bcc5f35adb76cc0b9241b4cc0cc24f",
+      "capture_digest": "e13a113e7c8ead1583ca60562c96d1a5e6cfa2b723d53415cd725d230ef56b17",
+      "capture_persisted_before_local_validation": true,
+      "capture_policy_ref": "fin01.runtime.provider_interaction_audit_capture:v2",
+      "capture_ref": ".codex_runtime/s4_t06_mu_changed_contract_family_single_node_canaries_exact_once_r1/captures/02_claim_candidate_atoms_e13a113e7c8ead1583ca60562c96d1a5e6cfa2b723d53415cd725d230ef56b17.json",
+      "failure_code": "s4_compiled_claim_atom_no_valid_scope_compatible_subset",
+      "family_id": "claim_candidate_atoms",
+      "finish_reason": "stop",
+      "provider_status": "ok",
+      "raw_provider_envelope_persisted": false,
+      "segment_id": "owner_grade_claim_cards",
+      "sequence": 2,
+      "status": "terminal_failed",
+      "usage_receipt": {
+        "call_id": "llm_1785401132938426200_domain_specialist_demand_authenticity_and_sustainability_own",
+        "estimated_cost_usd": 0.00151206,
+        "finish_reason": "stop",
+        "input_cache_hit_tokens": 0,
+        "input_cache_miss_tokens": 3300,
+        "input_tokens": 3300,
+        "latency_ms": 2939,
+        "model": "deepseek-v4-pro",
+        "output_tokens": 88,
+        "provider": "deepseek",
+        "stage": "changed_contract_canary:claim_candidate_atoms",
+        "status": "ok",
+        "total_tokens": 3388,
+        "transport_attempt_count": 1
+      },
+      "validation": {
+        "compiled_wire_pass": false,
+        "local_deterministic_assembly_pass": false
+      }
+    }
+  ],
+  "first_credible_failure": "s4_compiled_claim_atom_no_valid_scope_compatible_subset",
+  "known_boundary": "This is a bounded three-family single-node natural-output canary result. It is not a formal MU full-chain run, final L1 proof, paired assessment, owner acceptance, or T06 closeout. A separate zero-call post-result disposition is mandatory.",
+  "next_action": "S4-T06-MU-CHANGED-CONTRACT-FAMILY-SINGLE-NODE-NATURAL-OUTPUT-CANARIES-POST-RESULT-DISPOSITION-DECISION",
+  "paired_assessment_or_owner_acceptance": false,
+  "project_os_preflight": {
+    "open_blockers": 0,
+    "ref": ".codex_runtime/s4_t06_mu_changed_family_canary_execution_authority_postflight.json",
+    "sha256": "bfb8a827111a280826f6e712363efa8a235432c2696bd205f734672ea43f62a7",
+    "status": "pass"
+  },
+  "provider_route": {
+    "base_url": "https://api.deepseek.com/beta",
+    "model": "deepseek-v4-pro",
+    "provider": "deepseek",
+    "wire_api": "chat_completions_json_object"
+  },
+  "runner_ref": "scripts/releases/run_fin_ia_0_1_s4_t06_mu_changed_contract_family_single_node_natural_output_canaries.py",
+  "schema_version": "fin_ia_0_1_s4_t06_mu_changed_contract_family_single_node_natural_output_canaries_exact_once_execution_result_v1_0",
+  "skipped_after_first_failure": [
+    "what_would_change_atoms"
+  ],
+  "started_at": "2026-07-30T08:45:29.177901+00:00",
+  "status": "terminal_failed_no_retry",
+  "totals": {
+    "captures": 2,
+    "estimated_cost_usd": 0.0034813,
+    "input_tokens": 7283,
+    "model_calls": 2,
+    "network_calls": 2,
+    "output_tokens": 360,
+    "provider_calls": 2,
+    "total_tokens": 7643,
+    "transport_attempts": 2
+  },
+  "work_item_id": "S4-T06-MU-CHANGED-CONTRACT-FAMILY-SINGLE-NODE-NATURAL-OUTPUT-CANARIES-EXACT-ONCE-EXECUTION"
+}

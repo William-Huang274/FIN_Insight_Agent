@@ -1,0 +1,161 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_dell_specialist_wwc_judgment_atom_r6_exact_live_execution_pre_admission_failure_result_v1_0",
+  "result_id": "S4-T05-DELL-SPECIALIST-WWC-JUDGMENT-ATOM-R6-EXACT-LIVE-EXECUTION-PRE-ADMISSION-FAILURE-R1",
+  "recorded_at": "2026-07-27T22:00:00+08:00",
+  "status": "runner_exited_pre_admission_on_S4_research_profile_binding_mismatch_no_calls_no_retry",
+  "authority_decision_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_specialist_wwc_judgment_atom_r6_exact_live_execution_and_paired_assessment_authority_decision_v1_0.json",
+  "authority_decision_sha256": "0e059de45c542bf380caea142e5f27abfd5f58445ddba9f89cfffa594537cfbc",
+  "admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s4_t05_dell_specialist_wwc_judgment_atom_fresh_exact_admission_r6.json",
+    "admission_file_sha256": "90f0905ef4cf323998b1a4c86cfabf50bf204037f9e63d4a3784a4dba5988acd",
+    "admission_id": "fin01-s4-t05-dell-specialist-wwc-judgment-atom-fresh-exact-admission-r6",
+    "admission_digest": "ac44bff5dda2911465859dc48dfbce44aefaa22533b74321c96fedc816a4b265",
+    "issued": true,
+    "consumed": false,
+    "supervised_launch_attempted": true,
+    "canonical_execution_started": false,
+    "automatic_second_launch_authorized": false
+  },
+  "identity": {
+    "case_id": "case_7b5c2042bef3825b8df71a96",
+    "case_version": 1,
+    "as_of": "2026-07-26T00:00:00Z",
+    "input_digest": "3499c03470c5bec5168dc87a2974802869da389f2ef588f41021731828d09e96",
+    "preparation_digest": "cb614b2f953ca73d93dd4ffefa2ec1eb9bc6974535adc360059bb676cfeb7e5f",
+    "work_unit_id": "wu_p02_5_4fc6d8f6a641779d1c97861f",
+    "attempt_id": "attempt_fin01_f34ce162a7e166702a3f5262",
+    "research_run_id": "research_run_fin01_e187ada6b55d471d462e3242"
+  },
+  "terminal_result": {
+    "supervisor_status": "runner_exited_without_verified_terminal_state",
+    "runner_process_status": "exited_self_finalized",
+    "runner_exit_code": 1,
+    "typed_unhandled_failure_code": "unhandled_ValueError",
+    "runtime_result_materialized": false,
+    "work_unit_state": null,
+    "attempt_state": null,
+    "research_run_state": null,
+    "canonical_terminal_state_required": false,
+    "orphaned_run": false,
+    "artifact_count": 0
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "completed_provider_responses": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated_cost_usd": 0.0,
+    "provider_output_capture_count": 0,
+    "raw_provider_body_persisted": false,
+    "assistant_output_text_persisted": false,
+    "private_reasoning_persisted": false,
+    "credential_value_persisted": false
+  },
+  "first_credible_failure": {
+    "failure_code": "s4_admission_research_profile_binding_mismatch",
+    "exception_type": "ValueError",
+    "stage": "create_app:Fin01ResearchRuntime.__init__",
+    "layer": "L1_exact_runtime_binding_integrity",
+    "failure_family": "S4_case_runtime_binding_and_exact_admission_profile_version_drift",
+    "case_runtime_binding_research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v1",
+    "exact_admission_research_profile_ref": "fin01.s4.research_profile.dell_oem_three_cell:v2",
+    "earliest_owned_artifact": "S4CaseRuntimeBinding.research_profile_ref",
+    "runtime_guard_disposition": "correctly_rejected_before_WorkUnit_creation_or_provider_call",
+    "model_or_provider_fault": false
+  },
+  "preflight_coverage_gap": {
+    "exact_runner_zero_call_preflight_passed": true,
+    "admission_schema_and_profile_registry_validation_passed": true,
+    "executor_factory_zero_call_validation_passed": true,
+    "Fin01ResearchRuntime_or_create_app_instantiated_during_preflight": false,
+    "S4_case_runtime_binding_to_admission_profile_equality_checked_during_preflight": false,
+    "why_not_caught": "the preflight validated the admission and executor but did not instantiate the application runtime that loads the frozen S4 case binding",
+    "required_regression_direction": "add a zero-call create_app_or_equivalent_runtime_binding_preflight before future exact-live launch"
+  },
+  "root_cause_classification": {
+    "new_issue_id": "RC-P36-063-s4-R6-research-profile-v2-case-runtime-binding-drift",
+    "new_issue_status": "open_zero_call_root_cause_disposition_pending",
+    "immediate_failure_owner": "S4_case_runtime_binding_profile_version_propagation",
+    "owned_by_project": true,
+    "external_boundary": false,
+    "RC_P36_062_status": "R6_launch_failed_before_v8_live_observation",
+    "RC_P36_061_status": "R5_consumed_failed_upstream_projection_live_observation_unproven",
+    "Specialist_v8_or_WWC_atom_failure_observed": false,
+    "Research_Lead_v6_or_gap_projection_failure_observed": false,
+    "repair_or_relaunch_authorized": false,
+    "sequence_boundary": "current_T05_first_credible_failure_only; no patch relaunch paired S4_T06 or deferred architecture expansion"
+  },
+  "stop_contract_observation": {
+    "first_credible_failure_stopped_chain": true,
+    "automatic_retry_count": 0,
+    "fallback_count": 0,
+    "replay_count": 0,
+    "relaunch_count": 0,
+    "rerun_count": 0,
+    "monitor_mutations": 0,
+    "signals_sent": 0,
+    "paired_assessment_performed": false,
+    "paired_assessment_allowed_after_failure": false,
+    "DELL_R2_proven": false
+  },
+  "post_failure_zero_call_verification": {
+    "status": "pass_exact_zero_call_execution_preflight",
+    "canonical_total_work_unit_attempt_run_artifact_counts": [
+      5,
+      5,
+      5,
+      0
+    ],
+    "target_work_unit_attempt_run_absent": true,
+    "admission_consumed": false,
+    "model_provider_network_source_tool_calls": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "runtime_evidence": {
+    "preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_specialist_wwc_judgment_atom_r6_r1_live_execution_preflight.json",
+    "preflight_sha256": "5d0fbc15bf0b1595229aac7cacf02f06fe4a6a380d6a575ab0870a0e52f48333",
+    "post_failure_preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_specialist_wwc_judgment_atom_r6_r1_post_failure_live_execution_preflight.json",
+    "post_failure_preflight_sha256": "5d0fbc15bf0b1595229aac7cacf02f06fe4a6a380d6a575ab0870a0e52f48333",
+    "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/s4_t05_dell_specialist_wwc_judgment_atom_r6_r1_live_execution_result.json",
+    "runtime_result_materialized": false,
+    "runner_command_ref": ".codex_runtime/fin01-s4-t05-dell-specialist-wwc-judgment-atom-r6-supervision-r1/runner_command.json",
+    "runner_command_sha256": "941505d4710f6a03cd65d8eeb334972513a63a4e5a53964654dfb5ad2be21587",
+    "launch_receipt_ref": ".codex_runtime/fin01-s4-t05-dell-specialist-wwc-judgment-atom-r6-supervision-r1/launch_receipt.json",
+    "launch_receipt_sha256": "7b9a619b0e59df773ab694b89eb74ae6655f962177a08143dbc795f3cbd09d9b",
+    "exit_receipt_ref": ".codex_runtime/fin01-s4-t05-dell-specialist-wwc-judgment-atom-r6-supervision-r1/exit_receipt.json",
+    "exit_receipt_sha256": "a5211823c7cadbcdd8aad05e736850a4668bb0d93b40710117abbc5fb05c4c17",
+    "runner_stdout_ref": ".codex_runtime/fin01-s4-t05-dell-specialist-wwc-judgment-atom-r6-supervision-r1/runner.stdout.log",
+    "runner_stdout_sha256": "5d0fbc15bf0b1595229aac7cacf02f06fe4a6a380d6a575ab0870a0e52f48333",
+    "runner_stderr_ref": ".codex_runtime/fin01-s4-t05-dell-specialist-wwc-judgment-atom-r6-supervision-r1/runner.stderr.log",
+    "runner_stderr_sha256": "5b46d84ead06d68c3f9524ad304b3ba13f14d865c2d767994834672bcde9ffad",
+    "exit_receipt_stderr_digest_captured_before_final_trace_flush": true,
+    "raw_provider_body_in_evidence": false,
+    "credential_value_in_evidence": false
+  },
+  "historical_exact_binding_supersession": {
+    "reason": "historical implementation tests now recognize the R6 pre-admission failure as the latest current-state pointer without changing the frozen runtime contract",
+    "allowed_changed_paths": [
+      "tests/contract/test_fin_0_1_s4_t05_specialist_wwc_judgment_atom_deterministic_assembly_zero_call_implementation.py",
+      "tests/contract/test_fin_0_1_s4_t05_task_claim_link_policy_minimum_zero_call_implementation.py",
+      "tests/contract/test_fin_0_1_s4_t05_wwc_numeric_authority_surface_minimum_zero_call_implementation.py"
+    ],
+    "current_sha256": {
+      "tests/contract/test_fin_0_1_s4_t05_specialist_wwc_judgment_atom_deterministic_assembly_zero_call_implementation.py": "c1fd4cc387641a2806be61e14183194c4c9243fda128e79315be5ad02d4ea363",
+      "tests/contract/test_fin_0_1_s4_t05_task_claim_link_policy_minimum_zero_call_implementation.py": "d9ebcbe7f0135d3f5137114b0856ff469fa9f09388541dc7e1f17387baef6799",
+      "tests/contract/test_fin_0_1_s4_t05_wwc_numeric_authority_surface_minimum_zero_call_implementation.py": "8a686a8b8dee6edac3da7e7c4669b02f7736af1ebdc16eed3c69ae37f55bfeb2"
+    }
+  },
+  "next_action": "S4-T05-DELL-R6-RESEARCH-PROFILE-V2-CASE-RUNTIME-BINDING-MISMATCH-FIRST-CREDIBLE-FAILURE-ROOT-CAUSE-DISPOSITION-DECISION"
+}

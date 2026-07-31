@@ -1,0 +1,107 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_mu_r2_source_grounded_deterministic_baseline_materialization_v1_0",
+  "result_id": "S4-T06-MU-R2-SOURCE-GROUNDED-DETERMINISTIC-BASELINE-MATERIALIZATION-R1",
+  "recorded_at": "2026-07-29T19:20:00+08:00",
+  "status": "pass_exact_once_source_grounded_deterministic_baseline_materialized_and_read_only_verified",
+  "source_binding": {
+    "source_agent_result_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_r2_exact_live_execution_success_result_v1_0.json",
+    "source_agent_result_sha256": "d4ac5502ed6d87a43de853877511a0c61f9bfc42b6a5ec17f56dfe38a5d95e1b",
+    "source_decision_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r2_success_only_paired_baseline_source_decision_v1_0.json",
+    "materialization_decision_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r2_source_grounded_deterministic_baseline_materialization_decision_v1_0.json",
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_version": 1,
+    "analysis_as_of": "2026-07-26T00:00:00Z",
+    "decision_surface_ref": "p02_decision_surface_dd094559ce4c0f79d242e852:v1",
+    "canonical_input_head_digest": "d0bb8780877914737b68fc1cfd763932c56f496758d9be62e5194d4c648179f2",
+    "paired_input_head_digest": "4023ee74d3c54a8583203ba6b994eea55083aa1e68c1efc7786d819fbd64d247"
+  },
+  "source_grounding": {
+    "case_ticker": "MU",
+    "source_pack_digest": "5fff74f742b038ead1718e449e3e4dafc4f04b55587256d98e619d05cf6c263d",
+    "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+    "legacy_P36_NVDA_preview_used": false,
+    "prospective_double_prepare_equal": true,
+    "prospective_payload_digest": "c02beb76792489456bb7eab63a4a8bbdefa9306155037d5a98234b87019de6d4"
+  },
+  "identity": {
+    "execution_identity": "fin01-s3-t09-paired-deterministic-baseline-materialization-r1",
+    "execution_profile_version_ref": "fin01.execution_profile.p36_local_deterministic:v1",
+    "work_unit_id": "wu_p02_5_b7e302b67e326511be069250",
+    "attempt_id": "attempt_fin01_519fb331fd798ef6f769a0e2",
+    "research_run_id": "research_run_fin01_7d6adea8b1b4788a7842e914",
+    "distinct_from_agent_research_run_id": "research_run_fin01_1920b03b8205e9861dfb5676"
+  },
+  "terminal_truth": {
+    "work_unit_state": "succeeded",
+    "attempt_state": "succeeded",
+    "research_run_state": "succeeded",
+    "attempt_no": 1,
+    "maximum_attempts": 1,
+    "retry_budget": 0,
+    "exact_deterministic_run_cardinality": 1,
+    "artifact_count": 4,
+    "source_agent_artifact_count": 9
+  },
+  "artifact_manifest": {
+    "deterministic_research_result": {
+      "artifact_ref": "artifact_fin01_e7b972dc50ec40067a281524:v1",
+      "object_digest": "641c4caa30d96a1913f3123c66fb434195738caffb02eb23a6992ff1e12449e8"
+    },
+    "s3_three_cell_workpaper": {
+      "artifact_ref": "artifact_fin01_413831487f01fb8ad7e46587:v1",
+      "object_digest": "5868c8a1243f8d6f7bc50e33544d778d69a8f5659414d48a4e35d52af9e526cd"
+    },
+    "s3_three_cell_report": {
+      "artifact_ref": "artifact_fin01_31d0b55ac8728ae74abed085:v1",
+      "object_digest": "5c2484d438541a06c0c8923e6796fda08882ca450dccb91acfe1c87c5c662755"
+    },
+    "s3_three_cell_trace_review": {
+      "artifact_ref": "artifact_fin01_9247fa45aec1abab9bf06a02:v1",
+      "object_digest": "3f39ef93c363ea86bd466a590108aec10fbbf36c0ac52eb75ad179adc90f02fc"
+    }
+  },
+  "canonical_delta": {
+    "new_work_units": 1,
+    "new_attempts": 1,
+    "new_research_runs": 1,
+    "new_artifacts": 4,
+    "existing_logical_objects_unchanged": true,
+    "existing_object_payloads_unchanged": true,
+    "source_agent_run_and_artifacts_unchanged": true,
+    "database_sha256_before": "2a5377e0159789072ab3dc72bd978a555e3e439ff4aa1d2d89ca7c348277d248",
+    "database_sha256_after": "315b44b6d7f0dd25640f4599c7815702a600778e9cb1ae3bdee2742b85f69591",
+    "object_tree_sha256_before": "a7225b2f6e2390eba036be6c86d3a4963bf2217a48e061ea19cb8c972fb12fb2",
+    "object_tree_sha256_after": "49dd0e2403c93643c624b4a704faeed3cd7f881407d57d4519ba4744c8f20dcb"
+  },
+  "observed_counts": {
+    "baseline_materializations": 1,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "evidence_promotions": 0,
+    "live_case_head_writes": 0,
+    "agent_reruns": 0,
+    "owner_acceptance_writes": 0
+  },
+  "boundary": {
+    "automatic_fallback_or_agent_substitution": false,
+    "baseline_output_body_exposed_to_agent": false,
+    "baseline_labeled_as_agent_output": false,
+    "paired_comparison_performed": false,
+    "owner_acceptance_signed": false,
+    "S4_T07_entered": false
+  },
+  "read_only_verification": {
+    "status": "pass_materialized_baseline_read_only_verification",
+    "canonical_database_sha256": "315b44b6d7f0dd25640f4599c7815702a600778e9cb1ae3bdee2742b85f69591",
+    "canonical_object_tree_sha256": "49dd0e2403c93643c624b4a704faeed3cd7f881407d57d4519ba4744c8f20dcb",
+    "model_provider_network_calls": [
+      0,
+      0,
+      0
+    ]
+  },
+  "next_action": "S4-T06-MU-R2-SUCCESS-ONLY-PAIRED-ASSESSMENT"
+}

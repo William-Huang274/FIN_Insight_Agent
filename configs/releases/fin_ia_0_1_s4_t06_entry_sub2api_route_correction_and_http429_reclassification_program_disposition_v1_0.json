@@ -1,0 +1,101 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_entry_sub2api_route_correction_and_http429_reclassification_program_disposition_v1_0",
+  "recorded_at": "2026-07-28T23:01:33+08:00",
+  "work_item_id": "S4-T06-ENTRY-OPENAI-HTTP-429-RATE-OR-QUOTA-PROGRAM-DISPOSITION-DECISION",
+  "status": "completed_intended_sub2api_route_unbound_official_openai_429_not_applicable_to_intended_provider",
+  "decision_label": "retract_official_platform_quota_diagnosis_and_rebaseline_sub2api_route",
+  "user_correction": {
+    "intended_provider": "self_hosted_Sub2API",
+    "intended_provider_is_official_openai_api": false,
+    "correction_received": true,
+    "credential_or_base_url_value_persisted": false
+  },
+  "immutable_historical_evidence": {
+    "metadata_probe_ref": "configs/releases/fin_ia_0_1_s4_t06_entry_openai_credential_requalification_exact_once_metadata_probe_result_v1_0.json",
+    "metadata_probe_sha256": "ba1368b9ab3cba319f89e6de96f2d3949a5a59b86b87c6471b013dc2d874766c",
+    "metadata_probe_actual_base_url": "https://api.openai.com/v1",
+    "metadata_probe_scope": "official_OpenAI_credential_and_model_visibility_only",
+    "canary_authority_ref": "configs/releases/fin_ia_0_1_s4_t06_entry_openai_credential_requalified_fresh_strict_schema_canary_authority_decision_v1_0.json",
+    "canary_authority_sha256": "bb9df485efda0ffacd6ed2a6b496470bca0ed6cb7e56356e7184a9615a1ef27d",
+    "canary_result_ref": "configs/releases/fin_ia_0_1_s4_t06_entry_openai_credential_requalified_fresh_strict_schema_canary_exact_once_execution_result_v1_0.json",
+    "canary_result_sha256": "22cc6a236cda8a81e09f8283e266c7ec0fcf0135fb8417a57f876407474da27d",
+    "canary_actual_base_url": "https://api.openai.com/v1",
+    "canary_terminal_result": "HTTP 429 before generation",
+    "prior_http429_disposition_ref": "configs/releases/fin_ia_0_1_s4_t06_entry_openai_credential_requalified_strict_schema_canary_http_429_program_disposition_v1_0.json",
+    "prior_http429_disposition_sha256": "e19572330af5bc8801202172b8639b46322c50c3d9a652340aa6129cb3e24ccd",
+    "historical_result_mutated": false,
+    "historical_result_replayed": false
+  },
+  "zero_call_route_audit": {
+    "base_runner_ref": "scripts/releases/run_fin_ia_0_1_s4_t06_entry_single_node_strict_schema_canary.py",
+    "base_runner_sha256": "18cb228c7002538acfd2f6708e42271eaa3448fb5e9ba02facf4e97774e47844",
+    "runner_hardcodes_official_openai_base_url": true,
+    "authority_hardcodes_official_openai_base_url": true,
+    "metadata_probe_hardcodes_official_openai_base_url": true,
+    "result_records_official_openai_base_url": true,
+    "OPENAI_BASE_URL_present": false,
+    "BASE_URL_present": false,
+    "OPENAI_API_BASE_present": false,
+    "API_BASE_URL_present": false,
+    "SUB2API_BASE_URL_present": false,
+    "sub2api_route_bound_in_current_authority": false,
+    "sub2api_route_contacted_by_historical_probe_or_canary": false,
+    "model_provider_network_calls": [
+      0,
+      0,
+      0
+    ],
+    "browser_billing_or_limit_change": false,
+    "credential_read_or_write": false
+  },
+  "reclassification": {
+    "official_openai_http429_remains_valid_historical_fact": true,
+    "official_openai_http429_proves_sub2api_rate_limit": false,
+    "official_openai_http429_proves_sub2api_quota_exhaustion": false,
+    "official_openai_http429_proves_sub2api_model_or_schema_behavior": false,
+    "official_platform_billing_inspection_relevant_to_intended_route": false,
+    "intended_sub2api_rate_or_quota_state": "not_evaluated",
+    "intended_sub2api_model_visibility": "not_evaluated",
+    "intended_sub2api_responses_endpoint_support": "not_evaluated",
+    "intended_sub2api_strict_schema_support": "not_evaluated",
+    "earliest_current_fault": "provider_route_authority_mismatch_official_OpenAI_was_frozen_and_called_instead_of_intended_self_hosted_Sub2API",
+    "fault_owner": "project_configuration_and_authority_contract"
+  },
+  "program_disposition": {
+    "official_platform_billing_or_limits_investigation": "stopped_as_wrong_boundary",
+    "automatic_canary_retry_or_third_canary": false,
+    "automatic_key_creation_replacement_or_rotation": false,
+    "automatic_sub2api_base_url_invention": false,
+    "automatic_provider_hopping": false,
+    "automatic_runtime_or_schema_repair": false,
+    "DELL_R12": "forbidden",
+    "S4_T05": "blocked_not_passed_not_owner_accepted",
+    "DELL_R2": "not_proven",
+    "S4_T06": "not_entered",
+    "MU_T06": "blocked",
+    "S4_T07_T10": "blocked",
+    "S5": "blocked",
+    "release": "blocked",
+    "production": "blocked"
+  },
+  "issue_disposition": {
+    "RC_P36_067": "future_live_semantic_requalification_pending_blocked_by_RC_P36_073",
+    "RC_P36_068": "carried_open_next_case_live_unproven",
+    "RC_P36_069": "closed_remains_closed",
+    "RC_P36_070": "provider_target_and_capability_contract_rebaseline_pending_blocked_by_RC_P36_073",
+    "RC_P36_071": "closed_official_openai_credential_scope_only_not_sub2api_evidence",
+    "RC_P36_072": "superseded_official_endpoint_only_not_applicable_to_intended_sub2api_route",
+    "RC_P36_073": "open_project_owned_provider_route_authority_mismatch_sub2api_unbound"
+  },
+  "next_action": "S4-T06-ENTRY-SUB2API-PROVIDER-ROUTE-AND-CAPABILITY-CONTRACT-REBASELINE-DECISION",
+  "next_action_authorized": false,
+  "next_action_preconditions": {
+    "user_supplies_or_confirms_non_secret_sub2api_base_url": true,
+    "freeze_exact_provider_identity_and_api_dialect_without_guessing": true,
+    "verify_supported_endpoints_models_and_structured_output_contract_before_any_inference": true,
+    "decide_safe_credential_env_binding_without_exposing_or_reusing_unapproved_values": true,
+    "all_consumed_canaries_remain_unreplayable": true,
+    "no_model_or_provider_call_in_rebaseline_decision": true
+  },
+  "known_boundary": "This decision corrects the intended provider boundary only. It does not establish the Sub2API URL, authentication, model mapping, Responses or Chat Completions compatibility, strict-schema capability, rate or quota state, or research quality, and it authorizes no new request."
+}

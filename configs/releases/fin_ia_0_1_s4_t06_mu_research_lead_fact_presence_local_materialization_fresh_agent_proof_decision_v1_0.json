@@ -1,0 +1,212 @@
+{
+  "decision_id": "S4-T06-MU-RESEARCH-LEAD-CONFLICT-FACT-PRESENCE-LOCAL-MATERIALIZATION-FRESH-AGENT-PROOF-DECISION",
+  "double_prepare": {
+    "clone_execution_counts_after": {
+      "canonical_artifact_versions": 0,
+      "canonical_attempts": 1,
+      "canonical_research_run_versions": 1,
+      "canonical_work_units": 1
+    },
+    "clone_execution_counts_before": {
+      "canonical_artifact_versions": 0,
+      "canonical_attempts": 1,
+      "canonical_research_run_versions": 1,
+      "canonical_work_units": 1
+    },
+    "equal": true,
+    "prepared_payload_digest": "9e9f65490a1d4cc84daea0a93e3ed015424cbdf1ab6486a8fdccf8e24e4ccd94"
+  },
+  "experiment_governance": {
+    "S4_T07_or_later_authorized": false,
+    "admission_consumption_authorized": false,
+    "admission_issuance_authorized": false,
+    "decision_label": "proceed_to_separate_fresh_exact_admission_issuance_decision",
+    "dependency_conflict_or_all_node_atomization_reentered": false,
+    "live_execution_authorized": false,
+    "paired_assessment_authorized": false,
+    "retry_fallback_replay_relaunch_or_rerun_authorized": false,
+    "strict_schema_transport_reentered": false
+  },
+  "fresh_identity": {
+    "attempt_id": "attempt_fin01_217f2f2aaaa051080a540f2a",
+    "case_id": "case_ec7da8015386e7bfeda92c61",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_dd094559ce4c0f79d242e852:v1",
+    "evidence_alignment_digest": "92baf3feb394161af33d1d676ed9f61e10cfab9fd91b887547e1e2fc79ffa9e9",
+    "evidence_dispatch_digest": "b0996683e28dcce7260251efad3c10ac65de5ce9c132d586f70e9e52b192edb7",
+    "execution_identity": "fin01-s4-t06-mu-research-lead-fact-presence-local-materialization-exact-live-r2",
+    "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+    "preparation_digest": "0c4a7979e7b8d1fa38d1f11945684a20ed68fe3b8750f857fd8ac2dad0f6b159",
+    "research_run_id": "research_run_fin01_1920b03b8205e9861dfb5676",
+    "role_group_mapping_digest": "d11857d2c3c6d3262a156255bb546996c878e171dddde3d9f30430ba39fb94e0",
+    "work_unit_id": "wu_p02_5_43322e55457b647277d2297a"
+  },
+  "freshness_and_nonreuse": {
+    "attempt_absent": true,
+    "consumed_failed_R1_identity": {
+      "attempt_id": "attempt_fin01_e4473dd705631f215159fe76",
+      "research_run_id": "research_run_fin01_c94013e1c3666739c35ff00c",
+      "work_unit_id": "wu_p02_5_fbe7fa234fce9f4c54403c56"
+    },
+    "consumed_failed_R1_preserved": true,
+    "consumed_failed_R1_reused": false,
+    "prior_research_run_ids": [
+      "research_run_fin01_c94013e1c3666739c35ff00c"
+    ],
+    "research_run_absent": true,
+    "work_unit_absent": true
+  },
+  "future_success_contract": {
+    "canonical_conflict_summary_locally_materialized": true,
+    "layered_acceptance_required": true,
+    "logical_artifact_families": 9,
+    "logical_nodes": 6,
+    "paired_assessment_only_after_coherent_success": true,
+    "provider_calls": 12,
+    "provider_output_captures": 12,
+    "provider_wire_omits_fact_presence_summary": true,
+    "research_lead_v7_consumed": true,
+    "terminal_state": "succeeded",
+    "typed_verifier_success_required": true
+  },
+  "hard_boundaries": {
+    "admissions_consumed": 0,
+    "admissions_issued": 0,
+    "external_tool_calls": 0,
+    "human_reviews": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "paired_assessments": 0,
+    "provider_calls": 0,
+    "source_network_calls": 0,
+    "target_canonical_writes": 0,
+    "target_object_writes": 0
+  },
+  "implementation_reaudit": {
+    "exact_code_bindings": {
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py": "1fda11363c094b5e80db90ba10db0fbb8df459cfbc3a616a39e907d9311c9faa",
+      "apps/workbench/backend/application/bounded_agent_executor.py": "76c5fe40dbbb523f6429158c1c1df530de534f9cbf1ada7da29f90a0fe43416d",
+      "tests/contract/test_fin_0_1_s4_t05_research_lead_gap_atom_deterministic_projection_zero_call_implementation.py": "2af44c8c4ee62fcaa06e2035d7527b174dc1b89eed7f5135338b2845e26fecae",
+      "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_zero_call_implementation.py": "2f5af9c1edb1fb7b7d421a6582318d80041de4459b145fc4e33d7577d3a2d1dc"
+    },
+    "historical_R1_admission_capture_or_Run_rewritten": false,
+    "implementation_contract_sha256": "be1538bf3a867a5df5ef3d01727d9d1f15c4eba6c70aed526545989a4b9a7c3f",
+    "materialization_policy_ref": "fin01.s3.research_lead.conflict_fact_presence_local_materialization:v1",
+    "node_level_fixture_proven": true,
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v7",
+    "v7_runtime_injected": true
+  },
+  "materialization_policy_reproof": {
+    "MU_case_or_provider_special_branch": false,
+    "aliases_validated_before_materialization": true,
+    "canonical_field_id": "fact_presence_summary",
+    "canonical_output_requires_fact_presence_summary": true,
+    "lead_v6_gap_atom_projection_inherited": false,
+    "local_source": "validated involved Claim Card direct support_fact_ids only",
+    "policy_ref": "fin01.s3.research_lead.conflict_fact_presence_local_materialization:v1",
+    "provider_emits_fact_presence_summary": false,
+    "provider_field_id": "fact_presence_summary",
+    "provider_field_injection_hard_fails": true,
+    "silent_provider_value_overwrite_allowed": false,
+    "truth_table": {
+      "all_involved_claims_supported": "facts_present",
+      "no_involved_claims_supported": "no_facts_present",
+      "some_involved_claims_supported": "mixed_fact_presence"
+    },
+    "v3_semantic_and_output_v4_validators_retained": true,
+    "v5_historical_provider_owned_behavior_preserved": true
+  },
+  "next_action": "S4-T06-MU-RESEARCH-LEAD-CONFLICT-FACT-PRESENCE-LOCAL-MATERIALIZATION-FRESH-EXACT-ADMISSION-ISSUANCE-DECISION",
+  "proof_generator": {
+    "independent_invocations": 2,
+    "independent_outputs_equal": true,
+    "ref": "scripts/releases/prepare_fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_fresh_proof.py",
+    "sha256": "4deeac8d4b157e745cd3014da16275de8c5324c2bbcbbc373a5ca581745de68a"
+  },
+  "prospective_admission": {
+    "consumed": false,
+    "digest": "55fb08cac25b3a03109b13ae645d858b90b2074873f5355e6ed47ac93c6cd65c",
+    "digest_advanced_from_R1": true,
+    "execution_started": false,
+    "issued": false,
+    "output_v4_writer_v3_and_link_policies_preserved": true,
+    "payload": {
+      "admission_id": "fin01-s4-t06-mu-research-lead-fact-presence-local-materialization-fresh-exact-admission-r2",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "as_of": "2026-07-26T00:00:00Z",
+      "base_url": "https://api.deepseek.com/beta",
+      "case_id": "case_ec7da8015386e7bfeda92c61",
+      "case_version": 1,
+      "claim_fact_link_policy_ref": "fin01.s3.claim_fact_link_policy:v1",
+      "company": "MU",
+      "execution_enabled": true,
+      "execution_mode": "exact_live_s4_mu_research_lead_fact_presence_local_materialization_r2",
+      "execution_profile_version_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+      "external_tool_calls_allowed": false,
+      "input_cache_hit_usd_per_million": 0.003625,
+      "input_cache_miss_usd_per_million": 0.435,
+      "input_contract_ref": "fin01.s3.bounded_agent_three_cell_input:v1",
+      "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+      "lead_max_output_tokens": 1800,
+      "live_business_case_head_writes_allowed": false,
+      "max_network_calls": 12,
+      "max_provider_calls": 12,
+      "max_semantic_model_calls": 12,
+      "max_total_cost_usd": 0.1,
+      "max_transport_attempts_per_call": 1,
+      "maximum_cell_count": 3,
+      "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+      "model": "deepseek-v4-pro",
+      "model_ref": "deepseek:deepseek-v4-pro",
+      "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+      "output_usd_per_million": 0.87,
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "provider": "deepseek",
+      "provider_output_capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+      "reasoning_effort": "none",
+      "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v7",
+      "research_profile_ref": "fin01.s4.research_profile.mu_hbm_three_cell:v1",
+      "retry_budget": 0,
+      "scoped_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+      "source_network_calls_allowed": false,
+      "specialist_max_output_tokens": 4200,
+      "timeout_seconds": 120,
+      "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+      "verifier_max_output_tokens": 1000,
+      "writer_max_output_tokens": 1400
+    },
+    "prospective_admission_file": "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_fresh_exact_admission_r2.json",
+    "prospective_admission_file_absent": true,
+    "research_lead_v7_local_materialization_bound": true,
+    "source_consumed_R1_admission_digest": "56005ffb1227e9ec1ead1b73b780342dfeaeef06bbdb0eff01592d7cdc19c891",
+    "specialist_v7_preserved": true
+  },
+  "recorded_at": "2026-07-29T17:30:00+08:00",
+  "root_cause_disposition": {
+    "MU_R2_proven": false,
+    "historical_R1_terminal_failure_reclassified": false,
+    "issue_id": "RC-P36-078-s4-t06-mu-research-lead-deterministic-fact-presence-summary-model-ownership-recurrence",
+    "new_status": "fresh_proof_contract_frozen_admission_issuance_pending",
+    "prior_status": "minimum_zero_call_implementation_complete_fixture_proven_fresh_agent_proof_pending"
+  },
+  "schema_version": "fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_fresh_agent_proof_decision_v1_0",
+  "source_refs": {
+    "canonical_preparation": "configs/releases/fin_ia_0_1_s4_t06_mu_canonical_case_surface_and_fresh_exact_admission_preparation_zero_call_proof_v1_0.json",
+    "immutable_R1_failure": "configs/releases/fin_ia_0_1_s4_t06_mu_fresh_exact_live_execution_failure_result_v1_0.json",
+    "immutable_consumed_failed_R1_admission": "configs/releases/fin_ia_0_1_s4_t06_mu_fresh_exact_admission_r1.json",
+    "implementation": "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_minimum_zero_call_implementation_v1_0.json"
+  },
+  "status": "pass_zero_call_independent_fresh_proof_contract_frozen_admission_issuance_pending_separate_authority",
+  "target_read_only_audit": {
+    "canonical_database_file_unchanged": true,
+    "canonical_database_sha256": "739d4c6c6714512e709a0a6718618079b95cc03b92f4518c3b18b4ed1a66177b",
+    "canonical_object_tree_sha256": "f8db21cfa5f9798d8ce3aaa5f9aa68d88716d9a3875891e7b29b3973d71ce054",
+    "canonical_object_tree_unchanged": true,
+    "logical_snapshot_digest": "cd64a8ba7d81b22088ca6d85bf71e5d7c3fa4b995b5cc77116bd65525e1f01b7",
+    "logical_snapshot_unchanged": true
+  }
+}

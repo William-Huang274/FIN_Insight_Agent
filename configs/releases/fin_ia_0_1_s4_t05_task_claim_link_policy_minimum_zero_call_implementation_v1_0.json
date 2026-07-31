@@ -1,0 +1,118 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t05_task_claim_link_policy_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "S4-T05-DELL-WWC-TASK-TO-CLAIM-CLOSED-IDENTITY-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-27T01:18:10+08:00",
+  "status": "pass_zero_call_implementation_fixture_proven_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "bounded_zero_call_runtime_prompt_schema_validator_and_telemetry_implementation_authorized": true,
+    "fresh_agent_proof_admission_or_exact_execution_authorized": false,
+    "model_provider_network_source_or_external_tool_calls_authorized": false,
+    "paired_assessment_Human_review_S4_T06_or_later_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "source_decision": {
+    "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_wwc_task_to_claim_closed_identity_zero_call_root_cause_disposition_v1_0.json",
+    "sha256": "a70a7721e18acf8d07d57dc12fe63b80bc3216f2cb487375c0f753622ae671bd"
+  },
+  "implemented_contract": {
+    "contract_ref": "fin01.s3.task_claim_link_policy:v1",
+    "policy_name": "TaskClaimLinkPolicy",
+    "applies_only_to_segment": "actionable_what_would_change_tasks",
+    "alias_table_source": "already_validated_current_Cell_owner_grade_claim_cards",
+    "alias_generation": "sort_by_original_claim_id_then_assign_Q001_Q002_and_so_on",
+    "provider_response_field": "claim_alias",
+    "local_canonical_output_field": "claim_id",
+    "local_expansion": "exact_request_local_alias_membership_only_before_existing_task_validation",
+    "minimum_new_failure_subtype": "task_claim_alias_unknown",
+    "provider_generated_task_id_behavior_retained": true,
+    "raw_claim_id_CellScopedResearchRef_and_canonical_object_ref_provider_hidden": true,
+    "trim_casefold_normalize_prefix_guess_fuzzy_match_nearest_claim_relink_task_drop_or_rewrite_allowed": false,
+    "one_shared_runtime_preserved": true
+  },
+  "capability_binding": {
+    "admission_field": "task_claim_link_policy_ref",
+    "accepted_value": "fin01.s3.task_claim_link_policy:v1",
+    "requires_output_v4_segmented_transport_local_scope_assembly_and_field_local_fact_support_authority": true,
+    "legacy_admission_field_absent_digest_unchanged": true,
+    "historical_admission_or_Run_rewritten": false
+  },
+  "fixture_proof": {
+    "deterministic_alias_generation": "pass",
+    "exact_alias_expansion": "pass",
+    "unknown_whitespace_case_mismatch_raw_claim_id_blank_and_non_string_fail_closed": "pass",
+    "content_free_typed_telemetry": "pass",
+    "provider_prior_claim_projection_contains_zero_raw_claim_ids": "pass",
+    "full_fake_provider_logical_nodes": 6,
+    "full_fake_provider_callbacks": 12,
+    "full_fake_provider_logical_artifacts": 9,
+    "full_fake_provider_Q_alias_residue": 0,
+    "legacy_raw_task_validator_behavior_unchanged": true,
+    "ClaimFactLinkPolicy_behavior_unchanged": true,
+    "CellScopedResearchIdentityPolicy_behavior_unchanged": true,
+    "S4_role_group_mapping_and_actual_dispatch_behavior_unchanged": true
+  },
+  "historical_exact_binding_supersession": {
+    "reason": "The shared executor and its historical role-mapping implementation test advanced under the separately authorized TaskClaimLinkPolicy implementation. Historical proof, admission, Run and role-mapping result bytes remain immutable; only the explicitly listed current-file bindings may differ while all unaffected bindings must still match.",
+    "allowed_changed_paths": [
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+      "apps/workbench/backend/application/bounded_agent_executor.py",
+      "tests/contract/test_fin_0_1_s4_t05_evidence_role_group_mapping_actual_dispatch_preflight_implementation.py"
+    ],
+    "superseded_binding_contracts": {
+      "configs/releases/fin_ia_0_1_s4_t04_dell_provider_canary_need_and_fresh_agent_proof_decision_v1_0.json": "0c2cf1a84fb78c3e3dc86f2dd10bd93c37ff4c6321a2825d2b686773c2ce289c",
+      "configs/releases/fin_ia_0_1_s4_t04_dell_fresh_exact_admission_issuance_v1_0.json": "d70d24ec684332abeec619b90d9c6ef463d169e17f83ef422d8f0cb43b350ec5",
+      "configs/releases/fin_ia_0_1_s4_t05_evidence_role_group_mapping_actual_dispatch_preflight_zero_call_implementation_v1_0.json": "4b7823da7d65998d79bbc8f9ad5803b20cb766c31ddfea9b0712429369486624",
+      "configs/releases/fin_ia_0_1_s4_t05_evidence_role_group_mapping_repair_fresh_agent_proof_decision_v1_0.json": "6833437d0ae707031ef1c0976454e1edb790d5391ac70b9f21f77b33b3a53e2b",
+      "configs/releases/fin_ia_0_1_s4_t05_evidence_role_group_mapping_repair_fresh_exact_admission_issuance_v1_0.json": "04f498f4d393345c3145f50f5aac667f52453e9f787b350efc5b491b8853295b"
+    },
+    "unaffected_historical_exact_bindings_still_required": true,
+    "historical_business_evidence_reinterpreted": false
+  },
+  "deferred_cross_sequence_items": [
+    {
+      "item": "deterministic_locally_assembled_task_identity",
+      "target": "S4-T10-to-S5-carry-forward",
+      "blocks_current_T05": false
+    },
+    {
+      "item": "complete_typed_WWC_failure_taxonomy",
+      "target": "S4-T10-to-S5-carry-forward",
+      "blocks_current_T05": false
+    },
+    {
+      "item": "cross_stage_unified_claim_task_identity_redesign",
+      "target": "S5-or-later-architecture-sequence",
+      "blocks_current_T05": false
+    }
+  ],
+  "verification": {
+    "focused_policy_identity_role_mapping_and_historical_compatibility_regression": "74 passed",
+    "S4_T04_and_S4_T05_adjacent_regression": "80 passed",
+    "python_compileall": "pass",
+    "Project_OS_implementation_scope_preflight": "pass"
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "bdfd055a45f2bfd8a516ecb89d52aec0161925bdb1771c9d1137af1f727c913d",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "e1b6dbc0e4d194f5e38e28cb3bb105bd2ff1e7a367412e94b7f7ecdcbc0ce805"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "target_work_units_attempts_runs_or_business_artifacts_created": 0,
+    "target_canonical_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_059": "implementation_fixture_proven_fresh_agent_proof_pending",
+    "S4_T05": "blocked_pending_separately_authorized_fresh_agent_proof_and_later_exact_admission",
+    "DELL_R2": "not_proven",
+    "S4_T06_or_later": "not_entered",
+    "S5_release_or_production": "not_authorized"
+  },
+  "next_action": "S4-T05-DELL-WWC-TASK-TO-CLAIM-CLOSED-IDENTITY-FRESH-AGENT-PROOF-DECISION"
+}

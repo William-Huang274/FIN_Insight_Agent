@@ -1,0 +1,158 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t06_sub2api_park_and_deepseek_mainline_rebaseline_decision_v1_0",
+  "decision_id": "fin01-s4-t06-sub2api-park-and-deepseek-mainline-rebaseline-r1",
+  "decided_at": "2026-07-29T09:37:34+08:00",
+  "status": "pass_zero_call_Sub2API_strict_schema_track_parked_DeepSeek_mainline_rebased_MU_fresh_proof_next",
+  "authority": {
+    "source": "user",
+    "instruction": "主线回到ds然后往下做s4/t06；strict-schema transport问题记录在显眼位置，等待后续新API",
+    "authorized_now": [
+      "zero_call_program_disposition",
+      "prominent_external_API_handoff_record",
+      "DeepSeek_mainline_rebaseline",
+      "S4_T06_MU_fresh_exact_admission_preparation_and_zero_call_proof"
+    ],
+    "not_authorized_by_this_decision": [
+      "model_or_provider_call",
+      "network_or_source_call",
+      "credential_value_read_or_persistence",
+      "MU_exact_admission_issuance",
+      "MU_exact_live_execution",
+      "paired_assessment",
+      "owner_acceptance",
+      "DELL_R12",
+      "S4_pass",
+      "S5_release_or_production"
+    ]
+  },
+  "program_disposition": {
+    "decision_label": "park_optional_provider_track_and_resume_existing_mainline",
+    "Sub2API_track": "parked_external_dependency_until_complete_standalone_HTTPS_raw_client_contract_is_supplied",
+    "strict_schema_transport": "optional_provider_reliability_enhancement_not_a_DeepSeek_MU_T06_entry_blocker",
+    "DeepSeek_track": "selected_existing_mainline",
+    "reason": "The consumed Sub2API diagnostic stopped at HTTP401 before generation. Existing DeepSeek exact-live evidence already proves the project can execute the shared six-node path over HTTPS, while local typed contracts and L1 validators remain the truth boundary even without server-side strict JSON Schema.",
+    "handoff_ref": "docs/project_os/STRICT_SCHEMA_TRANSPORT_API_HANDOFF.zh-CN.md"
+  },
+  "DeepSeek_mainline_binding": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_tier": "pro_not_flash",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "credential_presence_checked": true,
+    "credential_present": true,
+    "credential_value_read_or_printed": false,
+    "transport_family": "existing_segmented_typed_atom_and_local_validation_path",
+    "server_side_strict_schema_required_for_T06_entry": false,
+    "local_fail_closed_validation_required": true,
+    "provider_hopping_allowed": false
+  },
+  "existing_evidence": {
+    "S4_T05_R10": {
+      "terminal_states": [
+        "succeeded",
+        "succeeded",
+        "succeeded"
+      ],
+      "model_provider_network_calls": [
+        12,
+        12,
+        12
+      ],
+      "artifact_count": 9,
+      "boundary": "paired_L1_failed_later_on_numeric_and_case_identity_integrity; exact product remains immutable and not owner accepted",
+      "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_profile_aware_artifact_lineage_exact_live_execution_success_result_v1_0.json"
+    },
+    "S4_T05_R11": {
+      "first_provider_call_reached": true,
+      "transport_or_credential_failure": false,
+      "local_L1_fail_closed": true,
+      "failure_code": "s4_case_numeric_authority_provider_narrative_invalid",
+      "artifact_count": 0,
+      "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r11_numeric_identity_exact_live_execution_failure_result_v1_0.json"
+    },
+    "three_case_zero_call_fixture": {
+      "case_count": 3,
+      "per_case_nodes_callbacks_artifacts": [
+        6,
+        12,
+        9
+      ],
+      "strict_truth_kernel_fixture_proven": true,
+      "local_semantic_validator_fixture_proven": true
+    }
+  },
+  "integrity_contract": {
+    "model_owned": [
+      "request_local_alias_selection",
+      "typed_judgment_atoms",
+      "bounded_direction_materiality_confidence_and_causal_relation"
+    ],
+    "local_deterministic_owner": [
+      "material_number",
+      "period",
+      "unit",
+      "sign",
+      "entity_and_title",
+      "canonical_ID",
+      "ordering",
+      "lineage",
+      "rendered_material_clause"
+    ],
+    "hard_fail_retained_for": [
+      "source_and_identity_integrity",
+      "numeric_authority_and_correspondence",
+      "typed_structure_required_for_canonical_materialization",
+      "secret_safety",
+      "atomic_terminal_truth"
+    ],
+    "quality_finding_only": [
+      "non_authoritative_narrative_style",
+      "conciseness",
+      "expression_density_when_truth_contract_is_complete"
+    ]
+  },
+  "stage_disposition": {
+    "S4_T05": "honestly_blocked_after_R11_no_R12_dependency_satisfied_for_T06_exploration_not_S4_pass",
+    "DELL_R2": "not_proven",
+    "S4_T06": "entered_zero_call_MU_preparation_only",
+    "MU_R2": "not_started",
+    "S4_T07_to_T10": "not_entered",
+    "S4_pass": false,
+    "S5": "blocked"
+  },
+  "root_cause_disposition": {
+    "RC_P36_070": "parked_optional_provider_strict_schema_live_compatibility_unproven_not_DeepSeek_mainline_blocker",
+    "RC_P36_073": "parked_Sub2API_raw_client_route_contract_track_not_DeepSeek_mainline_blocker",
+    "RC_P36_074": "open_for_Sub2API_plain_HTTP_only_not_applicable_to_DeepSeek_HTTPS_mainline",
+    "RC_P36_075": "open_external_waiting_for_operator_standalone_HTTPS_raw_client_contract",
+    "RC_P36_067": "carried_open_DELL_live_reproof_not_retried_in_T06",
+    "RC_P36_068": "carried_open_DELL_live_reproof_not_retried_in_T06"
+  },
+  "non_inflation": {
+    "transport_schema_capability_claimed": false,
+    "DeepSeek_model_quality_requalified_by_this_zero_call_decision": false,
+    "MU_exact_execution_started": false,
+    "T05_passed_or_owner_accepted": false,
+    "S4_passed": false,
+    "release_or_production_ready": false
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "credential_value_reads": 0,
+    "credential_writes": 0,
+    "admissions_issued": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "business_artifacts_created": 0,
+    "paired_assessments": 0,
+    "human_acceptances": 0
+  },
+  "current_next": "S4-T06-MU-DEEPSEEK-MAINLINE-FRESH-EXACT-ADMISSION-PREPARATION-AND-ZERO-CALL-PROOF"
+}

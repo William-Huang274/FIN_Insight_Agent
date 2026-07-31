@@ -1,0 +1,48 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v1_0",
+  "projection_id": "FIN-0.1.3-S0-T01-STAGE-PLAN-PASS-T02-READY-CURRENT-PROGRAM-PROJECTION-R1",
+  "recorded_at": "2026-08-01T03:53:37+08:00",
+  "status": "current_host_validated_FIN_0_1_3_S0_T01_stage_plan_pass_T02_ready",
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "S4_backlog": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "external_pattern_ledger": "docs/project_os/external_pattern_registry.jsonl"
+  },
+  "expectations": {
+    "active_slice": "FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_REBASELINE",
+    "current_next_action": "FIN-0.1.3-S0-RUNTIME-RESOURCE-REGISTRY-AND-TYPED-ENVIRONMENT-PROJECTION-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+    "capability_id": "fin_0_1_3_S0_T01_hermetic_runtime_dependency_and_semantic_parity_stage_plan",
+    "capability_stage_acceptance": {
+      "FIN_0_1_2": "frozen_internal_honest_block",
+      "FIN_0_1_3_S0_T01": "pass",
+      "FIN_0_1_3_S0_T02": "ready_not_started",
+      "FIN_0_1_3_S1_entry": "blocked",
+      "FIN_0_1_3_S2_entry": "blocked"
+    },
+    "open_issue_ids": [
+      "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+      "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
+      "RC-P36-092-fin-0-1-2-code-declared-static-runtime-resource-missing-from-hermetic-inventory",
+      "RC-P36-093-fin-0-1-2-hermetic-semantic-parity-untyped-host-python-traceback-path"
+    ],
+    "pattern_id": "runtime_code_declared_static_resources_and_traceback_environment_paths_must_be_typed_in_hermetic_proofs",
+    "pattern_status": "FIN_0_1_3_S0_T01_stage_plan_frozen_T02_implementation_pending",
+    "FIN_0_1_2_S0C_implementation_and_corrective_proof_packages": [1, 1],
+    "FIN_0_1_3_S0_implementation_and_formal_proof_packages": [0, 0],
+    "FIN_0_1_3_S0_T01": "pass",
+    "FIN_0_1_3_S0_T02": "ready_not_started",
+    "FIN_0_1_3_S2_entry_authorized": false,
+    "FIN_0_1_release_qualified": false
+  },
+  "package_governance": {
+    "host_sources_packaged": false,
+    "projection_document_packaged": true,
+    "disposable_git_required": false,
+    "failed_package_business_promotable": false,
+    "raw_content_addressed_evidence_preserved": true,
+    "restricted_review_before_share_or_promotion": true
+  }
+}

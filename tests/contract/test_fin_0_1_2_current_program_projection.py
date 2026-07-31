@@ -10,6 +10,9 @@ from sec_agent.hermetic_test_runner import (
 
 ROOT = Path(__file__).resolve().parents[2]
 CURRENT_PROJECTION_REF = (
+    "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_1.json"
+)
+FROZEN_FIN_0_1_3_ENTRY_PROJECTION_REF = (
     "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_0.json"
 )
 FROZEN_S0C_TERMINAL_PROJECTION_REF = (
@@ -55,6 +58,7 @@ def test_host_state_sources_and_host_only_test_are_not_disposable_inputs() -> No
     )
     assert CURRENT_PROJECTION_REF != FROZEN_T03_PROJECTION_REF
     assert CURRENT_PROJECTION_REF != FROZEN_S0C_TERMINAL_PROJECTION_REF
+    assert CURRENT_PROJECTION_REF != FROZEN_FIN_0_1_3_ENTRY_PROJECTION_REF
     assert HOST_ONLY_TEST not in selected_paths
     assert not set(projection["source_paths"].values()).intersection(seeds)
     assert projection["package_governance"]["host_sources_packaged"] is False

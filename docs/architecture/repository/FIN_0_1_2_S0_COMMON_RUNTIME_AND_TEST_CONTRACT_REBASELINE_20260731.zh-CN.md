@@ -75,4 +75,6 @@ collection traceback 同时暴露第二个合同缺口：当前 semantic parity 
 
 RC-P36-090–093 原样转交 `FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-REBASELINE-R1`。新的 S0 必须先以一个 StagePlan 冻结：单一 RuntimeResourceRegistry、所有 active-suite 可达的 repo-relative non-Python reads、禁止未注册直接文件读取、interpreter/purelib/platlib typed path projection、active-suite collect/import sweep、资源与路径 mutation，以及 DELL/MU/NVDA full-fake。任务固定 T01–T04，最多一个实现包和一个正式双-disposable proof package；失败不自动 T05、R/H、0.1.4 或模型调用。
 
-这不是把债务向版本号平移：0.1.3 仍处于 FIN 0.1 产品范围，继承同一 blocker、同一 release=false 和同一产品验收义务。FIN 0.2 继续是 Earnings Review Alpha。当前只允许 `FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-STAGE-PLAN`，尚未实施任何 0.1.3 Runtime 或 proof。
+这不是把债务向版本号平移：0.1.3 仍处于 FIN 0.1 产品范围，继承同一 blocker、同一 release=false 和同一产品验收义务。FIN 0.2 继续是 Earnings Review Alpha。
+
+2026-08-01 supersession note：上述 0.1.3 S0 StagePlan 已完成并通过 G0；其当前技术权威已迁入 `docs/architecture/repository/FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_AND_SEMANTIC_PARITY_STAGE_PLAN_20260801.zh-CN.md`。尚未实施任何 0.1.3 Runtime 或 proof；当前只允许 T02 单一零调用实现包。

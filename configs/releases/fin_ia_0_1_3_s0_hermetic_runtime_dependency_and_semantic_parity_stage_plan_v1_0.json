@@ -1,0 +1,290 @@
+{
+  "schema_version": "fin_ia_0_1_3_s0_hermetic_runtime_dependency_and_semantic_parity_stage_plan_v1_0",
+  "plan_id": "FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-STAGE-PLAN-R1",
+  "planned_at": "2026-08-01T03:53:37+08:00",
+  "status": "G0_pass_T01_complete_T02_ready_zero_call",
+  "authority": {
+    "user_instruction": "继续",
+    "stage_plan_and_G0_authorized": true,
+    "runtime_implementation_executed_by_this_plan": false,
+    "proof_package_created_or_executed_by_this_plan": false,
+    "model_provider_credential_network_execution_authorized": false,
+    "S1_S2_transfer_product_or_release_execution_authorized": false
+  },
+  "source_bindings": [
+    {
+      "role": "FIN_0_1_2_terminal_repair_owner_and_version_disposition",
+      "ref": "configs/releases/fin_ia_0_1_2_s0c_terminal_honest_block_repair_owner_version_disposition_v1_0.json",
+      "sha256": "c79b8918628612f995f0a76e7819998ec873f5f191fd345680084ef3bb59d0d3"
+    },
+    {
+      "role": "FIN_0_1_2_S0C_terminal_failed_proof_closeout",
+      "ref": "configs/releases/fin_ia_0_1_2_s0c_t03_corrective_hermetic_proof_and_terminal_honest_block_closeout_v1_0.json",
+      "sha256": "c790aa649babdf4dcb4201456fcd969b77289e0323e939d056b248522d25655e"
+    }
+  ],
+  "mission": "Close the inherited FIN 0.1 hermetic Runtime dependency and semantic-parity boundary with one explicit Runtime resource registry, one typed execution-environment projection, complete active-suite collection and deterministic behavior closure, and one independent two-disposable formal proof before any natural model or transfer-product work.",
+  "non_goals": [
+    "implement_RuntimeResourceRegistry_or_environment_projection_in_T01",
+    "materialize_or_execute_a_proof_package_in_T01",
+    "rewrite_or_rerun_any_FIN_0_1_2_failed_package",
+    "enter_FIN_0_1_3_S1_or_S2",
+    "call_DeepSeek_Flash_stable_Pro_preview_or_any_other_model",
+    "read_or_probe_credentials_or_provider_access",
+    "run_business_sources_admissions_or_exact_live",
+    "close_DELL_MU_R2_post_transfer_NVDA_or_NVDA_R3",
+    "change_FIN_0_2_Earnings_Review_Alpha_scope",
+    "create_release_candidate_tag_release_or_production_action"
+  ],
+  "G0_scope_and_owner": {
+    "verdict": "pass",
+    "stage_id": "FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-REBASELINE-R1",
+    "restart_semantics": "revalidate_every_gate_and_reuse_only_hash_compatible_assets_not_rewrite_from_zero",
+    "issue_ownership": [
+      {
+        "issue_id": "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+        "owner": "host_only_inventory_compilation_and_git_independent_disposable_current_gate",
+        "T01_state": "open_positive_construction_no_recurrence_not_formally_closed"
+      },
+      {
+        "issue_id": "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
+        "owner": "tracked_or_typed_dependency_closure_and_restricted_evidence_governance",
+        "T01_state": "open_positive_tracked_only_construction_no_recurrence_not_formally_closed"
+      },
+      {
+        "issue_id": "RC-P36-092-fin-0-1-2-code-declared-static-runtime-resource-missing-from-hermetic-inventory",
+        "owner": "RuntimeResourceRegistry_and_dependency_compiler",
+        "T01_state": "open_terminal_collection_blocker"
+      },
+      {
+        "issue_id": "RC-P36-093-fin-0-1-2-hermetic-semantic-parity-untyped-host-python-traceback-path",
+        "owner": "typed_execution_environment_semantic_projection",
+        "T01_state": "open_semantic_parity_blocker"
+      }
+    ],
+    "task_and_package_budgets_frozen": true,
+    "product_truth_inflation_forbidden": true
+  },
+  "fixed_tasks": [
+    {
+      "task_id": "FIN-0.1.3-S0-T01",
+      "title": "Hermetic Runtime dependency and semantic parity StagePlan",
+      "status": "pass_current_artifact",
+      "implementation_bundles": 0,
+      "formal_proof_packages": 0
+    },
+    {
+      "task_id": "FIN-0.1.3-S0-T02",
+      "title": "Runtime resource registry and typed environment projection minimum zero-call implementation",
+      "status": "ready_not_started",
+      "maximum_implementation_bundles": 1,
+      "model_provider_or_network_calls": 0
+    },
+    {
+      "task_id": "FIN-0.1.3-S0-T03",
+      "title": "Host collect import resource mutation and three-case full-fake proof",
+      "status": "locked_until_T02_all_green",
+      "maximum_zero_call_engineering_proof_runs": 1,
+      "formal_two_disposable_package": false
+    },
+    {
+      "task_id": "FIN-0.1.3-S0-T04",
+      "title": "Independent two-disposable hermetic proof and S0 closeout",
+      "status": "locked_until_T03_all_green",
+      "maximum_formal_two_disposable_proof_packages": 1
+    }
+  ],
+  "prospective_contract_refs": {
+    "runtime_resource_registry": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+    "typed_environment_semantic_parity": "configs/runtime/fin_ia_0_1_3_typed_environment_semantic_parity_v1_0.json",
+    "active_test_suite_manifest": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_0.json",
+    "resource_registry_contract_test": "tests/contract/test_fin_0_1_3_s0_runtime_resource_registry_and_dependency_compiler.py",
+    "typed_environment_contract_test": "tests/contract/test_fin_0_1_3_s0_typed_environment_semantic_parity.py",
+    "active_suite_contract_test": "tests/contract/test_fin_0_1_3_s0_active_suite.py"
+  },
+  "resource_dependency_contract": {
+    "authority": "RuntimeResourceRegistry_compiled_before_package_materialization",
+    "required_row_fields": [
+      "resource_id",
+      "repo_relative_path",
+      "sha256",
+      "bytes",
+      "classification",
+      "consumer_ids",
+      "load_phase",
+      "required",
+      "source_owner"
+    ],
+    "coverage": "every_production_repo_relative_non_Python_read_reachable_from_the_active_suite",
+    "rules": [
+      "registry_is_the_source_of_truth_and_static_scanning_is_only_a_detector",
+      "every_resource_path_is_normalized_repo_relative_and_digest_bound",
+      "every_resource_has_one_stable_id_and_one_or_more_declared_consumers",
+      "direct_unregistered_Runtime_file_reads_fail_a_deterministic_lint_or_contract",
+      "missing_unknown_duplicate_digest_drift_permutation_and_cross_version_mutations_fail_closed",
+      "tracked_or_explicitly_typed_policy_boundary_applies_before_object_storage",
+      "ignored_untracked_codex_runtime_traversal_and_symlink_escape_paths_are_forbidden"
+    ],
+    "T02_exit": "registry_compiler_and_all_declared_consumers_share_one_validated_contract_and_all_negative_mutations_fail_closed"
+  },
+  "typed_environment_semantic_parity_contract": {
+    "authority": "frozen_execution_environment_projection_created_before_disposable_execution",
+    "typed_roots": [
+      "disposable_package_root",
+      "disposable_repository_root",
+      "disposable_temporary_root",
+      "sys_prefix",
+      "sys_base_prefix",
+      "purelib_root",
+      "platlib_root",
+      "installed_distribution_roots"
+    ],
+    "required_root_fields": [
+      "root_id",
+      "role",
+      "absolute_path",
+      "projection_token",
+      "source",
+      "digest_or_environment_fingerprint"
+    ],
+    "normalization_boundary": [
+      "replace_only_exact_or_descendant_paths_under_frozen_typed_roots",
+      "normalize_only_traceback_environment_and_process_diagnostic_fields",
+      "use_stable_role_specific_projection_tokens",
+      "preserve_business_values_nodeids_failure_codes_repo_relative_paths_and_raw_evidence",
+      "unknown_absolute_paths_fail_closed"
+    ],
+    "mutation_matrix": [
+      "Windows_drive_letter_case",
+      "slash_direction",
+      "site_packages_purelib_and_platlib",
+      "base_prefix_versus_prefix",
+      "unknown_host_absolute_path",
+      "business_value_that_looks_like_a_path",
+      "relative_resource_path_preservation"
+    ],
+    "T02_exit": "two_equivalent_typed_environments_produce_one_semantic_digest_while_raw_content_addressed_evidence_remains_distinct_and_complete"
+  },
+  "active_set_closure": {
+    "required_owners": [
+      "immutable_FIN_0_1_2_terminal_and_disposition_events",
+      "single_current_program_projection",
+      "RuntimeResourceRegistry_and_dependency_compiler_contracts",
+      "typed_environment_semantic_parity_contracts",
+      "current_DELL_MU_NVDA_deterministic_Runtime",
+      "current_FIN_0_1_release_gate"
+    ],
+    "collection_rule": "all_selected_current_tests_and_all_importable_application_modules_must_collect_and_import_before_T04_formal_budget_is_consumable",
+    "historical_mutable_state_rule": "immutable_event_tests_must_not_own_current_next_latest_ledger_row_or_current_code_digest",
+    "disposable_rule": "no_Git_metadata_no_Git_subprocess_no_ignored_Runtime_state_and_no_host_only_mutable_state_sources"
+  },
+  "T03_zero_call_engineering_proof": {
+    "entry": "T02_all_focused_and_active_suite_contracts_green",
+    "required_matrix": [
+      "application_module_import_sweep",
+      "active_suite_collect_only",
+      "missing_unknown_duplicate_digest_drift_permutation_and_cross_version_resource_mutation",
+      "typed_environment_path_and_unknown_absolute_path_mutation",
+      "DELL_MU_NVDA_each_6_nodes_12_interactions_12_captures_9_diagnostic_Artifacts",
+      "final_nine_numeric_identity_temporal_and_lineage_mutation",
+      "Lead_Writer_Verifier_downstream_failure_capture_and_terminal_result_retention",
+      "zero_Git_metadata_zero_codex_runtime_zero_ignored_or_untracked_paths",
+      "repository_unchanged_and_all_raw_process_and_test_evidence_content_addressed"
+    ],
+    "promotion_boundary": "full_fake_and_diagnostic_Artifacts_are_not_product_acceptance_or_business_evidence",
+    "exit": "all_matrix_rows_green_with_zero_model_provider_network_admission_or_business_calls"
+  },
+  "T04_formal_proof_and_closeout": {
+    "entry": "T03_all_green_and_repository_clean_synced",
+    "required_conditions": [
+      "one_package_materialized_into_two_fresh_disposable_roots",
+      "separate_processes_and_zero_Git_dependency",
+      "all_current_tests_collect_import_and_execute_in_both_disposables",
+      "current_release_gate_green_in_both_disposables",
+      "semantic_projection_digest_equal_across_disposables",
+      "unknown_absolute_path_count_zero",
+      "package_contains_zero_ignored_untracked_or_codex_runtime_paths",
+      "host_repository_readback_unchanged",
+      "complete_content_addressed_raw_terminal_collection_and_per_test_evidence"
+    ],
+    "pass_effect": "close_RC_P36_090_through_093_only_when_their_exact_evidence_rows_pass_then_close_FIN_0_1_3_S0_and_allow_S1_StagePlan",
+    "failure_effect": "terminal_FIN_0_1_3_S0_honest_block_and_project_level_disposition_required"
+  },
+  "gates": {
+    "G0_scope_owner_and_budget": {
+      "verdict": "pass",
+      "evidence": "this_stage_plan"
+    },
+    "G1_contract_closure": {
+      "verdict": "pending_FIN_0_1_3_S0_T02"
+    },
+    "G2_deterministic_and_behavioral_closure": {
+      "verdict": "pending_FIN_0_1_3_S0_T03"
+    },
+    "G3_natural_model_canary": {
+      "verdict": "not_applicable_to_S0",
+      "earliest_owner": "FIN_0_1_3_S2_after_S0_and_S1_pass"
+    },
+    "G4_quarantined_diagnostic": {
+      "verdict": "not_needed_and_forbidden_in_S0",
+      "historical_failed_packages_remain_restricted": true
+    },
+    "G5_formal_proof": {
+      "verdict": "pending_FIN_0_1_3_S0_T04",
+      "maximum_packages": 1
+    },
+    "G6_assessment_closeout_and_git": {
+      "verdict": "pending_FIN_0_1_3_S0_T04",
+      "requires_issue_ledger_and_product_truth_update": true
+    }
+  },
+  "budgets": {
+    "maximum_implementation_bundles": 1,
+    "maximum_formal_two_disposable_proof_packages": 1,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "credential_reads_or_probes": 0,
+    "business_network_or_source_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "automatic_T05_R_H_replacement_or_FIN_0_1_4": 0
+  },
+  "stop_rules": [
+    "T02_failure_blocks_T03_and_requires_honest_disposition_without_second_implementation_bundle",
+    "T03_failure_blocks_T04_and_requires_honest_disposition_without_formal_package_consumption",
+    "T04_failure_terminates_FIN_0_1_3_S0_without_T05_R_H_replacement_or_automatic_FIN_0_1_4",
+    "no_historical_failed_package_rerun_or_rewrite",
+    "no_model_provider_credential_network_admission_business_run_or_business_Artifact_before_S0_and_S1_pass",
+    "new_shared_L1_is_not_converted_into_a_field_by_field_patch_loop",
+    "L2_to_L4_quality_findings_are_carried_forward_unless_predeclared_as_S0_substrate_blockers"
+  ],
+  "observed_counts": {
+    "runtime_implementation_files_changed": 0,
+    "implementation_bundles_executed": 0,
+    "engineering_proof_runs_executed": 0,
+    "formal_two_disposable_proof_packages_created_or_executed": 0,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_source_or_external_tool_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "tags_releases_or_production_actions": 0
+  },
+  "product_truth": {
+    "FIN_0_1_2": "frozen_internal_honest_block_not_release_qualified",
+    "FIN_0_1_3": "S0_T01_stage_plan_pass_T02_ready",
+    "FIN_0_1_3_S0": "G0_pass_implementation_and_proof_not_started",
+    "FIN_0_1_3_S1": "not_started",
+    "FIN_0_1_3_S2_entry": false,
+    "DELL_R2": false,
+    "MU_R2": false,
+    "post_transfer_NVDA_exact_product": false,
+    "NVDA_R3": false,
+    "FIN_0_1_release_qualified": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "next_action": "FIN-0.1.3-S0-RUNTIME-RESOURCE-REGISTRY-AND-TYPED-ENVIRONMENT-PROJECTION-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

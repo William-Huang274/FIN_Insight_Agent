@@ -52,10 +52,45 @@ def test_disposition_freezes_FIN_0_1_2_without_renamed_gate_bypass() -> None:
     assert lineage["FIN_0_2"]["common_Runtime_debt_fallback_owner"] is False
 
 
-def test_disposition_source_bindings_match_current_durable_sources() -> None:
+def test_disposition_immutable_sources_remain_exact_and_living_sources_supersede() -> None:
     decision = _load(DECISION)
-    for binding in decision["source_bindings"]:
+    bindings = {
+        binding["evidence_role"]: binding
+        for binding in decision["source_bindings"]
+    }
+    immutable_roles = {
+        "S0C_terminal_truth",
+        "prior_version_lineage_machine_decision",
+    }
+    living_roles = {
+        "living_product_version_lineage_updated_by_this_disposition",
+        "living_FIN_0_1_2_S0_architecture_updated_by_this_disposition",
+    }
+    assert set(bindings) == immutable_roles | living_roles
+    for role in immutable_roles:
+        binding = bindings[role]
         assert _sha256(ROOT / binding["ref"]) == binding["sha256"]
+
+    product_binding = bindings[
+        "living_product_version_lineage_updated_by_this_disposition"
+    ]
+    product = (ROOT / product_binding["ref"]).read_text(encoding="utf-8")
+    architecture_binding = bindings[
+        "living_FIN_0_1_2_S0_architecture_updated_by_this_disposition"
+    ]
+    architecture = (ROOT / architecture_binding["ref"]).read_text(
+        encoding="utf-8"
+    )
+    for binding in (product_binding, architecture_binding):
+        assert len(binding["sha256"]) == 64
+        assert _sha256(ROOT / binding["ref"]) != binding["sha256"]
+    assert "FIN 0.1.3 S0-T01 StagePlan 已冻结" in product
+    assert (
+        "FIN-0.1.3-S0-RUNTIME-RESOURCE-REGISTRY-AND-TYPED-"
+        "ENVIRONMENT-PROJECTION-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+    ) in product
+    assert "2026-08-01 supersession note" in architecture
+    assert "FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY" in architecture
 
 
 def test_all_four_open_blockers_transfer_to_new_FIN_0_1_3_S0_owners() -> None:

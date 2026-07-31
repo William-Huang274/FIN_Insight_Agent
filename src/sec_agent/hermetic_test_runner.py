@@ -291,6 +291,8 @@ def validate_host_current_program_projection(
         "current_host_validated_S0C_T03_terminal_honest_block_S2_deferred",
         "current_host_validated_FIN_0_1_2_frozen_blocked_"
         "FIN_0_1_3_S0_stage_plan_ready",
+        "current_host_validated_FIN_0_1_3_S0_T01_stage_plan_pass_"
+        "T02_ready",
     }
     if projection["status"] not in allowed_projection_statuses:
         raise HermeticTestRunnerError("current_projection_status_invalid")

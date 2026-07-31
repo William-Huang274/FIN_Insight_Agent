@@ -1151,4 +1151,5 @@
 - [ ] P38 compile approved pack candidate definitions into schema-only M2 fixtures: remove all WorkBuddy facts/values, add FIN source/numeric policy and independent rubrics, then run deterministic compiler calibration before any model node.
 - [x] FIN-0.1.2-S0C-T03 corrective hermetic proof terminal closeout: 唯一双 disposable package 在 collection 期同点失败，冻结 RC-P36-092 static Runtime resource inventory 与 RC-P36-093 semantic environment-path taxonomy；RC-P36-090/091 仅保留构建层未复发证据。implementation/proof=`1/1`，不重跑、不建 T04/S2、不调用模型。
 - [x] FIN-0.1.2-S0C terminal repair-owner/version disposition: FIN 0.1.2 冻结 internal honest block；RC-P36-090–093 转交 FIN 0.1.3 S0，不改写或重跑已消费的 S0C-T03。
-- [ ] FIN-0.1.3-S0 hermetic Runtime dependency and semantic parity StagePlan: 冻结 RuntimeResourceRegistry、typed interpreter environment、active-suite collect/import closure、固定 T01–T04 与单实现/单正式 proof 预算；本项只做计划，不实现或调用模型。
+- [x] FIN-0.1.3-S0 hermetic Runtime dependency and semantic parity StagePlan: 已冻结 RuntimeResourceRegistry、typed interpreter environment、active-suite collect/import closure、固定 T01–T04 与单实现/单正式 proof 预算；T01/G0 pass，本项未实现 Runtime、创建 proof package 或调用模型。
+- [ ] FIN-0.1.3-S0-T02 Runtime resource registry and typed environment projection minimum zero-call implementation: 最多消费一个实现包，建立 registry/compiler、typed environment projection 与确定性 mutation contracts；不得同轮执行 T03/T04 或模型调用。

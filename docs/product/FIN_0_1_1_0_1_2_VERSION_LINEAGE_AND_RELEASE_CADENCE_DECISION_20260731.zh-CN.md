@@ -108,8 +108,10 @@ FIN-0.1 repository evidence freeze + safe classification
   -> FIN 0.2 Earnings Review Alpha
 ```
 
+截至 2026-08-01，FIN 0.1.3 S0-T01 StagePlan 已冻结并通过 G0。四项 inherited blocker、T01–T04、单实现/单正式 proof 预算、active-suite collect/import 前置条件以及失败停止线均已绑定；没有实现 Runtime、创建 proof package 或调用模型。
+
 当前唯一下一项：
 
-`FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-STAGE-PLAN`
+`FIN-0.1.3-S0-RUNTIME-RESOURCE-REGISTRY-AND-TYPED-ENVIRONMENT-PROJECTION-MINIMUM-ZERO-CALL-IMPLEMENTATION`
 
-该动作只能冻结 0.1.3 S0 的 StagePlan、G0、资源依赖/环境路径合同、固定 T01–T04 与停止预算；不得同轮实现、创建 proof package、进入 S1/S2、读取凭据或调用模型。
+该动作只能消费一个 T02 零调用实现包，建立单一 RuntimeResourceRegistry、dependency compiler、typed environment projection 及其 mutation contracts；不得同轮创建或执行 T03/T04 proof package、进入 S1/S2、读取凭据或调用模型。StagePlan 见 `docs/architecture/repository/FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_AND_SEMANTIC_PARITY_STAGE_PLAN_20260801.zh-CN.md`。

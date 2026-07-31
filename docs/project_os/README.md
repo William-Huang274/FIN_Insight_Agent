@@ -4,8 +4,15 @@
 
 它不是普通工作日志。这里存放的是每轮任务启动、full-chain 预检、root-cause closeout、技术模式复用和金融研究方法复用所需的当前事实。
 
+## 当前恢复锚点
+
+FIN 0.1 的 `1,128` 个 dirty paths 已在 owner 授权下先写入并回验离仓内容寻址恢复包，再按 8 个 exact-path slices 重建本地提交链。前七个 predecessor commits 已写入 `current_context_pack.zh-CN.md`；本目录是最后的 Project OS finalization slice。该动作不代表 S4、FIN 0.1 或 release 通过，也没有执行 push、tag、release、T10 closeout 或 S5 entry。
+
+历史契约测试必须区分 immutable event proof 和 mutable current projection。恢复阶段保留 S3/S4 historical-suite 非绿项与 T07 honest-block，不以批量修改旧断言制造全绿。
+
 ## 文件职责
 
+- `STRICT_SCHEMA_TRANSPORT_API_HANDOFF.zh-CN.md`：⚠ 新 Provider/API 到手后的醒目恢复入口；记录 HTTPS/raw curl/auth/schema 必需资料与 exact-once canary 顺序。该轨道已停放，不阻断 DeepSeek 主线。
 - `current_context_pack.zh-CN.md`：每轮启动前先读的短上下文包。
 - `capability_status_ledger.jsonl`：机器可读能力状态主账本。
 - `root_cause_issue_ledger.jsonl`：机器可读 root-cause issue / blocker 账本。
@@ -39,6 +46,7 @@
 - `p36_verifier_workbench_review_v0_1.json`：P36 Node11 verifier / Workbench 手工审查 artifact；判定 runtime-only writer 只能 bounded partial，supervisor-augmented report 可作人工报告但不算 runtime 能力，现有 verifier / Workbench 可守 claim/gap/source 边界但缺 decision-cell review surface。
 - `p36_manual_full_chain_node_ledger_v0_1.json`：P36 逐节点手工 full-chain dogfood 账本；记录每个节点读过的 prompt/skill/artifact、手工输出、ruler 评分、root-cause notes 和下一节点。当前已记录 node 01 Research Lead、node 02 Retrieval/RAG/SQL/SourceRoute、node 03 Parser/EvidenceOperator、node 04 Graph/Relationship/Value-Capture、node 05 Fundamental Specialist、node 06 Product/Industry Specialist、node 07 Market/Capital/Price-in Specialist、node 08 Risk/Counterevidence Specialist、node 09 Aggregate/Judgment Planner、node 10 Writer/Report Generation、node 11 Verifier/Workbench Review；Node11 证明边界可审，但 P36 仍缺 `DecisionSurfacePack` 与 Workbench `decision_surface_cell` review surface，不能记为 runtime pass。
 - `full_chain_preflight_checklist.json`：full-chain 预检 checklist。
+- `../configs/releases/fin_ia_0_1_s4_t06_mu_action_planning_temporal_authority_and_capture_v2_terminal_result_materialization_minimum_zero_call_implementation_v1_0.json`：S4-T06 唯一 temporal-authority / capture-v2 terminal-result 零调用结构包证据；三案 `6/12/12/9` fixture 已通过，fresh-agent proof、R6 admission 和 exact-live 仍需独立授权。
 
 ## 使用规则
 

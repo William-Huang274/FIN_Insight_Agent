@@ -68,5 +68,6 @@ def test_current_backlogs_project_the_freeze_and_s0_handoff() -> None:
     assert program["version"] == "FIN_0_1_1_INTERNAL_HONEST_BLOCK"
     assert program["current_truth"]["FIN_0_1_1_status"] == "frozen_internal_honest_block"
     assert program["next_action"]["item_id"] == s4["current_next_action"]
-    assert program["next_action"]["item_id"] == "FIN-0.1.2-S0-COMMON-RUNTIME-AND-TEST-CONTRACT-REBASELINE"
+    assert program["next_action"]["item_id"] != _load(MANIFEST)["next_action"]
+    assert program["active_slice"] == "FIN_0_1_2_S0"
     assert s4["FIN_0_1_1_internal_freeze"]["release_qualified"] is False

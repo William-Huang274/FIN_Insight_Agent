@@ -1,0 +1,99 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0_common_runtime_and_test_contract_rebaseline_v1_0",
+  "decision_id": "FIN-0.1.2-S0-COMMON-RUNTIME-AND-TEST-CONTRACT-REBASELINE-T01-R1",
+  "decided_at": "2026-07-31T21:10:00+08:00",
+  "status": "S0_T01_governance_compiler_and_test_manifest_pass_S0_not_closed",
+  "authority": {
+    "user_instruction": "按这个顺序做",
+    "FIN_0_1_2_S0_start_authorized": true,
+    "zero_call_contract_governance_implementation_authorized": true,
+    "live_runtime_migration_model_call_or_release_authorized": false
+  },
+  "source_bindings": [
+    {
+      "role": "FIN_0_1_1_frozen_parent",
+      "ref": "configs/releases/fin_ia_0_1_1_internal_honest_block_baseline_manifest_v1_0.json",
+      "sha256": "111ea8bc076ecdb14604a90ae45dc03c6dca174ca70e7a58d3688856022ad4d3"
+    },
+    {
+      "role": "runtime_contract_governance_code",
+      "ref": "src/sec_agent/runtime_contract_governance.py",
+      "sha256": "f09aca92119497abe28c8b54d9ae0877acab79ca2611526f5045ee8d2c2bb0f9"
+    },
+    {
+      "role": "common_runtime_contract_family_source",
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+      "sha256": "b9a0e990dbf01ce11e76012c246240494cf38029b11b2c289008ae490fc2283f"
+    },
+    {
+      "role": "active_test_suite_manifest",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_active_test_suite_manifest_v1_0.json",
+      "sha256": "4faab1018ef3830c5e4465359a1ebfe7e2cb22f798462d25d473349711d52e2a"
+    }
+  ],
+  "S0_gates": {
+    "G0_version_scope_and_parent_truth": {
+      "verdict": "pass",
+      "evidence": "FIN_0_1_1_frozen_not_release_qualified_and_FIN_0_2_definition_preserved"
+    },
+    "G1_truth_ownership_and_provider_envelope": {
+      "verdict": "pass_governance_source_and_mutation_fixture",
+      "local_truth": ["material_number", "reporting_date", "case_identity", "runtime_id", "lineage"],
+      "provider_surface": "request_local_aliases_enums_and_bounded_judgment_atoms_only"
+    },
+    "G2_single_source_compiled_consumers": {
+      "verdict": "pass_governance_compiler_fixture",
+      "consumers": ["prompt", "server_schema", "local_validator", "fake_provider", "selector", "renderer", "capacity", "budget", "typed_failure", "capture_index"],
+      "live_runtime_family_migration_complete": false
+    },
+    "G3_test_semantics_and_active_manifest": {
+      "verdict": "pass_manifest_and_negative_mutations",
+      "proof_classes": ["immutable_event", "current_projection", "current_runtime", "historical_audit", "release_gate"],
+      "active_suite_runner_migration_complete": false,
+      "historical_failures_ignored": false
+    },
+    "G4_hermetic_package_and_complete_failure_output": {
+      "verdict": "blocked_RC_P36_085",
+      "package_inventory_complete": false,
+      "complete_content_addressed_stdout_stderr_proven": false,
+      "disposable_runtime_parity_proven": false
+    },
+    "G5_current_active_suite_all_green": {
+      "verdict": "not_run_until_runner_migration",
+      "release_gate_waived": false
+    },
+    "G6_S1_entry": {
+      "verdict": "blocked_until_G4_and_G5_pass",
+      "S1_started": false
+    }
+  },
+  "implementation_truth": {
+    "governance_compiler_runtime_module_added": true,
+    "one_source_consumer_digest_binding_added": true,
+    "local_truth_owner_and_bounded_provider_envelope_enforced": true,
+    "immutable_event_mutable_projection_current_runtime_historical_audit_release_gate_split_enforced": true,
+    "production_runtime_rewired": false,
+    "active_suite_runner_rewired": false,
+    "hermetic_package_built": false,
+    "S0_closed": false
+  },
+  "non_inflation": {
+    "governance_fixture_called_live_runtime_migration": false,
+    "manifest_definition_called_all_green": false,
+    "historical_failures_suppressed": false,
+    "S0_T01_called_S0_complete": false,
+    "FIN_0_1_release_called_qualified": false
+  },
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_source_or_external_tool_calls": 0,
+    "new_admissions_runs_or_business_artifacts": 0,
+    "paid_reproofs": 0,
+    "release_candidates": 0,
+    "tag_pushes": 0,
+    "releases": 0
+  },
+  "next_action": "FIN-0.1.2-S0-HERMETIC-PACKAGE-AND-ACTIVE-SUITE-RUNNER-MIGRATION"
+}

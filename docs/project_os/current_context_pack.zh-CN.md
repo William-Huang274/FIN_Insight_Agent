@@ -3,6 +3,9 @@
 更新时间：2026-07-31
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S0 已启动，T01 治理编译器与测试语义 manifest 通过，S0 尚未关闭（current，2026-07-31）**：新增 `sec_agent.runtime_contract_governance`，强制 material number/date/identity/ID/lineage 为本地确定性 owner，Provider 仅允许 request-local aliases、closed enums 与 bounded judgment atoms；同一 source 为 prompt/schema/validator/fake/selector/renderer/capacity/budget/typed failure/capture index 生成同 digest envelope。测试分为 immutable event、current projection、current runtime、historical audit、release gate 五类，并用负向 mutation 拒绝 event test 绑定 current-next 及 historical test 阻断 current release。当前仅是治理与 fixture，不宣称生产 Runtime 或 runner 已迁移；RC-P36-085 hermetic package、完整 stdout/stderr、disposable parity 和 active-suite all-green 仍阻断 S0 closeout/S1。credential/model/provider/business-network/admission/Run/Artifact/release=`0`。decision=`configs/releases/fin_ia_0_1_2_s0_common_runtime_and_test_contract_rebaseline_v1_0.json`。current next=`FIN-0.1.2-S0-HERMETIC-PACKAGE-AND-ACTIVE-SUITE-RUNNER-MIGRATION`。
+>
+> [!IMPORTANT]
 > **FIN 0.1.1 已冻结为内部 honest-block 工程基线（current，2026-07-31）**：冻结清单绑定 S4-T10、S5 blocked release decision、仓库 evidence inventory、远端恢复链 `10fb4aee` 和离仓 content-addressed recovery package 的 full readback。产品真值不膨胀：NVDA 仅 historical S3 R2/accepted 9 Artifacts；DELL/MU 各 9 个 diagnostic Artifacts 但 R2=false；post-transfer NVDA、R3、T07 all-green、S4 pass 与 FIN0.1 release qualification 均为 false。建议标签 `fin-0.1.1-internal-honest-block` 仅为本地 annotated engineering tag，不是 Release，未授权 push。冻结动作 credential/model/provider/source/business-network/admission/Run/Artifact/release candidate=`0`。manifest=`configs/releases/fin_ia_0_1_1_internal_honest_block_baseline_manifest_v1_0.json`。current next=`FIN-0.1.2-S0-COMMON-RUNTIME-AND-TEST-CONTRACT-REBASELINE`。
 >
 > [!IMPORTANT]

@@ -1,5 +1,6 @@
 # Worklog
 
+- `product_strategy/527_fin_0_1_2_s0_common_runtime_and_test_contract_rebaseline.md`: 2026-07-31 从 FIN 0.1.2 S0 重新起步，完成本地 truth-owner／bounded Provider envelope、十 consumer 同 digest 治理编译器和五类 active test manifest 及负向 mutation。生产 Runtime、active runner、hermetic package 尚未迁移，S0 未关闭；下一项处理 RC-P36-085 与 runner migration。
 - `product_strategy/526_fin_0_1_1_internal_honest_block_baseline_freeze.md`: 2026-07-31 将 T10、S5、远端恢复链、仓库 inventory 与离仓 recovery package 绑定成 FIN 0.1.1 内部工程基线；保留 NVDA accepted 9、DELL/MU diagnostic 18 及 `release_qualified=false` 的真实边界。建议本地 annotated tag 不是 Release且未授权推送；下一项进入 FIN 0.1.2 S0 共同 Runtime 与测试合同重构。
 - `product_strategy/525_fin_0_1_s5_decision_only_honest_block_handoff.md`: 2026-07-31 S5 消费 T10 closeout 与 carry-forward，以 blocked evidence inventory 对账 RG1–RG5：RG1–RG4 blocked、RG5 仅 internal recoverability pass，不能覆盖产品门禁。S5 终态 honest block、release candidate=0；下一项为 FIN 0.1.1 内部冻结，RC-P36-085/086 与共同 Runtime/transfer reproof 进入 FIN 0.1.2。
 - `product_strategy/524_fin_0_1_s4_t10_honest_block_closeout.md`: 2026-07-31 恢复链先成功 push 到远端，随后 T10 按唯一合法分支终态收口为 `S4 honestly blocked / FIN 0.1 not qualified`。冻结 10-source carry-forward manifest，将 release engineering 交给 S5 decision-only，将共同 Runtime、测试合同和三案 transfer reproof 交给 FIN 0.1.2；T10 本身零模型、零 Provider、零业务网络、零 Run/Artifact/release candidate。

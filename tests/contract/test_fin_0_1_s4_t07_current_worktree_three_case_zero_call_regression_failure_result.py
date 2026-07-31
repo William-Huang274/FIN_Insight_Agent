@@ -92,7 +92,8 @@ def test_t07_is_blocked_and_exact_live_was_not_run() -> None:
     )
 
 
-def test_backlogs_advance_to_read_only_t08_without_t07_pass_claim() -> None:
+def test_backlogs_preserve_t07_honest_block_after_current_program_advances() -> None:
+    result = _load(RESULT_PATH)
     program = _load(PROGRAM_BACKLOG)
     s4 = _load(S4_BACKLOG)
     s4_items = {
@@ -106,10 +107,7 @@ def test_backlogs_advance_to_read_only_t08_without_t07_pass_claim() -> None:
     }
     assert "honestly_blocked" in s4_items["S4-T07"]["status"]
     assert "honestly_blocked" in program_items["S4-T07"]["status"]
-    assert s4_items["S4-T08"]["status"].startswith("next_read_only")
-    assert program_items["S4-T08"]["status"].startswith("next_read_only")
-    assert s4["current_next_action"] == (
-        "S4-T08-READ-ONLY-THREE-CASE-CALIBRATION-AND-WORKBENCH-"
-        "PRODUCT-VALUE-SCOPE-DECISION"
-    )
+    assert "read_only" in s4_items["S4-T08"]["status"]
+    assert "read_only" in program_items["S4-T08"]["status"]
     assert program["next_action"]["item_id"] == s4["current_next_action"]
+    assert program["next_action"]["item_id"] != result["next_action"]

@@ -1,0 +1,234 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0c_terminal_honest_block_repair_owner_version_disposition_v1_0",
+  "decision_id": "FIN-0.1.2-S0C-TERMINAL-HONEST-BLOCK-AND-REPAIR-OWNER-VERSION-DISPOSITION-DECISION-R1",
+  "recorded_at": "2026-08-01T03:39:22+08:00",
+  "status": "pass_FIN_0_1_2_frozen_internal_honest_block_RC_P36_090_through_093_transferred_to_FIN_0_1_3_S0_stage_plan_only",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_now": [
+      "read_only_terminal_evidence_and_version_lineage_audit",
+      "repair_owner_and_version_disposition",
+      "FIN_0_1_3_S0_stage_boundary_and_fixed_budget_freeze",
+      "Project_OS_source_doc_worklog_and_zero_call_contract_update",
+      "focused_commit_and_push_after_all_green"
+    ],
+    "not_authorized_now": [
+      "S0C_T03_patch_retry_second_package_or_S0C_T04",
+      "FIN_0_1_3_runtime_or_test_implementation",
+      "FIN_0_1_3_proof_package",
+      "S1_or_S2_entry",
+      "Flash_stable_or_Pro_preview_canary",
+      "credential_read_or_probe",
+      "model_provider_network_source_or_business_execution",
+      "admission_WorkUnit_Attempt_Run_or_business_Artifact",
+      "tag_release_or_production"
+    ]
+  },
+  "source_bindings": [
+    {
+      "evidence_role": "S0C_terminal_truth",
+      "ref": "configs/releases/fin_ia_0_1_2_s0c_t03_corrective_hermetic_proof_and_terminal_honest_block_closeout_v1_0.json",
+      "sha256": "c790aa649babdf4dcb4201456fcd969b77289e0323e939d056b248522d25655e"
+    },
+    {
+      "evidence_role": "prior_version_lineage_machine_decision",
+      "ref": "configs/releases/fin_ia_0_1_repository_recovery_s0_to_s4_audit_and_0_1_1_0_1_2_version_lineage_scope_decision_v1_0.json",
+      "sha256": "055fe4f2f94214007efd0effc707d8ae177920a73f639d0d3cbd76ef067990b5"
+    },
+    {
+      "evidence_role": "living_product_version_lineage_updated_by_this_disposition",
+      "ref": "docs/product/FIN_0_1_1_0_1_2_VERSION_LINEAGE_AND_RELEASE_CADENCE_DECISION_20260731.zh-CN.md",
+      "sha256": "aa972bdf43420201184728dbf7791421b3443fa67f3a0b7ae58fa488b137d040"
+    },
+    {
+      "evidence_role": "living_FIN_0_1_2_S0_architecture_updated_by_this_disposition",
+      "ref": "docs/architecture/repository/FIN_0_1_2_S0_COMMON_RUNTIME_AND_TEST_CONTRACT_REBASELINE_20260731.zh-CN.md",
+      "sha256": "44359f11f38f4545794a7bb4dc6121d12f536c603e80f531afb901d5246ea608"
+    }
+  ],
+  "decision_options": [
+    {
+      "option": "A",
+      "label": "continue_inside_FIN_0_1_2_as_S0D_H_or_R_family",
+      "selected": false,
+      "reason": "S0C is terminal and its fixed implementation/proof budget is exhausted. Renaming the same failed gate inside FIN 0.1.2 would violate the frozen non-bypass rule."
+    },
+    {
+      "option": "B",
+      "label": "freeze_FIN_0_1_2_internal_honest_block_and_transfer_exact_debt_to_FIN_0_1_3_S0",
+      "selected": true,
+      "reason": "The four blockers remain finite and project-owned, but need a genuinely new patch-line contract and full S0 revalidation. This preserves immutable failed evidence without changing FIN 0.2 product scope."
+    },
+    {
+      "option": "C",
+      "label": "defer_common_runtime_debt_to_FIN_0_2",
+      "selected": false,
+      "reason": "FIN 0.2 remains Earnings Review Alpha and cannot absorb unfinished FIN 0.1 Runtime quality commitments."
+    },
+    {
+      "option": "D",
+      "label": "waive_hermeticity_semantic_parity_or_static_resource_closure",
+      "selected": false,
+      "reason": "That would turn a replayability and evidence-integrity failure into a false pass."
+    },
+    {
+      "option": "E",
+      "label": "run_Flash_stable_versus_Pro_preview_before_upstream_closure",
+      "selected": false,
+      "reason": "No model was reached in S0C-T03, so a model comparison cannot diagnose or close the upstream proof-contract blockers."
+    }
+  ],
+  "selected_version_lineage": {
+    "FIN_0_1_1": {
+      "status": "frozen_internal_honest_block",
+      "release_qualified": false,
+      "changed_by_this_decision": false
+    },
+    "FIN_0_1_2": {
+      "name": "common_runtime_stabilization_attempt_one",
+      "status": "frozen_internal_honest_block_S0C_terminal_failed_S2_not_entered",
+      "release_qualified": false,
+      "tag_or_release_created": false,
+      "historical_bytes_or_failed_packages_rewritten": false
+    },
+    "FIN_0_1_3": {
+      "name": "hermetic_runtime_dependency_closure_and_transfer_qualification_patch",
+      "status": "S0_stage_plan_ready_not_started",
+      "scope": [
+        "code_declared_static_Runtime_resource_single_registry_and_dependency_compilation",
+        "typed_interpreter_and_distribution_environment_path_semantic_parity",
+        "formal_closure_or_honest_disposition_of_RC_P36_090_through_093",
+        "reuse_hash_compatible_FIN_0_1_2_common_Runtime_assets_with_full_gate_revalidation",
+        "only_after_S0_and_S1_pass_natural_model_capability_and_transfer_product_reproof"
+      ],
+      "not_a_product_feature_release": true
+    },
+    "FIN_0_2": {
+      "name": "Earnings_Review_Alpha",
+      "original_definition_preserved": true,
+      "common_Runtime_debt_fallback_owner": false
+    }
+  },
+  "issue_owner_transfer": [
+    {
+      "issue_id": "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+      "observed_in": "FIN_0_1_2",
+      "current_status": "open_positive_construction_no_recurrence_not_formally_closed",
+      "new_owner": "FIN_0_1_3_S0_hermetic_test_topology_and_current_gate_execution"
+    },
+    {
+      "issue_id": "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
+      "observed_in": "FIN_0_1_2",
+      "current_status": "open_positive_tracked_only_construction_no_recurrence_not_formally_closed",
+      "new_owner": "FIN_0_1_3_S0_tracked_or_typed_dependency_closure_and_restricted_evidence_governance"
+    },
+    {
+      "issue_id": "RC-P36-092-fin-0-1-2-code-declared-static-runtime-resource-missing-from-hermetic-inventory",
+      "observed_in": "FIN_0_1_2",
+      "current_status": "open_terminal_collection_blocker",
+      "new_owner": "FIN_0_1_3_S0_RuntimeResourceRegistry_and_dependency_compiler"
+    },
+    {
+      "issue_id": "RC-P36-093-fin-0-1-2-hermetic-semantic-parity-untyped-host-python-traceback-path",
+      "observed_in": "FIN_0_1_2",
+      "current_status": "open_semantic_parity_blocker",
+      "new_owner": "FIN_0_1_3_S0_typed_environment_path_projection_contract"
+    }
+  ],
+  "FIN_0_1_3_S0_stage_boundary": {
+    "stage_id": "FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-REBASELINE-R1",
+    "mission": "Replace incomplete ad hoc resource discovery with one explicit Runtime resource dependency registry and type the stable interpreter environment in semantic parity before any natural model or transfer product work.",
+    "restart_from_S0_means": "revalidate_all_gates_and_reuse_only_hash_compatible_assets_not_rewrite_from_zero",
+    "fixed_task_ids": [
+      "FIN-0.1.3-S0-T01",
+      "FIN-0.1.3-S0-T02",
+      "FIN-0.1.3-S0-T03",
+      "FIN-0.1.3-S0-T04"
+    ],
+    "tasks": [
+      {
+        "task_id": "FIN-0.1.3-S0-T01",
+        "title": "Hermetic Runtime dependency and semantic parity StagePlan",
+        "status": "ready_not_started",
+        "calls_or_implementation": 0
+      },
+      {
+        "task_id": "FIN-0.1.3-S0-T02",
+        "title": "Single RuntimeResourceRegistry and typed environment projection minimum zero-call implementation",
+        "status": "locked_until_T01_pass",
+        "maximum_implementation_bundles": 1
+      },
+      {
+        "task_id": "FIN-0.1.3-S0-T03",
+        "title": "Host import collection resource mutation and three-case full-fake proof",
+        "status": "locked_until_T02_all_green",
+        "model_or_provider_calls": 0
+      },
+      {
+        "task_id": "FIN-0.1.3-S0-T04",
+        "title": "One independent two-disposable hermetic proof and S0 closeout",
+        "status": "locked_until_T03_all_green",
+        "maximum_formal_proof_packages": 1
+      }
+    ]
+  },
+  "T01_stage_plan_required_scope": {
+    "resource_dependency_contract": [
+      "inventory every production repo-relative non-Python read reachable from the active suite",
+      "centralize resource path digest classification owner and consumer bindings",
+      "reject direct unregistered Runtime file reads with deterministic lint or contract tests",
+      "cover missing unknown duplicate digest drift permutation and cross-version resource mutation",
+      "run application import sweep and active-suite collect-only before formal disposable proof"
+    ],
+    "semantic_environment_contract": [
+      "type exact disposable package repository and temporary roots",
+      "type interpreter prefix purelib platlib and installed-distribution roots from a frozen environment projection",
+      "preserve nodeid failure code business values and relative resource paths",
+      "keep unknown absolute paths fail-closed",
+      "cover Windows drive case slash and site-packages path mutations"
+    ],
+    "behavioral_closure": [
+      "all active tests collect and import before the formal proof budget is consumable",
+      "DELL MU NVDA each 6 nodes 12 interactions 12 captures 9 diagnostic Artifacts",
+      "numeric identity lineage final-nine and downstream failure retention mutations",
+      "zero Git metadata zero ignored Runtime paths repository unchanged and content-addressed raw evidence"
+    ]
+  },
+  "fixed_budgets_and_stop_rules": {
+    "maximum_implementation_bundles": 1,
+    "maximum_formal_two_disposable_proof_packages": 1,
+    "automatic_FIN_0_1_3_S0_T05_R_H_or_replacement_family": false,
+    "automatic_FIN_0_1_4_on_failure": false,
+    "S0C_T03_or_historical_package_rerun": false,
+    "model_or_provider_calls_before_FIN_0_1_3_S0_and_S1_pass": 0,
+    "Flash_stable_versus_Pro_preview_canary_owner": "FIN_0_1_3_S2_G3_after_S0_and_S1_pass_only",
+    "on_new_S0_L1": "terminal_honest_block_and_new_project_level_disposition_not_automatic_patch_loop",
+    "L2_to_L4": "record_as_quality_findings_and_carry_forward_without_blocking_substrate_unless_predeclared"
+  },
+  "observed_counts": {
+    "runtime_implementation_files_changed": 0,
+    "proof_packages_created_or_executed": 0,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_source_or_external_tool_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "tags_releases_or_production_actions": 0
+  },
+  "product_truth": {
+    "FIN_0_1_2": "frozen_internal_honest_block_not_release_qualified",
+    "FIN_0_1_3": "S0_stage_plan_ready_not_started",
+    "FIN_0_1_3_S0": "not_started",
+    "FIN_0_1_3_S1": "not_started",
+    "FIN_0_1_3_S2_entry": false,
+    "DELL_R2": false,
+    "MU_R2": false,
+    "post_transfer_NVDA_exact_product": false,
+    "NVDA_R3": false,
+    "FIN_0_1_release_qualified": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "next_action": "FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-STAGE-PLAN"
+}

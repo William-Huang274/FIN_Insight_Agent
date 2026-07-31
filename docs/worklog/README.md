@@ -1,5 +1,6 @@
 # Worklog
 
+- `product_strategy/536_fin_0_1_2_s0c_repair_owner_version_disposition_and_fin_0_1_3_s0_entry.md`: 2026-08-01 冻结 FIN 0.1.2 internal honest block，拒绝 S0D/H/R 改名续修；RC-P36-090–093 转交 FIN 0.1.3 S0。固定 T01–T04、一个实现包和一个正式双-disposable proof，失败不得自动 T05/0.1.4；FIN 0.2 定义不变，本轮模型/实现/proof=`0`。
 - `product_strategy/535_fin_0_1_2_s0c_t03_corrective_hermetic_proof_terminal_honest_block.md`: 2026-08-01 唯一 S0C-T03 双 disposable package 在 collection 期同点失败：代码直接声明的 tracked VT2 Runtime 合同未进入 inventory；semantic projection 另各发现 1 个未类型化宿主 Python 绝对路径。登记 RC-P36-092/093；090/091 只有构建层未复发证据、不能关闭。预算=`1/1`，不重跑、不建 T04/S2、不调用 Flash/Pro；当前只允许 repair-owner/version 零调用处置。
 - `product_strategy/534_fin_0_1_2_s0c_t02_hermetic_topology_allowlisted_closure_zero_call_implementation.md`: 2026-08-01 完成 S0C 唯一零调用实现包：host/disposable 分层、tracked-or-typed closure、event/projection 分权及 restricted evidence 治理；当时 host contracts=`122 passed`、proof budget=`1/0`，只授权唯一 T03。
 - `product_strategy/533_fin_0_1_2_s0c_test_packaging_contract_scope_decision.md`: 2026-08-01 将 RC-P36-090/091 归回 S0 test/packaging earliest owner，选择不改写历史的有界 S0C stage。固定 T01–T03、一个零调用实现包和一个新 stage proof package；旧 pre-S2 T03 不重跑，失败即 honest block。当前仅授权下一步 S0C-T02，S2 与产品真值不变。

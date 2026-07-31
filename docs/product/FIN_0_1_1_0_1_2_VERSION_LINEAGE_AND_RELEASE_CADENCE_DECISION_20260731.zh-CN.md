@@ -1,6 +1,7 @@
-# FIN 0.1.1 / 0.1.2 版本谱系与发布节奏决策
+# FIN 0.1.1 / 0.1.2 / 0.1.3 版本谱系与发布节奏决策
 
 日期：2026-07-31
+更新：2026-08-01（新增 FIN 0.1.3 patch line）
 状态：`accepted_product_lineage / FIN_0_2_definition_preserved`
 
 ## 1. 产品大方向不变
@@ -15,14 +16,15 @@ FIN 0.1 bounded internal research workflow
   -> FIN 0.5 Enterprise Pilot
 ```
 
-本次新增的 0.1.1 和 0.1.2 是 FIN 0.1 内部工程迭代号，不重新定义产品路线，也不把原本属于 Earnings Review Alpha 的 FIN 0.2 改成“偿还第一版架构债”。
+本次新增的 0.1.1、0.1.2 和 0.1.3 是 FIN 0.1 内部工程迭代号，不重新定义产品路线，也不把原本属于 Earnings Review Alpha 的 FIN 0.2 改成“偿还第一版架构债”。0.1.3 只接收 0.1.2 未完成的共同 Runtime/hermetic 质量承诺，不增加新产品功能。
 
 ## 2. 版本定义
 
 | 版本 | 定位 | 包含 | 不包含 |
 | --- | --- | --- | --- |
 | FIN 0.1.1 | 第一轮 S0–S5 的内部工程基线 | NVDA historical R2、DELL/MU transfer diagnostics、完整 immutable evidence、S4 honest block、S5 decision-only、仓库/rollback manifest | 三案 R2、NVDA R3、release qualified、生产 |
-| FIN 0.1.2 | 同一 FIN 0.1 产品范围的稳定化与 transfer qualification | compiled contract、provider surface reduction、完整 capture/hermetic proof、DELL/MU R2 reproof、post-transfer NVDA、R3、release slice | Earnings 新产品功能 |
+| FIN 0.1.2 | 同一 FIN 0.1 产品范围的第一次稳定化尝试；现已冻结为 internal honest block | compiled contract、provider surface reduction、capture/hermetic 结构与失败证据；S0C terminal failed、S2 未进入 | release qualified、三案 transfer qualification、Earnings 新产品功能 |
+| FIN 0.1.3 | hermetic Runtime dependency closure 与 transfer qualification patch | 单一 RuntimeResourceRegistry、typed environment parity、RC-P36-090–093 closure、重新从 S0 验证并复用 hash-compatible 资产 | 新产品功能、S0C 重跑、自动 0.1.4、Earnings 功能 |
 | FIN 0.2 | 原定义的 Earnings Review Alpha | B1、Earnings Task/Workpaper/Report、精确三表、segment、guidance、同比环比、市场反应与反方 | 为 0.1 未完成的通用 Runtime 基线兜底 |
 
 ## 3. FIN 0.1.1 的冻结语义
@@ -49,7 +51,7 @@ FIN 0.1.1 的价值是保存一条真实、可追溯的工程基线，而不是�
 - canonical terminal truth、capture、paired review 和 Human evidence disposition；
 - 当前为什么不能 release。
 
-## 4. FIN 0.1.2 的使命
+## 4. FIN 0.1.2 的原始使命与终态
 
 FIN 0.1.2 不从 S4/T06 继续打补丁。它从 S0 重新执行“门禁验证”，但不是从零重写：
 
@@ -59,7 +61,9 @@ FIN 0.1.2 不从 S4/T06 继续打补丁。它从 S0 重新执行“门禁验证�
 - S4 只做冻结 Runtime 上的 transfer product proof；
 - S5 只做 release engineering 与 decision。
 
-### 4.1 0.1.2 必须完成
+截至 2026-08-01，0.1.2 已在 S0C 唯一双-disposable proof 的 collection 阶段终态失败，implementation/proof budget=`1/1` 已耗尽。它冻结为 `internal honest block / release qualified=false / S2 not entered`，不得通过 S0D、H、R 或第二 proof package 改名续跑。下列未完成目标原样转交 0.1.3，不因版本推进而降级。
+
+### 4.1 0.1.2 未完成、由 0.1.3 原样继承的承诺
 
 - 一个 source 编译 prompt、server schema、local validator、fake、selector、renderer、budget 和 capture index；
 - material number/date/identity/ID/lineage 本地确定性 owner；
@@ -72,7 +76,7 @@ FIN 0.1.2 不从 S4/T06 继续打补丁。它从 S0 重新执行“门禁验证�
 - 真实 qualified-senior NVDA R3；
 - coherent commit manifest、rollback、hermetic package 和 RG1–RG5 decision。
 
-### 4.2 0.1.2 不应再发生
+### 4.2 后续 FIN 0.1.x 不应再发生
 
 - 在 S4 为共同 Runtime 新建 R2–R11；
 - 每个字段分别 live 一次；
@@ -88,9 +92,9 @@ FIN 0.2 的进入条件仍为：
 
 > `FIN 0.1 Runtime and exact artifact mainline stable`
 
-因此 0.1.2 是进入 FIN 0.2 前的工程稳定化，不是 FIN 0.2 本身。只有 Earnings 特有的新任务模板、财务/segment/guidance 方法和交付面进入 0.2。
+因此 0.1.2/0.1.3 是进入 FIN 0.2 前的 FIN 0.1 工程稳定化 patch line，不是 FIN 0.2 本身。只有 Earnings 特有的新任务模板、财务/segment/guidance 方法和交付面进入 0.2。
 
-通用 Runtime、contract compiler、DELL/MU transfer completion、proof hermeticity 和基础 Verifier 语义属于 FIN 0.1 未完成的质量承诺，不能用版本号平移来掩盖。
+通用 Runtime、contract compiler、DELL/MU transfer completion、proof hermeticity 和基础 Verifier 语义属于 FIN 0.1 未完成的质量承诺，不能用版本号平移来掩盖。0.1.3 必须在 Project OS 中继续绑定同一四项 open blocker 和同一产品 non-inflation truth，不能把 0.1.2 的失败改写成 pass。
 
 ## 6. 当前执行顺序
 
@@ -99,12 +103,13 @@ FIN-0.1 repository evidence freeze + safe classification
   -> S4-T10 honest-block closeout
   -> S5 decision-only honest-block
   -> freeze FIN 0.1.1 internal baseline
-  -> FIN 0.1.2 S0–S5 with refined gates
+  -> FIN 0.1.2 S0/S1/S0C terminal internal honest block
+  -> FIN 0.1.3 S0–S5 with refined gates and inherited blockers
   -> FIN 0.2 Earnings Review Alpha
 ```
 
 当前唯一下一项：
 
-`FIN-0.1-REPOSITORY-EVIDENCE-FREEZE-AND-SAFE-CLASSIFICATION-EXECUTION`
+`FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-STAGE-PLAN`
 
-该动作只能生成内容寻址 inventory、分类和建议的 commit/rollback slices；不删除、不取消暂存、不提交、不打 tag，任何清理动作必须在 exact target list 形成后另行批准。
+该动作只能冻结 0.1.3 S0 的 StagePlan、G0、资源依赖/环境路径合同、固定 T01–T04 与停止预算；不得同轮实现、创建 proof package、进入 S1/S2、读取凭据或调用模型。

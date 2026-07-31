@@ -68,3 +68,11 @@ host `FIN 0.1.2` 合同矩阵由修复前 `101 pass / 7 fail` 收敛为 `122 pas
 collection traceback 同时暴露第二个合同缺口：当前 semantic parity 只类型化三个 exact disposable roots，宿主 Python/site-packages 绝对路径仍为 unknown；两份 projection 各保留 1 个 unknown path 并 fail closed。该 owner 登记为 RC-P36-093。未来处理必须扩展 typed environment-path taxonomy，不得用任意绝对路径删除或宽松字符串替换获得假 parity。
 
 本包实际为 `746 paths / 746 tracked / 0 explicit allowlist`，`.git` 与 `.codex_runtime` 均为 0；因此 RC-P36-090/091 得到 construction-level positive evidence，但因 current Runtime/release-gate tests 未执行而继续 open。S0C implementation/proof=`1/1` 已耗尽，S0C 终态 honest block；不得 patch-then-rerun、建立 T04、第二 package 或自动进入 S2。Flash stable / Pro preview canary 也因上游门禁不成立保持 0 调用。下一项仅为版本化 repair owner 处置，不是 S0C 续修。
+
+## 版本化 repair owner 处置（2026-08-01）
+
+处置选择冻结 FIN 0.1.2，而不是在同版本内建立 S0D、H、R 或 replacement family。FIN 0.1.2 现在是 `internal honest block / release qualified=false / S2 not entered` 的不可改写工程快照；失败 package、S0C budget 和四项 open blocker 均保留。
+
+RC-P36-090–093 原样转交 `FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-REBASELINE-R1`。新的 S0 必须先以一个 StagePlan 冻结：单一 RuntimeResourceRegistry、所有 active-suite 可达的 repo-relative non-Python reads、禁止未注册直接文件读取、interpreter/purelib/platlib typed path projection、active-suite collect/import sweep、资源与路径 mutation，以及 DELL/MU/NVDA full-fake。任务固定 T01–T04，最多一个实现包和一个正式双-disposable proof package；失败不自动 T05、R/H、0.1.4 或模型调用。
+
+这不是把债务向版本号平移：0.1.3 仍处于 FIN 0.1 产品范围，继承同一 blocker、同一 release=false 和同一产品验收义务。FIN 0.2 继续是 Earnings Review Alpha。当前只允许 `FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-STAGE-PLAN`，尚未实施任何 0.1.3 Runtime 或 proof。

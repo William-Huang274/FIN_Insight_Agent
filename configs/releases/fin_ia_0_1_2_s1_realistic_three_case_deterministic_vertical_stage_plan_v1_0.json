@@ -1,0 +1,318 @@
+{
+  "schema_version": "fin_ia_0_1_2_s1_realistic_three_case_deterministic_vertical_stage_plan_v1_0",
+  "plan_id": "FIN-0.1.2-S1-REALISTIC-THREE-CASE-DETERMINISTIC-VERTICAL-STAGE-PLAN-R1",
+  "planned_at": "2026-07-31T22:05:00+08:00",
+  "status": "S1_stage_plan_G0_pass_implementation_not_started",
+  "authority": {
+    "user_instruction": "继续往下做0.1.2",
+    "S1_stage_plan_authorized": true,
+    "S1_zero_call_implementation_authorized_by_program_continuation": true,
+    "model_provider_network_or_paid_execution_authorized": false,
+    "DELL_MU_R2_or_NVDA_R3_product_reproof_authorized": false
+  },
+  "parent_bindings": [
+    {
+      "role": "S0_closeout",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_common_runtime_and_test_contract_rebaseline_v1_0.json",
+      "sha256": "55c3840d48ce18baf66825f2e1504efff8f185b6ff4d15a3b5cddd3943db07e2"
+    },
+    {
+      "role": "common_runtime_contract_family_source",
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+      "sha256": "b9a0e990dbf01ce11e76012c246240494cf38029b11b2c289008ae490fc2283f"
+    },
+    {
+      "role": "S0_closed_commit",
+      "ref": "git:bbf32ee150db41c8a0ddd5e26bcd9b4f0e7d970c",
+      "sha256": null
+    }
+  ],
+  "mission": "Migrate the bounded FIN 0.1.2 judgment-atom family into the actual production consumer path and prove a realistic DELL MU NVDA deterministic vertical with positive, mutation, permutation, collect-all and failure-observability evidence.",
+  "non_goals": [
+    "general_purpose_multi_family_contract_compiler",
+    "changed_contract_family_natural_model_canary",
+    "formal_exact_live_or_paid_model_execution",
+    "DELL_or_MU_R2_product_acceptance",
+    "post_transfer_NVDA_exact_product_or_R3",
+    "Verifier_L2_to_L4_rubric_calibration",
+    "release_candidate_release_or_production"
+  ],
+  "scope_boundary": {
+    "FIN_0_1_2_S1_owned": [
+      "bounded_one_family_production_consumer_migration",
+      "realistic_three_case_nine_cell_fixture_bundle",
+      "numeric_identity_temporal_lineage_and_cardinality_mutation",
+      "deterministic_full_fake_and_collect_all_diagnostic_shape",
+      "complete_capture_and_typed_terminal_result_proof"
+    ],
+    "FIN_0_1_2_S2_owned": [
+      "changed_contract_family_natural_capability_envelope",
+      "one_formal_one_cell_product_run"
+    ],
+    "FIN_0_1_2_S3_owned": [
+      "anchor_three_cell_product_and_transfer_oriented_mutation"
+    ],
+    "FIN_0_1_2_S4_owned": [
+      "DELL_and_MU_R2",
+      "post_transfer_NVDA_exact_product",
+      "qualified_senior_NVDA_R3",
+      "three_case_Human_calibration"
+    ],
+    "FIN_0_2_owned": [
+      "generalized_cross_family_contract_compiler",
+      "Earnings_Review_Alpha_product_scope"
+    ]
+  },
+  "gates": {
+    "G0_scope_and_owner": {
+      "verdict": "pass",
+      "earliest_truth_owner": "local_deterministic_runtime",
+      "task_and_run_budgets_frozen": true
+    },
+    "G1_contract_closure": {
+      "verdict": "pending_S1_T02",
+      "exit": "all_ten_actual_consumers_bind_one_source_digest_and_one_contract_version"
+    },
+    "G2_deterministic_proof": {
+      "verdict": "pending_S1_T03",
+      "exit": "three_case_positive_mutation_permutation_collect_all_full_fake_and_failure_capture_all_green"
+    },
+    "G3_natural_canary": {
+      "verdict": "not_run_not_owned_by_S1",
+      "owner": "FIN_0_1_2_S2"
+    },
+    "G4_quarantined_diagnostic": {
+      "verdict": "shape_only_zero_call_fixture_in_S1_no_external_diagnostic_run",
+      "promotion_forbidden": true
+    },
+    "G5_formal_product_proof": {
+      "verdict": "not_run_not_owned_by_S1",
+      "owner": "FIN_0_1_2_S2_through_S4"
+    },
+    "G6_assessment_and_closeout": {
+      "verdict": "pending_S1_T04",
+      "exit": "hermetic_active_suite_stage_assessment_closeout_git_slice_and_carry_forward_closed"
+    }
+  },
+  "fixed_task_budget": [
+    {
+      "task_id": "S1-T01",
+      "title": "StagePlan and exact ownership freeze",
+      "status": "pass_current_artifact"
+    },
+    {
+      "task_id": "S1-T02",
+      "title": "Bounded production consumer migration",
+      "status": "pending",
+      "maximum_implementation_bundles": 1
+    },
+    {
+      "task_id": "S1-T03",
+      "title": "Realistic three-case fixture mutation collect-all and full-fake proof",
+      "status": "pending",
+      "maximum_zero_call_proof_packages": 1
+    },
+    {
+      "task_id": "S1-T04",
+      "title": "Independent hermetic assessment and S1 closeout",
+      "status": "pending",
+      "maximum_closeout_packages": 1
+    }
+  ],
+  "consumer_migration": [
+    {
+      "consumer_id": "prompt",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.provider_system_instruction",
+      "path": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py"
+    },
+    {
+      "consumer_id": "server_schema",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.wire_schema",
+      "path": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py"
+    },
+    {
+      "consumer_id": "local_validator",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.assemble",
+      "path": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py"
+    },
+    {
+      "consumer_id": "fake_provider",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.fake_provider_output",
+      "path": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py"
+    },
+    {
+      "consumer_id": "selector",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.assemble_and_FactCandidatePoolPlanner.plan",
+      "path": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py"
+    },
+    {
+      "consumer_id": "renderer",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.assemble",
+      "path": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py"
+    },
+    {
+      "consumer_id": "capacity",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.capacity_declaration_and_assert_rendered_capacity",
+      "path": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py"
+    },
+    {
+      "consumer_id": "budget",
+      "runtime_owner": "DeterministicJudgmentAtomCompiledContract.provider_output_max_utf8_bytes_and_local_item_max_unicode_characters",
+      "path": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py"
+    },
+    {
+      "consumer_id": "typed_failure",
+      "runtime_owner": "BoundedAgentExecutionError",
+      "path": "apps/workbench/backend/application/bounded_agent_executor.py"
+    },
+    {
+      "consumer_id": "capture_index",
+      "runtime_owner": "BoundedAgentExecutor._provider_interaction_capture",
+      "path": "apps/workbench/backend/application/bounded_agent_executor.py"
+    }
+  ],
+  "consumer_migration_rule": {
+    "required_consumer_count": 10,
+    "source_digest_must_equal": "b9a0e990dbf01ce11e76012c246240494cf38029b11b2c289008ae490fc2283f",
+    "contract_id_must_equal": "fin_0_1_2.common_runtime.judgment_atom_family",
+    "contract_version_must_equal": "v1.0.0",
+    "admission_optional_policy_activation_forbidden": true,
+    "case_specific_ticker_branch_forbidden": true
+  },
+  "realistic_fixture_matrix": {
+    "cases": ["DELL", "MU", "NVDA"],
+    "cells": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "case_cell_pairs": 9,
+    "fixture_requirements": [
+      "natural_case_local_identity_occurs_without_sanitizer_rewrite",
+      "natural_ISO_reporting_and_planning_dates",
+      "S4_flat_and_legacy_numeric_rows_share_one_canonical_projection",
+      "request_local_aliases_retain_metric_value_operator_currency_unit_scale_sign_period_entity_and_source_correspondence",
+      "case_specific_financial_method_runtime_slot_is_present_but_not_claimed_product_proven"
+    ]
+  },
+  "proof_matrix": {
+    "positive": [
+      "DELL_MU_NVDA_each_reach_6_nodes_12_provider_interactions_12_captures_9_artifacts",
+      "all_material_numbers_dates_identity_runtime_ids_and_lineage_are_locally_assembled",
+      "selected_results_are_stable_under_candidate_permutation",
+      "final_artifacts_preserve_case_numeric_identity_temporal_and_lineage_correspondence"
+    ],
+    "candidate_counts": [0, 1, 3, 6, 7, 22, 76],
+    "negative_mutations": [
+      "unknown_alias",
+      "duplicate_alias",
+      "cross_case_alias",
+      "cross_cell_alias",
+      "hidden_candidate_alias",
+      "seventh_provider_candidate",
+      "invalid_or_unbound_date_alias",
+      "natural_current_case_ticker_removed_or_foreign_ticker_inserted",
+      "numeric_metric_value_period_unit_scale_sign_source_correspondence_mutation",
+      "final_nine_artifact_identity_numeric_or_lineage_mutation",
+      "Lead_Writer_or_Verifier_downstream_failure_after_prior_captures"
+    ],
+    "collect_all": {
+      "isolated_diagnostic_namespace": true,
+      "deterministic_placeholder_may_continue_shape_checks": true,
+      "all_findings_typed_and_location_bound": true,
+      "invalid_output_promotable": false,
+      "diagnostic_namespace_cleared_before_future_formal_proof": true
+    },
+    "failure_observability": {
+      "capture_before_validation_terminalization": true,
+      "request_and_final_assistant_output_preserved": true,
+      "required_refs": [
+        "request_capture_ref",
+        "assistant_output_capture_ref",
+        "terminal_result_ref",
+        "stdout_ref",
+        "stderr_ref"
+      ],
+      "provider_private_reasoning_saved": false,
+      "credential_or_authorization_header_saved": false
+    }
+  },
+  "root_cause_allocation": [
+    {
+      "issue_prefix": "RC-P36-067",
+      "S1_obligation": "numeric_correspondence_mutation_and_local_rendering_fixture",
+      "product_reproof_owner": "FIN_0_1_2_S4"
+    },
+    {
+      "issue_prefix": "RC-P36-068",
+      "S1_obligation": "case_identity_positive_and_cross_case_mutation",
+      "product_reproof_owner": "FIN_0_1_2_S4"
+    },
+    {
+      "issue_prefix": "RC-P36-080",
+      "S1_obligation": "bounded_provider_surface_and_local_material_truth",
+      "product_reproof_owner": "FIN_0_1_2_S2_to_S4"
+    },
+    {
+      "issue_prefix": "RC-P36-083",
+      "S1_obligation": "regression_protect_current_bounded_family_only",
+      "generalized_fix_owner": "FIN_0_2"
+    },
+    {
+      "issue_prefix": "RC-P36-084",
+      "S1_obligation": "L1_numeric_identity_conflict_and_delivery_shape_mutation_only",
+      "semantic_rubric_owner": "FIN_0_1_2_S4"
+    }
+  ],
+  "method_and_pattern_truth": {
+    "external_pattern": {
+      "pattern_id": "bounded_judgment_atoms_local_validity_selection_and_single_source_contract_compilation",
+      "current_claim": "existing_current_runtime_pattern_reused_not_generalized_compiler_complete"
+    },
+    "financial_methods": [
+      {
+        "method_id": "s4_dell_oem_order_to_revenue_and_working_capital_playbook",
+        "S1_claim": "runtime_slot_and_node_consumption_fixture_only_no_paid_product_acceptance"
+      },
+      {
+        "method_id": "s4_mu_hbm_supply_pricing_and_cycle_playbook",
+        "S1_claim": "runtime_slot_and_node_consumption_fixture_only_no_paid_product_acceptance"
+      }
+    ],
+    "new_financial_method_claimed": false
+  },
+  "budgets": {
+    "stage_artifacts": {
+      "StagePlan": 1,
+      "StageCapsule": 1,
+      "StageAssessment": 1,
+      "StageCloseout": 1,
+      "worklog": 1
+    },
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_or_source_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "automatic_replacement_or_R_number_families": 0
+  },
+  "stop_rules": [
+    "no_model_or_provider_call_in_S1",
+    "no_financial_L1_gate_relaxation",
+    "no_historical_event_rewrite_to_make_current_green",
+    "no_per_case_ticker_conditional_or_fake_sanitizer_repair",
+    "one_consumer_migration_bundle_then_one_complete_deterministic_proof_package",
+    "new_shared_L1_after_S1_closeout_blocks_entry_instead_of_spawning_S1_T05",
+    "L2_to_L4_quality_findings_carry_forward_without_reopening_S1"
+  ],
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_source_or_external_tool_calls": 0,
+    "new_admissions_runs_or_business_artifacts": 0,
+    "paid_reproofs": 0
+  },
+  "next_action": "FIN-0.1.2-S1-BOUNDED-PRODUCTION-CONSUMER-MIGRATION-ZERO-CALL-IMPLEMENTATION"
+}

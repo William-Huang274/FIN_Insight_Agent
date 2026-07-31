@@ -25,6 +25,10 @@ MANIFEST = ROOT / "configs" / "releases" / "fin_ia_0_1_2_s0_active_test_suite_ma
 DECISION = ROOT / "configs" / "releases" / "fin_ia_0_1_2_s0_common_runtime_and_test_contract_rebaseline_v1_0.json"
 PROGRAM = ROOT / "configs" / "releases" / "fin_ia_0_1_program_release_backlog_v2_0.json"
 S4_BACKLOG = ROOT / "configs" / "releases" / "fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json"
+S1_STAGE_PLAN = ROOT / "configs" / "releases" / (
+    "fin_ia_0_1_2_s1_realistic_three_case_deterministic_"
+    "vertical_stage_plan_v1_0.json"
+)
 
 
 def _load(path: Path) -> dict:
@@ -126,14 +130,24 @@ def test_s0_decision_bindings_and_gates_are_honest() -> None:
     assert set(decision["observed_counts"].values()) == {0}
 
 
-def test_current_projection_advances_only_to_next_s0_capsule() -> None:
+def test_current_projection_consumes_s0_handoff_and_advances_to_s1_t02() -> None:
     decision = _load(DECISION)
+    stage_plan = _load(S1_STAGE_PLAN)
     program = _load(PROGRAM)
     s4 = _load(S4_BACKLOG)
     assert program["active_slice"] == "FIN_0_1_2_S1"
-    assert program["next_action"]["item_id"] == decision["next_action"]
-    assert s4["current_next_action"] == decision["next_action"]
+    assert decision["next_action"] == (
+        "FIN-0.1.2-S1-REALISTIC-THREE-CASE-DETERMINISTIC-VERTICAL-STAGE-PLAN"
+    )
+    assert stage_plan["status"] == (
+        "S1_stage_plan_G0_pass_implementation_not_started"
+    )
+    assert program["next_action"]["item_id"] == stage_plan["next_action"]
+    assert s4["current_next_action"] == stage_plan["next_action"]
     assert program["current_truth"]["FIN_0_1_2_S0_status"] == "closed_G4_G5_pass"
+    assert program["current_truth"]["FIN_0_1_2_S1_status"] == (
+        "stage_plan_G0_pass_implementation_not_started"
+    )
     assert program["current_truth"]["FIN_0_1_release_qualified"] is False
     assert program["version"] == "FIN_0_1_1_INTERNAL_HONEST_BLOCK"
     assert program["current_truth"]["FIN_0_1_1_status"] == "frozen_internal_honest_block"

@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_0_1_program_release_backlog_v2_0",
   "release_id": "REL-PROD-001",
   "version": "FIN_0_1_1_INTERNAL_HONEST_BLOCK",
-  "status": "FIN_0_1_2_S0_closed_G4_G5_pass_S1_stage_plan_next_FIN_0_1_not_qualified",
+  "status": "FIN_0_1_2_S1_stage_plan_G0_pass_consumer_migration_next_FIN_0_1_not_qualified",
   "authority": {
     "active_progress_source": true,
     "activated_at": "2026-07-19",
@@ -169,6 +169,10 @@
     "FIN_0_1_2_S0_live_runtime_migration_complete": false,
     "FIN_0_1_2_S0_active_runner_migration_complete": true,
     "FIN_0_1_2_S0_hermetic_package_complete": true,
+    "FIN_0_1_2_S1_status": "stage_plan_G0_pass_implementation_not_started",
+    "FIN_0_1_2_S1_stage_plan_ref": "configs/releases/fin_ia_0_1_2_s1_realistic_three_case_deterministic_vertical_stage_plan_v1_0.json",
+    "FIN_0_1_2_S1_model_provider_calls": 0,
+    "FIN_0_1_2_S1_product_reproof_authorized": false,
     "stage_boundary_rebaseline_status": "active_T05_T06_closed_no_acceptance_inflation",
     "global_audit_ref": "configs/releases/fin_ia_0_1_s0_to_s4_t05_full_chain_global_audit_and_forward_plan_v1_0.json",
     "global_audit_sha256": "6a00836e8b2a799e17eecad103982a35d8e4956069b63a5b9248adfb1e0ae451",
@@ -2248,8 +2252,8 @@
     ]
   },
   "next_action": {
-    "item_id": "FIN-0.1.2-S1-REALISTIC-THREE-CASE-DETERMINISTIC-VERTICAL-STAGE-PLAN",
-    "status": "S0_closed_G4_G5_pass_S1_stage_plan_not_started",
+    "item_id": "FIN-0.1.2-S1-BOUNDED-PRODUCTION-CONSUMER-MIGRATION-ZERO-CALL-IMPLEMENTATION",
+    "status": "S1_stage_plan_G0_pass_T02_not_started",
     "still_blocks": [
       "RC_P36_067_numeric_projection_and_rendering_exact_live_reproof",
       "RC_P36_068_case_delivery_identity_exact_live_reproof",
@@ -2261,7 +2265,11 @@
       "release",
       "production"
     ],
-    "action": "freeze one S1 StagePlan for realistic DELL MU NVDA deterministic vertical positive mutation permutation and multi-failure proof without model calls",
+    "action": "migrate one bounded FIN 0.1.2 judgment atom family into all ten actual production consumers with one source digest and fail closed admission omission and consumer drift tests",
+    "FIN_0_1_2_S1_stage_plan_ref": "configs/releases/fin_ia_0_1_2_s1_realistic_three_case_deterministic_vertical_stage_plan_v1_0.json",
+    "FIN_0_1_2_S1_stage_plan_sha256": "a51d241e56417ad6005ca1fecb4495a9b899945d8f50bfb595045934d88a77b7",
+    "FIN_0_1_2_S1_stage_plan_status": "G0_pass_implementation_not_started",
+    "FIN_0_1_2_S1_fixed_task_ids": ["S1-T01", "S1-T02", "S1-T03", "S1-T04"],
     "FIN_0_1_2_S0_decision_ref": "configs/releases/fin_ia_0_1_2_s0_common_runtime_and_test_contract_rebaseline_v1_0.json",
     "FIN_0_1_2_S0_decision_sha256": "55c3840d48ce18baf66825f2e1504efff8f185b6ff4d15a3b5cddd3943db07e2",
     "FIN_0_1_2_S0_T01_status": "superseded_by_T02_S0_closed",

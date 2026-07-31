@@ -15,6 +15,7 @@
 - `RELEASE_FIN_IA_0_1_DETAILED_PRODUCT_TECHNICAL_DESIGN_20260717.zh-CN.md`：FIN 0.1 可直接开发的产品与工程详设；覆盖页面/交互、read model、API、state/event、permission、前后端代码边界、Point 02-07 的 38 个 execution points、四阶段验收、测试和 rollback。
 - `FIN_0_1_PRD_TECH_POINT_IMPLEMENTATION_BASELINE_20260719.zh-CN.md`：截至 2026-07-19 的 PRD/TECH/Point 实证基线；区分 current release path、formal Point owner closeout、真实模型/人审/operational qualification 和 release readiness。
 - `FIN_0_1_2_S0_COMMON_RUNTIME_AND_TEST_CONTRACT_REBASELINE_20260731.zh-CN.md`：FIN 0.1.2 S0 共同 Runtime 权限边界、单一来源 consumer envelope、五类 proof semantics，以及已通过的 hermetic dependency package、完整 per-test capture、双 disposable parity 和 active-suite closeout。
+- `FIN_0_1_2_S1_REALISTIC_THREE_CASE_DETERMINISTIC_VERTICAL_STAGE_PLAN_20260731.zh-CN.md`：FIN 0.1.2 S1 的 bounded production-consumer 迁移、DELL/MU/NVDA realistic fixture、mutation/collect-all/full-fake 证明矩阵，以及固定 T01–T04 与 G0–G6 边界。
 - `../../product/FIN_0_1_INTERNAL_ALPHA_FEATURE_SCOPE_MATRIX_20260717.zh-CN.md`：`P001-F01`-`F15` 的 PRD、TECH owner、产品 surface、Point 和 release acceptance 映射。
 - 完整机器可读图：`data/manifests/repository_architecture_inventory_v0_1.json`。
 

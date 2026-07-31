@@ -15,6 +15,7 @@ Product docs should not be implementation plans. Technical contracts, APIs, sche
 
 ## Current Product Docs
 
+- [FIN 0.1 S0 To S4-T05 Global Product Audit And Forward Plan](FIN_0_1_S0_TO_S4_T05_GLOBAL_PRODUCT_AUDIT_AND_FORWARD_PLAN_20260728.zh-CN.md)
 - [PRODUCT 2026-06-28 FinSight ToB / ToC Positioning And Product Line](PRODUCT_20260628_finsight_tob_toc_positioning_and_product_line.zh-CN.md)
 - [PRD 2026-06-28 B2B Financial Research Workbench](PRD_20260628_b2b_financial_research_workbench.zh-CN.md)
 - [PRODUCT 2026-07-17 Release Ladder And Cadence](PRODUCT_20260717_release_ladder_and_cadence.zh-CN.md)

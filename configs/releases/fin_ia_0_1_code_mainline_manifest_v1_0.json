@@ -4,8 +4,8 @@
   "as_of": "2026-07-19",
   "git_baseline": {
     "branch": "codex/layered-data-source-expansion",
-    "head": "e8596d88bd82f4dce465a20eb50a55d70c1cea62",
-    "head_subject": "Add P26 product evidence depth split gate",
+    "head": "54d2e072b30d51cd7aaa3b55288d186782853a97",
+    "head_subject": "Record FIN 0.1 project state and mainline audit",
     "working_tree_policy": "inventory_only_no_bulk_stage_reset_or_commit"
   },
   "authority": {
@@ -33,6 +33,12 @@
         "path": "apps/workbench/backend/application",
         "path_type": "directory",
         "status": "active_application_services",
+        "required_exists": true
+      },
+      {
+        "path": "apps/workbench/backend/application/research_runtime.py",
+        "path_type": "file",
+        "status": "active_single_fin01_runtime_deterministic_and_complete_one_cell_agent_fixture_shadow_profiles",
         "required_exists": true
       },
       {
@@ -116,19 +122,19 @@
       {
         "path": "src/sec_agent/langgraph_orchestrator.py",
         "path_type": "file",
-        "status": "implemented_historical_engine_not_current_fin_0_1_execution_mainline",
+        "status": "T04_consumed_through_complete_Run_scoped_fixture_shadow_cell_with_Lead_Specialist_Tool_Graph_Writer_Verifier",
         "required_exists": true
       },
       {
         "path": "src/sec_agent/agent_registry.py",
         "path_type": "file",
-        "status": "implemented_registry_with_contract_drift",
+        "status": "T03_versioned_runtime_consumed_contract_drift_closed",
         "required_exists": true
       },
       {
         "path": "src/sec_agent/research_skills.py",
         "path_type": "file",
-        "status": "implemented_skill_registry_not_consumed_by_current_fin_0_1_chain",
+        "status": "T03_versioned_runtime_selected_injected_and_traced",
         "required_exists": true
       },
       {
@@ -272,18 +278,25 @@
   "release_contract_versions": [
     {
       "family": "fin_ia_0_1_release_contract",
-      "active": "configs/releases/fin_ia_0_1_release_contract_v1_2.json",
+      "active": "configs/releases/fin_ia_0_1_release_contract_v1_3.json",
       "historical_or_superseded": [
         "configs/releases/fin_ia_0_1_release_contract_v1_0.json",
-        "configs/releases/fin_ia_0_1_release_contract_v1_1.json"
+        "configs/releases/fin_ia_0_1_release_contract_v1_1.json",
+        "configs/releases/fin_ia_0_1_release_contract_v1_2.json"
       ]
     },
     {
-      "family": "fin_ia_0_1_execution_backlog",
-      "active": "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_1.json",
+      "family": "fin_ia_0_1_program_execution_backlog",
+      "active": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
       "historical_or_base_reference": [
+        "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_1.json",
         "configs/releases/fin_ia_0_1_detailed_execution_backlog_v1_0.json"
       ]
+    },
+    {
+      "family": "fin_ia_0_1_feature_scope_matrix",
+      "active": "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_1.json",
+      "historical_or_superseded": []
     },
     {
       "family": "p36_three_cell_deepseek_vertical",
@@ -317,12 +330,11 @@
         "src/sec_agent/memo_llm.py"
       ],
       "not_connected_to": [
-        "apps/workbench/backend/application/local_research_service.py",
-        "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx"
+        "bounded_real_agent_model_provider_execution"
       ],
-      "reason": "FIN 0.1 chose a bounded deterministic local vertical to ship an inspectable product slice without paid or operational authority; the integration adapter back to the historical engine was never implemented.",
-      "effect": "Current FIN 0.1 proves product flow and deterministic fallback, not the planned agentic research orchestration.",
-      "decision": "retain_as_reuse_candidate_integrate_through_one_versioned_runtime_adapter"
+      "reason": "T04 consumes the complete historical LangGraph node path through the single Fin01ResearchRuntime using Run-scoped deterministic fixture injectors; T05 now projects the exact profile, structured events, immutable artifact payloads and typed stop reason into Workbench Next. Real model/provider execution remains separately unauthorized S2 scope.",
+      "effect": "Current FIN 0.1 proves one browser-inspectable fixture-shadow orchestration cell with exact canonical artifacts and failure truth, not bounded real-Agent research quality or release readiness.",
+      "decision": "retain_the_T04_complete_cell_adapter_and_T05_read_projection_then_keep_real_model_authority_blocked_until_S2"
     },
     {
       "slice_id": "research_skill_registry_vs_fin_0_1_runtime",
@@ -333,12 +345,11 @@
         "src/sec_agent/specialist_llm.py"
       ],
       "not_connected_to": [
-        "apps/workbench/backend/application/local_research_service.py",
         "scripts/releases/run_fin_ia_0_1_p36_three_cell_deepseek_vertical.py"
       ],
-      "reason": "The deterministic service hard-codes the ten-cell analysis and the standalone DeepSeek runner freezes prompts directly instead of resolving the shared skill registry.",
-      "effect": "Skills exist and were historically exercised, but they are not selectable or traceable in the current product path.",
-      "decision": "retain_and_make_skill_resolution_an_input_to_the_future_runtime_adapter"
+      "reason": "T03 extends the existing registry with content-addressed SkillDefinitionVersion and SkillPackVersion selection and records selected/injected/consumed traces on the exact ResearchRun; the standalone paid runner remains deliberately separate and unauthorized.",
+      "effect": "Skill versions are now selectable and traceable in the current agent_fixture_shadow path, while deterministic fallback and the standalone paid runner receive no Skill-granted authority.",
+      "decision": "retain_current_registry_and_extend_T04_consumption_without_new_registry_family"
     },
     {
       "slice_id": "graph_assets_vs_agentic_graph_research",

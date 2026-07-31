@@ -55,6 +55,7 @@
 - [分层数据源扩容计划](layered_data_source_expansion_plan.zh-CN.md)
 - [分层数据源扩容执行文档](layered_data_source_expansion_execution_plan.zh-CN.md)
 - [扩容后检索与多智能体架构执行文档](expanded_universe_retrieval_agent_framework_v0_1.zh-CN.md)
+- [运行时审计证据留存与内容晋升分离合同 v1](fin_0_1_runtime_audit_evidence_retention_and_promotion_separation_v1.zh-CN.md)
 - [Agent Graph vNext 框架与分功能执行文档](agent_graph_vnext/README.zh-CN.md)
 - [投研质量评价体系](../eval/fin_agent_investment_research_quality_framework_v0_1.md)
 - [分层质量门控执行文档](../eval/fin_agent_layered_quality_execution_plan_v0_1.md)

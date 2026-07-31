@@ -3,6 +3,8 @@
 日期：2026-07-17
 状态：`release_scope_v1_2_accepted / fixture_shadow_internal_development_admitted / FIN_0_1_release_blocked_by_RG1_vertical_path`
 
+> 2026-07-25 验收增量：Agent 输出与完整链统一采用 `fin01.agent_acceptance.layered_hard_integrity_and_quality:v1`。真实性、证据/数字口径、范围归因、canonical identity/lineage、权限安全和真实 transport/storage/safety capacity 继续硬失败；可安全保留的 schema/协议问题进入可恢复处置，字数、表达和叙事密度进入质量评分或受控编辑。机器合同见 `configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json`。
+
 ## 1. Release Identity
 
 ```yaml
@@ -275,6 +277,23 @@ R3 reviewer acceptance 是首版 stretch outcome，不作为 FIN 0.1 的强制�
 - secret、权限或真实数据破坏。
 
 同一 blocker 最多两轮 bounded repair；之后按 Release Operating Model 做 block/defer/stop 裁决。
+
+### 9.1 Agent 分层验收与放行原则
+
+FIN 0.1 的 Agent 节点与完整链采用四层验收。四层可以在同一次 review 中执行，但不得用下层的写作质量问题伪装成上层真实性失败，也不得用多个不完整 Run 拼成一个不存在的完整产品。
+
+| 层 | 负责判断 | 默认处置 |
+| --- | --- | --- |
+| `L1 硬完整性` | 事实真实性、证据/引用、Numeric 口径与可复算、entity/business scope/period/unit/attribution、canonical identity/lineage、权限/secret/tool/source 边界、终态一致性和真实 transport/storage/safety capacity | terminal fail-closed；不得补写、猜测、模糊映射或静默降级 |
+| `L2 可恢复协议` | schema、cardinality、enum、字段表示、request/validator/fake Provider 对齐和可安全解析的格式偏差 | 保留有效输出，标记 recoverable，路由最早 owner；只有会造成事实/身份歧义或真实容量耗尽时升级为 L1 |
+| `L3 分析质量` | 决策相关性、因果、反证、gap、WWC、相对 deterministic baseline 的实质增益 | rubric 评分、quality finding、review disposition；L1 通过时不得仅因普通表达问题抹掉整条链 |
+| `L4 用户适配与交付` | 字数、语气、叙事密度、受众适配、视觉呈现和 review burden | profile-specific quality debt、受控编辑或后续优化 |
+
+普通 per-field/aggregate 字符目标属于 L3/L4；只有当其保护已证明的 Provider wire、canonical storage、security redaction 或无法安全完成的 token/context envelope 时才属于 L1 硬容量门禁。禁止 silent truncation、事实改写式压缩、capture rewrite 和以本地编辑冒充原始模型输出。
+
+模型侧优先输出有界判断原子、closed aliases、引用、枚举和简短理由；canonical ID、结构、dependency/conflict/gap 组装、lineage 和 exact validation 由本地确定性 owner 管理。Prompt schema、本地 validator、fake Provider 和 telemetry subtype 必须来自同一个可版本化合同。单节点真实 canary 先于昂贵 full-chain；组件可累计证明，但 Slice 的 product-completeness gate 仍要求一条 coherent exact Run 产生本任务要求的全部当前版本 Artifact。
+
+Stage 放行必须分别记录 `engineering_integrity`、`product_completeness`、`research_quality` 和 `owner_acceptance`。允许携带已披露的 L3/L4 质量债进入下一阶段；不允许携带 L1 缺陷、缺失的任务级 Artifact 或未发生的 owner acceptance。`documented`、`fixture_proven`、`live_partial`、`live_complete`、`owner_accepted` 和 `release_qualified` 继续不得互相冒充。
 
 ## 10. Deferred To Later Releases
 

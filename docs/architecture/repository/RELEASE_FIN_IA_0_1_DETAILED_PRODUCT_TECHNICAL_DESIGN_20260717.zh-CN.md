@@ -3,6 +3,10 @@
 日期：2026-07-17
 状态：`detailed_design_v1 / fixture_shadow_internal_development_admitted / FIN_0_1_release_blocked_by_RG1_vertical_path`
 
+> 2026-07-31 阶段归属增量：S1–S4-T06 的真实执行显示，Case transfer、shared Runtime 架构、proof hermeticity 与 release engineering 必须分离。T05/T06 以 honest block 终态关闭，不能再用更多 Case live 修复来代替架构或 release 工作；T07 只做 current-worktree regression 和一次有界 NVDA revalidation，T08–T10 做 calibration/Human/closeout，S5 做 hermetic candidate、Git/rollback 和 RG1–RG5，完整 contract compiler 与 DELL/MU transfer completion 进入 FIN 0.2。本文的 L1、三案 R2、NVDA R3 和 release gate 未降低；当前只能形成 blocked candidate。详细边界以 `docs/architecture/repository/FIN_0_1_S1_TO_S5_STAGE_BOUNDARY_REBASELINE_20260731.zh-CN.md` 为准，机器可检验的任务归属以 `configs/releases/fin_ia_0_1_s1_to_s4_t06_stage_boundary_and_task_ownership_rebaseline_v1_0.json` 为准。
+
+> 2026-07-25 验收增量：本文新增 `fin01.agent_acceptance.layered_hard_integrity_and_quality:v1` 的 runtime、artifact 与 stage 处置详设。机器合同见 `configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json`。
+
 ## 0. 本文是什么
 
 本文是 `REL-PROD-001 / FIN 0.1 Internal Alpha` 的详细设计和执行 source of truth。它把 PRD、TECH_01-10 和 Release 概设转换成可直接开发、测试和审批的说明。
@@ -528,6 +532,63 @@ Internal Alpha 暂不做 SSO/OA，但必须使用 server-configured local identi
 | `writer_blocked` | 409 | 回到 LeadReview/Repair Queue |
 | `artifact_superseded` | 409 | 打开 current version，旧 review 保留审计 |
 | `internal_error` | 500 + trace id | 保持原状态，管理员查 trace；不自动重放 mutation |
+
+### 13.1 Agent 分层校验、状态与恢复合同
+
+Agent node validator 必须先判断错误属于哪一层，再决定是否 terminalize；不能继续把“字段过长”或“表达不够紧凑”统一映射为 `failed/failed/failed`。
+
+| 层 | validator 输入 | canonical 记录 | 允许继续 |
+| --- | --- | --- | --- |
+| `L1 硬完整性` | Evidence/Fact/Claim/Numeric authority，scope/period/unit/attribution，canonical IDs，permission/tool/source boundary，process/terminal receipts，真实容量 envelope | typed hard failure code、earliest owner、restricted safe observation、原子 terminal truth | 否 |
+| `L2 可恢复协议` | schema/cardinality/enum/representation、request-validator parity、可安全解析的格式 | retained output ref、recoverable subtype、repair owner、no-fact-change assertion | 是；若需要猜测事实、身份或权威则升级 L1 |
+| `L3 分析质量` | relevance/causality/counterevidence/gap/WWC/material gain rubric | versioned quality finding、score、evidence refs、review disposition | 是；可进入 Writer/Verifier 和 paired review |
+| `L4 用户适配与交付` | verbosity/tone/density/audience/rendering/review burden | profile-specific finding、controlled-edit receipt | 是 |
+
+建议的 execution projection 增加：
+
+```text
+succeeded
+succeeded_with_quality_findings
+recoverable_partial
+failed_attention_required
+```
+
+`succeeded_with_quality_findings` 只能用于所有必需节点与 Artifact 完成、L1 通过且仅有 L3/L4 finding 的 Run。`recoverable_partial` 表示已保留的节点输出仍有效，但 downstream node 或 Artifact 尚未完成；它不是 product-complete，也不能自动解锁依赖完整 Artifact 的任务。历史 canonical terminal truth 不回写；新分类通过独立 reassessment/ref 解释，未来行为必须经 versioned runtime alignment 后生效。
+
+#### 13.1.1 字符、token 与容量
+
+每个 text field 可同时有：
+
+- `quality_target`：超过时记录 L3/L4 finding；
+- `provider_wire_hard_bytes`：超过时属于 L1 transport capacity；
+- `canonical_storage_hard_bytes`：超过时属于 L1 storage capacity；
+- `security_redaction_hard_bytes`：无法安全持久化时属于 L1；
+- `node_output_token_budget`：若耗尽导致 truncated/incomplete JSON 或必需字段缺失，属于 L1/L2 unrecoverable。
+
+普通 per-field/aggregate 字符上限没有独立安全依据时不得作为 terminal hard gate。禁止 silent trim/drop、事实改写式摘要、captured-output rewrite 或把本地编辑后的正文标成 Provider 原始输出。受控编辑必须产生 source digest、edited digest、规则/actor、事实不变断言和 exact lineage receipt。
+
+#### 13.1.2 模型与本地 deterministic owner
+
+Provider-visible 合同优先只包含 scoped judgment atoms、closed aliases、refs、enums 和短 rationale。以下字段归本地确定性 owner：
+
+- canonical Case/Run/Cell/Fact/Claim/WWC/Artifact IDs；
+- dependency/conflict/gap 的结构骨架、排序、cardinality 与 cross-cell lineage；
+- alias-to-canonical exact expansion；
+- scope、epistemic、Numeric、permission 和 writer no-source 校验；
+- Artifact manifest、terminal transaction 和 review binding。
+
+同一 versioned contract 必须生成或驱动 Prompt schema、本地 validator、fake Provider 正负 fixtures 和 telemetry subtype；不得再维护互相漂移的手写副本。真实验证顺序固定为 `single-node canary -> bounded coherent exact-live -> paired comparison -> independent owner review`。
+
+#### 13.1.3 Artifact 与 stage acceptance
+
+验收记录至少分开：
+
+1. `engineering_integrity`：runtime、identity、lineage、边界与 deterministic contract；
+2. `product_completeness`：一条 coherent current-version exact Run 产生全部任务要求的 Artifact；
+3. `research_quality`：四层 artifact review 和同输入 baseline comparison；
+4. `owner_acceptance`：授权 owner 绑定 exact artifact version/digest。
+
+跨 Run 的 evidence composition 只能提高单项 capability maturity，不能合成一套不存在的 Run/Artifact，也不能替代 product completeness、paired comparison 或 owner acceptance。L3/L4 债务可带 owner、截止点和 profile disposition 后前移；L1 缺陷、缺失的任务级 Artifact、未完成的 comparison 或未发生的 owner acceptance 不得通过改名为 quality debt 放行。
 
 ## 14. Point 02-07 详细执行拆分
 

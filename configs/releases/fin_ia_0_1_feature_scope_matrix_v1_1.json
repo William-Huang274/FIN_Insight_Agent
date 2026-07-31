@@ -1,0 +1,148 @@
+{
+  "schema_version": "fin_release_feature_scope_v1_1",
+  "release_id": "REL-PROD-001",
+  "version": "FIN_0_1_INTERNAL_ALPHA",
+  "status": "accepted_program_rebaseline_S1_fixture_shadow_execution_ready",
+  "supersedes": {
+    "schema_version": "fin_release_feature_scope_v1_0",
+    "path": "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_0.json",
+    "file_sha256": "a7afc254a264d1c930ca9ee9d3355da21fab35a81dc740b799f424e4e3a11740",
+    "reason": "The accepted D13 program scope narrows FIN 0.1 from ten-to-twenty active Agent cells to three complete Agent cells, reclassifies bounded same-Case explanation, and adds a user-visible bounded Graph drilldown."
+  },
+  "unchanged_v1_0_contract_inheritance": {
+    "resolution": "All v1.0 target-user, product-slice, frontend, source-boundary, hard-integrity and deferred-capability semantics remain active unless explicitly overridden by v1.1.",
+    "overridden_fields": [
+      "schema_version",
+      "status",
+      "detailed_execution_backlog_ref",
+      "decision_surface_policy",
+      "required_product_surfaces",
+      "feature_maturity",
+      "release_case_proof",
+      "named_roadmap_ref"
+    ]
+  },
+  "program_plan_ref": "docs/architecture/repository/FIN_0_1_PROGRAM_EXECUTION_PLAN_DRAFT_20260719.zh-CN.md",
+  "detailed_execution_backlog_ref": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+  "prd_absorption_ref": "docs/product/FIN_PRD_FULL_ABSORPTION_AND_RELEASE_ALLOCATION_MATRIX_20260719.zh-CN.md",
+  "product_slices": [
+    "B0_product_shell_and_task_loop",
+    "B2_company_deep_research_workpaper_bounded",
+    "B3_product_competitive_supply_chain_bounded_subset",
+    "B7_decision_surface_evidence_numeric_repair"
+  ],
+  "target_workflow": [
+    "create_research_case",
+    "review_three_cell_decision_surface",
+    "run_explicit_execution_profile",
+    "observe_agent_skill_tool_graph_events",
+    "review_evidence_numeric_and_bounded_graph_drilldown",
+    "review_workpaper_and_request_targeted_repair",
+    "lead_review_and_writer_admission",
+    "generate_internal_HTML_and_Markdown_no_source",
+    "human_review_exact_version",
+    "trace_material_claims_bidirectionally",
+    "inspect_quality_release_and_rollback_state"
+  ],
+  "feature_maturity": {
+    "release_critical_bounded": [
+      "P001-F01",
+      "P001-F02",
+      "P001-F03",
+      "P001-F04",
+      "P001-F05",
+      "P001-F06",
+      "P001-F07",
+      "P001-F08",
+      "P001-F09",
+      "P001-F10",
+      "P001-F11",
+      "P001-F12",
+      "P001-F13",
+      "P001-F15"
+    ],
+    "demo_support_nonblocking": [
+      "P001-F14"
+    ],
+    "feature_overrides": {
+      "P001-F03": "three_active_agent_cells_with_bounded_lead_overlay; existing ten-cell deterministic preview is reference_only",
+      "P001-F04": "bounded_run_start_cancel_typed_stop_and_safe_resume; no production scheduler claim",
+      "P001-F11": "internal_HTML_and_Markdown_only",
+      "P001-F14": "exact_why_gap_WWC_without_automatic_new_research_or_cross_quarter_refresh"
+    }
+  },
+  "decision_surface_policy": {
+    "release_active_agent_cells": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "lead_mutation": "bounded_run_overlay_with_human_versioned_material_revision",
+    "ten_to_twenty_cell_policy": "deferred_after_FIN_0_1_and_not_required_for_release",
+    "existing_ten_cell_deterministic_preview": "retained_as_explicit_non_agent_reference"
+  },
+  "required_product_surfaces": [
+    "dashboard_task_center",
+    "case_objective_and_three_cell_plan",
+    "research_run_workspace_and_structured_events",
+    "evidence_numeric_and_bounded_graph_drilldown",
+    "workpaper_and_targeted_repair",
+    "internal_report_and_trace",
+    "exact_human_review",
+    "quality_release_summary"
+  ],
+  "release_case_proof": {
+    "cases": [
+      "NVDA",
+      "DELL",
+      "MU"
+    ],
+    "all_cases_required": "R2_calibrated_research_output",
+    "NVDA_anchor_required": "R3_reviewer_accepted",
+    "allowed_proof_profiles": [
+      "bounded_agent_internal",
+      "release_candidate"
+    ],
+    "disallowed_as_release_proof": [
+      "deterministic_fallback",
+      "agent_fixture_shadow",
+      "manual_supervisor_supplement"
+    ]
+  },
+  "frontend_delivery_contract": {
+    "required": true,
+    "implementation_root": "apps/workbench/frontend/vite/src",
+    "stack": "react_19_typescript_vite",
+    "api_root": "apps/workbench/backend",
+    "api_style": "versioned_fastapi_product_contracts",
+    "desktop_first": true,
+    "minimum_supported_width_px": 1024,
+    "required_language": "zh_CN_with_optional_en",
+    "json_api_only_is_sufficient": false,
+    "private_chain_of_thought_visible": false,
+    "structured_run_events_visible": true
+  },
+  "required_runtime_capabilities": [
+    "one_Fin01ResearchRuntime",
+    "explicit_execution_profiles_without_silent_substitution",
+    "bounded_research_lead_and_stable_specialists",
+    "runtime_consumed_agent_skill_tool_and_graph",
+    "evidence_request_agentic_search_and_promotion",
+    "parser_numeric_program_trace",
+    "structured_financial_judgment_and_counterevidence",
+    "role_scoped_context_and_registry_memory_boundary",
+    "targeted_repair_and_materiality_invalidation",
+    "bounded_writer_no_source_and_layered_verifier",
+    "exact_human_review_and_bidirectional_provenance",
+    "release_eval_and_rollback"
+  ],
+  "named_roadmap_ref": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json#/named_roadmap",
+  "authority_boundary": {
+    "current_execution_admission": "S1_fixture_shadow_internal_only",
+    "model_provider_network_paid_authorized": false,
+    "real_business_case_mutation_authorized": false,
+    "release_candidate_authorized": false,
+    "production_cutover_authorized": false,
+    "production_readiness": "not_admitted"
+  }
+}

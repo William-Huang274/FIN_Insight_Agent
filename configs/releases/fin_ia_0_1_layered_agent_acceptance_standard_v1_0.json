@@ -1,0 +1,128 @@
+{
+  "schema_version": "fin_ia_0_1_layered_agent_acceptance_standard_v1_0",
+  "contract_ref": "fin01.agent_acceptance.layered_hard_integrity_and_quality:v1",
+  "effective_at": "2026-07-25T00:00:00+08:00",
+  "status": "active_for_design_stage_reassessment_and_future_runtime_alignment",
+  "scope": [
+    "FIN_0_1_agent_node_output_validation",
+    "full_chain_exact_live_acceptance",
+    "paired_baseline_comparison",
+    "owner_review_and_release_gate_evidence"
+  ],
+  "principles": [
+    "Hard failure is reserved for truth provenance numeric identity permission security and canonical lineage violations, or for transport storage and safety capacity exhaustion.",
+    "Schema and protocol deviations that can be retained and repaired without changing research facts are recoverable findings, not reasons to erase valid upstream work.",
+    "Analytical quality and user-fit are scored and reviewed separately from hard integrity.",
+    "Model outputs should contain bounded judgment atoms references and enums; canonical IDs structure lineage and deterministic expansion remain locally owned.",
+    "Prompt schema validator and fake Provider must derive from one versioned contract source.",
+    "Historical evidence may prove a capability cumulatively, but may not be composed into a terminal product that no single coherent Run actually produced."
+  ],
+  "acceptance_layers": [
+    {
+      "layer_id": "L1_hard_integrity",
+      "purpose": "Protect research truth, authority, security and reconstructability.",
+      "default_runtime_disposition": "terminal_fail_closed",
+      "gates": [
+        "no fabricated or unsupported material claim",
+        "exact Evidence Fact Claim Numeric and Artifact provenance",
+        "entity business scope period currency unit scale formula and attribution integrity",
+        "canonical identity lineage and same-scope reference validity",
+        "permission secret network tool source and writer-authority boundaries",
+        "no silent fallback substitution promotion normalization or immutable-output rewrite",
+        "terminal state idempotency capture and process identity consistency",
+        "transport storage or safety capacity is not exhausted"
+      ]
+    },
+    {
+      "layer_id": "L2_recoverable_protocol",
+      "purpose": "Keep structurally usable work while routing deterministic repair.",
+      "default_runtime_disposition": "retain_output_mark_recoverable_and_route_to_earliest_owner",
+      "gates": [
+        "schema shape and cardinality",
+        "required enum and field representation",
+        "request validator and fake Provider contract alignment",
+        "format rendering and bounded serialization"
+      ],
+      "hard_failure_escalation": [
+        "the deviation makes the output ambiguous or unsafe to parse",
+        "repair would require guessing identity fact numeric or authority",
+        "transport storage or security envelope is exceeded"
+      ]
+    },
+    {
+      "layer_id": "L3_analytical_quality",
+      "purpose": "Measure usefulness without confusing style with truth.",
+      "default_runtime_disposition": "persist_quality_findings_and_continue_when_L1_passes",
+      "rubric_dimensions": [
+        "decision relevance",
+        "causal clarity",
+        "counterevidence balance",
+        "gap visibility",
+        "what_would_change actionability",
+        "comparison against deterministic baseline",
+        "novelty and material research value"
+      ]
+    },
+    {
+      "layer_id": "L4_user_fit_and_delivery",
+      "purpose": "Adapt the product to user expertise and delivery context.",
+      "default_runtime_disposition": "controlled_edit_or_profile_specific_quality_debt",
+      "rubric_dimensions": [
+        "verbosity",
+        "tone",
+        "narrative density",
+        "audience adaptation",
+        "visual and rendering quality",
+        "interaction and review burden"
+      ]
+    }
+  ],
+  "narrative_length_policy": {
+    "quality_targets": "soft_quality_findings",
+    "ordinary_per_field_and_aggregate_character_limits": "soft_or_recoverable_unless_they_protect_a_proven_transport_storage_or_safety_envelope",
+    "hard_capacity_examples": [
+      "provider request or response byte envelope",
+      "canonical object storage envelope",
+      "security redaction envelope",
+      "context or token budget whose exhaustion prevents safe completion"
+    ],
+    "forbidden_repairs": [
+      "silent truncation",
+      "fact-changing summarization",
+      "identity guessing",
+      "captured-output rewrite presented as original model output"
+    ]
+  },
+  "runtime_state_model": {
+    "terminal_success": "all required nodes and canonical artifacts complete with L1 pass",
+    "succeeded_with_quality_findings": "all required nodes and canonical artifacts complete with L1 pass and one or more L3 or L4 findings",
+    "recoverable_partial": "valid outputs are retained but required downstream nodes or artifacts are incomplete",
+    "terminal_hard_failure": "an L1 violation or unrecoverable L2 violation occurred",
+    "historical_terminal_truth_is_immutable": true
+  },
+  "stage_acceptance": {
+    "engineering_integrity": "runtime identity lineage boundaries and deterministic contracts pass",
+    "product_completeness": "one coherent exact Run contains every required current-version Artifact",
+    "research_quality": "four-layer review and paired comparison are completed with findings explicitly dispositioned",
+    "owner_acceptance": "an authorized owner binds acceptance to exact artifact versions and digests",
+    "progression_rule": "A slice may advance only when the acceptance declared by that slice is evidenced; quality debt may carry forward, but missing product artifacts or L1 defects may not."
+  },
+  "maturity_non_equivalence": [
+    "documented_is_not_runtime_aligned",
+    "fixture_proven_is_not_live_complete",
+    "live_partial_is_not_product_complete",
+    "machine_verifier_pass_is_not_owner_acceptance",
+    "owner_accepted_is_not_release_qualified"
+  ],
+  "implementation_guidance": {
+    "provider_output": "small judgment atoms scoped aliases references enums and concise rationales",
+    "local_deterministic_ownership": "canonical IDs structure lineage dependency conflict gap assembly and exact validation",
+    "contract_generation": "one source generates Provider schema local validator fake Provider fixtures and telemetry subtype vocabulary",
+    "canary_sequence": [
+      "single_node_real_provider_canary",
+      "bounded_full_chain_exact_live",
+      "paired_comparison",
+      "independent_owner_review"
+    ]
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "schema_version": "fin_release_contract_v1_3",
+  "release_id": "REL-PROD-001",
+  "version": "FIN_0_1_INTERNAL_ALPHA",
+  "release_channel": "internal_alpha",
+  "status": "program_plan_accepted_S1_fixture_shadow_execution_admitted_release_blocked",
+  "supersedes": {
+    "schema_version": "fin_release_contract_v1_2",
+    "path": "configs/releases/fin_ia_0_1_release_contract_v1_2.json",
+    "file_sha256": "172d36cba76f3e4346ee3e5cd84ff11111d27bf3ec618d479b35ad97a3f2cd95",
+    "reason": "User accepted the D02-D14 Program Execution Plan, the full PRD allocation layer, the three-cell three-case FIN 0.1 release scope, and the single v2.0 progress backlog."
+  },
+  "unchanged_v1_2_contract_inheritance": {
+    "resolution": "All v1.2 foundation, authority, RG1 debt, hard-integrity, rollback and production-readiness semantics remain active unless explicitly overridden by v1.3.",
+    "overridden_fields": [
+      "schema_version",
+      "status",
+      "feature_scope_ref",
+      "detailed_execution_backlog_ref",
+      "program_plan_ref",
+      "target_job",
+      "required_feature_ids",
+      "required_product_surfaces",
+      "release_case_proof",
+      "development_admission"
+    ]
+  },
+  "target_user": [
+    "internal_research_analyst",
+    "internal_senior_reviewer",
+    "portfolio_project_reviewer"
+  ],
+  "target_job": "Create and run a bounded AI-infrastructure ResearchCase through one Agent-capable runtime, inspect evidence/numeric/graph/judgment, produce an exact workpaper/report/trace, and complete accountable Human review",
+  "feature_scope_ref": "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_1.json",
+  "detailed_execution_backlog_ref": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+  "program_plan_ref": "docs/architecture/repository/FIN_0_1_PROGRAM_EXECUTION_PLAN_DRAFT_20260719.zh-CN.md",
+  "prd_absorption_ref": "docs/product/FIN_PRD_FULL_ABSORPTION_AND_RELEASE_ALLOCATION_MATRIX_20260719.zh-CN.md",
+  "development_admission": {
+    "active_slice": "S1_one_cell_mainline_cut_through",
+    "allowed_profiles": [
+      "deterministic_fallback",
+      "agent_fixture_shadow"
+    ],
+    "allowed_actions": [
+      "adapter_map",
+      "runtime_profile_run_trace_implementation",
+      "historical_agent_shadow_adapter",
+      "runtime_registry_consumption",
+      "one_cell_fixture_shadow_vertical",
+      "workbench_structured_event_projection",
+      "fast_component_browser_tests"
+    ],
+    "forbidden_actions": [
+      "model_provider_or_network_call",
+      "paid_or_full_chain",
+      "commercial_data",
+      "real_business_case_mutation",
+      "release_candidate_run",
+      "production_cutover"
+    ]
+  },
+  "required_feature_ids": {
+    "release_critical_bounded": [
+      "P001-F01",
+      "P001-F02",
+      "P001-F03",
+      "P001-F04",
+      "P001-F05",
+      "P001-F06",
+      "P001-F07",
+      "P001-F08",
+      "P001-F09",
+      "P001-F10",
+      "P001-F11",
+      "P001-F12",
+      "P001-F13",
+      "P001-F15"
+    ],
+    "demo_support_nonblocking": [
+      "P001-F14"
+    ]
+  },
+  "required_product_surfaces": [
+    "dashboard_task_center",
+    "case_objective_and_three_cell_plan",
+    "research_run_workspace_and_structured_events",
+    "evidence_numeric_and_bounded_graph_drilldown",
+    "workpaper_and_targeted_repair",
+    "internal_report_and_trace",
+    "exact_human_review",
+    "quality_release_summary"
+  ],
+  "release_case_proof": {
+    "cases": [
+      "NVDA",
+      "DELL",
+      "MU"
+    ],
+    "all_cases_required": "R2_calibrated_research_output",
+    "NVDA_anchor_required": "R3_reviewer_accepted"
+  },
+  "release_admission": {
+    "issuer": "S5_release_owner_only",
+    "required_status": "FIN_0_1_INTERNAL_ALPHA_RELEASED",
+    "independent_gates": [
+      "RG1_vertical_path",
+      "RG2_evidence_numeric_integrity",
+      "RG3_research_outcome",
+      "RG4_review_product_value",
+      "RG5_release_rollback"
+    ],
+    "hard_blockers": [
+      "RG1_package_entry_to_leaf_identity_debt",
+      "missing_bounded_operational_vertical_run",
+      "missing_three_case_exact_agent_proof",
+      "missing_three_R2_and_NVDA_R3",
+      "missing_owner_and_qualified_senior_value_evidence",
+      "hard_integrity_failure",
+      "missing_rollback"
+    ]
+  },
+  "hard_invariants": {
+    "known_false_evidence_promotions": 0,
+    "material_numeric_trace_coverage": 1.0,
+    "writer_source_or_tool_calls": 0,
+    "material_claim_provenance_coverage": 1.0,
+    "dual_authoritative_writes": 0,
+    "silent_deterministic_substitutions": 0,
+    "production_cutover_authorized": false
+  },
+  "production_readiness": "not_admitted",
+  "legacy_global_authority": "retained",
+  "rollback_target": "REL-FND-001_with_legacy_global_authority_retained"
+}

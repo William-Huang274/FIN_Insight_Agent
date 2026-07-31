@@ -44,10 +44,13 @@ def test_next_workbench_composes_existing_typed_read_models() -> None:
         assert expected in next_ui
 
 
-def test_next_run_surface_does_not_fake_model_or_operational_execution() -> None:
+def test_next_run_surface_admits_only_the_t05_fixture_shadow_path() -> None:
     next_ui = _source("app/WorkbenchNext.tsx")
 
-    assert 'copy("运行请求未准入", "Run request not admitted")' in next_ui
+    assert 'copy("运行 Agent Fixture-Shadow", "Run agent fixture-shadow")' in next_ui
+    assert "AGENT_FIXTURE_SHADOW_WORK_UNIT_TYPE" in next_ui
+    assert 'bundle.plan?.review_status === "accepted"' in next_ui
+    assert 'copy("确定性预览只读", "Deterministic preview is read-only")' in next_ui
     assert 'model_calls' in next_ui
     assert 'case_mutation_calls' in next_ui
     assert "compileDecisionSurface(" not in next_ui

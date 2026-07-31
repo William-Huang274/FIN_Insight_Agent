@@ -1,0 +1,133 @@
+{
+  "schema_version": "fin_ia_0_1_cross_slice_early_delivery_carry_forward_contract_v1_0",
+  "contract_id": "FIN-0.1-CROSS-SLICE-EARLY-DELIVERY-CARRY-FORWARD",
+  "status": "S4_consumed_entry_decision_frozen_case_execution_pending",
+  "authority": {
+    "user_instruction": "if T09 passes, carry every task assumed early by T09 and its exact progress into later S-slice records",
+    "authorized_change": "planning_backlog_handoff_and_machine_contract_only",
+    "runtime_repair_model_call_rerun_release_or_production_authorized": false,
+    "owner_review_and_S3_T10_closeout_authorized_by_later_instruction": "放行"
+  },
+  "purpose": [
+    "prevent_later_slices_from_rebuilding_capabilities_completed_early_in_S3_T09",
+    "preserve_exact_maturity_evidence_and_remaining_gaps_across_slice_boundaries",
+    "make_reuse_extension_revalidation_and_defer_decisions_machine_readable"
+  ],
+  "producer_contract": {
+    "draft_trigger": "S3_T09_acceptance",
+    "draft_owner": "S3-T09",
+    "finalize_trigger": "S3_T10_owner_review_and_closeout",
+    "finalize_owner": "S3-T10",
+    "manifest_ref": "configs/releases/fin_ia_0_1_s3_to_s4_early_delivery_carry_forward_manifest_v1_0.json",
+    "manifest_status_before_draft_trigger": "historical_not_yet_due",
+    "manifest_current_status": "final_frozen_by_S3_T10_owner_review_and_closeout",
+    "manifest_sha256": "0b429dea6e796cfbc5e9de847396d48f16b64969cd7e93e307a6c4ff84e72108",
+    "source_inventory": [
+      "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json#S3-T09",
+      "docs/project_os/capability_status_ledger.jsonl",
+      "docs/project_os/root_cause_issue_ledger.jsonl",
+      "docs/worklog/product_strategy/",
+      "reports/model_runs/model_run_index.md"
+    ]
+  },
+  "S4_consumption": {
+    "status": "completed_zero_call_by_S4_T01",
+    "user_instruction": "认可",
+    "consumption_ref": "configs/releases/fin_ia_0_1_s4_entry_manifest_consumption_and_three_case_transfer_decision_v1_0.json",
+    "consumption_sha256": "097e9bcc5578a80abb04da02686498c73356e8a05c58c7ce7d7063cc27179179",
+    "detailed_backlog_ref": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+    "detailed_backlog_sha256": "9d54045aa8091d4338d5b4e9460442b1bb5a9d6c2046a683f25ac6d18b38ede3",
+    "manifest_item_count": 8,
+    "reuse_as_is_count": 2,
+    "extend_count": 2,
+    "revalidate_for_new_case_or_candidate_count": 4,
+    "defer_or_supersede_count": 0,
+    "case_execution_authorized": false,
+    "next_action": "S4-T02-DELL-MU-CASE-PACK-AND-FINANCIAL-METHOD-TO-RUNTIME-CONTRACT-DECISION"
+  },
+  "required_capability_domains": [
+    "provider_output_contract_and_transport",
+    "terminalization_usage_and_restricted_answer_capture",
+    "epistemic_state_fact_support_and_context_authority",
+    "cell_scoped_identity_alias_and_local_typed_expansion",
+    "token_byte_aggregate_and_per_field_capacity",
+    "failure_telemetry_replay_and_root_cause_lineage",
+    "writer_verifier_and_artifact_lineage",
+    "paired_baseline_owner_review_and_quality_findings"
+  ],
+  "required_manifest_item_fields": [
+    "capability_id",
+    "capability_domain",
+    "originally_planned_for",
+    "delivered_or_advanced_in",
+    "maturity_state",
+    "exact_status",
+    "evidence_refs",
+    "root_cause_refs",
+    "known_gaps",
+    "remaining_acceptance",
+    "reuse_instruction",
+    "later_slice_disposition",
+    "do_not_repeat_without_new_evidence"
+  ],
+  "allowed_maturity_states": [
+    "documented",
+    "contract_translated",
+    "fixture_proven",
+    "live_partial",
+    "live_complete",
+    "owner_accepted",
+    "release_qualified"
+  ],
+  "consumer_contract": {
+    "S4_entry_requires": [
+      "final_manifest_exists_and_digest_is_frozen",
+      "every_manifest_item_has_one_later_slice_disposition",
+      "S4_backlog_records_reuse_as_is_extend_revalidate_or_defer",
+      "no_completed_capability_is_rebuilt_without_changed_requirement_failure_or_new_evidence"
+    ],
+    "S5_entry_requires": [
+      "S3_to_S4_manifest_and_S4_consumption_results_are_reconciled",
+      "release_candidate_scope_distinguishes_carried_proof_from_candidate_revalidation",
+      "remaining_gaps_are_mapped_to_RG1_through_RG5_or_named_roadmap"
+    ],
+    "allowed_later_slice_dispositions": [
+      "reuse_as_is",
+      "extend",
+      "revalidate_for_new_case_or_candidate",
+      "defer_to_named_roadmap",
+      "superseded_with_reason"
+    ]
+  },
+  "non_inflation_rules": [
+    "fixture_proven_must_not_be_reported_as_live_complete",
+    "live_partial_must_not_be_reported_as_complete_artifact_product",
+    "owner_review_must_not_be_reported_as_qualified_senior_R3",
+    "S3_R2_must_not_be_reported_as_Alpha_release_or_production",
+    "historical_failure_and_consumed_admission_records_remain_immutable"
+  ],
+  "safety_and_storage": {
+    "raw_provider_answer_copy_into_manifest": false,
+    "private_reasoning_or_credential_copy_into_manifest": false,
+    "evidence_by_digest_or_durable_ref_only": true
+  },
+  "current_observation": {
+    "T09_passed": true,
+    "T10_owner_review_and_closeout_passed": true,
+    "draft_manifest_due": false,
+    "draft_manifest_completed": true,
+    "final_manifest_due": false,
+    "final_manifest_completed": true,
+    "S4_manifest_consumption_completed": true,
+    "S4_T01_passed": true,
+    "S4_case_execution_started": false,
+    "S5_reconciliation_due": false,
+    "model_provider_network_source_tool_calls": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+}

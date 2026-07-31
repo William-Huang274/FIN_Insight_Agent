@@ -1149,3 +1149,5 @@
 - [x] P38 Point 01 WorkBuddy improvement-baseline correction: classify DeepSeek V4 as non-strong calibration input, expose prior audit blind spots, and require semantic re-audit plus retain/improve/redesign/reject adjudication before pack compilation; no runtime cutover.
 - [x] P38 WorkBuddy 12-case semantic/trajectory re-audit: reviewed cell quality, claim-source entailment, numeric/unit/period, source conflict, tool usefulness, repair causality, context yield, handoff/version and chart data binding; direct promotion 0, pack candidates 20.
 - [ ] P38 compile approved pack candidate definitions into schema-only M2 fixtures: remove all WorkBuddy facts/values, add FIN source/numeric policy and independent rubrics, then run deterministic compiler calibration before any model node.
+- [x] FIN-0.1.2-S0C-T03 corrective hermetic proof terminal closeout: 唯一双 disposable package 在 collection 期同点失败，冻结 RC-P36-092 static Runtime resource inventory 与 RC-P36-093 semantic environment-path taxonomy；RC-P36-090/091 仅保留构建层未复发证据。implementation/proof=`1/1`，不重跑、不建 T04/S2、不调用模型。
+- [ ] FIN-0.1.2-S0C terminal repair-owner/version disposition: 只做零调用归属与版本边界决定；不得改写或重跑已消费的 S0C-T03。

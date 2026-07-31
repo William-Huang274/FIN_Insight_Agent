@@ -1,0 +1,177 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0c_t03_corrective_hermetic_proof_and_terminal_honest_block_closeout_v1_0",
+  "closeout_id": "FIN-0.1.2-S0C-T03-CORRECTIVE-HERMETIC-PROOF-AND-TERMINAL-HONEST-BLOCK-CLOSEOUT-R1",
+  "recorded_at": "2026-08-01T03:22:19+08:00",
+  "status": "terminal_failed_unique_S0C_T03_package_consumed_no_T04_S2_entry_false",
+  "authority": {
+    "parent_decision_ref": "configs/releases/fin_ia_0_1_2_s0c_hermetic_test_topology_and_allowlisted_package_closure_scope_decision_v1_0.json",
+    "parent_decision_sha256": "c2456ef0854a828c116da34a292e2a3bfc9701ab110f309d14b8e579d218108d",
+    "T02_implementation_ref": "configs/releases/fin_ia_0_1_2_s0c_t02_hermetic_test_topology_and_allowlisted_package_closure_minimum_zero_call_implementation_v1_0.json",
+    "T02_implementation_sha256": "b0f351986db242f20ea9f41c31c1a932b35d055ce358158102581aaffe7a4b2a",
+    "T03_manifest_ref": "configs/releases/fin_ia_0_1_2_s0c_t03_corrective_hermetic_proof_manifest_v1_0.json",
+    "T03_manifest_sha256": "4883eef54a123c2fe6037cd8b1eac26163aa151b42d0097f4d749cff1b9e76e4",
+    "task_id": "S0C-T03",
+    "maximum_implementation_bundles": 1,
+    "implementation_bundles_consumed": 1,
+    "maximum_corrective_proof_packages": 1,
+    "corrective_proof_packages_consumed": 1,
+    "manifest_failure_transition": "FIN-0.1.2-S0C-TERMINAL-HONEST-BLOCK-NO-T04-OR-SECOND-PROOF",
+    "automatic_second_implementation_bundle": false,
+    "automatic_second_proof_package": false,
+    "automatic_T04_or_R_number": false,
+    "patch_then_rerun_in_this_stage_authorized": false,
+    "S2_stage_plan_authorized": false,
+    "Flash_stable_or_Pro_preview_canary_authorized": false,
+    "model_provider_network_paid_or_business_execution_authorized": false
+  },
+  "frozen_execution": {
+    "output_root": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_2_s0c_t03_corrective_hermetic_proof_20260731T191455Z_head_47ed2584",
+    "git_head": "47ed258457d0b619dc90e8d220d088a06f7614a3",
+    "branch": "codex/layered-data-source-expansion",
+    "runner_exit_code": 1,
+    "verification_ref": "verification.json",
+    "verification_sha256": "4bdfa028acc3627321fe4997cd18e534f7b8eeaba6619d36c43fe41c634a0d80",
+    "package_manifest_ref": "package_manifest.json",
+    "package_manifest_sha256": "3b96871b7612954b73411e0a20d000c5b6dadd6390658eb85d1b33008ee000c1",
+    "terminal_result_refs": [
+      "runs/disposable_a/terminal_result.json",
+      "runs/disposable_b/terminal_result.json"
+    ],
+    "terminal_result_sha256": [
+      "933429ad4cbb7e6e4170e4286a56f14de181da141b4e0559c70de901ad4daf1c",
+      "2d37acebcc5baf9b02317ffb1414e76f73eb1cd3582879e8caa3392718ee5a16"
+    ],
+    "semantic_projection_refs": [
+      "runs/disposable_a/semantic_parity_projection.json",
+      "runs/disposable_b/semantic_parity_projection.json"
+    ],
+    "semantic_projection_sha256": [
+      "f10797cf38b05cf50eb0955fa8a837f0b5bfc42b3f45b0f9733659b13affd604",
+      "525a3742e3449a3e31dbe4b50a04faaa5d7180ec91c90e7618fa6d14672a543e"
+    ],
+    "disposable_runtime_count": 2,
+    "repository_file_count": 746,
+    "external_dependency_count": 0,
+    "package_file_count": 753,
+    "package_bytes": 15263099,
+    "test_counts_each": {},
+    "collection_errors_each": [1, 1],
+    "pytest_exit_code_each": [2, 2],
+    "repository_unchanged_during_run": true,
+    "complete_per_test_stdout_stderr_content_addressed": true,
+    "process_stdout_stderr_content_addressed": true,
+    "credential_environment_removed": [
+      "ANTHROPIC_API_KEY",
+      "AZURE_OPENAI_API_KEY",
+      "DEEPSEEK_API_KEY",
+      "EDINET_API_KEY",
+      "GEMINI_API_KEY",
+      "GOOGLE_API_KEY",
+      "OPENAI_API_KEY"
+    ]
+  },
+  "package_construction_result": {
+    "active_manifest_id": "FIN-0.1.2-S0C-T03-CORRECTIVE-HERMETIC-PROOF-R1",
+    "active_manifest_digest": "b1085a4aab93f263c9a80936a456472cadf3457cd14aaeef23cbaf7fdccac1d1",
+    "inventory_source": "host_compiled_git_tracked_plus_typed_allowlist_reference_closure",
+    "frozen_repository_inventory_digest": "21387480dabbd6a24bc4437010622d5ed5876cff8ea3848d191d454a900e870c",
+    "repository_inventory_closure_digest": "efdb400c1ae053a1c1da8c4aa3a1f73cdaf7eebd6c20fed5b7bbcb9ba61febf0",
+    "tracked_paths": 746,
+    "explicit_allowlist_paths": 0,
+    "recursive_reference_paths": 11,
+    "semantic_or_external_references": 113,
+    "git_metadata_paths": 0,
+    "codex_runtime_paths": 0,
+    "worktree_status": [],
+    "RC_P36_090_positive_no_recurrence_evidence": true,
+    "RC_P36_091_positive_no_recurrence_evidence": true,
+    "RC_P36_090_or_091_formally_closed": false,
+    "formal_closure_withheld_reason": "collection_failed_before_any_selected_current_runtime_or_release_gate_test_executed"
+  },
+  "first_blocking_failure": {
+    "phase": "pytest_collection",
+    "nodeid": "tests/contract/test_fin_0_1_2_s1_realistic_three_case_deterministic_proof.py",
+    "status_each": ["failed_current_gate", "failed_current_gate"],
+    "collection_error_detail_sha256": [
+      "82f74c09f4d3bcf01125df6491fd3f43007290afd301d8a592432a2a4409e85d",
+      "2ff0bcf77fb37c8458e03f8fb43bdf41f5eb8bbaa88b7c85ba8bfa04cd44b09d"
+    ],
+    "collection_error_detail_bytes_each": [3059, 3059],
+    "missing_runtime_resource_ref": "configs/releases/fin_ia_0_1_vt2_three_cell_integrity_workpaper_contract_v1_0.json",
+    "missing_runtime_resource_sha256_on_host": "2cb328eb3c69c001621ee3fc86f900417362fdb15ced823a06269f55b4e7ab79",
+    "missing_runtime_resource_bytes_on_host": 7614,
+    "host_resource_git_tracked": true,
+    "packaged_resource_count": 0,
+    "packaged_consumer_ref": "apps/workbench/backend/application/integrity_service.py",
+    "packaged_consumer_count": 1,
+    "consumer_line": 105,
+    "root_cause": "The hermetic closure compiled manifest seeds, Python prefixes, JSON references and the existing explicit Runtime resource inventory, but it did not compile static non-Python resources declared directly by Runtime code. IntegrityService imports successfully and then reads a tracked release contract that was absent from both disposable repositories.",
+    "classification": "project_owned_code_declared_static_runtime_resource_inventory_gap",
+    "identical_failure_class_in_both_disposables": true,
+    "financial_runtime_tests_executed": false,
+    "new_financial_runtime_L1_established": false,
+    "DeepSeek_or_provider_failure": false,
+    "issue_id": "RC-P36-092-fin-0-1-2-code-declared-static-runtime-resource-missing-from-hermetic-inventory"
+  },
+  "secondary_semantic_parity_failure": {
+    "normalization_valid_each": [false, false],
+    "semantic_parity": false,
+    "raw_parity": false,
+    "semantic_parity_digest_each": [
+      "637a481b015168d16cb5717c80c00ce5c2a3d090d4e75891794d88c81ced11d9",
+      "12dc54a2f6b0c40bd0d6fdfe2ed28393c568031cb210e9e33808763a802a7c77"
+    ],
+    "raw_parity_digest_each": [
+      "52c80522eb6c1cdb3c34fed3012672b3e6a0f8a90bb9baecd3329ccaa993c0b0",
+      "ebbc0ab6c75a32a4787c8bbafc54b44f8043911e46c7a71b89d6695075e61658"
+    ],
+    "unknown_absolute_path_count_each": [1, 1],
+    "unknown_absolute_path_digest_each": [
+      "e2318361aedff20cb1581b9d4d5e20cdba37bd703fc4bbc375fd8b492b548bcd",
+      "c2e5767b52a02d411a28890cc3d63e51f57a9f2a1fc38f6d1fad373c95c35755"
+    ],
+    "root_cause": "The collection traceback retained an absolute host Python or site-packages path outside the three allowlisted disposable roots. The semantic projection correctly failed closed instead of silently deleting the path.",
+    "classification": "project_owned_hermetic_semantic_projection_environment_path_taxonomy_gap",
+    "issue_id": "RC-P36-093-fin-0-1-2-hermetic-semantic-parity-untyped-host-python-traceback-path"
+  },
+  "stop_decision": {
+    "S0C_T03_result": "terminal_failed",
+    "S0C_result": "closed_terminal_honest_block",
+    "second_T03_package": false,
+    "S0C_T04": false,
+    "patch_or_retry_in_current_stage": false,
+    "S2_stage_plan_created": false,
+    "Flash_stable_canary_calls": 0,
+    "Pro_preview_canary_calls": 0,
+    "failed_output_business_promotable": false,
+    "failed_package_access": "restricted_quarantine_do_not_share_or_promote",
+    "repair_owner": "future_versioned_FIN_0_1_2_or_later_common_runtime_and_hermetic_test_contract",
+    "separate_owner_version_disposition_required": true
+  },
+  "observed_counts": {
+    "implementation_bundles_consumed": 1,
+    "corrective_proof_packages_consumed": 1,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_source_or_external_tool_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "paid_reproofs": 0
+  },
+  "product_truth": {
+    "historical_FIN_0_1_2_S0": "closed_pass_not_rewritten",
+    "FIN_0_1_2_S1": "closed_honest_block_not_reopened",
+    "S0C_T02": "engineering_pass",
+    "S0C_T03": "terminal_failed_unique_package_consumed",
+    "S0C": "closed_terminal_honest_block",
+    "S2_entry": false,
+    "DELL_R2": false,
+    "MU_R2": false,
+    "post_transfer_NVDA_exact_product": false,
+    "NVDA_R3": false,
+    "FIN_0_1_release_qualified": false
+  },
+  "next_action": "FIN-0.1.2-S0C-TERMINAL-HONEST-BLOCK-AND-REPAIR-OWNER-VERSION-DISPOSITION-DECISION"
+}

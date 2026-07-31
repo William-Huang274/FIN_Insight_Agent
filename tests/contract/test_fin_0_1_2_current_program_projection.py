@@ -9,7 +9,10 @@ from sec_agent.hermetic_test_runner import (
 
 
 ROOT = Path(__file__).resolve().parents[2]
-PROJECTION_REF = (
+CURRENT_PROJECTION_REF = (
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v1_1.json"
+)
+FROZEN_T03_PROJECTION_REF = (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v1_0.json"
 )
 MANIFEST = ROOT / (
@@ -28,13 +31,13 @@ def _load(path: Path) -> dict:
 def test_current_program_projection_is_the_single_host_state_owner() -> None:
     projection = validate_host_current_program_projection(
         ROOT,
-        PROJECTION_REF,
+        CURRENT_PROJECTION_REF,
     )
-    assert projection == Path(PROJECTION_REF)
+    assert projection == Path(CURRENT_PROJECTION_REF)
 
 
 def test_host_state_sources_and_host_only_test_are_not_disposable_inputs() -> None:
-    projection = _load(ROOT / PROJECTION_REF)
+    projection = _load(ROOT / CURRENT_PROJECTION_REF)
     manifest = _load(MANIFEST)
     policy = manifest["hermetic_package_policy"]
     selected_paths = {
@@ -44,7 +47,10 @@ def test_host_state_sources_and_host_only_test_are_not_disposable_inputs() -> No
         for path in suite["test_paths"]
     }
     seeds = set(policy["repository_seed_paths"])
-    assert policy["host_current_program_projection_ref"] == PROJECTION_REF
+    assert policy["host_current_program_projection_ref"] == (
+        FROZEN_T03_PROJECTION_REF
+    )
+    assert CURRENT_PROJECTION_REF != FROZEN_T03_PROJECTION_REF
     assert HOST_ONLY_TEST not in selected_paths
     assert not set(projection["source_paths"].values()).intersection(seeds)
     assert projection["package_governance"]["host_sources_packaged"] is False

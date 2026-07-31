@@ -286,7 +286,11 @@ def validate_host_current_program_projection(
         )
     if projection["schema_version"] != CURRENT_PROGRAM_PROJECTION_SCHEMA:
         raise HermeticTestRunnerError("current_projection_schema_invalid")
-    if projection["status"] != "current_host_validated_T02_pass_T03_ready":
+    allowed_projection_statuses = {
+        "current_host_validated_T02_pass_T03_ready",
+        "current_host_validated_S0C_T03_terminal_honest_block_S2_deferred",
+    }
+    if projection["status"] not in allowed_projection_statuses:
         raise HermeticTestRunnerError("current_projection_status_invalid")
 
     source_values = projection["source_paths"]

@@ -60,3 +60,11 @@ repository reference policy 现在区分三类关系：Git-tracked repository de
 host `FIN 0.1.2` 合同矩阵由修复前 `101 pass / 7 fail` 收敛为 `122 pass / 0 fail / 0 skip`；三案例 runtime + frozen authority 为 `32 pass`，DELL/MU/NVDA 各保持 `6 nodes / 12 interactions / 12 captures / 9 diagnostic Artifacts`。Windows 无 symlink 权限时由同一 resolved-path guard 的纯负例补证，不豁免 escape 检查。这仍只是 engineering pass：未创建或运行 S0C-T03 package，RC-P36-090/091 继续 open/full-chain blocker，S2 与产品/release 真值不变。
 
 当前唯一下一项为 `FIN-0.1.2-S0C-T03-INDEPENDENT-TWO-DISPOSABLE-CORRECTIVE-HERMETIC-PROOF-AND-CLOSEOUT`。它最多消费一个新-stage proof package；成功后才允许另做 S2 StagePlan 决策，失败则直接 S0C honest block，不产生 T04、R-number 或第二 package。
+
+## S0C-T03 终态与新增共同合同缺口（2026-08-01）
+
+唯一 S0C-T03 package 已执行并消费。两套 disposable 均在 pytest collection 阶段失败，exit code 都为 2、各 1 个 collection error、0 个测试实际执行。相同 import chain 在 `IntegrityService.from_services()` 读取 tracked `fin_ia_0_1_vt2_three_cell_integrity_workpaper_contract_v1_0.json` 时终止：consumer Python 已入包，代码直接声明的静态 Runtime contract 未入包。这表明当前闭包虽然能处理 JSON refs 和既有 non-Python inventory，却还没有把“代码声明的静态资源”编译成同一可验证依赖合同。该 owner 登记为 RC-P36-092。
+
+collection traceback 同时暴露第二个合同缺口：当前 semantic parity 只类型化三个 exact disposable roots，宿主 Python/site-packages 绝对路径仍为 unknown；两份 projection 各保留 1 个 unknown path 并 fail closed。该 owner 登记为 RC-P36-093。未来处理必须扩展 typed environment-path taxonomy，不得用任意绝对路径删除或宽松字符串替换获得假 parity。
+
+本包实际为 `746 paths / 746 tracked / 0 explicit allowlist`，`.git` 与 `.codex_runtime` 均为 0；因此 RC-P36-090/091 得到 construction-level positive evidence，但因 current Runtime/release-gate tests 未执行而继续 open。S0C implementation/proof=`1/1` 已耗尽，S0C 终态 honest block；不得 patch-then-rerun、建立 T04、第二 package 或自动进入 S2。Flash stable / Pro preview canary 也因上游门禁不成立保持 0 调用。下一项仅为版本化 repair owner 处置，不是 S0C 续修。

@@ -213,6 +213,7 @@ class P36LocalResearchService:
         payload = {
             "case_id": source["case_id"],
             "case_version": source["case_version"],
+            "as_of": source["as_of"],
             "source_preview_digest": source["preview_digest"],
             "analysis_mode": "bounded_local_deterministic_preview",
             "status": "internal_analysis_preview_ready",
@@ -262,12 +263,22 @@ class P36LocalResearchService:
             facts.append(
                 {
                     "candidate_id": candidate["candidate_id"],
+                    "entity_ref": candidate.get("ticker") or "",
+                    "segment_ref": candidate.get("segment_ref") or "__company_total__",
                     "metric_family": metric,
                     "label": candidate["title"],
+                    "row_label": candidate.get("row_label") or candidate["title"],
                     "value": str(value),
                     "unit": candidate.get("unit") or "",
+                    "currency": candidate.get("currency") or (
+                        "USD" if candidate.get("unit") == "USD" else ""
+                    ),
+                    "scale_multiplier": int(candidate.get("scale_multiplier") or 1),
                     "period": candidate.get("period") or candidate.get("published_at") or "",
                     "source_ref": candidate["evidence_ref"],
+                    "source_coordinate": candidate.get("source_coordinate")
+                    or candidate.get("citation_span")
+                    or candidate["evidence_ref"],
                     "exact_value_authority": bool(candidate["exact_value_authority"]),
                 }
             )
@@ -824,6 +835,11 @@ class P36LocalResearchService:
             "metric_family": str(row.get("metric_family") or ""),
             "value": str(row.get("value") or ""),
             "unit": str(row.get("unit") or ""),
+            "currency": "USD" if str(row.get("unit") or "") == "USD" else "",
+            "segment_ref": "__company_total__",
+            "row_label": str(row.get("metric_name") or row.get("metric_family") or ""),
+            "scale_multiplier": 1,
+            "source_coordinate": str(row.get("evidence_ref") or row.get("gold_row_id") or ""),
             "period": str(row.get("period") or ""),
             "writer_citable": False,
             "promotion_status": "candidate_not_promoted",

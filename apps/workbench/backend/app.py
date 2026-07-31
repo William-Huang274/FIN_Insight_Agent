@@ -29,6 +29,13 @@ from .application.integrity_service import IntegrityService
 from .application.human_baseline_service import HumanBaselineService
 from .application.local_research_service import P36LocalResearchService
 from .application.planning_service import PlanningService
+from .application.research_runtime import Fin01ResearchRuntime
+from .application.bounded_agent_executor import (
+    BoundedAgentAdmission,
+    BoundedAgentExecutorPort,
+    S3ThreeCellBoundedAgentAdmission,
+    S3ThreeCellBoundedAgentExecutorPort,
+)
 from sec_agent.workbench import (
     RunCancelReport,
     RunInspectionReport,
@@ -66,6 +73,11 @@ from sec_agent.workbench import (
 )
 from sec_agent.workbench.api_contracts import install_api_contracts, request_trace_id
 from sec_agent.langgraph_orchestrator import inspect_node_checkpoint_artifact
+from sec_agent.s4_case_runtime import (
+    S4CaseRuntimeBinding,
+    S4CaseRuntimeResearchProfileOverlay,
+    S4SourceGroundedInputPack,
+)
 from sec_agent.r53_r60_deliverable_studio_dashboard import (
     build_s7_gate as build_r53_r60_s7_deliverables,
     get_dashboard_projection as get_r53_r60_dashboard_projection,
@@ -345,17 +357,57 @@ def create_app(
     human_baseline_service: HumanBaselineService | None = None,
     vt2_integrity_service: IntegrityService | None = None,
     vt3_deliverable_service: DeliverableService | None = None,
+    bounded_agent_admission: BoundedAgentAdmission | None = None,
+    bounded_agent_executor: BoundedAgentExecutorPort | None = None,
+    s3_three_cell_bounded_agent_admission: S3ThreeCellBoundedAgentAdmission | None = None,
+    s3_three_cell_bounded_agent_executor: S3ThreeCellBoundedAgentExecutorPort | None = None,
+    s4_deterministic_binding: S4CaseRuntimeBinding | None = None,
+    s4_deterministic_source_pack: S4SourceGroundedInputPack | None = None,
+    s4_deterministic_research_profile_overlay: (
+        S4CaseRuntimeResearchProfileOverlay | None
+    ) = None,
 ) -> FastAPI:
     store = WorkbenchStore(store_path or default_store_path(REPO_ROOT))
     case_service = p02_case_service or case_service_from_env(REPO_ROOT)
     planning_service = p02_planning_service or PlanningService.from_case_service(case_service)
-    execution_service = p02_execution_service or ExecutionService.from_case_service(case_service)
     evidence_service = p03_evidence_service or EvidenceService.from_case_service(
         case_service, repo_root=REPO_ROOT
     )
     local_research_service = p36_local_research_service or P36LocalResearchService.from_case_service(
         case_service, repo_root=REPO_ROOT
     )
+    if p02_execution_service is not None:
+        execution_service = p02_execution_service
+    else:
+        facade = getattr(case_service, "_facade", None)
+        research_runtime = (
+            Fin01ResearchRuntime(
+                facade,
+                local_research_service,
+                evidence_service,
+                bounded_agent_admission=bounded_agent_admission,
+                bounded_agent_executor=bounded_agent_executor,
+                s3_three_cell_bounded_agent_admission=(
+                    s3_three_cell_bounded_agent_admission
+                ),
+                s3_three_cell_bounded_agent_executor=(
+                    s3_three_cell_bounded_agent_executor
+                ),
+                s4_deterministic_binding=s4_deterministic_binding,
+                s4_deterministic_source_pack=(
+                    s4_deterministic_source_pack
+                ),
+                s4_deterministic_research_profile_overlay=(
+                    s4_deterministic_research_profile_overlay
+                ),
+            )
+            if facade is not None
+            else None
+        )
+        execution_service = ExecutionService.from_case_service(
+            case_service,
+            runtime=research_runtime,
+        )
     baseline_service = human_baseline_service or HumanBaselineService.from_services(
         case_service, local_research_service, repo_root=REPO_ROOT
     )

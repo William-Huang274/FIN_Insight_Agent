@@ -95,6 +95,13 @@ class AttemptState(str, Enum):
     CANCELLED = "cancelled"
 
 
+class ResearchRunState(str, Enum):
+    RUNNING = "running"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
 class InstitutionalResearchCase(ScopedVersion):
     case_id: str
     case_version: int = Field(ge=1)
@@ -211,6 +218,30 @@ class Attempt(ScopedVersion):
     @field_validator("started_at", "ended_at", "lease_expires_at", "lease_heartbeat_at", "lease_reclaimed_at")
     @classmethod
     def require_attempt_utc(cls, value: datetime | None) -> datetime | None:
+        if value is not None and (value.tzinfo is None or value.utcoffset() != timezone.utc.utcoffset(value)):
+            raise ValueError("timezone_aware_utc_required")
+        return value
+
+
+class ResearchRunVersion(ScopedVersion):
+    case_id: str
+    research_run_id: str
+    research_run_version_id: str
+    research_run_version: int = Field(ge=1)
+    work_unit_id: str
+    attempt_id: str
+    execution_profile_version_ref: str
+    parent_research_run_id: str | None = None
+    input_refs: tuple[str, ...]
+    input_refs_digest: str
+    state: ResearchRunState
+    started_at: datetime
+    ended_at: datetime | None = None
+    terminal_reason: str | None = None
+
+    @field_validator("started_at", "ended_at")
+    @classmethod
+    def require_research_run_utc(cls, value: datetime | None) -> datetime | None:
         if value is not None and (value.tzinfo is None or value.utcoffset() != timezone.utc.utcoffset(value)):
             raise ValueError("timezone_aware_utc_required")
         return value

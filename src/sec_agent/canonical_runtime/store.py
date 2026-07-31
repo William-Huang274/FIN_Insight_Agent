@@ -9,7 +9,7 @@ from typing import Any, Iterator, Mapping
 from .models import EventEnvelope, canonical_digest, utc_now
 
 
-SCHEMA_MIGRATION = "point03_vt1_001"
+SCHEMA_MIGRATION = "fin01_s1_t02_001"
 
 OBJECT_TABLES = (
     "canonical_research_cases",
@@ -17,6 +17,7 @@ OBJECT_TABLES = (
     "canonical_task_run_bindings",
     "canonical_work_units",
     "canonical_attempts",
+    "canonical_research_run_versions",
     "canonical_actor_snapshots",
     "canonical_artifact_versions",
     "canonical_decision_surface_contract_versions",
@@ -432,6 +433,7 @@ def _ddl() -> str:
         "canonical_task_run_bindings",
         "canonical_work_units",
         "canonical_attempts",
+        "canonical_research_run_versions",
         "canonical_artifact_versions",
         "canonical_decision_surface_contract_versions",
         "canonical_decision_surface_cell_versions",
@@ -517,14 +519,47 @@ def _ddl() -> str:
     )
     begin select raise(abort, 'attempt_work_unit_parent_missing'); end;
 
-    create trigger if not exists canonical_artifact_versions_attempt_parent before insert on canonical_artifact_versions
+    create trigger if not exists canonical_research_run_versions_attempt_parent before insert on canonical_research_run_versions
+    when not exists (
+        select 1 from canonical_attempts parent
+        where parent.logical_id = json_extract(new.payload_json, '$.attempt_id')
+          and json_extract(parent.payload_json, '$.work_unit_id') = json_extract(new.payload_json, '$.work_unit_id')
+          and parent.case_id = new.case_id
+          and parent.tenant_id = new.tenant_id
+          and parent.project_id = new.project_id
+    )
+    begin select raise(abort, 'research_run_attempt_parent_missing'); end;
+
+    create trigger if not exists canonical_research_run_versions_attempt_identity before insert on canonical_research_run_versions
+    when exists (
+        select 1 from canonical_research_run_versions sibling
+        where json_extract(sibling.payload_json, '$.attempt_id') = json_extract(new.payload_json, '$.attempt_id')
+          and sibling.logical_id != new.logical_id
+    )
+    begin select raise(abort, 'attempt_research_run_identity_conflict'); end;
+
+    drop trigger if exists canonical_artifact_versions_attempt_parent;
+    create trigger canonical_artifact_versions_attempt_parent before insert on canonical_artifact_versions
     when not exists (
         select 1 from canonical_attempts parent
         where parent.logical_id = json_extract(new.payload_json, '$.producer_attempt_id')
           and parent.case_id = new.case_id
           and parent.tenant_id = new.tenant_id
           and parent.project_id = new.project_id
-          and json_extract(parent.payload_json, '$.input_head_digest') = json_extract(new.payload_json, '$.input_refs_digest')
+          and (
+            json_extract(parent.payload_json, '$.input_head_digest') = json_extract(new.payload_json, '$.input_refs_digest')
+            or exists (
+                select 1 from canonical_research_run_versions run
+                where json_extract(run.payload_json, '$.attempt_id') = parent.logical_id
+                  and run.case_id = new.case_id
+                  and run.tenant_id = new.tenant_id
+                  and run.project_id = new.project_id
+                  and exists (
+                      select 1 from json_each(json_extract(new.payload_json, '$.input_refs')) ref
+                      where ref.value = json_extract(run.payload_json, '$.research_run_version_id')
+                  )
+            )
+          )
     )
     begin select raise(abort, 'artifact_attempt_parent_missing'); end;
 

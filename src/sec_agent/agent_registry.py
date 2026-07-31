@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Mapping
@@ -11,6 +12,7 @@ from sec_agent.research_skills import SKILL_FILES
 
 
 SCHEMA_VERSION = "sec_agent_agent_registry_v0.1"
+AGENT_DEFINITION_VERSION_SCHEMA = "sec_agent_agent_definition_version_v0.1"
 
 TOOL_PERMISSIONS = {
     "none",
@@ -63,6 +65,35 @@ def list_agent_registry() -> list[dict[str, Any]]:
 
 def agent_registry_by_id() -> dict[str, dict[str, Any]]:
     return {entry["agent_id"]: entry for entry in list_agent_registry()}
+
+
+def agent_definition_version(agent_id: str) -> dict[str, Any]:
+    """Return one immutable, content-addressed view of the existing agent contract."""
+
+    contract = get_agent_contract(agent_id)
+    identity = {
+        "schema_version": AGENT_DEFINITION_VERSION_SCHEMA,
+        "source_registry_schema_version": SCHEMA_VERSION,
+        "agent_id": contract["agent_id"],
+        "contract": contract,
+    }
+    encoded = json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
+    digest = hashlib.sha256(encoded).hexdigest()
+    return {
+        **identity,
+        "canonical_digest": digest,
+        "agent_definition_version_ref": f"agent:{contract['agent_id']}:{digest[:16]}",
+    }
+
+
+def select_agent_definition_versions(agent_ids: list[str] | tuple[str, ...]) -> list[dict[str, Any]]:
+    selected = [agent_definition_version(agent_id) for agent_id in dict.fromkeys(agent_ids)]
+    validation = validate_agent_registry([row["contract"] for row in selected])
+    if validation["status"] != "pass":
+        raise ValueError("selected_agent_registry_contract_invalid")
+    return selected
 
 
 def get_agent_contract(agent_id: str) -> dict[str, Any]:

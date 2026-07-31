@@ -248,8 +248,232 @@ def chat_completion_content(**kwargs: Any) -> tuple[str, dict[str, Any]]:
     return str(result.get("content") or ""), result
 
 
+def responses_completion(
+    *,
+    llm_backend: str,
+    base_url: str,
+    responses_path: str,
+    model: str,
+    input: list[dict[str, Any]],
+    text: dict[str, Any],
+    api_key_env: str = "",
+    max_output_tokens: int = 1024,
+    timeout_s: int = 180,
+    stream: bool = False,
+    reasoning: dict[str, Any] | None = None,
+    role: str = "",
+    profile: str = "",
+    trace_tags: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Call a Responses-compatible endpoint without flattening structured output.
+
+    The returned provider output remains in memory for the caller's fail-closed
+    parser. Gateway events contain only transport/status/usage metadata.
+    """
+
+    started = time.time()
+    call_id = f"llm_{time.time_ns()}_{_safe_slug(role or profile or 'call')}"
+    backend = str(llm_backend or "").strip()
+    api_key = os.environ.get(str(api_key_env or ""), "") if api_key_env else ""
+    if not api_key:
+        return _error_result(
+            started=started,
+            status="provider_error",
+            backend=backend,
+            model=model,
+            role=role,
+            profile=profile,
+            trace_tags=trace_tags,
+            failure_reason=(
+                f"{backend} backend requires API key env var: "
+                f"{api_key_env or '<unset>'}"
+            ),
+        )
+
+    payload: dict[str, Any] = {
+        "model": model,
+        "input": input,
+        "text": text,
+        "max_output_tokens": max_output_tokens,
+        "stream": stream,
+    }
+    if reasoning is not None:
+        payload["reasoning"] = reasoning
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}",
+    }
+    request_body = json.dumps(
+        _clean_json_value(payload), ensure_ascii=False
+    ).encode("utf-8")
+    url = _responses_url(base_url, responses_path)
+    proxy_mode = _resolved_proxy_mode(base_url)
+    _append_gateway_event(
+        {
+            "event_type": "model_call_started",
+            "call_id": call_id,
+            "provider": backend,
+            "model": model,
+            "role": role,
+            "profile": profile,
+            "url": url,
+            "proxy_mode": proxy_mode,
+            "timeout_s": timeout_s,
+            "max_tokens": max_output_tokens,
+            "trace_tags": trace_tags or {},
+        }
+    )
+
+    transport_failures: list[dict[str, Any]] = []
+    max_transport_retries = max(
+        0,
+        _int_env(os.environ.get("LLM_GATEWAY_TRANSPORT_RETRIES"), default=1),
+    )
+    max_attempts = max_transport_retries + 1
+    parsed: dict[str, Any] | None = None
+    transport_attempt_count = 0
+    for attempt_index in range(max_attempts):
+        transport_attempt_count = attempt_index + 1
+        try:
+            req = urllib.request.Request(url, data=request_body, headers=headers)
+            with _urlopen_with_proxy_mode(
+                req, timeout_s=timeout_s, proxy_mode=proxy_mode
+            ) as resp:
+                response_text = resp.read().decode("utf-8")
+                candidate = json.loads(response_text)
+                if not isinstance(candidate, dict):
+                    raise ValueError("responses_gateway_response_not_object")
+                parsed = candidate
+            break
+        except urllib.error.HTTPError as exc:
+            # Provider error bodies can contain echoed input or generated text.
+            # Persist only the status code in gateway telemetry.
+            failure_reason = f"HTTP {exc.code}"
+            if _should_retry_http_status(exc.code) and attempt_index < max_attempts - 1:
+                transport_failures.append(
+                    {
+                        "attempt": transport_attempt_count,
+                        "status": "provider_error",
+                        "reason": failure_reason,
+                    }
+                )
+                _sleep_before_retry(attempt_index)
+                continue
+            result = _error_result(
+                started=started,
+                status="provider_error",
+                backend=backend,
+                model=model,
+                role=role,
+                profile=profile,
+                trace_tags=trace_tags,
+                failure_reason=failure_reason,
+                call_id=call_id,
+                url=url,
+                proxy_mode=proxy_mode,
+                transport_attempt_count=transport_attempt_count,
+                transport_failures=transport_failures,
+            )
+            _append_gateway_event(_completion_event(result))
+            return result
+        except Exception as exc:
+            failure_reason = f"{type(exc).__name__}: {str(exc)[:500]}"
+            status = "timeout" if "timed out" in str(exc).lower() else "provider_error"
+            if _should_retry_transport_exception(exc) and attempt_index < max_attempts - 1:
+                transport_failures.append(
+                    {
+                        "attempt": transport_attempt_count,
+                        "status": status,
+                        "reason": failure_reason,
+                    }
+                )
+                _sleep_before_retry(attempt_index)
+                continue
+            result = _error_result(
+                started=started,
+                status=status,
+                backend=backend,
+                model=model,
+                role=role,
+                profile=profile,
+                trace_tags=trace_tags,
+                failure_reason=failure_reason,
+                call_id=call_id,
+                url=url,
+                proxy_mode=proxy_mode,
+                transport_attempt_count=transport_attempt_count,
+                transport_failures=transport_failures,
+            )
+            _append_gateway_event(_completion_event(result))
+            return result
+
+    if parsed is None:
+        result = _error_result(
+            started=started,
+            status="provider_error",
+            backend=backend,
+            model=model,
+            role=role,
+            profile=profile,
+            trace_tags=trace_tags,
+            failure_reason="Responses transport returned no response.",
+            call_id=call_id,
+            url=url,
+            proxy_mode=proxy_mode,
+            transport_attempt_count=transport_attempt_count,
+            transport_failures=transport_failures,
+        )
+        _append_gateway_event(_completion_event(result))
+        return result
+
+    response_status = str(parsed.get("status") or "")
+    response_output = parsed.get("output")
+    incomplete_details = parsed.get("incomplete_details")
+    incomplete_reason = (
+        str(incomplete_details.get("reason") or "")
+        if isinstance(incomplete_details, Mapping)
+        else ""
+    )
+    result = {
+        "status": "ok",
+        "call_id": call_id,
+        "provider": backend,
+        "model": model,
+        "role": role,
+        "profile": profile,
+        "content": "",
+        "message": {},
+        "tool_calls": [],
+        "finish_reason": response_status or None,
+        "response_status": response_status,
+        "response_output": response_output,
+        "incomplete_reason": incomplete_reason,
+        "latency_ms": int((time.time() - started) * 1000),
+        "input_tokens": _usage_int(parsed, "input_tokens"),
+        "output_tokens": _usage_int(parsed, "output_tokens"),
+        "total_tokens": _usage_int(parsed, "total_tokens"),
+        "cost_estimate": None,
+        "failure_reason": "",
+        "trace_tags": trace_tags or {},
+        "transport_attempt_count": transport_attempt_count,
+        "transport_failures": transport_failures,
+        "url": url,
+        "proxy_mode": proxy_mode,
+        "raw_response": parsed,
+    }
+    _append_gateway_event(_completion_event(result))
+    return result
+
+
 def _chat_completions_url(base_url: str, chat_completions_path: str) -> str:
     path = str(chat_completions_path or "").strip() or "/v1/chat/completions"
+    if not path.startswith("/"):
+        path = "/" + path
+    return str(base_url or "").rstrip("/") + path
+
+
+def _responses_url(base_url: str, responses_path: str) -> str:
+    path = str(responses_path or "").strip() or "/responses"
     if not path.startswith("/"):
         path = "/" + path
     return str(base_url or "").rstrip("/") + path

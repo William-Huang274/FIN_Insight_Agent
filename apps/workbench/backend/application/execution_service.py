@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any, Mapping, Protocol
 
 from sec_agent.canonical_runtime.facade import (
     IllegalStateTransition,
@@ -25,8 +25,48 @@ from .case_service import CasePrincipal, CaseService
 
 
 VT1_WORK_UNIT_TYPE = "p36_evidence_fixture_entry"
+AGENT_FIXTURE_SHADOW_WORK_UNIT_TYPE = "agent_fixture_shadow_entry"
+BOUNDED_AGENT_INTERNAL_WORK_UNIT_TYPE = "bounded_agent_internal_entry"
+FIN01_ADMITTED_WORK_UNIT_TYPES = frozenset(
+    (VT1_WORK_UNIT_TYPE, AGENT_FIXTURE_SHADOW_WORK_UNIT_TYPE)
+)
 VT1_FENCING_TOKEN = "fixture-no-lease"
 VT1_CANCEL_REASON = "analyst_cancelled_fixture_work_unit"
+PRIVATE_TRACE_KEY_TOKENS = (
+    "chain_of_thought",
+    "internal_monologue",
+    "hidden_thought",
+    "private_thought",
+    "private_reasoning",
+    "hidden_reasoning",
+    "reasoning_trace",
+    "scratchpad",
+)
+
+
+def predict_work_unit_id(
+    *,
+    tenant_id: str,
+    project_id: str,
+    case_id: str,
+    contract_version_id: str,
+    work_unit_type: str,
+    execution_identity: str,
+) -> str:
+    """Predict the canonical WorkUnit identity without reading or writing state."""
+
+    work_unit_identity = {
+        "tenant_id": tenant_id,
+        "project_id": project_id,
+        "case_id": case_id,
+        "contract_version_id": contract_version_id,
+    }
+    if work_unit_type != VT1_WORK_UNIT_TYPE:
+        if not execution_identity.strip():
+            raise ValueError("non_vt1_execution_identity_required")
+        work_unit_identity["work_unit_type"] = work_unit_type
+        work_unit_identity["execution_identity"] = execution_identity
+    return "wu_p02_5_" + canonical_digest(work_unit_identity)[:24]
 
 
 @dataclass(frozen=True)
@@ -55,19 +95,50 @@ class ExecutionServiceError(RuntimeError):
         self.detail = {"reason": error_code, **detail}
 
 
-class ExecutionService:
-    """VT1 execution admission and canonical read-model projection boundary."""
+class QueuedWorkUnitRuntime(Protocol):
+    @property
+    def admitted_work_unit_types(self) -> frozenset[str]: ...
 
-    def __init__(self, facade: RuntimeFacade | None, *, unavailable_reason: str | None = None):
+    def dispatch_once(
+        self,
+        command: CommandEnvelope,
+        principal: CasePrincipal,
+    ) -> dict[str, Any]: ...
+
+
+class ExecutionService:
+    """Execution admission and canonical read-model projection boundary."""
+
+    def __init__(
+        self,
+        facade: RuntimeFacade | None,
+        *,
+        runtime: QueuedWorkUnitRuntime | None = None,
+        unavailable_reason: str | None = None,
+    ):
         self._facade = facade
+        self._runtime = runtime
         self._unavailable_reason = unavailable_reason
+        runtime_types = (
+            frozenset(runtime.admitted_work_unit_types)
+            if runtime is not None
+            else FIN01_ADMITTED_WORK_UNIT_TYPES
+        )
+        if not FIN01_ADMITTED_WORK_UNIT_TYPES.issubset(runtime_types):
+            raise ValueError("runtime_must_preserve_fin01_baseline_work_unit_types")
+        self._admitted_work_unit_types = runtime_types
 
     @classmethod
-    def from_case_service(cls, service: CaseService) -> "ExecutionService":
+    def from_case_service(
+        cls,
+        service: CaseService,
+        *,
+        runtime: QueuedWorkUnitRuntime | None = None,
+    ) -> "ExecutionService":
         facade = getattr(service, "_facade", None)
         if facade is None:
             return cls(None, unavailable_reason="explicit_fixture_root_required")
-        return cls(facade)
+        return cls(facade, runtime=runtime)
 
     @classmethod
     def unavailable(cls, reason: str = "explicit_fixture_root_required") -> "ExecutionService":
@@ -84,7 +155,7 @@ class ExecutionService:
         self._require_permission(principal, "execution:write")
         self._require_actor(draft.actor_ref, principal)
         self._require_request_identity(case_id, draft.idempotency_key, trace_id)
-        if draft.work_unit_type != VT1_WORK_UNIT_TYPE:
+        if draft.work_unit_type not in self._admitted_work_unit_types:
             raise ExecutionServiceError("work_unit_type_not_admitted", 403)
 
         case = self._case_row(case_id, principal)
@@ -114,18 +185,27 @@ class ExecutionService:
                 expected_input_head_digest=expected_digest,
             )
 
-        work_unit_id = "wu_p02_5_" + canonical_digest(
-            {
-                "tenant_id": principal.tenant_id,
-                "project_id": principal.project_id,
-                "case_id": case_id,
-                "contract_version_id": contract_version_id,
-            }
-        )[:24]
-        existing_work_units = self._vt1_work_units(case_id, principal)
-        if len(existing_work_units) > 1:
+        work_unit_id = predict_work_unit_id(
+            tenant_id=principal.tenant_id,
+            project_id=principal.project_id,
+            case_id=case_id,
+            contract_version_id=contract_version_id,
+            work_unit_type=draft.work_unit_type,
+            execution_identity=draft.idempotency_key,
+        )
+        existing_work_units = self._work_units_by_type(
+            case_id, principal, draft.work_unit_type
+        )
+        if draft.work_unit_type == VT1_WORK_UNIT_TYPE and len(existing_work_units) > 1:
             raise ExecutionServiceError("vt1_work_unit_cardinality_violation", 409)
-        if existing_work_units:
+        matching_identity = [
+            row
+            for row in existing_work_units
+            if row.get("idempotency_key") == draft.idempotency_key
+        ]
+        if len(matching_identity) > 1:
+            raise ExecutionServiceError("work_unit_execution_identity_ambiguous", 409)
+        if draft.work_unit_type == VT1_WORK_UNIT_TYPE and existing_work_units:
             existing = existing_work_units[0]
             if (
                 existing.get("work_unit_id") != work_unit_id
@@ -136,6 +216,12 @@ class ExecutionService:
                     409,
                     work_unit_id=str(existing["work_unit_id"]),
                 )
+        elif matching_identity and matching_identity[0].get("work_unit_id") != work_unit_id:
+            raise ExecutionServiceError(
+                "work_unit_execution_identity_conflict",
+                409,
+                work_unit_id=str(matching_identity[0]["work_unit_id"]),
+            )
         envelope = self._command(
             command_type="CREATE_WORK_UNIT",
             case_id=case_id,
@@ -146,7 +232,7 @@ class ExecutionService:
             principal=principal,
             payload={
                 "work_unit_id": work_unit_id,
-                "work_unit_type": VT1_WORK_UNIT_TYPE,
+                "work_unit_type": draft.work_unit_type,
                 "target_refs": (case_id,),
                 "input_version_refs": input_version_refs,
                 "expected_case_version": draft.expected_case_version,
@@ -165,6 +251,68 @@ class ExecutionService:
         self._require_permission(principal, "execution:read")
         self._case_row(case_id, principal)
         return self._work_unit_view(case_id, principal)
+
+    @property
+    def background_dispatch_enabled(self) -> bool:
+        return self._runtime is not None
+
+    @staticmethod
+    def dispatchable_work_unit_id(view: Mapping[str, Any]) -> str | None:
+        pending = [
+            str(row.get("work_unit_id") or "")
+            for row in view.get("work_units", ())
+            if isinstance(row, Mapping) and row.get("state") == "pending"
+        ]
+        return pending[0] if len(pending) == 1 and pending[0] else None
+
+    def pending_work_unit_id_for_type(
+        self,
+        case_id: str,
+        work_unit_type: str,
+        principal: CasePrincipal,
+        *,
+        idempotency_key: str | None = None,
+    ) -> str | None:
+        pending = [
+            str(row.get("work_unit_id") or "")
+            for row in self._work_units_by_type(case_id, principal, work_unit_type)
+            if row.get("state") == "pending"
+            and (
+                idempotency_key is None
+                or row.get("idempotency_key") == idempotency_key
+            )
+        ]
+        return pending[0] if len(pending) == 1 and pending[0] else None
+
+    def dispatch_queued_work_unit(
+        self,
+        case_id: str,
+        work_unit_id: str,
+        principal: CasePrincipal,
+        *,
+        trace_id: str,
+    ) -> dict[str, Any]:
+        if self._runtime is None:
+            return {"status": "not_dispatched", "reason": "runtime_not_configured"}
+        self._require_permission(principal, "execution:write")
+        work_unit = self._work_unit_row(case_id, work_unit_id, principal)
+        if work_unit.get("state") != "pending":
+            return {
+                "status": "not_dispatched",
+                "work_unit_id": work_unit_id,
+                "work_unit_state": str(work_unit.get("state") or "unknown"),
+            }
+        envelope = self._command(
+            command_type="DISPATCH_QUEUED_WORK_UNIT",
+            case_id=case_id,
+            actor_ref=principal.actor_id,
+            idempotency_key=f"{work_unit['idempotency_key']}:dispatch",
+            expected_state_version=int(work_unit.get("state_version") or 0),
+            trace_id=trace_id,
+            principal=principal,
+            payload={"work_unit_id": work_unit_id},
+        )
+        return self._runtime.dispatch_once(envelope, principal)
 
     def cancel_work_unit(
         self,
@@ -185,7 +333,7 @@ class ExecutionService:
 
         self._case_row(case_id, principal)
         work_unit = self._work_unit_row(case_id, work_unit_id, principal)
-        if work_unit.get("work_unit_type") != VT1_WORK_UNIT_TYPE:
+        if work_unit.get("work_unit_type") not in self._admitted_work_unit_types:
             raise ExecutionServiceError("work_unit_not_admitted", 403, work_unit_id=work_unit_id)
 
         current_work_unit_version = int(work_unit["work_unit_version"])
@@ -259,6 +407,191 @@ class ExecutionService:
             "events": events,
         }
 
+    def get_research_run_projection(
+        self,
+        case_id: str,
+        principal: CasePrincipal,
+    ) -> dict[str, Any]:
+        """Project exact Run/Event/Artifact truth without exposing private reasoning."""
+
+        self._require_permission(principal, "execution:read")
+        self._case_row(case_id, principal)
+        facade = self._facade_or_raise()
+        work_units = {
+            str(row["work_unit_id"]): row
+            for row in self._vt1_work_units(case_id, principal)
+        }
+        attempts = {
+            str(row["attempt_id"]): row
+            for row in facade.store.list_latest("canonical_attempts", case_id=case_id)
+            if row.get("tenant_id") == principal.tenant_id
+            and row.get("project_id") == principal.project_id
+            and str(row.get("work_unit_id") or "") in work_units
+        }
+        runs = [
+            row
+            for row in facade.store.list_latest(
+                "canonical_research_run_versions", case_id=case_id
+            )
+            if row.get("tenant_id") == principal.tenant_id
+            and row.get("project_id") == principal.project_id
+            and str(row.get("work_unit_id") or "") in work_units
+            and str(row.get("attempt_id") or "") in attempts
+        ]
+        artifacts_by_attempt: dict[str, list[Mapping[str, Any]]] = {}
+        for artifact in facade.store.list_latest(
+            "canonical_artifact_versions", case_id=case_id
+        ):
+            attempt_id = str(artifact.get("producer_attempt_id") or "")
+            if (
+                artifact.get("tenant_id") == principal.tenant_id
+                and artifact.get("project_id") == principal.project_id
+                and attempt_id in attempts
+            ):
+                artifacts_by_attempt.setdefault(attempt_id, []).append(artifact)
+
+        return {
+            "case_id": case_id,
+            "runs": [
+                self._research_run_projection_item(
+                    row,
+                    work_unit=work_units[str(row["work_unit_id"])],
+                    attempt=attempts[str(row["attempt_id"])],
+                    artifacts=artifacts_by_attempt.get(str(row["attempt_id"]), []),
+                )
+                for row in sorted(
+                    runs,
+                    key=lambda item: (
+                        str(item.get("started_at") or ""),
+                        str(item.get("research_run_id") or ""),
+                    ),
+                    reverse=True,
+                )
+            ],
+            "private_chain_of_thought_included": False,
+        }
+
+    def _research_run_projection_item(
+        self,
+        run: Mapping[str, Any],
+        *,
+        work_unit: Mapping[str, Any],
+        attempt: Mapping[str, Any],
+        artifacts: list[Mapping[str, Any]],
+    ) -> dict[str, Any]:
+        facade = self._facade_or_raise()
+        research_run_id = str(run["research_run_id"])
+        projected_events: list[dict[str, Any]] = []
+        for event in facade.store.list_events(research_run_id):
+            if (
+                str(event.get("work_unit_id") or "") != str(run["work_unit_id"])
+                or str(event.get("attempt_id") or "") != str(run["attempt_id"])
+            ):
+                raise ExecutionServiceError(
+                    "research_run_projection_lineage_invalid",
+                    409,
+                    event_id=str(event.get("event_id") or ""),
+                )
+            safe_payload, redacted = self._without_private_trace_fields(
+                event.get("payload") or {}
+            )
+            projected_events.append(
+                {
+                    "event_id": str(event["event_id"]),
+                    "sequence": int(event["sequence_no"]),
+                    "event_type": str(event["event_type"]),
+                    "occurred_at": str(event["occurred_at"]),
+                    "causation_event_id": event.get("causation_event_id"),
+                    "details": safe_payload,
+                    "redacted_fields": redacted,
+                    "private_chain_of_thought_included": False,
+                }
+            )
+
+        projected_artifacts: list[dict[str, Any]] = []
+        output_refs = set(attempt.get("output_refs") or ())
+        for artifact in sorted(
+            artifacts, key=lambda item: (str(item.get("artifact_type")), str(item.get("artifact_version_id")))
+        ):
+            if str(artifact["artifact_version_id"]) not in output_refs:
+                continue
+            artifact_view = facade.get_artifact_version(
+                str(artifact["artifact_version_id"]), include_payload=True
+            )
+            safe_payload, redacted = self._without_private_trace_fields(
+                artifact_view.get("payload") or {}
+            )
+            projected_artifacts.append(
+                {
+                    "artifact_version_id": str(artifact["artifact_version_id"]),
+                    "artifact_type": str(artifact["artifact_type"]),
+                    "producer_attempt_id": str(artifact["producer_attempt_id"]),
+                    "current_status": str(artifact["current_status"]),
+                    "object_digest": str(artifact["object_digest"]),
+                    "input_refs": list(artifact.get("input_refs") or ()),
+                    "payload": safe_payload,
+                    "payload_exact": not redacted,
+                    "redacted_fields": redacted,
+                }
+            )
+        if {row["artifact_version_id"] for row in projected_artifacts} != output_refs:
+            raise ExecutionServiceError(
+                "research_run_projection_artifact_lineage_invalid",
+                409,
+                research_run_id=research_run_id,
+            )
+
+        return {
+            "research_run_id": research_run_id,
+            "research_run_version_id": str(run["research_run_version_id"]),
+            "work_unit_id": str(run["work_unit_id"]),
+            "work_unit_type": str(work_unit["work_unit_type"]),
+            "attempt_id": str(run["attempt_id"]),
+            "execution_profile_version_ref": str(run["execution_profile_version_ref"]),
+            "state": str(run["state"]),
+            "started_at": str(run["started_at"]),
+            "ended_at": str(run["ended_at"]) if run.get("ended_at") else None,
+            "terminal_reason": run.get("terminal_reason") or attempt.get("terminal_reason"),
+            "output_refs": list(attempt.get("output_refs") or ()),
+            "events": projected_events,
+            "artifacts": projected_artifacts,
+        }
+
+    @classmethod
+    def _without_private_trace_fields(
+        cls,
+        value: Any,
+        *,
+        path: str = "$",
+    ) -> tuple[Any, list[str]]:
+        if isinstance(value, Mapping):
+            safe: dict[str, Any] = {}
+            redacted: list[str] = []
+            for raw_key, raw_value in value.items():
+                key = str(raw_key)
+                normalized = key.lower().replace("-", "_")
+                child_path = f"{path}.{key}"
+                if any(token in normalized for token in PRIVATE_TRACE_KEY_TOKENS):
+                    redacted.append(child_path)
+                    continue
+                child, child_redacted = cls._without_private_trace_fields(
+                    raw_value, path=child_path
+                )
+                safe[key] = child
+                redacted.extend(child_redacted)
+            return safe, redacted
+        if isinstance(value, (list, tuple)):
+            safe_items: list[Any] = []
+            redacted = []
+            for index, item in enumerate(value):
+                child, child_redacted = cls._without_private_trace_fields(
+                    item, path=f"{path}[{index}]"
+                )
+                safe_items.append(child)
+                redacted.extend(child_redacted)
+            return safe_items, redacted
+        return value, []
+
     def _work_unit_view(self, case_id: str, principal: CasePrincipal) -> dict[str, Any]:
         rows = self._vt1_work_units(case_id, principal)
         return {
@@ -282,7 +615,19 @@ class ExecutionService:
             if row.get("tenant_id") == principal.tenant_id
             and row.get("project_id") == principal.project_id
             and row.get("case_id") == case_id
-            and row.get("work_unit_type") == VT1_WORK_UNIT_TYPE
+            and row.get("work_unit_type") in self._admitted_work_unit_types
+        ]
+
+    def _work_units_by_type(
+        self,
+        case_id: str,
+        principal: CasePrincipal,
+        work_unit_type: str,
+    ) -> list[Mapping[str, Any]]:
+        return [
+            row
+            for row in self._vt1_work_units(case_id, principal)
+            if row.get("work_unit_type") == work_unit_type
         ]
 
     def _case_row(self, case_id: str, principal: CasePrincipal) -> Mapping[str, Any]:

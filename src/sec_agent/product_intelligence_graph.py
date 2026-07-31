@@ -14,6 +14,9 @@ PRODUCT_INTELLIGENCE_EDGE_SCHEMA_VERSION = "finsight_product_intelligence_edge_v
 PRODUCT_INTELLIGENCE_COMPANY_PACK_SCHEMA_VERSION = "finsight_product_intelligence_company_pack_v0_1"
 PRODUCT_INTELLIGENCE_GAP_SCHEMA_VERSION = "finsight_product_intelligence_gap_v0_1"
 PRODUCT_INTELLIGENCE_SUMMARY_SCHEMA_VERSION = "finsight_product_intelligence_summary_v0_1"
+S3_PRODUCT_INDUSTRY_PROJECTION_CONTRACT_REF = (
+    "fin01.s3.product_industry_decision_cell_projection:v1"
+)
 
 
 DEFAULT_PRODUCT_SLOTS = "data/manifests/company_product_slots_v0_1.jsonl"
@@ -66,6 +69,89 @@ RELATIONSHIP_AUTHORITY_BY_TYPE: dict[str, str] = {
     "HAS_PRODUCT_FAMILY": "product_taxonomy_context",
     "IN_PRODUCT_FAMILY": "product_taxonomy_context",
 }
+
+
+def compile_s3_product_industry_projection_inputs(
+    *,
+    evidence_route_plan: Mapping[str, Any],
+    financial_pack: Mapping[str, Any],
+) -> tuple[dict[str, Any], ...]:
+    """Project existing T03/T04 inputs by Cell without creating fact authority."""
+
+    expected_cells = (
+        "demand_authenticity_and_sustainability",
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change",
+    )
+    routes = {
+        str(row.get("program_cell_id") or ""): row
+        for row in evidence_route_plan.get("cell_routes") or ()
+    }
+    financial_cells = {
+        str(row.get("program_cell_id") or ""): row
+        for row in financial_pack.get("fundamental_decision_cells") or ()
+    }
+    if tuple(routes) != expected_cells or tuple(financial_cells) != expected_cells:
+        raise ValueError("s3_product_industry_cell_lineage_invalid")
+
+    rows: list[dict[str, Any]] = []
+    for cell_id in expected_cells:
+        route = routes[cell_id]
+        candidates = tuple(route.get("candidate_bundle", {}).get("candidates") or ())
+        if not candidates:
+            raise ValueError("s3_product_industry_candidate_context_required")
+        financial_cell = financial_cells[cell_id]
+        if cell_id == "demand_authenticity_and_sustainability":
+            status = "bounded_official_product_and_customer_context_only"
+            selected = candidates
+            typed_gaps = (
+                "deployment_breadth_and_persistence_not_promoted",
+                "technical_or_customer_signal_not_supplier_revenue",
+            )
+        elif cell_id == "value_and_profit_capture":
+            status = "bounded_company_total_bridge_product_attribution_gap"
+            selected = candidates
+            typed_gaps = tuple(financial_cell.get("typed_cannot_infer") or ())
+            if not financial_cell.get("derived_metric_refs"):
+                raise ValueError("s3_product_financial_bridge_requires_T04_metrics")
+        else:
+            status = "bounded_relationship_navigation_source_followup_required"
+            selected = tuple(
+                row for row in candidates if row.get("source_role") == "relationship_graph"
+            )
+            typed_gaps = (
+                "relationship_does_not_prove_current_binding_constraint",
+                "capacity_probability_and_impact_not_inferable",
+            )
+            if len(selected) != 1 or route.get("graph_observation") is None:
+                raise ValueError("s3_product_industry_graph_observation_required")
+        payload = {
+            "contract_ref": S3_PRODUCT_INDUSTRY_PROJECTION_CONTRACT_REF,
+            "program_cell_id": cell_id,
+            "status": status,
+            "candidate_refs": tuple(str(row["candidate_id"]) for row in selected),
+            "source_snapshot_refs": tuple(
+                str(row["source_snapshot_ref"]) for row in selected
+            ),
+            "source_period_refs": tuple(str(row["period_ref"]) for row in selected),
+            "source_roles": tuple(str(row["source_role"]) for row in selected),
+            "typed_gaps": typed_gaps,
+            "technical_signal_is_financial_fact": False,
+            "graph_or_product_numeric_authority": False,
+            "direct_evidence_authorized": False,
+            "writer_citable": False,
+        }
+        digest = hashlib.sha256(
+            json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        rows.append(
+            {
+                **payload,
+                "projection_input_ref": f"s3_product_industry_input_{digest[:24]}",
+                "projection_input_digest": digest,
+            }
+        )
+    return tuple(rows)
 
 
 def build_product_intelligence_graph(

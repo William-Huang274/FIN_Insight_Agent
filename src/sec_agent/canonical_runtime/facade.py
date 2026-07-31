@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import json
+import re
 from datetime import datetime, timedelta
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Mapping, Sequence
 from uuid import uuid4
 
+from .failure_observation_policy import (
+    is_registered_failure_observation,
+    normalize_optional_failure_observation,
+)
 from .feature_flags import FeatureFlagError, FeatureFlagRegistry
 from .models import (
     ActorSnapshot,
@@ -23,6 +29,8 @@ from .models import (
     InstitutionalResearchCase,
     LegacyTaskRunBinding,
     PlanningCheckpointVersion,
+    ResearchRunState,
+    ResearchRunVersion,
     ResultEnvelope,
     WorkUnit,
     WorkUnitState,
@@ -42,6 +50,27 @@ from .store import IdempotencyConflict, KillSwitchEnabled, StaleStateVersion, Tr
 
 FLAG_ID = "decision_surface_shadow_v0_1"
 MAX_CHECKPOINT_SNAPSHOT_BYTES = 262_144
+PROVIDER_OUTPUT_CAPTURE_POLICY_REF = (
+    "fin01.s3.provider_output_capture.assistant_final_text_only:v1"
+)
+PROVIDER_OUTPUT_CAPTURE_SCHEMA_REF = "fin01.provider_output_capture:v1"
+PROVIDER_INTERACTION_AUDIT_CAPTURE_POLICY_REF = (
+    "fin01.runtime.provider_interaction_audit_capture:v2"
+)
+PROVIDER_INTERACTION_AUDIT_CAPTURE_SCHEMA_REF = (
+    "fin01.provider_interaction_audit_capture:v2"
+)
+PROVIDER_OUTPUT_CAPTURE_SCHEMA_REFS = {
+    PROVIDER_OUTPUT_CAPTURE_POLICY_REF: PROVIDER_OUTPUT_CAPTURE_SCHEMA_REF,
+    PROVIDER_INTERACTION_AUDIT_CAPTURE_POLICY_REF: (
+        PROVIDER_INTERACTION_AUDIT_CAPTURE_SCHEMA_REF
+    ),
+}
+MAX_PROVIDER_OUTPUT_CAPTURE_COUNT = 12
+MAX_PROVIDER_OUTPUT_CAPTURE_BYTES = 131_072
+MAX_PROVIDER_OUTPUT_CAPTURE_TOTAL_BYTES = 524_288
+MAX_PROVIDER_INTERACTION_AUDIT_CAPTURE_BYTES = 524_288
+MAX_PROVIDER_INTERACTION_AUDIT_CAPTURE_TOTAL_BYTES = 4_194_304
 LEGAL_WORK_UNIT_TRANSITIONS = {
     WorkUnitState.PENDING.value: {WorkUnitState.RUNNING.value, WorkUnitState.CANCELLED.value},
     WorkUnitState.RUNNING.value: {
@@ -56,6 +85,288 @@ LEGAL_WORK_UNIT_TRANSITIONS = {
     WorkUnitState.DEAD_LETTERED.value: set(),
     WorkUnitState.CANCELLED.value: set(),
 }
+
+
+_SECRET_SAFE_BOUNDED_FAILURE_CODE = re.compile(r"^[a-z0-9_:.-]{1,256}$")
+_BOUNDED_FAILURE_CODE_NAMESPACES = (
+    "bounded_agent_",
+    "s3_bounded_",
+    "s4_",
+)
+
+
+def _is_secret_safe_bounded_failure_code(value: object) -> bool:
+    """Accept only typed, deterministic bounded-runtime failure identifiers."""
+
+    return (
+        isinstance(value, str)
+        and value.startswith(_BOUNDED_FAILURE_CODE_NAMESPACES)
+        and _SECRET_SAFE_BOUNDED_FAILURE_CODE.fullmatch(value) is not None
+    )
+
+
+_CAPTURE_SECRET_PATTERNS = (
+    re.compile(r"(?i)\bsk-(?:proj-)?[A-Za-z0-9_-]{16,}"),
+    re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/-]{16,}"),
+    re.compile(
+        r"(?i)\b(?:authorization|proxy-authorization)\s*:\s*\S+"
+    ),
+    re.compile(
+        r"(?i)\b(?:api[_ -]?key|password|cookie)\s*[:=]\s*"
+        r"[\"']?[A-Za-z0-9._~+/-]{16,}"
+    ),
+)
+
+
+def _capture_contains_secret(value: Any) -> bool:
+    if isinstance(value, Mapping):
+        return any(
+            _capture_contains_secret(key) or _capture_contains_secret(item)
+            for key, item in value.items()
+        )
+    if isinstance(value, (list, tuple)):
+        return any(_capture_contains_secret(item) for item in value)
+    if not isinstance(value, str):
+        return False
+    return any(pattern.search(value) for pattern in _CAPTURE_SECRET_PATTERNS)
+
+
+def _validate_provider_output_captures(value: object) -> list[dict[str, Any]]:
+    """Validate versioned restricted interaction captures before object write."""
+
+    if value is None:
+        return []
+    if not isinstance(value, list) or not (
+        1 <= len(value) <= MAX_PROVIDER_OUTPUT_CAPTURE_COUNT
+    ):
+        raise ArtifactValidationError("provider_output_capture_cardinality_invalid")
+    v1_required_keys = {
+        "capture_policy_ref",
+        "capture_sequence",
+        "stage",
+        "call_id",
+        "provider",
+        "model",
+        "provider_status",
+        "finish_reason",
+        "assistant_output_text",
+        "assistant_output_present",
+        "raw_provider_response_included",
+        "private_reasoning_included",
+    }
+    v2_required_keys = v1_required_keys | {
+        "model_visible_request",
+        "model_visible_request_digest",
+        "nonsecret_inference_arguments",
+        "nonsecret_inference_arguments_digest",
+        "provider_route",
+        "provider_route_digest",
+        "validator_match_index",
+        "raw_request_envelope_included",
+        "credentials_included",
+    }
+    allowed_inference_keys = {
+        "api_surface",
+        "tools",
+        "tool_choice",
+        "response_format",
+        "temperature",
+        "max_tokens",
+        "max_output_tokens",
+        "timeout_seconds",
+        "stream",
+        "enable_thinking",
+        "reasoning_effort",
+        "text",
+        "reasoning",
+    }
+    allowed_semantic_classes = {
+        "reporting_period_label",
+        "request_local_identifier",
+        "unknown_reporting_period_label",
+        "financial_amount",
+        "percentage",
+        "measurement",
+        "material_numeric_value",
+    }
+    rows: list[dict[str, Any]] = []
+    total_bytes = 0
+    policy_refs: set[str] = set()
+    for expected_sequence, raw in enumerate(value, 1):
+        if not isinstance(raw, Mapping):
+            raise ArtifactValidationError("provider_output_capture_shape_invalid")
+        row = dict(raw)
+        policy_ref = str(row.get("capture_policy_ref") or "")
+        policy_refs.add(policy_ref)
+        required_keys = (
+            v1_required_keys
+            if policy_ref == PROVIDER_OUTPUT_CAPTURE_POLICY_REF
+            else v2_required_keys
+            if policy_ref == PROVIDER_INTERACTION_AUDIT_CAPTURE_POLICY_REF
+            else set()
+        )
+        if not required_keys or set(row) != required_keys:
+            raise ArtifactValidationError("provider_output_capture_shape_invalid")
+        text = row.get("assistant_output_text")
+        text_bytes = len(text.encode("utf-8")) if isinstance(text, str) else -1
+        output_present = row.get("assistant_output_present")
+        if (
+            row.get("capture_sequence") != expected_sequence
+            or not all(
+                isinstance(row.get(key), str) and str(row[key]).strip()
+                for key in ("stage", "call_id", "provider", "model")
+            )
+            or not isinstance(row.get("provider_status"), str)
+            or not isinstance(row.get("finish_reason"), str)
+            or not isinstance(text, str)
+            or type(output_present) is not bool
+            or (output_present is False and text != "")
+            or row.get("raw_provider_response_included") is not False
+            or row.get("private_reasoning_included") is not False
+            or text_bytes < 0
+            or text_bytes > MAX_PROVIDER_OUTPUT_CAPTURE_BYTES
+        ):
+            raise ArtifactValidationError("provider_output_capture_contract_invalid")
+        row_bytes = text_bytes
+        if policy_ref == PROVIDER_INTERACTION_AUDIT_CAPTURE_POLICY_REF:
+            request = row.get("model_visible_request")
+            arguments = row.get("nonsecret_inference_arguments")
+            route = row.get("provider_route")
+            match_index = row.get("validator_match_index")
+            request_valid = (
+                isinstance(request, list)
+                and 1 <= len(request) <= 8
+                and all(
+                    isinstance(item, Mapping)
+                    and set(item) == {"role", "content"}
+                    and item.get("role")
+                    in {"system", "developer", "user"}
+                    and isinstance(item.get("content"), str)
+                    for item in request
+                )
+            )
+            arguments_valid = (
+                isinstance(arguments, Mapping)
+                and set(arguments).issubset(allowed_inference_keys)
+                and arguments.get("api_surface")
+                in {"chat_completions", "responses"}
+            )
+            route_valid = (
+                isinstance(route, Mapping)
+                and set(route) == {"base_url", "request_path"}
+                and isinstance(route.get("base_url"), str)
+                and re.fullmatch(
+                    r"https?://[^/?#@\s]+(?::\d+)?"
+                    r"(?:/[A-Za-z0-9._~!$&'()*+,;=:%-]*)*",
+                    route["base_url"],
+                )
+                is not None
+                and route.get("request_path")
+                in {"/chat/completions", "/responses"}
+            )
+            index_valid = (
+                isinstance(match_index, list)
+                and len(match_index) <= 64
+                and all(
+                    isinstance(item, Mapping)
+                    and set(item)
+                    == {
+                        "validator_rule_code",
+                        "field_path",
+                        "semantic_class",
+                        "terminal",
+                        "raw_match_persisted",
+                    }
+                    and item.get("validator_rule_code")
+                    == "material_numeric_provider_narrative_boundary_v2"
+                    and isinstance(item.get("field_path"), str)
+                    and re.fullmatch(
+                        r"\$(?:\.[A-Za-z_][A-Za-z0-9_]*|\[\d+\])+",
+                        str(item.get("field_path")),
+                    )
+                    is not None
+                    and item.get("semantic_class")
+                    in allowed_semantic_classes
+                    and type(item.get("terminal")) is bool
+                    and item.get("raw_match_persisted") is False
+                    for item in match_index
+                )
+            )
+            if (
+                not request_valid
+                or not arguments_valid
+                or not route_valid
+                or not index_valid
+                or row.get("model_visible_request_digest")
+                != canonical_digest(request)
+                or row.get("nonsecret_inference_arguments_digest")
+                != canonical_digest(arguments)
+                or row.get("provider_route_digest")
+                != canonical_digest(route)
+                or row.get("raw_request_envelope_included") is not False
+                or row.get("credentials_included") is not False
+                or _capture_contains_secret(
+                    {
+                        "assistant_output_text": text,
+                        "model_visible_request": request,
+                        "nonsecret_inference_arguments": arguments,
+                        "provider_route": route,
+                    }
+                )
+            ):
+                raise ArtifactValidationError(
+                    "provider_interaction_audit_capture_contract_invalid"
+                )
+            row_bytes = len(
+                json.dumps(
+                    row,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+            )
+            if row_bytes > MAX_PROVIDER_INTERACTION_AUDIT_CAPTURE_BYTES:
+                raise ArtifactValidationError(
+                    "provider_interaction_audit_capture_bytes_exceeded"
+                )
+        total_bytes += row_bytes
+        rows.append(row)
+    if len(policy_refs) != 1:
+        raise ArtifactValidationError("provider_output_capture_policy_mixed")
+    policy_ref = next(iter(policy_refs))
+    total_limit = (
+        MAX_PROVIDER_OUTPUT_CAPTURE_TOTAL_BYTES
+        if policy_ref == PROVIDER_OUTPUT_CAPTURE_POLICY_REF
+        else MAX_PROVIDER_INTERACTION_AUDIT_CAPTURE_TOTAL_BYTES
+    )
+    if total_bytes > total_limit:
+        raise ArtifactValidationError("provider_output_capture_total_bytes_exceeded")
+    return rows
+
+
+def _provider_output_capture_payloads(
+    captures: Sequence[Mapping[str, Any]],
+    *,
+    case_id: str,
+    work_unit_id: str,
+    attempt_id: str,
+    research_run_id: str,
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "schema_ref": PROVIDER_OUTPUT_CAPTURE_SCHEMA_REFS[
+                str(row["capture_policy_ref"])
+            ],
+            "access_class": "internal_restricted_run_audit",
+            "retention_class": "follow_research_run_retention",
+            "case_id": case_id,
+            "work_unit_id": work_unit_id,
+            "attempt_id": attempt_id,
+            "research_run_id": research_run_id,
+            **dict(row),
+        }
+        for row in captures
+    ]
 
 
 class RuntimeFacadeError(RuntimeError):
@@ -135,6 +446,18 @@ REPLAY_EVENT_TYPES = frozenset(
         "RECOVERY_FORK_CREATED",
         "RECOVERY_DEAD_LETTERED",
         "ARTIFACT_VERSION_CREATED",
+        "RESEARCH_RUN_STARTED",
+        "AGENT_DEFINITION_VERSIONS_SELECTED",
+        "SKILL_PACK_CONSUMPTION_RECORDED",
+        "LANGGRAPH_FIXTURE_SHADOW_VALIDATED",
+        "RESEARCH_LEAD_FIXTURE_COMPLETED",
+        "SPECIALIST_FIXTURE_COMPLETED",
+        "TOOL_FIXTURE_OBSERVATION_RECORDED",
+        "GRAPH_FIXTURE_OBSERVATION_RECORDED",
+        "WRITER_FIXTURE_COMPLETED",
+        "VERIFIER_FIXTURE_COMPLETED",
+        "RESEARCH_RUN_COMPLETED",
+        "RESEARCH_RUN_FAILED",
         "CHECKPOINT_VERSION_CREATED",
         "DECISION_SURFACE_COMPILED",
         "DECISION_SURFACE_VALIDATION_FAILED",
@@ -557,14 +880,21 @@ class RuntimeFacade:
             tx.insert("canonical_work_units", work_unit_id, updated.work_unit_version, updated.model_dump(mode="json"))
             tx.insert("canonical_attempts", attempt_id, attempt.attempt_no, attempt.model_dump(mode="json"))
             event_command = command.model_copy(update={"expected_state_version": state_before})
-            events = [
+            task_run_id = str(command.payload.get("task_run_id") or "") or None
+            events = []
+            events.append(
                 self._event(
                     tx,
                     event_command,
                     "WORK_UNIT_STARTED",
                     {"work_unit_id": work_unit_id, "attempt_no": attempt_no, "queue_name": queue_name},
+                    task_run_id=task_run_id,
                     work_unit_id=work_unit_id,
-                ),
+                    attempt_id=attempt_id,
+                )
+            )
+            tx.append_event(events[-1])
+            events.append(
                 self._event(
                     tx,
                     event_command,
@@ -575,18 +905,24 @@ class RuntimeFacade:
                         "input_head_digest": updated.input_head_digest,
                         "scheduler_managed": True,
                     },
+                    task_run_id=task_run_id,
                     work_unit_id=work_unit_id,
                     attempt_id=attempt_id,
-                ),
+                )
+            )
+            tx.append_event(events[-1])
+            events.append(
                 self._event(
                     tx,
                     event_command,
                     "SCHEDULER_LEASE_ACQUIRED",
                     self._lease_event_payload(attempt, queue_name=queue_name),
+                    task_run_id=task_run_id,
                     work_unit_id=work_unit_id,
                     attempt_id=attempt_id,
-                ),
-            ]
+                )
+            )
+            tx.append_event(events[-1])
             if recovery_mode:
                 events.append(
                     self._event(
@@ -600,12 +936,12 @@ class RuntimeFacade:
                             "resume_checkpoint_ref": resume_checkpoint_ref,
                             "replay_plan_digest": replay_plan_digest,
                         },
+                        task_run_id=task_run_id,
                         work_unit_id=work_unit_id,
                         attempt_id=attempt_id,
                     )
                 )
-            for event in events:
-                tx.append_event(event)
+                tx.append_event(events[-1])
             result = ResultEnvelope(
                 command_id=command.command_id,
                 status="succeeded",
@@ -613,6 +949,1950 @@ class RuntimeFacade:
                 state_version_after=state_before + 1,
                 event_ids=tuple(event.event_id for event in events),
                 projection_refs=(work_unit_id, attempt_id),
+            )
+            tx.put_idempotency(scope_key, payload_digest, result.model_dump(mode="json"))
+        return result
+
+    def start_research_run(self, command: CommandEnvelope) -> ResultEnvelope:
+        """Bind one exact running Attempt to its single immutable ResearchRun identity."""
+
+        self._authorize("point01_shadow_compiler")
+        case_id = self._require_case(command)
+        work_unit_id = str(command.payload.get("work_unit_id") or "")
+        attempt_id = str(command.payload.get("attempt_id") or "")
+        research_run_id = str(command.payload.get("research_run_id") or "")
+        profile_ref = str(command.payload.get("execution_profile_version_ref") or "")
+        if not work_unit_id or not attempt_id or not research_run_id or not profile_ref:
+            raise MissingDependency("research_run_identity_required")
+        scope_key, payload_digest, _ = self._idempotency(command, research_run_id)
+        with self.store.transaction() as tx:
+            existing = tx.get_idempotency(scope_key)
+            if existing:
+                return self._reuse_or_conflict(existing, payload_digest)
+            work_unit, attempt = self._require_running_execution(
+                tx, command, case_id, work_unit_id, attempt_id
+            )
+            sibling_runs = [
+                row
+                for row in tx.list_latest("canonical_research_run_versions", case_id=case_id)
+                if row.get("attempt_id") == attempt_id
+            ]
+            if sibling_runs:
+                raise IllegalStateTransition("attempt_research_run_identity_already_bound")
+            input_refs = tuple(str(value) for value in attempt.get("input_refs", ()))
+            if input_refs != tuple(str(value) for value in work_unit.get("input_version_refs", ())):
+                raise StaleInputHead("research_run_business_inputs_are_stale")
+            research_run = ResearchRunVersion(
+                **self._scope(command, case_id=case_id),
+                research_run_id=research_run_id,
+                research_run_version_id=f"{research_run_id}:v1",
+                research_run_version=1,
+                work_unit_id=work_unit_id,
+                attempt_id=attempt_id,
+                execution_profile_version_ref=profile_ref,
+                parent_research_run_id=(
+                    str(command.payload.get("parent_research_run_id") or "") or None
+                ),
+                input_refs=input_refs,
+                input_refs_digest=canonical_digest(input_refs),
+                state=ResearchRunState.RUNNING,
+                started_at=command.requested_at,
+                current_status=ResearchRunState.RUNNING.value,
+            )
+            tx.insert(
+                "canonical_research_run_versions",
+                research_run_id,
+                research_run.research_run_version,
+                research_run.model_dump(mode="json"),
+            )
+            event = self._event(
+                tx,
+                command,
+                "RESEARCH_RUN_STARTED",
+                {
+                    "research_run_id": research_run_id,
+                    "research_run_version_id": research_run.research_run_version_id,
+                    "execution_profile_version_ref": profile_ref,
+                },
+                task_run_id=research_run_id,
+                work_unit_id=work_unit_id,
+                attempt_id=attempt_id,
+            )
+            tx.append_event(event)
+            result = ResultEnvelope(
+                command_id=command.command_id,
+                status="succeeded",
+                state_version_before=0,
+                state_version_after=1,
+                event_ids=(event.event_id,),
+                projection_refs=(research_run.research_run_version_id,),
+            )
+            tx.put_idempotency(scope_key, payload_digest, result.model_dump(mode="json"))
+        return result
+
+    def record_research_run_trace(self, command: CommandEnvelope) -> ResultEnvelope:
+        """Append one bounded, Run-scoped execution trace event without business mutation."""
+
+        self._authorize("point01_shadow_compiler")
+        case_id = self._require_case(command)
+        work_unit_id = str(command.payload.get("work_unit_id") or "")
+        attempt_id = str(command.payload.get("attempt_id") or "")
+        research_run_id = str(command.payload.get("research_run_id") or "")
+        event_type = str(command.payload.get("event_type") or "")
+        event_payload = command.payload.get("event_payload")
+        allowed_event_types = {
+            "AGENT_DEFINITION_VERSIONS_SELECTED",
+            "SKILL_PACK_CONSUMPTION_RECORDED",
+            "LANGGRAPH_FIXTURE_SHADOW_VALIDATED",
+            "RESEARCH_LEAD_FIXTURE_COMPLETED",
+            "SPECIALIST_FIXTURE_COMPLETED",
+            "TOOL_FIXTURE_OBSERVATION_RECORDED",
+            "GRAPH_FIXTURE_OBSERVATION_RECORDED",
+            "WRITER_FIXTURE_COMPLETED",
+            "VERIFIER_FIXTURE_COMPLETED",
+            "BOUNDED_AGENT_T02_CONTRACT_PROBE_COMPLETED",
+            "BOUNDED_AGENT_INPUT_BOUND",
+            "BOUNDED_AGENT_VERSIONS_SELECTED",
+            "BOUNDED_AGENT_SPECIALIST_COMPLETED",
+            "BOUNDED_AGENT_LEAD_ADJUDICATED",
+            "BOUNDED_AGENT_WRITER_COMPLETED",
+            "BOUNDED_AGENT_VERIFIERS_COMPLETED",
+            "BOUNDED_AGENT_EXECUTION_COMPLETED",
+            "S3_BOUNDED_AGENT_NODE_COMPLETED",
+            "S3_BOUNDED_AGENT_EXECUTION_COMPLETED",
+        }
+        if not all((work_unit_id, attempt_id, research_run_id)):
+            raise MissingDependency("research_run_trace_identity_required")
+        if event_type not in allowed_event_types or not isinstance(event_payload, Mapping):
+            raise ArtifactValidationError("research_run_trace_event_not_admitted")
+        scope_key, payload_digest, _ = self._idempotency(
+            command, f"{research_run_id}:{event_type}"
+        )
+        with self.store.transaction() as tx:
+            existing = tx.get_idempotency(scope_key)
+            if existing:
+                return self._reuse_or_conflict(existing, payload_digest)
+            self._require_running_execution(tx, command, case_id, work_unit_id, attempt_id)
+            research_run = self._require_case_row(
+                tx,
+                command,
+                case_id,
+                table="canonical_research_run_versions",
+                logical_id=research_run_id,
+            )
+            if (
+                research_run.get("state") != ResearchRunState.RUNNING.value
+                or research_run.get("work_unit_id") != work_unit_id
+                or research_run.get("attempt_id") != attempt_id
+            ):
+                raise IllegalStateTransition("research_run_trace_execution_identity_mismatch")
+            event = self._event(
+                tx,
+                command,
+                event_type,
+                dict(event_payload),
+                task_run_id=research_run_id,
+                work_unit_id=work_unit_id,
+                attempt_id=attempt_id,
+                advances_state=False,
+            )
+            tx.append_event(event)
+            result = ResultEnvelope(
+                command_id=command.command_id,
+                status="succeeded",
+                state_version_before=command.expected_state_version,
+                state_version_after=command.expected_state_version,
+                event_ids=(event.event_id,),
+                projection_refs=(research_run_id,),
+            )
+            tx.put_idempotency(scope_key, payload_digest, result.model_dump(mode="json"))
+        return result
+
+    def _persist_provider_output_captures(
+        self,
+        captures: Sequence[Mapping[str, Any]],
+        *,
+        case_id: str,
+        work_unit_id: str,
+        attempt_id: str,
+        research_run_id: str,
+    ) -> list[dict[str, Any]]:
+        payloads = _provider_output_capture_payloads(
+            captures,
+            case_id=case_id,
+            work_unit_id=work_unit_id,
+            attempt_id=attempt_id,
+            research_run_id=research_run_id,
+        )
+        refs: list[dict[str, Any]] = []
+        for payload in payloads:
+            object_ref = self.object_store.put_json(
+                payload,
+                namespace="fin01/provider-output-captures",
+                artifact_type="provider_output_capture",
+            )
+            refs.append(
+                {
+                    "schema_ref": str(payload["schema_ref"]),
+                    "capture_policy_ref": str(
+                        payload["capture_policy_ref"]
+                    ),
+                    "access_class": "internal_restricted_run_audit",
+                    "retention_class": "follow_research_run_retention",
+                    "capture_sequence": int(payload["capture_sequence"]),
+                    "stage": str(payload["stage"]),
+                    "call_id": str(payload["call_id"]),
+                    "provider": str(payload["provider"]),
+                    "model": str(payload["model"]),
+                    "assistant_output_present": bool(
+                        payload["assistant_output_present"]
+                    ),
+                    "object_key": str(object_ref["object_key"]),
+                    "object_digest": str(object_ref["digest"]),
+                    "byte_size": int(object_ref["byte_size"]),
+                    "media_type": str(object_ref["media_type"]),
+                    "raw_provider_response_persisted": False,
+                    "private_reasoning_persisted": False,
+                    **(
+                        {
+                            "model_visible_request_digest": str(
+                                payload["model_visible_request_digest"]
+                            ),
+                            "nonsecret_inference_arguments_digest": str(
+                                payload[
+                                    "nonsecret_inference_arguments_digest"
+                                ]
+                            ),
+                            "provider_route_digest": str(
+                                payload["provider_route_digest"]
+                            ),
+                            "validator_match_index": deepcopy(
+                                payload["validator_match_index"]
+                            ),
+                            "raw_request_envelope_persisted": False,
+                            "credentials_persisted": False,
+                        }
+                        if payload["capture_policy_ref"]
+                        == PROVIDER_INTERACTION_AUDIT_CAPTURE_POLICY_REF
+                        else {}
+                    ),
+                }
+            )
+        return refs
+
+    def record_research_run_provider_output_captures(
+        self, command: CommandEnvelope
+    ) -> ResultEnvelope:
+        """Persist safe assistant-final-text captures before terminal adjudication."""
+
+        self._authorize("point01_shadow_compiler")
+        case_id = self._require_case(command)
+        work_unit_id = str(command.payload.get("work_unit_id") or "")
+        attempt_id = str(command.payload.get("attempt_id") or "")
+        research_run_id = str(command.payload.get("research_run_id") or "")
+        captures = _validate_provider_output_captures(
+            command.payload.get("provider_output_captures")
+        )
+        if not all((work_unit_id, attempt_id, research_run_id)) or not captures:
+            raise MissingDependency("provider_output_capture_running_identity_required")
+        scope_key, payload_digest, _ = self._idempotency(
+            command, f"{research_run_id}:provider-output-captures"
+        )
+        with self.store.transaction() as tx:
+            existing = tx.get_idempotency(scope_key)
+            if existing:
+                return self._reuse_or_conflict(existing, payload_digest)
+            self._require_running_execution(
+                tx, command, case_id, work_unit_id, attempt_id
+            )
+            research_run = self._require_case_row(
+                tx,
+                command,
+                case_id,
+                table="canonical_research_run_versions",
+                logical_id=research_run_id,
+            )
+            if (
+                research_run.get("state") != ResearchRunState.RUNNING.value
+                or research_run.get("work_unit_id") != work_unit_id
+                or research_run.get("attempt_id") != attempt_id
+            ):
+                raise IllegalStateTransition(
+                    "provider_output_capture_execution_identity_mismatch"
+                )
+            if str(research_run.get("execution_profile_version_ref") or "") not in {
+                "fin01.execution_profile.bounded_agent_internal:v1",
+                "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+            }:
+                raise ArtifactValidationError(
+                    "provider_output_capture_profile_not_admitted"
+                )
+            refs = self._persist_provider_output_captures(
+                captures,
+                case_id=case_id,
+                work_unit_id=work_unit_id,
+                attempt_id=attempt_id,
+                research_run_id=research_run_id,
+            )
+            event = self._event(
+                tx,
+                command,
+                "RESEARCH_RUN_PROVIDER_OUTPUT_CAPTURED",
+                {
+                    "research_run_id": research_run_id,
+                    "provider_output_capture_policy_ref": (
+                        str(captures[0]["capture_policy_ref"])
+                    ),
+                    "provider_output_capture_refs": refs,
+                },
+                task_run_id=research_run_id,
+                work_unit_id=work_unit_id,
+                attempt_id=attempt_id,
+                advances_state=False,
+            )
+            tx.append_event(event)
+            result = ResultEnvelope(
+                command_id=command.command_id,
+                status="succeeded",
+                state_version_before=command.expected_state_version,
+                state_version_after=command.expected_state_version,
+                event_ids=(event.event_id,),
+                projection_refs=(research_run_id,),
+            )
+            tx.put_idempotency(
+                scope_key, payload_digest, result.model_dump(mode="json")
+            )
+        return result
+
+    def read_research_run_provider_output_captures(
+        self, research_run_id: str
+    ) -> tuple[dict[str, Any], ...]:
+        """Read exact final assistant texts through durable Run audit references."""
+
+        self._authorize("point01_shadow_compiler")
+        run_id = str(research_run_id or "").strip()
+        if not run_id or not self.store.get_latest(
+            "canonical_research_run_versions", run_id
+        ):
+            raise MissingDependency("provider_output_capture_research_run_required")
+        terminal_events = [
+            row
+            for row in self.store.list_events()
+            if row.get("task_run_id") == run_id
+            and row.get("event_type")
+            in {"RESEARCH_RUN_COMPLETED", "RESEARCH_RUN_FAILED"}
+        ]
+        capture_events = [
+            row
+            for row in self.store.list_events()
+            if row.get("task_run_id") == run_id
+            and row.get("event_type") == "RESEARCH_RUN_PROVIDER_OUTPUT_CAPTURED"
+        ]
+        if len(terminal_events) > 1 or len(capture_events) > 1:
+            raise ArtifactValidationError(
+                "provider_output_capture_audit_event_cardinality_invalid"
+            )
+        terminal_refs = (
+            terminal_events[0].get("payload", {}).get(
+                "provider_output_capture_refs", []
+            )
+            if terminal_events
+            else []
+        )
+        durable_refs = (
+            capture_events[0].get("payload", {}).get(
+                "provider_output_capture_refs", []
+            )
+            if capture_events
+            else []
+        )
+        if terminal_refs and durable_refs and terminal_refs != durable_refs:
+            raise ArtifactValidationError(
+                "provider_output_capture_audit_refs_conflict"
+            )
+        refs = durable_refs or terminal_refs
+        if not refs:
+            raise MissingDependency("provider_output_capture_audit_event_required")
+        if not isinstance(refs, list):
+            raise ArtifactValidationError("provider_output_capture_refs_invalid")
+        captures: list[dict[str, Any]] = []
+        for ref in refs:
+            capture_policy_ref = (
+                str(ref.get("capture_policy_ref") or "")
+                if isinstance(ref, Mapping)
+                else ""
+            )
+            expected_schema_ref = PROVIDER_OUTPUT_CAPTURE_SCHEMA_REFS.get(
+                capture_policy_ref
+            )
+            if (
+                not isinstance(ref, Mapping)
+                or expected_schema_ref is None
+                or ref.get("access_class") != "internal_restricted_run_audit"
+                or not isinstance(ref.get("object_key"), str)
+                or not isinstance(ref.get("object_digest"), str)
+            ):
+                raise ArtifactValidationError("provider_output_capture_ref_invalid")
+            payload = self.object_store.get_json(
+                str(ref["object_key"]),
+                expected_digest=str(ref["object_digest"]),
+            )
+            if (
+                not isinstance(payload, Mapping)
+                or payload.get("schema_ref") != expected_schema_ref
+                or payload.get("capture_policy_ref")
+                != capture_policy_ref
+                or payload.get("research_run_id") != run_id
+                or payload.get("capture_sequence") != ref.get("capture_sequence")
+                or payload.get("call_id") != ref.get("call_id")
+                or payload.get("private_reasoning_included") is not False
+                or payload.get("raw_provider_response_included") is not False
+                or (
+                    capture_policy_ref
+                    == PROVIDER_INTERACTION_AUDIT_CAPTURE_POLICY_REF
+                    and (
+                        payload.get("credentials_included") is not False
+                        or payload.get("raw_request_envelope_included")
+                        is not False
+                        or payload.get("model_visible_request_digest")
+                        != ref.get("model_visible_request_digest")
+                        or payload.get(
+                            "nonsecret_inference_arguments_digest"
+                        )
+                        != ref.get(
+                            "nonsecret_inference_arguments_digest"
+                        )
+                        or payload.get("provider_route_digest")
+                        != ref.get("provider_route_digest")
+                        or payload.get("validator_match_index")
+                        != ref.get("validator_match_index")
+                    )
+                )
+            ):
+                raise ArtifactValidationError(
+                    "provider_output_capture_payload_lineage_invalid"
+                )
+            captures.append(dict(payload))
+        return tuple(captures)
+
+    def complete_research_run(self, command: CommandEnvelope) -> ResultEnvelope:
+        """Commit a typed profile result and terminal Run/Attempt/WorkUnit truth."""
+
+        self._authorize("point01_shadow_compiler")
+        case_id = self._require_case(command)
+        work_unit_id = str(command.payload.get("work_unit_id") or "")
+        attempt_id = str(command.payload.get("attempt_id") or "")
+        research_run_id = str(command.payload.get("research_run_id") or "")
+        provider_output_captures = _validate_provider_output_captures(
+            command.payload.get("provider_output_captures")
+        )
+        artifact_id = str(command.payload.get("artifact_id") or "")
+        artifact_payload = command.payload.get("artifact_payload")
+        artifact_type = str(
+            command.payload.get("artifact_type") or "deterministic_research_result"
+        )
+        raw_artifacts = command.payload.get("artifacts")
+        if isinstance(raw_artifacts, list) and any(
+            not isinstance(row, Mapping) for row in raw_artifacts
+        ):
+            raise ArtifactValidationError("profile_execution_artifact_entry_invalid")
+        artifact_specs = (
+            [dict(row) for row in raw_artifacts if isinstance(row, Mapping)]
+            if isinstance(raw_artifacts, list)
+            else [
+                {
+                    "artifact_id": artifact_id,
+                    "artifact_type": artifact_type,
+                    "artifact_payload": artifact_payload,
+                }
+            ]
+        )
+        admitted_artifact_types = {
+            "deterministic_research_result",
+            "s3_three_cell_workpaper",
+            "s3_three_cell_report",
+            "s3_three_cell_trace_review",
+            "agent_fixture_shadow_result",
+            "agent_fixture_evidence",
+            "agent_fixture_numeric",
+            "agent_fixture_judgment",
+            "agent_fixture_workpaper",
+            "agent_fixture_report",
+            "agent_fixture_trace",
+            "bounded_agent_manifest",
+            "bounded_agent_evidence",
+            "bounded_agent_numeric",
+            "bounded_agent_judgment",
+            "bounded_agent_workpaper",
+            "bounded_agent_report",
+            "bounded_agent_trace",
+            "bounded_agent_verification",
+            "agent_fallback_comparison",
+        }
+        if not artifact_specs or any(
+            str(row.get("artifact_type") or "") not in admitted_artifact_types
+            for row in artifact_specs
+        ):
+            raise ArtifactValidationError("research_run_artifact_type_not_admitted")
+        if not all((work_unit_id, attempt_id, research_run_id)) or any(
+            not str(row.get("artifact_id") or "") for row in artifact_specs
+        ):
+            raise MissingDependency("research_run_completion_identity_required")
+        if any(not isinstance(row.get("artifact_payload"), Mapping) for row in artifact_specs):
+            raise ArtifactValidationError("profile_execution_result_payload_required")
+        scope_key, payload_digest, _ = self._idempotency(command, research_run_id)
+        with self.store.transaction() as tx:
+            existing = tx.get_idempotency(scope_key)
+            if existing:
+                return self._reuse_or_conflict(existing, payload_digest)
+        current_run = self.store.get_latest("canonical_research_run_versions", research_run_id)
+        if not current_run or current_run.get("state") != ResearchRunState.RUNNING.value:
+            raise IllegalStateTransition("research_run_must_be_running")
+        expected_artifact_types = {
+            "fin01.execution_profile.p36_local_deterministic:v1": {
+                "deterministic_research_result",
+                "s3_three_cell_workpaper",
+                "s3_three_cell_report",
+                "s3_three_cell_trace_review",
+            },
+            "fin01.execution_profile.agent_fixture_shadow:v1": {
+                "agent_fixture_shadow_result",
+                "agent_fixture_evidence",
+                "agent_fixture_numeric",
+                "agent_fixture_judgment",
+                "agent_fixture_workpaper",
+                "agent_fixture_report",
+                "agent_fixture_trace",
+            },
+            "fin01.execution_profile.bounded_agent_internal:v1": {
+                "bounded_agent_manifest",
+                "bounded_agent_evidence",
+                "bounded_agent_numeric",
+                "bounded_agent_judgment",
+                "bounded_agent_workpaper",
+                "bounded_agent_report",
+                "bounded_agent_trace",
+                "bounded_agent_verification",
+                "agent_fallback_comparison",
+            },
+            "fin01.execution_profile.bounded_agent_internal_three_cell:v1": {
+                "bounded_agent_manifest",
+                "bounded_agent_evidence",
+                "bounded_agent_numeric",
+                "bounded_agent_judgment",
+                "bounded_agent_workpaper",
+                "bounded_agent_report",
+                "bounded_agent_trace",
+                "bounded_agent_verification",
+                "agent_fallback_comparison",
+            },
+        }.get(str(current_run.get("execution_profile_version_ref") or ""))
+        actual_artifact_types = {
+            str(row.get("artifact_type") or "") for row in artifact_specs
+        }
+        artifact_ids = [str(row.get("artifact_id") or "") for row in artifact_specs]
+        if (
+            expected_artifact_types != actual_artifact_types
+            or len(artifact_specs) != len(actual_artifact_types)
+            or len(artifact_ids) != len(set(artifact_ids))
+        ):
+            raise ArtifactValidationError("research_run_profile_artifact_type_mismatch")
+        if provider_output_captures and str(
+            current_run.get("execution_profile_version_ref") or ""
+        ) not in {
+            "fin01.execution_profile.bounded_agent_internal:v1",
+            "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+        }:
+            raise ArtifactValidationError(
+                "provider_output_capture_profile_not_admitted"
+            )
+        run_version_id = str(current_run["research_run_version_id"])
+        for row in artifact_specs:
+            expected_version_id = f"{row['artifact_id']}:v1"
+            payload = row["artifact_payload"]
+            if (
+                payload.get("artifact_version_id") != expected_version_id
+                or payload.get("research_run_id") != research_run_id
+                or payload.get("research_run_version_id") != run_version_id
+            ):
+                raise ArtifactValidationError("research_run_artifact_payload_lineage_mismatch")
+        object_refs = [
+            self.object_store.put_json(
+                dict(row["artifact_payload"]),
+                namespace="fin01/research-runs",
+                artifact_type=str(row["artifact_type"]),
+            )
+            for row in artifact_specs
+        ]
+        provider_output_capture_refs = self._persist_provider_output_captures(
+            provider_output_captures,
+            case_id=case_id,
+            work_unit_id=work_unit_id,
+            attempt_id=attempt_id,
+            research_run_id=research_run_id,
+        )
+        with self.store.transaction() as tx:
+            existing = tx.get_idempotency(scope_key)
+            if existing:
+                return self._reuse_or_conflict(existing, payload_digest)
+            work_unit, attempt = self._require_running_execution(
+                tx, command, case_id, work_unit_id, attempt_id
+            )
+            research_run = self._require_case_row(
+                tx,
+                command,
+                case_id,
+                table="canonical_research_run_versions",
+                logical_id=research_run_id,
+            )
+            if (
+                research_run.get("state") != ResearchRunState.RUNNING.value
+                or research_run.get("work_unit_id") != work_unit_id
+                or research_run.get("attempt_id") != attempt_id
+            ):
+                raise IllegalStateTransition("research_run_execution_identity_mismatch")
+            business_input_refs = tuple(str(value) for value in attempt.get("input_refs", ()))
+            if (
+                tuple(str(value) for value in research_run.get("input_refs", ())) != business_input_refs
+                or research_run.get("input_refs_digest") != canonical_digest(business_input_refs)
+            ):
+                raise StaleInputHead("research_run_business_inputs_are_stale")
+            run_version_id = str(research_run["research_run_version_id"])
+            artifact_input_refs = tuple(dict.fromkeys((run_version_id, *business_input_refs)))
+            artifacts = []
+            for artifact_spec, object_ref in zip(artifact_specs, object_refs, strict=True):
+                current_artifact_id = str(artifact_spec["artifact_id"])
+                artifacts.append(
+                    ArtifactVersionEnvelope(
+                        **self._scope(command, case_id=case_id),
+                        artifact_id=current_artifact_id,
+                        artifact_version_id=f"{current_artifact_id}:v1",
+                        artifact_version=1,
+                        artifact_type=str(artifact_spec["artifact_type"]),
+                        payload_business_owner="Fin01ResearchRuntime",
+                        producer_attempt_id=attempt_id,
+                        input_refs=artifact_input_refs,
+                        input_refs_digest=canonical_digest(artifact_input_refs),
+                        object_key=str(object_ref["object_key"]),
+                        object_digest=str(object_ref["digest"]),
+                        byte_size=int(object_ref["byte_size"]),
+                        media_type=str(object_ref["media_type"]),
+                        current_status="available",
+                    )
+                )
+            artifact_version_ids = tuple(
+                artifact.artifact_version_id for artifact in artifacts
+            )
+            artifact_version_id = artifact_version_ids[0]
+            completed_run = ResearchRunVersion.model_validate(
+                {
+                    **research_run,
+                    "research_run_version_id": f"{research_run_id}:v2",
+                    "research_run_version": 2,
+                    "state": ResearchRunState.SUCCEEDED.value,
+                    "ended_at": command.requested_at,
+                    "terminal_reason": str(command.payload.get("terminal_reason") or "completed"),
+                    "supersedes_version_id": run_version_id,
+                    "current_status": ResearchRunState.SUCCEEDED.value,
+                    "recorded_at": command.requested_at,
+                }
+            )
+            completed_attempt = Attempt.model_validate(
+                {
+                    **attempt,
+                    "state_version": int(attempt.get("state_version", 0)) + 1,
+                    "state": AttemptState.SUCCEEDED.value,
+                    "ended_at": command.requested_at,
+                    "terminal_reason": "completed",
+                    "output_refs": artifact_version_ids,
+                    "current_status": AttemptState.SUCCEEDED.value,
+                }
+            )
+            completed_work_unit = WorkUnit.model_validate(
+                {
+                    **work_unit,
+                    "state_version": command.expected_state_version + 1,
+                    "state": WorkUnitState.SUCCEEDED.value,
+                    "current_status": WorkUnitState.SUCCEEDED.value,
+                }
+            )
+            for artifact in artifacts:
+                tx.insert(
+                    "canonical_artifact_versions",
+                    artifact.artifact_id,
+                    1,
+                    artifact.model_dump(mode="json"),
+                )
+            tx.insert(
+                "canonical_research_run_versions",
+                research_run_id,
+                2,
+                completed_run.model_dump(mode="json"),
+            )
+            tx.insert(
+                "canonical_attempts",
+                attempt_id,
+                completed_attempt.attempt_no,
+                completed_attempt.model_dump(mode="json"),
+            )
+            tx.insert(
+                "canonical_work_units",
+                work_unit_id,
+                completed_work_unit.work_unit_version,
+                completed_work_unit.model_dump(mode="json"),
+            )
+            event_specs = (
+                *(
+                    (
+                        "ARTIFACT_VERSION_CREATED",
+                        {
+                            "artifact_version_id": artifact.artifact_version_id,
+                            "artifact_type": artifact.artifact_type,
+                            "research_run_version_id": run_version_id,
+                        },
+                    )
+                    for artifact in artifacts
+                ),
+                (
+                    "RESEARCH_RUN_COMPLETED",
+                    {
+                        "research_run_id": research_run_id,
+                        "research_run_version_id": completed_run.research_run_version_id,
+                        "artifact_version_id": artifact_version_id,
+                        "artifact_version_ids": list(artifact_version_ids),
+                        **(
+                            {
+                                "provider_output_capture_policy_ref": (
+                                    str(
+                                        provider_output_captures[0][
+                                            "capture_policy_ref"
+                                        ]
+                                    )
+                                ),
+                                "provider_output_capture_refs": (
+                                    provider_output_capture_refs
+                                ),
+                            }
+                            if provider_output_capture_refs
+                            else {}
+                        ),
+                    },
+                ),
+                ("ATTEMPT_COMPLETED", {"attempt_id": attempt_id, "output_refs": list(artifact_version_ids)}),
+                ("WORK_UNIT_COMPLETED", {"work_unit_id": work_unit_id, "attempt_id": attempt_id}),
+            )
+            events = []
+            for event_type, event_payload in event_specs:
+                event = self._event(
+                    tx,
+                    command,
+                    event_type,
+                    event_payload,
+                    task_run_id=research_run_id,
+                    work_unit_id=work_unit_id,
+                    attempt_id=attempt_id,
+                )
+                tx.append_event(event)
+                events.append(event)
+            result = ResultEnvelope(
+                command_id=command.command_id,
+                status="succeeded",
+                state_version_before=command.expected_state_version,
+                state_version_after=command.expected_state_version + 1,
+                event_ids=tuple(event.event_id for event in events),
+                artifact_refs=artifact_version_ids,
+                projection_refs=(
+                    work_unit_id,
+                    attempt_id,
+                    completed_run.research_run_version_id,
+                ),
+            )
+            tx.put_idempotency(scope_key, payload_digest, result.model_dump(mode="json"))
+        return result
+
+    def fail_research_run(self, command: CommandEnvelope) -> ResultEnvelope:
+        """Persist terminal failure without creating an artifact or hidden fallback."""
+
+        self._authorize("point01_shadow_compiler")
+        case_id = self._require_case(command)
+        work_unit_id = str(command.payload.get("work_unit_id") or "")
+        attempt_id = str(command.payload.get("attempt_id") or "")
+        research_run_id = str(command.payload.get("research_run_id") or "")
+        provider_output_captures = _validate_provider_output_captures(
+            command.payload.get("provider_output_captures")
+        )
+        failure_type = str(command.payload.get("failure_type") or "profile_execution_failed")
+        terminal_reason = str(command.payload.get("terminal_reason") or failure_type)
+        failure_observation = command.payload.get("failure_observation")
+        if failure_observation is not None and not isinstance(failure_observation, Mapping):
+            raise ArtifactValidationError("research_run_failure_observation_invalid")
+        if isinstance(failure_observation, Mapping):
+            failure_observation, _ = normalize_optional_failure_observation(
+                failure_observation
+            )
+            allowed_observation_keys = {
+                "stage",
+                "contract_ref",
+                "lifecycle_phase",
+                "failure_code",
+                "failure_codes",
+                "output_shape",
+                "failure_telemetry",
+                "observed_counts",
+                "estimated_cost_usd",
+                "usage_receipts",
+                "completed_node_receipts",
+                "private_reasoning_persisted",
+                "raw_provider_response_persisted",
+            }
+            allowed_receipt_keys = {
+                "stage",
+                "call_id",
+                "provider",
+                "model",
+                "status",
+                "finish_reason",
+                "input_tokens",
+                "input_cache_hit_tokens",
+                "input_cache_miss_tokens",
+                "output_tokens",
+                "total_tokens",
+                "estimated_cost_usd",
+                "latency_ms",
+                "transport_attempt_count",
+            }
+            receipts = failure_observation.get("usage_receipts") or []
+            completed_node_receipts = (
+                failure_observation.get("completed_node_receipts")
+            )
+            lifecycle_phase = failure_observation.get("lifecycle_phase")
+            typed_failure_code = failure_observation.get("failure_code")
+            output_shape = failure_observation.get("output_shape")
+            failure_telemetry = failure_observation.get("failure_telemetry")
+            strict_tool_arguments = (
+                failure_telemetry.get("strict_tool_arguments")
+                if isinstance(failure_telemetry, Mapping)
+                else None
+            )
+            segmented_specialist_shape = (
+                failure_telemetry.get("segmented_specialist_shape")
+                if isinstance(failure_telemetry, Mapping)
+                else None
+            )
+            segmented_specialist_text = (
+                failure_telemetry.get("segmented_specialist_text")
+                if isinstance(failure_telemetry, Mapping)
+                else None
+            )
+            segmented_specialist_authority = (
+                failure_telemetry.get("segmented_specialist_authority")
+                if isinstance(failure_telemetry, Mapping)
+                else None
+            )
+            segmented_specialist_fact_authority = (
+                failure_telemetry.get(
+                    "segmented_specialist_fact_authority"
+                )
+                if isinstance(failure_telemetry, Mapping)
+                else None
+            )
+            segmented_specialist_epistemic_status = (
+                failure_telemetry.get(
+                    "segmented_specialist_epistemic_status"
+                )
+                if isinstance(failure_telemetry, Mapping)
+                else None
+            )
+            research_lead_contract = (
+                failure_telemetry.get("research_lead_contract")
+                if isinstance(failure_telemetry, Mapping)
+                else None
+            )
+            memo_writer_contract = (
+                failure_telemetry.get("memo_writer_contract")
+                if isinstance(failure_telemetry, Mapping)
+                else None
+            )
+            scoped_identity_contract = (
+                failure_telemetry.get("scoped_identity_contract")
+                if isinstance(failure_telemetry, Mapping)
+                else None
+            )
+            verifier_state_machine = (
+                failure_telemetry.get("verifier_state_machine")
+                if isinstance(failure_telemetry, Mapping)
+                else None
+            )
+            profile_artifact_lineage = (
+                failure_telemetry.get("profile_artifact_lineage")
+                if isinstance(failure_telemetry, Mapping)
+                else None
+            )
+            registered_observation = (
+                failure_telemetry.get("registered_observation")
+                if isinstance(failure_telemetry, Mapping)
+                else None
+            )
+            allowed_failure_telemetry_keys = {
+                "strict_tool_arguments",
+                "segmented_specialist_shape",
+                "segmented_specialist_text",
+                "segmented_specialist_authority",
+                "segmented_specialist_fact_authority",
+                "segmented_specialist_epistemic_status",
+                "research_lead_contract",
+                "memo_writer_contract",
+                "scoped_identity_contract",
+                "verifier_state_machine",
+                "profile_artifact_lineage",
+                "registered_observation",
+            }
+            required_strict_tool_argument_keys = {
+                "parser_contract",
+                "parse_subtype",
+                "raw_arguments_persisted",
+                "argument_digest_persisted",
+                "argument_length_persisted",
+            }
+            allowed_strict_tool_parse_subtypes = {
+                "json_decode_error",
+                "duplicate_key",
+                "non_object",
+            }
+            required_segmented_specialist_shape_keys = {
+                "parser_contract",
+                "segment_id",
+                "shape_subtype",
+                "missing_key_count",
+                "unexpected_key_count",
+                "raw_output_persisted",
+                "arbitrary_key_names_persisted",
+            }
+            allowed_segment_ids = {
+                "facts_explanation_and_terminal",
+                "owner_grade_claim_cards",
+                "actionable_what_would_change_tasks",
+            }
+            allowed_segmented_shape_subtypes = {
+                "top_level_keys_missing",
+                "top_level_keys_unexpected",
+                "program_cell_id_mismatch",
+            }
+            required_segmented_specialist_text_keys = {
+                "validator_contract",
+                "segment_id",
+                "field_id",
+                "text_subtype",
+                "failing_item_count",
+                "raw_text_persisted",
+                "item_index_persisted",
+                "arbitrary_key_names_persisted",
+                "private_reasoning_persisted",
+            }
+            allowed_segmented_text_fields = {
+                "fact_layer.statement_or_boundary",
+                "explanation_layer",
+                "remaining_gaps",
+                "judgment_layer",
+                "what_would_change",
+            }
+            allowed_segmented_text_subtypes = {
+                "item_not_string",
+                "item_blank",
+                "item_over_max_unicode_characters",
+            }
+            required_segmented_specialist_authority_keys = {
+                "validator_contract",
+                "segment_id",
+                "field_id",
+                "authority_subtype",
+                "failing_item_count",
+                "raw_ref_persisted",
+                "ref_digest_persisted",
+                "item_index_persisted",
+                "arbitrary_key_names_persisted",
+                "private_reasoning_persisted",
+            }
+            allowed_segmented_authority_subtypes = {
+                "item_not_nonblank_string",
+                "evidence_or_numeric_ref_misclassified_as_context",
+                "outside_current_cell_context_authority",
+            }
+            required_segmented_specialist_fact_authority_keys = {
+                "validator_contract",
+                "segment_id",
+                "field_id",
+                "authority_subtype",
+                "failing_item_count",
+                "raw_ref_persisted",
+                "ref_digest_persisted",
+                "item_index_persisted",
+                "arbitrary_key_names_persisted",
+                "private_reasoning_persisted",
+            }
+            allowed_segmented_fact_authority_subtypes = {
+                "fact_layer_not_array",
+                "support_type_invalid",
+                "support_refs_not_array",
+                "support_refs_empty",
+                "item_not_nonblank_string",
+                "candidate_or_graph_ref_misclassified_as_fact",
+                "evidence_or_numeric_cross_type",
+                "outside_current_cell_fact_authority",
+                "support_ref_duplicate",
+            }
+            required_segmented_specialist_epistemic_status_keys = {
+                "validator_contract",
+                "segment_id",
+                "field_id",
+                "status_subtype",
+                "failing_item_count",
+                "raw_claim_persisted",
+                "support_fact_ids_persisted",
+                "cannot_support_text_persisted",
+                "item_index_persisted",
+                "arbitrary_key_names_persisted",
+                "private_reasoning_persisted",
+            }
+            allowed_segmented_epistemic_status_subtypes = {
+                "cannot_infer_has_support_fact_ids",
+                "cannot_infer_missing_cannot_support",
+                "cannot_infer_has_support_and_missing_boundary",
+            }
+            required_research_lead_contract_keys = {
+                "validator_contract",
+                "failure_family",
+                "failure_subtype",
+                "field_id",
+                "failing_item_count",
+                "raw_text_persisted",
+                "ref_or_digest_persisted",
+                "item_index_persisted",
+                "arbitrary_key_names_persisted",
+                "private_reasoning_persisted",
+            }
+            allowed_research_lead_failure_families = {
+                "parse",
+                "shape",
+                "cardinality",
+                "text",
+                "authority",
+                "capacity",
+                "assembly",
+                "semantic",
+            }
+            allowed_research_lead_failure_subtypes = {
+                "native_json_required",
+                "json_decode_failed",
+                "duplicate_key",
+                "non_object",
+                "top_level_keys_missing",
+                "top_level_keys_unexpected",
+                "item_schema_invalid",
+                "below_minimum",
+                "above_maximum",
+                "item_not_string",
+                "item_blank",
+                "item_over_max_unicode_characters",
+                "claim_ref_invalid",
+                "task_ref_invalid",
+                "provider_length_stop",
+                "provider_segment_over_max_utf8_bytes",
+                "deterministic_heads_invalid",
+                "assembled_output_over_max_utf8_bytes",
+                "canonical_validation_failed",
+                "involved_claim_ref_duplicate",
+                "fact_presence_summary_invalid",
+                "fact_presence_summary_mismatch",
+                "explicit_global_fact_presence_statement_conflict",
+            }
+            allowed_research_lead_field_ids = {
+                "top_level",
+                "cross_cell_dependencies",
+                "conflict_adjudications",
+                "variant_view",
+                "remaining_gaps",
+                "cell_heads",
+                "assembled_output",
+                "conflict_adjudications.fact_presence_summary",
+            }
+            required_memo_writer_contract_keys = {
+                "validator_contract",
+                "failure_family",
+                "failure_subtype",
+                "field_id",
+                "failing_item_count",
+                "raw_text_persisted",
+                "ref_or_digest_persisted",
+                "item_index_persisted",
+                "arbitrary_key_names_persisted",
+                "private_reasoning_persisted",
+            }
+            allowed_memo_writer_failure_families = {
+                "shape",
+                "cardinality",
+                "text",
+                "authority",
+                "assembly",
+                "semantic",
+            }
+            required_scoped_identity_contract_keys = {
+                "identity_kind",
+                "failure_subtype",
+                "failing_item_count",
+            }
+            allowed_scoped_identity_kinds = {
+                "claim",
+                "what_would_change",
+            }
+            allowed_scoped_identity_failure_subtypes = {
+                "duplicate_local_id_same_cell",
+                "raw_local_id_cross_cell_ambiguous",
+                "scoped_ref_duplicate",
+                "scoped_ref_mismatch",
+                "unknown_scoped_ref",
+            }
+            required_verifier_state_machine_keys = {
+                "validator_contract",
+                "failure_subtype",
+                "failing_layer_count",
+                "nonempty_issue_layer_count",
+                "nonempty_ref_layer_count",
+                "raw_issue_codes_persisted",
+                "raw_refs_persisted",
+                "repair_owner_persisted",
+                "raw_output_persisted",
+                "private_reasoning_persisted",
+            }
+            allowed_verifier_state_machine_subtypes = {
+                "pass_with_nonempty_issue_codes",
+                "pass_with_nonempty_refs",
+                "pass_with_repair_owner",
+                "nonpass_without_issue_codes",
+                "nonpass_without_refs",
+                "nonpass_without_repair_owner",
+                "decision_findings_state_conflict",
+            }
+            required_profile_artifact_lineage_keys = {
+                "validation_contract_ref",
+                "validation_subtype",
+                "artifact_type",
+                "lineage_family",
+                "raw_output_persisted",
+                "private_reasoning_persisted",
+                "credential_persisted",
+                "stack_persisted",
+            }
+            allowed_profile_artifact_lineage_subtypes = {
+                "bounded_agent_profile_lineage_contract_mismatch",
+                "bounded_agent_profile_lineage_digest_mismatch",
+                "bounded_agent_profile_lineage_overlay_mismatch",
+            }
+            allowed_profile_artifact_lineage_artifact_types = {
+                "bounded_agent_manifest",
+                "bounded_agent_trace",
+                "s4_case_runtime",
+            }
+            allowed_profile_artifact_lineage_families = {
+                "legacy_s3",
+                "s4_base",
+                "s4_research_profile_overlay",
+                "unresolved",
+            }
+            allowed_memo_writer_failure_subtypes = {
+                "top_level_keys_mismatch",
+                "claim_rendering_schema_invalid",
+                "claim_rendering_cardinality_mismatch",
+                "claim_ref_invalid",
+                "claim_ref_duplicate",
+                "analysis_text_blank",
+                "analysis_text_over_max_unicode_characters",
+                "graph_terminology_invalid",
+                "canonical_validation_failed",
+            }
+            allowed_memo_writer_field_ids = {
+                "top_level",
+                "claim_renderings",
+                "claim_renderings.claim_id",
+                "claim_renderings.analysis_text_zh_cn",
+                "assembled_output",
+            }
+            allowed_output_shape_keys = {
+                "outer_key_count",
+                "expected_outer_keys_present",
+                "missing_outer_keys",
+                "unexpected_outer_key_count",
+                "unexpected_outer_keys_digest",
+                "recognized_wrapper_keys_present",
+                "expected_outer_value_types",
+                "result_key_count",
+                "expected_result_keys_present",
+                "missing_result_keys",
+                "unexpected_result_key_count",
+                "unexpected_result_keys_digest",
+                "expected_result_value_types",
+            }
+            result_shape_keys = {
+                "result_key_count",
+                "expected_result_keys_present",
+                "missing_result_keys",
+                "unexpected_result_key_count",
+                "unexpected_result_keys_digest",
+                "expected_result_value_types",
+            }
+            result_shape_present = isinstance(output_shape, Mapping) and bool(
+                set(output_shape) & result_shape_keys
+            )
+            if (
+                set(failure_observation) - allowed_observation_keys
+                or failure_observation.get("private_reasoning_persisted") is not False
+                or failure_observation.get("raw_provider_response_persisted") is not False
+                or not isinstance(failure_observation.get("observed_counts"), Mapping)
+                or not isinstance(failure_observation.get("failure_codes"), list)
+                or any(
+                    not _is_secret_safe_bounded_failure_code(code)
+                    for code in (failure_observation.get("failure_codes") or [])
+                )
+                or (
+                    failure_observation.get("contract_ref") is not None
+                    and (
+                        failure_observation.get("contract_ref")
+                        != (
+                            "fin01.bounded_agent."
+                            "post_provider_failure_envelope:v1"
+                        )
+                        or lifecycle_phase
+                        not in {
+                            "node_envelope_accounting",
+                            "post_node_validation",
+                            "post_verifier_call_accounting",
+                            "execution_artifact_assembly",
+                            "adapter_output_conversion",
+                            "profile_artifact_ref_binding",
+                            "profile_result_validation",
+                            "profile_trace_recording",
+                        }
+                        or not _is_secret_safe_bounded_failure_code(
+                            typed_failure_code
+                        )
+                        or typed_failure_code
+                        not in failure_observation.get(
+                            "failure_codes", ()
+                        )
+                        or not isinstance(
+                            completed_node_receipts, list
+                        )
+                        or any(
+                            not isinstance(row, Mapping)
+                            or set(row)
+                            - {
+                                "node_id",
+                                "input_digest",
+                                "output_digest",
+                                "observed_counts",
+                                "version_bindings",
+                                "s4_case_runtime_consumption",
+                            }
+                            or not isinstance(
+                                row.get("node_id"), str
+                            )
+                            or not isinstance(
+                                row.get("input_digest"), str
+                            )
+                            or not isinstance(
+                                row.get("output_digest"), str
+                            )
+                            or not isinstance(
+                                row.get("observed_counts"), Mapping
+                            )
+                            or not isinstance(
+                                row.get("version_bindings"), Mapping
+                            )
+                            for row in completed_node_receipts
+                        )
+                    )
+                )
+                or (
+                    output_shape is not None
+                    and (
+                        not isinstance(output_shape, Mapping)
+                        or set(output_shape) - allowed_output_shape_keys
+                        or not isinstance(output_shape.get("outer_key_count"), int)
+                        or not isinstance(
+                            output_shape.get("unexpected_outer_key_count"), int
+                        )
+                        or not isinstance(
+                            output_shape.get("expected_outer_keys_present"), list
+                        )
+                        or not isinstance(output_shape.get("missing_outer_keys"), list)
+                        or not isinstance(
+                            output_shape.get("recognized_wrapper_keys_present"), list
+                        )
+                        or not isinstance(
+                            output_shape.get("expected_outer_value_types"), Mapping
+                        )
+                        or (
+                            result_shape_present
+                            and (
+                                not isinstance(output_shape.get("result_key_count"), int)
+                                or not isinstance(
+                                    output_shape.get("unexpected_result_key_count"), int
+                                )
+                                or not isinstance(
+                                    output_shape.get("expected_result_keys_present"), list
+                                )
+                                or not isinstance(
+                                    output_shape.get("missing_result_keys"), list
+                                )
+                                or not isinstance(
+                                    output_shape.get("expected_result_value_types"), Mapping
+                                )
+                                or result_shape_keys - set(output_shape)
+                            )
+                        )
+                    )
+                )
+                or (
+                    failure_telemetry is not None
+                    and (
+                        not isinstance(failure_telemetry, Mapping)
+                        or len(failure_telemetry) != 1
+                        or not set(failure_telemetry).issubset(
+                            allowed_failure_telemetry_keys
+                        )
+                        or (
+                            "registered_observation" in failure_telemetry
+                            and not is_registered_failure_observation(
+                                registered_observation
+                            )
+                        )
+                        or (
+                            "strict_tool_arguments" in failure_telemetry
+                            and (
+                                not isinstance(strict_tool_arguments, Mapping)
+                                or set(strict_tool_arguments)
+                                != required_strict_tool_argument_keys
+                                or strict_tool_arguments.get("parser_contract")
+                                != "native_json_object_no_fence_no_duplicate_keys"
+                                or strict_tool_arguments.get("parse_subtype")
+                                not in allowed_strict_tool_parse_subtypes
+                                or strict_tool_arguments.get(
+                                    "raw_arguments_persisted"
+                                )
+                                is not False
+                                or strict_tool_arguments.get(
+                                    "argument_digest_persisted"
+                                )
+                                is not False
+                                or strict_tool_arguments.get(
+                                    "argument_length_persisted"
+                                )
+                                is not False
+                            )
+                        )
+                        or (
+                            "segmented_specialist_shape" in failure_telemetry
+                            and (
+                                not isinstance(
+                                    segmented_specialist_shape, Mapping
+                                )
+                                or set(segmented_specialist_shape)
+                                != required_segmented_specialist_shape_keys
+                                or segmented_specialist_shape.get(
+                                    "parser_contract"
+                                )
+                                != "closed_segment_top_level_shape:v1"
+                                or segmented_specialist_shape.get("segment_id")
+                                not in allowed_segment_ids
+                                or segmented_specialist_shape.get(
+                                    "shape_subtype"
+                                )
+                                not in allowed_segmented_shape_subtypes
+                                or type(
+                                    segmented_specialist_shape.get(
+                                        "missing_key_count"
+                                    )
+                                )
+                                is not int
+                                or segmented_specialist_shape.get(
+                                    "missing_key_count"
+                                )
+                                < 0
+                                or type(
+                                    segmented_specialist_shape.get(
+                                        "unexpected_key_count"
+                                    )
+                                )
+                                is not int
+                                or segmented_specialist_shape.get(
+                                    "unexpected_key_count"
+                                )
+                                < 0
+                                or segmented_specialist_shape.get(
+                                    "raw_output_persisted"
+                                )
+                                is not False
+                                or segmented_specialist_shape.get(
+                                    "arbitrary_key_names_persisted"
+                                )
+                                is not False
+                            )
+                        )
+                        or (
+                            "segmented_specialist_text" in failure_telemetry
+                            and (
+                                not isinstance(
+                                    segmented_specialist_text, Mapping
+                                )
+                                or set(segmented_specialist_text)
+                                != required_segmented_specialist_text_keys
+                                or segmented_specialist_text.get(
+                                    "validator_contract"
+                                )
+                                != "closed_segment_narrative_text:v1"
+                                or segmented_specialist_text.get("segment_id")
+                                not in allowed_segment_ids
+                                or segmented_specialist_text.get("field_id")
+                                not in allowed_segmented_text_fields
+                                or segmented_specialist_text.get("text_subtype")
+                                not in allowed_segmented_text_subtypes
+                                or type(
+                                    segmented_specialist_text.get(
+                                        "failing_item_count"
+                                    )
+                                )
+                                is not int
+                                or segmented_specialist_text.get(
+                                    "failing_item_count"
+                                )
+                                <= 0
+                                or segmented_specialist_text.get(
+                                    "raw_text_persisted"
+                                )
+                                is not False
+                                or segmented_specialist_text.get(
+                                    "item_index_persisted"
+                                )
+                                is not False
+                                or segmented_specialist_text.get(
+                                    "arbitrary_key_names_persisted"
+                                )
+                                is not False
+                                or segmented_specialist_text.get(
+                                    "private_reasoning_persisted"
+                                )
+                                is not False
+                            )
+                        )
+                        or (
+                            "segmented_specialist_authority" in failure_telemetry
+                            and (
+                                not isinstance(
+                                    segmented_specialist_authority, Mapping
+                                )
+                                or set(segmented_specialist_authority)
+                                != required_segmented_specialist_authority_keys
+                                or segmented_specialist_authority.get(
+                                    "validator_contract"
+                                )
+                                != "closed_segment_context_authority:v1"
+                                or segmented_specialist_authority.get("segment_id")
+                                != "owner_grade_claim_cards"
+                                or segmented_specialist_authority.get("field_id")
+                                != "judgment_layer.context_refs"
+                                or segmented_specialist_authority.get(
+                                    "authority_subtype"
+                                )
+                                not in allowed_segmented_authority_subtypes
+                                or type(
+                                    segmented_specialist_authority.get(
+                                        "failing_item_count"
+                                    )
+                                )
+                                is not int
+                                or segmented_specialist_authority.get(
+                                    "failing_item_count"
+                                )
+                                <= 0
+                                or any(
+                                    segmented_specialist_authority.get(key)
+                                    is not False
+                                    for key in (
+                                        "raw_ref_persisted",
+                                        "ref_digest_persisted",
+                                        "item_index_persisted",
+                                        "arbitrary_key_names_persisted",
+                                        "private_reasoning_persisted",
+                                    )
+                                )
+                            )
+                        )
+                        or (
+                            "segmented_specialist_fact_authority"
+                            in failure_telemetry
+                            and (
+                                not isinstance(
+                                    segmented_specialist_fact_authority,
+                                    Mapping,
+                                )
+                                or set(segmented_specialist_fact_authority)
+                                != required_segmented_specialist_fact_authority_keys
+                                or segmented_specialist_fact_authority.get(
+                                    "validator_contract"
+                                )
+                                != "closed_fact_support_authority:v1"
+                                or segmented_specialist_fact_authority.get(
+                                    "segment_id"
+                                )
+                                != "facts_explanation_and_terminal"
+                                or segmented_specialist_fact_authority.get(
+                                    "field_id"
+                                )
+                                != "fact_layer.support_refs"
+                                or segmented_specialist_fact_authority.get(
+                                    "authority_subtype"
+                                )
+                                not in allowed_segmented_fact_authority_subtypes
+                                or type(
+                                    segmented_specialist_fact_authority.get(
+                                        "failing_item_count"
+                                    )
+                                )
+                                is not int
+                                or segmented_specialist_fact_authority.get(
+                                    "failing_item_count"
+                                )
+                                <= 0
+                                or any(
+                                    segmented_specialist_fact_authority.get(key)
+                                    is not False
+                                    for key in (
+                                        "raw_ref_persisted",
+                                        "ref_digest_persisted",
+                                        "item_index_persisted",
+                                        "arbitrary_key_names_persisted",
+                                        "private_reasoning_persisted",
+                                    )
+                                )
+                            )
+                        )
+                        or (
+                            "segmented_specialist_epistemic_status"
+                            in failure_telemetry
+                            and (
+                                not isinstance(
+                                    segmented_specialist_epistemic_status,
+                                    Mapping,
+                                )
+                                or set(segmented_specialist_epistemic_status)
+                                != required_segmented_specialist_epistemic_status_keys
+                                or segmented_specialist_epistemic_status.get(
+                                    "validator_contract"
+                                )
+                                != "closed_claim_card_epistemic_status_state:v1"
+                                or segmented_specialist_epistemic_status.get(
+                                    "segment_id"
+                                )
+                                != "owner_grade_claim_cards"
+                                or segmented_specialist_epistemic_status.get(
+                                    "field_id"
+                                )
+                                != (
+                                    "judgment_layer.epistemic_status_support_fact_ids_"
+                                    "qualification_cannot_support"
+                                )
+                                or segmented_specialist_epistemic_status.get(
+                                    "status_subtype"
+                                )
+                                not in allowed_segmented_epistemic_status_subtypes
+                                or type(
+                                    segmented_specialist_epistemic_status.get(
+                                        "failing_item_count"
+                                    )
+                                )
+                                is not int
+                                or segmented_specialist_epistemic_status.get(
+                                    "failing_item_count"
+                                )
+                                <= 0
+                                or any(
+                                    segmented_specialist_epistemic_status.get(key)
+                                    is not False
+                                    for key in (
+                                        "raw_claim_persisted",
+                                        "support_fact_ids_persisted",
+                                        "cannot_support_text_persisted",
+                                        "item_index_persisted",
+                                        "arbitrary_key_names_persisted",
+                                        "private_reasoning_persisted",
+                                    )
+                                )
+                            )
+                        )
+                        or (
+                            "research_lead_contract" in failure_telemetry
+                            and (
+                                not isinstance(research_lead_contract, Mapping)
+                                or set(research_lead_contract)
+                                != required_research_lead_contract_keys
+                                or research_lead_contract.get(
+                                    "validator_contract"
+                                )
+                                not in {
+                                    "closed_research_lead_output:v2",
+                                    "closed_research_lead_output:v3",
+                                }
+                                or research_lead_contract.get("failure_family")
+                                not in allowed_research_lead_failure_families
+                                or research_lead_contract.get("failure_subtype")
+                                not in allowed_research_lead_failure_subtypes
+                                or research_lead_contract.get("field_id")
+                                not in allowed_research_lead_field_ids
+                                or (
+                                    research_lead_contract.get(
+                                        "validator_contract"
+                                    )
+                                    == "closed_research_lead_output:v2"
+                                    and (
+                                        research_lead_contract.get(
+                                            "failure_family"
+                                        )
+                                        == "semantic"
+                                        or research_lead_contract.get(
+                                            "failure_subtype"
+                                        )
+                                        in {
+                                            "involved_claim_ref_duplicate",
+                                            "fact_presence_summary_invalid",
+                                            "fact_presence_summary_mismatch",
+                                            (
+                                                "explicit_global_fact_presence_"
+                                                "statement_conflict"
+                                            ),
+                                        }
+                                        or research_lead_contract.get(
+                                            "field_id"
+                                        )
+                                        == (
+                                            "conflict_adjudications."
+                                            "fact_presence_summary"
+                                        )
+                                    )
+                                )
+                                or type(
+                                    research_lead_contract.get(
+                                        "failing_item_count"
+                                    )
+                                )
+                                is not int
+                                or research_lead_contract.get(
+                                    "failing_item_count"
+                                )
+                                < 0
+                                or any(
+                                    research_lead_contract.get(key) is not False
+                                    for key in (
+                                        "raw_text_persisted",
+                                        "ref_or_digest_persisted",
+                                        "item_index_persisted",
+                                        "arbitrary_key_names_persisted",
+                                        "private_reasoning_persisted",
+                                    )
+                                )
+                            )
+                        )
+                        or (
+                            "memo_writer_contract" in failure_telemetry
+                            and (
+                                not isinstance(memo_writer_contract, Mapping)
+                                or set(memo_writer_contract)
+                                != required_memo_writer_contract_keys
+                                or memo_writer_contract.get("validator_contract")
+                                != "closed_memo_writer_output:v2"
+                                or memo_writer_contract.get("failure_family")
+                                not in allowed_memo_writer_failure_families
+                                or memo_writer_contract.get("failure_subtype")
+                                not in allowed_memo_writer_failure_subtypes
+                                or memo_writer_contract.get("field_id")
+                                not in allowed_memo_writer_field_ids
+                                or type(
+                                    memo_writer_contract.get(
+                                        "failing_item_count"
+                                    )
+                                )
+                                is not int
+                                or memo_writer_contract.get(
+                                    "failing_item_count"
+                                )
+                                < 0
+                                or any(
+                                    memo_writer_contract.get(key) is not False
+                                    for key in (
+                                        "raw_text_persisted",
+                                        "ref_or_digest_persisted",
+                                        "item_index_persisted",
+                                        "arbitrary_key_names_persisted",
+                                        "private_reasoning_persisted",
+                                    )
+                                )
+                            )
+                        )
+                        or (
+                            "scoped_identity_contract" in failure_telemetry
+                            and (
+                                not isinstance(
+                                    scoped_identity_contract, Mapping
+                                )
+                                or set(scoped_identity_contract)
+                                != required_scoped_identity_contract_keys
+                                or scoped_identity_contract.get("identity_kind")
+                                not in allowed_scoped_identity_kinds
+                                or scoped_identity_contract.get(
+                                    "failure_subtype"
+                                )
+                                not in allowed_scoped_identity_failure_subtypes
+                                or type(
+                                    scoped_identity_contract.get(
+                                        "failing_item_count"
+                                    )
+                                )
+                                is not int
+                                or scoped_identity_contract.get(
+                                    "failing_item_count"
+                                )
+                                <= 0
+                            )
+                        )
+                        or (
+                            "verifier_state_machine" in failure_telemetry
+                            and (
+                                not isinstance(
+                                    verifier_state_machine, Mapping
+                                )
+                                or set(verifier_state_machine)
+                                != required_verifier_state_machine_keys
+                                or verifier_state_machine.get(
+                                    "validator_contract"
+                                )
+                                != (
+                                    "fin01.s3.owner_grade_verifier_"
+                                    "output_state_machine:v1"
+                                )
+                                or verifier_state_machine.get(
+                                    "failure_subtype"
+                                )
+                                not in allowed_verifier_state_machine_subtypes
+                                or type(
+                                    verifier_state_machine.get(
+                                        "failing_layer_count"
+                                    )
+                                )
+                                is not int
+                                or verifier_state_machine.get(
+                                    "failing_layer_count"
+                                )
+                                <= 0
+                                or any(
+                                    type(verifier_state_machine.get(key))
+                                    is not int
+                                    or verifier_state_machine.get(key) < 0
+                                    for key in (
+                                        "nonempty_issue_layer_count",
+                                        "nonempty_ref_layer_count",
+                                    )
+                                )
+                                or any(
+                                    verifier_state_machine.get(key) is not False
+                                    for key in (
+                                        "raw_issue_codes_persisted",
+                                        "raw_refs_persisted",
+                                        "repair_owner_persisted",
+                                        "raw_output_persisted",
+                                        "private_reasoning_persisted",
+                                    )
+                                )
+                            )
+                        )
+                        or (
+                            "profile_artifact_lineage"
+                            in failure_telemetry
+                            and (
+                                not isinstance(
+                                    profile_artifact_lineage, Mapping
+                                )
+                                or set(profile_artifact_lineage)
+                                != required_profile_artifact_lineage_keys
+                                or profile_artifact_lineage.get(
+                                    "validation_contract_ref"
+                                )
+                                != (
+                                    "fin01.bounded_agent."
+                                    "profile_aware_artifact_lineage_"
+                                    "validation:v1"
+                                )
+                                or profile_artifact_lineage.get(
+                                    "validation_subtype"
+                                )
+                                not in (
+                                    allowed_profile_artifact_lineage_subtypes
+                                )
+                                or profile_artifact_lineage.get(
+                                    "artifact_type"
+                                )
+                                not in (
+                                    allowed_profile_artifact_lineage_artifact_types
+                                )
+                                or profile_artifact_lineage.get(
+                                    "lineage_family"
+                                )
+                                not in (
+                                    allowed_profile_artifact_lineage_families
+                                )
+                                or any(
+                                    profile_artifact_lineage.get(key)
+                                    is not False
+                                    for key in (
+                                        "raw_output_persisted",
+                                        "private_reasoning_persisted",
+                                        "credential_persisted",
+                                        "stack_persisted",
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+                or not isinstance(receipts, list)
+                or any(
+                    not isinstance(row, Mapping) or set(row) - allowed_receipt_keys
+                    for row in receipts
+                )
+            ):
+                raise ArtifactValidationError("research_run_failure_observation_not_secret_safe")
+        if not all((work_unit_id, attempt_id, research_run_id)):
+            raise MissingDependency("research_run_failure_identity_required")
+        scope_key, payload_digest, _ = self._idempotency(command, research_run_id)
+        with self.store.transaction() as tx:
+            existing = tx.get_idempotency(scope_key)
+            if existing:
+                return self._reuse_or_conflict(existing, payload_digest)
+            work_unit, attempt = self._require_running_execution(
+                tx, command, case_id, work_unit_id, attempt_id
+            )
+            research_run = self._require_case_row(
+                tx,
+                command,
+                case_id,
+                table="canonical_research_run_versions",
+                logical_id=research_run_id,
+            )
+            if (
+                research_run.get("state") != ResearchRunState.RUNNING.value
+                or research_run.get("work_unit_id") != work_unit_id
+                or research_run.get("attempt_id") != attempt_id
+            ):
+                raise IllegalStateTransition("research_run_execution_identity_mismatch")
+            if provider_output_captures and str(
+                research_run.get("execution_profile_version_ref") or ""
+            ) not in {
+                "fin01.execution_profile.bounded_agent_internal:v1",
+                "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+            }:
+                raise ArtifactValidationError(
+                    "provider_output_capture_profile_not_admitted"
+                )
+            provider_output_capture_refs = self._persist_provider_output_captures(
+                provider_output_captures,
+                case_id=case_id,
+                work_unit_id=work_unit_id,
+                attempt_id=attempt_id,
+                research_run_id=research_run_id,
+            )
+            failed_run = ResearchRunVersion.model_validate(
+                {
+                    **research_run,
+                    "research_run_version_id": f"{research_run_id}:v2",
+                    "research_run_version": 2,
+                    "state": ResearchRunState.FAILED.value,
+                    "ended_at": command.requested_at,
+                    "terminal_reason": terminal_reason,
+                    "supersedes_version_id": research_run["research_run_version_id"],
+                    "current_status": ResearchRunState.FAILED.value,
+                    "recorded_at": command.requested_at,
+                }
+            )
+            failed_attempt = Attempt.model_validate(
+                {
+                    **attempt,
+                    "state_version": int(attempt.get("state_version", 0)) + 1,
+                    "state": AttemptState.FAILED.value,
+                    "ended_at": command.requested_at,
+                    "failure_type": failure_type,
+                    "retryable": False,
+                    "terminal_reason": terminal_reason,
+                    "current_status": AttemptState.FAILED.value,
+                }
+            )
+            failed_work_unit = WorkUnit.model_validate(
+                {
+                    **work_unit,
+                    "state_version": command.expected_state_version + 1,
+                    "state": WorkUnitState.FAILED.value,
+                    "current_status": WorkUnitState.FAILED.value,
+                }
+            )
+            tx.insert("canonical_research_run_versions", research_run_id, 2, failed_run.model_dump(mode="json"))
+            tx.insert("canonical_attempts", attempt_id, failed_attempt.attempt_no, failed_attempt.model_dump(mode="json"))
+            tx.insert("canonical_work_units", work_unit_id, failed_work_unit.work_unit_version, failed_work_unit.model_dump(mode="json"))
+            event_specs = (
+                (
+                    "RESEARCH_RUN_FAILED",
+                    {
+                        "research_run_id": research_run_id,
+                        "research_run_version_id": failed_run.research_run_version_id,
+                        "failure_type": failure_type,
+                        "failure_observation": dict(failure_observation or {}),
+                        **(
+                            {
+                                "provider_output_capture_policy_ref": (
+                                    str(
+                                        provider_output_captures[0][
+                                            "capture_policy_ref"
+                                        ]
+                                    )
+                                ),
+                                "provider_output_capture_refs": (
+                                    provider_output_capture_refs
+                                ),
+                            }
+                            if provider_output_capture_refs
+                            else {}
+                        ),
+                    },
+                ),
+                ("ATTEMPT_FAILED", {"attempt_id": attempt_id, "failure_type": failure_type, "retryable": False}),
+                ("WORK_UNIT_FAILED", {"work_unit_id": work_unit_id, "attempt_id": attempt_id, "retryable": False}),
+            )
+            events = []
+            for event_type, event_payload in event_specs:
+                event = self._event(
+                    tx,
+                    command,
+                    event_type,
+                    event_payload,
+                    task_run_id=research_run_id,
+                    work_unit_id=work_unit_id,
+                    attempt_id=attempt_id,
+                )
+                tx.append_event(event)
+                events.append(event)
+            result = ResultEnvelope(
+                command_id=command.command_id,
+                status="succeeded",
+                state_version_before=command.expected_state_version,
+                state_version_after=command.expected_state_version + 1,
+                event_ids=tuple(event.event_id for event in events),
+                projection_refs=(work_unit_id, attempt_id, failed_run.research_run_version_id),
             )
             tx.put_idempotency(scope_key, payload_digest, result.model_dump(mode="json"))
         return result
@@ -1941,6 +4221,8 @@ class RuntimeFacade:
             "cases": {},
             "work_units": {},
             "attempts": {},
+            "research_runs": {},
+            "research_run_traces": {},
             "artifacts": {},
             "evidence_workspaces": {},
             "numeric_workspaces": {},
@@ -1994,6 +4276,57 @@ class RuntimeFacade:
                         "lease_expires_at": payload.get("lease_expires_at"),
                     }
                 )
+            elif event_type == "RESEARCH_RUN_STARTED":
+                research_run_id = str(event.get("task_run_id") or payload.get("research_run_id") or "")
+                if not research_run_id:
+                    raise UnknownEventSchema("research_run_started_missing_id")
+                projection["research_runs"][research_run_id] = {
+                    "state": "running",
+                    "research_run_version_id": payload.get("research_run_version_id"),
+                    "work_unit_id": event.get("work_unit_id"),
+                    "attempt_id": event.get("attempt_id"),
+                    "execution_profile_version_ref": payload.get("execution_profile_version_ref"),
+                }
+            elif event_type in {
+                "AGENT_DEFINITION_VERSIONS_SELECTED",
+                "SKILL_PACK_CONSUMPTION_RECORDED",
+                "LANGGRAPH_FIXTURE_SHADOW_VALIDATED",
+                "RESEARCH_LEAD_FIXTURE_COMPLETED",
+                "SPECIALIST_FIXTURE_COMPLETED",
+                "TOOL_FIXTURE_OBSERVATION_RECORDED",
+                "GRAPH_FIXTURE_OBSERVATION_RECORDED",
+                "WRITER_FIXTURE_COMPLETED",
+                "VERIFIER_FIXTURE_COMPLETED",
+            }:
+                research_run_id = str(event.get("task_run_id") or "")
+                if not research_run_id:
+                    raise UnknownEventSchema("research_run_trace_missing_run_id")
+                projection["research_run_traces"].setdefault(research_run_id, []).append(
+                    {
+                        "event_type": event_type,
+                        "event_id": event["event_id"],
+                        "causation_event_id": event.get("causation_event_id"),
+                        "payload": payload,
+                    }
+                )
+            elif event_type in {"RESEARCH_RUN_COMPLETED", "RESEARCH_RUN_FAILED"}:
+                research_run_id = str(event.get("task_run_id") or payload.get("research_run_id") or "")
+                if not research_run_id:
+                    raise UnknownEventSchema("research_run_terminal_missing_id")
+                projection["research_runs"].setdefault(
+                    research_run_id,
+                    {
+                        "work_unit_id": event.get("work_unit_id"),
+                        "attempt_id": event.get("attempt_id"),
+                    },
+                ).update(
+                    {
+                        "state": "succeeded" if event_type == "RESEARCH_RUN_COMPLETED" else "failed",
+                        "research_run_version_id": payload.get("research_run_version_id"),
+                        "artifact_version_id": payload.get("artifact_version_id"),
+                        "failure_type": payload.get("failure_type"),
+                    }
+                )
             elif event_type in {"ARTIFACT_VERSION_CREATED", "CHECKPOINT_VERSION_CREATED"}:
                 artifact_ref = str(payload.get("artifact_version_id") or "")
                 if event_type == "CHECKPOINT_VERSION_CREATED":
@@ -2002,7 +4335,7 @@ class RuntimeFacade:
                     raise UnknownEventSchema("artifact_event_missing_version_id")
                 projection["artifacts"][artifact_ref] = {
                     "producer_attempt_id": event.get("attempt_id"),
-                    "artifact_type": "runtime_checkpoint" if event_type == "CHECKPOINT_VERSION_CREATED" else None,
+                    "artifact_type": "runtime_checkpoint" if event_type == "CHECKPOINT_VERSION_CREATED" else payload.get("artifact_type"),
                     "supersedes_version_id": payload.get("supersedes_version_id"),
                     "checkpoint_state_digest": payload.get("checkpoint_state_digest"),
                 }
@@ -2209,6 +4542,7 @@ class RuntimeFacade:
         task_run_id: str | None = None,
         work_unit_id: str | None = None,
         attempt_id: str | None = None,
+        advances_state: bool = True,
     ) -> EventEnvelope:
         self._ensure_actor_snapshot(tx, command)
         now = utc_now()
@@ -2225,7 +4559,7 @@ class RuntimeFacade:
             causation_event_id=command.causation_event_id,
             correlation_id=command.correlation_id,
             state_version_before=command.expected_state_version,
-            state_version_after=command.expected_state_version + 1,
+            state_version_after=command.expected_state_version + (1 if advances_state else 0),
             payload_digest=canonical_digest(payload),
             payload=dict(payload),
         )

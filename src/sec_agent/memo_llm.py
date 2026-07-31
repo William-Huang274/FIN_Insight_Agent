@@ -5,11 +5,18 @@ import os
 import re
 import hashlib
 from dataclasses import dataclass
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Literal, Mapping, Sequence
 
+from pydantic import BaseModel, ConfigDict, Field
+
+from sec_agent.canonical_runtime.models import canonical_digest
 from sec_agent.llm_gateway import chat_completion
 from sec_agent.multi_agent_contracts import ANALYSIS_DIMENSION_ORDER, build_multi_agent_memo_draft, verify_multi_agent_memo_draft
 from sec_agent.research_skills import research_skill_prompt
+from sec_agent.s4_case_runtime import (
+    S4CaseRuntimeBinding,
+    consume_s4_case_runtime_binding,
+)
 
 
 MEMO_ROUTE_SCHEMA_VERSION = "sec_agent_memo_llm_route_v0.1"
@@ -45,6 +52,253 @@ SOURCE_COVERAGE_CLAIM_TYPES = {
 }
 
 ChatCompletionFunc = Callable[..., dict[str, Any]]
+
+
+S3_PRESENTATION_PACK_CONTRACT_REF = (
+    "fin01.s3.three_cell_workpaper_report_trace_review_surface:v1"
+)
+S3_PRESENTATION_OWNER_REF = "src.sec_agent.memo_llm:s3_presentation_projection"
+
+
+class S3PresentationStrictModel(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+
+class S3SurfaceClaimVersion(S3PresentationStrictModel):
+    surface_claim_id: str = Field(min_length=1)
+    surface_claim_version_ref: str = Field(min_length=1)
+    surface_claim_digest: str = Field(min_length=1)
+    program_cell_id: str = Field(min_length=1)
+    claim_text: str = Field(min_length=1)
+    disposition: str = Field(min_length=1)
+    specialist_judgment_ref: str = Field(min_length=1)
+    fact_statements: tuple[str, ...]
+    evidence_refs: tuple[str, ...]
+    numeric_refs: tuple[str, ...]
+    graph_context_refs: tuple[str, ...] = Field(min_length=1)
+    gap_codes: tuple[str, ...] = Field(min_length=1)
+    what_would_change: tuple[str, ...] = Field(min_length=1)
+    repair_ticket_refs: tuple[str, ...] = Field(min_length=1)
+    stop_semantic: str = Field(min_length=1)
+    source_grade: Literal["no_promoted_evidence", "deterministic_company_total_only"]
+    numeric_sanity_status: Literal[
+        "not_applicable_no_numeric_authority",
+        "exact_company_total_formula_recomputed_product_attribution_unavailable",
+    ]
+    official_or_estimate_flag: Literal[
+        "context_only_not_promoted",
+        "deterministic_exact_company_total_not_product_estimate",
+    ]
+
+
+class S3GraphDrilldownVersion(S3PresentationStrictModel):
+    program_cell_id: str = Field(min_length=1)
+    graph_edge_projection_ref: str = Field(min_length=1)
+    graph_authority: str = Field(min_length=1)
+    graph_status: Literal["context_only_not_evidence"] = "context_only_not_evidence"
+    source_followup_refs: tuple[str, ...] = Field(min_length=1)
+    typed_gaps: tuple[str, ...] = Field(min_length=1)
+    automatic_new_research: Literal[False] = False
+
+
+class S3WorkpaperCellVersion(S3PresentationStrictModel):
+    program_cell_id: str = Field(min_length=1)
+    cell_version_ref: str = Field(min_length=1)
+    surface_claim_ref: str = Field(min_length=1)
+    specialist_judgment_ref: str = Field(min_length=1)
+    decision_question: str = Field(min_length=1)
+    direct_answer: str = Field(min_length=1)
+    fact_statements: tuple[str, ...]
+    evidence_refs: tuple[str, ...]
+    numeric_refs: tuple[str, ...]
+    graph_drilldown: S3GraphDrilldownVersion
+    gaps: tuple[str, ...] = Field(min_length=1)
+    what_would_change: tuple[str, ...] = Field(min_length=1)
+    repair_ticket_refs: tuple[str, ...] = Field(min_length=1)
+    stop_semantic: str = Field(min_length=1)
+    review_status: Literal["pending_exact_human_review"] = "pending_exact_human_review"
+
+
+class S3WorkpaperVersion(S3PresentationStrictModel):
+    workpaper_id: str = Field(min_length=1)
+    workpaper_version_ref: str = Field(min_length=1)
+    workpaper_digest: str = Field(min_length=1)
+    artifact_ref: str = Field(min_length=1)
+    case_id: str = Field(min_length=1)
+    research_run_id: str = Field(min_length=1)
+    decision_surface_contract_ref: str = Field(min_length=1)
+    lead_synthesis_ref: str = Field(min_length=1)
+    cell_sections: tuple[S3WorkpaperCellVersion, ...] = Field(
+        min_length=3, max_length=3
+    )
+    status: Literal["bounded_review_ready_not_human_accepted"] = (
+        "bounded_review_ready_not_human_accepted"
+    )
+
+
+class S3ReportSectionVersion(S3PresentationStrictModel):
+    section_id: str = Field(min_length=1)
+    program_cell_id: str = Field(min_length=1)
+    heading: str = Field(min_length=1)
+    content: str = Field(min_length=1)
+    surface_claim_ref: str = Field(min_length=1)
+    specialist_judgment_ref: str = Field(min_length=1)
+    evidence_refs: tuple[str, ...]
+    numeric_refs: tuple[str, ...]
+    boundary: str = Field(min_length=1)
+
+
+class S3ReportVersion(S3PresentationStrictModel):
+    report_id: str = Field(min_length=1)
+    report_version_ref: str = Field(min_length=1)
+    report_digest: str = Field(min_length=1)
+    artifact_ref: str = Field(min_length=1)
+    workpaper_artifact_ref: str = Field(min_length=1)
+    case_id: str = Field(min_length=1)
+    research_run_id: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    executive_answer: str = Field(min_length=1)
+    sections: tuple[S3ReportSectionVersion, ...] = Field(min_length=3, max_length=3)
+    adjudicated_input_refs: tuple[str, ...] = Field(min_length=4)
+    presentation_gaps: tuple[str, ...] = Field(min_length=1)
+    writer_decisions: tuple[str, ...] = Field(min_length=1)
+    writer_source_authority: Literal[False] = False
+    writer_retrieval_authority: Literal[False] = False
+    writer_external_tool_authority: Literal[False] = False
+    raw_candidate_consumption: Literal[False] = False
+    model_writer_executed: Literal[False] = False
+    release_claim_authorized: Literal[False] = False
+
+
+class S3TraceNodeVersion(S3PresentationStrictModel):
+    node_ref: str = Field(min_length=1)
+    node_type: Literal["run", "cell", "claim", "judgment", "artifact"]
+    label: str = Field(min_length=1)
+
+
+class S3TraceEdgeVersion(S3PresentationStrictModel):
+    edge_id: str = Field(min_length=1)
+    from_ref: str = Field(min_length=1)
+    to_ref: str = Field(min_length=1)
+    relation: Literal[
+        "run_contains_cell",
+        "cell_exposes_claim",
+        "claim_projects_judgment",
+        "claim_rendered_in_workpaper",
+        "workpaper_rendered_as_report",
+        "report_verified_by_trace",
+    ]
+
+
+class S3VerifierFindingVersion(S3PresentationStrictModel):
+    finding_id: str = Field(min_length=1)
+    layer: Literal["deterministic_integrity", "semantic", "financial", "visual"]
+    severity: Literal["info", "warning"]
+    status: Literal["pass", "bounded_gap_preserved", "pending_browser_validation"]
+    affected_refs: tuple[str, ...] = Field(min_length=1)
+    earliest_owner_ref: str = Field(min_length=1)
+    message: str = Field(min_length=1)
+
+
+class S3CellReviewTargetVersion(S3PresentationStrictModel):
+    review_target_id: str = Field(min_length=1)
+    program_cell_id: str = Field(min_length=1)
+    surface_claim_ref: str = Field(min_length=1)
+    specialist_judgment_ref: str = Field(min_length=1)
+    artifact_refs: tuple[str, ...] = Field(min_length=3, max_length=3)
+    source_grade: str = Field(min_length=1)
+    numeric_sanity_status: str = Field(min_length=1)
+    official_or_estimate_flag: str = Field(min_length=1)
+    cannot_infer: tuple[str, ...] = Field(min_length=1)
+    what_would_change: tuple[str, ...] = Field(min_length=1)
+    repair_ticket_refs: tuple[str, ...] = Field(min_length=1)
+    stop_semantic: str = Field(min_length=1)
+    allowed_review_actions: tuple[
+        Literal[
+            "accepted",
+            "rejected",
+            "needs_source",
+            "needs_parser",
+            "estimate_only",
+            "commercial_gap",
+        ],
+        ...,
+    ] = Field(min_length=6, max_length=6)
+    review_status: Literal["not_performed"] = "not_performed"
+
+
+class S3VerifierAndHumanReviewBindingVersion(S3PresentationStrictModel):
+    verifier_binding_id: str = Field(min_length=1)
+    verifier_input_digest: str = Field(min_length=1)
+    execution_profile_version_ref: str = Field(min_length=1)
+    input_head_digest: str = Field(min_length=1)
+    analysis_as_of: str = Field(min_length=1)
+    artifact_refs: tuple[str, ...] = Field(min_length=3, max_length=3)
+    bound_content_digests: tuple[str, ...] = Field(min_length=3, max_length=3)
+    findings: tuple[S3VerifierFindingVersion, ...] = Field(min_length=4)
+    verifier_decision: Literal[
+        "pass_bounded_integrity_semantics_financial_visual_pending"
+    ] = "pass_bounded_integrity_semantics_financial_visual_pending"
+    review_targets: tuple[S3CellReviewTargetVersion, ...] = Field(
+        min_length=3, max_length=3
+    )
+    human_review_status: Literal["not_performed"] = "not_performed"
+    human_decision: Literal["not_performed"] = "not_performed"
+    exact_digest_confirmation: Literal[False] = False
+    machine_verifier_is_human_acceptance: Literal[False] = False
+
+
+class S3TraceReviewVersion(S3PresentationStrictModel):
+    trace_id: str = Field(min_length=1)
+    trace_version_ref: str = Field(min_length=1)
+    trace_digest: str = Field(min_length=1)
+    artifact_ref: str = Field(min_length=1)
+    workpaper_artifact_ref: str = Field(min_length=1)
+    report_artifact_ref: str = Field(min_length=1)
+    case_id: str = Field(min_length=1)
+    research_run_id: str = Field(min_length=1)
+    nodes: tuple[S3TraceNodeVersion, ...] = Field(min_length=13)
+    edges: tuple[S3TraceEdgeVersion, ...] = Field(min_length=13)
+    review_binding: S3VerifierAndHumanReviewBindingVersion
+
+
+class S3ThreeCellPresentationPackVersion(S3PresentationStrictModel):
+    presentation_pack_id: str = Field(min_length=1)
+    presentation_pack_version_ref: str = Field(min_length=1)
+    presentation_pack_digest: str = Field(min_length=1)
+    presentation_pack_contract_ref: str = S3_PRESENTATION_PACK_CONTRACT_REF
+    presentation_owner_ref: str = S3_PRESENTATION_OWNER_REF
+    case_id: str = Field(min_length=1)
+    work_unit_id: str = Field(min_length=1)
+    attempt_id: str = Field(min_length=1)
+    research_run_id: str = Field(min_length=1)
+    execution_profile_version_ref: str = Field(min_length=1)
+    decision_surface_contract_ref: str = Field(min_length=1)
+    runtime_plan_version_ref: str = Field(min_length=1)
+    runtime_plan_digest: str = Field(min_length=1)
+    evidence_route_plan_version_ref: str = Field(min_length=1)
+    evidence_route_plan_digest: str = Field(min_length=1)
+    financial_pack_version_ref: str = Field(min_length=1)
+    financial_pack_digest: str = Field(min_length=1)
+    graph_pack_version_ref: str = Field(min_length=1)
+    graph_pack_digest: str = Field(min_length=1)
+    judgment_pack_version_ref: str = Field(min_length=1)
+    judgment_pack_digest: str = Field(min_length=1)
+    surface_claims: tuple[S3SurfaceClaimVersion, ...] = Field(
+        min_length=3, max_length=3
+    )
+    workpaper: S3WorkpaperVersion
+    report: S3ReportVersion
+    trace_review: S3TraceReviewVersion
+    model_calls: Literal[0] = 0
+    provider_calls: Literal[0] = 0
+    execution_network_calls: Literal[0] = 0
+    source_network_calls: Literal[0] = 0
+    external_tool_calls: Literal[0] = 0
+    live_business_writes: Literal[0] = 0
+    automatic_new_research_calls: Literal[0] = 0
+    human_review_writes: Literal[0] = 0
+    paid_runs: Literal[0] = 0
 
 
 @dataclass(frozen=True)
@@ -7277,3 +7531,614 @@ def _float_env(value: str | None, *, default: float) -> float:
         return float(value) if value not in {None, ""} else default
     except (TypeError, ValueError):
         return default
+
+
+_S3_PRESENTATION_CELLS = (
+    "demand_authenticity_and_sustainability",
+    "value_and_profit_capture",
+    "bottleneck_counterevidence_and_what_would_change",
+)
+
+
+def _s3_presentation_identity(
+    prefix: str, payload: Mapping[str, Any]
+) -> tuple[str, str, str]:
+    digest = canonical_digest(dict(payload))
+    object_id = f"{prefix}_{digest[:24]}"
+    return object_id, f"{object_id}:v1", digest
+
+
+def _s3_unique_strings(*groups: Sequence[Any]) -> tuple[str, ...]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for group in groups:
+        for item in group:
+            text = str(item or "").strip()
+            if text and text not in seen:
+                seen.add(text)
+                result.append(text)
+    return tuple(result)
+
+
+def _s3_presentation_maps(
+    runtime_plan: Mapping[str, Any],
+    evidence_route_plan: Mapping[str, Any],
+    financial_pack: Mapping[str, Any],
+    graph_pack: Mapping[str, Any],
+    judgment_pack: Mapping[str, Any],
+) -> tuple[
+    dict[str, Mapping[str, Any]],
+    dict[str, Mapping[str, Any]],
+    dict[str, Mapping[str, Any]],
+    dict[str, Mapping[str, Any]],
+]:
+    lineage_fields = ("case_id", "work_unit_id", "attempt_id", "research_run_id")
+    for upstream in (evidence_route_plan, financial_pack, graph_pack, judgment_pack):
+        if any(upstream.get(field) != runtime_plan.get(field) for field in lineage_fields):
+            raise ValueError("s3_presentation_runtime_lineage_mismatch")
+    if (
+        evidence_route_plan.get("runtime_plan_version_ref")
+        != runtime_plan.get("runtime_plan_version_ref")
+        or evidence_route_plan.get("runtime_plan_digest")
+        != runtime_plan.get("runtime_plan_digest")
+        or financial_pack.get("financial_pack_version_ref")
+        != graph_pack.get("financial_pack_version_ref")
+        or financial_pack.get("financial_pack_digest")
+        != graph_pack.get("financial_pack_digest")
+        or graph_pack.get("graph_pack_version_ref")
+        != judgment_pack.get("graph_pack_version_ref")
+        or graph_pack.get("graph_pack_digest")
+        != judgment_pack.get("graph_pack_digest")
+    ):
+        raise ValueError("s3_presentation_upstream_digest_lineage_mismatch")
+    branches = {
+        str(row.get("program_cell_id") or ""): row
+        for row in runtime_plan.get("cell_branches") or ()
+    }
+    financial_cells = {
+        str(row.get("program_cell_id") or ""): row
+        for row in financial_pack.get("fundamental_decision_cells") or ()
+    }
+    graph_cells = {
+        str(row.get("program_cell_id") or ""): row
+        for row in graph_pack.get("decision_cells") or ()
+    }
+    judgments = {
+        str(row.get("program_cell_id") or ""): row
+        for row in judgment_pack.get("specialist_judgments") or ()
+    }
+    if any(tuple(rows) != _S3_PRESENTATION_CELLS for rows in (
+        branches,
+        financial_cells,
+        graph_cells,
+        judgments,
+    )):
+        raise ValueError("s3_presentation_cell_order_or_cardinality_invalid")
+    return branches, financial_cells, graph_cells, judgments
+
+
+def compile_s3_three_cell_presentation_pack(
+    *,
+    runtime_plan: Mapping[str, Any],
+    evidence_route_plan: Mapping[str, Any],
+    financial_pack: Mapping[str, Any],
+    graph_pack: Mapping[str, Any],
+    judgment_pack: Mapping[str, Any],
+    artifact_refs: Mapping[str, str],
+) -> S3ThreeCellPresentationPackVersion:
+    """Compile the T07 no-source presentation and exact review projection."""
+
+    branches, financial_cells, graph_cells, judgments = _s3_presentation_maps(
+        runtime_plan,
+        evidence_route_plan,
+        financial_pack,
+        graph_pack,
+        judgment_pack,
+    )
+    expected_artifact_keys = ("workpaper", "report", "trace")
+    if tuple(artifact_refs) != expected_artifact_keys or any(
+        not str(artifact_refs[key]).strip() for key in expected_artifact_keys
+    ):
+        raise ValueError("s3_presentation_exact_artifact_refs_required")
+    repairs_by_type = {
+        str(row.get("failure_type") or ""): row
+        for row in judgment_pack.get("targeted_repairs") or ()
+    }
+    if set(repairs_by_type) != {"unsupported_claim", "numeric_conflict", "missing_source"}:
+        raise ValueError("s3_presentation_repair_ticket_scope_invalid")
+    repair_type_by_cell = {
+        _S3_PRESENTATION_CELLS[0]: "missing_source",
+        _S3_PRESENTATION_CELLS[1]: "numeric_conflict",
+        _S3_PRESENTATION_CELLS[2]: "unsupported_claim",
+    }
+    stop_by_cell = {
+        _S3_PRESENTATION_CELLS[0]: "typed_stop_cannot_infer_durable_company_specific_demand",
+        _S3_PRESENTATION_CELLS[1]: "typed_stop_product_and_incremental_profit_attribution_unavailable",
+        _S3_PRESENTATION_CELLS[2]: "typed_stop_bottleneck_probability_and_financial_impact_unavailable",
+    }
+    headings = {
+        _S3_PRESENTATION_CELLS[0]: "需求真实性与持续性",
+        _S3_PRESENTATION_CELLS[1]: "价值与利润捕获",
+        _S3_PRESENTATION_CELLS[2]: "瓶颈、反证与判断改变条件",
+    }
+
+    claims: list[S3SurfaceClaimVersion] = []
+    sections: list[S3WorkpaperCellVersion] = []
+    for cell_id in _S3_PRESENTATION_CELLS:
+        branch = branches[cell_id]
+        judgment = judgments[cell_id]
+        fact = judgment.get("fact_layer") or {}
+        decision = judgment.get("decision_layer") or {}
+        graph_cell = graph_cells[cell_id]
+        financial_cell = financial_cells[cell_id]
+        repair = repairs_by_type[repair_type_by_cell[cell_id]]
+        numeric_refs = tuple(str(row) for row in fact.get("deterministic_numeric_refs") or ())
+        evidence_refs = tuple(str(row) for row in fact.get("accepted_evidence_refs") or ())
+        graph_ref = str(graph_cell.get("graph_edge_projection_ref") or "")
+        gaps = _s3_unique_strings(
+            tuple(str(row) for row in decision.get("remaining_gaps") or ()),
+            tuple(str(row) for row in graph_cell.get("typed_gaps") or ()),
+            tuple(str(row) for row in financial_cell.get("cannot_infer") or ()),
+        )
+        wwc = tuple(str(row) for row in decision.get("what_would_change") or ())
+        if not graph_ref or not gaps or not wwc:
+            raise ValueError("s3_presentation_cell_review_semantics_incomplete")
+        claim_payload = {
+            "program_cell_id": cell_id,
+            "claim_text": str(decision.get("direct_answer") or ""),
+            "disposition": str(decision.get("disposition") or ""),
+            "specialist_judgment_ref": str(judgment.get("specialist_judgment_version_ref") or ""),
+            "fact_statements": tuple(str(row) for row in fact.get("fact_statements") or ()),
+            "evidence_refs": evidence_refs,
+            "numeric_refs": numeric_refs,
+            "graph_context_refs": (graph_ref,),
+            "gap_codes": gaps,
+            "what_would_change": wwc,
+            "repair_ticket_refs": (str(repair.get("repair_ticket_version_ref") or ""),),
+            "stop_semantic": stop_by_cell[cell_id],
+            "source_grade": (
+                "deterministic_company_total_only" if numeric_refs else "no_promoted_evidence"
+            ),
+            "numeric_sanity_status": (
+                "exact_company_total_formula_recomputed_product_attribution_unavailable"
+                if numeric_refs
+                else "not_applicable_no_numeric_authority"
+            ),
+            "official_or_estimate_flag": (
+                "deterministic_exact_company_total_not_product_estimate"
+                if numeric_refs
+                else "context_only_not_promoted"
+            ),
+        }
+        claim_id, claim_ref, claim_digest = _s3_presentation_identity(
+            "s3_surface_claim", claim_payload
+        )
+        claim = S3SurfaceClaimVersion(
+            surface_claim_id=claim_id,
+            surface_claim_version_ref=claim_ref,
+            surface_claim_digest=claim_digest,
+            **claim_payload,
+        )
+        claims.append(claim)
+        sections.append(
+            S3WorkpaperCellVersion(
+                program_cell_id=cell_id,
+                cell_version_ref=str(branch.get("cell_version_ref") or ""),
+                surface_claim_ref=claim_ref,
+                specialist_judgment_ref=claim.specialist_judgment_ref,
+                decision_question=str(branch.get("decision_question") or ""),
+                direct_answer=claim.claim_text,
+                fact_statements=claim.fact_statements,
+                evidence_refs=claim.evidence_refs,
+                numeric_refs=claim.numeric_refs,
+                graph_drilldown=S3GraphDrilldownVersion(
+                    program_cell_id=cell_id,
+                    graph_edge_projection_ref=graph_ref,
+                    graph_authority="navigation_and_mechanism_context_only",
+                    source_followup_refs=tuple(
+                        str(row) for row in graph_cell.get("source_followup_refs") or ()
+                    ),
+                    typed_gaps=tuple(str(row) for row in graph_cell.get("typed_gaps") or ()),
+                ),
+                gaps=claim.gap_codes,
+                what_would_change=claim.what_would_change,
+                repair_ticket_refs=claim.repair_ticket_refs,
+                stop_semantic=claim.stop_semantic,
+            )
+        )
+
+    lead = judgment_pack.get("lead_synthesis") or {}
+    workpaper_payload = {
+        "artifact_ref": str(artifact_refs["workpaper"]),
+        "case_id": str(runtime_plan.get("case_id") or ""),
+        "research_run_id": str(runtime_plan.get("research_run_id") or ""),
+        "decision_surface_contract_ref": str(runtime_plan.get("decision_surface_contract_ref") or ""),
+        "lead_synthesis_ref": str(lead.get("lead_synthesis_version_ref") or ""),
+        "cell_sections": tuple(sections),
+        "status": "bounded_review_ready_not_human_accepted",
+    }
+    workpaper_id, workpaper_ref, workpaper_digest = _s3_presentation_identity(
+        "s3_three_cell_workpaper",
+        {
+            **workpaper_payload,
+            "cell_sections": [row.model_dump(mode="json") for row in sections],
+        },
+    )
+    workpaper = S3WorkpaperVersion(
+        workpaper_id=workpaper_id,
+        workpaper_version_ref=workpaper_ref,
+        workpaper_digest=workpaper_digest,
+        **workpaper_payload,
+    )
+
+    report_sections = tuple(
+        S3ReportSectionVersion(
+            section_id=f"s3_report_section_{canonical_digest({'cell': row.program_cell_id, 'claim': row.surface_claim_ref})[:24]}",
+            program_cell_id=row.program_cell_id,
+            heading=headings[row.program_cell_id],
+            content=row.direct_answer,
+            surface_claim_ref=row.surface_claim_ref,
+            specialist_judgment_ref=row.specialist_judgment_ref,
+            evidence_refs=row.evidence_refs,
+            numeric_refs=row.numeric_refs,
+            boundary=row.stop_semantic,
+        )
+        for row in sections
+    )
+    report_payload = {
+        "artifact_ref": str(artifact_refs["report"]),
+        "workpaper_artifact_ref": str(artifact_refs["workpaper"]),
+        "case_id": str(runtime_plan.get("case_id") or ""),
+        "research_run_id": str(runtime_plan.get("research_run_id") or ""),
+        "title": "NVDA AI 基础设施三 Cell 有界研究报告",
+        "executive_answer": str(lead.get("cross_cell_conclusion") or lead.get("variant_view") or ""),
+        "sections": report_sections,
+        "adjudicated_input_refs": (
+            str(lead.get("lead_synthesis_version_ref") or ""),
+            *(row.specialist_judgment_ref for row in sections),
+        ),
+        "presentation_gaps": tuple(str(row) for row in lead.get("unresolved_material_gaps") or ()),
+        "writer_decisions": (
+            "answer_first_then_three_cell_detail",
+            "preserve_all_typed_gaps_and_what_would_change",
+            "do_not_convert_company_total_margin_into_product_or_incremental_profit",
+        ),
+        "writer_source_authority": False,
+        "writer_retrieval_authority": False,
+        "writer_external_tool_authority": False,
+        "raw_candidate_consumption": False,
+        "model_writer_executed": False,
+        "release_claim_authorized": False,
+    }
+    if not report_payload["executive_answer"] or not report_payload["presentation_gaps"]:
+        raise ValueError("s3_presentation_lead_material_incomplete")
+    report_id, report_ref, report_digest = _s3_presentation_identity(
+        "s3_three_cell_report",
+        {
+            **report_payload,
+            "sections": [row.model_dump(mode="json") for row in report_sections],
+        },
+    )
+    report = S3ReportVersion(
+        report_id=report_id,
+        report_version_ref=report_ref,
+        report_digest=report_digest,
+        **report_payload,
+    )
+
+    nodes: list[S3TraceNodeVersion] = [
+        S3TraceNodeVersion(
+            node_ref=str(runtime_plan.get("research_run_id") or ""),
+            node_type="run",
+            label="ResearchRun",
+        )
+    ]
+    edges: list[S3TraceEdgeVersion] = []
+    run_ref = str(runtime_plan.get("research_run_id") or "")
+    for section, claim in zip(sections, claims, strict=True):
+        nodes.extend(
+            (
+                S3TraceNodeVersion(node_ref=section.cell_version_ref, node_type="cell", label=section.program_cell_id),
+                S3TraceNodeVersion(node_ref=claim.surface_claim_version_ref, node_type="claim", label=claim.disposition),
+                S3TraceNodeVersion(node_ref=section.specialist_judgment_ref, node_type="judgment", label=section.program_cell_id),
+            )
+        )
+        edge_specs = (
+            (run_ref, section.cell_version_ref, "run_contains_cell"),
+            (section.cell_version_ref, claim.surface_claim_version_ref, "cell_exposes_claim"),
+            (claim.surface_claim_version_ref, section.specialist_judgment_ref, "claim_projects_judgment"),
+            (claim.surface_claim_version_ref, str(artifact_refs["workpaper"]), "claim_rendered_in_workpaper"),
+        )
+        for from_ref, to_ref, relation in edge_specs:
+            edges.append(
+                S3TraceEdgeVersion(
+                    edge_id=f"s3_trace_edge_{canonical_digest({'from': from_ref, 'to': to_ref, 'relation': relation})[:24]}",
+                    from_ref=from_ref,
+                    to_ref=to_ref,
+                    relation=relation,
+                )
+            )
+    nodes.extend(
+        S3TraceNodeVersion(node_ref=str(artifact_refs[key]), node_type="artifact", label=key)
+        for key in expected_artifact_keys
+    )
+    for from_ref, to_ref, relation in (
+        (str(artifact_refs["workpaper"]), str(artifact_refs["report"]), "workpaper_rendered_as_report"),
+        (str(artifact_refs["report"]), str(artifact_refs["trace"]), "report_verified_by_trace"),
+    ):
+        edges.append(
+            S3TraceEdgeVersion(
+                edge_id=f"s3_trace_edge_{canonical_digest({'from': from_ref, 'to': to_ref, 'relation': relation})[:24]}",
+                from_ref=from_ref,
+                to_ref=to_ref,
+                relation=relation,
+            )
+        )
+    trace_input_digest = canonical_digest(
+        {
+            "nodes": [row.model_dump(mode="json") for row in nodes],
+            "edges": [row.model_dump(mode="json") for row in edges],
+            "artifact_refs": [artifact_refs[key] for key in expected_artifact_keys],
+        }
+    )
+    input_head_digest = canonical_digest((runtime_plan.get("decision_surface_contract_ref"),))
+    verifier_input_digest = canonical_digest(
+        {
+            "execution_profile_version_ref": runtime_plan.get("execution_profile_version_ref"),
+            "input_head_digest": input_head_digest,
+            "analysis_as_of": graph_pack.get("projection_as_of"),
+            "workpaper_digest": workpaper.workpaper_digest,
+            "report_digest": report.report_digest,
+            "trace_input_digest": trace_input_digest,
+        }
+    )
+    all_claim_refs = tuple(row.surface_claim_version_ref for row in claims)
+    all_numeric_refs = _s3_unique_strings(*(row.numeric_refs for row in claims))
+    findings = (
+        S3VerifierFindingVersion(
+            finding_id=f"s3_verifier_finding_{verifier_input_digest[:18]}_integrity",
+            layer="deterministic_integrity",
+            severity="info",
+            status="pass",
+            affected_refs=tuple(str(artifact_refs[key]) for key in expected_artifact_keys),
+            earliest_owner_ref=S3_PRESENTATION_OWNER_REF,
+            message="Exact Run, Cell, Claim, Judgment and Artifact refs are closed and replayable.",
+        ),
+        S3VerifierFindingVersion(
+            finding_id=f"s3_verifier_finding_{verifier_input_digest[:18]}_semantic",
+            layer="semantic",
+            severity="warning",
+            status="bounded_gap_preserved",
+            affected_refs=all_claim_refs,
+            earliest_owner_ref="src.sec_agent.langgraph_orchestrator:s3_specialist_lead_cross_cell_pack",
+            message="Durable demand, product attribution and quantified bottleneck risk remain cannot-infer.",
+        ),
+        S3VerifierFindingVersion(
+            finding_id=f"s3_verifier_finding_{verifier_input_digest[:18]}_financial",
+            layer="financial",
+            severity="warning",
+            status="bounded_gap_preserved",
+            affected_refs=all_numeric_refs or (str(financial_pack.get("financial_pack_version_ref") or ""),),
+            earliest_owner_ref="src.sec_agent.canonical_runtime.parser_numeric:s3_financial_numeric_pack",
+            message="Company-total margins are exact; product, segment and incremental-profit attribution is unavailable.",
+        ),
+        S3VerifierFindingVersion(
+            finding_id=f"s3_verifier_finding_{verifier_input_digest[:18]}_visual",
+            layer="visual",
+            severity="info",
+            status="pending_browser_validation",
+            affected_refs=(str(artifact_refs["report"]),),
+            earliest_owner_ref="apps.workbench.frontend.vite.src.app.WorkbenchNext:presentation_surface",
+            message="Responsive source contract is present; real browser visual acceptance is not yet performed.",
+        ),
+    )
+    allowed_actions = (
+        "accepted",
+        "rejected",
+        "needs_source",
+        "needs_parser",
+        "estimate_only",
+        "commercial_gap",
+    )
+    review_targets = tuple(
+        S3CellReviewTargetVersion(
+            review_target_id=f"s3_review_target_{claim.surface_claim_digest[:24]}",
+            program_cell_id=claim.program_cell_id,
+            surface_claim_ref=claim.surface_claim_version_ref,
+            specialist_judgment_ref=claim.specialist_judgment_ref,
+            artifact_refs=tuple(str(artifact_refs[key]) for key in expected_artifact_keys),
+            source_grade=claim.source_grade,
+            numeric_sanity_status=claim.numeric_sanity_status,
+            official_or_estimate_flag=claim.official_or_estimate_flag,
+            cannot_infer=claim.gap_codes,
+            what_would_change=claim.what_would_change,
+            repair_ticket_refs=claim.repair_ticket_refs,
+            stop_semantic=claim.stop_semantic,
+            allowed_review_actions=allowed_actions,
+        )
+        for claim in claims
+    )
+    review_binding = S3VerifierAndHumanReviewBindingVersion(
+        verifier_binding_id=f"s3_verifier_binding_{verifier_input_digest[:24]}",
+        verifier_input_digest=verifier_input_digest,
+        execution_profile_version_ref=str(runtime_plan.get("execution_profile_version_ref") or ""),
+        input_head_digest=input_head_digest,
+        analysis_as_of=str(graph_pack.get("projection_as_of") or ""),
+        artifact_refs=tuple(str(artifact_refs[key]) for key in expected_artifact_keys),
+        bound_content_digests=(workpaper.workpaper_digest, report.report_digest, trace_input_digest),
+        findings=findings,
+        review_targets=review_targets,
+    )
+    trace_payload = {
+        "artifact_ref": str(artifact_refs["trace"]),
+        "workpaper_artifact_ref": str(artifact_refs["workpaper"]),
+        "report_artifact_ref": str(artifact_refs["report"]),
+        "case_id": str(runtime_plan.get("case_id") or ""),
+        "research_run_id": run_ref,
+        "nodes": tuple(nodes),
+        "edges": tuple(edges),
+        "review_binding": review_binding,
+    }
+    trace_id, trace_ref, trace_digest = _s3_presentation_identity(
+        "s3_three_cell_trace_review",
+        {
+            **trace_payload,
+            "nodes": [row.model_dump(mode="json") for row in nodes],
+            "edges": [row.model_dump(mode="json") for row in edges],
+            "review_binding": review_binding.model_dump(mode="json"),
+        },
+    )
+    trace_review = S3TraceReviewVersion(
+        trace_id=trace_id,
+        trace_version_ref=trace_ref,
+        trace_digest=trace_digest,
+        **trace_payload,
+    )
+
+    pack_payload = {
+        "presentation_pack_contract_ref": S3_PRESENTATION_PACK_CONTRACT_REF,
+        "presentation_owner_ref": S3_PRESENTATION_OWNER_REF,
+        "case_id": str(runtime_plan.get("case_id") or ""),
+        "work_unit_id": str(runtime_plan.get("work_unit_id") or ""),
+        "attempt_id": str(runtime_plan.get("attempt_id") or ""),
+        "research_run_id": run_ref,
+        "execution_profile_version_ref": str(runtime_plan.get("execution_profile_version_ref") or ""),
+        "decision_surface_contract_ref": str(runtime_plan.get("decision_surface_contract_ref") or ""),
+        "runtime_plan_version_ref": str(runtime_plan.get("runtime_plan_version_ref") or ""),
+        "runtime_plan_digest": str(runtime_plan.get("runtime_plan_digest") or ""),
+        "evidence_route_plan_version_ref": str(evidence_route_plan.get("evidence_route_plan_version_ref") or ""),
+        "evidence_route_plan_digest": str(evidence_route_plan.get("evidence_route_plan_digest") or ""),
+        "financial_pack_version_ref": str(financial_pack.get("financial_pack_version_ref") or ""),
+        "financial_pack_digest": str(financial_pack.get("financial_pack_digest") or ""),
+        "graph_pack_version_ref": str(graph_pack.get("graph_pack_version_ref") or ""),
+        "graph_pack_digest": str(graph_pack.get("graph_pack_digest") or ""),
+        "judgment_pack_version_ref": str(judgment_pack.get("judgment_pack_version_ref") or ""),
+        "judgment_pack_digest": str(judgment_pack.get("judgment_pack_digest") or ""),
+        "surface_claims": tuple(claims),
+        "workpaper": workpaper,
+        "report": report,
+        "trace_review": trace_review,
+        "model_calls": 0,
+        "provider_calls": 0,
+        "execution_network_calls": 0,
+        "source_network_calls": 0,
+        "external_tool_calls": 0,
+        "live_business_writes": 0,
+        "automatic_new_research_calls": 0,
+        "human_review_writes": 0,
+        "paid_runs": 0,
+    }
+    identity_payload = {
+        **pack_payload,
+        "surface_claims": [row.model_dump(mode="json") for row in claims],
+        "workpaper": workpaper.model_dump(mode="json"),
+        "report": report.model_dump(mode="json"),
+        "trace_review": trace_review.model_dump(mode="json"),
+    }
+    pack_id, pack_ref, pack_digest = _s3_presentation_identity(
+        "s3_three_cell_presentation_pack", identity_payload
+    )
+    return S3ThreeCellPresentationPackVersion(
+        presentation_pack_id=pack_id,
+        presentation_pack_version_ref=pack_ref,
+        presentation_pack_digest=pack_digest,
+        **pack_payload,
+    )
+
+
+def consume_s3_three_cell_presentation_pack(
+    pack: S3ThreeCellPresentationPackVersion,
+    *,
+    runtime_plan: Mapping[str, Any],
+    evidence_route_plan: Mapping[str, Any],
+    financial_pack: Mapping[str, Any],
+    graph_pack: Mapping[str, Any],
+    judgment_pack: Mapping[str, Any],
+) -> tuple[dict[str, Any], ...]:
+    expected = compile_s3_three_cell_presentation_pack(
+        runtime_plan=runtime_plan,
+        evidence_route_plan=evidence_route_plan,
+        financial_pack=financial_pack,
+        graph_pack=graph_pack,
+        judgment_pack=judgment_pack,
+        artifact_refs={
+            "workpaper": pack.workpaper.artifact_ref,
+            "report": pack.report.artifact_ref,
+            "trace": pack.trace_review.artifact_ref,
+        },
+    )
+    if expected.model_dump(mode="json") != pack.model_dump(mode="json"):
+        raise ValueError("s3_presentation_pack_recompile_mismatch")
+    return (
+        {
+            "target_node": "memo_writer",
+            "presentation_pack_version_ref": pack.presentation_pack_version_ref,
+            "presentation_pack_digest": pack.presentation_pack_digest,
+            "consumption_mode": "adjudicated_heads_only_no_source_or_retrieval",
+            "model_calls": 0,
+            "network_calls": 0,
+        },
+        {
+            "target_node": "verifier",
+            "presentation_pack_version_ref": pack.presentation_pack_version_ref,
+            "presentation_pack_digest": pack.presentation_pack_digest,
+            "consumption_mode": "exact_digest_findings_and_decision_binding",
+            "model_calls": 0,
+            "network_calls": 0,
+        },
+        {
+            "target_node": "workbench",
+            "presentation_pack_version_ref": pack.presentation_pack_version_ref,
+            "presentation_pack_digest": pack.presentation_pack_digest,
+            "consumption_mode": "read_only_cell_graph_gap_WWC_repair_stop_projection",
+            "model_calls": 0,
+            "network_calls": 0,
+        },
+    )
+
+
+def consume_s4_case_runtime_writer_verifier_review(
+    binding: S4CaseRuntimeBinding,
+) -> dict[str, Any]:
+    """Inject case-local gaps/WWC/review bindings without new fact authority."""
+
+    return consume_s4_case_runtime_binding(
+        binding, "writer_verifier_and_review_surface"
+    ).model_dump(mode="json")
+
+
+def s3_presentation_artifact_payloads(
+    pack: S3ThreeCellPresentationPackVersion,
+) -> tuple[tuple[str, dict[str, Any]], ...]:
+    return (
+        (
+            "s3_three_cell_workpaper",
+            {
+                "artifact_ref": pack.workpaper.artifact_ref,
+                "presentation_pack_version_ref": pack.presentation_pack_version_ref,
+                "case_id": pack.case_id,
+                "research_run_id": pack.research_run_id,
+                "workpaper": pack.workpaper.model_dump(mode="json"),
+            },
+        ),
+        (
+            "s3_three_cell_report",
+            {
+                "artifact_ref": pack.report.artifact_ref,
+                "presentation_pack_version_ref": pack.presentation_pack_version_ref,
+                "case_id": pack.case_id,
+                "research_run_id": pack.research_run_id,
+                "report": pack.report.model_dump(mode="json"),
+            },
+        ),
+        (
+            "s3_three_cell_trace_review",
+            {
+                "artifact_ref": pack.trace_review.artifact_ref,
+                "presentation_pack_version_ref": pack.presentation_pack_version_ref,
+                "case_id": pack.case_id,
+                "research_run_id": pack.research_run_id,
+                "trace_review": pack.trace_review.model_dump(mode="json"),
+            },
+        ),
+    )

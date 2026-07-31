@@ -72,6 +72,19 @@ class DecisionCellSeed(StrictModel):
     evidence_slots: tuple[EvidenceSlotSeed, ...] = ()
 
 
+class Fin01S3ProgramCellContract(StrictModel):
+    """Release-cell alias and decision semantics consumed by the FIN 0.1 runtime."""
+
+    program_cell_id: str
+    legacy_cell_key: str
+    evidence_role: str
+    owner_role: str
+    decision_question: str
+    mandatory_judgment_chain: str
+    stop_rule: str
+    what_would_change: str
+
+
 class CompilerInputContract(StrictModel):
     tenant_id: str
     project_id: str
@@ -169,6 +182,57 @@ P02_4_FIXED_CELL_SEEDS = (
                 acceptance_role="risk_reviewer",
             ),
         ),
+    ),
+)
+
+FIN01_S3_PROGRAM_CELL_CONTRACTS = (
+    Fin01S3ProgramCellContract(
+        program_cell_id="demand_authenticity_and_sustainability",
+        legacy_cell_key="demand_reality",
+        evidence_role="demand_signal",
+        owner_role="industry_analyst",
+        decision_question=(
+            "Is NVDA AI infrastructure demand authentic and durable, and what "
+            "evidence distinguishes recognized demand from temporary pull-forward?"
+        ),
+        mandatory_judgment_chain=(
+            "demand_signal_to_company_specificity_to_real_deployment_to_"
+            "durability_driver_to_cannot_infer"
+        ),
+        stop_rule=P02_4_FIXED_CELL_SEEDS[0].stop_rule,
+        what_would_change=P02_4_FIXED_CELL_SEEDS[0].what_would_change,
+    ),
+    Fin01S3ProgramCellContract(
+        program_cell_id="value_and_profit_capture",
+        legacy_cell_key="value_profit_capture",
+        evidence_role="revenue_capture",
+        owner_role="financial_analyst",
+        decision_question=(
+            "Where and how does NVDA capture revenue and incremental profit from AI "
+            "infrastructure demand, using segment, period, unit and formula-bound evidence?"
+        ),
+        mandatory_judgment_chain=(
+            "demand_transmission_to_product_segment_attribution_to_revenue_to_margin_"
+            "operating_profit_cash_conversion_to_unattributed_scope"
+        ),
+        stop_rule=P02_4_FIXED_CELL_SEEDS[1].stop_rule,
+        what_would_change=P02_4_FIXED_CELL_SEEDS[1].what_would_change,
+    ),
+    Fin01S3ProgramCellContract(
+        program_cell_id="bottleneck_counterevidence_and_what_would_change",
+        legacy_cell_key="bottleneck_counterevidence",
+        evidence_role="thesis_counterevidence",
+        owner_role="risk_reviewer",
+        decision_question=(
+            "Which bottlenecks and counterevidence could break or qualify the NVDA "
+            "thesis, and what exact evidence would change the judgment?"
+        ),
+        mandatory_judgment_chain=(
+            "strongest_counterevidence_to_impact_mechanism_to_observed_state_to_"
+            "probability_impact_boundary_to_what_would_change"
+        ),
+        stop_rule=P02_4_FIXED_CELL_SEEDS[2].stop_rule,
+        what_would_change=P02_4_FIXED_CELL_SEEDS[2].what_would_change,
     ),
 )
 

@@ -89,6 +89,7 @@ def test_permission_matrix_hard_rules_match_step2() -> None:
     assert registry["product_technology_analyst"]["allowed_tools"] == []
     assert registry["product_technology_analyst"]["source_families"] == [
         "company_product_evidence_graph",
+        "relationship_graph",
         "public_source_context",
         "live_public_web_context",
     ]

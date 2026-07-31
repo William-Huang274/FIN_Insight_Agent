@@ -4,15 +4,20 @@ import json
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Literal, Mapping
 
 from sec_agent.canonical_runtime.candidate_bundle import (
+    CandidateBundle,
     CandidateBundleCompiler,
     CandidateBundlePolicy,
     CandidateMetadata,
     CandidateMetadataSnapshot,
 )
-from sec_agent.canonical_runtime.evidence_request import EvidenceRequestCompiler, EvidenceRequestPolicy
+from sec_agent.canonical_runtime.evidence_request import (
+    EvidenceRequest,
+    EvidenceRequestCompiler,
+    EvidenceRequestPolicy,
+)
 from sec_agent.canonical_runtime.models import (
     DecisionSurfaceCellVersion,
     DecisionSurfaceContractVersion,
@@ -20,8 +25,12 @@ from sec_agent.canonical_runtime.models import (
     EvidenceSlotVersion,
     EvidenceWorkbenchProjectionVersion,
     EventEnvelope,
+    StrictModel,
     canonical_digest,
     utc_now,
+)
+from sec_agent.canonical_runtime.planning_service import (
+    FIN01_S3_PROGRAM_CELL_CONTRACTS,
 )
 from sec_agent.canonical_runtime.store import IdempotencyConflict, TransactionConflict
 from sec_agent.canonical_runtime.tool_planner import (
@@ -30,6 +39,14 @@ from sec_agent.canonical_runtime.tool_planner import (
     PlannerPolicy,
     ToolRegistryEntry,
     ToolRegistrySnapshot,
+    ToolSelectionPlan,
+)
+from sec_agent.s4_case_runtime import (
+    S4CaseEvidenceSlotAlignmentReceipt,
+    S4CaseRuntimeBinding,
+    compile_s4_case_evidence_role_group_mapping,
+    compile_s4_case_evidence_slot_alignment,
+    consume_s4_case_runtime_binding,
 )
 
 from .case_service import (
@@ -45,6 +62,401 @@ PROJECTION_TABLE = "canonical_evidence_workbench_projection_versions"
 REVIEW_TABLE = "canonical_evidence_review_action_versions"
 REPAIR_OUTCOME_TABLE = "canonical_evidence_repair_outcome_versions"
 CONTRACT_RELATIVE_PATH = "configs/releases/point03_vt1_evidence_workbench_contract_v1_0.json"
+S3_EVIDENCE_ROUTE_PLAN_CONTRACT_REF = "fin01.s3.evidence_route_plan_three_cell:v1"
+S3_EVIDENCE_SERVICE_OWNER_REF = (
+    "apps.workbench.backend.application.evidence_service:EvidenceService"
+)
+S3_SOURCEHUNTER_BOUNDARY_REF = "fin01.s3.sourcehunter_separate_exact_admission:v1"
+
+
+class S3ToolGatewayPreflightDecision(StrictModel):
+    preflight_id: str
+    preflight_digest: str
+    evidence_request_id: str
+    tool_selection_plan_id: str
+    planner_step_id: str
+    selected_tool_id: str
+    selected_route_id: str
+    tool_registry_check: Literal["pass"] = "pass"
+    permission_check: Literal["pass_planning_allowlist_only"] = (
+        "pass_planning_allowlist_only"
+    )
+    network_check: Literal["not_required_local_route"] = "not_required_local_route"
+    data_scope_check: Literal["pass_fixture_metadata_only"] = (
+        "pass_fixture_metadata_only"
+    )
+    budget_check: Literal["pass"] = "pass"
+    input_contract_check: Literal["pass"] = "pass"
+    decision: Literal["checks_pass_execution_not_admitted"] = (
+        "checks_pass_execution_not_admitted"
+    )
+    invocation_status: Literal["not_executed"] = "not_executed"
+
+
+class S3EvidencePromotionAssessment(StrictModel):
+    assessment_id: str
+    assessment_digest: str
+    evidence_request_id: str
+    candidate_bundle_id: str
+    decision: Literal[
+        "candidate_only_pending_claim_source_content_and_corroboration",
+        "candidate_only_pending_T04_parser_numeric_lineage",
+        "context_only_graph_observation_source_followup_required",
+        "typed_gap_local_route_exhausted",
+    ]
+    candidate_refs: tuple[str, ...]
+    context_refs: tuple[str, ...]
+    rejected_refs: tuple[str, ...]
+    typed_gap_codes: tuple[str, ...]
+    accepted_evidence_refs: tuple[str, ...] = ()
+    evidence_gate_owner_ref: str = S3_EVIDENCE_SERVICE_OWNER_REF
+    runtime_promotion_authorized: Literal[False] = False
+    writer_citable: Literal[False] = False
+    judgment_eligible: Literal[False] = False
+    persistence_authorized: Literal[False] = False
+
+
+class S3GraphObservationVersion(StrictModel):
+    observation_id: str
+    observation_digest: str
+    program_cell_id: str
+    branch_version_ref: str
+    evidence_request_id: str
+    candidate_id: str
+    observation_class: Literal["navigation_hypothesis_only"] = (
+        "navigation_hypothesis_only"
+    )
+    relation_hypothesis: str
+    source_followup_required: Literal[True] = True
+    direct_evidence_authorized: Literal[False] = False
+    numeric_authority: Literal[False] = False
+
+
+class S3SourceFollowupRequestVersion(StrictModel):
+    followup_request_id: str
+    followup_request_digest: str
+    program_cell_id: str
+    branch_version_ref: str
+    originating_graph_observation_ref: str
+    parent_evidence_request_id: str
+    target_route_id: str
+    objective: str
+    status: Literal["planned_local_followup_not_executed"] = (
+        "planned_local_followup_not_executed"
+    )
+    execution_admission: Literal["not_admitted"] = "not_admitted"
+
+
+class S3SourceHunterBoundaryVersion(StrictModel):
+    boundary_id: str
+    boundary_digest: str
+    program_cell_id: str
+    branch_version_ref: str
+    evidence_request_id: str
+    source_followup_request_ref: str | None = None
+    status: Literal[
+        "not_needed_local_candidate_route_available",
+        "not_eligible_until_parser_or_claim_binding",
+        "proposal_only_blocked_missing_separate_network_admission",
+    ]
+    trigger_reason: str
+    boundary_contract_ref: str = S3_SOURCEHUNTER_BOUNDARY_REF
+    exact_network_admission_required: Literal[True] = True
+    network_execution_authorized: Literal[False] = False
+    external_tool_execution_authorized: Literal[False] = False
+    model_execution_authorized: Literal[False] = False
+    request_executed: Literal[False] = False
+    network_calls: Literal[0] = 0
+
+
+class S3CellEvidenceRouteVersion(StrictModel):
+    program_cell_id: str
+    evidence_role: str
+    branch_version_ref: str
+    evidence_operator_context_plan_ref: str
+    research_run_id: str
+    evidence_request: EvidenceRequest
+    tool_selection_plan: ToolSelectionPlan
+    candidate_snapshot: CandidateMetadataSnapshot
+    candidate_bundle: CandidateBundle
+    tool_gateway_preflights: tuple[S3ToolGatewayPreflightDecision, ...]
+    promotion_assessment: S3EvidencePromotionAssessment
+    graph_observation: S3GraphObservationVersion | None = None
+    source_followup_request: S3SourceFollowupRequestVersion | None = None
+    sourcehunter_boundary: S3SourceHunterBoundaryVersion
+    route_outcome: Literal[
+        "candidate_observed_promotion_blocked",
+        "graph_context_observed_source_followup_required",
+        "typed_gap_sourcehunter_not_admitted",
+    ]
+    cell_route_digest: str
+
+
+class S3ThreeCellEvidenceRoutePlanVersion(StrictModel):
+    evidence_route_plan_id: str
+    evidence_route_plan_version_ref: str
+    evidence_route_plan_contract_ref: str = S3_EVIDENCE_ROUTE_PLAN_CONTRACT_REF
+    evidence_service_owner_ref: str = S3_EVIDENCE_SERVICE_OWNER_REF
+    case_id: str
+    work_unit_id: str
+    attempt_id: str
+    research_run_id: str
+    execution_profile_version_ref: str
+    decision_surface_contract_ref: str
+    runtime_plan_version_ref: str
+    runtime_plan_digest: str
+    cell_routes: tuple[S3CellEvidenceRouteVersion, ...]
+    evidence_route_plan_digest: str
+    model_calls: Literal[0] = 0
+    provider_calls: Literal[0] = 0
+    execution_network_calls: Literal[0] = 0
+    source_network_calls: Literal[0] = 0
+    external_tool_calls: Literal[0] = 0
+    live_business_writes: Literal[0] = 0
+    runtime_evidence_promotions: Literal[0] = 0
+
+
+def _s3_recomputed_digest(model: StrictModel, *identity_fields: str) -> str:
+    payload = model.model_dump(mode="json")
+    for field in identity_fields:
+        payload.pop(field, None)
+    return canonical_digest(payload)
+
+
+def consume_s3_three_cell_evidence_route_plan(
+    plan: S3ThreeCellEvidenceRoutePlanVersion,
+    *,
+    runtime_plan_version_ref: str,
+    runtime_plan_digest: str,
+) -> tuple[dict[str, Any], ...]:
+    """Validate T03 lineage/digests and emit zero-call node consumption receipts."""
+
+    if (
+        plan.runtime_plan_version_ref != runtime_plan_version_ref
+        or plan.runtime_plan_digest != runtime_plan_digest
+    ):
+        raise ValueError("s3_evidence_route_runtime_plan_lineage_mismatch")
+    if any(
+        (
+            plan.model_calls,
+            plan.provider_calls,
+            plan.execution_network_calls,
+            plan.source_network_calls,
+            plan.external_tool_calls,
+            plan.live_business_writes,
+            plan.runtime_evidence_promotions,
+        )
+    ):
+        raise ValueError("s3_evidence_route_zero_call_boundary_violated")
+    expected_plan_digest = _s3_recomputed_digest(
+        plan,
+        "evidence_route_plan_id",
+        "evidence_route_plan_version_ref",
+        "evidence_route_plan_digest",
+    )
+    if expected_plan_digest != plan.evidence_route_plan_digest:
+        raise ValueError("s3_evidence_route_plan_digest_mismatch")
+    expected_plan_id = (
+        f"evidence_route_plan_fin01_s3_{plan.evidence_route_plan_digest[:24]}"
+    )
+    if (
+        plan.evidence_route_plan_id != expected_plan_id
+        or plan.evidence_route_plan_version_ref != f"{expected_plan_id}:v1"
+    ):
+        raise ValueError("s3_evidence_route_plan_identity_mismatch")
+    expected_cells = tuple(
+        row.program_cell_id for row in FIN01_S3_PROGRAM_CELL_CONTRACTS
+    )
+    if (
+        tuple(row.program_cell_id for row in plan.cell_routes) != expected_cells
+        or len({row.branch_version_ref for row in plan.cell_routes}) != 3
+        or {row.research_run_id for row in plan.cell_routes}
+        != {plan.research_run_id}
+    ):
+        raise ValueError("s3_evidence_route_cell_lineage_invalid")
+
+    selected_route_sets: list[tuple[str, ...]] = []
+    receipts: list[dict[str, Any]] = []
+    for cell in plan.cell_routes:
+        if _s3_recomputed_digest(cell, "cell_route_digest") != cell.cell_route_digest:
+            raise ValueError("s3_cell_evidence_route_digest_mismatch")
+        request = cell.evidence_request
+        if _s3_recomputed_digest(request, "request_id", "request_digest") != request.request_digest:
+            raise ValueError("s3_evidence_request_digest_mismatch")
+        if request.request_id != f"evidence_request_{request.request_digest[:20]}":
+            raise ValueError("s3_evidence_request_identity_mismatch")
+        tool_plan = cell.tool_selection_plan
+        if _s3_recomputed_digest(tool_plan, "plan_id", "plan_digest") != tool_plan.plan_digest:
+            raise ValueError("s3_tool_selection_plan_digest_mismatch")
+        if tool_plan.plan_id != f"tool_selection_plan_{tool_plan.plan_digest[:20]}":
+            raise ValueError("s3_tool_selection_plan_identity_mismatch")
+        snapshot = cell.candidate_snapshot
+        snapshot_digest = canonical_digest(
+            {
+                "snapshot_id": snapshot.snapshot_id,
+                "fixture_only": snapshot.fixture_only,
+                "candidates": [
+                    row.model_dump(mode="json") for row in snapshot.candidates
+                ],
+            }
+        )
+        if snapshot_digest != snapshot.snapshot_digest:
+            raise ValueError("s3_candidate_snapshot_digest_mismatch")
+        bundle = cell.candidate_bundle
+        if _s3_recomputed_digest(bundle, "bundle_id", "bundle_digest") != bundle.bundle_digest:
+            raise ValueError("s3_candidate_bundle_digest_mismatch")
+        if bundle.bundle_id != f"candidate_bundle_{bundle.bundle_digest[:20]}":
+            raise ValueError("s3_candidate_bundle_identity_mismatch")
+        if (
+            tool_plan.request_id != request.request_id
+            or tool_plan.request_digest != request.request_digest
+            or bundle.request_id != request.request_id
+            or bundle.request_digest != request.request_digest
+            or bundle.tool_selection_plan_id != tool_plan.plan_id
+            or bundle.tool_selection_plan_digest != tool_plan.plan_digest
+            or bundle.metadata_snapshot_id != snapshot.snapshot_id
+            or bundle.metadata_snapshot_digest != snapshot.snapshot_digest
+        ):
+            raise ValueError("s3_request_plan_bundle_lineage_mismatch")
+        if len(cell.tool_gateway_preflights) != len(tool_plan.steps):
+            raise ValueError("s3_tool_gateway_preflight_cardinality_mismatch")
+        for preflight, step in zip(
+            cell.tool_gateway_preflights, tool_plan.steps, strict=True
+        ):
+            if (
+                _s3_recomputed_digest(
+                    preflight, "preflight_id", "preflight_digest"
+                )
+                != preflight.preflight_digest
+                or preflight.preflight_id
+                != f"s3_tool_gateway_preflight_{preflight.preflight_digest[:24]}"
+                or preflight.planner_step_id != step.planner_step_id
+                or preflight.selected_tool_id != step.selected_tool_id
+                or preflight.selected_route_id != step.selected_route_id
+                or preflight.invocation_status != "not_executed"
+            ):
+                raise ValueError("s3_tool_gateway_preflight_invalid")
+        promotion = cell.promotion_assessment
+        if (
+            _s3_recomputed_digest(
+                promotion, "assessment_id", "assessment_digest"
+            )
+            != promotion.assessment_digest
+            or promotion.assessment_id
+            != f"s3_promotion_assessment_{promotion.assessment_digest[:24]}"
+            or promotion.evidence_request_id != request.request_id
+            or promotion.candidate_bundle_id != bundle.bundle_id
+            or promotion.accepted_evidence_refs
+            or promotion.runtime_promotion_authorized
+            or promotion.writer_citable
+            or promotion.judgment_eligible
+            or promotion.persistence_authorized
+        ):
+            raise ValueError("s3_evidence_promotion_boundary_invalid")
+        graph = cell.graph_observation
+        followup = cell.source_followup_request
+        if graph is not None:
+            if (
+                _s3_recomputed_digest(
+                    graph, "observation_id", "observation_digest"
+                )
+                != graph.observation_digest
+                or graph.observation_id
+                != f"s3_graph_observation_{graph.observation_digest[:24]}"
+                or graph.direct_evidence_authorized
+                or graph.numeric_authority
+                or followup is None
+            ):
+                raise ValueError("s3_graph_observation_boundary_invalid")
+        if followup is not None:
+            if (
+                _s3_recomputed_digest(
+                    followup,
+                    "followup_request_id",
+                    "followup_request_digest",
+                )
+                != followup.followup_request_digest
+                or followup.followup_request_id
+                != f"s3_source_followup_{followup.followup_request_digest[:24]}"
+                or graph is None
+                or followup.originating_graph_observation_ref
+                != graph.observation_id
+                or followup.execution_admission != "not_admitted"
+            ):
+                raise ValueError("s3_source_followup_boundary_invalid")
+        sourcehunter = cell.sourcehunter_boundary
+        if (
+            _s3_recomputed_digest(
+                sourcehunter, "boundary_id", "boundary_digest"
+            )
+            != sourcehunter.boundary_digest
+            or sourcehunter.boundary_id
+            != f"s3_sourcehunter_boundary_{sourcehunter.boundary_digest[:24]}"
+            or sourcehunter.network_execution_authorized
+            or sourcehunter.external_tool_execution_authorized
+            or sourcehunter.model_execution_authorized
+            or sourcehunter.request_executed
+            or sourcehunter.network_calls
+        ):
+            raise ValueError("s3_sourcehunter_boundary_invalid")
+        selected_routes = tuple(
+            str(step.selected_route_id) for step in tool_plan.steps
+        )
+        selected_route_sets.append(selected_routes)
+        receipts.append(
+            {
+                "program_cell_id": cell.program_cell_id,
+                "branch_version_ref": cell.branch_version_ref,
+                "evidence_operator_context_plan_ref": (
+                    cell.evidence_operator_context_plan_ref
+                ),
+                "evidence_request_id": request.request_id,
+                "tool_selection_plan_id": tool_plan.plan_id,
+                "candidate_bundle_id": bundle.bundle_id,
+                "promotion_assessment_id": promotion.assessment_id,
+                "sourcehunter_boundary_id": sourcehunter.boundary_id,
+                "cell_route_digest": cell.cell_route_digest,
+                "consumption_mode": (
+                    "deterministic_evidence_service_node_contract_validation"
+                ),
+                "model_calls": 0,
+                "source_network_calls": 0,
+                "external_tool_calls": 0,
+                "runtime_evidence_promotions": 0,
+            }
+        )
+    if len(set(selected_route_sets)) != 3:
+        raise ValueError("s3_cell_route_sets_must_be_distinct")
+    counter = next(
+        row
+        for row in plan.cell_routes
+        if row.program_cell_id
+        == "bottleneck_counterevidence_and_what_would_change"
+    )
+    if counter.tool_selection_plan.status == "await_execution_admission":
+        if (
+            counter.graph_observation is None
+            or counter.source_followup_request is None
+            or counter.sourcehunter_boundary.status
+            != "proposal_only_blocked_missing_separate_network_admission"
+        ):
+            raise ValueError("s3_graph_followup_sourcehunter_boundary_missing")
+    elif (
+        counter.tool_selection_plan.status != "stopped"
+        or counter.route_outcome != "typed_gap_sourcehunter_not_admitted"
+    ):
+        raise ValueError("s3_counter_route_or_typed_stop_invalid")
+    return tuple(receipts)
+
+
+def consume_s4_case_runtime_evidence_route(
+    binding: S4CaseRuntimeBinding,
+) -> dict[str, Any]:
+    """Inject one frozen S4 Case Pack into the existing Evidence route owner."""
+
+    return consume_s4_case_runtime_binding(
+        binding, "evidence_route_plan"
+    ).model_dump(mode="json")
 
 
 @dataclass(frozen=True)
@@ -71,7 +483,7 @@ class EvidenceServiceError(RuntimeError):
 
 
 class EvidenceService:
-    """Point 3 VT1 metadata-only compiler and append-only review boundary."""
+    """Evidence owner for Point 3 VT1 and FIN 0.1 S3 route/promotion boundaries."""
 
     def __init__(
         self,
@@ -163,6 +575,958 @@ class EvidenceService:
         )
         self._p36_profile_digest = (
             canonical_digest(self._p36_profile) if self._p36_profile else ""
+        )
+        self._configure_s3_route_contract()
+
+    def _configure_s3_route_contract(self) -> None:
+        request_policy = deepcopy(self._contract["evidence_request_policy"])
+        route_overrides = {
+            "demand_signal": {
+                "preferred_routes": ["local_object_bm25_official_disclosure"],
+                "fallback_routes": ["local_materialized_customer_deployment_context"],
+            },
+            "revenue_capture": {
+                "preferred_routes": ["local_gold_sql_financial_table"],
+                "fallback_routes": ["local_official_filing_table_address"],
+            },
+            "thesis_counterevidence": {
+                "preferred_routes": ["local_relationship_graph_navigation"],
+                "fallback_routes": ["local_official_counterevidence_source_followup"],
+                "tool_call_limit": 2,
+            },
+        }
+        role_rules = request_policy["role_rules"]
+        for role, override in route_overrides.items():
+            role_rules[role] = {**deepcopy(role_rules[role]), **override}
+        request_policy["policy_ref"] = "fin01.s3.cell_driven_evidence_request:v1"
+        self._s3_request_compiler = EvidenceRequestCompiler(
+            EvidenceRequestPolicy.model_validate(request_policy)
+        )
+
+        registry_rows = (
+            self._s3_registry_row(
+                tool_id="s3_local_object_bm25_metadata",
+                route_id="local_object_bm25_official_disclosure",
+                evidence_role="demand_candidate",
+                source_policy_ref="fixture:issuer_filing_first",
+                source_role="official_issuer",
+                source_authority="local_official_disclosure_index",
+                source_authority_rank=5,
+                capability="local.object_bm25.metadata.read",
+                cost_rank=0,
+            ),
+            self._s3_registry_row(
+                tool_id="s3_local_customer_deployment_context",
+                route_id="local_materialized_customer_deployment_context",
+                evidence_role="demand_candidate",
+                source_policy_ref="fixture:issuer_filing_first",
+                source_role="official_customer",
+                source_authority="local_materialized_official_context",
+                source_authority_rank=4,
+                capability="local.materialized_context.read",
+                cost_rank=1,
+            ),
+            self._s3_registry_row(
+                tool_id="s3_local_gold_sql_financial_table",
+                route_id="local_gold_sql_financial_table",
+                evidence_role="revenue_candidate",
+                source_policy_ref="fixture:issuer_filing_first",
+                source_role="official_issuer",
+                source_authority="local_gold_sql_exact_value_locator",
+                source_authority_rank=5,
+                capability="local.gold_sql.table_address.read",
+                cost_rank=0,
+            ),
+            self._s3_registry_row(
+                tool_id="s3_local_official_filing_table_address",
+                route_id="local_official_filing_table_address",
+                evidence_role="revenue_candidate",
+                source_policy_ref="fixture:issuer_filing_first",
+                source_role="official_issuer",
+                source_authority="local_official_filing_table_address",
+                source_authority_rank=5,
+                capability="local.filing.table_address.read",
+                cost_rank=1,
+            ),
+            self._s3_registry_row(
+                tool_id="s3_local_relationship_graph_navigation",
+                route_id="local_relationship_graph_navigation",
+                evidence_role="counterevidence_candidate",
+                source_policy_ref="fixture:issuer_and_policy_first",
+                source_role="relationship_graph",
+                source_authority="local_graph_navigation_hypothesis",
+                source_authority_rank=1,
+                capability="local.relationship_graph.navigation.read",
+                cost_rank=0,
+            ),
+            self._s3_registry_row(
+                tool_id="s3_local_official_counterevidence_followup",
+                route_id="local_official_counterevidence_source_followup",
+                evidence_role="counterevidence_candidate",
+                source_policy_ref="fixture:issuer_and_policy_first",
+                source_role="official_policy",
+                source_authority="local_materialized_official_policy",
+                source_authority_rank=5,
+                capability="local.official_policy.metadata.read",
+                cost_rank=1,
+            ),
+        )
+        self._s3_registry = ToolRegistrySnapshot.create(
+            registry_id="fin01-s3-cell-driven-local-route-registry",
+            registry_version=1,
+            entries=tuple(ToolRegistryEntry.model_validate(row) for row in registry_rows),
+        )
+        self._s3_planner = BoundedToolPlanner(
+            registry=self._s3_registry,
+            policy=PlannerPolicy.model_validate(
+                {
+                    "policy_ref": "fin01.s3.tool_planner_preflight_only:v1",
+                    "max_tool_calls": 2,
+                    "max_fallback_depth": 1,
+                    "required_permission_scope": "s3_fixture_metadata_read_only",
+                    "minimum_source_authority_rank_by_evidence_role": {
+                        "demand_candidate": 4,
+                        "revenue_candidate": 4,
+                        "counterevidence_candidate": 1,
+                    },
+                    "required_execution_admission": (
+                        "separate_local_execution_admission_required"
+                    ),
+                    "stop_rules": [
+                        "budget_exhausted_stop_rule",
+                        "route_exhaustion_stop_rule",
+                        "permission_scope_stop_rule",
+                        "source_network_requires_separate_exact_admission",
+                    ],
+                }
+            ),
+        )
+        self._s3_candidate_compiler = CandidateBundleCompiler(
+            policy=CandidateBundlePolicy.model_validate(
+                {
+                    "policy_ref": "fin01.s3.cell_route_candidate_boundary:v1",
+                    "minimum_source_authority_rank_by_evidence_role": {
+                        "demand_candidate": 4,
+                        "revenue_candidate": 4,
+                        "counterevidence_candidate": 1,
+                    },
+                    "required_candidate_kinds_by_evidence_role": {
+                        "demand_candidate": ["top_k_seed", "neighbor_section"],
+                        "revenue_candidate": ["top_k_seed", "table_context"],
+                        "counterevidence_candidate": ["top_k_seed"],
+                    },
+                    "allowed_candidate_kinds": [
+                        "top_k_seed",
+                        "neighbor_section",
+                        "table_context",
+                    ],
+                    "allowed_bundle_statuses": [
+                        "metadata_fixture_compiled",
+                        "retrieval_exhausted",
+                        "not_attempted_typed_stop",
+                    ],
+                }
+            )
+        )
+        self._s3_fixture_candidate_sets = {
+            "demand_signal": self._s3_remap_fixture_candidates(
+                "demand_signal",
+                {
+                    "top_k_seed": "local_object_bm25_official_disclosure",
+                    "neighbor_section": "local_materialized_customer_deployment_context",
+                },
+            ),
+            "revenue_capture": self._s3_remap_fixture_candidates(
+                "revenue_capture",
+                {
+                    "top_k_seed": "local_gold_sql_financial_table",
+                    "table_context": "local_official_filing_table_address",
+                },
+            ),
+            "thesis_counterevidence": (
+                CandidateMetadata(
+                    candidate_id="s3_fixture_nvda_tsm_packaging_graph_observation",
+                    document_id="fixture_relationship_graph_nvda_tsm",
+                    document_version="fixture:v1",
+                    source_snapshot_ref="fixture_snapshot:p36_ai_infra_graph:v1",
+                    source_policy_ref="fixture:issuer_and_policy_first",
+                    route_id="local_relationship_graph_navigation",
+                    source_role="relationship_graph",
+                    source_authority_rank=1,
+                    entity_ref="NVDA",
+                    period_ref="latest_two_quarters",
+                    candidate_kind="top_k_seed",
+                    section_or_table_ref="nvda_to_tsm_packaging_dependency_hypothesis",
+                    metadata_rank=1,
+                    content_ref="fixture://p36/graph/nvda-tsm-packaging-hypothesis",
+                ),
+            ),
+        }
+
+    @staticmethod
+    def _s3_registry_row(
+        *,
+        tool_id: str,
+        route_id: str,
+        evidence_role: str,
+        source_policy_ref: str,
+        source_role: str,
+        source_authority: str,
+        source_authority_rank: int,
+        capability: str,
+        cost_rank: int,
+    ) -> dict[str, Any]:
+        return {
+            "tool_id": tool_id,
+            "tool_name": tool_id,
+            "capabilities": [capability],
+            "input_schema_ref": "EvidenceRequest:v1",
+            "output_schema_ref": "CandidateMetadata:v1",
+            "source_role": source_role,
+            "source_authority": source_authority,
+            "source_authority_rank": source_authority_rank,
+            "can_support": [evidence_role],
+            "cannot_support": [
+                "promoted_evidence_without_gate",
+                "final_judgment",
+            ],
+            "cost_class": "fixture_zero_cost",
+            "cost_rank": cost_rank,
+            "latency_class": "local",
+            "failure_types": [
+                "fixture_candidate_absent",
+                "route_exhausted",
+            ],
+            "fallback_tool_ids": [],
+            "permission_scope": "s3_fixture_metadata_read_only",
+            "forbidden_claims": [
+                "candidate_as_evidence",
+                "graph_observation_as_fact",
+            ],
+            "supported_evidence_roles": [evidence_role],
+            "supported_source_policy_refs": [source_policy_ref],
+            "declared_route_ids": [route_id],
+            "execution_mode": "not_admitted",
+        }
+
+    def _s3_remap_fixture_candidates(
+        self,
+        evidence_role: str,
+        route_by_kind: Mapping[str, str],
+    ) -> tuple[CandidateMetadata, ...]:
+        rows = []
+        for raw in self._fixture_candidate_sets[evidence_role]:
+            metadata = deepcopy(raw["metadata"])
+            metadata["route_id"] = route_by_kind[metadata["candidate_kind"]]
+            rows.append(CandidateMetadata.model_validate(metadata))
+        return tuple(rows)
+
+    def compile_s3_three_cell_runtime_evidence_plan(
+        self,
+        *,
+        runtime_plan: Mapping[str, Any],
+        principal: CasePrincipal,
+        allowed_tool_ids_by_program_cell: Mapping[str, tuple[str, ...]] | None = None,
+        _allow_prospective_execution_lineage: bool = False,
+    ) -> S3ThreeCellEvidenceRoutePlanVersion:
+        """Compile the T03 three-cell evidence control plane without executing a route."""
+
+        self._require_permission(principal, "evidence:read")
+        context = self._s3_runtime_context(
+            runtime_plan,
+            principal,
+            allow_prospective_execution_lineage=(
+                _allow_prospective_execution_lineage
+            ),
+        )
+        permission_overrides = allowed_tool_ids_by_program_cell or {}
+        cell_routes: list[S3CellEvidenceRouteVersion] = []
+        for program_cell in FIN01_S3_PROGRAM_CELL_CONTRACTS:
+            branch = context["branches_by_program_cell"][program_cell.program_cell_id]
+            evidence_context = context["contexts_by_program_cell"][
+                program_cell.program_cell_id
+            ]
+            cell, slot = context["slots_by_role"][program_cell.evidence_role]
+            request_result = self._s3_request_compiler.compile(
+                contract=context["contract"],
+                cell=cell,
+                slot=slot,
+            )
+            allowed_tool_ids = permission_overrides.get(
+                program_cell.program_cell_id,
+                tuple(entry.tool_id for entry in self._s3_registry.entries),
+            )
+            plan_result = self._s3_planner.plan(
+                request=request_result.request,
+                permissions=PlannerPermissionContext(
+                    permission_snapshot_ref=self._permission_ref(principal),
+                    allowed_tool_ids=allowed_tool_ids,
+                    required_permission_scope=(
+                        self._s3_planner.policy.required_permission_scope
+                    ),
+                ),
+            )
+            snapshot = CandidateMetadataSnapshot.create(
+                snapshot_id=(
+                    "fin01:s3:t03:"
+                    f"{context['contract'].contract_version_id}:"
+                    f"{program_cell.program_cell_id}"
+                ),
+                candidates=self._s3_fixture_candidate_sets[
+                    program_cell.evidence_role
+                ],
+            )
+            bundle_result = self._s3_candidate_compiler.compile(
+                request=request_result.request,
+                plan=plan_result.plan,
+                snapshot=snapshot,
+            )
+            if any(
+                (
+                    request_result.model_call_count,
+                    request_result.external_call_count,
+                    plan_result.model_call_count,
+                    plan_result.external_call_count,
+                    plan_result.tool_invocation_count,
+                    bundle_result.model_call_count,
+                    bundle_result.retrieval_call_count,
+                    bundle_result.external_call_count,
+                    bundle_result.store_write_count,
+                )
+            ):
+                raise EvidenceServiceError("s3_evidence_route_zero_call_boundary_violated", 409)
+            preflights = tuple(
+                self._s3_gateway_preflight(
+                    request=request_result.request,
+                    plan=plan_result.plan,
+                    planner_step_id=step.planner_step_id,
+                )
+                for step in plan_result.plan.steps
+            )
+            graph_observation = self._s3_graph_observation(
+                program_cell_id=program_cell.program_cell_id,
+                branch_version_ref=str(branch["branch_version_ref"]),
+                request=request_result.request,
+                bundle=bundle_result.bundle,
+            )
+            source_followup = self._s3_source_followup(
+                graph_observation=graph_observation,
+                request=request_result.request,
+            )
+            promotion = self._s3_promotion_assessment(
+                evidence_role=program_cell.evidence_role,
+                request=request_result.request,
+                bundle=bundle_result.bundle,
+                graph_observation=graph_observation,
+            )
+            sourcehunter = self._s3_sourcehunter_boundary(
+                program_cell_id=program_cell.program_cell_id,
+                branch_version_ref=str(branch["branch_version_ref"]),
+                request=request_result.request,
+                bundle=bundle_result.bundle,
+                source_followup=source_followup,
+            )
+            route_outcome: str
+            if bundle_result.bundle.status in {
+                "retrieval_exhausted",
+                "not_attempted_typed_stop",
+            }:
+                route_outcome = "typed_gap_sourcehunter_not_admitted"
+            elif graph_observation is not None:
+                route_outcome = "graph_context_observed_source_followup_required"
+            else:
+                route_outcome = "candidate_observed_promotion_blocked"
+            route_payload = {
+                "program_cell_id": program_cell.program_cell_id,
+                "evidence_role": program_cell.evidence_role,
+                "branch_version_ref": str(branch["branch_version_ref"]),
+                "evidence_operator_context_plan_ref": str(
+                    evidence_context["context_plan_version_ref"]
+                ),
+                "research_run_id": str(runtime_plan["research_run_id"]),
+                "evidence_request": request_result.request.model_dump(mode="json"),
+                "tool_selection_plan": plan_result.plan.model_dump(mode="json"),
+                "candidate_snapshot": snapshot.model_dump(mode="json"),
+                "candidate_bundle": bundle_result.bundle.model_dump(mode="json"),
+                "tool_gateway_preflights": [
+                    row.model_dump(mode="json") for row in preflights
+                ],
+                "promotion_assessment": promotion.model_dump(mode="json"),
+                "graph_observation": (
+                    graph_observation.model_dump(mode="json")
+                    if graph_observation
+                    else None
+                ),
+                "source_followup_request": (
+                    source_followup.model_dump(mode="json")
+                    if source_followup
+                    else None
+                ),
+                "sourcehunter_boundary": sourcehunter.model_dump(mode="json"),
+                "route_outcome": route_outcome,
+            }
+            cell_routes.append(
+                S3CellEvidenceRouteVersion(
+                    **route_payload,
+                    cell_route_digest=canonical_digest(route_payload),
+                )
+            )
+
+        plan_payload = {
+            "evidence_route_plan_contract_ref": S3_EVIDENCE_ROUTE_PLAN_CONTRACT_REF,
+            "evidence_service_owner_ref": S3_EVIDENCE_SERVICE_OWNER_REF,
+            "case_id": str(runtime_plan["case_id"]),
+            "work_unit_id": str(runtime_plan["work_unit_id"]),
+            "attempt_id": str(runtime_plan["attempt_id"]),
+            "research_run_id": str(runtime_plan["research_run_id"]),
+            "execution_profile_version_ref": str(
+                runtime_plan["execution_profile_version_ref"]
+            ),
+            "decision_surface_contract_ref": str(
+                runtime_plan["decision_surface_contract_ref"]
+            ),
+            "runtime_plan_version_ref": str(
+                runtime_plan["runtime_plan_version_ref"]
+            ),
+            "runtime_plan_digest": str(runtime_plan["runtime_plan_digest"]),
+            "cell_routes": [row.model_dump(mode="json") for row in cell_routes],
+            "model_calls": 0,
+            "provider_calls": 0,
+            "execution_network_calls": 0,
+            "source_network_calls": 0,
+            "external_tool_calls": 0,
+            "live_business_writes": 0,
+            "runtime_evidence_promotions": 0,
+        }
+        digest = canonical_digest(plan_payload)
+        plan_id = f"evidence_route_plan_fin01_s3_{digest[:24]}"
+        return S3ThreeCellEvidenceRoutePlanVersion(
+            evidence_route_plan_id=plan_id,
+            evidence_route_plan_version_ref=f"{plan_id}:v1",
+            evidence_route_plan_digest=digest,
+            **plan_payload,
+        )
+
+    def compile_s3_three_cell_preflight_evidence_plan(
+        self,
+        *,
+        runtime_plan: Mapping[str, Any],
+        principal: CasePrincipal,
+    ) -> S3ThreeCellEvidenceRoutePlanVersion:
+        """Compile exact prospective lineage only while no execution state exists."""
+
+        return self.compile_s3_three_cell_runtime_evidence_plan(
+            runtime_plan=runtime_plan,
+            principal=principal,
+            _allow_prospective_execution_lineage=True,
+        )
+
+    def compile_s4_case_evidence_slot_alignment(
+        self,
+        *,
+        runtime_plan: Mapping[str, Any],
+        binding: S4CaseRuntimeBinding,
+        principal: CasePrincipal,
+        _allow_prospective_execution_lineage: bool = False,
+    ) -> S4CaseEvidenceSlotAlignmentReceipt:
+        """Align all S4 case roles to accepted Canonical slots without routing."""
+
+        self._require_permission(principal, "evidence:read")
+        required_identity_fields = (
+            "case_id",
+            "work_unit_id",
+            "attempt_id",
+            "research_run_id",
+            "execution_profile_version_ref",
+            "decision_surface_contract_ref",
+            "runtime_plan_version_ref",
+            "runtime_plan_digest",
+            "s4_evidence_role_group_mapping_ref",
+            "s4_evidence_role_group_mapping_digest",
+        )
+        if any(
+            not str(runtime_plan.get(key) or "").strip()
+            for key in required_identity_fields
+        ):
+            raise EvidenceServiceError(
+                "s4_evidence_alignment_runtime_identity_required", 409
+            )
+        mapping = compile_s4_case_evidence_role_group_mapping(binding)
+        if (
+            runtime_plan["s4_evidence_role_group_mapping_ref"]
+            != mapping.contract_ref
+            or runtime_plan["s4_evidence_role_group_mapping_digest"]
+            != mapping.role_group_mapping_digest
+        ):
+            raise EvidenceServiceError(
+                "s4_evidence_role_group_mapping_digest_mismatch", 409
+            )
+
+        case_id = str(runtime_plan["case_id"])
+        catalog = self._facade_or_raise().store
+        contract_rows = [
+            row
+            for row in catalog.list_versions(
+                "canonical_decision_surface_contract_versions",
+                case_id=case_id,
+            )
+            if row.get("contract_version_id")
+            == runtime_plan["decision_surface_contract_ref"]
+            and self._matches_scope(row, case_id, principal)
+        ]
+        if len(contract_rows) != 1:
+            raise EvidenceServiceError(
+                "s4_exact_decision_surface_contract_required", 409
+            )
+        accepted_checkpoints = [
+            row
+            for row in catalog.list_latest(
+                "canonical_planning_checkpoint_versions", case_id=case_id
+            )
+            if row.get("contract_version_id")
+            == runtime_plan["decision_surface_contract_ref"]
+            and row.get("review_status") == "accepted"
+            and self._matches_scope(row, case_id, principal)
+        ]
+        if len(accepted_checkpoints) != 1:
+            raise EvidenceServiceError(
+                "s4_accepted_checkpoint_required", 409
+            )
+
+        work_unit = catalog.get_latest(
+            "canonical_work_units", str(runtime_plan["work_unit_id"])
+        )
+        attempt = catalog.get_latest(
+            "canonical_attempts", str(runtime_plan["attempt_id"])
+        )
+        research_run = catalog.get_latest(
+            "canonical_research_run_versions",
+            str(runtime_plan["research_run_id"]),
+        )
+        if _allow_prospective_execution_lineage:
+            if any((work_unit, attempt, research_run)):
+                raise EvidenceServiceError(
+                    "s4_preflight_requires_absent_execution_lineage", 409
+                )
+        elif (
+            not work_unit
+            or work_unit.get("case_id") != case_id
+            or work_unit.get("tenant_id") != principal.tenant_id
+            or work_unit.get("project_id") != principal.project_id
+            or work_unit.get("state") not in {"pending", "running"}
+            or tuple(work_unit.get("input_version_refs") or ())
+            != (runtime_plan["decision_surface_contract_ref"],)
+            or not attempt
+            or attempt.get("case_id") != case_id
+            or attempt.get("work_unit_id") != runtime_plan["work_unit_id"]
+            or attempt.get("state") != "running"
+            or not research_run
+            or research_run.get("case_id") != case_id
+            or research_run.get("work_unit_id")
+            != runtime_plan["work_unit_id"]
+            or research_run.get("attempt_id") != runtime_plan["attempt_id"]
+            or research_run.get("state") != "running"
+            or research_run.get("execution_profile_version_ref")
+            != runtime_plan["execution_profile_version_ref"]
+        ):
+            raise EvidenceServiceError(
+                "s4_work_unit_decision_surface_lineage_mismatch", 409
+            )
+
+        cell_rows = [
+            row
+            for row in catalog.list_versions(
+                "canonical_decision_surface_cell_versions", case_id=case_id
+            )
+            if row.get("contract_version_id")
+            == runtime_plan["decision_surface_contract_ref"]
+            and self._matches_scope(row, case_id, principal)
+        ]
+        cell_version_refs = {
+            str(row.get("cell_version_id") or "") for row in cell_rows
+        }
+        slot_rows = [
+            row
+            for row in catalog.list_versions(
+                "canonical_evidence_slot_versions", case_id=case_id
+            )
+            if row.get("cell_version_id") in cell_version_refs
+            and self._matches_scope(row, case_id, principal)
+        ]
+        try:
+            return compile_s4_case_evidence_slot_alignment(
+                binding,
+                case_id=case_id,
+                decision_surface_contract_ref=str(
+                    runtime_plan["decision_surface_contract_ref"]
+                ),
+                cells=cell_rows,
+                slots=slot_rows,
+            )
+        except ValueError as exc:
+            raise EvidenceServiceError(str(exc), 409) from exc
+
+    def _s3_runtime_context(
+        self,
+        runtime_plan: Mapping[str, Any],
+        principal: CasePrincipal,
+        *,
+        allow_prospective_execution_lineage: bool = False,
+    ) -> dict[str, Any]:
+        required_identity_fields = (
+            "case_id",
+            "work_unit_id",
+            "attempt_id",
+            "research_run_id",
+            "execution_profile_version_ref",
+            "decision_surface_contract_ref",
+            "runtime_plan_version_ref",
+            "runtime_plan_digest",
+        )
+        if any(not str(runtime_plan.get(key) or "").strip() for key in required_identity_fields):
+            raise EvidenceServiceError("s3_runtime_plan_identity_required", 409)
+        case_id = str(runtime_plan["case_id"])
+        if principal.tenant_id != str(runtime_plan.get("tenant_id") or principal.tenant_id):
+            raise EvidenceServiceError("s3_runtime_plan_tenant_scope_mismatch", 409)
+        catalog = self._facade_or_raise().store
+        contract_rows = [
+            row
+            for row in catalog.list_versions(
+                "canonical_decision_surface_contract_versions", case_id=case_id
+            )
+            if row.get("contract_version_id")
+            == runtime_plan["decision_surface_contract_ref"]
+            and self._matches_scope(row, case_id, principal)
+        ]
+        if len(contract_rows) != 1:
+            raise EvidenceServiceError("s3_exact_decision_surface_contract_required", 409)
+        contract = DecisionSurfaceContractVersion.model_validate(contract_rows[0])
+        accepted_checkpoints = [
+            row
+            for row in catalog.list_latest(
+                "canonical_planning_checkpoint_versions", case_id=case_id
+            )
+            if row.get("contract_version_id") == contract.contract_version_id
+            and row.get("review_status") == "accepted"
+            and self._matches_scope(row, case_id, principal)
+        ]
+        if len(accepted_checkpoints) != 1:
+            raise EvidenceServiceError("s3_accepted_checkpoint_required", 409)
+        work_unit = catalog.get_latest(
+            "canonical_work_units", str(runtime_plan["work_unit_id"])
+        )
+        if allow_prospective_execution_lineage:
+            if (
+                work_unit is not None
+                or catalog.get_latest(
+                    "canonical_attempts", str(runtime_plan["attempt_id"])
+                )
+                is not None
+                or catalog.get_latest(
+                    "canonical_research_run_versions",
+                    str(runtime_plan["research_run_id"]),
+                )
+                is not None
+            ):
+                raise EvidenceServiceError(
+                    "s3_preflight_requires_absent_execution_lineage", 409
+                )
+        elif (
+            not work_unit
+            or work_unit.get("case_id") != case_id
+            or work_unit.get("tenant_id") != principal.tenant_id
+            or work_unit.get("project_id") != principal.project_id
+            or work_unit.get("state") not in {"pending", "running"}
+            or tuple(work_unit.get("input_version_refs") or ())
+            != (contract.contract_version_id,)
+        ):
+            raise EvidenceServiceError("s3_work_unit_decision_surface_lineage_mismatch", 409)
+        branch_rows = list(runtime_plan.get("cell_branches") or ())
+        context_rows = list(runtime_plan.get("role_context_plans") or ())
+        branches_by_program_cell = {
+            str(row.get("program_cell_id") or ""): row for row in branch_rows
+        }
+        contexts_by_program_cell = {
+            str(row.get("program_cell_id") or ""): row
+            for row in context_rows
+            if row.get("target_node") == "evidence_operator"
+        }
+        required_program_cells = {
+            row.program_cell_id for row in FIN01_S3_PROGRAM_CELL_CONTRACTS
+        }
+        if (
+            len(branch_rows) != 3
+            or set(branches_by_program_cell) != required_program_cells
+            or len(contexts_by_program_cell) != 3
+            or set(contexts_by_program_cell) != required_program_cells
+        ):
+            raise EvidenceServiceError("s3_runtime_branch_or_evidence_context_cardinality", 409)
+        cell_rows = [
+            row
+            for row in catalog.list_versions(
+                "canonical_decision_surface_cell_versions", case_id=case_id
+            )
+            if row.get("contract_version_id") == contract.contract_version_id
+            and self._matches_scope(row, case_id, principal)
+        ]
+        cells = [DecisionSurfaceCellVersion.model_validate(row) for row in cell_rows]
+        cells_by_version = {row.cell_version_id: row for row in cells}
+        slots_by_role: dict[
+            str, tuple[DecisionSurfaceCellVersion, EvidenceSlotVersion]
+        ] = {}
+        required_roles = {
+            row.evidence_role for row in FIN01_S3_PROGRAM_CELL_CONTRACTS
+        }
+        for raw in catalog.list_versions(
+            "canonical_evidence_slot_versions", case_id=case_id
+        ):
+            if raw.get("cell_version_id") not in cells_by_version:
+                continue
+            if not self._matches_scope(raw, case_id, principal):
+                continue
+            slot = EvidenceSlotVersion.model_validate(raw)
+            if slot.evidence_role not in required_roles:
+                continue
+            if slot.evidence_role in slots_by_role:
+                raise EvidenceServiceError("s3_evidence_role_slot_cardinality", 409)
+            slots_by_role[slot.evidence_role] = (
+                cells_by_version[slot.cell_version_id],
+                slot,
+            )
+        if set(slots_by_role) != required_roles:
+            raise EvidenceServiceError("s3_required_evidence_role_slot_missing", 409)
+        for program_cell in FIN01_S3_PROGRAM_CELL_CONTRACTS:
+            branch = branches_by_program_cell[program_cell.program_cell_id]
+            cell, slot = slots_by_role[program_cell.evidence_role]
+            if (
+                branch.get("evidence_role") != program_cell.evidence_role
+                or branch.get("owner_role") != program_cell.owner_role
+                or cell.owner_role != program_cell.owner_role
+                or slot.acceptance_role != program_cell.owner_role
+                or branch.get("research_run_id") != runtime_plan["research_run_id"]
+            ):
+                raise EvidenceServiceError("s3_cell_branch_slot_semantic_mismatch", 409)
+        return {
+            "contract": contract,
+            "branches_by_program_cell": branches_by_program_cell,
+            "contexts_by_program_cell": contexts_by_program_cell,
+            "slots_by_role": slots_by_role,
+        }
+
+    def _s3_gateway_preflight(
+        self,
+        *,
+        request: EvidenceRequest,
+        plan: ToolSelectionPlan,
+        planner_step_id: str,
+    ) -> S3ToolGatewayPreflightDecision:
+        step = next(
+            (row for row in plan.steps if row.planner_step_id == planner_step_id),
+            None,
+        )
+        if step is None or not step.selected_tool_id or not step.selected_route_id:
+            raise EvidenceServiceError("s3_tool_gateway_step_identity_missing", 409)
+        entries = [
+            row
+            for row in self._s3_registry.entries
+            if row.tool_id == step.selected_tool_id
+            and step.selected_route_id in row.declared_route_ids
+        ]
+        if len(entries) != 1:
+            raise EvidenceServiceError("s3_tool_gateway_registry_check_failed", 409)
+        payload = {
+            "evidence_request_id": request.request_id,
+            "tool_selection_plan_id": plan.plan_id,
+            "planner_step_id": planner_step_id,
+            "selected_tool_id": step.selected_tool_id,
+            "selected_route_id": step.selected_route_id,
+            "tool_registry_check": "pass",
+            "permission_check": "pass_planning_allowlist_only",
+            "network_check": "not_required_local_route",
+            "data_scope_check": "pass_fixture_metadata_only",
+            "budget_check": "pass",
+            "input_contract_check": "pass",
+            "decision": "checks_pass_execution_not_admitted",
+            "invocation_status": "not_executed",
+        }
+        digest = canonical_digest(payload)
+        return S3ToolGatewayPreflightDecision(
+            preflight_id=f"s3_tool_gateway_preflight_{digest[:24]}",
+            preflight_digest=digest,
+            **payload,
+        )
+
+    @staticmethod
+    def _s3_graph_observation(
+        *,
+        program_cell_id: str,
+        branch_version_ref: str,
+        request: EvidenceRequest,
+        bundle: CandidateBundle,
+    ) -> S3GraphObservationVersion | None:
+        graph_candidate = next(
+            (
+                row
+                for row in bundle.candidates
+                if row.source_role == "relationship_graph"
+            ),
+            None,
+        )
+        if graph_candidate is None:
+            return None
+        payload = {
+            "program_cell_id": program_cell_id,
+            "branch_version_ref": branch_version_ref,
+            "evidence_request_id": request.request_id,
+            "candidate_id": graph_candidate.candidate_id,
+            "observation_class": "navigation_hypothesis_only",
+            "relation_hypothesis": (
+                "NVDA packaging dependency may require an underlying official-source "
+                "counterevidence check; the graph relation is not itself Evidence."
+            ),
+            "source_followup_required": True,
+            "direct_evidence_authorized": False,
+            "numeric_authority": False,
+        }
+        digest = canonical_digest(payload)
+        return S3GraphObservationVersion(
+            observation_id=f"s3_graph_observation_{digest[:24]}",
+            observation_digest=digest,
+            **payload,
+        )
+
+    @staticmethod
+    def _s3_source_followup(
+        *,
+        graph_observation: S3GraphObservationVersion | None,
+        request: EvidenceRequest,
+    ) -> S3SourceFollowupRequestVersion | None:
+        if graph_observation is None:
+            return None
+        payload = {
+            "program_cell_id": graph_observation.program_cell_id,
+            "branch_version_ref": graph_observation.branch_version_ref,
+            "originating_graph_observation_ref": graph_observation.observation_id,
+            "parent_evidence_request_id": request.request_id,
+            "target_route_id": "local_official_counterevidence_source_followup",
+            "objective": (
+                "Locate an underlying issuer or official-policy source for the "
+                "graph navigation hypothesis before any Evidence classification."
+            ),
+            "status": "planned_local_followup_not_executed",
+            "execution_admission": "not_admitted",
+        }
+        digest = canonical_digest(payload)
+        return S3SourceFollowupRequestVersion(
+            followup_request_id=f"s3_source_followup_{digest[:24]}",
+            followup_request_digest=digest,
+            **payload,
+        )
+
+    @staticmethod
+    def _s3_promotion_assessment(
+        *,
+        evidence_role: str,
+        request: EvidenceRequest,
+        bundle: CandidateBundle,
+        graph_observation: S3GraphObservationVersion | None,
+    ) -> S3EvidencePromotionAssessment:
+        candidate_ids = tuple(row.candidate_id for row in bundle.candidates)
+        if bundle.status in {"retrieval_exhausted", "not_attempted_typed_stop"}:
+            decision = "typed_gap_local_route_exhausted"
+            candidate_refs: tuple[str, ...] = ()
+            context_refs: tuple[str, ...] = ()
+            gap_codes = bundle.typed_gap_codes or (
+                bundle.exhaustion_status,
+            )
+        elif graph_observation is not None:
+            decision = "context_only_graph_observation_source_followup_required"
+            candidate_refs = ()
+            context_refs = candidate_ids
+            gap_codes = ("underlying_official_source_followup_required",)
+        elif evidence_role == "revenue_capture":
+            decision = "candidate_only_pending_T04_parser_numeric_lineage"
+            candidate_refs = candidate_ids
+            context_refs = ()
+            gap_codes = ("T04_parser_numeric_lineage_required",)
+        else:
+            decision = "candidate_only_pending_claim_source_content_and_corroboration"
+            candidate_refs = tuple(bundle.top_k_candidate_ids)
+            context_refs = tuple(
+                candidate_id
+                for candidate_id in candidate_ids
+                if candidate_id not in set(candidate_refs)
+            )
+            gap_codes = (
+                "claim_scoped_source_content_and_corroboration_required",
+            )
+        payload = {
+            "evidence_request_id": request.request_id,
+            "candidate_bundle_id": bundle.bundle_id,
+            "decision": decision,
+            "candidate_refs": candidate_refs,
+            "context_refs": context_refs,
+            "rejected_refs": (),
+            "typed_gap_codes": gap_codes,
+            "accepted_evidence_refs": (),
+            "evidence_gate_owner_ref": S3_EVIDENCE_SERVICE_OWNER_REF,
+            "runtime_promotion_authorized": False,
+            "writer_citable": False,
+            "judgment_eligible": False,
+            "persistence_authorized": False,
+        }
+        digest = canonical_digest(payload)
+        return S3EvidencePromotionAssessment(
+            assessment_id=f"s3_promotion_assessment_{digest[:24]}",
+            assessment_digest=digest,
+            **payload,
+        )
+
+    @staticmethod
+    def _s3_sourcehunter_boundary(
+        *,
+        program_cell_id: str,
+        branch_version_ref: str,
+        request: EvidenceRequest,
+        bundle: CandidateBundle,
+        source_followup: S3SourceFollowupRequestVersion | None,
+    ) -> S3SourceHunterBoundaryVersion:
+        if program_cell_id == "bottleneck_counterevidence_and_what_would_change":
+            status = "proposal_only_blocked_missing_separate_network_admission"
+            trigger_reason = (
+                "graph_observation_requires_underlying_official_source_and_the_"
+                "local_followup_has_no_executed_candidate"
+                if source_followup
+                else "local_counterevidence_route_stopped_or_exhausted"
+            )
+        elif bundle.status in {"retrieval_exhausted", "not_attempted_typed_stop"}:
+            status = "proposal_only_blocked_missing_separate_network_admission"
+            trigger_reason = "local_route_stopped_or_exhausted"
+        else:
+            status = "not_eligible_until_parser_or_claim_binding"
+            trigger_reason = "local_candidates_exist_but_are_not_Evidence"
+        payload = {
+            "program_cell_id": program_cell_id,
+            "branch_version_ref": branch_version_ref,
+            "evidence_request_id": request.request_id,
+            "source_followup_request_ref": (
+                source_followup.followup_request_id if source_followup else None
+            ),
+            "status": status,
+            "trigger_reason": trigger_reason,
+            "boundary_contract_ref": S3_SOURCEHUNTER_BOUNDARY_REF,
+            "exact_network_admission_required": True,
+            "network_execution_authorized": False,
+            "external_tool_execution_authorized": False,
+            "model_execution_authorized": False,
+            "request_executed": False,
+            "network_calls": 0,
+        }
+        digest = canonical_digest(payload)
+        return S3SourceHunterBoundaryVersion(
+            boundary_id=f"s3_sourcehunter_boundary_{digest[:24]}",
+            boundary_digest=digest,
+            **payload,
         )
 
     def compile_fixture(

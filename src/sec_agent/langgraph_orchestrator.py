@@ -4,9 +4,18 @@ import hashlib
 import json
 import re
 import time
+from tempfile import TemporaryDirectory
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Mapping, TypedDict
+from typing import Any, Callable, Literal, Mapping, Sequence, TypedDict
+
+from pydantic import Field
+
+from sec_agent.canonical_runtime.models import StrictModel, canonical_digest
+from sec_agent.s4_case_runtime import (
+    S4CaseRuntimeBinding,
+    consume_s4_case_runtime_binding,
+)
 
 try:
     from langgraph.checkpoint.base import BaseCheckpointSaver
@@ -150,6 +159,1028 @@ MULTI_AGENT_NODE_ORDER = (
     "renderer",
     "persist_session_state",
 )
+
+
+class Fin01FixtureShadowStageError(RuntimeError):
+    def __init__(self, stage: str):
+        self.stage = str(stage)
+        super().__init__(f"fin01_fixture_shadow_stage_failed:{self.stage}")
+
+
+S3_SPECIALIST_LEAD_PACK_CONTRACT_REF = (
+    "fin01.s3.specialist_judgment_cross_cell_adjudication_and_targeted_repair:v1"
+)
+S3_SPECIALIST_LEAD_OWNER_REF = (
+    "src.sec_agent.langgraph_orchestrator:"
+    "compile_s3_specialist_lead_cross_cell_pack"
+)
+_S3_SPECIALIST_LEAD_PROGRAM_CELLS = (
+    "demand_authenticity_and_sustainability",
+    "value_and_profit_capture",
+    "bottleneck_counterevidence_and_what_would_change",
+)
+
+
+class S3SpecialistFactLayerVersion(StrictModel):
+    program_cell_id: str = Field(min_length=1)
+    fact_statements: tuple[str, ...]
+    accepted_evidence_refs: tuple[str, ...]
+    deterministic_numeric_refs: tuple[str, ...]
+    deterministic_numeric_source_refs: tuple[str, ...]
+    unavailable_fact_codes: tuple[str, ...] = Field(min_length=1)
+    excluded_candidate_or_graph_refs: tuple[str, ...] = Field(min_length=1)
+    authority_boundary: str = Field(min_length=1)
+
+
+class S3SpecialistExplanationLayerVersion(StrictModel):
+    program_cell_id: str = Field(min_length=1)
+    mechanism_summary: str = Field(min_length=1)
+    input_refs: tuple[str, ...] = Field(min_length=1)
+    assumptions: tuple[str, ...] = Field(min_length=1)
+    alternative_explanations: tuple[str, ...] = Field(min_length=1)
+    inference_distance: Literal[
+        "one_step_bounded_mechanism",
+        "two_step_hypothesis_requires_source_followup",
+    ]
+    explanation_is_fact_authority: Literal[False] = False
+
+
+class S3SpecialistDecisionLayerVersion(StrictModel):
+    program_cell_id: str = Field(min_length=1)
+    direct_answer: str = Field(min_length=1)
+    disposition: Literal[
+        "bounded_cannot_infer_demand_durability",
+        "bounded_company_total_support_product_capture_unattributed",
+        "bounded_counterevidence_hypothesis_probability_impact_unknown",
+    ]
+    confidence: Literal["low", "medium_low"]
+    counterevidence_refs: tuple[str, ...] = Field(min_length=1)
+    remaining_gaps: tuple[str, ...] = Field(min_length=1)
+    cannot_infer: tuple[str, ...] = Field(min_length=1)
+    what_would_change: tuple[str, ...] = Field(min_length=1)
+    recommended_next_action: str = Field(min_length=1)
+    cross_cell_impact: str = Field(min_length=1)
+
+
+class S3SpecialistJudgmentVersion(StrictModel):
+    specialist_judgment_id: str = Field(min_length=1)
+    specialist_judgment_version_ref: str = Field(min_length=1)
+    specialist_judgment_digest: str = Field(min_length=1)
+    program_cell_id: str = Field(min_length=1)
+    specialist_role: str = Field(min_length=1)
+    case_id: str = Field(min_length=1)
+    research_run_id: str = Field(min_length=1)
+    branch_version_ref: str = Field(min_length=1)
+    specialist_context_plan_ref: str = Field(min_length=1)
+    source_pack_refs: tuple[str, ...] = Field(min_length=3)
+    fact_layer: S3SpecialistFactLayerVersion
+    explanation_layer: S3SpecialistExplanationLayerVersion
+    decision_layer: S3SpecialistDecisionLayerVersion
+    execution_mode: Literal["deterministic_node_contract_projection"] = (
+        "deterministic_node_contract_projection"
+    )
+    specialist_model_consumed: Literal[False] = False
+    paid_artifact_proven: Literal[False] = False
+    writer_citable: Literal[False] = False
+
+
+class S3CrossCellDependencyVersion(StrictModel):
+    dependency_id: str = Field(min_length=1)
+    from_program_cell_id: str = Field(min_length=1)
+    to_program_cell_id: str = Field(min_length=1)
+    dependency_type: Literal[
+        "demand_durability_bounds_value_capture_interpretation",
+        "value_attribution_bounds_thesis_strength",
+        "counterevidence_bounds_demand_and_value_confidence",
+    ]
+    source_judgment_refs: tuple[str, ...] = Field(min_length=2)
+    adjudication: str = Field(min_length=1)
+    boundary: str = Field(min_length=1)
+
+
+class S3CrossCellConflictVersion(StrictModel):
+    conflict_id: str = Field(min_length=1)
+    conflict_type: Literal[
+        "exact_company_profitability_vs_unproven_product_attribution",
+        "demand_candidate_context_vs_no_accepted_durability_evidence",
+        "risk_mechanism_vs_unavailable_probability_and_impact",
+    ]
+    affected_judgment_refs: tuple[str, ...] = Field(min_length=1)
+    adjudication: str = Field(min_length=1)
+    preserved_claims: tuple[str, ...] = Field(min_length=1)
+    rejected_overreach: tuple[str, ...] = Field(min_length=1)
+    numeric_override_authorized: Literal[False] = False
+
+
+class S3LeadCrossCellSynthesisVersion(StrictModel):
+    lead_synthesis_id: str = Field(min_length=1)
+    lead_synthesis_version_ref: str = Field(min_length=1)
+    lead_synthesis_digest: str = Field(min_length=1)
+    case_id: str = Field(min_length=1)
+    research_run_id: str = Field(min_length=1)
+    lead_context_plan_ref: str = Field(min_length=1)
+    specialist_judgment_refs: tuple[str, ...] = Field(min_length=3, max_length=3)
+    dependencies: tuple[S3CrossCellDependencyVersion, ...] = Field(
+        min_length=3, max_length=3
+    )
+    conflicts: tuple[S3CrossCellConflictVersion, ...] = Field(
+        min_length=3, max_length=3
+    )
+    variant_view: str = Field(min_length=1)
+    cross_cell_conclusion: str = Field(min_length=1)
+    unresolved_material_gaps: tuple[str, ...] = Field(min_length=1)
+    synthesis_adds_new_adjudication: Literal[True] = True
+    text_concatenation_only: Literal[False] = False
+    writer_admission_recommended: Literal[False] = False
+    execution_mode: Literal["deterministic_lead_node_contract_projection"] = (
+        "deterministic_lead_node_contract_projection"
+    )
+    lead_model_consumed: Literal[False] = False
+    paid_artifact_proven: Literal[False] = False
+
+
+class S3TargetedRepairTicketVersion(StrictModel):
+    repair_ticket_id: str = Field(min_length=1)
+    repair_ticket_version_ref: str = Field(min_length=1)
+    repair_ticket_digest: str = Field(min_length=1)
+    failure_type: Literal["unsupported_claim", "numeric_conflict", "missing_source"]
+    failure_fingerprint: str = Field(min_length=1)
+    earliest_faulty_object_ref: str = Field(min_length=1)
+    earliest_owner_ref: str = Field(min_length=1)
+    affected_refs: tuple[str, ...] = Field(min_length=1)
+    changed_dimensions: tuple[
+        Literal["input", "route", "owner", "hypothesis", "verifiable_output"],
+        ...,
+    ] = Field(min_length=1)
+    new_information_or_route_hypothesis: str = Field(min_length=1)
+    expected_verifiable_output: str = Field(min_length=1)
+    resume_checkpoint_ref: str = Field(min_length=1)
+    stop_condition: str = Field(min_length=1)
+    execution_status: Literal["planned_not_executed"] = "planned_not_executed"
+
+
+class S3RepairAdmissionDecisionVersion(StrictModel):
+    decision_id: str = Field(min_length=1)
+    failure_fingerprint: str = Field(min_length=1)
+    matching_prior_failure_count: int = Field(ge=0)
+    changed_dimensions: tuple[str, ...]
+    decision: Literal[
+        "admit_changed_targeted_repair",
+        "stop_repeated_same_fingerprint_without_new_information",
+    ]
+    repair_ticket_ref: str | None = None
+    execution_authorized: Literal[False] = False
+
+
+class S3ParallelJudgmentCommitDecisionVersion(StrictModel):
+    decision_id: str = Field(min_length=1)
+    probe: Literal["matching_snapshot", "stale_snapshot", "late_superseded_output"]
+    current_head_dependency_digest: str = Field(min_length=1)
+    output_dependency_digest: str = Field(min_length=1)
+    output_arrival_status: Literal["on_time", "on_time_but_stale", "late_after_supersession"]
+    decision: Literal[
+        "eligible_for_single_writer_commit_fixture_only",
+        "quarantine_stale_output",
+        "quarantine_late_superseded_output",
+    ]
+    current_head_commit_authorized: bool
+    canonical_head_mutation_executed: Literal[False] = False
+
+
+class S3SpecialistLeadCrossCellPackVersion(StrictModel):
+    judgment_pack_id: str = Field(min_length=1)
+    judgment_pack_version_ref: str = Field(min_length=1)
+    judgment_pack_digest: str = Field(min_length=1)
+    judgment_pack_contract_ref: str = S3_SPECIALIST_LEAD_PACK_CONTRACT_REF
+    judgment_owner_ref: str = S3_SPECIALIST_LEAD_OWNER_REF
+    case_id: str = Field(min_length=1)
+    work_unit_id: str = Field(min_length=1)
+    attempt_id: str = Field(min_length=1)
+    research_run_id: str = Field(min_length=1)
+    execution_profile_version_ref: str = Field(min_length=1)
+    decision_surface_contract_ref: str = Field(min_length=1)
+    runtime_plan_version_ref: str = Field(min_length=1)
+    runtime_plan_digest: str = Field(min_length=1)
+    evidence_route_plan_version_ref: str = Field(min_length=1)
+    evidence_route_plan_digest: str = Field(min_length=1)
+    financial_pack_version_ref: str = Field(min_length=1)
+    financial_pack_digest: str = Field(min_length=1)
+    graph_pack_version_ref: str = Field(min_length=1)
+    graph_pack_digest: str = Field(min_length=1)
+    specialist_judgments: tuple[S3SpecialistJudgmentVersion, ...] = Field(
+        min_length=3, max_length=3
+    )
+    lead_synthesis: S3LeadCrossCellSynthesisVersion
+    targeted_repairs: tuple[S3TargetedRepairTicketVersion, ...] = Field(
+        min_length=3, max_length=3
+    )
+    repair_admission_decisions: tuple[S3RepairAdmissionDecisionVersion, ...] = Field(
+        min_length=4, max_length=4
+    )
+    parallel_commit_decisions: tuple[S3ParallelJudgmentCommitDecisionVersion, ...] = (
+        Field(min_length=3, max_length=3)
+    )
+    model_calls: Literal[0] = 0
+    provider_calls: Literal[0] = 0
+    execution_network_calls: Literal[0] = 0
+    source_network_calls: Literal[0] = 0
+    external_tool_calls: Literal[0] = 0
+    live_business_writes: Literal[0] = 0
+    runtime_evidence_promotions: Literal[0] = 0
+    canonical_judgment_head_writes: Literal[0] = 0
+    repair_executions: Literal[0] = 0
+    paid_runs: Literal[0] = 0
+
+
+def _s3_content_identity(prefix: str, payload: Mapping[str, Any]) -> tuple[str, str, str]:
+    digest = canonical_digest(dict(payload))
+    object_id = f"{prefix}_{digest[:24]}"
+    return object_id, f"{object_id}:v1", digest
+
+
+def _s3_cross_cell_record_id(prefix: str, payload: Mapping[str, Any]) -> str:
+    return f"{prefix}_{canonical_digest(dict(payload))[:24]}"
+
+
+def decide_s3_targeted_repair_admission(
+    *,
+    failure_fingerprint: str,
+    matching_prior_failure_count: int,
+    changed_dimensions: Sequence[str],
+    repair_ticket_ref: str | None,
+) -> S3RepairAdmissionDecisionVersion:
+    changed = tuple(str(item) for item in changed_dimensions if str(item))
+    if matching_prior_failure_count > 0 and not changed:
+        decision = "stop_repeated_same_fingerprint_without_new_information"
+        ticket_ref = None
+    else:
+        decision = "admit_changed_targeted_repair"
+        ticket_ref = repair_ticket_ref
+    payload = {
+        "failure_fingerprint": failure_fingerprint,
+        "matching_prior_failure_count": matching_prior_failure_count,
+        "changed_dimensions": changed,
+        "decision": decision,
+        "repair_ticket_ref": ticket_ref,
+        "execution_authorized": False,
+    }
+    return S3RepairAdmissionDecisionVersion(
+        decision_id=_s3_cross_cell_record_id("s3_repair_admission", payload),
+        **payload,
+    )
+
+
+def decide_s3_parallel_judgment_commit(
+    *,
+    probe: Literal["matching_snapshot", "stale_snapshot", "late_superseded_output"],
+    current_head_dependency_digest: str,
+    output_dependency_digest: str,
+    output_arrival_status: Literal[
+        "on_time", "on_time_but_stale", "late_after_supersession"
+    ],
+) -> S3ParallelJudgmentCommitDecisionVersion:
+    if (
+        probe == "matching_snapshot"
+        and output_arrival_status == "on_time"
+        and output_dependency_digest == current_head_dependency_digest
+    ):
+        decision = "eligible_for_single_writer_commit_fixture_only"
+        authorized = True
+    elif output_arrival_status == "late_after_supersession":
+        decision = "quarantine_late_superseded_output"
+        authorized = False
+    else:
+        decision = "quarantine_stale_output"
+        authorized = False
+    payload = {
+        "probe": probe,
+        "current_head_dependency_digest": current_head_dependency_digest,
+        "output_dependency_digest": output_dependency_digest,
+        "output_arrival_status": output_arrival_status,
+        "decision": decision,
+        "current_head_commit_authorized": authorized,
+        "canonical_head_mutation_executed": False,
+    }
+    return S3ParallelJudgmentCommitDecisionVersion(
+        decision_id=_s3_cross_cell_record_id("s3_parallel_commit", payload),
+        **payload,
+    )
+
+
+def _s3_specialist_judgment(
+    *,
+    runtime_plan: Mapping[str, Any],
+    route_plan: Mapping[str, Any],
+    financial_pack: Mapping[str, Any],
+    graph_pack: Mapping[str, Any],
+    branch: Mapping[str, Any],
+    specialist_context: Mapping[str, Any],
+    route: Mapping[str, Any],
+    fundamental_cell: Mapping[str, Any],
+    graph_cell: Mapping[str, Any],
+    graph_edge: Mapping[str, Any],
+    market_context: Mapping[str, Any],
+    risk_context: Mapping[str, Any],
+) -> S3SpecialistJudgmentVersion:
+    cell_id = str(branch["program_cell_id"])
+    promotion = dict(route.get("promotion_assessment") or {})
+    candidate_refs = tuple(
+        dict.fromkeys(
+            [
+                *[str(item) for item in promotion.get("candidate_refs") or ()],
+                *[str(item) for item in promotion.get("context_refs") or ()],
+                *[str(item) for item in promotion.get("rejected_refs") or ()],
+                str(graph_edge["edge_projection_id"]),
+            ]
+        )
+    )
+    unavailable = tuple(
+        dict.fromkeys(
+            [
+                *[str(item) for item in fundamental_cell.get("typed_cannot_infer") or ()],
+                *[str(item) for item in promotion.get("typed_gap_codes") or ()],
+                str(market_context["status"]),
+                f"risk_probability:{risk_context['probability_status']}",
+                f"risk_financial_impact:{risk_context['financial_impact_status']}",
+            ]
+        )
+    )
+    numeric_refs: tuple[str, ...] = ()
+    numeric_source_refs: tuple[str, ...] = ()
+    fact_statements: tuple[str, ...] = ()
+    derived_by_ref = {
+        str(row["derived_metric_id"]): row
+        for row in financial_pack.get("derived_metrics") or ()
+    }
+    rows_by_ref = {
+        str(row["financial_row_id"]): row
+        for row in financial_pack.get("selected_financial_rows") or ()
+    }
+    if cell_id == "value_and_profit_capture":
+        numeric_refs = tuple(
+            str(item) for item in fundamental_cell.get("derived_metric_refs") or ()
+        )
+        selected_rows = [
+            rows_by_ref[str(item)]
+            for item in fundamental_cell.get("selected_financial_row_refs") or ()
+        ]
+        numeric_source_refs = tuple(
+            dict.fromkeys(str(row["evidence_ref"]) for row in selected_rows)
+        )
+        fact_statements = tuple(
+            f"NVDA company-total {derived_by_ref[ref]['metric_family']} was "
+            f"{derived_by_ref[ref]['result_value']}% for "
+            f"{derived_by_ref[ref]['inputs'][0]['period']} under the saved formula and rounding rule."
+            for ref in numeric_refs
+        )
+
+    if cell_id == "demand_authenticity_and_sustainability":
+        mechanism = (
+            "Customer and deployment context can motivate a durability check, but the "
+            "current candidate-only route does not establish company-specific end demand."
+        )
+        assumptions = (
+            "customer infrastructure activity would need a sourced bridge to NVDA-specific deployment",
+            "a demand proxy must not be treated as final customer consumption",
+        )
+        alternatives = (
+            "capacity build may reflect inventory, competitive procurement, or timing rather than durable consumption",
+        )
+        disposition = "bounded_cannot_infer_demand_durability"
+        direct_answer = (
+            "Current materials do not establish that NVDA-specific AI demand is both real and durable."
+        )
+        confidence = "low"
+        next_action = "return the unsupported durability claim to the Cell adjudicator and source route owner"
+        cross_impact = "without durable demand evidence, company-level profitability cannot establish thesis durability"
+        inference_distance = "one_step_bounded_mechanism"
+    elif cell_id == "value_and_profit_capture":
+        mechanism = (
+            "Exact company-total profitability establishes an aggregate economic baseline, "
+            "while product, segment, incremental-AI and cross-chain attribution remain unavailable."
+        )
+        assumptions = (
+            "company-total margins are not accelerator-specific margins",
+            "no Graph or Product row may allocate revenue or profit",
+        )
+        alternatives = (
+            "company mix, pricing, operating leverage, and non-accelerator activities can contribute to aggregate margins",
+        )
+        disposition = "bounded_company_total_support_product_capture_unattributed"
+        direct_answer = (
+            "NVDA has exact company-total profitability support, but this fixture cannot attribute value capture to the accelerator product or AI chain."
+        )
+        confidence = "medium_low"
+        next_action = "preserve exact Numeric facts and route any correction to parser_numeric before re-adjudication"
+        cross_impact = "value-capture thesis strength stays bounded until demand durability and product attribution are sourced"
+        inference_distance = "one_step_bounded_mechanism"
+    else:
+        mechanism = (
+            "The packaging dependency path identifies a plausible failure mechanism, but it "
+            "is a navigation hypothesis without current probability or financial-impact authority."
+        )
+        assumptions = (
+            "the graph relationship requires issuer or official-policy corroboration",
+            "a bottleneck mechanism is not proof that the bottleneck is current or material",
+        )
+        alternatives = (
+            "capacity expansion, supplier diversification, or demand digestion could reduce the mechanism's impact",
+        )
+        disposition = "bounded_counterevidence_hypothesis_probability_impact_unknown"
+        direct_answer = (
+            "A packaging-dependency counter-thesis is plausible, but its current probability and financial impact cannot be inferred."
+        )
+        confidence = "low"
+        next_action = "return the missing-source path to EvidenceService for separately admitted official follow-up"
+        cross_impact = "unquantified counterevidence prevents the Lead from treating demand and value support as an unqualified thesis"
+        inference_distance = "two_step_hypothesis_requires_source_followup"
+
+    source_pack_refs = (
+        str(route_plan["evidence_route_plan_version_ref"]),
+        str(financial_pack["financial_pack_version_ref"]),
+        str(graph_pack["graph_pack_version_ref"]),
+        str(graph_cell["skill_contract_version_ref"]),
+    )
+    fact_layer = S3SpecialistFactLayerVersion(
+        program_cell_id=cell_id,
+        fact_statements=fact_statements,
+        accepted_evidence_refs=(),
+        deterministic_numeric_refs=numeric_refs,
+        deterministic_numeric_source_refs=numeric_source_refs,
+        unavailable_fact_codes=unavailable,
+        excluded_candidate_or_graph_refs=candidate_refs,
+        authority_boundary=(
+            "Only T03 accepted Evidence and T04 deterministic Numeric may enter the fact layer; "
+            "T03 Candidates and T05 Graph/Product/Market/Risk context remain excluded."
+        ),
+    )
+    explanation_layer = S3SpecialistExplanationLayerVersion(
+        program_cell_id=cell_id,
+        mechanism_summary=mechanism,
+        input_refs=(
+            str(graph_edge["edge_projection_id"]),
+            str(market_context["market_context_id"]),
+            str(risk_context["risk_context_id"]),
+            str(graph_cell["product_industry_projection_input_ref"]),
+        ),
+        assumptions=assumptions,
+        alternative_explanations=alternatives,
+        inference_distance=inference_distance,
+    )
+    decision_layer = S3SpecialistDecisionLayerVersion(
+        program_cell_id=cell_id,
+        direct_answer=direct_answer,
+        disposition=disposition,
+        confidence=confidence,
+        counterevidence_refs=(str(risk_context["risk_context_id"]),),
+        remaining_gaps=unavailable,
+        cannot_infer=tuple(str(item) for item in fundamental_cell["typed_cannot_infer"]),
+        what_would_change=(str(risk_context["what_would_change"]),),
+        recommended_next_action=next_action,
+        cross_cell_impact=cross_impact,
+    )
+    payload = {
+        "program_cell_id": cell_id,
+        "specialist_role": str(branch["owner_role"]),
+        "case_id": str(runtime_plan["case_id"]),
+        "research_run_id": str(runtime_plan["research_run_id"]),
+        "branch_version_ref": str(branch["branch_version_ref"]),
+        "specialist_context_plan_ref": str(specialist_context["context_plan_version_ref"]),
+        "source_pack_refs": source_pack_refs,
+        "fact_layer": fact_layer.model_dump(mode="json"),
+        "explanation_layer": explanation_layer.model_dump(mode="json"),
+        "decision_layer": decision_layer.model_dump(mode="json"),
+        "execution_mode": "deterministic_node_contract_projection",
+        "specialist_model_consumed": False,
+        "paid_artifact_proven": False,
+        "writer_citable": False,
+    }
+    object_id, version_ref, digest = _s3_content_identity(
+        "specialist_judgment_fin01_s3", payload
+    )
+    return S3SpecialistJudgmentVersion(
+        specialist_judgment_id=object_id,
+        specialist_judgment_version_ref=version_ref,
+        specialist_judgment_digest=digest,
+        **payload,
+    )
+
+
+def _s3_lead_synthesis(
+    *,
+    runtime_plan: Mapping[str, Any],
+    lead_context: Mapping[str, Any],
+    judgments: Sequence[S3SpecialistJudgmentVersion],
+) -> S3LeadCrossCellSynthesisVersion:
+    by_cell = {row.program_cell_id: row for row in judgments}
+    demand = by_cell[_S3_SPECIALIST_LEAD_PROGRAM_CELLS[0]]
+    value = by_cell[_S3_SPECIALIST_LEAD_PROGRAM_CELLS[1]]
+    risk = by_cell[_S3_SPECIALIST_LEAD_PROGRAM_CELLS[2]]
+
+    dependency_specs = (
+        (
+            demand.program_cell_id,
+            value.program_cell_id,
+            "demand_durability_bounds_value_capture_interpretation",
+            (demand.specialist_judgment_version_ref, value.specialist_judgment_version_ref),
+            "Exact aggregate profitability cannot establish durable AI value capture while demand durability is unsupported.",
+            "This dependency limits thesis strength; it does not invalidate the saved company-total Numeric facts.",
+        ),
+        (
+            value.program_cell_id,
+            demand.program_cell_id,
+            "value_attribution_bounds_thesis_strength",
+            (value.specialist_judgment_version_ref, demand.specialist_judgment_version_ref),
+            "Even if demand later proves durable, product and segment attribution is required before assigning captured economics to the AI accelerator chain.",
+            "No Graph or narrative allocation may fill the product-attribution gap.",
+        ),
+        (
+            risk.program_cell_id,
+            value.program_cell_id,
+            "counterevidence_bounds_demand_and_value_confidence",
+            (risk.specialist_judgment_version_ref, value.specialist_judgment_version_ref),
+            "Packaging dependency is a plausible modifier of revenue conversion and margin durability, but remains unquantified.",
+            "The mechanism lowers confidence only within its hypothesis boundary; probability and impact remain cannot-infer.",
+        ),
+    )
+    dependencies = tuple(
+        S3CrossCellDependencyVersion(
+            dependency_id=_s3_cross_cell_record_id(
+                "s3_cross_cell_dependency",
+                {
+                    "from": from_cell,
+                    "to": to_cell,
+                    "type": dep_type,
+                    "refs": refs,
+                    "adjudication": adjudication,
+                    "boundary": boundary,
+                },
+            ),
+            from_program_cell_id=from_cell,
+            to_program_cell_id=to_cell,
+            dependency_type=dep_type,
+            source_judgment_refs=refs,
+            adjudication=adjudication,
+            boundary=boundary,
+        )
+        for from_cell, to_cell, dep_type, refs, adjudication, boundary in dependency_specs
+    )
+    conflict_specs = (
+        (
+            "exact_company_profitability_vs_unproven_product_attribution",
+            (value.specialist_judgment_version_ref,),
+            "Preserve the exact company-total margins and separately preserve the inability to attribute them to accelerator economics.",
+            tuple(value.fact_layer.fact_statements),
+            ("company-total margin proves accelerator margin or incremental AI profit",),
+        ),
+        (
+            "demand_candidate_context_vs_no_accepted_durability_evidence",
+            (demand.specialist_judgment_version_ref,),
+            "Treat deployment/customer material as a research route, not a durable-demand conclusion.",
+            ("candidate context can identify a demand question",),
+            ("customer capex or deployment context proves durable NVDA demand",),
+        ),
+        (
+            "risk_mechanism_vs_unavailable_probability_and_impact",
+            (risk.specialist_judgment_version_ref,),
+            "Keep the packaging mechanism visible while refusing probability or financial-impact language.",
+            ("a bounded packaging dependency hypothesis exists",),
+            ("the bottleneck is current, probable, or financially material",),
+        ),
+    )
+    conflicts = tuple(
+        S3CrossCellConflictVersion(
+            conflict_id=_s3_cross_cell_record_id(
+                "s3_cross_cell_conflict",
+                {
+                    "type": conflict_type,
+                    "refs": refs,
+                    "adjudication": adjudication,
+                    "preserved": preserved,
+                    "rejected": rejected,
+                },
+            ),
+            conflict_type=conflict_type,
+            affected_judgment_refs=refs,
+            adjudication=adjudication,
+            preserved_claims=preserved,
+            rejected_overreach=rejected,
+        )
+        for conflict_type, refs, adjudication, preserved, rejected in conflict_specs
+    )
+    gaps = tuple(
+        dict.fromkeys(
+            gap
+            for judgment in judgments
+            for gap in judgment.decision_layer.remaining_gaps
+        )
+    )
+    payload = {
+        "case_id": str(runtime_plan["case_id"]),
+        "research_run_id": str(runtime_plan["research_run_id"]),
+        "lead_context_plan_ref": str(lead_context["context_plan_version_ref"]),
+        "specialist_judgment_refs": tuple(
+            row.specialist_judgment_version_ref for row in judgments
+        ),
+        "dependencies": tuple(row.model_dump(mode="json") for row in dependencies),
+        "conflicts": tuple(row.model_dump(mode="json") for row in conflicts),
+        "variant_view": (
+            "The saved materials support strong NVDA company-level profitability, but they do not yet "
+            "establish durable company-specific AI demand, accelerator-specific value capture, or a "
+            "quantified bottleneck risk. The variant view is therefore evidence acquisition and attribution "
+            "dependent, not an admissible investment Alpha conclusion."
+        ),
+        "cross_cell_conclusion": (
+            "Demand durability is unresolved; aggregate profitability is exact but product attribution is "
+            "unresolved; packaging counterevidence is plausible but unquantified. These three conditions "
+            "jointly require a bounded cannot-infer thesis state rather than three independent summaries."
+        ),
+        "unresolved_material_gaps": gaps,
+        "synthesis_adds_new_adjudication": True,
+        "text_concatenation_only": False,
+        "writer_admission_recommended": False,
+        "execution_mode": "deterministic_lead_node_contract_projection",
+        "lead_model_consumed": False,
+        "paid_artifact_proven": False,
+    }
+    object_id, version_ref, digest = _s3_content_identity(
+        "lead_synthesis_fin01_s3", payload
+    )
+    return S3LeadCrossCellSynthesisVersion(
+        lead_synthesis_id=object_id,
+        lead_synthesis_version_ref=version_ref,
+        lead_synthesis_digest=digest,
+        **payload,
+    )
+
+
+def _s3_targeted_repair_ticket(
+    *,
+    failure_type: Literal["unsupported_claim", "numeric_conflict", "missing_source"],
+    earliest_faulty_object_ref: str,
+    earliest_owner_ref: str,
+    affected_refs: Sequence[str],
+    changed_dimensions: Sequence[
+        Literal["input", "route", "owner", "hypothesis", "verifiable_output"]
+    ],
+    new_information_or_route_hypothesis: str,
+    expected_verifiable_output: str,
+    resume_checkpoint_ref: str,
+) -> S3TargetedRepairTicketVersion:
+    fingerprint = canonical_digest(
+        {
+            "failure_type": failure_type,
+            "earliest_faulty_object_ref": earliest_faulty_object_ref,
+            "affected_refs": tuple(affected_refs),
+        }
+    )
+    payload = {
+        "failure_type": failure_type,
+        "failure_fingerprint": fingerprint,
+        "earliest_faulty_object_ref": earliest_faulty_object_ref,
+        "earliest_owner_ref": earliest_owner_ref,
+        "affected_refs": tuple(affected_refs),
+        "changed_dimensions": tuple(changed_dimensions),
+        "new_information_or_route_hypothesis": new_information_or_route_hypothesis,
+        "expected_verifiable_output": expected_verifiable_output,
+        "resume_checkpoint_ref": resume_checkpoint_ref,
+        "stop_condition": (
+            "stop when the same failure fingerprint recurs without a changed input, route, owner, "
+            "hypothesis, or verifiable output"
+        ),
+        "execution_status": "planned_not_executed",
+    }
+    object_id, version_ref, digest = _s3_content_identity(
+        "repair_ticket_fin01_s3", payload
+    )
+    return S3TargetedRepairTicketVersion(
+        repair_ticket_id=object_id,
+        repair_ticket_version_ref=version_ref,
+        repair_ticket_digest=digest,
+        **payload,
+    )
+
+
+def compile_s3_specialist_lead_cross_cell_pack(
+    *,
+    runtime_plan: Mapping[str, Any],
+    evidence_route_plan: Mapping[str, Any],
+    financial_pack: Mapping[str, Any],
+    graph_pack: Mapping[str, Any],
+) -> S3SpecialistLeadCrossCellPackVersion:
+    """Compile the zero-call T06 Specialist/Lead judgment and repair contract."""
+
+    lineage_fields = (
+        "case_id",
+        "work_unit_id",
+        "attempt_id",
+        "research_run_id",
+        "execution_profile_version_ref",
+        "decision_surface_contract_ref",
+    )
+    for field in lineage_fields:
+        expected = str(runtime_plan.get(field) or "")
+        if not expected or any(
+            str(pack.get(field) or "") != expected
+            for pack in (evidence_route_plan, financial_pack, graph_pack)
+        ):
+            raise ValueError(f"s3_t06_lineage_mismatch:{field}")
+    if (
+        evidence_route_plan.get("runtime_plan_version_ref")
+        != runtime_plan.get("runtime_plan_version_ref")
+        or evidence_route_plan.get("runtime_plan_digest")
+        != runtime_plan.get("runtime_plan_digest")
+        or financial_pack.get("evidence_route_plan_digest")
+        != evidence_route_plan.get("evidence_route_plan_digest")
+        or graph_pack.get("financial_pack_digest")
+        != financial_pack.get("financial_pack_digest")
+    ):
+        raise ValueError("s3_t06_upstream_pack_lineage_mismatch")
+
+    branches = tuple(runtime_plan.get("cell_branches") or ())
+    routes = tuple(evidence_route_plan.get("cell_routes") or ())
+    fundamental_cells = tuple(financial_pack.get("fundamental_decision_cells") or ())
+    graph_cells = tuple(graph_pack.get("decision_cells") or ())
+    graph_edges = tuple(graph_pack.get("graph_edges") or ())
+    markets = tuple(graph_pack.get("market_price_in_contexts") or ())
+    risks = tuple(graph_pack.get("risk_contexts") or ())
+    cell_sequences = tuple(
+        tuple(str(row.get("program_cell_id") or "") for row in rows)
+        for rows in (branches, routes, fundamental_cells, graph_cells, graph_edges, markets, risks)
+    )
+    if any(sequence != _S3_SPECIALIST_LEAD_PROGRAM_CELLS for sequence in cell_sequences):
+        raise ValueError("s3_t06_exact_three_cell_alignment_required")
+
+    role_contexts = tuple(runtime_plan.get("role_context_plans") or ())
+    lead_contexts = tuple(
+        row for row in role_contexts if row.get("target_node") == "research_lead"
+    )
+    specialist_contexts = tuple(
+        row for row in role_contexts if row.get("target_node") == "domain_specialist"
+    )
+    if len(lead_contexts) != 1 or tuple(
+        str(row.get("program_cell_id") or "") for row in specialist_contexts
+    ) != _S3_SPECIALIST_LEAD_PROGRAM_CELLS:
+        raise ValueError("s3_t06_lead_or_specialist_context_cardinality_invalid")
+
+    judgments = tuple(
+        _s3_specialist_judgment(
+            runtime_plan=runtime_plan,
+            route_plan=evidence_route_plan,
+            financial_pack=financial_pack,
+            graph_pack=graph_pack,
+            branch=branch,
+            specialist_context=context,
+            route=route,
+            fundamental_cell=fundamental,
+            graph_cell=graph_cell,
+            graph_edge=edge,
+            market_context=market,
+            risk_context=risk,
+        )
+        for branch, context, route, fundamental, graph_cell, edge, market, risk in zip(
+            branches,
+            specialist_contexts,
+            routes,
+            fundamental_cells,
+            graph_cells,
+            graph_edges,
+            markets,
+            risks,
+            strict=True,
+        )
+    )
+    lead = _s3_lead_synthesis(
+        runtime_plan=runtime_plan,
+        lead_context=lead_contexts[0],
+        judgments=judgments,
+    )
+    by_cell = {row.program_cell_id: row for row in judgments}
+    demand = by_cell[_S3_SPECIALIST_LEAD_PROGRAM_CELLS[0]]
+    value = by_cell[_S3_SPECIALIST_LEAD_PROGRAM_CELLS[1]]
+    risk = by_cell[_S3_SPECIALIST_LEAD_PROGRAM_CELLS[2]]
+    gross_margin_ref = next(
+        str(row["derived_metric_id"])
+        for row in financial_pack.get("derived_metrics") or ()
+        if row.get("metric_family") == "gross_margin"
+    )
+    risk_route = routes[2]
+    followup = dict(risk_route.get("source_followup_request") or {})
+    repairs = (
+        _s3_targeted_repair_ticket(
+            failure_type="unsupported_claim",
+            earliest_faulty_object_ref=demand.specialist_judgment_version_ref,
+            earliest_owner_ref=S3_SPECIALIST_LEAD_OWNER_REF,
+            affected_refs=(demand.specialist_judgment_version_ref,),
+            changed_dimensions=("owner", "hypothesis", "verifiable_output"),
+            new_information_or_route_hypothesis=(
+                "downgrade the unsupported durable-demand claim to cannot-infer and require an exact accepted-Evidence bridge"
+            ),
+            expected_verifiable_output="a recompiled demand Judgment with no unsupported fact-layer statement",
+            resume_checkpoint_ref=str(demand.specialist_context_plan_ref),
+        ),
+        _s3_targeted_repair_ticket(
+            failure_type="numeric_conflict",
+            earliest_faulty_object_ref=str(financial_pack["parser_numeric_owner_ref"]),
+            earliest_owner_ref=str(financial_pack["parser_numeric_owner_ref"]),
+            affected_refs=(gross_margin_ref, value.specialist_judgment_version_ref),
+            changed_dimensions=("input", "owner", "verifiable_output"),
+            new_information_or_route_hypothesis=(
+                "recompute the affected formula from corrected exact inputs before re-adjudicating only the dependent value chain"
+            ),
+            expected_verifiable_output="a new derived-metric digest and exact selective dependency impact set",
+            resume_checkpoint_ref=str(value.specialist_context_plan_ref),
+        ),
+        _s3_targeted_repair_ticket(
+            failure_type="missing_source",
+            earliest_faulty_object_ref=str(
+                risk_route.get("sourcehunter_boundary", {}).get("boundary_id")
+                or risk_route["evidence_request"]["request_id"]
+            ),
+            earliest_owner_ref=str(evidence_route_plan["evidence_service_owner_ref"]),
+            affected_refs=(
+                risk.specialist_judgment_version_ref,
+                str(followup.get("followup_request_id") or risk_route["evidence_request"]["request_id"]),
+            ),
+            changed_dimensions=("route", "owner", "hypothesis", "verifiable_output"),
+            new_information_or_route_hypothesis=(
+                "use the separately admitted official-source follow-up route to test whether the packaging mechanism is current"
+            ),
+            expected_verifiable_output="a source-bound Candidate and promotion assessment or an exhausted-route typed gap",
+            resume_checkpoint_ref=str(risk.specialist_context_plan_ref),
+        ),
+    )
+    repair_decisions = tuple(
+        decide_s3_targeted_repair_admission(
+            failure_fingerprint=row.failure_fingerprint,
+            matching_prior_failure_count=0,
+            changed_dimensions=row.changed_dimensions,
+            repair_ticket_ref=row.repair_ticket_version_ref,
+        )
+        for row in repairs
+    ) + (
+        decide_s3_targeted_repair_admission(
+            failure_fingerprint=repairs[0].failure_fingerprint,
+            matching_prior_failure_count=1,
+            changed_dimensions=(),
+            repair_ticket_ref=repairs[0].repair_ticket_version_ref,
+        ),
+    )
+    current_dependency_digest = canonical_digest(
+        {
+            "runtime_plan_digest": runtime_plan["runtime_plan_digest"],
+            "evidence_route_plan_digest": evidence_route_plan["evidence_route_plan_digest"],
+            "financial_pack_digest": financial_pack["financial_pack_digest"],
+            "graph_pack_digest": graph_pack["graph_pack_digest"],
+            "lead_synthesis_digest": lead.lead_synthesis_digest,
+        }
+    )
+    stale_dependency_digest = canonical_digest(
+        {"superseded_dependency_digest": current_dependency_digest}
+    )
+    parallel_decisions = (
+        decide_s3_parallel_judgment_commit(
+            probe="matching_snapshot",
+            current_head_dependency_digest=current_dependency_digest,
+            output_dependency_digest=current_dependency_digest,
+            output_arrival_status="on_time",
+        ),
+        decide_s3_parallel_judgment_commit(
+            probe="stale_snapshot",
+            current_head_dependency_digest=current_dependency_digest,
+            output_dependency_digest=stale_dependency_digest,
+            output_arrival_status="on_time_but_stale",
+        ),
+        decide_s3_parallel_judgment_commit(
+            probe="late_superseded_output",
+            current_head_dependency_digest=current_dependency_digest,
+            output_dependency_digest=current_dependency_digest,
+            output_arrival_status="late_after_supersession",
+        ),
+    )
+    payload = {
+        "judgment_pack_contract_ref": S3_SPECIALIST_LEAD_PACK_CONTRACT_REF,
+        "judgment_owner_ref": S3_SPECIALIST_LEAD_OWNER_REF,
+        "case_id": str(runtime_plan["case_id"]),
+        "work_unit_id": str(runtime_plan["work_unit_id"]),
+        "attempt_id": str(runtime_plan["attempt_id"]),
+        "research_run_id": str(runtime_plan["research_run_id"]),
+        "execution_profile_version_ref": str(runtime_plan["execution_profile_version_ref"]),
+        "decision_surface_contract_ref": str(runtime_plan["decision_surface_contract_ref"]),
+        "runtime_plan_version_ref": str(runtime_plan["runtime_plan_version_ref"]),
+        "runtime_plan_digest": str(runtime_plan["runtime_plan_digest"]),
+        "evidence_route_plan_version_ref": str(evidence_route_plan["evidence_route_plan_version_ref"]),
+        "evidence_route_plan_digest": str(evidence_route_plan["evidence_route_plan_digest"]),
+        "financial_pack_version_ref": str(financial_pack["financial_pack_version_ref"]),
+        "financial_pack_digest": str(financial_pack["financial_pack_digest"]),
+        "graph_pack_version_ref": str(graph_pack["graph_pack_version_ref"]),
+        "graph_pack_digest": str(graph_pack["graph_pack_digest"]),
+        "specialist_judgments": tuple(row.model_dump(mode="json") for row in judgments),
+        "lead_synthesis": lead.model_dump(mode="json"),
+        "targeted_repairs": tuple(row.model_dump(mode="json") for row in repairs),
+        "repair_admission_decisions": tuple(
+            row.model_dump(mode="json") for row in repair_decisions
+        ),
+        "parallel_commit_decisions": tuple(
+            row.model_dump(mode="json") for row in parallel_decisions
+        ),
+        "model_calls": 0,
+        "provider_calls": 0,
+        "execution_network_calls": 0,
+        "source_network_calls": 0,
+        "external_tool_calls": 0,
+        "live_business_writes": 0,
+        "runtime_evidence_promotions": 0,
+        "canonical_judgment_head_writes": 0,
+        "repair_executions": 0,
+        "paid_runs": 0,
+    }
+    object_id, version_ref, digest = _s3_content_identity(
+        "judgment_pack_fin01_s3", payload
+    )
+    return S3SpecialistLeadCrossCellPackVersion(
+        judgment_pack_id=object_id,
+        judgment_pack_version_ref=version_ref,
+        judgment_pack_digest=digest,
+        **payload,
+    )
+
+
+def consume_s3_specialist_lead_cross_cell_pack(
+    pack: S3SpecialistLeadCrossCellPackVersion,
+    *,
+    runtime_plan: Mapping[str, Any],
+    evidence_route_plan: Mapping[str, Any],
+    financial_pack: Mapping[str, Any],
+    graph_pack: Mapping[str, Any],
+) -> tuple[dict[str, Any], ...]:
+    expected = compile_s3_specialist_lead_cross_cell_pack(
+        runtime_plan=runtime_plan,
+        evidence_route_plan=evidence_route_plan,
+        financial_pack=financial_pack,
+        graph_pack=graph_pack,
+    )
+    if pack.model_dump(mode="json") != expected.model_dump(mode="json"):
+        raise ValueError("s3_specialist_lead_pack_recompile_mismatch")
+    if any(
+        (
+            pack.model_calls,
+            pack.provider_calls,
+            pack.execution_network_calls,
+            pack.source_network_calls,
+            pack.external_tool_calls,
+            pack.live_business_writes,
+            pack.runtime_evidence_promotions,
+            pack.canonical_judgment_head_writes,
+            pack.repair_executions,
+            pack.paid_runs,
+        )
+    ):
+        raise ValueError("s3_specialist_lead_zero_call_boundary_violated")
+    if any(
+        row.current_head_commit_authorized
+        for row in pack.parallel_commit_decisions
+        if row.probe in {"stale_snapshot", "late_superseded_output"}
+    ):
+        raise ValueError("s3_specialist_lead_stale_or_late_commit_authorized")
+    receipts = [
+        {
+            "target_node": "domain_specialist",
+            "program_cell_id": row.program_cell_id,
+            "specialist_judgment_version_ref": row.specialist_judgment_version_ref,
+            "specialist_judgment_digest": row.specialist_judgment_digest,
+            "consumed_layers": ["fact", "explanation", "judgment"],
+            "consumption_mode": "deterministic_node_contract_validation",
+            "model_calls": 0,
+            "network_calls": 0,
+        }
+        for row in pack.specialist_judgments
+    ]
+    receipts.append(
+        {
+            "target_node": "research_lead",
+            "program_cell_id": None,
+            "lead_synthesis_version_ref": pack.lead_synthesis.lead_synthesis_version_ref,
+            "lead_synthesis_digest": pack.lead_synthesis.lead_synthesis_digest,
+            "consumed_specialist_judgment_refs": list(
+                pack.lead_synthesis.specialist_judgment_refs
+            ),
+            "consumption_mode": "deterministic_cross_cell_adjudication_validation",
+            "model_calls": 0,
+            "network_calls": 0,
+        }
+    )
+    return tuple(receipts)
+
+
+def consume_s4_case_runtime_specialist_and_research_lead(
+    binding: S4CaseRuntimeBinding,
+) -> dict[str, Any]:
+    """Inject case method chains and judgment atoms into Specialist/Lead."""
+
+    return consume_s4_case_runtime_binding(
+        binding, "specialist_and_research_lead"
+    ).model_dump(mode="json")
 
 SCOPE_MODES = {"full_universe", "sector_representative", "focused_peer"}
 NODE_CHECKPOINT_SCHEMA_VERSION = "sec_agent_langgraph_node_checkpoint_v0.1"
@@ -909,6 +1940,620 @@ def make_multi_agent_smoke_state(
     return state
 
 
+def run_fin01_agent_fixture_shadow_slice(
+    *,
+    case_id: str,
+    work_unit_id: str,
+    attempt_id: str,
+    research_run_id: str,
+    causation_event_id: str,
+    execution_profile_version_ref: str,
+    selected_agent_versions: list[Mapping[str, Any]],
+    selected_skill_packs: list[Mapping[str, Any]],
+    primary_specialist_id: str = "industry_supply_chain_analyst",
+    _run_validation_graph: bool = True,
+) -> dict[str, Any]:
+    """Run the historical LangGraph planning slice under the FIN 0.1 Run identity.
+
+    T03 intentionally stops after activation-plan validation.  Every model,
+    tool, network, and business-write budget is zero; the complete cell remains
+    a T04 concern.
+    """
+
+    exact_refs = {
+        "case_id": str(case_id or ""),
+        "work_unit_id": str(work_unit_id or ""),
+        "attempt_id": str(attempt_id or ""),
+        "research_run_id": str(research_run_id or ""),
+        "causation_event_id": str(causation_event_id or ""),
+    }
+    if not all(exact_refs.values()):
+        raise ValueError("fin01_fixture_shadow_exact_run_refs_required")
+    agent_versions = [dict(row) for row in selected_agent_versions]
+    skill_packs = [dict(row) for row in selected_skill_packs]
+    agents_by_id = {str(row.get("agent_id") or ""): row for row in agent_versions}
+    packs_by_agent = {str(row.get("agent_id") or ""): row for row in skill_packs}
+    active_agents = [
+        "research_lead",
+        "universe_relationship",
+        "coverage_reflection",
+        primary_specialist_id,
+        "judgment_plan_aggregator",
+        "memo_writer",
+        "verifier",
+        "renderer",
+    ]
+    if set(agents_by_id) != set(active_agents):
+        raise ValueError("fin01_fixture_shadow_agent_selection_mismatch")
+    if set(packs_by_agent) != set(active_agents):
+        raise ValueError("fin01_fixture_shadow_skill_pack_selection_mismatch")
+    for agent_id in active_agents:
+        version = agents_by_id[agent_id]
+        pack = packs_by_agent[agent_id]
+        if pack.get("execution_profile_version_ref") != execution_profile_version_ref:
+            raise PermissionError("fin01_fixture_shadow_skill_pack_profile_mismatch")
+        registered_skills = tuple((version.get("contract") or {}).get("skill_ids") or ())
+        selected_skills = tuple(
+            row.get("skill_id") for row in pack.get("skill_definitions") or []
+        )
+        if registered_skills != selected_skills:
+            raise ValueError("fin01_fixture_shadow_skill_pack_contract_mismatch")
+
+    agent_refs = {
+        agent_id: str(agents_by_id[agent_id]["agent_definition_version_ref"])
+        for agent_id in active_agents
+    }
+    skill_pack_refs = {
+        agent_id: str(packs_by_agent[agent_id]["skill_pack_version_ref"])
+        for agent_id in active_agents
+    }
+    specialist_task = {
+        "schema_version": "fin01_specialist_task_version_v0.1",
+        "specialist_task_version_ref": f"specialist-task:{research_run_id}:v1",
+        **exact_refs,
+        "cell_ref": "NVDA:demand_authenticity_and_sustainability",
+        "lead_agent_definition_version_ref": agent_refs["research_lead"],
+        "specialist_agent_id": primary_specialist_id,
+        "specialist_agent_definition_version_ref": agent_refs[primary_specialist_id],
+        "skill_pack_version_ref": skill_pack_refs[primary_specialist_id],
+        "skill_pack_digest": packs_by_agent[primary_specialist_id]["canonical_digest"],
+        "handoff_from_agent_id": "research_lead",
+        "handoff_to_agent_id": primary_specialist_id,
+    }
+    plan = {
+        "execution_mode": "deep_research",
+        "activate_agents": active_agents,
+        "skip_agents": [],
+        "allowed_source_families": [
+            "primary_sec_filing",
+            "company_authored_unaudited_sec_filing",
+            "industry_snapshot",
+            "relationship_graph",
+            "run_artifact",
+        ],
+        "model_policy_hint": {agent_id: "none" for agent_id in active_agents},
+        "agent_priorities": {
+            agent_id: (
+                "primary"
+                if agent_id in {"research_lead", primary_specialist_id}
+                else "supporting"
+            )
+            for agent_id in active_agents
+        },
+        "max_tool_calls_total": 0,
+        "max_second_pass_rounds": 0,
+        "max_repair_rounds": 0,
+        "reasoning_summary": "FIN 0.1 T03 registry-consumption fixture shadow.",
+        "schema_version": "sec_agent_agent_activation_plan_v0.1",
+        "scope_mode": "focused_peer",
+        "focus_tickers": ["NVDA"],
+        "search_scope_tickers": ["NVDA"],
+        "relationship_scope_rationale": "Selection only; graph/tool execution is not authorized in T03.",
+        "research_objective_contract": {},
+        "thesis_path": {},
+        "evidence_role_plan": [],
+        "specialist_assignment": {
+            "primary_specialist": primary_specialist_id,
+            "specialist_task_version_ref": specialist_task["specialist_task_version_ref"],
+        },
+        "missing_but_retrievable": [],
+        "bounded_or_commercial_gap": [],
+        "writer_order": [],
+        "metadata": {
+            "fin01_fixture_shadow": True,
+            "exact_run_refs": exact_refs,
+            "agent_definition_version_refs": agent_refs,
+            "skill_pack_version_refs": skill_pack_refs,
+        },
+    }
+
+    def fixture_route(_: SecAgentGraphRuntimeState) -> dict[str, Any]:
+        return {
+            "activation_plan": plan,
+            "status": "pass",
+            "source": "fin01_agent_fixture_shadow_v1",
+            "validation": {"status": "pass"},
+            "routing_trace": {
+                "profile": execution_profile_version_ref,
+                "model_calls_allowed": False,
+                "network_calls_allowed": False,
+                "tool_calls_allowed": False,
+            },
+        }
+
+    query_contract = {
+        "task_type": "open_analysis",
+        "search_scope_tickers": ["NVDA"],
+        "focus_tickers": ["NVDA"],
+        "years": [2026],
+        "filing_types": ["10-Q"],
+        "source_tiers": ["primary_sec_filing"],
+        "metric_families": ["revenue"],
+        "decomposed_tasks": [
+            {
+                "task_id": "nvda_demand_authenticity_and_sustainability",
+                "question_zh": "分析 NVDA 需求真实性与持续性。",
+                "priority": "primary",
+                "required_tickers": ["NVDA"],
+                "required_metric_families": ["revenue"],
+            }
+        ],
+    }
+    if _run_validation_graph:
+        with TemporaryDirectory(prefix="fin01-agent-fixture-shadow-") as output_dir:
+            state = make_multi_agent_smoke_state(
+                user_query="分析 NVDA 需求真实性与持续性。",
+                output_dir=output_dir,
+                query_contract=query_contract,
+                focus_tickers=["NVDA"],
+                search_scope_tickers=["NVDA"],
+            )
+            state["run_id"] = research_run_id
+            graph = build_multi_agent_orchestration_graph(
+                use_checkpointer=False,
+                route_activation=fixture_route,
+                stop_after_node="validate_activation_plan",
+            )
+            result = graph.invoke(state)
+        validation = dict(result.get("agent_activation_validation") or {})
+        node_names = [str(row.get("node") or "") for row in result.get("node_trace") or []]
+        if result.get("status") != "stopped_after_node" or validation.get("status") != "pass":
+            raise RuntimeError("fin01_fixture_shadow_langgraph_validation_failed")
+        if node_names != ["load_session_state", "research_lead_plan", "validate_activation_plan"]:
+            raise RuntimeError("fin01_fixture_shadow_unexpected_graph_slice")
+    else:
+        validation = {"status": "deferred_to_complete_cell_graph"}
+        node_names = []
+    return {
+        "schema_version": "fin01_agent_fixture_shadow_slice_v0.1",
+        **exact_refs,
+        "execution_profile_version_ref": execution_profile_version_ref,
+        "cell_ref": specialist_task["cell_ref"],
+        "primary_lead_agent_id": "research_lead",
+        "primary_specialist_agent_id": primary_specialist_id,
+        "agent_definition_version_refs": agent_refs,
+        "skill_pack_version_refs": skill_pack_refs,
+        "specialist_task": specialist_task,
+        "handoff_trace": [
+            {
+                **exact_refs,
+                "from_agent_id": "research_lead",
+                "to_agent_id": primary_specialist_id,
+                "specialist_task_version_ref": specialist_task[
+                    "specialist_task_version_ref"
+                ],
+            }
+        ],
+        "specialist_to_specialist_hidden_call_count": 0,
+        "graph_nodes_executed": node_names,
+        "graph_stop_after_node": "validate_activation_plan",
+        "activation_validation_status": validation["status"],
+        "activation_plan": plan,
+        "skill_consumption_trace": [
+            {
+                "agent_id": agent_id,
+                "skill_pack_version_ref": skill_pack_refs[agent_id],
+                "status": "selected_injected_consumed_by_activation_plan",
+            }
+            for agent_id in active_agents
+        ],
+        "execution_counts": {
+            "model_calls": 0,
+            "provider_calls": 0,
+            "network_calls": 0,
+            "external_tool_calls": 0,
+            "business_writes": 0,
+        },
+    }
+
+
+def run_fin01_agent_fixture_shadow_cell(
+    *,
+    case_id: str,
+    work_unit_id: str,
+    attempt_id: str,
+    research_run_id: str,
+    causation_event_id: str,
+    execution_profile_version_ref: str,
+    selected_agent_versions: list[Mapping[str, Any]],
+    selected_skill_packs: list[Mapping[str, Any]],
+    primary_specialist_id: str = "industry_supply_chain_analyst",
+    fail_at_stage: str | None = None,
+) -> dict[str, Any]:
+    """Execute one complete NVDA fixture-shadow cell with zero external authority."""
+
+    early = run_fin01_agent_fixture_shadow_slice(
+        case_id=case_id,
+        work_unit_id=work_unit_id,
+        attempt_id=attempt_id,
+        research_run_id=research_run_id,
+        causation_event_id=causation_event_id,
+        execution_profile_version_ref=execution_profile_version_ref,
+        selected_agent_versions=selected_agent_versions,
+        selected_skill_packs=selected_skill_packs,
+        primary_specialist_id=primary_specialist_id,
+        _run_validation_graph=False,
+    )
+    full_activation_plan = {
+        **early["activation_plan"],
+        "reasoning_summary": "FIN 0.1 T04 complete one-cell fixture shadow.",
+        "relationship_scope_rationale": (
+            "Run-scoped fixture graph observation for demand-driver navigation; "
+            "no external tool or numeric authority."
+        ),
+    }
+    exact_refs = {
+        key: early[key]
+        for key in (
+            "case_id",
+            "work_unit_id",
+            "attempt_id",
+            "research_run_id",
+            "causation_event_id",
+        )
+    }
+    evidence_ref = f"fixture-evidence:{research_run_id}:nvda-demand:v1"
+    numeric_ref = f"fixture-numeric:{research_run_id}:nvda-demand:v1"
+    judgment_ref = f"fixture-judgment:{research_run_id}:nvda-demand:v1"
+    workpaper_ref = f"fixture-workpaper:{research_run_id}:nvda-demand:v1"
+    report_ref = f"fixture-report:{research_run_id}:nvda-demand:v1"
+    trace_ref = f"fixture-trace:{research_run_id}:nvda-demand:v1"
+
+    graph_observation = {
+        "schema_version": "fin01_fixture_graph_observation_v0.1",
+        **exact_refs,
+        "status": "fixture_injected",
+        "query": "NVDA demand durability depends on hyperscaler deployment continuity.",
+        "relationships": [
+            {
+                "from_ticker": "NVDA",
+                "related_entity": "hyperscaler_ai_infrastructure_capex",
+                "relationship_type": "demand_driver",
+                "edge_authority": "fixture_navigation_hypothesis_only",
+                "evidence_refs": [evidence_ref],
+                "numeric_authority": False,
+            }
+        ],
+        "relationship_rows": [],
+        "source_gaps": [],
+        "artifact_refs": [],
+    }
+    graph_plan = {
+        "schema_version": "sec_agent_universe_relationship_plan_v0.1",
+        "scope_mode": "focused_peer",
+        "focus_tickers": ["NVDA"],
+        "search_scope_tickers": ["NVDA"],
+        "expanded_tickers": [],
+        "relationship_hypotheses": graph_observation["relationships"],
+        "boundary": "navigation_hypothesis_only_no_numeric_authority",
+    }
+
+    def fixture_graph(_: SecAgentGraphRuntimeState) -> dict[str, Any]:
+        return {
+            "relationship_graph_observation": graph_observation,
+            "universe_relationship_plan": graph_plan,
+            "universe_relationship_validation": {
+                "status": "pass",
+                "plan": graph_plan,
+                "errors": [],
+            },
+            "source": "fin01_t04_fixture_graph",
+            "routing_trace": {"external_tool_calls": 0, "network_calls": 0},
+        }
+
+    tool_observation = {
+        "schema_version": "fin01_fixture_tool_observation_v0.1",
+        **exact_refs,
+        "tool_name": "fin01_fixture_evidence_lookup",
+        "status": "fixture_observed",
+        "source_family": "primary_sec_filing_fixture",
+        "evidence_ref": evidence_ref,
+        "external_call": False,
+    }
+    evidence_row = {
+        "evidence_ref": evidence_ref,
+        "source_family": "primary_sec_filing",
+        "ticker": "NVDA",
+        "metric_family": "demand_signal",
+        "metric_role": "reported_demand_indicator",
+        "value": "fixture:year_over_year_growth_positive",
+        "authority_tier": "fixture_primary_exact_shape",
+        "exact_value_authority": False,
+        "promotion_status": "fixture_shadow_not_promoted",
+    }
+
+    def fixture_evidence(state: SecAgentGraphRuntimeState) -> dict[str, Any]:
+        return {
+            "tool_observations": [tool_observation],
+            "tool_call_ledger": state.get("tool_call_ledger") or ToolCallLedger().to_dict(),
+            "runtime_ledger_rows": [evidence_row],
+            "source_gaps": [],
+        }
+
+    def fixture_coverage(_: SecAgentGraphRuntimeState) -> dict[str, Any]:
+        report = {
+            "schema_version": "sec_agent_multi_agent_reflection_report_v0.1",
+            "sufficiency_level": "sufficient",
+            "missing_requirements": [],
+            "source_available": True,
+            "second_pass_requests": [],
+            "source_family_gaps": [],
+            "bounded_answer_allowed": False,
+        }
+        return {
+            "multi_agent_reflection_report": report,
+            "evidence_sufficiency_report": report,
+            "multi_agent_second_pass_decision": {
+                "allowed": False,
+                "reason": "fixture_evidence_sufficient",
+            },
+        }
+
+    specialist_observation = {
+        "claim": "Fixture evidence supports a bounded positive view on NVDA demand authenticity, while durability remains conditional.",
+        "ticker_scope": ["NVDA"],
+        "metric_scope": ["demand_signal"],
+        "memo_slot": "demand_authenticity_and_sustainability",
+        "materiality": "high",
+        "direction": "positive_bounded",
+        "evidence_refs": [evidence_ref],
+        "source_families": ["primary_sec_filing"],
+        "numeric_refs": [numeric_ref],
+        "what_would_change": "A sustained decline in reported demand indicators would weaken the view.",
+    }
+
+    def fixture_specialist(_: SecAgentGraphRuntimeState) -> dict[str, Any]:
+        if fail_at_stage == "specialist":
+            raise Fin01FixtureShadowStageError("specialist")
+        return {
+            "specialist_outputs": [
+                {
+                    "agent_id": primary_specialist_id,
+                    "status": "pass",
+                    "observations": [specialist_observation],
+                    "specialist_task_version_ref": early["specialist_task"][
+                        "specialist_task_version_ref"
+                    ],
+                    **exact_refs,
+                }
+            ],
+            "specialist_route_results": [
+                {
+                    "agent_id": primary_specialist_id,
+                    "status": "pass",
+                    "priority": "primary",
+                    "activation_decision": "run",
+                    "matched_requirement_count": 1,
+                    "explicit_intent": True,
+                    **exact_refs,
+                }
+            ],
+        }
+
+    def fixture_writer(_: SecAgentGraphRuntimeState) -> dict[str, Any]:
+        if fail_at_stage == "writer":
+            raise Fin01FixtureShadowStageError("writer")
+        return {
+            "memo_answer": {
+                "schema_version": "fin01_fixture_report_draft_v0.1",
+                "answer_status": "draft",
+                "direct_answer": "Fixture-shadow conclusion: NVDA demand authenticity is supported, with durability explicitly conditional.",
+                "memo_claims": [
+                    {
+                        "claim_id": "nvda_demand_fixture_claim",
+                        "claim": specialist_observation["claim"],
+                        "evidence_refs": [evidence_ref],
+                        "numeric_refs": [numeric_ref],
+                        "judgment_refs": [judgment_ref],
+                    }
+                ],
+                "bounded_answer_allowed": False,
+                "writer_source_calls": 0,
+                "writer_tool_calls": 0,
+                **exact_refs,
+            }
+        }
+
+    def fixture_verifier(_: SecAgentGraphRuntimeState) -> dict[str, Any]:
+        if fail_at_stage == "verifier":
+            raise Fin01FixtureShadowStageError("verifier")
+        return {
+            "claim_verification": {
+                "schema_version": "fin01_fixture_verifier_result_v0.1",
+                "status": "pass",
+                "errors": [],
+                "findings": [],
+                "verified_refs": [evidence_ref, numeric_ref, judgment_ref],
+                "human_review_status": "not_performed",
+                **exact_refs,
+            }
+        }
+
+    def fixture_renderer(_: SecAgentGraphRuntimeState) -> dict[str, Any]:
+        return {
+            "rendered_answer": "NVDA 需求真实性获得 fixture-shadow 支持；持续性仍取决于后续需求指标。",
+            "renderer_source_calls": 0,
+            "renderer_tool_calls": 0,
+        }
+
+    with TemporaryDirectory(prefix="fin01-agent-fixture-cell-") as output_dir:
+        state = make_multi_agent_smoke_state(
+            user_query="分析 NVDA 需求真实性与持续性。",
+            output_dir=output_dir,
+            query_contract={
+                "task_type": "open_analysis",
+                "search_scope_tickers": ["NVDA"],
+                "focus_tickers": ["NVDA"],
+                "years": [2026],
+                "filing_types": ["10-Q"],
+                "source_tiers": ["primary_sec_filing", "relationship_graph"],
+                "metric_families": ["demand_signal"],
+                "decomposed_tasks": [
+                    {
+                        "task_id": "nvda_demand_authenticity_and_sustainability",
+                        "question_zh": "分析 NVDA 需求真实性与持续性。",
+                        "priority": "primary",
+                        "required_tickers": ["NVDA"],
+                        "required_metric_families": ["demand_signal"],
+                    }
+                ],
+            },
+            focus_tickers=["NVDA"],
+            search_scope_tickers=["NVDA"],
+        )
+        state["run_id"] = research_run_id
+        graph = build_multi_agent_orchestration_graph(
+            use_checkpointer=False,
+            route_activation=lambda _: {
+                "activation_plan": full_activation_plan,
+                "status": "pass",
+                "source": "fin01_agent_fixture_shadow_v1",
+                "validation": {"status": "pass"},
+                "routing_trace": {
+                    "profile": execution_profile_version_ref,
+                    "model_calls_allowed": False,
+                    "network_calls_allowed": False,
+                    "tool_calls_allowed": False,
+                },
+            },
+            expand_universe_relationship=fixture_graph,
+            execute_evidence_operators=fixture_evidence,
+            coverage_reflection=fixture_coverage,
+            run_specialist_analysts=fixture_specialist,
+            memo_writer=fixture_writer,
+            verifier=fixture_verifier,
+            renderer=fixture_renderer,
+        )
+        result = graph.invoke(state)
+
+    node_names = [str(row.get("node") or "") for row in result.get("node_trace") or []]
+    required_nodes = {
+        "research_lead_plan",
+        "universe_relationship_expand",
+        "execute_evidence_operators",
+        "optional_specialist_subgraph",
+        "aggregate_judgment_plan",
+        "memo_writer",
+        "verifier",
+        "renderer",
+        "persist_session_state",
+    }
+    if result.get("status") != "completed" or not required_nodes.issubset(set(node_names)):
+        raise RuntimeError("fin01_fixture_shadow_complete_cell_failed")
+
+    artifacts = {
+        "evidence": {
+            "schema_version": "fin01_fixture_evidence_artifact_v0.1",
+            "artifact_ref": evidence_ref,
+            **exact_refs,
+            "cell_ref": early["cell_ref"],
+            "tool_observation": tool_observation,
+            "evidence_rows": [evidence_row],
+            "promotion_status": "fixture_shadow_not_promoted",
+        },
+        "numeric": {
+            "schema_version": "fin01_fixture_numeric_artifact_v0.1",
+            "artifact_ref": numeric_ref,
+            **exact_refs,
+            "cell_ref": early["cell_ref"],
+            "value": "fixture:positive_growth_direction",
+            "unit": "direction_only",
+            "period": "fixture_as_of_2026_07_19",
+            "evidence_refs": [evidence_ref],
+            "numeric_authority": "fixture_only",
+        },
+        "judgment": {
+            "schema_version": "fin01_fixture_judgment_artifact_v0.1",
+            "artifact_ref": judgment_ref,
+            **exact_refs,
+            "cell_ref": early["cell_ref"],
+            "specialist_agent_id": primary_specialist_id,
+            "direct_answer": specialist_observation["claim"],
+            "evidence_refs": [evidence_ref],
+            "numeric_refs": [numeric_ref],
+            "what_would_change": specialist_observation["what_would_change"],
+        },
+        "workpaper": {
+            "schema_version": "fin01_fixture_workpaper_artifact_v0.1",
+            "artifact_ref": workpaper_ref,
+            **exact_refs,
+            "cell_ref": early["cell_ref"],
+            "evidence_refs": [evidence_ref],
+            "numeric_refs": [numeric_ref],
+            "judgment_refs": [judgment_ref],
+            "sections": ["evidence", "numeric", "judgment", "boundary"],
+        },
+        "report": {
+            "schema_version": "fin01_fixture_report_artifact_v0.1",
+            "artifact_ref": report_ref,
+            **exact_refs,
+            "cell_ref": early["cell_ref"],
+            "workpaper_refs": [workpaper_ref],
+            "judgment_refs": [judgment_ref],
+            "rendered_answer": result.get("rendered_answer"),
+            "human_review_status": "not_performed",
+        },
+        "trace": {
+            "schema_version": "fin01_fixture_trace_artifact_v0.1",
+            "artifact_ref": trace_ref,
+            **exact_refs,
+            "cell_ref": early["cell_ref"],
+            "graph_nodes_executed": node_names,
+            "handoff_trace": early["handoff_trace"],
+            "event_scope": {"task_run_id": research_run_id},
+        },
+    }
+    return {
+        "schema_version": "fin01_agent_fixture_shadow_complete_cell_v0.1",
+        **exact_refs,
+        "execution_profile_version_ref": execution_profile_version_ref,
+        "cell_ref": early["cell_ref"],
+        "primary_lead_agent_id": early["primary_lead_agent_id"],
+        "primary_specialist_agent_id": early["primary_specialist_agent_id"],
+        "agent_definition_version_refs": early["agent_definition_version_refs"],
+        "skill_pack_version_refs": early["skill_pack_version_refs"],
+        "specialist_task": early["specialist_task"],
+        "handoff_trace": early["handoff_trace"],
+        "specialist_to_specialist_hidden_call_count": 0,
+        "activation_validation_status": "pass",
+        "graph_nodes_executed": node_names,
+        "graph_stop_after_node": None,
+        "skill_consumption_trace": early["skill_consumption_trace"],
+        "graph_observation": graph_observation,
+        "tool_observation": tool_observation,
+        "verifier_result": result.get("claim_verification"),
+        "artifacts": artifacts,
+        "execution_counts": {
+            "model_calls": 0,
+            "provider_calls": 0,
+            "network_calls": 0,
+            "external_tool_calls": 0,
+            "fixture_tool_observations": 1,
+            "business_writes": 0,
+        },
+    }
+
+
 def infer_scope_mode(query_contract: dict[str, Any]) -> str:
     explicit = str(
         query_contract.get("scope_mode")
@@ -1324,41 +2969,53 @@ def _node_universe_relationship_expand(
         "max_expanded_tickers": 12,
         "include_sector_depth": True,
     }
-    permission = validate_operator_tool_call(agent_id="universe_relationship", tool_name="relationship_graph_lookup")
-    decision = (
-        ledger.can_call_tool(
-            turn_id=str(state.get("run_id") or "multi_agent_turn"),
-            agent_id="universe_relationship",
-            tool_name="relationship_graph_lookup",
-            arguments=lookup_args,
-        )
-        if permission["status"] == "pass"
-        else {"allowed": False, "reason": permission["error"], "status": "blocked"}
-    )
-    if decision["allowed"]:
-        lookup = invoke_mcp_tool("relationship_graph_lookup", lookup_args)
-        rows = list(lookup.get("relationship_rows") or [])
-        gaps = list(lookup.get("source_gaps") or [])
-        refs = [dict(item) for item in lookup.get("artifact_refs") or [] if isinstance(item, dict)]
-        ledger.record_tool_call(
-            turn_id=str(state.get("run_id") or "multi_agent_turn"),
-            agent_id="universe_relationship",
-            tool_name="relationship_graph_lookup",
-            arguments=lookup_args,
-            output_artifact_digest=_first_artifact_digest(refs),
-            row_count=len(rows),
-            source_gap_count=len(gaps),
-            coverage_delta={"closed_gaps": 0},
-            status=str(lookup.get("status") or "ok"),
-            metadata={"boundary": "relationship_hypothesis_only"},
-        )
+    injected_result: dict[str, Any] = {}
+    if expand_universe_relationship is not None:
+        injected_result = dict(expand_universe_relationship(state) or {})
+        lookup = dict(injected_result.get("relationship_graph_observation") or {})
+        if not lookup:
+            lookup = {
+                "status": "fixture_injected",
+                "relationships": [],
+                "relationship_rows": [],
+                "source_gaps": [],
+            }
     else:
-        lookup = {
-            "status": "blocked",
-            "relationships": [],
-            "relationship_rows": [],
-            "source_gaps": [{"source_family": "relationship_graph", "reason": decision["reason"], "source_available": False}],
-        }
+        permission = validate_operator_tool_call(agent_id="universe_relationship", tool_name="relationship_graph_lookup")
+        decision = (
+            ledger.can_call_tool(
+                turn_id=str(state.get("run_id") or "multi_agent_turn"),
+                agent_id="universe_relationship",
+                tool_name="relationship_graph_lookup",
+                arguments=lookup_args,
+            )
+            if permission["status"] == "pass"
+            else {"allowed": False, "reason": permission["error"], "status": "blocked"}
+        )
+        if decision["allowed"]:
+            lookup = invoke_mcp_tool("relationship_graph_lookup", lookup_args)
+            rows = list(lookup.get("relationship_rows") or [])
+            gaps = list(lookup.get("source_gaps") or [])
+            refs = [dict(item) for item in lookup.get("artifact_refs") or [] if isinstance(item, dict)]
+            ledger.record_tool_call(
+                turn_id=str(state.get("run_id") or "multi_agent_turn"),
+                agent_id="universe_relationship",
+                tool_name="relationship_graph_lookup",
+                arguments=lookup_args,
+                output_artifact_digest=_first_artifact_digest(refs),
+                row_count=len(rows),
+                source_gap_count=len(gaps),
+                coverage_delta={"closed_gaps": 0},
+                status=str(lookup.get("status") or "ok"),
+                metadata={"boundary": "relationship_hypothesis_only"},
+            )
+        else:
+            lookup = {
+                "status": "blocked",
+                "relationships": [],
+                "relationship_rows": [],
+                "source_gaps": [{"source_family": "relationship_graph", "reason": decision["reason"], "source_available": False}],
+            }
 
     sanitized_lookup = _sanitize_relationship_lookup_for_state(lookup)
     state_with_lookup: SecAgentGraphRuntimeState = {
@@ -1380,7 +3037,7 @@ def _node_universe_relationship_expand(
 
     universe_input_pack_fingerprint: dict[str, Any] = {}
     if expand_universe_relationship is not None:
-        result = expand_universe_relationship(state_with_lookup)
+        result = injected_result
         plan = result.get("universe_relationship_plan") if isinstance(result.get("universe_relationship_plan"), dict) else result.get("plan")
         validation = result.get("universe_relationship_validation") if isinstance(result.get("universe_relationship_validation"), dict) else {}
         source = result.get("source") or "injected"

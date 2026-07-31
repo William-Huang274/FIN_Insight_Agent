@@ -3,11 +3,13 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Header, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from ...application.case_service import CasePrincipal
 from ...application.execution_service import (
+    AGENT_FIXTURE_SHADOW_WORK_UNIT_TYPE,
+    BOUNDED_AGENT_INTERNAL_WORK_UNIT_TYPE,
     CancelWorkUnitDraft,
     CreateWorkUnitDraft,
     ExecutionService,
@@ -21,7 +23,11 @@ from sec_agent.workbench.api_contracts import request_trace_id
 class CreateWorkUnitCommand(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    work_unit_type: Literal[VT1_WORK_UNIT_TYPE]
+    work_unit_type: Literal[
+        VT1_WORK_UNIT_TYPE,
+        AGENT_FIXTURE_SHADOW_WORK_UNIT_TYPE,
+        BOUNDED_AGENT_INTERNAL_WORK_UNIT_TYPE,
+    ]
     expected_case_version: int = Field(ge=0)
     input_head_digest: str = Field(pattern=r"^[a-f0-9]{64}$")
     actor_ref: str = Field(min_length=1)
@@ -73,6 +79,59 @@ class ActivityTraceView(BaseModel):
     events: list[ActivityEvent]
 
 
+class ResearchRunEventView(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    event_id: str
+    sequence: int = Field(ge=0)
+    event_type: str
+    occurred_at: datetime
+    causation_event_id: str | None = None
+    details: dict[str, Any]
+    redacted_fields: list[str]
+    private_chain_of_thought_included: Literal[False] = False
+
+
+class ResearchRunArtifactView(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    artifact_version_id: str
+    artifact_type: str
+    producer_attempt_id: str
+    current_status: str
+    object_digest: str = Field(pattern=r"^[a-f0-9]{64}$")
+    input_refs: list[str]
+    payload: dict[str, Any]
+    payload_exact: bool
+    redacted_fields: list[str]
+
+
+class ResearchRunProjectionItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    research_run_id: str
+    research_run_version_id: str
+    work_unit_id: str
+    work_unit_type: str
+    attempt_id: str
+    execution_profile_version_ref: str
+    state: str
+    started_at: datetime
+    ended_at: datetime | None = None
+    terminal_reason: str | None = None
+    output_refs: list[str]
+    events: list[ResearchRunEventView]
+    artifacts: list[ResearchRunArtifactView]
+
+
+class ResearchRunProjectionView(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    case_id: str
+    runs: list[ResearchRunProjectionItem]
+    private_chain_of_thought_included: Literal[False] = False
+
+
 def build_execution_router(service: ExecutionService) -> APIRouter:
     router = APIRouter(tags=["point02-execution"])
 
@@ -106,18 +165,36 @@ def build_execution_router(service: ExecutionService) -> APIRouter:
         case_id: str,
         command: CreateWorkUnitCommand,
         request: Request,
+        background_tasks: BackgroundTasks,
         tenant_id: Annotated[str | None, Header(alias="X-Fin-Case-Tenant")] = None,
         project_id: Annotated[str | None, Header(alias="X-Fin-Case-Project")] = None,
         actor_id: Annotated[str | None, Header(alias="X-Fin-Case-Actor")] = None,
         permissions: Annotated[str | None, Header(alias="X-Fin-Case-Permissions")] = None,
     ) -> dict[str, Any]:
         try:
-            return service.create_work_unit(
+            principal = _principal(tenant_id, project_id, actor_id, permissions)
+            trace_id = request_trace_id(request)
+            view = service.create_work_unit(
                 case_id,
                 CreateWorkUnitDraft(**command.model_dump()),
-                _principal(tenant_id, project_id, actor_id, permissions),
-                trace_id=request_trace_id(request),
+                principal,
+                trace_id=trace_id,
             )
+            work_unit_id = service.pending_work_unit_id_for_type(
+                case_id,
+                command.work_unit_type,
+                principal,
+                idempotency_key=command.idempotency_key,
+            )
+            if service.background_dispatch_enabled and work_unit_id:
+                background_tasks.add_task(
+                    service.dispatch_queued_work_unit,
+                    case_id,
+                    work_unit_id,
+                    principal,
+                    trace_id=trace_id,
+                )
+            return view
         except ExecutionServiceError as exc:
             _raise_service_error(exc)
 
@@ -162,6 +239,26 @@ def build_execution_router(service: ExecutionService) -> APIRouter:
     ) -> dict[str, Any]:
         try:
             return service.get_activity(
+                case_id,
+                _principal(tenant_id, project_id, actor_id, permissions),
+            )
+        except ExecutionServiceError as exc:
+            _raise_service_error(exc)
+
+    @router.get(
+        "/cases/{case_id}/execution-projection",
+        operation_id="getResearchRunProjection",
+        response_model=ResearchRunProjectionView,
+    )
+    def get_research_run_projection(
+        case_id: str,
+        tenant_id: Annotated[str | None, Header(alias="X-Fin-Case-Tenant")] = None,
+        project_id: Annotated[str | None, Header(alias="X-Fin-Case-Project")] = None,
+        actor_id: Annotated[str | None, Header(alias="X-Fin-Case-Actor")] = None,
+        permissions: Annotated[str | None, Header(alias="X-Fin-Case-Permissions")] = None,
+    ) -> dict[str, Any]:
+        try:
+            return service.get_research_run_projection(
                 case_id,
                 _principal(tenant_id, project_id, actor_id, permissions),
             )

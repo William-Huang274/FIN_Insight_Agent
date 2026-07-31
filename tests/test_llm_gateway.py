@@ -5,7 +5,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from sec_agent.llm_gateway import chat_completion
+from sec_agent.llm_gateway import chat_completion, responses_completion
 
 
 class _FakeResponse:
@@ -149,3 +149,83 @@ def test_chat_completion_event_log_records_started_and_finished(monkeypatch, tmp
     assert rows[0]["role"] == "memo_writer"
     assert rows[1]["total_tokens"] == 7
     assert "Authorization" not in json.dumps(rows, ensure_ascii=False)
+
+
+def test_responses_completion_sends_native_json_schema_without_tools_and_logs_no_output(
+    monkeypatch, tmp_path: Path
+) -> None:
+    event_log = tmp_path / "responses_events.jsonl"
+    captured: dict[str, object] = {}
+    generated_text = '{"secret-provider-output":"must-not-enter-event-log"}'
+
+    def fake_urlopen(req: urllib.request.Request, timeout: int) -> _FakeResponse:
+        captured["url"] = req.full_url
+        captured["payload"] = json.loads(bytes(req.data or b"").decode("utf-8"))
+        return _FakeResponse(
+            {
+                "id": "resp_fixture",
+                "status": "completed",
+                "output": [
+                    {
+                        "type": "message",
+                        "content": [{"type": "output_text", "text": generated_text}],
+                    }
+                ],
+                "usage": {
+                    "input_tokens": 11,
+                    "output_tokens": 7,
+                    "total_tokens": 18,
+                },
+            }
+        )
+
+    text_format = {
+        "format": {
+            "type": "json_schema",
+            "name": "fixture_schema",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {"result": {"type": "string"}},
+                "required": ["result"],
+                "additionalProperties": False,
+            },
+        }
+    }
+    monkeypatch.setenv("OPENAI_API_KEY", "test-secret-never-persist")
+    monkeypatch.setenv("LLM_GATEWAY_EVENT_LOG_PATH", str(event_log))
+    monkeypatch.setenv("LLM_GATEWAY_TRANSPORT_RETRIES", "0")
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+
+    result = responses_completion(
+        llm_backend="openai",
+        base_url="https://api.openai.com/v1",
+        responses_path="/responses",
+        model="fixture-structured-model",
+        input=[{"role": "user", "content": "Return the bounded result."}],
+        text=text_format,
+        api_key_env="OPENAI_API_KEY",
+        max_output_tokens=500,
+        reasoning={"effort": "medium"},
+        role="bounded_specialist_and_lead",
+    )
+
+    assert result["status"] == "ok"
+    assert result["response_status"] == "completed"
+    assert result["response_output"][0]["content"][0]["text"] == generated_text
+    assert result["input_tokens"] == 11
+    assert result["output_tokens"] == 7
+    assert captured["url"] == "https://api.openai.com/v1/responses"
+    payload = captured["payload"]
+    assert isinstance(payload, dict)
+    assert payload["text"] == text_format
+    assert payload["max_output_tokens"] == 500
+    assert payload["reasoning"] == {"effort": "medium"}
+    assert "tools" not in payload
+    assert "tool_choice" not in payload
+    assert "temperature" not in payload
+
+    serialized_events = event_log.read_text(encoding="utf-8")
+    assert generated_text not in serialized_events
+    assert "test-secret-never-persist" not in serialized_events
+    assert "Authorization" not in serialized_events

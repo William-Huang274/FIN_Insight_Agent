@@ -12,13 +12,6 @@ CLOSEOUT = ROOT / (
     "fin_ia_0_1_2_pre_s2_t03_replacement_hermetic_proof_"
     "and_honest_block_closeout_v1_0.json"
 )
-PROGRAM_BACKLOG = ROOT / (
-    "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
-)
-S4_BACKLOG = ROOT / (
-    "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json"
-)
-CONTEXT = ROOT / "docs/project_os/current_context_pack.zh-CN.md"
 EXPECTED_CLOSEOUT_SHA256 = (
     "244442ddc01110cf6fbdb4c5d3580c26b418955cd8da2ed92f94fb4eccafc7ae"
 )
@@ -117,25 +110,15 @@ def test_T03_closeout_quarantines_ignored_runtime_package_overreach() -> None:
     assert finding["package_deletion_authorized_or_performed"] is False
 
 
-def test_current_projection_closes_pre_S2_without_product_inflation() -> None:
+def test_terminal_event_closes_pre_S2_without_product_inflation() -> None:
     closeout = _load(CLOSEOUT)
-    program = _load(PROGRAM_BACKLOG)
-    s4 = _load(S4_BACKLOG)
     next_action = closeout["next_action"]
 
-    assert program["next_action"]["item_id"] == next_action
-    assert program["next_action"][
-        "FIN_0_1_2_pre_S2_T03_closeout_sha256"
-    ] == EXPECTED_CLOSEOUT_SHA256
-    assert program["next_action"][
-        "FIN_0_1_2_pre_S2_observed_implementation_and_proof_packages"
-    ] == [1, 1]
-    assert program["next_action"]["FIN_0_1_2_S2_entry_authorized"] is False
-    assert s4["current_next_action"] == next_action
-    assert s4["FIN_0_1_2_S1_stage_plan"][
-        "pre_S2_observed_implementation_and_proof_packages"
-    ] == [1, 1]
-    assert s4["FIN_0_1_2_S1_stage_plan"]["S2_entry_authorized"] is False
+    assert _sha256(CLOSEOUT) == EXPECTED_CLOSEOUT_SHA256
+    assert next_action == (
+        "FIN-0.1.2-PRE-S2-TERMINAL-HONEST-BLOCK-AND-S0-TEST-"
+        "PACKAGING-CONTRACT-REOPEN-OR-DEFER-SCOPE-DECISION"
+    )
 
     assert closeout["observed_counts"] == {
         "implementation_bundles_consumed": 1,
@@ -154,4 +137,3 @@ def test_current_projection_closes_pre_S2_without_product_inflation() -> None:
     assert closeout["product_truth"]["MU_R2"] is False
     assert closeout["product_truth"]["NVDA_R3"] is False
     assert closeout["product_truth"]["FIN_0_1_release_qualified"] is False
-    assert f"current next=`{next_action}`" in CONTEXT.read_text(encoding="utf-8")

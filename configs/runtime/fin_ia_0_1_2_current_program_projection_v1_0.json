@@ -1,0 +1,46 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v1_0",
+  "projection_id": "FIN-0.1.2-S0C-T02-CURRENT-PROGRAM-PROJECTION-R1",
+  "recorded_at": "2026-08-01T01:16:34+08:00",
+  "status": "current_host_validated_T02_pass_T03_ready",
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "S4_backlog": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "external_pattern_ledger": "docs/project_os/external_pattern_registry.jsonl"
+  },
+  "expectations": {
+    "active_slice": "FIN_0_1_2_S0_CORRECTIVE_TEST_PACKAGING_CONTRACT",
+    "current_next_action": "FIN-0.1.2-S0C-T03-INDEPENDENT-TWO-DISPOSABLE-CORRECTIVE-HERMETIC-PROOF-AND-CLOSEOUT",
+    "capability_id": "fin_0_1_2_S0C_T02_hermetic_topology_allowlisted_closure_implementation",
+    "capability_stage_acceptance": {
+      "S0C_T01": "pass",
+      "S0C_T02": "pass",
+      "S0C_T03": "ready_not_started",
+      "FIN_0_1_2_S2_entry": "blocked"
+    },
+    "open_issue_ids": [
+      "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+      "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state"
+    ],
+    "pattern_id": "host_package_construction_must_not_self_execute_in_disposable_and_reference_closure_must_remain_allowlisted",
+    "pattern_status": "S0C_T02_implemented_host_matrix_green_T03_corrective_proof_pending",
+    "implementation_and_corrective_proof_packages": [
+      1,
+      0
+    ],
+    "historical_PRE_S2_RB_T03_rerun_authorized": false,
+    "S2_entry_authorized": false,
+    "FIN_0_1_release_qualified": false
+  },
+  "package_governance": {
+    "host_sources_packaged": false,
+    "projection_document_packaged": true,
+    "disposable_git_required": false,
+    "failed_package_business_promotable": false,
+    "raw_content_addressed_evidence_preserved": true,
+    "restricted_review_before_share_or_promotion": true
+  }
+}

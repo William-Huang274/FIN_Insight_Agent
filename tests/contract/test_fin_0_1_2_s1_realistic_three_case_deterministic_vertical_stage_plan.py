@@ -33,13 +33,6 @@ SOURCE_PATH = ROOT / (
     "configs/runtime/fin_ia_0_1_2_common_runtime_contract_"
     "family_source_v1_0.json"
 )
-PROGRAM_BACKLOG = ROOT / (
-    "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
-)
-S4_BACKLOG = ROOT / (
-    "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json"
-)
-CONTEXT = ROOT / "docs/project_os/current_context_pack.zh-CN.md"
 
 EXPECTED_CONSUMERS = {
     "prompt",
@@ -223,66 +216,29 @@ def test_root_causes_are_allocated_to_the_earliest_stage_without_product_inflati
     assert rows["RC-P36-084"]["semantic_rubric_owner"] == "FIN_0_1_2_S4"
 
 
-def test_current_projection_closes_S1_honestly_before_S2() -> None:
+def test_historical_records_close_S1_honestly_before_S2() -> None:
     capsule = _load(CAPSULE_PATH)
     disposition = _load(PRE_S2_DISPOSITION)
     implementation = _load(PRE_S2_IMPLEMENTATION)
-    next_action = implementation["next_action"]
-    program = _load(PROGRAM_BACKLOG)
-    s4 = _load(S4_BACKLOG)
-    context = CONTEXT.read_text(encoding="utf-8")
-    assert program["next_action"]["item_id"] == next_action
-    assert program["next_action"]["FIN_0_1_2_S1_stage_capsule_sha256"] == (
-        _sha256(CAPSULE_PATH)
-    )
-    assert program["next_action"]["FIN_0_1_2_pre_S2_disposition_sha256"] == (
-        _sha256(PRE_S2_DISPOSITION)
-    )
-    assert program["next_action"][
-        "FIN_0_1_2_pre_S2_implementation_sha256"
-    ] == _sha256(PRE_S2_IMPLEMENTATION)
-    assert program["current_truth"]["FIN_0_1_2_S1_status"] == (
-        "closed_honest_block_G2_not_proven_S2_entry_blocked"
-    )
-    assert program["current_truth"][
-        "FIN_0_1_2_S1_production_consumer_migration_complete"
-    ]
-    assert not program["current_truth"][
-        "FIN_0_1_2_S1_deterministic_proof_complete"
-    ]
-    assert not program["current_truth"]["FIN_0_1_2_S2_entry_authorized"]
-    assert s4["current_next_action"] == next_action
-    assert s4["FIN_0_1_2_S1_stage_plan"]["plan_ref"] == str(
-        PLAN_PATH.relative_to(ROOT)
-    ).replace("\\", "/")
-    assert s4["FIN_0_1_2_S1_stage_plan"]["plan_sha256"] == _sha256(
-        PLAN_PATH
-    )
-    assert s4["FIN_0_1_2_S1_stage_plan"]["stage_capsule_ref"] == str(
-        CAPSULE_PATH.relative_to(ROOT)
-    ).replace("\\", "/")
-    assert s4["FIN_0_1_2_S1_stage_plan"][
-        "stage_capsule_sha256"
-    ] == _sha256(CAPSULE_PATH)
-    assert s4["FIN_0_1_2_S1_stage_plan"][
-        "pre_S2_disposition_sha256"
-    ] == _sha256(PRE_S2_DISPOSITION)
-    assert s4["FIN_0_1_2_S1_stage_plan"][
-        "pre_S2_implementation_sha256"
-    ] == _sha256(PRE_S2_IMPLEMENTATION)
-    assert f"current next=`{next_action}`" in context
     assert capsule["next_action"] == (
         "FIN-0.1.2-S1-TO-S2-HERMETIC-FIXTURE-RESOURCE-BLOCKER-DISPOSITION"
     )
+    assert disposition["next_action"] == (
+        "FIN-0.1.2-PRE-S2-HERMETIC-FIXTURE-RESOURCE-REBASELINE-"
+        "MINIMUM-ZERO-CALL-IMPLEMENTATION"
+    )
+    assert implementation["next_action"] == (
+        "FIN-0.1.2-PRE-S2-RB-T03-INDEPENDENT-TWO-DISPOSABLE-"
+        "REPLACEMENT-HERMETIC-PROOF"
+    )
+    assert capsule["product_truth"]["S2_entry_authorized"] is False
+    assert disposition["product_truth"]["S2_entry"] is False
+    assert implementation["product_truth"]["S2_entry"] is False
 
 
 def test_stage_plan_does_not_reclassify_product_or_release_truth() -> None:
     plan = _load(PLAN_PATH)
     assert not plan["authority"]["DELL_MU_R2_or_NVDA_R3_product_reproof_authorized"]
-    program = _load(PROGRAM_BACKLOG)
-    truth = program["current_truth"]
-    assert not truth["FIN_0_1_release_qualified"]
-    assert truth["S4_status"] == "closed_terminal_honest_block_FIN_0_1_not_qualified"
-    assert truth["S5_status"] == (
-        "closed_honestly_blocked_decision_only_no_release_candidate"
-    )
+    assert plan["budgets"]["business_runs"] == 0
+    assert plan["budgets"]["business_artifacts"] == 0
+    assert plan["scope_boundary"]["FIN_0_2_owned"]

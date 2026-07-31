@@ -48,3 +48,15 @@ manifest 中列出的 current suite failure 必须阻断；未列入 current sui
 项目因此选择新的 `FIN-0.1.2-S0C-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-R1`，而不是重开或改写历史 S0。固定任务只有 `S0C-T01..T03`：当前 T01 只冻结处置；T02 最多一个零调用实现包，负责 host/disposable 分层、tracked/explicit allowlist reference closure、immutable-event/current-projection 分权以及 restricted-package 治理；T03 仅在 T02 全绿后允许一个新 stage identity 的双 disposable proof package。它不是第二次 `PRE-S2-RB-T03`。任一后续任务失败即 S0C honest block，不自动生成 T04、R-number 或 patch-then-rerun。
 
 机器权威：`configs/releases/fin_ia_0_1_2_s0c_hermetic_test_topology_and_allowlisted_package_closure_scope_decision_v1_0.json`。当前下一项仅为 `FIN-0.1.2-S0C-T02-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-MINIMUM-ZERO-CALL-IMPLEMENTATION`；S2、模型调用、产品重证与 release 均未授权。
+
+## S0C-T02 实现结果（2026-08-01）
+
+S0C-T02 已消费唯一 `1/1` 零调用实现包。Git inventory、recursive dependency classification 与 mutable Project OS 对账只在 host 执行；host 将排序后的路径、bytes 与 SHA-256 冻结为 inventory digest。disposable materializer 在复制任何对象前重算该 digest，并逐对象回验 bytes/SHA，不调用 Git，也不读取 program backlog、S4 backlog、context 或 JSONL ledger。
+
+repository reference policy 现在区分三类关系：Git-tracked repository dependency、带 `path + sha256 + classification + reason` 的显式 allowlist，以及显式声明的 package-relative/external audit lineage。仅 dependency 进入闭包；file existence 本身不再构成 authority。`.codex_runtime`、`.git`、untracked/ignored、unknown repository ref、traversal 与 symlink escape 均在 object storage 前失败。正式 T03 manifest 的 host compile 为 `746 paths / 746 tracked / 0 explicit allowlist / 11 recursive dependency refs / 0 forbidden-or-untracked paths`，closure digest=`efdb400c...ebf0`。
+
+测试所有权也完成拆分。历史 S0/S1/pre-S2 测试继续验证当时 event、parent digest、status、count 与产品非膨胀，不再断言今天的 `current_next`、active slice、最新 ledger 行或不断演化的代码 SHA；这些 mutable truth 只有 `configs/runtime/fin_ia_0_1_2_current_program_projection_v1_0.json` 一个 host owner。三案例 current-runtime proof 与 S1 frozen-stage authority 也分成 current-runtime 和 immutable-event 两个测试文件。raw per-test/process stdout、stderr、detail、terminal result 与 content-addressed capture 流程未改。
+
+host `FIN 0.1.2` 合同矩阵由修复前 `101 pass / 7 fail` 收敛为 `122 pass / 0 fail / 0 skip`；三案例 runtime + frozen authority 为 `32 pass`，DELL/MU/NVDA 各保持 `6 nodes / 12 interactions / 12 captures / 9 diagnostic Artifacts`。Windows 无 symlink 权限时由同一 resolved-path guard 的纯负例补证，不豁免 escape 检查。这仍只是 engineering pass：未创建或运行 S0C-T03 package，RC-P36-090/091 继续 open/full-chain blocker，S2 与产品/release 真值不变。
+
+当前唯一下一项为 `FIN-0.1.2-S0C-T03-INDEPENDENT-TWO-DISPOSABLE-CORRECTIVE-HERMETIC-PROOF-AND-CLOSEOUT`。它最多消费一个新-stage proof package；成功后才允许另做 S2 StagePlan 决策，失败则直接 S0C honest block，不产生 T04、R-number 或第二 package。

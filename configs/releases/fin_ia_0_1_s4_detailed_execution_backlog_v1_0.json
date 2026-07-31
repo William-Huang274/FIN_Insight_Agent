@@ -1122,7 +1122,7 @@
     "only_planned_remaining_T05_paid_execution": "DELL_R11_consumed_failed_no_further_paid_execution_authorized",
     "automatic_R12": false
   },
-  "current_next_action": "FIN-0.1.2-S0C-T02-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "current_next_action": "FIN-0.1.2-S0C-T03-INDEPENDENT-TWO-DISPOSABLE-CORRECTIVE-HERMETIC-PROOF-AND-CLOSEOUT",
   "T07_current_worktree_regression": {
     "scope_decision_ref": "configs/releases/fin_ia_0_1_s4_t07_entry_current_worktree_three_case_regression_and_nvda_post_transfer_exact_revalidation_scope_decision_v1_0.json",
     "result_ref": "configs/releases/fin_ia_0_1_s4_t07_current_worktree_three_case_zero_call_regression_failure_result_v1_0.json",
@@ -1287,7 +1287,7 @@
     "next_action": "FIN-0.1.2-PRE-S2-TERMINAL-HONEST-BLOCK-AND-S0-TEST-PACKAGING-CONTRACT-REOPEN-OR-DEFER-SCOPE-DECISION"
   },
   "FIN_0_1_2_S0_corrective_test_packaging_contract": {
-    "status": "T01_pass_bounded_corrective_stage_selected_T02_ready_not_started",
+    "status": "T02_engineering_pass_host_matrix_green_T03_ready_not_started",
     "decision_ref": "configs/releases/fin_ia_0_1_2_s0c_hermetic_test_topology_and_allowlisted_package_closure_scope_decision_v1_0.json",
     "decision_sha256": "c2456ef0854a828c116da34a292e2a3bfc9701ab110f309d14b8e579d218108d",
     "stage_id": "FIN-0.1.2-S0C-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-R1",
@@ -1296,14 +1296,20 @@
     "fixed_task_ids": ["S0C-T01", "S0C-T02", "S0C-T03"],
     "maximum_implementation_bundles": 1,
     "maximum_corrective_proof_packages": 1,
-    "observed_implementation_and_proof_packages": [0, 0],
+    "observed_implementation_and_proof_packages": [1, 0],
+    "T02_implementation_ref": "configs/releases/fin_ia_0_1_2_s0c_t02_hermetic_test_topology_and_allowlisted_package_closure_minimum_zero_call_implementation_v1_0.json",
+    "T02_implementation_sha256": "b0f351986db242f20ea9f41c31c1a932b35d055ce358158102581aaffe7a4b2a",
+    "current_projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v1_0.json",
+    "T03_manifest_ref": "configs/releases/fin_ia_0_1_2_s0c_t03_corrective_hermetic_proof_manifest_v1_0.json",
+    "T03_manifest_sha256": "4883eef54a123c2fe6037cd8b1eac26163aa151b42d0097f4d749cff1b9e76e4",
+    "T03_manifest_status": "ready_unexecuted_after_T02_pass",
     "issue_ids": [
       "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
       "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state"
     ],
     "S2_entry_authorized": false,
     "product_reproof_authorized": false,
-    "next_action": "FIN-0.1.2-S0C-T02-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+    "next_action": "FIN-0.1.2-S0C-T03-INDEPENDENT-TWO-DISPOSABLE-CORRECTIVE-HERMETIC-PROOF-AND-CLOSEOUT"
   },
   "repository_recovery_and_version_lineage_scope": {
     "scope_decision_ref": "configs/releases/fin_ia_0_1_repository_recovery_s0_to_s4_audit_and_0_1_1_0_1_2_version_lineage_scope_decision_v1_0.json",

@@ -15,11 +15,6 @@ IMPLEMENTATION = ROOT / (
     "configs/releases/fin_ia_0_1_2_pre_s2_hermetic_fixture_resource_"
     "rebaseline_minimum_zero_call_implementation_v1_0.json"
 )
-PROGRAM = ROOT / "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
-S4_BACKLOG = ROOT / (
-    "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json"
-)
-CONTEXT = ROOT / "docs/project_os/current_context_pack.zh-CN.md"
 CAPABILITY_LEDGER = ROOT / "docs/project_os/capability_status_ledger.jsonl"
 ROOT_CAUSE_LEDGER = ROOT / "docs/project_os/root_cause_issue_ledger.jsonl"
 PATTERN_LEDGER = ROOT / "docs/project_os/external_pattern_registry.jsonl"
@@ -137,53 +132,53 @@ def test_disposition_assigns_all_three_earliest_repository_owners() -> None:
     assert parity["unknown_absolute_path_behavior"] == "fail_closed_and_keep_parity_false"
 
 
-def test_current_projection_points_to_replacement_proof_without_product_inflation() -> None:
+def test_historical_disposition_points_to_replacement_proof_without_inflation() -> None:
     decision = _load(DECISION)
     implementation = _load(IMPLEMENTATION)
-    program = _load(PROGRAM)
-    s4 = _load(S4_BACKLOG)
-    decision_sha = _sha256(DECISION)
-    implementation_sha = _sha256(IMPLEMENTATION)
-    assert program["active_slice"] == "FIN_0_1_2_PRE_S2_REBASELINE"
     assert decision["next_action"] == (
         "FIN-0.1.2-PRE-S2-HERMETIC-FIXTURE-RESOURCE-REBASELINE-"
         "MINIMUM-ZERO-CALL-IMPLEMENTATION"
     )
-    assert program["next_action"]["item_id"] == implementation["next_action"]
-    assert program["next_action"]["FIN_0_1_2_pre_S2_disposition_sha256"] == decision_sha
-    assert program["next_action"][
-        "FIN_0_1_2_pre_S2_implementation_sha256"
-    ] == implementation_sha
-    assert s4["current_next_action"] == implementation["next_action"]
-    assert s4["FIN_0_1_2_S1_stage_plan"]["pre_S2_disposition_sha256"] == decision_sha
-    assert s4["FIN_0_1_2_S1_stage_plan"][
-        "pre_S2_implementation_sha256"
-    ] == implementation_sha
-    assert program["current_truth"]["FIN_0_1_2_S1_closed_honest_block"] is True
-    assert program["current_truth"]["FIN_0_1_2_S2_entry_authorized"] is False
-    assert program["current_truth"]["FIN_0_1_release_qualified"] is False
+    assert implementation["next_action"] == (
+        "FIN-0.1.2-PRE-S2-RB-T03-INDEPENDENT-TWO-DISPOSABLE-"
+        "REPLACEMENT-HERMETIC-PROOF"
+    )
     assert set(decision["observed_counts"].values()) == {0}
     assert implementation["authority"]["implementation_bundles_consumed"] == 1
     assert implementation["authority"]["replacement_proof_packages_consumed"] == 0
-    context = CONTEXT.read_text(encoding="utf-8")
-    assert f"current next=`{implementation['next_action']}`" in context
+    assert decision["product_truth"]["S2_entry"] is False
+    assert implementation["product_truth"]["S2_entry"] is False
 
 
 def test_project_OS_records_T02_pass_and_T03_pending_proof() -> None:
-    capability = _ledger(CAPABILITY_LEDGER)[-1]
-    root_cause = _ledger(ROOT_CAUSE_LEDGER)[-1]
-    pattern = _ledger(PATTERN_LEDGER)[-1]
-    assert capability["capability_id"] == (
-        "fin_0_1_2_pre_s2_hermetic_fixture_resource_rebaseline_T02"
+    capability = next(
+        row
+        for row in _ledger(CAPABILITY_LEDGER)
+        if row["capability_id"]
+        == "fin_0_1_2_pre_s2_hermetic_fixture_resource_rebaseline_T02"
     )
     assert capability["stage_acceptance"]["PRE_S2_RB_T02"] == "pass"
     assert capability["stage_acceptance"]["PRE_S2_RB_T03"] == "ready_not_started"
+    root_cause = next(
+        row
+        for row in _ledger(ROOT_CAUSE_LEDGER)
+        if row["issue_id"].startswith("RC-P36-085-")
+        and row["status"]
+        == "pre_S2_T02_fixture_resource_semantic_parity_implementation_"
+        "pass_T03_replacement_proof_pending"
+    )
     assert root_cause["issue_id"].startswith("RC-P36-085-")
     assert root_cause["full_chain_blocker"] is True
     assert root_cause["model_or_provider_fault_established"] is False
-    assert pattern["pattern_id"] == (
-        "content_addressed_runtime_dependency_closure_with_raw_evidence_"
+    pattern = next(
+        row
+        for row in _ledger(PATTERN_LEDGER)
+        if row["pattern_id"]
+        == "content_addressed_runtime_dependency_closure_with_raw_evidence_"
         "and_normalized_semantic_parity"
+        and row["status"]
+        == "runtime_implemented_fixture_and_host_matrix_proven_"
+        "independent_hermetic_proof_pending"
     )
     assert pattern["status"] == (
         "runtime_implemented_fixture_and_host_matrix_proven_"

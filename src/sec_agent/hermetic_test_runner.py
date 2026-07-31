@@ -31,6 +31,35 @@ RUNTIME_RESOURCE_INVENTORY_SCHEMA = (
 SEMANTIC_PARITY_SCHEMA = (
     "fin_ia_0_1_2_hermetic_semantic_parity_projection_v1_0"
 )
+REPOSITORY_REFERENCE_POLICY_SCHEMA = (
+    "fin_ia_hermetic_repository_reference_policy_v1_0"
+)
+CURRENT_PROGRAM_PROJECTION_SCHEMA = (
+    "fin_ia_0_1_2_current_program_projection_v1_0"
+)
+
+_REPOSITORY_PATH_SUFFIXES = frozenset(
+    {
+        ".json",
+        ".jsonl",
+        ".md",
+        ".py",
+        ".toml",
+        ".yaml",
+        ".yml",
+    }
+)
+_REPOSITORY_ROOTS = frozenset(
+    {
+        ".github",
+        "apps",
+        "configs",
+        "docs",
+        "scripts",
+        "src",
+        "tests",
+    }
+)
 
 _CREDENTIAL_ENV_NAMES = frozenset(
     {
@@ -111,6 +140,33 @@ class ObjectRef:
         return {"sha256": self.sha256, "bytes": self.bytes, "ref": self.ref}
 
 
+@dataclass(frozen=True)
+class CompiledRepositoryInventory:
+    paths: tuple[Path, ...]
+    tracked_paths: tuple[str, ...]
+    explicit_allowlist_paths: tuple[str, ...]
+    recursive_reference_paths: tuple[str, ...]
+    semantic_or_external_reference_count: int
+    closure_digest: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": "fin_ia_hermetic_repository_inventory_closure_v1_0",
+            "path_count": len(self.paths),
+            "tracked_path_count": len(self.tracked_paths),
+            "explicit_allowlist_path_count": len(
+                self.explicit_allowlist_paths
+            ),
+            "recursive_reference_path_count": len(
+                self.recursive_reference_paths
+            ),
+            "semantic_or_external_reference_count": (
+                self.semantic_or_external_reference_count
+            ),
+            "closure_digest": self.closure_digest,
+        }
+
+
 class ContentAddressedStore:
     def __init__(self, root: Path) -> None:
         self.root = root.resolve()
@@ -164,16 +220,275 @@ def _git_output(repository_root: Path, *args: str) -> bytes:
     return completed.stdout
 
 
-def _repository_ref_strings(value: Any) -> Iterable[str]:
+def _repository_ref_strings(value: Any) -> Iterable[tuple[str, str]]:
     if isinstance(value, Mapping):
         for key, item in value.items():
             if isinstance(item, str) and (key == "ref" or key.endswith("_ref")):
-                yield item
+                yield key, item
             else:
                 yield from _repository_ref_strings(item)
     elif isinstance(value, list):
         for item in value:
             yield from _repository_ref_strings(item)
+
+
+def _load_jsonl(path: Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        value = json.loads(line)
+        if not isinstance(value, dict):
+            raise HermeticTestRunnerError("current_projection_jsonl_row_invalid")
+        rows.append(value)
+    return rows
+
+
+def _latest_matching_row(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    field: str,
+    value: str,
+) -> Mapping[str, Any]:
+    for row in reversed(rows):
+        if row.get(field) == value:
+            return row
+    raise HermeticTestRunnerError(
+        f"current_projection_ledger_row_missing:{field}:{value}"
+    )
+
+
+def validate_host_current_program_projection(
+    repository_root: Path,
+    projection_ref: str,
+) -> Path:
+    """Validate mutable program state on the Git-capable host only.
+
+    The returned path is the sole current-projection document packaged for a
+    disposable. Mutable backlogs and ledgers are deliberately not returned.
+    """
+
+    repository_root = repository_root.resolve()
+    projection_path = _safe_relative_path(repository_root, projection_ref)
+    projection = _load_json(repository_root / projection_path)
+    expected_top_level = {
+        "schema_version",
+        "projection_id",
+        "recorded_at",
+        "status",
+        "source_paths",
+        "expectations",
+        "package_governance",
+    }
+    if set(projection) != expected_top_level:
+        raise HermeticTestRunnerError(
+            "current_projection_top_level_invalid"
+        )
+    if projection["schema_version"] != CURRENT_PROGRAM_PROJECTION_SCHEMA:
+        raise HermeticTestRunnerError("current_projection_schema_invalid")
+    if projection["status"] != "current_host_validated_T02_pass_T03_ready":
+        raise HermeticTestRunnerError("current_projection_status_invalid")
+
+    source_values = projection["source_paths"]
+    expected_sources = {
+        "program_backlog",
+        "S4_backlog",
+        "context_pack",
+        "capability_ledger",
+        "root_cause_ledger",
+        "external_pattern_ledger",
+    }
+    if not isinstance(source_values, Mapping) or set(source_values) != expected_sources:
+        raise HermeticTestRunnerError("current_projection_sources_invalid")
+    sources = {
+        key: repository_root
+        / _safe_relative_path(repository_root, str(source_values[key]))
+        for key in expected_sources
+    }
+    expectations = projection["expectations"]
+    if not isinstance(expectations, Mapping):
+        raise HermeticTestRunnerError("current_projection_expectations_invalid")
+    next_action = str(expectations.get("current_next_action", ""))
+    active_slice = str(expectations.get("active_slice", ""))
+    capability_id = str(expectations.get("capability_id", ""))
+    pattern_id = str(expectations.get("pattern_id", ""))
+    if not all((next_action, active_slice, capability_id, pattern_id)):
+        raise HermeticTestRunnerError("current_projection_identity_missing")
+
+    program = _load_json(sources["program_backlog"])
+    s4 = _load_json(sources["S4_backlog"])
+    if (
+        program.get("active_slice") != active_slice
+        or not isinstance(program.get("next_action"), Mapping)
+        or program["next_action"].get("item_id") != next_action
+        or s4.get("current_next_action") != next_action
+    ):
+        raise HermeticTestRunnerError("current_projection_next_action_drift")
+    truth = program.get("current_truth")
+    if (
+        not isinstance(truth, Mapping)
+        or truth.get("FIN_0_1_2_S2_entry_authorized") is not False
+        or truth.get("FIN_0_1_release_qualified") is not False
+    ):
+        raise HermeticTestRunnerError("current_projection_product_truth_inflated")
+    context = sources["context_pack"].read_text(encoding="utf-8")
+    if f"current next=`{next_action}`" not in context:
+        raise HermeticTestRunnerError("current_projection_context_drift")
+
+    capability = _latest_matching_row(
+        _load_jsonl(sources["capability_ledger"]),
+        field="capability_id",
+        value=capability_id,
+    )
+    expected_stage = expectations.get("capability_stage_acceptance")
+    if (
+        capability.get("current_next") != next_action
+        or not isinstance(expected_stage, Mapping)
+        or any(
+            capability.get("stage_acceptance", {}).get(key) != value
+            for key, value in expected_stage.items()
+        )
+    ):
+        raise HermeticTestRunnerError("current_projection_capability_drift")
+
+    issue_ids = expectations.get("open_issue_ids")
+    if not isinstance(issue_ids, list) or not issue_ids:
+        raise HermeticTestRunnerError("current_projection_issue_ids_invalid")
+    root_rows = _load_jsonl(sources["root_cause_ledger"])
+    for issue_id in issue_ids:
+        row = _latest_matching_row(
+            root_rows,
+            field="issue_id",
+            value=str(issue_id),
+        )
+        if (
+            row.get("status") != "open"
+            or row.get("full_chain_blocker") is not True
+            or next_action not in row.get("allowed_run_scopes", [])
+        ):
+            raise HermeticTestRunnerError(
+                f"current_projection_issue_state_drift:{issue_id}"
+            )
+
+    pattern = _latest_matching_row(
+        _load_jsonl(sources["external_pattern_ledger"]),
+        field="pattern_id",
+        value=pattern_id,
+    )
+    if pattern.get("status") != expectations.get("pattern_status"):
+        raise HermeticTestRunnerError("current_projection_pattern_drift")
+
+    governance = projection["package_governance"]
+    required_governance = {
+        "host_sources_packaged": False,
+        "projection_document_packaged": True,
+        "disposable_git_required": False,
+        "failed_package_business_promotable": False,
+        "raw_content_addressed_evidence_preserved": True,
+        "restricted_review_before_share_or_promotion": True,
+    }
+    if not isinstance(governance, Mapping) or any(
+        governance.get(key) is not value
+        for key, value in required_governance.items()
+    ):
+        raise HermeticTestRunnerError(
+            "current_projection_package_governance_invalid"
+        )
+    return projection_path
+
+
+def _repository_relative_path(
+    repository_root: Path,
+    value: str,
+    *,
+    missing_code: str,
+) -> Path:
+    normalized = value.strip().replace("\\", "/")
+    candidate = Path(normalized)
+    if not normalized or candidate.is_absolute():
+        raise HermeticTestRunnerError(
+            "hermetic_repository_reference_outside_repository"
+        )
+    if ".." in candidate.parts:
+        raise HermeticTestRunnerError(
+            "hermetic_repository_reference_traversal"
+        )
+    relative = Path(*candidate.parts)
+    lexical = repository_root / relative
+    resolved = lexical.resolve()
+    _assert_resolved_repository_path(repository_root, resolved)
+    if not lexical.is_file():
+        raise HermeticTestRunnerError(f"{missing_code}:{normalized}")
+    return relative
+
+
+def _assert_resolved_repository_path(
+    repository_root: Path,
+    resolved: Path,
+) -> None:
+    try:
+        resolved.relative_to(repository_root.resolve())
+    except ValueError as exc:
+        raise HermeticTestRunnerError(
+            "hermetic_repository_reference_symlink_escape"
+        ) from exc
+
+
+def _is_forbidden_repository_path(
+    path: str,
+    forbidden_prefixes: Sequence[str],
+) -> bool:
+    normalized = path.replace("\\", "/")
+    return any(
+        normalized == prefix or normalized.startswith(prefix + "/")
+        for prefix in forbidden_prefixes
+    )
+
+
+def _classify_repository_reference(
+    key: str,
+    value: str,
+    *,
+    explicit_allowlist: Mapping[str, str],
+    non_repository_reference_fields: Mapping[str, str],
+) -> str:
+    normalized = value.strip().replace("\\", "/")
+    if not normalized:
+        return "semantic"
+    if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", normalized):
+        return "external"
+    candidate = Path(normalized)
+    if candidate.is_absolute():
+        return "external"
+    if ".." in candidate.parts:
+        return "repository_path"
+    if normalized in explicit_allowlist:
+        return "repository_path"
+    if normalized == "pyproject.toml":
+        return "repository_path"
+    if candidate.parts and candidate.parts[0] in _REPOSITORY_ROOTS:
+        return "repository_path"
+    if key in non_repository_reference_fields:
+        return "external"
+    if key.startswith("repository_") and (
+        "/" in normalized
+        or candidate.suffix.lower() in _REPOSITORY_PATH_SUFFIXES
+    ):
+        return "repository_path"
+    if "/" in normalized or candidate.suffix.lower() in _REPOSITORY_PATH_SUFFIXES:
+        return "unclassified_path_reference"
+    return "semantic"
+
+
+def _repository_reference_path(value: str) -> str:
+    normalized = value.replace("\\", "/")
+    for suffix in sorted(_REPOSITORY_PATH_SUFFIXES, key=len, reverse=True):
+        for delimiter in ("#", ":"):
+            marker = suffix + delimiter
+            index = normalized.lower().find(marker)
+            if index >= 0:
+                return normalized[: index + len(suffix)]
+    return normalized
 
 
 def _literal_string_mapping(
@@ -386,13 +701,26 @@ def _policy_contract_paths(
         if not isinstance(parity_ref, str) or not parity_ref.strip():
             raise HermeticTestRunnerError("semantic_parity_contract_ref_invalid")
         paths.add(_safe_relative_path(repository_root, parity_ref))
+    projection_ref = policy.get("host_current_program_projection_ref")
+    if projection_ref is not None:
+        if not isinstance(projection_ref, str) or not projection_ref.strip():
+            raise HermeticTestRunnerError(
+                "current_projection_ref_invalid"
+            )
+        paths.add(
+            validate_host_current_program_projection(
+                repository_root,
+                projection_ref,
+            )
+        )
     return tuple(sorted(paths, key=lambda item: item.as_posix()))
 
 
-def discover_repository_paths(
+def compile_repository_inventory(
     repository_root: Path,
     manifest: Mapping[str, Any],
-) -> tuple[Path, ...]:
+) -> CompiledRepositoryInventory:
+    repository_root = repository_root.resolve()
     raw = _git_output(repository_root, "ls-files", "-z")
     tracked = {
         item.decode("utf-8").replace("\\", "/")
@@ -400,13 +728,156 @@ def discover_repository_paths(
         if item
     }
     policy = manifest["hermetic_package_policy"]
-    values = set(str(item) for item in policy["required_runner_files"])
-    values.update(str(item) for item in policy.get("repository_seed_paths", []))
-    values.update(_selected_test_paths(manifest))
-    values.update(
-        path.as_posix()
-        for path in _policy_contract_paths(repository_root, policy)
+    reference_policy = policy.get("repository_reference_policy")
+    if not isinstance(reference_policy, Mapping):
+        raise HermeticTestRunnerError(
+            "hermetic_repository_reference_policy_missing"
+        )
+    if reference_policy.get("schema_version") != (
+        REPOSITORY_REFERENCE_POLICY_SCHEMA
+    ):
+        raise HermeticTestRunnerError(
+            "hermetic_repository_reference_policy_schema_invalid"
+        )
+    required_policy = {
+        "tracked_repository_paths_allowed": True,
+        "untracked_or_ignored_reference_behavior": "fail_closed",
+        "unknown_reference_behavior": "fail_closed",
+        "traversal_or_symlink_escape_behavior": "fail_closed",
+        "semantic_or_external_reference_behavior": "observe_not_package",
+    }
+    if any(reference_policy.get(key) != expected for key, expected in required_policy.items()):
+        raise HermeticTestRunnerError(
+            "hermetic_repository_reference_policy_boundary_invalid"
+        )
+    forbidden_values = reference_policy.get("forbidden_prefixes")
+    if not isinstance(forbidden_values, list) or not all(
+        isinstance(item, str) and item.strip()
+        for item in forbidden_values
+    ):
+        raise HermeticTestRunnerError(
+            "hermetic_repository_forbidden_prefixes_invalid"
+        )
+    forbidden_prefixes = tuple(
+        sorted(
+            {
+                item.strip().replace("\\", "/").rstrip("/")
+                for item in forbidden_values
+            }
+        )
     )
+    if ".codex_runtime" not in forbidden_prefixes:
+        raise HermeticTestRunnerError(
+            "hermetic_repository_runtime_prefix_not_forbidden"
+        )
+
+    allowlist_rows = reference_policy.get("explicit_allowlist")
+    if not isinstance(allowlist_rows, list):
+        raise HermeticTestRunnerError(
+            "hermetic_repository_explicit_allowlist_invalid"
+        )
+    explicit_allowlist: dict[str, str] = {}
+    for row in allowlist_rows:
+        if not isinstance(row, Mapping) or set(row) != {
+            "path",
+            "sha256",
+            "classification",
+            "reason",
+        }:
+            raise HermeticTestRunnerError(
+                "hermetic_repository_explicit_allowlist_row_invalid"
+            )
+        path_value = str(row["path"]).strip().replace("\\", "/")
+        digest = str(row["sha256"]).strip().lower()
+        if (
+            not path_value
+            or path_value in explicit_allowlist
+            or not re.fullmatch(r"[0-9a-f]{64}", digest)
+            or not str(row["classification"]).strip()
+            or not str(row["reason"]).strip()
+        ):
+            raise HermeticTestRunnerError(
+                "hermetic_repository_explicit_allowlist_row_invalid"
+            )
+        relative = _repository_relative_path(
+            repository_root,
+            path_value,
+            missing_code="hermetic_repository_explicit_allowlist_file_missing",
+        )
+        normalized = relative.as_posix()
+        if _is_forbidden_repository_path(normalized, forbidden_prefixes):
+            raise HermeticTestRunnerError(
+                f"hermetic_repository_forbidden_path:{normalized}"
+            )
+        if _sha256_file(repository_root / relative) != digest:
+            raise HermeticTestRunnerError(
+                "hermetic_repository_explicit_allowlist_digest_mismatch"
+            )
+        explicit_allowlist[normalized] = digest
+
+    non_repository_rows = reference_policy.get(
+        "non_repository_reference_fields"
+    )
+    if not isinstance(non_repository_rows, list):
+        raise HermeticTestRunnerError(
+            "hermetic_non_repository_reference_fields_invalid"
+        )
+    non_repository_reference_fields: dict[str, str] = {}
+    for row in non_repository_rows:
+        if not isinstance(row, Mapping) or set(row) != {
+            "field",
+            "classification",
+            "reason",
+        }:
+            raise HermeticTestRunnerError(
+                "hermetic_non_repository_reference_field_row_invalid"
+            )
+        field = str(row["field"]).strip()
+        classification = str(row["classification"]).strip()
+        reason = str(row["reason"]).strip()
+        if (
+            not field
+            or field in non_repository_reference_fields
+            or not classification
+            or not reason
+        ):
+            raise HermeticTestRunnerError(
+                "hermetic_non_repository_reference_field_row_invalid"
+            )
+        non_repository_reference_fields[field] = classification
+
+    sources: dict[str, set[str]] = {}
+    pending: list[str] = []
+
+    def admit(value: str, source: str) -> None:
+        relative = _repository_relative_path(
+            repository_root,
+            value,
+            missing_code="hermetic_repository_reference_unknown",
+        )
+        normalized = relative.as_posix()
+        if _is_forbidden_repository_path(normalized, forbidden_prefixes):
+            raise HermeticTestRunnerError(
+                f"hermetic_repository_forbidden_path:{normalized}"
+            )
+        if normalized not in tracked and normalized not in explicit_allowlist:
+            raise HermeticTestRunnerError(
+                "hermetic_repository_reference_untracked_or_ignored:"
+                f"{normalized}"
+            )
+        if normalized not in sources:
+            sources[normalized] = set()
+            pending.append(normalized)
+        sources[normalized].add(source)
+
+    for value in policy["required_runner_files"]:
+        admit(str(value), "required_runner_file")
+    for value in policy.get("repository_seed_paths", []):
+        admit(str(value), "repository_seed")
+    for value in _selected_test_paths(manifest):
+        admit(value, "selected_test")
+    for path in _policy_contract_paths(repository_root, policy):
+        admit(path.as_posix(), "policy_contract")
     for prefix_row in policy.get("repository_prefixes", []):
         if not isinstance(prefix_row, Mapping):
             raise HermeticTestRunnerError("hermetic_repository_prefix_invalid")
@@ -416,33 +887,91 @@ def discover_repository_paths(
             isinstance(item, str) for item in suffixes
         ):
             raise HermeticTestRunnerError("hermetic_repository_prefix_incomplete")
-        values.update(
+        for path in sorted(
             path
             for path in tracked
             if path.startswith(prefix + "/")
             and any(path.endswith(suffix) for suffix in suffixes)
-        )
+        ):
+            admit(path, "tracked_prefix")
 
-    pending = list(values)
+    semantic_or_external_reference_count = 0
     while pending:
-        value = pending.pop()
-        relative = _safe_relative_path(repository_root, value)
+        value = pending.pop(0)
+        relative = _repository_relative_path(
+            repository_root,
+            value,
+            missing_code="hermetic_repository_reference_unknown",
+        )
         if relative.suffix.lower() != ".json":
             continue
         document = _load_json(repository_root / relative)
-        for ref in _repository_ref_strings(document):
+        for key, ref in sorted(set(_repository_ref_strings(document))):
             normalized = ref.replace("\\", "/")
-            if normalized in values:
+            classification = _classify_repository_reference(
+                key,
+                normalized,
+                explicit_allowlist=explicit_allowlist,
+                non_repository_reference_fields=(
+                    non_repository_reference_fields
+                ),
+            )
+            if classification == "unclassified_path_reference":
+                raise HermeticTestRunnerError(
+                    "hermetic_repository_reference_classification_missing:"
+                    f"{key}:{normalized}"
+                )
+            if classification != "repository_path":
+                semantic_or_external_reference_count += 1
                 continue
-            candidate = Path(normalized)
-            if candidate.is_absolute() or ".." in candidate.parts:
-                continue
-            if (repository_root / candidate).is_file():
-                values.add(normalized)
-                pending.append(normalized)
+            repository_value = _repository_reference_path(normalized)
+            admit(repository_value, "recursive_reference")
 
-    paths = {_safe_relative_path(repository_root, value) for value in values}
-    return tuple(sorted(paths, key=lambda item: item.as_posix()))
+    rows = [
+        {
+            "path": path,
+            "admission": (
+                "tracked" if path in tracked else "explicit_allowlist"
+            ),
+            "sources": sorted(sources[path]),
+        }
+        for path in sorted(sources)
+    ]
+    closure_digest = _sha256_bytes(
+        json.dumps(
+            rows,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    )
+    return CompiledRepositoryInventory(
+        paths=tuple(Path(row["path"]) for row in rows),
+        tracked_paths=tuple(
+            row["path"] for row in rows if row["admission"] == "tracked"
+        ),
+        explicit_allowlist_paths=tuple(
+            row["path"]
+            for row in rows
+            if row["admission"] == "explicit_allowlist"
+        ),
+        recursive_reference_paths=tuple(
+            row["path"]
+            for row in rows
+            if "recursive_reference" in row["sources"]
+        ),
+        semantic_or_external_reference_count=(
+            semantic_or_external_reference_count
+        ),
+        closure_digest=closure_digest,
+    )
+
+
+def discover_repository_paths(
+    repository_root: Path,
+    manifest: Mapping[str, Any],
+) -> tuple[Path, ...]:
+    return compile_repository_inventory(repository_root, manifest).paths
 
 
 def _resolve_external_dependencies(
@@ -537,16 +1066,47 @@ def build_content_addressed_package(
         repository_root,
         package_policy,
     )
-    paths = (
-        discover_repository_paths(repository_root, manifest)
-        if repository_paths is None
-        else tuple(
+    if repository_paths is None:
+        compiled_inventory = compile_repository_inventory(
+            repository_root,
+            manifest,
+        )
+        paths = compiled_inventory.paths
+    else:
+        paths = tuple(
             sorted(
-                {_safe_relative_path(repository_root, item.as_posix()) for item in repository_paths},
+                {
+                    _safe_relative_path(repository_root, item.as_posix())
+                    for item in repository_paths
+                },
                 key=lambda item: item.as_posix(),
             )
         )
-    )
+        explicit_rows = [
+            {
+                "path": path.as_posix(),
+                "admission": "explicit_fixture_inventory",
+                "sources": ["explicit_fixture_inventory"],
+            }
+            for path in paths
+        ]
+        compiled_inventory = CompiledRepositoryInventory(
+            paths=paths,
+            tracked_paths=(),
+            explicit_allowlist_paths=tuple(
+                path.as_posix() for path in paths
+            ),
+            recursive_reference_paths=(),
+            semantic_or_external_reference_count=0,
+            closure_digest=_sha256_bytes(
+                json.dumps(
+                    explicit_rows,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+            ),
+        )
     if repository_paths is not None and not set(policy_contract_paths).issubset(
         set(paths)
     ):
@@ -558,6 +1118,22 @@ def build_content_addressed_package(
     for relative in paths:
         ref = store.put_file(repository_root / relative)
         entries.append({"path": relative.as_posix(), **ref.as_dict()})
+    frozen_inventory_rows = [
+        {
+            "path": row["path"],
+            "sha256": row["sha256"],
+            "bytes": row["bytes"],
+        }
+        for row in entries
+    ]
+    frozen_inventory_digest = _sha256_bytes(
+        json.dumps(
+            frozen_inventory_rows,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    )
 
     external_entries = []
     for dependency_id, path, expected in _resolve_external_dependencies(
@@ -584,6 +1160,8 @@ def build_content_addressed_package(
         "git_head": git_head,
         "worktree_status": status,
         "inventory_source": inventory_source,
+        "repository_inventory_closure": compiled_inventory.as_dict(),
+        "frozen_repository_inventory_digest": frozen_inventory_digest,
         "python_environment": _python_environment_inventory(),
         "repository_files": entries,
         "external_read_only_dependencies": external_entries,
@@ -599,10 +1177,75 @@ def _materialize_package(
     package_manifest: Mapping[str, Any],
     destination: Path,
 ) -> None:
+    rows = package_manifest.get("repository_files")
+    if not isinstance(rows, list) or not rows:
+        raise HermeticTestRunnerError(
+            "hermetic_frozen_inventory_rows_invalid"
+        )
+    frozen_rows: list[dict[str, Any]] = []
+    seen_paths: set[str] = set()
+    for row in rows:
+        if not isinstance(row, Mapping):
+            raise HermeticTestRunnerError(
+                "hermetic_frozen_inventory_row_invalid"
+            )
+        path_value = str(row.get("path", "")).replace("\\", "/")
+        relative = Path(path_value)
+        if (
+            not path_value
+            or relative.is_absolute()
+            or ".." in relative.parts
+            or path_value in seen_paths
+            or not isinstance(row.get("sha256"), str)
+            or not isinstance(row.get("bytes"), int)
+            or not isinstance(row.get("ref"), str)
+        ):
+            raise HermeticTestRunnerError(
+                "hermetic_frozen_inventory_row_invalid"
+            )
+        seen_paths.add(path_value)
+        frozen_rows.append(
+            {
+                "path": path_value,
+                "sha256": row["sha256"],
+                "bytes": row["bytes"],
+            }
+        )
+    if [row["path"] for row in frozen_rows] != sorted(seen_paths):
+        raise HermeticTestRunnerError(
+            "hermetic_frozen_inventory_order_invalid"
+        )
+    digest = _sha256_bytes(
+        json.dumps(
+            frozen_rows,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    )
+    if digest != package_manifest.get("frozen_repository_inventory_digest"):
+        raise HermeticTestRunnerError(
+            "hermetic_frozen_inventory_digest_mismatch"
+        )
     destination.mkdir(parents=True, exist_ok=False)
-    for row in package_manifest["repository_files"]:
+    destination_root = destination.resolve()
+    for row in rows:
         source = package_root / str(row["ref"])
         target = destination / str(row["path"])
+        try:
+            target.resolve().relative_to(destination_root)
+        except ValueError as exc:
+            raise HermeticTestRunnerError(
+                "hermetic_materialized_path_escape"
+            ) from exc
+        if (
+            not source.is_file()
+            or source.stat().st_size != row["bytes"]
+            or _sha256_file(source) != row["sha256"]
+        ):
+            raise HermeticTestRunnerError(
+                "hermetic_package_object_digest_mismatch"
+            )
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, target)
         if _sha256_file(target) != row["sha256"]:

@@ -1,0 +1,201 @@
+{
+  "schema_version": "fin_ia_active_test_suite_manifest_v1_0",
+  "manifest_id": "FIN-0.1.2-S0C-T03-CORRECTIVE-HERMETIC-PROOF-R1",
+  "status": "S0C_T03_ready_unexecuted_after_T02_pass",
+  "historical_failures_are_ignored": false,
+  "suites": [
+    {
+      "suite_id": "immutable_S0C_parent_and_T02_event",
+      "proof_class": "immutable_event",
+      "selected": true,
+      "gates_current_release": false,
+      "assertion_surfaces": [
+        "frozen_S0C_decision_hash",
+        "frozen_T02_implementation_contract",
+        "historical_PRE_S2_T03_non_rewrite"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s0c_disposable_contract.py"
+      ]
+    },
+    {
+      "suite_id": "frozen_host_validated_current_projection",
+      "proof_class": "current_projection",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": [
+        "host_validated_projection_snapshot",
+        "S0C_T03_ready",
+        "S2_entry_false"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s0c_disposable_contract.py"
+      ]
+    },
+    {
+      "suite_id": "current_three_case_deterministic_runtime",
+      "proof_class": "current_runtime",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": [
+        "DELL_MU_NVDA_each_6_nodes_12_interactions_12_captures_9_artifacts",
+        "numeric_identity_lineage_mutation",
+        "downstream_failure_capture_and_terminal_retention"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s1_realistic_three_case_deterministic_proof.py"
+      ]
+    },
+    {
+      "suite_id": "historical_consumed_PRE_S2_T03_visibility",
+      "proof_class": "historical_audit",
+      "selected": true,
+      "gates_current_release": false,
+      "assertion_surfaces": [
+        "historical_failure_classification",
+        "historical_package_restricted_quarantine",
+        "historical_package_budget_consumed"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s0c_disposable_contract.py"
+      ]
+    },
+    {
+      "suite_id": "S0C_corrective_release_gate",
+      "proof_class": "release_gate",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": [
+        "two_disposable_current_gate_green",
+        "frozen_inventory_digest_readback",
+        "zero_disposable_git",
+        "zero_ignored_or_untracked_paths",
+        "repository_unchanged",
+        "semantic_parity",
+        "S2_noninflation"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s0c_disposable_contract.py"
+      ]
+    }
+  ],
+  "runner_policy": {
+    "manifest_selection_is_authoritative": true,
+    "unlisted_historical_test_failure_is_visible_but_not_implicitly_current": true,
+    "listed_current_test_failure_is_blocking": true,
+    "bulk_relax_historical_assertions_for_green_forbidden": true,
+    "runner_migration_completed": true
+  },
+  "hermetic_package_policy": {
+    "repository_inventory": "host_compiled_git_tracked_plus_typed_allowlist_reference_closure",
+    "required_runner_files": [
+      "src/sec_agent/hermetic_test_capture.py",
+      "src/sec_agent/hermetic_test_runner.py",
+      "scripts/engineering/run_fin_0_1_2_s0_active_suite.py"
+    ],
+    "capture_plugin_path": "src/sec_agent/hermetic_test_capture.py",
+    "runtime_nonpython_resource_inventory_ref": "configs/runtime/fin_ia_0_1_2_runtime_nonpython_resource_inventory_v1_0.json",
+    "semantic_parity_contract_ref": "configs/runtime/fin_ia_0_1_2_hermetic_semantic_parity_projection_v1_0.json",
+    "host_current_program_projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v1_0.json",
+    "repository_reference_policy": {
+      "schema_version": "fin_ia_hermetic_repository_reference_policy_v1_0",
+      "tracked_repository_paths_allowed": true,
+      "explicit_allowlist": [],
+      "non_repository_reference_fields": [
+        {
+          "field": "source_object_ref",
+          "classification": "external_content_addressed_runtime_audit_object",
+          "reason": "historical source objects are audit lineage, not repository package inputs"
+        },
+        {
+          "field": "source_ref",
+          "classification": "external_or_semantic_source_lineage",
+          "reason": "repository-root source refs are packaged first; remaining source refs identify external or semantic lineage"
+        },
+        {
+          "field": "package_manifest_ref",
+          "classification": "package_relative_audit_manifest",
+          "reason": "package-local manifest paths are resolved inside their evidence package, not the repository"
+        },
+        {
+          "field": "verification_ref",
+          "classification": "package_relative_or_external_verification",
+          "reason": "verification paths are audit evidence locations unless they use an explicit repository root"
+        },
+        {
+          "field": "terminal_result_ref",
+          "classification": "package_relative_terminal_result",
+          "reason": "terminal-result paths are package-local audit evidence, not repository dependencies"
+        }
+      ],
+      "forbidden_prefixes": [
+        ".codex_runtime",
+        ".git"
+      ],
+      "untracked_or_ignored_reference_behavior": "fail_closed",
+      "unknown_reference_behavior": "fail_closed",
+      "traversal_or_symlink_escape_behavior": "fail_closed",
+      "semantic_or_external_reference_behavior": "observe_not_package"
+    },
+    "repository_seed_paths": [
+      "pyproject.toml",
+      "configs/releases/fin_ia_0_1_2_s0c_t03_corrective_hermetic_proof_manifest_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_s0c_t02_hermetic_test_topology_and_allowlisted_package_closure_minimum_zero_call_implementation_v1_0.json",
+      "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+      "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0.json"
+    ],
+    "repository_prefixes": [
+      {
+        "path": "src",
+        "suffixes": [
+          ".py"
+        ]
+      },
+      {
+        "path": "apps/workbench/backend",
+        "suffixes": [
+          ".py"
+        ]
+      },
+      {
+        "path": "tests/contract",
+        "suffixes": [
+          ".py"
+        ]
+      },
+      {
+        "path": "tests/fixtures",
+        "suffixes": [
+          ".json",
+          ".jsonl",
+          ".yaml",
+          ".yml"
+        ]
+      }
+    ],
+    "complete_per_test_stdout_stderr_required": true,
+    "content_addressed_object_readback_required": true,
+    "frozen_inventory_digest_readback_required": true,
+    "disposable_runtime_count": 2,
+    "disposable_git_subprocess_calls_allowed": 0,
+    "ignored_or_untracked_repository_paths_packaged_maximum": 0,
+    "semantic_parity_required": true,
+    "provider_credential_environment_removed": true,
+    "failed_or_quarantined_package_business_promotable": false,
+    "restricted_review_before_share_or_promotion": true,
+    "external_read_only_bindings": []
+  },
+  "fixed_budget": {
+    "corrective_proof_packages_maximum": 1,
+    "automatic_second_package": false,
+    "automatic_T04_R_number_or_patch_then_rerun": false,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_or_source_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "next_action_on_pass": "FIN-0.1.2-S2-ENTRY-STAGE-PLAN-AUTHORITY-DECISION",
+  "next_action_on_failure": "FIN-0.1.2-S0C-TERMINAL-HONEST-BLOCK-NO-T04-OR-SECOND-PROOF"
+}

@@ -3,7 +3,6 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 from decimal import Decimal
-import hashlib
 import json
 from pathlib import Path
 import re
@@ -47,9 +46,6 @@ from apps.workbench.backend.application.fin_0_1_2_runtime_contract_binding impor
     load_fin_0_1_2_runtime_contract_binding,
 )
 from sec_agent.canonical_runtime.models import canonical_digest
-from sec_agent.runtime_contract_governance import (
-    validate_active_test_suite_manifest,
-)
 from test_fin_0_1_2_s1_bounded_production_consumer_migration import (
     _fin012_runtime,
 )
@@ -59,20 +55,6 @@ from test_fin_0_1_s4_shared_runtime_deterministic_fact_candidate_pool_planner_mi
 )
 
 
-STAGE_PLAN = ROOT / (
-    "configs/releases/fin_ia_0_1_2_s1_realistic_three_case_"
-    "deterministic_vertical_stage_plan_v1_0.json"
-)
-STAGE_CAPSULE = ROOT / (
-    "configs/releases/fin_ia_0_1_2_s1_stage_capsule_v1_0.json"
-)
-PROOF_MANIFEST = ROOT / (
-    "configs/releases/fin_ia_0_1_2_s1_t03_deterministic_"
-    "proof_manifest_v1_0.json"
-)
-FROZEN_STAGE_PLAN_SHA256 = (
-    "a51d241e56417ad6005ca1fecb4495a9b899945d8f50bfb595045934d88a77b7"
-)
 ISO_DATE = re.compile(r"(?<!\d)20\d{2}-\d{2}-\d{2}(?!\d)")
 
 
@@ -239,22 +221,6 @@ def _provider_atom_keys(value: Any) -> set[str]:
         for item in value:
             keys.update(_provider_atom_keys(item))
     return keys
-
-
-def test_proof_manifest_and_frozen_stage_authority_are_valid() -> None:
-    manifest = json.loads(PROOF_MANIFEST.read_text(encoding="utf-8"))
-    validate_active_test_suite_manifest(manifest)
-    assert hashlib.sha256(STAGE_PLAN.read_bytes()).hexdigest() == (
-        FROZEN_STAGE_PLAN_SHA256
-    )
-    capsule = json.loads(STAGE_CAPSULE.read_text(encoding="utf-8"))
-    assert capsule["immutable_stage_plan"]["sha256"] == (
-        FROZEN_STAGE_PLAN_SHA256
-    )
-    assert not capsule["product_truth"]["DELL_R2"]
-    assert not capsule["product_truth"]["MU_R2"]
-    assert not capsule["product_truth"]["post_transfer_NVDA_exact_product"]
-    assert not capsule["product_truth"]["NVDA_R3"]
 
 
 @pytest.mark.parametrize(

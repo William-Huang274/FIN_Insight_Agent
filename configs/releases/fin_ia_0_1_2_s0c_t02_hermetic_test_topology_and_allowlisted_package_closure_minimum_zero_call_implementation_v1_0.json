@@ -1,0 +1,163 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0c_t02_hermetic_test_topology_and_allowlisted_package_closure_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S0C-T02-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-R1",
+  "recorded_at": "2026-08-01T01:16:34+08:00",
+  "status": "pass_S0C_T02_zero_call_implementation_host_matrix_green_T03_corrective_proof_ready",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "single_S0C_T02_zero_call_implementation_bundle",
+    "implementation_bundles_consumed": 1,
+    "maximum_implementation_bundles": 1,
+    "corrective_proof_packages_consumed": 0,
+    "maximum_corrective_proof_packages": 1,
+    "historical_PRE_S2_RB_T03_rerun_or_rewrite_authorized": false,
+    "S0C_T03_executed_in_this_record": false,
+    "model_provider_network_source_or_business_execution": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "immutable_parent_decision": {
+    "path": "configs/releases/fin_ia_0_1_2_s0c_hermetic_test_topology_and_allowlisted_package_closure_scope_decision_v1_0.json",
+    "sha256": "c2456ef0854a828c116da34a292e2a3bfc9701ab110f309d14b8e579d218108d",
+    "historical_event_rewritten": false
+  },
+  "runtime_implementation": {
+    "runner_ref": "src/sec_agent/hermetic_test_runner.py",
+    "runner_sha256": "8a3ee11638de84ad034abf6e6d06c9d3aaecd0a5276cf5dd8493473e6ac15844",
+    "host_inventory_compiler": "compile_repository_inventory",
+    "host_current_projection_validator": "validate_host_current_program_projection",
+    "disposable_materializer": "_materialize_package",
+    "disposable_git_subprocess_calls_required": 0,
+    "frozen_inventory_digest_readback_before_copy": true,
+    "raw_content_addressed_capture_changed": false
+  },
+  "allowlisted_package_closure": {
+    "policy_schema": "fin_ia_hermetic_repository_reference_policy_v1_0",
+    "tracked_paths_allowed": true,
+    "typed_explicit_allowlist_requires_path_digest_classification_and_reason": true,
+    "package_relative_or_external_audit_refs_require_typed_field_classification": true,
+    "existing_file_only_admission": false,
+    "untracked_or_ignored_reference_behavior": "fail_closed_before_object_storage",
+    "unknown_reference_behavior": "fail_closed_before_object_storage",
+    "traversal_or_symlink_escape_behavior": "fail_closed_before_object_storage",
+    "forbidden_prefixes_include": [
+      ".codex_runtime",
+      ".git"
+    ],
+    "semantic_or_external_reference_behavior": "observe_not_package",
+    "permutation_stable_closure_digest": true
+  },
+  "test_topology": {
+    "host_only_inventory_and_projection_tests": [
+      "tests/contract/test_fin_0_1_2_s0c_hermetic_topology_and_allowlisted_package_closure.py",
+      "tests/contract/test_fin_0_1_2_current_program_projection.py"
+    ],
+    "disposable_contract_test": "tests/contract/test_fin_0_1_2_s0c_disposable_contract.py",
+    "historical_tests_validate_frozen_events_not_mutable_current_next": true,
+    "single_mutable_current_projection_owner": "configs/runtime/fin_ia_0_1_2_current_program_projection_v1_0.json",
+    "historical_assertions_relaxed_or_evidence_rewritten": false,
+    "old_PRE_S2_T03_host_discovery_test_selected_in_new_disposable": false
+  },
+  "current_projection_binding": {
+    "ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v1_0.json",
+    "sha256": "926b62e419c6c806d5a2dace89db4949f63f90a7633a98ce4320826e043efccb",
+    "host_sources_validated_before_packaging": true,
+    "host_sources_packaged": false
+  },
+  "corrective_proof_manifest": {
+    "ref": "configs/releases/fin_ia_0_1_2_s0c_t03_corrective_hermetic_proof_manifest_v1_0.json",
+    "sha256": "4883eef54a123c2fe6037cd8b1eac26163aa151b42d0097f4d749cff1b9e76e4",
+    "status": "ready_unexecuted_after_T02_pass",
+    "historical_manifest_identity_reused": false,
+    "corrective_proof_packages_consumed": 0
+  },
+  "implementation_test_bindings": [
+    {
+      "role": "host_inventory_and_mutation_matrix",
+      "ref": "tests/contract/test_fin_0_1_2_s0c_hermetic_topology_and_allowlisted_package_closure.py",
+      "sha256": "c4c41ec49a222b9150e2e76bab2b94cb3651a2f8f5130d6d03edcde6fd489b64"
+    },
+    {
+      "role": "single_current_projection_owner",
+      "ref": "tests/contract/test_fin_0_1_2_current_program_projection.py",
+      "sha256": "c84ed7c416e7601e3ee101e89d7aaf6fae683e42265ca347e3d30cbfba444b03"
+    },
+    {
+      "role": "disposable_contract",
+      "ref": "tests/contract/test_fin_0_1_2_s0c_disposable_contract.py",
+      "sha256": "2a80decf7dc74165d16767c7d4099f16d651a4e2a2236e1e8843ba40cfbe10c3"
+    }
+  ],
+  "restricted_package_governance": {
+    "historical_failed_package_classification": "restricted_quarantined_audit_evidence",
+    "historical_failed_package_delete_share_or_promote_authorized": [
+      false,
+      false,
+      false
+    ],
+    "new_failed_or_quarantined_package_business_promotable": false,
+    "raw_stdout_stderr_detail_terminal_and_process_output_content_addressed": true,
+    "telemetry_role": "index_with_capture_ref_digest_and_failure_location",
+    "credential_or_Authorization_Cookie_content_capture_authorized": false,
+    "restricted_review_required_before_any_share_or_promotion": true
+  },
+  "verification": {
+    "focused_inventory_projection_matrix": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "symlink_escape_guard": "integration_when_available_and_pure_resolved_path_fallback"
+    },
+    "three_case_deterministic_runtime_and_frozen_stage_authority": {
+      "passed": 32,
+      "failed": 0,
+      "DELL_MU_NVDA_each_nodes_interactions_captures_artifacts": [
+        6,
+        12,
+        12,
+        9
+      ]
+    },
+    "current_FIN_0_1_2_host_contracts": "122_passed_0_failed_0_skipped_2251_deselected",
+    "corrective_manifest_host_inventory_compilation": {
+      "path_count": 746,
+      "tracked_path_count": 746,
+      "explicit_allowlist_path_count": 0,
+      "recursive_reference_path_count": 11,
+      "forbidden_or_untracked_path_count": 0,
+      "closure_digest": "efdb400c1ae053a1c1da8c4aa3a1f73cdaf7eebd6c20fed5b7bbcb9ba61febf0"
+    },
+    "corrective_proof_packages_created": 0
+  },
+  "observed_counts": {
+    "implementation_bundles_consumed": 1,
+    "corrective_proof_packages_consumed": 0,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_source_or_external_tool_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "paid_reproofs": 0
+  },
+  "product_truth": {
+    "historical_S0": "closed_pass_not_rewritten",
+    "S1": "closed_honest_block_not_reopened",
+    "PRE_S2_RB_T03": "terminal_failed_unique_package_consumed_not_rerun",
+    "S0C_T01": "pass",
+    "S0C_T02": "engineering_pass",
+    "S0C_T03": "ready_not_started",
+    "S2_entry": false,
+    "DELL_R2": false,
+    "MU_R2": false,
+    "post_transfer_NVDA_exact_product": false,
+    "NVDA_R3": false,
+    "FIN_0_1_release_qualified": false
+  },
+  "next_action": "FIN-0.1.2-S0C-T03-INDEPENDENT-TWO-DISPOSABLE-CORRECTIVE-HERMETIC-PROOF-AND-CLOSEOUT"
+}

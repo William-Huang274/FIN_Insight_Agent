@@ -58,13 +58,6 @@ PRE_S2_IMPLEMENTATION = ROOT / (
     "configs/releases/fin_ia_0_1_2_pre_s2_hermetic_fixture_resource_"
     "rebaseline_minimum_zero_call_implementation_v1_0.json"
 )
-PROGRAM_BACKLOG = ROOT / (
-    "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
-)
-S4_BACKLOG = ROOT / (
-    "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json"
-)
-CONTEXT_PATH = ROOT / "docs/project_os/current_context_pack.zh-CN.md"
 
 
 def _manifest() -> dict[str, Any]:
@@ -206,39 +199,31 @@ def test_stage_capsule_records_g1_without_product_or_compiler_inflation() -> Non
     ]
 
 
-def test_stage_capsule_is_terminal_history_and_pre_s2_is_current_projection() -> None:
+def test_stage_capsule_and_pre_s2_records_form_immutable_history() -> None:
     capsule = _load_json(CAPSULE_PATH)
     disposition = _load_json(PRE_S2_DISPOSITION)
     implementation = _load_json(PRE_S2_IMPLEMENTATION)
-    program = _load_json(PROGRAM_BACKLOG)
-    s4 = _load_json(S4_BACKLOG)
     capsule_sha = hashlib.sha256(CAPSULE_PATH.read_bytes()).hexdigest()
-    disposition_sha = hashlib.sha256(PRE_S2_DISPOSITION.read_bytes()).hexdigest()
-    implementation_sha = hashlib.sha256(PRE_S2_IMPLEMENTATION.read_bytes()).hexdigest()
-    assert program["next_action"]["item_id"] == implementation["next_action"]
-    assert program["next_action"][
-        "FIN_0_1_2_S1_stage_capsule_sha256"
-    ] == capsule_sha
-    assert program["next_action"][
-        "FIN_0_1_2_pre_S2_disposition_sha256"
-    ] == disposition_sha
-    assert program["next_action"][
-        "FIN_0_1_2_pre_S2_implementation_sha256"
-    ] == implementation_sha
-    assert s4["current_next_action"] == implementation["next_action"]
-    assert s4["FIN_0_1_2_S1_stage_plan"][
-        "stage_capsule_sha256"
-    ] == capsule_sha
-    assert s4["FIN_0_1_2_S1_stage_plan"][
-        "pre_S2_disposition_sha256"
-    ] == disposition_sha
-    assert s4["FIN_0_1_2_S1_stage_plan"][
-        "pre_S2_implementation_sha256"
-    ] == implementation_sha
-    context = CONTEXT_PATH.read_text(encoding="utf-8")
-    assert f"current next=`{implementation['next_action']}`" in context
+    parent = next(
+        row
+        for row in disposition["immutable_parent_evidence"]
+        if row["role"] == "S1_terminal_capsule"
+    )
+    assert parent["sha256"] == capsule_sha
+    assert capsule["next_action"] == (
+        "FIN-0.1.2-S1-TO-S2-HERMETIC-FIXTURE-RESOURCE-BLOCKER-DISPOSITION"
+    )
+    assert disposition["next_action"] == (
+        "FIN-0.1.2-PRE-S2-HERMETIC-FIXTURE-RESOURCE-REBASELINE-"
+        "MINIMUM-ZERO-CALL-IMPLEMENTATION"
+    )
+    assert implementation["next_action"] == (
+        "FIN-0.1.2-PRE-S2-RB-T03-INDEPENDENT-TWO-DISPOSABLE-"
+        "REPLACEMENT-HERMETIC-PROOF"
+    )
     assert capsule["product_truth"]["S2_entry_authorized"] is False
     assert disposition["product_truth"]["S1"] == "closed_honest_block_not_reopened"
+    assert implementation["product_truth"]["S2_entry"] is False
 
 
 @pytest.mark.parametrize(

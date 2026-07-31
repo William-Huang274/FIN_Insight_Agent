@@ -11,11 +11,6 @@ DECISION = ROOT / (
     "configs/releases/fin_ia_0_1_2_s0c_hermetic_test_topology_and_"
     "allowlisted_package_closure_scope_decision_v1_0.json"
 )
-PROGRAM = ROOT / "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
-S4_BACKLOG = ROOT / (
-    "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json"
-)
-CONTEXT = ROOT / "docs/project_os/current_context_pack.zh-CN.md"
 CAPABILITY_LEDGER = ROOT / "docs/project_os/capability_status_ledger.jsonl"
 ROOT_CAUSE_LEDGER = ROOT / "docs/project_os/root_cause_issue_ledger.jsonl"
 PATTERN_LEDGER = ROOT / "docs/project_os/external_pattern_registry.jsonl"
@@ -132,52 +127,48 @@ def test_structural_owners_cover_topology_closure_projection_and_raw_evidence() 
     assert proof["ignored_or_untracked_runtime_paths_packaged_maximum"] == 0
 
 
-def test_current_projection_points_only_to_S0C_T02_without_product_inflation() -> None:
+def test_decision_event_points_only_to_S0C_T02_without_product_inflation() -> None:
     decision = _load(DECISION)
-    program = _load(PROGRAM)
-    s4 = _load(S4_BACKLOG)
-    decision_sha = _sha256(DECISION)
     assert decision["next_action"] == NEXT
-    assert program["active_slice"] == "FIN_0_1_2_S0_CORRECTIVE_TEST_PACKAGING_CONTRACT"
-    assert program["next_action"]["item_id"] == NEXT
-    assert program["next_action"]["FIN_0_1_2_S0C_decision_sha256"] == decision_sha
-    assert program["next_action"][
-        "FIN_0_1_2_S0C_historical_PRE_S2_RB_T03_rerun_authorized"
-    ] is False
-    assert s4["current_next_action"] == NEXT
-    projection = s4["FIN_0_1_2_S0_corrective_test_packaging_contract"]
-    assert projection["decision_sha256"] == decision_sha
-    assert projection["stage_id"] == STAGE
-    assert projection["observed_implementation_and_proof_packages"] == [0, 0]
-    assert program["current_truth"]["FIN_0_1_2_S2_entry_authorized"] is False
-    assert program["current_truth"]["FIN_0_1_release_qualified"] is False
     assert set(decision["observed_counts"].values()) == {0}
-    assert f"current next=`{NEXT}`" in CONTEXT.read_text(encoding="utf-8")
+    assert decision["product_truth"]["S0C_T02"] == "ready_not_started"
+    assert decision["product_truth"]["S0C_T03"] == "locked"
+    assert decision["product_truth"]["S2_entry"] is False
+    assert decision["product_truth"]["FIN_0_1_release_qualified"] is False
 
 
-def test_project_OS_latest_records_keep_both_blockers_open_and_scope_T02() -> None:
-    capability = _ledger(CAPABILITY_LEDGER)[-1]
-    roots = _ledger(ROOT_CAUSE_LEDGER)
-    pattern = _ledger(PATTERN_LEDGER)[-1]
-    assert capability["capability_id"] == (
-        "fin_0_1_2_S0C_test_packaging_contract_reopen_scope_decision"
+def test_project_OS_event_records_keep_both_blockers_open_and_scope_T02() -> None:
+    capability = next(
+        row
+        for row in _ledger(CAPABILITY_LEDGER)
+        if row["capability_id"]
+        == "fin_0_1_2_S0C_test_packaging_contract_reopen_scope_decision"
     )
+    roots = _ledger(ROOT_CAUSE_LEDGER)
     assert capability["stage_acceptance"]["S0C_T01"] == "pass"
     assert capability["stage_acceptance"]["S0C_T02"] == "ready_not_started"
     assert capability["current_next"] == NEXT
 
-    latest_by_issue = {row["issue_id"]: row for row in roots}
-    assert ISSUES <= set(latest_by_issue)
     for issue_id in ISSUES:
-        issue = latest_by_issue[issue_id]
+        issue = next(
+            row
+            for row in roots
+            if row["issue_id"] == issue_id
+            and NEXT in row.get("allowed_run_scopes", [])
+        )
         assert issue["status"] == "open"
         assert issue["full_chain_blocker"] is True
         assert NEXT in issue["allowed_run_scopes"]
         assert issue["model_or_provider_fault_established"] is False
 
-    assert pattern["pattern_id"] == (
-        "host_package_construction_must_not_self_execute_in_disposable_"
+    pattern = next(
+        row
+        for row in _ledger(PATTERN_LEDGER)
+        if row["pattern_id"]
+        == "host_package_construction_must_not_self_execute_in_disposable_"
         "and_reference_closure_must_remain_allowlisted"
+        and row["status"]
+        == "bounded_S0C_selected_T02_zero_call_implementation_pending"
     )
     assert pattern["status"] == (
         "bounded_S0C_selected_T02_zero_call_implementation_pending"

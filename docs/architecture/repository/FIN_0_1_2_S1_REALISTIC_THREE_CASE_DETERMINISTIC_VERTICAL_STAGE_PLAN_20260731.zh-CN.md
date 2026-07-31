@@ -129,10 +129,18 @@ T02 已按这三个 owner 一次性实现并通过当前主机矩阵：
 - raw terminal result、stdout/stderr refs 与 content-addressed objects 原样保留；独立 semantic projection 只替换三个 exact disposable roots，未知绝对路径阻断 parity，业务值、nodeid、failure code 与 relative path 保持显著；
 - focused implementation=`12 passed`，加既有 runner=`14 passed`，最终全体 FIN0.1.2 contracts=`97 passed`，既有 manifest-selected current host suite=`24 passed`；模型、Provider、网络、admission、business Run/Artifact 均为零。
 
-这只建立 `T02 engineering pass`，没有建立新的双 disposable hermetic proof。一个 implementation bundle 已消费，replacement proof package 仍为 `0/1`；S2 entry 继续为 false。历史 T03/T04 不重跑，也不把当前实现回写成 S1 pass。
+上述结果只建立 `T02 engineering pass`。随后唯一 `PRE-S2-RB-T03` replacement package 已执行，implementation/proof budget 因此为 `1/1`，没有第二包：
+
+- 两套 disposable Runtime 均实际执行到 `56 passed / 1 failed / 0 collection errors`，唯一 gating node 完全一致；
+- MU tracked fixture、16 项 Runtime resource、三案 full-fake、mutation、failure capture 与 terminal result 留存均通过；两套 semantic projection digest 相同，未知绝对路径为 0，raw digest 按设计因不同临时根而不同；
+- 唯一测试失败不是金融 Runtime 或模型失败。一个本应只在 host 执行的 manifest/package-discovery 断言被放进 disposable current gate，测试在隔离仓内再次调用 `git ls-files`；隔离仓按设计不携带 `.git`，因此以 `hermetic_git_inventory_failed` 终止；
+- 独立审计还发现 JSON reference closure 会接受“仓内存在但不在 tracked/显式 allowlist”的路径，导致 164 个被 Git 忽略的历史 `.codex_runtime` 文件（6,427,052 bytes）进入证明包。它们未被 active three-case proof 读取，也不是首个测试失败原因，但证明包必须受限隔离、不得分享或晋升，credential 内容缺失不能由本次结果推定。
+
+因此 T02 三个最早 owner 的实现获得了正面证据，但 T03 正式结果仍是 `terminal failed`。项目登记 RC-P36-090（disposable 自反 Git inventory 依赖）和 RC-P36-091（ignored Runtime state 被递归引用闭包带入 package），按冻结 stop rule 不修后重跑、不重跑历史 T03/T04、不回写 S1 pass；pre-S2 终态 honest block，S2 entry 继续为 false。
 
 机器权威处置：`configs/releases/fin_ia_0_1_2_s1_to_s2_hermetic_fixture_resource_blocker_disposition_v1_0.json`。
 T02 实现记录：`configs/releases/fin_ia_0_1_2_pre_s2_hermetic_fixture_resource_rebaseline_minimum_zero_call_implementation_v1_0.json`。
-T03 可执行 manifest：`configs/releases/fin_ia_0_1_2_pre_s2_t03_replacement_hermetic_proof_manifest_v1_0.json`；状态为 ready/unexecuted，它已绑定 inventory 与 semantic parity contract，但尚未产生任何 disposable proof result。
+T03 冻结 manifest：`configs/releases/fin_ia_0_1_2_pre_s2_t03_replacement_hermetic_proof_manifest_v1_0.json`。
+T03 结果与 honest-block closeout：`configs/releases/fin_ia_0_1_2_pre_s2_t03_replacement_hermetic_proof_and_honest_block_closeout_v1_0.json`。
 
-当前下一项：`FIN-0.1.2-PRE-S2-RB-T03-INDEPENDENT-TWO-DISPOSABLE-REPLACEMENT-HERMETIC-PROOF`。
+当前下一项只允许决策，不自动实现或证明：`FIN-0.1.2-PRE-S2-TERMINAL-HONEST-BLOCK-AND-S0-TEST-PACKAGING-CONTRACT-REOPEN-OR-DEFER-SCOPE-DECISION`。它必须决定把测试自反依赖与 package allowlist 修复作为 FIN 0.1.2 S0 的新有界 reopen stage，还是明确递延到后续 patch line；不得把它解释为第二个 T03 package 或 S2 entry。

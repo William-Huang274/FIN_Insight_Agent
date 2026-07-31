@@ -1,0 +1,190 @@
+{
+  "schema_version": "fin_ia_0_1_2_pre_s2_t03_replacement_hermetic_proof_and_honest_block_closeout_v1_0",
+  "closeout_id": "FIN-0.1.2-PRE-S2-RB-T03-REPLACEMENT-HERMETIC-PROOF-AND-HONEST-BLOCK-CLOSEOUT-R1",
+  "recorded_at": "2026-08-01T00:22:10+08:00",
+  "status": "terminal_failed_unique_T03_package_consumed_pre_S2_honest_block_S2_entry_false",
+  "authority": {
+    "parent_disposition_ref": "configs/releases/fin_ia_0_1_2_s1_to_s2_hermetic_fixture_resource_blocker_disposition_v1_0.json",
+    "parent_disposition_sha256": "f5b7abd6803220ddc3e9f7fce49889b6e75fdca8a9d7b25b0b0ed4375d10e62a",
+    "T02_implementation_ref": "configs/releases/fin_ia_0_1_2_pre_s2_hermetic_fixture_resource_rebaseline_minimum_zero_call_implementation_v1_0.json",
+    "T02_implementation_sha256": "629563185fcd075894fd0f998b330c8af047d7eb34e8d2b174537758e29fd8c4",
+    "T03_manifest_ref": "configs/releases/fin_ia_0_1_2_pre_s2_t03_replacement_hermetic_proof_manifest_v1_0.json",
+    "T03_manifest_sha256": "5acee61ddf47abd479ca3257f8510cdef07da3ef7c5941ba3cef1a8ab956f4dc",
+    "task_id": "PRE-S2-RB-T03",
+    "maximum_implementation_bundles": 1,
+    "implementation_bundles_consumed": 1,
+    "maximum_replacement_proof_packages": 1,
+    "replacement_proof_packages_consumed": 1,
+    "next_action_on_failure_consumed": "FIN-0.1.2-PRE-S2-HONEST-BLOCK-CLOSEOUT-NO-SECOND-PROOF-PACKAGE",
+    "automatic_second_implementation_bundle": false,
+    "automatic_second_proof_package": false,
+    "patch_then_rerun_in_this_stage_authorized": false,
+    "S1_reopened": false,
+    "S2_entry_authorized": false,
+    "model_provider_network_paid_or_business_execution_authorized": false
+  },
+  "frozen_execution": {
+    "output_root": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_2_pre_s2_t03_replacement_hermetic_proof_20260731T161211Z_head_97f20c4a",
+    "git_head": "97f20c4a301f5591526fef2f42501ccf4d0b0221",
+    "branch": "codex/layered-data-source-expansion",
+    "runner_exit_code": 1,
+    "runtime_seconds": 103.8,
+    "verification_ref": "verification.json",
+    "verification_sha256": "dd5b9594ef374e3397912aa196ea5e00dfc8e6b74964c81d7c2d1133601a757e",
+    "package_manifest_ref": "package_manifest.json",
+    "package_manifest_sha256": "13217026a2006b12e1a8d57eef21afcc91dcb01ccc2f2b3d96bee212003eb8cd",
+    "terminal_result_refs": [
+      "runs/disposable_a/terminal_result.json",
+      "runs/disposable_b/terminal_result.json"
+    ],
+    "terminal_result_sha256": [
+      "0c44be8194f696d67ba8cb22419a0f64557ebaf7d4958bab4ee9960a2489f4b3",
+      "65b6d5742144d0fa12708b267be0492c066885048dbbdca3e1b964fb3173d516"
+    ],
+    "disposable_runtime_count": 2,
+    "repository_file_count": 1616,
+    "external_dependency_count": 0,
+    "package_file_count": 1625,
+    "package_bytes": 34773882,
+    "test_counts_each": {
+      "passed": 56,
+      "failed": 1,
+      "collection_errors": 0
+    },
+    "pytest_exit_code_each": [1, 1],
+    "repository_unchanged_during_run": true,
+    "complete_per_test_stdout_stderr_content_addressed": true,
+    "process_stdout_stderr_content_addressed": true,
+    "content_addressed_readback_reported_complete": true,
+    "credential_environment_removed": [
+      "ANTHROPIC_API_KEY",
+      "AZURE_OPENAI_API_KEY",
+      "DEEPSEEK_API_KEY",
+      "EDINET_API_KEY",
+      "GEMINI_API_KEY",
+      "GOOGLE_API_KEY",
+      "OPENAI_API_KEY"
+    ]
+  },
+  "T02_owner_results": {
+    "tracked_MU_fixture": {
+      "ref": "tests/fixtures/fin_0_1_2/mu_realistic_three_cell_exact_input_v1.json",
+      "sha256": "84e2f2adf08423e6f7f7d2ab688656f2b1f47e83d5e62c24fb7fa25d82679909",
+      "packaged_exactly_once": true,
+      "active_three_case_proof_read_host_local_MU_object": false
+    },
+    "runtime_nonpython_resources": {
+      "inventory_ref": "configs/runtime/fin_ia_0_1_2_runtime_nonpython_resource_inventory_v1_0.json",
+      "inventory_sha256": "986efbaf2ac5874e94c1756fd9219ea93b86bbcda7b4dc54569bc188a968c2c3",
+      "registered_resource_count": 16,
+      "registered_resource_bytes": 53382,
+      "inventory_registry_and_resource_paths_expected_packaged": 18,
+      "inventory_registry_and_resource_paths_packaged": 18,
+      "missing_paths": 0,
+      "digest_mismatches": 0
+    },
+    "semantic_parity": {
+      "contract_ref": "configs/runtime/fin_ia_0_1_2_hermetic_semantic_parity_projection_v1_0.json",
+      "contract_canonical_digest": "922bcd08e9c42879f16262bd22cf94debecef6d1c5d550c4435c9f86cebdc7e7",
+      "semantic_parity": true,
+      "semantic_parity_digest_each": [
+        "3b1ab0e75711d50812eab9dda18404dff8769f27102e370e9a63e5c8681e1e63",
+        "3b1ab0e75711d50812eab9dda18404dff8769f27102e370e9a63e5c8681e1e63"
+      ],
+      "semantic_projection_sha256_each": [
+        "34be957bfc3241c22230d8422dd465fea2936c747a3dfa19e497fc5d5450798f",
+        "34be957bfc3241c22230d8422dd465fea2936c747a3dfa19e497fc5d5450798f"
+      ],
+      "semantic_normalization_valid_each": [true, true],
+      "unknown_absolute_path_count_each": [0, 0],
+      "raw_parity": false,
+      "raw_parity_digest_each": [
+        "121d9b277f8c5390f99ff7a6dbb57bcbbc3d53fbcc376db5640b7c05cae68b9f",
+        "d7f6163b87b2c1b756af767f3e130ae3982a268857b70ec8df7cafd43b901706"
+      ]
+    },
+    "current_runtime": {
+      "three_case_full_fake_and_final_artifact_mutations_passed": true,
+      "candidate_and_request_local_alias_mutations_passed": true,
+      "failure_capture_and_terminal_result_retention_passed": true,
+      "new_financial_runtime_L1_established": false,
+      "model_or_provider_fault_established": false
+    }
+  },
+  "first_blocking_failure": {
+    "nodeid": "tests/contract/test_fin_0_1_2_pre_s2_hermetic_fixture_resource_rebaseline_minimum_zero_call_implementation.py::test_T03_manifest_is_runnable_and_binds_all_T02_dependency_contracts",
+    "phase": "call",
+    "failure_code": "hermetic_git_inventory_failed",
+    "detail_refs": [
+      "objects/sha256/e2/e2bb3e70ec461e147664aa7f5259a25787870264e31cdc9a1edac5aad456ed17",
+      "objects/sha256/db/db80095e9913b21c6fe74bd3fceeb6d577c3e6d3e7ac288da802d671dd8c2f0f"
+    ],
+    "detail_sha256": [
+      "e2bb3e70ec461e147664aa7f5259a25787870264e31cdc9a1edac5aad456ed17",
+      "db80095e9913b21c6fe74bd3fceeb6d577c3e6d3e7ac288da802d671dd8c2f0f"
+    ],
+    "detail_bytes_each": [1921, 1921],
+    "root_cause": "A host-only T03 package-discovery assertion was selected as a current gate inside each disposable Runtime. The assertion recursively called discover_repository_paths, which requires git ls-files, while the hermetic disposable repository intentionally contains no .git metadata.",
+    "classification": "project_owned_proof_test_self_introspection_and_stage_contract_error",
+    "identical_gating_nodeid_in_both_disposables": true,
+    "missing_MU_fixture": false,
+    "missing_registered_runtime_resource": false,
+    "semantic_parity_failure": false,
+    "unknown_absolute_path_failure": false,
+    "financial_runtime_failure": false,
+    "DeepSeek_or_provider_failure": false,
+    "issue_id": "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency"
+  },
+  "independent_package_boundary_finding": {
+    "issue_id": "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
+    "ignored_host_runtime_prefix": ".codex_runtime/",
+    "ignored_host_runtime_files_packaged": 164,
+    "ignored_host_runtime_bytes_packaged": 6427052,
+    "source_paths_git_tracked": 0,
+    "source_paths_git_ignored": true,
+    "root_cause": "The JSON reference closure accepted any repository-relative file that existed, without requiring the referenced path to remain inside the tracked or explicit policy allowlist. Mutable backlog and ledger references therefore pulled ignored historical Runtime state into the content-addressed package.",
+    "participated_in_active_three_case_runtime_proof": false,
+    "caused_first_blocking_test_failure": false,
+    "credential_environment_was_removed": true,
+    "credential_content_absence_independently_proven": false,
+    "package_access": "restricted_quarantine_do_not_share_or_promote",
+    "package_business_promotable": false,
+    "package_deletion_authorized_or_performed": false
+  },
+  "stop_decision": {
+    "T03_result": "terminal_failed",
+    "pre_S2_result": "closed_honest_block",
+    "S2_entry": false,
+    "second_T03_package": false,
+    "historical_S1_T03_or_T04_rerun": false,
+    "failed_output_business_promotable": false,
+    "repair_then_rerun_in_current_stage": false,
+    "failure_owner": "FIN_0_1_2_test_and_hermetic_packaging_contract",
+    "separately_authorized_scope_decision_required": true
+  },
+  "observed_counts": {
+    "implementation_bundles_consumed": 1,
+    "replacement_proof_packages_consumed": 1,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_source_or_external_tool_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "paid_reproofs": 0
+  },
+  "product_truth": {
+    "S1": "closed_honest_block_not_reopened",
+    "PRE_S2_RB_T02": "engineering_pass_owner_fixes_positive",
+    "PRE_S2_RB_T03": "terminal_failed_unique_package_consumed",
+    "pre_S2": "closed_honest_block",
+    "S2_entry": false,
+    "DELL_R2": false,
+    "MU_R2": false,
+    "post_transfer_NVDA_exact_product": false,
+    "NVDA_R3": false,
+    "FIN_0_1_release_qualified": false
+  },
+  "next_action": "FIN-0.1.2-PRE-S2-TERMINAL-HONEST-BLOCK-AND-S0-TEST-PACKAGING-CONTRACT-REOPEN-OR-DEFER-SCOPE-DECISION"
+}

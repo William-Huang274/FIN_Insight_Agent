@@ -40,3 +40,11 @@ manifest 中列出的 current suite failure 必须阻断；未列入 current sui
 ## 下一门
 
 下一项是 `FIN-0.1.2-S1-REALISTIC-THREE-CASE-DETERMINISTIC-VERTICAL-STAGE-PLAN`。S1 只规划并随后证明 DELL/MU/NVDA realistic fixture、cross-case/date/cardinality/permutation/multi-failure mutation、三案 full-fake 和 production consumer migration；StagePlan 本身不调用模型。FIN 0.1 仍未 release-qualified，DELL/MU R2 与 post-transfer NVDA/R3 仍归 S4 产品证明。
+
+## 后续 S0 corrective stage 决策（2026-08-01）
+
+上述 S0 closeout 与当时的双 disposable `24 passed` 仍是不可改写的历史结果。后续 S1/pre-S2 唯一证明包暴露了两个更早归属于 S0 测试与打包合同的缺口：host-only inventory assertion 被放进无 `.git` 的 disposable current gate；recursive JSON reference closure 又允许 Git-ignored `.codex_runtime` 历史状态进入 package。它们不否定 S0 当时完成的能力，但说明原 S0 的 proof topology 与 package data-minimization 合同不够完整。
+
+项目因此选择新的 `FIN-0.1.2-S0C-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-R1`，而不是重开或改写历史 S0。固定任务只有 `S0C-T01..T03`：当前 T01 只冻结处置；T02 最多一个零调用实现包，负责 host/disposable 分层、tracked/explicit allowlist reference closure、immutable-event/current-projection 分权以及 restricted-package 治理；T03 仅在 T02 全绿后允许一个新 stage identity 的双 disposable proof package。它不是第二次 `PRE-S2-RB-T03`。任一后续任务失败即 S0C honest block，不自动生成 T04、R-number 或 patch-then-rerun。
+
+机器权威：`configs/releases/fin_ia_0_1_2_s0c_hermetic_test_topology_and_allowlisted_package_closure_scope_decision_v1_0.json`。当前下一项仅为 `FIN-0.1.2-S0C-T02-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-MINIMUM-ZERO-CALL-IMPLEMENTATION`；S2、模型调用、产品重证与 release 均未授权。

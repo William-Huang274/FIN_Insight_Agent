@@ -1,7 +1,7 @@
 # FIN 0.1.2 S1 realistic three-case deterministic vertical StagePlan
 
 日期：2026-07-31
-状态：`S1 terminal honest block / G0、G1 pass / G2 not proven / G6 closed / pre-S2 T02 pass / T03 ready`
+状态：`S1 terminal honest block / G0、G1 pass / G2 not proven / G6 closed / pre-S2 T03 terminal failed / S0C-T01 pass / S2 blocked`
 
 ## 1. 本阶段只解决什么
 
@@ -144,3 +144,5 @@ T03 冻结 manifest：`configs/releases/fin_ia_0_1_2_pre_s2_t03_replacement_herm
 T03 结果与 honest-block closeout：`configs/releases/fin_ia_0_1_2_pre_s2_t03_replacement_hermetic_proof_and_honest_block_closeout_v1_0.json`。
 
 当前下一项只允许决策，不自动实现或证明：`FIN-0.1.2-PRE-S2-TERMINAL-HONEST-BLOCK-AND-S0-TEST-PACKAGING-CONTRACT-REOPEN-OR-DEFER-SCOPE-DECISION`。它必须决定把测试自反依赖与 package allowlist 修复作为 FIN 0.1.2 S0 的新有界 reopen stage，还是明确递延到后续 patch line；不得把它解释为第二个 T03 package 或 S2 entry。
+
+该 decision-only 项已在 2026-08-01 完成，选择新的 S0-owned corrective stage `FIN-0.1.2-S0C-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-R1`。这不是 S1 延长、S1-T05、历史 S0 reopen 或第二次 `PRE-S2-RB-T03`；历史结果保持不变。S0C 固定 `T01/T02/T03`，最多一个零调用 implementation bundle 和一个新身份的 corrective proof package；失败即 honest block。当前只进入 `S0C-T02`，S2 仍未授权。

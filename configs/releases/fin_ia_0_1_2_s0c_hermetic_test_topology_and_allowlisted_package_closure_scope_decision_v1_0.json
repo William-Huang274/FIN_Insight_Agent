@@ -1,0 +1,236 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0c_hermetic_test_topology_and_allowlisted_package_closure_scope_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S0C-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-SCOPE-DECISION-R1",
+  "recorded_at": "2026-08-01T00:45:00+08:00",
+  "status": "pass_bounded_S0_corrective_stage_selected_T02_implementation_pending_S2_entry_blocked",
+  "authority": {
+    "user_instruction": "继续",
+    "decision_only_scope_authorized": true,
+    "T02_implementation_executed_or_authorized_in_this_turn": false,
+    "T02_implementation_ready_for_separate_continuation": true,
+    "T03_corrective_proof_ready_before_T02_pass": false,
+    "historical_S0_S1_or_PRE_S2_RB_T03_reopen_authorized": false,
+    "model_provider_network_paid_or_business_execution_authorized": false,
+    "product_acceptance_release_or_production_authorized": false
+  },
+  "immutable_parent_evidence": [
+    {
+      "role": "historical_S0_contract_decision",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_common_runtime_and_test_contract_rebaseline_v1_0.json",
+      "sha256": "55c3840d48ce18baf66825f2e1504efff8f185b6ff4d15a3b5cddd3943db07e2"
+    },
+    {
+      "role": "historical_S0_hermetic_preflight_result",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_hermetic_package_and_active_suite_runner_preflight_result_v1_0.json",
+      "sha256": "a6a686ed65fb42218c5a33dd296eba5c785c8f34899b408581ee6e8c563f874f"
+    },
+    {
+      "role": "terminal_S1_closeout",
+      "ref": "configs/releases/fin_ia_0_1_2_s1_stage_closeout_v1_0.json",
+      "sha256": "91fa819f69aebb95dcfe3303031aba0a7f46553c0049bc528ced67c6a5fe0a5c"
+    },
+    {
+      "role": "terminal_PRE_S2_RB_T03_closeout",
+      "ref": "configs/releases/fin_ia_0_1_2_pre_s2_t03_replacement_hermetic_proof_and_honest_block_closeout_v1_0.json",
+      "sha256": "244442ddc01110cf6fbdb4c5d3580c26b418955cd8da2ed92f94fb4eccafc7ae"
+    },
+    {
+      "role": "terminal_PRE_S2_RB_T03_verification",
+      "ref": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_2_pre_s2_t03_replacement_hermetic_proof_20260731T161211Z_head_97f20c4a/verification.json",
+      "sha256": "dd5b9594ef374e3397912aa196ea5e00dfc8e6b74964c81d7c2d1133601a757e"
+    }
+  ],
+  "observed_blockers": [
+    {
+      "issue_id": "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+      "classification": "project_owned_test_topology_and_host_disposable_boundary",
+      "observed_result_each": [56, 1, 0],
+      "first_failure_code": "hermetic_git_inventory_failed",
+      "model_provider_or_financial_runtime_fault_established": false
+    },
+    {
+      "issue_id": "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
+      "classification": "project_owned_package_allowlist_data_minimization_boundary",
+      "ignored_runtime_files_and_bytes_packaged": [164, 6427052],
+      "caused_first_test_failure": false,
+      "credential_content_absence_independently_proven": false
+    }
+  ],
+  "decision_options": [
+    {
+      "option": "A",
+      "label": "new_bounded_S0_corrective_stage_inside_FIN_0_1_2",
+      "selected": true,
+      "reason": "Both blockers are finite project-owned test and packaging substrate defects required before any FIN 0.1.2 S2 proof. A new corrective stage preserves immutable historical results while repairing the earliest owner."
+    },
+    {
+      "option": "B",
+      "label": "defer_to_FIN_0_1_3_or_later_patch_line",
+      "selected": false,
+      "reason": "Deferral would leave FIN 0.1.2 unable to enter S2 even though the defects have bounded repository owners and require no model call."
+    },
+    {
+      "option": "C",
+      "label": "patch_and_rerun_consumed_PRE_S2_RB_T03",
+      "selected": false,
+      "reason": "The historical proof budget is consumed and its terminal evidence must remain immutable."
+    },
+    {
+      "option": "D",
+      "label": "waive_hermeticity_or_package_data_minimization",
+      "selected": false,
+      "reason": "A host-green or overbroad package cannot establish replayable release evidence."
+    },
+    {
+      "option": "E",
+      "label": "attribute_to_DeepSeek_provider_or_financial_method",
+      "selected": false,
+      "reason": "No model or Provider call occurred and the application Runtime owners passed in both disposables before the proof-contract failure."
+    }
+  ],
+  "selected_stage": {
+    "stage_id": "FIN-0.1.2-S0C-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-R1",
+    "stage_kind": "bounded_S0_owned_corrective_stage_not_historical_stage_reopen",
+    "owner_phase": "FIN_0_1_2_S0_test_and_packaging_contract",
+    "is_historical_S0_rewrite": false,
+    "is_S1_continuation_or_S1_T05": false,
+    "is_second_PRE_S2_RB_T03": false,
+    "is_S2": false,
+    "mission": "Separate host package construction from disposable runtime validation, constrain the complete reference closure to tracked or explicitly policy-allowlisted inputs, and restore immutable-event versus current-projection test ownership before one new corrective proof package."
+  },
+  "earliest_owner_audit": {
+    "host_vs_disposable_test_topology": {
+      "current_owner_ref": "tests/contract/test_fin_0_1_2_pre_s2_hermetic_fixture_resource_rebaseline_minimum_zero_call_implementation.py",
+      "current_owner_sha256": "96582b1ed38e112927259a189d52512675b38f43ac23fe7849e5c62abb0630bf",
+      "runtime_owner_ref": "src/sec_agent/hermetic_test_runner.py",
+      "runtime_owner_sha256": "53240479ebfe534098ac60c389dd2781e3459ac9f722ce5e9bb295e1e6855deb",
+      "required_boundary": "Host pre-materialization may use Git to freeze inventory; disposable current-runtime tests consume and verify the frozen inventory without .git or repository self-discovery.",
+      "disposable_git_command_requirement": 0
+    },
+    "allowlisted_recursive_reference_closure": {
+      "current_owner_ref": "src/sec_agent/hermetic_test_runner.py",
+      "runtime_owner_sha256": "53240479ebfe534098ac60c389dd2781e3459ac9f722ce5e9bb295e1e6855deb",
+      "required_boundary": "Every seed and recursively discovered repository reference must remain Git-tracked or match an explicit typed policy allowlist entry; existing-file-only admission is forbidden.",
+      "ignored_or_untracked_repository_reference_behavior": "fail_closed_before_object_storage_or_disposable_execution",
+      "required_negative_fixture": ".codex_runtime reference from an otherwise tracked JSON document"
+    },
+    "immutable_event_vs_current_projection_topology": {
+      "observed_host_matrix": [95, 6],
+      "observed_failure_class": "six historical S0 S1 T01 or T02 contracts assert a mutable current-next pointer or the ledger last row",
+      "required_boundary": "Historical tests validate their frozen event document; one separately owned current-projection contract validates active slice, current next action, and latest issue state.",
+      "historical_evidence_or_assertion_relaxation": false
+    },
+    "raw_evidence_and_restricted_package_governance": {
+      "raw_content_addressed_capture_rewrite_allowed": false,
+      "telemetry_role": "index_with_capture_ref_digest_and_failure_location",
+      "failed_or_quarantined_package_business_promotable": false,
+      "historical_failed_package_deletion_or_sharing_authorized": false,
+      "future_package_share_or_promotion_before_policy_review": false
+    }
+  },
+  "fixed_task_and_package_budget": [
+    {
+      "task_id": "S0C-T01",
+      "title": "S0 test and packaging contract reopen-or-defer scope decision",
+      "status": "pass_current_decision"
+    },
+    {
+      "task_id": "S0C-T02",
+      "title": "Hermetic test topology and allowlisted package closure minimum zero-call implementation",
+      "status": "ready_not_started",
+      "maximum_implementation_bundles": 1
+    },
+    {
+      "task_id": "S0C-T03",
+      "title": "One independent two-disposable corrective proof and closeout",
+      "status": "locked_until_T02_all_green",
+      "maximum_corrective_proof_packages": 1
+    }
+  ],
+  "T02_implementation_contract": {
+    "required_changes": [
+      "split host package-construction assertions from disposable current-runtime gates",
+      "make disposable inventory validation Git-independent and bind it to the frozen host inventory digest",
+      "compile seed and recursive reference closure from Git-tracked paths plus an explicit typed allowlist",
+      "reject ignored untracked unknown traversal symlink escape and existing-file-only reference admission before object storage",
+      "add .codex_runtime and non-allowlisted reference negative mutations",
+      "separate immutable historical event assertions from one mutable current-projection owner",
+      "preserve raw content-addressed stdout stderr terminal result and capture refs unchanged",
+      "encode restricted package classification review retention non-sharing and non-promotion rules"
+    ],
+    "required_zero_call_matrix": [
+      "host inventory construction with repository Git metadata",
+      "disposable inventory readback with no .git and zero Git subprocess requirement",
+      "tracked explicit-allowlist ignored untracked unknown and symlink-escape reference mutations",
+      "historical event versus current projection mutation",
+      "DELL MU NVDA each 6 nodes 12 interactions 12 captures 9 diagnostic Artifacts",
+      "final nine Artifact numeric identity lineage and downstream failure retention mutations"
+    ],
+    "current_fin_0_1_2_host_contracts_all_green_required": true,
+    "runner_or_proof_execution_in_decision_turn": false,
+    "model_provider_network_source_or_business_execution": [0, 0, 0, 0, 0]
+  },
+  "T03_proof_contract": {
+    "new_stage_and_manifest_identity_required": true,
+    "historical_PRE_S2_RB_T03_patch_rerun_or_second_package": false,
+    "disposable_runtime_count": 2,
+    "fresh_roots_and_processes_required": true,
+    "disposable_git_metadata_present": false,
+    "disposable_git_subprocess_calls_allowed": 0,
+    "ignored_or_untracked_runtime_paths_packaged_maximum": 0,
+    "complete_raw_per_test_and_process_output_content_addressed": true,
+    "semantic_parity_required": true,
+    "repository_readback_unchanged_required": true,
+    "current_gate_all_green_required": true,
+    "failed_output_or_package_business_promotable": false,
+    "on_pass": "Close RC-P36-090 and RC-P36-091 for this current corrective scope and authorize only a separate FIN 0.1.2 S2 StagePlan scope decision.",
+    "on_failure": "Close S0C terminal honest block without S0C-T04 automatic repair replacement package or direct S2 entry."
+  },
+  "pass_and_stop_rules": {
+    "historical_S0_S1_PRE_S2_result_or_package_rewrite": false,
+    "automatic_second_T02_implementation_bundle": false,
+    "automatic_second_T03_corrective_proof_package": false,
+    "automatic_S0C_T04_R_number_or_patch_then_rerun": false,
+    "hermeticity_data_minimization_raw_evidence_or_financial_L1_relaxation": false,
+    "S2_entry_before_new_corrective_proof_pass_and_separate_decision": false,
+    "new_L1_if_observed": "stop and assign to the earliest owner under a new project-level disposition; do not expand S0C automatically",
+    "L2_to_L4_if_observed": "record and carry to S2 through S5 or a later patch line without expanding this substrate stage"
+  },
+  "quarantine_and_retention": {
+    "historical_package_ref": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_2_pre_s2_t03_replacement_hermetic_proof_20260731T161211Z_head_97f20c4a",
+    "classification": "restricted_quarantined_audit_evidence",
+    "delete_authorized": false,
+    "share_promote_or_treat_as_business_artifact_authorized": false,
+    "credential_content_absence_claimed": false,
+    "future_review_owner": "repository_security_and_release_evidence_governance"
+  },
+  "observed_counts": {
+    "implementation_files_changed": 0,
+    "runner_changes": 0,
+    "historical_tests_rewritten": 0,
+    "corrective_proof_packages": 0,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_source_or_external_tool_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "paid_reproofs": 0
+  },
+  "product_truth": {
+    "historical_S0": "closed_pass_not_rewritten",
+    "S1": "closed_honest_block_not_reopened",
+    "PRE_S2_RB_T03": "terminal_failed_unique_package_consumed",
+    "S0C_T01": "pass",
+    "S0C_T02": "ready_not_started",
+    "S0C_T03": "locked",
+    "S2_entry": false,
+    "DELL_R2": false,
+    "MU_R2": false,
+    "post_transfer_NVDA_exact_product": false,
+    "NVDA_R3": false,
+    "FIN_0_1_release_qualified": false
+  },
+  "next_action": "FIN-0.1.2-S0C-T02-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

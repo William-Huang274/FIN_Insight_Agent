@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_0_1_s4_detailed_execution_backlog_v1_0",
   "backlog_id": "FIN-0.1-S4-THREE-CASE-TRANSFER-AND-HUMAN-CALIBRATION-R1",
   "frozen_at": "2026-07-26T15:41:14+08:00",
-  "status": "S4_and_S5_closed_FIN_0_1_1_frozen_FIN_0_1_2_pre_S2_T03_terminal_failed_honest_block_S2_entry_blocked",
+  "status": "S4_and_S5_closed_FIN_0_1_1_frozen_FIN_0_1_2_S0C_T01_pass_T02_pending_S2_entry_blocked",
   "authority": {
     "user_instruction": "认可",
     "instruction_context": "User accepted the proposed S4 plan after Codex stated that the next action would only create the zero-call S4 entry decision detailed backlog and manifest consumption record.",
@@ -1122,7 +1122,7 @@
     "only_planned_remaining_T05_paid_execution": "DELL_R11_consumed_failed_no_further_paid_execution_authorized",
     "automatic_R12": false
   },
-  "current_next_action": "FIN-0.1.2-PRE-S2-TERMINAL-HONEST-BLOCK-AND-S0-TEST-PACKAGING-CONTRACT-REOPEN-OR-DEFER-SCOPE-DECISION",
+  "current_next_action": "FIN-0.1.2-S0C-T02-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-MINIMUM-ZERO-CALL-IMPLEMENTATION",
   "T07_current_worktree_regression": {
     "scope_decision_ref": "configs/releases/fin_ia_0_1_s4_t07_entry_current_worktree_three_case_regression_and_nvda_post_transfer_exact_revalidation_scope_decision_v1_0.json",
     "result_ref": "configs/releases/fin_ia_0_1_s4_t07_current_worktree_three_case_zero_call_regression_failure_result_v1_0.json",
@@ -1285,6 +1285,25 @@
     "model_provider_network_admission_Run_business_Artifact": [0, 0, 0, 0, 0, 0],
     "product_reproof_authorized": false,
     "next_action": "FIN-0.1.2-PRE-S2-TERMINAL-HONEST-BLOCK-AND-S0-TEST-PACKAGING-CONTRACT-REOPEN-OR-DEFER-SCOPE-DECISION"
+  },
+  "FIN_0_1_2_S0_corrective_test_packaging_contract": {
+    "status": "T01_pass_bounded_corrective_stage_selected_T02_ready_not_started",
+    "decision_ref": "configs/releases/fin_ia_0_1_2_s0c_hermetic_test_topology_and_allowlisted_package_closure_scope_decision_v1_0.json",
+    "decision_sha256": "c2456ef0854a828c116da34a292e2a3bfc9701ab110f309d14b8e579d218108d",
+    "stage_id": "FIN-0.1.2-S0C-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-R1",
+    "owner_phase": "FIN_0_1_2_S0_test_and_packaging_contract",
+    "historical_S0_S1_or_PRE_S2_RB_T03_reopened": false,
+    "fixed_task_ids": ["S0C-T01", "S0C-T02", "S0C-T03"],
+    "maximum_implementation_bundles": 1,
+    "maximum_corrective_proof_packages": 1,
+    "observed_implementation_and_proof_packages": [0, 0],
+    "issue_ids": [
+      "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+      "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state"
+    ],
+    "S2_entry_authorized": false,
+    "product_reproof_authorized": false,
+    "next_action": "FIN-0.1.2-S0C-T02-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-MINIMUM-ZERO-CALL-IMPLEMENTATION"
   },
   "repository_recovery_and_version_lineage_scope": {
     "scope_decision_ref": "configs/releases/fin_ia_0_1_repository_recovery_s0_to_s4_audit_and_0_1_1_0_1_2_version_lineage_scope_decision_v1_0.json",

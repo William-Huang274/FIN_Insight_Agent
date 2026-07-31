@@ -1,0 +1,92 @@
+{
+  "contract_id": "fin_ia_0_1_s2_t03_specialist_lead_output_contract_repair_v3_0",
+  "status": "live_validation_terminal_failed_unexpected_outer_keys_admission_consumed",
+  "scope": "S2-T03 post-v2-live first-stage output-shape repair",
+  "output_contract_ref": "fin01.bounded_agent.specialist_lead_output:v3",
+  "supersedes_consumed_contract_ref": "fin01.bounded_agent.specialist_lead_output:v2",
+  "historical_v2_live_validation": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v2_0.json",
+    "consumed": true,
+    "terminal_state": "failed",
+    "failure_code": "bounded_agent_specialist_outer_schema_invalid",
+    "artifact_count": 0,
+    "reusable": false
+  },
+  "provider_output_mode": {
+    "response_format": {
+      "type": "json_object"
+    },
+    "nested_schema_server_enforced": false,
+    "local_validation_fail_closed": true
+  },
+  "required_outer_keys": [
+    "output_contract_ref",
+    "specialist_judgment",
+    "lead_adjudication"
+  ],
+  "allowed_lossless_adaptations": [
+    "unwrap a sole result/output/data mapping",
+    "flatten output_contract_ref plus a sole result/output/data mapping when contract refs do not conflict",
+    "trim and lowercase declared enum strings",
+    "wrap one evidence-finding mapping as a one-item list",
+    "wrap one string as a one-item list for declared list fields"
+  ],
+  "forbidden_repairs": [
+    "drop or rename an unknown outer key",
+    "synthesize missing specialist or lead meaning",
+    "map semantic synonyms into enums",
+    "replace an unknown candidate ID",
+    "persist provider prose, raw response, unknown key names or private reasoning"
+  ],
+  "typed_outer_failures": [
+    "bounded_agent_specialist_outer_keys_missing",
+    "bounded_agent_specialist_outer_keys_unexpected"
+  ],
+  "secret_safe_output_shape": {
+    "outer_key_count": true,
+    "expected_outer_keys_present": true,
+    "missing_outer_keys": true,
+    "unexpected_outer_key_count": true,
+    "unexpected_outer_keys_digest": true,
+    "recognized_wrapper_keys_present": true,
+    "expected_outer_value_types": true,
+    "provider_prose_or_unknown_key_names_persisted": false
+  },
+  "verification": {
+    "deterministic_fixture_proven": true,
+    "related_regression": "post_run_targeted_19_passed",
+    "real_model_calls_after_v2_failure": 1,
+    "new_exact_admission_issued": true,
+    "live_validation_performed": true
+  },
+  "live_validation_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v3_0.json",
+    "admission_id": "fin01-s2-t03-bounded-agent-v3-contract-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s2-t03-bounded-agent-work-unit-v3-contract-r1",
+    "runtime_root": ".codex_runtime/fin01-s2-t03-v3-live-validation-r1",
+    "user_authorized": true,
+    "execution_started": true,
+    "execution_consumed": true
+  },
+  "live_validation_result": {
+    "terminal_state": "failed",
+    "failure_code": "bounded_agent_specialist_outer_keys_unexpected",
+    "expected_outer_keys_present": [
+      "lead_adjudication",
+      "output_contract_ref",
+      "specialist_judgment"
+    ],
+    "missing_outer_keys": [],
+    "outer_key_count": 8,
+    "unexpected_outer_key_count": 5,
+    "unexpected_outer_keys_digest": "774c9c26f3dc06b8cb832afa196f0c25041000ebee79efac58140b16c2e6b557",
+    "model_provider_network_calls": 1,
+    "transport_attempts": 1,
+    "estimated_cost_usd": 0.00175131,
+    "artifact_count": 0,
+    "fallback_performed": false,
+    "automatic_rerun_performed": false,
+    "raw_provider_response_persisted": false
+  },
+  "next_execution_gate": "v3 admission and WorkUnit identity are consumed and rejected before provider access; any new contract policy or execution requires explicit user direction and a distinct versioned admission"
+}

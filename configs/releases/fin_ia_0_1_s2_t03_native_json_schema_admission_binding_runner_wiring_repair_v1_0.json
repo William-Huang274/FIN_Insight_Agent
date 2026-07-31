@@ -1,0 +1,106 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t03_native_json_schema_admission_binding_runner_wiring_repair_v1_0",
+  "repair_id": "S2-T03-NATIVE-JSON-SCHEMA-ADMISSION-BINDING-AND-RUNNER-WIRING-REPAIR",
+  "completed_at": "2026-07-20T23:15:59+08:00",
+  "status": "fixture_proven_after_independent_review_exact_admission_issuance_decision_pending",
+  "authority": {
+    "zero_call_admission_binding_repair_authorized": true,
+    "runner_wiring_repair_authorized": true,
+    "deterministic_tests_and_independent_review_authorized": true,
+    "new_admission_issuance_authorized": false,
+    "actual_model_execution_authorized": false,
+    "T04_authorized": false,
+    "S3_release_or_production_authorized": false
+  },
+  "implementation": {
+    "admission_fields_added": [
+      "specialist_transport_ref",
+      "reasoning_effort"
+    ],
+    "new_execution_enabled_admission_requires_both_fields": true,
+    "supported_transport_refs": [
+      "fin01.bounded_agent.deepseek_strict_tool_output:v1",
+      "fin01.bounded_agent.native_json_schema_response:v1"
+    ],
+    "supported_reasoning_efforts": [
+      "none",
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ],
+    "transport_selected_from_provider_guessing": false,
+    "transport_selected_from_exact_admission_binding": true,
+    "reasoning_forwarded_to_openai_responses": true,
+    "reasoning_forwarded_to_writer_and_verifier_chat_calls": true,
+    "factory_ref": "apps.workbench.backend.application.bounded_agent_executor:build_bounded_agent_executor_for_admission",
+    "runner_preflight_zero_call": true,
+    "runner_factory_uses_exact_binding": true,
+    "default_application_runtime_silently_switched": false,
+    "automatic_fallback_added": false
+  },
+  "historical_compatibility": {
+    "legacy_missing_binding_allowed_only_for_named_historical_admission_ids": true,
+    "historical_v1_v2_v3_transport_ref": "fin01.bounded_agent.deepseek_json_object:v1",
+    "historical_v4_and_v4_r2_transport_ref": "fin01.bounded_agent.deepseek_strict_tool_output:v1",
+    "historical_json_object_transport_reopened_for_new_admissions": false,
+    "historical_digest_payload_omits_only_new_null_fields": true,
+    "historical_admission_digests": {
+      "fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v1_0.json": "48db768981ef9e637b065670d40ee4661a8c7bda9c2991be61a5d8269147ea0e",
+      "fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v2_0.json": "03cf4bfaaa0148f585003b030ae1efa9604cc308a90eea2fe369a7fe3a9136ea",
+      "fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v3_0.json": "8e058866434b8fe8e276af6deb59df9d11010a01aa869e6ca072f8554473f710",
+      "fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v4_0.json": "61e9e21033eb6ab31e7400067eb455b172d63e421ba42bdd5ca2b09a978639f6",
+      "fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v4_r2.json": "671ec47b1085e51bfb43a8af46b8b89918498441ce6d92a3bdbbcd2b62ea0adf"
+    },
+    "consumed_admission_guards_changed": false,
+    "consumed_work_unit_guards_changed": false,
+    "historical_provider_request_replay_performed": false
+  },
+  "fail_closed_guards": {
+    "new_unbound_execution_admission_rejected": true,
+    "unsupported_transport_rejected": true,
+    "transport_adapter_mismatch_rejected_before_provider_call": true,
+    "native_openai_provider_model_ref_base_url_credential_binding_required": true,
+    "deepseek_strict_provider_model_beta_binding_retained": true,
+    "retry_budget": 0,
+    "maximum_transport_attempts_per_call": 1
+  },
+  "official_alignment": {
+    "exact_model": "gpt-5.6-sol",
+    "responses_and_structured_outputs_supported": true,
+    "reasoning_effort_values_match_current_model_guidance": true,
+    "medium_is_balanced_starting_point": true,
+    "references": [
+      "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
+      "https://developers.openai.com/api/docs/guides/latest-model",
+      "https://developers.openai.com/api/docs/guides/structured-outputs"
+    ]
+  },
+  "deterministic_verification": {
+    "focused_gateway_and_S2_T01_T03": "84 passed in 91.59s",
+    "project_os_preflight": "6 passed in 0.22s",
+    "python_compileall": "pass",
+    "json_and_jsonl_parse": "pass",
+    "git_diff_check": "pass",
+    "historical_digest_assertions": 5,
+    "native_zero_call_preflight": "pass",
+    "native_factory_binding": "pass",
+    "reasoning_wire_payload_fixture": "pass",
+    "provider_calls": 0,
+    "model_inference_or_generation_calls": 0,
+    "execution_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions_issued": 0,
+    "actual_executions": 0
+  },
+  "independent_review": {
+    "disposition": "pass_after_backward_compatibility_and_wire_binding_verification",
+    "historical_transport_semantics_corrected_during_review": true,
+    "owned_blocker_closed": true,
+    "live_provider_compliance_proven": false,
+    "closed_v4_agent_artifact_proven": false,
+    "agent_research_quality_proven": false
+  },
+  "next_action": "S2-T03-NATIVE-JSON-SCHEMA-GPT-5-6-SOL-EXACT-ADMISSION-ISSUANCE-DECISION"
+}

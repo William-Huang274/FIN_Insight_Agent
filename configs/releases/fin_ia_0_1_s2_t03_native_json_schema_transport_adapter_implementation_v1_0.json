@@ -1,0 +1,79 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t03_native_json_schema_transport_adapter_implementation_v1_0",
+  "implementation_id": "S2-T03-NATIVE-JSON-SCHEMA-TRANSPORT-ADAPTER-IMPLEMENTATION",
+  "implemented_at": "2026-07-20T22:26:12+08:00",
+  "status": "adapter_fixture_proven_exact_live_admission_decision_pending",
+  "authority": {
+    "zero_call_adapter_implementation_authorized": true,
+    "deterministic_fixture_verification_authorized": true,
+    "credential_configuration_authorized": false,
+    "account_model_availability_check_authorized": false,
+    "exact_model_binding_authorized": false,
+    "new_admission_issuance_authorized": false,
+    "actual_model_execution_authorized": false,
+    "T04_authorized": false,
+    "S3_release_or_production_authorized": false
+  },
+  "implementation": {
+    "internal_transport_ref": "fin01.bounded_agent.native_json_schema_response:v1",
+    "output_contract_ref": "fin01.bounded_agent.specialist_lead_output:v4",
+    "semantic_adapter": "provider_neutral_native_json_schema_response_parser",
+    "first_wire_binding": "openai_responses_api",
+    "request_contract": "text.format.type=json_schema;strict=true",
+    "tools_sent": false,
+    "tool_choice_sent": false,
+    "external_tools_executed": false,
+    "existing_closed_v4_schema_reused": true,
+    "candidate_enum_bound_to_exact_input": true,
+    "native_json_object_parser_retained": true,
+    "duplicate_key_rejection_retained": true,
+    "candidate_evidence_semantic_validators_retained": true,
+    "refusal_incomplete_cardinality_parse_semantic_failures_typed": true,
+    "raw_provider_response_persisted": false,
+    "raw_failure_output_text_persisted": false,
+    "automatic_transport_fallback_allowed": false,
+    "automatic_retry_or_rerun_allowed": false,
+    "historical_admission_schema_or_digest_changed": false,
+    "default_application_runtime_wired": false,
+    "executor_boundary_explicit_injection_fixture_proven": true
+  },
+  "independent_review": {
+    "status": "pass_after_one_owned_repair",
+    "finding": "The initial parser object also owned the OpenAI admission binding and therefore was not provider-neutral.",
+    "repair": "Provider-neutral response parsing remains in NativeJsonSchemaResponseAdapter; OpenAI base URL credential-environment and model-ref validation now remains at the executor wire-binding boundary.",
+    "canonical_terminal_failure_path_retained": true,
+    "refusal_failure_fixture_reaches_typed_closeout": true,
+    "semantic_failure_fixture_reaches_typed_closeout": true,
+    "writer_and_verifier_blocked_after_specialist_failure": true
+  },
+  "unbound_future_preference": {
+    "user_model_preference_order": [
+      "GPT-5.6",
+      "GPT-5.5"
+    ],
+    "preference_is_exact_model_binding": false,
+    "account_availability_verified": false,
+    "credential_material_persisted": false,
+    "credential_environment_configured": false
+  },
+  "deterministic_verification": {
+    "focused_gateway_and_T03": "62 passed in 3.97s",
+    "combined_S2_T01_T03": "70 passed in 110.51s",
+    "model_calls": 0,
+    "provider_api_calls": 0,
+    "execution_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "actual_executions": 0
+  },
+  "stage_acceptance": {
+    "adapter": "fixture_proven_zero_call",
+    "S2_T03": "failed_live_provider_output_and_agent_artifact_unproven",
+    "S2_T04": "blocked_by_S2_T03",
+    "S3": "blocked_by_S2",
+    "agent_research_quality": "not_proven",
+    "release_admission": "not_issued",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S2-T03-NATIVE-JSON-SCHEMA-EXACT-LIVE-ADMISSION-DECISION"
+}

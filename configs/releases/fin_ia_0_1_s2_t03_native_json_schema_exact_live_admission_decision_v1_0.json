@@ -1,0 +1,137 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t03_native_json_schema_exact_live_admission_decision_v1_0",
+  "decision_id": "S2-T03-NATIVE-JSON-SCHEMA-EXACT-LIVE-ADMISSION-DECISION",
+  "decided_at": "2026-07-20T22:54:52+08:00",
+  "status": "exact_model_access_verified_changes_required_before_admission_issuance",
+  "authority": {
+    "credential_gate_authorized": true,
+    "credential_local_save_authorized": true,
+    "account_model_availability_preflight_authorized": true,
+    "exact_model_decision_authorized": true,
+    "admission_binding_repair_authorized": false,
+    "new_admission_issuance_authorized": false,
+    "actual_model_execution_authorized": false,
+    "T04_authorized": false,
+    "S3_release_or_production_authorized": false
+  },
+  "credential_gate": {
+    "credential_env": "OPENAI_API_KEY",
+    "local_storage": ".env",
+    "local_storage_ignored_by_git": true,
+    "local_storage_tracked_by_git": false,
+    "credential_material_persisted_in_git": false,
+    "credential_material_persisted_in_project_artifacts": false,
+    "plaintext_value_recorded": false
+  },
+  "account_model_availability_preflight": {
+    "provider": "openai",
+    "endpoint_semantics": "GET_model_metadata_only",
+    "requested_exact_model": "gpt-5.6-sol",
+    "available_to_configured_project": true,
+    "fallback_model_probe_performed": false,
+    "fallback_model": "gpt-5.5",
+    "inference_or_generation_performed": false
+  },
+  "selected_candidate_binding": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "model_ref": "openai:gpt-5.6-sol",
+    "api_family": "responses_api",
+    "base_url": "https://api.openai.com/v1",
+    "credential_env": "OPENAI_API_KEY",
+    "specialist_transport_ref": "fin01.bounded_agent.native_json_schema_response:v1",
+    "specialist_output_contract_ref": "fin01.bounded_agent.specialist_lead_output:v4",
+    "structured_output": {
+      "type": "json_schema",
+      "strict": true,
+      "tools_sent": false,
+      "tool_choice_sent": false,
+      "external_tool_execution_allowed": false
+    },
+    "reasoning_effort_provisional": "medium",
+    "reasoning_effort_machine_bound": false,
+    "exact_admission_issued": false
+  },
+  "provisional_execution_envelope": {
+    "maximum_semantic_provider_network_calls": 3,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "specialist_max_output_tokens": 1600,
+    "writer_max_output_tokens": 1000,
+    "verifier_max_output_tokens": 900,
+    "maximum_output_tokens_total": 3500,
+    "public_price_usd_per_million_tokens": {
+      "input": 5.0,
+      "cached_input": 0.5,
+      "output": 30.0
+    },
+    "output_only_cost_ceiling_usd": 0.105,
+    "proposed_max_total_cost_usd": 0.25,
+    "cost_cap_machine_bound": false,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_case_head_writes": 0,
+    "evidence_promotions": 0
+  },
+  "provisional_fresh_identity": {
+    "admission_id": "fin01-s2-t03-bounded-agent-native-json-schema-gpt-5-6-sol-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s2-t03-bounded-agent-work-unit-native-json-schema-gpt-5-6-sol-r1",
+    "runtime_root": ".codex_runtime/fin01-s2-t03-native-json-schema-gpt-5-6-sol-live-validation-r1",
+    "issued": false,
+    "consumable": false
+  },
+  "independent_review": {
+    "disposition": "changes_required_before_admission_issuance",
+    "exact_model_available": true,
+    "provider_capability_documented": true,
+    "project_owned_blockers": [
+      "runner_preflight_hardcodes_deepseek_v4_pro_and_beta_base_url",
+      "runner_factory_hardcodes_DeepSeekBoundedAgentExecutor_without_native_adapter",
+      "BoundedAgentAdmission_has_no_specialist_transport_ref_binding",
+      "BoundedAgentAdmission_has_no_reasoning_effort_binding",
+      "native_adapter_is_fixture_proven_only_through_explicit_test_injection"
+    ],
+    "why_admission_was_not_issued": "Issuing now would either fail before the provider call or leave transport and reasoning selection outside the admission digest.",
+    "historical_admission_digest_mutation_allowed": false,
+    "silent_provider_or_transport_inference_allowed": false,
+    "automatic_fallback_allowed": false
+  },
+  "required_zero_call_repair_acceptance": [
+    "historical_v1_v2_v3_v4_and_v4_r2_admission_digests_remain_unchanged",
+    "exact_admission_digest_binds_specialist_transport_ref_and_reasoning_effort",
+    "runner_preflight_accepts_only_the_exact_admitted_provider_model_base_url_transport_and_reasoning",
+    "runner_factory_selects_native_json_schema_adapter_from_exact_admission_binding",
+    "deepseek_consumed_paths_remain_rejected_and_unchanged",
+    "retry_budget_remains_zero_and_preflight_makes_zero_provider_calls",
+    "default_application_runtime_does_not_silently_switch_provider_or_transport"
+  ],
+  "official_references": [
+    "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
+    "https://developers.openai.com/api/docs/guides/latest-model",
+    "https://developers.openai.com/api/docs/guides/structured-outputs"
+  ],
+  "observed_counts_this_decision": {
+    "provider_api_metadata_calls": 1,
+    "model_inference_or_generation_calls": 0,
+    "execution_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions_issued": 0,
+    "actual_executions": 0
+  },
+  "deterministic_verification": {
+    "focused_S2_T01_T03_contracts": "63 passed in 11.33s",
+    "project_os_preflight": "6 passed in 2.29s",
+    "json_and_jsonl_parse": "pass",
+    "git_diff_check": "pass"
+  },
+  "stage_acceptance": {
+    "exact_model_access": "pass",
+    "admission_issuance": "blocked_by_project_owned_binding_and_runner_wiring_gap",
+    "S2_T03": "failed_live_provider_output_and_closed_v4_agent_artifact_unproven",
+    "S2_T04": "blocked_by_S2_T03",
+    "S3": "blocked_by_S2",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S2-T03-NATIVE-JSON-SCHEMA-ADMISSION-BINDING-AND-RUNNER-WIRING-REPAIR"
+}

@@ -1,0 +1,409 @@
+{
+  "schema_version": "fin_ia_0_1_s1_to_s4_t06_stage_boundary_and_task_ownership_rebaseline_v1_0",
+  "audit_id": "FIN-0.1-S1-TO-S4-T06-STAGE-BOUNDARY-AND-TASK-OWNERSHIP-REBASELINE",
+  "audited_at": "2026-07-31T15:30:00+08:00",
+  "status": "pass_boundaries_rebaselined_T05_T06_closed_honestly_blocked_T07_next_no_acceptance_inflation",
+  "authority": {
+    "user_instruction": "重新审计 S1 至 T06 的 Agent 链路能力，并按真实复杂度重新界定各 S 阶段任务归属；属于 T06 的保留，不属于的分配到 T07、S5 或下一版本",
+    "audit_is_not": [
+      "T06_pass_override",
+      "L1_gate_weakening",
+      "historical_result_rewrite",
+      "new_model_provider_network_execution_authority",
+      "release_or_production_authority"
+    ]
+  },
+  "source_of_truth_refs": [
+    "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+    "configs/releases/fin_ia_0_1_s0_to_s4_t05_full_chain_global_audit_and_forward_plan_v1_0.json",
+    "configs/releases/fin_ia_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_r2_exact_live_execution_success_result_v1_0.json",
+    "configs/releases/fin_ia_0_1_s4_t06_mu_r2_success_only_paired_assessment_result_v1_0.json",
+    "configs/releases/fin_ia_0_1_s4_t06_mu_wwc_stable_top3_replacement_r1_exact_live_failure_result_v1_0.json",
+    "configs/releases/fin_ia_0_1_s4_shared_runtime_deterministic_fact_candidate_pool_planner_minimum_zero_call_implementation_v1_0.json",
+    "configs/releases/fin_ia_0_1_s4_shared_runtime_deterministic_fact_candidate_pool_planner_independent_fresh_agent_proof_failure_result_v1_0.json",
+    "docs/project_os/capability_status_ledger.jsonl",
+    "docs/project_os/root_cause_issue_ledger.jsonl",
+    "docs/project_os/external_pattern_registry.jsonl",
+    "docs/project_os/financial_research_method_registry.jsonl"
+  ],
+  "boundary_principles": [
+    "A problem is owned by the earliest product promise it prevents, not by the live run that happened to expose it.",
+    "A case-transfer task may validate a shared Runtime but may not absorb unlimited shared-runtime redesign, provider qualification, release packaging or repository cleanup.",
+    "Engineering capability, coherent product output, research quality, owner acceptance and release qualification remain separate states.",
+    "An original acceptance clause that allows an honest block is terminal: it does not require unlimited repair until product pass.",
+    "Current-release hard integrity is not weakened. Unmet release gates remain blockers and may produce an honest blocked release decision.",
+    "Cross-case architecture consolidation is a new-version capability unless it is the smallest bounded change required to preserve an already accepted current-version path.",
+    "Paid exact-live is product proof, not the default integration test or field-by-field debugger."
+  ],
+  "stage_capability_baseline": [
+    {
+      "stage": "S1",
+      "original_mission": "one-cell fixture-shadow mainline cut-through",
+      "current_state": "closed_pass_fixture_only",
+      "proven_capabilities": [
+        "Workbench to API to Fin01ResearchRuntime to canonical Run Event Artifact read projection",
+        "explicit deterministic and agent-fixture profiles without silent substitution",
+        "Agent Skill Tool Graph trace in a complete fixture cell",
+        "terminal failure with zero fallback artifact",
+        "desktop and mobile inspection of exact artifacts and stop reason"
+      ],
+      "not_proven": [
+        "real model research quality",
+        "cross-case transfer",
+        "release reproducibility"
+      ],
+      "future_owner": "regression_baseline_only"
+    },
+    {
+      "stage": "S2",
+      "original_mission": "one-cell bounded real Agent value proof",
+      "current_state": "closed_pass_owner_accepted_one_cell",
+      "proven_capabilities": [
+        "DeepSeek segmented bounded output path",
+        "one exact WorkUnit Attempt Run with retry zero",
+        "nine reconstructable artifacts",
+        "four-layer verifier path",
+        "same-input deterministic baseline and owner-accepted material Agent gain"
+      ],
+      "not_proven": [
+        "three-cell orchestration",
+        "cross-case portability",
+        "stable provider compliance for large nested contracts"
+      ],
+      "future_owner": "historical_provider_and_one_cell_regression_only"
+    },
+    {
+      "stage": "S3",
+      "original_mission": "NVDA three-cell anchor product",
+      "current_state": "closed_pass_NVDA_R2_owner_accepted",
+      "proven_capabilities": [
+        "three active decision cells",
+        "three Specialists plus Research Lead Writer and Verifier",
+        "six logical nodes and twelve model calls",
+        "Evidence Numeric Judgment Workpaper Report Trace in one coherent nine-Artifact Run",
+        "cross-cell synthesis and actionable what-would-change tasks",
+        "restricted provider-output capture and canonical terminal truth",
+        "paired deterministic comparison and explicit owner acceptance"
+      ],
+      "known_debt": [
+        "high schema and transport convergence cost",
+        "L4 narrative and user-fit findings",
+        "NVDA acceptance does not prove transfer"
+      ],
+      "future_owner": "accepted_anchor_and_legacy_compatibility_baseline"
+    },
+    {
+      "stage": "S4_T01_T04",
+      "original_mission": "prepare three-case transfer",
+      "current_state": "closed_pass",
+      "proven_capabilities": [
+        "DELL and MU exact case packs",
+        "financial method contracts with named Runtime consumers",
+        "source-grounded DELL and MU input materialization",
+        "case-local identity and leakage fixtures",
+        "DELL MU NVDA deterministic three-case path"
+      ],
+      "known_debt": [
+        "method registry contains additional active methods without Runtime consumer contracts",
+        "fixture proof is not paid product proof"
+      ],
+      "future_owner": "preserved_case_transfer_input_baseline"
+    },
+    {
+      "stage": "S4_T05",
+      "original_mission": "DELL exact R2 and paired assessment",
+      "current_state": "terminal_honestly_blocked_closed_no_more_T05_execution",
+      "proven_capabilities": [
+        "DELL source-grounded full six-node twelve-call path can complete",
+        "nine Artifacts and material Agent actionability gain were observed",
+        "shared Runtime detects several truth capacity lineage and terminal failures fail-closed"
+      ],
+      "product_result": "DELL_R2_not_proven_owner_acceptance_ineligible",
+      "reason_for_close": "The task acceptance explicitly allowed an honest block. Repeated exact-live integration debugging exceeded T05 scope and a final new L1 occurred under the frozen stop rule."
+    },
+    {
+      "stage": "S4_T06",
+      "original_mission": "MU exact R2 and paired assessment",
+      "current_state": "terminal_honestly_blocked_closed_engineering_capability_preserved_no_more_T06_execution",
+      "proven_capabilities": [
+        "MU exact source-grounded input and current-case identity",
+        "one formal six-node twelve-call nine-Artifact success",
+        "paired assessment that correctly rejected numeric and identity L1 defects",
+        "local material numeric identity date task lineage and candidate-selection owners implemented",
+        "current-worktree DELL MU NVDA full-fake each reaches 6 nodes 12 calls 12 captures and 9 Artifacts"
+      ],
+      "product_result": "MU_R2_not_proven_owner_acceptance_ineligible",
+      "latest_formal_truth": "replacement exact-live stopped at call four because twenty-two visible Fact candidates exceeded the six-item Provider contract; zero Artifacts",
+      "reason_for_close": "The task acceptance explicitly allowed an honest block. Remaining work is shared-runtime portability, proof hermeticity, release engineering or next-version architecture rather than more MU field repairs."
+    }
+  ],
+  "current_agent_chain": {
+    "logical_flow": [
+      "Workbench task and exact Case input",
+      "Fin01ResearchRuntime and canonical WorkUnit Attempt ResearchRun",
+      "three segmented Domain Specialist paths producing Fact Claim and WWC judgments",
+      "Research Lead cross-cell synthesis",
+      "Writer local no-source delivery",
+      "Verifier layered findings",
+      "nine immutable Artifacts plus receipts captures events and trace"
+    ],
+    "strong_capabilities": [
+      "one accepted real one-cell product and one accepted three-cell NVDA product",
+      "case-specific source and numeric packs for NVDA DELL and MU",
+      "explicit retry-zero exact-once run governance",
+      "failure capture before validation and typed terminal truth",
+      "local deterministic ownership for canonical IDs identity lineage important numeric rendering and typed dates",
+      "paired deterministic baseline and layered L1 to L4 review",
+      "fail-closed cross-case and mutation checks"
+    ],
+    "unproven_or_unstable_capabilities": [
+      "transfer-safe DELL and MU product acceptance",
+      "stable natural Provider compliance for large candidate and narrative surfaces",
+      "one-source compilation across every prompt schema validator fake selector renderer budget and telemetry family",
+      "machine Verifier semantic coverage sufficient to replace independent L1 review",
+      "hermetic independent proof packaging and complete failure observability",
+      "three-case Human time edit burden trust and continue-use calibration",
+      "release-candidate Git package rollback and RG1 to RG5"
+    ]
+  },
+  "root_cause_classes": [
+    {
+      "class": "provider_truth_ownership_too_broad",
+      "examples": [
+        "model-authored material numeric narrative",
+        "model-authored dates",
+        "model-selected cardinality treated as canonical final cardinality",
+        "model-restated identity and authority fields"
+      ],
+      "disposition": "Keep current local owners; comprehensive surface minimization and compiler consolidation belongs to FIN_0_2."
+    },
+    {
+      "class": "cross_layer_contract_fragmentation",
+      "examples": [
+        "prompt schema validator fake Provider selector renderer and telemetry drift",
+        "S3 and S4 lineage-family drift",
+        "Provider candidate maximum and local selected maximum conflation"
+      ],
+      "disposition": "Current fixes remain regression protection; broad contract-family consolidation belongs to FIN_0_2."
+    },
+    {
+      "class": "fixture_and_proof_blind_spots",
+      "examples": [
+        "fake Provider sanitized natural current-case ticker usage",
+        "fake did not expose all legal candidate aliases",
+        "disposable proof omitted dependencies or relied on hidden worktree state",
+        "proof runner retained only a five-hundred-character terminal tail"
+      ],
+      "disposition": "Functional cross-case regression belongs to T07; hermetic package inventory and complete logs belong to S5."
+    },
+    {
+      "class": "live_used_as_integration_test",
+      "examples": [
+        "many sequential exact-live runs exposed one downstream contract at a time",
+        "authority issuance and proof micro-gates multiplied without changing user value"
+      ],
+      "disposition": "No more T05 or T06 paid runs. T07 has at most one NVDA exact revalidation after one bounded current-worktree regression decision."
+    },
+    {
+      "class": "acceptance_and_program_state_drift",
+      "examples": [
+        "engineering pass confused with product pass",
+        "stale nested backlog statuses",
+        "duplicate RC-P36-084 numeric prefix",
+        "large dirty staged release slice"
+      ],
+      "disposition": "T10 reconciles stage truth; S5 owns release package issue-ID Git rollback and reproducibility governance."
+    }
+  ],
+  "task_ownership_rebaseline": [
+    {
+      "owner": "S4-T05",
+      "decision": "closed_honestly_blocked",
+      "remaining_scope": [
+        "preserve immutable DELL results and root-cause evidence",
+        "no new runtime repair admission provider call paired or owner acceptance"
+      ]
+    },
+    {
+      "owner": "S4-T06",
+      "decision": "closed_honestly_blocked",
+      "remaining_scope": [
+        "freeze MU exact results paired L1 rejection and current engineering evidence",
+        "retain hard L1 truth numeric identity provenance lineage and terminal gates",
+        "no second replacement proof package admission or exact-live"
+      ]
+    },
+    {
+      "owner": "S4-T07",
+      "decision": "next_active_slice_item",
+      "scope": [
+        "one bounded current-worktree shared-runtime regression over DELL MU NVDA",
+        "consume the fact-candidate planner as an existing implementation without broad redesign",
+        "NVDA post-transfer compatibility and at most one separately authorized exact revalidation",
+        "produce an NVDA R3 candidate only if the exact product passes L1 and L2"
+      ],
+      "non_goals": [
+        "fix disposable proof hermeticity",
+        "repair DELL or MU",
+        "all-node contract compiler rewrite",
+        "provider matrix or strict-schema qualification",
+        "more than one exact-live"
+      ],
+      "stop_rule": "Any new L1 closes T07 honestly blocked and moves structural repair to FIN_0_2; no T07 repair-live loop."
+    },
+    {
+      "owner": "S4-T08",
+      "decision": "read_only_cross_case_calibration_after_T07",
+      "scope": [
+        "compare immutable NVDA accepted DELL blocked and MU blocked evidence",
+        "calibrate integrity failure taxonomy Agent gain cost latency and evidence yield",
+        "record Workbench task time edit burden trust and continue-use where real evidence exists",
+        "carry L2 to L4 semantic and Chinese delivery findings without promoting failed outputs"
+      ],
+      "non_goals": [
+        "new model calls",
+        "repair failed artifacts",
+        "declare three R2 cases"
+      ]
+    },
+    {
+      "owner": "S4-T09",
+      "decision": "human_review_only",
+      "scope": [
+        "owner reviews available exact products and explicit blocked cases",
+        "qualified-senior NVDA R3 only with a real qualified external reviewer"
+      ],
+      "stop_rule": "No model verifier owner self-review or shadow reviewer substitutes for qualified-senior authority."
+    },
+    {
+      "owner": "S4-T10",
+      "decision": "stage_closeout_pass_or_honest_block",
+      "scope": [
+        "reconcile stage status ledgers and issue ownership",
+        "freeze S4 to S5 carry-forward",
+        "record whether three-case R2 and NVDA R3 are unmet",
+        "allow S5 decision-only entry even when S4 is honestly blocked"
+      ]
+    },
+    {
+      "owner": "S5",
+      "decision": "release_engineering_and_decision_not_agent_semantic_repair",
+      "scope": [
+        "explicit package inventory and complete content-addressed per-test logs",
+        "hermetic independent reproducibility and RC-P36-085 disposition",
+        "Git commit manifest coherent rollback slice and secret-safe release evidence",
+        "root-cause ledger duplicate-ID reconciliation",
+        "RG1 to RG5 and released-or-honestly-blocked decision"
+      ],
+      "entry_modes": {
+        "release_candidate_execution": "requires_S4_pass",
+        "decision_only_honest_block": "allowed_after_S4_T10_honest_block_without_paid_three_case_rerun"
+      },
+      "non_goals": [
+        "new Agent semantics",
+        "prompt field repair",
+        "DELL or MU product acceptance retry",
+        "provider qualification"
+      ]
+    },
+    {
+      "owner": "FIN_0_2",
+      "decision": "next_version_architecture_and_transfer_completion",
+      "scope": [
+        "single compiled contract source across prompt schema validator fake selector renderer capacity budget telemetry and capture index",
+        "complete Provider surface minimization to judgment atoms and request-local aliases",
+        "formal DELL and MU R2 reattempt on the consolidated Runtime",
+        "machine Verifier semantic numeric identity conflict and delivery-quality calibration",
+        "executor and version-family decomposition",
+        "strict-schema or alternate-provider qualification after a complete HTTPS API contract is available"
+      ]
+    },
+    {
+      "owner": "post_FIN_0_2_roadmap",
+      "decision": "deferred_product_expansion",
+      "scope": [
+        "additional financial methods still registry-only or without named Runtime consumers",
+        "cross-sector packs",
+        "institutional memory and selective refresh",
+        "monitoring",
+        "multi-format delivery",
+        "enterprise production controls"
+      ]
+    }
+  ],
+  "root_cause_reassignment": [
+    {
+      "issue": "RC-P36-067 and RC-P36-068",
+      "from": "T05_T06_active_repair",
+      "to": "current_release_blocker_record_then_FIN_0_2_transfer_acceptance",
+      "current_version_effect": "DELL_and_MU_R2_remain_unproven"
+    },
+    {
+      "issue": "RC-P36-080 and RC-P36-083",
+      "from": "T06_field_repair",
+      "to": "FIN_0_2_compiled_contract_and_truth_surface_consolidation",
+      "current_version_effect": "no_more_T06_live_repair"
+    },
+    {
+      "issue": "RC-P36-084-fact-candidate-pool",
+      "from": "T06_product_acceptance",
+      "to": "T07_current_worktree_cross_case_regression_plus_S5_hermetic_release_proof",
+      "current_version_effect": "planner_is_engineering_evidence_not_MU_product_pass"
+    },
+    {
+      "issue": "RC-P36-085",
+      "from": "T06",
+      "to": "S5_release_reproducibility_and_failure_observability",
+      "current_version_effect": "does_not_establish_a_new_business_L1"
+    },
+    {
+      "issue": "RC-P36-084-machine-verifier-quality",
+      "from": "T06",
+      "to": "T08_T10_quality_calibration_and_FIN_0_2_verifier_semantics",
+      "current_version_effect": "L2_L4_does_not_trigger_T06_repair"
+    },
+    {
+      "issue": "RC-P36-070_RC-P36-073_RC-P36-074_RC-P36-075",
+      "from": "T06_entry",
+      "to": "FIN_0_2_optional_provider_qualification",
+      "current_version_effect": "parked_not_DeepSeek_mainline_blockers"
+    }
+  ],
+  "release_truth": {
+    "FIN_0_1_release_requirements_changed": false,
+    "three_case_R2_requirement": "still_required_for_release",
+    "NVDA_R3_requirement": "still_required_for_release",
+    "current_release_status": "not_qualified",
+    "permitted_closeout": "honest_blocked_candidate_without_release_claim",
+    "reason": "Reassigning work prevents a task loop; it does not convert missing DELL MU R2 or NVDA R3 evidence into a pass."
+  },
+  "execution_policy_after_rebaseline": {
+    "T05_additional_model_provider_network_calls": 0,
+    "T06_additional_model_provider_network_calls": 0,
+    "T06_additional_proof_packages": 0,
+    "T07_exact_live_ceiling": 1,
+    "T08_model_provider_network_calls": 0,
+    "S5_paid_three_case_rerun_if_S4_blocked": 0,
+    "historical_artifact_rewrite": false,
+    "failed_or_quarantined_output_promotion": false
+  },
+  "validation": {
+    "boundary_contract_tests": "4 passed",
+    "strict_release_and_project_os_machine_source_parse": {
+      "files_checked": 403,
+      "duplicate_or_parse_errors": 0
+    },
+    "project_os_full_chain_preflight": "pass_open_full_chain_blockers_0",
+    "touched_file_diff_check": "pass",
+    "touched_file_secret_scan": "pass_no_matches",
+    "legacy_global_audit_test": {
+      "status": "failed_before_duplicate_scan_due_stale_exact_file_count",
+      "expected_release_json_count": 296,
+      "actual_release_json_count": 399,
+      "effect_on_this_audit": "none_strict_scan_was_run_directly_over_all_current_machine_sources",
+      "future_owner": "S5_manifest_based_package_inventory_and_hermetic_test_baseline"
+    }
+  },
+  "next_action": "S4-T07-ENTRY-SHARED-RUNTIME-CURRENT-WORKTREE-REGRESSION-AND-NVDA-POST-TRANSFER-REVALIDATION-SCOPE-DECISION"
+}

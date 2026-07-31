@@ -1,0 +1,161 @@
+{
+  "contract_id": "fin_ia_0_1_s2_t03_specialist_lead_output_contract_repair_v2_0",
+  "status": "live_validation_terminal_failed_shape_telemetry_repaired_no_further_run_admitted",
+  "scope": "S2-T03 first specialist-and-lead stage only",
+  "output_contract_ref": "fin01.bounded_agent.specialist_lead_output:v2",
+  "supersedes_prompt_contract_ref": "fin01.bounded_agent.specialist_lead_output:v1",
+  "historical_admission": {
+    "ref": "configs/releases/fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v1_0.json",
+    "consumed": true,
+    "mutable": false,
+    "rerunnable": false
+  },
+  "provider_output_mode": {
+    "response_format": {
+      "type": "json_object"
+    },
+    "guarantee": "valid_json_object_only_not_nested_schema_conformance",
+    "prompt_requires_json_instruction": true,
+    "prompt_requires_concrete_example": true,
+    "deepseek_beta_strict_tool_mode_adopted": false,
+    "reason": "beta strict tool mode changes base URL and tool-call semantics outside the consumed admission and current external_tool_calls=0 boundary"
+  },
+  "required_outer_keys": [
+    "output_contract_ref",
+    "specialist_judgment",
+    "lead_adjudication"
+  ],
+  "specialist_judgment": {
+    "required_keys": [
+      "thesis",
+      "confidence",
+      "evidence_findings",
+      "counter_thesis",
+      "unresolved_gaps"
+    ],
+    "confidence_enum": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "evidence_finding_required_keys": [
+      "candidate_id",
+      "supported_claim",
+      "boundary"
+    ],
+    "additional_keys_allowed": false,
+    "gap_items_must_be_nonempty_strings": true
+  },
+  "lead_adjudication": {
+    "required_keys": [
+      "decision",
+      "adjudicated_judgment",
+      "confidence",
+      "evidence_refs",
+      "remaining_gaps",
+      "what_would_change"
+    ],
+    "decision_enum": [
+      "accept",
+      "repair",
+      "reject"
+    ],
+    "confidence_enum": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "additional_keys_allowed": false,
+    "gap_and_change_items_must_be_nonempty_strings": true
+  },
+  "evidence_boundary": {
+    "candidate_ids_must_be_exact_supplied_ids": true,
+    "evidence_findings_min_items": 1,
+    "lead_evidence_refs_min_items": 1,
+    "candidate_is_evidence": false,
+    "unsupported_semantic_synthesis_allowed": false
+  },
+  "allowed_lossless_adaptations": [
+    "unwrap a sole result/output/data mapping",
+    "trim and lowercase declared enum strings",
+    "wrap one evidence-finding mapping as a one-item list",
+    "wrap one string as a one-item list for declared list fields"
+  ],
+  "forbidden_repairs": [
+    "synthesize a missing thesis, judgment, claim, boundary, candidate ID, evidence ref, confidence or decision",
+    "map semantic synonyms into contract enums",
+    "replace an unknown candidate ID",
+    "recover truncated or empty provider content",
+    "persist raw provider response or private reasoning"
+  ],
+  "typed_terminal_failures": [
+    "bounded_agent_provider_failure",
+    "bounded_agent_provider_output_empty",
+    "bounded_agent_provider_output_truncated",
+    "bounded_agent_provider_finish_reason_not_stop",
+    "bounded_agent_provider_output_invalid_json",
+    "bounded_agent_specialist_contract_ref_invalid",
+    "bounded_agent_specialist_outer_schema_invalid",
+    "bounded_agent_specialist_schema_invalid",
+    "bounded_agent_specialist_judgment_schema_invalid",
+    "bounded_agent_lead_schema_invalid",
+    "bounded_agent_specialist_confidence_invalid",
+    "bounded_agent_specialist_judgment_text_required",
+    "bounded_agent_evidence_findings_required",
+    "bounded_agent_evidence_finding_schema_invalid",
+    "bounded_agent_evidence_ref_not_in_input",
+    "bounded_agent_specialist_gap_schema_invalid",
+    "bounded_agent_lead_adjudication_invalid",
+    "bounded_agent_lead_gap_schema_invalid",
+    "bounded_agent_adjudicated_judgment_required"
+  ],
+  "verification": {
+    "mode": "one_live_validation_then_deterministic_post_run_repair",
+    "real_model_calls": 1,
+    "network_calls": 1,
+    "new_exact_admission_issued": true,
+    "rerun_performed": false
+  },
+  "live_validation_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v2_0.json",
+    "admission_id": "fin01-s2-t03-bounded-agent-v2-contract-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s2-t03-bounded-agent-work-unit-v2-contract-r1",
+    "runtime_root": ".codex_runtime/fin01-s2-t03-v2-live-validation-r1",
+    "user_authorized": true,
+    "execution_started": true,
+    "execution_consumed": true
+  },
+  "live_validation_result": {
+    "state": "failed",
+    "research_run_id": "research_run_fin01_9239b033666398bd8dece2a5",
+    "attempt_id": "attempt_fin01_c058cc2c206c715aa933bd8b",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:bounded_specialist_and_lead:contract_validation_failed",
+    "failure_code": "bounded_agent_specialist_outer_schema_invalid",
+    "model_calls": 1,
+    "provider_calls": 1,
+    "network_calls": 1,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "transport_attempts": 1,
+    "input_tokens": 1010,
+    "output_tokens": 1512,
+    "total_tokens": 2522,
+    "latency_ms": 18212,
+    "estimated_cost_usd": 0.00175479,
+    "artifact_count": 0,
+    "fallback_performed": false,
+    "automatic_rerun_performed": false,
+    "raw_provider_response_persisted": false,
+    "private_reasoning_persisted": false
+  },
+  "post_run_deterministic_repair": {
+    "superseding_output_contract_ref": "fin01.bounded_agent.specialist_lead_output:v3",
+    "contract_ref": "configs/releases/fin_ia_0_1_s2_t03_specialist_lead_output_contract_repair_v3_0.json",
+    "lossless_contract_ref_plus_known_wrapper_flattening": true,
+    "outer_missing_and_unexpected_failure_codes_split": true,
+    "secret_safe_output_shape_telemetry": true,
+    "fixture_tests": "23 passed; related S1/S2/Workbench regression 42 passed in 33.99s",
+    "additional_live_run_performed": false
+  },
+  "next_execution_gate": "requires explicit user authorization plus new execution identity, exact input digest, provider/model/network/call/token/cost budget and specialist_output_contract_ref v3"
+}

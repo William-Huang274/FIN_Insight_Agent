@@ -1,0 +1,259 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t01_one_cell_bounded_agent_preflight_v1_0",
+  "contract_id": "REL-PROD-001:S2-T01:ONE-CELL-BOUNDED-AGENT-PREFLIGHT",
+  "version": "1.0",
+  "status": "accepted_design_preflight_actual_execution_not_admitted",
+  "release_id": "REL-PROD-001",
+  "slice_id": "S2",
+  "task_id": "S2-T01",
+  "purpose": "Freeze the one-cell bounded real-agent topology, integrity boundary, comparison method, and exact admission blockers without executing a model, provider, network route, external tool, evidence promotion, or business Case mutation.",
+  "authority": {
+    "current_turn_allows": [
+      "repository_read_only_preflight",
+      "design_and_machine_contract_freeze",
+      "deterministic_contract_tests",
+      "project_os_and_backlog_updates",
+      "path_exact_git_staging"
+    ],
+    "current_turn_forbids": [
+      "bounded_agent_profile_implementation",
+      "model_or_provider_call",
+      "provider_or_source_network_egress",
+      "paid_service_or_commercial_data",
+      "external_tool_invocation",
+      "evidence_promotion_execution",
+      "real_business_case_mutation",
+      "human_review_fabrication",
+      "release_candidate_or_production_action"
+    ],
+    "actual_execution_admitted": false
+  },
+  "source_contracts": [
+    "docs/architecture/repository/FIN_0_1_PROGRAM_EXECUTION_PLAN_DRAFT_20260719.zh-CN.md",
+    "docs/architecture/repository/FIN_0_1_LAYER_2_AGENT_CORE_EXECUTION_DRAFT_20260719.zh-CN.md",
+    "docs/architecture/repository/FIN_0_1_LAYER_3_AGENTIC_SEARCH_EVIDENCE_EXECUTION_DRAFT_20260719.zh-CN.md",
+    "docs/architecture/repository/FIN_0_1_LAYER_4_FINANCIAL_JUDGMENT_EXECUTION_DRAFT_20260719.zh-CN.md",
+    "docs/architecture/repository/FIN_0_1_LAYER_5_PRESENTATION_RUNTIME_PROFILES_EXECUTION_DRAFT_20260719.zh-CN.md",
+    "docs/architecture/repository/FIN_0_1_LAYER_6_RELEASE_SCOPE_EVALUATION_EXECUTION_DRAFT_20260719.zh-CN.md",
+    "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
+  ],
+  "case_and_cell_scope": {
+    "company": "NVDA",
+    "cell_id": "demand_authenticity_and_sustainability",
+    "cell_alias_mapping": {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "layer_4_semantic_role": "demand_signal"
+    },
+    "maximum_cell_count": 1,
+    "execution_case_id": null,
+    "execution_case_version": null,
+    "decision_surface_version_ref": null,
+    "as_of": null,
+    "input_digest": null,
+    "binding_status": "blocked_until_exact_evaluation_case_version_and_input_digest_are_frozen",
+    "live_business_case_head_mutation_allowed": false
+  },
+  "profile_contract": {
+    "product_profile_id": "bounded_agent_internal",
+    "future_execution_profile_version_ref": null,
+    "future_work_unit_type": "bounded_agent_internal_entry",
+    "future_worker_ref": null,
+    "status": "profile_identity_reserved_not_implemented_or_admitted",
+    "single_runtime": "apps/workbench/backend/application/research_runtime.py::Fin01ResearchRuntime",
+    "single_admission_path": "Workbench -> API v1 -> ExecutionService -> existing DurableSchedulerService -> Fin01ResearchRuntime -> existing RuntimeFacade/store -> read projection -> Workbench",
+    "parallel_runtime_or_standalone_runner_allowed": false,
+    "silent_deterministic_substitution_allowed": false,
+    "explicit_child_fallback_allowed_only_after_parent_terminal_truth": true,
+    "required_version_bindings": [
+      "model_and_provider",
+      "agent_definition_versions",
+      "skill_pack_versions",
+      "tool_and_graph_allowlists",
+      "network_and_data_policy",
+      "context_policy",
+      "budget_and_concurrency",
+      "stop_and_repair_policy",
+      "output_authority",
+      "ui_label",
+      "eval_suite"
+    ]
+  },
+  "execution_cardinality": {
+    "scope": "per_exact_execution_admission",
+    "maximum_work_units_per_execution_admission": 1,
+    "maximum_attempts_per_work_unit": 1,
+    "retry_budget": 0,
+    "maximum_research_runs_per_attempt": 1,
+    "late_or_stale_output_policy": "quarantine_no_commit",
+    "repair_policy": "a_repair_requires_a_new_exact_execution_admission_and_run_with_changed_information_route_skill_context_or_implementation",
+    "repair_cycle_ceiling_for_S2": 1
+  },
+  "required_one_cell_flow": [
+    "lead_bounded_plan",
+    "real_local_or_official_evidence_request",
+    "candidate_collection",
+    "claim_scoped_evidence_gate",
+    "deterministic_numeric_program",
+    "specialist_financial_judgment",
+    "lead_adjudication",
+    "writer_no_source",
+    "four_layer_verification",
+    "canonical_exact_artifact_commit",
+    "agent_vs_fallback_comparison",
+    "owner_product_review"
+  ],
+  "provider_model_budget_admission": {
+    "provider": null,
+    "model": null,
+    "provider_endpoint": null,
+    "credential_environment_variable": null,
+    "max_provider_preflight_calls": null,
+    "max_semantic_model_calls": null,
+    "max_input_tokens": null,
+    "max_output_tokens": null,
+    "max_total_cost_usd": null,
+    "max_transport_attempts_per_call": 1,
+    "automatic_retry_allowed": false,
+    "raw_private_reasoning_persistence_allowed": false,
+    "status": "blocked_requires_fresh_provider_model_call_token_cost_and_secret_safe_preflight",
+    "prior_three_cell_deepseek_freeze": {
+      "ref": "configs/releases/fin_ia_0_1_p36_three_cell_deepseek_vertical_contract_v1_1.json",
+      "disposition": "historical_noncanonical_scope_mismatch_not_selected_not_revalidated_not_authorized"
+    }
+  },
+  "data_and_tool_boundary": {
+    "initial_source_policy": "local_or_repo_available_official_assets_first",
+    "model_provider_egress": "denied_until_exact_execution_admission",
+    "source_network_egress": "denied_for_initial_one_cell_run_unless_separately_added_to_exact_execution_admission",
+    "commercial_data": "forbidden",
+    "external_tool_calls": "denied_until_exact_tool_allowlist_and_authority_are_frozen",
+    "tool_gateway_required_for_any_future_tool_call": true,
+    "candidate_is_evidence": false,
+    "graph_edge_is_evidence": false,
+    "writer_source_or_tool_calls": 0
+  },
+  "promotion_and_write_boundary": {
+    "future_promotion_scope": "exact_run_scoped_evaluation_evidence_versions_only",
+    "promotion_requires": [
+      "exact_claim_entity_period_unit_scope",
+      "source_authority_and_as_of",
+      "permission_and_license",
+      "can_support_and_cannot_support",
+      "counterevidence_symmetry",
+      "immutable_lineage"
+    ],
+    "live_case_head_writes": 0,
+    "global_memory_or_registry_writes": 0,
+    "release_admissions": 0,
+    "adapter_direct_canonical_writes": 0,
+    "canonical_execution_ledger_writes_during_future_run": "only_existing_RuntimeFacade_authority_after_profile_validation"
+  },
+  "writer_and_verifier": {
+    "writer_input_allowlist": [
+      "lead_synthesis",
+      "specialist_judgment_versions",
+      "claim_versions",
+      "what_would_change",
+      "cannot_infer",
+      "material_conflicts",
+      "typed_gaps",
+      "boundaries",
+      "writer_brief",
+      "authorized_citation_refs",
+      "authorized_numeric_refs",
+      "presentation_policy"
+    ],
+    "writer_forbidden_inputs": [
+      "raw_candidates",
+      "raw_source_rows",
+      "retrieval_tools",
+      "source_tools",
+      "private_reasoning"
+    ],
+    "verifier_layers": [
+      "deterministic_integrity",
+      "semantic_fidelity",
+      "financial_coherence",
+      "visual_delivery"
+    ],
+    "verifier_can_rewrite_research_truth": false,
+    "machine_verifier_pass_is_human_acceptance": false
+  },
+  "required_future_artifacts": [
+    "bounded_agent_manifest",
+    "bounded_agent_evidence",
+    "bounded_agent_numeric",
+    "bounded_agent_judgment",
+    "bounded_agent_workpaper",
+    "bounded_agent_report",
+    "bounded_agent_trace",
+    "bounded_agent_verification",
+    "agent_fallback_comparison",
+    "owner_product_review"
+  ],
+  "comparison_contract": {
+    "baseline_profile": "deterministic_fallback",
+    "candidate_profile": "bounded_agent_internal",
+    "runs_must_be_distinct": true,
+    "required_parity": [
+      "same_exact_evaluation_case_version",
+      "same_cell",
+      "same_as_of",
+      "same_decision_question",
+      "same_source_and_permission_boundary",
+      "same_material_output_surface"
+    ],
+    "historical_mismatched_run_is_valid_baseline": false,
+    "review_mode": "blind_or_semi_blind_exact_artifact_comparison",
+    "quality_dimensions": [
+      "direct_answer",
+      "evidence_authority",
+      "numeric_bridge",
+      "mechanism_depth",
+      "counterevidence",
+      "boundary_and_cannot_infer",
+      "what_would_change",
+      "workpaper_reconstructability",
+      "report_review_burden"
+    ],
+    "material_value_gain_rule": "zero_hard_integrity_regression_and_at_least_one_exact_research_or_product_dimension_materially_better_with_owner_artifact_refs",
+    "no_gain_rule": "after_one_information_changing_repair_cycle_stop_and_request_user_provider_data_skill_or_scope_decision"
+  },
+  "hard_failure_floor": [
+    "false_citation_or_false_evidence_promotion",
+    "material_numeric_error",
+    "case_run_attempt_artifact_or_review_lineage_mismatch",
+    "silent_deterministic_substitution",
+    "writer_source_or_fact_creation",
+    "permission_secret_license_or_data_boundary_breach"
+  ],
+  "execution_admission_blockers": [
+    "exact_evaluation_case_cell_as_of_and_input_digest_not_frozen",
+    "release_contract_v1_3_still_admits_S1_fixture_only_and_must_be_superseded_before_execution",
+    "API_and_ExecutionService_do_not_admit_bounded_agent_internal_entry",
+    "bounded_agent_internal_execution_profile_version_not_implemented",
+    "provider_and_model_not_selected_or_revalidated",
+    "call_token_cost_and_latency_budget_not_frozen",
+    "provider_egress_and_secret_safe_preflight_not_authorized",
+    "agent_skill_tool_graph_context_and_eval_versions_not_frozen",
+    "paired_deterministic_baseline_parity_not_proven",
+    "owner_review_identity_and_exact_artifact_binding_not_prepared"
+  ],
+  "t01_observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "external_tool_calls": 0,
+    "evidence_promotions": 0,
+    "real_business_case_mutations": 0,
+    "human_reviews": 0,
+    "release_admissions": 0
+  },
+  "t01_acceptance": [
+    "one_cell_scope_and_alias_are_unambiguous",
+    "single_runtime_and_exact_lineage_are_preserved",
+    "provider_model_budget_and_network_are_fail_closed_until_exact_admission",
+    "candidate_promotion_writer_verifier_and_comparison_boundaries_are_machine_readable",
+    "actual_calls_writes_reviews_and_release_actions_remain_zero"
+  ]
+}

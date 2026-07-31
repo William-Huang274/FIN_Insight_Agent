@@ -1,0 +1,108 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t03_gpt_5_6_sol_exact_admission_issuance_v1_0",
+  "decision_id": "S2-T03-NATIVE-JSON-SCHEMA-GPT-5-6-SOL-EXACT-ADMISSION-ISSUANCE-DECISION",
+  "issued_at": "2026-07-20T23:30:50+08:00",
+  "status": "fresh_exact_admission_consumed_terminal_failed_http_429",
+  "authority": {
+    "new_exact_admission_issuance_authorized": true,
+    "zero_call_prepare_and_preflight_authorized": true,
+    "actual_model_execution_authorized": true,
+    "T04_authorized": false,
+    "S3_release_or_production_authorized": false
+  },
+  "issued_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v5_0.json",
+    "admission_id": "fin01-s2-t03-bounded-agent-native-json-schema-gpt-5-6-sol-live-validation-r1",
+    "admission_digest": "fddf22daf385ae09883ad1140dccaa6f7725b9339ce15aba91d949190469dd30",
+    "work_unit_idempotency_key": "fin01-s2-t03-bounded-agent-work-unit-native-json-schema-gpt-5-6-sol-r1",
+    "runtime_root": ".codex_runtime/fin01-s2-t03-native-json-schema-gpt-5-6-sol-live-validation-r1",
+    "fresh_identity": true,
+    "consumed": true,
+    "execution_enabled": true,
+    "execution_started": true
+  },
+  "exact_binding": {
+    "case_id": "case_87682fa72e72d7d042dabba0",
+    "case_version": 1,
+    "as_of": "2026-07-20T00:00:00Z",
+    "input_digest": "ce6f5758ecb1e3f5d18d50028cf23214e2c1628ed00a99038c7a8bb5cec228ea",
+    "candidate_count": 3,
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "model_ref": "openai:gpt-5.6-sol",
+    "api_family": "responses_api",
+    "base_url": "https://api.openai.com/v1",
+    "credential_env": "OPENAI_API_KEY",
+    "specialist_transport_ref": "fin01.bounded_agent.native_json_schema_response:v1",
+    "specialist_output_contract_ref": "fin01.bounded_agent.specialist_lead_output:v4",
+    "reasoning_effort": "medium"
+  },
+  "execution_envelope": {
+    "maximum_semantic_model_calls": 3,
+    "maximum_provider_calls": 3,
+    "maximum_network_calls": 3,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "maximum_output_tokens_total": 3500,
+    "output_only_cost_ceiling_usd": 0.105,
+    "maximum_total_cost_usd": 0.25,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "automatic_fallback_allowed": false
+  },
+  "zero_call_preflight": {
+    "prepare_status": "prepared_no_model_call",
+    "preflight_status": "pass_no_model_call",
+    "exact_input_match": true,
+    "credential_present": true,
+    "credential_value_persisted": false,
+    "transport_retries": 0,
+    "provider_health_check_performed": false,
+    "model_inference_or_generation_calls": 0,
+    "provider_execution_calls": 0,
+    "execution_network_calls": 0,
+    "external_tool_calls": 0
+  },
+  "credential_hygiene": {
+    "credential_storage": ".env",
+    "credential_storage_git_ignored": true,
+    "credential_storage_git_tracked": false,
+    "plaintext_value_recorded": false,
+    "credential_material_persisted_in_project_artifacts": false
+  },
+  "independent_review": {
+    "disposition": "historical_issuance_pass_then_consumed_terminal_failed_http_429",
+    "historical_admission_digests_mutated": false,
+    "consumed_identity_guards_mutated": false,
+    "transport_reasoning_and_budget_digest_bound": true,
+    "live_provider_compliance_proven": false,
+    "closed_v4_agent_artifact_proven": false,
+    "agent_research_quality_proven": false
+  },
+  "deterministic_verification": {
+    "focused_S2_T03_contracts": "67 passed in 2.47s",
+    "project_os_preflight": "6 passed in 0.23s",
+    "json_and_jsonl_parse": "pass",
+    "git_staged_and_unstaged_diff_check": "pass",
+    "plaintext_openai_key_matches_in_git_diff": 0,
+    "tracked_env_or_runtime_artifacts": 0
+  },
+  "execution_result": {
+    "result_ref": "configs/releases/fin_ia_0_1_s2_t03_gpt_5_6_sol_native_live_validation_result_v1_0.json",
+    "terminal_state": "failed",
+    "http_status": 429,
+    "admission_consumed": true,
+    "artifact_count": 0,
+    "retry_or_rerun_performed": false
+  },
+  "stage_acceptance": {
+    "exact_admission_issuance": "pass_consumed_once",
+    "S2_T03": "failed_live_provider_output_and_closed_v4_agent_artifact_unproven",
+    "S2_T04": "blocked_by_S2_T03",
+    "S3": "blocked_by_S2",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S2-T03-OPENAI-HTTP-429-BILLING-RATE-LIMIT-AND-SAFE-SUBTYPE-TELEMETRY-DECISION"
+}

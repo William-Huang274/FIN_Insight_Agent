@@ -1,0 +1,16 @@
+{
+  "schema_version": "fin_ia_0_1_s1_adapter_map_supersession_pointer_v1_0",
+  "manifest_id": "fin_ia_0_1_s1_t01_decision_to_code_adapter_map_20260719",
+  "status": "superseded_after_independent_review_changes_requested",
+  "superseded_by": "configs/releases/fin_ia_0_1_s1_adapter_map_v1_1.json",
+  "superseded_at": "2026-07-19",
+  "superseded_manifest_sha256": "bf1ca153e583b2c6c68d3320b3c8499faea655ece9ebb701ffe828b1dfc74941",
+  "reason": [
+    "async enqueue claim execute and terminal sequence was not frozen",
+    "ResearchRun WorkUnit Attempt Event Artifact lineage was underspecified",
+    "application composition root and existing scheduler facade object store targets were incomplete",
+    "transitional ActivityTrace write and target Workbench Next write roles were conflated",
+    "D06 EvidenceService target and machine owner uniqueness required repair"
+  ],
+  "authority_boundary": "historical pointer only; not an accepted implementation contract and grants no runtime model network business Case release or production authority"
+}

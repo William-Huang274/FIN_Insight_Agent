@@ -1,0 +1,178 @@
+{
+  "authority": {
+    "S2_T05_technical_comparison_authorized": true,
+    "S3_release_or_production_authorized": false,
+    "agent_admission_rerun_authorized": false,
+    "deterministic_baseline_execution_authorized": true,
+    "owner_acceptance_may_be_imputed": false
+  },
+  "baseline_materialization": {
+    "artifact_version_id": "artifact_fin01_a31db6c15dd3f6b84071b115:v1",
+    "attempt_id": "attempt_fin01_9d8dee57ef29fa1acf14fc28",
+    "canonical_execution_writes_only": true,
+    "created_in_this_execution": true,
+    "research_run_id": "research_run_fin01_7fa8f05bf3864a6673fee088",
+    "work_unit_idempotency_key": "fin01-s2-t05-exact-paired-deterministic-baseline-r1"
+  },
+  "boundary": {
+    "S3_release_or_production_entered": false,
+    "consumed_agent_admission_rerun": false,
+    "live_business_case_head_writes": 0,
+    "new_agent_model_provider_network_calls": [
+      0,
+      0,
+      0
+    ],
+    "new_deterministic_model_provider_network_calls": [
+      0,
+      0,
+      0
+    ]
+  },
+  "dimensions": {
+    "boundary_and_cannot_infer": {
+      "agent_gap_count": 3,
+      "baseline_gap_count": 1,
+      "result": "agent_material_gain"
+    },
+    "counterevidence": {
+      "finding_count": 3,
+      "result": "agent_material_gain_in_evidence_bounded_counter_thesis"
+    },
+    "direct_answer": {
+      "basis": "deterministic judgment and Agent thesis both answer authenticity and durability",
+      "result": "tie_both_answer_the_cell"
+    },
+    "evidence_authority": {
+      "evidence_ref_count": 3,
+      "result": "tie_same_exact_local_official_candidate_set"
+    },
+    "mechanism_depth": {
+      "basis": "Agent separates capacity/energy, supply-constraint, and one-time-versus-secular durability mechanisms",
+      "result": "agent_material_gain"
+    },
+    "numeric_bridge": {
+      "result": "no_new_numeric_gain_agent_has_clearer_typed_gap",
+      "unsupported_precision": false
+    },
+    "report_review_burden": {
+      "agent_limitation_count": 3,
+      "agent_section_count": 3,
+      "baseline_section_count": 1,
+      "result": "agent_material_gain"
+    },
+    "what_would_change": {
+      "agent_count": 3,
+      "baseline_count": 1,
+      "result": "agent_material_gain"
+    },
+    "workpaper_reconstructability": {
+      "basis": "Agent output has an exact nine-ArtifactVersion manifest; baseline has one deterministic result ArtifactVersion",
+      "result": "agent_material_gain"
+    }
+  },
+  "hard_integrity": {
+    "agent_artifacts_unchanged_after_baseline_run": true,
+    "agent_four_layer_verifier": {
+      "deterministic_integrity": "pass",
+      "financial_coherence": "pass",
+      "financial_score": 100,
+      "recommendation": "accept_for_internal_review",
+      "semantic_fidelity": "pass",
+      "semantic_score": 100,
+      "visual_delivery": "pass"
+    },
+    "baseline_model_provider_network_external_tool_calls": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "status": "pass_no_regression"
+  },
+  "independent_product_review": {
+    "disposition": "material_gain_candidate",
+    "material_gain_scope": "reasoning granularity, explicit evidence boundaries, actionable gaps/WWC, and review-ready report structure",
+    "not_gained": [
+      "new source evidence",
+      "supported numeric bridge",
+      "proof of long-term demand durability"
+    ],
+    "recommendation": "accept_S2_material_gain_only_if_owner_values_the_reviewability_gain_as_material",
+    "reviewer": "Codex_independent_review_not_owner_signoff"
+  },
+  "input_binding": {
+    "agent_attempt_id": "attempt_fin01_57990c35b5111150989e03a7",
+    "agent_research_run_id": "research_run_fin01_9c03f2ff9b221e7c8a42c121",
+    "input_digest": "ce6f5758ecb1e3f5d18d50028cf23214e2c1628ed00a99038c7a8bb5cec228ea",
+    "runtime_root": ".codex_runtime/fin01-s2-t03-deepseek-segmented-v4-live-validation-r1"
+  },
+  "lineage": {
+    "agent_artifact_count": 9,
+    "agent_artifact_manifest": {
+      "agent_fallback_comparison": "artifact_fin01_bd57e477cc76dae548b4ee98:v1",
+      "bounded_agent_evidence": "artifact_fin01_d3b77357e62ddc153d7ef013:v1",
+      "bounded_agent_judgment": "artifact_fin01_e2305c188ff6baf20e9e4017:v1",
+      "bounded_agent_manifest": "artifact_fin01_6690f48c75b93424d1042667:v1",
+      "bounded_agent_numeric": "artifact_fin01_4d09b864d76d27a015653e78:v1",
+      "bounded_agent_report": "artifact_fin01_0572de7beb9ccdadf80353df:v1",
+      "bounded_agent_trace": "artifact_fin01_3c6e4048f55d20af44a2c397:v1",
+      "bounded_agent_verification": "artifact_fin01_55eff602bd36fcff41e889a2:v1",
+      "bounded_agent_workpaper": "artifact_fin01_7b0707ed542542d6c1b3575b:v1"
+    },
+    "agent_research_run_id": "research_run_fin01_9c03f2ff9b221e7c8a42c121",
+    "deterministic_artifact_version_id": "artifact_fin01_a31db6c15dd3f6b84071b115:v1",
+    "deterministic_research_run_id": "research_run_fin01_7fa8f05bf3864a6673fee088",
+    "runs_are_distinct": true,
+    "same_as_of": true,
+    "same_case_id": true,
+    "same_case_version": true,
+    "same_input_digest": "ce6f5758ecb1e3f5d18d50028cf23214e2c1628ed00a99038c7a8bb5cec228ea"
+  },
+  "next_action": "S2-T06-INDEPENDENT-S2-CLOSEOUT",
+  "owner_product_review": {
+    "material_gain_accepted": true,
+    "owner_comment": "认可 Agent 在推理拆分、证据边界、可行动 gaps/WWC 和复核效率上的提升属于 FIN 0.1 S2 的 bounded material gain；主动取证、可追溯财务计算和 Alpha 能力按既有后续规划推进，不把当前结果表述为新增事实、新增数值或投资 Alpha。",
+    "status": "accepted_by_user_owner_with_explicit_future_capability_boundary"
+  },
+  "future_capability_planning_coverage": {
+    "condition_satisfied_at_roadmap_ownership_level": true,
+    "active_evidence_acquisition": {
+      "status": "planned_not_implemented",
+      "current_owner": "FIN_0_1_S3_S4_agentic_search_evidence_and_three_case_transfer",
+      "refs": [
+        "docs/architecture/repository/FIN_0_1_LAYER_3_AGENTIC_SEARCH_EVIDENCE_EXECUTION_DRAFT_20260719.zh-CN.md",
+        "docs/architecture/repository/FIN_0_1_PROGRAM_EXECUTION_PLAN_DRAFT_20260719.zh-CN.md"
+      ]
+    },
+    "deterministic_financial_calculation": {
+      "status": "planned_not_implemented_beyond_current_typed_gap",
+      "current_owner": "FIN_0_1_S3_S4_case_specific_numeric_then_FIN_0_2_exact_earnings",
+      "refs": [
+        "docs/architecture/repository/FIN_0_1_PROGRAM_EXECUTION_PLAN_DRAFT_20260719.zh-CN.md",
+        "docs/product/FIN_PRD_FULL_ABSORPTION_AND_RELEASE_ALLOCATION_MATRIX_20260719.zh-CN.md"
+      ]
+    },
+    "research_to_alpha": {
+      "status": "planned_later_assisted_track_not_current_release_delivery",
+      "current_owner": "FIN_0_2_earnings_review_alpha_plus_RM_QUANT_assisted_experimental_track",
+      "refs": [
+        "docs/product/FIN_PRD_FULL_ABSORPTION_AND_RELEASE_ALLOCATION_MATRIX_20260719.zh-CN.md",
+        "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
+      ],
+      "boundary": "RM_QUANT names thesis-to-factor, PIT dataset, backtest, risk and paper trading; exact consensus, valuation, scenario, catalyst and outcome-validation contracts are not yet frozen and are not S3-S5 exit claims"
+    }
+  },
+  "result_id": "S2-T05-EXACT-AGENT-FALLBACK-TECHNICAL-COMPARISON-R1",
+  "reviewed_at": "2026-07-21",
+  "schema_version": "fin_ia_0_1_s2_t05_exact_agent_fallback_review_v1_0",
+  "stage_acceptance": {
+    "S2": "ready_for_T06_independent_closeout",
+    "S2_T05_owner_product_review": "pass_bounded_material_gain_accepted",
+    "S2_T05_technical_comparison": "pass",
+    "S3": "blocked_pending_T06_closeout",
+    "production": "not_admitted",
+    "release": "not_admitted"
+  },
+  "status": "pass_owner_accepted_bounded_material_gain"
+}

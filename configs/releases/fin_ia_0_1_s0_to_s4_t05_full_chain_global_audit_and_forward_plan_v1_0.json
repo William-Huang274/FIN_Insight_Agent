@@ -1,0 +1,324 @@
+{
+  "schema_version": "fin_ia_0_1_s0_to_s4_t05_full_chain_global_audit_and_forward_plan_v1_0",
+  "audit_id": "FIN-0.1-S0-TO-S4-T05-FULL-CHAIN-GLOBAL-AUDIT-R1",
+  "audited_at": "2026-07-28T16:30:00+08:00",
+  "status": "audit_complete_continue_with_one_T05_convergence_bundle_then_one_exact_live_or_honest_block",
+  "authority": {
+    "user_instruction": "从 S0 到 S4-T05 站在全局视角审计全链路表现并安排后续",
+    "authorized": [
+      "repository_project_OS_release_contract_backlog_code_test_artifact_and_worklog_read_only_audit",
+      "durable_product_and_technical_audit_documents",
+      "machine_readable_forward_plan",
+      "source_of_truth_reconciliation_and_duplicate_JSON_key_correction"
+    ],
+    "not_authorized": [
+      "runtime_feature_implementation",
+      "model_provider_network_source_or_external_tool_calls",
+      "new_exact_admission_or_exact_live",
+      "owner_acceptance",
+      "S4_T06_or_later_execution",
+      "release_or_production_admission"
+    ]
+  },
+  "audit_scope": {
+    "S0_definition": "pre-S1 FIN 0.1 product baseline, Point01 Foundation Alpha, release operating model, PRD allocation and program backlog",
+    "included_slices": [
+      "S0_foundation_and_program_baseline",
+      "S1_one_cell_fixture_mainline",
+      "S2_one_cell_bounded_real_agent",
+      "S3_NVDA_three_cell_anchor",
+      "S4_T01_to_T05_three_case_transfer_first_case"
+    ],
+    "excluded": [
+      "new_external_market_or_provider research",
+      "MU_or_NVDA_new_execution",
+      "S5_release_execution",
+      "production_readiness certification"
+    ]
+  },
+  "evidence_snapshot": {
+    "program_backlog_ref": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "S4_backlog_ref": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+    "program_plan_ref": "docs/architecture/repository/FIN_0_1_PROGRAM_EXECUTION_PLAN_DRAFT_20260719.zh-CN.md",
+    "S4_plan_ref": "docs/architecture/repository/FIN_0_1_S4_THREE_CASE_TRANSFER_AND_HUMAN_CALIBRATION_EXECUTION_PLAN_20260726.zh-CN.md",
+    "release_operating_model_ref": "docs/product/PRODUCT_20260717_release_ladder_and_cadence.zh-CN.md",
+    "context_pack_ref": "docs/project_os/current_context_pack.zh-CN.md",
+    "root_cause_ledger_records": 506,
+    "root_cause_unique_issue_ids": 120,
+    "root_cause_unique_issue_ids_marked_project_owned": 120,
+    "pre_reconciliation_full_chain_blocker_flags": 47,
+    "post_reconciliation_full_chain_blocker_flags": 44,
+    "S4_unique_root_cause_issue_ids": 14,
+    "S4_pre_reconciliation_blocker_flags": 5,
+    "S4_post_reconciliation_blocker_flags": 2,
+    "actual_current_S4_T05_blockers": [
+      "RC-P36-067-s4-R10-numeric-reference-value-correspondence-false-negative",
+      "RC-P36-068-s4-R10-case-identity-title-contract-hardcoded-NVDA"
+    ],
+    "release_JSON_files_pre_audit_artifact": 295,
+    "release_JSON_files_post_audit_artifact": 296,
+    "S3_T09_release_JSON_files": 139,
+    "S4_T05_release_JSON_files": 69,
+    "contract_test_files": 300,
+    "S3_T09_contract_test_files": 93,
+    "S4_T05_contract_test_files": 52,
+    "product_strategy_worklogs": 443,
+    "bounded_agent_executor_lines": 12904,
+    "bounded_agent_contract_policy_lines": 2794,
+    "specialist_transport_versions_in_executor": 8,
+    "research_lead_transport_versions_in_executor": 6,
+    "git_branch": "codex/layered-data-source-expansion",
+    "git_ahead_origin_commits": 5,
+    "pre_audit_staged_files": 793,
+    "pre_audit_unstaged_files": 0,
+    "pre_audit_untracked_files": 0
+  },
+  "stage_assessment": [
+    {
+      "stage": "S0",
+      "outcome": "foundation_and_program_contracts_exist",
+      "pass": [
+        "Point01 Foundation Alpha contract/runtime proof",
+        "canonical Case/Run/Artifact state and rollback concepts",
+        "release ladder, PRD allocation and bounded FIN 0.1 scope"
+      ],
+      "not_proven": [
+        "RG1 entry-to-clean-child operational qualification",
+        "production authority or enterprise readiness"
+      ],
+      "assessment": "foundation_pass_operational_release_risk_open"
+    },
+    {
+      "stage": "S1",
+      "outcome": "one_cell_fixture_shadow_mainline_connected",
+      "evidence": {
+        "tests": 142,
+        "successful_trace_events": 9,
+        "successful_lifecycle_events": 23,
+        "successful_artifacts": 7,
+        "model_provider_network_calls": [
+          0,
+          0,
+          0
+        ]
+      },
+      "assessment": "pass_fixture_only_no_real_agent_quality_claim"
+    },
+    {
+      "stage": "S2",
+      "outcome": "one_cell_real_agent_material_value_proven",
+      "evidence": {
+        "final_agent_state": "succeeded",
+        "final_agent_artifacts": 9,
+        "final_deepseek_segmented_v4_calls": 4,
+        "final_total_tokens": 5516,
+        "final_estimated_cost_usd": 0.00308154,
+        "owner_review": "accepted_bounded_material_gain"
+      },
+      "assessment": "pass_bounded_one_cell_R2_path_but_convergence_cost_was_high"
+    },
+    {
+      "stage": "S3",
+      "outcome": "NVDA_three_cell_R2_owner_accepted",
+      "evidence": {
+        "coherent_current_artifacts": 9,
+        "paired_assessment": true,
+        "owner_acceptance": true,
+        "remaining_quality_debt": "L4_narrative_and_user_fit",
+        "tracked_live_or_closeout_result_files": 23
+      },
+      "assessment": "pass_anchor_case_but_schema_transport_and_runtime_convergence_was_excessively_iterative"
+    },
+    {
+      "stage": "S4_T01_to_T04",
+      "outcome": "three_case_contracts_and_DELL_source_grounding_entered_shared_runtime",
+      "evidence": {
+        "DELL_official_routes": 11,
+        "DELL_source_snapshots": 9,
+        "DELL_evidence_rows": 6,
+        "DELL_numeric_rows": 22,
+        "DELL_derived_metrics": 2,
+        "DELL_graph_context_rows": 4,
+        "DELL_typed_unsupported_inferences": 9,
+        "DELL_MU_case_runtime_fixture_node_consumption": true
+      },
+      "assessment": "pass_source_grounding_and_runtime_injection"
+    },
+    {
+      "stage": "S4_T05",
+      "outcome": "DELL_exact_runtime_success_but_product_L1_failure",
+      "evidence": {
+        "exact_or_pre_provider_attempts_R1_to_R10": 10,
+        "paid_attempts": 8,
+        "provider_calls": 70,
+        "total_tokens": 400866,
+        "estimated_total_cost_usd_range": [
+          0.12464695,
+          0.1547125
+        ],
+        "R10_terminal_states": [
+          "succeeded",
+          "succeeded",
+          "succeeded"
+        ],
+        "R10_artifacts": 9,
+        "R10_agent_actionability_gain": {
+          "claims": 6,
+          "WWC_tasks": 8,
+          "dependencies": 3,
+          "conflicts": 3,
+          "selected_gaps": 4
+        },
+        "paired_L1": "fail_numeric_truth_and_case_identity",
+        "DELL_R2": false
+      },
+      "assessment": "runtime_and_agent_value_proven_transfer_quality_not_accepted"
+    },
+    {
+      "stage": "S5",
+      "outcome": "not_started",
+      "assessment": "blocked_by_S4_and_RG1"
+    }
+  ],
+  "global_verdict": {
+    "product_maturity": "internal_engineering_alpha_with_one_owner_accepted_anchor_case_not_yet_transfer_qualified",
+    "runtime_reliability": "strong_terminal_truth_trace_lineage_retry_zero_and_failure_preservation_but_shared_contract_portability_is_medium",
+    "research_value": "material_agent_actionability_gain_proven_in_NVDA_and_observed_in_DELL",
+    "research_truth": "not_transfer_safe_until_numeric_value_correspondence_and_case_identity_are deterministic",
+    "cross_case_generalization": "not_proven_DELL_R2_false_MU_unrun",
+    "Workbench_product_value": "bounded_internal_surfaces_exist_exact_multi_case_user_time_and_edit_value_not_yet_calibrated",
+    "release_qualification": "not_qualified",
+    "production_readiness": "not_admitted"
+  },
+  "material_findings": [
+    {
+      "finding_id": "GA-F01",
+      "severity": "critical",
+      "title": "truth_and_acceptance_gate_false_positive",
+      "evidence": "R10 machine Verifier passed all four layers while material numeric statements contradicted bound authority and the DELL title declared NVDA",
+      "disposition": "keep L1 blocking and implement the already selected numeric authority plus delivery identity contracts"
+    },
+    {
+      "finding_id": "GA-F02",
+      "severity": "high",
+      "title": "shared_contract_topology_is_fragmented",
+      "evidence": "S4 flat numeric rows, legacy model-view fields, membership-only validators, empty Verifier projection and Writer local constants are maintained by different code paths",
+      "disposition": "one canonical projection owner per material field and one policy source for prompt schema local validation fake Provider telemetry and final commit checks"
+    },
+    {
+      "finding_id": "GA-F03",
+      "severity": "high",
+      "title": "exact_live_is_being_used_as_an_integration_test",
+      "evidence": "S4-T05 consumed ten R1-to-R10 attempts, eight paid attempts and 400866 tokens before the first owner-grade paired L1 review",
+      "disposition": "after the final zero-call convergence bundle allow one R11 only; a new L1 defect produces an honest blocked decision rather than automatic R12"
+    },
+    {
+      "finding_id": "GA-F04",
+      "severity": "high",
+      "title": "implementation_and_governance_surface_has_exceeded_auditable_scale",
+      "evidence": "12904-line executor, eight Specialist versions, six Lead versions, 69 T05 release JSON files, 52 T05 contract tests and 443 worklogs",
+      "disposition": "do not refactor the whole runtime inside T05; extract only the two current canonical policy owners now and schedule broader version-family consolidation after S4"
+    },
+    {
+      "finding_id": "GA-F05",
+      "severity": "high",
+      "title": "program_state_sources_are_not_reconciled",
+      "evidence": "top-level backlog says current RC-P36-067/068 while nested S4 status still says RC-P36-066; current_truth still says S3 in progress; the latest root-cause ledger reports 47 blockers including three S4 issues already exercised successfully",
+      "disposition": "reconcile the active backlog now and run a dedicated issue-by-issue historical blocker review before S5"
+    },
+    {
+      "finding_id": "GA-F06",
+      "severity": "high",
+      "title": "machine_readable_source_of_truth_allowed_duplicate_JSON_keys",
+      "evidence": "strict duplicate-key scan found one duplicated S4_T05_RC_P36_059_status in the program backlog and one duplicated first_provider_owned_numeric_drift_surface in the RC-P36-067/068 decision",
+      "disposition": "correct duplicates now and add duplicate-key validation to the existing release JSON validation path without creating a new gate family"
+    },
+    {
+      "finding_id": "GA-F07",
+      "severity": "medium",
+      "title": "repository_release_slice_is_not_closeout_ready",
+      "evidence": "793 staged files span multiple historical slices on a branch five commits ahead of origin",
+      "disposition": "do not call the current index a release candidate; before S5 create reviewed commit manifests and coherent rollback slices"
+    }
+  ],
+  "T05_final_convergence_contract": {
+    "scope": [
+      "normalize S4 flat and legacy numeric rows into one canonical projection",
+      "provider selects numeric aliases and bounded qualitative interpretation atoms only",
+      "local code renders material numeric clauses",
+      "independent post-node and pre-commit L1 numeric recomputation",
+      "derive all entity-bearing delivery fields from case-local identity",
+      "generate prompt schema validator fake Provider and telemetry from the same policy owners",
+      "positive DELL MU NVDA and mutation-negative fixtures",
+      "full fake three-case shape plus legacy S3 compatibility regression"
+    ],
+    "non_goals": [
+      "general dependency conflict gap or all-node atomization",
+      "whole executor rewrite",
+      "model switch",
+      "new provider matrix",
+      "MU or NVDA exact-live",
+      "release or production work"
+    ],
+    "zero_call_acceptance": [
+      "wrong value period comparator currency unit scale sign formula input and cross-Cell ref each fail before Artifact commit",
+      "wrong ticker title and any entity-bearing cross-case leakage fail before Artifact commit",
+      "DELL MU NVDA full-fake each complete 6 logical nodes 12 callbacks and 9 Artifacts",
+      "historical S2 and S3 accepted contracts remain immutable and regression-green",
+      "strict duplicate-key scan is zero"
+    ]
+  },
+  "forward_sequence": [
+    {
+      "order": 1,
+      "item": "S4-T05-FINAL-CONVERGENCE-ZERO-CALL-IMPLEMENTATION",
+      "action": "implement the two frozen contracts and the three-case deterministic mutation matrix",
+      "paid_calls": 0
+    },
+    {
+      "order": 2,
+      "item": "S4-T05-DELL-R11-EXACT-LIVE-AND-PAIRED-OWNER-DECISION",
+      "action": "one fresh admission and one exact-live only after zero-call proof; compare against the immutable same-input baseline",
+      "stop_rule": "L1 pass plus material Agent gain allows owner decision; L2 to L4 findings are recorded without reopening T05; any new L1 defect stops as an honest blocked program decision with no automatic R12"
+    },
+    {
+      "order": 3,
+      "item": "S4-T06-MU-R2",
+      "action": "reuse the same frozen runtime and contract topology; one exact-live and at most one separately authorized blocker disposition, not a replay of T05"
+    },
+    {
+      "order": 4,
+      "item": "S4-T07-NVDA-POST-TRANSFER-R3-CANDIDATE",
+      "action": "prove legacy compatibility and post-transfer quality without restoring ticker-specific constants"
+    },
+    {
+      "order": 5,
+      "item": "S4-T08-TO-T10-CROSS-CASE-CALIBRATION-OWNER-REVIEW-AND-CLOSEOUT",
+      "action": "compare L1 integrity, Agent gain, owner edit/time value, cost and latency across all three cases; reconcile ledgers and freeze S5 carry-forward"
+    },
+    {
+      "order": 6,
+      "item": "S5-RELEASE-CANDIDATE",
+      "action": "close RG1 to RG5, freeze coherent Git and artifact manifests, issue internal-alpha release or an honest blocked decision"
+    }
+  ],
+  "next_action": "S4-T05-DELL-CASE-LOCAL-NUMERIC-ATOM-DETERMINISTIC-RENDERING-AND-DELIVERY-IDENTITY-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "next_action_governance": {
+    "this_is_the_last_planned_T05_runtime_repair_bundle": true,
+    "R11_is_the_only_planned_remaining_T05_paid_execution": true,
+    "automatic_R12_or_scope_expansion": false,
+    "new_non_L1_quality_findings_defer_to_S4_T08_T10_or_S5": true,
+    "new_L1_after_R11_requires_explicit_program_level_block_or_scope_swap_decision": true
+  },
+  "observed_actions_this_audit": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "ResearchRuns_created": 0,
+    "business_Artifacts_created": 0,
+    "Human_reviews_written": 0
+  }
+}

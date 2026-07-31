@@ -1,0 +1,106 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t03_gpt_5_6_sol_native_live_validation_result_v1_0",
+  "result_id": "S2-T03-NATIVE-JSON-SCHEMA-GPT-5-6-SOL-LIVE-VALIDATION-R1",
+  "completed_at": "2026-07-20T23:42:14+08:00",
+  "status": "terminal_failed_http_429_admission_consumed_no_retry",
+  "authority": {
+    "single_exact_execution_authorized": true,
+    "retry_or_rerun_authorized": false,
+    "fallback_authorized": false,
+    "T04_authorized": false,
+    "S3_release_or_production_authorized": false
+  },
+  "execution_identity": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v5_0.json",
+    "admission_id": "fin01-s2-t03-bounded-agent-native-json-schema-gpt-5-6-sol-live-validation-r1",
+    "admission_digest": "fddf22daf385ae09883ad1140dccaa6f7725b9339ce15aba91d949190469dd30",
+    "work_unit_idempotency_key": "fin01-s2-t03-bounded-agent-work-unit-native-json-schema-gpt-5-6-sol-r1",
+    "work_unit_id": "wu_p02_5_d2f329725f5b8af48813f91e",
+    "attempt_id": "attempt_fin01_cf3852087cc52386d3108d04",
+    "research_run_id": "research_run_fin01_17bf9f5ab4bcb68150e6e895",
+    "admission_consumed": true,
+    "work_unit_identity_consumed": true
+  },
+  "canonical_result": {
+    "work_unit_count": 1,
+    "attempt_count": 1,
+    "research_run_count": 1,
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:bounded_specialist_and_lead:provider_failure",
+    "failure_codes": [
+      "bounded_agent_provider_failure"
+    ],
+    "artifact_count": 0,
+    "orphaned_run": false
+  },
+  "provider_result": {
+    "provider": "openai",
+    "model": "gpt-5.6-sol",
+    "endpoint": "https://api.openai.com/v1/responses",
+    "http_status": 429,
+    "gateway_status": "provider_error",
+    "finish_reason": null,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "latency_ms": 2341,
+    "transport_attempt_count": 1,
+    "estimated_cost_usd": 0.0,
+    "request_reached_provider": true,
+    "structured_output_or_model_content_received": false
+  },
+  "observed_counts": {
+    "model_calls": 1,
+    "provider_calls": 1,
+    "network_calls": 1,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "writer_calls": 0,
+    "verifier_calls": 0,
+    "fallbacks": 0,
+    "retries": 0,
+    "reruns": 0
+  },
+  "failure_classification": {
+    "class": "openai_http_429_subtype_undetermined",
+    "could_be_insufficient_quota_or_credit": true,
+    "could_be_rate_limit": true,
+    "specific_openai_error_code_persisted": false,
+    "specific_openai_error_message_persisted": false,
+    "quota_exhaustion_proven": false,
+    "ordinary_rate_limit_proven": false,
+    "project_owned_subtype_telemetry_gap": true,
+    "model_json_schema_failure": false,
+    "local_parser_failure": false,
+    "known_boundary": "The secret-safe gateway event retained HTTP 429 but not the provider error code or message, so quota exhaustion and ordinary rate limiting cannot be distinguished from durable evidence."
+  },
+  "safety": {
+    "raw_provider_response_persisted": false,
+    "credential_value_persisted": false,
+    "private_chain_of_thought_included": false,
+    "live_business_case_head_writes": 0,
+    "automatic_retry_or_rerun_performed": false
+  },
+  "deterministic_verification": {
+    "pre_execution_T03_and_project_os_contracts": "73 passed in 2.87s",
+    "post_execution_gateway_S2_T01_T02_T03_and_project_os": "91 passed in 96.23s",
+    "consumed_reuse_preflight_rejected": true,
+    "gateway_event_count_before_after_reuse_check": [
+      2,
+      2
+    ]
+  },
+  "stage_acceptance": {
+    "live_provider_request_route": "reached_openai_http_429",
+    "native_json_schema_provider_compliance": "not_evaluated_request_failed_before_generation",
+    "closed_v4_agent_artifact": "failed_zero_artifacts",
+    "S2_T03": "failed",
+    "S2_T04": "blocked_by_S2_T03",
+    "S3": "blocked_by_S2",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S2-T03-OPENAI-HTTP-429-BILLING-RATE-LIMIT-AND-SAFE-SUBTYPE-TELEMETRY-DECISION"
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t03_deepseek_segmented_v4_implementation_v1_0",
+  "decision_id": "S2-T03-DEEPSEEK-SEGMENTED-V4-IMPLEMENTATION",
+  "recorded_at": "2026-07-21T00:28:00+08:00",
+  "status": "implemented_fixture_pass_live_not_executed",
+  "authority": {
+    "conditional_implementation_authorized_after_openai_failure": true,
+    "deterministic_fixture_validation_authorized": true,
+    "fresh_deepseek_live_admission_issued": true,
+    "deepseek_live_execution_performed": false,
+    "T04_authorized": false
+  },
+  "contract_invariants": {
+    "canonical_output_contract_ref": "fin01.bounded_agent.specialist_lead_output:v4",
+    "canonical_v4_shape_changed": false,
+    "candidate_allowlist_validation": "fail_closed",
+    "lead_refs_must_be_supplied_candidates": true,
+    "lead_refs_must_be_present_in_validated_specialist_findings": true,
+    "raw_provider_response_persisted": false,
+    "external_tool_execution_allowed": false,
+    "source_network_calls_allowed": false
+  },
+  "segmented_transport": {
+    "transport_ref": "fin01.bounded_agent.deepseek_segmented_json_object:v1",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "reasoning_effort": "none",
+    "provider_stage_1": "bounded_specialist",
+    "provider_stage_1_output": "flat_specialist_judgment_object",
+    "provider_stage_2": "bounded_lead_adjudication",
+    "provider_stage_2_output": "flat_lead_adjudication_object",
+    "assembly": "deterministic_local_exact_v4_envelope",
+    "writer_and_verifier_unchanged": true,
+    "future_exact_call_cap": 4,
+    "retry_budget": 0
+  },
+  "deterministic_acceptance": {
+    "positive_fixture_exact_v4_assembly": "pass",
+    "bad_lead_candidate_ref_fails_before_writer": "pass",
+    "existing_combined_strict_and_openai_native_routes_preserved": true,
+    "paid_or_live_provider_calls": 0,
+    "focused_T03_contracts": "71 passed",
+    "expanded_gateway_S2_T01_T02_T03_and_project_os": "95 passed in 86.51s"
+  },
+  "stage_acceptance": {
+    "segmented_adapter_implementation": "pass_fixture_only",
+    "deepseek_live_protocol_compliance": "unproven",
+    "closed_live_v4_agent_artifact": "unproven",
+    "S2_T03": "failed_pending_separately_authorized_exact_live_execution_and_terminal_success",
+    "S2_T04": "blocked_by_S2_T03"
+  },
+  "next_action": "S2-T03-DEEPSEEK-SEGMENTED-V4-LIVE-VALIDATION-EXECUTION-DECISION"
+}

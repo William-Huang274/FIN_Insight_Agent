@@ -1,0 +1,160 @@
+{
+  "contract_id": "fin_ia_0_1_s2_t03_specialist_lead_output_contract_repair_v4_0",
+  "status": "v4_live_validation_terminal_failed_strict_tool_arguments_invalid_json",
+  "scope": "S2-T03 post-v3 input-output namespace and canonical execution identity repair",
+  "output_contract_ref": "fin01.bounded_agent.specialist_lead_output:v4",
+  "supersedes_consumed_contract_ref": "fin01.bounded_agent.specialist_lead_output:v3",
+  "root_cause": {
+    "observed_fact": "v3 returned all three required fields with correct types plus five unknown top-level fields",
+    "project_owned_reproducible_gap": "the v3 user document exposed request metadata, contract rules, example output and candidates as sibling top-level fields while asking for a sibling top-level response",
+    "inference_not_historical_fact": "the five live unknown fields may be echoed request metadata, but their names were intentionally not persisted and cannot be reconstructed",
+    "repair_target": "separate request and response namespaces and make the response a closed one-key envelope without dropping unknown fields"
+  },
+  "provider_output_mode": {
+    "current_runtime_mode": "deepseek_beta_strict_named_function_for_specialist_and_json_object_for_writer_verifier",
+    "specialist_response_format": null,
+    "writer_verifier_response_format": {
+      "type": "json_object"
+    },
+    "nested_schema_server_enforcement_requested_for_specialist": true,
+    "nested_schema_server_enforcement_live_proven": false,
+    "strict_tool_or_schema_mode_adopted": true,
+    "official_strict_tool_mode_researched": true,
+    "ordinary_json_object_live_admission_authorized": false,
+    "strict_tool_adapter_selected_before_live_admission": true,
+    "decision_ref": "configs/releases/fin_ia_0_1_s2_t03_v4_live_validation_decision_v1_0.json",
+    "transport_ref": "fin01.bounded_agent.deepseek_strict_tool_output:v1",
+    "provider_beta_base_url": "https://api.deepseek.com/beta",
+    "chat_completion_path": "/chat/completions",
+    "forced_tool_name": "submit_specialist_lead_result",
+    "tool_call_cardinality_enforced_locally": true,
+    "external_tool_execution_performed": false,
+    "reason": "official DeepSeek documentation confirms json_object guarantees valid JSON but not the nested v4 schema; the beta strict named-function adapter is now deterministic fixture-proven, while live provider compliance remains unproven and unadmitted"
+  },
+  "request_document": {
+    "exact_top_level_keys": [
+      "request_contract",
+      "analysis_input",
+      "response_shape_example"
+    ],
+    "analysis_input_contains": [
+      "task",
+      "decision_question",
+      "as_of",
+      "candidates"
+    ],
+    "request_fields_must_not_be_copied_to_response": true
+  },
+  "response_envelope": {
+    "required_outer_keys": [
+      "result"
+    ],
+    "additional_outer_keys_allowed": false,
+    "result_required_keys": [
+      "output_contract_ref",
+      "specialist_judgment",
+      "lead_adjudication"
+    ],
+    "additional_result_keys_allowed": false,
+    "unknown_fields_silently_dropped": false,
+    "semantic_synonyms_repaired": false
+  },
+  "allowed_lossless_adaptations_inside_result": [
+    "trim and lowercase declared enum strings",
+    "wrap one evidence-finding mapping as a one-item list",
+    "wrap one string as a one-item list for declared list fields"
+  ],
+  "typed_envelope_failures": [
+    "bounded_agent_specialist_envelope_keys_missing",
+    "bounded_agent_specialist_envelope_keys_unexpected",
+    "bounded_agent_specialist_result_schema_invalid",
+    "bounded_agent_specialist_result_keys_missing",
+    "bounded_agent_specialist_result_keys_unexpected"
+  ],
+  "canonical_execution_identity": {
+    "non_vt1_work_unit_identity_includes": [
+      "tenant_id",
+      "project_id",
+      "case_id",
+      "contract_version_id",
+      "work_unit_type",
+      "execution_identity"
+    ],
+    "execution_identity_source": "request idempotency_key",
+    "attempt_identity_inherits_distinct_work_unit_id": true,
+    "research_run_identity_inherits_distinct_attempt_id": true,
+    "pending_dispatch_selects_exact_execution_identity": true,
+    "vt1_single_fixture_identity_semantics_preserved": true
+  },
+  "verification": {
+    "deterministic_fixture_proven": true,
+    "shared_store_distinct_identity_proven": true,
+    "strict_tool_adapter_fixture_proven": true,
+    "strict_schema_closed_recursively": true,
+    "native_json_arguments_only": true,
+    "duplicate_and_fenced_json_rejected": true,
+    "exact_tool_call_cardinality_and_name_proven": true,
+    "local_semantic_validation_retained": true,
+    "focused_regression": "32 passed in 1.67s",
+    "related_regression": "91 passed in 84.85s",
+    "issued_admission_zero_call_preflight_passed": true,
+    "issued_admission_digest": "61e9e21033eb6ab31e7400067eb455b172d63e421ba42bdd5ca2b09a978639f6",
+    "real_model_calls": 1,
+    "provider_calls": 1,
+    "network_calls": 1,
+    "new_exact_admission_issued": true,
+    "live_validation_performed": true
+  },
+  "issued_live_validation_admission": {
+    "issued_at": "2026-07-20T15:05:25+08:00",
+    "admission_ref": "configs/releases/fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v4_0.json",
+    "admission_id": "fin01-s2-t03-bounded-agent-v4-strict-tool-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s2-t03-bounded-agent-work-unit-v4-strict-tool-r1",
+    "runtime_root": ".codex_runtime/fin01-s2-t03-v4-strict-tool-live-validation-r1",
+    "execution_enabled": true,
+    "execution_command_authorized_by_user": true,
+    "execution_started": true,
+    "execution_consumed": true
+  },
+  "live_validation_result": {
+    "state": "failed",
+    "research_run_id": "research_run_fin01_b9f50318d58998a5a5c0506f",
+    "failure_code": "bounded_agent_strict_tool_arguments_invalid_json",
+    "provider_finish_reason": "tool_calls",
+    "model_provider_network_calls": 1,
+    "transport_attempts": 1,
+    "total_tokens": 3272,
+    "estimated_cost_usd": 0.00200448,
+    "artifact_count": 0,
+    "external_tool_executions": 0,
+    "automatic_retry_or_rerun_performed": false,
+    "raw_provider_response_persisted": false
+  },
+  "post_run_verification": {
+    "focused_T01_T03": "39 passed in 2.17s",
+    "related_runtime_S1_S2_workbench": "93 passed in 61.57s",
+    "consumed_identity_guards_proven": true
+  },
+  "post_failure_telemetry_repair": {
+    "status": "fixture_proven_no_new_admission",
+    "generic_failure_code_retained": "bounded_agent_strict_tool_arguments_invalid_json",
+    "observable_parse_subtypes": [
+      "json_decode_error",
+      "duplicate_key",
+      "non_object"
+    ],
+    "parser_contract": "native_json_object_no_fence_no_duplicate_keys",
+    "raw_arguments_persisted": false,
+    "argument_digest_persisted": false,
+    "argument_length_persisted": false,
+    "historical_live_result_subtype_reconstructed": false,
+    "parser_relaxed": false,
+    "focused_T03_regression": "39 passed in 2.39s",
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "new_exact_admission_issued": false
+  },
+  "post_telemetry_provider_strategy_decision_ref": "configs/releases/fin_ia_0_1_s2_t03_post_telemetry_provider_strategy_decision_v1_0.json",
+  "next_execution_gate": "the fresh r2 admission was consumed once and left a running orphan because canonical failure-observation validation rejected the new failure_telemetry field; decide a zero-call root-cause repair separately, never reuse r2 or issue a third strict attempt, and do not enter T04 or downstream progression"
+}

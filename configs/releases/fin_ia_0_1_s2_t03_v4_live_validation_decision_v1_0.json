@@ -1,0 +1,178 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t03_v4_live_validation_decision_v1_0",
+  "decision_id": "S2-T03-V4-LIVE-VALIDATION-DECISION",
+  "decided_at": "2026-07-20T13:25:00+08:00",
+  "status": "v4_admission_consumed_terminal_failed_strict_tool_arguments_invalid_json",
+  "decision": {
+    "issue_ordinary_json_object_v4_admission": false,
+    "implement_provider_strict_tool_adapter_first": true,
+    "reason": "DeepSeek json_object guarantees valid JSON but not the required nested key schema; two prior live validations already terminated on output shape. DeepSeek strict function calling can server-validate a supported JSON Schema and a named tool choice can force the exact output carrier."
+  },
+  "official_provider_evidence": [
+    {
+      "title": "DeepSeek JSON Output",
+      "url": "https://api-docs.deepseek.com/guides/json_mode/",
+      "observed_contract": "response_format type json_object guarantees valid JSON only; prompt examples remain required and empty content can occur"
+    },
+    {
+      "title": "DeepSeek Tool Calls strict mode",
+      "url": "https://api-docs.deepseek.com/guides/tool_calls/",
+      "observed_contract": "beta base URL plus strict true makes the server validate the supplied Function JSON Schema; every object requires all properties and additionalProperties false"
+    },
+    {
+      "title": "DeepSeek Create Chat Completion",
+      "url": "https://api-docs.deepseek.com/api/create-chat-completion/",
+      "observed_contract": "a named function tool_choice forces that tool; strict is a supported beta tool property and tool_calls is a terminal finish reason"
+    }
+  ],
+  "selected_output_transport": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "response_format": null,
+    "tool_name": "submit_specialist_lead_result",
+    "tool_choice": {
+      "type": "function",
+      "function": {
+        "name": "submit_specialist_lead_result"
+      }
+    },
+    "strict": true,
+    "parallel_tool_calls_parameter_adopted": false,
+    "tool_call_cardinality_enforced_locally": true,
+    "expected_tool_call_count": 1,
+    "expected_finish_reason": "tool_calls",
+    "tool_arguments_are_output_only": true,
+    "external_tool_execution_performed": false,
+    "local_v4_semantic_validation_retained": true
+  },
+  "schema_fit": {
+    "v4_uses_supported_types_only": true,
+    "supported_types_used": [
+      "object",
+      "string",
+      "array",
+      "enum"
+    ],
+    "all_object_properties_required": true,
+    "all_objects_additional_properties_false": true,
+    "candidate_ids_can_be_bound_as_enum": true,
+    "provider_schema_does_not_replace_candidate_and_semantic_validation": true
+  },
+  "mandatory_deterministic_acceptance_before_any_admission": [
+    "gateway sends beta base URL, one strict function schema and the exact named tool_choice",
+    "executor accepts exactly one tool call with the exact name and finish_reason tool_calls",
+    "tool arguments parse to the closed v4 result envelope without executing any external tool",
+    "missing, duplicate, wrong-name, invalid-JSON or schema-invalid tool calls fail before artifact commit",
+    "usage, cost, secret safety, canonical failure truth and zero retry remain unchanged",
+    "ordinary json_object live admission remains rejected"
+  ],
+  "independent_review": {
+    "status": "pass_after_native_json_and_duplicate_key_repair",
+    "finding": "the first adapter draft correctly avoided the unverified parallel_tool_calls parameter and enforced one-call cardinality, but its shared JSON parser would also accept fenced JSON and duplicate object keys instead of the provider-native strict arguments contract",
+    "resolution": "force the named strict function, enforce exact one-call cardinality locally, and parse arguments with a dedicated native-JSON duplicate-key-rejecting parser before semantic validation or artifact commit"
+  },
+  "implementation_status": "deterministic_fixture_proven",
+  "deterministic_verification": {
+    "provider_binding_requires_exact_beta_base_url_before_call": true,
+    "strict_function_schema_closes_every_object": true,
+    "candidate_ids_bound_as_enum": true,
+    "forced_named_tool_choice": true,
+    "exact_one_tool_call_enforced_locally": true,
+    "parallel_tool_calls_parameter_sent": false,
+    "arguments_native_json_only": true,
+    "duplicate_keys_rejected": true,
+    "fenced_json_rejected": true,
+    "external_tool_execution_performed": false,
+    "local_candidate_evidence_and_semantic_validation_retained": true,
+    "focused_regression": "32 passed in 1.67s",
+    "related_runtime_s1_s2_workbench_regression": "91 passed in 84.85s",
+    "issued_admission_zero_call_preflight": {
+      "status": "pass_no_model_call",
+      "admission_digest": "61e9e21033eb6ab31e7400067eb455b172d63e421ba42bdd5ca2b09a978639f6",
+      "exact_input_match": true,
+      "candidate_count": 3,
+      "credential_present": true,
+      "credential_value_persisted": false,
+      "transport_retries": 0,
+      "max_output_tokens": 3500,
+      "output_only_cost_ceiling_usd": 0.003045,
+      "observed_model_provider_network_external_tool_calls": [0, 0, 0, 0]
+    },
+    "issuance_contract_regression": "38 passed in 1.82s"
+  },
+  "issued_admission": {
+    "issued_at": "2026-07-20T15:05:25+08:00",
+    "admission_ref": "configs/releases/fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v4_0.json",
+    "admission_id": "fin01-s2-t03-bounded-agent-v4-strict-tool-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s2-t03-bounded-agent-work-unit-v4-strict-tool-r1",
+    "runtime_root": ".codex_runtime/fin01-s2-t03-v4-strict-tool-live-validation-r1",
+    "specialist_output_contract_ref": "fin01.bounded_agent.specialist_lead_output:v4",
+    "specialist_output_transport_ref": "fin01.bounded_agent.deepseek_strict_tool_output:v1",
+    "execution_enabled": true,
+    "execution_command_authorized_by_user": true,
+    "execution_started": true,
+    "execution_consumed": true,
+    "automatic_execution_or_retry_allowed": false
+  },
+  "live_validation_result": {
+    "executed_at": "2026-07-20T15:12:19.923398+08:00",
+    "completed_at": "2026-07-20T15:12:47.949862+08:00",
+    "state": "failed",
+    "work_unit_id": "wu_p02_5_620b5f91fc25d0f4f2a59149",
+    "attempt_id": "attempt_fin01_c078251c5487cc4c1f952523",
+    "research_run_id": "research_run_fin01_b9f50318d58998a5a5c0506f",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:bounded_specialist_and_lead:strict_tool_arguments_invalid_json",
+    "failure_code": "bounded_agent_strict_tool_arguments_invalid_json",
+    "provider_finish_reason": "tool_calls",
+    "model_provider_network_calls": 1,
+    "transport_attempts": 1,
+    "input_tokens": 1936,
+    "output_tokens": 1336,
+    "total_tokens": 3272,
+    "latency_ms": 28026,
+    "estimated_cost_usd": 0.00200448,
+    "artifact_count": 0,
+    "source_network_calls": 0,
+    "external_tool_executions": 0,
+    "fallback_performed": false,
+    "automatic_retry_or_rerun_performed": false,
+    "raw_provider_response_persisted": false,
+    "private_chain_of_thought_included": false,
+    "root_cause_precision": "provider returned tool_calls but secret-safe runtime did not persist arguments; invalid native JSON versus duplicate-key versus non-object subtype cannot be reconstructed without a separately authorized telemetry repair"
+  },
+  "post_run_verification": {
+    "focused_T01_T03": "39 passed in 2.17s",
+    "related_runtime_S1_S2_workbench": "93 passed in 61.57s",
+    "consumed_admission_rejected_before_provider": true,
+    "consumed_work_unit_identity_rejected_before_provider": true,
+    "stable_source_digests_match": true
+  },
+  "post_failure_telemetry_repair": {
+    "status": "fixture_proven_no_new_admission",
+    "generic_failure_code_retained": "bounded_agent_strict_tool_arguments_invalid_json",
+    "observable_parse_subtypes": [
+      "json_decode_error",
+      "duplicate_key",
+      "non_object"
+    ],
+    "parser_contract": "native_json_object_no_fence_no_duplicate_keys",
+    "raw_arguments_persisted": false,
+    "argument_digest_persisted": false,
+    "argument_length_persisted": false,
+    "historical_live_result_subtype_reconstructed": false,
+    "parser_relaxed": false,
+    "focused_T03_regression": "39 passed in 2.39s",
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "new_exact_admission_issued": false
+  },
+  "post_telemetry_provider_strategy_decision_ref": "configs/releases/fin_ia_0_1_s2_t03_post_telemetry_provider_strategy_decision_v1_0.json",
+  "new_exact_v4_admission_issued": true,
+  "actual_model_execution_authorized": true,
+  "model_calls": 1,
+  "provider_calls": 1,
+  "network_calls": 1,
+  "next_action": "S2-T03-R2-ORPHANED-RUN-ROOT-CAUSE-REPAIR-DECISION"
+}

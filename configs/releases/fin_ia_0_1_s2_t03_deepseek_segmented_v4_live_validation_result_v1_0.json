@@ -1,0 +1,103 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t03_deepseek_segmented_v4_live_validation_result_v1_0",
+  "result_id": "S2-T03-DEEPSEEK-SEGMENTED-V4-LIVE-VALIDATION-R1",
+  "executed_at": "2026-07-21T01:41:00+08:00",
+  "status": "terminal_succeeded_admission_consumed_no_retry",
+  "authority": {
+    "exact_once_execution_authorized": true,
+    "retry_or_fallback_authorized": false,
+    "T04_authorized": false,
+    "S3_release_or_production_authorized": false
+  },
+  "identity": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v6_0.json",
+    "admission_id": "fin01-s2-t03-bounded-agent-deepseek-segmented-v4-live-validation-r1",
+    "admission_digest": "521dc295dd6eb7e52c224ba5c765f0f76b6350e3c206df315bc25812cf121e63",
+    "work_unit_idempotency_key": "fin01-s2-t03-bounded-agent-work-unit-deepseek-segmented-v4-r1",
+    "case_id": "case_87682fa72e72d7d042dabba0",
+    "case_version": 1,
+    "input_digest": "ce6f5758ecb1e3f5d18d50028cf23214e2c1628ed00a99038c7a8bb5cec228ea",
+    "research_run_id": "research_run_fin01_9c03f2ff9b221e7c8a42c121",
+    "attempt_id": "attempt_fin01_57990c35b5111150989e03a7"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "succeeded",
+    "attempt_state": "succeeded",
+    "research_run_state": "succeeded",
+    "terminal_reason": "bounded_agent_one_cell_first_run_succeeded",
+    "artifact_count": 9,
+    "artifact_types": [
+      "agent_fallback_comparison",
+      "bounded_agent_evidence",
+      "bounded_agent_judgment",
+      "bounded_agent_manifest",
+      "bounded_agent_numeric",
+      "bounded_agent_report",
+      "bounded_agent_trace",
+      "bounded_agent_verification",
+      "bounded_agent_workpaper"
+    ],
+    "orphaned_run": false
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "transport_ref": "fin01.bounded_agent.deepseek_segmented_json_object:v1",
+    "canonical_output_contract_ref": "fin01.bounded_agent.specialist_lead_output:v4",
+    "model_calls": 4,
+    "provider_calls": 4,
+    "network_calls": 4,
+    "transport_attempts_per_call": [1, 1, 1, 1],
+    "input_tokens": 3948,
+    "output_tokens": 1568,
+    "total_tokens": 5516,
+    "estimated_cost_usd": 0.00308154,
+    "latency_ms_by_stage": {
+      "bounded_specialist": 7647,
+      "bounded_lead_adjudication": 5417,
+      "bounded_writer_no_source": 9320,
+      "bounded_semantic_financial_verifier": 2914
+    },
+    "retry_count": 0,
+    "fallback_count": 0
+  },
+  "boundary_observation": {
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_case_head_writes": 0,
+    "raw_provider_response_persisted": false,
+    "private_chain_of_thought_persisted": false,
+    "credential_value_persisted": false
+  },
+  "research_quality_review": {
+    "disposition": "accept_for_internal_review",
+    "financial_coherence_score": 100,
+    "semantic_fidelity_score": 100,
+    "evidence_candidate_count": 3,
+    "evidence_refs_all_from_supplied_candidates": true,
+    "thesis": "reported-period AI infrastructure demand is authentic, while durability remains uncertain",
+    "counter_thesis_present": true,
+    "typed_numeric_gap": "single demand-signal cell does not establish an exact sustainability metric",
+    "remaining_gaps": [
+      "one-time buildout versus long-term secular demand is unresolved",
+      "customer data-center capacity and energy procurement pace is unresolved",
+      "future revenue impact from supply constraints is unquantified"
+    ],
+    "not_proven": [
+      "external-source corroboration",
+      "investment recommendation quality",
+      "multi-cell or multi-case transfer",
+      "human owner value acceptance"
+    ]
+  },
+  "acceptance": {
+    "exact_live_provider_compliance": "pass",
+    "closed_canonical_v4_agent_artifact": "pass",
+    "bounded_one_cell_research_quality": "pass_for_internal_review",
+    "S2_T03": "pass",
+    "S2_T04": "ready_pending_separate_authorization",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S2-T04-PROMOTION-NUMERIC-JUDGMENT-WRITER-FOUR-LAYER-VERIFIER-VALIDATION-DECISION"
+}

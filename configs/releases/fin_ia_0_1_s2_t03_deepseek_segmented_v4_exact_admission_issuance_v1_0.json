@@ -1,0 +1,115 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t03_deepseek_segmented_v4_exact_admission_issuance_v1_0",
+  "decision_id": "S2-T03-DEEPSEEK-SEGMENTED-V4-EXACT-ADMISSION-ISSUANCE",
+  "issued_at": "2026-07-21T00:50:45+08:00",
+  "status": "consumed_terminal_succeeded_no_retry",
+  "authority": {
+    "new_exact_admission_issuance_authorized": true,
+    "zero_call_prepare_and_preflight_authorized": true,
+    "actual_model_execution_authorized": true,
+    "retry_or_fallback_authorized": false,
+    "T04_authorized": false,
+    "S3_release_or_production_authorized": false
+  },
+  "issued_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v6_0.json",
+    "admission_id": "fin01-s2-t03-bounded-agent-deepseek-segmented-v4-live-validation-r1",
+    "admission_digest": "521dc295dd6eb7e52c224ba5c765f0f76b6350e3c206df315bc25812cf121e63",
+    "work_unit_idempotency_key": "fin01-s2-t03-bounded-agent-work-unit-deepseek-segmented-v4-r1",
+    "runtime_root": ".codex_runtime/fin01-s2-t03-deepseek-segmented-v4-live-validation-r1",
+    "fresh_identity": true,
+    "consumed": true,
+    "execution_enabled": true,
+    "execution_started": true
+  },
+  "exact_binding": {
+    "case_id": "case_87682fa72e72d7d042dabba0",
+    "case_version": 1,
+    "as_of": "2026-07-20T00:00:00Z",
+    "input_digest": "ce6f5758ecb1e3f5d18d50028cf23214e2c1628ed00a99038c7a8bb5cec228ea",
+    "candidate_count": 3,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "specialist_transport_ref": "fin01.bounded_agent.deepseek_segmented_json_object:v1",
+    "specialist_output_contract_ref": "fin01.bounded_agent.specialist_lead_output:v4",
+    "reasoning_effort": "none"
+  },
+  "execution_envelope": {
+    "maximum_semantic_model_calls": 4,
+    "maximum_provider_calls": 4,
+    "maximum_network_calls": 4,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "maximum_output_tokens_total": 4200,
+    "specialist_max_output_tokens": 1400,
+    "lead_max_output_tokens": 900,
+    "writer_max_output_tokens": 1000,
+    "verifier_max_output_tokens": 900,
+    "output_only_cost_ceiling_usd": 0.003654,
+    "maximum_total_cost_usd": 0.05,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "automatic_fallback_allowed": false
+  },
+  "segmented_contract": {
+    "provider_output_segment_count": 2,
+    "specialist_output": "flat_specialist_judgment_object",
+    "lead_output": "flat_lead_adjudication_object",
+    "provider_tool_calls": 0,
+    "provider_strict_schema_requested": false,
+    "deterministic_local_exact_v4_assembly": true,
+    "canonical_v4_shape_changed": false,
+    "writer_and_verifier_paths_changed": false,
+    "candidate_and_evidence_validation": "fail_closed"
+  },
+  "zero_call_preflight": {
+    "prepare_status": "prepared_no_model_call",
+    "preflight_status": "pass_no_model_call",
+    "exact_input_match": true,
+    "credential_present": true,
+    "credential_value_persisted": false,
+    "transport_retries": 0,
+    "provider_health_check_performed": false,
+    "model_inference_or_generation_calls": 0,
+    "provider_execution_calls": 0,
+    "execution_network_calls": 0,
+    "external_tool_calls": 0
+  },
+  "credential_hygiene": {
+    "credential_source": "process_environment",
+    "plaintext_value_recorded": false,
+    "credential_material_persisted_in_project_artifacts": false,
+    "credential_material_staged_or_tracked": false
+  },
+  "independent_review": {
+    "disposition": "pass_exact_admission_consumed_terminal_succeeded",
+    "historical_admission_digests_mutated": false,
+    "consumed_identity_guards_mutated": true,
+    "segmented_preflight_metadata_corrected": true,
+    "transport_reasoning_lead_budget_and_call_cap_digest_bound": true,
+    "live_provider_compliance_proven": true,
+    "closed_v4_agent_artifact_proven": true,
+    "agent_research_quality_proven": "bounded_internal_review_acceptance_only"
+  },
+  "deterministic_verification": {
+    "focused_S2_T03_contracts": "73 passed in 2.65s",
+    "prepare": "prepared_no_model_call",
+    "zero_call_preflight": "pass_no_model_call",
+    "json_and_jsonl_parse": "pass",
+    "focused_T01_T03_and_project_os": "82 passed in 2.93s",
+    "expanded_gateway_S2_T01_T02_T03_and_project_os": "97 passed in 61.82s"
+  },
+  "stage_acceptance": {
+    "exact_admission_issuance": "pass_consumed_terminal_succeeded",
+    "S2_T03": "pass_bounded_live_one_cell_internal_review",
+    "S2_T04": "ready_pending_separate_authorization",
+    "S3": "blocked_by_S2",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S2-T04-PROMOTION-NUMERIC-JUDGMENT-WRITER-FOUR-LAYER-VERIFIER-VALIDATION-DECISION"
+}

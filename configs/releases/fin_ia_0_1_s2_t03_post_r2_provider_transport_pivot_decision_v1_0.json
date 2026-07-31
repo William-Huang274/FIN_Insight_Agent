@@ -1,0 +1,138 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t03_post_r2_provider_transport_pivot_decision_v1_0",
+  "decision_id": "S2-T03-POST-R2-PROVIDER-TRANSPORT-PIVOT-DECISION",
+  "decided_at": "2026-07-20T21:47:52+08:00",
+  "status": "native_json_schema_response_transport_selected_adapter_not_implemented",
+  "authority": {
+    "provider_transport_pivot_decision_authorized": true,
+    "adapter_implementation_authorized": false,
+    "credential_configuration_authorized": false,
+    "model_selection_authorized": false,
+    "new_admission_issuance_authorized": false,
+    "actual_model_execution_authorized": false,
+    "T04_authorized": false,
+    "S3_release_or_production_authorized": false
+  },
+  "historical_evidence": {
+    "ordinary_json_object_shape_failures": 2,
+    "deepseek_beta_strict_named_function_live_attempts": 2,
+    "deepseek_beta_strict_named_function_closed_v4_outputs": 0,
+    "deepseek_beta_strict_named_function_agent_artifacts": 0,
+    "r1_strict_argument_parse_failure_proven": true,
+    "r2_strict_argument_parse_failure_inferred_from_unique_runtime_path": true,
+    "r2_parse_subtype_reconstructable": false,
+    "project_owned_terminalization_defect_repaired": true,
+    "third_same_route_strict_attempt_allowed": false
+  },
+  "decision": {
+    "pivot_required": true,
+    "selected_internal_transport_family": "provider_native_json_schema_response",
+    "selected_output_semantics": "structured_assistant_response_not_tool_invocation",
+    "first_provider_candidate": "openai",
+    "first_provider_api_candidate": "responses_api",
+    "first_provider_wire_contract_candidate": "text.format.type=json_schema;strict=true",
+    "provider_and_model_binding_deferred_to_exact_admission": true,
+    "deepseek_beta_strict_named_function_retained_for_new_live_attempt": false,
+    "deepseek_json_object_selected": false,
+    "local_json_repair_or_parser_relaxation_selected": false,
+    "reason": "The bounded stage needs a schema-constrained answer, not an executable tool request. Two prompt-only json_object validations drifted in shape and two DeepSeek strict named-function validations produced no closed v4 output or Agent artifact. A provider-native JSON Schema response channel is a materially different transport and preserves fail-closed local validation without a third same-route attempt."
+  },
+  "official_capability_basis": [
+    {
+      "provider": "openai",
+      "title": "Structured model outputs",
+      "url": "https://developers.openai.com/api/docs/guides/structured-outputs",
+      "observed_contract": "Responses Structured Outputs supports json_schema through text.format with strict true, distinguishes structured assistant responses from function calling, and exposes refusal and incomplete response states for typed handling."
+    },
+    {
+      "provider": "openai",
+      "title": "GPT-5.6 Sol model",
+      "url": "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
+      "observed_contract": "The current model catalog identifies Responses and Structured Outputs support; exact model choice remains intentionally unfrozen in this decision."
+    },
+    {
+      "provider": "deepseek",
+      "title": "JSON Output",
+      "url": "https://api-docs.deepseek.com/guides/json_mode/",
+      "observed_contract": "json_object guarantees valid JSON strings rather than conformance to the project's exact v4 schema and may return empty content."
+    },
+    {
+      "provider": "deepseek",
+      "title": "Tool Calls strict mode",
+      "url": "https://api-docs.deepseek.com/guides/tool_calls/",
+      "observed_contract": "DeepSeek schema-constrained strict mode remains a beta tool-call path, which is the already-consumed route being retired from further T03 live validation."
+    }
+  ],
+  "adapter_contract_to_implement": {
+    "internal_transport_ref": "fin01.bounded_agent.native_json_schema_response:v1",
+    "output_contract_ref": "fin01.bounded_agent.specialist_lead_output:v4",
+    "request_output_channel": "assistant_structured_response",
+    "tools_sent": false,
+    "tool_choice_sent": false,
+    "external_tools_executed": false,
+    "schema_source": "the_existing_closed_v4_result_schema",
+    "schema_strict": true,
+    "unknown_properties_allowed": false,
+    "candidate_ids_bound_to_exact_input": true,
+    "local_native_json_object_parser_retained": true,
+    "local_duplicate_key_rejection_retained": true,
+    "local_candidate_evidence_and_semantic_validators_retained": true,
+    "response_refusal_is_typed_failure": true,
+    "response_incomplete_is_typed_failure": true,
+    "missing_or_multiple_message_outputs_are_typed_failure": true,
+    "raw_provider_response_persisted": false,
+    "raw_output_text_persisted_on_failure": false,
+    "automatic_transport_fallback_allowed": false,
+    "automatic_retry_or_rerun_allowed": false
+  },
+  "rejected_options": [
+    {
+      "option": "third_deepseek_beta_strict_named_function_attempt",
+      "reason": "It repeats the consumed route after two attempts without a closed v4 output or Agent artifact and violates the frozen stop rule."
+    },
+    {
+      "option": "deepseek_json_object",
+      "reason": "It is weaker than exact JSON Schema conformance and the project already observed two first-stage shape failures on that family."
+    },
+    {
+      "option": "relax_or_repair_provider_json_locally",
+      "reason": "It would hide transport nonconformance and risks changing financial-research semantics rather than proving the exact contract."
+    },
+    {
+      "option": "provider_switch_with_immediate_live_execution",
+      "reason": "No adapter, exact model binding, credential gate, cost envelope, admission, or execution authority exists yet."
+    }
+  ],
+  "required_proof_sequence": [
+    "implement one provider-neutral native-json-schema response adapter behind the existing bounded executor boundary",
+    "prove request translation and refusal incomplete cardinality parse and semantic failures with deterministic fixtures and zero provider calls",
+    "perform an independent contract review and retain the existing canonical terminal failure truth path",
+    "only after a separate user decision bind an exact provider model credential environment budget case input and fresh execution identity in a new admission",
+    "only after another explicit execution instruction consume that admission once and stop on success or failure"
+  ],
+  "deterministic_verification": {
+    "focused_T03_contracts": "44 passed in 6.39s",
+    "combined_S2_T01_T03_contracts": "57 passed in 95.50s",
+    "project_os_preflight": "6 passed in 0.36s",
+    "json_and_jsonl_parse": "pass",
+    "git_diff_check": "pass"
+  },
+  "observed_counts_this_decision": {
+    "model_calls": 0,
+    "provider_api_calls": 0,
+    "execution_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions_issued": 0,
+    "actual_executions": 0,
+    "documentation_network_research_performed": true
+  },
+  "stage_acceptance": {
+    "S2_T03": "failed_transport_pivot_selected_adapter_implementation_pending",
+    "S2_T04": "blocked_by_S2_T03",
+    "S3": "blocked_by_S2",
+    "agent_research_quality": "not_proven",
+    "release_admission": "not_issued",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S2-T03-NATIVE-JSON-SCHEMA-TRANSPORT-ADAPTER-IMPLEMENTATION-DECISION"
+}

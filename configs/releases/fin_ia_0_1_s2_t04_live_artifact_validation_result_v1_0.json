@@ -1,0 +1,106 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t04_live_artifact_validation_result_v1_0",
+  "result_id": "S2-T04-PROMOTION-NUMERIC-JUDGMENT-WRITER-FOUR-LAYER-VERIFIER-VALIDATION-R1",
+  "validated_at": "2026-07-21T02:06:11+08:00",
+  "status": "pass_read_only_exact_live_artifact_validation",
+  "authority": {
+    "S2_T04_authorized": true,
+    "new_model_or_provider_execution_authorized": false,
+    "canonical_mutation_authorized": false,
+    "T05_owner_review_authorized": false,
+    "S3_release_or_production_authorized": false
+  },
+  "input_binding": {
+    "source_result_ref": "configs/releases/fin_ia_0_1_s2_t03_deepseek_segmented_v4_live_validation_result_v1_0.json",
+    "runtime_root": ".codex_runtime/fin01-s2-t03-deepseek-segmented-v4-live-validation-r1",
+    "research_run_id": "research_run_fin01_9c03f2ff9b221e7c8a42c121",
+    "attempt_id": "attempt_fin01_57990c35b5111150989e03a7",
+    "input_digest": "ce6f5758ecb1e3f5d18d50028cf23214e2c1628ed00a99038c7a8bb5cec228ea"
+  },
+  "artifact_manifest": {
+    "agent_fallback_comparison": "artifact_fin01_bd57e477cc76dae548b4ee98:v1",
+    "bounded_agent_evidence": "artifact_fin01_d3b77357e62ddc153d7ef013:v1",
+    "bounded_agent_judgment": "artifact_fin01_e2305c188ff6baf20e9e4017:v1",
+    "bounded_agent_manifest": "artifact_fin01_6690f48c75b93424d1042667:v1",
+    "bounded_agent_numeric": "artifact_fin01_4d09b864d76d27a015653e78:v1",
+    "bounded_agent_report": "artifact_fin01_0572de7beb9ccdadf80353df:v1",
+    "bounded_agent_trace": "artifact_fin01_3c6e4048f55d20af44a2c397:v1",
+    "bounded_agent_verification": "artifact_fin01_55eff602bd36fcff41e889a2:v1",
+    "bounded_agent_workpaper": "artifact_fin01_7b0707ed542542d6c1b3575b:v1"
+  },
+  "validation": {
+    "promotion": {
+      "status": "pass_run_scoped_evaluation_evidence_version",
+      "candidate_count": 3,
+      "findings_have_claim_and_boundary": true,
+      "live_evidence_head_promoted": false
+    },
+    "numeric": {
+      "status": "pass_typed_gap",
+      "metric": "demand_sustainability",
+      "value": null,
+      "unsupported_precision_added": false
+    },
+    "judgment": {
+      "status": "pass",
+      "lead_decision": "accept",
+      "counter_thesis_present": true,
+      "remaining_gap_count": 3,
+      "what_would_change_present": true,
+      "evidence_refs_within_promoted_set": true
+    },
+    "writer": {
+      "status": "pass_no_source",
+      "source_calls": 0,
+      "tool_calls": 0,
+      "section_count": 3,
+      "limitation_count": 3,
+      "evidence_ref_count": 3,
+      "evidence_refs_within_promoted_set": true
+    },
+    "four_layer_verifier": {
+      "deterministic_integrity": "pass",
+      "semantic_fidelity": "pass",
+      "semantic_score": 100,
+      "financial_coherence": "pass",
+      "financial_score": 100,
+      "visual_delivery": "pass",
+      "recommendation": "accept_for_internal_review"
+    }
+  },
+  "read_only_audit": {
+    "canonical_database_digest_unchanged": true,
+    "canonical_object_tree_digest_unchanged": true,
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_network_calls": 0,
+    "canonical_business_writes": 0
+  },
+  "independent_review": {
+    "disposition": "pass_with_typed_promotion_boundary",
+    "promotion_does_not_mean_live_evidence_head": true,
+    "typed_gap_is_correct_not_missing_work": true,
+    "verifier_pass_is_cross_checked_against_refs_gaps_writer_and_trace": true,
+    "T05_material_gain_or_owner_review_claimed": false
+  },
+  "deterministic_verification": {
+    "focused_T04_contracts": "6 passed in 0.57s",
+    "expanded_gateway_S2_T01_T02_T03_T04_and_project_os": "103 passed in 60.80s",
+    "negative_cases": [
+      "live_evidence_head_promotion_forbidden",
+      "unsupported_numeric_precision_forbidden",
+      "writer_ref_outside_promoted_evidence_forbidden",
+      "financial_verifier_nonpass_forbidden"
+    ],
+    "exact_live_read_only_validation": "pass"
+  },
+  "stage_acceptance": {
+    "S2_T04": "pass",
+    "S2_T05": "ready_pending_separate_authorization",
+    "S2": "in_progress",
+    "S3": "blocked_by_S2",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S2-T05-EXACT-AGENT-VS-FALLBACK-COMPARISON-AND-OWNER-PRODUCT-REVIEW-DECISION"
+}

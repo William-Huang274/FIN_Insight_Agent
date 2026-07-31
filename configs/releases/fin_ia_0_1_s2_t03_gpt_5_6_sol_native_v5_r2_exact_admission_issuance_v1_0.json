@@ -1,0 +1,50 @@
+{
+  "schema_version": "fin_ia_0_1_s2_t03_gpt_5_6_sol_native_v5_r2_exact_admission_issuance_v1_0",
+  "decision_id": "S2-T03-NATIVE-JSON-SCHEMA-GPT-5-6-SOL-V5-R2-EXACT-ADMISSION-ISSUANCE",
+  "issued_at": "2026-07-21T00:13:00+08:00",
+  "status": "fresh_same_contract_admission_consumed_terminal_failed_http_401",
+  "authority": {
+    "credential_replacement_authorized": true,
+    "single_exact_execution_authorized": true,
+    "automatic_retry_or_fallback_authorized": false,
+    "conditional_deepseek_segmented_implementation_authorized": true,
+    "deepseek_live_execution_authorized": false,
+    "T04_authorized": false,
+    "S3_release_or_production_authorized": false
+  },
+  "issued_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s2_t03_bounded_agent_exact_admission_v5_r2.json",
+    "admission_id": "fin01-s2-t03-bounded-agent-native-json-schema-gpt-5-6-sol-live-validation-r2",
+    "admission_digest": "f971b6cae471b438638712f88b756c49bf8a770ffa31cf610198ce7ae4cff37c",
+    "work_unit_idempotency_key": "fin01-s2-t03-bounded-agent-work-unit-native-json-schema-gpt-5-6-sol-r2",
+    "runtime_root": ".codex_runtime/fin01-s2-t03-native-json-schema-gpt-5-6-sol-live-validation-r2",
+    "same_contract_as_v5_r1": true,
+    "fresh_identity_before_execution": true,
+    "consumed": true
+  },
+  "zero_call_preflight": {
+    "prepare_status": "prepared_no_model_call",
+    "preflight_status": "pass_no_model_call",
+    "exact_input_match": true,
+    "credential_present": true,
+    "credential_value_persisted": false,
+    "transport_retries": 0,
+    "provider_health_check_performed": false,
+    "model_inference_or_generation_calls": 0
+  },
+  "execution_result": {
+    "result_ref": "configs/releases/fin_ia_0_1_s2_t03_gpt_5_6_sol_native_live_validation_r2_result_v1_0.json",
+    "terminal_state": "failed",
+    "http_status": 401,
+    "artifact_count": 0,
+    "retry_or_rerun_performed": false
+  },
+  "credential_hygiene": {
+    "credential_storage": ".env",
+    "credential_storage_git_ignored": true,
+    "credential_storage_git_tracked": false,
+    "plaintext_value_recorded": false,
+    "credential_material_persisted_in_project_artifacts": false
+  },
+  "next_action": "S2-T03-DEEPSEEK-SEGMENTED-V4-IMPLEMENTATION-AND-EXACT-LIVE-ADMISSION-DECISION"
+}

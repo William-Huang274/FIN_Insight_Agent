@@ -1,0 +1,1285 @@
+{
+  "schema_version": "fin_ia_0_1_s1_adapter_map_v1_1",
+  "manifest_id": "fin_ia_0_1_s1_t01_decision_to_code_adapter_map_v1_1_20260719",
+  "release_id": "REL-PROD-001",
+  "slice_id": "S1",
+  "item_id": "S1-T01",
+  "status": "accepted_after_independent_review_repair",
+  "as_of": "2026-07-19",
+  "supersedes": {
+    "manifest": "configs/releases/fin_ia_0_1_s1_adapter_map_v1_0.json",
+    "sha256": "bf1ca153e583b2c6c68d3320b3c8499faea655ece9ebb701ffe828b1dfc74941",
+    "prior_disposition": "changes_requested_before_acceptance",
+    "repair_scope": [
+      "freeze_async_enqueue_claim_execute_complete_sequence",
+      "freeze_ResearchRun_WorkUnit_Attempt_Event_Artifact_cardinality_and_lineage",
+      "add_application_composition_root_and_existing_scheduler_facade_object_store_targets",
+      "separate_transitional_ActivityTrace_write_from_target_WorkbenchNext_write_and_projection",
+      "close_D06_EvidenceService_target_and_machine_owner_uniqueness"
+    ]
+  },
+  "authority": {
+    "allowed_profiles": [
+      "deterministic_fallback",
+      "agent_fixture_shadow"
+    ],
+    "allowed_effects": [
+      "documentation",
+      "machine_readable_adapter_freeze",
+      "read_only_code_inspection",
+      "deterministic_consistency_checks"
+    ],
+    "forbidden_effects": [
+      "model_or_provider_call",
+      "network_call",
+      "paid_or_full_chain",
+      "commercial_data",
+      "real_business_case_mutation",
+      "release_candidate_run",
+      "production_cutover"
+    ],
+    "execution_counts": {
+      "model_calls": 0,
+      "provider_calls": 0,
+      "network_calls": 0,
+      "commercial_data_calls": 0,
+      "business_case_mutations": 0,
+      "runtime_implementation_changes": 0
+    }
+  },
+  "source_authority": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "program_plan": "docs/architecture/repository/FIN_0_1_PROGRAM_EXECUTION_PLAN_DRAFT_20260719.zh-CN.md",
+    "release_contract": "configs/releases/fin_ia_0_1_release_contract_v1_3.json",
+    "feature_scope": "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_1.json",
+    "code_mainline_manifest": "configs/releases/fin_ia_0_1_code_mainline_manifest_v1_0.json",
+    "disconnection_audit": "docs/architecture/repository/FIN_0_1_CODE_MAINLINE_ARCHIVE_AND_DISCONNECTION_AUDIT_20260719.zh-CN.md",
+    "decision_documents": [
+      "docs/architecture/repository/FIN_0_1_LAYER_2_AGENT_CORE_EXECUTION_DRAFT_20260719.zh-CN.md",
+      "docs/architecture/repository/FIN_0_1_LAYER_3_AGENTIC_SEARCH_EVIDENCE_EXECUTION_DRAFT_20260719.zh-CN.md",
+      "docs/architecture/repository/FIN_0_1_LAYER_4_FINANCIAL_JUDGMENT_EXECUTION_DRAFT_20260719.zh-CN.md",
+      "docs/architecture/repository/FIN_0_1_LAYER_5_PRESENTATION_RUNTIME_PROFILES_EXECUTION_DRAFT_20260719.zh-CN.md",
+      "docs/architecture/repository/FIN_0_1_LAYER_6_RELEASE_SCOPE_EVALUATION_EXECUTION_DRAFT_20260719.zh-CN.md"
+    ]
+  },
+  "observed_current_mainline": {
+    "product_entry": "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx",
+    "current_execution_command_producer": "apps/workbench/frontend/vite/src/features/activity-trace/ActivityTrace.tsx",
+    "current_execution_api_client": "apps/workbench/frontend/vite/src/api/execution.ts",
+    "http_host": "apps/workbench/backend/app.py",
+    "api_router": "apps/workbench/backend/api/v1/execution.py",
+    "application_service": "apps/workbench/backend/application/execution_service.py",
+    "canonical_facade": "src/sec_agent/canonical_runtime/facade.py",
+    "canonical_store": "src/sec_agent/canonical_runtime/store.py",
+    "canonical_object_store": "src/sec_agent/canonical_runtime/object_store.py",
+    "deterministic_read_only_service": "apps/workbench/backend/application/local_research_service.py",
+    "current_truth": "deterministic_local_p36_workbench_preview",
+    "current_gap": "no_exact_ResearchRun_or_execution_profile_contract_and_no_product_consumption_of_historical_agent_assets"
+  },
+  "frozen_single_mainline": {
+    "path_id": "fin01_single_runtime_api_ui_async_write_path_v1_1",
+    "sequence": [
+      "transitional ActivityTrace action then target Workbench Next run action at S1-T05",
+      "ExecutionApiClient.createWorkUnit",
+      "POST /api/v1/cases/{case_id}/work-units returns HTTP 202 after admission and enqueue only",
+      "ExecutionService.create_work_unit",
+      "RuntimeFacade.create_work_unit",
+      "DurableSchedulerService.claim_next",
+      "RuntimeFacade.claim_next_scheduled_attempt creates one running Attempt",
+      "Fin01ResearchRuntime.execute_claimed_attempt",
+      "exact ExecutionProfileVersion private adapter returns ProfileExecutionResult with zero direct canonical writes",
+      "Fin01ResearchRuntime validates result and commits through RuntimeFacade",
+      "FileCanonicalObjectStore immutable object then SQLiteCanonicalStore envelope event and head transaction",
+      "ResearchRunVersion plus EventEnvelope plus ArtifactVersionEnvelope exact lineage",
+      "API v1 run-scoped read projections",
+      "Workbench Next"
+    ],
+    "phase_contract": {
+      "http_request_phase": "admit_validate_and_enqueue_only_no_profile_execution_in_request_thread",
+      "claim_phase": "existing_DurableSchedulerService_claim_next_and_RuntimeFacade_claim_next_scheduled_attempt_create_the_only_running_Attempt",
+      "execution_phase": "one_Fin01ResearchRuntime_executes_only_an_exact_claimed_Attempt_and_never_claims_outside_existing_scheduler_control_plane",
+      "commit_phase": "profile_adapter_returns_typed_result_then_Fin01ResearchRuntime_commits_via_existing_RuntimeFacade_store_and_object_store",
+      "terminal_phase": "RuntimeFacade_complete_attempt_or_fail_attempt_preserves_failure_truth_and_API_read_projection_exposes_exact_state",
+      "trigger_boundary": "after_successful_enqueue_the_execution_API_route_registers_one_FastAPI_BackgroundTask_for_ExecutionService.dispatch_queued_work_unit; that_method_delegates_to_Fin01ResearchRuntime.dispatch_once_which_claims_the_exact_WorkUnit_through_existing_DurableSchedulerService; no_profile_runs_before_the_HTTP_202_response_and_no_new_worker_or_scheduler_family_is_created",
+      "crash_boundary": "if_the_process_stops_before_claim_or_execution_the_durable_WorkUnit_remains_pending_or_lease_reclaimable; no_success_is_inferred_and_a_later_explicit_dispatch_may_resume_under_existing_fencing_rules"
+    },
+    "public_runtime_owner": {
+      "symbol": "Fin01ResearchRuntime",
+      "target_path": "apps/workbench/backend/application/research_runtime.py",
+      "path_status": "planned_for_S1_T02",
+      "relationship_to_existing_runtime": "application_adapter_over_existing_RuntimeFacade_not_a_second_store_or_authority"
+    },
+    "command_owner": {
+      "symbol": "ExecutionService",
+      "path": "apps/workbench/backend/application/execution_service.py",
+      "rule": "API_v1_execution_command_admission_and_enqueue_only; never_execute_profile_in_HTTP_request"
+    },
+    "scheduler_control_owner": {
+      "symbol": "DurableSchedulerService",
+      "path": "src/sec_agent/canonical_runtime/durable_scheduler.py",
+      "rule": "reuse_existing_enqueue_claim_heartbeat_reclaim_cancel_control_plane; no_second_scheduler_or_worker_family"
+    },
+    "composition_root": {
+      "path": "apps/workbench/backend/app.py",
+      "rule": "construct_one_Fin01ResearchRuntime_from_existing_RuntimeFacade_DurableSchedulerService_FileCanonicalObjectStore_and_profile_dependencies_then_inject_it_into_ExecutionService"
+    },
+    "ui_boundary": {
+      "transitional_write_owner": "apps/workbench/frontend/vite/src/features/activity-trace/ActivityTrace.tsx",
+      "transitional_status": "current_createWorkUnit_action_retained_until_S1_T05_parity",
+      "target_write_owner": "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx",
+      "target_status": "run_action_currently_disabled_and_only_wired_to_same_ExecutionApiClient_command_at_S1_T05",
+      "current_WorkbenchNext_role": "read_only_aggregate_and_synthetic_event_projection_not_Run_authority"
+    },
+    "profile_adapters": [
+      {
+        "profile": "deterministic_fallback",
+        "existing_asset": "apps/workbench/backend/application/local_research_service.py",
+        "target": "private adapter inside apps/workbench/backend/application/research_runtime.py",
+        "write_rule": "returns_ProfileExecutionResult_only_no_direct_canonical_write"
+      },
+      {
+        "profile": "agent_fixture_shadow",
+        "existing_asset": "src/sec_agent/langgraph_orchestrator.py",
+        "target": "private adapter inside apps/workbench/backend/application/research_runtime.py",
+        "write_rule": "returns_ProfileExecutionResult_only_no_direct_canonical_write"
+      }
+    ],
+    "durable_contracts": {
+      "new_object_in_existing_store": "ResearchRunVersion",
+      "existing_event_contract": "EventEnvelope",
+      "existing_artifact_contract": "ArtifactVersionEnvelope",
+      "existing_store_only": "SQLiteCanonicalStore",
+      "existing_object_store_only": "FileCanonicalObjectStore",
+      "adapter_direct_business_writes": 0,
+      "object_store_commit_rule": "write_immutable_object_before_SQL_envelope_transaction; orphan_object_is_not_a_canonical_head_and_may_be_gc_reconciled",
+      "distributed_transaction_claim": "none"
+    },
+    "run_identity_contract": {
+      "ResearchRunVersion_fields": [
+        "research_run_id",
+        "research_run_version_id",
+        "research_run_version",
+        "case_id",
+        "work_unit_id",
+        "attempt_id",
+        "execution_profile_version_ref",
+        "parent_research_run_id",
+        "input_refs",
+        "input_refs_digest",
+        "state",
+        "started_at",
+        "ended_at",
+        "terminal_reason"
+      ],
+      "cardinality": [
+        "one WorkUnit has one or more Attempts over retries",
+        "one Attempt owns exactly one ResearchRunVersion identity",
+        "one ResearchRunVersion binds exactly one WorkUnit and one Attempt",
+        "different execution profile requires a forked child WorkUnit Attempt and child ResearchRun rather than reusing a failed Run"
+      ],
+      "event_binding": "EventEnvelope.task_run_id equals research_run_id and EventEnvelope also carries exact work_unit_id and attempt_id",
+      "artifact_binding": "ArtifactVersionEnvelope.producer_attempt_id equals the Run attempt_id; input_refs includes research_run_version_id and exact business input refs; Attempt.output_refs contains every committed artifact_version_id",
+      "fallback_binding": "explicit deterministic continuation after Agent failure uses existing RuntimeFacade.fork_recovery_work_unit to create forked WorkUnit lineage plus a new Attempt parent_research_run_id and distinct profile version",
+      "replay_key": "research_run_id via existing EventEnvelope.task_run_id and exact Artifact Attempt lineage"
+    },
+    "read_projection_rule": "all Workbench runtime views are run-scoped API v1 projections; local preview endpoints remain compatibility reads until S1 parity and never become a second Run authority"
+  },
+  "ownership_invariants": [
+    "Fin01ResearchRuntime is the only owner that commits execution profile, ResearchRun, runtime Event and runtime Artifact identity",
+    "ExecutionService is the only API v1 command boundary for starting or controlling an S1 runtime execution",
+    "profile adapters are pure with respect to canonical business writes and return typed ProfileExecutionResult",
+    "PlanningService remains the owner of accepted DecisionSurface mutation and Human-reviewed revisions",
+    "Evidence Gate remains the only Evidence promotion owner",
+    "deterministic parser, numeric, permission, schema, renderer and verifier services are traced services rather than hidden fallback",
+    "agent failure remains failed or typed-stop; deterministic continuation requires an explicit child ResearchRun",
+    "Workbench never derives Agent success from the presence of deterministic local preview rows"
+  ],
+  "decisions": [
+    {
+      "decision_id": "D02",
+      "decision_name": "DecisionSurfaceMutationAuthority",
+      "frozen_resolution": "bounded_run_overlay_with_human_versioned_material_revision",
+      "current_producers": [
+        "apps/workbench/backend/application/planning_service.py",
+        "src/sec_agent/canonical_runtime/facade.py"
+      ],
+      "current_consumers": [
+        "apps/workbench/backend/application/execution_service.py",
+        "apps/workbench/frontend/vite/src/features/decision-surface/DecisionSurface.tsx",
+        "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "src/sec_agent/canonical_runtime/models.py",
+          "action": "retain",
+          "reason": "accepted DecisionSurface and exact version models already exist"
+        },
+        {
+          "path": "src/sec_agent/canonical_runtime/facade.py",
+          "action": "refactor",
+          "reason": "add exact RunDecisionOverlay and revision linkage without creating planning authority"
+        },
+        {
+          "path": "apps/workbench/backend/application/planning_service.py",
+          "action": "retain",
+          "reason": "remains the sole accepted DecisionSurface command owner"
+        }
+      ],
+      "target_modules": [
+        "src/sec_agent/canonical_runtime/models.py",
+        "src/sec_agent/canonical_runtime/facade.py",
+        "apps/workbench/backend/application/planning_service.py",
+        "apps/workbench/backend/application/research_runtime.py"
+      ],
+      "input_contracts": [
+        "AcceptedDecisionSurfaceVersion",
+        "ResearchRunVersion",
+        "Lead structured observation"
+      ],
+      "output_contracts": [
+        "RunDecisionOverlayVersion",
+        "DecisionSurfaceRevisionProposal",
+        "typed stop waiting_human"
+      ],
+      "unique_owner": "PlanningService",
+      "ownership_by_object": {
+        "AcceptedDecisionSurfaceVersion": "PlanningService",
+        "RunDecisionOverlayVersion": "Fin01ResearchRuntime",
+        "DecisionSurfaceRevisionProposal": "PlanningService"
+      },
+      "dependencies": [
+        "exact Case and DecisionSurface versions",
+        "D12 execution profile"
+      ],
+      "minimum_tests": [
+        "ordinary reorder changes overlay only",
+        "material scope change cannot mutate accepted surface",
+        "accepted revision creates a child Run rather than rewriting artifacts"
+      ],
+      "risks": [
+        "overlay could become a second planning authority",
+        "current WorkUnit has no ResearchRun binding"
+      ],
+      "non_goals": [
+        "autonomous top-level Cell creation",
+        "real business Case mutation in S1"
+      ]
+    },
+    {
+      "decision_id": "D03",
+      "decision_name": "AgentTopologyAndHandoff",
+      "frozen_resolution": "stable_domain_specialists_with_lead_mediated_handoffs",
+      "current_producers": [
+        "src/sec_agent/agent_registry.py",
+        "src/sec_agent/langgraph_orchestrator.py"
+      ],
+      "current_consumers": [
+        "historical eval and cloud runners only",
+        "no current API v1 or Workbench Next consumer"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "src/sec_agent/agent_registry.py",
+          "action": "retain",
+          "reason": "retain 17 role permission source and model contracts"
+        },
+        {
+          "path": "src/sec_agent/langgraph_orchestrator.py",
+          "action": "absorb",
+          "reason": "place historical graph behind the agent_fixture_shadow adapter"
+        },
+        {
+          "path": "src/sec_agent/langgraph_orchestrator.py#fixed_node_order_and_free_text_state",
+          "action": "refactor",
+          "reason": "adapt one selected Cell to exact task result and typed-stop handoff"
+        },
+        {
+          "path": "historical_top_level_langgraph_product_entry",
+          "action": "retire_after_parity",
+          "reason": "no top-level product execution may bypass Fin01ResearchRuntime"
+        }
+      ],
+      "target_modules": [
+        "apps/workbench/backend/application/research_runtime.py",
+        "src/sec_agent/langgraph_orchestrator.py",
+        "src/sec_agent/agent_registry.py"
+      ],
+      "input_contracts": [
+        "SpecialistTaskVersion",
+        "exact Run Cell Branch refs",
+        "AgentDefinitionVersion"
+      ],
+      "output_contracts": [
+        "SpecialistResultVersion",
+        "JudgmentProposal",
+        "EvidenceRequest",
+        "RepairRequest",
+        "TypedStop"
+      ],
+      "unique_owner": "Fin01ResearchRuntime",
+      "ownership_by_object": {
+        "SpecialistTaskVersion": "Fin01ResearchRuntime",
+        "SpecialistResultVersion": "selected DomainSpecialist",
+        "Lead mediated handoff": "Fin01ResearchRuntime"
+      },
+      "dependencies": [
+        "D02 overlay",
+        "D04 SkillPack",
+        "D09 ContextPlan"
+      ],
+      "minimum_tests": [
+        "one NVDA Cell selects Lead and one primary Specialist",
+        "all handoffs carry exact Run and causation refs",
+        "no specialist-to-specialist hidden call"
+      ],
+      "risks": [
+        "old 17-node order may masquerade as dynamic orchestration",
+        "agent registry relationship_graph test drift remains unresolved"
+      ],
+      "non_goals": [
+        "full 17-node migration",
+        "one Agent per Cell",
+        "real model execution"
+      ]
+    },
+    {
+      "decision_id": "D04",
+      "decision_name": "SkillRuntimeContract",
+      "frozen_resolution": "versioned_runtime_consumed_skillpacks_with_policy_separation",
+      "current_producers": [
+        "src/sec_agent/research_skills.py",
+        "src/sec_agent/agent_registry.py"
+      ],
+      "current_consumers": [
+        "src/sec_agent/research_lead_llm.py",
+        "src/sec_agent/specialist_llm.py",
+        "src/sec_agent/memo_llm.py",
+        "no current product consumer"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "src/sec_agent/research_skills.py",
+          "action": "refactor",
+          "reason": "extend the existing registry with version digest applicability precondition and output fields"
+        },
+        {
+          "path": "src/sec_agent/prompts/skills",
+          "action": "retain",
+          "reason": "retain reviewed method content"
+        },
+        {
+          "path": "parallel_fin01_skill_registry",
+          "action": "retire_after_parity",
+          "reason": "explicitly forbidden; extend the existing registry only"
+        }
+      ],
+      "target_modules": [
+        "src/sec_agent/research_skills.py",
+        "src/sec_agent/agent_registry.py",
+        "apps/workbench/backend/application/research_runtime.py"
+      ],
+      "input_contracts": [
+        "AgentDefinitionVersion",
+        "Cell and task type",
+        "ExecutionProfile allowlist"
+      ],
+      "output_contracts": [
+        "SkillDefinitionVersion",
+        "SkillPackVersion with canonical digest",
+        "skill selected injected consumed or skipped events"
+      ],
+      "unique_owner": "ResearchSkillRegistry",
+      "ownership_by_object": {
+        "SkillDefinitionVersion": "ResearchSkillRegistry",
+        "SkillPackVersion": "ResearchSkillRegistry",
+        "runtime selection and consumption event": "Fin01ResearchRuntime"
+      },
+      "dependencies": [
+        "D03 Agent selection",
+        "D09 ContextPlan"
+      ],
+      "minimum_tests": [
+        "exact skill version and digest bind to SpecialistTask",
+        "profile-disallowed skill fails closed",
+        "different observation can select or skip an optional skill"
+      ],
+      "risks": [
+        "Markdown presence could be mistaken for runtime consumption",
+        "Skill capability requirements could accidentally grant authority"
+      ],
+      "non_goals": [
+        "runtime-authored Skills",
+        "new registry family",
+        "Skill-granted tool or network permission"
+      ]
+    },
+    {
+      "decision_id": "D05",
+      "decision_name": "AgenticSearchControl",
+      "frozen_resolution": "evidence_request_driven_bounded_search_with_candidate_promotion_separation",
+      "current_producers": [
+        "apps/workbench/backend/application/local_research_service.py",
+        "src/sec_agent/canonical_runtime/evidence_request.py",
+        "src/sec_agent/canonical_runtime/tool_planner.py",
+        "src/sec_agent/canonical_runtime/candidate_bundle.py"
+      ],
+      "current_consumers": [
+        "apps/workbench/backend/application/evidence_service.py",
+        "apps/workbench/frontend/vite/src/features/evidence-workbench/EvidenceWorkbench.tsx"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "src/sec_agent/canonical_runtime/evidence_request.py",
+          "action": "retain",
+          "reason": "existing exact EvidenceRequest compiler"
+        },
+        {
+          "path": "src/sec_agent/canonical_runtime/tool_planner.py",
+          "action": "retain",
+          "reason": "existing bounded deterministic tool planning boundary"
+        },
+        {
+          "path": "apps/workbench/backend/application/local_research_service.py#fixed_queries",
+          "action": "absorb",
+          "reason": "becomes deterministic_fallback adapter behavior, not a product runtime"
+        },
+        {
+          "path": "src/sec_agent/tool_controller.py",
+          "action": "refactor",
+          "reason": "retain bounded trace logic but do not admit SEC-oriented execution in S1"
+        }
+      ],
+      "target_modules": [
+        "apps/workbench/backend/application/research_runtime.py",
+        "apps/workbench/backend/application/evidence_service.py",
+        "src/sec_agent/canonical_runtime/evidence_request.py",
+        "src/sec_agent/canonical_runtime/tool_planner.py",
+        "src/sec_agent/canonical_runtime/candidate_bundle.py"
+      ],
+      "input_contracts": [
+        "EvidenceRequestVersion",
+        "ExecutionProfile tool data and network policy"
+      ],
+      "output_contracts": [
+        "SearchPlanVersion",
+        "CandidateBundleVersion",
+        "EvidenceResponseVersion",
+        "typed route stop"
+      ],
+      "unique_owner": "EvidenceService",
+      "ownership_by_object": {
+        "EvidenceRequestVersion": "EvidenceService",
+        "SearchPlanVersion": "BoundedToolPlanner",
+        "CandidateBundleVersion": "EvidenceService"
+      },
+      "dependencies": [
+        "D02 Cell and Branch refs",
+        "D12 profile authority"
+      ],
+      "minimum_tests": [
+        "numeric request selects SQL parser route",
+        "unadmitted route fails closed",
+        "candidate cannot become accepted Evidence without D07"
+      ],
+      "risks": [
+        "fixed local queries could be mislabeled Agentic Search",
+        "Tool Controller could execute without current product policy"
+      ],
+      "non_goals": [
+        "network SourceHunter",
+        "commercial data",
+        "adaptive real search in S1"
+      ]
+    },
+    {
+      "decision_id": "D06",
+      "decision_name": "GraphResearchRoleAndAuthority",
+      "frozen_resolution": "typed_provenance_graph_for_navigation_hypothesis_and_lineage",
+      "current_producers": [
+        "src/sec_agent/research_graph_store.py",
+        "src/sec_agent/relationship_graph.py",
+        "apps/workbench/backend/application/local_research_service.py"
+      ],
+      "current_consumers": [
+        "fixed read-only graph SQL in P36LocalResearchService",
+        "historical LangGraph relationship plan",
+        "no current agentic product consumer"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "data/workbench_private/research_data/research_graph_store_v0_1.sqlite",
+          "action": "retain",
+          "reason": "retain local read-only graph data boundary"
+        },
+        {
+          "path": "src/sec_agent/relationship_graph.py",
+          "action": "absorb",
+          "reason": "bounded graph query function becomes a traced runtime tool behind Tool Planner"
+        },
+        {
+          "path": "apps/workbench/backend/application/evidence_service.py",
+          "action": "refactor",
+          "reason": "remain the unique GraphQueryRequest route owner and bind graph candidate events to exact ResearchRun lineage"
+        },
+        {
+          "path": "apps/workbench/backend/application/local_research_service.py#fixed_graph_sql",
+          "action": "refactor",
+          "reason": "keep deterministic fallback while removing any Agentic Graph claim"
+        },
+        {
+          "path": "new_fin01_graph_abstraction",
+          "action": "retire_after_parity",
+          "reason": "no new graph abstraction family is allowed"
+        }
+      ],
+      "target_modules": [
+        "apps/workbench/backend/application/evidence_service.py",
+        "src/sec_agent/relationship_graph.py",
+        "src/sec_agent/canonical_runtime/tool_planner.py",
+        "apps/workbench/backend/application/research_runtime.py"
+      ],
+      "input_contracts": [
+        "GraphQueryRequest",
+        "Run Cell Branch refs",
+        "profile depth top-k and namespace policy"
+      ],
+      "output_contracts": [
+        "GraphCandidateBundleVersion",
+        "GraphPath with edge authority and source refs",
+        "suggested follow-up EvidenceRequest"
+      ],
+      "unique_owner": "EvidenceService",
+      "ownership_by_object": {
+        "GraphQueryRequest route": "EvidenceService",
+        "GraphCandidateBundleVersion": "EvidenceService",
+        "bounded relationship lookup implementation": "relationship_graph module"
+      },
+      "dependencies": [
+        "D05 Tool Planner",
+        "D07 Evidence promotion"
+      ],
+      "minimum_tests": [
+        "fixed fixture graph query emits graph queried and candidate events",
+        "naked edge cannot support Judgment",
+        "Graph never creates numeric authority"
+      ],
+      "risks": [
+        "graph data usage may be overstated as graph reasoning",
+        "historical relationship focus filtering has known weaknesses"
+      ],
+      "non_goals": [
+        "canonical graph mutation",
+        "unbounded graph explorer",
+        "real second-hop network follow-up"
+      ]
+    },
+    {
+      "decision_id": "D07",
+      "decision_name": "EvidencePromotionAndCounterevidenceAuthority",
+      "frozen_resolution": "claim_scoped_symmetric_promotion_with_immutable_lineage_plus_deferred_calibrated_policy",
+      "current_producers": [
+        "apps/workbench/backend/application/evidence_service.py",
+        "apps/workbench/backend/application/integrity_service.py",
+        "src/sec_agent/canonical_runtime/evidence_gate.py"
+      ],
+      "current_consumers": [
+        "current fixture Numeric and Workpaper projection",
+        "current Workbench Evidence view"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "src/sec_agent/canonical_runtime/evidence_gate.py",
+          "action": "retain",
+          "reason": "retain the single promotion authority"
+        },
+        {
+          "path": "apps/workbench/backend/application/evidence_service.py",
+          "action": "refactor",
+          "reason": "bind Candidate Evidence and counterevidence to exact ResearchRun artifacts"
+        },
+        {
+          "path": "apps/workbench/backend/application/integrity_service.py",
+          "action": "retain",
+          "reason": "retain deterministic parser numeric and fixture gate behavior as traced service"
+        }
+      ],
+      "target_modules": [
+        "src/sec_agent/canonical_runtime/evidence_gate.py",
+        "apps/workbench/backend/application/evidence_service.py",
+        "apps/workbench/backend/application/integrity_service.py"
+      ],
+      "input_contracts": [
+        "CandidateBundleVersion",
+        "claim entity period unit scope",
+        "EvidencePromotionPolicyVersion"
+      ],
+      "output_contracts": [
+        "EvidenceRecordVersion",
+        "CounterevidenceAssessment",
+        "accepted context_only rejected or typed_gap classification"
+      ],
+      "unique_owner": "FixtureEvidenceGate",
+      "ownership_by_object": {
+        "EvidencePromotionPolicyVersion": "FixtureEvidenceGate",
+        "EvidenceRecordVersion promotion head": "FixtureEvidenceGate",
+        "Evidence and integrity projection": "EvidenceService"
+      },
+      "dependencies": [
+        "D05 Candidate separation",
+        "parser and Numeric lineage"
+      ],
+      "minimum_tests": [
+        "Candidate cannot bypass Gate",
+        "accepted counterevidence remains visible",
+        "context-only row cannot support exact fact"
+      ],
+      "risks": [
+        "current 31 local candidates could be mislabeled accepted Evidence",
+        "D07-B thresholds are not human calibrated"
+      ],
+      "non_goals": [
+        "D07-B real-case threshold calibration in S1",
+        "Evidence promotion from agent prose"
+      ]
+    },
+    {
+      "decision_id": "D08",
+      "decision_name": "SpecialistJudgmentContract",
+      "frozen_resolution": "structured_financial_judgment_with_bounded_narrative_and_lead_cross_cell_synthesis",
+      "current_producers": [
+        "apps/workbench/backend/application/local_research_service.py",
+        "apps/workbench/backend/application/integrity_service.py",
+        "src/sec_agent/specialist_llm.py",
+        "src/sec_agent/langgraph_orchestrator.py"
+      ],
+      "current_consumers": [
+        "current deterministic Workpaper and Report",
+        "historical memo writer",
+        "no current exact agent judgment product consumer"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "src/sec_agent/specialist_llm.py",
+          "action": "absorb",
+          "reason": "reuse structured specialist normalization behind agent_fixture_shadow adapter"
+        },
+        {
+          "path": "apps/workbench/backend/application/local_research_service.py#judgment_analysis",
+          "action": "retain",
+          "reason": "explicit deterministic fallback baseline only"
+        },
+        {
+          "path": "src/sec_agent/langgraph_orchestrator.py#judgment_aggregation",
+          "action": "refactor",
+          "reason": "separate Specialist artifact from Lead synthesis and exact Run lineage"
+        }
+      ],
+      "target_modules": [
+        "apps/workbench/backend/application/research_runtime.py",
+        "src/sec_agent/specialist_llm.py",
+        "src/sec_agent/canonical_runtime/models.py",
+        "apps/workbench/backend/application/integrity_service.py"
+      ],
+      "input_contracts": [
+        "accepted Evidence refs",
+        "exact Numeric refs",
+        "SpecialistTaskVersion and ContextPlan"
+      ],
+      "output_contracts": [
+        "SpecialistJudgmentVersion as immutable runtime Artifact",
+        "LeadSynthesis artifact",
+        "cannot_infer and What-Would-Change"
+      ],
+      "unique_owner": "Fin01ResearchRuntime",
+      "ownership_by_object": {
+        "SpecialistJudgmentVersion content": "selected DomainSpecialist",
+        "LeadSynthesis content": "ResearchLead",
+        "artifact identity and commit": "Fin01ResearchRuntime"
+      },
+      "dependencies": [
+        "D03 handoff",
+        "D07 accepted Evidence",
+        "D09 ContextPlan"
+      ],
+      "minimum_tests": [
+        "fixture Specialist emits structured one-cell Judgment",
+        "numeric conflict cannot be overwritten by narrative",
+        "judgment artifact shares exact Run identity"
+      ],
+      "risks": [
+        "deterministic judgment may be shown as Agent output",
+        "historical generic dimensions may flatten Cell semantics"
+      ],
+      "non_goals": [
+        "three-cell Lead synthesis in S1-T01",
+        "research quality claim from fixture output"
+      ]
+    },
+    {
+      "decision_id": "D09",
+      "decision_name": "ContextAndMemoryAllocation",
+      "frozen_resolution": "role_scoped_reconstructable_context_with_registry_governed_memory",
+      "current_producers": [
+        "src/sec_agent/context_engine.py",
+        "src/sec_agent/multi_agent_runtime.py",
+        "historical LLM prompt builders"
+      ],
+      "current_consumers": [
+        "deterministic fixtures and historical agent tests",
+        "no current API v1 product runtime consumer"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "src/sec_agent/context_engine.py",
+          "action": "absorb",
+          "reason": "reuse the existing resolve select compress inject interface"
+        },
+        {
+          "path": "src/sec_agent/context_engine.py#role_visibility_and_preservation",
+          "action": "refactor",
+          "reason": "bind exact Run Cell Artifact Permission and SkillPack refs"
+        },
+        {
+          "path": "parallel_fin01_context_engine",
+          "action": "retire_after_parity",
+          "reason": "one ContextEngine public interface only"
+        }
+      ],
+      "target_modules": [
+        "src/sec_agent/context_engine.py",
+        "apps/workbench/backend/application/research_runtime.py"
+      ],
+      "input_contracts": [
+        "ContextRequirement",
+        "canonical business heads",
+        "role permission token and SkillPack"
+      ],
+      "output_contracts": [
+        "ContextSnapshot",
+        "ContextSelectionDecision",
+        "ContextInjectionPlan with exact input digest"
+      ],
+      "unique_owner": "ContextEngine",
+      "ownership_by_object": {
+        "ContextSnapshot": "ContextEngine",
+        "ContextSelectionDecision": "ContextEngine",
+        "runtime invocation and event": "Fin01ResearchRuntime"
+      },
+      "dependencies": [
+        "D04 SkillPack",
+        "D12 profile context policy"
+      ],
+      "minimum_tests": [
+        "Lead Specialist Writer and Verifier receive distinct plans",
+        "Writer receives no raw Candidate or source tool",
+        "context plan is reconstructable from exact refs"
+      ],
+      "risks": [
+        "current ContextEngine is not mainline consumed",
+        "compression may lose negation gap period or permission boundary"
+      ],
+      "non_goals": [
+        "cross-Run memory promotion in S1",
+        "chat history as business truth"
+      ]
+    },
+    {
+      "decision_id": "D10",
+      "decision_name": "RepairConcurrencyInvalidationAndStop",
+      "frozen_resolution": "owner_routed_targeted_repair_with_snapshot_isolated_parallelism_and_materiality_based_invalidation",
+      "current_producers": [
+        "apps/workbench/backend/application/evidence_service.py",
+        "apps/workbench/backend/application/integrity_service.py",
+        "src/sec_agent/canonical_runtime/repair_ticket.py",
+        "src/sec_agent/canonical_runtime/parallel_context.py",
+        "src/sec_agent/canonical_runtime/durable_scheduler.py"
+      ],
+      "current_consumers": [
+        "current fixture repair UI",
+        "historical orchestration repair paths"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "src/sec_agent/canonical_runtime/repair_ticket.py",
+          "action": "retain",
+          "reason": "retain owner-routed repair contract"
+        },
+        {
+          "path": "src/sec_agent/canonical_runtime/parallel_context.py",
+          "action": "retain",
+          "reason": "retain snapshot-isolated context and stale output controls"
+        },
+        {
+          "path": "apps/workbench/backend/application/integrity_service.py#fixture_repair",
+          "action": "absorb",
+          "reason": "use as deterministic_fallback service event rather than a parallel runtime"
+        },
+        {
+          "path": "broad_full_chain_rerun_as_repair",
+          "action": "retire_after_parity",
+          "reason": "repair must target the earliest owner"
+        }
+      ],
+      "target_modules": [
+        "apps/workbench/backend/application/research_runtime.py",
+        "src/sec_agent/canonical_runtime/repair_ticket.py",
+        "src/sec_agent/canonical_runtime/parallel_context.py",
+        "src/sec_agent/canonical_runtime/durable_scheduler.py"
+      ],
+      "input_contracts": [
+        "failure fingerprint",
+        "earliest faulty object",
+        "Run dependency refs and changed-information hypothesis"
+      ],
+      "output_contracts": [
+        "RepairTicket",
+        "PackChangeSet",
+        "continue rebase cancel or typed-stop decision"
+      ],
+      "unique_owner": "Fin01ResearchRuntime",
+      "ownership_by_object": {
+        "RepairTicket routing": "Fin01ResearchRuntime",
+        "PackChangeSet": "earliest faulty object owner named by RepairTicket",
+        "continue rebase cancel or typed stop": "Fin01ResearchRuntime"
+      },
+      "dependencies": [
+        "D02 Run overlay",
+        "D09 ContextPlan",
+        "single authoritative store writer"
+      ],
+      "minimum_tests": [
+        "unsupported claim routes to earliest owner",
+        "same fingerprint with no new information stops",
+        "late output cannot commit to current head"
+      ],
+      "risks": [
+        "fixture one-repair behavior could be generalized incorrectly",
+        "direct service writes could create dual heads"
+      ],
+      "non_goals": [
+        "parallel execution in S1-T01",
+        "broad rerun",
+        "second automatic engineering repair"
+      ]
+    },
+    {
+      "decision_id": "D11",
+      "decision_name": "WriterVerifierRoleBoundary",
+      "frozen_resolution": "bounded_presentation_agent_with_independent_layered_verification",
+      "current_producers": [
+        "apps/workbench/backend/application/local_research_service.py",
+        "apps/workbench/backend/application/deliverable_service.py",
+        "src/sec_agent/memo_llm.py",
+        "src/sec_agent/langgraph_orchestrator.py"
+      ],
+      "current_consumers": [
+        "apps/workbench/frontend/vite/src/features/deliverable-review/DeliverableReview.tsx",
+        "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "src/sec_agent/memo_llm.py",
+          "action": "absorb",
+          "reason": "reuse historical Writer and Verifier behind agent_fixture_shadow adapter"
+        },
+        {
+          "path": "apps/workbench/backend/application/local_research_service.py#writer_analysis",
+          "action": "retain",
+          "reason": "explicit deterministic no-source fallback only"
+        },
+        {
+          "path": "apps/workbench/backend/application/deliverable_service.py",
+          "action": "refactor",
+          "reason": "project exact run-scoped presentation and verifier artifacts"
+        },
+        {
+          "path": "standalone_writer_product_entry",
+          "action": "retire_after_parity",
+          "reason": "Writer cannot bypass Fin01ResearchRuntime or admitted judgments"
+        }
+      ],
+      "target_modules": [
+        "apps/workbench/backend/application/research_runtime.py",
+        "src/sec_agent/memo_llm.py",
+        "apps/workbench/backend/application/deliverable_service.py"
+      ],
+      "input_contracts": [
+        "LeadSynthesis",
+        "exact adjudicated Claim and Judgment refs",
+        "WriterBrief and no-source policy"
+      ],
+      "output_contracts": [
+        "CanonicalPresentationModel",
+        "SurfaceClaim artifacts",
+        "layered Verifier findings",
+        "typed upstream stop"
+      ],
+      "unique_owner": "Fin01ResearchRuntime",
+      "ownership_by_object": {
+        "CanonicalPresentationModel artifact identity": "Fin01ResearchRuntime",
+        "Writer and Verifier content stage": "Fin01ResearchRuntime",
+        "read projection": "DeliverableService"
+      },
+      "dependencies": [
+        "D08 exact Judgment",
+        "D09 Writer Context",
+        "D10 repair routing"
+      ],
+      "minimum_tests": [
+        "Writer source and tool calls remain zero",
+        "SurfaceClaim refs resolve inside exact Run",
+        "Writer failure cannot reuse old artifact"
+      ],
+      "risks": [
+        "current deterministic first-judgment report may look like Lead synthesis",
+        "Verifier could be treated as release acceptance"
+      ],
+      "non_goals": [
+        "real model Writer in S1",
+        "Human or release acceptance",
+        "new Writer family"
+      ]
+    },
+    {
+      "decision_id": "D12",
+      "decision_name": "ExecutionProfilesAndFailureTruth",
+      "frozen_resolution": "one_runtime_multiple_explicit_profiles_without_silent_substitution",
+      "current_producers": [
+        "apps/workbench/backend/application/execution_service.py",
+        "apps/workbench/backend/application/local_research_service.py",
+        "scripts/releases/run_fin_ia_0_1_p36_three_cell_deepseek_vertical.py",
+        "src/sec_agent/workbench"
+      ],
+      "current_consumers": [
+        "ActivityTrace execution UI",
+        "Workbench Next aggregate read UI",
+        "standalone release CLI"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "apps/workbench/backend/application/execution_service.py",
+          "action": "refactor",
+          "reason": "remain the API admission and enqueue boundary; never run a profile inside the HTTP request"
+        },
+        {
+          "path": "apps/workbench/backend/app.py",
+          "action": "refactor",
+          "reason": "become the explicit composition root for one Fin01ResearchRuntime and its existing scheduler facade object store and profile dependencies"
+        },
+        {
+          "path": "src/sec_agent/canonical_runtime/durable_scheduler.py",
+          "action": "retain",
+          "reason": "reuse the existing enqueue claim heartbeat reclaim cancel control plane without creating another scheduler family"
+        },
+        {
+          "path": "src/sec_agent/canonical_runtime/facade.py",
+          "action": "refactor",
+          "reason": "add ResearchRunVersion commands and exact Attempt Event Artifact lineage inside the existing facade authority"
+        },
+        {
+          "path": "src/sec_agent/canonical_runtime/object_store.py",
+          "action": "retain",
+          "reason": "remain the only immutable runtime payload object store"
+        },
+        {
+          "path": "apps/workbench/backend/application/local_research_service.py",
+          "action": "absorb",
+          "reason": "deterministic_fallback adapter input only"
+        },
+        {
+          "path": "scripts/releases/run_fin_ia_0_1_p36_three_cell_deepseek_vertical.py",
+          "action": "retain",
+          "reason": "release reproducibility tool only, not application runtime"
+        },
+        {
+          "path": "standalone_deepseek_runner_as_application_runtime",
+          "action": "retire_after_parity",
+          "reason": "future model execution must enter through the same runtime contract"
+        }
+      ],
+      "target_modules": [
+        "apps/workbench/backend/app.py",
+        "apps/workbench/backend/application/research_runtime.py",
+        "apps/workbench/backend/application/execution_service.py",
+        "apps/workbench/backend/api/v1/execution.py",
+        "apps/workbench/frontend/vite/src/api/execution.ts",
+        "apps/workbench/frontend/vite/src/features/activity-trace/ActivityTrace.tsx",
+        "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx",
+        "src/sec_agent/canonical_runtime/models.py",
+        "src/sec_agent/canonical_runtime/store.py",
+        "src/sec_agent/canonical_runtime/facade.py",
+        "src/sec_agent/canonical_runtime/object_store.py",
+        "src/sec_agent/canonical_runtime/durable_scheduler.py"
+      ],
+      "input_contracts": [
+        "ExecutionProfileVersion",
+        "exact Case DecisionSurface Cell actor permission budget refs",
+        "idempotency and expected versions"
+      ],
+      "output_contracts": [
+        "ResearchRunVersion",
+        "ProfileExecutionResult",
+        "structured EventTrace",
+        "ArtifactManifest",
+        "typed stop or failure"
+      ],
+      "unique_owner": "Fin01ResearchRuntime",
+      "ownership_by_object": {
+        "API admission and enqueue": "ExecutionService",
+        "queue claim and Attempt lease": "DurableSchedulerService",
+        "ResearchRunVersion and profile execution": "Fin01ResearchRuntime",
+        "canonical persistence commands": "RuntimeFacade",
+        "runtime read projection": "ExecutionService"
+      },
+      "dependencies": [
+        "existing RuntimeFacade and canonical store",
+        "explicit profile allowlist"
+      ],
+      "minimum_tests": [
+        "POST work-units returns HTTP 202 after pending enqueue and before profile execution",
+        "FastAPI BackgroundTask calls ExecutionService dispatch only after successful enqueue and never selects a profile in the router",
+        "existing scheduler claim creates the only running Attempt before Fin01ResearchRuntime executes",
+        "process stop before execution leaves pending or reclaimable truth rather than false success",
+        "ResearchRun WorkUnit Attempt Event Artifact lineage is exact and replayable",
+        "deterministic and agent shadow produce distinct Run IDs and artifacts",
+        "agent failure remains failed",
+        "explicit fallback creates a forked child WorkUnit Attempt and child Run"
+      ],
+      "risks": [
+        "ResearchRun object is currently missing",
+        "Workbench Next currently synthesizes run events from independent reads",
+        "legacy WorkbenchProfile is a separate compatibility surface"
+      ],
+      "non_goals": [
+        "bounded_agent_internal",
+        "release_candidate",
+        "provider or network call"
+      ]
+    },
+    {
+      "decision_id": "D13",
+      "decision_name": "ReleaseScopeAndCaseProof",
+      "frozen_resolution": "narrow_complete_vertical_release_with_three_case_transfer_proof",
+      "current_producers": [
+        "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_1.json",
+        "apps/workbench/backend/application/local_research_service.py"
+      ],
+      "current_consumers": [
+        "Workbench Next",
+        "release backlog and contract tests"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "apps/workbench/backend/application/local_research_service.py#ten_cell_preview",
+          "action": "retain",
+          "reason": "explicit non-agent deterministic reference"
+        },
+        {
+          "path": "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_1.json",
+          "action": "retain",
+          "reason": "current three-cell three-case release scope authority"
+        },
+        {
+          "path": "hard_coded_NVDA_fact_or_mechanism_in_runtime_adapter",
+          "action": "retire_after_parity",
+          "reason": "same contract must transfer to DELL and MU"
+        }
+      ],
+      "target_modules": [
+        "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_1.json",
+        "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+        "apps/workbench/backend/application/research_runtime.py"
+      ],
+      "input_contracts": [
+        "three active Cell ids",
+        "case profile and exact input pack",
+        "release scope version"
+      ],
+      "output_contracts": [
+        "S1 one-cell fixture Run",
+        "later NVDA DELL MU exact case proofs"
+      ],
+      "unique_owner": "FIN_0_1ProgramBacklog",
+      "ownership_by_object": {
+        "release scope": "FeatureScopeMatrix",
+        "program progress": "FIN_0_1ProgramBacklog",
+        "case execution": "Fin01ResearchRuntime"
+      },
+      "dependencies": [
+        "D12 explicit profile",
+        "same adapter contract across cases"
+      ],
+      "minimum_tests": [
+        "S1 selects only NVDA demand authenticity Cell",
+        "ten-cell preview remains labeled deterministic reference",
+        "no release proof status changes in S1"
+      ],
+      "risks": [
+        "ten-cell deterministic depth could be confused with Agent release depth",
+        "NVDA-specific fixture facts could leak into future transfer cases"
+      ],
+      "non_goals": [
+        "DELL or MU execution in S1",
+        "R2 or R3 claim",
+        "release decision"
+      ]
+    },
+    {
+      "decision_id": "D14",
+      "decision_name": "EvaluationHumanReviewAndReleaseGate",
+      "frozen_resolution": "hard_integrity_floor_plus_case_level_research_quality_and_human_value",
+      "current_producers": [
+        "apps/workbench/backend/application/human_baseline_service.py",
+        "apps/workbench/backend/application/integrity_service.py",
+        "apps/workbench/backend/application/deliverable_service.py",
+        "tests/contract",
+        "reports/release_evidence"
+      ],
+      "current_consumers": [
+        "Workbench Human Baseline and Review surfaces",
+        "release gate records"
+      ],
+      "asset_dispositions": [
+        {
+          "path": "apps/workbench/backend/application/human_baseline_service.py",
+          "action": "retain",
+          "reason": "retain isolated local baseline until explicit review import authority exists"
+        },
+        {
+          "path": "tests/contract",
+          "action": "retain",
+          "reason": "retain deterministic contract and integrity regression suites"
+        },
+        {
+          "path": "apps/workbench/backend/application/deliverable_service.py#review_projection",
+          "action": "refactor",
+          "reason": "bind review and verifier projections to exact ResearchRun and profile"
+        },
+        {
+          "path": "new_S1_gate_family",
+          "action": "retire_after_parity",
+          "reason": "reuse the existing hard-integrity and RG1-RG5 families"
+        }
+      ],
+      "target_modules": [
+        "apps/workbench/backend/application/human_baseline_service.py",
+        "apps/workbench/backend/application/deliverable_service.py",
+        "tests/contract",
+        "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
+      ],
+      "input_contracts": [
+        "exact Case ResearchRun profile and artifact digest",
+        "hard-integrity findings",
+        "owner and qualified senior review contracts"
+      ],
+      "output_contracts": [
+        "S1 fixture integration evidence only",
+        "later exact HumanReview attestation",
+        "unchanged RG1 to RG5 state"
+      ],
+      "unique_owner": "FIN_0_1ReleaseGateAuthority",
+      "ownership_by_object": {
+        "fixture integrity evidence": "IntegrityService",
+        "HumanReview attestation": "HumanReviewAuthority",
+        "release disposition": "FIN_0_1ReleaseGateAuthority"
+      },
+      "dependencies": [
+        "D11 exact presentation artifact",
+        "D12 profile and failure truth",
+        "D13 case proof scope"
+      ],
+      "minimum_tests": [
+        "S1 call and write counts match fixture shadow scope",
+        "machine pass cannot become Human accepted",
+        "fixture shadow cannot become release proof"
+      ],
+      "risks": [
+        "separate HumanBaseline SQLite is not canonical release evidence",
+        "fixture or shadow pass could be overstated"
+      ],
+      "non_goals": [
+        "qualified senior review",
+        "RG1 to RG5 closeout",
+        "release or production admission"
+      ]
+    }
+  ],
+  "retirement_policy": {
+    "delete_now": [],
+    "retire_after_parity_only": [
+      "historical top-level LangGraph product entry",
+      "standalone DeepSeek runner as application runtime",
+      "direct local preview as Run authority",
+      "parallel Agent Skill Graph Writer Runtime or gate family"
+    ],
+    "parity_requirements": [
+      "same current deterministic Workbench behavior through Fin01ResearchRuntime",
+      "exact Run Event Artifact identity",
+      "explicit rollback path",
+      "targeted deterministic and browser regression"
+    ]
+  },
+  "verification_contract": {
+    "decision_ids_exact": [
+      "D02",
+      "D03",
+      "D04",
+      "D05",
+      "D06",
+      "D07",
+      "D08",
+      "D09",
+      "D10",
+      "D11",
+      "D12",
+      "D13",
+      "D14"
+    ],
+    "allowed_asset_actions": [
+      "retain",
+      "refactor",
+      "absorb",
+      "retire_after_parity"
+    ],
+    "required_fields_per_decision": [
+      "current_producers",
+      "current_consumers",
+      "asset_dispositions",
+      "target_modules",
+      "input_contracts",
+      "output_contracts",
+      "unique_owner",
+      "ownership_by_object",
+      "dependencies",
+      "minimum_tests",
+      "risks",
+      "non_goals"
+    ],
+    "owner_rules": {
+      "unique_owner_cardinality_per_decision": 1,
+      "object_level_owner_map_required": true,
+      "unique_owner_must_not_encode_multiple_authorities": true,
+      "D06_EvidenceService_must_be_in_asset_dispositions_and_target_modules": true
+    },
+    "async_path_rules": {
+      "HTTP_202_means_enqueue_only": true,
+      "profile_execution_in_request_thread": false,
+      "existing_DurableSchedulerService_claim_required": true,
+      "running_Attempt_required_before_profile_execution": true,
+      "Fin01ResearchRuntime_is_not_a_second_scheduler": true
+    },
+    "run_lineage_rules": {
+      "one_Attempt_one_ResearchRun_identity": true,
+      "EventEnvelope_task_run_id_equals_research_run_id": true,
+      "Artifact_producer_attempt_and_Run_input_ref_required": true,
+      "fallback_profile_requires_child_WorkUnit_Attempt_Run": true
+    },
+    "ui_rules": {
+      "current_write_surface": "ActivityTrace",
+      "current_WorkbenchNext_write_admitted": false,
+      "target_WorkbenchNext_write_task": "S1-T05",
+      "same_ExecutionApiClient_command_required": true
+    },
+    "disposition": "pass_after_independent_review_repair_no_implementation_claim"
+  }
+}

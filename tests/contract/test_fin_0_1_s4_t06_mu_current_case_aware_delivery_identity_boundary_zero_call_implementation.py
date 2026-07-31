@@ -41,8 +41,8 @@ from test_fin_0_1_s4_t05_case_numeric_authority_and_delivery_identity_zero_call_
 from test_fin_0_1_s4_t06_mu_case_runtime_mandatory_material_truth_identity_safety_closure_zero_call_implementation import (
     _NumericIdentitySafeMuV7Fake,
 )
-from test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_zero_call_implementation import (
-    _mu_input_and_admission,
+from fin_0_1_2_realistic_fixture_support import (
+    load_mu_realistic_input_and_admission as _mu_input_and_admission,
 )
 
 IMPLEMENTATION = ROOT / (

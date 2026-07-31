@@ -1,0 +1,57 @@
+{
+  "schema_version": "fin_ia_0_1_2_hermetic_semantic_parity_projection_v1_0",
+  "contract_id": "FIN-0.1.2-PRE-S2-HERMETIC-SEMANTIC-PARITY-PROJECTION-R1",
+  "status": "raw_preserving_allowlisted_root_normalization",
+  "raw_evidence": {
+    "content_addressed_refs_retained": true,
+    "raw_detail_stdout_stderr_hashes_rewritten": false,
+    "raw_terminal_result_retained": true,
+    "semantic_hash_is_separate_index_only": true
+  },
+  "normalization": {
+    "allowed_roots": [
+      {
+        "root_id": "exact_disposable_repository_root",
+        "placeholder": "<DISPOSABLE_REPOSITORY_ROOT>"
+      },
+      {
+        "root_id": "exact_disposable_package_root",
+        "placeholder": "<DISPOSABLE_PACKAGE_ROOT>"
+      },
+      {
+        "root_id": "exact_hermetic_temporary_parent",
+        "placeholder": "<HERMETIC_TEMPORARY_PARENT>"
+      }
+    ],
+    "derive_native_and_posix_separator_variants_from_exact_roots": true,
+    "replace_longest_exact_literal_first": true,
+    "substring_or_fuzzy_path_matching_allowed": false,
+    "unknown_absolute_path_patterns": [
+      "(?<![A-Za-z0-9_])[A-Za-z]:[\\\\/][^\\s\\\"'<>]+",
+      "(?<![A-Za-z0-9_:])/(?:[^/\\s\\\"'<>]+/)+[^/\\s\\\"'<>]+"
+    ],
+    "unknown_absolute_path_behavior": "fail_closed_and_keep_parity_false"
+  },
+  "semantic_projection": {
+    "normalized_content_fields": [
+      "test.stdout",
+      "test.stderr",
+      "test.detail",
+      "collection_errors",
+      "process_stdout",
+      "process_stderr"
+    ],
+    "comparison_significant_fields": [
+      "business_values",
+      "nodeids",
+      "failure_codes",
+      "relative_paths",
+      "non_allowlisted_absolute_paths",
+      "test_outcomes",
+      "suite_memberships",
+      "release_gate_classification"
+    ],
+    "semantic_parity_requires_both_normalization_valid_and_digest_equal": true,
+    "normalization_findings_are_business_promotable": false
+  }
+}

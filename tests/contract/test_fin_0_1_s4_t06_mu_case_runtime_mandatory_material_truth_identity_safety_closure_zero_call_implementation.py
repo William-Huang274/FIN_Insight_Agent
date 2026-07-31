@@ -45,9 +45,9 @@ from test_fin_0_1_s4_t05_case_numeric_authority_and_delivery_identity_zero_call_
     _sanitize_provider_narratives,
     _shared_local_id_specialists,
 )
-from test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_zero_call_implementation import (
-    _MuSourceGroundedV7FullFakeProvider,
-    _mu_input_and_admission,
+from fin_0_1_2_realistic_fixture_support import (
+    MuSourceGroundedV7FullFakeProvider,
+    load_mu_realistic_input_and_admission as _mu_input_and_admission,
 )
 
 
@@ -73,7 +73,7 @@ S4_BACKLOG = (
 
 
 class _NumericIdentitySafeMuV7Fake(
-    _MuSourceGroundedV7FullFakeProvider
+    MuSourceGroundedV7FullFakeProvider
 ):
     def __call__(self, **kwargs: Any) -> Mapping[str, Any]:
         response = dict(super().__call__(**kwargs))

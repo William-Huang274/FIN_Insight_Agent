@@ -1,0 +1,118 @@
+{
+  "inventory_id": "FIN-0.1.2-PRE-S2-RUNTIME-NONPYTHON-RESOURCE-INVENTORY-R1",
+  "package_contract": {
+    "directory_glob_is_authority": false,
+    "duplicate_skill_or_path_fails_before_pytest": true,
+    "missing_resource_fails_before_pytest": true,
+    "path_or_hash_drift_fails_before_pytest": true,
+    "registry_mapping_is_source_of_truth": true,
+    "unknown_inventory_resource_fails_before_pytest": true
+  },
+  "registry_mapping_name": "SKILL_FILES",
+  "registry_ref": "src/sec_agent/research_skills.py",
+  "registry_source_sha256": "d757747da6209eeb8cded8c6980b7805db53fb6521c0c2424900af7ad7cffdba",
+  "resource_bytes": 53382,
+  "resource_canonical_digest": "2b704b4c20dafad05097f59bb35740fc2f8a0479a2f55b6bb7d1a1bae15d1e9a",
+  "resource_count": 16,
+  "resource_root": "src/sec_agent/prompts/skills",
+  "resources": [
+    {
+      "bytes": 1101,
+      "path": "src/sec_agent/prompts/skills/coverage_reflection_skill_v0_1.md",
+      "sha256": "a7d69001af9e726025fe70e59714c052d8998af50f605713441557cfa853c168",
+      "skill_id": "coverage_reflection"
+    },
+    {
+      "bytes": 717,
+      "path": "src/sec_agent/prompts/skills/evidence_operator_tool_use_skill_v0_1.md",
+      "sha256": "bd48533400709f08b3c0e0128cf436fd075676e133c82d82f88f472931d0ccbd",
+      "skill_id": "evidence_operator_tool_use"
+    },
+    {
+      "bytes": 2910,
+      "path": "src/sec_agent/prompts/skills/evidence_requirement_and_sufficiency_skill_v0_1.md",
+      "sha256": "3f730aab83f78a36f08f18a71f377e8a799f38e1315ff18a1227a09d217ea596",
+      "skill_id": "evidence_requirement_and_sufficiency"
+    },
+    {
+      "bytes": 6887,
+      "path": "src/sec_agent/prompts/skills/fundamental_analysis_skill_v0_2.md",
+      "sha256": "c6df0975982cb4f39d6cd81c86ad2a9f0a62610b12da72184ef3b8828a8500f7",
+      "skill_id": "fundamental_analysis"
+    },
+    {
+      "bytes": 7417,
+      "path": "src/sec_agent/prompts/skills/industry_supply_chain_analysis_skill_v0_2.md",
+      "sha256": "2253c2d95df21e096de8ffac4e33752d15ebf030f52f6b810bf981bfdf1d8a9e",
+      "skill_id": "industry_supply_chain_analysis"
+    },
+    {
+      "bytes": 2978,
+      "path": "src/sec_agent/prompts/skills/investment_research_workflow_skill_v0_1.md",
+      "sha256": "1e47d67ceb8fe6fffc395227a25becb00f1b5c0edf3569f3dd1289a1e7beaceb",
+      "skill_id": "investment_research_workflow"
+    },
+    {
+      "bytes": 665,
+      "path": "src/sec_agent/prompts/skills/judgment_plan_aggregation_skill_v0_1.md",
+      "sha256": "bef511f5a0d8d4c5ca12d37d3f8ca131973b1885d068900e24803d9a6ab7639f",
+      "skill_id": "judgment_plan_aggregation"
+    },
+    {
+      "bytes": 5013,
+      "path": "src/sec_agent/prompts/skills/market_valuation_analysis_skill_v0_2.md",
+      "sha256": "7da51ed0dff13f12e9082def5d91fa098d727a5a051239bef5371a10ce3faf35",
+      "skill_id": "market_valuation_analysis"
+    },
+    {
+      "bytes": 4484,
+      "path": "src/sec_agent/prompts/skills/memo_writer_skill_v0_1.md",
+      "sha256": "336414c1b41e14418abe88de0df9afc4088cdcb87fe6bad093825c8f907a120c",
+      "skill_id": "memo_writer"
+    },
+    {
+      "bytes": 6299,
+      "path": "src/sec_agent/prompts/skills/product_technology_analysis_skill_v0_1.md",
+      "sha256": "889ac159bd5032b39fd2d6ddcbdb48621c521f98c9e5e621ed6ac671dfd8e7f6",
+      "skill_id": "product_technology_analysis"
+    },
+    {
+      "bytes": 970,
+      "path": "src/sec_agent/prompts/skills/relationship_universe_skill_v0_1.md",
+      "sha256": "b5fb0fff1c02f757eaab6a80f84e8f55ac9416205486a7970a3d701988ecf2ff",
+      "skill_id": "relationship_universe"
+    },
+    {
+      "bytes": 655,
+      "path": "src/sec_agent/prompts/skills/renderer_skill_v0_1.md",
+      "sha256": "6a428cb72e3893c4bbca3fd657d19857d732c8acabe13ef1d63f055b043b881c",
+      "skill_id": "renderer"
+    },
+    {
+      "bytes": 4878,
+      "path": "src/sec_agent/prompts/skills/research_lead_planning_skill_v0_1.md",
+      "sha256": "7de218bd7ae06a63175764e69e54e24480d166dc628d6df85475c47eb6e60614",
+      "skill_id": "research_lead_planning"
+    },
+    {
+      "bytes": 5590,
+      "path": "src/sec_agent/prompts/skills/risk_counterevidence_skill_v0_2.md",
+      "sha256": "15905b6f7dbadf68ae2f3df8067533bb261b2699cd217c616478598f456c74c2",
+      "skill_id": "risk_counterevidence"
+    },
+    {
+      "bytes": 2019,
+      "path": "src/sec_agent/prompts/skills/shared_evidence_boundary_skill_v0_1.md",
+      "sha256": "e2eedfca1696ea38aae218c476bb44389a3d119467159bf88c39136315ab6376",
+      "skill_id": "shared_evidence_boundary"
+    },
+    {
+      "bytes": 799,
+      "path": "src/sec_agent/prompts/skills/verification_skill_v0_1.md",
+      "sha256": "c7f9151275707334e590426cb5a0d36bbb96094652ffeeb7c3f8ae2ed1cb3739",
+      "skill_id": "verification"
+    }
+  ],
+  "schema_version": "fin_ia_0_1_2_runtime_nonpython_resource_inventory_v1_0",
+  "status": "tracked_exact_runtime_resource_inventory"
+}

@@ -1,0 +1,100 @@
+{
+  "schema_version": "fin_ia_active_test_suite_manifest_v1_0",
+  "manifest_id": "FIN-0.1.2-PRE-S2-RB-T03-REPLACEMENT-HERMETIC-PROOF-MANIFEST-R1",
+  "created_at": "2026-07-31T23:59:58+08:00",
+  "status": "PRE_S2_RB_T03_ready_unexecuted_after_T02_pass",
+  "historical_failures_are_ignored": false,
+  "suites": [
+    {
+      "suite_id": "immutable_pre_S2_parent_disposition",
+      "proof_class": "immutable_event",
+      "selected": true,
+      "gates_current_release": false,
+      "assertion_surfaces": ["parent_disposition_hash", "fixed_package_budget", "historical_S1_terminal_state"],
+      "test_paths": ["tests/contract/test_fin_0_1_2_s1_to_s2_hermetic_fixture_resource_blocker_disposition.py"]
+    },
+    {
+      "suite_id": "current_pre_S2_T02_implementation_projection",
+      "proof_class": "current_projection",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": ["current_next_action", "T02_record_hash", "implementation_and_proof_budget"],
+      "test_paths": ["tests/contract/test_fin_0_1_2_pre_s2_hermetic_fixture_resource_rebaseline_minimum_zero_call_implementation.py"]
+    },
+    {
+      "suite_id": "current_three_case_fixture_resource_and_semantic_parity_runtime",
+      "proof_class": "current_runtime",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": ["three_case_full_fake", "mutation", "failure_retention", "tracked_fixture", "runtime_resource_inventory", "raw_preserving_semantic_parity"],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s1_realistic_three_case_deterministic_proof.py",
+        "tests/contract/test_fin_0_1_2_pre_s2_hermetic_fixture_resource_rebaseline_minimum_zero_call_implementation.py"
+      ]
+    },
+    {
+      "suite_id": "historical_S1_T03_T04_failure_visibility",
+      "proof_class": "historical_audit",
+      "selected": true,
+      "gates_current_release": false,
+      "assertion_surfaces": ["historical_package_budget", "historical_failure_classification", "S1_not_rewritten"],
+      "test_paths": ["tests/contract/test_fin_0_1_2_s1_independent_hermetic_assessment.py"]
+    },
+    {
+      "suite_id": "current_pre_S2_dependency_closure_gate",
+      "proof_class": "release_gate",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": ["both_disposables_current_gate_green", "repository_unchanged", "semantic_parity", "S2_entry_noninflation"],
+      "test_paths": ["tests/contract/test_fin_0_1_2_pre_s2_hermetic_fixture_resource_rebaseline_minimum_zero_call_implementation.py"]
+    }
+  ],
+  "runner_policy": {
+    "manifest_selection_is_authoritative": true,
+    "unlisted_historical_test_failure_is_visible_but_not_implicitly_current": true,
+    "listed_current_test_failure_is_blocking": true,
+    "bulk_relax_historical_assertions_for_green_forbidden": true,
+    "runner_migration_completed": true
+  },
+  "hermetic_package_policy": {
+    "repository_inventory": "manifest_selected_dependency_closure_from_current_worktree_bytes",
+    "required_runner_files": [
+      "src/sec_agent/hermetic_test_capture.py",
+      "src/sec_agent/hermetic_test_runner.py",
+      "scripts/engineering/run_fin_0_1_2_s0_active_suite.py"
+    ],
+    "capture_plugin_path": "src/sec_agent/hermetic_test_capture.py",
+    "runtime_nonpython_resource_inventory_ref": "configs/runtime/fin_ia_0_1_2_runtime_nonpython_resource_inventory_v1_0.json",
+    "semantic_parity_contract_ref": "configs/runtime/fin_ia_0_1_2_hermetic_semantic_parity_projection_v1_0.json",
+    "repository_seed_paths": [
+      "pyproject.toml",
+      "configs/releases/fin_ia_0_1_2_pre_s2_t03_replacement_hermetic_proof_manifest_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_s1_to_s2_hermetic_fixture_resource_blocker_disposition_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_pre_s2_hermetic_fixture_resource_rebaseline_minimum_zero_call_implementation_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_s1_stage_capsule_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_s1_stage_assessment_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_s1_stage_closeout_v1_0.json",
+      "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+      "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0.json",
+      "docs/project_os/current_context_pack.zh-CN.md",
+      "docs/project_os/capability_status_ledger.jsonl",
+      "docs/project_os/root_cause_issue_ledger.jsonl",
+      "docs/project_os/external_pattern_registry.jsonl"
+    ],
+    "repository_prefixes": [
+      {"path": "src", "suffixes": [".py"]},
+      {"path": "apps/workbench/backend", "suffixes": [".py"]},
+      {"path": "tests/contract", "suffixes": [".py"]},
+      {"path": "tests/fixtures", "suffixes": [".json", ".jsonl", ".yaml", ".yml"]},
+      {"path": "configs", "suffixes": [".json", ".jsonl", ".yaml", ".yml", ".toml"]}
+    ],
+    "complete_per_test_stdout_stderr_required": true,
+    "content_addressed_object_readback_required": true,
+    "disposable_runtime_count": 2,
+    "semantic_parity_required": true,
+    "provider_credential_environment_removed": true,
+    "external_read_only_bindings": []
+  },
+  "next_action_on_pass": "FIN-0.1.2-S2-ENTRY-STAGE-PLAN-AUTHORITY-DECISION",
+  "next_action_on_failure": "FIN-0.1.2-PRE-S2-HONEST-BLOCK-CLOSEOUT-NO-SECOND-PROOF-PACKAGE"
+}

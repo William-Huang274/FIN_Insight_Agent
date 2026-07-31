@@ -1,7 +1,7 @@
 # FIN 0.1.2 S1 realistic three-case deterministic vertical StagePlan
 
 日期：2026-07-31
-状态：`S1 terminal honest block / G0、G1 pass / G2 not proven / G6 closed / pre-S2 rebaseline selected`
+状态：`S1 terminal honest block / G0、G1 pass / G2 not proven / G6 closed / pre-S2 T02 pass / T03 ready`
 
 ## 1. 本阶段只解决什么
 
@@ -122,6 +122,17 @@ S1 默认只有一个 StagePlan、一个可追加 StageCapsule、一个 StageAss
 2. `PRE-S2-RB-T02` 只允许一个零调用实现包：把 MU exact input 变成受版本控制的 immutable fixture，从 `research_skills.SKILL_FILES` 生成精确 Runtime resource inventory，并在保留 raw capture 的同时只对 allowlisted disposable roots 生成独立 semantic parity hash；
 3. `PRE-S2-RB-T03` 仅在 T02 全绿后允许一个新的双 disposable replacement proof package。成功只授权另行编制 S2 StagePlan；失败则 pre-S2 honest block，不自动产生第二包。
 
-机器权威处置：`configs/releases/fin_ia_0_1_2_s1_to_s2_hermetic_fixture_resource_blocker_disposition_v1_0.json`。
+T02 已按这三个 owner 一次性实现并通过当前主机矩阵：
 
-当前下一项：`FIN-0.1.2-PRE-S2-HERMETIC-FIXTURE-RESOURCE-REBASELINE-MINIMUM-ZERO-CALL-IMPLEMENTATION`。
+- 受版本控制的 MU fixture 绑定原始对象 SHA、输入 digest、本案 identity 与 non-promotion 约束；active FIN0.1.2 proof 不再依赖 ignored host-local state；
+- 精确 resource inventory 绑定 `SKILL_FILES` registry 与 16 项资源的 path/bytes/SHA，missing、duplicate、unknown、drift 和显式 package omission 均 fail closed；
+- raw terminal result、stdout/stderr refs 与 content-addressed objects 原样保留；独立 semantic projection 只替换三个 exact disposable roots，未知绝对路径阻断 parity，业务值、nodeid、failure code 与 relative path 保持显著；
+- focused implementation=`12 passed`，加既有 runner=`14 passed`，最终全体 FIN0.1.2 contracts=`97 passed`，既有 manifest-selected current host suite=`24 passed`；模型、Provider、网络、admission、business Run/Artifact 均为零。
+
+这只建立 `T02 engineering pass`，没有建立新的双 disposable hermetic proof。一个 implementation bundle 已消费，replacement proof package 仍为 `0/1`；S2 entry 继续为 false。历史 T03/T04 不重跑，也不把当前实现回写成 S1 pass。
+
+机器权威处置：`configs/releases/fin_ia_0_1_2_s1_to_s2_hermetic_fixture_resource_blocker_disposition_v1_0.json`。
+T02 实现记录：`configs/releases/fin_ia_0_1_2_pre_s2_hermetic_fixture_resource_rebaseline_minimum_zero_call_implementation_v1_0.json`。
+T03 可执行 manifest：`configs/releases/fin_ia_0_1_2_pre_s2_t03_replacement_hermetic_proof_manifest_v1_0.json`；状态为 ready/unexecuted，它已绑定 inventory 与 semantic parity contract，但尚未产生任何 disposable proof result。
+
+当前下一项：`FIN-0.1.2-PRE-S2-RB-T03-INDEPENDENT-TWO-DISPOSABLE-REPLACEMENT-HERMETIC-PROOF`。

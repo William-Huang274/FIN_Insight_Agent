@@ -36,6 +36,10 @@ PRE_S2_DISPOSITION = ROOT / "configs" / "releases" / (
     "fin_ia_0_1_2_s1_to_s2_hermetic_fixture_resource_"
     "blocker_disposition_v1_0.json"
 )
+PRE_S2_IMPLEMENTATION = ROOT / "configs" / "releases" / (
+    "fin_ia_0_1_2_pre_s2_hermetic_fixture_resource_rebaseline_"
+    "minimum_zero_call_implementation_v1_0.json"
+)
 
 
 def _load(path: Path) -> dict:
@@ -116,10 +120,18 @@ def test_active_manifest_rejects_mutable_event_and_historical_gate_mutations() -
 
 def test_s0_decision_bindings_and_gates_are_honest() -> None:
     decision = _load(DECISION)
+    pre_s2 = _load(PRE_S2_IMPLEMENTATION)
     for binding in decision["source_bindings"]:
         path = ROOT / binding["ref"]
         assert path.is_file()
-        assert _sha256(path) == binding["sha256"]
+        observed = _sha256(path)
+        if observed == binding["sha256"]:
+            continue
+        assert binding["ref"] == "src/sec_agent/hermetic_test_runner.py"
+        assert binding["sha256"] == (
+            "423718fdbab9fe904d678de2b4136c58709f3cb002048ea8b37cdf376493e92b"
+        )
+        assert pre_s2["semantic_parity"]["runner_sha256"] == observed
     gates = decision["S0_gates"]
     assert gates["G1_truth_ownership_and_provider_envelope"]["verdict"].startswith("pass")
     assert gates["G2_single_source_compiled_consumers"]["live_runtime_family_migration_complete"] is False
@@ -142,6 +154,7 @@ def test_current_projection_preserves_s0_handoff_and_closes_s1_honestly() -> Non
     stage_plan = _load(S1_STAGE_PLAN)
     stage_capsule = _load(S1_STAGE_CAPSULE)
     disposition = _load(PRE_S2_DISPOSITION)
+    implementation = _load(PRE_S2_IMPLEMENTATION)
     program = _load(PROGRAM)
     s4 = _load(S4_BACKLOG)
     assert program["active_slice"] == "FIN_0_1_2_PRE_S2_REBASELINE"
@@ -154,11 +167,14 @@ def test_current_projection_preserves_s0_handoff_and_closes_s1_honestly() -> Non
     assert stage_capsule["status"] == (
         "S1_closed_honest_block_G2_not_proven_S2_entry_blocked"
     )
-    assert program["next_action"]["item_id"] == disposition["next_action"]
-    assert s4["current_next_action"] == disposition["next_action"]
+    assert program["next_action"]["item_id"] == implementation["next_action"]
+    assert s4["current_next_action"] == implementation["next_action"]
     assert program["next_action"]["FIN_0_1_2_pre_S2_disposition_sha256"] == (
         _sha256(PRE_S2_DISPOSITION)
     )
+    assert program["next_action"][
+        "FIN_0_1_2_pre_S2_implementation_sha256"
+    ] == _sha256(PRE_S2_IMPLEMENTATION)
     assert stage_capsule["next_action"] == (
         "FIN-0.1.2-S1-TO-S2-HERMETIC-FIXTURE-RESOURCE-BLOCKER-DISPOSITION"
     )

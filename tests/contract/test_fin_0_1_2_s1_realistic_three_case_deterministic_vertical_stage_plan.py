@@ -21,6 +21,10 @@ PRE_S2_DISPOSITION = ROOT / (
     "configs/releases/fin_ia_0_1_2_s1_to_s2_hermetic_fixture_"
     "resource_blocker_disposition_v1_0.json"
 )
+PRE_S2_IMPLEMENTATION = ROOT / (
+    "configs/releases/fin_ia_0_1_2_pre_s2_hermetic_fixture_resource_"
+    "rebaseline_minimum_zero_call_implementation_v1_0.json"
+)
 S0_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_2_s0_common_runtime_and_"
     "test_contract_rebaseline_v1_0.json"
@@ -222,7 +226,8 @@ def test_root_causes_are_allocated_to_the_earliest_stage_without_product_inflati
 def test_current_projection_closes_S1_honestly_before_S2() -> None:
     capsule = _load(CAPSULE_PATH)
     disposition = _load(PRE_S2_DISPOSITION)
-    next_action = disposition["next_action"]
+    implementation = _load(PRE_S2_IMPLEMENTATION)
+    next_action = implementation["next_action"]
     program = _load(PROGRAM_BACKLOG)
     s4 = _load(S4_BACKLOG)
     context = CONTEXT.read_text(encoding="utf-8")
@@ -233,6 +238,9 @@ def test_current_projection_closes_S1_honestly_before_S2() -> None:
     assert program["next_action"]["FIN_0_1_2_pre_S2_disposition_sha256"] == (
         _sha256(PRE_S2_DISPOSITION)
     )
+    assert program["next_action"][
+        "FIN_0_1_2_pre_S2_implementation_sha256"
+    ] == _sha256(PRE_S2_IMPLEMENTATION)
     assert program["current_truth"]["FIN_0_1_2_S1_status"] == (
         "closed_honest_block_G2_not_proven_S2_entry_blocked"
     )
@@ -259,6 +267,9 @@ def test_current_projection_closes_S1_honestly_before_S2() -> None:
     assert s4["FIN_0_1_2_S1_stage_plan"][
         "pre_S2_disposition_sha256"
     ] == _sha256(PRE_S2_DISPOSITION)
+    assert s4["FIN_0_1_2_S1_stage_plan"][
+        "pre_S2_implementation_sha256"
+    ] == _sha256(PRE_S2_IMPLEMENTATION)
     assert f"current next=`{next_action}`" in context
     assert capsule["next_action"] == (
         "FIN-0.1.2-S1-TO-S2-HERMETIC-FIXTURE-RESOURCE-BLOCKER-DISPOSITION"

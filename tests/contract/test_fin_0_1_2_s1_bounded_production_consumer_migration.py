@@ -54,6 +54,10 @@ PRE_S2_DISPOSITION = ROOT / (
     "configs/releases/fin_ia_0_1_2_s1_to_s2_hermetic_fixture_"
     "resource_blocker_disposition_v1_0.json"
 )
+PRE_S2_IMPLEMENTATION = ROOT / (
+    "configs/releases/fin_ia_0_1_2_pre_s2_hermetic_fixture_resource_"
+    "rebaseline_minimum_zero_call_implementation_v1_0.json"
+)
 PROGRAM_BACKLOG = ROOT / (
     "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
 )
@@ -205,26 +209,34 @@ def test_stage_capsule_records_g1_without_product_or_compiler_inflation() -> Non
 def test_stage_capsule_is_terminal_history_and_pre_s2_is_current_projection() -> None:
     capsule = _load_json(CAPSULE_PATH)
     disposition = _load_json(PRE_S2_DISPOSITION)
+    implementation = _load_json(PRE_S2_IMPLEMENTATION)
     program = _load_json(PROGRAM_BACKLOG)
     s4 = _load_json(S4_BACKLOG)
     capsule_sha = hashlib.sha256(CAPSULE_PATH.read_bytes()).hexdigest()
     disposition_sha = hashlib.sha256(PRE_S2_DISPOSITION.read_bytes()).hexdigest()
-    assert program["next_action"]["item_id"] == disposition["next_action"]
+    implementation_sha = hashlib.sha256(PRE_S2_IMPLEMENTATION.read_bytes()).hexdigest()
+    assert program["next_action"]["item_id"] == implementation["next_action"]
     assert program["next_action"][
         "FIN_0_1_2_S1_stage_capsule_sha256"
     ] == capsule_sha
     assert program["next_action"][
         "FIN_0_1_2_pre_S2_disposition_sha256"
     ] == disposition_sha
-    assert s4["current_next_action"] == disposition["next_action"]
+    assert program["next_action"][
+        "FIN_0_1_2_pre_S2_implementation_sha256"
+    ] == implementation_sha
+    assert s4["current_next_action"] == implementation["next_action"]
     assert s4["FIN_0_1_2_S1_stage_plan"][
         "stage_capsule_sha256"
     ] == capsule_sha
     assert s4["FIN_0_1_2_S1_stage_plan"][
         "pre_S2_disposition_sha256"
     ] == disposition_sha
+    assert s4["FIN_0_1_2_S1_stage_plan"][
+        "pre_S2_implementation_sha256"
+    ] == implementation_sha
     context = CONTEXT_PATH.read_text(encoding="utf-8")
-    assert f"current next=`{disposition['next_action']}`" in context
+    assert f"current next=`{implementation['next_action']}`" in context
     assert capsule["product_truth"]["S2_entry_authorized"] is False
     assert disposition["product_truth"]["S1"] == "closed_honest_block_not_reopened"
 

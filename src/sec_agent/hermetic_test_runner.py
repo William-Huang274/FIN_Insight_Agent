@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 from collections import Counter
 from dataclasses import dataclass
 import hashlib
@@ -7,6 +8,7 @@ import importlib.metadata
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -23,6 +25,12 @@ RUNNER_SCHEMA = "fin_ia_hermetic_active_suite_runner_v1_0"
 PACKAGE_SCHEMA = "fin_ia_hermetic_source_package_manifest_v1_0"
 TERMINAL_SCHEMA = "fin_ia_hermetic_active_suite_terminal_result_v1_0"
 VERIFICATION_SCHEMA = "fin_ia_hermetic_active_suite_verification_v1_0"
+RUNTIME_RESOURCE_INVENTORY_SCHEMA = (
+    "fin_ia_0_1_2_runtime_nonpython_resource_inventory_v1_0"
+)
+SEMANTIC_PARITY_SCHEMA = (
+    "fin_ia_0_1_2_hermetic_semantic_parity_projection_v1_0"
+)
 
 _CREDENTIAL_ENV_NAMES = frozenset(
     {
@@ -65,7 +73,20 @@ def _sha256_file(path: Path) -> str:
 
 
 def _load_json(path: Path) -> dict[str, Any]:
-    value = json.loads(path.read_text(encoding="utf-8"))
+    def strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, item in pairs:
+            if key in result:
+                raise HermeticTestRunnerError(
+                    f"hermetic_json_duplicate_key:{key}"
+                )
+            result[key] = item
+        return result
+
+    value = json.loads(
+        path.read_text(encoding="utf-8"),
+        object_pairs_hook=strict_object,
+    )
     if not isinstance(value, dict):
         raise HermeticTestRunnerError("hermetic_json_root_not_object")
     return value
@@ -155,6 +176,219 @@ def _repository_ref_strings(value: Any) -> Iterable[str]:
             yield from _repository_ref_strings(item)
 
 
+def _literal_string_mapping(
+    path: Path,
+    variable_name: str,
+) -> dict[str, str]:
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    except (OSError, SyntaxError) as exc:
+        raise HermeticTestRunnerError(
+            "runtime_resource_registry_parse_failed"
+        ) from exc
+    candidate: ast.AST | None = None
+    for node in tree.body:
+        if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            if node.target.id == variable_name:
+                candidate = node.value
+                break
+        if isinstance(node, ast.Assign):
+            if any(
+                isinstance(target, ast.Name) and target.id == variable_name
+                for target in node.targets
+            ):
+                candidate = node.value
+                break
+    if candidate is None:
+        raise HermeticTestRunnerError(
+            "runtime_resource_registry_mapping_missing"
+        )
+    try:
+        value = ast.literal_eval(candidate)
+    except (ValueError, TypeError) as exc:
+        raise HermeticTestRunnerError(
+            "runtime_resource_registry_mapping_not_literal"
+        ) from exc
+    if (
+        not isinstance(value, dict)
+        or not value
+        or not all(
+            isinstance(key, str)
+            and key.strip()
+            and isinstance(item, str)
+            and item.strip()
+            for key, item in value.items()
+        )
+    ):
+        raise HermeticTestRunnerError(
+            "runtime_resource_registry_mapping_invalid"
+        )
+    if len(set(value.values())) != len(value):
+        raise HermeticTestRunnerError(
+            "runtime_resource_registry_duplicate_path"
+        )
+    return {str(key): str(item) for key, item in value.items()}
+
+
+def validate_runtime_resource_inventory(
+    repository_root: Path,
+    inventory_ref: str,
+) -> tuple[Path, ...]:
+    repository_root = repository_root.resolve()
+    inventory_path = _safe_relative_path(repository_root, inventory_ref)
+    inventory = _load_json(repository_root / inventory_path)
+    expected_top_level = {
+        "schema_version",
+        "inventory_id",
+        "status",
+        "registry_ref",
+        "registry_mapping_name",
+        "registry_source_sha256",
+        "resource_root",
+        "resource_count",
+        "resource_bytes",
+        "resource_canonical_digest",
+        "resources",
+        "package_contract",
+    }
+    if set(inventory) != expected_top_level:
+        raise HermeticTestRunnerError(
+            "runtime_resource_inventory_top_level_invalid"
+        )
+    if inventory["schema_version"] != RUNTIME_RESOURCE_INVENTORY_SCHEMA:
+        raise HermeticTestRunnerError("runtime_resource_inventory_schema_invalid")
+    if inventory["status"] != "tracked_exact_runtime_resource_inventory":
+        raise HermeticTestRunnerError("runtime_resource_inventory_status_invalid")
+    registry_path = _safe_relative_path(
+        repository_root,
+        str(inventory["registry_ref"]),
+    )
+    registry_full_path = repository_root / registry_path
+    if _sha256_file(registry_full_path) != inventory["registry_source_sha256"]:
+        raise HermeticTestRunnerError(
+            "runtime_resource_registry_source_digest_mismatch"
+        )
+    mapping_name = str(inventory["registry_mapping_name"])
+    registry = _literal_string_mapping(registry_full_path, mapping_name)
+    resource_root = str(inventory["resource_root"]).strip().replace("\\", "/")
+    if not resource_root or resource_root.startswith("/") or ".." in Path(resource_root).parts:
+        raise HermeticTestRunnerError("runtime_resource_root_invalid")
+    rows = inventory["resources"]
+    if not isinstance(rows, list):
+        raise HermeticTestRunnerError("runtime_resource_inventory_rows_invalid")
+    skill_ids: list[str] = []
+    paths: list[str] = []
+    for row in rows:
+        if not isinstance(row, Mapping) or set(row) != {
+            "skill_id",
+            "path",
+            "bytes",
+            "sha256",
+        }:
+            raise HermeticTestRunnerError(
+                "runtime_resource_inventory_row_invalid"
+            )
+        skill_ids.append(str(row["skill_id"]))
+        paths.append(str(row["path"]).replace("\\", "/"))
+    if len(set(skill_ids)) != len(skill_ids):
+        raise HermeticTestRunnerError(
+            "runtime_resource_inventory_duplicate_skill"
+        )
+    if len(set(paths)) != len(paths):
+        raise HermeticTestRunnerError(
+            "runtime_resource_inventory_duplicate_path"
+        )
+    if set(skill_ids) - set(registry):
+        raise HermeticTestRunnerError(
+            "runtime_resource_inventory_unknown_resource"
+        )
+    if set(registry) - set(skill_ids):
+        raise HermeticTestRunnerError(
+            "runtime_resource_inventory_missing_resource"
+        )
+    expected_rows: list[dict[str, Any]] = []
+    resource_paths: list[Path] = []
+    for skill_id, filename in sorted(registry.items()):
+        expected_path = f"{resource_root}/{filename}"
+        relative = _safe_relative_path(repository_root, expected_path)
+        value = (repository_root / relative).read_bytes()
+        expected_rows.append(
+            {
+                "skill_id": skill_id,
+                "path": relative.as_posix(),
+                "bytes": len(value),
+                "sha256": _sha256_bytes(value),
+            }
+        )
+        resource_paths.append(relative)
+    if rows != expected_rows:
+        raise HermeticTestRunnerError(
+            "runtime_resource_inventory_path_bytes_or_digest_drift"
+        )
+    canonical_rows = json.dumps(
+        expected_rows,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    if (
+        inventory["resource_count"] != len(expected_rows)
+        or inventory["resource_bytes"]
+        != sum(int(row["bytes"]) for row in expected_rows)
+        or inventory["resource_canonical_digest"]
+        != _sha256_bytes(canonical_rows)
+    ):
+        raise HermeticTestRunnerError(
+            "runtime_resource_inventory_aggregate_drift"
+        )
+    package_contract = inventory["package_contract"]
+    if not isinstance(package_contract, Mapping) or any(
+        package_contract.get(key) is not expected
+        for key, expected in {
+            "registry_mapping_is_source_of_truth": True,
+            "directory_glob_is_authority": False,
+            "missing_resource_fails_before_pytest": True,
+            "duplicate_skill_or_path_fails_before_pytest": True,
+            "path_or_hash_drift_fails_before_pytest": True,
+            "unknown_inventory_resource_fails_before_pytest": True,
+        }.items()
+    ):
+        raise HermeticTestRunnerError(
+            "runtime_resource_inventory_package_contract_invalid"
+        )
+    return tuple(
+        sorted(
+            {inventory_path, registry_path, *resource_paths},
+            key=lambda item: item.as_posix(),
+        )
+    )
+
+
+def _policy_contract_paths(
+    repository_root: Path,
+    policy: Mapping[str, Any],
+) -> tuple[Path, ...]:
+    paths: set[Path] = set()
+    inventory_ref = policy.get("runtime_nonpython_resource_inventory_ref")
+    if inventory_ref is not None:
+        if not isinstance(inventory_ref, str) or not inventory_ref.strip():
+            raise HermeticTestRunnerError(
+                "runtime_resource_inventory_ref_invalid"
+            )
+        paths.update(
+            validate_runtime_resource_inventory(
+                repository_root,
+                inventory_ref,
+            )
+        )
+    parity_ref = policy.get("semantic_parity_contract_ref")
+    if parity_ref is not None:
+        if not isinstance(parity_ref, str) or not parity_ref.strip():
+            raise HermeticTestRunnerError("semantic_parity_contract_ref_invalid")
+        paths.add(_safe_relative_path(repository_root, parity_ref))
+    return tuple(sorted(paths, key=lambda item: item.as_posix()))
+
+
 def discover_repository_paths(
     repository_root: Path,
     manifest: Mapping[str, Any],
@@ -169,6 +403,10 @@ def discover_repository_paths(
     values = set(str(item) for item in policy["required_runner_files"])
     values.update(str(item) for item in policy.get("repository_seed_paths", []))
     values.update(_selected_test_paths(manifest))
+    values.update(
+        path.as_posix()
+        for path in _policy_contract_paths(repository_root, policy)
+    )
     for prefix_row in policy.get("repository_prefixes", []):
         if not isinstance(prefix_row, Mapping):
             raise HermeticTestRunnerError("hermetic_repository_prefix_invalid")
@@ -295,6 +533,10 @@ def build_content_addressed_package(
     required = package_policy.get("required_runner_files")
     if not isinstance(required, list) or not all(isinstance(item, str) for item in required):
         raise HermeticTestRunnerError("hermetic_required_runner_files_invalid")
+    policy_contract_paths = _policy_contract_paths(
+        repository_root,
+        package_policy,
+    )
     paths = (
         discover_repository_paths(repository_root, manifest)
         if repository_paths is None
@@ -305,6 +547,12 @@ def build_content_addressed_package(
             )
         )
     )
+    if repository_paths is not None and not set(policy_contract_paths).issubset(
+        set(paths)
+    ):
+        raise HermeticTestRunnerError(
+            "hermetic_explicit_inventory_omits_runtime_resource_or_parity_contract"
+        )
     store = ContentAddressedStore(package_root)
     entries = []
     for relative in paths:
@@ -538,12 +786,17 @@ def run_disposable_once(
         "gating_failure_nodeids": [row["nodeid"] for row in gating_failures],
         "historical_finding_nodeids": [row["nodeid"] for row in historical_findings],
         "credential_environment_removed": sorted(_CREDENTIAL_ENV_NAMES),
+        "semantic_normalization_roots": {
+            "exact_disposable_repository_root": str(runtime_root.resolve()),
+            "exact_disposable_package_root": str(package_root.resolve()),
+            "exact_hermetic_temporary_parent": str(disposable_parent.resolve()),
+        },
     }
     _write_json(package_root / "runs" / run_id / "terminal_result.json", result)
     return result
 
 
-def _parity_projection(result: Mapping[str, Any]) -> dict[str, Any]:
+def _raw_parity_projection(result: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "status": result["status"],
         "pytest_exit_code": result["pytest_exit_code"],
@@ -572,6 +825,291 @@ def _parity_projection(result: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _load_semantic_parity_contract(
+    repository_root: Path,
+    manifest: Mapping[str, Any],
+) -> tuple[dict[str, Any] | None, str | None, str | None]:
+    policy = manifest["hermetic_package_policy"]
+    contract_ref = policy.get("semantic_parity_contract_ref")
+    if contract_ref is None:
+        return None, None, None
+    if not isinstance(contract_ref, str) or not contract_ref.strip():
+        raise HermeticTestRunnerError("semantic_parity_contract_ref_invalid")
+    relative = _safe_relative_path(repository_root, contract_ref)
+    contract = _load_json(repository_root / relative)
+    if set(contract) != {
+        "schema_version",
+        "contract_id",
+        "status",
+        "raw_evidence",
+        "normalization",
+        "semantic_projection",
+    }:
+        raise HermeticTestRunnerError("semantic_parity_contract_top_level_invalid")
+    if contract["schema_version"] != SEMANTIC_PARITY_SCHEMA:
+        raise HermeticTestRunnerError("semantic_parity_contract_schema_invalid")
+    if contract["status"] != "raw_preserving_allowlisted_root_normalization":
+        raise HermeticTestRunnerError("semantic_parity_contract_status_invalid")
+    raw_evidence = contract["raw_evidence"]
+    if not isinstance(raw_evidence, Mapping) or any(
+        raw_evidence.get(key) is not expected
+        for key, expected in {
+            "content_addressed_refs_retained": True,
+            "raw_detail_stdout_stderr_hashes_rewritten": False,
+            "raw_terminal_result_retained": True,
+            "semantic_hash_is_separate_index_only": True,
+        }.items()
+    ):
+        raise HermeticTestRunnerError(
+            "semantic_parity_raw_evidence_contract_invalid"
+        )
+    normalization = contract["normalization"]
+    if not isinstance(normalization, Mapping):
+        raise HermeticTestRunnerError("semantic_parity_normalization_invalid")
+    expected_roots = [
+        {
+            "root_id": "exact_disposable_repository_root",
+            "placeholder": "<DISPOSABLE_REPOSITORY_ROOT>",
+        },
+        {
+            "root_id": "exact_disposable_package_root",
+            "placeholder": "<DISPOSABLE_PACKAGE_ROOT>",
+        },
+        {
+            "root_id": "exact_hermetic_temporary_parent",
+            "placeholder": "<HERMETIC_TEMPORARY_PARENT>",
+        },
+    ]
+    if normalization.get("allowed_roots") != expected_roots:
+        raise HermeticTestRunnerError(
+            "semantic_parity_allowed_roots_invalid"
+        )
+    for key, expected in {
+        "derive_native_and_posix_separator_variants_from_exact_roots": True,
+        "replace_longest_exact_literal_first": True,
+        "substring_or_fuzzy_path_matching_allowed": False,
+        "unknown_absolute_path_behavior": "fail_closed_and_keep_parity_false",
+    }.items():
+        if normalization.get(key) != expected:
+            raise HermeticTestRunnerError(
+                "semantic_parity_normalization_rule_invalid"
+            )
+    patterns = normalization.get("unknown_absolute_path_patterns")
+    if not isinstance(patterns, list) or len(patterns) != 2:
+        raise HermeticTestRunnerError(
+            "semantic_parity_absolute_path_patterns_invalid"
+        )
+    try:
+        for pattern in patterns:
+            re.compile(str(pattern))
+    except re.error as exc:
+        raise HermeticTestRunnerError(
+            "semantic_parity_absolute_path_pattern_compile_failed"
+        ) from exc
+    projection = contract["semantic_projection"]
+    if not isinstance(projection, Mapping):
+        raise HermeticTestRunnerError("semantic_parity_projection_invalid")
+    significant = set(projection.get("comparison_significant_fields", []))
+    if not {
+        "business_values",
+        "nodeids",
+        "failure_codes",
+        "relative_paths",
+        "non_allowlisted_absolute_paths",
+    }.issubset(significant):
+        raise HermeticTestRunnerError(
+            "semantic_parity_comparison_significance_incomplete"
+        )
+    if (
+        projection.get(
+            "semantic_parity_requires_both_normalization_valid_and_digest_equal"
+        )
+        is not True
+        or projection.get("normalization_findings_are_business_promotable")
+        is not False
+    ):
+        raise HermeticTestRunnerError(
+            "semantic_parity_projection_gate_invalid"
+        )
+    return (
+        contract,
+        relative.as_posix(),
+        _sha256_bytes(_canonical_bytes(contract)),
+    )
+
+
+def _semantic_text_projection(
+    value: bytes,
+    *,
+    roots: Mapping[str, Any],
+    contract: Mapping[str, Any],
+) -> dict[str, Any]:
+    try:
+        normalized = value.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise HermeticTestRunnerError(
+            "semantic_parity_content_not_utf8"
+        ) from exc
+    allowed_rows = contract["normalization"]["allowed_roots"]
+    expected_root_ids = {str(row["root_id"]) for row in allowed_rows}
+    if set(roots) != expected_root_ids:
+        raise HermeticTestRunnerError(
+            "semantic_parity_runtime_roots_incomplete"
+        )
+    replacements: list[tuple[str, str]] = []
+    for row in allowed_rows:
+        root_id = str(row["root_id"])
+        placeholder = str(row["placeholder"])
+        root = str(roots[root_id]).strip()
+        if not root:
+            raise HermeticTestRunnerError(
+                "semantic_parity_runtime_root_empty"
+            )
+        variants = {root, root.replace("\\", "/"), root.replace("/", "\\")}
+        replacements.extend(
+            (variant, placeholder)
+            for variant in variants
+            if variant
+        )
+    for literal, placeholder in sorted(
+        set(replacements),
+        key=lambda item: len(item[0]),
+        reverse=True,
+    ):
+        normalized = normalized.replace(literal, placeholder)
+    unknown_paths: set[str] = set()
+    for pattern in contract["normalization"]["unknown_absolute_path_patterns"]:
+        unknown_paths.update(
+            match.group(0)
+            for match in re.finditer(str(pattern), normalized)
+        )
+    normalized_bytes = normalized.encode("utf-8")
+    return {
+        "semantic_sha256": _sha256_bytes(normalized_bytes),
+        "semantic_bytes": len(normalized_bytes),
+        "normalization_valid": not unknown_paths,
+        "unknown_absolute_path_count": len(unknown_paths),
+        "unknown_absolute_path_digests": sorted(
+            _sha256_bytes(path.encode("utf-8"))
+            for path in unknown_paths
+        ),
+    }
+
+
+def _semantic_ref_projection(
+    package_root: Path,
+    ref: Mapping[str, Any],
+    *,
+    roots: Mapping[str, Any],
+    contract: Mapping[str, Any],
+) -> dict[str, Any]:
+    return _semantic_text_projection(
+        read_object(package_root, ref),
+        roots=roots,
+        contract=contract,
+    )
+
+
+def _semantic_parity_projection(
+    result: Mapping[str, Any],
+    *,
+    package_root: Path,
+    contract: Mapping[str, Any],
+    contract_digest: str,
+) -> dict[str, Any]:
+    roots = result["semantic_normalization_roots"]
+    normalized_rows: list[dict[str, Any]] = []
+    all_content: list[dict[str, Any]] = []
+    for row in result["tests"]:
+        stdout = _semantic_ref_projection(
+            package_root,
+            row["stdout"],
+            roots=roots,
+            contract=contract,
+        )
+        stderr = _semantic_ref_projection(
+            package_root,
+            row["stderr"],
+            roots=roots,
+            contract=contract,
+        )
+        detail = _semantic_ref_projection(
+            package_root,
+            row["detail"],
+            roots=roots,
+            contract=contract,
+        )
+        all_content.extend((stdout, stderr, detail))
+        normalized_rows.append(
+            {
+                "nodeid": row["nodeid"],
+                "outcome": row["outcome"],
+                "phase_outcomes": row["phase_outcomes"],
+                "suite_memberships": row["suite_memberships"],
+                "gates_current_release": row["gates_current_release"],
+                "stdout_semantic_sha256": stdout["semantic_sha256"],
+                "stderr_semantic_sha256": stderr["semantic_sha256"],
+                "detail_semantic_sha256": detail["semantic_sha256"],
+            }
+        )
+    collection_errors = _semantic_ref_projection(
+        package_root,
+        result["collection_errors_ref"],
+        roots=roots,
+        contract=contract,
+    )
+    process_stdout = _semantic_ref_projection(
+        package_root,
+        result["process_stdout"],
+        roots=roots,
+        contract=contract,
+    )
+    process_stderr = _semantic_ref_projection(
+        package_root,
+        result["process_stderr"],
+        roots=roots,
+        contract=contract,
+    )
+    all_content.extend((collection_errors, process_stdout, process_stderr))
+    unknown_digests = sorted(
+        {
+            digest
+            for projection in all_content
+            for digest in projection["unknown_absolute_path_digests"]
+        }
+    )
+    return {
+        "semantic_parity_contract_digest": contract_digest,
+        "status": result["status"],
+        "pytest_exit_code": result["pytest_exit_code"],
+        "captured_session_exit_code": result["captured_session_exit_code"],
+        "selected_test_paths": result["selected_test_paths"],
+        "test_counts": result["test_counts"],
+        "tests": normalized_rows,
+        "collection_errors_semantic_sha256": collection_errors[
+            "semantic_sha256"
+        ],
+        "process_stdout_semantic_sha256": process_stdout[
+            "semantic_sha256"
+        ],
+        "process_stderr_semantic_sha256": process_stderr[
+            "semantic_sha256"
+        ],
+        "current_gate_all_green": result["current_gate_all_green"],
+        "gating_failure_nodeids": result["gating_failure_nodeids"],
+        "historical_finding_nodeids": result["historical_finding_nodeids"],
+        "normalization_valid": all(
+            projection["normalization_valid"]
+            for projection in all_content
+        ),
+        "unknown_absolute_path_count": sum(
+            int(projection["unknown_absolute_path_count"])
+            for projection in all_content
+        ),
+        "unknown_absolute_path_digests": unknown_digests,
+    }
+
+
 def run_hermetic_active_suite(
     *,
     repository_root: Path,
@@ -588,6 +1126,11 @@ def run_hermetic_active_suite(
         validate_active_test_suite_manifest(manifest)
     except ContractGovernanceError as exc:
         raise HermeticTestRunnerError(f"hermetic_manifest_invalid:{exc.code}") from exc
+    (
+        semantic_contract,
+        semantic_contract_ref,
+        semantic_contract_digest,
+    ) = _load_semantic_parity_contract(repository_root, manifest)
     staging = output_root.with_name(output_root.name + ".partial")
     if staging.exists():
         raise HermeticTestRunnerError("hermetic_output_staging_root_already_exists")
@@ -618,11 +1161,63 @@ def run_hermetic_active_suite(
                 store=store,
                 disposable_parent=disposable_parent,
             )
-        projection_a = _parity_projection(run_a)
-        projection_b = _parity_projection(run_b)
+        raw_projection_a = _raw_parity_projection(run_a)
+        raw_projection_b = _raw_parity_projection(run_b)
+        raw_parity_a = _sha256_bytes(_canonical_bytes(raw_projection_a))
+        raw_parity_b = _sha256_bytes(_canonical_bytes(raw_projection_b))
+        raw_parity = raw_parity_a == raw_parity_b
+        if semantic_contract is None:
+            projection_a = raw_projection_a
+            projection_b = raw_projection_b
+            normalization_valid_a = True
+            normalization_valid_b = True
+            unknown_absolute_path_count = [0, 0]
+        else:
+            assert semantic_contract_digest is not None
+            projection_a = _semantic_parity_projection(
+                run_a,
+                package_root=staging,
+                contract=semantic_contract,
+                contract_digest=semantic_contract_digest,
+            )
+            projection_b = _semantic_parity_projection(
+                run_b,
+                package_root=staging,
+                contract=semantic_contract,
+                contract_digest=semantic_contract_digest,
+            )
+            normalization_valid_a = bool(
+                projection_a["normalization_valid"]
+            )
+            normalization_valid_b = bool(
+                projection_b["normalization_valid"]
+            )
+            unknown_absolute_path_count = [
+                int(projection_a["unknown_absolute_path_count"]),
+                int(projection_b["unknown_absolute_path_count"]),
+            ]
+        semantic_projection_refs: list[str] = []
+        semantic_projection_sha256: list[str] = []
+        if semantic_contract is not None:
+            for run_id, projection in (
+                ("disposable_a", projection_a),
+                ("disposable_b", projection_b),
+            ):
+                relative = Path("runs") / run_id / (
+                    "semantic_parity_projection.json"
+                )
+                _write_json(staging / relative, projection)
+                semantic_projection_refs.append(relative.as_posix())
+                semantic_projection_sha256.append(
+                    _sha256_file(staging / relative)
+                )
         parity_a = _sha256_bytes(_canonical_bytes(projection_a))
         parity_b = _sha256_bytes(_canonical_bytes(projection_b))
-        parity = parity_a == parity_b
+        parity = (
+            normalization_valid_a
+            and normalization_valid_b
+            and parity_a == parity_b
+        )
         repository_readback = [
             {
                 "path": row["path"],
@@ -634,7 +1229,12 @@ def run_hermetic_active_suite(
             row["sha256"] == package_manifest["repository_files"][index]["sha256"]
             for index, row in enumerate(repository_readback)
         )
-        passed = parity and repository_unchanged and bool(run_a["current_gate_all_green"])
+        passed = (
+            parity
+            and repository_unchanged
+            and bool(run_a["current_gate_all_green"])
+            and bool(run_b["current_gate_all_green"])
+        )
         verification = {
             "schema_version": VERIFICATION_SCHEMA,
             "status": "pass" if passed else "failed",
@@ -645,10 +1245,27 @@ def run_hermetic_active_suite(
             "external_dependency_count": len(package_manifest["external_read_only_dependencies"]),
             "disposable_runtime_count": 2,
             "disposable_parity": parity,
+            "raw_disposable_parity": raw_parity,
             "parity_digest_a": parity_a,
             "parity_digest_b": parity_b,
+            "raw_parity_digest_a": raw_parity_a,
+            "raw_parity_digest_b": raw_parity_b,
+            "semantic_parity_contract_ref": semantic_contract_ref,
+            "semantic_parity_contract_digest": semantic_contract_digest,
+            "semantic_normalization_valid": [
+                normalization_valid_a,
+                normalization_valid_b,
+            ],
+            "semantic_unknown_absolute_path_count": (
+                unknown_absolute_path_count
+            ),
+            "semantic_projection_refs": semantic_projection_refs,
+            "semantic_projection_sha256": semantic_projection_sha256,
             "repository_unchanged_during_run": repository_unchanged,
-            "current_active_suite_all_green": bool(run_a["current_gate_all_green"]),
+            "current_active_suite_all_green": bool(
+                run_a["current_gate_all_green"]
+                and run_b["current_gate_all_green"]
+            ),
             "test_counts": run_a["test_counts"],
             "historical_finding_nodeids": run_a["historical_finding_nodeids"],
             "complete_per_test_stdout_stderr_content_addressed": True,

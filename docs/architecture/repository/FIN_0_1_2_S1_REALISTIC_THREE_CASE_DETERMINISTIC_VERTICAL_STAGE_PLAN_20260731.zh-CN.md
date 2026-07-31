@@ -1,7 +1,7 @@
 # FIN 0.1.2 S1 realistic three-case deterministic vertical StagePlan
 
 日期：2026-07-31
-状态：`S1 StagePlan / G0 pass / implementation not started`
+状态：`S1 terminal honest block / G0、G1 pass / G2 not proven / G6 closed / pre-S2 rebaseline selected`
 
 ## 1. 本阶段只解决什么
 
@@ -106,3 +106,22 @@ S1 默认只有一个 StagePlan、一个可追加 StageCapsule、一个 StageAss
 `FIN-0.1.2-S1-BOUNDED-PRODUCTION-CONSUMER-MIGRATION-ZERO-CALL-IMPLEMENTATION`
 
 它只完成 T02：让当前 bounded family 的十个生产 consumer 消费 S0 source digest/version，并以 admission 漏装、consumer 漂移和 case-specific branch mutation fail-closed。完成后才进入唯一 T03 deterministic proof package。
+
+## 10. 终态复盘与 pre-S2 边界（2026-07-31）
+
+本文件前九节保留冻结时的计划语义；实际执行结果由 StageCapsule、StageAssessment 与 StageCloseout 覆盖其“下一项”投影，但不改写历史计划：
+
+- G0、G1 已通过；主机 realistic three-case proof 为 `32 passed`，T04 主机预检为 `36 passed`；
+- G2 未得到 hermetic 证明。T03 在 collection 前暴露 Python transitive dependency inventory 缺口；T04 补齐 Python 前缀后，两套 disposable Runtime 均为 `25 passed / 11 failed`，失败 nodeids 完全一致；
+- 失败来自三类有限的项目内依赖闭包：MU realistic input 仍由 ignored `.codex_runtime` 提供、`research_skills.SKILL_FILES` 登记的非 Python Markdown Runtime 资源未进入 package、raw failure text 中 disposable root 路径使原始 hash 不同；
+- 完整 raw per-test/process 输出已内容寻址保存。没有模型、Provider、DS、金融方法或新 Runtime L1 故障证据；S1 已按固定 T01–T04 与 package budget 终态 honest block，不创建 S1-T05，也不重跑 T03/T04。
+
+项目级处置选择独立的 `FIN-0.1.2-PRE-S2-HERMETIC-FIXTURE-RESOURCE-REBASELINE-R1`，它既不是 S1 延长，也不是 S2：
+
+1. `PRE-S2-RB-T01` 冻结本处置与最早 owner，已通过；
+2. `PRE-S2-RB-T02` 只允许一个零调用实现包：把 MU exact input 变成受版本控制的 immutable fixture，从 `research_skills.SKILL_FILES` 生成精确 Runtime resource inventory，并在保留 raw capture 的同时只对 allowlisted disposable roots 生成独立 semantic parity hash；
+3. `PRE-S2-RB-T03` 仅在 T02 全绿后允许一个新的双 disposable replacement proof package。成功只授权另行编制 S2 StagePlan；失败则 pre-S2 honest block，不自动产生第二包。
+
+机器权威处置：`configs/releases/fin_ia_0_1_2_s1_to_s2_hermetic_fixture_resource_blocker_disposition_v1_0.json`。
+
+当前下一项：`FIN-0.1.2-PRE-S2-HERMETIC-FIXTURE-RESOURCE-REBASELINE-MINIMUM-ZERO-CALL-IMPLEMENTATION`。

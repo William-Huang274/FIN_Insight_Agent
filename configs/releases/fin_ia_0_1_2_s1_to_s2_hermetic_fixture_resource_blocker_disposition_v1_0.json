@@ -1,0 +1,230 @@
+{
+  "schema_version": "fin_ia_0_1_2_s1_to_s2_hermetic_fixture_resource_blocker_disposition_v1_0",
+  "decision_id": "FIN-0.1.2-S1-TO-S2-HERMETIC-FIXTURE-RESOURCE-BLOCKER-DISPOSITION-R1",
+  "recorded_at": "2026-07-31T23:59:30+08:00",
+  "status": "pass_pre_S2_rebaseline_selected_implementation_pending_S2_entry_blocked",
+  "authority": {
+    "user_instruction": "继续",
+    "project_level_zero_call_disposition_authorized": true,
+    "pre_S2_minimum_zero_call_implementation_authorized_by_continuation": true,
+    "replacement_hermetic_proof_budget_reserved_conditionally": true,
+    "S1_reopen_or_S1_T05_authorized": false,
+    "S2_entry_authorized": false,
+    "model_provider_network_paid_or_business_execution_authorized": false,
+    "product_acceptance_release_or_production_authorized": false
+  },
+  "immutable_parent_evidence": [
+    {
+      "role": "S1_terminal_capsule",
+      "ref": "configs/releases/fin_ia_0_1_2_s1_stage_capsule_v1_0.json",
+      "sha256": "5691b437b3095547f9d6d6ae31b5e4c95734b845762953e4ea6091b77e61d9de"
+    },
+    {
+      "role": "S1_terminal_assessment",
+      "ref": "configs/releases/fin_ia_0_1_2_s1_stage_assessment_v1_0.json",
+      "sha256": "f4487ad883f911862a47b10946afa73b694755049671edd65bed6fb3228c7c9e"
+    },
+    {
+      "role": "S1_terminal_closeout",
+      "ref": "configs/releases/fin_ia_0_1_2_s1_stage_closeout_v1_0.json",
+      "sha256": "91fa819f69aebb95dcfe3303031aba0a7f46553c0049bc528ced67c6a5fe0a5c"
+    },
+    {
+      "role": "T04_failed_assessment_manifest",
+      "ref": "configs/releases/fin_ia_0_1_2_s1_t04_independent_assessment_manifest_v1_0.json",
+      "sha256": "00488251af12b08350ef4c87a06f0c1fef613c2275881dd6d58a451b4cc32a74"
+    },
+    {
+      "role": "T04_failed_assessment_verification",
+      "ref": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_2_s1_t04_independent_assessment_20260731T224645+0800_head_48566f24/verification.json",
+      "sha256": "391f17006599ebec6853c50e36f89aeadc1585a5b0487806b452c7a77b58520c"
+    }
+  ],
+  "decision_options": [
+    {
+      "option": "A",
+      "label": "bounded_pre_S2_rebaseline",
+      "selected": true,
+      "reason": "The blocker is a project-owned dependency-closure defect with three finite earliest owners and can be repaired without reopening S1 or weakening G2."
+    },
+    {
+      "option": "B",
+      "label": "waive_hermeticity_and_enter_S2",
+      "selected": false,
+      "reason": "Host green cannot substitute for replayable isolated proof."
+    },
+    {
+      "option": "C",
+      "label": "reopen_S1_or_create_S1_T05",
+      "selected": false,
+      "reason": "S1 is terminal and all frozen task and package budgets are consumed."
+    },
+    {
+      "option": "D",
+      "label": "attribute_to_model_or_provider",
+      "selected": false,
+      "reason": "No model or Provider call occurred and no such fault was established."
+    },
+    {
+      "option": "E",
+      "label": "defer_to_FIN_0_2",
+      "selected": false,
+      "reason": "Hermetic fixture and resource closure is required before FIN 0.1.2 S2 and is not the generalized compiler owned by FIN 0.2."
+    }
+  ],
+  "selected_stage": {
+    "stage_id": "FIN-0.1.2-PRE-S2-HERMETIC-FIXTURE-RESOURCE-REBASELINE-R1",
+    "stage_kind": "bounded_zero_call_dependency_closure_and_replacement_proof",
+    "is_S1_continuation": false,
+    "is_S1_T05_or_R_number": false,
+    "is_S2": false,
+    "mission": "Materialize every current proof dependency under explicit repository ownership, preserve raw failure evidence while normalizing only disposable path noise for semantic parity, and run at most one new pre-S2 hermetic proof package."
+  },
+  "earliest_owner_audit": {
+    "MU_realistic_fixture": {
+      "symptom": "Nine T04 tests load a realistic MU input through a historical S4 helper that reads ignored host-local .codex_runtime state.",
+      "current_helper_ref": "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_zero_call_implementation.py",
+      "current_helper_sha256": "afe94e6cd3f85dc6b0ba813d9dd21a41520a768149785e87555638eee855fe5e",
+      "source_object_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/canonical-runtime/objects/fin01/s4/exact-input-heads/29/0e/290e82aec53d6d3078eb0c8bac94e022bde7cc17a77b72d2315af118ced4958e.json",
+      "source_object_sha256": "290e82aec53d6d3078eb0c8bac94e022bde7cc17a77b72d2315af118ced4958e",
+      "source_object_bytes": 196647,
+      "input_digest": "7887b5bb447fc6a844c410751f2038a04a1c0b04dbbe7e5bde41b040135a12e1",
+      "future_owner": "tests/fixtures/fin_0_1_2/mu_realistic_three_cell_exact_input_v1.json",
+      "future_loader": "tests/contract/fin_0_1_2_realistic_fixture_support.py",
+      "required_envelope": [
+        "schema_version",
+        "fixture_id",
+        "source_object_sha256",
+        "source_input_digest",
+        "source_case_id_and_version",
+        "input_pack",
+        "content_digest",
+        "provenance_and_nonpromotion_boundary"
+      ],
+      "excluded_content": [
+        "credentials_or_authorization_headers",
+        "Provider_output_or_private_reasoning",
+        "mutable_WorkUnit_Attempt_or_Run_state",
+        "business_acceptance_or_release_claim"
+      ],
+      "active_proof_import_of_historical_S4_fixture_helper_after_migration": false
+    },
+    "runtime_nonpython_resources": {
+      "symptom": "Two T04 full-chain tests fail because Python-only src packaging omits Markdown Skills loaded by research_skills.py.",
+      "runtime_registry_ref": "src/sec_agent/research_skills.py",
+      "runtime_registry_sha256": "d757747da6209eeb8cded8c6980b7805db53fb6521c0c2424900af7ad7cffdba",
+      "observed_registered_resource_count": 16,
+      "observed_registered_resource_bytes": 53382,
+      "observed_registered_resource_canonical_digest": "2b704b4c20dafad05097f59bb35740fc2f8a0479a2f55b6bb7d1a1bae15d1e9a",
+      "future_owner": "configs/runtime/fin_ia_0_1_2_runtime_nonpython_resource_inventory_v1_0.json",
+      "inventory_source_of_truth": "research_skills.SKILL_FILES",
+      "package_rule": "Package every and only current registered runtime resource by repository path bytes and SHA-256; missing duplicate path drift or unregistered runtime read fails before pytest execution.",
+      "directory_glob_as_only_authority": false
+    },
+    "semantic_parity_projection": {
+      "symptom": "Both disposable runtimes have identical counts and failure nodeids but raw detail hashes differ because absolute temporary roots differ.",
+      "runtime_owner_ref": "src/sec_agent/hermetic_test_runner.py",
+      "runtime_owner_sha256": "423718fdbab9fe904d678de2b4136c58709f3cb002048ea8b37cdf376493e92b",
+      "future_contract_ref": "configs/runtime/fin_ia_0_1_2_hermetic_semantic_parity_projection_v1_0.json",
+      "raw_capture_retention_required": true,
+      "raw_detail_stdout_stderr_hashes_rewritten": false,
+      "semantic_projection_rule": "Create separate normalized hashes after replacing only the exact package and disposable root prefixes with typed placeholders; use normalized hashes for parity and retain raw refs for audit.",
+      "normalization_allowlist": [
+        "exact_disposable_repository_root",
+        "exact_disposable_package_root",
+        "exact_hermetic_temporary_parent"
+      ],
+      "normalization_of_business_values_nodeids_failure_codes_or_relative_paths": false,
+      "unknown_absolute_path_behavior": "fail_closed_and_keep_parity_false"
+    }
+  },
+  "fixed_task_and_package_budget": [
+    {
+      "task_id": "PRE-S2-RB-T01",
+      "title": "Hermetic fixture and runtime-resource blocker disposition",
+      "status": "pass_current_decision"
+    },
+    {
+      "task_id": "PRE-S2-RB-T02",
+      "title": "Tracked fixture resource inventory and semantic parity minimum zero-call implementation",
+      "status": "authorized_not_started",
+      "maximum_implementation_bundles": 1
+    },
+    {
+      "task_id": "PRE-S2-RB-T03",
+      "title": "One independent two-disposable replacement hermetic proof and closeout",
+      "status": "conditionally_authorized_after_T02_all_green",
+      "maximum_hermetic_proof_packages": 1
+    }
+  ],
+  "T02_acceptance": {
+    "fixture": [
+      "tracked fixture validates as the same MU input_digest and case identity",
+      "active FIN 0.1.2 proof path contains zero .codex_runtime reads and zero historical S4 fixture-helper imports",
+      "fixture secret and private-output scan passes"
+    ],
+    "resources": [
+      "runtime resource inventory exactly matches research_skills.SKILL_FILES",
+      "all registered resource bytes and hashes read back",
+      "missing drift duplicate and unknown runtime resource mutations fail closed"
+    ],
+    "parity": [
+      "raw content-addressed output remains byte-exact",
+      "only allowlisted disposable roots normalize in a separate semantic projection",
+      "business text nodeids failure codes relative paths and non-allowlisted absolute paths remain comparison-significant"
+    ],
+    "host_matrix": [
+      "DELL_MU_NVDA_each_6_nodes_12_interactions_12_captures_9_diagnostic_artifacts",
+      "candidate_0_1_3_6_7_22_76_mutation_permutation_collect_all_and_downstream_failure_retention",
+      "current_projection_and_hash_binding_all_green"
+    ]
+  },
+  "T03_proof_contract": {
+    "new_package_identity_required": true,
+    "T03_or_T04_historical_package_rerun": false,
+    "disposable_runtime_count": 2,
+    "fresh_processes_required": true,
+    "credential_environment_removed": true,
+    "repository_readback_unchanged_required": true,
+    "complete_raw_per_test_and_process_output_content_addressed": true,
+    "semantic_parity_required": true,
+    "current_gate_all_green_required": true,
+    "failed_output_business_promotable": false,
+    "on_pass": "close_RC_P36_085_for_current_pre_S2_scope_and_authorize_S2_StagePlan_only",
+    "on_failure": "close_pre_S2_rebaseline_honest_block_without_second_package_or_direct_S2_entry"
+  },
+  "pass_and_stop_rules": {
+    "S2_entry_before_T03_pass": false,
+    "S1_history_or_failed_package_rewrite": false,
+    "automatic_second_implementation_bundle": false,
+    "automatic_second_replacement_proof_package": false,
+    "hermeticity_or_L1_relaxation": false,
+    "model_or_provider_blame_without_call_evidence": false,
+    "new_runtime_L1_if_observed": "stop_and_assign_to_earliest_owner_outside_closed_S1",
+    "L2_to_L4_if_observed": "record_and_carry_to_existing_later_owner_without_blocking_this_dependency_closure"
+  },
+  "observed_counts": {
+    "fixture_files_materialized": 0,
+    "runtime_resource_inventories_created": 0,
+    "parity_runtime_changes": 0,
+    "replacement_proof_packages": 0,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_source_or_external_tool_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "paid_reproofs": 0
+  },
+  "product_truth": {
+    "S1": "closed_honest_block_not_reopened",
+    "S2_entry": false,
+    "DELL_R2": false,
+    "MU_R2": false,
+    "post_transfer_NVDA_exact_product": false,
+    "NVDA_R3": false,
+    "FIN_0_1_release_qualified": false
+  },
+  "next_action": "FIN-0.1.2-PRE-S2-HERMETIC-FIXTURE-RESOURCE-REBASELINE-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

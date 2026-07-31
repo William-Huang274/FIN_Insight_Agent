@@ -50,6 +50,10 @@ MANIFEST_PATH = ROOT / FIN_0_1_2_COMMON_RUNTIME_BINDING_MANIFEST_REF
 CAPSULE_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_2_s1_stage_capsule_v1_0.json"
 )
+PRE_S2_DISPOSITION = ROOT / (
+    "configs/releases/fin_ia_0_1_2_s1_to_s2_hermetic_fixture_"
+    "resource_blocker_disposition_v1_0.json"
+)
 PROGRAM_BACKLOG = ROOT / (
     "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
 )
@@ -198,22 +202,31 @@ def test_stage_capsule_records_g1_without_product_or_compiler_inflation() -> Non
     ]
 
 
-def test_stage_capsule_is_the_current_honest_block_projection() -> None:
+def test_stage_capsule_is_terminal_history_and_pre_s2_is_current_projection() -> None:
     capsule = _load_json(CAPSULE_PATH)
+    disposition = _load_json(PRE_S2_DISPOSITION)
     program = _load_json(PROGRAM_BACKLOG)
     s4 = _load_json(S4_BACKLOG)
     capsule_sha = hashlib.sha256(CAPSULE_PATH.read_bytes()).hexdigest()
-    assert program["next_action"]["item_id"] == capsule["next_action"]
+    disposition_sha = hashlib.sha256(PRE_S2_DISPOSITION.read_bytes()).hexdigest()
+    assert program["next_action"]["item_id"] == disposition["next_action"]
     assert program["next_action"][
         "FIN_0_1_2_S1_stage_capsule_sha256"
     ] == capsule_sha
-    assert s4["current_next_action"] == capsule["next_action"]
+    assert program["next_action"][
+        "FIN_0_1_2_pre_S2_disposition_sha256"
+    ] == disposition_sha
+    assert s4["current_next_action"] == disposition["next_action"]
     assert s4["FIN_0_1_2_S1_stage_plan"][
         "stage_capsule_sha256"
     ] == capsule_sha
+    assert s4["FIN_0_1_2_S1_stage_plan"][
+        "pre_S2_disposition_sha256"
+    ] == disposition_sha
     context = CONTEXT_PATH.read_text(encoding="utf-8")
-    assert f"current next=`{capsule['next_action']}`" in context
+    assert f"current next=`{disposition['next_action']}`" in context
     assert capsule["product_truth"]["S2_entry_authorized"] is False
+    assert disposition["product_truth"]["S1"] == "closed_honest_block_not_reopened"
 
 
 @pytest.mark.parametrize(

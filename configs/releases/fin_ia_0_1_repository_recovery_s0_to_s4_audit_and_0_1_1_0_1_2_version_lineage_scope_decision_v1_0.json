@@ -1,0 +1,342 @@
+{
+  "schema_version": "fin_ia_0_1_repository_recovery_s0_to_s4_audit_and_0_1_1_0_1_2_version_lineage_scope_decision_v1_0",
+  "decision_id": "FIN-0.1-REPOSITORY-RECOVERY-S0-TO-S4-AUDIT-AND-0.1.1-0.1.2-VERSION-LINEAGE-SCOPE-DECISION",
+  "decided_at": "2026-07-31T15:02:37+08:00",
+  "status": "pass_read_only_dual_thread_retrospective_repository_inventory_stage_rebaseline_and_version_lineage_scope_complete_no_cleanup_executed",
+  "authority": {
+    "user_instruction": "认可只读零删除零模型的仓库恢复、S0-S4审计和0.1.1/0.1.2版本谱系决策；读取当前与相邻任务，反思工程问题并细化S系列规划",
+    "authorized_now": [
+      "read_both_Codex_task_histories",
+      "read_only_repository_and_Project_OS_inventory",
+      "S0_to_S4_engineering_and_product_retrospective",
+      "refined_S_series_and_model_capability_boundary_design",
+      "FIN_0_1_1_FIN_0_1_2_FIN_0_2_version_lineage_decision",
+      "documentation_machine_scope_contract_and_zero_call_tests"
+    ],
+    "not_authorized_now": [
+      "delete_move_or_clean_files",
+      "unstage_reset_checkout_or_rewrite_user_changes",
+      "commit_push_tag_branch_or_release",
+      "credential_read_or_probe",
+      "model_provider_network_source_or_external_tool_call",
+      "new_admission_WorkUnit_Attempt_Run_or_business_Artifact",
+      "T05_T06_T07_reopen_or_exact_live",
+      "S4_T10_closeout_or_S5_entry",
+      "FIN_0_1_1_tag_or_FIN_0_1_2_runtime_implementation"
+    ]
+  },
+  "source_bindings": [
+    {
+      "evidence_role": "original_PRD_release_allocation_with_patch_line_clarification",
+      "ref": "docs/product/FIN_PRD_FULL_ABSORPTION_AND_RELEASE_ALLOCATION_MATRIX_20260719.zh-CN.md",
+      "sha256": "86b22a44ee2504891d6b94cdea578ea614a9c081ffc4ff9a18f7beaf4d4c9f43"
+    },
+    {
+      "evidence_role": "prior_S0_to_S4_T05_global_audit",
+      "ref": "configs/releases/fin_ia_0_1_s0_to_s4_t05_full_chain_global_audit_and_forward_plan_v1_0.json",
+      "sha256": "6a00836e8b2a799e17eecad103982a35d8e4956069b63a5b9248adfb1e0ae451"
+    },
+    {
+      "evidence_role": "historical_S1_to_S4_T06_boundary_rebaseline_machine_record",
+      "ref": "configs/releases/fin_ia_0_1_s1_to_s4_t06_stage_boundary_and_task_ownership_rebaseline_v1_0.json",
+      "sha256": "73981b143b4a92f37063e4a950d5634c0d04825dc3eaf19366fbb6070c233017"
+    },
+    {
+      "evidence_role": "current_stage_boundary_document_with_version_supersession",
+      "ref": "docs/architecture/repository/FIN_0_1_S1_TO_S5_STAGE_BOUNDARY_REBASELINE_20260731.zh-CN.md",
+      "sha256": "3616d79ec72cda00aa93dc5f60286002dcbd7a73b6c832628524e58879410c89"
+    },
+    {
+      "evidence_role": "T07_zero_call_regression_terminal_truth",
+      "ref": "configs/releases/fin_ia_0_1_s4_t07_current_worktree_three_case_zero_call_regression_failure_result_v1_0.json",
+      "sha256": "9ee8e454b9c8eea14f7eeab93b5050b7a85fce006c5c42d25139f1a0aaab59d1"
+    },
+    {
+      "evidence_role": "T08_three_case_product_calibration_truth",
+      "ref": "configs/releases/fin_ia_0_1_s4_t08_read_only_three_case_calibration_and_workbench_product_value_result_v1_0.json",
+      "sha256": "be8f97a984f01290554937ab7f17b23bfb387407c5d6f0cab636334ecbf9dceb"
+    },
+    {
+      "evidence_role": "T09_real_owner_option_A",
+      "ref": "configs/releases/fin_ia_0_1_s4_t09_real_human_owner_evidence_review_disposition_v1_0.json",
+      "sha256": "d2b62d5bd7158a018c4b8579d502703c4664cd49a392e911dc1d0307e5ef5ed4"
+    },
+    {
+      "evidence_role": "historical_T10_honest_block_scope",
+      "ref": "configs/releases/fin_ia_0_1_s4_t10_s4_pass_or_honest_block_closeout_scope_decision_v1_0.json",
+      "sha256": "2e867649f93491133051931f21dc3994822260bfbd668d5f142f75ba872918e8"
+    },
+    {
+      "evidence_role": "FIN_0_1_release_truth",
+      "ref": "configs/releases/fin_ia_0_1_release_contract_v1_3.json",
+      "sha256": "317c4c27d944cbda076c6177e035daecec256e649b5a1b31596dca22df69117f"
+    },
+    {
+      "evidence_role": "dual_thread_engineering_retrospective",
+      "ref": "docs/architecture/repository/FIN_0_1_S0_TO_S4_DUAL_THREAD_ENGINEERING_RETROSPECTIVE_AND_REFINED_S_SERIES_20260731.zh-CN.md",
+      "sha256": "d0fb651f246f9d2bd261228b8c6afa9f652da312b9877ad22cec5d00b830d9c7"
+    },
+    {
+      "evidence_role": "version_lineage_and_release_cadence_decision",
+      "ref": "docs/product/FIN_0_1_1_0_1_2_VERSION_LINEAGE_AND_RELEASE_CADENCE_DECISION_20260731.zh-CN.md",
+      "sha256": "1c40f0cd4b1765547ff2a80b102b88586815d56b54877fc0e994d8acf193f585"
+    }
+  ],
+  "Codex_task_history_audit": {
+    "method": "Codex task API paged newest_to_oldest_until_hasMore_false; messages summarized as engineering patterns and not treated as product evidence",
+    "current_task": {
+      "thread_id": "019f91b7-662a-7f31-b71d-eb90d2ec32c2",
+      "turns": 199,
+      "user_message_items": 198,
+      "final_answer_items": 190,
+      "context_compactions": 121,
+      "file_change_events_not_unique_files": 2055,
+      "completed_interrupted_in_progress": [194, 3, 2],
+      "dominant_pattern": "S3_T09_and_S4_T05_T06_exact_live_field_serialization_then_boundary_rebaseline"
+    },
+    "adjacent_task": {
+      "thread_id": "019f54fe-4b90-74c0-b5e7-6325c47b77ce",
+      "turns": 135,
+      "user_message_items": 136,
+      "final_answer_items": 129,
+      "context_compactions": 59,
+      "file_change_events_not_unique_files": 1246,
+      "completed_interrupted": [131, 4],
+      "dominant_pattern": "Point01_Point02_contract_authority_package_and_closeout_repairs_despite_no_model_quality_dependency"
+    },
+    "shared_finding": "Late behavioral and set closure plus excessive governance object families creates repeated repair even without a language model."
+  },
+  "repository_snapshot": {
+    "captured_at": "2026-07-31T14:53:55+08:00",
+    "git_branch": "codex/layered-data-source-expansion",
+    "git_head": "54d2e072b30d51cd7aaa3b55288d186782853a97",
+    "ahead_behind_origin": [5, 0],
+    "status_rows": 1118,
+    "staged_unstaged_untracked_rows": [799, 28, 317],
+    "top_level_status_rows": {
+      "configs": 382,
+      "docs": 308,
+      "tests": 259,
+      "scripts": 92,
+      "reports": 49,
+      "apps": 14,
+      "src": 14
+    },
+    "S0_to_S4_release_JSON_files": 376,
+    "S0_to_S4_contract_test_files": 255,
+    "S0_to_S4_product_strategy_worklogs": 261,
+    "S4_T05_release_test_worklog_files": [74, 53, 39],
+    "S4_T06_release_test_worklog_files": [92, 68, 66],
+    "cleanup_ready": false,
+    "reason": "The mixed staged and untracked surface contains user work and versioned evidence; no file can be deleted or unstaged safely before exact classification."
+  },
+  "audit_verdict": {
+    "product_maturity": "internal_engineering_alpha_one_owner_accepted_anchor_two_real_transfer_diagnostics_not_release_qualified",
+    "S4_truth": "honestly_blocked",
+    "DELL_R2": false,
+    "MU_R2": false,
+    "NVDA_historical_S3_R2": true,
+    "NVDA_post_transfer_exact_product": false,
+    "NVDA_qualified_senior_R3": false,
+    "T07_all_green": false,
+    "FIN_0_1_release_qualified": false,
+    "release_requirements_weakened": false
+  },
+  "root_cause_classes": [
+    {
+      "class": "cross_layer_contract_and_truth_owner_fragmentation",
+      "examples": [
+        "prompt_schema_validator_fake_selector_renderer_budget_telemetry_drift",
+        "numeric_membership_without_exact_value_correspondence",
+        "NVDA_case_identity_hard_code_in_transfer_output"
+      ],
+      "earliest_owner": "FIN_0_1_2_S0_contract_closure_and_S1_mutation"
+    },
+    {
+      "class": "model_capability_overestimation",
+      "examples": [
+        "cardinality_and_length_treated_as_prompt_guarantees",
+        "large_free_narrative_and_cross_field_state_machine",
+        "fake_provider_cleaned_natural_ticker_and_candidate_behavior"
+      ],
+      "earliest_owner": "FIN_0_1_2_S2_natural_capability_envelope_and_provider_surface_reduction"
+    },
+    {
+      "class": "formal_live_used_as_integration_debugger",
+      "examples": [
+        "one_fail_fast_field_per_paid_run",
+        "R2_to_R11_and_R1_to_R7_version_sequences",
+        "product_proof_and_runtime_repair_in_one_task"
+      ],
+      "earliest_owner": "fixed_gate_and_run_budget_program_policy"
+    },
+    {
+      "class": "governance_surface_inflation",
+      "examples": [
+        "separate_scope_authority_admission_proof_result_disposition_for_zero_call_changes",
+        "declaration_tests_before_active_set_or_behavioral_closure",
+        "worklog_and_machine_artifact_growth_outpacing_product_capability"
+      ],
+      "earliest_owner": "one_StageCapsule_one_RunCapsule_and_one_closeout_per_stage"
+    },
+    {
+      "class": "repository_and_mutable_state_debt",
+      "examples": [
+        "799_staged_plus_317_untracked_rows",
+        "immutable_tests_bound_to_mutable_current_next",
+        "release_slice_not_commit_or_rollback_coherent"
+      ],
+      "earliest_owner": "FIN_0_1_repository_recovery_then_S5_shadow_from_each_future_stage"
+    }
+  ],
+  "DeepSeek_capability_envelope": {
+    "allowed_outputs": [
+      "request_local_alias_or_enum_selection",
+      "bounded_judgment_atoms",
+      "non_authoritative_explanation_counterargument_causal_and_WWC_candidates",
+      "actionability_and_cross_cell_synthesis_over_locally_owned_truth"
+    ],
+    "locally_owned_outputs": [
+      "material_number_period_unit_scale_sign_formula_inputs",
+      "canonical_ID_ticker_entity_identity_authority_ref_lineage",
+      "final_dates",
+      "provider_visible_candidate_pool_and_final_cardinality",
+      "business_Artifact_assembly_and_L1_recomputation"
+    ],
+    "transport_rule": "Without proven strict schema, JSON cardinality length enum and cross-field constraints are soft hints and cannot be an L1 premise.",
+    "provider_fault_is_not_default": "A model instruction deviation is only one symptom; the project remains responsible for not exposing unsafe free surfaces."
+  },
+  "refined_S_series": {
+    "macro_stages": [
+      ["S0", "baseline_architecture_truth_owner_contract_compiler_capture_and_repo_slice"],
+      ["S1", "realistic_deterministic_vertical_mutation_and_three_case_full_fake"],
+      ["S2", "natural_contract_family_capability_and_one_cell_product_value"],
+      ["S3", "three_cell_anchor_plus_transfer_oriented_identity_numeric_and_candidate_mutation"],
+      ["S4", "frozen_runtime_three_case_transfer_product_and_Human_calibration_no_structural_repair"],
+      ["S5", "hermetic_Git_rollback_RG_and_released_or_blocked_decision"]
+    ],
+    "fixed_internal_gates": [
+      ["G0", "scope_owner_non_goal_stop_budget"],
+      ["G1", "contract_and_active_set_closure"],
+      ["G2", "deterministic_unit_mutation_full_fake_and_capture_proof"],
+      ["G3", "natural_changed_contract_family_canary"],
+      ["G4", "optional_quarantined_collect_all_diagnostic_no_promotion"],
+      ["G5", "single_formal_product_proof"],
+      ["G6", "L1_to_L4_paired_Human_closeout_and_Git_slice"]
+    ],
+    "non_bypass_rule": "A failed gate cannot be restarted under a new R number replacement family H stage or renamed blocker.",
+    "S5_shadow_lane": "Every stage must leave a coherent commit candidate proof inventory and rollback note; formal S5 is aggregation not first cleanup."
+  },
+  "artifact_and_run_budgets": {
+    "default_stage_artifacts": [
+      "one_StagePlan",
+      "one_append_only_content_addressed_StageCapsule",
+      "one_RunCapsule_per_real_external_execution",
+      "one_StageAssessment",
+      "one_StageCloseout",
+      "one_stage_worklog"
+    ],
+    "separate_zero_call_scope_authority_admission_proof_result_disposition_families": 0,
+    "natural_canary_batches_per_changed_contract_family": 1,
+    "quarantined_diagnostic_full_chain_per_product_target": 1,
+    "formal_exact_live_per_product_target": 1,
+    "automatic_R_number_or_replacement_family": 0,
+    "new_shared_runtime_L1_during_S4": "honest_block_and_route_to_next_0_1_x_S0_to_S3",
+    "L2_to_L4_default": "quality_finding_and_carry_forward_unless_predeclared_release_blocker"
+  },
+  "version_lineage": {
+    "broad_product_release_cadence_changed": false,
+    "FIN_0_1_1": {
+      "name": "Internal Engineering Baseline",
+      "target_state": "S4_honest_block_plus_S5_decision_only",
+      "release_qualified": false,
+      "tag_suggestion_not_created": "fin-0.1.1-internal-honest-block"
+    },
+    "FIN_0_1_2": {
+      "name": "FIN_0_1_stabilization_and_transfer_qualification",
+      "scope": [
+        "common_contract_compiler_and_provider_surface_reduction",
+        "capture_and_hermetic_proof",
+        "DELL_MU_R2_reproof",
+        "post_transfer_NVDA_and_qualified_senior_R3",
+        "coherent_release_slice"
+      ],
+      "restart_from_S0_means": "revalidate_all_gates_and_reuse_hash_compatible_assets_not_rewrite_from_zero"
+    },
+    "FIN_0_2": {
+      "name": "Earnings Review Alpha",
+      "original_definition_preserved": true,
+      "scope": "B1_Earnings_Task_Workpaper_Report_exact_financial_segment_guidance_comparison_market_reaction_and_countercase",
+      "entry": "FIN_0_1_runtime_and_exact_artifact_mainline_stable"
+    }
+  },
+  "supersession": {
+    "historical_T10_scope_bytes_rewritten": false,
+    "T10_honest_block_truth_preserved": true,
+    "T05_T06_T07_reopened": false,
+    "superseded_historical_carry_forward": "FIN_0_2_owns_common_compiler_and_DELL_MU_transfer_completion",
+    "current_carry_forward": "FIN_0_1_2_owns_common_compiler_and_DELL_MU_transfer_completion",
+    "FIN_0_2_product_definition": "Earnings_Review_Alpha"
+  },
+  "progression": [
+    "FIN-0.1-REPOSITORY-EVIDENCE-FREEZE-AND-SAFE-CLASSIFICATION-EXECUTION",
+    "S4-T10-S4-HONEST-BLOCK-CLOSEOUT-AND-S5-DECISION-ONLY-HANDOFF",
+    "S5-DECISION-ONLY-HONEST-BLOCK-AND-FIN-0.1.1-INTERNAL-BASELINE-FREEZE",
+    "FIN-0.1.2-S0-ENTRY-AND-REFINED-S-SERIES-PLAN-FREEZE",
+    "FIN-0.2-EARNINGS-REVIEW-ALPHA-AFTER-FIN-0.1-MAINLINE-STABLE"
+  ],
+  "next_action_scope": {
+    "item_id": "FIN-0.1-REPOSITORY-EVIDENCE-FREEZE-AND-SAFE-CLASSIFICATION-EXECUTION",
+    "allowed": [
+      "content_addressed_status_and_index_inventory",
+      "classify_paths_by_product_slice_owner_and_recoverability",
+      "identify_generated_ephemeral_secret_risk_and_historical_evidence_without_deleting",
+      "propose_coherent_commit_and_rollback_slices"
+    ],
+    "not_allowed": [
+      "delete_move_clean_unstage_reset_checkout",
+      "commit_push_tag_or_release",
+      "runtime_or_product_repair",
+      "model_provider_network_source_or_live"
+    ],
+    "requires_later_explicit_approval": [
+      "any_delete_or_unstage",
+      "any_commit_or_tag",
+      "S4_T10_closeout",
+      "S5_entry",
+      "FIN_0_1_2_implementation"
+    ]
+  },
+  "hard_budgets": {
+    "file_deletes": 0,
+    "file_moves": 0,
+    "unstage_reset_checkout_operations": 0,
+    "commits_pushes_tags_or_releases": 0,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_work_units_attempts_or_runs": 0,
+    "new_business_artifacts": 0,
+    "exact_live_runs": 0,
+    "S4_T10_closeouts": 0,
+    "S5_entries": 0,
+    "FIN_0_1_1_tags": 0
+  },
+  "validation": {
+    "scope_contract_tests": "16 passed",
+    "strict_JSON_parse": {
+      "release_JSON_files": 408,
+      "project_OS_JSONL_files": 24,
+      "project_OS_JSONL_records": 1502,
+      "duplicate_or_parse_errors": 0
+    },
+    "source_binding_sha256": "11 of 11 match",
+    "target_diff_check": "pass",
+    "scoped_secret_scan": "pass_no_secret_values"
+  },
+  "next_action": "FIN-0.1-REPOSITORY-EVIDENCE-FREEZE-AND-SAFE-CLASSIFICATION-EXECUTION"
+}

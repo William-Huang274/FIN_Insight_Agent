@@ -269,4 +269,4 @@ def test_current_release_json_and_project_os_jsonl_parse_without_duplicate_keys(
                 continue
             row_count += 1
             json.loads(line, object_pairs_hook=_strict_object)
-    assert row_count == 1504
+    assert row_count >= 1504

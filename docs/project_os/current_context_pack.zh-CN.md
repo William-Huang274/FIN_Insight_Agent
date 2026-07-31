@@ -3,6 +3,9 @@
 更新时间：2026-07-31
 
 > [!IMPORTANT]
+> **FIN 0.1.1 已冻结为内部 honest-block 工程基线（current，2026-07-31）**：冻结清单绑定 S4-T10、S5 blocked release decision、仓库 evidence inventory、远端恢复链 `10fb4aee` 和离仓 content-addressed recovery package 的 full readback。产品真值不膨胀：NVDA 仅 historical S3 R2/accepted 9 Artifacts；DELL/MU 各 9 个 diagnostic Artifacts 但 R2=false；post-transfer NVDA、R3、T07 all-green、S4 pass 与 FIN0.1 release qualification 均为 false。建议标签 `fin-0.1.1-internal-honest-block` 仅为本地 annotated engineering tag，不是 Release，未授权 push。冻结动作 credential/model/provider/source/business-network/admission/Run/Artifact/release candidate=`0`。manifest=`configs/releases/fin_ia_0_1_1_internal_honest_block_baseline_manifest_v1_0.json`。current next=`FIN-0.1.2-S0-COMMON-RUNTIME-AND-TEST-CONTRACT-REBASELINE`。
+>
+> [!IMPORTANT]
 > **FIN 0.1 S5 decision-only honest-block 已终态完成（current，2026-07-31）**：S5 消费 T10 closeout、S4→S5 manifest、release contract、version lineage 与 blocked release evidence inventory，不执行候选版本或 paid reproof。evidence inventory 区分 accepted NVDA 9 Artifacts、DELL/MU 各 9 个 diagnostic Artifacts 与仓库可恢复性；共观测 27 个 Agent Artifacts，仅 9 个 accepted。RG1–RG4=`blocked`，RG5=`pass_internal_recoverability_only` 且不得覆盖前四门。S5=`closed_honestly_blocked_decision_only`、FIN0.1 qualified=false、release candidate/tag/release=0。RC-P36-085 的历史完整 stdout/stderr 与 RC-P36-086 的 event/projection/active-suite 分层只完成 inventory，继续由 FIN0.1.2 S0 实现。本项 credential/model/provider/source/business-network/admission/Run/Artifact/paid reproof=`0`。decision=`configs/releases/fin_ia_0_1_s5_decision_only_honest_block_handoff_and_release_decision_v1_0.json`；inventory=`configs/releases/fin_ia_0_1_s5_blocked_release_evidence_inventory_v1_0.json`。current next=`FIN-0.1.1-INTERNAL-HONEST-BLOCK-BASELINE-FREEZE`。
 >
 > [!IMPORTANT]

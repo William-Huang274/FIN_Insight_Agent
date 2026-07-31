@@ -1,0 +1,122 @@
+{
+  "schema_version": "fin_ia_0_1_1_internal_honest_block_baseline_manifest_v1_0",
+  "baseline_id": "FIN-0.1.1-INTERNAL-HONEST-BLOCK-BASELINE-R1",
+  "frozen_at": "2026-07-31T20:30:00+08:00",
+  "status": "frozen_internal_honest_block_engineering_baseline_not_release_qualified",
+  "authority": {
+    "user_instruction": "按这个顺序做",
+    "internal_baseline_freeze_authorized": true,
+    "local_annotated_tag_after_commit_authorized": true,
+    "tag_push_release_or_production_authorized": false,
+    "model_provider_network_source_or_external_tool_authorized": false
+  },
+  "git_lineage": {
+    "branch": "codex/layered-data-source-expansion",
+    "remote_recovery_chain_head": "10fb4aee05f31d1db5ae5c1867d69f5ace698d8c",
+    "S4_T10_commit": "c7ed17adbe3c44e2746cc5874e9584e9b459818d",
+    "S5_decision_commit": "5a3e8f4bfee92d03c76667dacff060eaa11297ec",
+    "freeze_commit": "bound_by_local_annotated_tag_after_commit",
+    "local_tag": "fin-0.1.1-internal-honest-block",
+    "tag_push_authorized": false,
+    "release_created": false
+  },
+  "source_bindings": [
+    {
+      "role": "S4_terminal_closeout",
+      "ref": "configs/releases/fin_ia_0_1_s4_t10_s4_honest_block_closeout_decision_v1_0.json",
+      "sha256": "217eccfe72fa2d4f2d5b959513154ddfebe807d826ac6c46c637de766c984750"
+    },
+    {
+      "role": "S5_terminal_release_decision",
+      "ref": "configs/releases/fin_ia_0_1_s5_decision_only_honest_block_handoff_and_release_decision_v1_0.json",
+      "sha256": "74781455b3c73135456b8289209c7ae75849a3aa886502e73066c45e78fbe746"
+    },
+    {
+      "role": "S5_blocked_release_evidence_inventory",
+      "ref": "configs/releases/fin_ia_0_1_s5_blocked_release_evidence_inventory_v1_0.json",
+      "sha256": "38b7204a735eeba181bf837aade170d3672544012ac16d8bf4296e021d20ac0f"
+    },
+    {
+      "role": "repository_evidence_inventory",
+      "ref": "configs/releases/fin_ia_0_1_repository_evidence_freeze_and_safe_classification_inventory_v1_0.json",
+      "sha256": "ab4c2a129d229f94f15e1f890d564c975d5d1a5666b72254a35b89d76d479f29"
+    },
+    {
+      "role": "version_lineage_scope_decision",
+      "ref": "configs/releases/fin_ia_0_1_repository_recovery_s0_to_s4_audit_and_0_1_1_0_1_2_version_lineage_scope_decision_v1_0.json",
+      "sha256": "055fe4f2f94214007efd0effc707d8ae177920a73f639d0d3cbd76ef067990b5"
+    },
+    {
+      "role": "release_contract",
+      "ref": "configs/releases/fin_ia_0_1_release_contract_v1_3.json",
+      "sha256": "317c4c27d944cbda076c6177e035daecec256e649b5a1b31596dca22df69117f"
+    }
+  ],
+  "external_recovery_package": {
+    "path": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_repo_recovery_20260731T163800+0800_head_54d2e072",
+    "manifest_file_sha256": "46f5670c13c2ef5efb51d33634aa92e5afbcdf644c214b4f7798a25176985c6b",
+    "manifest_semantic_digest": "ca8edba1599f782f9c661ff81a4b056c65564be0d3ab22798101ca632a5ad12a",
+    "verification_file_sha256": "8d4d29f1ad3d8b573a57b12b4716e07faee7a2fd75bc25ab545766c9e614770a",
+    "verification_status": "pass_full_object_payload_source_and_repository_readback",
+    "manifest_entries_verified": 1128,
+    "object_catalog_entries_verified": 1255,
+    "source_index_and_worktree_versions_verified": 1929
+  },
+  "product_truth": {
+    "NVDA_historical_S3_R2": true,
+    "NVDA_accepted_artifacts": 9,
+    "DELL_R2": false,
+    "MU_R2": false,
+    "DELL_diagnostic_artifacts_observed": 9,
+    "MU_diagnostic_artifacts_observed": 9,
+    "post_transfer_NVDA_exact_product": false,
+    "NVDA_R3": false,
+    "T07_all_green": false,
+    "S4_pass": false,
+    "S5_release_candidate_created": false,
+    "FIN_0_1_release_qualified": false,
+    "production_ready": false
+  },
+  "preserved_capabilities": [
+    "typed_capture_and_terminal_failure_evidence",
+    "bounded_three_case_fixture_and_mutation_proof_assets",
+    "deterministic_numeric_identity_date_ID_and_lineage_ownership_direction",
+    "paired_L1_to_L4_and_owner_evidence_separation",
+    "content_addressed_repository_recovery_and_commit_chain"
+  ],
+  "open_ownership": {
+    "FIN_0_1_2_S0": [
+      "single_source_compiled_runtime_contract",
+      "bounded_provider_judgment_atom_authority",
+      "immutable_event_mutable_projection_and_current_runtime_test_split",
+      "manifest_selected_active_test_suite",
+      "hermetic_package_complete_stdout_stderr_capture_and_terminal_materialization"
+    ],
+    "FIN_0_1_2_S4": [
+      "DELL_R2",
+      "MU_R2",
+      "post_transfer_NVDA_exact_product",
+      "qualified_senior_NVDA_R3"
+    ],
+    "FIN_0_2": [
+      "Earnings_Review_Alpha_original_scope"
+    ]
+  },
+  "non_inflation": {
+    "honest_block_called_pass": false,
+    "diagnostic_artifacts_promoted_to_accepted": false,
+    "internal_tag_called_release": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_source_or_external_tool_calls": 0,
+    "new_admissions_runs_or_business_artifacts": 0,
+    "release_candidates": 0,
+    "tag_pushes": 0,
+    "releases": 0
+  },
+  "next_action": "FIN-0.1.2-S0-COMMON-RUNTIME-AND-TEST-CONTRACT-REBASELINE"
+}

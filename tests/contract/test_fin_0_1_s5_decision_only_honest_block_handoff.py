@@ -82,8 +82,12 @@ def test_program_and_s4_backlog_record_s5_terminal_decision() -> None:
     assert s5["status"] == "closed_honestly_blocked_decision_only_no_release_candidate"
     assert len(s5["items"]) == 5
     assert s5["items"][-1]["status"] == "terminal_honest_block_no_release_candidate"
-    assert program["next_action"]["item_id"] == "FIN-0.1.1-INTERNAL-HONEST-BLOCK-BASELINE-FREEZE"
-    assert program["next_action"]["S5_entered"] is True
-    assert s4["current_next_action"] == "FIN-0.1.1-INTERNAL-HONEST-BLOCK-BASELINE-FREEZE"
+    assert program["next_action"]["item_id"] == s4["current_next_action"]
+    assert program["next_action"]["item_id"] != decision_next_action()
+    assert program["current_truth"]["S5_status"] == "closed_honestly_blocked_decision_only_no_release_candidate"
     assert s4["T10_honest_block_closeout_scope"]["S5_entered"] is True
     assert s4["non_inflation"]["Alpha_release_or_production"] is False
+
+
+def decision_next_action() -> str:
+    return _load(DECISION)["next_action"]

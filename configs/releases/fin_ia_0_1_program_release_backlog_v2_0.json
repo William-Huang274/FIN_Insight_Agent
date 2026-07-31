@@ -1,8 +1,8 @@
 {
   "schema_version": "fin_ia_0_1_program_release_backlog_v2_0",
   "release_id": "REL-PROD-001",
-  "version": "FIN_0_1_INTERNAL_ALPHA",
-  "status": "S5_terminal_honestly_blocked_decision_only_no_release_candidate_FIN_0_1_not_qualified_FIN_0_1_1_freeze_next",
+  "version": "FIN_0_1_1_INTERNAL_HONEST_BLOCK",
+  "status": "FIN_0_1_1_frozen_internal_honest_block_FIN_0_1_not_qualified_FIN_0_1_2_S0_next",
   "authority": {
     "active_progress_source": true,
     "activated_at": "2026-07-19",
@@ -156,6 +156,11 @@
     "S3_entry_status": "pass_NVDA_R2_owner_accepted_S3_T10_closeout_complete",
     "S4_status": "closed_terminal_honest_block_FIN_0_1_not_qualified",
     "S5_status": "closed_honestly_blocked_decision_only_no_release_candidate",
+    "FIN_0_1_1_status": "frozen_internal_honest_block",
+    "FIN_0_1_1_release_qualified": false,
+    "FIN_0_1_1_baseline_manifest_ref": "configs/releases/fin_ia_0_1_1_internal_honest_block_baseline_manifest_v1_0.json",
+    "FIN_0_1_1_local_tag": "fin-0.1.1-internal-honest-block",
+    "FIN_0_1_1_local_tag_is_release": false,
     "stage_boundary_rebaseline_status": "active_T05_T06_closed_no_acceptance_inflation",
     "global_audit_ref": "configs/releases/fin_ia_0_1_s0_to_s4_t05_full_chain_global_audit_and_forward_plan_v1_0.json",
     "global_audit_sha256": "6a00836e8b2a799e17eecad103982a35d8e4956069b63a5b9248adfb1e0ae451",
@@ -450,7 +455,7 @@
     "human_accepted",
     "release_qualified"
   ],
-  "active_slice": "FIN_0_1_1_FREEZE",
+  "active_slice": "FIN_0_1_2_S0",
   "slices": [
     {
       "slice_id": "S1",
@@ -2206,7 +2211,7 @@
     "program_repair_budget": "one_automatic_engineering_review_iteration_per_slice_then_scope_swap_defer_or_user_decision",
     "cross_slice_early_delivery_carry_forward": {
       "contract_ref": "configs/releases/fin_ia_0_1_cross_slice_early_delivery_carry_forward_contract_v1_0.json",
-      "status": "S4_consumption_and_T10_honest_block_closeout_complete_S5_decision_only_reconciliation_next",
+      "status": "S4_T10_and_S5_honest_block_complete_FIN_0_1_1_internal_baseline_frozen_FIN_0_1_2_S0_next",
       "draft_owner_and_trigger": [
         "S3-T09",
         "S3_T09_acceptance"
@@ -2235,8 +2240,8 @@
     ]
   },
   "next_action": {
-    "item_id": "FIN-0.1.1-INTERNAL-HONEST-BLOCK-BASELINE-FREEZE",
-    "status": "S5_terminal_honest_block_complete_no_release_candidate_internal_freeze_ready",
+    "item_id": "FIN-0.1.2-S0-COMMON-RUNTIME-AND-TEST-CONTRACT-REBASELINE",
+    "status": "FIN_0_1_1_internal_honest_block_baseline_frozen_S0_rebaseline_ready",
     "still_blocks": [
       "RC_P36_067_numeric_projection_and_rendering_exact_live_reproof",
       "RC_P36_068_case_delivery_identity_exact_live_reproof",
@@ -2248,7 +2253,12 @@
       "release",
       "production"
     ],
-    "action": "freeze an internal FIN 0.1.1 honest-block baseline that binds T10 S5 repository recovery and release-qualified false without creating a public release or changing FIN 0.2",
+    "action": "begin FIN 0.1.2 S0 by separating immutable event current projection current runtime and historical audit tests while freezing one-source compiled Runtime authority and hermetic evidence gates",
+    "FIN_0_1_1_baseline_manifest_ref": "configs/releases/fin_ia_0_1_1_internal_honest_block_baseline_manifest_v1_0.json",
+    "FIN_0_1_1_baseline_manifest_sha256": "111ea8bc076ecdb14604a90ae45dc03c6dca174ca70e7a58d3688856022ad4d3",
+    "FIN_0_1_1_freeze_status": "frozen_internal_honest_block_not_release_qualified",
+    "FIN_0_1_1_local_tag": "fin-0.1.1-internal-honest-block",
+    "FIN_0_1_1_tag_push_or_release_authorized": false,
     "repository_inventory_ref": "configs/releases/fin_ia_0_1_repository_evidence_freeze_and_safe_classification_inventory_v1_0.json",
     "repository_inventory_schema_version": "fin_ia_0_1_repository_evidence_freeze_and_safe_classification_inventory_v1_0",
     "repository_inventory_status_rows": 1127,

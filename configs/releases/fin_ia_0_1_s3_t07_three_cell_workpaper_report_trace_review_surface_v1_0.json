@@ -1,0 +1,62 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t07_three_cell_workpaper_report_trace_review_surface_v1_0",
+  "result_id": "S3-T07-NVDA-THREE-CELL-PRESENTATION-R1",
+  "occurred_at": "2026-07-21T23:20:00+08:00",
+  "status": "pass_after_independent_review_T08_ready_pending_separate_authorization",
+  "authority": {
+    "user_instruction": "授权t07",
+    "S3_T07_zero_call_deterministic_presentation_authorized": true,
+    "S3_T08_execution_authorized": false,
+    "model_provider_or_source_network_authorized": false,
+    "external_tool_or_automatic_new_research_authorized": false,
+    "human_review_decision_authorized_or_performed": false,
+    "live_business_mutation_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "implementation": {
+    "single_runtime": "apps.workbench.backend.application.research_runtime:Fin01ResearchRuntime",
+    "presentation_owner": "src.sec_agent.memo_llm:s3_presentation_projection",
+    "surface_claim_count": 3,
+    "workpaper_cell_count": 3,
+    "report_section_count": 3,
+    "canonical_presentation_artifact_count": 3,
+    "trace_node_count": 13,
+    "trace_edge_count": 14,
+    "verifier_finding_count": 4,
+    "cell_review_target_count": 3,
+    "presentation_consumption_receipt_count": 3,
+    "writer_source_retrieval_tool_raw_candidate_authority": [false, false, false, false],
+    "automatic_new_research_calls": 0,
+    "human_review_writes": 0
+  },
+  "acceptance": {
+    "Workpaper_Report_Trace_and_Workbench_share_exact_Run_Cell_Claim_Judgment_and_Artifact_refs": true,
+    "Writer_consumes_only_adjudicated_heads_and_has_zero_source_or_retrieval_authority": true,
+    "Workbench_exposes_cell_Evidence_Numeric_Graph_gap_WWC_repair_and_stop_business_semantics": true,
+    "exact_why_gap_WWC_reads_existing_artifacts_without_automatic_new_research": true,
+    "Verifier_and_Human_review_bind_exact_digests_profile_input_as_of_findings_and_decision": true,
+    "machine_verifier_is_human_acceptance": false,
+    "human_review_status": "not_performed"
+  },
+  "root_cause_disposition": {
+    "RC-P30-002-memo-quality-insight-density-not-proven": "deterministic_three_cell_answer_first_projection_proven_real_model_and_human_quality_still_open",
+    "RC-P33-019-humanmade-gold-set-runtime-depth-gap": "exact_NVDA_three_cell_review_target_proven_paid_artifact_and_human_acceptance_still_open",
+    "RC-P34-020-writer-payload-lacked-fact-table-surface-and-goldcase-availability-alignment": "T07_fact_numeric_graph_gap_WWC_surface_repaired_for_current_three_cell_fixture_full_source_depth_still_open",
+    "RC-P36-030-writer-report-depends-on-supervisor-supplement-not-runtime-decision-surface": "runtime_decision_surface_to_report_projection_repaired_with_bounded_partial_output_source_depth_still_open",
+    "RC-P36-031-verifier-workbench-can-preserve-boundary-but-lacks-decision-cell-review-surface": "three_cell_review_surface_and_actions_contract_repaired_human_action_not_performed",
+    "root_causes_fully_closed_by_T07": 0
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "automatic_new_research_calls": 0,
+    "live_business_writes": 0,
+    "human_review_writes": 0,
+    "paid_runs": 0
+  },
+  "known_boundary": "T07 proves deterministic presentation, exact lineage, graph drill-down and review-target consumption only. It does not prove paid Writer quality, new facts, investment Alpha, browser human acceptance, S3 exact-live readiness, release or production.",
+  "next_action": "S3-T08-DETERMINISTIC-THREE-CELL-INTEGRATION-AND-EXACT-LIVE-ADMISSION-READINESS"
+}

@@ -1,0 +1,123 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_specialist_v6_fresh_live_execution_result_v1_0",
+  "execution_id": "S3-T09-OWNER-GRADE-V3-SPECIALIST-V6-FRESH-EXACT-LIVE-EXECUTION-R1",
+  "executed_at": "2026-07-23T15:54:30+08:00",
+  "status": "terminal_failed_second_specialist_fact_support_graph_context_authority_violation_admission_consumed_no_retry",
+  "authority": {
+    "user_instruction": "继续修复，然后跑完真实调用看看效果",
+    "zero_call_repair_and_fresh_exact_execution_authorized": true,
+    "automatic_retry_fallback_patch_normalization_or_rerun_authorized": false,
+    "paired_comparison_human_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_specialist_v6_research_lead_v3_writer_v2_exact_admission_v1_0.json",
+  "source_issuance_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_specialist_v6_fresh_exact_admission_issuance_v1_0.json",
+  "runtime_project_os_preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/specialist_v6_r1_project_os_preflight.json",
+  "runtime_preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/specialist_v6_r1_live_execution_preflight.json",
+  "runtime_preflight_sha256": "f9eca52395d185a547469e9a0b3fbe08e87f42f2b5ed747b75377ec78b86a35e",
+  "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/specialist_v6_r1_live_execution_result.json",
+  "runtime_result_sha256": "5974fb535a1ed975f7da748d7b64b3a2c4528aee7ff73b5dd32ecac20d0053c0",
+  "identity": {
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-specialist-v6-research-lead-v3-writer-v2-exact-admission-r1",
+    "admission_digest": "1bcd6174896646b3d6ef220bffab29ba3e1039a333705daae981a28893ba6dcd",
+    "work_unit_id": "wu_p02_5_810ed409df27c6bb3a1b372e",
+    "attempt_id": "attempt_fin01_d0815e4b459dc8d9d264e323",
+    "research_run_id": "research_run_fin01_4f66728b8bd8b8c502a24b07",
+    "input_digest": "6f1ffec035ec89dc4a5b7fddef0f3a147f4d70042c63cf8875e6dc9d4b7be6d9"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:domain_specialist:value_and_profit_capture",
+    "artifact_count": 0,
+    "orphaned_run": false,
+    "event_types": [
+      "WORK_UNIT_STARTED",
+      "ATTEMPT_STARTED",
+      "SCHEDULER_LEASE_ACQUIRED",
+      "RESEARCH_RUN_STARTED",
+      "RESEARCH_RUN_PROVIDER_OUTPUT_CAPTURED",
+      "RESEARCH_RUN_FAILED",
+      "ATTEMPT_FAILED",
+      "WORK_UNIT_FAILED"
+    ]
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v6",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v3",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v2",
+    "model_calls": 4,
+    "provider_calls": 4,
+    "network_calls": 4,
+    "input_tokens": 14162,
+    "output_tokens": 2143,
+    "total_tokens": 16305,
+    "estimated_cost_usd": 0.00758315,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "rerun_count": 0
+  },
+  "provider_output_capture": {
+    "policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+    "capture_count": 4,
+    "restricted_readback_count": 4,
+    "assistant_final_output_text_replayable": true,
+    "raw_provider_HTTP_envelope_persisted": false,
+    "private_reasoning_persisted": false,
+    "credential_value_persisted": false
+  },
+  "specialist_v6_repair_effect": {
+    "first_cell_three_segments_passed": true,
+    "first_cell_claim_scope_local_assembly_executed": true,
+    "prior_FY2025_FY_to_FY2025_provider_normalization_repeated": false,
+    "provider_emitted_deterministic_scope_fields": false,
+    "strict_scope_validator_preserved": true,
+    "value_profit_claim_segment_reached": false,
+    "writer_v2_reached": false,
+    "verifier_reached": false,
+    "research_product_delivered": false
+  },
+  "earliest_failure": {
+    "stage": "domain_specialist:value_and_profit_capture:facts_explanation_and_terminal",
+    "failure_code": "s3_bounded_segmented_specialist_contract_invalid:value_and_profit_capture:facts_explanation_and_terminal:s3_bounded_specialist_fact_authority_invalid:value_and_profit_capture",
+    "restricted_replay_findings": {
+      "fact_count": 3,
+      "support_ref_count": 6,
+      "authorized_numeric_ref_count": 5,
+      "authorized_evidence_ref_count": 0,
+      "candidate_ref_count": 0,
+      "graph_context_ref_count": 1,
+      "unknown_ref_count": 0,
+      "all_support_refs_authorized_as_fact": false
+    },
+    "interpretation": "One Graph context ref was emitted as Fact support authority. The facts segment exposes a global model view but lacks a field-local exact Evidence-or-Numeric support_refs contract comparable to the later context_refs contract."
+  },
+  "read_only_audit_integrity": {
+    "service_backed_capture_read_changed_target_sqlite_physical_digest": true,
+    "logical_work_unit_attempt_run_artifact_counts_after_audit": [
+      13,
+      13,
+      13,
+      13
+    ],
+    "run_event_count_after_audit": 8,
+    "business_state_or_artifact_created_by_audit": false,
+    "database_sha256_after_audit": "dedd7e2e62b9a4092cfd2af7966554a9c5313f185b4dc67c555a7b6c4de60cd8",
+    "object_tree_sha256_after_audit": "aeaf8eade612234e29ce2b571494026db308c7e24fc0435e38b32b5b3f55f608",
+    "disposition": "record_RC_P36_038_recurrence_and_use_direct_read_only_or_clone_audit_only"
+  },
+  "acceptance": {
+    "specialist_v6_zero_call_contract": "pass",
+    "specialist_v6_live_scope_assembly": "partial_pass_first_cell_only",
+    "fresh_complete_agent_artifact_proof": "fail_no_artifacts",
+    "owner_grade_research_product_proof": "fail_no_deliverable",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-SPECIALIST-FACT-SUPPORT-FIELD-LOCAL-AUTHORITY-ZERO-CALL-ROOT-CAUSE-DECISION"
+}

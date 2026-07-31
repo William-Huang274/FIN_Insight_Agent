@@ -1,0 +1,124 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_verifier_typed_scoped_ref_l2_recovery_and_l1_semantic_findings_disposition_v1_0",
+  "decision_id": "S3-T09-VERIFIER-TYPED-SCOPED-REF-L2-RECOVERY-AND-L1-SEMANTIC-FINDINGS-DISPOSITION-ZERO-CALL",
+  "decided_at": "2026-07-25T18:20:00+08:00",
+  "status": "pass_zero_call_typed_ref_contract_converged_L1_hard_integrity_not_confirmed_quality_findings_carried_forward_fresh_proof_decision_pending",
+  "authority": {
+    "user_instruction": "可以",
+    "authorized_scope": "the previously proposed zero-call typed-ref recovery and evidence-backed L1 finding disposition",
+    "model_provider_network_source_or_tool_execution_authorized": false,
+    "captured_output_rewrite_promotion_or_artifact_synthesis_authorized": false,
+    "fresh_exact_admission_issuance_or_consumption_authorized": false,
+    "second_exact_live_authorized": false,
+    "paired_comparison_owner_acceptance_T10_S4_release_or_production_authorized": false
+  },
+  "source_evidence": {
+    "failed_live_result_ref": "configs/releases/fin_ia_0_1_s3_t09_layered_acceptance_final_exact_live_execution_result_v1_0.json",
+    "restricted_read_only_audit_script_ref": "scripts/releases/audit_fin_ia_0_1_s3_t09_verifier_typed_scoped_ref_and_semantic_findings_zero_call.py",
+    "runtime_contract_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "scoped_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+    "layered_acceptance_standard_ref": "configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json",
+    "research_run_id": "research_run_fin01_db6800815317852334584e51"
+  },
+  "L2_recovery": {
+    "typed_ref_contract_converged": true,
+    "provider_request_representation": "CellScopedResearchIdentityPolicy.wire_schema(claim)",
+    "local_validator_representation": "exact typed scoped Claim refs validated against the canonical scoped identity surface",
+    "fake_provider_contract_source": "the same required_output_schema emitted by the request builder",
+    "captured_ref_count": 7,
+    "captured_unique_ref_count": 5,
+    "captured_refs_all_known": true,
+    "raw_unknown_wrong_kind_wrong_cell_or_duplicate_ref_behavior": "typed fail closed",
+    "identity_guessing_normalization_fuzzy_match_or_silent_rewrite": false,
+    "historical_output_v1_v2_behavior_changed": false
+  },
+  "L1_review": {
+    "hard_integrity_violation_confirmed": false,
+    "scope_digest_mismatch": {
+      "disposition": "not_substantiated_model_finding",
+      "acceptance_layer": "deterministic_owned_check",
+      "evidence": "Writer scope digests are locally derived from each validated Claim scope and the captured finding supplied no contradictory canonical digest."
+    },
+    "unresolved_cross_cell_conflict": {
+      "disposition": "confirmed_but_safely_disclosed",
+      "acceptance_layer": "L3_analytical_quality",
+      "unresolved_conflict_count": 2,
+      "evidence": "The Lead retained unresolved status and the Writer retained every upstream cannot-support boundary in limitations; no supported conclusion was fabricated."
+    },
+    "unattributed_company_total_margins": {
+      "disposition": "confirmed_analytical_gap_without_false_attribution",
+      "acceptance_layer": "L3_analytical_quality",
+      "evidence": "Both margin renderings explicitly state company-total scope and do not attribute the values to AI infrastructure, Data Center, accelerator or a segment."
+    },
+    "quality_findings_carried_forward": [
+      "unresolved_cross_cell_conflict",
+      "unattributed_company_total_margins"
+    ],
+    "future_verifier_guidance": {
+      "deterministic_owned": [
+        "lead_and_writer_digest_binding",
+        "claim_scope_digest_derivation",
+        "typed_scoped_reference_membership"
+      ],
+      "hard_integrity_examples": [
+        "unsupported material claim",
+        "unsupported numeric attribution",
+        "claim scope overreach",
+        "omitted material counterevidence",
+        "changed epistemic qualification"
+      ],
+      "quality_finding_examples": [
+        "explicitly disclosed unresolved conflict",
+        "company-total metric retained with explicit non-attribution"
+      ]
+    }
+  },
+  "historical_terminal_truth": {
+    "work_unit_attempt_research_run_states": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "artifact_count": 0,
+    "rewritten": false,
+    "captured_output_promoted_or_synthesized": false
+  },
+  "verification_required": {
+    "focused_typed_ref_contract_tests": true,
+    "existing_output_v4_nullable_owner_state_machine_tests": true,
+    "existing_cross_cell_identity_and_profile_v4_full_fake_path": true,
+    "relevant_S3_T09_regression": true,
+    "project_os_preflight_before_any_future_paid_run": true
+  },
+  "verification_observed": {
+    "restricted_read_only_audit": "pass",
+    "focused_contract_regression": "62 passed",
+    "adjacent_specialist_lead_writer_and_layered_regression": "72 passed",
+    "all_S3_T09_single_batch": "inconclusive_external_timeout_after_300_seconds_no_assertion_summary",
+    "timed_out_pytest_process_verified_and_stopped": true,
+    "program_backlog_strict_duplicate_key_parse": "pass_after_lossless_historical_key_prefixing",
+    "project_os_next_scope_preflight": "pass"
+  },
+  "stage_decision": {
+    "RC_P36_054": "zero_call_L2_repaired_and_L1_findings_dispositioned_fixture_regression_pending",
+    "RC_P36_037": "current_coherent_nine_artifact_product_still_missing",
+    "S3_T09": "blocked_pending_fresh_proof_decision_and_future_exact_live_product",
+    "S3_T10": "not_entered",
+    "S4": "blocked_by_S3",
+    "release_or_production": "not_authorized"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_live_runs": 0,
+    "new_business_artifacts": 0,
+    "captured_output_promotions": 0,
+    "paired_comparisons": 0,
+    "owner_acceptance_writes": 0
+  },
+  "next_action": "S3-T09-LAYERED-VERIFIER-TYPED-REF-AND-FINDING-DISPOSITION-FRESH-AGENT-PROOF-DECISION"
+}

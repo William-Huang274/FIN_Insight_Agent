@@ -1,0 +1,116 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t10_d07b_nvda_initial_calibration_policy_v2_0",
+  "policy_ref": "fin01.d07b.NVDA_initial_calibration:v2",
+  "status": "owner_accepted_NVDA_R2_initial_calibration_not_universal_or_cross_case",
+  "accepted_at": "2026-07-26T14:08:51+08:00",
+  "supersedes": {
+    "policy_ref": "fin01.d07b.NVDA_initial_hypothesis:v1",
+    "source_ref": "configs/releases/fin_ia_0_1_s3_t08_deterministic_integration_and_exact_live_readiness_v1_0.json#D07B_NVDA_initial_policy",
+    "historical_policy_or_run_rewritten": false
+  },
+  "authority": {
+    "owner_instruction": "放行",
+    "owner_acceptance_authorized": true,
+    "NVDA_R2_and_S3_closeout_authorized": true,
+    "S4_case_execution_model_provider_network_source_or_tool_authorized": false,
+    "qualified_senior_R3_Alpha_release_or_production_authorized": false
+  },
+  "scope": {
+    "case": "NVDA",
+    "program_cells": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "maturity": "R2_calibrated_research_output",
+    "universal_or_cross_case_calibration_claimed": false
+  },
+  "owner_accepted_evidence": {
+    "assessment_ref": "configs/releases/fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_final_exact_live_and_paired_assessment_v1_0.json",
+    "assessment_sha256": "2ee18e79fed173b1f5d6120bd0860a8d8227c67b8c9b904c47c3319982b37f92",
+    "research_run_id": "research_run_fin01_5322ebc0e99fe4c5f00f3526",
+    "artifact_count": 9,
+    "deterministic_baseline_research_run_id": "research_run_fin01_fac094aac24174903915016b",
+    "four_layer_results": [
+      "L1_pass",
+      "L2_pass",
+      "L3_pass_agent_materially_exceeds_deterministic_baseline_on_actionability",
+      "L4_pass_with_carried_quality_debt"
+    ]
+  },
+  "calibrated_cell_policy": [
+    {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "accepted_policy": "Issuer facts may support issuer-scoped observations, but durable company-specific demand requires promoted issuer conversion evidence plus customer deployment or capex persistence and a counterindicator; otherwise preserve typed cannot-infer.",
+      "accepted_NVDA_result": "cannot_infer_pending_issuer_conversion_persistence_and_pull_forward_counterindicator",
+      "S4_revalidation_required": true
+    },
+    {
+      "program_cell_id": "value_and_profit_capture",
+      "accepted_policy": "Company-total rows support only company-total metrics; product segment incremental-profit and cross-chain allocation require exact scoped financial authority and may not be inferred from graph or company-total context.",
+      "accepted_NVDA_result": "company_total_margin_fact_supported_product_and_incremental_profit_cannot_infer",
+      "S4_revalidation_required": true
+    },
+    {
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "accepted_policy": "Graph paths remain navigation context; a binding bottleneck probability or financial impact requires official-source and Numeric authority, and unresolved conflict must be disclosed rather than averaged away.",
+      "accepted_NVDA_result": "packaging_dependency_navigation_hypothesis_and_independent_counterevidence_gap",
+      "S4_revalidation_required": true
+    }
+  ],
+  "version_2_policy_additions": [
+    "Claim-to-Fact support is expanded and validated within the exact program Cell before downstream use.",
+    "Cross-Cell Claim and what-would-change identities use typed scoped references.",
+    "Ordinary narrative length is L3 or L4 quality debt when hard byte storage security and safety envelopes pass.",
+    "Verifier protocol findings are retained and routed by layer; only L1 or unrecoverable L2 defects terminalize.",
+    "Owner acceptance is bound to exact Artifact versions and object digests and is not release qualification."
+  ],
+  "accepted_quality_debt": [
+    {
+      "layer": "L4_user_fit_and_delivery",
+      "finding": "Research Lead variant_view reached 531 characters against the 512 quality ceiling.",
+      "S4_disposition": "extend_with_concise_profile_and_revalidate"
+    },
+    {
+      "layer": "L4_user_fit_and_delivery",
+      "finding": "cross_cell_dependencies and remaining_gaps exceeded the 320 narrative target.",
+      "S4_disposition": "extend_with_controlled_editing_without_fact_change"
+    },
+    {
+      "layer": "L4_user_fit_and_delivery",
+      "finding": "Chinese report delivery still contains English limitation text and can be normalized for review efficiency.",
+      "S4_disposition": "extend_delivery_normalization"
+    }
+  ],
+  "S4_calibration_boundary": {
+    "case_scope": [
+      "NVDA",
+      "DELL",
+      "MU"
+    ],
+    "required": [
+      "revalidate NVDA under qualified-senior R3 criteria without reusing R2 owner acceptance as R3 evidence",
+      "run exact DELL and MU R2 cases under separately authorized admissions",
+      "measure false-promotion and over-conservative cannot-infer samples",
+      "compare versioned policy behavior across cases",
+      "prove no NVDA fact or mechanism hardcode leaks into DELL or MU"
+    ],
+    "deferred_to": "S4_three_case_transfer_and_human_calibration"
+  },
+  "non_inflation": {
+    "NVDA_R2": true,
+    "qualified_senior_R3": false,
+    "Alpha": false,
+    "release_qualified": false,
+    "production_ready": false
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v5_fresh_exact_admission_issuance_v1_0",
+  "issuance_id": "S3-T09-OWNER-GRADE-V3-SEGMENTED-TRANSPORT-V5-FRESH-EXACT-ADMISSION-ISSUANCE-R1",
+  "issued_at": "2026-07-23T09:50:00+08:00",
+  "status": "issued_unconsumed_zero_call_preflight_pass",
+  "authority": {
+    "user_instruction": "授权你继续往下做，修完做真实运行看是否能通过",
+    "fresh_transport_v5_exact_admission_issuance_authorized": true,
+    "zero_call_prepare_and_preflight_authorized": true,
+    "admission_consumption_and_exact_once_execution_authorized": true,
+    "automatic_retry_fallback_repair_or_rerun_authorized": false,
+    "paired_comparison_owner_acceptance_T10_S4_release_or_production_authorized": false
+  },
+  "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v5_fresh_agent_proof_decision_v1_0.json",
+  "issued_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_segmented_transport_v5_exact_admission_v1_0.json",
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-segmented-transport-v5-exact-admission-r1",
+    "admission_digest": "ac79c81490572b43752e01a6fa05240ef6a12ec68753f1db8fafc867c8f64559",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-segmented-transport-v5-live-validation-r1",
+    "fresh_identity": true,
+    "execution_enabled": true,
+    "consumed": false,
+    "execution_started": false
+  },
+  "exact_binding": {
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "as_of": "2026-07-21T00:00:00Z",
+    "input_head_digest": "c9867b54b86cf17982b4cebfaf0c0ebcae2a6f46d894ff82dbb643f693c9836d",
+    "input_digest": "007f438bc94290fc3da719812138ecef7a6afeba688b8137b54ff089c4a3c7a1",
+    "preparation_digest": "c015a67483d88cb08650adbb9a51f2bf9e8fde4283ea5fdff74cef8fea886ec8",
+    "predicted_work_unit_id": "wu_p02_5_713cf8d315bcbed10391ff93",
+    "predicted_attempt_id": "attempt_fin01_243aa3b41c58d7f67d7fd207",
+    "predicted_research_run_id": "research_run_fin01_1736461952f90e35f104f478",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v5",
+    "provider_output_capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+    "reasoning_effort": "none",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3"
+  },
+  "execution_envelope": {
+    "maximum_semantic_model_calls": 12,
+    "maximum_provider_calls": 12,
+    "maximum_network_calls": 12,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "specialist_segment_output_tokens": [
+      1600,
+      1200,
+      1400
+    ],
+    "specialist_total_output_tokens_each": 4200,
+    "lead_max_output_tokens": 1200,
+    "writer_max_output_tokens": 1400,
+    "verifier_max_output_tokens": 1000,
+    "maximum_output_tokens_total": 16200,
+    "output_only_cost_ceiling_usd": 0.014094,
+    "input_cache_miss_pricing_units_under_total_cap": 197485,
+    "maximum_total_cost_usd": 0.1,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "automatic_retry_repair_fallback_or_rerun_allowed": false,
+    "first_credible_failure": "terminal_fail_closed_stop",
+    "new_credible_failure_disposition": "stop_without_retry_fallback_patch_or_hidden_rerun"
+  },
+  "product_proof_target": {
+    "paired_comparison_and_owner_acceptance_remain_separate": true,
+    "provider_output_capture_count_on_full_success": 12,
+    "required_artifact_family_count": 9,
+    "required_logical_node_count": 6,
+    "required_output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "success_is_not_transport_or_first_segment_only": true,
+    "unsupported_claims_must_remain_bounded_or_cannot_infer": true,
+    "verifier_false_green_forbidden": true,
+    "what_would_change_must_remain_actionable": true
+  },
+  "zero_call_preflight": {
+    "project_os_scoped_preflight": "pass_zero_open_full_chain_blockers",
+    "frozen_decision_payload_and_digest_recheck": "pass_exact",
+    "exact_identity_input_transport_capture_policy_budget_and_digest_match": true,
+    "canonical_work_unit_count_before_and_after": [
+      8,
+      8
+    ],
+    "canonical_attempt_count_before_and_after": [
+      8,
+      8
+    ],
+    "canonical_research_run_count_before_and_after": [
+      8,
+      8
+    ],
+    "canonical_artifact_count_before_and_after": [
+      13,
+      13
+    ],
+    "fresh_predicted_work_unit_attempt_run_absent": true,
+    "distinct_from_all_prior_agent_and_baseline_runs": true,
+    "prior_research_run_nonreuse_count": 8,
+    "baseline_output_body_exposed_to_agent": false,
+    "baseline_body_or_artifact_is_provider_input": false,
+    "schema_and_factory_validation": "pass_provider_callback_not_invoked",
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "provider_health_probe_performed": false,
+    "transport_retry_environment_currently_zero": true,
+    "transport_retry_environment_requirement": "must_equal_0_before_any_execution_command",
+    "canonical_database_sha256": "41bda156e5aea6271787520b07dd5a0021e9b74f1570058477dbfd94305c7e19",
+    "canonical_object_tree_sha256": "cec2324ac32247dc9fe2bb17773bd2fd2dcf1bd50906106302de449726de7d88"
+  },
+  "credential_hygiene": {
+    "credential_source": "process_environment",
+    "plaintext_value_recorded": false,
+    "credential_material_persisted_in_project_artifacts": false,
+    "credential_material_staged_or_tracked": false
+  },
+  "observed_counts": {
+    "new_admissions": 1,
+    "admission_consumptions": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "artifacts_created": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "target_canonical_writes": 0,
+    "target_object_writes": 0,
+    "paired_comparisons": 0,
+    "human_review_writes": 0,
+    "paid_runs": 0
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-SEGMENTED-TRANSPORT-V5-FRESH-EXACT-LIVE-EXECUTION"
+}

@@ -1,0 +1,271 @@
+{
+  "schema_version": "fin_ia_0_1_s3_to_s4_early_delivery_carry_forward_manifest_v1_0",
+  "manifest_id": "FIN-0.1-S3-TO-S4-EARLY-DELIVERY-CARRY-FORWARD-R1",
+  "status": "final_frozen_by_S3_T10_owner_review_and_closeout",
+  "frozen_at": "2026-07-26T14:08:51+08:00",
+  "contract_ref": "configs/releases/fin_ia_0_1_cross_slice_early_delivery_carry_forward_contract_v1_0.json",
+  "owner_acceptance": {
+    "instruction": "放行",
+    "T09_owner_accepted": true,
+    "S3_T10_closeout_authorized": true,
+    "qualified_senior_R3_Alpha_release_or_production_authorized": false
+  },
+  "source_product": {
+    "assessment_ref": "configs/releases/fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_final_exact_live_and_paired_assessment_v1_0.json",
+    "assessment_sha256": "2ee18e79fed173b1f5d6120bd0860a8d8227c67b8c9b904c47c3319982b37f92",
+    "research_run_id": "research_run_fin01_5322ebc0e99fe4c5f00f3526",
+    "artifact_count": 9,
+    "deterministic_baseline_research_run_id": "research_run_fin01_fac094aac24174903915016b",
+    "D07B_policy_ref": "configs/releases/fin_ia_0_1_s3_t10_d07b_nvda_initial_calibration_policy_v2_0.json"
+  },
+  "items": [
+    {
+      "capability_id": "s3_t09_provider_output_contract_and_transport",
+      "capability_domain": "provider_output_contract_and_transport",
+      "originally_planned_for": "S3-T09_exact_live",
+      "delivered_or_advanced_in": "S3-T09",
+      "maturity_state": "live_complete",
+      "exact_status": "all nine Specialist segments Research Lead Memo Writer and Verifier completed under output-v4 profile-v4 with 12 ok-stop calls and no retry",
+      "evidence_refs": [
+        "configs/releases/fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_final_exact_live_and_paired_assessment_v1_0.json",
+        "reports/model_runs/20260725_fin_ia_0_1_s3_t09_layered_verifier_final_exact_live_r1.md"
+      ],
+      "root_cause_refs": [
+        "RC-P36-039",
+        "RC-P36-040",
+        "RC-P36-047",
+        "RC-P36-049"
+      ],
+      "known_gaps": [
+        "model behavior is proven only for the NVDA R2 exact input",
+        "three-case transfer remains unproven"
+      ],
+      "remaining_acceptance": [
+        "revalidate exact contracts for DELL and MU inputs in S4"
+      ],
+      "reuse_instruction": "reuse current contract generation and transport unchanged unless a new case exposes changed information",
+      "later_slice_disposition": "revalidate_for_new_case_or_candidate",
+      "do_not_repeat_without_new_evidence": true
+    },
+    {
+      "capability_id": "s3_t09_atomic_terminalization_usage_and_capture",
+      "capability_domain": "terminalization_usage_and_restricted_answer_capture",
+      "originally_planned_for": "S3-T09_exact_live_governance",
+      "delivered_or_advanced_in": "S3-T09",
+      "maturity_state": "live_complete",
+      "exact_status": "WorkUnit Attempt and ResearchRun succeeded consistently; 12 usage receipts and restricted captures are bound; orphan signal retry fallback replay relaunch and rerun are zero",
+      "evidence_refs": [
+        "configs/releases/fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_final_exact_live_and_paired_assessment_v1_0.json",
+        "configs/releases/fin_ia_0_1_s3_t09_atomic_terminalization_and_typed_verifier_state_machine_zero_call_implementation_v1_0.json"
+      ],
+      "root_cause_refs": [
+        "RC-P38-050",
+        "RC-P38-053"
+      ],
+      "known_gaps": [
+        "production process supervision and multi-host operations are outside S3"
+      ],
+      "remaining_acceptance": [
+        "reuse exact-once supervision for each separately authorized S4 case"
+      ],
+      "reuse_instruction": "reuse as the canonical exact-run supervision and terminalization path",
+      "later_slice_disposition": "reuse_as_is",
+      "do_not_repeat_without_new_evidence": true
+    },
+    {
+      "capability_id": "s3_t09_epistemic_fact_support_and_context_authority",
+      "capability_domain": "epistemic_state_fact_support_and_context_authority",
+      "originally_planned_for": "S3-T06_through_S3-T10",
+      "delivered_or_advanced_in": "S3-T09_and_S3-T10",
+      "maturity_state": "owner_accepted",
+      "exact_status": "NVDA company-total margins are fact-supported while demand durability product profit attribution bottleneck probability and impact remain typed cannot-infer; candidate and graph context are not promoted",
+      "evidence_refs": [
+        "configs/releases/fin_ia_0_1_s3_t10_d07b_nvda_initial_calibration_policy_v2_0.json",
+        "configs/releases/fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_final_exact_live_and_paired_assessment_v1_0.json"
+      ],
+      "root_cause_refs": [
+        "RC-P36-037",
+        "RC-P36-048"
+      ],
+      "known_gaps": [
+        "owner acceptance is NVDA R2 only",
+        "false-promotion and over-conservative samples require three-case calibration"
+      ],
+      "remaining_acceptance": [
+        "S4 exact NVDA DELL and MU policy comparison"
+      ],
+      "reuse_instruction": "reuse the policy and preserve cannot-infer; do not copy NVDA facts into new cases",
+      "later_slice_disposition": "revalidate_for_new_case_or_candidate",
+      "do_not_repeat_without_new_evidence": true
+    },
+    {
+      "capability_id": "s3_t09_cell_scoped_identity_and_alias_expansion",
+      "capability_domain": "cell_scoped_identity_alias_and_local_typed_expansion",
+      "originally_planned_for": "S3-T09_owner_grade_contract_repair",
+      "delivered_or_advanced_in": "S3-T09",
+      "maturity_state": "live_complete",
+      "exact_status": "typed program-Cell Claim and what-would-change references plus same-Cell ClaimFactLink expansion completed with zero alias or source-ref residue",
+      "evidence_refs": [
+        "configs/releases/fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_fresh_agent_proof_decision_v1_0.json",
+        "configs/releases/fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_final_exact_live_and_paired_assessment_v1_0.json"
+      ],
+      "root_cause_refs": [
+        "RC-P36-048",
+        "RC-P36-054"
+      ],
+      "known_gaps": [
+        "new-case local identity surfaces must be regenerated from their own Cells"
+      ],
+      "remaining_acceptance": [
+        "S4 verifies no cross-case or cross-Cell collision"
+      ],
+      "reuse_instruction": "reuse policy code and regenerate exact local surfaces per case",
+      "later_slice_disposition": "revalidate_for_new_case_or_candidate",
+      "do_not_repeat_without_new_evidence": true
+    },
+    {
+      "capability_id": "s3_t09_capacity_and_layered_quality_policy",
+      "capability_domain": "token_byte_aggregate_and_per_field_capacity",
+      "originally_planned_for": "S3-T09_runtime_alignment",
+      "delivered_or_advanced_in": "S3-T09",
+      "maturity_state": "live_complete",
+      "exact_status": "hard byte storage security and safety envelopes passed; ordinary narrative targets produced three retained non-terminal L4 findings",
+      "evidence_refs": [
+        "configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json",
+        "configs/releases/fin_ia_0_1_s3_t09_layered_acceptance_runtime_alignment_zero_call_implementation_v1_0.json",
+        "configs/releases/fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_final_exact_live_and_paired_assessment_v1_0.json"
+      ],
+      "root_cause_refs": [
+        "RC-P36-040",
+        "RC-P36-047"
+      ],
+      "known_gaps": [
+        "variant_view reached 531 characters",
+        "cross-cell dependency and gap narratives exceeded the 320 target",
+        "Chinese delivery includes English limitation text"
+      ],
+      "remaining_acceptance": [
+        "S4 concise profile and delivery normalization without fact-changing rewrite"
+      ],
+      "reuse_instruction": "reuse hard envelopes and extend quality editing as a separate delivery layer",
+      "later_slice_disposition": "extend",
+      "do_not_repeat_without_new_evidence": true
+    },
+    {
+      "capability_id": "s3_t09_failure_telemetry_and_root_cause_lineage",
+      "capability_domain": "failure_telemetry_replay_and_root_cause_lineage",
+      "originally_planned_for": "S3-T09_exact_live_governance",
+      "delivered_or_advanced_in": "S3-T09",
+      "maturity_state": "live_complete",
+      "exact_status": "historical failures remain immutable and typed; final success is separately bound without capture rewrite synthesis or hidden rerun",
+      "evidence_refs": [
+        "docs/project_os/root_cause_issue_ledger.jsonl",
+        "docs/project_os/capability_status_ledger.jsonl",
+        "docs/worklog/product_strategy/398_fin_0_1_s3_t09_final_exact_live_and_paired_assessment.md"
+      ],
+      "root_cause_refs": [
+        "RC-P38-050",
+        "RC-P38-053"
+      ],
+      "known_gaps": [
+        "failure replay remains restricted and is not a business Artifact source"
+      ],
+      "remaining_acceptance": [
+        "preserve the same typed failure discipline in S4"
+      ],
+      "reuse_instruction": "reuse ledgers telemetry state machine and immutable historical truth",
+      "later_slice_disposition": "reuse_as_is",
+      "do_not_repeat_without_new_evidence": true
+    },
+    {
+      "capability_id": "s3_t09_writer_verifier_and_nine_artifact_lineage",
+      "capability_domain": "writer_verifier_and_artifact_lineage",
+      "originally_planned_for": "S3-T07_through_S3-T10",
+      "delivered_or_advanced_in": "S3-T09_and_S3-T10",
+      "maturity_state": "owner_accepted",
+      "exact_status": "one coherent exact Run contains all nine current-version Artifact families with verified object digests and an accept-for-internal-review Verifier decision",
+      "evidence_refs": [
+        "configs/releases/fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_final_exact_live_and_paired_assessment_v1_0.json"
+      ],
+      "root_cause_refs": [
+        "RC-P36-037",
+        "RC-P36-049",
+        "RC-P36-051",
+        "RC-P36-052",
+        "RC-P36-054"
+      ],
+      "known_gaps": [
+        "owner acceptance is not qualified-senior R3 or external delivery acceptance"
+      ],
+      "remaining_acceptance": [
+        "S4 qualified-senior review and three-case transfer"
+      ],
+      "reuse_instruction": "reuse exact Artifact families and digest validation; extend reviewer surface only through versioned contracts",
+      "later_slice_disposition": "extend",
+      "do_not_repeat_without_new_evidence": true
+    },
+    {
+      "capability_id": "s3_t09_paired_baseline_owner_review_and_quality_findings",
+      "capability_domain": "paired_baseline_owner_review_and_quality_findings",
+      "originally_planned_for": "S3-T09_and_S3-T10",
+      "delivered_or_advanced_in": "S3-T09_and_S3-T10",
+      "maturity_state": "owner_accepted",
+      "exact_status": "same-input-head distinct-run comparison found equivalent truth boundaries and materially better Agent actionability and cross-Cell synthesis; owner accepted with explicit L4 debt",
+      "evidence_refs": [
+        "configs/releases/fin_ia_0_1_s3_t09_paired_deterministic_baseline_materialization_v1_0.json",
+        "configs/releases/fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_final_exact_live_and_paired_assessment_v1_0.json",
+        "configs/releases/fin_ia_0_1_s3_t10_d07b_nvda_initial_calibration_policy_v2_0.json"
+      ],
+      "root_cause_refs": [
+        "RC-P36-036",
+        "RC-P36-037"
+      ],
+      "known_gaps": [
+        "delivery concision favors the deterministic baseline",
+        "owner acceptance is limited to NVDA R2"
+      ],
+      "remaining_acceptance": [
+        "S4 owner calibration across NVDA DELL and MU",
+        "qualified-senior R3 assessment remains separate"
+      ],
+      "reuse_instruction": "reuse the paired method; establish new per-case baselines and never expose baseline body to the Agent",
+      "later_slice_disposition": "revalidate_for_new_case_or_candidate",
+      "do_not_repeat_without_new_evidence": true
+    }
+  ],
+  "S4_entry_handoff": {
+    "case_scope": [
+      "NVDA",
+      "DELL",
+      "MU"
+    ],
+    "required_dispositions": {
+      "NVDA": "revalidate_for_qualified_senior_R3_without_reusing_R2_owner_acceptance",
+      "DELL": "new_exact_R2_case_and_policy_transfer_validation",
+      "MU": "new_exact_R2_case_and_policy_transfer_validation"
+    },
+    "completed_capability_rebuild_forbidden_without": [
+      "changed_requirement",
+      "new_failure",
+      "new_evidence"
+    ],
+    "manifest_consumption_record_required": true
+  },
+  "non_inflation": {
+    "S3_NVDA_R2_owner_accepted": true,
+    "qualified_senior_R3": false,
+    "Alpha": false,
+    "release_qualified": false,
+    "production_ready": false
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0,
+    "owner_acceptance_records": 1
+  }
+}

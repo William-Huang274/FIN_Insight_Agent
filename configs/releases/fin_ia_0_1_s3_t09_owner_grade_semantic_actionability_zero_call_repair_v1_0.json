@@ -1,0 +1,100 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_semantic_actionability_zero_call_repair_v1_0",
+  "result_id": "S3-T09-OWNER-GRADE-SEMANTIC-ACTIONABILITY-ZERO-CALL-REPAIR-R1",
+  "completed_at": "2026-07-22T11:30:00+08:00",
+  "status": "pass_zero_call_v3_contract_and_earliest_owner_fixtures_verified_fresh_agent_proof_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "repair_implementation_authorized": true,
+    "baseline_materialization_authorized": false,
+    "new_admission_or_agent_proof_authorized": false,
+    "model_provider_network_source_or_tool_execution_authorized": false,
+    "paired_comparison_or_human_review_authorized": false,
+    "T10_S4_release_or_production_authorized": false
+  },
+  "root_cause_binding": {
+    "issue_id": "RC-P36-037-s3-owner-grade-semantic-actionability-and-verifier-false-negative-gap",
+    "decision_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_semantic_actionability_zero_call_repair_decision_v1_0.json",
+    "earliest_faulty_surface": "specialist_outputs[value_and_profit_capture].judgment_layer",
+    "repair_status": "implemented_and_deterministic_fixture_proven_live_agent_proof_pending",
+    "historical_v2_artifacts_rewritten": false
+  },
+  "implementation": {
+    "owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "three_cell_output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "claim_card_contract_ref": "fin01.s3.owner_grade_claim_card:v1",
+    "what_would_change_contract_ref": "fin01.s3.actionable_what_would_change:v1",
+    "specialist": [
+      "typed_epistemic_status_support_fact_context_and_scope_claim_cards",
+      "company_total_numeric_cannot_authorize_segment_product_or_cross_chain_claims",
+      "candidate_and_graph_context_cannot_authorize_supported_claims",
+      "actionable_source_metric_rule_threshold_time_transition_stop_tasks"
+    ],
+    "lead": [
+      "recomputed_evidence_numeric_and_claim_state_counts",
+      "terminal_state_separated_from_fact_presence",
+      "claim_and_WWC_identity_bound_synthesis"
+    ],
+    "writer": [
+      "no_new_claims_or_tasks",
+      "exact_status_scope_digest_and_qualification_preservation",
+      "top_level_summary_and_limitations_are_deterministic_upstream_projections",
+      "graph_terminology_guard",
+      "source_and_tool_calls_zero"
+    ],
+    "verifier": [
+      "full_authority_specialist_claim_lead_writer_bodies",
+      "typed_finding_owners_and_refs",
+      "local_semantic_issue_or_nonpass_finding_forbids_false_green"
+    ],
+    "existing_runtime_registry_writer_store_families_reused": true,
+    "existing_artifact_type_count": 9,
+    "stage_output_token_budgets": {
+      "specialist": 2200,
+      "lead": 1200,
+      "writer": 1400,
+      "verifier": 1000,
+      "aggregate": 10200
+    }
+  },
+  "deterministic_proof": {
+    "positive_six_node_fixture": "pass_terminal_success_nine_existing_artifact_types",
+    "negative_fixture_count": 10,
+    "all_negative_fixtures_failed_at_expected_earliest_owner": true,
+    "negative_failure_codes": [
+      "s3_owner_grade_claim_scope_exceeds_fact_authority",
+      "s3_owner_grade_context_promoted_to_claim_authority",
+      "s3_owner_grade_epistemic_status_statement_conflict",
+      "s3_owner_grade_WWC_task_incomplete",
+      "s3_owner_grade_lead_fact_presence_mismatch",
+      "s3_owner_grade_writer_claim_surface_violation",
+      "s3_owner_grade_writer_graph_terminology_invalid",
+      "s3_owner_grade_writer_qualification_dropped",
+      "s3_owner_grade_verifier_authority_surface_missing",
+      "s3_owner_grade_verifier_false_green_forbidden"
+    ],
+    "focused_implementation_and_decision_tests": "18 passed",
+    "related_v1_v2_adapter_and_transport_regression": "21 passed",
+    "python_compile": "pass",
+    "ruff": "not_available_in_workspace_python"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "live_runs": 0,
+    "baseline_materializations": 0,
+    "canonical_business_writes": 0,
+    "human_review_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_037_implementation": "pass_zero_call_fixture_proven_live_agent_proof_pending",
+    "RC_P36_037_closed": false,
+    "S3_T09_acceptance": "blocked_pending_baseline_materialization_fresh_v3_agent_proof_paired_comparison_and_owner_acceptance",
+    "T10_unblocked": false
+  },
+  "next_action": "S3-T09-PAIRED-DETERMINISTIC-BASELINE-MATERIALIZATION"
+}

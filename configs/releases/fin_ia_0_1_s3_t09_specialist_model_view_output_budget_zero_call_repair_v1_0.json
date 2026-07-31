@@ -1,0 +1,130 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_specialist_model_view_output_budget_zero_call_repair_v1_0",
+  "repair_id": "S3-T09-SPECIALIST-MODEL-VIEW-AND-OUTPUT-BUDGET-ZERO-CALL-REPAIR",
+  "completed_at": "2026-07-22T05:30:00+08:00",
+  "status": "pass_zero_call_repair_fixture_verified_replacement_admission_not_issued",
+  "authority": {
+    "source": "user_continue_after_repair_decision",
+    "allows": [
+      "deterministic_specialist_model_view_v1_implementation",
+      "specialist_output_v2_local_validation",
+      "exact_stage_and_aggregate_budget_validation",
+      "fake_provider_and_deterministic_regression",
+      "durable_project_state_and_git_staging"
+    ],
+    "forbids": [
+      "replacement_admission_issuance",
+      "real_model_provider_or_network_execution",
+      "source_network_or_external_tool_execution",
+      "retry_fallback_or_rerun",
+      "T10_S4_release_or_production_progression"
+    ]
+  },
+  "implemented_contract": {
+    "canonical_input_contract_ref": "fin01.s3.bounded_agent_three_cell_input:v1",
+    "canonical_input_digest_changed": false,
+    "specialist_model_view_contract_ref": "fin01.s3.specialist_model_view:v1",
+    "specialist_output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v2",
+    "model_view_receipt_binding": [
+      "model_view_contract_ref",
+      "model_view_digest"
+    ],
+    "full_original_cell_authority_remains_validation_source": true,
+    "excluded_provider_view_fields": [
+      "candidate_snapshot",
+      "tool_selection_plan",
+      "tool_gateway_preflights",
+      "duplicated_decision_cells_list",
+      "other_role_contexts",
+      "audit_only_digests_and_persistence_flags"
+    ],
+    "retained_analysis_fields": [
+      "T02_decision_chain_stop_what_would_change_branch_observation_and_specialist_authority",
+      "T03_candidate_metadata_promotion_typed_gaps_source_boundary_and_followup",
+      "T04_exact_financial_rows_derived_metric_formula_inputs_results_and_support_boundary",
+      "T05_product_method_edge_market_risk_and_typed_gap_context",
+      "exact_Evidence_Numeric_candidate_and_Graph_authority_refs"
+    ]
+  },
+  "specialist_output_v2_limits": {
+    "fact_layer_max_items": 3,
+    "explanation_layer_min_max_items": [1, 3],
+    "judgment_layer_min_max_items": [1, 2],
+    "remaining_gaps_min_max_items": [1, 4],
+    "what_would_change_min_max_items": [1, 3],
+    "maximum_unicode_characters_per_narrative_item": 320,
+    "maximum_serialized_utf8_bytes": 6000,
+    "duplicate_fact_ids_or_support_refs": "fail_closed",
+    "additional_fields_or_unauthorized_refs": "fail_closed"
+  },
+  "budget_contract": {
+    "specialist_max_output_tokens": 2200,
+    "lead_max_output_tokens": 1200,
+    "writer_max_output_tokens": 1400,
+    "verifier_max_output_tokens": 1000,
+    "aggregate_max_output_tokens": 10200,
+    "max_total_cost_usd": 0.1,
+    "retry_budget": 0
+  },
+  "frozen_exact_input_projection_audit": {
+    "input_digest": "ec562442781bae817fdba072cc953e86373ef3b64e78e8a9dcca8312bb5802b8",
+    "measurement_basis": "unchanged locally persisted exact S3 T09 input pack with deterministic v2 system and request serialization; no provider tokenization or call",
+    "cells": [
+      {
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "canonical_payload_bytes": 25944,
+        "v2_request_bytes": 8331,
+        "v2_system_plus_request_bytes": 8804,
+        "payload_to_request_reduction_percent": 67.9,
+        "model_view_digest": "e9403451608fd83a45b80bbf75257b6e3b51a2b1705526d319083b063126ae6c"
+      },
+      {
+        "program_cell_id": "value_and_profit_capture",
+        "canonical_payload_bytes": 32146,
+        "v2_request_bytes": 12461,
+        "v2_system_plus_request_bytes": 12934,
+        "payload_to_request_reduction_percent": 61.2,
+        "model_view_digest": "ff26aa810c5d3dbe7a4ba2f38fd207fecddd733eeaf5097e2b5da35f54eaaf4f"
+      },
+      {
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "canonical_payload_bytes": 26748,
+        "v2_request_bytes": 8969,
+        "v2_system_plus_request_bytes": 9442,
+        "payload_to_request_reduction_percent": 66.5,
+        "model_view_digest": "36ab169980660b3f26c0b515765a9920be4a914b7cdf5ff8cb74eb50215123f5"
+      }
+    ],
+    "all_three_cells_named_T02_T05_and_authority_retention_verified": true,
+    "provider_token_estimate_or_quality_claim_made": false
+  },
+  "verification": {
+    "focused_repair_decision_and_admission_regression": "20 passed in 1.22s",
+    "slow_three_cell_exact_input_and_fake_provider_compatibility": "5 passed in 150.47s",
+    "historical_digest_and_S3_adapter_selected_regression": "5 passed 73 deselected in 3.20s",
+    "python_compile": "pass",
+    "git_diff_check": "pass",
+    "validated_fail_closed_cases": [
+      "over_cardinality",
+      "over_320_unicode_characters",
+      "over_6000_utf8_bytes",
+      "duplicate_fact_id_or_support_ref",
+      "unexpected_field",
+      "unauthorized_authority_ref",
+      "raw_provider_content_over_byte_budget"
+    ]
+  },
+  "observed_counts": {
+    "real_model_calls": 0,
+    "real_provider_calls": 0,
+    "real_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "live_runs": 0,
+    "retry_fallback_reruns": 0,
+    "live_business_case_head_writes": 0
+  },
+  "known_boundary": "The project-owned input/output capacity contract is now implementation- and fixture-proven only. No replacement identity exists, no provider has consumed v2, and no paid artifact quality or Human acceptance is proven.",
+  "next_action": "S3-T09-REPLACEMENT-EXACT-ADMISSION-ISSUANCE-DECISION"
+}

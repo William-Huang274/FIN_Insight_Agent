@@ -1,0 +1,153 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_replacement_live_artifact_paired_baseline_decision_v1_0",
+  "decision_id": "S3-T09-REPLACEMENT-LIVE-ARTIFACT-PAIRED-BASELINE-DECISION-R1",
+  "decided_at": "2026-07-22T08:20:00+08:00",
+  "status": "artifact_integrity_pass_owner_grade_repair_required_no_paired_baseline",
+  "authority": {
+    "user_instruction": "授权",
+    "read_only_live_artifact_validation_authorized": true,
+    "paired_baseline_search_authorized": true,
+    "deterministic_baseline_materialization_authorized": false,
+    "model_provider_source_or_tool_execution_authorized": false,
+    "canonical_business_or_human_review_write_authorized": false,
+    "S3_T10_S4_release_or_production_authorized": false
+  },
+  "input_binding": {
+    "source_live_result_ref": "configs/releases/fin_ia_0_1_s3_t09_replacement_output_v2_live_execution_result_v1_0.json",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "analysis_as_of": "2026-07-21T00:00:00Z",
+    "decision_surface_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "research_run_id": "research_run_fin01_c24bc3ce28a3ecfafa6ce7c2",
+    "attempt_id": "attempt_fin01_f4a6445c0fb3813864ee06a9",
+    "input_digest": "80822c5ff99e529e3de0aed73f0d3782819e987732473b7f48f6e08d593364fb",
+    "input_head_digest": "c9867b54b86cf17982b4cebfaf0c0ebcae2a6f46d894ff82dbb643f693c9836d"
+  },
+  "read_only_audit": {
+    "validator_ref": "scripts/releases/validate_fin_ia_0_1_s3_t09_replacement_artifacts_and_baseline.py",
+    "canonical_database_sha256": "64d2c1dc7ce129312b714078969a25885ed896cee761794c32ffdc0dc7142afc",
+    "canonical_object_tree_sha256": "4d6a8e19feed1bc80fd45b8d252f22c57edfbbd6a339edd690596d8f7ba632dc",
+    "all_searched_database_digests_unchanged": true,
+    "target_object_tree_digest_unchanged": true,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_writes": 0,
+    "human_review_writes": 0
+  },
+  "artifact_integrity_validation": {
+    "status": "pass",
+    "canonical_terminal_states": ["succeeded", "succeeded", "succeeded"],
+    "artifact_count": 9,
+    "cross_artifact_manifest_equal": true,
+    "node_receipt_count": 6,
+    "artifact_object_digests": {
+      "agent_fallback_comparison": "af704549a0c00efdb7d8acb707e1704e66fe8e85954d0e4d983022af03e518e8",
+      "bounded_agent_evidence": "f89e9fdb81e3b0adf3da09776b6b510bc2f9a3bcce0759685cd9fb9becc5a808",
+      "bounded_agent_judgment": "50d8d53a9f589f0a05bb8ab3d2b852997c2faefee5b549da20dd246995fe72e6",
+      "bounded_agent_manifest": "f8bd67d945b3d5eee37533d77be0d1a4a5df313f857c6dd3d00cb9fbfe52cb5e",
+      "bounded_agent_numeric": "b0bc7c359ef48b39c58215826b1c7d2f490288def810a6f81caad3f6396f9135",
+      "bounded_agent_report": "ded13f162824da5a08d89ec010c316b808ceeb80676b2ddabd4a1074364bb82a",
+      "bounded_agent_trace": "19533b941f5c7f40ac3ca71e0a36148ae10748bcb74b08bc258ab5f16f14e39c",
+      "bounded_agent_verification": "3860754949cbf6996aa0be5d408f78c676b740a937fcd021a61ba2163381af0e",
+      "bounded_agent_workpaper": "f24f48b1e99eaf55e408dce09ef8b4f2b58575f8409aa3c3703e7ab3feb69d5f"
+    },
+    "specialist_terminal_classes": {
+      "demand_authenticity_and_sustainability": "typed_cannot_infer",
+      "value_and_profit_capture": "value_capture_unattributed",
+      "bottleneck_counterevidence_and_what_would_change": "typed_gap_source_followup_required"
+    },
+    "evidence_fact_row_count": 0,
+    "live_evidence_head_promoted": false,
+    "numeric_fact_row_count": 1,
+    "numeric_boundary": "Company-total only; no segment or product attribution.",
+    "unsupported_numeric_precision_found": false,
+    "writer_source_calls": 0,
+    "writer_tool_calls": 0
+  },
+  "owner_grade_quality_validation": {
+    "machine_verifier_decision": "accept_for_internal_review",
+    "machine_verifier_reported_issue_count": 0,
+    "independent_disposition": "repair_before_final_acceptance",
+    "findings": [
+      {
+        "finding_id": "unsupported_declarative_segment_revenue_claim",
+        "severity": "high",
+        "earliest_artifact": "bounded_agent_judgment.value_and_profit_capture.judgment_layer",
+        "propagated_to": "bounded_agent_report.value_and_profit_capture",
+        "reason": "No promoted Evidence or segment/product Numeric fact authorizes a declarative segment revenue-capture statement; it must remain candidate/hypothesis-qualified."
+      },
+      {
+        "finding_id": "lead_non_fact_state_wording_conflicts_with_numeric_fact_row",
+        "severity": "medium",
+        "earliest_artifact": "bounded_agent_judgment.cross_cell_lead.conflict_adjudications",
+        "reason": "The Value cell contains one company-total Numeric fact row; unresolved terminal class must not be described as absence of facts."
+      },
+      {
+        "finding_id": "graph_hypothesis_mistranslated_as_chart_hypothesis",
+        "severity": "medium",
+        "earliest_artifact": "bounded_agent_report.report.executive_summary_zh_cn",
+        "reason": "Graph navigation context was rendered as chart hypothesis, reducing domain precision."
+      },
+      {
+        "finding_id": "what_would_change_lacks_actionable_source_metric_threshold_time_contract",
+        "severity": "medium",
+        "earliest_artifact": "fin01.s3.bounded_agent_three_cell_output:v2",
+        "reason": "Free-text WWC does not provide the source/metric/threshold/time tuple needed for an analyst follow-up task."
+      }
+    ],
+    "machine_verifier_false_negative_confirmed": true,
+    "machine_verifier_is_human_acceptance": false
+  },
+  "paired_baseline_search": {
+    "contract_ref": "fin01.s3.paired_three_cell_deterministic_baseline:v1",
+    "baseline_profile_ref": "fin01.execution_profile.p36_local_deterministic:v1",
+    "searched_canonical_database_count": 11,
+    "query_error_count": 0,
+    "same_case_and_input_head_run_count": 2,
+    "same_case_and_input_head_runs": [
+      {
+        "research_run_id": "research_run_fin01_a77b165e85be8757e5855a69",
+        "profile_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+        "state": "failed"
+      },
+      {
+        "research_run_id": "research_run_fin01_c24bc3ce28a3ecfafa6ce7c2",
+        "profile_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+        "state": "succeeded"
+      }
+    ],
+    "minimum_gate_terminal_deterministic_candidate_count": 0,
+    "qualifying_paired_baseline_exists": false,
+    "T08_deterministic_run_reusable": false,
+    "T08_mismatch": ["case_id", "input_head_digest", "decision_surface_ref"],
+    "decision": "no_qualifying_baseline_exists_materialization_decision_required"
+  },
+  "stage_decision": {
+    "artifact_integrity_gate": "pass",
+    "owner_grade_quality_gate": "repair_required",
+    "paired_baseline_gate": "fail_absent",
+    "material_gain_comparison_performed": false,
+    "T09_acceptance": "blocked_missing_paired_baseline_and_owner_grade_semantic_repair",
+    "T10_unblocked": false,
+    "deterministic_baseline_materialized": false,
+    "owner_review_performed": false
+  },
+  "deterministic_verification": {
+    "live_read_only_validator": "pass",
+    "current_state_contracts": "39 passed",
+    "complete_T09_admission_repair_result_and_decision_contracts": "48 passed",
+    "python_compile": "pass",
+    "json_and_jsonl_validation": "pass",
+    "project_os_repository_hygiene_scope": "pass_zero_open_blockers",
+    "secret_and_git_diff_check": "pass_zero_secret_hits_and_diff_check_clean"
+  },
+  "root_cause_decision": {
+    "RC-P36-036": "confirmed_no_qualifying_baseline_materialization_decision_required",
+    "RC-P36-037": "opened_owner_grade_semantic_actionability_and_verifier_false_negative_gap"
+  },
+  "next_action": "S3-T09-PAIRED-DETERMINISTIC-BASELINE-MATERIALIZATION-DECISION"
+}

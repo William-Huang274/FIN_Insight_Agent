@@ -1,0 +1,84 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_output_v4_verifier_schema_repair_orphan_typed_closeout_result_v1_0",
+  "status": "typed_orphan_closeout_succeeded_zero_call",
+  "admission_id": "fin01-s3-t09-three-cell-deepseek-output-v4-verifier-schema-repair-exact-admission-r1",
+  "identity": {
+    "work_unit_id": "wu_p02_5_2bbd547a60d876d3c676aafc",
+    "attempt_id": "attempt_fin01_29a1eb04e4ea04e0c574ee76",
+    "research_run_id": "research_run_fin01_f136c2d298568856bde6512e"
+  },
+  "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:bounded_runtime_terminalization:orphaned_after_verifier_capture_before_artifact_persistence",
+  "failure_stage": "bounded_runtime_terminalization:orphaned_after_verifier_capture_before_artifact_persistence",
+  "failure_code": "s3_bounded_execution_controller_timeout_orphan",
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "artifact_count": 0,
+    "orphaned_run": false
+  },
+  "completed_provider_execution": {
+    "model_calls": 12,
+    "provider_calls": 12,
+    "network_calls": 12,
+    "transport_attempts": 12,
+    "transport_failures": 0,
+    "finish_reasons": [
+      "stop"
+    ],
+    "stages": [
+      "domain_specialist:demand_authenticity_and_sustainability:facts_explanation_and_terminal",
+      "domain_specialist:demand_authenticity_and_sustainability:owner_grade_claim_cards",
+      "domain_specialist:demand_authenticity_and_sustainability:actionable_what_would_change_tasks",
+      "domain_specialist:value_and_profit_capture:facts_explanation_and_terminal",
+      "domain_specialist:value_and_profit_capture:owner_grade_claim_cards",
+      "domain_specialist:value_and_profit_capture:actionable_what_would_change_tasks",
+      "domain_specialist:bottleneck_counterevidence_and_what_would_change:facts_explanation_and_terminal",
+      "domain_specialist:bottleneck_counterevidence_and_what_would_change:owner_grade_claim_cards",
+      "domain_specialist:bottleneck_counterevidence_and_what_would_change:actionable_what_would_change_tasks",
+      "research_lead",
+      "memo_writer",
+      "verifier"
+    ],
+    "input_tokens": 55186,
+    "output_tokens": 6422,
+    "total_tokens": 61608
+  },
+  "provider_output_capture": {
+    "capture_count": 12,
+    "restricted_readback_count": 12,
+    "assistant_output_present_count": 12,
+    "stages": [
+      "domain_specialist:demand_authenticity_and_sustainability:facts_explanation_and_terminal",
+      "domain_specialist:demand_authenticity_and_sustainability:owner_grade_claim_cards",
+      "domain_specialist:demand_authenticity_and_sustainability:actionable_what_would_change_tasks",
+      "domain_specialist:value_and_profit_capture:facts_explanation_and_terminal",
+      "domain_specialist:value_and_profit_capture:owner_grade_claim_cards",
+      "domain_specialist:value_and_profit_capture:actionable_what_would_change_tasks",
+      "domain_specialist:bottleneck_counterevidence_and_what_would_change:facts_explanation_and_terminal",
+      "domain_specialist:bottleneck_counterevidence_and_what_would_change:owner_grade_claim_cards",
+      "domain_specialist:bottleneck_counterevidence_and_what_would_change:actionable_what_would_change_tasks",
+      "research_lead",
+      "memo_writer",
+      "verifier"
+    ],
+    "recoverable_for_audit_only": true,
+    "replayed_or_promoted_to_business_artifacts": false
+  },
+  "estimated_cost_usd_range": {
+    "lower_bound": 0.00578719,
+    "upper_bound": 0.02959305,
+    "basis": "gateway_event_tokens_cache_split_unavailable"
+  },
+  "exact_usage_receipts_available": false,
+  "closeout_model_provider_network_calls": [
+    0,
+    0,
+    0
+  ],
+  "retry_count": 0,
+  "fallback_count": 0,
+  "rerun_count": 0,
+  "t09_acceptance_eligible": false,
+  "t09_acceptance_blocker": "zero_canonical_business_artifacts"
+}

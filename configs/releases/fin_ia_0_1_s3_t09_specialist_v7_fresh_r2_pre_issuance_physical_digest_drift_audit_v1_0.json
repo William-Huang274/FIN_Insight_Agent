@@ -1,0 +1,44 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_specialist_v7_fresh_r2_pre_issuance_physical_digest_drift_audit_v1_0",
+  "audited_at": "2026-07-23T17:55:00+08:00",
+  "status": "pass_benign_sqlite_physical_digest_drift_logical_identity_and_object_tree_unchanged",
+  "trigger": {
+    "stage": "fresh_r2_exact_admission_issuance_zero_call_preflight",
+    "failure_code": "specialist_v7_r2_target_digest_drift",
+    "admission_file_created": false,
+    "issuance_file_created": false,
+    "admission_consumed": false,
+    "model_provider_or_network_calls": 0
+  },
+  "classification": {
+    "prior_canonical_database_sha256": "d0a78d6a50ad3f2554604e0a4330bbb826b602e6f4e775fcc881a91033a711b9",
+    "current_canonical_database_sha256": "9256ea88325ed9b622230fe0d3beb5efc41030f342155857a7e5da7a3a9000fb",
+    "canonical_object_tree_sha256_unchanged": true,
+    "canonical_object_tree_sha256": "b11b26b3cc28a872e64e8f27c69c7b1ef3b9fece9f2b5d8c0e6185da5a26bdc7",
+    "logical_distinct_counts_unchanged": [
+      14,
+      14,
+      14,
+      13
+    ],
+    "prospective_r2_identity_rows": [
+      0,
+      0,
+      0
+    ],
+    "fresh_prepare_identity_equal": true,
+    "fresh_prepare_double_prepare_equal": true,
+    "fresh_prepare_prepared_payload_digest_equal": true,
+    "fresh_prepare_prospective_admission_equal": true,
+    "research_or_execution_state_drift_observed": false,
+    "likely_cause": "full historical S3-T09 tests include target-runtime service initialization despite the RC-P36-038 disposable-clone-only audit boundary"
+  },
+  "disposition": {
+    "old_unissued_proof_consumed_or_relied_on": false,
+    "refresh_unissued_proof_physical_digest_authorized_by_existing_chain": true,
+    "new_execution_identity_or_admission_payload_required": false,
+    "automatic_model_retry_fallback_patch_or_rerun": false,
+    "future_full_historical_tests_against_target_runtime_allowed": false
+  },
+  "next_action": "S3-T09-OWNER-GRADE-SPECIALIST-V7-FRESH-R2-EXACT-PROOF-PHYSICAL-DIGEST-REFRESH"
+}

@@ -1,0 +1,277 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_verifier_nullable_repair_owner_and_windows_direct_runner_supervision_v2_zero_call_root_cause_disposition_v1_0",
+  "decision_id": "S3-T09-VERIFIER-REPAIR-OWNER-SENTINEL-AND-WINDOWS-SUPERVISOR-EXIT-RECEIPT-LOSS-ZERO-CALL-ROOT-CAUSE-DISPOSITION",
+  "decided_at": "2026-07-24T21:39:26+08:00",
+  "status": "pass_zero_call_dual_root_cause_frozen_nullable_repair_owner_and_windows_direct_runner_self_finalizing_supervision_v2_selected",
+  "authority": {
+    "user_instruction": "授权",
+    "root_cause_disposition_authorized": true,
+    "repair_implementation_authorized": false,
+    "new_admission_or_second_live_execution_authorized": false,
+    "restricted_capture_replay_or_business_artifact_promotion_authorized": false,
+    "paired_comparison_or_owner_acceptance_authorized": false,
+    "T10_S4_release_or_production_authorized": false
+  },
+  "source_refs": {
+    "fresh_exact_live_result": "configs/releases/fin_ia_0_1_s3_t09_atomic_terminalization_and_typed_verifier_state_machine_fresh_exact_live_execution_result_v1_0.json",
+    "fresh_exact_live_worklog": "docs/worklog/product_strategy/387_fin_0_1_s3_t09_atomic_terminalization_and_verifier_state_machine_fresh_exact_live_failure.md",
+    "fresh_exact_live_model_run": "reports/model_runs/20260724_fin_ia_0_1_s3_t09_atomic_state_machine_supervised_exact_live_failure_r1.md",
+    "verifier_request_and_validator_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "supervision_owner": "scripts/releases/supervise_fin_ia_0_1_s3_t09_exact_live_execution.py",
+    "exact_runner": "scripts/releases/run_fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution.py"
+  },
+  "source_digests": {
+    "fresh_exact_live_result_sha256": "3a1df5299d490291e494bd388cfed3addcfb9be954dc96bb378e12246c3010c1",
+    "verifier_request_and_validator_owner_sha256": "7fe4fa1803039589a8d8e82bf2168925378b5adedf9b070af2d0e203c4077035",
+    "supervision_owner_sha256": "8807ff831d5f46833d8461459e7e1af96107835bf6cf7ebe575e98c50583f74f",
+    "exact_runner_sha256": "e5e8055510ff496c028d4ea0a1cbd229025af65571f7b7eb54a1bfa201b07b8d"
+  },
+  "corrected_failure_chain": {
+    "provider_execution": {
+      "model_provider_network_calls": [
+        12,
+        12,
+        12
+      ],
+      "all_status_ok": true,
+      "all_finish_reason_stop": true,
+      "retry_fallback_relaunch_rerun_counts": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "verifier": {
+      "semantic_state_machine_satisfied": true,
+      "statuses": [
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "issue_code_counts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "artifact_or_claim_ref_counts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "repair_owner_runtime_types": [
+        "NoneType",
+        "NoneType",
+        "NoneType",
+        "NoneType"
+      ],
+      "decision": "accept_for_internal_review",
+      "direct_provider_shape_nonconformance": "JSON null returned where the request declared string",
+      "project_owned_ambiguity": "the same request declared repair_owner as string but used must_equal_none without defining JSON null versus literal string none",
+      "local_pre_state_machine_drift": "the shape gate rejected every nonblank-string alternative before the cross-field state machine could decide semantic validity",
+      "model_only_failure": false
+    },
+    "supervision": {
+      "launch_receipt_present": true,
+      "launch_receipt_pid_kind": "intermediate_wrapper_pid",
+      "actual_runner_pid_observed_separately": true,
+      "wrapper_lost_while_runner_alive": true,
+      "runner_naturally_exited_without_signal": true,
+      "runtime_result_present": true,
+      "exit_receipt_present": false,
+      "status_probe_failure": "os.kill_pid_zero_raised_WinError_87_SystemError_on_Windows",
+      "external_trigger": "observed Codex host or Windows job-lifetime behavior did not preserve the detached intermediate wrapper",
+      "project_owned_gap": "supervision-v1 equated console detachment with durable host ownership, tracked the wrapper rather than the actual runner, made the wrapper the sole exit-receipt writer, and used a non-Windows-safe status probe",
+      "model_related": false
+    },
+    "canonical_terminal_truth": {
+      "work_unit_attempt_research_run": [
+        "failed",
+        "failed",
+        "failed"
+      ],
+      "orphaned_run": false,
+      "artifact_count": 0,
+      "atomic_capture_bearing_failure_transaction_live_proven": true
+    },
+    "raw_provider_text_persisted_in_decision": false,
+    "private_reasoning_persisted_in_decision": false,
+    "credential_value_persisted_in_decision": false
+  },
+  "root_cause_disposition": {
+    "RC_P36_052": {
+      "issue_id": "RC-P36-052-verifier-repair-owner-none-sentinel-ambiguity",
+      "status": "root_cause_frozen_zero_call_implementation_pending",
+      "full_chain_blocker": true,
+      "earliest_faulty_artifact": "DeepSeekS3ThreeCellNodeExecutor._node_request typed Verifier required_output_schema and output_state_machine",
+      "secondary_faulty_artifact": "S3ThreeCellBoundedAgentExecutor._validate_verifier_output pre-state-machine string-only shape gate",
+      "selected_representation": "JSON null means no repair owner; a nonempty string names a real repair owner",
+      "literal_string_none_allowed": false,
+      "model_only_failure": false
+    },
+    "RC_P38_053": {
+      "issue_id": "RC-P38-053-windows-detached-wrapper-exit-receipt-loss",
+      "status": "root_cause_frozen_zero_call_implementation_pending",
+      "full_chain_blocker": true,
+      "external_trigger": "Windows or host job-lifetime behavior ended the intermediate wrapper",
+      "earliest_project_owned_lifecycle_surface": "supervision-v1 launches an intermediate _child wrapper and records only its PID while the actual runner is a nested subprocess",
+      "earliest_project_owned_status_surface": "_process_alive uses os.kill(pid, 0) on Windows",
+      "classification": "external_host_triggered_project_owned_process_identity_receipt_ownership_and_status_probe_gap",
+      "model_related": false
+    },
+    "RC_P38_050": {
+      "status": "atomic_capture_bearing_failure_terminalization_fresh_live_proven",
+      "full_chain_blocker": false
+    },
+    "RC_P36_051": {
+      "status": "provider_live_followed_semantic_state_machine_superseded_by_RC_P36_052",
+      "full_chain_blocker": false
+    }
+  },
+  "selected_zero_call_implementation_contract": {
+    "nullable_repair_owner_state_machine_v2": {
+      "contract_ref": "fin01.s3.owner_grade_verifier_output_state_machine:v2",
+      "required_output_schema": {
+        "repair_owner_domain": "JSON null or nonempty string",
+        "pass_repair_owner": "must_be_JSON_null",
+        "review_required_or_fail_repair_owner": "must_be_nonempty_string_and_not_literal_none",
+        "literal_string_none_allowed": false
+      },
+      "structural_gate": [
+        "require the exact five finding keys",
+        "accept repair_owner only when it is JSON null or a nonblank string",
+        "do not derive status-dependent semantics in the structural gate"
+      ],
+      "semantic_gate": [
+        "status pass requires empty issue_codes empty artifact_or_claim_refs and repair_owner JSON null",
+        "status review_required or fail requires nonempty typed issue_codes nonempty exact refs and a nonblank non-none repair_owner",
+        "decision remains derived from all four finding statuses and local_semantic_issues"
+      ],
+      "provider_request_must_include_literal_JSON_examples": true,
+      "normalization_or_silent_rewrite_allowed": false,
+      "captured_null_to_string_rewrite_allowed": false,
+      "legacy_state_machine_v1_consumed_evidence_immutable": true
+    },
+    "windows_direct_runner_self_finalizing_supervision_v2": {
+      "contract_ref": "fin01.s3.exact_run_supervision:v2",
+      "process_topology": "launcher starts the actual exact runner directly; no intermediate wrapper process owns completion truth",
+      "launch_receipt_must_bind": [
+        "actual runner PID",
+        "process creation identity or creation timestamp",
+        "command digest",
+        "runtime root",
+        "issuance and admission identities",
+        "stdout stderr and exit receipt refs"
+      ],
+      "completion_receipt_owner": "actual exact runner writes its own atomic exit receipt in a top-level finally path after runtime result persistence",
+      "exit_receipt_must_bind": [
+        "actual runner PID and creation identity",
+        "exit code or typed unhandled failure code",
+        "runtime result ref when present",
+        "stdout and stderr digests and byte counts when safely available",
+        "zero retry fallback replay relaunch counts"
+      ],
+      "windows_status_probe": "use native OpenProcess and GetExitCodeProcess or an equivalently exact Windows process API; os.kill(pid, 0) is forbidden",
+      "pid_reuse_guard_required": true,
+      "host_job_lifetime_preflight": {
+        "required_before_admission_consumption": true,
+        "must_run_across_separate_launcher_and_status_command_invocations": true,
+        "must_prove_actual_runner_survives_launcher exit and writes a self-finalized receipt": true,
+        "CREATE_BREAKAWAY_FROM_JOB_may_be_used_only_when_capability_proven": true,
+        "if_durable_breakaway_is_unavailable": "fail_closed_before_admission_consumption_and require an explicit durable service or scheduler route"
+      },
+      "read_only_monitor_may_signal_or_terminate": false,
+      "automatic_retry_fallback_replay_relaunch_allowed": false,
+      "supervision_v1_consumed_evidence_immutable": true
+    }
+  },
+  "deterministic_implementation_acceptance": {
+    "verifier_positive_matrix": [
+      "all pass with JSON null owners maps to accept_for_internal_review",
+      "one or more review_required with nonempty string owners and no fail maps to repair",
+      "any fail with nonempty string owner maps to reject"
+    ],
+    "verifier_negative_matrix_minimum": [
+      "pass with literal string none",
+      "pass with a real repair owner",
+      "pass with nonempty issue codes",
+      "pass with nonempty refs",
+      "nonpass with JSON null owner",
+      "nonpass with literal string none",
+      "nonpass with blank owner",
+      "nonpass without issue codes",
+      "nonpass without refs",
+      "decision and finding status conflict"
+    ],
+    "fake_provider_must_derive_output_from_v2_request": true,
+    "supervision_unit_matrix": [
+      "launch receipt PID is the actual runner PID",
+      "there is no intermediate _child wrapper in the v2 topology",
+      "normal child success writes a self-finalized exit receipt",
+      "typed child failure writes a self-finalized nonzero exit receipt",
+      "read-only status performs no signal retry relaunch or mutation",
+      "Windows native status distinguishes running exited and PID-reused identities"
+    ],
+    "supervision_host_integration_matrix": [
+      "one launcher command returns while a slow synthetic actual runner remains alive",
+      "a separate status command observes the same process identity without signal",
+      "a later separate status command observes the atomic self-finalized exit receipt",
+      "the smoke uses zero model Provider network source and external-tool calls",
+      "failure of host-lifetime capability blocks exact admission consumption"
+    ],
+    "legacy_v1_contracts_and_consumed_run_evidence_immutable": true,
+    "model_provider_network_source_tool_calls_allowed": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "new_admissions_runs_business_artifacts_allowed": [
+      0,
+      0,
+      0
+    ]
+  },
+  "explicit_rejections": [
+    "classifying repair_owner null as only a model failure",
+    "keeping must_equal_none without a literal JSON representation",
+    "using the magic string none for future pass findings",
+    "normalizing or replaying the consumed captured answer",
+    "loosening nonpass repair-owner requirements",
+    "treating DETACHED_PROCESS as proof of durable Windows host ownership",
+    "tracking only an intermediate wrapper PID",
+    "using os.kill(pid, 0) as the Windows status contract",
+    "silently falling back to an unsupervised or short-timeout run",
+    "another model run before implementation deterministic proof fresh proof and admission gates",
+    "reuse of the consumed admission or exact identity"
+  ],
+  "observed_counts": {
+    "decision_model_calls": 0,
+    "decision_provider_calls": 0,
+    "decision_network_calls": 0,
+    "decision_source_network_calls": 0,
+    "decision_external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_runs": 0,
+    "new_business_artifacts": 0,
+    "paired_comparisons": 0,
+    "owner_acceptance_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_052": "root_cause_frozen_zero_call_implementation_pending",
+    "RC_P38_053": "root_cause_frozen_zero_call_implementation_pending",
+    "RC_P38_050": "atomic_capture_bearing_failure_terminalization_fresh_live_proven",
+    "RC_P36_051": "provider_live_followed_semantic_state_machine_superseded",
+    "RC_P36_037": "complete_product_still_missing",
+    "S3_T09": "blocked_zero_artifacts_no_comparison_or_owner_acceptance",
+    "S3_T10": "not_entered",
+    "S4": "blocked_by_S3",
+    "release": "not_qualified",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-NULLABLE-REPAIR-OWNER-AND-WINDOWS-DIRECT-RUNNER-SELF-FINALIZING-SUPERVISION-V2-ZERO-CALL-IMPLEMENTATION"
+}

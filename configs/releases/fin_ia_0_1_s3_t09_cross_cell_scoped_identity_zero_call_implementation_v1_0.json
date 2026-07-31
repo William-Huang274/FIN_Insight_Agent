@@ -1,0 +1,79 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_cross_cell_scoped_identity_zero_call_implementation_v1_0",
+  "implemented_at": "2026-07-23T19:25:00+08:00",
+  "status": "pass_zero_call_cross_cell_scoped_identity_and_safe_collision_telemetry_fixture_proven_fresh_agent_proof_decision_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_cross_cell_scoped_identity_zero_call_root_cause_decision_v1_0.json",
+    "zero_call_implementation_and_deterministic_tests_authorized": true,
+    "admission_issuance_consumption_model_provider_network_or_live_execution_authorized": false,
+    "comparison_owner_review_T10_S4_release_or_production_authorized": false
+  },
+  "architecture": {
+    "contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+    "policy_module_ref": "apps/workbench/backend/application/bounded_agent_identity_policies.py",
+    "architecture_ref": "docs/architecture/fin_0_1_s3_cell_scoped_research_identity_contract_v1.md",
+    "runtime_identity_fields": [
+      "identity_kind",
+      "program_cell_id",
+      "local_id"
+    ],
+    "supported_identity_kinds": [
+      "claim",
+      "what_would_change"
+    ],
+    "provider_local_ids_preserved": true,
+    "prompt_schema_and_local_validator_share_typed_policy": true,
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v4",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+    "safe_failure_telemetry_family": "scoped_identity_contract"
+  },
+  "compatibility": {
+    "specialist_transport_v1_through_v7_unchanged": true,
+    "historical_output_v3_unchanged": true,
+    "historical_admission_digest_payload_shape_preserved": true,
+    "historical_failed_runs_or_provider_answers_rewritten": false,
+    "validation_aliases_persisted_as_provider_id_replacements": false
+  },
+  "deterministic_proof": {
+    "scoped_identity_contract_tests_passed": 11,
+    "full_fake_provider_logical_nodes": 6,
+    "full_fake_provider_calls": 12,
+    "full_fake_provider_artifact_families": 9,
+    "cross_cell_duplicate_claim_local_id_passed": true,
+    "cross_cell_duplicate_WWC_local_id_passed": true,
+    "same_cell_duplicate_negative_passed": true,
+    "raw_unknown_wrong_kind_and_wrong_cell_negative_passed": true,
+    "non_nvda_different_period_mixed_evidence_numeric_fixture_passed": true,
+    "canonical_safe_telemetry_persist_and_unsafe_raw_id_reject_passed": true,
+    "adjacent_runtime_tests_passed": 42,
+    "adjacent_stale_backlog_snapshot_assertions_failed": 1,
+    "python_compile_passed": true
+  },
+  "observed_counts": {
+    "real_model_calls": 0,
+    "real_provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "admission_consumptions": 0,
+    "canonical_runs": 0,
+    "canonical_artifacts": 0,
+    "business_case_writes": 0,
+    "comparisons": 0,
+    "human_reviews": 0
+  },
+  "acceptance": {
+    "RC_P36_046": "zero_call_repaired_and_fixture_proven_fresh_agent_proof_decision_pending",
+    "RC_P36_037": "still_blocked_complete_fresh_nine_artifact_owner_grade_product_missing",
+    "S3_T09": "blocked_pending_fresh_exact_agent_proof",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-CROSS-CELL-SCOPED-IDENTITY-FRESH-AGENT-PROOF-DECISION"
+}

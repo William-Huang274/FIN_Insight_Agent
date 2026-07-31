@@ -1,0 +1,33 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_v3_orphan_typed_closeout_result_v1_0",
+  "execution_id": "S3-T09-OWNER-GRADE-V3-RESEARCH-LEAD-V3-ORPHAN-TYPED-CLOSEOUT",
+  "closed_at": "2026-07-23T15:26:16+08:00",
+  "status": "pass_zero_call_typed_closeout_failed_failed_failed",
+  "identity": {
+    "work_unit_id": "wu_p02_5_faa27f97931244939f6daf3f",
+    "attempt_id": "attempt_fin01_1de0ba5e8037f6d2953d1733",
+    "research_run_id": "research_run_fin01_e418d7086d4a1d253e9b2c9b"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "artifact_count": 0,
+    "failure_code": "s3_bounded_canonical_terminalization_interrupted",
+    "orphaned_run": false
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "artifacts": 0
+  },
+  "audit_boundary": {
+    "historical_assistant_outputs_recovered_or_reconstructed": false,
+    "historical_usage_receipts_reconstructed": false,
+    "historical_exact_cost_reconstructed": false,
+    "typed_closeout_changes_historical_execution_result": false
+  }
+}

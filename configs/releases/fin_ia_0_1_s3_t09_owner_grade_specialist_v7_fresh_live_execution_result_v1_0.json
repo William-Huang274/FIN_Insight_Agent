@@ -1,0 +1,157 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_specialist_v7_fresh_live_execution_result_v1_0",
+  "execution_id": "S3-T09-OWNER-GRADE-SPECIALIST-V7-FRESH-EXACT-LIVE-EXECUTION-R1",
+  "executed_at": "2026-07-23T17:03:44.950456+08:00",
+  "status": "terminal_failed_first_cell_outer_legacy_6000_byte_revalidation_admission_consumed_no_retry",
+  "authority": {
+    "user_instruction": "继续",
+    "fresh_exact_live_execution_authorized": true,
+    "automatic_retry_fallback_patch_normalization_or_rerun_authorized": false,
+    "paired_comparison_human_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_specialist_v7_research_lead_v3_writer_v2_exact_admission_v1_0.json",
+  "source_issuance_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_specialist_v7_fresh_exact_admission_issuance_v1_0.json",
+  "runtime_project_os_preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/specialist_v7_r1_project_os_preflight.json",
+  "runtime_project_os_preflight_sha256": "f90508398f3cab38b067e0178915684006034899e8ebd354498f46c3a321db66",
+  "runtime_preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/specialist_v7_r1_live_execution_preflight.json",
+  "runtime_preflight_sha256": "944d46d04e9a49b79c3b8cda26a157eb52da33a947b066514b8e513e7de07832",
+  "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/specialist_v7_r1_live_execution_result.json",
+  "runtime_result_sha256": "a9d434660a47290dcb21105e37f9cb762b9161438e208e3aaf221c85c539f6e9",
+  "identity": {
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-specialist-v7-research-lead-v3-writer-v2-exact-admission-r1",
+    "admission_digest": "9657d30751eea5f24ea26b73fa9d93909b2df0c9966f96539a405a9dde1e72a6",
+    "work_unit_id": "wu_p02_5_10ff261f10fe7a6c7cecfc7a",
+    "attempt_id": "attempt_fin01_1119ac82535a73593f0e0c03",
+    "research_run_id": "research_run_fin01_ebf0f6376cec28087151562e",
+    "input_digest": "b2c1ed15e64c653bb39270bf2e5b759b4ce7250e83f951644c49e8d24c65af1d",
+    "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v1"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_reason": "bounded_agent_profile_error:ValueError",
+    "artifact_count": 0,
+    "orphaned_run": false,
+    "task_run_event_count": 7,
+    "event_types": [
+      "WORK_UNIT_STARTED",
+      "ATTEMPT_STARTED",
+      "SCHEDULER_LEASE_ACQUIRED",
+      "RESEARCH_RUN_STARTED",
+      "RESEARCH_RUN_FAILED",
+      "ATTEMPT_FAILED",
+      "WORK_UNIT_FAILED"
+    ]
+  },
+  "provider_execution_gateway_truth": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v3",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v2",
+    "model_calls": 3,
+    "provider_calls": 3,
+    "network_calls": 3,
+    "completed_calls": 3,
+    "finish_reasons": [
+      "stop",
+      "stop",
+      "stop"
+    ],
+    "stages": [
+      "facts_explanation_and_terminal",
+      "owner_grade_claim_cards",
+      "actionable_what_would_change_tasks"
+    ],
+    "transport_attempt_count_per_call": [
+      1,
+      1,
+      1
+    ],
+    "input_tokens": 10375,
+    "output_tokens": 1826,
+    "total_tokens": 12201,
+    "latency_ms_sum": 29566,
+    "exact_cost_usd_reconstructable": false,
+    "estimated_cost_usd_range": {
+      "minimum_all_input_cache_hit": 0.00162623,
+      "maximum_all_input_cache_miss": 0.00610174
+    },
+    "retry_count": 0,
+    "fallback_count": 0,
+    "rerun_count": 0
+  },
+  "telemetry_discrepancy": {
+    "runtime_result_reported_model_provider_network_calls": [
+      0,
+      0,
+      0
+    ],
+    "gateway_event_model_provider_network_calls": [
+      3,
+      3,
+      3
+    ],
+    "runtime_usage_receipt_count": 0,
+    "provider_output_capture_count": 0,
+    "restricted_readback_count": 0,
+    "assistant_final_output_text_replayable": false,
+    "failure_observation": {},
+    "interpretation": "The outer post-node bare ValueError bypassed BoundedAgentExecutionError usage and capture propagation. Gateway events retain call and token aggregates but not the assistant bodies or exact cache split, so the three final texts and exact cost are unrecoverable."
+  },
+  "specialist_v7_effect": {
+    "first_cell_three_provider_segments_completed": true,
+    "first_cell_inner_profile_8192_byte_validation_passed": true,
+    "field_local_fact_authority_contract_reached": true,
+    "prior_graph_context_as_fact_failure_repeated": false,
+    "value_profit_cell_reached": false,
+    "research_lead_v3_reached": false,
+    "writer_v2_reached": false,
+    "verifier_reached": false,
+    "research_product_delivered": false,
+    "RC_P36_044_live_disposition": "partial_pass_first_cell_inner_contract_only"
+  },
+  "earliest_project_owned_failure": {
+    "stage": "outer_specialist_output_revalidation_after_first_cell_node_completion",
+    "failure_code": "outer_legacy_specialist_6000_byte_limit_applied_to_capability_bounded_v7",
+    "source_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "inner_profile_max_serialized_utf8_bytes": 8192,
+    "outer_effective_max_serialized_utf8_bytes": 6000,
+    "assembled_first_cell_serialized_utf8_bytes_proven_range": [
+      6001,
+      8192
+    ],
+    "root_cause": "The v7 convergence moved assembly sizing into a transport capability and research profile, but the outer executor retained a cumulative v5/v6 version set. V7 therefore passed the inner capability-driven 8192-byte gate and was then revalidated against the legacy 6000-byte default.",
+    "provider_fault_confirmed": false,
+    "validator_strictness_should_be_relaxed": false
+  },
+  "read_only_audit_integrity": {
+    "target_SQLite_audit_mode": "direct_mode_ro_and_file_digest",
+    "service_backed_target_read_used": false,
+    "logical_work_unit_attempt_run_artifact_counts_after": [
+      14,
+      14,
+      14,
+      13
+    ],
+    "database_sha256_after": "d0a78d6a50ad3f2554604e0a4330bbb826b602e6f4e775fcc881a91033a711b9",
+    "object_tree_sha256_after": "b11b26b3cc28a872e64e8f27c69c7b1ef3b9fece9f2b5d8c0e6185da5a26bdc7",
+    "object_tree_changed_by_execution_or_audit": false,
+    "business_state_or_artifact_created_by_audit": false,
+    "source_network_calls": 0,
+    "external_tool_calls": 0
+  },
+  "acceptance": {
+    "specialist_v7_zero_call_contract": "pass",
+    "specialist_v7_live_first_cell_inner_contract": "partial_pass",
+    "fresh_complete_agent_artifact_proof": "fail_no_artifacts",
+    "owner_grade_research_product_proof": "fail_no_deliverable",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-SPECIALIST-V7-OUTER-ASSEMBLY-CAPABILITY-AND-CAPTURE-ZERO-CALL-ROOT-CAUSE-DECISION"
+}

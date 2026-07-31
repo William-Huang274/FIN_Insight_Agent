@@ -1,0 +1,117 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_fresh_live_execution_result_v1_0",
+  "execution_id": "S3-T09-OWNER-GRADE-V3-FRESH-EXACT-LIVE-EXECUTION-R1",
+  "executed_at": "2026-07-22T02:28:08+08:00",
+  "status": "terminal_failed_admission_consumed_no_retry",
+  "authority": {
+    "user_instruction": "授权",
+    "fresh_v3_exact_live_execution_authorized": true,
+    "exact_once_consumption_authorized": true,
+    "automatic_retry_fallback_repair_or_rerun_authorized": false,
+    "paired_comparison_Human_Review_T10_S4_release_or_production_authorized": false
+  },
+  "source_admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_exact_admission_v1_0.json",
+  "source_issuance_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_fresh_exact_admission_issuance_v1_0.json",
+  "runtime_preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/owner_grade_v3_authorized_live_execution_preflight.json",
+  "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/owner_grade_v3_live_live_execution_result.json",
+  "runtime_inspection_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/owner_grade_v3_post_live_execution_terminal_inspection.json",
+  "model_run_ref": "reports/model_runs/20260722_fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_live_validation_r1.md",
+  "preflight": {
+    "project_os_scoped_preflight": "pass_zero_open_full_chain_blockers",
+    "exact_zero_call_execution_preflight": "pass",
+    "admission_digest": "5f8db7ff2eef2b8ea06c8c95b21c32dec57432b34888a9cf6c5990af3d4b4459",
+    "input_digest": "dba3d25144edfd0f7411d638b964deba8bab70406fb33b3bfca7c16be6bcf06e",
+    "preparation_digest": "fa95fcbfb777273634141e58769adaa351073d700190bfd7c6f5bc857855815f",
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "transport_retries": 0,
+    "maximum_semantic_provider_network_calls": [6, 6, 6],
+    "maximum_output_tokens": 10200,
+    "maximum_total_cost_usd": 0.1,
+    "fresh_target_identity_absent_before_consumption": true,
+    "preflight_observed_model_provider_network_calls": [0, 0, 0]
+  },
+  "identity": {
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-exact-admission-r1",
+    "work_unit_idempotency_key": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-live-validation-r1",
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "as_of": "2026-07-21T00:00:00Z",
+    "work_unit_id": "wu_p02_5_7c9d8f72c8ceed8cb8e77d58",
+    "attempt_id": "attempt_fin01_ac510b41a2d9d4a955960179",
+    "research_run_id": "research_run_fin01_b939a453b921cb5bcf3c2edf"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:domain_specialist:demand_authenticity_and_sustainability",
+    "failure_code": "s3_bounded_specialist_output_schema_invalid:demand_authenticity_and_sustainability",
+    "artifact_count": 0,
+    "event_count": 7,
+    "orphaned_run": false
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_node_json_object:v1",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "failed_stage": "domain_specialist:demand_authenticity_and_sustainability",
+    "finish_reason": "stop",
+    "model_calls": 1,
+    "provider_calls": 1,
+    "network_calls": 1,
+    "transport_attempt_count": 1,
+    "input_tokens": 2916,
+    "output_tokens": 1316,
+    "total_tokens": 4232,
+    "latency_ms": 17305,
+    "estimated_cost_usd": 0.00241338,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "rerun_count": 0
+  },
+  "failure_disposition": {
+    "issue_id": "RC-P36-039-s3-owner-grade-v3-first-specialist-schema-and-observability-gap",
+    "proven": [
+      "provider_transport_succeeded_and_returned_finish_reason_stop",
+      "native_JSON_object_parse_passed",
+      "first_Specialist_exact_top_level_schema_or_program_cell_binding_failed",
+      "local_v3_validator_stopped_before_any_artifact_commit"
+    ],
+    "not_reconstructable_from_safe_persisted_evidence": [
+      "missing_top_level_keys",
+      "unexpected_top_level_keys",
+      "program_cell_id_mismatch",
+      "raw_provider_output"
+    ],
+    "provider_JSON_syntax_failure": false,
+    "canonical_terminalization_failure": false,
+    "owner_grade_semantic_repair_live_proven": false,
+    "automatic_repair_or_replacement_execution_performed": false
+  },
+  "boundary_observation": {
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_case_head_writes": 0,
+    "raw_provider_response_persisted": false,
+    "private_chain_of_thought_persisted": false,
+    "credential_value_persisted": false,
+    "post_terminal_inspect_additional_model_provider_network_calls": [0, 0, 0],
+    "consumed_identity_reuse_preflight_rejected": true,
+    "reuse_guard_gateway_event_lines_before_after": [16, 16],
+    "historical_output_v2_runtime_result_sha256_unchanged": "8210b6ae96fa21d6b0a69885437ccf65ce2096011ad88e4dd75d0999a9fef474"
+  },
+  "acceptance": {
+    "exact_execution_and_terminal_truth": "pass",
+    "fresh_v3_agent_artifact_proof": "fail_no_artifacts",
+    "paired_comparison": "not_performed_not_authorized",
+    "owner_acceptance": "not_performed_not_authorized",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-FIRST-SPECIALIST-SCHEMA-FAILURE-ROOT-CAUSE-AND-TRANSPORT-DECISION"
+}

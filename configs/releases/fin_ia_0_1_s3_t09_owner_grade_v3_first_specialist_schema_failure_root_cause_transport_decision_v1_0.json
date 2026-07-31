@@ -1,0 +1,180 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_first_specialist_schema_failure_root_cause_transport_decision_v1_0",
+  "decision_id": "S3-T09-OWNER-GRADE-V3-FIRST-SPECIALIST-SCHEMA-FAILURE-ROOT-CAUSE-AND-TRANSPORT-DECISION",
+  "decided_at": "2026-07-22T17:00:00+08:00",
+  "status": "pass_root_cause_confirmed_segmented_specialist_transport_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "授权",
+    "zero_call_root_cause_and_transport_decision_authorized": true,
+    "implementation_authorized": false,
+    "new_admission_or_execution_authorized": false,
+    "paired_comparison_Human_Review_T10_S4_release_or_production_authorized": false
+  },
+  "source_evidence": {
+    "failed_live_result_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_fresh_live_execution_result_v1_0.json",
+    "failed_research_run_id": "research_run_fin01_b939a453b921cb5bcf3c2edf",
+    "executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "S2_segmented_live_result_ref": "configs/releases/fin_ia_0_1_s2_t03_deepseek_segmented_v4_live_validation_result_v1_0.json",
+    "official_provider_sources": [
+      "https://api-docs.deepseek.com/guides/json_mode/",
+      "https://api-docs.deepseek.com/guides/tool_calls/",
+      "https://api-docs.deepseek.com/api/create-chat-completion/"
+    ],
+    "documentation_network_research_calls": 3,
+    "model_provider_execution_network_calls": [0, 0, 0]
+  },
+  "confirmed_project_owned_root_cause": {
+    "issue_id": "RC-P36-039-s3-owner-grade-v3-first-specialist-schema-and-observability-gap",
+    "earliest_faulty_artifact": "provider_visible_Specialist_required_output_schema",
+    "provider_visible_required_output_schema_top_level_key_count": 14,
+    "local_validator_accepted_top_level_key_count": 7,
+    "local_validator_accepted_top_level_keys": [
+      "program_cell_id",
+      "fact_layer",
+      "explanation_layer",
+      "judgment_layer",
+      "remaining_gaps",
+      "what_would_change",
+      "terminal_class"
+    ],
+    "provider_visible_but_local_validator_rejected_constraint_keys": [
+      "fact_layer_cardinality",
+      "explanation_layer_cardinality",
+      "judgment_layer_cardinality",
+      "remaining_gaps_cardinality",
+      "what_would_change_cardinality",
+      "maximum_narrative_item_unicode_characters",
+      "maximum_serialized_utf8_bytes"
+    ],
+    "request_additional_properties_allowed": false,
+    "diagnosis": "the prompt labels constraint metadata as required_output_schema members while simultaneously forbidding additional properties, but the local validator rejects those members; the Provider-facing contract and canonical validator therefore disagree before model quality is assessed",
+    "live_failure_proves": [
+      "provider_HTTP_and_transport_succeeded",
+      "finish_reason_stop",
+      "native_JSON_object_parse_passed",
+      "exact_top_level_key_set_or_program_cell_id_binding_failed",
+      "zero_artifacts_committed"
+    ],
+    "live_failure_does_not_reconstruct": [
+      "missing_required_keys",
+      "unexpected_keys",
+      "program_cell_id_mismatch",
+      "raw_provider_output"
+    ]
+  },
+  "provider_contract_findings": {
+    "deepseek_json_object": "guarantees valid JSON and requires prompt guidance plus an example; it does not claim conformance to an application JSON Schema",
+    "deepseek_beta_strict_tool": "officially claims Function JSON Schema conformance, but two consumed S2 strict-route validations produced no closed Artifact and the route is retired from another same-path attempt",
+    "S2_deepseek_segmented_json_object": "four flat segments plus local deterministic assembly terminalized succeeded with nine Artifacts, four calls, retry zero and no external tool execution",
+    "inference": "fixing the contradictory prompt is necessary but a third monolithic prompt-only structured-output attempt is not a sufficient transport strategy for the expanded nested owner-grade contract"
+  },
+  "alternatives": [
+    {
+      "route": "same_monolithic_v3_json_object_after_prompt_repair",
+      "decision": "reject_as_next_live_route",
+      "reason": "JSON validity is not schema conformance and repeating a deeply nested prompt-only route would not use the strongest available project evidence"
+    },
+    {
+      "route": "deepseek_beta_strict_named_function",
+      "decision": "reject",
+      "reason": "the project already consumed two strict-route attempts without a closed output and Project OS forbids a third same-route attempt"
+    },
+    {
+      "route": "openai_native_strict_json_schema",
+      "decision": "defer_not_primary",
+      "reason": "it changes the Provider variable and prior exact attempts stopped at account 429 and credential 401 before schema compliance could be evaluated"
+    },
+    {
+      "route": "deepseek_segmented_owner_grade_specialist_with_local_assembly",
+      "decision": "selected",
+      "reason": "it preserves DeepSeek and the canonical output-v3 contract while reusing the only Provider transport pattern already live-proven in this repository"
+    }
+  ],
+  "selected_zero_call_implementation_contract": {
+    "prospective_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v1",
+    "canonical_output_contract_ref_unchanged": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "logical_node_count_unchanged": 6,
+    "specialist_segments_per_cell": [
+      {
+        "segment_id": "facts_explanation_and_terminal",
+        "exact_top_level_keys": [
+          "program_cell_id",
+          "fact_layer",
+          "explanation_layer",
+          "remaining_gaps",
+          "terminal_class"
+        ],
+        "maximum_output_tokens": 1600
+      },
+      {
+        "segment_id": "owner_grade_claim_cards",
+        "exact_top_level_keys": ["program_cell_id", "judgment_layer"],
+        "maximum_output_tokens": 1200
+      },
+      {
+        "segment_id": "actionable_what_would_change_tasks",
+        "exact_top_level_keys": ["program_cell_id", "what_would_change"],
+        "maximum_output_tokens": 1400
+      }
+    ],
+    "assembly": "validate each flat segment against exact input authority, deterministically assemble the unchanged seven-key v3 Specialist object, then run the existing complete local v3 validator before Lead execution",
+    "schema_conveyance_repair": {
+      "required_output_schema_contains_only_output_members": true,
+      "output_constraints_are_a_separate_non_output_object": true,
+      "required_top_level_keys_are_explicit": true,
+      "additional_properties_allowed": false,
+      "provider_example_must_not_contain_constraint_metadata_keys": true
+    },
+    "closed_safe_shape_telemetry": {
+      "allowed_subtypes": [
+        "top_level_keys_missing",
+        "top_level_keys_unexpected",
+        "program_cell_id_mismatch"
+      ],
+      "persist_raw_output": false,
+      "persist_arbitrary_provider_key_names": false,
+      "persist_only_subtype_and_counts": true
+    },
+    "provisional_maximum_semantic_provider_network_calls": [12, 12, 12],
+    "provisional_maximum_output_tokens": 16200,
+    "maximum_total_cost_usd": 0.1,
+    "transport_attempts_per_call": 1,
+    "retry_fallback_repair_or_rerun_budget": 0,
+    "first_failure_stop": true,
+    "source_network_external_tool_live_case_head_write_allowed": false,
+    "downstream_lead_writer_verifier_contracts_unchanged": true
+  },
+  "implementation_acceptance": [
+    "the existing output-v3 contract and historical Run truth remain unchanged",
+    "the new transport is admission-bound and never becomes a silent fallback or default",
+    "the Provider-visible required_output_schema has exactly the locally accepted keys and no constraint metadata keys",
+    "three segment validators reject unknown keys duplicate IDs unauthorized refs and cell mismatch before deterministic assembly",
+    "the assembled object passes the existing full owner-grade authority Claim Card WWC and length validators",
+    "a six-logical-node positive fake-provider fixture produces all nine Artifact families",
+    "negative fixtures stop at the earliest segment owner and never call later segments or downstream nodes",
+    "safe subtype telemetry persists no raw output arbitrary key names private reasoning or credentials",
+    "projected calls tokens and cost remain within the frozen ceilings without live Provider execution"
+  ],
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "new_admissions": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_Artifacts": 0,
+    "paired_comparisons": 0,
+    "Human_Reviews": 0
+  },
+  "stage_decision": {
+    "RC_P36_039": "root_cause_confirmed_selected_repair_implementation_pending_separate_authority",
+    "RC_P36_037": "remains_blocked_until_complete_fresh_v3_artifacts_and_owner_grade_validation",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-DEEPSEEK-SEGMENTED-SPECIALIST-TRANSPORT-ZERO-CALL-IMPLEMENTATION"
+}

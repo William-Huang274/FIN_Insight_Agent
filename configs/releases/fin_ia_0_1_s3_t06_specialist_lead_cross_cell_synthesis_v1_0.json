@@ -1,0 +1,200 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t06_specialist_lead_cross_cell_synthesis_v1_0",
+  "release_id": "REL-PROD-001",
+  "slice_id": "S3",
+  "task_id": "S3-T06",
+  "status": "pass_after_independent_review_T07_ready_pending_separate_authorization",
+  "occurred_at": "2026-07-21T21:15:00+08:00",
+  "authority": {
+    "user_instruction": "继续",
+    "S3_T06_zero_call_deterministic_fixture_authorized": true,
+    "S3_T07_execution_authorized": false,
+    "model_execution_authorized": false,
+    "provider_execution_authorized": false,
+    "source_network_authorized": false,
+    "external_tool_execution_authorized": false,
+    "Evidence_promotion_authorized": false,
+    "repair_execution_authorized": false,
+    "canonical_judgment_head_mutation_authorized": false,
+    "business_mutation_authorized": false,
+    "new_admission_or_paid_run_authorized": false,
+    "S4_release_or_production_authorized": false
+  },
+  "dependencies": {
+    "runtime_plan_ref": "configs/releases/fin_ia_0_1_s3_t02_runtime_plan_branch_lineage_role_context_v1_0.json",
+    "evidence_route_plan_ref": "configs/releases/fin_ia_0_1_s3_t03_evidence_route_promotion_sourcehunter_v1_0.json",
+    "financial_pack_ref": "configs/releases/fin_ia_0_1_s3_t04_financial_numeric_fundamental_pack_v1_0.json",
+    "graph_pack_ref": "configs/releases/fin_ia_0_1_s3_t05_bounded_graph_decision_cell_pack_v1_0.json",
+    "lineage_rule": "one exact Case WorkUnit Attempt ResearchRun RuntimePlan and T02-T05 pack chain"
+  },
+  "implementation": {
+    "unique_owner": "src/sec_agent/langgraph_orchestrator.py:compile_s3_specialist_lead_cross_cell_pack",
+    "runtime_owner": "apps/workbench/backend/application/research_runtime.py:Fin01ResearchRuntime",
+    "judgment_pack_contract_ref": "fin01.s3.specialist_judgment_cross_cell_adjudication_and_targeted_repair:v1",
+    "canonical_artifact_surface": "deterministic_research_result.s3_specialist_lead_cross_cell_pack_and_consumption_receipts",
+    "specialist_judgment_count": 3,
+    "specialist_fact_layer_count": 3,
+    "specialist_explanation_layer_count": 3,
+    "specialist_decision_layer_count": 3,
+    "lead_synthesis_count": 1,
+    "lead_cross_cell_dependency_count": 3,
+    "lead_cross_cell_conflict_count": 3,
+    "variant_view_count": 1,
+    "targeted_repair_ticket_count": 3,
+    "repeat_fingerprint_stop_probe_count": 1,
+    "parallel_commit_probe_count": 3,
+    "stale_or_late_commit_rejection_probe_count": 2,
+    "canonical_judgment_head_write_count": 0
+  },
+  "specialist_layering": [
+    {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "fact_layer": "no accepted demand fact; Candidate and Graph refs excluded",
+      "explanation_layer": "customer and deployment context motivates a bounded durability mechanism check",
+      "judgment_layer": "bounded_cannot_infer_demand_durability"
+    },
+    {
+      "program_cell_id": "value_and_profit_capture",
+      "fact_layer": "zero accepted Evidence refs; three deterministic Numeric source refs and two deterministic derived margins",
+      "explanation_layer": "aggregate profitability is separated from product segment incremental-AI and cross-chain attribution",
+      "judgment_layer": "bounded_company_total_support_product_capture_unattributed"
+    },
+    {
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "fact_layer": "no accepted current bottleneck fact; Graph path excluded",
+      "explanation_layer": "packaging dependency is a source-followup mechanism hypothesis",
+      "judgment_layer": "bounded_counterevidence_hypothesis_probability_impact_unknown"
+    }
+  ],
+  "lead_adjudication": {
+    "specialist_input_count": 3,
+    "dependency_count": 3,
+    "conflict_count": 3,
+    "adds_new_adjudication": true,
+    "text_concatenation_only": false,
+    "numeric_override_authorized": false,
+    "writer_admission_recommended": false,
+    "variant_view": "exact company profitability exists, but durable company-specific demand, accelerator-specific value capture, and quantified bottleneck risk remain unproven; this is not an admissible Alpha conclusion"
+  },
+  "targeted_repair": [
+    {
+      "failure_type": "unsupported_claim",
+      "earliest_owner": "src/sec_agent/langgraph_orchestrator.py",
+      "required_change": ["owner", "hypothesis", "verifiable_output"],
+      "execution_status": "planned_not_executed"
+    },
+    {
+      "failure_type": "numeric_conflict",
+      "earliest_owner": "src/sec_agent/canonical_runtime/parser_numeric.py",
+      "required_change": ["input", "owner", "verifiable_output"],
+      "execution_status": "planned_not_executed"
+    },
+    {
+      "failure_type": "missing_source",
+      "earliest_owner": "apps/workbench/backend/application/evidence_service.py",
+      "required_change": ["route", "owner", "hypothesis", "verifiable_output"],
+      "execution_status": "planned_not_executed"
+    }
+  ],
+  "concurrency_and_stop": {
+    "matching_snapshot": "eligible_for_single_writer_commit_fixture_only_no_mutation_executed",
+    "stale_snapshot": "quarantine_stale_output",
+    "late_superseded_output": "quarantine_late_superseded_output",
+    "repeated_same_fingerprint_without_new_information": "stop",
+    "actual_canonical_head_mutations": 0
+  },
+  "method_to_runtime": {
+    "method_ids": [
+      "thesis_path_first_research",
+      "three_statement_peer_panel",
+      "secondary_market_capital_feedback",
+      "p32_ai_semis_theme_exposure_thesis_path",
+      "p32_product_architecture_competitive_bridge",
+      "p32_semis_cycle_value_chain_playbook"
+    ],
+    "contract_translated": true,
+    "fixture_proven": true,
+    "runtime_injected": true,
+    "node_level_consumed": true,
+    "specialist_or_lead_model_consumed": false,
+    "paid_artifact_proven": false,
+    "dogfood_accepted": false,
+    "full_methods_claimed_active": false,
+    "boundary": "T06 proves deterministic role-node consumption and adjudication semantics; paid Specialist/Lead quality remains T09 and owner acceptance remains T10"
+  },
+  "root_cause_reconciliation": [
+    {
+      "issue_id": "RC-P36-029-aggregate-judgment-planner-preserves-claims-but-not-decision-surface-adjudication",
+      "three_cell_adjudication_layer_proven": true,
+      "full_issue_closed": false,
+      "remaining": "paid Specialist/Lead behavior, T07 delivery consumption, T09 exact artifact and T10 owner acceptance"
+    },
+    {
+      "issue_id": "RC-P36-025-fundamental-specialist-input-pack-not-decision-cell-ready",
+      "deterministic_specialist_node_consumption_proven": true,
+      "full_issue_closed": false,
+      "remaining": "live parser quality and paid Specialist output"
+    },
+    {
+      "issue_id": "RC-P36-028-risk-counterevidence-not-risk-cell-projected",
+      "deterministic_risk_judgment_consumption_proven": true,
+      "full_issue_closed": false,
+      "remaining": "promoted counterevidence, probability, impact and paid quality"
+    },
+    {
+      "issue_id": "RC-P35-021-ai-infra-decision-surface-not-runtime-contract",
+      "judgment_subscope_runtime_consumed": true,
+      "full_issue_closed": false,
+      "remaining": "T07 delivery consumption and T08-T10 readiness/output/owner review"
+    }
+  ],
+  "independent_review": {
+    "disposition": "pass_after_fact_authority_full_recompile_and_repair_stop_review",
+    "checks": [
+      "all T02-T05 lineage identities are exact before judgment compilation",
+      "only accepted Evidence and deterministic Numeric may enter fact layers",
+      "T04 Numeric source refs remain deterministic_numeric_source_refs and do not masquerade as accepted Evidence",
+      "Candidate Graph Product Market and Risk context stay outside fact authority",
+      "the value Cell preserves exact company-total margins and refuses product or chain allocation",
+      "Lead output contains typed dependencies conflicts and a variant view rather than concatenated Specialist prose",
+      "unsupported claim numeric conflict and missing source route to three different earliest owners",
+      "every repair changes at least one governed dimension and repeated same fingerprint without new information stops",
+      "stale and late outputs are quarantined and cannot commit current head",
+      "consumer fully recompiles the pack and rejects nested fact-layer tampering",
+      "no new Runtime Store Registry Writer Gate family or business head was created"
+    ],
+    "root_causes_closed_by_T06": 0
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_writes": 0,
+    "runtime_Evidence_promotions": 0,
+    "canonical_judgment_head_writes": 0,
+    "repair_executions": 0,
+    "new_admissions": 0,
+    "paid_runs": 0
+  },
+  "verification": {
+    "T06_contract_and_functional": "7 passed in 41.59s",
+    "focused_S3_entry_through_T06": "42 passed in 121.17s",
+    "expanded_regression": "426 passed in 229.33s",
+    "broader_shared_suite_audit": "438 passed and 3 failed initially; one stale backlog-next assertion repaired, two pre-existing renderer boundary-display assertions had no T06 unstaged diff intersection and were excluded from the final scoped expansion",
+    "final_contract_Project_OS_and_stable_digest": "13 passed in 34.29s",
+    "JSON_and_JSONL": "pass",
+    "secret_scan": "pass_no_credential_shaped_match",
+    "git_diff_check": "pass_CRLF_normalization_warnings_only"
+  },
+  "stage_acceptance": {
+    "S3_T06": "pass",
+    "S3_T07": "ready_pending_separate_authorization",
+    "S3_T08_through_T10": "blocked_by_dependencies_and_separate_exact_authority_where_applicable",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T07-THREE-CELL-WORKPAPER-REPORT-TRACE-GRAPH-DRILLDOWN-AND-REVIEW-SURFACE"
+}

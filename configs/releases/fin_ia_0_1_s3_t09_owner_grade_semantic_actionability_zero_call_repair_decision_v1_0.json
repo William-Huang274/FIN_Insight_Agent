@@ -1,0 +1,338 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_semantic_actionability_zero_call_repair_decision_v1_0",
+  "decision_id": "S3-T09-OWNER-GRADE-SEMANTIC-ACTIONABILITY-ZERO-CALL-REPAIR-DECISION-R1",
+  "decided_at": "2026-07-22T10:20:00+08:00",
+  "status": "pass_selected_upstream_to_verifier_typed_repair_implementation_pending",
+  "authority": {
+    "user_instruction": "可以，继续做下一项",
+    "zero_call_repair_decision_authorized": true,
+    "repair_implementation_authorized": false,
+    "baseline_materialization_authorized": false,
+    "new_agent_proof_authorized": false,
+    "model_provider_network_source_or_tool_execution_authorized": false,
+    "paired_comparison_or_human_review_authorized": false,
+    "T10_S4_release_or_production_authorized": false
+  },
+  "root_cause_binding": {
+    "issue_id": "RC-P36-037-s3-owner-grade-semantic-actionability-and-verifier-false-negative-gap",
+    "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_replacement_live_artifact_paired_baseline_decision_v1_0.json",
+    "source_agent_result_ref": "configs/releases/fin_ia_0_1_s3_t09_replacement_output_v2_live_execution_result_v1_0.json",
+    "earliest_faulty_artifact_ref": "artifact_fin01_2c3449b6cd97941b2039f1bd:v1",
+    "earliest_faulty_surface": "specialist_outputs[value_and_profit_capture].judgment_layer",
+    "downstream_propagation": [
+      "cross_cell_lead.conflict_adjudications",
+      "bounded_agent_report.report.executive_summary_zh_cn",
+      "bounded_agent_report.report.sections[value_and_profit_capture]",
+      "bounded_agent_verification.verification.semantic_fidelity"
+    ],
+    "classification": "project_owned_output_contract_context_and_validator_gap_not_provider_json_failure",
+    "immutable_v2_artifacts_may_be_rewritten": false
+  },
+  "current_contract_gap_proof": {
+    "specialist": "v2 validates authority only inside fact_layer; judgment_layer and what_would_change remain bounded strings without typed scope entailment or task fields",
+    "lead": "cell_heads bind only specialist digest and conflict_adjudications remain free strings; fact presence and terminal state are not separate machine fields",
+    "writer": "writer validates section cardinality lineage and source/tool zero, but sections have no consumed claim refs or scope-preservation contract",
+    "verifier_input": "verifier receives writer body plus digests but not Specialist/Lead bodies or the accepted fact Numeric candidate and Graph authority surface",
+    "verifier_output": "verifier validation checks four-layer shape digests and decision enum but does not fail accept_for_internal_review when semantic issues exist",
+    "observed_false_negative_count": 4
+  },
+  "selected_contract_versions": {
+    "three_cell_output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "claim_card_contract_ref": "fin01.s3.owner_grade_claim_card:v1",
+    "what_would_change_contract_ref": "fin01.s3.actionable_what_would_change:v1",
+    "lead_output_contract_ref": "fin01.s3.cross_cell_lead_output:v2",
+    "writer_output_contract_ref": "fin01.s3.owner_grade_writer_output:v2",
+    "verifier_input_contract_ref": "fin01.s3.owner_grade_verifier_input:v2",
+    "verifier_output_contract_ref": "fin01.s3.owner_grade_verifier_output:v2",
+    "transport_ref_unchanged": "fin01.s3.bounded_agent.deepseek_segmented_node_json_object:v1",
+    "profile_ref_unchanged": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+    "specialist_model_view_ref_unchanged": "fin01.s3.specialist_model_view:v1"
+  },
+  "specialist_claim_card_contract": {
+    "replaces_free_string_judgment_layer": true,
+    "required_fields": [
+      "claim_id",
+      "statement",
+      "epistemic_status",
+      "support_fact_ids",
+      "context_refs",
+      "scope",
+      "qualification",
+      "cannot_support"
+    ],
+    "epistemic_status_enum": [
+      "fact_supported",
+      "bounded_inference",
+      "hypothesis",
+      "cannot_infer"
+    ],
+    "scope_required_fields": [
+      "entity_ref",
+      "business_scope_kind",
+      "business_scope_ref",
+      "period",
+      "metric_or_mechanism",
+      "attribution_level"
+    ],
+    "business_scope_kind_enum": [
+      "company_total",
+      "segment",
+      "product",
+      "value_chain",
+      "unknown"
+    ],
+    "attribution_level_enum": [
+      "company_total",
+      "segment",
+      "product",
+      "cross_chain",
+      "none"
+    ],
+    "deterministic_rules": [
+      "fact_supported and bounded_inference require known support_fact_ids",
+      "claim scope entity period metric business scope and attribution may not exceed the exact support facts or any upstream cannot_support boundary",
+      "candidate and Graph refs may appear only in context_refs and cannot authorize fact_supported",
+      "hypothesis must have non-empty qualification and must remain visibly hypothesis downstream",
+      "cannot_infer requires non-empty cannot_support and cannot encode a positive supported proposition",
+      "unknown support fact claim or duplicate claim identity fails closed before Lead"
+    ],
+    "known_case_effect": "a Data Center segment revenue-capture claim backed only by company-total Numeric facts is rejected as scope and attribution expansion"
+  },
+  "actionable_what_would_change_contract": {
+    "replaces_free_string_list": true,
+    "required_fields": [
+      "task_id",
+      "claim_id",
+      "source_target",
+      "metric_or_observation",
+      "decision_rule",
+      "time_window",
+      "expected_claim_transition",
+      "fallback_stop_condition",
+      "authority_refs"
+    ],
+    "source_target_required_fields": [
+      "source_type",
+      "entity_or_owner",
+      "document_event_or_dataset"
+    ],
+    "decision_rule_required_fields": [
+      "rule_type",
+      "comparator_or_condition",
+      "threshold_or_observation"
+    ],
+    "time_window_required_fields": [
+      "as_of",
+      "start_or_trigger",
+      "deadline_or_review_date"
+    ],
+    "rules": [
+      "all required fields must be non-empty and claim_id must bind an exact Claim Card",
+      "qualitative tasks use rule_type qualitative_observation but still require an explicit observable condition",
+      "authority refs are routing inputs only and do not promote future evidence",
+      "missing source metric decision rule or time field fails at the node that emitted the task"
+    ]
+  },
+  "lead_contract": {
+    "cell_head_required_fields": [
+      "program_cell_id",
+      "specialist_output_digest",
+      "terminal_class",
+      "evidence_fact_count",
+      "numeric_fact_count",
+      "claim_state_counts"
+    ],
+    "conflict_adjudication_required_fields": [
+      "adjudication_id",
+      "involved_claim_ids",
+      "terminal_state_summary",
+      "fact_presence_summary",
+      "resolution_status",
+      "statement"
+    ],
+    "deterministic_rules": [
+      "fact counts and claim-state counts are recomputed from Specialist outputs",
+      "terminal_class is never used as a synonym for absence of facts",
+      "all-cells-non-fact wording is invalid whenever any Evidence or Numeric fact count is positive",
+      "variant view and remaining gaps must reference exact claim or WWC identities"
+    ]
+  },
+  "writer_contract": {
+    "writer_may_create_new_research_claims": false,
+    "section_required_fields": [
+      "program_cell_id",
+      "claim_renderings",
+      "what_would_change_task_refs"
+    ],
+    "claim_rendering_required_fields": [
+      "claim_id",
+      "rendered_text_zh_cn",
+      "epistemic_status",
+      "scope_digest",
+      "qualification_preserved"
+    ],
+    "required_bindings": [
+      "consumed_claim_surface_digest",
+      "consumed_lead_digest",
+      "exact_claim_ids",
+      "exact_WWC_task_ids"
+    ],
+    "deterministic_rules": [
+      "unknown claim or task identity is rejected",
+      "epistemic status scope digest numeric values period and attribution must equal upstream Claim Card and fact surface",
+      "hypothesis and cannot_infer qualifications must remain explicit in rendered output",
+      "Graph context renders as 研究关系图谱 or 关系图谱假设 and cannot render as 图表假设",
+      "source_calls and tool_calls remain exactly zero"
+    ]
+  },
+  "verifier_contract": {
+    "required_full_input_bodies": [
+      "authority_surface_by_cell",
+      "specialist_claim_cards",
+      "specialist_output_digests",
+      "cross_cell_lead",
+      "cross_cell_lead_digest",
+      "writer_output",
+      "writer_digest"
+    ],
+    "authority_surface_by_cell_includes": [
+      "accepted_evidence_refs",
+      "numeric_fact_scope_and_cannot_support",
+      "candidate_refs_not_evidence",
+      "graph_context_refs_not_evidence"
+    ],
+    "finding_required_fields": [
+      "layer",
+      "status",
+      "issue_codes",
+      "artifact_or_claim_refs",
+      "repair_owner"
+    ],
+    "decision_rules": [
+      "local owner-grade semantic precommit validation runs before accepting model verifier output",
+      "accept_for_internal_review is forbidden when any local semantic issue or any verifier review_required or fail finding exists",
+      "verifier cannot repair mutate or silently qualify upstream output",
+      "machine verifier remains non-human and cannot sign owner acceptance"
+    ],
+    "no_additional_model_call": true
+  },
+  "negative_fixture_matrix": [
+    {
+      "fixture_id": "unsupported_segment_revenue_from_company_total_numeric",
+      "earliest_rejector": "specialist_claim_scope_validator",
+      "expected_failure_code": "s3_owner_grade_claim_scope_exceeds_fact_authority"
+    },
+    {
+      "fixture_id": "candidate_or_graph_promoted_to_supported_claim",
+      "earliest_rejector": "specialist_claim_authority_validator",
+      "expected_failure_code": "s3_owner_grade_context_promoted_to_claim_authority"
+    },
+    {
+      "fixture_id": "positive_claim_encoded_as_cannot_infer",
+      "earliest_rejector": "specialist_epistemic_validator",
+      "expected_failure_code": "s3_owner_grade_epistemic_status_statement_conflict"
+    },
+    {
+      "fixture_id": "WWC_missing_source_metric_rule_or_time",
+      "earliest_rejector": "specialist_or_lead_WWC_validator",
+      "expected_failure_code": "s3_owner_grade_WWC_task_incomplete"
+    },
+    {
+      "fixture_id": "lead_non_fact_wording_with_numeric_fact_count_one",
+      "earliest_rejector": "lead_fact_presence_validator",
+      "expected_failure_code": "s3_owner_grade_lead_fact_presence_mismatch"
+    },
+    {
+      "fixture_id": "writer_unknown_claim_or_scope_expansion",
+      "earliest_rejector": "writer_claim_surface_validator",
+      "expected_failure_code": "s3_owner_grade_writer_claim_surface_violation"
+    },
+    {
+      "fixture_id": "writer_graph_context_mistranslated_as_chart",
+      "earliest_rejector": "writer_terminology_validator",
+      "expected_failure_code": "s3_owner_grade_writer_graph_terminology_invalid"
+    },
+    {
+      "fixture_id": "writer_drops_hypothesis_or_cannot_infer_qualification",
+      "earliest_rejector": "writer_qualification_validator",
+      "expected_failure_code": "s3_owner_grade_writer_qualification_dropped"
+    },
+    {
+      "fixture_id": "verifier_input_omits_full_claim_or_authority_body",
+      "earliest_rejector": "verifier_input_validator",
+      "expected_failure_code": "s3_owner_grade_verifier_authority_surface_missing"
+    },
+    {
+      "fixture_id": "verifier_accepts_with_local_semantic_issue",
+      "earliest_rejector": "verifier_decision_validator",
+      "expected_failure_code": "s3_owner_grade_verifier_false_green_forbidden"
+    }
+  ],
+  "implementation_owners": [
+    {
+      "owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "responsibility": "v3 schemas node payloads prompts local validators failure codes and artifact projection"
+    },
+    {
+      "owner": "tests/contract/test_fin_0_1_s3_t09_owner_grade_semantic_actionability_zero_call_repair.py",
+      "responsibility": "positive three-cell fake-provider proof ten negative fixtures and historical v1/v2 immutability"
+    },
+    {
+      "owner": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_semantic_actionability_zero_call_repair_v1_0.json",
+      "responsibility": "future implementation result and zero-call observed counts"
+    }
+  ],
+  "implementation_acceptance_gate": {
+    "positive_fixture": "one six-node fake-provider v3 execution reaches terminal success with nine existing Artifact types and exact three cells",
+    "negative_fixture_count": 10,
+    "all_negative_fixtures_fail_at_expected_earliest_owner": true,
+    "historical_v1_v2_admissions_digests_and_artifacts_unchanged": true,
+    "existing_profile_transport_runtime_registry_writer_and_store_families_reused": true,
+    "stage_output_token_budgets": {
+      "specialist": 2200,
+      "lead": 1200,
+      "writer": 1400,
+      "verifier": 1000,
+      "aggregate": 10200
+    },
+    "budget_rule": "retain current ceilings; if a deterministic v3 fixture cannot fit, stop for a separate budget decision rather than silently relaxing them",
+    "model_provider_network_source_tool_calls": 0,
+    "new_admission_or_live_run": 0,
+    "baseline_materialization": 0,
+    "human_review": 0
+  },
+  "explicit_rejections": [
+    "verifier_only keyword patch",
+    "prompt-only warning without typed contract",
+    "post-hoc rewriting of immutable v2 artifacts",
+    "silent deterministic substitution or fallback",
+    "another paid run before deterministic negative fixtures pass",
+    "treating DeepSeek JSON transport as the root cause",
+    "claiming general natural-language entailment beyond the structured scope contract"
+  ],
+  "method_to_runtime_state": {
+    "thesis_path_first_research": "already runtime-injected but WWC actionability now selected for v3 contract translation",
+    "p32_product_architecture_competitive_bridge": "Graph remains navigation context and cannot authorize revenue or margin claims",
+    "p32_thesis_led_memo_output": "selected for claim-bound Writer translation and deterministic consumption proof",
+    "paid_artifact_proven": false,
+    "dogfood_accepted": false
+  },
+  "observed_counts": {
+    "repair_implementation_changes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "baseline_materializations": 0,
+    "agent_reruns": 0,
+    "human_review_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_037": "selected_repair_contract_implementation_pending",
+    "T09_acceptance": "blocked_pending_zero_call_implementation_baseline_materialization_new_agent_proof_and_comparison",
+    "T10_unblocked": false
+  },
+  "next_action": "S3-T09-OWNER-GRADE-SEMANTIC-ACTIONABILITY-ZERO-CALL-REPAIR-IMPLEMENTATION"
+}

@@ -1,0 +1,78 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_research_lead_v5_profile_v3_final_fresh_exact_admission_issuance_v1_0",
+  "issuance_id": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-PROFILE-V3-FINAL-FRESH-EXACT-ADMISSION-ISSUANCE",
+  "issued_at": "2026-07-24T01:00:58+08:00",
+  "status": "issued_unconsumed_zero_call_preflight_pass",
+  "authority": {
+    "user_instruction": "按这个顺序做",
+    "issuance_and_one_exact_live_authorized": true,
+    "automatic_retry_fallback_or_second_live_authorized": false,
+    "owner_acceptance_authorized_for_codex": false,
+    "release_or_production_authorized": false
+  },
+  "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_research_lead_v5_profile_v3_final_fresh_exact_proof_decision_v1_0.json",
+  "issued_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_research_lead_v5_profile_v3_final_exact_admission_r1.json",
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-research-lead-v5-profile-v3-final-exact-admission-r1",
+    "admission_digest": "e3db9ce6eb89372983cca3696a8223e7e29d612060189568c604352f8efadd12",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s3-t09-three-cell-deepseek-owner-grade-research-lead-v5-profile-v3-final-live-validation-r1",
+    "fresh_identity": true,
+    "execution_enabled": true,
+    "consumed": false,
+    "execution_started": false
+  },
+  "exact_binding": {
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "as_of": "2026-07-21T00:00:00Z",
+    "input_head_digest": "c9867b54b86cf17982b4cebfaf0c0ebcae2a6f46d894ff82dbb643f693c9836d",
+    "input_digest": "6c7fa9b0349114b2821c9a5bf632c765c79f96e1b81752703d6f1ac90f196ad9",
+    "preparation_digest": "6ad5dfae708815276477503c3054b9ed63c798b59291d52ad9772c13af7f0db2",
+    "predicted_work_unit_id": "wu_p02_5_ab7e45832916d2102c8f09dc",
+    "predicted_attempt_id": "attempt_fin01_b4fab104010e8c349f719c8a",
+    "predicted_research_run_id": "research_run_fin01_0065b32eb5c74773c4c81799",
+    "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v3",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v5",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+    "scoped_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+    "provider_output_capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1"
+  },
+  "execution_envelope": {
+    "maximum_semantic_model_calls": 12,
+    "maximum_provider_calls": 12,
+    "maximum_network_calls": 12,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "maximum_output_tokens_total": 16800,
+    "maximum_total_cost_usd": 0.1,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "automatic_retry_repair_fallback_or_rerun_allowed": false,
+    "second_live_execution_allowed": false
+  },
+  "zero_call_preflight": {
+    "fresh_predicted_work_unit_attempt_run_absent": true,
+    "target_counts": {
+      "canonical_work_units": 17,
+      "canonical_attempts": 17,
+      "canonical_research_run_versions": 17,
+      "canonical_artifact_versions": 13
+    },
+    "canonical_database_sha256": "1490f9aa109a520f47bc2b4e821b79ce743090a6064cb80b524a879bb11efe7c",
+    "canonical_object_tree_sha256": "0b78abbdf472cba30a23501202f0666f54a3eaaae90ea73de47dbc3687a74d3b",
+    "provider_calls": 0,
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "transport_retries_env_is_zero": false
+  },
+  "next_action": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-PROFILE-V3-FINAL-FRESH-EXACT-LIVE-EXECUTION"
+}

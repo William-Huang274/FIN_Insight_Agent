@@ -1,0 +1,116 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_research_lead_v5_narrative_quality_and_s3_scope_rebaseline_decision_v1_0",
+  "decision_id": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-PER-FIELD-NARRATIVE-LENGTH-FAILURE-ZERO-CALL-ROOT-CAUSE-AND-S3-SCOPE-REBASELINE-DECISION",
+  "decided_at": "2026-07-24T15:20:00+08:00",
+  "status": "pass_quality_target_and_hard_integrity_boundary_separated_single_final_exact_live_selected",
+  "authority": {
+    "user_instruction": "按这个顺序做",
+    "continuous_zero_call_implementation_regression_and_one_final_exact_live_authorized": true,
+    "automatic_retry_fallback_or_second_live_execution_authorized": false,
+    "owner_acceptance_may_be_impersonated_by_codex": false,
+    "release_or_production_authorized": false
+  },
+  "source_result": {
+    "result_ref": "configs/releases/fin_ia_0_1_s3_t09_research_lead_v5_fresh_live_execution_result_v1_0.json",
+    "research_run_id": "research_run_fin01_2aeba4619781fa9a56f55af0",
+    "provider_finish_reason": "stop",
+    "lead_output_tokens_and_cap": [1050, 1800],
+    "provider_wire_utf8_bytes_and_cap": [4628, 8192],
+    "aggregate_narrative_characters_and_cap": [3077, 3200],
+    "per_field_target_exceedance_count": 3,
+    "observed_lengths": [388, 343, 423],
+    "runtime_reported_failing_item_count": 1,
+    "restricted_replay_failing_item_count": 3,
+    "raw_answer_text_copied_into_tracked_artifacts": false
+  },
+  "root_cause": {
+    "immediate_cause": "Three complete narrative fields exceeded the profile-v2 320-character per-field terminal limit.",
+    "earliest_owned_defect": "One limit conflated a writing-quality target with a hard integrity and capacity boundary, while first-error telemetry hid the true violation cardinality.",
+    "provider_json_or_reference_conformance_failure_confirmed": false,
+    "unsupported_fact_or_numeric_failure_confirmed": false,
+    "project_owned_contract_grading_defect_confirmed": true,
+    "deepseek_model_fault_confirmed": false
+  },
+  "selected_contract": {
+    "research_lead_transport_ref_unchanged": "fin01.s3.bounded_agent.research_lead_owner_grade:v5",
+    "new_research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v3",
+    "historical_profile_v1_and_v2_immutable_and_replayable": true,
+    "specialist_per_field_hard_maximum_unchanged": 320,
+    "research_lead_per_field_quality_target": 320,
+    "research_lead_per_field_hard_safety_maximum": 512,
+    "research_lead_aggregate_narrative_hard_maximum_unchanged": 3200,
+    "provider_raw_wire_utf8_hard_maximum_unchanged": 8192,
+    "canonical_alias_utf8_hard_maximum_unchanged": 6000,
+    "lead_output_token_cap_unchanged": 1800,
+    "aggregate_output_token_cap_unchanged": 16800,
+    "max_total_cost_usd_unchanged": 0.1,
+    "quality_target_exceedance_behavior": "persist_closed_non_terminal_quality_observation",
+    "hard_maximum_exceedance_behavior": "terminal_fail_closed_with_complete_safe_count",
+    "silent_truncation_trim_drop_or_rewrite_allowed": false,
+    "provider_or_transport_specific_if_branch_required": false
+  },
+  "hard_integrity_gates": [
+    "native JSON shape cardinality and schema",
+    "closed scoped Claim and what-would-change references",
+    "Evidence Numeric and epistemic authority consistency",
+    "per-field 512-character hard safety maximum",
+    "aggregate narrative raw wire canonical alias and local expansion capacities",
+    "exact call budget retry-zero terminal consistency and no orphan",
+    "nine canonical Artifact families and source/tool/write boundaries"
+  ],
+  "soft_quality_findings": [
+    "per-field 320-character target exceedance",
+    "repetition and weak directness",
+    "imprecise causal wording",
+    "variant view without sufficiently actionable metric threshold time and source"
+  ],
+  "s3_scope_rebaseline": {
+    "S3_target": "complete_three_cell_NVDA_R2_internal_research_product",
+    "permitted_closeout": "R2_with_known_quality_gaps",
+    "S3_must_not_absorb": [
+      "three-case transfer",
+      "qualified senior analyst R3",
+      "new source-network evidence acquisition",
+      "deterministic financial calculation layer",
+      "market-consensus variant-view and Alpha proof",
+      "release candidate gates"
+    ],
+    "later_owners": {
+      "S4": [
+        "three-case transfer",
+        "qualified senior R3",
+        "cost latency and D07B calibration"
+      ],
+      "S5": [
+        "RG1-RG5",
+        "release candidate qualification"
+      ],
+      "FIN_0_2": [
+        "exact earnings segment guidance and market-reaction research",
+        "source expansion deterministic financial metrics and Alpha workflow"
+      ]
+    },
+    "repair_budget_disposition": "No additional ordinary style or Alpha repair loop in S3 after the final exact-live; hard integrity failure stops, soft quality gaps carry forward."
+  },
+  "execution_sequence": [
+    "zero_call_general_contract_implementation_and_deterministic_regression",
+    "one_fresh_exact_admission_and_one_exact_live_execution",
+    "if_hard_integrity_passes_paired_comparison_and_independent_product_review",
+    "T10_owner_acceptance_handoff_without_impersonating_owner",
+    "S3_to_S4_cross_slice_early_delivery_manifest_draft"
+  ],
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_live_WorkUnits": 0,
+    "new_live_Attempts": 0,
+    "new_live_ResearchRuns": 0,
+    "new_live_Artifacts": 0,
+    "owner_acceptances": 0
+  },
+  "next_action": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-PROFILE-V3-NARRATIVE-QUALITY-TIERING-AND-CLOSED-OBSERVATION-ZERO-CALL-IMPLEMENTATION"
+}

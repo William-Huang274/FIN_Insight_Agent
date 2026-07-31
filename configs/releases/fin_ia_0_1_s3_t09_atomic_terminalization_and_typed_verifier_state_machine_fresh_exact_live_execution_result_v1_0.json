@@ -1,0 +1,238 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_atomic_terminalization_and_typed_verifier_state_machine_fresh_exact_live_execution_result_v1_0",
+  "status": "terminal_failed_verifier_repair_owner_null_vs_string_sentinel_and_supervisor_exit_receipt_loss_no_retry_relaunch_or_rerun",
+  "authority": {
+    "user_instruction": "继续",
+    "fresh_exact_live_execution_authorized": true,
+    "automatic_retry_fallback_patch_replay_relaunch_or_rerun_authorized": false,
+    "paired_comparison_owner_acceptance_T10_S4_release_or_production_authorized": false
+  },
+  "source_refs": {
+    "issuance": "configs/releases/fin_ia_0_1_s3_t09_atomic_terminalization_and_typed_verifier_state_machine_fresh_exact_admission_issuance_v1_0.json",
+    "runtime_result": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/atomic_state_machine_supervised_r1_live_execution_result.json",
+    "supervision_root": ".codex_runtime/supervision/fin01-s3-t09-atomic-state-machine-supervised-r1"
+  },
+  "identity": {
+    "work_unit_id": "wu_p02_5_1e93d822b376782fb7648693",
+    "attempt_id": "attempt_fin01_d39d0f35211169de635d6643",
+    "research_run_id": "research_run_fin01_1e49c5f66f867ce2ba5ab9e0",
+    "admission_digest": "2b87b9360ed53ec060670446125065497f2625f9384839cb65c4482ea8c381e1",
+    "admission_consumed": true
+  },
+  "preflight": {
+    "project_os_scoped_preflight": "pass",
+    "exact_runner_preflight": "pass_exact_zero_call_execution_preflight",
+    "transport_retries": 0,
+    "target_counts_before": [
+      20,
+      20,
+      20,
+      13
+    ]
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "observed_counts": {
+      "external_tool_calls": 0,
+      "model_calls": 12,
+      "network_calls": 12,
+      "provider_calls": 12,
+      "source_network_calls": 0
+    },
+    "usage": {
+      "input_tokens": 53346,
+      "output_tokens": 5527,
+      "total_tokens": 58873,
+      "estimated_cost_usd": 0.02481146,
+      "transport_attempt_count": 12
+    },
+    "all_status_ok": true,
+    "all_finish_reason_stop": true,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "patch_count": 0,
+    "relaunch_count": 0,
+    "rerun_count": 0
+  },
+  "restricted_capture_audit": {
+    "capture_count": 12,
+    "restricted_readback_count": 12,
+    "verifier_capture_count": 1,
+    "raw_assistant_output_persisted_in_result": false,
+    "private_reasoning_persisted_in_result": false
+  },
+  "verifier_safe_structure": {
+    "contract_ref": "fin01.s3.owner_grade_verifier_output_state_machine:v1",
+    "native_json_object": true,
+    "top_level_keys": [
+      "bound_lead_digest",
+      "bound_writer_digest",
+      "decision",
+      "findings"
+    ],
+    "finding_count": 4,
+    "layers": [
+      "deterministic_integrity",
+      "semantic_fidelity",
+      "financial_coherence",
+      "visual_delivery"
+    ],
+    "finding_keys": [
+      [
+        "artifact_or_claim_refs",
+        "issue_codes",
+        "layer",
+        "repair_owner",
+        "status"
+      ],
+      [
+        "artifact_or_claim_refs",
+        "issue_codes",
+        "layer",
+        "repair_owner",
+        "status"
+      ],
+      [
+        "artifact_or_claim_refs",
+        "issue_codes",
+        "layer",
+        "repair_owner",
+        "status"
+      ],
+      [
+        "artifact_or_claim_refs",
+        "issue_codes",
+        "layer",
+        "repair_owner",
+        "status"
+      ]
+    ],
+    "statuses": [
+      "pass",
+      "pass",
+      "pass",
+      "pass"
+    ],
+    "issue_code_counts": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "artifact_or_claim_ref_counts": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "repair_owner_types": [
+      "NoneType",
+      "NoneType",
+      "NoneType",
+      "NoneType"
+    ],
+    "decision": "accept_for_internal_review",
+    "bound_lead_digest_is_sha256_shape": true,
+    "bound_writer_digest_is_sha256_shape": true,
+    "state_machine_semantics_satisfied": true,
+    "required_string_shape_satisfied": false,
+    "local_failure_code": "s3_bounded_verifier_finding_schema_invalid"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "orphaned_run": false,
+    "artifact_count": 0,
+    "event_types": [
+      "WORK_UNIT_STARTED",
+      "ATTEMPT_STARTED",
+      "SCHEDULER_LEASE_ACQUIRED",
+      "RESEARCH_RUN_STARTED",
+      "RESEARCH_RUN_FAILED",
+      "ATTEMPT_FAILED",
+      "WORK_UNIT_FAILED"
+    ],
+    "terminal_failure_event_capture_ref_count": 12,
+    "separate_preterminal_capture_event_present": false,
+    "atomic_capture_bearing_failure_transaction_live_proven": true,
+    "target_counts_after": [
+      21,
+      21,
+      21,
+      13
+    ],
+    "canonical_database_sha256": "b0c9541f20b34ac853c8ce439972b0c4f51796e566e4ecbab34007b9171846dc",
+    "canonical_object_tree_sha256": "bbcddcf833a5cec51bf65bd7045277db2d1fba22c3c22353f850541a131fae2b"
+  },
+  "supervision_observation": {
+    "contract_ref": "fin01.s3.exact_run_supervision:v1",
+    "launch_receipt_present": true,
+    "child_command_receipt_present": true,
+    "supervisor_pid": 46480,
+    "runner_pid_observed": 35312,
+    "wrapper_pid_alive_when_observed_after_launch": false,
+    "runner_alive_after_wrapper_loss_when_observed": true,
+    "runner_naturally_exited_without_signal": true,
+    "runtime_result_present": true,
+    "exit_receipt_present": false,
+    "stdout_sha256": "1dc0c3321865db910d7a3d7eedf85861c35a4e85ca1a275921eaafac19832a4d",
+    "stdout_bytes": 25690,
+    "stderr_sha256": "0c735490bee8e9a8917cc9bcb4cd09fb45568e53c8460e99c93c18e676a96bc8",
+    "stderr_bytes": 299,
+    "raw_provider_body_in_audit_result": false,
+    "credential_value_in_audit_result": false,
+    "monitor_signals_sent": 0,
+    "automatic_retry_count": 0,
+    "fallback_count": 0,
+    "replay_count": 0,
+    "relaunch_count": 0
+  },
+  "root_cause_classification": {
+    "verifier_direct_failure": "provider_returned_JSON_null_for_repair_owner_while_required_output_schema_declared_string",
+    "provider_state_machine_semantics_followed": true,
+    "project_owned_request_ambiguity": "repair_owner_declared_string_but_pass_rule_says_must_equal_none_without_explicit_string_literal_sentinel",
+    "local_validator_drift_from_provider_state_machine_semantics": "pre_state_machine_shape_gate_requires_nonempty_string",
+    "model_only_failure": false,
+    "supervision_failure": "detached_wrapper_lost_before_exit_receipt_while_runner_continued_and_reached_canonical_terminal_failure",
+    "supervision_model_related": false,
+    "new_root_cause_ids": [
+      "RC-P36-052-verifier-repair-owner-none-sentinel-ambiguity",
+      "RC-P38-053-windows-detached-wrapper-exit-receipt-loss"
+    ]
+  },
+  "acceptance": {
+    "RC_P38_050_atomic_failure_terminalization_live_proven": true,
+    "RC_P36_051_state_machine_semantics_live_followed": true,
+    "supervision_contract_complete": false,
+    "typed_verifier_end_to_end_complete": false,
+    "nine_artifact_product_complete": false,
+    "paired_comparison_performed": false,
+    "owner_acceptance_performed": false,
+    "S3_T09": "blocked"
+  },
+  "observed_counts": {
+    "admission_consumptions": 1,
+    "supervisor_launches": 1,
+    "live_executions": 1,
+    "model_calls": 12,
+    "provider_calls": 12,
+    "network_calls": 12,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_work_units": 1,
+    "new_attempts": 1,
+    "new_research_runs": 1,
+    "new_business_artifacts": 0,
+    "automatic_retries": 0,
+    "fallbacks": 0,
+    "patches": 0,
+    "capture_replays": 0,
+    "relaunches": 0,
+    "reruns": 0,
+    "paired_comparisons": 0,
+    "owner_acceptance_writes": 0
+  },
+  "next_action": "S3-T09-VERIFIER-REPAIR-OWNER-SENTINEL-AND-WINDOWS-SUPERVISOR-EXIT-RECEIPT-LOSS-ZERO-CALL-ROOT-CAUSE-DISPOSITION"
+}

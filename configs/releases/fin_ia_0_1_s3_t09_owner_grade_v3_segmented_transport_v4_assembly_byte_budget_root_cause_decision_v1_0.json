@@ -1,0 +1,76 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v4_assembly_byte_budget_root_cause_decision_v1_0",
+  "decision_id": "S3-T09-OWNER-GRADE-V3-SEGMENTED-TRANSPORT-V4-ASSEMBLY-BYTE-BUDGET-RESULT-AND-ROOT-CAUSE-DECISION",
+  "decided_at": "2026-07-23T09:20:00+08:00",
+  "status": "pass_project_owned_non_closing_assembly_budget_confirmed_transport_v5_bounded_assembly_contract_selected",
+  "authority": {
+    "user_instruction": "授权你继续往下做，修完做真实运行看是否能通过",
+    "zero_call_root_cause_decision_authorized": true,
+    "transport_v5_repair_and_deterministic_regression_authorized": true,
+    "fresh_exact_admission_decision_issuance_preflight_and_one_live_execution_authorized": true,
+    "retry_fallback_or_hidden_rerun_authorized": false,
+    "paired_comparison_owner_acceptance_T10_S4_release_or_production_authorized": false
+  },
+  "source_evidence": {
+    "failed_live_result_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v4_fresh_live_execution_result_v1_0.json",
+    "failed_model_run_ref": "reports/model_runs/20260723_fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_segmented_transport_v4_live_validation_r1.md",
+    "failed_research_run_id": "research_run_fin01_0e2b6e9698ebbf61288708a9",
+    "restricted_capture_count": 3,
+    "segment_canonical_utf8_bytes": [1166, 1519, 3445],
+    "assembled_canonical_utf8_bytes": 6010,
+    "historical_assembled_limit_bytes": 6000,
+    "excess_bytes": 10,
+    "model_provider_network_calls_in_this_decision": [0, 0, 0]
+  },
+  "root_cause": {
+    "provider_HTTP_JSON_finish_and_segment_contracts_passed": true,
+    "transport_v4_epistemic_status_contract_passed": true,
+    "three_segments_each_valid_under_6000_bytes": true,
+    "assembled_union_valid_under_same_6000_bytes": false,
+    "earliest_owned_defect": "the segmented protocol applies the historical monolithic 6000-byte ceiling independently to every segment and then again to their union, so the admitted segment state space is not closed under assembly",
+    "deepseek_only_root_cause": false,
+    "token_budget_only_root_cause": false,
+    "prompt_only_repair_selected": false
+  },
+  "selected_repair_contract": {
+    "new_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v5",
+    "historical_transport_v1_v2_v3_v4_immutable": true,
+    "historical_whole_output_limit_bytes": 6000,
+    "per_segment_limit_bytes": 6000,
+    "transport_v5_assembled_limit_bytes": 8192,
+    "why_8192": "a small explicit binary operational envelope that contains the replayed 6010-byte valid union while remaining bounded well below the sum of three independent 6000-byte segment ceilings",
+    "canonical_output_contract_ref_unchanged": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "maximum_narrative_unicode_characters_unchanged": 320,
+    "cardinality_authority_epistemic_scope_and_actionability_validators_unchanged": true,
+    "provider_request_contract_identical_to_v4": true,
+    "truncation_coercion_drop_compression_or_silent_repair_forbidden": true,
+    "retry_fallback_and_rerun_budget": 0,
+    "capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1"
+  },
+  "fixture_acceptance": [
+    "the 6010-byte reconstructed valid union remains rejected by historical v4 validation",
+    "the same union passes the v5 assembly envelope",
+    "v5 inherits the exact v4 field authority and epistemic-state Provider request",
+    "a fake Provider first Specialist completes three segments and returns the exact 6010-byte assembly",
+    "all historical segmented transport fixtures remain green"
+  ],
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "new_admissions": 0,
+    "new_live_WorkUnits": 0,
+    "new_live_Attempts": 0,
+    "new_live_ResearchRuns": 0,
+    "new_live_Artifacts": 0
+  },
+  "stage_decision": {
+    "RC_P36_039": "transport_v5_bounded_assembly_repair_selected_and_authorized",
+    "RC_P36_037": "still_open_no_fresh_complete_owner_grade_artifact_proof",
+    "S3_T09": "blocked_pending_repair_regression_and_one_fresh_exact_proof",
+    "S3_T10": "blocked_by_S3_T09",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-SEGMENTED-TRANSPORT-V5-BOUNDED-ASSEMBLY-ZERO-CALL-IMPLEMENTATION"
+}

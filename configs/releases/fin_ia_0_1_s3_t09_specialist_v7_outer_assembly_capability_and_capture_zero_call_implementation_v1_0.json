@@ -1,0 +1,74 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_specialist_v7_outer_assembly_capability_and_capture_zero_call_implementation_v1_0",
+  "implemented_at": "2026-07-23T17:37:32+08:00",
+  "status": "pass_zero_call_specialist_v7_outer_capability_and_capture_repair_fixture_proven_fresh_r2_proof_decision_pending",
+  "authority": {
+    "user_instruction": "修复，修复完做真实模型调用看看修复效果",
+    "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_specialist_v7_outer_assembly_capability_and_capture_zero_call_root_cause_decision_v1_0.json",
+    "zero_call_implementation_and_deterministic_tests_authorized": true,
+    "fresh_r2_exact_admission_issuance_and_one_live_execution_authorized": true,
+    "automatic_retry_fallback_patch_normalization_or_rerun_authorized": false
+  },
+  "architecture": {
+    "selected_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "shared_capacity_policy": "specialist_assembled_output_max_utf8_bytes",
+    "capacity_inputs": [
+      "SpecialistTransportContract.bounded_assembly",
+      "BoundedResearchProfile.specialist_segment_max_utf8_bytes",
+      "BoundedResearchProfile.specialist_assembly_max_utf8_bytes"
+    ],
+    "inner_and_outer_use_same_capacity_policy": true,
+    "transport_version_membership_selects_capacity": false,
+    "post_node_validator_families_wrapped": [
+      "specialist_output",
+      "lead_output",
+      "writer_output",
+      "verifier_input",
+      "verifier_output"
+    ],
+    "typed_failure_class": "BoundedAgentExecutionError",
+    "accumulated_usage_receipts_propagated": true,
+    "accumulated_provider_output_captures_propagated": true,
+    "raw_validator_payload_or_error_text_persisted": false
+  },
+  "compatibility": {
+    "v7_profile_bounded_output_between_6001_and_8192_passes_outer_revalidation": true,
+    "v4_non_bounded_output_limit_remains_6000": true,
+    "v5_v6_v7_and_capture_persistence_regression_passed": true,
+    "historical_admission_payload_or_digest_mutated": false
+  },
+  "deterministic_proof": {
+    "specialist_v7_contract_tests_passed": 16,
+    "focused_v5_v6_v7_and_capture_persistence_tests_passed": 29,
+    "full_historical_s3_t09_tests_passed": 303,
+    "full_historical_s3_t09_stale_state_snapshot_assertions_failed": 44,
+    "full_historical_failure_classification": "all failures bind obsolete backlog next_action or obsolete cumulative canonical execution counts; no repair-path contract failure observed",
+    "post_node_failure_usage_receipt_count": 1,
+    "post_node_failure_provider_output_capture_count": 1,
+    "post_node_failure_raw_invalid_value_persisted": false,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true
+  },
+  "observed_counts": {
+    "real_model_calls": 0,
+    "real_provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "admission_consumptions": 0,
+    "canonical_runs": 0,
+    "canonical_artifacts": 0,
+    "business_case_writes": 0
+  },
+  "acceptance": {
+    "RC_P36_045": "zero_call_repaired_and_fixture_proven_fresh_r2_live_proof_pending",
+    "RC_P38_042": "zero_call_repaired_and_fixture_proven_fresh_r2_live_proof_pending",
+    "RC_P36_037": "still_blocked_complete_fresh_nine_artifact_owner_grade_product_missing",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-SPECIALIST-V7-FRESH-R2-EXACT-PROOF-DECISION"
+}

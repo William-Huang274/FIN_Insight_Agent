@@ -1,0 +1,96 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_output_v4_verifier_schema_drift_zero_call_root_cause_decision_v1_0",
+  "decision_id": "S3-T09-OUTPUT-V4-VERIFIER-PROMPT-VALIDATOR-SCHEMA-DRIFT-ZERO-CALL-ROOT-CAUSE-DECISION",
+  "decided_at": "2026-07-24T12:55:10+08:00",
+  "status": "pass_zero_call_output_v4_verifier_prompt_validator_schema_drift_root_cause_frozen_minimum_repair_selected",
+  "authority": {
+    "user_instruction": "按这个顺序先修exact-live然后做次t09整体验收",
+    "root_cause_decision_authorized": true,
+    "minimum_implementation_authorized_after_decision": true,
+    "one_fresh_replacement_exact_live_authorized_after_deterministic_pass": true,
+    "T09_artifact_validation_and_paired_comparison_authorized_only_after_complete_live_success": true,
+    "owner_acceptance_may_be_prepared_but_not_self_signed_by_codex": true,
+    "automatic_retry_fallback_or_second_replacement_live_authorized": false
+  },
+  "source_refs": {
+    "failed_live_result": "configs/releases/fin_ia_0_1_s3_t09_claim_fact_link_policy_fresh_exact_live_execution_result_v1_0.json",
+    "request_builder": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "historical_fixture": "tests/contract/test_fin_0_1_s3_t09_owner_grade_v3_segmented_specialist_transport.py",
+    "historical_result_contract_test": "tests/contract/test_fin_0_1_s3_t09_claim_fact_link_policy_fresh_exact_live_result.py"
+  },
+  "confirmed_project_owned_root_cause": {
+    "failure_code": "s3_bounded_verifier_finding_schema_invalid",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+    "provider_request_finding_keys": [
+      "layer",
+      "status",
+      "issues"
+    ],
+    "local_validator_required_finding_keys": [
+      "layer",
+      "status",
+      "issue_codes",
+      "artifact_or_claim_refs",
+      "repair_owner"
+    ],
+    "earliest_faulty_artifact": "DeepSeekS3ThreeCellNodeExecutor._node_request verifier output-contract predicate",
+    "request_builder_predicate_before": "typed finding schema only for output:v3",
+    "validator_predicate_before": "typed finding schema for output:v3 and output:v4",
+    "provider_followed_declared_schema": true,
+    "provider_model_noncompliance_confirmed": false,
+    "fixture_blind_spot": "the fake Provider returned a prebuilt five-field Verifier object without checking required_output_schema"
+  },
+  "selected_minimum_repair_contract": {
+    "shared_typed_verifier_output_contract_set": [
+      "fin01.s3.bounded_agent_three_cell_output:v3",
+      "fin01.s3.bounded_agent_three_cell_output:v4"
+    ],
+    "request_builder_and_validator_must_consume_same_set": true,
+    "output_v4_provider_finding_keys": [
+      "layer",
+      "status",
+      "issue_codes",
+      "artifact_or_claim_refs",
+      "repair_owner"
+    ],
+    "legacy_output_v1_v2_finding_shape_unchanged": true,
+    "output_contract_version_bump_required": false,
+    "historical_admissions_runs_and_captures_immutable": true,
+    "fake_provider_must_assert_output_follows_required_output_schema": true,
+    "no_normalization_fallback_or_validator_relaxation": true
+  },
+  "deterministic_acceptance_contract": {
+    "focused_schema_and_historical_truth_tests_required": true,
+    "output_v4_full_fake_requires_logical_nodes": 6,
+    "output_v4_full_fake_requires_provider_calls": 12,
+    "output_v4_full_fake_requires_artifacts": 9,
+    "output_v4_verifier_request_must_use_typed_five_field_schema": true,
+    "output_v3_regression_required": true,
+    "claim_fact_link_policy_regression_required": true,
+    "model_provider_network_source_tool_calls_allowed": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "experiment_governance": {
+    "hypothesis": "A shared typed-Verifier contract predicate removes the output-v4 request-validator contradiction without weakening validation or changing upstream research behavior.",
+    "decision_target": "Deterministic output-v3 and output-v4 paths agree on the five-field Verifier schema, and the complete output-v4 fake-provider path reaches six nodes, twelve calls and nine Artifacts.",
+    "stop_condition": "Any legacy contract regression, validator relaxation, fake-provider mismatch, full-fake failure or target-runtime mutation stops before admission issuance.",
+    "decision_label": "proceed_to_minimum_zero_call_implementation_then_fresh_exact_proof",
+    "paid_execution_before_deterministic_pass_allowed": false
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_runs": 0,
+    "new_artifacts": 0
+  },
+  "next_action": "S3-T09-OUTPUT-V4-VERIFIER-SCHEMA-ALIGNMENT-AND-FIXTURE-BLIND-SPOT-ZERO-CALL-IMPLEMENTATION"
+}

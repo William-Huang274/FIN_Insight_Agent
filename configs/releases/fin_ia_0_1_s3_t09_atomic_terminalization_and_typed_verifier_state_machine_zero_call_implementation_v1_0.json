@@ -1,0 +1,143 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_atomic_terminalization_and_typed_verifier_state_machine_zero_call_implementation_v1_0",
+  "implementation_id": "S3-T09-ATOMIC-CAPTURE-FAILURE-TERMINALIZATION-AND-TYPED-VERIFIER-STATE-MACHINE-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-24T14:41:00+08:00",
+  "status": "pass_zero_call_atomic_failure_terminalization_typed_verifier_state_machine_safe_telemetry_and_supervised_runner_fixture_proven",
+  "authority": {
+    "user_instruction": "继续",
+    "zero_call_repair_implementation_authorized": true,
+    "fresh_agent_proof_decision_authorized": false,
+    "replacement_admission_or_live_execution_authorized": false,
+    "restricted_capture_replay_or_business_artifact_promotion_authorized": false,
+    "T09_artifact_validation_paired_comparison_or_owner_acceptance_authorized": false,
+    "T10_S4_release_or_production_authorized": false
+  },
+  "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_controller_orphan_and_verifier_state_machine_zero_call_root_cause_disposition_v1_0.json",
+  "implementation": {
+    "atomic_failure_terminalization": {
+      "runtime_owner": "apps/workbench/backend/application/research_runtime.py",
+      "canonical_transaction_owner": "src/sec_agent/canonical_runtime/facade.py",
+      "runtime_exception_path_command_count": 1,
+      "command_type": "FAIL_RESEARCH_RUN",
+      "command_carries_provider_output_captures": true,
+      "separate_preterminal_capture_command_used": false,
+      "single_transaction_persists": [
+        "restricted provider output capture refs",
+        "failed ResearchRun version",
+        "failed Attempt",
+        "failed WorkUnit",
+        "RESEARCH_RUN_FAILED",
+        "ATTEMPT_FAILED",
+        "WORK_UNIT_FAILED",
+        "idempotency result"
+      ],
+      "capture_refs_bound_to_terminal_event": true,
+      "captured_output_replay_or_business_artifact_promotion": false
+    },
+    "typed_verifier_state_machine": {
+      "runtime_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "contract_ref": "fin01.s3.owner_grade_verifier_output_state_machine:v1",
+      "provider_request_exposes_state_machine": true,
+      "local_validator_consumes_same_rules": true,
+      "pass_requires_empty_issues_empty_refs_and_none_owner": true,
+      "review_or_fail_requires_nonempty_typed_details_and_real_owner": true,
+      "decision_is_derived_from_finding_states": true,
+      "normalization_or_silent_rewrite": false,
+      "local_validator_fail_closed": true
+    },
+    "safe_failure_telemetry": {
+      "canonical_owner": "src/sec_agent/canonical_runtime/facade.py",
+      "failure_code": "s3_bounded_verifier_state_machine_invalid",
+      "closed_subtype_count": 7,
+      "persisted_fields": [
+        "failure_subtype",
+        "failing_layer_count",
+        "nonempty_issue_layer_count",
+        "nonempty_ref_layer_count"
+      ],
+      "raw_issue_codes_refs_repair_owner_or_output_persisted": false,
+      "private_reasoning_persisted": false
+    },
+    "supervised_exact_runner": {
+      "supervisor_ref": "scripts/releases/supervise_fin_ia_0_1_s3_t09_exact_live_execution.py",
+      "supervision_contract_ref": "fin01.s3.exact_run_supervision:v1",
+      "direct_execute_cli_requires_supervision_receipt": true,
+      "detached_process_has_no_parent_timeout": true,
+      "durable_pid_stdout_stderr_and_exit_receipt": true,
+      "monitor_is_read_only": true,
+      "monitor_sends_signals": false,
+      "terminal_state_required_before_complete": true,
+      "automatic_retry_fallback_or_replay": false
+    }
+  },
+  "deterministic_acceptance": {
+    "failure_injection": {
+      "before_transaction": "pass_invalid_failure_observation_leaves_running_identity_without_capture_or_terminal_event",
+      "inside_transaction": "pass_injected_RESEARCH_RUN_FAILED_event_failure_rolls_back_all_canonical_partial_state",
+      "after_transaction": "pass_failed_failed_failed_with_capture_refs_bound_to_RESEARCH_RUN_FAILED_and_restricted_readback"
+    },
+    "verifier_positive_states": [
+      "all_pass_maps_to_accept",
+      "review_required_without_fail_maps_to_repair",
+      "any_fail_maps_to_reject"
+    ],
+    "verifier_negative_subtypes": [
+      "pass_with_nonempty_issue_codes",
+      "pass_with_nonempty_refs",
+      "pass_with_repair_owner",
+      "nonpass_without_issue_codes",
+      "nonpass_without_refs",
+      "nonpass_without_repair_owner",
+      "decision_findings_state_conflict"
+    ],
+    "local_semantic_issue_false_green_rejected": true,
+    "fake_provider_derives_output_from_request_state_machine": true,
+    "detached_slow_child_survives_parent_return": true,
+    "direct_unsupervised_execute_cli_rejected": true
+  },
+  "verification": {
+    "new_implementation_contract_tests": {
+      "passed": 16,
+      "failed": 0
+    },
+    "related_T09_contract_batch": {
+      "passed_before_stale_assertion_update": 66,
+      "stale_assertion_updates": 1,
+      "updated_assertion_passed": 1
+    },
+    "exact_runner_fixture_tests": {
+      "passed": 5,
+      "failed": 0,
+      "execution_mode": "local_fake_provider_and_read_only_preflight_only"
+    },
+    "program_backlog_governance_assertion": {
+      "passed": 1,
+      "failed": 0
+    },
+    "py_compile": "pass",
+    "real_model_or_provider_execution": false
+  },
+  "observed_counts": {
+    "implementation_model_calls": 0,
+    "implementation_provider_calls": 0,
+    "implementation_network_calls": 0,
+    "implementation_source_network_calls": 0,
+    "implementation_external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_runs": 0,
+    "new_business_artifacts": 0,
+    "human_review_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_049": "live_path_positive_evidence_no_schema_shape_recurrence",
+    "RC_P36_051": "zero_call_implemented_runtime_injected_node_level_and_fixture_proven_fresh_proof_pending",
+    "RC_P38_050": "zero_call_implemented_atomic_fault_injection_and_supervised_runner_fixture_proven_fresh_proof_pending",
+    "RC_P36_037": "complete_product_still_missing",
+    "S3_T09": "blocked_zero_artifacts_no_comparison_or_owner_acceptance",
+    "S3_T10": "not_entered",
+    "S4": "blocked_by_S3",
+    "release": "not_qualified",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-ATOMIC-CAPTURE-FAILURE-TERMINALIZATION-AND-TYPED-VERIFIER-STATE-MACHINE-FRESH-AGENT-PROOF-DECISION"
+}

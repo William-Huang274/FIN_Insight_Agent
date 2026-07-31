@@ -1,0 +1,108 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t10_owner_review_nvda_r2_and_s3_closeout_v1_0",
+  "closeout_id": "S3-T10-OWNER-REVIEW-NVDA-R2-AND-S3-CLOSEOUT-R1",
+  "closed_at": "2026-07-26T14:08:51+08:00",
+  "status": "pass_owner_accepted_NVDA_R2_S3_closed_S4_entry_ready",
+  "authority": {
+    "owner_instruction": "放行",
+    "instruction_context": "Owner replied after receiving the exact-live nine-Artifact L1-L4 and paired-comparison result and the explicit request to accept and release T09.",
+    "T09_owner_acceptance_authorized": true,
+    "S3_T10_owner_review_and_closeout_authorized": true,
+    "S4_entry_readiness_record_authorized": true,
+    "S4_case_execution_model_provider_network_source_or_tool_authorized": false,
+    "S5_release_or_production_authorized": false
+  },
+  "accepted_product": {
+    "assessment_ref": "configs/releases/fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_final_exact_live_and_paired_assessment_v1_0.json",
+    "assessment_sha256": "2ee18e79fed173b1f5d6120bd0860a8d8227c67b8c9b904c47c3319982b37f92",
+    "research_run_id": "research_run_fin01_5322ebc0e99fe4c5f00f3526",
+    "deterministic_baseline_research_run_id": "research_run_fin01_fac094aac24174903915016b",
+    "artifact_manifest": {
+      "bounded_agent_manifest": {
+        "artifact_ref": "artifact_fin01_766b1ef391cdbafff65a5aad:v1",
+        "object_digest": "e1b83d4d8436d3c7b65fc7229af99b88a457383ada9370359cf2454ca2fbac8f"
+      },
+      "bounded_agent_evidence": {
+        "artifact_ref": "artifact_fin01_ba0b0937a2ab726c0aa7b497:v1",
+        "object_digest": "ef8f3fefe8b691f22eac8af66dfa97818b0f4ddbeb0c82e38ebec0e5715346b4"
+      },
+      "bounded_agent_numeric": {
+        "artifact_ref": "artifact_fin01_587bad1626a4b3afad88e222:v1",
+        "object_digest": "541aad88b47bd8cf98a5350bdb06848872e25f86be365d5a92e3ec5f7339d339"
+      },
+      "bounded_agent_judgment": {
+        "artifact_ref": "artifact_fin01_4060b9bb19aa5e772c1dda25:v1",
+        "object_digest": "7e9069f40f2706b6f67fc739fab022b55d0d8d40524fb054fec438d17e41e8e8"
+      },
+      "bounded_agent_workpaper": {
+        "artifact_ref": "artifact_fin01_28c976f4b751092aafa071ab:v1",
+        "object_digest": "d876448ab2237fc2ccc777c365220df1d8813bcc192c0c5b5807ba2ef5f0fee5"
+      },
+      "bounded_agent_report": {
+        "artifact_ref": "artifact_fin01_168a8f3374f15d9fd2a548df:v1",
+        "object_digest": "abc6adeeb52a9abc77bb9a967ad07802855b34ffb323db651054011fe2680538"
+      },
+      "bounded_agent_trace": {
+        "artifact_ref": "artifact_fin01_86236881dbc4fafdef8b48b9:v1",
+        "object_digest": "7c31b80d6d2088f08d19bf863ea3ee05f583e9bb10616fc4c5dc47b7fcf971d7"
+      },
+      "bounded_agent_verification": {
+        "artifact_ref": "artifact_fin01_e441edb0d7ce0e514b8946cf:v1",
+        "object_digest": "d317b8ca66cbf1bc2b2510a59367b21e1f5345417257c727cffd4dc4137006ed"
+      },
+      "agent_fallback_comparison": {
+        "artifact_ref": "artifact_fin01_cc371b3cc3c5f1e7ab77bbb6:v1",
+        "object_digest": "ff1eb4d4c9ec3abab780440f288538c0fcfd1b66a3b30e52b87262b225adae60"
+      }
+    }
+  },
+  "owner_review": {
+    "all_three_cells_answered_or_typed_cannot_infer": true,
+    "cross_cell_synthesis_materially_better_than_deterministic_baseline": true,
+    "truth_and_scope_safety_pass": true,
+    "accepted_quality_debt": [
+      "variant_view 531 characters against 512 quality ceiling",
+      "cross_cell_dependencies 457 and remaining_gaps 355 against 320 target",
+      "Chinese external-delivery normalization remains desirable"
+    ],
+    "owner_disposition": "accept_NVDA_R2_and_carry_quality_debt_into_S4",
+    "machine_verifier_is_owner_acceptance": false,
+    "this_record_is_owner_acceptance": true
+  },
+  "D07B_initial_calibration": {
+    "policy_ref": "configs/releases/fin_ia_0_1_s3_t10_d07b_nvda_initial_calibration_policy_v2_0.json",
+    "policy_sha256": "d30c88757458f908b162fff0c83908a15ec7471431b80e9c17b97b5c6a942ef1",
+    "status": "owner_accepted_NVDA_R2_initial_calibration_not_universal_or_cross_case",
+    "remaining_three_case_calibration_deferred_to": "S4",
+    "historical_runs_rewritten": false
+  },
+  "carry_forward": {
+    "manifest_ref": "configs/releases/fin_ia_0_1_s3_to_s4_early_delivery_carry_forward_manifest_v1_0.json",
+    "manifest_sha256": "0b429dea6e796cfbc5e9de847396d48f16b64969cd7e93e307a6c4ff84e72108",
+    "status": "final_frozen_for_S4_and_S5",
+    "item_count": 8,
+    "S4_consumption_required_before_case_execution": true
+  },
+  "stage_decision": {
+    "S3_T09": "pass_owner_accepted",
+    "S3_T10": "pass_owner_review_and_closeout_complete",
+    "S3": "pass_NVDA_R2",
+    "S4": "entry_ready_manifest_consumption_and_separate_execution_authority_required",
+    "S5": "blocked_by_S4",
+    "qualified_senior_R3": "not_claimed",
+    "Alpha": "not_claimed",
+    "release": "not_authorized",
+    "production": "not_authorized"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0,
+    "owner_acceptance_records": 1
+  },
+  "next_action": "S4-ENTRY-CARRY-FORWARD-MANIFEST-CONSUMPTION-AND-THREE-CASE-TRANSFER-DECISION"
+}

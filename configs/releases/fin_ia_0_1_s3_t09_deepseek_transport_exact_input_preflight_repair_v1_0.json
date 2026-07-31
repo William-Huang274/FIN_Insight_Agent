@@ -1,0 +1,117 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_deepseek_transport_exact_input_preflight_repair_v1_0",
+  "repair_id": "S3-T09-DEEPSEEK-SIX-NODE-TRANSPORT-AND-EXACT-INPUT-ZERO-CALL-PREFLIGHT-REPAIR-R1",
+  "completed_at": "2026-07-22T03:30:00+08:00",
+  "status": "pass_zero_call_preissuance_repair_exact_admission_not_issued",
+  "authority": {
+    "user_instruction": "继续",
+    "six_node_transport_and_exact_input_preflight_repair_authorized": true,
+    "exact_admission_issuance_or_consumption_authorized": false,
+    "model_provider_execution_network_source_network_or_external_tool_execution_authorized": false,
+    "live_business_or_human_review_write_authorized": false,
+    "S3_T09_live_execution_T10_S4_release_or_production_authorized": false
+  },
+  "provider_transport_repair": {
+    "transport_contract_ref": "fin01.s3.bounded_agent.deepseek_segmented_node_json_object:v1",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "credential_checked_during_repair": false,
+    "credential_value_read_or_persisted": false,
+    "node_topology": [
+      "domain_specialist:demand_authenticity_and_sustainability",
+      "domain_specialist:value_and_profit_capture",
+      "domain_specialist:bottleneck_counterevidence_and_what_would_change",
+      "research_lead",
+      "memo_writer",
+      "verifier"
+    ],
+    "transport_attempts_per_node": 1,
+    "retry_budget": 0,
+    "response_mode": "native_json_object_with_local_node_specific_fail_closed_validation",
+    "tool_calls": 0,
+    "source_network_calls": 0,
+    "raw_provider_response_persisted": false,
+    "private_reasoning_persisted": false,
+    "exact_agent_and_skill_version_binding_per_node": true,
+    "per_node_output_token_caps_enforced": true,
+    "aggregate_cost_cap_enforced": true,
+    "factory_available": true
+  },
+  "exact_input_preflight_repair": {
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "runtime_family_count": 1,
+    "same_compiler_path_as_Fin01ResearchRuntime": true,
+    "persistent_isolated_evaluation_case_created": true,
+    "live_business_case_created_or_mutated": false,
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "analysis_as_of": "2026-07-21T00:00:00Z",
+    "decision_surface_contract_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "execution_identity": "fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "predicted_work_unit_id": "wu_p02_5_b32274eec019e44d8982af58",
+    "predicted_attempt_id": "attempt_fin01_8f40a1cf360e736835f65413",
+    "predicted_research_run_id": "research_run_fin01_a77b165e85be8757e5855a69",
+    "input_digest": "ec562442781bae817fdba072cc953e86373ef3b64e78e8a9dcca8312bb5802b8",
+    "preparation_digest": "59d38459c8260bd8fc594c2d73917f028361b3c4f6039776f9d7382f235b1ad8",
+    "double_compile_exact_parity": true,
+    "execution_state_counts_before": {
+      "work_units": 0,
+      "attempts": 0,
+      "research_runs": 0,
+      "artifacts": 0
+    },
+    "execution_state_counts_after": {
+      "work_units": 0,
+      "attempts": 0,
+      "research_runs": 0,
+      "artifacts": 0
+    },
+    "runtime_rechecks_prepared_digest_before_first_provider_call": true
+  },
+  "deterministic_fixture_proof": {
+    "fake_provider_only": true,
+    "simulated_model_provider_network_calls": [6, 6, 6],
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_terminal_states": [
+      "succeeded",
+      "succeeded",
+      "succeeded"
+    ],
+    "predicted_and_materialized_work_unit_attempt_run_ids_match": true,
+    "canonical_artifact_count": 9,
+    "malformed_native_or_duplicate_json_fails_before_artifact_commit": true,
+    "input_digest_mismatch_provider_call_count": 0
+  },
+  "root_cause_reconciliation": {
+    "RC-P36-032-s3-three-cell-six-node-provider-adapter-missing": "closed_root_cause_repaired_zero_call_fixture_verified",
+    "RC-P36-033-s3-exact-input-run-before-prepare-cycle": "closed_root_cause_repaired_zero_call_preflight_verified",
+    "open_preissuance_owned_blocker_count": 0,
+    "paid_three_cell_artifact_quality_proven": false,
+    "human_acceptance_proven": false
+  },
+  "verification": {
+    "focused_S2_T08_T09_gateway_registry_regression": "104 passed; 1 stale historical-source assertion corrected and passed in targeted recheck",
+    "S3_entry_through_T09_regression": "68 passed; 2 stale current-backlog assertions corrected and passed in targeted recheck",
+    "new_transport_and_preflight_contract_tests": "4 runtime and fail-closed tests passed plus 1 closeout contract test passed",
+    "persistent_zero_call_prepare_runner": "pass_and_idempotent_same_ids_digests_and_zero_execution_state_on_second_run",
+    "python_compile": "pass",
+    "json_and_jsonl_validation": "pass",
+    "project_os_scoped_preflight": "pass_zero_open_full_chain_blockers_for_admission_issuance_decision_scope",
+    "git_diff_check": "pass"
+  },
+  "observed_counts": {
+    "new_admissions": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_writes": 0,
+    "human_review_writes": 0,
+    "paid_runs": 0
+  },
+  "next_action": "S3-T09-EXACT-THREE-CELL-DEEPSEEK-ADMISSION-ISSUANCE-DECISION"
+}

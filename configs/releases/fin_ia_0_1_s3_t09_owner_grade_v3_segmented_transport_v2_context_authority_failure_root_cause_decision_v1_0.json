@@ -1,0 +1,207 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v2_context_authority_failure_root_cause_decision_v1_0",
+  "decision_id": "S3-T09-OWNER-GRADE-V3-SEGMENTED-TRANSPORT-V2-CONTEXT-AUTHORITY-FAILURE-RESULT-AND-ROOT-CAUSE-DECISION",
+  "decided_at": "2026-07-22T17:23:21+08:00",
+  "status": "pass_transport_v3_field_local_closed_context_authority_and_safe_subtype_telemetry_repair_selected_implementation_pending_separate_authority",
+  "authority": {
+    "user_instruction": "授权下一步",
+    "zero_call_result_and_root_cause_decision_authorized": true,
+    "implementation_authorized": false,
+    "new_admission_or_model_provider_network_execution_authorized": false,
+    "paired_comparison_Human_Review_T10_S4_release_or_production_authorized": false
+  },
+  "source_evidence": {
+    "failed_live_result_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_text_contract_v2_fresh_live_execution_result_v1_0.json",
+    "failed_model_run_ref": "reports/model_runs/20260722_fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_segmented_text_contract_v2_live_validation_r1.md",
+    "failed_research_run_id": "research_run_fin01_fe1dc2df883030283d38d362",
+    "executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "transport_v2_fixture_ref": "tests/contract/test_fin_0_1_s3_t09_owner_grade_v3_segmented_specialist_transport.py",
+    "transport_v2_text_fixture_ref": "tests/contract/test_fin_0_1_s3_t09_owner_grade_v3_segmented_field_local_text_contract_repair.py",
+    "model_provider_execution_network_calls_in_this_decision": [0, 0, 0],
+    "documentation_network_calls_in_this_decision": 0
+  },
+  "proven_failure_boundary": {
+    "first_demand_specialist_all_three_segments": "pass",
+    "second_value_profit_facts_explanation_segment": "pass",
+    "second_value_profit_claim_card_provider_HTTP_and_finish_reason_stop": "pass",
+    "second_value_profit_claim_card_native_JSON_exact_shape_and_cell_binding": "pass",
+    "second_value_profit_claim_card_shape": "pass",
+    "second_value_profit_context_authority_membership": "failed",
+    "failure_code": "s3_owner_grade_claim_context_authority_invalid",
+    "artifact_count": 0,
+    "canonical_terminalization": "pass_failed_failed_failed_no_orphan",
+    "retry_fallback_rerun_counts": [0, 0, 0]
+  },
+  "not_reconstructable": [
+    "the_exact_invalid_context_ref_value",
+    "the_invalid_context_ref_item_index",
+    "the_number_of_invalid_context_refs",
+    "whether_the_value_was_evidence_numeric_wrong_cell_or_unrelated",
+    "the_raw_provider_output"
+  ],
+  "frozen_authority_and_request_audit": {
+    "audit_method": "recompile_same_case_head_in_disposable_canonical_clone_and_compare_current_provider_visible_request_with_local_validator",
+    "program_cell_count": 3,
+    "all_allowed_context_values_visible_to_provider_by_cell": [true, true, true],
+    "allowed_context_value_counts_by_cell": [8, 8, 7],
+    "value_profit_candidate_context_count": 2,
+    "value_profit_graph_context_count": 6,
+    "value_profit_allowed_context_count": 8,
+    "value_profit_accepted_evidence_count": 0,
+    "value_profit_numeric_fact_scope_count": 5,
+    "value_profit_visible_ref_like_non_context_value_count": 30,
+    "provider_visible_authority_keys": [
+      "accepted_evidence_refs",
+      "candidate_refs_not_evidence",
+      "graph_context_refs_not_evidence",
+      "numeric_refs"
+    ],
+    "claim_context_schema_instruction": [
+      "exact Candidate or Graph context ref"
+    ],
+    "claim_field_has_explicit_closed_allowed_context_refs": false,
+    "request_requires_empty_array_when_no_authorized_context_is_used": false,
+    "transport_v2_fixture_uses_full_crowded_live_model_view": false,
+    "transport_v2_fake_provider_selects_refs_from_provider_visible_contract": false,
+    "local_validator_uses_exact_candidate_plus_graph_context_union": true
+  },
+  "root_cause_classification": {
+    "immediate_failure_class": "provider_model_output_contained_at_least_one_context_ref_outside_the_current_cell_candidate_plus_graph_context_authority",
+    "external_or_model_only_root_cause_confirmed": false,
+    "project_owned_earliest_repair_surface": "DeepSeekS3ThreeCellNodeExecutor segmented claim-card provider-visible field authority contract fixture realism and closed authority telemetry",
+    "confirmed_project_owned_gaps": [
+      {
+        "gap": "context_ref_closed_set_is_visible_but_not_field_locally_bound",
+        "evidence": "all eight Value/Profit allowed context values are present in authority_refs, but judgment_layer.context_refs only says exact Candidate or Graph context ref and does not carry the exact closed list beside the field"
+      },
+      {
+        "gap": "crowded_model_view_contains_competing_reference_like_values",
+        "evidence": "the frozen Value/Profit model view contains thirty unique ref-like values outside the eight-value context authority, including separate numeric and routing identities that the local context validator correctly rejects"
+      },
+      {
+        "gap": "fixture_proof_does_not_test_live_reference_selection",
+        "evidence": "the segmented fake-Provider fixture replaces the production model view with program_cell_id plus authority_refs and returns preassembled valid claims instead of deriving context_refs from the provider-visible field contract"
+      },
+      {
+        "gap": "authority_failure_telemetry_is_not_actionably_typed",
+        "evidence": "the generic ValueError persists the membership failure code but no content-free subtype or failing count, so evidence/numeric misclassification cannot be separated from an arbitrary out-of-authority value"
+      }
+    ],
+    "diagnosis": "The direct output is nonconforming, but the earliest preventable project weakness is that a high-cardinality model view asks the model to infer a field-specific closed set from generic wording. The strict local validator is correct and must remain unchanged. The historical raw value is unavailable, so this decision does not claim which competing identifier was used or label DeepSeek defective."
+  },
+  "rejected_actions": [
+    {
+      "action": "relax_context_authority_membership_or_accept_any_visible_ref",
+      "decision": "reject",
+      "reason": "that would let Candidate Graph Evidence Numeric or routing identities cross authority classes and could create unsupported financial claims"
+    },
+    {
+      "action": "silently_drop_normalize_or_remap_invalid_context_refs",
+      "decision": "reject",
+      "reason": "normalization would conceal model nonconformance and alter claim meaning without an auditable source"
+    },
+    {
+      "action": "retry_or_reuse_the_consumed_transport_v2_admission",
+      "decision": "reject",
+      "reason": "the identity is consumed and retry would destroy exact-once evidence"
+    },
+    {
+      "action": "blame_or_replace_DeepSeek_without_repairing_the_owned_closed_set_conveyance_gap",
+      "decision": "reject_as_current_next_step",
+      "reason": "the project-owned gap is deterministic and fixture-testable while the historical output cannot isolate a provider-only cause"
+    },
+    {
+      "action": "perform_a_fourth_prompt_only_tweak_after_the_same_failure_repeats_under_transport_v3",
+      "decision": "reject",
+      "reason": "one future explicit closed-set live proof is the stop line; recurrence must move to provider-route disposition rather than another prompt patch"
+    }
+  ],
+  "selected_zero_call_implementation_contract": {
+    "next_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v3",
+    "historical_transport_v1_and_v2_immutable": true,
+    "canonical_output_contract_ref_unchanged": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "local_context_authority_validator_unchanged": true,
+    "provider_visible_context_field_contract": {
+      "add_exact_sorted_allowed_context_refs_beside_judgment_layer_context_refs": true,
+      "allowed_set_equals_current_cell_candidate_refs_plus_graph_context_refs": true,
+      "output_context_refs_must_be_an_exact_subset": true,
+      "empty_array_required_when_no_allowed_context_is_used": true,
+      "evidence_numeric_fact_ids_routing_ids_and_free_text_forbidden": true,
+      "pre_response_membership_self_check_required": true,
+      "no_dynamic_normalization_or_fuzzy_matching": true
+    },
+    "safe_authority_failure_telemetry": {
+      "allowed_segment": "owner_grade_claim_cards",
+      "allowed_field": "judgment_layer.context_refs",
+      "allowed_subtypes": [
+        "item_not_nonblank_string",
+        "evidence_or_numeric_ref_misclassified_as_context",
+        "outside_current_cell_context_authority"
+      ],
+      "persist_only_segment_field_subtype_and_failing_item_count": true,
+      "persist_raw_ref_ref_digest_item_index_arbitrary_key_name_or_private_reasoning": false,
+      "telemetry_families_remain_mutually_exclusive": true
+    },
+    "fake_provider_acceptance": [
+      "production full crowded model view exposes the exact field-local allowed list",
+      "a fake Provider derives valid context_refs only from the request field contract rather than a preassembled hidden fixture",
+      "exact allowed subset and empty array pass without normalization",
+      "non-string blank evidence numeric and arbitrary out-of-authority refs fail at the earliest claim segment with closed subtype and count",
+      "no invalid output reaches later segments Lead Writer Verifier or Artifact commit",
+      "the existing six logical nodes and nine Artifact families remain unchanged on the positive fixture"
+    ],
+    "execution_policy": {
+      "implementation_and_fake_provider_fixtures_only": true,
+      "model_provider_network_calls": [0, 0, 0],
+      "new_admission_or_execution": false,
+      "retry_fallback_repair_or_rerun_budget": 0,
+      "first_failure_stop": true
+    }
+  },
+  "future_live_stop_line": {
+    "at_most_one_fresh_transport_v3_exact_live_proof_may_be_considered_under_later_separate_decision_issuance_and_execution_authorities": true,
+    "if_same_context_authority_class_recurs": "mark_current_DeepSeek_route_nonconforming_for_S3_T09_and_move_to_provider_route disposition_or_defer_without_another_prompt_only_repair",
+    "a_successful_run_still_requires_complete_artifacts_paired_comparison_and_owner_acceptance": true
+  },
+  "audit_integrity": {
+    "target_logical_WorkUnit_Attempt_Run_Artifact_counts_after_audit": [6, 6, 6, 13],
+    "target_object_tree_sha256_unchanged": "00ac740b53c91c032b221453cf9269c5748a7fbcf5802bbc239a8e34ae21ea75",
+    "target_new_logical_entities_or_objects": 0,
+    "target_main_sqlite_file_digest_unchanged": false,
+    "target_main_sqlite_file_digest_after_direct_prepare_audit": "46c7578a5289eac2aa9f3ca75cfefe406ad539b4ef1c730522fb88748d40f080",
+    "procedure_note": "An initial direct prepare audit opened the target SQLite runtime and changed the physical main-file digest while logical identities and the object tree remained unchanged. All subsequent authority audits used a disposable clone or URI read-only connection. This is recorded as an audit-procedure defect and is not counted as a canonical business write."
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "new_admissions": 0,
+    "new_logical_WorkUnits": 0,
+    "new_logical_Attempts": 0,
+    "new_logical_ResearchRuns": 0,
+    "new_Artifacts": 0,
+    "paired_comparisons": 0,
+    "Human_Reviews": 0
+  },
+  "verification": {
+    "project_os_entry_preflight": "pass_zero_open_blockers",
+    "focused_decision_and_adjacent_contracts": "33 passed",
+    "latest_ledger_and_physical_digest_regressions": "36 passed",
+    "complete_S3_T09_contract_suite": "164 passed",
+    "configs_and_docs_JSON_Project_OS_JSONL_parse": "pass_zero_errors",
+    "stable_source_digests": "9_of_9_match",
+    "python_compile": "pass",
+    "git_diff_check": "pass",
+    "project_os_repository_hygiene_closeout": "pass_zero_open_blockers"
+  },
+  "stage_decision": {
+    "RC_P36_039": "transport_v3_field_local_closed_context_authority_and_safe_subtype_telemetry_repair_selected_implementation_pending_separate_authority",
+    "RC_P36_037": "repair_and_transport_v2_live_failed_no_fresh_artifact_proof_transport_v3_implementation_pending",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-SEGMENTED-TRANSPORT-V3-FIELD-LOCAL-CLOSED-CONTEXT-AUTHORITY-AND-SAFE-SUBTYPE-TELEMETRY-ZERO-CALL-IMPLEMENTATION"
+}

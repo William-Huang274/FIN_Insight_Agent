@@ -1,0 +1,130 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_claim_fact_link_policy_closed_alias_zero_call_implementation_v1_0",
+  "implementation_id": "S3-T09-GENERALIZED-CLAIM-FACT-LINK-POLICY-CLOSED-ALIAS-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-24T10:35:00+08:00",
+  "status": "pass_zero_call_shared_claim_fact_link_policy_closed_alias_local_expansion_fixture_proven",
+  "authority": {
+    "user_instruction": "继续",
+    "zero_call_runtime_policy_implementation_authorized": true,
+    "deterministic_and_fake_provider_validation_authorized": true,
+    "admission_decision_or_issuance_authorized": false,
+    "model_provider_network_source_or_external_tool_call_authorized": false,
+    "fresh_live_proof_or_rerun_authorized": false,
+    "paired_comparison_owner_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_final_hard_failure_disposition_decision_v1_0.json",
+  "source_failure_ref": "configs/releases/fin_ia_0_1_s3_t09_research_lead_v5_profile_v3_final_exact_live_execution_result_v1_0.json",
+  "selected_contract_ref": "fin01.s3.claim_fact_link_policy:v1",
+  "implementation": {
+    "policy_owner": "apps/workbench/backend/application/bounded_agent_contract_policies.py::ClaimFactLinkPolicy",
+    "runtime_owner": "apps/workbench/backend/application/bounded_agent_executor.py::DeepSeekS3ThreeCellNodeExecutor",
+    "activation_binding": "S3ThreeCellBoundedAgentAdmission.claim_fact_link_policy_ref",
+    "activation_is_explicit": true,
+    "transport_version_number_controls_behavior": false,
+    "new_specialist_transport_version_created": false,
+    "historical_admission_digest_field_absence_preserved": true,
+    "historical_transport_v1_through_v7_default_behavior_preserved": true,
+    "provider_response_field": "support_fact_aliases",
+    "local_canonical_output_field": "support_fact_ids",
+    "alias_generation": "sort_validated_current_Cell_Facts_by_exact_fact_id_then_assign_F001_upward",
+    "alias_scope": "request_local_per_Cell_claim_segment",
+    "provider_claim_link_fact_surface": [
+      "fact_alias",
+      "fact_statement",
+      "support_type",
+      "boundary",
+      "locally_assembled_scope_summary"
+    ],
+    "provider_claim_selection_model_view_redaction": [
+      "authority_refs_removed",
+      "non_program_cell_object_ids_removed",
+      "source_object_and_routing_ref_fields_removed",
+      "validated_prior_Fact_IDs_and_support_refs_removed"
+    ],
+    "local_pipeline_order": [
+      "native_JSON_and_provider_output_capture",
+      "closed_alias_validation",
+      "exact_alias_to_original_validated_Fact_ID_expansion",
+      "local_claim_scope_assembly",
+      "closed_context_authority_validation",
+      "epistemic_state_validation",
+      "canonical_owner_grade_claim_validation",
+      "downstream_scoped_identity_Lead_Writer_Verifier_and_Artifact_consumption"
+    ],
+    "normalization_trim_prefix_guess_fuzzy_match_or_silent_rewrite_allowed": false,
+    "provider_support_fact_ids_when_policy_active_allowed": false,
+    "request_alias_persisted_as_authoritative_identity": false,
+    "historical_failed_answer_rewritten": false
+  },
+  "safe_failure_telemetry": {
+    "failure_code": "s3_owner_grade_claim_fact_link_invalid",
+    "validator_contract": "fin01.s3.claim_fact_link_policy:v1",
+    "allowed_subtypes": [
+      "support_alias_not_array",
+      "support_alias_item_invalid",
+      "support_alias_empty_when_required",
+      "support_alias_unknown",
+      "support_alias_duplicate",
+      "support_alias_wrong_cell",
+      "raw_fact_or_source_ref_used_in_alias_field",
+      "local_expansion_mismatch"
+    ],
+    "persisted_fields": [
+      "validator_contract",
+      "segment_id",
+      "field_id",
+      "failure_subtype",
+      "failing_item_count",
+      "content_persistence_flags"
+    ],
+    "raw_alias_fact_id_source_ref_program_cell_id_item_index_or_private_reasoning_persisted": false
+  },
+  "deterministic_acceptance": {
+    "focused_test_file": "tests/contract/test_fin_0_1_s3_t09_claim_fact_link_policy_zero_call_implementation.py",
+    "focused_runtime_tests_passed": 16,
+    "adjacent_contract_tests_passed": 56,
+    "combined_tests_passed_before_machine_result_freeze": 72,
+    "non_NVDA_company_fixture": "AMD",
+    "nonstandard_period_fixture": "FY2027-Q1-53W",
+    "mixed_Evidence_and_Numeric_Fact_authority_fixture": true,
+    "cross_Cell_same_alias_fixture": "each_Cell_may_independently_use_F001",
+    "raw_Fact_or_source_ref_negative_fixture": true,
+    "unknown_duplicate_blank_non_array_empty_required_wrong_Cell_negative_fixtures": true,
+    "provider_support_fact_ids_field_rejected_when_active": true,
+    "legacy_admission_digest_field_absence_regression": true,
+    "legacy_request_support_fact_ids_regression": true,
+    "full_fake_provider_logical_nodes": 6,
+    "full_fake_provider_calls": 12,
+    "full_fake_provider_artifact_families": 9,
+    "Writer_Verifier_Artifact_request_alias_residue": 0,
+    "earliest_typed_failure_fake_provider_call_count": 2,
+    "historical_final_live_failure_mutated": false
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "admissions_consumed": 0,
+    "new_live_WorkUnits": 0,
+    "new_live_Attempts": 0,
+    "new_live_ResearchRuns": 0,
+    "new_live_Artifacts": 0,
+    "paired_comparisons": 0,
+    "owner_acceptances": 0
+  },
+  "stage_decision": {
+    "method_lifecycle": "runtime_injected_and_node_level_consumed_fixture_proven",
+    "RC_P36_048": "zero_call_repaired_fixture_proven_fresh_agent_proof_decision_pending",
+    "RC_P36_047": "zero_call_repaired_profile_v3_live_not_reached",
+    "RC_P36_046": "complete_live_scoped_identity_lineage_unproven",
+    "RC_P36_037": "complete_live_artifact_product_missing",
+    "S3_T09": "blocked_pending_separately_authorized_fresh_agent_proof_decision_and_future_exact_proof",
+    "S3_T10": "blocked_by_S3_T09",
+    "cross_slice_manifest": "not_due",
+    "S4_S5_release_production": "not_entered"
+  },
+  "next_action": "S3-T09-GENERALIZED-CLAIM-FACT-LINK-POLICY-FRESH-AGENT-PROOF-DECISION"
+}

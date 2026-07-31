@@ -1,0 +1,196 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_output_truncation_root_cause_decision_v1_0",
+  "decision_id": "S3-T09-OWNER-GRADE-V3-SEGMENTED-TRANSPORT-V5-RESEARCH-LEAD-OUTPUT-TRUNCATION-RESULT-AND-ROOT-CAUSE-DECISION",
+  "decided_at": "2026-07-23T10:22:20+08:00",
+  "status": "pass_project_owned_open_lead_output_contract_and_unproven_1200_token_capacity_confirmed_closed_lead_output_with_local_heads_and_moderate_headroom_selected",
+  "authority": {
+    "user_instruction": "继续",
+    "zero_call_restricted_capture_and_contract_audit_authorized": true,
+    "repair_selection_authorized": true,
+    "code_prompt_budget_or_admission_change_authorized": false,
+    "model_provider_network_retry_fallback_or_rerun_authorized": false,
+    "paired_comparison_owner_acceptance_T10_S4_release_or_production_authorized": false
+  },
+  "source_evidence": {
+    "failed_live_result_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v5_fresh_live_execution_result_v1_0.json",
+    "failed_model_run_ref": "reports/model_runs/20260723_fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_segmented_transport_v5_live_validation_r1.md",
+    "failed_research_run_id": "research_run_fin01_1736461952f90e35f104f478",
+    "failure_stage": "research_lead",
+    "failure_code": "s3_bounded_node_output_truncated",
+    "lead_input_tokens": 4581,
+    "lead_output_tokens": 1200,
+    "lead_output_token_cap": 1200,
+    "finish_reason": "length",
+    "artifact_count": 0,
+    "writer_called": false,
+    "verifier_called": false,
+    "retry_fallback_rerun_counts": [0, 0, 0],
+    "restricted_capture_object_digest": "8df1d74e6f42bcb250a1b1186c919aaf1aa1595c6863efed319159be3c64b9b1",
+    "restricted_assistant_output_sha256": "54e55ba6c5dbea32d7978e4cb77ff119d6ad31668922671018835935a1de9ddb",
+    "restricted_assistant_output_characters": 4278,
+    "restricted_assistant_output_utf8_bytes": 4278,
+    "raw_assistant_output_copied_into_tracked_artifacts": false,
+    "model_provider_network_calls_in_this_decision": [0, 0, 0]
+  },
+  "restricted_capture_structural_audit": {
+    "starts_with_json_object": true,
+    "ends_with_json_object": false,
+    "json_error": {
+      "subtype": "unterminated_string_after_length_cutoff",
+      "character_offset": 4260,
+      "line": 127,
+      "column": 7,
+      "remaining_captured_characters": 18
+    },
+    "all_required_top_level_keys_started": [
+      "cell_heads",
+      "cross_cell_dependencies",
+      "conflict_adjudications",
+      "variant_view",
+      "remaining_gaps"
+    ],
+    "completed_or_started_cardinality": {
+      "cell_heads": 3,
+      "cross_cell_dependencies": 2,
+      "conflict_adjudications": 1,
+      "remaining_gaps": 3
+    },
+    "completed_narrative_statement_count": 7,
+    "completed_narrative_statement_character_range": [71, 209],
+    "unexpected_schema_member_names_observed": [],
+    "structural_interpretation": "The response was following the requested object shape and was cut inside the final remaining-gaps area. The malformed JSON is a consequence of the length stop, not evidence of a fresh native-JSON or schema-key failure."
+  },
+  "current_contract_audit": {
+    "analysis_input": "the full three validated Specialist outputs plus a separate duplicate specialist-output-digest map",
+    "analysis_input_lossy_compression_present": false,
+    "lead_required_top_level_key_count": 5,
+    "model_is_required_to_repeat_deterministic_cell_heads": true,
+    "cell_head_values_are_locally_derivable_from_validated_specialists": true,
+    "cross_cell_dependency_cardinality_contract": "open_nonempty",
+    "conflict_adjudication_cardinality_contract": "open_list",
+    "remaining_gap_cardinality_contract": "open_nonempty",
+    "narrative_item_character_limit": null,
+    "serialized_output_byte_limit": null,
+    "provider_visible_concision_self_check": false,
+    "lead_specific_model_view_binding": false,
+    "lead_output_budget_was_closed_against_maximum_valid_contract_shape": false,
+    "deterministic_valid_fixture_compact_utf8_bytes": 1932,
+    "deterministic_valid_fixture_pretty_utf8_bytes": 2623,
+    "fixture_boundary": "The small fixture proves that some valid Lead outputs fit; it does not prove that the open live contract is bounded by 1200 provider tokens."
+  },
+  "root_cause": {
+    "immediate_cause": "the Provider reached the exact 1200-token Research Lead output cap and stopped before closing the JSON object",
+    "earliest_owned_defect": "the project asks one Lead call to emit an open-cardinality semantic synthesis plus deterministic copy fields, provides no narrative or serialized-size ceiling, and assigns a 1200-token cap without proving that every admitted output shape can close inside it",
+    "lead_input_volume_is_primary_root_cause": false,
+    "reason_input_volume_not_selected": "The exact 4581-token input is materially smaller than several already successful Specialist requests and contains the validated claim, fact, boundary and what-would-change bodies needed for cross-cell synthesis. No evidence shows that lossy input compression would repair output closure.",
+    "deepseek_json_conformance_is_primary_root_cause": false,
+    "reason_not_deepseek_json": "The captured response started the exact five top-level members and was structurally coherent until the provider length stop cut a string.",
+    "cap_only_root_cause": false,
+    "reason_not_cap_only": "Raising the cap alone would leave open cardinality and redundant deterministic output unconstrained, so the same defect could recur at a larger budget.",
+    "external_boundary": false
+  },
+  "option_comparison": [
+    {
+      "option": "increase_lead_tokens_only",
+      "decision": "reject",
+      "reason": "does not close output cardinality or remove deterministic copy work"
+    },
+    {
+      "option": "prompt_only_be_concise_instruction",
+      "decision": "reject",
+      "reason": "has no machine-checkable capacity invariant and would make another paid run the first real validator"
+    },
+    {
+      "option": "lossy_specialist_body_compression_only",
+      "decision": "reject",
+      "reason": "could remove the exact fact, scope, qualification, gap or WWC semantics that the Research Lead must adjudicate"
+    },
+    {
+      "option": "closed_semantic_output_local_deterministic_heads_and_moderate_bounded_headroom",
+      "decision": "select",
+      "reason": "repairs the earliest owned capacity contract while preserving full validated analyst semantics and keeping retry zero"
+    }
+  ],
+  "selected_repair_contract": {
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v2",
+    "historical_lead_behavior_and_consumed_admissions_immutable": true,
+    "specialist_transport_ref_unchanged": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v5",
+    "canonical_output_contract_ref_unchanged": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "provider_output_members": [
+      "cross_cell_dependencies",
+      "conflict_adjudications",
+      "variant_view",
+      "remaining_gaps"
+    ],
+    "cell_heads": {
+      "provider_must_emit": false,
+      "local_runtime_derives_exactly_three_from_validated_specialist_outputs_and_digests": true,
+      "assembled_canonical_lead_still_contains_cell_heads": true
+    },
+    "provider_visible_cardinality": {
+      "cross_cell_dependencies_min_max": [1, 3],
+      "conflict_adjudications_min_max": [0, 3],
+      "remaining_gaps_min_max": [1, 4],
+      "variant_view_exactly_one_object": true
+    },
+    "provider_visible_text_and_size": {
+      "maximum_unicode_characters_per_narrative_field": 320,
+      "maximum_provider_segment_serialized_utf8_bytes": 6000,
+      "maximum_locally_assembled_lead_utf8_bytes": 8192,
+      "concision_and_item_by_item_self_check_required": true,
+      "truncate_trim_coerce_drop_join_split_or_silent_repair_forbidden": true
+    },
+    "analysis_input": {
+      "retain_full_validated_specialist_semantic_bodies": true,
+      "remove_provider_need_for_duplicate_digest_map_and_cell_head_recomputation": true,
+      "all_local_validation_still_uses_full_original_specialist_authority": true
+    },
+    "token_and_cost_limits": {
+      "lead_max_output_tokens": 1800,
+      "prior_lead_max_output_tokens": 1200,
+      "aggregate_max_output_tokens": 16800,
+      "prior_aggregate_max_output_tokens": 16200,
+      "maximum_incremental_output_only_cost_usd": 0.000522,
+      "max_total_cost_usd": 0.1,
+      "max_total_cost_change_allowed": false,
+      "retry_fallback_and_rerun_budget": 0
+    },
+    "local_fail_closed_acceptance": [
+      "derive exact cell heads before Provider output assembly and reject any digest or fact-count mismatch",
+      "reject missing or additional top-level semantic members",
+      "reject over-cardinality under-cardinality over-320-character and over-byte fixtures",
+      "reject unauthorized claim or WWC task references against all original Specialist bodies",
+      "reject duplicate keys and incomplete JSON without normalization or retry",
+      "record content-free Lead parse shape text authority and capacity subtype telemetry while keeping raw text restricted"
+    ]
+  },
+  "implementation_acceptance_before_any_new_admission": [
+    "a deterministic local assembly fixture reproduces exact three cell heads without asking the fake Provider to emit them",
+    "the captured live structural cardinalities can be represented inside the new closed ranges without copying raw content",
+    "minimum and maximum cardinality fixtures close under both 6000-byte provider and 8192-byte assembled envelopes",
+    "the 1200-token historical admission remains immutable and historical tests stay green",
+    "the future 1800-token Lead and 16800 aggregate budgets are enforced with max total cost USD 0.10 and retry zero",
+    "full Specialist claim fact scope qualification gap and actionable-WWC authority remains available to Lead and local validators",
+    "real model provider network new admission Run Artifact comparison and Human Review counts remain zero"
+  ],
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "new_admissions": 0,
+    "new_live_WorkUnits": 0,
+    "new_live_Attempts": 0,
+    "new_live_ResearchRuns": 0,
+    "new_live_Artifacts": 0
+  },
+  "stage_decision": {
+    "RC_P36_040": "root_cause_confirmed_closed_lead_output_local_heads_and_moderate_headroom_zero_call_implementation_pending_separate_authority",
+    "RC_P36_039": "closed_transport_v5_live_specialist_proof_retained",
+    "RC_P36_037": "still_open_no_fresh_complete_owner_grade_artifact_proof",
+    "S3_T09": "blocked_pending_zero_call_lead_repair_and_future_separately_governed_proof",
+    "S3_T10": "blocked_by_S3_T09",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-RESEARCH-LEAD-CLOSED-OUTPUT-LOCAL-HEAD-ASSEMBLY-AND-BOUNDED-HEADROOM-ZERO-CALL-IMPLEMENTATION"
+}

@@ -1,0 +1,100 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_v3_conflict_local_direct_support_zero_call_implementation_v1_0",
+  "implementation_id": "S3-T09-OWNER-GRADE-V3-RESEARCH-LEAD-V3-CONFLICT-LOCAL-DIRECT-SUPPORT-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-23T13:49:06+08:00",
+  "status": "pass_zero_call_research_lead_v3_conflict_local_direct_support_truth_table_provider_local_canonical_parity_and_safe_telemetry_fixture_proven",
+  "authority": {
+    "user_instruction": "继续",
+    "zero_call_implementation_authorized": true,
+    "admission_issuance_or_consumption_authorized": false,
+    "model_provider_network_source_or_tool_execution_authorized": false,
+    "canonical_run_artifact_or_business_case_write_authorized": false,
+    "retry_fallback_repair_rerun_comparison_or_human_review_authorized": false,
+    "T10_S4_release_or_production_authorized": false
+  },
+  "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_v2_conflict_fact_presence_scope_root_cause_decision_v1_0.json",
+  "implementation": {
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v3",
+    "historical_research_lead_v2_immutable": true,
+    "specialist_transport_v5_unchanged": true,
+    "canonical_output_contract_v3_shape_unchanged": true,
+    "shared_truth_owner": "each conflict involved Claim Card direct support_fact_ids",
+    "truth_table": {
+      "all_involved_claims_supported": "facts_present",
+      "no_involved_claims_supported": "no_facts_present",
+      "some_involved_claims_supported": "mixed_fact_presence"
+    },
+    "unrelated_global_or_same_cell_facts_affect_summary": false,
+    "provider_contract_exposes_exact_truth_table": true,
+    "local_validator_fails_before_assembly": true,
+    "canonical_validator_reuses_shared_helper": true,
+    "cell_head_and_conflict_fact_presence_errors_separated": true,
+    "explicit_false_global_all_cell_narrative_guard_preserved": true,
+    "normalization_coercion_or_silent_repair": false,
+    "lead_max_output_tokens": 1800,
+    "aggregate_max_output_tokens": 16800,
+    "provider_max_utf8_bytes": 6000,
+    "assembled_max_utf8_bytes": 8192
+  },
+  "safe_telemetry": {
+    "validator_contract": "closed_research_lead_output:v3",
+    "failure_family": "semantic",
+    "subtypes": [
+      "involved_claim_ref_duplicate",
+      "fact_presence_summary_invalid",
+      "fact_presence_summary_mismatch",
+      "explicit_global_fact_presence_statement_conflict"
+    ],
+    "field_id": "conflict_adjudications.fact_presence_summary",
+    "raw_text_persisted": false,
+    "claim_or_fact_ids_persisted": false,
+    "ref_or_digest_persisted": false,
+    "item_index_persisted": false,
+    "arbitrary_key_names_persisted": false,
+    "private_reasoning_persisted": false,
+    "canonical_failure_persistence_fixture": "pass"
+  },
+  "deterministic_verification": {
+    "truth_table_and_singleton_cases": "pass",
+    "unrelated_global_and_same_cell_fact_invariance": "pass",
+    "duplicate_unknown_invalid_and_mismatch_fail_closed": "pass",
+    "explicit_false_global_statement_separate_subtype": "pass",
+    "restricted_live_replay_expected_summaries": [
+      "no_facts_present",
+      "no_facts_present",
+      "no_facts_present"
+    ],
+    "restricted_live_replay_mismatch_count": 1,
+    "local_and_canonical_parity": "pass",
+    "historical_research_lead_v2_regression": "pass",
+    "full_fake_provider_logical_node_count": 6,
+    "full_fake_provider_artifact_count": 9,
+    "full_fake_provider_transport_call_count": 12,
+    "focused_contract_tests": "35 passed"
+  },
+  "observed_counts": {
+    "real_model_calls": 0,
+    "real_provider_calls": 0,
+    "real_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "canonical_runs_created": 0,
+    "canonical_artifacts_created": 0,
+    "live_business_case_writes": 0,
+    "paired_comparisons": 0,
+    "human_review_writes": 0
+  },
+  "stage_acceptance": {
+    "RC_P36_040": "closed_live_proven",
+    "RC_P36_041": "zero_call_implementation_fixture_proven_fresh_live_proof_pending",
+    "RC_P36_037": "blocked_by_missing_complete_fresh_artifact_proof",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-RESEARCH-LEAD-V3-FRESH-AGENT-PROOF-DECISION"
+}

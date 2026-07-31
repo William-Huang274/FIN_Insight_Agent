@@ -1,0 +1,497 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t01_three_cell_decision_surface_asset_owner_freeze_v1_0",
+  "contract_id": "S3-T01-NVDA-THREE-CELL-DECISION-SURFACE-ASSET-OWNER-R1",
+  "frozen_at": "2026-07-21T11:20:00+08:00",
+  "status": "pass_after_independent_review_T02_ready_pending_separate_authorization",
+  "authority": {
+    "user_instruction": "继续",
+    "S3_T01_zero_call_contract_freeze_authorized": true,
+    "S3_T02_execution_authorized": false,
+    "model_or_provider_execution_authorized": false,
+    "source_network_or_external_tool_execution_authorized": false,
+    "live_business_case_mutation_authorized": false,
+    "new_admission_or_research_run_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "source_authority": {
+    "S3_entry_ref": "configs/releases/fin_ia_0_1_s3_entry_and_detailed_backlog_freeze_v1_0.json",
+    "program_backlog_ref": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "program_plan_ref": "docs/architecture/repository/FIN_0_1_PROGRAM_EXECUTION_PLAN_DRAFT_20260719.zh-CN.md",
+    "evidence_and_graph_ref": "docs/architecture/repository/FIN_0_1_LAYER_3_AGENTIC_SEARCH_EVIDENCE_EXECUTION_DRAFT_20260719.zh-CN.md",
+    "judgment_context_repair_ref": "docs/architecture/repository/FIN_0_1_LAYER_4_FINANCIAL_JUDGMENT_EXECUTION_DRAFT_20260719.zh-CN.md",
+    "legacy_seed_ref": "src/sec_agent/canonical_runtime/planning_service.py:P02_4_FIXED_CELL_SEEDS",
+    "root_cause_ledger_ref": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "method_registry_ref": "docs/project_os/financial_research_method_registry.jsonl"
+  },
+  "decision_surface": {
+    "case_scope": "NVDA",
+    "active_cell_cardinality": 3,
+    "cell_order_is_contractual": true,
+    "cells": [
+      {
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "legacy_cell_key": "demand_reality",
+        "evidence_role": "demand_signal",
+        "unique_owner_role": "industry_analyst",
+        "decision_question": "Is NVDA AI infrastructure demand authentic and durable, and what evidence distinguishes recognized demand from temporary pull-forward?",
+        "mandatory_judgment_chain": "demand_signal_to_company_specificity_to_real_deployment_to_durability_driver_to_cannot_infer",
+        "stop_rule": "Do not advance without issuer or filing evidence for demand and revenue conversion plus one counterindicator.",
+        "what_would_change": "Two consecutive quarters of weaker order-to-revenue conversion, material customer digestion, or evidence that demand is primarily inventory pull-forward.",
+        "legacy_evidence_roles": [
+          "demand_signal",
+          "revenue_conversion"
+        ],
+        "required_evidence_roles": [
+          "demand_signal",
+          "revenue_conversion",
+          "thesis_counterevidence"
+        ],
+        "typed_terminal_states": [
+          "answered_with_bounded_evidence",
+          "cannot_infer_missing_authoritative_demand_evidence",
+          "cannot_infer_durability_not_observable",
+          "stopped_by_material_counterevidence"
+        ]
+      },
+      {
+        "program_cell_id": "value_and_profit_capture",
+        "legacy_cell_key": "value_profit_capture",
+        "evidence_role": "revenue_capture",
+        "unique_owner_role": "financial_analyst",
+        "decision_question": "Where and how does NVDA capture revenue and incremental profit from AI infrastructure demand, using segment, period, unit and formula-bound evidence?",
+        "mandatory_judgment_chain": "demand_transmission_to_product_segment_attribution_to_revenue_to_margin_operating_profit_cash_conversion_to_unattributed_scope",
+        "stop_rule": "Do not assign value capture without segment revenue or margin evidence and an explicit cross-chain comparison.",
+        "what_would_change": "Evidence that pricing power is competed away, mix shifts to lower-margin products, or upstream capacity captures the incremental economics.",
+        "legacy_evidence_roles": [
+          "revenue_capture",
+          "margin_capture"
+        ],
+        "required_evidence_roles": [
+          "revenue_capture",
+          "margin_capture",
+          "cross_chain_comparison"
+        ],
+        "typed_terminal_states": [
+          "answered_with_formula_bound_numeric_support",
+          "cannot_infer_missing_segment_or_margin_inputs",
+          "cannot_infer_unattributable_profit_capture",
+          "stopped_by_numeric_conflict"
+        ]
+      },
+      {
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "legacy_cell_key": "bottleneck_counterevidence",
+        "evidence_role": "thesis_counterevidence",
+        "unique_owner_role": "risk_reviewer",
+        "decision_question": "Which bottlenecks and counterevidence could break or qualify the NVDA thesis, and what exact evidence would change the judgment?",
+        "mandatory_judgment_chain": "strongest_counterevidence_to_impact_mechanism_to_observed_state_to_probability_impact_boundary_to_what_would_change",
+        "stop_rule": "Do not close the thesis without one capacity bottleneck and one independent counterevidence route.",
+        "what_would_change": "A credible supply release, export restriction, capex digestion, customer concentration break, or price-in evidence that invalidates the expected risk-reward.",
+        "legacy_evidence_roles": [
+          "capacity_constraint",
+          "thesis_counterevidence"
+        ],
+        "required_evidence_roles": [
+          "capacity_constraint",
+          "thesis_counterevidence",
+          "independent_counterevidence_route"
+        ],
+        "typed_terminal_states": [
+          "answered_with_bounded_counterevidence",
+          "cannot_infer_missing_independent_counterevidence",
+          "cannot_infer_probability_or_impact",
+          "stopped_by_material_core_conflict"
+        ]
+      }
+    ],
+    "cross_cell_invariants": [
+      "all_cells_share_one_CaseVersion_one_ResearchPlanVersion_one_Fin01ResearchRuntime_and_one_ResearchRunVersion",
+      "each_cell_has_its_own_CellVersion_BranchVersion_owner_role_context_and_terminal_state",
+      "candidate_context_graph_observation_numeric_fact_evidence_and_judgment_are_distinct_authority_classes",
+      "cannot_infer_is_a_valid_terminal_output_not_narrative_fill",
+      "Lead_must_adjudicate_cross_cell_dependency_conflict_and_variant_view_not_concatenate_text",
+      "Writer_consumes_only_adjudicated_heads_and_never_retrieves_or_promotes_evidence",
+      "why_gap_and_WWC_read_existing_exact_artifacts_without_automatic_new_research"
+    ],
+    "explicit_non_goals": [
+      "ten_to_twenty_active_agent_cells",
+      "DELL_or_MU_execution",
+      "qualified_senior_R3",
+      "consensus_valuation_scenario_catalyst_or_investment_alpha_contract",
+      "automatic_source_network_or_SourceHunter_execution",
+      "release_candidate_or_production_admission"
+    ]
+  },
+  "single_runtime_lineage": {
+    "family_rule": "extend_the_existing_FIN_0_1_runtime_family_only",
+    "runtime_cardinality": 1,
+    "research_run_cardinality_per_exact_execution": 1,
+    "ordered_object_path": [
+      "TaskVersion",
+      "CaseVersion",
+      "ResearchPlanVersion",
+      "Fin01ResearchRuntime",
+      "ResearchRunVersion",
+      "CellVersion",
+      "InvestigationBranchVersion",
+      "EvidenceRequestVersion",
+      "Candidate_or_Numeric_or_GraphObservationVersion",
+      "EvidenceGateDecisionVersion",
+      "EvidenceVersion_or_TypedGapVersion",
+      "SpecialistJudgmentVersion",
+      "LeadJudgmentVersion",
+      "WorkpaperVersion",
+      "ReportVersion",
+      "TraceVersion",
+      "WorkbenchReviewProjection",
+      "HumanReviewDecisionVersion"
+    ],
+    "write_path": "ExecutionService_to_Fin01ResearchRuntime_to_RuntimeFacade_to_canonical_store_and_ObjectStore",
+    "parallel_runtime_registry_writer_store_or_business_truth_family_allowed": false,
+    "T01_implementation_claim": "contract_frozen_only_runtime_lineage_to_be_implemented_and_proven_in_T02_through_T08"
+  },
+  "object_owner_freeze": [
+    {
+      "object_or_authority": "DecisionSurface_and_three_cell_alias_compilation",
+      "unique_owner": "src/sec_agent/canonical_runtime/planning_service.py",
+      "target_task": "S3-T02",
+      "consumers": ["Fin01ResearchRuntime", "ResearchLead", "WorkbenchReviewProjection"],
+      "boundary": "legacy_seed_is_input_not_runtime_or_live_proof"
+    },
+    {
+      "object_or_authority": "ResearchRun_Cell_Branch_and_Artifact_lineage",
+      "unique_owner": "apps/workbench/backend/application/research_runtime.py",
+      "target_task": "S3-T02",
+      "consumers": ["RuntimeFacade", "bounded_agent_executor", "WorkbenchNext"],
+      "boundary": "one_existing_runtime_family_no_parallel_run_truth"
+    },
+    {
+      "object_or_authority": "three_cell_bounded_agent_profile_and_specialist_lead_writer_verifier_execution",
+      "unique_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "target_task": "S3-T02",
+      "consumers": ["Fin01ResearchRuntime"],
+      "boundary": "preserve_S2_consumed_identities_and_history"
+    },
+    {
+      "object_or_authority": "EvidenceRequest_route_candidate_and_promotion_application_surface",
+      "unique_owner": "apps/workbench/backend/application/evidence_service.py",
+      "target_task": "S3-T03",
+      "consumers": ["EvidenceToolPlanner", "ToolGateway", "EvidenceGate", "ResearchLead"],
+      "boundary": "Candidate_or_GraphObservation_never_auto_promotes_to_Evidence"
+    },
+    {
+      "object_or_authority": "deterministic_financial_numeric_parse_formula_and_stop",
+      "unique_owner": "src/sec_agent/canonical_runtime/parser_numeric.py",
+      "target_task": "S3-T04",
+      "consumers": ["financial_analyst", "SpecialistJudgmentVersion", "Verifier"],
+      "boundary": "Graph_or_model_never_allocates_revenue_profit_price_or_share"
+    },
+    {
+      "object_or_authority": "bounded_graph_navigation_hypothesis_and_workflow_lineage",
+      "unique_owner": "src/sec_agent/research_graph_store.py",
+      "target_task": "S3-T05",
+      "consumers": ["EvidenceToolPlanner", "ResearchLead", "WorkbenchReviewProjection"],
+      "boundary": "graph_edge_requires_source_followup_and_never_is_naked_fact_authority"
+    },
+    {
+      "object_or_authority": "specialist_judgment_cross_cell_adjudication_and_targeted_repair",
+      "unique_owner": "src/sec_agent/langgraph_orchestrator.py",
+      "target_task": "S3-T06",
+      "consumers": ["bounded_agent_executor", "WorkpaperVersion", "TraceVersion"],
+      "boundary": "repair_returns_to_earliest_owner_and_repeated_same_fingerprint_stops"
+    },
+    {
+      "object_or_authority": "Workbench_three_cell_review_projection",
+      "unique_owner": "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx",
+      "target_task": "S3-T07",
+      "consumers": ["human_owner", "qualified_reviewer"],
+      "boundary": "projection_is_read_only_and_cannot_create_new_research_or_business_truth"
+    }
+  ],
+  "asset_disposition": [
+    {
+      "asset": "src/sec_agent/canonical_runtime/planning_service.py:P02_4_FIXED_CELL_SEEDS",
+      "unique_owner": "src/sec_agent/canonical_runtime/planning_service.py",
+      "disposition": "retain_seed_identity_and_compile_through_frozen_aliases",
+      "target_task": "S3-T02",
+      "proof_required": "deterministic_compilation_proves_exact_three_program_cells_stop_rules_and_WWC"
+    },
+    {
+      "asset": "apps/workbench/backend/application/local_research_service.py",
+      "unique_owner": "apps/workbench/backend/application/local_research_service.py",
+      "disposition": "retain_as_exact_deterministic_three_cell_baseline",
+      "target_task": "S3-T08",
+      "proof_required": "paired_baseline_uses_same_CaseVersion_plan_input_digest_and_three_cell_surface"
+    },
+    {
+      "asset": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "unique_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "disposition": "refactor_existing_one_cell_profile_into_three_cell_profile_inside_same_runtime",
+      "target_task": "S3-T02",
+      "proof_required": "node_level_fixture_proves_three_distinct_cell_branches_and_role_scoped_inputs"
+    },
+    {
+      "asset": "configs/releases/fin_ia_0_1_p36_three_cell_deepseek_vertical_contract_v1_1.json",
+      "unique_owner": "configs/releases/fin_ia_0_1_p36_three_cell_deepseek_vertical_contract_v1_1.json",
+      "disposition": "historical_reference_only_never_reuse_as_S3_admission",
+      "target_task": "S3-T08",
+      "proof_required": "exact_live_readiness_rejects_old_Case_digests_prompt_only_json_object_and_consumed_or_legacy_identity"
+    },
+    {
+      "asset": "configs/releases/fin_ia_0_1_vt4_p36_candidate_profile_v1_0.json",
+      "unique_owner": "configs/releases/fin_ia_0_1_vt4_p36_candidate_profile_v1_0.json",
+      "disposition": "ten_cell_fixture_reference_only_no_release_activation",
+      "target_task": "S3-T08",
+      "proof_required": "active_Agent_cell_cardinality_remains_exactly_three"
+    },
+    {
+      "asset": "docs/project_os/root_cause_issue_ledger.jsonl",
+      "unique_owner": "docs/project_os/root_cause_issue_ledger.jsonl",
+      "disposition": "retain_P35_P36_manual_dogfood_as_diagnostic_and_fixture_evidence_only",
+      "target_task": "S3-T08",
+      "proof_required": "runtime_and_node_level_proof_exists_before_any_manual_supplement_or_registry_method_is_called_capability"
+    }
+  ],
+  "method_to_runtime_freeze": [
+    {
+      "method_id": "product_to_financial_bridge",
+      "registry_recorded_status": "active",
+      "S3_normalized_state": "registry_only_not_runtime_capability",
+      "earliest_target_task": "S3-T05",
+      "target_runtime_consumer": "product_or_industry_specialist_context",
+      "completion_proof": "runtime_injected_plus_node_level_consumed_plus_exact_paid_artifact_and_owner_acceptance"
+    },
+    {
+      "method_id": "customer_supplier_readthrough",
+      "registry_recorded_status": "active",
+      "S3_normalized_state": "registry_only_not_runtime_capability",
+      "earliest_target_task": "S3-T03",
+      "target_runtime_consumer": "EvidenceRequest_route_and_demand_specialist_context",
+      "completion_proof": "runtime_injected_plus_node_level_consumed_plus_exact_paid_artifact_and_owner_acceptance"
+    },
+    {
+      "method_id": "bounded_leading_signal_promotion",
+      "registry_recorded_status": "active",
+      "S3_normalized_state": "registry_only_not_runtime_capability",
+      "earliest_target_task": "S3-T03",
+      "target_runtime_consumer": "EvidenceGate_and_demand_specialist_context",
+      "completion_proof": "runtime_injected_plus_node_level_consumed_plus_exact_paid_artifact_and_owner_acceptance"
+    },
+    {
+      "method_id": "p32_product_architecture_competitive_bridge",
+      "registry_recorded_status": "active_registry_ready_feature_flagged",
+      "S3_normalized_state": "fixture_proven_but_not_runtime_injected_for_S3",
+      "earliest_target_task": "S3-T05",
+      "target_runtime_consumer": "product_graph_projection_and_specialist_context",
+      "completion_proof": "runtime_injected_plus_node_level_consumed_plus_exact_paid_artifact_and_owner_acceptance"
+    },
+    {
+      "method_id": "p32_semis_cycle_value_chain_playbook",
+      "registry_recorded_status": "active_registry_ready_feature_flagged",
+      "S3_normalized_state": "fixture_proven_but_not_runtime_injected_for_S3",
+      "earliest_target_task": "S3-T05",
+      "target_runtime_consumer": "industry_graph_projection_and_specialist_context",
+      "completion_proof": "runtime_injected_plus_node_level_consumed_plus_exact_paid_artifact_and_owner_acceptance"
+    }
+  ],
+  "root_cause_reconcile_map": [
+    {
+      "issue_id": "RC-P30-001-real-single-case-artifact-proof-pending",
+      "ledger_status_at_freeze": "open",
+      "earliest_owner_task": "S3-T02",
+      "unique_owner": "apps/workbench/backend/application/research_runtime.py",
+      "T01_disposition": "mapped_not_closed",
+      "proof_required": "one_runtime_one_run_three_cell_branch_and_artifact_lineage_fixture_then_T08_integration_and_T09_exact_live_artifact",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P30-002-memo-quality-insight-density-not-proven",
+      "ledger_status_at_freeze": "open",
+      "earliest_owner_task": "S3-T07",
+      "unique_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "T01_disposition": "mapped_not_closed",
+      "proof_required": "three_cell_workpaper_and_report_quality_comparison_then_T10_owner_review",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P33-019-humanmade-gold-set-runtime-depth-gap",
+      "ledger_status_at_freeze": "open_p34_scoped_writer_projection_pass_human_review_pending",
+      "earliest_owner_task": "S3-T07",
+      "unique_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "T01_disposition": "mapped_not_closed_historical_projection_not_runtime_depth_proof",
+      "proof_required": "runtime_consumes_cell_specific_goldcase_depth_and_exact_reviewer_surface_without_manual_fact_invention",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P34-020-writer-payload-lacked-fact-table-surface-and-goldcase-availability-alignment",
+      "ledger_status_at_freeze": "mitigated_deterministic_projection_pass_user_approval_pending",
+      "earliest_owner_task": "S3-T07",
+      "unique_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "T01_disposition": "mapped_not_closed_mitigation_not_runtime_closeout",
+      "proof_required": "Writer_consumes_adjudicated_fact_table_numeric_availability_and_goldcase_alignment_with_exact_refs",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P35-021-ai-infra-decision-surface-not-runtime-contract",
+      "ledger_status_at_freeze": "open_p35_dogfood_report_and_source_supplement_done_runtime_ingestion_pending",
+      "earliest_owner_task": "S3-T02",
+      "unique_owner": "src/sec_agent/canonical_runtime/planning_service.py",
+      "T01_disposition": "decision_surface_contract_frozen_runtime_gap_remains_open",
+      "proof_required": "compiled_surface_is_injected_into_one_runtime_and_consumed_by_three_cell_node_level_fixture",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P36-022-retrieval-rag-market-ownership-not-decision-cell-driven",
+      "ledger_status_at_freeze": "open_node02_manual_dogfood_recorded_parser_promotion_and_source_hunter_pending",
+      "earliest_owner_task": "S3-T03",
+      "unique_owner": "apps/workbench/backend/application/evidence_service.py",
+      "T01_disposition": "mapped_not_closed",
+      "proof_required": "three_typed_EvidenceRequests_choose_cell_specific_local_routes_or_typed_stop_and_SourceHunter_remains_separately_admitted",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P36-023-foundation-financials-exist-but-business-line-economics-and-numeric-sanity-promotion-gap",
+      "ledger_status_at_freeze": "open_node03_manual_dogfood_recorded_headline_selector_and_business_line_parser_pending",
+      "earliest_owner_task": "S3-T04",
+      "unique_owner": "src/sec_agent/canonical_runtime/parser_numeric.py",
+      "T01_disposition": "mapped_not_closed",
+      "proof_required": "cell_segment_period_currency_unit_formula_rounding_and_Evidence_ref_bound_numeric_pack_or_typed_gap",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P36-024-graph-assets-not-projected-into-value-capture-decision-surface",
+      "ledger_status_at_freeze": "open_node04_manual_dogfood_recorded_graph_to_decision_cell_projection_pending",
+      "earliest_owner_task": "S3-T05",
+      "unique_owner": "src/sec_agent/research_graph_store.py",
+      "T01_disposition": "mapped_not_closed",
+      "proof_required": "bounded_value_capture_graph_path_exposes_edge_semantics_source_as_of_boundary_and_source_followup",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P36-025-fundamental-specialist-input-pack-not-decision-cell-ready",
+      "ledger_status_at_freeze": "open_node05_manual_dogfood_recorded_fundamental_pack_projection_pending",
+      "earliest_owner_task": "S3-T04",
+      "unique_owner": "src/sec_agent/canonical_runtime/parser_numeric.py",
+      "T01_disposition": "mapped_not_closed",
+      "proof_required": "financial_analyst_receives_only_cell_relevant_fact_rows_numeric_inputs_and_typed_availability",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P36-026-product-industry-selector-not-decision-surface-balanced",
+      "ledger_status_at_freeze": "open_node06_manual_dogfood_recorded_product_industry_projection_pending",
+      "earliest_owner_task": "S3-T05",
+      "unique_owner": "src/sec_agent/product_intelligence_graph.py",
+      "T01_disposition": "mapped_not_closed",
+      "proof_required": "product_and_industry_rows_are_cell_specific_and_preserve_technical_signal_vs_financial_fact_boundary",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P36-027-market-capital-feedback-not-decision-surface-wired",
+      "ledger_status_at_freeze": "open_node07_manual_dogfood_recorded_market_capital_projection_pending",
+      "earliest_owner_task": "S3-T05",
+      "unique_owner": "src/sec_agent/research_skills.py",
+      "T01_disposition": "mapped_not_closed",
+      "proof_required": "market_price_in_and_capital_feedback_are_bounded_context_or_typed_gap_not_claim_authority",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P36-028-risk-counterevidence-not-risk-cell-projected",
+      "ledger_status_at_freeze": "open_node08_manual_dogfood_recorded_risk_matrix_projection_pending",
+      "earliest_owner_task": "S3-T05",
+      "unique_owner": "src/sec_agent/research_skills.py",
+      "T01_disposition": "mapped_not_closed",
+      "proof_required": "risk_cell_receives_typed_counterevidence_impact_mechanism_probability_boundary_and_WWC",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P36-029-aggregate-judgment-planner-preserves-claims-but-not-decision-surface-adjudication",
+      "ledger_status_at_freeze": "open_node09_manual_dogfood_recorded_decision_surface_adjudicator_pending",
+      "earliest_owner_task": "S3-T06",
+      "unique_owner": "src/sec_agent/langgraph_orchestrator.py",
+      "T01_disposition": "mapped_not_closed",
+      "proof_required": "Lead_adds_cross_cell_dependency_conflict_variant_view_and_targeted_repair_without_text_concatenation",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P36-030-writer-report-depends-on-supervisor-supplement-not-runtime-decision-surface",
+      "ledger_status_at_freeze": "open_node10_manual_dogfood_recorded_writer_runtime_bounded_supervisor_supplement_required",
+      "earliest_owner_task": "S3-T07",
+      "unique_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "T01_disposition": "mapped_not_closed",
+      "proof_required": "Writer_builds_Report_only_from_adjudicated_runtime_heads_with_zero_manual_supervisor_fact_supplement",
+      "blocks_exact_live_readiness_now": true
+    },
+    {
+      "issue_id": "RC-P36-031-verifier-workbench-can-preserve-boundary-but-lacks-decision-cell-review-surface",
+      "ledger_status_at_freeze": "open_node11_manual_review_recorded_decision_cell_review_surface_pending",
+      "earliest_owner_task": "S3-T07",
+      "unique_owner": "apps/workbench/frontend/vite/src/app/WorkbenchNext.tsx",
+      "T01_disposition": "mapped_not_closed",
+      "proof_required": "Workbench_exposes_exact_cell_Evidence_Numeric_Graph_gap_WWC_repair_stop_and_review_refs",
+      "blocks_exact_live_readiness_now": true
+    }
+  ],
+  "acceptance_split": {
+    "engineering_acceptance": [
+      "exact_three_cell_alias_questions_roles_stop_rules_and_WWC_are_machine_frozen",
+      "each_object_asset_and_root_cause_has_one_unique_owner_and_earliest_target_task",
+      "single_runtime_and_single_run_family_is_frozen_without_parallel_truth",
+      "all_fifteen_current_root_causes_are_mapped_and_none_is_imputed_closed",
+      "method_registry_status_is_normalized_below_runtime_capability_until_consumption_proof",
+      "deterministic_contract_tests_and_Project_OS_checks_pass",
+      "all_observed_execution_and_mutation_counts_are_zero"
+    ],
+    "product_acceptance": [
+      "NVDA_scope_is_exactly_three_active_cells",
+      "each_cell_has_a_decision_question_stop_rule_WWC_and_typed_cannot_infer_path",
+      "future_output_must_be_one_cross_cell_workpaper_report_trace_and_review_surface",
+      "T01_does_not_claim_new_fact_metric_Alpha_research_quality_or_NVDA_R2"
+    ],
+    "T01_product_acceptance_status": "pass_scope_and_review_contract_only",
+    "T01_engineering_acceptance_status": "pass_zero_call_contract_freeze",
+    "runtime_or_research_quality_acceptance_status": "not_started"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_business_writes": 0,
+    "new_admissions": 0,
+    "new_research_runs": 0,
+    "new_runtime_artifacts": 0
+  },
+  "independent_review": {
+    "disposition": "pass_after_legacy_status_owner_and_runtime_capability_boundaries_reconciled",
+    "checks": [
+      "exact_three_cell_cardinality_and_aliases_match_entry_and_legacy_seed",
+      "owner_fields_are_atomic_file_paths_not_multi_owner_strings",
+      "all_fifteen_latest_ledger_statuses_are_preserved_and_not_closed_by_T01",
+      "P35_contract_freeze_is_not_misreported_as_runtime_injection",
+      "historical_three_cell_admission_and_ten_cell_fixture_cannot_become_S3_execution_authority",
+      "method_registry_active_labels_do_not_bypass_method_to_runtime_lifecycle",
+      "T02_through_T10_model_source_network_business_mutation_release_and_production_remain_unauthorized"
+    ],
+    "remaining_blockers": [
+      "all_fifteen_root_causes_remain_open_or_mitigated_only_until_their_named_proof_exists",
+      "T02_runtime_lineage_and_role_context_not_implemented",
+      "no_three_cell_deterministic_integration_or_paid_artifact_exists"
+    ]
+  },
+  "deterministic_verification": {
+    "focused_T01_entry_and_latest_backlog": "15 passed in 0.39s",
+    "expanded_gateway_S2_T01_through_T06_S3_entry_T01_and_project_os": "119 passed in 64.07s",
+    "JSON_and_JSONL": "pass",
+    "model_provider_or_source_network_execution": "not_run_by_design"
+  },
+  "stage_acceptance": {
+    "S3_T01": "pass_zero_call_decision_surface_asset_owner_and_root_cause_freeze",
+    "S3_T02": "ready_pending_separate_authorization",
+    "S3_T03_through_T10": "blocked_by_dependencies_and_separate_authority_where_applicable",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T02-THREE-CELL-RUNTIME-PLAN-BRANCH-LINEAGE-AND-ROLE-CONTEXT-CONTRACT"
+}

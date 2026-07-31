@@ -1,0 +1,188 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_layered_verifier_typed_ref_and_finding_disposition_final_exact_live_and_paired_assessment_v1_0",
+  "assessment_id": "S3-T09-LAYERED-VERIFIER-TYPED-REF-AND-FINDING-DISPOSITION-FINAL-EXACT-LIVE-AND-PAIRED-ASSESSMENT-R1",
+  "assessed_at": "2026-07-25T18:10:50+08:00",
+  "status": "pass_engineering_product_and_research_with_L4_quality_debt_owner_acceptance_pending",
+  "authority": {
+    "user_instruction": "授权你一直做完exact-live并返回t09最终结果为止",
+    "single_exact_live_authorized": true,
+    "read_only_paired_comparison_authorized": true,
+    "layered_T09_assessment_authorized": true,
+    "automatic_retry_fallback_replay_relaunch_or_rerun_authorized": false,
+    "owner_acceptance_write_authorized": false,
+    "T10_S4_release_or_production_authorized": false
+  },
+  "identity": {
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-layered-verifier-typed-ref-finding-disposition-exact-admission-r1",
+    "admission_digest": "fdc5dab0a6045dce123fdee897f337638eb297d961b514cd52e44f1cbf6ac7c2",
+    "work_unit_id": "wu_p02_5_d9dd3698e17079ccd3bbd2a6",
+    "attempt_id": "attempt_fin01_3de738b36b2c011ed984cc58",
+    "research_run_id": "research_run_fin01_5322ebc0e99fe4c5f00f3526",
+    "input_digest": "2afb36728277556718eead7a56c3d8ba9ee4485532ac9bb1b6f32204182af872",
+    "shared_input_head_digest": "c9867b54b86cf17982b4cebfaf0c0ebcae2a6f46d894ff82dbb643f693c9836d",
+    "deterministic_baseline_research_run_id": "research_run_fin01_fac094aac24174903915016b"
+  },
+  "source_evidence": {
+    "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/layered_verifier_typed_ref_finding_disposition_r1_live_execution_result.json",
+    "runtime_result_sha256": "da1956fa6035962190b28de8567f949eabc2eaf4d9ff4ee45f103f3a767e035f",
+    "preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/layered_verifier_typed_ref_finding_disposition_r1_live_execution_preflight.json",
+    "preflight_sha256": "d0469e6dfaab04ba7c193600b7c3ca85ef3d4c4e4c761731152bc28db1f9922f",
+    "launch_receipt_ref": ".codex_runtime/fin01-s3-t09-layered-verifier-typed-ref-finding-disposition-exact-run-r1/launch_receipt.json",
+    "launch_receipt_sha256": "9122034d8ad180a1c5a99a1a0474bd0f05ad47e8182408f49df201eb39b58569",
+    "exit_receipt_ref": ".codex_runtime/fin01-s3-t09-layered-verifier-typed-ref-finding-disposition-exact-run-r1/exit_receipt.json",
+    "exit_receipt_sha256": "9eb8f1afb6405d71e17b4f60f33dab7985fa925f868623267622af5c6f7b4cdc",
+    "paired_baseline_ref": "configs/releases/fin_ia_0_1_s3_t09_paired_deterministic_baseline_materialization_v1_0.json",
+    "paired_baseline_sha256": "197a99f9a0d22810412f50aefbb3a04017424c58c1b6ec64e94216338c8b3042",
+    "acceptance_standard_ref": "configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json",
+    "acceptance_standard_sha256": "2f4ffb82f7cc18ac97c7265fd968e004a4b64d5ad8244d79c0a0a0b86c466703"
+  },
+  "exact_live_execution": {
+    "preflight_status": "pass_exact_zero_call_execution_preflight",
+    "terminal_status": "terminal_succeeded_admission_consumed_no_retry",
+    "canonical_terminal_states": [
+      "succeeded",
+      "succeeded",
+      "succeeded"
+    ],
+    "terminal_consistent": true,
+    "orphaned_run": false,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_provider_network_calls": [
+      12,
+      12,
+      12
+    ],
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_case_head_writes": 0,
+    "input_output_total_tokens": [
+      55223,
+      6269,
+      61492
+    ],
+    "estimated_cost_usd": 0.02643915,
+    "retry_fallback_replay_relaunch_rerun_counts": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "supervision_exit_code": 0,
+    "monitor_mutations": 0,
+    "signals_sent": 0
+  },
+  "artifact_manifest": {
+    "bounded_agent_manifest": {
+      "artifact_ref": "artifact_fin01_766b1ef391cdbafff65a5aad:v1",
+      "object_digest": "e1b83d4d8436d3c7b65fc7229af99b88a457383ada9370359cf2454ca2fbac8f"
+    },
+    "bounded_agent_evidence": {
+      "artifact_ref": "artifact_fin01_ba0b0937a2ab726c0aa7b497:v1",
+      "object_digest": "ef8f3fefe8b691f22eac8af66dfa97818b0f4ddbeb0c82e38ebec0e5715346b4"
+    },
+    "bounded_agent_numeric": {
+      "artifact_ref": "artifact_fin01_587bad1626a4b3afad88e222:v1",
+      "object_digest": "541aad88b47bd8cf98a5350bdb06848872e25f86be365d5a92e3ec5f7339d339"
+    },
+    "bounded_agent_judgment": {
+      "artifact_ref": "artifact_fin01_4060b9bb19aa5e772c1dda25:v1",
+      "object_digest": "7e9069f40f2706b6f67fc739fab022b55d0d8d40524fb054fec438d17e41e8e8"
+    },
+    "bounded_agent_workpaper": {
+      "artifact_ref": "artifact_fin01_28c976f4b751092aafa071ab:v1",
+      "object_digest": "d876448ab2237fc2ccc777c365220df1d8813bcc192c0c5b5807ba2ef5f0fee5"
+    },
+    "bounded_agent_report": {
+      "artifact_ref": "artifact_fin01_168a8f3374f15d9fd2a548df:v1",
+      "object_digest": "abc6adeeb52a9abc77bb9a967ad07802855b34ffb323db651054011fe2680538"
+    },
+    "bounded_agent_trace": {
+      "artifact_ref": "artifact_fin01_86236881dbc4fafdef8b48b9:v1",
+      "object_digest": "7c31b80d6d2088f08d19bf863ea3ee05f583e9bb10616fc4c5dc47b7fcf971d7"
+    },
+    "bounded_agent_verification": {
+      "artifact_ref": "artifact_fin01_e441edb0d7ce0e514b8946cf:v1",
+      "object_digest": "d317b8ca66cbf1bc2b2510a59367b21e1f5345417257c727cffd4dc4137006ed"
+    },
+    "agent_fallback_comparison": {
+      "artifact_ref": "artifact_fin01_cc371b3cc3c5f1e7ab77bbb6:v1",
+      "object_digest": "ff1eb4d4c9ec3abab780440f288538c0fcfd1b66a3b30e52b87262b225adae60"
+    }
+  },
+  "four_layer_assessment": [
+    {
+      "layer": "L1_hard_integrity",
+      "result": "pass",
+      "evidence": [
+        "All nine current-version Artifacts belong to one terminal exact Run and have verified immutable object digests.",
+        "The only fact-supported claim is scoped to NVDA FY2025 company-total margins and is linked to the same-Cell Numeric fact f1.",
+        "Segment, product, incremental-AI-profit, bottleneck probability and financial impact remain explicit cannot-infer states.",
+        "Candidate and graph context were not promoted to Evidence or Numeric authority.",
+        "Verifier deterministic-integrity semantic-fidelity financial-coherence and visual-delivery findings all passed with no issue codes."
+      ]
+    },
+    {
+      "layer": "L2_recoverable_protocol",
+      "result": "pass",
+      "evidence": [
+        "Verifier returned and runtime accepted the five-field typed finding schema.",
+        "Typed scoped artifact_or_claim_refs are supported by the local validator.",
+        "No retained recoverable protocol finding remained and no local rewrite or guessed repair occurred."
+      ]
+    },
+    {
+      "layer": "L3_analytical_quality",
+      "result": "pass_agent_materially_exceeds_deterministic_baseline_on_actionability",
+      "evidence": [
+        "Agent and deterministic baseline agree on the bounded thesis: demand durability unresolved, company-total profitability supported but product attribution unresolved, and packaging bottleneck unconfirmed.",
+        "Agent product adds 9 source-targeted what-would-change tasks versus 3 coarse deterministic conditions.",
+        "Agent product adds one cross-Cell dependency, one explicit unresolved conflict adjudication, three scoped remaining-gap groups and one variant view.",
+        "The added analysis preserves cannot-infer boundaries rather than creating unsupported confidence."
+      ]
+    },
+    {
+      "layer": "L4_user_fit_and_delivery",
+      "result": "pass_with_carried_quality_debt",
+      "evidence": [
+        "Three non-terminal Research Lead narrative findings were persisted exactly as required by narrative quality policy v2.",
+        "variant_view reached 531 characters against the 512 quality ceiling.",
+        "cross_cell_dependencies reached 457 and remaining_gaps reached 355 characters against the 320 quality target.",
+        "The product is usable for internal review, but concise editing and Chinese-English presentation normalization remain desirable before external delivery."
+      ]
+    }
+  ],
+  "paired_comparison": {
+    "status": "completed_read_only_same_input_head_distinct_runs",
+    "agent_artifact_count": 9,
+    "deterministic_artifact_count": 4,
+    "shared_input_head_digest_equal": true,
+    "research_runs_distinct": true,
+    "baseline_output_exposed_to_agent": false,
+    "canonical_or_object_writes_from_comparison": 0,
+    "agent_reruns_from_comparison": 0,
+    "core_epistemic_conclusion": "equivalent",
+    "actionability": "agent_materially_better",
+    "cross_cell_synthesis": "agent_materially_better",
+    "truth_and_scope_safety": "equivalent_pass",
+    "delivery_concision": "deterministic_better_but_not_disqualifying"
+  },
+  "stage_decision": {
+    "RC_P36_037": "closed_current_version_coherent_terminal_nine_artifact_product_exists",
+    "engineering_integrity": "pass",
+    "product_completeness": "pass",
+    "research_quality": "pass_with_L4_quality_debt",
+    "owner_acceptance": "pending_not_written",
+    "S3_T09": "conditional_pass_pending_explicit_owner_acceptance",
+    "S3_T10": "not_yet_authorized",
+    "S4_release_or_production": "not_authorized"
+  },
+  "observed_counts": {
+    "new_live_runs": 1,
+    "new_agent_artifacts": 9,
+    "paired_comparisons": 1,
+    "owner_acceptance_writes": 0
+  },
+  "next_action": "S3-T09-EXPLICIT-OWNER-ACCEPTANCE-DECISION"
+}

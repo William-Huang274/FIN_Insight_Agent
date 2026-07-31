@@ -1,0 +1,164 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_first_node_truncation_repair_decision_v1_0",
+  "decision_id": "S3-T09-FIRST-NODE-TRUNCATION-ROOT-CAUSE-AND-REPAIR-DECISION",
+  "decided_at": "2026-07-22T05:10:00+08:00",
+  "status": "pass_zero_call_combined_repair_selected_implementation_pending_separate_authority",
+  "authority": {
+    "source": "user_continue_after_terminal_failed_exact_run",
+    "allows": [
+      "read_only_root_cause_analysis",
+      "zero_call_repair_option_comparison",
+      "machine_readable_decision_and_backlog_update"
+    ],
+    "forbids": [
+      "repair_implementation",
+      "new_admission_issuance",
+      "model_provider_or_network_execution",
+      "retry_fallback_or_rerun",
+      "source_network_or_external_tool_execution",
+      "T10_S4_release_or_production_progression"
+    ]
+  },
+  "source_failure": {
+    "result_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution_result_v1_0.json",
+    "root_cause_issue_id": "RC-P36-035-s3-first-specialist-output-budget-contract-mismatch",
+    "failed_stage": "domain_specialist:demand_authenticity_and_sustainability",
+    "input_tokens": 8973,
+    "output_tokens": 1400,
+    "configured_output_cap": 1400,
+    "finish_reason": "length",
+    "failure_code": "s3_bounded_node_output_truncated",
+    "raw_output_persisted": false
+  },
+  "request_size_audit": {
+    "measurement_basis": "canonical prepared input plus the current DeepSeekS3ThreeCellNodeExecutor system and JSON request serialization",
+    "actual_first_node_request_bytes": 26852,
+    "observed_first_node_tokens_per_request_byte": 0.3341650529,
+    "cells": [
+      {
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "current_request_bytes": 26852,
+        "candidate_model_view_request_bytes": 6659,
+        "reduction_percent": 75.2,
+        "estimated_input_tokens_using_observed_first_node_ratio": 2225
+      },
+      {
+        "program_cell_id": "value_and_profit_capture",
+        "current_request_bytes": 33040,
+        "candidate_model_view_request_bytes": 12796,
+        "reduction_percent": 61.3,
+        "estimated_input_tokens_using_observed_first_node_ratio": 4276
+      },
+      {
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "current_request_bytes": 27666,
+        "candidate_model_view_request_bytes": 7989,
+        "reduction_percent": 71.1,
+        "estimated_input_tokens_using_observed_first_node_ratio": 2670
+      }
+    ],
+    "estimate_boundary": "Only request bytes are deterministic. Token estimates for candidate views reuse the observed first-node byte-to-token ratio and are not provider measurements."
+  },
+  "root_cause_findings": [
+    "the current provider request serializes the full canonical cell pack rather than a role-specific model view",
+    "candidate metadata is duplicated in candidate_snapshot and candidate_bundle",
+    "single decision-cell projections appear both as a one-row list and a duplicate decision_cell object",
+    "tool plans gateway preflights identifiers and digests are audit-relevant but do not help the Specialist form its bounded judgment",
+    "the Specialist output schema defines required fields but no list cardinality item-length or total serialized-size ceiling",
+    "raising max_tokens alone would preserve avoidable context and unconstrained verbosity and is therefore rejected"
+  ],
+  "option_comparison": [
+    {
+      "option": "cap_only",
+      "decision": "reject",
+      "reason": "does not repair duplicated provider context or unbounded output cardinality and would spend more without improving information architecture"
+    },
+    {
+      "option": "blind_input_compression_only",
+      "decision": "reject",
+      "reason": "could hide financial evidence graph mechanisms or authority boundaries and does not guarantee a bounded closed output"
+    },
+    {
+      "option": "role_specific_projection_plus_closed_output_budget_plus_moderate_cap_headroom",
+      "decision": "select",
+      "reason": "removes audit-only duplication while retaining analyst-useful inputs, bounds response verbosity locally and adds low-cost headroom without changing provider or weakening fail-closed behavior"
+    }
+  ],
+  "selected_repair_contract": {
+    "canonical_input_contract_ref": "fin01.s3.bounded_agent_three_cell_input:v1",
+    "canonical_input_and_digest_change_allowed": false,
+    "specialist_model_view_contract_ref": "fin01.s3.specialist_model_view:v1",
+    "replacement_output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v2",
+    "model_view_must_retain": [
+      "T02_decision_question_mandatory_chain_stop_rule_what_would_change_branch_state_and_observation",
+      "T02_domain_specialist_authority",
+      "T03_candidate_metadata_promotion_result_typed_gaps_and_source_boundary",
+      "T04_selected_financial_rows_derived_metrics_availability_and_support_boundary",
+      "T05_method_ids_product_graph_edge_market_risk_and_typed_gap_context",
+      "exact_accepted_Evidence_Numeric_candidate_and_graph_authority_refs"
+    ],
+    "model_view_must_exclude": [
+      "duplicated_candidate_snapshot_when_candidate_bundle_is_canonical_for_the_view",
+      "tool_selection_plan_and_gateway_preflight_bodies",
+      "duplicated_singleton_decision_cells_list",
+      "audit_only_ids_digests_and_persistence_flags_not_needed_for_judgment",
+      "other_role_context_plans"
+    ],
+    "auditability": {
+      "full_canonical_input_remains_persisted_and_digest_bound": true,
+      "model_view_is_deterministically_derived": true,
+      "node_receipt_must_record_model_view_contract_ref_and_digest": true,
+      "output_is_still_validated_against_full_original_cell_authority": true
+    },
+    "specialist_output_limits": {
+      "fact_layer_max_items": 3,
+      "explanation_layer_min_max_items": [1, 3],
+      "judgment_layer_min_max_items": [1, 2],
+      "remaining_gaps_min_max_items": [1, 4],
+      "what_would_change_min_max_items": [1, 3],
+      "maximum_unicode_characters_per_narrative_item": 320,
+      "maximum_serialized_utf8_bytes": 6000,
+      "duplicate_keys_additional_fields_and_unauthorized_refs": "fail_closed"
+    },
+    "token_and_cost_limits": {
+      "specialist_max_output_tokens": 2200,
+      "lead_max_output_tokens": 1200,
+      "writer_max_output_tokens": 1400,
+      "verifier_max_output_tokens": 1000,
+      "aggregate_max_output_tokens": 10200,
+      "prior_aggregate_max_output_tokens": 7800,
+      "incremental_output_only_cost_ceiling_usd": 0.002088,
+      "max_total_cost_usd": 0.1,
+      "max_total_cost_change_allowed": false,
+      "retry_budget": 0
+    },
+    "unchanged_boundaries": [
+      "same_DeepSeek_provider_and_json_object_transport_until_separately_changed",
+      "no_source_network",
+      "no_external_tools",
+      "no_live_case_head_writes",
+      "no_parser_relaxation_or_silent_fallback",
+      "consumed_r1_identity_is_never_reused"
+    ]
+  },
+  "implementation_acceptance_before_any_new_admission": [
+    "deterministic model-view projection is stable across repeated compilation",
+    "all three cells retain the named T02_T05 analyst inputs and exact authority refs",
+    "audit-only duplicate fields are absent from the provider view but remain in canonical input",
+    "valid bounded outputs at every declared cardinality edge pass",
+    "over-cardinality over-length over-byte duplicate-key unexpected-field and unauthorized-ref fixtures fail before artifact commit",
+    "projected cost and runtime admission validators enforce the new 2200 and 10200 limits with retry zero",
+    "full S2 historical and S3 deterministic compatibility regressions pass",
+    "real model provider network new admission and paid run counts remain zero"
+  ],
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "live_runs": 0
+  },
+  "next_action": "S3-T09-SPECIALIST-MODEL-VIEW-AND-OUTPUT-BUDGET-ZERO-CALL-REPAIR"
+}

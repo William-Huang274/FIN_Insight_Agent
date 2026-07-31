@@ -1,0 +1,155 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_cross_cell_scoped_identity_zero_call_root_cause_decision_v1_0",
+  "decided_at": "2026-07-23T18:16:43+08:00",
+  "status": "pass_shared_typed_cell_scoped_claim_and_WWC_identity_contract_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "zero_call_root_cause_decision_authorized": true,
+    "runtime_code_prompt_schema_or_validator_implementation_authorized": false,
+    "admission_issuance_or_consumption_authorized": false,
+    "model_provider_network_source_or_external_tool_call_authorized": false,
+    "rerun_paired_comparison_owner_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_live_result_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_specialist_v7_fresh_r2_live_execution_result_v1_0.json",
+  "source_issue_id": "RC-P36-046-s3-cross-cell-local-id-namespace-gap",
+  "independent_root_cause_review": {
+    "confirmed": true,
+    "provider_fault_confirmed": false,
+    "project_owned_contract_mismatch_confirmed": true,
+    "earliest_owner": "shared_S3_claim_and_WWC_identity_scope_contract",
+    "producer_contract": "Specialist validates claim_id and task_id uniqueness only inside one program_cell_id.",
+    "lead_contract": "Lead collapses Claim and WWC identities into global raw-string sets and a global raw claim_id map.",
+    "writer_contract": "Writer builds global raw-string Claim and WWC maps, so a later Cell overwrites an earlier Cell before section lineage validation.",
+    "verifier_contract": "Verifier receives the downstream assembled surfaces and therefore must consume the same scoped identity contract rather than infer Cell ownership from a raw local ID.",
+    "observed_live_collision": {
+      "identity_kind": "what_would_change",
+      "local_ids": [
+        "wwc-001",
+        "wwc-002",
+        "wwc-003"
+      ],
+      "program_cell_ids": [
+        "demand_and_revenue_conversion",
+        "value_and_profit_capture"
+      ]
+    },
+    "same_shape_unobserved_risk": {
+      "identity_kind": "claim",
+      "confirmed_by_code_path": true,
+      "live_collision_observed": false,
+      "reason": "Claim IDs are also only Cell-local at the Specialist boundary and are later keyed globally by Lead and Writer."
+    },
+    "lead_generated_dependency_gap_and_adjudication_ids_in_scope": false,
+    "lead_generated_id_boundary": "These IDs have one Lead producer and no observed cross-Cell namespace collision; keep them node-local and validate their own uniqueness separately."
+  },
+  "selected_identity_contract": {
+    "contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+    "identity_type": "CellScopedResearchRef",
+    "authoritative_fields": [
+      "identity_kind",
+      "program_cell_id",
+      "local_id"
+    ],
+    "identity_kinds": [
+      "claim",
+      "what_would_change"
+    ],
+    "runtime_key": [
+      "identity_kind",
+      "program_cell_id",
+      "local_id"
+    ],
+    "scoped_ref_digest": "canonical_digest_of_the_typed_authoritative_fields_for_lineage_and_exact_binding_only",
+    "scoped_ref_digest_replaces_authoritative_fields": false,
+    "provider_local_id_preserved": true,
+    "provider_local_id_mutated_prefixed_or_rewritten": false,
+    "derived_at_boundary": "immediately_after_each_Cell Specialist output passes its existing local validator and is bound to the exact program_cell_id",
+    "downstream_authoritative_join_key": "CellScopedResearchRef",
+    "raw_local_id_only_cross_cell_join_allowed": false,
+    "same_local_id_in_different_cells_allowed": true,
+    "same_local_id_in_same_cell_allowed": false,
+    "duplicate_scoped_ref_allowed": false,
+    "unknown_or_kind_mismatched_scoped_ref_allowed": false,
+    "prompt_schema_and_local_validator_source": "one shared typed identity contract",
+    "node_contract_effect": {
+      "specialist": "keep Provider-visible local IDs; local assembly emits typed scoped refs after Cell binding",
+      "research_lead": "consume and emit typed Claim and WWC refs; never collapse them to raw-string global sets",
+      "memo_writer": "consume and emit typed Claim refs and keep WWC refs scoped by section Cell",
+      "verifier": "validate exact scoped lineage across Specialist, Lead and Writer surfaces"
+    },
+    "versioning": {
+      "new_shared_identity_contract_required": true,
+      "new_canonical_output_contract_version_required": true,
+      "specialist_transport_v8_required_only_for_identity_scope": false,
+      "downstream_node_transport_version_required_if_provider_wire_schema_changes": true,
+      "transport_capability_not_version_number_sets_controls_behavior": true
+    }
+  },
+  "safe_failure_telemetry_contract": {
+    "failure_family": "cross_cell_scoped_identity",
+    "allowed_subtypes": [
+      "duplicate_local_id_same_cell",
+      "raw_local_id_cross_cell_ambiguous",
+      "scoped_ref_duplicate",
+      "scoped_ref_mismatch",
+      "unknown_scoped_ref"
+    ],
+    "allowed_fields": [
+      "identity_kind",
+      "failure_subtype",
+      "failing_item_count"
+    ],
+    "raw_local_ids_allowed": false,
+    "program_cell_ids_allowed": false,
+    "scoped_ref_digests_allowed": false,
+    "item_indexes_allowed": false,
+    "answer_text_or_private_reasoning_allowed": false
+  },
+  "compatibility_contract": {
+    "historical_output_contract_v3_or_transport_v1_through_v7_mutated": false,
+    "historical_failed_run_or_provider_answer_rewritten": false,
+    "silent_prefix_remap_normalize_trim_drop_or_repair_allowed": false,
+    "historical_run_replay_preserves_original_failure": true,
+    "future_execution_requires_explicit_versioned_identity_contract_binding": true,
+    "consumed_r2_admission_or_identity_reuse_allowed": false
+  },
+  "future_implementation_acceptance_contract": {
+    "deterministic_positive_fixtures": [
+      "two Cells reuse the same three WWC local IDs and remain distinct through Lead Writer and Verifier",
+      "two Cells reuse one Claim local ID and remain distinct through Lead Writer and Verifier",
+      "non_NVDA_profile_with_a_different_period_format_and_mixed_Evidence_Numeric_authority_passes",
+      "complete_fake_Provider_path_produces_six_logical_nodes_and_nine_Artifacts"
+    ],
+    "deterministic_negative_fixtures": [
+      "duplicate Claim or WWC local ID inside one Cell fails at the Cell boundary",
+      "raw local ID used as a cross-Cell reference fails before downstream Provider dispatch",
+      "unknown wrong-kind wrong-Cell or duplicate scoped ref fails with content-free telemetry"
+    ],
+    "parity_requirements": [
+      "Prompt and local validators derive identity shape from the same typed contract",
+      "Lead Writer and Verifier use the same scoped key semantics",
+      "historical v3 output and admission identities remain unchanged"
+    ],
+    "real_model_provider_network_calls_required": false,
+    "canonical_business_writes_required": false
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "work_units_attempts_runs_or_artifacts_created": 0,
+    "canonical_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_046": "root_cause_decided_shared_scoped_identity_implementation_pending",
+    "RC_P36_037": "fresh_complete_artifact_proof_missing",
+    "S3_T09": "blocked_pending_zero_call_implementation_and_separate_future_proof",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4_release_production": "not_authorized"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-CROSS-CELL-SCOPED-IDENTITY-AND-SAFE-COLLISION-TELEMETRY-ZERO-CALL-IMPLEMENTATION"
+}

@@ -1,0 +1,138 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_paired_deterministic_baseline_materialization_decision_v1_0",
+  "decision_id": "S3-T09-PAIRED-DETERMINISTIC-BASELINE-MATERIALIZATION-DECISION-R1",
+  "decided_at": "2026-07-22T09:20:00+08:00",
+  "status": "pass_materialization_contract_decided_execution_deferred_until_owner_grade_repair",
+  "authority": {
+    "user_instruction": "按你这里建议的顺序来",
+    "baseline_materialization_decision_authorized": true,
+    "baseline_materialization_authorized": false,
+    "agent_rerun_authorized": false,
+    "model_provider_source_or_tool_execution_authorized": false,
+    "human_review_or_T10_authorized": false,
+    "S4_release_or_production_authorized": false
+  },
+  "source_binding": {
+    "contract_ref": "fin01.s3.paired_three_cell_deterministic_baseline:v1",
+    "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_replacement_live_artifact_paired_baseline_decision_v1_0.json",
+    "source_agent_result_ref": "configs/releases/fin_ia_0_1_s3_t09_replacement_output_v2_live_execution_result_v1_0.json",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "analysis_as_of": "2026-07-21T00:00:00Z",
+    "decision_surface_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "input_head_digest": "c9867b54b86cf17982b4cebfaf0c0ebcae2a6f46d894ff82dbb643f693c9836d",
+    "agent_profile_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+    "agent_research_run_id": "research_run_fin01_c24bc3ce28a3ecfafa6ce7c2"
+  },
+  "prospective_baseline": {
+    "execution_identity": "fin01-s3-t09-paired-deterministic-baseline-materialization-r1",
+    "execution_profile_version_ref": "fin01.execution_profile.p36_local_deterministic:v1",
+    "work_unit_id": "wu_p02_5_da52f02a9594f011dde69058",
+    "attempt_id": "attempt_fin01_946d7ef0b02a8a88395aff53",
+    "research_run_id": "research_run_fin01_fac094aac24174903915016b",
+    "program_cell_ids": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "artifact_refs": {
+      "deterministic_research_result": "artifact_fin01_159ec07da5899acb4282c7f8:v1",
+      "s3_three_cell_workpaper": "artifact_fin01_cac9c6d21fb71718bde53180:v1",
+      "s3_three_cell_report": "artifact_fin01_d930f0e0dced7a227ab8f26a:v1",
+      "s3_three_cell_trace_review": "artifact_fin01_92c87bb66da287219987f628:v1"
+    },
+    "double_prepare_equal": true,
+    "prospective_payload_digest": "71784beb7b2f3a8c5f73b134589b3171087f1ba14f017d5467f1ee2f9204e57b",
+    "all_identities_absent_and_distinct_from_agent": true,
+    "materialized": false
+  },
+  "materialization_contract": {
+    "must_match_agent": [
+      "case_id",
+      "case_version",
+      "decision_surface_ref",
+      "analysis_as_of",
+      "input_head_digest",
+      "program_cell_ids"
+    ],
+    "must_be_distinct_from_agent": [
+      "work_unit_id",
+      "attempt_id",
+      "research_run_id",
+      "artifact_refs",
+      "execution_profile_version_ref"
+    ],
+    "exact_artifact_types": [
+      "deterministic_research_result",
+      "s3_three_cell_workpaper",
+      "s3_three_cell_report",
+      "s3_three_cell_trace_review"
+    ],
+    "maximum_attempts": 1,
+    "retry_budget": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "evidence_promotions": 0,
+    "live_case_head_writes": 0,
+    "automatic_fallback_or_agent_substitution": false,
+    "baseline_body_may_be_exposed_to_future_agent": false,
+    "baseline_may_be_labeled_agent_output": false,
+    "machine_verifier_may_sign_human_acceptance": false
+  },
+  "preflight_safety": {
+    "validator_ref": "scripts/releases/prepare_fin_ia_0_1_s3_t09_paired_deterministic_baseline_decision.py",
+    "method": "copy canonical runtime to a disposable temporary clone; initialize and compile only the clone; inspect target only through SQLite mode=ro and file hashes",
+    "corrected_preflight_status": "pass",
+    "target_database_sha256_before_and_after": "876e98a85517b4959fd95258592847d3f76a5a8305e349601b27dffcb34addac",
+    "target_object_tree_sha256_before_and_after": "4d6a8e19feed1bc80fd45b8d252f22c57edfbbd6a339edd690596d8f7ba632dc",
+    "target_logical_snapshot_unchanged": true,
+    "initial_direct_open_incident": {
+      "status": "disclosed_and_method_repaired",
+      "root_cause_id": "RC-P36-038-read-only-preflight-opened-migrating-store-on-target",
+      "cause": "the first diagnostic instantiated CaseService.for_fixture_root on the target; SQLiteCanonicalStore.migrate executes WAL/schema initialization and changed the physical database file even without creating execution objects",
+      "database_sha256_before": "64d2c1dc7ce129312b714078969a25885ed896cee761794c32ffdc0dc7142afc",
+      "database_sha256_after": "876e98a85517b4959fd95258592847d3f76a5a8305e349601b27dffcb34addac",
+      "object_tree_unchanged": true,
+      "prospective_work_unit_attempt_run_and_artifact_refs_remain_absent": true,
+      "baseline_materialized": false,
+      "future_preflight_rule": "never initialize a migrating store on the target; use disposable clone only"
+    }
+  },
+  "observed_counts": {
+    "baseline_materializations": 0,
+    "new_work_units": 0,
+    "new_attempts": 0,
+    "new_research_runs": 0,
+    "new_artifacts": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "agent_reruns": 0,
+    "human_review_writes": 0
+  },
+  "stage_decision": {
+    "baseline_identity_and_same_input_contract": "pass",
+    "baseline_materialization_now": "not_authorized",
+    "program_order": [
+      "RC-P36-037 zero-call semantic/actionability repair decision and implementation",
+      "separately authorize deterministic baseline materialization",
+      "separately authorize fresh Agent proof only if repaired immutable artifacts are required",
+      "paired comparison",
+      "owner acceptance"
+    ],
+    "T09_acceptance": "blocked_pending_RC_P36_037_repair_baseline_materialization_and_comparison",
+    "T10_unblocked": false
+  },
+  "root_cause_decision": {
+    "RC-P36-036": "materialization_contract_decided_execution_deferred_until_RC_P36_037_repair",
+    "RC-P36-037": "remains_open_and_is_next_in_approved_program_order",
+    "RC-P36-038": "closed_preflight_method_repaired_with_disposable_clone_and_target_hash_guard"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-SEMANTIC-ACTIONABILITY-ZERO-CALL-REPAIR-DECISION"
+}

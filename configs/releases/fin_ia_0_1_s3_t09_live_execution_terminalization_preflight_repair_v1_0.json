@@ -1,0 +1,59 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_live_execution_terminalization_preflight_repair_v1_0",
+  "task_id": "S3-T09-EXACT-THREE-CELL-DEEPSEEK-LIVE-EXECUTION",
+  "status": "pass_zero_real_call_terminalization_repair_live_admission_unconsumed",
+  "authority": {
+    "source": "user_continue_after_exact_admission_issuance",
+    "allows": [
+      "exact_live_execution_preflight",
+      "owned_zero_call_repair_required_to_make_terminal_truth_reliable",
+      "one_exact_admission_consumption_after_all_preflight_gates_pass"
+    ],
+    "forbids": [
+      "retry",
+      "fallback",
+      "rerun",
+      "source_expansion",
+      "external_tool_execution",
+      "live_case_head_write",
+      "S3_T10"
+    ]
+  },
+  "root_cause": {
+    "issue_id": "RC-P36-034-s3-failure-code-namespace-not-terminalizable",
+    "earliest_faulty_artifact": "src/sec_agent/canonical_runtime/facade.py::RuntimeFacade.fail_research_run",
+    "finding": "canonical failure observation validation accepted the historical bounded_agent_ namespace only and rejected the S3 executor's typed s3_bounded_ failures before terminalization"
+  },
+  "repair": {
+    "accepted_namespaces": [
+      "bounded_agent_",
+      "s3_bounded_"
+    ],
+    "identifier_pattern": "^[a-z0-9_:.-]{1,256}$",
+    "unknown_namespace_rejected": true,
+    "whitespace_rejected": true,
+    "overlength_rejected": true,
+    "secret_safety_allowlist_broadened_to_arbitrary_text": false
+  },
+  "verification": {
+    "targeted_secret_safety_regression": "3 passed in 24.11s",
+    "full_runner_regression": "3 passed in 119.23s",
+    "fake_provider_call_count": 1,
+    "canonical_terminal_truth": {
+      "work_unit_state": "failed",
+      "attempt_state": "failed",
+      "research_run_state": "failed",
+      "artifact_count": 0
+    },
+    "consumed_identity_reuse_rejected": true,
+    "real_model_calls": 0,
+    "real_provider_calls": 0,
+    "real_network_calls": 0
+  },
+  "exact_admission": {
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-segmented-exact-admission-r1",
+    "admission_digest": "ca7af62de613dcaa274cc8a0780658ef16e72082de54a8e1038eeeb6a4bfba3f",
+    "consumed": false
+  },
+  "known_boundary": "The repair makes success or failure canonically terminalizable. It does not predict the live provider result or prove paid research quality."
+}

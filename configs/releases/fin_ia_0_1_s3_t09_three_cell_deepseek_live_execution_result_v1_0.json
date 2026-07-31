@@ -1,0 +1,90 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution_result_v1_0",
+  "result_id": "S3-T09-THREE-CELL-DEEPSEEK-LIVE-EXECUTION-R1",
+  "executed_at": "2026-07-22T04:38:00+08:00",
+  "status": "terminal_failed_admission_consumed_no_retry",
+  "authority": {
+    "exact_once_execution_authorized": true,
+    "retry_fallback_rerun_authorized": false,
+    "source_network_external_tool_live_case_head_write_authorized": false,
+    "replacement_admission_T10_S4_release_or_production_authorized": false
+  },
+  "identity": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_segmented_exact_admission_v1_0.json",
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-segmented-exact-admission-r1",
+    "admission_digest": "ca7af62de613dcaa274cc8a0780658ef16e72082de54a8e1038eeeb6a4bfba3f",
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "input_digest": "ec562442781bae817fdba072cc953e86373ef3b64e78e8a9dcca8312bb5802b8",
+    "work_unit_id": "wu_p02_5_b32274eec019e44d8982af58",
+    "attempt_id": "attempt_fin01_8f40a1cf360e736835f65413",
+    "research_run_id": "research_run_fin01_a77b165e85be8757e5855a69"
+  },
+  "pre_execution_gates": {
+    "terminalization_fake_provider_regression": "3 passed in 119.23s",
+    "project_os_scoped_preflight": "pass_open_full_chain_blocker_count_0",
+    "exact_zero_call_preflight": "pass_exact_zero_call_execution_preflight",
+    "credential_present": true,
+    "transport_retries": 0,
+    "execution_state_before": [0, 0, 0, 0]
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:domain_specialist:demand_authenticity_and_sustainability",
+    "failure_code": "s3_bounded_node_output_truncated",
+    "artifact_count": 0,
+    "event_count": 7,
+    "orphaned_run": false
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_node_json_object:v1",
+    "failed_stage": "domain_specialist:demand_authenticity_and_sustainability",
+    "finish_reason": "length",
+    "model_calls": 1,
+    "provider_calls": 1,
+    "network_calls": 1,
+    "transport_attempt_count": 1,
+    "input_tokens": 8973,
+    "output_tokens": 1400,
+    "total_tokens": 10373,
+    "configured_stage_output_token_cap": 1400,
+    "latency_ms": 18813,
+    "estimated_cost_usd": 0.00512125,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "rerun_count": 0
+  },
+  "boundary_observation": {
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_case_head_writes": 0,
+    "raw_provider_response_persisted": false,
+    "private_chain_of_thought_persisted": false,
+    "credential_value_persisted": false,
+    "post_terminal_inspect_additional_model_provider_network_calls": [0, 0, 0]
+  },
+  "root_cause_disposition": {
+    "issue_id": "RC-P36-035-s3-first-specialist-output-budget-contract-mismatch",
+    "finding": "the first Specialist consumed the exact 1400-token output allowance and returned finish_reason length, so the local adapter correctly rejected a truncated closed output before any artifact commit",
+    "provider_protocol_failure": false,
+    "canonical_terminalization_failure": false,
+    "project_owned_capacity_contract_repair_required": true,
+    "replacement_admission_issued": false,
+    "replacement_execution_authorized": false
+  },
+  "acceptance": {
+    "exact_execution_and_terminal_truth": "pass",
+    "complete_reconstructable_three_cell_artifacts": "fail_no_artifacts",
+    "paired_baseline_and_four_layer_artifact_validation": "not_reached",
+    "S3_T09": "failed",
+    "S3_T10": "blocked",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-FIRST-NODE-TRUNCATION-ROOT-CAUSE-AND-REPAIR-DECISION"
+}

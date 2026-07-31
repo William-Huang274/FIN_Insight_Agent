@@ -1,0 +1,124 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_writer_v2_fresh_exact_admission_issuance_v1_0",
+  "issuance_id": "S3-T09-OWNER-GRADE-V3-WRITER-V2-FRESH-EXACT-ADMISSION-ISSUANCE-R1",
+  "issued_at": "2026-07-23T15:23:23+08:00",
+  "status": "issued_unconsumed_zero_call_preflight_pass",
+  "authority": {
+    "user_instruction": "继续修，修完做真实调用看看效果",
+    "zero_call_repair_and_preflight_authorized": true,
+    "fresh_exact_admission_issuance_authorized": true,
+    "exact_once_model_provider_network_execution_authorized": true,
+    "automatic_retry_fallback_repair_or_rerun_authorized": false,
+    "paired_comparison_human_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_failed_result_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_v3_fresh_live_execution_result_v1_0.json",
+  "repair_scope": {
+    "writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v2",
+    "provider_emits_only": [
+      "claim_id",
+      "analysis_text_zh_cn"
+    ],
+    "locally_assembled_authority_fields": [
+      "title_zh_cn",
+      "executive_summary_zh_cn",
+      "sections.program_cell_id",
+      "epistemic_status",
+      "scope_digest",
+      "qualification_preserved",
+      "what_would_change_task_refs",
+      "limitations_zh_cn",
+      "consumed_lead_digest",
+      "consumed_claim_surface_digest",
+      "exact_claim_ids",
+      "exact_WWC_task_ids",
+      "source_calls",
+      "tool_calls"
+    ],
+    "typed_writer_failure_contract": "closed_memo_writer_output:v2",
+    "capture_before_terminal_validation": true,
+    "historical_orphan_typed_closeout": "pass_zero_call"
+  },
+  "issued_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_specialist_v5_research_lead_v3_writer_v2_exact_admission_v1_0.json",
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-specialist-v5-research-lead-v3-writer-v2-exact-admission-r1",
+    "admission_digest": "1dc1b3290bf19bf73e0ad90cb8d5be3e1e60bf71bf151129c913894e93256885",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-specialist-v5-research-lead-v3-writer-v2-live-validation-r1",
+    "fresh_identity": true,
+    "execution_enabled": true,
+    "consumed": false,
+    "execution_started": false
+  },
+  "exact_binding": {
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "as_of": "2026-07-21T00:00:00Z",
+    "input_head_digest": "c9867b54b86cf17982b4cebfaf0c0ebcae2a6f46d894ff82dbb643f693c9836d",
+    "input_digest": "f8c196492edbbf5ccbba603c284d8eb3c606897f7551ca1018b551a45614bf4e",
+    "preparation_digest": "df695cff536ad5b83a329a62b607b6b25e800dd32b14ea28ba9a1a7294686b92",
+    "predicted_work_unit_id": "wu_p02_5_821cee42568e9454078c5104",
+    "predicted_attempt_id": "attempt_fin01_d2279356bce93fb0d4035953",
+    "predicted_research_run_id": "research_run_fin01_76a7eace510a50091c351502",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v5",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v3",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v2",
+    "provider_output_capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+    "reasoning_effort": "none",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3"
+  },
+  "execution_envelope": {
+    "maximum_semantic_model_calls": 12,
+    "maximum_provider_calls": 12,
+    "maximum_network_calls": 12,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "maximum_output_tokens_total": 16800,
+    "maximum_total_cost_usd": 0.1,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "automatic_retry_repair_fallback_or_rerun_allowed": false,
+    "first_credible_failure": "terminal_fail_closed_stop"
+  },
+  "zero_call_preflight": {
+    "focused_repair_and_capture_tests": "pass_20",
+    "broader_S3_T09_non_live_tests": {
+      "passed": 229,
+      "failed": 30,
+      "failure_class": "historical_snapshot_tests_expect_older_backlog_or_runtime_counts",
+      "new_repair_regression_detected": false
+    },
+    "fresh_predicted_work_unit_attempt_run_absent": true,
+    "old_admission_or_run_reused": false,
+    "target_execution_counts": [
+      11,
+      11,
+      11,
+      13
+    ],
+    "canonical_database_sha256": "e865d38ec2cb7167f964fd8251967759e10f9dca054e653cab6efe2570a0093c",
+    "canonical_object_tree_sha256": "39e91ac27ecd145a274021794bebf3e927a3d86f7d85643c368bbb27c327a55c",
+    "provider_callback_invoked": false,
+    "credential_value_read_output_or_persisted": false
+  },
+  "observed_counts": {
+    "new_admissions": 1,
+    "admission_consumptions": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "artifacts_created": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-WRITER-V2-FRESH-EXACT-LIVE-EXECUTION"
+}

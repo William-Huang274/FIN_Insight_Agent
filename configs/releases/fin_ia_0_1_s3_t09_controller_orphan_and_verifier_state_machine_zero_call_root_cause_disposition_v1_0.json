@@ -1,0 +1,234 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_controller_orphan_and_verifier_state_machine_zero_call_root_cause_disposition_v1_0",
+  "decision_id": "S3-T09-EXECUTION-CONTROLLER-POST-CAPTURE-PRE-ARTIFACT-TERMINALIZATION-ZERO-CALL-ROOT-CAUSE-DISPOSITION",
+  "decided_at": "2026-07-24T13:48:53+08:00",
+  "status": "pass_zero_call_dual_failure_root_cause_frozen_atomic_terminalization_and_typed_verifier_state_machine_selected",
+  "authority": {
+    "user_instruction": "继续",
+    "root_cause_disposition_authorized": true,
+    "repair_implementation_authorized": false,
+    "replacement_admission_or_second_live_authorized": false,
+    "restricted_capture_replay_or_business_artifact_promotion_authorized": false,
+    "T09_artifact_validation_paired_comparison_or_owner_acceptance_authorized": false,
+    "T10_S4_release_or_production_authorized": false
+  },
+  "source_refs": {
+    "safe_root_cause_audit": "configs/releases/fin_ia_0_1_s3_t09_controller_orphan_zero_call_root_cause_audit_v1_0.json",
+    "orphan_closeout": "configs/releases/fin_ia_0_1_s3_t09_output_v4_verifier_schema_repair_orphan_typed_closeout_result_v1_0.json",
+    "exact_live_report": "reports/model_runs/20260724_fin_ia_0_1_s3_t09_output_v4_verifier_schema_repair_exact_live_orphan_r1.md",
+    "runtime_failure_owner": "apps/workbench/backend/application/research_runtime.py",
+    "canonical_failure_transaction_owner": "src/sec_agent/canonical_runtime/facade.py",
+    "verifier_request_and_validator_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "exact_runner": "scripts/releases/run_fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution.py"
+  },
+  "corrected_failure_chain": {
+    "provider_transport": {
+      "calls_completed": 12,
+      "transport_failures": 0,
+      "verifier_finish_reason": "stop"
+    },
+    "verifier_shape": {
+      "native_json_object": true,
+      "typed_five_field_finding_shape_valid": true,
+      "four_layer_order_valid": true,
+      "output_v4_three_field_schema_drift_recurred": false
+    },
+    "underlying_runtime_failure": {
+      "statuses": [
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "issue_code_counts": [
+        1,
+        7,
+        2,
+        3
+      ],
+      "artifact_or_claim_ref_counts": [
+        2,
+        2,
+        1,
+        1
+      ],
+      "decision": "accept_for_internal_review",
+      "local_failure_code": "s3_owner_grade_verifier_false_green_forbidden",
+      "classification": "typed_shape_passed_but_cross_field_semantic_state_machine_failed"
+    },
+    "orphan_sequence": [
+      "runtime catches the Verifier false-green validation error",
+      "runtime commits RESEARCH_RUN_PROVIDER_OUTPUT_CAPTURED in one facade command",
+      "outer execution controller terminates the process before the next FAIL_RESEARCH_RUN command completes",
+      "canonical WorkUnit Attempt and ResearchRun remain running with zero business Artifacts",
+      "later zero-call typed closeout restores failed failed failed"
+    ],
+    "raw_provider_text_persisted_in_decision": false,
+    "private_reasoning_persisted_in_decision": false
+  },
+  "root_cause_disposition": {
+    "RC_P36_049": {
+      "status": "live_path_positive_evidence_no_schema_shape_recurrence",
+      "full_chain_blocker": false
+    },
+    "RC_P36_051": {
+      "issue_id": "RC-P36-051-s3-verifier-status-issue-decision-state-machine-request-gap",
+      "status": "open_zero_call_implementation_pending",
+      "full_chain_blocker": true,
+      "earliest_faulty_artifact": "DeepSeekS3ThreeCellNodeExecutor._node_request typed Verifier contract",
+      "confirmed_gap": "Provider-visible schema declares field types but omits status issue-code ref repair-owner and final-decision cross-field invariants",
+      "model_only_failure": false,
+      "local_validator_correctly_failed_closed": true
+    },
+    "RC_P38_050": {
+      "issue_id": "RC-P38-050-s3-execution-controller-interrupted-after-verifier-capture-before-artifact-terminal-transaction",
+      "status": "root_cause_frozen_zero_call_implementation_pending",
+      "full_chain_blocker": true,
+      "external_trigger": "outer execution command timeout",
+      "earliest_project_owned_orphan_surface": "Fin01ResearchRuntime.dispatch_once exception path performs capture and failure terminalization as two facade commands",
+      "existing_atomic_capability": "RuntimeFacade.fail_research_run already accepts provider_output_captures and persists captures terminal states and failure events in one store transaction",
+      "classification": "external_timeout_triggered_project_owned_non_atomic_terminalization_window"
+    }
+  },
+  "selected_zero_call_implementation_contract": {
+    "atomic_failure_terminalization": {
+      "runtime_exception_path_command_count": 1,
+      "command_type": "FAIL_RESEARCH_RUN",
+      "command_payload_must_include": [
+        "provider_output_captures",
+        "failure_type",
+        "terminal_reason",
+        "failure_observation"
+      ],
+      "separate_preterminal_capture_command_for_failure_path_allowed": false,
+      "single_transaction_must_persist": [
+        "restricted provider output capture objects and refs",
+        "failed ResearchRun version",
+        "failed Attempt",
+        "failed WorkUnit",
+        "RESEARCH_RUN_FAILED",
+        "ATTEMPT_FAILED",
+        "WORK_UNIT_FAILED",
+        "idempotency result"
+      ],
+      "forbidden_observable_state": "running identity with RESEARCH_RUN_PROVIDER_OUTPUT_CAPTURED but no terminal event",
+      "captured_output_replay_or_business_artifact_promotion_allowed": false
+    },
+    "typed_verifier_state_machine": {
+      "contract_ref": "fin01.s3.owner_grade_verifier_output_state_machine:v1",
+      "provider_request_must_expose_cross_field_rules": true,
+      "finding_rules": [
+        "status pass requires empty issue_codes empty artifact_or_claim_refs and repair_owner none",
+        "status review_required or fail requires nonempty issue_codes nonempty artifact_or_claim_refs and a non-none repair_owner",
+        "each layer appears exactly once in required order"
+      ],
+      "decision_rules": [
+        "accept_for_internal_review iff every layer is pass with empty issue and ref arrays and local_semantic_issues is empty",
+        "repair iff at least one layer is review_required and no layer is fail",
+        "reject iff any layer is fail"
+      ],
+      "local_validator_remains_fail_closed": true,
+      "normalization_or_silent_rewrite_allowed": false,
+      "safe_failure_subtypes_required": [
+        "pass_with_nonempty_issue_codes",
+        "pass_with_nonempty_refs",
+        "pass_with_repair_owner",
+        "nonpass_without_issue_codes",
+        "nonpass_without_refs",
+        "nonpass_without_repair_owner",
+        "decision_findings_state_conflict"
+      ],
+      "safe_telemetry_may_persist": [
+        "failure_subtype",
+        "failing_layer_count",
+        "nonempty_issue_layer_count",
+        "nonempty_ref_layer_count"
+      ],
+      "raw_issue_codes_refs_owners_or_provider_text_may_persist_in_failure_telemetry": false
+    },
+    "exact_runner_lifecycle": {
+      "direct_short_timeout_ownership_allowed": false,
+      "required_supervision": [
+        "execution process lifetime exceeds frozen worst-case stage timeouts plus canonical commit margin",
+        "stdout stderr PID and exit receipt are durable without containing credentials or raw Provider bodies",
+        "monitoring is read-only and does not terminate a still-running exact child",
+        "canonical terminal state is checked before declaring execution complete"
+      ],
+      "automatic_retry_fallback_or_replay_allowed": false
+    }
+  },
+  "deterministic_implementation_acceptance": {
+    "failure_injection_matrix": [
+      {
+        "point": "before FAIL_RESEARCH_RUN transaction",
+        "allowed_truth": "running with no capture event and no capture refs",
+        "forbidden_truth": "running with capture event"
+      },
+      {
+        "point": "inside FAIL_RESEARCH_RUN transaction",
+        "allowed_truth": "transaction rollback leaves no capture event and no partial failed state",
+        "forbidden_truth": "partial capture or partial terminal state"
+      },
+      {
+        "point": "after FAIL_RESEARCH_RUN transaction",
+        "allowed_truth": "failed failed failed with captures bound to RESEARCH_RUN_FAILED",
+        "forbidden_truth": "running or mixed terminal state"
+      }
+    ],
+    "verifier_positive_matrix": [
+      "all pass empty issues and refs none owners maps to accept",
+      "review_required nonempty typed details and no fail maps to repair",
+      "any fail nonempty typed details maps to reject"
+    ],
+    "verifier_negative_fixture_count_minimum": 7,
+    "fake_provider_must_derive_output_from_request_state_machine": true,
+    "legacy_v1_v2_shapes_and_consumed_run_evidence_immutable": true,
+    "output_v3_v4_typed_validator_regression_required": true,
+    "controller_stub_must_prove_no_short_timeout_kills_terminalization": true,
+    "model_provider_network_source_tool_calls_allowed": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "new_admissions_runs_business_artifacts_allowed": [
+      0,
+      0,
+      0
+    ]
+  },
+  "explicit_rejections": [
+    "classifying the incident as only a model failure",
+    "classifying the incident as only an external controller timeout",
+    "relaxing or deleting the false-green validator",
+    "normalizing pass findings by deleting issue codes or refs",
+    "replaying restricted captures into business Artifacts",
+    "keeping split capture then fail commands in the runtime exception path",
+    "another paid run before deterministic implementation and fresh proof gates",
+    "reuse of the consumed admission or exact identity"
+  ],
+  "observed_counts": {
+    "decision_model_calls": 0,
+    "decision_provider_calls": 0,
+    "decision_network_calls": 0,
+    "decision_source_network_calls": 0,
+    "decision_external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_runs": 0,
+    "new_business_artifacts": 0,
+    "human_review_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_049": "live_path_positive_evidence_no_schema_shape_recurrence",
+    "RC_P36_051": "root_cause_frozen_zero_call_implementation_pending",
+    "RC_P38_050": "root_cause_frozen_zero_call_implementation_pending",
+    "RC_P36_037": "complete_product_still_missing",
+    "S3_T09": "blocked_zero_artifacts_no_comparison_or_owner_acceptance",
+    "S3_T10": "not_entered",
+    "S4": "blocked_by_S3",
+    "release": "not_qualified",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-ATOMIC-CAPTURE-FAILURE-TERMINALIZATION-AND-TYPED-VERIFIER-STATE-MACHINE-ZERO-CALL-IMPLEMENTATION"
+}

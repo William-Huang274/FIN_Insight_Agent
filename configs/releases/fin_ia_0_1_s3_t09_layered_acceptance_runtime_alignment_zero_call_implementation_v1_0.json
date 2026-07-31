@@ -1,0 +1,78 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_layered_acceptance_runtime_alignment_zero_call_implementation_v1_0",
+  "implementation_id": "S3-T09-LAYERED-ACCEPTANCE-RUNTIME-ALIGNMENT-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-25T15:16:49+08:00",
+  "status": "pass_zero_call_layered_acceptance_runtime_alignment_profile_v4_fixture_proven",
+  "authority": {
+    "user_instruction": "生产 exact-live 9 Artifact 后报告结果",
+    "runtime_implementation_authorized": true,
+    "zero_call_regression_authorized": true,
+    "fresh_exact_admission_and_one_exact_live_authorized": true,
+    "automatic_retry_fallback_replay_relaunch_or_rerun_authorized": false,
+    "owner_acceptance_write_authorized": false,
+    "T10_S4_release_or_production_authorized": false
+  },
+  "acceptance_standard_ref": "configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json",
+  "runtime_alignment": {
+    "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v4",
+    "narrative_quality_policy_ref": "fin01.s3.narrative_quality_policy:v2",
+    "historical_profile_v3_behavior_preserved": true,
+    "per_field_quality_target_characters": 320,
+    "per_field_quality_ceiling_characters": 512,
+    "aggregate_quality_ceiling_characters": 3200,
+    "ordinary_character_limit_exceedance_terminal": false,
+    "provider_raw_wire_hard_max_utf8_bytes": 8192,
+    "canonical_alias_hard_max_utf8_bytes": 6000,
+    "local_expanded_capacity_formula_ref": "fin01.s3.research_lead_local_capacity.exact_surface_maximum_valid_shape:v1",
+    "blank_or_non_string_remains_hard": true,
+    "identity_scope_numeric_authority_and_lineage_gates_unchanged": true,
+    "silent_truncation_rewrite_or_fact_guessing_allowed": false
+  },
+  "provider_validator_fixture_alignment": {
+    "provider_request_marks_character_thresholds_non_terminal": true,
+    "provider_request_marks_byte_capacities_mandatory": true,
+    "local_assembly_retains_over_512_and_over_3200_text_when_byte_envelopes_pass": true,
+    "quality_findings_persist_to_JudgmentSet_and_manifest": true,
+    "fake_verifier_pass_repair_owner_uses_JSON_null": true
+  },
+  "deterministic_verification": {
+    "observed_field_lengths": [
+      571,
+      533,
+      528
+    ],
+    "observed_aggregate_narrative_characters": 3312,
+    "hard_narrative_findings": 0,
+    "persisted_quality_codes": [
+      "narrative_quality_ceiling_exceeded",
+      "narrative_aggregate_quality_ceiling_exceeded"
+    ],
+    "fixture_terminal_reason": "s3_bounded_agent_three_cell_execution_succeeded",
+    "fixture_artifact_count": 9,
+    "focused_test_result": "34 passed"
+  },
+  "source_digests": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "584ad77866c81bcdb1324f3d7728d9d69fe10226c5b0b796865dbb63cf4bf55c",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "c12de6a331f3f2cb6deb37b9fc61dcb69650bbc7ae04710308bcbdba419c62e6",
+    "tests/contract/test_fin_0_1_s3_t09_layered_acceptance_runtime_alignment.py": "2c2851f72b96662bcc828c208ae37620f62320a2df742862d9ae49d5c1ff8db1",
+    "tests/contract/test_fin_0_1_s3_t09_owner_grade_semantic_actionability_zero_call_repair.py": "1569438c2bebeca3d1d284daff8bb80b35740779046199693822da1e9a71fe9d"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_live_runs": 0,
+    "new_business_artifacts": 0,
+    "captured_output_replays": 0
+  },
+  "stage_decision": {
+    "runtime_alignment": "fixture_proven",
+    "S3_T09": "blocked_pending_one_fresh_coherent_exact_live_nine_artifact_product",
+    "owner_acceptance": "not_written",
+    "T10_S4_release_or_production": "not_authorized"
+  },
+  "next_action": "S3-T09-LAYERED-ACCEPTANCE-FINAL-FRESH-EXACT-PROOF-AND-ADMISSION"
+}

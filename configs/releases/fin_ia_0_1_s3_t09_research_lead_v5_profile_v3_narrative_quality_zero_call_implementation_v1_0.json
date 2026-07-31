@@ -1,0 +1,60 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_research_lead_v5_profile_v3_narrative_quality_zero_call_implementation_v1_0",
+  "implementation_id": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-PROFILE-V3-NARRATIVE-QUALITY-TIERING-AND-CLOSED-OBSERVATION-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-24T15:48:00+08:00",
+  "status": "pass_zero_call_profile_v3_quality_target_hard_safety_separation_complete_safe_count_and_artifact_observation_fixture_proven",
+  "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_research_lead_v5_narrative_quality_and_s3_scope_rebaseline_decision_v1_0.json",
+  "implementation": {
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v5",
+    "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v3",
+    "narrative_quality_policy_ref": "fin01.s3.narrative_quality_policy:v1",
+    "canonical_output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+    "canonical_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+    "specialist_narrative_hard_maximum_unchanged": 320,
+    "research_lead_narrative_quality_target": 320,
+    "research_lead_narrative_hard_maximum": 512,
+    "research_lead_aggregate_narrative_hard_maximum": 3200,
+    "provider_raw_wire_utf8_hard_maximum": 8192,
+    "canonical_alias_utf8_hard_maximum": 6000,
+    "local_expanded_utf8_hard_maximum": 32768,
+    "quality_observation_persisted_in_manifest_and_judgment": true,
+    "quality_observation_contains_raw_text_or_item_index": false,
+    "hard_failure_reports_complete_safe_count": true,
+    "silent_truncation_trim_drop_or_rewrite_allowed": false,
+    "new_research_lead_transport_version_added": false,
+    "provider_specific_branch_added": false,
+    "historical_profile_v1_and_v2_immutable": true
+  },
+  "deterministic_replay": {
+    "failed_live_observed_lengths": [388, 343, 423],
+    "profile_v2_terminal_failure_count": 3,
+    "profile_v3_non_terminal_quality_finding_count": 3,
+    "profile_v3_hard_failure_count": 0,
+    "profile_v3_513_character_fixture_terminal_failure_count": 1,
+    "full_fake_provider_logical_nodes_calls_artifacts": [6, 12, 9],
+    "full_fake_provider_quality_findings_persisted": 3
+  },
+  "verification": {
+    "decision_implementation_and_v5_suite": "27 passed",
+    "adjacent_v2_v3_v4_live_result_and_specialist_v7_suite": "64 passed",
+    "python_compile": "pass",
+    "real_model_provider_network_source_tool_calls": 0
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_live_WorkUnits": 0,
+    "new_live_Attempts": 0,
+    "new_live_ResearchRuns": 0,
+    "new_live_Artifacts": 0,
+    "paired_comparisons": 0,
+    "owner_acceptances": 0
+  },
+  "next_action": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-PROFILE-V3-FINAL-FRESH-EXACT-PROOF-DECISION-AND-ADMISSION-ISSUANCE"
+}

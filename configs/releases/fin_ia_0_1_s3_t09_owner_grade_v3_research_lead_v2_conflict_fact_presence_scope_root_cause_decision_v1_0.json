@@ -1,0 +1,220 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_v2_conflict_fact_presence_scope_root_cause_decision_v1_0",
+  "decision_id": "S3-T09-OWNER-GRADE-V3-RESEARCH-LEAD-V2-CONFLICT-FACT-PRESENCE-SCOPE-ROOT-CAUSE-DECISION",
+  "decided_at": "2026-07-23T12:47:42+08:00",
+  "status": "pass_conflict_local_direct_claim_support_scope_selected_research_lead_v3_zero_call_implementation_pending_separate_authority",
+  "authority": {
+    "user_instruction": "继续",
+    "zero_call_root_cause_decision_authorized": true,
+    "runtime_validator_prompt_or_transport_implementation_authorized": false,
+    "admission_issuance_or_consumption_authorized": false,
+    "model_provider_network_source_or_tool_execution_authorized": false,
+    "canonical_run_artifact_or_business_case_write_authorized": false,
+    "retry_fallback_repair_rerun_comparison_or_human_review_authorized": false,
+    "T10_S4_release_or_production_authorized": false
+  },
+  "source_refs": {
+    "live_result": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_v2_fresh_live_execution_result_v1_0.json",
+    "lead_v2_repair": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_closed_output_local_head_assembly_and_bounded_headroom_zero_call_implementation_v1_0.json",
+    "runtime_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "root_cause_issue": "RC-P36-041-s3-owner-grade-research-lead-conflict-fact-presence-scope-mismatch"
+  },
+  "confirmed_earliest_owned_fault": {
+    "research_lead_v2_provider_schema_advertises_enum": true,
+    "research_lead_v2_local_validator_enforces_exact_fact_presence_truth_table": false,
+    "canonical_validator_uses_global_three_cell_total_fact_count": true,
+    "canonical_validator_applies_global_count_to_each_conflict_local_summary": true,
+    "canonical_fact_presence_error_is_shared_with_cell_head_mismatch": true,
+    "failure_is_provider_json_parse_or_capacity": false,
+    "failure_is_external_provider_only": false,
+    "failure_is_project_contract_scope_mismatch": true
+  },
+  "restricted_live_replay": {
+    "global_specialist_fact_count": 2,
+    "specialist_fact_counts_by_cell_order": [0, 2, 0],
+    "observed_conflict_fact_presence_summaries": [
+      "no_facts_present",
+      "mixed_fact_presence",
+      "no_facts_present"
+    ],
+    "involved_claim_direct_support_fact_counts": [
+      [0, 0],
+      [0, 0],
+      [0]
+    ],
+    "legacy_global_rule_rejection_flags": [true, false, true],
+    "selected_scope_expected_summaries": [
+      "no_facts_present",
+      "no_facts_present",
+      "no_facts_present"
+    ],
+    "selected_scope_mismatch_flags": [false, true, false],
+    "selected_scope_mismatch_count": 1,
+    "current_answer_would_pass_after_simple_relaxation": false,
+    "raw_answer_text_copied_to_tracked_files": false
+  },
+  "selected_semantics": {
+    "scope_owner": "each_conflict_adjudication_involved_claim_ids",
+    "fact_presence_source": "each_involved_claim_direct_support_fact_ids",
+    "fact_definition": "a validated Specialist Fact referenced directly by the involved Claim support_fact_ids",
+    "unrelated_global_cell_or_claim_facts_affect_summary": false,
+    "unrelated_facts_in_the_same_cell_affect_summary": false,
+    "truth_table": [
+      {
+        "condition": "every_involved_claim_has_at_least_one_direct_support_fact_id",
+        "expected_summary": "facts_present"
+      },
+      {
+        "condition": "no_involved_claim_has_any_direct_support_fact_id",
+        "expected_summary": "no_facts_present"
+      },
+      {
+        "condition": "some_but_not_all_involved_claims_have_direct_support_fact_ids",
+        "expected_summary": "mixed_fact_presence"
+      }
+    ],
+    "involved_claim_ids_requirements": {
+      "type": "nonempty_list_of_strings",
+      "unique": true,
+      "must_resolve_to_validated_specialist_claims": true
+    },
+    "rationale": [
+      "fact_presence_summary_is_nested_inside_one_conflict_and_is_adjacent_to_involved_claim_ids",
+      "Claim_Cards_already_carry_validated_direct_support_fact_ids",
+      "direct_support_is_deterministic_and_does_not_promote_unrelated_Cell_facts",
+      "the_three_state_enum_has_an_exact_all_none_some_truth_table"
+    ]
+  },
+  "rejected_alternatives": [
+    {
+      "scope": "global_all_specialists",
+      "decision": "reject",
+      "reason": "unrelated Facts can rewrite a conflict-local summary and produced the live false rejection"
+    },
+    {
+      "scope": "all_facts_in_involved_cells",
+      "decision": "reject",
+      "reason": "a Fact in the same Cell but not supporting an involved Claim is still unrelated to that conflict"
+    },
+    {
+      "scope": "provider_free_text_interpretation",
+      "decision": "reject",
+      "reason": "the enum can be derived exactly from validated Claim Card support references"
+    },
+    {
+      "scope": "remove_or_ignore_fact_presence_summary",
+      "decision": "reject",
+      "reason": "this would weaken conflict auditability and could hide unsupported adjudication"
+    }
+  ],
+  "version_and_compatibility_decision": {
+    "selected_future_research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v3",
+    "historical_research_lead_v2_transport_immutable": true,
+    "specialist_transport_v5_unchanged": true,
+    "canonical_output_contract_v3_retained": true,
+    "canonical_output_contract_v3_disposition": "clarify_existing_conflict_local_field_semantics_not_expand_output_shape",
+    "consumed_admissions_and_terminal_runs_immutable": true,
+    "provider_or_model_change_selected": false,
+    "token_or_byte_cap_change_selected": false
+  },
+  "future_zero_call_implementation_contract": {
+    "shared_deterministic_owner": "one helper derives expected conflict fact presence from involved Claim Card support_fact_ids",
+    "provider_contract": [
+      "Research_Lead_v3_field_local_schema_defines_involved_claim_direct_support_scope",
+      "Research_Lead_v3_request_exposes_the_exact_all_none_some_truth_table",
+      "Provider_must_self_check_every_conflict_before_returning"
+    ],
+    "local_validator": [
+      "validate_nonempty_unique_involved_claim_ids",
+      "resolve_only_validated_Specialist_Claim_Cards",
+      "derive_expected_summary_without_reading_unrelated_Facts",
+      "fail_closed_before_local_assembly_on_any_summary_mismatch"
+    ],
+    "canonical_validator": [
+      "reuse_the_same_direct_support_helper",
+      "remove_global_total_facts_as_the_structured_summary_owner",
+      "separate_cell_head_fact_count_failure_from_conflict_fact_presence_failure",
+      "preserve_a_separate_guard_for_explicit_false_global_all_Cell_narrative_assertions"
+    ],
+    "normalization_coercion_or_silent_repair_allowed": false,
+    "historical_v2_branch_mutation_allowed": false
+  },
+  "safe_telemetry_contract": {
+    "validator_contract": "closed_research_lead_output:v3",
+    "failure_family": "semantic",
+    "allowed_subtypes": [
+      "involved_claim_ref_duplicate",
+      "fact_presence_summary_invalid",
+      "fact_presence_summary_mismatch",
+      "explicit_global_fact_presence_statement_conflict"
+    ],
+    "field_id": "conflict_adjudications.fact_presence_summary",
+    "allowed_payload": [
+      "validator_contract",
+      "failure_family",
+      "failure_subtype",
+      "field_id",
+      "failing_item_count"
+    ],
+    "raw_text_persisted": false,
+    "claim_or_fact_ids_persisted": false,
+    "ref_or_digest_persisted": false,
+    "item_index_persisted": false,
+    "arbitrary_key_names_persisted": false,
+    "private_reasoning_persisted": false
+  },
+  "required_deterministic_fixtures": [
+    "all_involved_claims_supported_maps_to_facts_present",
+    "no_involved_claim_supported_maps_to_no_facts_present",
+    "some_involved_claims_supported_maps_to_mixed_fact_presence",
+    "single_supported_claim_maps_to_facts_present",
+    "single_unsupported_claim_maps_to_no_facts_present",
+    "unrelated_global_fact_does_not_change_conflict_summary",
+    "unrelated_same_cell_fact_does_not_change_conflict_summary",
+    "duplicate_involved_claim_id_fails_closed",
+    "unknown_involved_claim_id_fails_closed",
+    "invalid_enum_fails_closed",
+    "summary_truth_table_mismatch_fails_closed_with_content_free_telemetry",
+    "explicit_false_global_all_Cell_statement_fails_under_separate_subtype",
+    "restricted_live_capture_replay_yields_exactly_one_selected_scope_mismatch",
+    "Research_Lead_v3_local_and_canonical_validators_have_parity",
+    "historical_Research_Lead_v2_consumed_Run_and_contract_tests_remain_immutable",
+    "full_fake_Provider_six_node_nine_Artifact_path_passes_without_model_calls"
+  ],
+  "experiment_governance": {
+    "hypothesis": "A versioned Research Lead-v3 contract with conflict-local direct Claim support semantics will remove the owned global-scope mismatch while continuing to reject the one incorrect mixed summary in the captured live answer.",
+    "decision_target": "Zero-call fixtures prove one shared truth table in Provider schema local validation canonical validation and safe telemetry without relaxing the captured answer to success.",
+    "stop_condition": "If implementation requires global or Cell-level heuristics, output normalization, historical v2 mutation, or raw IDs/text in telemetry, stop and revisit the contract.",
+    "decision_label": "proceed_to_separately_authorized_zero_call_implementation"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "canonical_runs_created": 0,
+    "canonical_artifacts_created": 0,
+    "live_business_case_writes": 0,
+    "paired_comparisons": 0,
+    "human_review_writes": 0
+  },
+  "deterministic_verification": {
+    "project_os_scoped_preflight": "pass_zero_open_full_chain_blockers",
+    "decision_live_result_lead_v2_and_historical_contract_tests": "pass_53",
+    "model_provider_network_calls_during_decision_and_verification": [0, 0, 0]
+  },
+  "stage_acceptance": {
+    "RC_P36_040": "closed_live_proven",
+    "RC_P36_041": "root_cause_scope_decided_zero_call_implementation_pending",
+    "RC_P36_037": "blocked_by_RC_P36_041_and_missing_complete_artifact_proof",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-RESEARCH-LEAD-V3-CONFLICT-LOCAL-DIRECT-SUPPORT-ZERO-CALL-IMPLEMENTATION"
+}

@@ -1,0 +1,234 @@
+{
+  "audit_contract": {
+    "RC_P36_038": "recurrence_open",
+    "post_run_service_backed_target_audit_allowed": false,
+    "service_backed_preparation": "disposable_clone_only",
+    "target_SQLite_access": "direct_mode_ro_or_digest_only",
+    "target_service_initialization_allowed": false
+  },
+  "budget_and_stop_contract": {
+    "aggregate_max_output_tokens": 16800,
+    "automatic_repair_fallback_or_rerun": false,
+    "first_parse_shape_schema_semantic_or_length_failure": "terminal_fail_closed_stop",
+    "input_cache_miss_pricing_units_under_total_cap": 196285,
+    "lead_max_output_tokens": 1800,
+    "max_total_cost_usd": 0.1,
+    "max_transport_attempts_per_call": 1,
+    "network_calls": 12,
+    "output_only_cost_ceiling_usd": 0.014616,
+    "provider_calls": 12,
+    "retry_budget": 0,
+    "semantic_model_calls": 12,
+    "specialist_segment_output_tokens": [
+      1600,
+      1200,
+      1400
+    ],
+    "specialist_total_output_tokens_each": 4200,
+    "verifier_max_output_tokens": 1000,
+    "writer_max_output_tokens": 1400
+  },
+  "comparison_boundary": {
+    "owner_acceptance_performed": false,
+    "paired_comparison_performed": false,
+    "paired_comparison_requires_separate_read_only_step": true
+  },
+  "contract_ref": "fin01.s3.owner_grade_v3.specialist_v7_research_lead_v3_writer_v2_fresh_exact_proof_decision:v1",
+  "double_prepare": {
+    "clone_execution_counts_after": {
+      "canonical_artifact_versions": 13,
+      "canonical_attempts": 13,
+      "canonical_research_run_versions": 13,
+      "canonical_work_units": 13
+    },
+    "clone_execution_counts_before": {
+      "canonical_artifact_versions": 13,
+      "canonical_attempts": 13,
+      "canonical_research_run_versions": 13,
+      "canonical_work_units": 13
+    },
+    "equal": true,
+    "prepared_payload_digest": "111928c1ecceb03975f9ca1521e681db891110338cb590179d5e9ed4a3518b52"
+  },
+  "experiment_governance": {
+    "admission_issuance_authorized": false,
+    "decision_label": "proceed_to_exact_admission_issuance_pending_separate_authority",
+    "decision_target": "A separately issued fresh exact Run either produces all six logical nodes and nine Artifacts or terminalizes at the first credible typed failure with restricted provider captures.",
+    "hypothesis": "An exact field-local Evidence/Numeric Fact authority, shared by the Provider prompt and local validator, prevents Graph or Candidate context from being emitted as Fact support without relaxing any downstream owner-grade contract.",
+    "live_execution_authorized": false,
+    "paired_comparison_or_owner_acceptance_authorized": false,
+    "stop_condition": "Any credible parse, shape, schema, semantic, authority, length, budget, or terminalization failure consumes the admission and stops with no retry, fallback, patch, normalization, or hidden rerun."
+  },
+  "fact_support_authority_contract": {
+    "candidate_and_graph_are_context_only": true,
+    "full_fake_provider_artifact_count": 9,
+    "normalization_trim_remap_drop_or_repair_allowed": false,
+    "policy_ref": "closed_fact_support_authority:v1",
+    "prompt_and_local_validator_share_policy": true,
+    "provider_fact_authority": [
+      "EvidenceVersion",
+      "NumericVersion"
+    ]
+  },
+  "freshness_and_nonreuse": {
+    "additional_consumed_failed_identity_count": 9,
+    "additional_consumed_failed_identity_reusable": false,
+    "attempt_absent": true,
+    "baseline_body_or_artifact_is_not_provider_input": true,
+    "baseline_output_body_exposed_to_agent": false,
+    "consumed_monolithic_v3_identity_reusable": false,
+    "distinct_from_all_prior_agent_and_baseline_runs": true,
+    "prior_research_run_ids": [
+      "research_run_fin01_0e2b6e9698ebbf61288708a9",
+      "research_run_fin01_1736461952f90e35f104f478",
+      "research_run_fin01_4f66728b8bd8b8c502a24b07",
+      "research_run_fin01_613dad1d30f9ce5357213b21",
+      "research_run_fin01_641650afe6bb1062f9ae135e",
+      "research_run_fin01_76a7eace510a50091c351502",
+      "research_run_fin01_9bc3ffd904ae98b26b5cba95",
+      "research_run_fin01_a77b165e85be8757e5855a69",
+      "research_run_fin01_b939a453b921cb5bcf3c2edf",
+      "research_run_fin01_c24bc3ce28a3ecfafa6ce7c2",
+      "research_run_fin01_e418d7086d4a1d253e9b2c9b",
+      "research_run_fin01_fac094aac24174903915016b",
+      "research_run_fin01_fe1dc2df883030283d38d362"
+    ],
+    "research_run_absent": true,
+    "work_unit_absent": true
+  },
+  "identity": {
+    "analysis_as_of": "2026-07-21T00:00:00Z",
+    "attempt_id": "attempt_fin01_1119ac82535a73593f0e0c03",
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "decision_surface_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "execution_identity": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-specialist-v7-research-lead-v3-writer-v2-live-validation-r1",
+    "execution_profile_version_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+    "input_digest": "b2c1ed15e64c653bb39270bf2e5b759b4ce7250e83f951644c49e8d24c65af1d",
+    "input_head_digest": "c9867b54b86cf17982b4cebfaf0c0ebcae2a6f46d894ff82dbb643f693c9836d",
+    "preparation_digest": "116d96507ee085db1af3f609667cbe84d41020c60983dcc80c13f80ad7bf63db",
+    "program_cell_ids": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "research_run_id": "research_run_fin01_ebf0f6376cec28087151562e",
+    "work_unit_id": "wu_p02_5_10ff261f10fe7a6c7cecfc7a"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-SPECIALIST-V7-FRESH-EXACT-ADMISSION-ISSUANCE",
+  "observed_counts": {
+    "admissions_consumed": 0,
+    "admissions_issued": 0,
+    "agent_runs_created": 0,
+    "external_tool_calls": 0,
+    "human_review_writes": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "paired_comparisons": 0,
+    "provider_calls": 0,
+    "source_network_calls": 0,
+    "target_canonical_writes": 0,
+    "target_object_writes": 0
+  },
+  "prospective_admission": {
+    "admission_consumed": false,
+    "admission_issued": false,
+    "digest": "9657d30751eea5f24ea26b73fa9d93909b2df0c9966f96539a405a9dde1e72a6",
+    "execution_started": false,
+    "payload": {
+      "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-specialist-v7-research-lead-v3-writer-v2-exact-admission-r1",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "as_of": "2026-07-21T00:00:00Z",
+      "base_url": "https://api.deepseek.com/beta",
+      "case_id": "case_ac6fce120bf27977a1b45832",
+      "case_version": 1,
+      "company": "NVDA",
+      "execution_enabled": true,
+      "execution_mode": "exact_live_three_cell_deepseek_owner_grade_v3_specialist_v7_research_lead_v3_writer_v2_r1",
+      "execution_profile_version_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+      "external_tool_calls_allowed": false,
+      "input_cache_hit_usd_per_million": 0.003625,
+      "input_cache_miss_usd_per_million": 0.435,
+      "input_contract_ref": "fin01.s3.bounded_agent_three_cell_input:v1",
+      "input_digest": "b2c1ed15e64c653bb39270bf2e5b759b4ce7250e83f951644c49e8d24c65af1d",
+      "lead_max_output_tokens": 1800,
+      "live_business_case_head_writes_allowed": false,
+      "max_network_calls": 12,
+      "max_provider_calls": 12,
+      "max_semantic_model_calls": 12,
+      "max_total_cost_usd": 0.1,
+      "max_transport_attempts_per_call": 1,
+      "maximum_cell_count": 3,
+      "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v2",
+      "model": "deepseek-v4-pro",
+      "model_ref": "deepseek:deepseek-v4-pro",
+      "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3",
+      "output_usd_per_million": 0.87,
+      "program_cell_ids": [
+        "demand_authenticity_and_sustainability",
+        "value_and_profit_capture",
+        "bottleneck_counterevidence_and_what_would_change"
+      ],
+      "provider": "deepseek",
+      "provider_output_capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+      "reasoning_effort": "none",
+      "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v3",
+      "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v1",
+      "retry_budget": 0,
+      "source_network_calls_allowed": false,
+      "specialist_max_output_tokens": 4200,
+      "timeout_seconds": 120,
+      "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+      "verifier_max_output_tokens": 1000,
+      "writer_max_output_tokens": 1400
+    },
+    "prospective_admission_file": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_specialist_v7_research_lead_v3_writer_v2_exact_admission_v1_0.json",
+    "prospective_admission_file_absent": true
+  },
+  "provider_route_review": {
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "decision": "retain_deepseek_with_fixture_proven_segmented_transport",
+    "execution_precondition": "LLM_GATEWAY_TRANSPORT_RETRIES must equal 0",
+    "local_segment_and_full_v3_validators_are_fail_closed_owners": true,
+    "provider_health_probe_performed": false,
+    "provider_transport": "json_object_three_segment_specialist",
+    "server_side_strict_json_schema_claimed": false,
+    "transport_retries_env_is_zero": false,
+    "transport_retries_env_state": "unset_or_nonzero"
+  },
+  "research_profile_contract": {
+    "company": "NVDA",
+    "explicitly_bound_in_prospective_admission": true,
+    "program_cell_count": 3,
+    "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v1"
+  },
+  "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+  "source_refs": {
+    "additional_prior_failed_results": [
+      "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_fresh_live_execution_result_v1_0.json",
+      "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_text_contract_v2_fresh_live_execution_result_v1_0.json",
+      "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v3_fresh_live_execution_result_v1_0.json",
+      "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v4_fresh_live_execution_result_v1_0.json",
+      "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v5_fresh_live_execution_result_v1_0.json",
+      "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_v2_fresh_live_execution_result_v1_0.json",
+      "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_v3_orphan_typed_closeout_result_v1_0.json",
+      "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_writer_v2_fresh_live_execution_result_v1_0.json",
+      "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_specialist_v6_fresh_live_execution_result_v1_0.json"
+    ],
+    "baseline_result": "configs/releases/fin_ia_0_1_s3_t09_paired_deterministic_baseline_materialization_v1_0.json",
+    "monolithic_v3_result": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_fresh_live_execution_result_v1_0.json",
+    "paired_decision": "configs/releases/fin_ia_0_1_s3_t09_replacement_live_artifact_paired_baseline_decision_v1_0.json",
+    "specialist_v7_contract_convergence": "configs/releases/fin_ia_0_1_s3_t09_specialist_v7_contract_convergence_zero_call_implementation_v1_0.json",
+    "transport_implementation_result": "configs/releases/fin_ia_0_1_s3_t09_specialist_v7_contract_convergence_zero_call_implementation_v1_0.json"
+  },
+  "status": "pass_specialist_v7_fresh_exact_proof_decided_admission_issuance_pending_separate_authority",
+  "target_read_only_audit": {
+    "canonical_database_file_unchanged": true,
+    "canonical_database_sha256": "dedd7e2e62b9a4092cfd2af7966554a9c5313f185b4dc67c555a7b6c4de60cd8",
+    "canonical_object_tree_sha256": "b11b26b3cc28a872e64e8f27c69c7b1ef3b9fece9f2b5d8c0e6185da5a26bdc7",
+    "canonical_object_tree_unchanged": true,
+    "expected_prior_research_run_count": 13,
+    "logical_snapshot_unchanged": true
+  }
+}

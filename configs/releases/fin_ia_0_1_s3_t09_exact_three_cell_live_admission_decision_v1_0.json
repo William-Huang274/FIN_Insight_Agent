@@ -1,0 +1,132 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_exact_three_cell_live_admission_decision_v1_0",
+  "decision_id": "S3-T09-EXACT-THREE-CELL-LIVE-ADMISSION-DECISION-R1",
+  "decided_at": "2026-07-22T02:30:00+08:00",
+  "status": "decision_complete_admission_not_issued_owned_provider_node_adapter_and_exact_input_preflight_repair_required",
+  "authority": {
+    "user_instruction": "授权",
+    "S3_T09_exact_provider_model_budget_credential_identity_and_input_binding_decision_authorized": true,
+    "admission_issuance_or_consumption_authorized": false,
+    "model_provider_execution_network_source_network_or_external_tool_execution_authorized": false,
+    "live_business_or_Human_Review_write_authorized": false,
+    "S4_release_or_production_authorized": false
+  },
+  "selected_target_binding": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "credential_present": true,
+    "credential_value_read_or_persisted": false,
+    "transport_family": "segmented_node_json_object_with_local_fail_closed_validation",
+    "transport_contract_ref": "fin01.s3.bounded_agent.deepseek_segmented_node_json_object:v1",
+    "transport_contract_status": "selected_target_not_implemented_or_fixture_proven",
+    "selection_basis": [
+      "S2 segmented-v4 completed one exact terminal run with four provider calls and nine canonical artifacts",
+      "the S2 strict named-tool route was retired after repeated malformed-output and terminalization failures",
+      "the OpenAI route did not reach generation under the available credentials",
+      "S3 must keep node-specific local schema authority rather than relax the canonical three-cell output contract"
+    ]
+  },
+  "frozen_six_node_budget": {
+    "node_topology": [
+      "domain_specialist:demand_authenticity_and_sustainability",
+      "domain_specialist:value_and_profit_capture",
+      "domain_specialist:bottleneck_counterevidence_and_what_would_change",
+      "research_lead",
+      "memo_writer",
+      "verifier"
+    ],
+    "max_semantic_model_calls": 6,
+    "max_provider_calls": 6,
+    "max_execution_network_calls": 6,
+    "max_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "max_total_cost_usd": 0.1,
+    "specialist_max_output_tokens_each": 1400,
+    "lead_max_output_tokens": 1200,
+    "writer_max_output_tokens": 1400,
+    "verifier_max_output_tokens": 1000,
+    "maximum_aggregate_output_tokens": 7800,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "automatic_fallback_retry_or_broad_rerun_allowed": false
+  },
+  "fresh_execution_identity_freeze": {
+    "work_unit_idempotency_key": "fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "identity_reuse_allowed": false,
+    "canonical_work_unit_id": null,
+    "canonical_attempt_id": null,
+    "canonical_research_run_id": null,
+    "canonical_ids_status": "not_freezeable_until_exact_case_decision_surface_and_zero_call_prepare_are_bound"
+  },
+  "immutable_input_binding_decision": {
+    "case_id": null,
+    "case_version": null,
+    "accepted_decision_surface_version_ref": null,
+    "analysis_as_of": null,
+    "input_digest": null,
+    "status": "blocked_owned_zero_call_prepare_contract_missing",
+    "observed_facts": [
+      "the T08 proof case exists only in an isolated deterministic fixture and is not a reusable live admission identity",
+      "no FINSIGHT_P02_FIXTURE_ROOT is configured for one persistent S3 anchor Case",
+      "the S3 input pack is currently compiled inside _S3ThreeCellBoundedAgentAdapter.execute after WorkUnit Attempt and ResearchRun creation",
+      "the input digest includes T02 through T07 lineage that is bound to work_unit_id attempt_id and research_run_id",
+      "there is no public zero-call S3 prepare function or exact-admission runner that predicts identities compiles the pack and verifies digest parity before canonical execution"
+    ],
+    "required_repair": [
+      "add one read-only S3 exact-input prepare path using the existing Fin01ResearchRuntime compilers and no parallel runtime family",
+      "bind one persistent isolated NVDA S3 Case accepted DecisionSurface version and analysis as-of",
+      "derive the fresh WorkUnit Attempt and ResearchRun identities before execution from the frozen idempotency key",
+      "compile T02 through T07 and the S3 input pack twice and require byte-stable digest parity",
+      "reject any admission whose runtime-built input digest differs from the prepared digest before the first provider call"
+    ]
+  },
+  "owned_provider_node_adapter_decision": {
+    "status": "blocked_owned_six_node_provider_adapter_missing",
+    "observed_facts": [
+      "S3ThreeCellAgentNodeExecutorPort has only the T08 zero-call test fixture implementation",
+      "build_bounded_agent_executor_for_admission builds only the historical S2 DeepSeekBoundedAgentExecutor",
+      "create_app requires an explicitly injected S3 executor and has no exact-admission factory for the six-node provider path"
+    ],
+    "required_repair": [
+      "implement one DeepSeek segmented node executor for the exact six S3 nodes",
+      "use node-specific closed JSON shapes with native JSON duplicate-key rejection and local semantic validation",
+      "return one usage receipt and exact Agent and Skill version bindings per node",
+      "enforce one transport attempt per node retry zero and aggregate six-call cost and token caps",
+      "prove malformed specialist Lead Writer and Verifier outputs fail before canonical artifact commit"
+    ]
+  },
+  "decision": {
+    "provider_model_budget_and_credential_target_selected": true,
+    "fresh_public_execution_key_and_runtime_root_frozen": true,
+    "exact_case_and_immutable_input_digest_frozen": false,
+    "provider_six_node_adapter_fixture_proven": false,
+    "issue_exact_admission_now": false,
+    "execute_live_run_now": false,
+    "reason": "An exact admission cannot be signed while its provider node implementation and immutable input digest are unknown. Both are project-owned zero-call prerequisites and must be repaired before any paid call."
+  },
+  "verification": {
+    "T09_T08_and_S2_T03_contract_regression": "82 passed in 16.80s",
+    "json_and_jsonl_validation": "pass",
+    "git_diff_check": "pass_with_existing_CRLF_normalization_warnings_only",
+    "secret_scan": "pass_no_plaintext_key_or_private_key_in_changed_surface",
+    "project_os_broad_full_chain_preflight": "expected_blocked_by_RC_P36_032_and_RC_P36_033",
+    "open_full_chain_blocker_count": 2
+  },
+  "observed_counts": {
+    "new_admissions": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_writes": 0,
+    "human_review_writes": 0,
+    "paid_runs": 0
+  },
+  "next_action": "S3-T09-DEEPSEEK-SIX-NODE-TRANSPORT-AND-EXACT-INPUT-ZERO-CALL-PREFLIGHT-REPAIR"
+}

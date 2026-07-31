@@ -1,0 +1,144 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_paired_deterministic_baseline_materialization_v1_0",
+  "execution_id": "S3-T09-PAIRED-DETERMINISTIC-BASELINE-MATERIALIZATION-R1",
+  "executed_on": "2026-07-22",
+  "status": "pass_exact_once_deterministic_baseline_materialized_and_read_only_verified",
+  "authority": {
+    "user_instruction": "授权",
+    "deterministic_baseline_materialization_authorized": true,
+    "fresh_v3_agent_admission_or_execution_authorized": false,
+    "model_provider_network_source_or_tool_authorized": false,
+    "paired_comparison_authorized": false,
+    "human_review_or_T10_authorized": false,
+    "S4_release_or_production_authorized": false
+  },
+  "source_binding": {
+    "contract_ref": "fin01.s3.paired_three_cell_deterministic_baseline:v1",
+    "decision_ref": "configs/releases/fin_ia_0_1_s3_t09_paired_deterministic_baseline_materialization_decision_v1_0.json",
+    "source_agent_result_ref": "configs/releases/fin_ia_0_1_s3_t09_replacement_output_v2_live_execution_result_v1_0.json",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "analysis_as_of": "2026-07-21T00:00:00Z",
+    "decision_surface_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "input_head_digest": "c9867b54b86cf17982b4cebfaf0c0ebcae2a6f46d894ff82dbb643f693c9836d",
+    "source_agent_research_run_id": "research_run_fin01_c24bc3ce28a3ecfafa6ce7c2"
+  },
+  "pre_materialization_gate": {
+    "project_os_scoped_preflight": "pass",
+    "disposable_clone_full_materialization_test": "pass",
+    "same_clone_second_materialization": "rejected_before_write",
+    "final_target_read_only_preflight": "pass",
+    "double_prepare_equal": true,
+    "prospective_payload_digest": "71784beb7b2f3a8c5f73b134589b3171087f1ba14f017d5467f1ee2f9204e57b",
+    "all_exact_identities_fresh": true,
+    "canonical_database_sha256": "876e98a85517b4959fd95258592847d3f76a5a8305e349601b27dffcb34addac",
+    "canonical_object_tree_sha256": "4d6a8e19feed1bc80fd45b8d252f22c57edfbbd6a339edd690596d8f7ba632dc"
+  },
+  "materialized_identity": {
+    "execution_identity": "fin01-s3-t09-paired-deterministic-baseline-materialization-r1",
+    "execution_profile_version_ref": "fin01.execution_profile.p36_local_deterministic:v1",
+    "work_unit_id": "wu_p02_5_da52f02a9594f011dde69058",
+    "attempt_id": "attempt_fin01_946d7ef0b02a8a88395aff53",
+    "research_run_id": "research_run_fin01_fac094aac24174903915016b",
+    "program_cell_ids": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ]
+  },
+  "terminal_truth": {
+    "work_unit_state": "succeeded",
+    "attempt_state": "succeeded",
+    "research_run_state": "succeeded",
+    "attempt_no": 1,
+    "maximum_attempts": 1,
+    "retry_budget": 0,
+    "exact_deterministic_run_cardinality": 1
+  },
+  "artifact_manifest": {
+    "deterministic_research_result": {
+      "artifact_ref": "artifact_fin01_159ec07da5899acb4282c7f8:v1",
+      "object_key": "fin01/research-runs/cd/86/cd86a7e51311d4a379b223928b4e409138dcf2bb4b2ddfe7aee9052dfbcacf08.json",
+      "object_digest": "cd86a7e51311d4a379b223928b4e409138dcf2bb4b2ddfe7aee9052dfbcacf08"
+    },
+    "s3_three_cell_workpaper": {
+      "artifact_ref": "artifact_fin01_cac9c6d21fb71718bde53180:v1",
+      "object_key": "fin01/research-runs/b3/87/b3878ef0bfe1c450fd201755cbcf317e5c24ce2260938b8cfe2eb83a3fa72e39.json",
+      "object_digest": "b3878ef0bfe1c450fd201755cbcf317e5c24ce2260938b8cfe2eb83a3fa72e39"
+    },
+    "s3_three_cell_report": {
+      "artifact_ref": "artifact_fin01_d930f0e0dced7a227ab8f26a:v1",
+      "object_key": "fin01/research-runs/b4/34/b434bba332ffe99d8915e797c359288cfe1d92f9669c697b55e210ab92a7f3b5.json",
+      "object_digest": "b434bba332ffe99d8915e797c359288cfe1d92f9669c697b55e210ab92a7f3b5"
+    },
+    "s3_three_cell_trace_review": {
+      "artifact_ref": "artifact_fin01_92c87bb66da287219987f628:v1",
+      "object_key": "fin01/research-runs/f0/5c/f05ce75f13d3bf4b291ec8ca6ce773986dab9cd34a7a40fc8abc21127ebb2bff.json",
+      "object_digest": "f05ce75f13d3bf4b291ec8ca6ce773986dab9cd34a7a40fc8abc21127ebb2bff"
+    }
+  },
+  "canonical_delta": {
+    "new_logical_work_units": 1,
+    "new_logical_attempts": 1,
+    "new_logical_research_runs": 1,
+    "new_artifacts": 4,
+    "new_object_payloads": 4,
+    "work_unit_version_rows": 3,
+    "attempt_version_rows": 2,
+    "research_run_version_rows": 2,
+    "artifact_version_rows": 4,
+    "event_rows": 12,
+    "idempotency_rows": 4,
+    "all_preexisting_logical_objects_unchanged": true,
+    "all_preexisting_object_payloads_unchanged": true,
+    "source_agent_run_and_nine_artifacts_unchanged": true,
+    "live_case_head_unchanged": true,
+    "canonical_database_sha256_after": "46ba35b8dd1b65fb3980470ebeed00dc38c9e17f1576876291c2659bb94edc9f",
+    "canonical_object_tree_sha256_after": "00ac740b53c91c032b221453cf9269c5748a7fbcf5802bbc239a8e34ae21ea75"
+  },
+  "post_materialization_read_only_verification": {
+    "status": "pass_materialized_baseline_read_only_verification",
+    "exact_artifact_count": 4,
+    "source_agent_artifact_count": 9,
+    "all_object_digests_verified": true,
+    "three_cell_contract_verified": true,
+    "terminal_and_lineage_bindings_verified": true,
+    "second_materialization_is_fail_closed": true
+  },
+  "regression_verification": {
+    "direct_materialization_owner_grade_and_backlog_tests": "39 passed",
+    "historical_admission_decision_tests": "4 passed",
+    "historical_admission_issuance_tests": "5 passed",
+    "transport_exact_input_and_fake_provider_tests": "5 passed",
+    "remaining_admission_truncation_and_replacement_issuance_tests": "19 passed",
+    "live_execution_runner_fake_provider_tests": "4 passed",
+    "S3_T09_contract_test_total": "76 passed",
+    "real_model_provider_network_calls_from_tests": 0,
+    "python_compile": "pass",
+    "json_and_jsonl_parse": "pass",
+    "git_diff_check": "pass",
+    "changed_file_credential_pattern_scan": "pass_232_files_0_hits"
+  },
+  "observed_counts": {
+    "baseline_materializations": 1,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "evidence_promotions": 0,
+    "live_case_head_writes": 0,
+    "agent_reruns": 0,
+    "human_review_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_036": "closed_exact_same_input_terminal_deterministic_baseline_materialized",
+    "RC_P36_037": "repair_implemented_fixture_proven_fresh_v3_agent_proof_pending",
+    "paired_comparison": "not_authorized_and_not_performed",
+    "S3_T09": "blocked_pending_fresh_v3_agent_proof_paired_comparison_and_owner_acceptance",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4_release_or_production": "not_authorized"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-FRESH-AGENT-PROOF-DECISION"
+}

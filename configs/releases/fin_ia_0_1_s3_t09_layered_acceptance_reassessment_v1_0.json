@@ -1,0 +1,133 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_layered_acceptance_reassessment_v1_0",
+  "decision_id": "S3-T09-LAYERED-ACCEPTANCE-REASSESSMENT-R1",
+  "decided_at": "2026-07-25T00:00:00+08:00",
+  "status": "reassessed_narrative_length_reclassified_but_T09_remains_blocked_by_missing_coherent_owner_grade_product",
+  "authority": {
+    "user_instruction": "更新概设详设，并按新标准重新审 S3-T09；仅在通过时放行下一步",
+    "documentation_and_read_only_reassessment_authorized": true,
+    "runtime_implementation_authorized": false,
+    "model_provider_network_source_or_tool_execution_authorized": false,
+    "captured_output_replay_or_promotion_authorized": false,
+    "paired_comparison_or_owner_acceptance_write_authorized": false,
+    "T10_S4_release_or_production_authorized": false
+  },
+  "acceptance_standard_ref": "configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json",
+  "evidence_reviewed": [
+    "configs/releases/fin_ia_0_1_s3_t09_nullable_owner_and_supervision_v2_final_exact_live_execution_result_v1_0.json",
+    "configs/releases/fin_ia_0_1_s3_t09_replacement_output_v2_live_execution_result_v1_0.json",
+    "configs/releases/fin_ia_0_1_s3_t09_replacement_live_artifact_paired_baseline_decision_v1_0.json",
+    "configs/releases/fin_ia_0_1_s3_t09_paired_deterministic_baseline_materialization_v1_0.json",
+    "configs/releases/fin_ia_0_1_s3_t09_owner_grade_semantic_actionability_zero_call_repair_v1_0.json",
+    "configs/releases/fin_ia_0_1_s3_t09_claim_fact_link_policy_fresh_exact_live_execution_result_v1_0.json",
+    "configs/releases/fin_ia_0_1_s3_t09_atomic_terminalization_and_typed_verifier_state_machine_fresh_exact_live_execution_result_v1_0.json"
+  ],
+  "latest_exact_live_reclassification": {
+    "research_run_id": "research_run_fin01_6594b12567cdebecd441d31d",
+    "historical_canonical_state": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "historical_state_must_be_rewritten": false,
+    "observed_narrative_lengths": [
+      571,
+      533,
+      528
+    ],
+    "former_per_field_hard_limit": 512,
+    "aggregate_observed_and_former_limit": [
+      3875,
+      3200
+    ],
+    "provider_wire_observed_and_hard_capacity": [
+      5195,
+      8192
+    ],
+    "valid_json_and_stop": true,
+    "transport_storage_or_security_capacity_exhausted": false,
+    "new_classification": "L3_analytical_quality_or_L4_delivery_finding_not_L1_hard_integrity_failure",
+    "RC_P36_047_disposition": "remove_as_standalone_full_chain_hard_blocker_after_runtime_alignment",
+    "complete_L1_evaluation_reached": false,
+    "reason": "The run stopped before downstream semantic validation Writer Verifier and canonical Artifact construction."
+  },
+  "historical_complete_product_reassessment": {
+    "research_run_id": "research_run_fin01_c24bc3ce28a3ecfafa6ce7c2",
+    "terminal_success_and_artifact_count": [
+      true,
+      9
+    ],
+    "contract_version": "fin01.s3.bounded_agent_three_cell_output:v2",
+    "hard_integrity_finding": "A company-total Numeric fact was expanded into a declarative segment revenue-capture claim without segment or product authority.",
+    "new_classification": "L1_hard_integrity_failure",
+    "eligible_as_current_T09_product": false,
+    "reason": "The revised standard intentionally keeps truth provenance scope and attribution violations hard."
+  },
+  "cumulative_capability_evidence": {
+    "deterministic_same_input_baseline_materialized": true,
+    "claim_fact_closed_alias_live_observed": true,
+    "output_v4_typed_verifier_live_reached": true,
+    "atomic_failure_terminalization_live_proven": true,
+    "supervision_v2_fresh_live_proven": true,
+    "nullable_owner_v2_fixture_and_fresh_proof_passed": true,
+    "current_owner_grade_complete_nine_artifact_live_product_exists": false,
+    "evidence_composition_rule": "Component capabilities may be credited, but separate Runs may not be synthesized into one nonexistent terminal product."
+  },
+  "S3_T09_acceptance_matrix": [
+    {
+      "criterion": "one_terminal_exact_NVDA_three_cell_Run_has_complete_reconstructable_artifacts",
+      "result": "fail",
+      "evidence": "The current owner-grade final Run has zero Artifacts; the older nine-Artifact v2 Run contains an L1 scope and attribution violation."
+    },
+    {
+      "criterion": "Agent_Skill_Tool_Graph_Context_Repair_Writer_and_Verifier_consumption_is_traced",
+      "result": "partial",
+      "evidence": "Traceable component evidence exists across multiple Runs, but not in one current-version complete product."
+    },
+    {
+      "criterion": "no_silent_fallback_broad_rerun_false_promotion_or_unsupported_numeric_precision",
+      "result": "pass_for_observed_runs",
+      "evidence": "Retry fallback replay relaunch and silent promotion remained zero; the older v2 scope expansion remains disqualifying for that product."
+    },
+    {
+      "criterion": "paired_baseline_and_four_layer_artifact_validation_pass",
+      "result": "fail",
+      "evidence": "The deterministic baseline exists, but no paired comparison and four-layer review bind a current owner-grade nine-Artifact Agent product."
+    },
+    {
+      "criterion": "draft_cross_slice_early_delivery_manifest_is_created",
+      "result": "not_due",
+      "evidence": "The manifest is created only after T09 acceptance."
+    }
+  ],
+  "stage_decision": {
+    "RC_P36_047": "reclassified_from_hard_failure_to_quality_finding_runtime_alignment_pending",
+    "RC_P36_037": "complete_current_owner_grade_product_still_missing",
+    "RC_P36_052": "nullable_owner_v2_live_not_reached_in_a_complete_current_product",
+    "S3_T09": "blocked",
+    "S3_T10": "not_authorized",
+    "S4": "blocked_by_S3",
+    "release_or_production": "not_authorized",
+    "conditional_pass_granted": false
+  },
+  "required_remaining_evidence": [
+    "runtime alignment so ordinary narrative length findings retain valid Research Lead output instead of terminalizing the Run",
+    "one coherent current-version terminal exact Run with all nine canonical Artifact families and L1 pass",
+    "read-only four-layer product validation against the already materialized deterministic baseline",
+    "authorized owner acceptance bound to exact Artifact versions and digests"
+  ],
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_live_runs": 0,
+    "new_business_artifacts": 0,
+    "captured_output_replays": 0,
+    "paired_comparisons": 0,
+    "owner_acceptance_writes": 0
+  },
+  "next_action": "S3-T09-LAYERED-ACCEPTANCE-RUNTIME-ALIGNMENT-ZERO-CALL-IMPLEMENTATION"
+}

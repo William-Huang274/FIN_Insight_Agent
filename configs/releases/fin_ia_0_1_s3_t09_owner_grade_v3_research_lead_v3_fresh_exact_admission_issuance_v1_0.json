@@ -1,0 +1,158 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_v3_fresh_exact_admission_issuance_v1_0",
+  "issuance_id": "S3-T09-OWNER-GRADE-V3-RESEARCH-LEAD-V3-FRESH-EXACT-ADMISSION-ISSUANCE-R1",
+  "issued_at": "2026-07-23T14:27:46+08:00",
+  "status": "issued_unconsumed_zero_call_preflight_pass",
+  "authority": {
+    "user_instruction": "授权",
+    "research_lead_v3_fresh_exact_admission_issuance_authorized": true,
+    "zero_call_prepare_and_preflight_authorized": true,
+    "admission_consumption_or_exact_once_execution_authorized": false,
+    "model_provider_network_source_or_tool_execution_authorized": false,
+    "automatic_retry_fallback_repair_or_rerun_authorized": false,
+    "paired_comparison_human_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_v3_fresh_agent_proof_decision_v1_0.json",
+  "issued_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_specialist_v5_research_lead_v3_exact_admission_v1_0.json",
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-specialist-v5-research-lead-v3-exact-admission-r1",
+    "admission_digest": "f4fede4d86274bf099e801c8ec89ff0773a7cc9f66baa5365cbcf3ac39d3b080",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-specialist-v5-research-lead-v3-live-validation-r1",
+    "fresh_identity": true,
+    "execution_enabled": true,
+    "consumed": false,
+    "execution_started": false
+  },
+  "exact_binding": {
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "as_of": "2026-07-21T00:00:00Z",
+    "input_head_digest": "c9867b54b86cf17982b4cebfaf0c0ebcae2a6f46d894ff82dbb643f693c9836d",
+    "input_digest": "4574a5ce43ec24a8563d8ca2108de0880deb6659c4ffde7162f0d801a0dda9fb",
+    "preparation_digest": "2f525c594b12e572f7b8c09d9232460475ac0e2f35c4acb1755645f4678644b0",
+    "predicted_work_unit_id": "wu_p02_5_faa27f97931244939f6daf3f",
+    "predicted_attempt_id": "attempt_fin01_1de0ba5e8037f6d2953d1733",
+    "predicted_research_run_id": "research_run_fin01_e418d7086d4a1d253e9b2c9b",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v5",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v3",
+    "provider_output_capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+    "reasoning_effort": "none",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3"
+  },
+  "execution_envelope": {
+    "maximum_semantic_model_calls": 12,
+    "maximum_provider_calls": 12,
+    "maximum_network_calls": 12,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "specialist_segment_output_tokens": [
+      1600,
+      1200,
+      1400
+    ],
+    "specialist_total_output_tokens_each": 4200,
+    "lead_max_output_tokens": 1800,
+    "writer_max_output_tokens": 1400,
+    "verifier_max_output_tokens": 1000,
+    "maximum_output_tokens_total": 16800,
+    "output_only_cost_ceiling_usd": 0.014616,
+    "input_cache_miss_pricing_units_under_total_cap": 196285,
+    "maximum_total_cost_usd": 0.1,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "automatic_retry_repair_fallback_or_rerun_allowed": false,
+    "first_credible_failure": "terminal_fail_closed_stop",
+    "new_credible_failure_disposition": "stop_without_retry_fallback_patch_or_hidden_rerun"
+  },
+  "research_lead_v3_contract": {
+    "fact_presence_scope": "each conflict involved Claim direct support_fact_ids",
+    "fact_presence_truth_table": {
+      "all_involved_claims_supported": "facts_present",
+      "no_involved_claims_supported": "no_facts_present",
+      "some_involved_claims_supported": "mixed_fact_presence"
+    },
+    "unrelated_global_or_same_cell_facts_affect_summary": false,
+    "local_validator_fails_before_assembly": true,
+    "canonical_validator_reuses_shared_helper": true,
+    "historical_research_lead_v2_contract_and_runs_immutable": true
+  },
+  "product_proof_target": {
+    "required_logical_node_count": 6,
+    "required_artifact_family_count": 9,
+    "required_output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "provider_output_capture_count_on_full_success": 12,
+    "unsupported_claims_must_remain_bounded_or_cannot_infer": true,
+    "conflict_fact_presence_truth_table_must_pass": true,
+    "what_would_change_must_remain_actionable": true,
+    "verifier_false_green_forbidden": true,
+    "paired_comparison_and_owner_acceptance_remain_separate": true
+  },
+  "zero_call_preflight": {
+    "project_os_scoped_preflight": "pass_issuance_scope_has_no_unresolved_preissuance_blocker",
+    "frozen_decision_payload_and_digest_recheck": "pass_exact",
+    "exact_identity_input_transports_capture_budget_and_digest_match": true,
+    "canonical_work_unit_count_before_and_after": [
+      10,
+      10
+    ],
+    "canonical_attempt_count_before_and_after": [
+      10,
+      10
+    ],
+    "canonical_research_run_count_before_and_after": [
+      10,
+      10
+    ],
+    "canonical_artifact_count_before_and_after": [
+      13,
+      13
+    ],
+    "fresh_predicted_work_unit_attempt_run_absent": true,
+    "distinct_from_all_prior_agent_and_baseline_runs": true,
+    "prior_research_run_nonreuse_count": 10,
+    "baseline_output_body_exposed_to_agent": false,
+    "baseline_body_or_artifact_is_provider_input": false,
+    "schema_and_factory_validation": "pass_provider_callback_not_invoked",
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "provider_health_probe_performed": false,
+    "transport_retry_environment_currently_zero": false,
+    "transport_retry_environment_observed": "unset",
+    "transport_retry_environment_requirement": "must_equal_0_before_any_execution_command",
+    "canonical_database_sha256": "3a4390adca6f656e1f653636cd657da7cf8939aadf3c96c131444967013b2458",
+    "canonical_object_tree_sha256": "42c30c3cc369e513bee5dd37a21c7fcdb7d5bdf4f9326e54215bdf89d6ee4784"
+  },
+  "credential_hygiene": {
+    "credential_source": "process_environment",
+    "plaintext_value_recorded": false,
+    "credential_material_persisted_in_project_artifacts": false,
+    "credential_material_staged_or_tracked": false
+  },
+  "observed_counts": {
+    "new_admissions": 1,
+    "admission_consumptions": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "artifacts_created": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "target_canonical_writes": 0,
+    "target_object_writes": 0,
+    "paired_comparisons": 0,
+    "human_review_writes": 0,
+    "paid_runs": 0
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-RESEARCH-LEAD-V3-FRESH-EXACT-LIVE-EXECUTION"
+}

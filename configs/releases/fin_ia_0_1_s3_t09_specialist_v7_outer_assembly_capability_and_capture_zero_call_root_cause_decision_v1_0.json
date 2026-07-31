@@ -1,0 +1,56 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_specialist_v7_outer_assembly_capability_and_capture_zero_call_root_cause_decision_v1_0",
+  "decided_at": "2026-07-23T17:37:32+08:00",
+  "status": "pass_root_cause_decided_zero_call_repair_and_fresh_r2_exact_proof_authorized",
+  "authority": {
+    "user_instruction": "修复，修复完做真实模型调用看看修复效果",
+    "zero_call_root_cause_decision_authorized": true,
+    "zero_call_implementation_and_deterministic_tests_authorized": true,
+    "fresh_r2_exact_admission_issuance_and_one_live_execution_authorized": true,
+    "automatic_retry_fallback_patch_normalization_or_rerun_authorized": false,
+    "paired_comparison_human_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_failed_result_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_specialist_v7_fresh_live_execution_result_v1_0.json",
+  "root_causes": [
+    {
+      "issue_id": "RC-P36-045-s3-specialist-v7-outer-assembly-capability-residue",
+      "confirmed": true,
+      "earliest_owned_gap": "The inner segmented Specialist used the profile 8192-byte assembly capacity while the outer executor selected 8192 only from a hard-coded v5/v6 version set and therefore revalidated v7 at the legacy 6000-byte limit.",
+      "selected_repair": "Resolve the whole Specialist output limit from the immutable transport capability and the bound research profile through one shared policy function used by both inner and outer validators.",
+      "version_specific_v7_fallback_allowed": false
+    },
+    {
+      "issue_id": "RC-P38-042-post-node-usage-and-provider-output-capture-loss",
+      "confirmed": true,
+      "earliest_owned_gap": "Outer post-node validators raised bare ValueError after Provider calls had completed, bypassing BoundedAgentExecutionError and losing accumulated usage receipts and answer captures.",
+      "selected_repair": "Route every outer post-node Specialist, Lead, Writer, verifier-input and Verifier ValueError through a content-free typed BoundedAgentExecutionError carrying all accumulated receipts and restricted assistant-final-text captures.",
+      "raw_invalid_payload_in_failure_telemetry_allowed": false
+    }
+  ],
+  "compatibility_contract": {
+    "historical_transport_refs_v1_through_v7_mutated": false,
+    "legacy_non_bounded_assembly_limit_utf8_bytes": 6000,
+    "bounded_assembly_profile_limit_utf8_bytes": 8192,
+    "consumed_r1_admission_or_identity_reuse_allowed": false,
+    "normalization_trim_remap_drop_or_repair_allowed": false
+  },
+  "experiment_contract": {
+    "new_execution_identity_required": true,
+    "new_exact_admission_required": true,
+    "transport_retry_count": 0,
+    "maximum_live_execution_count": 1,
+    "first_credible_failure": "terminal_fail_closed_stop",
+    "original_answer_capture_required_before_post_node_terminalization": true
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "canonical_writes": 0
+  },
+  "next_action": "S3-T09-OWNER-GRADE-SPECIALIST-V7-OUTER-ASSEMBLY-CAPABILITY-AND-CAPTURE-ZERO-CALL-IMPLEMENTATION"
+}

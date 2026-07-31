@@ -1,0 +1,227 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_research_lead_v4_capacity_recurrence_zero_call_root_cause_decision_v1_0",
+  "decision_id": "S3-T09-OWNER-GRADE-CROSS-CELL-SCOPED-IDENTITY-RESEARCH-LEAD-V4-CAPACITY-RECURRENCE-ZERO-CALL-ROOT-CAUSE-DECISION",
+  "decided_at": "2026-07-23T22:27:26+08:00",
+  "status": "pass_project_owned_provider_wire_and_canonical_identity_representation_conflation_confirmed_compact_alias_dual_capacity_repair_selected_implementation_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "zero_call_restricted_capture_code_contract_and_capacity_audit_authorized": true,
+    "repair_selection_authorized": true,
+    "runtime_code_prompt_schema_validator_profile_or_budget_implementation_authorized": false,
+    "admission_issuance_or_consumption_authorized": false,
+    "model_provider_network_source_external_tool_retry_fallback_or_rerun_authorized": false,
+    "paired_comparison_owner_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_evidence": {
+    "failed_live_result_ref": "configs/releases/fin_ia_0_1_s3_t09_cross_cell_scoped_identity_fresh_live_execution_result_v1_0.json",
+    "failed_model_run_ref": "reports/model_runs/20260723_fin_ia_0_1_s3_t09_cross_cell_scoped_identity_output_v4_live_validation_r1.md",
+    "restricted_capture_object_digest": "aef9fe5d43b1a6062ef4824e9900b276397da0392cad2154388c19a7ee0b19de",
+    "failed_research_run_id": "research_run_fin01_389411049b562ebd57000528",
+    "failure_stage": "research_lead",
+    "finish_reason": "length",
+    "lead_input_tokens": 6738,
+    "lead_output_tokens_and_cap": [
+      1800,
+      1800
+    ],
+    "captured_output_characters_and_utf8_bytes": [
+      7177,
+      7177
+    ],
+    "provider_segment_utf8_byte_ceiling": 6000,
+    "writer_called": false,
+    "verifier_called": false,
+    "artifact_count": 0,
+    "retry_fallback_rerun_counts": [
+      0,
+      0,
+      0
+    ],
+    "raw_assistant_text_copied_into_tracked_artifacts": false,
+    "model_provider_network_calls_in_this_decision": [
+      0,
+      0,
+      0
+    ]
+  },
+  "independent_structural_amplification_audit": {
+    "identity_kind_occurrences": 25,
+    "complete_typed_ref_objects": 24,
+    "complete_typed_ref_utf8_bytes": 4030,
+    "complete_typed_ref_share_of_captured_output": 0.5615,
+    "same_complete_refs_as_local_id_strings_utf8_bytes": 698,
+    "same_complete_refs_as_three_character_alias_strings_utf8_bytes": 120,
+    "three_character_alias_projected_captured_prefix_utf8_bytes": 3267,
+    "selected_four_character_alias_projected_captured_prefix_utf8_bytes": 3291,
+    "selected_alias_projection_is_a_counterfactual_not_a_complete_output_proof": true,
+    "completed_narrative_fields": 16,
+    "completed_narrative_characters": 1210,
+    "maximum_completed_narrative_characters": 127,
+    "dependency_conflict_gap_items_started": [
+      3,
+      3,
+      3
+    ],
+    "all_three_program_cells_observed": true,
+    "json_error": "unterminated_string_at_line_208_column_30",
+    "truncated_inside_field": "program_cell_id"
+  },
+  "control_comparison": {
+    "control_run_id": "research_run_fin01_8b42809cc1a8274a9b16fe37",
+    "control_contract": "output_v3_research_lead_v3_raw_local_reference_wire",
+    "control_lead_input_tokens": 5340,
+    "control_lead_output_tokens": 876,
+    "control_lead_output_utf8_bytes": 3540,
+    "control_finish_reason": "stop",
+    "control_complete_claim_and_task_ref_occurrences": 38,
+    "output_v4_lead_input_token_increase": 1398,
+    "interpretation": "The output-v4 request repeats a full scoped identity surface in addition to Specialist bodies, while each selected reference expands from one scalar into a three-field object. The new wire representation, not a larger analyst narrative, consumed the closed output envelope."
+  },
+  "root_cause": {
+    "immediate_cause": "Research Lead-v4 reached the exact 1800-token cap and stopped inside the twenty-fifth typed scoped reference.",
+    "secondary_guaranteed_failure_if_tokens_only_were_increased": "The already captured 7177-byte incomplete response exceeds the current 6000-byte Provider segment ceiling, so a token-only increase would merely move the same Run to the byte-cap gate.",
+    "earliest_owned_defect": "The project conflates canonical authoritative identity representation with Provider wire representation. It requires the model to repeat identity_kind program_cell_id and local_id for every semantic reference, duplicates the scoped surface in the request, retains Provider-generated unbounded row identifiers, and reuses the output-v3 capacity profile without a wire-to-canonical capacity proof.",
+    "provider_model_fault_confirmed": false,
+    "deepseek_json_conformance_fault_confirmed": false,
+    "input_evidence_or_analyst_semantics_too_large_confirmed": false,
+    "project_owned_contract_and_capacity_mismatch_confirmed": true,
+    "external_boundary": false
+  },
+  "option_comparison": [
+    {
+      "option": "increase_Research_Lead_output_tokens_only",
+      "decision": "reject",
+      "reason": "The incomplete response already violates the 6000-byte Provider envelope and the canonical expansion remains unbounded."
+    },
+    {
+      "option": "increase_raw_and_local_byte_limits_without_changing_wire_shape",
+      "decision": "reject",
+      "reason": "It pays repeatedly for identical identity fields and does not create a capacity invariant across future profiles or Providers."
+    },
+    {
+      "option": "prompt_only_minified_JSON_or_be_concise",
+      "decision": "reject",
+      "reason": "Whitespace and concision instructions are not a machine-checkable closure proof."
+    },
+    {
+      "option": "emit_raw_local_ids_and_infer_Cell_ownership_locally",
+      "decision": "reject",
+      "reason": "It reintroduces RC-P36-046 cross-Cell ambiguity."
+    },
+    {
+      "option": "lossy_specialist_or_narrative_compression",
+      "decision": "reject",
+      "reason": "The captured narrative is not the dominant expansion and removing analyst semantics would hide the owned wire defect."
+    },
+    {
+      "option": "request_scoped_compact_alias_wire_local_typed_expansion_local_row_ids_and_dual_capacity_proof",
+      "decision": "select",
+      "reason": "It preserves authoritative typed lineage and full analyst semantics while bounding Provider wire cost independently from local canonical expansion."
+    }
+  ],
+  "selected_repair_contract": {
+    "new_research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v5",
+    "historical_research_lead_v1_through_v4_immutable": true,
+    "canonical_output_contract_ref_unchanged": "fin01.s3.bounded_agent_three_cell_output:v4",
+    "canonical_scoped_identity_contract_ref_unchanged": "fin01.s3.cell_scoped_research_identity:v1",
+    "specialist_transport_ref_unchanged": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "memo_writer_transport_ref_unchanged": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+    "provider_wire_identity": {
+      "contract": "request_scoped_closed_alias_table",
+      "alias_shape": "C001 for Claim and W001 for what-would-change",
+      "alias_is_authoritative_identity": false,
+      "alias_is_persisted_as_canonical_identity": false,
+      "alias_to_typed_ref_mapping_supplied_once_per_unique_ref": true,
+      "provider_output_ref_values": "exact aliases from the field-local closed allowlist",
+      "local_runtime_expands_aliases_to_CellScopedResearchRef_before_existing_output_v4_validation_and_persistence": true,
+      "raw_local_id_only_output_allowed": false,
+      "unknown_wrong_kind_wrong_field_duplicate_or_normalized_alias_allowed": false,
+      "trim_casefold_fuzzy_remap_drop_or_silent_repair_allowed": false
+    },
+    "local_deterministic_assembly": {
+      "dependency_id_provider_emitted": false,
+      "adjudication_id_provider_emitted": false,
+      "gap_id_provider_emitted": false,
+      "row_ids_derived_from_validated_list_order_and_node_scope": true,
+      "cell_heads_remain_locally_derived": true,
+      "semantic_statements_ref_selection_fact_presence_and_resolution_remain_model_owned": true
+    },
+    "closed_reference_cardinality": {
+      "every_reference_list_must_be_unique": true,
+      "claim_list_maximum": "exact count of available Claim aliases in the validated scoped surface",
+      "task_list_maximum": "exact count of available what-would-change aliases in the validated scoped surface",
+      "empty_list_behavior": "only where the existing semantic field contract permits empty",
+      "hardcoded_NVDA_or_Cell_specific_ref_counts": false
+    },
+    "dual_capacity_contract": {
+      "per_narrative_field_unicode_character_maximum": 320,
+      "aggregate_provider_narrative_unicode_character_maximum": 3200,
+      "provider_raw_wire_utf8_byte_maximum": 8192,
+      "provider_canonical_alias_segment_utf8_byte_maximum": 6000,
+      "lead_max_output_tokens": 1800,
+      "aggregate_max_output_tokens": 16800,
+      "max_total_cost_usd": 0.1,
+      "retry_fallback_rerun_budget": [
+        0,
+        0,
+        0
+      ],
+      "token_or_total_cost_increase_selected": false,
+      "local_expanded_canonical_utf8_byte_maximum": "must be derived and frozen in a versioned research profile from the exact admitted scoped surface and maximum valid output shape; the historical 8192 constant cannot be reused without proof",
+      "admission_requires_exact_minimum_maximum_and_adversarial_capacity_fixture_digests": true
+    },
+    "capability_and_profile_governance": {
+      "Lead_transport_capability_registry_required": true,
+      "if_transport_equals_v5_branching_allowed": false,
+      "versioned_research_profile_capacity_fields_required": true,
+      "prompt_schema_local_parser_alias_expander_and_capacity_validator_share_one_typed_contract": true,
+      "non_NVDA_different_period_and_different_ref_cardinality_fixture_required": true,
+      "Provider_specific_contract_fork_required": false
+    }
+  },
+  "implementation_acceptance_before_any_new_proof_or_admission": [
+    "A full production-shape fake Provider path uses compact aliases and locally expands to the unchanged output-v4 typed refs across Lead Writer Verifier and nine Artifact families.",
+    "The exact captured prefix counterfactual is reproduced without copying raw answer text into tracked fixtures and demonstrates the measured 4030-byte typed-ref amplification.",
+    "Minimum maximum and adversarial reference-cardinality fixtures prove raw-wire canonical-alias and locally-expanded envelopes simultaneously.",
+    "The maximum fixture combines maximum item cardinality maximum allowed aggregate narrative and every exact available alias rather than testing each boundary separately.",
+    "Unknown wrong-kind wrong-field duplicate malformed and normalized aliases fail before canonical assembly with content-free telemetry.",
+    "Lead-v1 through v4 output-v3 output-v4 identity-v1 historical admissions Runs and restricted captures remain immutable and replayable.",
+    "The exact 1800 Lead 16800 aggregate USD 0.10 and retry-zero budgets remain unchanged.",
+    "A non-NVDA profile with a different period format and different Claim and WWC counts passes without company or transport-version special cases.",
+    "Model Provider execution network source tool admission Run Artifact comparison and Human Review counts remain zero."
+  ],
+  "verification": {
+    "decision_and_historical_trace_tests": "31 passed",
+    "release_JSON_validation": "pass",
+    "Project_OS_JSONL_validation": {
+      "root_cause_issue_ledger_lines": 364,
+      "capability_status_ledger_lines": 350,
+      "status": "pass"
+    },
+    "diff_check": "pass",
+    "new_content_secret_and_raw_capture_boundary_scan": "pass"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_live_WorkUnits": 0,
+    "new_live_Attempts": 0,
+    "new_live_ResearchRuns": 0,
+    "new_live_Artifacts": 0,
+    "comparisons": 0,
+    "human_reviews": 0
+  },
+  "stage_decision": {
+    "RC_P36_040": "root_cause_decided_compact_scoped_alias_dual_capacity_zero_call_implementation_pending",
+    "RC_P36_046": "partial_live_progress_identity_semantics_retained_complete_downstream_proof_blocked_by_RC_P36_040",
+    "RC_P36_037": "still_open_no_complete_fresh_owner_grade_artifact_product",
+    "S3_T09": "blocked_pending_zero_call_generalized_Lead_wire_capacity_implementation_and_separate_future_proof",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4_release_production": "not_authorized"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-COMPACT-SCOPED-REFERENCE-WIRE-LOCAL-TYPED-EXPANSION-AND-DUAL-CAPACITY-ZERO-CALL-IMPLEMENTATION"
+}

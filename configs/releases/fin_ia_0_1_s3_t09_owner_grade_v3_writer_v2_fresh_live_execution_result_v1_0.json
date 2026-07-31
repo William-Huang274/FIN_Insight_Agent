@@ -1,0 +1,110 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_writer_v2_fresh_live_execution_result_v1_0",
+  "execution_id": "S3-T09-OWNER-GRADE-V3-WRITER-V2-FRESH-EXACT-LIVE-EXECUTION-R1",
+  "executed_at": "2026-07-23T15:29:05+08:00",
+  "status": "terminal_failed_second_specialist_canonical_period_scope_mismatch_admission_consumed_no_retry",
+  "authority": {
+    "user_instruction": "继续修，修完做真实调用看看效果",
+    "zero_call_repair_and_orphan_closeout_authorized": true,
+    "fresh_exact_admission_and_one_live_execution_authorized": true,
+    "automatic_retry_fallback_repair_or_rerun_authorized": false,
+    "replacement_admission_or_execution_authorized": false,
+    "paired_comparison_human_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_specialist_v5_research_lead_v3_writer_v2_exact_admission_v1_0.json",
+  "source_issuance_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_writer_v2_fresh_exact_admission_issuance_v1_0.json",
+  "runtime_preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/writer_v2_r1_live_execution_preflight.json",
+  "runtime_preflight_sha256": "3520799a9bcdff8b635b5a7b737c81ae1a6b052577f140146424478349a0b8d2",
+  "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/writer_v2_r1_live_execution_result.json",
+  "runtime_result_sha256": "12b680ce31a754512d6b567b921b738c9e3bf610361a730641fcc04437e99beb",
+  "identity": {
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-specialist-v5-research-lead-v3-writer-v2-exact-admission-r1",
+    "admission_digest": "1dc1b3290bf19bf73e0ad90cb8d5be3e1e60bf71bf151129c913894e93256885",
+    "work_unit_id": "wu_p02_5_821cee42568e9454078c5104",
+    "attempt_id": "attempt_fin01_d2279356bce93fb0d4035953",
+    "research_run_id": "research_run_fin01_76a7eace510a50091c351502",
+    "input_digest": "f8c196492edbbf5ccbba603c284d8eb3c606897f7551ca1018b551a45614bf4e"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:domain_specialist:value_and_profit_capture",
+    "artifact_count": 0,
+    "orphaned_run": false,
+    "event_types": [
+      "WORK_UNIT_STARTED",
+      "ATTEMPT_STARTED",
+      "SCHEDULER_LEASE_ACQUIRED",
+      "RESEARCH_RUN_STARTED",
+      "RESEARCH_RUN_PROVIDER_OUTPUT_CAPTURED",
+      "RESEARCH_RUN_FAILED",
+      "ATTEMPT_FAILED",
+      "WORK_UNIT_FAILED"
+    ]
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v5",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v3",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v2",
+    "model_calls": 5,
+    "provider_calls": 5,
+    "network_calls": 5,
+    "input_tokens": 19055,
+    "output_tokens": 2372,
+    "total_tokens": 21427,
+    "estimated_cost_usd": 0.00968997,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "rerun_count": 0
+  },
+  "provider_output_capture": {
+    "policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+    "capture_event_persisted_before_terminal_validation": true,
+    "capture_count": 5,
+    "restricted_readback_count": 5,
+    "assistant_final_output_text_replayable": true,
+    "raw_provider_HTTP_envelope_persisted": false,
+    "private_reasoning_persisted": false,
+    "credential_value_persisted": false
+  },
+  "live_repair_effect": {
+    "historical_orphan_typed_closeout": "pass_failed_failed_failed_zero_call",
+    "future_terminal_failure_integrity": "pass_no_orphan",
+    "capture_before_terminal_validation": "pass_live_proven",
+    "typed_writer_contract_reached": false,
+    "typed_writer_contract_not_reached_reason": "earlier_second_specialist_scope_validator_failure",
+    "writer_v2_product_conformance": "not_exercised",
+    "verifier_conformance": "not_exercised",
+    "research_product_delivered": false
+  },
+  "earliest_failure": {
+    "stage": "domain_specialist:value_and_profit_capture:owner_grade_claim_cards",
+    "failure_code": "s3_bounded_segmented_specialist_contract_invalid:value_and_profit_capture:owner_grade_claim_cards:s3_owner_grade_claim_scope_exceeds_fact_authority",
+    "raw_response_replay_findings": {
+      "fact_period": "FY2025-FY",
+      "claim_period": "FY2025",
+      "fact_business_scope_kind": "company_total",
+      "claim_business_scope_kind": "company_total",
+      "fact_attribution_level": "company_total",
+      "claim_attribution_level": "company_total",
+      "direct_supported_claim_id": "c2",
+      "mismatch_class": "canonical_period_token_not_preserved_exactly"
+    },
+    "interpretation": "The Writer-v2 repair did not regress this run; a stochastic upstream Specialist normalized the canonical period token before Writer was reached."
+  },
+  "acceptance": {
+    "writer_v2_zero_call_contract": "pass",
+    "terminal_integrity_and_replayable_capture": "pass_live_proven",
+    "fresh_complete_agent_artifact_proof": "fail_no_artifacts",
+    "owner_grade_research_product_proof": "fail_no_deliverable",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-SPECIALIST-CANONICAL-SCOPE-TOKEN-ZERO-CALL-ROOT-CAUSE-DECISION"
+}

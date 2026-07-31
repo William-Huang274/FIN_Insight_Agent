@@ -1,0 +1,217 @@
+{
+  "schema_version": "fin_ia_0_1_s3_entry_and_detailed_backlog_freeze_v1_0",
+  "entry_id": "S3-ENTRY-NVDA-THREE-CELL-ANCHOR-R1",
+  "entered_at": "2026-07-21T10:35:35+08:00",
+  "status": "pass_S3_entry_T01_ready_pending_separate_authorization",
+  "authority": {
+    "user_instruction": "进入s3",
+    "S3_entry_and_current_slice_backlog_freeze_authorized": true,
+    "S3_T01_execution_authorized": false,
+    "model_or_provider_execution_authorized": false,
+    "source_network_or_external_tool_execution_authorized": false,
+    "live_business_case_mutation_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "entry_preconditions": {
+    "S2_status": "pass_bounded_one_cell_material_agent_value",
+    "S2_closeout_ref": "configs/releases/fin_ia_0_1_s2_t06_closeout_v1_0.json",
+    "S2_material_gain_scope": "reasoning_boundary_WWC_and_reviewability",
+    "S2_hard_integrity_regression": false,
+    "S3_entry_condition_met": true
+  },
+  "product_scope": {
+    "case": "NVDA",
+    "target_maturity": "R2_calibrated_research_output",
+    "product_result": "dynamic_lead_and_three_cells_produce_one_exact_NVDA_workpaper_graph_drilldown_report_trace_and_owner_review",
+    "active_cells": [
+      {
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "legacy_cell_key": "demand_reality",
+        "evidence_role": "demand_signal",
+        "owner_role": "industry_analyst",
+        "decision_question": "Is NVDA AI infrastructure demand authentic and durable, and what evidence distinguishes recognized demand from temporary pull-forward?",
+        "mandatory_judgment_chain": "demand_signal_to_company_specificity_to_real_deployment_to_durability_driver_to_cannot_infer",
+        "primary_routes": [
+          "issuer_disclosure",
+          "customer_deployment",
+          "customer_capex",
+          "local_RAG"
+        ],
+        "conditional_routes": [
+          "bounded_graph_neighbors",
+          "upstream_downstream_official_sources",
+          "SourceHunter_only_after_separate_admission"
+        ],
+        "numeric_obligation": "typed_numeric_support_or_explicit_gap_no_synthetic_sustainability_metric",
+        "graph_role": "cross_validation_navigation_not_demand_scale_authority"
+      },
+      {
+        "program_cell_id": "value_and_profit_capture",
+        "legacy_cell_key": "value_profit_capture",
+        "evidence_role": "revenue_capture",
+        "owner_role": "financial_analyst",
+        "decision_question": "Where and how does NVDA capture revenue and incremental profit from AI infrastructure demand, using segment, period, unit and formula-bound evidence?",
+        "mandatory_judgment_chain": "demand_transmission_to_product_segment_attribution_to_revenue_to_margin_operating_profit_cash_conversion_to_unattributed_scope",
+        "primary_routes": [
+          "Gold_SQL",
+          "issuer_financial_tables",
+          "Numeric_Parser"
+        ],
+        "conditional_routes": [
+          "segment_product_mix",
+          "pricing",
+          "customer_OEM_readthrough"
+        ],
+        "numeric_obligation": "deterministic_fact_inputs_formula_rounding_period_currency_unit_and_evidence_refs",
+        "graph_role": "locate_value_capture_evidence_not_allocate_revenue_profit_price_or_share"
+      },
+      {
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "legacy_cell_key": "bottleneck_counterevidence",
+        "evidence_role": "thesis_counterevidence",
+        "owner_role": "risk_reviewer",
+        "decision_question": "Which bottlenecks and counterevidence could break or qualify the NVDA thesis, and what exact evidence would change the judgment?",
+        "mandatory_judgment_chain": "strongest_counterevidence_to_impact_mechanism_to_observed_state_to_probability_impact_boundary_to_what_would_change",
+        "primary_routes": [
+          "relationship_and_research_graph",
+          "policy_and_industry_sources",
+          "counter_search"
+        ],
+        "conditional_routes": [
+          "supply_chain_sources",
+          "market_expectation_context",
+          "competition_and_cycle_context"
+        ],
+        "numeric_obligation": "quantify_only_when_exact_inputs_exist_otherwise_typed_probability_or_impact_gap",
+        "graph_role": "risk_path_discovery_not_confirmed_counterevidence_or_causality"
+      }
+    ],
+    "explicit_non_goals": [
+      "ten_to_twenty_active_agent_cells",
+      "DELL_or_MU_case_execution",
+      "qualified_senior_R3",
+      "consensus_valuation_scenario_catalyst_or_investment_alpha_contract",
+      "automatic_new_research_from_why_gap_WWC",
+      "release_candidate_or_production_admission"
+    ]
+  },
+  "asset_disposition": [
+    {
+      "asset": "src/sec_agent/canonical_runtime/planning_service.py:P02_4_FIXED_CELL_SEEDS",
+      "disposition": "retain_and_alias_into_three_release_cells",
+      "boundary": "fixture seed identity is not live S3 execution proof"
+    },
+    {
+      "asset": "apps/workbench/backend/application/local_research_service.py",
+      "disposition": "retain_as_exact_deterministic_three_cell_baseline",
+      "boundary": "does not become Agent Evidence or Judgment authority"
+    },
+    {
+      "asset": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "disposition": "refactor_existing_one_cell_executor_into_three_cell_profile_without_parallel_runtime",
+      "boundary": "preserve S2 consumed identities and exact output history"
+    },
+    {
+      "asset": "configs/releases/fin_ia_0_1_p36_three_cell_deepseek_vertical_contract_v1_1.json",
+      "disposition": "historical_reference_only_not_reusable_S3_admission",
+      "boundary": "historical Case and digests plus prompt-only json_object transport are not current S3 authority"
+    },
+    {
+      "asset": "configs/releases/fin_ia_0_1_vt4_p36_candidate_profile_v1_0.json",
+      "disposition": "retain_as_ten_cell_fixture_reference_only",
+      "boundary": "FIN_0_1 release remains three active Agent cells"
+    },
+    {
+      "asset": "P35_P36_manual_dogfood_and_project_OS_ledgers",
+      "disposition": "consume_as_root_cause_and_fixture_inputs",
+      "boundary": "manual supervisor supplement and registry-only methods are not runtime capability or release proof"
+    }
+  ],
+  "root_cause_entry_constraints": {
+    "deterministic_S3_implementation_allowed": true,
+    "paid_or_broad_three_cell_run_allowed_now": false,
+    "must_address_before_exact_live_readiness": [
+      "RC-P30-001-real-single-case-artifact-proof-pending",
+      "RC-P30-002-memo-quality-insight-density-not-proven",
+      "RC-P33-019-humanmade-gold-set-runtime-depth-gap",
+      "RC-P34-020-writer-payload-lacked-fact-table-surface-and-goldcase-availability-alignment",
+      "RC-P35-021-ai-infra-decision-surface-not-runtime-contract",
+      "RC-P36-022-retrieval-rag-market-ownership-not-decision-cell-driven",
+      "RC-P36-023-foundation-financials-exist-but-business-line-economics-and-numeric-sanity-promotion-gap",
+      "RC-P36-024-graph-assets-not-projected-into-value-capture-decision-surface",
+      "RC-P36-025-fundamental-specialist-input-pack-not-decision-cell-ready",
+      "RC-P36-026-product-industry-selector-not-decision-surface-balanced",
+      "RC-P36-027-market-capital-feedback-not-decision-surface-wired",
+      "RC-P36-028-risk-counterevidence-not-risk-cell-projected",
+      "RC-P36-029-aggregate-judgment-planner-preserves-claims-but-not-decision-surface-adjudication",
+      "RC-P36-030-writer-report-depends-on-supervisor-supplement-not-runtime-decision-surface",
+      "RC-P36-031-verifier-workbench-can-preserve-boundary-but-lacks-decision-cell-review-surface"
+    ],
+    "repair_rule": "fix_earliest_owned_contract_and_prove_deterministically_before_paid_or_broad_run"
+  },
+  "method_to_runtime_boundary": {
+    "documented_or_registry_methods": [
+      "product_to_financial_bridge",
+      "customer_supplier_readthrough",
+      "bounded_leading_signal_promotion",
+      "p32_product_architecture_competitive_bridge",
+      "p32_semis_cycle_value_chain_playbook"
+    ],
+    "S3_completion_requires": [
+      "contract_translated",
+      "fixture_proven",
+      "runtime_injected",
+      "node_level_consumed",
+      "exact_paid_artifact_proven_where_model_behavior_is_claimed",
+      "owner_accepted_for_NVDA_R2"
+    ],
+    "registry_status_alone_is_completion": false
+  },
+  "detailed_task_order": [
+    "S3-T01",
+    "S3-T02",
+    "S3-T03",
+    "S3-T04",
+    "S3-T05",
+    "S3-T06",
+    "S3-T07",
+    "S3-T08",
+    "S3-T09",
+    "S3-T10"
+  ],
+  "entry_observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_business_writes": 0,
+    "new_admissions": 0,
+    "actual_research_runs": 0
+  },
+  "independent_review": {
+    "disposition": "pass_entry_after_scope_reuse_and_blocker_boundaries_frozen",
+    "findings_closed": [
+      "historical_three_cell_DeepSeek_contract_cannot_be_reused_as_current_admission",
+      "manual_dogfood_and_registry_methods_cannot_be_called_runtime_capability",
+      "open_P35_P36_gaps_block_paid_broad_run_but_not_deterministic_root_cause_implementation",
+      "open_P30_P33_P34_legacy_full_chain_blockers_must_be_reconciled_not_assumed_superseded",
+      "Research_to_Alpha_remains_outside_S3_exit"
+    ]
+  },
+  "deterministic_verification": {
+    "focused_S3_entry_latest_backlog_S2_closeout_and_project_os": "18 passed in 0.54s",
+    "expanded_gateway_S2_T01_through_T06_S3_entry_and_project_os": "113 passed in 52.47s",
+    "stable_source_digests": "pass_all_match",
+    "JSON_and_JSONL": "pass"
+  },
+  "stage_acceptance": {
+    "S3_entry": "pass",
+    "S3_T01": "ready_pending_separate_authorization",
+    "S3_execution": "not_started",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T01-THREE-CELL-DECISION-SURFACE-AND-ASSET-OWNER-FREEZE"
+}

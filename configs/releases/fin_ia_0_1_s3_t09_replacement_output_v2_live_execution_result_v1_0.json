@@ -1,0 +1,158 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_replacement_output_v2_live_execution_result_v1_0",
+  "execution_id": "S3-T09-REPLACEMENT-OUTPUT-V2-LIVE-EXECUTION-R1",
+  "executed_at": "2026-07-22T07:10:00+08:00",
+  "status": "terminal_succeeded_artifacts_complete_T09_acceptance_pending_paired_baseline",
+  "authority": {
+    "user_instruction": "授权",
+    "replacement_exact_live_execution_authorized": true,
+    "exact_once_consumption_authorized": true,
+    "automatic_retry_fallback_or_rerun_authorized": false,
+    "source_network_external_tool_or_live_case_head_write_authorized": false,
+    "S3_T10_S4_release_or_production_authorized": false
+  },
+  "source_admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_segmented_output_v2_exact_admission_v1_0.json",
+  "source_issuance_ref": "configs/releases/fin_ia_0_1_s3_t09_replacement_exact_admission_issuance_v1_0.json",
+  "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/live_execution_result.json",
+  "model_run_ref": "reports/model_runs/20260722_fin_ia_0_1_s3_t09_three_cell_deepseek_output_v2_live_validation_r1.md",
+  "preflight": {
+    "project_os_scoped_preflight": "pass_zero_open_full_chain_blockers",
+    "exact_input_and_identity_parity": "pass",
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-segmented-output-v2-exact-admission-r1",
+    "admission_digest": "7871e5e93ff9f4c01db73205726a72ef899beb18ce1fce84da027f2856d1c829",
+    "input_digest": "80822c5ff99e529e3de0aed73f0d3782819e987732473b7f48f6e08d593364fb",
+    "preparation_digest": "28810e89dade1f4285b01508bf664a139d7a4cb5fadb3cd10f02efe1d472b1fe",
+    "transport_retries": 0,
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "provider_health_probe_performed": false,
+    "maximum_semantic_model_calls": 6,
+    "maximum_provider_calls": 6,
+    "maximum_network_calls": 6,
+    "maximum_output_tokens": 10200,
+    "maximum_total_cost_usd": 0.1,
+    "fresh_execution_state_absent_before_consumption": true
+  },
+  "identity": {
+    "work_unit_idempotency_key": "fin01-s3-t09-three-cell-deepseek-segmented-output-v2-live-validation-r1",
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "as_of": "2026-07-21T00:00:00Z",
+    "work_unit_id": "wu_p02_5_02efa4f27511923ba3e6735c",
+    "attempt_id": "attempt_fin01_f4a6445c0fb3813864ee06a9",
+    "research_run_id": "research_run_fin01_c24bc3ce28a3ecfafa6ce7c2"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "succeeded",
+    "attempt_state": "succeeded",
+    "research_run_state": "succeeded",
+    "terminal_reason": "s3_bounded_agent_three_cell_execution_succeeded",
+    "artifact_count": 9,
+    "event_count": 23,
+    "orphaned_run": false
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_node_json_object:v1",
+    "model_calls": 6,
+    "provider_calls": 6,
+    "network_calls": 6,
+    "input_tokens": 14833,
+    "output_tokens": 2850,
+    "total_tokens": 17683,
+    "estimated_cost_usd": 0.00893187,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "rerun_count": 0,
+    "usage_receipts": [
+      {"stage":"domain_specialist:demand_authenticity_and_sustainability","input_tokens":2561,"output_tokens":350,"total_tokens":2911,"finish_reason":"stop","latency_ms":6820,"transport_attempt_count":1,"estimated_cost_usd":0.00141854},
+      {"stage":"domain_specialist:value_and_profit_capture","input_tokens":3956,"output_tokens":591,"total_tokens":4547,"finish_reason":"stop","latency_ms":9437,"transport_attempt_count":1,"estimated_cost_usd":0.00223503},
+      {"stage":"domain_specialist:bottleneck_counterevidence_and_what_would_change","input_tokens":2646,"output_tokens":339,"total_tokens":2985,"finish_reason":"stop","latency_ms":5983,"transport_attempt_count":1,"estimated_cost_usd":0.00144594},
+      {"stage":"research_lead","input_tokens":1702,"output_tokens":717,"total_tokens":2419,"finish_reason":"stop","latency_ms":10686,"transport_attempt_count":1,"estimated_cost_usd":0.00136416},
+      {"stage":"memo_writer","input_tokens":2279,"output_tokens":629,"total_tokens":2908,"finish_reason":"stop","latency_ms":10838,"transport_attempt_count":1,"estimated_cost_usd":0.0015386},
+      {"stage":"verifier","input_tokens":1689,"output_tokens":224,"total_tokens":1913,"finish_reason":"stop","latency_ms":3123,"transport_attempt_count":1,"estimated_cost_usd":0.0009296}
+    ]
+  },
+  "artifact_validation": {
+    "artifact_types": [
+      "agent_fallback_comparison",
+      "bounded_agent_evidence",
+      "bounded_agent_judgment",
+      "bounded_agent_manifest",
+      "bounded_agent_numeric",
+      "bounded_agent_report",
+      "bounded_agent_trace",
+      "bounded_agent_verification",
+      "bounded_agent_workpaper"
+    ],
+    "artifact_refs": {
+      "agent_fallback_comparison": "artifact_fin01_c7b36eafd8fc164a99f1382d:v1",
+      "bounded_agent_evidence": "artifact_fin01_5741720ceef5d6c5f8c2bfc1:v1",
+      "bounded_agent_judgment": "artifact_fin01_2c3449b6cd97941b2039f1bd:v1",
+      "bounded_agent_manifest": "artifact_fin01_dd153404e63f918a86217af2:v1",
+      "bounded_agent_numeric": "artifact_fin01_1c11b553252d6f566f0d578a:v1",
+      "bounded_agent_report": "artifact_fin01_1c8daa819545fc02ad21b7fd:v1",
+      "bounded_agent_trace": "artifact_fin01_7f23326593d73c398f0f922d:v1",
+      "bounded_agent_verification": "artifact_fin01_afb335c6b0506ad74e682b71:v1",
+      "bounded_agent_workpaper": "artifact_fin01_8b4b58e0532a51af3f8a781c:v1"
+    },
+    "node_receipt_count": 6,
+    "specialist_model_view_bindings": [
+      {"program_cell_id":"demand_authenticity_and_sustainability","model_view_contract_ref":"fin01.s3.specialist_model_view:v1","model_view_digest":"8b29865d56f74a7cce911eab8184199b5def928b0907d709875a621138e4fa91"},
+      {"program_cell_id":"value_and_profit_capture","model_view_contract_ref":"fin01.s3.specialist_model_view:v1","model_view_digest":"59a66a333cc387776929917e6ed1c0cfa99748113be1ff0d80022e1808c5cf3f"},
+      {"program_cell_id":"bottleneck_counterevidence_and_what_would_change","model_view_contract_ref":"fin01.s3.specialist_model_view:v1","model_view_digest":"40f95496c1acba8c95c6dc0ed350ce44576d7092d669a7750f682ffd7e0d1fb9"}
+    ],
+    "specialist_terminal_classes": {
+      "demand_authenticity_and_sustainability": "typed_cannot_infer",
+      "value_and_profit_capture": "value_capture_unattributed",
+      "bottleneck_counterevidence_and_what_would_change": "typed_gap_source_followup_required"
+    },
+    "agent_fact_row_count": 0,
+    "agent_numeric_fact_row_count": 1,
+    "live_evidence_head_promoted": false,
+    "report_section_count": 3,
+    "writer_source_calls": 0,
+    "writer_tool_calls": 0,
+    "machine_verifier_decision": "accept_for_internal_review",
+    "machine_verifier_findings": {
+      "deterministic_integrity": "pass",
+      "semantic_fidelity": "pass",
+      "financial_coherence": "pass",
+      "visual_delivery": "pass"
+    },
+    "machine_verifier_is_human_acceptance": false
+  },
+  "comparison_and_acceptance": {
+    "comparison_status": "pending_distinct_terminal_deterministic_run",
+    "automatic_fallback_performed": false,
+    "baseline_output_body_exposed_to_agent": false,
+    "owner_review_status": "not_performed",
+    "live_execution_gate": "pass",
+    "T09_acceptance": "pending_paired_baseline_and_read_only_artifact_acceptance",
+    "T10_unblocked": false
+  },
+  "research_quality_observation": {
+    "bounded_fact_gap_and_WWC_discipline": "pass_candidate",
+    "new_external_evidence_or_source": false,
+    "new_financial_metric_beyond_frozen_numeric_pack": false,
+    "investment_alpha_proven": false,
+    "summary": "The model completed all three cells and preserved typed gaps and numeric boundaries. It produced an internally reviewable workpaper/report, but no live Evidence promotion, new source, new metric or Alpha; paired-baseline and owner review remain required."
+  },
+  "boundary_observation": {
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_case_head_writes": 0,
+    "raw_provider_response_persisted": false,
+    "private_chain_of_thought_persisted": false,
+    "credential_value_persisted": false
+  },
+  "deterministic_verification": {
+    "runner_shared_store_target_and_nonreuse_fixture": "4 passed",
+    "post_run_contracts": "44 passed",
+    "project_os_scoped_preflight": "pass_zero_open_full_chain_blockers",
+    "json_and_jsonl_validation": "pass",
+    "secret_and_git_diff_check": "pass_zero_secret_hits_and_diff_check_clean"
+  },
+  "next_action": "S3-T09-REPLACEMENT-LIVE-ARTIFACT-READ-ONLY-VALIDATION-AND-PAIRED-BASELINE-DECISION"
+}

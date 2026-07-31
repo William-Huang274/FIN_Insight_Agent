@@ -1,0 +1,147 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_fresh_agent_proof_decision_v1_0",
+  "decision_id": "S3-T09-OWNER-GRADE-V3-FRESH-AGENT-PROOF-DECISION-R1",
+  "decided_on": "2026-07-22",
+  "status": "pass_fresh_v3_exact_proof_contract_decided_admission_issuance_pending_separate_authority",
+  "authority": {
+    "user_instruction": "授权",
+    "fresh_v3_agent_proof_decision_authorized": true,
+    "admission_issuance_authorized": false,
+    "model_provider_network_execution_authorized": false,
+    "source_network_external_tool_or_live_case_write_authorized": false,
+    "paired_comparison_authorized": false,
+    "human_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_binding": {
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "baseline_result_ref": "configs/releases/fin_ia_0_1_s3_t09_paired_deterministic_baseline_materialization_v1_0.json",
+    "owner_grade_repair_result_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_semantic_actionability_zero_call_repair_v1_0.json",
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "analysis_as_of": "2026-07-21T00:00:00Z",
+    "decision_surface_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "input_head_digest": "c9867b54b86cf17982b4cebfaf0c0ebcae2a6f46d894ff82dbb643f693c9836d",
+    "program_cell_ids": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ]
+  },
+  "fresh_identity": {
+    "execution_identity": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-live-validation-r1",
+    "execution_profile_version_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+    "work_unit_id": "wu_p02_5_7c9d8f72c8ceed8cb8e77d58",
+    "attempt_id": "attempt_fin01_ac510b41a2d9d4a955960179",
+    "research_run_id": "research_run_fin01_b939a453b921cb5bcf3c2edf",
+    "input_digest": "dba3d25144edfd0f7411d638b964deba8bab70406fb33b3bfca7c16be6bcf06e",
+    "preparation_digest": "fa95fcbfb777273634141e58769adaa351073d700190bfd7c6f5bc857855815f",
+    "double_prepared_payload_digest": "8611c46e76eb5dd060197fda7246c58ace50f7db09a5bd9f031087030c2a61bc"
+  },
+  "freshness_and_nonreuse": {
+    "work_unit_attempt_and_run_absent": true,
+    "distinct_from_prior_failed_agent_run": "research_run_fin01_a77b165e85be8757e5855a69",
+    "distinct_from_prior_output_v2_succeeded_agent_run": "research_run_fin01_c24bc3ce28a3ecfafa6ce7c2",
+    "distinct_from_exact_deterministic_baseline_run": "research_run_fin01_fac094aac24174903915016b",
+    "consumed_identity_reuse_allowed": false,
+    "automatic_retry_repair_fallback_or_rerun_allowed": false,
+    "baseline_output_body_exposed_to_agent": false,
+    "baseline_body_or_artifact_is_provider_input": false
+  },
+  "prospective_admission": {
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-exact-admission-r1",
+    "admission_digest": "5f8db7ff2eef2b8ea06c8c95b21c32dec57432b34888a9cf6c5990af3d4b4459",
+    "prospective_admission_file": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_exact_admission_v1_0.json",
+    "execution_enabled": true,
+    "execution_mode": "exact_live_three_cell_deepseek_owner_grade_v3_r1",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_node_json_object:v1",
+    "reasoning_effort": "none",
+    "admission_issued": false,
+    "admission_consumed": false,
+    "execution_started": false
+  },
+  "provider_route_review": {
+    "decision": "retain_deepseek_to_isolate_output_v3_contract_effect",
+    "rationale": "The same provider and six-node route already completed output v2, so keeping it constant isolates whether the local output-v3 repair generalizes. Switching providers would confound contract and provider effects.",
+    "server_side_strict_json_schema_claimed": false,
+    "provider_transport_guarantee_used": "json_object_only",
+    "strict_contract_owner": "local_output_v3_schema_candidate_evidence_numeric_semantic_and_false_green_validators",
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "provider_health_probe_performed": false,
+    "known_risk": "DeepSeek may still return a JSON object that violates the closed v3 contract; local validation must terminalize the first failing node without repair or continuation."
+  },
+  "budget_and_stop_contract": {
+    "maximum_semantic_model_calls": 6,
+    "maximum_provider_calls": 6,
+    "maximum_network_calls": 6,
+    "specialist_max_output_tokens_each": 2200,
+    "lead_max_output_tokens": 1200,
+    "writer_max_output_tokens": 1400,
+    "verifier_max_output_tokens": 1000,
+    "aggregate_max_output_tokens": 10200,
+    "maximum_total_cost_usd": 0.1,
+    "max_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "automatic_repair_fallback_or_rerun": false,
+    "first_parse_schema_semantic_or_length_failure": "terminal_fail_closed_stop",
+    "execution_environment_precondition": "LLM_GATEWAY_TRANSPORT_RETRIES=0",
+    "current_environment_precondition_satisfied": false
+  },
+  "preflight_verification": {
+    "script_ref": "scripts/releases/prepare_fin_ia_0_1_s3_t09_owner_grade_v3_fresh_agent_proof_decision.py",
+    "project_os_scoped_preflight": "pass_zero_open_full_chain_blockers_for_decision_scope",
+    "disposable_clone_double_prepare_equal": true,
+    "clone_execution_counts_unchanged": true,
+    "prospective_admission_schema_and_factory_construction": "pass_provider_callback_not_invoked",
+    "canonical_database_sha256": "46ba35b8dd1b65fb3980470ebeed00dc38c9e17f1576876291c2659bb94edc9f",
+    "canonical_object_tree_sha256": "00ac740b53c91c032b221453cf9269c5748a7fbcf5802bbc239a8e34ae21ea75",
+    "target_logical_database_and_object_state_unchanged": true
+  },
+  "comparison_boundary": {
+    "fresh_agent_artifact_embedded_comparison_state": "pending_distinct_terminal_deterministic_run",
+    "reason": "The Agent input deliberately does not receive the baseline body or identity. A later read-only comparison must independently bind the terminal fresh Agent Run to the already materialized deterministic Run.",
+    "paired_comparison_performed": false,
+    "owner_acceptance_performed": false
+  },
+  "observed_counts": {
+    "admissions_issued": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "target_canonical_writes": 0,
+    "target_object_writes": 0,
+    "agent_runs_created": 0,
+    "paired_comparisons": 0,
+    "human_review_writes": 0
+  },
+  "regression_verification": {
+    "focused_decision_and_direct_dependency_tests": "25 passed",
+    "remaining_S3_T09_contract_tests": "50 passed plus 6 corrected current-backlog assertions rerun passed",
+    "effective_S3_T09_contract_coverage": "81 passed",
+    "python_compile": "pass",
+    "json_and_jsonl_parse": "pass",
+    "git_diff_check": "pass",
+    "new_or_untracked_plaintext_key_pattern_hits": 0
+  },
+  "stage_decision": {
+    "RC_P36_037": "fresh_v3_exact_proof_contract_decided_admission_issuance_pending_separate_authority",
+    "fresh_v3_proof_decision": "pass",
+    "admission_issuance": "not_authorized",
+    "fresh_v3_live_execution": "not_authorized",
+    "paired_comparison": "not_authorized",
+    "S3_T09": "blocked_pending_fresh_v3_execution_artifact_validation_paired_comparison_and_owner_acceptance",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4_release_or_production": "not_authorized"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-FRESH-EXACT-ADMISSION-ISSUANCE"
+}

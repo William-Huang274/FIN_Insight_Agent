@@ -1,0 +1,103 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_research_lead_closed_output_local_head_assembly_and_bounded_headroom_zero_call_implementation_v1_0",
+  "implementation_id": "S3-T09-OWNER-GRADE-V3-RESEARCH-LEAD-CLOSED-OUTPUT-LOCAL-HEAD-ASSEMBLY-AND-BOUNDED-HEADROOM-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-23T10:56:13+08:00",
+  "status": "pass_zero_call_research_lead_v2_closed_output_local_heads_bounded_capacity_and_safe_telemetry_fixture_proven",
+  "authority": {
+    "user_instruction": "继续",
+    "zero_call_code_contract_fixture_and_ledger_changes_authorized": true,
+    "new_admission_issuance_authorized": false,
+    "model_provider_network_or_live_execution_authorized": false,
+    "comparison_human_review_T10_S4_release_or_production_authorized": false
+  },
+  "implementation": {
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v2",
+    "specialist_transport_ref_unchanged": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v5",
+    "canonical_output_contract_ref_unchanged": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "provider_output_members": [
+      "cross_cell_dependencies",
+      "conflict_adjudications",
+      "variant_view",
+      "remaining_gaps"
+    ],
+    "provider_emits_cell_heads": false,
+    "local_runtime_derives_exact_three_cell_heads": true,
+    "full_validated_specialist_semantic_bodies_retained": true,
+    "duplicate_specialist_digest_map_removed_from_provider_input": true,
+    "provider_visible_cardinality": {
+      "cross_cell_dependencies": [1, 3],
+      "conflict_adjudications": [0, 3],
+      "remaining_gaps": [1, 4],
+      "variant_view": "exactly_one_object"
+    },
+    "maximum_unicode_characters_per_narrative_field": 320,
+    "maximum_provider_segment_serialized_utf8_bytes": 6000,
+    "maximum_locally_assembled_lead_utf8_bytes": 8192,
+    "lead_max_output_tokens": 1800,
+    "aggregate_max_output_tokens": 16800,
+    "max_total_cost_usd": 0.1,
+    "retry_fallback_rerun_budget": [0, 0, 0],
+    "historical_default_lead_tokens": 1200,
+    "historical_admission_digest_compatibility_preserved": true
+  },
+  "failure_contract": {
+    "telemetry_family": "research_lead_contract",
+    "validator_contract": "closed_research_lead_output:v2",
+    "closed_families": [
+      "parse",
+      "shape",
+      "cardinality",
+      "text",
+      "authority",
+      "capacity",
+      "assembly"
+    ],
+    "raw_text_ref_digest_item_index_arbitrary_keys_or_private_reasoning_persisted": false,
+    "canonical_safe_telemetry_acceptance_fixture_passed": true,
+    "canonical_unsafe_raw_text_rejection_fixture_passed": true
+  },
+  "deterministic_proof": {
+    "full_chain_fake_provider_positive_fixture": "pass_12_calls_6_logical_nodes_9_artifacts",
+    "provider_output_contains_cell_heads": false,
+    "assembled_output_contains_exact_three_local_heads": true,
+    "minimum_cardinality_fixture": "pass_under_6000_and_8192_byte_envelopes",
+    "maximum_cardinality_fixture": "pass_under_6000_and_8192_byte_envelopes",
+    "negative_contract_families_covered": [
+      "shape",
+      "cardinality",
+      "text",
+      "authority",
+      "parse",
+      "capacity"
+    ],
+    "length_stop_and_provider_byte_overflow_fail_closed": true,
+    "historical_specialist_transport_v5_regression_passed": true,
+    "tests": {
+      "research_lead_v2_and_transport_v5": "28 passed",
+      "canonical_runtime_failure_path": "18 passed",
+      "total": "46 passed"
+    },
+    "python_compile": "pass"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "new_admissions": 0,
+    "new_live_WorkUnits": 0,
+    "new_live_Attempts": 0,
+    "new_live_ResearchRuns": 0,
+    "new_live_Artifacts": 0,
+    "comparisons": 0,
+    "human_reviews": 0
+  },
+  "stage_decision": {
+    "RC_P36_040": "zero_call_repair_fixture_proven_fresh_agent_proof_decision_pending_separate_authority",
+    "RC_P36_037": "still_open_no_fresh_complete_owner_grade_artifact_proof",
+    "S3_T09": "blocked_pending_separately_governed_fresh_agent_proof",
+    "S3_T10": "blocked_by_S3_T09",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-RESEARCH-LEAD-V2-FRESH-AGENT-PROOF-DECISION"
+}

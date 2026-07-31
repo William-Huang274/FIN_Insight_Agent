@@ -1,0 +1,176 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t05_bounded_graph_decision_cell_pack_v1_0",
+  "release_id": "REL-PROD-001",
+  "slice_id": "S3",
+  "task_id": "S3-T05",
+  "status": "pass_after_independent_review_T06_ready_pending_separate_authorization",
+  "occurred_at": "2026-07-21T18:20:00+08:00",
+  "authority": {
+    "S3_T05_zero_call_deterministic_fixture_authorized": true,
+    "existing_local_read_only_preview_consumption_authorized": true,
+    "additional_graph_read_authorized": false,
+    "S3_T06_execution_authorized": false,
+    "model_execution_authorized": false,
+    "provider_execution_authorized": false,
+    "source_network_authorized": false,
+    "external_tool_execution_authorized": false,
+    "Evidence_promotion_authorized": false,
+    "business_mutation_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "dependencies": {
+    "runtime_plan_ref": "configs/releases/fin_ia_0_1_s3_t02_runtime_plan_branch_lineage_role_context_v1_0.json",
+    "evidence_route_plan_ref": "configs/releases/fin_ia_0_1_s3_t03_evidence_route_promotion_sourcehunter_v1_0.json",
+    "financial_pack_ref": "configs/releases/fin_ia_0_1_s3_t04_financial_numeric_fundamental_pack_v1_0.json",
+    "dependency_repair": "T05 consumes T03 and T04 artifacts in addition to the originally frozen T01/T02 dependencies, so the active backlog now names all four prerequisites"
+  },
+  "implementation": {
+    "graph_owner": "src/sec_agent/research_graph_store.py",
+    "product_industry_owner": "src/sec_agent/product_intelligence_graph.py",
+    "market_and_risk_method_owner": "src/sec_agent/research_skills.py",
+    "runtime_owner": "apps/workbench/backend/application/research_runtime.py",
+    "canonical_artifact_surface": "deterministic_research_result.s3_bounded_graph_product_market_risk_pack_and_consumption_receipts",
+    "decision_cell_projection_count": 3,
+    "graph_edge_projection_count": 3,
+    "product_industry_projection_input_count": 3,
+    "market_price_in_typed_gap_count": 3,
+    "risk_context_count": 3,
+    "edge_admissibility_probe_count": 4,
+    "existing_local_research_graph_read_count": 1,
+    "additional_graph_read_count": 0,
+    "accepted_graph_Evidence_ref_count": 0,
+    "graph_allocated_financial_number_count": 0,
+    "current_specialist_model_consumption_count": 0
+  },
+  "cell_projection": [
+    {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "use_case": "deployment_and_customer_context_to_demand_durability_check",
+      "edge_type": "OFFICIAL_DISCLOSURE_TO_DEMAND_DURABILITY_CHECK",
+      "authority": "candidate_metadata_context_only",
+      "market_status": "typed_gap_no_same_as_of_consensus_or_price_reaction",
+      "risk_status": "probability_and_financial_impact_typed_cannot_infer",
+      "boundary": "customer or deployment context cannot become durable demand or NVDA revenue fact"
+    },
+    {
+      "program_cell_id": "value_and_profit_capture",
+      "use_case": "product_attribution_bridge_to_company_total_profitability",
+      "edge_type": "PRODUCT_ATTRIBUTION_BRIDGE_REQUIRED",
+      "authority": "exact_financial_input_graph_bridge_hypothesis_only",
+      "market_status": "typed_gap_no_same_as_of_valuation_or_expectation_baseline",
+      "risk_status": "probability_and_financial_impact_typed_cannot_infer",
+      "boundary": "Graph cannot allocate T04 company-total margin to accelerator segment incremental AI profit or cross-chain economics"
+    },
+    {
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "use_case": "packaging_dependency_to_counterevidence_followup",
+      "edge_type": "PACKAGING_DEPENDENCY_NAVIGATION_HYPOTHESIS",
+      "authority": "navigation_hypothesis_only",
+      "market_status": "typed_gap_no_same_as_of_crowding_ownership_or_volatility",
+      "risk_status": "probability_and_financial_impact_typed_cannot_infer",
+      "boundary": "relationship path requires an underlying issuer or official-policy source before any Evidence classification"
+    }
+  ],
+  "edge_admissibility": {
+    "naked": "graph_edge_missing_source_ref",
+    "stale": "graph_edge_stale_as_of",
+    "inferred": "graph_edge_inferred_hypothesis",
+    "conflicting": "graph_edge_conflicting_sources",
+    "all_accepted_as_Evidence": false
+  },
+  "method_to_runtime": {
+    "method_ids": [
+      "product_to_financial_bridge",
+      "customer_supplier_readthrough",
+      "p32_product_architecture_competitive_bridge",
+      "p32_semis_cycle_value_chain_playbook"
+    ],
+    "contract_translated": true,
+    "fixture_proven": true,
+    "runtime_injected": true,
+    "node_level_consumed": true,
+    "paid_artifact_proven": false,
+    "dogfood_accepted": false,
+    "full_methods_claimed_active": false,
+    "boundary": "T05 consumes content-addressed role and method contracts only as bounded Graph projection inputs; T06 model behavior and T09/T10 quality remain unproven"
+  },
+  "root_cause_reconciliation": [
+    {
+      "issue_id": "RC-P36-024-graph-assets-not-projected-into-value-capture-decision-surface",
+      "runtime_projection_layer_proven": true,
+      "full_issue_closed": false,
+      "remaining": "live graph source sufficiency and downstream Specialist judgment"
+    },
+    {
+      "issue_id": "RC-P36-026-product-industry-selector-not-decision-surface-balanced",
+      "runtime_projection_layer_proven": true,
+      "full_issue_closed": false,
+      "remaining": "real ProductIntelligenceGraph row quality and paid Specialist output"
+    },
+    {
+      "issue_id": "RC-P36-027-market-capital-feedback-not-decision-surface-wired",
+      "runtime_projection_layer_proven": true,
+      "full_issue_closed": false,
+      "remaining": "same-as-of market valuation ownership and price-in sources remain typed gaps"
+    },
+    {
+      "issue_id": "RC-P36-028-risk-counterevidence-not-risk-cell-projected",
+      "runtime_projection_layer_proven": true,
+      "full_issue_closed": false,
+      "remaining": "risk probability financial impact and T06 judgment remain typed cannot-infer"
+    },
+    {
+      "issue_id": "RC-P35-021-ai-infra-decision-surface-not-runtime-contract",
+      "graph_subscope_runtime_consumed": true,
+      "full_issue_closed": false,
+      "remaining": "T06 Specialist/Lead adjudication and T07 delivery consumption"
+    }
+  ],
+  "independent_review": {
+    "disposition": "pass_after_dependency_lineage_nested_digest_and_legacy_spy_repairs",
+    "checks": [
+      "T05 reuses the existing local preview graph read and creates no second Graph runtime or read",
+      "T03 route and T04 financial identities are cross-checked before projection",
+      "each Cell has exactly one typed use case and explicit source authority as-of boundary and followup refs",
+      "naked stale inferred and conflicting graph rows fail Evidence admission",
+      "company-total Numeric inputs remain separate and Graph allocates zero financial values",
+      "all market price-in rows are typed gaps rather than fabricated market facts",
+      "risk rows persist mechanism boundary WWC and typed cannot-infer probability and financial impact",
+      "method contracts grant no model network tool write or Evidence authority",
+      "S1 deterministic preview spy was upgraded to the current complete preview contract instead of weakening T05"
+    ],
+    "root_causes_closed_by_T05": 0
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_writes": 0,
+    "runtime_Evidence_promotions": 0,
+    "graph_edges_promoted_to_Evidence": 0,
+    "graph_allocated_financial_numbers": 0,
+    "new_admissions": 0,
+    "paid_runs": 0
+  },
+  "verification": {
+    "functional_without_machine_contract": "5 passed in 28.48s",
+    "S1_compatibility_and_T05_functional": "8 passed in 31.27s",
+    "focused": "49 passed in 84.04s",
+    "expanded_regression": "177 passed in 181.45s",
+    "final_contract_Project_OS_and_stable_digest": "12 passed in 31.15s",
+    "JSON_and_JSONL": "pass",
+    "secret_scan": "pass_no_match",
+    "git_diff_check": "pass"
+  },
+  "stage_acceptance": {
+    "S3_T05": "pass",
+    "S3_T06": "ready_pending_separate_authorization",
+    "S3_T07_through_T10": "blocked_by_dependencies",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T06-SPECIALIST-LEAD-CROSS-CELL-SYNTHESIS-CONTEXT-AND-TARGETED-REPAIR"
+}

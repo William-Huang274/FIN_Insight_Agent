@@ -1,0 +1,168 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v4_fresh_live_execution_result_v1_0",
+  "execution_id": "S3-T09-OWNER-GRADE-V3-SEGMENTED-TRANSPORT-V4-FRESH-EXACT-LIVE-EXECUTION-R1",
+  "executed_at": "2026-07-23T01:15:23+08:00",
+  "status": "terminal_failed_admission_consumed_no_retry",
+  "authority": {
+    "user_instruction": "授权，你一直做把v4真实调用也一起做完",
+    "fresh_transport_v4_decision_issuance_preflight_and_exact_once_execution_authorized": true,
+    "automatic_retry_fallback_repair_or_rerun_authorized": false,
+    "post_failure_contract_patch_or_v5_execution_authorized": false,
+    "paired_comparison_owner_acceptance_T10_S4_release_or_production_authorized": false
+  },
+  "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v4_fresh_agent_proof_decision_v1_0.json",
+  "source_admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_segmented_transport_v4_exact_admission_v1_0.json",
+  "source_issuance_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v4_fresh_exact_admission_issuance_v1_0.json",
+  "runtime_preflight_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/transport_v4_r1_live_execution_preflight.json",
+  "runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/transport_v4_r1_live_execution_result.json",
+  "runtime_result_sha256": "39689eb3e5b4790375c887ed3b25d81095abb7e2d711b9778c20f915692e82bb",
+  "runtime_inspection_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/transport_v4_r1_live_execution_terminal_inspection.json",
+  "runtime_inspection_sha256": "119e20ca5a474b3b6e4d50ca7d33b10db2166342070a5edf840da854af3b1dce",
+  "model_run_ref": "reports/model_runs/20260723_fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_segmented_transport_v4_live_validation_r1.md",
+  "preflight": {
+    "project_os_scoped_preflight": "pass_zero_open_full_chain_blockers",
+    "exact_zero_call_execution_preflight": "pass",
+    "admission_digest": "e85202b8adfa28274c7c90a78eb2a7c2c95518b74aeef83b657fe475fc332b62",
+    "input_digest": "c25ecb0d92343be1e7ed07676c72b00ac4e2a92c1afb0c6450729c7635c3dc85",
+    "preparation_digest": "51ba6967f043df47d076f786989707b78811318ca2fd2b091a6f8ed86ec7e442",
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "transport_retries": 0,
+    "maximum_semantic_provider_network_calls": [12, 12, 12],
+    "maximum_output_tokens": 16200,
+    "maximum_total_cost_usd": 0.1,
+    "fresh_target_identity_absent_before_consumption": true,
+    "execution_state_counts_before_and_after": [7, 7, 7, 13],
+    "preflight_observed_model_provider_network_calls": [0, 0, 0]
+  },
+  "identity": {
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-segmented-transport-v4-exact-admission-r1",
+    "work_unit_idempotency_key": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-segmented-transport-v4-live-validation-r1",
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "as_of": "2026-07-21T00:00:00Z",
+    "work_unit_id": "wu_p02_5_1f79a5619b9c67327f90ab4f",
+    "attempt_id": "attempt_fin01_a8cd885b1ae7a2338453d622",
+    "research_run_id": "research_run_fin01_0e2b6e9698ebbf61288708a9"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:domain_specialist:demand_authenticity_and_sustainability",
+    "failure_code": "s3_bounded_segmented_specialist_assembly_invalid:demand_authenticity_and_sustainability:s3_bounded_specialist_output_byte_budget_exceeded:demand_authenticity_and_sustainability",
+    "artifact_count": 0,
+    "event_count": 7,
+    "orphaned_run": false
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v4",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "completed_provider_stages": [
+      "domain_specialist:demand_authenticity_and_sustainability:facts_explanation_and_terminal",
+      "domain_specialist:demand_authenticity_and_sustainability:owner_grade_claim_cards",
+      "domain_specialist:demand_authenticity_and_sustainability:actionable_what_would_change_tasks"
+    ],
+    "finish_reasons": ["stop", "stop", "stop"],
+    "model_calls": 3,
+    "provider_calls": 3,
+    "network_calls": 3,
+    "transport_attempt_count": 3,
+    "input_tokens": 9881,
+    "output_tokens": 1665,
+    "total_tokens": 11546,
+    "provider_receipt_latency_total_ms": 19981,
+    "estimated_cost_usd": 0.00552593,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "rerun_count": 0
+  },
+  "provider_output_capture": {
+    "capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+    "capture_count": 3,
+    "restricted_readback_count": 3,
+    "assistant_output_present_count": 3,
+    "capture_sequences": [1, 2, 3],
+    "object_digests": [
+      "4bf51db4f0d35d0233fa7919dfbd5bf059b99f7b9c1bd0eabfd1413453ebad8b",
+      "6482538efa4285ff771706131ee6a8c4798096b7bbbc3aaae0dfcf6a30929288",
+      "6b6fe21c21d0e840ed1d55bec0443d0f9ec6049e74bffec48f3e0ee456eba643"
+    ],
+    "assistant_output_text_in_runtime_or_release_result": false,
+    "raw_provider_HTTP_envelope_persisted": false,
+    "private_reasoning_persisted": false,
+    "replay_path": "RuntimeFacade.read_research_run_provider_output_captures(research_run_fin01_0e2b6e9698ebbf61288708a9)"
+  },
+  "zero_call_replay_diagnosis": {
+    "exact_raw_assistant_outputs_replayed_through_restricted_facade": true,
+    "segments": [
+      {
+        "segment_id": "facts_explanation_and_terminal",
+        "canonical_json_utf8_bytes": 1166,
+        "provider_text_utf8_bytes": 1228,
+        "segment_contract_passed": true
+      },
+      {
+        "segment_id": "owner_grade_claim_cards",
+        "canonical_json_utf8_bytes": 1519,
+        "provider_text_utf8_bytes": 1785,
+        "segment_contract_passed": true
+      },
+      {
+        "segment_id": "actionable_what_would_change_tasks",
+        "canonical_json_utf8_bytes": 3445,
+        "provider_text_utf8_bytes": 4084,
+        "segment_contract_passed": true
+      }
+    ],
+    "assembled_canonical_json_utf8_bytes": 6010,
+    "specialist_assembled_output_budget_bytes": 6000,
+    "over_budget_bytes": 10,
+    "provider_HTTP_failure": false,
+    "provider_JSON_syntax_failure": false,
+    "segment_shape_or_cell_binding_failure": false,
+    "transport_v4_epistemic_status_state_machine_failure": false,
+    "project_owned_segment_to_assembly_budget_mismatch": true,
+    "root_cause_decision_or_repair_performed": false
+  },
+  "boundary_observation": {
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_case_head_writes": 0,
+    "raw_provider_response_persisted": false,
+    "assistant_final_output_text_persisted_restricted": true,
+    "assistant_final_output_text_persisted_count": 3,
+    "private_chain_of_thought_persisted": false,
+    "credential_value_persisted": false,
+    "post_terminal_inspect_additional_model_provider_network_calls": [0, 0, 0],
+    "gateway_event_lines_before_and_after_execution": [38, 44],
+    "canonical_counts_after": [8, 8, 8, 13],
+    "canonical_database_sha256_after_terminal_inspection": "5b3c44269e5912491da335888b989c896d6683f8892c18229413920070b1093c",
+    "canonical_object_tree_sha256_after": "cec2324ac32247dc9fe2bb17773bd2fd2dcf1bd50906106302de449726de7d88"
+  },
+  "deterministic_verification": {
+    "v4_decision_issuance_execution_result_and_capture_contracts": "20 passed",
+    "affected_historical_and_current_S3_T09_contracts_excluding_expensive_live_runner": "215 passed, 823 deselected",
+    "python_compile": "pass",
+    "configs_JSON_parse": "pass_zero_errors",
+    "project_os_JSONL_parse": "pass_zero_errors",
+    "project_os_repository_hygiene_preflight": "pass_zero_open_blockers",
+    "git_diff_check": "pass",
+    "plaintext_key_pattern_hits_in_new_v4_tracked_artifacts": 0
+  },
+  "acceptance": {
+    "exact_execution_terminal_truth_and_raw_answer_capture": "pass",
+    "fresh_transport_v4_agent_artifact_proof": "fail_no_artifacts",
+    "owner_grade_research_product_proof": "fail_no_deliverable",
+    "paired_comparison": "not_performed_not_authorized",
+    "owner_acceptance": "not_performed_not_authorized",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-SEGMENTED-TRANSPORT-V4-ASSEMBLY-BYTE-BUDGET-RESULT-AND-ROOT-CAUSE-DECISION"
+}

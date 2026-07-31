@@ -1,0 +1,110 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_specialist_v6_fresh_exact_admission_issuance_v1_0",
+  "issuance_id": "S3-T09-OWNER-GRADE-V3-SPECIALIST-V6-FRESH-EXACT-ADMISSION-ISSUANCE-R1",
+  "issued_at": "2026-07-23T15:53:04+08:00",
+  "status": "issued_unconsumed_zero_call_preflight_pass",
+  "authority": {
+    "user_instruction": "继续修复，然后跑完真实调用看看效果",
+    "zero_call_repair_and_preflight_authorized": true,
+    "fresh_exact_admission_issuance_authorized": true,
+    "exact_once_model_provider_network_execution_authorized": true,
+    "automatic_retry_fallback_repair_or_rerun_authorized": false,
+    "paired_comparison_human_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_specialist_v6_fresh_exact_proof_decision_v1_0.json",
+  "scope_ownership_contract": {
+    "canonical_token_normalization_allowed": false,
+    "full_fake_provider_artifact_count": 9,
+    "locally_assembled_scope_fields": [
+      "entity_ref",
+      "business_scope_kind",
+      "business_scope_ref",
+      "period",
+      "attribution_level"
+    ],
+    "provider_emitted_scope_fields": [
+      "metric_or_mechanism"
+    ],
+    "strict_scope_authority_validator_preserved": true
+  },
+  "issued_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_specialist_v6_research_lead_v3_writer_v2_exact_admission_v1_0.json",
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-specialist-v6-research-lead-v3-writer-v2-exact-admission-r1",
+    "admission_digest": "1bcd6174896646b3d6ef220bffab29ba3e1039a333705daae981a28893ba6dcd",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s3-t09-three-cell-deepseek-owner-grade-v3-specialist-v6-research-lead-v3-writer-v2-live-validation-r1",
+    "fresh_identity": true,
+    "execution_enabled": true,
+    "consumed": false,
+    "execution_started": false
+  },
+  "exact_binding": {
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "as_of": "2026-07-21T00:00:00Z",
+    "input_head_digest": "c9867b54b86cf17982b4cebfaf0c0ebcae2a6f46d894ff82dbb643f693c9836d",
+    "input_digest": "6f1ffec035ec89dc4a5b7fddef0f3a147f4d70042c63cf8875e6dc9d4b7be6d9",
+    "preparation_digest": "7cf049f498ac9bf552feba8ed739498d9e44347031fd689165407728ec83ecb7",
+    "predicted_work_unit_id": "wu_p02_5_810ed409df27c6bb3a1b372e",
+    "predicted_attempt_id": "attempt_fin01_d0815e4b459dc8d9d264e323",
+    "predicted_research_run_id": "research_run_fin01_4f66728b8bd8b8c502a24b07",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v6",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v3",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v2",
+    "provider_output_capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+    "reasoning_effort": "none",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3"
+  },
+  "execution_envelope": {
+    "maximum_semantic_model_calls": 12,
+    "maximum_provider_calls": 12,
+    "maximum_network_calls": 12,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "maximum_output_tokens_total": 16800,
+    "maximum_total_cost_usd": 0.1,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "automatic_retry_repair_fallback_or_rerun_allowed": false,
+    "first_credible_failure": "terminal_fail_closed_stop"
+  },
+  "zero_call_preflight": {
+    "focused_scope_and_shared_runtime_tests": "pass_76",
+    "double_prepare_equal": true,
+    "fresh_predicted_work_unit_attempt_run_absent": true,
+    "old_admission_or_run_reused": false,
+    "target_execution_counts": [
+      12,
+      12,
+      12,
+      13
+    ],
+    "canonical_database_sha256": "0ccbedf4aa5d8dff6cf291d3aabfd2fa9390b6c8a118cc20a8da7e09a07316a2",
+    "canonical_object_tree_sha256": "19ecb9a878ff42b7035a025f5810983a56748ced29e874515d400be8920749da",
+    "provider_callback_invoked": false,
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "transport_retry_environment_zero": true
+  },
+  "observed_counts": {
+    "new_admissions": 1,
+    "admission_consumptions": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "artifacts_created": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0
+  },
+  "next_action": "S3-T09-OWNER-GRADE-SPECIALIST-V6-FRESH-EXACT-LIVE-EXECUTION"
+}

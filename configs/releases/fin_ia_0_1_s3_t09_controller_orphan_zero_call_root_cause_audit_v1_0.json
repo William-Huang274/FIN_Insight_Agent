@@ -1,0 +1,137 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_controller_orphan_zero_call_root_cause_audit_v1_0",
+  "status": "pass_zero_call_dual_failure_root_cause_reconstructed",
+  "identity": {
+    "work_unit_id": "wu_p02_5_2bbd547a60d876d3c676aafc",
+    "attempt_id": "attempt_fin01_29a1eb04e4ea04e0c574ee76",
+    "research_run_id": "research_run_fin01_f136c2d298568856bde6512e"
+  },
+  "restricted_capture_audit": {
+    "capture_count": 12,
+    "verifier_capture_count": 1,
+    "raw_assistant_output_persisted_in_audit_result": false,
+    "private_reasoning_persisted_in_audit_result": false
+  },
+  "verifier_safe_structure": {
+    "native_json_object": true,
+    "top_level_keys": [
+      "bound_lead_digest",
+      "bound_writer_digest",
+      "decision",
+      "findings"
+    ],
+    "finding_count": 4,
+    "layers": [
+      "deterministic_integrity",
+      "semantic_fidelity",
+      "financial_coherence",
+      "visual_delivery"
+    ],
+    "finding_keys": [
+      [
+        "artifact_or_claim_refs",
+        "issue_codes",
+        "layer",
+        "repair_owner",
+        "status"
+      ],
+      [
+        "artifact_or_claim_refs",
+        "issue_codes",
+        "layer",
+        "repair_owner",
+        "status"
+      ],
+      [
+        "artifact_or_claim_refs",
+        "issue_codes",
+        "layer",
+        "repair_owner",
+        "status"
+      ],
+      [
+        "artifact_or_claim_refs",
+        "issue_codes",
+        "layer",
+        "repair_owner",
+        "status"
+      ]
+    ],
+    "statuses": [
+      "pass",
+      "pass",
+      "pass",
+      "pass"
+    ],
+    "issue_code_counts": [
+      1,
+      7,
+      2,
+      3
+    ],
+    "artifact_or_claim_ref_counts": [
+      2,
+      2,
+      1,
+      1
+    ],
+    "repair_owner_nonblank": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "decision": "accept_for_internal_review",
+    "bound_lead_digest_is_sha256_shape": true,
+    "bound_writer_digest_is_sha256_shape": true,
+    "typed_finding_shape_valid": true,
+    "false_green_predicate_triggered": true,
+    "inferred_local_failure_code": "s3_owner_grade_verifier_false_green_forbidden"
+  },
+  "canonical_event_path": {
+    "event_types": [
+      "WORK_UNIT_STARTED",
+      "ATTEMPT_STARTED",
+      "SCHEDULER_LEASE_ACQUIRED",
+      "RESEARCH_RUN_STARTED",
+      "RESEARCH_RUN_PROVIDER_OUTPUT_CAPTURED",
+      "RESEARCH_RUN_FAILED",
+      "ATTEMPT_FAILED",
+      "WORK_UNIT_FAILED"
+    ],
+    "capture_event_before_terminal_event": true,
+    "terminal_failure_event_present_after_typed_closeout": true,
+    "canonical_business_artifact_count": 0,
+    "terminal_states": {
+      "work_unit_id": "failed",
+      "attempt_id": "failed",
+      "research_run_id": "failed"
+    }
+  },
+  "code_path_proof": {
+    "runtime_failure_path_uses_two_facade_commands": true,
+    "first_command": "RECORD_RESEARCH_RUN_PROVIDER_OUTPUT_CAPTURES",
+    "second_command": "FAIL_RESEARCH_RUN",
+    "interruption_window_exists_between_commands": true,
+    "fail_research_run_already_supports_atomic_capture_and_terminal_state": true,
+    "selected_earliest_project_owned_orphan_surface": "Fin01ResearchRuntime.dispatch_once exception path split capture and failure terminalization"
+  },
+  "root_cause_classification": {
+    "underlying_runtime_failure": "typed_verifier_false_green_state_machine_violation",
+    "underlying_request_gap": "provider_visible typed schema omits status issue-code reference repair-owner and final-decision cross-field invariants",
+    "orphan_trigger": "outer_execution_controller_process_timeout",
+    "project_owned_orphanability": "non_atomic_capture_then_failure_terminalization",
+    "model_only_failure": false,
+    "schema_shape_drift_recurred": false
+  },
+  "observed_counts": {
+    "audit_model_calls": 0,
+    "audit_provider_calls": 0,
+    "audit_network_calls": 0,
+    "audit_source_network_calls": 0,
+    "audit_external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_runs": 0,
+    "new_business_artifacts": 0
+  }
+}

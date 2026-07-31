@@ -1,0 +1,97 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_specialist_v6_canonical_scope_local_assembly_zero_call_repair_v1_0",
+  "execution_id": "S3-T09-OWNER-GRADE-SPECIALIST-CANONICAL-SCOPE-TOKEN-ZERO-CALL-REPAIR",
+  "decided_and_implemented_at": "2026-07-23T15:45:00+08:00",
+  "status": "pass_zero_call_specialist_v6_canonical_scope_local_assembly_fixture_proven",
+  "authority": {
+    "user_instruction": "继续修复，然后跑完真实调用看看效果",
+    "zero_call_root_cause_decision_and_repair_authorized": true,
+    "fresh_exact_admission_and_one_live_execution_authorized_after_deterministic_pass": true,
+    "automatic_retry_fallback_or_rerun_authorized": false,
+    "paired_comparison_human_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_refs": {
+    "prior_live_result": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_writer_v2_fresh_live_execution_result_v1_0.json",
+    "implementation": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "deterministic_tests": "tests/contract/test_fin_0_1_s3_t09_owner_grade_v3_specialist_v6_local_scope_assembly.py",
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
+  },
+  "root_cause_decision": {
+    "issue_id": "RC-P36-043-s3-owner-grade-specialist-canonical-scope-token-mismatch",
+    "earliest_faulty_contract": "owner_grade_claim_cards required the Provider to copy entity period business-scope and attribution authority tokens",
+    "observed_failure": {
+      "fact_period": "FY2025-FY",
+      "provider_claim_period": "FY2025",
+      "field": "judgment_layer.scope.period",
+      "strict_validator_disposition": "correct_fail_closed"
+    },
+    "selected_owner": "local_runtime_deterministic_scope_assembly",
+    "rejected_options": [
+      "normalize_the_failed_provider_answer",
+      "relax_exact_scope_validation",
+      "prompt_only_repeat_of_specialist_v5",
+      "allow_provider_to_restate_or_abbreviate_canonical_tokens"
+    ]
+  },
+  "implementation": {
+    "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v6",
+    "historical_specialist_v1_through_v5_immutable": true,
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v3",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v2",
+    "provider_emitted_scope_fields": [
+      "metric_or_mechanism"
+    ],
+    "locally_assembled_scope_fields": [
+      "entity_ref",
+      "business_scope_kind",
+      "business_scope_ref",
+      "period",
+      "attribution_level"
+    ],
+    "numeric_scope_source": "validated support_fact_ids to Numeric support_refs to canonical authority rows",
+    "multiple_numeric_scope_rule": "all deterministic scope fields must agree exactly or fail closed",
+    "non_numeric_scope": {
+      "entity_ref": "unknown",
+      "business_scope_kind": "unknown",
+      "business_scope_ref": "unknown",
+      "period": "unknown",
+      "attribution_level": "none"
+    },
+    "provider_extra_deterministic_scope_field_disposition": "reject_provider_shape",
+    "provider_segment_utf8_byte_limit": 6000,
+    "locally_assembled_specialist_utf8_byte_limit": 8192,
+    "retry_budget": 0
+  },
+  "deterministic_verification": {
+    "exact_FY2025_FY_local_period_assembly": true,
+    "provider_FY2025_period_copy_rejected": true,
+    "specialist_node_three_segments_passed": true,
+    "full_fake_provider_logical_nodes": 6,
+    "full_fake_provider_calls": 12,
+    "full_fake_provider_artifact_families": 9,
+    "restricted_capture_count": 12,
+    "historical_v5_and_downstream_contract_regression": "pass",
+    "focused_tests": {
+      "passed": 40,
+      "deselected_stale_snapshot_assertions": 2
+    }
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_business_writes": 0,
+    "artifacts": 0
+  },
+  "acceptance": {
+    "RC_P36_043_zero_call_contract": "fixture_repaired",
+    "strict_scope_authority_preserved": true,
+    "live_conformance": "pending_fresh_exact_execution",
+    "research_product_delivered": false,
+    "S3_T09": "blocked_pending_live_proof"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-SPECIALIST-V6-FRESH-EXACT-PROOF-PREPARATION-AND-ISSUANCE"
+}

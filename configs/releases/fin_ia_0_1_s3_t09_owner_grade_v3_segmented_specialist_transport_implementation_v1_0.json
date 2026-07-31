@@ -1,0 +1,118 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_segmented_specialist_transport_implementation_v1_0",
+  "result_id": "S3-T09-OWNER-GRADE-V3-SEGMENTED-SPECIALIST-TRANSPORT-ZERO-CALL-IMPLEMENTATION-R1",
+  "completed_at": "2026-07-22T18:00:00+08:00",
+  "status": "pass_zero_call_segmented_specialist_transport_fixture_proven_fresh_exact_admission_decision_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "implementation_and_fake_provider_fixtures_authorized": true,
+    "new_admission_or_issuance_authorized": false,
+    "model_provider_network_source_or_tool_execution_authorized": false,
+    "canonical_run_or_artifact_write_authorized": false,
+    "paired_comparison_or_human_review_authorized": false,
+    "T10_S4_release_or_production_authorized": false
+  },
+  "root_cause_binding": {
+    "issue_id": "RC-P36-039-s3-owner-grade-v3-provider-visible-schema-contradicts-local-validator",
+    "decision_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_first_specialist_schema_failure_root_cause_transport_decision_v1_0.json",
+    "confirmed_old_provider_visible_top_level_key_count": 14,
+    "canonical_specialist_top_level_key_count": 7,
+    "repair_status": "implemented_and_deterministic_fake_provider_fixture_proven_live_agent_proof_pending",
+    "historical_failed_run_rewritten": false
+  },
+  "implementation": {
+    "owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "canonical_output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v1",
+    "logical_node_count": 6,
+    "specialist_segment_ids": [
+      "facts_explanation_and_terminal",
+      "owner_grade_claim_cards",
+      "actionable_what_would_change_tasks"
+    ],
+    "specialist_segment_output_token_budgets": [
+      1600,
+      1200,
+      1400
+    ],
+    "stage_output_token_budgets": {
+      "specialist": 4200,
+      "lead": 1200,
+      "writer": 1400,
+      "verifier": 1000,
+      "aggregate": 16200
+    },
+    "maximum_semantic_provider_network_calls": [
+      12,
+      12,
+      12
+    ],
+    "maximum_cost_usd": 0.1,
+    "transport_attempts_per_segment": 1,
+    "retry_fallback_repair_rerun_budgets": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "provider_schema_contains_only_output_members": true,
+    "constraints_conveyed_separately": true,
+    "segments_validated_before_deterministic_assembly": true,
+    "full_output_v3_validator_reused_after_assembly": true,
+    "existing_runtime_registry_writer_store_and_nine_artifact_families_reused": true
+  },
+  "failure_telemetry": {
+    "family": "segmented_specialist_shape",
+    "parser_contract": "closed_segment_top_level_shape:v1",
+    "allowed_shape_subtypes": [
+      "top_level_keys_missing",
+      "top_level_keys_unexpected",
+      "program_cell_id_mismatch"
+    ],
+    "raw_output_persisted": false,
+    "arbitrary_key_names_persisted": false,
+    "telemetry_families_mutually_exclusive": true,
+    "canonical_secret_safe_allowlist_proven": true
+  },
+  "deterministic_proof": {
+    "positive_fake_provider_fixture": "pass_six_logical_nodes_twelve_fake_calls_nine_existing_artifact_types",
+    "negative_fixture_count": 6,
+    "all_negative_fixtures_failed_at_expected_earliest_owner": true,
+    "negative_cases_and_observed_call_counts": {
+      "unexpected_top_level_field_segment_1": 1,
+      "program_cell_id_mismatch_segment_1": 1,
+      "unauthorized_fact_ref_segment_1": 1,
+      "duplicate_fact_id_segment_1": 1,
+      "unknown_claim_support_fact_segment_2": 2,
+      "unauthorized_WWC_ref_segment_3": 3
+    },
+    "lead_or_later_node_called_after_specialist_failure": false,
+    "S3_T09_grouped_contract_tests": "105 passed",
+    "canonical_failure_telemetry_contract_tests": "10 passed",
+    "python_compile": "pass",
+    "project_os_scoped_preflight": "pass"
+  },
+  "observed_counts": {
+    "real_model_calls": 0,
+    "real_provider_calls": 0,
+    "real_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "admission_consumptions": 0,
+    "new_work_units": 0,
+    "new_attempts": 0,
+    "new_research_runs": 0,
+    "new_canonical_artifacts": 0,
+    "paired_comparisons": 0,
+    "human_review_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_039_implementation": "pass_zero_call_fixture_proven_live_agent_proof_pending",
+    "RC_P36_039_closed": false,
+    "RC_P36_037": "repair_fixture_and_segmented_transport_fixture_proven_fresh_live_artifact_proof_pending",
+    "S3_T09_acceptance": "blocked_pending_fresh_exact_admission_decision_issuance_live_proof_paired_comparison_and_owner_acceptance",
+    "T10_unblocked": false
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-SEGMENTED-SPECIALIST-FRESH-EXACT-ADMISSION-DECISION"
+}

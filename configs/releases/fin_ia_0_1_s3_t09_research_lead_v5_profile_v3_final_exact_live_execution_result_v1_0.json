@@ -1,0 +1,94 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_research_lead_v5_profile_v3_final_exact_live_execution_result_v1_0",
+  "execution_id": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-PROFILE-V3-FINAL-FRESH-EXACT-LIVE-EXECUTION",
+  "executed_at": "2026-07-24T01:05:33+08:00",
+  "status": "terminal_failed_hard_specialist_claim_fact_identity_layer_violation_no_second_execution_authorized",
+  "authority": {
+    "user_instruction": "按这个顺序做",
+    "one_final_exact_live_authorized": true,
+    "admission_consumed_exactly_once": true,
+    "automatic_retry_fallback_patch_or_second_live_executed": false,
+    "paired_comparison_or_T10_entered": false,
+    "owner_acceptance_impersonated": false
+  },
+  "source_refs": {
+    "decision_ref": "configs/releases/fin_ia_0_1_s3_t09_research_lead_v5_narrative_quality_and_s3_scope_rebaseline_decision_v1_0.json",
+    "implementation_ref": "configs/releases/fin_ia_0_1_s3_t09_research_lead_v5_profile_v3_narrative_quality_zero_call_implementation_v1_0.json",
+    "proof_ref": "configs/releases/fin_ia_0_1_s3_t09_research_lead_v5_profile_v3_final_fresh_exact_proof_decision_v1_0.json",
+    "issuance_ref": "configs/releases/fin_ia_0_1_s3_t09_research_lead_v5_profile_v3_final_fresh_exact_admission_issuance_v1_0.json",
+    "admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_research_lead_v5_profile_v3_final_exact_admission_r1.json",
+    "restricted_runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/profile_v3_final_r1_live_execution_result.json",
+    "restricted_runtime_result_sha256": "d59c8b58f2eaa4f7b9d4f87dc4109774ff42c793e545075a154a02c8e749f3bc",
+    "raw_assistant_text_copied_into_tracked_artifacts": false
+  },
+  "identity": {
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-research-lead-v5-profile-v3-final-exact-admission-r1",
+    "admission_digest": "e3db9ce6eb89372983cca3696a8223e7e29d612060189568c604352f8efadd12",
+    "work_unit_id": "wu_p02_5_ab7e45832916d2102c8f09dc",
+    "attempt_id": "attempt_fin01_b4fab104010e8c349f719c8a",
+    "research_run_id": "research_run_fin01_0065b32eb5c74773c4c81799",
+    "input_digest": "6c7fa9b0349114b2821c9a5bf632c765c79f96e1b81752703d6f1ac90f196ad9"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "orphaned_run": false,
+    "event_count": 8,
+    "artifact_count": 0,
+    "artifact_types": []
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v5",
+    "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v3",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+    "model_provider_network_calls": [5, 5, 5],
+    "input_output_total_tokens": [20072, 1801, 21873],
+    "estimated_cost_usd": 0.0096356,
+    "retry_fallback_rerun_counts": [0, 0, 0],
+    "provider_output_capture_and_restricted_readback_counts": [5, 5],
+    "source_network_external_tool_live_case_head_write_counts": [0, 0, 0]
+  },
+  "failure": {
+    "stage": "domain_specialist:value_and_profit_capture:owner_grade_claim_cards",
+    "failure_code": "s3_bounded_segmented_specialist_contract_invalid:value_and_profit_capture:owner_grade_claim_cards:s3_owner_grade_claim_support_fact_unknown",
+    "finish_reason": "stop",
+    "claim_count": 2,
+    "claim_support_fact_id_item_count": 6,
+    "items_matching_validated_local_fact_ids": 0,
+    "items_matching_underlying_numeric_support_refs": 6,
+    "validated_local_fact_count": 2,
+    "expected_identity_layer": "validated_prior_segment_fact_id",
+    "observed_identity_layer": "underlying_numeric_support_ref",
+    "provider_returned_valid_native_JSON": true,
+    "provider_followed_fact_link_identity_contract": false,
+    "unsupported_numeric_precision_or_new_fact_assertion_observed": false,
+    "validator_correctly_failed_closed": true,
+    "runtime_answer_and_usage_persisted_before_terminal_failure": true
+  },
+  "independent_root_cause_assessment": {
+    "direct_cause": "The Specialist copied each Fact's underlying Numeric support_refs into Claim support_fact_ids instead of linking the Claim to the local Fact IDs f1/f2.",
+    "provider_model_semantic_mapping_failure_confirmed": true,
+    "project_conveyance_robustness_gap": "The schema says exact validated fact_id, but the claim-card model view still exposes both local fact IDs and underlying Evidence/Numeric reference namespaces without a field-local alias allowlist.",
+    "same_as_research_lead_narrative_quality_failure": false,
+    "profile_v3_live_reached": false,
+    "research_lead_writer_verifier_live_reached": [false, false, false],
+    "selected_future_generalized_direction_if_separately_authorized": "ClaimFactLinkPolicy with a closed request-local Fact alias allowlist and local expansion; hide underlying source refs from the claim-link selection surface while preserving them in canonical Fact lineage.",
+    "repair_or_second_live_authorized_now": false
+  },
+  "stage_decision": {
+    "RC_P36_047": "zero_call_repaired_but_not_live_reached",
+    "RC_P36_048": "new_hard_specialist_claim_fact_identity_layer_failure_disposition_pending",
+    "RC_P36_046": "complete_live_scoped_identity_lineage_still_unproven",
+    "RC_P36_037": "complete_live_artifact_product_still_missing",
+    "S3_T09": "blocked_final_authorized_exact_live_failed_hard_integrity",
+    "S3_T10": "not_entered",
+    "paired_comparison": "not_performed_because_no_complete_agent_artifact_product",
+    "cross_slice_manifest": "not_due_because_T09_acceptance_not_reached",
+    "S4_S5_release_production": "not_entered"
+  },
+  "next_action": "S3-T09-FINAL-HARD-FAILURE-DISPOSITION-DECISION"
+}

@@ -1,0 +1,124 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_research_lead_v5_compact_scoped_reference_dual_capacity_zero_call_implementation_v1_0",
+  "implementation_id": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-COMPACT-SCOPED-REFERENCE-WIRE-LOCAL-TYPED-EXPANSION-AND-DUAL-CAPACITY-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-23T22:59:17+08:00",
+  "status": "pass_zero_call_provider_neutral_lead_capability_compact_alias_local_typed_expansion_local_row_ids_closed_reference_cardinality_dual_capacity_and_full_fake_provider_proven",
+  "authority": {
+    "user_instruction": "继续",
+    "runtime_contract_profile_prompt_parser_validator_and_fake_provider_implementation_authorized": true,
+    "admission_issuance_or_consumption_authorized": false,
+    "model_provider_network_source_external_tool_retry_fallback_or_rerun_authorized": false,
+    "comparison_owner_review_T10_S4_release_or_production_authorized": false
+  },
+  "implementation": {
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v5",
+    "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v2",
+    "canonical_output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+    "canonical_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+    "compact_alias_contract_ref": "fin01.s3.compact_scoped_reference_alias:v1",
+    "lead_capability_registry": true,
+    "transport_version_special_case_for_v5": false,
+    "alias_shapes": [
+      "C001",
+      "W001"
+    ],
+    "alias_is_authoritative_or_persisted": false,
+    "local_typed_expansion_before_output_v4_validation": true,
+    "dependency_adjudication_and_gap_ids_locally_derived_by_validated_order": true,
+    "reference_list_uniqueness_and_exact_surface_maximum_enforced": true,
+    "per_narrative_field_unicode_character_maximum": 320,
+    "aggregate_provider_narrative_unicode_character_maximum": 3200,
+    "provider_raw_wire_utf8_byte_maximum": 8192,
+    "canonical_alias_segment_utf8_byte_maximum": 6000,
+    "local_expanded_hard_utf8_byte_maximum": 32768,
+    "local_expanded_exact_capacity_formula_ref": "fin01.s3.research_lead_local_capacity.exact_surface_maximum_valid_shape:v1",
+    "lead_max_output_tokens": 1800,
+    "aggregate_max_output_tokens": 16800,
+    "max_total_cost_usd": 0.1,
+    "retry_fallback_rerun_budget": [
+      0,
+      0,
+      0
+    ],
+    "provider_output_capture_precedes_post_node_validation": true
+  },
+  "capacity_fixtures": {
+    "minimum_reference_surface": {
+      "claim_aliases": 1,
+      "what_would_change_aliases": 1,
+      "capacity_digest": "ae3963f35f8eb3f9624f143f8c6f0e7897b51a3b56ab5f8e6ddaa45d64c41d7a"
+    },
+    "exact_prior_live_shape_surface": {
+      "claim_aliases": 3,
+      "what_would_change_aliases": 3,
+      "maximum_provider_segment_utf8_bytes": 4440,
+      "maximum_canonical_alias_segment_utf8_bytes": 4866,
+      "maximum_local_expanded_canonical_utf8_bytes": 12253,
+      "capacity_digest": "f207e92024c9a4e109ec3ddb7665c3e396d965250726705ab43de635d6ce1bc3"
+    },
+    "maximum_specialist_reference_surface": {
+      "claim_aliases": 6,
+      "what_would_change_aliases": 9,
+      "maximum_provider_segment_utf8_bytes": 4881,
+      "maximum_canonical_alias_segment_utf8_bytes": 5307,
+      "maximum_local_expanded_canonical_utf8_bytes": 19210,
+      "capacity_digest": "2fff37072e7af7e4a825931eb8c639c344704285708828e3a60a9ccd4d9da02b"
+    },
+    "adversarial_one_byte_under_each_envelope_fails_closed": true,
+    "maximum_fixture_combines_maximum_item_cardinality_aggregate_narrative_and_every_available_alias": true
+  },
+  "structural_amplification_regression": {
+    "restricted_capture_raw_text_copied_to_tracked_fixture": false,
+    "measured_complete_typed_ref_objects": 24,
+    "measured_complete_typed_ref_utf8_bytes": 4030,
+    "selected_four_character_alias_counterfactual_utf8_bytes": 120,
+    "selected_four_character_alias_projected_prefix_utf8_bytes": 3291,
+    "interpretation": "The deterministic fixture preserves the measured amplification facts without persisting the restricted assistant answer."
+  },
+  "deterministic_verification": {
+    "affected_focused_tests_passed": 78,
+    "full_fake_provider_logical_nodes_provider_calls_artifacts": [
+      6,
+      12,
+      9
+    ],
+    "fake_provider_alias_expanded_before_writer_verifier_and_artifacts": true,
+    "canonical_alias_residue_count": 0,
+    "unknown_wrong_kind_wrong_field_duplicate_raw_local_and_normalized_aliases_fail_closed": true,
+    "non_NVDA_company": "AMD",
+    "nonstandard_period": "FY2027-Q1-53W",
+    "different_cell_claim_and_task_cardinality_fixture": true,
+    "historical_research_lead_v1_through_v4_request_and_admission_behavior_preserved": true,
+    "canonical_output_v4_identity_v1_specialist_v7_writer_v3_unchanged": true
+  },
+  "non_acceptance_test_observation": {
+    "all_S3_T09_history_suite_timeout_seconds": 604,
+    "first_16_file_group_timeout_seconds": 304,
+    "pytest_failure_summary_emitted": false,
+    "classified_as_pass": false,
+    "acceptance_basis": "The terminal affected suite of 78 tests, JSON/JSONL validation, diff check, secret scan and deterministic fake-provider/capacity fixtures."
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_live_WorkUnits": 0,
+    "new_live_Attempts": 0,
+    "new_live_ResearchRuns": 0,
+    "new_live_Artifacts": 0,
+    "comparisons": 0,
+    "human_reviews": 0
+  },
+  "stage_decision": {
+    "RC_P36_040": "zero_call_repaired_full_fake_provider_and_capacity_fixture_proven_fresh_agent_proof_decision_pending",
+    "RC_P36_046": "zero_call_repaired_complete_live_downstream_proof_still_pending",
+    "RC_P36_037": "still_open_no_complete_fresh_owner_grade_artifact_product",
+    "S3_T09": "blocked_pending_separate_fresh_agent_proof_decision_admission_and_live_execution",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4_release_production": "not_authorized"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-FRESH-AGENT-PROOF-DECISION"
+}

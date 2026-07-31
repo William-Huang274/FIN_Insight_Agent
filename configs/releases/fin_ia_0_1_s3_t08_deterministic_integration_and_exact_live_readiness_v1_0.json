@@ -1,0 +1,224 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t08_deterministic_integration_and_exact_live_readiness_v1_0",
+  "result_id": "S3-T08-NVDA-THREE-CELL-READINESS-R1",
+  "occurred_at": "2026-07-22T00:30:00+08:00",
+  "status": "pass_readiness_gate_exact_live_blocked_owned_three_cell_executor_gap",
+  "authority": {
+    "user_instruction": "继续",
+    "S3_T08_deterministic_integration_and_readiness_decision_authorized": true,
+    "S3_T09_execution_or_admission_issuance_authorized": false,
+    "model_provider_or_source_network_execution_authorized": false,
+    "external_tool_or_live_business_mutation_authorized": false,
+    "human_review_decision_authorized_or_performed": false,
+    "release_or_production_authorized": false
+  },
+  "deterministic_integration_proof": {
+    "profile_ref": "fin01.execution_profile.p36_local_deterministic:v1",
+    "case_id": "case_d67422c3fac89955e7542eb5",
+    "work_unit_id": "wu_p02_5_554927f6c144298ef9845f28",
+    "attempt_id": "attempt_fin01_889fffe171dc83f921d931c6",
+    "research_run_id": "research_run_fin01_60f0d706b06b15d67abbe58b",
+    "input_head_digest": "7162f5489a099f145283821ed0cbf5a21ef1c6231c195134dc33110c7bd2e76d",
+    "verifier_input_digest": "81fa731118059598b9219a6803236d2908b0e9a264063f6e1c60c89b10f476e2",
+    "artifact_manifest": {
+      "deterministic_research_result": "artifact_fin01_7682e636a83e8b5ceac6057a:v1",
+      "s3_three_cell_workpaper": "artifact_fin01_75ce0401d167527074750d93:v1",
+      "s3_three_cell_report": "artifact_fin01_9c836166e72b832bedb0800a:v1",
+      "s3_three_cell_trace_review": "artifact_fin01_159f1624b464250a7e7980c3:v1"
+    },
+    "cell_outcomes": [
+      {
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "terminal_class": "typed_cannot_infer",
+        "accepted_evidence_count": 0,
+        "numeric_count": 0,
+        "stop_semantic": "typed_stop_cannot_infer_durable_company_specific_demand"
+      },
+      {
+        "program_cell_id": "value_and_profit_capture",
+        "terminal_class": "bounded_company_total_answer_with_typed_attribution_gap",
+        "accepted_evidence_count": 0,
+        "numeric_count": 2,
+        "stop_semantic": "typed_stop_product_and_incremental_profit_attribution_unavailable"
+      },
+      {
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "terminal_class": "typed_cannot_infer",
+        "accepted_evidence_count": 0,
+        "numeric_count": 0,
+        "stop_semantic": "typed_stop_bottleneck_probability_and_financial_impact_unavailable"
+      }
+    ],
+    "exact_cell_count": 3,
+    "all_cells_answered_or_typed_cannot_infer": true,
+    "cross_cell_synthesis_is_text_concatenation": false,
+    "automatic_new_research_calls": 0
+  },
+  "method_to_runtime_proof": {
+    "method_ids": [
+      "product_to_financial_bridge",
+      "customer_supplier_readthrough",
+      "p32_product_architecture_competitive_bridge",
+      "p32_semis_cycle_value_chain_playbook"
+    ],
+    "lifecycle_state": "runtime_injected_and_node_level_consumed_deterministic_only",
+    "runtime_nodes": [
+      "domain_specialist:demand_authenticity_and_sustainability",
+      "domain_specialist:value_and_profit_capture",
+      "domain_specialist:bottleneck_counterevidence_and_what_would_change",
+      "research_lead",
+      "memo_writer",
+      "verifier",
+      "workbench"
+    ],
+    "paid_artifact_proven": false,
+    "human_accepted": false
+  },
+  "root_cause_reconciliation": {
+    "required_issue_count": 15,
+    "fully_closed_by_T08": 0,
+    "blocks_current_exact_live_readiness_count": 12,
+    "future_paid_or_human_proof_count": 3,
+    "issues": [
+      {"issue_id": "RC-P30-001-real-single-case-artifact-proof-pending", "disposition": "requires_T09_exact_paid_artifact", "blocks_current_exact_live_readiness": false},
+      {"issue_id": "RC-P30-002-memo-quality-insight-density-not-proven", "disposition": "requires_T09_paid_report_and_T10_owner_review", "blocks_current_exact_live_readiness": false},
+      {"issue_id": "RC-P33-019-humanmade-gold-set-runtime-depth-gap", "disposition": "requires_T09_exact_artifact_and_T10_human_acceptance", "blocks_current_exact_live_readiness": false},
+      {"issue_id": "RC-P34-020-writer-payload-lacked-fact-table-surface-and-goldcase-availability-alignment", "disposition": "deterministic_surface_repaired_but_live_writer_input_remains_one_cell", "blocks_current_exact_live_readiness": true},
+      {"issue_id": "RC-P35-021-ai-infra-decision-surface-not-runtime-contract", "disposition": "deterministic_chain_consumed_but_live_profile_not_three_cell", "blocks_current_exact_live_readiness": true},
+      {"issue_id": "RC-P36-022-retrieval-rag-market-ownership-not-decision-cell-driven", "disposition": "live_input_compiler_excludes_three_cell_route_plan", "blocks_current_exact_live_readiness": true},
+      {"issue_id": "RC-P36-023-foundation-financials-exist-but-business-line-economics-and-numeric-sanity-promotion-gap", "disposition": "live_input_compiler_excludes_T04_numeric_pack", "blocks_current_exact_live_readiness": true},
+      {"issue_id": "RC-P36-024-graph-assets-not-projected-into-value-capture-decision-surface", "disposition": "live_input_compiler_excludes_T05_graph_pack", "blocks_current_exact_live_readiness": true},
+      {"issue_id": "RC-P36-025-fundamental-specialist-input-pack-not-decision-cell-ready", "disposition": "live_specialist_receives_only_S2_demand_candidates", "blocks_current_exact_live_readiness": true},
+      {"issue_id": "RC-P36-026-product-industry-selector-not-decision-surface-balanced", "disposition": "live_specialist_receives_no_three_cell_product_industry_context", "blocks_current_exact_live_readiness": true},
+      {"issue_id": "RC-P36-027-market-capital-feedback-not-decision-surface-wired", "disposition": "live_lead_receives_no_exact_market_gap_contract", "blocks_current_exact_live_readiness": true},
+      {"issue_id": "RC-P36-028-risk-counterevidence-not-risk-cell-projected", "disposition": "live_profile_has_no_risk_specialist_branch", "blocks_current_exact_live_readiness": true},
+      {"issue_id": "RC-P36-029-aggregate-judgment-planner-preserves-claims-but-not-decision-surface-adjudication", "disposition": "live_profile_has_one_specialist_lead_envelope_not_three_specialists_plus_cross_cell_lead", "blocks_current_exact_live_readiness": true},
+      {"issue_id": "RC-P36-030-writer-report-depends-on-supervisor-supplement-not-runtime-decision-surface", "disposition": "live_writer_consumes_S2_one_cell_adjudication_not_T06_exact_heads", "blocks_current_exact_live_readiness": true},
+      {"issue_id": "RC-P36-031-verifier-workbench-can-preserve-boundary-but-lacks-decision-cell-review-surface", "disposition": "live_verifier_does_not_emit_T07_three_cell_review_binding", "blocks_current_exact_live_readiness": true}
+    ]
+  },
+  "paired_deterministic_baseline_contract": {
+    "contract_ref": "fin01.s3.paired_three_cell_deterministic_baseline:v1",
+    "baseline_profile_ref": "fin01.execution_profile.p36_local_deterministic:v1",
+    "agent_profile_ref_required": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+    "must_match": [
+      "case_id",
+      "case_version",
+      "accepted_decision_surface_version_ref",
+      "analysis_as_of",
+      "input_head_digest",
+      "three_program_cell_ids"
+    ],
+    "must_be_distinct": ["work_unit_id", "attempt_id", "research_run_id", "artifact_refs"],
+    "baseline_exact_artifact_types": [
+      "deterministic_research_result",
+      "s3_three_cell_workpaper",
+      "s3_three_cell_report",
+      "s3_three_cell_trace_review"
+    ],
+    "agent_failure_may_trigger_automatic_fallback": false,
+    "baseline_may_be_labeled_agent_output": false,
+    "comparison_requires_two_terminal_runs": true
+  },
+  "product_review_contract": {
+    "contract_ref": "fin01.s3.three_cell_owner_product_review:v1",
+    "execution_task": "S3-T10",
+    "review_status": "not_performed",
+    "comparison_mode": "semi_blind_exact_agent_vs_deterministic_baseline",
+    "required_bindings": [
+      "agent_research_run_id",
+      "baseline_research_run_id",
+      "agent_artifact_refs_and_content_digests",
+      "baseline_artifact_refs_and_content_digests",
+      "profile_refs",
+      "shared_input_head_digest",
+      "analysis_as_of",
+      "verifier_findings"
+    ],
+    "hard_failures": [
+      "false_citation_or_false_promotion",
+      "material_numeric_error",
+      "case_run_artifact_or_review_mismatch",
+      "silent_deterministic_substitution",
+      "writer_source_or_tool_authority",
+      "permission_secret_or_data_boundary_break"
+    ],
+    "material_gain_dimensions": [
+      "direct_answer",
+      "evidence_authority",
+      "numeric_and_financial_bridge",
+      "mechanism_depth",
+      "counterevidence",
+      "boundary_and_cannot_infer",
+      "what_would_change",
+      "cross_cell_synthesis",
+      "workpaper_report_review_burden"
+    ],
+    "decision_enum": ["accept_material_gain", "repair", "reject_no_material_gain"],
+    "machine_verifier_may_sign_human_decision": false
+  },
+  "D07B_NVDA_initial_policy": {
+    "policy_ref": "fin01.d07b.NVDA_initial_hypothesis:v1",
+    "status": "hypothesis_not_calibrated_policy",
+    "scope": "NVDA_three_cell_only",
+    "universal_or_cross_case_calibration_claimed": false,
+    "historical_runs_rewritten_by_policy_change": false,
+    "cell_hypotheses": [
+      {
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "hypothesis": "one exact issuer source may support an issuer fact, but durable company-specific demand requires independent deployment customer-capex or conversion evidence; otherwise typed cannot-infer"
+      },
+      {
+        "program_cell_id": "value_and_profit_capture",
+        "hypothesis": "company-total filing rows may support company-total metrics, while product segment incremental-profit or cross-chain allocation requires exact scoped financial inputs and cannot be inferred from Graph context"
+      },
+      {
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "hypothesis": "Graph paths are navigation context only; probability and financial impact remain gaps until exact source and numeric authority exist, and material unresolved conflict escalates rather than being averaged away"
+      }
+    ],
+    "calibration_requires": [
+      "NVDA_DELL_and_MU_exact_cases",
+      "false_promotion_and_over_conservative_samples",
+      "exact_owner_and_qualified_human_review",
+      "versioned_policy_comparison"
+    ],
+    "remaining_three_case_calibration_task": "S4"
+  },
+  "exact_live_readiness_decision": {
+    "decision": "blocked_owned_runtime_adapter_repair_required",
+    "earliest_faulty_owner": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "observed_production_contract": {
+      "execution_profile_ref": "fin01.execution_profile.bounded_agent_internal:v1",
+      "maximum_cell_count": 1,
+      "input_compiler_cell": "demand_authenticity_and_sustainability",
+      "input_compiler_evidence_role": "demand_signal",
+      "specialist_branch_count": 1,
+      "consumes_T02_through_T07_three_cell_packs": false
+    },
+    "required_repair": [
+      "add_a_versioned_three_cell_bounded_agent_profile_without_mutating_S2_history",
+      "compile_exact_three_cell_live_input_from_T02_through_T07_lineage",
+      "prove_three_specialist_branches_one_cross_cell_lead_no_source_writer_and_four_layer_verifier_at_node_level",
+      "preserve_candidate_Evidence_Numeric_Graph_fact_and_cannot_infer_boundaries",
+      "wire_the_new_profile_through_the_existing_Fin01ResearchRuntime_and_factory",
+      "re-run_this_readiness_gate_before_any_exact_admission_is_issued"
+    ],
+    "historical_three_cell_admission_reusable": false,
+    "new_admission_issued": false,
+    "S3_T09_may_execute": false
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "automatic_new_research_calls": 0,
+    "live_business_writes": 0,
+    "human_review_writes": 0,
+    "new_admissions": 0,
+    "paid_runs": 0
+  },
+  "next_action": "S3-T08-THREE-CELL-BOUNDED-AGENT-PROFILE-INPUT-OUTPUT-ADAPTER-REPAIR"
+}

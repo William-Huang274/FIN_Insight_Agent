@@ -1,0 +1,208 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_nullable_owner_and_supervision_v2_final_exact_live_execution_result_v1_0",
+  "status": "terminal_failed_research_lead_profile_v3_hard_narrative_nonconformance_admission_consumed_no_retry_or_relaunch",
+  "authority": {
+    "user_instruction": "继续，依次进入新 admission、最终 exact-live 和 T09 整体验收。",
+    "one_final_exact_live_execution_authorized": true,
+    "automatic_retry_fallback_patch_replay_relaunch_or_rerun_authorized": false,
+    "acceptance_only_after_terminal_success_and_nine_artifacts": true
+  },
+  "source_refs": {
+    "proof": "configs/releases/fin_ia_0_1_s3_t09_nullable_owner_and_supervision_v2_final_fresh_agent_proof_decision_v1_0.json",
+    "issuance": "configs/releases/fin_ia_0_1_s3_t09_nullable_owner_and_supervision_v2_final_fresh_exact_admission_issuance_v1_0.json",
+    "admission": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_nullable_owner_supervision_v2_final_exact_admission_r1.json",
+    "runtime_result": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/nullable_supervision_v2_final_r1_live_execution_result.json",
+    "supervision_root": ".codex_runtime/fin01-s3-t09-nullable-owner-supervision-v2-final-exact-run-r1"
+  },
+  "identity": {
+    "work_unit_id": "wu_p02_5_870d16faa31ee622a270a581",
+    "attempt_id": "attempt_fin01_747d6459f09956ced4a50f2e",
+    "research_run_id": "research_run_fin01_6594b12567cdebecd441d31d",
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-nullable-owner-supervision-v2-final-exact-admission-r1",
+    "admission_digest": "854a29f299c1d86f1cb86d75f97b0f344f13f9275a04298120789e44d9734f31",
+    "admission_consumed": true
+  },
+  "preflight": {
+    "project_os_scoped_preflight": "pass",
+    "exact_runner_preflight": "pass_exact_zero_call_execution_preflight",
+    "transport_retries": 0,
+    "target_counts_before": [
+      21,
+      21,
+      21,
+      13
+    ]
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "observed_counts": {
+      "external_tool_calls": 0,
+      "model_calls": 10,
+      "network_calls": 10,
+      "provider_calls": 10,
+      "source_network_calls": 0
+    },
+    "usage": {
+      "input_tokens": 38849,
+      "output_tokens": 4914,
+      "total_tokens": 43763,
+      "estimated_cost_usd": 0.01797197,
+      "transport_attempt_count": 10
+    },
+    "specialist_segments_completed": 9,
+    "research_lead_called": true,
+    "memo_writer_called": false,
+    "verifier_called": false,
+    "all_status_ok": true,
+    "all_finish_reason_stop": true,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "rerun_count": 0
+  },
+  "restricted_capture_audit": {
+    "capture_count": 10,
+    "restricted_readback_count": 10,
+    "research_lead_capture_count": 1,
+    "research_lead_capture_object_digest": "4a2fb6e447afaca0ca91309a975665ef6061a65a3df5f1727f3880e447c65ab0",
+    "assistant_output_unicode_characters": 5195,
+    "assistant_output_utf8_bytes": 5195,
+    "raw_assistant_output_persisted_in_result": false,
+    "private_reasoning_persisted_in_result": false
+  },
+  "research_lead_safe_structure": {
+    "native_json_object": true,
+    "top_level_keys": [
+      "conflict_adjudications",
+      "cross_cell_dependencies",
+      "remaining_gaps",
+      "variant_view"
+    ],
+    "field_cardinalities": {
+      "cross_cell_dependencies": 3,
+      "conflict_adjudications": 2,
+      "variant_view": 1,
+      "remaining_gaps": 3
+    },
+    "quality_target_unicode_characters": 320,
+    "hard_maximum_unicode_characters": 512,
+    "aggregate_maximum_unicode_characters": 3200,
+    "aggregate_observed_unicode_characters": 3875,
+    "aggregate_over_by": 675,
+    "hard_failing_item_count": 3,
+    "hard_failing_items": [
+      {
+        "field_path": "cross_cell_dependencies[0].statement",
+        "unicode_characters": 571,
+        "over_hard_maximum_characters": 59
+      },
+      {
+        "field_path": "cross_cell_dependencies[1].statement",
+        "unicode_characters": 533,
+        "over_hard_maximum_characters": 21
+      },
+      {
+        "field_path": "cross_cell_dependencies[2].statement",
+        "unicode_characters": 528,
+        "over_hard_maximum_characters": 16
+      }
+    ],
+    "provider_output_text_copied_to_result": false
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:research_lead",
+    "orphaned_run": false,
+    "artifact_count": 0,
+    "event_types": [
+      "WORK_UNIT_STARTED",
+      "ATTEMPT_STARTED",
+      "SCHEDULER_LEASE_ACQUIRED",
+      "RESEARCH_RUN_STARTED",
+      "RESEARCH_RUN_FAILED",
+      "ATTEMPT_FAILED",
+      "WORK_UNIT_FAILED"
+    ],
+    "terminal_failure_event_capture_ref_count": 10,
+    "target_counts_after": [
+      22,
+      22,
+      22,
+      13
+    ],
+    "canonical_database_sha256": "351eae557099289ad7744dc7fb96a81fa0221a5b3a2642f1c083f502a22495f8",
+    "canonical_object_tree_sha256": "f3cfa298ff94455e2bd6e5423431b11db115561cf1c697a8069d0cd95b4395a2"
+  },
+  "supervision_observation": {
+    "contract_ref": "fin01.s3.exact_run_supervision:v2",
+    "process_topology": "direct_actual_runner_no_intermediate_wrapper",
+    "launch_receipt_present": true,
+    "runner_command_receipt_present": true,
+    "exit_receipt_present": true,
+    "runner_pid": 13792,
+    "runner_process_identity": {
+      "pid": 13792,
+      "identity_kind": "windows_pid_and_creation_filetime",
+      "creation_filetime_100ns": 134293928422770950
+    },
+    "launch_and_exit_identity_match": true,
+    "runner_self_finalized": true,
+    "runner_exit_code": 0,
+    "stdout_sha256": "543b709158e8f6bca354c3573bb3eaeb1397f2acb059cb78e0f05c3ba579d359",
+    "stdout_bytes": 23739,
+    "stderr_sha256": "deaa1f6b9b39620795f025f7d69bf4b085bb60ee410e48139697e8b4d4df0a27",
+    "stderr_bytes": 299,
+    "monitor_signals_sent": 0,
+    "automatic_retry_count": 0,
+    "fallback_count": 0,
+    "replay_count": 0,
+    "relaunch_count": 0
+  },
+  "root_cause_classification": {
+    "first_credible_failure_stage": "research_lead",
+    "direct_failure": "three cross_cell_dependency statements exceeded the explicit 512-character hard maximum; aggregate narrative also exceeded the explicit 3200-character maximum",
+    "provider_returned_valid_json": true,
+    "provider_finish_reason_stop": true,
+    "provider_visible_hard_and_aggregate_limits_present": true,
+    "local_validator_matches_profile": true,
+    "project_request_validator_schema_drift_observed": false,
+    "direct_model_output_contract_nonconformance": true,
+    "supervision_model_related": false,
+    "root_cause_id": "RC-P36-047-s3-research-lead-v5-per-field-narrative-length-contract-gap",
+    "disposition_selected_or_repair_authorized": false
+  },
+  "acceptance": {
+    "RC_P38_053_supervision_v2_fresh_live_proven": true,
+    "RC_P36_052_nullable_owner_v2_live_reached": false,
+    "nine_artifact_product_complete": false,
+    "paired_comparison_performed": false,
+    "owner_acceptance_performed": false,
+    "S3_T09": "blocked",
+    "T09_overall_acceptance_started": false
+  },
+  "observed_counts": {
+    "admission_consumptions": 1,
+    "supervisor_launches": 1,
+    "live_executions": 1,
+    "model_calls": 10,
+    "provider_calls": 10,
+    "network_calls": 10,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_work_units": 1,
+    "new_attempts": 1,
+    "new_research_runs": 1,
+    "new_business_artifacts": 0,
+    "automatic_retries": 0,
+    "fallbacks": 0,
+    "patches": 0,
+    "capture_replays": 0,
+    "relaunches": 0,
+    "reruns": 0,
+    "paired_comparisons": 0,
+    "owner_acceptance_writes": 0
+  },
+  "next_action": "S3-T09-FINAL-EXACT-LIVE-RESEARCH-LEAD-HARD-NARRATIVE-NONCONFORMANCE-DISPOSITION-DECISION"
+}

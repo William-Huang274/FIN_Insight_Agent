@@ -1,0 +1,204 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t04_financial_numeric_fundamental_pack_v1_0",
+  "status": "pass_after_independent_review_T05_ready_pending_separate_authorization",
+  "recorded_at": "2026-07-21T16:40:00+08:00",
+  "task_id": "S3-T04-DETERMINISTIC-FINANCIAL-NUMERIC-AND-FUNDAMENTAL-DECISION-CELL-PACK",
+  "authority": {
+    "user_instruction": "继续",
+    "S3_T04_zero_call_deterministic_fixture_authorized": true,
+    "S3_T05_execution_authorized": false,
+    "model_or_provider_execution_authorized": false,
+    "source_network_or_external_tool_execution_authorized": false,
+    "live_business_case_mutation_authorized": false,
+    "runtime_evidence_head_promotion_authorized": false,
+    "canonical_judgment_or_report_head_invalidation_authorized": false,
+    "new_live_admission_or_paid_run_authorized": false,
+    "S4_release_or_production_authorized": false
+  },
+  "implementation": {
+    "unique_owner": "src/sec_agent/canonical_runtime/parser_numeric.py:compile_s3_financial_numeric_and_fundamental_pack",
+    "runtime_owner": "apps/workbench/backend/application/research_runtime.py:Fin01ResearchRuntime",
+    "financial_pack_contract_ref": "fin01.s3.financial_numeric_and_fundamental_cell_pack:v1",
+    "selected_financial_row_count": 3,
+    "derived_metric_count": 2,
+    "fundamental_decision_cell_count": 3,
+    "typed_cannot_infer_count": 5,
+    "selective_correction_invalidation_fixture_count": 1,
+    "local_financial_route_read_count": 1,
+    "runtime_evidence_promotion_count": 0,
+    "canonical_head_invalidation_count": 0,
+    "parallel_numeric_store_or_business_truth_family_added": false,
+    "S2_or_T03_consumed_identity_or_artifact_rewritten": false
+  },
+  "financial_row_selection": {
+    "program_cell_id": "value_and_profit_capture",
+    "entity_ref": "NVDA",
+    "segment_ref": "__company_total__",
+    "period": "FY2025-FY",
+    "currency": "USD",
+    "unit": "USD",
+    "row_labels": [
+      "Revenues",
+      "Gross Profit",
+      "Operating Income (Loss)"
+    ],
+    "metric_families": [
+      "revenue",
+      "gross_profit",
+      "operating_income"
+    ],
+    "exact_value_authority_required": true,
+    "evidence_ref_required": true,
+    "writer_citable": false
+  },
+  "derived_metrics": [
+    {
+      "metric_family": "gross_margin",
+      "formula": "gross_profit/revenue*100",
+      "rounding_rule": "decimal_half_up_2dp",
+      "result_value": "74.99",
+      "result_unit": "percent",
+      "input_count": 2,
+      "evidence_ref_count": 2
+    },
+    {
+      "metric_family": "operating_margin",
+      "formula": "operating_income/revenue*100",
+      "rounding_rule": "decimal_half_up_2dp",
+      "result_value": "62.42",
+      "result_unit": "percent",
+      "input_count": 2,
+      "evidence_ref_count": 2
+    }
+  ],
+  "fundamental_decision_cell_pack": [
+    {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "availability": "typed_cannot_infer_financial_rows_do_not_prove_demand_durability",
+      "selected_financial_row_count": 0,
+      "derived_metric_count": 0,
+      "narrative_fill_authorized": false
+    },
+    {
+      "program_cell_id": "value_and_profit_capture",
+      "availability": "bounded_company_total_numeric_support_segment_profit_unattributed",
+      "selected_financial_row_count": 3,
+      "derived_metric_count": 2,
+      "cannot_infer": [
+        "data_center_or_accelerator_segment_margin_not_disclosed",
+        "incremental_AI_profit_capture_not_attributable_from_company_total_rows",
+        "cross_chain_economic_allocation_unavailable"
+      ],
+      "narrative_fill_authorized": false
+    },
+    {
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "availability": "typed_cannot_infer_no_probability_or_impact_numeric",
+      "selected_financial_row_count": 0,
+      "derived_metric_count": 0,
+      "narrative_fill_authorized": false
+    }
+  ],
+  "correction_invalidation": {
+    "corrected_input": "gross_profit_row",
+    "invalidated_derived_metric_count": 1,
+    "preserved_derived_metric_count": 1,
+    "invalidated_dependency_types": [
+      "claim",
+      "judgment",
+      "report"
+    ],
+    "preserved_dependency_types": [
+      "claim",
+      "judgment",
+      "report"
+    ],
+    "rule": "exact_dependency_closure_only",
+    "execution_scope": "deterministic_fixture_plan_not_business_head_mutation"
+  },
+  "method_to_runtime": {
+    "method_id": "three_statement_peer_panel",
+    "registry_recorded_status": "active",
+    "T04_normalized_state": "runtime_injected_and_node_consumed_for_company_total_income_statement_subset_only",
+    "proven": [
+      "exact_company_total_income_statement_rows",
+      "formula_bound_gross_and_operating_margin",
+      "typed_availability_and_cannot_infer"
+    ],
+    "not_proven": [
+      "balance_sheet_pack",
+      "cash_flow_pack",
+      "peer_comparable_panel",
+      "product_or_segment_profit_attribution",
+      "paid_artifact_quality",
+      "dogfood_acceptance"
+    ],
+    "full_method_claimed_active_for_S3": false
+  },
+  "root_cause_reconcile": [
+    {
+      "issue_id": "RC-P36-023-foundation-financials-exist-but-business-line-economics-and-numeric-sanity-promotion-gap",
+      "T04_disposition": "exact_company_total_selector_formula_rounding_evidence_lineage_and_typed_business_line_gap_runtime_consumed_live_parser_and_business_line_quality_pending",
+      "closed_by_T04": false,
+      "full_chain_blocker_after_T04": true
+    },
+    {
+      "issue_id": "RC-P36-025-fundamental-specialist-input-pack-not-decision-cell-ready",
+      "T04_disposition": "three_cell_fundamental_availability_pack_runtime_consumed_value_cell_ready_for_future_specialist_fixture_paid_quality_pending",
+      "closed_by_T04": false,
+      "full_chain_blocker_after_T04": true
+    },
+    {
+      "issue_id": "RC-P35-021-ai-infra-decision-surface-not-runtime-contract",
+      "T04_disposition": "numeric_and_fundamental_subscope_runtime_consumed_T05_T07_graph_judgment_delivery_subscopes_open",
+      "closed_by_T04": false,
+      "full_chain_blocker_after_T04": true
+    }
+  ],
+  "independent_review": {
+    "initial_findings": [
+      "T04_runtime_consumes_the_T03_route_plan_so_S3_T03_must_be_an_explicit_dependency",
+      "the_S1_deterministic_spy_lacked_entity_segment_currency_row_label_and_source_coordinate_fields_required_by_the_new_fail_closed_selector",
+      "company_total_margin_must_not_be_described_as_Data_Center_accelerator_or_cross_chain_profit_capture",
+      "T06_T07_canonical_heads_do_not_exist_yet_so_correction_proof_must_remain_a_dependency_closure_fixture_not_a_business_head_mutation",
+      "digest_and_arithmetic_recomputation_alone_did_not_cross_check_each_metric_input_against_the_selected_row_or_the_T03_bundle_and_promotion_refs"
+    ],
+    "repairs": [
+      "backlog_T04_dependency_now_includes_S3_T03",
+      "deterministic_preview_facts_and_the_S1_spy_now_expose_the_same_exact_financial_selector_contract",
+      "value_cell_keeps_segment_product_incremental_and_cross_chain_attribution_as_typed_cannot_infer",
+      "correction_planner_invalidates_only_the_dependent_metric_and_claim_judgment_report_dependency_anchors_while_preserving_the_independent_metric_closure",
+      "consumer_now_cross_checks_formula_input_order_value_evidence_entity_segment_period_currency_unit_and_T03_bundle_promotion_lineage"
+    ],
+    "disposition": "pass_after_dependency_selector_boundary_and_invalidation_scope_repairs"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_writes": 0,
+    "runtime_evidence_promotions": 0,
+    "canonical_head_invalidations": 0,
+    "new_live_admissions": 0,
+    "paid_or_live_research_runs": 0
+  },
+  "verification": {
+    "focused_T01_T04_and_project_os": "38 passed in 38.15s",
+    "expanded_regression": "164 passed in 99.32s",
+    "final_contract_project_os_and_stable_digest": "13 passed in 20.37s",
+    "json_and_jsonl_parse": "pass",
+    "secret_scan": "pass_no_match_18_T04_files",
+    "git_diff_check": "pass_CRLF_normalization_warnings_only"
+  },
+  "stage_acceptance": {
+    "S3_T04": "pass",
+    "S3_T05": "ready_pending_separate_authorization",
+    "S3_T06_through_T10": "blocked_by_dependencies",
+    "S4": "blocked_by_S3",
+    "release_admission": "not_issued",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S3-T05-BOUNDED-GRAPH-PRODUCT-MARKET-AND-RISK-DECISION-CELL-PROJECTION"
+}

@@ -1,0 +1,156 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v3_epistemic_status_statement_conflict_root_cause_decision_v1_0",
+  "decision_id": "S3-T09-OWNER-GRADE-V3-SEGMENTED-TRANSPORT-V3-EPISTEMIC-STATUS-STATEMENT-CONFLICT-RESULT-AND-ROOT-CAUSE-DECISION",
+  "decided_at": "2026-07-22T22:30:00+08:00",
+  "status": "pass_transport_v4_field_local_epistemic_status_state_machine_and_safe_subtype_telemetry_selected_implementation_pending_separate_authority",
+  "authority": {
+    "user_instruction": "你把原始回答做持久化后再做下一步，要能持续复盘才行",
+    "provider_output_persistence_implementation_authorized": true,
+    "zero_call_result_and_root_cause_decision_authorized_after_persistence": true,
+    "semantic_repair_implementation_authorized": false,
+    "new_admission_model_provider_network_execution_or_rerun_authorized": false,
+    "paired_comparison_Human_Review_T10_S4_release_or_production_authorized": false
+  },
+  "provider_output_persistence_prerequisite": {
+    "status": "implemented_and_fixture_verified_for_future_runs",
+    "capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+    "captured_value": "exact final assistant content string for every provider call, including output rejected later by local parsing or semantic validation",
+    "excluded_values": [
+      "HTTP response envelope",
+      "headers or credentials",
+      "request prompts",
+      "provider reasoning content or private reasoning"
+    ],
+    "storage": "content-addressed canonical object store",
+    "terminal_event_storage": "Run-bound restricted metadata digest and object reference only",
+    "read_surface": "RuntimeFacade.read_research_run_provider_output_captures",
+    "access_class": "internal_restricted_run_audit",
+    "retention_class": "follow_research_run_retention",
+    "historical_transport_v3_output_recoverable": false,
+    "historical_boundary": "the consumed transport-v3 Run predates this capture contract, so its exact response cannot be reconstructed or backfilled",
+    "new_model_provider_network_calls": [0, 0, 0]
+  },
+  "source_evidence": {
+    "failed_live_result_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_transport_v3_fresh_live_execution_result_v1_0.json",
+    "failed_model_run_ref": "reports/model_runs/20260722_fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_segmented_transport_v3_live_validation_r1.md",
+    "failed_research_run_id": "research_run_fin01_9bc3ffd904ae98b26b5cba95",
+    "executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "provider_output_capture_test_ref": "tests/contract/test_fin_0_1_s3_t09_provider_output_capture_persistence.py",
+    "model_provider_execution_network_calls_in_this_decision": [0, 0, 0]
+  },
+  "proven_failure_boundary": {
+    "first_demand_specialist_all_three_segments": "pass",
+    "second_value_profit_facts_explanation_segment": "pass",
+    "second_value_profit_claim_card_provider_HTTP_finish_reason_JSON_shape_cell_and_context_authority": "pass",
+    "second_value_profit_claim_card_local_epistemic_status_state_invariant": "failed",
+    "failure_code": "s3_owner_grade_epistemic_status_statement_conflict",
+    "possible_validator_branches": [
+      "cannot_infer_with_nonempty_support_fact_ids",
+      "cannot_infer_with_empty_cannot_support",
+      "both_conditions"
+    ],
+    "exact_failed_claim_branch_or_raw_output_reconstructable": false,
+    "artifact_count": 0,
+    "canonical_terminalization": "pass_failed_failed_failed_no_orphan",
+    "model_provider_network_calls": [5, 5, 5],
+    "tokens": 20030,
+    "estimated_cost_usd": 0.00941302,
+    "retry_fallback_rerun_counts": [0, 0, 0]
+  },
+  "zero_call_contract_audit": {
+    "local_validator_invariant": {
+      "when_epistemic_status_is_cannot_infer_support_fact_ids_must_equal_empty_array": true,
+      "when_epistemic_status_is_cannot_infer_cannot_support_must_be_nonempty": true,
+      "local_validator_should_be_relaxed": false
+    },
+    "provider_visible_transport_v3_contract": {
+      "epistemic_status_lists_four_allowed_values": true,
+      "support_fact_ids_field_only_says_exact_validated_fact_id": true,
+      "cannot_support_field_says_nonempty_and_required_for_cannot_infer": true,
+      "explicit_rule_that_cannot_infer_requires_empty_support_fact_ids": false,
+      "closed_per_status_field_state_machine_present": false,
+      "pre_response_cross_field_state_check_present": false
+    },
+    "fixture_gap": "positive fixtures emit preassembled valid cards, while existing negatives validate authority and narrative fields but do not prove Provider-visible per-status cross-field rules",
+    "earliest_project_owned_root_cause": "the local validator enforces a cross-field epistemic state machine that transport-v3 does not explicitly convey beside the claim-card fields",
+    "provider_or_model_only_root_cause_confirmed": false,
+    "diagnosis": "The returned card was nonconforming, but the project asked the model to infer an unstated conditional invariant. This is a project-owned contract gap with Provider conformance as residual risk, not sufficient evidence that DeepSeek itself is defective."
+  },
+  "selected_zero_call_implementation_contract": {
+    "next_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v4",
+    "historical_transport_v1_v2_v3_immutable": true,
+    "canonical_output_contract_ref_unchanged": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "local_owner_grade_validator_unchanged": true,
+    "provider_visible_epistemic_status_contract": {
+      "field_id": "judgment_layer.epistemic_status_support_fact_ids_qualification_cannot_support",
+      "fact_supported_or_bounded_inference_requires_nonempty_support_fact_ids": true,
+      "hypothesis_requires_nonblank_qualification": true,
+      "cannot_infer_requires_support_fact_ids_exactly_empty_array": true,
+      "cannot_infer_requires_one_or_more_nonblank_cannot_support_boundaries": true,
+      "exact_machine_readable_status_matrix_beside_claim_schema": true,
+      "pre_response_cross_field_state_check_required": true,
+      "no_silent_coercion_drop_or_status_rewrite": true
+    },
+    "safe_failure_telemetry": {
+      "allowed_subtypes": [
+        "cannot_infer_has_support_fact_ids",
+        "cannot_infer_missing_cannot_support",
+        "cannot_infer_has_support_and_missing_boundary"
+      ],
+      "persist_only_segment_field_subtype_and_failing_item_count": true,
+      "raw_claim_text_fact_ids_boundary_text_item_index_or_private_reasoning_in_failure_event": false,
+      "exact_assistant_text_remains_available_only_through_restricted_object_capture": true
+    },
+    "fixture_acceptance": [
+      "request exposes the closed status matrix in the full production model view",
+      "valid fact_supported bounded_inference hypothesis and cannot_infer cards pass",
+      "each cannot_infer conflict branch fails at the claim-card segment with a closed subtype",
+      "invalid cards never reach WWC Lead Writer Verifier or Artifact commit",
+      "successful fixture preserves six logical nodes nine Artifact families and twelve exact calls"
+    ],
+    "future_admission_requirement": "every future exact admission must explicitly bind fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+    "execution_policy": {
+      "implementation_and_fake_provider_fixtures_only": true,
+      "model_provider_network_calls": [0, 0, 0],
+      "new_admission_or_execution": false,
+      "retry_fallback_repair_or_rerun_budget": 0
+    }
+  },
+  "future_stop_line": {
+    "at_most_one_fresh_transport_v4_exact_live_proof_may_be_considered_under_later_separate_decision_issuance_and_execution_authorities": true,
+    "if_transport_v4_reaches_another_claim_card_contract_failure": "stop prompt-only versioning and move DeepSeek to provider-route disposition or defer S3-T09",
+    "successful_transport_conformance_still_does_not_equal_owner_grade_acceptance": true
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "new_admissions": 0,
+    "new_live_WorkUnits": 0,
+    "new_live_Attempts": 0,
+    "new_live_ResearchRuns": 0,
+    "new_live_Artifacts": 0,
+    "paired_comparisons": 0,
+    "Human_Reviews": 0
+  },
+  "verification": {
+    "focused_capture_decision_and_transport_contracts": "17 passed",
+    "complete_S3_T09_except_expensive_live_runner_file": "195 passed",
+    "directly_affected_live_runner_terminal_failure_and_nonreuse_case": "1 passed",
+    "historical_admission_issuance_digest_compatibility": "21 passed",
+    "JSON_and_JSONL_parse": "pass",
+    "python_compile": "pass",
+    "git_diff_check": "pass",
+    "full_live_runner_file_note": "not rerun as one file because its four full canonical prepares exceed the per-command tool budget; the directly affected terminal-failure/nonreuse case passed in 105.14 seconds"
+  },
+  "stage_decision": {
+    "RC_P36_039": "transport_v4_field_local_epistemic_state_machine_repair_selected_implementation_pending",
+    "RC_P36_037": "still_open_no_fresh_complete_owner_grade_artifact_proof",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-SEGMENTED-TRANSPORT-V4-FIELD-LOCAL-EPISTEMIC-STATUS-STATE-MACHINE-AND-SAFE-SUBTYPE-TELEMETRY-ZERO-CALL-IMPLEMENTATION"
+}

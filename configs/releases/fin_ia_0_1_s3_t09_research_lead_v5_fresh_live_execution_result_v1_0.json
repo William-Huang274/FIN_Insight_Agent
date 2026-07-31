@@ -1,0 +1,193 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_research_lead_v5_fresh_live_execution_result_v1_0",
+  "executed_at": "2026-07-24T00:07:27+08:00",
+  "terminal_at": "2026-07-24T00:09:06+08:00",
+  "status": "terminal_failed_research_lead_v5_per_field_narrative_length_admission_consumed_no_retry",
+  "authority": {
+    "user_instruction": "继续",
+    "one_exact_live_execution_authorized": true,
+    "automatic_retry_fallback_patch_or_rerun_authorized": false,
+    "paired_comparison_owner_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_refs": {
+    "admission_issuance": "configs/releases/fin_ia_0_1_s3_t09_research_lead_v5_fresh_exact_admission_issuance_v1_0.json",
+    "admission": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_research_lead_v5_exact_admission_r1.json",
+    "decision": "configs/releases/fin_ia_0_1_s3_t09_research_lead_v5_fresh_agent_proof_decision_v1_0.json",
+    "runtime_result": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/research_lead_v5_r1_live_execution_result.json",
+    "runtime_preflight": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/research_lead_v5_r1_live_execution_preflight.json",
+    "runtime_terminal_inspection": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/research_lead_v5_r1_live_execution_terminal_inspection.json"
+  },
+  "identity": {
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-research-lead-v5-exact-admission-r1",
+    "admission_digest": "ac364bd6fccdd881e47bef72cec19d44b3eadb0c3de40befc041916d6c84e264",
+    "work_unit_idempotency_key": "fin01-s3-t09-three-cell-deepseek-owner-grade-research-lead-v5-live-validation-r1",
+    "work_unit_id": "wu_p02_5_772dcb33e32d7c39bdae2875",
+    "attempt_id": "attempt_fin01_3e298924838c215f8d5bea8d",
+    "research_run_id": "research_run_fin01_2aeba4619781fa9a56f55af0",
+    "input_digest": "6fd6585549db9c483a7ea430507185791d83762a62da20381ebec80628981f4c"
+  },
+  "preflight": {
+    "project_os_status": "pass",
+    "project_os_run_scope": "S3_T09_research_lead_v5_fresh_exact_live_execution_after_user_authority",
+    "project_os_blocker_override_used": false,
+    "exact_runner_status": "pass_exact_zero_call_execution_preflight",
+    "transport_retries": 0,
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "execution_state_counts_before_after": [
+      [16, 16, 16, 13],
+      [16, 16, 16, 13]
+    ],
+    "model_provider_network_source_tool_calls": [0, 0, 0, 0, 0]
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "terminal_reason": "bounded_agent_profile_error:BoundedAgentExecutionError:research_lead",
+    "artifact_count": 0,
+    "artifact_types": [],
+    "event_count": 8,
+    "orphaned_run": false
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v5",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+    "scoped_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+    "model_provider_network_calls": [10, 10, 10],
+    "input_output_total_tokens": [42040, 5860, 47900],
+    "estimated_cost_usd": 0.0223365,
+    "retry_fallback_rerun_counts": [0, 0, 0],
+    "specialist_segments_completed": 9,
+    "research_lead_called": true,
+    "memo_writer_called": false,
+    "verifier_called": false,
+    "finish_reasons": [
+      "stop",
+      "stop",
+      "stop",
+      "stop",
+      "stop",
+      "stop",
+      "stop",
+      "stop",
+      "stop",
+      "stop"
+    ],
+    "research_lead_output_tokens_and_cap": [1050, 1800],
+    "research_lead_wire_utf8_bytes_and_cap": [4628, 8192],
+    "research_lead_aggregate_narrative_characters_and_cap": [3077, 3200]
+  },
+  "provider_output_capture": {
+    "policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1",
+    "capture_count": 10,
+    "restricted_readback_count": 10,
+    "assistant_output_present_count": 10,
+    "research_lead_capture_sequence": 10,
+    "research_lead_object_digest": "64c9758cd2f4c4d9a6b678c0974627e81a9e136809ea1ce2e8348cc67dd41271",
+    "assistant_output_text_in_runtime_or_release_result": false,
+    "raw_provider_response_persisted": false,
+    "private_reasoning_persisted": false
+  },
+  "restricted_research_lead_capture_audit": {
+    "assistant_output_characters_and_utf8_bytes": [4628, 4628],
+    "json_valid": true,
+    "top_level_keys": [
+      "conflict_adjudications",
+      "cross_cell_dependencies",
+      "remaining_gaps",
+      "variant_view"
+    ],
+    "field_cardinalities": {
+      "cross_cell_dependencies": 3,
+      "conflict_adjudications": 3,
+      "remaining_gaps": 3
+    },
+    "narrative_item_count": 16,
+    "aggregate_narrative_characters": 3077,
+    "maximum_narrative_item_characters": 423,
+    "over_320_item_count": 3,
+    "over_320_items": [
+      {
+        "field_path": "cross_cell_dependencies[0].statement",
+        "unicode_characters": 388,
+        "over_by": 68
+      },
+      {
+        "field_path": "cross_cell_dependencies[1].statement",
+        "unicode_characters": 343,
+        "over_by": 23
+      },
+      {
+        "field_path": "variant_view.statement",
+        "unicode_characters": 423,
+        "over_by": 103
+      }
+    ],
+    "raw_text_copied_to_release_result": false
+  },
+  "failure_observation": {
+    "stage": "research_lead",
+    "failure_code": "s3_bounded_research_lead_v3_text_item_over_max_unicode_characters",
+    "failure_family": "text",
+    "failure_subtype": "item_over_max_unicode_characters",
+    "field_id": "assembled_output",
+    "validator_contract": "closed_research_lead_output:v3",
+    "runtime_telemetry_failing_item_count": 1,
+    "restricted_audit_failing_item_count": 3,
+    "first_credible_failure_stopped_execution": true
+  },
+  "runtime_integrity": {
+    "canonical_counts_after": [17, 17, 17, 13],
+    "canonical_database_sha256_after": "1490f9aa109a520f47bc2b4e821b79ce743090a6064cb80b524a879bb11efe7c",
+    "canonical_object_tree_sha256_after": "0b78abbdf472cba30a23501202f0666f54a3eaaae90ea73de47dbc3687a74d3b",
+    "provider_answers_and_usage_durably_replayable": true,
+    "terminal_states_consistent": true,
+    "additional_calls_during_inspection": [0, 0, 0]
+  },
+  "boundary_observation": {
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_case_head_writes": 0,
+    "credential_value_persisted": false
+  },
+  "product_acceptance": {
+    "required_terminal_state": "succeeded",
+    "required_logical_nodes": 6,
+    "required_provider_calls": 12,
+    "required_artifact_families": 9,
+    "observed_provider_calls": 10,
+    "observed_artifact_families": 0,
+    "transport_only_green": false,
+    "fresh_agent_product_proof": "failed",
+    "junior_analyst_deliverable": false,
+    "paired_comparison_authorized_or_performed": false,
+    "owner_acceptance_authorized_or_performed": false
+  },
+  "root_cause_disposition": {
+    "RC_P36_040": "lead_v5_compact_wire_and_aggregate_capacity_live_proven_but_complete_product_blocked_by_per_field_text_failure",
+    "RC_P36_046": "partial_live_alias_wire_observed_but_local_typed_expansion_writer_verifier_and_complete_artifact_lineage_unproven",
+    "RC_P36_047": "new_research_lead_v5_per_field_narrative_length_failure_root_cause_decision_pending",
+    "RC_P36_037": "blocked_no_complete_fresh_artifact_product",
+    "repair_or_rerun_authorized": false
+  },
+  "observed_counts": {
+    "admissions_consumed": 1,
+    "work_units_created": 1,
+    "attempts_created": 1,
+    "research_runs_created": 1,
+    "artifacts_created": 0,
+    "model_calls": 10,
+    "provider_calls": 10,
+    "execution_network_calls": 10,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "comparisons": 0,
+    "human_reviews": 0
+  },
+  "next_action": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-PER-FIELD-NARRATIVE-LENGTH-FAILURE-ZERO-CALL-ROOT-CAUSE-DECISION"
+}

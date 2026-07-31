@@ -1,0 +1,132 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_research_lead_v5_fresh_exact_admission_issuance_v1_0",
+  "issuance_id": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-FRESH-EXACT-ADMISSION-ISSUANCE",
+  "issued_at": "2026-07-23T23:54:26+08:00",
+  "status": "issued_unconsumed_zero_call_preflight_pass",
+  "authority": {
+    "user_instruction": "继续",
+    "fresh_exact_admission_issuance_authorized": true,
+    "admission_consumption_or_exact_live_execution_authorized": false,
+    "automatic_retry_fallback_patch_or_rerun_authorized": false,
+    "paired_comparison_human_review_T10_S4_release_or_production_authorized": false
+  },
+  "source_decision_ref": "configs/releases/fin_ia_0_1_s3_t09_research_lead_v5_fresh_agent_proof_decision_v1_0.json",
+  "issued_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_research_lead_v5_exact_admission_r1.json",
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-owner-grade-research-lead-v5-exact-admission-r1",
+    "admission_digest": "ac364bd6fccdd881e47bef72cec19d44b3eadb0c3de40befc041916d6c84e264",
+    "runtime_root": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "work_unit_idempotency_key": "fin01-s3-t09-three-cell-deepseek-owner-grade-research-lead-v5-live-validation-r1",
+    "fresh_identity": true,
+    "execution_enabled": true,
+    "consumed": false,
+    "execution_started": false
+  },
+  "exact_binding": {
+    "case_id": "case_ac6fce120bf27977a1b45832",
+    "case_version": 1,
+    "decision_surface_contract_ref": "p02_decision_surface_fd8fca1b6e3b98886fb71109:v1",
+    "as_of": "2026-07-21T00:00:00Z",
+    "input_head_digest": "c9867b54b86cf17982b4cebfaf0c0ebcae2a6f46d894ff82dbb643f693c9836d",
+    "input_digest": "6fd6585549db9c483a7ea430507185791d83762a62da20381ebec80628981f4c",
+    "preparation_digest": "f59382dfa927a43c4968566f2c416792637e6cfe9d78d40f9eb94d392cdff4ee",
+    "predicted_work_unit_id": "wu_p02_5_772dcb33e32d7c39bdae2875",
+    "predicted_attempt_id": "attempt_fin01_3e298924838c215f8d5bea8d",
+    "predicted_research_run_id": "research_run_fin01_2aeba4619781fa9a56f55af0",
+    "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v2",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "credential_env": "DEEPSEEK_API_KEY",
+    "output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v4",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v5",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+    "scoped_identity_contract_ref": "fin01.s3.cell_scoped_research_identity:v1",
+    "provider_output_capture_policy_ref": "fin01.s3.provider_output_capture.assistant_final_text_only:v1"
+  },
+  "capacity_contract": {
+    "aggregate_max_output_tokens": 16800,
+    "aggregate_provider_narrative_unicode_character_maximum": 3200,
+    "canonical_alias_segment_utf8_byte_maximum": 6000,
+    "fixture_digests": [
+      "ae3963f35f8eb3f9624f143f8c6f0e7897b51a3b56ab5f8e6ddaa45d64c41d7a",
+      "f207e92024c9a4e109ec3ddb7665c3e396d965250726705ab43de635d6ce1bc3",
+      "2fff37072e7af7e4a825931eb8c639c344704285708828e3a60a9ccd4d9da02b"
+    ],
+    "lead_max_output_tokens": 1800,
+    "local_expanded_hard_utf8_byte_maximum": 32768,
+    "provider_raw_wire_utf8_byte_maximum": 8192,
+    "token_or_cost_increase_selected": false
+  },
+  "artifact_acceptance_contract": {
+    "complete_product_semantic_review_required_after_live_success": true,
+    "failure_preserves_completed_assistant_outputs_and_usage": true,
+    "failure_requires_typed_terminal_closeout": true,
+    "required_artifact_types": [
+      "SpecialistAnalysis",
+      "ResearchLeadSynthesis",
+      "MemoDraft",
+      "VerifierResult",
+      "FactSet",
+      "EvidenceSet",
+      "NumericSet",
+      "JudgmentSet",
+      "Report"
+    ],
+    "success_requires_artifact_families": 9,
+    "success_requires_logical_nodes": 6,
+    "success_requires_provider_calls": 12,
+    "success_requires_terminal_state": "succeeded",
+    "transport_or_lead_only_green_is_success": false
+  },
+  "execution_envelope": {
+    "maximum_semantic_model_calls": 12,
+    "maximum_provider_calls": 12,
+    "maximum_network_calls": 12,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "maximum_output_tokens_total": 16800,
+    "maximum_total_cost_usd": 0.1,
+    "source_network_calls_allowed": false,
+    "external_tool_calls_allowed": false,
+    "live_business_case_head_writes_allowed": false,
+    "automatic_retry_repair_fallback_or_rerun_allowed": false,
+    "first_credible_failure": "terminal_fail_closed_stop"
+  },
+  "zero_call_preflight": {
+    "decision_contract_tests": "pass_focused_issuance_contract_suite",
+    "independent_disposable_clone_invocations": 2,
+    "fresh_predicted_work_unit_attempt_run_absent": true,
+    "historical_admission_or_run_reused": false,
+    "target_execution_counts": [
+      16,
+      16,
+      16,
+      13
+    ],
+    "canonical_database_sha256": "3661afa25058ad8d83b86941ae01593c3eb2f53c55d0245fe32c907fd013ece7",
+    "canonical_object_tree_sha256": "c7d7eff7a5b2cf243baac7582a021d40273091a3d4821032799f323ecea206c3",
+    "target_audit_mode": "direct_SQLite_mode_ro_and_object_digest",
+    "provider_callback_invoked": false,
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "transport_retry_environment_zero": false,
+    "exact_live_execution_precondition": "LLM_GATEWAY_TRANSPORT_RETRIES must equal 0"
+  },
+  "observed_counts": {
+    "new_admissions": 1,
+    "admission_consumptions": 0,
+    "work_units_created": 0,
+    "attempts_created": 0,
+    "research_runs_created": 0,
+    "artifacts_created": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0
+  },
+  "next_action": "S3-T09-OWNER-GRADE-RESEARCH-LEAD-V5-FRESH-EXACT-LIVE-EXECUTION"
+}

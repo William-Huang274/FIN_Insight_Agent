@@ -1,0 +1,157 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t03_evidence_route_promotion_sourcehunter_v1_0",
+  "status": "pass_after_independent_review_T04_ready_pending_separate_authorization",
+  "recorded_at": "2026-07-21T15:20:00+08:00",
+  "task_id": "S3-T03-CELL-DRIVEN-EVIDENCE-REQUEST-ROUTE-PROMOTION-AND-SOURCEHUNTER-BOUNDARY",
+  "authority": {
+    "user_instruction": "继续",
+    "S3_T03_zero_call_local_fixture_authorized": true,
+    "S3_T04_execution_authorized": false,
+    "model_or_provider_execution_authorized": false,
+    "source_network_or_external_tool_execution_authorized": false,
+    "live_business_case_mutation_authorized": false,
+    "new_live_admission_or_paid_run_authorized": false,
+    "S4_release_or_production_authorized": false
+  },
+  "implementation": {
+    "unique_owner": "apps/workbench/backend/application/evidence_service.py:EvidenceService",
+    "runtime_owner": "apps/workbench/backend/application/research_runtime.py:Fin01ResearchRuntime",
+    "evidence_route_plan_contract_ref": "fin01.s3.evidence_route_plan_three_cell:v1",
+    "sourcehunter_boundary_ref": "fin01.s3.sourcehunter_separate_exact_admission:v1",
+    "evidence_request_count": 3,
+    "distinct_local_route_set_count": 3,
+    "tool_gateway_preflight_count": 6,
+    "candidate_bundle_count": 3,
+    "promotion_assessment_count": 3,
+    "graph_observation_count": 1,
+    "local_source_followup_count": 1,
+    "sourcehunter_boundary_count": 3,
+    "runtime_evidence_promotion_count": 0,
+    "parallel_runtime_registry_writer_store_or_business_truth_family_added": false,
+    "S2_consumed_identity_or_artifact_rewritten": false
+  },
+  "cell_route_contract": [
+    {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "evidence_role": "demand_signal",
+      "route_order": [
+        "local_object_bm25_official_disclosure",
+        "local_materialized_customer_deployment_context"
+      ],
+      "promotion_decision": "candidate_only_pending_claim_source_content_and_corroboration",
+      "accepted_evidence_count": 0,
+      "sourcehunter_status": "not_eligible_until_parser_or_claim_binding"
+    },
+    {
+      "program_cell_id": "value_and_profit_capture",
+      "evidence_role": "revenue_capture",
+      "route_order": [
+        "local_gold_sql_financial_table",
+        "local_official_filing_table_address"
+      ],
+      "promotion_decision": "candidate_only_pending_T04_parser_numeric_lineage",
+      "accepted_evidence_count": 0,
+      "sourcehunter_status": "not_eligible_until_parser_or_claim_binding"
+    },
+    {
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "evidence_role": "thesis_counterevidence",
+      "route_order": [
+        "local_relationship_graph_navigation",
+        "local_official_counterevidence_source_followup"
+      ],
+      "promotion_decision": "context_only_graph_observation_source_followup_required",
+      "accepted_evidence_count": 0,
+      "graph_direct_evidence_authorized": false,
+      "sourcehunter_status": "proposal_only_blocked_missing_separate_network_admission"
+    }
+  ],
+  "tool_gateway_preflight_contract": {
+    "checks": [
+      "tool_registry",
+      "permission_planning_allowlist",
+      "network_requirement",
+      "data_scope",
+      "budget",
+      "input_contract"
+    ],
+    "local_route_decision": "checks_pass_execution_not_admitted",
+    "all_invocation_status": "not_executed",
+    "permission_denial_result": "typed_stop_before_tool_execution"
+  },
+  "candidate_evidence_promotion_boundary": {
+    "candidate_is_evidence": false,
+    "graph_observation_is_evidence": false,
+    "context_is_exact_fact_support": false,
+    "runtime_promotion_authorized": false,
+    "writer_citable": false,
+    "judgment_eligible": false,
+    "accepted_evidence_refs": [],
+    "reason": "T03 has metadata-only local fixtures; demand still needs claim-scoped source content and corroboration, revenue still needs T04 parser/numeric lineage, and graph context still needs an underlying official source."
+  },
+  "sourcehunter_boundary": {
+    "proposal_exists_for_counterevidence_cell": true,
+    "proposal_executed": false,
+    "separate_exact_network_admission_required": true,
+    "model_permission_implies_network_permission": false,
+    "network_calls": 0,
+    "external_tool_calls": 0,
+    "new_source_persisted": false
+  },
+  "root_cause_reconcile": [
+    {
+      "issue_id": "RC-P36-022-retrieval-rag-market-ownership-not-decision-cell-driven",
+      "T03_disposition": "cell_driven_control_plane_runtime_injected_and_node_consumed_but_live_local_route_parser_promotion_and_source_network_quality_remain_unproven",
+      "closed_by_T03": false,
+      "full_chain_blocker_after_T03": true,
+      "reason": "The original routing/control-plane defect is repaired for the deterministic fixture, but T03 intentionally executes no local retrieval, parser promotion or SourceHunter network request and therefore cannot prove live evidence quality."
+    },
+    {
+      "issue_id": "RC-P35-021-ai-infra-decision-surface-not-runtime-contract",
+      "T03_disposition": "evidence_route_subscope_runtime_consumed_T04_T07_subscopes_open",
+      "closed_by_T03": false,
+      "full_chain_blocker_after_T03": true
+    }
+  ],
+  "independent_review": {
+    "initial_findings": [
+      "counterevidence_route_inherited_the_old_single_route_budget_so_graph_source_followup_was_missing",
+      "runtime_work_unit_scope_needed_explicit_tenant_project_state_and_decision_surface_checks",
+      "nested_request_plan_bundle_preflight_promotion_graph_followup_sourcehunter_and_plan_digests_needed_recomputation"
+    ],
+    "repairs": [
+      "counterevidence_tool_call_limit_is_two_for_graph_navigation_plus_local_official_followup",
+      "EvidenceService_validates_exact_scoped_pending_or_running_WorkUnit_and_accepted_DecisionSurface",
+      "consumer_recomputes_all_nested_digests_and_exact_identities_fail_closed"
+    ],
+    "disposition": "pass_after_route_budget_scope_and_digest_repair"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_writes": 0,
+    "runtime_evidence_promotions": 0,
+    "new_live_admissions": 0,
+    "paid_or_live_research_runs": 0
+  },
+  "verification": {
+    "focused_runtime_T02_T03": "32 passed in 23.97s",
+    "expanded_regression": "160 passed in 98.20s",
+    "json_and_jsonl_parse": "pass",
+    "secret_scan": "pass_no_match",
+    "git_diff_check": "pass_CRLF_normalization_warnings_only"
+  },
+  "stage_acceptance": {
+    "S3_T03": "pass",
+    "S3_T04": "ready_pending_separate_authorization",
+    "S3_T05": "dependency_ready_but_not_current_pending_S3_T04_order",
+    "S3_T06_through_T10": "blocked_by_dependencies",
+    "S4": "blocked_by_S3",
+    "release_admission": "not_issued",
+    "production_readiness": "not_admitted"
+  },
+  "next_action": "S3-T04-DETERMINISTIC-FINANCIAL-NUMERIC-AND-FUNDAMENTAL-DECISION-CELL-PACK"
+}

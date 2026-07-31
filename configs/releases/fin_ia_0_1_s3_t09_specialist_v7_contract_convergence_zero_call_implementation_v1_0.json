@@ -1,0 +1,88 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_specialist_v7_contract_convergence_zero_call_implementation_v1_0",
+  "implemented_at": "2026-07-23T18:10:00+08:00",
+  "status": "pass_zero_call_specialist_v7_contract_convergence_fixture_proven_fresh_agent_proof_decision_pending",
+  "authority": {
+    "user_instruction": "可以，按你说的做",
+    "root_cause_decision_and_zero_call_implementation_authorized": true,
+    "admission_issuance_model_provider_network_or_live_execution_authorized": false,
+    "comparison_human_review_T10_S4_release_or_production_authorized": false
+  },
+  "root_cause": {
+    "issue_id": "RC-P36-044-s3-specialist-fact-support-field-local-authority-gap",
+    "confirmed": true,
+    "earliest_owned_contract_gap": "fact_layer.support_refs lacked a field-local exact Evidence/Numeric authority contract while the Provider could see Candidate and Graph context",
+    "historical_failed_answer_disposition": "remains_failed_and_replayable_no_ref_drop_normalization_or_reclassification"
+  },
+  "architecture": {
+    "policy_module_ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+    "selected_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "transport_dispatch": "transport_ref_to_immutable_capability_contract",
+    "shared_typed_policies": [
+      "FactSupportAuthorityPolicy",
+      "EpistemicStatePolicy",
+      "ClaimScopeResolver",
+      "BoundedResearchProfile"
+    ],
+    "fact_support_contract_ref": "closed_fact_support_authority:v1",
+    "prompt_and_validator_share_policy": true,
+    "candidate_and_graph_fact_authority_allowed": false,
+    "local_normalization_trim_remap_drop_or_repair_allowed": false,
+    "safe_failure_telemetry_family": "segmented_specialist_fact_authority"
+  },
+  "profile_configuration": {
+    "default_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v1",
+    "company_cell_inventory_narrative_capacity_byte_capacity_and_token_budgets_are_profile_fields": true,
+    "new_v7_admission_requires_explicit_profile_ref": true,
+    "historical_missing_profile_ref_maps_to_frozen_legacy_profile": true,
+    "non_nvda_fixture_company": "AMD",
+    "nonstandard_period_fixture": "2027-Q1-53W"
+  },
+  "compatibility": {
+    "v1_through_v6_transport_refs_unchanged": true,
+    "v6_request_contains_fact_support_authority_contract": false,
+    "historical_admission_digest_payload_adds_implicit_profile_field": false,
+    "canonical_output_contract_ref": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "six_logical_nodes_preserved": true,
+    "nine_artifact_family_preserved": true
+  },
+  "deterministic_proof": {
+    "specialist_v7_contract_tests": 12,
+    "canonical_fact_authority_telemetry_tests": 2,
+    "canonical_adjacent_telemetry_tests": 4,
+    "shared_owner_grade_regression_passed": 74,
+    "shared_owner_grade_stale_backlog_assertions_excluded": 2,
+    "s2_t03_adjacent_regression_passed": 69,
+    "v7_full_fake_provider_calls": 12,
+    "v7_full_fake_provider_artifacts": 9,
+    "v7_graph_fact_support_earliest_stop_provider_calls": 1,
+    "mixed_evidence_numeric_authority_fixture": true,
+    "non_nvda_profile_fixture": true,
+    "historical_v6_request_immutability_fixture": true
+  },
+  "observed_counts": {
+    "real_model_calls": 0,
+    "real_provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "admission_consumptions": 0,
+    "canonical_runs": 0,
+    "canonical_artifacts": 0,
+    "business_case_writes": 0,
+    "comparisons": 0,
+    "human_reviews": 0
+  },
+  "acceptance": {
+    "RC_P36_044": "zero_call_contract_converged_and_fixture_proven_fresh_live_proof_pending",
+    "RC_P36_038": "open_audit_mode_recurrence_direct_SQLite_mode_ro_or_disposable_clone_only",
+    "RC_P36_037": "still_blocked_complete_fresh_nine_artifact_owner_grade_product_missing",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-SPECIALIST-V7-FRESH-AGENT-PROOF-DECISION"
+}

@@ -1,0 +1,162 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_owner_grade_v3_segmented_first_segment_text_length_failure_root_cause_decision_v1_0",
+  "decision_id": "S3-T09-OWNER-GRADE-V3-SEGMENTED-FIRST-SEGMENT-TEXT-LENGTH-FAILURE-RESULT-AND-ROOT-CAUSE-DECISION",
+  "decided_at": "2026-07-22T21:00:00+08:00",
+  "status": "pass_field_local_text_contract_and_safe_subtype_telemetry_repair_selected_implementation_pending_separate_authority",
+  "authority": {
+    "user_instruction": "授权",
+    "zero_call_result_and_root_cause_decision_authorized": true,
+    "implementation_authorized": false,
+    "new_admission_or_model_execution_authorized": false,
+    "paired_comparison_Human_Review_T10_S4_release_or_production_authorized": false
+  },
+  "source_evidence": {
+    "failed_live_result_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_fresh_live_execution_result_v1_0.json",
+    "failed_model_run_ref": "reports/model_runs/20260722_fin_ia_0_1_s3_t09_three_cell_deepseek_owner_grade_v3_segmented_live_validation_r1.md",
+    "failed_research_run_id": "research_run_fin01_613dad1d30f9ce5357213b21",
+    "executor_ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "prior_transport_implementation_ref": "configs/releases/fin_ia_0_1_s3_t09_owner_grade_v3_segmented_specialist_transport_implementation_v1_0.json",
+    "model_provider_execution_network_calls_in_this_decision": [0, 0, 0],
+    "documentation_network_calls_in_this_decision": 0
+  },
+  "proven_failure_boundary": {
+    "provider_HTTP_transport_and_finish_reason_stop": "pass",
+    "native_JSON_object_parse": "pass",
+    "segment_exact_top_level_keys": "pass",
+    "program_cell_id_binding": "pass",
+    "explanation_layer_list_and_cardinality": "pass",
+    "combined_item_predicate": "failed_nonblank_string_and_maximum_320_unicode_characters",
+    "second_segment_called": false,
+    "artifact_count": 0,
+    "canonical_terminalization": "pass_failed_failed_failed_no_orphan",
+    "retry_fallback_rerun_counts": [0, 0, 0]
+  },
+  "not_reconstructable": [
+    "which_explanation_item_failed",
+    "whether_the_item_was_non_string_blank_or_over_320_unicode_characters",
+    "actual_item_lengths",
+    "raw_provider_output"
+  ],
+  "root_cause_classification": {
+    "immediate_failure_class": "provider_model_output_did_not_conform_to_application_text_contract",
+    "external_or_model_only_root_cause_confirmed": false,
+    "project_owned_earliest_repair_surface": "DeepSeekS3ThreeCellNodeExecutor._specialist_segment_request_provider_visible_field_contract_and_safe_failure_telemetry",
+    "confirmed_project_owned_gaps": [
+      {
+        "gap": "field_local_text_contract_conveyance_is_underspecified",
+        "evidence": "required_output_schema represents explanation_layer only as an array of generic string exemplars while the 320 Unicode-character rule is supplied once as a cross-field output_constraints member"
+      },
+      {
+        "gap": "segmented_system_instruction_lost_direct_limit_emphasis",
+        "evidence": "the segmented system instruction says to treat output_constraints as rules but omits the monolithic path directive to obey every cardinality character and byte limit and prefer concise typed boundaries"
+      },
+      {
+        "gap": "text_failure_telemetry_coalesces_actionable_subtypes",
+        "evidence": "the same persisted failure family represents non-string blank and over-limit items, so the historical failure cannot select a narrower repair honestly"
+      }
+    ],
+    "diagnosis": "The live result is a model-output conformance failure, but the earliest project-owned preventable weakness is a provider-visible segmented contract regression plus an observability gap. Prompt-only JSON mode cannot enforce the local maximum, so the project must make the rule field-local and explicit while continuing to fail closed; this decision does not label DeepSeek itself defective."
+  },
+  "rejected_actions": [
+    {
+      "action": "retry_or_rerun_the_consumed_admission",
+      "decision": "reject",
+      "reason": "the identity is consumed and retry would hide the same unresolved contract fingerprint"
+    },
+    {
+      "action": "silently_truncate_trim_coerce_drop_or_join_items",
+      "decision": "reject",
+      "reason": "silent normalization can remove financial qualifications or convert invalid output into apparently valid research"
+    },
+    {
+      "action": "relax_or_remove_the_320_character_local_validator",
+      "decision": "reject",
+      "reason": "the bound protects concise auditable workpaper content and the run provides no evidence that a looser contract improves research quality"
+    },
+    {
+      "action": "add_safe_subtype_telemetry_only",
+      "decision": "reject_as_complete_repair",
+      "reason": "telemetry improves diagnosis but does not improve Provider-visible conformance"
+    },
+    {
+      "action": "blame_or_replace_the_provider_before_an_owned_contract_repair",
+      "decision": "reject_as_current_next_step",
+      "reason": "the project-owned field-local conveyance regression is cheaper and deterministically testable before changing the Provider variable"
+    }
+  ],
+  "selected_zero_call_implementation_contract": {
+    "next_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v2",
+    "canonical_output_contract_ref_unchanged": "fin01.s3.bounded_agent_three_cell_output:v3",
+    "local_maximum_narrative_item_unicode_characters_unchanged": 320,
+    "provider_visible_contract_repair": {
+      "every_narrative_field_has_field_local_nonblank_string_and_maximum_320_unicode_character_instructions": true,
+      "system_instruction_requires_pre_response_field_by_field_limit_check": true,
+      "system_instruction_requires_concise_typed_boundaries_instead_of_repetition": true,
+      "output_constraints_retain_closed_cardinality_and_serialized_byte_limits": true,
+      "required_output_schema_contains_only_real_output_members": true,
+      "additional_properties_allowed": false
+    },
+    "safe_text_failure_telemetry": {
+      "allowed_fields": [
+        "fact_layer.statement_or_boundary",
+        "explanation_layer",
+        "remaining_gaps",
+        "judgment_layer",
+        "what_would_change"
+      ],
+      "allowed_subtypes": [
+        "item_not_string",
+        "item_blank",
+        "item_over_max_unicode_characters"
+      ],
+      "persist_only_field_subtype_and_failing_item_count": true,
+      "persist_raw_text_item_index_arbitrary_key_name_or_private_reasoning": false
+    },
+    "normalization_policy": {
+      "truncate": false,
+      "trim_into_acceptance": false,
+      "coerce_non_string": false,
+      "drop_invalid_item": false,
+      "join_or_split_item": false
+    },
+    "execution_policy": {
+      "fake_provider_fixtures_only": true,
+      "model_provider_network_calls": [0, 0, 0],
+      "new_admission_or_execution": false,
+      "retry_fallback_repair_or_rerun_budget": 0,
+      "first_failure_stop": true
+    }
+  },
+  "implementation_acceptance": [
+    "the v2 segmented request makes the 320-character rule field-local for every narrative output member and restores an explicit concise-limit system instruction",
+    "the canonical output-v3 object and local maximum remain unchanged",
+    "non-string blank and over-limit fixtures produce distinct closed telemetry without persisting content item index key names or private reasoning",
+    "no fixture path truncates coerces drops joins or repairs invalid Provider content",
+    "the first invalid segment stops before later segments downstream nodes or Artifact commit",
+    "positive six-logical-node fake-Provider fixtures still produce the existing nine Artifact families",
+    "historical admission Run result and raw-output non-persistence remain immutable",
+    "implementation does not decide issue or consume a fresh admission and performs no real model Provider or network call"
+  ],
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "new_admissions": 0,
+    "new_WorkUnits": 0,
+    "new_Attempts": 0,
+    "new_ResearchRuns": 0,
+    "new_Artifacts": 0,
+    "paired_comparisons": 0,
+    "Human_Reviews": 0
+  },
+  "stage_decision": {
+    "RC_P36_039": "field_local_text_contract_and_safe_subtype_telemetry_repair_selected_implementation_pending_separate_authority",
+    "RC_P36_037": "remains_blocked_until_complete_fresh_v3_artifacts_paired_comparison_and_owner_acceptance",
+    "S3_T09": "blocked",
+    "S3_T10": "blocked_by_S3_T09",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-OWNER-GRADE-V3-SEGMENTED-FIELD-LOCAL-TEXT-CONTRACT-AND-SAFE-SUBTYPE-TELEMETRY-ZERO-CALL-IMPLEMENTATION"
+}

@@ -1,0 +1,176 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t02_runtime_plan_branch_lineage_role_context_v1_0",
+  "contract_id": "S3-T02-NVDA-THREE-CELL-RUNTIME-PLAN-BRANCH-CONTEXT-R1",
+  "frozen_at": "2026-07-21T12:15:00+08:00",
+  "status": "pass_after_independent_review_T03_ready_pending_separate_authorization",
+  "authority": {
+    "user_instruction": "继续",
+    "S3_T02_implementation_and_zero_call_fixture_authorized": true,
+    "S3_T03_execution_authorized": false,
+    "model_or_provider_execution_authorized": false,
+    "source_network_or_external_tool_execution_authorized": false,
+    "live_business_case_mutation_authorized": false,
+    "new_live_admission_or_paid_run_authorized": false,
+    "S4_release_or_production_authorized": false
+  },
+  "source_authority": {
+    "T01_ref": "configs/releases/fin_ia_0_1_s3_t01_three_cell_decision_surface_asset_owner_freeze_v1_0.json",
+    "program_backlog_ref": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "runtime_owner": "apps/workbench/backend/application/research_runtime.py",
+    "decision_surface_owner": "src/sec_agent/canonical_runtime/planning_service.py",
+    "role_context_decision_ref": "docs/architecture/repository/FIN_0_1_LAYER_4_FINANCIAL_JUDGMENT_EXECUTION_DRAFT_20260719.zh-CN.md#L4-D09"
+  },
+  "implementation": {
+    "runtime_family_ref": "apps.workbench.backend.application.research_runtime:Fin01ResearchRuntime",
+    "runtime_family_count": 1,
+    "runtime_plan_contract_ref": "fin01.s3.runtime_plan_three_cell:v1",
+    "research_run_count_per_exact_execution": 1,
+    "active_cell_count": 3,
+    "program_cell_contract_source": "src/sec_agent/canonical_runtime/planning_service.py:FIN01_S3_PROGRAM_CELL_CONTRACTS",
+    "runtime_compiler": "apps/workbench/backend/application/research_runtime.py:compile_fin01_s3_three_cell_runtime_plan",
+    "runtime_injection_point": "Fin01ResearchRuntime.dispatch_once_before_profile_adapter_execute",
+    "deterministic_node_consumption": "apps/workbench/backend/application/research_runtime.py:consume_fin01_s3_role_context_plans",
+    "canonical_artifact_projection": "existing_deterministic_research_result_payload.s3_runtime_plan_and_s3_context_consumption_receipts",
+    "parallel_runtime_registry_writer_store_or_business_truth_family_added": false,
+    "S2_consumed_identity_or_artifact_rewritten": false,
+    "bounded_agent_three_cell_model_execution_implemented": false,
+    "bounded_agent_three_cell_execution_boundary": "deferred_to_later_S3_specialist_lead_tasks_and_exact_admission"
+  },
+  "branch_decision_contract": [
+    {
+      "observation_type": "no_runtime_observation",
+      "lead_branch_decision": "continue_to_evidence_request",
+      "branch_state": "planned",
+      "boundary": "T02_does_not_invent_EvidenceRequest_results"
+    },
+    {
+      "observation_type": "candidate_available_not_evidence",
+      "lead_branch_decision": "continue_to_evidence_request",
+      "branch_state": "planned",
+      "boundary": "Candidate_does_not_become_Evidence"
+    },
+    {
+      "observation_type": "accepted_evidence_available",
+      "lead_branch_decision": "continue_to_specialist",
+      "branch_state": "active",
+      "boundary": "Specialist_may_consume_only_exact_accepted_refs"
+    },
+    {
+      "observation_type": "material_counterevidence_available",
+      "lead_branch_decision": "continue_to_specialist_counterevidence_first",
+      "branch_state": "active",
+      "boundary": "counterevidence_cannot_be_hidden_by_positive_thesis"
+    },
+    {
+      "observation_type": "route_exhausted",
+      "lead_branch_decision": "typed_stop_cannot_infer",
+      "branch_state": "stopped",
+      "boundary": "no_narrative_fill_after_route_exhaustion"
+    },
+    {
+      "observation_type": "decision_surface_revision_required",
+      "lead_branch_decision": "stop_for_human_decision_surface_revision",
+      "branch_state": "stopped",
+      "boundary": "Lead_cannot_change_material_scope_without_versioned_human_authority"
+    }
+  ],
+  "context_plan_contract": {
+    "lifecycle": "ContextRequirement_to_ContextSelectionDecision_to_ContextPayload_to_exact_input_digest",
+    "plan_count_per_runtime_plan": 9,
+    "role_cardinality": {
+      "research_lead": 1,
+      "domain_specialist": 3,
+      "evidence_operator": 3,
+      "memo_writer": 1,
+      "verifier": 1
+    },
+    "role_boundaries": {
+      "research_lead": "sees_case_objective_three_branch_summaries_and_dependencies_not_all_raw_rows_or_private_drafts",
+      "domain_specialist": "sees_exact_cell_branch_question_chain_stop_WWC_and_exact_refs_not_unrelated_cells",
+      "evidence_operator": "sees_question_role_and_later_route_criteria_not_expected_conclusion_or_final_judgment",
+      "memo_writer": "sees_only_future_adjudicated_heads_and_WWC_with_zero_source_or_tool_authority",
+      "verifier": "sees_exact_draft_claim_evidence_numeric_boundaries_and_forbidden_claims_with_zero_evidence_or_judgment_write_authority"
+    },
+    "digest_integrity": "runtime_plan_and_each_role_context_plan_are_recomputed_and_fail_closed_on_mismatch",
+    "runtime_capability_claim": "deterministic_profile_runtime_injected_and_node_contract_consumed",
+    "model_behavior_claim": "none_no_model_node_was_called"
+  },
+  "root_cause_reconcile": [
+    {
+      "issue_id": "RC-P30-001-real-single-case-artifact-proof-pending",
+      "before_status": "open",
+      "T02_disposition": "deterministic_three_cell_run_lineage_and_artifact_fixture_proven_exact_paid_case_artifact_still_pending",
+      "closed_by_T02": false,
+      "remaining_proof": "T08_deterministic_integration_then_T09_exact_paid_three_cell_artifact_and_manual_review"
+    },
+    {
+      "issue_id": "RC-P35-021-ai-infra-decision-surface-not-runtime-contract",
+      "before_status": "open_p35_dogfood_report_and_source_supplement_done_runtime_ingestion_pending",
+      "T02_disposition": "three_cell_decision_surface_runtime_plan_injected_and_context_node_contract_consumed_remaining_T03_through_T07_subscopes_open",
+      "closed_by_T02": false,
+      "remaining_proof": "cell_driven_routes_numeric_graph_specialist_lead_writer_and_workbench_consume_the_runtime_plan_without_manual_supplement"
+    }
+  ],
+  "acceptance_split": {
+    "engineering_acceptance": [
+      "one_existing_Fin01ResearchRuntime_compiles_one_plan_for_one_ResearchRun_and_three_branch_refs",
+      "different_typed_observations_produce_distinct_continue_specialist_counterevidence_cannot_infer_or_human_revision_decisions",
+      "nine_role_scoped_context_plans_are_distinct_reconstructable_digest_bound_and_node_contract_consumed",
+      "deterministic_runtime_artifact_persists_plan_and_consumption_receipts",
+      "tampered_plan_digest_unknown_cell_and_missing_exact_surface_ref_fail_closed",
+      "no_parallel_runtime_registry_writer_store_or_business_truth_family"
+    ],
+    "product_acceptance": [
+      "all_three_NVDA_cells_are_visible_inside_one_run_control_plan",
+      "lack_of_evidence_can_stop_as_typed_cannot_infer",
+      "counterevidence_changes_branch_priority",
+      "roles_do_not_receive_a_shared_full_case_dump",
+      "T02_does_not_claim_retrieval_numeric_graph_cross_cell_model_quality_or_NVDA_R2"
+    ],
+    "engineering_status": "pass_deterministic_runtime_injection_and_node_contract_consumption",
+    "product_status": "pass_control_plane_contract_only",
+    "research_quality_status": "not_evaluated"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_business_case_writes": 0,
+    "new_live_admissions": 0,
+    "new_paid_or_live_research_runs": 0,
+    "ephemeral_isolated_test_fixture_runs": "performed_by_contract_tests_only_not_durable_business_truth"
+  },
+  "independent_review": {
+    "disposition": "pass_after_digest_recompute_and_historical_identity_boundaries_added",
+    "findings_closed": [
+      "initial_context_consumption_checked_shape_but_not_recomputed_digest",
+      "runtime_now_requires_exactly_one_decision_surface_input_ref_before_profile_execution",
+      "T02_runtime_injection_does_not_upgrade_S2_one_cell_bounded_admission_or_rewrite_consumed_artifacts",
+      "P30_and_P35_are_partially_advanced_but_not_imputed_closed"
+    ],
+    "remaining_blockers": [
+      "T03_EvidenceRequest_route_and_promotion_not_implemented",
+      "T04_numeric_and_T05_graph_projection_not_implemented",
+      "three_cell_Specialist_and_Lead_model_behavior_not_proven",
+      "exact_paid_three_cell_artifact_and_owner_review_not_performed"
+    ]
+  },
+  "deterministic_verification": {
+    "focused_T02_runtime_T01_entry_latest_backlog_and_project_os": "32 passed in 7.41s",
+    "expanded_planning_runtime_S1_S2_S3_T01_T02_gateway_and_project_os": "151 passed in 71.22s",
+    "JSON_and_JSONL": "pass",
+    "model_provider_or_source_network_execution": "not_run_by_design"
+  },
+  "stage_acceptance": {
+    "S3_T02": "pass_runtime_plan_branch_lineage_and_role_context_contract",
+    "S3_T03": "ready_pending_separate_authorization",
+    "S3_T04_and_T05": "dependency_ready_but_not_current_pending_program_order_and_separate_authorization",
+    "S3_T06_through_T10": "blocked_by_dependencies",
+    "S4": "blocked_by_S3",
+    "release": "not_admitted",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T03-CELL-DRIVEN-EVIDENCE-REQUEST-ROUTE-PROMOTION-AND-SOURCEHUNTER-BOUNDARY"
+}

@@ -1,0 +1,143 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_nullable_repair_owner_and_windows_direct_runner_supervision_v2_zero_call_implementation_v1_0",
+  "implementation_id": "S3-T09-NULLABLE-REPAIR-OWNER-AND-WINDOWS-DIRECT-RUNNER-SELF-FINALIZING-SUPERVISION-V2-ZERO-CALL-IMPLEMENTATION",
+  "implemented_at": "2026-07-24T21:58:35+08:00",
+  "status": "pass_zero_call_nullable_repair_owner_and_windows_direct_runner_self_finalizing_supervision_v2_implemented_and_host_smoke_proven",
+  "authority": {
+    "user_instruction": "授权",
+    "zero_call_repair_implementation_authorized": true,
+    "fresh_agent_proof_decision_authorized": false,
+    "new_admission_or_second_live_execution_authorized": false,
+    "model_provider_network_source_or_external_tool_execution_authorized": false,
+    "paired_comparison_or_owner_acceptance_authorized": false,
+    "T10_S4_release_or_production_authorized": false
+  },
+  "source_disposition_ref": "configs/releases/fin_ia_0_1_s3_t09_verifier_nullable_repair_owner_and_windows_direct_runner_supervision_v2_zero_call_root_cause_disposition_v1_0.json",
+  "implementation_refs": {
+    "verifier_request_and_validator": "apps/workbench/backend/application/bounded_agent_executor.py",
+    "direct_runner_supervisor": "scripts/releases/supervise_fin_ia_0_1_s3_t09_exact_live_execution.py",
+    "exact_runner_self_finalizer": "scripts/releases/run_fin_ia_0_1_s3_t09_three_cell_deepseek_live_execution.py",
+    "adjacent_contract_test": "tests/contract/test_fin_0_1_s3_t09_atomic_terminalization_and_verifier_state_machine.py",
+    "implementation_contract_test": "tests/contract/test_fin_0_1_s3_t09_nullable_repair_owner_and_windows_direct_runner_supervision_v2_implementation.py"
+  },
+  "source_digests": {
+    "verifier_request_and_validator_sha256": "cc6b613d7f36941a4c2396e9fe4a82192bd428391f963d70242f1acc2b3591f1",
+    "direct_runner_supervisor_sha256": "460245b87be6f17ede10b7afa89aac80b2a2a11d58deedf5089b0d8e8019ee92",
+    "exact_runner_self_finalizer_sha256": "3398a833fbae31a27a868f373b43797b5f471b035ebd30deafb238979433c76e",
+    "adjacent_contract_test_sha256": "46df4fbaceb6697e0c1c153822b9825be18fe2fd3ea588379d499df7fa47b2ec",
+    "implementation_contract_test_sha256": "0de112084542643156c900506c73169df5b7475087fb956a349503867e8dbaf5"
+  },
+  "nullable_repair_owner_state_machine_v2": {
+    "contract_ref": "fin01.s3.owner_grade_verifier_output_state_machine:v2",
+    "request_schema": "repair_owner is JSON null for pass or a nonblank real-owner string for review_required and fail",
+    "literal_JSON_examples_present": true,
+    "pass_repair_owner": null,
+    "review_required_or_fail_repair_owner": "nonblank string not equal to literal none",
+    "structural_gate_domain": "JSON null or nonblank string",
+    "status_dependent_semantics_owned_by": "semantic_state_machine_only",
+    "literal_string_none_allowed": false,
+    "normalization_or_silent_rewrite_allowed": false,
+    "captured_answer_rewrite_performed": false,
+    "legacy_v1_consumed_evidence_mutated": false
+  },
+  "windows_direct_runner_supervision_v2": {
+    "contract_ref": "fin01.s3.exact_run_supervision:v2",
+    "process_topology": "launcher directly starts actual runner with no intermediate wrapper",
+    "launch_receipt_binds_actual_runner_pid": true,
+    "launch_and_exit_bind_creation_identity": true,
+    "actual_runner_top_level_finally_writes_atomic_exit_receipt": true,
+    "exit_receipt_binds_typed_failure_and_safe_log_digests": true,
+    "windows_status_api": [
+      "OpenProcess",
+      "GetExitCodeProcess",
+      "GetProcessTimes"
+    ],
+    "windows_os_kill_pid_zero_used": false,
+    "pid_reuse_guard": true,
+    "read_only_monitor_signals_or_mutations": [
+      0,
+      0
+    ],
+    "exact_launch_requires_valid_host_capability_receipt_before_issuance_or_admission_read": true,
+    "automatic_retry_fallback_replay_relaunch": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "legacy_v1_consumed_evidence_mutated": false
+  },
+  "windows_host_lifetime_smoke": {
+    "status": "pass_direct_runner_survived_launcher_and_self_finalized",
+    "platform": "nt",
+    "durable_process_strategy": "windows_CREATE_BREAKAWAY_FROM_JOB_direct_runner",
+    "separate_launcher_and_status_command_invocations": true,
+    "launcher_returned_while_runner_alive": true,
+    "running_status_identity_match": true,
+    "later_atomic_self_finalized_exit_receipt": true,
+    "runner_pid": 37940,
+    "process_identity_kind": "windows_pid_and_creation_filetime",
+    "launch_receipt_sha256": "84ff24ee541dc7cc793f82582a02c29f84c58c8c7b8e8b60b7e29683ad6637de",
+    "exit_receipt_sha256": "ce4209937c699383382d56da033897e29af4a0172a8c0ce8910c08dd9733784f",
+    "host_capability_receipt_sha256": "a192f52e7ba6378ac56d929ada3cb7ba957a2c8ebd866192be4b979dd055bb72",
+    "marker_sha256": "05343e9845302eb730fa9d18ac7b28d5e509893daf1eb76ede8d6e82d47b2da9",
+    "stdout_stderr_digests_available": [
+      true,
+      true
+    ],
+    "model_provider_network_source_tool_calls": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "signals_retry_relaunch": [
+      0,
+      0,
+      0
+    ],
+    "runtime_smoke_evidence_is_ignored_ephemeral_not_release_staged": true
+  },
+  "deterministic_verification": {
+    "focused_disposition_and_implementation_tests": "41 passed",
+    "adjacent_atomic_proof_issuance_live_verifier_and_workbench_regression": "70 passed",
+    "project_os_repository_and_git_hygiene_preflight": "pass",
+    "git_boundary": {
+      "staged_path_count_after_implementation": 530,
+      "staged_path_delta": 3,
+      "unstaged_path_count": 0,
+      "untracked_path_count": 0,
+      "codex_runtime_paths_staged": 0,
+      "commit_or_push_performed": false
+    },
+    "success_self_finalization": true,
+    "typed_nonzero_self_finalization": true,
+    "running_exited_and_pid_reuse_status_covered": true,
+    "missing_host_capability_fails_before_issuance_read": true,
+    "request_derived_fake_provider_nullable_output": true
+  },
+  "observed_counts": {
+    "implementation_model_calls": 0,
+    "implementation_provider_calls": 0,
+    "implementation_network_calls": 0,
+    "implementation_source_network_calls": 0,
+    "implementation_external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_runs": 0,
+    "new_business_artifacts": 0,
+    "paired_comparisons": 0,
+    "owner_acceptance_writes": 0
+  },
+  "stage_decision": {
+    "RC_P36_052": "zero_call_runtime_and_request_fixture_implemented_fresh_agent_proof_pending",
+    "RC_P38_053": "zero_call_runtime_fixture_and_windows_host_smoke_proven_fresh_agent_proof_pending",
+    "RC_P38_050": "atomic_capture_bearing_failure_terminalization_fresh_live_proven",
+    "S3_T09": "blocked_zero_artifacts_no_comparison_or_owner_acceptance",
+    "S3_T10": "not_entered",
+    "S4": "blocked_by_S3",
+    "release": "not_qualified",
+    "production": "not_admitted"
+  },
+  "next_action": "S3-T09-NULLABLE-REPAIR-OWNER-AND-WINDOWS-DIRECT-RUNNER-SUPERVISION-V2-FRESH-AGENT-PROOF-DECISION"
+}

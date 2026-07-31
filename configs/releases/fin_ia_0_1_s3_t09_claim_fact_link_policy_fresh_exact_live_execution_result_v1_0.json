@@ -1,0 +1,139 @@
+{
+  "schema_version": "fin_ia_0_1_s3_t09_claim_fact_link_policy_fresh_exact_live_execution_result_v1_0",
+  "execution_id": "S3-T09-GENERALIZED-CLAIM-FACT-LINK-POLICY-FRESH-EXACT-LIVE-EXECUTION",
+  "executed_at": "2026-07-24T10:51:52+08:00",
+  "status": "terminal_failed_hard_output_v4_verifier_prompt_validator_schema_drift_no_second_execution_authorized",
+  "authority": {
+    "user_instruction": "继续",
+    "one_exact_live_authorized": true,
+    "admission_consumed_exactly_once": true,
+    "automatic_retry_fallback_patch_or_second_live_executed": false,
+    "paired_comparison_human_review_T10_S4_release_or_production_entered": false
+  },
+  "source_refs": {
+    "implementation_ref": "configs/releases/fin_ia_0_1_s3_t09_claim_fact_link_policy_closed_alias_zero_call_implementation_v1_0.json",
+    "proof_ref": "configs/releases/fin_ia_0_1_s3_t09_claim_fact_link_policy_fresh_agent_proof_decision_v1_0.json",
+    "issuance_ref": "configs/releases/fin_ia_0_1_s3_t09_claim_fact_link_policy_fresh_exact_admission_issuance_v1_0.json",
+    "admission_ref": "configs/releases/fin_ia_0_1_s3_t09_three_cell_deepseek_claim_fact_link_policy_exact_admission_r1.json",
+    "restricted_runtime_result_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/claim_fact_link_policy_r1_live_execution_result.json",
+    "restricted_runtime_result_sha256": "240b3bacb724991735690ace10858cb404b5250b21a6d693907a855078eee67a",
+    "runtime_inspection_ref": ".codex_runtime/fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1/claim_fact_link_policy_r1_live_execution_terminal_inspection.json",
+    "runtime_inspection_sha256": "76195355eef19b151eb16b92d85f159e7ae6b5ce9545254f93c83e7437b44d12",
+    "raw_assistant_text_copied_into_tracked_artifacts": false
+  },
+  "identity": {
+    "admission_id": "fin01-s3-t09-three-cell-deepseek-claim-fact-link-policy-exact-admission-r1",
+    "admission_digest": "65bcbedfa6d68f6932130aaffdddec5580abc8c4e683e0e5523e1da49b0b128d",
+    "work_unit_id": "wu_p02_5_3462a35abeed38983ea2ebf8",
+    "attempt_id": "attempt_fin01_4cf8eb001b193f7311d36937",
+    "research_run_id": "research_run_fin01_0c4247687b5e4ee13c352d11",
+    "input_digest": "c0e52d02c742b8f795539e4efcc68d5d7118e78b364ec01725691dfe927fb456"
+  },
+  "canonical_terminal_truth": {
+    "work_unit_state": "failed",
+    "attempt_state": "failed",
+    "research_run_state": "failed",
+    "orphaned_run": false,
+    "event_count": 8,
+    "artifact_count": 0,
+    "artifact_types": []
+  },
+  "provider_execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v7",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v5",
+    "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v3",
+    "memo_writer_transport_ref": "fin01.s3.bounded_agent.memo_writer_owner_grade:v3",
+    "model_provider_network_calls": [12, 12, 12],
+    "input_output_total_tokens": [53834, 5742, 59576],
+    "estimated_cost_usd": 0.02764032,
+    "retry_fallback_rerun_counts": [0, 0, 0],
+    "provider_output_capture_and_restricted_readback_counts": [12, 12],
+    "finish_reason_counts": {
+      "stop": 12,
+      "length": 0
+    },
+    "source_network_external_tool_live_case_head_write_counts": [0, 0, 0]
+  },
+  "claim_fact_link_live_observation": {
+    "policy_ref": "fin01.s3.claim_fact_link_policy:v1",
+    "claim_segments_completed": 3,
+    "claim_count": 5,
+    "fact_supported_claim_count": 2,
+    "cannot_infer_claim_count": 3,
+    "fact_supported_alias_selections": [["F001"], ["F002"]],
+    "cannot_infer_alias_selections": [[], [], []],
+    "provider_support_fact_aliases_field_count": 5,
+    "provider_support_fact_ids_field_count": 0,
+    "all_fact_supported_claims_selected_nonempty_closed_aliases": true,
+    "local_exact_expansion_and_same_cell_validation_passed_before_downstream": true,
+    "research_lead_writer_verifier_reached": [true, true, true],
+    "downstream_capture_alias_token_count": 0,
+    "downstream_support_fact_aliases_field_count": 0,
+    "downstream_support_fact_ids_field_count": 0,
+    "canonical_artifact_alias_residue_auditable": false,
+    "canonical_artifact_alias_residue_not_auditable_reason": "the later Verifier hard failure produced zero canonical Artifacts",
+    "prior_claim_fact_identity_failure_recurred": false,
+    "RC_P36_048_live_repair_observed": true
+  },
+  "failure": {
+    "stage": "verifier",
+    "failure_code": "s3_bounded_verifier_finding_schema_invalid",
+    "finish_reason": "stop",
+    "provider_returned_valid_native_JSON": true,
+    "provider_finding_count": 4,
+    "provider_finding_layers": [
+      "deterministic_integrity",
+      "semantic_fidelity",
+      "financial_coherence",
+      "visual_delivery"
+    ],
+    "provider_decision": "accept_for_internal_review",
+    "provider_observed_finding_keys": ["issues", "layer", "status"],
+    "output_v4_validator_required_finding_keys": [
+      "artifact_or_claim_refs",
+      "issue_codes",
+      "layer",
+      "repair_owner",
+      "status"
+    ],
+    "digest_bindings_present": true,
+    "validator_correctly_failed_closed": true,
+    "runtime_answer_and_usage_persisted_before_terminal_failure": true
+  },
+  "independent_root_cause_assessment": {
+    "direct_cause": "The output-v4 Verifier Provider request declared the legacy three-field finding schema, while the output-v4 local validator required the five-field typed finding schema.",
+    "earliest_faulty_artifact": "apps/workbench/backend/application/bounded_agent_executor.py DeepSeekS3ThreeCellNodeExecutor._node_request verifier branch",
+    "request_builder_condition": "typed Verifier schema is selected only when output_contract_ref equals output:v3",
+    "validator_condition": "typed Verifier schema is required when output_contract_ref equals output:v3 or output:v4",
+    "provider_followed_declared_request_schema": true,
+    "provider_model_noncompliance_confirmed": false,
+    "project_owned_prompt_validator_schema_drift_confirmed": true,
+    "deterministic_fixture_blind_spot": "the full fake Provider emitted a prebuilt typed-v4 Verifier object instead of deriving its finding shape from required_output_schema",
+    "same_as_claim_fact_identity_failure": false,
+    "claim_fact_link_policy_live_path_reached_and_passed": true,
+    "repair_or_second_live_authorized_now": false
+  },
+  "post_run_target_integrity": {
+    "logical_counts": {
+      "canonical_work_units": 19,
+      "canonical_attempts": 19,
+      "canonical_research_run_versions": 19,
+      "canonical_artifact_versions": 13
+    },
+    "canonical_database_sha256": "86c623db5cfaa02a8e462a925134135c2f91518d2d44e4b2eb32cf988092098a",
+    "canonical_object_tree_sha256": "0f081e219fbb32f0a5b493473c8d3078c6c0960d873bf98540744320a00b1541"
+  },
+  "stage_decision": {
+    "RC_P36_048": "live_repair_observed_claim_segments_and_downstream_path_passed",
+    "RC_P36_049": "new_output_v4_verifier_prompt_validator_schema_drift_root_cause_decision_pending",
+    "RC_P36_037": "complete_live_artifact_product_still_missing",
+    "S3_T09": "blocked_exact_live_failed_at_verifier_zero_artifacts",
+    "S3_T10": "not_entered",
+    "paired_comparison": "not_performed_because_no_complete_agent_artifact_product",
+    "cross_slice_manifest": "not_due_because_T09_acceptance_not_reached",
+    "S4_S5_release_production": "not_entered"
+  },
+  "next_action": "S3-T09-OUTPUT-V4-VERIFIER-PROMPT-VALIDATOR-SCHEMA-DRIFT-ZERO-CALL-ROOT-CAUSE-DECISION"
+}

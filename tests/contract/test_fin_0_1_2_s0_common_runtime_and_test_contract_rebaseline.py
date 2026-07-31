@@ -71,7 +71,11 @@ def test_active_manifest_has_one_selected_suite_per_proof_class() -> None:
     validate_active_test_suite_manifest(manifest)
     selected = [row for row in manifest["suites"] if row["selected"]]
     assert {row["proof_class"] for row in selected} == {item.value for item in ProofClass}
-    assert manifest["runner_policy"]["runner_migration_completed"] is False
+    assert manifest["runner_policy"]["runner_migration_completed"] is True
+    package = manifest["hermetic_package_policy"]
+    assert package["disposable_runtime_count"] == 2
+    assert package["complete_per_test_stdout_stderr_required"] is True
+    assert package["capture_plugin_path"] in package["required_runner_files"]
     for suite in selected:
         for path in suite["test_paths"]:
             assert (ROOT / path).is_file()
@@ -91,6 +95,13 @@ def test_active_manifest_rejects_mutable_event_and_historical_gate_mutations() -
     with pytest.raises(ContractGovernanceError, match="historical_audit_cannot_gate_current_release"):
         validate_active_test_suite_manifest(mutated)
 
+    mutated = deepcopy(manifest)
+    mutated["hermetic_package_policy"]["required_runner_files"].remove(
+        mutated["hermetic_package_policy"]["capture_plugin_path"]
+    )
+    with pytest.raises(ContractGovernanceError, match="test_manifest_capture_plugin_not_packaged"):
+        validate_active_test_suite_manifest(mutated)
+
 
 def test_s0_decision_bindings_and_gates_are_honest() -> None:
     decision = _load(DECISION)
@@ -101,11 +112,17 @@ def test_s0_decision_bindings_and_gates_are_honest() -> None:
     gates = decision["S0_gates"]
     assert gates["G1_truth_ownership_and_provider_envelope"]["verdict"].startswith("pass")
     assert gates["G2_single_source_compiled_consumers"]["live_runtime_family_migration_complete"] is False
-    assert gates["G3_test_semantics_and_active_manifest"]["active_suite_runner_migration_complete"] is False
-    assert gates["G4_hermetic_package_and_complete_failure_output"]["verdict"] == "blocked_RC_P36_085"
-    assert gates["G5_current_active_suite_all_green"]["verdict"] == "not_run_until_runner_migration"
+    assert gates["G3_test_semantics_and_active_manifest"]["active_suite_runner_migration_complete"] is True
+    assert gates["G4_hermetic_package_and_complete_failure_output"]["verdict"].startswith("pass_")
+    assert gates["G4_hermetic_package_and_complete_failure_output"][
+        "complete_content_addressed_stdout_stderr_proven"
+    ] is True
+    assert gates["G4_hermetic_package_and_complete_failure_output"][
+        "disposable_runtime_parity_proven"
+    ] is True
+    assert gates["G5_current_active_suite_all_green"]["verdict"].startswith("pass_")
     assert gates["G6_S1_entry"]["S1_started"] is False
-    assert decision["implementation_truth"]["S0_closed"] is False
+    assert decision["implementation_truth"]["S0_closed"] is True
     assert set(decision["observed_counts"].values()) == {0}
 
 
@@ -113,8 +130,18 @@ def test_current_projection_advances_only_to_next_s0_capsule() -> None:
     decision = _load(DECISION)
     program = _load(PROGRAM)
     s4 = _load(S4_BACKLOG)
-    assert program["active_slice"] == "FIN_0_1_2_S0"
+    assert program["active_slice"] == "FIN_0_1_2_S1"
     assert program["next_action"]["item_id"] == decision["next_action"]
     assert s4["current_next_action"] == decision["next_action"]
-    assert program["current_truth"]["FIN_0_1_2_S0_status"] == "T01_pass_S0_not_closed"
+    assert program["current_truth"]["FIN_0_1_2_S0_status"] == "closed_G4_G5_pass"
     assert program["current_truth"]["FIN_0_1_release_qualified"] is False
+    assert program["version"] == "FIN_0_1_1_INTERNAL_HONEST_BLOCK"
+    assert program["current_truth"]["FIN_0_1_1_status"] == "frozen_internal_honest_block"
+    assert program["current_truth"]["S4_status"] == (
+        "closed_terminal_honest_block_FIN_0_1_not_qualified"
+    )
+    assert program["current_truth"]["S5_status"] == (
+        "closed_honestly_blocked_decision_only_no_release_candidate"
+    )
+    assert s4["FIN_0_1_1_internal_freeze"]["release_qualified"] is False
+    assert s4["non_inflation"]["Alpha_release_or_production"] is False

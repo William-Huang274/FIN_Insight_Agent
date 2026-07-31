@@ -350,3 +350,36 @@ def validate_active_test_suite_manifest(
             raise ContractGovernanceError(
                 f"test_manifest_selected_suite_count_invalid:{proof_class.value}"
             )
+
+    runner_policy = _mapping(
+        manifest.get("runner_policy"), "test_manifest_runner_policy_missing"
+    )
+    migration_complete = runner_policy.get("runner_migration_completed")
+    if type(migration_complete) is not bool:
+        raise ContractGovernanceError(
+            "test_manifest_runner_migration_boolean_invalid"
+        )
+    if migration_complete:
+        package_policy = _mapping(
+            manifest.get("hermetic_package_policy"),
+            "test_manifest_hermetic_package_policy_missing",
+        )
+        required_runner_files = set(
+            _string_tuple(
+                package_policy.get("required_runner_files"),
+                "test_manifest_required_runner_files_invalid",
+            )
+        )
+        capture_plugin_path = _nonempty_string(
+            package_policy.get("capture_plugin_path"),
+            "test_manifest_capture_plugin_path_missing",
+        )
+        if capture_plugin_path not in required_runner_files:
+            raise ContractGovernanceError(
+                "test_manifest_capture_plugin_not_packaged"
+            )
+        bindings = package_policy.get("external_read_only_bindings")
+        if not isinstance(bindings, list):
+            raise ContractGovernanceError(
+                "test_manifest_external_bindings_invalid"
+            )

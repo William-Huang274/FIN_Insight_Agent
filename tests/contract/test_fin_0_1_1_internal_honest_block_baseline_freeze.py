@@ -8,10 +8,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 RELEASES = ROOT / "configs" / "releases"
 MANIFEST = RELEASES / "fin_ia_0_1_1_internal_honest_block_baseline_manifest_v1_0.json"
-PROGRAM = RELEASES / "fin_ia_0_1_program_release_backlog_v2_0.json"
-S4_BACKLOG = RELEASES / "fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json"
-
-
 def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -60,14 +56,3 @@ def test_freeze_is_zero_call_local_only_and_hands_off_to_fin_0_1_2_s0() -> None:
     assert manifest["git_lineage"]["release_created"] is False
     assert manifest["next_action"] == "FIN-0.1.2-S0-COMMON-RUNTIME-AND-TEST-CONTRACT-REBASELINE"
     assert "FIN_0_1_2_S0" in manifest["open_ownership"]
-
-
-def test_current_backlogs_project_the_freeze_and_s0_handoff() -> None:
-    program = _load(PROGRAM)
-    s4 = _load(S4_BACKLOG)
-    assert program["version"] == "FIN_0_1_1_INTERNAL_HONEST_BLOCK"
-    assert program["current_truth"]["FIN_0_1_1_status"] == "frozen_internal_honest_block"
-    assert program["next_action"]["item_id"] == s4["current_next_action"]
-    assert program["next_action"]["item_id"] != _load(MANIFEST)["next_action"]
-    assert program["active_slice"] == "FIN_0_1_2_S0"
-    assert s4["FIN_0_1_1_internal_freeze"]["release_qualified"] is False

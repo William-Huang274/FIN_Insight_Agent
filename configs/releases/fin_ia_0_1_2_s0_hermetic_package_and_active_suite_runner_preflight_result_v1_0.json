@@ -1,0 +1,53 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0_hermetic_package_and_active_suite_runner_preflight_result_v1_0",
+  "result_id": "FIN-0.1.2-S0-HERMETIC-PACKAGE-ACTIVE-SUITE-PREFLIGHT-R1",
+  "recorded_at": "2026-07-31T21:17:35+08:00",
+  "status": "pass_hermetic_dependency_package_two_disposable_parity_and_current_active_suite_all_green",
+  "scope": {
+    "stage": "FIN_0_1_2_S0",
+    "gate": "G4_G5",
+    "mode": "zero_call_deterministic_preflight",
+    "business_output_promotable": false
+  },
+  "external_preflight_package": {
+    "path": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_2_s0_hermetic_active_suite_preflight_20260731T2126+0800_head_cee47c2a",
+    "package_manifest_sha256": "fdf983bcee5e2f4f67abbb0f8e5b4927ca267596ead209f31b5154e42a447eed",
+    "verification_sha256": "058417ac82f42c2830646a27352d4cb8837967885769679436744eed6032d751",
+    "disposable_a_terminal_result_sha256": "7d60a31c6a12f6cb0de90bf95bf94f7d036818461a9018af2f5c7ea9f25b632c",
+    "disposable_b_terminal_result_sha256": "a895c4734c35e16c4edf1a16ffe08e2f92df60613d936378848f125a5011cd87"
+  },
+  "preflight_source_bindings": {
+    "active_manifest_sha256": "d73057ef89920d03b0e67b564b71fcb79fd204cfecd9269b1f663a035ec30f95",
+    "S0_decision_sha256": "736978c76eece41735bf1fe7f53fd81ab3260af932d27a41fe08f091a558cd74",
+    "runner_sha256": "423718fdbab9fe904d678de2b4136c58709f3cb002048ea8b37cdf376493e92b",
+    "capture_plugin_sha256": "3d387b7dbedffceb3706f374a6f2bdf7539cea7cd222e0f77aca3363db242dc4",
+    "entrypoint_sha256": "3d0614b32368bd1a8809996531c0c675751469750d9338de97fe35bf27c76204",
+    "active_contract_test_sha256": "ac195b1af74ca642202d98c89ff6c2f2e1f0b34c85d2bf344f4048b8b31f711b"
+  },
+  "verification": {
+    "repository_file_count": 888,
+    "repository_bytes": 25063271,
+    "external_dependency_count": 2,
+    "disposable_runtime_count": 2,
+    "disposable_parity": true,
+    "parity_digest": "067f249353b14f9a5ee54d1a5c9815656a5ef70910cf6865505ea4a5b0a78215",
+    "repository_unchanged_during_run": true,
+    "tests_collected_and_passed": [25, 25],
+    "current_active_suite_all_green": true,
+    "historical_findings": 0,
+    "complete_per_test_stdout_stderr_content_addressed": true,
+    "process_stdout_stderr_content_addressed": true,
+    "failed_output_business_promotable": false
+  },
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_source_or_external_tool_calls": 0,
+    "admissions_runs_or_business_artifacts": 0,
+    "paid_reproofs": 0,
+    "release_candidates": 0,
+    "releases": 0
+  },
+  "next_action": "FIN-0.1.2-S0-FINAL-CURRENT-PROJECTION-HERMETIC-REPROOF-AND-CLOSEOUT"
+}

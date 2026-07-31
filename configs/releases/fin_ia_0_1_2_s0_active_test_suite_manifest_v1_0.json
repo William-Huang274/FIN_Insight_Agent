@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_active_test_suite_manifest_v1_0",
   "manifest_id": "FIN-0.1.2-S0-ACTIVE-TEST-SUITE-MANIFEST-R1",
   "created_at": "2026-07-31T21:00:00+08:00",
-  "status": "S0_T01_manifest_governance_defined_runner_migration_pending",
+  "status": "S0_T02_manifest_selected_hermetic_runner_migrated",
   "historical_failures_are_ignored": false,
   "suites": [
     {
@@ -31,7 +31,10 @@
       "selected": true,
       "gates_current_release": true,
       "assertion_surfaces": ["current_code_digest", "compiled_consumer_digest", "truth_owner", "provider_authority"],
-      "test_paths": ["tests/contract/test_fin_0_1_2_s0_common_runtime_and_test_contract_rebaseline.py"]
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s0_common_runtime_and_test_contract_rebaseline.py",
+        "tests/contract/test_fin_0_1_2_s0_hermetic_active_suite_preflight_result.py"
+      ]
     },
     {
       "suite_id": "historical_fin_0_1_audit_visibility",
@@ -55,7 +58,81 @@
     "unlisted_historical_test_failure_is_visible_but_not_implicitly_current": true,
     "listed_current_test_failure_is_blocking": true,
     "bulk_relax_historical_assertions_for_green_forbidden": true,
-    "runner_migration_completed": false
+    "runner_migration_completed": true
   },
-  "next_action": "FIN-0.1.2-S0-HERMETIC-PACKAGE-AND-ACTIVE-SUITE-RUNNER-MIGRATION"
+  "hermetic_package_policy": {
+    "repository_inventory": "manifest_selected_dependency_closure_from_current_worktree_bytes",
+    "required_runner_files": [
+      "src/sec_agent/hermetic_test_capture.py",
+      "src/sec_agent/hermetic_test_runner.py",
+      "scripts/engineering/run_fin_0_1_2_s0_active_suite.py"
+    ],
+    "capture_plugin_path": "src/sec_agent/hermetic_test_capture.py",
+    "repository_seed_paths": [
+      "pyproject.toml",
+      "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_s0_common_runtime_and_test_contract_rebaseline_v1_0.json",
+      "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+      "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+      "configs/releases/fin_ia_0_1_s4_t10_s4_honest_block_closeout_decision_v1_0.json",
+      "configs/releases/fin_ia_0_1_s4_to_s5_honest_block_carry_forward_and_revalidation_manifest_v1_0.json",
+      "configs/releases/fin_ia_0_1_s5_blocked_release_evidence_inventory_v1_0.json",
+      "configs/releases/fin_ia_0_1_s5_decision_only_honest_block_handoff_and_release_decision_v1_0.json",
+      "configs/releases/fin_ia_0_1_1_internal_honest_block_baseline_manifest_v1_0.json",
+      "configs/releases/fin_ia_0_1_s4_t07_current_worktree_three_case_zero_call_regression_failure_result_v1_0.json"
+      ,"configs/releases/fin_ia_0_1_2_s0_hermetic_package_and_active_suite_runner_preflight_result_v1_0.json"
+    ],
+    "repository_prefixes": [
+      {
+        "path": "src/sec_agent",
+        "suffixes": [".py"]
+      }
+    ],
+    "complete_per_test_stdout_stderr_required": true,
+    "content_addressed_object_readback_required": true,
+    "disposable_runtime_count": 2,
+    "semantic_parity_required": true,
+    "provider_credential_environment_removed": true,
+    "external_read_only_bindings": [
+      {
+        "binding_id": "fin_0_1_1_external_recovery_package",
+        "binding_manifest": "configs/releases/fin_ia_0_1_1_internal_honest_block_baseline_manifest_v1_0.json",
+        "binding_object_field": "external_recovery_package",
+        "files": [
+          {
+            "relative_path": "manifest.json",
+            "sha256_field": "manifest_file_sha256"
+          },
+          {
+            "relative_path": "verification.json",
+            "sha256_field": "verification_file_sha256"
+          }
+        ]
+      },
+      {
+        "binding_id": "fin_0_1_2_s0_preflight_package",
+        "binding_manifest": "configs/releases/fin_ia_0_1_2_s0_hermetic_package_and_active_suite_runner_preflight_result_v1_0.json",
+        "binding_object_field": "external_preflight_package",
+        "files": [
+          {
+            "relative_path": "package_manifest.json",
+            "sha256_field": "package_manifest_sha256"
+          },
+          {
+            "relative_path": "verification.json",
+            "sha256_field": "verification_sha256"
+          },
+          {
+            "relative_path": "runs/disposable_a/terminal_result.json",
+            "sha256_field": "disposable_a_terminal_result_sha256"
+          },
+          {
+            "relative_path": "runs/disposable_b/terminal_result.json",
+            "sha256_field": "disposable_b_terminal_result_sha256"
+          }
+        ]
+      }
+    ]
+  },
+  "next_action": "FIN-0.1.2-S1-REALISTIC-THREE-CASE-DETERMINISTIC-VERTICAL-STAGE-PLAN"
 }

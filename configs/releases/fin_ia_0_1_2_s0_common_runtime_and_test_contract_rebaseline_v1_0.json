@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_0_1_2_s0_common_runtime_and_test_contract_rebaseline_v1_0",
   "decision_id": "FIN-0.1.2-S0-COMMON-RUNTIME-AND-TEST-CONTRACT-REBASELINE-T01-R1",
   "decided_at": "2026-07-31T21:10:00+08:00",
-  "status": "S0_T01_governance_compiler_and_test_manifest_pass_S0_not_closed",
+  "status": "S0_closed_G4_G5_pass_S1_stage_plan_ready",
   "authority": {
     "user_instruction": "按这个顺序做",
     "FIN_0_1_2_S0_start_authorized": true,
@@ -18,7 +18,7 @@
     {
       "role": "runtime_contract_governance_code",
       "ref": "src/sec_agent/runtime_contract_governance.py",
-      "sha256": "f09aca92119497abe28c8b54d9ae0877acab79ca2611526f5045ee8d2c2bb0f9"
+      "sha256": "76b5efeaaf2b5ebc3a2a985d1535dc4fc76537a7ee31198a394ab536597d6f68"
     },
     {
       "role": "common_runtime_contract_family_source",
@@ -28,7 +28,27 @@
     {
       "role": "active_test_suite_manifest",
       "ref": "configs/releases/fin_ia_0_1_2_s0_active_test_suite_manifest_v1_0.json",
-      "sha256": "4faab1018ef3830c5e4465359a1ebfe7e2cb22f798462d25d473349711d52e2a"
+      "sha256": "013111661b95f84cc8c5f24cf5fbd511bae82afb8430214a372b87119abad469"
+    },
+    {
+      "role": "hermetic_test_capture_plugin",
+      "ref": "src/sec_agent/hermetic_test_capture.py",
+      "sha256": "3d387b7dbedffceb3706f374a6f2bdf7539cea7cd222e0f77aca3363db242dc4"
+    },
+    {
+      "role": "hermetic_active_suite_runner",
+      "ref": "src/sec_agent/hermetic_test_runner.py",
+      "sha256": "423718fdbab9fe904d678de2b4136c58709f3cb002048ea8b37cdf376493e92b"
+    },
+    {
+      "role": "hermetic_active_suite_entrypoint",
+      "ref": "scripts/engineering/run_fin_0_1_2_s0_active_suite.py",
+      "sha256": "3d0614b32368bd1a8809996531c0c675751469750d9338de97fe35bf27c76204"
+    },
+    {
+      "role": "hermetic_active_suite_preflight_result",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_hermetic_package_and_active_suite_runner_preflight_result_v1_0.json",
+      "sha256": "a6a686ed65fb42218c5a33dd296eba5c785c8f34899b408581ee6e8c563f874f"
     }
   ],
   "S0_gates": {
@@ -49,21 +69,28 @@
     "G3_test_semantics_and_active_manifest": {
       "verdict": "pass_manifest_and_negative_mutations",
       "proof_classes": ["immutable_event", "current_projection", "current_runtime", "historical_audit", "release_gate"],
-      "active_suite_runner_migration_complete": false,
+      "active_suite_runner_migration_complete": true,
       "historical_failures_ignored": false
     },
     "G4_hermetic_package_and_complete_failure_output": {
-      "verdict": "blocked_RC_P36_085",
-      "package_inventory_complete": false,
-      "complete_content_addressed_stdout_stderr_proven": false,
-      "disposable_runtime_parity_proven": false
+      "verdict": "pass_content_addressed_dependency_package_complete_output_and_disposable_parity",
+      "package_inventory_complete": true,
+      "package_repository_files": 888,
+      "package_external_dependencies": 2,
+      "complete_content_addressed_stdout_stderr_proven": true,
+      "disposable_runtime_parity_proven": true,
+      "external_preflight_package": "D:/FIN_Insight_Agent_recovery/packages/fin_0_1_2_s0_hermetic_active_suite_preflight_20260731T2126+0800_head_cee47c2a",
+      "preflight_verification_sha256": "058417ac82f42c2830646a27352d4cb8837967885769679436744eed6032d751"
     },
     "G5_current_active_suite_all_green": {
-      "verdict": "not_run_until_runner_migration",
+      "verdict": "pass_manifest_selected_preflight_25_of_25_and_result_contract_focused_green",
+      "preflight_tests_collected_passed": [25, 25],
+      "gating_failures": 0,
+      "historical_findings": 0,
       "release_gate_waived": false
     },
     "G6_S1_entry": {
-      "verdict": "blocked_until_G4_and_G5_pass",
+      "verdict": "pass_S0_closeout_S1_stage_plan_ready",
       "S1_started": false
     }
   },
@@ -73,15 +100,16 @@
     "local_truth_owner_and_bounded_provider_envelope_enforced": true,
     "immutable_event_mutable_projection_current_runtime_historical_audit_release_gate_split_enforced": true,
     "production_runtime_rewired": false,
-    "active_suite_runner_rewired": false,
-    "hermetic_package_built": false,
-    "S0_closed": false
+    "active_suite_runner_rewired": true,
+    "hermetic_package_built": true,
+    "S0_closed": true
   },
   "non_inflation": {
     "governance_fixture_called_live_runtime_migration": false,
     "manifest_definition_called_all_green": false,
     "historical_failures_suppressed": false,
     "S0_T01_called_S0_complete": false,
+    "S0_T02_called_release_candidate": false,
     "FIN_0_1_release_called_qualified": false
   },
   "observed_counts": {
@@ -95,5 +123,5 @@
     "tag_pushes": 0,
     "releases": 0
   },
-  "next_action": "FIN-0.1.2-S0-HERMETIC-PACKAGE-AND-ACTIVE-SUITE-RUNNER-MIGRATION"
+  "next_action": "FIN-0.1.2-S1-REALISTIC-THREE-CASE-DETERMINISTIC-VERTICAL-STAGE-PLAN"
 }

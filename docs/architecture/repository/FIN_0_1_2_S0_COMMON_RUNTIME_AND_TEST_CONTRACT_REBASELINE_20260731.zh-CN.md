@@ -4,15 +4,15 @@
 
 ## 当前结果
 
-FIN 0.1.2 已从 S0 开始，不再沿着 FIN 0.1 的 S4/T06 继续追加 R8、R9 或字段补丁。本轮完成 S0-T01：把共同 Runtime 的真值所有权、Provider 权限边界、单一来源消费者绑定，以及测试 proof class 做成可执行治理代码和机器清单。
+FIN 0.1.2 已从 S0 开始，不再沿着 FIN 0.1 的 S4/T06 继续追加 R8、R9 或字段补丁。S0-T01 把共同 Runtime 的真值所有权、Provider 权限边界、单一来源消费者绑定，以及测试 proof class 做成可执行治理代码和机器清单。
 
-S0 尚未关闭。生产 Runtime family 尚未迁移，active-suite runner 尚未按 manifest 执行，RC-P36-085 的 hermetic package、完整 stdout/stderr 与 disposable parity 仍未证明。因此不会进入 S1，也不会调用模型。
+S0-T02 已完成 hermetic dependency package、manifest-selected active-suite runner、typed per-test terminal result、完整内容寻址 stdout/stderr 和双 disposable-runtime parity。最终包在两个独立 root/进程中各执行 24 个选中测试，均为 24 passed，parity digest 相同；890 个仓库依赖文件、6 个显式只读外部证据对象和 Python distribution inventory 均被登记，目标仓库在运行期间未变化。因此 RC-P36-085/086 在 FIN 0.1.2 S0 范围关闭，S0 关闭，下一项进入 S1 StagePlan。没有模型、Provider、业务网络、admission、Run、业务 Artifact 或 release candidate。
 
 ## Runtime 合同
 
 共同 source 固定五类本地真值：material number、reporting date、case identity、runtime ID 和 lineage。Provider 只能返回 request-local alias、closed enum 与 bounded judgment atom。prompt、server schema、local validator、fake Provider、selector、renderer、capacity、budget、typed failure 与 capture index 必须共享同一 contract ID、version 和 source digest。
 
-本轮实现的是治理编译器：它会拒绝 truth owner 外移、Provider surface 扩张、消费者缺失、版本漂移、预算倒挂和 capture surface 缺失，并为十个消费者生成相同 source digest 的 envelope。它尚未宣称十个生产消费者都已改接新 source。
+本轮实现的是治理编译器：它会拒绝 truth owner 外移、Provider surface 扩张、消费者缺失、版本漂移、预算倒挂和 capture surface 缺失，并为十个消费者生成相同 source digest 的 envelope。十个生产消费者仍将在 S1 的 deterministic vertical 中逐一迁移并证明；S0 closeout 只证明治理 source、runner、capture 与可复现基线成立。
 
 ## 测试合同
 
@@ -24,8 +24,19 @@ S0 尚未关闭。生产 Runtime family 尚未迁移，active-suite runner 尚�
 4. historical audit：历史失败必须可见，但不得隐式代表当前 release gate；
 5. release gate：单独汇总当前产品成熟度、L1–L4、Human acceptance 与发布资格。
 
-manifest 中列出的 current suite failure 必须阻断；未列入 current suite 的历史失败仍保留审计可见性，不能批量放宽断言制造全绿。
+manifest 中列出的 current suite failure 必须阻断；未列入 current suite 的历史失败仍保留审计可见性，不能批量放宽断言制造全绿。T02 还把 T10、S5 和 0.1.1 freeze 测试中残留的 mutable current-backlog 断言移入 0.1.2 current-projection 测试；历史事件文件继续验证原始 status、count、source binding 和当时 next，不再要求当前 active slice 永远停在旧阶段。
+
+## Hermetic runner 与证据合同
+
+- runner 只封装 manifest 选择的测试、required runner files、`src/sec_agent` Python source、明确 seed 及递归 JSON `*_ref`/`ref` 依赖，不再复制整个历史仓库；
+- package 中所有仓库文件、外部只读证据、per-test stdout/stderr/detail 和 process stdout/stderr 都进入 SHA-256 对象库；
+- 子进程使用显式 Python environment inventory，清除已知 Provider credential 环境名，禁用第三方 pytest 自动加载；
+- historical-audit failure 必须可见，但只有 current-projection、current-runtime 和 release-gate failure 阻断当前门禁；
+- 两个 disposable root 的去时长、去绝对路径语义投影必须同 digest；repository readback 不一致时 package 即使测试全绿也判 failed；
+- failed package 和 failed test output 均不可晋升为业务 Artifact。
+
+最终 package：`D:/FIN_Insight_Agent_recovery/packages/fin_0_1_2_s0_hermetic_active_suite_final_20260731T2135+0800_head_cee47c2a`；`verification.json` SHA-256=`4ba00673331abf7b0eabf51aa125765817315b9811b818215a39e3c5e0622b0c`。
 
 ## 下一门
 
-下一项是 `FIN-0.1.2-S0-HERMETIC-PACKAGE-AND-ACTIVE-SUITE-RUNNER-MIGRATION`：建立完整 package inventory、typed per-test result、内容寻址 stdout/stderr 和 disposable-runtime parity，并让 runner 真正按 active manifest 选择当前门禁。只有 G4/G5 通过后才允许关闭 S0、进入 S1。
+下一项是 `FIN-0.1.2-S1-REALISTIC-THREE-CASE-DETERMINISTIC-VERTICAL-STAGE-PLAN`。S1 只规划并随后证明 DELL/MU/NVDA realistic fixture、cross-case/date/cardinality/permutation/multi-failure mutation、三案 full-fake 和 production consumer migration；StagePlan 本身不调用模型。FIN 0.1 仍未 release-qualified，DELL/MU R2 与 post-transfer NVDA/R3 仍归 S4 产品证明。

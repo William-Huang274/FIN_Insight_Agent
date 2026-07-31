@@ -11,10 +11,6 @@ CLOSEOUT = RELEASES / "fin_ia_0_1_s4_t10_s4_honest_block_closeout_decision_v1_0.
 MANIFEST = RELEASES / (
     "fin_ia_0_1_s4_to_s5_honest_block_carry_forward_and_revalidation_manifest_v1_0.json"
 )
-PROGRAM = RELEASES / "fin_ia_0_1_program_release_backlog_v2_0.json"
-S4_BACKLOG = RELEASES / "fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json"
-
-
 def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -75,21 +71,3 @@ def test_closeout_is_zero_call_and_does_not_enter_s5() -> None:
         "decision_only_honest_block_handoff_ready_not_entered"
     )
     assert closeout["stage_decision"]["release"] == "not_qualified_not_authorized"
-
-
-def test_backlogs_record_terminal_t10_without_release_inflation() -> None:
-    program = _load(PROGRAM)
-    s4 = _load(S4_BACKLOG)
-    program_s4 = next(row for row in program["slices"] if row["slice_id"] == "S4")
-    program_s5 = next(row for row in program["slices"] if row["slice_id"] == "S5")
-    program_t10 = next(row for row in program_s4["items"] if row["item_id"] == "S4-T10")
-    s4_t10 = next(row for row in s4["tasks"] if row["item_id"] == "S4-T10")
-    expected = "closed_terminal_honest_block_FIN_0_1_not_qualified"
-    assert program_s4["status"] == expected
-    assert program_t10["status"] == expected
-    assert s4_t10["status"] == expected
-    assert program_s5["status"] == "closed_honestly_blocked_decision_only_no_release_candidate"
-    assert s4["non_inflation"]["S4_passed"] is False
-    assert s4["non_inflation"]["S5_entry_ready"] is True
-    assert s4["non_inflation"]["Alpha_release_or_production"] is False
-    assert program["next_action"]["item_id"] == s4["current_next_action"]

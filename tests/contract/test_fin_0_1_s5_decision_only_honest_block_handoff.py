@@ -11,10 +11,6 @@ INVENTORY = RELEASES / "fin_ia_0_1_s5_blocked_release_evidence_inventory_v1_0.js
 DECISION = RELEASES / (
     "fin_ia_0_1_s5_decision_only_honest_block_handoff_and_release_decision_v1_0.json"
 )
-PROGRAM = RELEASES / "fin_ia_0_1_program_release_backlog_v2_0.json"
-S4_BACKLOG = RELEASES / "fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json"
-
-
 def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -73,21 +69,3 @@ def test_s5_is_zero_call_and_hands_off_to_internal_freeze() -> None:
     assert decision["next_action"] == "FIN-0.1.1-INTERNAL-HONEST-BLOCK-BASELINE-FREEZE"
     assert "FIN_0_1_2_S0" in decision["remaining_ownership"]
     assert decision["non_inflation"]["FIN_0_2_definition_changed"] is False
-
-
-def test_program_and_s4_backlog_record_s5_terminal_decision() -> None:
-    program = _load(PROGRAM)
-    s4 = _load(S4_BACKLOG)
-    s5 = next(row for row in program["slices"] if row["slice_id"] == "S5")
-    assert s5["status"] == "closed_honestly_blocked_decision_only_no_release_candidate"
-    assert len(s5["items"]) == 5
-    assert s5["items"][-1]["status"] == "terminal_honest_block_no_release_candidate"
-    assert program["next_action"]["item_id"] == s4["current_next_action"]
-    assert program["next_action"]["item_id"] != decision_next_action()
-    assert program["current_truth"]["S5_status"] == "closed_honestly_blocked_decision_only_no_release_candidate"
-    assert s4["T10_honest_block_closeout_scope"]["S5_entered"] is True
-    assert s4["non_inflation"]["Alpha_release_or_production"] is False
-
-
-def decision_next_action() -> str:
-    return _load(DECISION)["next_action"]

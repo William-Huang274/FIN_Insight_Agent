@@ -1,0 +1,140 @@
+{
+  "schema_version": "fin_ia_0_1_s4_t10_s4_honest_block_closeout_decision_v1_0",
+  "closeout_id": "S4-T10-S4-HONEST-BLOCK-CLOSEOUT-R1",
+  "closed_at": "2026-07-31T19:10:00+08:00",
+  "status": "terminal_S4_honestly_blocked_FIN_0_1_not_qualified_S5_decision_only_handoff_ready",
+  "authority": {
+    "user_instruction": "按这个顺序做",
+    "instruction_context": "push the clean recovery chain then execute T10 honest-block closeout before the separate S5 decision-only handoff",
+    "T10_closeout_authorized": true,
+    "S4_honest_block_branch_mandatory": true,
+    "S5_entry_executed_by_this_record": false,
+    "release_candidate_release_or_production_authorized": false,
+    "model_provider_network_source_external_tool_or_live_authorized": false,
+    "T05_T06_T07_reopen_or_runtime_repair_authorized": false
+  },
+  "source_bindings": [
+    {
+      "evidence_role": "T10_scope",
+      "ref": "configs/releases/fin_ia_0_1_s4_t10_s4_pass_or_honest_block_closeout_scope_decision_v1_0.json",
+      "sha256": "2e867649f93491133051931f21dc3994822260bfbd668d5f142f75ba872918e8"
+    },
+    {
+      "evidence_role": "S4_to_S5_carry_forward_manifest",
+      "ref": "configs/releases/fin_ia_0_1_s4_to_s5_honest_block_carry_forward_and_revalidation_manifest_v1_0.json",
+      "sha256": "bbd9dfdfc684f14bbdbfc39d14d0248668d66098502c573bfb35bd853fa69424"
+    },
+    {
+      "evidence_role": "release_qualification_contract",
+      "ref": "configs/releases/fin_ia_0_1_release_contract_v1_3.json",
+      "sha256": "317c4c27d944cbda076c6177e035daecec256e649b5a1b31596dca22df69117f"
+    },
+    {
+      "evidence_role": "owner_option_A",
+      "ref": "configs/releases/fin_ia_0_1_s4_t09_real_human_owner_evidence_review_disposition_v1_0.json",
+      "sha256": "d2b62d5bd7158a018c4b8579d502703c4664cd49a392e911dc1d0307e5ef5ed4"
+    }
+  ],
+  "pass_gate_truth": {
+    "DELL_R2": false,
+    "MU_R2": false,
+    "NVDA_historical_S3_R2_owner_accepted": true,
+    "NVDA_post_transfer_exact_product_present": false,
+    "NVDA_qualified_senior_R3": false,
+    "T07_all_green": false,
+    "owner_option_A_evidence_disposition_complete": true,
+    "three_case_R2_requirement_satisfied": false,
+    "S4_pass": false,
+    "FIN_0_1_release_qualified": false
+  },
+  "stage_decision": {
+    "S4_T05": "terminal_honestly_blocked_DELL_R2_not_proven",
+    "S4_T06": "terminal_honestly_blocked_MU_R2_not_proven",
+    "S4_T07": "terminal_honestly_blocked_93_passed_4_failed_no_post_transfer_NVDA_exact_live",
+    "S4_T08": "pass_read_only_calibration_complete_without_release_qualification",
+    "S4_T09": "owner_option_A_evidence_review_complete_R3_not_attested",
+    "S4_T10": "terminal_honest_block_closeout_complete",
+    "S4": "closed_honestly_blocked",
+    "S5": "decision_only_honest_block_handoff_ready_not_entered",
+    "FIN_0_1_1": "freeze_pending_after_S5_decision_only",
+    "FIN_0_1_2": "common_runtime_and_test_contract_rebaseline_after_FIN_0_1_1_freeze",
+    "FIN_0_2": "Earnings_Review_Alpha_definition_preserved",
+    "release": "not_qualified_not_authorized",
+    "production": "not_authorized"
+  },
+  "carry_forward": {
+    "manifest_ref": "configs/releases/fin_ia_0_1_s4_to_s5_honest_block_carry_forward_and_revalidation_manifest_v1_0.json",
+    "manifest_sha256": "bbd9dfdfc684f14bbdbfc39d14d0248668d66098502c573bfb35bd853fa69424",
+    "item_count": 8,
+    "S5_entry_mode": "decision_only_honest_block",
+    "S5_may_execute_release_candidate": false,
+    "S5_may_run_paid_three_case_reproof": false,
+    "FIN_0_1_2_receives_common_runtime_and_transfer_qualification": true
+  },
+  "root_cause_ownership": [
+    {
+      "issue_id": "RC-P36-067-s4-R10-numeric-reference-value-correspondence-false-negative",
+      "terminal_T10_disposition": "open_release_blocker_transferred_to_FIN_0_1_2_S0_to_S4",
+      "T05_or_T06_reopened": false
+    },
+    {
+      "issue_id": "RC-P36-068-s4-R10-case-identity-title-contract-hardcoded-NVDA",
+      "terminal_T10_disposition": "open_release_blocker_transferred_to_FIN_0_1_2_S0_to_S4",
+      "T05_or_T06_reopened": false
+    },
+    {
+      "issue_id": "RC-P36-080-s4-t06-provider-authored-numeric-token-in-specialist-explanation-layer",
+      "terminal_T10_disposition": "open_release_blocker_transferred_to_FIN_0_1_2_compiled_contract",
+      "T05_or_T06_reopened": false
+    },
+    {
+      "issue_id": "RC-P36-084-s4-t06-machine-verifier-semantic-and-delivery-quality-gap",
+      "terminal_T10_disposition": "T08_calibrated_and_transferred_to_FIN_0_1_2_verifier_semantics",
+      "L1_weakened": false
+    },
+    {
+      "issue_id": "RC-P36-085-s4-independent-proof-disposable-runtime-hermeticity-and-failure-observability",
+      "terminal_T10_disposition": "S5_decision_only_inventory_then_FIN_0_1_2_reproducibility",
+      "T06_rerun_authorized": false
+    },
+    {
+      "issue_id": "RC-P36-086-s4-t07-legacy-fixture-and-current-next-regression-baseline-drift",
+      "terminal_T10_disposition": "FIN_0_1_1_S5_test_inventory_and_FIN_0_1_2_S0_test_architecture",
+      "historical_failures_rewritten": false
+    },
+    {
+      "issue_id": "RC-P36-089-fin-0-1-mixed-index-worktree-and-untracked-recoverability-risk",
+      "terminal_T10_disposition": "resolved_recovery_chain_pushed_before_closeout",
+      "repository_cleanup_or_history_rewrite": false
+    }
+  ],
+  "repository_prerequisite": {
+    "branch": "codex/layered-data-source-expansion",
+    "pushed_HEAD": "10fb4aee05f31d1db5ae5c1867d69f5ace698d8c",
+    "remote": "origin",
+    "recovery_chain_push_completed_before_T10": true,
+    "force_push_or_history_rewrite": false
+  },
+  "non_inflation": {
+    "release_requirements_weakened": false,
+    "failed_or_quarantined_output_promoted": false,
+    "owner_evidence_review_reinterpreted_as_product_acceptance": false,
+    "historical_NVDA_R2_reinterpreted_as_post_transfer_R3": false,
+    "S4_honest_block_reinterpreted_as_engineering_or_product_pass": false
+  },
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_or_external_tool_calls": 0,
+    "new_admissions_or_research_runs": 0,
+    "new_business_artifacts": 0,
+    "paired_assessments": 0,
+    "owner_product_acceptance_records": 0,
+    "qualified_senior_attestations": 0,
+    "release_candidates": 0,
+    "S5_entry_records": 0
+  },
+  "next_action": "S5-DECISION-ONLY-HONEST-BLOCK-HANDOFF-AND-RELEASE-DECISION"
+}

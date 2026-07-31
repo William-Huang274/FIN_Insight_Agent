@@ -115,7 +115,7 @@ def test_only_the_human_evidence_disposition_record_count_increased() -> None:
     assert set(zero_fields.values()) == {0}
 
 
-def test_T09_progression_contract_advances_to_T10_scope_without_S4_pass() -> None:
+def test_T09_event_truth_is_preserved_after_current_program_advances() -> None:
     disposition = _load(DISPOSITION_PATH)
     program = _load(PROGRAM_BACKLOG)
     s4 = _load(S4_BACKLOG)
@@ -134,6 +134,10 @@ def test_T09_progression_contract_advances_to_T10_scope_without_S4_pass() -> Non
     assert s4_t09["status"].startswith("closed_owner_evidence_review_complete")
     expected = "S4-T10-S4-PASS-OR-HONEST-BLOCK-CLOSEOUT-SCOPE-DECISION"
     assert disposition["next_action"] == expected
-    assert program["next_action"]["item_id"].startswith("S4-T10-")
-    assert s4["current_next_action"].startswith("S4-T10-")
+    assert program["next_action"]["item_id"] == (
+        "S5-DECISION-ONLY-HONEST-BLOCK-HANDOFF-AND-RELEASE-DECISION"
+    )
+    assert s4["current_next_action"] == (
+        "S5-DECISION-ONLY-HONEST-BLOCK-HANDOFF-AND-RELEASE-DECISION"
+    )
     assert "not_qualified" in program["status"]

@@ -1,0 +1,170 @@
+{
+  "schema_version": "fin_ia_0_1_s4_to_s5_honest_block_carry_forward_and_revalidation_manifest_v1_0",
+  "manifest_id": "FIN-0.1-S4-TO-S5-HONEST-BLOCK-CARRY-FORWARD-R1",
+  "frozen_at": "2026-07-31T19:05:00+08:00",
+  "status": "frozen_for_S4_T10_honest_block_closeout_and_S5_decision_only_consumption",
+  "authority": {
+    "user_instruction": "按这个顺序做",
+    "T10_honest_block_closeout_authorized": true,
+    "S5_decision_only_handoff_authorized_after_T10": true,
+    "S5_entry_or_release_candidate_created_by_this_manifest": false,
+    "model_provider_network_source_external_tool_or_live_authorized": false,
+    "T05_T06_T07_reopen_or_historical_evidence_rewrite_authorized": false
+  },
+  "source_bindings": [
+    {
+      "evidence_role": "T10_frozen_scope",
+      "ref": "configs/releases/fin_ia_0_1_s4_t10_s4_pass_or_honest_block_closeout_scope_decision_v1_0.json",
+      "sha256": "2e867649f93491133051931f21dc3994822260bfbd668d5f142f75ba872918e8"
+    },
+    {
+      "evidence_role": "release_qualification_contract",
+      "ref": "configs/releases/fin_ia_0_1_release_contract_v1_3.json",
+      "sha256": "317c4c27d944cbda076c6177e035daecec256e649b5a1b31596dca22df69117f"
+    },
+    {
+      "evidence_role": "T07_terminal_regression_result",
+      "ref": "configs/releases/fin_ia_0_1_s4_t07_current_worktree_three_case_zero_call_regression_failure_result_v1_0.json",
+      "sha256": "9ee8e454b9c8eea14f7eeab93b5050b7a85fce006c5c42d25139f1a0aaab59d1"
+    },
+    {
+      "evidence_role": "T08_three_case_calibration",
+      "ref": "configs/releases/fin_ia_0_1_s4_t08_read_only_three_case_calibration_and_workbench_product_value_result_v1_0.json",
+      "sha256": "be8f97a984f01290554937ab7f17b23bfb387407c5d6f0cab636334ecbf9dceb"
+    },
+    {
+      "evidence_role": "T09_owner_option_A",
+      "ref": "configs/releases/fin_ia_0_1_s4_t09_real_human_owner_evidence_review_disposition_v1_0.json",
+      "sha256": "d2b62d5bd7158a018c4b8579d502703c4664cd49a392e911dc1d0307e5ef5ed4"
+    },
+    {
+      "evidence_role": "NVDA_historical_R2_owner_acceptance",
+      "ref": "configs/releases/fin_ia_0_1_s3_t10_owner_review_nvda_r2_and_s3_closeout_v1_0.json",
+      "sha256": "b7cdb5bf00b31581b26b6e66b3194f8c913a3d78ff1c84a59db2eee1d284a8b2"
+    },
+    {
+      "evidence_role": "DELL_transfer_paired_evidence",
+      "ref": "configs/releases/fin_ia_0_1_s4_t05_dell_r10_success_only_paired_assessment_and_owner_acceptance_decision_v1_0.json",
+      "sha256": "502be154addb75b3c4a27ae918d3785b173176f071c231771a1a4ec56241de7e"
+    },
+    {
+      "evidence_role": "MU_transfer_paired_evidence",
+      "ref": "configs/releases/fin_ia_0_1_s4_t06_mu_r2_success_only_paired_assessment_result_v1_0.json",
+      "sha256": "fe31c95f92ac9a2e41be6ace784498084839edf16c300f4006e6f6ac11414fa1"
+    },
+    {
+      "evidence_role": "repository_content_addressed_inventory",
+      "ref": "configs/releases/fin_ia_0_1_repository_evidence_freeze_and_safe_classification_inventory_v1_0.json",
+      "sha256": "ab4c2a129d229f94f15e1f890d564c975d5d1a5666b72254a35b89d76d479f29"
+    },
+    {
+      "evidence_role": "version_lineage_authority",
+      "ref": "configs/releases/fin_ia_0_1_repository_recovery_s0_to_s4_audit_and_0_1_1_0_1_2_version_lineage_scope_decision_v1_0.json",
+      "sha256": "055fe4f2f94214007efd0effc707d8ae177920a73f639d0d3cbd76ef067990b5"
+    }
+  ],
+  "terminal_truth": {
+    "DELL_R2": false,
+    "MU_R2": false,
+    "NVDA_historical_S3_R2_owner_accepted": true,
+    "NVDA_post_transfer_exact_product_present": false,
+    "NVDA_qualified_senior_R3": false,
+    "T07_current_worktree_regression_passed_failed": [93, 4],
+    "three_case_R2_requirement_satisfied": false,
+    "S4_pass": false,
+    "FIN_0_1_release_qualified": false
+  },
+  "carry_forward_items": [
+    {
+      "item_id": "CF-S5-01",
+      "capability": "immutable_exact_evidence_and_package_inventory",
+      "owner": "FIN_0_1_1_S5_decision_only",
+      "disposition": "reconcile_for_blocked_release_decision",
+      "acceptance": "all accepted failed and quarantined evidence remains separately content addressed",
+      "release_blocking": true
+    },
+    {
+      "item_id": "CF-S5-02",
+      "capability": "complete_typed_failure_capture_stdout_stderr_inventory",
+      "owner": "FIN_0_1_1_S5_decision_only",
+      "disposition": "inventory_without_rerun_or_business_promotion",
+      "acceptance": "capture refs digests failure phase and retention boundary are explicit",
+      "release_blocking": true
+    },
+    {
+      "item_id": "CF-S5-03",
+      "capability": "Git_commit_manifest_rollback_and_secret_safe_evidence",
+      "owner": "FIN_0_1_1_S5_decision_only",
+      "disposition": "bind_pushed_recovery_chain_and_local_freeze_inputs",
+      "acceptance": "coherent commit chain recovery package rollback path and zero plaintext credential finding are recorded",
+      "release_blocking": false
+    },
+    {
+      "item_id": "CF-S5-04",
+      "capability": "RG1_to_RG5_blocked_decision_reconciliation",
+      "owner": "FIN_0_1_1_S5_decision_only",
+      "disposition": "record_blocked_not_execute_release_candidate",
+      "acceptance": "each release gate has evidence backed terminal status and no pass inflation",
+      "release_blocking": true
+    },
+    {
+      "item_id": "CF-012-S0-01",
+      "capability": "immutable_event_mutable_projection_and_active_suite_test_architecture",
+      "owner": "FIN_0_1_2_S0",
+      "disposition": "rebuild_test_contract_and_manifest_selected_current_baseline",
+      "acceptance": "historical event proofs never assert mutable current_next last_row or cumulative store state",
+      "release_blocking": true
+    },
+    {
+      "item_id": "CF-012-S0-02",
+      "capability": "single_source_compiled_runtime_contract",
+      "owner": "FIN_0_1_2_S0_to_S3",
+      "disposition": "compile_prompt_schema_validator_fake_selector_renderer_budget_and_capture_index",
+      "acceptance": "all consumers share one versioned contract source and mutation suite",
+      "release_blocking": true
+    },
+    {
+      "item_id": "CF-012-S4-01",
+      "capability": "DELL_MU_transfer_R2_and_post_transfer_NVDA_product_reproof",
+      "owner": "FIN_0_1_2_S4",
+      "disposition": "reprove_only_on_frozen_all_green_common_runtime",
+      "acceptance": "DELL MU and NVDA each meet current R2 with no L1 and NVDA reaches qualified senior R3",
+      "release_blocking": true
+    },
+    {
+      "item_id": "CF-012-OPTIONAL-01",
+      "capability": "strict_schema_transport_qualification",
+      "owner": "FIN_0_1_2_optional_provider_qualification",
+      "disposition": "blocked_until_complete_standalone_HTTPS_raw_HTTP_contract_is_available",
+      "acceptance": "HTTPS endpoint exact headers auth request and response examples are independently reproducible",
+      "release_blocking": false
+    }
+  ],
+  "release_gate_snapshot": {
+    "RG1_vertical_path": "blocked_no_three_case_qualified_candidate",
+    "RG2_evidence_numeric_integrity": "blocked_DELL_and_MU_L1_not_accepted",
+    "RG3_research_outcome": "blocked_only_NVDA_historical_R2_is_owner_accepted",
+    "RG4_review_product_value": "blocked_no_qualified_senior_R3_and_cross_case_value_incomplete",
+    "RG5_release_rollback": "engineering_evidence_available_but_cannot_override_RG1_to_RG4",
+    "release_candidate_execution_allowed": false
+  },
+  "non_inflation": {
+    "failed_or_quarantined_output_promoted": false,
+    "historical_NVDA_R2_reused_as_post_transfer_R2_or_R3": false,
+    "Agent_gain_reused_as_L1_or_owner_acceptance": false,
+    "FIN_0_1_1_is_public_release": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_or_external_tool_calls": 0,
+    "new_admissions_or_research_runs": 0,
+    "new_business_artifacts": 0,
+    "release_candidates": 0,
+    "S5_entry_records": 0
+  },
+  "next_action": "S4-T10-S4-HONEST-BLOCK-CLOSEOUT-DECISION"
+}

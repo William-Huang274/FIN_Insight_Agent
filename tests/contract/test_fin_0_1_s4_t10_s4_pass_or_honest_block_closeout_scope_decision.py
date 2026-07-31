@@ -96,7 +96,7 @@ def test_historical_scope_preserves_its_next_step_without_binding_mutable_curren
     assert scope["progression_rule"]["future_closeout_requires_separate_execution_step"] is True
 
 
-def test_backlogs_preserve_non_inflation_and_t10_scope_status() -> None:
+def test_backlogs_preserve_non_inflation_after_t10_progression() -> None:
     program = _load(PROGRAM_BACKLOG_PATH)
     s4 = _load(S4_BACKLOG_PATH)
     program_t10 = next(
@@ -107,11 +107,11 @@ def test_backlogs_preserve_non_inflation_and_t10_scope_status() -> None:
         if item["item_id"] == "S4-T10"
     )
     s4_t10 = next(item for item in s4["tasks"] if item["item_id"] == "S4-T10")
-    assert program_t10["status"] == "scope_pass_honest_block_closeout_authorized_not_executed"
-    assert s4_t10["status"] == "scope_pass_honest_block_closeout_authorized_not_executed"
+    assert program_t10["status"] == "closed_terminal_honest_block_FIN_0_1_not_qualified"
+    assert s4_t10["status"] == "closed_terminal_honest_block_FIN_0_1_not_qualified"
     assert s4["non_inflation"]["DELL_R2"] is False
     assert s4["non_inflation"]["MU_R2"] is False
     assert s4["non_inflation"]["NVDA_R3"] is False
     assert s4["non_inflation"]["S4_passed"] is False
-    assert s4["non_inflation"]["S5_entry_ready"] is False
+    assert s4["non_inflation"]["S5_entry_ready"] is True
     assert s4["non_inflation"]["Alpha_release_or_production"] is False

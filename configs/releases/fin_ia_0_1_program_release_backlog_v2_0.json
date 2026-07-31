@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_0_1_program_release_backlog_v2_0",
   "release_id": "REL-PROD-001",
   "version": "FIN_0_1_INTERNAL_ALPHA",
-  "status": "S4_T05_T06_T07_honestly_blocked_closed_T08_read_only_pass_T09_owner_option_A_T10_scope_pass_repository_inventory_classification_pass_owner_review_next_release_not_qualified",
+  "status": "S4_terminal_honestly_blocked_T10_closeout_complete_S5_decision_only_handoff_next_FIN_0_1_not_qualified",
   "authority": {
     "active_progress_source": true,
     "activated_at": "2026-07-19",
@@ -154,7 +154,7 @@
     "exact_human_senior_reviews": 0,
     "exact_owner_product_reviews": 1,
     "S3_entry_status": "pass_NVDA_R2_owner_accepted_S3_T10_closeout_complete",
-    "S4_status": "T01_T04_pass_T05_T06_T07_honestly_blocked_closed_T08_read_only_calibration_next",
+    "S4_status": "closed_terminal_honest_block_FIN_0_1_not_qualified",
     "stage_boundary_rebaseline_status": "active_T05_T06_closed_no_acceptance_inflation",
     "global_audit_ref": "configs/releases/fin_ia_0_1_s0_to_s4_t05_full_chain_global_audit_and_forward_plan_v1_0.json",
     "global_audit_sha256": "6a00836e8b2a799e17eecad103982a35d8e4956069b63a5b9248adfb1e0ae451",
@@ -449,7 +449,7 @@
     "human_accepted",
     "release_qualified"
   ],
-  "active_slice": "S4",
+  "active_slice": "S5",
   "slices": [
     {
       "slice_id": "S1",
@@ -2055,7 +2055,7 @@
     {
       "slice_id": "S4",
       "name": "three_case_transfer_and_human_calibration",
-      "status": "in_progress_T01_T04_pass_T05_T06_T07_honestly_blocked_closed_T08_read_only_next",
+      "status": "closed_terminal_honest_block_FIN_0_1_not_qualified",
       "case_scope": [
         "NVDA",
         "DELL",
@@ -2069,7 +2069,7 @@
       "entry_decision_ref": "configs/releases/fin_ia_0_1_s4_entry_manifest_consumption_and_three_case_transfer_decision_v1_0.json",
       "entry_decision_sha256": "097e9bcc5578a80abb04da02686498c73356e8a05c58c7ce7d7063cc27179179",
       "detailed_backlog_ref": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
-      "detailed_backlog_sha256": "43334d74cc5dfb6477b2ee9fc7a052c41c71779aceea881ed5bf1d7648004f3d",
+      "detailed_backlog_sha256": "20d44c88c465f9c7dc4eca5278da6f9ca2885dd1a3d2e25479c86a83811adcfb",
       "T02_decision_ref": "configs/releases/fin_ia_0_1_s4_t02_dell_mu_case_pack_and_financial_method_to_runtime_contract_decision_v1_0.json",
       "T02_decision_sha256": "3abcb72ffdc3b90666e68baf009a5d36b8d118e082b1d8c6b36915c9f4a9ba9b",
       "T03_decision_ref": "configs/releases/fin_ia_0_1_s4_t03_case_runtime_injection_and_leakage_preflight_v1_0.json",
@@ -2140,14 +2140,14 @@
         {
           "item_id": "S4-T10",
           "title": "S4_closeout_and_S5_carry_forward_freeze",
-          "status": "scope_pass_honest_block_closeout_authorized_not_executed"
+          "status": "closed_terminal_honest_block_FIN_0_1_not_qualified"
         }
       ]
     },
     {
       "slice_id": "S5",
       "name": "release_candidate_and_portfolio_release",
-      "status": "blocked_by_S4",
+      "status": "decision_only_honest_block_handoff_ready_not_entered",
       "case_scope": [
         "NVDA",
         "DELL",
@@ -2155,8 +2155,8 @@
       ],
       "product_result": "one_exact_reproducible_candidate_is_released_or_honestly_blocked_after_RG1_to_RG5",
       "entry": [
-        "S4_pass",
-        "release_candidate_authority",
+        "S4_pass_or_terminal_honest_block",
+        "release_candidate_authority_or_decision_only_block_authority",
         "S3_and_S4_carry_forward_records_reconciled"
       ],
       "exit": [
@@ -2178,7 +2178,7 @@
     "program_repair_budget": "one_automatic_engineering_review_iteration_per_slice_then_scope_swap_defer_or_user_decision",
     "cross_slice_early_delivery_carry_forward": {
       "contract_ref": "configs/releases/fin_ia_0_1_cross_slice_early_delivery_carry_forward_contract_v1_0.json",
-      "status": "S4_consumption_complete_T01_pass_S5_reconciliation_later",
+      "status": "S4_consumption_and_T10_honest_block_closeout_complete_S5_decision_only_reconciliation_next",
       "draft_owner_and_trigger": [
         "S3-T09",
         "S3_T09_acceptance"
@@ -2207,8 +2207,8 @@
     ]
   },
   "next_action": {
-    "item_id": "FIN-0.1-REPOSITORY-CLASSIFICATION-OWNER-REVIEW-AND-COHERENT-COMMIT-SLICE-AUTHORITY-DECISION",
-    "status": "repository_evidence_freeze_and_safe_classification_pass_owner_review_pending_no_cleanup_or_closeout",
+    "item_id": "S5-DECISION-ONLY-HONEST-BLOCK-HANDOFF-AND-RELEASE-DECISION",
+    "status": "S4_T10_terminal_honest_block_complete_S5_decision_only_ready_not_entered",
     "still_blocks": [
       "RC_P36_067_numeric_projection_and_rendering_exact_live_reproof",
       "RC_P36_068_case_delivery_identity_exact_live_reproof",
@@ -2216,11 +2216,11 @@
       "owner_acceptance_while_L1_fails",
       "DELL_R2_MU_R2_and_NVDA_R3",
       "NVDA_qualified_senior_R3",
-      "S5",
+      "S5_release_candidate_execution",
       "release",
       "production"
     ],
-    "action": "review accept modify or reject the eight populated content-addressed commit slices and the external recovery-package precondition without deleting moving unstaging restaging committing tagging closing S4 entering S5 or calling any model provider network or source",
+    "action": "consume the frozen S4 to S5 manifest and record a decision-only honest-block release decision without release candidate execution paid rerun model provider network source or product maturity inflation",
     "repository_inventory_ref": "configs/releases/fin_ia_0_1_repository_evidence_freeze_and_safe_classification_inventory_v1_0.json",
     "repository_inventory_schema_version": "fin_ia_0_1_repository_evidence_freeze_and_safe_classification_inventory_v1_0",
     "repository_inventory_status_rows": 1127,
@@ -2245,9 +2245,11 @@
     "historical_T10_next_action_superseded_but_scope_truth_preserved": "S4-T10-S4-HONEST-BLOCK-CLOSEOUT-AND-S5-DECISION-ONLY-HANDOFF",
     "T10_scope_decision_ref": "configs/releases/fin_ia_0_1_s4_t10_s4_pass_or_honest_block_closeout_scope_decision_v1_0.json",
     "T10_scope_decision_sha256": "2e867649f93491133051931f21dc3994822260bfbd668d5f142f75ba872918e8",
-    "T10_scope_decision_status": "pass_honest_block_closeout_authorized_not_executed",
+    "T10_scope_decision_status": "consumed_by_terminal_honest_block_closeout",
+    "T10_closeout_decision_ref": "configs/releases/fin_ia_0_1_s4_t10_s4_honest_block_closeout_decision_v1_0.json",
+    "T10_carry_forward_manifest_ref": "configs/releases/fin_ia_0_1_s4_to_s5_honest_block_carry_forward_and_revalidation_manifest_v1_0.json",
     "T10_selected_closeout_branch": "S4_honestly_blocked_FIN_0_1_not_qualified",
-    "S4_closeout_executed": false,
+    "S4_closeout_executed": true,
     "S5_entered": false,
     "S5_future_entry_mode": "decision_only_honest_block",
     "release_candidate_execution_allowed": false,

@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from pathlib import Path
 from typing import Any, Literal, Mapping, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from sec_agent.canonical_runtime.models import canonical_digest
+from sec_agent.runtime_resource_registry import (
+    read_registered_runtime_bytes,
+    read_registered_runtime_json,
+)
 
 
 S4_CASE_RUNTIME_CONTRACT_REF = "fin01.s4.case_runtime_binding:v1"
@@ -268,6 +271,15 @@ _SOURCE_GROUNDED_PACK_PATHS = {
         "fin_ia_0_1_s4_t06_mu_source_grounded_input_pack_v1_0.json"
     ),
 }
+_CASE_PACK_RESOURCE_IDS = {
+    "DELL": "s4.case_pack.dell",
+    "MU": "s4.case_pack.mu",
+}
+_SOURCE_GROUNDED_PACK_RESOURCE_IDS = {
+    "DELL": "s4.source_grounded_input.dell",
+    "MU": "s4.source_grounded_input.mu",
+}
+_METHOD_CONTRACT_RESOURCE_ID = "s4.financial_method_runtime_contract"
 _SOURCE_GROUNDED_ROUTE_COUNTS = {"DELL": 11, "MU": 8}
 
 
@@ -381,24 +393,6 @@ class S4SourceGroundedInputPack(BaseModel):
             raise ValueError("s4_source_grounded_pack_digest_mismatch")
         return self
 
-
-def _read_json(path: Path) -> dict[str, Any]:
-    try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise S4CaseRuntimeError("s4_case_runtime_contract_read_failed") from exc
-    if not isinstance(value, dict):
-        raise S4CaseRuntimeError("s4_case_runtime_contract_not_object")
-    return value
-
-
-def _sha256(path: Path) -> str:
-    try:
-        return hashlib.sha256(path.read_bytes()).hexdigest()
-    except OSError as exc:
-        raise S4CaseRuntimeError("s4_case_runtime_contract_read_failed") from exc
-
-
 def load_s4_source_grounded_input_pack(
     repo_root: str | Path,
     case_ticker: str,
@@ -411,7 +405,10 @@ def load_s4_source_grounded_input_pack(
         raise S4CaseRuntimeError(
             "s4_source_grounded_input_case_unsupported"
         ) from exc
-    raw = _read_json(Path(repo_root).resolve() / relative_path)
+    raw = read_registered_runtime_json(
+        repo_root,
+        _SOURCE_GROUNDED_PACK_RESOURCE_IDS[case_ticker],
+    )
     try:
         pack = S4SourceGroundedInputPack.model_validate(raw)
     except ValueError as exc:
@@ -725,12 +722,24 @@ def load_s4_case_runtime_binding(
     except KeyError as exc:
         raise S4CaseRuntimeError("s4_case_runtime_case_unsupported") from exc
 
-    case_path = root / str(case_config["case_pack_ref"])
-    method_path = root / _METHOD_CONTRACT_PATH
-    case_pack = _read_json(case_path)
-    method_contract = _read_json(method_path)
-    case_sha = _sha256(case_path)
-    method_sha = _sha256(method_path)
+    case_bytes = read_registered_runtime_bytes(
+        root,
+        _CASE_PACK_RESOURCE_IDS[case_ticker],
+    )
+    method_bytes = read_registered_runtime_bytes(
+        root,
+        _METHOD_CONTRACT_RESOURCE_ID,
+    )
+    case_pack = read_registered_runtime_json(
+        root,
+        _CASE_PACK_RESOURCE_IDS[case_ticker],
+    )
+    method_contract = read_registered_runtime_json(
+        root,
+        _METHOD_CONTRACT_RESOURCE_ID,
+    )
+    case_sha = hashlib.sha256(case_bytes).hexdigest()
+    method_sha = hashlib.sha256(method_bytes).hexdigest()
     if (
         case_sha != case_config["case_pack_sha256"]
         or method_sha != _METHOD_CONTRACT_SHA256

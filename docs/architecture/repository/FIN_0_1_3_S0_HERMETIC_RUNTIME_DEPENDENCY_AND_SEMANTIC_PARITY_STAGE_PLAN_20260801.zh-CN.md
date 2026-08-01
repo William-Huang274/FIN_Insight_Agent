@@ -1,7 +1,7 @@
 # FIN 0.1.3 S0 Hermetic Runtime 依赖与语义等价 StagePlan
 
 日期：2026-08-01
-状态：`G0 pass / T01 complete / T02 ready / zero call`
+状态：`G1 engineering pass / T02 complete / T03 ready / zero call`
 
 ## 1. 为什么 0.1.3 必须重新从 S0 开始
 
@@ -25,8 +25,8 @@ S0 不负责 DeepSeek Flash stable / Pro preview 对比，不负责 DELL/MU R2�
 | 任务 | 内容 | 当前状态 | 预算 |
 | --- | --- | --- | --- |
 | T01 | StagePlan、G0、owner 与停止线 | 已通过 | 本文件与机器合同 |
-| T02 | resource registry + typed environment 的单一零调用实现包 | ready，未开始 | 最多 1 个 implementation bundle |
-| T03 | host import/collect、resource/path mutation、三案例 full-fake | 被 T02 锁定 | 1 次零调用 engineering proof |
+| T02 | resource registry + typed environment 的单一零调用实现包 | engineering pass，已完成 | 1/1 implementation bundle 已消费 |
+| T03 | host import/collect、resource/path mutation、三案例 full-fake | ready，未开始 | 1 次零调用 engineering proof |
 | T04 | 独立双-disposable formal proof 与 S0 closeout | 被 T03 锁定 | 最多 1 个 formal package |
 
 T02 失败时不进入 T03；T03 失败时不进入 T04；T04 失败时 S0 终态 honest block。不得自动创建 T05、R/H、replacement family 或 FIN 0.1.4。
@@ -60,9 +60,12 @@ T04 只能创建一个 package，并在两个 fresh disposable roots、两个独
 
 ## 7. 当前真值
 
-- `G0=pass`，T01 完成；
-- T02 ready，但 RuntimeResourceRegistry、typed environment projection 和 prospective active-suite manifest 均尚未创建；
-- implementation/formal proof package=`0/0`；
+- `G0=pass`，T01 完成；`G1=engineering pass`，T02 完成；
+- RuntimeResourceRegistry 已覆盖 29 项/323,829 bytes；7 个应用/三案例默认 loader 模块改用 resource ID，16 个 prompt 则保留 FIN 0.1.2 冻结的 `SKILL_FILES` compatibility adapter 并与新注册表双向校验；missing、unknown、duplicate、drift、permutation、cross-version 与 traversal mutation 均 fail closed；
+- typed environment projection 已覆盖八类 roots，并证明 Windows drive case、slash、purelib/platlib、prefix/base-prefix、未知路径、相对路径与字段边界；raw evidence 不改写；
+- focused registry/environment contracts=`24 passed`，相关生产 consumer 与三案例 host 回归通过；
+- active-suite manifest 已物化，但 T03 host import/collect/full-fake proof 尚未执行，T04 package 尚未创建；
+- implementation/formal proof package=`1/0`；
 - credential/model/provider/network/admission/business Run/Artifact=`0`；
 - RC-P36-090–093 仍 open/full-chain blocker；
 - FIN 0.1 release qualified=false，S1/S2 尚未进入。
@@ -72,4 +75,4 @@ SHA-256：`034c7714e5773fe48b0d69ed6ab373ba02074e497d803bcd73349932f2177000`
 
 当前唯一下一项：
 
-`FIN-0.1.3-S0-RUNTIME-RESOURCE-REGISTRY-AND-TYPED-ENVIRONMENT-PROJECTION-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.3-S0-HOST-IMPORT-COLLECT-RESOURCE-MUTATION-AND-THREE-CASE-FULL-FAKE-ZERO-CALL-PROOF`

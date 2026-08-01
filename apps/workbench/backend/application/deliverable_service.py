@@ -15,6 +15,7 @@ from sec_agent.canonical_runtime.models import (
     utc_now,
 )
 from sec_agent.canonical_runtime.store import IdempotencyConflict, TransactionConflict
+from sec_agent.runtime_resource_registry import read_registered_runtime_json
 
 from .case_service import CasePrincipal, CaseService, load_p36_candidate_profile
 from .evidence_service import EvidenceService, EvidenceServiceError
@@ -23,6 +24,7 @@ from .evidence_service import EvidenceService, EvidenceServiceError
 CONTRACT_RELATIVE_PATH = (
     "configs/releases/fin_ia_0_1_vt3_deliverable_review_trace_contract_v1_0.json"
 )
+CONTRACT_RESOURCE_ID = "application.contract.deliverable_review_trace"
 WORKPAPER_TABLE = "canonical_workpaper_projection_versions"
 LEAD_REVIEW_TABLE = "canonical_lead_review_decision_versions"
 DELIVERABLE_TABLE = "canonical_deliverable_projection_versions"
@@ -83,9 +85,7 @@ class DeliverableService:
         *,
         repo_root: str | Path,
     ) -> "DeliverableService":
-        contract = json.loads(
-            (Path(repo_root) / CONTRACT_RELATIVE_PATH).read_text(encoding="utf-8")
-        )
+        contract = read_registered_runtime_json(repo_root, CONTRACT_RESOURCE_ID)
         return cls(
             getattr(case_service, "_facade", None),
             evidence_service,

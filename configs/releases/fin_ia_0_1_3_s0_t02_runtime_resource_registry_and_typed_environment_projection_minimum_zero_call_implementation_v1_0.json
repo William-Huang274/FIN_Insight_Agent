@@ -1,0 +1,227 @@
+{
+  "schema_version": "fin_ia_0_1_3_s0_t02_runtime_resource_registry_and_typed_environment_projection_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.3-S0-T02-RUNTIME-RESOURCE-REGISTRY-AND-TYPED-ENVIRONMENT-PROJECTION-R1",
+  "implemented_at": "2026-08-01T15:10:29+08:00",
+  "status": "engineering_pass_T02_complete_T03_ready_unexecuted",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "single_FIN_0_1_3_S0_T02_zero_call_implementation_bundle",
+    "T03_engineering_proof_created_or_executed": false,
+    "T04_formal_two_disposable_package_created_or_executed": false,
+    "model_provider_credential_network_authorized": false,
+    "admission_business_run_or_business_artifact_authorized": false,
+    "S1_S2_or_FIN_0_2_scope_change_authorized": false
+  },
+  "source_bindings": [
+    {
+      "role": "immutable_T01_stage_plan",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_hermetic_runtime_dependency_and_semantic_parity_stage_plan_v1_0.json",
+      "sha256": "034c7714e5773fe48b0d69ed6ab373ba02074e497d803bcd73349932f2177000"
+    },
+    {
+      "role": "runtime_resource_registry",
+      "ref": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+      "sha256": "a3ea8c7631f4688dcba7133fcdf9c27630f7828dc774608b11a4489e9d1e106b"
+    },
+    {
+      "role": "typed_environment_semantic_parity_contract",
+      "ref": "configs/runtime/fin_ia_0_1_3_typed_environment_semantic_parity_v1_0.json",
+      "sha256": "7e523a536f539c8e509ab1b9402296ce9ff20ff396ef2bce0da3262668b1c4f3"
+    },
+    {
+      "role": "active_suite_manifest",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_0.json",
+      "sha256": "ec3be712618a03e5792984e46054954571c98c52a767cab0aa261bb31ef614be"
+    },
+    {
+      "role": "current_program_projection",
+      "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_2.json",
+      "sha256": "7ee62e46f06f379860644073d54a39de2d4a052bbcd15d2df48377d75ca02bb1"
+    },
+    {
+      "role": "registry_compiler",
+      "ref": "src/sec_agent/runtime_resource_registry.py",
+      "sha256": "5c1979449f805fdb3e6b7152b61e959653994cd5145afa15e6f78a4dc9b81f28"
+    },
+    {
+      "role": "hermetic_runner",
+      "ref": "src/sec_agent/hermetic_test_runner.py",
+      "sha256": "5e1f06ede2bde8893aaac7e704741e3fcc390bf050428dc9e57145746e99478f"
+    },
+    {
+      "role": "case_service_consumer",
+      "ref": "apps/workbench/backend/application/case_service.py",
+      "sha256": "690474a7a7f62783a6e6fb0e7a5420cfe927d2b1309e2ab01bd77e183bc9acdd"
+    },
+    {
+      "role": "evidence_service_consumer",
+      "ref": "apps/workbench/backend/application/evidence_service.py",
+      "sha256": "f236be7b6c9454882f0f32b619948b2c3ee3d1e2fd8ae75bd1d5268df129ece6"
+    },
+    {
+      "role": "integrity_service_consumer",
+      "ref": "apps/workbench/backend/application/integrity_service.py",
+      "sha256": "ed8a7d17519aef425e2268968b29dbc489ad45ec7780f260da88a3a143ecee16"
+    },
+    {
+      "role": "deliverable_service_consumer",
+      "ref": "apps/workbench/backend/application/deliverable_service.py",
+      "sha256": "e717441170efc1c90f7c9758087d3c0a5861128cf52caf96fe00b0665b6e8b0e"
+    },
+    {
+      "role": "fact_candidate_profile_consumer",
+      "ref": "apps/workbench/backend/application/fact_candidate_pool_planner.py",
+      "sha256": "a46aa574d4caac699db848013e60e6e3c4dc5af0202b1245f46f192714f8385b"
+    },
+    {
+      "role": "compiled_contract_binding_consumer",
+      "ref": "apps/workbench/backend/application/fin_0_1_2_runtime_contract_binding.py",
+      "sha256": "f66707bf52478cfb707d07524ba4da0bdd1be482a2dac978090f338ec49caa77"
+    },
+    {
+      "role": "three_case_resource_consumer",
+      "ref": "src/sec_agent/s4_case_runtime.py",
+      "sha256": "045a9df581a3924140cf84034748f6fde0d7073fb1bcf6c27990e596348e0d30"
+    },
+    {
+      "role": "registry_contract_tests",
+      "ref": "tests/contract/test_fin_0_1_3_s0_runtime_resource_registry_and_dependency_compiler.py",
+      "sha256": "bc14f2e67692a9824fc6b59758421470afd0a35bfc687839cbd0d3a2b1a87fe1"
+    },
+    {
+      "role": "typed_environment_contract_tests",
+      "ref": "tests/contract/test_fin_0_1_3_s0_typed_environment_semantic_parity.py",
+      "sha256": "9b3e8551352c4f4fb1fdfa2d18664ccd1e7dbf800b66e2497aeec3d76d934e28"
+    },
+    {
+      "role": "active_suite_contract_tests",
+      "ref": "tests/contract/test_fin_0_1_3_s0_active_suite.py",
+      "sha256": "a92b28a80e1d12b3acfa67f42678f1f679da74bd1c7d5759baa7ca9b31afe702"
+    }
+  ],
+  "runtime_resource_registry": {
+    "registry_ref": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+    "registry_id": "FIN-0.1.3-S0-T02-RUNTIME-RESOURCE-REGISTRY-R1",
+    "resource_count": 29,
+    "resource_bytes": 323829,
+    "resource_canonical_digest": "d2126d8c5e8c94c1d435ba0b9cada37e70ee6bd5e7d38a6233ed0db2e19079a4",
+    "static_literal_detector_count": 28,
+    "default_loader_modules_migrated_to_resource_ids": 7,
+    "frozen_prompt_SKILL_FILES_compatibility_resources": 16,
+    "frozen_prompt_mapping_bidirectionally_validated": true,
+    "registry_is_authority_static_scanner_is_detector": true,
+    "package_compiler_includes_registry_and_all_resources_before_pytest": true,
+    "mutation_contracts": [
+      "missing",
+      "unknown_resource_id",
+      "duplicate_id_or_path",
+      "digest_or_bytes_drift",
+      "permutation",
+      "cross_version",
+      "duplicate_JSON_key",
+      "traversal",
+      "symlink_escape",
+      "unregistered_literal",
+      "frozen_SKILL_FILES_adapter_drift"
+    ]
+  },
+  "typed_environment_projection": {
+    "contract_ref": "configs/runtime/fin_ia_0_1_3_typed_environment_semantic_parity_v1_0.json",
+    "typed_root_count": 8,
+    "typed_roots": [
+      "disposable_package_root",
+      "disposable_repository_root",
+      "disposable_temporary_root",
+      "sys_prefix",
+      "sys_base_prefix",
+      "purelib_root",
+      "platlib_root",
+      "installed_distribution_roots"
+    ],
+    "frozen_before_disposable_execution": true,
+    "normalization_scope": [
+      "test.stdout",
+      "test.stderr",
+      "test.detail",
+      "collection_errors",
+      "process_stdout",
+      "process_stderr"
+    ],
+    "replace_only_exact_or_descendant_paths": true,
+    "Windows_drive_case_and_slash_variants_supported": true,
+    "unknown_absolute_paths_fail_closed": true,
+    "raw_content_addressed_evidence_rewritten": false,
+    "business_values_nodeids_failure_codes_and_relative_paths_preserved": true
+  },
+  "active_suite": {
+    "manifest_ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_0.json",
+    "selected_proof_classes": 5,
+    "immutable_event_current_projection_current_runtime_historical_audit_release_gate_each_have_one_owner": true,
+    "application_import_sweep_executed": false,
+    "active_suite_collect_only_executed": false,
+    "three_case_T03_engineering_proof_executed": false,
+    "formal_two_disposable_T04_package_created_or_executed": false
+  },
+  "historical_immutability": {
+    "FIN_0_1_3_T01_stage_plan_sha256_preserved": true,
+    "FIN_0_1_2_runtime_inventory_rewritten": false,
+    "FIN_0_1_2_research_skills_source_sha256_preserved": "d757747da6209eeb8cded8c6980b7805db53fb6521c0c2424900af7ad7cffdba",
+    "FIN_0_1_2_failed_packages_rerun_or_rewritten": false,
+    "T01_event_test_no_longer_asserts_future_filesystem_absence": true
+  },
+  "verification": {
+    "focused_registry_and_environment_contracts": "24_passed",
+    "related_legacy_inventory_runner_consumer_and_three_case_matrix": "100_passed",
+    "current_projection_and_T01_event_matrix_before_record": "17_passed",
+    "T02_record_active_current_and_event_matrix": "19_passed",
+    "next_T03_scope_Project_OS_preflight": "pass_open_full_chain_blocker_count_0",
+    "python_compile": "pass",
+    "git_diff_check": "pass",
+    "model_provider_network_calls": [0, 0, 0]
+  },
+  "budgets": {
+    "maximum_implementation_bundles": 1,
+    "implementation_bundles_consumed": 1,
+    "maximum_engineering_proof_runs": 1,
+    "engineering_proof_runs_consumed": 0,
+    "maximum_formal_two_disposable_proof_packages": 1,
+    "formal_two_disposable_proof_packages_consumed": 0
+  },
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_source_or_external_tool_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "engineering_proof_runs_created_or_executed": 0,
+    "formal_two_disposable_proof_packages_created_or_executed": 0,
+    "tags_releases_or_production_actions": 0
+  },
+  "gates": {
+    "G0_scope_owner_and_budget": "pass_frozen_T01",
+    "G1_contract_closure": "engineering_pass_T02",
+    "G2_deterministic_and_behavioral_closure": "pending_T03",
+    "G3_natural_model_canary": "not_applicable_to_S0",
+    "G4_quarantined_diagnostic": "not_needed_and_forbidden_in_S0",
+    "G5_formal_proof": "pending_T04_locked",
+    "G6_assessment_closeout_and_git": "pending_T04"
+  },
+  "product_truth": {
+    "FIN_0_1_2": "frozen_internal_honest_block_not_release_qualified",
+    "FIN_0_1_3_S0_T01": "pass",
+    "FIN_0_1_3_S0_T02": "engineering_pass",
+    "FIN_0_1_3_S0_T03": "ready_not_started",
+    "FIN_0_1_3_S0_T04": "locked",
+    "FIN_0_1_3_S1": "not_started",
+    "FIN_0_1_3_S2_entry": false,
+    "DELL_R2": false,
+    "MU_R2": false,
+    "post_transfer_NVDA_exact_product": false,
+    "NVDA_R3": false,
+    "FIN_0_1_release_qualified": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "next_action": "FIN-0.1.3-S0-HOST-IMPORT-COLLECT-RESOURCE-MUTATION-AND-THREE-CASE-FULL-FAKE-ZERO-CALL-PROOF"
+}

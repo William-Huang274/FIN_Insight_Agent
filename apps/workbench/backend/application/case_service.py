@@ -12,14 +12,22 @@ from sec_agent.canonical_runtime.facade import RuntimeFacadeError
 from sec_agent.canonical_runtime.feature_flags import FeatureFlagError, FeatureFlagRegistry
 from sec_agent.canonical_runtime.models import CommandEnvelope, canonical_digest, utc_now
 from sec_agent.canonical_runtime.store import IdempotencyConflict, SQLiteCanonicalStore
+from sec_agent.runtime_resource_registry import (
+    read_registered_runtime_json,
+    resolve_registered_runtime_resource,
+)
 
 
 P36_CANDIDATE_PROFILE = "configs/releases/fin_ia_0_1_vt4_p36_candidate_profile_v1_0.json"
+P36_CANDIDATE_PROFILE_RESOURCE_ID = "application.contract.p36_candidate_profile"
+POINT01_FEATURE_FLAGS_RESOURCE_ID = "application.config.point01_feature_flags"
 
 
 def load_p36_candidate_profile(repo_root: str | Path) -> dict[str, Any] | None:
-    profile_path = Path(repo_root).resolve() / P36_CANDIDATE_PROFILE
-    return json.loads(profile_path.read_text(encoding="utf-8")) if profile_path.exists() else None
+    return read_registered_runtime_json(
+        repo_root,
+        P36_CANDIDATE_PROFILE_RESOURCE_ID,
+    )
 
 
 @dataclass(frozen=True)
@@ -58,7 +66,12 @@ class CaseService:
     def for_fixture_root(cls, fixture_root: str | Path, *, repo_root: str | Path) -> "CaseService":
         root = Path(fixture_root).resolve()
         repo = Path(repo_root).resolve()
-        flags = FeatureFlagRegistry.from_path(repo / "configs" / "runtime" / "point01_feature_flags_v1_0.json")
+        flags = FeatureFlagRegistry.from_path(
+            resolve_registered_runtime_resource(
+                repo,
+                POINT01_FEATURE_FLAGS_RESOURCE_ID,
+            )
+        )
         profile = load_p36_candidate_profile(repo)
         facade = RuntimeFacade(
             SQLiteCanonicalStore(root / "canonical.sqlite"),

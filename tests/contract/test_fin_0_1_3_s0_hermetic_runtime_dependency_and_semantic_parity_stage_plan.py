@@ -183,10 +183,12 @@ def test_scope_budget_and_product_truth_mutations_fail_closed(mutator: Any) -> N
         _validate_plan(plan)
 
 
-def test_prospective_contracts_do_not_exist_during_T01() -> None:
+def test_T01_immutably_records_that_prospective_contracts_were_not_created() -> None:
     plan = _load(PLAN_PATH)
-    for ref in plan["prospective_contract_refs"].values():
-        assert not (ROOT / ref).exists()
+    assert len(plan["prospective_contract_refs"]) == 6
+    assert plan["observed_counts"]["runtime_implementation_files_changed"] == 0
+    assert plan["observed_counts"]["implementation_bundles_executed"] == 0
+    assert plan["authority"]["runtime_implementation_executed_by_this_plan"] is False
 
 
 def test_T01_did_not_authorize_execution_or_product_reproof() -> None:

@@ -7,6 +7,10 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from sec_agent.canonical_runtime.models import canonical_digest
+from sec_agent.runtime_resource_registry import (
+    RuntimeResourceRegistryError,
+    read_registered_runtime_json,
+)
 
 
 FACT_CANDIDATE_POOL_PLAN_REF = "fin01.s4.fact_candidate_pool_plan:v1"
@@ -15,6 +19,7 @@ FACT_CANDIDATE_PROFILE_SET_RELATIVE_PATH = (
     "configs/releases/"
     "fin_ia_0_1_s4_fact_candidate_pool_profiles_v1_0.json"
 )
+FACT_CANDIDATE_PROFILE_SET_RESOURCE_ID = "s4.fact_candidate_pool_profiles"
 FACT_CANDIDATE_POOL_MAXIMUM = 6
 
 
@@ -111,6 +116,10 @@ def _load_profile_set(path_text: str) -> dict[str, Any]:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError("s4_fact_candidate_profile_set_unreadable") from exc
+    return _validate_profile_set_payload(payload)
+
+
+def _validate_profile_set_payload(payload: Any) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("s4_fact_candidate_profile_set_invalid")
     expected_keys = {
@@ -170,12 +179,20 @@ class FactCandidatePoolPlanner:
         program_cell_id: str,
         registry_path: str | Path | None = None,
     ) -> FactCandidatePoolPlanner:
-        path = (
-            Path(registry_path)
-            if registry_path is not None
-            else _repo_root() / FACT_CANDIDATE_PROFILE_SET_RELATIVE_PATH
-        )
-        profile_set = _load_profile_set(str(path.resolve()))
+        if registry_path is not None:
+            profile_set = _load_profile_set(str(Path(registry_path).resolve()))
+        else:
+            try:
+                profile_set = _validate_profile_set_payload(
+                    read_registered_runtime_json(
+                        _repo_root(),
+                        FACT_CANDIDATE_PROFILE_SET_RESOURCE_ID,
+                    )
+                )
+            except RuntimeResourceRegistryError as exc:
+                raise ValueError(
+                    "s4_fact_candidate_profile_set_unreadable"
+                ) from exc
         matches = [
             row
             for row in profile_set["profiles"]

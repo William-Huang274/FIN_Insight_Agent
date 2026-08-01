@@ -1,5 +1,11 @@
 # Internal Master Checklist
 
+## FIN 0.1.3 S0 Current
+
+- [x] 2026-08-01 S0-T02 Runtime resource registry and typed environment projection: central registry covers 29 resources/323,829 bytes; seven default loader modules use resource IDs; the frozen 16-prompt `SKILL_FILES` adapter is bidirectionally checked without changing its historical hash; eight typed environment roots support diagnostic-only semantic projection. Focused=`24 passed`, related host matrix=`100 passed`, model/Provider/network=`0/0/0`.
+- [ ] S0-T03 host import/collect/resource-path mutation and DELL/MU/NVDA `6/12/12/9` zero-call engineering proof. Do not create T04 formal package unless T03 is all green.
+- [ ] S0-T04 one independent two-disposable formal proof and RC-P36-090–093/S0 closeout. S1/S2 and FIN 0.1 release remain blocked until this passes.
+
 ## Integrated 09-12 Execution Governance
 
 - [x] R53-R60 P31 Agent Self-Hardening / Project OS: create global-stewardship and project-os Codex skills, repo-local `docs/project_os/` context pack, machine-readable capability/root-cause ledgers, external technical pattern registry, financial research method registry, L4-scope done definition, full-chain/token run policies, and deterministic Project OS full-chain preflight guard. Boundary: P31 improves project operating discipline and fail-closed governance; it does not close P30 real single-case memo-quality proof.

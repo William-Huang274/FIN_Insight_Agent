@@ -1,0 +1,113 @@
+{
+  "schema_version": "fin_ia_0_1_3_typed_environment_semantic_parity_v1_0",
+  "contract_id": "FIN-0.1.3-S0-T02-TYPED-ENVIRONMENT-SEMANTIC-PARITY-R1",
+  "status": "raw_preserving_typed_environment_normalization",
+  "raw_evidence": {
+    "content_addressed_refs_retained": true,
+    "raw_detail_stdout_stderr_hashes_rewritten": false,
+    "raw_terminal_result_retained": true,
+    "semantic_hash_is_separate_index_only": true
+  },
+  "normalization": {
+    "allowed_roots": [
+      {
+        "root_id": "disposable_package_root",
+        "role": "disposable_package",
+        "projection_token": "<ENV:DISPOSABLE_PACKAGE_ROOT>",
+        "source": "runner.package_root",
+        "cardinality": "exactly_one"
+      },
+      {
+        "root_id": "disposable_repository_root",
+        "role": "disposable_repository",
+        "projection_token": "<ENV:DISPOSABLE_REPOSITORY_ROOT>",
+        "source": "runner.materialized_repository_root",
+        "cardinality": "exactly_one"
+      },
+      {
+        "root_id": "disposable_temporary_root",
+        "role": "disposable_temporary_parent",
+        "projection_token": "<ENV:DISPOSABLE_TEMPORARY_ROOT>",
+        "source": "runner.temporary_parent",
+        "cardinality": "exactly_one"
+      },
+      {
+        "root_id": "sys_prefix",
+        "role": "python_prefix",
+        "projection_token": "<ENV:PYTHON_PREFIX>",
+        "source": "host_frozen_python_environment.sys_prefix",
+        "cardinality": "exactly_one"
+      },
+      {
+        "root_id": "sys_base_prefix",
+        "role": "python_base_prefix",
+        "projection_token": "<ENV:PYTHON_BASE_PREFIX>",
+        "source": "host_frozen_python_environment.sys_base_prefix",
+        "cardinality": "exactly_one"
+      },
+      {
+        "root_id": "purelib_root",
+        "role": "python_purelib",
+        "projection_token": "<ENV:PYTHON_PURELIB_ROOT>",
+        "source": "host_frozen_python_environment.sysconfig.purelib",
+        "cardinality": "exactly_one"
+      },
+      {
+        "root_id": "platlib_root",
+        "role": "python_platlib",
+        "projection_token": "<ENV:PYTHON_PLATLIB_ROOT>",
+        "source": "host_frozen_python_environment.sysconfig.platlib",
+        "cardinality": "exactly_one"
+      },
+      {
+        "root_id": "installed_distribution_roots",
+        "role": "installed_distribution_roots",
+        "projection_token": "<ENV:INSTALLED_DISTRIBUTION_ROOT>",
+        "source": "host_frozen_python_environment.importlib_metadata",
+        "cardinality": "one_or_more_sorted_unique"
+      }
+    ],
+    "required_runtime_root_fields": [
+      "root_id",
+      "role",
+      "absolute_path",
+      "projection_token",
+      "source",
+      "digest_or_environment_fingerprint"
+    ],
+    "derive_native_and_posix_separator_variants_from_exact_roots": true,
+    "replace_longest_exact_literal_first": true,
+    "substring_or_fuzzy_path_matching_allowed": false,
+    "replace_only_exact_or_descendant_paths": true,
+    "Windows_drive_letter_case_insensitive": true,
+    "unknown_absolute_path_patterns": [
+      "(?<![A-Za-z0-9_])[A-Za-z]:[\\\\/][^\\s\\\"'<>]+",
+      "(?<![A-Za-z0-9_:>])/(?:[^/\\s\\\"'<>]+/)+[^/\\s\\\"'<>]+"
+    ],
+    "unknown_absolute_path_behavior": "fail_closed_and_keep_parity_false"
+  },
+  "semantic_projection": {
+    "normalized_content_fields": [
+      "test.stdout",
+      "test.stderr",
+      "test.detail",
+      "collection_errors",
+      "process_stdout",
+      "process_stderr"
+    ],
+    "comparison_significant_fields": [
+      "business_values",
+      "nodeids",
+      "failure_codes",
+      "relative_paths",
+      "non_allowlisted_absolute_paths",
+      "test_outcomes",
+      "suite_memberships",
+      "release_gate_classification"
+    ],
+    "business_and_contract_fields_are_never_normalized": true,
+    "raw_and_semantic_evidence_are_separate": true,
+    "semantic_parity_requires_both_normalization_valid_and_digest_equal": true,
+    "normalization_findings_are_business_promotable": false
+  }
+}

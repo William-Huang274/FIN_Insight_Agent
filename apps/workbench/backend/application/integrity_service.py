@@ -23,6 +23,7 @@ from sec_agent.canonical_runtime.parser_numeric import (
     ParserNumericPolicy,
 )
 from sec_agent.canonical_runtime.store import IdempotencyConflict, TransactionConflict
+from sec_agent.runtime_resource_registry import read_registered_runtime_json
 
 from .case_service import CasePrincipal, CaseService, load_p36_candidate_profile
 from .evidence_service import EvidenceService, EvidenceServiceError
@@ -31,6 +32,7 @@ from .evidence_service import EvidenceService, EvidenceServiceError
 CONTRACT_RELATIVE_PATH = (
     "configs/releases/fin_ia_0_1_vt2_three_cell_integrity_workpaper_contract_v1_0.json"
 )
+CONTRACT_RESOURCE_ID = "application.contract.integrity_workpaper"
 REPAIR_TABLE = "canonical_evidence_repair_outcome_versions"
 NUMERIC_TABLE = "canonical_numeric_workbench_projection_versions"
 WORKPAPER_TABLE = "canonical_workpaper_projection_versions"
@@ -101,9 +103,7 @@ class IntegrityService:
         *,
         repo_root: str | Path,
     ) -> "IntegrityService":
-        contract = json.loads(
-            (Path(repo_root) / CONTRACT_RELATIVE_PATH).read_text(encoding="utf-8")
-        )
+        contract = read_registered_runtime_json(repo_root, CONTRACT_RESOURCE_ID)
         return cls(
             getattr(case_service, "_facade", None),
             evidence_service,

@@ -14,6 +14,11 @@ from sec_agent.runtime_contract_governance import (
     compile_runtime_contract_source,
     validate_runtime_contract_source,
 )
+from sec_agent.runtime_resource_registry import (
+    RuntimeResourceRegistryError,
+    read_registered_runtime_bytes,
+    read_registered_runtime_json,
+)
 
 
 FIN_0_1_2_COMMON_RUNTIME_BINDING_REF = (
@@ -29,6 +34,12 @@ FIN_0_1_2_COMMON_RUNTIME_SOURCE_REF = (
 FIN_0_1_2_COMMON_RUNTIME_BINDING_MANIFEST_REF = (
     "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_"
     "binding_v1_0.json"
+)
+FIN_0_1_2_COMMON_RUNTIME_SOURCE_RESOURCE_ID = (
+    "fin_0_1_2.common_runtime_contract_family_source"
+)
+FIN_0_1_2_COMMON_RUNTIME_BINDING_RESOURCE_ID = (
+    "fin_0_1_2.common_runtime_contract_family_binding"
 )
 FIN_0_1_2_ACTUAL_CONSUMER_OWNERS = {
     "prompt": (
@@ -318,20 +329,21 @@ def load_fin_0_1_2_runtime_contract_binding() -> (
     Fin012RuntimeContractFamilyBinding
 ):
     root = _repository_root()
-    source_path = root / FIN_0_1_2_COMMON_RUNTIME_SOURCE_REF
-    manifest_path = root / FIN_0_1_2_COMMON_RUNTIME_BINDING_MANIFEST_REF
     try:
-        manifest = json.loads(
-            manifest_path.read_text(encoding="utf-8"),
-            object_pairs_hook=_duplicate_key_guard,
+        manifest = read_registered_runtime_json(
+            root,
+            FIN_0_1_2_COMMON_RUNTIME_BINDING_RESOURCE_ID,
         )
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+    except RuntimeResourceRegistryError as exc:
         raise Fin012RuntimeContractBindingError(
             "fin012_runtime_contract_binding_manifest_unreadable"
         ) from exc
     try:
-        source_bytes = source_path.read_bytes()
-    except OSError as exc:
+        source_bytes = read_registered_runtime_bytes(
+            root,
+            FIN_0_1_2_COMMON_RUNTIME_SOURCE_RESOURCE_ID,
+        )
+    except RuntimeResourceRegistryError as exc:
         raise Fin012RuntimeContractBindingError(
             "fin012_runtime_contract_source_unreadable"
         ) from exc

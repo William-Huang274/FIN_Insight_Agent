@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_0_1_s4_detailed_execution_backlog_v1_0",
   "backlog_id": "FIN-0.1-S4-THREE-CASE-TRANSFER-AND-HUMAN-CALIBRATION-R1",
   "frozen_at": "2026-07-26T15:41:14+08:00",
-  "status": "S4_and_S5_closed_FIN_0_1_2_frozen_blocked_FIN_0_1_3_S0_T01_stage_plan_pass_T02_ready",
+  "status": "S4_and_S5_closed_FIN_0_1_2_frozen_blocked_FIN_0_1_3_S0_T02_engineering_pass_T03_ready",
   "authority": {
     "user_instruction": "认可",
     "instruction_context": "User accepted the proposed S4 plan after Codex stated that the next action would only create the zero-call S4 entry decision detailed backlog and manifest consumption record.",
@@ -1122,7 +1122,7 @@
     "only_planned_remaining_T05_paid_execution": "DELL_R11_consumed_failed_no_further_paid_execution_authorized",
     "automatic_R12": false
   },
-  "current_next_action": "FIN-0.1.3-S0-RUNTIME-RESOURCE-REGISTRY-AND-TYPED-ENVIRONMENT-PROJECTION-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "current_next_action": "FIN-0.1.3-S0-HOST-IMPORT-COLLECT-RESOURCE-MUTATION-AND-THREE-CASE-FULL-FAKE-ZERO-CALL-PROOF",
   "T07_current_worktree_regression": {
     "scope_decision_ref": "configs/releases/fin_ia_0_1_s4_t07_entry_current_worktree_three_case_regression_and_nvda_post_transfer_exact_revalidation_scope_decision_v1_0.json",
     "result_ref": "configs/releases/fin_ia_0_1_s4_t07_current_worktree_three_case_zero_call_regression_failure_result_v1_0.json",

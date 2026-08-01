@@ -12,12 +12,17 @@ import re
 import shutil
 import subprocess
 import sys
+import sysconfig
 import tempfile
 from typing import Any, Iterable, Mapping, Sequence
 
 from sec_agent.runtime_contract_governance import (
     ContractGovernanceError,
     validate_active_test_suite_manifest,
+)
+from sec_agent.runtime_resource_registry import (
+    RuntimeResourceRegistryError,
+    load_runtime_resource_registry,
 )
 
 
@@ -30,6 +35,9 @@ RUNTIME_RESOURCE_INVENTORY_SCHEMA = (
 )
 SEMANTIC_PARITY_SCHEMA = (
     "fin_ia_0_1_2_hermetic_semantic_parity_projection_v1_0"
+)
+TYPED_SEMANTIC_PARITY_SCHEMA = (
+    "fin_ia_0_1_3_typed_environment_semantic_parity_v1_0"
 )
 REPOSITORY_REFERENCE_POLICY_SCHEMA = (
     "fin_ia_hermetic_repository_reference_policy_v1_0"
@@ -293,6 +301,8 @@ def validate_host_current_program_projection(
         "FIN_0_1_3_S0_stage_plan_ready",
         "current_host_validated_FIN_0_1_3_S0_T01_stage_plan_pass_"
         "T02_ready",
+        "current_host_validated_FIN_0_1_3_S0_T02_implementation_pass_"
+        "T03_ready",
     }
     if projection["status"] not in allowed_projection_statuses:
         raise HermeticTestRunnerError("current_projection_status_invalid")
@@ -704,6 +714,20 @@ def _policy_contract_paths(
                 inventory_ref,
             )
         )
+    registry_ref = policy.get("runtime_resource_registry_ref")
+    if registry_ref is not None:
+        if not isinstance(registry_ref, str) or not registry_ref.strip():
+            raise HermeticTestRunnerError(
+                "runtime_resource_registry_ref_invalid"
+            )
+        try:
+            registry = load_runtime_resource_registry(
+                repository_root,
+                registry_ref,
+            )
+        except RuntimeResourceRegistryError as exc:
+            raise HermeticTestRunnerError(exc.code) from exc
+        paths.update(registry.package_paths())
     parity_ref = policy.get("semantic_parity_contract_ref")
     if parity_ref is not None:
         if not isinstance(parity_ref, str) or not parity_ref.strip():
@@ -1045,15 +1069,157 @@ def _python_environment_inventory() -> dict[str, Any]:
         },
         key=lambda item: (item[0].lower(), item[1]),
     )
+    distribution_roots: set[str] = set()
+    for distribution in importlib.metadata.distributions():
+        try:
+            root = Path(distribution.locate_file("")).resolve()
+        except (OSError, TypeError, ValueError):
+            continue
+        if root.is_dir():
+            distribution_roots.add(str(root))
+    sysconfig_paths = sysconfig.get_paths()
+    typed_roots = {
+        "sys_prefix": str(Path(sys.prefix).resolve()),
+        "sys_base_prefix": str(Path(sys.base_prefix).resolve()),
+        "purelib_root": str(
+            Path(str(sysconfig_paths.get("purelib", sys.prefix))).resolve()
+        ),
+        "platlib_root": str(
+            Path(str(sysconfig_paths.get("platlib", sys.prefix))).resolve()
+        ),
+        "installed_distribution_roots": sorted(distribution_roots),
+    }
     return {
         "python_executable": str(Path(sys.executable).resolve()),
         "python_version": sys.version,
         "site_paths": site_paths,
+        "typed_roots": typed_roots,
+        "typed_environment_fingerprint": _sha256_bytes(
+            _canonical_bytes(typed_roots)
+        ),
         "installed_distributions": [
             {"name": name, "version": version}
             for name, version in distributions
         ],
     }
+
+
+def _environment_root_fingerprint(
+    root_id: str,
+    absolute_path: str | Sequence[str],
+) -> str:
+    paths = (
+        [absolute_path]
+        if isinstance(absolute_path, str)
+        else list(absolute_path)
+    )
+    return _sha256_bytes(
+        _canonical_bytes(
+            {
+                "root_id": root_id,
+                "absolute_paths": paths,
+            }
+        )
+    )
+
+
+def _typed_environment_root_rows(
+    *,
+    package_root: Path,
+    runtime_root: Path,
+    disposable_parent: Path,
+    python_environment: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    frozen = python_environment.get("typed_roots")
+    if not isinstance(frozen, Mapping):
+        raise HermeticTestRunnerError(
+            "typed_environment_frozen_roots_missing"
+        )
+    values: dict[str, str | list[str]] = {
+        "disposable_package_root": str(package_root.resolve()),
+        "disposable_repository_root": str(runtime_root.resolve()),
+        "disposable_temporary_root": str(disposable_parent.resolve()),
+        "sys_prefix": str(frozen.get("sys_prefix", "")),
+        "sys_base_prefix": str(frozen.get("sys_base_prefix", "")),
+        "purelib_root": str(frozen.get("purelib_root", "")),
+        "platlib_root": str(frozen.get("platlib_root", "")),
+        "installed_distribution_roots": [
+            str(value)
+            for value in frozen.get("installed_distribution_roots", [])
+        ],
+    }
+    metadata = {
+        "disposable_package_root": (
+            "disposable_package",
+            "<ENV:DISPOSABLE_PACKAGE_ROOT>",
+            "runner.package_root",
+        ),
+        "disposable_repository_root": (
+            "disposable_repository",
+            "<ENV:DISPOSABLE_REPOSITORY_ROOT>",
+            "runner.materialized_repository_root",
+        ),
+        "disposable_temporary_root": (
+            "disposable_temporary_parent",
+            "<ENV:DISPOSABLE_TEMPORARY_ROOT>",
+            "runner.temporary_parent",
+        ),
+        "sys_prefix": (
+            "python_prefix",
+            "<ENV:PYTHON_PREFIX>",
+            "host_frozen_python_environment.sys_prefix",
+        ),
+        "sys_base_prefix": (
+            "python_base_prefix",
+            "<ENV:PYTHON_BASE_PREFIX>",
+            "host_frozen_python_environment.sys_base_prefix",
+        ),
+        "purelib_root": (
+            "python_purelib",
+            "<ENV:PYTHON_PURELIB_ROOT>",
+            "host_frozen_python_environment.sysconfig.purelib",
+        ),
+        "platlib_root": (
+            "python_platlib",
+            "<ENV:PYTHON_PLATLIB_ROOT>",
+            "host_frozen_python_environment.sysconfig.platlib",
+        ),
+        "installed_distribution_roots": (
+            "installed_distribution_roots",
+            "<ENV:INSTALLED_DISTRIBUTION_ROOT>",
+            "host_frozen_python_environment.importlib_metadata",
+        ),
+    }
+    rows: list[dict[str, Any]] = []
+    for root_id, absolute_path in values.items():
+        if (
+            (isinstance(absolute_path, str) and not absolute_path.strip())
+            or (
+                isinstance(absolute_path, list)
+                and (
+                    not absolute_path
+                    or absolute_path != sorted(set(absolute_path))
+                    or any(not item.strip() for item in absolute_path)
+                )
+            )
+        ):
+            raise HermeticTestRunnerError(
+                f"typed_environment_root_invalid:{root_id}"
+            )
+        role, token, source = metadata[root_id]
+        rows.append(
+            {
+                "root_id": root_id,
+                "role": role,
+                "absolute_path": absolute_path,
+                "projection_token": token,
+                "source": source,
+                "digest_or_environment_fingerprint": (
+                    _environment_root_fingerprint(root_id, absolute_path)
+                ),
+            }
+        )
+    return rows
 
 
 def build_content_addressed_package(
@@ -1442,6 +1608,12 @@ def run_disposable_once(
             "exact_disposable_package_root": str(package_root.resolve()),
             "exact_hermetic_temporary_parent": str(disposable_parent.resolve()),
         },
+        "typed_environment_roots": _typed_environment_root_rows(
+            package_root=package_root,
+            runtime_root=runtime_root,
+            disposable_parent=disposable_parent,
+            python_environment=package_manifest["python_environment"],
+        ),
     }
     _write_json(package_root / "runs" / run_id / "terminal_result.json", result)
     return result
@@ -1497,9 +1669,15 @@ def _load_semantic_parity_contract(
         "semantic_projection",
     }:
         raise HermeticTestRunnerError("semantic_parity_contract_top_level_invalid")
-    if contract["schema_version"] != SEMANTIC_PARITY_SCHEMA:
+    schema = contract["schema_version"]
+    if schema not in {SEMANTIC_PARITY_SCHEMA, TYPED_SEMANTIC_PARITY_SCHEMA}:
         raise HermeticTestRunnerError("semantic_parity_contract_schema_invalid")
-    if contract["status"] != "raw_preserving_allowlisted_root_normalization":
+    expected_status = (
+        "raw_preserving_allowlisted_root_normalization"
+        if schema == SEMANTIC_PARITY_SCHEMA
+        else "raw_preserving_typed_environment_normalization"
+    )
+    if contract["status"] != expected_status:
         raise HermeticTestRunnerError("semantic_parity_contract_status_invalid")
     raw_evidence = contract["raw_evidence"]
     if not isinstance(raw_evidence, Mapping) or any(
@@ -1517,30 +1695,99 @@ def _load_semantic_parity_contract(
     normalization = contract["normalization"]
     if not isinstance(normalization, Mapping):
         raise HermeticTestRunnerError("semantic_parity_normalization_invalid")
-    expected_roots = [
-        {
-            "root_id": "exact_disposable_repository_root",
-            "placeholder": "<DISPOSABLE_REPOSITORY_ROOT>",
-        },
-        {
-            "root_id": "exact_disposable_package_root",
-            "placeholder": "<DISPOSABLE_PACKAGE_ROOT>",
-        },
-        {
-            "root_id": "exact_hermetic_temporary_parent",
-            "placeholder": "<HERMETIC_TEMPORARY_PARENT>",
-        },
-    ]
-    if normalization.get("allowed_roots") != expected_roots:
-        raise HermeticTestRunnerError(
-            "semantic_parity_allowed_roots_invalid"
-        )
-    for key, expected in {
-        "derive_native_and_posix_separator_variants_from_exact_roots": True,
-        "replace_longest_exact_literal_first": True,
-        "substring_or_fuzzy_path_matching_allowed": False,
-        "unknown_absolute_path_behavior": "fail_closed_and_keep_parity_false",
-    }.items():
+    if schema == SEMANTIC_PARITY_SCHEMA:
+        expected_roots = [
+            {
+                "root_id": "exact_disposable_repository_root",
+                "placeholder": "<DISPOSABLE_REPOSITORY_ROOT>",
+            },
+            {
+                "root_id": "exact_disposable_package_root",
+                "placeholder": "<DISPOSABLE_PACKAGE_ROOT>",
+            },
+            {
+                "root_id": "exact_hermetic_temporary_parent",
+                "placeholder": "<HERMETIC_TEMPORARY_PARENT>",
+            },
+        ]
+        if normalization.get("allowed_roots") != expected_roots:
+            raise HermeticTestRunnerError(
+                "semantic_parity_allowed_roots_invalid"
+            )
+        required_rules = {
+            "derive_native_and_posix_separator_variants_from_exact_roots": True,
+            "replace_longest_exact_literal_first": True,
+            "substring_or_fuzzy_path_matching_allowed": False,
+            "unknown_absolute_path_behavior": (
+                "fail_closed_and_keep_parity_false"
+            ),
+        }
+    else:
+        expected_root_ids = [
+            "disposable_package_root",
+            "disposable_repository_root",
+            "disposable_temporary_root",
+            "sys_prefix",
+            "sys_base_prefix",
+            "purelib_root",
+            "platlib_root",
+            "installed_distribution_roots",
+        ]
+        allowed_roots = normalization.get("allowed_roots")
+        if (
+            not isinstance(allowed_roots, list)
+            or [row.get("root_id") for row in allowed_roots if isinstance(row, Mapping)]
+            != expected_root_ids
+            or any(
+                not isinstance(row, Mapping)
+                or set(row)
+                != {
+                    "root_id",
+                    "role",
+                    "projection_token",
+                    "source",
+                    "cardinality",
+                }
+                or not all(
+                    isinstance(row.get(key), str) and row[key].strip()
+                    for key in (
+                        "root_id",
+                        "role",
+                        "projection_token",
+                        "source",
+                        "cardinality",
+                    )
+                )
+                for row in allowed_roots
+            )
+            or len({row["projection_token"] for row in allowed_roots})
+            != len(allowed_roots)
+        ):
+            raise HermeticTestRunnerError(
+                "semantic_parity_typed_roots_invalid"
+            )
+        if normalization.get("required_runtime_root_fields") != [
+            "root_id",
+            "role",
+            "absolute_path",
+            "projection_token",
+            "source",
+            "digest_or_environment_fingerprint",
+        ]:
+            raise HermeticTestRunnerError(
+                "semantic_parity_runtime_root_fields_invalid"
+            )
+        required_rules = {
+            "derive_native_and_posix_separator_variants_from_exact_roots": True,
+            "replace_longest_exact_literal_first": True,
+            "substring_or_fuzzy_path_matching_allowed": False,
+            "replace_only_exact_or_descendant_paths": True,
+            "Windows_drive_letter_case_insensitive": True,
+            "unknown_absolute_path_behavior": (
+                "fail_closed_and_keep_parity_false"
+            ),
+        }
+    for key, expected in required_rules.items():
         if normalization.get(key) != expected:
             raise HermeticTestRunnerError(
                 "semantic_parity_normalization_rule_invalid"
@@ -1561,6 +1808,19 @@ def _load_semantic_parity_contract(
     if not isinstance(projection, Mapping):
         raise HermeticTestRunnerError("semantic_parity_projection_invalid")
     significant = set(projection.get("comparison_significant_fields", []))
+    if schema == TYPED_SEMANTIC_PARITY_SCHEMA and projection.get(
+        "normalized_content_fields"
+    ) != [
+        "test.stdout",
+        "test.stderr",
+        "test.detail",
+        "collection_errors",
+        "process_stdout",
+        "process_stderr",
+    ]:
+        raise HermeticTestRunnerError(
+            "semantic_parity_normalized_field_boundary_invalid"
+        )
     if not {
         "business_values",
         "nodeids",
@@ -1602,32 +1862,131 @@ def _semantic_text_projection(
             "semantic_parity_content_not_utf8"
         ) from exc
     allowed_rows = contract["normalization"]["allowed_roots"]
-    expected_root_ids = {str(row["root_id"]) for row in allowed_rows}
-    if set(roots) != expected_root_ids:
-        raise HermeticTestRunnerError(
-            "semantic_parity_runtime_roots_incomplete"
-        )
     replacements: list[tuple[str, str]] = []
-    for row in allowed_rows:
-        root_id = str(row["root_id"])
-        placeholder = str(row["placeholder"])
-        root = str(roots[root_id]).strip()
-        if not root:
+    if contract["schema_version"] == SEMANTIC_PARITY_SCHEMA:
+        expected_root_ids = {str(row["root_id"]) for row in allowed_rows}
+        if not isinstance(roots, Mapping) or set(roots) != expected_root_ids:
             raise HermeticTestRunnerError(
-                "semantic_parity_runtime_root_empty"
+                "semantic_parity_runtime_roots_incomplete"
             )
-        variants = {root, root.replace("\\", "/"), root.replace("/", "\\")}
-        replacements.extend(
-            (variant, placeholder)
-            for variant in variants
-            if variant
+        for row in allowed_rows:
+            root_id = str(row["root_id"])
+            placeholder = str(row["placeholder"])
+            root = str(roots[root_id]).strip()
+            if not root:
+                raise HermeticTestRunnerError(
+                    "semantic_parity_runtime_root_empty"
+                )
+            variants = {
+                root,
+                root.replace("\\", "/"),
+                root.replace("/", "\\"),
+            }
+            replacements.extend(
+                (variant, placeholder) for variant in variants if variant
+            )
+        unique_replacements: dict[str, str] = {}
+        for literal, placeholder in replacements:
+            unique_replacements.setdefault(literal, placeholder)
+        for literal, placeholder in sorted(
+            unique_replacements.items(),
+            key=lambda item: (-len(item[0]), item[0].casefold(), item[0]),
+        ):
+            normalized = normalized.replace(literal, placeholder)
+    else:
+        if not isinstance(roots, Sequence) or isinstance(roots, (str, bytes)):
+            raise HermeticTestRunnerError(
+                "semantic_parity_typed_runtime_roots_invalid"
+            )
+        contract_by_id = {str(row["root_id"]): row for row in allowed_rows}
+        runtime_by_id: dict[str, Mapping[str, Any]] = {}
+        required_fields = set(
+            contract["normalization"]["required_runtime_root_fields"]
         )
-    for literal, placeholder in sorted(
-        set(replacements),
-        key=lambda item: len(item[0]),
-        reverse=True,
-    ):
-        normalized = normalized.replace(literal, placeholder)
+        for raw_row in roots:
+            if not isinstance(raw_row, Mapping) or set(raw_row) != required_fields:
+                raise HermeticTestRunnerError(
+                    "semantic_parity_typed_runtime_root_row_invalid"
+                )
+            root_id = str(raw_row.get("root_id", ""))
+            if root_id in runtime_by_id:
+                raise HermeticTestRunnerError(
+                    "semantic_parity_typed_runtime_root_duplicate"
+                )
+            runtime_by_id[root_id] = raw_row
+        if set(runtime_by_id) != set(contract_by_id):
+            raise HermeticTestRunnerError(
+                "semantic_parity_runtime_roots_incomplete"
+            )
+        for root_id, contract_row in contract_by_id.items():
+            runtime_row = runtime_by_id[root_id]
+            if any(
+                runtime_row.get(key) != contract_row.get(key)
+                for key in ("role", "projection_token", "source")
+            ):
+                raise HermeticTestRunnerError(
+                    "semantic_parity_typed_runtime_root_contract_drift"
+                )
+            path_value = runtime_row["absolute_path"]
+            path_values = (
+                [path_value]
+                if isinstance(path_value, str)
+                else list(path_value)
+                if isinstance(path_value, list)
+                else []
+            )
+            if (
+                not path_values
+                or any(not isinstance(item, str) or not item.strip() for item in path_values)
+                or path_values != sorted(set(path_values))
+                and isinstance(path_value, list)
+                or runtime_row["digest_or_environment_fingerprint"]
+                != _environment_root_fingerprint(root_id, path_values)
+            ):
+                raise HermeticTestRunnerError(
+                    f"semantic_parity_typed_runtime_root_invalid:{root_id}"
+                )
+            replacements.extend(
+                (item, str(contract_row["projection_token"]))
+                for item in path_values
+            )
+        unique_replacements = {}
+        for literal, placeholder in replacements:
+            unique_replacements.setdefault(literal, placeholder)
+        for literal, placeholder in sorted(
+            unique_replacements.items(),
+            key=lambda item: (-len(item[0]), item[0].casefold(), item[0]),
+        ):
+            normalized_literal = literal.replace("\\", "/").rstrip("/")
+            posix_absolute = normalized_literal.startswith("/")
+            components = normalized_literal.lstrip("/").split("/")
+            if not normalized_literal or any(not item for item in components):
+                raise HermeticTestRunnerError(
+                    "semantic_parity_typed_runtime_root_empty"
+                )
+            escaped: list[str] = []
+            for index, component in enumerate(components):
+                if index == 0 and re.fullmatch(r"[A-Za-z]:", component):
+                    drive = component[0]
+                    escaped.append(f"[{drive.lower()}{drive.upper()}]:")
+                else:
+                    escaped.append(re.escape(component))
+            path_pattern = (
+                (r"[\\/]" if posix_absolute else "")
+                + r"[\\/]".join(escaped)
+            )
+            boundary_pattern = (
+                r"(?<![A-Za-z0-9_.-])"
+                + path_pattern
+                + r"(?P<descendant>(?:[\\/][^\s\"'<>),:\]]*)?)"
+                + r"(?=$|[\s\"'<>),:\]])"
+            )
+            normalized = re.sub(
+                boundary_pattern,
+                lambda match: placeholder
+                + str(match.group("descendant") or "").replace("\\", "/"),
+                normalized,
+            )
     unknown_paths: set[str] = set()
     for pattern in contract["normalization"]["unknown_absolute_path_patterns"]:
         unknown_paths.update(
@@ -1668,7 +2027,11 @@ def _semantic_parity_projection(
     contract: Mapping[str, Any],
     contract_digest: str,
 ) -> dict[str, Any]:
-    roots = result["semantic_normalization_roots"]
+    roots = (
+        result["semantic_normalization_roots"]
+        if contract["schema_version"] == SEMANTIC_PARITY_SCHEMA
+        else result["typed_environment_roots"]
+    )
     normalized_rows: list[dict[str, Any]] = []
     all_content: list[dict[str, Any]] = []
     for row in result["tests"]:

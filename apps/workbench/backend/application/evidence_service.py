@@ -48,6 +48,7 @@ from sec_agent.s4_case_runtime import (
     compile_s4_case_evidence_slot_alignment,
     consume_s4_case_runtime_binding,
 )
+from sec_agent.runtime_resource_registry import read_registered_runtime_json
 
 from .case_service import (
     P36_CANDIDATE_PROFILE,
@@ -62,6 +63,7 @@ PROJECTION_TABLE = "canonical_evidence_workbench_projection_versions"
 REVIEW_TABLE = "canonical_evidence_review_action_versions"
 REPAIR_OUTCOME_TABLE = "canonical_evidence_repair_outcome_versions"
 CONTRACT_RELATIVE_PATH = "configs/releases/point03_vt1_evidence_workbench_contract_v1_0.json"
+CONTRACT_RESOURCE_ID = "application.contract.evidence_workbench"
 S3_EVIDENCE_ROUTE_PLAN_CONTRACT_REF = "fin01.s3.evidence_route_plan_three_cell:v1"
 S3_EVIDENCE_SERVICE_OWNER_REF = (
     "apps.workbench.backend.application.evidence_service:EvidenceService"
@@ -505,8 +507,7 @@ class EvidenceService:
         facade = getattr(service, "_facade", None)
         if facade is None:
             return cls(None, unavailable_reason="explicit_fixture_root_required")
-        contract_path = Path(repo_root) / CONTRACT_RELATIVE_PATH
-        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        contract = read_registered_runtime_json(repo_root, CONTRACT_RESOURCE_ID)
         return cls(
             facade,
             contract=contract,

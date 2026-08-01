@@ -2,7 +2,7 @@
 
 日期：2026-08-01
 
-状态：`accepted planning normalization / execution not started`
+状态：`accepted planning normalization / S0 exit-contract v2 reference-role implementation engineering pass / proof gates pending`
 
 当前版本：`FIN 0.1.3`
 
@@ -56,8 +56,8 @@ FIN 0.1.1 与 0.1.2 已冻结为历史内部工程基线；FIN 0.1.3 是当前�
 
 ## 5. 本次决策的真实影响
 
-本次只统一路线与验收合同，没有实现 taxonomy、没有重跑 T03、没有创建 T04、没有进入 S1、没有调用模型或生成业务 Artifact。因此用户可见功能没有新增，FIN 0.1.3 S0 仍为 blocked。
+路线与验收合同之后，S0 已完成一次有界 taxonomy 实现：六角色注册表、v2 closure compiler、collect-all validator、typed failure 和 mutation 已落地，且 current-worktree 预记录完整闭包为 0 unknown。它修复的是可信运行基础，不新增用户可见金融研究功能；旧 T03 没有重跑或改写，新的 host/formal proof 也尚未执行。因此 FIN 0.1.3 S0 仍 blocked，S1–S5 产品能力顺序不变。
 
 当前唯一下一项：
 
-`FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-REGISTRY-AND-COLLECT-ALL-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF-AUTHORITY-DECISION`

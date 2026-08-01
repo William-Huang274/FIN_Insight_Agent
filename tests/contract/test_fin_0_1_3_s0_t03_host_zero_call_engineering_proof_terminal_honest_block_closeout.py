@@ -47,13 +47,32 @@ def _load_jsonl(ref: str) -> list[dict[str, Any]]:
     ]
 
 
-def test_T03_closeout_binds_unique_failure_without_rewriting_sources() -> None:
+def test_T03_closeout_preserves_immutable_failure_snapshot_bindings() -> None:
     closeout = _load(CLOSEOUT_REF)
     assert closeout["status"] == (
         "terminal_failed_unique_T03_engineering_proof_consumed_T04_blocked"
     )
-    for binding in closeout["source_bindings"]:
-        assert binding["sha256"] == _sha256(binding["ref"])
+    bindings = {
+        binding["role"]: (binding["ref"], binding["sha256"])
+        for binding in closeout["source_bindings"]
+    }
+    assert bindings["repository_closure_compiler"] == (
+        "src/sec_agent/hermetic_test_runner.py",
+        "5e1f06ede2bde8893aaac7e704741e3fcc390bf050428dc9e57145746e99478f",
+    )
+    for role in (
+        "immutable_T01_stage_plan",
+        "T02_implementation_record",
+        "T03_execution_manifest",
+        "T02_active_suite_manifest",
+        "T03_host_proof_runner",
+        "first_failure_resource",
+    ):
+        ref, digest = bindings[role]
+        assert digest == _sha256(ref)
+    assert _sha256("src/sec_agent/hermetic_test_runner.py") != bindings[
+        "repository_closure_compiler"
+    ][1]
     failure = closeout["first_credible_failure"]
     assert failure == {
         "phase": (

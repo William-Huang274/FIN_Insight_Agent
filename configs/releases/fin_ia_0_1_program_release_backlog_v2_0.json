@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_0_1_program_release_backlog_v2_0",
   "release_id": "REL-PROD-001",
   "version": "FIN_0_1_3_CURRENT_INTERNAL_PATCH",
-  "status": "FIN_0_1_3_S0_exit_contract_v2_selected_reference_role_taxonomy_implementation_ready_FIN_0_1_not_qualified",
+  "status": "FIN_0_1_3_S0_exit_contract_v2_reference_role_implementation_pass_host_proof_authority_pending_FIN_0_1_not_qualified",
   "authority": {
     "active_progress_source": true,
     "activated_at": "2026-07-19",
@@ -223,7 +223,7 @@
     "FIN_0_1_2_tag_or_release_created": false,
     "FIN_0_1_2_to_FIN_0_1_3_disposition_ref": "configs/releases/fin_ia_0_1_2_s0c_terminal_honest_block_repair_owner_version_disposition_v1_0.json",
     "FIN_0_1_2_to_FIN_0_1_3_disposition_sha256": "c79b8918628612f995f0a76e7819998ec873f5f191fd345680084ef3bb59d0d3",
-    "FIN_0_1_3_status": "S0_exit_contract_v2_selected_reference_role_taxonomy_implementation_pending",
+    "FIN_0_1_3_status": "S0_exit_contract_v2_reference_role_implementation_pass_host_proof_authority_pending",
     "FIN_0_1_3_S0_stage_id": "FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-REBASELINE-R1",
     "FIN_0_1_3_S0_fixed_task_ids": ["FIN-0.1.3-S0-T01", "FIN-0.1.3-S0-T02", "FIN-0.1.3-S0-T03", "FIN-0.1.3-S0-T04"],
     "FIN_0_1_3_S0_stage_plan_ref": "configs/releases/fin_ia_0_1_3_s0_hermetic_runtime_dependency_and_semantic_parity_stage_plan_v1_0.json",
@@ -243,7 +243,11 @@
     "FIN_0_1_3_S0_exit_contract_v2_disposition_sha256": "2c040ff28f499b03e36cc5d3b5b31df7827fe27d8a1448958d6dd965f368fcba",
     "FIN_0_1_3_S0_exit_contract_v2_id": "fin_0_1_3.S0.exit_contract:v2",
     "FIN_0_1_3_S0_v2_implementation_host_formal_budget": [1, 1, 1],
-    "FIN_0_1_3_S0_v2_observed_implementation_host_formal": [0, 0, 0],
+    "FIN_0_1_3_S0_v2_observed_implementation_host_formal": [1, 0, 0],
+    "FIN_0_1_3_S0_v2_reference_role_registry_ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_0.json",
+    "FIN_0_1_3_S0_v2_active_suite_manifest_ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_2.json",
+    "FIN_0_1_3_S0_v2_implementation_ref": "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_registry_and_collect_all_compiler_minimum_zero_call_implementation_v1_0.json",
+    "FIN_0_1_3_S0_v2_implementation_sha256": "9bf91966018e6e0a3b5378f073f44039f9690fce23d80412397bc7764292ee63",
     "FIN_0_1_3_canonical_S0_to_S5_plan_ref": "docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md",
     "FIN_0_1_3_canonical_S0_to_S5_plan_sha256": "51d710d2eac3e366d9bb19a27b477fbeb540efffb214270ae21c8ff122b7a7b9",
     "FIN_0_1_3_automatic_FIN_0_1_4": false,
@@ -545,7 +549,7 @@
     "human_accepted",
     "release_qualified"
   ],
-  "active_slice": "FIN_0_1_3_S0_EXIT_CONTRACT_V2_REFERENCE_ROLE_TAXONOMY_IMPLEMENTATION_READY",
+  "active_slice": "FIN_0_1_3_S0_EXIT_CONTRACT_V2_REFERENCE_ROLE_IMPLEMENTATION_PASS_HOST_PROOF_AUTHORITY_PENDING",
   "slices": [
     {
       "slice_id": "S1",
@@ -2330,8 +2334,8 @@
     ]
   },
   "next_action": {
-    "item_id": "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-REGISTRY-AND-COLLECT-ALL-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION",
-    "status": "FIN_0_1_3_S0_exit_contract_v2_selected_implementation_pending",
+    "item_id": "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF-AUTHORITY-DECISION",
+    "status": "FIN_0_1_3_S0_exit_contract_v2_reference_role_implementation_pass_host_proof_not_authorized",
     "still_blocks": [
       "FIN_0_1_3_S1_and_S2_until_static_runtime_resource_inventory_and_semantic_environment_path_taxonomy_are_proven",
       "RC_P36_067_numeric_projection_and_rendering_exact_live_reproof",
@@ -2344,7 +2348,7 @@
       "release",
       "production"
     ],
-    "action": "consume at most one exit_contract_v2 zero-call implementation bundle to create one typed reference-role registry/schema and compile field rules, closure policy, collect-all validation, mutations and typed failures; do not patch individual fields, rerun old T03, execute a new proof in the same task, enter S1/S2, call a model, or create business artifacts",
+    "action": "perform one zero-call authority and independent preflight decision for the future v2 host engineering proof; do not execute the proof in this item, rerun or reinterpret old T03, enter S1/S2, call a model, or create business artifacts",
     "FIN_0_1_2_S0C_decision_ref": "configs/releases/fin_ia_0_1_2_s0c_hermetic_test_topology_and_allowlisted_package_closure_scope_decision_v1_0.json",
     "FIN_0_1_2_S0C_decision_sha256": "c2456ef0854a828c116da34a292e2a3bfc9701ab110f309d14b8e579d218108d",
     "FIN_0_1_2_S0C_selected_stage": "FIN-0.1.2-S0C-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-R1",
@@ -2358,7 +2362,11 @@
     "FIN_0_1_2_S0C_terminal_projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v1_1.json",
     "FIN_0_1_3_entry_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_0.json",
     "FIN_0_1_3_frozen_T03_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_3.json",
-    "FIN_0_1_3_current_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_4.json",
+    "FIN_0_1_3_current_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_5.json",
+    "FIN_0_1_3_S0_reference_role_registry_ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_0.json",
+    "FIN_0_1_3_S0_reference_role_implementation_ref": "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_registry_and_collect_all_compiler_minimum_zero_call_implementation_v1_0.json",
+    "FIN_0_1_3_S0_reference_role_implementation_sha256": "9bf91966018e6e0a3b5378f073f44039f9690fce23d80412397bc7764292ee63",
+    "FIN_0_1_3_S0_current_active_suite_manifest_ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_2.json",
     "FIN_0_1_2_S0C_T03_manifest_ref": "configs/releases/fin_ia_0_1_2_s0c_t03_corrective_hermetic_proof_manifest_v1_0.json",
     "FIN_0_1_2_S0C_T03_manifest_sha256": "4883eef54a123c2fe6037cd8b1eac26163aa151b42d0097f4d749cff1b9e76e4",
     "FIN_0_1_2_S0C_T03_manifest_status": "frozen_consumed_by_terminal_failed_unique_package",
@@ -2400,7 +2408,7 @@
     "FIN_0_1_3_S0_exit_contract_v2_id": "fin_0_1_3.S0.exit_contract:v2",
     "FIN_0_1_3_S0_exit_contract_v2_required_reference_roles": ["repository_resource", "package_relative_audit", "external_content", "restricted_runtime_audit", "model_run_report", "semantic_followup"],
     "FIN_0_1_3_S0_exit_contract_v2_implementation_host_formal_budget": [1, 1, 1],
-    "FIN_0_1_3_S0_exit_contract_v2_observed": [0, 0, 0],
+    "FIN_0_1_3_S0_exit_contract_v2_observed": [1, 0, 0],
     "FIN_0_1_3_canonical_S0_to_S5_plan_ref": "docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md",
     "FIN_0_1_3_canonical_S0_to_S5_plan_sha256": "51d710d2eac3e366d9bb19a27b477fbeb540efffb214270ae21c8ff122b7a7b9",
     "FIN_0_1_3_S0_T05_R_H_or_automatic_FIN_0_1_4": false,

@@ -1,7 +1,7 @@
 # FIN 0.1.3 S0 Hermetic Runtime 依赖与语义等价 StagePlan
 
 日期：2026-08-01
-状态：`G2 failed / T03 terminal immutable / exit_contract:v2 selected / implementation pending / zero external call`
+状态：`G2 failed / T03 terminal immutable / exit_contract:v2 reference-role implementation engineering pass / host proof authority pending / zero external call`
 
 ## 1. 为什么 0.1.3 必须重新从 S0 开始
 
@@ -80,12 +80,14 @@ SHA-256：`034c7714e5773fe48b0d69ed6ab373ba02074e497d803bcd73349932f2177000`
 
 Owner 选择保留 FIN 0.1.3 为当前唯一主线，不自动创建 FIN 0.1.4，不豁免 hermetic gate，也不对旧 T03 重新计数。旧 v1 StagePlan 和 T03 closeout 保持不可变历史证据；新的 `fin_0_1_3.S0.exit_contract:v2` 是同一 S0 下的显式合同修订。
 
-v2 的 reference-role registry 至少覆盖 `repository_resource`、`package_relative_audit`、`external_content`、`restricted_runtime_audit`、`model_run_report` 与 `semantic_followup`。同一 registry/schema 必须生成字段规则、closure policy、collect-all validator 和 mutation fixture；未知角色 fail closed。实现应一次报告全部未分类角色，禁止增加 47 个字段例外。
+v2 的 reference-role registry 已精确覆盖 `repository_resource`、`package_relative_audit`、`external_content`、`restricted_runtime_audit`、`model_run_report` 与 `semantic_followup`。同一 registry/schema 生成字段优先规则、有序值命名空间、closure policy、collect-all validator、mutation fixture 与 typed failure；未知角色 fail closed。`followup_ref` 的语义 owner 优先于字符串中的 `/`，v2 不接受 `non_repository_reference_fields`。
+
+当前零调用实现已工程通过：正式 current-manifest 完整闭包得到 1,233 个全 tracked path、4,996 条 reference observation、0 unknown；repository/package/external/restricted/model-run/semantic 六类计数为 `1,640 / 6 / 54 / 219 / 16 / 3,061`。两未知项 mutation 会在同一个受限 typed failure envelope 中保留 document、JSON pointer、field、value、role/rule 空值与 observation digest，并明确 `business_promotable=false`；duplicate JSON key、cross-version、rule-order、untracked/traversal/symlink、未知 repository-like root filename 和历史 v1 兼容路径继续 fail closed。focused/current/legacy matrix=`83 passed`。该结果只消费 v2 implementation=`1/1`，没有消费 host/formal proof。
 
 v2 固定预算为一个零调用实现包、一个 host engineering proof 和一个独立双-disposable formal proof；每项最多一次，无自动 retry、replacement、T05/R/H 或版本跃迁。实现包只证明合同已落地；host proof 全绿后才可签发 formal proof；formal proof 全绿并关闭 RC-P36-090–094 后，S0 才可进入 S1。任一全新 L1/结构失败触发项目级计划变更说明，不在同一任务内无限修补。
 
 完整 S0–S5 产品归属见 `docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md`。
 
-当前唯一下一项（零调用实现；不重跑旧 T03）：
+当前唯一下一项（零调用权限/独立 preflight 决策；不执行 proof，不重跑旧 T03）：
 
-`FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-REGISTRY-AND-COLLECT-ALL-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF-AUTHORITY-DECISION`

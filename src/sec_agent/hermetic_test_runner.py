@@ -24,6 +24,14 @@ from sec_agent.runtime_resource_registry import (
     RuntimeResourceRegistryError,
     load_runtime_resource_registry,
 )
+from sec_agent.reference_role_registry import (
+    ReferenceRoleRegistry,
+    ReferenceRoleRegistryError,
+    ReferenceRoleReport,
+    collect_reference_roles,
+    iter_reference_strings,
+    load_reference_role_registry,
+)
 
 
 RUNNER_SCHEMA = "fin_ia_hermetic_active_suite_runner_v1_0"
@@ -41,6 +49,9 @@ TYPED_SEMANTIC_PARITY_SCHEMA = (
 )
 REPOSITORY_REFERENCE_POLICY_SCHEMA = (
     "fin_ia_hermetic_repository_reference_policy_v1_0"
+)
+REPOSITORY_REFERENCE_POLICY_V2_SCHEMA = (
+    "fin_ia_hermetic_repository_reference_policy_v2_0"
 )
 CURRENT_PROGRAM_PROJECTION_SCHEMA = (
     "fin_ia_0_1_2_current_program_projection_v1_0"
@@ -83,8 +94,16 @@ _CREDENTIAL_ENV_NAMES = frozenset(
 
 
 class HermeticTestRunnerError(RuntimeError):
-    def __init__(self, code: str) -> None:
+    def __init__(
+        self,
+        code: str,
+        *,
+        failure_envelope: Mapping[str, Any] | None = None,
+    ) -> None:
         self.code = code
+        self.failure_envelope = (
+            dict(failure_envelope) if failure_envelope is not None else None
+        )
         super().__init__(code)
 
 
@@ -156,9 +175,10 @@ class CompiledRepositoryInventory:
     recursive_reference_paths: tuple[str, ...]
     semantic_or_external_reference_count: int
     closure_digest: str
+    reference_role_report: ReferenceRoleReport | None = None
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        output = {
             "schema_version": "fin_ia_hermetic_repository_inventory_closure_v1_0",
             "path_count": len(self.paths),
             "tracked_path_count": len(self.tracked_paths),
@@ -173,6 +193,11 @@ class CompiledRepositoryInventory:
             ),
             "closure_digest": self.closure_digest,
         }
+        if self.reference_role_report is not None:
+            output["reference_role_report"] = (
+                self.reference_role_report.as_dict()
+            )
+        return output
 
 
 class ContentAddressedStore:
@@ -279,7 +304,7 @@ def validate_host_current_program_projection(
     repository_root = repository_root.resolve()
     projection_path = _safe_relative_path(repository_root, projection_ref)
     projection = _load_json(repository_root / projection_path)
-    expected_top_level = {
+    required_top_level = {
         "schema_version",
         "projection_id",
         "recorded_at",
@@ -288,7 +313,11 @@ def validate_host_current_program_projection(
         "expectations",
         "package_governance",
     }
-    if set(projection) != expected_top_level:
+    optional_top_level = {"decision_binding", "implementation_binding"}
+    if (
+        not required_top_level.issubset(projection)
+        or not set(projection).issubset(required_top_level | optional_top_level)
+    ):
         raise HermeticTestRunnerError(
             "current_projection_top_level_invalid"
         )
@@ -303,9 +332,35 @@ def validate_host_current_program_projection(
         "T02_ready",
         "current_host_validated_FIN_0_1_3_S0_T02_implementation_pass_"
         "T03_ready",
+        "current_FIN_0_1_3_S0_T03_terminal_failed_unique_run_consumed_"
+        "T04_blocked",
+        "current_FIN_0_1_3_S0_exit_contract_v2_selected_reference_role_"
+        "taxonomy_implementation_ready",
+        "current_FIN_0_1_3_S0_exit_contract_v2_reference_role_"
+        "implementation_pass_host_proof_authority_pending",
     }
     if projection["status"] not in allowed_projection_statuses:
         raise HermeticTestRunnerError("current_projection_status_invalid")
+
+    for field in optional_top_level.intersection(projection):
+        binding = projection[field]
+        if not isinstance(binding, Mapping) or set(binding) != {
+            "ref",
+            "sha256",
+        }:
+            raise HermeticTestRunnerError(
+                f"current_projection_{field}_invalid"
+            )
+        binding_ref = str(binding["ref"])
+        binding_sha = str(binding["sha256"])
+        binding_path = _safe_relative_path(repository_root, binding_ref)
+        if (
+            not re.fullmatch(r"[0-9a-f]{64}", binding_sha)
+            or _sha256_file(repository_root / binding_path) != binding_sha
+        ):
+            raise HermeticTestRunnerError(
+                f"current_projection_{field}_drift"
+            )
 
     source_values = projection["source_paths"]
     expected_sources = {
@@ -405,9 +460,25 @@ def validate_host_current_program_projection(
         "raw_content_addressed_evidence_preserved": True,
         "restricted_review_before_share_or_promotion": True,
     }
-    if not isinstance(governance, Mapping) or any(
-        governance.get(key) is not value
-        for key, value in required_governance.items()
+    optional_governance = {
+        "decision_is_engineering_proof_authority": False,
+        "implementation_is_host_or_formal_proof_authority": False,
+    }
+    if (
+        not isinstance(governance, Mapping)
+        or not set(required_governance).issubset(governance)
+        or not set(governance).issubset(
+            set(required_governance) | set(optional_governance)
+        )
+        or any(
+            governance.get(key) is not value
+            for key, value in required_governance.items()
+        )
+        or any(
+            governance.get(key) is not value
+            for key, value in optional_governance.items()
+            if key in governance
+        )
     ):
         raise HermeticTestRunnerError(
             "current_projection_package_governance_invalid"
@@ -702,6 +773,31 @@ def _policy_contract_paths(
     policy: Mapping[str, Any],
 ) -> tuple[Path, ...]:
     paths: set[Path] = set()
+    reference_policy = policy.get("repository_reference_policy")
+    if isinstance(reference_policy, Mapping) and reference_policy.get(
+        "schema_version"
+    ) == REPOSITORY_REFERENCE_POLICY_V2_SCHEMA:
+        reference_role_registry_ref = reference_policy.get(
+            "reference_role_registry_ref"
+        )
+        if (
+            not isinstance(reference_role_registry_ref, str)
+            or not reference_role_registry_ref.strip()
+        ):
+            raise HermeticTestRunnerError(
+                "reference_role_registry_ref_invalid"
+            )
+        try:
+            reference_role_registry = load_reference_role_registry(
+                repository_root,
+                reference_role_registry_ref,
+            )
+        except ReferenceRoleRegistryError as exc:
+            raise HermeticTestRunnerError(
+                exc.code,
+                failure_envelope=exc.failure_envelope,
+            ) from exc
+        paths.update(reference_role_registry.package_paths())
     inventory_ref = policy.get("runtime_nonpython_resource_inventory_ref")
     if inventory_ref is not None:
         if not isinstance(inventory_ref, str) or not inventory_ref.strip():
@@ -765,9 +861,11 @@ def compile_repository_inventory(
         raise HermeticTestRunnerError(
             "hermetic_repository_reference_policy_missing"
         )
-    if reference_policy.get("schema_version") != (
-        REPOSITORY_REFERENCE_POLICY_SCHEMA
-    ):
+    reference_policy_schema = reference_policy.get("schema_version")
+    if reference_policy_schema not in {
+        REPOSITORY_REFERENCE_POLICY_SCHEMA,
+        REPOSITORY_REFERENCE_POLICY_V2_SCHEMA,
+    }:
         raise HermeticTestRunnerError(
             "hermetic_repository_reference_policy_schema_invalid"
         )
@@ -847,36 +945,69 @@ def compile_repository_inventory(
             )
         explicit_allowlist[normalized] = digest
 
-    non_repository_rows = reference_policy.get(
-        "non_repository_reference_fields"
-    )
-    if not isinstance(non_repository_rows, list):
-        raise HermeticTestRunnerError(
-            "hermetic_non_repository_reference_fields_invalid"
-        )
+    reference_role_registry: ReferenceRoleRegistry | None = None
     non_repository_reference_fields: dict[str, str] = {}
-    for row in non_repository_rows:
-        if not isinstance(row, Mapping) or set(row) != {
-            "field",
-            "classification",
-            "reason",
-        }:
+    if reference_policy_schema == REPOSITORY_REFERENCE_POLICY_SCHEMA:
+        non_repository_rows = reference_policy.get(
+            "non_repository_reference_fields"
+        )
+        if not isinstance(non_repository_rows, list):
             raise HermeticTestRunnerError(
-                "hermetic_non_repository_reference_field_row_invalid"
+                "hermetic_non_repository_reference_fields_invalid"
             )
-        field = str(row["field"]).strip()
-        classification = str(row["classification"]).strip()
-        reason = str(row["reason"]).strip()
-        if (
-            not field
-            or field in non_repository_reference_fields
-            or not classification
-            or not reason
-        ):
+        for row in non_repository_rows:
+            if not isinstance(row, Mapping) or set(row) != {
+                "field",
+                "classification",
+                "reason",
+            }:
+                raise HermeticTestRunnerError(
+                    "hermetic_non_repository_reference_field_row_invalid"
+                )
+            field = str(row["field"]).strip()
+            classification = str(row["classification"]).strip()
+            reason = str(row["reason"]).strip()
+            if (
+                not field
+                or field in non_repository_reference_fields
+                or not classification
+                or not reason
+            ):
+                raise HermeticTestRunnerError(
+                    "hermetic_non_repository_reference_field_row_invalid"
+                )
+            non_repository_reference_fields[field] = classification
+    else:
+        expected_v2_fields = {
+            "schema_version",
+            "tracked_repository_paths_allowed",
+            "explicit_allowlist",
+            "reference_role_registry_ref",
+            "forbidden_prefixes",
+            "untracked_or_ignored_reference_behavior",
+            "unknown_reference_behavior",
+            "traversal_or_symlink_escape_behavior",
+            "semantic_or_external_reference_behavior",
+        }
+        if set(reference_policy) != expected_v2_fields:
             raise HermeticTestRunnerError(
-                "hermetic_non_repository_reference_field_row_invalid"
+                "hermetic_repository_reference_policy_v2_surface_invalid"
             )
-        non_repository_reference_fields[field] = classification
+        registry_ref = reference_policy.get("reference_role_registry_ref")
+        if not isinstance(registry_ref, str) or not registry_ref.strip():
+            raise HermeticTestRunnerError(
+                "reference_role_registry_ref_invalid"
+            )
+        try:
+            reference_role_registry = load_reference_role_registry(
+                repository_root,
+                registry_ref,
+            )
+        except ReferenceRoleRegistryError as exc:
+            raise HermeticTestRunnerError(
+                exc.code,
+                failure_envelope=exc.failure_envelope,
+            ) from exc
 
     sources: dict[str, set[str]] = {}
     pending: list[str] = []
@@ -928,6 +1059,7 @@ def compile_repository_inventory(
             admit(path, "tracked_prefix")
 
     semantic_or_external_reference_count = 0
+    reference_documents: list[tuple[str, Mapping[str, Any]]] = []
     while pending:
         value = pending.pop(0)
         relative = _repository_relative_path(
@@ -938,6 +1070,28 @@ def compile_repository_inventory(
         if relative.suffix.lower() != ".json":
             continue
         document = _load_json(repository_root / relative)
+        if reference_role_registry is not None:
+            reference_documents.append((relative.as_posix(), document))
+            reference_rows = [
+                reference_role_registry.classify(
+                    document_ref=relative.as_posix(),
+                    json_pointer=pointer,
+                    field=key,
+                    value=ref,
+                )
+                for key, ref, pointer in iter_reference_strings(document)
+            ]
+            for observation in reference_rows:
+                if observation.role is None:
+                    continue
+                if observation.role != "repository_resource":
+                    semantic_or_external_reference_count += 1
+                    continue
+                repository_value = _repository_reference_path(
+                    observation.value
+                )
+                admit(repository_value, "recursive_reference")
+            continue
         for key, ref in sorted(set(_repository_ref_strings(document))):
             normalized = ref.replace("\\", "/")
             classification = _classify_repository_reference(
@@ -958,6 +1112,19 @@ def compile_repository_inventory(
                 continue
             repository_value = _repository_reference_path(normalized)
             admit(repository_value, "recursive_reference")
+
+    reference_role_report: ReferenceRoleReport | None = None
+    if reference_role_registry is not None:
+        reference_role_report = collect_reference_roles(
+            reference_role_registry,
+            reference_documents,
+        )
+        if reference_role_report.unknowns:
+            envelope = reference_role_report.failure_envelope()
+            raise HermeticTestRunnerError(
+                str(envelope["code"]),
+                failure_envelope=envelope,
+            )
 
     rows = [
         {
@@ -996,6 +1163,7 @@ def compile_repository_inventory(
             semantic_or_external_reference_count
         ),
         closure_digest=closure_digest,
+        reference_role_report=reference_role_report,
     )
 
 

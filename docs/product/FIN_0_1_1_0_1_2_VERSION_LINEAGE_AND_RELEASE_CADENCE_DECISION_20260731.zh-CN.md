@@ -1,8 +1,8 @@
 # FIN 0.1.1 / 0.1.2 / 0.1.3 版本谱系与发布节奏决策
 
 日期：2026-07-31
-更新：2026-08-01（FIN 0.1.3 S0 Exit Contract v3 proof-control-plane implementation pass）
-状态：`accepted_product_lineage / FIN_0_2_definition_preserved`
+更新：2026-08-02（FIN 0.1.3 S0 Exit Contract v3 authority-transition terminal honest block）
+状态：`accepted_product_lineage / FIN_0_1_3_frozen_pending_version_scope_disposition / FIN_0_2_definition_preserved`
 
 ## 1. 产品大方向不变
 
@@ -24,7 +24,7 @@ FIN 0.1 bounded internal research workflow
 | --- | --- | --- | --- |
 | FIN 0.1.1 | 第一轮 S0–S5 的内部工程基线 | NVDA historical R2、DELL/MU transfer diagnostics、完整 immutable evidence、S4 honest block、S5 decision-only、仓库/rollback manifest | 三案 R2、NVDA R3、release qualified、生产 |
 | FIN 0.1.2 | 同一 FIN 0.1 产品范围的第一次稳定化尝试；现已冻结为 internal honest block | compiled contract、provider surface reduction、capture/hermetic 结构与失败证据；S0C terminal failed、S2 未进入 | release qualified、三案 transfer qualification、Earnings 新产品功能 |
-| FIN 0.1.3 | hermetic Runtime dependency closure、proof-control-plane 与 transfer qualification patch | 单一 RuntimeResourceRegistry、typed reference role/environment parity、消费前 exact-boundary eligibility、RC-P36-090–095 closure、重新从 S0 验证并复用 hash-compatible 资产 | 新产品功能、历史 proof 重跑、同版本 Exit Contract v4、自动 0.1.4、Earnings 功能 |
+| FIN 0.1.3 | hermetic Runtime dependency closure 与 proof-control-plane 稳定化尝试；现已冻结为 internal honest block | 单一 RuntimeResourceRegistry、typed reference role/environment parity、v3 pre-consumption control-plane 工程实现、不可变失败与终态证据 | 已完成 eligibility/host/formal proof、RC-P36-090–096 closure、新产品功能、历史 proof 重跑、同版本 Exit Contract v4、自动 0.1.4、Earnings 功能 |
 | FIN 0.2 | 原定义的 Earnings Review Alpha | B1、Earnings Task/Workpaper/Report、精确三表、segment、guidance、同比环比、市场反应与反方 | 为 0.1 未完成的通用 Runtime 基线兜底 |
 
 ## 3. FIN 0.1.1 的冻结语义
@@ -112,12 +112,14 @@ FIN-0.1 repository evidence freeze + safe classification
 
 Owner 项目级决策继续保留 FIN 0.1.3 为唯一当前主线，不自动创建 0.1.4。v1/v2 StagePlan、proof 结论和预算保持不可变；同一 S0 下建立最后一次 `fin_0_1_3.S0.exit_contract:v3`，只修 proof policy 单一来源与 host 消费前 exact-boundary eligibility。v3 不重做金融 Runtime，固定 `[implementation, eligibility, host, formal]` 各最多一次；任一新结构失败都冻结 FIN 0.1.3，禁止同版本 v4。
 
-v3 proof-control-plane 最小实现现已工程通过，observed=`[1 implementation, 0 eligibility, 0 host, 0 formal]`。实现已建立唯一 policy source、manifest/compiler 同源编译、content-addressed eligibility attestation 与 host pre-consumption recompute boundary；它不是 clean-head eligibility、host/formal proof 或金融产品验收。RC-P36-090–095 继续 open，S1/S2 未进入，模型调用为 0。
+v3 proof-control-plane 最小实现已工程通过，observed=`[1 implementation, 0 eligibility, 0 host, 0 formal]`。实现建立了唯一 policy source、manifest/compiler 同源编译、content-addressed eligibility attestation 与 host pre-consumption recompute boundary；它不是 clean-head eligibility、host/formal proof 或金融产品验收。
+
+2026-08-02 的授权前 exact transition audit 发现冻结 runner/active manifest 只接受授权前 pending projection，不能接受授权后必须成为 current truth 的 `eligibility_authorized_not_executed`。诚实推进会以 `current_v3_projection_status_invalid` 在 eligibility 前停止；保留 pending 会造成 split-brain；修改 runner 会超过唯一 implementation budget。按上文已经冻结的 terminal/no-v4 规则，没有签发 eligibility authority，也没有执行 eligibility、host/formal proof。observed 保持 `[1,0,0,0]`，eligibility budget 未消费，RC-P36-090–095 继续 open并新增 RC-P36-096。FIN 0.1.3 因此冻结为 internal honest block，S1/S2 未进入，模型调用为 0。
 
 FIN 0.1.3 后续恢复为单一 S0–S5 产品主轴：S0 可信基础、S1 零模型三案、S2 DeepSeek 模型边界、S3 NVDA 当前产品锚点、S4 DELL/MU 迁移与 Workbench 用户价值、S5 release/honest-block。完整产品归属见 `docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md`。
 
 当前唯一下一项：
 
-`FIN-0.1.3-S0-EXIT-CONTRACT-V3-CLEAN-HEAD-EXACT-BOUNDARY-ELIGIBILITY-ATTESTATION-AUTHORITY-DECISION`
+`FIN-0.1.3-S0-EXIT-CONTRACT-V3-TERMINAL-HONEST-BLOCK-AND-VERSION-SCOPE-DISPOSITION-DECISION`
 
-该动作只能决定是否授权一次 clean/synced committed HEAD 上的 exact-boundary eligibility attestation；决策本身不得自动运行 eligibility，更不授权 host/formal proof。它不能改写 v1/v2 失败或预算，不能进入 S1/S2、读取凭据或调用模型。StagePlan 见 `docs/architecture/repository/FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_AND_SEMANTIC_PARITY_STAGE_PLAN_20260801.zh-CN.md`。
+该动作只决定 FIN 0.1.3 终态证据如何冻结，以及未完成的共同 Runtime 质量承诺归属哪个后续版本/范围。它不得自动 patch v3、建立同版本 v4、创建 FIN 0.1.4、执行 eligibility/host/formal、进入 S1/S2、读取凭据或调用模型。FIN 0.2 Earnings Review Alpha 的产品定义保持不变；是否在其之前设立新的 0.1.x 工程版本，必须由该处置另行决定。StagePlan 见 `docs/architecture/repository/FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_AND_SEMANTIC_PARITY_STAGE_PLAN_20260801.zh-CN.md`。

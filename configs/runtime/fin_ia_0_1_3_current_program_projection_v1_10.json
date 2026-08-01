@@ -1,0 +1,75 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v1_0",
+  "projection_id": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-ELIGIBILITY-AUTHORITY-TRANSITION-TERMINAL-HONEST-BLOCK-CURRENT-PROGRAM-PROJECTION-R1",
+  "recorded_at": "2026-08-02T03:25:00+08:00",
+  "status": "current_FIN_0_1_3_S0_exit_contract_v3_eligibility_authority_transition_terminal_honest_block_version_scope_disposition_required",
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "S4_backlog": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "external_pattern_ledger": "docs/project_os/external_pattern_registry.jsonl"
+  },
+  "decision_binding": {
+    "ref": "configs/releases/fin_ia_0_1_3_s0_exit_contract_v3_eligibility_authority_transition_structural_blocker_terminal_decision_v1_0.json",
+    "sha256": "10f20dd36bfeafcd65a8dac0beb71cc1cfbc47094b2eb250cf54f56ae8c8f3a7"
+  },
+  "implementation_binding": {
+    "ref": "configs/releases/fin_ia_0_1_3_s0_exit_contract_v3_proof_policy_single_source_and_pre_consumption_boundary_minimum_zero_call_implementation_v1_0.json",
+    "sha256": "0043ae6933621e9b84a1df91a4fe70714a5874ecea474275d8b54518a5820a48"
+  },
+  "expectations": {
+    "active_slice": "FIN_0_1_3_S0_EXIT_CONTRACT_V3_ELIGIBILITY_AUTHORITY_TRANSITION_TERMINAL_HONEST_BLOCK_VERSION_SCOPE_DISPOSITION_REQUIRED",
+    "current_next_action": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-TERMINAL-HONEST-BLOCK-AND-VERSION-SCOPE-DISPOSITION-DECISION",
+    "capability_id": "fin_0_1_3_S0_exit_contract_v3_eligibility_authority_transition_terminal_block",
+    "capability_stage_acceptance": {
+      "FIN_0_1_2": "frozen_internal_honest_block",
+      "FIN_0_1_3_S0_v1_T03": "terminal_failed_unique_run_consumed_immutable",
+      "FIN_0_1_3_S0_exit_contract_v2_implementation": "engineering_pass_immutable",
+      "FIN_0_1_3_S0_v2_host_proof": "terminal_failed_unique_run_consumed_immutable",
+      "FIN_0_1_3_S0_exit_contract_v3_implementation": "engineering_pass_consumed_immutable",
+      "FIN_0_1_3_S0_v3_eligibility_authority": "not_authorized_structural_transition_blocker",
+      "FIN_0_1_3_S0_v3_eligibility": "not_executed_budget_unconsumed",
+      "FIN_0_1_3_S0_v3_host_proof": "not_authorized_not_executed",
+      "FIN_0_1_3_S0_v3_formal_proof": "not_authorized_not_executed",
+      "FIN_0_1_3_S0": "terminal_honest_block_version_scope_disposition_required",
+      "FIN_0_1_3_S1_entry": "blocked",
+      "FIN_0_1_3_S2_entry": "blocked"
+    },
+    "open_issue_ids": [
+      "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+      "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
+      "RC-P36-092-fin-0-1-2-code-declared-static-runtime-resource-missing-from-hermetic-inventory",
+      "RC-P36-093-fin-0-1-2-hermetic-semantic-parity-untyped-host-python-traceback-path",
+      "RC-P36-094-fin-0-1-3-hermetic-reference-role-taxonomy-conflates-semantic-audit-and-repository-paths",
+      "RC-P36-095-fin-0-1-3-v2-host-proof-manifest-policy-enum-contract-drift",
+      "RC-P36-096-fin-0-1-3-v3-eligibility-authority-transition-projection-status-hard-coded-pre-authority-state"
+    ],
+    "pattern_id": "fixed_budget_proof_must_cross_exact_earliest_execution_boundary_before_consumption",
+    "pattern_status": "FIN_0_1_3_S0_exit_contract_v3_eligibility_authority_transition_terminal_honest_block",
+    "exit_contract_id": "fin_0_1_3.S0.exit_contract:v3",
+    "terminal_decision_ref": "configs/releases/fin_ia_0_1_3_s0_exit_contract_v3_eligibility_authority_transition_structural_blocker_terminal_decision_v1_0.json",
+    "active_suite_manifest_ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_3.json",
+    "active_suite_manifest_role": "immutable_v3_implementation_snapshot_not_eligibility_authority",
+    "v2_implementation_host_formal_observed": [1, 1, 0],
+    "v3_implementation_eligibility_host_formal_maximum": [1, 1, 1, 1],
+    "v3_implementation_eligibility_host_formal_observed": [1, 0, 0, 0],
+    "eligibility_authorized": false,
+    "eligibility_host_or_formal_executed": [false, false, false],
+    "exit_contract_v4_authorized": false,
+    "version_scope_disposition_required": true,
+    "FIN_0_1_4_created_or_implied": false,
+    "FIN_0_1_3_S1_entry_authorized": false,
+    "FIN_0_1_release_qualified": false
+  },
+  "package_governance": {
+    "host_sources_packaged": false,
+    "projection_document_packaged": false,
+    "disposable_git_required": false,
+    "decision_is_eligibility_or_proof_authority": false,
+    "failed_package_business_promotable": false,
+    "raw_content_addressed_evidence_preserved": true,
+    "restricted_review_before_share_or_promotion": true
+  }
+}

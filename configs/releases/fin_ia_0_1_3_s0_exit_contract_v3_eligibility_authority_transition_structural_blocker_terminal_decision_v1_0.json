@@ -1,0 +1,151 @@
+{
+  "schema_version": "fin_ia_0_1_3_s0_exit_contract_v3_eligibility_authority_transition_structural_blocker_terminal_decision_v1_0",
+  "decision_id": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-ELIGIBILITY-AUTHORITY-TRANSITION-STRUCTURAL-BLOCKER-TERMINAL-DECISION-R1",
+  "recorded_at": "2026-08-02T03:25:00+08:00",
+  "status": "terminal_honest_block_do_not_authorize_eligibility_freeze_FIN_0_1_3_pending_version_scope_disposition",
+  "decision_class": "zero_call_pre_authority_exact_transition_compatibility_decision",
+  "authority": {
+    "user_instruction": "继续",
+    "decision_only": true,
+    "eligibility_attestation_authorized": false,
+    "eligibility_attestation_executed": false,
+    "host_or_formal_proof_authorized": false,
+    "host_or_formal_proof_executed": false,
+    "execution_manifest_created": false,
+    "automatic_retry_replacement_exit_contract_v4_or_FIN_0_1_4_authorized": false,
+    "credential_model_provider_network_source_external_tool_admission_business_run_artifact_authorized": false
+  },
+  "project_os_preflight": {
+    "run_scope": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-CLEAN-HEAD-EXACT-BOUNDARY-ELIGIBILITY-ATTESTATION-AUTHORITY-DECISION",
+    "status": "pass",
+    "missing_files": 0,
+    "missing_capabilities": 0,
+    "open_full_chain_blockers_for_this_decision_scope": 0,
+    "business_promotable": false
+  },
+  "source_bindings": [
+    {
+      "role": "exit_contract_v3_owner_decision",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_v2_host_proof_first_credible_failure_project_level_disposition_and_exit_contract_v3_decision_v1_0.json",
+      "sha256": "273e0383c133fa6530205357beb722453830f9e6aff03564f8e5765a962fdc30"
+    },
+    {
+      "role": "consumed_v3_implementation",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_exit_contract_v3_proof_policy_single_source_and_pre_consumption_boundary_minimum_zero_call_implementation_v1_0.json",
+      "sha256": "0043ae6933621e9b84a1df91a4fe70714a5874ecea474275d8b54518a5820a48"
+    },
+    {
+      "role": "v3_implementation_snapshot_active_suite",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_3.json",
+      "sha256": "bd8ece123ed959183a6e9a696759892e51b2c7798982dcb6c66e4123a371ea34"
+    },
+    {
+      "role": "pre_authority_current_projection",
+      "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_9.json",
+      "sha256": "402bdf42a69ca9ffaa7fedcfa43764346872b56e6e96841c41e5537319ea4c67"
+    },
+    {
+      "role": "v3_single_policy_source",
+      "ref": "configs/runtime/fin_ia_0_1_3_repository_reference_proof_policy_v3_0.json",
+      "sha256": "52eabb953ccbf5c2a64685fea3012ec311229233450c080eacc52bda2ea35253"
+    },
+    {
+      "role": "v3_proof_control_plane",
+      "ref": "src/sec_agent/proof_control_plane.py",
+      "sha256": "e3f14dfcdc3ae4eb40c61feea8db1a7044ea1772fd8ac399f44c8d6ab8da99fc"
+    },
+    {
+      "role": "consumed_v3_runner",
+      "ref": "scripts/engineering/run_fin_0_1_3_s0_v3_proof_control_plane.py",
+      "sha256": "f38b2e0157f1f870c05b9af64716b23e8a2c3774c91f1154aa7266b9a77a0e94"
+    },
+    {
+      "role": "v3_implementation_contract_test",
+      "ref": "tests/contract/test_fin_0_1_3_s0_exit_contract_v3_proof_control_plane.py",
+      "sha256": "6f8e4fc94567368da7f2c318359cfbe26294efa4a59cb3691bab00f918dbd704"
+    }
+  ],
+  "first_credible_failure": {
+    "phase": "pre_authority_current_state_transition_compatibility_audit",
+    "error_code": "current_v3_projection_status_invalid",
+    "current_accepted_projection_status": "current_FIN_0_1_3_S0_exit_contract_v3_proof_control_plane_implementation_pass_eligibility_authority_pending",
+    "required_post_decision_projection_status": "current_FIN_0_1_3_S0_exit_contract_v3_eligibility_authorized_not_executed",
+    "frozen_runner_requires_only_pre_authority_status": true,
+    "authorized_state_reproduction": "fail_closed_before_legacy_projection_validation_or_repository_compilation",
+    "project_owned": true,
+    "model_or_provider_fault": false,
+    "financial_runtime_L1_failure": false,
+    "eligibility_host_formal_executed": [false, false, false]
+  },
+  "unsatisfied_transition_invariant": {
+    "requirements": [
+      "current_Project_OS_and_backlogs_advance_to_eligibility_execution_after_authority",
+      "exact_active_manifest_compiles_the_same_current_projection_eligibility_will_consume",
+      "consumed_v3_implementation_sources_remain_immutable"
+    ],
+    "reason_no_valid_state_exists": "The frozen v3 runner accepts only the pre-authority pending status. Advancing to a truthful authorized state fails closed; retaining the pending state makes current Project OS stale; modifying the runner would consume a second implementation patch forbidden by v3.",
+    "stale_or_misleading_compatibility_status_allowed": false,
+    "split_brain_Project_OS_allowed": false,
+    "consumed_implementation_source_mutation_allowed": false
+  },
+  "options": {
+    "authorize_and_leave_Project_OS_at_pre_authority_state": {
+      "selected": false,
+      "reason": "Would make the authority decision invisible to current truth and recreate projection/backlog split-brain."
+    },
+    "authorize_with_a_misleading_pending_status": {
+      "selected": false,
+      "reason": "Would pass a compatibility token while falsely reporting eligibility authority as pending."
+    },
+    "patch_the_consumed_v3_runner_or_projection_validator": {
+      "selected": false,
+      "reason": "Would be a second v3 implementation patch after the one-bundle budget was consumed."
+    },
+    "authorize_and_execute_eligibility_before_updating_current_truth": {
+      "selected": false,
+      "reason": "This decision scope does not authorize execution and would make evidence ordering depend on stale governance state."
+    },
+    "terminal_honest_block_and_freeze_FIN_0_1_3": {
+      "selected": true,
+      "reason": "Preserves immutable evidence and applies the explicit v3 terminal/no-v4 rule before consuming the only eligibility attestation."
+    }
+  },
+  "budget_truth": {
+    "v3_implementation_eligibility_host_formal_maximum": [1, 1, 1, 1],
+    "v3_implementation_eligibility_host_formal_observed": [1, 0, 0, 0],
+    "remaining_budget_transferred_or_reinterpreted": false,
+    "eligibility_attestation_consumed": 0,
+    "automatic_retry_replacement_or_exit_contract_v4": 0
+  },
+  "issue_disposition": {
+    "new_issue_id": "RC-P36-096-fin-0-1-3-v3-eligibility-authority-transition-projection-status-hard-coded-pre-authority-state",
+    "status": "open_full_chain_blocker",
+    "RC_P36_090_through_095": "remain_open",
+    "issues_closed_in_this_decision": 0
+  },
+  "product_truth": {
+    "user_visible_financial_research_capability_delta": "none",
+    "FIN_0_1_3": "frozen_internal_honest_block_pending_version_scope_disposition",
+    "FIN_0_1_3_S0": "terminal_blocked_no_eligibility_host_or_formal_evidence",
+    "FIN_0_1_3_S1_entry": false,
+    "FIN_0_1_3_S2_entry": false,
+    "FIN_0_1_release_qualified": false,
+    "FIN_0_1_4_created_or_implied": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "observed_counts_this_decision": {
+    "eligibility_attestations": 0,
+    "host_proof_runs": 0,
+    "formal_proof_packages": 0,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "next_action": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-TERMINAL-HONEST-BLOCK-AND-VERSION-SCOPE-DISPOSITION-DECISION"
+}

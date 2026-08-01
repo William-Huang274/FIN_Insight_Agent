@@ -2,7 +2,7 @@
 
 日期：2026-08-01
 
-状态：`accepted planning normalization / S0 exit-contract v3 proof-control-plane implementation pass / eligibility authority pending`
+状态：`accepted planning normalization / FIN 0.1.3 S0 exit-contract v3 authority-transition terminal honest block / version-scope disposition required`
 
 当前版本：`FIN 0.1.3`
 
@@ -46,6 +46,8 @@ FIN 0.1.1 与 0.1.2 已冻结为历史内部工程基线；FIN 0.1.3 是当前�
 
 当前 v3 最小实现已工程通过：versioned policy source 成为 manifest validator、eligibility compiler、host recompute 和 shared repository compiler 的共同真值；manifest 只保存 `policy_ref + policy_sha256`。eligibility payload 可绑定 clean/synced HEAD、exact manifests、source digests、Project OS preflight、tracked snapshot、compiled inventory 与 selected tests；host 路径在写入消费标记和 import sweep 前重算并匹配 attestation。相关 schema、digest、值、consumer order、registry 以及 attestation/authority drift mutation 全部 fail closed。这些是 proof control plane 的工程实现，不是 clean-head eligibility 或 host/formal proof。
 
+授权前的 exact transition 审计进一步发现：冻结的 v3 runner/active manifest 只接受“eligibility authority pending”投影，无法接受授权后必须写入 current truth 的“eligibility authorized, not executed”状态。诚实推进会以 `current_v3_projection_status_invalid` 在 eligibility 前失败；保留旧状态会造成 Project OS split-brain；修改 runner 会超过唯一 implementation bundle；先执行再更新真值既未授权也破坏证据顺序。该新结构失败触发已经写明的 v3 terminal/no-v4 规则。因此没有签发或执行 eligibility，observed 保持 `[1,0,0,0]`，RC-P36-096 新增，FIN 0.1.3 冻结为 internal honest block。
+
 ## 4. 计划变化规则
 
 下列变化必须在执行前向 Owner 说明“为什么变、从哪移到哪、对版本/用户能力/预算的影响”，并更新产品计划、技术边界、backlog 与 Project OS：
@@ -60,8 +62,8 @@ FIN 0.1.1 与 0.1.2 已冻结为历史内部工程基线；FIN 0.1.3 是当前�
 
 ## 5. 本次决策的真实影响
 
-路线与验收合同之后，S0 已完成有界 taxonomy 实现，但 v2 host proof 暴露 proof packaging 与消费边界不足。项目级 decision 没有重跑、豁免 proof 或新建 0.1.4，而是把最后一次同版本恢复限制为 Exit Contract v3 proof-control-plane。该最小实现现已工程通过，v3 observed=`1/0/0/0`；本轮没有执行 clean-head eligibility、host/formal proof、模型、Provider、网络或业务链，用户可见金融研究功能无增量。FIN 0.1.3 S0 与 RC-P36-090–095 继续 blocked/open，S1–S5 产品能力顺序不变。
+路线与验收合同之后，S0 已完成有界 taxonomy 与 v3 proof-control-plane 工程实现，但 v2 host proof 暴露 packaging/消费边界不足，v3 又在 eligibility authority 状态迁移处发现新的结构阻断。项目没有重跑、伪造 pending 状态、修改已消费实现或新建 v4。v3 observed 仍为 `1/0/0/0`，eligibility 预算未消费；没有执行 eligibility、host/formal proof、模型、Provider、网络或业务链，用户可见金融研究功能无增量。FIN 0.1.3 S0 与 RC-P36-090–096 继续 blocked/open；FIN 0.1.3 已按预定止损规则冻结，S1–S5 产品能力顺序不变，FIN 0.1.4 未自动创建，FIN 0.2 定义不变。
 
 当前唯一下一项：
 
-`FIN-0.1.3-S0-EXIT-CONTRACT-V3-CLEAN-HEAD-EXACT-BOUNDARY-ELIGIBILITY-ATTESTATION-AUTHORITY-DECISION`
+`FIN-0.1.3-S0-EXIT-CONTRACT-V3-TERMINAL-HONEST-BLOCK-AND-VERSION-SCOPE-DISPOSITION-DECISION`

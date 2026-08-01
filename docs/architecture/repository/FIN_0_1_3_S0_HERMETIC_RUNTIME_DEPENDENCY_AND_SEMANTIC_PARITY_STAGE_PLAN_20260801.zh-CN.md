@@ -1,7 +1,7 @@
 # FIN 0.1.3 S0 Hermetic Runtime 依赖与语义等价 StagePlan
 
 日期：2026-08-01
-状态：`G2 failed / v1 and v2 host failures immutable / exit_contract:v3 proof-control-plane implementation pass eligibility authority pending / zero external call`
+状态：`G2 failed / v1 and v2 host failures immutable / exit_contract:v3 authority-transition structural failure / FIN 0.1.3 terminal honest block / zero external call`
 
 ## 1. 为什么 0.1.3 必须重新从 S0 开始
 
@@ -103,6 +103,10 @@ v3 maximum/observed `[implementation, eligibility, host, formal]=[1,1,1,1]/[1,0,
 
 上述结果没有执行 clean/synced HEAD eligibility，也没有创建或消费 host/formal proof authority。implementation 不授权 eligibility 或 proof；eligibility 通过后仍需单独 host authority，host 通过后仍需单独 formal authority。eligibility、host 或 formal 任一出现新结构失败，FIN 0.1.3 冻结 internal honest block，不得在同版本创建 Exit Contract v4。S0 只有在 RC-P36-090–095 均可关闭后才进入 S1。
 
-当前唯一下一项（仅做 clean-head exact-boundary eligibility attestation 权限决策；不得在本项自动执行 eligibility、host/formal proof 或修改金融 Runtime）：
+授权前 exact transition audit 已触发这条终态规则：冻结的 v3 runner 与 active manifest 仅允许 current projection 保持 `...implementation_pass_eligibility_authority_pending`，而一次诚实的 authority decision 必须把 current truth 推进为 `...eligibility_authorized_not_executed`；后一状态会在 eligibility 之前触发 `current_v3_projection_status_invalid`。保留旧状态会造成 Project OS 与权限事实不一致，修改 runner 属于第二个 v3 implementation patch，先运行后更新则超出权限并破坏证据顺序。因此 eligibility authority 未签发、execution manifest 未创建、eligibility/host/formal 均未执行，observed 保持 `[1,0,0,0]`。新增 RC-P36-096，RC-P36-090–095 继续 open；这不是 DS、Provider、金融 Runtime 或研究质量失败。
 
-`FIN-0.1.3-S0-EXIT-CONTRACT-V3-CLEAN-HEAD-EXACT-BOUNDARY-ELIGIBILITY-ATTESTATION-AUTHORITY-DECISION`
+FIN 0.1.3 现为 `terminal honest block / version-scope disposition required`。eligibility 剩余预算不转移、不自动解释为新权限；不得建立同版本 v4，也不自动创建 FIN 0.1.4。FIN 0.2 的 Earnings Review Alpha 定义保持不变。
+
+当前唯一下一项（仅做终态与版本范围处置；不得自动补丁、eligibility/host/formal proof、FIN 0.1.4 或修改金融 Runtime）：
+
+`FIN-0.1.3-S0-EXIT-CONTRACT-V3-TERMINAL-HONEST-BLOCK-AND-VERSION-SCOPE-DISPOSITION-DECISION`

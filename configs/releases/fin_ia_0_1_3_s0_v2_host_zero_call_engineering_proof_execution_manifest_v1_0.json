@@ -1,0 +1,210 @@
+{
+  "schema_version": "fin_ia_0_1_3_s0_v2_host_zero_call_proof_execution_v1_0",
+  "execution_id": "FIN-0.1.3-S0-V2-HOST-ZERO-CALL-ENGINEERING-PROOF-R1",
+  "status": "ready_unexecuted",
+  "run_scope": "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF",
+  "authority": {
+    "v2_host_zero_call_engineering_proof_authorized": true,
+    "maximum_host_proof_runs": 1,
+    "host_proof_runs_consumed_before_execution": 0,
+    "formal_two_disposable_proof_authorized": false,
+    "old_T03_rerun_or_reinterpretation_authorized": false,
+    "shared_runtime_or_contract_repair_during_proof_authorized": false,
+    "model_provider_credential_network_source_external_tool_authorized": false,
+    "admission_business_run_or_business_artifact_authorized": false,
+    "S1_S2_release_or_FIN_0_1_4_authorized": false
+  },
+  "source_bindings": [
+    {
+      "role": "v2_host_proof_authority",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_and_current_runtime_host_zero_call_engineering_proof_authority_decision_v1_0.json",
+      "sha256": "e1ab2dbfea350f309a19981fb9b625bfbff3892f6b1510e6bb3d6841d69486e8"
+    },
+    {
+      "role": "v2_reference_role_implementation",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_registry_and_collect_all_compiler_minimum_zero_call_implementation_v1_0.json",
+      "sha256": "9bf91966018e6e0a3b5378f073f44039f9690fce23d80412397bc7764292ee63"
+    },
+    {
+      "role": "v2_host_proof_active_suite_manifest",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_v2_host_zero_call_engineering_proof_active_suite_manifest_v1_0.json",
+      "sha256": "06ba3cd35ce35ab1325babec9cba458f1b96eadf477b0f0f31751a4f4dcd0e4d"
+    },
+    {
+      "role": "current_program_projection",
+      "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_6.json",
+      "sha256": "49d1f1eccff21e11f1cd57699e4ea205b3962f3d222e53353886b3cc0640960a"
+    },
+    {
+      "role": "reference_role_registry",
+      "ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_0.json",
+      "sha256": "240d6f7beadd1554c58d95f99bd7fbe85bd3ecea07b8556d2c95a283704fe209"
+    },
+    {
+      "role": "runtime_resource_registry",
+      "ref": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+      "sha256": "a3ea8c7631f4688dcba7133fcdf9c27630f7828dc774608b11a4489e9d1e106b"
+    },
+    {
+      "role": "typed_environment_semantic_parity_contract",
+      "ref": "configs/runtime/fin_ia_0_1_3_typed_environment_semantic_parity_v1_0.json",
+      "sha256": "7e523a536f539c8e509ab1b9402296ce9ff20ff396ef2bce0da3262668b1c4f3"
+    },
+    {
+      "role": "hermetic_closure_and_capture_runtime",
+      "ref": "src/sec_agent/hermetic_test_runner.py",
+      "sha256": "98ea3b835ae8be1631745b41b2b20e27c90eb3086e1b9572a61ae3e80bfa3c41"
+    },
+    {
+      "role": "raw_test_capture_plugin",
+      "ref": "src/sec_agent/hermetic_test_capture.py",
+      "sha256": "3d387b7dbedffceb3706f374a6f2bdf7539cea7cd222e0f77aca3363db242dc4"
+    },
+    {
+      "role": "reference_role_classifier",
+      "ref": "src/sec_agent/reference_role_registry.py",
+      "sha256": "cc7e97f88acc5fe70e2f901037e2d29ebb06ce9e82a9b103f8bc8cdd23885c36"
+    },
+    {
+      "role": "runtime_resource_registry_compiler",
+      "ref": "src/sec_agent/runtime_resource_registry.py",
+      "sha256": "5c1979449f805fdb3e6b7152b61e959653994cd5145afa15e6f78a4dc9b81f28"
+    },
+    {
+      "role": "immutable_old_T03_orchestration_base",
+      "ref": "scripts/engineering/run_fin_0_1_3_s0_t03_host_zero_call_proof.py",
+      "sha256": "9ccbb980c8fd4fd958cde5b43752bea93026c2564498438dc2f8b940b936e88c"
+    },
+    {
+      "role": "v2_proof_only_orchestration_runner",
+      "ref": "scripts/engineering/run_fin_0_1_3_s0_v2_host_zero_call_engineering_proof.py",
+      "sha256": "aa62ca370d1aeba5fbe739d7e12a94e6b9df77a071761d847c74a3c7e651ae03"
+    },
+    {
+      "role": "project_os_preflight",
+      "ref": "scripts/eval_multi_agent/run_project_os_full_chain_preflight.py",
+      "sha256": "3e8705736e3762a284a6893acd94437e80593d0b75ed56a4600613c9eba1fcb0"
+    },
+    {
+      "role": "reference_role_contract_tests",
+      "ref": "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py",
+      "sha256": "abc9d862e0902a66a1f63dd4cfad86b8581d7c2b2057e8fcb18cf8b9f6db8948"
+    },
+    {
+      "role": "runtime_resource_contract_tests",
+      "ref": "tests/contract/test_fin_0_1_3_s0_runtime_resource_registry_and_dependency_compiler.py",
+      "sha256": "bc14f2e67692a9824fc6b59758421470afd0a35bfc687839cbd0d3a2b1a87fe1"
+    },
+    {
+      "role": "typed_environment_contract_tests",
+      "ref": "tests/contract/test_fin_0_1_3_s0_typed_environment_semantic_parity.py",
+      "sha256": "9b3e8551352c4f4fb1fdfa2d18664ccd1e7dbf800b66e2497aeec3d76d934e28"
+    },
+    {
+      "role": "immutable_old_T03_event_tests",
+      "ref": "tests/contract/test_fin_0_1_3_s0_t03_host_zero_call_engineering_proof_terminal_honest_block_closeout.py",
+      "sha256": "97ca1a87f484fe9879078fbabbbb6a82b1c4bec722a879ed95716f75c98c12b5"
+    },
+    {
+      "role": "realistic_three_case_contract_tests",
+      "ref": "tests/contract/test_fin_0_1_2_s1_realistic_three_case_deterministic_proof.py",
+      "sha256": "7b59695a0f2268627bdc98e7420b0468d40a2e6c3d9cfce4385bb9a43212506e"
+    },
+    {
+      "role": "v2_host_proof_authority_contract_tests",
+      "ref": "tests/contract/test_fin_0_1_3_s0_reference_role_current_runtime_host_zero_call_proof_authority_decision.py",
+      "sha256": "b0d33633d02b1eb2798bb2e3881df96b94492ecef1e83391a6a552cfe230e7fb"
+    },
+    {
+      "role": "tracked_typed_closure_contract_tests",
+      "ref": "tests/contract/test_fin_0_1_2_s0c_hermetic_topology_and_allowlisted_package_closure.py",
+      "sha256": "c4c41ec49a222b9150e2e76bab2b94cb3651a2f8f5130d6d03edcde6fd489b64"
+    },
+    {
+      "role": "program_backlog_current_truth",
+      "ref": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+      "sha256": "33459e5b11602b6fa676433e834078f70cf4fd8c618503ece5a1bf97ef4b722a"
+    },
+    {
+      "role": "S4_backlog_current_truth",
+      "ref": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+      "sha256": "d460577e77f31742f42644c8e6ffa7589ad0ed0fe4bdbc389b65b7201c4a216a"
+    },
+    {
+      "role": "capability_ledger_current_truth",
+      "ref": "docs/project_os/capability_status_ledger.jsonl",
+      "sha256": "febd7c03047439cca60204c73858f68d31dfec5e33573def15353d594dcb715a"
+    },
+    {
+      "role": "root_cause_ledger_current_truth",
+      "ref": "docs/project_os/root_cause_issue_ledger.jsonl",
+      "sha256": "2ba208c4d7fba8332f2185a3138756dfa4cea4a8771e6314014d8e08e2c6a049"
+    },
+    {
+      "role": "external_pattern_registry_current_truth",
+      "ref": "docs/project_os/external_pattern_registry.jsonl",
+      "sha256": "360305bca35a26e4b4844b2b111aea096109fbbc807baf0518c6b742814dbb9d"
+    },
+    {
+      "role": "current_context_pack",
+      "ref": "docs/project_os/current_context_pack.zh-CN.md",
+      "sha256": "02b631cc3ed820682576f2f622dd97583e0fb0567073f1f72a844e055c230462"
+    }
+  ],
+  "active_suite_manifest_ref": "configs/releases/fin_ia_0_1_3_s0_v2_host_zero_call_engineering_proof_active_suite_manifest_v1_0.json",
+  "capture_plugin_ref": "src/sec_agent/hermetic_test_capture.py",
+  "required_matrix": [
+    "application_module_import_sweep",
+    "active_suite_collect_only",
+    "reference_role_exact_six_roles_and_collect_all_unknowns",
+    "reference_role_duplicate_cross_version_rule_order_and_path_shape_mutations",
+    "all_current_tracked_dependencies_zero_allowlist_zero_unknown_roles",
+    "runtime_resource_missing_unknown_duplicate_digest_drift_permutation_cross_version_traversal_and_symlink_mutations",
+    "typed_environment_eight_roots_and_unknown_absolute_path_mutations",
+    "DELL_MU_NVDA_each_6_nodes_12_interactions_12_captures_9_diagnostic_Artifacts",
+    "final_nine_numeric_identity_temporal_and_lineage_mutations",
+    "Lead_Writer_Verifier_downstream_failure_capture_and_terminal_result_retention",
+    "zero_Git_metadata_zero_codex_runtime_zero_ignored_or_untracked_paths",
+    "repository_unchanged_and_all_raw_process_and_test_evidence_content_addressed"
+  ],
+  "required_passed_nodeid_fragments": [
+    "test_registry_has_exact_six_roles_and_field_rule_beats_path_shape",
+    "test_collect_all_failure_contains_every_unknown_in_stable_order",
+    "test_registry_duplicate_version_and_order_mutations_fail_closed",
+    "tests/contract/test_fin_0_1_2_s0c_hermetic_topology_and_allowlisted_package_closure.py::",
+    "tests/contract/test_fin_0_1_3_s0_runtime_resource_registry_and_dependency_compiler.py::",
+    "tests/contract/test_fin_0_1_3_s0_typed_environment_semantic_parity.py::",
+    "test_numeric_correspondence_mutations_fail_independent_recompute",
+    "test_case_identity_projection_rejects_removal_and_foreign_case",
+    "test_date_alias_is_locally_rendered_and_unbound_values_fail_closed",
+    "test_three_case_full_fake_and_final_artifact_mutations",
+    "test_collect_all_is_isolated_typed_nonpromotable_and_cleared",
+    "test_downstream_failure_retains_request_output_usage_and_typed_terminal",
+    "test_mutable_backlogs_follow_the_projection_they_declare_current",
+    "test_T03_budget_and_product_truth_stop_before_T04"
+  ],
+  "budgets": {
+    "v2_implementation_host_formal_maximum": [1, 1, 1],
+    "v2_observed_before_execution": [1, 0, 0],
+    "v2_host_engineering_proof_runs_maximum": 1,
+    "v2_host_engineering_proof_runs_consumed_before_execution": 0,
+    "formal_two_disposable_packages_created_or_executed": 0,
+    "automatic_retries_replacements_or_second_host_runs": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "credential_reads_or_probes": 0,
+    "network_source_or_external_tool_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "promotion_boundary": "The host full-fake and diagnostic Artifacts are restricted engineering evidence only. They are not product acceptance, business evidence, an admission, a business Run, a formal disposable proof, or a release candidate.",
+  "success_and_stop_rules": {
+    "success_establishes": "v2_host_zero_call_engineering_proof_only",
+    "success_automatically_closes_RC_P36_090_through_094": false,
+    "success_automatically_authorizes_formal_proof": false,
+    "success_next": "FIN-0.1.3-S0-V2-FORMAL-TWO-DISPOSABLE-PROOF-AUTHORITY-DECISION",
+    "failure": "terminal_stop_no_patch_retry_replacement_second_host_run_or_automatic_FIN_0_1_4",
+    "failure_next": "FIN-0.1.3-S0-V2-HOST-PROOF-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-DECISION"
+  }
+}

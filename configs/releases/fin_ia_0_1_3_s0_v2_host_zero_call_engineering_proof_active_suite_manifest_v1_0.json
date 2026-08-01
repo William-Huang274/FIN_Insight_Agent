@@ -1,0 +1,186 @@
+{
+  "schema_version": "fin_ia_active_test_suite_manifest_v1_0",
+  "manifest_id": "FIN-0.1.3-S0-V2-HOST-ZERO-CALL-ENGINEERING-PROOF-ACTIVE-SUITE-R1",
+  "status": "frozen_ready_for_single_authorized_v2_host_zero_call_engineering_proof",
+  "historical_failures_are_ignored": false,
+  "suites": [
+    {
+      "suite_id": "immutable_FIN_0_1_3_T03_terminal_event",
+      "proof_class": "immutable_event",
+      "selected": true,
+      "gates_current_release": false,
+      "assertion_surfaces": [
+        "old_T03_terminal_failure_remains_visible",
+        "old_T03_engineering_proof_budget_remains_consumed",
+        "old_T04_remains_unexecuted"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_3_s0_t03_host_zero_call_engineering_proof_terminal_honest_block_closeout.py"
+      ]
+    },
+    {
+      "suite_id": "single_current_FIN_0_1_3_S0_v2_host_proof_authority_projection",
+      "proof_class": "current_projection",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": [
+        "authority_is_single_host_proof_not_execution",
+        "mutable_backlogs_follow_their_declared_current_projection",
+        "v2_observed_budget_is_1_0_0_before_execution"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_3_s0_reference_role_current_runtime_host_zero_call_proof_authority_decision.py"
+      ]
+    },
+    {
+      "suite_id": "current_reference_role_resource_environment_and_three_case_runtime",
+      "proof_class": "current_runtime",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": [
+        "six_role_registry_and_collect_all_unknowns",
+        "tracked_or_typed_repository_closure",
+        "runtime_resource_registry_and_mutations",
+        "typed_environment_roots_and_unknown_path_failure",
+        "DELL_MU_NVDA_full_fake_and_final_artifact_mutations",
+        "downstream_capture_and_terminal_result_retention"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py::test_registry_has_exact_six_roles_and_field_rule_beats_path_shape",
+        "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py::test_registry_classifies_each_required_role",
+        "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py::test_collect_all_failure_contains_every_unknown_in_stable_order",
+        "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py::test_registry_duplicate_version_and_order_mutations_fail_closed",
+        "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py::test_v2_compiler_packages_repository_role_and_reports_role_counts",
+        "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py::test_v2_compiler_collects_all_unknowns_and_rejects_field_exceptions",
+        "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py::test_current_active_manifest_uses_v2_without_field_exceptions",
+        "tests/contract/test_fin_0_1_2_s0c_hermetic_topology_and_allowlisted_package_closure.py",
+        "tests/contract/test_fin_0_1_3_s0_runtime_resource_registry_and_dependency_compiler.py",
+        "tests/contract/test_fin_0_1_3_s0_typed_environment_semantic_parity.py",
+        "tests/contract/test_fin_0_1_2_s1_realistic_three_case_deterministic_proof.py"
+      ]
+    },
+    {
+      "suite_id": "historical_T03_failed_package_visibility",
+      "proof_class": "historical_audit",
+      "selected": true,
+      "gates_current_release": false,
+      "assertion_surfaces": [
+        "historical_first_failure_is_not_reinterpreted",
+        "historical_failed_package_remains_nonpromotable",
+        "historical_proof_budget_is_not_reset"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_3_s0_t03_host_zero_call_engineering_proof_terminal_honest_block_closeout.py"
+      ]
+    },
+    {
+      "suite_id": "FIN_0_1_3_S0_v2_host_proof_entry_gate",
+      "proof_class": "release_gate",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": [
+        "host_proof_is_authorized_once",
+        "formal_proof_is_not_authorized",
+        "S1_S2_and_release_remain_blocked"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_3_s0_reference_role_current_runtime_host_zero_call_proof_authority_decision.py"
+      ]
+    }
+  ],
+  "runner_policy": {
+    "manifest_selection_is_authoritative": true,
+    "nodeid_scoped_test_selection_allowed": true,
+    "unlisted_historical_test_failure_is_visible_but_not_implicitly_current": true,
+    "listed_current_test_failure_is_blocking": true,
+    "bulk_relax_historical_assertions_for_green_forbidden": true,
+    "runner_migration_completed": true,
+    "old_v1_2_v1_5_mutable_current_snapshot_is_not_current_gate": true,
+    "old_T03_rerun_forbidden": true,
+    "manifest_is_not_formal_proof_authority": true
+  },
+  "hermetic_package_policy": {
+    "repository_inventory": "host_compiled_git_tracked_plus_typed_reference_role_closure",
+    "required_runner_files": [
+      "src/sec_agent/hermetic_test_capture.py",
+      "src/sec_agent/hermetic_test_runner.py",
+      "src/sec_agent/reference_role_registry.py",
+      "src/sec_agent/runtime_resource_registry.py",
+      "scripts/engineering/run_fin_0_1_2_s0_active_suite.py",
+      "scripts/engineering/run_fin_0_1_3_s0_t03_host_zero_call_proof.py",
+      "scripts/engineering/run_fin_0_1_3_s0_v2_host_zero_call_engineering_proof.py"
+    ],
+    "capture_plugin_path": "src/sec_agent/hermetic_test_capture.py",
+    "runtime_resource_registry_ref": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+    "semantic_parity_contract_ref": "configs/runtime/fin_ia_0_1_3_typed_environment_semantic_parity_v1_0.json",
+    "repository_reference_policy": {
+      "schema_version": "fin_ia_hermetic_repository_reference_policy_v2_0",
+      "tracked_repository_paths_allowed": true,
+      "explicit_allowlist": [],
+      "reference_role_registry_ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_0.json",
+      "forbidden_prefixes": [
+        ".codex_runtime",
+        ".git"
+      ],
+      "untracked_or_ignored_reference_behavior": "fail_closed",
+      "unknown_reference_behavior": "fail_closed_collect_all",
+      "traversal_or_symlink_escape_behavior": "fail_closed",
+      "semantic_or_external_reference_behavior": "observe_not_package"
+    },
+    "repository_seed_paths": [
+      "pyproject.toml",
+      "configs/releases/fin_ia_0_1_3_s0_v2_host_zero_call_engineering_proof_active_suite_manifest_v1_0.json",
+      "configs/releases/fin_ia_0_1_3_s0_v2_host_zero_call_engineering_proof_execution_manifest_v1_0.json",
+      "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_and_current_runtime_host_zero_call_engineering_proof_authority_decision_v1_0.json",
+      "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_registry_and_collect_all_compiler_minimum_zero_call_implementation_v1_0.json",
+      "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_6.json"
+    ],
+    "repository_prefixes": [
+      {
+        "path": "src",
+        "suffixes": [".py"]
+      },
+      {
+        "path": "apps/workbench/backend",
+        "suffixes": [".py"]
+      },
+      {
+        "path": "tests/contract",
+        "suffixes": [".py"]
+      },
+      {
+        "path": "tests/fixtures",
+        "suffixes": [".json", ".jsonl", ".yaml", ".yml"]
+      }
+    ],
+    "complete_per_test_stdout_stderr_required": true,
+    "content_addressed_object_readback_required": true,
+    "frozen_inventory_digest_readback_required": true,
+    "host_runtime_count": 1,
+    "disposable_git_subprocess_calls_allowed": 0,
+    "ignored_or_untracked_repository_paths_packaged_maximum": 0,
+    "semantic_parity_required": true,
+    "provider_credential_environment_removed": true,
+    "network_socket_blocked": true,
+    "failed_or_quarantined_package_business_promotable": false,
+    "restricted_review_before_share_or_promotion": true,
+    "external_read_only_bindings": []
+  },
+  "fixed_budget": {
+    "old_exit_contract_v1_engineering_proof_runs": [1, 1],
+    "old_T04_formal_proof_packages": [0, 1],
+    "v2_implementation_bundles": [1, 1],
+    "v2_host_engineering_proof_runs": [0, 1],
+    "v2_formal_two_disposable_proof_packages": [0, 1],
+    "automatic_retries_or_replacements": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "credential_reads_or_probes": 0,
+    "business_network_or_source_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "next_action_on_host_proof_success": "FIN-0.1.3-S0-V2-FORMAL-TWO-DISPOSABLE-PROOF-AUTHORITY-DECISION",
+  "next_action_on_host_proof_failure": "FIN-0.1.3-S0-V2-HOST-PROOF-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-DECISION"
+}

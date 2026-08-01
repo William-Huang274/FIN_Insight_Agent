@@ -1,7 +1,7 @@
 # FIN 0.1.3 S0 Hermetic Runtime 依赖与语义等价 StagePlan
 
 日期：2026-08-01
-状态：`G2 failed / T03 terminal / T04 blocked / zero external call`
+状态：`G2 failed / T03 terminal immutable / exit_contract:v2 selected / implementation pending / zero external call`
 
 ## 1. 为什么 0.1.3 必须重新从 S0 开始
 
@@ -11,12 +11,13 @@ FIN 0.1.2 的失败发生在正式模型、金融判断和三案例 Runtime 之�
 
 ## 2. S0 的唯一目标
 
-S0 只关闭四个继承的工程 blocker：
+S0 关闭四个继承的工程 blocker，以及 T03 暴露的一个同源合同 blocker：
 
 - RC-P36-090：host inventory 与 disposable current gate 的职责分离；
 - RC-P36-091：递归依赖始终受 tracked-or-typed 边界控制；
 - RC-P36-092：所有 active-suite 可达的 non-Python Runtime 读取进入单一 `RuntimeResourceRegistry`；
 - RC-P36-093：interpreter、purelib、platlib 和 distribution roots 进入 typed environment projection。
+- RC-P36-094：nested `ref/*_ref` 的 reference role 由版本化 registry/schema 编译，不再靠字段例外和字符串形状推断。
 
 S0 不负责 DeepSeek Flash stable / Pro preview 对比，不负责 DELL/MU R2、post-transfer NVDA、NVDA R3，也不修改 FIN 0.2 Earnings Review Alpha 的产品定义。
 
@@ -75,6 +76,16 @@ T03 实际在上述第 1 项之前停止：中央 registry 让 DELL source-groun
 机器合同：`configs/releases/fin_ia_0_1_3_s0_hermetic_runtime_dependency_and_semantic_parity_stage_plan_v1_0.json`
 SHA-256：`034c7714e5773fe48b0d69ed6ab373ba02074e497d803bcd73349932f2177000`
 
-当前唯一下一项（零调用 project-level disposition；不得修后重跑 T03）：
+## 8. Owner disposition：S0 Exit Contract v2
 
-`FIN-0.1.3-S0-T03-TERMINAL-HONEST-BLOCK-AND-REFERENCE-ROLE-TAXONOMY-OWNER-VERSION-DISPOSITION-DECISION`
+Owner 选择保留 FIN 0.1.3 为当前唯一主线，不自动创建 FIN 0.1.4，不豁免 hermetic gate，也不对旧 T03 重新计数。旧 v1 StagePlan 和 T03 closeout 保持不可变历史证据；新的 `fin_0_1_3.S0.exit_contract:v2` 是同一 S0 下的显式合同修订。
+
+v2 的 reference-role registry 至少覆盖 `repository_resource`、`package_relative_audit`、`external_content`、`restricted_runtime_audit`、`model_run_report` 与 `semantic_followup`。同一 registry/schema 必须生成字段规则、closure policy、collect-all validator 和 mutation fixture；未知角色 fail closed。实现应一次报告全部未分类角色，禁止增加 47 个字段例外。
+
+v2 固定预算为一个零调用实现包、一个 host engineering proof 和一个独立双-disposable formal proof；每项最多一次，无自动 retry、replacement、T05/R/H 或版本跃迁。实现包只证明合同已落地；host proof 全绿后才可签发 formal proof；formal proof 全绿并关闭 RC-P36-090–094 后，S0 才可进入 S1。任一全新 L1/结构失败触发项目级计划变更说明，不在同一任务内无限修补。
+
+完整 S0–S5 产品归属见 `docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md`。
+
+当前唯一下一项（零调用实现；不重跑旧 T03）：
+
+`FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-REGISTRY-AND-COLLECT-ALL-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION`

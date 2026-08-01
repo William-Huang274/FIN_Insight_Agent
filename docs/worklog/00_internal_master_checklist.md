@@ -4,8 +4,9 @@
 
 - [x] 2026-08-01 S0-T02 Runtime resource registry and typed environment projection: central registry covers 29 resources/323,829 bytes; seven default loader modules use resource IDs; the frozen 16-prompt `SKILL_FILES` adapter is bidirectionally checked without changing its historical hash; eight typed environment roots support diagnostic-only semantic projection. Focused=`24 passed`, related host matrix=`100 passed`, model/Provider/network=`0/0/0`.
 - [x] 2026-08-01 S0-T03 unique host zero-call engineering proof: clean/synced `5323858a` 上在 repository closure 阶段以 `hermetic_repository_reference_classification_missing:followup_ref` 终态失败，尚未进入 import/collect/pytest。事后 non-promotable collect-all 暴露 47 种 reference field 的 typed-role taxonomy 缺口；不修后重跑。
-- [ ] S0-T03 terminal honest-block / reference-role taxonomy owner-version disposition：决定由哪个 patch line/stage 承担 typed reference-role registry/schema compiler；不得自动建立 T05/R/H/FIN0.1.4。
-- [ ] S0-T04 one independent two-disposable formal proof：因 T03 未 all-green 当前 blocked，package=`0/1`；RC-P36-090–094、S1/S2 与 FIN 0.1 release 继续 blocked。
+- [x] 2026-08-01 S0-T03 terminal honest-block / reference-role taxonomy owner-version disposition：FIN 0.1.3 保持唯一当前主线；旧 T03 immutable，不自动 FIN0.1.4。选择 `fin_0_1_3.S0.exit_contract:v2`，六类 typed role 同源编译，预算固定 `implementation/host/formal=1/1/1`；focused governance=`24 passed`，本项无 Runtime proof 或模型调用。
+- [ ] S0 Exit Contract v2 reference-role taxonomy minimum zero-call implementation：建立单一 registry/schema、collect-all compiler/validator、mutation 与 typed failure；不得逐字段例外或同轮执行 proof。
+- [ ] S0 v2 host engineering proof and one independent two-disposable formal proof：仅在前序全绿时依次消费，当前 observed=`0/0`；RC-P36-090–094、S1/S2 与 FIN 0.1 release 继续 blocked。
 
 ## Integrated 09-12 Execution Governance
 

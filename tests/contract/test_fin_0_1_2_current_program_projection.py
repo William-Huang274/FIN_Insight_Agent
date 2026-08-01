@@ -5,6 +5,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 CURRENT_PROJECTION_REF = (
+    "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_4.json"
+)
+FROZEN_FIN_0_1_3_T03_PROJECTION_REF = (
     "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_3.json"
 )
 FROZEN_FIN_0_1_3_T02_PROJECTION_REF = (
@@ -38,12 +41,12 @@ def _load(path: Path) -> dict:
 def test_current_program_projection_is_the_single_host_state_owner() -> None:
     projection = _load(ROOT / CURRENT_PROJECTION_REF)
     assert projection["status"] == (
-        "current_FIN_0_1_3_S0_T03_terminal_failed_unique_run_consumed_"
-        "T04_blocked"
+        "current_FIN_0_1_3_S0_exit_contract_v2_selected_reference_role_"
+        "taxonomy_implementation_ready"
     )
     assert projection["expectations"]["current_next_action"] == (
-        "FIN-0.1.3-S0-T03-TERMINAL-HONEST-BLOCK-AND-REFERENCE-ROLE-"
-        "TAXONOMY-OWNER-VERSION-DISPOSITION-DECISION"
+        "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-REGISTRY-AND-COLLECT-ALL-"
+        "COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION"
     )
     assert all(
         (ROOT / value).is_file()
@@ -70,6 +73,7 @@ def test_host_state_sources_and_host_only_test_are_not_disposable_inputs() -> No
     assert CURRENT_PROJECTION_REF != FROZEN_FIN_0_1_3_ENTRY_PROJECTION_REF
     assert CURRENT_PROJECTION_REF != FROZEN_FIN_0_1_3_T01_PROJECTION_REF
     assert CURRENT_PROJECTION_REF != FROZEN_FIN_0_1_3_T02_PROJECTION_REF
+    assert CURRENT_PROJECTION_REF != FROZEN_FIN_0_1_3_T03_PROJECTION_REF
     assert HOST_ONLY_TEST not in selected_paths
     assert not set(projection["source_paths"].values()).intersection(seeds)
     assert projection["package_governance"]["host_sources_packaged"] is False

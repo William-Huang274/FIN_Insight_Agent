@@ -1,7 +1,7 @@
 # FIN 0.1.1 / 0.1.2 / 0.1.3 版本谱系与发布节奏决策
 
 日期：2026-07-31
-更新：2026-08-01（新增 FIN 0.1.3 patch line）
+更新：2026-08-01（FIN 0.1.3 S0 Exit Contract v2 与统一 S0–S5 主轴）
 状态：`accepted_product_lineage / FIN_0_2_definition_preserved`
 
 ## 1. 产品大方向不变
@@ -108,10 +108,14 @@ FIN-0.1 repository evidence freeze + safe classification
   -> FIN 0.2 Earnings Review Alpha
 ```
 
-截至 2026-08-01，FIN 0.1.3 S0-T01 StagePlan 已冻结并通过 G0。四项 inherited blocker、T01–T04、单实现/单正式 proof 预算、active-suite collect/import 前置条件以及失败停止线均已绑定；没有实现 Runtime、创建 proof package 或调用模型。
+截至 2026-08-01，FIN 0.1.3 S0 的 T01/G0 与 T02 engineering implementation 已完成；唯一 T03 在 repository closure 阶段因 typed reference-role taxonomy 缺失而终态失败，旧预算 `1/1` 已消费，T04 未创建。RC-P36-090–094 均继续 open，S1/S2 未进入，模型调用为 0。
+
+Owner 决策保留 FIN 0.1.3 为唯一当前主线，不自动创建 0.1.4。旧 StagePlan/T03 结论保持不可变，在同一 S0 下建立显式 `fin_0_1_3.S0.exit_contract:v2`：先用一个版本化 registry/schema 统一编译六类 reference role 与 collect-all validator，再分别最多执行一次 host engineering proof 和一次独立双-disposable formal proof。旧 T03 不重跑、不重算，也不以新合同覆盖历史失败。
+
+FIN 0.1.3 后续恢复为单一 S0–S5 产品主轴：S0 可信基础、S1 零模型三案、S2 DeepSeek 模型边界、S3 NVDA 当前产品锚点、S4 DELL/MU 迁移与 Workbench 用户价值、S5 release/honest-block。完整产品归属见 `docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md`。
 
 当前唯一下一项：
 
-`FIN-0.1.3-S0-RUNTIME-RESOURCE-REGISTRY-AND-TYPED-ENVIRONMENT-PROJECTION-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-REGISTRY-AND-COLLECT-ALL-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION`
 
-该动作只能消费一个 T02 零调用实现包，建立单一 RuntimeResourceRegistry、dependency compiler、typed environment projection 及其 mutation contracts；不得同轮创建或执行 T03/T04 proof package、进入 S1/S2、读取凭据或调用模型。StagePlan 见 `docs/architecture/repository/FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_AND_SEMANTIC_PARITY_STAGE_PLAN_20260801.zh-CN.md`。
+该动作只能消费 v2 的一个零调用实现包，建立 typed reference-role registry/schema、collect-all compiler/validator 与 mutation contracts；不得重跑旧 T03、同轮创建或执行新 proof package、进入 S1/S2、读取凭据或调用模型。StagePlan 见 `docs/architecture/repository/FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_AND_SEMANTIC_PARITY_STAGE_PLAN_20260801.zh-CN.md`。

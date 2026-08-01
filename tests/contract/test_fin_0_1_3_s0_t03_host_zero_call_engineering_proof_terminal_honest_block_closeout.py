@@ -160,7 +160,7 @@ def test_terminal_active_manifest_replaces_stale_T02_current_owner() -> None:
     assert manifest["next_action_on_T03_failure"] == NEXT_ACTION
 
 
-def test_current_projection_is_single_terminal_state_owner() -> None:
+def test_frozen_T03_projection_preserves_the_terminal_event_snapshot() -> None:
     projection = _load(CURRENT_PROJECTION_REF)
     expectations = projection["expectations"]
     sources = projection["source_paths"]
@@ -176,38 +176,14 @@ def test_current_projection_is_single_terminal_state_owner() -> None:
         (ROOT / value).is_file()
         for value in sources.values()
     )
-    program = _load(sources["program_backlog"])
-    s4 = _load(sources["S4_backlog"])
-    assert program["active_slice"] == expectations["active_slice"]
-    assert program["next_action"]["item_id"] == NEXT_ACTION
-    assert s4["current_next_action"] == NEXT_ACTION
-    context = (ROOT / sources["context_pack"]).read_text(encoding="utf-8")
-    assert f"current next=`{NEXT_ACTION}`" in context
-
-    capability = next(
-        row
-        for row in reversed(_load_jsonl(sources["capability_ledger"]))
-        if row.get("capability_id") == expectations["capability_id"]
+    assert expectations["active_slice"] == (
+        "FIN_0_1_3_S0_TERMINAL_HONEST_BLOCK_REFERENCE_ROLE_TAXONOMY_"
+        "DISPOSITION"
     )
-    assert capability["current_next"] == NEXT_ACTION
-    assert capability["stage_acceptance"] == expectations[
-        "capability_stage_acceptance"
-    ]
-
-    root_rows = _load_jsonl(sources["root_cause_ledger"])
-    for issue_id in expectations["open_issue_ids"]:
-        row = next(
-            item
-            for item in reversed(root_rows)
-            if item.get("issue_id") == issue_id
-        )
-        assert row["status"] == "open"
-        assert row["full_chain_blocker"] is True
-        assert NEXT_ACTION in row["allowed_run_scopes"]
-
-    pattern = next(
-        row
-        for row in reversed(_load_jsonl(sources["external_pattern_ledger"]))
-        if row.get("pattern_id") == expectations["pattern_id"]
+    assert expectations["capability_stage_acceptance"]["FIN_0_1_3_S0_T03"] == (
+        "terminal_failed_unique_engineering_proof_consumed"
     )
-    assert pattern["status"] == expectations["pattern_status"]
+    assert expectations["pattern_status"] == (
+        "FIN_0_1_3_S0_T03_terminal_failed_typed_reference_role_taxonomy_"
+        "missing"
+    )

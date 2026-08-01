@@ -1,0 +1,171 @@
+{
+  "schema_version": "fin_ia_0_1_3_s0_host_zero_call_engineering_proof_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF-AUTHORITY-DECISION-R1",
+  "recorded_at": "2026-08-01T21:00:00+08:00",
+  "status": "pass_authorize_one_future_v2_host_zero_call_engineering_proof_not_executed",
+  "decision_label": "authorize_one_future_v2_host_zero_call_engineering_proof_only",
+  "authority": {
+    "user_instruction": "继续",
+    "future_host_zero_call_engineering_proof_authorized": true,
+    "future_proof_execution_scope": "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF",
+    "proof_executed_in_this_decision": false,
+    "maximum_future_host_proof_runs": 1,
+    "formal_two_disposable_proof_authorized": false,
+    "old_T03_rerun_or_reinterpretation_authorized": false,
+    "runtime_contract_resource_reference_or_environment_repair_during_proof": false,
+    "credential_model_provider_network_source_external_tool_admission_business_run_artifact_authorized": false,
+    "S1_S2_or_release_entry_authorized": false
+  },
+  "project_os_preflight": {
+    "run_scope": "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF-AUTHORITY-DECISION",
+    "restricted_runtime_ref": ".codex_runtime/fin_0_1_3_s0_reference_role_host_proof_authority_decision_preflight.json",
+    "sha256": "f219578c9405d95e94234d64e2b053659c7e7e20b10142ca61ba92750bcb81c0",
+    "status": "pass",
+    "missing_files": 0,
+    "missing_capabilities": 0,
+    "open_full_chain_blockers_for_this_authorized_scope": 0,
+    "packaged_or_business_promotable": false
+  },
+  "source_bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_3_s0_t03_terminal_honest_block_reference_role_taxonomy_owner_and_exit_contract_v2_disposition_v1_0.json",
+      "sha256": "2c040ff28f499b03e36cc5d3b5b31df7827fe27d8a1448958d6dd965f368fcba",
+      "role": "owner_exit_contract_v2_decision"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_registry_and_collect_all_compiler_minimum_zero_call_implementation_v1_0.json",
+      "sha256": "9bf91966018e6e0a3b5378f073f44039f9690fce23d80412397bc7764292ee63",
+      "role": "completed_v2_implementation"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_2.json",
+      "sha256": "3353650956fa4b32ce252abde2814c122382b0773ffeb049e0756ad00908f8e1",
+      "role": "immutable_implementation_snapshot_manifest"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_0.json",
+      "sha256": "240d6f7beadd1554c58d95f99bd7fbe85bd3ecea07b8556d2c95a283704fe209",
+      "role": "six_role_reference_authority"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_5.json",
+      "sha256": "352bb59919517a165371855d4090ca46a8d73ca773f7526d876368731ef7a9e7",
+      "role": "pre_decision_current_projection"
+    },
+    {
+      "ref": "src/sec_agent/hermetic_test_runner.py",
+      "sha256": "98ea3b835ae8be1631745b41b2b20e27c90eb3086e1b9572a61ae3e80bfa3c41",
+      "role": "current_host_closure_and_proof_runtime"
+    },
+    {
+      "ref": "src/sec_agent/reference_role_registry.py",
+      "sha256": "cc7e97f88acc5fe70e2f901037e2d29ebb06ce9e82a9b103f8bc8cdd23885c36",
+      "role": "reference_role_classifier_and_collect_all_validator"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py",
+      "sha256": "abc9d862e0902a66a1f63dd4cfad86b8581d7c2b2057e8fcb18cf8b9f6db8948",
+      "role": "reference_role_positive_negative_contract"
+    }
+  ],
+  "clean_head_precondition": {
+    "branch": "codex/layered-data-source-expansion",
+    "head": "dc978ac94fe6084252e9b14cab58bfed03233ad9",
+    "upstream_head": "dc978ac94fe6084252e9b14cab58bfed03233ad9",
+    "worktree_clean": true,
+    "independent_zero_call_matrix": "83_passed_in_27_53_seconds"
+  },
+  "fixed_budget": {
+    "v2_implementation_host_formal_maximum": [1, 1, 1],
+    "v2_observed_before_future_proof": [1, 0, 0],
+    "v2_observed_after_this_authority_decision": [1, 0, 0],
+    "future_host_proof_run_ceiling": 1,
+    "automatic_retry_replacement_or_second_package": 0,
+    "old_T03_engineering_proof_runs": [1, 1],
+    "old_T04_formal_packages": [0, 1]
+  },
+  "future_proof_packaging_contract": {
+    "new_execution_manifest_required": true,
+    "orchestration_only_runner_may_be_created": true,
+    "shared_runtime_or_contract_source_change_allowed": false,
+    "implementation_snapshot_manifest_v1_2_mutation_allowed": false,
+    "exact_source_runtime_manifest_and_test_digests_must_be_bound": true,
+    "execute_only_from_clean_synced_committed_head": true,
+    "proof_package_and_run_count": [1, 1],
+    "proof_output_location": "restricted_external_evidence_root_outside_repository",
+    "provider_credential_environment_scrubbed": true,
+    "network_socket_blocked": true,
+    "repository_readback_before_after_equal": true,
+    "content_addressed_raw_stdout_stderr_detail_per_test_and_terminal_capture_required": true,
+    "failed_package_business_promotable": false,
+    "restricted_review_before_share_or_promotion": true
+  },
+  "required_positive_matrix": [
+    "future_execution_manifest_validates_and_binds_current_committed_truth",
+    "reference_registry_digest_and_exact_six_roles_match",
+    "all_current_tracked_repository_dependencies_close_with_zero_allowlist_and_zero_unknown_roles",
+    "exact_manifest_compiled_path_observation_role_counts_and_digest_are_recorded_not_assumed_from_pre_decision_snapshot",
+    "semantic_followup_containing_slash_remains_semantic_followup",
+    "collect_all_unknown_fixture_preserves_every_unknown_in_one_typed_nonpromotable_envelope",
+    "application_module_import_sweep_passes",
+    "active_suite_collect_only_passes",
+    "current_selected_pytest_matrix_passes",
+    "runtime_resource_registry_has_29_digest_bound_resources",
+    "typed_environment_has_8_root_roles_and_unknown_absolute_path_mutation_fails_closed",
+    "DELL_MU_NVDA_each_complete_6_nodes_12_interactions_12_captures_9_artifacts_under_full_fake",
+    "numeric_identity_temporal_and_lineage_mutations_fail_closed",
+    "Lead_Writer_Verifier_downstream_failures_preserve_capture_and_terminal_result",
+    "proof_package_contains_zero_git_metadata_codex_runtime_ignored_or_untracked_paths",
+    "repository_is_unchanged_after_proof"
+  ],
+  "required_negative_matrix": [
+    "duplicate_reference_registry_key_fails_closed",
+    "schema_cross_version_and_rule_order_or_digest_drift_fail_closed",
+    "unknown_path_like_root_or_filename_fails_closed",
+    "untracked_traversal_and_symlink_escape_fail_closed",
+    "restricted_runtime_audit_is_not_packaged_or_business_promoted",
+    "model_run_report_is_not_automatically_business_promoted",
+    "semantic_followup_is_not_reclassified_by_string_shape",
+    "multiple_unknown_roles_are_all_reported_not_first_hit_only",
+    "unknown_environment_absolute_path_fails_closed",
+    "content_address_readback_mutation_fails_closed"
+  ],
+  "success_and_stop_rules": {
+    "host_success_establishes": "v2_host_zero_call_engineering_proof_only",
+    "host_success_automatically_closes_RC_P36_090_through_094": false,
+    "host_success_automatically_authorizes_formal_proof": false,
+    "next_after_host_success": "separate_formal_two_disposable_proof_authority_decision",
+    "failure_behavior": "terminal_stop_no_patch_retry_replacement_second_host_proof_or_automatic_FIN_0_1_4",
+    "new_structural_failure_next": "project_level_scope_contract_or_version_disposition",
+    "L2_to_L4_product_quality_findings_block_this_host_proof": false
+  },
+  "open_issue_truth": {
+    "issue_ids": [
+      "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+      "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
+      "RC-P36-092-fin-0-1-2-code-declared-static-runtime-resource-missing-from-hermetic-inventory",
+      "RC-P36-093-fin-0-1-2-hermetic-semantic-parity-untyped-host-python-traceback-path",
+      "RC-P36-094-fin-0-1-3-hermetic-reference-role-taxonomy-conflates-semantic-audit-and-repository-paths"
+    ],
+    "status_each": "open_full_chain_blocker",
+    "host_proof_authorized_not_executed": true,
+    "S0": "blocked_until_host_and_formal_proofs_pass_and_issues_close",
+    "S1_entry": false,
+    "S2_entry": false,
+    "release_qualified": false
+  },
+  "observed_counts_this_decision": {
+    "host_proof_runs": 0,
+    "formal_proof_packages": 0,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "next_action": "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF"
+}

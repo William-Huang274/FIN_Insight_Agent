@@ -1,7 +1,7 @@
 # FIN 0.1.3 S0 Hermetic Runtime 依赖与语义等价 StagePlan
 
 日期：2026-08-01
-状态：`G2 failed / T03 terminal immutable / exit_contract:v2 reference-role implementation engineering pass / host proof authority pending / zero external call`
+状态：`G2 failed / T03 terminal immutable / exit_contract:v2 reference-role implementation engineering pass / one future host proof authorized not executed / zero external call`
 
 ## 1. 为什么 0.1.3 必须重新从 S0 开始
 
@@ -88,6 +88,8 @@ v2 固定预算为一个零调用实现包、一个 host engineering proof 和�
 
 完整 S0–S5 产品归属见 `docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md`。
 
-当前唯一下一项（零调用权限/独立 preflight 决策；不执行 proof，不重跑旧 T03）：
+host proof 权限决策已通过：独立 Project OS preflight 为 0 blocker，clean/synced HEAD 上 83 项实现/closure/三案相关矩阵全绿。未来 proof 最多执行一次；只允许新增 digest-bound execution manifest 与纯编排 runner，不得在 proof 内修改共享 Runtime、资源、reference-role、environment 或测试合同。证明输出必须写入仓外受限证据根，credential env 必须移除、network socket 必须封锁、raw 与 terminal evidence 必须内容寻址，仓库 readback 必须前后一致。成功只建立 host engineering proof，并转入单独的 formal-proof authority decision；失败立即终止，不自动 patch、retry、replacement、T05/R/H 或 FIN 0.1.4。
 
-`FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF-AUTHORITY-DECISION`
+当前唯一下一项（执行已授权的单次 v2 host zero-call engineering proof；不重跑旧 T03，不执行 formal proof）：
+
+`FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF`

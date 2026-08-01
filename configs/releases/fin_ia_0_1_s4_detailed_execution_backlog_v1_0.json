@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_0_1_s4_detailed_execution_backlog_v1_0",
   "backlog_id": "FIN-0.1-S4-THREE-CASE-TRANSFER-AND-HUMAN-CALIBRATION-R1",
   "frozen_at": "2026-07-26T15:41:14+08:00",
-  "status": "S4_and_S5_closed_FIN_0_1_2_frozen_blocked_FIN_0_1_3_S0_exit_contract_v2_implementation_ready",
+  "status": "S4_and_S5_closed_FIN_0_1_2_frozen_blocked_FIN_0_1_3_S0_v2_host_proof_authorized_not_executed",
   "authority": {
     "user_instruction": "认可",
     "instruction_context": "User accepted the proposed S4 plan after Codex stated that the next action would only create the zero-call S4 entry decision detailed backlog and manifest consumption record.",
@@ -1122,7 +1122,7 @@
     "only_planned_remaining_T05_paid_execution": "DELL_R11_consumed_failed_no_further_paid_execution_authorized",
     "automatic_R12": false
   },
-  "current_next_action": "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF-AUTHORITY-DECISION",
+  "current_next_action": "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF",
   "T07_current_worktree_regression": {
     "scope_decision_ref": "configs/releases/fin_ia_0_1_s4_t07_entry_current_worktree_three_case_regression_and_nvda_post_transfer_exact_revalidation_scope_decision_v1_0.json",
     "result_ref": "configs/releases/fin_ia_0_1_s4_t07_current_worktree_three_case_zero_call_regression_failure_result_v1_0.json",
@@ -1343,15 +1343,21 @@
     "next_action": "FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-STAGE-PLAN"
   },
   "FIN_0_1_3_S0_hermetic_runtime_dependency_and_semantic_parity": {
-    "status": "exit_contract_v2_reference_role_implementation_pass_host_proof_authority_pending",
+    "status": "exit_contract_v2_host_zero_call_engineering_proof_authorized_not_executed",
     "stage_id": "FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-REBASELINE-R1",
     "stage_plan_ref": "configs/releases/fin_ia_0_1_3_s0_hermetic_runtime_dependency_and_semantic_parity_stage_plan_v1_0.json",
-    "stage_plan_sha256": "034c7714e5773fe48b0d69ed6ab373ba02074e497d803bcd73349932f2177000",
+    "stage_plan_sha256": "83e8612def030ec955cdfb78a92363b2910c4af88f018ffe2a3fb648568d1167",
     "frozen_T03_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_3.json",
-    "current_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_5.json",
+    "current_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_6.json",
+    "current_projection_sha256": "49d1f1eccff21e11f1cd57699e4ea205b3962f3d222e53353886b3cc0640960a",
     "reference_role_registry_ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_0.json",
     "reference_role_implementation_ref": "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_registry_and_collect_all_compiler_minimum_zero_call_implementation_v1_0.json",
     "reference_role_implementation_sha256": "9bf91966018e6e0a3b5378f073f44039f9690fce23d80412397bc7764292ee63",
+    "host_proof_authority_ref": "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_and_current_runtime_host_zero_call_engineering_proof_authority_decision_v1_0.json",
+    "host_proof_authority_sha256": "e1ab2dbfea350f309a19981fb9b625bfbff3892f6b1510e6bb3d6841d69486e8",
+    "host_proof_authorized": true,
+    "host_proof_executed": false,
+    "host_proof_run_ceiling": 1,
     "current_active_suite_manifest_ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_2.json",
     "fixed_task_ids": ["FIN-0.1.3-S0-T01", "FIN-0.1.3-S0-T02", "FIN-0.1.3-S0-T03", "FIN-0.1.3-S0-T04"],
     "T01_status": "pass",
@@ -1371,7 +1377,7 @@
     "exit_contract_v2_implementation_host_formal_budget": [1, 1, 1],
     "exit_contract_v2_observed": [1, 0, 0],
     "canonical_S0_to_S5_plan_ref": "docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md",
-    "canonical_S0_to_S5_plan_sha256": "51d710d2eac3e366d9bb19a27b477fbeb540efffb214270ae21c8ff122b7a7b9",
+    "canonical_S0_to_S5_plan_sha256": "c7c7d4b07ec137ca25a7453efe48d618b29c27c9bc6384fce8303c8090bebb21",
     "open_issue_ids": [
       "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
       "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
@@ -1381,7 +1387,7 @@
     ],
     "automatic_T05_R_H_or_FIN_0_1_4": false,
     "model_provider_credential_network_admission_Run_business_Artifact": [0, 0, 0, 0, 0, 0, 0],
-    "next_action": "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF-AUTHORITY-DECISION"
+    "next_action": "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF"
   },
   "repository_recovery_and_version_lineage_scope": {
     "scope_decision_ref": "configs/releases/fin_ia_0_1_repository_recovery_s0_to_s4_audit_and_0_1_1_0_1_2_version_lineage_scope_decision_v1_0.json",

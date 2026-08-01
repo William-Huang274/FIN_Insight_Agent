@@ -2,7 +2,7 @@
 
 日期：2026-08-01
 
-状态：`accepted planning normalization / S0 exit-contract v3 proof-control-plane recovery selected / implementation pending`
+状态：`accepted planning normalization / S0 exit-contract v3 proof-control-plane implementation pass / eligibility authority pending`
 
 当前版本：`FIN 0.1.3`
 
@@ -16,7 +16,7 @@ FIN 0.1.1 与 0.1.2 已冻结为历史内部工程基线；FIN 0.1.3 是当前�
 - S0–S5 说明产品能力从可信基础设施走到可发布候选的成熟顺序；
 - Txx 只是某一阶段内有界、可停止、可审计的执行单元。
 
-旧 T03 的失败、预算和证据保持不可变。当前决策只在 FIN 0.1.3 S0 下建立新的 `exit_contract:v2`，不把旧失败改名为 pass，也不把一次合同修订伪装成新版本。
+旧 T03 与 v2 的失败、预算和证据保持不可变。当前只在 FIN 0.1.3 S0 下建立最后一次 `exit_contract:v3`，不把旧失败改名为 pass，也不把一次合同修订伪装成新版本。
 
 ## 2. FIN 0.1.3 的单一 S0–S5 主轴
 
@@ -44,6 +44,8 @@ FIN 0.1.1 与 0.1.2 已冻结为历史内部工程基线；FIN 0.1.3 是当前�
 
 项目级 disposition 选择同版本 S0 Exit Contract v3，不自动创建 FIN 0.1.4。v3 不重做产品 Runtime；它只建立 proof policy 单一来源，并把 `unknown_reference_behavior=fail_closed` 与 `unknown_reference_reporting=collect_all_typed_envelope` 分成两个语义，再增加一次 non-consuming exact-boundary eligibility。eligibility 必须在 clean/synced committed HEAD 上绑定 execution/active manifest、source digests 和 compiled inventory digest；只有 attestation 匹配后，host proof 才开始消费。v3 固定 `[implementation, eligibility, host, formal]` 各最多一次，任一新结构失败都冻结 FIN 0.1.3，禁止同版本 v4。
 
+当前 v3 最小实现已工程通过：versioned policy source 成为 manifest validator、eligibility compiler、host recompute 和 shared repository compiler 的共同真值；manifest 只保存 `policy_ref + policy_sha256`。eligibility payload 可绑定 clean/synced HEAD、exact manifests、source digests、Project OS preflight、tracked snapshot、compiled inventory 与 selected tests；host 路径在写入消费标记和 import sweep 前重算并匹配 attestation。相关 schema、digest、值、consumer order、registry 以及 attestation/authority drift mutation 全部 fail closed。这些是 proof control plane 的工程实现，不是 clean-head eligibility 或 host/formal proof。
+
 ## 4. 计划变化规则
 
 下列变化必须在执行前向 Owner 说明“为什么变、从哪移到哪、对版本/用户能力/预算的影响”，并更新产品计划、技术边界、backlog 与 Project OS：
@@ -58,8 +60,8 @@ FIN 0.1.1 与 0.1.2 已冻结为历史内部工程基线；FIN 0.1.3 是当前�
 
 ## 5. 本次决策的真实影响
 
-路线与验收合同之后，S0 已完成一次有界 taxonomy 实现，但 v2 host proof 暴露 proof packaging 与消费边界不足。项目级 decision 没有重跑、豁免 proof 或新建 0.1.4，而是把最后一次同版本恢复限制为 Exit Contract v3 proof-control-plane implementation。当前只是 planning/contract selection：v3 observed=`0/0/0/0`，没有实现、eligibility、host 或 formal evidence，用户可见金融研究功能无增量。FIN 0.1.3 S0 与 RC-P36-090–095 继续 blocked/open，S1–S5 产品能力顺序不变。
+路线与验收合同之后，S0 已完成有界 taxonomy 实现，但 v2 host proof 暴露 proof packaging 与消费边界不足。项目级 decision 没有重跑、豁免 proof 或新建 0.1.4，而是把最后一次同版本恢复限制为 Exit Contract v3 proof-control-plane。该最小实现现已工程通过，v3 observed=`1/0/0/0`；本轮没有执行 clean-head eligibility、host/formal proof、模型、Provider、网络或业务链，用户可见金融研究功能无增量。FIN 0.1.3 S0 与 RC-P36-090–095 继续 blocked/open，S1–S5 产品能力顺序不变。
 
 当前唯一下一项：
 
-`FIN-0.1.3-S0-EXIT-CONTRACT-V3-PROOF-POLICY-SINGLE-SOURCE-AND-PRE-CONSUMPTION-BOUNDARY-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.3-S0-EXIT-CONTRACT-V3-CLEAN-HEAD-EXACT-BOUNDARY-ELIGIBILITY-ATTESTATION-AUTHORITY-DECISION`

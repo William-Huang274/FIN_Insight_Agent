@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_0_1_s4_detailed_execution_backlog_v1_0",
   "backlog_id": "FIN-0.1-S4-THREE-CASE-TRANSFER-AND-HUMAN-CALIBRATION-R1",
   "frozen_at": "2026-07-26T15:41:14+08:00",
-  "status": "S4_and_S5_closed_FIN_0_1_2_frozen_blocked_FIN_0_1_3_S0_exit_contract_v3_proof_control_plane_implementation_pending",
+  "status": "S4_and_S5_closed_FIN_0_1_2_frozen_blocked_FIN_0_1_3_S0_exit_contract_v3_proof_control_plane_implementation_pass_eligibility_authority_pending",
   "authority": {
     "user_instruction": "认可",
     "instruction_context": "User accepted the proposed S4 plan after Codex stated that the next action would only create the zero-call S4 entry decision detailed backlog and manifest consumption record.",
@@ -1122,7 +1122,7 @@
     "only_planned_remaining_T05_paid_execution": "DELL_R11_consumed_failed_no_further_paid_execution_authorized",
     "automatic_R12": false
   },
-  "current_next_action": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-PROOF-POLICY-SINGLE-SOURCE-AND-PRE-CONSUMPTION-BOUNDARY-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "current_next_action": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-CLEAN-HEAD-EXACT-BOUNDARY-ELIGIBILITY-ATTESTATION-AUTHORITY-DECISION",
   "T07_current_worktree_regression": {
     "scope_decision_ref": "configs/releases/fin_ia_0_1_s4_t07_entry_current_worktree_three_case_regression_and_nvda_post_transfer_exact_revalidation_scope_decision_v1_0.json",
     "result_ref": "configs/releases/fin_ia_0_1_s4_t07_current_worktree_three_case_zero_call_regression_failure_result_v1_0.json",
@@ -1343,13 +1343,13 @@
     "next_action": "FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-STAGE-PLAN"
   },
   "FIN_0_1_3_S0_hermetic_runtime_dependency_and_semantic_parity": {
-    "status": "exit_contract_v3_selected_proof_control_plane_implementation_pending",
+    "status": "exit_contract_v3_proof_control_plane_implementation_pass_eligibility_authority_pending",
     "stage_id": "FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-REBASELINE-R1",
     "stage_plan_ref": "configs/releases/fin_ia_0_1_3_s0_hermetic_runtime_dependency_and_semantic_parity_stage_plan_v1_0.json",
     "stage_plan_sha256": "034c7714e5773fe48b0d69ed6ab373ba02074e497d803bcd73349932f2177000",
     "frozen_T03_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_3.json",
-    "current_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_8.json",
-    "current_projection_sha256": "9413590a956ea5290672d8af494ac759c29e9eab05c6b0a033761ef4775c816a",
+    "current_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_9.json",
+    "current_projection_sha256": "402bdf42a69ca9ffaa7fedcfa43764346872b56e6e96841c41e5537319ea4c67",
     "reference_role_registry_ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_0.json",
     "reference_role_implementation_ref": "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_registry_and_collect_all_compiler_minimum_zero_call_implementation_v1_0.json",
     "reference_role_implementation_sha256": "9bf91966018e6e0a3b5378f073f44039f9690fce23d80412397bc7764292ee63",
@@ -1363,7 +1363,8 @@
     "host_proof_verification_sha256": "dd8b9eef8e95b56f61519cd3ca8cd92266b18e302f777c45d456583d0416f667",
     "host_proof_first_failure": "hermetic_repository_reference_policy_boundary_invalid",
     "host_proof_run_ceiling": 1,
-    "current_active_suite_manifest_ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_2.json",
+    "current_active_suite_manifest_ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_3.json",
+    "current_active_suite_manifest_sha256": "bd8ece123ed959183a6e9a696759892e51b2c7798982dcb6c66e4123a371ea34",
     "fixed_task_ids": ["FIN-0.1.3-S0-T01", "FIN-0.1.3-S0-T02", "FIN-0.1.3-S0-T03", "FIN-0.1.3-S0-T04"],
     "T01_status": "pass",
     "T02_status": "engineering_pass",
@@ -1385,10 +1386,14 @@
     "exit_contract_v3_decision_sha256": "273e0383c133fa6530205357beb722453830f9e6aff03564f8e5765a962fdc30",
     "exit_contract_v3_id": "fin_0_1_3.S0.exit_contract:v3",
     "exit_contract_v3_implementation_eligibility_host_formal_budget": [1, 1, 1, 1],
-    "exit_contract_v3_observed": [0, 0, 0, 0],
+    "exit_contract_v3_observed": [1, 0, 0, 0],
+    "exit_contract_v3_repository_reference_proof_policy_ref": "configs/runtime/fin_ia_0_1_3_repository_reference_proof_policy_v3_0.json",
+    "exit_contract_v3_repository_reference_proof_policy_sha256": "52eabb953ccbf5c2a64685fea3012ec311229233450c080eacc52bda2ea35253",
+    "exit_contract_v3_implementation_ref": "configs/releases/fin_ia_0_1_3_s0_exit_contract_v3_proof_policy_single_source_and_pre_consumption_boundary_minimum_zero_call_implementation_v1_0.json",
+    "exit_contract_v3_implementation_sha256": "0043ae6933621e9b84a1df91a4fe70714a5874ecea474275d8b54518a5820a48",
     "exit_contract_v4_authorized": false,
     "canonical_S0_to_S5_plan_ref": "docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md",
-    "canonical_S0_to_S5_plan_sha256": "a522a5006b95e9668df13871f0d6d096bf8a9580b63e079b9d204040abe6b25c",
+    "canonical_S0_to_S5_plan_sha256": "c2531217adecc7de9385813c26c3a4e6b3305b7a3f61c9ab85cd326125cf4e8c",
     "open_issue_ids": [
       "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
       "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
@@ -1399,7 +1404,7 @@
     ],
     "automatic_T05_R_H_or_FIN_0_1_4": false,
     "model_provider_credential_network_admission_Run_business_Artifact": [0, 0, 0, 0, 0, 0, 0],
-    "next_action": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-PROOF-POLICY-SINGLE-SOURCE-AND-PRE-CONSUMPTION-BOUNDARY-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+    "next_action": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-CLEAN-HEAD-EXACT-BOUNDARY-ELIGIBILITY-ATTESTATION-AUTHORITY-DECISION"
   },
   "repository_recovery_and_version_lineage_scope": {
     "scope_decision_ref": "configs/releases/fin_ia_0_1_repository_recovery_s0_to_s4_audit_and_0_1_1_0_1_2_version_lineage_scope_decision_v1_0.json",

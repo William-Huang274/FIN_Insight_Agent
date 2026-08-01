@@ -1,0 +1,27 @@
+{
+  "schema_version": "fin_ia_repository_reference_proof_policy_source_v3_0",
+  "policy_id": "fin_0_1_3.S0.repository_reference_proof_policy",
+  "policy_version": "v3",
+  "status": "single_source_typed_fail_closed",
+  "consumers": [
+    "active_suite_manifest_binding",
+    "eligibility_compiler",
+    "host_execution_recompute",
+    "manifest_validator",
+    "shared_repository_compiler"
+  ],
+  "tracked_repository_paths_allowed": true,
+  "explicit_allowlist": [],
+  "reference_role_registry_ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_1.json",
+  "reference_role_registry_sha256": "0d4b388cbb16cfac9cac8ea883e3d65a64473cfb6733311354d64de4bd2def75",
+  "forbidden_prefixes": [
+    ".codex_runtime",
+    ".git"
+  ],
+  "untracked_or_ignored_reference_behavior": "fail_closed",
+  "unknown_reference_behavior": "fail_closed",
+  "unknown_reference_reporting": "collect_all_typed_envelope",
+  "traversal_or_symlink_escape_behavior": "fail_closed",
+  "semantic_or_external_reference_behavior": "observe_not_package",
+  "policy_canonical_digest": "07d53162aa8fb948a12b40d314ab096871bf85361bea950dfe6776bf9a8a8c64"
+}

@@ -1,7 +1,7 @@
 # FIN 0.1.1 / 0.1.2 / 0.1.3 版本谱系与发布节奏决策
 
 日期：2026-07-31
-更新：2026-08-01（FIN 0.1.3 S0 Exit Contract v3 proof-control-plane recovery）
+更新：2026-08-01（FIN 0.1.3 S0 Exit Contract v3 proof-control-plane implementation pass）
 状态：`accepted_product_lineage / FIN_0_2_definition_preserved`
 
 ## 1. 产品大方向不变
@@ -112,10 +112,12 @@ FIN-0.1 repository evidence freeze + safe classification
 
 Owner 项目级决策继续保留 FIN 0.1.3 为唯一当前主线，不自动创建 0.1.4。v1/v2 StagePlan、proof 结论和预算保持不可变；同一 S0 下建立最后一次 `fin_0_1_3.S0.exit_contract:v3`，只修 proof policy 单一来源与 host 消费前 exact-boundary eligibility。v3 不重做金融 Runtime，固定 `[implementation, eligibility, host, formal]` 各最多一次；任一新结构失败都冻结 FIN 0.1.3，禁止同版本 v4。
 
+v3 proof-control-plane 最小实现现已工程通过，observed=`[1 implementation, 0 eligibility, 0 host, 0 formal]`。实现已建立唯一 policy source、manifest/compiler 同源编译、content-addressed eligibility attestation 与 host pre-consumption recompute boundary；它不是 clean-head eligibility、host/formal proof 或金融产品验收。RC-P36-090–095 继续 open，S1/S2 未进入，模型调用为 0。
+
 FIN 0.1.3 后续恢复为单一 S0–S5 产品主轴：S0 可信基础、S1 零模型三案、S2 DeepSeek 模型边界、S3 NVDA 当前产品锚点、S4 DELL/MU 迁移与 Workbench 用户价值、S5 release/honest-block。完整产品归属见 `docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md`。
 
 当前唯一下一项：
 
-`FIN-0.1.3-S0-EXIT-CONTRACT-V3-PROOF-POLICY-SINGLE-SOURCE-AND-PRE-CONSUMPTION-BOUNDARY-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.3-S0-EXIT-CONTRACT-V3-CLEAN-HEAD-EXACT-BOUNDARY-ELIGIBILITY-ATTESTATION-AUTHORITY-DECISION`
 
-该动作只能消费 v3 的一个 proof-control-plane 零调用实现包，建立 policy 单一来源、manifest/compiler 同源校验、non-consuming eligibility mode 与 mutation contracts；不得运行 eligibility、host/formal proof，不能改写 v1/v2 失败或预算，不能进入 S1/S2、读取凭据或调用模型。StagePlan 见 `docs/architecture/repository/FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_AND_SEMANTIC_PARITY_STAGE_PLAN_20260801.zh-CN.md`。
+该动作只能决定是否授权一次 clean/synced committed HEAD 上的 exact-boundary eligibility attestation；决策本身不得自动运行 eligibility，更不授权 host/formal proof。它不能改写 v1/v2 失败或预算，不能进入 S1/S2、读取凭据或调用模型。StagePlan 见 `docs/architecture/repository/FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_AND_SEMANTIC_PARITY_STAGE_PLAN_20260801.zh-CN.md`。

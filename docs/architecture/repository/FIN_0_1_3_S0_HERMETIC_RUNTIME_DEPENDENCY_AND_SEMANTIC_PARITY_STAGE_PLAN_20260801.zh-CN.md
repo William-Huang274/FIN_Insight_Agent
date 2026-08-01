@@ -1,7 +1,7 @@
 # FIN 0.1.3 S0 Hermetic Runtime 依赖与语义等价 StagePlan
 
 日期：2026-08-01
-状态：`G2 failed / v1 and v2 host failures immutable / exit_contract:v3 proof-control-plane recovery selected implementation pending / zero external call`
+状态：`G2 failed / v1 and v2 host failures immutable / exit_contract:v3 proof-control-plane implementation pass eligibility authority pending / zero external call`
 
 ## 1. 为什么 0.1.3 必须重新从 S0 开始
 
@@ -99,8 +99,10 @@ v3 只允许一个 proof-control-plane 实现包，建立版本化 repository-re
 
 实现还必须加入 non-consuming exact-boundary eligibility：在 clean/synced committed HEAD 上绑定 execution/active manifest 与全部 source digest，执行 Project OS preflight、tracked snapshot、`compile_repository_inventory`、inventory policy/role/unknown/forbidden/allowlist/digest 校验和 content-addressed readback。host execution 必须立即重算并匹配 eligibility digest，之后才写入 consumed marker 并进入 import sweep。eligibility failure 在 host budget 消费前终止；匹配后的任何 host failure 都消费唯一 host run。
 
-v3 maximum/observed `[implementation, eligibility, host, formal]=[1,1,1,1]/[0,0,0,0]`。implementation 不授权 eligibility 或 proof；eligibility 通过后仍需单独 host authority，host 通过后仍需单独 formal authority。eligibility、host 或 formal 任一出现新结构失败，FIN 0.1.3 冻结 internal honest block，不得在同版本创建 Exit Contract v4。S0 只有在 RC-P36-090–095 均可关闭后才进入 S1。
+v3 maximum/observed `[implementation, eligibility, host, formal]=[1,1,1,1]/[1,0,0,0]`。唯一 implementation bundle 已工程通过：`fin_ia_0_1_3_repository_reference_proof_policy_v3_0.json` 成为唯一 policy source；被 v2 implementation 哈希绑定的 `hermetic_test_runner.py` 保持 byte-identical，新 `proof_control_plane.py` 先校验 v3 source，再确定性投影为 immutable v2 compiler surface，并把 policy source 本身纳入 closure。reference-role v1.0 也保持不变；新 v1.1 只增加完整 current compile 暴露的 `execution_started.json -> package_relative_audit` 兼容规则，六角色与闭包语义不变。`proof_control_plane.py` 同时建立 eligibility/attestation/host-authority typed contract，v3 runner 在 base execution 前重算 exact boundary。current active manifest v1.3 只保存 policy binding，并将 mutable current 验证归属新 v3 test。schema/digest/value/consumer-order/registry 与 attestation/authority drift mutation 全部 fail closed。
 
-当前唯一下一项（仅实现 v3 proof policy 与 pre-consumption boundary；不得执行 eligibility、host/formal proof 或修改金融 Runtime）：
+上述结果没有执行 clean/synced HEAD eligibility，也没有创建或消费 host/formal proof authority。implementation 不授权 eligibility 或 proof；eligibility 通过后仍需单独 host authority，host 通过后仍需单独 formal authority。eligibility、host 或 formal 任一出现新结构失败，FIN 0.1.3 冻结 internal honest block，不得在同版本创建 Exit Contract v4。S0 只有在 RC-P36-090–095 均可关闭后才进入 S1。
 
-`FIN-0.1.3-S0-EXIT-CONTRACT-V3-PROOF-POLICY-SINGLE-SOURCE-AND-PRE-CONSUMPTION-BOUNDARY-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+当前唯一下一项（仅做 clean-head exact-boundary eligibility attestation 权限决策；不得在本项自动执行 eligibility、host/formal proof 或修改金融 Runtime）：
+
+`FIN-0.1.3-S0-EXIT-CONTRACT-V3-CLEAN-HEAD-EXACT-BOUNDARY-ELIGIBILITY-ATTESTATION-AUTHORITY-DECISION`

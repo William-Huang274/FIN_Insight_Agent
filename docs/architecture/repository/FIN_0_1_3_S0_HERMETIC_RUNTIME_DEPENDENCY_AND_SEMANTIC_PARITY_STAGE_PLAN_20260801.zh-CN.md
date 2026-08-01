@@ -88,8 +88,8 @@ v2 固定预算为一个零调用实现包、一个 host engineering proof 和�
 
 完整 S0–S5 产品归属见 `docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md`。
 
-host proof 权限决策已通过：独立 Project OS preflight 为 0 blocker，clean/synced HEAD 上 83 项实现/closure/三案相关矩阵全绿。未来 proof 最多执行一次；只允许新增 digest-bound execution manifest 与纯编排 runner，不得在 proof 内修改共享 Runtime、资源、reference-role、environment 或测试合同。证明输出必须写入仓外受限证据根，credential env 必须移除、network socket 必须封锁、raw 与 terminal evidence 必须内容寻址，仓库 readback 必须前后一致。成功只建立 host engineering proof，并转入单独的 formal-proof authority decision；失败立即终止，不自动 patch、retry、replacement、T05/R/H 或 FIN 0.1.4。
+host proof 权限决策已消费：proof-specific active manifest 的 `unknown_reference_behavior=fail_closed_collect_all` 与共享 compiler 精确要求的 `fail_closed` 不一致，唯一 v2 host run 在 import、collect、pytest 与三案 full-fake 前触发 `hermetic_repository_reference_policy_boundary_invalid` 并终态停止。Project OS preflight、4316 文件启动 readback、内容寻址失败证据与失败后 clean/synced 仓库均已核验；这证明的是 packaging-to-compiler 合同漂移，不是 Runtime、reference-role 行为或金融 L1 失败。按固定预算没有 patch、retry、replacement 或第二次 host proof，formal proof 也未授权；v2 observed 已变为 `1 implementation / 1 host / 0 formal`，RC-P36-090–094 继续 open，并新增 RC-P36-095。
 
-当前唯一下一项（执行已授权的单次 v2 host zero-call engineering proof；不重跑旧 T03，不执行 formal proof）：
+当前唯一下一项（项目级处理首个可信失败；不得在原 proof scope 内修 enum 后重跑，也不得执行 formal proof）：
 
-`FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF`
+`FIN-0.1.3-S0-V2-HOST-PROOF-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-DECISION`

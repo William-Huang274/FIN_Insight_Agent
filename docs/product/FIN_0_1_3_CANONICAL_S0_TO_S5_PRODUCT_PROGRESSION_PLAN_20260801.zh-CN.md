@@ -56,8 +56,8 @@ FIN 0.1.1 与 0.1.2 已冻结为历史内部工程基线；FIN 0.1.3 是当前�
 
 ## 5. 本次决策的真实影响
 
-路线与验收合同之后，S0 已完成一次有界 taxonomy 实现：六角色注册表、v2 closure compiler、collect-all validator、typed failure 和 mutation 已落地，且 current-worktree 预记录完整闭包为 0 unknown。独立 Project OS preflight 和 83 项零调用矩阵已通过，因此 Owner 已单独授权未来一次 host engineering proof；本决策没有执行该 proof，也没有消费 host/formal 预算。它修复的是可信运行基础，不新增用户可见金融研究功能；旧 T03 没有重跑或改写。因此 FIN 0.1.3 S0 仍 blocked，S1–S5 产品能力顺序不变。
+路线与验收合同之后，S0 已完成一次有界 taxonomy 实现：六角色注册表、v2 closure compiler、collect-all validator、typed failure 和 mutation 已落地。随后唯一 v2 host engineering proof 已从 clean/synced committed HEAD 启动，但 proof-specific manifest 的 policy enum 与共享 compiler 精确边界不一致，运行在 import、collect、pytest 和三案 full-fake 前终止。按固定预算没有修 manifest 后重跑，也没有进入 formal proof。该失败只暴露证明包装合同与消费前预检不足，没有建立新的 Runtime、DS、金融 L1 或产品质量失败；用户可见金融研究功能仍无增量。FIN 0.1.3 S0 因 v2 observed=`1/1/0` 且 RC-P36-090–095 open 而 terminal blocked，S1–S5 产品能力顺序不变。
 
 当前唯一下一项：
 
-`FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-AND-CURRENT-RUNTIME-HOST-ZERO-CALL-ENGINEERING-PROOF`
+`FIN-0.1.3-S0-V2-HOST-PROOF-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-DECISION`

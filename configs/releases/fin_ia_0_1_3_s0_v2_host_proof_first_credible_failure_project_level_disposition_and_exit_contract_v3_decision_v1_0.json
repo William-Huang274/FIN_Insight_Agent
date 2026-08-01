@@ -1,0 +1,207 @@
+{
+  "schema_version": "fin_ia_0_1_3_s0_v2_host_proof_first_credible_failure_project_level_disposition_and_exit_contract_v3_decision_v1_0",
+  "decision_id": "FIN-0.1.3-S0-V2-HOST-PROOF-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-AND-EXIT-CONTRACT-V3-R1",
+  "recorded_at": "2026-08-01T18:40:00+08:00",
+  "status": "pass_keep_FIN_0_1_3_single_mainline_select_S0_exit_contract_v3_proof_control_plane_recovery_implementation_pending",
+  "decision_class": "zero_call_project_level_scope_contract_and_version_disposition",
+  "authority": {
+    "user_instruction": "继续",
+    "decision_only": true,
+    "exit_contract_v3_selected": true,
+    "implementation_executed_in_this_decision": false,
+    "eligibility_attestation_executed_in_this_decision": false,
+    "host_or_formal_proof_executed_in_this_decision": false,
+    "old_T03_or_v2_host_proof_rerun_replacement_or_reinterpretation_authorized": false,
+    "automatic_FIN_0_1_4_or_FIN_0_2_change_authorized": false,
+    "credential_model_provider_network_source_external_tool_admission_business_run_artifact_authorized": false
+  },
+  "project_os_preflight": {
+    "run_scope": "FIN-0.1.3-S0-V2-HOST-PROOF-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-DECISION",
+    "status": "pass",
+    "missing_files": 0,
+    "missing_capabilities": 0,
+    "open_full_chain_blockers_for_this_scope": 0,
+    "business_promotable": false
+  },
+  "source_bindings": [
+    {
+      "role": "immutable_v2_host_proof_terminal_failure",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_v2_host_zero_call_engineering_proof_terminal_failure_and_project_level_disposition_required_v1_0.json",
+      "sha256": "5e452fdef23b8492feeabef994731a2997c3eee11b9ed0865ff6ec584d57f6b1",
+      "binding_mode": "immutable_source"
+    },
+    {
+      "role": "pre_decision_current_projection",
+      "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_7.json",
+      "sha256": "67f7a75058b1d65be27cc99debab05d35ec266c0fea61e3b05ba3575249d2d0d",
+      "binding_mode": "immutable_snapshot"
+    },
+    {
+      "role": "immutable_v2_active_suite_manifest",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_v2_host_zero_call_engineering_proof_active_suite_manifest_v1_0.json",
+      "sha256": "06ba3cd35ce35ab1325babec9cba458f1b96eadf477b0f0f31751a4f4dcd0e4d",
+      "binding_mode": "immutable_source"
+    },
+    {
+      "role": "immutable_v2_execution_manifest",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_v2_host_zero_call_engineering_proof_execution_manifest_v1_0.json",
+      "sha256": "84f68b31511bfa17d3ee12fad752bbb696020c81781ccb62afd4a9defc5d79ac",
+      "binding_mode": "immutable_source"
+    },
+    {
+      "role": "immutable_v2_proof_orchestration",
+      "ref": "scripts/engineering/run_fin_0_1_3_s0_v2_host_zero_call_engineering_proof.py",
+      "sha256": "aa62ca370d1aeba5fbe739d7e12a94e6b9df77a071761d847c74a3c7e651ae03",
+      "binding_mode": "immutable_source"
+    },
+    {
+      "role": "current_shared_repository_compiler",
+      "ref": "src/sec_agent/hermetic_test_runner.py",
+      "sha256": "98ea3b835ae8be1631745b41b2b20e27c90eb3086e1b9572a61ae3e80bfa3c41",
+      "binding_mode": "pre_implementation_snapshot"
+    },
+    {
+      "role": "canonical_product_plan",
+      "ref": "docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md",
+      "sha256": "b81e3a645ea3d7cbcecf8ee3668550736a359b21437dfd14535a289e59460d99",
+      "binding_mode": "decision_time_living_document_snapshot"
+    },
+    {
+      "role": "living_S0_technical_boundary",
+      "ref": "docs/architecture/repository/FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_AND_SEMANTIC_PARITY_STAGE_PLAN_20260801.zh-CN.md",
+      "sha256": "89e1abfe66c1fb0d7ef8ea7d1a181f660c26d0d89e598a93c51ab0d2a9b8e79a",
+      "binding_mode": "decision_time_living_document_snapshot"
+    },
+    {
+      "role": "version_lineage_authority",
+      "ref": "docs/product/FIN_0_1_1_0_1_2_VERSION_LINEAGE_AND_RELEASE_CADENCE_DECISION_20260731.zh-CN.md",
+      "sha256": "1e457d26f1176ae685dc3dd0f8ca39b8b4d4cce85df6153547320e7881ca9d3a",
+      "binding_mode": "decision_time_living_document_snapshot"
+    },
+    {
+      "role": "terminal_failure_worklog",
+      "ref": "docs/worklog/product_strategy/543_fin_0_1_3_s0_v2_host_zero_call_engineering_proof_terminal_failure.md",
+      "sha256": "2c63ad21ffd431f92455d8f06e88248e4b90d4304e3e82074aeb997e66ff8926",
+      "binding_mode": "immutable_event_summary"
+    }
+  ],
+  "first_credible_failure_truth": {
+    "error_code": "hermetic_repository_reference_policy_boundary_invalid",
+    "active_manifest_value": "fail_closed_collect_all",
+    "shared_compiler_required_value": "fail_closed",
+    "phase": "proof_packaging_manifest_to_shared_compiler_before_import_collect_pytest",
+    "application_import_collect_pytest_artifacts": [0, 0, 0, 0],
+    "project_owned": true,
+    "model_or_provider_fault": false,
+    "financial_runtime_L1_failure": false,
+    "reference_role_behavior_result_established": false,
+    "v2_implementation_host_formal_observed": [1, 1, 0],
+    "v2_result_reinterpreted_or_reset": false
+  },
+  "options": {
+    "patch_v2_manifest_and_retry_same_proof": {
+      "selected": false,
+      "reason": "Would violate the consumed-run stop rule and rewrite the meaning of immutable v2 evidence."
+    },
+    "waive_host_and_formal_proof_from_local_93_test_matrix": {
+      "selected": false,
+      "reason": "Deterministic host tests do not establish executable packaging compatibility or disposable semantic parity and cannot close RC-P36-090 through 094."
+    },
+    "freeze_FIN_0_1_3_and_automatically_create_FIN_0_1_4": {
+      "selected": false,
+      "reason": "No product or financial Runtime behavior was tested or invalidated; a proof-control-plane packaging defect alone does not justify product-line version churn."
+    },
+    "defer_proof_control_plane_failure_to_S1_S5_or_FIN_0_2": {
+      "selected": false,
+      "reason": "The defect blocks the S0 hermetic evidence boundary and cannot be transferred downstream without acceptance inflation."
+    },
+    "keep_FIN_0_1_3_and_select_bounded_S0_exit_contract_v3": {
+      "selected": true,
+      "reason": "Preserves the product line and immutable v2 failure while repairing the earliest owned proof policy and consumption boundary under one final bounded S0 contract revision."
+    }
+  },
+  "version_and_stage_disposition": {
+    "FIN_0_1_1": "frozen_internal_honest_block_history",
+    "FIN_0_1_2": "frozen_internal_honest_block_history",
+    "FIN_0_1_3": "sole_current_mainline_S0_blocked_exit_contract_v3_selected",
+    "FIN_0_1_4": "not_created_not_implied",
+    "FIN_0_2": "original_Earnings_Review_Alpha_definition_preserved",
+    "current_stage": "S0",
+    "S1_S2_entry_authorized": false,
+    "FIN_0_1_3_exit_contract_revision_ceiling": "v3_no_v4_within_FIN_0_1_3"
+  },
+  "exit_contract_v3": {
+    "contract_id": "fin_0_1_3.S0.exit_contract:v3",
+    "status": "selected_proof_control_plane_implementation_pending",
+    "owner": "FIN_0_1_3_S0_proof_policy_single_source_and_pre_consumption_execution_boundary",
+    "inherits_without_reimplementation": [
+      "v2_six_role_reference_registry",
+      "v2_collect_all_reference_validator",
+      "RuntimeResourceRegistry_29_resources",
+      "typed_environment_eight_roots",
+      "DELL_MU_NVDA_deterministic_runtime_contracts"
+    ],
+    "required_contract_surfaces": [
+      "one_versioned_repository_reference_proof_policy_source",
+      "manifest_compiler_and_shared_repository_compiler_consume_same_policy_source",
+      "unknown_reference_behavior_equals_fail_closed",
+      "unknown_reference_reporting_equals_collect_all_typed_envelope_as_a_separate_semantic",
+      "non_consuming_exact_execution_boundary_eligibility_mode",
+      "eligibility_binds_clean_synced_git_head_execution_manifest_active_manifest_source_digests_and_compiled_inventory_digest",
+      "host_execution_recomputes_and_matches_eligibility_before_writing_the_consumed_execution_marker",
+      "policy_value_schema_digest_order_and_manifest_compiler_drift_mutations_fail_closed"
+    ],
+    "consumption_boundary": {
+      "before_host_run_consumption": [
+        "execution_and_active_manifest_schema_and_digest_validation",
+        "clean_synced_committed_head_validation",
+        "Project_OS_scope_preflight",
+        "tracked_repository_snapshot",
+        "compile_repository_inventory_on_the_exact_active_manifest",
+        "inventory_policy_role_unknown_forbidden_allowlist_and_digest_validation",
+        "content_addressed_eligibility_attestation_readback"
+      ],
+      "host_run_consumption_begins": "only_after_a_matching_eligibility_attestation_is_recomputed_and_verified_immediately_before_application_import_sweep",
+      "eligibility_failure": "terminal_stop_before_host_budget_consumption_and_return_to_project_level_disposition_without_inline_patch_or_repeat_attestation",
+      "post_consumption_failure": "terminal_host_failure_no_retry_replacement_or_second_run"
+    },
+    "fixed_budget": {
+      "maximum_proof_control_plane_implementation_bundles": 1,
+      "maximum_clean_head_eligibility_attestations": 1,
+      "maximum_host_engineering_proof_runs": 1,
+      "maximum_formal_two_disposable_proof_packages": 1,
+      "observed_implementation_eligibility_host_formal": [0, 0, 0, 0],
+      "automatic_retries_replacements_or_repeat_attestations": 0,
+      "automatic_exit_contract_v4_or_version_bump": 0
+    },
+    "ordered_execution": [
+      "proof_policy_single_source_and_pre_consumption_boundary_minimum_zero_call_implementation",
+      "independent_contract_matrix_and_one_clean_head_non_consuming_eligibility_attestation",
+      "separate_authority_then_one_host_zero_call_engineering_proof_if_eligibility_passes",
+      "separate_authority_then_one_formal_two_disposable_proof_if_host_passes",
+      "S0_closeout_only_if_RC_P36_090_through_095_can_close"
+    ],
+    "terminal_rule": "Any new structural failure in the single v3 eligibility host or formal path freezes FIN_0_1_3 as an internal honest block; no exit_contract_v4 is permitted within FIN_0_1_3."
+  },
+  "issue_disposition": {
+    "RC_P36_090_through_094": "remain_open_pending_v3_host_and_formal_behavior_evidence",
+    "RC_P36_095": "assigned_to_v3_proof_control_plane_implementation_and_eligibility_boundary",
+    "issues_closed_in_this_decision": 0,
+    "new_issue_created_in_this_decision": false
+  },
+  "product_truth": {
+    "user_visible_financial_research_capability_delta": "none",
+    "new_Runtime_or_reference_role_implementation": false,
+    "new_proof_or_eligibility_execution": false,
+    "model_provider_network_calls": [0, 0, 0],
+    "business_runs_artifacts": [0, 0],
+    "FIN_0_1_3_S0": "blocked_exit_contract_v3_implementation_pending",
+    "FIN_0_1_3_S1": "not_started",
+    "DELL_R2": false,
+    "MU_R2": false,
+    "NVDA_current_R2": false,
+    "NVDA_R3": false,
+    "FIN_0_1_release_qualified": false
+  },
+  "next_action": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-PROOF-POLICY-SINGLE-SOURCE-AND-PRE-CONSUMPTION-BOUNDARY-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

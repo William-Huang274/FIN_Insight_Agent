@@ -1,7 +1,7 @@
 # FIN 0.1.1 / 0.1.2 / 0.1.3 版本谱系与发布节奏决策
 
 日期：2026-07-31
-更新：2026-08-01（FIN 0.1.3 S0 Exit Contract v2 与统一 S0–S5 主轴）
+更新：2026-08-01（FIN 0.1.3 S0 Exit Contract v3 proof-control-plane recovery）
 状态：`accepted_product_lineage / FIN_0_2_definition_preserved`
 
 ## 1. 产品大方向不变
@@ -24,7 +24,7 @@ FIN 0.1 bounded internal research workflow
 | --- | --- | --- | --- |
 | FIN 0.1.1 | 第一轮 S0–S5 的内部工程基线 | NVDA historical R2、DELL/MU transfer diagnostics、完整 immutable evidence、S4 honest block、S5 decision-only、仓库/rollback manifest | 三案 R2、NVDA R3、release qualified、生产 |
 | FIN 0.1.2 | 同一 FIN 0.1 产品范围的第一次稳定化尝试；现已冻结为 internal honest block | compiled contract、provider surface reduction、capture/hermetic 结构与失败证据；S0C terminal failed、S2 未进入 | release qualified、三案 transfer qualification、Earnings 新产品功能 |
-| FIN 0.1.3 | hermetic Runtime dependency closure 与 transfer qualification patch | 单一 RuntimeResourceRegistry、typed environment parity、RC-P36-090–093 closure、重新从 S0 验证并复用 hash-compatible 资产 | 新产品功能、S0C 重跑、自动 0.1.4、Earnings 功能 |
+| FIN 0.1.3 | hermetic Runtime dependency closure、proof-control-plane 与 transfer qualification patch | 单一 RuntimeResourceRegistry、typed reference role/environment parity、消费前 exact-boundary eligibility、RC-P36-090–095 closure、重新从 S0 验证并复用 hash-compatible 资产 | 新产品功能、历史 proof 重跑、同版本 Exit Contract v4、自动 0.1.4、Earnings 功能 |
 | FIN 0.2 | 原定义的 Earnings Review Alpha | B1、Earnings Task/Workpaper/Report、精确三表、segment、guidance、同比环比、市场反应与反方 | 为 0.1 未完成的通用 Runtime 基线兜底 |
 
 ## 3. FIN 0.1.1 的冻结语义
@@ -108,14 +108,14 @@ FIN-0.1 repository evidence freeze + safe classification
   -> FIN 0.2 Earnings Review Alpha
 ```
 
-截至 2026-08-01，FIN 0.1.3 S0 的 T01/G0 与 T02 engineering implementation 已完成；唯一 T03 在 repository closure 阶段因 typed reference-role taxonomy 缺失而终态失败，旧预算 `1/1` 已消费，T04 未创建。RC-P36-090–094 均继续 open，S1/S2 未进入，模型调用为 0。
+截至 2026-08-01，FIN 0.1.3 S0 的 v2 reference-role implementation 已工程通过；v2 唯一 host proof 因 proof manifest policy enum 与 shared compiler 不一致，在 import/collect/pytest 前终态失败。v2 observed=`1 implementation / 1 host / 0 formal`，RC-P36-090–095 均继续 open，S1/S2 未进入，模型调用为 0。
 
-Owner 决策保留 FIN 0.1.3 为唯一当前主线，不自动创建 0.1.4。旧 StagePlan/T03 结论保持不可变，在同一 S0 下建立显式 `fin_0_1_3.S0.exit_contract:v2`：先用一个版本化 registry/schema 统一编译六类 reference role 与 collect-all validator，再分别最多执行一次 host engineering proof 和一次独立双-disposable formal proof。旧 T03 不重跑、不重算，也不以新合同覆盖历史失败。
+Owner 项目级决策继续保留 FIN 0.1.3 为唯一当前主线，不自动创建 0.1.4。v1/v2 StagePlan、proof 结论和预算保持不可变；同一 S0 下建立最后一次 `fin_0_1_3.S0.exit_contract:v3`，只修 proof policy 单一来源与 host 消费前 exact-boundary eligibility。v3 不重做金融 Runtime，固定 `[implementation, eligibility, host, formal]` 各最多一次；任一新结构失败都冻结 FIN 0.1.3，禁止同版本 v4。
 
 FIN 0.1.3 后续恢复为单一 S0–S5 产品主轴：S0 可信基础、S1 零模型三案、S2 DeepSeek 模型边界、S3 NVDA 当前产品锚点、S4 DELL/MU 迁移与 Workbench 用户价值、S5 release/honest-block。完整产品归属见 `docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md`。
 
 当前唯一下一项：
 
-`FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY-REGISTRY-AND-COLLECT-ALL-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.3-S0-EXIT-CONTRACT-V3-PROOF-POLICY-SINGLE-SOURCE-AND-PRE-CONSUMPTION-BOUNDARY-MINIMUM-ZERO-CALL-IMPLEMENTATION`
 
-该动作只能消费 v2 的一个零调用实现包，建立 typed reference-role registry/schema、collect-all compiler/validator 与 mutation contracts；不得重跑旧 T03、同轮创建或执行新 proof package、进入 S1/S2、读取凭据或调用模型。StagePlan 见 `docs/architecture/repository/FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_AND_SEMANTIC_PARITY_STAGE_PLAN_20260801.zh-CN.md`。
+该动作只能消费 v3 的一个 proof-control-plane 零调用实现包，建立 policy 单一来源、manifest/compiler 同源校验、non-consuming eligibility mode 与 mutation contracts；不得运行 eligibility、host/formal proof，不能改写 v1/v2 失败或预算，不能进入 S1/S2、读取凭据或调用模型。StagePlan 见 `docs/architecture/repository/FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_AND_SEMANTIC_PARITY_STAGE_PLAN_20260801.zh-CN.md`。

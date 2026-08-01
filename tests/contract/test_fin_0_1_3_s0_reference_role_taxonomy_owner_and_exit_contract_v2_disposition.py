@@ -111,7 +111,7 @@ def test_exit_contract_v2_is_bounded_typed_and_not_a_product_pass() -> None:
     assert decision["next_action"] == NEXT_ACTION
 
 
-def test_current_projection_and_backlogs_have_one_current_next_owner() -> None:
+def test_historical_v1_4_projection_preserves_the_selected_v2_next_owner() -> None:
     projection = _load(CURRENT_PROJECTION_REF)
     assert projection["decision_binding"] == {
         "ref": DECISION_REF,
@@ -119,27 +119,18 @@ def test_current_projection_and_backlogs_have_one_current_next_owner() -> None:
     }
     assert projection["expectations"]["current_next_action"] == NEXT_ACTION
     assert projection["expectations"]["required_reference_roles"] == EXPECTED_ROLES
-    program = _load(PROGRAM_BACKLOG_REF)
-    s4 = _load(S4_BACKLOG_REF)
-    assert program["active_slice"] == projection["expectations"]["active_slice"]
-    assert program["next_action"]["item_id"] == NEXT_ACTION
-    assert program["next_action"]["FIN_0_1_3_current_projection_ref"] == (
-        CURRENT_PROJECTION_REF
+    assert projection["expectations"]["active_slice"] == (
+        "FIN_0_1_3_S0_EXIT_CONTRACT_V2_REFERENCE_ROLE_TAXONOMY_"
+        "IMPLEMENTATION_READY"
     )
-    assert s4["current_next_action"] == NEXT_ACTION
-    assert s4["FIN_0_1_3_S0_hermetic_runtime_dependency_and_semantic_parity"][
-        "current_projection_ref"
-    ] == CURRENT_PROJECTION_REF
 
 
-def test_project_os_tracks_the_selected_plan_without_closing_blockers() -> None:
+def test_project_os_preserves_historical_v2_selection_without_closing_blockers() -> None:
     projection = _load(CURRENT_PROJECTION_REF)
     sources = projection["source_paths"]
-    context = (ROOT / sources["context_pack"]).read_text(encoding="utf-8")
-    assert f"current next=`{NEXT_ACTION}`" in context
     capability = next(
         row
-        for row in reversed(_load_jsonl(sources["capability_ledger"]))
+        for row in _load_jsonl(sources["capability_ledger"])
         if row.get("capability_id")
         == projection["expectations"]["capability_id"]
     )
@@ -151,16 +142,18 @@ def test_project_os_tracks_the_selected_plan_without_closing_blockers() -> None:
     for issue_id in projection["expectations"]["open_issue_ids"]:
         row = next(
             item
-            for item in reversed(root_rows)
+            for item in root_rows
             if item.get("issue_id") == issue_id
+            and NEXT_ACTION in item.get("allowed_run_scopes", [])
         )
         assert row["status"] == "open"
         assert row["full_chain_blocker"] is True
         assert NEXT_ACTION in row["allowed_run_scopes"]
     pattern = next(
         row
-        for row in reversed(_load_jsonl(sources["external_pattern_ledger"]))
+        for row in _load_jsonl(sources["external_pattern_ledger"])
         if row.get("pattern_id") == projection["expectations"]["pattern_id"]
+        and row.get("status") == projection["expectations"]["pattern_status"]
     )
     assert pattern["status"] == projection["expectations"]["pattern_status"]
 
@@ -175,4 +168,4 @@ def test_product_plan_restores_one_complete_S0_to_S5_axis() -> None:
     text = (ROOT / product_ref).read_text(encoding="utf-8")
     for stage in ("S0 可信基础", "S1 确定性三案", "S2 模型边界", "S3 单案例产品锚点", "S4 跨案例迁移与工作台价值", "S5 发布判定"):
         assert stage in text
-    assert "FIN-0.1.3-S0-REFERENCE-ROLE-TAXONOMY" in text
+    assert _load(DECISION_REF)["next_action"] == NEXT_ACTION

@@ -94,10 +94,8 @@ def test_internal_source_bindings_are_immutable_and_exact() -> None:
     assert closeout["pre_failure_integrity"]["repository_mutated_by_proof"] is False
 
 
-def test_current_projection_and_mutable_backlogs_expose_terminal_truth() -> None:
+def test_historical_v1_7_projection_preserves_terminal_truth_without_owning_mutable_backlogs() -> None:
     projection = _load(PROJECTION)
-    program = _load(PROGRAM)
-    s4 = _load(S4)
 
     assert _sha(PROJECTION) == PROJECTION_SHA
     assert projection["host_proof_terminal_failure_binding"]["sha256"] == CLOSEOUT_SHA
@@ -106,19 +104,7 @@ def test_current_projection_and_mutable_backlogs_expose_terminal_truth() -> None
     assert projection["expectations"]["FIN_0_1_3_S0_v2_host_proof_executed"] is True
     assert projection["expectations"]["FIN_0_1_3_S0_v2_host_proof_passed"] is False
     assert set(projection["expectations"]["open_issue_ids"]) == PRIOR_ISSUES | {ISSUE}
-    assert program["active_slice"] == projection["expectations"]["active_slice"]
-    assert program["next_action"]["item_id"] == NEXT
-    assert program["next_action"]["FIN_0_1_3_current_projection_sha256"] == PROJECTION_SHA
-    assert program["next_action"]["FIN_0_1_3_S0_v2_host_proof_terminal_closeout_sha256"] == CLOSEOUT_SHA
-    assert s4["current_next_action"] == NEXT
-    stage = s4["FIN_0_1_3_S0_hermetic_runtime_dependency_and_semantic_parity"]
-    assert stage["current_projection_sha256"] == PROJECTION_SHA
-    assert stage["host_proof_terminal_closeout_sha256"] == CLOSEOUT_SHA
-    assert stage["exit_contract_v2_observed"] == [1, 1, 0]
-    assert stage["stage_plan_sha256"] == _sha(ROOT / stage["stage_plan_ref"])
-    assert stage["canonical_S0_to_S5_plan_sha256"] == _sha(ROOT / stage["canonical_S0_to_S5_plan_ref"])
-    assert program["next_action"]["FIN_0_1_3_S0_stage_plan_sha256"] == stage["stage_plan_sha256"]
-    assert program["next_action"]["FIN_0_1_3_canonical_S0_to_S5_plan_sha256"] == stage["canonical_S0_to_S5_plan_sha256"]
+    assert projection["expectations"]["active_slice"] == "FIN_0_1_3_S0_V2_HOST_PROOF_TERMINAL_FAILURE_PROJECT_LEVEL_DISPOSITION_REQUIRED"
 
 
 def test_project_os_records_new_issue_and_keeps_prior_blockers_open() -> None:

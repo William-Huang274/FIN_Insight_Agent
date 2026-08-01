@@ -1,7 +1,7 @@
 # FIN 0.1.3 S0 Hermetic Runtime 依赖与语义等价 StagePlan
 
 日期：2026-08-01
-状态：`G2 failed / T03 terminal immutable / exit_contract:v2 reference-role implementation engineering pass / one future host proof authorized not executed / zero external call`
+状态：`G2 failed / v1 and v2 host failures immutable / exit_contract:v3 proof-control-plane recovery selected implementation pending / zero external call`
 
 ## 1. 为什么 0.1.3 必须重新从 S0 开始
 
@@ -18,6 +18,7 @@ S0 关闭四个继承的工程 blocker，以及 T03 暴露的一个同源合同 
 - RC-P36-092：所有 active-suite 可达的 non-Python Runtime 读取进入单一 `RuntimeResourceRegistry`；
 - RC-P36-093：interpreter、purelib、platlib 和 distribution roots 进入 typed environment projection。
 - RC-P36-094：nested `ref/*_ref` 的 reference role 由版本化 registry/schema 编译，不再靠字段例外和字符串形状推断。
+- RC-P36-095：proof manifest、policy validator 与 shared repository compiler 必须使用同一 policy source，并在 host budget 消费前穿过 exact execution boundary。
 
 S0 不负责 DeepSeek Flash stable / Pro preview 对比，不负责 DELL/MU R2、post-transfer NVDA、NVDA R3，也不修改 FIN 0.2 Earnings Review Alpha 的产品定义。
 
@@ -84,12 +85,22 @@ v2 的 reference-role registry 已精确覆盖 `repository_resource`、`package_
 
 当前零调用实现已工程通过：正式 current-manifest 完整闭包得到 1,233 个全 tracked path、4,996 条 reference observation、0 unknown；repository/package/external/restricted/model-run/semantic 六类计数为 `1,640 / 6 / 54 / 219 / 16 / 3,061`。两未知项 mutation 会在同一个受限 typed failure envelope 中保留 document、JSON pointer、field、value、role/rule 空值与 observation digest，并明确 `business_promotable=false`；duplicate JSON key、cross-version、rule-order、untracked/traversal/symlink、未知 repository-like root filename 和历史 v1 兼容路径继续 fail closed。focused/current/legacy matrix=`83 passed`。该结果只消费 v2 implementation=`1/1`，没有消费 host/formal proof。
 
-v2 固定预算为一个零调用实现包、一个 host engineering proof 和一个独立双-disposable formal proof；每项最多一次，无自动 retry、replacement、T05/R/H 或版本跃迁。实现包只证明合同已落地；host proof 全绿后才可签发 formal proof；formal proof 全绿并关闭 RC-P36-090–094 后，S0 才可进入 S1。任一全新 L1/结构失败触发项目级计划变更说明，不在同一任务内无限修补。
+v2 固定预算为一个零调用实现包、一个 host engineering proof 和一个独立双-disposable formal proof；observed=`1/1/0`，失败与预算保持不可变，formal 预算不能转用为重跑。
 
 完整 S0–S5 产品归属见 `docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md`。
 
 host proof 权限决策已消费：proof-specific active manifest 的 `unknown_reference_behavior=fail_closed_collect_all` 与共享 compiler 精确要求的 `fail_closed` 不一致，唯一 v2 host run 在 import、collect、pytest 与三案 full-fake 前触发 `hermetic_repository_reference_policy_boundary_invalid` 并终态停止。Project OS preflight、4316 文件启动 readback、内容寻址失败证据与失败后 clean/synced 仓库均已核验；这证明的是 packaging-to-compiler 合同漂移，不是 Runtime、reference-role 行为或金融 L1 失败。按固定预算没有 patch、retry、replacement 或第二次 host proof，formal proof 也未授权；v2 observed 已变为 `1 implementation / 1 host / 0 formal`，RC-P36-090–094 继续 open，并新增 RC-P36-095。
 
-当前唯一下一项（项目级处理首个可信失败；不得在原 proof scope 内修 enum 后重跑，也不得执行 formal proof）：
+## 9. Owner disposition：S0 Exit Contract v3
 
-`FIN-0.1.3-S0-V2-HOST-PROOF-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-DECISION`
+项目级 decision 保留 FIN 0.1.3 为唯一主线，并把 v3 定义为同版本内最后一次 Exit Contract 修订；它不是 v2 retry，也不是 FIN 0.1.4。v2 六角色、29 项 Runtime resource、八类 environment root 与三案确定性合同原样继承，不重新实现或重新计数。
+
+v3 只允许一个 proof-control-plane 实现包，建立版本化 repository-reference proof policy 单一来源；manifest compiler、validator 和 shared repository compiler 必须从该源取得精确值。`unknown_reference_behavior=fail_closed` 表示终止语义，`unknown_reference_reporting=collect_all_typed_envelope` 表示报告语义，两者不能再压进同一个 enum literal。
+
+实现还必须加入 non-consuming exact-boundary eligibility：在 clean/synced committed HEAD 上绑定 execution/active manifest 与全部 source digest，执行 Project OS preflight、tracked snapshot、`compile_repository_inventory`、inventory policy/role/unknown/forbidden/allowlist/digest 校验和 content-addressed readback。host execution 必须立即重算并匹配 eligibility digest，之后才写入 consumed marker 并进入 import sweep。eligibility failure 在 host budget 消费前终止；匹配后的任何 host failure 都消费唯一 host run。
+
+v3 maximum/observed `[implementation, eligibility, host, formal]=[1,1,1,1]/[0,0,0,0]`。implementation 不授权 eligibility 或 proof；eligibility 通过后仍需单独 host authority，host 通过后仍需单独 formal authority。eligibility、host 或 formal 任一出现新结构失败，FIN 0.1.3 冻结 internal honest block，不得在同版本创建 Exit Contract v4。S0 只有在 RC-P36-090–095 均可关闭后才进入 S1。
+
+当前唯一下一项（仅实现 v3 proof policy 与 pre-consumption boundary；不得执行 eligibility、host/formal proof 或修改金融 Runtime）：
+
+`FIN-0.1.3-S0-EXIT-CONTRACT-V3-PROOF-POLICY-SINGLE-SOURCE-AND-PRE-CONSUMPTION-BOUNDARY-MINIMUM-ZERO-CALL-IMPLEMENTATION`

@@ -1,0 +1,55 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v1_0",
+  "projection_id": "FIN-0.1.3-S0-T03-TERMINAL-FAILED-REFERENCE-ROLE-TAXONOMY-DISPOSITION-READY-CURRENT-PROGRAM-PROJECTION-R1",
+  "recorded_at": "2026-08-01T16:01:11+08:00",
+  "status": "current_FIN_0_1_3_S0_T03_terminal_failed_unique_run_consumed_T04_blocked",
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "S4_backlog": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "external_pattern_ledger": "docs/project_os/external_pattern_registry.jsonl"
+  },
+  "expectations": {
+    "active_slice": "FIN_0_1_3_S0_TERMINAL_HONEST_BLOCK_REFERENCE_ROLE_TAXONOMY_DISPOSITION",
+    "current_next_action": "FIN-0.1.3-S0-T03-TERMINAL-HONEST-BLOCK-AND-REFERENCE-ROLE-TAXONOMY-OWNER-VERSION-DISPOSITION-DECISION",
+    "capability_id": "fin_0_1_3_S0_T03_host_zero_call_engineering_proof_terminal_honest_block",
+    "capability_stage_acceptance": {
+      "FIN_0_1_2": "frozen_internal_honest_block",
+      "FIN_0_1_3_S0_T01": "pass",
+      "FIN_0_1_3_S0_T02": "engineering_pass",
+      "FIN_0_1_3_S0_T03": "terminal_failed_unique_engineering_proof_consumed",
+      "FIN_0_1_3_S0_T04": "blocked_not_created_not_executed",
+      "FIN_0_1_3_S0": "honest_block_pending_project_level_disposition",
+      "FIN_0_1_3_S1_entry": "blocked",
+      "FIN_0_1_3_S2_entry": "blocked"
+    },
+    "open_issue_ids": [
+      "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+      "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
+      "RC-P36-092-fin-0-1-2-code-declared-static-runtime-resource-missing-from-hermetic-inventory",
+      "RC-P36-093-fin-0-1-2-hermetic-semantic-parity-untyped-host-python-traceback-path",
+      "RC-P36-094-fin-0-1-3-hermetic-reference-role-taxonomy-conflates-semantic-audit-and-repository-paths"
+    ],
+    "pattern_id": "runtime_code_declared_static_resources_and_traceback_environment_paths_must_be_typed_in_hermetic_proofs",
+    "pattern_status": "FIN_0_1_3_S0_T03_terminal_failed_typed_reference_role_taxonomy_missing",
+    "FIN_0_1_2_S0C_implementation_and_corrective_proof_packages": [1, 1],
+    "FIN_0_1_3_S0_implementation_and_formal_proof_packages": [1, 0],
+    "FIN_0_1_3_S0_T03_engineering_proof_runs": [1, 1],
+    "FIN_0_1_3_S0_T01": "pass",
+    "FIN_0_1_3_S0_T02": "engineering_pass",
+    "FIN_0_1_3_S0_T03": "terminal_failed_unique_run_consumed",
+    "FIN_0_1_3_S0_T04": "blocked_not_executed",
+    "FIN_0_1_3_S2_entry_authorized": false,
+    "FIN_0_1_release_qualified": false
+  },
+  "package_governance": {
+    "host_sources_packaged": false,
+    "projection_document_packaged": true,
+    "disposable_git_required": false,
+    "failed_package_business_promotable": false,
+    "raw_content_addressed_evidence_preserved": true,
+    "restricted_review_before_share_or_promotion": true
+  }
+}

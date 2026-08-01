@@ -1,7 +1,7 @@
 # FIN 0.1.3 S0 Hermetic Runtime 依赖与语义等价 StagePlan
 
 日期：2026-08-01
-状态：`G1 engineering pass / T02 complete / T03 ready / zero call`
+状态：`G2 failed / T03 terminal / T04 blocked / zero external call`
 
 ## 1. 为什么 0.1.3 必须重新从 S0 开始
 
@@ -26,8 +26,8 @@ S0 不负责 DeepSeek Flash stable / Pro preview 对比，不负责 DELL/MU R2�
 | --- | --- | --- | --- |
 | T01 | StagePlan、G0、owner 与停止线 | 已通过 | 本文件与机器合同 |
 | T02 | resource registry + typed environment 的单一零调用实现包 | engineering pass，已完成 | 1/1 implementation bundle 已消费 |
-| T03 | host import/collect、resource/path mutation、三案例 full-fake | ready，未开始 | 1 次零调用 engineering proof |
-| T04 | 独立双-disposable formal proof 与 S0 closeout | 被 T03 锁定 | 最多 1 个 formal package |
+| T03 | host import/collect、resource/path mutation、三案例 full-fake | 唯一 run 已在 closure compiler 期终态失败 | 1/1 零调用 engineering proof 已消费 |
+| T04 | 独立双-disposable formal proof 与 S0 closeout | blocked，未创建/未执行 | 0/1 formal package；当前未授权 |
 
 T02 失败时不进入 T03；T03 失败时不进入 T04；T04 失败时 S0 终态 honest block。不得自动创建 T05、R/H、replacement family 或 FIN 0.1.4。
 
@@ -58,21 +58,23 @@ T02 失败时不进入 T03；T03 失败时不进入 T04；T04 失败时 S0 终�
 
 T04 只能创建一个 package，并在两个 fresh disposable roots、两个独立 process 中执行。两侧必须全部 collect/import/execute、current release gate 全绿、semantic digest 一致、unknown absolute path 为 0。
 
+T03 实际在上述第 1 项之前停止：中央 registry 让 DELL source-grounded pack 进入闭包后，compiler 发现合法业务 `followup_ref` 含 `/`，但当前 `ref/*_ref` 路径启发式没有 typed semantic-followup role，故以 `hermetic_repository_reference_classification_missing` fail closed。事后只读 collect-all 进一步发现完整 reachable closure 需要区分 47 种 reference field：业务 follow-up、`.codex_runtime` restricted audit lineage、tracked model-run report 与真实 repository resource 不能再靠字段后缀和字符串形状区分。该诊断不可晋升为 T03 pass，也不授权增加字段例外后重跑。
+
 ## 7. 当前真值
 
-- `G0=pass`，T01 完成；`G1=engineering pass`，T02 完成；
+- `G0=pass`，T01 完成；`G1=engineering pass`，T02 完成；`G2=failed`，T03 唯一 run 已消费；
 - RuntimeResourceRegistry 已覆盖 29 项/323,829 bytes；7 个应用/三案例默认 loader 模块改用 resource ID，16 个 prompt 则保留 FIN 0.1.2 冻结的 `SKILL_FILES` compatibility adapter 并与新注册表双向校验；missing、unknown、duplicate、drift、permutation、cross-version 与 traversal mutation 均 fail closed；
 - typed environment projection 已覆盖八类 roots，并证明 Windows drive case、slash、purelib/platlib、prefix/base-prefix、未知路径、相对路径与字段边界；raw evidence 不改写；
 - focused registry/environment contracts=`24 passed`，相关生产 consumer 与三案例 host 回归通过；
-- active-suite manifest 已物化，但 T03 host import/collect/full-fake proof 尚未执行，T04 package 尚未创建；
+- T03 在 host dependency closure、application import/collect/pytest 之前终态失败；modules/tests/Artifacts=`0/0/0`，T04 package 未创建；
 - implementation/formal proof package=`1/0`；
 - credential/model/provider/network/admission/business Run/Artifact=`0`；
-- RC-P36-090–093 仍 open/full-chain blocker；
+- RC-P36-090–093 仍 open/full-chain blocker；新增 RC-P36-094 typed reference-role taxonomy blocker；
 - FIN 0.1 release qualified=false，S1/S2 尚未进入。
 
 机器合同：`configs/releases/fin_ia_0_1_3_s0_hermetic_runtime_dependency_and_semantic_parity_stage_plan_v1_0.json`
 SHA-256：`034c7714e5773fe48b0d69ed6ab373ba02074e497d803bcd73349932f2177000`
 
-当前唯一下一项：
+当前唯一下一项（零调用 project-level disposition；不得修后重跑 T03）：
 
-`FIN-0.1.3-S0-HOST-IMPORT-COLLECT-RESOURCE-MUTATION-AND-THREE-CASE-FULL-FAKE-ZERO-CALL-PROOF`
+`FIN-0.1.3-S0-T03-TERMINAL-HONEST-BLOCK-AND-REFERENCE-ROLE-TAXONOMY-OWNER-VERSION-DISPOSITION-DECISION`

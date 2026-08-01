@@ -1,0 +1,214 @@
+{
+  "schema_version": "fin_ia_0_1_3_s0_t03_host_zero_call_engineering_proof_terminal_honest_block_closeout_v1_0",
+  "closeout_id": "FIN-0.1.3-S0-T03-HOST-ZERO-CALL-ENGINEERING-PROOF-TERMINAL-HONEST-BLOCK-R1",
+  "closed_at": "2026-08-01T16:01:11+08:00",
+  "status": "terminal_failed_unique_T03_engineering_proof_consumed_T04_blocked",
+  "authority": {
+    "user_instruction": "继续",
+    "single_T03_engineering_proof_authorized_and_consumed": true,
+    "second_T03_run_or_runtime_patch_then_rerun_authorized": false,
+    "T04_formal_two_disposable_package_authorized_or_consumed": false,
+    "automatic_T05_R_H_FIN_0_1_4_or_version_transfer_authorized": false,
+    "model_provider_credential_network_admission_business_run_or_artifact_authorized": false
+  },
+  "source_bindings": [
+    {
+      "role": "immutable_T01_stage_plan",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_hermetic_runtime_dependency_and_semantic_parity_stage_plan_v1_0.json",
+      "sha256": "034c7714e5773fe48b0d69ed6ab373ba02074e497d803bcd73349932f2177000"
+    },
+    {
+      "role": "T02_implementation_record",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_t02_runtime_resource_registry_and_typed_environment_projection_minimum_zero_call_implementation_v1_0.json",
+      "sha256": "743c4c9933c1b7b2c13e4f7cc7cf015cfd554f19a35c2235d9d06a6908a3606f"
+    },
+    {
+      "role": "T03_execution_manifest",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_t03_host_zero_call_engineering_proof_execution_manifest_v1_0.json",
+      "sha256": "26c6fdb9793ce9df50d1ccc7a08b4b446494f715ca39702d7084f93715a6f8b4"
+    },
+    {
+      "role": "T02_active_suite_manifest",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_0.json",
+      "sha256": "ec3be712618a03e5792984e46054954571c98c52a767cab0aa261bb31ef614be"
+    },
+    {
+      "role": "T03_host_proof_runner",
+      "ref": "scripts/engineering/run_fin_0_1_3_s0_t03_host_zero_call_proof.py",
+      "sha256": "9ccbb980c8fd4fd958cde5b43752bea93026c2564498438dc2f8b940b936e88c"
+    },
+    {
+      "role": "repository_closure_compiler",
+      "ref": "src/sec_agent/hermetic_test_runner.py",
+      "sha256": "5e1f06ede2bde8893aaac7e704741e3fcc390bf050428dc9e57145746e99478f"
+    },
+    {
+      "role": "first_failure_resource",
+      "ref": "configs/releases/fin_ia_0_1_s4_t04_dell_source_grounded_input_pack_v1_0.json",
+      "sha256": "1a173ac6097195bdc6d2dd0f3d43544a947069d6848786f4fe9ca9eb805c8ec9"
+    }
+  ],
+  "proof_evidence": {
+    "restricted_output_root": "D:/FIN_Insight_Agent_recovery/proofs/fin_0_1_3_s0_t03_host_zero_call_engineering_proof_20260801T075335Z_head_5323858a.failed",
+    "verification_ref": "verification.json",
+    "verification_sha256": "80d0250334c37bb881eecd63e191e183c47a149c9287a6bd75df41416e631538",
+    "exception_detail_ref": "objects/sha256/13/1397fb6996069ef0513f8d6b52cd4462de8a55f6b4ddd632b3e8dadc1af65066",
+    "exception_detail_sha256": "1397fb6996069ef0513f8d6b52cd4462de8a55f6b4ddd632b3e8dadc1af65066",
+    "git_head": "5323858a00daed386fa757b374448eaa87b88e5d",
+    "branch": "codex/layered-data-source-expansion",
+    "clean_and_synced_before_execution": true,
+    "repository_clean_after_failure": true,
+    "started_at_utc": "2026-08-01T07:53:36Z",
+    "completed_at_utc": "2026-08-01T07:54:01Z",
+    "restricted_audit_only": true,
+    "business_promotable": false
+  },
+  "first_credible_failure": {
+    "phase": "host_compiled_repository_inventory_before_application_import_collect_or_pytest",
+    "error_type": "HermeticTestRunnerError",
+    "error_code": "hermetic_repository_reference_classification_missing",
+    "field": "followup_ref",
+    "value": "official quarterly cohort/definition bridge",
+    "resource_id": "s4.source_grounded_input.dell",
+    "resource_ref": "configs/releases/fin_ia_0_1_s4_t04_dell_source_grounded_input_pack_v1_0.json",
+    "resource_line": 1169,
+    "application_modules_imported": 0,
+    "active_tests_collected": 0,
+    "active_tests_executed": 0,
+    "diagnostic_artifacts_created": 0
+  },
+  "root_cause": {
+    "owned_by_project": true,
+    "model_or_provider_fault_established": false,
+    "runtime_financial_L1_failure_established": false,
+    "earliest_owner": "hermetic_repository_reference_role_taxonomy_and_dependency_compiler_contract",
+    "summary": "The compiler treats every key named ref or ending in _ref as a possible repository dependency, then relies on path-shape heuristics plus a short field-name exception list. RuntimeResourceRegistry made the DELL source-grounded pack reachable, but T02 did not compile a typed reference-role contract for semantic follow-up, restricted audit lineage, model-run reports and repository resources. A valid business semantic phrase containing a slash therefore became an unclassified path and correctly failed closed.",
+    "not_a_valid_fix": "remove_the_slash_from_the_business_phrase_or_append_one_field_exception_then_rerun_T03",
+    "required_structural_direction_for_separate_disposition": "replace suffix-and-string-shape inference with one versioned typed reference-role registry or schema compiler covering repository_resource, external_content, restricted_runtime_audit, model_run_report and semantic_followup roles; require collect-all closure validation before consuming another fixed proof budget"
+  },
+  "read_only_collect_all_diagnostic": {
+    "status": "nonpromotable_hypothetical_classification_only",
+    "registered_resource_ref_values_scanned": 507,
+    "registered_resource_classification_counts": {
+      "semantic": 440,
+      "external": 58,
+      "repository_path": 8,
+      "unclassified_path_reference": 1
+    },
+    "hypothetical_reference_field_count_before_closure_completed": 47,
+    "hypothetical_reference_value_families": {
+      "business_semantic_followup": 1,
+      "ignored_codex_runtime_audit_lineage": 44,
+      "tracked_model_run_report_lineage": 2
+    },
+    "hypothetical_reference_fields": [
+      "followup_ref",
+      "changed_family_canary_execution_project_os_postflight_ref",
+      "changed_family_canary_post_result_disposition_preflight_ref",
+      "fact_presence_materialization_R2_project_os_preflight_ref",
+      "fact_presence_materialization_R2_runner_preflight_ref",
+      "runtime_audit_classifier_fresh_R6_exact_live_authority_project_os_preflight_ref",
+      "runtime_audit_classifier_fresh_R6_exact_live_execution_scope_preflight_ref",
+      "runtime_audit_classifier_fresh_R6_issuance_project_os_preflight_ref",
+      "runtime_audit_classifier_fresh_R6_runner_preflight_ref",
+      "fresh_R2_project_os_preflight_ref",
+      "fresh_R2_runner_preflight_ref",
+      "agent_runtime_result_ref",
+      "database_ref",
+      "host_capability_receipt_ref",
+      "project_os_preflight_ref",
+      "runner_preflight_ref",
+      "exit_receipt_ref",
+      "launch_receipt_ref",
+      "runtime_result_ref",
+      "terminal_inspection_ref",
+      "restricted_capture_ref",
+      "prepared_input_ref",
+      "restricted_runtime_result_ref",
+      "runtime_inspection_ref",
+      "model_run_ref",
+      "runtime_preflight_ref",
+      "failed_model_run_ref",
+      "runtime_project_os_preflight_ref",
+      "typed_orphan_closeout_receipt_ref",
+      "execution_preflight_ref",
+      "gateway_events_ref",
+      "runner_command_ref",
+      "runner_stderr_ref",
+      "runner_stdout_ref",
+      "result_ref",
+      "preflight_ref",
+      "post_failure_preflight_ref",
+      "exact_input_object_ref",
+      "supervision_exit_ref",
+      "supervision_launch_ref",
+      "capture_ref",
+      "ref",
+      "claim_capture_ref",
+      "project_os_authority_preflight_ref",
+      "next_fresh_agent_proof_project_os_preflight_ref",
+      "quarantined_artifacts_ref",
+      "R6_runtime_result_ref"
+    ],
+    "hypothetical_closure": {
+      "path_count": 1218,
+      "tracked_path_count": 1218,
+      "explicit_allowlist_path_count": 0,
+      "recursive_reference_path_count": 527,
+      "semantic_or_external_reference_count": 2566,
+      "closure_digest": "c54b6131565049b3dbd68726d8f0f7aa246034937f0a2a5fa4fd9030cab771c9"
+    },
+    "does_not_reinterpret_or_pass_T03": true,
+    "repository_mutation_or_runtime_patch": false
+  },
+  "issue_disposition": {
+    "new_issue_id": "RC-P36-094-fin-0-1-3-hermetic-reference-role-taxonomy-conflates-semantic-audit-and-repository-paths",
+    "RC_P36_090_through_093": "remain_open_no_T04_evidence",
+    "RC_P36_091_scope": "extended_by_reference_role_taxonomy_failure_without_rewriting_historical_evidence",
+    "T03": "terminal_failed_unique_engineering_proof_consumed",
+    "T04": "blocked_not_created_not_executed",
+    "FIN_0_1_3_S0": "honest_block_pending_project_level_owner_and_version_disposition"
+  },
+  "budgets": {
+    "maximum_implementation_bundles": 1,
+    "implementation_bundles_consumed": 1,
+    "maximum_T03_engineering_proof_runs": 1,
+    "T03_engineering_proof_runs_consumed": 1,
+    "maximum_formal_two_disposable_proof_packages": 1,
+    "formal_two_disposable_proof_packages_consumed": 0,
+    "second_T03_or_T04_authorized": false
+  },
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_source_or_external_tool_calls": 0,
+    "new_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "formal_two_disposable_packages": 0
+  },
+  "closeout_verification": {
+    "terminal_closeout_current_projection_and_immutable_event_contracts": "19_passed",
+    "next_disposition_scope_Project_OS_preflight": "pass_open_full_chain_blocker_count_0",
+    "T03_proof_rerun": false,
+    "T04_formal_package_run": false,
+    "model_provider_network_calls": [0, 0, 0]
+  },
+  "product_truth": {
+    "FIN_0_1_2": "frozen_internal_honest_block_not_release_qualified",
+    "FIN_0_1_3_S0_T01": "pass",
+    "FIN_0_1_3_S0_T02": "engineering_pass",
+    "FIN_0_1_3_S0_T03": "terminal_failed_unique_run_consumed",
+    "FIN_0_1_3_S0_T04": "blocked_not_executed",
+    "FIN_0_1_3_S1": "not_started",
+    "FIN_0_1_3_S2_entry": false,
+    "DELL_R2": false,
+    "MU_R2": false,
+    "post_transfer_NVDA_exact_product": false,
+    "NVDA_R3": false,
+    "FIN_0_1_release_qualified": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "next_action": "FIN-0.1.3-S0-T03-TERMINAL-HONEST-BLOCK-AND-REFERENCE-ROLE-TAXONOMY-OWNER-VERSION-DISPOSITION-DECISION"
+}

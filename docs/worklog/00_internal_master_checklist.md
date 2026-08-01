@@ -3,8 +3,9 @@
 ## FIN 0.1.3 S0 Current
 
 - [x] 2026-08-01 S0-T02 Runtime resource registry and typed environment projection: central registry covers 29 resources/323,829 bytes; seven default loader modules use resource IDs; the frozen 16-prompt `SKILL_FILES` adapter is bidirectionally checked without changing its historical hash; eight typed environment roots support diagnostic-only semantic projection. Focused=`24 passed`, related host matrix=`100 passed`, model/Provider/network=`0/0/0`.
-- [ ] S0-T03 host import/collect/resource-path mutation and DELL/MU/NVDA `6/12/12/9` zero-call engineering proof. Do not create T04 formal package unless T03 is all green.
-- [ ] S0-T04 one independent two-disposable formal proof and RC-P36-090–093/S0 closeout. S1/S2 and FIN 0.1 release remain blocked until this passes.
+- [x] 2026-08-01 S0-T03 unique host zero-call engineering proof: clean/synced `5323858a` 上在 repository closure 阶段以 `hermetic_repository_reference_classification_missing:followup_ref` 终态失败，尚未进入 import/collect/pytest。事后 non-promotable collect-all 暴露 47 种 reference field 的 typed-role taxonomy 缺口；不修后重跑。
+- [ ] S0-T03 terminal honest-block / reference-role taxonomy owner-version disposition：决定由哪个 patch line/stage 承担 typed reference-role registry/schema compiler；不得自动建立 T05/R/H/FIN0.1.4。
+- [ ] S0-T04 one independent two-disposable formal proof：因 T03 未 all-green 当前 blocked，package=`0/1`；RC-P36-090–094、S1/S2 与 FIN 0.1 release 继续 blocked。
 
 ## Integrated 09-12 Execution Governance
 
@@ -1158,4 +1159,4 @@
 - [x] FIN-0.1.2-S0C-T03 corrective hermetic proof terminal closeout: 唯一双 disposable package 在 collection 期同点失败，冻结 RC-P36-092 static Runtime resource inventory 与 RC-P36-093 semantic environment-path taxonomy；RC-P36-090/091 仅保留构建层未复发证据。implementation/proof=`1/1`，不重跑、不建 T04/S2、不调用模型。
 - [x] FIN-0.1.2-S0C terminal repair-owner/version disposition: FIN 0.1.2 冻结 internal honest block；RC-P36-090–093 转交 FIN 0.1.3 S0，不改写或重跑已消费的 S0C-T03。
 - [x] FIN-0.1.3-S0 hermetic Runtime dependency and semantic parity StagePlan: 已冻结 RuntimeResourceRegistry、typed interpreter environment、active-suite collect/import closure、固定 T01–T04 与单实现/单正式 proof 预算；T01/G0 pass，本项未实现 Runtime、创建 proof package 或调用模型。
-- [ ] FIN-0.1.3-S0-T02 Runtime resource registry and typed environment projection minimum zero-call implementation: 最多消费一个实现包，建立 registry/compiler、typed environment projection 与确定性 mutation contracts；不得同轮执行 T03/T04 或模型调用。
+- [x] FIN-0.1.3-S0-T02 Runtime resource registry and typed environment projection minimum zero-call implementation: 已消费一个实现包，建立 registry/compiler、typed environment projection 与确定性 mutation contracts；本项没有执行 T03/T04 或模型调用。

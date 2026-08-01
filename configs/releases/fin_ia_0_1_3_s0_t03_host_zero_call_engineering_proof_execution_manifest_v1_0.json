@@ -62,7 +62,7 @@
     {
       "role": "T03_host_proof_runner",
       "ref": "scripts/engineering/run_fin_0_1_3_s0_t03_host_zero_call_proof.py",
-      "sha256": "c3e1bf56e4cdd096ed11df75854b48ec42e3e05229a2d4e6b3a9f4f3020eeb41"
+      "sha256": "9ccbb980c8fd4fd958cde5b43752bea93026c2564498438dc2f8b940b936e88c"
     }
   ],
   "active_suite_manifest_ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_0.json",

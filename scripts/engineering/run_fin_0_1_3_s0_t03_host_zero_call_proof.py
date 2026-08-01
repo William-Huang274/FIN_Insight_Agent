@@ -962,7 +962,7 @@ def _validate_only(execution_manifest_path: Path) -> int:
         "selected_test_paths": list(_selected_test_paths(active)),
         "capture_plugin_ref": capture_plugin.relative_to(ROOT).as_posix(),
         "git": git_state,
-        "proof_matrix_executed": false,
+        "proof_matrix_executed": False,
         "engineering_proof_runs_consumed": 0,
     }
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))

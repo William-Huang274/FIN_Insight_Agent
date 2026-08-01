@@ -1,7 +1,7 @@
 # FIN 0.1.3 S0 Hermetic Runtime 依赖与语义等价 StagePlan
 
 日期：2026-08-01
-状态：`G2 failed / v1 and v2 host failures immutable / exit_contract:v3 authority-transition structural failure / FIN 0.1.3 terminal honest block / zero external call`
+状态：`FIN 0.1.3 terminal honest block / version disposition complete / RC-P36-090–096 transferred to FIN 0.1.4 S0 StagePlan / zero external call`
 
 ## 1. 为什么 0.1.3 必须重新从 S0 开始
 
@@ -107,6 +107,14 @@ v3 maximum/observed `[implementation, eligibility, host, formal]=[1,1,1,1]/[1,0,
 
 FIN 0.1.3 现为 `terminal honest block / version-scope disposition required`。eligibility 剩余预算不转移、不自动解释为新权限；不得建立同版本 v4，也不自动创建 FIN 0.1.4。FIN 0.2 的 Earnings Review Alpha 定义保持不变。
 
-当前唯一下一项（仅做终态与版本范围处置；不得自动补丁、eligibility/host/formal proof、FIN 0.1.4 或修改金融 Runtime）：
+## 10. 终态版本处置：转交 FIN 0.1.4 S0
 
-`FIN-0.1.3-S0-EXIT-CONTRACT-V3-TERMINAL-HONEST-BLOCK-AND-VERSION-SCOPE-DISPOSITION-DECISION`
+Owner 处置正式冻结 FIN 0.1.3，不重开 v3、不建立同版本 v4、不把未完成的共同 Runtime 债务转给 FIN 0.2。RC-P36-090–096 原样转交 `FIN-0.1.4-S0-PROOF-LIFECYCLE-STATE-MACHINE-AND-HERMETIC-QUALIFICATION`；0.1.3 的 v1/v2/v3 failures、budget 与 hash-bound implementation snapshots 均保持不可变。
+
+FIN 0.1.4 不是再次逐字段修 proof runner。它首先把 proof lifecycle 变成单一版本化状态机，明确编译 pre-authority、authorized-not-executed、evidence-pass/fail、host/formal authority 与 terminal 状态；immutable event snapshot 不再验证 mutable backlog/current-next，current projection 也不再由历史 test suite 拥有。只有完整状态迁移 mutation、三案 deterministic closure 与 clean-head current projection 全部通过，未来 host/formal proof budget 才能消费。
+
+本次 disposition 只创建版本和 S0 StagePlan 入口，未创建 StagePlan 本体、implementation、eligibility、host/formal proof、模型或业务 Artifact。FIN 0.1.4 无自动 T05/R/H/replacement 或 FIN 0.1.5；任何新结构失败仍进入项目级处置，不在同阶段循环修补。
+
+当前唯一下一项（仅做 FIN 0.1.4 S0 StagePlan；不得自动实现、执行 proof 或修改金融 Runtime）：
+
+`FIN-0.1.4-S0-PROOF-LIFECYCLE-STATE-MACHINE-AND-HERMETIC-QUALIFICATION-STAGE-PLAN`

@@ -2,9 +2,9 @@
 
 日期：2026-08-01
 
-状态：`accepted planning normalization / FIN 0.1.3 S0 exit-contract v3 authority-transition terminal honest block / version-scope disposition required`
+状态：`frozen historical product progression / FIN 0.1.3 terminal honest block / superseded current entry by FIN 0.1.4 S0 StagePlan`
 
-当前版本：`FIN 0.1.3`
+版本：`FIN 0.1.3（已冻结）`
 
 发布真值：`internal honest block / release qualified=false`
 
@@ -64,6 +64,8 @@ FIN 0.1.1 与 0.1.2 已冻结为历史内部工程基线；FIN 0.1.3 是当前�
 
 路线与验收合同之后，S0 已完成有界 taxonomy 与 v3 proof-control-plane 工程实现，但 v2 host proof 暴露 packaging/消费边界不足，v3 又在 eligibility authority 状态迁移处发现新的结构阻断。项目没有重跑、伪造 pending 状态、修改已消费实现或新建 v4。v3 observed 仍为 `1/0/0/0`，eligibility 预算未消费；没有执行 eligibility、host/formal proof、模型、Provider、网络或业务链，用户可见金融研究功能无增量。FIN 0.1.3 S0 与 RC-P36-090–096 继续 blocked/open；FIN 0.1.3 已按预定止损规则冻结，S1–S5 产品能力顺序不变，FIN 0.1.4 未自动创建，FIN 0.2 定义不变。
 
+版本处置已经确认：FIN 0.1.3 不再继续执行 S1–S5，也不建立同版本 v4；RC-P36-090–096 原样转交 FIN 0.1.4 S0。该转交不把工程通过改写为 proof，不改变本表所描述的 S0–S5 产品能力顺序，也不改变 FIN 0.2 Earnings Review Alpha。
+
 当前唯一下一项：
 
-`FIN-0.1.3-S0-EXIT-CONTRACT-V3-TERMINAL-HONEST-BLOCK-AND-VERSION-SCOPE-DISPOSITION-DECISION`
+`FIN-0.1.4-S0-PROOF-LIFECYCLE-STATE-MACHINE-AND-HERMETIC-QUALIFICATION-STAGE-PLAN`

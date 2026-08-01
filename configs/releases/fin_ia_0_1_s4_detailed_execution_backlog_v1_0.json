@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_0_1_s4_detailed_execution_backlog_v1_0",
   "backlog_id": "FIN-0.1-S4-THREE-CASE-TRANSFER-AND-HUMAN-CALIBRATION-R1",
   "frozen_at": "2026-07-26T15:41:14+08:00",
-  "status": "S4_and_S5_closed_FIN_0_1_2_frozen_blocked_FIN_0_1_3_S0_exit_contract_v3_eligibility_authority_transition_terminal_honest_block",
+  "status": "S4_and_S5_closed_FIN_0_1_3_frozen_blocked_FIN_0_1_4_S0_stage_plan_ready_not_started",
   "authority": {
     "user_instruction": "认可",
     "instruction_context": "User accepted the proposed S4 plan after Codex stated that the next action would only create the zero-call S4 entry decision detailed backlog and manifest consumption record.",
@@ -1122,7 +1122,7 @@
     "only_planned_remaining_T05_paid_execution": "DELL_R11_consumed_failed_no_further_paid_execution_authorized",
     "automatic_R12": false
   },
-  "current_next_action": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-TERMINAL-HONEST-BLOCK-AND-VERSION-SCOPE-DISPOSITION-DECISION",
+  "current_next_action": "FIN-0.1.4-S0-PROOF-LIFECYCLE-STATE-MACHINE-AND-HERMETIC-QUALIFICATION-STAGE-PLAN",
   "T07_current_worktree_regression": {
     "scope_decision_ref": "configs/releases/fin_ia_0_1_s4_t07_entry_current_worktree_three_case_regression_and_nvda_post_transfer_exact_revalidation_scope_decision_v1_0.json",
     "result_ref": "configs/releases/fin_ia_0_1_s4_t07_current_worktree_three_case_zero_call_regression_failure_result_v1_0.json",
@@ -1343,13 +1343,13 @@
     "next_action": "FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-STAGE-PLAN"
   },
   "FIN_0_1_3_S0_hermetic_runtime_dependency_and_semantic_parity": {
-    "status": "exit_contract_v3_eligibility_authority_transition_terminal_honest_block_version_scope_disposition_required",
+    "status": "frozen_internal_honest_block_exit_contract_v3_authority_transition_terminal_failure",
     "stage_id": "FIN-0.1.3-S0-HERMETIC-RUNTIME-DEPENDENCY-AND-SEMANTIC-PARITY-REBASELINE-R1",
     "stage_plan_ref": "configs/releases/fin_ia_0_1_3_s0_hermetic_runtime_dependency_and_semantic_parity_stage_plan_v1_0.json",
     "stage_plan_sha256": "034c7714e5773fe48b0d69ed6ab373ba02074e497d803bcd73349932f2177000",
     "frozen_T03_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_3.json",
-    "current_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_10.json",
-    "current_projection_sha256": "8e59c15de843408c23f9ea76b118e7750f81c55b4e38ec3dbf76f879f33f9292",
+    "terminal_projection_ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_10.json",
+    "terminal_projection_sha256": "8e59c15de843408c23f9ea76b118e7750f81c55b4e38ec3dbf76f879f33f9292",
     "reference_role_registry_ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_0.json",
     "reference_role_implementation_ref": "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_registry_and_collect_all_compiler_minimum_zero_call_implementation_v1_0.json",
     "reference_role_implementation_sha256": "9bf91966018e6e0a3b5378f073f44039f9690fce23d80412397bc7764292ee63",
@@ -1396,7 +1396,7 @@
     "exit_contract_v3_eligibility_authorized": false,
     "exit_contract_v4_authorized": false,
     "canonical_S0_to_S5_plan_ref": "docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md",
-    "canonical_S0_to_S5_plan_sha256": "8bef26573bc60c0bdbe1e8b53564e8c52a9de06df6c80c1f016dda23ffd8fd18",
+    "canonical_S0_to_S5_plan_sha256": "95e70e885fd60fda3ace6c6df6933c9231e9ecc1c23481e9cb4fc4497f556100",
     "open_issue_ids": [
       "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
       "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
@@ -1408,7 +1408,35 @@
     ],
     "automatic_T05_R_H_or_FIN_0_1_4": false,
     "model_provider_credential_network_admission_Run_business_Artifact": [0, 0, 0, 0, 0, 0, 0],
-    "next_action": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-TERMINAL-HONEST-BLOCK-AND-VERSION-SCOPE-DISPOSITION-DECISION"
+    "next_action": "FIN-0.1.4-S0-PROOF-LIFECYCLE-STATE-MACHINE-AND-HERMETIC-QUALIFICATION-STAGE-PLAN"
+  },
+  "FIN_0_1_3_to_FIN_0_1_4_version_scope_disposition": {
+    "status": "pass_FIN_0_1_3_frozen_FIN_0_1_4_S0_stage_plan_ready_not_started",
+    "decision_ref": "configs/releases/fin_ia_0_1_3_terminal_honest_block_and_fin_0_1_4_s0_version_scope_disposition_v1_0.json",
+    "decision_sha256": "6991bfa371120ce9422242417884651bcc6f03703b4986bbbb54c0f387f85856",
+    "current_projection_ref": "configs/runtime/fin_ia_0_1_4_current_program_projection_v1_0.json",
+    "current_projection_sha256": "bbb10c6adef6f5cfa74c790d3510d8ff396e384980ed12aa142291c3a687ca33",
+    "selected_option": "B_freeze_FIN_0_1_3_and_create_bounded_FIN_0_1_4_S0_qualification_patch",
+    "FIN_0_1_3_release_qualified": false,
+    "FIN_0_1_3_exit_contract_v4_created": false,
+    "FIN_0_1_4_S0_stage_id": "FIN-0.1.4-S0-PROOF-LIFECYCLE-STATE-MACHINE-AND-HERMETIC-QUALIFICATION-REBASELINE-R1",
+    "FIN_0_1_4_S0_fixed_task_ids": ["FIN-0.1.4-S0-T01", "FIN-0.1.4-S0-T02", "FIN-0.1.4-S0-T03", "FIN-0.1.4-S0-T04"],
+    "FIN_0_1_4_S0_stage_plan_implementation_eligibility_host_formal_maximum": [1, 1, 1, 1, 1],
+    "FIN_0_1_4_S0_stage_plan_implementation_eligibility_host_formal_observed": [0, 0, 0, 0, 0],
+    "FIN_0_1_4_S0_stage_plan_created_or_executed": false,
+    "open_issue_ids": [
+      "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+      "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
+      "RC-P36-092-fin-0-1-2-code-declared-static-runtime-resource-missing-from-hermetic-inventory",
+      "RC-P36-093-fin-0-1-2-hermetic-semantic-parity-untyped-host-python-traceback-path",
+      "RC-P36-094-fin-0-1-3-hermetic-reference-role-taxonomy-conflates-semantic-audit-and-repository-paths",
+      "RC-P36-095-fin-0-1-3-v2-host-proof-manifest-policy-enum-contract-drift",
+      "RC-P36-096-fin-0-1-3-v3-eligibility-authority-transition-projection-status-hard-coded-pre-authority-state"
+    ],
+    "automatic_T05_R_H_replacement_or_FIN_0_1_5": false,
+    "FIN_0_2_definition": "Earnings_Review_Alpha_preserved",
+    "model_provider_credential_network_admission_Run_business_Artifact": [0, 0, 0, 0, 0, 0, 0],
+    "next_action": "FIN-0.1.4-S0-PROOF-LIFECYCLE-STATE-MACHINE-AND-HERMETIC-QUALIFICATION-STAGE-PLAN"
   },
   "repository_recovery_and_version_lineage_scope": {
     "scope_decision_ref": "configs/releases/fin_ia_0_1_repository_recovery_s0_to_s4_audit_and_0_1_1_0_1_2_version_lineage_scope_decision_v1_0.json",

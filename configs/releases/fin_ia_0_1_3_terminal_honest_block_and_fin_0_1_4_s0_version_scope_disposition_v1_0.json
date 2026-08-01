@@ -1,0 +1,260 @@
+{
+  "schema_version": "fin_ia_0_1_3_terminal_honest_block_and_fin_0_1_4_s0_version_scope_disposition_v1_0",
+  "decision_id": "FIN-0.1.3-TERMINAL-HONEST-BLOCK-AND-FIN-0.1.4-S0-VERSION-SCOPE-DISPOSITION-R1",
+  "recorded_at": "2026-08-02T04:10:00+08:00",
+  "status": "pass_FIN_0_1_3_frozen_internal_honest_block_FIN_0_1_4_S0_stage_plan_ready_not_started",
+  "decision_class": "zero_call_terminal_closeout_and_version_scope_disposition",
+  "authority": {
+    "user_instruction": "继续",
+    "decision_only": true,
+    "FIN_0_1_3_terminal_freeze_authorized": true,
+    "FIN_0_1_4_internal_patch_version_created": true,
+    "FIN_0_1_4_S0_stage_plan_entry_authorized": true,
+    "FIN_0_1_4_S0_stage_plan_created_or_executed": false,
+    "runtime_or_test_implementation_authorized": false,
+    "eligibility_host_or_formal_proof_authorized": false,
+    "credential_model_provider_network_source_external_tool_admission_business_run_artifact_authorized": false,
+    "tag_release_or_production_authorized": false
+  },
+  "project_os_preflight": {
+    "run_scope": "FIN-0.1.3-S0-EXIT-CONTRACT-V3-TERMINAL-HONEST-BLOCK-AND-VERSION-SCOPE-DISPOSITION-DECISION",
+    "status": "pass",
+    "missing_files": 0,
+    "missing_capabilities": 0,
+    "open_full_chain_blockers_for_this_decision_scope": 0,
+    "business_promotable": false
+  },
+  "source_bindings": [
+    {
+      "role": "FIN_0_1_3_terminal_authority_transition_decision",
+      "ref": "configs/releases/fin_ia_0_1_3_s0_exit_contract_v3_eligibility_authority_transition_structural_blocker_terminal_decision_v1_0.json",
+      "sha256": "10f20dd36bfeafcd65a8dac0beb71cc1cfbc47094b2eb250cf54f56ae8c8f3a7"
+    },
+    {
+      "role": "FIN_0_1_3_terminal_current_projection",
+      "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_10.json",
+      "sha256": "8e59c15de843408c23f9ea76b118e7750f81c55b4e38ec3dbf76f879f33f9292"
+    },
+    {
+      "role": "living_version_lineage",
+      "ref": "docs/product/FIN_0_1_1_0_1_2_VERSION_LINEAGE_AND_RELEASE_CADENCE_DECISION_20260731.zh-CN.md",
+      "sha256": "025e793ae7c2667b4a33474418d31ad91064f20f1e94adfc6ace73508408ab8d"
+    },
+    {
+      "role": "frozen_FIN_0_1_3_product_progression",
+      "ref": "docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md",
+      "sha256": "95e70e885fd60fda3ace6c6df6933c9231e9ecc1c23481e9cb4fc4497f556100"
+    },
+    {
+      "role": "frozen_FIN_0_1_3_S0_technical_plan",
+      "ref": "docs/architecture/repository/FIN_0_1_3_S0_HERMETIC_RUNTIME_DEPENDENCY_AND_SEMANTIC_PARITY_STAGE_PLAN_20260801.zh-CN.md",
+      "sha256": "1bfb1cf640c4e34136c86d1f9c3c526a072c507091128b717039fe00d23adf5a"
+    }
+  ],
+  "decision_options": [
+    {
+      "option": "A",
+      "label": "reopen_FIN_0_1_3_as_exit_contract_v4_or_patch_consumed_v3",
+      "selected": false,
+      "reason": "The v3 terminal rule explicitly forbids a same-version v4 or mutation of the consumed implementation."
+    },
+    {
+      "option": "B",
+      "label": "freeze_FIN_0_1_3_and_create_bounded_FIN_0_1_4_S0_qualification_patch",
+      "selected": true,
+      "reason": "The seven blockers are finite and project-owned, FIN 0.2 cannot absorb unfinished FIN 0.1 Runtime debt, and a new version is required to define a truthful proof-lifecycle state machine without rewriting FIN 0.1.3 evidence."
+    },
+    {
+      "option": "C",
+      "label": "transfer_common_Runtime_debt_to_FIN_0_2",
+      "selected": false,
+      "reason": "FIN 0.2 remains Earnings Review Alpha and its entry requires a stable FIN 0.1 Runtime and exact-artifact mainline."
+    },
+    {
+      "option": "D",
+      "label": "waive_RC_P36_090_through_096_and_enter_product_or_model_stages",
+      "selected": false,
+      "reason": "No clean-head eligibility, host or formal evidence exists, so waiver would inflate product and release truth."
+    },
+    {
+      "option": "E",
+      "label": "stop_FIN_0_1_patch_line_and_enter_FIN_0_2_anyway",
+      "selected": false,
+      "reason": "This violates the frozen FIN 0.2 entry contract and would move an upstream replayability defect into an Earnings product stage."
+    }
+  ],
+  "selected_version_lineage": {
+    "FIN_0_1_1": {
+      "status": "frozen_internal_honest_block",
+      "changed_by_this_decision": false
+    },
+    "FIN_0_1_2": {
+      "status": "frozen_internal_honest_block",
+      "changed_by_this_decision": false
+    },
+    "FIN_0_1_3": {
+      "name": "hermetic_runtime_and_proof_control_plane_stabilization_attempt",
+      "status": "frozen_internal_honest_block_S0_terminal_S1_S2_not_entered",
+      "release_qualified": false,
+      "historical_failures_budgets_or_hash_bound_sources_rewritten": false,
+      "exit_contract_v4_created": false
+    },
+    "FIN_0_1_4": {
+      "name": "proof_lifecycle_state_machine_and_hermetic_qualification_patch",
+      "status": "S0_stage_plan_ready_not_started",
+      "not_a_product_feature_release": true,
+      "scope": [
+        "single_versioned_proof_lifecycle_state_machine_and_transition_compiler",
+        "immutable_event_snapshot_and_mutable_current_projection_separation",
+        "hash_compatible_RuntimeResourceRegistry_reference_role_typed_environment_and_proof_policy_reuse",
+        "formal_closure_or_honest_disposition_of_RC_P36_090_through_096",
+        "only_after_S0_pass_resume_existing_S1_to_S5_product_progression"
+      ]
+    },
+    "FIN_0_2": {
+      "name": "Earnings_Review_Alpha",
+      "original_definition_preserved": true,
+      "common_Runtime_debt_fallback_owner": false
+    }
+  },
+  "issue_owner_transfer": [
+    {
+      "issue_id": "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+      "status": "open",
+      "new_owner": "FIN_0_1_4_S0_git_independent_host_and_disposable_inventory_proof"
+    },
+    {
+      "issue_id": "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
+      "status": "open",
+      "new_owner": "FIN_0_1_4_S0_tracked_or_typed_closure_and_restricted_evidence_proof"
+    },
+    {
+      "issue_id": "RC-P36-092-fin-0-1-2-code-declared-static-runtime-resource-missing-from-hermetic-inventory",
+      "status": "open",
+      "new_owner": "FIN_0_1_4_S0_RuntimeResourceRegistry_import_collect_and_readback_proof"
+    },
+    {
+      "issue_id": "RC-P36-093-fin-0-1-2-hermetic-semantic-parity-untyped-host-python-traceback-path",
+      "status": "open",
+      "new_owner": "FIN_0_1_4_S0_typed_environment_mutation_and_formal_parity_proof"
+    },
+    {
+      "issue_id": "RC-P36-094-fin-0-1-3-hermetic-reference-role-taxonomy-conflates-semantic-audit-and-repository-paths",
+      "status": "open",
+      "new_owner": "FIN_0_1_4_S0_six_role_closure_and_typed_failure_behavior_proof"
+    },
+    {
+      "issue_id": "RC-P36-095-fin-0-1-3-v2-host-proof-manifest-policy-enum-contract-drift",
+      "status": "open",
+      "new_owner": "FIN_0_1_4_S0_single_source_policy_and_exact_boundary_proof"
+    },
+    {
+      "issue_id": "RC-P36-096-fin-0-1-3-v3-eligibility-authority-transition-projection-status-hard-coded-pre-authority-state",
+      "status": "open",
+      "new_owner": "FIN_0_1_4_S0_proof_lifecycle_state_machine_and_projection_transition_compiler"
+    }
+  ],
+  "FIN_0_1_4_S0_stage_boundary": {
+    "stage_id": "FIN-0.1.4-S0-PROOF-LIFECYCLE-STATE-MACHINE-AND-HERMETIC-QUALIFICATION-REBASELINE-R1",
+    "mission": "Compile the complete proof authority and evidence lifecycle as one typed state machine, separate immutable event evidence from mutable current truth, and close the inherited hermetic Runtime blockers before any model or product reproof.",
+    "restart_from_S0_means": "revalidate_all_S0_gates_and_reuse_only_hash_compatible_assets_not_rewrite_from_zero_or_inherit_prior_proof_status",
+    "fixed_task_ids": [
+      "FIN-0.1.4-S0-T01",
+      "FIN-0.1.4-S0-T02",
+      "FIN-0.1.4-S0-T03",
+      "FIN-0.1.4-S0-T04"
+    ],
+    "tasks": [
+      {
+        "task_id": "FIN-0.1.4-S0-T01",
+        "title": "Proof lifecycle state machine and hermetic qualification StagePlan",
+        "status": "ready_not_started",
+        "calls_or_implementation": 0
+      },
+      {
+        "task_id": "FIN-0.1.4-S0-T02",
+        "title": "Single lifecycle compiler current-event separation and inherited hermetic contract minimum zero-call implementation",
+        "status": "locked_until_T01_pass",
+        "maximum_implementation_bundles": 1
+      },
+      {
+        "task_id": "FIN-0.1.4-S0-T03",
+        "title": "Clean-head lifecycle transition eligibility and host zero-call engineering proof",
+        "status": "locked_until_T02_all_green_and_separate_authority",
+        "maximum_eligibility_attestations": 1,
+        "maximum_host_proof_runs": 1
+      },
+      {
+        "task_id": "FIN-0.1.4-S0-T04",
+        "title": "One independent two-disposable hermetic proof and S0 closeout",
+        "status": "locked_until_T03_all_green_and_separate_authority",
+        "maximum_formal_proof_packages": 1
+      }
+    ]
+  },
+  "T01_stage_plan_required_scope": {
+    "proof_lifecycle_contract": [
+      "one versioned registry owns allowed states transitions guards evidence bindings and terminal semantics",
+      "compile planned implementation_pass eligibility_authorized eligibility_pass host_authorized host_pass formal_authorized pass_and_fail_terminal states before any proof authority",
+      "immutable historical event tests never validate mutable current_next backlog or ledger tail",
+      "current projection validates current truth while exact proof manifests bind immutable event snapshot digests",
+      "unknown duplicate stale skipped reversed or cross-version transitions fail closed with typed errors"
+    ],
+    "inherited_hermetic_contract": [
+      "reuse only digest-matching RuntimeResourceRegistry reference-role typed-environment proof-policy and three-case assets",
+      "compile full tracked-or-typed closure with unknown forbidden and allowlist counts before budget consumption",
+      "prove application import active collect three-case full-fake numeric identity lineage mutation and terminal evidence retention",
+      "prove host and independent two-disposable semantic parity with repository readback unchanged"
+    ],
+    "product_boundary": [
+      "no model comparison live financial conclusion DELL_MU_NVDA product acceptance or Workbench dogfood in S0",
+      "S1_to_S5 remain blocked until S0 closes RC_P36_090_through_096",
+      "FIN_0_2 Earnings Review Alpha definition remains unchanged"
+    ]
+  },
+  "fixed_budgets_and_stop_rules": {
+    "maximum_stage_plans": 1,
+    "maximum_implementation_bundles": 1,
+    "maximum_eligibility_attestations": 1,
+    "maximum_host_engineering_proof_runs": 1,
+    "maximum_formal_two_disposable_proof_packages": 1,
+    "automatic_FIN_0_1_4_S0_T05_R_H_or_replacement_family": false,
+    "automatic_FIN_0_1_5_on_failure": false,
+    "FIN_0_1_3_v3_patch_retry_replacement_or_v4": false,
+    "model_or_provider_calls_before_FIN_0_1_4_S0_and_S1_pass": 0,
+    "on_new_S0_structural_failure": "terminal_honest_block_and_program_architecture_disposition_not_same_stage_patch_loop",
+    "L2_to_L4": "record_as_quality_findings_and_carry_forward_without_blocking_S0_unless_predeclared"
+  },
+  "observed_counts_this_decision": {
+    "stage_plans_created_or_executed": 0,
+    "runtime_or_test_implementation_files_changed": 0,
+    "eligibility_attestations": 0,
+    "host_proof_runs": 0,
+    "formal_proof_packages": 0,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "tags_releases_or_production_actions": 0
+  },
+  "product_truth": {
+    "user_visible_financial_research_capability_delta": "none",
+    "FIN_0_1_3": "frozen_internal_honest_block_not_release_qualified",
+    "FIN_0_1_4": "S0_stage_plan_ready_not_started",
+    "FIN_0_1_4_S0": "not_started",
+    "FIN_0_1_4_S1_entry": false,
+    "FIN_0_1_4_S2_entry": false,
+    "DELL_R2": false,
+    "MU_R2": false,
+    "post_transfer_NVDA_exact_product": false,
+    "NVDA_R3": false,
+    "FIN_0_1_release_qualified": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "next_action": "FIN-0.1.4-S0-PROOF-LIFECYCLE-STATE-MACHINE-AND-HERMETIC-QUALIFICATION-STAGE-PLAN"
+}

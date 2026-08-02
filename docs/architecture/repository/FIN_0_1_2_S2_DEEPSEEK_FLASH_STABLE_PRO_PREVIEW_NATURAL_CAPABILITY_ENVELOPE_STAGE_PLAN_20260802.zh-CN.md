@@ -2,7 +2,7 @@
 
 日期：2026-08-02
 
-状态：`S2-T02 engineering pass / T03 authority decision next / model call not authorized`
+状态：`S2-T03 conditional authority issued / bound runner and atomic capture preflight next / execution not started`
 
 ## 1. S2 到底要回答什么
 
@@ -91,6 +91,6 @@ T02 已完成唯一一个零调用实现包。当前 v1.1 source/binding 与 Fla
 
 ## 11. 当前下一项
 
-`FIN-0.1.2-S2-T03-MU-THREE-FAMILY-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-AUTHORITY-DECISION`
+`FIN-0.1.2-S2-T03-PAIRED-CANARY-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`
 
-下一项仍是零调用权限审查。只有该权限单独通过后，才能读取凭据并执行冻结的 MU 六调用 canary；T02 本身没有读取 credential、调用模型或 Provider，也没有执行网络、业务 Run 或 Artifact 写入。
+零调用权限审查已通过并有条件签发六调用 authority。审计发现 T02 只有 compiler、本地 materializer 与内存 fake capture，缺少该实验专用真实 runner 和校验前原子受限 capture persistence，登记 RC-P36-101。下一项只补 runner/capture/preflight；preflight 通过前不得读取凭据或执行六调用。sub2api `gpt-5.5 /responses` strict-schema 路线继续 parked，不与当前官方 DeepSeek 路线混用。

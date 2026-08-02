@@ -1,0 +1,189 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_t03_mu_three_family_flash_stable_vs_pro_preview_paired_natural_output_canary_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S2-T03-MU-THREE-FAMILY-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-AUTHORITY-R1",
+  "recorded_at": "2026-08-03T00:01:40+08:00",
+  "status": "pass_conditional_exact_six_call_authority_issued_preflight_pending",
+  "decision_label": "authorize_one_future_six_call_paired_canary_only_after_bound_runner_and_atomic_capture_preflight",
+  "engineering_base": {
+    "git_head": "e90e714f673a1181224844b5e584214a6f0e1cef",
+    "branch": "codex/layered-data-source-expansion",
+    "worktree_clean_at_review": true
+  },
+  "bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s2_deepseek_flash_stable_pro_preview_natural_capability_envelope_stage_plan_v1_0.json",
+      "sha256": "819891dbc1862be73a36a5b2fe5d2c011bedbc811988821bf206f5c7cd5931cf",
+      "role": "S2_stage_plan"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s2_t02_dual_model_route_current_contract_source_and_paired_canary_compiler_zero_call_implementation_v1_0.json",
+      "sha256": "605c0e10ee566089275196d03d07e74b0cb68de40d3673d2eb92255449463ff1",
+      "role": "T02_engineering_evidence"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_1.json",
+      "sha256": "15c4be902cebc72ea8ef24008de0b2177eb1259a5aded0c78e758e8e91ce7501",
+      "role": "current_family_contract_source"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_1.json",
+      "sha256": "2e233d2a58449398774f2b1a21c84b215a82a81b4ef8552d3b86f9876408b420",
+      "role": "current_family_contract_binding"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s2_deepseek_model_candidate_registry_v1_0.json",
+      "sha256": "bbfd0ab03bfd008c5fd14437fb4c4e920234bbb91ea52493f27cd40ebb2502e2",
+      "role": "paired_model_route"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s2_runtime_resource_registry_v1_0.json",
+      "sha256": "0c14df326b26300badcf59cd57dd0595b0279fa3c4c36bb10e9f72a7b9746082",
+      "role": "S2_resource_integrity"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s2_paired_model_canary.py",
+      "sha256": "f6d4321556012d643c64f87006a6f60dfac1fec56f2b48f0622edcbdd4b10fb5",
+      "role": "paired_request_compiler_and_local_materializer"
+    }
+  ],
+  "experiment_gate": {
+    "hypothesis": "On the same MU evidence and compiled contract, DeepSeek V4 Flash stable can preserve all hard integrity gates and retain acceptable decision quality relative to DeepSeek V4 Pro preview.",
+    "decision_target": "Select the S3 provider surface model family by hard-integrity pass first and blinded four-dimension quality second; prefer Flash unless it trails Pro by more than two aggregate quality points.",
+    "baseline_or_control": "deepseek-v4-pro preview is the historical control; deepseek-v4-flash stable is the preferred candidate.",
+    "capability_ceiling": "Only the three isolated Fact, Claim and WWC natural-output families are evaluated. This cannot prove full-chain, nine-Artifact, analyst value, owner acceptance or release readiness.",
+    "stop_conditions": {
+      "transport_auth_security_or_capture_failure": "stop_all_remaining_calls",
+      "family_semantic_failure": "record_failure_and_continue_other_independent_calls",
+      "retry_fallback_provider_hopping_or_prompt_only_retry": 0
+    },
+    "proceed_rule": "Proceed to blinded T04 assessment only after six terminal results and six restricted captures are materialized, or close T03 with an honest transport block.",
+    "pivot_rule": "A project-owned comparator or capture defect permits at most one consolidated zero-call repair and one separately authorized affected-family two-model replacement pair; model noncompliance never authorizes a retry."
+  },
+  "exact_canary": {
+    "case": "MU",
+    "program_cell_id": "demand_authenticity_and_sustainability",
+    "provider": "deepseek",
+    "base_url": "https://api.deepseek.com/beta",
+    "wire_api": "chat_completions_json_object",
+    "api_key_env_name": "DEEPSEEK_API_KEY",
+    "api_key_value_read_or_persisted_in_this_decision": false,
+    "thinking": "disabled",
+    "temperature": 0.0,
+    "stream": false,
+    "call_plan": [
+      {
+        "call_id": "fin012-s2-mu-specialist_fact_atoms-flash_stable-r1",
+        "family_id": "specialist_fact_atoms",
+        "candidate_id": "flash_stable",
+        "model_ref": "deepseek:deepseek-v4-flash",
+        "model_visible_request_digest": "f7f59b2f9cacedd0dab051cb845b4db893c77a28113f4ee298c6fa45a1386cc2",
+        "request_equivalence_digest": "c9d19bb2964de0fa324ff54e9c66a8426a90c2df967aa536584877828d71eda5"
+      },
+      {
+        "call_id": "fin012-s2-mu-specialist_fact_atoms-pro_preview-r1",
+        "family_id": "specialist_fact_atoms",
+        "candidate_id": "pro_preview",
+        "model_ref": "deepseek:deepseek-v4-pro",
+        "model_visible_request_digest": "f7f59b2f9cacedd0dab051cb845b4db893c77a28113f4ee298c6fa45a1386cc2",
+        "request_equivalence_digest": "c9d19bb2964de0fa324ff54e9c66a8426a90c2df967aa536584877828d71eda5"
+      },
+      {
+        "call_id": "fin012-s2-mu-claim_candidate_atoms-flash_stable-r1",
+        "family_id": "claim_candidate_atoms",
+        "candidate_id": "flash_stable",
+        "model_ref": "deepseek:deepseek-v4-flash",
+        "model_visible_request_digest": "265545b55b178e5286bbc13da136338f12527e7c1b5e6f6ca101bf3a2cec9c6a",
+        "request_equivalence_digest": "9542d6205851a31632fa3a08d1986b75c2bf5db6883dc50b078309d70c58e061"
+      },
+      {
+        "call_id": "fin012-s2-mu-claim_candidate_atoms-pro_preview-r1",
+        "family_id": "claim_candidate_atoms",
+        "candidate_id": "pro_preview",
+        "model_ref": "deepseek:deepseek-v4-pro",
+        "model_visible_request_digest": "265545b55b178e5286bbc13da136338f12527e7c1b5e6f6ca101bf3a2cec9c6a",
+        "request_equivalence_digest": "9542d6205851a31632fa3a08d1986b75c2bf5db6883dc50b078309d70c58e061"
+      },
+      {
+        "call_id": "fin012-s2-mu-what_would_change_atoms-flash_stable-r1",
+        "family_id": "what_would_change_atoms",
+        "candidate_id": "flash_stable",
+        "model_ref": "deepseek:deepseek-v4-flash",
+        "model_visible_request_digest": "6f4592534ab20302c966be77b5a665eabfeed2f65f9e0aa0226a512ee4490b46",
+        "request_equivalence_digest": "68a3a0da8be304658e8c0cf409c5bb634f6e30156c18f19695b6d1d001cc6ba2"
+      },
+      {
+        "call_id": "fin012-s2-mu-what_would_change_atoms-pro_preview-r1",
+        "family_id": "what_would_change_atoms",
+        "candidate_id": "pro_preview",
+        "model_ref": "deepseek:deepseek-v4-pro",
+        "model_visible_request_digest": "6f4592534ab20302c966be77b5a665eabfeed2f65f9e0aa0226a512ee4490b46",
+        "request_equivalence_digest": "68a3a0da8be304658e8c0cf409c5bb634f6e30156c18f19695b6d1d001cc6ba2"
+      }
+    ]
+  },
+  "hard_budget": {
+    "primary_semantic_model_calls": 6,
+    "maximum_affected_family_replacement_pair_calls": 2,
+    "maximum_total_semantic_model_calls": 8,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "fallback_budget": 0,
+    "provider_hopping_budget": 0,
+    "prompt_only_retry_budget": 0,
+    "maximum_input_tokens_primary": 50000,
+    "maximum_output_tokens_per_call": 1400,
+    "maximum_output_tokens_primary": 8400,
+    "maximum_total_cost_usd_primary": 0.06,
+    "maximum_wall_clock_seconds_primary": 900,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_business_Run_or_Artifact_writes": 0
+  },
+  "preexecution_gap": {
+    "issue_id": "RC-P36-101-fin-0-1-2-s2-t03-real-transport-runner-and-atomic-capture-materialization-gap",
+    "root_cause": "T02 intentionally delivered a request compiler, local materializer and in-memory fake matrix, but no dedicated real DeepSeek executor and no atomic restricted capture persistence path for this six-call experiment.",
+    "not_a_model_failure": true,
+    "not_a_provider_failure": true,
+    "not_a_sub2api_route_issue": true,
+    "required_minimum_fix": [
+      "bind one dedicated runner to the exact six compiled calls and official DeepSeek route without changing model-visible requests",
+      "atomically persist full model-visible request and final assistant output before local validation using content-addressed restricted storage",
+      "persist terminal result, usage, finish reason, latency and allowlisted inference arguments while excluding credentials, headers, cookies and private reasoning",
+      "prove fail-closed budget, one-attempt, semantic-continue and transport-auth-security-capture-stop behavior with zero-call fake and mutation tests",
+      "run a zero-call preflight that re-derives all six request and equivalence digests from committed code"
+    ]
+  },
+  "authority": {
+    "future_exact_six_call_canary_authorized": true,
+    "authorization_effective_only_after_bound_runner_and_atomic_capture_preflight_pass": true,
+    "current_turn_credential_read_authorized": false,
+    "current_turn_model_provider_or_execution_network_authorized": false,
+    "runner_implementation_authorized_next": true,
+    "business_run_or_artifact_write_authorized": false,
+    "full_chain_or_S3_execution_authorized": false,
+    "automatic_replacement_pair_authorized": false,
+    "T04_assessment_authorized_before_valid_terminal_materialization": false
+  },
+  "current_turn_observed_counts": {
+    "credential_reads": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "business_Run_or_Artifact_writes": 0
+  },
+  "stage_acceptance": {
+    "S2_T02": "engineering_pass",
+    "S2_T03": "conditional_authority_issued_execution_not_started_preflight_pending",
+    "S2_T04": "blocked_until_valid_T03_terminal_materialization",
+    "S3": "not_started_blocked_by_S2",
+    "release": "not_qualified"
+  },
+  "strict_schema_transport_boundary": {
+    "sub2api_gpt_5_5_responses_route": "parked_nonblocking_separate_handoff",
+    "current_DeepSeek_canary_route": "official_DeepSeek_chat_completions_JSON_object",
+    "routes_are_not_interchangeable": true
+  },
+  "next_action": "FIN-0.1.2-S2-T03-PAIRED-CANARY-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION"
+}

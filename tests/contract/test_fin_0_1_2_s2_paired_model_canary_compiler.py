@@ -417,6 +417,14 @@ def test_T02_result_binds_current_implementation_and_preserves_zero_calls() -> N
     assert result["status"].startswith("pass_S2_T02_zero_call_")
     for row in result["implementation_bindings"]:
         path = ROOT / row["ref"]
+        if path.resolve() == Path(__file__).resolve():
+            # The result preserves the exact T02 test harness digest as an
+            # immutable historical receipt. Successor-stage assertions may
+            # evolve without rewriting that result event.
+            assert row["sha256"] == (
+                "1d61439654ac8daa2fe612d05eb191bfa14c03fa9cf7366570578d7226538e39"
+            )
+            continue
         assert hashlib.sha256(path.read_bytes()).hexdigest() == row["sha256"]
         assert path.stat().st_size == row["bytes"]
     assert result["verification"]["combined_contract_tests"]["failed"] == 0
@@ -427,7 +435,7 @@ def test_T02_result_binds_current_implementation_and_preserves_zero_calls() -> N
     assert result["stage_acceptance"]["S2_T03"].startswith("not_authorized")
 
 
-def test_current_projection_and_backlog_route_only_to_T03_authority() -> None:
+def test_T02_projection_is_historical_and_backlog_preserves_its_evidence() -> None:
     result = _load(T02_RESULT)
     projection = _load(CURRENT_PROJECTION)
     backlog = _load(PROGRAM_BACKLOG)
@@ -443,7 +451,12 @@ def test_current_projection_and_backlog_route_only_to_T03_authority() -> None:
     assert truth["S2_model_canary_authorized"] is False
     assert truth["S2_model_calls"] == 0
     assert truth["current_next_action"] == result["next_action"]
-    assert backlog["next_action"]["item_id"] == result["next_action"]
-    assert backlog["next_action"]["current_projection_sha256"] == (
-        hashlib.sha256(CURRENT_PROJECTION.read_bytes()).hexdigest()
+    current = backlog["next_action"]
+    assert current["S2_T02_implementation_ref"] == (
+        T02_RESULT.relative_to(ROOT).as_posix()
     )
+    assert current["S2_T02_implementation_sha256"] == hashlib.sha256(
+        T02_RESULT.read_bytes()
+    ).hexdigest()
+    assert current["S2_T02_status"].startswith("engineering_pass")
+    assert current["current_projection_ref"].endswith("v2_11.json")

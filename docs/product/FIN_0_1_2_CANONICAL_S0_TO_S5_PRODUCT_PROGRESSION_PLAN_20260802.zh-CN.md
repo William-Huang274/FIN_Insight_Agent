@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S1 pass closed / S2-T02 engineering pass / T03 authority decision next / S3-S5 not started`
+状态：`current canonical plan / S0-S1 pass closed / S2-T03 conditional authority issued and runner preflight next / S3-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -12,7 +12,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭，S2-T02 的双模型路由与 paired-canary compiler 已工程通过，下一项是 T03 六调用 canary 的独立权限审查；
+- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭，S2-T02 的双模型路由与 paired-canary compiler 已工程通过，T03 六调用 canary 已有条件签权，下一项是专用 runner、原子 capture 与零调用 preflight；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
@@ -62,9 +62,11 @@ S1 current evidence reconciliation 与独立 closeout 已通过。独立 host as
 
 StagePlan 同时发现 `common_runtime_contract_family_source_v1_0` 的状态文字仍停留在“尚未迁移”，而 admission 校验仍硬编码 Pro。T02 已通过新建 v1.1 source/binding、S2 model registry 和独立 paired-canary compiler 修复该漂移，并额外把 `program_cell_id` 收回本地注入、给 Fact 增加有界证据上下文、隔离 S2 与旧默认资源 registry。组合回归=`97 passed / 0 failed`，DELL/MU/NVDA 各 6 个 fake call、capture 和本地 assembly 全绿；RC-P36-098/099/100 已关闭。
 
-这仍只证明比较器与本地安全边界，尚未证明 Flash 或 Pro 的自然输出能力，也没有选择 S3 主线模型。当前下一项仍是零调用权限审查，不读取 credential 或执行模型：
+这仍只证明比较器与本地安全边界，尚未证明 Flash 或 Pro 的自然输出能力，也没有选择 S3 主线模型。T03 权限审查已经冻结六个 exact call、硬预算和停止规则，但审计发现 T02 只有 compiler、本地 materializer 与内存 fake capture，尚无专用真实 runner，也未证明校验前原子写入受限 capture store。该项目内缺口登记为 RC-P36-101，不属于模型或 Provider 失败。
 
-`FIN-0.1.2-S2-T03-MU-THREE-FAMILY-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-AUTHORITY-DECISION`
+当前下一项只补这一执行前缺口，不读取 credential 或执行模型：
+
+`FIN-0.1.2-S2-T03-PAIRED-CANARY-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`
 
 以下 S0 收口说明保留为 preceding current-baseline evidence：
 

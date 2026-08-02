@@ -1,6 +1,9 @@
 # Current Context Pack: P38 Point 01 Canonical Runtime Foundation
 
-更新时间：2026-08-02
+更新时间：2026-08-03
+
+> [!IMPORTANT]
+> **FIN 0.1.2 S2-T03 六调用 paired canary 已有条件签权，当前只实现 runner/capture 零调用 preflight（current，2026-08-03）**：权限冻结 MU 的 Fact/Claim/WWC × Flash stable/Pro preview=`6 calls`，每 family 的两模型 request/equivalence digest 相同；thinking disabled、每调用一次 transport attempt、retry/fallback/provider hopping/prompt-only retry=`0`，主预算 50k input/8.4k output/USD 0.06/900s，业务 Run/Artifact=`0`。审计同时确认 T02 新模块只有请求 compiler、本地 materializer 与内存 fake capture，尚无该六调用专用真实 runner，也未证明校验前原子写入受限 capture store，登记项目内 RC-P36-101；这不是 DeepSeek/Provider/sub2api 失败。authority=`configs/releases/fin_ia_0_1_2_s2_t03_mu_three_family_flash_stable_vs_pro_preview_paired_natural_output_canary_authority_decision_v1_0.json`，projection=`configs/runtime/fin_ia_0_1_2_current_program_projection_v2_11.json`，current next=`FIN-0.1.2-S2-T03-PAIRED-CANARY-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`。本轮 credential/model/provider/execution network=`0/0/0/0`；preflight 通过前不得执行已签权调用。
 
 > [!IMPORTANT]
 > **FIN 0.1.2 S2-T02 零调用实现已工程通过，T03 权限审查为当前唯一下一项（current，2026-08-02）**：新 v1.1 family source/binding、Flash stable / Pro preview model registry、独立 S2 RuntimeResourceRegistry 与 paired-canary compiler 已完成；历史 v1.0 与旧 Pro admission 未改写。模型不再输出 `program_cell_id`，由本地校验后注入；Fact 可见有界 statement/boundary 但仍只能返回 alias/enum；三 family 的 Flash/Pro model-visible request 各自逐字节一致。DELL/MU/NVDA fake 各=`6 calls / 6 pass / 6 captures / 6 assemblies`，组合 S0/S1/S2 回归=`97 passed / 0 failed`，identity/cross-case/Claim 条件/WWC 日期与容量/transport/capture/resource mutation 全绿。RC-P36-098/099/100 已关闭。credential/model/provider/network/business Run/Artifact=`0/0/0/0/0/0`；这不是模型资格或产品验收。implementation=`configs/releases/fin_ia_0_1_2_s2_t02_dual_model_route_current_contract_source_and_paired_canary_compiler_zero_call_implementation_v1_0.json`，projection=`configs/runtime/fin_ia_0_1_2_current_program_projection_v2_10.json`，current next=`FIN-0.1.2-S2-T03-MU-THREE-FAMILY-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-AUTHORITY-DECISION`；下一项仍为零调用 authority，不得自动读取凭据或调用 DeepSeek。

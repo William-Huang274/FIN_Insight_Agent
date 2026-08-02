@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0 formal pass closed / S1 current baseline pass closed / S2 stage plan next / S2-S5 product execution not started`
+状态：`current canonical plan / S0-S1 pass closed / S2 StagePlan pass / T02 zero-call model comparator contract next / S3-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -12,7 +12,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1 已按合并后 current baseline 通过并关闭，下一项是先制定 S2 模型边界 StagePlan；
+- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭，S2 StagePlan 已通过，下一项是双模型路由与 paired-canary compiler 的零调用实现；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
@@ -58,9 +58,11 @@ S1 current evidence reconciliation 与独立 closeout 已通过。独立 host as
 
 `configs/releases/fin_ia_0_1_2_s1_current_evidence_reconciliation_independent_assessment_and_closeout_v1_0.json`
 
-这仍只证明三案确定性链与故障留存，不证明 DeepSeek、exact-live 或产品质量。下一项不是直接调用模型，而是先制定 S2 StagePlan，冻结改变的合同家族、DeepSeek 主线候选、少量 canary 预算、本地确定性 owner、停止规则和原始证据留存：
+这仍只证明三案确定性链与故障留存，不证明 DeepSeek、exact-live 或产品质量。S2 StagePlan 已完成，冻结了 Flash stable 与 Pro preview 的同输入 paired comparison、Fact/Claim/WWC 三个 changed family、模型只输出 alias/enum/judgment atom、本地拥有 material truth，以及主要 6 calls、最多一个受影响 family 的 2-call replacement pair。replacement 只允许修复已证明的项目比较器缺陷，不能用来重试模型不遵循或弱质量结果。
 
-`FIN-0.1.2-S2-CHANGED-CONTRACT-FAMILY-NATURAL-CAPABILITY-ENVELOPE-STAGE-PLAN`
+StagePlan 同时发现 `common_runtime_contract_family_source_v1_0` 的状态文字仍停留在“尚未迁移”，而 admission 校验仍硬编码 Pro。该漂移不推翻 S1 行为证明，但在修复前阻断公平模型比较，登记 RC-P36-098。当前下一项仍是零调用，不读取 credential 或执行模型：
+
+`FIN-0.1.2-S2-T02-DUAL-MODEL-ROUTE-CURRENT-CONTRACT-SOURCE-AND-PAIRED-CANARY-COMPILER-ZERO-CALL-IMPLEMENTATION`
 
 以下 S0 收口说明保留为 preceding current-baseline evidence：
 

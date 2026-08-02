@@ -1,0 +1,311 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_deepseek_flash_stable_pro_preview_natural_capability_envelope_stage_plan_v1_0",
+  "stage_id": "FIN-0.1.2-S2-DEEPSEEK-FLASH-STABLE-PRO-PREVIEW-NATURAL-CAPABILITY-ENVELOPE-R1",
+  "recorded_at": "2026-08-02T22:54:47+08:00",
+  "status": "S2_stage_plan_pass_T02_zero_call_comparator_contract_implementation_next",
+  "authority": {
+    "user_instruction": "继续",
+    "stage_plan_and_read_only_audit_authorized": true,
+    "runtime_implementation_authorized_in_this_slice": false,
+    "credential_read_or_probe_authorized": false,
+    "model_provider_network_or_business_execution_authorized": false,
+    "model_canary_requires_separate_authority": true,
+    "S3_entry_release_or_production_authorized": false
+  },
+  "parent_binding": {
+    "S1_closeout_ref": "configs/releases/fin_ia_0_1_2_s1_current_evidence_reconciliation_independent_assessment_and_closeout_v1_0.json",
+    "S1_closeout_sha256": "fe4a13608368d45d251b51a7449e3ae47c8ccb53fb70d1f11f4e9ad88c4264bb",
+    "current_runtime_source_ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+    "current_runtime_source_sha256": "b9a0e990dbf01ce11e76012c246240494cf38029b11b2c289008ae490fc2283f",
+    "current_runtime_binding_ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0.json",
+    "current_runtime_binding_sha256": "17bab0f9b4bad8befa2452b596d7e925fde656ccf265e707986cd628a1888655",
+    "current_S1_three_case_contract": "DELL_MU_NVDA_one_6_12_12_9_deterministic_path"
+  },
+  "stage_objective": {
+    "plain_language": "Use one small paired experiment to decide what DeepSeek may judge and what local code must own before any full product run.",
+    "decision_targets": [
+      "select one S3 mainline model alias or honestly block model eligibility",
+      "freeze the model-authored judgment atom surface family by family",
+      "freeze deterministic local ownership for numbers dates identity IDs ordering lineage and final rendering",
+      "record latency token and cost evidence without treating speed as research quality",
+      "prevent field-by-field live repair loops from moving into S3 or S4"
+    ],
+    "non_goals": [
+      "three_case_full_chain",
+      "nine_business_Artifact_generation",
+      "DELL_R2_MU_R2_or_NVDA_R3",
+      "paired_product_assessment_or_owner_acceptance",
+      "strict_server_side_JSON_Schema_qualification",
+      "generalized_cross_family_compiler_for_FIN_0_2",
+      "release_or_production_readiness"
+    ]
+  },
+  "historical_evidence_audit": {
+    "deepseek_alias_observation": {
+      "flash_alias": "deepseek-v4-flash",
+      "flash_release_role": "user_confirmed_stable_API_only_candidate",
+      "pro_alias": "deepseek-v4-pro",
+      "pro_release_role": "user_confirmed_preview_historical_mainline_control",
+      "historical_models_endpoint_listed_both_aliases": true,
+      "historical_minimal_thinking_disabled_smoke_latency_seconds": {
+        "flash": "approximately_1",
+        "pro": "approximately_1_to_2"
+      },
+      "current_comparative_capability_proven": false
+    },
+    "prior_pro_canary": {
+      "authority_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_changed_contract_family_single_node_natural_output_canaries_authority_decision_v1_0.json",
+      "authority_sha256": "e6f10a50d796d22bf03c48012442dbae1196be58984159cd4ef194053f124498",
+      "result_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_changed_contract_family_single_node_natural_output_canaries_exact_once_execution_result_v1_0.json",
+      "result_sha256": "410051c4dc94eb94c8d2f06fbc601e57dfc5b8e759cb6a938bbc17d99d7ae9bb",
+      "result": "Fact_pass_Claim_failed_WWC_not_called",
+      "Fact_positive_evidence": "five_fact_atoms_native_JSON_compiled_and_locally_assembled",
+      "Claim_earliest_fault": "project_contract_conditional_semantics_absent_from_model_visible_surface",
+      "model_or_provider_fault_established_for_Claim": false
+    },
+    "later_live_findings": [
+      {
+        "finding": "provider_authored_material_numeric_tokens",
+        "classification": "model_surface_too_broad_and_model_instruction_noncompliance",
+        "current_owner": "S2_provider_surface_boundary_plus_local_numeric_owner"
+      },
+      {
+        "finding": "provider_authored_calendar_deadline",
+        "classification": "temporal_authority_must_be_local_alias_or_enum",
+        "current_owner": "S2_provider_surface_boundary_plus_local_temporal_owner"
+      },
+      {
+        "finding": "WWC_six_candidates_rejected_before_local_top_three_selection",
+        "classification": "project_owned_candidate_vs_selected_capacity_drift",
+        "current_owner": "already_deterministically_repaired_retain_as_regression"
+      },
+      {
+        "finding": "Fact_returned_all_twenty_two_visible_aliases_above_six",
+        "classification": "project_design_exposed_unbounded_legal_pool_and_model_did_not_self_limit",
+        "current_owner": "current_local_pre_provider_fact_candidate_pool_maximum_six"
+      }
+    ],
+    "strict_schema_transport": {
+      "handoff_ref": "docs/project_os/STRICT_SCHEMA_TRANSPORT_API_HANDOFF.zh-CN.md",
+      "handoff_sha256": "384fb6175d52a834f42e254152a3cba22acbb65d5e1ed9cd4514f3e306697eda",
+      "status": "parked_nonblocking",
+      "current_wire": "chat_completions_json_object_plus_local_semantic_validation"
+    }
+  },
+  "current_owned_gap": {
+    "issue_id": "RC-P36-098-fin-0-1-2-s2-common-runtime-source-status-and-deepseek-model-route-drift",
+    "observations": [
+      "the current source status still says not yet migrated while the S1 binding and ten-consumer proof establish migration",
+      "bounded agent admission validation hard-codes deepseek-v4-pro and cannot express a fair Flash-versus-Pro paired canary"
+    ],
+    "impact": "S2 cannot compare the two aliases under one versioned contract without a zero-call route and source rebaseline.",
+    "S1_reopened": false,
+    "earliest_owner": "S2-T02"
+  },
+  "model_candidates": [
+    {
+      "candidate_id": "flash_stable",
+      "provider": "deepseek",
+      "model": "deepseek-v4-flash",
+      "model_ref": "deepseek:deepseek-v4-flash",
+      "role": "preferred_stable_candidate",
+      "automatic_runtime_mainline": false
+    },
+    {
+      "candidate_id": "pro_preview",
+      "provider": "deepseek",
+      "model": "deepseek-v4-pro",
+      "model_ref": "deepseek:deepseek-v4-pro",
+      "role": "historical_preview_control",
+      "automatic_runtime_mainline": false
+    }
+  ],
+  "shared_provider_route": {
+    "base_url": "https://api.deepseek.com/beta",
+    "wire_api": "chat_completions_json_object",
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "thinking": "disabled",
+    "reasoning_effort": "none",
+    "temperature": 0.0,
+    "stream": false,
+    "timeout_seconds_per_call": 120,
+    "provider_hopping": false,
+    "automatic_model_fallback": false
+  },
+  "changed_contract_families": [
+    {
+      "family_id": "specialist_fact_atoms",
+      "current_local_owner": "pre_provider_typed_candidate_pool_maximum_six_then_validate_all_and_select_maximum_three",
+      "model_surface": "select_request_local_support_aliases_and_closed_judgment_enums_only",
+      "historical_unknown": "current_prebounded_pool_has_not_been_paired_between_Flash_and_Pro"
+    },
+    {
+      "family_id": "claim_candidate_atoms",
+      "current_local_owner": "compiled_claim_kind_support_role_matrix_alias_expansion_and_final_rendering",
+      "model_surface": "claim_kind_direction_and_request_local_support_aliases_only",
+      "historical_unknown": "compiled_v2_visible_semantics_have_not_received_a_fresh_natural_output_pair"
+    },
+    {
+      "family_id": "what_would_change_atoms",
+      "current_local_owner": "validate_every_candidate_stable_select_maximum_three_and_render_bound_temporal_aliases",
+      "model_surface": "closed_action_priority_trigger_authority_and_date_alias_judgments_only",
+      "historical_unknown": "current_candidate_vs_selected_capacity_and_temporal_alias_surface_have_not_been_paired"
+    }
+  ],
+  "fixed_tasks": [
+    {
+      "task_id": "S2-T01",
+      "title": "stage_plan_historical_evidence_reconciliation_and_budget_freeze",
+      "status": "pass",
+      "model_calls": 0,
+      "exit": "current plan machine contract technical plan projection and ledgers agree"
+    },
+    {
+      "task_id": "S2-T02",
+      "title": "dual_model_route_current_contract_source_and_paired_canary_compiler_zero_call_implementation",
+      "status": "pending",
+      "maximum_initial_implementation_bundles": 1,
+      "requirements": [
+        "create one versioned S2 model candidate registry and corrected current contract source binding without rewriting v1.0 history",
+        "parameterize only the S2 canary route for the two exact aliases while preserving historical Pro admissions",
+        "compile the same model-visible prompt wire shape validator selector renderer capacity typed failure fake fixtures and capture index from one family contract",
+        "make paired requests byte-identical except model model_ref call identity and unavoidable provider receipt fields",
+        "prove DELL MU NVDA fake and mutation coverage before any credential access"
+      ],
+      "exit": "all zero_call_contract_fixture_mutation_and_capture_tests_pass_and_exact_six_call_plan_is_frozen"
+    },
+    {
+      "task_id": "S2-T03",
+      "title": "MU_three_family_Flash_stable_vs_Pro_preview_paired_natural_output_canary",
+      "status": "pending_separate_authority_required",
+      "primary_call_count": 6,
+      "case": "MU",
+      "families_per_model": 3,
+      "full_chain": false,
+      "business_artifact_writes": 0,
+      "exit": "six_independent_results_and_captures_materialized_or_honest_transport_block"
+    },
+    {
+      "task_id": "S2-T04",
+      "title": "blind_paired_assessment_model_surface_disposition_and_S2_closeout",
+      "status": "pending",
+      "model_calls": 0,
+      "exit": "mainline_or_honest_block_local_ownership_and_S3_eligibility_are_machine_recorded"
+    }
+  ],
+  "paired_canary_contract": {
+    "case": "MU",
+    "program_cell_id": "demand_authenticity_and_sustainability",
+    "model_count": 2,
+    "family_count": 3,
+    "primary_call_count": 6,
+    "request_equivalence": "identical_system_user_wire_schema_inference_arguments_except_model_model_ref_and_fresh_call_identity",
+    "family_outputs_are_isolated": true,
+    "one_family_output_feeds_another": false,
+    "semantic_validation_failure_stops_other_independent_calls": false,
+    "transport_auth_security_or_capture_failure_stops_remaining_calls": true,
+    "why_collect_all_semantic_failures": "The bounded experiment must expose the full current family envelope in one round instead of repairing and rerunning one field at a time.",
+    "capture_policy_ref": "fin01.runtime.provider_interaction_audit_capture:v2",
+    "capture_before_local_validation": true,
+    "preserve_exact_model_visible_request": true,
+    "preserve_final_assistant_output": true,
+    "persist_usage_finish_reason_model_and_allowlisted_arguments": true,
+    "persist_credentials_headers_cookies_or_private_reasoning": false,
+    "failed_output_business_promotable": false
+  },
+  "hard_budget": {
+    "primary_semantic_model_calls": 6,
+    "maximum_affected_family_replacement_pair_calls": 2,
+    "maximum_total_semantic_model_calls": 8,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "fallback_budget": 0,
+    "provider_hopping_budget": 0,
+    "prompt_only_retry_budget": 0,
+    "maximum_input_tokens_primary": 50000,
+    "maximum_output_tokens_primary": 8400,
+    "maximum_total_cost_usd_primary": 0.06,
+    "maximum_wall_clock_seconds_primary": 900,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_business_Run_or_Artifact_writes": 0
+  },
+  "post_canary_repair_rule": {
+    "automatic_replacement": false,
+    "one_consolidated_zero_call_repair_bundle_maximum": 1,
+    "one_affected_family_two_model_replacement_pair_maximum": 1,
+    "replacement_requires": [
+      "the primary comparison was invalidated by a project-owned comparator model-visible-contract capture or local-assembly defect",
+      "the defect is fixed at its earliest S2 owner with deterministic DELL MU NVDA regression",
+      "a new exact request digest and separate user authority are issued"
+    ],
+    "replacement_for_model_noncompliance_or_weak_quality": false,
+    "second_new_project_owned_failure_after_replacement": "S2_honest_block_no_more_live_repair_loop"
+  },
+  "assessment_contract": {
+    "hard_integrity_dimensions": [
+      "provider_status_and_finish_reason",
+      "native_JSON_and_exact_top_level_shape",
+      "closed_enum_and_request_local_alias_membership",
+      "candidate_and_byte_capacity",
+      "cross_field_semantic_rules",
+      "no_provider_authored_material_number_date_identity_ID_lineage_or_raw_reference",
+      "local_deterministic_assembly_and_rendering",
+      "capture_v2_and_terminal_result_completeness"
+    ],
+    "blind_quality_dimensions_each_scored_0_to_2": [
+      "evidence_selection_relevance",
+      "epistemic_discipline",
+      "decision_usefulness",
+      "concise_information_density"
+    ],
+    "operational_dimensions": [
+      "input_output_total_tokens",
+      "latency_ms",
+      "estimated_cost_usd"
+    ],
+    "stable_candidate_preference_rule": "If both models pass all hard integrity gates Flash stable is selected unless its blinded total quality score is more than two points below Pro across the three families.",
+    "pro_preview_selection_rule": "Pro preview may be selected only when it passes all hard gates and Flash fails a hard gate or trails by more than two blinded quality points; preview lifecycle risk must be recorded.",
+    "no_model_selection_rule": "If neither model passes the retained provider surface no model is selected and that family moves to local deterministic ownership or S2 closes honest block.",
+    "automatic_runtime_fallback": false
+  },
+  "stage_exit": {
+    "pass_requires": [
+      "S2_T02_zero_call_comparator_contract_pass",
+      "one_valid_primary_or_bounded_replacement_paired_canary_result",
+      "one_model_alias_selected_for_S3_or_explicit_no_model_surface_disposition",
+      "family_by_family_provider_and_local_authority_matrix_frozen",
+      "capture_and_cost_envelope_proven",
+      "RC_P36_098_closed_or_honestly_blocked",
+      "S2_closeout_and_current_projection_materialized"
+    ],
+    "does_not_require": [
+      "full_chain",
+      "nine_Artifacts",
+      "product_paired_assessment",
+      "owner_acceptance",
+      "DELL_MU_or_NVDA_product_grade"
+    ],
+    "S3_entry": "only_after_S2_closeout_pass",
+    "failure_version_effect": "no_automatic_FIN_0_1_3_or_FIN_0_1_4"
+  },
+  "issue_ownership": {
+    "RC_P36_067": "S2_preserves_local_numeric_owner_final_product_reproof_remains_S3_S4",
+    "RC_P36_068": "S2_preserves_local_identity_owner_final_Artifact_reproof_remains_S3_S4",
+    "RC_P36_080": "S2_blocking_provider_surface_boundary_and_mainline_model_disposition",
+    "RC_P36_081": "closed_capture_v2_regression_only",
+    "RC_P36_083": "broad_generalized_compiler_remains_FIN_0_2_nonblocking_for_scoped_three_family_S2",
+    "RC_P36_084": "verifier_and_delivery_quality_remains_S3_S4_nonblocking_for_S2_model_boundary",
+    "RC_P36_098": "S2_T02_blocking_before_any_model_call"
+  },
+  "observed_counts": {
+    "runtime_code_changes": 0,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_or_source_calls": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "next_action": "FIN-0.1.2-S2-T02-DUAL-MODEL-ROUTE-CURRENT-CONTRACT-SOURCE-AND-PAIRED-CANARY-COMPILER-ZERO-CALL-IMPLEMENTATION"
+}

@@ -20,6 +20,11 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 markers = [
+  "contract_compile: mirror of the host-before-attempt contract compilation phase",
+  "host_preflight: mirror of the clean synced host preflight phase",
+  "disposable_current_gate: mirror of the Git-free disposable current gate phase",
+  "historical_audit: mirror of the non-gating immutable historical audit phase",
+  "post_run_attestation: mirror of the host read-only closeout attestation phase",
   "fast_contract: hermetic deterministic contract or unit test",
   "fixture_integration: integration test using temporary or repository fixtures without live external services",
   "local_data_integration: test whose result may depend on local non-hermetic data assets",

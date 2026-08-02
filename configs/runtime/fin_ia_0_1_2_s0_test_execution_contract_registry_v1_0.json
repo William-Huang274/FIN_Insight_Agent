@@ -1,0 +1,241 @@
+{
+  "schema_version": "fin_ia_test_execution_contract_registry_v1_0",
+  "registry_id": "FIN-0.1.2-S0-TEST-EXECUTION-CONTRACT-REGISTRY-R1",
+  "contract_id": "fin_0_1_2.S0.phase_aware_test_execution_and_typed_dependency:v1",
+  "status": "current_selected_engineering_candidate",
+  "phases": [
+    {
+      "phase": "contract_compile",
+      "location": "host_before_attempt",
+      "gates_current_candidate": true
+    },
+    {
+      "phase": "host_preflight",
+      "location": "clean_synced_repository_with_git",
+      "gates_current_candidate": true
+    },
+    {
+      "phase": "disposable_current_gate",
+      "location": "two_git_free_content_addressed_disposables",
+      "gates_current_candidate": true
+    },
+    {
+      "phase": "historical_audit",
+      "location": "host_read_only_after_current_gate",
+      "gates_current_candidate": false
+    },
+    {
+      "phase": "post_run_attestation",
+      "location": "host_read_only_closeout",
+      "gates_current_candidate": true
+    }
+  ],
+  "dependency_bundles": [
+    {
+      "bundle_id": "current_program_projection",
+      "resolver_type": "current_projection_binding_and_source_paths_closure",
+      "configuration": {
+        "policy_field": "host_current_program_projection_ref"
+      }
+    },
+    {
+      "bundle_id": "historical_event_roots",
+      "resolver_type": "immutable_event_root_closure",
+      "configuration": {
+        "roots": [
+          "configs/releases/fin_ia_0_1_2_s0_fresh_clean_environment_qualification_authority_decision_v1_0.json",
+          "configs/releases/fin_ia_0_1_2_s0_fresh_clean_environment_qualification_terminal_failure_and_project_level_disposition_required_v1_0.json",
+          "configs/releases/fin_ia_0_1_2_version_consolidation_and_current_rebaseline_v1_0.json",
+          "configs/releases/fin_ia_0_1_3_s0_t03_host_zero_call_engineering_proof_terminal_honest_block_closeout_v1_0.json",
+          "configs/releases/fin_ia_0_1_3_s0_v2_host_zero_call_engineering_proof_terminal_failure_and_project_level_disposition_required_v1_0.json"
+        ]
+      }
+    },
+    {
+      "bundle_id": "python_imports",
+      "resolver_type": "python_import_closure",
+      "configuration": {
+        "source_roots": [
+          "apps",
+          "scripts",
+          "src",
+          "tests",
+          "tests/contract"
+        ]
+      }
+    },
+    {
+      "bundle_id": "reference_role_registry",
+      "resolver_type": "reference_role_repository_closure",
+      "configuration": {
+        "registry_ref": "configs/runtime/fin_ia_current_reference_role_registry_v2_0.json"
+      }
+    },
+    {
+      "bundle_id": "runtime_resource_registry",
+      "resolver_type": "runtime_resource_registry_closure",
+      "configuration": {
+        "registry_ref": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+        "policy_contract_fields": [
+          "semantic_parity_contract_ref"
+        ]
+      }
+    },
+    {
+      "bundle_id": "tracked_fixtures",
+      "resolver_type": "tracked_fixture_prefix",
+      "configuration": {
+        "path": "tests/fixtures",
+        "suffixes": [
+          ".json",
+          ".jsonl",
+          ".yaml",
+          ".yml"
+        ]
+      }
+    }
+  ],
+  "test_modules": [
+    {
+      "test_path": "tests/contract/test_fin_0_1_2_s0_clean_environment_qualification_authority.py",
+      "phase": "historical_audit",
+      "dependency_bundle_ids": [
+        "historical_event_roots",
+        "python_imports"
+      ],
+      "assertion_surfaces": [
+        "prior_qualification_authority_event",
+        "prior_candidate_digest_binding"
+      ]
+    },
+    {
+      "test_path": "tests/contract/test_fin_0_1_2_s0_current_projection_and_attempt_boundary.py",
+      "phase": "historical_audit",
+      "dependency_bundle_ids": [
+        "current_program_projection",
+        "historical_event_roots",
+        "python_imports",
+        "reference_role_registry"
+      ],
+      "assertion_surfaces": [
+        "prior_projection_and_attempt_boundary_snapshot"
+      ]
+    },
+    {
+      "test_path": "tests/contract/test_fin_0_1_2_s0_phase_aware_test_execution_contract.py",
+      "phase": "host_preflight",
+      "dependency_bundle_ids": [
+        "current_program_projection",
+        "historical_event_roots",
+        "python_imports",
+        "reference_role_registry",
+        "runtime_resource_registry",
+        "tracked_fixtures"
+      ],
+      "assertion_surfaces": [
+        "phase_registry_compile",
+        "typed_dependency_closure",
+        "separate_phase_results",
+        "negative_mutation"
+      ]
+    },
+    {
+      "test_path": "tests/contract/test_fin_0_1_2_s1_realistic_three_case_deterministic_proof.py",
+      "phase": "disposable_current_gate",
+      "dependency_bundle_ids": [
+        "python_imports",
+        "runtime_resource_registry",
+        "tracked_fixtures"
+      ],
+      "assertion_surfaces": [
+        "DELL_MU_NVDA_zero_model_6_12_12_9",
+        "identity_numeric_lineage_mutation"
+      ]
+    },
+    {
+      "test_path": "tests/contract/test_fin_0_1_2_version_consolidation_and_current_rebaseline.py",
+      "phase": "host_preflight",
+      "dependency_bundle_ids": [
+        "current_program_projection",
+        "historical_event_roots",
+        "python_imports"
+      ],
+      "assertion_surfaces": [
+        "single_current_FIN_0_1_2_projection",
+        "S1_to_S5_not_started"
+      ]
+    },
+    {
+      "test_path": "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py",
+      "phase": "host_preflight",
+      "dependency_bundle_ids": [
+        "current_program_projection",
+        "historical_event_roots",
+        "python_imports",
+        "reference_role_registry"
+      ],
+      "assertion_surfaces": [
+        "reference_role_repository_closure",
+        "host_git_inventory_compiler"
+      ]
+    },
+    {
+      "test_path": "tests/contract/test_fin_0_1_3_s0_runtime_resource_registry_and_dependency_compiler.py",
+      "phase": "disposable_current_gate",
+      "dependency_bundle_ids": [
+        "python_imports",
+        "runtime_resource_registry"
+      ],
+      "assertion_surfaces": [
+        "runtime_resource_registry_29",
+        "typed_repository_test_resource"
+      ]
+    },
+    {
+      "test_path": "tests/contract/test_fin_0_1_3_s0_t03_host_zero_call_engineering_proof_terminal_honest_block_closeout.py",
+      "phase": "historical_audit",
+      "dependency_bundle_ids": [
+        "historical_event_roots",
+        "python_imports"
+      ],
+      "assertion_surfaces": [
+        "immutable_T03_terminal_event"
+      ]
+    },
+    {
+      "test_path": "tests/contract/test_fin_0_1_3_s0_typed_environment_semantic_parity.py",
+      "phase": "disposable_current_gate",
+      "dependency_bundle_ids": [
+        "python_imports",
+        "runtime_resource_registry"
+      ],
+      "assertion_surfaces": [
+        "typed_environment_roots",
+        "raw_preserving_semantic_projection",
+        "uri_before_path_detection"
+      ]
+    },
+    {
+      "test_path": "tests/contract/test_fin_0_1_3_s0_v2_host_zero_call_engineering_proof_terminal_failure.py",
+      "phase": "historical_audit",
+      "dependency_bundle_ids": [
+        "historical_event_roots",
+        "python_imports"
+      ],
+      "assertion_surfaces": [
+        "immutable_v2_terminal_failure"
+      ]
+    }
+  ],
+  "policies": {
+    "one_selected_module_one_phase": true,
+    "phase_derives_gating_role": true,
+    "pytest_markers_are_mirrors_only": true,
+    "direct_nonpython_repository_reads_require_typed_helper": true,
+    "repository_shaped_direct_read_without_bundle_fails": true,
+    "per_observed_file_exception_list_forbidden": true,
+    "git_and_codex_runtime_packaging_forbidden": true,
+    "historical_findings_gate_current_candidate": false,
+    "pytest_basetemp_under_disposable_temporary_root": true
+  }
+}

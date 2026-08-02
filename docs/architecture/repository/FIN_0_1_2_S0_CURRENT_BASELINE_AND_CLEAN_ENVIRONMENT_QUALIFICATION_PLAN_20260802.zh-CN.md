@@ -1,7 +1,7 @@
 # FIN 0.1.2 S0 当前基线与干净环境验收计划
 
 日期：2026-08-02
-状态：`S0-04 engineering pass / S0-05 terminal failed / S0-06 disposition complete / structural implementation pending`
+状态：`S0-04 engineering pass / S0-05 terminal failed / S0-06 disposition complete / S0-07 structural engineering pass / formal qualification authority pending`
 
 产品计划：`docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md`
 
@@ -82,11 +82,30 @@ S0 只确认当前代码、配置、Prompt、fixture、测试和原始运行记�
 
 本次处置还纠正了旧 proof 预算：本地 unit/fixture/mutation 是实现期正常验证，不算产品版本或 formal attempt；正式双 disposable qualification 只针对 committed candidate，每个 candidate 最多一次且需另行授权。同一 candidate 不重跑；修复产生新 candidate 时仍留在 FIN 0.1.2 S0。出现新的结构失败族，先修改计划，不自动创建新版本。
 
-当前下一项只实现上述一个结构包，并以此前暴露的 19 个直接依赖、6 个 projection source paths、2 个组合依赖、53 条路径 findings，以及 DELL/MU/NVDA `6/12/12/9` 为回归矩阵。实现通过不等于 clean qualification 或 S0 通过。
+上述结构包已由 S0-07 实现。该实现仍不等于 clean qualification 或 S0 通过。
 
-机器入口：
+历史机器入口：
 
 `FIN-0.1.2-S0-PHASE-AWARE-TEST-TOPOLOGY-AND-TYPED-TEST-DEPENDENCY-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+
+### S0-07 phase-aware topology 与 typed dependency 实现（工程通过）
+
+已完成选定的单一结构实现，没有逐文件补缺失清单：
+
+1. `TestExecutionContractRegistry` 成为五阶段、module ownership、gating 和六类 dependency bundle 的机器权威；旧 suite schema 仅保留兼容投影，runner 执行时按 registry 分类；
+2. host preflight、两套 Git-free disposable current gate、historical audit 和 post-run attestation 分别执行与物化；历史 finding 继续可见但不能升级为 current gate failure；
+3. typed dependency compiler 从 Python import（含 lazy registry 与 relative import）、29 项 Runtime resources、reference-role repository refs、current projection bindings/source_paths、immutable event roots 和 tracked fixtures 编译 closure；candidate 不使用 broad repository prefix 或逐文件 allowlist；
+4. selected disposable test 的直接非 Python repository read 使用 typed helper；未声明 bundle、direct ROOT read、unknown/duplicate phase、mixed module、traversal 与 forbidden root 均有负向回归；
+5. 每个 disposable 的 pytest basetemp 都位于其 typed temporary root 下；`fixture://` 先按 URI 分类，双转义 Windows repr 只在 semantic projection 中规范化，raw evidence 不改；未知宿主路径继续 fail closed；
+6. 最终显式 inventory 工程 full-chain（不是 formal qualification）为 784 tracked files / 0 allowlist；host=`31 passed`，两套 disposable 各=`58 passed / 0 failed / 0 collection error / 0 unknown path`，semantic parity=true，post-run attestation=pass；historical audit=`23 passed / 1 finding`，唯一 finding 是旧 R2.1 authority 已被历史 attempt 消费，按预期 non-gating。
+
+实现记录：`configs/releases/fin_ia_0_1_2_s0_phase_aware_test_topology_and_typed_test_dependency_compiler_minimum_zero_call_implementation_v1_0.json`。
+
+RC-P36-090/091/093/094/095/097 已达到 engineering repaired，但仍保持 open，等待 separately authorized、clean/synced、committed candidate 的正式 qualification 复证；本轮没有关闭 full-chain blocker，也没有使用 formal attempt 预算。
+
+当前下一项：
+
+`FIN-0.1.2-S0-PHASE-AWARE-CLEAN-ENVIRONMENT-QUALIFICATION-AUTHORITY-DECISION`
 
 ## 4. 简化后的通过标准
 
@@ -112,4 +131,4 @@ S0 通过必须同时满足：
 
 ## 6. 本计划没有授权的动作
 
-S0-04 本地零调用实现与确定性回归已完成；S0-05 唯一 qualification 已终态失败并保留完整受限证据；S0-06 项目级 disposition 已完成。当前下一项仍需独立授权，只允许 phase-aware test topology 与 typed test dependency compiler 的一个零调用实现包。新 formal qualification attempt、凭据读取、DeepSeek/OpenAI/Sub2API 调用、业务网络、exact-live、DELL/MU/NVDA 产品验收、自动 retry/replacement、S1 entry、tag、release 或 production 均未授权。
+S0-04 本地集中修复、S0-05 失败终态、S0-06 项目级 disposition 和 S0-07 phase-aware/typed dependency 零调用工程实现均已完成。当前只允许先做 formal qualification 的 authority decision；尚未授权创建正式 attempt、执行 clean qualification、读取凭据、调用 DeepSeek/OpenAI/Sub2API、访问业务网络、执行 exact-live 或 DELL/MU/NVDA 产品验收，也未授权自动 retry/replacement、S1 entry、tag、release 或 production。

@@ -32,6 +32,12 @@ from sec_agent.reference_role_registry import (
     iter_reference_strings,
     load_reference_role_registry,
 )
+from sec_agent.test_execution_contract import (
+    CompiledTestExecutionContract,
+    TestDependencyBundle,
+    TestExecutionContractError,
+    load_test_execution_contract_registry,
+)
 
 
 RUNNER_SCHEMA = "fin_ia_hermetic_active_suite_runner_v1_0"
@@ -211,6 +217,29 @@ class CompiledRepositoryInventory:
                 self.reference_role_report.as_dict()
             )
         return output
+
+
+def _load_test_execution_plan(
+    repository_root: Path,
+    manifest: Mapping[str, Any],
+) -> CompiledTestExecutionContract | None:
+    policy = manifest.get("hermetic_package_policy")
+    if not isinstance(policy, Mapping):
+        raise HermeticTestRunnerError("hermetic_package_policy_missing")
+    registry_ref = policy.get("test_execution_contract_registry_ref")
+    if registry_ref is None:
+        return None
+    if not isinstance(registry_ref, str) or not registry_ref.strip():
+        raise HermeticTestRunnerError(
+            "test_execution_contract_registry_ref_invalid"
+        )
+    try:
+        return load_test_execution_contract_registry(
+            repository_root,
+            registry_ref,
+        )
+    except TestExecutionContractError as exc:
+        raise HermeticTestRunnerError(exc.code) from exc
 
 
 class ContentAddressedStore:
@@ -1043,11 +1072,530 @@ def validate_runtime_resource_inventory(
     )
 
 
+def _declared_document_repository_paths(
+    repository_root: Path,
+    roots: Iterable[str],
+) -> tuple[Path, ...]:
+    """Close typed projection/event bindings without treating every string as a path."""
+
+    admitted: set[Path] = set()
+    pending = list(roots)
+    while pending:
+        value = pending.pop(0)
+        relative = _safe_relative_path(repository_root, value)
+        if relative in admitted:
+            continue
+        if not (repository_root / relative).is_file():
+            raise HermeticTestRunnerError(
+                f"typed_test_dependency_missing:{relative.as_posix()}"
+            )
+        admitted.add(relative)
+        if relative.suffix.lower() != ".json":
+            continue
+        document = _load_json(repository_root / relative)
+        candidate_values: list[str] = []
+        for field in ("decision_binding", "implementation_binding"):
+            binding = document.get(field)
+            if isinstance(binding, Mapping) and isinstance(
+                binding.get("ref"), str
+            ):
+                candidate_values.append(str(binding["ref"]))
+        source_paths = document.get("source_paths")
+        if isinstance(source_paths, Mapping):
+            candidate_values.extend(
+                str(item)
+                for item in source_paths.values()
+                if isinstance(item, str)
+            )
+        historical_policy = document.get("historical_projection_policy")
+        if isinstance(historical_policy, Mapping) and isinstance(
+            historical_policy.get("superseded_projection"), str
+        ):
+            candidate_values.append(
+                str(historical_policy["superseded_projection"])
+            )
+        source_bindings = document.get("source_bindings")
+        if isinstance(source_bindings, list):
+            candidate_values.extend(
+                str(row["ref"])
+                for row in source_bindings
+                if isinstance(row, Mapping) and isinstance(row.get("ref"), str)
+            )
+        for candidate in candidate_values:
+            normalized = _repository_reference_path(candidate)
+            path = Path(normalized.replace("\\", "/"))
+            if (
+                path.parts
+                and path.parts[0] in _REPOSITORY_ROOTS
+                and path not in admitted
+            ):
+                pending.append(path.as_posix())
+    return tuple(sorted(admitted, key=lambda item: item.as_posix()))
+
+
+def _python_module_index(
+    tracked: set[str],
+    source_roots: Sequence[str],
+) -> dict[str, str]:
+    index: dict[str, str] = {}
+    for raw_root in source_roots:
+        root = raw_root.strip().replace("\\", "/").strip("/")
+        if not root:
+            raise HermeticTestRunnerError(
+                "typed_test_python_source_root_invalid"
+            )
+        for path in tracked:
+            if not path.endswith(".py") or not path.startswith(root + "/"):
+                continue
+            relative = path[len(root) + 1 :]
+            stem = relative[:-3]
+            if stem.endswith("/__init__"):
+                stem = stem[: -len("/__init__")]
+            module = stem.replace("/", ".")
+            if module:
+                index.setdefault(module, path)
+            full_module = path[:-3].replace("/", ".")
+            if full_module.endswith(".__init__"):
+                full_module = full_module[: -len(".__init__")]
+            if full_module:
+                index.setdefault(full_module, path)
+    return index
+
+
+def _local_import_candidates(
+    path: Path,
+    *,
+    module_names: Sequence[str],
+) -> tuple[str, ...]:
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    except (OSError, SyntaxError) as exc:
+        raise HermeticTestRunnerError(
+            f"typed_test_python_import_parse_failed:{path.as_posix()}"
+        ) from exc
+    candidates: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            candidates.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0:
+            if node.module:
+                candidates.add(node.module)
+                candidates.update(
+                    f"{node.module}.{alias.name}"
+                    for alias in node.names
+                    if alias.name != "*"
+                )
+            else:
+                candidates.update(
+                    alias.name for alias in node.names if alias.name != "*"
+                )
+    canonical_module = min(module_names, key=len) if module_names else ""
+    if canonical_module:
+        package = (
+            canonical_module
+            if path.name == "__init__.py"
+            else canonical_module.rpartition(".")[0]
+        )
+        package_parts = package.split(".") if package else []
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.ImportFrom) or node.level <= 0:
+                continue
+            retained = len(package_parts) - (node.level - 1)
+            if retained < 0:
+                continue
+            base_parts = package_parts[:retained]
+            if node.module:
+                base_parts.extend(node.module.split("."))
+            if base_parts:
+                base = ".".join(base_parts)
+                candidates.add(base)
+                candidates.update(
+                    f"{base}.{alias.name}"
+                    for alias in node.names
+                    if alias.name != "*"
+                )
+        for node in ast.walk(tree):
+            if not (
+                isinstance(node, ast.Constant)
+                and isinstance(node.value, str)
+                and node.value.startswith(".")
+            ):
+                continue
+            value = node.value
+            level = len(value) - len(value.lstrip("."))
+            suffix = value[level:]
+            retained = len(package_parts) - (level - 1)
+            if retained < 0:
+                continue
+            resolved_parts = package_parts[:retained]
+            if suffix:
+                resolved_parts.extend(suffix.split("."))
+            if resolved_parts:
+                candidates.add(".".join(resolved_parts))
+    return tuple(sorted(candidates))
+
+
+def _python_import_closure(
+    repository_root: Path,
+    tracked: set[str],
+    *,
+    seeds: Iterable[str],
+    source_roots: Sequence[str],
+) -> tuple[Path, ...]:
+    index = _python_module_index(tracked, source_roots)
+    modules_by_path: dict[str, list[str]] = {}
+    for module_name, path in index.items():
+        modules_by_path.setdefault(path, []).append(module_name)
+    admitted: set[str] = set()
+    pending = [str(value).replace("\\", "/") for value in seeds]
+    while pending:
+        path = pending.pop(0)
+        if path in admitted:
+            continue
+        if path not in tracked or not path.endswith(".py"):
+            raise HermeticTestRunnerError(
+                f"typed_test_python_seed_invalid:{path}"
+            )
+        admitted.add(path)
+        for candidate in _local_import_candidates(
+            repository_root / path,
+            module_names=modules_by_path.get(path, ()),
+        ):
+            resolved = index.get(candidate)
+            if resolved is not None and resolved not in admitted:
+                pending.append(resolved)
+            parts = candidate.split(".")
+            for length in range(1, len(parts)):
+                parent = index.get(".".join(parts[:length]))
+                if parent is not None and parent not in admitted:
+                    pending.append(parent)
+    return tuple(Path(path) for path in sorted(admitted))
+
+
+def _bundle_paths(
+    repository_root: Path,
+    tracked: set[str],
+    plan: CompiledTestExecutionContract,
+    bundle: TestDependencyBundle,
+    *,
+    phase: str,
+    policy: Mapping[str, Any],
+) -> tuple[Path, ...]:
+    configuration = bundle.configuration
+    resolver = bundle.resolver_type
+    if resolver == "python_import_closure":
+        source_roots = configuration.get("source_roots")
+        if not isinstance(source_roots, list) or not all(
+            isinstance(item, str) and item.strip() for item in source_roots
+        ):
+            raise HermeticTestRunnerError(
+                "typed_test_python_source_roots_invalid"
+            )
+        seeds = [
+            row.test_path
+            for row in plan.test_modules
+            if row.phase == phase and bundle.bundle_id in row.dependency_bundle_ids
+        ]
+        return _python_import_closure(
+            repository_root,
+            tracked,
+            seeds=seeds,
+            source_roots=source_roots,
+        )
+    if resolver == "runtime_resource_registry_closure":
+        registry_ref = configuration.get("registry_ref")
+        if not isinstance(registry_ref, str) or not registry_ref.strip():
+            raise HermeticTestRunnerError(
+                "typed_test_runtime_registry_ref_invalid"
+            )
+        try:
+            paths = set(load_runtime_resource_registry(
+                repository_root, registry_ref
+            ).package_paths())
+        except RuntimeResourceRegistryError as exc:
+            raise HermeticTestRunnerError(exc.code) from exc
+        policy_fields = configuration.get("policy_contract_fields", [])
+        if not isinstance(policy_fields, list) or not all(
+            isinstance(item, str) and item.strip()
+            for item in policy_fields
+        ):
+            raise HermeticTestRunnerError(
+                "typed_test_runtime_policy_contract_fields_invalid"
+            )
+        for field in policy_fields:
+            value = policy.get(field)
+            if not isinstance(value, str) or not value.strip():
+                raise HermeticTestRunnerError(
+                    f"typed_test_runtime_policy_contract_ref_missing:{field}"
+                )
+            paths.add(_safe_relative_path(repository_root, value))
+        return tuple(sorted(paths, key=lambda item: item.as_posix()))
+    if resolver == "reference_role_repository_closure":
+        registry_ref = configuration.get("registry_ref")
+        if not isinstance(registry_ref, str) or not registry_ref.strip():
+            raise HermeticTestRunnerError(
+                "typed_test_reference_role_registry_ref_invalid"
+            )
+        try:
+            return load_reference_role_registry(
+                repository_root, registry_ref
+            ).package_paths()
+        except ReferenceRoleRegistryError as exc:
+            raise HermeticTestRunnerError(exc.code) from exc
+    if resolver == "current_projection_binding_and_source_paths_closure":
+        policy_field = configuration.get("policy_field")
+        if policy_field != "host_current_program_projection_ref":
+            raise HermeticTestRunnerError(
+                "typed_test_current_projection_policy_field_invalid"
+            )
+        projection_ref = policy.get(policy_field)
+        if not isinstance(projection_ref, str) or not projection_ref.strip():
+            raise HermeticTestRunnerError(
+                "typed_test_current_projection_ref_invalid"
+            )
+        validate_host_current_program_projection(
+            repository_root, projection_ref
+        )
+        return _declared_document_repository_paths(
+            repository_root, [projection_ref]
+        )
+    if resolver == "immutable_event_root_closure":
+        roots = configuration.get("roots")
+        if not isinstance(roots, list) or not roots or not all(
+            isinstance(item, str) and item.strip() for item in roots
+        ):
+            raise HermeticTestRunnerError(
+                "typed_test_immutable_event_roots_invalid"
+            )
+        return _declared_document_repository_paths(repository_root, roots)
+    if resolver == "tracked_fixture_prefix":
+        prefix = configuration.get("path")
+        suffixes = configuration.get("suffixes")
+        if (
+            not isinstance(prefix, str)
+            or not prefix.strip()
+            or not isinstance(suffixes, list)
+            or not suffixes
+            or not all(isinstance(item, str) and item for item in suffixes)
+        ):
+            raise HermeticTestRunnerError(
+                "typed_test_fixture_prefix_invalid"
+            )
+        normalized = prefix.strip().replace("\\", "/").rstrip("/")
+        return tuple(
+            Path(path)
+            for path in sorted(
+                path
+                for path in tracked
+                if path.startswith(normalized + "/")
+                and any(path.endswith(suffix) for suffix in suffixes)
+            )
+        )
+    raise HermeticTestRunnerError(
+        f"typed_test_dependency_resolver_unknown:{resolver}"
+    )
+
+
+def compile_test_dependency_bundles(
+    repository_root: Path,
+    tracked: set[str],
+    plan: CompiledTestExecutionContract,
+    *,
+    phase: str,
+    policy: Mapping[str, Any],
+) -> dict[str, tuple[Path, ...]]:
+    selected_bundle_ids = {
+        bundle_id
+        for row in plan.test_modules
+        if row.phase == phase
+        for bundle_id in row.dependency_bundle_ids
+    }
+    return {
+        bundle.bundle_id: _bundle_paths(
+            repository_root,
+            tracked,
+            plan,
+            bundle,
+            phase=phase,
+            policy=policy,
+        )
+        for bundle in plan.dependency_bundles
+        if bundle.bundle_id in selected_bundle_ids
+    }
+
+
+def _static_string_constants(tree: ast.Module) -> dict[str, str]:
+    constants: dict[str, str] = {}
+    pending: list[tuple[str, ast.AST]] = []
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and len(node.targets) == 1:
+            target = node.targets[0]
+            if isinstance(target, ast.Name):
+                pending.append((target.id, node.value))
+        elif isinstance(node, ast.AnnAssign) and isinstance(
+            node.target, ast.Name
+        ):
+            pending.append((node.target.id, node.value))
+    changed = True
+    while changed:
+        changed = False
+        for name, value in pending:
+            if name in constants:
+                continue
+            resolved: str | None = None
+            if isinstance(value, ast.Constant) and isinstance(value.value, str):
+                resolved = value.value
+            elif isinstance(value, ast.Name):
+                resolved = constants.get(value.id)
+            elif isinstance(value, ast.BinOp) and isinstance(value.op, ast.Add):
+                left = (
+                    value.left.value
+                    if isinstance(value.left, ast.Constant)
+                    and isinstance(value.left.value, str)
+                    else constants.get(value.left.id)
+                    if isinstance(value.left, ast.Name)
+                    else None
+                )
+                right = (
+                    value.right.value
+                    if isinstance(value.right, ast.Constant)
+                    and isinstance(value.right.value, str)
+                    else constants.get(value.right.id)
+                    if isinstance(value.right, ast.Name)
+                    else None
+                )
+                if left is not None and right is not None:
+                    resolved = left + right
+            if resolved is not None:
+                constants[name] = resolved
+                changed = True
+    return constants
+
+
+def _constant_string(node: ast.AST, constants: Mapping[str, str]) -> str | None:
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    if isinstance(node, ast.Name):
+        return constants.get(node.id)
+    return None
+
+
+def _contains_root_name(node: ast.AST) -> bool:
+    return any(
+        isinstance(value, ast.Name) and value.id == "ROOT"
+        for value in ast.walk(node)
+    )
+
+
+def _call_name(node: ast.Call) -> str:
+    if isinstance(node.func, ast.Name):
+        return node.func.id
+    if isinstance(node.func, ast.Attribute):
+        return node.func.attr
+    return ""
+
+
+def _is_typed_test_resource_call(node: ast.AST) -> bool:
+    return isinstance(node, ast.Call) and _call_name(node) == (
+        "repository_test_resource"
+    )
+
+
+def audit_disposable_test_resource_contract(
+    repository_root: Path,
+    plan: CompiledTestExecutionContract,
+    bundle_paths: Mapping[str, Sequence[Path]],
+) -> None:
+    direct_read_methods = {
+        "read_text",
+        "read_bytes",
+        "open",
+        "is_file",
+        "exists",
+    }
+    copy_functions = {"copy", "copy2", "copyfile"}
+    module_by_path = plan.module_by_path
+    for test_path in plan.test_paths("disposable_current_gate"):
+        module = module_by_path[test_path]
+        try:
+            tree = ast.parse(
+                (repository_root / test_path).read_text(encoding="utf-8"),
+                filename=test_path,
+            )
+        except (OSError, SyntaxError) as exc:
+            raise HermeticTestRunnerError(
+                f"typed_test_resource_static_audit_parse_failed:{test_path}"
+            ) from exc
+        constants = _static_string_constants(tree)
+        declared = set(module.dependency_bundle_ids)
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            call_name = _call_name(node)
+            if call_name == "repository_test_resource":
+                if len(node.args) < 3:
+                    raise HermeticTestRunnerError(
+                        f"typed_test_resource_helper_shape_invalid:{test_path}"
+                    )
+                bundle_id = _constant_string(node.args[1], constants)
+                if bundle_id is None or bundle_id not in declared:
+                    raise HermeticTestRunnerError(
+                        f"typed_test_resource_bundle_undeclared:{test_path}"
+                    )
+                relative = _constant_string(node.args[2], constants)
+                if relative is not None:
+                    normalized = Path(relative.replace("\\", "/"))
+                    admitted = {
+                        path.as_posix()
+                        for path in bundle_paths.get(bundle_id, ())
+                    }
+                    if normalized.as_posix() not in admitted:
+                        raise HermeticTestRunnerError(
+                            "typed_test_resource_not_in_declared_bundle:"
+                            f"{test_path}:{normalized.as_posix()}"
+                        )
+                continue
+            direct_node: ast.AST | None = None
+            if (
+                isinstance(node.func, ast.Attribute)
+                and call_name in direct_read_methods
+            ):
+                direct_node = node.func.value
+            elif call_name in copy_functions and node.args:
+                direct_node = node.args[0]
+            elif call_name == "open" and node.args:
+                direct_node = node.args[0]
+            if (
+                direct_node is not None
+                and not _is_typed_test_resource_call(direct_node)
+                and _contains_root_name(direct_node)
+            ):
+                raise HermeticTestRunnerError(
+                    f"typed_test_resource_direct_root_read_forbidden:{test_path}"
+                )
+
+
 def _policy_contract_paths(
     repository_root: Path,
     policy: Mapping[str, Any],
 ) -> tuple[Path, ...]:
     paths: set[Path] = set()
+    test_execution_registry_ref = policy.get(
+        "test_execution_contract_registry_ref"
+    )
+    if test_execution_registry_ref is not None:
+        if (
+            not isinstance(test_execution_registry_ref, str)
+            or not test_execution_registry_ref.strip()
+        ):
+            raise HermeticTestRunnerError(
+                "test_execution_contract_registry_ref_invalid"
+            )
+        paths.add(
+            _safe_relative_path(
+                repository_root, test_execution_registry_ref
+            )
+        )
     reference_policy = policy.get("repository_reference_policy")
     if isinstance(reference_policy, Mapping) and reference_policy.get(
         "schema_version"
@@ -1110,10 +1658,14 @@ def _policy_contract_paths(
             raise HermeticTestRunnerError(
                 "current_projection_ref_invalid"
             )
-        paths.add(
-            validate_host_current_program_projection(
+        validate_host_current_program_projection(
+            repository_root,
+            projection_ref,
+        )
+        paths.update(
+            _declared_document_repository_paths(
                 repository_root,
-                projection_ref,
+                [projection_ref],
             )
         )
     return tuple(sorted(paths, key=lambda item: item.as_posix()))
@@ -1130,6 +1682,7 @@ def compile_repository_inventory(
         for item in raw.split(b"\0")
         if item
     }
+    execution_plan = _load_test_execution_plan(repository_root, manifest)
     policy = manifest["hermetic_package_policy"]
     reference_policy = policy.get("repository_reference_policy")
     if not isinstance(reference_policy, Mapping):
@@ -1312,11 +1865,46 @@ def compile_repository_inventory(
         admit(str(value), "required_runner_file")
     for value in policy.get("repository_seed_paths", []):
         admit(str(value), "repository_seed")
-    for value in _selected_test_paths(manifest):
+    selected_paths = (
+        execution_plan.test_paths("disposable_current_gate")
+        if execution_plan is not None
+        else _selected_test_paths(manifest)
+    )
+    selected_disposable_test_paths = set(selected_paths)
+    for value in selected_paths:
         admit(value, "selected_test")
     for path in _policy_contract_paths(repository_root, policy):
+        if (
+            execution_plan is not None
+            and path.as_posix().startswith("tests/")
+            and path.suffix.lower() == ".py"
+            and path.as_posix() not in selected_disposable_test_paths
+        ):
+            continue
         admit(path.as_posix(), "policy_contract")
-    for prefix_row in policy.get("repository_prefixes", []):
+    dependency_bundle_paths: dict[str, tuple[Path, ...]] = {}
+    if execution_plan is not None:
+        dependency_bundle_paths = compile_test_dependency_bundles(
+            repository_root,
+            tracked,
+            execution_plan,
+            phase="disposable_current_gate",
+            policy=policy,
+        )
+        audit_disposable_test_resource_contract(
+            repository_root,
+            execution_plan,
+            dependency_bundle_paths,
+        )
+        for bundle_id, bundle_paths in dependency_bundle_paths.items():
+            for path in bundle_paths:
+                admit(path.as_posix(), f"typed_test_dependency:{bundle_id}")
+    prefix_rows = policy.get("repository_prefixes", [])
+    if execution_plan is not None and prefix_rows:
+        raise HermeticTestRunnerError(
+            "typed_test_dependency_broad_repository_prefix_forbidden"
+        )
+    for prefix_row in prefix_rows:
         if not isinstance(prefix_row, Mapping):
             raise HermeticTestRunnerError("hermetic_repository_prefix_invalid")
         prefix = str(prefix_row.get("path", "")).strip().replace("\\", "/").rstrip("/")
@@ -1365,6 +1953,14 @@ def compile_repository_inventory(
                 repository_value = _repository_reference_path(
                     observation.value
                 )
+                if (
+                    execution_plan is not None
+                    and repository_value.startswith("tests/")
+                    and repository_value.endswith(".py")
+                    and repository_value
+                    not in selected_disposable_test_paths
+                ):
+                    continue
                 admit(repository_value, "recursive_reference")
             continue
         for key, ref in sorted(set(_repository_ref_strings(document))):
@@ -1386,6 +1982,13 @@ def compile_repository_inventory(
                 semantic_or_external_reference_count += 1
                 continue
             repository_value = _repository_reference_path(normalized)
+            if (
+                execution_plan is not None
+                and repository_value.startswith("tests/")
+                and repository_value.endswith(".py")
+                and repository_value not in selected_disposable_test_paths
+            ):
+                continue
             admit(repository_value, "recursive_reference")
 
     reference_role_report: ReferenceRoleReport | None = None
@@ -1683,6 +2286,20 @@ def build_content_addressed_package(
         repository_root,
         package_policy,
     )
+    execution_plan = _load_test_execution_plan(repository_root, manifest)
+    if execution_plan is not None:
+        disposable_tests = set(
+            execution_plan.test_paths("disposable_current_gate")
+        )
+        policy_contract_paths = tuple(
+            path
+            for path in policy_contract_paths
+            if not (
+                path.as_posix().startswith("tests/")
+                and path.suffix.lower() == ".py"
+                and path.as_posix() not in disposable_tests
+            )
+        )
     if repository_paths is None:
         compiled_inventory = compile_repository_inventory(
             repository_root,
@@ -1876,7 +2493,14 @@ def _materialize_package(
             raise HermeticTestRunnerError("hermetic_materialized_file_digest_mismatch")
 
 
-def _selected_test_paths(manifest: Mapping[str, Any]) -> tuple[str, ...]:
+def _selected_test_paths(
+    manifest: Mapping[str, Any],
+    execution_plan: CompiledTestExecutionContract | None = None,
+    *,
+    phase: str | None = None,
+) -> tuple[str, ...]:
+    if execution_plan is not None:
+        return execution_plan.test_paths(phase)
     paths = {
         str(path)
         for suite in manifest["suites"]
@@ -1887,8 +2511,28 @@ def _selected_test_paths(manifest: Mapping[str, Any]) -> tuple[str, ...]:
 
 
 def _suite_memberships(
-    manifest: Mapping[str, Any], nodeid: str
+    manifest: Mapping[str, Any],
+    nodeid: str,
+    execution_plan: CompiledTestExecutionContract | None = None,
 ) -> list[dict[str, Any]]:
+    if execution_plan is not None:
+        try:
+            membership = execution_plan.membership(nodeid)
+        except TestExecutionContractError as exc:
+            raise HermeticTestRunnerError(exc.code) from exc
+        return [
+            {
+                "suite_id": membership["phase"],
+                "proof_class": membership["phase"],
+                "gates_current_release": membership[
+                    "gates_current_candidate"
+                ],
+                "execution_location": membership["location"],
+                "dependency_bundle_ids": membership[
+                    "dependency_bundle_ids"
+                ],
+            }
+        ]
     path = nodeid.split("::", 1)[0].replace("\\", "/")
     return [
         {
@@ -1907,6 +2551,7 @@ def _objectize_raw_capture(
     raw: Mapping[str, Any],
     manifest: Mapping[str, Any],
     store: ContentAddressedStore,
+    execution_plan: CompiledTestExecutionContract | None = None,
 ) -> list[dict[str, Any]]:
     results = []
     tests = raw.get("tests")
@@ -1915,7 +2560,11 @@ def _objectize_raw_capture(
     for row in tests:
         if not isinstance(row, Mapping):
             raise HermeticTestRunnerError("hermetic_raw_test_row_invalid")
-        memberships = _suite_memberships(manifest, str(row["nodeid"]))
+        memberships = _suite_memberships(
+            manifest,
+            str(row["nodeid"]),
+            execution_plan,
+        )
         if not memberships:
             raise HermeticTestRunnerError("hermetic_test_without_manifest_membership")
         stdout = store.put_bytes(str(row.get("stdout", "")).encode("utf-8"))
@@ -1953,6 +2602,7 @@ root = Path(sys.argv[1]).resolve()
 plugin_path = root / sys.argv[2]
 test_paths = json.loads(sys.argv[3])
 site_paths = json.loads(sys.argv[4])
+basetemp = Path(sys.argv[5]).resolve()
 for value in reversed(site_paths):
     sys.path.insert(0, value)
 sys.path.insert(0, str(root / "src"))
@@ -1963,7 +2613,14 @@ if spec is None or spec.loader is None:
     raise RuntimeError("capture plugin cannot be loaded")
 plugin = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(plugin)
-args = [*test_paths, "-p", "no:terminal", "--capture=fd"]
+args = [
+    *test_paths,
+    "-p",
+    "no:terminal",
+    "--capture=fd",
+    "--strict-markers",
+    f"--basetemp={basetemp}",
+]
 raise SystemExit(pytest.main(args, plugins=[plugin]))
 """
 
@@ -1976,6 +2633,7 @@ def run_disposable_once(
     manifest: Mapping[str, Any],
     store: ContentAddressedStore,
     disposable_parent: Path,
+    execution_plan: CompiledTestExecutionContract | None = None,
 ) -> dict[str, Any]:
     runtime_root = disposable_parent / f"runtime_{run_id}"
     _materialize_package(package_root, package_manifest, runtime_root)
@@ -1989,6 +2647,16 @@ def run_disposable_once(
     env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
     env["PYTHONDONTWRITEBYTECODE"] = "1"
     env["FIN_0_1_2_HERMETIC_CAPTURE_PATH"] = str(raw_capture)
+    pytest_basetemp = disposable_parent / f"pytest_{run_id}"
+    selected_test_paths = _selected_test_paths(
+        manifest,
+        execution_plan,
+        phase=(
+            "disposable_current_gate"
+            if execution_plan is not None
+            else None
+        ),
+    )
     command = [
         sys.executable,
         "-I",
@@ -1996,8 +2664,9 @@ def run_disposable_once(
         _BOOTSTRAP,
         str(runtime_root),
         str(plugin_path),
-        json.dumps(list(_selected_test_paths(manifest))),
+        json.dumps(list(selected_test_paths)),
         json.dumps(package_manifest["python_environment"]["site_paths"]),
+        str(pytest_basetemp),
     ]
     completed = subprocess.run(
         command,
@@ -2012,7 +2681,12 @@ def run_disposable_once(
     if not raw_capture.is_file():
         raise HermeticTestRunnerError("hermetic_pytest_capture_not_materialized")
     raw = _load_json(raw_capture)
-    tests = _objectize_raw_capture(raw=raw, manifest=manifest, store=store)
+    tests = _objectize_raw_capture(
+        raw=raw,
+        manifest=manifest,
+        store=store,
+        execution_plan=execution_plan,
+    )
     collection_errors = raw.get("collection_errors", [])
     collection_ref = store.put_bytes(
         json.dumps(collection_errors, ensure_ascii=False, sort_keys=True).encode("utf-8")
@@ -2042,7 +2716,18 @@ def run_disposable_once(
         "status": status,
         "pytest_exit_code": int(completed.returncode),
         "captured_session_exit_code": int(raw["session_exit_code"]),
-        "selected_test_paths": list(_selected_test_paths(manifest)),
+        "selected_test_paths": list(selected_test_paths),
+        "execution_phase": (
+            "disposable_current_gate"
+            if execution_plan is not None
+            else "legacy_combined_active_suite"
+        ),
+        "pytest_basetemp": str(pytest_basetemp.resolve()),
+        "pytest_basetemp_under_disposable_temporary_root": (
+            pytest_basetemp.resolve().is_relative_to(
+                disposable_parent.resolve()
+            )
+        ),
         "test_counts": dict(sorted(counts.items())),
         "tests": tests,
         "collection_errors": collection_errors,
@@ -2066,6 +2751,134 @@ def run_disposable_once(
         ),
     }
     _write_json(package_root / "runs" / run_id / "terminal_result.json", result)
+    return result
+
+
+def run_host_phase(
+    *,
+    run_id: str,
+    phase: str,
+    repository_root: Path,
+    manifest: Mapping[str, Any],
+    execution_plan: CompiledTestExecutionContract,
+    store: ContentAddressedStore,
+    temporary_root: Path,
+    python_environment: Mapping[str, Any],
+) -> dict[str, Any]:
+    selected_test_paths = execution_plan.test_paths(phase)
+    if not selected_test_paths:
+        return {
+            "schema_version": TERMINAL_SCHEMA,
+            "run_id": run_id,
+            "execution_phase": phase,
+            "status": "pass_no_selected_test_modules",
+            "pytest_exit_code": 0,
+            "captured_session_exit_code": 0,
+            "selected_test_paths": [],
+            "test_counts": {},
+            "tests": [],
+            "collection_errors": [],
+            "current_gate_all_green": True,
+            "gating_failure_nodeids": [],
+            "historical_finding_nodeids": [],
+            "credential_environment_removed": sorted(_CREDENTIAL_ENV_NAMES),
+        }
+    phase_root = temporary_root / run_id
+    phase_root.mkdir(parents=True, exist_ok=False)
+    raw_capture = phase_root / "raw_capture.json"
+    pytest_basetemp = phase_root / "pytest_basetemp"
+    plugin_path = manifest["hermetic_package_policy"]["capture_plugin_path"]
+    env = os.environ.copy()
+    for name in _CREDENTIAL_ENV_NAMES:
+        env.pop(name, None)
+    env.pop("PYTEST_ADDOPTS", None)
+    env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    env["FIN_0_1_2_HERMETIC_CAPTURE_PATH"] = str(raw_capture)
+    command = [
+        sys.executable,
+        "-I",
+        "-c",
+        _BOOTSTRAP,
+        str(repository_root),
+        str(plugin_path),
+        json.dumps(list(selected_test_paths)),
+        json.dumps(python_environment["site_paths"]),
+        str(pytest_basetemp),
+    ]
+    completed = subprocess.run(
+        command,
+        cwd=repository_root,
+        env=env,
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    process_stdout = store.put_bytes(completed.stdout)
+    process_stderr = store.put_bytes(completed.stderr)
+    if not raw_capture.is_file():
+        raise HermeticTestRunnerError(
+            f"hermetic_host_phase_capture_not_materialized:{phase}"
+        )
+    raw = _load_json(raw_capture)
+    tests = _objectize_raw_capture(
+        raw=raw,
+        manifest=manifest,
+        store=store,
+        execution_plan=execution_plan,
+    )
+    collection_errors = raw.get("collection_errors", [])
+    collection_ref = store.put_bytes(
+        json.dumps(
+            collection_errors,
+            ensure_ascii=False,
+            sort_keys=True,
+        ).encode("utf-8")
+    )
+    counts = Counter(str(row["outcome"]) for row in tests)
+    gating_failures = [
+        row
+        for row in tests
+        if row["gates_current_release"] and row["outcome"] != "passed"
+    ]
+    historical_findings = [
+        row
+        for row in tests
+        if not row["gates_current_release"] and row["outcome"] != "passed"
+    ]
+    current_gate_all_green = not gating_failures and not collection_errors
+    status = (
+        "pass_current_gate_all_green"
+        if current_gate_all_green and not historical_findings
+        else "pass_non_gating_with_historical_findings"
+        if current_gate_all_green
+        else "failed_current_gate"
+    )
+    result = {
+        "schema_version": TERMINAL_SCHEMA,
+        "run_id": run_id,
+        "execution_phase": phase,
+        "status": status,
+        "pytest_exit_code": int(completed.returncode),
+        "captured_session_exit_code": int(raw["session_exit_code"]),
+        "selected_test_paths": list(selected_test_paths),
+        "pytest_basetemp": str(pytest_basetemp.resolve()),
+        "test_counts": dict(sorted(counts.items())),
+        "tests": tests,
+        "collection_errors": collection_errors,
+        "collection_errors_ref": collection_ref.as_dict(),
+        "process_stdout": process_stdout.as_dict(),
+        "process_stderr": process_stderr.as_dict(),
+        "current_gate_all_green": current_gate_all_green,
+        "gating_failure_nodeids": [
+            row["nodeid"] for row in gating_failures
+        ],
+        "historical_finding_nodeids": [
+            row["nodeid"] for row in historical_findings
+        ],
+        "credential_environment_removed": sorted(_CREDENTIAL_ENV_NAMES),
+    }
+    _write_json(store.root / "runs" / run_id / "terminal_result.json", result)
     return result
 
 
@@ -2422,26 +3235,35 @@ def _semantic_text_projection(
                 else:
                     escaped.append(re.escape(component))
             path_pattern = (
-                (r"[\\/]" if posix_absolute else "")
-                + r"[\\/]".join(escaped)
+                (r"[\\/]{1,2}" if posix_absolute else "")
+                + r"[\\/]{1,2}".join(escaped)
             )
             boundary_pattern = (
                 r"(?<![A-Za-z0-9_.-])"
                 + path_pattern
-                + r"(?P<descendant>(?:[\\/][^\s\"'<>),:\]]*)?)"
+                + r"(?P<descendant>(?:[\\/]{1,2}[^\s\"'<>),:\]]*)?)"
                 + r"(?=$|[\s\"'<>),:\]])"
             )
             normalized = re.sub(
                 boundary_pattern,
                 lambda match: placeholder
-                + str(match.group("descendant") or "").replace("\\", "/"),
+                + re.sub(
+                    r"[\\/]+",
+                    "/",
+                    str(match.group("descendant") or ""),
+                ),
                 normalized,
             )
+    unknown_scan = re.sub(
+        r"[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>]+",
+        lambda match: "_" * len(match.group(0)),
+        normalized,
+    )
     unknown_paths: set[str] = set()
     for pattern in contract["normalization"]["unknown_absolute_path_patterns"]:
         unknown_paths.update(
             match.group(0)
-            for match in re.finditer(str(pattern), normalized)
+            for match in re.finditer(str(pattern), unknown_scan)
         )
     normalized_bytes = normalized.encode("utf-8")
     return {
@@ -2589,6 +3411,18 @@ def run_hermetic_active_suite(
         validate_active_test_suite_manifest(manifest)
     except ContractGovernanceError as exc:
         raise HermeticTestRunnerError(f"hermetic_manifest_invalid:{exc.code}") from exc
+    execution_plan = _load_test_execution_plan(repository_root, manifest)
+    if execution_plan is not None:
+        legacy_paths = {
+            str(path).replace("\\", "/")
+            for suite in manifest["suites"]
+            if suite["selected"]
+            for path in suite["test_paths"]
+        }
+        if legacy_paths != set(execution_plan.test_paths()):
+            raise HermeticTestRunnerError(
+                "test_execution_contract_legacy_manifest_path_drift"
+            )
     authority_metadata: dict[str, Any] | None = None
     if repository_paths is None:
         authority_metadata = (
@@ -2620,6 +3454,28 @@ def run_hermetic_active_suite(
         store = ContentAddressedStore(staging)
         with tempfile.TemporaryDirectory(prefix="fin_0_1_2_hermetic_active_suite_") as temporary:
             disposable_parent = Path(temporary)
+            host_preflight = (
+                run_host_phase(
+                    run_id="host_preflight",
+                    phase="host_preflight",
+                    repository_root=repository_root,
+                    manifest=manifest,
+                    execution_plan=execution_plan,
+                    store=store,
+                    temporary_root=disposable_parent,
+                    python_environment=package_manifest[
+                        "python_environment"
+                    ],
+                )
+                if execution_plan is not None
+                else None
+            )
+            if host_preflight is not None and not host_preflight[
+                "current_gate_all_green"
+            ]:
+                raise HermeticTestRunnerError(
+                    "hermetic_host_preflight_failed"
+                )
             run_a = run_disposable_once(
                 run_id="disposable_a",
                 package_root=staging,
@@ -2627,6 +3483,7 @@ def run_hermetic_active_suite(
                 manifest=manifest,
                 store=store,
                 disposable_parent=disposable_parent,
+                execution_plan=execution_plan,
             )
             run_b = run_disposable_once(
                 run_id="disposable_b",
@@ -2635,6 +3492,23 @@ def run_hermetic_active_suite(
                 manifest=manifest,
                 store=store,
                 disposable_parent=disposable_parent,
+                execution_plan=execution_plan,
+            )
+            historical_audit = (
+                run_host_phase(
+                    run_id="historical_audit",
+                    phase="historical_audit",
+                    repository_root=repository_root,
+                    manifest=manifest,
+                    execution_plan=execution_plan,
+                    store=store,
+                    temporary_root=disposable_parent,
+                    python_environment=package_manifest[
+                        "python_environment"
+                    ],
+                )
+                if execution_plan is not None
+                else None
             )
         raw_projection_a = _raw_parity_projection(run_a)
         raw_projection_b = _raw_parity_projection(run_b)
@@ -2704,11 +3578,51 @@ def run_hermetic_active_suite(
             row["sha256"] == package_manifest["repository_files"][index]["sha256"]
             for index, row in enumerate(repository_readback)
         )
+        post_run_attestation = {
+            "schema_version": "fin_ia_post_run_attestation_v1_0",
+            "execution_phase": "post_run_attestation",
+            "status": (
+                "pass"
+                if parity and repository_unchanged
+                else "failed"
+            ),
+            "gates_current_candidate": True,
+            "repository_unchanged_during_run": repository_unchanged,
+            "two_disposable_semantic_parity": parity,
+            "raw_capture_and_content_readback_materialized": True,
+        }
+        if execution_plan is not None:
+            _write_json(
+                staging
+                / "runs"
+                / "contract_compile"
+                / "terminal_result.json",
+                {
+                    "schema_version": (
+                        "fin_ia_contract_compile_terminal_result_v1_0"
+                    ),
+                    "execution_phase": "contract_compile",
+                    "status": "pass",
+                    "gates_current_candidate": True,
+                    "execution_plan": execution_plan.as_dict(),
+                },
+            )
+            _write_json(
+                staging
+                / "runs"
+                / "post_run_attestation"
+                / "terminal_result.json",
+                post_run_attestation,
+            )
         passed = (
             parity
             and repository_unchanged
             and bool(run_a["current_gate_all_green"])
             and bool(run_b["current_gate_all_green"])
+            and (
+                host_preflight is None
+                or bool(host_preflight["current_gate_all_green"])
+            )
         )
         verification = {
             "schema_version": VERIFICATION_SCHEMA,
@@ -2748,6 +3662,37 @@ def run_hermetic_active_suite(
             "failed_output_business_promotable": False,
             "credential_environment_removed": sorted(_CREDENTIAL_ENV_NAMES),
         }
+        if execution_plan is not None:
+            verification["compiled_test_execution_contract"] = (
+                execution_plan.as_dict()
+            )
+            verification["phase_results"] = {
+                "contract_compile": {
+                    "status": "pass",
+                    "gates_current_candidate": True,
+                    "execution_plan_digest": (
+                        execution_plan.execution_plan_digest
+                    ),
+                },
+                "host_preflight": host_preflight,
+                "disposable_current_gate": {
+                    "status": (
+                        "pass"
+                        if run_a["current_gate_all_green"]
+                        and run_b["current_gate_all_green"]
+                        else "failed"
+                    ),
+                    "gates_current_candidate": True,
+                    "runs": [run_a, run_b],
+                },
+                "historical_audit": historical_audit,
+                "post_run_attestation": post_run_attestation,
+            }
+            verification["historical_finding_nodeids"] = (
+                []
+                if historical_audit is None
+                else historical_audit["historical_finding_nodeids"]
+            )
         if authority_metadata is not None:
             verification["clean_environment_qualification_authority"] = (
                 authority_metadata

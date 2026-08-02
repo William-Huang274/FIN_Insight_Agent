@@ -1,0 +1,167 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0_phase_aware_test_topology_and_typed_test_dependency_compiler_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S0-PHASE-AWARE-TEST-TOPOLOGY-AND-TYPED-TEST-DEPENDENCY-COMPILER-R1",
+  "recorded_at": "2026-08-02T19:20:00+08:00",
+  "status": "pass_engineering_zero_call_formal_clean_qualification_authority_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "implementation_authorized": true,
+    "formal_clean_environment_qualification_authorized": false,
+    "credential_model_provider_network_business_authorized": false,
+    "S1_entry_version_increment_tag_release_or_production_authorized": false
+  },
+  "project_os_preflight": {
+    "run_scope": "FIN-0.1.2-S0-PHASE-AWARE-TEST-TOPOLOGY-AND-TYPED-TEST-DEPENDENCY-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+    "restricted_ref": ".codex_runtime/fin_0_1_2_s0_phase_aware_test_topology_typed_dependency_implementation_preflight.json",
+    "sha256": "f6edf22baa25bbde9e4855d60512a3d871e91181c743586abc6c48b4a660ebb8",
+    "status": "pass",
+    "missing_required_records": 0,
+    "blocking_issues_for_scope": 0,
+    "business_promotable": false
+  },
+  "source_bindings": [
+    {
+      "role": "selected_project_level_disposition",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_clean_qualification_failure_project_level_disposition_v1_0.json",
+      "sha256": "494e6e68a4e4dcb61671ddb65067d7e9622f3adcef5e74ffb4584dcd156874b8"
+    },
+    {
+      "role": "test_execution_contract_registry",
+      "ref": "configs/runtime/fin_ia_0_1_2_s0_test_execution_contract_registry_v1_0.json",
+      "sha256": "d4e77900d8241e654e0e107d78edc04c4e3d736fa6008a91ebb19007d524065b"
+    },
+    {
+      "role": "engineering_candidate_manifest_not_formal_authority",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_2.json",
+      "sha256": "20a8ec0c138da09e46d6629e729f19cb97da8ecb026f953ef2b71690721589ff"
+    },
+    {
+      "role": "compiled_registry_implementation",
+      "ref": "src/sec_agent/test_execution_contract.py",
+      "sha256": "1fb878598d813fac1c5aba88e99d8f2611089278104b2a2c9a6c4cc3d3b1ce02"
+    },
+    {
+      "role": "phase_aware_runner_and_typed_dependency_compiler",
+      "ref": "src/sec_agent/hermetic_test_runner.py",
+      "sha256": "0d87498b80823db1da14c17f60bdfccbadc69816ed96932704455a9299f1a2d3"
+    },
+    {
+      "role": "typed_repository_test_resource_helper",
+      "ref": "src/sec_agent/test_resource.py",
+      "sha256": "9fcb94774cf69fc0046262f6b504c6d3f6080f8bcadb710402da69322e017bac"
+    },
+    {
+      "role": "phase_topology_and_fake_full_chain_regression",
+      "ref": "tests/contract/test_fin_0_1_2_s0_phase_aware_test_execution_contract.py",
+      "sha256": "d710faf572fbe2b0709f2ecfbf5c5f79a04abb306f9debf4b481ee1a613449eb"
+    },
+    {
+      "role": "uri_and_escaped_path_semantic_mutation_regression",
+      "ref": "tests/contract/test_fin_0_1_3_s0_typed_environment_semantic_parity.py",
+      "sha256": "bf98541da1d22e67f2a49ffb93217a2b02ecf244c4d81d5f54af7c4b6b04a962"
+    }
+  ],
+  "implemented_contract": {
+    "contract_id": "fin_0_1_2.S0.phase_aware_test_execution_and_typed_dependency:v1",
+    "registry_schema": "fin_ia_test_execution_contract_registry_v1_0",
+    "registry_canonical_digest": "cb6654a860b2a722afafe916d0f149d507eddc969e5853fc1aeb166caf5a5653",
+    "execution_plan_digest": "8c97887d095d992f001e6038566dbfc502a67007961fe6eeee77b1bbff0d2622",
+    "phases": [
+      "contract_compile",
+      "host_preflight",
+      "disposable_current_gate",
+      "historical_audit",
+      "post_run_attestation"
+    ],
+    "selected_module_counts": {
+      "host_preflight": 3,
+      "disposable_current_gate": 3,
+      "historical_audit": 4,
+      "contract_compile_internal": 1,
+      "post_run_attestation_internal": 1
+    },
+    "typed_dependency_resolver_count": 6,
+    "broad_repository_prefixes": 0,
+    "per_observed_file_allowlist_entries": 0,
+    "git_or_codex_runtime_packaged": 0,
+    "pytest_basetemp_is_typed_descendant": true,
+    "raw_capture_rewritten": false,
+    "URI_scanned_before_filesystem_absolute_path_detection": true,
+    "escaped_Windows_repr_normalized_in_semantic_projection_only": true
+  },
+  "engineering_full_chain": {
+    "classification": "explicit_inventory_zero_call_engineering_full_chain_not_formal_qualification",
+    "restricted_output_ref": ".codex_runtime/fin_0_1_2_s0_phase_aware_engineering_fake_full_chain_r6",
+    "verification_ref": ".codex_runtime/fin_0_1_2_s0_phase_aware_engineering_fake_full_chain_r6/verification.json",
+    "verification_sha256": "00a7730b41615c351ff1468fffe43e9269dedebc18d6e1d60c9c245feceb457a",
+    "status": "pass",
+    "repository_file_count": 784,
+    "tracked_file_count": 784,
+    "explicit_or_per_file_allowlist_count": 0,
+    "package_semantic_digest": "5fba12b29f2746d6bf3619ce51c6b9504170ce4c609ad9aac937767034afd352",
+    "host_preflight": {
+      "passed": 31,
+      "failed": 0,
+      "collection_errors": 0
+    },
+    "disposable_current_gate_each": {
+      "passed": 58,
+      "failed": 0,
+      "collection_errors": 0,
+      "semantic_unknown_absolute_paths": 0
+    },
+    "disposable_count": 2,
+    "semantic_parity": true,
+    "semantic_parity_digest": "f04c0171977440b92577fdfc06777ab4b3371209f781a3a33f37183519b31bba",
+    "historical_audit": {
+      "passed": 23,
+      "failed_findings": 1,
+      "gates_current_candidate": false,
+      "finding_nodeid": "tests/contract/test_fin_0_1_2_s0_clean_environment_qualification_authority.py::test_authority_decision_is_bound_but_has_not_consumed_attempt",
+      "finding_meaning": "the prior R2.1 authority event was consumed by its immutable failed attempt and correctly cannot describe the new engineering candidate"
+    },
+    "post_run_attestation": "pass",
+    "repository_unchanged": true,
+    "credential_model_provider_network_business_calls": [0, 0, 0, 0, 0]
+  },
+  "verification_matrix": {
+    "phase_contract_and_fake_full_chain": "11_passed",
+    "current_runtime_three_case_resource_semantic_reference_and_host_regression_before_final_mutations": "75_passed",
+    "typed_semantic_uri_and_escaped_path_final": "13_passed",
+    "final_two_disposable_selected_suite_each": "58_passed",
+    "negative_mutations": [
+      "unknown_or_duplicate_phase",
+      "duplicate_or_mixed_module",
+      "unknown_dependency_bundle",
+      "historical_gate_escalation",
+      "direct_ROOT_nonpython_read",
+      "projection_binding_and_source_path_closure",
+      "lazy_and_relative_python_import_closure",
+      "fixture_URI_path_false_positive",
+      "escaped_Windows_repr_projection",
+      "unknown_escaped_host_path_fail_closed",
+      "pytest_basetemp_outside_typed_root"
+    ]
+  },
+  "issue_disposition": {
+    "RC-P36-090": "engineering_repaired_phase_separation_formal_reproof_pending",
+    "RC-P36-091": "engineering_repaired_typed_dependency_closure_formal_reproof_pending",
+    "RC-P36-093": "engineering_repaired_basetemp_URI_and_escaped_path_mutations_formal_reproof_pending",
+    "RC-P36-094": "six_role_host_behavior_and_zero_unknown_package_report_pass_formal_reproof_pending",
+    "RC-P36-095": "engineering_repaired_single_registry_compiled_selection_and_result_classification_formal_reproof_pending",
+    "RC-P36-097": "structural_root_cause_engineering_repaired_formal_reproof_pending",
+    "issues_closed_in_this_implementation": 0,
+    "reason_not_closed": "the selected project contract requires a separately authorized committed-candidate clean qualification before closing full-chain blockers"
+  },
+  "product_truth": {
+    "current_product_version": "FIN_0_1_2",
+    "current_stage": "S0",
+    "S0": "structural_implementation_engineering_pass_formal_clean_qualification_authority_pending",
+    "S1_through_S5": "not_started_under_consolidated_baseline",
+    "formal_clean_qualification_attempts_after_disposition": [0, 1],
+    "release_qualified": false,
+    "user_visible_financial_research_capability_delta": "none",
+    "FIN_0_2_definition_changed": false
+  },
+  "next_action": "FIN-0.1.2-S0-PHASE-AWARE-CLEAN-ENVIRONMENT-QUALIFICATION-AUTHORITY-DECISION"
+}

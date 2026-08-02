@@ -16,12 +16,14 @@ from sec_agent.hermetic_test_runner import (
     _semantic_text_projection,
     _typed_environment_root_rows,
 )
+from sec_agent.test_resource import repository_test_resource
 
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT_REF = (
     "configs/runtime/fin_ia_0_1_3_typed_environment_semantic_parity_v1_0.json"
 )
+RUNTIME_RESOURCE_BUNDLE_ID = "runtime_resource_registry"
 
 
 def _manifest(ref: str = CONTRACT_REF) -> dict[str, Any]:
@@ -167,6 +169,51 @@ def test_relative_resource_path_and_business_field_are_not_rewritten() -> None:
     assert payload["business_values"] == before
 
 
+def test_uri_is_classified_before_filesystem_path_detection() -> None:
+    contract = _contract()
+    rows = _runtime_rows(contract, "a")
+    value = b"fixture://case/evidence/quarterly/report.json"
+    projected = _semantic_text_projection(
+        value,
+        roots=rows,
+        contract=contract,
+    )
+    assert projected["normalization_valid"] is True
+    assert projected["unknown_absolute_path_count"] == 0
+    assert projected["semantic_sha256"] == hashlib.sha256(value).hexdigest()
+
+
+def test_escaped_windows_repr_normalizes_only_in_semantic_projection() -> None:
+    contract = _contract()
+    rows_a = _runtime_rows(contract, "a")
+    rows_b = _runtime_rows(contract, "b")
+    raw_a = b'File "C:\\\\Proof\\\\a\\\\repository\\\\tests\\\\sample.py"'
+    raw_b = b'File "D:/Proof/b/repository/tests/sample.py"'
+    projected_a = _semantic_text_projection(
+        raw_a,
+        roots=rows_a,
+        contract=contract,
+    )
+    projected_b = _semantic_text_projection(
+        raw_b,
+        roots=rows_b,
+        contract=contract,
+    )
+    assert hashlib.sha256(raw_a).hexdigest() != hashlib.sha256(raw_b).hexdigest()
+    assert projected_a["normalization_valid"] is True
+    assert projected_a["semantic_sha256"] == projected_b["semantic_sha256"]
+
+
+def test_unknown_escaped_windows_repr_still_fails_closed() -> None:
+    projected = _semantic_text_projection(
+        b'File "Z:\\\\Outside\\\\module.py"',
+        roots=_runtime_rows(_contract(), "a"),
+        contract=_contract(),
+    )
+    assert projected["normalization_valid"] is False
+    assert projected["unknown_absolute_path_count"] == 1
+
+
 @pytest.mark.parametrize(
     "mutation",
     ["missing", "duplicate", "fingerprint", "role"],
@@ -209,7 +256,13 @@ def test_host_environment_is_frozen_into_complete_typed_rows() -> None:
 
 
 def test_contract_root_or_field_mutation_is_rejected(tmp_path: Path) -> None:
-    contract = json.loads((ROOT / CONTRACT_REF).read_text(encoding="utf-8"))
+    contract = json.loads(
+        repository_test_resource(
+            ROOT,
+            RUNTIME_RESOURCE_BUNDLE_ID,
+            CONTRACT_REF,
+        ).read_text(encoding="utf-8")
+    )
     contract["normalization"]["allowed_roots"].pop()
     target = tmp_path / "typed.json"
     target.write_text(json.dumps(contract), encoding="utf-8")

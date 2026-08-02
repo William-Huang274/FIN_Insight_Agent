@@ -19,10 +19,16 @@ from sec_agent.runtime_resource_registry import (
     read_registered_runtime_json,
     registered_runtime_resource,
 )
+from sec_agent.test_resource import repository_test_resource
 
 
 ROOT = Path(__file__).resolve().parents[2]
-REGISTRY_PATH = ROOT / DEFAULT_RUNTIME_RESOURCE_REGISTRY_REF
+RUNTIME_RESOURCE_BUNDLE_ID = "runtime_resource_registry"
+REGISTRY_PATH = repository_test_resource(
+    ROOT,
+    RUNTIME_RESOURCE_BUNDLE_ID,
+    DEFAULT_RUNTIME_RESOURCE_REGISTRY_REF,
+)
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -47,7 +53,14 @@ def _copy_closure(destination: Path) -> dict[str, Any]:
     for ref in refs:
         target = destination / ref
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ROOT / ref, target)
+        shutil.copy2(
+            repository_test_resource(
+                ROOT,
+                RUNTIME_RESOURCE_BUNDLE_ID,
+                ref,
+            ),
+            target,
+        )
     return registry
 
 

@@ -1,7 +1,7 @@
 # FIN 0.1.2 S0 当前基线与干净环境验收计划
 
 日期：2026-08-02
-状态：`S0-04 engineering pass / S0-05 terminal failed / S0-06 disposition complete / S0-07 structural engineering pass / formal qualification authority pending`
+状态：`S0-04 engineering pass / S0-05 terminal failed / S0-06 disposition complete / S0-07 structural engineering pass / S0-08 formal authority issued not executed`
 
 产品计划：`docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md`
 
@@ -103,9 +103,26 @@ S0 只确认当前代码、配置、Prompt、fixture、测试和原始运行记�
 
 RC-P36-090/091/093/094/095/097 已达到 engineering repaired，但仍保持 open，等待 separately authorized、clean/synced、committed candidate 的正式 qualification 复证；本轮没有关闭 full-chain blocker，也没有使用 formal attempt 预算。
 
-当前下一项：
+历史下一项（已由 S0-08 消费）：
 
 `FIN-0.1.2-S0-PHASE-AWARE-CLEAN-ENVIRONMENT-QUALIFICATION-AUTHORITY-DECISION`
+
+### S0-08 phase-aware clean-environment qualification 授权（已签发，未执行）
+
+用户以“继续”授权本项。Project OS 对该 authority scope 的预检为 pass，当前 engineering base HEAD=`16a5d4da0b2dd387a9d6564a8f9b60a17803da12`，当时分支 clean 且与远端一致。新 authority、formal manifest R2.3 和 current projection v2.5 共同固定：
+
+1. 只允许一个新 attempt：`attempt_fin_0_1_2_s0_phase_aware_clean_environment_qualification_20260802_r2`；
+2. 只允许输出到预先冻结的 repository 外受限目录；同名 final/failed/partial 任一存在即视为已消费；
+3. exact manifest 使用 phase-aware registry 和 typed dependency closure，formal runner 默认入口已指向 R2.3；
+4. contract compile、host preflight、两套 Git-free disposable current gate、独立 historical audit 和 post-run attestation 必须按阶段物化；
+5. model/Provider/network/business 调用上限均为 0，失败输出不可晋升；
+6. 同 attempt 重试和自动 replacement 都为 0，失败不创建新产品版本。
+
+authority=`configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_authority_decision_v1_0.json`；manifest=`configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_3.json`；current projection=`configs/runtime/fin_ia_0_1_2_current_program_projection_v2_5.json`。
+
+当前下一项：
+
+`FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-EXECUTION-AND-CLOSEOUT`
 
 ## 4. 简化后的通过标准
 
@@ -131,4 +148,4 @@ S0 通过必须同时满足：
 
 ## 6. 本计划没有授权的动作
 
-S0-04 本地集中修复、S0-05 失败终态、S0-06 项目级 disposition 和 S0-07 phase-aware/typed dependency 零调用工程实现均已完成。当前只允许先做 formal qualification 的 authority decision；尚未授权创建正式 attempt、执行 clean qualification、读取凭据、调用 DeepSeek/OpenAI/Sub2API、访问业务网络、执行 exact-live 或 DELL/MU/NVDA 产品验收，也未授权自动 retry/replacement、S1 entry、tag、release 或 production。
+S0-04 本地集中修复、S0-05 失败终态、S0-06 项目级 disposition、S0-07 phase-aware/typed dependency 零调用工程实现和 S0-08 authority decision 均已完成。现在只授权下一项按冻结合同创建并执行一次 formal clean qualification attempt；没有授权读取凭据、调用 DeepSeek/OpenAI/Sub2API、访问业务网络、执行 exact-live 或 DELL/MU/NVDA 产品验收，也没有授权自动 retry/replacement、S1 entry、tag、release 或 production。formal run 成功也必须先做证据审查和 issue disposition，不能自动宣布 S0 通过。

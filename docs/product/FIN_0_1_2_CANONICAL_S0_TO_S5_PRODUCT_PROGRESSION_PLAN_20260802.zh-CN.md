@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0 project disposition complete / structural implementation pending / S1-S5 not started`
+状态：`current canonical plan / S0 structural engineering pass / formal clean qualification authorized not executed / S1-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -56,12 +56,14 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 
 这不是模型、Provider、金融判断或用户可见产品质量失败，而是 S0 测试拓扑与 hermetic dependency/environment closure 的项目内结构问题。不能通过补齐本次看到的单个 JSON 文件来宣布修复。
 
-项目级零调用处置已经完成，选择一个最小结构修复：建立单一 TestExecutionContractRegistry，把检查分为 contract compile、host preflight、双 disposable current gate、非阻断 historical audit 和 post-run attestation；测试模块只引用逻辑 dependency bundle，compiler 负责闭合 current projection、Runtime registry、reference role、immutable event 和 fixture 资源。历史失败继续可见，但不再与 current gate 混算；`.git` 不进入 disposable；pytest 临时目录固定在每个 disposable 的 typed temp root；原始输出不改写，只在语义副本中做 URI-aware 和 escaped-path 规范化。
+项目级零调用处置和结构实现已经完成：单一 TestExecutionContractRegistry 把检查分为 contract compile、host preflight、双 disposable current gate、非阻断 historical audit 和 post-run attestation；测试模块只引用逻辑 dependency bundle，compiler 负责闭合 current projection、Runtime registry、reference role、immutable event 和 fixture 资源。历史失败继续可见，但不再与 current gate 混算；`.git` 不进入 disposable；pytest 临时目录固定在每个 disposable 的 typed temp root；原始输出不改写，只在语义副本中做 URI-aware 和 escaped-path 规范化。工程 full-chain 已达到 host `31 passed`、两套 disposable 各 `58 passed`、semantic parity 与 post-run attestation 通过，仍不等于正式 S0 资格通过。
 
 同时纠正 proof 节奏：本地零调用单测、fixture 和 mutation 是正常实现验证，不再被当成产品版本或一次性正式 attempt；提交后的双目录 qualification 才记正式 attempt，同一代码候选禁止盲重跑。失败后仍在 FIN 0.1.2 S0 修最早根因，不自动创建 0.1.3。
 
+新的 R2 authority 已绑定 clean/synced engineering base HEAD、phase-aware registry、实现记录、正式 manifest R2.3、current projection v2.5、runner、attempt contract、唯一输出根和一次性预算；authority decision 本身没有启动 attempt。
+
 当前下一项是：
 
-`FIN-0.1.2-S0-PHASE-AWARE-TEST-TOPOLOGY-AND-TYPED-TEST-DEPENDENCY-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-EXECUTION-AND-CLOSEOUT`
 
-上一 qualification attempt 已按 `1/1` 消费并禁止同候选重试。RC-P36-092 与 RC-P36-096 保持关闭；RC-P36-090/091/093/094/095/097 已分配到上述单一结构实现包，尚未关闭。S0 尚未通过，下一项只实现并做本地零调用验证；新的 formal qualification、S1–S5、模型/Provider、真实业务链和产品 Artifact 均未授权。
+上一 R1 qualification attempt 已按 `1/1` 消费并永久保留；新 R2 只针对结构修复后的新 committed candidate，最多执行一次且无自动重试。RC-P36-092 与 RC-P36-096 保持关闭；RC-P36-090/091/093/094/095/097 仍 open，只有 R2 formal evidence 通过并另行审查后才能关闭。S0 尚未通过；S1–S5、模型/Provider、真实业务链和产品 Artifact 均未授权。

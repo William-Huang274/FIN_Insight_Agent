@@ -1,0 +1,109 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0_clean_environment_qualification_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S0-PHASE-AWARE-CLEAN-ENVIRONMENT-QUALIFICATION-AUTHORITY-R2",
+  "recorded_at": "2026-08-02T19:55:00+08:00",
+  "status": "authorize_one_future_clean_environment_qualification_not_executed",
+  "authority": {
+    "user_instruction": "继续",
+    "future_clean_environment_qualification_authorized": true,
+    "qualification_executed_in_this_decision": false,
+    "maximum_future_qualification_attempts": 1,
+    "automatic_retry_or_replacement_attempts": 0,
+    "credential_model_provider_network_business_authorized": false,
+    "S1_through_S5_or_release_entry_authorized": false
+  },
+  "project_os_preflight": {
+    "restricted_runtime_ref": ".codex_runtime/fin_0_1_2_s0_phase_aware_clean_qualification_authority_preflight.json",
+    "sha256": "776101d1dba94e63d6c94feac3bda0fa6ba71706515d53686dd83709e01a199f",
+    "status": "pass",
+    "missing_required_record_count": 0,
+    "blocking_issue_count": 0
+  },
+  "clean_head_precondition": {
+    "branch": "codex/layered-data-source-expansion",
+    "engineering_base_head": "16a5d4da0b2dd387a9d6564a8f9b60a17803da12",
+    "require_current_head_descends_from_engineering_base": true,
+    "require_head_equal_upstream": true,
+    "require_worktree_clean": true
+  },
+  "execution_contract": {
+    "attempt_id": "attempt_fin_0_1_2_s0_phase_aware_clean_environment_qualification_20260802_r2",
+    "runner_ref": "scripts/engineering/run_fin_s0_current_qualification.py",
+    "manifest_ref": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_3.json",
+    "manifest_without_authority_binding_sha256": "3226c5f44ab8b5ee6084340acafee85d900071489686039be76feeca443289e0",
+    "current_projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_5.json",
+    "current_projection_without_decision_binding_sha256": "e21d6020e698e9b6bdb911922f0fde6c57148710da8a218fd1a1a75697ee19b3",
+    "attempt_contract_ref": "configs/runtime/fin_ia_s0_qualification_attempt_contract_v1_0.json",
+    "output_root": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_phase_aware_clean_environment_qualification_20260802T115500Z_head_16a5d4da_r2",
+    "test_execution_contract_registry_ref": "configs/runtime/fin_ia_0_1_2_s0_test_execution_contract_registry_v1_0.json",
+    "test_execution_plan_digest": "8c97887d095d992f001e6038566dbfc502a67007961fe6eeee77b1bbff0d2622",
+    "disposable_runtime_count": 2,
+    "provider_credential_environment_removed": true,
+    "model_provider_network_call_maximum": 0,
+    "complete_per_test_stdout_stderr_content_addressed": true,
+    "raw_evidence_preserved_before_terminal_failure": true,
+    "failed_or_quarantined_output_business_promotable": false
+  },
+  "source_bindings": [
+    {
+      "role": "focused_repair_implementation",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_phase_aware_test_topology_and_typed_test_dependency_compiler_minimum_zero_call_implementation_v1_0.json",
+      "sha256": "1b7fbb46945f4e84b1681077584ca78292953b0996609499776c5c2d2ed39474"
+    },
+    {
+      "role": "qualification_runner",
+      "ref": "scripts/engineering/run_fin_s0_current_qualification.py",
+      "sha256": "74535da034c07eff9fe00583ad7f4b62911838d5348693108c9974b171cd4c20"
+    },
+    {
+      "role": "hermetic_runner",
+      "ref": "src/sec_agent/hermetic_test_runner.py",
+      "sha256": "0d87498b80823db1da14c17f60bdfccbadc69816ed96932704455a9299f1a2d3"
+    },
+    {
+      "role": "manifest_governance_validator",
+      "ref": "src/sec_agent/runtime_contract_governance.py",
+      "sha256": "014abea6391c989ec768d29d1c109f6211dac0a0fa1309d2f018b1ba6e30b592"
+    },
+    {
+      "role": "attempt_contract",
+      "ref": "configs/runtime/fin_ia_s0_qualification_attempt_contract_v1_0.json",
+      "sha256": "f133da63891665c65b77f515b5aef7da92fd509cbe833912dfcf347459a3140d"
+    }
+  ],
+  "success_and_stop_rules": {
+    "success_requires": [
+      "contract_compile_pass",
+      "host_preflight_all_green",
+      "two_git_free_disposable_current_gates_all_green",
+      "two_disposable_runtime_semantic_parity",
+      "historical_audit_materialized_separately_and_non_gating",
+      "post_run_repository_and_content_addressed_readback_unchanged",
+      "zero_unknown_absolute_path_and_zero_untracked_or_ignored_package_input",
+      "separate_evidence_review_and_issue_disposition_before_S0_closeout"
+    ],
+    "failure_is_terminal_and_immutable": true,
+    "same_attempt_retry_forbidden": true,
+    "automatic_replacement_attempt_forbidden": true,
+    "failure_does_not_create_new_product_version": true,
+    "new_failure_requires_project_level_root_cause_disposition": true
+  },
+  "observed_counts": {
+    "clean_environment_qualification_attempts_started_after_disposition": 0,
+    "clean_environment_packages_created_after_disposition": 0,
+    "credential_reads": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "product_truth": {
+    "user_visible_financial_research_capability_delta": "none",
+    "FIN_0_1_2_S0": "phase_aware_clean_qualification_authorized_not_executed_not_passed",
+    "FIN_0_1_2_S1_through_S5": "not_started_under_consolidated_baseline",
+    "FIN_0_1_release_qualified": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "next_action": "FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-EXECUTION-AND-CLOSEOUT"
+}

@@ -1,0 +1,171 @@
+{
+  "schema_version": "fin_ia_active_test_suite_manifest_v1_0",
+  "manifest_id": "FIN-0.1.2-S0-CURRENT-ACTIVE-TEST-SUITE-MANIFEST-R2.3",
+  "created_at": "2026-08-02T19:55:00+08:00",
+  "status": "clean_environment_qualification_authorized_not_executed",
+  "historical_failures_are_ignored": false,
+  "clean_environment_qualification_authority_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_authority_decision_v1_0.json",
+    "sha256": "192cd3e7e2bf90895d9cfe856d83357f9adf83b8225b902d08d7f7948030d71e"
+  },
+  "suites": [
+    {
+      "suite_id": "immutable_historical_attempt_events",
+      "proof_class": "immutable_event",
+      "selected": true,
+      "gates_current_release": false,
+      "assertion_surfaces": [
+        "historical_failure_status",
+        "historical_evidence_digest",
+        "prior_projection_snapshot"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s0_current_projection_and_attempt_boundary.py",
+        "tests/contract/test_fin_0_1_3_s0_t03_host_zero_call_engineering_proof_terminal_honest_block_closeout.py"
+      ]
+    },
+    {
+      "suite_id": "single_current_version_neutral_projection",
+      "proof_class": "current_projection",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": [
+        "current_next_action",
+        "current_active_slice",
+        "phase_registry_digest"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s0_phase_aware_test_execution_contract.py",
+        "tests/contract/test_fin_0_1_2_version_consolidation_and_current_rebaseline.py"
+      ]
+    },
+    {
+      "suite_id": "current_reusable_runtime_foundation",
+      "proof_class": "current_runtime",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": [
+        "typed_dependency_compiler",
+        "runtime_resource_registry_29",
+        "typed_environment_roots_8",
+        "three_case_zero_model_base_regression"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s1_realistic_three_case_deterministic_proof.py",
+        "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py",
+        "tests/contract/test_fin_0_1_3_s0_runtime_resource_registry_and_dependency_compiler.py",
+        "tests/contract/test_fin_0_1_3_s0_typed_environment_semantic_parity.py"
+      ]
+    },
+    {
+      "suite_id": "historical_failed_package_visibility",
+      "proof_class": "historical_audit",
+      "selected": true,
+      "gates_current_release": false,
+      "assertion_surfaces": [
+        "prior_authority_nonpromotable",
+        "raw_terminal_evidence_preserved",
+        "historical_projection_not_current_authority"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s0_clean_environment_qualification_authority.py",
+        "tests/contract/test_fin_0_1_3_s0_v2_host_zero_call_engineering_proof_terminal_failure.py"
+      ]
+    },
+    {
+      "suite_id": "current_S0_release_gate",
+      "proof_class": "release_gate",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": [
+        "S0_repair_scope_only",
+        "formal_qualification_authorized_not_executed",
+        "S1_to_S5_not_started",
+        "release_qualified_false"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s0_phase_aware_test_execution_contract.py"
+      ]
+    }
+  ],
+  "runner_policy": {
+    "manifest_selection_is_authoritative": false,
+    "unlisted_historical_test_failure_is_visible_but_not_implicitly_current": true,
+    "listed_current_test_failure_is_blocking": true,
+    "bulk_relax_historical_assertions_for_green_forbidden": true,
+    "runner_migration_completed": true,
+    "historical_projection_may_read_mutable_current_truth": false,
+    "manifest_is_clean_environment_authority": true,
+    "test_execution_contract_registry_is_candidate_authority": true
+  },
+  "hermetic_package_policy": {
+    "repository_inventory": "typed_test_dependency_bundle_closure_only",
+    "required_runner_files": [
+      "src/sec_agent/hermetic_test_capture.py",
+      "src/sec_agent/hermetic_test_runner.py",
+      "src/sec_agent/reference_role_registry.py",
+      "src/sec_agent/runtime_resource_registry.py",
+      "src/sec_agent/test_execution_contract.py",
+      "src/sec_agent/test_resource.py",
+      "scripts/engineering/run_fin_s0_current_qualification.py"
+    ],
+    "capture_plugin_path": "src/sec_agent/hermetic_test_capture.py",
+    "test_execution_contract_registry_ref": "configs/runtime/fin_ia_0_1_2_s0_test_execution_contract_registry_v1_0.json",
+    "runtime_resource_registry_ref": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+    "semantic_parity_contract_ref": "configs/runtime/fin_ia_0_1_3_typed_environment_semantic_parity_v1_0.json",
+    "host_current_program_projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_5.json",
+    "repository_reference_policy": {
+      "schema_version": "fin_ia_hermetic_repository_reference_policy_v2_0",
+      "tracked_repository_paths_allowed": true,
+      "explicit_allowlist": [],
+      "reference_role_registry_ref": "configs/runtime/fin_ia_current_reference_role_registry_v2_0.json",
+      "forbidden_prefixes": [
+        ".codex_runtime",
+        ".git"
+      ],
+      "untracked_or_ignored_reference_behavior": "fail_closed",
+      "unknown_reference_behavior": "fail_closed",
+      "traversal_or_symlink_escape_behavior": "fail_closed",
+      "semantic_or_external_reference_behavior": "observe_not_package"
+    },
+    "repository_seed_paths": [
+      "pyproject.toml",
+      "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_3.json",
+      "configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_authority_decision_v1_0.json",
+      "configs/runtime/fin_ia_0_1_2_s0_test_execution_contract_registry_v1_0.json"
+    ],
+    "repository_prefixes": [],
+    "complete_per_test_stdout_stderr_required": true,
+    "content_addressed_object_readback_required": true,
+    "frozen_inventory_digest_readback_required": true,
+    "disposable_runtime_count": 2,
+    "disposable_git_subprocess_calls_allowed": 0,
+    "ignored_or_untracked_repository_paths_packaged_maximum": 0,
+    "semantic_parity_required": true,
+    "provider_credential_environment_removed": true,
+    "failed_or_quarantined_package_business_promotable": false,
+    "restricted_review_before_share_or_promotion": true,
+    "external_read_only_bindings": []
+  },
+  "engineering_verification": {
+    "test_execution_contract_registry": "engineering_pass",
+    "typed_dependency_closure": "engineering_pass",
+    "phase_separated_fake_disposable": "engineering_pass",
+    "engineering_verification_ref": ".codex_runtime/fin_0_1_2_s0_phase_aware_engineering_fake_full_chain_r6/verification.json",
+    "engineering_verification_sha256": "00a7730b41615c351ff1468fffe43e9269dedebc18d6e1d60c9c245feceb457a",
+    "clean_environment_acceptance_executed": false,
+    "model_provider_network_calls": [0, 0, 0]
+  },
+  "fixed_budget": {
+    "phase_aware_structural_implementation_slices": [1, 1],
+    "formal_clean_environment_qualification_attempts_after_disposition": [0, 1],
+    "automatic_retries_or_replacements": 0,
+    "credential_reads": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_or_source_calls": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "next_action_on_authority_pass": "FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-EXECUTION-AND-CLOSEOUT"
+}

@@ -1,7 +1,7 @@
 # FIN 0.1.2 S0 当前基线与干净环境验收计划
 
 日期：2026-08-02
-状态：`S0-04 engineering pass / S0-05 clean qualification authorized not executed`
+状态：`S0-04 engineering pass / S0-05 clean qualification terminal failed / project disposition required`
 
 产品计划：`docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md`
 
@@ -13,7 +13,7 @@ S0 只确认当前代码、配置、Prompt、fixture、测试和原始运行记�
 
 以当前累计代码 HEAD 为基础，不回滚原 0.1.3 实现。S0 当前状态是“实现资产存在但最终验收未通过”，不是从零开始，也不是继承历史 proof pass。
 
-当前已知 S0 问题为 RC-P36-090–096。它们全部留在 FIN 0.1.2 S0；模型质量、真实研究结果和 Workbench 用户价值不进入本阶段。
+资格运行后当前 open S0 问题为 RC-P36-090/091/093/094/095/097；RC-P36-092/096 已由本次真实证据关闭。它们全部留在 FIN 0.1.2 S0；模型质量、真实研究结果和 Workbench 用户价值不进入本阶段。
 
 ## 3. 执行顺序
 
@@ -37,7 +37,7 @@ S0 只确认当前代码、配置、Prompt、fixture、测试和原始运行记�
 2. 简化 clean-environment runner：不把产品版本、用户授权和一次测试运行编织成复杂硬编码状态机；
 3. 统一当前资源和引用入口：复用已实现的 29 项资源、六类引用和八类环境路径，但建立版本中性的 current manifest；
 4. 清理测试归属：S0 只收当前基础测试，S1 三案例逻辑作为依赖回归，不让旧 closeout 测试拥有 mutable truth；
-5. 修复 RC-P36-090–096 的最早责任代码，并给每类根因增加确定性回归。
+5. 对当时的 RC-P36-090–096 最早责任代码做集中修复，并给每类根因增加确定性回归；后续 qualification 证明其中 092/096 已关闭，其余问题仍需结构性处置并新增 097。
 
 本地验证结果为：current manifest selected suite=`95 passed`，FIN 0.1.2/0.1.3 全部 S0 兼容合同=`147 passed`，DELL/MU/NVDA 零模型链=`31 passed`。这些结果只建立 S0-04 engineering pass；尚未执行干净环境 package、双目录比较或 S0 closeout。
 
@@ -45,7 +45,16 @@ S0 只确认当前代码、配置、Prompt、fixture、测试和原始运行记�
 
 ### S0-05 本机与干净环境验收
 
-资格授权已完成，但尚未启动 attempt。授权只覆盖一个固定 ID、固定 manifest、固定 current projection 和固定离仓输出目录的零模型 qualification；runner 会在输出创建前校验 authority digest、投影摘要、source bindings、clean worktree、HEAD=upstream 和 engineering-base ancestry。旧 manifest 缺少 authority 时只能作为历史证据读取，不能启动真实资格运行。
+资格授权与唯一 attempt 均已消费。runner 在 clean/synced HEAD 上接受 exact authority，成功构建 789-file 内容寻址 package 并执行两套 disposable 测试；终态为每套 `45 passed / 54 failed`，repository readback 未变化，897 个内容引用/15,827,581 bytes 复核通过，模型与网络调用为 0。
+
+首个可信失败不是某个业务字段，而是 current manifest 的 phase/test dependency closure 不完整：
+
+1. pre-execution authority 测试被放进它自己授权的 disposable 运行；
+2. host-only Git inventory 测试被放进无 `.git` 的 package；
+3. selected tests 直接声明的 tracked JSON/JSONL/Markdown 依赖，以及 `current_projection.source_paths`，没有进入 typed closure；
+4. pytest basetemp 未绑定 disposable temporary root，escaped Windows repr 与 `fixture://` URI 又造成语义路径误报。
+
+因此不能逐个把本次缺少的文件加入 allowlist。下一项必须先决定统一的 phase 分类、typed test-resource dependency compiler、pytest temporary-root 绑定和 raw-preserving diagnostic projection 边界；本计划没有授权直接实现或第二次 qualification。
 
 顺序为：
 
@@ -54,7 +63,7 @@ S0 只确认当前代码、配置、Prompt、fixture、测试和原始运行记�
 3. 一个干净目录完整运行；
 4. 最终两个相互独立目录运行并比较业务语义；
 5. repository readback 和原始失败证据留存检查；
-6. S0 closeout 与 RC-P36-090–096 逐项处置。
+6. S0 closeout 与当前 open RC-P36-090/091/093/094/095/097 逐项处置。
 
 失败 attempt 永久保留。允许在定位根因、完成修复并添加回归测试后用新 attempt ID 重验；禁止不改任何条件直接碰运气重跑。
 
@@ -69,7 +78,7 @@ S0 通过必须同时满足：
 - 失败仍先保存完整安全 capture 和 terminal result；
 - 两个独立目录得到一致的业务语义结果；
 - 历史 event、当前 projection 和运行 attempt 三类真值互不冒充；
-- RC-P36-090–096 关闭，或有经用户接受且不影响 S0 目标的明确外部边界。
+- 当前 open RC-P36-090/091/093/094/095/097 关闭，或有经用户接受且不影响 S0 目标的明确外部边界；已关闭的 092/096 不重复重证。
 
 ## 5. 停止和反思规则
 
@@ -82,4 +91,4 @@ S0 通过必须同时满足：
 
 ## 6. 本计划没有授权的动作
 
-S0-04 本地零调用实现与确定性回归已完成，S0-05 仅授权一次后续 clean-environment qualification；当前未创建或执行 package，也未完成证据 closeout。凭据读取、DeepSeek/OpenAI/Sub2API 调用、业务网络、exact-live、DELL/MU/NVDA 产品验收、自动 retry/replacement、tag、release 或 production 仍未授权。
+S0-04 本地零调用实现与确定性回归已完成；S0-05 唯一 qualification 已终态失败并保留完整受限证据。当前只允许下一项零调用项目级 disposition；代码修复、新 manifest、新 attempt、凭据读取、DeepSeek/OpenAI/Sub2API 调用、业务网络、exact-live、DELL/MU/NVDA 产品验收、自动 retry/replacement、tag、release 或 production 均未授权。

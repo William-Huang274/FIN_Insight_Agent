@@ -1,0 +1,118 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0_clean_environment_qualification_terminal_result_v1_0",
+  "result_id": "FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-R1-TERMINAL-FAILURE",
+  "recorded_at": "2026-08-02T16:45:12+08:00",
+  "status": "terminal_failed_no_retry_project_level_disposition_required",
+  "authority_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s0_fresh_clean_environment_qualification_authority_decision_v1_0.json",
+    "sha256": "ec1b96e24a6c560e1790bcf9bdeecadcf557557097c9421dc8556034c9ddd027"
+  },
+  "execution": {
+    "attempt_id": "attempt_fin_0_1_2_s0_clean_environment_qualification_20260802_r1",
+    "attempt_started_at": "2026-08-02T16:36:53+08:00",
+    "attempt_terminal_at": "2026-08-02T16:38:15+08:00",
+    "attempt_consumed": true,
+    "maximum_attempts": 1,
+    "automatic_retry_or_replacement_attempts": 0,
+    "git_branch": "codex/layered-data-source-expansion",
+    "git_head": "162ba5f3889d8469d1b3dea2476f2956b0149a1e",
+    "head_equal_upstream_before_and_after": true,
+    "worktree_clean_before_and_after": true,
+    "command": "python scripts/engineering/run_fin_s0_current_qualification.py --output-root D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_clean_environment_qualification_20260802T080750Z_head_56732cd9_r1",
+    "credential_model_provider_network_business_calls": [0, 0, 0, 0, 0]
+  },
+  "project_os_preflight": {
+    "restricted_runtime_ref": ".codex_runtime/fin_0_1_2_s0_fresh_clean_environment_qualification_execution_preflight.json",
+    "sha256": "6a280dd7361d544df739e75bdbe9ae7ee02f52340f22b9089a45f23f6ee0f9ff",
+    "status": "pass",
+    "missing_required_record_count": 0,
+    "blocking_issue_count_for_this_scope": 0
+  },
+  "restricted_evidence": {
+    "package_root": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_clean_environment_qualification_20260802T080750Z_head_56732cd9_r1",
+    "business_promotable": false,
+    "verification_ref": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_clean_environment_qualification_20260802T080750Z_head_56732cd9_r1/verification.json",
+    "verification_sha256": "d040be21af9c3defcbdf70999d797552ee984047dbe11bf9ebaa5d78d7bddcf7",
+    "package_manifest_ref": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_clean_environment_qualification_20260802T080750Z_head_56732cd9_r1/package_manifest.json",
+    "package_manifest_sha256": "b223219d76357ab3488f424eec880b0b4911a2b672ff12bec07f731aa27440f9",
+    "disposable_a_terminal_ref": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_clean_environment_qualification_20260802T080750Z_head_56732cd9_r1/runs/disposable_a/terminal_result.json",
+    "disposable_a_terminal_sha256": "225d3e66b6e71c34d9434702936bd812f297cfed38871f10745600f2254b3e6b",
+    "disposable_b_terminal_ref": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_clean_environment_qualification_20260802T080750Z_head_56732cd9_r1/runs/disposable_b/terminal_result.json",
+    "disposable_b_terminal_sha256": "0f8ffadbd8c76ea5d20177145e17d7c7393642980e74f0626f360f3aafefde8a",
+    "disposable_a_semantic_projection_sha256": "33e3db76704d40d1919e4ad6fbdb325dc5d6af2bc3ce66a62777e20ea9f03965",
+    "disposable_b_semantic_projection_sha256": "a98e1c7168891c9c7607d7473f45898c7176dea525605fbf86ccf5c5b90bc227"
+  },
+  "result_summary": {
+    "verification_status": "failed",
+    "current_active_suite_all_green": false,
+    "disposable_parity": false,
+    "raw_disposable_parity": false,
+    "semantic_normalization_valid": [false, false],
+    "semantic_unknown_absolute_path_count": [53, 53],
+    "disposable_a_tests": {"passed": 45, "failed": 54},
+    "disposable_b_tests": {"passed": 45, "failed": 54},
+    "gating_failures_each": 41,
+    "historical_findings_each": 13,
+    "repository_file_count": 789,
+    "repository_unchanged_during_run": true,
+    "content_addressed_refs_and_bytes_read_back": [897, 15827581],
+    "forbidden_git_or_codex_runtime_paths_packaged": 0,
+    "registered_runtime_resources_present": [29, 29],
+    "reference_role_observations_unknown": [1063, 0]
+  },
+  "per_selected_test_file_outcomes_each_disposable": {
+    "qualification_authority": {"passed": 3, "failed": 1},
+    "prior_current_projection_snapshot": {"passed": 7, "failed": 2},
+    "three_case_zero_model": {"passed": 9, "failed": 22},
+    "version_consolidation_current_truth": {"passed": 2, "failed": 3},
+    "reference_role_registry_and_collect_all": {"passed": 0, "failed": 15},
+    "runtime_resource_registry_and_dependency_compiler": {"passed": 14, "failed": 0},
+    "typed_environment_semantic_parity_contract": {"passed": 10, "failed": 0},
+    "historical_T03_closeout": {"passed": 0, "failed": 5},
+    "historical_v2_host_failure": {"passed": 0, "failed": 6}
+  },
+  "first_credible_failure": {
+    "failure_code": "current_manifest_phase_and_test_dependency_closure_incomplete",
+    "first_gating_nodeid": "tests/contract/test_fin_0_1_2_s0_clean_environment_qualification_authority.py::test_authority_decision_is_bound_but_has_not_consumed_attempt",
+    "first_visible_exception": "hermetic_package_file_missing",
+    "root_cause": "The current manifest treats pre-execution authority checks, host-only Git inventory assertions, disposable-safe runtime tests and historical audits as one package-executed suite, while the inventory compiler closes tracked Python prefixes and JSON ref fields but not schema-owned current_projection.source_paths or Python-declared test resources. The qualification therefore self-invalidates its pre-run authority test and omits tracked dependencies required by selected tests.",
+    "structural_findings": [
+      "the pre-execution authority test was incorrectly selected inside the disposable execution it was designed to authorize",
+      "a host-only full repository Git inventory assertion was selected inside a Git-free disposable package and failed with hermetic_git_inventory_failed",
+      "static read-only audit found at least 19 direct selected-test repository string dependencies and 6 current projection source paths absent from the package; observed failures also exposed two composed exact-admission dependencies",
+      "semantic diagnostics retained double-escaped Windows repr paths that the typed root projection did not normalize",
+      "the absolute-path detector treated the path component of fixture://case/evidence as a POSIX host path",
+      "pytest tmp_path escaped the frozen disposable temporary root because the run did not bind pytest basetemp to that root"
+    ],
+    "project_owned": true,
+    "model_or_provider_fault": false,
+    "financial_runtime_L1_failure": false,
+    "one_file_at_a_time_patch_forbidden": true
+  },
+  "issue_disposition": {
+    "RC-P36-090": "open_recurred_host_only_git_inventory_test_selected_in_disposable",
+    "RC-P36-091": "open_recurred_and_expanded_selected_test_dependency_closure_incomplete",
+    "RC-P36-092": "closed_29_registered_runtime_resources_present_and_14_of_14_resource_tests_passed_in_both_disposables",
+    "RC-P36-093": "open_recurred_53_unknown_absolute_path_findings_in_each_disposable",
+    "RC-P36-094": "open_partial_reference_report_unknown_zero_but_15_of_15_selected_reference_role_tests_failed_before_intended_behavior",
+    "RC-P36-095": "open_recurred_exact_manifest_was_bound_but_not_dependency_or_phase_complete",
+    "RC-P36-096": "closed_authorized_state_was_consumed_attempt_terminalized_outside_current_projection_and_no_product_version_was_created",
+    "RC-P36-097": "new_open_current_manifest_phase_and_test_dependency_closure_incomplete"
+  },
+  "stop_rule": {
+    "same_attempt_retry_allowed": false,
+    "automatic_replacement_attempt_allowed": false,
+    "repair_or_new_attempt_authorized": false,
+    "new_product_version_created": false,
+    "next_work_must_start_with_project_level_zero_call_disposition": true
+  },
+  "product_truth": {
+    "user_visible_financial_research_capability_delta": "none",
+    "FIN_0_1_2_S0": "terminal_failed_blocked_project_level_disposition_required",
+    "FIN_0_1_2_S1_through_S5": "not_started_under_consolidated_baseline",
+    "FIN_0_1_release_qualified": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "next_projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_2.json",
+  "next_action": "FIN-0.1.2-S0-CLEAN-QUALIFICATION-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-DECISION"
+}

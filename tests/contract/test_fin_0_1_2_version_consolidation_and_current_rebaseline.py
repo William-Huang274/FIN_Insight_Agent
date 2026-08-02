@@ -119,12 +119,19 @@ def test_latest_project_os_rows_reassign_current_scope_to_fin_0_1_2() -> None:
         "current_next_action"
     ]
     issues = _jsonl(Path("docs/project_os/root_cause_issue_ledger.jsonl"))
-    for number in range(90, 97):
+    latest_by_number = {}
+    for number in range(90, 98):
         matching = [row for row in issues if f"RC-P36-{number:03d}" in row.get("issue_id", "")]
         assert matching
-        assert matching[-1]["state_detail"] == (
-            "clean_qualification_authorized_not_executed"
-        )
+        latest_by_number[number] = matching[-1]
+    assert latest_by_number[92]["status"] == "closed"
+    assert latest_by_number[96]["status"] == "closed"
+    for number in (90, 91, 93, 94, 95, 97):
+        assert latest_by_number[number]["status"] == "open"
+    assert {
+        row["issue_id"] for row in latest_by_number.values()
+        if row["status"] == "open"
+    } == set(projection["current_truth"]["open_issue_ids"])
 
 
 def test_decision_did_not_authorize_runtime_or_external_execution() -> None:

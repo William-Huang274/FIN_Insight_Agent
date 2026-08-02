@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_0_1_program_release_backlog_v2_0",
   "release_id": "REL-PROD-001",
   "version": "FIN_0_1_2_CURRENT_CONSOLIDATED_PRODUCT_ITERATION",
-  "status": "FIN_0_1_2_S0_clean_environment_qualification_authorized_not_executed_FIN_0_1_not_qualified",
+  "status": "FIN_0_1_2_S0_clean_qualification_terminal_failed_project_level_disposition_required_FIN_0_1_not_qualified",
   "authority": {
     "active_progress_source": true,
     "activated_at": "2026-07-19",
@@ -22,8 +22,8 @@
   "current_version_rebaseline": {
     "authoritative_current_truth": false,
     "current_projection_is_authority": true,
-    "decision_ref": "configs/releases/fin_ia_0_1_2_s0_fresh_clean_environment_qualification_authority_decision_v1_0.json",
-    "projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_1.json",
+    "decision_ref": "configs/releases/fin_ia_0_1_2_s0_fresh_clean_environment_qualification_terminal_failure_and_project_level_disposition_required_v1_0.json",
+    "projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_2.json",
     "product_plan_ref": "docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md",
     "S0_plan_ref": "docs/architecture/repository/FIN_0_1_2_S0_CURRENT_BASELINE_AND_CLEAN_ENVIRONMENT_QUALIFICATION_PLAN_20260802.zh-CN.md",
     "asset_audit_ref": "docs/architecture/repository/FIN_0_1_2_S0_CURRENT_CODE_ASSET_AUDIT_20260802.zh-CN.md",
@@ -33,7 +33,7 @@
     "FIN_0_1_4_role": "historical_unexecuted_FIN_0_1_2_S0_improvement_proposal",
     "failed_attempt_automatically_increments_product_version": false,
     "legacy_nested_current_truth_role": "historical_snapshot_not_current_authority",
-    "current_next_action": "FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-EXECUTION-AND-CLOSEOUT"
+    "current_next_action": "FIN-0.1.2-S0-CLEAN-QUALIFICATION-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-DECISION"
   },
   "program_plan_ref": "docs/architecture/repository/FIN_0_1_PROGRAM_EXECUTION_PLAN_DRAFT_20260719.zh-CN.md",
   "prd_absorption_ref": "docs/product/FIN_PRD_FULL_ABSORPTION_AND_RELEASE_ALLOCATION_MATRIX_20260719.zh-CN.md",
@@ -2383,10 +2383,10 @@
     ]
   },
   "next_action": {
-    "item_id": "FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-EXECUTION-AND-CLOSEOUT",
-    "status": "FIN_0_1_2_current_S0_clean_environment_qualification_authorized_not_executed",
+    "item_id": "FIN-0.1.2-S0-CLEAN-QUALIFICATION-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-DECISION",
+    "status": "FIN_0_1_2_current_S0_clean_qualification_terminal_failed_no_retry",
     "still_blocks": [
-      "FIN_0_1_2_S1_until_RC_P36_090_through_096_are_closed_in_current_S0",
+      "FIN_0_1_2_S1_until_current_S0_open_RC_P36_090_091_093_094_095_097_are_closed_or_honestly_dispositioned",
       "RC_P36_067_numeric_projection_and_rendering_exact_live_reproof",
       "RC_P36_068_case_delivery_identity_exact_live_reproof",
       "automatic_R7_after_new_L1_failure",
@@ -2397,12 +2397,16 @@
       "release",
       "production"
     ],
-    "action": "execute the one digest-bound fresh clean-environment qualification attempt, preserve its immutable terminal evidence, then disposition RC-P36-090 through 096 without automatic retry",
+    "action": "make one zero-call project-level disposition for the manifest phase and test dependency closure failure; do not patch individual missing files or authorize a replacement attempt in this item",
     "current_consolidation_decision_ref": "configs/releases/fin_ia_0_1_2_version_consolidation_and_current_rebaseline_v1_0.json",
-    "current_projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_1.json",
+    "current_projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_2.json",
     "clean_environment_qualification_authority_ref": "configs/releases/fin_ia_0_1_2_s0_fresh_clean_environment_qualification_authority_decision_v1_0.json",
     "clean_environment_qualification_authority_sha256": "ec1b96e24a6c560e1790bcf9bdeecadcf557557097c9421dc8556034c9ddd027",
-    "clean_environment_qualification_attempts_started": 0,
+    "clean_environment_qualification_attempts_started": 1,
+    "clean_environment_qualification_attempts_terminal_failed": 1,
+    "clean_environment_qualification_automatic_retries_or_replacements": 0,
+    "clean_environment_qualification_terminal_result_ref": "configs/releases/fin_ia_0_1_2_s0_fresh_clean_environment_qualification_terminal_failure_and_project_level_disposition_required_v1_0.json",
+    "clean_environment_qualification_terminal_result_sha256": "3ebf3a20b09bbe6593874f011321a5e920fabf97a721b994776a018e7708e8fc",
     "FIN_0_1_2_S0C_decision_ref": "configs/releases/fin_ia_0_1_2_s0c_hermetic_test_topology_and_allowlisted_package_closure_scope_decision_v1_0.json",
     "FIN_0_1_2_S0C_decision_sha256": "c2456ef0854a828c116da34a292e2a3bfc9701ab110f309d14b8e579d218108d",
     "FIN_0_1_2_S0C_selected_stage": "FIN-0.1.2-S0C-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-R1",

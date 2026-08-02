@@ -1,0 +1,152 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0_clean_environment_qualification_success_and_closeout_v1_0",
+  "closeout_id": "FIN-0.1.2-S0-PHASE-AWARE-CLEAN-ENVIRONMENT-QUALIFICATION-SUCCESS-AND-S0-CLOSEOUT-R1",
+  "recorded_at": "2026-08-02T21:55:00+08:00",
+  "status": "formal_qualification_pass_S0_closed_S1_entry_scope_decision_pending",
+  "authority_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_authority_decision_v1_0.json",
+    "sha256": "192cd3e7e2bf90895d9cfe856d83357f9adf83b8225b902d08d7f7948030d71e",
+    "attempt_id": "attempt_fin_0_1_2_s0_phase_aware_clean_environment_qualification_20260802_r2",
+    "maximum_attempts": 1,
+    "attempts_consumed": 1,
+    "automatic_retry_or_replacement_attempts": 0
+  },
+  "candidate_binding": {
+    "branch": "codex/layered-data-source-expansion",
+    "git_head": "6340aeef857ad3c48226a530ace6bb8204b8decd",
+    "manifest_ref": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_3.json",
+    "manifest_sha256": "ff7123a382c655a40ce22377d881bc8bc240839cf8e3fddd4345b012909b1b12",
+    "execution_contract_id": "fin_0_1_2.S0.phase_aware_test_execution_and_typed_dependency:v1",
+    "execution_plan_digest": "8c97887d095d992f001e6038566dbfc502a67007961fe6eeee77b1bbff0d2622",
+    "registry_digest": "cb6654a860b2a722afafe916d0f149d507eddc969e5853fc1aeb166caf5a5653"
+  },
+  "immutable_external_evidence": {
+    "output_root": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_phase_aware_clean_environment_qualification_20260802T115500Z_head_16a5d4da_r2",
+    "verification_ref": "verification.json",
+    "verification_sha256": "81564dd8f7fa7169dce25567d73d74e24f689e79f9e881dd8b5a70b1364bca3c",
+    "package_manifest_ref": "package_manifest.json",
+    "package_manifest_sha256": "05c153d7279d1e26f9d5382455801341a4e6fcaedea57d99f56e932a04e9eee1",
+    "phase_terminal_results": [
+      {
+        "phase": "contract_compile",
+        "ref": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_phase_aware_clean_environment_qualification_20260802T115500Z_head_16a5d4da_r2/runs/contract_compile/terminal_result.json",
+        "sha256": "4ef836e1a099a87832fe31b25eccf5edb1053d08fcd42f051db3c1a9149c31ec"
+      },
+      {
+        "phase": "host_preflight",
+        "ref": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_phase_aware_clean_environment_qualification_20260802T115500Z_head_16a5d4da_r2/runs/host_preflight/terminal_result.json",
+        "sha256": "ca186ff6f92d917cdd01ce7062bd67cbce7520513c2381e47a8f250a2d92e5c6"
+      },
+      {
+        "phase": "disposable_a",
+        "ref": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_phase_aware_clean_environment_qualification_20260802T115500Z_head_16a5d4da_r2/runs/disposable_a/terminal_result.json",
+        "sha256": "81c41b320bd89ec60313e191fad360126d3b21252e44fa6dacc9f9317f632237"
+      },
+      {
+        "phase": "disposable_b",
+        "ref": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_phase_aware_clean_environment_qualification_20260802T115500Z_head_16a5d4da_r2/runs/disposable_b/terminal_result.json",
+        "sha256": "2c317085248b3221d9d83aae4c5b70dce86e8004607449c7731552a91cb68d78"
+      },
+      {
+        "phase": "historical_audit",
+        "ref": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_phase_aware_clean_environment_qualification_20260802T115500Z_head_16a5d4da_r2/runs/historical_audit/terminal_result.json",
+        "sha256": "2c2209712dcd040cb83481b2dffc09857d5f152eb68b76cdc034fa9927e6d980"
+      },
+      {
+        "phase": "post_run_attestation",
+        "ref": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_phase_aware_clean_environment_qualification_20260802T115500Z_head_16a5d4da_r2/runs/post_run_attestation/terminal_result.json",
+        "sha256": "08447ea49966f0f2633281d036700f40e0906a60a03b1531a06b80398fa9243d"
+      }
+    ]
+  },
+  "formal_result": {
+    "status": "pass",
+    "contract_compile": "pass",
+    "host_preflight": {
+      "status": "pass_current_gate_all_green",
+      "passed": 31,
+      "failed": 0,
+      "collection_errors": 0
+    },
+    "disposable_current_gate": {
+      "runtime_count": 2,
+      "each_passed": 58,
+      "each_failed": 0,
+      "each_collection_errors": 0,
+      "semantic_parity": true,
+      "raw_parity": true,
+      "semantic_unknown_absolute_path_count": [0, 0],
+      "semantic_parity_digest": "f04c0171977440b92577fdfc06777ab4b3371209f781a3a33f37183519b31bba",
+      "raw_parity_digest": "1fd9152e061f54439102eea6fc7702ce3ad753dcc3ebe665e8a0d66ae7bf06c7"
+    },
+    "historical_audit": {
+      "status": "pass_non_gating_with_historical_findings",
+      "passed": 23,
+      "historical_findings": 1,
+      "finding_nodeid": "tests/contract/test_fin_0_1_2_s0_clean_environment_qualification_authority.py::test_authority_decision_is_bound_but_has_not_consumed_attempt",
+      "disposition": "expected_historical_R2_1_pre_consumption_assertion_after_immutable_R2_1_attempt_was_consumed_not_a_current_candidate_failure"
+    },
+    "post_run_attestation": {
+      "status": "pass",
+      "repository_unchanged_during_run": true,
+      "complete_per_test_stdout_stderr_content_addressed": true,
+      "process_stdout_stderr_content_addressed": true,
+      "failed_output_business_promotable": false
+    }
+  },
+  "package_truth": {
+    "inventory_source": "typed_test_dependency_bundle_closure_only",
+    "repository_file_count": 789,
+    "tracked_file_count": 789,
+    "explicit_allowlist_path_count": 0,
+    "external_read_only_dependency_count": 0,
+    "recursive_reference_path_count": 560,
+    "semantic_or_external_reference_count": 3375,
+    "unknown_reference_role_count": 0,
+    "package_semantic_digest": "76d693f3d73a0c90795cd03311bce7abf55886373d7d04bf4c5651a62cc42c22",
+    "repository_inventory_closure_digest": "e106287f99590083b43d7dca6cfd55483bc9c49b01bee4cbbdc1f315c2797e5f"
+  },
+  "issue_disposition": {
+    "closed_issue_ids": [
+      "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+      "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
+      "RC-P36-093-fin-0-1-2-hermetic-semantic-parity-untyped-host-python-traceback-path",
+      "RC-P36-094-fin-0-1-3-hermetic-reference-role-taxonomy-conflates-semantic-audit-and-repository-paths",
+      "RC-P36-095-fin-0-1-3-v2-host-proof-manifest-policy-enum-contract-drift",
+      "RC-P36-097-fin-0-1-2-current-manifest-phase-and-test-dependency-closure-incomplete"
+    ],
+    "previously_closed_issue_ids_not_reopened": [
+      "RC-P36-092-fin-0-1-2-s0c-hermetic-package-misses-static-runtime-resource",
+      "RC-P36-096-fin-0-1-3-v3-eligibility-authority-transition-projection-status-hard-coded-pre-authority-state"
+    ],
+    "open_S0_issue_ids_after_closeout": []
+  },
+  "stage_acceptance": {
+    "FIN_0_1_2_S0": "pass_closed",
+    "FIN_0_1_2_S1": "not_started_current_consolidated_baseline",
+    "FIN_0_1_2_S2_to_S5": "not_started",
+    "FIN_0_1_2_release_qualified": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "product_truth_boundary": {
+    "proves": [
+      "current_committed_code_and_typed_resources_reproduce_in_two_independent_git_free_disposable_runtimes",
+      "current_Dell_MU_NVDA_zero_model_baseline_tests_execute_without_hidden_host_or_untracked_dependency",
+      "raw_capture_terminal_result_and_semantic_parity_paths_survive_the_formal_run",
+      "S0_structural_issues_RC_P36_090_091_093_094_095_097_are_closed"
+    ],
+    "does_not_prove": [
+      "DeepSeek_or_any_model_quality",
+      "exact_live_financial_research_quality",
+      "DELL_or_MU_R2",
+      "NVDA_R3",
+      "paired_assessment_or_owner_acceptance",
+      "S1_through_S5_completion",
+      "release_or_production_readiness"
+    ],
+    "credential_model_provider_network_business_calls": [0, 0, 0, 0, 0],
+    "business_artifacts_created": 0
+  },
+  "next_action": "FIN-0.1.2-S1-ENTRY-AND-HISTORICAL-ASSET-REUSE-SCOPE-DECISION",
+  "next_action_rule": "Do not replay the historical S1 plan blindly. First map reusable S1 deterministic three-case assets against the newly passed current S0 baseline, then freeze only the missing current-baseline S1 work."
+}

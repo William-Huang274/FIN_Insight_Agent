@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0 structural engineering pass / formal clean qualification authorized not executed / S1-S5 not started`
+状态：`current canonical plan / S0 formal pass closed / S1 entry scope decision pending / S2-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -12,11 +12,11 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，正在重新完成 S0；
+- FIN 0.1.2：当前唯一开发版本，S0 已正式通过并关闭，S1 current-baseline 入口待决策；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
-- FIN 0.1.2 当前没有新增用户可见能力，release qualified=false。
+- FIN 0.1.2 本次 S0 收口没有新增用户可见能力，release qualified=false。
 
 合并使用当前累计代码，不回滚原 0.1.3 已实现资产，也不继承其未成立的 proof pass。
 
@@ -52,6 +52,16 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 
 ## 6. 当前执行入口
 
+S0 的唯一 R2 formal qualification 已在 clean/synced HEAD=`6340aeef857ad3c48226a530ace6bb8204b8decd` 上执行一次并通过：host=`31 passed`，两套 Git-free disposable 各=`58 passed`，semantic/raw parity、content-addressed capture 和 repository readback 全部通过，789 个 package files 全部 tracked，未知宿主路径、allowlist 和外部依赖均为 0。历史审计单独保留 `23 passed / 1 non-gating finding`，没有被隐藏或计入 current gate。
+
+因此 RC-P36-090/091/093/094/095/097 已关闭，FIN 0.1.2 S0=`pass_closed`。本结论不证明模型质量、exact-live、三案例产品等级或 release；S1–S5 仍未按合并后的 current baseline 重新进入。
+
+历史 S1 已存在大量三案例确定性资产，且本次 S0 package 已实际执行其中的 realistic three-case tests。为避免再次把“已有资产”误当“当前阶段已验收”，也避免从头重复建设，当前下一项先做 S1 入口与资产复用边界决策：
+
+`FIN-0.1.2-S1-ENTRY-AND-HISTORICAL-ASSET-REUSE-SCOPE-DECISION`
+
+以下内容保留为本次 S0 正式通过前的历史执行脉络，不再拥有 current next：
+
 版本合并、计划、新起点、只读资产审计和 S0-04 本地零调用集中修复已经完成。S0-05 唯一 clean qualification 已在 clean/synced HEAD 上执行并终态失败：两套 disposable 均为 `45 passed / 54 failed`，其中 current gate 失败 41、历史 finding 13；29 项生产 Runtime 资源、14 项资源测试和 10 项 typed-environment 合同测试均通过，但 manifest 把运行前、host-only、disposable 与历史测试混在同一执行集合，且没有编译完整测试资源依赖。语义 parity 也因 escaped path、fixture URI 和 pytest 临时根边界得到每套 53 个未知绝对路径 finding。
 
 这不是模型、Provider、金融判断或用户可见产品质量失败，而是 S0 测试拓扑与 hermetic dependency/environment closure 的项目内结构问题。不能通过补齐本次看到的单个 JSON 文件来宣布修复。
@@ -62,8 +72,8 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 
 新的 R2 authority 已绑定 clean/synced engineering base HEAD、phase-aware registry、实现记录、正式 manifest R2.3、current projection v2.5、runner、attempt contract、唯一输出根和一次性预算；authority decision 本身没有启动 attempt。
 
-当前下一项是：
+当时下一项是（已由成功 formal attempt 消费）：
 
 `FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-EXECUTION-AND-CLOSEOUT`
 
-上一 R1 qualification attempt 已按 `1/1` 消费并永久保留；新 R2 只针对结构修复后的新 committed candidate，最多执行一次且无自动重试。RC-P36-092 与 RC-P36-096 保持关闭；RC-P36-090/091/093/094/095/097 仍 open，只有 R2 formal evidence 通过并另行审查后才能关闭。S0 尚未通过；S1–S5、模型/Provider、真实业务链和产品 Artifact 均未授权。
+上一 R1 qualification attempt 与本次成功 R2 attempt 均按不可变事件永久保留；R2 已消费 `1/1` 且没有自动重试。正式审查已关闭 RC-P36-090/091/093/094/095/097，S0 已通过；S1–S5、模型/Provider、真实业务链和产品 Artifact 仍未因此自动获权或通过。

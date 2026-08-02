@@ -1,0 +1,66 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S0-PASSED-S1-ENTRY-PENDING-R7",
+  "recorded_at": "2026-08-02T21:55:00+08:00",
+  "status": "current_FIN_0_1_2_S0_formal_clean_qualification_passed_S1_entry_scope_decision_pending",
+  "lifecycle_state": "in_progress",
+  "decision_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_success_and_s0_closeout_v1_0.json",
+    "sha256": "66a870f9bf49fbd06f265464a94dda30c26601e6256a8966ced86c3b43b18797",
+    "binding_role": "current_S0_formal_pass_and_stage_closeout"
+  },
+  "implementation_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s0_phase_aware_test_topology_and_typed_test_dependency_compiler_minimum_zero_call_implementation_v1_0.json",
+    "sha256": "1b7fbb46945f4e84b1681077584ca78292953b0996609499776c5c2d2ed39474",
+    "binding_role": "S0_phase_aware_and_typed_dependency_implementation"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S0",
+    "active_slice": "FIN_0_1_2_S0_PASSED_S1_ENTRY_SCOPE_DECISION_PENDING",
+    "current_next_action": "FIN-0.1.2-S1-ENTRY-AND-HISTORICAL-ASSET-REUSE-SCOPE-DECISION",
+    "current_stage_status": "S0_pass_closed_S1_current_baseline_not_started",
+    "downstream_stages_started": {
+      "S1": false,
+      "S2": false,
+      "S3": false,
+      "S4": false,
+      "S5": false
+    },
+    "open_issue_ids": [],
+    "issue_state": "S0_RC_P36_090_091_093_094_095_097_closed_by_formal_evidence",
+    "FIN_0_1_3_role": "historical_FIN_0_1_2_S0_recovery_attempt_family",
+    "FIN_0_1_4_role": "historical_unexecuted_S0_improvement_proposal",
+    "FIN_0_2": "Earnings_Review_Alpha_unchanged",
+    "release_qualified": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "historical_S4_backlog": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+    "product_plan": "docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md",
+    "S0_plan": "docs/architecture/repository/FIN_0_1_2_S0_CURRENT_BASELINE_AND_CLEAN_ENVIRONMENT_QUALIFICATION_PLAN_20260802.zh-CN.md",
+    "asset_audit": "docs/architecture/repository/FIN_0_1_2_S0_CURRENT_CODE_ASSET_AUDIT_20260802.zh-CN.md",
+    "assistant_policy": "docs/project_os/senior_assistant_collaboration_policy.zh-CN.md",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "formal_manifest": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_3.json",
+    "test_execution_contract_registry": "configs/runtime/fin_ia_0_1_2_s0_test_execution_contract_registry_v1_0.json",
+    "implementation_result": "configs/releases/fin_ia_0_1_2_s0_phase_aware_test_topology_and_typed_test_dependency_compiler_minimum_zero_call_implementation_v1_0.json",
+    "qualification_authority_decision": "configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_authority_decision_v1_0.json",
+    "qualification_success_and_S0_closeout": "configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_success_and_s0_closeout_v1_0.json",
+    "qualification_attempt_contract": "configs/runtime/fin_ia_s0_qualification_attempt_contract_v1_0.json"
+  },
+  "historical_projection_policy": {
+    "immutable_event_files_remain_valid_for_historical_facts": true,
+    "historical_files_may_own_current_next_or_backlog_tail": false,
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_5.json",
+    "superseded_projection_deleted_or_rewritten": false
+  },
+  "execution_authority": {
+    "planning_and_read_only_audit_complete": true,
+    "focused_s0_repair_authorized": false,
+    "clean_environment_acceptance_authorized": false,
+    "credential_model_provider_network_business_authorized": false
+  }
+}

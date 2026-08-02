@@ -1,7 +1,7 @@
 # FIN 0.1.2 S0 当前基线与干净环境验收计划
 
 日期：2026-08-02
-状态：`S0-04 engineering pass / S0-05 terminal failed / S0-06 disposition complete / S0-07 structural engineering pass / S0-08 formal authority issued not executed`
+状态：`S0-04 engineering pass / S0-05 terminal failed / S0-06 disposition complete / S0-07 structural engineering pass / S0-08 authority consumed / S0-09 formal pass and S0 closed`
 
 产品计划：`docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md`
 
@@ -13,7 +13,7 @@ S0 只确认当前代码、配置、Prompt、fixture、测试和原始运行记�
 
 以当前累计代码 HEAD 为基础，不回滚原 0.1.3 实现。S0 当前状态是“实现资产存在但最终验收未通过”，不是从零开始，也不是继承历史 proof pass。
 
-资格运行后当前 open S0 问题为 RC-P36-090/091/093/094/095/097；RC-P36-092/096 已由本次真实证据关闭。它们全部留在 FIN 0.1.2 S0；模型质量、真实研究结果和 Workbench 用户价值不进入本阶段。
+首个资格运行后 open S0 问题为 RC-P36-090/091/093/094/095/097；RC-P36-092/096 当时已关闭。它们全部留在 FIN 0.1.2 S0 修复，并已由 S0-09 正式正证据关闭；模型质量、真实研究结果和 Workbench 用户价值不进入本阶段。
 
 ## 3. 执行顺序
 
@@ -120,9 +120,28 @@ RC-P36-090/091/093/094/095/097 已达到 engineering repaired，但仍保持 ope
 
 authority=`configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_authority_decision_v1_0.json`；manifest=`configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_3.json`；current projection=`configs/runtime/fin_ia_0_1_2_current_program_projection_v2_5.json`。
 
-当前下一项：
+当时下一项（已由 S0-09 消费）：
 
 `FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-EXECUTION-AND-CLOSEOUT`
+
+### S0-09 正式资格运行与 S0 收口（通过）
+
+唯一 R2 attempt 在 clean/synced HEAD=`6340aeef857ad3c48226a530ace6bb8204b8decd` 上执行一次，exit=0，未重试、未替换：
+
+1. contract compile=`pass`，绑定五阶段、六类 dependency bundle 和冻结 execution-plan digest；
+2. host preflight=`31 passed / 0 failed / 0 collection error`；
+3. 两套 Git-free disposable 各=`58 passed / 0 failed / 0 collection error`，semantic/raw parity=true，未知宿主绝对路径各 0；
+4. package=`789 tracked / 0 allowlist / 0 external dependency`，repository 在运行前后不变；per-test 和 process stdout/stderr 均内容寻址；
+5. historical audit=`23 passed / 1 non-gating finding`。该 finding 是旧 R2.1 authority 的“尚未消费”历史断言在旧 attempt 已消费后失败，属于预期历史事实，不是 current gate 失败；
+6. RC-P36-090/091/093/094/095/097 关闭，092/096 保持关闭，S0=`pass_closed`。
+
+证据摘要：`configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_success_and_s0_closeout_v1_0.json`；current projection：`configs/runtime/fin_ia_0_1_2_current_program_projection_v2_6.json`。
+
+当前下一项：
+
+`FIN-0.1.2-S1-ENTRY-AND-HISTORICAL-ASSET-REUSE-SCOPE-DECISION`
+
+S1 不从头重做，也不直接继承历史“已通过”声明。先对照当前 S0 package 已覆盖的三案例测试与历史 S1 资产，确认哪些可复用、哪些仍缺 current-baseline 验收，再冻结 S1 最小剩余工作。
 
 ## 4. 简化后的通过标准
 

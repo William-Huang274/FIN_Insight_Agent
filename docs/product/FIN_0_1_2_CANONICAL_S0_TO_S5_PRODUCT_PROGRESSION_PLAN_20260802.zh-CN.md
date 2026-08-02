@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0 clean qualification terminal failed / project disposition required / S1-S5 not started`
+状态：`current canonical plan / S0 project disposition complete / structural implementation pending / S1-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -54,10 +54,14 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 
 版本合并、计划、新起点、只读资产审计和 S0-04 本地零调用集中修复已经完成。S0-05 唯一 clean qualification 已在 clean/synced HEAD 上执行并终态失败：两套 disposable 均为 `45 passed / 54 failed`，其中 current gate 失败 41、历史 finding 13；29 项生产 Runtime 资源、14 项资源测试和 10 项 typed-environment 合同测试均通过，但 manifest 把运行前、host-only、disposable 与历史测试混在同一执行集合，且没有编译完整测试资源依赖。语义 parity 也因 escaped path、fixture URI 和 pytest 临时根边界得到每套 53 个未知绝对路径 finding。
 
-这不是模型、Provider、金融判断或用户可见产品质量失败，而是 S0 测试拓扑与 hermetic dependency/environment closure 的项目内结构问题。不能通过补齐本次看到的单个 JSON 文件来宣布修复；必须先做项目级零调用处置，重新划分 phase 并建立 typed test dependency closure。
+这不是模型、Provider、金融判断或用户可见产品质量失败，而是 S0 测试拓扑与 hermetic dependency/environment closure 的项目内结构问题。不能通过补齐本次看到的单个 JSON 文件来宣布修复。
+
+项目级零调用处置已经完成，选择一个最小结构修复：建立单一 TestExecutionContractRegistry，把检查分为 contract compile、host preflight、双 disposable current gate、非阻断 historical audit 和 post-run attestation；测试模块只引用逻辑 dependency bundle，compiler 负责闭合 current projection、Runtime registry、reference role、immutable event 和 fixture 资源。历史失败继续可见，但不再与 current gate 混算；`.git` 不进入 disposable；pytest 临时目录固定在每个 disposable 的 typed temp root；原始输出不改写，只在语义副本中做 URI-aware 和 escaped-path 规范化。
+
+同时纠正 proof 节奏：本地零调用单测、fixture 和 mutation 是正常实现验证，不再被当成产品版本或一次性正式 attempt；提交后的双目录 qualification 才记正式 attempt，同一代码候选禁止盲重跑。失败后仍在 FIN 0.1.2 S0 修最早根因，不自动创建 0.1.3。
 
 当前下一项是：
 
-`FIN-0.1.2-S0-CLEAN-QUALIFICATION-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-DECISION`
+`FIN-0.1.2-S0-PHASE-AWARE-TEST-TOPOLOGY-AND-TYPED-TEST-DEPENDENCY-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION`
 
-唯一 attempt 已按 `1/1` 消费并禁止重试或自动 replacement。RC-P36-092 与 RC-P36-096 获得充分正面证据后关闭；RC-P36-090/091/093/094/095 保持 open，并新增同一结构族的 RC-P36-097。S0 尚未通过，S1–S5、模型/Provider、真实业务链和产品 Artifact 均未授权。
+上一 qualification attempt 已按 `1/1` 消费并禁止同候选重试。RC-P36-092 与 RC-P36-096 保持关闭；RC-P36-090/091/093/094/095/097 已分配到上述单一结构实现包，尚未关闭。S0 尚未通过，下一项只实现并做本地零调用验证；新的 formal qualification、S1–S5、模型/Provider、真实业务链和产品 Artifact 均未授权。

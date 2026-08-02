@@ -25,12 +25,6 @@ AUTHORITY_REF = Path(
 PROJECTION_REF = Path(
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_2.json"
 )
-PROGRAM_REF = Path(
-    "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
-)
-S4_REF = Path(
-    "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json"
-)
 CAPABILITY_REF = Path("docs/project_os/capability_status_ledger.jsonl")
 ISSUE_REF = Path("docs/project_os/root_cause_issue_ledger.jsonl")
 NEXT = (
@@ -132,17 +126,18 @@ def test_current_projection_is_blocked_without_attempt_state_or_version_bump() -
     }.intersection(projection["current_truth"])
 
 
-def test_backlogs_and_project_os_share_terminal_truth() -> None:
-    program = _load(PROGRAM_REF)
-    s4 = _load(S4_REF)
+def test_terminal_event_and_its_capability_row_preserve_then_current_next() -> None:
+    result = _load(RESULT_REF)
     projection = _load(PROJECTION_REF)
-    assert program["current_version_rebaseline"]["projection_ref"] == (
-        PROJECTION_REF.as_posix()
-    )
-    assert program["next_action"]["item_id"] == NEXT
-    assert s4["current_next_action"] == NEXT
+    assert result["next_projection_ref"] == PROJECTION_REF.as_posix()
+    assert result["next_action"] == NEXT
     assert projection["current_truth"]["current_next_action"] == NEXT
-    capability = _jsonl(CAPABILITY_REF)[-1]
+    capability = [
+        row
+        for row in _jsonl(CAPABILITY_REF)
+        if row.get("status")
+        == "clean_environment_qualification_terminal_failed_project_level_disposition_required"
+    ][-1]
     assert capability["current_next"] == NEXT
     assert capability["stage_acceptance"]["FIN_0_1_2_S0"] == (
         "blocked_project_level_disposition_required"

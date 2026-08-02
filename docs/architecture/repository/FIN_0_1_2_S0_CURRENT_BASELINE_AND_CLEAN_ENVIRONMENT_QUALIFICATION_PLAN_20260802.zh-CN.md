@@ -1,7 +1,7 @@
 # FIN 0.1.2 S0 当前基线与干净环境验收计划
 
 日期：2026-08-02
-状态：`S0-04 engineering pass / S0-05 clean qualification terminal failed / project disposition required`
+状态：`S0-04 engineering pass / S0-05 terminal failed / S0-06 disposition complete / structural implementation pending`
 
 产品计划：`docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md`
 
@@ -54,7 +54,7 @@ S0 只确认当前代码、配置、Prompt、fixture、测试和原始运行记�
 3. selected tests 直接声明的 tracked JSON/JSONL/Markdown 依赖，以及 `current_projection.source_paths`，没有进入 typed closure；
 4. pytest basetemp 未绑定 disposable temporary root，escaped Windows repr 与 `fixture://` URI 又造成语义路径误报。
 
-因此不能逐个把本次缺少的文件加入 allowlist。下一项必须先决定统一的 phase 分类、typed test-resource dependency compiler、pytest temporary-root 绑定和 raw-preserving diagnostic projection 边界；本计划没有授权直接实现或第二次 qualification。
+因此不能逐个把本次缺少的文件加入 allowlist。该结论触发了下方 S0-06，由项目级处置先决定统一的 phase 分类、typed test-resource dependency compiler、pytest temporary-root 绑定和 raw-preserving diagnostic projection 边界；S0-05 本身没有授权直接实现或第二次 qualification。
 
 顺序为：
 
@@ -66,6 +66,27 @@ S0 只确认当前代码、配置、Prompt、fixture、测试和原始运行记�
 6. S0 closeout 与当前 open RC-P36-090/091/093/094/095/097 逐项处置。
 
 失败 attempt 永久保留。允许在定位根因、完成修复并添加回归测试后用新 attempt ID 重验；禁止不改任何条件直接碰运气重跑。
+
+### S0-06 项目级根因处置（已完成）
+
+选定 `fin_0_1_2.S0.phase_aware_test_execution_and_typed_dependency:v1`，不增加产品版本，也不重做已经 live-proven 的 29 项 RuntimeResourceRegistry、六类 reference role 或 current/event/attempt 分权。
+
+实施边界如下：
+
+1. 单一 `TestExecutionContractRegistry` 同时拥有 test module 的 phase、是否阻断 current candidate 和逻辑 dependency bundle；同一 selected module 只能属于一个 phase，混合模块必须先拆分；
+2. `contract_compile` 在运行前验证注册表、阶段和依赖闭包；`host_preflight` 独占 Git/current authority 检查；`disposable_current_gate` 只执行当前 Runtime、mutation、三案例 zero-model、capture 和 environment；`historical_audit` 单独只读且不阻断；`post_run_attestation` 负责 repository/readback/parity/terminal；
+3. dependency bundle 使用 typed resolver 闭合 Python import、Runtime resources、reference-role repository refs、current projection bindings/source_paths、immutable event roots 和 tracked fixture prefixes；禁止按本次缺失清单逐文件加例外；
+4. disposable test 对非 Python repository resource 必须通过 typed test-resource helper 访问；未声明的 repository-shaped literal、unknown bundle、untracked/ignored、`.git`、`.codex_runtime`、traversal、symlink escape 和 digest drift 均 fail closed；
+5. pytest `--basetemp` 固定为每个 disposable temporary root 的专用子目录；URI 先按 URI 解析，escaped Windows repr 只在 semantic projection 中规范化，raw stdout/stderr/detail/collection/terminal 保持字节不变；
+6. current gate、historical findings 和 post-run attestation 分开物化，历史失败既不能被隐藏，也不能再被统计为 current Runtime failure。
+
+本次处置还纠正了旧 proof 预算：本地 unit/fixture/mutation 是实现期正常验证，不算产品版本或 formal attempt；正式双 disposable qualification 只针对 committed candidate，每个 candidate 最多一次且需另行授权。同一 candidate 不重跑；修复产生新 candidate 时仍留在 FIN 0.1.2 S0。出现新的结构失败族，先修改计划，不自动创建新版本。
+
+当前下一项只实现上述一个结构包，并以此前暴露的 19 个直接依赖、6 个 projection source paths、2 个组合依赖、53 条路径 findings，以及 DELL/MU/NVDA `6/12/12/9` 为回归矩阵。实现通过不等于 clean qualification 或 S0 通过。
+
+机器入口：
+
+`FIN-0.1.2-S0-PHASE-AWARE-TEST-TOPOLOGY-AND-TYPED-TEST-DEPENDENCY-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION`
 
 ## 4. 简化后的通过标准
 
@@ -91,4 +112,4 @@ S0 通过必须同时满足：
 
 ## 6. 本计划没有授权的动作
 
-S0-04 本地零调用实现与确定性回归已完成；S0-05 唯一 qualification 已终态失败并保留完整受限证据。当前只允许下一项零调用项目级 disposition；代码修复、新 manifest、新 attempt、凭据读取、DeepSeek/OpenAI/Sub2API 调用、业务网络、exact-live、DELL/MU/NVDA 产品验收、自动 retry/replacement、tag、release 或 production 均未授权。
+S0-04 本地零调用实现与确定性回归已完成；S0-05 唯一 qualification 已终态失败并保留完整受限证据；S0-06 项目级 disposition 已完成。当前下一项仍需独立授权，只允许 phase-aware test topology 与 typed test dependency compiler 的一个零调用实现包。新 formal qualification attempt、凭据读取、DeepSeek/OpenAI/Sub2API 调用、业务网络、exact-live、DELL/MU/NVDA 产品验收、自动 retry/replacement、S1 entry、tag、release 或 production 均未授权。

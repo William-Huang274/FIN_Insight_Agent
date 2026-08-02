@@ -1,0 +1,232 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0_clean_qualification_failure_project_level_disposition_v1_0",
+  "decision_id": "FIN-0.1.2-S0-CLEAN-QUALIFICATION-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-R1",
+  "recorded_at": "2026-08-02T17:05:00+08:00",
+  "status": "pass_keep_FIN_0_1_2_in_S0_select_phase_aware_test_topology_and_typed_test_dependency_compiler_implementation_pending",
+  "decision_class": "zero_call_project_level_root_cause_scope_and_test_execution_contract_disposition",
+  "authority": {
+    "user_instruction": "继续",
+    "decision_only": true,
+    "implementation_authorized_in_this_item": false,
+    "new_manifest_or_qualification_attempt_authorized_in_this_item": false,
+    "credential_model_provider_network_business_execution_authorized": false,
+    "S1_entry_version_increment_tag_release_or_production_authorized": false
+  },
+  "project_os_preflight": {
+    "run_scope": "FIN-0.1.2-S0-CLEAN-QUALIFICATION-FIRST-CREDIBLE-FAILURE-PROJECT-LEVEL-DISPOSITION-DECISION",
+    "restricted_ref": ".codex_runtime/fin_0_1_2_s0_clean_qualification_failure_project_disposition_preflight.json",
+    "sha256": "016f94ba64cad90470f6e87262455699869e25194e3b1a0e4d41f18ee7c161ee",
+    "status": "pass",
+    "missing_required_records": 0,
+    "blocking_issues_for_this_scope": 0,
+    "business_promotable": false
+  },
+  "source_bindings": [
+    {
+      "role": "immutable_clean_qualification_terminal_failure",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_fresh_clean_environment_qualification_terminal_failure_and_project_level_disposition_required_v1_0.json",
+      "sha256": "3ebf3a20b09bbe6593874f011321a5e920fabf97a721b994776a018e7708e8fc"
+    },
+    {
+      "role": "pre_decision_current_projection",
+      "ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_2.json",
+      "sha256": "b6f62b9a1e8cdfc2247c8bd069969930826254c6efcf6e638bd52a730b2341b0"
+    },
+    {
+      "role": "consumed_active_manifest",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_1.json",
+      "sha256": "83ff2d5e83e129ed2895dbc9b095d669ab5a5ea7574bde8da9ad0ec24615f29a"
+    },
+    {
+      "role": "pre_implementation_hermetic_runner",
+      "ref": "src/sec_agent/hermetic_test_runner.py",
+      "sha256": "09afc1075a96c68f64f3c10d53e60f0876091183ebe5a6de04266648b7616885"
+    },
+    {
+      "role": "pre_implementation_test_manifest_validator",
+      "ref": "src/sec_agent/runtime_contract_governance.py",
+      "sha256": "014abea6391c989ec768d29d1c109f6211dac0a0fa1309d2f018b1ba6e30b592"
+    },
+    {
+      "role": "retained_reference_role_registry",
+      "ref": "configs/runtime/fin_ia_current_reference_role_registry_v2_0.json",
+      "sha256": "88fc1796a18629a826405e69150aaf75e2ef258ae64a4aed2b40461acee60343"
+    },
+    {
+      "role": "retained_runtime_resource_registry",
+      "ref": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+      "sha256": "a3ea8c7631f4688dcba7133fcdf9c27630f7828dc774608b11a4489e9d1e106b"
+    }
+  ],
+  "external_pattern_basis": [
+    {
+      "source": "Bazel common test-rule data and runfiles contract",
+      "url": "https://bazel.build/reference/be/common-definitions",
+      "adopted_principle": "runtime data required by a test must be declared and materialized transitively instead of discovered from incidental host files"
+    },
+    {
+      "source": "pytest registered custom markers and strict marker validation",
+      "url": "https://docs.pytest.org/en/stable/how-to/mark.html",
+      "adopted_principle": "phase labels must be registered and unknown labels fail before execution; markers mirror but do not replace the machine registry"
+    },
+    {
+      "source": "pytest temporary directory and basetemp contract",
+      "url": "https://docs.pytest.org/en/stable/how-to/tmp_path.html",
+      "adopted_principle": "each disposable run receives a dedicated basetemp below its typed temporary root"
+    }
+  ],
+  "first_credible_failure_truth": {
+    "failure_code": "current_manifest_phase_and_test_dependency_closure_incomplete",
+    "disposable_test_results_each": {"passed": 45, "failed": 54},
+    "gating_failures_each": 41,
+    "historical_findings_each": 13,
+    "registered_runtime_resources_present_each": 29,
+    "direct_selected_test_repository_dependencies_missing_at_least": 19,
+    "current_projection_source_paths_missing": 6,
+    "composed_exact_admission_dependencies_observed_missing": 2,
+    "semantic_unknown_absolute_paths_each": 53,
+    "project_owned": true,
+    "model_or_provider_fault": false,
+    "financial_runtime_L1_failure": false
+  },
+  "rejected_options": {
+    "add_the_observed_missing_files_to_an_allowlist": "rejected_because_the_next_test_or_projection_change_would_recreate_the_same_failure_family",
+    "package_or_mock_git_inside_disposables": "rejected_because_host_repository_truth_must_not_become_a_hidden_disposable_dependency",
+    "keep_authority_and_historical_tests_inside_the_current_disposable_gate": "rejected_because_pre_run_and_non_gating_truth_cannot_be_validated_as_current_runtime_behavior",
+    "ignore_historical_failures_or_unknown_paths_for_green": "rejected_because_visibility_and_fail_closed_host_path_detection_remain_required",
+    "freeze_FIN_0_1_2_or_create_FIN_0_1_3_from_this_test_failure": "rejected_because_no_product_scope_or_compatibility_boundary_changed",
+    "treat_every_zero_call_test_run_as_a_one_shot_product_version_budget": "rejected_because_it_created_governance_churn_without_protecting_paid_or_product_evidence"
+  },
+  "selected_contract": {
+    "contract_id": "fin_0_1_2.S0.phase_aware_test_execution_and_typed_dependency:v1",
+    "status": "selected_minimum_zero_call_implementation_pending",
+    "single_source": "one machine-readable TestExecutionContractRegistry compiled by validation packaging and result classification",
+    "execution_phases": [
+      {
+        "phase": "contract_compile",
+        "location": "host_before_attempt",
+        "gates_current_candidate": true,
+        "purpose": "validate phase ownership dependency bundles tracked closure and exact execution plan without executing tests"
+      },
+      {
+        "phase": "host_preflight",
+        "location": "clean_synced_repository_with_git",
+        "gates_current_candidate": true,
+        "purpose": "validate Git inventory current projection authority and package plan; never run inside a disposable"
+      },
+      {
+        "phase": "disposable_current_gate",
+        "location": "two_git_free_content_addressed_disposables",
+        "gates_current_candidate": true,
+        "purpose": "execute only current Runtime contract mutation three_case_zero_model capture and environment tests"
+      },
+      {
+        "phase": "historical_audit",
+        "location": "host_read_only_after_current_gate",
+        "gates_current_candidate": false,
+        "purpose": "keep immutable failures budgets and digests visible without letting historical files own current truth"
+      },
+      {
+        "phase": "post_run_attestation",
+        "location": "host_read_only_closeout",
+        "gates_current_candidate": true,
+        "purpose": "verify repository unchanged content readback raw capture retention semantic parity and terminal materialization"
+      }
+    ],
+    "module_ownership_rules": {
+      "one_selected_test_module_has_exactly_one_execution_phase": true,
+      "mixed_phase_modules_must_be_split_before_selection": true,
+      "gating_role_is_derived_from_phase_not_duplicated_per_suite": true,
+      "registered_strict_pytest_markers_mirror_registry_for_collection_audit_only": true,
+      "pytest_markers_are_not_dependency_or_authority_source": true
+    },
+    "typed_dependency_compiler": {
+      "test_module_rows_reference_logical_dependency_bundle_ids": true,
+      "dependency_bundle_resolver_types": [
+        "python_import_closure",
+        "runtime_resource_registry_closure",
+        "reference_role_repository_closure",
+        "current_projection_binding_and_source_paths_closure",
+        "immutable_event_root_closure",
+        "tracked_fixture_prefix"
+      ],
+      "selected_tests_must_use_a_typed_repository_test_resource_helper_for_direct_non_python_reads": true,
+      "repository_shaped_string_literals_in_disposable_tests_without_a_declared_bundle_fail_static_audit": true,
+      "unknown_duplicate_cross_phase_untracked_ignored_forbidden_traversal_or_digest_drift_fail_closed": true,
+      "per_observed_file_exception_list_forbidden": true,
+      "git_and_codex_runtime_never_enter_disposable_package": true
+    },
+    "environment_and_capture_contract": {
+      "pytest_basetemp": "dedicated_descendant_of_each_disposable_temporary_root",
+      "uri_is_parsed_before_filesystem_absolute_path_detection": true,
+      "escaped_windows_repr_path_is_normalized_only_in_semantic_projection": true,
+      "raw_stdout_stderr_detail_collection_and_terminal_content_remain_byte_preserved": true,
+      "unknown_host_absolute_paths_after_typed_projection_fail_closed": true
+    },
+    "result_contract": {
+      "host_preflight_result_separate": true,
+      "disposable_current_gate_results_separate": true,
+      "historical_audit_findings_separate_non_gating": true,
+      "post_run_attestation_separate": true,
+      "S0_candidate_pass_requires_all_gating_phases_and_two_disposable_semantic_parity": true,
+      "historical_findings_cannot_be_dropped_or_counted_as_current_gate_failures": true
+    }
+  },
+  "implementation_acceptance_matrix": {
+    "positive": [
+      "phase_registry_compiles_to_stable_order_and_digest",
+      "all_selected_modules_have_one_phase_and_declared_dependency_bundles",
+      "current_projection_source_paths_and_bindings_close_transitively",
+      "registered_runtime_and_reference_role_resources_remain_reused_not_reimplemented",
+      "DELL_MU_NVDA_zero_model_6_12_12_9_regression_remains_green",
+      "two_fake_disposable_current_gates_and_post_run_attestation_materialize_separate_results"
+    ],
+    "negative_and_mutation": [
+      "unknown_or_duplicate_phase",
+      "mixed_host_and_disposable_module",
+      "unknown_dependency_bundle",
+      "undeclared_repository_test_resource",
+      "projection_source_path_or_binding_mutation",
+      "untracked_ignored_git_codex_runtime_traversal_symlink_or_digest_drift",
+      "fixture_uri_misclassified_as_host_path",
+      "escaped_windows_path_or_pytest_basetemp_outside_typed_root",
+      "historical_finding_attempts_to_gate_current_candidate"
+    ]
+  },
+  "iteration_and_proof_policy": {
+    "local_unit_contract_fixture_and_mutation_runs_are_normal_implementation_verification": true,
+    "local_zero_call_test_iteration_is_not_a_product_version_or_formal_attempt": true,
+    "one_minimum_structural_implementation_slice_selected": true,
+    "formal_clean_qualification_authorized_now": false,
+    "future_formal_qualification_requires_separate_authority_after_engineering_pass": true,
+    "one_formal_qualification_per_committed_candidate": true,
+    "same_candidate_blind_retry": false,
+    "new_candidate_after_documented_root_cause_fix_keeps_FIN_0_1_2_in_S0": true,
+    "new_structural_failure_class_requires_plan_review_before_another_formal_candidate": true,
+    "failure_automatically_creates_product_version": false
+  },
+  "issue_disposition": {
+    "RC-P36-090": "assigned_to_host_preflight_vs_disposable_phase_separation",
+    "RC-P36-091": "assigned_to_typed_test_dependency_bundle_compiler",
+    "RC-P36-092": "remains_closed_runtime_resource_registry_reused",
+    "RC-P36-093": "assigned_to_basetemp_and_raw_preserving_uri_aware_semantic_projection",
+    "RC-P36-094": "remains_open_until_reference_role_tests_reach_intended_disposable_behavior",
+    "RC-P36-095": "assigned_to_single_registry_compiled_phase_and_result_contract",
+    "RC-P36-096": "remains_closed_current_event_attempt_ownership_reused",
+    "RC-P36-097": "root_cause_disposed_selected_contract_implementation_pending",
+    "issues_closed_in_this_decision": 0,
+    "new_issue_created_in_this_decision": false
+  },
+  "product_truth": {
+    "current_product_version": "FIN_0_1_2",
+    "current_stage": "S0",
+    "S0": "blocked_selected_structural_implementation_pending",
+    "S1_through_S5": "not_started_under_consolidated_baseline",
+    "user_visible_financial_research_capability_delta": "none",
+    "Runtime_or_test_implementation_delta": "none_decision_only",
+    "model_provider_network_business_calls": [0, 0, 0, 0],
+    "FIN_0_1_release_qualified": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "next_action": "FIN-0.1.2-S0-PHASE-AWARE-TEST-TOPOLOGY-AND-TYPED-TEST-DEPENDENCY-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

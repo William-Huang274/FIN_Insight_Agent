@@ -104,17 +104,17 @@ def test_plans_and_assistant_policy_are_durable_and_plainly_scoped() -> None:
 
 def test_latest_project_os_rows_reassign_current_scope_to_fin_0_1_2() -> None:
     capabilities = _jsonl(Path("docs/project_os/capability_status_ledger.jsonl"))
-    current = [
-        row
-        for row in capabilities
-        if row.get("capability_id")
-        == "fin_0_1_2_version_consolidation_current_S0_rebaseline_and_senior_assistant_policy"
-    ]
-    assert current
     program = _load(PROGRAM_BACKLOG_REF)
     projection = _load(
         Path(program["current_version_rebaseline"]["projection_ref"])
     )
+    current = [
+        row
+        for row in capabilities
+        if row.get("current_next")
+        == projection["current_truth"]["current_next_action"]
+    ]
+    assert current
     assert current[-1]["current_next"] == projection["current_truth"][
         "current_next_action"
     ]

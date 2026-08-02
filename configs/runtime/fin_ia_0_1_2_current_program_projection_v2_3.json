@@ -1,0 +1,70 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S0-PHASE-AWARE-TEST-CONTRACT-SELECTED-R4",
+  "recorded_at": "2026-08-02T17:05:00+08:00",
+  "status": "current_FIN_0_1_2_S0_phase_aware_test_topology_and_typed_dependency_contract_selected_implementation_pending",
+  "lifecycle_state": "in_progress",
+  "decision_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s0_clean_qualification_failure_project_level_disposition_v1_0.json",
+    "sha256": "494e6e68a4e4dcb61671ddb65067d7e9622f3adcef5e74ffb4584dcd156874b8",
+    "binding_role": "current_project_level_disposition_and_selected_S0_structural_implementation_contract"
+  },
+  "implementation_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s0_current_event_ownership_and_version_neutral_runner_focused_repair_implementation_v1_0.json",
+    "sha256": "780edf95906d2b27c8d73c0c3c8b14735bd6d5d1cbe006be7044f7750dfaf7d3",
+    "binding_role": "preceding_local_zero_call_focused_repair_engineering_result"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S0",
+    "active_slice": "FIN_0_1_2_S0_PHASE_AWARE_TEST_TOPOLOGY_AND_TYPED_TEST_DEPENDENCY_COMPILER",
+    "current_next_action": "FIN-0.1.2-S0-PHASE-AWARE-TEST-TOPOLOGY-AND-TYPED-TEST-DEPENDENCY-COMPILER-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+    "current_stage_status": "project_disposition_complete_structural_implementation_pending",
+    "downstream_stages_started": {
+      "S1": false,
+      "S2": false,
+      "S3": false,
+      "S4": false,
+      "S5": false
+    },
+    "open_issue_ids": [
+      "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
+      "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
+      "RC-P36-093-fin-0-1-2-hermetic-semantic-parity-untyped-host-python-traceback-path",
+      "RC-P36-094-fin-0-1-3-hermetic-reference-role-taxonomy-conflates-semantic-audit-and-repository-paths",
+      "RC-P36-095-fin-0-1-3-v2-host-proof-manifest-policy-enum-contract-drift",
+      "RC-P36-097-fin-0-1-2-current-manifest-phase-and-test-dependency-closure-incomplete"
+    ],
+    "FIN_0_1_3_role": "historical_FIN_0_1_2_S0_recovery_attempt_family",
+    "FIN_0_1_4_role": "historical_unexecuted_S0_improvement_proposal",
+    "FIN_0_2": "Earnings_Review_Alpha_unchanged",
+    "release_qualified": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "historical_S4_backlog": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+    "product_plan": "docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md",
+    "S0_plan": "docs/architecture/repository/FIN_0_1_2_S0_CURRENT_BASELINE_AND_CLEAN_ENVIRONMENT_QUALIFICATION_PLAN_20260802.zh-CN.md",
+    "asset_audit": "docs/architecture/repository/FIN_0_1_2_S0_CURRENT_CODE_ASSET_AUDIT_20260802.zh-CN.md",
+    "assistant_policy": "docs/project_os/senior_assistant_collaboration_policy.zh-CN.md",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "consumed_qualification_manifest": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_1.json",
+    "qualification_attempt_contract": "configs/runtime/fin_ia_s0_qualification_attempt_contract_v1_0.json",
+    "qualification_terminal_closeout": "configs/releases/fin_ia_0_1_2_s0_fresh_clean_environment_qualification_terminal_failure_and_project_level_disposition_required_v1_0.json",
+    "current_project_disposition": "configs/releases/fin_ia_0_1_2_s0_clean_qualification_failure_project_level_disposition_v1_0.json"
+  },
+  "historical_projection_policy": {
+    "immutable_event_files_remain_valid_for_historical_facts": true,
+    "historical_files_may_own_current_next_or_backlog_tail": false,
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_2.json",
+    "superseded_projection_deleted_or_rewritten": false
+  },
+  "execution_authority": {
+    "planning_and_read_only_audit_complete": true,
+    "focused_s0_repair_authorized": false,
+    "clean_environment_acceptance_authorized": false,
+    "credential_model_provider_network_business_authorized": false
+  }
+}

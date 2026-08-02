@@ -161,4 +161,6 @@ S0 后续修复已经解决旧 S1 的 hermetic package、tracked fixture、Runti
 3. 新建 current S1 assessment/closeout，不修改旧 StageCapsule、Assessment 或 Closeout；
 4. 只有新 closeout 通过后才允许进入 S2。
 
-当前下一项：`FIN-0.1.2-S1-CURRENT-EVIDENCE-RECONCILIATION-INDEPENDENT-ASSESSMENT-AND-CLOSEOUT`。
+该 current closeout 已于 2026-08-02 完成：独立 host assessment=`56 passed / 0 failed`；S0 formal verification、package manifest 与六个 phase terminal-result 哈希均重验匹配；8 项关键资产仍与 formal package 逐字节一致。G0/G1/G2/G4/G6 因此通过，S1=`pass_closed_current_consolidated_baseline`。旧 T03/T04 失败和旧 assessment/closeout 仍为不可变历史；没有新增 Runtime implementation、hermetic proof 或模型调用。
+
+当前下一项：`FIN-0.1.2-S2-CHANGED-CONTRACT-FAMILY-NATURAL-CAPABILITY-ENVELOPE-STAGE-PLAN`。它先规划模型边界，不直接执行 canary，更不得把三案 fixture 通过冒充 DeepSeek 或产品质量。

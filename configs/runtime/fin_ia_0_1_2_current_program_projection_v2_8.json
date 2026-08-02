@@ -1,0 +1,76 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S1-PASS-CLOSED-S2-STAGE-PLAN-NEXT-R9",
+  "recorded_at": "2026-08-02T22:29:55+08:00",
+  "status": "current_FIN_0_1_2_S1_pass_closed_S2_natural_capability_envelope_stage_plan_next",
+  "lifecycle_state": "in_progress",
+  "decision_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s1_current_evidence_reconciliation_independent_assessment_and_closeout_v1_0.json",
+    "sha256": "fe4a13608368d45d251b51a7449e3ae47c8ccb53fb70d1f11f4e9ad88c4264bb",
+    "binding_role": "current_S1_independent_assessment_and_closeout"
+  },
+  "implementation_binding": {
+    "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0.json",
+    "sha256": "17bab0f9b4bad8befa2452b596d7e925fde656ccf265e707986cd628a1888655",
+    "binding_role": "S1_closed_reusable_ten_consumer_runtime_binding"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S2",
+    "active_slice": "FIN_0_1_2_S2_CHANGED_CONTRACT_FAMILY_NATURAL_CAPABILITY_ENVELOPE_STAGE_PLAN",
+    "current_next_action": "FIN-0.1.2-S2-CHANGED-CONTRACT-FAMILY-NATURAL-CAPABILITY-ENVELOPE-STAGE-PLAN",
+    "current_stage_status": "S1_pass_closed_S2_not_started_stage_plan_next",
+    "S2_stage_plan_authorized": true,
+    "S2_model_canary_authorized": false,
+    "completed_current_stages": {
+      "S0": "pass_closed",
+      "S1": "pass_closed_current_consolidated_baseline"
+    },
+    "downstream_stages_started": {
+      "S2": false,
+      "S3": false,
+      "S4": false,
+      "S5": false
+    },
+    "open_issue_ids": [],
+    "carried_nonblocking_for_S2_or_later_issue_ids": [
+      "RC-P36-067-s4-R10-numeric-reference-value-correspondence-false-negative",
+      "RC-P36-068-s4-R10-case-identity-title-contract-hardcoded-NVDA",
+      "RC-P36-080-s4-t06-provider-authored-numeric-token-in-specialist-explanation-layer",
+      "RC-P36-083-s4-t06-cross-layer-compiled-contract-invariant-gap",
+      "RC-P36-084-s4-t06-machine-verifier-semantic-and-delivery-quality-gap"
+    ],
+    "FIN_0_1_3_role": "historical_FIN_0_1_2_S0_recovery_attempt_family",
+    "FIN_0_1_4_role": "historical_unexecuted_S0_improvement_proposal",
+    "FIN_0_2": "Earnings_Review_Alpha_unchanged",
+    "release_qualified": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "historical_S4_backlog": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+    "product_plan": "docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md",
+    "historical_S1_plan": "docs/architecture/repository/FIN_0_1_2_S1_REALISTIC_THREE_CASE_DETERMINISTIC_VERTICAL_STAGE_PLAN_20260731.zh-CN.md",
+    "assistant_policy": "docs/project_os/senior_assistant_collaboration_policy.zh-CN.md",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "S0_closeout": "configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_success_and_s0_closeout_v1_0.json",
+    "S1_entry_and_reuse_decision": "configs/releases/fin_ia_0_1_2_s1_entry_and_historical_asset_reuse_scope_decision_v1_0.json",
+    "S1_current_assessment_and_closeout": "configs/releases/fin_ia_0_1_2_s1_current_evidence_reconciliation_independent_assessment_and_closeout_v1_0.json",
+    "common_runtime_source": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+    "common_runtime_binding": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0.json",
+    "formal_S0_manifest": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_3.json"
+  },
+  "historical_projection_policy": {
+    "immutable_event_files_remain_valid_for_historical_facts": true,
+    "historical_files_may_own_current_next_or_backlog_tail": false,
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_7.json",
+    "superseded_projection_deleted_or_rewritten": false
+  },
+  "execution_authority": {
+    "planning_and_read_only_audit_complete": true,
+    "focused_s0_repair_authorized": false,
+    "clean_environment_acceptance_authorized": false,
+    "credential_model_provider_network_business_authorized": false
+  }
+}

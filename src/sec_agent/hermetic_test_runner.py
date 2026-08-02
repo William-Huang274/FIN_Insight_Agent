@@ -53,8 +53,12 @@ REPOSITORY_REFERENCE_POLICY_SCHEMA = (
 REPOSITORY_REFERENCE_POLICY_V2_SCHEMA = (
     "fin_ia_hermetic_repository_reference_policy_v2_0"
 )
-CURRENT_PROGRAM_PROJECTION_SCHEMA = (
+LEGACY_PROGRAM_EVENT_PROJECTION_SCHEMA = (
     "fin_ia_0_1_2_current_program_projection_v1_0"
+)
+CURRENT_PROGRAM_PROJECTION_SCHEMA = "fin_ia_current_program_projection_v2_0"
+CURRENT_PROGRAM_LIFECYCLE_STATES = frozenset(
+    {"planned", "in_progress", "blocked", "passed"}
 )
 
 _REPOSITORY_PATH_SUFFIXES = frozenset(
@@ -265,45 +269,42 @@ def _repository_ref_strings(value: Any) -> Iterable[tuple[str, str]]:
             yield from _repository_ref_strings(item)
 
 
-def _load_jsonl(path: Path) -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if not line.strip():
-            continue
-        value = json.loads(line)
-        if not isinstance(value, dict):
-            raise HermeticTestRunnerError("current_projection_jsonl_row_invalid")
-        rows.append(value)
-    return rows
-
-
-def _latest_matching_row(
-    rows: Sequence[Mapping[str, Any]],
-    *,
-    field: str,
-    value: str,
-) -> Mapping[str, Any]:
-    for row in reversed(rows):
-        if row.get(field) == value:
-            return row
-    raise HermeticTestRunnerError(
-        f"current_projection_ledger_row_missing:{field}:{value}"
-    )
-
-
-def validate_host_current_program_projection(
+def _validate_projection_binding(
     repository_root: Path,
-    projection_ref: str,
-) -> Path:
-    """Validate mutable program state on the Git-capable host only.
+    field: str,
+    binding: Any,
+    *,
+    allow_role: bool = False,
+) -> None:
+    required = {"ref", "sha256"}
+    if allow_role:
+        required.add("binding_role")
+    if not isinstance(binding, Mapping) or set(binding) != required:
+        raise HermeticTestRunnerError(f"current_projection_{field}_invalid")
+    binding_ref = str(binding["ref"])
+    binding_sha = str(binding["sha256"])
+    binding_path = _safe_relative_path(repository_root, binding_ref)
+    if allow_role and not str(binding["binding_role"]).strip():
+        raise HermeticTestRunnerError(f"current_projection_{field}_invalid")
+    if (
+        not re.fullmatch(r"[0-9a-f]{64}", binding_sha)
+        or _sha256_file(repository_root / binding_path) != binding_sha
+    ):
+        raise HermeticTestRunnerError(f"current_projection_{field}_drift")
 
-    The returned path is the sole current-projection document packaged for a
-    disposable. Mutable backlogs and ledgers are deliberately not returned.
+
+def _validate_legacy_program_event_projection(
+    repository_root: Path,
+    projection_path: Path,
+    projection: Mapping[str, Any],
+) -> Path:
+    """Validate a historical projection as an immutable event snapshot.
+
+    Legacy v1 documents may name the backlogs and ledgers that were current
+    when the event was recorded. Those mutable files are existence-checked but
+    never re-read as today's authority.
     """
 
-    repository_root = repository_root.resolve()
-    projection_path = _safe_relative_path(repository_root, projection_ref)
-    projection = _load_json(repository_root / projection_path)
     required_top_level = {
         "schema_version",
         "projection_id",
@@ -311,179 +312,201 @@ def validate_host_current_program_projection(
         "status",
         "source_paths",
         "expectations",
-        "package_governance",
     }
-    optional_top_level = {"decision_binding", "implementation_binding"}
-    if (
-        not required_top_level.issubset(projection)
-        or not set(projection).issubset(required_top_level | optional_top_level)
+    if not required_top_level.issubset(projection):
+        raise HermeticTestRunnerError("historical_projection_top_level_invalid")
+    if not all(
+        isinstance(projection.get(field), str) and str(projection[field]).strip()
+        for field in ("projection_id", "recorded_at", "status")
     ):
-        raise HermeticTestRunnerError(
-            "current_projection_top_level_invalid"
-        )
-    if projection["schema_version"] != CURRENT_PROGRAM_PROJECTION_SCHEMA:
-        raise HermeticTestRunnerError("current_projection_schema_invalid")
-    allowed_projection_statuses = {
-        "current_host_validated_T02_pass_T03_ready",
-        "current_host_validated_S0C_T03_terminal_honest_block_S2_deferred",
-        "current_host_validated_FIN_0_1_2_frozen_blocked_"
-        "FIN_0_1_3_S0_stage_plan_ready",
-        "current_host_validated_FIN_0_1_3_S0_T01_stage_plan_pass_"
-        "T02_ready",
-        "current_host_validated_FIN_0_1_3_S0_T02_implementation_pass_"
-        "T03_ready",
-        "current_FIN_0_1_3_S0_T03_terminal_failed_unique_run_consumed_"
-        "T04_blocked",
-        "current_FIN_0_1_3_S0_exit_contract_v2_selected_reference_role_"
-        "taxonomy_implementation_ready",
-        "current_FIN_0_1_3_S0_exit_contract_v2_reference_role_"
-        "implementation_pass_host_proof_authority_pending",
-    }
-    if projection["status"] not in allowed_projection_statuses:
-        raise HermeticTestRunnerError("current_projection_status_invalid")
-
-    for field in optional_top_level.intersection(projection):
-        binding = projection[field]
-        if not isinstance(binding, Mapping) or set(binding) != {
-            "ref",
-            "sha256",
-        }:
-            raise HermeticTestRunnerError(
-                f"current_projection_{field}_invalid"
-            )
-        binding_ref = str(binding["ref"])
-        binding_sha = str(binding["sha256"])
-        binding_path = _safe_relative_path(repository_root, binding_ref)
+        raise HermeticTestRunnerError("historical_projection_identity_invalid")
+    source_values = projection["source_paths"]
+    if not isinstance(source_values, Mapping) or not source_values:
+        raise HermeticTestRunnerError("historical_projection_sources_invalid")
+    for value in source_values.values():
+        if not isinstance(value, str) or not value.strip():
+            raise HermeticTestRunnerError("historical_projection_sources_invalid")
+        _safe_relative_path(repository_root, value)
+    expectations = projection["expectations"]
+    if not isinstance(expectations, Mapping):
+        raise HermeticTestRunnerError("historical_projection_expectations_invalid")
+    for field in ("active_slice", "current_next_action"):
         if (
-            not re.fullmatch(r"[0-9a-f]{64}", binding_sha)
-            or _sha256_file(repository_root / binding_path) != binding_sha
+            not isinstance(expectations.get(field), str)
+            or not expectations[field].strip()
         ):
-            raise HermeticTestRunnerError(
-                f"current_projection_{field}_drift"
+            raise HermeticTestRunnerError("historical_projection_identity_invalid")
+    governance = projection.get("package_governance", projection.get("scope_governance"))
+    if not isinstance(governance, Mapping) or not governance:
+        raise HermeticTestRunnerError("historical_projection_governance_invalid")
+    for field, binding in projection.items():
+        if field.endswith("_binding"):
+            _validate_projection_binding(repository_root, field, binding)
+    return projection_path
+
+
+def _validate_current_program_projection_v2(
+    repository_root: Path,
+    projection_path: Path,
+    projection: Mapping[str, Any],
+) -> Path:
+    required_top_level = {
+        "schema_version",
+        "projection_id",
+        "recorded_at",
+        "status",
+        "lifecycle_state",
+        "decision_binding",
+        "current_truth",
+        "source_paths",
+        "historical_projection_policy",
+        "execution_authority",
+    }
+    optional_top_level = {"implementation_binding"}
+    if set(projection) not in (
+        required_top_level,
+        required_top_level | optional_top_level,
+    ):
+        raise HermeticTestRunnerError("current_projection_top_level_invalid")
+    if not all(
+        isinstance(projection.get(field), str) and str(projection[field]).strip()
+        for field in ("projection_id", "recorded_at", "status")
+    ):
+        raise HermeticTestRunnerError("current_projection_identity_invalid")
+    if projection["lifecycle_state"] not in CURRENT_PROGRAM_LIFECYCLE_STATES:
+        raise HermeticTestRunnerError("current_projection_lifecycle_state_invalid")
+    _validate_projection_binding(
+        repository_root,
+        "decision_binding",
+        projection["decision_binding"],
+        allow_role=True,
+    )
+    if "implementation_binding" in projection:
+        _validate_projection_binding(
+            repository_root,
+            "implementation_binding",
+            projection["implementation_binding"],
+            allow_role=True,
+        )
+
+    truth = projection["current_truth"]
+    required_truth = {
+        "product_version",
+        "stage",
+        "active_slice",
+        "current_next_action",
+        "current_stage_status",
+        "open_issue_ids",
+        "release_qualified",
+    }
+    if not isinstance(truth, Mapping) or not required_truth.issubset(truth):
+        raise HermeticTestRunnerError("current_projection_truth_invalid")
+    if (
+        not re.fullmatch(r"FIN(?:_[0-9]+){2,}", str(truth["product_version"]))
+        or not re.fullmatch(r"S[0-9]+", str(truth["stage"]))
+        or not all(
+            isinstance(truth.get(field), str) and str(truth[field]).strip()
+            for field in (
+                "active_slice",
+                "current_next_action",
+                "current_stage_status",
             )
+        )
+        or type(truth["release_qualified"]) is not bool
+    ):
+        raise HermeticTestRunnerError("current_projection_truth_invalid")
+    issue_ids = truth["open_issue_ids"]
+    if (
+        not isinstance(issue_ids, list)
+        or any(not isinstance(item, str) or not item.strip() for item in issue_ids)
+        or len(issue_ids) != len(set(issue_ids))
+    ):
+        raise HermeticTestRunnerError("current_projection_issue_ids_invalid")
+    forbidden_truth_fields = {
+        "attempt_id",
+        "run_id",
+        "execution_started",
+        "terminal_result",
+    }
+    if forbidden_truth_fields.intersection(truth):
+        raise HermeticTestRunnerError("current_projection_attempt_state_forbidden")
 
     source_values = projection["source_paths"]
-    expected_sources = {
+    required_sources = {
         "program_backlog",
-        "S4_backlog",
         "context_pack",
         "capability_ledger",
         "root_cause_ledger",
-        "external_pattern_ledger",
     }
-    if not isinstance(source_values, Mapping) or set(source_values) != expected_sources:
+    if (
+        not isinstance(source_values, Mapping)
+        or not required_sources.issubset(source_values)
+    ):
         raise HermeticTestRunnerError("current_projection_sources_invalid")
-    sources = {
-        key: repository_root
-        / _safe_relative_path(repository_root, str(source_values[key]))
-        for key in expected_sources
-    }
-    expectations = projection["expectations"]
-    if not isinstance(expectations, Mapping):
-        raise HermeticTestRunnerError("current_projection_expectations_invalid")
-    next_action = str(expectations.get("current_next_action", ""))
-    active_slice = str(expectations.get("active_slice", ""))
-    capability_id = str(expectations.get("capability_id", ""))
-    pattern_id = str(expectations.get("pattern_id", ""))
-    if not all((next_action, active_slice, capability_id, pattern_id)):
-        raise HermeticTestRunnerError("current_projection_identity_missing")
+    for value in source_values.values():
+        if not isinstance(value, str) or not value.strip():
+            raise HermeticTestRunnerError("current_projection_sources_invalid")
+        _safe_relative_path(repository_root, value)
 
-    program = _load_json(sources["program_backlog"])
-    s4 = _load_json(sources["S4_backlog"])
-    if (
-        program.get("active_slice") != active_slice
-        or not isinstance(program.get("next_action"), Mapping)
-        or program["next_action"].get("item_id") != next_action
-        or s4.get("current_next_action") != next_action
-    ):
-        raise HermeticTestRunnerError("current_projection_next_action_drift")
-    truth = program.get("current_truth")
-    if (
-        not isinstance(truth, Mapping)
-        or truth.get("FIN_0_1_2_S2_entry_authorized") is not False
-        or truth.get("FIN_0_1_release_qualified") is not False
-    ):
-        raise HermeticTestRunnerError("current_projection_product_truth_inflated")
-    context = sources["context_pack"].read_text(encoding="utf-8")
-    if f"current next=`{next_action}`" not in context:
-        raise HermeticTestRunnerError("current_projection_context_drift")
-
-    capability = _latest_matching_row(
-        _load_jsonl(sources["capability_ledger"]),
-        field="capability_id",
-        value=capability_id,
-    )
-    expected_stage = expectations.get("capability_stage_acceptance")
-    if (
-        capability.get("current_next") != next_action
-        or not isinstance(expected_stage, Mapping)
-        or any(
-            capability.get("stage_acceptance", {}).get(key) != value
-            for key, value in expected_stage.items()
-        )
-    ):
-        raise HermeticTestRunnerError("current_projection_capability_drift")
-
-    issue_ids = expectations.get("open_issue_ids")
-    if not isinstance(issue_ids, list) or not issue_ids:
-        raise HermeticTestRunnerError("current_projection_issue_ids_invalid")
-    root_rows = _load_jsonl(sources["root_cause_ledger"])
-    for issue_id in issue_ids:
-        row = _latest_matching_row(
-            root_rows,
-            field="issue_id",
-            value=str(issue_id),
-        )
-        if (
-            row.get("status") != "open"
-            or row.get("full_chain_blocker") is not True
-            or next_action not in row.get("allowed_run_scopes", [])
-        ):
-            raise HermeticTestRunnerError(
-                f"current_projection_issue_state_drift:{issue_id}"
-            )
-
-    pattern = _latest_matching_row(
-        _load_jsonl(sources["external_pattern_ledger"]),
-        field="pattern_id",
-        value=pattern_id,
-    )
-    if pattern.get("status") != expectations.get("pattern_status"):
-        raise HermeticTestRunnerError("current_projection_pattern_drift")
-
-    governance = projection["package_governance"]
-    required_governance = {
-        "host_sources_packaged": False,
-        "projection_document_packaged": True,
-        "disposable_git_required": False,
-        "failed_package_business_promotable": False,
-        "raw_content_addressed_evidence_preserved": True,
-        "restricted_review_before_share_or_promotion": True,
-    }
-    optional_governance = {
-        "decision_is_engineering_proof_authority": False,
-        "implementation_is_host_or_formal_proof_authority": False,
+    history = projection["historical_projection_policy"]
+    required_history = {
+        "immutable_event_files_remain_valid_for_historical_facts": True,
+        "historical_files_may_own_current_next_or_backlog_tail": False,
+        "superseded_projection_deleted_or_rewritten": False,
     }
     if (
-        not isinstance(governance, Mapping)
-        or not set(required_governance).issubset(governance)
-        or not set(governance).issubset(
-            set(required_governance) | set(optional_governance)
-        )
+        not isinstance(history, Mapping)
         or any(
-            governance.get(key) is not value
-            for key, value in required_governance.items()
-        )
-        or any(
-            governance.get(key) is not value
-            for key, value in optional_governance.items()
-            if key in governance
+            history.get(key) is not value
+            for key, value in required_history.items()
         )
     ):
-        raise HermeticTestRunnerError(
-            "current_projection_package_governance_invalid"
-        )
+        raise HermeticTestRunnerError("current_projection_history_policy_invalid")
+
+    authority = projection["execution_authority"]
+    required_authority = {
+        "planning_and_read_only_audit_complete",
+        "focused_s0_repair_authorized",
+        "clean_environment_acceptance_authorized",
+        "credential_model_provider_network_business_authorized",
+    }
+    if (
+        not isinstance(authority, Mapping)
+        or set(authority) != required_authority
+        or any(type(value) is not bool for value in authority.values())
+    ):
+        raise HermeticTestRunnerError("current_projection_execution_authority_invalid")
     return projection_path
+
+
+def validate_host_current_program_projection(
+    repository_root: Path,
+    projection_ref: str,
+) -> Path:
+    """Validate either today's single current truth or a historical snapshot.
+
+    Current v2 documents are self-contained mutable projections. Legacy v1
+    documents are immutable event snapshots and cannot regain authority by
+    comparing themselves with today's backlogs or ledger tails.
+    """
+
+    repository_root = repository_root.resolve()
+    projection_path = _safe_relative_path(repository_root, projection_ref)
+    projection = _load_json(repository_root / projection_path)
+    schema = projection.get("schema_version")
+    if schema == LEGACY_PROGRAM_EVENT_PROJECTION_SCHEMA:
+        return _validate_legacy_program_event_projection(
+            repository_root,
+            projection_path,
+            projection,
+        )
+    if schema == CURRENT_PROGRAM_PROJECTION_SCHEMA:
+        return _validate_current_program_projection_v2(
+            repository_root,
+            projection_path,
+            projection,
+        )
+    raise HermeticTestRunnerError("current_projection_schema_invalid")
 
 
 def _repository_relative_path(

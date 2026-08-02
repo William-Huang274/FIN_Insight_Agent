@@ -29,7 +29,7 @@ S0_PLAN_REF = Path(
 ASSET_AUDIT_REF = Path(
     "docs/architecture/repository/FIN_0_1_2_S0_CURRENT_CODE_ASSET_AUDIT_20260802.zh-CN.md"
 )
-NEXT = (
+CONSOLIDATION_NEXT = (
     "FIN-0.1.2-S0-CURRENT-BASELINE-AUDIT-OWNER-REVIEW-AND-REPAIR-"
     "AUTHORIZATION"
 )
@@ -59,7 +59,7 @@ def test_consolidation_restores_fin_0_1_2_without_rewriting_history() -> None:
     assert decision["repair_and_retry_policy"][
         "failure_automatically_creates_product_version"
     ] is False
-    assert decision["next_action"] == NEXT
+    assert decision["next_action"] == CONSOLIDATION_NEXT
 
 
 def test_current_projection_and_backlogs_have_one_current_truth() -> None:
@@ -68,14 +68,17 @@ def test_current_projection_and_backlogs_have_one_current_truth() -> None:
     s4 = _load(S4_BACKLOG_REF)
     assert projection["current_truth"]["product_version"] == "FIN_0_1_2"
     assert projection["current_truth"]["stage"] == "S0"
-    assert projection["current_truth"]["current_next_action"] == NEXT
+    current_next = projection["current_truth"]["current_next_action"]
+    assert current_next.startswith("FIN-0.1.2-S0-")
+    assert current_next != CONSOLIDATION_NEXT
     assert program["version"] == "FIN_0_1_2_CURRENT_CONSOLIDATED_PRODUCT_ITERATION"
-    assert program["current_version_rebaseline"]["authoritative_current_truth"] is True
-    assert program["next_action"]["item_id"] == NEXT
+    assert program["current_version_rebaseline"]["authoritative_current_truth"] is False
+    assert program["current_version_rebaseline"]["current_projection_is_authority"] is True
+    assert program["next_action"]["item_id"] == current_next
     assert s4["current_version_rebaseline"]["historical_backlog_role"].startswith(
         "preserve_first_FIN_0_1_1_S4"
     )
-    assert s4["current_next_action"] == NEXT
+    assert s4["current_next_action"] == current_next
     assert (ROOT / "configs/runtime/fin_ia_0_1_4_current_program_projection_v1_0.json").exists()
     assert projection["historical_projection_policy"][
         "superseded_projection_deleted_or_rewritten"
@@ -108,7 +111,10 @@ def test_latest_project_os_rows_reassign_current_scope_to_fin_0_1_2() -> None:
         == "fin_0_1_2_version_consolidation_current_S0_rebaseline_and_senior_assistant_policy"
     ]
     assert current
-    assert current[-1]["current_next"] == NEXT
+    projection = _load(PROJECTION_REF)
+    assert current[-1]["current_next"] == projection["current_truth"][
+        "current_next_action"
+    ]
     issues = _jsonl(Path("docs/project_os/root_cause_issue_ledger.jsonl"))
     for number in range(90, 97):
         matching = [row for row in issues if f"RC-P36-{number:03d}" in row.get("issue_id", "")]

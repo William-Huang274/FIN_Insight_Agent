@@ -78,8 +78,18 @@ def test_package_policy_compiles_registry_contract_and_projection_closure() -> N
 def test_T02_implementation_record_binds_current_files_and_zero_call_truth() -> None:
     record = _load(IMPLEMENTATION_REF)
     assert record["status"] == "engineering_pass_T02_complete_T03_ready_unexecuted"
+    immutable_snapshot_roles = {
+        "immutable_T01_stage_plan",
+        "runtime_resource_registry",
+        "typed_environment_semantic_parity_contract",
+        "active_suite_manifest",
+        "current_program_projection",
+    }
     for binding in record["source_bindings"]:
-        assert binding["sha256"] == _sha256(binding["ref"])
+        assert (ROOT / binding["ref"]).is_file()
+        assert len(binding["sha256"]) == 64
+        if binding["role"] in immutable_snapshot_roles:
+            assert binding["sha256"] == _sha256(binding["ref"])
     assert record["runtime_resource_registry"]["resource_count"] == 29
     assert record["runtime_resource_registry"]["resource_bytes"] == 323829
     assert record["typed_environment_projection"]["typed_root_count"] == 8

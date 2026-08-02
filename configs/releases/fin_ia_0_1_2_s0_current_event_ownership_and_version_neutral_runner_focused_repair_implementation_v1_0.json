@@ -1,0 +1,91 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0_focused_repair_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S0-CURRENT-EVENT-OWNERSHIP-AND-VERSION-NEUTRAL-RUNNER-FOCUSED-REPAIR-R1",
+  "implemented_at": "2026-08-02T15:44:05+08:00",
+  "status": "engineering_pass_clean_environment_qualification_not_executed",
+  "authority": {
+    "authorization_ref": "configs/releases/fin_ia_0_1_2_s0_focused_repair_authorization_v1_0.json",
+    "authorized_scope": "one_local_zero_call_S0_focused_repair_slice",
+    "clean_environment_qualification_authorized_or_executed": false,
+    "credential_model_provider_network_business_authorized": false,
+    "S1_through_S5_or_release_entry_authorized": false
+  },
+  "root_cause_and_repair": {
+    "failure_family": "current_projection_next_action_drift",
+    "root_cause": "Historical projection validators and tests reread mutable present-day backlogs and ledgers, so immutable attempt events incorrectly reclaimed current-state authority. Version-specific schema tokens also kept the reusable runner and current reference registry coupled to an abandoned product-version label.",
+    "repair": [
+      "dispatch immutable legacy event validation separately from current projection validation",
+      "make the current projection own product version, stage, next action and execution authority without attempt state",
+      "keep attempt lifecycle in a small immutable capture-and-terminal-result contract",
+      "select exactly one current test owner for every proof class",
+      "support an explicit version-neutral current reference-role registry schema while preserving legacy schema compatibility",
+      "change historical compatibility tests to locate their own event rows rather than ledger tails or mutable living documents"
+    ],
+    "financial_integrity_identity_temporal_reference_or_capture_gate_relaxed": false
+  },
+  "source_bindings": [
+    {
+      "role": "legacy_event_and_current_projection_dispatch",
+      "ref": "src/sec_agent/hermetic_test_runner.py",
+      "sha256": "fe88a1e4e573d93a10daf8bab78dddcb5a79d14353c2cfb90d8b6319b0135785"
+    },
+    {
+      "role": "legacy_and_current_reference_registry_schema_loader",
+      "ref": "src/sec_agent/reference_role_registry.py",
+      "sha256": "0c19d19efe35548c728b114fc06b02a761572304e3778e5895686f36fec34868"
+    },
+    {
+      "role": "current_active_test_suite_manifest",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_0.json",
+      "sha256": "73bedf144b073e6eb921d3eea39e09125c3ebd8737d9c05d07377fce3be5a38c"
+    },
+    {
+      "role": "version_neutral_attempt_boundary",
+      "ref": "configs/runtime/fin_ia_s0_qualification_attempt_contract_v1_0.json",
+      "sha256": "f133da63891665c65b77f515b5aef7da92fd509cbe833912dfcf347459a3140d"
+    },
+    {
+      "role": "version_neutral_current_reference_registry",
+      "ref": "configs/runtime/fin_ia_current_reference_role_registry_v2_0.json",
+      "sha256": "88fc1796a18629a826405e69150aaf75e2ef258ae64a4aed2b40461acee60343"
+    },
+    {
+      "role": "current_clean_qualification_runner_entry_not_executed",
+      "ref": "scripts/engineering/run_fin_s0_current_qualification.py",
+      "sha256": "729a51de69d595b4bc82642a122fa569f3a09d3616f8019704cd6d54fc7b0f4d"
+    },
+    {
+      "role": "current_projection_attempt_and_registry_contract_tests",
+      "ref": "tests/contract/test_fin_0_1_2_s0_current_projection_and_attempt_boundary.py",
+      "sha256": "5bdfd723506c7ff297283c174f456d9ddb172e0e2b08cb89184884ab48151101"
+    },
+    {
+      "role": "legacy_projection_mutable_truth_decoupling_regression",
+      "ref": "tests/contract/test_fin_0_1_2_s0c_hermetic_topology_and_allowlisted_package_closure.py",
+      "sha256": "6a31c9729b54342578b7c57898edf2dcb0a387b8e5be94e30a053e63de09fbbe"
+    },
+    {
+      "role": "current_repository_reference_closure_regression",
+      "ref": "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py",
+      "sha256": "fcd21d56b33342a4a464132db1174465e9f006cedcc0b471433966424f507a20"
+    }
+  ],
+  "verification": {
+    "pre_repair_baseline": "62_passed_3_failed_all_current_projection_next_action_drift",
+    "current_manifest_selected_suite": "95_passed_in_20_00_seconds",
+    "all_FIN_0_1_2_and_FIN_0_1_3_S0_compatibility_contracts": "147_passed_in_24_98_seconds",
+    "DELL_MU_NVDA_zero_model_regression": "31_passed_in_11_64_seconds",
+    "historical_files_or_recorded_digests_rewritten": false,
+    "clean_environment_packages_created_or_executed": 0,
+    "model_provider_network_calls": [0, 0, 0]
+  },
+  "product_truth": {
+    "user_visible_financial_research_capability_delta": "none",
+    "FIN_0_1_2_S0_04": "engineering_pass",
+    "FIN_0_1_2_S0": "not_passed_clean_environment_qualification_pending",
+    "FIN_0_1_2_S1_through_S5": "not_started_under_consolidated_baseline",
+    "FIN_0_1_release_qualified": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "next_action": "FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-AUTHORITY-DECISION"
+}

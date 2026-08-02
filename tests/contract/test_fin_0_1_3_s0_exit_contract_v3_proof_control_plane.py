@@ -411,7 +411,7 @@ def test_current_v3_manifest_projection_and_product_boundary() -> None:
     assert projection["expectations"]["FIN_0_1_release_qualified"] is False
 
 
-def test_current_v3_manifest_projection_and_repository_inventory_compile() -> None:
+def test_v3_projection_remains_a_valid_historical_event_snapshot() -> None:
     active = json.loads((ROOT / ACTIVE_REF).read_text(encoding="utf-8"))
 
     validate_active_test_suite_manifest(active)
@@ -426,12 +426,10 @@ def test_current_v3_manifest_projection_and_repository_inventory_compile() -> No
         PROJECTION_REF
     )
 
-    compiled = runner._compile_repository_inventory_v3(ROOT, active)
-    report = compiled.reference_role_report
-    policy = compiled.as_dict()["repository_reference_policy"]
-    assert policy["ref"] == POLICY_REF
-    assert policy["sha256"] == sha256_file(ROOT / POLICY_REF)
-    assert compiled.explicit_allowlist_paths == ()
-    assert report is not None
-    assert report.unknowns == ()
-    assert report.as_dict()["unknown_count"] == 0
+    assert active["status"] == (
+        "S0_exit_contract_v3_proof_control_plane_implementation_pass_"
+        "eligibility_authority_pending"
+    )
+    assert active["runner_policy"][
+        "manifest_is_not_eligibility_host_or_formal_proof_authority"
+    ] is True

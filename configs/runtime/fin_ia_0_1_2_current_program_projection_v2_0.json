@@ -1,19 +1,32 @@
 {
-  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_0",
+  "schema_version": "fin_ia_current_program_projection_v2_0",
   "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S0-REBASELINE-PROJECTION-R1",
-  "recorded_at": "2026-08-02T14:36:18+08:00",
-  "status": "current_FIN_0_1_2_S0_rebaseline_asset_audit_complete_owner_review_pending",
+  "recorded_at": "2026-08-02T15:44:05+08:00",
+  "status": "current_FIN_0_1_2_S0_focused_repair_engineering_pass_clean_environment_qualification_pending",
+  "lifecycle_state": "passed",
   "decision_binding": {
-    "ref": "configs/releases/fin_ia_0_1_2_version_consolidation_and_current_rebaseline_v1_0.json",
-    "binding_role": "current_version_and_stage_authority"
+    "ref": "configs/releases/fin_ia_0_1_2_s0_focused_repair_authorization_v1_0.json",
+    "sha256": "4d178ef131cef193a8026e27008d24bfb11d15f49f366c4f3c30c4c177ac1875",
+    "binding_role": "current_version_stage_and_focused_repair_authority"
+  },
+  "implementation_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s0_current_event_ownership_and_version_neutral_runner_focused_repair_implementation_v1_0.json",
+    "sha256": "780edf95906d2b27c8d73c0c3c8b14735bd6d5d1cbe006be7044f7750dfaf7d3",
+    "binding_role": "completed_local_zero_call_focused_repair_engineering_result"
   },
   "current_truth": {
     "product_version": "FIN_0_1_2",
     "stage": "S0",
     "active_slice": "FIN_0_1_2_S0_CURRENT_BASELINE_AND_CLEAN_ENVIRONMENT_QUALIFICATION",
-    "current_next_action": "FIN-0.1.2-S0-CURRENT-BASELINE-AUDIT-OWNER-REVIEW-AND-REPAIR-AUTHORIZATION",
-    "S0_status": "rebaseline_in_progress_asset_audit_complete_owner_review_pending",
-    "S1_to_S5_started_under_consolidated_baseline": [false, false, false, false, false],
+    "current_next_action": "FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-AUTHORITY-DECISION",
+    "current_stage_status": "focused_repair_engineering_pass_clean_environment_qualification_pending",
+    "downstream_stages_started": {
+      "S1": false,
+      "S2": false,
+      "S3": false,
+      "S4": false,
+      "S5": false
+    },
     "open_issue_ids": [
       "RC-P36-090-fin-0-1-2-pre-s2-t03-disposable-self-introspection-git-inventory-dependency",
       "RC-P36-091-fin-0-1-2-hermetic-package-recursive-json-ref-admits-ignored-runtime-state",
@@ -37,7 +50,9 @@
     "assistant_policy": "docs/project_os/senior_assistant_collaboration_policy.zh-CN.md",
     "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
     "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
-    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl"
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "current_active_suite_manifest": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_0.json",
+    "qualification_attempt_contract": "configs/runtime/fin_ia_s0_qualification_attempt_contract_v1_0.json"
   },
   "historical_projection_policy": {
     "immutable_event_files_remain_valid_for_historical_facts": true,
@@ -47,7 +62,7 @@
   },
   "execution_authority": {
     "planning_and_read_only_audit_complete": true,
-    "runtime_or_test_implementation_authorized": false,
+    "focused_s0_repair_authorized": true,
     "clean_environment_acceptance_authorized": false,
     "credential_model_provider_network_business_authorized": false
   }

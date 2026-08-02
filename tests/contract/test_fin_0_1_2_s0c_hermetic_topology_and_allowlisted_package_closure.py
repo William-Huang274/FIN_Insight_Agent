@@ -331,7 +331,7 @@ def _projection_repository(tmp_path: Path) -> tuple[Path, str]:
     return repository, projection_ref
 
 
-def test_single_current_projection_owner_validates_host_sources_and_fails_on_drift(
+def test_legacy_projection_snapshot_does_not_reclaim_current_authority(
     tmp_path: Path,
 ) -> None:
     repository, projection_ref = _projection_repository(tmp_path)
@@ -342,8 +342,6 @@ def test_single_current_projection_owner_validates_host_sources_and_fails_on_dri
         repository / "state/s4.json",
         {"current_next_action": "stale-historical-next"},
     )
-    with pytest.raises(
-        HermeticTestRunnerError,
-        match="current_projection_next_action_drift",
-    ):
-        validate_host_current_program_projection(repository, projection_ref)
+    assert validate_host_current_program_projection(
+        repository, projection_ref
+    ) == Path(projection_ref)

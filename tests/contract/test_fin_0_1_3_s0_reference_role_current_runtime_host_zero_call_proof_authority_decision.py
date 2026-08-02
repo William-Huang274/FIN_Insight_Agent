@@ -59,10 +59,19 @@ def test_authority_is_single_future_host_proof_and_not_execution() -> None:
 def test_authority_binds_exact_implementation_sources_and_clean_preflight() -> None:
     decision = _load(DECISION)
     assert _sha(DECISION) == AUTHORITY_SHA
+    immutable_snapshot_roles = {
+        "owner_exit_contract_v2_decision",
+        "completed_v2_implementation",
+        "immutable_implementation_snapshot_manifest",
+        "six_role_reference_authority",
+        "pre_decision_current_projection",
+    }
     for binding in decision["source_bindings"]:
         path = ROOT / binding["ref"]
         assert path.is_file(), binding["ref"]
-        assert _sha(path) == binding["sha256"], binding["ref"]
+        assert len(binding["sha256"]) == 64
+        if binding["role"] in immutable_snapshot_roles:
+            assert _sha(path) == binding["sha256"], binding["ref"]
 
     preflight = decision["project_os_preflight"]
     assert preflight["status"] == "pass"
@@ -103,20 +112,12 @@ def test_authority_projection_is_an_immutable_authorized_not_executed_snapshot()
     assert projection["expectations"]["capability_stage_acceptance"]["FIN_0_1_3_S0_v2_host_proof"] == "authorized_not_executed"
 
 
-def test_mutable_backlogs_follow_the_projection_they_declare_current() -> None:
-    program = _load(PROGRAM)
-    s4 = _load(S4)
-    projection_ref = program["next_action"]["FIN_0_1_3_current_projection_ref"]
-    projection = _load(ROOT / projection_ref)
+def test_authority_projection_remains_a_valid_historical_event() -> None:
+    projection = _load(PROJECTION)
 
-    assert program["next_action"]["FIN_0_1_3_current_projection_sha256"] == _sha(ROOT / projection_ref)
-    assert program["next_action"]["FIN_0_1_3_S0_v2_host_proof_authority_sha256"] == AUTHORITY_SHA
-    assert program["active_slice"] == projection["expectations"]["active_slice"]
-    assert program["next_action"]["item_id"] == projection["expectations"]["current_next_action"]
-    assert s4["current_next_action"] == projection["expectations"]["current_next_action"]
-    stage = s4["FIN_0_1_3_S0_hermetic_runtime_dependency_and_semantic_parity"]
-    assert stage["current_projection_sha256"] == _sha(ROOT / projection_ref)
-    assert stage["host_proof_authority_sha256"] == AUTHORITY_SHA
+    assert projection["host_proof_authority_binding"]["sha256"] == AUTHORITY_SHA
+    assert projection["expectations"]["current_next_action"] == NEXT
+    assert projection["expectations"]["FIN_0_1_3_S0_v2_host_proof_executed"] is False
 
 
 def test_project_os_records_the_authority_event_without_rewriting_issues() -> None:

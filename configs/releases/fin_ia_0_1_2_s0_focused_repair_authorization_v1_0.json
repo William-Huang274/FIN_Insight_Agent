@@ -1,0 +1,46 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0_focused_repair_authorization_v1_0",
+  "decision_id": "FIN-0.1.2-S0-CURRENT-EVENT-OWNERSHIP-AND-VERSION-NEUTRAL-RUNNER-FOCUSED-REPAIR-AUTHORIZATION-R1",
+  "recorded_at": "2026-08-02T15:15:05+08:00",
+  "status": "authorized_local_zero_call_focused_repair_not_clean_environment_acceptance",
+  "authority": {
+    "user_instruction": "继续",
+    "interpreted_scope": "approve_the_documented_asset_classification_and_execute_FIN_0_1_2_S0_04_focused_repair",
+    "runtime_and_contract_implementation_authorized": true,
+    "local_deterministic_tests_authorized": true,
+    "clean_environment_acceptance_execution_authorized": false,
+    "credential_model_provider_network_business_run_authorized": false,
+    "tag_release_or_production_authorized": false
+  },
+  "repair_scope": {
+    "current_projection_single_truth_owner": true,
+    "legacy_projection_immutable_event_only": true,
+    "version_neutral_current_projection_schema_and_validator": true,
+    "current_S0_manifest_and_runner": true,
+    "reuse_runtime_resource_registry_reference_roles_and_typed_environment": true,
+    "preserve_historical_attempts_digests_and_failure_results": true
+  },
+  "explicit_non_goals": [
+    "full_proof_lifecycle_state_machine",
+    "rewrite_or_delete_historical_projection_or_attempt_evidence",
+    "rename_all_FIN_0_1_3_assets",
+    "change_financial_runtime_or_model_output_contracts",
+    "DeepSeek_or_other_model_calls",
+    "S1_or_later_acceptance",
+    "automatic_product_version_increment"
+  ],
+  "acceptance": {
+    "legacy_v1_projection_does_not_read_mutable_current_truth": true,
+    "current_v2_projection_is_self_contained_and_fail_closed": true,
+    "current_manifest_uses_retained_29_resource_six_role_eight_root_assets": true,
+    "attempt_state_is_not_embedded_in_current_projection": true,
+    "focused_and_three_case_zero_model_regressions_green": true,
+    "historical_failed_attempts_remain_visible": true
+  },
+  "starting_repository": {
+    "branch": "codex/layered-data-source-expansion",
+    "head": "8e5cea8df1cb6eaf28354edcea63f6be79357027",
+    "worktree_clean_before_repair": true
+  },
+  "next_action": "FIN-0.1.2-S0-CURRENT-EVENT-OWNERSHIP-AND-VERSION-NEUTRAL-RUNNER-FOCUSED-REPAIR"
+}

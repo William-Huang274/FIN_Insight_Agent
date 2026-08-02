@@ -3,7 +3,10 @@
 更新时间：2026-08-02
 
 > [!IMPORTANT]
-> **FIN 0.1.2/0.1.3/0.1.4 已按用户纠偏合并，FIN 0.1.2 恢复为当前完整 S0–S5 产品迭代（current，2026-08-02）**：原 0.1.3 的实现、失败和工作日志归类为 FIN 0.1.2 S0 recovery/clean-environment acceptance attempts；原 0.1.4 只有未执行规划入口，归类为历史 S0 improvement proposal。旧文件、失败、digest 和 commit 不删除、不改写，但不再拥有 current version/next action。当前 S0 已完成合并计划与只读代码资产审计；focused zero-call=`57 passed / 3 failed`，三项共同根因为旧 current projection/manifest 与 mutable backlog-next 漂移，不是新资源或金融 Runtime 失败。当前只允许 Owner 审核 retain/repair/historical-only 分类；Runtime/test repair、clean-environment acceptance、credential/model/Provider/network/business 均未授权。decision=`configs/releases/fin_ia_0_1_2_version_consolidation_and_current_rebaseline_v1_0.json`，projection=`configs/runtime/fin_ia_0_1_2_current_program_projection_v2_0.json`，current next=`FIN-0.1.2-S0-CURRENT-BASELINE-AUDIT-OWNER-REVIEW-AND-REPAIR-AUTHORIZATION`。
+> **FIN 0.1.2 S0-04 集中修复已工程通过，S0-05 干净环境资格验证待单独授权（current，2026-08-02）**：旧 v1 projection 已降为不可变历史 event，不再读取今天的 backlog/ledger；current v2 projection 使用版本中性 schema，独立拥有今天的 product/stage/next/authority；attempt 只保存在 capture/terminal-result 路径，不进入 current projection。current manifest 复用 29 项 Runtime 资源、六类 reference role、八类 typed environment 和三案例零模型基线；新的 current reference registry 也使用版本中性 schema，旧 registry 继续兼容且不改写。验证=`95 current / 147 S0 compatibility / 31 three-case zero-model passed`，模型/Provider/网络调用均为 0。该结果只建立本地 engineering pass，没有创建或执行 clean-environment attempt，也没有关闭 RC-P36-090–096 或宣布 S0 通过。authorization=`configs/releases/fin_ia_0_1_2_s0_focused_repair_authorization_v1_0.json`，projection=`configs/runtime/fin_ia_0_1_2_current_program_projection_v2_0.json`，current next=`FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-AUTHORITY-DECISION`。
+
+> [!IMPORTANT]
+> **FIN 0.1.2/0.1.3/0.1.4 合并纠偏保持有效（current lineage，2026-08-02）**：原 0.1.3 的实现、失败和工作日志继续归类为 FIN 0.1.2 S0 recovery/clean-environment acceptance attempts；原 0.1.4 继续是历史未执行提案。旧文件、失败、digest 和 commit 不删除、不改写，也不得重新拥有 current version/next action。合并审计的 `57 passed / 3 failed` 是修复前基线，不是当前完成声明。
 
 > [!IMPORTANT]
 > **高级助手主动反思规范已成为跨会话强制规则（current，2026-08-02）**：Codex 不得只按字面静默执行；必须持续检查已批准需求、阶段归属、计划、成本和证据是否矛盾、不实际或过度工程化，发现实质问题须及时用大白话报告证据、影响和修改建议。用户仍拥有最终决定，但先前批准不阻止后续基于新证据提出异议。入口=`AGENTS.md`，完整规范=`docs/project_os/senior_assistant_collaboration_policy.zh-CN.md`；每次 compaction、handoff 或新任务恢复时必须读取。

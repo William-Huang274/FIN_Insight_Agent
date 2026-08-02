@@ -1,0 +1,117 @@
+{
+  "schema_version": "fin_ia_current_reference_role_registry_v2_0",
+  "registry_id": "FIN-CURRENT-REFERENCE-ROLE-TAXONOMY-V2",
+  "status": "typed_reference_role_authority",
+  "policy": {
+    "registry_is_single_source_of_truth": true,
+    "field_rules_precede_value_rules": true,
+    "unknown_reference_role_behavior": "collect_all_fail_closed",
+    "repository_resource_behavior": "enter_tracked_or_typed_closure",
+    "semantic_followup_path_shape_reclassification_forbidden": true,
+    "restricted_runtime_audit_business_promotable": false,
+    "raw_evidence_business_promotion_separate": true,
+    "duplicate_or_rule_order_drift_fails_closed": true
+  },
+  "roles": [
+    {"role_id": "repository_resource", "closure_behavior": "package", "business_promotable": false},
+    {"role_id": "package_relative_audit", "closure_behavior": "observe_not_package", "business_promotable": false},
+    {"role_id": "external_content", "closure_behavior": "observe_not_package", "business_promotable": false},
+    {"role_id": "restricted_runtime_audit", "closure_behavior": "observe_not_package", "business_promotable": false},
+    {"role_id": "model_run_report", "closure_behavior": "observe_not_package", "business_promotable": false},
+    {"role_id": "semantic_followup", "closure_behavior": "observe_not_package", "business_promotable": false}
+  ],
+  "field_rules": [
+    {
+      "rule_id": "r010_semantic_followup_field",
+      "field": "followup_ref",
+      "role": "semantic_followup",
+      "reason": "business follow-up semantics remain semantic even when the value contains path punctuation"
+    },
+    {
+      "rule_id": "r020_optional_model_run_field",
+      "field": "manual_paid_model_output_ref",
+      "role": "model_run_report",
+      "reason": "the optional manual model-run pointer retains its typed role even when absent"
+    }
+  ],
+  "value_rules": [
+    {
+      "rule_id": "r100_empty_optional_reference",
+      "matcher": "empty",
+      "values": ["enabled"],
+      "role": "semantic_followup",
+      "reason": "an explicitly empty optional reference carries no package path authority"
+    },
+    {
+      "rule_id": "r110_restricted_runtime_namespace",
+      "matcher": "path_prefix",
+      "values": [".codex_runtime/", ".runtime_control/"],
+      "role": "restricted_runtime_audit",
+      "reason": "ignored runtime state is audit-only and must never enter the repository closure"
+    },
+    {
+      "rule_id": "r120_model_run_report_namespace",
+      "matcher": "path_prefix",
+      "values": ["reports/model_runs/"],
+      "role": "model_run_report",
+      "reason": "tracked model-run reports remain audit lineage and are not automatic business inputs"
+    },
+    {
+      "rule_id": "r130_windows_absolute_audit_path",
+      "matcher": "windows_absolute_path",
+      "values": ["enabled"],
+      "role": "restricted_runtime_audit",
+      "reason": "host-absolute paths identify restricted historical runtime evidence outside the package"
+    },
+    {
+      "rule_id": "r140_posix_absolute_audit_path",
+      "matcher": "posix_absolute_path",
+      "values": ["enabled"],
+      "role": "restricted_runtime_audit",
+      "reason": "host-absolute paths identify restricted historical runtime evidence outside the package"
+    },
+    {
+      "rule_id": "r150_external_content_schemes",
+      "matcher": "external_scheme",
+      "values": ["customer-news", "derived", "file", "fixture", "fred", "git", "git+db", "gs", "http", "https", "ir", "object", "official", "s3", "sec", "urn"],
+      "role": "external_content",
+      "reason": "explicit URI namespaces are external or content-addressed lineage, not repository paths"
+    },
+    {
+      "rule_id": "r160_package_relative_object_namespace",
+      "matcher": "path_prefix",
+      "values": ["objects/sha256/"],
+      "role": "package_relative_audit",
+      "reason": "content-addressed objects resolve inside a generated qualification package"
+    },
+    {
+      "rule_id": "r170_package_relative_audit_files",
+      "matcher": "exact_value",
+      "values": ["capture.json", "execution_started.json", "package_manifest.json", "receipts.json", "terminal_result.json", "verification.json"],
+      "role": "package_relative_audit",
+      "reason": "well-known qualification output names resolve inside a generated package"
+    },
+    {
+      "rule_id": "r180_repository_roots",
+      "matcher": "path_root",
+      "values": [".github", "apps", "archive", "configs", "data", "docs", "eval", "eval_sets", "experiments", "output", "reports", "scripts", "src", "tests"],
+      "role": "repository_resource",
+      "reason": "versioned repository roots enter the tracked-or-typed closure"
+    },
+    {
+      "rule_id": "r190_repository_root_files",
+      "matcher": "exact_value",
+      "values": ["AGENTS.md", "README.md", "pyproject.toml"],
+      "role": "repository_resource",
+      "reason": "versioned repository-root files enter the tracked-or-typed closure"
+    },
+    {
+      "rule_id": "r200_semantic_identifier",
+      "matcher": "semantic_identifier",
+      "values": ["enabled"],
+      "role": "semantic_followup",
+      "reason": "non-path identifiers and contract atoms are semantic lineage"
+    }
+  ],
+  "rule_canonical_digest": "63452f4d20c2faa729776234e637bbfbc4a549f53d52cf29c0d4b0453f3cc112"
+}

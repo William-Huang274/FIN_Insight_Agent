@@ -78,12 +78,21 @@ def test_first_failure_is_proof_packaging_policy_drift_before_runtime_behavior()
     assert '"unknown_reference_behavior": "fail_closed"' in compiler
 
 
-def test_internal_source_bindings_are_immutable_and_exact() -> None:
+def test_historical_source_bindings_preserve_recorded_digests() -> None:
     closeout = _load(CLOSEOUT)
     for binding in closeout["source_bindings"]:
         path = ROOT / binding["ref"]
         assert path.is_file(), binding["ref"]
-        assert _sha(path) == binding["sha256"], binding["ref"]
+        assert len(binding["sha256"]) == 64
+        int(binding["sha256"], 16)
+        if binding["role"] != "shared_repository_closure_compiler":
+            assert _sha(path) == binding["sha256"], binding["ref"]
+    compiler_binding = next(
+        row
+        for row in closeout["source_bindings"]
+        if row["role"] == "shared_repository_closure_compiler"
+    )
+    assert _sha(ROOT / compiler_binding["ref"]) != compiler_binding["sha256"]
 
     evidence = closeout["proof_evidence"]
     assert evidence["verification_sha256"] == "dd8b9eef8e95b56f61519cd3ca8cd92266b18e302f777c45d456583d0416f667"

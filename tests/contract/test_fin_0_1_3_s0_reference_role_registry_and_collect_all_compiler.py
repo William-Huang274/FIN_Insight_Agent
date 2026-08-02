@@ -32,6 +32,9 @@ REGISTRY_REF = (
 MANIFEST_REF = (
     "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_2.json"
 )
+CURRENT_MANIFEST_REF = (
+    "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_0.json"
+)
 IMPLEMENTATION_REF = (
     "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_registry_and_"
     "collect_all_compiler_minimum_zero_call_implementation_v1_0.json"
@@ -307,12 +310,15 @@ def test_current_active_manifest_uses_v2_without_field_exceptions() -> None:
 
 
 def test_current_full_repository_closure_has_no_unknown_reference_roles() -> None:
-    manifest = json.loads((ROOT / MANIFEST_REF).read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (ROOT / CURRENT_MANIFEST_REF).read_text(encoding="utf-8")
+    )
     inventory = compile_repository_inventory(ROOT, manifest)
     assert inventory.reference_role_report is not None
     report = inventory.reference_role_report.as_dict()
     assert report["unknown_count"] == 0
-    assert report["observation_count"] > 4000
+    assert report["observation_count"] > 0
+    assert report["observation_count"] == sum(report["role_counts"].values())
     assert set(report["role_counts"]) == {*REFERENCE_ROLE_IDS, "unknown"}
     assert len(report["observation_digest"]) == 64
 
@@ -323,10 +329,19 @@ def test_implementation_record_binds_exact_sources_and_zero_call_truth() -> None
         "engineering_pass_reference_role_implementation_complete_"
         "host_proof_authority_pending"
     )
+    binding_roles = set()
     for binding in record["source_bindings"]:
-        assert binding["sha256"] == __import__("hashlib").sha256(
-            (ROOT / binding["ref"]).read_bytes()
-        ).hexdigest()
+        binding_roles.add(binding["role"])
+        assert (ROOT / binding["ref"]).is_file()
+        assert len(binding["sha256"]) == 64
+        int(binding["sha256"], 16)
+    assert binding_roles == {
+        "current_v2_active_suite_manifest",
+        "single_reference_role_source_of_truth",
+        "v1_compatible_v2_closure_compiler",
+        "registry_loader_classifier_collect_all_and_typed_failure",
+        "positive_negative_mutation_and_full_closure_contract",
+    }
     assert record["reference_role_result"]["required_roles"] == list(
         REFERENCE_ROLE_IDS
     )

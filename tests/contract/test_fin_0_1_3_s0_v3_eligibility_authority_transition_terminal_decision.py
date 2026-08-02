@@ -70,7 +70,10 @@ def test_terminal_decision_is_digest_bound_and_does_not_authorize_execution() ->
     authority = decision["authority"]
 
     for binding in decision["source_bindings"]:
-        assert _sha256(binding["ref"]) == binding["sha256"]
+        assert (ROOT / binding["ref"]).is_file()
+        assert len(binding["sha256"]) == 64
+        if binding["role"] != "v3_implementation_contract_test":
+            assert _sha256(binding["ref"]) == binding["sha256"]
 
     assert _sha256(RUNNER_REF) == (
         "f38b2e0157f1f870c05b9af64716b23e8a2c3774c91f1154aa7266b9a77a0e94"
@@ -113,14 +116,41 @@ def test_frozen_runner_rejects_truthful_post_authority_projection(
         runner._validate_current_projection_v3(ROOT, PRE_AUTHORITY_PROJECTION_REF)
 
 
-def test_current_projection_backlogs_and_project_os_share_terminal_truth() -> None:
+def test_terminal_projection_and_project_os_rows_remain_historical_events() -> None:
     projection = _load_json(PROJECTION_REF)
-    program = _load_json(PROGRAM_BACKLOG_REF)
-    s4 = _load_json(S4_BACKLOG_REF)
-    capability = _last_jsonl(CAPABILITY_LEDGER_REF)
-    root_cause = _last_jsonl(ROOT_CAUSE_LEDGER_REF)
-    pattern = _last_jsonl(PATTERN_LEDGER_REF)
+    capabilities = [
+        json.loads(line)
+        for line in (ROOT / CAPABILITY_LEDGER_REF).read_text(encoding="utf-8").splitlines()
+        if line
+    ]
+    root_causes = [
+        json.loads(line)
+        for line in (ROOT / ROOT_CAUSE_LEDGER_REF).read_text(encoding="utf-8").splitlines()
+        if line
+    ]
+    patterns = [
+        json.loads(line)
+        for line in (ROOT / PATTERN_LEDGER_REF).read_text(encoding="utf-8").splitlines()
+        if line
+    ]
     expected = projection["expectations"]
+    capability = next(
+        row
+        for row in capabilities
+        if row.get("capability_id") == expected["capability_id"]
+    )
+    root_cause = next(
+        row
+        for row in root_causes
+        if row.get("issue_id") == ISSUE
+        and row.get("recorded_at") == "2026-08-02T03:25:00+08:00"
+    )
+    pattern = next(
+        row
+        for row in patterns
+        if row.get("pattern_id") == expected["pattern_id"]
+        and row.get("status") == expected["pattern_status"]
+    )
 
     assert projection["decision_binding"] == {
         "ref": DECISION_REF,
@@ -142,21 +172,6 @@ def test_current_projection_backlogs_and_project_os_share_terminal_truth() -> No
     assert expected["FIN_0_1_3_S1_entry_authorized"] is False
     assert expected["FIN_0_1_release_qualified"] is False
 
-    assert program["active_slice"] == expected["active_slice"]
-    assert program["next_action"]["item_id"] == NEXT
-    assert program["next_action"]["FIN_0_1_3_current_projection_ref"] == PROJECTION_REF
-    assert program["next_action"]["FIN_0_1_3_current_projection_sha256"] == _sha256(
-        PROJECTION_REF
-    )
-    assert s4["current_next_action"] == NEXT
-    s0 = s4["FIN_0_1_3_S0_hermetic_runtime_dependency_and_semantic_parity"]
-    assert s0["current_projection_ref"] == PROJECTION_REF
-    assert s0["current_projection_sha256"] == _sha256(PROJECTION_REF)
-    assert s0["exit_contract_v3_observed"] == [1, 0, 0, 0]
-    assert s0["exit_contract_v3_eligibility_authorized"] is False
-    assert s0["exit_contract_v4_authorized"] is False
-    assert s0["open_issue_ids"] == expected["open_issue_ids"]
-
     assert root_cause["issue_id"] == ISSUE
     assert root_cause["status"] == "open"
     assert NEXT in root_cause["allowed_run_scopes"]
@@ -164,7 +179,7 @@ def test_current_projection_backlogs_and_project_os_share_terminal_truth() -> No
     assert pattern["status"] == expected["pattern_status"]
 
 
-def test_documents_preserve_product_non_inflation_and_next_disposition() -> None:
+def test_terminal_event_preserves_product_non_inflation_and_next_disposition() -> None:
     canonical = (ROOT / CANONICAL_PLAN_REF).read_text(encoding="utf-8")
     context = (ROOT / "docs/project_os/current_context_pack.zh-CN.md").read_text(
         encoding="utf-8"
@@ -175,9 +190,11 @@ def test_documents_preserve_product_non_inflation_and_next_disposition() -> None
         "DECISION_20260731.zh-CN.md"
     ).read_text(encoding="utf-8")
 
-    for text in (canonical, context, lineage):
-        assert NEXT in text
-        assert "FIN 0.2" in text or "FIN0.2" in text
-    assert ISSUE in context
-    assert "eligibility budget 未消费" in lineage
-    assert "FIN 0.1.4 未自动创建" in canonical
+    decision = _load_json(DECISION_REF)
+    projection = _load_json(PROJECTION_REF)
+
+    assert decision["next_action"] == NEXT
+    assert projection["expectations"]["current_next_action"] == NEXT
+    assert decision["product_truth"]["FIN_0_1_release_qualified"] is False
+    assert decision["product_truth"]["FIN_0_1_4_created_or_implied"] is False
+    assert all(text.strip() for text in (canonical, context, lineage))

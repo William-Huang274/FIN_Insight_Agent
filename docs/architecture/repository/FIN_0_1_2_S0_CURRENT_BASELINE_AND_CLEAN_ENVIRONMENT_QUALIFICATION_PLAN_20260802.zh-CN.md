@@ -1,7 +1,7 @@
 # FIN 0.1.2 S0 当前基线与干净环境验收计划
 
 日期：2026-08-02
-状态：`plan ready / asset audit complete / repair not started`
+状态：`S0-04 focused repair engineering pass / S0-05 clean acceptance not authorized`
 
 产品计划：`docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md`
 
@@ -25,19 +25,21 @@ S0 只确认当前代码、配置、Prompt、fixture、测试和原始运行记�
 
 已完成只读初审。详细结果见 `FIN_0_1_2_S0_CURRENT_CODE_ASSET_AUDIT_20260802.zh-CN.md`。
 
-### S0-03 Owner 审核
+### S0-03 Owner 审核（已完成）
 
-当前项。向用户报告保留、修复和退出当前入口的资产；用户确认后才修改 Runtime 或测试工具。
+用户以“继续”批准保留、修复和退出当前入口的分类，并授权严格限于本地零调用 S0-04 集中修复。
 
-### S0-04 集中修复
+### S0-04 集中修复（工程通过）
 
-建议只做一轮按根因分组的修复：
+已完成一轮按根因分组的修复：
 
 1. 当前状态与历史事件分权：历史测试只验证当时发生的事件，current projection 独立表达今天的版本和下一步；
 2. 简化 clean-environment runner：不把产品版本、用户授权和一次测试运行编织成复杂硬编码状态机；
 3. 统一当前资源和引用入口：复用已实现的 29 项资源、六类引用和八类环境路径，但建立版本中性的 current manifest；
 4. 清理测试归属：S0 只收当前基础测试，S1 三案例逻辑作为依赖回归，不让旧 closeout 测试拥有 mutable truth；
 5. 修复 RC-P36-090–096 的最早责任代码，并给每类根因增加确定性回归。
+
+本地验证结果为：current manifest selected suite=`95 passed`，FIN 0.1.2/0.1.3 全部 S0 兼容合同=`147 passed`，DELL/MU/NVDA 零模型链=`31 passed`。这些结果只建立 S0-04 engineering pass；尚未执行干净环境 package、双目录比较或 S0 closeout。
 
 如果实现中发现新问题，先判断阶段归属。S0 问题修在 S0；S1–S5 问题只登记后传。不会自动增加产品版本。
 
@@ -78,4 +80,4 @@ S0 通过必须同时满足：
 
 ## 6. 本计划没有授权的动作
 
-当前未授权 S0-04/S0-05 实现或运行；未授权凭据读取、DeepSeek/OpenAI/Sub2API 调用、业务网络、exact-live、DELL/MU/NVDA 产品验收、tag、release 或 production。
+S0-04 本地零调用实现与确定性回归已完成。S0-05 clean-environment acceptance 仍需单独处置；凭据读取、DeepSeek/OpenAI/Sub2API 调用、业务网络、exact-live、DELL/MU/NVDA 产品验收、tag、release 或 production 仍未授权。

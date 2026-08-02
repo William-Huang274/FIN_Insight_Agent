@@ -1,0 +1,55 @@
+{
+  "schema_version": "fin_ia_s0_qualification_attempt_contract_v1_0",
+  "contract_id": "FIN-S0-QUALIFICATION-ATTEMPT-EVENT-R1",
+  "status": "active_version_neutral_attempt_boundary",
+  "ownership": {
+    "current_projection_owns": [
+      "current_product_version",
+      "current_stage",
+      "current_next_action",
+      "current_execution_authority"
+    ],
+    "attempt_event_owns": [
+      "attempt_id",
+      "started_at",
+      "terminal_state",
+      "first_failure_code",
+      "capture_refs",
+      "terminal_result_ref"
+    ],
+    "historical_projection_owns": [
+      "recorded_historical_fact_only"
+    ]
+  },
+  "attempt_states": [
+    "planned",
+    "running",
+    "passed",
+    "failed"
+  ],
+  "transition_rules": {
+    "allowed": [
+      "planned_to_running",
+      "running_to_passed",
+      "running_to_failed"
+    ],
+    "terminal_is_immutable": true,
+    "failed_attempt_may_be_rewritten": false,
+    "same_attempt_retry_allowed": false,
+    "new_attempt_requires_root_cause_fix_and_regression": true,
+    "attempt_failure_creates_product_version": false
+  },
+  "evidence_rules": {
+    "capture_before_fail_closed": true,
+    "raw_safe_output_content_addressed": true,
+    "terminal_result_required": true,
+    "credential_or_authorization_header_persisted": false,
+    "failed_output_business_promotable": false
+  },
+  "current_projection_boundary": {
+    "attempt_id_allowed": false,
+    "run_id_allowed": false,
+    "execution_started_allowed": false,
+    "terminal_result_allowed": false
+  }
+}

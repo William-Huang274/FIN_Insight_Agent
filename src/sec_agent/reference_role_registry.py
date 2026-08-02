@@ -8,8 +8,17 @@ import re
 from typing import Any, Iterable, Mapping
 
 
-REFERENCE_ROLE_REGISTRY_SCHEMA = (
+LEGACY_REFERENCE_ROLE_REGISTRY_SCHEMA = (
     "fin_ia_0_1_3_reference_role_registry_v1_0"
+)
+CURRENT_REFERENCE_ROLE_REGISTRY_SCHEMA = (
+    "fin_ia_current_reference_role_registry_v2_0"
+)
+SUPPORTED_REFERENCE_ROLE_REGISTRY_SCHEMAS = frozenset(
+    {
+        LEGACY_REFERENCE_ROLE_REGISTRY_SCHEMA,
+        CURRENT_REFERENCE_ROLE_REGISTRY_SCHEMA,
+    }
 )
 DEFAULT_REFERENCE_ROLE_REGISTRY_REF = (
     "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_0.json"
@@ -303,7 +312,10 @@ def load_reference_role_registry(
         raise ReferenceRoleRegistryError(
             "reference_role_registry_top_level_invalid"
         )
-    if document["schema_version"] != REFERENCE_ROLE_REGISTRY_SCHEMA:
+    if (
+        document["schema_version"]
+        not in SUPPORTED_REFERENCE_ROLE_REGISTRY_SCHEMAS
+    ):
         raise ReferenceRoleRegistryError(
             "reference_role_registry_schema_invalid"
         )

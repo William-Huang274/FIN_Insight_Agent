@@ -1161,3 +1161,6 @@
 - [x] FIN-0.1.2-S0C terminal repair-owner/version disposition: FIN 0.1.2 冻结 internal honest block；RC-P36-090–093 转交 FIN 0.1.3 S0，不改写或重跑已消费的 S0C-T03。
 - [x] FIN-0.1.3-S0 hermetic Runtime dependency and semantic parity StagePlan: 已冻结 RuntimeResourceRegistry、typed interpreter environment、active-suite collect/import closure、固定 T01–T04 与单实现/单正式 proof 预算；T01/G0 pass，本项未实现 Runtime、创建 proof package 或调用模型。
 - [x] FIN-0.1.3-S0-T02 Runtime resource registry and typed environment projection minimum zero-call implementation: 已消费一个实现包，建立 registry/compiler、typed environment projection 与确定性 mutation contracts；本项没有执行 T03/T04 或模型调用。
+- [x] FIN-0.1.2 version consolidation and current S0 rebaseline: 按用户纠偏将原 0.1.3/0.1.4 归并为 FIN 0.1.2 S0 历史 recovery attempts/未执行提案；建立 current 0.1.2 S0–S5 计划、简化 S0 计划、current projection 和 retain/repair/historical-only 资产审计，旧失败与 digest 不改写。
+- [x] FIN-0.1.2 senior-assistant active reflection policy: 根目录 AGENTS、Project OS 规范、context 和 ledger 已要求 Codex 边做边反思，发现已批准需求/方向不实际、矛盾或过度工程化时及时说明证据、影响和修改建议；跨 compaction/handoff 必须恢复。
+- [ ] FIN-0.1.2 S0 current baseline audit owner review and repair authorization: Owner 审核 `57 passed / 3 failed`、资产分类和 current/event ownership 简化建议后，才授权 S0 Runtime/test repair 与 clean-environment acceptance。

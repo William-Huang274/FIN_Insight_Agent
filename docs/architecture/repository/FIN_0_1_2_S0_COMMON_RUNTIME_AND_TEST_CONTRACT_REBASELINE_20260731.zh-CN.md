@@ -2,6 +2,9 @@
 
 日期：2026-07-31
 
+> [!IMPORTANT]
+> 2026-08-02 当前纠偏：本文件保留原 S0/S0C 计划和执行历史，但其“冻结 0.1.2 并转交 0.1.3”的当前效力已被 `configs/releases/fin_ia_0_1_2_version_consolidation_and_current_rebaseline_v1_0.json` supersede。FIN 0.1.2 已恢复为当前完整 S0–S5 产品迭代；新 S0 source 是 `FIN_0_1_2_S0_CURRENT_BASELINE_AND_CLEAN_ENVIRONMENT_QUALIFICATION_PLAN_20260802.zh-CN.md`。历史失败仍不可改写。
+
 ## 当前结果
 
 FIN 0.1.2 已从 S0 开始，不再沿着 FIN 0.1 的 S4/T06 继续追加 R8、R9 或字段补丁。S0-T01 把共同 Runtime 的真值所有权、Provider 权限边界、单一来源消费者绑定，以及测试 proof class 做成可执行治理代码和机器清单。

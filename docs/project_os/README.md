@@ -6,14 +6,16 @@
 
 ## 当前恢复锚点
 
-FIN 0.1 的 `1,128` 个 dirty paths 已在 owner 授权下先写入并回验离仓内容寻址恢复包，再按 8 个 exact-path slices 重建提交链；恢复后的 14 个本地提交现已推送到远端分支。S4-T10 已按 immutable evidence 终态 honest block，S5 decision-only 也已关闭为 no-release-candidate；FIN 0.1.1 已冻结为内部 honest-block 工程基线。FIN 0.1.2 S0-T01 已建立共同 Runtime 权限治理编译器和 active test manifest，但生产 Runtime、hermetic proof 与 active runner 尚未迁移，FIN 0.1 仍不具备 release 资格。
+FIN 0.1.1 保存第一轮 S0–S5 的内部 honest-block 工程基线。2026-08-02 用户纠正版本治理后，原 0.1.2、0.1.3、0.1.4 已合并回 FIN 0.1.2：原 0.1.3 是 FIN 0.1.2 S0 的历史 recovery/clean-environment acceptance attempts，原 0.1.4 是未执行的 S0 改进提案。当前唯一开发版本为 FIN 0.1.2，当前阶段为 S0，release qualified=false。
 
-历史契约测试必须区分 immutable event proof 和 mutable current projection。恢复阶段保留 S3/S4 historical-suite 非绿项与 T07 honest-block，不以批量修改旧断言制造全绿。
+当前已完成合并计划和只读资产审计。focused zero-call=`57 passed / 3 failed`；三项失败共同来自旧 manifest/current projection 对 mutable backlog 和 next-action 的所有权漂移。当前只等待 Owner 审核资产分类和 S0 修复建议；不以这三项失败增加产品版本号。
 
-当前下一项：`FIN-0.1.2-S0-HERMETIC-PACKAGE-AND-ACTIVE-SUITE-RUNNER-MIGRATION`。
+当前下一项：`FIN-0.1.2-S0-CURRENT-BASELINE-AUDIT-OWNER-REVIEW-AND-REPAIR-AUTHORIZATION`。
 
 ## 文件职责
 
+- `../../AGENTS.md`：仓库级跨会话协作入口；要求主动反思、及时挑战不合理需求和正确区分版本/阶段/合同/attempt。
+- `senior_assistant_collaboration_policy.zh-CN.md`：高级助手主动反思、需求挑战、建议和用户最终决策边界的完整规范。
 - `STRICT_SCHEMA_TRANSPORT_API_HANDOFF.zh-CN.md`：⚠ 新 Provider/API 到手后的醒目恢复入口；记录 HTTPS/raw curl/auth/schema 必需资料与 exact-once canary 顺序。该轨道已停放，不阻断 DeepSeek 主线。
 - `current_context_pack.zh-CN.md`：每轮启动前先读的短上下文包。
 - `capability_status_ledger.jsonl`：机器可读能力状态主账本。
@@ -58,3 +60,5 @@ FIN 0.1 的 `1,128` 个 dirty paths 已在 owner 授权下先写入并回验离�
 4. 不用 gate/fallback 代替 root-cause 修复。
 5. 不把 token 降低本身当成目标；目标是更高的信息传导效率和更好的判断质量。
 6. 外部方法/技术参考必须先进入 learning ledger，再经过 extraction、contract translation 和 deterministic proof，不能因为“看过资料”就直接改 runtime 或宣布吸收完成。
+7. 不做静默执行机器人；发现已经批准的需求、计划或方向与新证据冲突、不实际或过度工程化时，必须及时报告证据、影响和修改建议。
+8. 测试或 clean-environment acceptance 失败留在所属 S 阶段修复；失败 attempt 不可改写，但不自动创建产品版本。

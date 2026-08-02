@@ -1,5 +1,8 @@
 # FIN 0.1.3 统一 S0–S5 产品推进计划
 
+> [!IMPORTANT]
+> 2026-08-02 版本治理纠偏：本文件保留为 FIN 0.1.2 S0 recovery/proof attempt family 的历史计划，不再定义一个独立产品版本，也不再拥有 current next。当前版本和计划分别是 FIN 0.1.2 与 `docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md`；历史失败和实现证据保持不变。
+
 日期：2026-08-01
 
 状态：`frozen historical product progression / FIN 0.1.3 terminal honest block / superseded current entry by FIN 0.1.4 S0 StagePlan`

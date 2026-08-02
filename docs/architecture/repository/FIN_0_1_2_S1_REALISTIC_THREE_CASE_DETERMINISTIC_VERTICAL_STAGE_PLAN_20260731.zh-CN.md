@@ -3,6 +3,9 @@
 日期：2026-07-31
 状态：`S1 terminal honest block / G0、G1 pass / G2 not proven / G6 closed / pre-S2 T03 terminal failed / S0C-T01 pass / S2 blocked`
 
+> [!IMPORTANT]
+> 2026-08-02 当前纠偏：本文件是原 S1 attempt 的历史计划与结果，不是合并后 FIN 0.1.2 的 current stage。已有十个 consumer、三案例 fixture/full-fake 和失败证据可复用，但新 S1 只有在当前 S0 通过后才重新开始；当前计划见 `docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md`。
+
 ## 1. 本阶段只解决什么
 
 S1 只把 S0 冻结的 bounded judgment-atom 合同家族接到真实生产 consumer，并用 realistic DELL、MU、NVDA fixture 证明一条完整确定性链。它不是产品验收，也不调用模型。

@@ -27,11 +27,16 @@ from .fin_0_1_2_runtime_contract_binding import (
     Fin012RuntimeContractBindingError,
     load_fin_0_1_2_runtime_contract_binding,
 )
+from .fin_0_1_2_s2_runtime_contract_binding import (
+    FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+    load_fin_0_1_2_s2_runtime_contract_binding,
+)
 
 
 DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS = (
     *S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS,
     FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+    FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
 )
 
 
@@ -174,11 +179,16 @@ class DeterministicJudgmentAtomCompiledContract:
         self.runtime_contract_binding: (
             Fin012RuntimeContractFamilyBinding | None
         ) = None
-        if (
-            contract_ref
-            == FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
-        ):
-            binding = load_fin_0_1_2_runtime_contract_binding()
+        if contract_ref in {
+            FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+            FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+        }:
+            binding = (
+                load_fin_0_1_2_s2_runtime_contract_binding()
+                if contract_ref
+                == FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+                else load_fin_0_1_2_runtime_contract_binding()
+            )
             binding.assert_admission_binding(
                 binding_ref=runtime_contract_family_binding_ref,
                 source_digest=runtime_contract_family_source_digest,
@@ -236,6 +246,7 @@ class DeterministicJudgmentAtomCompiledContract:
             in {
                 S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_V2_REF,
                 FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+                FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
             }
         )
 
@@ -532,6 +543,17 @@ class DeterministicJudgmentAtomCompiledContract:
                                 else "Evidence"
                             ),
                             "semantic_role": row["role"],
+                            **(
+                                {
+                                    "selection_context": {
+                                        "statement": row["statement"],
+                                        "boundary": row["boundary"],
+                                    }
+                                }
+                                if self.contract_ref
+                                == FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+                                else {}
+                            ),
                         }
                         for row in candidate_catalog
                     ],

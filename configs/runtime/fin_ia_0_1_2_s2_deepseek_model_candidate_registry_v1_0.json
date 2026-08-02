@@ -1,0 +1,58 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_deepseek_model_candidate_registry_v1_0",
+  "registry_id": "FIN-0.1.2-S2-DEEPSEEK-FLASH-STABLE-PRO-PREVIEW-CANDIDATES-R1",
+  "status": "paired_canary_candidates_only_no_runtime_mainline_selected",
+  "provider_route": {
+    "provider": "deepseek",
+    "base_url": "https://api.deepseek.com/beta",
+    "wire_api": "chat_completions_json_object",
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "thinking": "disabled",
+    "reasoning_effort": "none",
+    "temperature": 0.0,
+    "stream": false,
+    "timeout_seconds": 120,
+    "max_output_tokens_per_call": 1400,
+    "max_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "fallback_budget": 0,
+    "provider_hopping_budget": 0
+  },
+  "candidates": [
+    {
+      "candidate_id": "flash_stable",
+      "model": "deepseek-v4-flash",
+      "model_ref": "deepseek:deepseek-v4-flash",
+      "lifecycle": "stable_API_only",
+      "preferred_when_hard_integrity_and_quality_rule_pass": true,
+      "automatic_runtime_mainline": false
+    },
+    {
+      "candidate_id": "pro_preview",
+      "model": "deepseek-v4-pro",
+      "model_ref": "deepseek:deepseek-v4-pro",
+      "lifecycle": "preview_historical_control",
+      "preferred_when_hard_integrity_and_quality_rule_pass": false,
+      "automatic_runtime_mainline": false
+    }
+  ],
+  "comparison": {
+    "case": "MU",
+    "program_cell_id": "demand_authenticity_and_sustainability",
+    "family_ids": [
+      "specialist_fact_atoms",
+      "claim_candidate_atoms",
+      "what_would_change_atoms"
+    ],
+    "primary_call_count": 6,
+    "maximum_total_call_count": 8,
+    "request_equivalence_exclusions": [
+      "candidate_id",
+      "model",
+      "model_ref",
+      "call_id"
+    ],
+    "one_family_output_feeds_another": false,
+    "business_run_or_artifact_writes": 0
+  }
+}

@@ -66,6 +66,30 @@ FIN_0_1_2_ACTUAL_CONSUMER_OWNERS = {
 }
 
 
+@dataclass(frozen=True)
+class Fin012RuntimeContractBindingProfile:
+    schema_version: str
+    binding_ref: str
+    source_ref: str
+    compiled_contract_ref: str
+    actual_consumer_owners: Mapping[str, str]
+    additional_compatibility_requirements: Mapping[str, bool]
+
+
+FIN_0_1_2_COMMON_RUNTIME_BINDING_PROFILE = (
+    Fin012RuntimeContractBindingProfile(
+        schema_version=(
+            "fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0"
+        ),
+        binding_ref=FIN_0_1_2_COMMON_RUNTIME_BINDING_REF,
+        source_ref=FIN_0_1_2_COMMON_RUNTIME_SOURCE_REF,
+        compiled_contract_ref=FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+        actual_consumer_owners=FIN_0_1_2_ACTUAL_CONSUMER_OWNERS,
+        additional_compatibility_requirements={},
+    )
+)
+
+
 class Fin012RuntimeContractBindingError(ValueError):
     """Typed failure for the bounded FIN 0.1.2 family binding."""
 
@@ -175,24 +199,23 @@ def compile_fin_0_1_2_runtime_contract_binding(
     *,
     source_bytes: bytes,
     manifest: Mapping[str, Any],
+    profile: Fin012RuntimeContractBindingProfile = (
+        FIN_0_1_2_COMMON_RUNTIME_BINDING_PROFILE
+    ),
 ) -> Fin012RuntimeContractFamilyBinding:
-    if manifest.get("schema_version") != (
-        "fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0"
-    ):
+    if manifest.get("schema_version") != profile.schema_version:
         raise Fin012RuntimeContractBindingError(
             "fin012_runtime_contract_binding_manifest_schema_invalid"
         )
-    if manifest.get("binding_ref") != FIN_0_1_2_COMMON_RUNTIME_BINDING_REF:
+    if manifest.get("binding_ref") != profile.binding_ref:
         raise Fin012RuntimeContractBindingError(
             "fin012_runtime_contract_binding_ref_invalid"
         )
-    if manifest.get("compiled_contract_ref") != (
-        FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
-    ):
+    if manifest.get("compiled_contract_ref") != profile.compiled_contract_ref:
         raise Fin012RuntimeContractBindingError(
             "fin012_runtime_contract_compiled_ref_invalid"
         )
-    if manifest.get("source_ref") != FIN_0_1_2_COMMON_RUNTIME_SOURCE_REF:
+    if manifest.get("source_ref") != profile.source_ref:
         raise Fin012RuntimeContractBindingError(
             "fin012_runtime_contract_source_ref_invalid"
         )
@@ -214,6 +237,12 @@ def compile_fin_0_1_2_runtime_contract_binding(
         raise Fin012RuntimeContractBindingError(
             "fin012_runtime_contract_compatibility_boundary_invalid"
         )
+    for key, expected in profile.additional_compatibility_requirements.items():
+        if compatibility.get(key) is not expected:
+            raise Fin012RuntimeContractBindingError(
+                "fin012_runtime_contract_profile_compatibility_invalid:"
+                f"{key}"
+            )
     source_file_sha256 = hashlib.sha256(source_bytes).hexdigest()
     if manifest.get("source_file_sha256") != source_file_sha256:
         raise Fin012RuntimeContractBindingError(
@@ -277,9 +306,7 @@ def compile_fin_0_1_2_runtime_contract_binding(
         raise Fin012RuntimeContractBindingError(
             "fin012_runtime_contract_actual_consumer_surface_incomplete"
         )
-    for consumer_id, expected_owner in (
-        FIN_0_1_2_ACTUAL_CONSUMER_OWNERS.items()
-    ):
+    for consumer_id, expected_owner in profile.actual_consumer_owners.items():
         if owner_by_id.get(consumer_id) != expected_owner:
             raise Fin012RuntimeContractBindingError(
                 "fin012_runtime_contract_actual_consumer_owner_drift:"
@@ -288,14 +315,14 @@ def compile_fin_0_1_2_runtime_contract_binding(
     compiled_consumers = tuple(
         {
             **dict(row),
-            "binding_ref": FIN_0_1_2_COMMON_RUNTIME_BINDING_REF,
+            "binding_ref": profile.binding_ref,
             "runtime_owner": owner_by_id[str(row["consumer_id"])],
         }
         for row in compiled["compiled_consumers"]
     )
     budget = source["budget_contract"]
     return Fin012RuntimeContractFamilyBinding(
-        binding_ref=FIN_0_1_2_COMMON_RUNTIME_BINDING_REF,
+        binding_ref=profile.binding_ref,
         source_ref=_nonblank(
             manifest.get("source_ref"),
             "fin012_runtime_contract_source_ref_missing",
@@ -304,9 +331,7 @@ def compile_fin_0_1_2_runtime_contract_binding(
         source_digest=str(compiled["source_digest"]),
         contract_id=str(compiled["contract_id"]),
         contract_version=str(compiled["contract_version"]),
-        compiled_contract_ref=(
-            FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
-        ),
+        compiled_contract_ref=profile.compiled_contract_ref,
         local_truth_fields=tuple(LOCAL_TRUTH_FIELDS),
         provider_surface=str(compiled["provider_surface"]),
         budget_contract={key: int(value) for key, value in budget.items()},

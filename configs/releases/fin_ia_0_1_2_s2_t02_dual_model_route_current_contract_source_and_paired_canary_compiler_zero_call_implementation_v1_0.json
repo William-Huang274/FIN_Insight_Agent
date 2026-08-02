@@ -1,0 +1,198 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_t02_dual_model_route_current_contract_source_and_paired_canary_compiler_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S2-T02-DUAL-MODEL-ROUTE-CURRENT-CONTRACT-SOURCE-AND-PAIRED-CANARY-COMPILER-R1",
+  "recorded_at": "2026-08-02T23:38:19+08:00",
+  "status": "pass_S2_T02_zero_call_implementation_T03_separate_authority_next",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "single_S2_T02_zero_call_implementation_bundle",
+    "implementation_bundles_consumed": 1,
+    "implementation_bundles_maximum": 1,
+    "credential_read_or_probe_authorized": false,
+    "model_canary_authorized": false,
+    "model_provider_network_or_business_execution_authorized": false
+  },
+  "parent_binding": {
+    "stage_plan_ref": "configs/releases/fin_ia_0_1_2_s2_deepseek_flash_stable_pro_preview_natural_capability_envelope_stage_plan_v1_0.json",
+    "stage_plan_sha256": "819891dbc1862be73a36a5b2fe5d2c011bedbc811988821bf206f5c7cd5931cf",
+    "historical_binding_ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0.json",
+    "historical_binding_sha256": "17bab0f9b4bad8befa2452b596d7e925fde656ccf265e707986cd628a1888655",
+    "historical_source_ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+    "historical_source_sha256": "b9a0e990dbf01ce11e76012c246240494cf38029b11b2c289008ae490fc2283f",
+    "historical_v1_0_rewritten": false
+  },
+  "implementation_bindings": [
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_runtime_contract_binding.py",
+      "sha256": "690cd3c79c56164dd6c2a918945ec767e213a6925a638fbfc9970231288b21cc",
+      "bytes": 13785,
+      "role": "versioned_binding_profile_compiler_with_v1_0_default_preserved"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s2_runtime_contract_binding.py",
+      "sha256": "da5f205a5bb967b49d9587db90da187a814c61738d26b7a963c6f0989a87c87f",
+      "bytes": 4516,
+      "role": "isolated_S2_v1_1_binding_and_resource_loader"
+    },
+    {
+      "ref": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py",
+      "sha256": "9cfbe46c281193e1e83caa349f16db6a7b85d071b3eeb721a04dfc06185a59b3",
+      "bytes": 62007,
+      "role": "versioned_contract_dispatch_and_fact_selection_context"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s2_paired_model_canary.py",
+      "sha256": "f6d4321556012d643c64f87006a6f60dfac1fec56f2b48f0622edcbdd4b10fb5",
+      "bytes": 26595,
+      "role": "six_call_paired_canary_compiler_fake_capture_and_terminal_materializer"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_1.json",
+      "sha256": "15c4be902cebc72ea8ef24008de0b2177eb1259a5aded0c78e758e8e91ce7501",
+      "bytes": 4224,
+      "role": "current_S2_family_contract_source"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_1.json",
+      "sha256": "2e233d2a58449398774f2b1a21c84b215a82a81b4ef8552d3b86f9876408b420",
+      "bytes": 2420,
+      "role": "current_S2_ten_consumer_binding"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s2_deepseek_model_candidate_registry_v1_0.json",
+      "sha256": "bbfd0ab03bfd008c5fd14437fb4c4e920234bbb91ea52493f27cd40ebb2502e2",
+      "bytes": 1816,
+      "role": "Flash_stable_and_Pro_preview_shared_route_budget"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s2_runtime_resource_registry_v1_0.json",
+      "sha256": "0c14df326b26300badcf59cd57dd0595b0279fa3c4c36bb10e9f72a7b9746082",
+      "bytes": 2953,
+      "role": "three_resource_typed_digest_authority"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s2_paired_model_canary_compiler.py",
+      "sha256": "1d61439654ac8daa2fe612d05eb191bfa14c03fa9cf7366570578d7226538e39",
+      "bytes": 15775,
+      "role": "three_case_fake_mutation_capture_equivalence_and_registry_proof"
+    }
+  ],
+  "compiled_route": {
+    "provider": "deepseek",
+    "wire_api": "chat_completions_json_object",
+    "thinking": "disabled",
+    "temperature": 0.0,
+    "retry_fallback_provider_hopping": [0, 0, 0],
+    "candidates": [
+      "deepseek:deepseek-v4-flash",
+      "deepseek:deepseek-v4-pro"
+    ],
+    "case": "MU",
+    "program_cell_id": "demand_authenticity_and_sustainability",
+    "families": [
+      "specialist_fact_atoms",
+      "claim_candidate_atoms",
+      "what_would_change_atoms"
+    ],
+    "primary_call_count": 6,
+    "maximum_total_call_count": 8,
+    "business_Run_or_Artifact_writes": 0
+  },
+  "request_equivalence_receipts": [
+    {
+      "family_id": "specialist_fact_atoms",
+      "model_visible_request_digest": "f7f59b2f9cacedd0dab051cb845b4db893c77a28113f4ee298c6fa45a1386cc2",
+      "request_equivalence_digest": "c9d19bb2964de0fa324ff54e9c66a8426a90c2df967aa536584877828d71eda5"
+    },
+    {
+      "family_id": "claim_candidate_atoms",
+      "model_visible_request_digest": "265545b55b178e5286bbc13da136338f12527e7c1b5e6f6ca101bf3a2cec9c6a",
+      "request_equivalence_digest": "9542d6205851a31632fa3a08d1986b75c2bf5db6883dc50b078309d70c58e061"
+    },
+    {
+      "family_id": "what_would_change_atoms",
+      "model_visible_request_digest": "6f4592534ab20302c966be77b5a665eabfeed2f65f9e0aa0226a512ee4490b46",
+      "request_equivalence_digest": "68a3a0da8be304658e8c0cf409c5bb634f6e30156c18f19695b6d1d001cc6ba2"
+    }
+  ],
+  "implemented_boundaries": {
+    "provider_output_program_cell_id_forbidden": true,
+    "program_cell_id_injected_locally_after_validation": true,
+    "material_number_date_case_identity_runtime_ID_lineage_and_final_rendering_local": true,
+    "fact_model_visible_context_includes_bounded_statement_and_boundary": true,
+    "fact_provider_output_may_only_select_aliases_and_closed_enums": true,
+    "claim_conditional_semantics_compiled_into_visible_and_local_surfaces": true,
+    "WWC_provider_candidates_maximum": 6,
+    "WWC_local_selected_maximum": 3,
+    "semantic_failure_collects_remaining_independent_calls": true,
+    "auth_transport_security_or_capture_failure_stops_remaining_calls": true,
+    "capture_before_local_validation": true,
+    "failed_output_business_promotable": false,
+    "credentials_headers_cookies_or_private_reasoning_persisted": false
+  },
+  "verification": {
+    "python_compile": "pass",
+    "combined_contract_tests": {
+      "passed": 97,
+      "failed": 0,
+      "duration_seconds": 13.14
+    },
+    "DELL_MU_NVDA_fake_each": {
+      "planned_calls": 6,
+      "passes": 6,
+      "captures": 6,
+      "local_assemblies": 6
+    },
+    "covered_mutations": [
+      "candidate_registry_model_route_and_budget_drift",
+      "provider_authored_local_identity",
+      "unknown_and_cross_case_alias",
+      "claim_kind_support_role_conflict",
+      "WWC_unknown_date_alias",
+      "WWC_six_valid_candidates_to_local_top_three",
+      "transport_failure_stop_and_capture",
+      "S2_resource_registration_and_digest_drift"
+    ],
+    "historical_S0_S1_regression": "pass_in_same_95_test_matrix",
+    "repository_architecture_inventory": {
+      "python_parse_errors": 0,
+      "nodes": 3654,
+      "edges": 18834
+    },
+    "repository_architecture_guard": {
+      "status": "inherited_nonblocking_fail_outside_T02_changed_files",
+      "critical_errors": 5,
+      "error_paths": [
+        "apps/workbench/backend/application/bounded_agent_contract_policies.py",
+        "apps/workbench/backend/application/bounded_agent_executor.py",
+        "src/sec_agent/canonical_runtime/facade.py",
+        "src/sec_agent/langgraph_orchestrator.py",
+        "src/sec_agent/memo_llm.py"
+      ],
+      "T02_new_critical_hotspot": false
+    },
+    "ruff": "not_installed_in_current_environment",
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "credential_reads_or_probes": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "root_cause_disposition": {
+    "RC_P36_098": "closed_by_versioned_source_binding_model_registry_and_paired_route_zero_call_proof",
+    "RC_P36_099": "discovered_and_closed_provider_output_local_identity_echo_removed_and_local_injection_proven",
+    "RC_P36_100": "discovered_and_closed_S2_resource_loader_isolated_from_historical_default_registry"
+  },
+  "stage_acceptance": {
+    "S2_T01": "pass",
+    "S2_T02": "engineering_pass",
+    "S2_T03": "not_authorized_separate_authority_decision_next",
+    "S2_T04": "pending",
+    "S2": "not_yet_passed",
+    "S3_to_S5": "not_started",
+    "release_qualified": false
+  },
+  "known_boundary": "T02 proves the comparator contract and deterministic safety behavior only. It does not prove either DeepSeek alias follows the natural-output contract, does not select a mainline model, and does not establish exact-live product quality or release readiness. The repository architecture guard still has five inherited critical hotspot failures outside this T02 change and remains separate engineering debt.",
+  "next_action": "FIN-0.1.2-S2-T03-MU-THREE-FAMILY-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-AUTHORITY-DECISION"
+}

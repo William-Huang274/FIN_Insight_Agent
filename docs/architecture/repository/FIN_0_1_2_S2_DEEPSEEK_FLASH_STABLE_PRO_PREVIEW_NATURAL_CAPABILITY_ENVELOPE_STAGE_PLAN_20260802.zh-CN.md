@@ -2,7 +2,7 @@
 
 日期：2026-08-02
 
-状态：`S2 StagePlan pass / T02 zero-call implementation next / model call not authorized`
+状态：`S2-T02 engineering pass / T03 authority decision next / model call not authorized`
 
 ## 1. S2 到底要回答什么
 
@@ -32,7 +32,7 @@ S0 已证明当前工程包可复现，S1 已证明 DELL、MU、NVDA 的确定�
 | 任务 | 内容 | 调用预算 | Exit |
 | --- | --- | --- | --- |
 | S2-T01 | 本 StagePlan、历史证据审计、阶段归属和预算冻结 | 0 | 当前计划、机器合同、投影和 Project OS 一致 |
-| S2-T02 | 双模型 route、当前合同 source/binding、paired-canary compiler 的一次零调用实现 | 0 | DELL/MU/NVDA fake、mutation、capture、请求等价性和精确六调用计划全绿 |
+| S2-T02 | 双模型 route、当前合同 source/binding、paired-canary compiler 的一次零调用实现 | 0 | `engineering_pass`：97 项组合回归全绿，三案各 6/6 fake/capture/assembly 通过 |
 | S2-T03 | MU 单 Cell、Fact/Claim/WWC、Flash/Pro 配对自然输出 canary | 主要 6 calls | 六个独立结果与 capture 完整，或形成诚实 transport block |
 | S2-T04 | 盲配对 assessment、模型/本地 surface disposition、S2 closeout | 0 | 选择 S3 主线或明确 no-model surface，并冻结成本与证据边界 |
 
@@ -79,8 +79,18 @@ S0 已证明当前工程包可复现，S1 已证明 DELL、MU、NVDA 的确定�
 - RC-P36-084 的 Verifier 与交付质量属于 S3/S4；
 - strict-schema transport 继续停放，不阻断 DeepSeek JSON-object + local validation 主线。
 
-## 10. 当前下一项
+## 10. T02 实现结果
 
-`FIN-0.1.2-S2-T02-DUAL-MODEL-ROUTE-CURRENT-CONTRACT-SOURCE-AND-PAIRED-CANARY-COMPILER-ZERO-CALL-IMPLEMENTATION`
+T02 已完成唯一一个零调用实现包。当前 v1.1 source/binding 与 Flash stable / Pro preview 候选 registry 均由独立 S2 RuntimeResourceRegistry 做哈希约束，历史 v1.0 source/binding 和旧 Pro admission 未改写。三个 family 各生成一对模型可见内容逐字节一致的请求，只有模型身份和调用身份不同。
 
-本 StagePlan 没有读取 credential、调用模型或 Provider，也没有执行网络、业务 Run 或 Artifact 写入。
+实现时额外发现并在本任务最早 owner 处收口了三项设计漂移：Provider 不再回写本地 `program_cell_id`，而是在校验后由本地注入；Fact 合同补入有界 statement/boundary 供模型做相关性判断，但输出仍只能选择 alias/enum；S2 资源 loader 与旧默认 registry 完全隔离，避免新阶段路径污染 S0 历史资源权威。对应 RC-P36-098/099/100 均以零调用证据关闭。
+
+组合回归为 `97 passed / 0 failed`（95 项 Runtime/历史兼容矩阵，加 2 项结果与 current projection 闭环）。覆盖 DELL/MU/NVDA、Flash/Pro 六调用计划、请求等价、身份/跨案/日期/Claim 条件/WWC 容量 mutation、capture-before-validation、语义失败继续收集和 transport 失败停止。credential、模型、Provider、网络、业务 Run/Artifact 调用均为 0。
+
+机器结果：`configs/releases/fin_ia_0_1_2_s2_t02_dual_model_route_current_contract_source_and_paired_canary_compiler_zero_call_implementation_v1_0.json`。
+
+## 11. 当前下一项
+
+`FIN-0.1.2-S2-T03-MU-THREE-FAMILY-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-AUTHORITY-DECISION`
+
+下一项仍是零调用权限审查。只有该权限单独通过后，才能读取凭据并执行冻结的 MU 六调用 canary；T02 本身没有读取 credential、调用模型或 Provider，也没有执行网络、业务 Run 或 Artifact 写入。

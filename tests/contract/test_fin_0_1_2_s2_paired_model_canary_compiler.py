@@ -459,4 +459,4 @@ def test_T02_projection_is_historical_and_backlog_preserves_its_evidence() -> No
         T02_RESULT.read_bytes()
     ).hexdigest()
     assert current["S2_T02_status"].startswith("engineering_pass")
-    assert current["current_projection_ref"].endswith("v2_11.json")
+    assert current["current_projection_ref"].endswith("v2_12.json")

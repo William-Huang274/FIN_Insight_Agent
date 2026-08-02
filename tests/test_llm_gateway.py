@@ -5,6 +5,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+import pytest
+
 from sec_agent.llm_gateway import chat_completion, responses_completion
 
 
@@ -75,6 +77,53 @@ def test_chat_completion_does_not_retry_invalid_url(monkeypatch) -> None:
     assert result["status"] == "provider_error"
     assert result["transport_attempt_count"] == 1
     assert "unknown url type" in result["failure_reason"]
+
+
+def test_chat_completion_explicit_attempt_limit_overrides_retry_environment(
+    monkeypatch,
+) -> None:
+    calls: list[str] = []
+
+    def fake_urlopen(req: urllib.request.Request, timeout: int) -> _FakeResponse:
+        calls.append(req.full_url)
+        raise urllib.error.URLError(TimeoutError("timed out"))
+
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
+    monkeypatch.setenv("LLM_GATEWAY_TRANSPORT_RETRIES", "5")
+    monkeypatch.setenv("LLM_GATEWAY_TRANSPORT_RETRY_BACKOFF_S", "0")
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+
+    result = chat_completion(
+        llm_backend="deepseek",
+        base_url="https://api.deepseek.com/beta",
+        chat_completions_path="/chat/completions",
+        model="deepseek-v4-flash",
+        messages=[{"role": "user", "content": "Return JSON."}],
+        response_format={"type": "json_object"},
+        api_key_env="DEEPSEEK_API_KEY",
+        max_transport_attempts=1,
+    )
+
+    assert result["status"] == "timeout"
+    assert result["transport_attempt_count"] == 1
+    assert calls == ["https://api.deepseek.com/beta/chat/completions"]
+
+
+@pytest.mark.parametrize("value", (0, -1, True, 1.5))
+def test_chat_completion_rejects_invalid_explicit_attempt_limit(
+    monkeypatch, value: object
+) -> None:
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
+    with pytest.raises(ValueError, match="positive_integer"):
+        chat_completion(
+            llm_backend="deepseek",
+            base_url="https://api.deepseek.com/beta",
+            chat_completions_path="/chat/completions",
+            model="deepseek-v4-flash",
+            messages=[{"role": "user", "content": "Return JSON."}],
+            api_key_env="DEEPSEEK_API_KEY",
+            max_transport_attempts=value,  # type: ignore[arg-type]
+        )
 
 
 def test_chat_completion_direct_proxy_mode_uses_explicit_no_proxy_opener(monkeypatch) -> None:

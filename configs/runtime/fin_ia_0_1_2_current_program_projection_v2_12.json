@@ -1,0 +1,108 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S2-T03-PREFLIGHT-PASS-EXACT-SIX-CALL-NEXT-R13",
+  "recorded_at": "2026-08-03T00:40:22+08:00",
+  "status": "current_FIN_0_1_2_S2_T03_preflight_pass_exact_six_call_authorized_not_started",
+  "lifecycle_state": "in_progress",
+  "decision_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s2_t03_mu_three_family_flash_stable_vs_pro_preview_paired_natural_output_canary_authority_decision_v1_0.json",
+    "sha256": "8e18bf6c9c6f385af521646a525893670e27ae80863fd238b69d9ea3c10f3f7f",
+    "binding_role": "exact_six_call_authority_now_effective_after_preflight"
+  },
+  "implementation_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s2_t03_paired_canary_bound_runner_atomic_capture_and_zero_call_preflight_minimum_implementation_v1_0.json",
+    "sha256": "3a53a115f9a025d76616ac2f6c7c491f612c349f20a0465b8237ef0bfe12849b",
+    "binding_role": "S2_T03_bound_runner_atomic_capture_and_zero_call_preflight_pass"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S2",
+    "active_slice": "FIN_0_1_2_S2_T03_EXACT_SIX_CALL_PAIRED_NATURAL_OUTPUT_CANARY_EXECUTION",
+    "current_next_action": "FIN-0.1.2-S2-T03-MU-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-EXACT-SIX-CALL-EXECUTION",
+    "current_stage_status": "S2_T03_preflight_pass_exact_six_call_authorized_not_started",
+    "S2_started": true,
+    "S2_stage_plan_passed": true,
+    "S2_T02_engineering_passed": true,
+    "S2_model_canary_authority_effective": true,
+    "S2_model_canary_execution_started": false,
+    "S2_model_calls": 0,
+    "completed_current_stages": {
+      "S0": "pass_closed",
+      "S1": "pass_closed_current_consolidated_baseline"
+    },
+    "current_S2_tasks": {
+      "S2_T01": "pass",
+      "S2_T02": "engineering_pass",
+      "S2_T03": "preflight_pass_exact_six_call_authorized_not_started",
+      "S2_T04": "pending_blocked_by_T03_terminal_materialization"
+    },
+    "downstream_stages_started": {
+      "S2": true,
+      "S3": false,
+      "S4": false,
+      "S5": false
+    },
+    "open_issue_ids": [],
+    "closed_in_S2_issue_ids": [
+      "RC-P36-098-fin-0-1-2-s2-common-runtime-source-status-and-deepseek-model-route-drift",
+      "RC-P36-099-fin-0-1-2-s2-provider-output-local-identity-echo-conflict",
+      "RC-P36-100-fin-0-1-2-s2-resource-loader-cross-registry-literal-drift",
+      "RC-P36-101-fin-0-1-2-s2-t03-real-transport-runner-and-atomic-capture-materialization-gap"
+    ],
+    "carried_nonblocking_for_S2_or_later_issue_ids": [
+      "RC-P36-067-s4-R10-numeric-reference-value-correspondence-false-negative",
+      "RC-P36-068-s4-R10-case-identity-title-contract-hardcoded-NVDA",
+      "RC-P36-080-s4-t06-provider-authored-numeric-token-in-specialist-explanation-layer",
+      "RC-P36-083-s4-t06-cross-layer-compiled-contract-invariant-gap",
+      "RC-P36-084-s4-t06-machine-verifier-semantic-and-delivery-quality-gap"
+    ],
+    "model_candidates": [
+      "deepseek:deepseek-v4-flash",
+      "deepseek:deepseek-v4-pro"
+    ],
+    "primary_call_plan": 6,
+    "strict_schema_transport": "sub2api_gpt_5_5_parked_nonblocking_separate_handoff",
+    "FIN_0_1_3_role": "historical_FIN_0_1_2_S0_recovery_attempt_family",
+    "FIN_0_1_4_role": "historical_unexecuted_S0_improvement_proposal",
+    "FIN_0_2": "Earnings_Review_Alpha_unchanged",
+    "release_qualified": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "product_plan": "docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md",
+    "S2_technical_plan": "docs/architecture/repository/FIN_0_1_2_S2_DEEPSEEK_FLASH_STABLE_PRO_PREVIEW_NATURAL_CAPABILITY_ENVELOPE_STAGE_PLAN_20260802.zh-CN.md",
+    "assistant_policy": "docs/project_os/senior_assistant_collaboration_policy.zh-CN.md",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "external_pattern_registry": "docs/project_os/external_pattern_registry.jsonl",
+    "strict_schema_handoff": "docs/project_os/STRICT_SCHEMA_TRANSPORT_API_HANDOFF.zh-CN.md",
+    "S0_closeout": "configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_success_and_s0_closeout_v1_0.json",
+    "S1_closeout": "configs/releases/fin_ia_0_1_2_s1_current_evidence_reconciliation_independent_assessment_and_closeout_v1_0.json",
+    "S2_stage_plan": "configs/releases/fin_ia_0_1_2_s2_deepseek_flash_stable_pro_preview_natural_capability_envelope_stage_plan_v1_0.json",
+    "S2_T02_implementation": "configs/releases/fin_ia_0_1_2_s2_t02_dual_model_route_current_contract_source_and_paired_canary_compiler_zero_call_implementation_v1_0.json",
+    "S2_T03_authority": "configs/releases/fin_ia_0_1_2_s2_t03_mu_three_family_flash_stable_vs_pro_preview_paired_natural_output_canary_authority_decision_v1_0.json",
+    "S2_T03_preflight_implementation": "configs/releases/fin_ia_0_1_2_s2_t03_paired_canary_bound_runner_atomic_capture_and_zero_call_preflight_minimum_implementation_v1_0.json",
+    "S2_T03_runtime_resource_registry": "configs/runtime/fin_ia_0_1_2_s2_t03_runtime_resource_registry_v1_0.json",
+    "current_runtime_source": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_1.json",
+    "current_runtime_binding": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_1.json",
+    "S2_model_candidate_registry": "configs/runtime/fin_ia_0_1_2_s2_deepseek_model_candidate_registry_v1_0.json",
+    "S2_runtime_resource_registry": "configs/runtime/fin_ia_0_1_2_s2_runtime_resource_registry_v1_0.json"
+  },
+  "historical_projection_policy": {
+    "immutable_event_files_remain_valid_for_historical_facts": true,
+    "historical_files_may_own_current_next_or_backlog_tail": false,
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_11.json",
+    "superseded_projection_deleted_or_rewritten": false
+  },
+  "execution_authority": {
+    "exact_six_call_authority_effective": true,
+    "bound_runner_atomic_capture_zero_call_preflight_passed": true,
+    "exact_execution_started": false,
+    "credential_read_only_during_exact_execution_authorized": true,
+    "model_provider_network_calls_authorized": 6,
+    "automatic_retry_fallback_provider_hopping_or_replacement_authorized": false,
+    "business_Run_or_Artifact_writes_authorized": false,
+    "full_chain_authorized": false
+  }
+}

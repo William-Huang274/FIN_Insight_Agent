@@ -2,7 +2,7 @@
 
 日期：2026-08-02
 
-状态：`S2-T03 conditional authority issued / bound runner and atomic capture preflight next / execution not started`
+状态：`S2-T03 bound runner and atomic capture preflight pass / exact six-call execution authorized not started`
 
 ## 1. S2 到底要回答什么
 
@@ -94,3 +94,15 @@ T02 已完成唯一一个零调用实现包。当前 v1.1 source/binding 与 Fla
 `FIN-0.1.2-S2-T03-PAIRED-CANARY-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`
 
 零调用权限审查已通过并有条件签发六调用 authority。审计发现 T02 只有 compiler、本地 materializer 与内存 fake capture，缺少该实验专用真实 runner 和校验前原子受限 capture persistence，登记 RC-P36-101。下一项只补 runner/capture/preflight；preflight 通过前不得读取凭据或执行六调用。sub2api `gpt-5.5 /responses` strict-schema 路线继续 parked，不与当前官方 DeepSeek 路线混用。
+
+## 12. T03 preflight 实现结果
+
+专用 runner、T03 资源注册表、原子内容寻址对象仓与显式单次 transport attempt 已完成。runner 不再依赖测试 helper，而是从已登记的 MU exact fixture 重建当前 compiler；零调用 preflight 重新派生的六个 request/equivalence digest 与 authority 全部一致。capture 在本地 validation 前持久化，raw Provider envelope、credential、header、Cookie 和 private reasoning 不进入对象仓；失败 terminal 与 sanitized execution result 均保留。
+
+实现证据为 focused=`28 passed / 0 failed`、包含 T02 与资源/网关/对象仓的组合回归=`61 passed / 0 failed`；加入结果文件与 current projection/backlog 闭环断言后，最终分别为 `30 / 63 passed`。语义失败继续五个调用、transport 失败留存 capture 后停止五个调用、capture/预算/重复 execution identity 均 fail closed。preflight 没有读取凭据或调用模型/Provider/网络，最坏主预算估算为 `USD 0.029058`，低于授权上限 `USD 0.06`。RC-P36-101 因此关闭。
+
+当前唯一下一项已经变为：
+
+`FIN-0.1.2-S2-T03-MU-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-EXACT-SIX-CALL-EXECUTION`
+
+该项只消费既有六调用 authority；没有 retry、fallback、Provider hopping、自动 replacement pair 或业务 Run/Artifact。只有完成六个 terminal/capture 或形成诚实 transport block 后，才能进入 T04。

@@ -2,11 +2,17 @@ from __future__ import annotations
 
 import sqlite3
 from datetime import datetime, timezone
+import hashlib
+import json
+import os
 
 import pytest
 
 from sec_agent.canonical_runtime.models import ActorSnapshot, EventEnvelope
-from sec_agent.canonical_runtime.object_store import FileCanonicalObjectStore
+from sec_agent.canonical_runtime.object_store import (
+    FileCanonicalObjectStore,
+    ObjectDigestMismatch,
+)
 from sec_agent.canonical_runtime.store import (
     OBJECT_TABLES,
     KillSwitchEnabled,
@@ -58,6 +64,51 @@ def test_object_store_uses_portable_key_and_checks_digest(tmp_path) -> None:
     assert not ref["object_key"].startswith(str(tmp_path))
     assert ":" not in ref["object_key"]
     assert store.get_json(ref["object_key"], expected_digest=ref["digest"]) == {"a": 1, "b": 2}
+
+
+def test_object_store_rejects_corrupted_existing_content_address(tmp_path) -> None:
+    store = FileCanonicalObjectStore(tmp_path / "objects")
+    payload = {"atomic": True}
+    data = json.dumps(
+        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode()
+    digest = hashlib.sha256(data).hexdigest()
+    target = (
+        tmp_path
+        / "objects"
+        / "point01"
+        / "corrupt"
+        / digest[:2]
+        / digest[2:4]
+        / f"{digest}.json"
+    )
+    target.parent.mkdir(parents=True)
+    target.write_text("corrupted", encoding="utf-8")
+
+    with pytest.raises(ObjectDigestMismatch, match="object_digest_mismatch"):
+        store.put_json(
+            payload,
+            namespace="point01/corrupt",
+            artifact_type="fixture",
+        )
+
+
+def test_object_store_cleans_temporary_file_when_atomic_replace_fails(
+    tmp_path, monkeypatch
+) -> None:
+    store = FileCanonicalObjectStore(tmp_path / "objects")
+
+    def fail_replace(source, target) -> None:
+        raise OSError("replace_failed")
+
+    monkeypatch.setattr(os, "replace", fail_replace)
+    with pytest.raises(OSError, match="replace_failed"):
+        store.put_json(
+            {"atomic": True},
+            namespace="point01/failure",
+            artifact_type="fixture",
+        )
+    assert not list((tmp_path / "objects").rglob("*.tmp"))
 
 
 def test_kill_switch_fails_closed_without_deleting_history(tmp_path) -> None:

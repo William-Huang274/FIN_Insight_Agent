@@ -37,6 +37,7 @@ def chat_completion(
     role: str = "",
     profile: str = "",
     trace_tags: dict[str, Any] | None = None,
+    max_transport_attempts: int | None = None,
 ) -> dict[str, Any]:
     started = time.time()
     call_id = f"llm_{time.time_ns()}_{_safe_slug(role or profile or 'call')}"
@@ -100,8 +101,19 @@ def chat_completion(
         }
     )
     transport_failures: list[dict[str, Any]] = []
-    max_transport_retries = max(0, _int_env(os.environ.get("LLM_GATEWAY_TRANSPORT_RETRIES"), default=1))
-    max_attempts = max_transport_retries + 1
+    if max_transport_attempts is not None:
+        if type(max_transport_attempts) is not int or max_transport_attempts < 1:
+            raise ValueError("max_transport_attempts_must_be_positive_integer")
+        max_attempts = max_transport_attempts
+    else:
+        max_transport_retries = max(
+            0,
+            _int_env(
+                os.environ.get("LLM_GATEWAY_TRANSPORT_RETRIES"),
+                default=1,
+            ),
+        )
+        max_attempts = max_transport_retries + 1
     parsed: dict[str, Any] | None = None
     transport_attempt_count = 0
     for attempt_index in range(max_attempts):

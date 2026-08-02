@@ -1,0 +1,48 @@
+{
+  "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
+  "registry_id": "FIN-0.1.2-S2-T03-PAIRED-CANARY-EXECUTION-RUNTIME-RESOURCE-REGISTRY-R1",
+  "status": "tracked_typed_runtime_resource_authority",
+  "policy": {
+    "registry_is_source_of_truth": true,
+    "static_scanner_is_detector_only": true,
+    "direct_unregistered_runtime_read_fails_closed": true,
+    "missing_unknown_duplicate_or_digest_drift_fails_closed": true,
+    "permutation_or_cross_version_fails_closed": true,
+    "ignored_untracked_codex_runtime_and_git_forbidden": true,
+    "traversal_and_symlink_escape_forbidden": true
+  },
+  "detector_python_refs": [
+    "apps/workbench/backend/application/fin_0_1_2_s2_paired_model_canary_runner.py"
+  ],
+  "resource_count": 2,
+  "resource_bytes": 285654,
+  "resource_canonical_digest": "13b83d74e056b291774bfd84f75cf3f40ed60a9691c2e5f21bae10ac550f6fda",
+  "resources": [
+    {
+      "resource_id": "fin_0_1_2.s2.t03.mu_exact_input_fixture",
+      "repo_relative_path": "tests/fixtures/fin_0_1_2/mu_realistic_three_cell_exact_input_v1.json",
+      "sha256": "84e2f2adf08423e6f7f7d2ab688656f2b1f47e83d5e62c24fb7fa25d82679909",
+      "bytes": 275275,
+      "classification": "hermetic_exact_input_fixture",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s2_paired_model_canary_runner.build_bound_compiler"
+      ],
+      "load_phase": "S2_T03_preflight_and_exact_execution",
+      "required": true,
+      "source_owner": "tests.contract.fin_0_1_2_realistic_fixture_support"
+    },
+    {
+      "resource_id": "fin_0_1_2.s2.t03.paired_canary_authority",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_2_s2_t03_mu_three_family_flash_stable_vs_pro_preview_paired_natural_output_canary_authority_decision_v1_0.json",
+      "sha256": "8e18bf6c9c6f385af521646a525893670e27ae80863fd238b69d9ea3c10f3f7f",
+      "bytes": 10379,
+      "classification": "exact_execution_authority",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s2_paired_model_canary_runner.build_bound_compiler"
+      ],
+      "load_phase": "S2_T03_preflight_and_exact_execution",
+      "required": true,
+      "source_owner": "configs.releases.fin_0_1_2_s2_t03_authority"
+    }
+  ]
+}

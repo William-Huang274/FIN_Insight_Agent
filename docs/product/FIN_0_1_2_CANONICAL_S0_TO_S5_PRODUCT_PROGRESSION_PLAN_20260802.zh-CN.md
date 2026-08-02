@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S1 pass closed / S2-T03 conditional authority issued and runner preflight next / S3-S5 not started`
+状态：`current canonical plan / S0-S1 pass closed / S2-T03 preflight pass and exact six-call execution next / S3-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -12,7 +12,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭，S2-T02 的双模型路由与 paired-canary compiler 已工程通过，T03 六调用 canary 已有条件签权，下一项是专用 runner、原子 capture 与零调用 preflight；
+- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭，S2-T02 双模型 compiler 与 T03 专用 runner、原子 capture、零调用 preflight 均已工程通过；六调用权限现已生效但尚未执行；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
@@ -64,9 +64,11 @@ StagePlan 同时发现 `common_runtime_contract_family_source_v1_0` 的状态文
 
 这仍只证明比较器与本地安全边界，尚未证明 Flash 或 Pro 的自然输出能力，也没有选择 S3 主线模型。T03 权限审查已经冻结六个 exact call、硬预算和停止规则，但审计发现 T02 只有 compiler、本地 materializer 与内存 fake capture，尚无专用真实 runner，也未证明校验前原子写入受限 capture store。该项目内缺口登记为 RC-P36-101，不属于模型或 Provider 失败。
 
-当前下一项只补这一执行前缺口，不读取 credential 或执行模型：
+该执行前缺口已经由一个合并结构包关闭：专用 runner 从已登记 MU fixture 重建六个 exact call；原子对象仓先保存 capture 再做本地校验；网关显式锁定单次 attempt；语义失败继续、transport/auth/security/capture/budget 失败停止。实现证据=`28 focused / 61 combined passed`，加入结果与 current projection 闭环后最终=`30 focused / 63 combined passed`；preflight 外部调用为 0，RC-P36-101 已关闭。
 
-`FIN-0.1.2-S2-T03-PAIRED-CANARY-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`
+当前下一项只执行已经签权的六个调用，不扩展 family、不自动 replacement、不写业务 Artifact：
+
+`FIN-0.1.2-S2-T03-MU-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-EXACT-SIX-CALL-EXECUTION`
 
 以下 S0 收口说明保留为 preceding current-baseline evidence：
 

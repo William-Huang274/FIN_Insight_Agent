@@ -1,0 +1,107 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_t03_paired_canary_bound_runner_atomic_capture_and_zero_call_preflight_minimum_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S2-T03-PAIRED-CANARY-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION-R1",
+  "recorded_at": "2026-08-03T00:40:22+08:00",
+  "status": "pass_engineering_and_zero_call_preflight_exact_six_call_authority_now_effective_execution_not_started",
+  "engineering_base": {
+    "git_head_before_implementation": "c444e397b7abddd93fd7dfc8bcb325f78daef8f6",
+    "branch": "codex/layered-data-source-expansion",
+    "authority_ref": "configs/releases/fin_ia_0_1_2_s2_t03_mu_three_family_flash_stable_vs_pro_preview_paired_natural_output_canary_authority_decision_v1_0.json",
+    "authority_sha256": "8e18bf6c9c6f385af521646a525893670e27ae80863fd238b69d9ea3c10f3f7f"
+  },
+  "implementation_bindings": [
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s2_paired_model_canary_runner.py",
+      "sha256": "f67ec3e3fdf1d9dcafaaf0ba79afc72b6878decb2df6a6776f20e5da69a8e1a4",
+      "bytes": 23874,
+      "role": "authority_bound_runner_atomic_capture_and_preflight"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s2_t03_paired_natural_output_canary.py",
+      "sha256": "fcdb459b6bbebf5cda87bf052caec74208b6832c1fa33a91a9307d32da813797",
+      "bytes": 1189,
+      "role": "default_zero_call_cli_and_explicit_execute_entry"
+    },
+    {
+      "ref": "src/sec_agent/canonical_runtime/object_store.py",
+      "sha256": "91452ec6024788bd63d9c123a1dedecb9972515746d3a2ca0e8843f355f48a17",
+      "bytes": 2881,
+      "role": "atomic_content_addressed_json_store"
+    },
+    {
+      "ref": "src/sec_agent/llm_gateway.py",
+      "sha256": "783dba9d987b55123c211d6124db6f93fa546e41f4d0e0c7a00506b9c1d31799",
+      "bytes": 24587,
+      "role": "explicit_one_transport_attempt_gateway_boundary"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s2_t03_runtime_resource_registry_v1_0.json",
+      "sha256": "4d7a3ac6a2506099c692f5f65c012e13e4413927a5b7ad3de469955700b84ce4",
+      "bytes": 2201,
+      "role": "authority_and_MU_exact_input_resource_integrity"
+    }
+  ],
+  "implemented_scope": {
+    "dedicated_exact_runner": true,
+    "registered_authority_and_exact_MU_fixture": true,
+    "production_fixture_compiler_without_test_helper_import": true,
+    "exact_call_plan_digest_rederivation": true,
+    "exclusive_execution_identity_before_provider_call": true,
+    "atomic_capture_before_local_validation": true,
+    "atomic_terminal_result_materialization": true,
+    "semantic_failure_collects_remaining_independent_calls": true,
+    "transport_auth_capture_security_or_budget_failure_stops_remaining": true,
+    "explicit_maximum_transport_attempts_per_call": 1,
+    "raw_provider_envelope_credentials_headers_cookies_or_private_reasoning_persisted": false,
+    "business_Run_or_Artifact_writes": 0,
+    "automatic_replacement_pair_calls": 0
+  },
+  "zero_call_preflight": {
+    "status": "pass",
+    "exact_primary_calls_rederived": 6,
+    "request_and_equivalence_digests_match_authority": true,
+    "atomic_object_roundtrip": "pass",
+    "projected_worst_case_primary_cost_usd": 0.029058,
+    "authorized_maximum_primary_cost_usd": 0.06,
+    "credential_checked": false,
+    "credential_reads": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0
+  },
+  "verification": {
+    "focused_runner_gateway_object_store_tests": {
+      "passed": 28,
+      "failed": 0
+    },
+    "combined_T02_fixture_registry_runner_gateway_object_store_tests": {
+      "passed": 61,
+      "failed": 0
+    },
+    "python_compileall": "pass",
+    "git_diff_check": "pass",
+    "credential_model_provider_network_business_execution": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "issue_disposition": {
+    "closed_issue_id": "RC-P36-101-fin-0-1-2-s2-t03-real-transport-runner-and-atomic-capture-materialization-gap",
+    "closure_basis": "Dedicated runner, registered exact inputs, atomic content-addressed capture-before-validation, typed terminal retention, explicit one-attempt gateway and zero-call failure matrix all pass.",
+    "model_or_provider_fault_established": false
+  },
+  "stage_acceptance": {
+    "S2_T02": "engineering_pass",
+    "S2_T03_preflight": "pass_exact_six_call_conditional_authority_effective",
+    "S2_T03_execution": "authorized_not_started",
+    "S2_T04": "blocked_until_six_terminal_results_and_restricted_captures_exist",
+    "S2": "not_yet_passed",
+    "S3_to_S5": "not_started",
+    "release": "not_qualified"
+  },
+  "known_boundary": "This proves execution readiness and audit retention only. It does not qualify Flash or Pro, prove natural-output compliance, select the S3 model, create business Artifacts, pass S2, or establish release readiness.",
+  "next_action": "FIN-0.1.2-S2-T03-MU-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-EXACT-SIX-CALL-EXECUTION"
+}

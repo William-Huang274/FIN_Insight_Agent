@@ -1,10 +1,10 @@
 # FIN 0.1.2 S1 realistic three-case deterministic vertical StagePlan
 
 日期：2026-07-31
-状态：`S1 terminal honest block / G0、G1 pass / G2 not proven / G6 closed / pre-S2 T03 terminal failed / S0C-T01 pass / S2 blocked`
+状态：`historical S1 attempt retained / current S1 re-entered / G1 and G2 positive evidence reused / current G6 assessment-closeout pending / S2 not started`
 
 > [!IMPORTANT]
-> 2026-08-02 当前纠偏：本文件是原 S1 attempt 的历史计划与结果，不是合并后 FIN 0.1.2 的 current stage。已有十个 consumer、三案例 fixture/full-fake 和失败证据可复用，但新 S1 只有在当前 S0 通过后才重新开始；当前计划见 `docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md`。
+> 2026-08-02 current re-entry：本文件前十节继续是原 S1 attempt 的不可变历史计划与结果；旧 T03/T04 失败和 budget 不改写。当前 S0 已正式通过，S1 入口审计确认十个 consumer、三案例 fixture/full-fake、capture 和 failure observability 可复用：current 四族测试=`56 passed`，S0 formal 两套 disposable 各执行 realistic suite=`31 passed`，8 项关键资产与 formal package 逐字节一致。当前不重做 implementation 或 hermetic proof，只补一次 evidence reconciliation、独立 assessment 和 closeout。机器决定=`configs/releases/fin_ia_0_1_2_s1_entry_and_historical_asset_reuse_scope_decision_v1_0.json`；current next=`FIN-0.1.2-S1-CURRENT-EVIDENCE-RECONCILIATION-INDEPENDENT-ASSESSMENT-AND-CLOSEOUT`。
 
 ## 1. 本阶段只解决什么
 
@@ -146,6 +146,19 @@ T02 实现记录：`configs/releases/fin_ia_0_1_2_pre_s2_hermetic_fixture_resour
 T03 冻结 manifest：`configs/releases/fin_ia_0_1_2_pre_s2_t03_replacement_hermetic_proof_manifest_v1_0.json`。
 T03 结果与 honest-block closeout：`configs/releases/fin_ia_0_1_2_pre_s2_t03_replacement_hermetic_proof_and_honest_block_closeout_v1_0.json`。
 
-当前下一项只允许决策，不自动实现或证明：`FIN-0.1.2-PRE-S2-TERMINAL-HONEST-BLOCK-AND-S0-TEST-PACKAGING-CONTRACT-REOPEN-OR-DEFER-SCOPE-DECISION`。它必须决定把测试自反依赖与 package allowlist 修复作为 FIN 0.1.2 S0 的新有界 reopen stage，还是明确递延到后续 patch line；不得把它解释为第二个 T03 package 或 S2 entry。
+当时下一项只允许决策、不自动实现或证明：`FIN-0.1.2-PRE-S2-TERMINAL-HONEST-BLOCK-AND-S0-TEST-PACKAGING-CONTRACT-REOPEN-OR-DEFER-SCOPE-DECISION`。它必须决定把测试自反依赖与 package allowlist 修复作为 FIN 0.1.2 S0 的新有界 reopen stage，还是明确递延到后续 patch line；不得把它解释为第二个 T03 package 或 S2 entry。该历史 next 已由后续 S0C/S0 recovery 与 current S0 formal closeout 消费。
 
 该 decision-only 项已在 2026-08-01 完成，选择新的 S0-owned corrective stage `FIN-0.1.2-S0C-HERMETIC-TEST-TOPOLOGY-AND-ALLOWLISTED-PACKAGE-CLOSURE-R1`。这不是 S1 延长、S1-T05、历史 S0 reopen 或第二次 `PRE-S2-RB-T03`；历史结果保持不变。S0C 固定 `T01/T02/T03`，最多一个零调用 implementation bundle 和一个新身份的 corrective proof package；失败即 honest block。当前只进入 `S0C-T02`，S2 仍未授权。
+
+## 11. 合并后 current S1 的最小剩余范围（2026-08-02）
+
+S0 后续修复已经解决旧 S1 的 hermetic package、tracked fixture、Runtime resource、typed environment 和历史/current phase 混算问题。最新正式证据已经在两套隔离环境中运行本文件定义的 31 项 realistic 三案例测试；当前十 consumer 专门测试 18 项也通过，且关键 Runtime、合同、测试和 fixture 与正式包逐字节一致。
+
+因此 current S1 不创建新的 T02 implementation、T03 proof 或 replacement package。唯一剩余工作合并为一次 G6 收口：
+
+1. 绑定 current S0 formal evidence、current G1 host audit 和关键资产 byte identity；
+2. 独立核对 G0/G1/G2/G4 及 product non-inflation；
+3. 新建 current S1 assessment/closeout，不修改旧 StageCapsule、Assessment 或 Closeout；
+4. 只有新 closeout 通过后才允许进入 S2。
+
+当前下一项：`FIN-0.1.2-S1-CURRENT-EVIDENCE-RECONCILIATION-INDEPENDENT-ASSESSMENT-AND-CLOSEOUT`。

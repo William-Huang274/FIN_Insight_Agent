@@ -1,0 +1,69 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S1-ENTRY-EVIDENCE-REUSE-CLOSEOUT-PENDING-R8",
+  "recorded_at": "2026-08-02T22:19:00+08:00",
+  "status": "current_FIN_0_1_2_S1_entered_formal_evidence_reuse_selected_assessment_closeout_pending",
+  "lifecycle_state": "in_progress",
+  "decision_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s1_entry_and_historical_asset_reuse_scope_decision_v1_0.json",
+    "sha256": "e9fd3b0046eb29ae7d719ae4a33b81d9430137b234fafe693f6c0c3433a44c22",
+    "binding_role": "current_S1_entry_and_historical_asset_reuse_scope_decision"
+  },
+  "implementation_binding": {
+    "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0.json",
+    "sha256": "17bab0f9b4bad8befa2452b596d7e925fde656ccf265e707986cd628a1888655",
+    "binding_role": "current_byte_identical_reusable_S1_ten_consumer_runtime_binding"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S1",
+    "active_slice": "FIN_0_1_2_S1_CURRENT_EVIDENCE_RECONCILIATION_ASSESSMENT_AND_CLOSEOUT",
+    "current_next_action": "FIN-0.1.2-S1-CURRENT-EVIDENCE-RECONCILIATION-INDEPENDENT-ASSESSMENT-AND-CLOSEOUT",
+    "current_stage_status": "S1_entered_G1_G2_reusable_positive_evidence_G6_current_closeout_pending",
+    "downstream_stages_started": {
+      "S2": false,
+      "S3": false,
+      "S4": false,
+      "S5": false
+    },
+    "open_issue_ids": [],
+    "carried_nonblocking_for_S1_issue_ids": [
+      "RC-P36-067-s4-R10-numeric-reference-value-correspondence-false-negative",
+      "RC-P36-068-s4-R10-case-identity-title-contract-hardcoded-NVDA",
+      "RC-P36-080-s4-t06-provider-authored-numeric-token-in-specialist-explanation-layer",
+      "RC-P36-083-s4-t06-cross-layer-compiled-contract-invariant-gap",
+      "RC-P36-084-s4-t06-machine-verifier-semantic-and-delivery-quality-gap"
+    ],
+    "FIN_0_1_3_role": "historical_FIN_0_1_2_S0_recovery_attempt_family",
+    "FIN_0_1_4_role": "historical_unexecuted_S0_improvement_proposal",
+    "FIN_0_2": "Earnings_Review_Alpha_unchanged",
+    "release_qualified": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "historical_S4_backlog": "configs/releases/fin_ia_0_1_s4_detailed_execution_backlog_v1_0.json",
+    "product_plan": "docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md",
+    "historical_S1_plan": "docs/architecture/repository/FIN_0_1_2_S1_REALISTIC_THREE_CASE_DETERMINISTIC_VERTICAL_STAGE_PLAN_20260731.zh-CN.md",
+    "assistant_policy": "docs/project_os/senior_assistant_collaboration_policy.zh-CN.md",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "S0_closeout": "configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_success_and_s0_closeout_v1_0.json",
+    "S1_entry_and_reuse_decision": "configs/releases/fin_ia_0_1_2_s1_entry_and_historical_asset_reuse_scope_decision_v1_0.json",
+    "common_runtime_source": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+    "common_runtime_binding": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0.json",
+    "formal_S0_manifest": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_3.json"
+  },
+  "historical_projection_policy": {
+    "immutable_event_files_remain_valid_for_historical_facts": true,
+    "historical_files_may_own_current_next_or_backlog_tail": false,
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_6.json",
+    "superseded_projection_deleted_or_rewritten": false
+  },
+  "execution_authority": {
+    "planning_and_read_only_audit_complete": true,
+    "focused_s0_repair_authorized": false,
+    "clean_environment_acceptance_authorized": false,
+    "credential_model_provider_network_business_authorized": false
+  }
+}

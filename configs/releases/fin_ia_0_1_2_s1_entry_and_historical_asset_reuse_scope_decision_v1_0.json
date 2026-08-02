@@ -1,0 +1,164 @@
+{
+  "schema_version": "fin_ia_0_1_2_s1_entry_and_historical_asset_reuse_scope_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S1-ENTRY-AND-HISTORICAL-ASSET-REUSE-SCOPE-DECISION-R1",
+  "recorded_at": "2026-08-02T22:19:00+08:00",
+  "status": "S1_entry_pass_reuse_current_byte_identical_assets_assessment_closeout_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "decision_and_read_only_zero_call_audit_authorized": true,
+    "S1_current_baseline_entry_authorized": true,
+    "new_runtime_implementation_authorized": false,
+    "new_hermetic_proof_package_authorized": false,
+    "model_provider_network_paid_or_business_execution_authorized": false,
+    "S2_entry_release_or_production_authorized": false
+  },
+  "parent_binding": {
+    "S0_closeout_ref": "configs/releases/fin_ia_0_1_2_s0_phase_aware_clean_environment_qualification_success_and_s0_closeout_v1_0.json",
+    "S0_closeout_sha256": "66a870f9bf49fbd06f265464a94dda30c26601e6256a8966ced86c3b43b18797",
+    "formal_candidate_git_head": "6340aeef857ad3c48226a530ace6bb8204b8decd",
+    "current_audit_git_head": "43ab8c6988b5c9e31dc58be2726ab362190af46f",
+    "runtime_test_or_fixture_changed_since_formal_candidate": false
+  },
+  "selected_disposition": {
+    "option": "reuse_formal_G2_and_current_G1_evidence_then_one_current_assessment_closeout",
+    "reason": "The old S1 blockers were S0-owned packaging and typed-resource defects. The current S0 formal qualification has already executed the realistic S1 deterministic suite in two independent Git-free runtimes, while all critical S1 bytes remain identical and the explicit ten-consumer host suite is green.",
+    "reimplement_historical_S1_from_scratch": false,
+    "inherit_historical_S1_pass_claim": false,
+    "repeat_clean_environment_or_hermetic_proof": false,
+    "rewrite_historical_failed_T03_T04_or_budget": false
+  },
+  "asset_classification": {
+    "reuse_as_current_positive_evidence": [
+      {
+        "asset": "bounded_production_consumer_runtime_and_binding",
+        "evidence": "current_host_suite_18_passed_and_formal_package_byte_identity",
+        "scope": "G1_ten_actual_consumers_one_contract_version_and_source_digest"
+      },
+      {
+        "asset": "realistic_DELL_MU_NVDA_deterministic_vertical",
+        "evidence": "S0_formal_disposable_a_31_passed_and_disposable_b_31_passed",
+        "scope": "G2_three_case_positive_mutation_permutation_collect_all_failure_retention_and_6_12_12_9"
+      },
+      {
+        "asset": "typed_runtime_resource_and_environment_closure",
+        "evidence": "S0_formal_58_passed_each_zero_unknown_paths_and_semantic_raw_parity",
+        "scope": "hermetic_dependency_capture_and_terminal_result_support"
+      }
+    ],
+    "retain_as_historical_only": [
+      {
+        "ref": "configs/releases/fin_ia_0_1_2_s1_realistic_three_case_deterministic_vertical_stage_plan_v1_0.json",
+        "sha256": "a51d241e56417ad6005ca1fecb4495a9b899945d8f50bfb595045934d88a77b7",
+        "reason": "historical_plan_and_budget_not_current_authority"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_2_s1_stage_capsule_v1_0.json",
+        "sha256": "5691b437b3095547f9d6d6ae31b5e4c95734b845762953e4ea6091b77e61d9de",
+        "reason": "immutable_old_T03_T04_honest_block_event"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_2_s1_stage_assessment_v1_0.json",
+        "sha256": "f4487ad883f911862a47b10946afa73b694755049671edd65bed6fb3228c7c9e",
+        "reason": "historical_G2_not_proven_assessment_superseded_only_for_current_effect"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_2_s1_stage_closeout_v1_0.json",
+        "sha256": "91fa819f69aebb95dcfe3303031aba0a7f46553c0049bc528ced67c6a5fe0a5c",
+        "reason": "historical_S1_honest_block_closeout_not_rewritten"
+      }
+    ],
+    "retire_from_current_entry": [
+      "historical_T03_and_T04_manifest_selection",
+      "historical_one_time_package_budgets",
+      "pre_S2_S0C_and_FIN_0_1_3_recovery_next_actions",
+      "old_S1_G2_failed_current_projection"
+    ]
+  },
+  "current_evidence": {
+    "project_os_preflight": {
+      "status": "pass",
+      "missing_required_records": 0,
+      "blocking_issues_for_scope": 0
+    },
+    "host_audit": {
+      "command_scope": "four_existing_FIN_0_1_2_S1_test_families",
+      "passed": 56,
+      "failed": 0,
+      "collection_errors": 0,
+      "consumer_migration_tests": 18,
+      "realistic_three_case_tests": 31,
+      "historical_authority_tests": 1,
+      "historical_assessment_tests": 6
+    },
+    "formal_G2_reuse": {
+      "output_root": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_phase_aware_clean_environment_qualification_20260802T115500Z_head_16a5d4da_r2",
+      "verification_sha256": "81564dd8f7fa7169dce25567d73d74e24f689e79f9e881dd8b5a70b1364bca3c",
+      "selected_test_ref": "tests/contract/test_fin_0_1_2_s1_realistic_three_case_deterministic_proof.py",
+      "disposable_a": {
+        "passed": 31,
+        "failed": 0
+      },
+      "disposable_b": {
+        "passed": 31,
+        "failed": 0
+      }
+    },
+    "critical_asset_byte_identity": {
+      "asset_count": 8,
+      "all_present_in_formal_package": true,
+      "all_current_bytes_equal_formal_package": true,
+      "assets": [
+        "apps/workbench/backend/application/deterministic_judgment_atom_contract.py",
+        "apps/workbench/backend/application/bounded_agent_executor.py",
+        "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+        "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0.json",
+        "tests/contract/test_fin_0_1_2_s1_bounded_production_consumer_migration.py",
+        "tests/contract/test_fin_0_1_2_s1_realistic_three_case_deterministic_proof.py",
+        "tests/contract/fin_0_1_2_realistic_fixture_support.py",
+        "tests/fixtures/fin_0_1_2/mu_realistic_three_cell_exact_input_v1.json"
+      ]
+    }
+  },
+  "current_gate_truth": {
+    "G0_scope_and_owner": "pass_current_canonical_product_plan",
+    "G1_contract_closure": "positive_current_host_evidence_reusable",
+    "G2_deterministic_proof": "positive_two_disposable_formal_evidence_reusable",
+    "G3_natural_canary": "not_run_owned_by_S2",
+    "G4_failure_observability": "positive_formal_capture_and_terminal_evidence_reusable",
+    "G5_product_proof": "not_run_owned_by_S2_to_S4",
+    "G6_current_assessment_and_closeout": "pending_one_reconciliation_and_closeout_slice"
+  },
+  "minimum_remaining_S1_scope": {
+    "task_id": "FIN-0.1.2-S1-CURRENT-EVIDENCE-RECONCILIATION-INDEPENDENT-ASSESSMENT-AND-CLOSEOUT",
+    "maximum_runtime_implementation_bundles": 0,
+    "maximum_new_hermetic_or_clean_environment_proof_packages": 0,
+    "maximum_current_assessment_and_closeout_packages": 1,
+    "required_actions": [
+      "bind_current_S0_formal_evidence_and_current_G1_host_audit",
+      "independently_verify_G0_G1_G2_G4_and_product_noninflation",
+      "materialize_current_S1_assessment_and_closeout_without_rewriting_history",
+      "enter_S2_only_if_current_S1_closeout_passes"
+    ],
+    "stop_rule": "Any changed critical runtime test or fixture byte invalidates evidence reuse and requires a new scope decision; it does not automatically authorize implementation or another proof package."
+  },
+  "product_truth": {
+    "new_end_user_capability": false,
+    "S1_current_baseline_entered": true,
+    "S1_current_baseline_passed": false,
+    "S2_to_S5_started": false,
+    "DeepSeek_or_other_model_quality_proven": false,
+    "DELL_R2": false,
+    "MU_R2": false,
+    "NVDA_R3": false,
+    "release_qualified": false
+  },
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_or_source_calls": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "next_action": "FIN-0.1.2-S1-CURRENT-EVIDENCE-RECONCILIATION-INDEPENDENT-ASSESSMENT-AND-CLOSEOUT"
+}

@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0 formal pass closed / S1 entry scope decision pending / S2-S5 not started`
+状态：`current canonical plan / S0 formal pass closed / S1 entered with evidence reuse / current assessment and closeout pending / S2-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -12,7 +12,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0 已正式通过并关闭，S1 current-baseline 入口待决策；
+- FIN 0.1.2：当前唯一开发版本，S0 已正式通过并关闭，S1 已进入且只剩 current evidence reconciliation、独立 assessment 与 closeout；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
@@ -52,11 +52,21 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 
 ## 6. 当前执行入口
 
+S1 入口与历史资产复用审计已经完成。当前四个 S1 测试族合计=`56 passed`：十个实际 consumer 的专门测试 18 项、realistic 三案例 31 项、历史 authority 1 项、历史 assessment 6 项。S0 正式包已经在两个 Git-free disposable 中分别执行 realistic 三案例 31 项并全部通过；8 个关键 Runtime、合同、测试和 MU fixture 在当前 HEAD 与正式包中逐字节一致。从正式候选到当前 HEAD 没有修改 Runtime、测试或 fixture。
+
+因此当前 S1 不从头重做、不新增 Runtime implementation，也不重复 clean/hermetic proof。G1 使用 current 18 项 host 正证据，G2/G4 使用 S0 formal 两套 disposable 正证据；旧 S1 T03/T04 失败、一次性 budget、assessment 和 closeout 保持不可变历史。S1 当前唯一剩余项是把这些证据重新绑定到 current baseline，完成一次独立 assessment 和 closeout：
+
+`FIN-0.1.2-S1-CURRENT-EVIDENCE-RECONCILIATION-INDEPENDENT-ASSESSMENT-AND-CLOSEOUT`
+
+这仍是零模型工程验收，不证明 DeepSeek 或产品质量；只有 S1 current closeout 通过后才能进入 S2。
+
+以下 S0 收口说明保留为 preceding current-baseline evidence：
+
 S0 的唯一 R2 formal qualification 已在 clean/synced HEAD=`6340aeef857ad3c48226a530ace6bb8204b8decd` 上执行一次并通过：host=`31 passed`，两套 Git-free disposable 各=`58 passed`，semantic/raw parity、content-addressed capture 和 repository readback 全部通过，789 个 package files 全部 tracked，未知宿主路径、allowlist 和外部依赖均为 0。历史审计单独保留 `23 passed / 1 non-gating finding`，没有被隐藏或计入 current gate。
 
-因此 RC-P36-090/091/093/094/095/097 已关闭，FIN 0.1.2 S0=`pass_closed`。本结论不证明模型质量、exact-live、三案例产品等级或 release；S1–S5 仍未按合并后的 current baseline 重新进入。
+因此 RC-P36-090/091/093/094/095/097 已关闭，FIN 0.1.2 S0=`pass_closed`。本结论不证明模型质量、exact-live、三案例产品等级或 release；S1 已由上方入口决策重新进入，S2–S5 尚未进入。
 
-历史 S1 已存在大量三案例确定性资产，且本次 S0 package 已实际执行其中的 realistic three-case tests。为避免再次把“已有资产”误当“当前阶段已验收”，也避免从头重复建设，当前下一项先做 S1 入口与资产复用边界决策：
+历史 S1 已存在大量三案例确定性资产，且本次 S0 package 已实际执行其中的 realistic three-case tests。为避免再次把“已有资产”误当“当前阶段已验收”，也避免从头重复建设，当时下一项先做 S1 入口与资产复用边界决策（已由上方决策消费）：
 
 `FIN-0.1.2-S1-ENTRY-AND-HISTORICAL-ASSET-REUSE-SCOPE-DECISION`
 

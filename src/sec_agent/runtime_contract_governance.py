@@ -359,6 +359,49 @@ def validate_active_test_suite_manifest(
         raise ContractGovernanceError(
             "test_manifest_runner_migration_boolean_invalid"
         )
+    authority_enabled = runner_policy.get(
+        "manifest_is_clean_environment_authority", False
+    )
+    if type(authority_enabled) is not bool:
+        raise ContractGovernanceError(
+            "test_manifest_clean_environment_authority_boolean_invalid"
+        )
+    authority_binding = manifest.get(
+        "clean_environment_qualification_authority_binding"
+    )
+    if authority_enabled:
+        binding = _mapping(
+            authority_binding,
+            "test_manifest_clean_environment_authority_binding_missing",
+        )
+        if set(binding) != {"ref", "sha256"}:
+            raise ContractGovernanceError(
+                "test_manifest_clean_environment_authority_binding_invalid"
+            )
+        _nonempty_string(
+            binding.get("ref"),
+            "test_manifest_clean_environment_authority_ref_missing",
+        )
+        digest = _nonempty_string(
+            binding.get("sha256"),
+            "test_manifest_clean_environment_authority_digest_missing",
+        )
+        if len(digest) != 64 or any(
+            character not in "0123456789abcdef" for character in digest
+        ):
+            raise ContractGovernanceError(
+                "test_manifest_clean_environment_authority_digest_invalid"
+            )
+        if manifest.get("status") != (
+            "clean_environment_qualification_authorized_not_executed"
+        ):
+            raise ContractGovernanceError(
+                "test_manifest_clean_environment_authority_status_invalid"
+            )
+    elif authority_binding is not None:
+        raise ContractGovernanceError(
+            "test_manifest_unowned_clean_environment_authority_binding"
+        )
     if migration_complete:
         package_policy = _mapping(
             manifest.get("hermetic_package_policy"),

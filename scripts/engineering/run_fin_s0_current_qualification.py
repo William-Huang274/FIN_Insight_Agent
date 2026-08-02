@@ -15,7 +15,7 @@ from sec_agent.hermetic_test_runner import run_hermetic_active_suite
 
 DEFAULT_MANIFEST = ROOT / (
     "configs/releases/"
-    "fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_0.json"
+    "fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_1.json"
 )
 
 

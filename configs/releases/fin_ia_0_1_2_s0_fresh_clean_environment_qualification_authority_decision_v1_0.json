@@ -1,0 +1,104 @@
+{
+  "schema_version": "fin_ia_0_1_2_s0_clean_environment_qualification_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-AUTHORITY-R1",
+  "recorded_at": "2026-08-02T16:12:31+08:00",
+  "status": "authorize_one_future_clean_environment_qualification_not_executed",
+  "authority": {
+    "user_instruction": "继续",
+    "future_clean_environment_qualification_authorized": true,
+    "qualification_executed_in_this_decision": false,
+    "maximum_future_qualification_attempts": 1,
+    "automatic_retry_or_replacement_attempts": 0,
+    "credential_model_provider_network_business_authorized": false,
+    "S1_through_S5_or_release_entry_authorized": false
+  },
+  "project_os_preflight": {
+    "restricted_runtime_ref": ".codex_runtime/fin_0_1_2_s0_fresh_clean_environment_qualification_authority_preflight.json",
+    "sha256": "e5c8288ad3d6cd04b5d8f7b0f46771968358645bea78d0649a46b5d16a08ce5d",
+    "status": "pass",
+    "missing_required_record_count": 0,
+    "blocking_issue_count": 0
+  },
+  "clean_head_precondition": {
+    "branch": "codex/layered-data-source-expansion",
+    "engineering_base_head": "56732cd9eaab81d8d8f1ffa020f6e5536c06e6e1",
+    "require_current_head_descends_from_engineering_base": true,
+    "require_head_equal_upstream": true,
+    "require_worktree_clean": true
+  },
+  "execution_contract": {
+    "attempt_id": "attempt_fin_0_1_2_s0_clean_environment_qualification_20260802_r1",
+    "runner_ref": "scripts/engineering/run_fin_s0_current_qualification.py",
+    "manifest_ref": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_1.json",
+    "manifest_without_authority_binding_sha256": "a32e8430293bf69e55ed02077e400dc2642e974abd033c4a992ef627baadb5ae",
+    "current_projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_1.json",
+    "current_projection_without_decision_binding_sha256": "573d08144b52c8a4b576c3f239e259700ab8b1a8c4fceee328e6e8891feef79c",
+    "attempt_contract_ref": "configs/runtime/fin_ia_s0_qualification_attempt_contract_v1_0.json",
+    "output_root": "D:/FIN_Insight_Agent_recovery/qualifications/fin_0_1_2_s0_clean_environment_qualification_20260802T080750Z_head_56732cd9_r1",
+    "disposable_runtime_count": 2,
+    "provider_credential_environment_removed": true,
+    "model_provider_network_call_maximum": 0,
+    "complete_per_test_stdout_stderr_content_addressed": true,
+    "raw_evidence_preserved_before_terminal_failure": true,
+    "failed_or_quarantined_output_business_promotable": false
+  },
+  "source_bindings": [
+    {
+      "role": "focused_repair_implementation",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_current_event_ownership_and_version_neutral_runner_focused_repair_implementation_v1_0.json",
+      "sha256": "780edf95906d2b27c8d73c0c3c8b14735bd6d5d1cbe006be7044f7750dfaf7d3"
+    },
+    {
+      "role": "qualification_runner",
+      "ref": "scripts/engineering/run_fin_s0_current_qualification.py",
+      "sha256": "a398d580b44e18f4e5e6f99d93df3e7aa1910b31d644c6e63a5aed738a796671"
+    },
+    {
+      "role": "hermetic_runner",
+      "ref": "src/sec_agent/hermetic_test_runner.py",
+      "sha256": "09afc1075a96c68f64f3c10d53e60f0876091183ebe5a6de04266648b7616885"
+    },
+    {
+      "role": "manifest_governance_validator",
+      "ref": "src/sec_agent/runtime_contract_governance.py",
+      "sha256": "014abea6391c989ec768d29d1c109f6211dac0a0fa1309d2f018b1ba6e30b592"
+    },
+    {
+      "role": "attempt_contract",
+      "ref": "configs/runtime/fin_ia_s0_qualification_attempt_contract_v1_0.json",
+      "sha256": "f133da63891665c65b77f515b5aef7da92fd509cbe833912dfcf347459a3140d"
+    }
+  ],
+  "success_and_stop_rules": {
+    "success_requires": [
+      "two_disposable_runtime_semantic_parity",
+      "current_manifest_selected_suite_all_green_in_both_directories",
+      "repository_and_content_addressed_readback_unchanged",
+      "zero_unknown_absolute_path_and_zero_untracked_or_ignored_package_input",
+      "separate_evidence_review_and_issue_disposition_before_S0_closeout"
+    ],
+    "failure_is_terminal_and_immutable": true,
+    "same_attempt_retry_forbidden": true,
+    "automatic_replacement_attempt_forbidden": true,
+    "failure_does_not_create_new_product_version": true,
+    "new_failure_requires_project_level_root_cause_disposition": true
+  },
+  "observed_counts": {
+    "clean_environment_qualification_attempts_started": 0,
+    "clean_environment_packages_created": 0,
+    "credential_reads": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "product_truth": {
+    "user_visible_financial_research_capability_delta": "none",
+    "FIN_0_1_2_S0": "qualification_authorized_not_executed_not_passed",
+    "FIN_0_1_2_S1_through_S5": "not_started_under_consolidated_baseline",
+    "FIN_0_1_release_qualified": false,
+    "FIN_0_2_definition_changed": false
+  },
+  "next_action": "FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-EXECUTION-AND-CLOSEOUT"
+}

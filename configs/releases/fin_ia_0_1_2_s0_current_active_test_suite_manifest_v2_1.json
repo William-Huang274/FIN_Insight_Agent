@@ -1,0 +1,193 @@
+{
+  "schema_version": "fin_ia_active_test_suite_manifest_v1_0",
+  "manifest_id": "FIN-0.1.2-S0-CURRENT-ACTIVE-TEST-SUITE-MANIFEST-R2.1",
+  "created_at": "2026-08-02T16:12:31+08:00",
+  "status": "clean_environment_qualification_authorized_not_executed",
+  "historical_failures_are_ignored": false,
+  "clean_environment_qualification_authority_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s0_fresh_clean_environment_qualification_authority_decision_v1_0.json",
+    "sha256": "ec1b96e24a6c560e1790bcf9bdeecadcf557557097c9421dc8556034c9ddd027"
+  },
+  "suites": [
+    {
+      "suite_id": "immutable_historical_attempt_events",
+      "proof_class": "immutable_event",
+      "selected": true,
+      "gates_current_release": false,
+      "assertion_surfaces": [
+        "historical_failure_status",
+        "historical_evidence_digest",
+        "historical_budget_observation",
+        "prior_current_projection_snapshot"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_3_s0_t03_host_zero_call_engineering_proof_terminal_honest_block_closeout.py",
+        "tests/contract/test_fin_0_1_2_s0_current_projection_and_attempt_boundary.py"
+      ]
+    },
+    {
+      "suite_id": "single_current_version_neutral_projection",
+      "proof_class": "current_projection",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": [
+        "current_next_action",
+        "current_active_slice",
+        "current_execution_authority",
+        "current_attempt_separation",
+        "authority_digest_binding"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_s0_clean_environment_qualification_authority.py"
+      ]
+    },
+    {
+      "suite_id": "current_reusable_runtime_foundation",
+      "proof_class": "current_runtime",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": [
+        "runtime_resource_registry_29",
+        "reference_roles_6",
+        "typed_environment_roots_8",
+        "collect_all_fail_closed",
+        "three_case_zero_model_base_regression"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_3_s0_runtime_resource_registry_and_dependency_compiler.py",
+        "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py",
+        "tests/contract/test_fin_0_1_3_s0_typed_environment_semantic_parity.py",
+        "tests/contract/test_fin_0_1_2_s1_realistic_three_case_deterministic_proof.py"
+      ]
+    },
+    {
+      "suite_id": "historical_failed_package_visibility",
+      "proof_class": "historical_audit",
+      "selected": true,
+      "gates_current_release": false,
+      "assertion_surfaces": [
+        "failed_package_nonpromotable",
+        "raw_terminal_evidence_preserved",
+        "historical_projection_not_current_authority"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_3_s0_v2_host_zero_call_engineering_proof_terminal_failure.py"
+      ]
+    },
+    {
+      "suite_id": "current_S0_release_gate",
+      "proof_class": "release_gate",
+      "selected": true,
+      "gates_current_release": true,
+      "assertion_surfaces": [
+        "S0_repair_scope_only",
+        "one_future_clean_qualification_only",
+        "S1_to_S5_not_started",
+        "release_qualified_false"
+      ],
+      "test_paths": [
+        "tests/contract/test_fin_0_1_2_version_consolidation_and_current_rebaseline.py",
+        "tests/contract/test_fin_0_1_2_s0_clean_environment_qualification_authority.py"
+      ]
+    }
+  ],
+  "runner_policy": {
+    "manifest_selection_is_authoritative": true,
+    "unlisted_historical_test_failure_is_visible_but_not_implicitly_current": true,
+    "listed_current_test_failure_is_blocking": true,
+    "bulk_relax_historical_assertions_for_green_forbidden": true,
+    "runner_migration_completed": true,
+    "historical_projection_may_read_mutable_current_truth": false,
+    "manifest_is_clean_environment_authority": true
+  },
+  "hermetic_package_policy": {
+    "repository_inventory": "host_compiled_git_tracked_plus_typed_reference_role_closure",
+    "required_runner_files": [
+      "src/sec_agent/hermetic_test_capture.py",
+      "src/sec_agent/hermetic_test_runner.py",
+      "src/sec_agent/reference_role_registry.py",
+      "src/sec_agent/runtime_resource_registry.py",
+      "scripts/engineering/run_fin_s0_current_qualification.py"
+    ],
+    "capture_plugin_path": "src/sec_agent/hermetic_test_capture.py",
+    "runtime_resource_registry_ref": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+    "semantic_parity_contract_ref": "configs/runtime/fin_ia_0_1_3_typed_environment_semantic_parity_v1_0.json",
+    "host_current_program_projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_1.json",
+    "repository_reference_policy": {
+      "schema_version": "fin_ia_hermetic_repository_reference_policy_v2_0",
+      "tracked_repository_paths_allowed": true,
+      "explicit_allowlist": [],
+      "reference_role_registry_ref": "configs/runtime/fin_ia_current_reference_role_registry_v2_0.json",
+      "forbidden_prefixes": [
+        ".codex_runtime",
+        ".git"
+      ],
+      "untracked_or_ignored_reference_behavior": "fail_closed",
+      "unknown_reference_behavior": "fail_closed",
+      "traversal_or_symlink_escape_behavior": "fail_closed",
+      "semantic_or_external_reference_behavior": "observe_not_package"
+    },
+    "repository_seed_paths": [
+      "pyproject.toml",
+      "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_1.json",
+      "configs/releases/fin_ia_0_1_2_s0_fresh_clean_environment_qualification_authority_decision_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_s0_current_event_ownership_and_version_neutral_runner_focused_repair_implementation_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_version_consolidation_and_current_rebaseline_v1_0.json",
+      "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_1.json",
+      "configs/runtime/fin_ia_s0_qualification_attempt_contract_v1_0.json",
+      "docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md",
+      "docs/architecture/repository/FIN_0_1_2_S0_CURRENT_BASELINE_AND_CLEAN_ENVIRONMENT_QUALIFICATION_PLAN_20260802.zh-CN.md"
+    ],
+    "repository_prefixes": [
+      {
+        "path": "src",
+        "suffixes": [".py"]
+      },
+      {
+        "path": "apps/workbench/backend",
+        "suffixes": [".py"]
+      },
+      {
+        "path": "tests/contract",
+        "suffixes": [".py"]
+      },
+      {
+        "path": "tests/fixtures",
+        "suffixes": [".json", ".jsonl", ".yaml", ".yml"]
+      }
+    ],
+    "complete_per_test_stdout_stderr_required": true,
+    "content_addressed_object_readback_required": true,
+    "frozen_inventory_digest_readback_required": true,
+    "disposable_runtime_count": 2,
+    "disposable_git_subprocess_calls_allowed": 0,
+    "ignored_or_untracked_repository_paths_packaged_maximum": 0,
+    "semantic_parity_required": true,
+    "provider_credential_environment_removed": true,
+    "failed_or_quarantined_package_business_promotable": false,
+    "restricted_review_before_share_or_promotion": true,
+    "external_read_only_bindings": []
+  },
+  "engineering_verification": {
+    "current_manifest_selected_suite": "99_passed",
+    "current_FIN_0_1_2_and_FIN_0_1_3_S0_compatibility_contracts": "151_passed",
+    "historical_superseded_FIN_0_1_4_entry_contract": "visible_3_failed_1_passed_not_current_gate",
+    "DELL_MU_NVDA_zero_model_regression": "31_passed",
+    "authority_guard_regression": "4_passed",
+    "current_reference_registry_schema": "fin_ia_current_reference_role_registry_v2_0",
+    "clean_environment_acceptance_executed": false,
+    "model_provider_network_calls": [0, 0, 0]
+  },
+  "fixed_budget": {
+    "focused_repair_implementation_slices": [1, 1],
+    "clean_environment_acceptance_attempts": [0, 1],
+    "automatic_retries_or_replacements": 0,
+    "credential_reads": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_or_source_calls": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "next_action_on_authority_pass": "FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-EXECUTION-AND-CLOSEOUT"
+}

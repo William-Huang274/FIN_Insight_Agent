@@ -60,6 +60,15 @@ CURRENT_PROGRAM_PROJECTION_SCHEMA = "fin_ia_current_program_projection_v2_0"
 CURRENT_PROGRAM_LIFECYCLE_STATES = frozenset(
     {"planned", "in_progress", "blocked", "passed"}
 )
+CLEAN_ENVIRONMENT_AUTHORITY_SCHEMA = (
+    "fin_ia_0_1_2_s0_clean_environment_qualification_authority_decision_v1_0"
+)
+CLEAN_ENVIRONMENT_AUTHORITY_STATUS = (
+    "authorize_one_future_clean_environment_qualification_not_executed"
+)
+CLEAN_ENVIRONMENT_EXECUTION_NEXT = (
+    "FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-EXECUTION-AND-CLOSEOUT"
+)
 
 _REPOSITORY_PATH_SUFFIXES = frozenset(
     {
@@ -507,6 +516,249 @@ def validate_host_current_program_projection(
             projection,
         )
     raise HermeticTestRunnerError("current_projection_schema_invalid")
+
+
+def _validate_clean_environment_qualification_authority(
+    *,
+    repository_root: Path,
+    manifest_path: Path,
+    manifest: Mapping[str, Any],
+    output_root: Path,
+) -> dict[str, Any]:
+    runner_policy = manifest.get("runner_policy")
+    if (
+        not isinstance(runner_policy, Mapping)
+        or runner_policy.get("manifest_is_clean_environment_authority")
+        is not True
+    ):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_authority_missing"
+        )
+    binding = manifest.get(
+        "clean_environment_qualification_authority_binding"
+    )
+    if not isinstance(binding, Mapping) or set(binding) != {"ref", "sha256"}:
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_authority_binding_invalid"
+        )
+    authority_ref = str(binding["ref"])
+    authority_path = _safe_relative_path(repository_root, authority_ref)
+    authority_sha256 = str(binding["sha256"])
+    if (
+        not re.fullmatch(r"[0-9a-f]{64}", authority_sha256)
+        or _sha256_file(repository_root / authority_path) != authority_sha256
+    ):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_authority_binding_drift"
+        )
+    decision = _load_json(repository_root / authority_path)
+    if (
+        decision.get("schema_version") != CLEAN_ENVIRONMENT_AUTHORITY_SCHEMA
+        or decision.get("status") != CLEAN_ENVIRONMENT_AUTHORITY_STATUS
+    ):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_authority_decision_invalid"
+        )
+    authority = decision.get("authority")
+    if (
+        not isinstance(authority, Mapping)
+        or authority.get("future_clean_environment_qualification_authorized")
+        is not True
+        or authority.get("qualification_executed_in_this_decision") is not False
+        or authority.get("maximum_future_qualification_attempts") != 1
+        or authority.get("automatic_retry_or_replacement_attempts") != 0
+        or authority.get("credential_model_provider_network_business_authorized")
+        is not False
+    ):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_authority_scope_invalid"
+        )
+    execution = decision.get("execution_contract")
+    if not isinstance(execution, Mapping):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_execution_contract_invalid"
+        )
+    manifest_projection = dict(manifest)
+    manifest_projection.pop(
+        "clean_environment_qualification_authority_binding", None
+    )
+    if (
+        execution.get("manifest_without_authority_binding_sha256")
+        != _sha256_bytes(_canonical_bytes(manifest_projection))
+    ):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_manifest_projection_drift"
+        )
+    expected_manifest = _safe_relative_path(
+        repository_root,
+        str(execution.get("manifest_ref", "")),
+    )
+    if manifest_path.resolve() != (repository_root / expected_manifest).resolve():
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_manifest_mismatch"
+        )
+    expected_output = Path(str(execution.get("output_root", ""))).resolve()
+    if output_root.resolve() != expected_output:
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_output_root_mismatch"
+        )
+    try:
+        expected_output.relative_to(repository_root)
+    except ValueError:
+        pass
+    else:
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_output_inside_repository"
+        )
+    expected_failure_root = expected_output.with_name(
+        expected_output.name + ".failed"
+    )
+    expected_staging_root = expected_output.with_name(
+        expected_output.name + ".partial"
+    )
+    if (
+        expected_output.exists()
+        or expected_failure_root.exists()
+        or expected_staging_root.exists()
+    ):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_attempt_already_consumed"
+        )
+
+    source_bindings = decision.get("source_bindings")
+    if not isinstance(source_bindings, list):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_source_bindings_invalid"
+        )
+    required_roles = {
+        "focused_repair_implementation",
+        "qualification_runner",
+        "hermetic_runner",
+        "manifest_governance_validator",
+        "attempt_contract",
+    }
+    observed_roles: set[str] = set()
+    for source_binding in source_bindings:
+        if not isinstance(source_binding, Mapping) or set(source_binding) != {
+            "role",
+            "ref",
+            "sha256",
+        }:
+            raise HermeticTestRunnerError(
+                "clean_environment_qualification_source_binding_invalid"
+            )
+        role = str(source_binding["role"])
+        source_path = _safe_relative_path(
+            repository_root,
+            str(source_binding["ref"]),
+        )
+        digest = str(source_binding["sha256"])
+        if (
+            role in observed_roles
+            or not re.fullmatch(r"[0-9a-f]{64}", digest)
+            or _sha256_file(repository_root / source_path) != digest
+        ):
+            raise HermeticTestRunnerError(
+                "clean_environment_qualification_source_binding_drift"
+            )
+        observed_roles.add(role)
+    if observed_roles != required_roles:
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_source_roles_invalid"
+        )
+
+    projection_ref = str(execution.get("current_projection_ref", ""))
+    validate_host_current_program_projection(repository_root, projection_ref)
+    projection = _load_json(
+        repository_root / _safe_relative_path(repository_root, projection_ref)
+    )
+    projection_without_decision_binding = dict(projection)
+    projection_without_decision_binding.pop("decision_binding", None)
+    if (
+        execution.get("current_projection_without_decision_binding_sha256")
+        != _sha256_bytes(_canonical_bytes(projection_without_decision_binding))
+    ):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_current_projection_drift"
+        )
+    current_truth = projection.get("current_truth")
+    execution_authority = projection.get("execution_authority")
+    if (
+        not isinstance(current_truth, Mapping)
+        or current_truth.get("current_next_action")
+        != CLEAN_ENVIRONMENT_EXECUTION_NEXT
+        or not isinstance(execution_authority, Mapping)
+        or execution_authority.get("clean_environment_acceptance_authorized")
+        is not True
+    ):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_current_projection_not_authorized"
+        )
+    attempt_contract_ref = str(execution.get("attempt_contract_ref", ""))
+    attempt_contract = _load_json(
+        repository_root
+        / _safe_relative_path(repository_root, attempt_contract_ref)
+    )
+    if (
+        attempt_contract.get("status")
+        != "active_version_neutral_attempt_boundary"
+        or attempt_contract.get("transition_rules", {}).get(
+            "same_attempt_retry_allowed"
+        )
+        is not False
+        or attempt_contract.get("transition_rules", {}).get(
+            "terminal_is_immutable"
+        )
+        is not True
+    ):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_attempt_contract_invalid"
+        )
+
+    precondition = decision.get("clean_head_precondition")
+    if not isinstance(precondition, Mapping):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_clean_head_precondition_invalid"
+        )
+    branch = _git_output(
+        repository_root, "rev-parse", "--abbrev-ref", "HEAD"
+    ).decode("utf-8").strip()
+    head = _git_output(repository_root, "rev-parse", "HEAD").decode(
+        "ascii"
+    ).strip()
+    upstream = _git_output(
+        repository_root, "rev-parse", "@{u}"
+    ).decode("ascii").strip()
+    worktree_status = _git_output(
+        repository_root, "status", "--porcelain"
+    ).decode("utf-8").strip()
+    engineering_base_head = str(
+        precondition.get("engineering_base_head", "")
+    )
+    if (
+        branch != precondition.get("branch")
+        or head != upstream
+        or worktree_status
+        or not re.fullmatch(r"[0-9a-f]{40}", engineering_base_head)
+    ):
+        raise HermeticTestRunnerError(
+            "clean_environment_qualification_clean_head_precondition_failed"
+        )
+    _git_output(
+        repository_root,
+        "merge-base",
+        "--is-ancestor",
+        engineering_base_head,
+        head,
+    )
+    return {
+        "authority_ref": authority_ref,
+        "authority_sha256": authority_sha256,
+        "decision_id": str(decision.get("decision_id", "")),
+        "attempt_id": str(execution.get("attempt_id", "")),
+        "output_root": expected_output.as_posix(),
+        "git_head": head,
+    }
 
 
 def _repository_relative_path(
@@ -1532,6 +1784,13 @@ def build_content_addressed_package(
         "external_read_only_dependencies": external_entries,
         "credential_environment_names_removed": sorted(_CREDENTIAL_ENV_NAMES),
     }
+    authority_binding = manifest.get(
+        "clean_environment_qualification_authority_binding"
+    )
+    if isinstance(authority_binding, Mapping):
+        payload["clean_environment_qualification_authority_binding"] = dict(
+            authority_binding
+        )
     payload["semantic_digest"] = _sha256_bytes(_canonical_bytes(payload))
     _write_json(package_root / "package_manifest.json", payload)
     return payload
@@ -2323,14 +2582,25 @@ def run_hermetic_active_suite(
     repository_paths: Sequence[Path] | None = None,
 ) -> dict[str, Any]:
     repository_root = repository_root.resolve()
+    manifest_path = manifest_path.resolve()
     output_root = output_root.resolve()
-    if output_root.exists():
-        raise HermeticTestRunnerError("hermetic_output_root_already_exists")
     manifest = _load_json(manifest_path)
     try:
         validate_active_test_suite_manifest(manifest)
     except ContractGovernanceError as exc:
         raise HermeticTestRunnerError(f"hermetic_manifest_invalid:{exc.code}") from exc
+    authority_metadata: dict[str, Any] | None = None
+    if repository_paths is None:
+        authority_metadata = (
+            _validate_clean_environment_qualification_authority(
+                repository_root=repository_root,
+                manifest_path=manifest_path,
+                manifest=manifest,
+                output_root=output_root,
+            )
+        )
+    if output_root.exists():
+        raise HermeticTestRunnerError("hermetic_output_root_already_exists")
     (
         semantic_contract,
         semantic_contract_ref,
@@ -2478,6 +2748,10 @@ def run_hermetic_active_suite(
             "failed_output_business_promotable": False,
             "credential_environment_removed": sorted(_CREDENTIAL_ENV_NAMES),
         }
+        if authority_metadata is not None:
+            verification["clean_environment_qualification_authority"] = (
+                authority_metadata
+            )
         _write_json(staging / "verification.json", verification)
         staging.replace(output_root)
         return {**verification, "output_root": output_root.as_posix()}

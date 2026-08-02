@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0 focused repair engineering pass / clean qualification pending / S1-S5 not started`
+状态：`current canonical plan / S0 clean qualification authorized not executed / S1-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -52,10 +52,10 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 
 ## 6. 当前执行入口
 
-版本合并、计划、新起点、只读资产审计和 S0-04 本地零调用集中修复已经完成；current suite=`95 passed`、全部 S0 compatibility=`147 passed`、三案例零模型链=`31 passed`。这只是 engineering pass，clean-environment acceptance 仍单独设门。
+版本合并、计划、新起点、只读资产审计和 S0-04 本地零调用集中修复已经完成；上一基线为 current suite=`95 passed`、全部 S0 compatibility=`147 passed`、三案例零模型链=`31 passed`。S0-05 已完成独立零调用资格授权决定，并新增 fail-closed runner 门禁：旧清单或无摘要绑定的清单不能启动真实资格运行，清单、current projection、固定输出目录和 clean/synced Git 条件任一漂移都会在创建 package 前失败。
 
 当前下一项是：
 
-`FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-AUTHORITY-DECISION`
+`FIN-0.1.2-S0-FRESH-CLEAN-ENVIRONMENT-QUALIFICATION-EXECUTION-AND-CLOSEOUT`
 
-下一项只决定是否授权一次 fresh clean-environment qualification；当前尚未创建或执行该 attempt。模型、Provider、网络、真实业务链和产品 Artifact 均未授权。
+下一项只允许执行一次已冻结的 fresh clean-environment qualification，并在同一结果上做证据复核与 RC-P36-090–096 处置；当前 attempt/package 计数仍为 0，S0 尚未通过。模型、Provider、网络、真实业务链和产品 Artifact 均未授权。

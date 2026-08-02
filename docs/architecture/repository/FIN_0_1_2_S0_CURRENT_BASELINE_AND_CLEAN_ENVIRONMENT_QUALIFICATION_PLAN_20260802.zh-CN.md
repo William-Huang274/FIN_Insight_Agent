@@ -1,7 +1,7 @@
 # FIN 0.1.2 S0 当前基线与干净环境验收计划
 
 日期：2026-08-02
-状态：`S0-04 focused repair engineering pass / S0-05 clean acceptance not authorized`
+状态：`S0-04 engineering pass / S0-05 clean qualification authorized not executed`
 
 产品计划：`docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md`
 
@@ -45,6 +45,8 @@ S0 只确认当前代码、配置、Prompt、fixture、测试和原始运行记�
 
 ### S0-05 本机与干净环境验收
 
+资格授权已完成，但尚未启动 attempt。授权只覆盖一个固定 ID、固定 manifest、固定 current projection 和固定离仓输出目录的零模型 qualification；runner 会在输出创建前校验 authority digest、投影摘要、source bindings、clean worktree、HEAD=upstream 和 engineering-base ancestry。旧 manifest 缺少 authority 时只能作为历史证据读取，不能启动真实资格运行。
+
 顺序为：
 
 1. 当前核心单元/合同/mutation 测试；
@@ -80,4 +82,4 @@ S0 通过必须同时满足：
 
 ## 6. 本计划没有授权的动作
 
-S0-04 本地零调用实现与确定性回归已完成。S0-05 clean-environment acceptance 仍需单独处置；凭据读取、DeepSeek/OpenAI/Sub2API 调用、业务网络、exact-live、DELL/MU/NVDA 产品验收、tag、release 或 production 仍未授权。
+S0-04 本地零调用实现与确定性回归已完成，S0-05 仅授权一次后续 clean-environment qualification；当前未创建或执行 package，也未完成证据 closeout。凭据读取、DeepSeek/OpenAI/Sub2API 调用、业务网络、exact-live、DELL/MU/NVDA 产品验收、自动 retry/replacement、tag、release 或 production 仍未授权。

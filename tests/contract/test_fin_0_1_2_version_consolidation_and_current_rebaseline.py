@@ -8,9 +8,6 @@ ROOT = Path(__file__).resolve().parents[2]
 DECISION_REF = Path(
     "configs/releases/fin_ia_0_1_2_version_consolidation_and_current_rebaseline_v1_0.json"
 )
-PROJECTION_REF = Path(
-    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_0.json"
-)
 PROGRAM_BACKLOG_REF = Path(
     "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
 )
@@ -63,9 +60,12 @@ def test_consolidation_restores_fin_0_1_2_without_rewriting_history() -> None:
 
 
 def test_current_projection_and_backlogs_have_one_current_truth() -> None:
-    projection = _load(PROJECTION_REF)
     program = _load(PROGRAM_BACKLOG_REF)
     s4 = _load(S4_BACKLOG_REF)
+    projection_ref = Path(
+        program["current_version_rebaseline"]["projection_ref"]
+    )
+    projection = _load(projection_ref)
     assert projection["current_truth"]["product_version"] == "FIN_0_1_2"
     assert projection["current_truth"]["stage"] == "S0"
     current_next = projection["current_truth"]["current_next_action"]
@@ -111,7 +111,10 @@ def test_latest_project_os_rows_reassign_current_scope_to_fin_0_1_2() -> None:
         == "fin_0_1_2_version_consolidation_current_S0_rebaseline_and_senior_assistant_policy"
     ]
     assert current
-    projection = _load(PROJECTION_REF)
+    program = _load(PROGRAM_BACKLOG_REF)
+    projection = _load(
+        Path(program["current_version_rebaseline"]["projection_ref"])
+    )
     assert current[-1]["current_next"] == projection["current_truth"][
         "current_next_action"
     ]
@@ -119,7 +122,9 @@ def test_latest_project_os_rows_reassign_current_scope_to_fin_0_1_2() -> None:
     for number in range(90, 97):
         matching = [row for row in issues if f"RC-P36-{number:03d}" in row.get("issue_id", "")]
         assert matching
-        assert matching[-1]["state_detail"].startswith("reassigned_to_consolidated_FIN_0_1_2_S0")
+        assert matching[-1]["state_detail"] == (
+            "clean_qualification_authorized_not_executed"
+        )
 
 
 def test_decision_did_not_authorize_runtime_or_external_execution() -> None:

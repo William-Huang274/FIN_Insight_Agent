@@ -1,0 +1,57 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_research_lead_v8_local_semantic_materialization_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-MATERIALIZATION-ZERO-CALL-I1",
+  "recorded_at": "2026-08-03T22:00:00+08:00",
+  "status": "engineering_pass_fixture_and_natural_failure_body_proven_independent_proof_pending",
+  "root_cause_issue_id": "RC-P36-108-fin-0-1-2-s3-t03-research-lead-deterministic-fact-presence-and-claim-alias-semantic-ownership-regression",
+  "design": {
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v8",
+    "provider_owned": [
+      "exact_claim_alias_relationship_selection",
+      "exact_what_would_change_alias_relationship_selection"
+    ],
+    "local_deterministic_owned": [
+      "claim_evidence_state_narratives",
+      "conflict_fact_presence_summary",
+      "conflict_resolution_status",
+      "gap_atom_ranking_and_projection",
+      "local_row_ids",
+      "scoped_identity_expansion"
+    ],
+    "provider_raw_narratives": "preserved_only_in_restricted_capture_not_canonical_business_output",
+    "common_runtime_binding_changed": false,
+    "common_runtime_binding_reason": "The v1.3 common binding owns Specialist judgment atoms; Research Lead has its own versioned transport family, so v8 must not mutate the frozen Specialist business input."
+  },
+  "exact_code_bindings": {
+    "apps/workbench/backend/application/bounded_agent_contract_policies.py": "bf7c2644d35816b5c2bd969c683a43f133d6dd2f602be108bc92e7d447aeaff5",
+    "apps/workbench/backend/application/bounded_agent_executor.py": "464db9bb371da994ab2420735a8ce47b7bdc0ba6a4e98456db2bec3a0929ebc7"
+  },
+  "historical_exact_binding_supersession": {
+    "reason": "The current v8 proof and historical compatibility test extend the older v6/v7 fixture family without rewriting its immutable implementation record.",
+    "allowed_changed_paths": [
+      "tests/contract/test_fin_0_1_s4_t05_research_lead_gap_atom_deterministic_projection_zero_call_implementation.py",
+      "tests/contract/test_fin_0_1_s4_t06_mu_research_lead_fact_presence_local_materialization_zero_call_implementation.py"
+    ]
+  },
+  "proofs": {
+    "current_NVDA_full_fake_9_artifacts": true,
+    "provider_runtime_owned_fact_presence_negative_mutation": "hard_failed_at_research_lead",
+    "natural_failed_Lead_body_reused_without_C002_C003_manual_swap": true,
+    "natural_failed_Lead_body_false_fact_narrative_survived": false,
+    "natural_failed_C001_C002_fact_presence": "no_facts_present",
+    "historical_v6_gap_projection_preserved": true,
+    "historical_v7_local_fact_presence_preserved": true,
+    "model_provider_network_calls": 0,
+    "business_artifact_promotions": 0
+  },
+  "acceptance_boundary": {
+    "formal_S3_T03_pass": false,
+    "replacement_admission_issued": false,
+    "replacement_exact_live_executed": false,
+    "paired_assessment_performed": false,
+    "owner_acceptance_performed": false,
+    "S3_T04_entered": false,
+    "release_qualified": false
+  },
+  "next_action": "FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-MATERIALIZATION-INDEPENDENT-ZERO-CALL-PROOF-DECISION"
+}

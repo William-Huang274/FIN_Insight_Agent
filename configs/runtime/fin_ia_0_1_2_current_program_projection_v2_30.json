@@ -1,0 +1,78 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S3-T03-COLLECT-ALL-DIAGNOSTIC-AND-LEAD-V8-ENGINEERING-PASS-R31",
+  "recorded_at": "2026-08-03T22:00:00+08:00",
+  "status": "current_FIN_0_1_2_S3_T03_primary_failed_diagnostic_complete_Lead_v8_engineering_pass_independent_proof_pending",
+  "lifecycle_state": "in_progress_blocked_at_S3_T03_independent_proof",
+  "decision_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_quarantined_collect_all_diagnostic_aggregate_and_stage_disposition_v1_0.json",
+    "sha256": "f043693517d8232efd3e241315ecfdd450e3741d2c8b01dba397281e455b5f7d",
+    "bytes": 4317,
+    "binding_role": "non_promotable_full_chain_diagnostic_aggregate_stage_disposition_and_structural_repair_selection"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S3_in_progress_T03_Lead_v8_independent_proof_pending",
+    "active_slice": "FIN_0_1_2_S3_NVDA_PRODUCT_ANCHOR",
+    "current_next_action": "FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-MATERIALIZATION-INDEPENDENT-ZERO-CALL-PROOF-DECISION",
+    "current_stage_status": "primary_failure_immutable_diagnostic_complete_Lead_v8_engineering_pass_no_replacement_authority",
+    "completed_current_stages": {
+      "S0": "pass_closed",
+      "S1": "pass_closed_current_consolidated_baseline",
+      "S2": "pass_closed_not_reopened"
+    },
+    "current_S3_tasks": {
+      "S3_T01": "pass",
+      "S3_T02": "engineering_pass",
+      "S3_T03_primary": "immutable_terminal_failed_after_7_calls_0_artifacts",
+      "S3_T03_collect_all_diagnostic": "complete_non_promotable_after_2_new_DeepSeek_Pro_calls_9_quarantined_artifacts",
+      "S3_T03_Lead_v8": "engineering_pass_fixture_and_natural_failure_body_proven_independent_proof_pending",
+      "S3_T04": "blocked_with_quality_debt_preassigned"
+    },
+    "product_case": "NVDA",
+    "current_exact_input_kind": "internal_frozen_NVDA_dogfood_fixture",
+    "target_maturity": "current_FIN_0_1_2_NVDA_R2_owner_accepted",
+    "selected_model_ref": "deepseek:deepseek-v4-pro",
+    "runtime_contract_family_binding_ref": "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1.3",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v8",
+    "stable_business_input_digest": "a19743ffdaa63319a5381262adc9c5b04751abadc9bc4781561c1aa905b744fc",
+    "formal_primary_execution_identity": "fin012-s3-t03-nvda-primary-r1",
+    "formal_primary_terminal_status": "failed",
+    "formal_primary_calls_captures_artifacts": [7, 7, 0],
+    "diagnostic_source_replays_new_live_calls_quarantined_artifacts": [7, 2, 9],
+    "diagnostic_new_tokens": [23294, 657, 23951],
+    "diagnostic_new_cost_usd": 0.01070448,
+    "diagnostic_business_promotions": 0,
+    "downstream_L1_contract_failures_after_isolated_Lead_repair": 0,
+    "open_T03_issue": "RC-P36-108-fin-0-1-2-s3-t03-research-lead-deterministic-fact-presence-and-claim-alias-semantic-ownership-regression",
+    "open_T04_issue": "RC-P36-109-fin-0-1-2-s3-t04-final-delivery-evidence-density-renderer-and-verifier-preview-coverage",
+    "current_NVDA_R2": false,
+    "release_qualified": false
+  },
+  "execution_policy": {
+    "primary_exact_attempts_consumed": 1,
+    "diagnostic_live_calls_consumed": 2,
+    "automatic_retry_replay_relaunch_or_replacement_authorized": false,
+    "independent_zero_call_proof_authorized": false,
+    "replacement_admission_or_execution_authorized": false,
+    "paired_assessment_or_owner_acceptance_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "S3_stage_plan": "docs/architecture/repository/FIN_0_1_2_S3_NVDA_PRODUCT_ANCHOR_AND_BOUNDED_MODEL_SURFACE_STAGE_PLAN_20260803.zh-CN.md",
+    "formal_terminal_failure": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_terminal_failure_result_v1_0.json",
+    "diagnostic_authority": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_quarantined_collect_all_diagnostic_authority_decision_v1_0.json",
+    "diagnostic_aggregate": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_quarantined_collect_all_diagnostic_aggregate_and_stage_disposition_v1_0.json",
+    "Lead_v8_implementation": "configs/releases/fin_ia_0_1_2_s3_t03_research_lead_v8_local_semantic_materialization_minimum_zero_call_implementation_v1_0.json",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md"
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_29.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "formal_failure_deleted_rewritten_or_promoted": false,
+    "diagnostic_output_business_promoted": false,
+    "diagnostic_success_is_not_formal_acceptance": true,
+    "execution_failure_or_contract_change_does_not_create_a_new_product_version": true
+  }
+}

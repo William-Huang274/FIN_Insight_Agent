@@ -1,0 +1,68 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_nvda_quarantined_collect_all_diagnostic_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S3-T03-NVDA-QUARANTINED-COLLECT-ALL-DIAGNOSTIC-R1",
+  "recorded_at": "2026-08-03T21:30:00+08:00",
+  "status": "authorized_diagnostic_only_non_promotable_downstream_continuation",
+  "authority": {
+    "user_instruction": "先把当前block的地方修复后让ds pro续跑后面的链路，把全链路问题都暴露出来后再整合一下修",
+    "explicit_project_os_diagnostic_override": true,
+    "formal_replay_or_replacement_authorized": false,
+    "product_acceptance_authorized": false
+  },
+  "immutable_source_failure": {
+    "result_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_terminal_failure_result_v1_0.json",
+    "result_sha256": "42f3dd198696dd6d284c9e3bb67b5fbc093b2491b992785ed46d0cc5e1440a56",
+    "runtime_root": ".codex_runtime/fin012-s3-t03-nvda-primary-r1",
+    "execution_result_sha256": "09a0bf6bb643cec69ced0728c98e3b779fcf4825ffb8829924664d2dd245111c",
+    "capture_index_sha256": "b235ff9096d280a61fcecaaa9f3a5347e694288c9fd1506c30215fa5242ec7a2",
+    "terminal_phase": "research_lead",
+    "terminal_code": "s3_bounded_research_lead_v3_semantic_fact_presence_summary_mismatch",
+    "provider_calls": 7,
+    "capture_count": 7,
+    "artifact_count": 0
+  },
+  "diagnostic_method": {
+    "disposable_runtime_root": ".codex_runtime/fin012-s3-t03-nvda-primary-r1-quarantined-collect-all-diagnostic-r1",
+    "replay_specialist_capture_count": 6,
+    "research_lead_capture_replayed": true,
+    "research_lead_repair": "swap adjacent same-cell claim aliases C002 and C003 throughout the captured Lead JSON, then deterministically materialize fact_presence_summary from supplied Specialist support facts",
+    "downstream_live_stages": [
+      "memo_writer",
+      "verifier"
+    ],
+    "downstream_validation_failure_policy": "preserve the original output first; only an auditable local non-promotable diagnostic projection may be used to reach the next stage, with no additional Provider call",
+    "aggregate_before_mainline_repair": true
+  },
+  "hard_limits": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "maximum_new_live_calls": 2,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "fallback_budget": 0,
+    "relaunch_budget": 0,
+    "maximum_new_live_cost_usd": 0.04,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "canonical_target_writes": 0,
+    "business_artifact_promotions": 0
+  },
+  "acceptance_boundary": {
+    "diagnostic_only": true,
+    "S3_T03_pass_eligible": false,
+    "current_NVDA_R2_eligible": false,
+    "paired_assessment_eligible": false,
+    "owner_acceptance_eligible": false,
+    "S3_T04_entry_eligible": false,
+    "release_or_production_eligible": false
+  },
+  "stop_conditions": [
+    "more than two new Provider calls would be required",
+    "a transport retry, fallback or relaunch would be required",
+    "new live cost would exceed USD 0.04",
+    "the immutable source runtime or capture bytes change",
+    "a repair cannot be expressed as an explicit path-level diagnostic finding",
+    "a credential, authorization header, cookie, private reasoning or raw Provider envelope would be persisted"
+  ],
+  "next_after_execution": "aggregate all observed downstream defects by shared ownership, contract, planner, validator, fixture and quality-rubric root cause before any formal implementation or replacement admission"
+}

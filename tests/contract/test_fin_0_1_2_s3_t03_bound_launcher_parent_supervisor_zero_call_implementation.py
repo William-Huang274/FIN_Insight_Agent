@@ -20,7 +20,7 @@ IMPLEMENTATION = ROOT / (
 )
 TEST_SUCCESSOR = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_launcher_supervisor_projection_"
-    "assertion_test_controlled_successor_v2_0.json"
+    "assertion_test_controlled_successor_v3_0.json"
 )
 PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_27.json"
@@ -34,12 +34,19 @@ FAILURE_NEXT = (
     "FIN-0.1.2-S3-T03-NVDA-RESEARCH-LEAD-LOCAL-FACT-PRESENCE-AND-"
     "CLAIM-ALIAS-SEMANTIC-OWNERSHIP-REGRESSION-DISPOSITION-DECISION"
 )
+LEAD_V8_PROOF_NEXT = (
+    "FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-"
+    "MATERIALIZATION-INDEPENDENT-ZERO-CALL-PROOF-DECISION"
+)
 TERMINAL_RESULT = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
     "terminal_failure_result_v1_0.json"
 )
 CURRENT_PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_29.json"
+)
+LEAD_V8_PROJECTION = ROOT / (
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_30.json"
 )
 
 from apps.workbench.backend.application.fin_0_1_2_s3_t03_exact_live_runner import (
@@ -388,23 +395,32 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
     if backlog["item_id"] == projection["current_truth"]["current_next_action"]:
         assert backlog["current_projection_sha256"] == _sha256(PROJECTION)
     else:
-        assert backlog["item_id"] in {EXECUTION_NEXT, FAILURE_NEXT}
+        assert backlog["item_id"] in {
+            EXECUTION_NEXT,
+            FAILURE_NEXT,
+            LEAD_V8_PROOF_NEXT,
+        }
         current = ROOT / backlog["current_projection_ref"]
         if backlog["item_id"] == EXECUTION_NEXT:
             assert current.name == "fin_ia_0_1_2_current_program_projection_v2_28.json"
             assert _load(current)["historical_projection_policy"][
                 "superseded_projection"
             ].endswith("fin_ia_0_1_2_current_program_projection_v2_27.json")
-        else:
+        elif backlog["item_id"] == FAILURE_NEXT:
             assert current == CURRENT_PROJECTION
             assert backlog["S3_T03_fresh_admission_consumed"] is True
             assert backlog["S3_T03_execution_terminal_status"] == "failed"
             assert backlog["S3_T03_execution_result_sha256"] == _sha256(
                 TERMINAL_RESULT
             )
+        else:
+            assert current == LEAD_V8_PROJECTION
+            assert backlog["S3_T03_Lead_v8_status"] == (
+                "engineering_pass_independent_proof_pending"
+            )
         assert backlog["current_projection_sha256"] == _sha256(current)
     assert backlog["S3_T03_bound_launcher_parent_supervisor_missing"] is False
-    if backlog["item_id"] == FAILURE_NEXT:
+    if backlog["item_id"] in {FAILURE_NEXT, LEAD_V8_PROOF_NEXT}:
         assert backlog["S3_T03_fresh_admission_consumed"] is True
         assert backlog["S3_T03_execution_started"] is True
         assert (ROOT / target.runtime_root_ref).exists()

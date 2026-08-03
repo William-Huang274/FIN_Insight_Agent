@@ -1,7 +1,7 @@
 # FIN 0.1.2 S3：NVDA 产品锚点与有界模型 Surface 计划
 
 日期：2026-08-03
-状态：`S3-T01 pass / S3-T02 engineering pass / S3-T03 admission issued-unconsumed / exact-live authority blocked by executable launcher-supervisor gap / zero model calls in authority turn`
+状态：`S3-T01 pass / S3-T02 engineering pass / S3-T03 primary immutable failed + collect-all diagnostic complete + Lead-v8 engineering pass / independent proof and replacement authority pending / S3-T04 blocked`
 
 ## 一、S3 到底要证明什么
 
@@ -148,3 +148,21 @@ R2 只授权在新的用户续行后执行一次 supervised exact-once：最多 
 `FIN-0.1.2-S3-T03-NVDA-RESEARCH-LEAD-LOCAL-FACT-PRESENCE-AND-CLAIM-ALIAS-SEMANTIC-OWNERSHIP-REGRESSION-DISPOSITION-DECISION`
 
 下一项只做一次零调用处置：对账 Lead-v7 已证明资产与 FIN 0.1.2 当前合同继承，并决定防止 C002/C003 语义互换所需的最小本地 projection 或有限 Claim-role atom。不得改写本次失败、自动切换合同、签发 replacement admission、调用模型、paired、Owner 或进入 S3-T04。只有处置之后另行授权的单一 consolidated implementation、独立 proof、fresh admission 和 execution authority 全部成立，才可能讨论新的 live；不能回到逐字段循环。
+
+## 十一、隔离 collect-all diagnostic 与 Lead-v8 结构修复
+
+Owner 明确要求先修当前 blocker，再让 DeepSeek Pro 继续 Writer/Verifier，以一次隔离诊断尽量暴露后续链路问题。该授权没有改写 primary failure：正式 R1 仍是 7 calls、0 Artifacts 的 immutable failure，原 admission 没有再次消费，原 runtime tree digest 前后均为 `651b21…30ee`。
+
+诊断精确重放 7 份受限 capture，只在隔离分支对 Research Lead 的 C002/C003 语义互换做一次路径级本地修复，然后真实调用 Writer 与 Verifier 各一次。两次均为 DeepSeek Pro、`ok/stop`、transport attempt=1；新增 tokens=`23,294/657/23,951`，成本=`USD 0.01070448`，无 retry/fallback/relaunch。Writer 与 Verifier 均自然通过现有合同，诊断形成 9 份 quarantined Artifacts；没有 downstream local repair、业务晋升、paired 或 Owner acceptance。因此，全链诊断没有发现新的下游 L1 合同阻塞，当前 T03 首因仍收敛在 Research Lead semantic ownership。
+
+同时诊断暴露三项产品质量债务，但它们归 T04，不能继续塞回 T03：当前 frozen NVDA fixture 使四个 Claim 中三个保持 `cannot_infer`；最终本地 renderer 仍会露出 `__company_total__`、`FY2025-FY`、重复 `USD` 和粗糙拼接；Verifier 当前验证 Lead/Writer 对象，却没有看到最终本地渲染的 delivery preview，因此它的 `visual_delivery=pass` 不能替代最终成品检查。
+
+T03 的合并结构修复已实现为 Research Lead-v8。v8 继承 v6 的 deterministic gap projection 与 v7 的 local fact-presence materialization，并进一步冻结权限：Provider 只选择 Claim/WWC 关系 alias；Claim 证据状态叙事、conflict fact presence、resolution status、gap projection、行 ID 和 scoped identity expansion 全部由本地 Claim Card 确定性生成。Provider 原始叙事仍保留在受限 capture 中用于审计，但不再成为 canonical Artifact 内容。v1.3 common Runtime binding 不变，因为它只拥有 Specialist judgment atom family；Lead 有独立的 transport version，不能为修 Lead 而改变 frozen Specialist business input。
+
+零调用证明已覆盖：当前 NVDA full-fake 九件套、Provider 越权返回 runtime-owned field 的负例，以及把这次自然失败的 Lead 正文直接送入 v8。后者没有手工交换 C002/C003；v8 仍把所选 C002 正确渲染为 `cannot_infer`，并把 C001+C002 计算为 `no_facts_present`，证明模型关系选择即使质量不佳也不会再升级为 L1 假事实。这建立 `engineering_pass`，不建立正式 T03 pass。
+
+当前下一项严格限定为：
+
+`FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-MATERIALIZATION-INDEPENDENT-ZERO-CALL-PROOF-DECISION`
+
+必须先由独立 fresh proof 复证 v8 与当前 frozen input、mutation 和九件套路径；之后才可另行签发 fresh replacement admission 与一次 execution authority。新的 live 仍需用户明确续行。若 replacement 出现新的 L1，S3 honest-block，不进入第三轮修补；L2–L4 继续归 T04。

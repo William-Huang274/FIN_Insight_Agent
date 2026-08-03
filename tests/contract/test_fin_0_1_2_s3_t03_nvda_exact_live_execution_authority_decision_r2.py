@@ -52,6 +52,13 @@ FAILURE_NEXT = (
     "FIN-0.1.2-S3-T03-NVDA-RESEARCH-LEAD-LOCAL-FACT-PRESENCE-AND-"
     "CLAIM-ALIAS-SEMANTIC-OWNERSHIP-REGRESSION-DISPOSITION-DECISION"
 )
+LEAD_V8_PROOF_NEXT = (
+    "FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-"
+    "MATERIALIZATION-INDEPENDENT-ZERO-CALL-PROOF-DECISION"
+)
+LEAD_V8_PROJECTION = ROOT / (
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_30.json"
+)
 
 
 def _load(path: Path) -> dict:
@@ -180,14 +187,25 @@ def test_r2_projection_backlog_and_project_os_are_current() -> None:
 
     assert projection["decision_binding"]["sha256"] == _sha256(DECISION)
     assert projection["current_truth"]["current_next_action"] == next_action
-    assert backlog["item_id"] in {next_action, FAILURE_NEXT}
+    assert backlog["item_id"] in {
+        next_action,
+        FAILURE_NEXT,
+        LEAD_V8_PROOF_NEXT,
+    }
     if backlog["item_id"] == next_action:
         assert backlog["current_projection_sha256"] == _sha256(PROJECTION)
         assert backlog["S3_T03_exact_live_execution_authorized_now"] is True
         assert backlog["S3_T03_fresh_admission_consumed"] is False
         assert backlog["S3_T03_execution_started"] is False
     else:
-        assert backlog["current_projection_sha256"] == _sha256(CURRENT_PROJECTION)
+        expected_projection = (
+            CURRENT_PROJECTION
+            if backlog["item_id"] == FAILURE_NEXT
+            else LEAD_V8_PROJECTION
+        )
+        assert backlog["current_projection_sha256"] == _sha256(
+            expected_projection
+        )
         assert backlog["S3_T03_exact_live_execution_authorized_now"] is False
         assert backlog["S3_T03_fresh_admission_consumed"] is True
         assert backlog["S3_T03_execution_started"] is True
@@ -202,5 +220,5 @@ def test_r2_projection_backlog_and_project_os_are_current() -> None:
     )
     assert decision["decision_id"] in capabilities
     assert next_action in context
-    if backlog["item_id"] == FAILURE_NEXT:
+    if backlog["item_id"] in {FAILURE_NEXT, LEAD_V8_PROOF_NEXT}:
         assert FAILURE_NEXT in context

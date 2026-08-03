@@ -25,6 +25,13 @@ NEXT = (
     "FIN-0.1.2-S3-T03-NVDA-RESEARCH-LEAD-LOCAL-FACT-PRESENCE-AND-"
     "CLAIM-ALIAS-SEMANTIC-OWNERSHIP-REGRESSION-DISPOSITION-DECISION"
 )
+LEAD_V8_PROOF_NEXT = (
+    "FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-"
+    "MATERIALIZATION-INDEPENDENT-ZERO-CALL-PROOF-DECISION"
+)
+CURRENT_PROJECTION = ROOT / (
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_30.json"
+)
 ISSUE = (
     "RC-P36-108-fin-0-1-2-s3-t03-research-lead-deterministic-fact-"
     "presence-and-claim-alias-semantic-ownership-regression"
@@ -127,8 +134,13 @@ def test_projection_backlog_and_project_os_stop_before_any_replacement() -> None
         "automatic_retry_replay_relaunch_or_replacement_authorized"
     ] is False
     assert projection["execution_policy"]["new_admission_or_execution_authorized"] is False
-    assert backlog["item_id"] == NEXT
-    assert backlog["current_projection_sha256"] == _sha256(PROJECTION)
+    assert backlog["item_id"] in {NEXT, LEAD_V8_PROOF_NEXT}
+    expected_projection = (
+        PROJECTION if backlog["item_id"] == NEXT else CURRENT_PROJECTION
+    )
+    assert backlog["current_projection_sha256"] == _sha256(
+        expected_projection
+    )
     assert backlog["S3_T03_fresh_admission_consumed"] is True
     assert backlog["S3_T03_primary_exact_attempts_remaining"] == 0
     assert backlog["S3_T03_execution_result_sha256"] == _sha256(RESULT)
@@ -140,9 +152,11 @@ def test_projection_backlog_and_project_os_stop_before_any_replacement() -> None
         ).read_text(encoding="utf-8").splitlines()
         if ISSUE in line
     ]
-    assert root_rows[-1]["status"].startswith("open_first_credible")
+    assert root_rows[-1]["status"] == (
+        "structural_implementation_fixture_proven_independent_proof_pending"
+    )
     assert root_rows[-1]["full_chain_blocker"] is True
-    assert root_rows[-1]["allowed_run_scopes"][0] == NEXT
+    assert root_rows[-1]["allowed_run_scopes"][0] == LEAD_V8_PROOF_NEXT
     capability_rows = [
         json.loads(line)
         for line in (

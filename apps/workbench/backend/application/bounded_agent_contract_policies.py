@@ -1174,6 +1174,7 @@ class ResearchLeadTransportContract:
     gap_atom_deterministic_projection: bool = False
     case_material_truth_identity_safety_composable: bool = False
     conflict_fact_presence_materialization_policy_ref: str | None = None
+    claim_evidence_state_local_narrative_policy_ref: str | None = None
 
 
 @dataclass(frozen=True)
@@ -1232,6 +1233,12 @@ S3_RESEARCH_LEAD_CONFLICT_FACT_PRESENCE_LOCAL_MATERIALIZATION_POLICY = (
             ("some_involved_claims_supported", "mixed_fact_presence"),
         ),
     )
+)
+
+
+S3_RESEARCH_LEAD_CLAIM_EVIDENCE_STATE_LOCAL_NARRATIVE_POLICY_REF = (
+    "fin01.s3.research_lead.claim_evidence_state_local_narrative_"
+    "materialization:v1"
 )
 
 
@@ -1363,6 +1370,24 @@ _RESEARCH_LEAD_TRANSPORT_CONTRACTS = {
         conflict_fact_presence_materialization_policy_ref=(
             S3_RESEARCH_LEAD_CONFLICT_FACT_PRESENCE_LOCAL_MATERIALIZATION_POLICY
             .policy_ref
+        ),
+    ),
+    f"{_RESEARCH_LEAD_TRANSPORT_PREFIX}:v8": ResearchLeadTransportContract(
+        transport_ref=f"{_RESEARCH_LEAD_TRANSPORT_PREFIX}:v8",
+        closed_semantic_output=True,
+        conflict_local_fact_presence=True,
+        typed_scoped_identity=True,
+        compact_scoped_alias_wire=True,
+        local_row_ids=True,
+        dual_capacity=True,
+        gap_atom_deterministic_projection=True,
+        case_material_truth_identity_safety_composable=True,
+        conflict_fact_presence_materialization_policy_ref=(
+            S3_RESEARCH_LEAD_CONFLICT_FACT_PRESENCE_LOCAL_MATERIALIZATION_POLICY
+            .policy_ref
+        ),
+        claim_evidence_state_local_narrative_policy_ref=(
+            S3_RESEARCH_LEAD_CLAIM_EVIDENCE_STATE_LOCAL_NARRATIVE_POLICY_REF
         ),
     ),
 }

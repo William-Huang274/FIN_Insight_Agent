@@ -46,6 +46,10 @@ FAILURE_NEXT = (
     "FIN-0.1.2-S3-T03-NVDA-RESEARCH-LEAD-LOCAL-FACT-PRESENCE-AND-"
     "CLAIM-ALIAS-SEMANTIC-OWNERSHIP-REGRESSION-DISPOSITION-DECISION"
 )
+LEAD_V8_PROOF_NEXT = (
+    "FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-"
+    "MATERIALIZATION-INDEPENDENT-ZERO-CALL-PROOF-DECISION"
+)
 TERMINAL_RESULT = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
     "terminal_failure_result_v1_0.json"
@@ -53,6 +57,10 @@ TERMINAL_RESULT = ROOT / (
 LAUNCHER_SUPERVISOR_IMPLEMENTATION = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_nvda_bound_execution_launcher_"
     "parent_supervisor_zero_call_preflight_minimum_implementation_v1_0.json"
+)
+LEAD_V8_IMPLEMENTATION = ROOT / (
+    "configs/releases/fin_ia_0_1_2_s3_t03_research_lead_v8_local_"
+    "semantic_materialization_minimum_zero_call_implementation_v1_0.json"
 )
 
 
@@ -147,6 +155,12 @@ def test_issuance_bindings_are_immutable_or_have_an_exact_current_successor() ->
         current = hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
         if current == digest:
             continue
+        if relative == (
+            "apps/workbench/backend/application/bounded_agent_executor.py"
+        ):
+            v8 = _load(LEAD_V8_IMPLEMENTATION)
+            assert v8["exact_code_bindings"][relative] == current
+            continue
         assert relative == (
             "apps/workbench/backend/application/"
             "fin_0_1_2_s3_t03_exact_live_runner.py"
@@ -223,6 +237,7 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
         LAUNCHER_SUPERVISOR_PASS_NEXT,
         R2_EXECUTION_NEXT,
         FAILURE_NEXT,
+        LEAD_V8_PROOF_NEXT,
     }
     if backlog["item_id"] == NEXT_ACTION:
         assert backlog["current_projection_ref"] == projection_path.relative_to(
@@ -252,7 +267,7 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
         assert backlog[
             "S3_T03_exact_live_execution_requires_new_user_continuation"
         ] is True
-    else:
+    elif backlog["item_id"] == FAILURE_NEXT:
         assert backlog["current_projection_ref"].endswith(
             "fin_ia_0_1_2_current_program_projection_v2_29.json"
         )
@@ -261,8 +276,15 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
         assert backlog["S3_T03_execution_result_sha256"] == hashlib.sha256(
             TERMINAL_RESULT.read_bytes()
         ).hexdigest()
+    else:
+        assert backlog["current_projection_ref"].endswith(
+            "fin_ia_0_1_2_current_program_projection_v2_30.json"
+        )
+        assert backlog["S3_T03_Lead_v8_status"] == (
+            "engineering_pass_independent_proof_pending"
+        )
     assert backlog["S3_T03_fresh_admission_issued"] is True
-    if backlog["item_id"] == FAILURE_NEXT:
+    if backlog["item_id"] in {FAILURE_NEXT, LEAD_V8_PROOF_NEXT}:
         assert backlog["S3_T03_fresh_admission_consumed"] is True
         assert backlog["S3_T03_execution_started"] is True
     else:

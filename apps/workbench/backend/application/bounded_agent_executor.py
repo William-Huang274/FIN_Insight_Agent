@@ -39,6 +39,7 @@ from .bounded_agent_contract_policies import (
     S3_NVDA_THREE_CELL_RESEARCH_PROFILE,
     S3_NVDA_THREE_CELL_RESEARCH_PROFILE_REF,
     S3_NVDA_THREE_CELL_RESEARCH_PROFILE_V4_REF,
+    S3_RESEARCH_LEAD_CLAIM_EVIDENCE_STATE_LOCAL_NARRATIVE_POLICY_REF,
     S3_RESEARCH_LEAD_CONFLICT_FACT_PRESENCE_LOCAL_MATERIALIZATION_POLICY,
     S3_RESEARCH_LEAD_GAP_ATOM_PROJECTION_POLICY,
     S3_SPECIALIST_WWC_JUDGMENT_ATOM_POLICY_REF,
@@ -280,6 +281,9 @@ S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_V6_REF = (
 )
 S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_V7_REF = (
     "fin01.s3.bounded_agent.research_lead_owner_grade:v7"
+)
+S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_V8_REF = (
+    "fin01.s3.bounded_agent.research_lead_owner_grade:v8"
 )
 S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_REFS = (
     research_lead_transport_refs()
@@ -1398,7 +1402,7 @@ def compile_fin_0_1_2_s3_production_admission(
             S4_CASE_DELIVERY_IDENTITY_CURRENT_CASE_AWARE_POLICY_REF
         ),
         "research_lead_transport_ref": (
-            S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_V6_REF
+            S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_V8_REF
         ),
         "memo_writer_transport_ref": (
             S3_OWNER_GRADE_MEMO_WRITER_TRANSPORT_V3_REF
@@ -8710,6 +8714,26 @@ class DeepSeekS3ThreeCellNodeExecutor:
             )
         elif (
             node_id == "research_lead"
+            and (
+                lead_transport_contract
+                .claim_evidence_state_local_narrative_policy_ref
+            )
+        ):
+            (
+                output,
+                receipts,
+                model_view_binding,
+                captures,
+                recoverable_protocol_findings,
+            ) = self._execute_research_lead_v8(
+                payload=payload,
+                admission=admission,
+                state=state,
+                input_digest=input_digest,
+                research_run_id=research_run_id,
+            )
+        elif (
+            node_id == "research_lead"
             and lead_transport_contract.gap_atom_deterministic_projection
         ):
             (
@@ -10383,6 +10407,173 @@ class DeepSeekS3ThreeCellNodeExecutor:
         try:
             output, recoverable_protocol_findings = (
                 self._assemble_research_lead_v6_output(
+                    segment,
+                    specialists,
+                    scoped_surface,
+                    cell_heads=cell_heads,
+                    research_profile=research_profile,
+                    capacity=capacity,
+                )
+            )
+            S3ThreeCellBoundedAgentExecutor._validate_lead_output(
+                output,
+                digests,
+                specialist_outputs=specialists,
+                scoped_identity_surface=scoped_surface,
+                output_contract_ref=(
+                    S3_THREE_CELL_BOUNDED_AGENT_OUTPUT_CONTRACT_V4_REF
+                ),
+            )
+        except S3ScopedIdentityContractError as exc:
+            state["failed"] = True
+            self._stop(
+                state,
+                "research_lead",
+                exc.failure_code,
+                scoped_identity_contract=exc.telemetry,
+            )
+        except S3ResearchLeadV3ContractError as exc:
+            state["failed"] = True
+            self._stop(
+                state,
+                "research_lead",
+                exc.failure_code,
+                research_lead_contract=exc.telemetry,
+            )
+        except ValueError as exc:
+            state["failed"] = True
+            error = S3ResearchLeadV3ContractError(
+                failure_family="assembly",
+                failure_subtype="canonical_validation_failed",
+                field_id="assembled_output",
+                failing_item_count=1,
+            )
+            self._stop(
+                state,
+                "research_lead",
+                error.failure_code,
+                research_lead_contract=error.telemetry,
+            )
+            raise AssertionError("unreachable") from exc
+        return (
+            output,
+            [receipt],
+            model_view_binding,
+            [capture],
+            recoverable_protocol_findings,
+        )
+
+    def _execute_research_lead_v8(
+        self,
+        *,
+        payload: Mapping[str, Any],
+        admission: S3ThreeCellBoundedAgentAdmission,
+        state: dict[str, Any],
+        input_digest: str,
+        research_run_id: str,
+    ) -> tuple[
+        dict[str, Any],
+        list[dict[str, Any]],
+        dict[str, str],
+        list[dict[str, Any]],
+        list[dict[str, Any]],
+    ]:
+        specialists = payload.get("specialist_outputs")
+        digests = payload.get("specialist_output_digests")
+        scoped_surface = payload.get("scoped_identity_surface")
+        if (
+            not isinstance(specialists, list)
+            or not isinstance(digests, Mapping)
+            or not isinstance(scoped_surface, Mapping)
+        ):
+            state["failed"] = True
+            error = S3ScopedIdentityContractError(
+                ScopedIdentityViolation(
+                    identity_kind="claim",
+                    failure_subtype="scoped_ref_mismatch",
+                    failing_item_count=1,
+                )
+            )
+            self._stop(
+                state,
+                "research_lead",
+                error.failure_code,
+                scoped_identity_contract=error.telemetry,
+            )
+        research_profile = research_profile_for_ref(
+            admission.research_profile_ref
+        )
+        try:
+            cell_heads = self._derive_research_lead_cell_heads(
+                specialists,
+                digests,
+                research_profile=research_profile,
+            )
+            alias_table = (
+                S3ThreeCellBoundedAgentExecutor._compact_scoped_alias_table(
+                    specialists,
+                    scoped_surface,
+                )
+            )
+            capacity = self._research_lead_v5_capacity_envelope(
+                alias_table=alias_table,
+                cell_heads=cell_heads,
+                research_profile=research_profile,
+            )
+        except S3ScopedIdentityContractError as exc:
+            state["failed"] = True
+            self._stop(
+                state,
+                "research_lead",
+                exc.failure_code,
+                scoped_identity_contract=exc.telemetry,
+            )
+        except ValueError:
+            state["failed"] = True
+            error = S3ResearchLeadV3ContractError(
+                failure_family="assembly",
+                failure_subtype="deterministic_heads_invalid",
+                field_id="cell_heads",
+                failing_item_count=1,
+            )
+            self._stop(
+                state,
+                "research_lead",
+                error.failure_code,
+                research_lead_contract=error.telemetry,
+            )
+        system, request, model_view_binding = self._research_lead_v8_request(
+            payload,
+            cell_heads,
+            research_profile=research_profile,
+            capacity=capacity,
+        )
+        system = self._bind_case_numeric_identity_to_lead_request(
+            payload=payload,
+            admission=admission,
+            state=state,
+            request=request,
+            system=system,
+        )
+        segment, receipt, capture = self._call_json_object(
+            state=state,
+            logical_node_id="research_lead",
+            receipt_stage="research_lead",
+            system=system,
+            request=request,
+            max_tokens=admission.lead_max_output_tokens,
+            admission=admission,
+            input_digest=input_digest,
+            research_run_id=research_run_id,
+            enforce_specialist_byte_limit=False,
+            research_lead_v3_telemetry=True,
+            output_byte_limit=(
+                research_profile.research_lead_provider_raw_max_utf8_bytes
+            ),
+        )
+        try:
+            output, recoverable_protocol_findings = (
+                self._assemble_research_lead_v8_output(
                     segment,
                     specialists,
                     scoped_surface,
@@ -13786,6 +13977,140 @@ class DeepSeekS3ThreeCellNodeExecutor:
         )
 
     @classmethod
+    def _assemble_research_lead_v8_output(
+        cls,
+        segment: Mapping[str, Any],
+        specialist_outputs: list[Mapping[str, Any]],
+        scoped_identity_surface: Mapping[str, Any],
+        *,
+        cell_heads: list[Mapping[str, Any]],
+        research_profile: BoundedResearchProfile,
+        capacity: Mapping[str, Any],
+    ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+        """Keep Provider relationship selection; own evidence-state prose locally."""
+
+        gap_policy = S3_RESEARCH_LEAD_GAP_ATOM_PROJECTION_POLICY
+        fact_policy = (
+            S3_RESEARCH_LEAD_CONFLICT_FACT_PRESENCE_LOCAL_MATERIALIZATION_POLICY
+        )
+        required = {
+            "cross_cell_dependencies",
+            "conflict_adjudications",
+            "variant_view",
+            gap_policy.provider_field_id,
+        }
+        if set(segment) != required:
+            raise S3ResearchLeadV3ContractError(
+                failure_family="shape",
+                failure_subtype=(
+                    "top_level_keys_missing"
+                    if required - set(segment)
+                    else "top_level_keys_unexpected"
+                ),
+                field_id="top_level",
+                failing_item_count=len(
+                    required - set(segment) or set(segment) - required
+                ),
+            )
+        projected_specialists, alias_table = (
+            S3ThreeCellBoundedAgentExecutor
+            ._compact_alias_specialist_projection(
+                specialist_outputs,
+                scoped_identity_surface,
+            )
+        )
+        claim_by_alias = {
+            str(claim["claim_id"]): claim
+            for specialist in projected_specialists
+            for claim in specialist.get("judgment_layer", ())
+            if isinstance(claim, Mapping) and claim.get("claim_id")
+        }
+
+        def statuses(raw_aliases: Any) -> list[str]:
+            expanded = alias_table.expand_list(
+                raw_aliases,
+                expected_kind="claim",
+                allow_empty=False,
+            )
+            if isinstance(expanded, ScopedIdentityViolation):
+                raise S3ScopedIdentityContractError(expanded)
+            aliases = [str(alias) for alias in raw_aliases]
+            if any(alias not in claim_by_alias for alias in aliases):
+                raise S3ScopedIdentityContractError(
+                    ScopedIdentityViolation(
+                        identity_kind="claim",
+                        failure_subtype="unknown_scoped_ref",
+                        failing_item_count=1,
+                    )
+                )
+            return [
+                str(claim_by_alias[alias].get("epistemic_status") or "unknown")
+                for alias in aliases
+            ]
+
+        def status_text(raw_aliases: Any) -> str:
+            return "、".join(statuses(raw_aliases))
+
+        canonical = deepcopy(dict(segment))
+        for row in canonical.get("cross_cell_dependencies", ()):
+            if not isinstance(row, dict):
+                continue
+            row["statement"] = (
+                "所选主张的本地证据状态为"
+                + status_text(row.get("claim_ids"))
+                + "；本项仅保留关联关系，因果方向仍待复核。"
+            )
+        for row in canonical.get("conflict_adjudications", ()):
+            if not isinstance(row, dict):
+                continue
+            if fact_policy.provider_field_id in row:
+                raise S3ResearchLeadV3ContractError(
+                    failure_family="shape",
+                    failure_subtype="item_schema_invalid",
+                    field_id="conflict_adjudications",
+                    failing_item_count=1,
+                )
+            aliases = row.get("involved_claim_ids")
+            status = status_text(aliases)
+            row[fact_policy.canonical_field_id] = (
+                S3ThreeCellBoundedAgentExecutor
+                ._expected_conflict_fact_presence_summary(
+                    aliases,
+                    claim_by_alias,
+                )
+            )
+            row["resolution_status"] = "unresolved"
+            row["statement"] = (
+                "所选主张的本地证据状态为"
+                + status
+                + "；当前不据此自动判定实质冲突。"
+            )
+            row["terminal_state_summary"] = (
+                "证据状态已由本地 Claim Card 绑定；冲突结论保持 unresolved。"
+            )
+        variant = canonical.get("variant_view")
+        if isinstance(variant, dict):
+            variant["statement"] = (
+                "该变体视图仅组织所选主张与后续任务，不改变本地证据状态。"
+            )
+        for row in canonical.get(gap_policy.provider_field_id, ()):
+            if not isinstance(row, dict):
+                continue
+            row["statement"] = (
+                "所选主张的本地证据状态为"
+                + status_text(row.get("claim_ids"))
+                + "；后续任务已绑定，缺口优先级仍待复核。"
+            )
+        return cls._assemble_research_lead_v6_output(
+            canonical,
+            specialist_outputs,
+            scoped_identity_surface,
+            cell_heads=cell_heads,
+            research_profile=research_profile,
+            capacity=capacity,
+        )
+
+    @classmethod
     def _assemble_research_lead_v6_output(
         cls,
         segment: Mapping[str, Any],
@@ -14417,12 +14742,14 @@ class DeepSeekS3ThreeCellNodeExecutor:
         *,
         research_profile: BoundedResearchProfile,
         capacity: Mapping[str, Any],
+        provider_fact_presence_summary: bool = True,
     ) -> tuple[str, dict[str, Any], dict[str, str]]:
         system, request, binding = cls._research_lead_v5_request(
             payload,
             cell_heads,
             research_profile=research_profile,
             capacity=capacity,
+            provider_fact_presence_summary=provider_fact_presence_summary,
         )
         policy = S3_RESEARCH_LEAD_GAP_ATOM_PROJECTION_POLICY
         request = deepcopy(request)
@@ -14475,6 +14802,63 @@ class DeepSeekS3ThreeCellNodeExecutor:
             "canonical remaining_gaps. Candidate count has no independent "
             "semantic maximum; the supplied raw-wire and token capacities "
             "remain hard. An invalid overflow atom fails the whole response."
+        )
+        return system, request, binding
+
+    @classmethod
+    def _research_lead_v8_request(
+        cls,
+        payload: Mapping[str, Any],
+        cell_heads: list[Mapping[str, Any]],
+        *,
+        research_profile: BoundedResearchProfile,
+        capacity: Mapping[str, Any],
+    ) -> tuple[str, dict[str, Any], dict[str, str]]:
+        system, request, binding = cls._research_lead_v6_request(
+            payload,
+            cell_heads,
+            research_profile=research_profile,
+            capacity=capacity,
+            provider_fact_presence_summary=False,
+        )
+        request = deepcopy(request)
+        binding = dict(binding)
+        request["research_lead_transport_ref"] = (
+            S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_V8_REF
+        )
+        request["output_constraints"].update(
+            {
+                "provider_narratives_are_canonical": False,
+                "claim_evidence_state_narrative_owner": (
+                    "local_deterministic_runtime"
+                ),
+                "claim_evidence_state_local_narrative_policy_ref": (
+                    S3_RESEARCH_LEAD_CLAIM_EVIDENCE_STATE_LOCAL_NARRATIVE_POLICY_REF
+                ),
+                "provider_resolution_status_is_canonical": False,
+            }
+        )
+        binding.update(
+            {
+                "research_lead_transport_ref": (
+                    S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_V8_REF
+                ),
+                "conflict_fact_presence_materialization_policy_ref": (
+                    S3_RESEARCH_LEAD_CONFLICT_FACT_PRESENCE_LOCAL_MATERIALIZATION_POLICY
+                    .policy_ref
+                ),
+                "claim_evidence_state_local_narrative_policy_ref": (
+                    S3_RESEARCH_LEAD_CLAIM_EVIDENCE_STATE_LOCAL_NARRATIVE_POLICY_REF
+                ),
+            }
+        )
+        system = (
+            system
+            + " All narrative strings and resolution_status are non-authoritative "
+            "wire placeholders. The runtime replaces them locally from the exact "
+            "selected aliases and supplied Claim Cards before any Artifact may be "
+            "created. Do not rely on a narrative string to bind an alias to an "
+            "evidence state."
         )
         return system, request, binding
 

@@ -16,6 +16,7 @@ sys.path.insert(0, str(ROOT / "tests" / "contract"))
 from apps.workbench.backend.application.bounded_agent_executor import (
     BOUNDED_AGENT_MANIFEST_ARTIFACT_TYPE,
     BoundedAgentExecutionError,
+    S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_V8_REF,
     S3_OWNER_GRADE_SEGMENTED_SPECIALIST_TRANSPORT_V9_REF,
     build_s3_three_cell_bounded_agent_executor_for_admission,
     compile_fin_0_1_2_s3_production_admission,
@@ -47,10 +48,16 @@ from test_fin_0_1_s4_t05_research_lead_gap_atom_deterministic_projection_zero_ca
 class _CurrentS3ProductionFake:
     """Input-driven compiled atoms plus the established downstream fake."""
 
-    def __init__(self, *, safe_lead: bool) -> None:
+    def __init__(
+        self,
+        *,
+        safe_lead: bool,
+        inject_runtime_owned_lead_field: bool = False,
+    ) -> None:
         _, historical_specialists = _shared_local_id_specialists()
         self.base = _GapAtomV6FullFakeProvider(historical_specialists)
         self.safe_lead = safe_lead
+        self.inject_runtime_owned_lead_field = inject_runtime_owned_lead_field
         self.compiled_calls = 0
 
     @property
@@ -138,17 +145,27 @@ class _CurrentS3ProductionFake:
             )
 
         response = dict(self.base(**kwargs))
-        if self.safe_lead and request["node_id"] == "research_lead":
+        if request["node_id"] == "research_lead":
             output = json.loads(str(response["content"]))
-            labels = "甲乙丙丁戊己庚辛"
-            for row, label in zip(
-                output["remaining_gap_atoms"], labels, strict=True
+            if self.safe_lead:
+                labels = "甲乙丙丁戊己庚辛"
+                for row, label in zip(
+                    output["remaining_gap_atoms"], labels, strict=True
+                ):
+                    row["statement"] = (
+                        str(row["statement"]).split(" #", 1)[0]
+                        + f" {label}"
+                    )
+            if (
+                request.get("research_lead_transport_ref")
+                == S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_V8_REF
             ):
-                row["statement"] = (
-                    str(row["statement"]).split(" #", 1)[0] + f" {label}"
-                )
-            for row in output["conflict_adjudications"]:
-                row["fact_presence_summary"] = "mixed_fact_presence"
+                for row in output["conflict_adjudications"]:
+                    row.pop("fact_presence_summary", None)
+                if self.inject_runtime_owned_lead_field:
+                    output["conflict_adjudications"][0][
+                        "fact_presence_summary"
+                    ] = "mixed_fact_presence"
             response["content"] = json.dumps(
                 output, ensure_ascii=False, sort_keys=True
             )
@@ -226,6 +243,10 @@ def test_current_nvda_exact_input_runs_six_nodes_twelve_interactions(
     admission = _compiled_admission(prepared)
     assert admission.transport_ref == S3_OWNER_GRADE_SEGMENTED_SPECIALIST_TRANSPORT_V9_REF
     assert (
+        admission.research_lead_transport_ref
+        == S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_V8_REF
+    )
+    assert (
         admission.max_provider_calls,
         admission.max_total_cost_usd,
         admission.specialist_max_output_tokens * 3
@@ -284,7 +305,10 @@ def test_current_nvda_exact_input_runs_six_nodes_twelve_interactions(
         "business_artifact_count": 9,
     }
 
-    failing_fake = _CurrentS3ProductionFake(safe_lead=False)
+    failing_fake = _CurrentS3ProductionFake(
+        safe_lead=True,
+        inject_runtime_owned_lead_field=True,
+    )
     failing_executor = build_s3_three_cell_bounded_agent_executor_for_admission(
         admission, chat_completion_fn=failing_fake
     )
@@ -303,5 +327,5 @@ def test_current_nvda_exact_input_runs_six_nodes_twelve_interactions(
     assert len(failure.failure_observation["local_fact_receipts"]) == 3
     assert len(failure.failure_observation["completed_node_receipts"]) == 3
     assert failure.failure_observation["failure_code"] == (
-        "s4_case_numeric_authority_provider_narrative_invalid"
+        "s3_bounded_research_lead_v3_shape_item_schema_invalid"
     )

@@ -78,6 +78,10 @@ CURRENT_IDENTITY_BOUNDARY_IMPLEMENTATION = ROOT / (
     "delivery_identity_boundary_scope_replacement_minimum_zero_call_"
     "implementation_v1_0.json"
 )
+CURRENT_RESEARCH_LEAD_V8_IMPLEMENTATION = ROOT / (
+    "configs/releases/fin_ia_0_1_2_s3_t03_research_lead_v8_local_"
+    "semantic_materialization_minimum_zero_call_implementation_v1_0.json"
+)
 
 
 def _provider_response(
@@ -684,7 +688,18 @@ def test_implementation_record_binds_current_code_and_next_gate() -> None:
             relative_path
         )
         if current_digest is not None:
-            assert current_digest == observed
+            if current_digest == observed:
+                continue
+        v8 = json.loads(
+            CURRENT_RESEARCH_LEAD_V8_IMPLEMENTATION.read_text(
+                encoding="utf-8"
+            )
+        )
+        if v8["exact_code_bindings"].get(relative_path) == observed:
+            continue
+        if relative_path in v8["historical_exact_binding_supersession"][
+            "allowed_changed_paths"
+        ]:
             continue
         assert relative_path in current[
             "historical_exact_binding_supersession"

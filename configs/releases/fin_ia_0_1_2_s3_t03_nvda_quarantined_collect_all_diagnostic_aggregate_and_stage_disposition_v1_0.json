@@ -1,0 +1,73 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_nvda_quarantined_collect_all_diagnostic_aggregate_and_stage_disposition_v1_0",
+  "decision_id": "FIN-0.1.2-S3-T03-NVDA-QUARANTINED-COLLECT-ALL-DIAGNOSTIC-R1-AGGREGATE",
+  "recorded_at": "2026-08-03T22:00:00+08:00",
+  "status": "diagnostic_complete_non_promotable_structural_S3_T03_repair_selected",
+  "authority": {
+    "user_instruction": "Fix the current blocker, continue the remaining chain with DeepSeek Pro, expose the full-chain problems, then aggregate and repair them together.",
+    "diagnostic_authority_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_quarantined_collect_all_diagnostic_authority_decision_v1_0.json",
+    "diagnostic_authority_sha256": "548fa5de405d6a99fc3ec2a8e4a09fd34107613069a0e974cbfef4155c7f9179",
+    "formal_failure_replay_or_rewrite_authorized": false,
+    "business_promotion_authorized": false,
+    "replacement_exact_live_authorized": false
+  },
+  "formal_source": {
+    "result_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_terminal_failure_result_v1_0.json",
+    "result_sha256": "42f3dd198696dd6d284c9e3bb67b5fbc093b2491b992785ed46d0cc5e1440a56",
+    "immutable_status": "terminal_failed_at_research_lead_after_7_provider_calls",
+    "business_artifacts": 0,
+    "source_runtime_tree_unchanged": true
+  },
+  "diagnostic_result": {
+    "restricted_result_ref": ".codex_runtime/fin012-s3-t03-nvda-primary-r1-quarantined-collect-all-diagnostic-r1/result.json",
+    "restricted_result_sha256": "2e3d8b6adcddd8e51fadb04f7b6ed73fef73a0ae3514fd2cfb8eedbc788698e7",
+    "restricted_result_bytes": 26846,
+    "status": "diagnostic_terminal_succeeded_quarantined",
+    "source_capture_replays": 7,
+    "local_repair_stage": "research_lead_only",
+    "local_repair_findings": 14,
+    "new_live_calls": ["memo_writer", "verifier"],
+    "new_live_call_count": 2,
+    "new_live_tokens": {"input": 23294, "output": 657, "total": 23951},
+    "new_live_cost_usd": 0.01070448,
+    "retry_fallback_relaunch": [0, 0, 0],
+    "quarantined_artifact_count": 9,
+    "restricted_artifacts_sha256": "4df28e266cd34bbd5e886ae213ef14209740b08939b1b2faa2efc76e95e037e5",
+    "restricted_artifacts_bytes": 208084,
+    "business_artifact_promotions": 0,
+    "paired_assessment_performed": false,
+    "owner_acceptance_performed": false
+  },
+  "aggregate_findings": {
+    "S3_T03_L1_blocker": {
+      "finding": "Research Lead conflated adjacent C002 and C003 evidence-state semantics across dependency, conflict and gap narratives, while the current v6 contract also returned deterministic fact_presence_summary ownership to the Provider.",
+      "downstream_contract_failure_after_local_lead_repair": false,
+      "selected_repair": "Research Lead v8 keeps Provider-selected relationship aliases but locally materializes every claim-evidence-state narrative, conflict fact presence, conflict resolution status and existing gap projection from exact Claim Cards."
+    },
+    "S3_T04_product_quality_backlog": [
+      {
+        "finding": "The frozen NVDA fixture is sparse: three of four claims remain cannot_infer.",
+        "ownership": "S3_T04_evidence_and_product_value_assessment",
+        "blocks_S3_T03_contract_repair": false
+      },
+      {
+        "finding": "The local final-report renderer exposes crude forms such as __company_total__, FY2025-FY, duplicated USD and semicolon concatenation.",
+        "ownership": "S3_T04_delivery_quality_and_paired_assessment",
+        "blocks_S3_T03_contract_repair": false
+      },
+      {
+        "finding": "The Verifier sees Lead and Writer objects but not the final locally rendered delivery preview, so visual_delivery=pass does not prove the final report surface.",
+        "ownership": "S3_T04_verifier_rubric_input_coverage_and_owner_acceptance",
+        "blocks_S3_T03_contract_repair": false
+      }
+    ]
+  },
+  "stage_disposition": {
+    "S3_T03": "formal_failure_remains_immutable_structural_v8_zero_call_implementation_allowed",
+    "S3_T04": "blocked_until_a_fresh_replacement_exact_live_succeeds_but_quality_debt_preassigned",
+    "S0_S1_S2": "not_reopened",
+    "product_version": "FIN_0_1_2_unchanged",
+    "diagnostic_is_acceptance": false
+  },
+  "next_action": "FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-MATERIALIZATION-INDEPENDENT-ZERO-CALL-PROOF-DECISION"
+}

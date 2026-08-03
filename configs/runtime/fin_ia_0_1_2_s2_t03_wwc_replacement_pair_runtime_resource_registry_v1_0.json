@@ -1,0 +1,48 @@
+{
+  "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
+  "registry_id": "FIN-0.1.2-S2-T03-WWC-V1.2-REPLACEMENT-PAIR-RUNTIME-RESOURCE-REGISTRY-R1",
+  "status": "tracked_typed_runtime_resource_authority",
+  "policy": {
+    "registry_is_source_of_truth": true,
+    "static_scanner_is_detector_only": true,
+    "direct_unregistered_runtime_read_fails_closed": true,
+    "missing_unknown_duplicate_or_digest_drift_fails_closed": true,
+    "permutation_or_cross_version_fails_closed": true,
+    "ignored_untracked_codex_runtime_and_git_forbidden": true,
+    "traversal_and_symlink_escape_forbidden": true
+  },
+  "detector_python_refs": [
+    "apps/workbench/backend/application/fin_0_1_2_s2_wwc_replacement_pair_runner.py"
+  ],
+  "resource_count": 2,
+  "resource_bytes": 283320,
+  "resource_canonical_digest": "a7b5ee22bb4a512589e738a0e5701a62c585ecb4b4295b53657ca1e416762f89",
+  "resources": [
+    {
+      "resource_id": "fin_0_1_2.s2.t03.wwc_v12_mu_exact_input_fixture",
+      "repo_relative_path": "tests/fixtures/fin_0_1_2/mu_realistic_three_cell_exact_input_v1.json",
+      "sha256": "84e2f2adf08423e6f7f7d2ab688656f2b1f47e83d5e62c24fb7fa25d82679909",
+      "bytes": 275275,
+      "classification": "hermetic_exact_input_fixture",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s2_wwc_replacement_pair_runner.build_bound_replacement_pair"
+      ],
+      "load_phase": "S2_T03_WWC_v1_2_replacement_preflight_and_exact_execution",
+      "required": true,
+      "source_owner": "tests.contract.fin_0_1_2_realistic_fixture_support"
+    },
+    {
+      "resource_id": "fin_0_1_2.s2.t03.wwc_v12_replacement_pair_authority",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_2_s2_t03_wwc_v12_independent_zero_call_proof_and_replacement_pair_conditional_authority_decision_v1_0.json",
+      "sha256": "e55e0b41a47df0a63af472df0f2456d9f5f692bf3a8ed892ce158ea812bb75d2",
+      "bytes": 8045,
+      "classification": "conditional_exact_execution_authority",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s2_wwc_replacement_pair_runner.build_bound_replacement_pair"
+      ],
+      "load_phase": "S2_T03_WWC_v1_2_replacement_preflight_and_exact_execution",
+      "required": true,
+      "source_owner": "configs.releases.fin_0_1_2_s2_t03_wwc_v12_replacement_authority"
+    }
+  ]
+}

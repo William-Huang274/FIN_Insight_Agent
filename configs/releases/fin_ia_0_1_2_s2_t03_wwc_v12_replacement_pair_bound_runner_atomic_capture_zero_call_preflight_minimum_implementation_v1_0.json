@@ -1,0 +1,213 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_t03_wwc_v12_replacement_pair_bound_runner_atomic_capture_zero_call_preflight_minimum_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S2-T03-WWC-V1.2-REPLACEMENT-PAIR-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION",
+  "recorded_at": "2026-08-03T11:30:58+08:00",
+  "status": "pass_engineering_and_zero_call_preflight_conditional_exact_two_call_authority_effective_execution_not_started",
+  "authority": {
+    "user_instruction": "继续",
+    "runner_preflight_implementation_authorized_and_executed": true,
+    "conditional_replacement_pair_authority_now_effective": true,
+    "current_exact_execution_started": false,
+    "current_credential_read_authorized": false,
+    "current_model_provider_network_calls_authorized": 0,
+    "Fact_or_Claim_rerun_authorized": false,
+    "T04_or_model_selection_authorized": false
+  },
+  "authority_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s2_t03_wwc_v12_independent_zero_call_proof_and_replacement_pair_conditional_authority_decision_v1_0.json",
+    "sha256": "e55e0b41a47df0a63af472df0f2456d9f5f692bf3a8ed892ce158ea812bb75d2",
+    "authority_id": "FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-REPLACEMENT-PAIR-R1",
+    "execution_identity": "fin012-s2-t03-mu-wwc-v12-replacement-pair-r1"
+  },
+  "implementation_bindings": [
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s2_paired_model_canary.py",
+      "sha256": "f6d4321556012d643c64f87006a6f60dfac1fec56f2b48f0622edcbdd4b10fb5",
+      "bytes": 26595
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s2_wwc_replacement_pair_runner.py",
+      "sha256": "9b5ad12e509dd99a14b4ad5175309c66d80d362e57da38e8f71cf62fbada3763",
+      "bytes": 34283
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_2.json",
+      "sha256": "59e0777ffc0522b7b86545aef786467a468440d8ddddc239b51434491f240b57",
+      "bytes": 2493
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_2.json",
+      "sha256": "8158e4206dd69a4ec688170f8281001ed7ca26be5fca2dc2a37f088873a85985",
+      "bytes": 4768
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s2_deepseek_model_candidate_registry_v1_0.json",
+      "sha256": "bbfd0ab03bfd008c5fd14437fb4c4e920234bbb91ea52493f27cd40ebb2502e2",
+      "bytes": 1816
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s2_runtime_resource_registry_v1_1.json",
+      "sha256": "5341ad1b6334da7f53462b988c6a4492c53db1af4b5ab04051c3ef5491c3e724",
+      "bytes": 2952
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s2_t03_wwc_replacement_pair_runtime_resource_registry_v1_0.json",
+      "sha256": "52a403da85237848e0b3d81cf02c814ba6455151006a0e2bacde4a9d02ef6ebb",
+      "bytes": 2310
+    },
+    {
+      "ref": "scripts/releases/prepare_fin_ia_0_1_2_s2_t03_wwc_replacement_pair_runner_preflight.py",
+      "sha256": "bdc20b82df34722ba66396e919c37e2840506de564b11ba2325e7c8d283fce53",
+      "bytes": 7356
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s2_t03_wwc_replacement_pair_runner_atomic_capture_preflight.py",
+      "sha256": "d987940dbe68fba0196bd804f5cf6e450cb60729b89848bd3b5982bfb5b01615",
+      "bytes": 11370
+    },
+    {
+      "ref": "tests/fixtures/fin_0_1_2/mu_realistic_three_cell_exact_input_v1.json",
+      "sha256": "84e2f2adf08423e6f7f7d2ab688656f2b1f47e83d5e62c24fb7fa25d82679909",
+      "bytes": 275275
+    }
+  ],
+  "historical_immutability": {
+    "shared_compiler_sha256": "f6d4321556012d643c64f87006a6f60dfac1fec56f2b48f0622edcbdd4b10fb5",
+    "shared_compiler_expected_sha256": "f6d4321556012d643c64f87006a6f60dfac1fec56f2b48f0622edcbdd4b10fb5",
+    "historical_six_call_authority_rewritten": false,
+    "historical_six_call_runner_rewritten": false,
+    "historical_v11_source_or_binding_rewritten": false
+  },
+  "zero_call_preflight": {
+    "schema_version": "fin_ia_0_1_2_s2_t03_wwc_v12_replacement_pair_zero_call_preflight_v1_0",
+    "status": "pass_zero_call_exact_two_call_runner_atomic_capture_terminal_budget_identity_and_stop_rule_preflight",
+    "authority_decision_id": "FIN-0.1.2-S2-T03-WWC-V2-INDEPENDENT-ZERO-CALL-PROOF-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-AUTHORITY-DECISION",
+    "replacement_authority_id": "FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-REPLACEMENT-PAIR-R1",
+    "execution_identity": "fin012-s2-t03-mu-wwc-v12-replacement-pair-r1",
+    "exact_call_count": 2,
+    "exact_calls": [
+      {
+        "call_id": "fin012-s2-mu-what_would_change_atoms-flash_stable-replacement-r1",
+        "family_id": "what_would_change_atoms",
+        "candidate_id": "flash_stable",
+        "model_ref": "deepseek:deepseek-v4-flash",
+        "model_visible_request_digest": "0c52c9ab17fdfde457686a4ff15326e83ea0a5f8cd04207fa25aeada454881c2",
+        "request_equivalence_digest": "543836b68295bb7fdab4e4db44011d7bff5384e6f536f440b7e912309347de90"
+      },
+      {
+        "call_id": "fin012-s2-mu-what_would_change_atoms-pro_preview-replacement-r1",
+        "family_id": "what_would_change_atoms",
+        "candidate_id": "pro_preview",
+        "model_ref": "deepseek:deepseek-v4-pro",
+        "model_visible_request_digest": "0c52c9ab17fdfde457686a4ff15326e83ea0a5f8cd04207fa25aeada454881c2",
+        "request_equivalence_digest": "543836b68295bb7fdab4e4db44011d7bff5384e6f536f440b7e912309347de90"
+      }
+    ],
+    "route": {
+      "provider": "deepseek",
+      "base_url": "https://api.deepseek.com/beta",
+      "wire_api": "chat_completions_json_object",
+      "thinking": "disabled",
+      "maximum_transport_attempts_per_call": 1
+    },
+    "capture_contract": {
+      "atomic_content_addressed_write_and_readback_proved": true,
+      "capture_before_local_validation_proved": true,
+      "terminal_result_persistence_proved": true,
+      "credentials_headers_cookies_private_reasoning_excluded": true,
+      "business_promotable": false
+    },
+    "fake_execution_proofs": {
+      "happy_pair_statuses": [
+        "pass",
+        "pass"
+      ],
+      "semantic_failure_continues_pair": true,
+      "transport_failure_stops_pair": true,
+      "execution_identity_reuse_fails_closed": true,
+      "Fact_or_Claim_calls": 0
+    },
+    "budget": {
+      "projected_worst_case_cost_usd": 0.006786,
+      "authorized_maximum_cost_usd": 0.015,
+      "replacement_pair_calls": 2,
+      "Fact_or_Claim_calls": 0
+    },
+    "fresh_canonical_execution_identity_unclaimed": true,
+    "credential_checked": false,
+    "credential_reads": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "business_Run_or_Artifact_writes": 0,
+    "next_action": "FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-REPLACEMENT-PAIR-EXACT-EXECUTION"
+  },
+  "verification": {
+    "focused_replacement_runner_tests": {
+      "passed": 13,
+      "failed": 0
+    },
+    "combined_S2_and_historical_immutability_regression": {
+      "passed": 86,
+      "failed": 0
+    },
+    "exact_authority_call_digests_matched": 2,
+    "happy_semantic_transport_fake_paths_proved": [
+      2,
+      2,
+      1
+    ],
+    "atomic_capture_before_validation": true,
+    "terminal_materialization": true,
+    "execution_identity_reuse_blocked": true,
+    "raw_provider_envelope_persisted": false,
+    "projected_worst_case_cost_usd": 0.006786,
+    "credential_model_provider_network_calls": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "business_Run_or_Artifact_writes": 0
+  },
+  "issue_disposition": {
+    "RC_P36_102": "runner_preflight_pass_fair_replacement_measurement_pending",
+    "RC_P36_103": "runner_preflight_pass_fair_replacement_measurement_pending",
+    "issues_closed_now": 0
+  },
+  "stage_acceptance": {
+    "S2_T03_WWC_v12_independent_proof": "pass",
+    "S2_T03_replacement_pair_runner_preflight": "pass",
+    "S2_T03_replacement_pair_execution": "authority_effective_not_started",
+    "S2_T03_fair_WWC_measurement": "pending",
+    "S2_T04": "not_entered",
+    "S2": "not_passed",
+    "S3_to_S5": "not_started",
+    "release_qualified": false
+  },
+  "observed_counts": {
+    "credential_reads": 0,
+    "model_provider_network_calls": [
+      0,
+      0,
+      0
+    ],
+    "replacement_pair_calls": 0,
+    "Fact_or_Claim_calls": 0,
+    "business_Run_or_Artifact_writes": 0
+  },
+  "stop_rules": {
+    "exact_execution_requires_new_user_continuation": true,
+    "retry_fallback_provider_hopping_prompt_only_retry": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "new_project_owned_failure_after_replacement": "S2_honest_block_no_second_repair_bundle",
+    "true_model_noncompliance_or_weak_quality": "record_once_no_retry_then_T04_or_honest_block"
+  },
+  "next_action": "FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-REPLACEMENT-PAIR-EXACT-EXECUTION",
+  "next_action_authorized": false,
+  "known_boundary": "Runner/preflight pass makes the existing conditional authority technically effective but does not execute either model, create fair WWC evidence, close RC-P36-102/103, enter T04, select a model, pass S2 or qualify a release."
+}

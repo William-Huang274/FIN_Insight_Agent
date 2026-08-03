@@ -1,0 +1,102 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S2-T03-WWC-V1.2-REPLACEMENT-RUNNER-PREFLIGHT-PASS-R18",
+  "recorded_at": "2026-08-03T11:30:58+08:00",
+  "status": "current_FIN_0_1_2_S2_T03_WWC_v1_2_replacement_runner_preflight_pass_exact_pair_authority_effective_execution_not_started",
+  "lifecycle_state": "in_progress",
+  "implementation_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s2_t03_wwc_v12_replacement_pair_bound_runner_atomic_capture_zero_call_preflight_minimum_implementation_v1_0.json",
+    "sha256": "3e6f5e55993ae452c24e3890470389ccc69ad6fad99ce87fc954c8c19929d3a1",
+    "binding_role": "S2_T03_WWC_v1_2_replacement_pair_bound_runner_atomic_capture_zero_call_preflight_pass"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S2",
+    "active_slice": "FIN_0_1_2_S2_T03_MU_WWC_V1_2_REPLACEMENT_PAIR_EXACT_EXECUTION",
+    "current_next_action": "FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-REPLACEMENT-PAIR-EXACT-EXECUTION",
+    "current_stage_status": "S2_T03_WWC_v1_2_runner_preflight_pass_exact_pair_authority_effective_execution_not_started",
+    "S2_started": true,
+    "S2_stage_plan_passed": true,
+    "S2_T02_engineering_passed": true,
+    "S2_model_calls": 6,
+    "S2_terminal_results": 6,
+    "S2_restricted_captures": 6,
+    "S2_replacement_pair_calls": 0,
+    "fair_capability_evidence_calls": 4,
+    "WWC_fair_capability_evidence_calls": 0,
+    "WWC_v12_engineering_passed": true,
+    "WWC_v12_independent_proof_passed": true,
+    "WWC_v12_replacement_runner_preflight_passed": true,
+    "WWC_v12_exact_pair_authority_effective": true,
+    "WWC_v12_exact_pair_execution_started": false,
+    "WWC_v12_exact_pair_call_count": 2,
+    "WWC_v12_Fact_or_Claim_rerun": false,
+    "WWC_v12_request_digest": "0c52c9ab17fdfde457686a4ff15326e83ea0a5f8cd04207fa25aeada454881c2",
+    "WWC_v12_equivalence_digest": "543836b68295bb7fdab4e4db44011d7bff5384e6f536f440b7e912309347de90",
+    "completed_current_stages": {
+      "S0": "pass_closed",
+      "S1": "pass_closed_current_consolidated_baseline"
+    },
+    "current_S2_tasks": {
+      "S2_T01": "pass",
+      "S2_T02": "engineering_pass",
+      "S2_T03": "replacement_runner_preflight_pass_fair_WWC_measurement_pending",
+      "S2_T04": "not_entered_blocked_by_missing_fair_WWC_pair"
+    },
+    "downstream_stages_started": {
+      "S2": true,
+      "S3": false,
+      "S4": false,
+      "S5": false
+    },
+    "open_issue_ids": [
+      "RC-P36-102-fin-0-1-2-s2-t03-wwc-review-cadence-date-alias-model-visible-contract-parity-gap",
+      "RC-P36-103-fin-0-1-2-s2-t03-wwc-selected-task-claim-binding-loop-state-leak"
+    ],
+    "model_candidates": [
+      "deepseek:deepseek-v4-flash",
+      "deepseek:deepseek-v4-pro"
+    ],
+    "model_selection": "not_permitted_before_fair_WWC_replacement_and_T04",
+    "replacement_pair": "exact_authority_effective_execution_not_started_user_continuation_required",
+    "known_preexisting_non_gating_baseline": "historical_S4_changed_family_runner_canary_exact_template_drift_reproduces_on_clean_HEAD_2dba2e9a",
+    "strict_schema_transport": "sub2api_gpt_5_5_parked_nonblocking_separate_handoff",
+    "FIN_0_1_3_role": "historical_FIN_0_1_2_S0_recovery_attempt_family",
+    "FIN_0_1_4_role": "historical_unexecuted_S0_improvement_proposal",
+    "FIN_0_2": "Earnings_Review_Alpha_unchanged",
+    "release_qualified": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "product_plan": "docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md",
+    "S2_technical_plan": "docs/architecture/repository/FIN_0_1_2_S2_DEEPSEEK_FLASH_STABLE_PRO_PREVIEW_NATURAL_CAPABILITY_ENVELOPE_STAGE_PLAN_20260802.zh-CN.md",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "S2_T03_WWC_v12_implementation": "configs/releases/fin_ia_0_1_2_s2_t03_wwc_contract_parity_and_row_local_binding_consolidated_zero_call_implementation_v1_0.json",
+    "S2_T03_WWC_v12_proof_and_authority": "configs/releases/fin_ia_0_1_2_s2_t03_wwc_v12_independent_zero_call_proof_and_replacement_pair_conditional_authority_decision_v1_0.json",
+    "S2_T03_WWC_v12_replacement_runner_preflight": "configs/releases/fin_ia_0_1_2_s2_t03_wwc_v12_replacement_pair_bound_runner_atomic_capture_zero_call_preflight_minimum_implementation_v1_0.json",
+    "replacement_runtime_registry": "configs/runtime/fin_ia_0_1_2_s2_t03_wwc_replacement_pair_runtime_resource_registry_v1_0.json",
+    "current_runtime_source": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_2.json",
+    "current_runtime_binding": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_2.json"
+  },
+  "historical_projection_policy": {
+    "immutable_event_files_remain_valid_for_historical_facts": true,
+    "historical_files_may_own_current_next_or_backlog_tail": false,
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_16.json",
+    "superseded_projection_deleted_or_rewritten": false
+  },
+  "execution_authority": {
+    "independent_zero_call_proof_consumed": true,
+    "conditional_replacement_pair_authority_issued": true,
+    "replacement_runner_preflight_passed": true,
+    "replacement_pair_exact_authority_effective": true,
+    "replacement_pair_execution_started": false,
+    "current_turn_model_provider_network_calls_authorized": 0,
+    "new_user_continuation_required_before_exact_execution": true,
+    "automatic_retry_fallback_provider_hopping_authorized": false,
+    "T04_or_model_selection_authorized": false,
+    "business_Run_or_Artifact_writes_authorized": false,
+    "full_chain_authorized": false
+  }
+}

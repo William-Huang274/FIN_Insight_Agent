@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S1 pass closed / S2-T03 WWC v1.2 engineering pass and independent proof pending / S3-S5 not started`
+状态：`current canonical plan / S0-S1 pass closed / S2-T03 WWC v1.2 replacement runner preflight pass and exact pair pending / S3-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -74,11 +74,13 @@ RC-P36-102 留在 S2-T03。进一步的受限 Pro 结果重放还发现本地 ta
 
 旧 v1.1 资源和历史 S4 authority 没有改写；v1.2 只属于 S2 paired-canary。随后两个 fresh Python process 在两个独立 disposable roots 中完成零调用复证：凭据环境清除、网络硬阻断、8 项实现 binding、v1.1 immutable hash、日期正负矩阵、逐行 Claim/Authority、permutation、6→3 selection、三案 fake 和受限形状重放结果逐字节相同。独立 proof 因此通过，但 RC-P36-102/103 仍不关闭，因为还没有公平自然 WWC 输出。
 
-现已签发“有条件的未来两调用 authority”：只允许 MU 的 WWC family，Flash stable 与 Pro preview 各一次；Fact/Claim 不重跑，retry/fallback/provider hopping 均为 0，总预算上限 `2 calls / 10k input / 2.8k output / USD 0.015 / 300s`。该权限必须先经过专用 two-call runner、atomic capture-first、terminal materialization、fresh identity 与预算的零调用 preflight，当前不能读取凭据或执行。当前下一项：
+现已签发“有条件的未来两调用 authority”：只允许 MU 的 WWC family，Flash stable 与 Pro preview 各一次；Fact/Claim 不重跑，retry/fallback/provider hopping 均为 0，总预算上限 `2 calls / 10k input / 2.8k output / USD 0.015 / 300s`。专用 two-call runner 与零调用 preflight 随后已通过：authority、MU fixture、v1.2 contract 和两个 request/equivalence digest 均重新绑定；happy、semantic-continue、transport-stop、capture/budget-stop、fresh identity 不可复用和 capture-before-validation 均已确定性证明。focused=`13 passed`，S2/历史不可变性组合回归=`86 passed`，外部调用为 0。
 
-`FIN-0.1.2-S2-T03-WWC-V1.2-REPLACEMENT-PAIR-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`
+共享六调用 compiler 是旧 authority 和独立 proof 的哈希冻结资产，因此 pair 适配器被隔离在新 runner 子类中；共享 compiler 恢复并保持原 SHA256，旧六调用 authority/runner、v1.1 source/binding 和失败证据均未改写。现有 conditional authority 已满足技术 precondition，但本轮没有自动执行。当前下一项：
 
-该下一项仍为零模型调用；不得在同一项执行两次 replacement、重跑 Fact/Claim、进入 T04 或选择模型。
+`FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-REPLACEMENT-PAIR-EXACT-EXECUTION`
+
+该执行仍需用户新的“继续”。它只能消费 Flash/Pro 各一次，不能重跑 Fact/Claim、retry、fallback、provider hopping、创建业务 Artifact、进入 T04 或选择模型；RC-P36-102/103 只有在公平两结果形成并完成后续处置时才能关闭。
 
 以下 S0 收口说明保留为 preceding current-baseline evidence：
 

@@ -169,3 +169,24 @@ RC-P36-102/103 状态为 `implementation pass / independent proof pending`，尚
 `FIN-0.1.2-S2-T03-WWC-V1.2-REPLACEMENT-PAIR-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`
 
 下一项不得读取凭据或执行 replacement pair；runner/preflight 通过后仍需另行确认 exact execution 边界。
+
+## 17. WWC v1.2 replacement pair runner 与零调用 preflight
+
+专用 runner 已与 conditional authority、MU exact fixture、v1.2 Runtime contract 和两个 authority call ID 绑定。它只编译 `what_would_change_atoms` 的 Flash/Pro pair；Fact/Claim 不进入 call plan。请求摘要继续为 `0c52c9ab...81c2 / 543836b6...de90`，每调用 `max_transport_attempts=1`，retry/fallback/provider hopping/prompt-only retry 均为 0。
+
+共享 paired-canary compiler 已被历史六调用 authority 和 WWC v1.2 独立 proof 哈希绑定。开发中一度把 family-pair 入口加进共享文件，受影响回归立即以 3 个 immutable hash failure 拒绝；因此该改动在本项内撤回，共享 compiler 恢复原 SHA256=`f6d43215...10fb5`。新 call-ID 适配器只存在于专用 runner 子类中，不重写历史六调用代码、authority、v1.1 source/binding 或旧 terminal evidence。
+
+零调用 preflight 在 disposable runtime 中证明：
+
+- 原子内容寻址 write/readback；
+- 每个 assistant output 先 capture，再进入本地 semantic validation，之后独立 terminalize；
+- happy pair 两项通过；第一项 semantic failure 时第二项继续；transport failure 时第二项不启动；
+- capture/budget failure fail-closed，sanitized execution result 不回显异常文本或 raw Provider envelope；
+- execution identity 第一次原子 claim，第二次复用被拒绝；canonical identity 当前未占用；
+- worst-case 估算 `USD 0.006786 < 0.015`；credential/model/Provider/network/business Run/Artifact 均为 0。
+
+focused replacement-runner tests=`13 passed`，S2 与历史不可变性组合回归=`86 passed`。这使既有 conditional two-call authority 的技术前置条件成立，但不是模型执行、自然 WWC 证据或 T04。当前下一项：
+
+`FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-REPLACEMENT-PAIR-EXACT-EXECUTION`
+
+该项需要新的用户续行，只能执行固定两调用一次。真实执行若出现新的项目内 comparator 缺陷，S2 honest block，不开第二 repair/replacement；若是模型不遵循或弱质量，则如实记录且不重试。

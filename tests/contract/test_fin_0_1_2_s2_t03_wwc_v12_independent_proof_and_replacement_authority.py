@@ -102,7 +102,7 @@ def test_implementation_binding_drift_fails_closed() -> None:
         _verify_implementation_bindings(implementation)
 
 
-def test_projection_and_backlog_advance_only_to_runner_preflight() -> None:
+def test_historical_projection_remains_bound_after_backlog_advances() -> None:
     decision = _load(DECISION)
     projection = _load(PROJECTION)
     backlog = _load(BACKLOG)["next_action"]
@@ -120,9 +120,12 @@ def test_projection_and_backlog_advance_only_to_runner_preflight() -> None:
     assert projection["execution_authority"][
         "replacement_pair_execution_authorized_now"
     ] is False
-    assert backlog["item_id"] == NEXT_ACTION
-    assert backlog["current_projection_ref"] == projection_ref
-    assert backlog["current_projection_sha256"] == projection_sha
+    assert backlog["item_id"] == (
+        "FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-"
+        "REPLACEMENT-PAIR-EXACT-EXECUTION"
+    )
+    assert backlog["current_projection_ref"] != projection_ref
+    assert backlog["current_projection_sha256"] != projection_sha
     assert backlog["S2_T03_independent_zero_call_proof_ref"] == decision_ref
     assert backlog["S2_T03_independent_zero_call_proof_sha256"] == decision_sha
     assert backlog["S2_T03_future_WWC_replacement_pair_authorized"] is True

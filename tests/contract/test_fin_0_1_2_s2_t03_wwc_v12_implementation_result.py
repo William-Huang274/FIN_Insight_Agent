@@ -119,13 +119,26 @@ def test_history_and_project_os_state_remain_honest() -> None:
     assert latest_103["verification"]["row_local_claim_authority_matrix"] == "pass"
 
     capabilities = _load_jsonl(CAPABILITY_LEDGER)
-    assert capabilities[-1]["status"].startswith("independent_proof_pass")
-    assert capabilities[-1]["authority"][
+    proof = [
+        row
+        for row in capabilities
+        if row["capability_id"]
+        == "fin_0_1_2_S2_T03_WWC_v1_2_independent_zero_call_proof_and_conditional_replacement_authority"
+    ][-1]
+    assert proof["status"].startswith("independent_proof_pass")
+    assert capabilities[-1]["status"].startswith("engineering_and_preflight_pass")
+    assert proof["authority"][
         "future_replacement_pair_conditionally_authorized"
     ] is True
-    assert capabilities[-1]["authority"][
+    assert proof["authority"][
         "replacement_execution_authorized_now"
     ] is False
+    assert capabilities[-1]["authority"]["exact_execution_started"] is False
     patterns = _load_jsonl(PATTERN_LEDGER)
-    assert patterns[-1]["verification"]["fresh_processes"] == 2
+    independent_pattern = [
+        row
+        for row in patterns
+        if row["status"].endswith("runner_preflight_pending")
+    ][-1]
+    assert independent_pattern["verification"]["fresh_processes"] == 2
     assert patterns[-1]["verification"]["replacement_calls_executed"] == 0

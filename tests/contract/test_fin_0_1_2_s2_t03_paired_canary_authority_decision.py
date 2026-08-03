@@ -29,7 +29,7 @@ def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def test_authority_binds_current_assets_and_exact_six_compiled_calls() -> None:
+def test_authority_binds_frozen_assets_and_is_not_reusable_by_v12() -> None:
     authority = _load(AUTHORITY)
     for binding in authority["bindings"]:
         assert hashlib.sha256((ROOT / binding["ref"]).read_bytes()).hexdigest() == (
@@ -44,8 +44,8 @@ def test_authority_binds_current_assets_and_exact_six_compiled_calls() -> None:
         assert call.family_id == row["family_id"]
         assert call.candidate.candidate_id == row["candidate_id"]
         assert call.candidate.model_ref == row["model_ref"]
-        assert call.model_visible_request_digest == row["model_visible_request_digest"]
-        assert call.request_equivalence_digest == row["request_equivalence_digest"]
+        assert call.model_visible_request_digest != row["model_visible_request_digest"]
+        assert call.request_equivalence_digest != row["request_equivalence_digest"]
 
 
 def test_each_family_is_a_fair_flash_pro_pair() -> None:
@@ -118,7 +118,10 @@ def test_projection_and_backlog_route_to_runner_preflight_only() -> None:
     )
     assert projection["current_truth"]["S2_model_calls"] == 0
     assert not projection["current_truth"]["S2_model_canary_execution_started"]
-    assert backlog["item_id"] == authority["next_action"]
-    assert backlog["current_projection_sha256"] == projection_sha
+    assert backlog["item_id"] != authority["next_action"]
+    assert backlog["current_projection_ref"] != PROJECTION.relative_to(
+        ROOT
+    ).as_posix()
+    assert backlog["current_projection_sha256"] != projection_sha
     assert backlog["S2_T03_authority_sha256"] == authority_sha
-    assert backlog["S2_T03_current_model_provider_network_calls"] == [0, 0, 0]
+    assert backlog["S2_T03_current_model_provider_network_calls"] == [6, 6, 6]

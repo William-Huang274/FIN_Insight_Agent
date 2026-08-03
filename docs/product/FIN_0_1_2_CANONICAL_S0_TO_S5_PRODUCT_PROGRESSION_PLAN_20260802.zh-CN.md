@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S1 pass closed / S2-T03 WWC two project defects consolidated into one repair / S3-S5 not started`
+状态：`current canonical plan / S0-S1 pass closed / S2-T03 WWC v1.2 engineering pass and independent proof pending / S3-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -12,7 +12,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭；S2-T03 六个真实模型调用已全部终止并留存证据，但 WWC paired measurement 被项目自身未公开的跨字段校验规则污染，暂不能排名或进入 T04；
+- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭；S2-T03 六个真实模型调用已全部终止并留存证据，WWC v1.2 比较器修复已工程通过，但独立 proof 和公平 replacement pair 尚未发生，暂不能排名或进入 T04；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
@@ -70,9 +70,13 @@ StagePlan 同时发现 `common_runtime_contract_family_source_v1_0` 的状态文
 
 RC-P36-102 留在 S2-T03。进一步的受限 Pro 结果重放还发现本地 task assembly 把多 Claim atoms 错绑到循环结束时的最后一个 Claim，形成 terminal false green，登记 RC-P36-103。因此有效能力证据只有 Fact/Claim 四项，WWC 两模型都必须重新公平测量；T04、模型排名和主线模型选择均未进入。
 
-处置决定把两个 WWC comparator 缺陷合并为唯一零调用结构包：公开并同源编译 cadence/date 条件，同时改为每个 selected atom 自己展开 Claim ID；用三案 full-fake、多 Claim/permutation/subset 和受限 Pro replay 一次证明。实现通过后才另行审查 WWC 两调用 replacement authority，不重跑 Fact/Claim，不扩大到 full-chain。当前下一项：
+唯一 WWC v1.2 零调用结构包现已工程通过。cadence/date 条件由同一声明投影到模型可见合同、wire、instruction、validator、fake 和 typed failure；最终 Claim 与 Authority 均从各自 selected atom 展开。测试矩阵在开发轮内达到 focused=`31/31`、相关回归=`89/89`，三案 fake 各 6/6，受限 Pro capture 重放不再把 `Q001/Q002/Q001` 压成单一 Claim。实现时还发现 `authority_refs` 与 Claim 相同地读取循环终态，已在同一根因、同一包内收口，没有开启第二补丁包。
 
-`FIN-0.1.2-S2-T03-WWC-CONTRACT-PARITY-AND-ROW-LOCAL-CLAIM-BINDING-CONSOLIDATED-ZERO-CALL-IMPLEMENTATION`
+旧 v1.1 资源和历史 S4 authority 没有改写；v1.2 只属于 S2 paired-canary。RC-P36-102/103 暂不关闭，因为同轮工程测试不等于独立 proof，更不等于公平模型结果。当前下一项：
+
+`FIN-0.1.2-S2-T03-WWC-V2-INDEPENDENT-ZERO-CALL-PROOF-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-AUTHORITY-DECISION`
+
+该下一项仍为零模型调用：独立复证 v1.2，并决定是否另行签发最多 2 次 MU WWC replacement authority；不得在同一项直接执行两次调用、重跑 Fact/Claim、进入 T04 或选择模型。
 
 以下 S0 收口说明保留为 preceding current-baseline evidence：
 

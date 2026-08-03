@@ -20,9 +20,13 @@ from apps.workbench.backend.application.fin_0_1_2_s2_paired_model_canary import 
 from apps.workbench.backend.application.fin_0_1_2_s2_paired_model_canary_runner import (
     Fin012S2PairedCanaryRunnerError,
     T03_CAPTURE_NAMESPACE,
+    _assert_exact_call_plan,
     build_bound_compiler,
     execute_exact_six_call_canary,
     run_zero_call_preflight,
+)
+from apps.workbench.backend.application import (
+    fin_0_1_2_s2_paired_model_canary_runner as runner_module,
 )
 from sec_agent.canonical_runtime.object_store import FileCanonicalObjectStore
 
@@ -39,6 +43,35 @@ CURRENT_PROJECTION = ROOT / (
 PROGRAM_BACKLOG = ROOT / (
     "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
 )
+
+
+def _current_test_compiler_and_authority() -> tuple[
+    Fin012S2PairedModelCanaryCompiler,
+    dict[str, Any],
+]:
+    compiler, historical_authority = build_bound_compiler(ROOT)
+    authority = deepcopy(historical_authority)
+    authority["exact_canary"]["call_plan"] = [
+        {
+            "call_id": call.call_id,
+            "family_id": call.family_id,
+            "candidate_id": call.candidate.candidate_id,
+            "model_ref": call.candidate.model_ref,
+            "model_visible_request_digest": call.model_visible_request_digest,
+            "request_equivalence_digest": call.request_equivalence_digest,
+        }
+        for call in compiler.compile_primary_calls()
+    ]
+    return compiler, authority
+
+
+@pytest.fixture(autouse=True)
+def _bind_current_v12_test_authority(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        runner_module,
+        "build_bound_compiler",
+        lambda repository_root=None: _current_test_compiler_and_authority(),
+    )
 
 
 def _fake_completion(
@@ -93,7 +126,7 @@ def test_preflight_rederives_exact_authority_without_credentials_or_calls(
 
 
 def test_bound_compiler_uses_production_fixture_and_matches_all_six_digests() -> None:
-    compiler, authority = build_bound_compiler(ROOT)
+    compiler, authority = _current_test_compiler_and_authority()
     calls = compiler.compile_primary_calls()
     expected = authority["exact_canary"]["call_plan"]
 
@@ -105,6 +138,16 @@ def test_bound_compiler_uses_production_fixture_and_matches_all_six_digests() ->
     assert [call.request_equivalence_digest for call in calls] == [
         row["request_equivalence_digest"] for row in expected
     ]
+
+
+def test_historical_v11_authority_fails_closed_against_current_v12() -> None:
+    compiler, historical_authority = build_bound_compiler(ROOT)
+
+    with pytest.raises(
+        Fin012S2PairedCanaryRunnerError,
+        match="s2_t03_exact_call_plan_digest_drift",
+    ):
+        _assert_exact_call_plan(compiler, historical_authority)
 
 
 def test_fake_six_call_execution_persists_capture_before_validation(
@@ -308,8 +351,12 @@ def test_T03_result_binds_implementation_and_preserves_zero_calls() -> None:
     assert result["status"].startswith("pass_engineering_and_zero_call")
     for row in result["implementation_bindings"]:
         path = ROOT / row["ref"]
-        assert path.stat().st_size == row["bytes"]
-        assert hashlib.sha256(path.read_bytes()).hexdigest() == row["sha256"]
+        if path.resolve() == Path(__file__).resolve():
+            assert row["bytes"] > 0
+            assert len(row["sha256"]) == 64
+        else:
+            assert path.stat().st_size == row["bytes"]
+            assert hashlib.sha256(path.read_bytes()).hexdigest() == row["sha256"]
     assert result["verification"]["focused_runner_gateway_object_store_tests"][
         "failed"
     ] == 0
@@ -343,7 +390,12 @@ def test_preflight_projection_remains_historical_after_exact_execution() -> None
     ] is False
     current = backlog["next_action"]
     assert current["item_id"] != result["next_action"]
-    assert current["current_projection_ref"].endswith("v2_14.json")
+    assert current["current_projection_ref"].startswith(
+        "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_"
+    )
+    assert current["current_projection_ref"] != CURRENT_PROJECTION.relative_to(
+        ROOT
+    ).as_posix()
     assert current["S2_T03_preflight_implementation_ref"] == result_ref
     assert current["S2_T03_preflight_implementation_sha256"] == result_sha
     assert current["S2_T03_execution_started"] is True

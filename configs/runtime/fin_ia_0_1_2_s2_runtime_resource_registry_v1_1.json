@@ -1,0 +1,62 @@
+{
+  "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
+  "registry_id": "FIN-0.1.2-S2-T03-WWC-V2-RUNTIME-RESOURCE-REGISTRY-R1",
+  "status": "tracked_typed_runtime_resource_authority",
+  "policy": {
+    "registry_is_source_of_truth": true,
+    "static_scanner_is_detector_only": true,
+    "direct_unregistered_runtime_read_fails_closed": true,
+    "missing_unknown_duplicate_or_digest_drift_fails_closed": true,
+    "permutation_or_cross_version_fails_closed": true,
+    "ignored_untracked_codex_runtime_and_git_forbidden": true,
+    "traversal_and_symlink_escape_forbidden": true
+  },
+  "detector_python_refs": [
+    "apps/workbench/backend/application/fin_0_1_2_s2_paired_model_canary.py",
+    "apps/workbench/backend/application/fin_0_1_2_s2_runtime_contract_binding.py"
+  ],
+  "resource_count": 3,
+  "resource_bytes": 9077,
+  "resource_canonical_digest": "ae589a8524bf7e56c9bc72476cdacb1b5be37ebe5ce2380dfbb4152d7fece1eb",
+  "resources": [
+    {
+      "resource_id": "fin_0_1_2.s2.common_runtime_contract_family_binding",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_2.json",
+      "sha256": "59e0777ffc0522b7b86545aef786467a468440d8ddddc239b51434491f240b57",
+      "bytes": 2493,
+      "classification": "deterministic_contract_binding",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s2_runtime_contract_binding.load_fin_0_1_2_s2_runtime_contract_binding"
+      ],
+      "load_phase": "S2_T03_WWC_contract_compilation",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s2_runtime_contract_binding"
+    },
+    {
+      "resource_id": "fin_0_1_2.s2.common_runtime_contract_family_source",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_2.json",
+      "sha256": "8158e4206dd69a4ec688170f8281001ed7ca26be5fca2dc2a37f088873a85985",
+      "bytes": 4768,
+      "classification": "deterministic_contract_source",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s2_runtime_contract_binding.load_fin_0_1_2_s2_runtime_contract_binding"
+      ],
+      "load_phase": "S2_T03_WWC_contract_compilation",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s2_runtime_contract_binding"
+    },
+    {
+      "resource_id": "fin_0_1_2.s2.deepseek_model_candidate_registry",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_s2_deepseek_model_candidate_registry_v1_0.json",
+      "sha256": "bbfd0ab03bfd008c5fd14437fb4c4e920234bbb91ea52493f27cd40ebb2502e2",
+      "bytes": 1816,
+      "classification": "model_candidate_registry",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s2_paired_model_canary.Fin012S2PairedModelCanaryCompiler"
+      ],
+      "load_phase": "S2_paired_canary_compilation",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s2_paired_model_canary"
+    }
+  ]
+}

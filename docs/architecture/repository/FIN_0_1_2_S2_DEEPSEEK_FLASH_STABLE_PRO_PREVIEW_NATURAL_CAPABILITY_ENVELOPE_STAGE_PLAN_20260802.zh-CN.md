@@ -2,7 +2,7 @@
 
 日期：2026-08-02
 
-状态：`S2-T03 bound runner and atomic capture preflight pass / exact six-call execution authorized not started`
+状态：`S2-T03 WWC v1.2 engineering pass / independent zero-call proof and affected-family replacement authority decision pending`
 
 ## 1. S2 到底要回答什么
 
@@ -137,3 +137,21 @@ Fact、Claim 的 Flash/Pro 四项均通过，Pro WWC 通过；Flash WWC 在本�
 当前下一项：
 
 `FIN-0.1.2-S2-T03-WWC-CONTRACT-PARITY-AND-ROW-LOCAL-CLAIM-BINDING-CONSOLIDATED-ZERO-CALL-IMPLEMENTATION`
+
+## 15. WWC v1.2 零调用实现结果
+
+唯一实现包已完成，没有创建第二个 repair bundle。新 current source/binding 为 v1.2，旧 v1.1 文件保持原摘要；v1.2 仅用于 S2 paired-canary，不重写历史 S4 exact request authority。
+
+日期规则现在只有一份声明：`bound_date -> allowed non-NONE date alias`，其余 cadence `-> NONE`。模型可见合同、wire schema、system instruction、本地 validator descriptor、实际 semantic validation、fake 和 typed failure capture 均消费该规则。日期正向覆盖每个 allowed alias 与所有 relative cadence，负向覆盖 `bound_date+NONE`、relative cadence+date alias、unknown/cross-case alias。
+
+行绑定从每个 selected normalized atom 展开。实现矩阵进一步发现 `authority_refs` 也使用了候选循环结束后的外层列表；它与 RC-P36-103 是同一 loop-state-leak 的另一表现，已和 Claim 一起在本包修复。one/multi Claim、六候选截断到三、provider permutation、稳定选择与 task correspondence 均通过。
+
+开发轮证据：S2 compiler+WWC focused=`31 passed`，S1/S4 compiler/S2/T03 相关回归（排除已在干净起点复现的旧 S4 历史 runner 漂移）=`138 passed`；旧 v1.1 admission 对 v1.2 明确 fail-closed；DELL/MU/NVDA fake 各 6/6。真实受限 Pro capture 以零调用回放，raw `Q001/Q002/Q001` 最终覆盖两个正确 Claim ID，不再 false-green。新 WWC pair request digest=`0c52c9ab...81c2`，equivalence digest=`543836b6...de90`，Flash/Pro 请求逐字节相同。
+
+旧 `test_fin_0_1_s4_t06_mu_changed_contract_family_single_node_canaries_runner.py` 的三个 `canary_exact_template_drift:specialist_fact_atoms` 在本轮起点 clean HEAD=`2dba2e9a` 即可复现，故不是本包引入，也没有通过改写历史 authority 吸收。它继续作为 stage 外基线债务，不能阻塞 S2 v1.2 engineering pass，也不能被误报成当前全仓全绿。
+
+RC-P36-102/103 状态为 `implementation pass / independent proof pending`，尚未关闭。当前下一项：
+
+`FIN-0.1.2-S2-T03-WWC-V2-INDEPENDENT-ZERO-CALL-PROOF-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-AUTHORITY-DECISION`
+
+该项不调用模型，只做独立复证和两调用 authority 判断；replacement pair、T04 与模型选择仍未授权。

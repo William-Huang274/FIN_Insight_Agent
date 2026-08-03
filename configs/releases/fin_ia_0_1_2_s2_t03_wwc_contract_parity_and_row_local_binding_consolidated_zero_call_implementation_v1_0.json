@@ -1,0 +1,127 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_t03_wwc_contract_parity_and_row_local_binding_consolidated_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S2-T03-WWC-CONTRACT-PARITY-AND-ROW-LOCAL-BINDING-CONSOLIDATED-ZERO-CALL-IMPLEMENTATION-R1",
+  "recorded_at": "2026-08-03T10:20:47+08:00",
+  "status": "engineering_pass_one_versioned_WWC_v2_bundle_implemented_independent_proof_and_replacement_authority_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "selected_decision_ref": "configs/releases/fin_ia_0_1_2_s2_t03_wwc_contract_parity_row_local_claim_binding_and_replacement_pair_disposition_decision_v1_0.json",
+    "zero_call_implementation_authorized": true,
+    "restricted_capture_zero_call_replay_authorized": true,
+    "credential_read_authorized": false,
+    "model_provider_network_calls_authorized": 0,
+    "replacement_pair_authorized": false,
+    "T04_or_model_selection_authorized": false
+  },
+  "versioned_contract": {
+    "binding_ref": "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1.2",
+    "compiled_contract_ref": "fin_0_1_2.common_runtime.judgment_atom_family:v1.2.0",
+    "source_ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_2.json",
+    "binding_manifest_ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_2.json",
+    "runtime_resource_registry_ref": "configs/runtime/fin_ia_0_1_2_s2_runtime_resource_registry_v1_1.json",
+    "historical_v1_1_source_and_binding_rewritten": false,
+    "scope": "S2_paired_canary_only"
+  },
+  "implementation": {
+    "single_declarative_date_rule": {
+      "rule_id": "review_cadence_to_review_date_alias:v1",
+      "bound_date": "allowed_non_NONE_date_alias",
+      "all_other_cadences": "NONE",
+      "compiled_consumers": [
+        "model_visible_contract",
+        "wire_schema",
+        "provider_system_instruction",
+        "local_validator_descriptor",
+        "local_semantic_validation",
+        "fake_provider_fixture",
+        "typed_failure_capture"
+      ],
+      "silent_alias_drop_or_rewrite": false,
+      "validator_weakened": false
+    },
+    "row_local_final_assembly": {
+      "claim_id_source": "claims[str(atom['claim_alias'])]",
+      "authority_refs_source": "atom['authority_aliases']",
+      "outer_loop_state_forbidden_for_v1_2": true,
+      "additional_same_root_manifestation_found_during_matrix": "authority_refs_also_read_loop_terminal_authority_aliases_before_repair",
+      "automatic_second_bundle_created": false
+    },
+    "legacy_boundary": {
+      "model_visible_v2_projection_applies_only_to_S2_v1_2": true,
+      "historical_S4_exact_request_authority_rewritten": false,
+      "legacy_shared_runtime_migration_claimed": false
+    }
+  },
+  "implementation_bindings": [
+    {"ref": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py", "sha256": "2465cd166b633de9b25894d7ff290f3db06587cb9fb72146b98e9942952e6629", "bytes": 66262},
+    {"ref": "apps/workbench/backend/application/fin_0_1_2_s2_runtime_contract_binding.py", "sha256": "734d4501416ca388d09bff616c644e9155b04a53aca03387e3f6c5946b69a58c", "bytes": 4579},
+    {"ref": "apps/workbench/backend/application/fin_0_1_2_s2_paired_model_canary.py", "sha256": "f6d4321556012d643c64f87006a6f60dfac1fec56f2b48f0622edcbdd4b10fb5", "bytes": 26595},
+    {"ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_2.json", "sha256": "8158e4206dd69a4ec688170f8281001ed7ca26be5fca2dc2a37f088873a85985", "bytes": 4768},
+    {"ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_2.json", "sha256": "59e0777ffc0522b7b86545aef786467a468440d8ddddc239b51434491f240b57", "bytes": 2493},
+    {"ref": "configs/runtime/fin_ia_0_1_2_s2_runtime_resource_registry_v1_1.json", "sha256": "5341ad1b6334da7f53462b988c6a4492c53db1af4b5ab04051c3ef5491c3e724", "bytes": 2952},
+    {"ref": "tests/contract/test_fin_0_1_2_s2_paired_model_canary_compiler.py", "sha256": "3727e6f8983f069378710366112b2ff1524a04fab993ea036d2594a2f10a871c", "bytes": 17033},
+    {"ref": "tests/contract/test_fin_0_1_2_s2_t03_wwc_consolidated_zero_call_implementation.py", "sha256": "08f40ef6efd4a87b05f2a8cfa83a4708361b000170ec1272976d295eceac7146", "bytes": 12755}
+  ],
+  "zero_call_proof_evidence": {
+    "focused_S2_compiler_and_WWC_tests": {"passed": 31, "failed": 0},
+    "S1_S4_compiler_S2_and_T03_related_regression_excluding_known_preexisting_historical_runner": {"passed": 138, "failed": 0},
+    "date_positive_matrix": "all_allowed_bound_date_aliases_and_all_non_bound_cadences_pass",
+    "date_negative_matrix": [
+      "bound_date_NONE_typed_fail",
+      "non_bound_known_alias_typed_fail",
+      "bound_date_cross_case_alias_typed_fail"
+    ],
+    "claim_and_authority_binding_matrix": [
+      "one_claim",
+      "multiple_claims",
+      "provider_permutation",
+      "stable_selection",
+      "six_to_three_subset_truncation"
+    ],
+    "three_case_full_fake": {"DELL": [6, 6], "MU": [6, 6], "NVDA": [6, 6]},
+    "paired_WWC_request_byte_equivalent": true,
+    "new_WWC_model_visible_request_digest": "0c52c9ab17fdfde457686a4ff15326e83ea0a5f8cd04207fa25aeada454881c2",
+    "new_WWC_request_equivalence_digest": "543836b68295bb7fdab4e4db44011d7bff5384e6f536f440b7e912309347de90",
+    "restricted_Pro_capture_replay": {
+      "capture_sha256": "7f6fd6857ffeb3c6fe0b1f5d72c6d3e578acad0f27505436a847c1f9a7f83ddc",
+      "raw_claim_aliases": ["Q001", "Q002", "Q001"],
+      "replayed_status": "pass_with_row_local_binding",
+      "observed_unique_claim_ids": 2,
+      "old_false_green_reproduced_after_repair": false,
+      "restricted_raw_content_copied_to_result": false
+    }
+  },
+  "known_preexisting_baseline": {
+    "test_path": "tests/contract/test_fin_0_1_s4_t06_mu_changed_contract_family_single_node_canaries_runner.py",
+    "observed": {"passed": 0, "failed": 3, "first_failure": "canary_exact_template_drift:specialist_fact_atoms"},
+    "clean_HEAD_2dba2e9a_reproduction": true,
+    "introduced_by_this_implementation": false,
+    "fixed_or_authority_rewritten_in_this_scope": false,
+    "reason_not_absorbed": "historical_S4_exact_template_ownership_is_outside_the_S2_T03_WWC_comparator_bundle"
+  },
+  "issue_disposition": {
+    "RC_P36_102": "implementation_pass_independent_zero_call_proof_pending",
+    "RC_P36_103": "implementation_pass_including_same_root_authority_list_leak_independent_zero_call_proof_pending",
+    "issues_closed_now": 0,
+    "reason": "same-turn engineering tests are positive but the separately required independent proof and fair replacement measurement have not occurred"
+  },
+  "observed_counts": {
+    "implementation_bundles": 1,
+    "credential_reads": 0,
+    "model_provider_network_calls": [0, 0, 0],
+    "replacement_pair_calls": 0,
+    "business_Run_or_Artifact_writes": 0
+  },
+  "stage_acceptance": {
+    "S2_T03_engineering": "pass",
+    "S2_T03_independent_proof": "pending",
+    "S2_T03_fair_WWC_measurement": "pending",
+    "S2_T04": "not_entered",
+    "S2": "not_passed",
+    "S3_to_S5": "not_started",
+    "release_qualified": false
+  },
+  "next_action": "FIN-0.1.2-S2-T03-WWC-V2-INDEPENDENT-ZERO-CALL-PROOF-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-AUTHORITY-DECISION",
+  "next_action_authorized": false,
+  "known_boundary": "Engineering pass does not close RC-P36-102/103, qualify Flash or Pro, authorize the two-call replacement pair, enter T04, prove product quality, or qualify a release."
+}

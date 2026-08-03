@@ -82,7 +82,12 @@ def test_execution_projection_stays_historical_and_backlog_retains_result() -> N
 
     current = backlog["next_action"]
     assert current["item_id"] != result["next_action"]
-    assert current["current_projection_ref"].endswith("v2_14.json")
+    assert current["current_projection_ref"].startswith(
+        "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_"
+    )
+    assert current["current_projection_ref"] != PROJECTION.relative_to(
+        ROOT
+    ).as_posix()
     assert current["S2_T03_execution_result_ref"] == result_ref
     assert current["S2_T03_execution_result_sha256"] == result_sha
     assert current["S2_T03_terminal_capture_counts"] == [6, 6]

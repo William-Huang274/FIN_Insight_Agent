@@ -19,21 +19,21 @@ from .fin_0_1_2_runtime_contract_binding import (
 
 
 FIN_0_1_2_S2_COMMON_RUNTIME_BINDING_REF = (
-    "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1.1"
+    "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1.2"
 )
 FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF = (
-    "fin_0_1_2.common_runtime.judgment_atom_family:v1.1.0"
+    "fin_0_1_2.common_runtime.judgment_atom_family:v1.2.0"
 )
 FIN_0_1_2_S2_COMMON_RUNTIME_SOURCE_REF = (
     "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_"
-    "source_v1_1.json"
+    "source_v1_2.json"
 )
 FIN_0_1_2_S2_COMMON_RUNTIME_BINDING_MANIFEST_REF = (
     "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_"
-    "binding_v1_1.json"
+    "binding_v1_2.json"
 )
 FIN_0_1_2_S2_RUNTIME_RESOURCE_REGISTRY_REF = (
-    "configs/runtime/fin_ia_0_1_2_s2_runtime_resource_registry_v1_0.json"
+    "configs/runtime/fin_ia_0_1_2_s2_runtime_resource_registry_v1_1.json"
 )
 FIN_0_1_2_S2_COMMON_RUNTIME_SOURCE_RESOURCE_ID = (
     "fin_0_1_2.s2.common_runtime_contract_family_source"
@@ -73,7 +73,7 @@ FIN_0_1_2_S2_ACTUAL_CONSUMER_OWNERS = {
 FIN_0_1_2_S2_COMMON_RUNTIME_BINDING_PROFILE = (
     Fin012RuntimeContractBindingProfile(
         schema_version=(
-            "fin_ia_0_1_2_common_runtime_contract_family_binding_v1_1"
+            "fin_ia_0_1_2_common_runtime_contract_family_binding_v1_2"
         ),
         binding_ref=FIN_0_1_2_S2_COMMON_RUNTIME_BINDING_REF,
         source_ref=FIN_0_1_2_S2_COMMON_RUNTIME_SOURCE_REF,
@@ -83,6 +83,7 @@ FIN_0_1_2_S2_COMMON_RUNTIME_BINDING_PROFILE = (
         actual_consumer_owners=FIN_0_1_2_S2_ACTUAL_CONSUMER_OWNERS,
         additional_compatibility_requirements={
             "historical_v1_0_binding_remains_supported": True,
+            "historical_v1_1_binding_remains_immutable": True,
             "S2_paired_canary_only": True,
         },
     )

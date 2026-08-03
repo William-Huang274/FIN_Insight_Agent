@@ -89,6 +89,15 @@ class DeterministicJudgmentAtomCompiledContract:
         "no_change",
     )
 
+    _review_date_alias_binding_modes = {
+        "next_authority_event": "NONE",
+        "next_reporting_event": "NONE",
+        "next_month_end": "NONE",
+        "next_quarter_end": "NONE",
+        "bound_date": "allowed_non_NONE_date_alias",
+        "unscheduled": "NONE",
+    }
+
     _relation_text = {
         "supports": "支持",
         "challenges": "削弱",
@@ -250,6 +259,13 @@ class DeterministicJudgmentAtomCompiledContract:
             }
         )
 
+    @property
+    def wwc_model_visible_binding_v2(self) -> bool:
+        return (
+            self.contract_ref
+            == FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+        )
+
     def _consumer_binding(
         self,
         consumer_id: str,
@@ -257,6 +273,25 @@ class DeterministicJudgmentAtomCompiledContract:
         if self.runtime_contract_binding is None:
             return None
         return self.runtime_contract_binding.consumer_receipt(consumer_id)
+
+    def review_date_alias_binding_contract(self) -> dict[str, Any]:
+        """Return the single declarative WWC cadence/date invariant."""
+        if set(self._review_date_alias_binding_modes) != set(
+            self.review_cadences
+        ):
+            raise ValueError(
+                "s4_compiled_wwc_review_date_binding_contract_invalid"
+            )
+        return {
+            "rule_id": "review_cadence_to_review_date_alias:v1",
+            "field": "review_date_alias",
+            "by_review_cadence": {
+                cadence: self._review_date_alias_binding_modes[cadence]
+                for cadence in self.review_cadences
+            },
+            "allowed_non_NONE_source": "allowed_date_aliases",
+            "silent_alias_drop_or_rewrite": False,
+        }
 
     def runtime_contract_binding_receipt(self) -> dict[str, Any] | None:
         binding = self.runtime_contract_binding
@@ -648,6 +683,10 @@ class DeterministicJudgmentAtomCompiledContract:
                     "local_selected_maximum": self.wwc_selected_maximum,
                 }
             )
+            if self.wwc_model_visible_binding_v2:
+                contract["review_date_alias_binding_rule"] = (
+                    self.review_date_alias_binding_contract()
+                )
         contract["contract_digest"] = canonical_digest(contract)
         return contract
 
@@ -713,7 +752,12 @@ class DeterministicJudgmentAtomCompiledContract:
                     "direction": "|".join(self.causal_relations),
                     "review_cadence": "|".join(self.review_cadences),
                     "start_date_alias": "exact allowed date alias or NONE",
-                    "review_date_alias": "exact allowed date alias or NONE",
+                    "review_date_alias": (
+                        "when review_cadence=bound_date: exactly one allowed "
+                        "non-NONE date alias; otherwise: exactly NONE"
+                        if self.wwc_model_visible_binding_v2
+                        else "exact allowed date alias or NONE"
+                    ),
                     "expected_claim_transition": "|".join(
                         self.expected_transitions
                     ),
@@ -759,23 +803,42 @@ class DeterministicJudgmentAtomCompiledContract:
                 "bounded allowed_supports pool. Do not recreate or infer hidden "
                 "supports."
             )
+        if (
+            self.family_id(segment_id) == self.family_ids[2]
+            and self.wwc_model_visible_binding_v2
+        ):
+            instruction += (
+                " For what_would_change_atoms, obey the declared "
+                "review_date_alias_binding_rule: review_cadence bound_date "
+                "requires exactly one allowed non-NONE date alias; every "
+                "other review_cadence requires review_date_alias exactly "
+                "NONE. Never drop, replace, or reinterpret an alias."
+            )
         return instruction
 
     def compiled_surface(self, segment_id: str) -> dict[str, Any]:
         contract = self.model_visible_contract(segment_id)
+        local_validator: dict[str, Any] = {
+            "exact_top_level_shape": True,
+            "request_local_alias_membership": True,
+            "closed_enum_membership": True,
+            "arbitrary_narrative_rejected": True,
+            "every_candidate_validated_before_selection": True,
+            "exact_duplicate_candidate_rejected": True,
+        }
+        if (
+            contract["family_id"] == self.family_ids[2]
+            and self.wwc_model_visible_binding_v2
+        ):
+            local_validator["cross_field_invariants"] = [
+                self.review_date_alias_binding_contract()
+            ]
         surface = {
             "contract_ref": self.contract_ref,
             "family_id": contract["family_id"],
             "model_visible_contract": contract,
             "wire_schema": self.wire_schema(segment_id),
-            "local_validator": {
-                "exact_top_level_shape": True,
-                "request_local_alias_membership": True,
-                "closed_enum_membership": True,
-                "arbitrary_narrative_rejected": True,
-                "every_candidate_validated_before_selection": True,
-                "exact_duplicate_candidate_rejected": True,
-            },
+            "local_validator": local_validator,
             "fake_provider_fixture": self.fake_provider_output(segment_id),
             "selector": {
                 "validity_aware": True,
@@ -1178,15 +1241,30 @@ class DeterministicJudgmentAtomCompiledContract:
         alias: str,
         policy: SpecialistWWCJudgmentAtomPolicy,
     ) -> str:
-        if cadence == "bound_date":
+        binding_mode = self.review_date_alias_binding_contract()[
+            "by_review_cadence"
+        ].get(cadence)
+        if binding_mode is None:
+            raise ValueError("s4_compiled_wwc_review_cadence_unknown")
+        if binding_mode == "allowed_non_NONE_date_alias":
+            if alias == "NONE":
+                raise ValueError(
+                    "s4_compiled_wwc_bound_date_alias_required"
+                )
             try:
                 return policy.alias_to_iso_date[alias]
             except KeyError as exc:
                 raise ValueError(
-                    "s4_compiled_wwc_date_alias_unknown"
+                    "s4_compiled_wwc_date_alias_unknown_or_cross_case"
                 ) from exc
+        if binding_mode != "NONE":
+            raise ValueError(
+                "s4_compiled_wwc_review_date_binding_contract_invalid"
+            )
         if alias != "NONE":
-            raise ValueError("s4_compiled_wwc_unbound_date_alias_forbidden")
+            raise ValueError(
+                "s4_compiled_wwc_unbound_date_alias_forbidden"
+            )
         return {
             "next_authority_event": "next authority event",
             "next_reporting_event": "next reporting event",
@@ -1335,7 +1413,11 @@ class DeterministicJudgmentAtomCompiledContract:
                         f"{self.program_cell_id}:what_would_change:"
                         f"{ordinal:03d}"
                     ),
-                    "claim_id": claims[claim_alias],
+                    "claim_id": claims[
+                        str(atom["claim_alias"])
+                        if self.wwc_model_visible_binding_v2
+                        else claim_alias
+                    ],
                     "source_target": primary.source_target(),
                     "metric_or_observation": (
                         primary.document_event_or_dataset
@@ -1362,7 +1444,11 @@ class DeterministicJudgmentAtomCompiledContract:
                     ),
                     "authority_refs": [
                         authorities[str(alias)].authority_ref
-                        for alias in sorted(map(str, authority_aliases))
+                        for alias in (
+                            atom["authority_aliases"]
+                            if self.wwc_model_visible_binding_v2
+                            else sorted(map(str, authority_aliases))
+                        )
                     ],
                 }
             )
@@ -1509,45 +1595,68 @@ class DeterministicJudgmentAtomCompiledContract:
                 ],
             }
         policy = self._wwc_policy()
-        if not policy.claim_policy.alias_rows or not policy.authority_aliases:
+        if (
+            not policy.claim_policy.alias_rows
+            or not policy.authority_aliases
+            or not policy.temporal_date_aliases
+        ):
             raise ValueError("s4_compiled_atom_fake_catalog_empty")
         claim_alias = policy.claim_policy.alias_rows[0].alias
         authority_alias = policy.authority_aliases[0].alias
+        date_alias = policy.temporal_date_aliases[0].alias
+        v2_bound_date_pattern = (
+            "authority_contradiction",
+            "unknown",
+            "bound_date",
+            date_alias,
+            "no_change",
+        )
+        legacy_relative_pattern = (
+            "trend_persists",
+            "unknown",
+            "next_quarter_end",
+            "NONE",
+            "no_change",
+        )
         patterns = (
             (
                 "authority_contradiction",
                 "challenges",
                 "next_authority_event",
+                "NONE",
                 "weaken",
             ),
             (
                 "authority_confirmation",
                 "supports",
                 "next_reporting_event",
+                "NONE",
                 "strengthen",
             ),
             (
                 "bounded_event_occurs",
                 "mixed",
                 "next_month_end",
+                "NONE",
                 "resolve_cannot_infer",
             ),
             (
-                "trend_persists",
-                "unknown",
-                "next_quarter_end",
-                "no_change",
+                v2_bound_date_pattern
+                if self.wwc_model_visible_binding_v2
+                else legacy_relative_pattern
             ),
             (
                 "authority_contradiction",
                 "challenges",
                 "unscheduled",
+                "NONE",
                 "invalidate",
             ),
             (
                 "authority_confirmation",
                 "supports",
                 "next_quarter_end",
+                "NONE",
                 "strengthen",
             ),
         )
@@ -1562,9 +1671,15 @@ class DeterministicJudgmentAtomCompiledContract:
                     "direction": direction,
                     "review_cadence": cadence,
                     "start_date_alias": "NONE",
-                    "review_date_alias": "NONE",
+                    "review_date_alias": review_date_alias,
                     "expected_claim_transition": transition,
                 }
-                for trigger, direction, cadence, transition in patterns
+                for (
+                    trigger,
+                    direction,
+                    cadence,
+                    review_date_alias,
+                    transition,
+                ) in patterns
             ],
         }

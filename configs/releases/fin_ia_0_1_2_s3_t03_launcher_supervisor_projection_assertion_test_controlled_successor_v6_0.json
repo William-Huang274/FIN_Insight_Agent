@@ -1,0 +1,74 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_launcher_supervisor_projection_assertion_test_controlled_successor_v6_0",
+  "record_id": "FIN-0.1.2-S3-T03-LAUNCHER-SUPERVISOR-PROJECTION-ASSERTION-TEST-CONTROLLED-SUCCESSOR-R6",
+  "recorded_at": "2026-08-04T11:30:00+08:00",
+  "status": "pass_controlled_test_successor_for_replacement_execution_control_bundle",
+  "predecessor_successor": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_launcher_supervisor_projection_assertion_test_controlled_successor_v5_0.json",
+    "rewritten": false
+  },
+  "historical_implementation": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_bound_execution_launcher_parent_supervisor_zero_call_preflight_minimum_implementation_v1_0.json",
+    "sha256": "0cef1f7ad6f3f370bc25f4636fb028a5971847b898cd8170f4407cfc1ee25d13",
+    "bytes": 8467,
+    "rewritten": false
+  },
+  "binding_successors": {
+    "apps/workbench/backend/application/fin_0_1_2_s3_t03_exact_live_runner.py": {
+      "historical_binding": {
+        "ref": "apps/workbench/backend/application/fin_0_1_2_s3_t03_exact_live_runner.py",
+        "sha256": "449e5e6b5a0f0e8e548d80595f4400145da8f6e29937ef97ee8d2372cae42869",
+        "bytes": 29432
+      },
+      "current_binding": {
+        "ref": "apps/workbench/backend/application/fin_0_1_2_s3_t03_exact_live_runner.py",
+        "sha256": "4758a2d052edcfec6b67859f5fb58b8965268f4a6bb2bb3fa1fc945b8c9ccde1",
+        "bytes": 29642
+      }
+    },
+    "scripts/releases/run_fin_ia_0_1_2_s3_t03_nvda_supervised_exact_live.py": {
+      "historical_binding": {
+        "ref": "scripts/releases/run_fin_ia_0_1_2_s3_t03_nvda_supervised_exact_live.py",
+        "sha256": "754b51aebbb5ea6a6ba87046a6b6b9a0d8f336675cc88cf73782ccc80b6345d8",
+        "bytes": 33128
+      },
+      "current_binding": {
+        "ref": "scripts/releases/run_fin_ia_0_1_2_s3_t03_nvda_supervised_exact_live.py",
+        "sha256": "185934956f6d45f1d3970f93c145179aefbf2698ac4273627bdeb11022b75872",
+        "bytes": 33672
+      }
+    },
+    "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_parent_supervisor_zero_call_implementation.py": {
+      "historical_binding": {
+        "ref": "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_parent_supervisor_zero_call_implementation.py",
+        "sha256": "a2cf771c6fbd1e9445a8a206388c9caf3e5afade7708962fe287d8eab3a2a206",
+        "bytes": 12269
+      },
+      "current_binding": {
+        "ref": "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_parent_supervisor_zero_call_implementation.py",
+        "sha256": "90c1854cf22038652b191c65d6f8c26d283f50eb2073c11cba6c56ce7270f4bd",
+        "bytes": 18093
+      }
+    }
+  },
+  "replacement_control_bindings": {
+    "runner_ref": "scripts/releases/run_fin_ia_0_1_2_s3_t03_nvda_replacement_controlled_successor.py",
+    "runner_sha256": "d5d27f7c2871926aa2c369f33a8224cd64990a2789093ac6f4ae909bbc4edc25",
+    "execution_envelope_ref": "configs/runtime/fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_identity_execution_envelope_v1_0.json",
+    "execution_envelope_sha256": "6513b82cc34082d428fb0864fbbb06987a63a66d09bd297a68c3d5dd9e41a48f",
+    "binding_profile_ref": "configs/runtime/fin_ia_0_1_2_s3_t03_nvda_replacement_control_binding_profile_v1_0.json",
+    "binding_profile_sha256": "1e3b4d7be5f2ea450cdc0e4d8713f690112eeb9a4215b34a3524fa6a1c8f0446"
+  },
+  "change_boundary": {
+    "runtime_code_changed": true,
+    "runtime_change_is_replacement_control_only": true,
+    "historical_implementation_rewritten": false,
+    "admission_model_business_or_budget_contract_changed": false,
+    "execution_authority_created_or_consumed_by_this_record": false,
+    "historical_test_claim_reinterpreted": false,
+    "failed_exact_live_output_modified_or_promoted": false,
+    "diagnostic_output_promoted": false,
+    "current_global_projection_successor_is_explicit_and_closed": true
+  },
+  "known_boundary": "This successor permits only the explicitly authorized replacement envelope, issuer and supervisor binding surface. It does not issue or consume admission, call a model or Provider, execute exact-live, perform paired assessment or Owner acceptance, or enter S3-T04."
+}

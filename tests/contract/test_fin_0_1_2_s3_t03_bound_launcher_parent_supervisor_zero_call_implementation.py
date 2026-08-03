@@ -20,7 +20,7 @@ IMPLEMENTATION = ROOT / (
 )
 TEST_SUCCESSOR = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_launcher_supervisor_projection_"
-    "assertion_test_controlled_successor_v5_0.json"
+    "assertion_test_controlled_successor_v6_0.json"
 )
 PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_27.json"
@@ -45,6 +45,10 @@ REPLACEMENT_AUTHORITY_NEXT = (
 CONTROLLED_SUCCESSOR_NEXT = (
     "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-ADMISSION-ENVELOPE-ISSUER-"
     "SUPERVISOR-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+)
+T04_CLOSEOUT_NEXT = (
+    "FIN-0.1.2-S3-T04-OWNER-REJECTION-DISPOSITION-AND-S4-"
+    "INELIGIBILITY-HANDOFF"
 )
 TERMINAL_RESULT = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
@@ -370,17 +374,14 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
         current_sha256 = _sha256(path)
         if current_bytes == row["bytes"] and current_sha256 == row["sha256"]:
             continue
-        assert row["ref"] == (
-            "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_"
-            "parent_supervisor_zero_call_implementation.py"
-        )
         successor = _load(TEST_SUCCESSOR)
-        assert successor["historical_binding"] == {
+        successor_binding = successor["binding_successors"][row["ref"]]
+        assert successor_binding["historical_binding"] == {
             "ref": row["ref"],
             "sha256": row["sha256"],
             "bytes": row["bytes"],
         }
-        assert successor["current_binding"] == {
+        assert successor_binding["current_binding"] == {
             "ref": row["ref"],
             "sha256": current_sha256,
             "bytes": current_bytes,
@@ -388,7 +389,10 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
         assert successor["historical_implementation"]["sha256"] == _sha256(
             IMPLEMENTATION
         )
-        assert successor["change_boundary"]["runtime_code_changed"] is False
+        assert successor["change_boundary"]["runtime_code_changed"] is True
+        assert successor["change_boundary"][
+            "runtime_change_is_replacement_control_only"
+        ] is True
         assert successor["change_boundary"][
             "historical_implementation_rewritten"
         ] is False
@@ -409,6 +413,7 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
             LEAD_V8_PROOF_NEXT,
             REPLACEMENT_AUTHORITY_NEXT,
             CONTROLLED_SUCCESSOR_NEXT,
+            T04_CLOSEOUT_NEXT,
         }
         current = ROOT / backlog["current_projection_ref"]
         if backlog["item_id"] == EXECUTION_NEXT:
@@ -434,11 +439,20 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
             assert backlog["S3_T03_Lead_v8_status"] == (
                 "engineering_pass_independent_two_fresh_process_zero_call_proof_pass"
             )
-        else:
+        elif backlog["item_id"] == CONTROLLED_SUCCESSOR_NEXT:
             assert backlog["item_id"] == CONTROLLED_SUCCESSOR_NEXT
             assert current.name == "fin_ia_0_1_2_current_program_projection_v2_32.json"
             assert backlog["S3_T03_replacement_admission_authority_status"] == (
                 "blocked_controlled_successor_missing"
+            )
+        else:
+            assert backlog["item_id"] == T04_CLOSEOUT_NEXT
+            assert current.name == "fin_ia_0_1_2_current_program_projection_v2_33.json"
+            assert backlog["S3_T03_replacement_exact_live_status"].startswith(
+                "success_9_calls"
+            )
+            assert backlog["S3_T04_owner_decision"] == (
+                "reject_current_NVDA_R2_product_acceptance"
             )
         assert backlog["current_projection_sha256"] == _sha256(current)
     assert backlog["S3_T03_bound_launcher_parent_supervisor_missing"] is False
@@ -447,6 +461,7 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
         LEAD_V8_PROOF_NEXT,
         REPLACEMENT_AUTHORITY_NEXT,
         CONTROLLED_SUCCESSOR_NEXT,
+        T04_CLOSEOUT_NEXT,
     }:
         assert backlog["S3_T03_fresh_admission_consumed"] is True
         assert backlog["S3_T03_execution_started"] is True

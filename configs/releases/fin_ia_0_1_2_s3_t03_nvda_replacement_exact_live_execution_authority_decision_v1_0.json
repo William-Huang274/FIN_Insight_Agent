@@ -1,0 +1,80 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_nvda_replacement_exact_live_execution_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-EXACT-LIVE-EXECUTION-AUTHORITY-R1",
+  "recorded_at": "2026-08-04T12:15:00+08:00",
+  "status": "authorized_exact_once_execution_not_started",
+  "authority": {
+    "user_instruction": "按已确认顺序执行唯一 replacement exact-live；如 S3-T03 仍 block 则立即返回",
+    "future_exact_live_execution_authorized": true,
+    "current_turn_admission_consumption_or_execution_authorized": false,
+    "execution_requires_the_separately_authorized_next_operation_in_the_same_user_sequence": true,
+    "automatic_retry_fallback_replay_relaunch_repair_or_third_exact_authorized": false,
+    "source_network_external_tool_or_live_case_head_write_authorized": false,
+    "paired_owner_or_S3_T04_authorized_only_after_T03_success": true
+  },
+  "source_authority": {
+    "admission_authority_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_admission_authority_decision_v2_0.json",
+    "admission_authority_sha256": "e2a2260dc8ea2a69e734eb925fc173b2d2895d5f2a26c1917fbd37d288e89cff",
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_exact_admission_r2.json",
+    "admission_sha256": "cc7b1269f2510f796bef502370b3d1cfc86230de68ac14ab26f86103aebf6d77",
+    "admission_digest": "1fd4c49be86c25079f0108f79d38e2832a102a9d6df91e3f0e2771a5f1cb3be0",
+    "issuance_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_exact_admission_issuance_v1_0.json",
+    "issuance_sha256": "aa61944e570ba4672f443e40607c8f2a35375a8e2d90e9c07df72e043eb526ec",
+    "binding_profile_ref": "configs/runtime/fin_ia_0_1_2_s3_t03_nvda_replacement_control_binding_profile_v1_0.json",
+    "binding_profile_sha256": "1e3b4d7be5f2ea450cdc0e4d8713f690112eeb9a4215b34a3524fa6a1c8f0446",
+    "execution_envelope_ref": "configs/runtime/fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_identity_execution_envelope_v1_0.json",
+    "execution_envelope_sha256": "6513b82cc34082d428fb0864fbbb06987a63a66d09bd297a68c3d5dd9e41a48f"
+  },
+  "exact_execution_target": {
+    "execution_identity": "fin012-s3-t03-nvda-replacement-r2",
+    "runtime_root": ".codex_runtime/fin012-s3-t03-nvda-replacement-r2",
+    "supervision_root": ".codex_runtime/fin012-s3-t03-nvda-replacement-r2-supervision",
+    "complete_input_digest": "40625b4385cc97998bea6b9cd1e928dd49ac60f9078a3a884eb9581a53d48272",
+    "stable_business_input_digest": "a19743ffdaa63319a5381262adc9c5b04751abadc9bc4781561c1aa905b744fc",
+    "work_unit_id": "wu_p02_5_e686e554b462009957cb843c",
+    "attempt_id": "attempt_fin01_62bee0627a8cfd94e32c8594",
+    "research_run_id": "research_run_fin01_c127bd40b46738022b67bfcc",
+    "provider": "deepseek",
+    "model_ref": "deepseek:deepseek-v4-pro"
+  },
+  "code_bindings": {
+    "scripts/releases/run_fin_ia_0_1_2_s3_t03_nvda_replacement_controlled_successor.py": "d5d27f7c2871926aa2c369f33a8224cd64990a2789093ac6f4ae909bbc4edc25",
+    "scripts/releases/run_fin_ia_0_1_2_s3_t03_nvda_supervised_exact_live.py": "185934956f6d45f1d3970f93c145179aefbf2698ac4273627bdeb11022b75872",
+    "apps/workbench/backend/application/fin_0_1_2_s3_t03_exact_live_runner.py": "4758a2d052edcfec6b67859f5fb58b8965268f4a6bb2bb3fa1fc945b8c9ccde1"
+  },
+  "preflight": {
+    "project_os_status": "pass_open_blockers_0",
+    "real_child_status": "pass_child_exact_input_transport_wiring_zero_call",
+    "child_process_launch_count": 1,
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "provider_health_probe_performed": false,
+    "provider_callback_calls": 0,
+    "runtime_and_supervision_roots_absent": true,
+    "admission_issued_unconsumed": true,
+    "execution_started": false,
+    "transport_retries": 0
+  },
+  "hard_budget": {
+    "semantic_model_calls": 9,
+    "provider_calls": 9,
+    "execution_network_calls": 9,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "maximum_input_tokens": 60000,
+    "maximum_output_tokens": 10000,
+    "maximum_total_cost_usd": 0.06,
+    "maximum_wall_clock_seconds": 900,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_case_head_writes": 0
+  },
+  "terminal_rule": {
+    "success": "require_9_captures_9_business_artifacts_then_independent_L1_assessment",
+    "first_credible_failure": "typed_terminal_stop_no_retry_or_third_exact",
+    "new_L1_after_replacement": "S3_T03_honest_block_return_to_user",
+    "L2_to_L4_only": "record_for_S3_T04_or_later_without_reopening_T03"
+  },
+  "next_action": "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-EXACT-LIVE-EXECUTION-AND-TERMINAL-MATERIALIZATION",
+  "known_boundary": "Authority is not execution or success. S3-T04 remains conditional on a successful nine-Artifact terminal and independent L1 pass."
+}

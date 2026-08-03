@@ -1,0 +1,56 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t04_same_input_deterministic_baseline_v1_0",
+  "execution_identity": "fin012-s3-t04-nvda-deterministic-baseline-r1",
+  "paired_agent_execution_identity": "fin012-s3-t03-nvda-replacement-r2",
+  "case_id": "case_e0b4021838a913c4ad21c328",
+  "case_version": 1,
+  "input_head_digest": "79602b8e8b4855df881c6bd1f550de2eecd18674cc2626ac7decadd5e3420424",
+  "complete_input_digest": "40625b4385cc97998bea6b9cd1e928dd49ac60f9078a3a884eb9581a53d48272",
+  "program_cells": [
+    {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "deterministic_terminal": "cannot_infer",
+      "financial_rows": [],
+      "derived_metrics": [],
+      "typed_cannot_infer": [
+        "company_total_revenue_and_margin_do_not_establish_demand_durability"
+      ]
+    },
+    {
+      "program_cell_id": "value_and_profit_capture",
+      "deterministic_terminal": "bounded_numeric_support",
+      "financial_rows": [
+        {"entity": "NVDA", "metric": "revenue", "period": "FY2025-FY", "value": "130497000000", "unit": "USD", "ref": "s3_financial_row_804455e6cabd4e4a750ea06d"},
+        {"entity": "NVDA", "metric": "gross_profit", "period": "FY2025-FY", "value": "97858000000", "unit": "USD", "ref": "s3_financial_row_eb5b460885724364348794b3"},
+        {"entity": "NVDA", "metric": "operating_income", "period": "FY2025-FY", "value": "81453000000", "unit": "USD", "ref": "s3_financial_row_08fde101be6e57451f7afcaf"}
+      ],
+      "derived_metrics": [
+        {"metric": "gross_margin", "formula": "gross_profit/revenue*100", "value": "74.99", "unit": "percent", "ref": "s3_derived_financial_metric_ade99ecb49ff3a46ad57807d"},
+        {"metric": "operating_margin", "formula": "operating_income/revenue*100", "value": "62.42", "unit": "percent", "ref": "s3_derived_financial_metric_c49ebf846b178d32d5eeedeb"}
+      ],
+      "typed_cannot_infer": [
+        "data_center_or_accelerator_segment_margin_not_disclosed",
+        "incremental_AI_profit_capture_not_attributable_from_company_total_rows",
+        "cross_chain_economic_allocation_unavailable"
+      ]
+    },
+    {
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "deterministic_terminal": "cannot_infer",
+      "financial_rows": [],
+      "derived_metrics": [],
+      "typed_cannot_infer": [
+        "no_capacity_probability_or_impact_numeric_from_graph_context"
+      ]
+    }
+  ],
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "business_writes": 0
+  },
+  "baseline_digest": "af3b120cfef8c3a3bc475c5e43cb322b5d6ae0e46fc432258bdb74415b592d0d"
+}

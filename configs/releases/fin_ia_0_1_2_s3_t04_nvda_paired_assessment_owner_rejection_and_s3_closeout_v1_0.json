@@ -1,0 +1,94 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t04_nvda_paired_assessment_owner_rejection_and_s3_closeout_v1_0",
+  "decision_id": "FIN-0.1.2-S3-T04-NVDA-SAME-INPUT-PAIRED-L1-TO-L4-ASSESSMENT-OWNER-DECISION-AND-S3-CLOSEOUT",
+  "recorded_at": "2026-08-04T12:45:00+08:00",
+  "status": "S3_T03_pass_S3_T04_owner_reject_S3_honest_block_not_S4_eligible",
+  "authority": {
+    "user_instruction": "按既定顺序完成唯一 replacement exact-live；成功后进入 S3-T04 产品验收",
+    "zero_call_paired_assessment_authorized": true,
+    "owner_accept_or_reject_decision_authorized": true,
+    "runtime_repair_third_exact_or_S4_entry_authorized": false
+  },
+  "source_bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_replacement_exact_live_execution_success_result_v1_0.json",
+      "role": "successful_agent_product_and_independent_L1"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s3_t04_nvda_same_input_deterministic_baseline_v1_0.json",
+      "digest": "af3b120cfef8c3a3bc475c5e43cb322b5d6ae0e46fc432258bdb74415b592d0d",
+      "role": "same_input_zero_model_deterministic_baseline"
+    },
+    {
+      "ref": ".codex_runtime/fin012-s3-t03-nvda-replacement-r2/execution-result.json",
+      "sha256": "7f430356295c558f5158898d069905c3ce6d02b2585e87676c9252ebd5a3568c",
+      "role": "immutable_runtime_result"
+    }
+  ],
+  "paired_input": {
+    "equal": true,
+    "complete_input_digest": "40625b4385cc97998bea6b9cd1e928dd49ac60f9078a3a884eb9581a53d48272",
+    "input_head_digest": "79602b8e8b4855df881c6bd1f550de2eecd18674cc2626ac7decadd5e3420424"
+  },
+  "L1_integrity": {
+    "status": "pass",
+    "new_L1_found": false,
+    "identity": "pass_NVDA_only",
+    "numeric_recompute": {
+      "gross_margin": "74.99",
+      "operating_margin": "62.42",
+      "status": "pass"
+    },
+    "support_refs": "pass_all_local_numeric_authority",
+    "lineage_capture_and_secret_exclusion": "pass"
+  },
+  "L2_evidence_reliability_and_coverage": {
+    "status": "limited_sparse_frozen_fixture",
+    "fact_supported_cells": 1,
+    "cannot_infer_cells": 2,
+    "total_cells": 3,
+    "finding": "Only value/profit has local Facts; demand and bottleneck remain typed cannot-infer."
+  },
+  "L3_agent_gain": {
+    "status": "limited_positive_over_deterministic_baseline",
+    "structured_followup_tasks": 7,
+    "generic_threshold_tasks": 7,
+    "cross_cell_dependencies": 1,
+    "conflict_adjudications": 1,
+    "finding": "Agent adds typed follow-up task structure and bounded cross-cell organization, but every threshold is generic and the conclusions largely repeat deterministic evidence state."
+  },
+  "L4_delivery": {
+    "status": "fail_not_analyst_ready",
+    "findings": [
+      {"issue": "internal_scope_token_exposed", "evidence": "__company_total__"},
+      {"issue": "unnatural_period_label_exposed", "evidence": "FY2025-FY"},
+      {"issue": "currency_unit_duplicated", "evidence": "USD 130497000000 USD"},
+      {"issue": "machine_verifier_did_not_bind_final_local_delivery_preview", "evidence": "final_delivery_preview_digest absent"}
+    ]
+  },
+  "owner_decision": {
+    "decision": "reject_current_NVDA_R2_product_acceptance",
+    "reason": "L1 is clean and limited Agent gain exists, but the frozen fixture covers only one factual cell and the final delivery is not analyst-ready.",
+    "RC_P36_109": "remains_open_owned_by_S3_T04_delivery_fixture_and_verifier_preview",
+    "S3_T03": "pass_closed",
+    "S3_T04": "honest_block_owner_reject",
+    "S3": "honest_block_not_eligible_for_S4",
+    "current_NVDA_R2": false,
+    "third_exact_or_runtime_repair": false,
+    "new_product_version_created": false
+  },
+  "artifact_digests": {
+    "bounded_agent_manifest": "42a5d0841ed37324b3bb53e55a508273bd344551a74cd5b03a4512ce9376a40a",
+    "bounded_agent_evidence": "69f1ef87fe2f49ee3536fbeecb882047bf3ec64c81640e26e12da8ff0f2bce10",
+    "bounded_agent_numeric": "987cad48e21fa2bda5bd4164b932ec7dd31b0f7c1d0fa366c1aa4a96df7d3ff4",
+    "bounded_agent_judgment": "926a7cbb061e00a41ba87ef15f8d275a56fca6295588545fa50911c61a873728",
+    "bounded_agent_workpaper": "4aa9dfa016f9f8091169d7f3a9d3766b117ea3b88d3ad1f1f4fd485078df7eca",
+    "bounded_agent_report": "292c35a3aa5c11d97b0c74c2cf95e55e3dc89dd718d6373a980dd55fd5a564c7",
+    "bounded_agent_trace": "f923cf2dbb7cc8e08288439ac46f8d44ad31fca0967840ea1b2f8d40b1d46625",
+    "bounded_agent_verification": "d9b6472d4226231f329f82875c1ca373bd48d00e13670fa3b1f15aaa6598cf24",
+    "agent_fallback_comparison": "1301d16c585e18ae0be27bc0ff9b435715d90217aea5d137146d1cbe3aab0757"
+  },
+  "assessment_digest": "c9eb42a3ad6ec1c59b60648932b8ced184f0f7a4075aabb46ee85b86e13726d8",
+  "next_action": "FIN-0.1.2-S3-T04-OWNER-REJECTION-DISPOSITION-AND-S4-INELIGIBILITY-HANDOFF",
+  "known_boundary": "S3-T03 engineering and L1 success are preserved. S3 does not pass because product acceptance failed at T04; no third exact, T03 repair loop, S4 entry, release or production claim is allowed."
+}

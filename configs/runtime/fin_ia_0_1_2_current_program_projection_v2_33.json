@@ -1,0 +1,74 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_33",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.33",
+  "recorded_at": "2026-08-04T13:00:00+08:00",
+  "status": "S3_T03_pass_closed_S3_T04_owner_reject_S3_honest_block",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3_T01": "pass",
+    "S3_T02": "pass",
+    "S3_T03": "pass_replacement_exact_live_and_independent_L1",
+    "S3_T04": "honest_block_owner_reject",
+    "S3": "honest_block_not_eligible_for_S4",
+    "S4": "not_entered",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S3-T04-OWNER-REJECTION-DISPOSITION-AND-S4-INELIGIBILITY-HANDOFF"
+  },
+  "replacement_exact_live": {
+    "execution_identity": "fin012-s3-t03-nvda-replacement-r2",
+    "result_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_replacement_exact_live_execution_success_result_v1_0.json",
+    "runtime_result_ref": ".codex_runtime/fin012-s3-t03-nvda-replacement-r2/execution-result.json",
+    "runtime_result_sha256": "7f430356295c558f5158898d069905c3ce6d02b2585e87676c9252ebd5a3568c",
+    "terminal_status": "success",
+    "calls_captures_local_fact_receipts_artifacts": [9, 9, 3, 9],
+    "input_output_tokens": [56613, 2296],
+    "estimated_cost_usd": 0.02662417,
+    "retry_fallback_replay_relaunch": [0, 0, 0, 0],
+    "independent_L1": "pass"
+  },
+  "S3_T04_assessment": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t04_nvda_paired_assessment_owner_rejection_and_s3_closeout_v1_0.json",
+    "deterministic_baseline_ref": "configs/releases/fin_ia_0_1_2_s3_t04_nvda_same_input_deterministic_baseline_v1_0.json",
+    "paired_input_equal": true,
+    "L1": "pass",
+    "L2": "limited_sparse_frozen_fixture_one_of_three_fact_supported",
+    "L3": "limited_positive_seven_structured_but_generic_followup_tasks",
+    "L4": "fail_not_analyst_ready_four_findings",
+    "owner_decision": "reject_current_NVDA_R2_product_acceptance"
+  },
+  "issue_state": {
+    "RC_P36_108": "closed_replacement_exact_live_L1_pass",
+    "RC_P36_109": "open_owner_rejection_root_cause_in_S3_T04",
+    "RC_P36_111": "closed_single_controlled_successor_bundle",
+    "RC_P36_110": "planning_rebaseline_recorded_execution_not_reached"
+  },
+  "execution_policy": {
+    "primary_exact_attempts_consumed": 1,
+    "replacement_exact_attempts_consumed": 1,
+    "third_exact_attempt_authorized": false,
+    "automatic_T03_runtime_repair_authorized": false,
+    "S4_entry_authorized": false,
+    "new_product_version_created": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "S3_stage_plan": "configs/releases/fin_ia_0_1_2_s3_nvda_product_anchor_and_bounded_model_surface_stage_plan_v1_0.json",
+    "replacement_execution_result": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_replacement_exact_live_execution_success_result_v1_0.json",
+    "S3_T04_closeout": "configs/releases/fin_ia_0_1_2_s3_t04_nvda_paired_assessment_owner_rejection_and_s3_closeout_v1_0.json",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md"
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_32.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "primary_failure_deleted_rewritten_or_promoted": false,
+    "replacement_success_does_not_reclassify_primary_failure": true,
+    "S3_T04_owner_reject_does_not_reopen_S3_T03": true,
+    "failed_product_acceptance_does_not_create_a_new_product_version": true
+  }
+}

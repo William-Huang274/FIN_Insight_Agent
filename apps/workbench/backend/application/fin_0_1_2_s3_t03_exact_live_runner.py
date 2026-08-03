@@ -189,9 +189,14 @@ def business_input_digest(
 
 def load_bound_s3_t03_execution_envelope(
     repository_root: str | Path | None = None,
+    *,
+    envelope_ref: str = BOUND_ENVELOPE_REF,
 ) -> dict[str, Any]:
     root = Path(repository_root).resolve() if repository_root else _repository_root()
-    payload = json.loads((root / BOUND_ENVELOPE_REF).read_text(encoding="utf-8"))
+    relative = Path(envelope_ref)
+    if relative.is_absolute() or ".." in relative.parts:
+        raise Fin012S3T03RunnerError("s3_t03_execution_envelope_ref_invalid")
+    payload = json.loads((root / relative).read_text(encoding="utf-8"))
     if payload.get("schema_version") != EXECUTION_ENVELOPE_SCHEMA:
         raise Fin012S3T03RunnerError("s3_t03_execution_envelope_schema_mismatch")
     declared = payload.get("envelope_digest")

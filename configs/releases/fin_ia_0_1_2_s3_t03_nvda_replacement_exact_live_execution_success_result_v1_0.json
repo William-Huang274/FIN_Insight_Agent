@@ -1,0 +1,73 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_nvda_replacement_exact_live_execution_success_result_v1_0",
+  "result_id": "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-EXACT-LIVE-R2-SUCCESS",
+  "recorded_at": "2026-08-04T12:30:00+08:00",
+  "status": "success_nine_calls_nine_captures_three_local_fact_receipts_nine_artifacts",
+  "identity": {
+    "execution_identity": "fin012-s3-t03-nvda-replacement-r2",
+    "work_unit_id": "wu_p02_5_e686e554b462009957cb843c",
+    "attempt_id": "attempt_fin01_62bee0627a8cfd94e32c8594",
+    "research_run_id": "research_run_fin01_c127bd40b46738022b67bfcc",
+    "complete_input_digest": "40625b4385cc97998bea6b9cd1e928dd49ac60f9078a3a884eb9581a53d48272",
+    "stable_business_input_digest": "a19743ffdaa63319a5381262adc9c5b04751abadc9bc4781561c1aa905b744fc"
+  },
+  "runtime_evidence": {
+    "execution_result_ref": ".codex_runtime/fin012-s3-t03-nvda-replacement-r2/execution-result.json",
+    "execution_result_sha256": "7f430356295c558f5158898d069905c3ce6d02b2585e87676c9252ebd5a3568c",
+    "execution_result_bytes": 136884,
+    "supervision_exit_receipt_ref": ".codex_runtime/fin012-s3-t03-nvda-replacement-r2-supervision/exit-receipt.json",
+    "terminal_status": "success",
+    "business_promotable": true,
+    "capture_count": 9,
+    "artifact_count": 9,
+    "local_fact_receipt_count": 3,
+    "launch_command_projection": [
+      "<python>",
+      "run_fin_ia_0_1_2_s3_t03_nvda_replacement_controlled_successor.py",
+      "child-execute"
+    ],
+    "post_terminal_execution_authority_code_bindings_revalidated": true,
+    "artifact_types": [
+      "agent_fallback_comparison",
+      "bounded_agent_evidence",
+      "bounded_agent_judgment",
+      "bounded_agent_manifest",
+      "bounded_agent_numeric",
+      "bounded_agent_report",
+      "bounded_agent_trace",
+      "bounded_agent_verification",
+      "bounded_agent_workpaper"
+    ]
+  },
+  "usage": {
+    "provider_calls": 9,
+    "input_tokens": 56613,
+    "output_tokens": 2296,
+    "estimated_cost_usd": 0.02662417,
+    "wall_clock_seconds": 61.687,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "replay_count": 0,
+    "relaunch_count": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_case_head_writes": 0
+  },
+  "independent_L1": {
+    "status": "pass",
+    "new_L1_found": false,
+    "identity": "pass_NVDA_only",
+    "gross_margin_recomputed": "74.99",
+    "operating_margin_recomputed": "62.42",
+    "support_refs": "pass_all_local_numeric_authority",
+    "capture_readback_and_secret_exclusion": "pass"
+  },
+  "stage_disposition": {
+    "RC_P36_108": "closed_replacement_exact_live_L1_pass",
+    "S3_T03": "pass_closed",
+    "S3_T04": "entered_for_paired_product_acceptance",
+    "third_exact_attempt": false
+  },
+  "known_boundary": "Runtime and L1 success do not by themselves establish Agent gain, analyst-ready delivery, Owner acceptance, current NVDA R2, S3 pass, S4 eligibility, release or production."
+}

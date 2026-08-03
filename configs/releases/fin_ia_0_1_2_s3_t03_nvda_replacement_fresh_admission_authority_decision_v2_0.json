@@ -1,0 +1,89 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_admission_authority_decision_v2_0",
+  "decision_id": "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-FRESH-ADMISSION-AUTHORITY-DECISION-R2",
+  "recorded_at": "2026-08-04T12:00:00+08:00",
+  "status": "authorized_replacement_fresh_admission_issuance_not_started",
+  "authority": {
+    "user_instruction": "按顺序继续执行 controlled-successor、admission authority、issuance、execution authority、唯一 replacement exact-live；若 S3-T03 仍 block 则返回",
+    "replacement_admission_issuance_authorized": true,
+    "replacement_admission_consumption_authorized": false,
+    "replacement_execution_authorized": false,
+    "credential_presence_or_value_read_authorized": false,
+    "model_provider_or_execution_network_calls_authorized": false,
+    "source_network_or_external_tool_calls_authorized": false,
+    "paired_assessment_owner_acceptance_or_S3_T04_authorized_in_this_decision": false,
+    "automatic_second_replacement_or_third_exact_authorized": false
+  },
+  "source_bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_replacement_controlled_successor_minimum_zero_call_implementation_v1_0.json",
+      "sha256": "74fb146736cd503048825581a58779b408fc95b204bc1f94808902741ef558c1",
+      "role": "single_controlled_successor_bundle_pass"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_identity_execution_envelope_v1_0.json",
+      "sha256": "6513b82cc34082d428fb0864fbbb06987a63a66d09bd297a68c3d5dd9e41a48f",
+      "digest": "11110ebfbcf29cf4881a264b8d7202c64ef3caf0fb579eb61565b937b8d68333",
+      "role": "fresh_replacement_execution_envelope"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s3_t03_nvda_replacement_control_binding_profile_v1_0.json",
+      "sha256": "1e3b4d7be5f2ea450cdc0e4d8713f690112eeb9a4215b34a3524fa6a1c8f0446",
+      "digest": "6542f57da8a58f56eeafe3f38b92427ed23c51902b502d98823237db78ea01b6",
+      "role": "replacement_issuer_and_supervisor_binding_profile"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s3_t03_nvda_replacement_controlled_successor.py",
+      "sha256": "d5d27f7c2871926aa2c369f33a8224cd64990a2789093ac6f4ae909bbc4edc25",
+      "role": "replacement_only_atomic_issuer_and_supervisor_entrypoint"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_terminal_failure_result_v1_0.json",
+      "sha256": "42f3dd198696dd6d284c9e3bb67b5fbc093b2491b992785ed46d0cc5e1440a56",
+      "role": "immutable_primary_R1_failure"
+    }
+  ],
+  "exact_issuance_target": {
+    "execution_identity": "fin012-s3-t03-nvda-replacement-r2",
+    "admission_id": "fin012-s3-t03-nvda-replacement-exact-admission-r2",
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_exact_admission_r2.json",
+    "expected_admission_digest": "1fd4c49be86c25079f0108f79d38e2832a102a9d6df91e3f0e2771a5f1cb3be0",
+    "expected_admission_sha256": "cc7b1269f2510f796bef502370b3d1cfc86230de68ac14ab26f86103aebf6d77",
+    "issuance_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_exact_admission_issuance_v1_0.json",
+    "runtime_root": ".codex_runtime/fin012-s3-t03-nvda-replacement-r2",
+    "supervision_root": ".codex_runtime/fin012-s3-t03-nvda-replacement-r2-supervision",
+    "complete_input_digest": "40625b4385cc97998bea6b9cd1e928dd49ac60f9078a3a884eb9581a53d48272",
+    "stable_business_input_digest": "a19743ffdaa63319a5381262adc9c5b04751abadc9bc4781561c1aa905b744fc",
+    "predicted_work_unit_id": "wu_p02_5_e686e554b462009957cb843c",
+    "predicted_attempt_id": "attempt_fin01_62bee0627a8cfd94e32c8594",
+    "predicted_research_run_id": "research_run_fin01_c127bd40b46738022b67bfcc"
+  },
+  "preconditions": {
+    "project_os_scope_preflight": "pass_open_blockers_0",
+    "controlled_successor_bundle_consumed": 1,
+    "controlled_successor_bundle_maximum": 1,
+    "primary_R1_failure_unchanged": true,
+    "replacement_admission_absent": true,
+    "replacement_issuance_absent": true,
+    "replacement_runtime_root_absent": true,
+    "replacement_supervision_root_absent": true,
+    "provider_callback_calls_in_proof": 0,
+    "credential_checked": false
+  },
+  "hard_budget_to_freeze_at_issuance": {
+    "semantic_model_calls": 9,
+    "provider_calls": 9,
+    "execution_network_calls": 9,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "maximum_input_tokens": 60000,
+    "maximum_output_tokens": 10000,
+    "maximum_total_cost_usd": 0.06,
+    "maximum_wall_clock_seconds": 900,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_case_head_writes": 0
+  },
+  "next_action": "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-FRESH-EXACT-ADMISSION-ISSUANCE-R2",
+  "known_boundary": "This authority allows one atomic admission issuance only. It does not consume the admission, access credentials, call DeepSeek, create a Run or Artifact, prove NVDA R2, perform paired or Owner acceptance, enter S3-T04, or qualify release."
+}

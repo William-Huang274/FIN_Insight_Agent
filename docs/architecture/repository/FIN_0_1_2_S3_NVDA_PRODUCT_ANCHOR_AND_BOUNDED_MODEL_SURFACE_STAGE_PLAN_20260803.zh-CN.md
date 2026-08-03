@@ -1,7 +1,9 @@
 # FIN 0.1.2 S3：NVDA 产品锚点与有界模型 Surface 计划
 
+> 2026-08-04 closeout：S3-T03 replacement exact-live 与独立 L1 已通过（9 calls / 9 captures / 3 local Fact receipts / 9 Artifacts），但 S3-T04 paired product assessment 因 sparse `1/3` factual-cell coverage、limited/generic Agent gain、renderer internal-token/period/currency defects 和 final-preview verifier coverage 缺口被 Owner reject。S3 因 T04 honest-block，不具备 S4 entry；S3-T03 不重开且不得第三次 exact。权威 closeout 见 `configs/releases/fin_ia_0_1_2_s3_t04_nvda_paired_assessment_owner_rejection_and_s3_closeout_v1_0.json`。
+
 日期：2026-08-03
-状态：`S3-T01 pass / S3-T02 engineering pass / S3-T03 primary immutable failed + collect-all diagnostic complete + Lead-v8 independent proof pass / replacement admission authority blocked by controlled-successor gap / S3-T04 blocked`
+状态：`S3-T01 pass / S3-T02 pass / S3-T03 replacement exact-live + independent L1 pass closed / S3-T04 Owner reject / S3 honest-block / S4 not eligible`
 
 ## 一、S3 到底要证明什么
 

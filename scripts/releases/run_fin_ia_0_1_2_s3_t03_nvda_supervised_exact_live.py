@@ -243,6 +243,53 @@ def prepare_exact_input(
 ) -> S3ThreeCellPreparedExecution:
     """Rehydrate the frozen internal NVDA dogfood input without test imports."""
 
+    local_service, evidence_service, case, accepted = rehydrate_exact_input_services(
+        preparation_root
+    )
+    prepared = prepare_s3_three_cell_bounded_agent_exact_input(
+        local_service,
+        evidence_service,
+        str(case["case_id"]),
+        _principal(),
+        decision_surface_contract_ref=str(accepted["contract_version_id"]),
+        execution_identity=target.execution_identity,
+    )
+    observed = {
+        "case_id": prepared.case_id,
+        "case_version": prepared.case_version,
+        "as_of": prepared.input_pack.as_of,
+        "decision_surface_contract_ref": prepared.decision_surface_contract_ref,
+        "input_head_digest": prepared.input_pack.input_head_digest,
+        "stable_business_input_digest": business_input_digest(prepared.input_pack),
+        "complete_input_digest": prepared.input_digest,
+        "preparation_digest": prepared.preparation_digest,
+        "work_unit_id": prepared.work_unit_id,
+        "attempt_id": prepared.attempt_id,
+        "research_run_id": prepared.research_run_id,
+    }
+    expected = {
+        "case_id": target.case_id,
+        "case_version": target.case_version,
+        "as_of": target.as_of,
+        "decision_surface_contract_ref": target.decision_surface_contract_ref,
+        "input_head_digest": target.input_head_digest,
+        "stable_business_input_digest": target.stable_business_input_digest,
+        "complete_input_digest": target.complete_input_digest,
+        "preparation_digest": target.preparation_digest,
+        "work_unit_id": target.work_unit_id,
+        "attempt_id": target.attempt_id,
+        "research_run_id": target.research_run_id,
+    }
+    if observed != expected or admission.input_digest != prepared.input_digest:
+        raise Fin012S3T03SupervisedLiveError("s3_t03_exact_input_rehydrate_drift")
+    return prepared
+
+
+def rehydrate_exact_input_services(
+    preparation_root: Path,
+) -> tuple[P36LocalResearchService, EvidenceService, Mapping[str, Any], Mapping[str, Any]]:
+    """Build the frozen NVDA case once for prospective or issued identities."""
+
     case_service = CaseService.for_fixture_root(
         preparation_root / "canonical-runtime", repo_root=ROOT
     )
@@ -314,43 +361,7 @@ def prepare_exact_input(
                 f"s3_t03_checkpoint_rehydrate_failed:{accepted_response.status_code}"
             )
         accepted = accepted_response.json()
-    prepared = prepare_s3_three_cell_bounded_agent_exact_input(
-        local_service,
-        evidence_service,
-        str(case["case_id"]),
-        _principal(),
-        decision_surface_contract_ref=str(accepted["contract_version_id"]),
-        execution_identity=target.execution_identity,
-    )
-    observed = {
-        "case_id": prepared.case_id,
-        "case_version": prepared.case_version,
-        "as_of": prepared.input_pack.as_of,
-        "decision_surface_contract_ref": prepared.decision_surface_contract_ref,
-        "input_head_digest": prepared.input_pack.input_head_digest,
-        "stable_business_input_digest": business_input_digest(prepared.input_pack),
-        "complete_input_digest": prepared.input_digest,
-        "preparation_digest": prepared.preparation_digest,
-        "work_unit_id": prepared.work_unit_id,
-        "attempt_id": prepared.attempt_id,
-        "research_run_id": prepared.research_run_id,
-    }
-    expected = {
-        "case_id": target.case_id,
-        "case_version": target.case_version,
-        "as_of": target.as_of,
-        "decision_surface_contract_ref": target.decision_surface_contract_ref,
-        "input_head_digest": target.input_head_digest,
-        "stable_business_input_digest": target.stable_business_input_digest,
-        "complete_input_digest": target.complete_input_digest,
-        "preparation_digest": target.preparation_digest,
-        "work_unit_id": target.work_unit_id,
-        "attempt_id": target.attempt_id,
-        "research_run_id": target.research_run_id,
-    }
-    if observed != expected or admission.input_digest != prepared.input_digest:
-        raise Fin012S3T03SupervisedLiveError("s3_t03_exact_input_rehydrate_drift")
-    return prepared
+    return local_service, evidence_service, case, accepted
 
 
 def _default_completion(**kwargs: Any) -> Mapping[str, Any]:
@@ -458,9 +469,13 @@ def child_execute(runtime_root: Path, supervision_root: Path) -> dict[str, Any]:
 
 
 def _child_command(mode: str, runtime_root: Path, supervision_root: Path) -> list[str]:
+    entrypoint = Path(
+        os.environ.get("FIN_IA_0_1_2_S3_T03_SUPERVISOR_ENTRYPOINT")
+        or Path(__file__).resolve()
+    ).resolve()
     return [
         sys.executable,
-        str(Path(__file__).resolve()),
+        str(entrypoint),
         mode,
         "--runtime-root",
         str(runtime_root.resolve()),

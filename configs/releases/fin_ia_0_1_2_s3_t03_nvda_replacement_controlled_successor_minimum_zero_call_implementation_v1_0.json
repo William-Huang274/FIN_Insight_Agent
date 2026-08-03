@@ -1,0 +1,89 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_nvda_replacement_controlled_successor_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-ADMISSION-ENVELOPE-ISSUER-SUPERVISOR-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "recorded_at": "2026-08-04T11:45:00+08:00",
+  "status": "pass_one_controlled_successor_bundle_fresh_admission_authority_decision_ready",
+  "authority": {
+    "user_instruction": "按图示顺序继续；若 S3-T03 仍 block 则返回结果",
+    "controlled_successor_zero_call_bundle_authorized": true,
+    "admission_issuance_or_consumption_performed": false,
+    "model_provider_or_network_call_authorized_or_performed": false,
+    "automatic_second_bundle_or_third_exact_authorized": false
+  },
+  "source_decision": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_admission_authority_decision_v1_0.json",
+    "sha256": "2a3c55cf0919b6bbf25e511be4728c0cf37db600d8d3030ac071487f74a16235",
+    "prior_status": "blocked_no_replacement_admission_issuance_authority_controlled_successor_missing"
+  },
+  "materialized_control": {
+    "execution_identity": "fin012-s3-t03-nvda-replacement-r2",
+    "execution_envelope_ref": "configs/runtime/fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_identity_execution_envelope_v1_0.json",
+    "execution_envelope_sha256": "6513b82cc34082d428fb0864fbbb06987a63a66d09bd297a68c3d5dd9e41a48f",
+    "execution_envelope_digest": "11110ebfbcf29cf4881a264b8d7202c64ef3caf0fb579eb61565b937b8d68333",
+    "binding_profile_ref": "configs/runtime/fin_ia_0_1_2_s3_t03_nvda_replacement_control_binding_profile_v1_0.json",
+    "binding_profile_sha256": "1e3b4d7be5f2ea450cdc0e4d8713f690112eeb9a4215b34a3524fa6a1c8f0446",
+    "binding_profile_digest": "6542f57da8a58f56eeafe3f38b92427ed23c51902b502d98823237db78ea01b6",
+    "complete_input_digest": "40625b4385cc97998bea6b9cd1e928dd49ac60f9078a3a884eb9581a53d48272",
+    "stable_business_input_digest": "a19743ffdaa63319a5381262adc9c5b04751abadc9bc4781561c1aa905b744fc",
+    "predicted_work_unit_id": "wu_p02_5_e686e554b462009957cb843c",
+    "predicted_attempt_id": "attempt_fin01_62bee0627a8cfd94e32c8594",
+    "predicted_research_run_id": "research_run_fin01_c127bd40b46738022b67bfcc",
+    "frozen_admission_digest": "1fd4c49be86c25079f0108f79d38e2832a102a9d6df91e3f0e2771a5f1cb3be0",
+    "admission_file_absent": true,
+    "issuance_file_absent": true,
+    "runtime_root_absent": true,
+    "supervision_root_absent": true
+  },
+  "implementation_bindings": [
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s3_t03_exact_live_runner.py",
+      "sha256": "4758a2d052edcfec6b67859f5fb58b8965268f4a6bb2bb3fa1fc945b8c9ccde1",
+      "role": "explicit_validated_execution_envelope_ref_loader"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s3_t03_nvda_supervised_exact_live.py",
+      "sha256": "185934956f6d45f1d3970f93c145179aefbf2698ac4273627bdeb11022b75872",
+      "role": "shared_case_rehydration_and_child_entrypoint_propagation"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s3_t03_nvda_replacement_controlled_successor.py",
+      "sha256": "d5d27f7c2871926aa2c369f33a8224cd64990a2789093ac6f4ae909bbc4edc25",
+      "role": "replacement_only_compiler_atomic_issuer_and_bound_supervisor_entrypoint"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s3_t03_launcher_supervisor_projection_assertion_test_controlled_successor_v6_0.json",
+      "role": "historical_primary_binding_preservation_and_explicit_runtime_successor"
+    }
+  ],
+  "zero_call_proof": {
+    "status": "pass_fresh_envelope_frozen_admission_atomic_issuer_and_real_child_zero_call_preflight",
+    "project_os_scope_preflight": "pass_open_blockers_0",
+    "real_child_process_count": 1,
+    "credential_environment_scrubbed": true,
+    "provider_callback_calls": 0,
+    "model_provider_network_calls": [0, 0, 0],
+    "fresh_process_envelope_and_admission_reproduction": "pass",
+    "focused_regression": "20_passed_then_one_expected_historical_binding_drift_closed_by_targeted_v6_successor_pass",
+    "additional_fresh_identity_reproduction": "2_passed",
+    "primary_R1_runtime_and_failure_rewritten": false
+  },
+  "issue_disposition": {
+    "issue_id": "RC-P36-111-fin-0-1-2-s3-t03-replacement-admission-controlled-successor-binding-gap",
+    "status": "closed_by_single_zero_call_controlled_successor_bundle",
+    "not_a_model_or_provider_failure": true,
+    "S0_S1_S2_reopened": false
+  },
+  "observed_counts": {
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "next_action": "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-FRESH-ADMISSION-AUTHORITY-DECISION-R2",
+  "known_boundary": "Engineering proof closes only RC-P36-111. It is not admission issuance, exact-live success, current NVDA R2, paired assessment, Owner acceptance, S3-T04, release or production."
+}

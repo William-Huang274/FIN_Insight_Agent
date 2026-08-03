@@ -1,5 +1,7 @@
 # Model Run Index
 
+- `2026-08-04` — FIN 0.1.2 S3-T03 NVDA DeepSeek Pro replacement exact-live R2: terminal success `9 calls / 9 captures / 3 local Fact receipts / 9 Artifacts`, independent L1 pass; S3-T04 paired review found limited gain and L4 delivery failure, so Owner rejected current NVDA R2 and S3 closed honest-blocked. See `reports/model_runs/20260804_fin_0_1_2_s3_t03_nvda_deepseek_pro_replacement_exact_live_r2.md`.
+
 | Run ID | Date | Type | Status | Summary |
 | --- | --- | --- | --- | --- |
 | `20260803_fin_0_1_2_s2_t03_mu_wwc_v12_flash_stable_vs_pro_preview_replacement_pair_r1` | 2026-08-03 | paired natural-output affected-family replacement canary | two terminal complete / both hard-integrity pass / fair T04 input restored | MU WWC v1.2 Flash stable/Pro preview each executed once on byte-equivalent requests; both returned `stop`, passed local semantic assembly, and preserved row-local Claim/Authority lineage. Calls=`2`, capture/terminal=`2/2`, tokens=`3690/779`, estimated cost=`USD 0.00228288`, retry/Fact-Claim rerun/business Artifact=`0/0/0`. RC-P36-102/103 closed; T04 and model selection not entered. |

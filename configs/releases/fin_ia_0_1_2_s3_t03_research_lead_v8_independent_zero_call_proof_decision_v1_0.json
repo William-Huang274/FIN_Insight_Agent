@@ -1,0 +1,135 @@
+{
+  "acceptance_boundary": {
+    "Lead_v8_engineering_proof": true,
+    "S3_T04_entered": false,
+    "formal_S3_T03_pass": false,
+    "owner_acceptance_performed": false,
+    "paired_assessment_performed": false,
+    "release_qualified": false,
+    "replacement_admission_issued": false,
+    "replacement_exact_live_executed": false
+  },
+  "decision_id": "FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-MATERIALIZATION-INDEPENDENT-ZERO-CALL-PROOF-DECISION",
+  "experiment_governance": {
+    "L2_to_L4_debt_owner": "S3-T04",
+    "live_execution_authorized_now": false,
+    "model_or_provider_call_authorized_now": false,
+    "replacement_admission_authority_decision_authorized_next": true,
+    "replacement_admission_issuance_authorized_now": false,
+    "replacement_new_L1_disposition": "S3_honest_block",
+    "third_exact_attempt_ever_authorized": false
+  },
+  "fresh_process_proof": {
+    "credential_environment_scrubbed_before_import": true,
+    "diagnostic_capture_replay_or_repair_callback_used": false,
+    "distinct_disposable_roots": 2,
+    "independent_processes": 2,
+    "matrix": {
+      "adjacent_alias_semantic_mutation": {
+        "artifacts": 9,
+        "local_fact_presence": "mixed_fact_presence",
+        "local_resolution_status": "unresolved",
+        "provider_narrative_survived": false,
+        "selected_conflict_claim_count": 2,
+        "selected_dependency_claim_count": 1
+      },
+      "current_full_fake": {
+        "artifact_types": [
+          "agent_fallback_comparison",
+          "bounded_agent_evidence",
+          "bounded_agent_judgment",
+          "bounded_agent_manifest",
+          "bounded_agent_numeric",
+          "bounded_agent_report",
+          "bounded_agent_trace",
+          "bounded_agent_verification",
+          "bounded_agent_workpaper"
+        ],
+        "artifacts": 9,
+        "local_fact_receipts": 3,
+        "logical_interactions": 12,
+        "logical_nodes": 6,
+        "provider_calls": 9,
+        "provider_captures": 9
+      },
+      "current_input": {
+        "input_digest": "906111ddd482cf15dc4d03c7a3769a59ec8ade80a2c9f867561b3bd128ddc953",
+        "mutation_rejected": true,
+        "preparation_digest": "49e4afabde167dbd9b3558db574aa56461f993294aa3518eb8c448d80c4ff860",
+        "stable_business_input_digest": "a19743ffdaa63319a5381262adc9c5b04751abadc9bc4781561c1aa905b744fc"
+      },
+      "hard_boundaries": {
+        "admissions_consumed": 0,
+        "admissions_issued": 0,
+        "business_artifact_promotions": 0,
+        "external_tool_calls": 0,
+        "network_attempts": 0,
+        "real_model_calls": 0,
+        "real_provider_calls": 0,
+        "source_network_calls": 0
+      },
+      "historical_regression": {
+        "lead_v6_gap_projection": "pass",
+        "lead_v7_fact_presence_all_none_some": "pass"
+      },
+      "negative_mutations": {
+        "duplicate_alias": {
+          "capture_count": 7,
+          "failure_code": "s3_bounded_cross_cell_scoped_identity_scoped_ref_duplicate",
+          "local_fact_receipts": 3,
+          "stage": "research_lead"
+        },
+        "runtime_owned_field": {
+          "capture_count": 7,
+          "failure_code": "s3_bounded_research_lead_v3_shape_item_schema_invalid",
+          "local_fact_receipts": 3,
+          "stage": "research_lead"
+        },
+        "unknown_alias": {
+          "capture_count": 7,
+          "failure_code": "s3_bounded_cross_cell_scoped_identity_unknown_scoped_ref",
+          "local_fact_receipts": 3,
+          "stage": "research_lead"
+        }
+      },
+      "status": "pass"
+    },
+    "normalized_output_digest": "ab012a6053c39a5be7744aa71293170fefadb8ecd35d4fc69fb6c4b531b4f783",
+    "normalized_outputs_equal": true,
+    "socket_network_guard_installed": true
+  },
+  "next_action": "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-EXACT-LIVE-FRESH-ADMISSION-AUTHORITY-DECISION",
+  "proof_generator": {
+    "ref": "scripts/releases/prepare_fin_ia_0_1_2_s3_t03_research_lead_v8_independent_zero_call_proof.py",
+    "sha256": "0f87602f864bd863abfa1139a9b304325f268517895bbf3c1db80c960d58b73d"
+  },
+  "recorded_at": "2026-08-03T23:30:00+08:00",
+  "root_cause_disposition": {
+    "closed": false,
+    "closure_requires_replacement_exact_live_L1_pass": true,
+    "issue_id": "RC-P36-108-fin-0-1-2-s3-t03-research-lead-deterministic-fact-presence-and-claim-alias-semantic-ownership-regression",
+    "new_status": "independent_fresh_zero_call_proof_pass_replacement_admission_authority_pending",
+    "prior_status": "structural_implementation_fixture_proven_independent_proof_pending"
+  },
+  "schema_version": "fin_ia_0_1_2_s3_t03_research_lead_v8_independent_zero_call_proof_decision_v1_0",
+  "source_bindings": {
+    "exact_code_bindings": {
+      "apps/workbench/backend/application/bounded_agent_contract_policies.py": "bf7c2644d35816b5c2bd969c683a43f133d6dd2f602be108bc92e7d447aeaff5",
+      "apps/workbench/backend/application/bounded_agent_executor.py": "464db9bb371da994ab2420735a8ce47b7bdc0ba6a4e98456db2bec3a0929ebc7"
+    },
+    "immutable_primary_failure": {
+      "artifacts": 0,
+      "provider_captures": 7,
+      "reclassified": false,
+      "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_terminal_failure_result_v1_0.json",
+      "sha256": "42f3dd198696dd6d284c9e3bb67b5fbc093b2491b992785ed46d0cc5e1440a56",
+      "status": "failed"
+    },
+    "implementation": {
+      "ref": "configs/releases/fin_ia_0_1_2_s3_t03_research_lead_v8_local_semantic_materialization_minimum_zero_call_implementation_v1_0.json",
+      "sha256": "6a2c8eb3410bcf9643f2bdbc9aff58c397e6840fe9466fa0ce039b38a1c8048d"
+    },
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v8"
+  },
+  "status": "pass_independent_two_fresh_process_zero_call_proof_replacement_admission_authority_pending"
+}

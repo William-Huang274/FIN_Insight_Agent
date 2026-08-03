@@ -59,6 +59,13 @@ LEAD_V8_PROOF_NEXT = (
 LEAD_V8_PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_30.json"
 )
+REPLACEMENT_AUTHORITY_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-EXACT-LIVE-FRESH-"
+    "ADMISSION-AUTHORITY-DECISION"
+)
+REPLACEMENT_AUTHORITY_PROJECTION = ROOT / (
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_31.json"
+)
 
 
 def _load(path: Path) -> dict:
@@ -191,6 +198,7 @@ def test_r2_projection_backlog_and_project_os_are_current() -> None:
         next_action,
         FAILURE_NEXT,
         LEAD_V8_PROOF_NEXT,
+        REPLACEMENT_AUTHORITY_NEXT,
     }
     if backlog["item_id"] == next_action:
         assert backlog["current_projection_sha256"] == _sha256(PROJECTION)
@@ -198,11 +206,11 @@ def test_r2_projection_backlog_and_project_os_are_current() -> None:
         assert backlog["S3_T03_fresh_admission_consumed"] is False
         assert backlog["S3_T03_execution_started"] is False
     else:
-        expected_projection = (
-            CURRENT_PROJECTION
-            if backlog["item_id"] == FAILURE_NEXT
-            else LEAD_V8_PROJECTION
-        )
+        expected_projection = {
+            FAILURE_NEXT: CURRENT_PROJECTION,
+            LEAD_V8_PROOF_NEXT: LEAD_V8_PROJECTION,
+            REPLACEMENT_AUTHORITY_NEXT: REPLACEMENT_AUTHORITY_PROJECTION,
+        }[backlog["item_id"]]
         assert backlog["current_projection_sha256"] == _sha256(
             expected_projection
         )
@@ -220,5 +228,9 @@ def test_r2_projection_backlog_and_project_os_are_current() -> None:
     )
     assert decision["decision_id"] in capabilities
     assert next_action in context
-    if backlog["item_id"] in {FAILURE_NEXT, LEAD_V8_PROOF_NEXT}:
+    if backlog["item_id"] in {
+        FAILURE_NEXT,
+        LEAD_V8_PROOF_NEXT,
+        REPLACEMENT_AUTHORITY_NEXT,
+    }:
         assert FAILURE_NEXT in context

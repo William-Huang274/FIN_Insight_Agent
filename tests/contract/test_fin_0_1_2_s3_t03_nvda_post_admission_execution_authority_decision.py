@@ -51,6 +51,10 @@ LEAD_V8_PROOF_NEXT = (
     "FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-"
     "MATERIALIZATION-INDEPENDENT-ZERO-CALL-PROOF-DECISION"
 )
+REPLACEMENT_AUTHORITY_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-EXACT-LIVE-FRESH-"
+    "ADMISSION-AUTHORITY-DECISION"
+)
 TERMINAL_RESULT = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
     "terminal_failure_result_v1_0.json"
@@ -152,6 +156,7 @@ def test_projection_and_backlog_stop_before_live_execution() -> None:
         R2_EXECUTION_NEXT,
         FAILURE_NEXT,
         LEAD_V8_PROOF_NEXT,
+        REPLACEMENT_AUTHORITY_NEXT,
     }
     if backlog["item_id"] == NEXT:
         assert backlog["current_projection_sha256"] == _sha256(PROJECTION)
@@ -174,14 +179,26 @@ def test_projection_and_backlog_stop_before_live_execution() -> None:
         assert backlog["S3_T03_execution_result_sha256"] == _sha256(
             TERMINAL_RESULT
         )
-    else:
+    elif backlog["item_id"] == LEAD_V8_PROOF_NEXT:
         current = ROOT / backlog["current_projection_ref"]
         assert current.name == "fin_ia_0_1_2_current_program_projection_v2_30.json"
         assert backlog["current_projection_sha256"] == _sha256(current)
         assert backlog["S3_T03_Lead_v8_status"] == (
             "engineering_pass_independent_proof_pending"
         )
-    if backlog["item_id"] in {FAILURE_NEXT, LEAD_V8_PROOF_NEXT}:
+    else:
+        current = ROOT / backlog["current_projection_ref"]
+        assert backlog["item_id"] == REPLACEMENT_AUTHORITY_NEXT
+        assert current.name == "fin_ia_0_1_2_current_program_projection_v2_31.json"
+        assert backlog["current_projection_sha256"] == _sha256(current)
+        assert backlog["S3_T03_Lead_v8_status"] == (
+            "engineering_pass_independent_two_fresh_process_zero_call_proof_pass"
+        )
+    if backlog["item_id"] in {
+        FAILURE_NEXT,
+        LEAD_V8_PROOF_NEXT,
+        REPLACEMENT_AUTHORITY_NEXT,
+    }:
         assert backlog["S3_T03_fresh_admission_consumed"] is True
         assert backlog["S3_T03_execution_started"] is True
     else:

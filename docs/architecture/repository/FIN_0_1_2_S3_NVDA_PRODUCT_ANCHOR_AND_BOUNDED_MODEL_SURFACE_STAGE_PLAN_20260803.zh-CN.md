@@ -1,7 +1,7 @@
 # FIN 0.1.2 S3：NVDA 产品锚点与有界模型 Surface 计划
 
 日期：2026-08-03
-状态：`S3-T01 pass / S3-T02 engineering pass / S3-T03 primary immutable failed + collect-all diagnostic complete + Lead-v8 engineering pass / independent proof and replacement authority pending / S3-T04 blocked`
+状态：`S3-T01 pass / S3-T02 engineering pass / S3-T03 primary immutable failed + collect-all diagnostic complete + Lead-v8 independent proof pass / replacement admission authority pending / S3-T04 blocked`
 
 ## 一、S3 到底要证明什么
 
@@ -166,3 +166,15 @@ T03 的合并结构修复已实现为 Research Lead-v8。v8 继承 v6 的 determ
 `FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-MATERIALIZATION-INDEPENDENT-ZERO-CALL-PROOF-DECISION`
 
 必须先由独立 fresh proof 复证 v8 与当前 frozen input、mutation 和九件套路径；之后才可另行签发 fresh replacement admission 与一次 execution authority。新的 live 仍需用户明确续行。若 replacement 出现新的 L1，S3 honest-block，不进入第三轮修补；L2–L4 继续归 T04。
+
+## 十二、Lead-v8 独立 fresh proof 结果
+
+独立复证已在两个不同 disposable root、两个新进程中执行；两个进程启动前清除 credential 环境，阻断外部 socket 网络，归一化输出一致。复证没有读取正式失败 capture、没有复用 collect-all diagnostic repair callback，也没有调用模型或 Provider。
+
+两份进程均以当前 tracked NVDA input 到达 `6 nodes / 12 logical interactions / 3 local Fact receipts / 9 fake Provider calls and captures / 9 Artifacts`。相邻 alias mutation 令 Provider 选择 C002 及 C001+C002 并附带虚假 facts/resolved 叙事，但 canonical 输出仍由本地 Claim Card 生成真实 evidence-state、fact-presence 与 `unresolved`，Provider 叙事未进入 Artifact。runtime-owned field、未知 alias、重复 alias 三类 mutation 均在 Research Lead 阶段 fail closed；v6 gap projection 与 v7 fact-presence truth table 历史回归保持。
+
+该结果只建立 Lead-v8 engineering proof。primary R1 仍为 immutable failed，RC-P36-108 尚未关闭；没有 replacement admission、DeepSeek call、paired、Owner 或 T04。当前下一项严格限定为：
+
+`FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-EXACT-LIVE-FRESH-ADMISSION-AUTHORITY-DECISION`
+
+下一项只做零调用权限复核，不能同轮签发或消费 admission。未来 replacement exact-live 仍需之后新的用户续行；若出现新的 L1，S3 honest-block 且不存在第三次 exact。

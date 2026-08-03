@@ -1,0 +1,47 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_launcher_supervisor_projection_assertion_test_controlled_successor_v4_0",
+  "record_id": "FIN-0.1.2-S3-T03-LAUNCHER-SUPERVISOR-PROJECTION-ASSERTION-TEST-CONTROLLED-SUCCESSOR-R4",
+  "recorded_at": "2026-08-03T23:40:00+08:00",
+  "status": "pass_controlled_test_successor_after_Lead_v8_independent_proof",
+  "predecessor_successor": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_launcher_supervisor_projection_assertion_test_controlled_successor_v3_0.json",
+    "sha256": "1d16a78430e1f217082e6965ddf5fb021c7ebf9ddf1e50b18745fc0a3b8a4278",
+    "bytes": 2560,
+    "rewritten": false
+  },
+  "historical_implementation": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_bound_execution_launcher_parent_supervisor_zero_call_preflight_minimum_implementation_v1_0.json",
+    "sha256": "0cef1f7ad6f3f370bc25f4636fb028a5971847b898cd8170f4407cfc1ee25d13",
+    "bytes": 8467,
+    "rewritten": false
+  },
+  "historical_binding": {
+    "ref": "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_parent_supervisor_zero_call_implementation.py",
+    "sha256": "a2cf771c6fbd1e9445a8a206388c9caf3e5afade7708962fe287d8eab3a2a206",
+    "bytes": 12269
+  },
+  "current_binding": {
+    "ref": "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_parent_supervisor_zero_call_implementation.py",
+    "sha256": "992498cf79bab95a002c2c32627dc406298431021ac6649c8c082862efb2a9fe",
+    "bytes": 16806
+  },
+  "change_scope": [
+    "preserve_historical_launcher_and_supervisor_assertions",
+    "recognize_v2_31_only_as_the_explicit_successor_to_v2_30",
+    "treat_the_primary_identity_as_consumed_and_terminal_failed",
+    "keep_the_collect_all_diagnostic_non_promotable",
+    "recognize_Lead_v8_independent_two_fresh_process_zero_call_proof_pass",
+    "allow_only_the_replacement_admission_authority_decision_as_current_next"
+  ],
+  "change_boundary": {
+    "runtime_code_changed": false,
+    "historical_implementation_rewritten": false,
+    "admission_model_business_or_budget_contract_changed": false,
+    "execution_authority_created_or_consumed_by_this_record": false,
+    "historical_test_claim_reinterpreted": false,
+    "failed_exact_live_output_modified_or_promoted": false,
+    "diagnostic_output_promoted": false,
+    "current_global_projection_successor_is_explicit_and_closed": true
+  },
+  "known_boundary": "This record updates only the historical launcher-supervisor regression to recognize the separately recorded v2_31 Lead-v8 independent proof successor. It authorizes no model call, replacement admission issuance, exact-live, paired assessment or Owner acceptance."
+}

@@ -26,6 +26,13 @@ NEXT = (
     "FIN-0.1.2-S3-T03-RESEARCH-LEAD-V8-LOCAL-SEMANTIC-"
     "MATERIALIZATION-INDEPENDENT-ZERO-CALL-PROOF-DECISION"
 )
+CURRENT_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-EXACT-LIVE-FRESH-"
+    "ADMISSION-AUTHORITY-DECISION"
+)
+CURRENT_PROJECTION = ROOT / (
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_31.json"
+)
 
 
 def _json(path: Path) -> dict:
@@ -72,7 +79,7 @@ def test_lead_v8_record_binds_current_code_and_does_not_claim_acceptance() -> No
     assert implementation["next_action"] == NEXT
 
 
-def test_current_projection_and_backlog_point_only_to_independent_proof() -> None:
+def test_historical_projection_and_current_backlog_preserve_proof_lifecycle() -> None:
     projection = _json(PROJECTION)
     assert projection["decision_binding"]["sha256"] == _sha256(AGGREGATE)
     assert projection["decision_binding"]["bytes"] == AGGREGATE.stat().st_size
@@ -82,10 +89,10 @@ def test_current_projection_and_backlog_point_only_to_independent_proof() -> Non
         "replacement_admission_or_execution_authorized"
     ] is False
     backlog = _json(BACKLOG)
-    assert backlog["next_action"]["item_id"] == NEXT
+    assert backlog["next_action"]["item_id"] == CURRENT_NEXT
     assert backlog["next_action"]["current_projection_ref"].endswith(
-        "current_program_projection_v2_30.json"
+        "current_program_projection_v2_31.json"
     )
     assert backlog["next_action"]["current_projection_sha256"] == _sha256(
-        PROJECTION
+        CURRENT_PROJECTION
     )

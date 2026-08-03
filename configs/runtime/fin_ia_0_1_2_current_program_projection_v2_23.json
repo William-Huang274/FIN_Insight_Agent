@@ -1,0 +1,85 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S3-T03-CONDITIONAL-AUTHORITY-R24",
+  "recorded_at": "2026-08-03T19:00:00+08:00",
+  "status": "current_FIN_0_1_2_S3_T03_conditional_exact_live_authority_fresh_identity_input_and_runner_preflight_pending",
+  "lifecycle_state": "in_progress",
+  "decision_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_authority_decision_v1_0.json",
+    "sha256": "18acd58696fbd0ef8934b036024fa1ba6eedf213b7e37c6080d88c7afc433c87",
+    "bytes": 10171,
+    "binding_role": "conditional_one_primary_exact_live_authority_and_preexecution_identity_input_runner_gap"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S3_in_progress_T01_T02_pass_T03_conditional_authority",
+    "active_slice": "FIN_0_1_2_S3_NVDA_PRODUCT_ANCHOR",
+    "current_next_action": "FIN-0.1.2-S3-T03-NVDA-FRESH-IDENTITY-INPUT-BOUNDARY-BOUND-RUNNER-ATOMIC-CAPTURE-TERMINAL-SUPERVISION-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION",
+    "current_stage_status": "S3_T03_conditional_exact_live_authority_issued_execution_not_started_fresh_identity_input_and_runner_preflight_pending",
+    "completed_current_stages": {
+      "S0": "pass_closed",
+      "S1": "pass_closed_current_consolidated_baseline",
+      "S2": "pass_closed_bounded_Pro_preview_Claim_WWC_surface_and_local_Fact_surface"
+    },
+    "current_S3_tasks": {
+      "S3_T01": "pass",
+      "S3_T02": "engineering_and_zero_call_product_readiness_pass",
+      "S3_T03_authority": "conditional_pass_fresh_identity_input_and_runner_atomic_capture_preflight_pending",
+      "S3_T03_execution": "not_started",
+      "S3_T04": "blocked_by_successful_current_nine_Artifact_product"
+    },
+    "product_case": "NVDA",
+    "target_maturity": "current_FIN_0_1_2_NVDA_R2_owner_accepted",
+    "selected_model_ref": "deepseek:deepseek-v4-pro",
+    "selected_model_lifecycle": "preview_historical_control",
+    "runtime_contract_family_binding_ref": "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1.3",
+    "tracked_T02_identity_bound_input_digest": "906111ddd482cf15dc4d03c7a3769a59ec8ade80a2c9f867561b3bd128ddc953",
+    "fresh_identity_recompiled_input_digest": "b9cc749d0d2351e228750343a61d3fc03abfc8a70870fa96d12c8a03f118e085",
+    "fresh_identity_execution_input_binding_ready": false,
+    "proposed_execution_identity": "fin012-s3-t03-nvda-primary-r1",
+    "proposed_execution_identity_issued_or_consumed": false,
+    "S3_product_call_topology": {
+      "logical_nodes": 6,
+      "logical_interactions": 12,
+      "model_provider_calls": 9,
+      "model_captures": 9,
+      "local_Fact_receipts": 3,
+      "business_Artifacts_on_success": 9
+    },
+    "open_S3_issue": "RC-P36-106-fin-0-1-2-s3-t03-bound-runner-durable-capture-and-terminal-supervision-gap",
+    "model_provider_network_calls_in_authority_turn": [0, 0, 0],
+    "current_NVDA_R2": false,
+    "release_qualified": false
+  },
+  "execution_authority": {
+    "future_one_primary_NVDA_exact_live_conditionally_authorized": true,
+    "authority_effective_now": false,
+    "effective_after_fresh_identity_input_boundary_bound_runner_atomic_capture_and_zero_call_preflight": true,
+    "fresh_identity_input_boundary_and_runner_minimum_implementation_authorized_next": true,
+    "credential_read_or_probe_authorized_or_performed": false,
+    "admission_issue_or_persist_authorized_or_performed": false,
+    "model_provider_or_execution_network_authorized_or_performed": false,
+    "business_Run_or_Artifact_writes_authorized_or_performed": false,
+    "automatic_exact_execution_after_preflight_authorized": false,
+    "owner_acceptance_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "S3_technical_plan": "docs/architecture/repository/FIN_0_1_2_S3_NVDA_PRODUCT_ANCHOR_AND_BOUNDED_MODEL_SURFACE_STAGE_PLAN_20260803.zh-CN.md",
+    "S3_stage_plan": "configs/releases/fin_ia_0_1_2_s3_nvda_product_anchor_and_bounded_model_surface_stage_plan_v1_0.json",
+    "S3_T02_implementation": "configs/releases/fin_ia_0_1_2_s3_t02_nvda_bounded_surface_production_runtime_integration_zero_call_implementation_v1_0.json",
+    "S3_T03_authority_decision": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_authority_decision_v1_0.json",
+    "current_runtime_binding": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_3.json",
+    "current_exact_input": "configs/releases/fin_ia_0_1_2_s3_nvda_exact_product_input_v1_0.json",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md"
+  },
+  "historical_projection_policy": {
+    "immutable_event_files_remain_valid_for_historical_facts": true,
+    "historical_files_may_own_current_next_or_backlog_tail": false,
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_22.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "T02_failure_retention_reinterpreted_as_durable_capture_preflight": false,
+    "historical_S2_or_FIN_0_1_live_evidence_reused_as_current_product_proof": false
+  }
+}

@@ -234,9 +234,10 @@ def test_projection_backlog_and_project_os_agree_on_current_next() -> None:
     assert rebaseline["current_stage"] == (
         "S3_in_progress_T01_T02_pass_T03_not_authorized"
     )
-    assert next_action["item_id"] == (
-        "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION"
-    )
+    # This file proves the immutable T01 entry projection. The global backlog
+    # is intentionally allowed to advance through T02/T03 and must not be
+    # treated as part of that historical snapshot.
+    assert next_action["item_id"] != NEXT_ACTION
     assert next_action["S3_stage_plan_sha256"] == EXPECTED_STAGE_PLAN_SHA256
     assert next_action["S3_model_provider_call_topology"] == [6, 12, 9, 9, 3, 9]
     assert next_action["S3_T01_completed"] is True

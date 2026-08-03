@@ -1,0 +1,180 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-R1",
+  "recorded_at": "2026-08-03T19:00:00+08:00",
+  "status": "pass_conditional_one_primary_exact_live_authority_exact_input_identity_boundary_and_runner_preflight_pending",
+  "decision_label": "authorize_one_future_current_NVDA_primary_exact_live_only_after_fresh_identity_input_boundary_bound_runner_atomic_capture_and_zero_call_preflight",
+  "engineering_base": {
+    "git_head": "bba8df9690742d1903fe608d5cb2279760664af0",
+    "branch": "codex/layered-data-source-expansion",
+    "upstream_head": "bba8df9690742d1903fe608d5cb2279760664af0",
+    "worktree_clean_at_review": true
+  },
+  "bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s3_nvda_product_anchor_and_bounded_model_surface_stage_plan_v1_0.json",
+      "sha256": "5e4a5bc8abd4b1b0c39c435e1aa65b23b34c5d6b1ef1c56cd0f9a6fa3e0131dd",
+      "bytes": 13662,
+      "role": "S3_stage_budget_failure_and_stop_contract"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s3_t02_nvda_bounded_surface_production_runtime_integration_zero_call_implementation_v1_0.json",
+      "sha256": "ba49b355816d2449050af13583d059c6d78bf10737d2a1b7d5d35191b32ad228",
+      "bytes": 8513,
+      "role": "T02_engineering_and_current_full_fake_evidence"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s3_nvda_exact_product_input_v1_0.json",
+      "sha256": "1f5bf2ba07a917f13f123c72e27e644af43c47ecf68ae34d2983fba7c724991b",
+      "bytes": 2902,
+      "role": "tracked_current_NVDA_exact_input"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_3.json",
+      "sha256": "d4edc514ba95c09810b75fa81b4caadf050aca2a91e77c93d472c588d82dd152",
+      "bytes": 5227,
+      "role": "current_S3_production_contract_source"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_3.json",
+      "sha256": "1658af8d96d9d82384bd689e56b9de07528faac063e3d55ae0ca6c5b56c0e30a",
+      "bytes": 2409,
+      "role": "current_S3_production_contract_binding"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s3_runtime_resource_registry_v1_0.json",
+      "sha256": "c4dd3f6bc2a53d256933c070f285bca1982b18a3a62b5f1c89171e7014023d4f",
+      "bytes": 3657,
+      "role": "content_addressed_runtime_resource_authority"
+    },
+    {
+      "ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "sha256": "f52d712878b97fdb2e5853c022f059e22d8e48f34fb7bb4add3b56671f313b6c",
+      "bytes": 670540,
+      "role": "current_S3_production_compiler_and_in_process_executor"
+    },
+    {
+      "ref": "apps/workbench/backend/application/research_runtime.py",
+      "sha256": "09acc8a6dc8aa0e3dfaf16ccc351dff470d6c39fc1cdd0e62e4afb6ec308396c",
+      "bytes": 135726,
+      "role": "current_Run_terminal_materialization_path"
+    }
+  ],
+  "exact_product_target": {
+    "case": "NVDA",
+    "case_id": "case_e0b4021838a913c4ad21c328",
+    "case_version": 1,
+    "as_of": "2026-07-21T00:00:00Z",
+    "input_head_digest": "79602b8e8b4855df881c6bd1f550de2eecd18674cc2626ac7decadd5e3420424",
+    "source_digest": "49e4afabde167dbd9b3558db574aa56461f993294aa3518eb8c448d80c4ff860",
+    "tracked_T02_identity_bound_input_digest": "906111ddd482cf15dc4d03c7a3769a59ec8ade80a2c9f867561b3bd128ddc953",
+    "execution_identity_proposal": "fin012-s3-t03-nvda-primary-r1",
+    "fresh_identity_recompiled_input_digest": "b9cc749d0d2351e228750343a61d3fc03abfc8a70870fa96d12c8a03f118e085",
+    "fresh_identity_digest_matches_tracked_T02_digest": false,
+    "fresh_identity_execution_input_binding_ready": false,
+    "execution_identity_is_issued_or_consumed": false,
+    "provider": "deepseek",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "model_lifecycle": "preview_historical_control_selected_in_S2",
+    "retained_model_families": [
+      "claim_candidate_atoms",
+      "what_would_change_atoms"
+    ],
+    "local_deterministic_families": [
+      "specialist_fact_atoms"
+    ],
+    "required_terminal_topology": {
+      "logical_nodes": 6,
+      "logical_interactions": 12,
+      "provider_calls_and_captures": 9,
+      "local_Fact_receipts": 3,
+      "business_Artifacts_on_success": 9
+    }
+  },
+  "hard_budget": {
+    "primary_formal_attempts": 1,
+    "maximum_transport_attempts_per_call": 1,
+    "semantic_model_calls": 9,
+    "provider_calls": 9,
+    "execution_network_calls": 9,
+    "retry_budget": 0,
+    "fallback_budget": 0,
+    "provider_hopping_budget": 0,
+    "prompt_only_retry_budget": 0,
+    "maximum_input_tokens": 60000,
+    "maximum_output_tokens": 10000,
+    "maximum_total_cost_usd": 0.06,
+    "maximum_wall_clock_seconds": 900,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_case_head_writes": 0,
+    "failed_output_business_promotions": 0
+  },
+  "preexecution_gap": {
+    "issue_id": "RC-P36-106-fin-0-1-2-s3-t03-bound-runner-durable-capture-and-terminal-supervision-gap",
+    "severity": "critical",
+    "owned_by_stage": "S3-T03",
+    "root_cause": "Two execution-control assumptions are currently incompatible. First, the tracked T02 input digest includes research Run and Artifact refs derived from execution_identity, so recompiling the same business input with the required fresh T03 identity changes the digest and fails the manifest's exact-match rule. Second, the current S3 path only appends Provider captures to in-process state and hands them to Runtime completion or failure materialization after execution returns. FIN 0.1.2 has no S3-T03-specific single-use issuer and supervised runner that binds a fresh identity-aware execution envelope and durably stores each capture before parsing and validation.",
+    "evidence": {
+      "executor_capture_append_lines": [9285, 9460],
+      "runtime_capture_collection_line": 2326,
+      "runtime_failure_materialization_line": 2352,
+      "current_S3_T03_runner_module_present": false,
+      "current_S3_T03_issuer_module_present": false,
+      "tracked_T02_input_digest": "906111ddd482cf15dc4d03c7a3769a59ec8ade80a2c9f867561b3bd128ddc953",
+      "fresh_identity_recompiled_input_digest": "b9cc749d0d2351e228750343a61d3fc03abfc8a70870fa96d12c8a03f118e085",
+      "exact_match_and_fresh_identity_contracts_currently_compatible": false
+    },
+    "not_a_model_failure": true,
+    "not_a_provider_failure": true,
+    "not_an_input_or_financial_truth_failure": true,
+    "not_a_reason_to_reopen_S0_S1_or_S2": true,
+    "required_minimum_fix": [
+      "separate the stable business-source and semantic input digest from execution_identity-derived Run and Artifact refs, preserve the T02 v1 manifest as history, and create one fresh-identity execution envelope binding without weakening source, head, cell or lineage checks",
+      "bind one dedicated S3-T03 runner to that fresh-identity NVDA execution envelope, v1.3 production contract and one proposed fresh execution identity",
+      "atomically persist the complete model-visible request, final assistant output, usage, finish reason, latency and allowlisted call arguments before local parse or validation",
+      "exclude credentials, Authorization headers, cookies and Provider private reasoning from all persisted evidence",
+      "materialize one typed terminal result for provider, validation, downstream, timeout and supervisor-exit failures and prove capture readback before terminalization",
+      "enforce nine-call, one-transport-attempt, token, cost, wall-clock, retry-zero and source-or-business-write-zero limits before execution",
+      "prove success-only nine-Artifact materialization, failed-output quarantine, single-use identity and no orphaned Run with zero-call fakes and mutations",
+      "re-derive the stable business input, fresh execution envelope, production binding and prospective admission digests twice in a fresh credential-cleared process"
+    ]
+  },
+  "authority": {
+    "future_one_primary_NVDA_exact_live_authorized": true,
+    "authorization_effective_only_after_fresh_identity_input_boundary_bound_runner_atomic_capture_and_zero_call_preflight_pass": true,
+    "current_turn_credential_read_or_probe_authorized": false,
+    "current_turn_admission_issue_or_persist_authorized": false,
+    "current_turn_model_provider_or_execution_network_authorized": false,
+    "current_turn_business_Run_or_Artifact_write_authorized": false,
+    "fresh_identity_input_boundary_runner_and_atomic_capture_minimum_implementation_authorized_next": true,
+    "automatic_exact_execution_after_preflight_authorized": false,
+    "automatic_repair_replacement_or_second_attempt_authorized": false,
+    "T04_assessment_authorized_before_successful_nine_Artifact_product": false,
+    "release_or_production_authorized": false
+  },
+  "current_turn_observed_counts": {
+    "credential_reads_or_probes": 0,
+    "admissions_issued_or_persisted": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "business_Runs": 0,
+    "business_Artifacts": 0,
+    "live_case_head_writes": 0
+  },
+  "stage_acceptance": {
+    "S3_T01": "pass",
+    "S3_T02": "engineering_and_zero_call_product_readiness_pass",
+    "S3_T03_authority": "conditional_pass_fresh_identity_input_boundary_and_runner_preflight_pending",
+    "S3_T03_execution": "not_started",
+    "S3_T04": "blocked_until_successful_current_nine_Artifact_product",
+    "current_NVDA_R2": false,
+    "S3": "in_progress",
+    "release": "not_qualified"
+  },
+  "known_product_boundary": "Conditional authority does not establish a fresh identity-bound execution input, runner readiness, admission issuance, natural DeepSeek behavior, current NVDA product quality, R2, paired gain, Owner acceptance, release or production. The current business input also has promotable numeric Facts only in the value cell; demand and bottleneck cells must remain honest cannot-infer where evidence is absent.",
+  "next_action": "FIN-0.1.2-S3-T03-NVDA-FRESH-IDENTITY-INPUT-BOUNDARY-BOUND-RUNNER-ATOMIC-CAPTURE-TERMINAL-SUPERVISION-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION"
+}

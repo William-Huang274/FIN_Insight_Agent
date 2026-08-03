@@ -1,7 +1,7 @@
 # FIN 0.1.2 S3：NVDA 产品锚点与有界模型 Surface 计划
 
 日期：2026-08-03
-状态：`S3-T01 pass / S3-T02 engineering pass / S3-T03 authority pending / zero model calls`
+状态：`S3-T01 pass / S3-T02 engineering pass / S3-T03 conditional authority / runner preflight pending / zero model calls in authority turn`
 
 ## 一、S3 到底要证明什么
 
@@ -75,14 +75,20 @@ T02 通过且用户另行授权后，才允许一次 primary formal attempt。�
 - replacement 再出现新 L1，S3 honest-block；没有第三次 exact attempt，也不新增 T05/R-number/产品版本。
 - collect-all diagnostic 只能在正式失败后由 Owner 明确决定，始终隔离且不可业务晋升。
 
-## 六、T02 实现结果与当前入口
+## 六、T02 实现结果与 T03 权限裁决
 
 S3-T02 已按单一零调用结构包完成：新建独立 v1.3 生产 source/binding 和 v9 transport；三次 Fact 交互改为本地确定性 selection/rendering，并各自产生 typed receipt；Claim/WWC 继续绑定 Pro preview 的 alias/enum surface；当前 NVDA exact input 以来源、head、input 和六段 lineage digest 登记，且明确不是 admission 或当前产品证明。
 
 full-fake 对当前 exact input 证明了 `6 nodes / 12 logical interactions / 3 local Fact receipts / 9 Provider calls and captures / 9 Artifacts`。输入、binding 和 Lead 叙事 mutation 均 fail closed；Research Lead 失败时仍保留已完成三节点、3 个本地 receipt、7 个 capture 和 typed terminal result。适用 S1/S2 与历史 S4 功能回归通过。真实 credential、模型、Provider、execution network、业务 Run/Artifact 与 live case head write 均为 0；内存 prospective admission 为 disabled，未签发、未消费。
 
-RC-P36-105 因生产接入和当前输入门禁完成而关闭，但这不建立自然模型表现、当前 NVDA R2、paired 质量或 Owner acceptance。当前下一项只允许先做零调用权限决策：
+RC-P36-105 因生产接入和当前输入门禁完成而关闭，但这不建立自然模型表现、当前 NVDA R2、paired 质量或 Owner acceptance。
 
 `FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION`
 
-该权限决策未完成前，不得访问凭据、签发 admission 或执行 exact-live。
+该零调用权限决策已完成，并有条件授权未来一次 primary exact-live；当前权限尚未生效。审计发现两项相连的执行前缺口：T02 tracked input digest 包含由 execution identity 派生的 Run/Artifact refs，使用 fresh T03 identity 复编译后 digest 从 `906111…c953` 变成 `b9cc74…e085`，因此“完全匹配旧 digest”和“fresh identity”目前不能同时成立；同时 T02 的 capture 保留是执行器内存累积、Runtime 在正常返回或捕获异常后再统一终态化，尚无 0.1.2 S3 专用的单次签发/监督 runner，也未证明每个 Provider 响应在解析校验前已耐久落盘。两项合并登记为 `RC-P36-106`，归 S3-T03 执行控制，不重开 S0–S2，也不归因 DeepSeek。
+
+当前下一项严格限定为：
+
+`FIN-0.1.2-S3-T03-NVDA-FRESH-IDENTITY-INPUT-BOUNDARY-BOUND-RUNNER-ATOMIC-CAPTURE-TERMINAL-SUPERVISION-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`
+
+该项只能在一个零调用收敛包中分离稳定业务输入摘要与 identity-bound execution envelope，并完成 runner/原子 capture/终态监督和预算 preflight；不得读取凭据、签发 admission 或执行 exact-live。通过后本次 conditional authority 才具备执行资格，但仍需新的用户续行才能签发并启动真实 attempt。

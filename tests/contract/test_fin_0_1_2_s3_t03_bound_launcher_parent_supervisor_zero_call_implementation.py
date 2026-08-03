@@ -18,10 +18,18 @@ IMPLEMENTATION = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_nvda_bound_execution_launcher_"
     "parent_supervisor_zero_call_preflight_minimum_implementation_v1_0.json"
 )
+TEST_SUCCESSOR = ROOT / (
+    "configs/releases/fin_ia_0_1_2_s3_t03_launcher_supervisor_projection_"
+    "assertion_test_controlled_successor_v1_0.json"
+)
 PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_27.json"
 )
 BACKLOG = ROOT / "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
+EXECUTION_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AND-TERMINAL-"
+    "MATERIALIZATION"
+)
 
 from apps.workbench.backend.application.fin_0_1_2_s3_t03_exact_live_runner import (
     Fin012S3T03RunnerError,
@@ -318,15 +326,50 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
     assert implementation["immutable_execution_inputs"]["execution_started"] is False
     for row in implementation["implementation_bindings"]:
         path = ROOT / row["ref"]
-        assert path.stat().st_size == row["bytes"]
-        assert _sha256(path) == row["sha256"]
+        current_bytes = path.stat().st_size
+        current_sha256 = _sha256(path)
+        if current_bytes == row["bytes"] and current_sha256 == row["sha256"]:
+            continue
+        assert row["ref"] == (
+            "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_"
+            "parent_supervisor_zero_call_implementation.py"
+        )
+        successor = _load(TEST_SUCCESSOR)
+        assert successor["historical_binding"] == {
+            "ref": row["ref"],
+            "sha256": row["sha256"],
+            "bytes": row["bytes"],
+        }
+        assert successor["current_binding"] == {
+            "ref": row["ref"],
+            "sha256": current_sha256,
+            "bytes": current_bytes,
+        }
+        assert successor["historical_implementation"]["sha256"] == _sha256(
+            IMPLEMENTATION
+        )
+        assert successor["change_boundary"]["runtime_code_changed"] is False
+        assert successor["change_boundary"][
+            "historical_implementation_rewritten"
+        ] is False
+        assert successor["change_boundary"][
+            "admission_model_business_or_budget_contract_changed"
+        ] is False
     implementation_sha = _sha256(IMPLEMENTATION)
     assert projection["decision_binding"]["sha256"] == implementation_sha
     assert projection["current_truth"]["current_next_action"] == (
         "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION-R2"
     )
-    assert backlog["item_id"] == projection["current_truth"]["current_next_action"]
-    assert backlog["current_projection_sha256"] == _sha256(PROJECTION)
+    if backlog["item_id"] == projection["current_truth"]["current_next_action"]:
+        assert backlog["current_projection_sha256"] == _sha256(PROJECTION)
+    else:
+        assert backlog["item_id"] == EXECUTION_NEXT
+        current = ROOT / backlog["current_projection_ref"]
+        assert current.name == "fin_ia_0_1_2_current_program_projection_v2_28.json"
+        assert backlog["current_projection_sha256"] == _sha256(current)
+        assert _load(current)["historical_projection_policy"][
+            "superseded_projection"
+        ].endswith("fin_ia_0_1_2_current_program_projection_v2_27.json")
     assert backlog["S3_T03_bound_launcher_parent_supervisor_missing"] is False
     assert backlog["S3_T03_fresh_admission_consumed"] is False
     assert backlog["S3_T03_execution_started"] is False

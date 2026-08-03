@@ -38,6 +38,10 @@ POST_ADMISSION_AUTHORITY_BLOCKED_NEXT = (
 LAUNCHER_SUPERVISOR_PASS_NEXT = (
     "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION-R2"
 )
+R2_EXECUTION_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AND-TERMINAL-"
+    "MATERIALIZATION"
+)
 LAUNCHER_SUPERVISOR_IMPLEMENTATION = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_nvda_bound_execution_launcher_"
     "parent_supervisor_zero_call_preflight_minimum_implementation_v1_0.json"
@@ -206,6 +210,7 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
         NEXT_ACTION,
         POST_ADMISSION_AUTHORITY_BLOCKED_NEXT,
         LAUNCHER_SUPERVISOR_PASS_NEXT,
+        R2_EXECUTION_NEXT,
     }
     if backlog["item_id"] == NEXT_ACTION:
         assert backlog["current_projection_ref"] == projection_path.relative_to(
@@ -219,7 +224,7 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
             "fin_ia_0_1_2_current_program_projection_v2_26.json"
         )
         assert backlog["S3_T03_bound_launcher_parent_supervisor_missing"] is True
-    else:
+    elif backlog["item_id"] == LAUNCHER_SUPERVISOR_PASS_NEXT:
         assert backlog["current_projection_ref"].endswith(
             "fin_ia_0_1_2_current_program_projection_v2_27.json"
         )
@@ -227,6 +232,14 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
         assert backlog[
             "S3_T03_bound_launcher_parent_supervisor_implementation_bundles_consumed"
         ] == 1
+    else:
+        assert backlog["current_projection_ref"].endswith(
+            "fin_ia_0_1_2_current_program_projection_v2_28.json"
+        )
+        assert backlog["S3_T03_exact_live_execution_authorized_now"] is True
+        assert backlog[
+            "S3_T03_exact_live_execution_requires_new_user_continuation"
+        ] is True
     assert backlog["S3_T03_fresh_admission_issued"] is True
     assert backlog["S3_T03_fresh_admission_consumed"] is False
     assert backlog["S3_T03_execution_started"] is False

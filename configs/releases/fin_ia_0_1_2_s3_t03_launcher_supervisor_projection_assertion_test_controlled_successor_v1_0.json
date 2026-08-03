@@ -1,0 +1,37 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_launcher_supervisor_projection_assertion_test_controlled_successor_v1_0",
+  "record_id": "FIN-0.1.2-S3-T03-LAUNCHER-SUPERVISOR-PROJECTION-ASSERTION-TEST-CONTROLLED-SUCCESSOR-R1",
+  "recorded_at": "2026-08-03T19:05:36+08:00",
+  "status": "pass_controlled_test_successor_historical_implementation_immutable",
+  "historical_implementation": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_bound_execution_launcher_parent_supervisor_zero_call_preflight_minimum_implementation_v1_0.json",
+    "sha256": "0cef1f7ad6f3f370bc25f4636fb028a5971847b898cd8170f4407cfc1ee25d13",
+    "bytes": 8467,
+    "rewritten": false
+  },
+  "historical_binding": {
+    "ref": "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_parent_supervisor_zero_call_implementation.py",
+    "sha256": "a2cf771c6fbd1e9445a8a206388c9caf3e5afade7708962fe287d8eab3a2a206",
+    "bytes": 12269
+  },
+  "current_binding": {
+    "ref": "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_parent_supervisor_zero_call_implementation.py",
+    "sha256": "110fb2d625c3be0456e327fc56b39455a787cc2cb03a3332a355fcc7a3d25e13",
+    "bytes": 14038
+  },
+  "change_scope": [
+    "preserve_the_v2_27_historical_projection_assertion",
+    "allow_only_the_explicit_v2_28_exact_live_execution_successor_as_current_global_backlog",
+    "verify_the_v2_28_projection_supersedes_v2_27_and_is_content_hash_bound",
+    "preserve_all_launcher_supervisor_runtime_and_failure_mode_assertions"
+  ],
+  "change_boundary": {
+    "runtime_code_changed": false,
+    "historical_implementation_rewritten": false,
+    "admission_model_business_or_budget_contract_changed": false,
+    "execution_authority_created_or_consumed_by_this_record": false,
+    "historical_test_claim_reinterpreted": false,
+    "current_global_projection_successor_is_explicit_and_closed": true
+  },
+  "known_boundary": "This record governs only the current-state assertion in a historical launcher-supervisor regression after the global backlog advanced to the separately authorized R2 execution successor. It does not alter the committed implementation evidence, runtime code, admission, execution authority, financial contract, budget, or product acceptance state."
+}

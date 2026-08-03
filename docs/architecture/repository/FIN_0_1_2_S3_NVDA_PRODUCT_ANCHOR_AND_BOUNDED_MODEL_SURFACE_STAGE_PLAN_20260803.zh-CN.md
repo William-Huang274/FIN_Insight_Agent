@@ -120,3 +120,17 @@ CLI 预检真实启动了一个本地 child 并重建 exact input，但 provider
 `FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION-R2`
 
 该下一项仍是零调用权限复核：重新验证当前 runner/launcher hashes、Project OS blocker、fresh target/supervision roots、credential presence、预算与 retry-zero。它不得同轮消费 admission 或启动 DeepSeek；真实 exact-live 仍需之后新的用户续行。
+
+## 九、exact-live execution authority R2
+
+R2 零调用资格复核已经通过。immutable admission、issuance、受控后继 runner、launcher 与 launcher/supervisor implementation 的当前字节全部匹配；Project OS 对 R2 scope 返回 pass/open blockers 0。真实本地 child preflight 再次完成 frozen exact input 重建和 executor/transport wiring，但 provider callback、模型、Provider 和执行网络均为 0。
+
+credential 只检查存在性，未读取值、未 probe Provider、未进入命令、日志或 receipt。target runtime root 与未来 supervision root 在复核前后都不存在；admission 仍为 issued/unconsumed，execution identity 未 claim。
+
+R2 只授权在新的用户续行后执行一次 supervised exact-once：最多 9 次 DeepSeek Pro Provider calls，60k input、10k output、USD 0.06、900 秒，每次最多一个 transport attempt，retry/fallback/provider hopping/prompt-only retry 均为 0。首个可信失败立即停止并物化 typed terminal；成功必须形成 3 个 local Fact receipts、9 份 restricted capture 与 9 个业务 Artifacts。execution turn 不自动进入 paired、Owner 或 S3-T04。
+
+当前下一项为：
+
+`FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AND-TERMINAL-MATERIALIZATION`
+
+该执行已具备条件授权，但仍必须由用户新的“继续”触发。当前 tracked exact input 仍是内部 frozen NVDA dogfood fixture；因此即使运行成功，也必须在 S3-T04 单独判断产品研究价值，不能仅凭执行成功宣布 NVDA R2。

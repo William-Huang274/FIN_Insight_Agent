@@ -31,6 +31,12 @@ from scripts.releases.issue_fin_ia_0_1_2_s3_t03_nvda_fresh_exact_admission impor
 from sec_agent.canonical_runtime.models import canonical_digest
 
 
+POST_ADMISSION_AUTHORITY_BLOCKED_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-BOUND-EXECUTION-LAUNCHER-PARENT-"
+    "SUPERVISOR-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION"
+)
+
+
 def _load(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -162,7 +168,7 @@ def test_issuance_stops_before_exact_live_and_later_stage() -> None:
     assert issuance["next_action"] == NEXT_ACTION
 
 
-def test_current_projection_and_backlog_point_to_execution_authority() -> None:
+def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle() -> None:
     projection_path = ROOT / (
         "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_25.json"
     )
@@ -175,13 +181,22 @@ def test_current_projection_and_backlog_point_to_execution_authority() -> None:
 
     assert projection["decision_binding"]["sha256"] == issuance_sha
     assert projection["current_truth"]["current_next_action"] == NEXT_ACTION
-    assert backlog["item_id"] == NEXT_ACTION
-    assert backlog["current_projection_ref"] == projection_path.relative_to(
-        ROOT
-    ).as_posix()
-    assert backlog["current_projection_sha256"] == hashlib.sha256(
-        projection_path.read_bytes()
-    ).hexdigest()
+    assert backlog["item_id"] in {
+        NEXT_ACTION,
+        POST_ADMISSION_AUTHORITY_BLOCKED_NEXT,
+    }
+    if backlog["item_id"] == NEXT_ACTION:
+        assert backlog["current_projection_ref"] == projection_path.relative_to(
+            ROOT
+        ).as_posix()
+        assert backlog["current_projection_sha256"] == hashlib.sha256(
+            projection_path.read_bytes()
+        ).hexdigest()
+    else:
+        assert backlog["current_projection_ref"].endswith(
+            "fin_ia_0_1_2_current_program_projection_v2_26.json"
+        )
+        assert backlog["S3_T03_bound_launcher_parent_supervisor_missing"] is True
     assert backlog["S3_T03_fresh_admission_issued"] is True
     assert backlog["S3_T03_fresh_admission_consumed"] is False
     assert backlog["S3_T03_execution_started"] is False

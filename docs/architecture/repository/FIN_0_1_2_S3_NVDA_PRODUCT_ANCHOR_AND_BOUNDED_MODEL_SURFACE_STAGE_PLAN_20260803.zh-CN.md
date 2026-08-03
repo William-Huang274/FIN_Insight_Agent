@@ -1,7 +1,7 @@
 # FIN 0.1.2 S3：NVDA 产品锚点与有界模型 Surface 计划
 
 日期：2026-08-03
-状态：`S3-T01 pass / S3-T02 engineering pass / S3-T03 conditional authority / runner preflight pending / zero model calls in authority turn`
+状态：`S3-T01 pass / S3-T02 engineering pass / S3-T03 admission issued-unconsumed / exact-live authority blocked by executable launcher-supervisor gap / zero model calls in authority turn`
 
 ## 一、S3 到底要证明什么
 
@@ -92,3 +92,17 @@ RC-P36-105 因生产接入和当前输入门禁完成而关闭，但这不建立
 `FIN-0.1.2-S3-T03-NVDA-FRESH-IDENTITY-INPUT-BOUNDARY-BOUND-RUNNER-ATOMIC-CAPTURE-TERMINAL-SUPERVISION-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`
 
 该项只能在一个零调用收敛包中分离稳定业务输入摘要与 identity-bound execution envelope，并完成 runner/原子 capture/终态监督和预算 preflight；不得读取凭据、签发 admission 或执行 exact-live。通过后本次 conditional authority 才具备执行资格，但仍需新的用户续行才能签发并启动真实 attempt。
+
+## 七、post-admission execution authority 复核
+
+fresh identity、稳定业务摘要、capture-first runner library 与 admission issuance 已完成；admission=`eed177…d1c8`，当前仍为 issued/unconsumed，runtime root 与 execution identity 未 claim。Project OS 对 exact-live scope 返回 pass/open blockers 0，credential 只检查存在性且为 true，未读取值或 probe Provider。
+
+但 execution authority 复核发现，现有 `fin_0_1_2_s3_t03_exact_live_runner.py` 只暴露库函数：它没有 admission-bound child command、DeepSeek transport 装配、父进程 launch/wait/timeout/exit supervisor，也没有真实父进程在子进程异常退出后自动调用 terminal recovery。现有测试由测试代码直接调用 recovery 函数，不能替代可执行监督路径。若此时启动 live，只能在执行轮临时拼装未审计入口，违反 exact-once 与 crash-terminalization 的既有要求。
+
+该缺口登记为 `RC-P36-107-fin-0-1-2-s3-t03-bound-live-launcher-and-parent-supervisor-entrypoint-gap`，仍归 S3-T03；不重开 S0–S2，不归因 DeepSeek，也不改变 S3 的 T01–T04 任务结构。当前 execution authority fail-closed，admission 不失效。
+
+当前下一项严格限定为：
+
+`FIN-0.1.2-S3-T03-NVDA-BOUND-EXECUTION-LAUNCHER-PARENT-SUPERVISOR-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`
+
+只允许一个零调用实现包，将现有 runner core 接成单一 child command 与真实 parent supervisor，并证明 admission、fresh root、预算、retry-zero、timeout、异常 exit recovery 和 provider callback=0。不得修改模型 surface、业务 input 或财务合同，不得同轮消费 admission 或调用 DeepSeek；完成后 exact-live 仍需新的用户续行。

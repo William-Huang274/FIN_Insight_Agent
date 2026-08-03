@@ -54,6 +54,10 @@ REPLACEMENT_AUTHORITY_NEXT = (
     "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-EXACT-LIVE-FRESH-"
     "ADMISSION-AUTHORITY-DECISION"
 )
+CONTROLLED_SUCCESSOR_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-ADMISSION-ENVELOPE-ISSUER-"
+    "SUPERVISOR-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+)
 TERMINAL_RESULT = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
     "terminal_failure_result_v1_0.json"
@@ -243,6 +247,7 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
         FAILURE_NEXT,
         LEAD_V8_PROOF_NEXT,
         REPLACEMENT_AUTHORITY_NEXT,
+        CONTROLLED_SUCCESSOR_NEXT,
     }
     if backlog["item_id"] == NEXT_ACTION:
         assert backlog["current_projection_ref"] == projection_path.relative_to(
@@ -288,7 +293,7 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
         assert backlog["S3_T03_Lead_v8_status"] == (
             "engineering_pass_independent_proof_pending"
         )
-    else:
+    elif backlog["item_id"] == REPLACEMENT_AUTHORITY_NEXT:
         assert backlog["item_id"] == REPLACEMENT_AUTHORITY_NEXT
         assert backlog["current_projection_ref"].endswith(
             "fin_ia_0_1_2_current_program_projection_v2_31.json"
@@ -296,11 +301,20 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
         assert backlog["S3_T03_Lead_v8_status"] == (
             "engineering_pass_independent_two_fresh_process_zero_call_proof_pass"
         )
+    else:
+        assert backlog["item_id"] == CONTROLLED_SUCCESSOR_NEXT
+        assert backlog["current_projection_ref"].endswith(
+            "fin_ia_0_1_2_current_program_projection_v2_32.json"
+        )
+        assert backlog["S3_T03_replacement_admission_authority_status"] == (
+            "blocked_controlled_successor_missing"
+        )
     assert backlog["S3_T03_fresh_admission_issued"] is True
     if backlog["item_id"] in {
         FAILURE_NEXT,
         LEAD_V8_PROOF_NEXT,
         REPLACEMENT_AUTHORITY_NEXT,
+        CONTROLLED_SUCCESSOR_NEXT,
     }:
         assert backlog["S3_T03_fresh_admission_consumed"] is True
         assert backlog["S3_T03_execution_started"] is True

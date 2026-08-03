@@ -1,7 +1,7 @@
 # FIN 0.1.2 S3：NVDA 产品锚点与有界模型 Surface 计划
 
 日期：2026-08-03
-状态：`S3-T01 pass / S3-T02 engineering pass / S3-T03 primary immutable failed + collect-all diagnostic complete + Lead-v8 independent proof pass / replacement admission authority pending / S3-T04 blocked`
+状态：`S3-T01 pass / S3-T02 engineering pass / S3-T03 primary immutable failed + collect-all diagnostic complete + Lead-v8 independent proof pass / replacement admission authority blocked by controlled-successor gap / S3-T04 blocked`
 
 ## 一、S3 到底要证明什么
 
@@ -178,3 +178,17 @@ T03 的合并结构修复已实现为 Research Lead-v8。v8 继承 v6 的 determ
 `FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-EXACT-LIVE-FRESH-ADMISSION-AUTHORITY-DECISION`
 
 下一项只做零调用权限复核，不能同轮签发或消费 admission。未来 replacement exact-live 仍需之后新的用户续行；若出现新的 L1，S3 honest-block 且不存在第三次 exact。
+
+## 十三、replacement fresh admission authority decision
+
+零调用权限复核没有授权签发 replacement admission。Lead-v8 proof、implementation binding、primary immutable failure 和稳定业务输入均重新匹配，Project OS 对 decision scope 也为 pass；但 admission schema 可编译不等于存在可签发 payload。
+
+现有 execution envelope、issuer 和 parent supervisor 都精确绑定已经消费的 primary R1。只读编译观察虽然得到 Lead-v8 profile-admissible candidate，但其 prepared execution identity 仍是历史 `fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1`，input digest=`906111…c953`；它没有 fresh replacement envelope、predicted WorkUnit/Attempt/Run 或 replacement supervision binding，因此明确标记为 non-issuable，digest 不得用于未来签发。登记 `RC-P36-111`，属于 S3-T03 execution-control binding，不是模型或 Provider 问题，也不重开 S0–S2。
+
+为避免重复“先签 admission、后发现 supervisor 不可消费”的时序错误，下一项限定为一个零调用 controlled-successor bundle：一次生成 fresh replacement identity/envelope、精确 Lead-v8 admission payload、replacement-only atomic issuer、绑定该 payload/envelope/authority/code hashes 的 parent supervisor 与 provider-callback=0 child preflight，同时保持 primary R1 runtime 和失败证据字节不变。bundle 上限为 1；通过后仍需重新做一项独立 admission authority decision，不自动签发。bundle 失败则 S3-T03 honest-block，不存在第二包或第三次 exact。
+
+当前 next：
+
+`FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-ADMISSION-ENVELOPE-ISSUER-SUPERVISOR-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+
+本轮 admission issued/consumed、credential、model/provider/network、source/tool、Run/Artifact、paired/Owner/S3-T04 均为 0；下一实现项尚未授权。

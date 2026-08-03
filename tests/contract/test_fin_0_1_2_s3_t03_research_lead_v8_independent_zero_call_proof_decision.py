@@ -23,6 +23,13 @@ PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_31.json"
 )
 BACKLOG = ROOT / "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
+CONTROLLED_SUCCESSOR_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-ADMISSION-ENVELOPE-ISSUER-"
+    "SUPERVISOR-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+)
+CONTROLLED_SUCCESSOR_PROJECTION = ROOT / (
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_32.json"
+)
 
 
 def _load(path: Path) -> dict:
@@ -143,11 +150,13 @@ def test_current_projection_and_backlog_advance_only_to_authority_decision() -> 
     assert policy["replacement_admission_authority_decision_authorized_next"]
     assert not policy["replacement_admission_issuance_authorized_now"]
     assert not policy["replacement_exact_live_execution_authorized_now"]
-    assert backlog["item_id"] == NEXT_ACTION
-    assert backlog["current_projection_ref"].endswith(
-        "current_program_projection_v2_31.json"
+    assert backlog["item_id"] in {NEXT_ACTION, CONTROLLED_SUCCESSOR_NEXT}
+    current = (
+        PROJECTION
+        if backlog["item_id"] == NEXT_ACTION
+        else CONTROLLED_SUCCESSOR_PROJECTION
     )
-    assert backlog["current_projection_sha256"] == _sha256(PROJECTION)
+    assert backlog["current_projection_sha256"] == _sha256(current)
     assert backlog["S3_T03_Lead_v8_independent_proof_sha256"] == _sha256(
         DECISION
     )

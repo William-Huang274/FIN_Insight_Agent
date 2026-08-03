@@ -1,5 +1,7 @@
 # Worklog
 
+- [582 — FIN 0.1.2 S3-T03 replacement fresh admission authority fail-closed](product_strategy/582_fin_0_1_2_s3_t03_replacement_fresh_admission_authority_fail_closed.md)
+
 - [581 — FIN 0.1.1 / 0.1.2 PRD 能力对账与阶段重基线](product_strategy/581_fin_0_1_1_0_1_2_prd_capability_alignment_and_stage_rebaseline.md)
 
 - `product_strategy/570_fin_0_1_2_s3_t01_nvda_product_anchor_and_bounded_model_surface_stage_plan.md`: 2026-08-03 S3-T01 入口审计确认 S2 的 Fact-local/Claim-WWC-model 决定尚未进入生产 Runtime，当前 executor 仍是 12 Provider calls，且缺少 current NVDA exact product input；登记 RC-P36-105。S3 收敛为 T01–T04，目标 `6 nodes / 12 logical interactions / 9 model calls and captures / 3 local Fact receipts / 9 Artifacts`，只允许一次 primary exact 和至多一个合并修复后的 replacement；本轮无 Runtime、模型、网络或业务 Artifact 执行，下一项为 T02 零调用生产接入。

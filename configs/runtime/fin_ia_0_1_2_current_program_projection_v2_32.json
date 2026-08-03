@@ -1,0 +1,90 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S3-T03-REPLACEMENT-ADMISSION-AUTHORITY-BLOCKED-R33",
+  "recorded_at": "2026-08-04T10:30:00+08:00",
+  "status": "current_FIN_0_1_2_S3_T03_replacement_admission_authority_blocked_controlled_successor_zero_call_implementation_pending",
+  "lifecycle_state": "in_progress_at_S3_T03_replacement_admission_controlled_successor_gap",
+  "decision_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_admission_authority_decision_v1_0.json",
+    "sha256": "2a3c55cf0919b6bbf25e511be4728c0cf37db600d8d3030ac071487f74a16235",
+    "bytes": 8857,
+    "binding_role": "zero_call_authority_block_and_single_controlled_successor_boundary"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S3_in_progress_T03_replacement_admission_controlled_successor_gap",
+    "active_slice": "FIN_0_1_2_S3_NVDA_PRODUCT_ANCHOR",
+    "current_next_action": "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-ADMISSION-ENVELOPE-ISSUER-SUPERVISOR-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+    "current_stage_status": "primary_failure_immutable_Lead_v8_independent_proof_pass_replacement_admission_not_authorized_due_to_primary_only_execution_bindings",
+    "completed_current_stages": {
+      "S0": "pass_closed",
+      "S1": "pass_closed_current_consolidated_baseline",
+      "S2": "pass_closed_not_reopened"
+    },
+    "current_S3_tasks": {
+      "S3_T01": "pass",
+      "S3_T02": "engineering_pass",
+      "S3_T03_primary": "immutable_terminal_failed_after_7_calls_0_artifacts",
+      "S3_T03_collect_all_diagnostic": "complete_non_promotable_after_2_new_DeepSeek_Pro_calls_9_quarantined_artifacts",
+      "S3_T03_Lead_v8": "engineering_pass_independent_two_fresh_process_zero_call_proof_pass",
+      "S3_T03_replacement_admission_authority": "blocked_primary_only_envelope_issuer_and_supervisor",
+      "S3_T04": "blocked_with_quality_debt_preassigned"
+    },
+    "product_case": "NVDA",
+    "current_exact_input_kind": "internal_frozen_NVDA_dogfood_fixture",
+    "target_maturity": "current_FIN_0_1_2_NVDA_R2_owner_accepted",
+    "selected_model_ref": "deepseek:deepseek-v4-pro",
+    "runtime_contract_family_binding_ref": "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1.3",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v8",
+    "stable_business_input_digest": "a19743ffdaa63319a5381262adc9c5b04751abadc9bc4781561c1aa905b744fc",
+    "formal_primary_execution_identity": "fin012-s3-t03-nvda-primary-r1",
+    "formal_primary_terminal_status": "failed",
+    "formal_primary_calls_captures_artifacts": [7, 7, 0],
+    "open_T03_issues": [
+      "RC-P36-108-fin-0-1-2-s3-t03-research-lead-deterministic-fact-presence-and-claim-alias-semantic-ownership-regression",
+      "RC-P36-111-fin-0-1-2-s3-t03-replacement-admission-controlled-successor-binding-gap"
+    ],
+    "open_T04_issue": "RC-P36-109-fin-0-1-2-s3-t04-final-delivery-evidence-density-renderer-and-verifier-preview-coverage",
+    "current_NVDA_R2": false,
+    "release_qualified": false
+  },
+  "authority_result": {
+    "project_os_decision_scope_preflight": "pass_open_blockers_0",
+    "Lead_v8_schema_profile_compiler_observation": "pass_but_non_issuable",
+    "replacement_execution_envelope_exists": false,
+    "replacement_atomic_issuer_exists": false,
+    "replacement_bound_parent_supervisor_exists": false,
+    "replacement_admission_issuance_authorized": false,
+    "reason": "The only existing envelope, issuer and supervisor are exact primary-R1 bindings. The compiler observation carries a historical T09 execution identity and cannot be frozen as a replacement payload."
+  },
+  "execution_policy": {
+    "primary_exact_attempts_consumed": 1,
+    "diagnostic_live_calls_consumed": 2,
+    "independent_zero_call_proof_completed": true,
+    "controlled_successor_bundle_maximum": 1,
+    "controlled_successor_bundle_consumed": 0,
+    "replacement_admission_issuance_authorized_now": false,
+    "replacement_exact_live_execution_authorized_now": false,
+    "third_exact_attempt_ever_authorized": false,
+    "paired_assessment_or_owner_acceptance_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "S3_stage_plan": "docs/architecture/repository/FIN_0_1_2_S3_NVDA_PRODUCT_ANCHOR_AND_BOUNDED_MODEL_SURFACE_STAGE_PLAN_20260803.zh-CN.md",
+    "authority_decision": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_admission_authority_decision_v1_0.json",
+    "formal_terminal_failure": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_terminal_failure_result_v1_0.json",
+    "Lead_v8_implementation": "configs/releases/fin_ia_0_1_2_s3_t03_research_lead_v8_local_semantic_materialization_minimum_zero_call_implementation_v1_0.json",
+    "Lead_v8_independent_proof": "configs/releases/fin_ia_0_1_2_s3_t03_research_lead_v8_independent_zero_call_proof_decision_v1_0.json",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md"
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_31.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "formal_failure_deleted_rewritten_or_promoted": false,
+    "diagnostic_output_business_promoted": false,
+    "non_issuable_compiler_observation_frozen_as_admission": false,
+    "authority_block_is_not_formal_T03_or_product_acceptance": true,
+    "execution_failure_or_controlled_successor_gap_does_not_create_a_new_product_version": true
+  }
+}

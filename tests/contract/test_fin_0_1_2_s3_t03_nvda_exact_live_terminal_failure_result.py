@@ -39,6 +39,13 @@ REPLACEMENT_AUTHORITY_NEXT = (
 REPLACEMENT_AUTHORITY_PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_31.json"
 )
+CONTROLLED_SUCCESSOR_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-ADMISSION-ENVELOPE-ISSUER-"
+    "SUPERVISOR-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+)
+CONTROLLED_SUCCESSOR_PROJECTION = ROOT / (
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_32.json"
+)
 ISSUE = (
     "RC-P36-108-fin-0-1-2-s3-t03-research-lead-deterministic-fact-"
     "presence-and-claim-alias-semantic-ownership-regression"
@@ -145,11 +152,13 @@ def test_projection_backlog_and_project_os_stop_before_any_replacement() -> None
         NEXT,
         LEAD_V8_PROOF_NEXT,
         REPLACEMENT_AUTHORITY_NEXT,
+        CONTROLLED_SUCCESSOR_NEXT,
     }
     expected_projection = {
         NEXT: PROJECTION,
         LEAD_V8_PROOF_NEXT: CURRENT_PROJECTION,
         REPLACEMENT_AUTHORITY_NEXT: REPLACEMENT_AUTHORITY_PROJECTION,
+        CONTROLLED_SUCCESSOR_NEXT: CONTROLLED_SUCCESSOR_PROJECTION,
     }[backlog["item_id"]]
     assert backlog["current_projection_sha256"] == _sha256(
         expected_projection

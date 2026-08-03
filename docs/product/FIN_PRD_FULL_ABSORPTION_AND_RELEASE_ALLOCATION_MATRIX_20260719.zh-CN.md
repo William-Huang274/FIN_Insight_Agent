@@ -31,6 +31,12 @@
 
 版本谱系权威说明见 `docs/product/FIN_0_1_1_0_1_2_VERSION_LINEAGE_AND_RELEASE_CADENCE_DECISION_20260731.zh-CN.md`。
 
+### 1.2 FIN 0.1.1 / 0.1.2 能力验收纠偏（2026-08-04）
+
+RAG、Agentic Search 和 Agentic Research 不是统一分配到 FIN 0.2 的能力。`F05`、public/local Evidence、三-cell judgment、targeted repair、Lead/Writer、Human Review 和 Trace 继续属于 FIN 0.1 bounded release scope。FIN 0.1.1 做过本地受控检索与历史 Agent 运行，但没有取得三案例/current-runtime/product-accepted 证明；FIN 0.1.2 当前 S3 又明确使用 frozen evidence、关闭 source network/external tools，因此 S3 success 不能隐含 F05 pass。
+
+尚未开始的 S4/S5 已据此重排：S4 独立承担自然 Case、真实 public/local Agentic Search、Evidence Gate、Agentic Research、三案例 transfer、Workbench 和 Human Review；S5 按 F01–F15 与 RG1–RG5 签发。完整对账见 `docs/product/FIN_0_1_1_0_1_2_PRD_CAPABILITY_ALIGNMENT_AND_S0_TO_S5_REBASELINE_20260804.zh-CN.md`。FIN 0.2 仍为 Earnings Review Alpha。
+
 ## 2. 五个产品平面
 
 | PRD 产品平面 | 长期产品结果 | FIN 0.1 吸收 | 后续明确归属 |

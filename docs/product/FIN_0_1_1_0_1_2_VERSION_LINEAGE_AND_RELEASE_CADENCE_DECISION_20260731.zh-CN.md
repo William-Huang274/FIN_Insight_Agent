@@ -48,11 +48,13 @@ FIN 0.1.2 从 S0 重新验证但不从零重写：
 - S0：当前代码、资源、合同、capture、测试和干净环境可复现；
 - S1：DELL/MU/NVDA 三案例 deterministic 6/12/12/9；
 - S2：DeepSeek Flash stable/Pro preview 的能力边界与本地接管面；
-- S3：NVDA current exact-live 九件套、paired 和 owner acceptance；
-- S4：DELL/MU transfer、post-transfer NVDA 与 Workbench dogfood；
-- S5：RG1–RG5、复现、回滚和 release decision。
+- S3：在 frozen evidence 上完成 NVDA current exact-live 九件套、paired、final delivery review 和 owner disposition；S3 不验收 F05 Agentic Search；
+- S4：自然 Case、public/local Agentic Search、Evidence Gate、Agentic Research、DELL/MU transfer、post-transfer NVDA、当前 Workbench 与 exact Human Review；
+- S5：F01–F15 evidence inventory、RG1–RG5、复现、回滚和 release decision。
 
 完整当前计划：`docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md`。
+
+2026-08-04 的 PRD 能力对账确认：RAG、Agentic Search 和 Agentic Research 原本就是 FIN 0.1 bounded release scope，不是统一后置到 FIN 0.2；FIN 0.1.1 只有 scoped/historical evidence，没有完整 product acceptance。修正后的 feature/stage 分配见 `docs/product/FIN_0_1_1_0_1_2_PRD_CAPABILITY_ALIGNMENT_AND_S0_TO_S5_REBASELINE_20260804.zh-CN.md`。
 
 ## 5. 历史 0.1.3/0.1.4 合并语义
 

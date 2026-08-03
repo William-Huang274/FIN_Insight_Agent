@@ -1,0 +1,74 @@
+{
+  "schema_version": "fin_ia_0_1_1_0_1_2_prd_capability_alignment_and_s0_to_s5_rebaseline_v1_0",
+  "decision_id": "FIN-0.1.1-0.1.2-PRD-CAPABILITY-ALIGNMENT-AND-S0-TO-S5-REBASELINE-R1",
+  "recorded_at": "2026-08-04T09:30:00+08:00",
+  "status": "planning_correction_pass_current_S3_unchanged_revised_S4_S5_pending_execution",
+  "authority": {
+    "user_request": "Audit whether 0.1.1 implemented RAG, agentic search and research; align frozen 0.1.1 and current 0.1.2 with the PRD; reorganize missing capabilities into 0.1.2 and later S0-S5 plans.",
+    "product_version_change": false,
+    "S0_S2_reopen": false,
+    "S3_T03_scope_change": false,
+    "model_provider_network_execution": false
+  },
+  "historical_disposition": {
+    "RAG": "implemented_deterministic_and_historical_runtime_evidence_not_FIN_0_1_1_product_accepted",
+    "agentic_search": "FIN_0_1_release_critical_implemented_scoped_not_current_three_case_product_accepted",
+    "agentic_research": "FIN_0_1_release_critical_single_case_historical_anchor_full_three_case_and_human_acceptance_blocked",
+    "FIN_0_2_role": "earnings_review_alpha_not_FIN_0_1_common_capability_debt_owner"
+  },
+  "identified_planning_gap": {
+    "issue_id": "RC-P36-110-fin-0-1-2-prd-release-critical-capability-stage-gate-omission",
+    "root_cause": "The consolidated FIN 0.1.2 plan described runtime, deterministic truth, model surface and frozen-evidence artifact proof in detail, but did not assign explicit current-version gates for F01-F15, natural Case entry, live public/local agentic search, bounded graph drilldown, current Workbench projection and exact Human Review.",
+    "impact": "A successful frozen-input S3 could be misread as FIN 0.1 Agentic Search/Research and product-surface completion even though source network and external tools are disabled.",
+    "selected_fix": "Keep S0-S2 and current S3 unchanged; rebaseline S4 into eight fixed evidence-to-workbench product qualification tasks and S5 into six exact release tasks. Preserve FIN 0.2 Earnings scope."
+  },
+  "current_stage_boundary": {
+    "S3_assesses": [
+      "frozen_evidence_specialist_judgment",
+      "research_lead",
+      "writer_verifier",
+      "nine_artifacts",
+      "paired_delivery_quality",
+      "owner_disposition"
+    ],
+    "S3_does_not_assess": [
+      "F05_agentic_search",
+      "natural_user_case_entry",
+      "live_source_or_external_tool",
+      "current_workbench_dogfood",
+      "qualified_human_review"
+    ],
+    "current_next": "FIN-0.1.2-S3-T03-NVDA-REPLACEMENT-EXACT-LIVE-FRESH-ADMISSION-AUTHORITY-DECISION"
+  },
+  "revised_S4_tasks": [
+    {"id":"S4-T01","name":"prd_current_runtime_natural_case_entry_binding","feature_ids":["F01","F02","F03","F04"]},
+    {"id":"S4-T02","name":"three_case_retrieval_evidence_deterministic_readiness","feature_ids":["F05","F06","F07","F13"]},
+    {"id":"S4-T03","name":"nvda_bounded_agentic_search_current_canary","feature_ids":["F05","F06","F07","F09","F13"]},
+    {"id":"S4-T04","name":"nvda_natural_case_agentic_research_integration","feature_ids":["F03","F08","F09","F10","F11","F13"]},
+    {"id":"S4-T05","name":"dell_mu_transfer_and_post_transfer_nvda","feature_ids":["F03","F05","F07","F08"]},
+    {"id":"S4-T06","name":"workbench_current_product_projection_and_dogfood","feature_ids":["F01","F02","F04","F06","F09","F11","F13","F15"]},
+    {"id":"S4-T07","name":"exact_human_review_nvda_R3_and_bounded_explanation","feature_ids":["F10","F12","F14"]},
+    {"id":"S4-T08","name":"three_case_feature_integrated_closeout","feature_ids":["F01","F02","F03","F04","F05","F06","F07","F08","F09","F10","F11","F12","F13","F14","F15"]}
+  ],
+  "revised_S5_tasks": [
+    "S5-T01_exact_candidate_and_F01_F15_inventory_freeze",
+    "S5-T02_RG1_operational_replay_and_recovery",
+    "S5-T03_RG2_evidence_numeric_authority_citation_integrity",
+    "S5-T04_RG3_three_R2_NVDA_R3_research_outcome",
+    "S5-T05_RG4_human_product_value",
+    "S5-T06_RG5_rollback_cost_security_and_release_decision"
+  ],
+  "later_version_policy": {
+    "FIN_0_2": "Earnings Review Alpha starts at its own S0 after FIN 0.1 exact candidate; it does not absorb unfinished FIN 0.1 generic runtime, agentic search or workbench debt.",
+    "FIN_0_3": "Review and Memory Beta owns correction reuse, follow-up, selective refresh and bounded R4.",
+    "FIN_0_4": "Cross-sector Beta owns sector-pack, graph, numeric and judgment generalization.",
+    "FIN_0_5": "Enterprise Pilot owns private Data Room, tenant isolation, RBAC and enterprise audit."
+  },
+  "stop_rule": {
+    "per_layer_consolidated_structural_repair_packages": 1,
+    "per_declared_canary_replacement_attempts": 1,
+    "new_foundational_gap_behavior": "same_version_project_level_disposition_or_honest_block",
+    "failed_attempt_creates_product_version": false
+  },
+  "source_document": "docs/product/FIN_0_1_1_0_1_2_PRD_CAPABILITY_ALIGNMENT_AND_S0_TO_S5_REBASELINE_20260804.zh-CN.md"
+}

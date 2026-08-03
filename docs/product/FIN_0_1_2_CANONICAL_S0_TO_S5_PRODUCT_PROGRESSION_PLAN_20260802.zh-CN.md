@@ -1,7 +1,9 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S2 pass closed / S3-T01 pass and S3 entered / S3-T02 pending / S4-S5 not started`
+状态：`current canonical plan / S0-S2 pass closed / S3-T03 replacement admission authority pending / S4-S5 PRD-rebaselined not started`
+
+> 2026-08-04 PRD 对账修正：本计划原先没有把 F01–F15、自然 Case 入口、真实 public/local Agentic Search、bounded Graph、当前 Workbench 与 exact Human Review 分解为明确的后续门禁。修正证据与完整矩阵见 `FIN_0_1_1_0_1_2_PRD_CAPABILITY_ALIGNMENT_AND_S0_TO_S5_REBASELINE_20260804.zh-CN.md`。该修正不重开 S0–S2、不扩大当前 S3-T03、不改变产品版本；它重排尚未开始的 S4/S5。
 
 ## 1. 为什么重新建立本计划
 
@@ -12,7 +14,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；独立盲评中 Pro preview=`18`、Flash stable=`13`，Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 因 Pro 的 epistemic-discipline 未达阈值继续由本地确定性 planner 掌管；S3-T01 StagePlan/入口已通过，S3-T02 生产 Runtime 接入尚未开始；
+- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；S3-T01/T02 已通过，S3-T03 primary exact-live 已 immutable failed，Lead-v8 独立零调用复证已通过，当前等待 replacement admission authority decision；Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 由本地确定性 planner 掌管；当前 S3 input 是 frozen NVDA dogfood，source network/external tools 为 0；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
@@ -27,9 +29,9 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 | S0 可靠基础 | 当前代码在本机和干净目录中使用同一批已登记资源稳定运行，不靠隐藏文件、旧账本或机器路径碰巧通过 | 当前代码/资源/配置清单一致；本机测试通过；一个干净环境通过；最终两个独立目录复现一致；当前 S0 open issues 关闭或得到诚实边界 | DeepSeek 质量、真实金融结论、三案例产品验收 |
 | S1 三案例确定性链 | 不调用模型也能让 DELL、MU、NVDA 走同一条 6/12/12/9 链 | 三案结构、数字、日期、身份、来源和失败留存可重算；mutation/permutation/跨案污染全绿 | 用 fixture 结果冒充模型或产品质量 |
 | S2 模型边界 | 用少量真实调用确定 DeepSeek 可以可靠生成什么，哪些表面必须由本地程序掌管 | 对改变的合同家族做有界 canary；确定主线模型、允许的 judgment atoms、降级/本地接管边界和成本 | 三案 full-chain、逐字段 live 修补 |
-| S3 单案例产品锚点 | 当前 Runtime 上的 NVDA 生成完整可追溯九件套并对分析师有增益 | exact-live 成功；独立 L1 通过；paired assessment 和 owner acceptance 成立 | DELL/MU 迁移 |
-| S4 跨案例与工作台价值 | 同一冻结 Runtime 迁移到 DELL/MU 并保持 NVDA，工作台可审阅、修订和追溯 | DELL/MU R2、post-transfer NVDA、NVDA R3、三案回归和 Workbench dogfood 达标 | 在 S4 重做共同 Runtime 或模型基础合同 |
-| S5 发布判断 | 团队能够复现、回滚并诚实签发或阻断内部候选 | RG1–RG5、证据清单、代码/配置 manifest、回滚和用户价值结论完整 | 用仓库可恢复性代替产品质量 |
+| S3 冻结证据后的单案例研究与交付锚点 | 当前 Runtime 上的 NVDA 在不重新检索的前提下生成完整可追溯九件套并检验 Agent 增益 | exact-live 成功；独立 L1；paired L1–L4；final delivery review 和 owner disposition 成立 | F05 Agentic Search、自然 Case、Workbench/Human Review、DELL/MU 迁移 |
+| S4 Evidence-to-Workbench 三案例产品资格 | 自然 Case 经真实 public/local 检索、Evidence Gate、Agentic Research、三案迁移进入当前 Workbench 与 Human Review | 固定 S4-T01–T08：Agentic Search、NVDA natural-case integration、DELL/MU R2、post-transfer NVDA、Workbench dogfood、NVDA R3 与 F01–F15 inventory 达标 | 重做 S0–S2 共同 Runtime/模型基础合同；无限 R-number 修补 |
+| S5 发布判断 | 对 exact candidate 的 F01–F15 和 RG1–RG5 逐项签发或阻断 | 固定 S5-T01–T06：candidate freeze、RG1 operational、RG2 integrity、RG3 research、RG4 Human value、RG5 rollback/security/release decision | 用仓库可恢复性或 S3 九件套替代完整产品质量 |
 
 ## 4. 问题分配规则
 

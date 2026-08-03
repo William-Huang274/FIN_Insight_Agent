@@ -137,14 +137,20 @@ def test_history_and_project_os_state_remain_honest_after_exact_pair() -> None:
         == "fin_0_1_2_S2_T03_WWC_v1_2_replacement_pair_bound_runner_atomic_capture_zero_call_preflight"
     ][-1]
     assert preflight["status"].startswith("engineering_and_preflight_pass")
-    assert capabilities[-1]["status"].endswith("T04_not_entered")
+    exact_pair = [
+        row
+        for row in capabilities
+        if row["capability_id"]
+        == "fin_0_1_2_S2_T03_WWC_v1_2_replacement_pair_exact_execution"
+    ][-1]
+    assert exact_pair["status"].endswith("T04_not_entered")
     assert proof["authority"][
         "future_replacement_pair_conditionally_authorized"
     ] is True
     assert proof["authority"][
         "replacement_execution_authorized_now"
     ] is False
-    assert capabilities[-1]["authority"]["exact_authority_consumed"] is True
+    assert exact_pair["authority"]["exact_authority_consumed"] is True
     patterns = _load_jsonl(PATTERN_LEDGER)
     independent_pattern = [
         row
@@ -152,4 +158,10 @@ def test_history_and_project_os_state_remain_honest_after_exact_pair() -> None:
         if row["status"].endswith("runner_preflight_pending")
     ][-1]
     assert independent_pattern["verification"]["fresh_processes"] == 2
-    assert patterns[-1]["verification"]["replacement_calls_executed"] == 0
+    preflight_pattern = [
+        row
+        for row in patterns
+        if row["reference"]
+        == "FIN 0.1.2 S2-T03 WWC v1.2 replacement pair bound runner and zero-call preflight"
+    ][-1]
+    assert preflight_pattern["verification"]["replacement_calls_executed"] == 0

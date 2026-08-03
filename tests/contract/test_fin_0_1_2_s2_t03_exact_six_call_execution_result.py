@@ -91,8 +91,10 @@ def test_execution_projection_stays_historical_and_backlog_retains_result() -> N
     assert current["S2_T03_execution_result_ref"] == result_ref
     assert current["S2_T03_execution_result_sha256"] == result_sha
     assert current["S2_T03_terminal_capture_counts"] == [6, 6]
-    assert current["S2_T03_T04_entered"] is False
+    assert current["S2_T03_T04_entered"] is True
     assert current["S2_T03_model_selected"] is False
+    assert current["S2_T04_authority_status"].startswith("pass_")
+    assert current["S2_T04_independent_assessment_started"] is False
 
 
 def test_restricted_evidence_is_referenced_but_not_promoted() -> None:

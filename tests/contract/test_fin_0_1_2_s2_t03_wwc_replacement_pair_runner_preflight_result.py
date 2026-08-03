@@ -91,7 +91,7 @@ def test_historical_projection_stops_at_exact_pair_execution_and_current_advance
     current = backlog["next_action"]
     assert current["item_id"].startswith("FIN-0.1.2-S2-T04-")
     assert current["current_projection_ref"].endswith(
-        "fin_ia_0_1_2_current_program_projection_v2_18.json"
+        "fin_ia_0_1_2_current_program_projection_v2_19.json"
     )
     assert current["current_projection_ref"] != projection_ref
     assert current["current_projection_sha256"] != projection_sha
@@ -99,8 +99,10 @@ def test_historical_projection_stops_at_exact_pair_execution_and_current_advance
     assert current["S2_T03_replacement_pair_runner_preflight_sha256"] == result_sha
     assert current["S2_T03_replacement_pair_execution_started"] is True
     assert current["S2_T03_replacement_pair_execution_authorized_now"] is False
-    assert current["S2_T03_T04_entered"] is False
+    assert current["S2_T03_T04_entered"] is True
     assert current["S2_T03_model_selected"] is False
+    assert current["S2_T04_authority_status"].startswith("pass_")
+    assert current["S2_T04_independent_assessment_started"] is False
 
 
 def test_project_os_preserves_preflight_open_state_as_history() -> None:

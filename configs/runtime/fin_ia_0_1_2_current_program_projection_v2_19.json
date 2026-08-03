@@ -1,0 +1,98 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S2-T04-INDEPENDENT-BLIND-ASSESSMENT-AUTHORITY-PASS-PACKET-PENDING-R20",
+  "recorded_at": "2026-08-03T13:37:15+08:00",
+  "status": "current_FIN_0_1_2_S2_T04_authority_pass_independent_packet_and_assessment_pending",
+  "lifecycle_state": "in_progress",
+  "implementation_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s2_t04_blinded_paired_assessment_model_local_surface_disposition_and_s2_closeout_authority_decision_v1_0.json",
+    "sha256": "d5427ded16e88de389490e6f611976af5f1a092bef8a93d44e5655346f24f55c",
+    "binding_role": "S2_T04_independent_identity_sealed_blind_assessment_authority_and_scope"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S2",
+    "active_slice": "FIN_0_1_2_S2_T04_IDENTITY_SEALED_BLIND_ASSESSMENT_PACKET_AND_INDEPENDENT_EVALUATOR_HANDOFF",
+    "current_next_action": "FIN-0.1.2-S2-T04-IDENTITY-SEALED-BLIND-ASSESSMENT-PACKET-AND-INDEPENDENT-EVALUATOR-HANDOFF-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+    "current_stage_status": "S2_T04_authority_scope_pass_packet_scoring_selection_and_closeout_pending",
+    "S2_started": true,
+    "S2_stage_plan_passed": true,
+    "S2_T02_engineering_passed": true,
+    "S2_model_calls": 8,
+    "S2_terminal_results": 8,
+    "S2_restricted_captures": 8,
+    "fair_capability_evidence_calls": 6,
+    "fair_capability_hard_passes": 6,
+    "completed_current_stages": {
+      "S0": "pass_closed",
+      "S1": "pass_closed_current_consolidated_baseline"
+    },
+    "current_S2_tasks": {
+      "S2_T01": "pass",
+      "S2_T02": "engineering_pass",
+      "S2_T03": "pass_complete_fair_six_outcome_measurement",
+      "S2_T04_authority_and_scope": "pass",
+      "S2_T04_packet": "authorized_not_started",
+      "S2_T04_independent_assessment": "not_started",
+      "S2_T04_closeout": "not_started"
+    },
+    "downstream_stages_started": {
+      "S2": true,
+      "S3": false,
+      "S4": false,
+      "S5": false
+    },
+    "closed_issue_ids": [
+      "RC-P36-102-fin-0-1-2-s2-t03-wwc-review-cadence-date-alias-model-visible-contract-parity-gap",
+      "RC-P36-103-fin-0-1-2-s2-t03-wwc-selected-task-claim-binding-loop-state-leak"
+    ],
+    "open_issue_ids": [
+      "RC-P36-104-fin-0-1-2-s2-t04-same-context-model-identity-contamination-and-unsealed-blind-assessment"
+    ],
+    "same_context_assessor_eligible": false,
+    "independent_assessor_required": true,
+    "sealed_mapping_required": true,
+    "quality_scores_recorded": 0,
+    "model_candidates": [
+      "deepseek:deepseek-v4-flash",
+      "deepseek:deepseek-v4-pro"
+    ],
+    "model_selection": "not_permitted_until_independent_score_freeze_mapping_reveal_and_deterministic_rule_application",
+    "model_local_surface_disposition": "not_started",
+    "strict_schema_transport": "sub2api_gpt_5_5_parked_nonblocking_separate_handoff",
+    "FIN_0_1_3_role": "historical_FIN_0_1_2_S0_recovery_attempt_family",
+    "FIN_0_1_4_role": "historical_unexecuted_S0_improvement_proposal",
+    "FIN_0_2": "Earnings_Review_Alpha_unchanged",
+    "release_qualified": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "product_plan": "docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md",
+    "S2_technical_plan": "docs/architecture/repository/FIN_0_1_2_S2_DEEPSEEK_FLASH_STABLE_PRO_PREVIEW_NATURAL_CAPABILITY_ENVELOPE_STAGE_PLAN_20260802.zh-CN.md",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "T04_authority_decision": "configs/releases/fin_ia_0_1_2_s2_t04_blinded_paired_assessment_model_local_surface_disposition_and_s2_closeout_authority_decision_v1_0.json",
+    "T03_primary_result": "configs/releases/fin_ia_0_1_2_s2_t03_mu_flash_stable_vs_pro_preview_exact_six_call_execution_result_and_project_contract_gap_v1_0.json",
+    "T03_replacement_result": "configs/releases/fin_ia_0_1_2_s2_t03_mu_wwc_v12_flash_stable_vs_pro_preview_replacement_pair_exact_execution_result_v1_0.json",
+    "current_runtime_source": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_2.json",
+    "current_runtime_binding": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_2.json"
+  },
+  "historical_projection_policy": {
+    "immutable_event_files_remain_valid_for_historical_facts": true,
+    "historical_files_may_own_current_next_or_backlog_tail": false,
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_18.json",
+    "superseded_projection_deleted_or_rewritten": false
+  },
+  "execution_authority": {
+    "T04_packet_builder_and_preflight_authorized": true,
+    "T04_independent_assessor_handoff_authorized": true,
+    "same_context_scoring_authorized": false,
+    "model_selection_executed": false,
+    "S2_closeout_executed": false,
+    "S3_entry_authorized": false,
+    "model_provider_or_execution_network_authorized": false,
+    "business_Run_or_Artifact_writes_authorized": false,
+    "full_chain_authorized": false
+  }
+}

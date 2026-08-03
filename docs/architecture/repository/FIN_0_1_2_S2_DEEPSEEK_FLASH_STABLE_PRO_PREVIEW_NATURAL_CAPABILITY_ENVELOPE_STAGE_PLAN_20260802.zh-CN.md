@@ -2,7 +2,7 @@
 
 日期：2026-08-02
 
-状态：`S2-T03 fair six-outcome measurement complete / T04 not entered`
+状态：`S2-T03 fair six-outcome measurement complete / T04 authority and scope pass / identity-sealed packet and independent assessment pending`
 
 ## 1. S2 到底要回答什么
 
@@ -37,6 +37,10 @@ S0 已证明当前工程包可复现，S1 已证明 DELL、MU、NVDA 的确定�
 | S2-T04 | 盲配对 assessment、模型/本地 surface disposition、S2 closeout | 0 | 选择 S3 主线或明确 no-model surface，并冻结成本与证据边界 |
 
 不存在自动 S2-T05，也不在 S2 内跑 full-chain。
+
+T04 独立性补充：当前执行上下文已经看到候选身份和方向性差异，因此无资格充当盲评者。评审 packet 必须用跨三 family 一致的随机 opaque labels，身份映射单独以受限内容寻址对象保存；评分记录完成校验、冻结并取 digest 后才能解盲。独立评审者只能看到必要的案例/证据/alias 上下文、六份去身份化输出与固定 rubric，不能看到模型身份、路径、可交叉查询 digest、成本、延迟、tokens、生命周期或历史观察。
+
+每个 family 的模型 surface 只有在 8 分中至少 4 分，且证据相关性、认知纪律、决策有用性各至少 1 分时才保留；否则转本地确定性 ownership 或 honest block。该阈值只操作化既有 surface disposition，不改写 hard-integrity 或 Flash stable 的既有优先规则。
 
 ## 5. T02 必须实现什么
 

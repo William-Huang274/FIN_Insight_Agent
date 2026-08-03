@@ -89,13 +89,18 @@ def test_projection_backlog_and_ledgers_point_to_T04_authority_only() -> None:
     assert projection["execution_authority"]["replacement_pair_execution_completed"] is True
     assert projection["execution_authority"]["T04_or_model_selection_executed"] is False
     current = backlog["next_action"]
-    assert current["item_id"] == result["next_action"]
-    assert current["current_projection_ref"] == projection_ref
-    assert current["current_projection_sha256"] == projection_sha
+    assert current["item_id"].endswith(
+        "INDEPENDENT-EVALUATOR-HANDOFF-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+    )
+    assert current["current_projection_ref"] != projection_ref
+    assert current["current_projection_sha256"] != projection_sha
     assert current["S2_T03_replacement_pair_result_ref"] == result_ref
     assert current["S2_T03_replacement_pair_result_sha256"] == result_sha
-    assert current["S2_T03_T04_entered"] is False
+    assert current["S2_T03_T04_entered"] is True
     assert current["S2_T03_model_selected"] is False
+    assert current["S2_T04_authority_status"].startswith("pass_")
+    assert current["S2_T04_quality_scores_recorded"] == 0
+    assert current["S2_T04_model_selected"] is False
 
     capability = _latest_jsonl(
         CAPABILITY_LEDGER,

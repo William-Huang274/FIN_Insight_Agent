@@ -1,0 +1,192 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_t04_blinded_paired_assessment_model_local_surface_disposition_and_s2_closeout_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S2-T04-BLINDED-PAIRED-ASSESSMENT-MODEL-LOCAL-SURFACE-DISPOSITION-AND-S2-CLOSEOUT-AUTHORITY-R1",
+  "recorded_at": "2026-08-03T13:37:15+08:00",
+  "status": "pass_independent_identity_sealed_assessment_protocol_authorized_scoring_not_started",
+  "decision_label": "authorize_one_zero_call_blind_packet_and_independent_assessor_handoff_without_same_context_scoring",
+  "engineering_base": {
+    "git_head": "4c069068a30a339b1fe6bdaa0f184bf4989623d4",
+    "branch": "codex/layered-data-source-expansion",
+    "worktree_clean_at_review": true
+  },
+  "bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s2_deepseek_flash_stable_pro_preview_natural_capability_envelope_stage_plan_v1_0.json",
+      "sha256": "819891dbc1862be73a36a5b2fe5d2c011bedbc811988821bf206f5c7cd5931cf",
+      "role": "immutable_S2_stage_plan_and_selection_rule"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s2_t03_mu_flash_stable_vs_pro_preview_exact_six_call_execution_result_and_project_contract_gap_v1_0.json",
+      "sha256": "612e328585c2801a8fb569625e10cc938a7f9560d0ba9c01f3d6f093b70a3a0e",
+      "role": "primary_Fact_Claim_evidence_and_immutable_invalid_WWC_history"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s2_t03_mu_wwc_v12_flash_stable_vs_pro_preview_replacement_pair_exact_execution_result_v1_0.json",
+      "sha256": "a49f27d9afd32c995b49d46b0a7f26cfffee984ab07b91accb0e1201dd24cc59",
+      "role": "fair_replacement_WWC_evidence"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s2_deepseek_model_candidate_registry_v1_0.json",
+      "sha256": "bbfd0ab03bfd008c5fd14437fb4c4e920234bbb91ea52493f27cd40ebb2502e2",
+      "role": "candidate_lifecycle_and_route_truth"
+    }
+  ],
+  "fair_assessment_inputs": {
+    "case": "MU",
+    "program_cell_id": "demand_authenticity_and_sustainability",
+    "families": [
+      "specialist_fact_atoms",
+      "claim_candidate_atoms",
+      "what_would_change_atoms"
+    ],
+    "candidate_count": 2,
+    "outcome_count": 6,
+    "hard_integrity_pass_count": 6,
+    "selected_capture_sha256": [
+      "78c8716e726011d85101b846e149479de9753ba35d0efa3a2965fa08af4c6a77",
+      "ba2ea774015b87ec1d8e332187ac1e619bb70ba459feb5a29c80efb6f260725e",
+      "b83f8abf176ce8fd308b6a5b77343588b4d39848fd160964b9f836034a93ec5f",
+      "581b69e31ee9e551b56296dcd02a20e31164594426c6b05594307c2a05c85b36",
+      "782520cb0279b8bc77fa095bdda77ff1d199a72ac0bcbc30fb4492808877a910",
+      "cf48a922ad083af2a8676ae07209beb255fafaa221fbc92e6b529970b9acb60d"
+    ],
+    "excluded_primary_WWC_capture_sha256": [
+      "deb9409168fa92e14603de3fba64cf4f305d702a914d190fb61c4f8467a13311",
+      "7f6fd6857ffeb3c6fe0b1f5d72c6d3e578acad0f27505436a847c1f9a7f83ddc"
+    ],
+    "excluded_reason": "primary_WWC_pair_was_measurement_invalid_due_project_owned_comparator_defects_and_must_not_be_scored",
+    "capture_existence_and_content_address_reverified": true
+  },
+  "first_credible_assessment_gap": {
+    "issue_id": "RC-P36-104-fin-0-1-2-s2-t04-same-context-model-identity-contamination-and-unsealed-blind-assessment",
+    "owned_by_project": true,
+    "root_cause": "The current assistant context has already seen the Flash/Pro mapping and recorded directional quality observations, so it cannot honestly act as a model-identity-blinded assessor.",
+    "impact": "Any same-context score could be influenced by known identity and prior conclusions, invalidating the T04 blinded-selection claim even if the arithmetic were correct.",
+    "not_a_model_failure": true,
+    "not_a_provider_failure": true,
+    "required_fix": "Generate a de-identified packet with a separately sealed mapping, hand it to an evaluator that has not seen the mapping or this history, freeze and digest the completed score record, and reveal identity only afterward."
+  },
+  "independence_contract": {
+    "current_task_or_same_context_is_eligible_to_score": false,
+    "eligible_assessor": "fresh_isolated_Codex_task_or_human_reviewer_without_access_to_identity_mapping_or_prior_directional_observations",
+    "assessor_must_not_receive": [
+      "candidate_or_model_identity",
+      "call_or_attempt_identity",
+      "provider_receipts",
+      "latency_tokens_cost_or_lifecycle_status",
+      "source_paths_or_capture_digests_that_can_be_cross_referenced_to_identity",
+      "prior_unscored_directional_observations",
+      "sealed_mapping_or_repository_history"
+    ],
+    "assessor_may_receive": [
+      "same_case_and_program_cell_context",
+      "same_source_evidence_and_request_local_alias_meanings_needed_to_judge_the_atoms",
+      "two_deidentified_outputs_for_each_of_three_families",
+      "fixed_rubric_anchors_and_score_record_schema"
+    ],
+    "opaque_labels": "use_one_consistent_random_pair_of_labels_across_all_three_families",
+    "mapping": {
+      "generation": "cryptographically_random_not_derived_from_model_order_name_digest_latency_token_count_or_cost",
+      "storage": "separate_restricted_content_addressed_object_not_in_assessor_packet",
+      "assessor_packet_contains": "mapping_commitment_digest_only",
+      "reveal_condition": "completed_score_record_is_schema_valid_frozen_and_content_digested",
+      "mapping_change_after_packet_freeze": "forbidden"
+    },
+    "assessor_instruction": "score_only_the_presented_outputs_under_the_fixed_rubric_cite_packet_rows_or_aliases_and_do_not_guess_model_identity"
+  },
+  "blind_quality_rubric": {
+    "score_range_each_dimension_each_family_each_candidate": [0, 2],
+    "dimensions": {
+      "evidence_selection_relevance": {
+        "0": "irrelevant_redundant_or_too_broad_to_discriminate",
+        "1": "partly_relevant_but_mixed_generic_or_incomplete",
+        "2": "precise_discriminative_evidence_for_the_case_and_family"
+      },
+      "epistemic_discipline": {
+        "0": "overclaim_inconsistent_with_evidence_or_hides_uncertainty",
+        "1": "generally_bounded_but_generic_or_incompletely_calibrated",
+        "2": "explicitly_calibrated_to_support_counterevidence_and_known_limits"
+      },
+      "decision_usefulness": {
+        "0": "no_actionable_distinction_trigger_transition_or_watch_condition",
+        "1": "usable_but_incomplete_ambiguous_or_weakly_timed",
+        "2": "specific_discriminative_trigger_transition_or_watch_condition"
+      },
+      "concise_information_density": {
+        "0": "repetitive_or_low_yield_atoms",
+        "1": "adequate_signal_to_redundancy",
+        "2": "compact_high_yield_atoms_without_material_duplication"
+      }
+    },
+    "atom_surface_note": "density_scores_signal_and_redundancy_per_atom_not_prose_elegance",
+    "bound_review_date_at_or_before_as_of": "score_as_a_decision_usefulness_quality_finding_not_as_a_retroactive_T03_hard_integrity_failure",
+    "required_score_evidence": "one_concise_packet_row_or_alias_grounded_reason_for_every_nonidentical_pair_score",
+    "maximum_total_per_candidate": 24
+  },
+  "deterministic_post_score_rules": {
+    "hard_integrity_precondition": "only_the_six_bound_hard_pass_outcomes_are_score_eligible",
+    "stable_candidate_preference_rule": "If both candidates pass all hard integrity gates Flash stable is selected unless its blinded total quality score is more than two points below Pro across the three families.",
+    "pro_preview_selection_rule": "Pro preview may be selected only when it passes all hard gates and Flash trails by more than two blinded quality points; preview lifecycle risk must be recorded.",
+    "tie_or_quality_gap_at_most_two": "select_Flash_stable",
+    "retained_model_surface_threshold_per_family": {
+      "family_total_minimum": 4,
+      "evidence_selection_relevance_minimum": 1,
+      "epistemic_discipline_minimum": 1,
+      "decision_usefulness_minimum": 1,
+      "concise_information_density_hard_minimum": 0,
+      "failure_disposition": "move_that_family_to_local_deterministic_ownership_or_honest_block"
+    },
+    "selected_candidate_retains_zero_families": "select_no_model_for_S3_provider_surface_and_close_S2_honest_block",
+    "automatic_runtime_fallback": false,
+    "operational_metrics_use": "latency_tokens_cost_and_preview_lifecycle_are_considered_only_after_blind_scores_and_mapping_are_frozen_and_revealed",
+    "rule_change_after_score_visibility": "forbidden"
+  },
+  "authorized_next_work": {
+    "item_id": "FIN-0.1.2-S2-T04-IDENTITY-SEALED-BLIND-ASSESSMENT-PACKET-AND-INDEPENDENT-EVALUATOR-HANDOFF-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+    "zero_call_packet_builder_and_preflight_authorized": true,
+    "independent_assessor_handoff_authorized": true,
+    "another_authority_decision_required_before_packet_implementation": false,
+    "model_provider_or_execution_network_calls": 0,
+    "business_Run_or_Artifact_writes": 0,
+    "maximum_packet_families": 3,
+    "maximum_outputs": 6,
+    "maximum_assessment_attempts_under_one_mapping": 1,
+    "same_context_scoring_authorized": false,
+    "automatic_evaluator_task_creation_authorized": false,
+    "score_or_mapping_fabrication_when_no_independent_assessor_is_available": "forbidden"
+  },
+  "closeout_gate": {
+    "required_before_model_selection": [
+      "deidentified_packet_schema_and_leakage_preflight_pass",
+      "sealed_mapping_commitment_materialized",
+      "independent_assessor_eligibility_attested",
+      "complete_score_record_frozen_and_digested",
+      "mapping_revealed_only_after_score_freeze",
+      "deterministic_selection_and_per_family_surface_rules_applied"
+    ],
+    "S2_closeout_allowed_in_this_decision": false,
+    "S3_entry_allowed_in_this_decision": false,
+    "full_chain_allowed_in_this_decision": false,
+    "owner_acceptance_or_release_claim_allowed": false
+  },
+  "current_turn_observed_counts": {
+    "credential_reads": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "business_Run_or_Artifact_writes": 0,
+    "quality_scores_recorded": 0,
+    "models_selected": 0
+  },
+  "stage_acceptance": {
+    "S2_T03": "pass_complete_fair_six_outcome_measurement",
+    "S2_T04_authority_and_scope": "pass",
+    "S2_T04_assessment": "not_started_independent_packet_and_assessor_required",
+    "S2": "not_yet_passed",
+    "S3": "not_started_blocked_by_S2",
+    "release": "not_qualified"
+  },
+  "next_action": "FIN-0.1.2-S2-T04-IDENTITY-SEALED-BLIND-ASSESSMENT-PACKET-AND-INDEPENDENT-EVALUATOR-HANDOFF-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

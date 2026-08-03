@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S1 pass closed / S2-T03 fair six-outcome measurement complete / T04 not entered / S3-S5 not started`
+状态：`current canonical plan / S0-S1 pass closed / S2-T03 pass / T04 authority pass, independent blind packet pending / S3-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -12,7 +12,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭；S2-T03 原六调用与 WWC v1.2 公平 replacement pair 均已终态化，形成六份 hard-integrity pass 的公平能力输入；T04 尚未进入，暂未排名或选择主线模型；
+- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭；S2-T03 形成六份 hard-integrity pass 的公平能力输入；T04 的权限与范围已通过，但当前上下文因已知模型映射而无盲评资格，独立去身份化 packet、评分和模型/本地 surface disposition 仍待执行；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
@@ -84,7 +84,13 @@ RC-P36-102 留在 S2-T03。进一步的受限 Pro 结果重放还发现本地 ta
 
 `FIN-0.1.2-S2-T04-BLINDED-PAIRED-ASSESSMENT-MODEL-LOCAL-SURFACE-DISPOSITION-AND-S2-CLOSEOUT-AUTHORITY-DECISION`
 
-该下一项仍需用户新的“继续”，且只做零调用 T04 权限与范围冻结：绑定六份公平输入、盲化模型身份、冻结四项 0–2 分 rubric 和选择规则。它不会在同一项直接选择模型、关闭 S2、进入 S3 或执行 full-chain。
+该零调用权限与范围决策已经完成。审计确认当前上下文已看到 Flash/Pro 映射和方向性观察，不能诚实承担盲评，因此登记 `RC-P36-104`。T04 已冻结：随机跨 family 一致 opaque labels、映射单独受限保存、评分记录先冻结取 digest 后解盲、四项 0–2 rubric、既有 Flash stable 优先规则，以及每 family 至少 4/8 且证据相关性/认知纪律/决策有用性各至少 1 分的模型 surface 保留阈值。未达标 family 转本地确定性 ownership 或 honest block。
+
+下一项已获得一次性零调用实施与交接权限，无需再插入同类 authority decision：
+
+`FIN-0.1.2-S2-T04-IDENTITY-SEALED-BLIND-ASSESSMENT-PACKET-AND-INDEPENDENT-EVALUATOR-HANDOFF-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+
+当前 quality score=0、model selection=0；S2 未关闭，S3 未进入。评分必须由未接触映射和本任务历史的新 Codex task 或人工评审完成。
 
 以下 S0 收口说明保留为 preceding current-baseline evidence：
 

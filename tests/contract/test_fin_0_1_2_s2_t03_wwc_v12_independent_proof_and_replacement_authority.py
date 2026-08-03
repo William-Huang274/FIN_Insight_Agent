@@ -120,10 +120,7 @@ def test_historical_projection_remains_bound_after_backlog_advances() -> None:
     assert projection["execution_authority"][
         "replacement_pair_execution_authorized_now"
     ] is False
-    assert backlog["item_id"] == (
-        "FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-"
-        "REPLACEMENT-PAIR-EXACT-EXECUTION"
-    )
+    assert backlog["item_id"].startswith("FIN-0.1.2-S2-T04-")
     assert backlog["current_projection_ref"] != projection_ref
     assert backlog["current_projection_sha256"] != projection_sha
     assert backlog["S2_T03_independent_zero_call_proof_ref"] == decision_ref

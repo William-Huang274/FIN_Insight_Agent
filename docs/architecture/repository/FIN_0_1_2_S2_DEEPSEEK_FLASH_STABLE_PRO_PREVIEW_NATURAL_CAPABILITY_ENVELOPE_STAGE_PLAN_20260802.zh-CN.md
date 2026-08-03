@@ -2,7 +2,7 @@
 
 日期：2026-08-02
 
-状态：`S2-T03 WWC v1.2 engineering pass / independent zero-call proof and affected-family replacement authority decision pending`
+状态：`S2-T03 fair six-outcome measurement complete / T04 not entered`
 
 ## 1. S2 到底要回答什么
 
@@ -190,3 +190,17 @@ focused replacement-runner tests=`13 passed`，S2 与历史不可变性组合回
 `FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-REPLACEMENT-PAIR-EXACT-EXECUTION`
 
 该项需要新的用户续行，只能执行固定两调用一次。真实执行若出现新的项目内 comparator 缺陷，S2 honest block，不开第二 repair/replacement；若是模型不遵循或弱质量，则如实记录且不重试。
+
+## 16. S2-T03 WWC v1.2 replacement pair exact execution 结果
+
+用户以新的“继续”消费唯一 exact-two-call authority。执行前 clean committed candidate、Project OS、预算、credential presence-only、v1.2 resource/digest 和 fresh execution identity 均通过。Flash stable 与 Pro preview 各一次调用均以单次 transport attempt、`finish_reason=stop` 返回，并在本地 validation 前原子保存完整 request/output capture；随后两者都通过 native JSON、alias/enum、cadence/date、容量、row-local Claim/Authority、本地 assembly 和 terminal result。
+
+合计 tokens=`3690 input / 779 output`，估算费用=`USD 0.00228288`，capture/terminal=`2/2`。Fact/Claim rerun、retry、fallback、Provider hopping、业务 Run/Artifact 均为 0。Flash/Pro 最终都保留两个 Claim ID，Authority refs 逐 selected atom 展开，RC-P36-102/103 因此关闭；历史 false-green/failed terminal 不改写。结合原六调用中四份有效 Fact/Claim，T04 输入恢复为六份公平 hard pass。
+
+本项没有进行正式盲评。未评分结构观察显示 Flash 的任务更保守、Authority 集合更宽且主要为 `unknown/no_change`；Pro 把正向、反向和图谱证据分组并给出不同 transition。两者都选过合同允许但不晚于 `as_of` 的 bound review date，可能降低 actionability；该问题应在 T04 的“决策有用性”维度评分，而不能事后变成第二个 T03 comparator repair。
+
+当前下一项为：
+
+`FIN-0.1.2-S2-T04-BLINDED-PAIRED-ASSESSMENT-MODEL-LOCAL-SURFACE-DISPOSITION-AND-S2-CLOSEOUT-AUTHORITY-DECISION`
+
+它只冻结零调用 assessment 权限、盲化映射、rubric、选择规则与 S2 closeout 边界；不会在同一权限项执行评分、选择模型、进入 S3 或运行 full-chain。

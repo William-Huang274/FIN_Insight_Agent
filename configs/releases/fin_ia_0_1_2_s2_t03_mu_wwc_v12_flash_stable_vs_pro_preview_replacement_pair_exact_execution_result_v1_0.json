@@ -1,0 +1,133 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_t03_mu_wwc_v12_flash_stable_vs_pro_preview_replacement_pair_exact_execution_result_v1_0",
+  "result_id": "FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-REPLACEMENT-PAIR-R1",
+  "recorded_at": "2026-08-03T12:53:33+08:00",
+  "status": "completed_two_terminal_results_both_hard_integrity_pass_fair_WWC_measurement_restored_T04_not_entered",
+  "engineering_base": {
+    "git_head": "5d94754a",
+    "branch": "codex/layered-data-source-expansion",
+    "worktree_clean_before_execution": true
+  },
+  "authority_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s2_t03_wwc_v12_independent_zero_call_proof_and_replacement_pair_conditional_authority_decision_v1_0.json",
+    "authority_id": "FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-REPLACEMENT-PAIR-R1",
+    "execution_identity": "fin012-s2-t03-mu-wwc-v12-replacement-pair-r1",
+    "consumed_exactly_once": true
+  },
+  "preflight_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s2_t03_wwc_v12_replacement_pair_bound_runner_atomic_capture_zero_call_preflight_minimum_implementation_v1_0.json",
+    "project_os_preflight": "pass_open_full_chain_blockers_0",
+    "runner_zero_call_preflight": "pass",
+    "credential_presence_only": true,
+    "credential_value_persisted": false,
+    "canonical_execution_identity_unclaimed_before_execution": true
+  },
+  "restricted_execution_evidence": {
+    "ref": ".codex_runtime/fin012-s2-t03-mu-wwc-v12-replacement-pair-r1/execution-result.json",
+    "sha256": "a3ebe3c626f742226ea34792b1674bb339c699475a0d8c7c410a92a759e5950e",
+    "tracked_or_business_promotable": false,
+    "restricted_capture_count": 2,
+    "terminal_result_count": 2,
+    "full_model_visible_request_and_final_assistant_output_captured_before_validation": true,
+    "raw_provider_response_persisted": false,
+    "credential_value_persisted": false
+  },
+  "execution_summary": {
+    "case": "MU",
+    "program_cell_id": "demand_authenticity_and_sustainability",
+    "family": "what_would_change_atoms",
+    "started_model_calls": 2,
+    "terminal_model_calls": 2,
+    "hard_integrity_passes": 2,
+    "transport_attempts_each": 1,
+    "Fact_or_Claim_calls": 0,
+    "retry_fallback_provider_hopping_prompt_only_retry": [0, 0, 0, 0],
+    "business_Run_or_Artifact_writes": 0,
+    "input_tokens": 3690,
+    "output_tokens": 779,
+    "estimated_cost_usd": 0.00228288,
+    "billing_truth": "provider_external"
+  },
+  "request_equivalence": {
+    "model_visible_request_digest": "0c52c9ab17fdfde457686a4ff15326e83ea0a5f8cd04207fa25aeada454881c2",
+    "request_equivalence_digest": "543836b68295bb7fdab4e4db44011d7bff5384e6f536f440b7e912309347de90",
+    "paired_requests_byte_equivalent_except_registered_identity_exclusions": true
+  },
+  "outcomes": [
+    {
+      "call_id": "fin012-s2-mu-what_would_change_atoms-flash_stable-replacement-r1",
+      "candidate_id": "flash_stable",
+      "model_ref": "deepseek:deepseek-v4-flash",
+      "status": "pass",
+      "phase": "post_provider_local_semantic_validation",
+      "code": null,
+      "finish_reason": "stop",
+      "latency_ms": 3291,
+      "usage": [1845, 425, 2270],
+      "transport_attempt_count": 1,
+      "capture_sha256": "782520cb0279b8bc77fa095bdda77ff1d199a72ac0bcbc30fb4492808877a910",
+      "terminal_sha256": "ebcc9fb61605dba739be08ae598518e61e346a05be284367af0b4d377667e0e",
+      "assembled_sha256": "335522cd77bc2e7ef325caf955701399326969b48333fb416c8e5041c5629573",
+      "assembled_task_count": 3,
+      "assembled_unique_claim_ids": 2,
+      "row_local_claim_and_authority_binding": "pass"
+    },
+    {
+      "call_id": "fin012-s2-mu-what_would_change_atoms-pro_preview-replacement-r1",
+      "candidate_id": "pro_preview",
+      "model_ref": "deepseek:deepseek-v4-pro",
+      "status": "pass",
+      "phase": "post_provider_local_semantic_validation",
+      "code": null,
+      "finish_reason": "stop",
+      "latency_ms": 3840,
+      "usage": [1845, 354, 2199],
+      "transport_attempt_count": 1,
+      "capture_sha256": "cf48a922ad083af2a8676ae07209beb255fafaa221fbc92e6b529970b9acb60d",
+      "terminal_sha256": "c9f6c05edf0f250614d6a81883ebdffa366dc7f24ecff7036d95ae05558c5ab8",
+      "assembled_sha256": "86aa696e580c98d7ef495a1007a8f3c9ee478656d02693739ae23e27b6d88b85",
+      "assembled_task_count": 3,
+      "assembled_unique_claim_ids": 2,
+      "row_local_claim_and_authority_binding": "pass"
+    }
+  ],
+  "fair_measurement_reconstruction": {
+    "valid_primary_Fact_and_Claim_outcomes": 4,
+    "valid_replacement_WWC_outcomes": 2,
+    "effective_hard_integrity_outcomes": 6,
+    "effective_hard_integrity_passes": 6,
+    "historical_invalid_WWC_outcomes_rewritten": false,
+    "fair_T04_input_complete": true
+  },
+  "project_defect_disposition": {
+    "new_project_owned_comparator_failure": false,
+    "RC_P36_102": "closed_repair_independent_proof_and_fair_natural_replacement_pass",
+    "RC_P36_103": "closed_row_local_claim_and_authority_binding_live_materialization_pass",
+    "second_repair_or_replacement_pair": false
+  },
+  "unscored_product_observations_for_T04": {
+    "formal_blinded_assessment_performed": false,
+    "model_selected": false,
+    "flash_shape": "three_valid_tasks_but_broad_all_authority_bundles_and_mostly_unknown_no_change_judgments",
+    "pro_shape": "three_valid_tasks_with_separated_support_challenge_and_graph_authority_groups_and_distinct_transitions",
+    "shared_actionability_risk": "bound_date aliases can materialize at_or_before the input as_of date; this is contract-compliant and must be scored under T04 decision usefulness rather than retroactively converted into a T03 hard failure",
+    "interpretation_boundary": "These are assessment inputs only. No winner, score, runtime mainline, or product acceptance is declared in T03."
+  },
+  "stage_acceptance": {
+    "S2_T03_exact_execution": "complete",
+    "S2_T03_fair_capability_measurement": "pass_complete",
+    "S2_T04": "not_entered_ready_for_separate_zero_call_blinded_assessment_and_closeout",
+    "model_selection": "not_permitted_in_this_execution_item",
+    "S2": "not_passed_pending_T04",
+    "S3_to_S5": "not_started",
+    "release_qualified": false
+  },
+  "forbidden_automatic_actions": [
+    "retry_or_second_replacement_pair",
+    "retroactively_rewrite_primary_terminal_results",
+    "select_Flash_or_Pro_inside_T03",
+    "enter_S3_or_execute_full_chain",
+    "write_business_Run_or_Artifact"
+  ],
+  "next_action": "FIN-0.1.2-S2-T04-BLINDED-PAIRED-ASSESSMENT-MODEL-LOCAL-SURFACE-DISPOSITION-AND-S2-CLOSEOUT-AUTHORITY-DECISION"
+}

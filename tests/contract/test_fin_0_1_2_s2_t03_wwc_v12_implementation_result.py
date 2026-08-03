@@ -102,7 +102,7 @@ def test_current_projection_and_backlog_bind_the_implementation() -> None:
     assert current["S2_T03_replacement_pair_execution_authorized_now"] is False
 
 
-def test_history_and_project_os_state_remain_honest() -> None:
+def test_history_and_project_os_state_remain_honest_after_exact_pair() -> None:
     assert _sha256(V11_SOURCE) == (
         "15c4be902cebc72ea8ef24008de0b2177eb1259a5aded0c78e758e8e91ce7501"
     )
@@ -111,12 +111,16 @@ def test_history_and_project_os_state_remain_honest() -> None:
     )
 
     root_causes = _load_jsonl(ROOT_CAUSE_LEDGER)
-    latest_102 = [row for row in root_causes if "RC-P36-102" in row["issue_id"]][-1]
-    latest_103 = [row for row in root_causes if "RC-P36-103" in row["issue_id"]][-1]
-    assert latest_102["status"] == "open"
-    assert latest_103["status"] == "open"
-    assert latest_102["verification"]["independent_zero_call_proof"] is True
-    assert latest_103["verification"]["row_local_claim_authority_matrix"] == "pass"
+    rows_102 = [row for row in root_causes if "RC-P36-102" in row["issue_id"]]
+    rows_103 = [row for row in root_causes if "RC-P36-103" in row["issue_id"]]
+    proof_102 = [row for row in rows_102 if row["recorded_at"] == "2026-08-03T10:54:54+08:00"][-1]
+    proof_103 = [row for row in rows_103 if row["recorded_at"] == "2026-08-03T10:54:54+08:00"][-1]
+    assert proof_102["status"] == "open"
+    assert proof_103["status"] == "open"
+    assert proof_102["verification"]["independent_zero_call_proof"] is True
+    assert proof_103["verification"]["row_local_claim_authority_matrix"] == "pass"
+    assert rows_102[-1]["status"] == "closed"
+    assert rows_103[-1]["status"] == "closed"
 
     capabilities = _load_jsonl(CAPABILITY_LEDGER)
     proof = [
@@ -126,14 +130,21 @@ def test_history_and_project_os_state_remain_honest() -> None:
         == "fin_0_1_2_S2_T03_WWC_v1_2_independent_zero_call_proof_and_conditional_replacement_authority"
     ][-1]
     assert proof["status"].startswith("independent_proof_pass")
-    assert capabilities[-1]["status"].startswith("engineering_and_preflight_pass")
+    preflight = [
+        row
+        for row in capabilities
+        if row["capability_id"]
+        == "fin_0_1_2_S2_T03_WWC_v1_2_replacement_pair_bound_runner_atomic_capture_zero_call_preflight"
+    ][-1]
+    assert preflight["status"].startswith("engineering_and_preflight_pass")
+    assert capabilities[-1]["status"].endswith("T04_not_entered")
     assert proof["authority"][
         "future_replacement_pair_conditionally_authorized"
     ] is True
     assert proof["authority"][
         "replacement_execution_authorized_now"
     ] is False
-    assert capabilities[-1]["authority"]["exact_execution_started"] is False
+    assert capabilities[-1]["authority"]["exact_authority_consumed"] is True
     patterns = _load_jsonl(PATTERN_LEDGER)
     independent_pattern = [
         row

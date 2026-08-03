@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S1 pass closed / S2-T03 WWC v1.2 replacement runner preflight pass and exact pair pending / S3-S5 not started`
+状态：`current canonical plan / S0-S1 pass closed / S2-T03 fair six-outcome measurement complete / T04 not entered / S3-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -12,7 +12,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭；S2-T03 六个真实模型调用已全部终止并留存证据，WWC v1.2 比较器修复已工程通过，但独立 proof 和公平 replacement pair 尚未发生，暂不能排名或进入 T04；
+- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭；S2-T03 原六调用与 WWC v1.2 公平 replacement pair 均已终态化，形成六份 hard-integrity pass 的公平能力输入；T04 尚未进入，暂未排名或选择主线模型；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
@@ -76,11 +76,15 @@ RC-P36-102 留在 S2-T03。进一步的受限 Pro 结果重放还发现本地 ta
 
 现已签发“有条件的未来两调用 authority”：只允许 MU 的 WWC family，Flash stable 与 Pro preview 各一次；Fact/Claim 不重跑，retry/fallback/provider hopping 均为 0，总预算上限 `2 calls / 10k input / 2.8k output / USD 0.015 / 300s`。专用 two-call runner 与零调用 preflight 随后已通过：authority、MU fixture、v1.2 contract 和两个 request/equivalence digest 均重新绑定；happy、semantic-continue、transport-stop、capture/budget-stop、fresh identity 不可复用和 capture-before-validation 均已确定性证明。focused=`13 passed`，S2/历史不可变性组合回归=`86 passed`，外部调用为 0。
 
-共享六调用 compiler 是旧 authority 和独立 proof 的哈希冻结资产，因此 pair 适配器被隔离在新 runner 子类中；共享 compiler 恢复并保持原 SHA256，旧六调用 authority/runner、v1.1 source/binding 和失败证据均未改写。现有 conditional authority 已满足技术 precondition，但本轮没有自动执行。当前下一项：
+共享六调用 compiler 是旧 authority 和独立 proof 的哈希冻结资产，因此 pair 适配器被隔离在新 runner 子类中；共享 compiler 恢复并保持原 SHA256，旧六调用 authority/runner、v1.1 source/binding 和失败证据均未改写。
 
-`FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-REPLACEMENT-PAIR-EXACT-EXECUTION`
+用户随后以新的“继续”消费唯一 replacement authority。Flash stable 与 Pro preview 各一次调用均以单次 transport attempt、`finish_reason=stop` 和本地 hard-integrity pass 终态化；capture/terminal=`2/2`，tokens=`3690 input / 779 output`，估算费用=`USD 0.00228288`，Fact/Claim rerun、retry、fallback、Provider hopping 与业务 Artifact 均为 0。两份输出都保留两个 Claim ID，Authority refs 逐 atom 展开，因此 RC-P36-102/103 关闭。与历史四份有效 Fact/Claim 结果组合后，T03 的公平输入为 `6/6 hard pass`。
 
-该执行仍需用户新的“继续”。它只能消费 Flash/Pro 各一次，不能重跑 Fact/Claim、retry、fallback、provider hopping、创建业务 Artifact、进入 T04 或选择模型；RC-P36-102/103 只有在公平两结果形成并完成后续处置时才能关闭。
+未评分检查显示 Pro 的证据分组和状态迁移更有区分度，Flash 更保守且多次合并全部 Authority；两者都出现“不晚于 as-of 的 bound review date”这一合同允许但可用性存疑的现象。它属于 T04 的决策有用性评分输入，不是再开 T03 修复包的理由。当前下一项：
+
+`FIN-0.1.2-S2-T04-BLINDED-PAIRED-ASSESSMENT-MODEL-LOCAL-SURFACE-DISPOSITION-AND-S2-CLOSEOUT-AUTHORITY-DECISION`
+
+该下一项仍需用户新的“继续”，且只做零调用 T04 权限与范围冻结：绑定六份公平输入、盲化模型身份、冻结四项 0–2 分 rubric 和选择规则。它不会在同一项直接选择模型、关闭 S2、进入 S3 或执行 full-chain。
 
 以下 S0 收口说明保留为 preceding current-baseline evidence：
 

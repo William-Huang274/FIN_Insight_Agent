@@ -174,22 +174,16 @@ def test_preexecution_gap_is_owned_by_t03_and_not_misclassified() -> None:
     assert authority["stage_acceptance"]["S3_T03_execution"] == "not_started"
 
 
-def test_projection_backlog_and_project_os_route_only_to_zero_call_preflight() -> None:
+def test_authority_projection_is_historical_and_backlog_preserves_binding() -> None:
     authority = _load(AUTHORITY)
     projection = _load(PROJECTION)
     backlog = _load(BACKLOG)["next_action"]
     authority_sha = hashlib.sha256(AUTHORITY.read_bytes()).hexdigest()
-    projection_sha = hashlib.sha256(PROJECTION.read_bytes()).hexdigest()
 
     assert projection["decision_binding"]["sha256"] == authority_sha
     assert projection["current_truth"]["current_next_action"] == (
         authority["next_action"]
     )
-    assert backlog["item_id"] == authority["next_action"]
-    assert backlog["current_projection_ref"] == PROJECTION.relative_to(
-        ROOT
-    ).as_posix()
-    assert backlog["current_projection_sha256"] == projection_sha
     assert backlog["S3_T03_authority_sha256"] == authority_sha
     assert backlog["S3_T03_execution_started"] is False
 

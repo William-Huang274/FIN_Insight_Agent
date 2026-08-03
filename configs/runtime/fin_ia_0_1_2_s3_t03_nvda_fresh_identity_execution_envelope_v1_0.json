@@ -1,0 +1,90 @@
+{
+  "admission": {
+    "execution_enabled": false,
+    "issued": false,
+    "persisted": false
+  },
+  "authority": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_authority_decision_v1_0.json",
+    "sha256": "18acd58696fbd0ef8934b036024fa1ba6eedf213b7e37c6080d88c7afc433c87"
+  },
+  "business_promotable": false,
+  "envelope_digest": "5f04852451a96c670e539eb79ced472c31615f79d4d491e9bfae57bf55ea37f7",
+  "fresh_t03": {
+    "attempt_id": "attempt_fin01_a52185b7b06088fe2a26afbb",
+    "execution_identity": "fin012-s3-t03-nvda-primary-r1",
+    "input_digest": "b9cc749d0d2351e228750343a61d3fc03abfc8a70870fa96d12c8a03f118e085",
+    "lineage": {
+      "T02_runtime_plan": {
+        "digest": "fa132afd1571443c3394d4a78c903561f7a1f5d5925c90c9c072bc68bb8021ba",
+        "version_ref": "runtime_plan_fin01_s3_fa132afd1571443c3394d4a7:v1"
+      },
+      "T03_evidence_route_plan": {
+        "digest": "5f529d22b61a2da38343864d5b1b1d5ae59b61af04c32786f2705b2bc2cb3dad",
+        "version_ref": "evidence_route_plan_fin01_s3_5f529d22b61a2da38343864d:v1"
+      },
+      "T04_financial_pack": {
+        "digest": "673dd5df37c6ff13c1757b61cb6862de2ad2c2e553ce440d8be57fc790c0dfb0",
+        "version_ref": "s3_financial_numeric_pack_673dd5df37c6ff13c1757b61:v1"
+      },
+      "T05_graph_pack": {
+        "digest": "9398c39f83947f689248c215da788c75e74c3c0e4620d3b08187d92a56f1294a",
+        "version_ref": "s3_graph_decision_cell_pack_9398c39f83947f689248c215:v1"
+      },
+      "T06_judgment_contract": {
+        "digest": "5ad103e5018b1c61f5b3ef89a6332b56fb063d0aed9e3ff66d36540b73c19d01",
+        "version_ref": "judgment_pack_fin01_s3_5ad103e5018b1c61f5b3ef89:v1"
+      },
+      "T07_presentation_contract": {
+        "digest": "e65680af612935b0f11fdcc7b41ff9725fd99b9b1626e3d3f935e685eca41d90",
+        "version_ref": "s3_three_cell_presentation_pack_e65680af612935b0f11fdcc7:v1"
+      }
+    },
+    "preparation_digest": "1136f0c5d5838513512c495e2437e3293cb931a2ff16b2d15df5c63138d0b49a",
+    "research_run_id": "research_run_fin01_521f576085b838d16edc24ab",
+    "work_unit_id": "wu_p02_5_6f25883c114d87edd3a0b27e"
+  },
+  "hard_budget": {
+    "execution_network_calls": 9,
+    "external_tool_calls": 0,
+    "failed_output_business_promotions": 0,
+    "fallback_budget": 0,
+    "live_case_head_writes": 0,
+    "maximum_input_tokens": 60000,
+    "maximum_output_tokens": 10000,
+    "maximum_total_cost_usd": 0.06,
+    "maximum_transport_attempts_per_call": 1,
+    "maximum_wall_clock_seconds": 900,
+    "provider_calls": 9,
+    "provider_hopping_budget": 0,
+    "retry_budget": 0,
+    "semantic_model_calls": 9,
+    "source_network_calls": 0
+  },
+  "historical_t02": {
+    "execution_identity": "fin01-s3-t09-three-cell-deepseek-segmented-live-validation-r1",
+    "input_digest": "906111ddd482cf15dc4d03c7a3769a59ec8ade80a2c9f867561b3bd128ddc953",
+    "preparation_digest": "49e4afabde167dbd9b3558db574aa56461f993294aa3518eb8c448d80c4ff860"
+  },
+  "observed_counts": {
+    "admissions_issued_or_persisted": 0,
+    "business_Artifacts": 0,
+    "business_Runs": 0,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0
+  },
+  "runtime_contract": {
+    "binding_ref": "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1.3",
+    "source_digest": "32ffec2cf4beeb184cceb0fda1bfbe5b66c83b2add53999407018a71e83a1c17"
+  },
+  "schema_version": "fin_ia_0_1_2_s3_t03_fresh_identity_execution_envelope_v1_0",
+  "stable_business_input": {
+    "case_id": "case_e0b4021838a913c4ad21c328",
+    "case_version": 1,
+    "digest": "a19743ffdaa63319a5381262adc9c5b04751abadc9bc4781561c1aa905b744fc",
+    "input_head_digest": "79602b8e8b4855df881c6bd1f550de2eecd18674cc2626ac7decadd5e3420424",
+    "projection_schema": "fin_ia_0_1_2_s3_stable_business_input_projection_v1_0"
+  }
+}

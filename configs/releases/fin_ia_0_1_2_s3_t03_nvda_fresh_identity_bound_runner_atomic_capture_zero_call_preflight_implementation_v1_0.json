@@ -1,0 +1,146 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_nvda_fresh_identity_bound_runner_atomic_capture_zero_call_preflight_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S3-T03-NVDA-FRESH-IDENTITY-BOUND-RUNNER-ATOMIC-CAPTURE-ZERO-CALL-PREFLIGHT-R1",
+  "recorded_at": "2026-08-03T22:30:00+08:00",
+  "status": "pass_zero_call_fresh_identity_business_boundary_bound_runner_atomic_capture_terminal_supervision_and_success_only_artifact_preflight",
+  "authority_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_authority_decision_v1_0.json",
+  "authority_sha256": "18acd58696fbd0ef8934b036024fa1ba6eedf213b7e37c6080d88c7afc433c87",
+  "implementation_bindings": [
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s3_t03_exact_live_runner.py",
+      "sha256": "fc09ffde0346bf8369fac415dfc72e160f5dd6d1437e0fc1dec019f12da31c4a",
+      "bytes": 27112,
+      "role": "fresh_identity_boundary_capture_first_single_use_runner_and_supervisor"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s3_t03_nvda_fresh_identity_execution_envelope_v1_0.json",
+      "sha256": "4e85c615569dde3b70666dd19dc775ef4098fa26cd12cfb3f1fd83653f7b7377",
+      "bytes": 3834,
+      "role": "prospective_fresh_identity_execution_envelope_not_admission"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s3_t03_fresh_identity_runner_atomic_capture_preflight.py",
+      "sha256": "6a9ae05248a4e93567d2c80e077f3ffd2350fbb3096421c908b2f2b26230175b",
+      "bytes": 17849,
+      "role": "zero_call_success_failure_mutation_supervisor_and_fresh_process_proof"
+    }
+  ],
+  "stable_business_input_boundary": {
+    "schema_version": "fin_ia_0_1_2_s3_stable_business_input_projection_v1_0",
+    "digest": "a19743ffdaa63319a5381262adc9c5b04751abadc9bc4781561c1aa905b744fc",
+    "tracked_T02_complete_input_digest": "906111ddd482cf15dc4d03c7a3769a59ec8ade80a2c9f867561b3bd128ddc953",
+    "fresh_T03_complete_input_digest": "b9cc749d0d2351e228750343a61d3fc03abfc8a70870fa96d12c8a03f118e085",
+    "complete_input_digests_equal": false,
+    "stable_business_projections_equal": true,
+    "business_fields_still_hard_bound": [
+      "query",
+      "case_id_and_version",
+      "input_head_digest",
+      "decision_surface_contract_ref",
+      "accepted_evidence_refs",
+      "numeric_input",
+      "lead_writer_verifier_and_hard_boundaries"
+    ],
+    "historical_T02_manifest_rewritten": false
+  },
+  "fresh_execution_envelope": {
+    "ref": "configs/runtime/fin_ia_0_1_2_s3_t03_nvda_fresh_identity_execution_envelope_v1_0.json",
+    "envelope_digest": "5f04852451a96c670e539eb79ced472c31615f79d4d491e9bfae57bf55ea37f7",
+    "execution_identity": "fin012-s3-t03-nvda-primary-r1",
+    "work_unit_id": "wu_p02_5_6f25883c114d87edd3a0b27e",
+    "attempt_id": "attempt_fin01_a52185b7b06088fe2a26afbb",
+    "research_run_id": "research_run_fin01_521f576085b838d16edc24ab",
+    "preparation_digest": "1136f0c5d5838513512c495e2437e3293cb931a2ff16b2d15df5c63138d0b49a",
+    "runtime_contract_binding_ref": "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1.3",
+    "admission_issued_or_persisted": false,
+    "execution_identity_claimed_or_consumed": false
+  },
+  "runner_contract": {
+    "single_use_identity": true,
+    "capture_persisted_before_local_parse_or_validation": true,
+    "capture_store": "existing_FileCanonicalObjectStore_content_addressed_atomic_json",
+    "capture_index_atomic_after_each_response": true,
+    "supervisor_scans_store_when_index_lags": true,
+    "typed_terminal_phases": [
+      "success",
+      "provider_or_transport",
+      "validation_or_downstream",
+      "timeout",
+      "capture_store_failure",
+      "supervisor_exit"
+    ],
+    "success_only_business_artifact_count": 9,
+    "failed_output_business_promotions": 0,
+    "capture_store_failure_behavior": "sanitized_atomic_execution_result_and_fail_closed_no_false_capture_claim",
+    "persisted_capture_excludes": [
+      "credential_values",
+      "api_key_env",
+      "Authorization_headers",
+      "cookies",
+      "raw_provider_response",
+      "provider_private_reasoning"
+    ]
+  },
+  "hard_budget": {
+    "provider_calls": 9,
+    "maximum_transport_attempts_per_call": 1,
+    "maximum_input_tokens": 60000,
+    "maximum_output_tokens": 10000,
+    "maximum_total_cost_usd": 0.06,
+    "maximum_wall_clock_seconds": 900,
+    "retry_budget": 0,
+    "fallback_budget": 0,
+    "provider_hopping_budget": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "live_case_head_writes": 0
+  },
+  "zero_call_verification": {
+    "success_topology": [6, 12, 3, 9, 9],
+    "success_topology_fields": [
+      "logical_nodes",
+      "logical_interactions",
+      "local_Fact_receipts",
+      "durable_provider_captures",
+      "business_Artifacts"
+    ],
+    "failure_scenarios": [
+      "lead_validation_failure_after_seven_captures",
+      "malformed_first_response_captured_before_parse",
+      "transport_timeout_before_capture",
+      "capture_store_unavailable",
+      "abnormal_child_exit_after_capture",
+      "abnormal_child_exit_between_capture_and_index",
+      "budget_mutation",
+      "single_use_identity_replay",
+      "execution_envelope_mutation",
+      "business_query_evidence_and_numeric_mutation"
+    ],
+    "two_credential_cleared_fresh_process_envelopes_byte_equivalent": true,
+    "focused_and_applicable_regression": "19 passed",
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "business_Runs": 0,
+    "business_Artifacts": 0
+  },
+  "issue_disposition": {
+    "issue_id": "RC-P36-106-fin-0-1-2-s3-t03-bound-runner-durable-capture-and-terminal-supervision-gap",
+    "status": "closed_by_zero_call_implementation_and_fresh_process_preflight",
+    "model_or_provider_fault": false,
+    "financial_truth_failure": false,
+    "S0_S1_or_S2_reopened": false
+  },
+  "stage_acceptance": {
+    "S3_T01": "pass",
+    "S3_T02": "engineering_and_zero_call_product_readiness_pass",
+    "S3_T03_runner_preflight": "pass",
+    "S3_T03_conditional_exact_live_authority": "effective_for_future_single_admission_after_new_user_continuation",
+    "S3_T03_execution": "not_started",
+    "S3_T04": "blocked_until_successful_current_nine_Artifact_product",
+    "current_NVDA_R2": false,
+    "release": "not_qualified"
+  },
+  "known_boundary": "This is execution-control readiness only. It is not an admission, credential qualification, natural DeepSeek output, exact-live execution, current NVDA product evidence, paired gain, Owner acceptance, R2, release or production.",
+  "next_action": "FIN-0.1.2-S3-T03-NVDA-FRESH-EXACT-ADMISSION-ISSUANCE"
+}

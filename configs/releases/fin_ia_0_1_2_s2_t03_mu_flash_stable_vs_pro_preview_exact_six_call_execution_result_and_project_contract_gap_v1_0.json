@@ -1,0 +1,141 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_t03_exact_six_call_execution_result_and_project_contract_gap_v1_0",
+  "result_id": "FIN-0.1.2-S2-T03-MU-FLASH-STABLE-VS-PRO-PREVIEW-EXACT-SIX-CALL-R1",
+  "recorded_at": "2026-08-03T09:20:33+08:00",
+  "status": "six_terminal_results_materialized_measurement_invalid_for_ranking_due_project_contract_parity_gap",
+  "engineering_base": {
+    "git_head": "0872f8d2cd1cb1ce5cb838881ce159638491cd1a",
+    "branch": "codex/layered-data-source-expansion",
+    "worktree_clean_before_execution": true
+  },
+  "authority_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s2_t03_mu_three_family_flash_stable_vs_pro_preview_paired_natural_output_canary_authority_decision_v1_0.json",
+    "sha256": "8e18bf6c9c6f385af521646a525893670e27ae80863fd238b69d9ea3c10f3f7f"
+  },
+  "preflight_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s2_t03_paired_canary_bound_runner_atomic_capture_and_zero_call_preflight_minimum_implementation_v1_0.json",
+    "sha256": "3a53a115f9a025d76616ac2f6c7c491f612c349f20a0465b8237ef0bfe12849b"
+  },
+  "restricted_execution_evidence": {
+    "ref": ".codex_runtime/fin012-s2-t03-mu-flash-pro-paired-r1/execution-result.json",
+    "sha256": "54f94957c4fe6f81ed3b1f493a1523e18be12624dd5e1ec4da173c108770f375",
+    "tracked_or_business_promotable": false,
+    "restricted_capture_count": 6,
+    "terminal_result_count": 6,
+    "raw_provider_response_persisted": false,
+    "credential_value_persisted": false
+  },
+  "execution_summary": {
+    "case": "MU",
+    "family_count": 3,
+    "candidate_count": 2,
+    "started_model_calls": 6,
+    "terminal_model_calls": 6,
+    "transport_attempts_each": 1,
+    "retry_fallback_provider_hopping_prompt_only_retry": [0, 0, 0, 0],
+    "replacement_pair_calls": 0,
+    "business_Run_or_Artifact_writes": 0,
+    "input_tokens": 9106,
+    "output_tokens": 1021,
+    "estimated_cost_usd": 0.00484938,
+    "billing_truth": "provider_external"
+  },
+  "outcomes": [
+    {
+      "call_id": "fin012-s2-mu-specialist_fact_atoms-flash_stable-r1",
+      "family_id": "specialist_fact_atoms",
+      "candidate_id": "flash_stable",
+      "status": "pass",
+      "finish_reason": "stop",
+      "latency_ms": 1095,
+      "usage": [1514, 98, 1612],
+      "capture_sha256": "78c8716e726011d85101b846e149479de9753ba35d0efa3a2965fa08af4c6a77",
+      "terminal_sha256": "a88abc3b6fe1b6f0ed44ae2d9ca9554e694e0cc73e27b3f87dac0cc5966338b8"
+    },
+    {
+      "call_id": "fin012-s2-mu-specialist_fact_atoms-pro_preview-r1",
+      "family_id": "specialist_fact_atoms",
+      "candidate_id": "pro_preview",
+      "status": "pass",
+      "finish_reason": "stop",
+      "latency_ms": 1990,
+      "usage": [1514, 160, 1674],
+      "capture_sha256": "ba2ea774015b87ec1d8e332187ac1e619bb70ba459feb5a29c80efb6f260725e",
+      "terminal_sha256": "34fa83578d0dc10d7dcd59b493fce69f5ce0adf34abacca8a9ca790b351f683c"
+    },
+    {
+      "call_id": "fin012-s2-mu-claim_candidate_atoms-flash_stable-r1",
+      "family_id": "claim_candidate_atoms",
+      "candidate_id": "flash_stable",
+      "status": "pass",
+      "finish_reason": "stop",
+      "latency_ms": 836,
+      "usage": [1375, 46, 1421],
+      "capture_sha256": "b83f8abf176ce8fd308b6a5b77343588b4d39848fd160964b9f836034a93ec5f",
+      "terminal_sha256": "3ca9a4ee8209ad279b287270ce0fd637c7e28bb5ab995fb0229b5e1a38467538"
+    },
+    {
+      "call_id": "fin012-s2-mu-claim_candidate_atoms-pro_preview-r1",
+      "family_id": "claim_candidate_atoms",
+      "candidate_id": "pro_preview",
+      "status": "pass",
+      "finish_reason": "stop",
+      "latency_ms": 1616,
+      "usage": [1375, 70, 1445],
+      "capture_sha256": "581b69e31ee9e551b56296dcd02a20e31164594426c6b05594307c2a05c85b36",
+      "terminal_sha256": "d692b11e5b3188590d59dc4b6c54174eb341855e13c30824f3cb33fde1ee5a63"
+    },
+    {
+      "call_id": "fin012-s2-mu-what_would_change_atoms-flash_stable-r1",
+      "family_id": "what_would_change_atoms",
+      "candidate_id": "flash_stable",
+      "status": "failed_local_semantic_validation_measurement_invalid",
+      "code": "s4_compiled_wwc_unbound_date_alias_forbidden",
+      "finish_reason": "stop",
+      "latency_ms": 2259,
+      "usage": [1664, 292, 1956],
+      "capture_sha256": "deb9409168fa92e14603de3fba64cf4f305d702a914d190fb61c4f8467a13311",
+      "terminal_sha256": "63c961d67656d4b20aded93ba437bf41dff99e4509437183aa47f1c1148416ea"
+    },
+    {
+      "call_id": "fin012-s2-mu-what_would_change_atoms-pro_preview-r1",
+      "family_id": "what_would_change_atoms",
+      "candidate_id": "pro_preview",
+      "status": "pass",
+      "finish_reason": "stop",
+      "latency_ms": 3751,
+      "usage": [1664, 355, 2019],
+      "capture_sha256": "7f6fd6857ffeb3c6fe0b1f5d72c6d3e578acad0f27505436a847c1f9a7f83ddc",
+      "terminal_sha256": "e424c4e66c5c30f73bc6bd181e58ac659a44c92fecf5ef4565f6de602dc8e847"
+    }
+  ],
+  "first_credible_failure": {
+    "issue_id": "RC-P36-102-fin-0-1-2-s2-t03-wwc-review-cadence-date-alias-model-visible-contract-parity-gap",
+    "owned_by_project": true,
+    "model_or_provider_fault_established": false,
+    "evidence": [
+      "The model-visible required output schema states that review_date_alias may be an exact allowed date alias or NONE.",
+      "The local validator additionally requires review_date_alias=NONE whenever review_cadence is not bound_date.",
+      "The cross-field condition is not present in the model-visible instruction or required output schema.",
+      "Flash used only allowed aliases and stopped normally; Pro happened to satisfy the hidden condition."
+    ],
+    "impact": "The WWC pair is not a fair capability measurement, so T03 cannot qualify either model or advance to T04 ranking.",
+    "earliest_owner": "S2_T03_model_visible_contract_and_local_validator_semantic_parity"
+  },
+  "stage_acceptance": {
+    "S2_T03_exact_six_call_materialization": "complete",
+    "S2_T03_capability_measurement": "blocked_invalid_WWC_pair",
+    "S2_T04_blinded_assessment": "not_entered",
+    "S2": "not_passed",
+    "S3_to_S5": "not_started",
+    "release_qualified": false
+  },
+  "forbidden_automatic_actions": [
+    "rank_or_select_Flash_or_Pro_from_this_measurement",
+    "retry_or_prompt_only_retry",
+    "automatic_affected_family_replacement_pair",
+    "enter_T04_or_S3",
+    "write_business_Run_or_Artifact"
+  ],
+  "next_action": "FIN-0.1.2-S2-T03-WWC-REVIEW-CADENCE-DATE-ALIAS-MODEL-VISIBLE-CONTRACT-PARITY-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-DISPOSITION-DECISION"
+}

@@ -320,7 +320,7 @@ def test_T03_result_binds_implementation_and_preserves_zero_calls() -> None:
     )
 
 
-def test_current_projection_and_backlog_advance_only_to_exact_six_calls() -> None:
+def test_preflight_projection_remains_historical_after_exact_execution() -> None:
     result = json.loads(T03_RESULT.read_text(encoding="utf-8"))
     projection = json.loads(CURRENT_PROJECTION.read_text(encoding="utf-8"))
     backlog = json.loads(PROGRAM_BACKLOG.read_text(encoding="utf-8"))
@@ -342,9 +342,9 @@ def test_current_projection_and_backlog_advance_only_to_exact_six_calls() -> Non
         "automatic_retry_fallback_provider_hopping_or_replacement_authorized"
     ] is False
     current = backlog["next_action"]
-    assert current["item_id"] == result["next_action"]
-    assert current["current_projection_ref"] == CURRENT_PROJECTION.relative_to(
-        ROOT
-    ).as_posix()
-    assert current["S2_T03_execution_started"] is False
-    assert current["S2_T03_current_model_provider_network_calls"] == [0, 0, 0]
+    assert current["item_id"] != result["next_action"]
+    assert current["current_projection_ref"].endswith("v2_13.json")
+    assert current["S2_T03_preflight_implementation_ref"] == result_ref
+    assert current["S2_T03_preflight_implementation_sha256"] == result_sha
+    assert current["S2_T03_execution_started"] is True
+    assert current["S2_T03_current_model_provider_network_calls"] == [6, 6, 6]

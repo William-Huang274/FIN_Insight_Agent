@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S1 pass closed / S2-T03 preflight pass and exact six-call execution next / S3-S5 not started`
+状态：`current canonical plan / S0-S1 pass closed / S2-T03 exact six terminal complete but WWC measurement invalid on project contract gap / S3-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -12,7 +12,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭，S2-T02 双模型 compiler 与 T03 专用 runner、原子 capture、零调用 preflight 均已工程通过；六调用权限现已生效但尚未执行；
+- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭；S2-T03 六个真实模型调用已全部终止并留存证据，但 WWC paired measurement 被项目自身未公开的跨字段校验规则污染，暂不能排名或进入 T04；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
@@ -66,9 +66,11 @@ StagePlan 同时发现 `common_runtime_contract_family_source_v1_0` 的状态文
 
 该执行前缺口已经由一个合并结构包关闭：专用 runner 从已登记 MU fixture 重建六个 exact call；原子对象仓先保存 capture 再做本地校验；网关显式锁定单次 attempt；语义失败继续、transport/auth/security/capture/budget 失败停止。实现证据=`28 focused / 61 combined passed`，加入结果与 current projection 闭环后最终=`30 focused / 63 combined passed`；preflight 外部调用为 0，RC-P36-101 已关闭。
 
-当前下一项只执行已经签权的六个调用，不扩展 family、不自动 replacement、不写业务 Artifact：
+六个已签权调用已经严格执行一次：6 次调用全部 `stop`，6 capture/6 terminal 均留存，Fact/Claim 两模型和 Pro WWC 通过；Flash WWC 被本地隐藏条件拒绝。模型可见 schema 允许 `review_date_alias=allowed alias or NONE`，本地 validator 却未公开“非 `bound_date` cadence 必须为 `NONE`”的规则，所以这不是可信的模型能力差异。调用总量=`9106 input / 1021 output`，估算成本 `USD 0.00484938`，无 retry、replacement 或业务 Artifact。
 
-`FIN-0.1.2-S2-T03-MU-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-EXACT-SIX-CALL-EXECUTION`
+RC-P36-102 留在 S2-T03。T04、模型排名和主线模型选择均未进入；当前下一项是零调用处置，不自动修复或重跑：
+
+`FIN-0.1.2-S2-T03-WWC-REVIEW-CADENCE-DATE-ALIAS-MODEL-VISIBLE-CONTRACT-PARITY-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-DISPOSITION-DECISION`
 
 以下 S0 收口说明保留为 preceding current-baseline evidence：
 

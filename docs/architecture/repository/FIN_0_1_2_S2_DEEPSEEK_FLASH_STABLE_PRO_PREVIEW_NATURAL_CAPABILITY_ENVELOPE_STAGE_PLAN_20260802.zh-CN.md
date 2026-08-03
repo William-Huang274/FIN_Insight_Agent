@@ -106,3 +106,15 @@ T02 已完成唯一一个零调用实现包。当前 v1.1 source/binding 与 Fla
 `FIN-0.1.2-S2-T03-MU-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-EXACT-SIX-CALL-EXECUTION`
 
 该项只消费既有六调用 authority；没有 retry、fallback、Provider hopping、自动 replacement pair 或业务 Run/Artifact。只有完成六个 terminal/capture 或形成诚实 transport block 后，才能进入 T04。
+
+## 13. T03 exact 六调用结果与当前边界
+
+授权的 MU 六调用已严格执行一次：六个调用均 `finish_reason=stop`、transport attempt=1，形成 6 个受限 capture 和 6 个 terminal result；总 usage=`9106 input / 1021 output`，按冻结费率估算 `USD 0.00484938`。没有 retry、fallback、provider hopping、replacement pair 或业务 Run/Artifact。
+
+Fact、Claim 的 Flash/Pro 四项均通过，Pro WWC 通过；Flash WWC 在本地 semantic validation 被 `s4_compiled_wwc_unbound_date_alias_forbidden` 拒绝。受限证据审计显示 Flash 只使用已绑定日期 alias，但在 `next_authority_event` / `next_reporting_event` cadence 下同时给出了日期 alias。模型可见 schema 允许 `review_date_alias` 为任一 allowed alias 或 `NONE`，却没有公开本地校验器的条件：只有 `bound_date` 可带日期 alias，其余 cadence 必须为 `NONE`。
+
+因此该结果不是 Flash 指令不遵循，也不是 Pro 已胜出；WWC pair 是受项目合同不对称污染的无效测量。RC-P36-102 在 S2-T03 打开，T04 不得进入。按本 StagePlan 第 8 节，当前只做零调用处置，判断是否消费唯一合并 repair bundle，并是否另行签权一次仅 WWC family 的 Flash/Pro replacement pair；本轮不自动修补或重跑。
+
+当前下一项：
+
+`FIN-0.1.2-S2-T03-WWC-REVIEW-CADENCE-DATE-ALIAS-MODEL-VISIBLE-CONTRACT-PARITY-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-DISPOSITION-DECISION`

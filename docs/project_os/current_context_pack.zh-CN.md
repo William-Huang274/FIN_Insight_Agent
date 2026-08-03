@@ -3,6 +3,9 @@
 更新时间：2026-08-03
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S2-T03 exact 六调用已完成，但 WWC 比较因项目合同不对称而无效（current，2026-08-03）**：MU 的 Fact/Claim/WWC × Flash stable/Pro preview 共 6 次调用均一次 transport 终止并保存 6 个受限 capture 与 6 个 terminal result；Fact/Claim 两模型及 Pro WWC 本地 hard pass，Flash WWC 被 `s4_compiled_wwc_unbound_date_alias_forbidden` 拒绝。审计确认模型可见 schema 只声明 `review_date_alias=allowed alias or NONE`，本地校验器却额外要求 `review_cadence != bound_date` 时必须为 `NONE`，该跨字段规则未对模型公开；因此 RC-P36-102 属于项目合同/校验一致性缺口，不成立模型或 Provider 过错，也不能据此选择 Pro。observed calls/tokens/cost=`6 / 9106+1021 / USD 0.00484938 estimated`，retry/fallback/replacement/business Artifact=`0/0/0/0`。T04 未进入；current next=`FIN-0.1.2-S2-T03-WWC-REVIEW-CADENCE-DATE-ALIAS-MODEL-VISIBLE-CONTRACT-PARITY-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-DISPOSITION-DECISION`。该下一项是零调用处置，只决定是否消费 StagePlan 唯一合并 repair 与另行授权 WWC 两模型 replacement pair，不得自动修补或重跑。
+
+> [!IMPORTANT]
 > **FIN 0.1.2 S2-T03 专用 runner 与原子 capture preflight 已通过，exact 六调用成为当前唯一下一项（current，2026-08-03）**：runner 从已登记 MU exact fixture 重建 compiler，并逐项匹配 authority 的 6 个 call/request/equivalence digest；对象仓改为同目录临时文件、fsync、原子 replace 和 readback digest，capture 在本地 semantic validation 前落入受限内容寻址存储，terminal result 随后独立物化。网关新增显式 `max_transport_attempts=1`，不再受全局 retry 环境漂移影响。语义失败继续收集其余独立调用；auth/transport/security/capture/budget 失败停止剩余。实现证据=`28 focused / 61 combined passed`，加入结果/投影闭环后的最终回归=`30 focused / 63 combined passed`；preflight worst-case cost=`USD 0.029058 < 0.06`，credential/model/provider/network/business=`0/0/0/0/0`。RC-P36-101 已关闭；implementation=`configs/releases/fin_ia_0_1_2_s2_t03_paired_canary_bound_runner_atomic_capture_and_zero_call_preflight_minimum_implementation_v1_0.json`，projection=`configs/runtime/fin_ia_0_1_2_current_program_projection_v2_12.json`，current next=`FIN-0.1.2-S2-T03-MU-FLASH-STABLE-VS-PRO-PREVIEW-PAIRED-NATURAL-OUTPUT-CANARY-EXACT-SIX-CALL-EXECUTION`。本项没有证明任何模型合规或产品质量；T04/S3 仍未解锁。
 
 > [!IMPORTANT]

@@ -1,0 +1,45 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_exact_product_input_manifest_v1_0",
+  "contract_ref": "fin_0_1_2.s3.nvda_exact_product_input:v1",
+  "status": "tracked_current_S3_exact_input_not_executed",
+  "case": {
+    "case_id": "case_e0b4021838a913c4ad21c328",
+    "case_version": 1,
+    "company": "NVDA",
+    "as_of": "2026-07-21T00:00:00Z",
+    "query": "Execute the FIN 0.1 NVDA S3 T09 exact three-cell preflight fixture",
+    "decision_surface_contract_ref": "p02_decision_surface_f4b13fd313df578194cbfde6:v1"
+  },
+  "materialization": {
+    "compiler_ref": "apps.workbench.backend.application.research_runtime.prepare_s3_three_cell_bounded_agent_exact_input",
+    "input_contract_ref": "fin01.s3.bounded_agent_three_cell_input:v1",
+    "execution_profile_version_ref": "fin01.execution_profile.bounded_agent_internal_three_cell:v1",
+    "program_cell_ids": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "input_head_digest": "79602b8e8b4855df881c6bd1f550de2eecd18674cc2626ac7decadd5e3420424",
+    "source_digest": "49e4afabde167dbd9b3558db574aa56461f993294aa3518eb8c448d80c4ff860",
+    "input_digest": "906111ddd482cf15dc4d03c7a3769a59ec8ade80a2c9f867561b3bd128ddc953"
+  },
+  "lineage": {
+    "T02_runtime_plan": {"version_ref": "runtime_plan_fin01_s3_d96a1de84de277af578b7c51:v1", "digest": "d96a1de84de277af578b7c5142a39f0ebf223e302a944feb62f4728e3121c4ca"},
+    "T03_evidence_route_plan": {"version_ref": "evidence_route_plan_fin01_s3_a51c55327b13bfe74719ab69:v1", "digest": "a51c55327b13bfe74719ab69fa859c3fb3dc0884ad080f9219cce2062145cb1b"},
+    "T04_financial_pack": {"version_ref": "s3_financial_numeric_pack_5745bbfbf6f3115d24f1d01b:v1", "digest": "5745bbfbf6f3115d24f1d01b3916aede26b0efcb8f60841d88b9bf7d0573159b"},
+    "T05_graph_pack": {"version_ref": "s3_graph_decision_cell_pack_c6d120ba1d280798a0968416:v1", "digest": "c6d120ba1d280798a096841615c58b3935bed7f0c218bd9c93f01255c5745a45"},
+    "T06_judgment_contract": {"version_ref": "judgment_pack_fin01_s3_7218053001759de8a067bf76:v1", "digest": "7218053001759de8a067bf761ba4d6eb17342ec1f2bd6685d3933c4f3bdb54bc"},
+    "T07_presentation_contract": {"version_ref": "s3_three_cell_presentation_pack_f11ed2f440f7756e87c82a22:v1", "digest": "f11ed2f440f7756e87c82a22e89e6aa089835f28d334bfc8d6179950df963146"}
+  },
+  "nonpromotion_boundary": {
+    "input_is_current_product_proof": false,
+    "input_is_execution_admission": false,
+    "paid_execution_authorized": false,
+    "source_network_calls_authorized": false,
+    "external_tool_calls_authorized": false,
+    "historical_artifacts_promoted_as_current": false,
+    "business_case_head_writes_authorized": false,
+    "exact_input_must_be_recompiled_and_digest_matched_before_T03": true
+  },
+  "manifest_digest": "a2c74ecd92122766dd01fe74ad69bdee2e96db70f3735f6105bbddccafefb755"
+}

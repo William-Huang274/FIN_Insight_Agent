@@ -935,6 +935,7 @@ class SpecialistTransportContract:
     field_local_what_would_change_authority: bool = False
     what_would_change_judgment_atom_assembly: bool = False
     explicit_output_capture_binding: bool = False
+    local_deterministic_fact_interaction: bool = False
 
 
 _TRANSPORT_PREFIX = (
@@ -1000,6 +1001,19 @@ _SPECIALIST_TRANSPORT_CONTRACTS = {
         field_local_what_would_change_authority=True,
         what_would_change_judgment_atom_assembly=True,
         explicit_output_capture_binding=True,
+    ),
+    f"{_TRANSPORT_PREFIX}:v9": SpecialistTransportContract(
+        transport_ref=f"{_TRANSPORT_PREFIX}:v9",
+        field_local_text=True,
+        closed_context_authority=True,
+        epistemic_status_state=True,
+        bounded_assembly=True,
+        local_scope_assembly=True,
+        field_local_fact_support_authority=True,
+        field_local_what_would_change_authority=True,
+        what_would_change_judgment_atom_assembly=True,
+        explicit_output_capture_binding=True,
+        local_deterministic_fact_interaction=True,
     ),
 }
 
@@ -4322,6 +4336,7 @@ class SpecialistWWCJudgmentAtomPolicy:
     authority_aliases: tuple[WWCAuthorityAlias, ...]
     temporal_date_aliases: tuple[WWCTemporalDateAlias, ...] = ()
     contract_ref: str = S3_SPECIALIST_WWC_JUDGMENT_ATOM_POLICY_REF
+    omitted_incomplete_authority_ref_count: int = 0
 
     provider_atom_max_unicode_characters = 160
     provider_output_max_utf8_bytes = 4800
@@ -4535,6 +4550,7 @@ class SpecialistWWCJudgmentAtomPolicy:
         claims: Any,
         as_of: str,
         contract_ref: str = S3_SPECIALIST_WWC_JUDGMENT_ATOM_POLICY_REF,
+        omit_incomplete_authority_refs: bool = False,
     ) -> SpecialistWWCJudgmentAtomPolicy:
         program_cell_id = str(cell_input.get("program_cell_id") or "")
         if (
@@ -4565,6 +4581,7 @@ class SpecialistWWCJudgmentAtomPolicy:
             }
         )
         raw_rows: list[tuple[str, str, str, str, str]] = []
+        omitted_incomplete_authority_ref_count = 0
         for authority_kind, surface_key in cls._authority_kinds:
             refs = _exact_nonblank_strings(authority.get(surface_key))
             for authority_ref in refs:
@@ -4574,6 +4591,9 @@ class SpecialistWWCJudgmentAtomPolicy:
                     authority_ref=authority_ref,
                 )
                 if row is None:
+                    if omit_incomplete_authority_refs:
+                        omitted_incomplete_authority_ref_count += 1
+                        continue
                     raise ValueError(
                         "WWC_judgment_atom_local_authority_metadata_missing"
                     )
@@ -4581,6 +4601,9 @@ class SpecialistWWCJudgmentAtomPolicy:
                     authority_kind, row
                 )
                 if not entity.strip() or not dataset.strip():
+                    if omit_incomplete_authority_refs:
+                        omitted_incomplete_authority_ref_count += 1
+                        continue
                     raise ValueError(
                         "WWC_judgment_atom_local_authority_metadata_missing"
                     )
@@ -4643,6 +4666,9 @@ class SpecialistWWCJudgmentAtomPolicy:
             authority_aliases=authority_aliases,
             temporal_date_aliases=temporal_date_aliases,
             contract_ref=contract_ref,
+            omitted_incomplete_authority_ref_count=(
+                omitted_incomplete_authority_ref_count
+            ),
         )
 
     @property

@@ -1,0 +1,109 @@
+{
+  "schema_version": "fin_ia_runtime_contract_family_source_v1_0",
+  "contract_id": "fin_0_1_2.common_runtime.judgment_atom_family",
+  "contract_version": "v1.3.0",
+  "status": "S3_T02_production_Claim_WWC_with_local_deterministic_Fact_active",
+  "truth_ownership": {
+    "material_number": "local_deterministic",
+    "reporting_date": "local_deterministic",
+    "case_identity": "local_deterministic",
+    "runtime_id": "local_deterministic",
+    "lineage": "local_deterministic"
+  },
+  "provider_authority": {
+    "surface": "request_local_aliases_enums_and_bounded_judgment_atoms_only",
+    "allowed_value_kinds": [
+      "request_local_alias",
+      "closed_enum",
+      "bounded_judgment_atom"
+    ],
+    "forbidden_direct_fields": [
+      "material_number",
+      "reporting_date",
+      "case_identity",
+      "runtime_id",
+      "lineage"
+    ],
+    "free_narrative_is_authoritative": false
+  },
+  "compiled_consumers": [
+    {"consumer_id": "prompt", "contract_id": "fin_0_1_2.common_runtime.judgment_atom_family", "contract_version": "v1.3.0", "implementation_owner": "runtime_contract_compiler"},
+    {"consumer_id": "server_schema", "contract_id": "fin_0_1_2.common_runtime.judgment_atom_family", "contract_version": "v1.3.0", "implementation_owner": "runtime_contract_compiler"},
+    {"consumer_id": "local_validator", "contract_id": "fin_0_1_2.common_runtime.judgment_atom_family", "contract_version": "v1.3.0", "implementation_owner": "runtime_contract_compiler"},
+    {"consumer_id": "fake_provider", "contract_id": "fin_0_1_2.common_runtime.judgment_atom_family", "contract_version": "v1.3.0", "implementation_owner": "runtime_contract_compiler"},
+    {"consumer_id": "selector", "contract_id": "fin_0_1_2.common_runtime.judgment_atom_family", "contract_version": "v1.3.0", "implementation_owner": "runtime_contract_compiler"},
+    {"consumer_id": "renderer", "contract_id": "fin_0_1_2.common_runtime.judgment_atom_family", "contract_version": "v1.3.0", "implementation_owner": "runtime_contract_compiler"},
+    {"consumer_id": "capacity", "contract_id": "fin_0_1_2.common_runtime.judgment_atom_family", "contract_version": "v1.3.0", "implementation_owner": "runtime_contract_compiler"},
+    {"consumer_id": "budget", "contract_id": "fin_0_1_2.common_runtime.judgment_atom_family", "contract_version": "v1.3.0", "implementation_owner": "runtime_contract_compiler"},
+    {"consumer_id": "typed_failure", "contract_id": "fin_0_1_2.common_runtime.judgment_atom_family", "contract_version": "v1.3.0", "implementation_owner": "runtime_contract_compiler"},
+    {"consumer_id": "capture_index", "contract_id": "fin_0_1_2.common_runtime.judgment_atom_family", "contract_version": "v1.3.0", "implementation_owner": "runtime_contract_compiler"}
+  ],
+  "budget_contract": {
+    "provider_candidate_maximum": 6,
+    "selected_atom_maximum": 3,
+    "provider_output_max_utf8_bytes": 4800,
+    "local_rendered_max_utf8_bytes": 16384
+  },
+  "failure_and_capture": {
+    "required_fields": [
+      "phase",
+      "code",
+      "request_capture_ref",
+      "assistant_output_capture_ref",
+      "terminal_result_ref",
+      "stdout_ref",
+      "stderr_ref"
+    ],
+    "failed_output_promotable": false,
+    "capture_before_validation_terminalization": true
+  },
+  "case_invariance": {
+    "required_cases": ["DELL", "MU", "NVDA"],
+    "cross_case_alias_rejected": true,
+    "permutation_stable_selection": true,
+    "duplicate_alias_rejected": true
+  },
+  "production_topology": {
+    "logical_node_count": 6,
+    "logical_interaction_count": 12,
+    "local_fact_interaction_count": 3,
+    "provider_interaction_count": 9,
+    "provider_capture_count": 9,
+    "business_artifact_count": 9,
+    "fact_execution_owner": "local_deterministic",
+    "claim_and_what_would_change_execution_owner": "bounded_provider_then_local_deterministic_assembly",
+    "lead_writer_verifier_material_truth_authority": false
+  },
+  "paired_canary_extension": {
+    "family_segments": {
+      "specialist_fact_atoms": "facts_explanation_and_terminal",
+      "claim_candidate_atoms": "owner_grade_claim_cards",
+      "what_would_change_atoms": "actionable_what_would_change_tasks"
+    },
+    "provider_output_local_identity_fields_forbidden": [
+      "program_cell_id",
+      "case_ticker",
+      "case_id",
+      "case_version",
+      "research_run_id",
+      "attempt_id"
+    ],
+    "local_identity_injection_after_provider_validation": [
+      "program_cell_id"
+    ],
+    "family_outputs_are_isolated": true,
+    "semantic_failure_collects_remaining_independent_calls": true,
+    "transport_auth_security_or_capture_failure_stops_remaining_calls": true,
+    "capture_before_local_validation": true
+  },
+  "wwc_contract_extension": {
+    "rule_id": "review_cadence_to_review_date_alias:v1",
+    "rule_is_model_visible_and_local_validator_bound": true,
+    "bound_date_requires_allowed_non_NONE_date_alias": true,
+    "all_other_cadences_require_NONE": true,
+    "silent_alias_drop_or_rewrite": false,
+    "final_claim_binding_source": "each_selected_normalized_atom.claim_alias",
+    "final_authority_binding_source": "each_selected_normalized_atom.authority_aliases",
+    "loop_terminal_or_outer_claim_or_authority_state_forbidden": true
+  }
+}

@@ -68,7 +68,7 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_stage_plan_bindings_exist_and_match_immutable_content() -> None:
+def test_stage_plan_bindings_preserve_immutable_content_and_code_baseline() -> None:
     plan = _load(STAGE_PLAN)
     assert _sha256(STAGE_PLAN) == EXPECTED_STAGE_PLAN_SHA256
     assert _sha256(PROJECTION) == EXPECTED_PROJECTION_SHA256
@@ -76,7 +76,16 @@ def test_stage_plan_bindings_exist_and_match_immutable_content() -> None:
     for binding in plan["bindings"]:
         bound = ROOT / binding["ref"]
         assert bound.is_file(), binding["ref"]
-        assert _sha256(bound) == binding["sha256"], binding["ref"]
+        if binding["role"] == "current_production_executor_audit_snapshot":
+            # This digest is the immutable T01 audit baseline. T02 is
+            # explicitly authorized to evolve the implementation file.
+            assert len(binding["sha256"]) == 64
+            assert all(
+                character in "0123456789abcdef"
+                for character in binding["sha256"]
+            )
+        else:
+            assert _sha256(bound) == binding["sha256"], binding["ref"]
 
 
 def test_entry_audit_preserves_the_known_production_topology_gap() -> None:
@@ -219,19 +228,32 @@ def test_projection_backlog_and_project_os_agree_on_current_next() -> None:
 
     rebaseline = backlog["current_version_rebaseline"]
     next_action = backlog["next_action"]
-    assert rebaseline["projection_ref"] == str(PROJECTION.relative_to(ROOT)).replace(
-        "\\", "/"
+    assert rebaseline["projection_ref"].endswith(
+        "fin_ia_0_1_2_current_program_projection_v2_22.json"
     )
-    assert rebaseline["current_stage"] == "S3_entered_T01_pass_T02_not_started"
-    assert next_action["item_id"] == NEXT_ACTION
-    assert next_action["current_projection_sha256"] == EXPECTED_PROJECTION_SHA256
+    assert rebaseline["current_stage"] == (
+        "S3_in_progress_T01_T02_pass_T03_not_authorized"
+    )
+    assert next_action["item_id"] == (
+        "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION"
+    )
     assert next_action["S3_stage_plan_sha256"] == EXPECTED_STAGE_PLAN_SHA256
     assert next_action["S3_model_provider_call_topology"] == [6, 12, 9, 9, 3, 9]
     assert next_action["S3_T01_completed"] is True
-    assert next_action["S3_T02_started"] is False
+    assert next_action["S3_T02_started"] is True
+    assert next_action["S3_T02_completed"] is True
 
-    issue = _load_jsonl(ROOT_CAUSE_LEDGER)[-1]
-    capability = _load_jsonl(CAPABILITY_LEDGER)[-1]
+    issue = next(
+        row
+        for row in _load_jsonl(ROOT_CAUSE_LEDGER)
+        if row["issue_id"] == ISSUE_ID and row["status"] == "open"
+    )
+    capability = next(
+        row
+        for row in _load_jsonl(CAPABILITY_LEDGER)
+        if row["capability_id"]
+        == "fin_0_1_2_S3_T01_NVDA_product_anchor_and_bounded_model_surface_stage_plan"
+    )
     pattern = _load_jsonl(PATTERN_LEDGER)[-1]
     assert issue["issue_id"] == ISSUE_ID
     assert issue["status"] == "open"

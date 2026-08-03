@@ -1,0 +1,95 @@
+{
+  "schema_version": "fin_ia_s4_fact_candidate_pool_profiles_v1_0",
+  "contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+  "profile_set_id": "FIN-0.1.2-S3-NVDA-EXACT-PRODUCT-FACT-CANDIDATE-PROFILES-R1",
+  "profile_set_digest": "bf61590211b7c013eba54be62619b3749929bd2d5d46dda220b3aa2a9ec93265",
+  "profiles": [
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v4",
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "coverage_slots": [
+        {
+          "coverage_slot_id": "bounded_demand_authority",
+          "coverage_slot_priority": 10,
+          "eligible_support_kinds": ["Evidence", "Numeric"],
+          "eligible_semantic_roles": [
+            "issuer_demand_or_order_signal",
+            "issuer_revenue_conversion",
+            "issuer_counterevidence",
+            "ai_server_orders",
+            "ai_server_backlog",
+            "ai_server_revenue",
+            "ai_server_shipments",
+            "revenue"
+          ],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 0,
+          "maximum_selected_from_slot": 6
+        }
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v4",
+      "program_cell_id": "value_and_profit_capture",
+      "coverage_slots": [
+        {
+          "coverage_slot_id": "bounded_financial_authority",
+          "coverage_slot_priority": 10,
+          "eligible_support_kinds": ["Evidence", "Numeric"],
+          "eligible_semantic_roles": [
+            "issuer_segment_or_product_disclosure",
+            "issuer_financial_statement",
+            "company_revenue",
+            "revenue",
+            "gross_profit",
+            "gross_margin",
+            "company_operating_income",
+            "operating_income",
+            "operating_margin",
+            "operating_cash_flow",
+            "free_cash_flow",
+            "capital_expenditure_and_capitalized_software"
+          ],
+          "authority_preference": ["Numeric", "Evidence"],
+          "scope_preference": ["company_total", "segment", "issuer_exact", "product", "unknown"],
+          "minimum_coverage": 1,
+          "maximum_selected_from_slot": 6
+        }
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v4",
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "coverage_slots": [
+        {
+          "coverage_slot_id": "bounded_counterevidence_authority",
+          "coverage_slot_priority": 10,
+          "eligible_support_kinds": ["Evidence", "Numeric"],
+          "eligible_semantic_roles": [
+            "issuer_counterevidence",
+            "issuer_financial_statement",
+            "revenue",
+            "gross_margin",
+            "operating_margin",
+            "operating_income",
+            "inventory",
+            "operating_cash_flow",
+            "free_cash_flow",
+            "capital_expenditure_and_capitalized_software"
+          ],
+          "authority_preference": ["Evidence", "Numeric"],
+          "scope_preference": ["issuer_exact", "company_total", "segment", "product", "unknown"],
+          "minimum_coverage": 0,
+          "maximum_selected_from_slot": 6
+        }
+      ],
+      "audit_only_rules": []
+    }
+  ]
+}

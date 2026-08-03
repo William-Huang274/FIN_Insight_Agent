@@ -1,0 +1,128 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t02_nvda_bounded_surface_production_runtime_integration_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S3-T02-NVDA-BOUNDED-SURFACE-PRODUCTION-RUNTIME-INTEGRATION-R1",
+  "recorded_at": "2026-08-03T18:30:00+08:00",
+  "status": "pass_S3_T02_engineering_and_zero_call_product_readiness_T03_separate_authority_required",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "S3_T02_zero_call_production_runtime_integration_only",
+    "implementation_bundles_consumed": 1,
+    "implementation_bundles_maximum": 1,
+    "credential_read_or_probe_authorized": false,
+    "model_provider_or_execution_network_authorized": false,
+    "business_run_artifact_or_case_head_write_authorized": false,
+    "S3_T03_exact_live_authorized": false
+  },
+  "parent_binding": {
+    "stage_plan_ref": "configs/releases/fin_ia_0_1_2_s3_nvda_product_anchor_and_bounded_model_surface_stage_plan_v1_0.json",
+    "stage_plan_sha256": "5e4a5bc8abd4b1b0c39c435e1aa65b23b34c5d6b1ef1c56cd0f9a6fa3e0131dd",
+    "historical_S2_source_ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_2.json",
+    "historical_S2_binding_ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_2.json",
+    "historical_S2_v1_2_rewritten": false,
+    "historical_S1_6_12_12_9_rewritten": false
+  },
+  "implementation_bindings": [
+    {"ref": "apps/workbench/backend/application/bounded_agent_contract_policies.py", "sha256": "415acfb078b0e27df8d812e48a51359fd8de1aca258affdaa6fd8a41c482c749", "bytes": 189766, "role": "v9_local_Fact_transport_and_S3_only_incomplete_monitoring_authority_filter"},
+    {"ref": "apps/workbench/backend/application/bounded_agent_executor.py", "sha256": "f52d712878b97fdb2e5853c022f059e22d8e48f34fb7bb4add3b56671f313b6c", "bytes": 670540, "role": "atomic_S3_production_admission_3_local_Fact_9_Provider_execution_capture_and_artifact_topology"},
+    {"ref": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py", "sha256": "3ad18fbf721bf22de2857b7a26190ed4c1eb530e957d06559ecf122bddf6a9fe", "bytes": 74147, "role": "local_Fact_selection_rendering_receipt_and_S3_Claim_WWC_compilation"},
+    {"ref": "apps/workbench/backend/application/fact_candidate_pool_planner.py", "sha256": "e900014f1831ec58d65a1b0240b8609187911440656a06ff747b18c193bc2c86", "bytes": 23655, "role": "versioned_NVDA_profile_and_unmapped_audit_only_boundary"},
+    {"ref": "apps/workbench/backend/application/fin_0_1_2_s3_product_input.py", "sha256": "09d95a0aa6b8306f41f25150b894ee38cc62c4caac03642b8a9b0402879a5ba2", "bytes": 4497, "role": "registered_exact_input_manifest_loader_and_digest_match_gate"},
+    {"ref": "apps/workbench/backend/application/fin_0_1_2_s3_runtime_contract_binding.py", "sha256": "feea724d30b314ec13dadbb5ab29ab56c7e531e1430e16f65ad1d8f59a6bff17", "bytes": 4647, "role": "isolated_S3_v1_3_runtime_family_binding"},
+    {"ref": "configs/releases/fin_ia_0_1_2_s3_nvda_exact_product_input_v1_0.json", "sha256": "1f5bf2ba07a917f13f123c72e27e644af43c47ecf68ae34d2983fba7c724991b", "bytes": 2902, "role": "tracked_current_NVDA_exact_input_digest_and_nonpromotion_boundary"},
+    {"ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_3.json", "sha256": "d4edc514ba95c09810b75fa81b4caadf050aca2a91e77c93d472c588d82dd152", "bytes": 5227, "role": "S3_production_truth_ownership_and_6_12_3_9_9_topology_source"},
+    {"ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_3.json", "sha256": "1658af8d96d9d82384bd689e56b9de07528faac063e3d55ae0ca6c5b56c0e30a", "bytes": 2409, "role": "S3_ten_consumer_binding_manifest"},
+    {"ref": "configs/runtime/fin_ia_0_1_2_s3_nvda_fact_candidate_pool_profiles_v1_0.json", "sha256": "717af44f48f63358da6bbeae7c0a5c2c5eae5530766e71e66800aeb80ce4f7d0", "bytes": 3662, "role": "current_exact_NVDA_three_cell_candidate_semantics"},
+    {"ref": "configs/runtime/fin_ia_0_1_2_s3_runtime_resource_registry_v1_0.json", "sha256": "c4dd3f6bc2a53d256933c070f285bca1982b18a3a62b5f1c89171e7014023d4f", "bytes": 3657, "role": "four_resource_content_addressed_runtime_authority"},
+    {"ref": "tests/contract/test_fin_0_1_2_s3_t02_production_runtime_integration.py", "sha256": "f756e5d61e21d44bda9f06dda8d6072ea098aa781dc1c76f50a6760b558fe0ca", "bytes": 11521, "role": "current_exact_full_fake_input_binding_mutation_and_failure_retention_proof"}
+  ],
+  "current_exact_input": {
+    "case": "NVDA",
+    "case_id": "case_e0b4021838a913c4ad21c328",
+    "case_version": 1,
+    "as_of": "2026-07-21T00:00:00Z",
+    "input_head_digest": "79602b8e8b4855df881c6bd1f550de2eecd18674cc2626ac7decadd5e3420424",
+    "source_digest": "49e4afabde167dbd9b3558db574aa56461f993294aa3518eb8c448d80c4ff860",
+    "input_digest": "906111ddd482cf15dc4d03c7a3769a59ec8ade80a2c9f867561b3bd128ddc953",
+    "tracked_input_is_execution_admission": false,
+    "historical_artifact_promotion": false
+  },
+  "production_contract": {
+    "binding_ref": "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1.3",
+    "compiled_contract_ref": "fin_0_1_2.common_runtime.judgment_atom_family:v1.3.0",
+    "research_profile_ref": "fin01.s3.research_profile.nvda_three_cell:v4",
+    "specialist_transport_ref": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v9",
+    "local_Fact_interaction_ref": "fin_0_1_2.s3.local_deterministic_fact_interaction:v1",
+    "provider": "deepseek",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "retained_provider_families": ["claim_candidate_atoms", "what_would_change_atoms"],
+    "local_deterministic_families": ["specialist_fact_atoms"],
+    "lead_writer_verifier_L1_truth_authority": false
+  },
+  "verified_topology": {
+    "logical_node_count": 6,
+    "logical_interaction_count": 12,
+    "local_fact_interaction_count": 3,
+    "provider_interaction_count": 9,
+    "provider_capture_count": 9,
+    "business_artifact_count": 9,
+    "maximum_total_cost_usd": 0.06,
+    "maximum_input_tokens": 60000,
+    "maximum_output_tokens": 10000,
+    "maximum_elapsed_seconds": 900,
+    "retry_fallback_provider_hopping_prompt_only_retry": [0, 0, 0, 0]
+  },
+  "verification": {
+    "python_compile": "pass",
+    "S3_focused_tests": {"passed": 8, "failed": 0},
+    "applicable_S1_S2_regression": {"passed": 80, "failed": 0},
+    "historical_S4_functional_and_governance_regression": {"passed": 43, "failed": 0},
+    "fresh_python_process": "pass_no_real_credential_or_network",
+    "covered_mutations": [
+      "runtime_binding_manifest_digest_drift",
+      "tracked_exact_input_query_drift",
+      "Provider_authored_numeric_token_in_Lead_narrative",
+      "historical_global_next_action_and_code_snapshot_not_misused_as_eternal_current_state"
+    ],
+    "failure_retention": {
+      "failure_phase": "research_lead",
+      "completed_specialist_nodes": 3,
+      "preserved_local_Fact_receipts": 3,
+      "preserved_provider_captures": 7,
+      "typed_terminal_result": true,
+      "failed_output_promotable": false
+    },
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "live_case_head_writes": 0,
+    "ruff": "not_installed_in_current_environment"
+  },
+  "root_cause_disposition": {
+    "RC_P36_105": "closed_by_versioned_S3_production_binding_tracked_exact_input_local_Fact_v9_and_current_full_fake_proof",
+    "model_or_provider_fault_established": false
+  },
+  "stage_acceptance": {
+    "S3_T01": "pass",
+    "S3_T02": "engineering_and_zero_call_product_readiness_pass",
+    "S3_T03": "not_authorized_separate_exact_live_authority_decision_next",
+    "S3_T04": "blocked_by_current_exact_product",
+    "current_NVDA_R2": false,
+    "S3": "in_progress",
+    "S4_to_S5": "not_started",
+    "release_qualified": false
+  },
+  "prospective_admission": {
+    "compiled_in_memory_only": true,
+    "execution_enabled": false,
+    "provider_calls_authorized": 0,
+    "persisted_or_issued": false,
+    "consumed": false
+  },
+  "known_boundary": "T02 proves current production integration, deterministic L1 ownership, exact input binding, failure retention and zero-call full-chain materialization only. It is not a natural DeepSeek run, product quality result, current NVDA R2, paired comparison, Owner acceptance, release or production readiness.",
+  "next_action": "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION"
+}

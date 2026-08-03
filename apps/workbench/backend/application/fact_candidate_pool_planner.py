@@ -20,6 +20,10 @@ FACT_CANDIDATE_PROFILE_SET_RELATIVE_PATH = (
     "fin_ia_0_1_s4_fact_candidate_pool_profiles_v1_0.json"
 )
 FACT_CANDIDATE_PROFILE_SET_RESOURCE_ID = "s4.fact_candidate_pool_profiles"
+FIN_0_1_2_S3_FACT_CANDIDATE_PROFILE_SET_RELATIVE_PATH = (
+    "configs/runtime/"
+    "fin_ia_0_1_2_s3_nvda_fact_candidate_pool_profiles_v1_0.json"
+)
 FACT_CANDIDATE_POOL_MAXIMUM = 6
 
 
@@ -163,13 +167,24 @@ class FactCandidatePoolPlanner:
         program_cell_id: str,
         profile_payload: Mapping[str, Any],
         profile_set_digest: str,
+        allow_unmapped_audit_only: bool = False,
     ) -> None:
         self.research_profile_ref = str(research_profile_ref).strip()
         self.program_cell_id = str(program_cell_id).strip()
         self.profile_payload = dict(profile_payload)
         self.profile_set_digest = str(profile_set_digest).strip()
+        self.allow_unmapped_audit_only = bool(
+            allow_unmapped_audit_only
+        )
         self._validate_profile()
-        self.profile_digest = canonical_digest(self.profile_payload)
+        self.profile_digest = canonical_digest(
+            {
+                "profile_payload": self.profile_payload,
+                "allow_unmapped_audit_only": True,
+            }
+            if self.allow_unmapped_audit_only
+            else self.profile_payload
+        )
 
     @classmethod
     def from_registry(
@@ -178,6 +193,7 @@ class FactCandidatePoolPlanner:
         research_profile_ref: str,
         program_cell_id: str,
         registry_path: str | Path | None = None,
+        allow_unmapped_audit_only: bool = False,
     ) -> FactCandidatePoolPlanner:
         if registry_path is not None:
             profile_set = _load_profile_set(str(Path(registry_path).resolve()))
@@ -211,6 +227,7 @@ class FactCandidatePoolPlanner:
             program_cell_id=program_cell_id,
             profile_payload=matches[0],
             profile_set_digest=str(profile_set["profile_set_digest"]),
+            allow_unmapped_audit_only=allow_unmapped_audit_only,
         )
 
     def _fail(
@@ -432,6 +449,11 @@ class FactCandidatePoolPlanner:
                 and str(rule.get("audit_only_reason") or "").strip()
             ]
             if len(audit_matches) != 1:
+                if self.allow_unmapped_audit_only and not audit_matches:
+                    audit_only.append(
+                        (row, "production_profile_unmapped_audit_only")
+                    )
+                    continue
                 self._fail(
                     "s4_fact_candidate_profile_unmapped_semantic_role",
                     eligible_support_count=len(rows),

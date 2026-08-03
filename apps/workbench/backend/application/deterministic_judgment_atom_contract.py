@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 import json
+from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from sec_agent.canonical_runtime.models import canonical_digest
@@ -10,6 +11,7 @@ from .bounded_agent_contract_policies import (
     CaseNumericAuthorityPolicy,
     ClaimFactAlias,
     ClaimFactLinkPolicy,
+    S3_NVDA_THREE_CELL_RESEARCH_PROFILE_V4_REF,
     S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REF,
     S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS,
     S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_V2_REF,
@@ -18,6 +20,7 @@ from .bounded_agent_contract_policies import (
 )
 from .fact_candidate_pool_planner import (
     FACT_CANDIDATE_POOL_MAXIMUM,
+    FIN_0_1_2_S3_FACT_CANDIDATE_PROFILE_SET_RELATIVE_PATH,
     FactCandidatePoolPlan,
     FactCandidatePoolPlanner,
 )
@@ -31,12 +34,20 @@ from .fin_0_1_2_s2_runtime_contract_binding import (
     FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
     load_fin_0_1_2_s2_runtime_contract_binding,
 )
+from .fin_0_1_2_s3_runtime_contract_binding import (
+    FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+    load_fin_0_1_2_s3_runtime_contract_binding,
+)
 
 
 DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS = (
     *S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS,
     FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
     FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+    FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+)
+S3_LOCAL_DETERMINISTIC_FACT_INTERACTION_CONTRACT_REF = (
+    "fin_0_1_2.s3.local_deterministic_fact_interaction:v1"
 )
 
 
@@ -191,12 +202,18 @@ class DeterministicJudgmentAtomCompiledContract:
         if contract_ref in {
             FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
             FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+            FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
         }:
             binding = (
-                load_fin_0_1_2_s2_runtime_contract_binding()
+                load_fin_0_1_2_s3_runtime_contract_binding()
                 if contract_ref
-                == FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
-                else load_fin_0_1_2_runtime_contract_binding()
+                == FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+                else (
+                    load_fin_0_1_2_s2_runtime_contract_binding()
+                    if contract_ref
+                    == FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+                    else load_fin_0_1_2_runtime_contract_binding()
+                )
             )
             binding.assert_admission_binding(
                 binding_ref=runtime_contract_family_binding_ref,
@@ -256,14 +273,17 @@ class DeterministicJudgmentAtomCompiledContract:
                 S4_DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_V2_REF,
                 FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
                 FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+                FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
             }
         )
 
     @property
     def wwc_model_visible_binding_v2(self) -> bool:
         return (
-            self.contract_ref
-            == FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+            self.contract_ref in {
+                FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+                FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+            }
         )
 
     def _consumer_binding(
@@ -477,9 +497,22 @@ class DeterministicJudgmentAtomCompiledContract:
         if not self.research_profile_ref:
             return None
         if self._fact_candidate_pool_plan_cache is None:
+            use_s3_nvda_registry = (
+                self.contract_ref
+                == FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+                and self.research_profile_ref
+                == S3_NVDA_THREE_CELL_RESEARCH_PROFILE_V4_REF
+            )
             planner = FactCandidatePoolPlanner.from_registry(
                 research_profile_ref=self.research_profile_ref,
                 program_cell_id=self.program_cell_id,
+                registry_path=(
+                    Path(__file__).resolve().parents[4]
+                    / FIN_0_1_2_S3_FACT_CANDIDATE_PROFILE_SET_RELATIVE_PATH
+                    if use_s3_nvda_registry
+                    else None
+                ),
+                allow_unmapped_audit_only=use_s3_nvda_registry,
             )
             self._fact_candidate_pool_plan_cache = planner.plan(
                 self._fact_catalog()
@@ -531,6 +564,10 @@ class DeterministicJudgmentAtomCompiledContract:
             claims=list(claims.get("judgment_layer") or ()),
             as_of=self.as_of,
             contract_ref=S4_SPECIALIST_WWC_TEMPORAL_AUTHORITY_POLICY_REF,
+            omit_incomplete_authority_refs=(
+                self.contract_ref
+                == FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+            ),
         )
 
     def model_visible_contract(self, segment_id: str) -> dict[str, Any]:
@@ -586,7 +623,10 @@ class DeterministicJudgmentAtomCompiledContract:
                                     }
                                 }
                                 if self.contract_ref
-                                == FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+                                in {
+                                    FIN_0_1_2_S2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+                                    FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+                                }
                                 else {}
                             ),
                         }
@@ -686,6 +726,9 @@ class DeterministicJudgmentAtomCompiledContract:
             if self.wwc_model_visible_binding_v2:
                 contract["review_date_alias_binding_rule"] = (
                     self.review_date_alias_binding_contract()
+                )
+                contract["omitted_incomplete_authority_ref_count"] = (
+                    policy.omitted_incomplete_authority_ref_count
                 )
         contract["contract_digest"] = canonical_digest(contract)
         return contract
@@ -919,7 +962,13 @@ class DeterministicJudgmentAtomCompiledContract:
         family = self.family_id(segment_id)
         local_text: list[str] = []
         if family == self.family_ids[0]:
-            for row in self._provider_fact_catalog():
+            raw_fact_catalog = self._fact_catalog()
+            fact_catalog = (
+                self._provider_fact_catalog()
+                if raw_fact_catalog
+                else raw_fact_catalog
+            )
+            for row in fact_catalog:
                 local_text.extend([row["statement"], row["boundary"]])
         elif family == self.family_ids[1]:
             local_text.extend(
@@ -1488,6 +1537,135 @@ class DeterministicJudgmentAtomCompiledContract:
             return self._assemble_claims(output)
         return self._assemble_wwc(output)
 
+    def local_fact_interaction(
+        self,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        """Select and render Fact atoms without granting Provider authority."""
+
+        if (
+            self.contract_ref
+            != FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+        ):
+            raise ValueError(
+                "s3_local_fact_interaction_requires_production_contract"
+            )
+        for consumer_id in (
+            "local_validator",
+            "selector",
+            "renderer",
+            "capacity",
+            "budget",
+        ):
+            self._consumer_binding(consumer_id)
+        catalog = self._fact_catalog()
+        plan = self.fact_candidate_pool_plan() if catalog else None
+        selected_rows = (
+            plan.candidate_rows[: self.fact_selected_maximum]
+            if plan is not None
+            else ()
+        )
+        if selected_rows:
+            local_atoms = {
+                "program_cell_id": self.program_cell_id,
+                "fact_atoms": [
+                    {
+                        "support_alias": row["alias"],
+                        "causal_relation": "supports",
+                        "materiality": "high",
+                        "confidence": "high",
+                        "priority": (
+                            "critical" if ordinal == 0 else "high"
+                        ),
+                    }
+                    for ordinal, row in enumerate(selected_rows)
+                ],
+                "terminal_class": "supported",
+            }
+            assembled = self._assemble_facts(local_atoms)
+        else:
+            assembled = {
+                "program_cell_id": self.program_cell_id,
+                "fact_layer": [],
+                "explanation_layer": [
+                    "当前单元没有绑定的可晋升事实，保留 cannot-infer 边界。"
+                ],
+                "remaining_gaps": [
+                    "需要由既定权威来源补充可验证证据或数值后再判断。"
+                ],
+                "terminal_class": "insufficient",
+            }
+        self.assert_rendered_capacity(
+            "facts_explanation_and_terminal",
+            assembled,
+            post_local_expansion_limit_utf8_bytes=(
+                self.local_rendered_max_utf8_bytes
+            ),
+        )
+        binding = self.runtime_contract_binding
+        if binding is None:
+            raise ValueError("s3_local_fact_runtime_binding_required")
+        plan_receipt = plan.safe_receipt() if plan is not None else None
+        empty_pool_digest = canonical_digest(
+            {
+                "research_profile_ref": self.research_profile_ref,
+                "program_cell_id": self.program_cell_id,
+                "candidate_rows": [],
+            }
+        )
+        receipt = {
+            "contract_ref": (
+                S3_LOCAL_DETERMINISTIC_FACT_INTERACTION_CONTRACT_REF
+            ),
+            "runtime_contract_family_binding_ref": binding.binding_ref,
+            "runtime_contract_family_source_digest": binding.source_digest,
+            "compiled_contract_ref": self.contract_ref,
+            "research_profile_ref": self.research_profile_ref,
+            "program_cell_id": self.program_cell_id,
+            "candidate_pool_contract_ref": (
+                plan_receipt["contract_ref"]
+                if plan_receipt is not None
+                else "fin01.s4.fact_candidate_pool_plan:v1"
+            ),
+            "candidate_profile_digest": (
+                plan_receipt["profile_digest"]
+                if plan_receipt is not None
+                else empty_pool_digest
+            ),
+            "candidate_pool_digest": (
+                plan_receipt["candidate_pool_digest"]
+                if plan_receipt is not None
+                else canonical_digest([])
+            ),
+            "eligible_support_count": (
+                plan_receipt["eligible_support_count"]
+                if plan_receipt is not None
+                else 0
+            ),
+            "visible_support_count": (
+                plan_receipt["candidate_pool_count"]
+                if plan_receipt is not None
+                else 0
+            ),
+            "selected_support_count": len(selected_rows),
+            "empty_authority_terminal": not selected_rows,
+            "selected_alias_digest": canonical_digest(
+                [row["alias"] for row in selected_rows]
+            ),
+            "assembled_output_digest": canonical_digest(assembled),
+            "model_calls": 0,
+            "provider_calls": 0,
+            "network_calls": 0,
+            "provider_capture_created": False,
+            "receipt_is_business_artifact": False,
+            "assembled_output_may_enter_successful_run": True,
+            "failed_output_promotable": False,
+            "raw_fact_text_persisted_in_receipt": False,
+            "raw_numeric_value_persisted_in_receipt": False,
+            "private_reasoning_persisted": False,
+        }
+        receipt["receipt_digest"] = canonical_digest(receipt)
+        return assembled, receipt
+
     def assert_rendered_capacity(
         self,
         segment_id: str,
@@ -1557,9 +1735,21 @@ class DeterministicJudgmentAtomCompiledContract:
             }
         if family == self.family_ids[1]:
             aliases = self._claim_policy().alias_rows
-            if not aliases:
-                raise ValueError("s4_compiled_atom_fake_catalog_empty")
             if self.claim_epistemic_support_role_v2:
+                if not aliases:
+                    return {
+                        "program_cell_id": self.program_cell_id,
+                        "claim_candidate_atoms": [
+                            {
+                                "support_fact_aliases": [],
+                                "claim_kind": "insufficient_evidence",
+                                "direction": "unknown",
+                                "materiality": "high",
+                                "confidence": "high",
+                                "priority": "high",
+                            }
+                        ],
+                    }
                 return {
                     "program_cell_id": self.program_cell_id,
                     "claim_candidate_atoms": [
@@ -1581,6 +1771,8 @@ class DeterministicJudgmentAtomCompiledContract:
                         },
                     ],
                 }
+            if not aliases:
+                raise ValueError("s4_compiled_atom_fake_catalog_empty")
             return {
                 "program_cell_id": self.program_cell_id,
                 "claim_candidate_atoms": [

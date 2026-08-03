@@ -38,6 +38,7 @@ from .bounded_agent_contract_policies import (
     S3_CLAIM_FACT_LINK_POLICY_REF,
     S3_NVDA_THREE_CELL_RESEARCH_PROFILE,
     S3_NVDA_THREE_CELL_RESEARCH_PROFILE_REF,
+    S3_NVDA_THREE_CELL_RESEARCH_PROFILE_V4_REF,
     S3_RESEARCH_LEAD_CONFLICT_FACT_PRESENCE_LOCAL_MATERIALIZATION_POLICY,
     S3_RESEARCH_LEAD_GAP_ATOM_PROJECTION_POLICY,
     S3_SPECIALIST_WWC_JUDGMENT_ATOM_POLICY_REF,
@@ -75,6 +76,7 @@ from .bounded_agent_contract_policies import (
 )
 from .deterministic_judgment_atom_contract import (
     DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS,
+    S3_LOCAL_DETERMINISTIC_FACT_INTERACTION_CONTRACT_REF,
     DeterministicJudgmentAtomCompiledContract,
 )
 from .fact_candidate_pool_planner import FactCandidatePoolPlannerError
@@ -83,6 +85,11 @@ from .fin_0_1_2_runtime_contract_binding import (
     FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
     Fin012RuntimeContractBindingError,
     load_fin_0_1_2_runtime_contract_binding,
+)
+from .fin_0_1_2_s3_runtime_contract_binding import (
+    FIN_0_1_2_S3_COMMON_RUNTIME_BINDING_REF,
+    FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+    load_fin_0_1_2_s3_runtime_contract_binding,
 )
 from .bounded_agent_identity_policies import (
     CellScopedResearchIdentityPolicy,
@@ -218,6 +225,9 @@ S3_OWNER_GRADE_SEGMENTED_SPECIALIST_TRANSPORT_V7_REF = (
 S3_OWNER_GRADE_SEGMENTED_SPECIALIST_TRANSPORT_V8_REF = (
     "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v8"
 )
+S3_OWNER_GRADE_SEGMENTED_SPECIALIST_TRANSPORT_V9_REF = (
+    "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v9"
+)
 S3_OWNER_GRADE_SEGMENTED_SPECIALIST_TRANSPORT_REFS = (
     specialist_transport_refs()
 )
@@ -239,6 +249,17 @@ S3_OWNER_GRADE_SEGMENTED_AGGREGATE_OUTPUT_TOKEN_BUDGET = (
         expanded_lead=False
     )
 )
+S3_PRODUCTION_MODEL_SEGMENT_OUTPUT_TOKEN_BUDGETS = {
+    "owner_grade_claim_cards": 900,
+    "actionable_what_would_change_tasks": 1100,
+}
+S3_PRODUCTION_STAGE_OUTPUT_TOKEN_BUDGETS = {
+    "specialist": 2000,
+    "lead": 1800,
+    "writer": 1400,
+    "verifier": 800,
+}
+S3_PRODUCTION_AGGREGATE_OUTPUT_TOKEN_BUDGET = 10000
 S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_V1_REF = (
     "fin01.s3.bounded_agent.research_lead_owner_grade:v1"
 )
@@ -659,6 +680,7 @@ class S3ThreeCellBoundedAgentAdmission(BaseModel):
     judgment_atom_compiled_contract_ref: str | None = None
     runtime_contract_family_binding_ref: str | None = None
     runtime_contract_family_source_digest: str | None = None
+    local_fact_interaction_contract_ref: str | None = None
     case_numeric_authority_policy_ref: str | None = None
     case_delivery_identity_policy_ref: str | None = None
     strict_truth_kernel_policy_ref: str | None = None
@@ -837,6 +859,22 @@ class S3ThreeCellBoundedAgentAdmission(BaseModel):
                     "s4_bounded_admission_compiled_judgment_atom_"
                     "capability_binding_required"
                 )
+        if transport_contract is not None and (
+            transport_contract.local_deterministic_fact_interaction
+        ):
+            if (
+                self.local_fact_interaction_contract_ref
+                != S3_LOCAL_DETERMINISTIC_FACT_INTERACTION_CONTRACT_REF
+                or self.judgment_atom_compiled_contract_ref
+                != FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+            ):
+                raise ValueError(
+                    "s3_bounded_admission_local_fact_production_binding_required"
+                )
+        elif self.local_fact_interaction_contract_ref is not None:
+            raise ValueError(
+                "s3_bounded_admission_local_fact_requires_v9_transport"
+            )
         fin012_binding_fields = (
             self.runtime_contract_family_binding_ref,
             self.runtime_contract_family_source_digest,
@@ -847,6 +885,24 @@ class S3ThreeCellBoundedAgentAdmission(BaseModel):
         ):
             try:
                 load_fin_0_1_2_runtime_contract_binding().assert_admission_binding(
+                    binding_ref=self.runtime_contract_family_binding_ref,
+                    source_digest=self.runtime_contract_family_source_digest,
+                )
+            except Fin012RuntimeContractBindingError as exc:
+                raise ValueError(exc.code) from exc
+            if (
+                self.provider_output_capture_policy_ref
+                != S4_PROVIDER_INTERACTION_AUDIT_CAPTURE_POLICY_REF
+            ):
+                raise ValueError(
+                    "fin012_runtime_contract_capture_v2_binding_required"
+                )
+        elif (
+            self.judgment_atom_compiled_contract_ref
+            == FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+        ):
+            try:
+                load_fin_0_1_2_s3_runtime_contract_binding().assert_admission_binding(
                     binding_ref=self.runtime_contract_family_binding_ref,
                     source_digest=self.runtime_contract_family_source_digest,
                 )
@@ -897,6 +953,14 @@ class S3ThreeCellBoundedAgentAdmission(BaseModel):
             self.provider_capability_ref,
             self.non_authoritative_narrative_shell_ref,
         )
+        if (
+            transport_contract is not None
+            and transport_contract.local_deterministic_fact_interaction
+            and any(value is not None for value in strict_truth_refs)
+        ):
+            raise ValueError(
+                "s3_bounded_admission_local_fact_and_strict_kernel_conflict"
+            )
         if any(value is not None for value in strict_truth_refs):
             if strict_truth_refs != (
                 S4_STRICT_TRUTH_KERNEL_POLICY_REF,
@@ -1079,6 +1143,11 @@ class S3ThreeCellBoundedAgentAdmission(BaseModel):
                 )
             if self.transport_ref == S3_THREE_CELL_DEEPSEEK_SEGMENTED_TRANSPORT_REF:
                 expected_calls = 6
+            elif (
+                transport_contract is not None
+                and transport_contract.local_deterministic_fact_interaction
+            ):
+                expected_calls = 9
             else:
                 expected_calls = 12
                 if self.output_contract_ref not in {
@@ -1132,10 +1201,23 @@ class S3ThreeCellBoundedAgentAdmission(BaseModel):
                     + self.verifier_max_output_tokens
                 )
                 if (
-                    observed_budgets != expected_budgets
-                    or aggregate_budget != expected_aggregate_budget
-                    or self.max_total_cost_usd != 0.10
+                    transport_contract is not None
+                    and transport_contract.local_deterministic_fact_interaction
                 ):
+                    budget_invalid = (
+                        observed_budgets
+                        != S3_PRODUCTION_STAGE_OUTPUT_TOKEN_BUDGETS
+                        or aggregate_budget
+                        != S3_PRODUCTION_AGGREGATE_OUTPUT_TOKEN_BUDGET
+                        or self.max_total_cost_usd != 0.06
+                    )
+                else:
+                    budget_invalid = (
+                        observed_budgets != expected_budgets
+                        or aggregate_budget != expected_aggregate_budget
+                        or self.max_total_cost_usd != 0.10
+                    )
+                if budget_invalid:
                     raise ValueError(
                         "s3_bounded_admission_segmented_specialist_exact_output_budget_required"
                     )
@@ -1205,6 +1287,8 @@ class S3ThreeCellBoundedAgentAdmission(BaseModel):
             payload.pop("runtime_contract_family_binding_ref", None)
         if "runtime_contract_family_source_digest" not in self.model_fields_set:
             payload.pop("runtime_contract_family_source_digest", None)
+        if "local_fact_interaction_contract_ref" not in self.model_fields_set:
+            payload.pop("local_fact_interaction_contract_ref", None)
         if "case_numeric_authority_policy_ref" not in self.model_fields_set:
             payload.pop("case_numeric_authority_policy_ref", None)
         if "case_delivery_identity_policy_ref" not in self.model_fields_set:
@@ -1269,6 +1353,98 @@ def compile_fin_0_1_2_common_runtime_admission(
         "provider_output_capture_policy_ref",
         S4_PROVIDER_INTERACTION_AUDIT_CAPTURE_POLICY_REF,
     )
+    compiled = source_admission.model_copy(update=compiled_updates)
+    compiled.assert_profile_admissible()
+    return compiled
+
+
+def compile_fin_0_1_2_s3_production_admission(
+    source_admission: S3ThreeCellBoundedAgentAdmission,
+    *,
+    updates: Mapping[str, Any] | None = None,
+) -> S3ThreeCellBoundedAgentAdmission:
+    """Compile the 3-local-Fact/9-Provider S3 production profile."""
+
+    binding = load_fin_0_1_2_s3_runtime_contract_binding()
+    compiled_updates: dict[str, Any] = {
+        "research_profile_ref": (
+            S3_NVDA_THREE_CELL_RESEARCH_PROFILE_V4_REF
+        ),
+        "output_contract_ref": (
+            S3_THREE_CELL_BOUNDED_AGENT_OUTPUT_CONTRACT_V4_REF
+        ),
+        "transport_ref": (
+            S3_OWNER_GRADE_SEGMENTED_SPECIALIST_TRANSPORT_V9_REF
+        ),
+        "judgment_atom_compiled_contract_ref": (
+            FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+        ),
+        "runtime_contract_family_binding_ref": (
+            FIN_0_1_2_S3_COMMON_RUNTIME_BINDING_REF
+        ),
+        "runtime_contract_family_source_digest": binding.source_digest,
+        "local_fact_interaction_contract_ref": (
+            S3_LOCAL_DETERMINISTIC_FACT_INTERACTION_CONTRACT_REF
+        ),
+        "claim_fact_link_policy_ref": S3_CLAIM_FACT_LINK_POLICY_REF,
+        "task_claim_link_policy_ref": S3_TASK_CLAIM_LINK_POLICY_REF,
+        "wwc_judgment_atom_policy_ref": (
+            S4_SPECIALIST_WWC_TEMPORAL_AUTHORITY_POLICY_REF
+        ),
+        "case_numeric_authority_policy_ref": (
+            S4_CASE_MATERIAL_NUMERIC_CLASSIFIER_POLICY_REF
+        ),
+        "case_delivery_identity_policy_ref": (
+            S4_CASE_DELIVERY_IDENTITY_CURRENT_CASE_AWARE_POLICY_REF
+        ),
+        "research_lead_transport_ref": (
+            S3_OWNER_GRADE_RESEARCH_LEAD_TRANSPORT_V6_REF
+        ),
+        "memo_writer_transport_ref": (
+            S3_OWNER_GRADE_MEMO_WRITER_TRANSPORT_V3_REF
+        ),
+        "scoped_identity_contract_ref": (
+            S3_CELL_SCOPED_RESEARCH_IDENTITY_CONTRACT_REF
+        ),
+        "provider_output_capture_policy_ref": (
+            S4_PROVIDER_INTERACTION_AUDIT_CAPTURE_POLICY_REF
+        ),
+        "strict_truth_kernel_policy_ref": None,
+        "provider_capability_ref": None,
+        "non_authoritative_narrative_shell_ref": None,
+    }
+    compiled_updates.update(dict(updates or {}))
+    execution_enabled = bool(
+        compiled_updates.get(
+            "execution_enabled", source_admission.execution_enabled
+        )
+    )
+    if execution_enabled:
+        compiled_updates.update(
+            {
+                "max_semantic_model_calls": 9,
+                "max_provider_calls": 9,
+                "max_network_calls": 9,
+                "max_total_cost_usd": 0.06,
+                "specialist_max_output_tokens": 2000,
+                "lead_max_output_tokens": 1800,
+                "writer_max_output_tokens": 1400,
+                "verifier_max_output_tokens": 800,
+            }
+        )
+    else:
+        compiled_updates.update(
+            {
+                "max_semantic_model_calls": 0,
+                "max_provider_calls": 0,
+                "max_network_calls": 0,
+                "max_total_cost_usd": 0.0,
+                "specialist_max_output_tokens": 0,
+                "lead_max_output_tokens": 0,
+                "writer_max_output_tokens": 0,
+                "verifier_max_output_tokens": 0,
+            }
+        )
     compiled = source_admission.model_copy(update=compiled_updates)
     compiled.assert_profile_admissible()
     return compiled
@@ -2020,6 +2196,7 @@ class BoundedAgentExecutionError(RuntimeError):
         profile_artifact_lineage: Mapping[str, Any] | None = None,
         fact_candidate_pool: Mapping[str, Any] | None = None,
         provider_output_captures: list[Mapping[str, Any]] | None = None,
+        local_fact_receipts: list[Mapping[str, Any]] | None = None,
         observed_counts: Mapping[str, Any] | None = None,
         completed_node_receipts: list[Mapping[str, Any]] | None = None,
         failure_contract_ref: str | None = None,
@@ -2079,6 +2256,10 @@ class BoundedAgentExecutionError(RuntimeError):
             "private_reasoning_persisted": False,
             "raw_provider_response_persisted": False,
         }
+        if local_fact_receipts:
+            self.failure_observation["local_fact_receipts"] = [
+                dict(row) for row in local_fact_receipts
+            ]
         if failure_contract_ref is not None:
             self.failure_observation.update(
                 {
@@ -2308,6 +2489,13 @@ def build_s3_post_provider_failure_error(
             for row in provider_output_captures
             if isinstance(row, Mapping)
         ],
+        local_fact_receipts=[
+            dict(row)
+            for row in execution_observation.get(
+                "local_fact_receipts", ()
+            )
+            if isinstance(row, Mapping)
+        ],
         observed_counts=normalized_counts,
         completed_node_receipts=node_receipts,
         failure_contract_ref=S3_POST_PROVIDER_FAILURE_ENVELOPE_CONTRACT_REF,
@@ -2401,6 +2589,28 @@ def _upgrade_s3_post_provider_failure_error(
             ],
         }
     )
+    prior_local_fact_receipts = [
+        dict(row)
+        for row in lifecycle.get("local_fact_receipts", ())
+        if isinstance(row, Mapping)
+    ]
+    error_local_fact_receipts = [
+        dict(row)
+        for row in observation.get("local_fact_receipts", ())
+        if isinstance(row, Mapping)
+    ]
+    local_fact_receipts_by_digest = {
+        str(row.get("receipt_digest") or ""): row
+        for row in (
+            *prior_local_fact_receipts,
+            *error_local_fact_receipts,
+        )
+    }
+    local_fact_receipts = list(
+        local_fact_receipts_by_digest.values()
+    )
+    if local_fact_receipts:
+        observation["local_fact_receipts"] = local_fact_receipts
     error.provider_output_captures = list(captures_by_call.values())
     runtime_bindings = {
         json.dumps(
@@ -2418,7 +2628,12 @@ def _upgrade_s3_post_provider_failure_error(
         )
     if runtime_bindings:
         observed_binding = json.loads(next(iter(runtime_bindings)))
-        binding = load_fin_0_1_2_runtime_contract_binding()
+        binding = (
+            load_fin_0_1_2_s3_runtime_contract_binding()
+            if observed_binding.get("binding_ref")
+            == load_fin_0_1_2_s3_runtime_contract_binding().binding_ref
+            else load_fin_0_1_2_runtime_contract_binding()
+        )
         binding.assert_admission_binding(
             binding_ref=observed_binding.get("binding_ref"),
             source_digest=observed_binding.get("source_digest"),
@@ -4399,6 +4614,29 @@ class DeepSeekBoundedAgentExecutor:
                 "owner_review_status": "not_performed_in_t03",
             },
         }
+        if admission.local_fact_interaction_contract_ref is not None:
+            interaction_topology = {
+                "logical_node_count": len(node_receipts),
+                "logical_interaction_count": (
+                    len(usage_receipts) + len(local_fact_receipts)
+                ),
+                "local_fact_interaction_count": len(
+                    local_fact_receipts
+                ),
+                "provider_interaction_count": len(usage_receipts),
+                "provider_capture_count": len(
+                    provider_output_captures
+                ),
+                "business_artifact_count": len(
+                    BOUNDED_AGENT_ARTIFACT_TYPES
+                ),
+            }
+            artifact_payloads[
+                BOUNDED_AGENT_MANIFEST_ARTIFACT_TYPE
+            ]["interaction_topology"] = interaction_topology
+            artifact_payloads[
+                BOUNDED_AGENT_TRACE_ARTIFACT_TYPE
+            ]["interaction_topology"] = interaction_topology
         trace_events = (
             {
                 "event_type": "BOUNDED_AGENT_INPUT_BOUND",
@@ -5418,6 +5656,7 @@ class S3ThreeCellBoundedAgentExecutor:
             "failure_code": "s3_bounded_node_envelope_accounting_failed",
             "completed_node_receipts": [],
             "usage_receipts": [],
+            "local_fact_receipts": [],
             "provider_output_captures": [],
             "quality_observations": [],
             "recoverable_protocol_findings": [],
@@ -5443,6 +5682,7 @@ class S3ThreeCellBoundedAgentExecutor:
                 lifecycle["usage_receipts"]
                 or lifecycle["provider_output_captures"]
                 or exc.failure_observation.get("usage_receipts")
+                or exc.failure_observation.get("local_fact_receipts")
                 or exc.provider_output_captures
             ):
                 _upgrade_s3_post_provider_failure_error(exc, lifecycle)
@@ -5450,6 +5690,7 @@ class S3ThreeCellBoundedAgentExecutor:
         except Exception as exc:
             if not (
                 lifecycle["usage_receipts"]
+                or lifecycle["local_fact_receipts"]
                 or lifecycle["provider_output_captures"]
             ):
                 raise
@@ -5591,6 +5832,7 @@ class S3ThreeCellBoundedAgentExecutor:
 
         node_receipts = lifecycle["completed_node_receipts"]
         usage_receipts = lifecycle["usage_receipts"]
+        local_fact_receipts = lifecycle["local_fact_receipts"]
         provider_output_captures = lifecycle["provider_output_captures"]
         quality_observations = lifecycle["quality_observations"]
         recoverable_protocol_findings = lifecycle[
@@ -5626,6 +5868,7 @@ class S3ThreeCellBoundedAgentExecutor:
                     "usage_receipts",
                     "version_bindings",
                     "provider_output_captures",
+                    "local_fact_receipts",
                     "quality_observations",
                     "recoverable_protocol_findings",
                 }
@@ -5679,6 +5922,47 @@ class S3ThreeCellBoundedAgentExecutor:
                     f"s3_bounded_node_model_view_binding_missing:{node_id}"
                 )
             usage_receipts.extend(dict(row) for row in receipts if isinstance(row, Mapping))
+            local_receipts = raw.get("local_fact_receipts") or []
+            if not isinstance(local_receipts, list) or any(
+                not isinstance(row, Mapping) for row in local_receipts
+            ):
+                raise ValueError(
+                    f"s3_bounded_node_local_fact_receipt_invalid:{node_id}"
+                )
+            for row in local_receipts:
+                receipt = dict(row)
+                if (
+                    not node_id.startswith("domain_specialist:")
+                    or receipt.get("contract_ref")
+                    != S3_LOCAL_DETERMINISTIC_FACT_INTERACTION_CONTRACT_REF
+                    or receipt.get("program_cell_id")
+                    != node_id.split(":", 1)[1]
+                    or any(
+                        receipt.get(key) != 0
+                        for key in (
+                            "model_calls",
+                            "provider_calls",
+                            "network_calls",
+                        )
+                    )
+                    or receipt.get("provider_capture_created") is not False
+                    or not re.fullmatch(
+                        r"[0-9a-f]{64}",
+                        str(receipt.get("receipt_digest") or ""),
+                    )
+                    or receipt.get("receipt_digest")
+                    != canonical_digest(
+                        {
+                            key: value
+                            for key, value in receipt.items()
+                            if key != "receipt_digest"
+                        }
+                    )
+                ):
+                    raise ValueError(
+                        f"s3_bounded_node_local_fact_receipt_not_closed:{node_id}"
+                    )
+                local_fact_receipts.append(receipt)
             captures = raw.get("provider_output_captures") or []
             if not isinstance(captures, list) or any(
                 not isinstance(row, Mapping) for row in captures
@@ -6155,16 +6439,38 @@ class S3ThreeCellBoundedAgentExecutor:
         ):
             raise ValueError("s3_bounded_zero_call_probe_execution_violation")
         expected_execution_calls = (
-            12
-            if admission.transport_ref
-            in S3_OWNER_GRADE_SEGMENTED_SPECIALIST_TRANSPORT_REFS
-            else 6
+            9
+            if (
+                admission.transport_ref
+                in S3_OWNER_GRADE_SEGMENTED_SPECIALIST_TRANSPORT_REFS
+                and specialist_transport_contract(
+                    admission.transport_ref
+                ).local_deterministic_fact_interaction
+            )
+            else (
+                12
+                if admission.transport_ref
+                in S3_OWNER_GRADE_SEGMENTED_SPECIALIST_TRANSPORT_REFS
+                else 6
+            )
         )
         if admission.execution_enabled and any(
             observed_counts[key] != expected_execution_calls
             for key in ("model_calls", "provider_calls", "network_calls")
         ):
             raise ValueError("s3_bounded_exact_call_cardinality_violation")
+        if (
+            admission.execution_enabled
+            and admission.local_fact_interaction_contract_ref is not None
+            and (
+                len(local_fact_receipts) != 3
+                or len(usage_receipts) + len(local_fact_receipts) != 12
+                or len(provider_output_captures) != 9
+            )
+        ):
+            raise ValueError(
+                "s3_bounded_exact_logical_interaction_cardinality_violation"
+            )
 
         if (
             case_numeric_contracts
@@ -6276,6 +6582,7 @@ class S3ThreeCellBoundedAgentExecutor:
                 "node_topology": [row["node_id"] for row in node_receipts],
                 "node_receipts": node_receipts,
                 "usage_receipts": usage_receipts,
+                "local_fact_receipts": local_fact_receipts,
                 "observed_counts": observed_counts,
                 "hard_boundaries": hard_boundaries,
                 "quality_observations": quality_observations,
@@ -6346,6 +6653,7 @@ class S3ThreeCellBoundedAgentExecutor:
                 "input_digest": input_pack.input_digest,
                 "lineage": input_pack.lineage,
                 "node_receipts": node_receipts,
+                "local_fact_receipts": local_fact_receipts,
                 "private_reasoning_persisted": False,
                 "raw_provider_response_persisted": False,
             },
@@ -6369,6 +6677,25 @@ class S3ThreeCellBoundedAgentExecutor:
                 "owner_review_status": "not_performed",
             },
         }
+        if admission.local_fact_interaction_contract_ref is not None:
+            interaction_topology = {
+                "logical_node_count": len(node_receipts),
+                "logical_interaction_count": (
+                    len(usage_receipts) + len(local_fact_receipts)
+                ),
+                "local_fact_interaction_count": len(local_fact_receipts),
+                "provider_interaction_count": len(usage_receipts),
+                "provider_capture_count": len(provider_output_captures),
+                "business_artifact_count": len(
+                    BOUNDED_AGENT_ARTIFACT_TYPES
+                ),
+            }
+            artifact_payloads[
+                BOUNDED_AGENT_MANIFEST_ARTIFACT_TYPE
+            ]["interaction_topology"] = interaction_topology
+            artifact_payloads[
+                BOUNDED_AGENT_TRACE_ARTIFACT_TYPE
+            ]["interaction_topology"] = interaction_topology
         if (
             case_numeric_contracts
             and case_delivery_identity_projection is not None
@@ -6571,6 +6898,9 @@ class S3ThreeCellBoundedAgentExecutor:
                 ],
                 "usage_receipts": [
                     dict(row) for row in usage_receipts
+                ],
+                "local_fact_receipts": [
+                    dict(row) for row in local_fact_receipts
                 ],
                 "observed_counts": dict(observed_counts),
             },
@@ -8346,6 +8676,7 @@ class DeepSeekS3ThreeCellNodeExecutor:
                 "next_index": 0,
                 "spent_usd": 0.0,
                 "usage_receipts": [],
+                "local_fact_receipts": [],
                 "provider_output_captures": [],
                 "failed": False,
             },
@@ -8357,6 +8688,7 @@ class DeepSeekS3ThreeCellNodeExecutor:
             raise ValueError("s3_bounded_node_execution_order_violation")
 
         recoverable_protocol_findings: list[dict[str, Any]] = []
+        local_fact_receipts: list[dict[str, Any]] = []
         if (
             node_id.startswith("domain_specialist:")
             and admission.transport_ref
@@ -8367,6 +8699,7 @@ class DeepSeekS3ThreeCellNodeExecutor:
                 receipts,
                 model_view_binding,
                 captures,
+                local_fact_receipts,
             ) = self._execute_segmented_specialist(
                 node_id=node_id,
                 payload=payload,
@@ -8672,6 +9005,7 @@ class DeepSeekS3ThreeCellNodeExecutor:
             "usage_receipts": receipts,
             "version_bindings": version_bindings,
             "provider_output_captures": captures,
+            "local_fact_receipts": local_fact_receipts,
             "quality_observations": quality_observations,
             "recoverable_protocol_findings": (
                 recoverable_protocol_findings
@@ -8789,9 +9123,17 @@ class DeepSeekS3ThreeCellNodeExecutor:
         }
         if (
             admission.judgment_atom_compiled_contract_ref
-            == FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+            in {
+                FIN_0_1_2_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+                FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF,
+            }
         ):
-            binding = load_fin_0_1_2_runtime_contract_binding()
+            binding = (
+                load_fin_0_1_2_s3_runtime_contract_binding()
+                if admission.judgment_atom_compiled_contract_ref
+                == FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+                else load_fin_0_1_2_runtime_contract_binding()
+            )
             binding.assert_admission_binding(
                 binding_ref=admission.runtime_contract_family_binding_ref,
                 source_digest=(
@@ -9366,6 +9708,7 @@ class DeepSeekS3ThreeCellNodeExecutor:
         dict[str, Any],
         list[dict[str, Any]],
         dict[str, str],
+        list[dict[str, Any]],
         list[dict[str, Any]],
     ]:
         specialists = payload.get("specialist_outputs")
@@ -10425,11 +10768,34 @@ class DeepSeekS3ThreeCellNodeExecutor:
         validated_segments: dict[str, dict[str, Any]] = {}
         receipts: list[dict[str, Any]] = []
         captures: list[dict[str, Any]] = []
+        local_fact_receipts: list[dict[str, Any]] = []
         model_view_binding: dict[str, str] = {}
         for segment_id in S3_OWNER_GRADE_SPECIALIST_SEGMENT_IDS:
-            try:
-                system, request, segment_model_view_binding = (
-                    self._specialist_segment_request(
+            local_fact_interaction = (
+                transport_contract.local_deterministic_fact_interaction
+                and segment_id == "facts_explanation_and_terminal"
+            )
+            if local_fact_interaction:
+                local_model_view = {
+                    "contract_ref": (
+                        S3_LOCAL_DETERMINISTIC_FACT_INTERACTION_CONTRACT_REF
+                    ),
+                    "program_cell_id": cell_id,
+                    "cell_input_digest": canonical_digest(cell_input),
+                    "provider_visible": False,
+                }
+                segment_model_view_binding = {
+                    "model_view_contract_ref": (
+                        S3_SPECIALIST_MODEL_VIEW_CONTRACT_REF
+                    ),
+                    "model_view_digest": canonical_digest(
+                        local_model_view
+                    ),
+                }
+            else:
+                try:
+                    system, request, segment_model_view_binding = (
+                        self._specialist_segment_request(
                         node_id=node_id,
                         segment_id=segment_id,
                         payload=payload,
@@ -10458,16 +10824,16 @@ class DeepSeekS3ThreeCellNodeExecutor:
                             admission.case_numeric_authority_policy_ref
                         ),
                         as_of=str(admission.as_of or ""),
+                        )
                     )
-                )
-            except FactCandidatePoolPlannerError as exc:
-                state["failed"] = True
-                self._stop(
-                    state,
-                    node_id,
-                    exc.failure_code,
-                    fact_candidate_pool=exc.telemetry,
-                )
+                except FactCandidatePoolPlannerError as exc:
+                    state["failed"] = True
+                    self._stop(
+                        state,
+                        node_id,
+                        exc.failure_code,
+                        fact_candidate_pool=exc.telemetry,
+                    )
             model_view_binding.update(segment_model_view_binding)
             strict_truth_kernel = (
                 admission.strict_truth_kernel_policy_ref
@@ -10475,7 +10841,49 @@ class DeepSeekS3ThreeCellNodeExecutor:
                 and segment_id
                 == "facts_explanation_and_terminal"
             )
-            if strict_truth_kernel:
+            if local_fact_interaction:
+                try:
+                    output, local_receipt = (
+                        DeterministicJudgmentAtomCompiledContract(
+                            cell_input=cell_input,
+                            validated_segments=validated_segments,
+                            as_of=str(admission.as_of or ""),
+                            contract_ref=str(
+                                admission.judgment_atom_compiled_contract_ref
+                            ),
+                            runtime_contract_family_binding_ref=(
+                                admission.runtime_contract_family_binding_ref
+                            ),
+                            runtime_contract_family_source_digest=(
+                                admission.runtime_contract_family_source_digest
+                            ),
+                            research_profile_ref=(
+                                research_profile.profile_ref
+                            ),
+                        ).local_fact_interaction()
+                    )
+                except FactCandidatePoolPlannerError as exc:
+                    state["failed"] = True
+                    self._stop(
+                        state,
+                        node_id,
+                        exc.failure_code,
+                        fact_candidate_pool=exc.telemetry,
+                    )
+                local_fact_receipts.append(local_receipt)
+                state["local_fact_receipts"].append(local_receipt)
+                model_view_binding.update(
+                    {
+                        "local_fact_interaction_contract_ref": (
+                            S3_LOCAL_DETERMINISTIC_FACT_INTERACTION_CONTRACT_REF
+                        ),
+                        "local_fact_receipt_digest": str(
+                            local_receipt["receipt_digest"]
+                        ),
+                    }
+                )
+                provider_output_utf8_bytes = 0
+            elif strict_truth_kernel:
                 truth_policy = StrictTruthKernelPolicy.from_cell_input(
                     cell_input
                 )
@@ -10529,6 +10937,9 @@ class DeepSeekS3ThreeCellNodeExecutor:
                         ),
                     }
                 )
+                provider_output_utf8_bytes = len(
+                    str(capture["assistant_output_text"]).encode("utf-8")
+                )
             else:
                 output, receipt, capture = self._call_json_object(
                     state=state,
@@ -10537,21 +10948,29 @@ class DeepSeekS3ThreeCellNodeExecutor:
                     system=system,
                     request=request,
                     max_tokens=(
-                        research_profile.segment_token_budgets[segment_id]
+                        S3_PRODUCTION_MODEL_SEGMENT_OUTPUT_TOKEN_BUDGETS[
+                            segment_id
+                        ]
+                        if transport_contract.local_deterministic_fact_interaction
+                        else research_profile.segment_token_budgets[segment_id]
                     ),
                     admission=admission,
                     input_digest=input_digest,
                     research_run_id=research_run_id,
                     enforce_specialist_byte_limit=True,
                 )
-            receipts.append(receipt)
-            captures.append(capture)
+                provider_output_utf8_bytes = len(
+                    str(capture["assistant_output_text"]).encode("utf-8")
+                )
+            if not local_fact_interaction:
+                receipts.append(receipt)
+                captures.append(capture)
             try:
                 compiled_atom_contract = (
                     admission.judgment_atom_compiled_contract_ref
                     in DETERMINISTIC_JUDGMENT_ATOM_COMPILED_CONTRACT_REFS
                 )
-                if compiled_atom_contract:
+                if compiled_atom_contract and not local_fact_interaction:
                     output = DeterministicJudgmentAtomCompiledContract(
                         cell_input=cell_input,
                         validated_segments=validated_segments,
@@ -10571,10 +10990,8 @@ class DeepSeekS3ThreeCellNodeExecutor:
                     ).assemble(
                         segment_id,
                         output,
-                        provider_output_utf8_bytes=len(
-                            str(capture["assistant_output_text"]).encode(
-                                "utf-8"
-                            )
+                        provider_output_utf8_bytes=(
+                            provider_output_utf8_bytes
                         ),
                     )
                 if (
@@ -10859,7 +11276,13 @@ class DeepSeekS3ThreeCellNodeExecutor:
                 "specialist_segment_count": "3",
             }
         )
-        return assembled, receipts, model_view_binding, captures
+        return (
+            assembled,
+            receipts,
+            model_view_binding,
+            captures,
+            local_fact_receipts,
+        )
 
     @classmethod
     def _specialist_segment_request(
@@ -10930,6 +11353,10 @@ class DeepSeekS3ThreeCellNodeExecutor:
                 validated_segments=validated_segments,
                 policy_ref=wwc_judgment_atom_policy_ref,
                 as_of=as_of,
+                omit_incomplete_authority_refs=(
+                    judgment_atom_compiled_contract_ref
+                    == FIN_0_1_2_S3_COMMON_RUNTIME_COMPILED_CONTRACT_REF
+                ),
             )
         nonblank_narrative = (
             "non-empty string, maximum "
@@ -11676,6 +12103,7 @@ class DeepSeekS3ThreeCellNodeExecutor:
         validated_segments: Mapping[str, Mapping[str, Any]],
         policy_ref: str,
         as_of: str,
+        omit_incomplete_authority_refs: bool = False,
     ) -> SpecialistWWCJudgmentAtomPolicy:
         if policy_ref not in SPECIALIST_WWC_JUDGMENT_ATOM_POLICY_REFS:
             raise ValueError("s3_WWC_judgment_atom_policy_unsupported")
@@ -11687,6 +12115,9 @@ class DeepSeekS3ThreeCellNodeExecutor:
             claims=list(claims.get("judgment_layer") or ()),
             as_of=as_of,
             contract_ref=policy_ref,
+            omit_incomplete_authority_refs=(
+                omit_incomplete_authority_refs
+            ),
         )
 
     @classmethod
@@ -15724,6 +16155,11 @@ class DeepSeekS3ThreeCellNodeExecutor:
             provider_output_captures=[
                 dict(row)
                 for row in state.get("provider_output_captures", ())
+                if isinstance(row, Mapping)
+            ],
+            local_fact_receipts=[
+                dict(row)
+                for row in state.get("local_fact_receipts", ())
                 if isinstance(row, Mapping)
             ],
         )

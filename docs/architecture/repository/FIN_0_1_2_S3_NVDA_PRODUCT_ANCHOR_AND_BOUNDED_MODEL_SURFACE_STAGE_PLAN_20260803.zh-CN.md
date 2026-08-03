@@ -1,7 +1,7 @@
 # FIN 0.1.2 S3：NVDA 产品锚点与有界模型 Surface 计划
 
 日期：2026-08-03
-状态：`S3-T01 pass / S3 entered / S3-T02 pending / zero model calls`
+状态：`S3-T01 pass / S3-T02 engineering pass / S3-T03 authority pending / zero model calls`
 
 ## 一、S3 到底要证明什么
 
@@ -75,8 +75,14 @@ T02 通过且用户另行授权后，才允许一次 primary formal attempt。�
 - replacement 再出现新 L1，S3 honest-block；没有第三次 exact attempt，也不新增 T05/R-number/产品版本。
 - collect-all diagnostic 只能在正式失败后由 Owner 明确决定，始终隔离且不可业务晋升。
 
-## 六、当前入口
+## 六、T02 实现结果与当前入口
 
-S3-T01 已通过并进入 S3；S3-T02 尚未获本轮实现权限。当前下一项：
+S3-T02 已按单一零调用结构包完成：新建独立 v1.3 生产 source/binding 和 v9 transport；三次 Fact 交互改为本地确定性 selection/rendering，并各自产生 typed receipt；Claim/WWC 继续绑定 Pro preview 的 alias/enum surface；当前 NVDA exact input 以来源、head、input 和六段 lineage digest 登记，且明确不是 admission 或当前产品证明。
 
-`FIN-0.1.2-S3-T02-NVDA-BOUNDED-SURFACE-PRODUCTION-RUNTIME-INTEGRATION-AND-ZERO-CALL-PRODUCT-READINESS-IMPLEMENTATION`
+full-fake 对当前 exact input 证明了 `6 nodes / 12 logical interactions / 3 local Fact receipts / 9 Provider calls and captures / 9 Artifacts`。输入、binding 和 Lead 叙事 mutation 均 fail closed；Research Lead 失败时仍保留已完成三节点、3 个本地 receipt、7 个 capture 和 typed terminal result。适用 S1/S2 与历史 S4 功能回归通过。真实 credential、模型、Provider、execution network、业务 Run/Artifact 与 live case head write 均为 0；内存 prospective admission 为 disabled，未签发、未消费。
+
+RC-P36-105 因生产接入和当前输入门禁完成而关闭，但这不建立自然模型表现、当前 NVDA R2、paired 质量或 Owner acceptance。当前下一项只允许先做零调用权限决策：
+
+`FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION`
+
+该权限决策未完成前，不得访问凭据、签发 admission 或执行 exact-live。

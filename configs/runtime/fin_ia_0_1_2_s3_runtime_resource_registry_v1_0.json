@@ -1,0 +1,75 @@
+{
+  "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
+  "registry_id": "FIN-0.1.2-S3-T02-PRODUCTION-RUNTIME-RESOURCE-REGISTRY-R1",
+  "status": "tracked_typed_runtime_resource_authority",
+  "policy": {
+    "registry_is_source_of_truth": true,
+    "static_scanner_is_detector_only": true,
+    "direct_unregistered_runtime_read_fails_closed": true,
+    "missing_unknown_duplicate_or_digest_drift_fails_closed": true,
+    "permutation_or_cross_version_fails_closed": true,
+    "ignored_untracked_codex_runtime_and_git_forbidden": true,
+    "traversal_and_symlink_escape_forbidden": true
+  },
+  "detector_python_refs": [
+    "apps/workbench/backend/application/fin_0_1_2_s3_product_input.py",
+    "apps/workbench/backend/application/fin_0_1_2_s3_runtime_contract_binding.py"
+  ],
+  "resource_count": 4,
+  "resource_bytes": 14200,
+  "resource_canonical_digest": "6716955a1a60f7ca6857046899b72e223539a30d552f3d95ec2668fffb0e63cd",
+  "resources": [
+    {
+      "resource_id": "fin_0_1_2.s3.common_runtime_contract_family_binding",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_3.json",
+      "sha256": "1658af8d96d9d82384bd689e56b9de07528faac063e3d55ae0ca6c5b56c0e30a",
+      "bytes": 2409,
+      "classification": "deterministic_contract_binding",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s3_runtime_contract_binding.load_fin_0_1_2_s3_runtime_contract_binding"
+      ],
+      "load_phase": "S3_T02_production_contract_compilation",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s3_runtime_contract_binding"
+    },
+    {
+      "resource_id": "fin_0_1_2.s3.common_runtime_contract_family_source",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_3.json",
+      "sha256": "d4edc514ba95c09810b75fa81b4caadf050aca2a91e77c93d472c588d82dd152",
+      "bytes": 5227,
+      "classification": "deterministic_contract_source",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s3_runtime_contract_binding.load_fin_0_1_2_s3_runtime_contract_binding"
+      ],
+      "load_phase": "S3_T02_production_contract_compilation",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s3_runtime_contract_binding"
+    },
+    {
+      "resource_id": "fin_0_1_2.s3.fact_candidate_pool_profiles",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_s3_nvda_fact_candidate_pool_profiles_v1_0.json",
+      "sha256": "717af44f48f63358da6bbeae7c0a5c2c5eae5530766e71e66800aeb80ce4f7d0",
+      "bytes": 3662,
+      "classification": "deterministic_fact_candidate_profile_set",
+      "consumer_ids": [
+        "apps.workbench.deterministic_judgment_atom_contract.DeterministicJudgmentAtomCompiledContract.fact_candidate_pool_plan"
+      ],
+      "load_phase": "S3_T02_local_fact_planning",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.deterministic_judgment_atom_contract"
+    },
+    {
+      "resource_id": "fin_0_1_2.s3.nvda_exact_product_input",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_2_s3_nvda_exact_product_input_v1_0.json",
+      "sha256": "1f5bf2ba07a917f13f123c72e27e644af43c47ecf68ae34d2983fba7c724991b",
+      "bytes": 2902,
+      "classification": "exact_product_input_manifest",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s3_product_input.load_fin_0_1_2_s3_nvda_exact_product_input_manifest"
+      ],
+      "load_phase": "S3_T02_exact_product_input_preflight",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s3_product_input"
+    }
+  ]
+}

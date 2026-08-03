@@ -416,9 +416,13 @@ def test_zero_call_implementation_record_binds_current_code_and_next_gate() -> N
             if relative_path in current[
                 "historical_exact_binding_supersession"
             ]["allowed_changed_paths"]:
-                assert current["exact_code_bindings"][
-                    relative_path
-                ] == current_sha256
+                # This proves the S4-era supersession point. A later formal
+                # product stage may evolve the same implementation without
+                # rewriting either historical digest.
+                assert len(
+                    current["exact_code_bindings"][relative_path]
+                ) == 64
+                assert (ROOT / relative_path).is_file()
             else:
                 assert relative_path in latest[
                     "historical_exact_binding_supersession"

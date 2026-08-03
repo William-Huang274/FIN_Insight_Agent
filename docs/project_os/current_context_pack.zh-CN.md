@@ -3,6 +3,9 @@
 更新时间：2026-08-03
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S2-T03 WWC 零调用处置已完成，两个项目缺陷合并为唯一修复包（current，2026-08-03）**：除 RC-P36-102 的隐藏 cadence/date 条件外，受限 Pro capture 零调用重放又证明本地 `_assemble_wwc` 在最终任务生成时读取循环结束残留的 `claim_alias`，把 raw `Q001/Q002/Q001` 三个 atoms 全部绑定为 `local_claim:001`，但仍返回 terminal pass；登记 RC-P36-103。故 immutable terminal 仍为 `5 pass / 1 failed`，但公平模型能力证据只有 Fact/Claim 四项，WWC 两项均无效。选定唯一 `fin_0_1_2.S2.WWC_model_visible_contract_and_row_local_claim_binding:v2` 零调用包：同源公开日期条件、validator/fake/mutation parity、row-local Claim 映射、三案 full-fake 与受限 Pro replay；不改 Fact/Claim、不放宽数字、不做广义 compiler 重写。WWC Flash/Pro replacement pair 仅在实现和独立 proof 后有资格，仍需单独 authority，当前模型/Provider/网络调用=0。decision=`configs/releases/fin_ia_0_1_2_s2_t03_wwc_contract_parity_row_local_claim_binding_and_replacement_pair_disposition_decision_v1_0.json`，current next=`FIN-0.1.2-S2-T03-WWC-CONTRACT-PARITY-AND-ROW-LOCAL-CLAIM-BINDING-CONSOLIDATED-ZERO-CALL-IMPLEMENTATION`；尚未授权实现、replacement、T04 或模型选择。
+
+> [!IMPORTANT]
 > **FIN 0.1.2 S2-T03 exact 六调用已完成，但 WWC 比较因项目合同不对称而无效（current，2026-08-03）**：MU 的 Fact/Claim/WWC × Flash stable/Pro preview 共 6 次调用均一次 transport 终止并保存 6 个受限 capture 与 6 个 terminal result；Fact/Claim 两模型及 Pro WWC 本地 hard pass，Flash WWC 被 `s4_compiled_wwc_unbound_date_alias_forbidden` 拒绝。审计确认模型可见 schema 只声明 `review_date_alias=allowed alias or NONE`，本地校验器却额外要求 `review_cadence != bound_date` 时必须为 `NONE`，该跨字段规则未对模型公开；因此 RC-P36-102 属于项目合同/校验一致性缺口，不成立模型或 Provider 过错，也不能据此选择 Pro。observed calls/tokens/cost=`6 / 9106+1021 / USD 0.00484938 estimated`，retry/fallback/replacement/business Artifact=`0/0/0/0`。T04 未进入；current next=`FIN-0.1.2-S2-T03-WWC-REVIEW-CADENCE-DATE-ALIAS-MODEL-VISIBLE-CONTRACT-PARITY-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-DISPOSITION-DECISION`。该下一项是零调用处置，只决定是否消费 StagePlan 唯一合并 repair 与另行授权 WWC 两模型 replacement pair，不得自动修补或重跑。
 
 > [!IMPORTANT]

@@ -343,7 +343,7 @@ def test_preflight_projection_remains_historical_after_exact_execution() -> None
     ] is False
     current = backlog["next_action"]
     assert current["item_id"] != result["next_action"]
-    assert current["current_projection_ref"].endswith("v2_13.json")
+    assert current["current_projection_ref"].endswith("v2_14.json")
     assert current["S2_T03_preflight_implementation_ref"] == result_ref
     assert current["S2_T03_preflight_implementation_sha256"] == result_sha
     assert current["S2_T03_execution_started"] is True

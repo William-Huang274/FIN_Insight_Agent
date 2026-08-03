@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S1 pass closed / S2-T03 exact six terminal complete but WWC measurement invalid on project contract gap / S3-S5 not started`
+状态：`current canonical plan / S0-S1 pass closed / S2-T03 WWC two project defects consolidated into one repair / S3-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -68,9 +68,11 @@ StagePlan 同时发现 `common_runtime_contract_family_source_v1_0` 的状态文
 
 六个已签权调用已经严格执行一次：6 次调用全部 `stop`，6 capture/6 terminal 均留存，Fact/Claim 两模型和 Pro WWC 通过；Flash WWC 被本地隐藏条件拒绝。模型可见 schema 允许 `review_date_alias=allowed alias or NONE`，本地 validator 却未公开“非 `bound_date` cadence 必须为 `NONE`”的规则，所以这不是可信的模型能力差异。调用总量=`9106 input / 1021 output`，估算成本 `USD 0.00484938`，无 retry、replacement 或业务 Artifact。
 
-RC-P36-102 留在 S2-T03。T04、模型排名和主线模型选择均未进入；当前下一项是零调用处置，不自动修复或重跑：
+RC-P36-102 留在 S2-T03。进一步的受限 Pro 结果重放还发现本地 task assembly 把多 Claim atoms 错绑到循环结束时的最后一个 Claim，形成 terminal false green，登记 RC-P36-103。因此有效能力证据只有 Fact/Claim 四项，WWC 两模型都必须重新公平测量；T04、模型排名和主线模型选择均未进入。
 
-`FIN-0.1.2-S2-T03-WWC-REVIEW-CADENCE-DATE-ALIAS-MODEL-VISIBLE-CONTRACT-PARITY-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-DISPOSITION-DECISION`
+处置决定把两个 WWC comparator 缺陷合并为唯一零调用结构包：公开并同源编译 cadence/date 条件，同时改为每个 selected atom 自己展开 Claim ID；用三案 full-fake、多 Claim/permutation/subset 和受限 Pro replay 一次证明。实现通过后才另行审查 WWC 两调用 replacement authority，不重跑 Fact/Claim，不扩大到 full-chain。当前下一项：
+
+`FIN-0.1.2-S2-T03-WWC-CONTRACT-PARITY-AND-ROW-LOCAL-CLAIM-BINDING-CONSOLIDATED-ZERO-CALL-IMPLEMENTATION`
 
 以下 S0 收口说明保留为 preceding current-baseline evidence：
 

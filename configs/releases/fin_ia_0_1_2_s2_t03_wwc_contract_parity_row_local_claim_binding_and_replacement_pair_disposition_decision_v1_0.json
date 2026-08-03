@@ -1,0 +1,186 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_t03_wwc_contract_parity_row_local_claim_binding_and_replacement_pair_disposition_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S2-T03-WWC-CONTRACT-PARITY-ROW-LOCAL-CLAIM-BINDING-AND-REPLACEMENT-PAIR-DISPOSITION-R1",
+  "recorded_at": "2026-08-03T09:54:13+08:00",
+  "status": "pass_zero_call_two_project_defects_consolidated_one_WWC_repair_bundle_selected_replacement_pair_separate_authority_required",
+  "authority": {
+    "user_instruction": "可以",
+    "zero_call_disposition_authorized": true,
+    "restricted_capture_read_for_sanitized_reproduction_authorized": true,
+    "runtime_implementation_authorized_in_this_turn": false,
+    "credential_read_authorized": false,
+    "model_provider_network_calls_authorized": 0,
+    "replacement_pair_execution_authorized": false,
+    "T04_assessment_or_model_selection_authorized": false,
+    "S3_to_S5_or_release_authorized": false
+  },
+  "evidence_bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s2_t03_mu_flash_stable_vs_pro_preview_exact_six_call_execution_result_and_project_contract_gap_v1_0.json",
+      "sha256": "612e328585c2801a8fb569625e10cc938a7f9560d0ba9c01f3d6f093b70a3a0e",
+      "role": "immutable_exact_six_call_result"
+    },
+    {
+      "ref": "apps/workbench/backend/application/deterministic_judgment_atom_contract.py",
+      "sha256": "9cfbe46c281193e1e83caa349f16db6a7b85d071b3eeb721a04dfc06185a59b3",
+      "role": "earliest_model_visible_contract_validator_and_assembly_owner"
+    }
+  ],
+  "sanitized_zero_call_reproduction": {
+    "restricted_raw_content_copied_to_decision": false,
+    "flash_WWC": {
+      "capture_sha256": "deb9409168fa92e14603de3fba64cf4f305d702a914d190fb61c4f8467a13311",
+      "provider_atom_count": 2,
+      "unique_claim_aliases": ["Q001", "Q002"],
+      "observed_cadence_date_pairs": [
+        "next_authority_event:D002",
+        "next_reporting_event:D002"
+      ],
+      "visible_schema_allows_each_date_alias_or_NONE": true,
+      "hidden_local_condition_rejects_non_bound_date_alias": true,
+      "terminal_status": "failed"
+    },
+    "pro_WWC": {
+      "capture_sha256": "7f6fd6857ffeb3c6fe0b1f5d72c6d3e578acad0f27505436a847c1f9a7f83ddc",
+      "provider_atom_count": 3,
+      "raw_claim_aliases": ["Q001", "Q002", "Q001"],
+      "claim_alias_mapping": {
+        "Q001": "demand_authenticity_and_sustainability:local_claim:001",
+        "Q002": "demand_authenticity_and_sustainability:local_claim:002"
+      },
+      "assembled_task_count": 3,
+      "assembled_unique_claim_ids": [
+        "demand_authenticity_and_sustainability:local_claim:001"
+      ],
+      "expected_unique_claim_id_count": 2,
+      "observed_unique_claim_id_count": 1,
+      "terminal_status": "pass_false_green_for_semantic_binding"
+    }
+  },
+  "corrected_measurement_interpretation": {
+    "immutable_terminal_statuses_rewritten": false,
+    "historical_terminal_pass_failed_counts": [5, 1],
+    "fair_capability_evidence_call_count": 4,
+    "fair_capability_evidence": [
+      "Fact Flash hard-integrity pass",
+      "Fact Pro hard-integrity pass",
+      "Claim Flash hard-integrity pass",
+      "Claim Pro hard-integrity pass"
+    ],
+    "WWC_fair_capability_evidence_call_count": 0,
+    "reason": "Flash was rejected by an undisclosed cross-field rule and Pro was accepted through a row-local claim-binding false green.",
+    "Flash_noncompliance_established": false,
+    "Pro_superiority_established": false
+  },
+  "root_cause_disposition": {
+    "RC_P36_102": {
+      "status": "open_selected_for_consolidated_repair",
+      "earliest_fault": "review_cadence_to_review_date_alias_condition_exists_in_local_validator_but_not_in_model_visible_contract_wire_schema_or_system_instruction"
+    },
+    "RC_P36_103": {
+      "issue_id": "RC-P36-103-fin-0-1-2-s2-t03-wwc-selected-task-claim-binding-loop-state-leak",
+      "status": "open_selected_for_same_consolidated_repair",
+      "earliest_fault": "final_WWC_task_assembly_reads_loop_terminal_claim_alias_instead_of_each_selected_atom_claim_alias"
+    },
+    "model_or_provider_fault_established": false,
+    "new_product_version_required": false,
+    "S0_or_S1_reopen_required": false,
+    "scope_owner": "FIN_0_1_2_S2_T03_WWC_comparator_correctness"
+  },
+  "selected_consolidated_repair": {
+    "contract_id": "fin_0_1_2.S2.WWC_model_visible_contract_and_row_local_claim_binding:v2",
+    "maximum_zero_call_implementation_bundles": 1,
+    "automatic_second_implementation_bundle": 0,
+    "scope": [
+      "one declarative review_cadence_to_review_date_alias invariant",
+      "model-visible contract rule",
+      "wire schema description",
+      "WWC system instruction",
+      "local validation and typed failure descriptors",
+      "fake Provider and mutation fixtures",
+      "row-local selected atom claim_alias expansion",
+      "paired request digest recompilation and T03 resource binding"
+    ],
+    "date_binding_rule": {
+      "bound_date": "review_date_alias must be exactly one allowed non-NONE date alias",
+      "all_other_review_cadences": "review_date_alias must be exactly NONE",
+      "silent_alias_drop_or_rewrite": false,
+      "validator_weakening": false
+    },
+    "claim_binding_rule": {
+      "source": "each selected normalized atom",
+      "mapping": "claims[str(atom['claim_alias'])]",
+      "loop_terminal_or_outer_state_use": "forbidden",
+      "silent_single_claim_collapse": false
+    },
+    "explicit_non_goals": [
+      "Fact_or_Claim_family_contract_changes",
+      "broad all-family compiler rewrite",
+      "free narrative expansion",
+      "financial numeric authority relaxation",
+      "T04 rubric changes",
+      "full-chain or business Artifact execution",
+      "strict-schema transport work"
+    ]
+  },
+  "required_zero_call_proof": {
+    "date_positive_matrix": [
+      "bound_date with each exact allowed date alias",
+      "each non-bound review cadence with NONE"
+    ],
+    "date_negative_matrix": [
+      "bound_date with NONE",
+      "non-bound cadence with any date alias",
+      "unknown or cross-case date alias"
+    ],
+    "claim_binding_matrix": [
+      "one claim",
+      "two or more claim aliases",
+      "selection reordering",
+      "provider permutation",
+      "selected subset after maximum truncation"
+    ],
+    "required_assertions": [
+      "each final task claim_id equals its selected atom alias mapping",
+      "no final task reads loop-terminal claim state",
+      "Flash and Pro WWC model-visible requests remain byte-equivalent",
+      "DELL MU and NVDA full-fake paths preserve identity numeric date lineage and capture rules",
+      "restricted Pro capture zero-call replay no longer false-greens incorrect claim binding"
+    ],
+    "model_provider_network_calls": 0
+  },
+  "affected_family_replacement_pair_disposition": {
+    "eligible_after_consolidated_implementation_and_independent_zero_call_proof": true,
+    "authorized_now": false,
+    "separate_authority_required": true,
+    "maximum_calls": 2,
+    "case": "MU",
+    "family": "what_would_change_atoms",
+    "candidates": ["deepseek-v4-flash", "deepseek-v4-pro"],
+    "Fact_or_Claim_rerun": false,
+    "new_request_and_equivalence_digests_required": true,
+    "new_execution_identity_required": true,
+    "retry_fallback_provider_hopping_prompt_only_retry": [0, 0, 0, 0],
+    "success_consumption": "combine the four valid primary Fact/Claim outcomes with the fair replacement WWC pair before T04",
+    "new_project_defect": "stop_S2_honest_block_no_second_repair_bundle",
+    "true_model_noncompliance_or_weak_quality": "record_result_no_retry_and_apply_existing_T04_or_honest_block_rules"
+  },
+  "stage_disposition": {
+    "S2_T03": "blocked_pending_one_consolidated_zero_call_WWC_repair_and_proof",
+    "S2_T04": "not_entered",
+    "model_selection": "not_permitted",
+    "S2": "not_passed",
+    "S3_to_S5": "not_started",
+    "release_qualified": false
+  },
+  "observed_counts_this_decision": {
+    "runtime_code_changes": 0,
+    "credential_reads": 0,
+    "model_provider_network_calls": [0, 0, 0],
+    "new_admissions_or_replacement_calls": [0, 0],
+    "business_Run_or_Artifact_writes": 0
+  },
+  "next_action": "FIN-0.1.2-S2-T03-WWC-CONTRACT-PARITY-AND-ROW-LOCAL-CLAIM-BINDING-CONSOLIDATED-ZERO-CALL-IMPLEMENTATION",
+  "next_action_authorized": false,
+  "known_boundary": "This decision selects one bounded WWC comparator repair. It does not implement v2, close RC-P36-102/103, authorize the replacement pair, rank models, enter T04, run a full chain, or change the product version."
+}

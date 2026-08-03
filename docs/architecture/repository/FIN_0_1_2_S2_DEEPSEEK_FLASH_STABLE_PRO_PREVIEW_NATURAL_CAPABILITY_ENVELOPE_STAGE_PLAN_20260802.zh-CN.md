@@ -118,3 +118,22 @@ Fact、Claim 的 Flash/Pro 四项均通过，Pro WWC 通过；Flash WWC 在本�
 当前下一项：
 
 `FIN-0.1.2-S2-T03-WWC-REVIEW-CADENCE-DATE-ALIAS-MODEL-VISIBLE-CONTRACT-PARITY-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-DISPOSITION-DECISION`
+
+## 14. WWC 零调用处置结果
+
+处置没有只停在日期条件。对 Pro WWC 受限 capture 做零调用本地重放时发现，Provider 原始 claim aliases=`Q001/Q002/Q001`，本地映射分别包含 `local_claim:001/002`，但最终三个 WWC tasks 全部写成 `local_claim:001`。首因是 `_assemble_wwc` 的最终循环使用了前一候选循环结束后残留的 `claim_alias`，而不是当前 selected atom 的 alias；校验器没有检查最终 task-to-selected-atom 对应，因此形成 false green。登记 RC-P36-103。
+
+因此六调用 immutable terminal 状态仍保持 `5 pass / 1 failed`，但模型能力解释更正为：Fact/Claim 四项是有效 positive evidence；Flash WWC 被未公开规则污染，Pro WWC 被本地 row-binding false green 污染，WWC 公平证据为 0。不得把 Pro WWC terminal pass 用于排名。
+
+两个缺陷归属同一个 S2-T03 WWC comparator owner，合并为唯一 `fin_0_1_2.S2.WWC_model_visible_contract_and_row_local_claim_binding:v2` 实现包：
+
+- `bound_date` 必须携带 allowed non-NONE date alias，其他 cadence 必须精确为 `NONE`；同一声明生成模型可见合同、wire schema、system instruction、本地 validator、fake、mutation 和 typed failure；
+- 最终 `claim_id` 必须从每个 selected normalized atom 的 `claim_alias` 展开，禁止读取循环终态；
+- 用 DELL/MU/NVDA、日期正负矩阵、多 Claim、selection reorder/permutation/subset 以及受限 Pro replay 做零调用证明；
+- 不修改 Fact/Claim family，不做 prompt-only patch，不放宽 numeric/date/identity/lineage，不扩展到 full-chain。
+
+实现和独立 proof 通过后，才可另行审查一次 MU WWC Flash/Pro 两调用 replacement authority；Fact/Claim 不重跑。若 replacement 再出现新项目缺陷，S2 honest block，不进入第二实现包；真实模型不遵循或质量弱则记录结果，不重试。
+
+当前下一项：
+
+`FIN-0.1.2-S2-T03-WWC-CONTRACT-PARITY-AND-ROW-LOCAL-CLAIM-BINDING-CONSOLIDATED-ZERO-CALL-IMPLEMENTATION`

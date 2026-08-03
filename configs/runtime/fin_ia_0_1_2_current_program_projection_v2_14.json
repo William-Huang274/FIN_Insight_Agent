@@ -1,0 +1,77 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S2-T03-WWC-TWO-PROJECT-DEFECTS-ONE-REPAIR-NEXT-R15",
+  "recorded_at": "2026-08-03T09:54:13+08:00",
+  "status": "current_FIN_0_1_2_S2_T03_one_consolidated_WWC_repair_selected_implementation_not_authorized",
+  "lifecycle_state": "in_progress",
+  "decision_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s2_t03_wwc_contract_parity_row_local_claim_binding_and_replacement_pair_disposition_decision_v1_0.json",
+    "sha256": "9e451b99397a231830acbe052db08d3b1c0ed606e63ee1a489fad6bf94390c25",
+    "binding_role": "S2_T03_WWC_two_project_defects_one_repair_and_replacement_pair_disposition"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S2",
+    "active_slice": "FIN_0_1_2_S2_T03_WWC_CONSOLIDATED_COMPARATOR_REPAIR",
+    "current_next_action": "FIN-0.1.2-S2-T03-WWC-CONTRACT-PARITY-AND-ROW-LOCAL-CLAIM-BINDING-CONSOLIDATED-ZERO-CALL-IMPLEMENTATION",
+    "current_stage_status": "S2_T03_two_project_WWC_defects_confirmed_one_zero_call_repair_selected_not_implemented",
+    "S2_started": true,
+    "S2_stage_plan_passed": true,
+    "S2_T02_engineering_passed": true,
+    "S2_model_calls": 6,
+    "S2_terminal_results": 6,
+    "S2_restricted_captures": 6,
+    "S2_replacement_pair_calls": 0,
+    "fair_capability_evidence_calls": 4,
+    "WWC_fair_capability_evidence_calls": 0,
+    "completed_current_stages": {
+      "S0": "pass_closed",
+      "S1": "pass_closed_current_consolidated_baseline"
+    },
+    "current_S2_tasks": {
+      "S2_T01": "pass",
+      "S2_T02": "engineering_pass",
+      "S2_T03": "blocked_one_consolidated_WWC_repair_selected",
+      "S2_T04": "not_entered_blocked_by_invalid_WWC_pair"
+    },
+    "downstream_stages_started": {"S2": true, "S3": false, "S4": false, "S5": false},
+    "open_issue_ids": [
+      "RC-P36-102-fin-0-1-2-s2-t03-wwc-review-cadence-date-alias-model-visible-contract-parity-gap",
+      "RC-P36-103-fin-0-1-2-s2-t03-wwc-selected-task-claim-binding-loop-state-leak"
+    ],
+    "model_candidates": ["deepseek:deepseek-v4-flash", "deepseek:deepseek-v4-pro"],
+    "model_selection": "not_permitted",
+    "replacement_pair": "eligible_after_implementation_and_proof_but_not_authorized",
+    "strict_schema_transport": "sub2api_gpt_5_5_parked_nonblocking_separate_handoff",
+    "FIN_0_1_3_role": "historical_FIN_0_1_2_S0_recovery_attempt_family",
+    "FIN_0_1_4_role": "historical_unexecuted_S0_improvement_proposal",
+    "FIN_0_2": "Earnings_Review_Alpha_unchanged",
+    "release_qualified": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "product_plan": "docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md",
+    "S2_technical_plan": "docs/architecture/repository/FIN_0_1_2_S2_DEEPSEEK_FLASH_STABLE_PRO_PREVIEW_NATURAL_CAPABILITY_ENVELOPE_STAGE_PLAN_20260802.zh-CN.md",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "S2_T03_execution_result": "configs/releases/fin_ia_0_1_2_s2_t03_mu_flash_stable_vs_pro_preview_exact_six_call_execution_result_and_project_contract_gap_v1_0.json",
+    "S2_T03_disposition": "configs/releases/fin_ia_0_1_2_s2_t03_wwc_contract_parity_row_local_claim_binding_and_replacement_pair_disposition_decision_v1_0.json"
+  },
+  "historical_projection_policy": {
+    "immutable_event_files_remain_valid_for_historical_facts": true,
+    "historical_files_may_own_current_next_or_backlog_tail": false,
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_13.json",
+    "superseded_projection_deleted_or_rewritten": false
+  },
+  "execution_authority": {
+    "zero_call_disposition_consumed": true,
+    "consolidated_zero_call_implementation_authorized": false,
+    "replacement_pair_authorized": false,
+    "model_provider_network_calls_authorized": 0,
+    "automatic_retry_fallback_provider_hopping_authorized": false,
+    "T04_or_model_selection_authorized": false,
+    "business_Run_or_Artifact_writes_authorized": false,
+    "full_chain_authorized": false
+  }
+}

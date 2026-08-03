@@ -70,13 +70,15 @@ StagePlan 同时发现 `common_runtime_contract_family_source_v1_0` 的状态文
 
 RC-P36-102 留在 S2-T03。进一步的受限 Pro 结果重放还发现本地 task assembly 把多 Claim atoms 错绑到循环结束时的最后一个 Claim，形成 terminal false green，登记 RC-P36-103。因此有效能力证据只有 Fact/Claim 四项，WWC 两模型都必须重新公平测量；T04、模型排名和主线模型选择均未进入。
 
-唯一 WWC v1.2 零调用结构包现已工程通过。cadence/date 条件由同一声明投影到模型可见合同、wire、instruction、validator、fake 和 typed failure；最终 Claim 与 Authority 均从各自 selected atom 展开。测试矩阵在开发轮内达到 focused=`31/31`、相关回归=`89/89`，三案 fake 各 6/6，受限 Pro capture 重放不再把 `Q001/Q002/Q001` 压成单一 Claim。实现时还发现 `authority_refs` 与 Claim 相同地读取循环终态，已在同一根因、同一包内收口，没有开启第二补丁包。
+唯一 WWC v1.2 零调用结构包现已工程通过。cadence/date 条件由同一声明投影到模型可见合同、wire、instruction、validator、fake 和 typed failure；最终 Claim 与 Authority 均从各自 selected atom 展开。测试矩阵在开发轮内达到 focused=`31/31`、相关回归=`138/138`，三案 fake 各 6/6，受限 Pro capture 重放不再把 `Q001/Q002/Q001` 压成单一 Claim。实现时还发现 `authority_refs` 与 Claim 相同地读取循环终态，已在同一根因、同一包内收口，没有开启第二补丁包。
 
-旧 v1.1 资源和历史 S4 authority 没有改写；v1.2 只属于 S2 paired-canary。RC-P36-102/103 暂不关闭，因为同轮工程测试不等于独立 proof，更不等于公平模型结果。当前下一项：
+旧 v1.1 资源和历史 S4 authority 没有改写；v1.2 只属于 S2 paired-canary。随后两个 fresh Python process 在两个独立 disposable roots 中完成零调用复证：凭据环境清除、网络硬阻断、8 项实现 binding、v1.1 immutable hash、日期正负矩阵、逐行 Claim/Authority、permutation、6→3 selection、三案 fake 和受限形状重放结果逐字节相同。独立 proof 因此通过，但 RC-P36-102/103 仍不关闭，因为还没有公平自然 WWC 输出。
 
-`FIN-0.1.2-S2-T03-WWC-V2-INDEPENDENT-ZERO-CALL-PROOF-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-AUTHORITY-DECISION`
+现已签发“有条件的未来两调用 authority”：只允许 MU 的 WWC family，Flash stable 与 Pro preview 各一次；Fact/Claim 不重跑，retry/fallback/provider hopping 均为 0，总预算上限 `2 calls / 10k input / 2.8k output / USD 0.015 / 300s`。该权限必须先经过专用 two-call runner、atomic capture-first、terminal materialization、fresh identity 与预算的零调用 preflight，当前不能读取凭据或执行。当前下一项：
 
-该下一项仍为零模型调用：独立复证 v1.2，并决定是否另行签发最多 2 次 MU WWC replacement authority；不得在同一项直接执行两次调用、重跑 Fact/Claim、进入 T04 或选择模型。
+`FIN-0.1.2-S2-T03-WWC-V1.2-REPLACEMENT-PAIR-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`
+
+该下一项仍为零模型调用；不得在同一项执行两次 replacement、重跑 Fact/Claim、进入 T04 或选择模型。
 
 以下 S0 收口说明保留为 preceding current-baseline evidence：
 

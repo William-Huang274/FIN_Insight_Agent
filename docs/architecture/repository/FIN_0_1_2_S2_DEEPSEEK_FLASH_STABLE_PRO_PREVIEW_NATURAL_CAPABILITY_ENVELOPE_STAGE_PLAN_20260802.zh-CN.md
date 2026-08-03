@@ -155,3 +155,17 @@ RC-P36-102/103 状态为 `implementation pass / independent proof pending`，尚
 `FIN-0.1.2-S2-T03-WWC-V2-INDEPENDENT-ZERO-CALL-PROOF-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-AUTHORITY-DECISION`
 
 该项不调用模型，只做独立复证和两调用 authority 判断；replacement pair、T04 与模型选择仍未授权。
+
+## 16. WWC v1.2 独立复证与 replacement 条件权限
+
+独立 proof 已在两个 fresh Python process 与两个 distinct disposable roots 中完成。每个进程均清除 credential 环境、安装 network deny guard，并重新验证 8 项 implementation binding、v1.1 source/binding immutable hash、单一 date rule、日期正负矩阵、row-local Claim/Authority、provider permutation、6→3 stable selection、DELL/MU/NVDA 各 6/6 fake，以及受限 Pro 形状的两 Claim 重放。两个 normalized proof outputs 逐字节一致，target binding fingerprint 前后不变；模型、Provider、网络、业务 Run/Artifact 均为 0。
+
+因此只签发 conditional future replacement authority：MU `what_would_change_atoms`，Flash stable 与 Pro preview 各 1 次，request digest=`0c52c9ab...81c2`，equivalence digest=`543836b6...de90`。Fact/Claim 不重跑；每调用最多一次 transport attempt，retry/fallback/provider hopping/prompt-only retry=0，总上限 `2 calls / 10k input / 2.8k output / USD 0.015 / 300s`。
+
+该 authority 尚未生效为执行许可。必须先实现专用 exact-two-call runner，并以零调用证明 authority/resource digest、fresh execution identity、atomic restricted capture-before-validation、terminal result、预算和 stop rules。RC-P36-102/103 推进到 `independent proof pass / fair replacement measurement pending`，仍保持 open；T04 与模型选择未进入。
+
+当前下一项：
+
+`FIN-0.1.2-S2-T03-WWC-V1.2-REPLACEMENT-PAIR-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`
+
+下一项不得读取凭据或执行 replacement pair；runner/preflight 通过后仍需另行确认 exact execution 边界。

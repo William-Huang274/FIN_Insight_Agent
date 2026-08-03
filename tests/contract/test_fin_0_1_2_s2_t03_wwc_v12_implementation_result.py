@@ -92,13 +92,14 @@ def test_current_projection_and_backlog_bind_the_implementation() -> None:
     assert projection["execution_authority"]["replacement_pair_authorized"] is False
 
     current = backlog["next_action"]
-    assert current["item_id"] == result["next_action"]
-    assert current["current_projection_ref"] == projection_ref
-    assert current["current_projection_sha256"] == projection_sha
+    assert current["item_id"] != result["next_action"]
+    assert current["current_projection_ref"] != projection_ref
+    assert current["current_projection_sha256"] != projection_sha
     assert current["S2_T03_consolidated_zero_call_implementation_ref"] == result_ref
     assert current["S2_T03_consolidated_zero_call_implementation_sha256"] == result_sha
-    assert current["S2_T03_independent_zero_call_proof_authorized"] is False
-    assert current["S2_T03_future_WWC_replacement_pair_authorized"] is False
+    assert current["S2_T03_independent_zero_call_proof_authorized"] is True
+    assert current["S2_T03_future_WWC_replacement_pair_authorized"] is True
+    assert current["S2_T03_replacement_pair_execution_authorized_now"] is False
 
 
 def test_history_and_project_os_state_remain_honest() -> None:
@@ -114,12 +115,17 @@ def test_history_and_project_os_state_remain_honest() -> None:
     latest_103 = [row for row in root_causes if "RC-P36-103" in row["issue_id"]][-1]
     assert latest_102["status"] == "open"
     assert latest_103["status"] == "open"
-    assert latest_102["verification"]["implementation_executed"] is True
-    assert latest_103["verification"]["same_root_authority_refs_leak_fixed"] is True
+    assert latest_102["verification"]["independent_zero_call_proof"] is True
+    assert latest_103["verification"]["row_local_claim_authority_matrix"] == "pass"
 
     capabilities = _load_jsonl(CAPABILITY_LEDGER)
-    assert capabilities[-1]["status"].startswith("engineering_pass")
-    assert capabilities[-1]["authority"]["replacement_pair_authorized"] is False
+    assert capabilities[-1]["status"].startswith("independent_proof_pass")
+    assert capabilities[-1]["authority"][
+        "future_replacement_pair_conditionally_authorized"
+    ] is True
+    assert capabilities[-1]["authority"][
+        "replacement_execution_authorized_now"
+    ] is False
     patterns = _load_jsonl(PATTERN_LEDGER)
-    assert patterns[-1]["verification"]["runtime_implementation"] is True
-    assert patterns[-1]["verification"]["independent_zero_call_proof"] is False
+    assert patterns[-1]["verification"]["fresh_processes"] == 2
+    assert patterns[-1]["verification"]["replacement_calls_executed"] == 0

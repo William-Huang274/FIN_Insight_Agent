@@ -113,4 +113,5 @@ def test_projection_and_backlog_advance_only_to_zero_call_implementation() -> No
     assert current["S2_T03_disposition_sha256"] == decision_sha
     assert current["S2_T03_fair_Fact_Claim_WWC_outcome_counts"] == [4, 0]
     assert current["S2_T03_consolidated_zero_call_implementation_authorized"] is True
-    assert current["S2_T03_future_WWC_replacement_pair_authorized"] is False
+    assert current["S2_T03_future_WWC_replacement_pair_authorized"] is True
+    assert current["S2_T03_replacement_pair_execution_authorized_now"] is False

@@ -1,0 +1,161 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_t03_wwc_v12_independent_zero_call_proof_and_replacement_pair_conditional_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S2-T03-WWC-V2-INDEPENDENT-ZERO-CALL-PROOF-AND-AFFECTED-FAMILY-REPLACEMENT-PAIR-AUTHORITY-DECISION",
+  "recorded_at": "2026-08-03T10:54:54+08:00",
+  "status": "pass_two_fresh_process_zero_call_proof_replacement_pair_conditionally_authorized_runner_preflight_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "independent_zero_call_proof_authorized_and_executed": true,
+    "future_replacement_pair_conditionally_authorized": true,
+    "conditional_authority_effective_only_after_bound_runner_atomic_capture_preflight": true,
+    "current_credential_read_authorized": false,
+    "current_model_provider_network_calls_authorized": 0,
+    "current_replacement_pair_execution_authorized": false,
+    "T04_assessment_or_model_selection_authorized": false
+  },
+  "source_bindings": {
+    "implementation_ref": "configs/releases/fin_ia_0_1_2_s2_t03_wwc_contract_parity_and_row_local_binding_consolidated_zero_call_implementation_v1_0.json",
+    "implementation_sha256": "dad28688aac43ad9369461437e5dc656bf308a2f45f86b516407df4e5ef7bc77",
+    "proof_generator_ref": "scripts/releases/prepare_fin_ia_0_1_2_s2_t03_wwc_v12_independent_proof_and_replacement_authority.py",
+    "proof_generator_sha256": "d82a31789c79224a7496eee2734153795dc9de38937523cde80a650f3a9b6357",
+    "verified_implementation_binding_count": 8,
+    "implementation_binding_fingerprint": "c4ede9ecf2355bd456200c87f6a9676426d4ff0d76ff75034d8e6ae54bfbf823"
+  },
+  "independent_proof": {
+    "fresh_processes": 2,
+    "distinct_disposable_roots": 2,
+    "normalized_outputs_byte_equal": true,
+    "credential_environment_scrubbed": true,
+    "network_guard_installed": true,
+    "target_binding_state_before": "c4ede9ecf2355bd456200c87f6a9676426d4ff0d76ff75034d8e6ae54bfbf823",
+    "target_binding_state_after": "c4ede9ecf2355bd456200c87f6a9676426d4ff0d76ff75034d8e6ae54bfbf823",
+    "target_binding_state_unchanged": true,
+    "result_digest": "5a0b542fefbe2eeb9a50e8f788cff0e18f2d286ea0c2f1fa7e68e69fa7b7fa85",
+    "matrix": {
+      "business_Run_or_Artifact_writes": 0,
+      "contract_ref": "fin_0_1_2.common_runtime.judgment_atom_family:v1.2.0",
+      "credential_reads": 0,
+      "date_negative_typed_capture_first_count": 3,
+      "date_positive_matrix": "pass",
+      "date_rule_digest": "4e58df35c93a3f9b329637d8d47780772accb669650b46275ad0449b3e572dac",
+      "disposable_root_used": true,
+      "equivalence_digest": "543836b68295bb7fdab4e4db44011d7bff5384e6f536f440b7e912309347de90",
+      "historical_v11_source_binding_immutable": true,
+      "implementation_sha256": "dad28688aac43ad9369461437e5dc656bf308a2f45f86b516407df4e5ef7bc77",
+      "model_provider_network_calls": [0, 0, 0],
+      "provider_permutation_and_six_to_three_selection": "pass",
+      "replacement_pair_fake_statuses": ["pass", "pass"],
+      "request_digest": "0c52c9ab17fdfde457686a4ff15326e83ea0a5f8cd04207fa25aeada454881c2",
+      "row_local_claim_authority_matrix": "pass",
+      "sanitized_restricted_shape_replay_unique_claim_ids": 2,
+      "status": "pass",
+      "three_case_full_fake": {
+        "DELL": [6, 6],
+        "MU": [6, 6],
+        "NVDA": [6, 6]
+      }
+    }
+  },
+  "replacement_pair_conditional_authority": {
+    "authority_id": "FIN-0.1.2-S2-T03-MU-WWC-V1.2-FLASH-STABLE-VS-PRO-PREVIEW-REPLACEMENT-PAIR-R1",
+    "status": "conditional_future_exact_two_call_authority_issued_unconsumed",
+    "execution_identity": "fin012-s2-t03-mu-wwc-v12-replacement-pair-r1",
+    "case": "MU",
+    "program_cell_id": "demand_authenticity_and_sustainability",
+    "family": "what_would_change_atoms",
+    "exact_call_count": 2,
+    "Fact_or_Claim_rerun": false,
+    "call_plan": [
+      {
+        "call_id": "fin012-s2-mu-what_would_change_atoms-flash_stable-replacement-r1",
+        "candidate_id": "flash_stable",
+        "family_id": "what_would_change_atoms",
+        "model": "deepseek-v4-flash",
+        "model_ref": "deepseek:deepseek-v4-flash",
+        "model_visible_request_digest": "0c52c9ab17fdfde457686a4ff15326e83ea0a5f8cd04207fa25aeada454881c2",
+        "request_equivalence_digest": "543836b68295bb7fdab4e4db44011d7bff5384e6f536f440b7e912309347de90"
+      },
+      {
+        "call_id": "fin012-s2-mu-what_would_change_atoms-pro_preview-replacement-r1",
+        "candidate_id": "pro_preview",
+        "family_id": "what_would_change_atoms",
+        "model": "deepseek-v4-pro",
+        "model_ref": "deepseek:deepseek-v4-pro",
+        "model_visible_request_digest": "0c52c9ab17fdfde457686a4ff15326e83ea0a5f8cd04207fa25aeada454881c2",
+        "request_equivalence_digest": "543836b68295bb7fdab4e4db44011d7bff5384e6f536f440b7e912309347de90"
+      }
+    ],
+    "request_digest": "0c52c9ab17fdfde457686a4ff15326e83ea0a5f8cd04207fa25aeada454881c2",
+    "equivalence_digest": "543836b68295bb7fdab4e4db44011d7bff5384e6f536f440b7e912309347de90",
+    "provider_route": {
+      "provider": "deepseek",
+      "base_url": "https://api.deepseek.com/beta",
+      "wire_api": "chat_completions_json_object",
+      "thinking": "disabled",
+      "reasoning_effort": "none",
+      "temperature": 0.0,
+      "stream": false,
+      "timeout_seconds_per_call": 120
+    },
+    "hard_budget": {
+      "semantic_model_calls": 2,
+      "maximum_transport_attempts_per_call": 1,
+      "retry_budget": 0,
+      "fallback_budget": 0,
+      "provider_hopping_budget": 0,
+      "prompt_only_retry_budget": 0,
+      "maximum_input_tokens": 10000,
+      "maximum_output_tokens": 2800,
+      "maximum_total_cost_usd": 0.015,
+      "maximum_wall_clock_seconds": 300,
+      "business_Run_or_Artifact_writes": 0
+    },
+    "capture_requirements": {
+      "capture_before_local_validation": true,
+      "full_model_visible_request_and_final_assistant_output": true,
+      "safe_terminal_usage_finish_reason_and_model": true,
+      "credentials_headers_cookies_private_reasoning_excluded": true,
+      "failed_output_business_promotable": false
+    },
+    "preconditions_before_execution": [
+      "dedicated_exact_two_call_runner_binds_this_authority_and_v1_2_resources",
+      "atomic_restricted_capture_and_terminal_result_zero_call_preflight_passes",
+      "fresh_execution_identity_is_unclaimed",
+      "credential_presence_is_checked_without_value_persistence",
+      "Project_OS_and_budget_preflights_pass"
+    ],
+    "automatic_execution_now": false
+  },
+  "issue_disposition": {
+    "RC_P36_102": "independent_proof_pass_fair_replacement_measurement_pending",
+    "RC_P36_103": "independent_proof_pass_fair_replacement_measurement_pending",
+    "issues_closed_now": 0,
+    "reason": "deterministic repair is independently reproduced but no fair natural WWC replacement outputs exist"
+  },
+  "stage_acceptance": {
+    "S2_T03_WWC_v12_independent_proof": "pass",
+    "S2_T03_replacement_pair": "conditionally_authorized_not_executed",
+    "S2_T03_fair_WWC_measurement": "pending",
+    "S2_T04": "not_entered",
+    "S2": "not_passed",
+    "S3_to_S5": "not_started",
+    "release_qualified": false
+  },
+  "observed_counts": {
+    "fresh_processes": 2,
+    "disposable_roots": 2,
+    "credential_reads": 0,
+    "model_provider_network_calls": [0, 0, 0],
+    "replacement_pair_calls": 0,
+    "business_Run_or_Artifact_writes": 0
+  },
+  "stop_rules": {
+    "runner_or_preflight_failure": "stop_no_execution",
+    "new_project_owned_failure_after_replacement": "S2_honest_block_no_second_repair_bundle",
+    "true_model_noncompliance_or_weak_quality": "record_once_no_retry_then_T04_or_honest_block",
+    "automatic_second_repair_or_replacement_pair": false
+  },
+  "next_action": "FIN-0.1.2-S2-T03-WWC-V1.2-REPLACEMENT-PAIR-BOUND-RUNNER-ATOMIC-CAPTURE-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION",
+  "next_action_authorized": false,
+  "known_boundary": "Independent proof and conditional authority do not execute or qualify either model, close RC-P36-102/103, enter T04, pass S2, produce business Artifacts, or qualify a release."
+}

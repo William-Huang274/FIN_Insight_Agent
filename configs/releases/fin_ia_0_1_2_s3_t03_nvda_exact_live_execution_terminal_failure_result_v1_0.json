@@ -1,0 +1,176 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_terminal_failure_result_v1_0",
+  "result_id": "FIN-0.1.2-S3-T03-NVDA-PRIMARY-R1-EXACT-LIVE-TERMINAL-FAILURE",
+  "recorded_at": "2026-08-04T01:20:00+08:00",
+  "status": "terminal_failed_first_credible_research_lead_semantic_failure_no_retry",
+  "authority": {
+    "user_instruction": "继续",
+    "execution_authority_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_authority_decision_r2_v1_0.json",
+    "execution_authority_sha256": "15ab88fdb3729b41df28db3540d61bc78a2106d710389b25569fc6ad6b137c61",
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_fresh_exact_admission_r1.json",
+    "admission_digest": "eed177b1124c8db930193196f71eb653b85a2b24d9c92a192251984def4fd1c8",
+    "admission_consumed": true,
+    "automatic_retry_fallback_replay_relaunch_or_replacement": [0, 0, 0, 0, 0],
+    "paired_assessment_owner_acceptance_or_S3_T04_performed": false
+  },
+  "execution_identity": {
+    "case": "NVDA",
+    "case_id": "case_e0b4021838a913c4ad21c328",
+    "execution_identity": "fin012-s3-t03-nvda-primary-r1",
+    "runtime_root": ".codex_runtime/fin012-s3-t03-nvda-primary-r1",
+    "supervision_root": ".codex_runtime/fin012-s3-t03-nvda-primary-r1-supervision",
+    "envelope_digest": "5f04852451a96c670e539eb79ced472c31615f79d4d491e9bfae57bf55ea37f7",
+    "complete_input_digest": "b9cc749d0d2351e228750343a61d3fc03abfc8a70870fa96d12c8a03f118e085",
+    "stable_business_input_digest": "a19743ffdaa63319a5381262adc9c5b04751abadc9bc4781561c1aa905b744fc",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "research_lead_transport_ref": "fin01.s3.bounded_agent.research_lead_owner_grade:v6"
+  },
+  "supervision_result": {
+    "parent_status": "completed_with_child_terminal",
+    "child_exit_code": 2,
+    "timed_out": false,
+    "launch_failed": false,
+    "wall_clock_seconds": 63.172,
+    "terminal_materialized": true,
+    "launch_receipt_sha256": "ab49a408bfbb8c0e8564a1975fe34bffb3a72c7a3ce2a0ee9a14dd7658a06232",
+    "exit_receipt_sha256": "1edef74b8143cede663a8c98c0c5bd798c617919a618ebbf5adeaa55594ef3d5",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_bytes": 0,
+    "stderr_sha256": "58acfb2bb07f48359b1f3f7eeea9f975d12840f34fa92f958aa27b48d64b63a5",
+    "stderr_bytes": 845,
+    "credential_value_persisted": false
+  },
+  "typed_terminal": {
+    "status": "failed",
+    "phase": "research_lead",
+    "code": "s3_bounded_research_lead_v3_semantic_fact_presence_summary_mismatch",
+    "execution_result_sha256": "09a0bf6bb643cec69ced0728c98e3b779fcf4825ffb8829924664d2dd245111c",
+    "execution_result_bytes": 9884,
+    "execution_state_sha256": "a40b71e4c033748d0746c9b5464906b73d638a601095b6d2375d1c8017014aa9",
+    "capture_index_sha256": "b235ff9096d280a61fcecaaa9f3a5347e694288c9fd1506c30215fa5242ec7a2",
+    "terminal_object_digest": "7c6847f297e6f605839b2e9ef6be3cb2d7735aa3d710cf9a3fc02cdb288ba221",
+    "terminal_object_bytes": 7231,
+    "failed_output_quarantined": true,
+    "business_promotable": false,
+    "credential_value_persisted": false,
+    "private_reasoning_persisted": false,
+    "raw_provider_response_persisted": false
+  },
+  "observed_execution": {
+    "local_fact_receipts": 3,
+    "provider_calls": 7,
+    "execution_network_calls": 7,
+    "restricted_captures": 7,
+    "completed_specialist_provider_segments": 6,
+    "research_lead_provider_calls": 1,
+    "memo_writer_calls": 0,
+    "verifier_calls": 0,
+    "business_artifacts": 0,
+    "input_tokens": 37107,
+    "output_tokens": 2310,
+    "total_tokens": 39417,
+    "estimated_cost_usd": 0.01815124,
+    "maximum_provider_calls": 9,
+    "maximum_total_cost_usd": 0.06,
+    "budget_exceeded": false,
+    "all_provider_finish_reasons": "stop",
+    "all_transport_attempt_counts": 1
+  },
+  "restricted_capture_metadata": [
+    {
+      "sequence": 1,
+      "stage": "domain_specialist:demand_authenticity_and_sustainability:owner_grade_claim_cards",
+      "digest": "47c62e2ff20f6e91b17ad0399b057e2ad5993b97d08ac3582096e2a318dd4e34",
+      "usage": [3275, 85, 3360]
+    },
+    {
+      "sequence": 2,
+      "stage": "domain_specialist:demand_authenticity_and_sustainability:actionable_what_would_change_tasks",
+      "digest": "a95ee3e699224c4d4675515f790db1b369989c0a1c8eb6a99467197b1b9d4242",
+      "usage": [4196, 352, 4548]
+    },
+    {
+      "sequence": 3,
+      "stage": "domain_specialist:value_and_profit_capture:owner_grade_claim_cards",
+      "digest": "ab64faa64f6abff6c600d2b2f13389ce9211c911f2c7fe0534ff733559bdf733",
+      "usage": [6172, 148, 6320]
+    },
+    {
+      "sequence": 4,
+      "stage": "domain_specialist:value_and_profit_capture:actionable_what_would_change_tasks",
+      "digest": "760f008191cf5dd072e766444a9bfcab233b95a6f42ba36615bbe50219b9f614",
+      "usage": [7457, 349, 7806]
+    },
+    {
+      "sequence": 5,
+      "stage": "domain_specialist:bottleneck_counterevidence_and_what_would_change:owner_grade_claim_cards",
+      "digest": "aece6ebbc361a08e4b8b8b843e64433f982ceabb79350a81a2e0ff2c82d11264",
+      "usage": [3414, 88, 3502]
+    },
+    {
+      "sequence": 6,
+      "stage": "domain_specialist:bottleneck_counterevidence_and_what_would_change:actionable_what_would_change_tasks",
+      "digest": "59a83084fda41b94f3b8d48b20d386ec19203568541b8ac4aff14889fb9f324b",
+      "usage": [4264, 354, 4618]
+    },
+    {
+      "sequence": 7,
+      "stage": "research_lead",
+      "digest": "f60b5aaa598ecd34a1d81728849fbf5ace5a154c7d6e9313e8d98a1e2b7af792",
+      "usage": [8329, 934, 9263]
+    }
+  ],
+  "first_failure_analysis": {
+    "provider_transport_or_json_failure": false,
+    "direct_model_semantic_error_observed": true,
+    "project_contract_regression_observed": true,
+    "claim_alias_support_truth": {
+      "C001": "no_direct_support_facts",
+      "C002": "no_direct_support_facts",
+      "C003": "three_direct_support_facts",
+      "C004": "no_direct_support_facts"
+    },
+    "observed_conflict_rows": [
+      {
+        "claim_aliases": ["C001", "C002"],
+        "provider_summary": "mixed_fact_presence",
+        "deterministic_expected_summary": "no_facts_present",
+        "provider_narrative_also_treated_C002_as_fact_supported": true
+      },
+      {
+        "claim_aliases": ["C001", "C004"],
+        "provider_summary": "no_facts_present",
+        "deterministic_expected_summary": "no_facts_present",
+        "provider_narrative_consistent": true
+      },
+      {
+        "claim_aliases": ["C002", "C004"],
+        "provider_summary": "mixed_fact_presence",
+        "deterministic_expected_summary": "no_facts_present",
+        "provider_narrative_also_treated_C002_as_fact_supported": true
+      }
+    ],
+    "adjacent_alias_conflation": "The Lead output repeatedly assigned C003's three direct-support Facts and bounded-inference semantics to C002, while treating C003 as unsupported. This is broader than one enum typo.",
+    "known_prior_capability": "Lead-v7 already removes Provider ownership of fact_presence_summary and was exact-live proven under RC-P36-078 in FIN 0.1 S4-T06.",
+    "regression": "The FIN 0.1.2 current admission bound Research Lead-v6, reintroducing Provider ownership of the deterministic fact-presence enum instead of carrying the proven Lead-v7 ownership boundary forward.",
+    "responsibility": "The model returned semantically wrong Claim aliases despite a closed request, but the project owns the larger regression because it re-authorized a deterministic field to the model and did not detect loss of the proven v7 boundary during consolidated-contract planning. The adjacent C002/C003 narrative conflation still requires explicit zero-call scope treatment; switching the enum alone is not enough evidence of product safety."
+  },
+  "issue": {
+    "issue_id": "RC-P36-108-fin-0-1-2-s3-t03-research-lead-deterministic-fact-presence-and-claim-alias-semantic-ownership-regression",
+    "owned_by_stage": "FIN-0.1.2-S3-T03",
+    "model_or_provider_fault_established": true,
+    "provider_transport_fault_established": false,
+    "project_owned_contract_regression_established": true,
+    "S0_S1_or_S2_reopened": false
+  },
+  "stage_acceptance": {
+    "S3_T03_execution": "immutable_terminal_failed",
+    "S3_T03_primary_exact_attempts_remaining": 0,
+    "S3_T04": "blocked",
+    "current_NVDA_R2": false,
+    "release": "not_qualified"
+  },
+  "next_action": "FIN-0.1.2-S3-T03-NVDA-RESEARCH-LEAD-LOCAL-FACT-PRESENCE-AND-CLAIM-ALIAS-SEMANTIC-OWNERSHIP-REGRESSION-DISPOSITION-DECISION",
+  "next_action_authorized": false,
+  "known_boundary": "This immutable result records the only authorized primary exact-live. It does not authorize a replay, replacement admission, prompt patch, Lead-v7 switch, broader semantic planner change, paired assessment, Owner acceptance or S3-T04. The next item is zero-call disposition only."
+}

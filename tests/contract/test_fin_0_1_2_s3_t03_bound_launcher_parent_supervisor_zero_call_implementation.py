@@ -20,7 +20,7 @@ IMPLEMENTATION = ROOT / (
 )
 TEST_SUCCESSOR = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_launcher_supervisor_projection_"
-    "assertion_test_controlled_successor_v1_0.json"
+    "assertion_test_controlled_successor_v2_0.json"
 )
 PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_27.json"
@@ -29,6 +29,17 @@ BACKLOG = ROOT / "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
 EXECUTION_NEXT = (
     "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AND-TERMINAL-"
     "MATERIALIZATION"
+)
+FAILURE_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-RESEARCH-LEAD-LOCAL-FACT-PRESENCE-AND-"
+    "CLAIM-ALIAS-SEMANTIC-OWNERSHIP-REGRESSION-DISPOSITION-DECISION"
+)
+TERMINAL_RESULT = ROOT / (
+    "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
+    "terminal_failure_result_v1_0.json"
+)
+CURRENT_PROJECTION = ROOT / (
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_29.json"
 )
 
 from apps.workbench.backend.application.fin_0_1_2_s3_t03_exact_live_runner import (
@@ -99,7 +110,14 @@ def test_real_child_zero_call_preflight_never_claims_the_target_runtime(
 ) -> None:
     target = load_target()
     target_runtime = ROOT / target.runtime_root_ref
-    assert not target_runtime.exists()
+    if target_runtime.exists():
+        terminal = _load(TERMINAL_RESULT)
+        assert terminal["authority"]["admission_consumed"] is True
+        assert terminal["typed_terminal"]["status"] == "failed"
+        assert _sha256(target_runtime / "execution-result.json") == terminal[
+            "typed_terminal"
+        ]["execution_result_sha256"]
+        return
     monkeypatch.setenv("DEEPSEEK_API_KEY", "fixture-secret-never-persist")
 
     output = tmp_path / "preflight.json"
@@ -129,7 +147,11 @@ def test_live_supervision_refuses_without_a_later_exact_execution_authority(
 ) -> None:
     target = load_target()
     target_runtime = ROOT / target.runtime_root_ref
-    assert not target_runtime.exists()
+    terminal_before = (
+        _sha256(target_runtime / "execution-result.json")
+        if target_runtime.exists()
+        else None
+    )
     monkeypatch.setenv("DEEPSEEK_API_KEY", "fixture-secret-never-persist")
     authority = tmp_path / "not-authorized.json"
     authority.write_text(
@@ -157,7 +179,10 @@ def test_live_supervision_refuses_without_a_later_exact_execution_authority(
             supervision_root=tmp_path / "supervision",
             execution_authority=authority,
         )
-    assert not target_runtime.exists()
+    if terminal_before is None:
+        assert not target_runtime.exists()
+    else:
+        assert _sha256(target_runtime / "execution-result.json") == terminal_before
 
 
 @pytest.mark.parametrize(
@@ -363,17 +388,30 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
     if backlog["item_id"] == projection["current_truth"]["current_next_action"]:
         assert backlog["current_projection_sha256"] == _sha256(PROJECTION)
     else:
-        assert backlog["item_id"] == EXECUTION_NEXT
+        assert backlog["item_id"] in {EXECUTION_NEXT, FAILURE_NEXT}
         current = ROOT / backlog["current_projection_ref"]
-        assert current.name == "fin_ia_0_1_2_current_program_projection_v2_28.json"
+        if backlog["item_id"] == EXECUTION_NEXT:
+            assert current.name == "fin_ia_0_1_2_current_program_projection_v2_28.json"
+            assert _load(current)["historical_projection_policy"][
+                "superseded_projection"
+            ].endswith("fin_ia_0_1_2_current_program_projection_v2_27.json")
+        else:
+            assert current == CURRENT_PROJECTION
+            assert backlog["S3_T03_fresh_admission_consumed"] is True
+            assert backlog["S3_T03_execution_terminal_status"] == "failed"
+            assert backlog["S3_T03_execution_result_sha256"] == _sha256(
+                TERMINAL_RESULT
+            )
         assert backlog["current_projection_sha256"] == _sha256(current)
-        assert _load(current)["historical_projection_policy"][
-            "superseded_projection"
-        ].endswith("fin_ia_0_1_2_current_program_projection_v2_27.json")
     assert backlog["S3_T03_bound_launcher_parent_supervisor_missing"] is False
-    assert backlog["S3_T03_fresh_admission_consumed"] is False
-    assert backlog["S3_T03_execution_started"] is False
-    assert not (ROOT / target.runtime_root_ref).exists()
+    if backlog["item_id"] == FAILURE_NEXT:
+        assert backlog["S3_T03_fresh_admission_consumed"] is True
+        assert backlog["S3_T03_execution_started"] is True
+        assert (ROOT / target.runtime_root_ref).exists()
+    else:
+        assert backlog["S3_T03_fresh_admission_consumed"] is False
+        assert backlog["S3_T03_execution_started"] is False
+        assert not (ROOT / target.runtime_root_ref).exists()
     root_cause_rows = [
         json.loads(line)
         for line in (

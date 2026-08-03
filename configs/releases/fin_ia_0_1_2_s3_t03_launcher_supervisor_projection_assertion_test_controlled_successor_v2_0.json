@@ -1,0 +1,50 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_launcher_supervisor_projection_assertion_test_controlled_successor_v2_0",
+  "record_id": "FIN-0.1.2-S3-T03-LAUNCHER-SUPERVISOR-PROJECTION-ASSERTION-TEST-CONTROLLED-SUCCESSOR-R2",
+  "recorded_at": "2026-08-04T01:35:00+08:00",
+  "status": "pass_controlled_test_successor_after_exact_live_terminal_failure_historical_implementation_and_R1_successor_immutable",
+  "predecessor_successor": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_launcher_supervisor_projection_assertion_test_controlled_successor_v1_0.json",
+    "sha256": "fc4c6eb752a5816eaaf0249fa4a744d66011466bd4431b3c5896e14ad50bc356",
+    "bytes": 2219,
+    "rewritten": false
+  },
+  "historical_implementation": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_bound_execution_launcher_parent_supervisor_zero_call_preflight_minimum_implementation_v1_0.json",
+    "sha256": "0cef1f7ad6f3f370bc25f4636fb028a5971847b898cd8170f4407cfc1ee25d13",
+    "bytes": 8467,
+    "rewritten": false
+  },
+  "historical_binding": {
+    "ref": "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_parent_supervisor_zero_call_implementation.py",
+    "sha256": "a2cf771c6fbd1e9445a8a206388c9caf3e5afade7708962fe287d8eab3a2a206",
+    "bytes": 12269
+  },
+  "intermediate_R1_binding": {
+    "ref": "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_parent_supervisor_zero_call_implementation.py",
+    "sha256": "110fb2d625c3be0456e327fc56b39455a787cc2cb03a3332a355fcc7a3d25e13",
+    "bytes": 14038
+  },
+  "current_binding": {
+    "ref": "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_parent_supervisor_zero_call_implementation.py",
+    "sha256": "6665e318e019453d9d482a544a87ab38020cd286fedae3be27f7a6d5ce21057a",
+    "bytes": 15649
+  },
+  "change_scope": [
+    "preserve_the_historical_pre_execution_launcher_supervisor_assertions",
+    "recognize_only_the_explicit_v2_29_terminal_failure_successor_after_v2_28_authority",
+    "avoid_relaunching_zero_call_preflight_against_the_consumed_target_identity",
+    "verify_the_existing_terminal_result_hash_instead_of_requiring_the_historical_root_to_remain_absent",
+    "preserve_all_runtime_failure_mode_and_invalid_authority_assertions"
+  ],
+  "change_boundary": {
+    "runtime_code_changed": false,
+    "historical_implementation_rewritten": false,
+    "admission_model_business_or_budget_contract_changed": false,
+    "execution_authority_created_or_consumed_by_this_record": false,
+    "historical_test_claim_reinterpreted": false,
+    "failed_exact_live_output_modified_or_promoted": false,
+    "current_global_projection_successor_is_explicit_and_closed": true
+  },
+  "known_boundary": "This record updates only historical launcher-supervisor regression behavior after the separately authorized target identity was consumed and terminal-failed. It does not alter runtime code, admission, authority, financial contracts, captures, the failed result, or product acceptance, and it authorizes no replay or replacement."
+}

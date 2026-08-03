@@ -41,6 +41,17 @@ PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_28.json"
 )
 BACKLOG = ROOT / "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
+TERMINAL_RESULT = ROOT / (
+    "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
+    "terminal_failure_result_v1_0.json"
+)
+CURRENT_PROJECTION = ROOT / (
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_29.json"
+)
+FAILURE_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-RESEARCH-LEAD-LOCAL-FACT-PRESENCE-AND-"
+    "CLAIM-ALIAS-SEMANTIC-OWNERSHIP-REGRESSION-DISPOSITION-DECISION"
+)
 
 
 def _load(path: Path) -> dict:
@@ -124,8 +135,20 @@ def test_r2_preflight_budget_and_roots_are_fail_closed() -> None:
     assert budget["maximum_transport_attempts_per_call"] == 1
     assert budget["retry_budget"] == 0
     assert budget["maximum_total_cost_usd"] == 0.06
-    assert not (ROOT / target["runtime_root"]).exists()
-    assert not (ROOT / target["supervision_root"]).exists()
+    runtime_root = ROOT / target["runtime_root"]
+    supervision_root = ROOT / target["supervision_root"]
+    if runtime_root.exists() or supervision_root.exists():
+        terminal = _load(TERMINAL_RESULT)
+        assert runtime_root.exists() and supervision_root.exists()
+        assert terminal["authority"]["admission_consumed"] is True
+        assert terminal["typed_terminal"]["status"] == "failed"
+        assert terminal["execution_identity"]["runtime_root"] == target["runtime_root"]
+        assert terminal["execution_identity"]["supervision_root"] == target[
+            "supervision_root"
+        ]
+    else:
+        assert not runtime_root.exists()
+        assert not supervision_root.exists()
 
 
 def test_r2_stops_before_execution_paired_owner_or_product_claim() -> None:
@@ -157,11 +180,20 @@ def test_r2_projection_backlog_and_project_os_are_current() -> None:
 
     assert projection["decision_binding"]["sha256"] == _sha256(DECISION)
     assert projection["current_truth"]["current_next_action"] == next_action
-    assert backlog["item_id"] == next_action
-    assert backlog["current_projection_sha256"] == _sha256(PROJECTION)
-    assert backlog["S3_T03_exact_live_execution_authorized_now"] is True
-    assert backlog["S3_T03_fresh_admission_consumed"] is False
-    assert backlog["S3_T03_execution_started"] is False
+    assert backlog["item_id"] in {next_action, FAILURE_NEXT}
+    if backlog["item_id"] == next_action:
+        assert backlog["current_projection_sha256"] == _sha256(PROJECTION)
+        assert backlog["S3_T03_exact_live_execution_authorized_now"] is True
+        assert backlog["S3_T03_fresh_admission_consumed"] is False
+        assert backlog["S3_T03_execution_started"] is False
+    else:
+        assert backlog["current_projection_sha256"] == _sha256(CURRENT_PROJECTION)
+        assert backlog["S3_T03_exact_live_execution_authorized_now"] is False
+        assert backlog["S3_T03_fresh_admission_consumed"] is True
+        assert backlog["S3_T03_execution_started"] is True
+        assert backlog["S3_T03_execution_result_sha256"] == _sha256(
+            TERMINAL_RESULT
+        )
     capabilities = (
         ROOT / "docs/project_os/capability_status_ledger.jsonl"
     ).read_text(encoding="utf-8")
@@ -170,3 +202,5 @@ def test_r2_projection_backlog_and_project_os_are_current() -> None:
     )
     assert decision["decision_id"] in capabilities
     assert next_action in context
+    if backlog["item_id"] == FAILURE_NEXT:
+        assert FAILURE_NEXT in context

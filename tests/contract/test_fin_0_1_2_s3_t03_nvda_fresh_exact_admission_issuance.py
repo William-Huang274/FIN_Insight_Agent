@@ -42,6 +42,14 @@ R2_EXECUTION_NEXT = (
     "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AND-TERMINAL-"
     "MATERIALIZATION"
 )
+FAILURE_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-RESEARCH-LEAD-LOCAL-FACT-PRESENCE-AND-"
+    "CLAIM-ALIAS-SEMANTIC-OWNERSHIP-REGRESSION-DISPOSITION-DECISION"
+)
+TERMINAL_RESULT = ROOT / (
+    "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
+    "terminal_failure_result_v1_0.json"
+)
 LAUNCHER_SUPERVISOR_IMPLEMENTATION = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_nvda_bound_execution_launcher_"
     "parent_supervisor_zero_call_preflight_minimum_implementation_v1_0.json"
@@ -79,7 +87,10 @@ def test_issuance_did_not_claim_identity_or_access_execution_surfaces() -> None:
     boundary = issuance["issuance_boundary"]
     counts = issuance["observed_counts"]
 
-    assert not RUNTIME_ROOT.exists()
+    if RUNTIME_ROOT.exists():
+        terminal = _load(TERMINAL_RESULT)
+        assert terminal["authority"]["admission_consumed"] is True
+        assert terminal["typed_terminal"]["status"] == "failed"
     assert boundary["admission_issued"]
     assert not boundary["admission_consumed"]
     assert not boundary["execution_identity_claimed"]
@@ -211,6 +222,7 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
         POST_ADMISSION_AUTHORITY_BLOCKED_NEXT,
         LAUNCHER_SUPERVISOR_PASS_NEXT,
         R2_EXECUTION_NEXT,
+        FAILURE_NEXT,
     }
     if backlog["item_id"] == NEXT_ACTION:
         assert backlog["current_projection_ref"] == projection_path.relative_to(
@@ -232,7 +244,7 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
         assert backlog[
             "S3_T03_bound_launcher_parent_supervisor_implementation_bundles_consumed"
         ] == 1
-    else:
+    elif backlog["item_id"] == R2_EXECUTION_NEXT:
         assert backlog["current_projection_ref"].endswith(
             "fin_ia_0_1_2_current_program_projection_v2_28.json"
         )
@@ -240,6 +252,19 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
         assert backlog[
             "S3_T03_exact_live_execution_requires_new_user_continuation"
         ] is True
+    else:
+        assert backlog["current_projection_ref"].endswith(
+            "fin_ia_0_1_2_current_program_projection_v2_29.json"
+        )
+        assert backlog["S3_T03_exact_live_execution_authorized_now"] is False
+        assert backlog["S3_T03_execution_terminal_status"] == "failed"
+        assert backlog["S3_T03_execution_result_sha256"] == hashlib.sha256(
+            TERMINAL_RESULT.read_bytes()
+        ).hexdigest()
     assert backlog["S3_T03_fresh_admission_issued"] is True
-    assert backlog["S3_T03_fresh_admission_consumed"] is False
-    assert backlog["S3_T03_execution_started"] is False
+    if backlog["item_id"] == FAILURE_NEXT:
+        assert backlog["S3_T03_fresh_admission_consumed"] is True
+        assert backlog["S3_T03_execution_started"] is True
+    else:
+        assert backlog["S3_T03_fresh_admission_consumed"] is False
+        assert backlog["S3_T03_execution_started"] is False

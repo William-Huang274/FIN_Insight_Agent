@@ -43,6 +43,14 @@ R2_EXECUTION_NEXT = (
     "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AND-TERMINAL-"
     "MATERIALIZATION"
 )
+FAILURE_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-RESEARCH-LEAD-LOCAL-FACT-PRESENCE-AND-"
+    "CLAIM-ALIAS-SEMANTIC-OWNERSHIP-REGRESSION-DISPOSITION-DECISION"
+)
+TERMINAL_RESULT = ROOT / (
+    "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
+    "terminal_failure_result_v1_0.json"
+)
 EXPECTED_ADMISSION_SHA = (
     "89254b2246ee8cced822edb93f4b5d9a3a4b6adc7f0223f1edade53d188d1720"
 )
@@ -134,7 +142,12 @@ def test_projection_and_backlog_stop_before_live_execution() -> None:
     assert projection["decision_binding"]["sha256"] == _sha256(DECISION)
     assert projection["decision_binding"]["bytes"] == DECISION.stat().st_size
     assert projection["current_truth"]["current_next_action"] == NEXT
-    assert backlog["item_id"] in {NEXT, IMPLEMENTATION_PASS_NEXT, R2_EXECUTION_NEXT}
+    assert backlog["item_id"] in {
+        NEXT,
+        IMPLEMENTATION_PASS_NEXT,
+        R2_EXECUTION_NEXT,
+        FAILURE_NEXT,
+    }
     if backlog["item_id"] == NEXT:
         assert backlog["current_projection_sha256"] == _sha256(PROJECTION)
         assert backlog["S3_T03_bound_launcher_parent_supervisor_missing"] is True
@@ -143,13 +156,25 @@ def test_projection_and_backlog_stop_before_live_execution() -> None:
         assert current.name == "fin_ia_0_1_2_current_program_projection_v2_27.json"
         assert backlog["current_projection_sha256"] == _sha256(current)
         assert backlog["S3_T03_bound_launcher_parent_supervisor_missing"] is False
-    else:
+    elif backlog["item_id"] == R2_EXECUTION_NEXT:
         current = ROOT / backlog["current_projection_ref"]
         assert current.name == "fin_ia_0_1_2_current_program_projection_v2_28.json"
         assert backlog["current_projection_sha256"] == _sha256(current)
         assert backlog["S3_T03_exact_live_execution_authorized_now"] is True
-    assert backlog["S3_T03_fresh_admission_consumed"] is False
-    assert backlog["S3_T03_execution_started"] is False
+    else:
+        current = ROOT / backlog["current_projection_ref"]
+        assert current.name == "fin_ia_0_1_2_current_program_projection_v2_29.json"
+        assert backlog["current_projection_sha256"] == _sha256(current)
+        assert backlog["S3_T03_exact_live_execution_authorized_now"] is False
+        assert backlog["S3_T03_execution_result_sha256"] == _sha256(
+            TERMINAL_RESULT
+        )
+    if backlog["item_id"] == FAILURE_NEXT:
+        assert backlog["S3_T03_fresh_admission_consumed"] is True
+        assert backlog["S3_T03_execution_started"] is True
+    else:
+        assert backlog["S3_T03_fresh_admission_consumed"] is False
+        assert backlog["S3_T03_execution_started"] is False
 
 
 def test_project_os_records_the_new_owned_blocker() -> None:

@@ -134,3 +134,17 @@ R2 只授权在新的用户续行后执行一次 supervised exact-once：最多 
 `FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AND-TERMINAL-MATERIALIZATION`
 
 该执行已具备条件授权，但仍必须由用户新的“继续”触发。当前 tracked exact input 仍是内部 frozen NVDA dogfood fixture；因此即使运行成功，也必须在 S3-T04 单独判断产品研究价值，不能仅凭执行成功宣布 NVDA R2。
+
+## 十、primary exact-live terminal failure 与阶段归属
+
+用户新的“继续”满足独立续行条件后，唯一 primary admission 已 exact-once 消费。真实 parent supervisor 启动一个 child，6 个 Specialist Provider segments 与第 7 次 Research Lead 调用均完成 `ok/stop`；Research Lead 本地语义校验随后以 `s3_bounded_research_lead_v3_semantic_fact_presence_summary_mismatch` typed terminal 停止。共保留 3 份 local Fact receipts、7 份 restricted captures、0 个业务 Artifacts；tokens=`37,107/2,310/39,417`，估算成本=`USD 0.01815124`，无 retry、fallback、replay、relaunch 或 replacement。失败输出没有晋升业务层，terminal 和 supervisor receipts 均完整物化。
+
+受限审计显示并非 Provider transport 或 JSON 失败。真实 Claim 支撑关系为 C001=0、C002=0、C003=3、C004=0，但 Lead 把同一 value cell 内 C003 的事实与 bounded-inference 语义多处赋给 C002：两个 conflict row 的 summary 与 narrative 均因此错误，dependencies/gaps 也出现相同别名互换迹象。模型的字段级 semantic error 成立。
+
+项目同时存在更早责任：FIN 0.1.2 当前 admission 绑定的是 Lead-v6，它把完全可本地计算的 `fact_presence_summary` 再次交给 Provider；而 FIN 0.1 S4-T06 的 RC-P36-078 已经用 Lead-v7 本地 materialization 做过 exact-live 正证明。当前 consolidated contract 没有把该已证明边界继承进来，也没有覆盖同一 cell 相邻 Claim alias 互换负例。因此登记 `RC-P36-108`，归 S3-T03 合同继承与 Lead semantic boundary；不重开 S0-S2，也不能只通过换一个 enum 或加一句 prompt 宣布修复。
+
+当前下一项严格限定为：
+
+`FIN-0.1.2-S3-T03-NVDA-RESEARCH-LEAD-LOCAL-FACT-PRESENCE-AND-CLAIM-ALIAS-SEMANTIC-OWNERSHIP-REGRESSION-DISPOSITION-DECISION`
+
+下一项只做一次零调用处置：对账 Lead-v7 已证明资产与 FIN 0.1.2 当前合同继承，并决定防止 C002/C003 语义互换所需的最小本地 projection 或有限 Claim-role atom。不得改写本次失败、自动切换合同、签发 replacement admission、调用模型、paired、Owner 或进入 S3-T04。只有处置之后另行授权的单一 consolidated implementation、独立 proof、fresh admission 和 execution authority 全部成立，才可能讨论新的 live；不能回到逐字段循环。

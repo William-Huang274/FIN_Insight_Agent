@@ -37,6 +37,10 @@ PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_23.json"
 )
 BACKLOG = ROOT / "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
+TERMINAL_RESULT = ROOT / (
+    "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
+    "terminal_failure_result_v1_0.json"
+)
 FRESH_IDENTITY = "fin012-s3-t03-nvda-primary-r1"
 
 
@@ -185,7 +189,16 @@ def test_authority_projection_is_historical_and_backlog_preserves_binding() -> N
         authority["next_action"]
     )
     assert backlog["S3_T03_authority_sha256"] == authority_sha
-    assert backlog["S3_T03_execution_started"] is False
+    if backlog["S3_T03_execution_started"]:
+        terminal = _load(TERMINAL_RESULT)
+        assert backlog["S3_T03_fresh_admission_consumed"] is True
+        assert backlog["S3_T03_execution_terminal_status"] == "failed"
+        assert backlog["S3_T03_execution_result_sha256"] == hashlib.sha256(
+            TERMINAL_RESULT.read_bytes()
+        ).hexdigest()
+        assert terminal["authority"]["admission_consumed"] is True
+    else:
+        assert backlog["S3_T03_execution_started"] is False
 
     capability = (ROOT / "docs/project_os/capability_status_ledger.jsonl").read_text(
         encoding="utf-8"

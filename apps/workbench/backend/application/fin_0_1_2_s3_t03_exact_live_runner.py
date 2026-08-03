@@ -319,6 +319,48 @@ def _atomic_write_json(path: Path, payload: Mapping[str, Any]) -> None:
             temporary.unlink()
 
 
+def claim_supervised_execution_identity(
+    runtime_root: str | Path,
+    envelope: Mapping[str, Any],
+    *,
+    supervision_root: str | Path,
+) -> dict[str, Any]:
+    """Atomically consume the one execution identity before child launch.
+
+    The parent owns this claim. A child may only transition the exact claim to
+    ``execution_claimed``; a second parent or an unsupervised replay fails.
+    """
+
+    runtime = Path(runtime_root).resolve()
+    runtime.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chmod(runtime, 0o700)
+    except OSError:
+        pass
+    path = runtime / "execution-state.json"
+    payload = {
+        "schema_version": EXECUTION_STATE_SCHEMA,
+        "status": "supervisor_claimed",
+        "execution_identity": envelope["fresh_t03"]["execution_identity"],
+        "envelope_digest": envelope["envelope_digest"],
+        "supervision_root": str(Path(supervision_root).resolve()),
+        "terminal_materialized": False,
+        "credential_value_persisted": False,
+        "business_promotable": False,
+    }
+    try:
+        descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError as exc:
+        raise Fin012S3T03RunnerError(
+            "s3_t03_execution_identity_already_claimed"
+        ) from exc
+    with os.fdopen(descriptor, "wb") as handle:
+        handle.write(_canonical_bytes(payload))
+        handle.flush()
+        os.fsync(handle.fileno())
+    return payload
+
+
 def _claim_execution_identity(runtime_root: Path, envelope: Mapping[str, Any]) -> None:
     runtime_root.mkdir(parents=True, exist_ok=True)
     try:
@@ -335,10 +377,35 @@ def _claim_execution_identity(runtime_root: Path, envelope: Mapping[str, Any]) -
         "credential_value_persisted": False,
         "business_promotable": False,
     }
+    if path.exists():
+        current = json.loads(path.read_text(encoding="utf-8"))
+        if (
+            current.get("status") != "supervisor_claimed"
+            or current.get("execution_identity")
+            != envelope["fresh_t03"]["execution_identity"]
+            or current.get("envelope_digest") != envelope["envelope_digest"]
+            or not current.get("supervision_root")
+        ):
+            raise Fin012S3T03RunnerError(
+                "s3_t03_execution_identity_already_claimed"
+            )
+        _atomic_write_json(
+            path,
+            {
+                **current,
+                "status": "execution_claimed",
+                "terminal_materialized": False,
+                "credential_value_persisted": False,
+                "business_promotable": False,
+            },
+        )
+        return
     try:
         descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     except FileExistsError as exc:
-        raise Fin012S3T03RunnerError("s3_t03_execution_identity_already_claimed") from exc
+        raise Fin012S3T03RunnerError(
+            "s3_t03_execution_identity_already_claimed"
+        ) from exc
     with os.fdopen(descriptor, "wb") as handle:
         handle.write(_canonical_bytes(payload))
         handle.flush()

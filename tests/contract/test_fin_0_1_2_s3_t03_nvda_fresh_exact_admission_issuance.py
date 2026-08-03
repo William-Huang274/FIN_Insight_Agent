@@ -35,6 +35,13 @@ POST_ADMISSION_AUTHORITY_BLOCKED_NEXT = (
     "FIN-0.1.2-S3-T03-NVDA-BOUND-EXECUTION-LAUNCHER-PARENT-"
     "SUPERVISOR-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION"
 )
+LAUNCHER_SUPERVISOR_PASS_NEXT = (
+    "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION-R2"
+)
+LAUNCHER_SUPERVISOR_IMPLEMENTATION = ROOT / (
+    "configs/releases/fin_ia_0_1_2_s3_t03_nvda_bound_execution_launcher_"
+    "parent_supervisor_zero_call_preflight_minimum_implementation_v1_0.json"
+)
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -110,8 +117,9 @@ def test_executor_wiring_is_constructible_without_provider_call() -> None:
     assert callback_calls == 0
 
 
-def test_issuance_source_and_code_bindings_match_current_bytes() -> None:
+def test_issuance_bindings_are_immutable_or_have_an_exact_current_successor() -> None:
     issuance = _load(ISSUANCE)
+    implementation = _load(LAUNCHER_SUPERVISOR_IMPLEMENTATION)
     for row in issuance["source_bindings"]:
         assert hashlib.sha256((ROOT / row["ref"]).read_bytes()).hexdigest() == (
             row["sha256"]
@@ -121,7 +129,20 @@ def test_issuance_source_and_code_bindings_match_current_bytes() -> None:
         code_bindings
     )
     for relative, digest in code_bindings.items():
-        assert hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() == digest
+        current = hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
+        if current == digest:
+            continue
+        assert relative == (
+            "apps/workbench/backend/application/"
+            "fin_0_1_2_s3_t03_exact_live_runner.py"
+        )
+        successor = implementation["controlled_runner_successor"]
+        assert successor["historical_issuance_runner_sha256"] == digest
+        assert successor["current_runner_sha256"] == current
+        assert successor["historical_issuance_bytes_rewritten"] is False
+        assert successor[
+            "future_execution_authority_must_bind_current_runner_and_launcher_bytes"
+        ] is True
 
 
 def test_historical_unissued_envelope_remains_immutable() -> None:
@@ -184,6 +205,7 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
     assert backlog["item_id"] in {
         NEXT_ACTION,
         POST_ADMISSION_AUTHORITY_BLOCKED_NEXT,
+        LAUNCHER_SUPERVISOR_PASS_NEXT,
     }
     if backlog["item_id"] == NEXT_ACTION:
         assert backlog["current_projection_ref"] == projection_path.relative_to(
@@ -192,11 +214,19 @@ def test_historical_issuance_projection_and_current_backlog_preserve_lifecycle()
         assert backlog["current_projection_sha256"] == hashlib.sha256(
             projection_path.read_bytes()
         ).hexdigest()
-    else:
+    elif backlog["item_id"] == POST_ADMISSION_AUTHORITY_BLOCKED_NEXT:
         assert backlog["current_projection_ref"].endswith(
             "fin_ia_0_1_2_current_program_projection_v2_26.json"
         )
         assert backlog["S3_T03_bound_launcher_parent_supervisor_missing"] is True
+    else:
+        assert backlog["current_projection_ref"].endswith(
+            "fin_ia_0_1_2_current_program_projection_v2_27.json"
+        )
+        assert backlog["S3_T03_bound_launcher_parent_supervisor_missing"] is False
+        assert backlog[
+            "S3_T03_bound_launcher_parent_supervisor_implementation_bundles_consumed"
+        ] == 1
     assert backlog["S3_T03_fresh_admission_issued"] is True
     assert backlog["S3_T03_fresh_admission_consumed"] is False
     assert backlog["S3_T03_execution_started"] is False

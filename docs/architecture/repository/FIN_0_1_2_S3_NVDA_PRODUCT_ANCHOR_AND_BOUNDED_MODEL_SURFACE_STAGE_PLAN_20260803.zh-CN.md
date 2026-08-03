@@ -106,3 +106,17 @@ fresh identity、稳定业务摘要、capture-first runner library 与 admission
 `FIN-0.1.2-S3-T03-NVDA-BOUND-EXECUTION-LAUNCHER-PARENT-SUPERVISOR-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION`
 
 只允许一个零调用实现包，将现有 runner core 接成单一 child command 与真实 parent supervisor，并证明 admission、fresh root、预算、retry-zero、timeout、异常 exit recovery 和 provider callback=0。不得修改模型 surface、业务 input 或财务合同，不得同轮消费 admission 或调用 DeepSeek；完成后 exact-live 仍需新的用户续行。
+
+## 八、bound launcher / parent supervisor 实现结果
+
+唯一零调用连接包已经完成。仓库现在有一个 admission-bound child command，负责在本地重新校验 admission、issuance、execution envelope 和 frozen exact input，并只在这些条件通过后装配既有 DeepSeek transport；另有一个真实 parent supervisor，在启动前原子 claim exact identity，只启动一个直接 child，执行 900 秒 timeout、异常退出恢复、stdout/stderr 内容哈希与 launch/exit receipt。
+
+CLI 预检真实启动了一个本地 child 并重建 exact input，但 provider callback、模型、Provider 和执行网络均为 0。独立子进程 fault injection 证明了异常 exit 和 timeout 都会自动生成 typed terminal，第二次 identity claim 与 supervision root 重用都会 fail closed，凭据值不会进入日志或 receipts。旧 issuance 仍保持原始 runner SHA；本实现以新的不可变记录声明当前 runner 为受控安全后继，后续 execution authority 必须同时绑定当前 runner 和 launcher 字节，不能只复用签发时的旧代码绑定。
+
+`RC-P36-107` 因真实可执行监督路径的零调用证明而关闭。admission 仍为 issued/unconsumed，target runtime root 仍不存在，S3-T03 execution 未开始。当前 exact input 仍是内部 frozen NVDA dogfood fixture，因此这一步不是外部用户查询、live source、自然模型输出、九件套产品、paired 增益或 Owner acceptance 证明。
+
+当前下一项严格限定为：
+
+`FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION-R2`
+
+该下一项仍是零调用权限复核：重新验证当前 runner/launcher hashes、Project OS blocker、fresh target/supervision roots、credential presence、预算与 retry-zero。它不得同轮消费 admission 或启动 DeepSeek；真实 exact-live 仍需之后新的用户续行。

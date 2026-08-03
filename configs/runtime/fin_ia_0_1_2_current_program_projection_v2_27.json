@@ -1,0 +1,83 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S3-T03-LAUNCHER-SUPERVISOR-PASS-R28",
+  "recorded_at": "2026-08-03T23:59:00+08:00",
+  "status": "current_FIN_0_1_2_S3_T03_admission_issued_unconsumed_bound_launcher_parent_supervisor_zero_call_pass_execution_authority_R2_pending",
+  "lifecycle_state": "in_progress",
+  "decision_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_bound_execution_launcher_parent_supervisor_zero_call_preflight_minimum_implementation_v1_0.json",
+    "sha256": "0cef1f7ad6f3f370bc25f4636fb028a5971847b898cd8170f4407cfc1ee25d13",
+    "bytes": 8467,
+    "binding_role": "bound_child_parent_supervisor_and_real_process_zero_call_preflight_implementation"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S3_in_progress_T03_execution_control",
+    "active_slice": "FIN_0_1_2_S3_NVDA_PRODUCT_ANCHOR",
+    "current_next_action": "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION-R2",
+    "current_stage_status": "S3_T03_admission_issued_unconsumed_executable_supervised_path_engineering_pass_execution_authority_R2_pending",
+    "completed_current_stages": {
+      "S0": "pass_closed",
+      "S1": "pass_closed_current_consolidated_baseline",
+      "S2": "pass_closed_bounded_Pro_preview_Claim_WWC_surface_and_local_Fact_surface"
+    },
+    "current_S3_tasks": {
+      "S3_T01": "pass",
+      "S3_T02": "engineering_and_zero_call_product_readiness_pass",
+      "S3_T03_runner_library_preflight": "pass",
+      "S3_T03_admission": "issued_unconsumed",
+      "S3_T03_executable_supervised_path": "engineering_pass_real_child_zero_call",
+      "S3_T03_execution_authority": "pending_separate_R2_decision",
+      "S3_T03_execution": "not_started",
+      "S3_T04": "blocked_by_successful_current_nine_Artifact_product"
+    },
+    "product_case": "NVDA",
+    "current_exact_input_kind": "internal_frozen_NVDA_dogfood_fixture",
+    "target_maturity": "current_FIN_0_1_2_NVDA_R2_owner_accepted",
+    "selected_model_ref": "deepseek:deepseek-v4-pro",
+    "runtime_contract_family_binding_ref": "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1.3",
+    "stable_business_input_digest": "a19743ffdaa63319a5381262adc9c5b04751abadc9bc4781561c1aa905b744fc",
+    "fresh_complete_input_digest": "b9cc749d0d2351e228750343a61d3fc03abfc8a70870fa96d12c8a03f118e085",
+    "fresh_execution_envelope_digest": "5f04852451a96c670e539eb79ced472c31615f79d4d491e9bfae57bf55ea37f7",
+    "execution_identity": "fin012-s3-t03-nvda-primary-r1",
+    "execution_identity_claimed_or_consumed": false,
+    "issued_admission_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_fresh_exact_admission_r1.json",
+    "issued_admission_sha256": "89254b2246ee8cced822edb93f4b5d9a3a4b6adc7f0223f1edade53d188d1720",
+    "issued_admission_digest": "eed177b1124c8db930193196f71eb653b85a2b24d9c92a192251984def4fd1c8",
+    "closed_issue": "RC-P36-107-fin-0-1-2-s3-t03-bound-live-launcher-and-parent-supervisor-entrypoint-gap",
+    "credential_presence_only": true,
+    "model_provider_network_calls_in_implementation_turn": [0, 0, 0],
+    "current_NVDA_R2": false,
+    "release_qualified": false
+  },
+  "execution_control": {
+    "fresh_admission_issued_unconsumed": true,
+    "real_local_child_preflight_launch_count": 1,
+    "parent_direct_child_topology_proven": true,
+    "parent_timeout_and_kill_proven": true,
+    "abnormal_exit_terminal_recovery_proven": true,
+    "exact_once_claim_and_replay_rejection_proven": true,
+    "credential_value_persisted": false,
+    "provider_health_probe_performed": false,
+    "exact_live_execution_authorized_by_current_implementation": false,
+    "current_turn_admission_consumption_or_execution": false,
+    "automatic_retry_repair_replacement_or_second_attempt_authorized": false,
+    "paired_assessment_or_owner_acceptance_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "S3_stage_plan": "docs/architecture/repository/FIN_0_1_2_S3_NVDA_PRODUCT_ANCHOR_AND_BOUNDED_MODEL_SURFACE_STAGE_PLAN_20260803.zh-CN.md",
+    "S3_T03_launcher_supervisor_implementation": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_bound_execution_launcher_parent_supervisor_zero_call_preflight_minimum_implementation_v1_0.json",
+    "S3_T03_issued_admission": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_fresh_exact_admission_r1.json",
+    "S3_T03_admission_issuance": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_fresh_exact_admission_issuance_v1_0.json",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md"
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_26.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "historical_issuance_deleted_or_rewritten": false,
+    "admission_invalidated": false,
+    "implementation_pass_does_not_authorize_exact_live_or_create_new_product_version_or_stage": true
+  }
+}

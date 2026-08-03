@@ -1,0 +1,154 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_t03_nvda_bound_execution_launcher_parent_supervisor_zero_call_preflight_minimum_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S3-T03-NVDA-BOUND-EXECUTION-LAUNCHER-PARENT-SUPERVISOR-ZERO-CALL-PREFLIGHT-R1",
+  "recorded_at": "2026-08-03T23:59:00+08:00",
+  "status": "pass_zero_call_real_child_parent_supervision_exact_input_rehydration_and_terminal_recovery_admission_unconsumed",
+  "authority": {
+    "user_instruction": "授权继续",
+    "authorized_scope": "FIN-0.1.2-S3-T03-NVDA-BOUND-EXECUTION-LAUNCHER-PARENT-SUPERVISOR-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION",
+    "implementation_bundles_consumed": 1,
+    "implementation_bundles_maximum": 1,
+    "credential_presence_check_authorized": true,
+    "credential_value_read_output_or_persistence_authorized": false,
+    "model_provider_or_execution_network_authorized": false,
+    "admission_consumption_or_exact_live_authorized": false,
+    "paired_assessment_owner_acceptance_or_S3_T04_authorized": false
+  },
+  "parent_decision": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_post_admission_exact_live_execution_authority_decision_v1_0.json",
+    "sha256": "ac1504e5bc4c8e8decc4dadd0a32aaa09a9aff774dd75a276e66b80339cbe9c4",
+    "bytes": 7378,
+    "issue_id": "RC-P36-107-fin-0-1-2-s3-t03-bound-live-launcher-and-parent-supervisor-entrypoint-gap"
+  },
+  "immutable_execution_inputs": {
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_fresh_exact_admission_r1.json",
+    "admission_file_sha256": "89254b2246ee8cced822edb93f4b5d9a3a4b6adc7f0223f1edade53d188d1720",
+    "admission_digest": "eed177b1124c8db930193196f71eb653b85a2b24d9c92a192251984def4fd1c8",
+    "issuance_ref": "configs/releases/fin_ia_0_1_2_s3_t03_nvda_fresh_exact_admission_issuance_v1_0.json",
+    "issuance_file_sha256": "41db08cb6fc08ceb6210ceffbaae15c19ea73502b0ff8c895c1d9d2f75b787dd",
+    "execution_envelope_ref": "configs/runtime/fin_ia_0_1_2_s3_t03_nvda_fresh_identity_execution_envelope_v1_0.json",
+    "execution_envelope_sha256": "4e85c615569dde3b70666dd19dc775ef4098fa26cd12cfb3f1fd83653f7b7377",
+    "execution_identity": "fin012-s3-t03-nvda-primary-r1",
+    "complete_input_digest": "b9cc749d0d2351e228750343a61d3fc03abfc8a70870fa96d12c8a03f118e085",
+    "stable_business_input_digest": "a19743ffdaa63319a5381262adc9c5b04751abadc9bc4781561c1aa905b744fc",
+    "admission_rewritten": false,
+    "issuance_rewritten": false,
+    "admission_consumed": false,
+    "execution_started": false
+  },
+  "controlled_runner_successor": {
+    "historical_issuance_runner_sha256": "fc09ffde0346bf8369fac415dfc72e160f5dd6d1437e0fc1dec019f12da31c4a",
+    "current_runner_sha256": "449e5e6b5a0f0e8e548d80595f4400145da8f6e29937ef97ee8d2372cae42869",
+    "change_scope": [
+      "parent_atomically_claims_the_exact_execution_identity_before_launch",
+      "child_transitions_only_the_matching_supervisor_claim_to_execution_claimed",
+      "second_parent_unsupervised_replay_or_mismatched_claim_fails_closed"
+    ],
+    "business_input_model_surface_financial_contract_and_budget_changed": false,
+    "historical_issuance_bytes_rewritten": false,
+    "future_execution_authority_must_bind_current_runner_and_launcher_bytes": true
+  },
+  "implementation_bindings": [
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s3_t03_exact_live_runner.py",
+      "sha256": "449e5e6b5a0f0e8e548d80595f4400145da8f6e29937ef97ee8d2372cae42869",
+      "bytes": 29432,
+      "role": "supervisor_claim_transition_capture_first_execution_and_terminal_recovery"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s3_t03_nvda_supervised_exact_live.py",
+      "sha256": "754b51aebbb5ea6a6ba87046a6b6b9a0d8f336675cc88cf73782ccc80b6345d8",
+      "bytes": 33128,
+      "role": "admission_bound_child_deepseek_transport_assembly_parent_launch_wait_timeout_exit_supervisor_and_zero_call_preflight"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s3_t03_bound_launcher_parent_supervisor_zero_call_implementation.py",
+      "sha256": "a2cf771c6fbd1e9445a8a206388c9caf3e5afade7708962fe287d8eab3a2a206",
+      "bytes": 12269,
+      "role": "exact_input_real_child_fault_injection_exact_once_and_secret_exclusion_regression"
+    }
+  ],
+  "launcher_and_supervisor_contract": {
+    "contract_ref": "fin_0_1_2.s3_t03.exact_live_supervision:v1",
+    "process_topology": "parent_direct_child_entrypoint",
+    "parent_claims_execution_identity_before_child_launch": true,
+    "child_requires_matching_launch_receipt_and_supervision_environment": true,
+    "child_rehydrates_frozen_exact_input_without_test_imports": true,
+    "deepseek_transport_assembled_only_inside_child_after_local_qualification": true,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_fallback_replay_relaunch": [0, 0, 0, 0],
+    "parent_timeout_seconds": 900,
+    "parent_kills_child_on_timeout": true,
+    "parent_launch_or_launch_receipt_failure_kills_started_child_and_terminalizes_claim": true,
+    "parent_invokes_terminal_recovery_when_child_has_no_terminal": true,
+    "stdout_stderr_launch_and_exit_receipts_content_hashed": true,
+    "credential_value_persisted": false,
+    "exact_live_requires_new_execution_authority_file": true
+  },
+  "zero_call_preflight": {
+    "runtime_ref": ".codex_runtime/fin012_s3_t03_nvda_launcher_supervisor_preflight.json",
+    "runtime_sha256": "837a92b28eb05534eef83efb195fa34d50fbfd784b61c3e6f399d1a543cb81b3",
+    "runtime_bytes": 1372,
+    "status": "pass_real_child_parent_supervisor_zero_call_preflight",
+    "real_local_child_process_launches": 1,
+    "exact_input_rehydrated": true,
+    "executor_and_transport_wiring_constructed": true,
+    "provider_callback_calls": 0,
+    "model_provider_execution_network_calls": [0, 0, 0],
+    "source_network_and_external_tool_calls": [0, 0],
+    "business_runs_and_artifacts": [0, 0],
+    "target_runtime_root_absent_before_and_after": true,
+    "credential_presence_checked": true,
+    "credential_value_read_output_or_persisted": false,
+    "provider_health_probe_performed": false,
+    "admission_consumed": false,
+    "execution_started": false
+  },
+  "verification": {
+    "python_compile": "pass",
+    "new_focused_tests": "10 passed",
+    "existing_T02_production_runtime": "2 passed",
+    "existing_T03_conditional_authority": "6 passed",
+    "existing_fresh_identity_runner": "11 passed",
+    "existing_post_admission_decision": "6 passed",
+    "historical_issuance_current_byte_assertion": "pass_historical_binding_or_exact_controlled_successor",
+    "covered_failure_modes": [
+      "missing_future_execution_authority",
+      "child_process_launch_failure_after_identity_claim",
+      "abnormal_child_exit_without_terminal",
+      "parent_wall_clock_timeout",
+      "second_execution_identity_claim",
+      "supervision_root_reuse",
+      "child_transition_after_existing_execution_claim",
+      "credential_value_leak_in_logs_or_receipts"
+    ]
+  },
+  "issue_disposition": {
+    "issue_id": "RC-P36-107-fin-0-1-2-s3-t03-bound-live-launcher-and-parent-supervisor-entrypoint-gap",
+    "status": "closed_by_real_child_zero_call_launcher_parent_supervisor_and_terminal_recovery_preflight",
+    "owned_by_stage": "S3-T03",
+    "model_or_provider_fault_established": false,
+    "financial_truth_or_business_input_failure_established": false,
+    "S0_S1_or_S2_reopened": false
+  },
+  "product_boundary": {
+    "current_exact_input_kind": "internal_frozen_NVDA_dogfood_fixture",
+    "external_user_query_or_live_source_product_proof": false,
+    "natural_deepseek_output_proven": false,
+    "current_nine_artifact_product_proven": false,
+    "paired_gain_or_owner_acceptance_proven": false,
+    "current_NVDA_R2": false,
+    "release_qualified": false
+  },
+  "stage_acceptance": {
+    "S3_T01": "pass",
+    "S3_T02": "engineering_and_zero_call_product_readiness_pass",
+    "S3_T03_executable_supervised_path": "engineering_pass",
+    "S3_T03_admission": "issued_unconsumed",
+    "S3_T03_execution": "not_started_separate_authority_required",
+    "S3_T04": "blocked_until_successful_current_nine_artifact_product"
+  },
+  "known_boundary": "This package closes only the executable launcher and parent-supervisor gap. It does not consume the issued admission or establish model, Provider, financial-research, nine-Artifact, paired, Owner, R2, release or production evidence.",
+  "next_action": "FIN-0.1.2-S3-T03-NVDA-EXACT-LIVE-EXECUTION-AUTHORITY-DECISION-R2",
+  "next_action_authorized": false
+}

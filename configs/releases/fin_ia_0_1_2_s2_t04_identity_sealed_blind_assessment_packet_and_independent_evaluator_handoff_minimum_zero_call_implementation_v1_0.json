@@ -1,0 +1,91 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_t04_identity_sealed_blind_assessment_packet_and_independent_evaluator_handoff_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S2-T04-IDENTITY-SEALED-BLIND-ASSESSMENT-PACKET-AND-INDEPENDENT-EVALUATOR-HANDOFF-R1",
+  "recorded_at": "2026-08-03T14:11:39+08:00",
+  "status": "engineering_pass_packet_materialized_identity_leak_preflight_pass_independent_handoff_complete",
+  "engineering_base": {
+    "git_head_before_implementation": "d121da24e1f09f1b0a31c160a974236b73624cf0",
+    "branch": "codex/layered-data-source-expansion",
+    "worktree_clean_at_start": true
+  },
+  "authority_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s2_t04_blinded_paired_assessment_model_local_surface_disposition_and_s2_closeout_authority_decision_v1_0.json",
+    "sha256": "d5427ded16e88de389490e6f611976af5f1a092bef8a93d44e5655346f24f55c"
+  },
+  "implementation_bindings": [
+    {
+      "ref": "scripts/releases/prepare_fin_ia_0_1_2_s2_t04_identity_sealed_blind_assessment_packet.py",
+      "sha256": "8e4209381a8cc9f434cbe180bb299e52810a8105a87bcd664244dd283b416085",
+      "bytes": 18564,
+      "role": "capture_binding_random_nonce_mapping_packet_builder_and_leakage_preflight"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s2_t04_identity_sealed_blind_assessment_packet.py",
+      "sha256": "bf690bb06b9f00af754a3273f65803085f6b3ac99113eaa0b2ef7b28e54a0955",
+      "bytes": 4370,
+      "role": "packet_mapping_nonce_leakage_and_one_shot_contract_tests"
+    }
+  ],
+  "packet_evidence": {
+    "restricted_runtime_root": ".codex_runtime/fin012-s2-t04-blind-assessment-r1",
+    "packet_ref": ".codex_runtime/fin012-s2-t04-blind-assessment-r1/assessor-packet.json",
+    "packet_sha256": "63296b6334629fd9fd293a64bfe7c8842d1f743bb089cc74ffc7b9652f8b4b4b",
+    "packet_bytes": 15360,
+    "manifest_ref": ".codex_runtime/fin012-s2-t04-blind-assessment-r1/packet-manifest.json",
+    "manifest_sha256": "8a0c9bf670f362c2f892ddbd09cfeb2a99340831b7d45457ae2c1bf20306f119",
+    "mapping_commitment": "sha256:f69e7c40ef2c4376e2b740d2ddd5ecfb780a8dcd5d1cbac2599ed498e2ba47fa",
+    "mapping_nonce_bits_minimum": 256,
+    "restricted_mapping_object_count": 1,
+    "mapping_or_nonce_in_packet": false,
+    "tracked_raw_capture_or_mapping": false
+  },
+  "packet_contract": {
+    "family_count": 3,
+    "candidate_output_count": 6,
+    "cross_family_label_mapping_consistent": true,
+    "candidate_output_JSON_canonicalized": true,
+    "source_and_alias_context_included": true,
+    "excluded_primary_invalid_WWC_pair": true,
+    "excluded_fields": [
+      "candidate_and_model_identity",
+      "call_and_attempt_identity",
+      "provider_receipts",
+      "capture_and_terminal_digests",
+      "latency_tokens_cost_and_lifecycle",
+      "repository_and_runtime_paths",
+      "prior_directional_observations"
+    ],
+    "identity_leak_preflight": "pass"
+  },
+  "independent_evaluator_handoff": {
+    "context_type": "fresh_subagent_fork_turns_none",
+    "inherited_chat_turns": 0,
+    "allowed_file_count": 1,
+    "allowed_file": ".codex_runtime/fin012-s2-t04-blind-assessment-r1/assessor-packet.json",
+    "packet_digest_verified_before_read": true,
+    "repository_history_or_other_files_authorized": false,
+    "network_external_source_or_product_provider_calls_authorized": false,
+    "identity_guessing_authorized": false,
+    "procedural_not_physical_isolation": true,
+    "assessment_completed": true
+  },
+  "verification": {
+    "focused_tests": {
+      "passed": 10,
+      "failed": 0
+    },
+    "packet_readback_digest": "pass",
+    "mapping_readback_digest": "pass",
+    "same_packet_identity_reuse": "fail_closed",
+    "two_choice_mapping_enumeration_guard": "random_256_bit_nonce"
+  },
+  "observed_counts": {
+    "product_model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "independent_evaluator_contexts": 1,
+    "business_Run_or_Artifact_writes": 0
+  },
+  "known_boundary": "The fresh subagent shares the repository filesystem and is procedurally constrained to the packet; this is sufficient for internal S2 selection evidence but is not a physically sandboxed external audit.",
+  "next_action": "FIN-0.1.2-S2-T04-INDEPENDENT-SCORE-FREEZE-MAPPING-REVEAL-MODEL-SURFACE-DISPOSITION-AND-S2-CLOSEOUT"
+}

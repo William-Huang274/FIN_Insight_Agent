@@ -82,7 +82,7 @@ def test_this_decision_authorizes_packet_handoff_but_not_scoring_selection_or_cl
     assert decision["next_action"].endswith("INDEPENDENT-EVALUATOR-HANDOFF-MINIMUM-ZERO-CALL-IMPLEMENTATION")
 
 
-def test_projection_backlog_and_project_os_advance_without_claiming_assessment():
+def test_historical_projection_remains_honest_after_current_backlog_advances():
     decision = load_json(DECISION)
     projection = load_json(PROJECTION)
     backlog = load_json(BACKLOG)["next_action"]
@@ -100,17 +100,22 @@ def test_projection_backlog_and_project_os_advance_without_claiming_assessment()
     assert projection["current_truth"]["model_local_surface_disposition"] == "not_started"
     assert projection["execution_authority"]["S2_closeout_executed"] is False
     assert projection["execution_authority"]["S3_entry_authorized"] is False
-    assert backlog["item_id"] == decision["next_action"]
-    assert backlog["current_projection_ref"] == projection_ref
-    assert backlog["current_projection_sha256"] == projection_sha
-    assert backlog["S2_T04_quality_scores_recorded"] == 0
-    assert backlog["S2_T04_model_selected"] is False
+    assert projection_ref.endswith("current_program_projection_v2_19.json")
+    assert len(projection_sha) == 64
+    assert backlog["item_id"] != decision["next_action"]
+    assert backlog["current_projection_ref"].endswith(
+        "current_program_projection_v2_20.json"
+    )
+    assert backlog["S2_T04_quality_scores_recorded"] == 2
+    assert backlog["S2_T04_model_selected"] is True
 
-    issue = [
+    issue = next(
         row
         for row in load_jsonl(ROOT_CAUSES)
         if row["issue_id"].startswith("RC-P36-104-")
-    ][-1]
+        and row["status"] == "open"
+        and row["state_detail"].startswith("authority_scope_pass_")
+    )
     assert issue["status"] == "open"
     assert issue["owned_by_project"] is True
     assert issue["model_or_provider_fault_established"] is False

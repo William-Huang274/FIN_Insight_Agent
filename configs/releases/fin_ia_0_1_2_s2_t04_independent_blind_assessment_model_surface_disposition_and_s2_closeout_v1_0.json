@@ -1,0 +1,160 @@
+{
+  "schema_version": "fin_ia_0_1_2_s2_t04_independent_blind_assessment_model_surface_disposition_and_s2_closeout_v1_0",
+  "result_id": "FIN-0.1.2-S2-T04-INDEPENDENT-BLIND-ASSESSMENT-MODEL-SURFACE-DISPOSITION-AND-S2-CLOSEOUT-R1",
+  "recorded_at": "2026-08-03T14:11:39+08:00",
+  "status": "pass_S2_closed_Pro_preview_selected_for_Claim_and_WWC_Fact_local",
+  "bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s2_deepseek_flash_stable_pro_preview_natural_capability_envelope_stage_plan_v1_0.json",
+      "sha256": "819891dbc1862be73a36a5b2fe5d2c011bedbc811988821bf206f5c7cd5931cf",
+      "role": "immutable_selection_and_closeout_contract"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s2_t04_blinded_paired_assessment_model_local_surface_disposition_and_s2_closeout_authority_decision_v1_0.json",
+      "sha256": "d5427ded16e88de389490e6f611976af5f1a092bef8a93d44e5655346f24f55c",
+      "role": "identity_isolation_rubric_threshold_and_stable_preference_authority"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s2_t04_identity_sealed_blind_assessment_packet_and_independent_evaluator_handoff_minimum_zero_call_implementation_v1_0.json",
+      "sha256": "b26cf347358bfdb046ca96705147804454b9f9f95f20f04667e99182067e3194",
+      "role": "packet_and_independent_handoff_evidence"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s2_t04_independent_blinded_score_record_v1_0.json",
+      "sha256": "ecaef3c3ea9250b055c09a2400aadf6b65466fa476c1b709cd5d303f95b99864",
+      "role": "tracked_label_only_independent_score_record"
+    },
+    {
+      "ref": "scripts/releases/finalize_fin_ia_0_1_2_s2_t04_independent_blind_assessment.py",
+      "sha256": "2c9eaa15431523be5aaf84b600619ddac238211785f8a1adf9a8b423039dd53a",
+      "role": "score_validator_freeze_before_reveal_and_deterministic_rule_application"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s2_t04_independent_blind_assessment_finalization.py",
+      "sha256": "f601d398d094c70c17edc3b2950656f7ef0d769fb8b2dc4bc5b10122ebdcc3c1",
+      "role": "score_validation_selection_threshold_and_one_shot_tests"
+    }
+  ],
+  "restricted_finalization_evidence": {
+    "finalization_ref": ".codex_runtime/fin012-s2-t04-blind-assessment-r1/finalization-r2/finalization-result.json",
+    "finalization_sha256": "fbb8969701cf81924e2ef8b0fac46ee86d64b1f0bb0d61cf16805e06209802c8",
+    "score_freeze_receipt_ref": ".codex_runtime/fin012-s2-t04-blind-assessment-r1/finalization-r2/score-freeze-receipt.json",
+    "score_freeze_receipt_sha256": "156909b825aca241f6333eb1e26460be58adf37bd390577577633f28bafae2c6",
+    "canonical_score_object_sha256": "e78c1b7f364b9f9af1b3af341272e43784a0fbadd79364e4e4a61c3a61018a06",
+    "score_frozen_before_mapping_read": true,
+    "first_finalization_r1_preserved": true,
+    "first_finalization_r1_non_authoritative_reason": "cost_scope_label_included_two_invalid_historical_WWC_calls_while_called_effective_six_cost",
+    "R2_changed_score_mapping_or_selection": false
+  },
+  "independent_blind_assessment": {
+    "packet_sha256": "63296b6334629fd9fd293a64bfe7c8842d1f743bb089cc74ffc7b9652f8b4b4b",
+    "mapping_commitment": "sha256:f69e7c40ef2c4376e2b740d2ddd5ecfb780a8dcd5d1cbac2599ed498e2ba47fa",
+    "assessor_attestation": {
+      "fresh_context_without_mapping_or_prior_observations": true,
+      "read_only_this_packet": true,
+      "did_not_guess_or_seek_identity": true
+    },
+    "blind_scores": {
+      "candidate_A": 18,
+      "candidate_B": 13
+    },
+    "revealed_mapping": {
+      "candidate_A": "pro_preview",
+      "candidate_B": "flash_stable"
+    },
+    "revealed_scores": {
+      "pro_preview": 18,
+      "flash_stable": 13
+    },
+    "Pro_minus_Flash": 5
+  },
+  "model_selection": {
+    "selected_candidate": "pro_preview",
+    "selected_model_ref": "deepseek:deepseek-v4-pro",
+    "selection_rule": "Pro preview may be selected only when both hard-pass and Flash trails by more than two blinded quality points.",
+    "selection_rule_result": "pass_Pro_lead_five_exceeds_two",
+    "preview_lifecycle_risk": "recorded_S3_must_not_treat_preview_as_stable_compatibility_contract",
+    "automatic_runtime_fallback": false,
+    "runtime_mainline_changed_in_S2": false
+  },
+  "family_surface_disposition": {
+    "specialist_fact_atoms": {
+      "Pro_score": 4,
+      "scores": {
+        "evidence_selection_relevance": 1,
+        "epistemic_discipline": 0,
+        "decision_usefulness": 1,
+        "concise_information_density": 2
+      },
+      "retained_model_surface": false,
+      "owner": "local_deterministic_fact_candidate_selection_and_terminal_calibration",
+      "reason": "epistemic_discipline_below_frozen_minimum"
+    },
+    "claim_candidate_atoms": {
+      "Pro_score": 7,
+      "scores": {
+        "evidence_selection_relevance": 2,
+        "epistemic_discipline": 2,
+        "decision_usefulness": 1,
+        "concise_information_density": 2
+      },
+      "retained_model_surface": true,
+      "owner": "deepseek_v4_pro_preview_bounded_alias_and_enum_surface"
+    },
+    "what_would_change_atoms": {
+      "Pro_score": 7,
+      "scores": {
+        "evidence_selection_relevance": 2,
+        "epistemic_discipline": 2,
+        "decision_usefulness": 1,
+        "concise_information_density": 2
+      },
+      "retained_model_surface": true,
+      "owner": "deepseek_v4_pro_preview_bounded_alias_and_enum_surface",
+      "quality_finding": "D001_pre_as_of_and_D002_equal_as_of_reduce_actionability_without_reopening_T03"
+    }
+  },
+  "operational_metrics_after_reveal": {
+    "historical_executed_call_count": 8,
+    "effective_scored_call_count": 6,
+    "invalid_historical_WWC_call_count": 2,
+    "effective_six_input_tokens": 9468,
+    "effective_six_output_tokens": 1153,
+    "effective_six_total_tokens": 10621,
+    "effective_six_tokens_by_candidate": {
+      "flash_stable": {"input": 4734, "output": 569, "total": 5303},
+      "pro_preview": {"input": 4734, "output": 584, "total": 5318}
+    },
+    "effective_six_latency_ms_by_candidate": {
+      "flash_stable": 5222,
+      "pro_preview": 7446
+    },
+    "historical_all_eight_executed_calls_estimated_cost_usd": 0.00713226,
+    "effective_six_cost_allocation": "not_available_from_aggregated_run_evidence",
+    "selection_override_from_operational_metrics": false
+  },
+  "issue_disposition": {
+    "issue_id": "RC-P36-104-fin-0-1-2-s2-t04-same-context-model-identity-contamination-and-unsealed-blind-assessment",
+    "status": "closed_for_internal_S2_independent_context_score_freeze_before_reveal_pass",
+    "external_audit_grade_physical_isolation_claimed": false
+  },
+  "stage_acceptance": {
+    "S2_T01": "pass",
+    "S2_T02": "engineering_pass",
+    "S2_T03": "pass_complete_fair_six_outcome_measurement",
+    "S2_T04": "pass",
+    "S2": "pass_closed_bounded_Pro_preview_Claim_WWC_surface_and_local_Fact_surface",
+    "S3_eligible": true,
+    "S3_started": false,
+    "release_qualified": false
+  },
+  "observed_counts": {
+    "product_model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "independent_evaluator_contexts": 1,
+    "business_Run_or_Artifact_writes": 0
+  },
+  "known_boundary": "S2 selection is based on one MU cell and three bounded atom families. It does not prove S3 full-chain behavior, nine Artifacts, DELL/MU/NVDA transfer, owner acceptance, release, or production readiness.",
+  "next_action": "FIN-0.1.2-S3-STAGE-PLAN-AND-BOUNDED-MODEL-SURFACE-ENTRY-DECISION"
+}

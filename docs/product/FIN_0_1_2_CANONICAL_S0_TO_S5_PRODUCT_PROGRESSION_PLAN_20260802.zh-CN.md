@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S1 pass closed / S2-T03 pass / T04 authority pass, independent blind packet pending / S3-S5 not started`
+状态：`current canonical plan / S0-S2 pass closed / Pro preview bounded Claim+WWC surface, Fact local / S3-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -12,7 +12,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1 已通过并关闭；S2-T03 形成六份 hard-integrity pass 的公平能力输入；T04 的权限与范围已通过，但当前上下文因已知模型映射而无盲评资格，独立去身份化 packet、评分和模型/本地 surface disposition 仍待执行；
+- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；独立盲评中 Pro preview=`18`、Flash stable=`13`，Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 因 Pro 的 epistemic-discipline 未达阈值继续由本地确定性 planner 掌管；S3 尚未开始；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
@@ -90,7 +90,13 @@ RC-P36-102 留在 S2-T03。进一步的受限 Pro 结果重放还发现本地 ta
 
 `FIN-0.1.2-S2-T04-IDENTITY-SEALED-BLIND-ASSESSMENT-PACKET-AND-INDEPENDENT-EVALUATOR-HANDOFF-MINIMUM-ZERO-CALL-IMPLEMENTATION`
 
-当前 quality score=0、model selection=0；S2 未关闭，S3 未进入。评分必须由未接触映射和本任务历史的新 Codex task 或人工评审完成。
+该下一项已经完成。packet 使用随机映射和 256-bit nonce commitment，六份输出与 source/alias context 进入 packet，但模型、call、receipt、digest、路径、延迟、tokens、成本、生命周期和此前观察全部排除；identity-leak preflight 通过。一个 `fork_turns=none` 的 fresh subagent 只读取该 packet，先验证 digest，再按四维 rubric 独立评分。score record 先以 canonical digest `e78c1b7f...18a06` 冻结，之后才读取 mapping。
+
+解盲结果为 Pro preview=`18`、Flash stable=`13`，差值 5，超过既有阈值 2，因此 S2 选择 Pro preview 作为 S3 候选。但 per-family 阈值继续生效：Pro 的 Fact=`4/8` 且 epistemic discipline=`0`，所以 `specialist_fact_atoms` 不交给模型；Claim 与 WWC 各=`7/8`，保留 bounded model surface。运行时主线尚未在 S2 修改，preview 生命周期风险与 no automatic fallback 必须进入 S3 StagePlan。
+
+S2=`pass_closed`，RC-P36-104 在内部评估等级关闭；fresh subagent 与主任务共享文件系统，属于严格流程隔离而非物理外部审计，这一边界不被夸大。S3、九件套、三案迁移、owner acceptance、release 与 production 均未因此自动通过或获权。当前下一项：
+
+`FIN-0.1.2-S3-STAGE-PLAN-AND-BOUNDED-MODEL-SURFACE-ENTRY-DECISION`
 
 以下 S0 收口说明保留为 preceding current-baseline evidence：
 

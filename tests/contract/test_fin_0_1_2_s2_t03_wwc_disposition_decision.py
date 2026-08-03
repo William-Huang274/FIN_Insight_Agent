@@ -115,4 +115,4 @@ def test_projection_and_backlog_advance_only_to_zero_call_implementation() -> No
     assert current["S2_T03_consolidated_zero_call_implementation_authorized"] is True
     assert current["S2_T03_future_WWC_replacement_pair_authorized"] is True
     assert current["S2_T03_replacement_pair_execution_authorized_now"] is False
-    assert current["item_id"].startswith("FIN-0.1.2-S2-T04-")
+    assert current["item_id"].startswith("FIN-0.1.2-S3-")

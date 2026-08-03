@@ -1,0 +1,110 @@
+{
+  "assessor_attestation": {
+    "did_not_guess_or_seek_identity": true,
+    "fresh_context_without_mapping_or_prior_observations": true,
+    "read_only_this_packet": true
+  },
+  "candidate_totals": {
+    "candidate_A": 18,
+    "candidate_B": 13
+  },
+  "comparative_summary": "candidate_A is stronger overall because its what-would-change rows distinguish supporting, challenging, and uncertainty-resolving conditions, although two bound dates are stale. candidate_B is slightly better calibrated in specialist fact prioritization, ties on claim-candidate quality, but its what-would-change rows are redundant and non-actionable.",
+  "family_scores": [
+    {
+      "candidate_scores": [
+        {
+          "dimension_scores": {
+            "concise_information_density": 2,
+            "decision_usefulness": 1,
+            "epistemic_discipline": 0,
+            "evidence_selection_relevance": 1
+          },
+          "evidence": [
+            "E001-E003 are compact and non-duplicative, but E001 is marked critical despite its company-level attribution boundary, while E004-E005 counterevidence is omitted and the terminal class remains supported."
+          ],
+          "family_total": 4,
+          "label": "candidate_A"
+        },
+        {
+          "dimension_scores": {
+            "concise_information_density": 2,
+            "decision_usefulness": 1,
+            "epistemic_discipline": 1,
+            "evidence_selection_relevance": 1
+          },
+          "evidence": [
+            "E001-E003 provide compact distinct signals, and E001 is not elevated to critical; however, omitting E004-E005 leaves the supported terminal class incompletely calibrated to demand and manufacturing uncertainty."
+          ],
+          "family_total": 5,
+          "label": "candidate_B"
+        }
+      ],
+      "family_id": "specialist_fact_atoms"
+    },
+    {
+      "candidate_scores": [
+        {
+          "dimension_scores": {
+            "concise_information_density": 2,
+            "decision_usefulness": 1,
+            "epistemic_discipline": 2,
+            "evidence_selection_relevance": 2
+          },
+          "evidence": [
+            "The single F001-backed row is compact and correctly encodes unknown direction as a bounded inference given F001's explicit company-level attribution limit, though it offers only a generic directional conclusion."
+          ],
+          "family_total": 7,
+          "label": "candidate_A"
+        },
+        {
+          "dimension_scores": {
+            "concise_information_density": 2,
+            "decision_usefulness": 1,
+            "epistemic_discipline": 2,
+            "evidence_selection_relevance": 2
+          },
+          "evidence": [
+            "The single F001-backed row is compact and correctly encodes unknown direction as a bounded inference given F001's explicit company-level attribution limit, though it offers only a generic directional conclusion."
+          ],
+          "family_total": 7,
+          "label": "candidate_B"
+        }
+      ],
+      "family_id": "claim_candidate_atoms"
+    },
+    {
+      "candidate_scores": [
+        {
+          "dimension_scores": {
+            "concise_information_density": 2,
+            "decision_usefulness": 1,
+            "epistemic_discipline": 2,
+            "evidence_selection_relevance": 2
+          },
+          "evidence": [
+            "Rows 1-3 separate confirmation via A001-A003, contradiction via A004-A005, and uncertainty resolution via A006-A009 with distinct transitions; decision usefulness is reduced because D001 predates the as-of date and D002 equals it."
+          ],
+          "family_total": 7,
+          "label": "candidate_A"
+        },
+        {
+          "dimension_scores": {
+            "concise_information_density": 0,
+            "decision_usefulness": 0,
+            "epistemic_discipline": 1,
+            "evidence_selection_relevance": 0
+          },
+          "evidence": [
+            "Each row repeats A001-A009 without discriminating among supportive, counterevidentiary, and graph authorities; all directions are unknown with no_change transitions, and the bound-date row uses stale D001."
+          ],
+          "family_total": 1,
+          "label": "candidate_B"
+        }
+      ],
+      "family_id": "what_would_change_atoms"
+    }
+  ],
+  "mapping_commitment": "sha256:f69e7c40ef2c4376e2b740d2ddd5ecfb780a8dcd5d1cbac2599ed498e2ba47fa",
+  "packet_id": "FIN-0.1.2-S2-T04-IDENTITY-SEALED-BLIND-ASSESSMENT-PACKET-R1",
+  "schema_version": "fin_ia_0_1_2_s2_t04_independent_score_record_v1_0"
+}

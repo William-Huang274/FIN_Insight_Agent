@@ -1,0 +1,97 @@
+{
+  "schema_version": "fin_ia_current_program_projection_v2_0",
+  "projection_id": "FIN-0.1.2-CONSOLIDATED-CURRENT-S3-T01-PASS-T02-PENDING-R22",
+  "recorded_at": "2026-08-03T14:40:58+08:00",
+  "status": "current_FIN_0_1_2_S3_entered_T01_pass_T02_zero_call_implementation_pending",
+  "lifecycle_state": "in_progress",
+  "implementation_binding": {
+    "ref": "configs/releases/fin_ia_0_1_2_s3_nvda_product_anchor_and_bounded_model_surface_stage_plan_v1_0.json",
+    "sha256": "5e4a5bc8abd4b1b0c39c435e1aa65b23b34c5d6b1ef1c56cd0f9a6fa3e0131dd",
+    "binding_role": "S3_stage_plan_entry_call_topology_failure_budget_and_bounded_surface_scope"
+  },
+  "current_truth": {
+    "product_version": "FIN_0_1_2",
+    "stage": "S3_entered_T01_pass_T02_not_started",
+    "active_slice": "FIN_0_1_2_S3_NVDA_PRODUCT_ANCHOR",
+    "current_next_action": "FIN-0.1.2-S3-T02-NVDA-BOUNDED-SURFACE-PRODUCTION-RUNTIME-INTEGRATION-AND-ZERO-CALL-PRODUCT-READINESS-IMPLEMENTATION",
+    "current_stage_status": "S3_T01_pass_T02_pending_separate_user_continuation",
+    "completed_current_stages": {
+      "S0": "pass_closed",
+      "S1": "pass_closed_current_consolidated_baseline",
+      "S2": "pass_closed_bounded_Pro_preview_Claim_WWC_surface_and_local_Fact_surface"
+    },
+    "current_S3_tasks": {
+      "S3_T01": "pass",
+      "S3_T02": "pending_not_authorized",
+      "S3_T03": "blocked_by_T02_and_separate_execution_authority",
+      "S3_T04": "blocked_by_current_exact_product"
+    },
+    "downstream_stages_started": {
+      "S3": true,
+      "S4": false,
+      "S5": false
+    },
+    "product_case": "NVDA",
+    "target_maturity": "current_FIN_0_1_2_NVDA_R2_owner_accepted",
+    "selected_candidate": "pro_preview",
+    "selected_model_ref": "deepseek:deepseek-v4-pro",
+    "selected_model_lifecycle": "preview_historical_control",
+    "retained_model_families": [
+      "claim_candidate_atoms",
+      "what_would_change_atoms"
+    ],
+    "local_deterministic_families": [
+      "specialist_fact_atoms"
+    ],
+    "conditional_non_L1_model_surfaces": [
+      "Research_Lead",
+      "Memo_Writer",
+      "Verifier"
+    ],
+    "S3_product_call_topology": {
+      "logical_nodes": 6,
+      "logical_interactions": 12,
+      "model_provider_calls": 9,
+      "model_captures": 9,
+      "local_Fact_receipts": 3,
+      "business_Artifacts": 9
+    },
+    "automatic_runtime_fallback": false,
+    "runtime_mainline_changed_in_S3_T01": false,
+    "open_S3_entry_issue": "RC-P36-105-fin-0-1-2-s3-s2-selected-surface-not-bound-to-production-runtime-and-current-nvda-product-input",
+    "strict_schema_transport": "sub2api_gpt_5_5_parked_nonblocking_separate_handoff",
+    "release_qualified": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "product_plan": "docs/product/FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md",
+    "S3_technical_plan": "docs/architecture/repository/FIN_0_1_2_S3_NVDA_PRODUCT_ANCHOR_AND_BOUNDED_MODEL_SURFACE_STAGE_PLAN_20260803.zh-CN.md",
+    "S3_stage_plan": "configs/releases/fin_ia_0_1_2_s3_nvda_product_anchor_and_bounded_model_surface_stage_plan_v1_0.json",
+    "S2_closeout": "configs/releases/fin_ia_0_1_2_s2_t04_independent_blind_assessment_model_surface_disposition_and_s2_closeout_v1_0.json",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md",
+    "capability_ledger": "docs/project_os/capability_status_ledger.jsonl",
+    "root_cause_ledger": "docs/project_os/root_cause_issue_ledger.jsonl",
+    "current_runtime_source": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_2.json",
+    "current_runtime_binding": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_2.json",
+    "current_production_executor": "apps/workbench/backend/application/bounded_agent_executor.py"
+  },
+  "historical_projection_policy": {
+    "immutable_event_files_remain_valid_for_historical_facts": true,
+    "historical_files_may_own_current_next_or_backlog_tail": false,
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_20.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "historical_S1_6_12_12_9_rewritten": false,
+    "historical_FIN_0_1_NVDA_owner_acceptance_reused_as_current_proof": false
+  },
+  "execution_authority": {
+    "S3_stage_plan_and_entry_completed": true,
+    "S3_T02_implementation_executed": false,
+    "new_user_continuation_required_before_S3_T02": true,
+    "credential_read_or_probe_authorized": false,
+    "model_provider_or_execution_network_authorized": false,
+    "business_Run_or_Artifact_writes_authorized": false,
+    "full_chain_authorized": false,
+    "owner_acceptance_authorized": false,
+    "release_or_production_authorized": false
+  }
+}

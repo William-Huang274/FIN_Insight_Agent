@@ -15,6 +15,9 @@ CLOSEOUT = ROOT / (
 PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_20.json"
 )
+CURRENT_PROJECTION = ROOT / (
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_21.json"
+)
 BACKLOG = ROOT / "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
 ROOT_CAUSE_LEDGER = ROOT / "docs/project_os/root_cause_issue_ledger.jsonl"
 CAPABILITY_LEDGER = ROOT / "docs/project_os/capability_status_ledger.jsonl"
@@ -119,7 +122,7 @@ def test_S2_is_closed_without_inflating_S3_or_release_state() -> None:
     assert closeout["next_action"] == NEXT_ACTION
 
 
-def test_projection_and_backlog_point_to_the_same_current_truth() -> None:
+def test_historical_S2_projection_remains_immutable_after_S3_entry() -> None:
     projection = _load(PROJECTION)
     backlog = _load(BACKLOG)
     rebaseline = backlog["current_version_rebaseline"]
@@ -145,16 +148,15 @@ def test_projection_and_backlog_point_to_the_same_current_truth() -> None:
     assert truth["local_deterministic_families"] == ["specialist_fact_atoms"]
     assert truth["release_qualified"] is False
 
-    assert rebaseline["projection_ref"] == str(PROJECTION.relative_to(ROOT)).replace(
-        "\\", "/"
-    )
-    assert rebaseline["current_stage"] == "S2_closed_S3_not_started"
-    assert rebaseline["current_next_action"] == NEXT_ACTION
-    assert next_action["current_projection_sha256"] == EXPECTED_PROJECTION_SHA256
+    assert rebaseline["projection_ref"] == str(
+        CURRENT_PROJECTION.relative_to(ROOT)
+    ).replace("\\", "/")
+    assert rebaseline["current_stage"] == "S3_entered_T01_pass_T02_not_started"
+    assert rebaseline["current_next_action"].startswith("FIN-0.1.2-S3-T02-")
     assert next_action["S2_T04_closeout_sha256"] == EXPECTED_CLOSEOUT_SHA256
     assert next_action["S2_T04_revealed_scores_Pro_Flash"] == [18, 13]
     assert next_action["S2_T04_S2_closed"] is True
-    assert next_action["S3_started"] is False
+    assert next_action["S3_started"] is True
 
 
 def test_project_os_ledgers_preserve_internal_only_closure_boundary() -> None:
@@ -168,7 +170,15 @@ def test_project_os_ledgers_preserve_internal_only_closure_boundary() -> None:
     assert issues[-1]["verification"]["score_frozen_before_mapping_read"] is True
     assert "no physically isolated external-audit claim" in issues[-1]["known_boundary"]
 
-    capability = _load_jsonl(CAPABILITY_LEDGER)[-1]
+    capability = [
+        item
+        for item in _load_jsonl(CAPABILITY_LEDGER)
+        if item.get("capability_id")
+        == (
+            "fin_0_1_2_S2_T04_independent_blind_assessment_"
+            "model_surface_disposition_and_S2_closeout"
+        )
+    ][-1]
     assert capability["capability_id"] == (
         "fin_0_1_2_S2_T04_independent_blind_assessment_"
         "model_surface_disposition_and_S2_closeout"
@@ -179,7 +189,15 @@ def test_project_os_ledgers_preserve_internal_only_closure_boundary() -> None:
     )
     assert capability["current_next"] == NEXT_ACTION
 
-    pattern = _load_jsonl(PATTERN_LEDGER)[-1]
+    pattern = [
+        item
+        for item in _load_jsonl(PATTERN_LEDGER)
+        if item.get("pattern_id")
+        == (
+            "blinded_model_assessment_requires_identity_isolation_"
+            "and_score_freeze_before_reveal"
+        )
+    ][-1]
     assert pattern["pattern_id"] == (
         "blinded_model_assessment_requires_identity_isolation_"
         "and_score_freeze_before_reveal"

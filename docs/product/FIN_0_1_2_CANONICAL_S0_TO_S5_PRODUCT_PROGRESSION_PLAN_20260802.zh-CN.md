@@ -1,7 +1,7 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S2 pass closed / Pro preview bounded Claim+WWC surface, Fact local / S3-S5 not started`
+状态：`current canonical plan / S0-S2 pass closed / S3-T01 pass and S3 entered / S3-T02 pending / S4-S5 not started`
 
 ## 1. 为什么重新建立本计划
 
@@ -12,7 +12,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；独立盲评中 Pro preview=`18`、Flash stable=`13`，Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 因 Pro 的 epistemic-discipline 未达阈值继续由本地确定性 planner 掌管；S3 尚未开始；
+- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；独立盲评中 Pro preview=`18`、Flash stable=`13`，Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 因 Pro 的 epistemic-discipline 未达阈值继续由本地确定性 planner 掌管；S3-T01 StagePlan/入口已通过，S3-T02 生产 Runtime 接入尚未开始；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
@@ -94,9 +94,15 @@ RC-P36-102 留在 S2-T03。进一步的受限 Pro 结果重放还发现本地 ta
 
 解盲结果为 Pro preview=`18`、Flash stable=`13`，差值 5，超过既有阈值 2，因此 S2 选择 Pro preview 作为 S3 候选。但 per-family 阈值继续生效：Pro 的 Fact=`4/8` 且 epistemic discipline=`0`，所以 `specialist_fact_atoms` 不交给模型；Claim 与 WWC 各=`7/8`，保留 bounded model surface。运行时主线尚未在 S2 修改，preview 生命周期风险与 no automatic fallback 必须进入 S3 StagePlan。
 
-S2=`pass_closed`，RC-P36-104 在内部评估等级关闭；fresh subagent 与主任务共享文件系统，属于严格流程隔离而非物理外部审计，这一边界不被夸大。S3、九件套、三案迁移、owner acceptance、release 与 production 均未因此自动通过或获权。当前下一项：
+S2=`pass_closed`，RC-P36-104 在内部评估等级关闭；fresh subagent 与主任务共享文件系统，属于严格流程隔离而非物理外部审计，这一边界不被夸大。S3、九件套、三案迁移、owner acceptance、release 与 production 均未因此自动通过或获权。随后 S3-T01 已完成 StagePlan 与入口决策。
 
-`FIN-0.1.2-S3-STAGE-PLAN-AND-BOUNDED-MODEL-SURFACE-ENTRY-DECISION`
+S3 只承担当前 NVDA 单案例产品锚点，不复制旧 FIN 0.1 的十任务膨胀结构。只读代码审计确认 S2 v1.2 binding 仍是 paired-canary-only，生产 executor 仍对每个 Cell 的 Fact/Claim/WWC 全部调用 Provider，并按 owner-grade 12-call profile 校验；这与 S2 已撤销 Fact 模型 surface 的结论矛盾。新增 RC-P36-105，归 S3-T02，不重开 S0–S2，也不归因 DeepSeek。
+
+新 S3 固定 T01–T04：T01 StagePlan；T02 一个生产 Runtime 接入＋零调用产品就绪包；T03 一次 current NVDA exact-live；T04 paired L1–L4、Owner 决定与收口。S3 产品形态改为 6 个逻辑节点、12 个逻辑交互、其中 3 个 Fact 为本地 receipt、9 次 Provider call/capture、9 个 Artifact；S1 的历史 `6/12/12/9` 证据不改写。primary live 后最多一个合并结构修复包和一个 replacement attempt；不得逐字段 prompt 修补、第三次 exact attempt、新 T05/R-number 或产品版本。
+
+S3-T01 没有修改 Runtime、读取凭据、调用模型或生成业务 Artifact。当前下一项：
+
+`FIN-0.1.2-S3-T02-NVDA-BOUNDED-SURFACE-PRODUCTION-RUNTIME-INTEGRATION-AND-ZERO-CALL-PRODUCT-READINESS-IMPLEMENTATION`
 
 以下 S0 收口说明保留为 preceding current-baseline evidence：
 

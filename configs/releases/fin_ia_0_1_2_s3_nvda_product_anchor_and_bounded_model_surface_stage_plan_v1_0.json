@@ -1,0 +1,280 @@
+{
+  "schema_version": "fin_ia_0_1_2_s3_nvda_product_anchor_and_bounded_model_surface_stage_plan_v1_0",
+  "stage_id": "FIN-0.1.2-S3-NVDA-PRODUCT-ANCHOR-AND-BOUNDED-MODEL-SURFACE-R1",
+  "recorded_at": "2026-08-03T14:40:58+08:00",
+  "status": "S3_stage_plan_and_entry_pass_T02_zero_call_product_runtime_integration_pending",
+  "authority": {
+    "user_instruction": "继续",
+    "S3_stage_plan_and_entry_decision_authorized": true,
+    "runtime_implementation_authorized_in_this_task": false,
+    "credential_read_or_probe_authorized": false,
+    "model_provider_network_or_business_execution_authorized": false,
+    "exact_live_requires_separate_authority": true,
+    "owner_acceptance_release_or_production_authorized": false
+  },
+  "bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s2_t04_independent_blind_assessment_model_surface_disposition_and_s2_closeout_v1_0.json",
+      "sha256": "72aed9bed5ef9ab735c7cb3054bdbc4352c5bbb57b6c53ead7c9f2e9189be73c",
+      "role": "S2_selected_model_family_surface_and_stage_closeout"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_2.json",
+      "sha256": "8158e4206dd69a4ec688170f8281001ed7ca26be5fca2dc2a37f088873a85985",
+      "role": "current_S2_comparator_contract_source"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_2.json",
+      "sha256": "59e0777ffc0522b7b86545aef786467a468440d8ddddc239b51434491f240b57",
+      "role": "current_S2_comparator_only_consumer_binding"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json",
+      "sha256": "2f4ffb82f7cc18ac97c7265fd968e004a4b64d5ad8244d79c0a0a0b86c466703",
+      "role": "L1_to_L4_product_acceptance_contract"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_s3_t07_three_cell_workpaper_report_trace_review_surface_v1_0.json",
+      "sha256": "dbef3be936bccfd75fa48f1e0930f0810f946a6e35eab29d585134c448a50f2e",
+      "role": "historical_product_surface_schema_reuse_reference_only"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_s3_t10_owner_review_nvda_r2_and_s3_closeout_v1_0.json",
+      "sha256": "b7cdb5bf00b31581b26b6e66b3194f8c913a3d78ff1c84a59db2eee1d284a8b2",
+      "role": "historical_NVDA_owner_accepted_comparison_reference_not_current_proof"
+    },
+    {
+      "ref": "apps/workbench/backend/application/bounded_agent_executor.py",
+      "sha256": "e0fa9eac38697019580a3f0f801f8a99093927f7da1a8267946e5ef96c6e9ec8",
+      "role": "current_production_executor_audit_snapshot"
+    }
+  ],
+  "stage_objective": {
+    "plain_language": "Make one current NVDA run produce a complete traceable nine-Artifact research product that is safer and more useful than the deterministic baseline.",
+    "product_case": "NVDA",
+    "target_maturity": "current_FIN_0_1_2_NVDA_R2_owner_accepted",
+    "requires": [
+      "one_current_exact_live_terminal_product_with_nine_Artifacts",
+      "independent_L1_integrity_assessment",
+      "same_input_deterministic_paired_comparison",
+      "L3_agent_research_value_above_deterministic_floor",
+      "explicit_owner_acceptance_bound_to_exact_digests"
+    ],
+    "non_goals": [
+      "DELL_or_MU_execution_or_R2",
+      "post_transfer_NVDA_or_R3",
+      "three_case_product_acceptance",
+      "generalized_FIN_0_2_cross_family_compiler",
+      "strict_schema_transport_reopen",
+      "release_candidate_production_or_external_customer_claim"
+    ]
+  },
+  "read_only_audit_findings": [
+    {
+      "finding_id": "S3-F01",
+      "finding": "The current v1.2 binding is explicitly S2-paired-canary-only and is not a production S3 binding.",
+      "impact": "S2 model selection cannot be treated as consumed by the product runtime.",
+      "owner": "S3-T02"
+    },
+    {
+      "finding_id": "S3-F02",
+      "finding": "The current production executor loops over Fact Claim and WWC Provider segments and expects twelve Provider calls for the owner-grade profile.",
+      "impact": "This contradicts the S2 disposition that Fact has no retained model surface.",
+      "owner": "S3-T02"
+    },
+    {
+      "finding_id": "S3-F03",
+      "finding": "The current FIN 0.1.2 NVDA fixture is an S1 structural compatibility fixture rather than a tracked current S3 exact product input.",
+      "impact": "No paid product run may use hidden historical runtime input or claim current product comparability.",
+      "owner": "S3-T02"
+    },
+    {
+      "finding_id": "S3-F04",
+      "finding": "Historical FIN 0.1 NVDA workpaper review and owner acceptance assets are reusable schemas and calibration references but not current FIN 0.1.2 proof.",
+      "impact": "S3 must produce one coherent current-version run and cannot assemble acceptance from historical runs.",
+      "owner": "S3-T03_and_S3-T04"
+    }
+  ],
+  "entry_issue": {
+    "issue_id": "RC-P36-105-fin-0-1-2-s3-s2-selected-surface-not-bound-to-production-runtime-and-current-nvda-product-input",
+    "classification": "project_owned_S3_entry_integration_gap",
+    "model_or_provider_fault_established": false,
+    "blocks": [
+      "S3_exact_live",
+      "current_NVDA_R2",
+      "S3_closeout"
+    ],
+    "does_not_reopen": [
+      "S0",
+      "S1",
+      "S2"
+    ],
+    "earliest_owner": "S3-T02"
+  },
+  "model_and_local_authority_matrix": {
+    "selected_model": {
+      "provider": "deepseek",
+      "model": "deepseek-v4-pro",
+      "model_ref": "deepseek:deepseek-v4-pro",
+      "lifecycle": "preview_historical_control_selected_by_S2",
+      "automatic_fallback": false,
+      "unavailable_or_material_alias_change": "honest_block_and_return_to_S2_candidate_qualification_not_silent_Flash_switch"
+    },
+    "local_L1_truth_owners": [
+      "specialist_Fact_candidate_selection_statement_boundary_and_terminal_calibration",
+      "all_material_numbers_periods_units_scales_signs_formulas_and_numeric_clauses",
+      "dates_case_identity_runtime_IDs_ordering_and_lineage",
+      "Claim_Fact_and_Task_Claim_link_expansion",
+      "final_material_Artifact_rendering_and_independent_L1_recompute"
+    ],
+    "retained_bounded_model_surfaces": [
+      "specialist_Claim_request_local_aliases_and_closed_judgment_enums",
+      "specialist_WWC_request_local_aliases_closed_enums_and_bound_date_aliases"
+    ],
+    "conditionally_retained_historical_model_surfaces": [
+      "Research_Lead_cross_cell_judgment_synthesis",
+      "Memo_Writer_non_authoritative_narrative_shell",
+      "Verifier_findings"
+    ],
+    "condition_for_historical_surfaces": "They may contribute L3 analysis or findings but may not create alter or repair L1 truth identity numeric authority or lineage.",
+    "forbidden": [
+      "Provider_authored_Fact_segment",
+      "Provider_authored_material_truth_or_final_numeric_clause",
+      "automatic_Flash_fallback",
+      "silent_output_rewrite_or_truncation",
+      "historical_run_or_Artifact_promotion_as_current_proof"
+    ]
+  },
+  "S3_product_call_topology": {
+    "logical_node_count": 6,
+    "logical_interaction_count": 12,
+    "local_Fact_interaction_count": 3,
+    "model_specialist_Claim_WWC_call_count": 6,
+    "model_Lead_Writer_Verifier_call_count": 3,
+    "maximum_model_provider_call_count": 9,
+    "expected_model_capture_count": 9,
+    "expected_local_Fact_receipt_count": 3,
+    "required_business_Artifact_count": 9,
+    "historical_S1_6_12_12_9_rewritten": false,
+    "S3_shape_reason": "Fact model authority was revoked by S2, so S3 preserves twelve logical interactions while replacing three Provider calls with deterministic local receipts."
+  },
+  "fixed_tasks": [
+    {
+      "task_id": "S3-T01",
+      "title": "stage_plan_asset_reuse_failure_budget_and_bounded_surface_entry_decision",
+      "status": "pass",
+      "model_provider_network_calls": 0,
+      "exit": "S3 scope tasks authority topology lifecycle stop rules and current projection agree"
+    },
+    {
+      "task_id": "S3-T02",
+      "title": "NVDA_bounded_surface_production_runtime_integration_and_zero_call_product_readiness",
+      "status": "pending_separate_user_continuation",
+      "maximum_initial_implementation_bundles": 1,
+      "requirements": [
+        "create one production S3 contract source binding and admission profile without rewriting S2 v1.2 history",
+        "materialize one tracked current NVDA exact product input with source digest input digest and nonpromotion boundary",
+        "replace three Provider Fact calls with local deterministic Fact interactions and typed receipts",
+        "bind Claim and WWC to the exact S2-selected contract and Pro preview route",
+        "prove Lead Writer and Verifier cannot author or mutate L1 material truth",
+        "prove six nodes twelve logical interactions nine Provider captures three local Fact receipts and nine Artifacts",
+        "cover numeric identity lineage cross_case unknown_alias date capacity terminal_and_capture mutations",
+        "run current applicable S0_S1_S2 regression and one fresh zero_call process proof before any credential access"
+      ],
+      "exit": "RC_P36_105_closed_or_honestly_blocked_and_one_exact_NVDA_admission_payload_is_ready_in_memory_only"
+    },
+    {
+      "task_id": "S3-T03",
+      "title": "one_current_NVDA_exact_live_and_terminal_product_materialization",
+      "status": "pending_blocked_by_S3-T02_and_separate_execution_authority",
+      "primary_formal_attempt_maximum": 1,
+      "maximum_transport_attempts_per_call": 1,
+      "retry_fallback_provider_hopping_prompt_only_retry": [0, 0, 0, 0],
+      "source_network_or_external_tool_calls": 0,
+      "required_terminal_shape": "six_nodes_twelve_logical_interactions_nine_model_calls_nine_captures_three_local_Fact_receipts_nine_Artifacts",
+      "exit": "one_coherent_current_product_or_one_immutable_typed_failure_with_capture_first_evidence"
+    },
+    {
+      "task_id": "S3-T04",
+      "title": "same_input_paired_L1_to_L4_assessment_owner_decision_and_S3_closeout",
+      "status": "pending_successful_S3-T03_product",
+      "model_calls": 0,
+      "requirements": [
+        "independent_L1_recompute_on_exact_nine_Artifact_product",
+        "same_input_deterministic_baseline_materialization",
+        "paired_L3_agent_gain_and_L4_delivery_assessment",
+        "owner_accept_reject_or_honest_block_bound_to_exact_digests",
+        "current_NVDA_R2_only_no_R3_release_or_production_claim"
+      ],
+      "exit": "S3_pass_closed_or_honestly_blocked_with_S4_eligibility_machine_recorded"
+    }
+  ],
+  "hard_budget": {
+    "primary_exact_live_model_calls": 9,
+    "maximum_transport_attempts_per_call": 1,
+    "retry_budget": 0,
+    "fallback_budget": 0,
+    "provider_hopping_budget": 0,
+    "prompt_only_retry_budget": 0,
+    "maximum_input_tokens": 60000,
+    "maximum_output_tokens": 10000,
+    "maximum_total_cost_usd": 0.06,
+    "maximum_wall_clock_seconds": 900,
+    "source_network_calls": 0,
+    "external_tool_calls": 0
+  },
+  "failure_and_repair_policy": {
+    "L1_or_unrecoverable_L2": "preserve_attempt_stop_and_route_to_earliest_S3_owner",
+    "recoverable_L2": "retain_valid_output_record_typed_finding_and_continue_only_when_truth_is_unambiguous",
+    "L3_or_L4": "record_quality_finding_and_decide_in_paired_owner_review_without_reopening_runtime_contract_by_default",
+    "automatic_repair_or_rerun": false,
+    "field_by_field_prompt_patch_series": false,
+    "maximum_consolidated_project_owned_structural_repair_bundles_after_primary_live": 1,
+    "maximum_replacement_exact_live_attempts_after_structural_repair": 1,
+    "replacement_requires": [
+      "one named earliest project owner and one consolidated structural fix",
+      "deterministic three_case and current_NVDA product regression",
+      "new execution identity admission digest and separate user authority"
+    ],
+    "retained_surface_model_nonconformance": "revoke_that_surface_to_local_deterministic_ownership_or_honest_block_not_expand_prompt_patch_loop",
+    "new_L1_after_replacement": "S3_honest_block_no_third_exact_attempt",
+    "isolated_collect_all_diagnostic": "not_automatic_nonpromotable_and_requires_explicit_owner_decision_after_a_formal_failure"
+  },
+  "issue_ownership": {
+    "RC_P36_067": "S3_reproves_NVDA_numeric_truth_only_full_Dell_MU_closure_remains_S4",
+    "RC_P36_068": "S3_reproves_NVDA_delivery_identity_only_full_Dell_MU_closure_remains_S4",
+    "RC_P36_080": "S3_T02_integrates_bounded_surface_and_S3_T03_must_live_prove_no_material_truth_recurrence",
+    "RC_P36_083": "broad_generalized_compiler_remains_FIN_0_2_nonblocking_for_scoped_S3",
+    "RC_P36_084": "S3_T04_calibrates_NVDA_L2_to_L4_full_three_case_semantic_closeout_remains_S4",
+    "RC_P36_105": "blocking_S3_T02_production_integration_owner"
+  },
+  "stage_exit": {
+    "pass_requires": [
+      "S3_T02_current_product_runtime_and_zero_call_readiness_pass",
+      "one_coherent_current_NVDA_exact_live_nine_Artifact_product",
+      "independent_L1_pass",
+      "paired_agent_gain",
+      "owner_acceptance_bound_to_exact_digests",
+      "current_NVDA_R2_recorded"
+    ],
+    "does_not_prove": [
+      "DELL_R2",
+      "MU_R2",
+      "NVDA_R3",
+      "three_case_transfer",
+      "release_or_production"
+    ],
+    "S4_entry": "only_after_S3_pass_closeout_and_separate_user_continuation",
+    "failure_version_effect": "no_automatic_FIN_0_1_3_or_new_stage"
+  },
+  "observed_counts": {
+    "runtime_code_changes": 0,
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "business_runs": 0,
+    "business_artifacts": 0
+  },
+  "next_action": "FIN-0.1.2-S3-T02-NVDA-BOUNDED-SURFACE-PRODUCTION-RUNTIME-INTEGRATION-AND-ZERO-CALL-PRODUCT-READINESS-IMPLEMENTATION"
+}

@@ -104,7 +104,7 @@ def test_historical_projection_remains_honest_after_current_backlog_advances():
     assert len(projection_sha) == 64
     assert backlog["item_id"] != decision["next_action"]
     assert backlog["current_projection_ref"].endswith(
-        "current_program_projection_v2_20.json"
+        "current_program_projection_v2_21.json"
     )
     assert backlog["S2_T04_quality_scores_recorded"] == 2
     assert backlog["S2_T04_model_selected"] is True

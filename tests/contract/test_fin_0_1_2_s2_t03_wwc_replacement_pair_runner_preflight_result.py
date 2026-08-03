@@ -91,7 +91,7 @@ def test_historical_projection_stops_at_exact_pair_execution_and_current_advance
     current = backlog["next_action"]
     assert current["item_id"].startswith("FIN-0.1.2-S3-")
     assert current["current_projection_ref"].endswith(
-        "fin_ia_0_1_2_current_program_projection_v2_20.json"
+        "fin_ia_0_1_2_current_program_projection_v2_21.json"
     )
     assert current["current_projection_ref"] != projection_ref
     assert current["current_projection_sha256"] != projection_sha

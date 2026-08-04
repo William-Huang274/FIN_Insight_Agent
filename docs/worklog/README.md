@@ -1,5 +1,7 @@
 # Worklog
 
+- [584 — FIN 0.1.2 S3-T04 verified delivery surface 与 Evidence density 边界](product_strategy/584_fin_0_1_2_s3_t04_verified_delivery_surface_and_evidence_density_boundary.md)
+- [583 — FIN 0.1.2 S3-T03 replacement success 与 S3-T04 Owner rejection](product_strategy/583_fin_0_1_2_s3_t03_replacement_success_and_s3_t04_owner_rejection.md)
 - [582 — FIN 0.1.2 S3-T03 replacement fresh admission authority fail-closed](product_strategy/582_fin_0_1_2_s3_t03_replacement_fresh_admission_authority_fail_closed.md)
 
 - [581 — FIN 0.1.1 / 0.1.2 PRD 能力对账与阶段重基线](product_strategy/581_fin_0_1_1_0_1_2_prd_capability_alignment_and_stage_rebaseline.md)

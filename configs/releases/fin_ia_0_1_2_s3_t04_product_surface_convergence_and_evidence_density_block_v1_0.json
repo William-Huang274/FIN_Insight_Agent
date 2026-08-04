@@ -1,0 +1,356 @@
+{
+  "final_delivery_preview": {
+    "contract_ref": "fin_0_1_2.s3_t04.verified_final_delivery_surface:v1",
+    "executive_summary_zh_cn": "需求真实性与可持续性单元：当前本地绑定事实不足以支持判断，证据缺口待后续任务填补。；价值与利润捕获单元：当前本地绑定事实不足以支持判断，证据缺口待后续任务填补。；NVDA 公司整体 FY2025 营业利润率 = 62.42%；NVDA 公司整体 FY2025 毛利率 = 74.99%；NVDA 公司整体 FY2025 营收 = USD 130,497,000,000；本地绑定数值事实仅支持上述财务指标，不足以单独证明该判断的因果机制。；瓶颈反证与条件变化单元：当前本地绑定事实不足以支持判断，证据缺口待后续任务填补。",
+    "final_delivery_preview_digest": "b8f5dc3d0c7ad85b0ef8417dea475ebad7af06d9d6b0b7a280709980fa10a07f",
+    "limitations_zh_cn": [
+      "仅限本地绑定的实体、期间、口径、单位、符号与精度",
+      "当前绑定事实不足以支持更强结论"
+    ],
+    "sections": [
+      {
+        "claims": [
+          {
+            "claim_ref": {
+              "identity_kind": "claim",
+              "local_id": "demand_authenticity_and_sustainability:local_claim:001",
+              "program_cell_id": "demand_authenticity_and_sustainability"
+            },
+            "epistemic_status": "cannot_infer",
+            "evidence_support_refs": [],
+            "numeric_only_qualification_applied": false,
+            "numeric_support_refs": [],
+            "qualification_preserved": true,
+            "rendered_text_zh_cn": "需求真实性与可持续性单元：当前本地绑定事实不足以支持判断，证据缺口待后续任务填补。",
+            "scope_digest": "2caddbd5469c5721aa19a8b0e9df0c2415c361dff18f2c1aa710d9a3341a037d"
+          }
+        ],
+        "decision_question": "Is NVDA AI infrastructure demand authentic and durable, and what evidence distinguishes recognized demand from temporary pull-forward?",
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "stop_rule": "Do not advance without issuer or filing evidence for demand and revenue conversion plus one counterindicator.",
+        "what_would_change": [
+          {
+            "authority_refs": [
+              "p03_fixture_msft_capex_neighbor"
+            ],
+            "claim_id": "demand_authenticity_and_sustainability:local_claim:001",
+            "decision_rule": {
+              "comparator_or_condition": "绑定权威来源确认当前方向",
+              "rule_type": "evidence_confirmation",
+              "threshold_or_observation": "Two consecutive quarters of weaker order-to-revenue conversion, material customer digestion, or evidence that demand is primarily inventory pull-forward.",
+              "threshold_source": "frozen_runtime_branch.what_would_change"
+            },
+            "expected_claim_transition": "resolve the linked claim from cannot_infer",
+            "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+            "metric_or_observation": "official_issuer@latest_two_quarters",
+            "source_target": {
+              "document_event_or_dataset": "official_issuer@latest_two_quarters",
+              "entity_or_owner": "MSFT",
+              "source_type": "Candidate"
+            },
+            "task_id": "demand_authenticity_and_sustainability:what_would_change:001",
+            "time_window": {
+              "as_of": "2026-07-21",
+              "deadline_or_review_date": "next reporting event",
+              "start_or_trigger": "2026-07-21"
+            }
+          },
+          {
+            "authority_refs": [
+              "p03_fixture_nvda_demand_seed"
+            ],
+            "claim_id": "demand_authenticity_and_sustainability:local_claim:001",
+            "decision_rule": {
+              "comparator_or_condition": "绑定权威来源确认当前方向",
+              "rule_type": "evidence_confirmation",
+              "threshold_or_observation": "Two consecutive quarters of weaker order-to-revenue conversion, material customer digestion, or evidence that demand is primarily inventory pull-forward.",
+              "threshold_source": "frozen_runtime_branch.what_would_change"
+            },
+            "expected_claim_transition": "resolve the linked claim from cannot_infer",
+            "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+            "metric_or_observation": "official_issuer@latest_two_quarters",
+            "source_target": {
+              "document_event_or_dataset": "official_issuer@latest_two_quarters",
+              "entity_or_owner": "NVDA",
+              "source_type": "Candidate"
+            },
+            "task_id": "demand_authenticity_and_sustainability:what_would_change:002",
+            "time_window": {
+              "as_of": "2026-07-21",
+              "deadline_or_review_date": "next reporting event",
+              "start_or_trigger": "2026-07-21"
+            }
+          },
+          {
+            "authority_refs": [
+              "p03_fixture_nvda_demand_seed"
+            ],
+            "claim_id": "demand_authenticity_and_sustainability:local_claim:001",
+            "decision_rule": {
+              "comparator_or_condition": "绑定权威事件发生",
+              "rule_type": "event_occurs",
+              "threshold_or_observation": "Two consecutive quarters of weaker order-to-revenue conversion, material customer digestion, or evidence that demand is primarily inventory pull-forward.",
+              "threshold_source": "frozen_runtime_branch.what_would_change"
+            },
+            "expected_claim_transition": "resolve the linked claim from cannot_infer",
+            "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+            "metric_or_observation": "official_issuer@latest_two_quarters",
+            "source_target": {
+              "document_event_or_dataset": "official_issuer@latest_two_quarters",
+              "entity_or_owner": "NVDA",
+              "source_type": "Candidate"
+            },
+            "task_id": "demand_authenticity_and_sustainability:what_would_change:003",
+            "time_window": {
+              "as_of": "2026-07-21",
+              "deadline_or_review_date": "2026-07-21",
+              "start_or_trigger": "2026-07-21"
+            }
+          }
+        ]
+      },
+      {
+        "claims": [
+          {
+            "claim_ref": {
+              "identity_kind": "claim",
+              "local_id": "value_and_profit_capture:local_claim:001",
+              "program_cell_id": "value_and_profit_capture"
+            },
+            "epistemic_status": "cannot_infer",
+            "evidence_support_refs": [],
+            "numeric_only_qualification_applied": false,
+            "numeric_support_refs": [],
+            "qualification_preserved": true,
+            "rendered_text_zh_cn": "价值与利润捕获单元：当前本地绑定事实不足以支持判断，证据缺口待后续任务填补。",
+            "scope_digest": "2caddbd5469c5721aa19a8b0e9df0c2415c361dff18f2c1aa710d9a3341a037d"
+          },
+          {
+            "claim_ref": {
+              "identity_kind": "claim",
+              "local_id": "value_and_profit_capture:local_claim:002",
+              "program_cell_id": "value_and_profit_capture"
+            },
+            "epistemic_status": "fact_supported",
+            "evidence_support_refs": [],
+            "numeric_only_qualification_applied": true,
+            "numeric_support_refs": [
+              "s3_derived_financial_metric_c49ebf846b178d32d5eeedeb",
+              "s3_derived_financial_metric_ade99ecb49ff3a46ad57807d",
+              "s3_financial_row_804455e6cabd4e4a750ea06d"
+            ],
+            "qualification_preserved": true,
+            "rendered_text_zh_cn": "NVDA 公司整体 FY2025 营业利润率 = 62.42%；NVDA 公司整体 FY2025 毛利率 = 74.99%；NVDA 公司整体 FY2025 营收 = USD 130,497,000,000；本地绑定数值事实仅支持上述财务指标，不足以单独证明该判断的因果机制。",
+            "scope_digest": "43a3934831e37c7809494c57d247c71cac0a56aadf0210e4dec4655dca925b68"
+          }
+        ],
+        "decision_question": "Where and how does NVDA capture revenue and incremental profit from AI infrastructure demand, using segment, period, unit and formula-bound evidence?",
+        "program_cell_id": "value_and_profit_capture",
+        "stop_rule": "Do not assign value capture without segment revenue or margin evidence and an explicit cross-chain comparison.",
+        "what_would_change": [
+          {
+            "authority_refs": [
+              "p03_fixture_tsm_packaging_table"
+            ],
+            "claim_id": "value_and_profit_capture:local_claim:002",
+            "decision_rule": {
+              "comparator_or_condition": "绑定权威来源出现相反证据",
+              "rule_type": "evidence_confirmation",
+              "threshold_or_observation": "Evidence that pricing power is competed away, mix shifts to lower-margin products, or upstream capacity captures the incremental economics.",
+              "threshold_source": "frozen_runtime_branch.what_would_change"
+            },
+            "expected_claim_transition": "weaken the linked claim",
+            "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+            "metric_or_observation": "official_issuer@latest_two_quarters",
+            "source_target": {
+              "document_event_or_dataset": "official_issuer@latest_two_quarters",
+              "entity_or_owner": "TSM",
+              "source_type": "Candidate"
+            },
+            "task_id": "value_and_profit_capture:what_would_change:001",
+            "time_window": {
+              "as_of": "2026-07-21",
+              "deadline_or_review_date": "next authority event",
+              "start_or_trigger": "2026-07-21"
+            }
+          },
+          {
+            "authority_refs": [
+              "p03_fixture_nvda_revenue_seed"
+            ],
+            "claim_id": "value_and_profit_capture:local_claim:002",
+            "decision_rule": {
+              "comparator_or_condition": "绑定权威来源出现相反证据",
+              "rule_type": "evidence_confirmation",
+              "threshold_or_observation": "Evidence that pricing power is competed away, mix shifts to lower-margin products, or upstream capacity captures the incremental economics.",
+              "threshold_source": "frozen_runtime_branch.what_would_change"
+            },
+            "expected_claim_transition": "weaken the linked claim",
+            "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+            "metric_or_observation": "official_issuer@latest_two_quarters",
+            "source_target": {
+              "document_event_or_dataset": "official_issuer@latest_two_quarters",
+              "entity_or_owner": "NVDA",
+              "source_type": "Candidate"
+            },
+            "task_id": "value_and_profit_capture:what_would_change:002",
+            "time_window": {
+              "as_of": "2026-07-21",
+              "deadline_or_review_date": "next reporting event",
+              "start_or_trigger": "2026-07-21"
+            }
+          },
+          {
+            "authority_refs": [
+              "p03_fixture_nvda_revenue_seed"
+            ],
+            "claim_id": "value_and_profit_capture:local_claim:002",
+            "decision_rule": {
+              "comparator_or_condition": "绑定权威事件发生",
+              "rule_type": "event_occurs",
+              "threshold_or_observation": "Evidence that pricing power is competed away, mix shifts to lower-margin products, or upstream capacity captures the incremental economics.",
+              "threshold_source": "frozen_runtime_branch.what_would_change"
+            },
+            "expected_claim_transition": "weaken the linked claim",
+            "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+            "metric_or_observation": "official_issuer@latest_two_quarters",
+            "source_target": {
+              "document_event_or_dataset": "official_issuer@latest_two_quarters",
+              "entity_or_owner": "NVDA",
+              "source_type": "Candidate"
+            },
+            "task_id": "value_and_profit_capture:what_would_change:003",
+            "time_window": {
+              "as_of": "2026-07-21",
+              "deadline_or_review_date": "2026-07-21",
+              "start_or_trigger": "2026-07-21"
+            }
+          }
+        ]
+      },
+      {
+        "claims": [
+          {
+            "claim_ref": {
+              "identity_kind": "claim",
+              "local_id": "bottleneck_counterevidence_and_what_would_change:local_claim:001",
+              "program_cell_id": "bottleneck_counterevidence_and_what_would_change"
+            },
+            "epistemic_status": "cannot_infer",
+            "evidence_support_refs": [],
+            "numeric_only_qualification_applied": false,
+            "numeric_support_refs": [],
+            "qualification_preserved": true,
+            "rendered_text_zh_cn": "瓶颈反证与条件变化单元：当前本地绑定事实不足以支持判断，证据缺口待后续任务填补。",
+            "scope_digest": "2caddbd5469c5721aa19a8b0e9df0c2415c361dff18f2c1aa710d9a3341a037d"
+          }
+        ],
+        "decision_question": "Which bottlenecks and counterevidence could break or qualify the NVDA thesis, and what exact evidence would change the judgment?",
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "stop_rule": "Do not close the thesis without one capacity bottleneck and one independent counterevidence route.",
+        "what_would_change": [
+          {
+            "authority_refs": [
+              "s3_fixture_nvda_tsm_packaging_graph_observation"
+            ],
+            "claim_id": "bottleneck_counterevidence_and_what_would_change:local_claim:001",
+            "decision_rule": {
+              "comparator_or_condition": "绑定权威来源确认当前方向",
+              "rule_type": "evidence_confirmation",
+              "threshold_or_observation": "A credible supply release, export restriction, capex digestion, customer concentration break, or price-in evidence that invalidates the expected risk-reward.",
+              "threshold_source": "frozen_runtime_branch.what_would_change"
+            },
+            "expected_claim_transition": "resolve the linked claim from cannot_infer",
+            "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+            "metric_or_observation": "relationship_graph@latest_two_quarters",
+            "source_target": {
+              "document_event_or_dataset": "relationship_graph@latest_two_quarters",
+              "entity_or_owner": "NVDA",
+              "source_type": "Candidate"
+            },
+            "task_id": "bottleneck_counterevidence_and_what_would_change:what_would_change:001",
+            "time_window": {
+              "as_of": "2026-07-21",
+              "deadline_or_review_date": "2026-07-21",
+              "start_or_trigger": "2026-07-21"
+            }
+          }
+        ]
+      }
+    ],
+    "source_calls": 0,
+    "source_input_digest": "40625b4385cc97998bea6b9cd1e928dd49ac60f9078a3a884eb9581a53d48272",
+    "source_judgment_digest": "926a7cbb061e00a41ba87ef15f8d275a56fca6295588545fa50911c61a873728",
+    "source_report_digest": "1995023392dc09b9410c8ad573085b8f62263d3b65061b2eb2462a69b69628ed",
+    "title_zh_cn": "NVDA 三单元内部研究备忘录",
+    "tool_calls": 0
+  },
+  "final_delivery_verification": {
+    "bound_source_judgment_digest": "926a7cbb061e00a41ba87ef15f8d275a56fca6295588545fa50911c61a873728",
+    "bound_source_report_digest": "1995023392dc09b9410c8ad573085b8f62263d3b65061b2eb2462a69b69628ed",
+    "checks": {
+      "case_identity": "pass_NVDA",
+      "case_specific_WWC_thresholds": "pass",
+      "cell_and_claim_cardinality": "pass",
+      "currency_unit_deduplication": "pass",
+      "epistemic_qualification_preservation": "pass",
+      "internal_scope_token_exclusion": "pass",
+      "numeric_authority_correspondence": "pass",
+      "numeric_only_support_not_overstated_as_evidence": "pass",
+      "period_label_normalization": "pass"
+    },
+    "contract_ref": "fin_0_1_2.s3_t04.local_final_delivery_verifier:v1",
+    "final_delivery_preview_digest": "b8f5dc3d0c7ad85b0ef8417dea475ebad7af06d9d6b0b7a280709980fa10a07f",
+    "machine_verifier_is_human_acceptance": false,
+    "status": "pass",
+    "verification_digest": "2e08604d70eea62bc4ff6b3fcfa9f30dcb943919f3b74b10276f4699b5d1351f"
+  },
+  "fixture_evidence_qualification": {
+    "candidate_metadata_promotion_allowed": false,
+    "cells": [
+      {
+        "accepted_evidence_refs": [],
+        "candidate_refs_not_evidence": [
+          "p03_fixture_msft_capex_neighbor",
+          "p03_fixture_nvda_demand_seed"
+        ],
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "qualified_evidence_fact_count": 0,
+        "status": "not_qualified_candidate_metadata_or_no_evidence_only"
+      },
+      {
+        "accepted_evidence_refs": [],
+        "candidate_refs_not_evidence": [
+          "p03_fixture_nvda_revenue_seed",
+          "p03_fixture_tsm_packaging_table"
+        ],
+        "program_cell_id": "value_and_profit_capture",
+        "qualified_evidence_fact_count": 0,
+        "status": "not_qualified_candidate_metadata_or_no_evidence_only"
+      },
+      {
+        "accepted_evidence_refs": [],
+        "candidate_refs_not_evidence": [
+          "s3_fixture_nvda_tsm_packaging_graph_observation"
+        ],
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "qualified_evidence_fact_count": 0,
+        "status": "not_qualified_candidate_metadata_or_no_evidence_only"
+      }
+    ],
+    "contract_ref": "fin_0_1_2.s3_t04.fixture_evidence_qualification:v1",
+    "current_numeric_only_fact_cell_does_not_count_as_evidence_cell": true,
+    "qualification_digest": "7282b09f07e0c239c599932cdf4daab3434821f33e83a0a17e1a572dcc0f7ad2",
+    "qualified_evidence_cells": 0,
+    "status": "blocked_requires_promoted_evidence_not_candidate_metadata",
+    "total_cells": 3
+  },
+  "immutable_exact_result_preserved": true,
+  "new_model_calls": 0,
+  "new_network_calls": 0,
+  "new_provider_calls": 0,
+  "owner_acceptance_eligible": false,
+  "result_digest": "52c7d590899cab6a239c1b2d589e1dacfc2b8c7e84c313c4487618215d083b80",
+  "schema_version": "fin_ia_0_1_2_s3_t04_product_surface_result_v1_0",
+  "status": "delivery_surface_pass_fixture_evidence_density_block"
+}

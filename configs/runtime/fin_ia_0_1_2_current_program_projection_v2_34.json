@@ -1,0 +1,85 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_34",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.34",
+  "recorded_at": "2026-08-04T16:30:00+08:00",
+  "status": "S3_T04_delivery_surface_pass_evidence_density_and_stage_ownership_decision_block",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3_T01": "pass",
+    "S3_T02": "pass",
+    "S3_T03": "pass_replacement_exact_live_and_independent_L1",
+    "S3_T04": "delivery_surface_pass_evidence_density_block_owner_acceptance_not_eligible",
+    "S3": "honest_block_pending_evidence_density_stage_ownership_decision",
+    "S4": "not_entered",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S3-T04-EVIDENCE-DENSITY-STAGE-OWNERSHIP-AND-BOUNDARY-REALIGNMENT-DECISION"
+  },
+  "replacement_exact_live": {
+    "execution_identity": "fin012-s3-t03-nvda-replacement-r2",
+    "runtime_result_ref": ".codex_runtime/fin012-s3-t03-nvda-replacement-r2/execution-result.json",
+    "runtime_result_sha256": "7f430356295c558f5158898d069905c3ce6d02b2585e87676c9252ebd5a3568c",
+    "terminal_status": "success",
+    "calls_captures_local_fact_receipts_artifacts": [9, 9, 3, 9],
+    "immutable_and_unchanged_after_T04_surface_materialization": true
+  },
+  "S3_T04_product_surface": {
+    "result_ref": "configs/releases/fin_ia_0_1_2_s3_t04_product_surface_convergence_and_evidence_density_block_v1_0.json",
+    "result_sha256": "1c9cd3389e84abc30e572da83039a5667d5904a995714da1bc73cb369e3dc19f",
+    "status": "delivery_surface_pass_fixture_evidence_density_block",
+    "final_delivery_preview_digest": "b8f5dc3d0c7ad85b0ef8417dea475ebad7af06d9d6b0b7a280709980fa10a07f",
+    "final_delivery_verification_digest": "2e08604d70eea62bc4ff6b3fcfa9f30dcb943919f3b74b10276f4699b5d1351f",
+    "renderer_findings_remaining": 0,
+    "case_specific_WWC_tasks": 7,
+    "generic_WWC_tasks": 0,
+    "numeric_fact_supported_cells": 1,
+    "numeric_only_claims_qualified_not_overstated": 1,
+    "qualified_evidence_cells": 0,
+    "total_cells": 3,
+    "candidate_metadata_promoted": false,
+    "new_model_provider_network_calls": [0, 0, 0],
+    "owner_acceptance_eligible": false
+  },
+  "stage_boundary_finding": {
+    "issue_id": "RC-P36-112-fin-0-1-2-s3-t04-sparse-frozen-fixture-and-s4-evidence-promotion-circular-entry-gate",
+    "finding": "S3-T04 currently requires evidence density that the approved S3 frozen input does not contain, while current Agentic Search and Evidence promotion are explicitly owned by S4-T02 through S4-T04.",
+    "recommended_disposition": "accept S3 only as a bounded frozen-input runtime and delivery anchor with the evidence-density limitation explicit; defer current source-grounded NVDA R2 product acceptance to S4-T04 after S4-T02/T03 evidence qualification",
+    "alternative_not_recommended": "reopen S3 with a richer source-grounded fixture and another exact-live, duplicating S4 evidence scope and violating the frozen attempt boundary",
+    "user_decision_required": true
+  },
+  "issue_state": {
+    "RC_P36_108": "closed_replacement_exact_live_L1_pass",
+    "RC_P36_109": "partial_delivery_renderer_WWC_and_final_preview_closed_evidence_density_open",
+    "RC_P36_110": "planning_rebaseline_recorded_S4_not_entered",
+    "RC_P36_111": "closed_single_controlled_successor_bundle",
+    "RC_P36_112": "open_stage_ownership_decision_required"
+  },
+  "execution_policy": {
+    "third_T03_exact_attempt_authorized": false,
+    "T04_model_or_provider_execution_authorized": false,
+    "product_live_reproof_authorized": false,
+    "S4_entry_authorized": false,
+    "owner_acceptance_auto_reclassified": false,
+    "new_product_version_created": false
+  },
+  "source_paths": {
+    "program_backlog": "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json",
+    "S3_stage_plan": "docs/architecture/repository/FIN_0_1_2_S3_NVDA_PRODUCT_ANCHOR_AND_BOUNDED_MODEL_SURFACE_STAGE_PLAN_20260803.zh-CN.md",
+    "prior_owner_rejection": "configs/releases/fin_ia_0_1_2_s3_t04_nvda_paired_assessment_owner_rejection_and_s3_closeout_v1_0.json",
+    "product_surface_result": "configs/releases/fin_ia_0_1_2_s3_t04_product_surface_convergence_and_evidence_density_block_v1_0.json",
+    "context_pack": "docs/project_os/current_context_pack.zh-CN.md"
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_33.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "primary_or_replacement_exact_result_rewritten": false,
+    "delivery_surface_pass_does_not_imply_evidence_density_pass": true,
+    "owner_rejection_not_silently_reclassified": true,
+    "failed_or_partial_product_acceptance_does_not_create_new_product_version": true
+  }
+}

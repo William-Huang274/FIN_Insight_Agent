@@ -228,15 +228,16 @@ def test_projection_backlog_and_project_os_agree_on_current_next() -> None:
 
     rebaseline = backlog["current_version_rebaseline"]
     next_action = backlog["next_action"]
-    assert rebaseline["projection_ref"].endswith(
-        "fin_ia_0_1_2_current_program_projection_v2_22.json"
-    )
-    assert rebaseline["current_stage"] == (
-        "S3_in_progress_T01_T02_pass_T03_not_authorized"
-    )
     # This file proves the immutable T01 entry projection. The global backlog
     # is intentionally allowed to advance through T02/T03 and must not be
-    # treated as part of that historical snapshot.
+    # treated as part of that historical snapshot. Its current authority must
+    # therefore agree with the backlog's live pointer, not stay pinned to v2.22.
+    assert rebaseline["current_projection_is_authority"] is True
+    assert rebaseline["projection_ref"] == next_action["current_projection_ref"]
+    current_projection = ROOT / rebaseline["projection_ref"]
+    assert current_projection.exists()
+    assert next_action["current_projection_sha256"] == _sha256(current_projection)
+    assert rebaseline["current_product_version"] == "FIN_0_1_2"
     assert next_action["item_id"] != NEXT_ACTION
     assert next_action["S3_stage_plan_sha256"] == EXPECTED_STAGE_PLAN_SHA256
     assert next_action["S3_model_provider_call_topology"] == [6, 12, 9, 9, 3, 9]

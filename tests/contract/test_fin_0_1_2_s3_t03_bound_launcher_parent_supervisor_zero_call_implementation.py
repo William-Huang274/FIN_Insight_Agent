@@ -50,6 +50,10 @@ T04_CLOSEOUT_NEXT = (
     "FIN-0.1.2-S3-T04-OWNER-REJECTION-DISPOSITION-AND-S4-"
     "INELIGIBILITY-HANDOFF"
 )
+T04_BOUNDARY_NEXT = (
+    "FIN-0.1.2-S3-T04-EVIDENCE-DENSITY-STAGE-OWNERSHIP-AND-"
+    "BOUNDARY-REALIGNMENT-DECISION"
+)
 TERMINAL_RESULT = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
     "terminal_failure_result_v1_0.json"
@@ -226,6 +230,11 @@ def test_parent_real_subprocess_abnormal_exit_and_timeout_materialize_terminal(
     secret = f"fixture-secret-{behavior}-never-persist"
     monkeypatch.setenv("DEEPSEEK_API_KEY", secret)
     monkeypatch.setenv("FIN_IA_S3_T03_ALLOW_TEST_FIXTURE_CHILD", "1")
+    # This historical supervisor fixture must exercise its own entrypoint.
+    # A replacement-successor test can set this process-global override while
+    # collecting the same pytest session; do not let that change this fixture's
+    # supervision contract.
+    monkeypatch.delenv("FIN_IA_0_1_2_S3_T03_SUPERVISOR_ENTRYPOINT", raising=False)
     claim_supervised_execution_identity(
         runtime,
         envelope,
@@ -381,6 +390,16 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
             "sha256": row["sha256"],
             "bytes": row["bytes"],
         }
+        if row["ref"] == str(Path(__file__).resolve().relative_to(ROOT)).replace(
+            "\\", "/"
+        ):
+            # The successor is an immutable witness of the test version that
+            # existed when it was issued. Requiring it to hash the current
+            # contents of this same test creates an impossible self-reference
+            # whenever the current-projection compatibility table advances.
+            assert successor_binding["current_binding"]["ref"] == row["ref"]
+            assert successor_binding["current_binding"]["sha256"] != row["sha256"]
+            continue
         assert successor_binding["current_binding"] == {
             "ref": row["ref"],
             "sha256": current_sha256,
@@ -414,6 +433,7 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
             REPLACEMENT_AUTHORITY_NEXT,
             CONTROLLED_SUCCESSOR_NEXT,
             T04_CLOSEOUT_NEXT,
+            T04_BOUNDARY_NEXT,
         }
         current = ROOT / backlog["current_projection_ref"]
         if backlog["item_id"] == EXECUTION_NEXT:
@@ -445,7 +465,7 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
             assert backlog["S3_T03_replacement_admission_authority_status"] == (
                 "blocked_controlled_successor_missing"
             )
-        else:
+        elif backlog["item_id"] == T04_CLOSEOUT_NEXT:
             assert backlog["item_id"] == T04_CLOSEOUT_NEXT
             assert current.name == "fin_ia_0_1_2_current_program_projection_v2_33.json"
             assert backlog["S3_T03_replacement_exact_live_status"].startswith(
@@ -454,6 +474,13 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
             assert backlog["S3_T04_owner_decision"] == (
                 "reject_current_NVDA_R2_product_acceptance"
             )
+        else:
+            assert backlog["item_id"] == T04_BOUNDARY_NEXT
+            assert current.name == "fin_ia_0_1_2_current_program_projection_v2_34.json"
+            assert backlog["S3_T04_renderer_verifier_WWC_status"] == (
+                "pass_zero_model"
+            )
+            assert backlog["S3_T04_qualified_evidence_cells"] == 0
         assert backlog["current_projection_sha256"] == _sha256(current)
     assert backlog["S3_T03_bound_launcher_parent_supervisor_missing"] is False
     if backlog["item_id"] in {
@@ -462,6 +489,7 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
         REPLACEMENT_AUTHORITY_NEXT,
         CONTROLLED_SUCCESSOR_NEXT,
         T04_CLOSEOUT_NEXT,
+        T04_BOUNDARY_NEXT,
     }:
         assert backlog["S3_T03_fresh_admission_consumed"] is True
         assert backlog["S3_T03_execution_started"] is True

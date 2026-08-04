@@ -1,0 +1,148 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_b_dell_current_search_exact_live_result_and_acceptance_v1_0",
+  "result_id": "FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-EXACT-LIVE-R1",
+  "recorded_at": "2026-08-05T01:20:00+08:00",
+  "status": "pass_live_current_evidence_candidate_pack_ready_agent_input_compilation_next",
+  "execution_binding": {
+    "candidate_commit": "1ac08720d101417398a810f178ecb062c3b3f294",
+    "admission_id": "s4_t03_search_admission_b5dd2c46346d81088e4b",
+    "admission_digest": "b5dd2c46346d81088e4bced4ceeb680c614febfbe8c2303bbd802fe7590167f2",
+    "admission_sha256": "b482ff19adfb3539b49e9857b3666965b2d80fdbf552611dbe482dff500e7071",
+    "issuance_digest": "a9a6c059a1a46aebda3c7b6afdfcfb5c5bcd0e23161c04958c92387e3d3f586c",
+    "issuance_sha256": "20028b6ca59a9b2e2fa0d191ed338d342e8024bc91861a532237f011883b9570",
+    "runner_sha256": "583685c4b48659d2f64e39f940705f5dd7e6bc87b38fb12e244bf7794b5519b8",
+    "run_id": "s4_t03_search_run_0494f423fd9c9c9d7571",
+    "attempt_id": "s4_t03_search_attempt_c5a9c85cfcf6f8eb4542",
+    "run_nonce": "20260805_dell_s4_t05b_current_search_exact_live_r1",
+    "runtime_ref": ".codex_runtime/fin012-s4-t05b-dell-current-search-r1"
+  },
+  "preexecution_gate": {
+    "project_os_scope": "FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-EXACT-LIVE-EXECUTION",
+    "project_os_status": "pass",
+    "open_blockers": 0,
+    "git_clean_and_upstream_synced": true,
+    "immutable_hashes_match": true,
+    "reserved_runtime_root_absent_before_execution": true,
+    "admission_active_at_execution": true,
+    "token_and_provider_preflight_applicability": "not_applicable_zero_model_zero_provider_search_only",
+    "extra_source_health_probe_performed": false,
+    "extra_source_health_probe_reason": "A separate probe would bypass the exact two-call source budget.",
+    "outer_gate_note": "The first shell gate failed closed before runner launch because PowerShell JSON date coercion lost the UTC marker. The runtime root remained absent and source calls remained zero. DateKind string preservation corrected the comparison; this was not a live attempt or admission consumption."
+  },
+  "terminal": {
+    "status": "success",
+    "phase": "terminalize",
+    "code": "three_request_current_evidence_candidate_pack_ready",
+    "object_key": "s4-t03/terminal-results/4e/84/4e84de38690d4ffed835092acc2aed94968b23ea8547f7d4e1db1ccbf3db0871.json",
+    "runtime_object_ref": ".codex_runtime/fin012-s4-t05b-dell-current-search-r1/objects/s4-t03/terminal-results/4e/84/4e84de38690d4ffed835092acc2aed94968b23ea8547f7d4e1db1ccbf3db0871.json",
+    "digest": "4e84de38690d4ffed835092acc2aed94968b23ea8547f7d4e1db1ccbf3db0871",
+    "byte_size": 48723,
+    "run_digest": "0494f423fd9c9c9d75710e22213f9efdd42635102937665e969096edc088d42e",
+    "completed_at": "2026-08-04T17:14:47.140990Z",
+    "elapsed_seconds": 20.937
+  },
+  "observed_counts": {
+    "requests": 3,
+    "source_calls": 1,
+    "live_source_network_calls": 1,
+    "local_retrieval_or_tool_invocations": 6,
+    "fallbacks": 0,
+    "same_target_retries": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "paid_api_cost_usd": 0.0,
+    "accepted_candidates": 18,
+    "rejected_candidates": 12,
+    "business_artifacts": 0,
+    "capture_objects": 8
+  },
+  "cell_results": [
+    {
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "accepted": 6,
+      "rejected": 9,
+      "typed_gaps": [],
+      "rejection_summary": {
+        "candidate_date_invalid": 9
+      }
+    },
+    {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "accepted": 6,
+      "rejected": 0,
+      "typed_gaps": []
+    },
+    {
+      "program_cell_id": "value_and_profit_capture",
+      "accepted": 6,
+      "rejected": 3,
+      "typed_gaps": [],
+      "rejection_summary": {
+        "request_candidate_ceiling_reached": 3
+      }
+    }
+  ],
+  "source_acceptance": {
+    "request_url": "https://data.sec.gov/submissions/CIK0001571996.json",
+    "final_url": "https://data.sec.gov/submissions/CIK0001571996.json",
+    "status_code": 200,
+    "content_type": "application/json",
+    "response_body_bytes": 157813,
+    "response_body_sha256": "1458f9935e361eb36cd204c3e47538c445ae2993e4bcd05638fd2326b01a00bd",
+    "source_request_capture_digest": "e3bd9f923b6fda9e243ae03043411efcb3ee04f64c650797ee35ba27876c0ad4",
+    "source_response_capture_digest": "94946133deca32cc0f588e80551406491b2f3c6eb5d353a7a81bfbefe64b0044",
+    "response_persisted_before_parse": true,
+    "credential_cookie_authorization_present": false
+  },
+  "candidate_composition": {
+    "by_route": {
+      "official_issuer_disclosure_metadata_route": 15,
+      "local_exact_value_sql_metadata_route": 3
+    },
+    "by_adapter": {
+      "issuer_document_bm25_read_only": 15,
+      "exact_value_sql_read_only": 3
+    },
+    "by_role": {
+      "issuer_counterevidence_statement": 6,
+      "issuer_demand_statement": 6,
+      "issuer_financial_statement": 3,
+      "exact_numeric_context": 3
+    },
+    "exact_value_authority_candidates": 3,
+    "structured_numeric_entries": 18,
+    "source_hosts": {
+      "www.sec.gov": 15,
+      "data.sec.gov": 3
+    }
+  },
+  "independent_acceptance": {
+    "entity_exact_DELL": true,
+    "all_accepted_not_after_case_as_of": true,
+    "all_accepted_https_and_locator_bound": true,
+    "source_snapshot_and_parser_lineage_present": true,
+    "response_body_digest_recomputed": true,
+    "all_capture_object_content_addresses_match": true,
+    "writer_citable_in_search": false,
+    "domain_judgment_eligible_in_search": false,
+    "failed_or_rejected_rows_promoted": false,
+    "agent_input_compilation_boundary_ready": true
+  },
+  "governance_finding": {
+    "issue_id": "RC-P36-115-fin-0-1-2-cross-runtime-admission-consumption-ledger-missing",
+    "severity": "medium_release_hardening",
+    "blocks_this_observed_single_execution": false,
+    "reason": "The exact admission was consumed only in its declared runtime root, but no shared durable ledger prevents cross-root replay. This stays assigned to S5 and forbids a second Search execution; it does not invalidate this observed single successful run."
+  },
+  "stage_acceptance": {
+    "FIN_0_1_2_S4_T05_B_DELL_Search": "pass_live_current_evidence_candidate_pack_ready",
+    "FIN_0_1_2_S4_T05_B_DELL_Agent": "not_started",
+    "DELL_current_R2": false,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified"
+  },
+  "next_action": "FIN-0.1.2-S4-T05-B-DELL-CURRENT-EVIDENCE-PACK-AND-AGENT-EXACT-INPUT-COMPILATION",
+  "known_boundary": "This result proves one bounded current DELL Search execution and a gated candidate pack. It does not itself promote writer-citable Evidence, authorize DeepSeek, create nine business Artifacts, complete L1-L4 or establish DELL R2."
+}

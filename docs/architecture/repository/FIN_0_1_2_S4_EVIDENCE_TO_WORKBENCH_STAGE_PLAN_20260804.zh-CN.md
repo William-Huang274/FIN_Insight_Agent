@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL Search admission issued-unconsumed，exact-live next / S4-T06–T08 not started`
+状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL Search exact-live pass，Evidence Pack/Agent exact input compilation next / S4-T06–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -123,7 +123,7 @@ RC-P36-117 现已完成结构处置：完整本地 payload 继续作为审计和
 
 当前 next：
 
-`FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-EXACT-LIVE-EXECUTION`
+`FIN-0.1.2-S4-T05-B-DELL-CURRENT-EVIDENCE-PACK-AND-AGENT-EXACT-INPUT-COMPILATION`
 
 R3 exact-live 已 exact-once 成功：9 calls / 9 captures / 3 local Fact receipts / 9 formal Artifacts，input/output=`55,906/3,038`，cost=`USD 0.02696216`，独立 L1 通过，RC-P36-117 live-close。T04 仍不能关闭：最终本地 delivery 暴露内部 scope/period token、重复币种单位并混入英文限制项，且 Verifier 未绑定 final delivery preview；登记 RC-P36-118。该问题属于 T04 产品表面与验收绑定，不属于模型重试事项。后继只允许零调用、有界本地 renderer/preview-binding 处置；不得自动 R4。paired/Owner 与 current NVDA R2 仍未成立，T05 继续 blocked。
 
@@ -154,3 +154,11 @@ DELL Search 已在两个独立 disposable root 中零调用通过。两次 norma
 审计同时在 live 前发现 DELL fallback 是直接官方 PDF，而冻结共享 parser 只解析 HTML anchor。该缺口留在 T05-B 并由新的 case-aware runner 以受控后继关闭：只接受官方 HTTPS allowlist、`application/pdf` 与 `%PDF`、可信 `Last-Modified` 且不晚于 as-of；source request/response 仍在解析前 capture。非 PDF、无日期/非法日期、未来日期和跨案 admission 均 fail closed。历史 T03 NVDA runner 与 T05-A immutable bindings 未改写。
 
 DELL Search fresh admission 已原子签发，digest=`b5dd2c46…167f2`，有效期为 `2026-08-04T17:01:00Z–19:01:00Z`；状态严格为 issued/unconsumed/not-started。它绑定三份 DELL request digest、`2 source / 8 local / retry 0 / fallback 1 / 300s / model 0`，并保留 admission 已写但 issuance 中断时仅对 exact payload 的恢复路径。reserved runtime root 仍不存在，source/model/Provider/Run/Artifact 均为 0。DELL current R2 仍为 false。下一项只允许在该单一 runtime root 执行一次 Search exact-live；若来源没有合格结果则保留 typed gap，项目内 adapter/parser/capture/budget failure 则 terminalize 并停止，不自动第二次搜索。RC-P36-115 的跨 runtime 共享消费锁仍留给 S5，不得宣称已全局解决。
+
+## 11. S4-T05-B DELL Search exact-live 结果
+
+唯一 Search admission 已在声明 runtime 中消费并成功 terminalize。Run/Attempt=`s4_t03_search_run_0494f423fd9c9d7571 / s4_t03_search_attempt_c5a9c85cfcf6f8eb4542`，terminal digest=`4e84de38…b0871`，耗时 20.937 秒。实际执行 `1` 次 SEC submissions 官方来源访问、`6` 次本地只读检索、`0` fallback、`0` retry、`0` 模型/Provider/费用，形成 `8` 个 capture、`18` accepted、`12` rejected 和 `0` 业务 Artifact。三 Cell accepted/rejected=`6/9、6/0、6/3`，无 typed gap。
+
+SEC response HTTP 200、157,813 bytes，request/response 均在解析边界完整留存且没有 Authorization、Cookie 或凭据；body SHA 与 content-addressed object 均回算一致。18 条 accepted 全部绑定 DELL、HTTPS、各自 as-of 以内的发布日期以及 source snapshot/parser lineage；9 条无效日期和 3 条超候选上限记录被拒绝且没有晋升。primary SEC 路径成功，因此 direct-PDF fallback 未被调用。
+
+Search success 只证明 gated current candidate pack。所有候选继续保持 `writer_citable=false / domain_judgment=false`，不得直接交给 Writer 或作为金融结论；DeepSeek admission、Agent live、9 Artifacts、L1–L4、paired 与 Owner 均未授权，DELL R2 仍为 false。下一项只做零调用 current Evidence Pack 与 Agent exact input 编译；之后再独立做 Agent fresh proof、capacity 和 admission authority。RC-P36-115 不阻断本次观察到的一次执行，但禁止第二次 Search，并继续阻断 S5/release。

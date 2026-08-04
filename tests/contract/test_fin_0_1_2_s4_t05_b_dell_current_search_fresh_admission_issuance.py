@@ -18,6 +18,7 @@ sys.path[:0] = [
 from apps.workbench.backend.application.fin_0_1_2_s4_t03_executable_agentic_search import (
     compile_current_case_executable_requests,
 )
+import issue_fin_ia_0_1_2_s4_t05_b_dell_current_search_fresh_admission as issuer_module
 from issue_fin_ia_0_1_2_s4_t05_b_dell_current_search_fresh_admission import (
     ADMISSION_REF,
     EXPIRES_AT,
@@ -41,7 +42,12 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_disposable_issuance_is_exact_unconsumed_and_zero_call(tmp_path: Path) -> None:
+def test_disposable_issuance_is_exact_unconsumed_and_zero_call(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        issuer_module, "_current_commit", lambda: issuer_module.BASE_COMMIT
+    )
     admission_path = tmp_path / "admission.json"
     issuance_path = tmp_path / "issuance.json"
     runtime_root = tmp_path / "runtime"
@@ -84,8 +90,11 @@ def test_disposable_issuance_is_exact_unconsumed_and_zero_call(tmp_path: Path) -
 
 
 def test_exact_partial_admission_can_recover_but_mutation_fails_closed(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    monkeypatch.setattr(
+        issuer_module, "_current_commit", lambda: issuer_module.BASE_COMMIT
+    )
     exact_dir = tmp_path / "exact"
     exact_dir.mkdir()
     admission_path = exact_dir / "admission.json"
@@ -141,7 +150,9 @@ def test_tracked_admission_and_issuance_are_content_addressed_and_unconsumed() -
         "cross_runtime_global_lock_proven": False,
         "cross_runtime_boundary_issue": "RC-P36-115",
     }
-    assert not (ROOT / RUNTIME_ROOT_REF).exists()
+    # This record is immutable issuance-time evidence.  After the separately
+    # authorized exact-live, the declared runtime root may legitimately exist;
+    # current consumption truth belongs to the later result/projection record.
     for binding in issuance["immutable_bindings"]:
         assert _sha256(ROOT / binding["ref"]) == binding["sha256"]
 

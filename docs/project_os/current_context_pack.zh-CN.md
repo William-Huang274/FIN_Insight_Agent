@@ -1,7 +1,10 @@
 # Current Context Pack: P38 Point 01 Canonical Runtime Foundation
 
-更新时间：2026-08-04
+更新时间：2026-08-05
 
+> [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-B DELL Search exact-live 已一次成功，Evidence Pack/Agent exact input 编译待续行（current，2026-08-05）**：唯一声明 runtime 中 admission 已消费，Run/Attempt=`s4_t03_search_run_0494f423fd9c9c9d7571 / s4_t03_search_attempt_c5a9c85cfcf6f8eb4542`，terminal=`4e84de38…b0871`。实际 `1 SEC source / 6 local / 0 fallback / 0 retry / 8 captures / 18 accepted / 12 rejected / 0 model/provider/cost/Artifact`；三 Cell accepted/rejected=`6/9、6/0、6/3`，无 typed gap。SEC response HTTP 200、157,813 bytes，capture-first 且 body SHA 回算一致；accepted 全为 DELL、日期≤as-of、HTTPS 并具 snapshot/parser lineage。候选仍为 `writer_citable=false / domain_judgment=false`，DELL R2=false；不能自动进入 DeepSeek。current next=`FIN-0.1.2-S4-T05-B-DELL-CURRENT-EVIDENCE-PACK-AND-AGENT-EXACT-INPUT-COMPILATION`。RC-P36-115 仍后传 S5，禁止第二次 Search。
+>
 > [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-B DELL Search fresh admission 已签发未消费，exact-live 待续行（current，2026-08-05）**：admission=`s4_t03_search_admission_b5dd2c46346d81088e4b`、digest=`b5dd2c46…167f2`，有效期=`2026-08-04T17:01:00Z–19:01:00Z`；精确绑定三份 DELL request、`2 source / 8 local / retry 0 / fallback 1 / 300s / model/provider/cost 0`。原子 issuer 证明首次写入、完整重复拒绝、exact orphan admission 恢复和 mutated orphan 拒绝；reserved root=`.codex_runtime/fin012-s4-t05b-dell-current-search-r1` 仍 absent。当前 issued/consumed/executed=`true/false/false`，source/model/Provider/Run/Artifact=`0/0/0/0/0`，DELL R2=false。RC-P36-115 的跨 runtime 锁仍后传 S5，因此下一次只可在声明 root 执行一次。current next=`FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-EXACT-LIVE-EXECUTION`；不得同步进入 Agent admission/DeepSeek。
 >

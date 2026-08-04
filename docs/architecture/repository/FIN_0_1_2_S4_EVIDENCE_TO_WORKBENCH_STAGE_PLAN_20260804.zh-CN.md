@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T02 pass closed / S4-T03 authority pending / S4-T04–T08 not started`
+状态：`S4 entered / S4-T01–T02 pass closed / S4-T03 authority fail-closed，controlled successor pending / S4-T04–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -28,7 +28,7 @@ S4 只有在以下结果同时成立时才能关闭：
 | --- | --- | --- | --- |
 | S4-T01 | PRD/current Runtime 自然 Case 入口与 exact binding（已通过） | 用户式 Objective、as-of、预算、三 Cell、current repository source/index snapshot refs 和 fresh identity projection 在 DELL/MU/NVDA fixture 中可重建；mutation/cross-case fail closed；snapshot 明确不是 current Evidence | 不检索、不调用模型、不生成业务 Artifact |
 | S4-T02 | Retrieval/Evidence deterministic readiness（已通过） | 三案 EvidenceRequest、route、candidate ceiling、metadata、parser/authority、accepted/rejected/gap、citation 由 fixture/mutation 证明；历史 source pack 与 2026-06-11 index snapshot 完成 freshness/reachability 处置；RC-P36-113 已关闭 | 不用 live 搜索发现合同问题 |
-| S4-T03 | NVDA bounded Agentic Search current canary（authority pending） | 当前 Runtime 实际调用批准的 public/local RAG/SQL/Graph/official routes；零 false promotion；完整 ToolUse/Evidence lineage | 不自动扩大来源或进行 full research |
+| S4-T03 | NVDA bounded Agentic Search current canary（authority fail-closed；受控实现待开始） | 当前 Runtime 实际调用批准的 public/local RAG/SQL/Graph/official routes；零 false promotion；完整 ToolUse/Evidence lineage | 不把 metadata route、state stub 或 URL wrapper 冒充真实检索，不自动扩大来源或进行 full research |
 | S4-T04 | NVDA natural-Case Agentic Research integration | EvidenceRequest→approved pack→Judgment→Lead/Writer/Verifier→九件套；与 S3 frozen-input 对照；完成 source-grounded NVDA R2 产品验收 | 不用 S3 frozen 结果冒充 current source proof |
 | S4-T05 | DELL/MU transfer 与 post-transfer NVDA | DELL/MU R2、post-transfer NVDA R2；同一 Runtime；新 L1 按 owner 阻断 | 不逐字段无限修复 |
 | S4-T06 | Workbench current product projection | Case/Run/Evidence/Numeric/Graph/Gap/Workpaper/Report/Trace/quality 可审、可回放、可退回 | 不用 fallback 冒充 Agent |
@@ -90,7 +90,13 @@ T02 已以合同 `fin_0_1_2.S4.three_case_retrieval_evidence_deterministic_readi
 
 这意味着“检索与 Evidence 资格判断的管道已准备好”，不意味着已经执行 RAG/Agentic Search。DELL/MU 历史包只用于 parser/citation/readiness 回归；NVDA 当前证据仍不存在，必须由 T03 的受控 current canary 获取。
 
-## 6. 阶段止损与工程纪律
+## 6. S4-T03 authority decision 结果
+
+T03 的零调用权限审计已经完成，但 current canary 必须 fail closed。首个可信阻断不是 DeepSeek、Provider 或外部数据，而是项目内执行集成缺口：T02 的四个 metadata route ID 尚未绑定任何 Python executor；三份 NVDA request 没有不可变 query、source locator、allowlist、adapter snapshot 或 parser binding；本地 retrieval skeleton 故意不调用 adapter，LangGraph 默认 retrieval path 仍为 `state_stub`；现有 web snapshot 只包装给定 URL 为 `context_only` metadata，不执行下载；来源 request/response 的 capture-before-parse、fresh identity、issuer、runner 与 terminal result 也尚不存在。
+
+因此本次 authority scope=`pass`，canary execution authority=`fail_closed`，admission=`not issued`。登记 `RC-P36-114`，仍归 S4-T03，不转给 T04，也不创建新产品版本。唯一后继是一个零调用合并实现包：补齐 `ExecutableSearchRequest`、metadata-to-executable adapter registry、只读 BM25/object-BM25、Graph、exact SQL 和受控 SEC/issuer adapter、来源 request/response 原子留存、fresh canary envelope/issuer/runner/typed terminal result。实现通过后才能另做 admission；T03 只可生成经过 gate 的 current Evidence candidate，仍不得 writer-citable、进入 Judgment 或生成业务 Artifact。
+
+## 7. 阶段止损与工程纪律
 
 - 每个技术层最多一个合并结构修复包和一个预先声明的 replacement canary；
 - fixture 或测试失败留在 owning task 原地修，不创建产品版本；
@@ -100,10 +106,10 @@ T02 已以合同 `fin_0_1_2.S4.three_case_retrieval_evidence_deterministic_readi
 - paid/live 前必须先过 Project OS full-chain preflight 和对应 deterministic ceiling gate；
 - S4-T01 不通过，不得进入 S4-T02；S4-T02 不通过，不得用 S4-T03 live 搜索暴露基础合同问题。
 
-## 7. 当前边界
+## 8. 当前边界
 
-当前 S4-T01、T02 已通过并关闭；S4-T03 尚未开始，先做独立零调用 authority decision；S4-T04–T08 未开始。T02 的 model、Provider、network、source、tool、retrieval、admission、Run、Artifact、Human Review 均未发生。current NVDA R2=false，release=false，production=false。
+当前 S4-T01、T02 已通过并关闭；S4-T03 authority decision 已完成且 execution fail-closed，唯一受控零调用实现包尚未开始；S4-T04–T08 未开始。本次 T03 decision 的 model、Provider、network、source、tool、retrieval、admission、Run、Artifact、Human Review 均为 0。current NVDA R2=false，release=false，production=false。
 
 当前 next：
 
-`FIN-0.1.2-S4-T03-NVDA-BOUNDED-AGENTIC-SEARCH-CURRENT-CANARY-AUTHORITY-DECISION`
+`FIN-0.1.2-S4-T03-NVDA-EXECUTABLE-SEARCH-REQUEST-ROUTE-ADAPTER-CAPTURE-FIRST-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION`

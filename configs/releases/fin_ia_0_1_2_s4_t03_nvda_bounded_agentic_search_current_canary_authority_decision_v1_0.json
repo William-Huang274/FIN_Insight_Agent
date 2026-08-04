@@ -1,0 +1,191 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t03_nvda_bounded_agentic_search_current_canary_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S4-T03-NVDA-BOUNDED-AGENTIC-SEARCH-CURRENT-CANARY-AUTHORITY-DECISION-R1",
+  "recorded_at": "2026-08-04T12:28:04+08:00",
+  "sequence_after_projection": "v2_37",
+  "status": "decision_scope_pass_canary_execution_fail_closed_controlled_successor_required",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "S4-T03 NVDA bounded Agentic Search current canary zero-call authority decision only",
+    "authority_decision_executed": true,
+    "controlled_successor_implementation_executed": false,
+    "canary_admission_issued": false,
+    "canary_execution_authorized": false,
+    "model_provider_network_source_tool_retrieval_store_Run_Artifact_Human_authorized": false
+  },
+  "project_os_preflight": {
+    "run_scope": "FIN-0.1.2-S4-T03-NVDA-BOUNDED-AGENTIC-SEARCH-CURRENT-CANARY-AUTHORITY-DECISION",
+    "status": "pass",
+    "open_full_chain_blocker_count": 0,
+    "interpretation": "Project OS permits the authority audit; it does not establish canary executability."
+  },
+  "evidence_bindings": [
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_37.json",
+      "sha256": "a626b95f1ae947230e06c88808a9aa8131e0d29695b34affe415750c6277094d",
+      "bytes": 4029,
+      "role": "current_program_truth_and_T03_pending_boundary"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t02_three_case_retrieval_evidence_deterministic_readiness_zero_call_implementation_v1_0.json",
+      "sha256": "e8b1dd46ffef4d432e33e1d610adee4cf2e96f7c17d626e22c7a1e26de7ebb0a",
+      "bytes": 6541,
+      "role": "immutable_T02_readiness_closeout"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s4_t02_retrieval_evidence_readiness_authority_v1_0.json",
+      "sha256": "6e89c3a8e8a335c96d248059a4e3bd50f6663eb7377ddc7dcf0e0fcde42a7452",
+      "bytes": 4838,
+      "role": "metadata_route_candidate_parser_citation_and_nonpromotion_authority"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_retrieval_evidence_readiness.py",
+      "sha256": "fcc97e851147196bbf1daa254dd36db8136c684dbccb11dcb492cf8f466487c4",
+      "bytes": 35639,
+      "role": "current_NVDA_three_request_readiness_consumer"
+    },
+    {
+      "ref": "src/sec_agent/canonical_runtime/local_retrieval_skeleton.py",
+      "sha256": "33e08307b6354b2b970ee6358d24c623a0e9c76b6d41b1ebe298b2bc06d430cc",
+      "bytes": 59468,
+      "role": "nonexecuting_local_retrieval_fixture_projection"
+    },
+    {
+      "ref": "src/sec_agent/langgraph_orchestrator.py",
+      "sha256": "d4c74c73bcb612635b318f1be4f22f6562730155df7f29011bda9f129447625a",
+      "bytes": 533763,
+      "role": "retrieval_node_uses_state_stub_without_injected_callback"
+    },
+    {
+      "ref": "src/sec_agent/mcp_tool_registry.py",
+      "sha256": "0674dfcecf20d0638e56fa01b5bfce35ef18f41c79f45f9b34f6c3baa3d58940",
+      "bytes": 60641,
+      "role": "historical_tool_surface_and_nonfetching_web_snapshot_wrapper"
+    },
+    {
+      "ref": "src/sec_agent/source_route_registry_v2.py",
+      "sha256": "502a8da660ae6e6f03d4b285fa70fc3378586346d72fa485cfcce146a88b6b46",
+      "bytes": 35084,
+      "role": "declarative_source_role_contracts_without_T02_route_id_binding"
+    }
+  ],
+  "current_NVDA_readiness": {
+    "case_key": "NVDA",
+    "as_of": "2026-07-21T00:00:00Z",
+    "request_count": 3,
+    "request_digests": [
+      "0e894febae6eb01805a9726b4dc8054774e18c39e7a5b0fb101b6678b660edf8",
+      "19e252afbc1f2478d9a814157e0e4bc1820faf88421c9194a0d5e903286e401a",
+      "588637346973b00837ea2c49fa6213093b283320f9e3f534601e2bee6821ffbb"
+    ],
+    "execution_admission_values": ["not_admitted", "not_admitted", "not_admitted"],
+    "accepted_rejected_citations_promoted": [0, 0, 0, 0],
+    "typed_gap_codes": [
+      "current_counterevidence_search_required",
+      "current_demand_evidence_search_required",
+      "current_value_evidence_search_required"
+    ]
+  },
+  "first_credible_blockers": [
+    {
+      "code": "t02_metadata_route_ids_have_no_executable_binding",
+      "evidence": "All four T02 route IDs occur only in the T02 authority JSON and in no Python executor or route registry.",
+      "owner": "S4_T03_search_route_integration"
+    },
+    {
+      "code": "current_requests_lack_executable_query_locator_and_source_policy",
+      "evidence": "The three current requests carry objective_digest and metadata route IDs but no immutable query text, source locator, allowlist, adapter snapshot or parser binding.",
+      "owner": "S4_T03_executable_search_request"
+    },
+    {
+      "code": "current_local_and_graph_path_is_projection_or_stub_only",
+      "evidence": "NonExecutingLocalRetrievalSkeleton never invokes recall and the orchestrator retrieval node uses state_stub unless an external callback is injected.",
+      "owner": "S4_T03_read_only_adapter_and_runner"
+    },
+    {
+      "code": "source_interaction_capture_first_and_admission_chain_missing",
+      "evidence": "Provider-output capture does not capture source request/response bytes, and no T03 source-capture contract, exact identity envelope, issuer, runner or terminal result exists.",
+      "owner": "S4_T03_execution_control_and_source_lineage"
+    }
+  ],
+  "misleading_fallbacks_rejected": [
+    "Do not treat mcp web_evidence_snapshot as a fetch because it only wraps a supplied URL into context_only metadata.",
+    "Do not rename metadata route IDs into executable IDs without binding and invoking adapters.",
+    "Do not use historical DELL or MU rows as current NVDA Evidence.",
+    "Do not call DeepSeek to generate search results or repair missing source execution.",
+    "Do not use a paid or full research run to discover the known T03 integration gap."
+  ],
+  "selected_controlled_successor_contract": {
+    "scope": "one zero-call implementation bundle inside S4-T03",
+    "required_outputs": [
+      "ExecutableSearchRequest with exact query source allowlist locator adapter parser and as-of bindings",
+      "MetadataRouteToExecutableAdapterRegistry",
+      "read-only local BM25 or object-BM25, relationship graph and exact-value SQL adapters",
+      "bounded SEC or issuer official-source fetch adapter",
+      "source-request and source-response capture-first content-addressed objects with sanitized headers",
+      "fresh canary WorkUnit Attempt Run envelope, issuer, runner and typed terminal result",
+      "candidate-to-current-Evidence gate that remains non-writer-citable until T04"
+    ],
+    "route_projection": {
+      "official_issuer_disclosure_metadata_route": [
+        "sec_edgar_current_disclosure",
+        "nvda_investor_relations_current_disclosure_as_single_controlled_fallback"
+      ],
+      "local_relationship_graph_metadata_route": ["relationship_graph_read_only"],
+      "public_source_index_metadata_route": ["route_catalog_only_not_direct_Evidence"],
+      "local_exact_value_sql_metadata_route": ["exact_value_sql_read_only"],
+      "captured_official_document_local_recall": ["issuer_document_bm25_or_object_bm25_read_only"]
+    },
+    "prospective_canary_ceiling": {
+      "cases": 1,
+      "evidence_requests": 3,
+      "source_network_calls": 2,
+      "local_retrieval_or_tool_invocations": 8,
+      "same_target_retries": 0,
+      "controlled_route_fallbacks": 1,
+      "model_calls": 0,
+      "provider_calls": 0,
+      "token_budget": 0,
+      "paid_api_cost_usd": 0.0,
+      "wall_clock_seconds": 300,
+      "accepted_candidates_per_request": 6,
+      "accepted_candidates_per_case": 18
+    },
+    "stop_rules": [
+      "stop before parse if source request or response capture cannot be atomically persisted and read back",
+      "stop on non-allowlisted domain redirect credential or cookie exposure identity mismatch cross-case row parser contract violation or budget breach",
+      "continue to the next predeclared route on a valid zero-candidate result and preserve a typed gap",
+      "allow at most one predeclared SEC-to-issuer route fallback and no same-target retry",
+      "do not promote any row until entity as-of source snapshot parser citation role and Evidence Gate all pass"
+    ],
+    "T04_consumption_boundary": {
+      "current_evidence_candidate_may_be_created_after_gate": true,
+      "writer_citable_in_T03": false,
+      "domain_judgment_eligible_in_T03": false,
+      "business_artifact_created_in_T03": false
+    },
+    "implementation_authorized_by_this_decision": false
+  },
+  "decision": {
+    "authority_scope": "pass",
+    "canary_execution_authority": "fail_closed",
+    "canary_admission_issuance": "not_authorized",
+    "root_cause_class": "project_owned_T03_execution_integration_gap_not_model_provider_or_external_data_failure",
+    "issue_id": "RC-P36-114-fin-0-1-2-s4-t03-metadata-route-to-executable-search-and-source-capture-binding-gap"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "retrieval_calls": 0,
+    "store_writes": 0,
+    "admissions_issued": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "human_reviews": 0
+  },
+  "next_action": "FIN-0.1.2-S4-T03-NVDA-EXECUTABLE-SEARCH-REQUEST-ROUTE-ADAPTER-CAPTURE-FIRST-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION",
+  "known_boundary": "This decision proves only that the current T03 canary is not yet issuable and selects one bounded in-stage integration package. It does not execute or authorize source access retrieval model calls Evidence promotion T04 Agentic Research current NVDA R2 Workbench acceptance release or production."
+}

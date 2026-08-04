@@ -63,8 +63,8 @@ S4_T02_NEXT = (
     "DETERMINISTIC-READINESS-ZERO-CALL-IMPLEMENTATION"
 )
 S4_T03_NEXT = (
-    "FIN-0.1.2-S4-T03-NVDA-BOUNDED-AGENTIC-SEARCH-"
-    "CURRENT-CANARY-AUTHORITY-DECISION"
+    "FIN-0.1.2-S4-T03-NVDA-EXECUTABLE-SEARCH-REQUEST-ROUTE-ADAPTER-"
+    "CAPTURE-FIRST-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION"
 )
 TERMINAL_RESULT = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
@@ -515,7 +515,7 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
             assert backlog["current_NVDA_R2"] is False
         else:
             assert backlog["item_id"] == S4_T03_NEXT
-            assert current.name == "fin_ia_0_1_2_current_program_projection_v2_37.json"
+            assert current.name == "fin_ia_0_1_2_current_program_projection_v2_38.json"
             assert backlog["S4_T01_completed"] is True
             assert backlog["S4_T02_started"] is True
             assert backlog["S4_T02_completed"] is True

@@ -1,0 +1,79 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_38",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.38",
+  "recorded_at": "2026-08-04T12:28:04+08:00",
+  "sequence_after_projection": "v2_37",
+  "status": "S3_bounded_anchor_pass_closed_S4_T01_T02_pass_closed_T03_authority_fail_closed_controlled_successor_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4": "entered_T01_T02_pass_T03_authority_fail_closed_controlled_successor_pending",
+    "S4_T01": "pass_closed_zero_call_runtime_injected_node_level_consumed",
+    "S4_T02": "pass_closed_zero_call_retrieval_evidence_readiness",
+    "S4_T03": "authority_decision_pass_execution_fail_closed_controlled_successor_not_started",
+    "S4_T04_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T03-NVDA-EXECUTABLE-SEARCH-REQUEST-ROUTE-ADAPTER-CAPTURE-FIRST-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+  },
+  "S4_T02_closeout": {
+    "implementation_ref": "configs/releases/fin_ia_0_1_2_s4_t02_three_case_retrieval_evidence_deterministic_readiness_zero_call_implementation_v1_0.json",
+    "implementation_sha256": "e8b1dd46ffef4d432e33e1d610adee4cf2e96f7c17d626e22c7a1e26de7ebb0a",
+    "accepted_rejected_citations_promoted_by_case": {
+      "DELL": [2, 8, 2, 0],
+      "MU": [13, 1, 13, 0],
+      "NVDA": [0, 0, 0, 0]
+    },
+    "historical_Dell_and_MU_rows_are_current_Evidence": false,
+    "NVDA_current_search_required": true
+  },
+  "S4_T03_authority_decision": {
+    "decision_ref": "configs/releases/fin_ia_0_1_2_s4_t03_nvda_bounded_agentic_search_current_canary_authority_decision_v1_0.json",
+    "decision_sha256": "0bfdb27640354d7b6289d087e1d7b53edd365d8b0f39683f1693f91e955032b3",
+    "authority_scope": "pass",
+    "canary_execution_authority": "fail_closed",
+    "admission_issued": false,
+    "execution_authorized": false,
+    "root_cause_issue_id": "RC-P36-114-fin-0-1-2-s4-t03-metadata-route-to-executable-search-and-source-capture-binding-gap",
+    "first_credible_blockers": [
+      "t02_metadata_route_ids_have_no_executable_binding",
+      "current_requests_lack_executable_query_locator_and_source_policy",
+      "current_local_and_graph_path_is_projection_or_stub_only",
+      "source_interaction_capture_first_and_admission_chain_missing"
+    ],
+    "controlled_successor_scope": "one_zero_call_implementation_bundle_inside_S4_T03",
+    "prospective_canary_model_provider_source_network_ceiling": [0, 0, 2],
+    "current_evidence_candidates_promoted_business_artifacts": [0, 0, 0]
+  },
+  "issue_state": {
+    "RC_P36_109": "delivery_surface_closed_for_S3_evidence_density_carried_to_S4_T04",
+    "RC_P36_110": "planning_rebaseline_consumed_S4_execution_gates_pending",
+    "RC_P36_112": "closed_owner_stage_boundary_realignment_selected",
+    "RC_P36_113": "closed_shared_default_registry_aligned_and_readback_proven",
+    "RC_P36_114": "open_owned_by_S4_T03_controlled_successor"
+  },
+  "execution_policy": {
+    "S4_T01_zero_call_implementation_executed": true,
+    "S4_T02_zero_call_implementation_executed": true,
+    "S4_T03_authority_decision_executed": true,
+    "S4_T03_controlled_successor_implementation_authorized": false,
+    "S4_T03_canary_execution_authorized": false,
+    "model_provider_execution_network_source_network_tool_or_retrieval_execution_authorized": false,
+    "admission_or_business_run_authorized": false,
+    "historical_fixture_auto_promoted_to_current_Evidence": false,
+    "current_NVDA_R2_auto_reclassified": false,
+    "new_product_version_created": false
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_37.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "prior_owner_product_rejection_rewritten": false,
+    "historical_source_pack_promoted_to_current_Evidence": false,
+    "wall_clock_note": "projection_sequence_is_authoritative_if_prior_authored_timestamp_exceeds_current_observed_host_time"
+  }
+}

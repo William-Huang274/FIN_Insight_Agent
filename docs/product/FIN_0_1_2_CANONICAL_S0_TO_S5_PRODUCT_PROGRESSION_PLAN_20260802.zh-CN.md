@@ -1,7 +1,11 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S2 pass closed / S3 bounded anchor pass closed / S4-T01–T02 pass closed / S4-T03 authority pending / S5 not started`
+状态：`current canonical plan / S0-S2 pass closed / S3 bounded anchor pass closed / S4-T01–T02 pass closed / S4-T03 authority fail-closed，controlled successor pending / S5 not started`
+
+> 2026-08-04 S4-T03 authority decision 已完成：decision scope 通过，但 current canary execution fail-closed。T02 的 metadata route 尚无 executable adapter binding，NVDA requests 尚无 immutable query/source policy，local/graph path 仍为 non-executing projection 或 `state_stub`，来源 capture-before-parse 与 fresh issuer/runner/terminal chain 缺失。登记项目内 `RC-P36-114`，不是 DeepSeek/Provider/外部数据问题；下一项只做一个 T03 内零调用受控实现包，不签发 admission、不执行检索、不晋升 Evidence。
+
+当前 next：`FIN-0.1.2-S4-T03-NVDA-EXECUTABLE-SEARCH-REQUEST-ROUTE-ADAPTER-CAPTURE-FIRST-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION`
 
 > 2026-08-04 S4-T02 已完成：三案 current Runtime 已编译 EvidenceRequest、route、candidate ceiling、parser/authority、accepted/rejected/gap 与 citation readiness，focused＋共享 registry=`29 passed`。DELL/MU 历史 fixture 分别为 `2/8/2/0`、`13/1/13/0`（accepted/rejected/citation/promoted）；NVDA manifest-only 为 `0/0/0/0` 并保留三个 current-search gap。RC-P36-113 已关闭。历史 fixture 仍不是 current Evidence；下一项只做 T03 bounded NVDA canary 的零调用 authority decision。
 
@@ -18,7 +22,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；S3 replacement exact-live、独立 L1 与 verified delivery surface 已完成，Owner 以有限 frozen-input Runtime/交付锚点范围关闭 S3，明确不接受 current source-grounded NVDA R2；Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 由本地确定性 planner 掌管；S4-T01、T02 已通过，当前为 S4-T03 bounded NVDA Agentic Search canary 的 authority decision；
+- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；S3 replacement exact-live、独立 L1 与 verified delivery surface 已完成，Owner 以有限 frozen-input Runtime/交付锚点范围关闭 S3，明确不接受 current source-grounded NVDA R2；Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 由本地确定性 planner 掌管；S4-T01、T02 已通过，S4-T03 authority 已 fail-closed，当前只允许补齐 executable search/request/adapter/source-capture/fresh runner 的受控零调用实现；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；

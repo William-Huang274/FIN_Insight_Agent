@@ -1,5 +1,8 @@
 # Worklog
 
+- [588 — FIN 0.1.2 S4-T03 Agentic Search canary authority fail-closed](product_strategy/588_fin_0_1_2_s4_t03_agentic_search_canary_authority_fail_closed.md)
+- [587 — FIN 0.1.2 S4-T02 Retrieval/Evidence deterministic readiness](product_strategy/587_fin_0_1_2_s4_t02_retrieval_evidence_deterministic_readiness.md)
+- [586 — FIN 0.1.2 S4-T01 natural Case entry 与 exact binding](product_strategy/586_fin_0_1_2_s4_t01_natural_case_entry_and_exact_binding.md)
 - [585 — FIN 0.1.2 S3 有限锚点关闭与 S4-T01 入口](product_strategy/585_fin_0_1_2_s3_bounded_anchor_closeout_and_s4_t01_entry.md)
 - [584 — FIN 0.1.2 S3-T04 verified delivery surface 与 Evidence density 边界](product_strategy/584_fin_0_1_2_s3_t04_verified_delivery_surface_and_evidence_density_boundary.md)
 - [583 — FIN 0.1.2 S3-T03 replacement success 与 S3-T04 Owner rejection](product_strategy/583_fin_0_1_2_s3_t03_replacement_success_and_s3_t04_owner_rejection.md)

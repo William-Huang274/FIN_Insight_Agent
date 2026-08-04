@@ -1,7 +1,11 @@
 # FIN 0.1.1 / 0.1.2 PRD 能力对账与 S0–S5 重基线
 
 日期：2026-08-04
-状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T02 pass closed / S4-T03 authority pending / no product version change`
+状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T02 pass closed / S4-T03 authority fail-closed，controlled successor pending / no product version change`
+
+> 2026-08-04 S4-T03 零调用权限审计确认：F05 当前不是“模型效果差”，而是 metadata route 尚未接成 executable search，来源 request/response capture-first 与 fresh execution-control chain 也未建立。`RC-P36-114` 留在 T03；必须先做一个合并的零调用可执行接入包，再另行判断 current canary admission，不能把 state stub、URL metadata wrapper 或历史 fixture 写成 current Agentic Search。
+
+当前 next：`FIN-0.1.2-S4-T03-NVDA-EXECUTABLE-SEARCH-REQUEST-ROUTE-ADAPTER-CAPTURE-FIRST-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION`
 
 > 2026-08-04 S4-T02 已通过：DELL/MU/NVDA 的 EvidenceRequest、route、ceiling、parser/authority、candidate decision、citation 与 typed gap 已由 current Runtime 零调用证明，合并回归=`29 passed`；RC-P36-113 已关闭。DELL/MU 只是历史 readiness fixture，NVDA 仍是 manifest-only 并需要 current search，promoted Evidence 仍为 `0/3`，current NVDA R2 仍为 false。
 
@@ -116,7 +120,7 @@ S3 通过继续写明：`F05 Agentic Search not assessed`、`natural Case entry 
 | --- | --- | --- | --- |
 | S4-T01（pass closed） | PRD/current Runtime 入口与自然 Case binding | F01/F02/F03/F04 | 用户式 Objective、as-of、预算、三 cells、current repository source/index entry snapshot 和 exact identity projection 可重建；明确不等于 current Evidence |
 | S4-T02（pass closed） | Retrieval/Evidence deterministic readiness | F05/F06/F07/F13 | 三案 EvidenceRequest、route、candidate ceiling、metadata、parser/authority、accepted/rejected/gap、citation 已以零模型 fixture/mutation 证明；RC-P36-113 已关闭；历史 fixture 未晋升 current Evidence |
-| S4-T03 | NVDA bounded Agentic Search current canary | F05/F06/F07/F09/F13 + bounded Graph | 当前 Runtime 实际使用 public/local RAG/SQL/Graph/official route；允许一次受控 fallback/repair；零 false promotion；完整 ToolUse/Evidence lineage |
+| S4-T03（authority fail-closed；受控实现 pending） | NVDA bounded Agentic Search current canary | F05/F06/F07/F09/F13 + bounded Graph | 先把 metadata route 绑定为 executable request/adapter/source capture/fresh runner；之后 current Runtime 才可实际使用 public/local RAG/SQL/Graph/official route；允许一次受控 fallback；零 false promotion；完整 ToolUse/Evidence lineage |
 | S4-T04 | NVDA natural-Case Agentic Research integration | F03/F08/F09/F10/F11/F13 | 自然 Case 从 EvidenceRequest 到 approved pack、judgment、Lead/Writer/Verifier；与 S3 frozen-input 输出分开比较；缺口不被伪装 |
 | S4-T05 | DELL/MU transfer 与 post-transfer NVDA | F03/F05/F07/F08 | DELL/MU R2、post-transfer NVDA R2；同一冻结 Runtime；新 L1 按 owner 阻断，不逐字段无限修补 |
 | S4-T06 | Workbench current product projection | F01/F02/F04/F06/F09/F11/F13/F15 + Graph | 当前 Case/Run/Evidence/Numeric/Graph/Workpaper/Report/Trace/quality state 在 UI 可审、可回放、可退回；无 fallback 冒充 Agent |
@@ -157,7 +161,7 @@ Owner 决定已经消费原 S3 入口并推进到：
 S3 bounded anchor pass closed
   -> revised S4-T01 natural Case entry / exact binding（pass closed）
   -> S4-T02 retrieval/evidence deterministic readiness（pass closed）
-  -> S4-T03 NVDA Agentic Search canary（authority pending）
+  -> S4-T03 NVDA Agentic Search canary（authority fail-closed；controlled successor pending）
   -> S4-T04 natural-Case Agentic Research / current NVDA R2
   -> S4-T05 ... S4-T08
   -> revised S5-T01 ... S5-T06

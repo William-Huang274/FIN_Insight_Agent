@@ -18,7 +18,7 @@ PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_35.json"
 )
 CURRENT_PROJECTION = ROOT / (
-    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_37.json"
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_38.json"
 )
 BACKLOG = ROOT / "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
 PRIOR_REJECTION = ROOT / (
@@ -37,8 +37,8 @@ T02_NEXT = (
     "DETERMINISTIC-READINESS-ZERO-CALL-IMPLEMENTATION"
 )
 T03_NEXT = (
-    "FIN-0.1.2-S4-T03-NVDA-BOUNDED-AGENTIC-SEARCH-"
-    "CURRENT-CANARY-AUTHORITY-DECISION"
+    "FIN-0.1.2-S4-T03-NVDA-EXECUTABLE-SEARCH-REQUEST-ROUTE-ADAPTER-"
+    "CAPTURE-FIRST-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION"
 )
 
 

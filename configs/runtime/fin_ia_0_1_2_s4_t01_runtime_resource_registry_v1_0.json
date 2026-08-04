@@ -1,0 +1,113 @@
+{
+  "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
+  "registry_id": "FIN-0.1.2-S4-T01-NATURAL-CASE-ENTRY-RUNTIME-RESOURCE-REGISTRY-R1",
+  "status": "tracked_typed_runtime_resource_authority",
+  "policy": {
+    "registry_is_source_of_truth": true,
+    "static_scanner_is_detector_only": true,
+    "direct_unregistered_runtime_read_fails_closed": true,
+    "missing_unknown_duplicate_or_digest_drift_fails_closed": true,
+    "permutation_or_cross_version_fails_closed": true,
+    "ignored_untracked_codex_runtime_and_git_forbidden": true,
+    "traversal_and_symlink_escape_forbidden": true
+  },
+  "detector_python_refs": [
+    "apps/workbench/backend/application/fin_0_1_2_s4_natural_case_entry.py"
+  ],
+  "resource_count": 7,
+  "resource_bytes": 139612,
+  "resource_canonical_digest": "c4c1bbcfdc21223d968a3f5d05eda98de07b13dd4ca613b9a9e318c10467d7bd",
+  "resources": [
+    {
+      "resource_id": "fin_0_1_2.s4.t01.current_runtime_binding",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_3.json",
+      "sha256": "1658af8d96d9d82384bd689e56b9de07528faac063e3d55ae0ca6c5b56c0e30a",
+      "bytes": 2409,
+      "classification": "current_runtime_contract_binding",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s4_natural_case_entry.compile_fin_0_1_2_s4_t01_case_entry"
+      ],
+      "load_phase": "S4_T01_current_runtime_exact_binding",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s4_natural_case_entry"
+    },
+    {
+      "resource_id": "fin_0_1_2.s4.t01.current_runtime_source",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_3.json",
+      "sha256": "d4edc514ba95c09810b75fa81b4caadf050aca2a91e77c93d472c588d82dd152",
+      "bytes": 5227,
+      "classification": "current_runtime_contract_source",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s4_natural_case_entry.compile_fin_0_1_2_s4_t01_case_entry"
+      ],
+      "load_phase": "S4_T01_current_runtime_exact_binding",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s4_natural_case_entry"
+    },
+    {
+      "resource_id": "fin_0_1_2.s4.t01.index_snapshot.public_source_summary",
+      "repo_relative_path": "data/manifests/public_source_normalized_snapshot_summary_v0_1.json",
+      "sha256": "af8058ac1d9051401590c7efdd44171782e67c4f8f649533314336ad681828cf",
+      "bytes": 4247,
+      "classification": "index_snapshot_metadata_only_not_current_evidence",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s4_natural_case_entry.compile_fin_0_1_2_s4_t01_case_entry"
+      ],
+      "load_phase": "S4_T01_source_index_snapshot_binding",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s4_natural_case_entry"
+    },
+    {
+      "resource_id": "fin_0_1_2.s4.t01.natural_case_entry_authority",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_s4_t01_natural_case_entry_authority_v1_0.json",
+      "sha256": "2e43a84bfa4115dbe44ab2816c80cea9c95aa50b1becff47f3192e3395affeda",
+      "bytes": 7532,
+      "classification": "natural_case_entry_and_exact_binding_authority",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s4_natural_case_entry.load_fin_0_1_2_s4_t01_authority_and_resources"
+      ],
+      "load_phase": "S4_T01_natural_case_entry_authority",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s4_natural_case_entry"
+    },
+    {
+      "resource_id": "fin_0_1_2.s4.t01.source_snapshot.dell",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_s4_t04_dell_source_grounded_input_pack_v1_0.json",
+      "sha256": "1a173ac6097195bdc6d2dd0f3d43544a947069d6848786f4fe9ca9eb805c8ec9",
+      "bytes": 62638,
+      "classification": "historical_source_pack_entry_snapshot_not_current_evidence",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s4_natural_case_entry.compile_fin_0_1_2_s4_t01_case_entry"
+      ],
+      "load_phase": "S4_T01_source_index_snapshot_binding",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s4_natural_case_entry"
+    },
+    {
+      "resource_id": "fin_0_1_2.s4.t01.source_snapshot.mu",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_s4_t06_mu_source_grounded_input_pack_v1_0.json",
+      "sha256": "c97add3afee69278084c090b05e114436f426266c40d91c8e4ce916774e33d09",
+      "bytes": 54657,
+      "classification": "historical_source_pack_entry_snapshot_not_current_evidence",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s4_natural_case_entry.compile_fin_0_1_2_s4_t01_case_entry"
+      ],
+      "load_phase": "S4_T01_source_index_snapshot_binding",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s4_natural_case_entry"
+    },
+    {
+      "resource_id": "fin_0_1_2.s4.t01.source_snapshot.nvda",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_2_s3_nvda_exact_product_input_v1_0.json",
+      "sha256": "1f5bf2ba07a917f13f123c72e27e644af43c47ecf68ae34d2983fba7c724991b",
+      "bytes": 2902,
+      "classification": "historical_frozen_input_entry_snapshot_not_current_evidence",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s4_natural_case_entry.compile_fin_0_1_2_s4_t01_case_entry"
+      ],
+      "load_phase": "S4_T01_source_index_snapshot_binding",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s4_natural_case_entry"
+    }
+  ]
+}

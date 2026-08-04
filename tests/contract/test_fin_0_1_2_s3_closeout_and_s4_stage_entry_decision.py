@@ -17,6 +17,9 @@ S4_PLAN = ROOT / (
 PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_35.json"
 )
+CURRENT_PROJECTION = ROOT / (
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_36.json"
+)
 BACKLOG = ROOT / "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
 PRIOR_REJECTION = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t04_nvda_paired_assessment_"
@@ -28,6 +31,10 @@ EXACT_RESULT = ROOT / (
 NEXT = (
     "FIN-0.1.2-S4-T01-NATURAL-CASE-ENTRY-AND-EXACT-BINDING-"
     "ZERO-CALL-IMPLEMENTATION"
+)
+T02_NEXT = (
+    "FIN-0.1.2-S4-T02-THREE-CASE-RETRIEVAL-EVIDENCE-"
+    "DETERMINISTIC-READINESS-ZERO-CALL-IMPLEMENTATION"
 )
 
 
@@ -109,13 +116,13 @@ def test_projection_and_backlog_have_one_current_authority() -> None:
     assert projection["current_truth"]["current_NVDA_R2"] is False
     assert projection["current_truth"]["current_next_action"] == NEXT
     assert projection["S4_entry"]["stage_plan_sha256"] == _sha256(S4_PLAN)
-    assert rebaseline["projection_ref"] == str(PROJECTION.relative_to(ROOT)).replace(
-        "\\", "/"
-    )
-    assert next_action["current_projection_sha256"] == _sha256(PROJECTION)
-    assert next_action["item_id"] == NEXT
+    assert rebaseline["projection_ref"] == str(
+        CURRENT_PROJECTION.relative_to(ROOT)
+    ).replace("\\", "/")
+    assert next_action["current_projection_sha256"] == _sha256(CURRENT_PROJECTION)
+    assert next_action["item_id"] == T02_NEXT
     assert next_action["S4_T01_started"] is True
-    assert next_action["S4_T01_completed"] is False
+    assert next_action["S4_T01_completed"] is True
     assert next_action["S4_T02_started"] is False
 
 

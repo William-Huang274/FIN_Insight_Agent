@@ -1,0 +1,76 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_36",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.36",
+  "recorded_at": "2026-08-04T11:30:30+08:00",
+  "sequence_after_projection": "v2_35",
+  "status": "S3_bounded_anchor_pass_closed_S4_T01_pass_closed_T02_zero_call_implementation_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4": "entered_T01_pass_T02_pending",
+    "S4_T01": "pass_closed_zero_call_runtime_injected_node_level_consumed",
+    "S4_T02": "not_started_zero_call_implementation_pending",
+    "S4_T03_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T02-THREE-CASE-RETRIEVAL-EVIDENCE-DETERMINISTIC-READINESS-ZERO-CALL-IMPLEMENTATION"
+  },
+  "S4_T01_closeout": {
+    "implementation_ref": "configs/releases/fin_ia_0_1_2_s4_t01_natural_case_entry_and_exact_binding_zero_call_implementation_v1_0.json",
+    "implementation_sha256": "d6333abd170a5e9aa2af131a1aad3ad2a6b8aab4429832a5624dc08ff9e7b4b4",
+    "contract_ref": "fin_0_1_2.S4.natural_case_entry_and_exact_binding:v1",
+    "authority_digest": "8ac62fb007af1c9cae5194856bee94694989ddc7eb0a4acfe377001bf9d7df59",
+    "case_keys": ["DELL", "MU", "NVDA"],
+    "entry_receipt_digests": [
+      "5ffed755ab7ed918e2c7047cd3d44f067b1188e6676e2d34ae295245b28fdb6c",
+      "422a6bfae0b841739ae0c2ba04c4515a5b9387fed799ea42fefc490b268ca2ca",
+      "54ae8bcf5cba289d825fe4689d674c92a5e64e2d7a0ab6c850705eb5abe10b12"
+    ],
+    "prospective_identity_claimed": false,
+    "snapshots_are_current_Evidence": false,
+    "snapshot_content_read_or_returned": false,
+    "T02_authorized": false,
+    "focused_and_relevant_tests": [15, 71]
+  },
+  "S4_T02_entry": {
+    "status": "pending_separate_continuation",
+    "scope": "three_case_EvidenceRequest_route_candidate_ceiling_metadata_parser_authority_accepted_rejected_gap_and_citation_deterministic_readiness",
+    "must_requalify": [
+      "historical_case_source_snapshot_freshness",
+      "shared_public_index_snapshot_as_of_2026_06_11",
+      "company_specific_route_and_candidate_reachability",
+      "zero_false_Evidence_promotion"
+    ],
+    "must_close_before_T03": [
+      "RC-P36-113-default-runtime-resource-registry-stale-after-s3-profile-addition"
+    ],
+    "live_search_or_model_authorized": false
+  },
+  "issue_state": {
+    "RC_P36_109": "delivery_surface_closed_for_S3_evidence_density_carried_to_S4_T04",
+    "RC_P36_110": "planning_rebaseline_consumed_S4_execution_gates_pending",
+    "RC_P36_112": "closed_owner_stage_boundary_realignment_selected",
+    "RC_P36_113": "open_inherited_default_registry_drift_blocks_T03_paid_and_S5_hermetic_not_T01_or_T02_zero_call"
+  },
+  "execution_policy": {
+    "S4_T01_zero_call_implementation_executed": true,
+    "S4_T02_zero_call_implementation_authorized_by_this_projection": false,
+    "S4_T03_or_later_execution_authorized": false,
+    "model_provider_execution_network_source_network_or_tool_execution_authorized": false,
+    "admission_or_business_run_authorized": false,
+    "current_NVDA_R2_auto_reclassified": false,
+    "new_product_version_created": false
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_35.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "prior_owner_product_rejection_rewritten": false,
+    "historical_source_pack_promoted_to_current_Evidence": false,
+    "wall_clock_note": "projection_sequence_is_authoritative_if_prior_authored_timestamp_exceeds_current_observed_host_time"
+  }
+}

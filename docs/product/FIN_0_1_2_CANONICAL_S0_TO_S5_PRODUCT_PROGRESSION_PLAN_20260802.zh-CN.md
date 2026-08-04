@@ -1,9 +1,11 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S2 pass closed / S3 bounded anchor pass closed / S4 entered T01 implementation pending / S5 not started`
+状态：`current canonical plan / S0-S2 pass closed / S3 bounded anchor pass closed / S4-T01 pass closed / S4-T02 zero-call pending / S5 not started`
 
-> 2026-08-04 Owner 已批准阶段边界重划：S3 以有限 frozen-input Runtime/交付锚点通过并关闭，不等于 current source-grounded NVDA R2；Evidence density 与自然 Case 产品验收回到既有 S4-T02/T03/T04 owner。S4 已进入，当前 next 为 S4-T01 zero-call natural Case entry/exact binding implementation，T02–T08 尚未开始。
+> 2026-08-04 S4-T01 已完成：DELL/MU/NVDA 的自然 Objective、as-of、三 Cell、零调用预算、内容寻址 source/index entry snapshot 和 prospective nonreusable identity 已由 current Runtime consumer 编译，focused/relevant=`15/71 passed`。这些 snapshot 不是 current Evidence；2026-06-11 index 与历史 source pack 的 freshness/reachability 归 S4-T02。组合审计同时登记 RC-P36-113 默认 registry 漂移，它在 T03 paid canary 前关闭，不倒灌 T01。当前 next 为 S4-T02 zero-call retrieval/evidence deterministic readiness。
+
+> 2026-08-04 Owner 已批准阶段边界重划：S3 以有限 frozen-input Runtime/交付锚点通过并关闭，不等于 current source-grounded NVDA R2；Evidence density 与自然 Case 产品验收回到既有 S4-T02/T03/T04 owner。
 
 > 2026-08-04 PRD 对账修正：本计划原先没有把 F01–F15、自然 Case 入口、真实 public/local Agentic Search、bounded Graph、当前 Workbench 与 exact Human Review 分解为明确的后续门禁。修正证据与完整矩阵见 `FIN_0_1_1_0_1_2_PRD_CAPABILITY_ALIGNMENT_AND_S0_TO_S5_REBASELINE_20260804.zh-CN.md`。该修正不重开 S0–S2、不扩大当前 S3-T03、不改变产品版本；它重排尚未开始的 S4/S5。
 
@@ -16,7 +18,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；S3 replacement exact-live、独立 L1 与 verified delivery surface 已完成，Owner 以有限 frozen-input Runtime/交付锚点范围关闭 S3，明确不接受 current source-grounded NVDA R2；Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 由本地确定性 planner 掌管；S4 已进入，当前为 S4-T01 自然 Case/exact binding 零调用实现待执行；
+- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；S3 replacement exact-live、独立 L1 与 verified delivery surface 已完成，Owner 以有限 frozen-input Runtime/交付锚点范围关闭 S3，明确不接受 current source-grounded NVDA R2；Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 由本地确定性 planner 掌管；S4-T01 已通过，当前为 S4-T02 retrieval/evidence deterministic readiness 待执行；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；
@@ -104,7 +106,7 @@ S3 只承担当前 NVDA 单案例产品锚点，不复制旧 FIN 0.1 的十任�
 
 新 S3 固定 T01–T04：T01 StagePlan；T02 一个生产 Runtime 接入＋零调用产品就绪包；T03 一次 current NVDA exact-live；T04 paired L1–L4、Owner 决定与收口。S3 产品形态改为 6 个逻辑节点、12 个逻辑交互、其中 3 个 Fact 为本地 receipt、9 次 Provider call/capture、9 个 Artifact；S1 的历史 `6/12/12/9` 证据不改写。primary live 后最多一个合并结构修复包和一个 replacement attempt；不得逐字段 prompt 修补、第三次 exact attempt、新 T05/R-number 或产品版本。
 
-S3-T01 没有修改 Runtime、读取凭据、调用模型或生成业务 Artifact。当前下一项：
+S3-T01 没有修改 Runtime、读取凭据、调用模型或生成业务 Artifact。当时下一项如下，现已被后续 S3 closeout 与 S4-T01 结果 supersede：
 
 `FIN-0.1.2-S3-T02-NVDA-BOUNDED-SURFACE-PRODUCTION-RUNTIME-INTEGRATION-AND-ZERO-CALL-PRODUCT-READINESS-IMPLEMENTATION`
 

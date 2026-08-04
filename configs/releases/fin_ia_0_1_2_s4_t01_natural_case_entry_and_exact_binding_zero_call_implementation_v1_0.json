@@ -1,0 +1,128 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t01_natural_case_entry_and_exact_binding_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S4-T01-NATURAL-CASE-ENTRY-AND-EXACT-BINDING-ZERO-CALL-IMPLEMENTATION-R1",
+  "recorded_at": "2026-08-04T11:30:30+08:00",
+  "sequence_after_projection": "v2_35",
+  "status": "pass_zero_call_runtime_injected_node_level_consumed_T01_closed_T02_not_started",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "S4-T01 natural Case entry and exact binding zero-call implementation only",
+    "S4_T01_implementation_executed": true,
+    "S4_T02_or_later_started": false,
+    "model_provider_network_source_tool_execution_authorized": false,
+    "admission_Run_Artifact_or_Human_authorized": false
+  },
+  "implementation_bindings": [
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_natural_case_entry.py",
+      "sha256": "263db62bd4ebd4c67009dbc04db586087db62e01dff7947d4157e7c8bb4ad892",
+      "bytes": 24770,
+      "role": "typed_current_Runtime_consumer_and_fail_closed_compiler"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s4_t01_natural_case_entry_authority_v1_0.json",
+      "sha256": "2e43a84bfa4115dbe44ab2816c80cea9c95aa50b1becff47f3192e3395affeda",
+      "bytes": 7532,
+      "role": "three_case_natural_objective_snapshot_budget_and_identity_authority"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s4_t01_runtime_resource_registry_v1_0.json",
+      "sha256": "e91d7fe96492c18b90e6a9d6cb707f99cf478c5e77dbb4dd1cc0241a077390d8",
+      "bytes": 5560,
+      "role": "isolated_content_addressed_runtime_resource_authority"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t01_natural_case_entry_and_exact_binding.py",
+      "sha256": "f5eedb3d5ac91d583e5e0e7663b2bdf8fb59b4fb1b9ab45f25418732626a2d6b",
+      "bytes": 9012,
+      "role": "positive_mutation_cross_case_nonreuse_permutation_and_readback_matrix"
+    }
+  ],
+  "contract": {
+    "contract_ref": "fin_0_1_2.S4.natural_case_entry_and_exact_binding:v1",
+    "authority_digest": "8ac62fb007af1c9cae5194856bee94694989ddc7eb0a4acfe377001bf9d7df59",
+    "runtime_contract_ref": "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1.3",
+    "required_outputs": [
+      "NaturalCaseEntryRequest",
+      "CurrentCaseRuntimeBinding",
+      "SourceIndexSnapshotBinding",
+      "ExactExecutionIdentityProjection",
+      "S4T01EntryReceipt"
+    ],
+    "current_runtime_consumer": "load_current_fin_0_1_2_s4_t01_case_entry",
+    "identity_claimed": false,
+    "T02_authorized": false
+  },
+  "three_case_results": [
+    {
+      "case_key": "DELL",
+      "request_digest": "762cf0d6eee397f9126dbbb95ebc2527d7a9eb9a84932fad86568e53f389c510",
+      "runtime_binding_digest": "b23fabfb0549a5824e64dc97ef35637b21ec21e0ce78193dc670f57b66449d87",
+      "snapshot_binding_digest": "0bd6144a1868974a2c9de955737974e758db1361a8c4e58631e11bc06ab7a295",
+      "identity_projection_digest": "05afc5751ff533e2d9004b173bc1847ae5d62d17a8109a92e1638111ae74e641",
+      "entry_receipt_digest": "5ffed755ab7ed918e2c7047cd3d44f067b1188e6676e2d34ae295245b28fdb6c"
+    },
+    {
+      "case_key": "MU",
+      "request_digest": "8120ca3c3e9d3c7c15e1d1dc8c5b5b53d9e1838c36d82dde2885747ac88ebd8b",
+      "runtime_binding_digest": "23a95220d736b0e71f13dac07116830194112d1649c728ca92d224b4a687466b",
+      "snapshot_binding_digest": "a389648e03a75457fa58d9185adfd39a256410777dc766867b76da32d46bf982",
+      "identity_projection_digest": "ea8230a3c1d6f33b1ae9f878a7408c824213b037863a0d6735ee35c1d08c1cf9",
+      "entry_receipt_digest": "422a6bfae0b841739ae0c2ba04c4515a5b9387fed799ea42fefc490b268ca2ca"
+    },
+    {
+      "case_key": "NVDA",
+      "request_digest": "b70a64a4cb49f476de6acf61f2c93872cbb608b98f0a0e0424c3f076d7f3c85c",
+      "runtime_binding_digest": "87f911be238803bdb388cfd17caa8a7be67b7ab8e9fc0e854ae473a96b8503d2",
+      "snapshot_binding_digest": "4d6498bf676aa398520150bcfd6dcb2a13676e086db1044bf428642456441f28",
+      "identity_projection_digest": "028018797ea561fa930664ddd06cc7b63bb32e9dee2f222a5615535b1707e517",
+      "entry_receipt_digest": "54ae8bcf5cba289d825fe4689d674c92a5e64e2d7a0ab6c850705eb5abe10b12"
+    }
+  ],
+  "acceptance": {
+    "DELL_MU_NVDA_positive": true,
+    "natural_objective_and_three_cells": true,
+    "objective_as_of_case_cell_snapshot_budget_identity_mutation_fail_closed": true,
+    "cross_case_contamination_fail_closed": true,
+    "duplicate_identity_fail_closed": true,
+    "unknown_snapshot_fail_closed": true,
+    "stale_or_unbound_runtime_head_fail_closed": true,
+    "permutation_digest_stable": true,
+    "current_runtime_consumer_readback": true,
+    "receipt_contains_Evidence_content": false
+  },
+  "snapshot_boundary": {
+    "historical_Dell_and_MU_source_packs_and_S3_NVDA_manifest_reused_as": "content_addressed_entry_snapshots_only",
+    "shared_public_index_snapshot_as_of": "2026-06-11",
+    "snapshots_are_current_Evidence": false,
+    "freshness_parser_authority_candidate_and_Evidence_qualification_owner": "S4-T02",
+    "T01_did_not_read_or_return_snapshot_content": true
+  },
+  "verification": {
+    "focused_tests": "15 passed",
+    "relevant_S1_S3_S4_regression": "71 passed",
+    "inherited_default_S0_registry_regression": "44 passed 2 failed",
+    "inherited_failure_first_unknown_literal": "configs/runtime/fin_ia_0_1_2_s3_nvda_fact_candidate_pool_profiles_v1_0.json",
+    "inherited_failure_present_at_clean_HEAD_9026b9f5": true,
+    "T01_files_caused_inherited_failure": false
+  },
+  "new_issue": {
+    "issue_id": "RC-P36-113-fin-0-1-2-default-runtime-resource-registry-stale-after-s3-profile-addition",
+    "blocks": ["S4_T03_paid_canary", "S5_hermetic_release_qualification"],
+    "does_not_block": ["S4_T01_closeout", "S4_T02_zero_call_deterministic_readiness"],
+    "required_disposition": "close_as_a_bounded_S4_T02_pre_T03_shared_resource_prerequisite_without_reopening_S0_or_S3"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "execution_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "human_reviews": 0
+  },
+  "next_action": "FIN-0.1.2-S4-T02-THREE-CASE-RETRIEVAL-EVIDENCE-DETERMINISTIC-READINESS-ZERO-CALL-IMPLEMENTATION",
+  "known_boundary": "T01 pass proves natural Case entry metadata, content-addressed bindings, prospective nonreusable identity and current Runtime consumption only. It does not make the historical snapshots current Evidence, start retrieval, qualify sources, execute a model, establish current NVDA R2, or authorize T03."
+}

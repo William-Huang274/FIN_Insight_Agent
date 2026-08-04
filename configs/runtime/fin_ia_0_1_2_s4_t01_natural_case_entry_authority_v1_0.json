@@ -1,0 +1,156 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t01_natural_case_entry_authority_v1_0",
+  "contract_ref": "fin_0_1_2.S4.natural_case_entry_and_exact_binding:v1",
+  "status": "tracked_zero_call_entry_authority_not_execution_admission",
+  "runtime_binding": {
+    "binding_ref": "fin_0_1_2.common_runtime.judgment_atom_family_binding:v1.3",
+    "binding_resource": {
+      "resource_id": "fin_0_1_2.s4.t01.current_runtime_binding",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_3.json",
+      "sha256": "1658af8d96d9d82384bd689e56b9de07528faac063e3d55ae0ca6c5b56c0e30a",
+      "bytes": 2409
+    },
+    "source_resource": {
+      "resource_id": "fin_0_1_2.s4.t01.current_runtime_source",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_3.json",
+      "sha256": "d4edc514ba95c09810b75fa81b4caadf050aca2a91e77c93d472c588d82dd152",
+      "bytes": 5227
+    }
+  },
+  "budgets": [
+    {
+      "budget_ref": "fin_0_1_2.s4.t01.zero_external_call_entry_budget:v1",
+      "model_calls": 0,
+      "provider_calls": 0,
+      "execution_network_calls": 0,
+      "source_network_calls": 0,
+      "external_tool_calls": 0,
+      "token_budget": 0,
+      "cost_usd": 0.0,
+      "wall_clock_seconds": 60,
+      "future_execution_budget_ref": "pending_S4_T02_T03_separate_authority"
+    }
+  ],
+  "cases": [
+    {
+      "case_key": "DELL",
+      "ticker": "DELL",
+      "company": "Dell Technologies Inc.",
+      "canonical_entity_ref": "DELL",
+      "objective": "评估 Dell AI 服务器需求能否持续转化为收入、利润和现金流，并识别订单质量、供应链与营运资本风险。",
+      "as_of": "2026-07-26T00:00:00Z",
+      "freshness_policy_ref": "fin_0_1_2.s4.snapshot_freshness_requalification_at_T02:v1",
+      "program_cells": [
+        {
+          "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+          "objective": "识别最强反证、供应链与渠道瓶颈，并明确哪些后续证据会改变当前判断。"
+        },
+        {
+          "program_cell_id": "demand_authenticity_and_sustainability",
+          "objective": "判断公司层面的 AI 服务器需求是否真实、可转化且具有持续性，而非提前拉货或渠道堆积。"
+        },
+        {
+          "program_cell_id": "value_and_profit_capture",
+          "objective": "评估收入、毛利、营业利润、营运资本和现金转化中可由 Dell 实际获得的价值。"
+        }
+      ],
+      "budget_ref": "fin_0_1_2.s4.t01.zero_external_call_entry_budget:v1",
+      "source_snapshot": {
+        "resource_id": "fin_0_1_2.s4.t01.source_snapshot.dell",
+        "repo_relative_path": "configs/releases/fin_ia_0_1_s4_t04_dell_source_grounded_input_pack_v1_0.json",
+        "sha256": "1a173ac6097195bdc6d2dd0f3d43544a947069d6848786f4fe9ca9eb805c8ec9",
+        "bytes": 62638
+      },
+      "index_snapshot": {
+        "resource_id": "fin_0_1_2.s4.t01.index_snapshot.public_source_summary",
+        "repo_relative_path": "data/manifests/public_source_normalized_snapshot_summary_v0_1.json",
+        "sha256": "af8058ac1d9051401590c7efdd44171782e67c4f8f649533314336ad681828cf",
+        "bytes": 4247
+      },
+      "identity_seed": "fin012-s4-t01-dell-natural-case-entry-r1"
+    },
+    {
+      "case_key": "MU",
+      "ticker": "MU",
+      "company": "Micron Technology, Inc.",
+      "canonical_entity_ref": "MU",
+      "objective": "评估 Micron HBM 需求、供给扩张和产品组合能否持续转化为收入、利润与现金流，并识别周期和客户风险。",
+      "as_of": "2026-07-26T00:00:00Z",
+      "freshness_policy_ref": "fin_0_1_2.s4.snapshot_freshness_requalification_at_T02:v1",
+      "program_cells": [
+        {
+          "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+          "objective": "识别产能、良率、客户集中、技术爬坡、出口限制和存储周期中的最强反证。"
+        },
+        {
+          "program_cell_id": "demand_authenticity_and_sustainability",
+          "objective": "判断 Micron 的 HBM 需求是否公司特定、可转化且能区分结构性 AI 需求与存储周期。"
+        },
+        {
+          "program_cell_id": "value_and_profit_capture",
+          "objective": "评估定价、产品组合、毛利、营业杠杆、库存、资本开支和现金流中的实际价值获取。"
+        }
+      ],
+      "budget_ref": "fin_0_1_2.s4.t01.zero_external_call_entry_budget:v1",
+      "source_snapshot": {
+        "resource_id": "fin_0_1_2.s4.t01.source_snapshot.mu",
+        "repo_relative_path": "configs/releases/fin_ia_0_1_s4_t06_mu_source_grounded_input_pack_v1_0.json",
+        "sha256": "c97add3afee69278084c090b05e114436f426266c40d91c8e4ce916774e33d09",
+        "bytes": 54657
+      },
+      "index_snapshot": {
+        "resource_id": "fin_0_1_2.s4.t01.index_snapshot.public_source_summary",
+        "repo_relative_path": "data/manifests/public_source_normalized_snapshot_summary_v0_1.json",
+        "sha256": "af8058ac1d9051401590c7efdd44171782e67c4f8f649533314336ad681828cf",
+        "bytes": 4247
+      },
+      "identity_seed": "fin012-s4-t01-mu-natural-case-entry-r1"
+    },
+    {
+      "case_key": "NVDA",
+      "ticker": "NVDA",
+      "company": "NVIDIA Corporation",
+      "canonical_entity_ref": "NVDA",
+      "objective": "评估 NVIDIA AI 基础设施需求的真实性与持续性、公司可获得的利润和现金流，以及供应链和客户侧反证。",
+      "as_of": "2026-07-21T00:00:00Z",
+      "freshness_policy_ref": "fin_0_1_2.s4.snapshot_freshness_requalification_at_T02:v1",
+      "program_cells": [
+        {
+          "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+          "objective": "识别供应、客户部署、竞争、监管与资本开支回报中的最强反证和判断改变条件。"
+        },
+        {
+          "program_cell_id": "demand_authenticity_and_sustainability",
+          "objective": "判断 NVIDIA AI 基础设施需求是否真实、公司特定、可转化且不会被提前采购或重复计算夸大。"
+        },
+        {
+          "program_cell_id": "value_and_profit_capture",
+          "objective": "评估收入、毛利、营业利润和现金流中可由 NVIDIA 获得的价值，并保持产品与公司口径边界。"
+        }
+      ],
+      "budget_ref": "fin_0_1_2.s4.t01.zero_external_call_entry_budget:v1",
+      "source_snapshot": {
+        "resource_id": "fin_0_1_2.s4.t01.source_snapshot.nvda",
+        "repo_relative_path": "configs/releases/fin_ia_0_1_2_s3_nvda_exact_product_input_v1_0.json",
+        "sha256": "1f5bf2ba07a917f13f123c72e27e644af43c47ecf68ae34d2983fba7c724991b",
+        "bytes": 2902
+      },
+      "index_snapshot": {
+        "resource_id": "fin_0_1_2.s4.t01.index_snapshot.public_source_summary",
+        "repo_relative_path": "data/manifests/public_source_normalized_snapshot_summary_v0_1.json",
+        "sha256": "af8058ac1d9051401590c7efdd44171782e67c4f8f649533314336ad681828cf",
+        "bytes": 4247
+      },
+      "identity_seed": "fin012-s4-t01-nvda-natural-case-entry-r1"
+    }
+  ],
+  "nonpromotion_boundary": {
+    "snapshot_content_read_or_returned": false,
+    "snapshot_is_current_evidence": false,
+    "evidence_qualification_owner": "S4-T02",
+    "execution_admission_created": false,
+    "T02_started": false,
+    "business_artifact_created": false
+  },
+  "authority_digest": "8ac62fb007af1c9cae5194856bee94694989ddc7eb0a4acfe377001bf9d7df59"
+}

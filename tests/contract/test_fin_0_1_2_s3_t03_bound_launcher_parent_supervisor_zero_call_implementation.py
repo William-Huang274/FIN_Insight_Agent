@@ -58,6 +58,10 @@ S4_T01_NEXT = (
     "FIN-0.1.2-S4-T01-NATURAL-CASE-ENTRY-AND-EXACT-BINDING-"
     "ZERO-CALL-IMPLEMENTATION"
 )
+S4_T02_NEXT = (
+    "FIN-0.1.2-S4-T02-THREE-CASE-RETRIEVAL-EVIDENCE-"
+    "DETERMINISTIC-READINESS-ZERO-CALL-IMPLEMENTATION"
+)
 TERMINAL_RESULT = ROOT / (
     "configs/releases/fin_ia_0_1_2_s3_t03_nvda_exact_live_execution_"
     "terminal_failure_result_v1_0.json"
@@ -439,6 +443,7 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
             T04_CLOSEOUT_NEXT,
             T04_BOUNDARY_NEXT,
             S4_T01_NEXT,
+            S4_T02_NEXT,
         }
         current = ROOT / backlog["current_projection_ref"]
         if backlog["item_id"] == EXECUTION_NEXT:
@@ -486,7 +491,7 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
                 "pass_zero_model"
             )
             assert backlog["S3_T04_qualified_evidence_cells"] == 0
-        else:
+        elif backlog["item_id"] == S4_T01_NEXT:
             assert backlog["item_id"] == S4_T01_NEXT
             assert current.name == "fin_ia_0_1_2_current_program_projection_v2_35.json"
             assert backlog["S3_status"] == (
@@ -495,6 +500,13 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
             assert backlog["S4_status"] == (
                 "entered_T01_started_zero_call_implementation_pending"
             )
+            assert backlog["current_NVDA_R2"] is False
+        else:
+            assert backlog["item_id"] == S4_T02_NEXT
+            assert current.name == "fin_ia_0_1_2_current_program_projection_v2_36.json"
+            assert backlog["S4_T01_completed"] is True
+            assert backlog["S4_T02_started"] is False
+            assert backlog["S4_T01_snapshots_are_current_Evidence"] is False
             assert backlog["current_NVDA_R2"] is False
         assert backlog["current_projection_sha256"] == _sha256(current)
     assert backlog["S3_T03_bound_launcher_parent_supervisor_missing"] is False
@@ -506,6 +518,7 @@ def test_implementation_projection_backlog_and_project_os_are_current() -> None:
         T04_CLOSEOUT_NEXT,
         T04_BOUNDARY_NEXT,
         S4_T01_NEXT,
+        S4_T02_NEXT,
     }:
         assert backlog["S3_T03_fresh_admission_consumed"] is True
         assert backlog["S3_T03_execution_started"] is True

@@ -256,7 +256,12 @@ def test_projection_backlog_and_project_os_agree_on_current_next() -> None:
         if row["capability_id"]
         == "fin_0_1_2_S3_T01_NVDA_product_anchor_and_bounded_model_surface_stage_plan"
     )
-    pattern = _load_jsonl(PATTERN_LEDGER)[-1]
+    pattern = next(
+        row
+        for row in _load_jsonl(PATTERN_LEDGER)
+        if row["pattern_id"]
+        == "model_surface_disposition_must_change_production_call_topology_before_product_live"
+    )
     assert issue["issue_id"] == ISSUE_ID
     assert issue["status"] == "open"
     assert issue["allowed_run_scopes"][0] == NEXT_ACTION

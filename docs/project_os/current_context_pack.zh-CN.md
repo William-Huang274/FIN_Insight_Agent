@@ -3,6 +3,9 @@
 更新时间：2026-08-04
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-A 三案例 current-evidence transfer 已零调用工程通过，T05-B DELL fresh decision 待续行（current，2026-08-05）**：DELL/MU/NVDA 均达到 `18 candidates / 15 Evidence / 3 exact Numeric / 3 typed gaps`，共享 Agent 测试链达到 `12 Provider callbacks / 9 compiled interactions / 12 captures / 9 Artifacts`。T03/T04 泛化改为 closed case profile 和 typed numeric；T05 current-evidence 候选覆盖合同独立版本化；DELL/MU 保留验证过的 S4 overlay lineage，NVDA 保留 legacy lineage，三者均绑定本案 current pack digest。最大单请求估算 DELL/MU/NVDA=`19,505/16,165/19,460`，未改 108k 编译边界；T05/旧 NVDA T03-T04/候选池与最终 Artifact mutation=`10/18/18 passed`。本轮真实 model/provider/network/source/admission/Run/business Artifact=`0`，full-fake Artifact 不是产品证明；current NVDA R2=true，DELL/MU/post-transfer NVDA=false。current next=`FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-AND-R2-FRESH-ZERO-CALL-PROOF-AND-ADMISSION-AUTHORITY-DECISION`；先做 DELL fresh proof 与权限决策，不自动 source/model live。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05 scope 已冻结，T05-A 单一零调用三案例 transfer package 待实现（current，2026-08-04）**：只读审计确认 T01/T02 已支持 DELL/MU/NVDA，但 T03 executable search 与 T04 current-Evidence research 仍分别含 34/30 个 NVDA literal，DELL/MU 不能直接 live。历史 FIN 0.1 DELL R10/MU R2 九件套及后续失败只作工程与失败 taxonomy 回归，不得晋升 current Evidence/R2。T05 固定 T05-A transfer package→T05-B DELL current R2→T05-C MU current R2→T05-D post-transfer NVDA R2；新 exact-live L1 立即停止余下 paid sequence，不自动 replacement、逐字段修补或新版本。此次 model/provider/network/source/admission/Run/Artifact/paired/Owner=0；current NVDA R2=true，DELL/MU/post-transfer NVDA=false。current next=`FIN-0.1.2-S4-T05-THREE-CASE-CURRENT-EVIDENCE-TRANSFER-PACKAGE-ZERO-CALL-IMPLEMENTATION`。
 
 > [!IMPORTANT]

@@ -24,6 +24,10 @@ FIN_0_1_2_S3_FACT_CANDIDATE_PROFILE_SET_RELATIVE_PATH = (
     "configs/runtime/"
     "fin_ia_0_1_2_s3_nvda_fact_candidate_pool_profiles_v1_0.json"
 )
+FIN_0_1_2_S4_T05_FACT_CANDIDATE_PROFILE_SET_RELATIVE_PATH = (
+    "configs/runtime/"
+    "fin_ia_0_1_2_s4_t05_current_evidence_fact_candidate_pool_profiles_v1_0.json"
+)
 FACT_CANDIDATE_POOL_MAXIMUM = 6
 
 
@@ -197,6 +201,17 @@ class FactCandidatePoolPlanner:
     ) -> FactCandidatePoolPlanner:
         if registry_path is not None:
             profile_set = _load_profile_set(str(Path(registry_path).resolve()))
+        elif research_profile_ref.startswith(
+            "fin_0_1_2.s4.t05.research_profile."
+        ):
+            profile_set = _load_profile_set(
+                str(
+                    (
+                        _repo_root()
+                        / FIN_0_1_2_S4_T05_FACT_CANDIDATE_PROFILE_SET_RELATIVE_PATH
+                    ).resolve()
+                )
+            )
         else:
             try:
                 profile_set = _validate_profile_set_payload(

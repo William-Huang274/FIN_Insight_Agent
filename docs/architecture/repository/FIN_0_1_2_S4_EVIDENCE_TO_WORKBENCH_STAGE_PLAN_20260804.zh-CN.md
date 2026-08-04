@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05 scope frozen，T05-A zero-call transfer package pending / S4-T06–T08 not started`
+状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass，T05-B DELL fresh proof and admission decision pending / S4-T06–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -30,7 +30,7 @@ S4 只有在以下结果同时成立时才能关闭：
 | S4-T02 | Retrieval/Evidence deterministic readiness（已通过） | 三案 EvidenceRequest、route、candidate ceiling、metadata、parser/authority、accepted/rejected/gap、citation 由 fixture/mutation 证明；历史 source pack 与 2026-06-11 index snapshot 完成 freshness/reachability 处置；RC-P36-113 已关闭 | 不用 live 搜索发现合同问题 |
 | S4-T03 | NVDA bounded Agentic Search current canary（已通过并关闭） | 当前 Runtime 实际调用批准的 public/local RAG/SQL/Graph/official routes；零 false promotion；完整 ToolUse/Evidence lineage | 不把 metadata route、state stub 或 URL wrapper 冒充真实检索，不自动扩大来源或进行 full research |
 | S4-T04 | NVDA natural-Case Agentic Research integration（已通过并由 Owner 验收关闭） | EvidenceRequest→approved pack→Judgment→Lead/Writer/Verifier→九件套；与 S3 frozen-input 对照；完成 source-grounded NVDA R2 产品验收 | 不用 S3 frozen 结果冒充 current source proof；不以固定 token 上限或删减财务证据换取通过 |
-| S4-T05 | DELL/MU transfer 与 post-transfer NVDA（已进入，T05-A 待实现） | 先用一个零调用 transfer package 把 NVDA-only search/research surface 收敛为 DELL/MU/NVDA closed profile；随后依次 DELL R2、MU R2、post-transfer NVDA R2 | 不复用历史结果冒充当前证明；不逐字段无限修复；新 L1 立即停止剩余 paid sequence |
+| S4-T05 | DELL/MU transfer 与 post-transfer NVDA（已进入，T05-A 工程通过） | 零调用 transfer package 已把 NVDA-only search/research surface 收敛为 DELL/MU/NVDA closed profile；随后依次 DELL R2、MU R2、post-transfer NVDA R2 | 不复用历史结果冒充当前证明；不逐字段无限修复；新 L1 立即停止剩余 paid sequence |
 | S4-T06 | Workbench current product projection | Case/Run/Evidence/Numeric/Graph/Gap/Workpaper/Report/Trace/quality 可审、可回放、可退回 | 不用 fallback 冒充 Agent |
 | S4-T07 | Exact Human Review、NVDA R3 与 bounded explanation | qualified reviewer 接受/退回/repair 绑定 exact digest；NVDA R3；记录 review burden | F14 why/gap/WWC demo 不阻断 release |
 | S4-T08 | 三案集成收口 | F01–F15 evidence inventory、三案 regression、成本、gap owner 和 rollback 完整 | 不新增模型或检索实现 |
@@ -132,3 +132,15 @@ R3 exact-live 已 exact-once 成功：9 calls / 9 captures / 3 local Fact receip
 用户已明确回复“接受”，因此 current source-grounded NVDA R2=true，S4-T04=`pass_closed_owner_accepted`，S4-T05 entry authorized。该决定不是 qualified Human Review 或 NVDA R3，也没有执行 DELL、MU、post-transfer NVDA 或任何新模型/网络调用。T05 当前只进入 scope decision，必须先复核历史 FIN 0.1 T05/T06 可复用的工程资产与 FIN 0.1.2 必须重新证明的产品边界。
 
 T05 scope audit 已完成：T01/T02 是三案例 current Runtime，而 T03 executable search 与 T04 current-Evidence research 仍是 NVDA-only，因此 DELL/MU 现在不能直接 live。T05 固定为 T05-A 单一零调用三案例 transfer package、T05-B DELL、T05-C MU、T05-D post-transfer NVDA。历史 FIN 0.1 DELL/MU 资产只作代码、fixture、mutation 和失败 taxonomy 回归，不作 current Evidence、R2 或 Owner acceptance。任何新 exact-live L1 立即停止余下 paid sequence，不自动 replacement 或逐字段修补。
+
+## 9. S4-T05-A 实现结果
+
+T05-A 已按 `fin_0_1_2.S4.T05.three_case_current_evidence_transfer:v1` 零调用工程通过。三案使用 closed issuer/source/query/parser profile；SQL adapter 把 metric family、value、unit、period、filed-at 作为 typed numeric 传递，NVDA 展示标题解析仅保留兼容 fallback。current Evidence bridge 对每案产出 `15 Evidence / 3 exact Numeric / 3 typed gaps`，不再使用历史 DELL/MU source pack 作为 current 产品事实。
+
+候选池没有放宽旧 profile，而是新增独立内容寻址的 T05 current-evidence coverage 合同：demand 至少一条本案 issuer demand Evidence；value 同时要求 issuer financial Evidence 与 revenue/gross-profit/operating-income 三条精确 Numeric；bottleneck 至少一条本案 counterevidence；两项本地派生 margin 只是可选上下文，不能替代最低覆盖。
+
+lineage 按既有合法家族分派：DELL/MU 使用 S4 base binding 加 current research-profile overlay，source-grounded slot 精确绑定本案 current Evidence Pack；NVDA 继续使用已通过 T04 的 legacy six-slot lineage。没有为了表面统一而伪造 DELL/MU T06/T07 摘要，也没有把旧 source payload 带入 current input。
+
+三案 full-fake 均达到 `12 Provider callbacks / 9 compiled interactions / 12 raw captures / 9 formal test Artifacts`。最大单请求保守估算 DELL/MU/NVDA 分别为 `19,505 / 16,165 / 19,460`，累计为 `99,031 / 91,725 / 98,528`，既有 108k 编译边界未修改。T05 focused 与状态合同、冻结 NVDA T03/T04、旧候选池与最终 Artifact mutation 合计 `46 passed`；跨案、未来日期、数值、parser lineage、duplicate/overflow、final identity/numeric/lineage mutation 均 fail closed。
+
+T05-A 只建立工程迁移资格。真实 model/provider/source、admission、Run 和业务 Artifact 均为 0；DELL/MU/post-transfer NVDA R2 仍为 false。下一步限定为 DELL fresh zero-call proof 与 admission authority decision；通过前不得执行 DELL source live 或 DeepSeek exact-live，且任何后续 exact L1 仍立即停止余下 paid sequence。

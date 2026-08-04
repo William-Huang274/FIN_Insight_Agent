@@ -37,6 +37,63 @@ NVDA_SEC_SUBMISSIONS_URL = (
     "https://data.sec.gov/submissions/CIK0001045810.json"
 )
 NVDA_IR_URL = "https://investor.nvidia.com/financial-info/financial-reports-and-filings/default.aspx"
+TRANSFER_PROFILE_RELATIVE_PATH = (
+    "configs/runtime/"
+    "fin_ia_0_1_2_s4_t05_three_case_current_evidence_transfer_profiles_v1_0.json"
+)
+
+
+def _load_transfer_profiles() -> tuple[
+    Mapping[str, Mapping[str, Any]], Mapping[str, Mapping[str, str]]
+]:
+    root = next(
+        (
+            parent
+            for parent in Path(__file__).resolve().parents
+            if (parent / "configs").is_dir() and (parent / "src").is_dir()
+        ),
+        None,
+    )
+    if root is None:
+        raise RuntimeError("t03_transfer_profile_repository_root_not_found")
+    path = root / TRANSFER_PROFILE_RELATIVE_PATH
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError("t03_transfer_profile_unreadable") from exc
+    digest_payload = dict(payload)
+    observed_digest = str(digest_payload.pop("profiles_digest", ""))
+    rows = payload.get("cases")
+    if (
+        payload.get("contract_ref")
+        != "fin_0_1_2.S4.T05.three_case_current_evidence_transfer:v1"
+        or observed_digest != canonical_digest(digest_payload)
+        or not isinstance(rows, list)
+        or {str(row.get("case_key") or "") for row in rows}
+        != {"DELL", "MU", "NVDA"}
+    ):
+        raise RuntimeError("t03_transfer_profile_contract_invalid")
+    source_profiles: dict[str, Mapping[str, Any]] = {}
+    query_profiles: dict[str, Mapping[str, str]] = {}
+    for row in rows:
+        case_key = str(row["case_key"])
+        source_profiles[case_key] = {
+            "cik": str(row["issuer_cik"]),
+            "sec_submissions_url": str(row["sec_submissions_url"]),
+            "ir_url": str(row["ir_fallback_url"]),
+            "ir_parser_adapter": str(row["ir_parser_adapter"]),
+            "allowed_source_hosts": tuple(
+                str(value) for value in row["allowed_source_hosts"]
+            ),
+        }
+        query_profiles[case_key] = {
+            str(key): str(value)
+            for key, value in row["query_text_by_cell"].items()
+        }
+    return source_profiles, query_profiles
+
+
+CASE_SEARCH_PROFILES, CASE_QUERY_TEXT = _load_transfer_profiles()
 
 TEXT_INDEX_RELATIVE_PATH = (
     "data/indexes/bm25/"
@@ -225,14 +282,20 @@ class ExecutableSearchRequest:
             f"executable_search_request_{self.request_digest[:20]}"
         ):
             raise Fin012S4T03SearchError("t03_executable_request_digest_mismatch")
-        if self.case_key != "NVDA" or self.target_entity_ref != "NVDA":
+        profile = CASE_SEARCH_PROFILES.get(self.case_key)
+        if profile is None or self.target_entity_ref != self.case_key:
             raise Fin012S4T03SearchError("t03_executable_request_case_mismatch")
         if self.writer_citable or self.domain_judgment_eligible:
             raise Fin012S4T03SearchError("t03_executable_request_nonpromotion_invalid")
         if not self.query_text or self.candidate_ceiling != 6:
             raise Fin012S4T03SearchError("t03_executable_request_query_or_ceiling_invalid")
-        if set(self.source_allowlist) != ALLOWED_SOURCE_HOSTS:
+        if set(self.source_allowlist) != set(profile["allowed_source_hosts"]):
             raise Fin012S4T03SearchError("t03_executable_request_allowlist_invalid")
+        if self.source_locators != (
+            str(profile["sec_submissions_url"]),
+            str(profile["ir_url"]),
+        ):
+            raise Fin012S4T03SearchError("t03_executable_request_locator_invalid")
         for route_id in self.metadata_route_ids:
             if route_id not in ROUTE_REGISTRY:
                 raise Fin012S4T03SearchError("t03_executable_request_route_invalid")
@@ -268,11 +331,17 @@ class ExecutableSearchRequest:
 def compile_executable_search_request(
     request: RetrievalEvidenceRequest,
 ) -> ExecutableSearchRequest:
-    if request.case_key != "NVDA" or request.target_entity_ref != "NVDA":
-        raise Fin012S4T03SearchError("t03_only_nvda_canary_is_compilable")
+    case_profile = CASE_SEARCH_PROFILES.get(request.case_key)
+    if case_profile is None or request.target_entity_ref != request.case_key:
+        raise Fin012S4T03SearchError("t03_case_profile_missing_or_mismatched")
     profile = QUERY_PROFILES.get(request.program_cell_id)
     if profile is None:
         raise Fin012S4T03SearchError("t03_program_cell_query_profile_missing")
+    query_text = CASE_QUERY_TEXT.get(request.case_key, {}).get(
+        request.program_cell_id
+    )
+    if not query_text:
+        raise Fin012S4T03SearchError("t03_case_query_profile_missing")
     executable: list[str] = []
     for route_id in request.route_ids:
         adapters = ROUTE_REGISTRY.get(route_id)
@@ -289,16 +358,19 @@ def compile_executable_search_request(
         "objective_digest": request.objective_digest,
         "target_entity_ref": request.target_entity_ref,
         "as_of": request.as_of,
-        "query_text": profile["query_text"],
+        "query_text": query_text,
         "metadata_route_ids": tuple(request.route_ids),
         "executable_adapter_ids": tuple(dict.fromkeys(executable)),
         "accepted_candidate_roles": tuple(profile["accepted_candidate_roles"]),
         "candidate_ceiling": request.candidate_ceiling,
-        "source_allowlist": tuple(sorted(ALLOWED_SOURCE_HOSTS)),
-        "source_locators": (NVDA_SEC_SUBMISSIONS_URL, NVDA_IR_URL),
+        "source_allowlist": tuple(sorted(case_profile["allowed_source_hosts"])),
+        "source_locators": (
+            str(case_profile["sec_submissions_url"]),
+            str(case_profile["ir_url"]),
+        ),
         "parser_adapters": (
             "sec_submissions_recent_filings_v1",
-            "nvda_ir_filing_link_parser_v1",
+            str(case_profile["ir_parser_adapter"]),
             "local_sec_chunk_projection_v1",
             "research_graph_projection_v1",
             "gold_fact_projection_v1",
@@ -342,13 +414,16 @@ class SearchAdmission:
         issued_at: str,
         expires_at: str,
         request_digests: Sequence[str],
+        case_key: str = "NVDA",
     ) -> "SearchAdmission":
+        if case_key not in CASE_SEARCH_PROFILES:
+            raise Fin012S4T03SearchError("t03_admission_case_unsupported")
         payload = {
             "schema_version": ADMISSION_SCHEMA,
             "contract_ref": CONTRACT_REF,
             "issued_at": issued_at,
             "expires_at": expires_at,
-            "case_key": "NVDA",
+            "case_key": case_key,
             "request_digests": tuple(request_digests),
             "source_network_call_ceiling": 2,
             "local_invocation_ceiling": 8,
@@ -431,7 +506,9 @@ class SearchAdmission:
             f"s4_t03_search_admission_{self.admission_digest[:20]}"
         ):
             raise Fin012S4T03SearchError("t03_admission_digest_mismatch")
-        if self.case_key != "NVDA" or any(row.case_key != self.case_key for row in requests):
+        if self.case_key not in CASE_SEARCH_PROFILES or any(
+            row.case_key != self.case_key for row in requests
+        ):
             raise Fin012S4T03SearchError("t03_admission_case_identity_mismatch")
         if tuple(row.request_digest for row in requests) != self.request_digests:
             raise Fin012S4T03SearchError("t03_admission_request_digest_mismatch")
@@ -648,6 +725,7 @@ def parse_sec_submissions(
     *,
     as_of: str,
     response_capture: Mapping[str, Any],
+    cik: str = NVDA_CIK,
 ) -> tuple[OfficialFilingIdentity, ...]:
     try:
         payload = json.loads(response.body.decode("utf-8"))
@@ -671,7 +749,7 @@ def parse_sec_submissions(
             continue
         compact_accession = re.sub(r"\D", "", str(accession))
         url = _sec_archive_url(
-            cik=NVDA_CIK,
+            cik=cik,
             accession=compact_accession,
             primary_document=str(primary_document),
         )
@@ -696,10 +774,28 @@ def parse_nvda_ir_links(
     as_of: str,
     response_capture: Mapping[str, Any],
 ) -> tuple[OfficialFilingIdentity, ...]:
+    return parse_issuer_ir_links(
+        response,
+        as_of=as_of,
+        response_capture=response_capture,
+        case_key="NVDA",
+    )
+
+
+def parse_issuer_ir_links(
+    response: SourceResponse,
+    *,
+    as_of: str,
+    response_capture: Mapping[str, Any],
+    case_key: str,
+) -> tuple[OfficialFilingIdentity, ...]:
+    profile = CASE_SEARCH_PROFILES.get(case_key)
+    if profile is None:
+        raise Fin012S4T03SearchError("t03_ir_case_profile_missing")
     try:
         text = response.body.decode("utf-8", errors="strict")
     except UnicodeDecodeError as exc:
-        raise Fin012S4T03SearchError("t03_nvda_ir_parse_failed") from exc
+        raise Fin012S4T03SearchError("t03_issuer_ir_parse_failed") from exc
     cutoff = _date_only(as_of)
     anchors = re.findall(
         r"<a\b[^>]*href=[\"'](?P<href>[^\"']+)[\"'][^>]*>(?P<title>.*?)</a>",
@@ -711,7 +807,7 @@ def parse_nvda_ir_links(
         title = _clip(html.unescape(re.sub(r"<[^>]+>", " ", raw_title)), 240)
         absolute = urljoin(response.final_url, html.unescape(href))
         host = (urlparse(absolute).hostname or "").lower()
-        if host not in ALLOWED_SOURCE_HOSTS or not re.search(
+        if host not in set(profile["allowed_source_hosts"]) or not re.search(
             r"(quarter|annual|financial|filing|results|earnings)", title, re.I
         ):
             continue
@@ -725,11 +821,11 @@ def parse_nvda_ir_links(
                 accession=synthetic,
                 filed_at=filed_at,
                 form_type="issuer_IR",
-                primary_document=title or f"NVDA IR link {index + 1}",
+                primary_document=title or f"{case_key} IR link {index + 1}",
                 source_url=absolute,
                 source_capture_ref=str(response_capture["object_key"]),
                 source_capture_digest=str(response_capture["digest"]),
-                parser_adapter="nvda_ir_filing_link_parser_v1",
+                parser_adapter=str(profile["ir_parser_adapter"]),
             )
         )
         if len(out) >= 12:
@@ -758,6 +854,7 @@ class SearchCandidate:
     source_authority_rank: int
     score: float
     exact_value_authority: bool
+    structured_numeric: Mapping[str, Any] | None = None
     writer_citable: bool = False
     domain_judgment_eligible: bool = False
 
@@ -862,7 +959,7 @@ class BM25SearchAdapter:
                 SearchCandidate.create(
                     request_digest=request.request_digest,
                     program_cell_id=request.program_cell_id,
-                    entity_ref="NVDA",
+                    entity_ref=request.case_key,
                     candidate_role=role,
                     adapter_id=self.adapter_id,
                     route_id=self.route_id,
@@ -915,7 +1012,7 @@ class RelationshipGraphSearchAdapter:
                 ORDER BY CASE WHEN citation_url <> '' THEN 0 ELSE 1 END, support_id
                 LIMIT 1
               )
-            WHERE n.graph_node_id = 'company:NVDA'
+            WHERE n.graph_node_id = ?
               AND e.can_enter_evidence_bundle = 1
             ORDER BY CASE e.source_role
                 WHEN 'supply_chain_official_relationship' THEN 1
@@ -926,7 +1023,12 @@ class RelationshipGraphSearchAdapter:
             LIMIT 12
         """
         with _read_only_sqlite(self._database) as connection:
-            rows = [dict(row) for row in connection.execute(query).fetchall()]
+            rows = [
+                dict(row)
+                for row in connection.execute(
+                    query, (f"company:{request.case_key}",)
+                ).fetchall()
+            ]
         capture = self._capture.capture(
             adapter_id=self.adapter_id,
             request=request,
@@ -956,11 +1058,14 @@ class RelationshipGraphSearchAdapter:
                 SearchCandidate.create(
                     request_digest=request.request_digest,
                     program_cell_id=request.program_cell_id,
-                    entity_ref="NVDA",
+                    entity_ref=request.case_key,
                     candidate_role="relationship_context",
                     adapter_id=self.adapter_id,
                     route_id=self.route_id,
-                    title=f"NVDA {str(row.get('edge_type') or 'relationship').replace('_', ' ')}",
+                    title=(
+                        f"{request.case_key} "
+                        f"{str(row.get('edge_type') or 'relationship').replace('_', ' ')}"
+                    ),
                     excerpt=excerpt,
                     # The graph support table has build time but no source publication
                     # date. Leave the authority field empty so Evidence Gate rejects
@@ -1038,7 +1143,7 @@ class ExactValueSqlSearchAdapter:
                 SearchCandidate.create(
                     request_digest=request.request_digest,
                     program_cell_id=request.program_cell_id,
-                    entity_ref="NVDA",
+                    entity_ref=request.case_key,
                     candidate_role="exact_numeric_context",
                     adapter_id=self.adapter_id,
                     route_id=self.route_id,
@@ -1054,6 +1159,18 @@ class ExactValueSqlSearchAdapter:
                     source_authority_rank=110,
                     score=float(20 - rank),
                     exact_value_authority=True,
+                    structured_numeric={
+                        "metric_name": str(
+                            row.get("metric_name")
+                            or row.get("metric_family")
+                            or ""
+                        ),
+                        "metric_family": str(row.get("metric_family") or ""),
+                        "value": str(row.get("value") or ""),
+                        "unit": str(row.get("unit") or ""),
+                        "period": str(row.get("period") or ""),
+                        "source_filed_at": str(row.get("as_of_date") or "")[:10],
+                    },
                 )
             )
         return tuple(out)
@@ -1191,7 +1308,8 @@ class Fin012S4T03SearchRunner:
     ) -> dict[str, Any]:
         started = time.monotonic()
         observed_at = now or _utc_now()
-        readiness = load_current_fin_0_1_2_s4_t02_readiness("NVDA")
+        case_key = admission.case_key
+        readiness = load_current_fin_0_1_2_s4_t02_readiness(case_key)
         requests = tuple(
             compile_executable_search_request(row)
             for row in readiness.evidence_requests
@@ -1204,7 +1322,7 @@ class Fin012S4T03SearchRunner:
             "contract_ref": CONTRACT_REF,
             "admission_id": admission.admission_id,
             "admission_digest": admission.admission_digest,
-            "case_key": "NVDA",
+            "case_key": case_key,
             "request_digests": [row.request_digest for row in requests],
             "run_nonce": run_nonce,
             "started_at": observed_at,
@@ -1221,6 +1339,7 @@ class Fin012S4T03SearchRunner:
             self._require_sources()
             phase = "official_source_identity"
             filings = self._load_official_filing_identities(
+                case_key=case_key,
                 as_of=requests[0].as_of,
                 admission=admission,
                 budget=budget,
@@ -1299,7 +1418,7 @@ class Fin012S4T03SearchRunner:
             "attempt_id": attempt_id,
             "admission_id": admission.admission_id,
             "admission_digest": admission.admission_digest,
-            "case_key": "NVDA",
+            "case_key": case_key,
             "status": status,
             "phase": phase,
             "code": code,
@@ -1342,21 +1461,27 @@ class Fin012S4T03SearchRunner:
     def _load_official_filing_identities(
         self,
         *,
+        case_key: str,
         as_of: str,
         admission: SearchAdmission,
         budget: _BudgetState,
     ) -> tuple[OfficialFilingIdentity, ...]:
+        profile = CASE_SEARCH_PROFILES.get(case_key)
+        if profile is None:
+            raise Fin012S4T03SearchError("t03_case_profile_missing")
+        allowed_hosts = set(profile["allowed_source_hosts"])
         self._consume_source_budget(admission, budget)
         try:
             response = self.source_client.fetch(
-                url=NVDA_SEC_SUBMISSIONS_URL,
-                allowed_hosts=ALLOWED_SOURCE_HOSTS,
+                url=str(profile["sec_submissions_url"]),
+                allowed_hosts=allowed_hosts,
             )
             capture = self.source_client.capture_objects[-1]
             filings = parse_sec_submissions(
                 response,
                 as_of=as_of,
                 response_capture=capture,
+                cik=str(profile["cik"]),
             )
             if filings:
                 return filings
@@ -1367,14 +1492,15 @@ class Fin012S4T03SearchRunner:
         budget.fallbacks += 1
         self._consume_source_budget(admission, budget)
         response = self.source_client.fetch(
-            url=NVDA_IR_URL,
-            allowed_hosts=ALLOWED_SOURCE_HOSTS,
+            url=str(profile["ir_url"]),
+            allowed_hosts=allowed_hosts,
         )
         capture = self.source_client.capture_objects[-1]
-        filings = parse_nvda_ir_links(
+        filings = parse_issuer_ir_links(
             response,
             as_of=as_of,
             response_capture=capture,
+            case_key=case_key,
         )
         if not filings:
             raise Fin012S4T03SearchError("t03_official_source_identity_unavailable")
@@ -1404,7 +1530,15 @@ class Fin012S4T03SearchRunner:
 
 
 def compile_current_nvda_executable_requests() -> tuple[ExecutableSearchRequest, ...]:
-    readiness = load_current_fin_0_1_2_s4_t02_readiness("NVDA")
+    return compile_current_case_executable_requests("NVDA")
+
+
+def compile_current_case_executable_requests(
+    case_key: str,
+) -> tuple[ExecutableSearchRequest, ...]:
+    if case_key not in CASE_SEARCH_PROFILES:
+        raise Fin012S4T03SearchError("t03_case_profile_missing")
+    readiness = load_current_fin_0_1_2_s4_t02_readiness(case_key)
     return tuple(
         compile_executable_search_request(row)
         for row in readiness.evidence_requests
@@ -1413,6 +1547,7 @@ def compile_current_nvda_executable_requests() -> tuple[ExecutableSearchRequest,
 
 __all__ = [
     "ALLOWED_SOURCE_HOSTS",
+    "CASE_SEARCH_PROFILES",
     "CONTRACT_REF",
     "CaptureFirstSourceClient",
     "ExecutableSearchRequest",
@@ -1426,8 +1561,10 @@ __all__ = [
     "SourceTransport",
     "UrllibSourceTransport",
     "compile_current_nvda_executable_requests",
+    "compile_current_case_executable_requests",
     "compile_executable_search_request",
     "parse_nvda_ir_links",
+    "parse_issuer_ir_links",
     "parse_sec_submissions",
     "qualify_candidates",
 ]

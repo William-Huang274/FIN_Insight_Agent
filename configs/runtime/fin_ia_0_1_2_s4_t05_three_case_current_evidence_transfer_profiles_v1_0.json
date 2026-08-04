@@ -1,0 +1,106 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_three_case_current_evidence_transfer_profiles_v1_0",
+  "contract_ref": "fin_0_1_2.S4.T05.three_case_current_evidence_transfer:v1",
+  "status": "zero_call_transfer_profiles_frozen_not_live_admission",
+  "cases": [
+    {
+      "case_key": "DELL",
+      "legal_name": "Dell Technologies Inc.",
+      "issuer_cik": "0001571996",
+      "as_of": "2026-07-26T00:00:00Z",
+      "sec_submissions_url": "https://data.sec.gov/submissions/CIK0001571996.json",
+      "ir_fallback_url": "https://investors.delltechnologies.com/node/19176/pdf",
+      "ir_parser_adapter": "dell_ir_filing_link_parser_v1",
+      "allowed_source_hosts": [
+        "data.sec.gov",
+        "investors.delltechnologies.com",
+        "www.sec.gov"
+      ],
+      "query_text_by_cell": {
+        "bottleneck_counterevidence_and_what_would_change": "AI server memory supply constraints gross margin working capital customer concentration backlog conversion risks",
+        "demand_authenticity_and_sustainability": "AI optimized server orders backlog shipments revenue customers demand sustainability",
+        "value_and_profit_capture": "revenue gross profit operating income ISG margin cash flow inventory receivables payables value capture"
+      },
+      "regression_oracle_ref": "configs/releases/fin_ia_0_1_s4_t04_dell_source_grounded_input_pack_v1_0.json",
+      "regression_oracle_sha256": "1a173ac6097195bdc6d2dd0f3d43544a947069d6848786f4fe9ca9eb805c8ec9",
+      "regression_oracle_is_current_product_proof": false,
+      "pre_transfer_product_status": "R2_not_accepted"
+    },
+    {
+      "case_key": "MU",
+      "legal_name": "Micron Technology, Inc.",
+      "issuer_cik": "0000723125",
+      "as_of": "2026-07-26T00:00:00Z",
+      "sec_submissions_url": "https://data.sec.gov/submissions/CIK0000723125.json",
+      "ir_fallback_url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-record-results-third-quarter",
+      "ir_parser_adapter": "mu_ir_filing_link_parser_v1",
+      "allowed_source_hosts": [
+        "data.sec.gov",
+        "investors.micron.com",
+        "www.sec.gov"
+      ],
+      "query_text_by_cell": {
+        "bottleneck_counterevidence_and_what_would_change": "HBM capacity yield customer concentration export restrictions memory cycle capital expenditure risks",
+        "demand_authenticity_and_sustainability": "HBM demand sold out customer qualification pricing volume AI memory demand sustainability",
+        "value_and_profit_capture": "revenue gross profit operating income margin inventory cash flow HBM product mix value capture"
+      },
+      "regression_oracle_ref": "configs/releases/fin_ia_0_1_s4_t06_mu_source_grounded_input_pack_v1_0.json",
+      "regression_oracle_sha256": "c97add3afee69278084c090b05e114436f426266c40d91c8e4ce916774e33d09",
+      "regression_oracle_is_current_product_proof": false,
+      "pre_transfer_product_status": "R2_not_accepted"
+    },
+    {
+      "case_key": "NVDA",
+      "legal_name": "NVIDIA Corporation",
+      "issuer_cik": "0001045810",
+      "as_of": "2026-07-21T00:00:00Z",
+      "sec_submissions_url": "https://data.sec.gov/submissions/CIK0001045810.json",
+      "ir_fallback_url": "https://investor.nvidia.com/financial-info/financial-reports-and-filings/default.aspx",
+      "ir_parser_adapter": "nvda_ir_filing_link_parser_v1",
+      "allowed_source_hosts": [
+        "data.sec.gov",
+        "investor.nvidia.com",
+        "www.sec.gov"
+      ],
+      "query_text_by_cell": {
+        "bottleneck_counterevidence_and_what_would_change": "supply constraints export controls customer concentration data center revenue risks earnings release what could change the thesis",
+        "demand_authenticity_and_sustainability": "data center revenue demand customer deployment orders backlog AI infrastructure demand sustainability",
+        "value_and_profit_capture": "revenue gross profit operating income cash flow data center value and profit capture"
+      },
+      "regression_oracle_ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_pack_v1_0.json",
+      "regression_oracle_sha256": "9fd5484d403814b59fd497b85c0904836571caaae439207438e295dc554aecd2",
+      "regression_oracle_is_current_product_proof": true,
+      "pre_transfer_product_status": "R2_owner_accepted"
+    }
+  ],
+  "shared_transfer_contract": {
+    "program_cell_count": 3,
+    "candidate_ceiling_per_cell": 6,
+    "accepted_candidate_count_per_case": 18,
+    "evidence_row_count_per_case": 15,
+    "exact_numeric_row_count_per_case": 3,
+    "typed_gap_count_per_case": 3,
+    "source_network_call_ceiling": 2,
+    "local_invocation_ceiling": 8,
+    "same_target_retry_ceiling": 0,
+    "fallback_ceiling": 1,
+    "model_calls_in_search_and_gate": 0,
+    "provider_calls_in_search_and_gate": 0,
+    "full_fake_provider_callbacks": 12,
+    "full_fake_compiled_model_interactions": 9,
+    "full_fake_artifacts": 9,
+    "cross_case_fact_reuse_allowed": false,
+    "regression_oracle_may_be_promoted_as_current_evidence": false
+  },
+  "nonpromotion_boundary": {
+    "live_source_calls_authorized": false,
+    "model_calls_authorized": false,
+    "provider_calls_authorized": false,
+    "DELL_admission_created": false,
+    "MU_admission_created": false,
+    "post_transfer_NVDA_admission_created": false,
+    "business_artifacts_created": false,
+    "product_acceptance_changed": false
+  },
+  "profiles_digest": "4179f10e1487d76c5874f4bacd34dc31edb4e74883a94ed02ea268675fc6f29a"
+}

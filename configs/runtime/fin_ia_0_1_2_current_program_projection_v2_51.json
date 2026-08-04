@@ -1,0 +1,54 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_51",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.51",
+  "recorded_at": "2026-08-05T00:16:15+08:00",
+  "sequence_after_projection": "v2_50",
+  "status": "S4_T05_A_zero_call_three_case_transfer_engineering_pass_T05_B_DELL_fresh_decision_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor",
+    "S4_T01_T04": "pass_closed",
+    "S4_T05_A": "engineering_pass_zero_call",
+    "S4_T05_B_DELL": "not_started",
+    "S4_T05_C_MU": "not_started",
+    "S4_T05_D_post_transfer_NVDA": "not_started",
+    "S4_T06_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": true,
+    "DELL_current_R2": false,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-AND-R2-FRESH-ZERO-CALL-PROOF-AND-ADMISSION-AUTHORITY-DECISION"
+  },
+  "T05_A_result": {
+    "implementation_ref": "configs/releases/fin_ia_0_1_2_s4_t05_three_case_current_evidence_transfer_package_zero_call_implementation_v1_0.json",
+    "implementation_digest": "83f4b2397e868659e5b169f111d6c13b1623d60a743ee925425edff281bada88",
+    "three_case_search_shape": [18, 15, 3, 3],
+    "three_case_agent_shape": [12, 9, 12, 9],
+    "capacity_maximum_per_call_tokens": {"DELL": 19505, "MU": 16165, "NVDA": 19460},
+    "key_tests_passed": 46,
+    "historical_product_result_promoted": false,
+    "live_or_paid_execution_occurred": false
+  },
+  "authority_boundary": {
+    "model_provider_network_source_calls": [0, 0, 0, 0],
+    "admissions_runs_business_artifacts": [0, 0, 0],
+    "T05_B_DELL_live_authorized": false,
+    "automatic_repair_packages": 0,
+    "automatic_replacement_exact_runs": 0,
+    "new_product_version_created": false
+  },
+  "issue_state": {
+    "RC_P36_115": "open_nonblocking_S5",
+    "RC_P36_119": "open_nonblocking_T08_T10_S5",
+    "T05_transfer_gap": "closed_at_T05_A_zero_call_engineering_boundary",
+    "new_open_issue": false
+  }
+}

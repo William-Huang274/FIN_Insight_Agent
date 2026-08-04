@@ -63,33 +63,62 @@ def _digest_payload(value: Mapping[str, Any], digest_key: str) -> str:
     return canonical_digest({key: row for key, row in value.items() if key != digest_key})
 
 
-def _numeric_projection(candidate: Mapping[str, Any]) -> dict[str, Any]:
+def _numeric_projection(
+    candidate: Mapping[str, Any], *, entity_ref: str
+) -> dict[str, Any]:
     excerpt = str(candidate.get("excerpt") or "")
-    match = re.match(r"^([^:]+):\s*(-?[0-9]+(?:\.[0-9]+)?)\s+([A-Za-z_]+);", excerpt)
-    period = re.search(r"\sfor\s+([^;]+);", excerpt)
-    filed = re.search(r"filed=([0-9]{4}-[0-9]{2}-[0-9]{2})", excerpt)
-    if match is None or period is None or filed is None:
-        raise Fin012S4T04EvidenceError("s4_t04_numeric_candidate_not_structurally_parseable")
-    metric_name, value, unit = match.groups()
-    metric_aliases = {
-        "Revenues": "revenue",
-        "Gross Profit": "gross_profit",
-        "Operating Income (Loss)": "operating_income",
-    }
-    metric_family = metric_aliases.get(metric_name.strip())
-    if metric_family is None:
-        raise Fin012S4T04EvidenceError("s4_t04_numeric_metric_alias_unknown")
+    structured = candidate.get("structured_numeric")
+    if isinstance(structured, Mapping):
+        metric_name = str(structured.get("metric_name") or "").strip()
+        metric_family = str(structured.get("metric_family") or "").strip()
+        value = str(structured.get("value") or "").strip()
+        unit = str(structured.get("unit") or "").strip()
+        period_value = str(structured.get("period") or "").strip()
+        filed_value = str(structured.get("source_filed_at") or "").strip()
+        if (
+            metric_family not in {"revenue", "gross_profit", "operating_income"}
+            or not metric_name
+            or re.fullmatch(r"-?[0-9]+(?:\.[0-9]+)?", value) is None
+            or not unit
+            or not period_value
+            or re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", filed_value) is None
+        ):
+            raise Fin012S4T04EvidenceError(
+                "s4_t04_structured_numeric_candidate_invalid"
+            )
+    else:
+        match = re.match(
+            r"^([^:]+):\s*(-?[0-9]+(?:\.[0-9]+)?)\s+([A-Za-z_]+);",
+            excerpt,
+        )
+        period = re.search(r"\sfor\s+([^;]+);", excerpt)
+        filed = re.search(r"filed=([0-9]{4}-[0-9]{2}-[0-9]{2})", excerpt)
+        if match is None or period is None or filed is None:
+            raise Fin012S4T04EvidenceError(
+                "s4_t04_numeric_candidate_not_structurally_parseable"
+            )
+        metric_name, value, unit = match.groups()
+        metric_aliases = {
+            "Revenues": "revenue",
+            "Gross Profit": "gross_profit",
+            "Operating Income (Loss)": "operating_income",
+        }
+        metric_family = metric_aliases.get(metric_name.strip())
+        if metric_family is None:
+            raise Fin012S4T04EvidenceError("s4_t04_numeric_metric_alias_unknown")
+        period_value = period.group(1).strip()
+        filed_value = filed.group(1)
     payload = {
         "numeric_ref": str(candidate["locator"]),
         "candidate_id": str(candidate["candidate_id"]),
-        "entity_ref": "NVDA",
+        "entity_ref": entity_ref,
         "program_cell_ids": [str(candidate["program_cell_id"])],
         "metric_name": metric_name.strip(),
         "metric_family": metric_family,
         "value": value,
         "unit": unit,
-        "period": period.group(1).strip(),
-        "source_filed_at": filed.group(1),
+        "period": period_value,
+        "source_filed_at": filed_value,
         "source_url": str(candidate["source_url"]),
         "source_coordinate": str(candidate["locator"]),
         "citation": excerpt,
@@ -106,7 +135,9 @@ def _numeric_projection(candidate: Mapping[str, Any]) -> dict[str, Any]:
     return {**payload, "numeric_row_digest": canonical_digest(payload)}
 
 
-def _evidence_projection(candidate: Mapping[str, Any]) -> dict[str, Any]:
+def _evidence_projection(
+    candidate: Mapping[str, Any], *, entity_ref: str
+) -> dict[str, Any]:
     excerpt = str(candidate["excerpt"]).strip()
     bounded_statement = (
         excerpt
@@ -124,7 +155,7 @@ def _evidence_projection(candidate: Mapping[str, Any]) -> dict[str, Any]:
     payload = {
         "evidence_ref": f"current_evidence:{candidate['candidate_id']}",
         "candidate_id": str(candidate["candidate_id"]),
-        "entity_ref": "NVDA",
+        "entity_ref": entity_ref,
         "program_cell_ids": [str(candidate["program_cell_id"])],
         "evidence_role": semantic_role,
         "source_candidate_role": source_role,
@@ -157,16 +188,31 @@ def compile_current_nvda_evidence_pack(
     terminal_digest: str,
     t01_entry: S4T01CompiledEntry,
 ) -> dict[str, Any]:
+    return compile_current_case_evidence_pack(
+        terminal,
+        terminal_digest=terminal_digest,
+        t01_entry=t01_entry,
+        case_key="NVDA",
+    )
+
+
+def compile_current_case_evidence_pack(
+    terminal: Mapping[str, Any],
+    *,
+    terminal_digest: str,
+    t01_entry: S4T01CompiledEntry,
+    case_key: str,
+) -> dict[str, Any]:
     """Promote only independently gated T03 candidates into a T04 input pack."""
 
     if (
         terminal.get("status") != "success"
         or terminal.get("code") != T03_SUCCESS_CODE
-        or terminal.get("case_key") != "NVDA"
+        or terminal.get("case_key") != case_key
         or terminal.get("T04_consumption_authorized") is not True
         or terminal.get("writer_citable_in_T03") is not False
         or terminal.get("domain_judgment_eligible_in_T03") is not False
-        or t01_entry.request.case_key != "NVDA"
+        or t01_entry.request.case_key != case_key
     ):
         raise Fin012S4T04EvidenceError("s4_t04_terminal_or_case_boundary_invalid")
     results = terminal.get("request_results")
@@ -200,7 +246,7 @@ def compile_current_nvda_evidence_pack(
             candidate_id = str(candidate.get("candidate_id") or "")
             if (
                 candidate_id in candidate_ids
-                or candidate.get("entity_ref") != "NVDA"
+                or candidate.get("entity_ref") != case_key
                 or candidate.get("program_cell_id") != cell_id
                 or candidate.get("writer_citable") is not False
                 or candidate.get("domain_judgment_eligible") is not False
@@ -222,9 +268,13 @@ def compile_current_nvda_evidence_pack(
                 },
             )
             if candidate.get("exact_value_authority") is True:
-                numeric_rows.append(_numeric_projection(candidate))
+                numeric_rows.append(
+                    _numeric_projection(candidate, entity_ref=case_key)
+                )
             else:
-                evidence_rows.append(_evidence_projection(candidate))
+                evidence_rows.append(
+                    _evidence_projection(candidate, entity_ref=case_key)
+                )
     if tuple(sorted(by_cell)) != tuple(sorted(EXPECTED_CELLS)):
         raise Fin012S4T04EvidenceError("s4_t04_cell_set_invalid")
     if len(evidence_rows) != 15 or len(numeric_rows) != 3:
@@ -250,8 +300,8 @@ def compile_current_nvda_evidence_pack(
     body = {
         "schema_version": PACK_SCHEMA,
         "contract_ref": CONTRACT_REF,
-        "status": "current_NVDA_T03_candidates_promoted_for_T04_input_only",
-        "case_key": "NVDA",
+        "status": f"current_{case_key}_T03_candidates_promoted_for_T04_input_only",
+        "case_key": case_key,
         "as_of": t01_entry.request.as_of,
         "natural_objective": t01_entry.request.objective,
         "t01_entry_digest": t01_entry.receipt.entry_digest,
@@ -285,12 +335,22 @@ def compile_current_nvda_evidence_pack(
 
 
 def validate_current_nvda_evidence_pack(pack: Mapping[str, Any]) -> dict[str, Any]:
+    return validate_current_case_evidence_pack(pack, case_key="NVDA")
+
+
+def validate_current_case_evidence_pack(
+    pack: Mapping[str, Any], *, case_key: str | None = None
+) -> dict[str, Any]:
     normalized = deepcopy(dict(pack))
+    expected_case = case_key or str(normalized.get("case_key") or "")
+    if expected_case not in {"DELL", "MU", "NVDA"}:
+        raise Fin012S4T04EvidenceError("s4_t04_evidence_pack_case_invalid")
     if (
         normalized.get("schema_version") != PACK_SCHEMA
         or normalized.get("contract_ref") != CONTRACT_REF
-        or normalized.get("case_key") != "NVDA"
-        or normalized.get("status") != "current_NVDA_T03_candidates_promoted_for_T04_input_only"
+        or normalized.get("case_key") != expected_case
+        or normalized.get("status")
+        != f"current_{expected_case}_T03_candidates_promoted_for_T04_input_only"
         or normalized.get("evidence_pack_digest") != _digest_payload(normalized, "evidence_pack_digest")
         or len(normalized.get("evidence_rows") or ()) != 15
         or len(normalized.get("numeric_rows") or ()) != 3
@@ -304,7 +364,7 @@ def validate_current_nvda_evidence_pack(pack: Mapping[str, Any]) -> dict[str, An
         len(set(evidence_refs)) != len(evidence_refs)
         or len(set(numeric_refs)) != len(numeric_refs)
         or any(
-            row.get("entity_ref") != "NVDA"
+            row.get("entity_ref") != expected_case
             or row.get("writer_citable") is not True
             or row.get("domain_judgment_eligible") is not True
             or row.get("evidence_row_digest") != _digest_payload(row, "evidence_row_digest")
@@ -316,7 +376,7 @@ def validate_current_nvda_evidence_pack(pack: Mapping[str, Any]) -> dict[str, An
             for row in normalized["evidence_rows"]
         )
         or any(
-            row.get("entity_ref") != "NVDA"
+            row.get("entity_ref") != expected_case
             or row.get("exact_value_authority") is not True
             or row.get("writer_citable") is not False
             or row.get("numeric_row_digest") != _digest_payload(row, "numeric_row_digest")
@@ -815,9 +875,11 @@ def compile_current_t04_execution_envelope(
 __all__ = [
     "CONTRACT_REF",
     "Fin012S4T04EvidenceError",
+    "compile_current_case_evidence_pack",
     "compile_current_nvda_agent_input",
     "compile_current_nvda_evidence_pack",
     "compile_current_t04_execution_envelope",
     "prepare_current_nvda_agent_execution",
     "validate_current_nvda_evidence_pack",
+    "validate_current_case_evidence_pack",
 ]

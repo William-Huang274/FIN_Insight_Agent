@@ -1,0 +1,101 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_current_evidence_fact_candidate_pool_profiles_v1_0",
+  "contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+  "profile_set_id": "FIN-0.1.2-S4-T05-CURRENT-EVIDENCE-FACT-CANDIDATE-PROFILES-R1",
+  "profile_set_digest": "37670a7df54bfd35609b6cb27b75b13fba923c1babf11ece917dfcfd87b379c6",
+  "profiles": [
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin_0_1_2.s4.t05.research_profile.dell_current_evidence:v1",
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "coverage_slots": [
+        {"coverage_slot_id": "current_issuer_demand_signal", "coverage_slot_priority": 10, "eligible_support_kinds": ["Evidence"], "eligible_semantic_roles": ["issuer_demand_or_order_signal"], "authority_preference": ["Evidence", "Numeric"], "scope_preference": ["issuer_exact", "company_total", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 3}
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin_0_1_2.s4.t05.research_profile.dell_current_evidence:v1",
+      "program_cell_id": "value_and_profit_capture",
+      "coverage_slots": [
+        {"coverage_slot_id": "current_issuer_financial_statement", "coverage_slot_priority": 10, "eligible_support_kinds": ["Evidence"], "eligible_semantic_roles": ["issuer_financial_statement"], "authority_preference": ["Evidence", "Numeric"], "scope_preference": ["issuer_exact", "company_total", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 1},
+        {"coverage_slot_id": "current_company_revenue", "coverage_slot_priority": 20, "eligible_support_kinds": ["Numeric"], "eligible_semantic_roles": ["revenue"], "authority_preference": ["Numeric", "Evidence"], "scope_preference": ["company_total", "issuer_exact", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 1},
+        {"coverage_slot_id": "current_company_gross_profit", "coverage_slot_priority": 30, "eligible_support_kinds": ["Numeric"], "eligible_semantic_roles": ["gross_profit"], "authority_preference": ["Numeric", "Evidence"], "scope_preference": ["company_total", "issuer_exact", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 1},
+        {"coverage_slot_id": "current_company_operating_income", "coverage_slot_priority": 40, "eligible_support_kinds": ["Numeric"], "eligible_semantic_roles": ["operating_income"], "authority_preference": ["Numeric", "Evidence"], "scope_preference": ["company_total", "issuer_exact", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 1},
+        {"coverage_slot_id": "current_deterministic_margin_context", "coverage_slot_priority": 50, "eligible_support_kinds": ["Numeric"], "eligible_semantic_roles": ["gross_margin_percent", "operating_margin_percent"], "authority_preference": ["Numeric"], "scope_preference": ["company_total", "issuer_exact", "unknown"], "minimum_coverage": 0, "maximum_selected_from_slot": 2}
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin_0_1_2.s4.t05.research_profile.dell_current_evidence:v1",
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "coverage_slots": [
+        {"coverage_slot_id": "current_issuer_counterevidence", "coverage_slot_priority": 10, "eligible_support_kinds": ["Evidence"], "eligible_semantic_roles": ["issuer_counterevidence"], "authority_preference": ["Evidence", "Numeric"], "scope_preference": ["issuer_exact", "company_total", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 3}
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin_0_1_2.s4.t05.research_profile.mu_current_evidence:v1",
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "coverage_slots": [
+        {"coverage_slot_id": "current_issuer_demand_signal", "coverage_slot_priority": 10, "eligible_support_kinds": ["Evidence"], "eligible_semantic_roles": ["issuer_demand_or_order_signal"], "authority_preference": ["Evidence", "Numeric"], "scope_preference": ["issuer_exact", "company_total", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 3}
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin_0_1_2.s4.t05.research_profile.mu_current_evidence:v1",
+      "program_cell_id": "value_and_profit_capture",
+      "coverage_slots": [
+        {"coverage_slot_id": "current_issuer_financial_statement", "coverage_slot_priority": 10, "eligible_support_kinds": ["Evidence"], "eligible_semantic_roles": ["issuer_financial_statement"], "authority_preference": ["Evidence", "Numeric"], "scope_preference": ["issuer_exact", "company_total", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 1},
+        {"coverage_slot_id": "current_company_revenue", "coverage_slot_priority": 20, "eligible_support_kinds": ["Numeric"], "eligible_semantic_roles": ["revenue"], "authority_preference": ["Numeric", "Evidence"], "scope_preference": ["company_total", "issuer_exact", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 1},
+        {"coverage_slot_id": "current_company_gross_profit", "coverage_slot_priority": 30, "eligible_support_kinds": ["Numeric"], "eligible_semantic_roles": ["gross_profit"], "authority_preference": ["Numeric", "Evidence"], "scope_preference": ["company_total", "issuer_exact", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 1},
+        {"coverage_slot_id": "current_company_operating_income", "coverage_slot_priority": 40, "eligible_support_kinds": ["Numeric"], "eligible_semantic_roles": ["operating_income"], "authority_preference": ["Numeric", "Evidence"], "scope_preference": ["company_total", "issuer_exact", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 1},
+        {"coverage_slot_id": "current_deterministic_margin_context", "coverage_slot_priority": 50, "eligible_support_kinds": ["Numeric"], "eligible_semantic_roles": ["gross_margin_percent", "operating_margin_percent"], "authority_preference": ["Numeric"], "scope_preference": ["company_total", "issuer_exact", "unknown"], "minimum_coverage": 0, "maximum_selected_from_slot": 2}
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin_0_1_2.s4.t05.research_profile.mu_current_evidence:v1",
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "coverage_slots": [
+        {"coverage_slot_id": "current_issuer_counterevidence", "coverage_slot_priority": 10, "eligible_support_kinds": ["Evidence"], "eligible_semantic_roles": ["issuer_counterevidence"], "authority_preference": ["Evidence", "Numeric"], "scope_preference": ["issuer_exact", "company_total", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 3}
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin_0_1_2.s4.t05.research_profile.nvda_current_evidence:v1",
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "coverage_slots": [
+        {"coverage_slot_id": "current_issuer_demand_signal", "coverage_slot_priority": 10, "eligible_support_kinds": ["Evidence"], "eligible_semantic_roles": ["issuer_demand_or_order_signal"], "authority_preference": ["Evidence", "Numeric"], "scope_preference": ["issuer_exact", "company_total", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 3}
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin_0_1_2.s4.t05.research_profile.nvda_current_evidence:v1",
+      "program_cell_id": "value_and_profit_capture",
+      "coverage_slots": [
+        {"coverage_slot_id": "current_issuer_financial_statement", "coverage_slot_priority": 10, "eligible_support_kinds": ["Evidence"], "eligible_semantic_roles": ["issuer_financial_statement"], "authority_preference": ["Evidence", "Numeric"], "scope_preference": ["issuer_exact", "company_total", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 1},
+        {"coverage_slot_id": "current_company_revenue", "coverage_slot_priority": 20, "eligible_support_kinds": ["Numeric"], "eligible_semantic_roles": ["revenue"], "authority_preference": ["Numeric", "Evidence"], "scope_preference": ["company_total", "issuer_exact", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 1},
+        {"coverage_slot_id": "current_company_gross_profit", "coverage_slot_priority": 30, "eligible_support_kinds": ["Numeric"], "eligible_semantic_roles": ["gross_profit"], "authority_preference": ["Numeric", "Evidence"], "scope_preference": ["company_total", "issuer_exact", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 1},
+        {"coverage_slot_id": "current_company_operating_income", "coverage_slot_priority": 40, "eligible_support_kinds": ["Numeric"], "eligible_semantic_roles": ["operating_income"], "authority_preference": ["Numeric", "Evidence"], "scope_preference": ["company_total", "issuer_exact", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 1},
+        {"coverage_slot_id": "current_deterministic_margin_context", "coverage_slot_priority": 50, "eligible_support_kinds": ["Numeric"], "eligible_semantic_roles": ["gross_margin_percent", "operating_margin_percent"], "authority_preference": ["Numeric"], "scope_preference": ["company_total", "issuer_exact", "unknown"], "minimum_coverage": 0, "maximum_selected_from_slot": 2}
+      ],
+      "audit_only_rules": []
+    },
+    {
+      "profile_contract_ref": "fin01.s4.fact_candidate_pool_profile:v1",
+      "research_profile_ref": "fin_0_1_2.s4.t05.research_profile.nvda_current_evidence:v1",
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "coverage_slots": [
+        {"coverage_slot_id": "current_issuer_counterevidence", "coverage_slot_priority": 10, "eligible_support_kinds": ["Evidence"], "eligible_semantic_roles": ["issuer_counterevidence"], "authority_preference": ["Evidence", "Numeric"], "scope_preference": ["issuer_exact", "company_total", "unknown"], "minimum_coverage": 1, "maximum_selected_from_slot": 3}
+      ],
+      "audit_only_rules": []
+    }
+  ]
+}

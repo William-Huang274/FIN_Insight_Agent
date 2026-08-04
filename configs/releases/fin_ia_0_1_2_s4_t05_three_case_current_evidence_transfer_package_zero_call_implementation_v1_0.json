@@ -1,0 +1,125 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_three_case_current_evidence_transfer_package_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S4-T05-THREE-CASE-CURRENT-EVIDENCE-TRANSFER-PACKAGE-ZERO-CALL-IMPLEMENTATION-R1",
+  "recorded_at": "2026-08-05T00:16:15+08:00",
+  "status": "T05_A_engineering_pass_three_case_current_evidence_transfer_proven_no_live_authorized",
+  "authority": {
+    "user_instruction": "可以的，你继续往下做",
+    "authorized_scope": "previously_frozen_T05_A_zero_call_transfer_package",
+    "model_provider_execution_network_source_network_calls_authorized": false,
+    "admission_or_exact_live_authorized": false,
+    "T05_B_or_later_product_acceptance_authorized": false
+  },
+  "implemented_contract": {
+    "contract_ref": "fin_0_1_2.S4.T05.three_case_current_evidence_transfer:v1",
+    "closed_case_registry": ["DELL", "MU", "NVDA"],
+    "executable_search": "per_case_CIK_official_HTTPS_locator_allowlist_parser_query_and_read_only_BM25_SQL_Graph_binding",
+    "numeric_projection": "typed_SQL_numeric_fields_first_with_frozen_NVDA_text_compatibility_fallback",
+    "evidence_bridge": "uniform_15_Evidence_3_exact_Numeric_3_typed_gap_current_pack",
+    "candidate_coverage": "versioned_T05_current_evidence_profiles_with_required_demand_financial_and_counterevidence_slots_and_optional_deterministic_margin_context",
+    "lineage_dispatch": {
+      "DELL": "s4_research_profile_overlay",
+      "MU": "s4_research_profile_overlay",
+      "NVDA": "legacy_s3",
+      "shared_truth": "all_three_bind_their_current_Evidence_pack_digest_without_historical_source_pack_promotion"
+    },
+    "verifier": "existing_compact_current_evidence_model_view_reused_without_relaxation"
+  },
+  "earliest_owned_findings_closed_in_T05_A": [
+    {
+      "finding": "numeric_metric_family_was_inferred_from_NVDA_display_title",
+      "root_cause": "adapter_owned_typed_numeric_fields_were_not_carried_into_SearchCandidate",
+      "resolution": "carry_metric_family_value_unit_period_and_filed_at_as_typed_fields"
+    },
+    {
+      "finding": "current_pack_roles_did_not_fit_historical_case_specific_fact_candidate_profiles",
+      "root_cause": "historical profiles required old case-specific semantic roles rather than the current transfer contract",
+      "resolution": "add_separate_content_addressed_T05_current_evidence_profile_set_without_weakening_old_profiles"
+    },
+    {
+      "finding": "DELL_MU_and_NVDA_baselines_use_different_valid_lineage_families",
+      "root_cause": "one_attempt_forced_new_S4_keys_into_the_legacy_family_and_then_forced_Dell_MU_into_NVDA_six_slot_lineage",
+      "resolution": "dispatch_DELL_MU_through_validated_S4_overlay_and_NVDA_through_existing_legacy_family"
+    }
+  ],
+  "three_case_zero_call_proof": {
+    "per_case_search_contract": {
+      "simulated_official_source_calls": 1,
+      "read_only_local_invocations": 6,
+      "accepted_candidates": 18,
+      "evidence_rows": 15,
+      "exact_numeric_rows": 3,
+      "typed_gaps": 3,
+      "live_source_calls": 0,
+      "model_calls": 0,
+      "provider_calls": 0
+    },
+    "per_case_agent_contract": {
+      "provider_callbacks": 12,
+      "compiled_model_interactions": 9,
+      "provider_output_captures": 12,
+      "formal_artifacts": 9,
+      "retry_budget": 0,
+      "maximum_transport_attempts_per_call": 1
+    },
+    "capacity": {
+      "compiled_limit_tokens": 108000,
+      "DELL": {"maximum_per_call_tokens": 19505, "aggregate_projected_tokens": 99031},
+      "MU": {"maximum_per_call_tokens": 16165, "aggregate_projected_tokens": 91725},
+      "NVDA": {"maximum_per_call_tokens": 19460, "aggregate_projected_tokens": 98528},
+      "limit_changed": false
+    },
+    "negative_proofs": [
+      "cross_case_request_or_candidate",
+      "future_date",
+      "numeric_value_mutation",
+      "parser_lineage_mutation",
+      "unknown_or_overlapping_candidate_role",
+      "duplicate_or_seventh_provider_candidate",
+      "final_artifact_identity_numeric_and_lineage_mutation"
+    ]
+  },
+  "immutable_bindings": [
+    {"ref": "apps/workbench/backend/application/fin_0_1_2_s4_t03_executable_agentic_search.py", "sha256": "8e441c9fc497e44af3fc3d98bd4f5dda3757ba0c38454c8d662dae5f3d507e23"},
+    {"ref": "apps/workbench/backend/application/fin_0_1_2_s4_t04_current_evidence_research.py", "sha256": "82d791fdb4905e29a934bcc286ab96abebd1d9141998e849f02272344058d359"},
+    {"ref": "apps/workbench/backend/application/fin_0_1_2_s4_t05_three_case_transfer.py", "sha256": "c1546f6edc925dbc379ffa1554f7d392040a02c2eff83d73ea03e7b6457e1c1e"},
+    {"ref": "configs/runtime/fin_ia_0_1_2_s4_t05_three_case_current_evidence_transfer_profiles_v1_0.json", "sha256": "06e43082dc0c20923d0778d8b259f6bab934702040b1f67af97cfe1c86f2ad5a"},
+    {"ref": "configs/runtime/fin_ia_0_1_2_s4_t05_current_evidence_fact_candidate_pool_profiles_v1_0.json", "sha256": "920a1af630081b74ccb800957f8216b2d1fcabf39075b01660a854d27b0df952"},
+    {"ref": "tests/contract/test_fin_0_1_2_s4_t05_three_case_current_evidence_transfer.py", "sha256": "a5ab089a14629f9d7fec95dffb53e11f7b7c1ab7c6e99233016193c72522d68b"}
+  ],
+  "verification": {
+    "T05_A_focused_and_status_contract": "10 passed",
+    "frozen_NVDA_T03_T04_regression": "18 passed",
+    "legacy_candidate_pool_and_three_case_final_artifact_mutation": "18 passed",
+    "total_key_tests": "46 passed",
+    "python_compile": "pass",
+    "new_open_root_cause_issue_created": false
+  },
+  "stage_truth_after_implementation": {
+    "S4_T05_A": "engineering_pass_zero_call",
+    "S4_T05_B_DELL": "not_started_fresh_proof_and_admission_decision_required",
+    "S4_T05_C_MU": "not_started_blocked_by_DELL_R2",
+    "S4_T05_D_post_transfer_NVDA": "not_started_blocked_by_DELL_and_MU_R2",
+    "current_NVDA_R2": true,
+    "DELL_current_R2": false,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified"
+  },
+  "observed_external_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions": 0,
+    "research_runs": 0,
+    "business_artifacts": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0
+  },
+  "next_action": "FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-AND-R2-FRESH-ZERO-CALL-PROOF-AND-ADMISSION-AUTHORITY-DECISION",
+  "known_boundary": "T05-A proves deterministic three-case transfer structure only. Full-fake Artifacts are test objects, not business Artifacts or current R2. No DELL source live, model live, admission, paired assessment or Owner acceptance has occurred.",
+  "implementation_digest": "83f4b2397e868659e5b169f111d6c13b1623d60a743ee925425edff281bada88"
+}

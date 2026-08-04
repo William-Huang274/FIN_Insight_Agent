@@ -81,6 +81,7 @@ class LocalAnalysisPreviewView(BaseModel):
     analysis_digest: str
     case_id: str
     case_version: int
+    as_of: str
     source_preview_digest: str
     analysis_mode: Literal["bounded_local_deterministic_preview"]
     status: Literal["internal_analysis_preview_ready"]

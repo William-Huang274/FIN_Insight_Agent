@@ -88,7 +88,7 @@ def test_current_nvda_requests_remain_unadmitted_and_have_no_current_evidence() 
     assert set(current.receipt.typed_gap_codes) == set(expected["typed_gap_codes"])
 
 
-def test_metadata_route_ids_have_no_python_executor_binding() -> None:
+def test_metadata_route_ids_are_now_owned_only_by_the_selected_controlled_successor() -> None:
     executable_sources = [
         path
         for path in ROOT.rglob("*.py")
@@ -102,7 +102,14 @@ def test_metadata_route_ids_have_no_python_executor_binding() -> None:
         ]
         for route_id in ROUTE_IDS
     }
-    assert occurrences == {route_id: [] for route_id in ROUTE_IDS}
+    expected_owner = (
+        "apps/workbench/backend/application/"
+        "fin_0_1_2_s4_t03_executable_agentic_search.py"
+    )
+    assert occurrences == {
+        route_id: [expected_owner]
+        for route_id in ROUTE_IDS
+    }
 
 
 def test_local_retrieval_skeleton_does_not_invoke_adapter_recall() -> None:

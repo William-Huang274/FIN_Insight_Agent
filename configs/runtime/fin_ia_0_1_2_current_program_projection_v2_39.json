@@ -1,0 +1,66 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_39",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.39",
+  "recorded_at": "2026-08-04T18:12:00+08:00",
+  "sequence_after_projection": "v2_38",
+  "status": "S3_bounded_anchor_pass_closed_S4_T01_T02_pass_T03_executable_successor_zero_call_pass_live_admission_authority_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4": "entered_T01_T02_pass_T03_executable_successor_zero_call_pass_live_canary_pending",
+    "S4_T01": "pass_closed_zero_call_runtime_injected_node_level_consumed",
+    "S4_T02": "pass_closed_zero_call_retrieval_evidence_readiness",
+    "S4_T03": "executable_successor_and_fresh_zero_call_proof_pass_live_canary_not_admitted",
+    "S4_T04_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-FRESH-ADMISSION-AUTHORITY-DECISION"
+  },
+  "S4_T03_controlled_successor": {
+    "implementation_ref": "configs/releases/fin_ia_0_1_2_s4_t03_executable_search_controlled_successor_zero_call_implementation_v1_0.json",
+    "implementation_sha256": "007758af9b15ffb35649db326d7f0d5d8f2cdecfb012d6ee022b8ad67754d52a",
+    "compiled_request_count": 3,
+    "metadata_route_binding_count": 4,
+    "read_only_adapter_count": 3,
+    "capture_first_source_and_local_rows": true,
+    "fresh_zero_call_run_attempt": [
+      "s4_t03_search_run_b30a53a76f5ec2b3afbf",
+      "s4_t03_search_attempt_0308286d8a6dfe8878d2"
+    ],
+    "fresh_zero_call_accepted_rejected_by_cell": [[6, 10], [6, 0], [6, 3]],
+    "source_live_local_model_provider_business_artifact_counts": [0, 6, 0, 0, 0],
+    "live_canary_admission_issued": false,
+    "live_canary_executed": false
+  },
+  "issue_state": {
+    "RC_P36_109": "delivery_surface_closed_for_S3_evidence_density_carried_to_S4_T04",
+    "RC_P36_110": "planning_rebaseline_consumed_S4_execution_gates_pending",
+    "RC_P36_112": "closed_owner_stage_boundary_realignment_selected",
+    "RC_P36_113": "closed_shared_default_registry_aligned_and_readback_proven",
+    "RC_P36_114": "closed_zero_call_executable_binding_and_capture_first_proven",
+    "historical_T02_tail_assertion_test_debt": "open_nonblocking_immutable_evidence_test_design_debt"
+  },
+  "execution_policy": {
+    "S4_T03_controlled_successor_implemented": true,
+    "S4_T03_fresh_zero_call_proof_pass": true,
+    "S4_T03_live_canary_authority_decision_pending": true,
+    "S4_T03_live_canary_admission_issued": false,
+    "S4_T03_live_canary_executed": false,
+    "source_network_execution_authorized_by_this_projection": false,
+    "model_provider_execution_authorized": false,
+    "historical_fixture_auto_promoted_to_current_Evidence": false,
+    "current_NVDA_R2_auto_reclassified": false,
+    "new_product_version_created": false
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_38.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "prior_owner_product_rejection_rewritten": false,
+    "historical_source_pack_promoted_to_current_Evidence": false
+  }
+}

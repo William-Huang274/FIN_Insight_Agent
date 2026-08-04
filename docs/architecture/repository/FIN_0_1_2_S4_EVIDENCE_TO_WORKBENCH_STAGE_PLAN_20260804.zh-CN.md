@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T02 pass closed / S4-T03 authority fail-closed，controlled successor pending / S4-T04–T08 not started`
+状态：`S4 entered / S4-T01–T02 pass closed / S4-T03 engineering pass，live canary admission authority pending / S4-T04–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -28,7 +28,7 @@ S4 只有在以下结果同时成立时才能关闭：
 | --- | --- | --- | --- |
 | S4-T01 | PRD/current Runtime 自然 Case 入口与 exact binding（已通过） | 用户式 Objective、as-of、预算、三 Cell、current repository source/index snapshot refs 和 fresh identity projection 在 DELL/MU/NVDA fixture 中可重建；mutation/cross-case fail closed；snapshot 明确不是 current Evidence | 不检索、不调用模型、不生成业务 Artifact |
 | S4-T02 | Retrieval/Evidence deterministic readiness（已通过） | 三案 EvidenceRequest、route、candidate ceiling、metadata、parser/authority、accepted/rejected/gap、citation 由 fixture/mutation 证明；历史 source pack 与 2026-06-11 index snapshot 完成 freshness/reachability 处置；RC-P36-113 已关闭 | 不用 live 搜索发现合同问题 |
-| S4-T03 | NVDA bounded Agentic Search current canary（authority fail-closed；受控实现待开始） | 当前 Runtime 实际调用批准的 public/local RAG/SQL/Graph/official routes；零 false promotion；完整 ToolUse/Evidence lineage | 不把 metadata route、state stub 或 URL wrapper 冒充真实检索，不自动扩大来源或进行 full research |
+| S4-T03 | NVDA bounded Agentic Search current canary（executor/fresh zero-call 已通过；live admission authority 待执行） | 当前 Runtime 实际调用批准的 public/local RAG/SQL/Graph/official routes；零 false promotion；完整 ToolUse/Evidence lineage | 不把 metadata route、state stub 或 URL wrapper 冒充真实检索，不自动扩大来源或进行 full research |
 | S4-T04 | NVDA natural-Case Agentic Research integration | EvidenceRequest→approved pack→Judgment→Lead/Writer/Verifier→九件套；与 S3 frozen-input 对照；完成 source-grounded NVDA R2 产品验收 | 不用 S3 frozen 结果冒充 current source proof |
 | S4-T05 | DELL/MU transfer 与 post-transfer NVDA | DELL/MU R2、post-transfer NVDA R2；同一 Runtime；新 L1 按 owner 阻断 | 不逐字段无限修复 |
 | S4-T06 | Workbench current product projection | Case/Run/Evidence/Numeric/Graph/Gap/Workpaper/Report/Trace/quality 可审、可回放、可退回 | 不用 fallback 冒充 Agent |
@@ -96,6 +96,12 @@ T03 的零调用权限审计已经完成，但 current canary 必须 fail closed
 
 因此本次 authority scope=`pass`，canary execution authority=`fail_closed`，admission=`not issued`。登记 `RC-P36-114`，仍归 S4-T03，不转给 T04，也不创建新产品版本。唯一后继是一个零调用合并实现包：补齐 `ExecutableSearchRequest`、metadata-to-executable adapter registry、只读 BM25/object-BM25、Graph、exact SQL 和受控 SEC/issuer adapter、来源 request/response 原子留存、fresh canary envelope/issuer/runner/typed terminal result。实现通过后才能另做 admission；T03 只可生成经过 gate 的 current Evidence candidate，仍不得 writer-citable、进入 Judgment 或生成业务 Artifact。
 
+### Controlled successor 实现结果
+
+上述唯一零调用包已经完成并通过。三份 request 现具有精确 query/source/allowlist/adapter/parser/as-of；四个 metadata route 唯一绑定到 SEC filing identity、NVIDIA IR 单一 fallback、只读本地 BM25、relationship graph 与 exact-value SQL。source request/response 在 parse 前保存，本地 raw rows 在 projection 前保存，所有对象内容寻址并 readback；success、typed gap、project failure 都生成 terminal result。
+
+fresh zero-call proof 使用模拟 SEC identity response 与真实本地索引/SQLite，得到三 Cell accepted/rejected=`6/10、6/0、6/3`，source simulated/live=`1/0`，local invocations=`6`，capture=`8`，retry/fallback/model/provider/Artifact=`0/0/0/0/0`；focused/related=`16/59 passed`。关系图缺少 source publication date 的行被拒绝，没有把 graph build time 冒充 evidence time。RC-P36-114 因执行集成结构已证明而关闭，但 live 来源与产品证据质量仍未证明。
+
 ## 7. 阶段止损与工程纪律
 
 - 每个技术层最多一个合并结构修复包和一个预先声明的 replacement canary；
@@ -108,8 +114,8 @@ T03 的零调用权限审计已经完成，但 current canary 必须 fail closed
 
 ## 8. 当前边界
 
-当前 S4-T01、T02 已通过并关闭；S4-T03 authority decision 已完成且 execution fail-closed，唯一受控零调用实现包尚未开始；S4-T04–T08 未开始。本次 T03 decision 的 model、Provider、network、source、tool、retrieval、admission、Run、Artifact、Human Review 均为 0。current NVDA R2=false，release=false，production=false。
+当前 S4-T01、T02 已通过并关闭；S4-T03 executor 与 fresh zero-call proof 已通过，live current-search canary 尚未签发 admission 或执行；S4-T04–T08 未开始。本次实现的 live source、model、Provider、business Artifact、Human Review 均为 0。current NVDA R2=false，release=false，production=false。
 
 当前 next：
 
-`FIN-0.1.2-S4-T03-NVDA-EXECUTABLE-SEARCH-REQUEST-ROUTE-ADAPTER-CAPTURE-FIRST-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-FRESH-ADMISSION-AUTHORITY-DECISION`

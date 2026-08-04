@@ -1,0 +1,147 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t03_executable_search_controlled_successor_zero_call_implementation_v1_0",
+  "decision_id": "FIN-0.1.2-S4-T03-EXECUTABLE-SEARCH-CONTROLLED-SUCCESSOR-ZERO-CALL-IMPLEMENTATION-R1",
+  "recorded_at": "2026-08-04T18:10:00+08:00",
+  "sequence_after_projection": "v2_38",
+  "status": "implementation_and_fresh_zero_call_proof_pass_live_canary_not_yet_admitted",
+  "authority": {
+    "user_instruction": "按已冻结顺序继续，无需逐步询问",
+    "controlled_successor_implementation_authorized": true,
+    "fresh_zero_call_proof_authorized": true,
+    "live_source_canary_authorized_by_this_artifact": false,
+    "model_provider_calls": [0, 0]
+  },
+  "implementation_bindings": [
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t03_executable_agentic_search.py",
+      "sha256": "6197012eed01280ac526345f7fcd519b7378ff96c09cf743fdd777571453cf1e",
+      "bytes": 56868,
+      "role": "executable_request_route_registry_read_only_adapters_capture_first_gate_runner_terminal"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s4_t03_agentic_search.py",
+      "sha256": "988939424a7701b2a72dd1e90f833b69f545ebeb23420afdce07f3a69cb0e80d",
+      "bytes": 4360,
+      "role": "zero_call_and_live_exact_runner_entrypoint"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t03_executable_agentic_search.py",
+      "sha256": "7244a9bbbbfa54f38f75c8df053ba05025afb42d85f8723448dc172291c4ce9b",
+      "bytes": 12213,
+      "role": "positive_mutation_capture_fallback_budget_and_terminal_contract_proof"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t03_nvda_bounded_agentic_search_current_canary_authority_decision.py",
+      "sha256": "0a76e9c1e4bd354a474317101d26ffe60572845e1d6ac893769be7a0776807dc",
+      "bytes": 6623,
+      "role": "historical_fail_closed_decision_and_unique_successor_ownership_regression"
+    },
+    {
+      "ref": "apps/workbench/backend/api/v1/local_research.py",
+      "sha256": "b9f17a45e89bec343fced36db2c8ecffef75dd06b8411bcccd32bf97c0398d3d",
+      "bytes": 4956,
+      "role": "preexisting_local_analysis_as_of_response_contract_alignment"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t03_nvda_bounded_agentic_search_current_canary_authority_decision_v1_0.json",
+      "sha256": "0bfdb27640354d7b6289d087e1d7b53edd365d8b0f39683f1693f91e955032b3",
+      "bytes": 9674,
+      "role": "selected_controlled_successor_authority"
+    }
+  ],
+  "compiled_requests": [
+    {
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "request_id": "executable_search_request_bfc502e4f0b493a6a872",
+      "request_digest": "bfc502e4f0b493a6a8722372a9fbc97263a51f3571effdbc17d44a845c418ece"
+    },
+    {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "request_id": "executable_search_request_d39c2a0d3c9c1b060ee5",
+      "request_digest": "d39c2a0d3c9c1b060ee5c6027104984b8a6a40607d6b3097badc56bb60eaf56d"
+    },
+    {
+      "program_cell_id": "value_and_profit_capture",
+      "request_id": "executable_search_request_7392a601fbc98741babd",
+      "request_digest": "7392a601fbc98741babd3158339c2e9992dbd820c1406a3871b8fa221d1a6f9b"
+    }
+  ],
+  "implemented_contract": {
+    "metadata_route_ids_bound": 4,
+    "official_source_route": "SEC submissions identity with one NVIDIA IR fallback",
+    "local_routes": [
+      "issuer_document_bm25_read_only",
+      "relationship_graph_read_only",
+      "exact_value_sql_read_only"
+    ],
+    "capture_first": {
+      "source_request_before_fetch": true,
+      "source_response_before_parse": true,
+      "local_raw_rows_before_projection": true,
+      "content_addressed_readback": true,
+      "authorization_cookie_private_reasoning_saved": false
+    },
+    "gate": {
+      "entity_as_of_https_locator_source_snapshot_parser_role_required": true,
+      "duplicate_cross_case_future_date_missing_citation_fail_closed": true,
+      "candidate_ceiling_per_request": 6,
+      "writer_citable_in_T03": false,
+      "domain_judgment_eligible_in_T03": false
+    },
+    "run_control": {
+      "fresh_Run_Attempt_identity": true,
+      "source_network_ceiling": 2,
+      "local_invocation_ceiling": 8,
+      "same_target_retry_ceiling": 0,
+      "fallback_ceiling": 1,
+      "model_provider_calls": [0, 0],
+      "typed_terminal_result_on_success_gap_or_failure": true
+    }
+  },
+  "fresh_zero_call_proof": {
+    "run_id": "s4_t03_search_run_b30a53a76f5ec2b3afbf",
+    "attempt_id": "s4_t03_search_attempt_0308286d8a6dfe8878d2",
+    "terminal_object_key": "s4-t03/terminal-results/a7/e9/a7e9c89b64deb26376dc56d24f250968def0fc86c8808c83490c30570f35fd05.json",
+    "terminal_digest": "a7e9c89b64deb26376dc56d24f250968def0fc86c8808c83490c30570f35fd05",
+    "status": "success",
+    "accepted_by_cell": [6, 6, 6],
+    "rejected_by_cell": [10, 0, 3],
+    "source_calls": 1,
+    "live_source_network_calls": 0,
+    "local_retrieval_or_tool_invocations": 6,
+    "fallbacks": 0,
+    "same_target_retries": 0,
+    "model_provider_calls": [0, 0],
+    "business_artifacts": 0,
+    "capture_objects": 8,
+    "T04_consumption_authorized_by_proof_only": true
+  },
+  "verification": {
+    "focused_contract_tests": "16 passed",
+    "related_T03_local_research_and_local_retrieval_tests": "59 passed",
+    "py_compile": "pass",
+    "git_diff_check": "pass",
+    "ruff": "not_available_in_current_python_environment",
+    "historical_T02_tail_assertion_test_debt": {
+      "count": 3,
+      "status": "preexisting_nonblocking_immutable_evidence_test_design_debt",
+      "reason": "The tests bind historical T02 evidence but also assert v2_37 and T02 records remain the current global tail after v2_38. Rewriting them would invalidate the immutable content-addressed T02 package."
+    }
+  },
+  "root_cause_disposition": {
+    "issue_id": "RC-P36-114-fin-0-1-2-s4-t03-metadata-route-to-executable-search-and-source-capture-binding-gap",
+    "status": "closed_zero_call_executable_binding_and_capture_first_proven",
+    "live_product_proof_still_required": true
+  },
+  "observed_counts": {
+    "live_source_network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "paid_api_cost_usd": 0.0,
+    "live_business_runs": 0,
+    "business_artifacts": 0,
+    "human_reviews": 0
+  },
+  "next_action": "FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-FRESH-ADMISSION-AUTHORITY-DECISION",
+  "known_boundary": "The executor and deterministic fresh proof are complete. No live source canary has run, no current product Evidence pack has been accepted, no model has consumed the candidates, and current source-grounded NVDA R2 remains false."
+}

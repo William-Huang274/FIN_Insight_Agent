@@ -1,0 +1,82 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t04_nvda_current_evidence_replacement_exact_live_r2_terminal_and_budget_capacity_disposition_v1_0",
+  "recorded_at": "2026-08-04T19:30:00+08:00",
+  "status": "replacement_exact_live_terminal_failed_post_verifier_aggregate_input_budget_capacity_gap",
+  "execution": {
+    "execution_identity": "fin012-s4-t04-nvda-current-evidence-replacement-exact-live-r2",
+    "admission_digest": "b6d66b6821cbf5d6abe18239689a00a81db5ca76649cbaf9011e614445a2180e",
+    "research_run_id": "research_run_fin01_49a0f03410cef14ff87c3263",
+    "attempt_id": "attempt_fin01_9eb741a8305c6c29840a5655",
+    "work_unit_id": "wu_p02_5_59ee2eca83eeb86887a0aa8e",
+    "result_ref": ".codex_runtime/fin012-s4-t04-nvda-current-evidence-replacement-exact-live-r2/execution-result.json",
+    "result_sha256": "8a75b5b07d6cf1dc4407e412d7496fea0e6ccbed619b9e65c6c2332fe33a1da1",
+    "result_bytes": 11155,
+    "terminal_digest": "ce1b75993a21b8893a91fbe730be8b4fa26255ec8355f6a6c750b5196ba918c8",
+    "terminal_phase": "node_envelope_accounting",
+    "terminal_code": "s3_bounded_node_envelope_accounting_failed",
+    "provider_calls_captures_local_fact_receipts_artifacts": [9, 9, 3, 0],
+    "input_output_total_tokens": [63419, 3096, 66515],
+    "estimated_cost_usd": 0.0302808,
+    "provider_latency_sum_ms": 46459,
+    "retry_fallback_replay_second_live": [0, 0, 0, 0]
+  },
+  "node_performance": [
+    {"stage": "demand_claim", "input_output_tokens": [3711, 145], "finish_reason": "stop", "json_valid": true},
+    {"stage": "demand_WWC", "input_output_tokens": [4295, 351], "finish_reason": "stop", "json_valid": true},
+    {"stage": "value_claim", "input_output_tokens": [5481, 149], "finish_reason": "stop", "json_valid": true},
+    {"stage": "value_WWC", "input_output_tokens": [6688, 390], "finish_reason": "stop", "json_valid": true},
+    {"stage": "bottleneck_claim", "input_output_tokens": [3674, 151], "finish_reason": "stop", "json_valid": true},
+    {"stage": "bottleneck_WWC", "input_output_tokens": [4269, 355], "finish_reason": "stop", "json_valid": true},
+    {"stage": "research_lead", "input_output_tokens": [10236, 689], "finish_reason": "stop", "json_valid": true},
+    {"stage": "memo_writer", "input_output_tokens": [5339, 558], "finish_reason": "stop", "json_valid": true},
+    {"stage": "verifier", "input_output_tokens": [19726, 308], "finish_reason": "stop", "json_valid": true}
+  ],
+  "observed_model_output_shape": {
+    "specialist_claims_per_cell": [2, 2, 2],
+    "specialist_WWC_per_cell": [3, 3, 3],
+    "lead_dependency_conflict_gap_counts": [1, 2, 3],
+    "writer_claim_renderings": 6,
+    "verifier_decision": "accept_for_internal_review",
+    "verifier_layers": ["deterministic_integrity:pass", "semantic_fidelity:pass", "financial_coherence:pass", "visual_delivery:pass"]
+  },
+  "quarantined_zero_model_replay": {
+    "status": "pass_schema_lineage_identity_numeric_and_artifact_assembly",
+    "responses_consumed": 9,
+    "diagnostic_artifact_count": 9,
+    "diagnostic_artifact_digest": "05c025918e839851dc9331c1921e3e01cdfa93627ad0741022909a37e98d2f62",
+    "current_evidence_pack_digest_present": true,
+    "identity_mentions_NVDA_DELL_MU": [108, 0, 0],
+    "canonical_or_business_writes": 0,
+    "business_promotable": false,
+    "formal_R2_terminal_rewritten": false
+  },
+  "root_cause": {
+    "issue_id": "RC-P36-117-fin-0-1-2-s4-t04-current-evidence-aggregate-input-budget-not-capacity-proven",
+    "owned_by_project": true,
+    "model_or_provider_failure_established": false,
+    "classifier_recurrence": false,
+    "admitted_aggregate_input_limit": 60000,
+    "observed_aggregate_input_tokens": 63419,
+    "excess_tokens": 3419,
+    "excess_percent": 5.6983,
+    "largest_request": {"stage": "verifier", "input_tokens": 19726, "share_of_total_percent": 31.1042},
+    "mechanism": "The execution envelope and capture-first runner hard-code a 60000 aggregate input-token ceiling, but fresh admission preflight proves identity and wiring only and does not capacity-prove the current Evidence verifier request. The ninth response is captured first, then aggregate accounting raises before the verifier output reaches business assembly."
+  },
+  "acceptance": {
+    "S4_T04_classifier_fix": "live_positive_no_recurrence",
+    "S4_T04_exact_live": "failed_terminal",
+    "formal_live_artifacts": 0,
+    "formal_L1": "not_reached",
+    "formal_paired_L1_L4": "not_performed",
+    "owner_acceptance": false,
+    "current_source_grounded_NVDA_R2": false,
+    "S4_T05_entry": "blocked"
+  },
+  "disposition": {
+    "R2_admission_consumed": true,
+    "automatic_retry_or_R3": false,
+    "budget_increase_in_this_closeout": false,
+    "recommended_next": "Zero-call capacity decision must choose a compiled per-node maximum/request-view reduction and prove the verifier envelope before any separately authorized R3; do not merely raise 60000 after observing 63419."
+  },
+  "current_next": "FIN-0.1.2-S4-T04-CURRENT-EVIDENCE-AGGREGATE-INPUT-BUDGET-CAPACITY-AND-VERIFIER-VIEW-ZERO-CALL-DISPOSITION"
+}

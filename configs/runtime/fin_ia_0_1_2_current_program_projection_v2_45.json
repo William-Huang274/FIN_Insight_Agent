@@ -1,0 +1,53 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_45",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.45",
+  "recorded_at": "2026-08-04T19:30:00+08:00",
+  "sequence_after_projection": "v2_44",
+  "status": "S4_T04_R2_terminal_failed_post_verifier_aggregate_input_budget_capacity_gap",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4_T01_T03": "pass_closed",
+    "S4_T04_input_bridge": "engineering_pass",
+    "S4_T04_classifier_fix": "live_positive_no_recurrence",
+    "S4_T04_R1_R2": ["immutable_failed_RC_P36_116", "immutable_failed_RC_P36_117"],
+    "S4_T04_exact_live": "terminal_failed",
+    "S4_T05_T08": "blocked_not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T04-CURRENT-EVIDENCE-AGGREGATE-INPUT-BUDGET-CAPACITY-AND-VERIFIER-VIEW-ZERO-CALL-DISPOSITION"
+  },
+  "R2_terminal": {
+    "closeout_ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_replacement_exact_live_r2_terminal_and_budget_capacity_disposition_v1_0.json",
+    "result_sha256": "8a75b5b07d6cf1dc4407e412d7496fea0e6ccbed619b9e65c6c2332fe33a1da1",
+    "terminal_digest": "ce1b75993a21b8893a91fbe730be8b4fa26255ec8355f6a6c750b5196ba918c8",
+    "phase_code": ["node_envelope_accounting", "s3_bounded_node_envelope_accounting_failed"],
+    "provider_capture_local_fact_artifact_counts": [9, 9, 3, 0],
+    "input_output_tokens_cost": [63419, 3096, 0.0302808],
+    "all_model_outputs_stop_and_json_valid": true,
+    "verifier_reached": true,
+    "automatic_R3": false
+  },
+  "issue_state": {
+    "RC_P36_115": "open_nonblocking_S4_assigned_to_S5_release_hardening",
+    "RC_P36_116": "closed_live_positive_classifier_no_recurrence",
+    "RC_P36_117": "open_T04_blocker_aggregate_input_budget_not_capacity_proven",
+    "model_or_provider_fault_established": false
+  },
+  "diagnostic_boundary": {
+    "quarantined_capture_replay_nine_artifacts": true,
+    "diagnostic_business_promotable": false,
+    "formal_L1_paired_owner": [false, false, false],
+    "R2_terminal_rewritten": false
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_44.json",
+    "R1_or_R2_rewritten": false,
+    "new_product_version_created": false
+  }
+}

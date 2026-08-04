@@ -1,0 +1,160 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_b_dell_current_search_fresh_zero_call_proof_and_admission_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-FRESH-ZERO-CALL-PROOF-AND-ADMISSION-AUTHORITY-DECISION-R1",
+  "recorded_at": "2026-08-05T00:45:25+08:00",
+  "sequence_after_projection": "v2_51",
+  "status": "pass_DELL_current_search_admission_issuance_authorized_not_issued_no_live",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "T05_B_DELL_current_search_fresh_zero_call_proof_and_admission_authority_decision",
+    "admission_issuance_authorized_next": true,
+    "admission_issued": false,
+    "admission_consumed": false,
+    "source_live_authorized_this_decision": false,
+    "source_live_executed": false,
+    "agent_or_model_live_authorized": false,
+    "agent_admission_authorized": false,
+    "DELL_R2_or_product_acceptance_authorized": false
+  },
+  "sequence_correction": {
+    "reason": "The Agent exact input depends on the actual Search live terminal and compiled current Evidence pack, so Search and Agent admissions cannot honestly be decided or issued together.",
+    "T05_B_subsequence": [
+      "DELL_current_search_fresh_zero_call_proof_and_admission_authority_decision",
+      "DELL_current_search_fresh_admission_issuance",
+      "DELL_current_search_exact_live_and_terminal_materialization",
+      "DELL_current_Evidence_pack_and_Agent_exact_input_compilation",
+      "DELL_Agent_fresh_proof_capacity_and_admission_authority_decision",
+      "DELL_Agent_exact_live_independent_L1_paired_assessment_and_owner_decision"
+    ],
+    "product_version_changed": false,
+    "stage_changed": false,
+    "scope_expanded": false
+  },
+  "fresh_zero_call_proof": {
+    "disposable_roots": 2,
+    "distinct_run_attempt_identities": true,
+    "normalized_results_equal": true,
+    "runs": [
+      {
+        "run_id": "s4_t03_search_run_733cc58c0f17726310e8",
+        "attempt_id": "s4_t03_search_attempt_ed967bb1940a1bc00aa5",
+        "terminal_digest": "b6fc334e9c4f948386691ad42bd2409db6a1cd37d0b4fca2b17a9de4d862fb21"
+      },
+      {
+        "run_id": "s4_t03_search_run_5f9d5a96d223b227796a",
+        "attempt_id": "s4_t03_search_attempt_6665e57b271a9af674fb",
+        "terminal_digest": "4bf5b3e96a582d889c5565516025c36e6aee45202090d0100b64ede52b586009"
+      }
+    ],
+    "request_cells": [
+      "bottleneck_counterevidence_and_what_would_change",
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture"
+    ],
+    "request_digests": [
+      "be255ecdf977f6f1db1fd0518b51c971cf87514685383fb7c7edd1eed5c04bd6",
+      "39d1c34d94254a45be8fcdf35630721abd44ca04ebd1e8d9215ca6682bd2f214",
+      "1d5ecad23a19cb1fa29bb7a4d3cfd21047bae42464c2b9c32639c7956ce30ec0"
+    ],
+    "accepted_rejected_by_cell": [[6, 9], [6, 0], [6, 3]],
+    "capture_objects_per_run": 8,
+    "T04_consumption_authorized_in_proof": true,
+    "observed_counts_per_run": {
+      "simulated_official_source_calls": 1,
+      "live_source_network_calls": 0,
+      "local_retrieval_or_tool_invocations": 6,
+      "fallbacks": 0,
+      "same_target_retries": 0,
+      "model_calls": 0,
+      "provider_calls": 0,
+      "paid_api_cost_usd": 0.0,
+      "accepted_candidates": 18,
+      "rejected_candidates": 12,
+      "business_artifacts": 0
+    }
+  },
+  "DELL_source_contract": {
+    "case_key": "DELL",
+    "issuer_cik": "0001571996",
+    "primary_source_locator": "https://data.sec.gov/submissions/CIK0001571996.json",
+    "fallback_source_locator": "https://investors.delltechnologies.com/node/19176/pdf",
+    "allowed_hosts": ["data.sec.gov", "investors.delltechnologies.com", "www.sec.gov"],
+    "fallback_owned_gap_found": "shared_historical_parser_expected_HTML_anchors_but_DELL_fallback_is_a_direct_PDF",
+    "fallback_controlled_successor": "DELL_direct_official_PDF_identity_requires_application_pdf_magic_bytes_trusted_Last_Modified_not_after_as_of_and_capture_first_lineage",
+    "historical_T03_runner_modified": false,
+    "untrusted_or_undated_PDF_behavior": "fail_closed"
+  },
+  "prospective_admission_contract": {
+    "issued_in_this_decision": false,
+    "case_key": "DELL",
+    "request_digests": [
+      "be255ecdf977f6f1db1fd0518b51c971cf87514685383fb7c7edd1eed5c04bd6",
+      "39d1c34d94254a45be8fcdf35630721abd44ca04ebd1e8d9215ca6682bd2f214",
+      "1d5ecad23a19cb1fa29bb7a4d3cfd21047bae42464c2b9c32639c7956ce30ec0"
+    ],
+    "maximum_source_network_calls": 2,
+    "maximum_local_retrieval_or_tool_invocations": 8,
+    "retry_budget": 0,
+    "fallback_budget": 1,
+    "maximum_wall_clock_seconds": 300,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "maximum_paid_api_cost_usd": 0.0,
+    "exact_once_runtime_boundary": "one_declared_runtime_root_only",
+    "cross_runtime_exact_once_boundary": "RC_P36_115_remains_open_for_S5_release_hardening"
+  },
+  "stop_policy": {
+    "project_owned_source_adapter_parser_capture_or_budget_failure": "terminalize_and_stop_without_automatic_second_search",
+    "official_source_has_no_eligible_result": "preserve_typed_gap_without_fabricated_Evidence",
+    "first_new_Agent_L1": "stop_remaining_paid_sequence_no_automatic_replacement",
+    "Agent_or_DeepSeek_step_in_this_decision": "forbidden"
+  },
+  "verification": {
+    "project_os_preflight": "pass_open_blockers_0",
+    "focused_tests_before_decision_materialization": "7_passed_1_deselected",
+    "python_compile": "pass",
+    "PDF_fallback_mutations": [
+      "non_PDF",
+      "missing_or_invalid_Last_Modified",
+      "future_dated_Last_Modified"
+    ],
+    "cross_case_admission": "rejected_before_transport",
+    "new_model_provider_execution_network_source_live_calls": [0, 0, 0, 0],
+    "new_admissions_business_runs_business_artifacts": [0, 0, 0]
+  },
+  "immutable_bindings": [
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s4_t05_current_search.py",
+      "sha256": "583685c4b48659d2f64e39f940705f5dd7e6bc87b38fb12e244bf7794b5519b8"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t05_b_dell_search_fresh_proof_and_admission_authority.py",
+      "sha256": "bebd365905e7f0ad7198a130f9eeb327662459105178dac48d5988318653c692"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t03_executable_agentic_search.py",
+      "sha256": "8e441c9fc497e44af3fc3d98bd4f5dda3757ba0c38454c8d662dae5f3d507e23"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s4_t05_three_case_current_evidence_transfer_profiles_v1_0.json",
+      "sha256": "06e43082dc0c20923d0778d8b259f6bab934702040b1f67af97cfe1c86f2ad5a"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s4_t03_agentic_search.py",
+      "sha256": "988939424a7701b2a72dd1e90f833b69f545ebeb23420afdce07f3a69cb0e80d"
+    }
+  ],
+  "stage_truth_after_decision": {
+    "S4_T05_A": "engineering_pass_zero_call",
+    "S4_T05_B_DELL": "search_admission_issuance_authorized_not_issued",
+    "DELL_current_R2": false,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "S4_T06": "not_started",
+    "release": false,
+    "production": false
+  },
+  "next_action": "FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-FRESH-ADMISSION-ISSUANCE",
+  "known_boundary": "This decision proves a fresh, case-bound, capture-first DELL Search engineering path and authorizes only a later exact admission issuance. It is not an admission, source live, current Evidence pack, Agent exact input, DeepSeek run, DELL R2, paired assessment, Owner acceptance, MU entry, release or production.",
+  "decision_digest": "3cb04ffb32c7bbd3a248549c87493b1907d8cb6d4e582eb70e49ee76ee9a88f2"
+}

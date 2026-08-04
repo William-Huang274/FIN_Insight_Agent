@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass，T05-B DELL fresh proof and admission decision pending / S4-T06–T08 not started`
+状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL Search fresh proof passed，admission issuance authorized but not issued / S4-T06–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -123,7 +123,7 @@ RC-P36-117 现已完成结构处置：完整本地 payload 继续作为审计和
 
 当前 next：
 
-`FIN-0.1.2-S4-T05-THREE-CASE-CURRENT-EVIDENCE-TRANSFER-PACKAGE-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-FRESH-ADMISSION-ISSUANCE`
 
 R3 exact-live 已 exact-once 成功：9 calls / 9 captures / 3 local Fact receipts / 9 formal Artifacts，input/output=`55,906/3,038`，cost=`USD 0.02696216`，独立 L1 通过，RC-P36-117 live-close。T04 仍不能关闭：最终本地 delivery 暴露内部 scope/period token、重复币种单位并混入英文限制项，且 Verifier 未绑定 final delivery preview；登记 RC-P36-118。该问题属于 T04 产品表面与验收绑定，不属于模型重试事项。后继只允许零调用、有界本地 renderer/preview-binding 处置；不得自动 R4。paired/Owner 与 current NVDA R2 仍未成立，T05 继续 blocked。
 
@@ -144,3 +144,13 @@ lineage 按既有合法家族分派：DELL/MU 使用 S4 base binding 加 current
 三案 full-fake 均达到 `12 Provider callbacks / 9 compiled interactions / 12 raw captures / 9 formal test Artifacts`。最大单请求保守估算 DELL/MU/NVDA 分别为 `19,505 / 16,165 / 19,460`，累计为 `99,031 / 91,725 / 98,528`，既有 108k 编译边界未修改。T05 focused 与状态合同、冻结 NVDA T03/T04、旧候选池与最终 Artifact mutation 合计 `46 passed`；跨案、未来日期、数值、parser lineage、duplicate/overflow、final identity/numeric/lineage mutation 均 fail closed。
 
 T05-A 只建立工程迁移资格。真实 model/provider/source、admission、Run 和业务 Artifact 均为 0；DELL/MU/post-transfer NVDA R2 仍为 false。下一步限定为 DELL fresh zero-call proof 与 admission authority decision；通过前不得执行 DELL source live 或 DeepSeek exact-live，且任何后续 exact L1 仍立即停止余下 paid sequence。
+
+## 10. S4-T05-B DELL Search fresh proof 与权限决策
+
+T05-B 必须拆成 Search 与 Agent 两段。Agent exact input 依赖真实 Search terminal 编译出的 current Evidence Pack，因此不能在 Search live 之前同时签发 Agent admission。固定子序列为：Search fresh proof/authority → Search admission issuance → Search exact-live → current Evidence Pack/Agent exact input → Agent fresh proof/capacity/authority → Agent exact-live/L1/paired/Owner。这是同一 T05-B 内的依赖纠正，不是新版本、阶段跳转或范围扩张。
+
+DELL Search 已在两个独立 disposable root 中零调用通过。两次 normalized 结果一致，Run/Attempt 各自新鲜；三个 Cell accepted/rejected=`6/9、6/0、6/3`，每次 `1` 个模拟官方来源、`6` 次真实本地只读检索、`8` 个 capture、`18` 个 accepted candidate，live source/model/provider/cost/业务 Artifact 均为 `0`。DELL 三份 request digest、CIK=`0001571996`、HTTPS locator、allowlist、candidate ceiling 和 `2 source / 8 local / retry 0 / fallback 1 / 300s / model 0` 预算已精确绑定。
+
+审计同时在 live 前发现 DELL fallback 是直接官方 PDF，而冻结共享 parser 只解析 HTML anchor。该缺口留在 T05-B 并由新的 case-aware runner 以受控后继关闭：只接受官方 HTTPS allowlist、`application/pdf` 与 `%PDF`、可信 `Last-Modified` 且不晚于 as-of；source request/response 仍在解析前 capture。非 PDF、无日期/非法日期、未来日期和跨案 admission 均 fail closed。历史 T03 NVDA runner 与 T05-A immutable bindings 未改写。
+
+当前 authority 只允许下一项签发一份 DELL Search fresh admission；本轮 admission 未生成、未消费，也没有访问外网或 DeepSeek。DELL current R2 仍为 false。Search live 后若来源没有合格结果，应保留 typed gap；若出现项目内 adapter/parser/capture/budget failure，应 terminalize 并停止，不自动第二次搜索。RC-P36-115 的跨 runtime 共享消费锁仍按既定边界留给 S5，当前执行必须固定一个 runtime root 且不得重放。

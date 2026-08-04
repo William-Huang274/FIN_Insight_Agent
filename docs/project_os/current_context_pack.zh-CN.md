@@ -3,6 +3,9 @@
 更新时间：2026-08-04
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-B DELL Search fresh proof 与 admission authority 已通过，签发待续行（current，2026-08-05）**：T05-B 已按真实依赖拆为 Search proof/签发/live → current Evidence Pack/Agent exact input → Agent proof/签发/live/L1/paired/Owner，未创建新版本或阶段。两个独立 disposable root 的 DELL Search 零调用结果一致且身份新鲜，三 Cell accepted/rejected=`6/9、6/0、6/3`，每次 `1 simulated source / 6 local / 8 captures / 18 accepted / 0 live source/model/provider/cost/Artifact`。审计在 live 前发现 DELL IR fallback 是直接 PDF、共享旧 parser 只认 HTML；新的 T05 case-aware runner 以官方 HTTPS allowlist、PDF magic/content-type、可信 Last-Modified≤as-of 和 capture-first 收敛，不改写冻结 T03 runner；非 PDF、缺日期、未来日期、跨案 admission 均 fail closed。authority 只允许下一步签发 DELL Search admission；当前 admission/source live/Agent admission/DeepSeek/DELL R2=`0/0/0/0/false`。current next=`FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-FRESH-ADMISSION-ISSUANCE`。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-A 三案例 current-evidence transfer 已零调用工程通过，T05-B DELL fresh decision 待续行（current，2026-08-05）**：DELL/MU/NVDA 均达到 `18 candidates / 15 Evidence / 3 exact Numeric / 3 typed gaps`，共享 Agent 测试链达到 `12 Provider callbacks / 9 compiled interactions / 12 captures / 9 Artifacts`。T03/T04 泛化改为 closed case profile 和 typed numeric；T05 current-evidence 候选覆盖合同独立版本化；DELL/MU 保留验证过的 S4 overlay lineage，NVDA 保留 legacy lineage，三者均绑定本案 current pack digest。最大单请求估算 DELL/MU/NVDA=`19,505/16,165/19,460`，未改 108k 编译边界；T05/旧 NVDA T03-T04/候选池与最终 Artifact mutation=`10/18/18 passed`。本轮真实 model/provider/network/source/admission/Run/business Artifact=`0`，full-fake Artifact 不是产品证明；current NVDA R2=true，DELL/MU/post-transfer NVDA=false。current next=`FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-AND-R2-FRESH-ZERO-CALL-PROOF-AND-ADMISSION-AUTHORITY-DECISION`；先做 DELL fresh proof 与权限决策，不自动 source/model live。
 >
 > [!IMPORTANT]

@@ -1,11 +1,13 @@
 # FIN 0.1.2 S3：NVDA 产品锚点与有界模型 Surface 计划
 
+> 2026-08-04 Owner 最终边界决定：批准把 S3 通过含义收敛为“有限 frozen-input Runtime 与 verified delivery anchor”，同时保留 `current source-grounded NVDA R2=false`、`F05/natural Case/Workbench/Human not assessed`。RC-P36-112 的循环门禁关闭，Evidence density 义务转入 S4-T02/T03/T04；S3 不重开、不再 exact。S4 已进入，当前 next 为 S4-T01 zero-call natural Case entry/exact binding implementation。决定见 `configs/releases/fin_ia_0_1_2_s3_t04_owner_stage_boundary_realignment_and_s3_closeout_v1_0.json`。
+
 > 2026-08-04 T04 零模型收敛：Owner 授权的 renderer、案例化 WWC、final-preview Verifier 与 fixture 资格审计已完成。新 delivery surface 不再暴露 `__company_total__`、`FY2025-FY` 或重复 USD，7/7 WWC 使用 frozen Cell 合同中的 NVDA 判据，最终 preview digest 已由本地 Verifier 显式绑定；旧 exact-live 九件套字节与 digest 均未改。审计同时证明当前 1/3 仅指一个 Cell 有 Numeric Facts，三个 Cell 实际均没有已晋升 Evidence；其余对象只是合同明确禁止晋升的 candidate metadata / graph hypothesis。故不得伪造 3/3，也不得立即再跑 live。当前阻断已缩为“证据密度由 S3 还是 S4 负责”的阶段边界决策：推荐把 S3 关闭为有限 frozen-input runtime/delivery anchor，把 source-grounded NVDA R2 放到既有 S4-T02/T03/T04；Owner 尚未签发该范围调整，S4 仍未进入。权威结果见 `configs/releases/fin_ia_0_1_2_s3_t04_product_surface_convergence_and_evidence_density_block_v1_0.json`。
 
 > 2026-08-04 closeout：S3-T03 replacement exact-live 与独立 L1 已通过（9 calls / 9 captures / 3 local Fact receipts / 9 Artifacts），但 S3-T04 paired product assessment 因 sparse `1/3` factual-cell coverage、limited/generic Agent gain、renderer internal-token/period/currency defects 和 final-preview verifier coverage 缺口被 Owner reject。S3 因 T04 honest-block，不具备 S4 entry；S3-T03 不重开且不得第三次 exact。权威 closeout 见 `configs/releases/fin_ia_0_1_2_s3_t04_nvda_paired_assessment_owner_rejection_and_s3_closeout_v1_0.json`。
 
 日期：2026-08-03
-状态：`S3-T01 pass / S3-T02 pass / S3-T03 replacement exact-live + independent L1 pass closed / S3-T04 delivery surface pass + evidence-density boundary decision block / S3 honest-block pending Owner realignment / S4 not entered`
+状态：`S3-T01 pass / S3-T02 pass / S3-T03 replacement exact-live + independent L1 pass / S3-T04 bounded delivery pass / S3 pass closed as bounded anchor / current NVDA R2 false / S4 entered`
 
 ## 一、S3 到底要证明什么
 
@@ -213,4 +215,4 @@ controlled successor、fresh admission、execution authority 和唯一 replaceme
 
 `FIN-0.1.2-S3-T04-EVIDENCE-DENSITY-STAGE-OWNERSHIP-AND-BOUNDARY-REALIGNMENT-DECISION`
 
-在 Owner 明确决定前，S3 继续 honest-block，S4 未进入；不得自动重新定义 owner acceptance、再跑 live、伪造 3/3 Evidence 或创建新产品版本。
+Owner 随后明确选择推荐处置：S3 以有限 frozen-input Runtime/交付锚点通过并关闭，product acceptance 仍为 false；S4 已进入且由 S4-T02/T03/T04 承担 Evidence density 和 current source-grounded NVDA R2。不得再跑 S3 live、伪造 3/3 Evidence 或创建新产品版本。

@@ -1,7 +1,9 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S2 pass closed / S3-T03 replacement admission authority blocked by controlled-successor gap / S4-S5 PRD-rebaselined not started`
+状态：`current canonical plan / S0-S2 pass closed / S3 bounded anchor pass closed / S4 entered T01 implementation pending / S5 not started`
+
+> 2026-08-04 Owner 已批准阶段边界重划：S3 以有限 frozen-input Runtime/交付锚点通过并关闭，不等于 current source-grounded NVDA R2；Evidence density 与自然 Case 产品验收回到既有 S4-T02/T03/T04 owner。S4 已进入，当前 next 为 S4-T01 zero-call natural Case entry/exact binding implementation，T02–T08 尚未开始。
 
 > 2026-08-04 PRD 对账修正：本计划原先没有把 F01–F15、自然 Case 入口、真实 public/local Agentic Search、bounded Graph、当前 Workbench 与 exact Human Review 分解为明确的后续门禁。修正证据与完整矩阵见 `FIN_0_1_1_0_1_2_PRD_CAPABILITY_ALIGNMENT_AND_S0_TO_S5_REBASELINE_20260804.zh-CN.md`。该修正不重开 S0–S2、不扩大当前 S3-T03、不改变产品版本；它重排尚未开始的 S4/S5。
 
@@ -14,7 +16,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；S3-T01/T02 已通过，S3-T03 primary exact-live 已 immutable failed，Lead-v8 独立零调用复证已通过；replacement admission authority decision 因现有 envelope/issuer/supervisor 仅绑定已消费 primary R1 而 fail-closed，当前等待一个零调用 controlled-successor bundle；Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 由本地确定性 planner 掌管；当前 S3 input 是 frozen NVDA dogfood，source network/external tools 为 0；
+- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；S3 replacement exact-live、独立 L1 与 verified delivery surface 已完成，Owner 以有限 frozen-input Runtime/交付锚点范围关闭 S3，明确不接受 current source-grounded NVDA R2；Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 由本地确定性 planner 掌管；S4 已进入，当前为 S4-T01 自然 Case/exact binding 零调用实现待执行；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；

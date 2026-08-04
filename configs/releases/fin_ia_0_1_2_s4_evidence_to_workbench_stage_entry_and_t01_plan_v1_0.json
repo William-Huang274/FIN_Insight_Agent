@@ -1,0 +1,175 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_evidence_to_workbench_stage_entry_and_t01_plan_v1_0",
+  "stage_id": "FIN-0.1.2-S4-EVIDENCE-TO-WORKBENCH-THREE-CASE-PRODUCT-QUALIFICATION-R1",
+  "recorded_at": "2026-08-04T10:59:26+08:00",
+  "status": "S4_entered_T01_zero_call_implementation_pending_T02_T08_not_started",
+  "authority": {
+    "user_instruction": "批准",
+    "owner_stage_boundary_decision_consumed": true,
+    "S4_entry_authorized": true,
+    "S4_T01_started": true,
+    "S4_T01_implementation_executed": false,
+    "S4_T02_or_later_started": false,
+    "model_provider_network_source_tool_or_business_execution_authorized": false,
+    "release_or_production_authorized": false
+  },
+  "immutable_bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s3_t04_owner_stage_boundary_realignment_and_s3_closeout_v1_0.json",
+      "sha256": "72156421d4c8001efbb93a0b6c9cb6544ccd242c2bcc8f3ebd6c6e23c08055c9",
+      "role": "Owner_approved_S3_closeout_and_S4_entry_authority"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_1_0_1_2_prd_capability_alignment_and_s0_to_s5_rebaseline_v1_0.json",
+      "sha256": "be494c6237f2b6cfedd917480e4403a01a21166bd3057382c907c395629661bb",
+      "role": "current_F01_F15_and_revised_S4_S5_ownership"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_release_contract_v1_3.json",
+      "sha256": "317c4c27d944cbda076c6177e035daecec256e649b5a1b31596dca22df69117f",
+      "role": "FIN_0_1_release_feature_and_gate_contract"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_feature_scope_matrix_v1_1.json",
+      "sha256": "07154739d402d834a2adc65d58a84461806773c3fb8cbb11895ae76eb73158e4",
+      "role": "F01_F15_scope_matrix"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_layered_agent_acceptance_standard_v1_0.json",
+      "sha256": "2f4ffb82f7cc18ac97c7265fd968e004a4b64d5ad8244d79c0a0a0b86c466703",
+      "role": "layered_L1_L4_acceptance"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_3.json",
+      "sha256": "1658af8d96d9d82384bd689e56b9de07528faac063e3d55ae0ca6c5b56c0e30a",
+      "role": "S3_production_runtime_input_to_S4_entry_audit_not_automatic_S4_binding"
+    }
+  ],
+  "source_plan_ref": "docs/architecture/repository/FIN_0_1_2_S4_EVIDENCE_TO_WORKBENCH_STAGE_PLAN_20260804.zh-CN.md",
+  "stage_objective": {
+    "plain_language": "Turn a natural user research objective into source-grounded, traceable, reviewable three-case research products in the current Workbench without hiding evidence gaps or reusing frozen S3 proof as live-search evidence.",
+    "product_cases": ["NVDA", "DELL", "MU"],
+    "target_maturity": "three_case_R2_current_workbench_exact_human_review_and_NVDA_R3_ready_for_S5",
+    "current_NVDA_R2_at_entry": false,
+    "S3_frozen_anchor_reusable_as": [
+      "runtime_and_failure_contract_reference",
+      "same_input_comparison_reference",
+      "renderer_and_verifier_regression_reference"
+    ],
+    "S3_frozen_anchor_not_reusable_as": [
+      "current_source_grounded_Evidence",
+      "F05_Agentic_Search_proof",
+      "natural_Case_proof",
+      "Workbench_or_Human_acceptance"
+    ]
+  },
+  "tasks": [
+    {
+      "id": "S4-T01",
+      "name": "natural_case_entry_and_exact_runtime_binding",
+      "status": "started_zero_call_implementation_pending",
+      "feature_ids": ["F01", "F02", "F03", "F04"],
+      "acceptance": "user-style objective, as-of, budgets, three Cells, current source/index snapshot refs and fresh exact identity reconstruct for DELL/MU/NVDA and fail closed on mutation or cross-case contamination"
+    },
+    {
+      "id": "S4-T02",
+      "name": "three_case_retrieval_evidence_deterministic_readiness",
+      "status": "not_started_blocked_by_T01",
+      "feature_ids": ["F05", "F06", "F07", "F13"]
+    },
+    {
+      "id": "S4-T03",
+      "name": "nvda_bounded_agentic_search_current_canary",
+      "status": "not_started_blocked_by_T02",
+      "feature_ids": ["F05", "F06", "F07", "F09", "F13"]
+    },
+    {
+      "id": "S4-T04",
+      "name": "nvda_natural_case_agentic_research_integration",
+      "status": "not_started_blocked_by_T03",
+      "feature_ids": ["F03", "F08", "F09", "F10", "F11", "F13"],
+      "must_resolve": ["current_source_grounded_NVDA_R2", "RC_P36_109_evidence_density_obligation"]
+    },
+    {
+      "id": "S4-T05",
+      "name": "dell_mu_transfer_and_post_transfer_nvda",
+      "status": "not_started_blocked_by_T04",
+      "feature_ids": ["F03", "F05", "F07", "F08"]
+    },
+    {
+      "id": "S4-T06",
+      "name": "workbench_current_product_projection_and_dogfood",
+      "status": "not_started_blocked_by_T05",
+      "feature_ids": ["F01", "F02", "F04", "F06", "F09", "F11", "F13", "F15"]
+    },
+    {
+      "id": "S4-T07",
+      "name": "exact_human_review_NVDA_R3_and_bounded_explanation",
+      "status": "not_started_blocked_by_T06",
+      "feature_ids": ["F10", "F12", "F14"]
+    },
+    {
+      "id": "S4-T08",
+      "name": "three_case_feature_integrated_closeout",
+      "status": "not_started_blocked_by_T07",
+      "feature_ids": ["F01", "F02", "F03", "F04", "F05", "F06", "F07", "F08", "F09", "F10", "F11", "F12", "F13", "F14", "F15"]
+    }
+  ],
+  "S4_T01_contract": {
+    "future_contract_ref": "fin_0_1_2.S4.natural_case_entry_and_exact_binding:v1",
+    "required_inputs": [
+      "user_objective",
+      "as_of_and_freshness_policy",
+      "case_company_ticker_and_three_cell_objectives",
+      "source_snapshot_ref_and_digest",
+      "index_snapshot_ref_and_digest",
+      "model_source_tool_token_cost_and_wall_clock_budget_refs",
+      "fresh_execution_identity_seed"
+    ],
+    "required_outputs": [
+      "NaturalCaseEntryRequest",
+      "CurrentCaseRuntimeBinding",
+      "SourceIndexSnapshotBinding",
+      "ExactExecutionIdentityProjection",
+      "S4T01EntryReceipt_without_Evidence_content"
+    ],
+    "required_zero_call_matrix": [
+      "DELL_MU_NVDA_positive",
+      "objective_as_of_case_cell_snapshot_budget_identity_mutation",
+      "cross_case_contamination",
+      "duplicate_identity",
+      "unknown_snapshot",
+      "stale_or_unbound_head",
+      "permutation_digest_stability",
+      "current_runtime_consumer_readback"
+    ],
+    "S4_T01_model_provider_execution_network_source_network_external_tool_business_artifact_counts": [0, 0, 0, 0, 0, 0]
+  },
+  "shared_stop_rule": {
+    "per_technical_layer_consolidated_structural_repair_packages": 1,
+    "per_declared_canary_replacement_attempts": 1,
+    "failed_test_or_proof_creates_product_version": false,
+    "available_source_adapter_parser_router_failure_owner": "project_not_external",
+    "candidate_or_graph_hypothesis_promoted_to_Evidence": false,
+    "paid_or_live_before_deterministic_ceiling_and_Project_OS_preflight": false,
+    "new_foundational_gap_behavior": "same_version_project_level_disposition_or_honest_block"
+  },
+  "historical_S4_policy": {
+    "FIN_0_1_S4_assets_are": "reuse_and_regression_references_only",
+    "historical_task_pass_counts_as_FIN_0_1_2_current_proof": false,
+    "old_R_number_chain_continues_in_FIN_0_1_2": false
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0,
+    "human_reviews": 0
+  },
+  "next_action": "FIN-0.1.2-S4-T01-NATURAL-CASE-ENTRY-AND-EXACT-BINDING-ZERO-CALL-IMPLEMENTATION",
+  "known_boundary": "S4 entry and T01 planning are not T01 implementation, retrieval readiness, live Agentic Search, Agentic Research, current NVDA R2, three-case transfer, Workbench dogfood, Human Review, release or production."
+}

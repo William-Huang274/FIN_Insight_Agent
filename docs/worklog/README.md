@@ -1,5 +1,6 @@
 # Worklog
 
+- [585 — FIN 0.1.2 S3 有限锚点关闭与 S4-T01 入口](product_strategy/585_fin_0_1_2_s3_bounded_anchor_closeout_and_s4_t01_entry.md)
 - [584 — FIN 0.1.2 S3-T04 verified delivery surface 与 Evidence density 边界](product_strategy/584_fin_0_1_2_s3_t04_verified_delivery_surface_and_evidence_density_boundary.md)
 - [583 — FIN 0.1.2 S3-T03 replacement success 与 S3-T04 Owner rejection](product_strategy/583_fin_0_1_2_s3_t03_replacement_success_and_s3_t04_owner_rejection.md)
 - [582 — FIN 0.1.2 S3-T03 replacement fresh admission authority fail-closed](product_strategy/582_fin_0_1_2_s3_t03_replacement_fresh_admission_authority_fail_closed.md)

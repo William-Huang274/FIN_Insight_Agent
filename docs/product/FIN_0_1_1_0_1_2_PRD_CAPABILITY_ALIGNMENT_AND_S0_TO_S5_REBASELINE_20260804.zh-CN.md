@@ -1,7 +1,9 @@
 # FIN 0.1.1 / 0.1.2 PRD 能力对账与 S0–S5 重基线
 
 日期：2026-08-04
-状态：`accepted planning correction / no stage reopen / no product version change`
+状态：`accepted planning correction / S3 bounded anchor pass closed / S4 entered T01 pending / no product version change`
+
+> 2026-08-04 Owner 边界决定：接受 S3 为“有限 frozen-input Runtime 与 verified delivery anchor”，但继续拒绝把它解释为 source-grounded NVDA R2。`0/3` promoted Evidence 义务按本文件既有 owner 转入 S4-T02/T03/T04，循环入口门禁已解除。S4 已进入，当前只开始 S4-T01 的自然 Case 与 exact binding，尚未实现 T01，也未开始 T02 检索。
 
 ## 1. 结论
 
@@ -100,13 +102,13 @@ WWC atom、known gaps、eval 和 release feedback 已有工程基础，但没有
 
 证明 Flash/Pro 在 Fact/Claim/WWC family 的自然能力与本地 ownership。它不选择或验收数据源和产品界面。
 
-### S3：冻结证据后的 NVDA 研究与交付锚点（当前）
+### S3：冻结证据后的 NVDA 研究与交付锚点（已按有限范围关闭）
 
 保持当前 T01–T04 和 exact attempt 上限。T03 只证明冻结证据后的 Specialist/Lead/Writer/Verifier/九件套；T04 只做 independent L1、paired L1–L4、最终 delivery review 和 Owner disposition。
 
-S3 通过也必须写明：`F05 Agentic Search not assessed`、`natural Case entry not assessed`、`Workbench/Human Review not assessed`。不得以 S3 R2 直接进入 S5。
+S3 通过继续写明：`F05 Agentic Search not assessed`、`natural Case entry not assessed`、`Workbench/Human Review not assessed`、`current source-grounded NVDA R2=false`。不得以 S3 anchor 直接进入 S5。
 
-### S4：Evidence-to-Workbench 三案例产品资格（固定八项）
+### S4：Evidence-to-Workbench 三案例产品资格（已进入，固定八项）
 
 | Task | 目标 | 主要 PRD owner | 通过条件 |
 | --- | --- | --- | --- |
@@ -147,18 +149,20 @@ Monitoring、Quant、Multi-format 和 Enterprise Production 继续使用已有 n
 
 ## 8. 当前执行顺序
 
-本次规划修正不改变当前执行入口：
+Owner 决定已经消费原 S3 入口并推进到：
 
 ```text
-S3-T03 replacement admission authority
-  -> replacement exact-live（若获后续授权）
-  -> S3-T04 paired / final delivery / Owner disposition
-  -> revised S4-T01 ... S4-T08
+S3 bounded anchor pass closed
+  -> revised S4-T01 natural Case entry / exact binding（current）
+  -> S4-T02 retrieval/evidence deterministic readiness
+  -> S4-T03 NVDA Agentic Search canary
+  -> S4-T04 natural-Case Agentic Research / current NVDA R2
+  -> S4-T05 ... S4-T08
   -> revised S5-T01 ... S5-T06
   -> FIN 0.2 S0 Earnings entry
 ```
 
-如果 S3-T03 replacement 再出现全新 L1，按当前 stop rule honest-block S3；本规划不得被解释为第三次 exact 或继续逐字段维修的授权。
+S3 不再重开。S4 每个技术层仍遵循一个合并结构修复包和一个声明过的 replacement canary 上限；本规划不得被解释为自动 retrieval、paid live、逐字段维修或 current NVDA R2 接受。
 
 ## 9. 证据来源
 

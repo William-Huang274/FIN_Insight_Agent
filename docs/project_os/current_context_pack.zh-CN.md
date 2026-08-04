@@ -3,6 +3,9 @@
 更新时间：2026-08-04
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05 scope 已冻结，T05-A 单一零调用三案例 transfer package 待实现（current，2026-08-04）**：只读审计确认 T01/T02 已支持 DELL/MU/NVDA，但 T03 executable search 与 T04 current-Evidence research 仍分别含 34/30 个 NVDA literal，DELL/MU 不能直接 live。历史 FIN 0.1 DELL R10/MU R2 九件套及后续失败只作工程与失败 taxonomy 回归，不得晋升 current Evidence/R2。T05 固定 T05-A transfer package→T05-B DELL current R2→T05-C MU current R2→T05-D post-transfer NVDA R2；新 exact-live L1 立即停止余下 paid sequence，不自动 replacement、逐字段修补或新版本。此次 model/provider/network/source/admission/Run/Artifact/paired/Owner=0；current NVDA R2=true，DELL/MU/post-transfer NVDA=false。current next=`FIN-0.1.2-S4-T05-THREE-CASE-CURRENT-EVIDENCE-TRANSFER-PACKAGE-ZERO-CALL-IMPLEMENTATION`。
+
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T04 已获 Product Owner 接受并关闭，S4-T05 entry authorized 但尚未执行（current，2026-08-04）**：用户对明确的“接受当前 NVDA R2，进入 S4-T05”请求回复“接受”。该决定绑定 R3 exact result SHA=`6f06be07…2fc9`、正式 paired digest=`f088af2a…b625` 和 final preview digest=`0255e854…5521`；current source-grounded NVDA R2=true，S4-T04=`pass_closed_owner_accepted`。RC-P36-119 作为已接受的非阻断 L3 finding 后传 T08–T10/S5，不重开 T04、不触发 R4。此次没有模型、Provider、网络、source、admission、Run、Artifact 或 Human Review；DELL/MU/post-transfer NVDA R2、qualified Human Review、NVDA R3、release 和 production 均未成立。current next=`FIN-0.1.2-S4-T05-DELL-MU-TRANSFER-AND-POST-TRANSFER-NVDA-SCOPE-ENTRY-DECISION`；先做零调用范围与复用边界决策，不自动 exact-live。
 
 > [!IMPORTANT]

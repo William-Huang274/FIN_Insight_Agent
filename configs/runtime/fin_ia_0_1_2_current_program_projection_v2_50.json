@@ -1,0 +1,48 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_50",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.50",
+  "recorded_at": "2026-08-04T23:45:00+08:00",
+  "sequence_after_projection": "v2_49",
+  "status": "S4_T05_scope_frozen_T05_A_zero_call_transfer_package_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor",
+    "S4_T01_T03": "pass_closed",
+    "S4_T04": "pass_closed_owner_accepted_current_NVDA_R2",
+    "S4_T05": "in_progress_T05_A_zero_call_transfer_package_pending",
+    "S4_T06_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": true,
+    "DELL_current_R2": false,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T05-THREE-CASE-CURRENT-EVIDENCE-TRANSFER-PACKAGE-ZERO-CALL-IMPLEMENTATION"
+  },
+  "T05_scope": {
+    "decision_ref": "configs/releases/fin_ia_0_1_2_s4_t05_dell_mu_post_transfer_nvda_scope_entry_decision_v1_0.json",
+    "decision_digest": "8b41310520371cf56713691fc3bc86ee35fd8a0aff4e4f5d2d3590bba6c0484a",
+    "fixed_sequence": ["T05-A", "T05-B-DELL", "T05-C-MU", "T05-D-post-transfer-NVDA"],
+    "historical_FIN_0_1_results_are_current_proof": false,
+    "direct_live_eligible": false,
+    "first_required_slice": "one_zero_call_three_case_transfer_package"
+  },
+  "authority_boundary": {
+    "model_provider_network_source_calls": [0, 0, 0, 0],
+    "admissions_runs_artifacts": [0, 0, 0],
+    "automatic_repair_packages": 0,
+    "automatic_replacement_exact_runs": 0,
+    "new_product_version_created": false
+  },
+  "issue_state": {
+    "RC_P36_115": "open_nonblocking_S5",
+    "RC_P36_119": "open_nonblocking_T08_T10_S5",
+    "T05_transfer_gap": "planned_scope_owned_by_T05_A_not_new_incident"
+  }
+}

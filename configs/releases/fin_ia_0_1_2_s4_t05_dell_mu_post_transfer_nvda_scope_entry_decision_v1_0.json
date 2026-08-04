@@ -1,0 +1,163 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_dell_mu_post_transfer_nvda_scope_entry_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S4-T05-DELL-MU-TRANSFER-AND-POST-TRANSFER-NVDA-SCOPE-ENTRY-DECISION-R1",
+  "recorded_at": "2026-08-04T23:45:00+08:00",
+  "status": "scope_decision_pass_T05_in_progress_zero_call_transfer_package_pending_no_live_authorized",
+  "authority": {
+    "user_instruction": "继续",
+    "instruction_context": "Continue after explicit Product Owner acceptance of current NVDA R2 and S4-T05 entry.",
+    "scope_entry_decision_authorized": true,
+    "zero_call_transfer_package_authorized_by_this_decision": false,
+    "search_model_provider_network_source_admission_or_exact_live_authorized": false,
+    "historical_FIN_0_1_product_result_promotion_authorized": false,
+    "S4_T06_or_later_authorized": false
+  },
+  "immutable_bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_r2_product_owner_acceptance_and_t05_entry_v1_0.json",
+      "sha256": "711fbac6cecf10890f1c00345de739cf5833a4d6bf43e402e89fa2c03f0f615a",
+      "role": "current_NVDA_R2_owner_acceptance_and_T05_entry_authority"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t02_three_case_retrieval_evidence_deterministic_readiness_zero_call_implementation_v1_0.json",
+      "sha256": "e8b1dd46ffef4d432e33e1d610adee4cf2e96f7c17d626e22c7a1e26de7ebb0a",
+      "role": "current_three_case_request_route_candidate_and_citation_readiness"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t03_executable_agentic_search.py",
+      "sha256": "6197012eed01280ac526345f7fcd519b7378ff96c09cf743fdd777571453cf1e",
+      "role": "current_executable_search_NVDA_only_surface_at_entry"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t04_current_evidence_research.py",
+      "sha256": "55686f2eee25bf501b43372ca2df0d5fa851dc0b489a28e2b12ea5ef10806282",
+      "role": "current_evidence_research_NVDA_only_surface_at_entry"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_s4_t10_s4_honest_block_closeout_decision_v1_0.json",
+      "sha256": "217eccfe72fa2d4f2d5b959513154ddfebe807d826ac6c46c637de766c984750",
+      "role": "historical_FIN_0_1_DELL_MU_nonpass_truth_preserved"
+    }
+  ],
+  "entry_audit": {
+    "T01_natural_case_binding": "three_case_current_runtime_proven",
+    "T02_retrieval_evidence_readiness": "three_case_fixture_and_mutation_proven",
+    "T03_executable_search": "NVDA_only_current_runtime_surface",
+    "T04_current_evidence_research": "NVDA_only_current_runtime_surface",
+    "T03_NVDA_literal_count": 34,
+    "T04_NVDA_literal_count": 30,
+    "DELL_historical_best": "R10_terminal_success_nine_artifacts_but_R2_not_owner_accepted_then_R11_new_L1_failed",
+    "MU_historical_best": "R2_terminal_success_nine_artifacts_but_paired_L1_failed_then_later_replacement_failed",
+    "finding_class": "planned_T05_transfer_gap_not_new_root_cause_incident",
+    "direct_DELL_or_MU_live_eligible_now": false
+  },
+  "reuse_policy": {
+    "reusable_as_engineering_assets_and_regression_oracles": [
+      "S0_to_S2 shared canonical Runtime contracts and deterministic ownership",
+      "S4-T01 three-case natural Case and exact identity binding",
+      "S4-T02 three-case EvidenceRequest route candidate ceiling citation and typed-gap readiness",
+      "S4-T03 capture-before-parse executable adapter runner and terminal-result patterns",
+      "S4-T04 current Evidence promotion bridge compact model view capacity compiler typed failure envelope final renderer and local verifier",
+      "historical FIN 0.1 DELL and MU profiles fixtures mutations failure taxonomy and immutable captures"
+    ],
+    "forbidden_as_FIN_0_1_2_current_product_proof": [
+      "historical DELL or MU source packs as current Evidence",
+      "historical admissions WorkUnits Attempts Runs or Artifacts",
+      "historical DELL R10 or MU R2 machine success as current R2",
+      "historical paired assessments or owner decisions",
+      "historical NVDA acceptance as post-transfer NVDA revalidation"
+    ]
+  },
+  "fixed_T05_sequence": [
+    {
+      "order": 1,
+      "slice": "T05-A",
+      "item": "three_case_current_evidence_transfer_package",
+      "mode": "zero_call",
+      "required": [
+        "replace NVDA literals with a closed DELL_MU_NVDA case profile registry",
+        "bind per-case issuer identity official HTTPS locators parser snapshots query profiles and exact numeric authority",
+        "generalize executable search and current-Evidence research bridge without weakening NVDA behavior",
+        "prove DELL MU NVDA full-fake nine-Artifact paths plus cross-case date identity numeric lineage and final-delivery mutations",
+        "compile per-case node capacity and exact execution ceilings before any paid run"
+      ],
+      "live_or_paid": false
+    },
+    {
+      "order": 2,
+      "slice": "T05-B",
+      "item": "DELL_current_search_then_current_evidence_agentic_research_R2",
+      "precondition": "T05-A independent zero-call proof pass",
+      "reason_for_order": "DELL is the historically weakest transfer case and should expose shared transfer defects before MU or NVDA paid work."
+    },
+    {
+      "order": 3,
+      "slice": "T05-C",
+      "item": "MU_current_search_then_current_evidence_agentic_research_R2",
+      "precondition": "DELL current R2 accepted"
+    },
+    {
+      "order": 4,
+      "slice": "T05-D",
+      "item": "post_transfer_NVDA_current_runtime_exact_revalidation_R2",
+      "precondition": "DELL and MU current R2 accepted",
+      "source_policy": "reuse the accepted current NVDA Evidence snapshot only if its digest and freshness contract remain valid; otherwise require a separately bounded current-source refresh before exact research"
+    }
+  ],
+  "prospective_ceiling_not_execution_authority": {
+    "per_case_current_search_canaries": 1,
+    "per_case_exact_agent_runs": 1,
+    "per_exact_agent_model_call_ceiling": 9,
+    "per_exact_agent_cost_usd_ceiling": 0.06,
+    "per_search_source_network_call_ceiling": 2,
+    "per_search_local_tool_call_ceiling": 8,
+    "three_case_model_call_ceiling": 27,
+    "three_case_cost_usd_ceiling": 0.18,
+    "automatic_retry_fallback_replay_relaunch_or_repair": false,
+    "these_ceilings_authorize_execution": false
+  },
+  "stop_and_failure_policy": {
+    "deterministic_or_full_fake_failure": "remain_in_T05_A_and_fix_only_the_earliest_owned_transfer_contract_before_any_live",
+    "valid_source_returns_no_qualifying_evidence": "preserve_typed_gap_and_stop_that_case_R2_without_fabrication",
+    "adapter_parser_capture_or_case_profile_defect": "project_owned_T05_failure; stop paid sequence and prepare one consolidated zero_call disposition for separate user decision",
+    "new_exact_live_L1": "stop the entire remaining T05 paid sequence immediately; no automatic replacement attempt or field patch",
+    "L2_to_L4_quality_finding_without_L1": "record for T08_to_T10_or_S5 unless it defeats case R2 product acceptance",
+    "maximum_automatic_structural_repair_packages_after_this_decision": 0,
+    "maximum_automatic_replacement_exact_runs_after_this_decision": 0,
+    "new_product_version_on_failure": false
+  },
+  "stage_truth_after_decision": {
+    "S4_T04": "pass_closed_owner_accepted",
+    "current_NVDA_R2": true,
+    "S4_T05": "in_progress_T05_A_zero_call_transfer_package_pending",
+    "DELL_current_R2": false,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_T06_to_T08": "not_started",
+    "S5": "not_entered",
+    "release": "not_qualified",
+    "production": "not_qualified"
+  },
+  "issue_disposition": {
+    "RC_P36_115": "open_nonblocking_assigned_S5_release_hardening",
+    "RC_P36_119": "open_nonblocking_assigned_T08_T10_S5",
+    "new_root_cause_issue_created": false
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "admissions": 0,
+    "research_runs": 0,
+    "business_artifacts": 0,
+    "paired_assessments": 0,
+    "owner_acceptances": 0
+  },
+  "next_action": "FIN-0.1.2-S4-T05-THREE-CASE-CURRENT-EVIDENCE-TRANSFER-PACKAGE-ZERO-CALL-IMPLEMENTATION",
+  "known_boundary": "This record defines T05 ownership, reuse, ordering, ceilings and stop rules. It does not implement the transfer package, perform current DELL or MU search, call a model, issue an admission, establish DELL or MU R2, revalidate NVDA after transfer, enter Workbench T06, or qualify release.",
+  "decision_digest": "8b41310520371cf56713691fc3bc86ee35fd8a0aff4e4f5d2d3590bba6c0484a"
+}

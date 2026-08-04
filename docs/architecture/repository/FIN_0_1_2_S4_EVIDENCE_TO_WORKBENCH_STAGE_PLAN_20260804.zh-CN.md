@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05 entry authorized，scope decision pending，execution not started / S4-T06–T08 not started`
+状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05 scope frozen，T05-A zero-call transfer package pending / S4-T06–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -30,7 +30,7 @@ S4 只有在以下结果同时成立时才能关闭：
 | S4-T02 | Retrieval/Evidence deterministic readiness（已通过） | 三案 EvidenceRequest、route、candidate ceiling、metadata、parser/authority、accepted/rejected/gap、citation 由 fixture/mutation 证明；历史 source pack 与 2026-06-11 index snapshot 完成 freshness/reachability 处置；RC-P36-113 已关闭 | 不用 live 搜索发现合同问题 |
 | S4-T03 | NVDA bounded Agentic Search current canary（已通过并关闭） | 当前 Runtime 实际调用批准的 public/local RAG/SQL/Graph/official routes；零 false promotion；完整 ToolUse/Evidence lineage | 不把 metadata route、state stub 或 URL wrapper 冒充真实检索，不自动扩大来源或进行 full research |
 | S4-T04 | NVDA natural-Case Agentic Research integration（已通过并由 Owner 验收关闭） | EvidenceRequest→approved pack→Judgment→Lead/Writer/Verifier→九件套；与 S3 frozen-input 对照；完成 source-grounded NVDA R2 产品验收 | 不用 S3 frozen 结果冒充 current source proof；不以固定 token 上限或删减财务证据换取通过 |
-| S4-T05 | DELL/MU transfer 与 post-transfer NVDA | DELL/MU R2、post-transfer NVDA R2；同一 Runtime；新 L1 按 owner 阻断 | 不逐字段无限修复 |
+| S4-T05 | DELL/MU transfer 与 post-transfer NVDA（已进入，T05-A 待实现） | 先用一个零调用 transfer package 把 NVDA-only search/research surface 收敛为 DELL/MU/NVDA closed profile；随后依次 DELL R2、MU R2、post-transfer NVDA R2 | 不复用历史结果冒充当前证明；不逐字段无限修复；新 L1 立即停止剩余 paid sequence |
 | S4-T06 | Workbench current product projection | Case/Run/Evidence/Numeric/Graph/Gap/Workpaper/Report/Trace/quality 可审、可回放、可退回 | 不用 fallback 冒充 Agent |
 | S4-T07 | Exact Human Review、NVDA R3 与 bounded explanation | qualified reviewer 接受/退回/repair 绑定 exact digest；NVDA R3；记录 review burden | F14 why/gap/WWC demo 不阻断 release |
 | S4-T08 | 三案集成收口 | F01–F15 evidence inventory、三案 regression、成本、gap owner 和 rollback 完整 | 不新增模型或检索实现 |
@@ -123,10 +123,12 @@ RC-P36-117 现已完成结构处置：完整本地 payload 继续作为审计和
 
 当前 next：
 
-`FIN-0.1.2-S4-T05-DELL-MU-TRANSFER-AND-POST-TRANSFER-NVDA-SCOPE-ENTRY-DECISION`
+`FIN-0.1.2-S4-T05-THREE-CASE-CURRENT-EVIDENCE-TRANSFER-PACKAGE-ZERO-CALL-IMPLEMENTATION`
 
 R3 exact-live 已 exact-once 成功：9 calls / 9 captures / 3 local Fact receipts / 9 formal Artifacts，input/output=`55,906/3,038`，cost=`USD 0.02696216`，独立 L1 通过，RC-P36-117 live-close。T04 仍不能关闭：最终本地 delivery 暴露内部 scope/period token、重复币种单位并混入英文限制项，且 Verifier 未绑定 final delivery preview；登记 RC-P36-118。该问题属于 T04 产品表面与验收绑定，不属于模型重试事项。后继只允许零调用、有界本地 renderer/preview-binding 处置；不得自动 R4。paired/Owner 与 current NVDA R2 仍未成立，T05 继续 blocked。
 
 上述 RC-P36-118 已通过 R3 immutable Artifact 的零调用重渲染关闭：preview 与 local verifier digest 绑定，内部 token、币种重复和英文限制项清零；三 Cell authority coverage=`3/3`。独立 zero-call baseline 与 Agent 同 input、不同 Run/Artifact，formal paired L1–L4 通过；L3 增益有限但成立。`9/9` WWC 通用阈值措辞作为 RC-P36-119 后传 T08–T10/S5，不阻断 T04、不触发 R4。
 
 用户已明确回复“接受”，因此 current source-grounded NVDA R2=true，S4-T04=`pass_closed_owner_accepted`，S4-T05 entry authorized。该决定不是 qualified Human Review 或 NVDA R3，也没有执行 DELL、MU、post-transfer NVDA 或任何新模型/网络调用。T05 当前只进入 scope decision，必须先复核历史 FIN 0.1 T05/T06 可复用的工程资产与 FIN 0.1.2 必须重新证明的产品边界。
+
+T05 scope audit 已完成：T01/T02 是三案例 current Runtime，而 T03 executable search 与 T04 current-Evidence research 仍是 NVDA-only，因此 DELL/MU 现在不能直接 live。T05 固定为 T05-A 单一零调用三案例 transfer package、T05-B DELL、T05-C MU、T05-D post-transfer NVDA。历史 FIN 0.1 DELL/MU 资产只作代码、fixture、mutation 和失败 taxonomy 回归，不作 current Evidence、R2 或 Owner acceptance。任何新 exact-live L1 立即停止余下 paid sequence，不自动 replacement 或逐字段修补。

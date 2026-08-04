@@ -1,11 +1,13 @@
 # FIN 0.1.1 / 0.1.2 PRD 能力对账与 S0–S5 重基线
 
 日期：2026-08-04
-状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T02 pass closed / S4-T03 authority fail-closed，controlled successor pending / no product version change`
+状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T04 pass closed，current NVDA R2 Owner accepted / S4-T05 scope frozen，T05-A zero-call transfer package pending / no product version change`
 
 > 2026-08-04 S4-T03 零调用权限审计确认：F05 当前不是“模型效果差”，而是 metadata route 尚未接成 executable search，来源 request/response capture-first 与 fresh execution-control chain 也未建立。`RC-P36-114` 留在 T03；必须先做一个合并的零调用可执行接入包，再另行判断 current canary admission，不能把 state stub、URL metadata wrapper 或历史 fixture 写成 current Agentic Search。
 
-当前 next：`FIN-0.1.2-S4-T03-NVDA-EXECUTABLE-SEARCH-REQUEST-ROUTE-ADAPTER-CAPTURE-FIRST-CONTROLLED-SUCCESSOR-MINIMUM-ZERO-CALL-IMPLEMENTATION`
+当前 next：`FIN-0.1.2-S4-T05-THREE-CASE-CURRENT-EVIDENCE-TRANSFER-PACKAGE-ZERO-CALL-IMPLEMENTATION`
+
+> 2026-08-04 T05 scope audit：T01/T02 已是三案例 current Runtime，但 T03 executable search 与 T04 current-Evidence research 仍是 NVDA-only。历史 FIN 0.1 DELL/MU 工程资产可作为 regression oracle，旧 source pack/admission/Run/Artifact/R2 不得作为 FIN 0.1.2 当前证明。T05 固定 T05-A 零调用 transfer package、T05-B DELL、T05-C MU、T05-D post-transfer NVDA；任何新 exact-live L1 停止剩余 paid sequence，不自动 replacement 或逐字段维修。
 
 > 2026-08-04 S4-T02 已通过：DELL/MU/NVDA 的 EvidenceRequest、route、ceiling、parser/authority、candidate decision、citation 与 typed gap 已由 current Runtime 零调用证明，合并回归=`29 passed`；RC-P36-113 已关闭。DELL/MU 只是历史 readiness fixture，NVDA 仍是 manifest-only 并需要 current search，promoted Evidence 仍为 `0/3`，current NVDA R2 仍为 false。
 

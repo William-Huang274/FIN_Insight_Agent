@@ -123,4 +123,6 @@ RC-P36-117 现已完成结构处置：完整本地 payload 继续作为审计和
 
 当前 next：
 
-`FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-FRESH-EXACT-LIVE-R3-ISSUANCE-AND-EXACT-ONCE-EXECUTION`
+`FIN-0.1.2-S4-T04-FINAL-DELIVERY-RENDERER-AND-VERIFIER-PREVIEW-BINDING-ZERO-CALL-DISPOSITION`
+
+R3 exact-live 已 exact-once 成功：9 calls / 9 captures / 3 local Fact receipts / 9 formal Artifacts，input/output=`55,906/3,038`，cost=`USD 0.02696216`，独立 L1 通过，RC-P36-117 live-close。T04 仍不能关闭：最终本地 delivery 暴露内部 scope/period token、重复币种单位并混入英文限制项，且 Verifier 未绑定 final delivery preview；登记 RC-P36-118。该问题属于 T04 产品表面与验收绑定，不属于模型重试事项。后继只允许零调用、有界本地 renderer/preview-binding 处置；不得自动 R4。paired/Owner 与 current NVDA R2 仍未成立，T05 继续 blocked。

@@ -1,0 +1,97 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t04_nvda_current_evidence_capacity_reproof_exact_live_r3_result_and_independent_assessment_v1_0",
+  "recorded_at": "2026-08-04T22:10:00+08:00",
+  "status": "exact_live_success_independent_L1_pass_product_L4_blocked",
+  "execution": {
+    "execution_identity": "fin012-s4-t04-nvda-current-evidence-capacity-reproof-exact-live-r3",
+    "admission_id": "fin012-s4-t04-nvda-current-evidence-capacity-reproof-exact-admission-r3",
+    "admission_digest": "b2aa76f43bd3fc58ee2014b58c9ab11bd63aa882699a62bb992b6b0ed4eb32dd",
+    "input_digest": "772425cd4ff05a0a089d5093d77ab433da36b77bbf1065048cc2aab450076453",
+    "envelope_digest": "1e11803e9ac773bded74048f782952f44616a5186c1693587d711cd00e182ba9",
+    "research_run_id": "research_run_fin01_26d57efecdc53fbf28847a1f",
+    "attempt_id": "attempt_fin01_3926d7398e05dc39c3a9c1b3",
+    "work_unit_id": "wu_p02_5_93e08bc861d3481a3ba80792",
+    "result_ref": ".codex_runtime/fin012-s4-t04-nvda-current-evidence-capacity-reproof-exact-live-r3/execution-result.json",
+    "result_sha256": "6f06be07041afc6c46d991ea9372ff487293bf7f1ba9ded96f2194659b302fc9",
+    "terminal_object_digest": "62774e277529d062a5938c40f024885911dc826c768c1d312e5f5539110b7879",
+    "terminal_status_phase_code": [
+      "success",
+      "complete",
+      "s3_t03_success_nine_artifacts"
+    ],
+    "business_promotable": true,
+    "provider_calls_captures_local_fact_receipts_artifacts": [9, 9, 3, 9],
+    "input_output_total_tokens": [55906, 3038, 58944],
+    "estimated_cost_usd": 0.02696216,
+    "retry_fallback_replay_R4": [0, 0, 0, 0],
+    "credential_value_persisted": false,
+    "private_reasoning_persisted": false
+  },
+  "node_performance": {
+    "all_finish_reason_stop": true,
+    "all_transport_attempts_exactly_one": true,
+    "verifier_input_tokens_R2_R3": [19726, 12578],
+    "aggregate_input_tokens_R2_R3": [63419, 55906],
+    "compiled_input_hard_limit": 108000,
+    "verifier_model_view_contract_ref": "fin01.s4.t04.current_evidence.verifier_model_view:v1"
+  },
+  "formal_artifact_surface": {
+    "artifact_types": [
+      "bounded_agent_manifest",
+      "bounded_agent_evidence",
+      "bounded_agent_numeric",
+      "bounded_agent_judgment",
+      "bounded_agent_workpaper",
+      "bounded_agent_report",
+      "bounded_agent_trace",
+      "bounded_agent_verification",
+      "agent_fallback_comparison"
+    ],
+    "specialist_cells": 3,
+    "claims": 6,
+    "what_would_change_tasks": 9,
+    "lead_dependency_conflict_gap_counts": [1, 2, 3],
+    "cross_case_DELL_or_MU_contamination": false
+  },
+  "independent_assessment": {
+    "L1_deterministic_integrity": "pass",
+    "L2_semantic_fidelity": "not_finally_adjudicated_paired_assessment_pending",
+    "L3_financial_coherence": "not_finally_adjudicated_paired_assessment_pending",
+    "L4_visual_delivery": "fail",
+    "machine_verifier_decision": "accept_for_internal_review",
+    "machine_verifier_all_four_layers_self_reported_pass": true,
+    "machine_verifier_is_human_acceptance": false,
+    "machine_verifier_and_independent_L4_disagree": true,
+    "L4_findings": [
+      "final report exposes internal scope token __company_total__",
+      "final report exposes internal period token FY2025-FY",
+      "final report renders duplicated currency form such as USD 130497000000 USD",
+      "Chinese limitations surface contains an English issuer-disclosure sentence",
+      "Verifier Artifact is bound to Writer and Lead digests but not to a final locally rendered delivery preview digest"
+    ]
+  },
+  "root_cause_disposition": {
+    "RC_P36_117": "closed_live_positive_capacity_failure_not_reproduced",
+    "RC_P36_118": "open_project_owned_final_delivery_renderer_and_verifier_binding_gap",
+    "model_or_provider_fault_established_for_RC_P36_118": false,
+    "explanation": "DeepSeek completed all nine contracted calls. The blocking L4 defects are introduced or left unchecked by the local deterministic delivery renderer and by a Verifier contract that does not inspect the final rendered delivery surface."
+  },
+  "acceptance": {
+    "S4_T04_engineering": "pass",
+    "S4_T04_exact_live_runtime": "pass",
+    "formal_nine_artifacts": true,
+    "formal_independent_L1": "pass",
+    "formal_paired_L1_L4": "not_performed",
+    "owner_acceptance": false,
+    "current_source_grounded_NVDA_R2": false,
+    "S4_T05_entry": "blocked"
+  },
+  "authority_boundary": {
+    "exact_live_executions": 1,
+    "automatic_retry_or_R4": false,
+    "additional_model_calls_after_terminal": 0,
+    "owner_acceptance_auto_granted": false,
+    "R1_R2_or_R3_rewritten": false
+  },
+  "recommended_next": "FIN-0.1.2-S4-T04-FINAL-DELIVERY-RENDERER-AND-VERIFIER-PREVIEW-BINDING-ZERO-CALL-DISPOSITION"
+}

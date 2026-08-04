@@ -1,0 +1,56 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_47",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.47",
+  "recorded_at": "2026-08-04T22:10:00+08:00",
+  "sequence_after_projection": "v2_46",
+  "status": "S4_T04_R3_exact_live_success_L1_pass_L4_product_surface_blocked",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4_T01_T03": "pass_closed",
+    "S4_T04_engineering": "pass",
+    "S4_T04_R1_R2": ["immutable_failed_RC_P36_116", "immutable_failed_RC_P36_117"],
+    "S4_T04_R3": "exact_live_success_nine_artifacts_independent_L1_pass",
+    "S4_T04_product_acceptance": "blocked_RC_P36_118_L4_final_delivery_surface",
+    "S4_T05_T08": "blocked_not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T04-FINAL-DELIVERY-RENDERER-AND-VERIFIER-PREVIEW-BINDING-ZERO-CALL-DISPOSITION"
+  },
+  "R3_exact_live": {
+    "result_ref": ".codex_runtime/fin012-s4-t04-nvda-current-evidence-capacity-reproof-exact-live-r3/execution-result.json",
+    "result_sha256": "6f06be07041afc6c46d991ea9372ff487293bf7f1ba9ded96f2194659b302fc9",
+    "terminal_object_digest": "62774e277529d062a5938c40f024885911dc826c768c1d312e5f5539110b7879",
+    "provider_calls_captures_local_receipts_artifacts": [9, 9, 3, 9],
+    "input_output_tokens_cost": [55906, 3038, 0.02696216],
+    "verifier_input_R2_R3": [19726, 12578],
+    "retry_fallback_R4": [0, 0, 0]
+  },
+  "independent_acceptance": {
+    "L1": "pass",
+    "L2_L3": "paired_assessment_pending",
+    "L4": "fail",
+    "paired_assessment": "not_performed",
+    "owner_acceptance": false,
+    "machine_verifier_human_acceptance": false
+  },
+  "issue_state": {
+    "RC_P36_115": "open_nonblocking_S4_assigned_to_S5_release_hardening",
+    "RC_P36_116": "closed_live_positive_classifier_no_recurrence",
+    "RC_P36_117": "closed_live_positive_capacity_failure_not_reproduced",
+    "RC_P36_118": "open_T04_product_surface_blocker",
+    "model_or_provider_fault_established_for_current_blocker": false
+  },
+  "authority_boundary": {
+    "R3_exact_live_count": 1,
+    "automatic_R4_or_retry": false,
+    "additional_post_terminal_model_calls": 0,
+    "paired_or_owner_auto_granted": false,
+    "new_product_version_created": false
+  }
+}

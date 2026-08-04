@@ -132,6 +132,12 @@ def prepare_exact_current_input(
         t01_entry=load_current_fin_0_1_2_s4_t01_case_entry("NVDA"),
         principal=_principal(),
         execution_identity=execution_identity,
+        verifier_input_contract_ref=str(
+            issuance["exact_binding"].get(
+                "verifier_input_contract_ref",
+                "fin01.s3.owner_grade_verifier_input:v2",
+            )
+        ),
     )
     expected = issuance["exact_binding"]
     observed = {
@@ -145,6 +151,15 @@ def prepare_exact_current_input(
         "predicted_research_run_id": prepared.research_run_id,
         "evidence_pack_digest": pack["evidence_pack_digest"],
         "t03_terminal_digest": pack["t03_terminal_digest"],
+        **(
+            {
+                "verifier_input_contract_ref": expected[
+                    "verifier_input_contract_ref"
+                ]
+            }
+            if "verifier_input_contract_ref" in expected
+            else {}
+        ),
     }
     if observed != expected or admission.input_digest != prepared.input_digest:
         raise ValueError("s4_t04_exact_live_input_rehydrate_drift")

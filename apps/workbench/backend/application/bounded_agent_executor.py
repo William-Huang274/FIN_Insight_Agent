@@ -173,6 +173,9 @@ S3_OWNER_GRADE_ATTRIBUTION_LEVELS = (
     "none",
 )
 S3_SPECIALIST_MODEL_VIEW_CONTRACT_REF = "fin01.s3.specialist_model_view:v1"
+S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF = (
+    "fin01.s4.t04.current_evidence.verifier_model_view:v1"
+)
 S3_SPECIALIST_V2_MAX_FACTS = 3
 S3_SPECIALIST_V2_NARRATIVE_CARDINALITY = {
     "explanation_layer": (1, 3),
@@ -6390,7 +6393,8 @@ class S3ThreeCellBoundedAgentExecutor:
             verifier_payload.update(
                 {
                     "verifier_input_contract_ref": (
-                        "fin01.s3.owner_grade_verifier_input:v2"
+                        input_pack.verifier_contract.get("input_contract_ref")
+                        or "fin01.s3.owner_grade_verifier_input:v2"
                     ),
                     "authority_surface_by_cell": authority_surface_by_cell,
                     "specialist_claim_cards": specialist_claim_cards,
@@ -8369,6 +8373,140 @@ class S3ThreeCellBoundedAgentExecutor:
                 specialist_identity_inputs,
                 scoped_surface,
             )
+
+    @classmethod
+    def _compile_current_evidence_verifier_model_view(
+        cls,
+        payload: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Compile a loss-aware Verifier view without repeated runtime projections.
+
+        The complete payload remains the local validation and audit authority.  This
+        view preserves every claim, its bound facts, scope, qualification, WWC rows,
+        final Writer rendering, and the complete cross-cell Lead surface, but replaces
+        repeated numeric/identity/runtime contracts with content-addressed bindings.
+        """
+
+        cls._validate_owner_grade_verifier_input(payload)
+        if (
+            payload.get("verifier_input_contract_ref")
+            != S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF
+        ):
+            raise ValueError("s4_t04_verifier_model_view_contract_mismatch")
+
+        cards_by_cell = payload["specialist_claim_cards"]
+        writer = payload["writer_output"]
+        sections = writer.get("sections")
+        if not isinstance(sections, list):
+            raise ValueError("s4_t04_verifier_writer_sections_missing")
+        section_by_cell = {
+            str(row.get("program_cell_id")): row
+            for row in sections
+            if isinstance(row, Mapping)
+        }
+        if set(section_by_cell) != set(S3_THREE_CELL_PROGRAM_CELL_IDS):
+            raise ValueError("s4_t04_verifier_writer_sections_incomplete")
+
+        claim_rows: list[dict[str, Any]] = []
+        for cell_id in S3_THREE_CELL_PROGRAM_CELL_IDS:
+            specialist = cards_by_cell[cell_id]
+            facts = {
+                str(row.get("fact_id")): row
+                for row in specialist["fact_layer"]
+                if isinstance(row, Mapping)
+            }
+            renderings = {
+                str(row.get("claim_ref", {}).get("local_id")): row
+                for row in section_by_cell[cell_id].get("claim_renderings", ())
+                if isinstance(row, Mapping)
+                and isinstance(row.get("claim_ref"), Mapping)
+            }
+            tasks_by_claim: dict[str, list[Mapping[str, Any]]] = {}
+            for task in specialist["what_would_change"]:
+                if not isinstance(task, Mapping):
+                    raise ValueError("s4_t04_verifier_WWC_row_invalid")
+                tasks_by_claim.setdefault(str(task.get("claim_id")), []).append(task)
+
+            for claim in specialist["claim_cards"]:
+                if not isinstance(claim, Mapping):
+                    raise ValueError("s4_t04_verifier_claim_row_invalid")
+                claim_id = str(claim.get("claim_id"))
+                rendering = renderings.get(claim_id)
+                if rendering is None:
+                    raise ValueError("s4_t04_verifier_claim_rendering_missing")
+                claim_ref = rendering.get("claim_ref")
+                if (
+                    not isinstance(claim_ref, Mapping)
+                    or claim_ref.get("program_cell_id") != cell_id
+                    or claim_ref.get("local_id") != claim_id
+                    or claim_ref.get("identity_kind") != "claim"
+                ):
+                    raise ValueError("s4_t04_verifier_claim_ref_mismatch")
+                support_fact_ids = [
+                    str(value) for value in claim.get("support_fact_ids", ())
+                ]
+                if any(value not in facts for value in support_fact_ids):
+                    raise ValueError("s4_t04_verifier_claim_fact_binding_missing")
+                claim_rows.append(
+                    {
+                        "program_cell_id": cell_id,
+                        "claim_ref": deepcopy(claim_ref),
+                        "claim": {
+                            "statement": claim.get("statement"),
+                            "epistemic_status": claim.get("epistemic_status"),
+                            "scope": deepcopy(claim.get("scope")),
+                            "qualification": claim.get("qualification"),
+                            "cannot_support": deepcopy(claim.get("cannot_support")),
+                            "context_refs": deepcopy(claim.get("context_refs")),
+                        },
+                        "bound_facts": [deepcopy(facts[value]) for value in support_fact_ids],
+                        "writer_rendering": deepcopy(rendering),
+                        "what_would_change": deepcopy(tasks_by_claim.get(claim_id, [])),
+                    }
+                )
+
+        scoped_surface = payload.get("scoped_identity_surface")
+        numeric_contracts = payload.get("case_numeric_authority_contracts") or []
+        identity_projection = payload.get("case_delivery_identity_projection") or {}
+        model_view = {
+            "model_view_contract_ref": (
+                S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF
+            ),
+            "input_digest": payload.get("input_digest"),
+            "required_layers": deepcopy(
+                payload.get("verifier_contract", {}).get("required_layers")
+            ),
+            "specialist_output_digests": deepcopy(
+                payload["specialist_output_digests"]
+            ),
+            "cross_cell_lead_digest": payload["cross_cell_lead_digest"],
+            "writer_digest": payload["writer_digest"],
+            "claim_evidence_rendering_rows": claim_rows,
+            "cross_cell_lead": deepcopy(payload["cross_cell_lead"]),
+            "writer_summary": {
+                "title_zh_cn": writer.get("title_zh_cn"),
+                "executive_summary_zh_cn": writer.get("executive_summary_zh_cn"),
+                "limitations_zh_cn": deepcopy(writer.get("limitations_zh_cn")),
+            },
+            "local_semantic_issues": deepcopy(
+                payload.get("local_semantic_issues") or []
+            ),
+            "authority_surface_digest": canonical_digest(
+                payload["authority_surface_by_cell"]
+            ),
+            "scoped_identity_surface_digest": canonical_digest(scoped_surface),
+            "numeric_authority_projection_digests": [
+                row.get("projection_digest")
+                for row in numeric_contracts
+                if isinstance(row, Mapping)
+            ],
+            "delivery_identity_projection_digest": identity_projection.get(
+                "projection_digest"
+            ),
+        }
+        if len(claim_rows) == 0:
+            raise ValueError("s4_t04_verifier_model_view_claims_missing")
+        return model_view
 
     @classmethod
     def _validate_verifier_output(
@@ -16302,6 +16440,25 @@ class DeepSeekS3ThreeCellNodeExecutor:
                 S3ThreeCellBoundedAgentExecutor._validate_owner_grade_verifier_input(
                     payload
                 )
+                if (
+                    payload.get("verifier_input_contract_ref")
+                    == S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF
+                ):
+                    verifier_model_view = (
+                        S3ThreeCellBoundedAgentExecutor
+                        ._compile_current_evidence_verifier_model_view(payload)
+                    )
+                    verifier_model_view_digest = canonical_digest(verifier_model_view)
+                    analysis_input = {
+                        **verifier_model_view,
+                        "model_view_digest": verifier_model_view_digest,
+                    }
+                    model_view_binding = {
+                        "model_view_contract_ref": (
+                            S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF
+                        ),
+                        "model_view_digest": verifier_model_view_digest,
+                    }
                 schema = {
                     "findings": [
                         {
@@ -16448,6 +16605,9 @@ class DeepSeekS3ThreeCellNodeExecutor:
             numeric_policy = CaseNumericAuthorityPolicy.from_prompt_contract(
                 numeric_contracts[0]
             )
+            # These top-level contracts are also consumed by local post-response
+            # classifiers.  The compact Verifier view removes their duplicate copy
+            # from analysis_input, but this single validation copy must remain.
             request["case_numeric_authority_contracts"] = deepcopy(
                 numeric_contracts
             )

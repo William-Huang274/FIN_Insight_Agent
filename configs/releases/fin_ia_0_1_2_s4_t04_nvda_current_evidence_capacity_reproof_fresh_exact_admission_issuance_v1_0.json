@@ -1,0 +1,102 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t04_current_evidence_capacity_reproof_fresh_exact_admission_issuance_v1_0",
+  "status": "issued_unconsumed_zero_call_preflight_pass",
+  "issued_admission": {
+    "admission_id": "fin012-s4-t04-nvda-current-evidence-capacity-reproof-exact-admission-r3",
+    "admission_digest": "b2aa76f43bd3fc58ee2014b58c9ab11bd63aa882699a62bb992b6b0ed4eb32dd",
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_capacity_reproof_fresh_exact_admission_r3.json",
+    "execution_identity": "fin012-s4-t04-nvda-current-evidence-capacity-reproof-exact-live-r3",
+    "consumed": false,
+    "execution_started": false
+  },
+  "exact_binding": {
+    "case_id": "case_e0b4021838a913c4ad21c328",
+    "case_version": 1,
+    "as_of": "2026-07-21T00:00:00Z",
+    "complete_input_digest": "772425cd4ff05a0a089d5093d77ab433da36b77bbf1065048cc2aab450076453",
+    "preparation_digest": "ed1083372049f8d7c9a92d15c7540861a32acacf72a033f44885ea37150a6da5",
+    "predicted_work_unit_id": "wu_p02_5_93e08bc861d3481a3ba80792",
+    "predicted_attempt_id": "attempt_fin01_3926d7398e05dc39c3a9c1b3",
+    "predicted_research_run_id": "research_run_fin01_26d57efecdc53fbf28847a1f",
+    "evidence_pack_digest": "fdc1a10010f0d47ba7be5b420fc5cac860c3044d6690696463865ecce4b7bf65",
+    "t03_terminal_digest": "7ec970b6c2f10983852c9cd52357499baccb08f50a00262de64d8f74a6f6f156",
+    "verifier_input_contract_ref": "fin01.s4.t04.current_evidence.verifier_model_view:v1"
+  },
+  "execution_envelope": {
+    "schema_version": "fin_ia_0_1_2_s4_t04_current_evidence_exact_execution_envelope_v1_0",
+    "status": "fresh_T04_exact_execution_not_started",
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_capacity_reproof_fresh_exact_admission_r3.json",
+    "current_evidence": {
+      "evidence_pack_digest": "fdc1a10010f0d47ba7be5b420fc5cac860c3044d6690696463865ecce4b7bf65",
+      "t03_terminal_digest": "7ec970b6c2f10983852c9cd52357499baccb08f50a00262de64d8f74a6f6f156",
+      "evidence_numeric_gap_counts": [
+        15,
+        3,
+        3
+      ]
+    },
+    "fresh_t03": {
+      "execution_identity": "fin012-s4-t04-nvda-current-evidence-capacity-reproof-exact-live-r3",
+      "work_unit_id": "wu_p02_5_93e08bc861d3481a3ba80792",
+      "attempt_id": "attempt_fin01_3926d7398e05dc39c3a9c1b3",
+      "research_run_id": "research_run_fin01_26d57efecdc53fbf28847a1f",
+      "input_digest": "772425cd4ff05a0a089d5093d77ab433da36b77bbf1065048cc2aab450076453",
+      "preparation_digest": "ed1083372049f8d7c9a92d15c7540861a32acacf72a033f44885ea37150a6da5"
+    },
+    "hard_budget": {
+      "semantic_model_calls": 9,
+      "provider_calls": 9,
+      "execution_network_calls": 9,
+      "maximum_transport_attempts_per_call": 1,
+      "retry_budget": 0,
+      "fallback_budget": 0,
+      "provider_hopping_budget": 0,
+      "maximum_input_tokens": 108000,
+      "maximum_output_tokens": 10000,
+      "maximum_total_cost_usd": 0.06,
+      "maximum_wall_clock_seconds": 900,
+      "source_network_calls": 0,
+      "external_tool_calls": 0,
+      "live_case_head_writes": 0,
+      "failed_output_business_promotions": 0
+    },
+    "input_capacity_contract": {
+      "contract_ref": "fin_0_1_2.S4.T04.compiled_node_request_capacity:v1",
+      "maximum_input_tokens": 108000,
+      "cost_derived_absolute_maximum_input_tokens": 117931,
+      "pricing_assumption_usd_per_million": {
+        "input_cache_miss": 0.435,
+        "output": 0.87
+      },
+      "reserved_maximum_output_tokens": 10000,
+      "maximum_total_cost_usd": 0.06,
+      "minimum_cost_headroom_usd": 0.00432,
+      "requires_zero_call_full_chain_capacity_proof": true
+    },
+    "observed_counts": {
+      "credential_reads_or_probes": 0,
+      "admissions_consumed": 0,
+      "model_calls": 0,
+      "provider_calls": 0,
+      "network_calls": 0,
+      "business_artifacts": 0
+    },
+    "business_promotable": false,
+    "envelope_digest": "1e11803e9ac773bded74048f782952f44616a5186c1693587d711cd00e182ba9"
+  },
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "business_artifacts": 0
+  },
+  "authority_boundary": {
+    "user_sequence_authorized_continuation": true,
+    "admission_issuance_authorized": true,
+    "exact_live_execution_authorized_after_fresh_preflight": true,
+    "automatic_retry_or_second_live": false,
+    "owner_acceptance_auto_granted": false
+  },
+  "issuance_digest": "4db9fb4a5787201fbc176fd157f2445c689fccbc3c2685d7669d14ed2acc9ec6"
+}

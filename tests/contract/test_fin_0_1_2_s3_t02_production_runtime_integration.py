@@ -144,6 +144,33 @@ class _CurrentS3ProductionFake:
                 self._compiled_output(contract), len(self.calls)
             )
 
+        analysis = request.get("analysis_input")
+        if (
+            request.get("node_id") == "verifier"
+            and isinstance(analysis, Mapping)
+            and analysis.get("model_view_contract_ref")
+            == "fin01.s4.t04.current_evidence.verifier_model_view:v1"
+        ):
+            self.calls.append({"kwargs": dict(kwargs), "request": request})
+            return self._response(
+                {
+                    "findings": [
+                        {
+                            "layer": layer,
+                            "status": "pass",
+                            "issue_codes": [],
+                            "artifact_or_claim_refs": [],
+                            "repair_owner": None,
+                        }
+                        for layer in analysis["required_layers"]
+                    ],
+                    "bound_lead_digest": analysis["cross_cell_lead_digest"],
+                    "bound_writer_digest": analysis["writer_digest"],
+                    "decision": "accept_for_internal_review",
+                },
+                len(self.calls),
+            )
+
         response = dict(self.base(**kwargs))
         if request["node_id"] == "research_lead":
             output = json.loads(str(response["content"]))

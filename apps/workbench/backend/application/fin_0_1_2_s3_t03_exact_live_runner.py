@@ -435,6 +435,7 @@ class _CaptureFirstCompletion:
         admission: S3ThreeCellBoundedAgentAdmission,
         clock: Callable[[], float],
         started: float,
+        hard_budget: Mapping[str, Any],
     ) -> None:
         self._completion = completion
         self._store = store
@@ -442,13 +443,21 @@ class _CaptureFirstCompletion:
         self._admission = admission
         self._clock = clock
         self._started = started
+        self._maximum_input_tokens = int(hard_budget["maximum_input_tokens"])
+        self._maximum_output_tokens = int(hard_budget["maximum_output_tokens"])
+        self._maximum_total_cost_usd = float(
+            hard_budget["maximum_total_cost_usd"]
+        )
+        self._maximum_wall_clock_seconds = int(
+            hard_budget["maximum_wall_clock_seconds"]
+        )
         self.state = _BudgetState()
         self.capture_objects: list[dict[str, Any]] = []
 
     def _assert_pre_call_budget(self) -> None:
         if self.state.call_count >= 9:
             raise Fin012S3T03RunnerError("s3_t03_provider_call_budget_exceeded")
-        if self._clock() - self._started > 900:
+        if self._clock() - self._started > self._maximum_wall_clock_seconds:
             raise Fin012S3T03RunnerError("s3_t03_wall_clock_budget_exceeded")
 
     def __call__(self, **kwargs: Any) -> Mapping[str, Any]:
@@ -522,12 +531,12 @@ class _CaptureFirstCompletion:
         if int(response.get("transport_attempt_count") or 0) != 1:
             raise Fin012S3T03RunnerError("s3_t03_transport_attempt_budget_exceeded")
         if (
-            self.state.input_tokens > 60000
-            or self.state.output_tokens > 10000
-            or total_cost > 0.06
+            self.state.input_tokens > self._maximum_input_tokens
+            or self.state.output_tokens > self._maximum_output_tokens
+            or total_cost > self._maximum_total_cost_usd
         ):
             raise Fin012S3T03RunnerError("s3_t03_token_or_cost_budget_exceeded")
-        if self._clock() - self._started > 900:
+        if self._clock() - self._started > self._maximum_wall_clock_seconds:
             raise Fin012S3T03RunnerError("s3_t03_wall_clock_budget_exceeded")
         return response
 
@@ -611,6 +620,7 @@ def execute_bound_s3_t03(
         admission=admission,
         clock=clock,
         started=started,
+        hard_budget=execution_envelope["hard_budget"],
     )
     local_receipts: list[Mapping[str, Any]] = []
     artifacts: list[Mapping[str, Any]] = []

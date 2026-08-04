@@ -1,0 +1,48 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t04_compiled_node_request_capacity_proof_v1_0",
+  "proof_id": "FIN-0.1.2-S4-T04-RC-P36-117-ZERO-CALL-CAPACITY-PROOF",
+  "status": "pass_eligible_for_one_fresh_exact_live",
+  "input_contract_ref": "fin01.s4.t04.current_evidence.verifier_model_view:v1",
+  "capacity_contract_ref": "fin_0_1_2.S4.T04.compiled_node_request_capacity:v1",
+  "maximum_input_tokens": 108000,
+  "cost_derived_absolute_maximum_input_tokens": 117931,
+  "reserved_maximum_output_tokens": 10000,
+  "maximum_total_cost_usd": 0.06,
+  "maximum_cost_at_compiled_hard_limits_usd": 0.05568,
+  "conservative_request_estimator": "max(ceil(utf8_bytes/4),ceil(unicode_characters/2),1)",
+  "r2_immutable_evidence": {
+    "terminal_digest": "ce1b75993a21b8893a91fbe730be8b4fa26255ec8355f6a6c750b5196ba918c8",
+    "verifier_capture_digest": "acaf84e4d603430172ed6a781e263c1e6044d832dbb798a6b9487108d6725883",
+    "actual_input_tokens": 63419,
+    "old_conservative_estimated_input_tokens": 102599
+  },
+  "compiled_projection": {
+    "per_interaction_estimated_input_tokens": [6580, 6923, 8431, 10009, 6599, 6947, 17170, 8644, 20224],
+    "aggregate_estimated_input_tokens": 91527,
+    "hard_limit_headroom_tokens": 16473,
+    "verifier_old_new_estimated_input_tokens": [31296, 20224],
+    "verifier_request_old_new_characters": [60959, 38816],
+    "verifier_character_reduction_ratio": 0.3632
+  },
+  "evidence_preservation": {
+    "six_claim_rows_preserved": true,
+    "bound_facts_or_cannot_support_preserved": true,
+    "writer_rendering_preserved": true,
+    "complete_cross_cell_lead_preserved": true,
+    "full_local_payload_remains_audit_and_validation_authority": true,
+    "repeated_numeric_and_identity_projection_removed_from_analysis_input_only": true
+  },
+  "tests": {
+    "t04_current_evidence_integration": "9_passed",
+    "s3_t03_atomic_runner_regression": "11_passed",
+    "three_case_numeric_identity_regression": "41_passed",
+    "r3_admission_and_full_fake": "2_passed",
+    "model_provider_network_calls": 0
+  },
+  "authority": {
+    "fresh_exact_live_count": 1,
+    "automatic_retry": false,
+    "owner_acceptance_auto_granted": false
+  },
+  "proof_digest": "fa334113bcb53ecbaecc656ee494aa0a6ec2109b7033d0eff2af354da5cecdde"
+}

@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T02 pass closed / S4-T03 engineering pass，live canary admission authority pending / S4-T04–T08 not started`
+状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 engineering pass，R1/R2 immutable failed，RC-P36-117 zero-call repaired，fresh R3 exact-live pending / S4-T05–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -28,8 +28,8 @@ S4 只有在以下结果同时成立时才能关闭：
 | --- | --- | --- | --- |
 | S4-T01 | PRD/current Runtime 自然 Case 入口与 exact binding（已通过） | 用户式 Objective、as-of、预算、三 Cell、current repository source/index snapshot refs 和 fresh identity projection 在 DELL/MU/NVDA fixture 中可重建；mutation/cross-case fail closed；snapshot 明确不是 current Evidence | 不检索、不调用模型、不生成业务 Artifact |
 | S4-T02 | Retrieval/Evidence deterministic readiness（已通过） | 三案 EvidenceRequest、route、candidate ceiling、metadata、parser/authority、accepted/rejected/gap、citation 由 fixture/mutation 证明；历史 source pack 与 2026-06-11 index snapshot 完成 freshness/reachability 处置；RC-P36-113 已关闭 | 不用 live 搜索发现合同问题 |
-| S4-T03 | NVDA bounded Agentic Search current canary（executor/fresh zero-call 已通过；live admission authority 待执行） | 当前 Runtime 实际调用批准的 public/local RAG/SQL/Graph/official routes；零 false promotion；完整 ToolUse/Evidence lineage | 不把 metadata route、state stub 或 URL wrapper 冒充真实检索，不自动扩大来源或进行 full research |
-| S4-T04 | NVDA natural-Case Agentic Research integration | EvidenceRequest→approved pack→Judgment→Lead/Writer/Verifier→九件套；与 S3 frozen-input 对照；完成 source-grounded NVDA R2 产品验收 | 不用 S3 frozen 结果冒充 current source proof |
+| S4-T03 | NVDA bounded Agentic Search current canary（已通过并关闭） | 当前 Runtime 实际调用批准的 public/local RAG/SQL/Graph/official routes；零 false promotion；完整 ToolUse/Evidence lineage | 不把 metadata route、state stub 或 URL wrapper 冒充真实检索，不自动扩大来源或进行 full research |
+| S4-T04 | NVDA natural-Case Agentic Research integration（工程通过，产品 exact-live 待复证） | EvidenceRequest→approved pack→Judgment→Lead/Writer/Verifier→九件套；与 S3 frozen-input 对照；完成 source-grounded NVDA R2 产品验收 | 不用 S3 frozen 结果冒充 current source proof；不以固定 token 上限或删减财务证据换取通过 |
 | S4-T05 | DELL/MU transfer 与 post-transfer NVDA | DELL/MU R2、post-transfer NVDA R2；同一 Runtime；新 L1 按 owner 阻断 | 不逐字段无限修复 |
 | S4-T06 | Workbench current product projection | Case/Run/Evidence/Numeric/Graph/Gap/Workpaper/Report/Trace/quality 可审、可回放、可退回 | 不用 fallback 冒充 Agent |
 | S4-T07 | Exact Human Review、NVDA R3 与 bounded explanation | qualified reviewer 接受/退回/repair 绑定 exact digest；NVDA R3；记录 review burden | F14 why/gap/WWC demo 不阻断 release |
@@ -111,11 +111,16 @@ fresh zero-call proof 使用模拟 SEC identity response 与真实本地索引/S
 - 原始 model-visible request、assistant output、调用参数、usage、terminal phase/code 与 capture ref 必须先耐久保存，凭据和 private reasoning 永不保存；
 - paid/live 前必须先过 Project OS full-chain preflight 和对应 deterministic ceiling gate；
 - S4-T01 不通过，不得进入 S4-T02；S4-T02 不通过，不得用 S4-T03 live 搜索暴露基础合同问题。
+- T04 每节点请求必须在 admission 前编译容量；完整本地审计/验证对象与模型可见视图分离，压缩只允许消除重复投影，不允许丢弃重要 Fact、反证、scope、qualification、WWC 或 Writer 成品映射。
 
 ## 8. 当前边界
 
-当前 S4-T01、T02、T03 已通过并关闭。T03 唯一 live canary 以 1 次 SEC 官方来源访问和 6 次本地只读调用形成三个 Cell 各 6 条的 current candidate pack；0 retry、0 fallback、0 模型/Provider、0 业务 Artifact，完整 source capture 与 terminal 已回读验收。S4-T04–T08 未开始，current NVDA R2=false，release=false，production=false。
+当前 S4-T01、T02、T03 已通过并关闭。T03 唯一 live canary 以 1 次 SEC 官方来源访问和 6 次本地只读调用形成三个 Cell 各 6 条的 current candidate pack；0 retry、0 fallback、0 模型/Provider、0 业务 Artifact，完整 source capture 与 terminal 已回读验收。
+
+S4-T04 已完成 current Evidence pack、Agent 输入桥、三案例 full-fake 与零调用工程验收。R1 因项目内 CJK local-ID numeric classifier 假阳性失败；修复后 R2 的九次 DeepSeek Pro 输出均 `stop` 且 JSON valid，RC-P36-116 live-close，但在 Verifier capture 后因固定 60k aggregate input ceiling 以 RC-P36-117 terminal failed。R1/R2 均保持 immutable，诊断 replay 不晋升业务 Artifact。
+
+RC-P36-117 现已完成结构处置：完整本地 payload 继续作为审计和校验权威；Verifier 模型视图保留六 Claim 的事实/边界、scope、qualification、WWC、Writer rendering 和完整 Lead，只移除重复 numeric/identity/runtime 投影。R2 capture 重编译将 Verifier 保守估算从 31,296 降至 20,224；全链估算 91,527，编译上限 108,000，余量 16,473，且仍低于 USD 0.06 推导的成本绝对上限。共享 runner 改读 execution envelope，历史 60k envelope 未改。S4-T04 仍不是产品通过，current NVDA R2=false，release=false，production=false。
 
 当前 next：
 
-`FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-PACK-AND-AGENTIC-RESEARCH-INTEGRATION-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-FRESH-EXACT-LIVE-R3-ISSUANCE-AND-EXACT-ONCE-EXECUTION`

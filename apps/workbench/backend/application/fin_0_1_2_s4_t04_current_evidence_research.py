@@ -6,6 +6,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 from apps.workbench.backend.application.bounded_agent_executor import (
+    S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF,
     S3_THREE_CELL_BOUNDED_AGENT_PROFILE_REF,
     S3ThreeCellBoundedAgentInputPack,
 )
@@ -35,6 +36,10 @@ T03_SUCCESS_CODE = "three_request_current_evidence_candidate_pack_ready"
 EVIDENCE_STATEMENT_MAX_CHARS = 300
 T04_EXECUTION_ENVELOPE_SCHEMA = (
     "fin_ia_0_1_2_s4_t04_current_evidence_exact_execution_envelope_v1_0"
+)
+T04_MAXIMUM_INPUT_TOKENS = 108000
+T04_INPUT_CAPACITY_CONTRACT_REF = (
+    "fin_0_1_2.S4.T04.compiled_node_request_capacity:v1"
 )
 
 
@@ -455,6 +460,9 @@ def compile_current_nvda_agent_input(
     pack: Mapping[str, Any],
     *,
     t01_entry: S4T01CompiledEntry,
+    verifier_input_contract_ref: str = (
+        S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF
+    ),
 ) -> S3ThreeCellBoundedAgentInputPack:
     """Replace the historical fixture fact surface while preserving proven Agent contracts."""
 
@@ -613,6 +621,22 @@ def compile_current_nvda_agent_input(
     }
     paired = deepcopy(baseline.paired_baseline_contract)
     paired["shared_input_head_digest"] = input_head_digest
+    verifier_contract = deepcopy(baseline.verifier_contract)
+    if verifier_input_contract_ref == (
+        S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF
+    ):
+        verifier_contract.update(
+            {
+                "input_contract_ref": verifier_input_contract_ref,
+                "request_capacity_contract_ref": T04_INPUT_CAPACITY_CONTRACT_REF,
+                "full_local_payload_remains_validation_authority": True,
+                "model_view_omits_repeated_runtime_projections_only": True,
+            }
+        )
+    elif verifier_input_contract_ref != "fin01.s3.owner_grade_verifier_input:v2":
+        raise Fin012S4T04EvidenceError(
+            "s4_t04_verifier_input_contract_unsupported"
+        )
     draft = baseline.model_copy(
         update={
             "query": t01_entry.request.objective,
@@ -621,6 +645,7 @@ def compile_current_nvda_agent_input(
             "input_head_digest": input_head_digest,
             "lineage": lineage,
             "cell_inputs": tuple(cells),
+            "verifier_contract": verifier_contract,
             "paired_baseline_contract": paired,
             "s4_case_runtime": None,
         }
@@ -642,16 +667,25 @@ def prepare_current_nvda_agent_execution(
     principal: CasePrincipal,
     execution_identity: str,
     attempt_no: int = 1,
+    verifier_input_contract_ref: str = (
+        S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF
+    ),
 ) -> S3ThreeCellPreparedExecution:
     """Bind the current T04 input to fresh WorkUnit/Attempt/Run identities."""
 
     if not execution_identity.strip():
         raise Fin012S4T04EvidenceError("s4_t04_execution_identity_missing")
     first = compile_current_nvda_agent_input(
-        baseline.input_pack, pack, t01_entry=t01_entry
+        baseline.input_pack,
+        pack,
+        t01_entry=t01_entry,
+        verifier_input_contract_ref=verifier_input_contract_ref,
     )
     second = compile_current_nvda_agent_input(
-        baseline.input_pack, pack, t01_entry=t01_entry
+        baseline.input_pack,
+        pack,
+        t01_entry=t01_entry,
+        verifier_input_contract_ref=verifier_input_contract_ref,
     )
     if first.model_dump(mode="json") != second.model_dump(mode="json"):
         raise Fin012S4T04EvidenceError("s4_t04_current_input_double_compile_mismatch")
@@ -698,6 +732,7 @@ def compile_current_t04_execution_envelope(
     pack: Mapping[str, Any],
     *,
     admission_ref: str,
+    maximum_input_tokens: int = T04_MAXIMUM_INPUT_TOKENS,
 ) -> dict[str, Any]:
     """Compile the exact-once T04 adapter envelope consumed by the proven runner."""
 
@@ -714,7 +749,7 @@ def compile_current_t04_execution_envelope(
         "retry_budget": 0,
         "fallback_budget": 0,
         "provider_hopping_budget": 0,
-        "maximum_input_tokens": 60000,
+        "maximum_input_tokens": maximum_input_tokens,
         "maximum_output_tokens": 10000,
         "maximum_total_cost_usd": 0.06,
         "maximum_wall_clock_seconds": 900,
@@ -745,6 +780,25 @@ def compile_current_t04_execution_envelope(
             "preparation_digest": prepared.preparation_digest,
         },
         "hard_budget": hard_budget,
+        **(
+            {
+                "input_capacity_contract": {
+                    "contract_ref": T04_INPUT_CAPACITY_CONTRACT_REF,
+                    "maximum_input_tokens": T04_MAXIMUM_INPUT_TOKENS,
+                    "cost_derived_absolute_maximum_input_tokens": 117931,
+                    "pricing_assumption_usd_per_million": {
+                        "input_cache_miss": 0.435,
+                        "output": 0.87,
+                    },
+                    "reserved_maximum_output_tokens": 10000,
+                    "maximum_total_cost_usd": 0.06,
+                    "minimum_cost_headroom_usd": 0.00432,
+                    "requires_zero_call_full_chain_capacity_proof": True,
+                }
+            }
+            if maximum_input_tokens == T04_MAXIMUM_INPUT_TOKENS
+            else {}
+        ),
         "observed_counts": {
             "credential_reads_or_probes": 0,
             "admissions_consumed": 0,

@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
 from apps.workbench.backend.application.bounded_agent_executor import (  # noqa: E402
+    S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF,
     S3ThreeCellBoundedAgentAdmission,
 )
 from apps.workbench.backend.application.fin_0_1_2_s4_natural_case_entry import (  # noqa: E402
@@ -61,6 +62,8 @@ def render_issuance_for(
     admission_id: str,
     execution_mode: str,
     issuance_schema_version: str,
+    verifier_input_contract_ref: str = "fin01.s3.owner_grade_verifier_input:v2",
+    maximum_input_tokens: int = 60000,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     pack = validate_current_nvda_evidence_pack(_load(PACK))
     template = S3ThreeCellBoundedAgentAdmission.model_validate(_load(TEMPLATE))
@@ -82,6 +85,7 @@ def render_issuance_for(
         t01_entry=load_current_fin_0_1_2_s4_t01_case_entry("NVDA"),
         principal=_principal(),
         execution_identity=execution_identity,
+        verifier_input_contract_ref=verifier_input_contract_ref,
     )
     admission = template.model_copy(
         update={
@@ -113,6 +117,7 @@ def render_issuance_for(
         prepared,
         pack,
         admission_ref=admission_ref,
+        maximum_input_tokens=maximum_input_tokens,
     )
     issuance_body = {
         "schema_version": issuance_schema_version,
@@ -136,6 +141,12 @@ def render_issuance_for(
             "predicted_research_run_id": prepared.research_run_id,
             "evidence_pack_digest": pack["evidence_pack_digest"],
             "t03_terminal_digest": pack["t03_terminal_digest"],
+            **(
+                {"verifier_input_contract_ref": verifier_input_contract_ref}
+                if verifier_input_contract_ref
+                == S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF
+                else {}
+            ),
         },
         "execution_envelope": envelope,
         "observed_counts": {

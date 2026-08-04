@@ -1,0 +1,47 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_46",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.46",
+  "recorded_at": "2026-08-04T21:20:00+08:00",
+  "sequence_after_projection": "v2_45",
+  "status": "S4_T04_RC_P36_117_zero_call_capacity_pass_one_fresh_exact_live_eligible",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4_T01_T03": "pass_closed",
+    "S4_T04_engineering": "pass_compact_verifier_view_and_compiled_budget_capacity",
+    "S4_T04_R1_R2": ["immutable_failed_RC_P36_116", "immutable_failed_RC_P36_117"],
+    "S4_T04_R3": "eligible_not_issued_not_executed",
+    "S4_T05_T08": "blocked_not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-FRESH-EXACT-LIVE-R3-ISSUANCE-AND-EXACT-ONCE-EXECUTION"
+  },
+  "capacity_proof": {
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t04_compiled_node_request_capacity_proof_v1_0.json",
+    "proof_digest": "fa334113bcb53ecbaecc656ee494aa0a6ec2109b7033d0eff2af354da5cecdde",
+    "old_new_verifier_estimated_tokens": [31296, 20224],
+    "aggregate_estimated_input_tokens": 91527,
+    "hard_limit_and_headroom_tokens": [108000, 16473],
+    "cost_derived_absolute_maximum_input_tokens": 117931,
+    "evidence_surface_reduced": false,
+    "repeated_transport_projection_reduced": true
+  },
+  "issue_state": {
+    "RC_P36_115": "open_nonblocking_S4_assigned_to_S5_release_hardening",
+    "RC_P36_116": "closed_live_positive_classifier_no_recurrence",
+    "RC_P36_117": "zero_call_repaired_fresh_exact_live_reproof_pending",
+    "model_or_provider_fault_established": false
+  },
+  "authority_boundary": {
+    "fresh_exact_live_count": 1,
+    "automatic_R4_or_retry": false,
+    "paired_or_owner_auto_granted": false,
+    "R1_or_R2_rewritten": false,
+    "new_product_version_created": false
+  }
+}

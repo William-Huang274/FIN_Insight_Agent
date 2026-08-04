@@ -18,8 +18,12 @@ sys.path[:0] = [
 
 from apps.workbench.backend.application.bounded_agent_executor import (
     BOUNDED_AGENT_ARTIFACT_TYPES,
+    S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF,
     S3ThreeCellBoundedAgentAdmission,
     build_s3_three_cell_bounded_agent_executor_for_admission,
+)
+from apps.workbench.backend.application.bounded_agent_contract_policies import (
+    estimate_provider_input_tokens,
 )
 from apps.workbench.backend.application.fin_0_1_2_s4_natural_case_entry import (
     load_current_fin_0_1_2_s4_t01_case_entry,
@@ -51,6 +55,10 @@ PACK = ROOT / (
 ADMISSION_TEMPLATE = ROOT / (
     "configs/releases/"
     "fin_ia_0_1_2_s3_t03_nvda_replacement_fresh_exact_admission_r2.json"
+)
+CAPACITY_PROOF = ROOT / (
+    "configs/releases/"
+    "fin_ia_0_1_2_s4_t04_compiled_node_request_capacity_proof_v1_0.json"
 )
 
 
@@ -99,7 +107,30 @@ def test_fresh_execution_identity_and_envelope_are_exactly_bound() -> None:
     assert envelope["fresh_t03"]["research_run_id"] == prepared.research_run_id
     assert envelope["current_evidence"]["evidence_numeric_gap_counts"] == [15, 3, 3]
     assert envelope["hard_budget"]["provider_calls"] == 9
+    assert envelope["hard_budget"]["maximum_input_tokens"] == 108000
+    assert envelope["input_capacity_contract"][
+        "cost_derived_absolute_maximum_input_tokens"
+    ] == 117931
     assert envelope["observed_counts"]["model_calls"] == 0
+
+
+def test_capacity_proof_is_content_addressed_and_has_real_headroom() -> None:
+    proof = json.loads(CAPACITY_PROOF.read_text(encoding="utf-8"))
+    assert proof["proof_digest"] == canonical_digest(
+        {key: value for key, value in proof.items() if key != "proof_digest"}
+    )
+    projection = proof["compiled_projection"]
+    assert sum(projection["per_interaction_estimated_input_tokens"]) == (
+        projection["aggregate_estimated_input_tokens"]
+    )
+    assert (
+        proof["maximum_input_tokens"]
+        - projection["aggregate_estimated_input_tokens"]
+        == projection["hard_limit_headroom_tokens"]
+    )
+    assert proof["maximum_input_tokens"] < (
+        proof["cost_derived_absolute_maximum_input_tokens"]
+    )
 
 
 def test_current_pack_is_exact_T03_partition_with_typed_gaps() -> None:
@@ -140,7 +171,10 @@ def test_current_input_replaces_fixture_surface_and_binds_current_lineage() -> N
     text = json.dumps(payload, ensure_ascii=False).lower()
     assert current.query.startswith("评估 NVIDIA AI 基础设施需求")
     assert current.input_digest == (
-        "53e3dba383feb1a642ab12bdd71be7d06fafd592b00a8dbbe11b9aa7d9249cec"
+        "1c1da27001ea081e156a456f8806a52ec702c8669b1f6b7169d0ed5f2d16159b"
+    )
+    assert current.verifier_contract["input_contract_ref"] == (
+        S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF
     )
     assert all(token not in text for token in ("fixture://", "p03_fixture", "metadata_fixture_compiled", "execute the fin"))
     assert payload["lineage"]["T03_evidence_route_plan"]["digest"] == (
@@ -206,3 +240,32 @@ def test_current_input_full_fake_reaches_six_nodes_nine_calls_nine_artifacts(
     )
     assert _pack()["evidence_pack_digest"] in artifact_text
     assert "fixture://" not in artifact_text
+
+    verifier_request = fake.calls[-1]["request"]
+    verifier_input = verifier_request["analysis_input"]
+    assert verifier_input["model_view_contract_ref"] == (
+        S4_T04_CURRENT_EVIDENCE_VERIFIER_MODEL_VIEW_CONTRACT_REF
+    )
+    assert len(verifier_input["claim_evidence_rendering_rows"]) == 3
+    assert all(
+        row["claim"]["statement"]
+        and row["writer_rendering"]["rendered_text_zh_cn"]
+        and row["what_would_change"]
+        for row in verifier_input["claim_evidence_rendering_rows"]
+    )
+    assert "specialist_claim_cards" not in verifier_input
+    assert "scoped_identity_surface" not in verifier_input
+    assert "case_numeric_authority_contracts" not in verifier_input
+    assert "case_delivery_identity_projection" not in verifier_input
+    assert len(verifier_request["case_numeric_authority_contracts"]) == 3
+
+    projected_by_call = [
+        estimate_provider_input_tokens(
+            str(row["kwargs"]["messages"][0]["content"])
+            + str(row["kwargs"]["messages"][1]["content"])
+        )
+        for row in fake.calls
+    ]
+    assert len(projected_by_call) == 9
+    assert sum(projected_by_call) < 108000
+    assert projected_by_call[-1] < 20000

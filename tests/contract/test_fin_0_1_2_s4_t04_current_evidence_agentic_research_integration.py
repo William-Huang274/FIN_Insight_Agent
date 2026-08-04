@@ -35,6 +35,11 @@ from apps.workbench.backend.application.fin_0_1_2_s4_t04_current_evidence_resear
     prepare_current_nvda_agent_execution,
     validate_current_nvda_evidence_pack,
 )
+from apps.workbench.backend.application.fin_0_1_2_s3_t04_product_surface import (
+    S3T04ProductSurfaceError,
+    materialize_verified_product_surface,
+    validate_verified_product_surface,
+)
 from apps.workbench.backend.application.research_runtime import (
     prepare_s3_three_cell_bounded_agent_exact_input,
 )
@@ -269,3 +274,61 @@ def test_current_input_full_fake_reaches_six_nodes_nine_calls_nine_artifacts(
     assert len(projected_by_call) == 9
     assert sum(projected_by_call) < 108000
     assert projected_by_call[-1] < 20000
+
+    execution_result = {
+        "status": "success",
+        "business_promotable": True,
+        "artifacts": [row.model_dump(mode="json") for row in result.artifacts],
+    }
+    surface = materialize_verified_product_surface(
+        execution_result=execution_result,
+        input_pack=current.model_dump(mode="json"),
+    )
+    validate_verified_product_surface(surface)
+    preview_text = json.dumps(
+        surface["final_delivery_preview"], ensure_ascii=False
+    )
+    assert surface["status"] == "delivery_and_fixture_qualification_pass"
+    assert surface["owner_acceptance_eligible"] is True
+    assert all(
+        token not in preview_text
+        for token in ("__company_total__", "FY2025-FY")
+    )
+    assert "USD 130497000000 USD" not in preview_text
+    assert surface["final_delivery_verification"][
+        "final_delivery_preview_digest"
+    ] == surface["final_delivery_preview"]["final_delivery_preview_digest"]
+
+    unlocalized = deepcopy(execution_result)
+    report = next(
+        row["payload"]["report"]
+        for row in unlocalized["artifacts"]
+        if row["artifact_type"] == "bounded_agent_report"
+    )
+    report["limitations_zh_cn"] = ["An unknown English limitation remains."]
+    with pytest.raises(
+        S3T04ProductSurfaceError,
+        match="s3_t04_delivery_limitation_localization_missing",
+    ):
+        materialize_verified_product_surface(
+            execution_result=unlocalized,
+            input_pack=current.model_dump(mode="json"),
+        )
+
+    unauthorized_task = deepcopy(execution_result)
+    judgment = next(
+        row["payload"]
+        for row in unauthorized_task["artifacts"]
+        if row["artifact_type"] == "bounded_agent_judgment"
+    )
+    judgment["specialist_outputs"][0]["what_would_change"][0][
+        "authority_refs"
+    ] = ["unknown:authority"]
+    with pytest.raises(
+        S3T04ProductSurfaceError,
+        match="s4_t04_current_WWC_delivery_binding_incomplete",
+    ):
+        materialize_verified_product_surface(
+            execution_result=unauthorized_task,
+            input_pack=current.model_dump(mode="json"),
+        )

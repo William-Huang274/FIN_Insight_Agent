@@ -1,0 +1,83 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t04_nvda_current_evidence_r3_formal_paired_assessment_and_owner_decision_request_v1_0",
+  "status": "paired_L1_L4_pass_owner_decision_required",
+  "pair_binding": {
+    "same_input_digest": "772425cd4ff05a0a089d5093d77ab433da36b77bbf1065048cc2aab450076453",
+    "same_input_head_digest": "d7e77b66c4c86d6de30dc8725d6aa6c18d8894820d78bfd79f45381f085dadfd",
+    "agent_research_run_id": "research_run_fin01_26d57efecdc53fbf28847a1f",
+    "deterministic_research_run_id": "research_run_s4_t04_baseline_5a8110354904439e3c28",
+    "runs_are_distinct": true,
+    "agent_artifacts": 9,
+    "deterministic_artifacts": 1
+  },
+  "L1_deterministic_integrity": {
+    "status": "pass",
+    "basis": "R3 independent integrity, numeric, lineage and capture audit"
+  },
+  "L2_evidence_reliability_and_coverage": {
+    "status": "pass_bounded_authority_coverage",
+    "evidence_cells": 2,
+    "authority_cells": 3,
+    "basis": "Demand and bottleneck use promoted Evidence; value/profit uses exact Numeric authority with an explicit causal limitation."
+  },
+  "L3_agent_gain": {
+    "status": "pass_limited_material_gain_with_quality_finding",
+    "baseline_claim_dependency_conflict_gap_WWC": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "agent_claim_dependency_conflict_gap_WWC": [
+      6,
+      1,
+      2,
+      3,
+      9
+    ],
+    "material_gain": "bounded claim synthesis, cross-cell dependency/conflict/gap organization and reviewable follow-up structure",
+    "quality_finding": "9/9 WWC tasks retain generic threshold wording; record for T08-T10/S5 calibration and do not reopen the successful T04 model chain."
+  },
+  "L4_final_delivery": {
+    "status": "pass",
+    "preview_digest": "0255e854a2fdc528dd8b248a1c61fca2475ca6969bcfcbbda247cf3c0c765521",
+    "local_verifier_digest": "7612904e54fb745f397427b6630950998ccc69dbd3fefa6fd010e07df767e344",
+    "internal_tokens_currency_duplication_or_unlocalized_limitation": 0
+  },
+  "owner_decision_request": {
+    "status": "awaiting_explicit_user_owner_decision",
+    "recommended_decision": "accept_current_NVDA_R2_with_L3_finding",
+    "material_gain_accepted": null,
+    "owner_comment": null
+  },
+  "acceptance_boundary": {
+    "RC_P36_118": "closed_zero_call_R3_replay_and_paired_L4_positive",
+    "S4_T04_engineering": "pass",
+    "S4_T04_exact_live": "pass",
+    "formal_paired_L1_L4": "pass",
+    "current_source_grounded_NVDA_R2": false,
+    "S4_T05_entry": "blocked_pending_owner_decision"
+  },
+  "observed_counts": {
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_execution_network_calls": 0,
+    "new_source_network_calls": 0,
+    "new_external_tool_calls": 0,
+    "exact_live_reruns": 0,
+    "R4_attempts": 0,
+    "deterministic_baseline_runs": 1,
+    "paired_assessments": 1,
+    "owner_decisions": 0
+  },
+  "source_refs": {
+    "exact_result": ".codex_runtime/fin012-s4-t04-nvda-current-evidence-capacity-reproof-exact-live-r3/execution-result.json",
+    "exact_result_sha256": "6f06be07041afc6c46d991ea9372ff487293bf7f1ba9ded96f2194659b302fc9",
+    "product_surface": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_r3_verified_product_surface_and_read_only_assessment_v1_0.json",
+    "product_surface_sha256": "126c5336c1ef10da7f9fa33a3e14d48d2d25d8d5add855171ded92893d0fb388",
+    "deterministic_baseline": ".codex_runtime/fin012-s4-t04-nvda-current-evidence-deterministic-baseline-r1/execution-result.json"
+  },
+  "recommended_next": "USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-NVDA-R2-THEN-S4-T05-ENTRY",
+  "assessment_digest": "f088af2aa5460c92f3de302b9e98311fbb5e43931affe77b8394c6428218b625"
+}

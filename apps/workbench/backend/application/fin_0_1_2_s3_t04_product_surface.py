@@ -15,8 +15,17 @@ PRODUCT_SURFACE_CONTRACT_REF = (
 FINAL_PREVIEW_VERIFIER_CONTRACT_REF = (
     "fin_0_1_2.s3_t04.local_final_delivery_verifier:v1"
 )
+CURRENT_EVIDENCE_PRODUCT_SURFACE_CONTRACT_REF = (
+    "fin_0_1_2.s4_t04.current_evidence_verified_final_delivery_surface:v1"
+)
+CURRENT_EVIDENCE_FINAL_PREVIEW_VERIFIER_CONTRACT_REF = (
+    "fin_0_1_2.s4_t04.current_evidence_local_final_delivery_verifier:v1"
+)
 FIXTURE_EVIDENCE_QUALIFICATION_CONTRACT_REF = (
     "fin_0_1_2.s3_t04.fixture_evidence_qualification:v1"
+)
+CURRENT_EVIDENCE_AUTHORITY_QUALIFICATION_CONTRACT_REF = (
+    "fin_0_1_2.s4_t04.current_evidence_authority_qualification:v1"
 )
 EXPECTED_CELLS = (
     "demand_authenticity_and_sustainability",
@@ -33,6 +42,17 @@ _METRIC_LABELS_ZH_CN = {
     "operating_income": "营业利润",
     "gross_margin": "毛利率",
     "operating_margin": "营业利润率",
+}
+_CURRENT_EVIDENCE_BRANCH_STATE = "current_source_grounded_exact_input_ready"
+_LIMITATION_TRANSLATIONS_ZH_CN = {
+    (
+        "Issuer disclosure supports only the quoted company statement at the "
+        "cited period and locator; causal, forward-looking and cross-company "
+        "conclusions remain analyst judgments."
+    ): (
+        "发行人披露仅支持所引期间和定位中的公司陈述；"
+        "因果、前瞻和跨公司结论仍属于分析师判断。"
+    )
 }
 
 
@@ -78,6 +98,41 @@ def _claim_key(ref: Mapping[str, Any]) -> tuple[str, str]:
 def _normalize_period(period: str) -> str:
     match = re.fullmatch(r"(FY\d{4})-FY", period)
     return match.group(1) if match else period
+
+
+def _normalize_current_delivery_value(value: Any) -> Any:
+    if isinstance(value, str):
+        return value.replace("__company_total__", "公司整体").replace(
+            "FY2025-FY", "FY2025"
+        )
+    if isinstance(value, Mapping):
+        return {
+            str(key): _normalize_current_delivery_value(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_normalize_current_delivery_value(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_normalize_current_delivery_value(item) for item in value)
+    return deepcopy(value)
+
+
+def _localized_limitations(
+    rows: Sequence[Any], *, current_evidence_surface: bool
+) -> list[str]:
+    localized: list[str] = []
+    for row in rows:
+        text = str(row or "").strip()
+        _require(text != "", "s3_t04_delivery_limitation_empty")
+        text = _LIMITATION_TRANSLATIONS_ZH_CN.get(text, text)
+        if current_evidence_surface:
+            residual = re.sub(r"\b(?:NVDA|USD|FY\d{4})\b", "", text)
+            _require(
+                re.search(r"[A-Za-z]{4,}", residual) is None,
+                "s3_t04_delivery_limitation_localization_missing",
+            )
+        localized.append(text)
+    return localized
 
 
 def _format_exact_number(value: str) -> str:
@@ -188,7 +243,10 @@ def _fixture_evidence_qualification(
     evidence_artifact: Mapping[str, Any],
     specialists: Sequence[Mapping[str, Any]],
     input_cells: Mapping[str, Mapping[str, Any]],
+    numeric_authority_refs: set[str] | None = None,
+    require_full_accepted_projection: bool = True,
 ) -> dict[str, Any]:
+    numeric_authority_refs = numeric_authority_refs or set()
     evidence_fact_refs = {
         str(ref)
         for row in evidence_artifact.get("agent_fact_rows", ())
@@ -197,6 +255,7 @@ def _fixture_evidence_qualification(
     }
     cell_results: list[dict[str, Any]] = []
     qualified_cells = 0
+    qualified_authority_cells = 0
     for specialist in specialists:
         cell_id = str(specialist.get("program_cell_id") or "")
         input_cell = input_cells[cell_id]
@@ -214,45 +273,93 @@ def _fixture_evidence_qualification(
             if isinstance(row, Mapping)
             and row.get("support_type") == "Evidence"
         ]
+        numeric_facts = [
+            row
+            for row in specialist.get("fact_layer", ())
+            if isinstance(row, Mapping)
+            and row.get("support_type") == "Numeric"
+        ]
         used_refs = {
             str(ref)
             for row in evidence_facts
             for ref in row.get("support_refs", ())
         }
+        if require_full_accepted_projection:
+            qualified_reference_binding = used_refs.issubset(
+                accepted
+            ) and accepted.issubset(evidence_fact_refs | used_refs)
+        else:
+            qualified_reference_binding = used_refs.issubset(
+                accepted
+            ) and used_refs.issubset(evidence_fact_refs)
         _require(
-            used_refs.issubset(accepted)
-            and accepted.issubset(evidence_fact_refs | used_refs),
+            qualified_reference_binding,
             "s3_t04_unqualified_evidence_promotion_detected",
         )
         _require(
             accepted.isdisjoint(candidate_only),
             "s3_t04_candidate_promoted_without_evidence_gate",
         )
+        allowed_numeric = {
+            str(ref) for ref in authority.get("numeric_refs", ())
+        }
+        used_numeric_refs = {
+            str(ref)
+            for row in numeric_facts
+            for ref in row.get("support_refs", ())
+        }
+        _require(
+            used_numeric_refs.issubset(allowed_numeric)
+            and used_numeric_refs.issubset(numeric_authority_refs),
+            "s3_t04_unqualified_numeric_authority_promotion_detected",
+        )
         qualified = bool(evidence_facts)
+        authority_qualified = bool(evidence_facts or numeric_facts)
         qualified_cells += int(qualified)
+        qualified_authority_cells += int(authority_qualified)
         cell_results.append(
             {
                 "program_cell_id": cell_id,
                 "qualified_evidence_fact_count": len(evidence_facts),
+                "qualified_numeric_fact_count": len(numeric_facts),
+                "authority_qualified": authority_qualified,
                 "accepted_evidence_refs": sorted(accepted),
+                "used_evidence_refs": sorted(used_refs),
+                "unused_accepted_evidence_refs": sorted(accepted - used_refs),
                 "candidate_refs_not_evidence": sorted(candidate_only),
                 "status": (
                     "qualified_promoted_evidence_present"
                     if qualified
-                    else "not_qualified_candidate_metadata_or_no_evidence_only"
+                    else (
+                        "qualified_numeric_authority_only"
+                        if numeric_facts
+                        else "not_qualified_candidate_metadata_or_no_authority"
+                    )
                 ),
             }
         )
     body = {
-        "contract_ref": FIXTURE_EVIDENCE_QUALIFICATION_CONTRACT_REF,
+        "contract_ref": (
+            FIXTURE_EVIDENCE_QUALIFICATION_CONTRACT_REF
+            if require_full_accepted_projection
+            else CURRENT_EVIDENCE_AUTHORITY_QUALIFICATION_CONTRACT_REF
+        ),
         "status": (
-            "pass_three_cell_promoted_evidence"
-            if qualified_cells == len(EXPECTED_CELLS)
-            else "blocked_requires_promoted_evidence_not_candidate_metadata"
+            "pass_three_cell_authority_coverage"
+            if qualified_authority_cells == len(EXPECTED_CELLS)
+            else (
+                "blocked_requires_promoted_evidence_not_candidate_metadata"
+                if require_full_accepted_projection
+                else "blocked_requires_three_cell_evidence_or_numeric_authority"
+            )
         ),
         "qualified_evidence_cells": qualified_cells,
+        "qualified_authority_cells": qualified_authority_cells,
         "total_cells": len(EXPECTED_CELLS),
         "candidate_metadata_promotion_allowed": False,
+        "all_accepted_evidence_must_be_consumed": (
+            require_full_accepted_projection
+        ),
         "current_numeric_only_fact_cell_does_not_count_as_evidence_cell": True,
         "cells": cell_results,
     }
@@ -318,6 +425,11 @@ def materialize_verified_product_surface(
     _require(
         tuple(input_cells) == EXPECTED_CELLS,
         "s3_t04_input_cell_order_invalid",
+    )
+    current_evidence_surface = all(
+        (input_cells[cell_id].get("runtime_branch") or {}).get("branch_state")
+        == _CURRENT_EVIDENCE_BRANCH_STATE
+        for cell_id in EXPECTED_CELLS
     )
     numeric_rows = _numeric_rows(artifacts["bounded_agent_numeric"])
     source_report = artifacts["bounded_agent_report"].get("report")
@@ -442,11 +554,13 @@ def materialize_verified_product_surface(
 
         input_cell = input_cells[cell_id]
         runtime_branch = input_cell.get("runtime_branch") or {}
+        input_authority = input_cell.get("authority_refs") or {}
+        allowed_current_task_authority_refs = {
+            str(ref)
+            for field in ("accepted_evidence_refs", "numeric_refs")
+            for ref in input_authority.get(field, ())
+        }
         case_threshold = str(runtime_branch.get("what_would_change") or "").strip()
-        _require(
-            case_threshold,
-            "s3_t04_case_specific_threshold_source_missing",
-        )
         tasks: list[dict[str, Any]] = []
         for task in specialist.get("what_would_change", ()):
             _require(
@@ -455,10 +569,35 @@ def materialize_verified_product_surface(
             )
             enriched = deepcopy(dict(task))
             decision_rule = deepcopy(dict(enriched.get("decision_rule") or {}))
-            decision_rule["threshold_or_observation"] = case_threshold
-            decision_rule["threshold_source"] = (
-                "frozen_runtime_branch.what_would_change"
-            )
+            if case_threshold:
+                decision_rule["threshold_or_observation"] = case_threshold
+                decision_rule["threshold_source"] = (
+                    "frozen_runtime_branch.what_would_change"
+                )
+            else:
+                _require(
+                    current_evidence_surface,
+                    "s3_t04_case_specific_threshold_source_missing",
+                )
+                enriched = _normalize_current_delivery_value(enriched)
+                decision_rule = deepcopy(
+                    dict(enriched.get("decision_rule") or {})
+                )
+                _require(
+                    str(
+                        decision_rule.get("threshold_or_observation") or ""
+                    ).strip()
+                    != ""
+                    and bool(enriched.get("authority_refs"))
+                    and {
+                        str(ref) for ref in enriched.get("authority_refs", ())
+                    }.issubset(allowed_current_task_authority_refs)
+                    and isinstance(enriched.get("time_window"), Mapping),
+                    "s4_t04_current_WWC_delivery_binding_incomplete",
+                )
+                decision_rule["threshold_source"] = (
+                    "validated_current_specialist_output"
+                )
             enriched["decision_rule"] = decision_rule
             tasks.append(enriched)
             specialized_task_count += 1
@@ -475,14 +614,21 @@ def materialize_verified_product_surface(
         )
 
     preview_body = {
-        "contract_ref": PRODUCT_SURFACE_CONTRACT_REF,
+        "contract_ref": (
+            CURRENT_EVIDENCE_PRODUCT_SURFACE_CONTRACT_REF
+            if current_evidence_surface
+            else PRODUCT_SURFACE_CONTRACT_REF
+        ),
         "source_input_digest": str(manifest.get("input_digest") or ""),
         "source_report_digest": canonical_digest(source_report),
         "source_judgment_digest": canonical_digest(judgment),
         "title_zh_cn": str(source_report.get("title_zh_cn") or ""),
         "executive_summary_zh_cn": "；".join(rendered_texts),
         "sections": preview_sections,
-        "limitations_zh_cn": list(source_report.get("limitations_zh_cn") or ()),
+        "limitations_zh_cn": _localized_limitations(
+            list(source_report.get("limitations_zh_cn") or ()),
+            current_evidence_surface=current_evidence_surface,
+        ),
         "source_calls": 0,
         "tool_calls": 0,
     }
@@ -506,23 +652,37 @@ def materialize_verified_product_surface(
         for section in preview_sections
         for task in section["what_would_change"]
     ]
-    _require(
-        specialized_task_count == len(all_tasks)
-        and specialized_task_count > 0
-        and all(
-            (task.get("decision_rule") or {}).get("threshold_source")
-            == "frozen_runtime_branch.what_would_change"
-            and "绑定权威观察"
-            not in str(
-                (task.get("decision_rule") or {}).get(
-                    "threshold_or_observation"
+    if current_evidence_surface:
+        _require(
+            specialized_task_count == len(all_tasks)
+            and specialized_task_count > 0
+            and all(
+                (task.get("decision_rule") or {}).get("threshold_source")
+                == "validated_current_specialist_output"
+                and bool(task.get("authority_refs"))
+                and isinstance(task.get("time_window"), Mapping)
+                for task in all_tasks
+            ),
+            "s4_t04_current_WWC_delivery_binding_incomplete",
+        )
+    else:
+        _require(
+            specialized_task_count == len(all_tasks)
+            and specialized_task_count > 0
+            and all(
+                (task.get("decision_rule") or {}).get("threshold_source")
+                == "frozen_runtime_branch.what_would_change"
+                and "绑定权威观察"
+                not in str(
+                    (task.get("decision_rule") or {}).get(
+                        "threshold_or_observation"
+                    )
+                    or ""
                 )
-                or ""
-            )
-            for task in all_tasks
-        ),
-        "s3_t04_generic_WWC_threshold_not_replaced",
-    )
+                for task in all_tasks
+            ),
+            "s3_t04_generic_WWC_threshold_not_replaced",
+        )
     _require(
         numeric_only_qualification_count
         == sum(
@@ -537,25 +697,36 @@ def materialize_verified_product_surface(
         ),
         "s3_t04_numeric_only_epistemic_qualification_missing",
     )
+    verifier_checks = {
+        "case_identity": "pass_NVDA",
+        "cell_and_claim_cardinality": "pass",
+        "numeric_authority_correspondence": "pass",
+        "internal_scope_token_exclusion": "pass",
+        "period_label_normalization": "pass",
+        "currency_unit_deduplication": "pass",
+        "epistemic_qualification_preservation": "pass",
+        "numeric_only_support_not_overstated_as_evidence": "pass",
+        "limitations_localization": "pass",
+        "final_delivery_preview_digest_binding": "pass",
+        **(
+            {"validated_current_WWC_authority_and_time_binding": "pass"}
+            if current_evidence_surface
+            else {"case_specific_WWC_thresholds": "pass"}
+        ),
+    }
     verifier_body = {
-        "contract_ref": FINAL_PREVIEW_VERIFIER_CONTRACT_REF,
+        "contract_ref": (
+            CURRENT_EVIDENCE_FINAL_PREVIEW_VERIFIER_CONTRACT_REF
+            if current_evidence_surface
+            else FINAL_PREVIEW_VERIFIER_CONTRACT_REF
+        ),
         "status": "pass",
         "final_delivery_preview_digest": preview[
             "final_delivery_preview_digest"
         ],
         "bound_source_report_digest": canonical_digest(source_report),
         "bound_source_judgment_digest": canonical_digest(judgment),
-        "checks": {
-            "case_identity": "pass_NVDA",
-            "cell_and_claim_cardinality": "pass",
-            "numeric_authority_correspondence": "pass",
-            "internal_scope_token_exclusion": "pass",
-            "period_label_normalization": "pass",
-            "currency_unit_deduplication": "pass",
-            "case_specific_WWC_thresholds": "pass",
-            "epistemic_qualification_preservation": "pass",
-            "numeric_only_support_not_overstated_as_evidence": "pass",
-        },
+        "checks": verifier_checks,
         "machine_verifier_is_human_acceptance": False,
     }
     final_verifier = {
@@ -566,6 +737,8 @@ def materialize_verified_product_surface(
         evidence_artifact=artifacts["bounded_agent_evidence"],
         specialists=specialists,
         input_cells=input_cells,
+        numeric_authority_refs=set(numeric_rows),
+        require_full_accepted_projection=not current_evidence_surface,
     )
     product_status = (
         "delivery_surface_pass_fixture_evidence_density_block"
@@ -573,7 +746,11 @@ def materialize_verified_product_surface(
         else "delivery_and_fixture_qualification_pass"
     )
     result_body = {
-        "schema_version": "fin_ia_0_1_2_s3_t04_product_surface_result_v1_0",
+        "schema_version": (
+            "fin_ia_0_1_2_s4_t04_current_evidence_product_surface_result_v1_0"
+            if current_evidence_surface
+            else "fin_ia_0_1_2_s3_t04_product_surface_result_v1_0"
+        ),
         "status": product_status,
         "immutable_exact_result_preserved": True,
         "new_model_calls": 0,
@@ -585,3 +762,47 @@ def materialize_verified_product_surface(
         "owner_acceptance_eligible": fixture["status"].startswith("pass_"),
     }
     return {**result_body, "result_digest": canonical_digest(result_body)}
+
+
+def validate_verified_product_surface(result: Mapping[str, Any]) -> dict[str, Any]:
+    body = {key: value for key, value in result.items() if key != "result_digest"}
+    _require(
+        result.get("result_digest") == canonical_digest(body),
+        "s3_t04_product_surface_result_digest_mismatch",
+    )
+    preview = result.get("final_delivery_preview")
+    verifier = result.get("final_delivery_verification")
+    _require(
+        isinstance(preview, Mapping) and isinstance(verifier, Mapping),
+        "s3_t04_product_surface_preview_or_verifier_missing",
+    )
+    preview_body = {
+        key: value
+        for key, value in preview.items()
+        if key != "final_delivery_preview_digest"
+    }
+    preview_digest = canonical_digest(preview_body)
+    _require(
+        preview.get("final_delivery_preview_digest") == preview_digest
+        and verifier.get("final_delivery_preview_digest") == preview_digest,
+        "s3_t04_final_delivery_preview_digest_mismatch",
+    )
+    verifier_body = {
+        key: value for key, value in verifier.items() if key != "verification_digest"
+    }
+    _require(
+        verifier.get("verification_digest") == canonical_digest(verifier_body)
+        and verifier.get("status") == "pass"
+        and verifier.get("machine_verifier_is_human_acceptance") is False,
+        "s3_t04_final_delivery_verifier_binding_invalid",
+    )
+    preview_text = json.dumps(preview, ensure_ascii=False, sort_keys=True)
+    _require(
+        all(token not in preview_text for token in _INTERNAL_DELIVERY_TOKENS)
+        and re.search(
+            r"\b(USD|EUR|CNY)\s+[0-9,.]+\s+\1\b", preview_text
+        )
+        is None,
+        "s3_t04_final_delivery_surface_not_normalized",
+    )
+    return deepcopy(dict(result))

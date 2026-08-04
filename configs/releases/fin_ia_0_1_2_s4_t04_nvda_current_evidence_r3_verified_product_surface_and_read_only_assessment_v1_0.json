@@ -1,0 +1,550 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t04_nvda_current_evidence_r3_verified_product_surface_and_read_only_assessment_v1_0",
+  "status": "RC_P36_118_zero_call_repaired_surface_pass_formal_paired_and_owner_pending",
+  "source_exact_result": {
+    "ref": ".codex_runtime/fin012-s4-t04-nvda-current-evidence-capacity-reproof-exact-live-r3/execution-result.json",
+    "sha256": "6f06be07041afc6c46d991ea9372ff487293bf7f1ba9ded96f2194659b302fc9",
+    "terminal_object_digest": "62774e277529d062a5938c40f024885911dc826c768c1d312e5f5539110b7879",
+    "immutable": true
+  },
+  "product_surface": {
+    "schema_version": "fin_ia_0_1_2_s4_t04_current_evidence_product_surface_result_v1_0",
+    "status": "delivery_and_fixture_qualification_pass",
+    "immutable_exact_result_preserved": true,
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_network_calls": 0,
+    "final_delivery_preview": {
+      "contract_ref": "fin_0_1_2.s4_t04.current_evidence_verified_final_delivery_surface:v1",
+      "source_input_digest": "772425cd4ff05a0a089d5093d77ab433da36b77bbf1065048cc2aab450076453",
+      "source_report_digest": "645d4f74089fa9485479a0e2a33ece8c96f36081ba2c594c535c3c59fd8e7b22",
+      "source_judgment_digest": "0d98ceb8a94ff04f162074bc942336d13dd0cec8f803dca6af3f7d0e67d13815",
+      "title_zh_cn": "NVDA 三单元内部研究备忘录",
+      "executive_summary_zh_cn": "需求真实性及可持续性单元中，证据方向支持当前判断，但仅限于发行人披露的引用期间及定位，因果、前瞻及跨公司结论仍属分析师判断。；需求真实性及可持续性单元中，反证机制削弱当前判断，但仅限于发行人披露的引用期间及定位，因果、前瞻及跨公司结论仍属分析师判断。；NVDA 公司整体 FY2025 营业利润 = USD 81,453,000,000；NVDA 公司整体 FY2025 营收 = USD 130,497,000,000；NVDA 公司整体 FY2025 毛利润 = USD 97,858,000,000；本地绑定数值事实仅支持上述财务指标，不足以单独证明该判断的因果机制。；价值与利润捕获单元中，当前绑定事实不足以支持更强结论，证据缺口尚不足以判断。；瓶颈反证与变化条件单元中，反证机制削弱当前判断，但仅限于发行人披露的引用期间及定位，因果、前瞻及跨公司结论仍属分析师判断。；瓶颈反证与变化条件单元中，证据方向尚不足以判断当前单元判断，但仅限于发行人披露的引用期间及定位，因果、前瞻及跨公司结论仍属分析师判断。",
+      "sections": [
+        {
+          "program_cell_id": "demand_authenticity_and_sustainability",
+          "decision_question": "判断 NVIDIA AI 基础设施需求是否真实、公司特定、可转化且不会被提前采购或重复计算夸大。",
+          "claims": [
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "demand_authenticity_and_sustainability:local_claim:001",
+                "program_cell_id": "demand_authenticity_and_sustainability"
+              },
+              "epistemic_status": "fact_supported",
+              "rendered_text_zh_cn": "需求真实性及可持续性单元中，证据方向支持当前判断，但仅限于发行人披露的引用期间及定位，因果、前瞻及跨公司结论仍属分析师判断。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [
+                "current_evidence:s4_t03_candidate_cadbc3012d384d8900a61c7d"
+              ],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "c53bc337cf7c04cf41968173f9719ffd087a0b342b8d9e41aad4417c60351395",
+              "qualification_preserved": true
+            },
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "demand_authenticity_and_sustainability:local_claim:002",
+                "program_cell_id": "demand_authenticity_and_sustainability"
+              },
+              "epistemic_status": "fact_supported",
+              "rendered_text_zh_cn": "需求真实性及可持续性单元中，反证机制削弱当前判断，但仅限于发行人披露的引用期间及定位，因果、前瞻及跨公司结论仍属分析师判断。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [
+                "current_evidence:s4_t03_candidate_f4961c4b5bff43cbd6b5c650"
+              ],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "d8d9999a0a6dcb3d0c497ef750ca4642521759a89554547e4d9d566005a0ec09",
+              "qualification_preserved": true
+            }
+          ],
+          "what_would_change": [
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_33d23186f259c792f8eb0005"
+              ],
+              "claim_id": "demand_authenticity_and_sustainability:local_claim:002",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_demand_or_order_signal",
+              "source_target": {
+                "document_event_or_dataset": "issuer_demand_or_order_signal",
+                "entity_or_owner": "NVDA",
+                "source_type": "Evidence"
+              },
+              "task_id": "demand_authenticity_and_sustainability:what_would_change:001",
+              "time_window": {
+                "as_of": "2026-07-21",
+                "deadline_or_review_date": "next reporting event",
+                "start_or_trigger": "2025-11-19"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_476bcb10a177ac5f93911ca9"
+              ],
+              "claim_id": "demand_authenticity_and_sustainability:local_claim:002",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_demand_or_order_signal",
+              "source_target": {
+                "document_event_or_dataset": "issuer_demand_or_order_signal",
+                "entity_or_owner": "NVDA",
+                "source_type": "Evidence"
+              },
+              "task_id": "demand_authenticity_and_sustainability:what_would_change:002",
+              "time_window": {
+                "as_of": "2026-07-21",
+                "deadline_or_review_date": "next reporting event",
+                "start_or_trigger": "2025-11-19"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_04d3c20524987b754c20e4bc"
+              ],
+              "claim_id": "demand_authenticity_and_sustainability:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察支持当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "strengthen the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_demand_or_order_signal",
+              "source_target": {
+                "document_event_or_dataset": "issuer_demand_or_order_signal",
+                "entity_or_owner": "NVDA",
+                "source_type": "Evidence"
+              },
+              "task_id": "demand_authenticity_and_sustainability:what_would_change:003",
+              "time_window": {
+                "as_of": "2026-07-21",
+                "deadline_or_review_date": "next reporting event",
+                "start_or_trigger": "2025-11-19"
+              }
+            }
+          ],
+          "stop_rule": ""
+        },
+        {
+          "program_cell_id": "value_and_profit_capture",
+          "decision_question": "评估收入、毛利、营业利润和现金流中可由 NVIDIA 获得的价值，并保持产品与公司口径边界。",
+          "claims": [
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "value_and_profit_capture:local_claim:001",
+                "program_cell_id": "value_and_profit_capture"
+              },
+              "epistemic_status": "fact_supported",
+              "rendered_text_zh_cn": "NVDA 公司整体 FY2025 营业利润 = USD 81,453,000,000；NVDA 公司整体 FY2025 营收 = USD 130,497,000,000；NVDA 公司整体 FY2025 毛利润 = USD 97,858,000,000；本地绑定数值事实仅支持上述财务指标，不足以单独证明该判断的因果机制。",
+              "numeric_support_refs": [
+                "sec_financial_statement_metric:7ad3400c708e723c",
+                "sec_financial_statement_metric:7af137bbfb745928",
+                "sec_financial_statement_metric:af86b3710e6d5a85"
+              ],
+              "evidence_support_refs": [],
+              "numeric_only_qualification_applied": true,
+              "scope_digest": "43a3934831e37c7809494c57d247c71cac0a56aadf0210e4dec4655dca925b68",
+              "qualification_preserved": true
+            },
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "value_and_profit_capture:local_claim:002",
+                "program_cell_id": "value_and_profit_capture"
+              },
+              "epistemic_status": "cannot_infer",
+              "rendered_text_zh_cn": "价值与利润捕获单元中，当前绑定事实不足以支持更强结论，证据缺口尚不足以判断。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "2caddbd5469c5721aa19a8b0e9df0c2415c361dff18f2c1aa710d9a3341a037d",
+              "qualification_preserved": true
+            }
+          ],
+          "what_would_change": [
+            {
+              "authority_refs": [
+                "s4_t04_current_derived_metric_12dee4fd5f169e3035bf5107",
+                "s4_t04_current_derived_metric_34a7aa8dabb77dfd8e660f3e",
+                "sec_financial_statement_metric:7ad3400c708e723c",
+                "sec_financial_statement_metric:7af137bbfb745928",
+                "sec_financial_statement_metric:af86b3710e6d5a85"
+              ],
+              "claim_id": "value_and_profit_capture:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源出现相反证据",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "gross_margin@FY2025",
+              "source_target": {
+                "document_event_or_dataset": "gross_margin@FY2025",
+                "entity_or_owner": "NVDA",
+                "source_type": "Numeric"
+              },
+              "task_id": "value_and_profit_capture:what_would_change:001",
+              "time_window": {
+                "as_of": "2026-07-21",
+                "deadline_or_review_date": "next reporting event",
+                "start_or_trigger": "2025-02-26"
+              }
+            },
+            {
+              "authority_refs": [
+                "s4_t04_current_derived_metric_12dee4fd5f169e3035bf5107",
+                "s4_t04_current_derived_metric_34a7aa8dabb77dfd8e660f3e",
+                "sec_financial_statement_metric:7ad3400c708e723c",
+                "sec_financial_statement_metric:7af137bbfb745928",
+                "sec_financial_statement_metric:af86b3710e6d5a85"
+              ],
+              "claim_id": "value_and_profit_capture:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察支持当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "strengthen the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "gross_margin@FY2025",
+              "source_target": {
+                "document_event_or_dataset": "gross_margin@FY2025",
+                "entity_or_owner": "NVDA",
+                "source_type": "Numeric"
+              },
+              "task_id": "value_and_profit_capture:what_would_change:002",
+              "time_window": {
+                "as_of": "2026-07-21",
+                "deadline_or_review_date": "next reporting event",
+                "start_or_trigger": "2025-02-26"
+              }
+            },
+            {
+              "authority_refs": [
+                "s4_t04_current_derived_metric_12dee4fd5f169e3035bf5107",
+                "s4_t04_current_derived_metric_34a7aa8dabb77dfd8e660f3e",
+                "sec_financial_statement_metric:7ad3400c708e723c",
+                "sec_financial_statement_metric:7af137bbfb745928",
+                "sec_financial_statement_metric:af86b3710e6d5a85"
+              ],
+              "claim_id": "value_and_profit_capture:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威观察持续",
+                "rule_type": "trend_persists",
+                "threshold_or_observation": "绑定权威观察支持当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "retain the linked claim state",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "gross_margin@FY2025",
+              "source_target": {
+                "document_event_or_dataset": "gross_margin@FY2025",
+                "entity_or_owner": "NVDA",
+                "source_type": "Numeric"
+              },
+              "task_id": "value_and_profit_capture:what_would_change:003",
+              "time_window": {
+                "as_of": "2026-07-21",
+                "deadline_or_review_date": "next reporting event",
+                "start_or_trigger": "2025-02-26"
+              }
+            }
+          ],
+          "stop_rule": ""
+        },
+        {
+          "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+          "decision_question": "识别供应、客户部署、竞争、监管与资本开支回报中的最强反证和判断改变条件。",
+          "claims": [
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "bottleneck_counterevidence_and_what_would_change:local_claim:001",
+                "program_cell_id": "bottleneck_counterevidence_and_what_would_change"
+              },
+              "epistemic_status": "fact_supported",
+              "rendered_text_zh_cn": "瓶颈反证与变化条件单元中，反证机制削弱当前判断，但仅限于发行人披露的引用期间及定位，因果、前瞻及跨公司结论仍属分析师判断。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [
+                "current_evidence:s4_t03_candidate_bc0976f0d94f195368b156e3",
+                "current_evidence:s4_t03_candidate_7028fe5997b5c51bee7534fc"
+              ],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "d8d9999a0a6dcb3d0c497ef750ca4642521759a89554547e4d9d566005a0ec09",
+              "qualification_preserved": true
+            },
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "bottleneck_counterevidence_and_what_would_change:local_claim:002",
+                "program_cell_id": "bottleneck_counterevidence_and_what_would_change"
+              },
+              "epistemic_status": "bounded_inference",
+              "rendered_text_zh_cn": "瓶颈反证与变化条件单元中，证据方向尚不足以判断当前单元判断，但仅限于发行人披露的引用期间及定位，因果、前瞻及跨公司结论仍属分析师判断。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [
+                "current_evidence:s4_t03_candidate_43e03f2bca23d27bcd007127"
+              ],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "c53bc337cf7c04cf41968173f9719ffd087a0b342b8d9e41aad4417c60351395",
+              "qualification_preserved": true
+            }
+          ],
+          "what_would_change": [
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_7028fe5997b5c51bee7534fc"
+              ],
+              "claim_id": "bottleneck_counterevidence_and_what_would_change:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源出现相反证据",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_counterevidence",
+              "source_target": {
+                "document_event_or_dataset": "issuer_counterevidence",
+                "entity_or_owner": "NVDA",
+                "source_type": "Evidence"
+              },
+              "task_id": "bottleneck_counterevidence_and_what_would_change:what_would_change:001",
+              "time_window": {
+                "as_of": "2026-07-21",
+                "deadline_or_review_date": "next authority event",
+                "start_or_trigger": "when bound rule condition is met"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_43e03f2bca23d27bcd007127"
+              ],
+              "claim_id": "bottleneck_counterevidence_and_what_would_change:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源出现相反证据",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_counterevidence",
+              "source_target": {
+                "document_event_or_dataset": "issuer_counterevidence",
+                "entity_or_owner": "NVDA",
+                "source_type": "Evidence"
+              },
+              "task_id": "bottleneck_counterevidence_and_what_would_change:what_would_change:002",
+              "time_window": {
+                "as_of": "2026-07-21",
+                "deadline_or_review_date": "next authority event",
+                "start_or_trigger": "when bound rule condition is met"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_5f46ec8c913ba5f062aec08a"
+              ],
+              "claim_id": "bottleneck_counterevidence_and_what_would_change:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源出现相反证据",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_counterevidence",
+              "source_target": {
+                "document_event_or_dataset": "issuer_counterevidence",
+                "entity_or_owner": "NVDA",
+                "source_type": "Evidence"
+              },
+              "task_id": "bottleneck_counterevidence_and_what_would_change:what_would_change:003",
+              "time_window": {
+                "as_of": "2026-07-21",
+                "deadline_or_review_date": "next authority event",
+                "start_or_trigger": "when bound rule condition is met"
+              }
+            }
+          ],
+          "stop_rule": ""
+        }
+      ],
+      "limitations_zh_cn": [
+        "发行人披露仅支持所引期间和定位中的公司陈述；因果、前瞻和跨公司结论仍属于分析师判断。",
+        "仅限本地绑定的实体、期间、口径、单位、符号与精度",
+        "当前绑定事实不足以支持更强结论"
+      ],
+      "source_calls": 0,
+      "tool_calls": 0,
+      "final_delivery_preview_digest": "0255e854a2fdc528dd8b248a1c61fca2475ca6969bcfcbbda247cf3c0c765521"
+    },
+    "final_delivery_verification": {
+      "contract_ref": "fin_0_1_2.s4_t04.current_evidence_local_final_delivery_verifier:v1",
+      "status": "pass",
+      "final_delivery_preview_digest": "0255e854a2fdc528dd8b248a1c61fca2475ca6969bcfcbbda247cf3c0c765521",
+      "bound_source_report_digest": "645d4f74089fa9485479a0e2a33ece8c96f36081ba2c594c535c3c59fd8e7b22",
+      "bound_source_judgment_digest": "0d98ceb8a94ff04f162074bc942336d13dd0cec8f803dca6af3f7d0e67d13815",
+      "checks": {
+        "case_identity": "pass_NVDA",
+        "cell_and_claim_cardinality": "pass",
+        "numeric_authority_correspondence": "pass",
+        "internal_scope_token_exclusion": "pass",
+        "period_label_normalization": "pass",
+        "currency_unit_deduplication": "pass",
+        "epistemic_qualification_preservation": "pass",
+        "numeric_only_support_not_overstated_as_evidence": "pass",
+        "limitations_localization": "pass",
+        "final_delivery_preview_digest_binding": "pass",
+        "validated_current_WWC_authority_and_time_binding": "pass"
+      },
+      "machine_verifier_is_human_acceptance": false,
+      "verification_digest": "7612904e54fb745f397427b6630950998ccc69dbd3fefa6fd010e07df767e344"
+    },
+    "fixture_evidence_qualification": {
+      "contract_ref": "fin_0_1_2.s4_t04.current_evidence_authority_qualification:v1",
+      "status": "pass_three_cell_authority_coverage",
+      "qualified_evidence_cells": 2,
+      "qualified_authority_cells": 3,
+      "total_cells": 3,
+      "candidate_metadata_promotion_allowed": false,
+      "all_accepted_evidence_must_be_consumed": false,
+      "current_numeric_only_fact_cell_does_not_count_as_evidence_cell": true,
+      "cells": [
+        {
+          "program_cell_id": "demand_authenticity_and_sustainability",
+          "qualified_evidence_fact_count": 3,
+          "qualified_numeric_fact_count": 0,
+          "authority_qualified": true,
+          "accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_04d3c20524987b754c20e4bc",
+            "current_evidence:s4_t03_candidate_33d23186f259c792f8eb0005",
+            "current_evidence:s4_t03_candidate_476bcb10a177ac5f93911ca9",
+            "current_evidence:s4_t03_candidate_cadbc3012d384d8900a61c7d",
+            "current_evidence:s4_t03_candidate_f4961c4b5bff43cbd6b5c650",
+            "current_evidence:s4_t03_candidate_fc36efb71538100cff0d8459"
+          ],
+          "used_evidence_refs": [
+            "current_evidence:s4_t03_candidate_33d23186f259c792f8eb0005",
+            "current_evidence:s4_t03_candidate_cadbc3012d384d8900a61c7d",
+            "current_evidence:s4_t03_candidate_f4961c4b5bff43cbd6b5c650"
+          ],
+          "unused_accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_04d3c20524987b754c20e4bc",
+            "current_evidence:s4_t03_candidate_476bcb10a177ac5f93911ca9",
+            "current_evidence:s4_t03_candidate_fc36efb71538100cff0d8459"
+          ],
+          "candidate_refs_not_evidence": [],
+          "status": "qualified_promoted_evidence_present"
+        },
+        {
+          "program_cell_id": "value_and_profit_capture",
+          "qualified_evidence_fact_count": 0,
+          "qualified_numeric_fact_count": 3,
+          "authority_qualified": true,
+          "accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_4864b96e2a53b95860ef681e",
+            "current_evidence:s4_t03_candidate_653c0f2e252c8d5eefe909f1",
+            "current_evidence:s4_t03_candidate_8579ff983ec8b5f39f0d700d"
+          ],
+          "used_evidence_refs": [],
+          "unused_accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_4864b96e2a53b95860ef681e",
+            "current_evidence:s4_t03_candidate_653c0f2e252c8d5eefe909f1",
+            "current_evidence:s4_t03_candidate_8579ff983ec8b5f39f0d700d"
+          ],
+          "candidate_refs_not_evidence": [],
+          "status": "qualified_numeric_authority_only"
+        },
+        {
+          "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+          "qualified_evidence_fact_count": 3,
+          "qualified_numeric_fact_count": 0,
+          "authority_qualified": true,
+          "accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_43e03f2bca23d27bcd007127",
+            "current_evidence:s4_t03_candidate_5f46ec8c913ba5f062aec08a",
+            "current_evidence:s4_t03_candidate_7028fe5997b5c51bee7534fc",
+            "current_evidence:s4_t03_candidate_bc0976f0d94f195368b156e3",
+            "current_evidence:s4_t03_candidate_ca4c77e7b8873821ae7f942b",
+            "current_evidence:s4_t03_candidate_e17c798e6d7551843c54549a"
+          ],
+          "used_evidence_refs": [
+            "current_evidence:s4_t03_candidate_43e03f2bca23d27bcd007127",
+            "current_evidence:s4_t03_candidate_7028fe5997b5c51bee7534fc",
+            "current_evidence:s4_t03_candidate_bc0976f0d94f195368b156e3"
+          ],
+          "unused_accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_5f46ec8c913ba5f062aec08a",
+            "current_evidence:s4_t03_candidate_ca4c77e7b8873821ae7f942b",
+            "current_evidence:s4_t03_candidate_e17c798e6d7551843c54549a"
+          ],
+          "candidate_refs_not_evidence": [],
+          "status": "qualified_promoted_evidence_present"
+        }
+      ],
+      "qualification_digest": "551e4c0b1dd4d27433eb29a2c355584f9fbbdc82a8acd33d64785afe81714c9c"
+    },
+    "owner_acceptance_eligible": true,
+    "result_digest": "2445b6766562c29677e1315fc32a4d552a3e8ef39d856134a13203015d78ebc0"
+  },
+  "read_only_assessment": {
+    "L1_deterministic_integrity": "pass_from_R3_independent_assessment",
+    "L2_authority_coverage": "pass_two_evidence_cells_one_numeric_authority_cell",
+    "L3_agent_gain": "limited_positive_formal_paired_baseline_pending",
+    "L4_final_delivery": "pass_after_local_verified_rendering",
+    "qualified_evidence_cells": 2,
+    "qualified_authority_cells": 3,
+    "claim_count": 6,
+    "what_would_change_task_count": 9,
+    "generic_what_would_change_task_count": 9,
+    "cross_cell_dependency_conflict_gap_counts": [
+      1,
+      2,
+      3
+    ],
+    "formal_distinct_deterministic_baseline_run": "not_materialized",
+    "formal_paired_assessment": "not_performed",
+    "owner_acceptance": false
+  },
+  "observed_counts": {
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_execution_network_calls": 0,
+    "new_source_network_calls": 0,
+    "new_external_tool_calls": 0,
+    "exact_live_reruns": 0,
+    "R4_attempts": 0
+  },
+  "acceptance_boundary": {
+    "RC_P36_118_engineering": "fixture_and_R3_replay_pass",
+    "S4_T04_product_acceptance": "pending_formal_distinct_baseline_paired_assessment_and_owner",
+    "current_source_grounded_NVDA_R2": false,
+    "S4_T05_entry": "blocked"
+  },
+  "recommended_next": "FIN-0.1.2-S4-T04-DISTINCT-ZERO-CALL-DETERMINISTIC-BASELINE-FORMAL-PAIRED-ASSESSMENT-AND-OWNER-DECISION",
+  "record_digest": "761e2ee49686290ce5904d27e40ae17f358e34093cd1f0c297a7f5656f9259b2"
+}

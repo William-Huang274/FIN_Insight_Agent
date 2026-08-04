@@ -1,0 +1,60 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_48",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.48",
+  "recorded_at": "2026-08-04T23:00:00+08:00",
+  "sequence_after_projection": "v2_47",
+  "status": "S4_T04_R3_exact_and_formal_paired_pass_owner_decision_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4_T01_T03": "pass_closed",
+    "S4_T04_engineering": "pass",
+    "S4_T04_exact_live": "pass_R3_nine_artifacts",
+    "S4_T04_final_delivery_surface": "pass_zero_call_R3_replay",
+    "S4_T04_formal_paired_L1_L4": "pass_with_nonblocking_L3_finding",
+    "S4_T04_owner_acceptance": "pending_explicit_user_decision",
+    "S4_T05_T08": "blocked_not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-NVDA-R2-THEN-S4-T05-ENTRY"
+  },
+  "product_surface": {
+    "record_ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_r3_verified_product_surface_and_read_only_assessment_v1_0.json",
+    "record_digest": "761e2ee49686290ce5904d27e40ae17f358e34093cd1f0c297a7f5656f9259b2",
+    "preview_digest": "0255e854a2fdc528dd8b248a1c61fca2475ca6969bcfcbbda247cf3c0c765521",
+    "local_verifier_digest": "2211ef9678d4d6a77c40a8094914ce51873196c49ab0e39a3bf019450797392d",
+    "qualified_evidence_cells": 2,
+    "qualified_authority_cells": 3,
+    "internal_token_currency_duplication_unlocalized_limitation_findings": 0
+  },
+  "formal_paired_assessment": {
+    "record_ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_r3_formal_paired_assessment_and_owner_decision_request_v1_0.json",
+    "assessment_digest": "f088af2aa5460c92f3de302b9e98311fbb5e43931affe77b8394c6428218b625",
+    "same_input_digest": "772425cd4ff05a0a089d5093d77ab433da36b77bbf1065048cc2aab450076453",
+    "agent_and_baseline_runs_distinct": true,
+    "L1_L2_L3_L4": ["pass", "pass", "pass_with_quality_finding", "pass"],
+    "recommended_owner_decision": "accept_current_NVDA_R2_with_L3_finding",
+    "owner_decision": null
+  },
+  "issue_state": {
+    "RC_P36_115": "open_nonblocking_S4_assigned_to_S5_release_hardening",
+    "RC_P36_116": "closed_live_positive_classifier_no_recurrence",
+    "RC_P36_117": "closed_live_positive_capacity_failure_not_reproduced",
+    "RC_P36_118": "closed_zero_call_R3_replay_and_paired_L4_positive",
+    "RC_P36_119": "open_nonblocking_assigned_T08_T10_S5_WWC_calibration",
+    "model_or_provider_fault_established_for_current_state": false
+  },
+  "authority_boundary": {
+    "R3_exact_live_count": 1,
+    "automatic_R4_or_retry": false,
+    "new_model_provider_network_calls_for_surface_and_pair": [0, 0, 0],
+    "owner_acceptance_auto_granted": false,
+    "S4_T05_entry_before_owner": false,
+    "new_product_version_created": false
+  }
+}

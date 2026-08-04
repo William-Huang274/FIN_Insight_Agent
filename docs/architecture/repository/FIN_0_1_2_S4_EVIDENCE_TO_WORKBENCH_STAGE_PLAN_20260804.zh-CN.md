@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 engineering pass，R1/R2 immutable failed，RC-P36-117 zero-call repaired，fresh R3 exact-live pending / S4-T05–T08 not started`
+状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 engineering、R3 exact-live、final delivery 与 formal paired pass，Owner decision pending / S4-T05–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -123,6 +123,8 @@ RC-P36-117 现已完成结构处置：完整本地 payload 继续作为审计和
 
 当前 next：
 
-`FIN-0.1.2-S4-T04-FINAL-DELIVERY-RENDERER-AND-VERIFIER-PREVIEW-BINDING-ZERO-CALL-DISPOSITION`
+`USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-NVDA-R2-THEN-S4-T05-ENTRY`
 
 R3 exact-live 已 exact-once 成功：9 calls / 9 captures / 3 local Fact receipts / 9 formal Artifacts，input/output=`55,906/3,038`，cost=`USD 0.02696216`，独立 L1 通过，RC-P36-117 live-close。T04 仍不能关闭：最终本地 delivery 暴露内部 scope/period token、重复币种单位并混入英文限制项，且 Verifier 未绑定 final delivery preview；登记 RC-P36-118。该问题属于 T04 产品表面与验收绑定，不属于模型重试事项。后继只允许零调用、有界本地 renderer/preview-binding 处置；不得自动 R4。paired/Owner 与 current NVDA R2 仍未成立，T05 继续 blocked。
+
+上述 RC-P36-118 已通过 R3 immutable Artifact 的零调用重渲染关闭：preview 与 local verifier digest 绑定，内部 token、币种重复和英文限制项清零；三 Cell authority coverage=`3/3`。独立 zero-call baseline 与 Agent 同 input、不同 Run/Artifact，formal paired L1–L4 通过；L3 增益有限但成立。`9/9` WWC 通用阈值措辞作为 RC-P36-119 后传 T08–T10/S5，不阻断 T04、不触发 R4。当前只等待用户 Owner decision；在明确接受前 current NVDA R2=false、T05 blocked。

@@ -1,0 +1,44 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t04_cjk_classifier_zero_call_repair_and_replacement_admission_v1_0",
+  "recorded_at": "2026-08-04T19:00:00+08:00",
+  "status": "zero_call_repair_proven_replacement_admission_issued_unconsumed",
+  "issue_id": "RC-P36-116-fin-0-1-2-CJK-adjacent-local-claim-id-numeric-classifier-false-positive",
+  "root_fix": {
+    "identifier_boundary": "ASCII-aware negative lookbehind/lookahead for schema-local IDs; CJK adjacency and CJK punctuation are valid boundaries",
+    "reporting_period_boundary": "the same ASCII boundary rule now classifies CJK-adjacent ISO dates and reporting periods accurately",
+    "financial_numeric_hard_gate_relaxed": false,
+    "provider_contract_changed": false,
+    "historical_R1_rewritten": false
+  },
+  "verification": {
+    "classifier_focused": "26 passed",
+    "T04_integration_runner_three_case_product_surface": "47 passed",
+    "replacement_admission_and_full_fake": "2 passed",
+    "CJK_local_ids_nonterminal": ["C001", "C002", "C005", "C006", "Claim_17", "fact#004"],
+    "terminal_mutations_preserved": ["embedded_ascii_identifier", "financial_amount", "percentage", "measurement", "unknown_reporting_period"],
+    "fake_topology": {
+      "provider_captures": 9,
+      "local_fact_receipts": 3,
+      "artifacts": 9
+    },
+    "model_provider_network_calls": [0, 0, 0]
+  },
+  "replacement_admission": {
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_replacement_fresh_exact_admission_r2.json",
+    "issuance_ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_replacement_fresh_exact_admission_issuance_v1_0.json",
+    "admission_digest": "b6d66b6821cbf5d6abe18239689a00a81db5ca76649cbaf9011e614445a2180e",
+    "issuance_digest": "b78ade3d7ce415c6ee10dadc3a867aa4c6e9a466a44d3a385c2abcefb89d977e",
+    "execution_identity": "fin012-s4-t04-nvda-current-evidence-replacement-exact-live-r2",
+    "model": "deepseek-v4-pro",
+    "provider_call_retry_cost_ceiling": [9, 0, 0.06],
+    "consumed": false,
+    "execution_started": false
+  },
+  "authority_boundary": {
+    "user_authorized_continuation_through_exact_live": true,
+    "replacement_exact_live_allowed_after_clean_synced_preflight": true,
+    "automatic_retry_or_R3": false,
+    "owner_acceptance_auto_granted": false
+  },
+  "current_next": "FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-REPLACEMENT-EXACT-LIVE-R2"
+}

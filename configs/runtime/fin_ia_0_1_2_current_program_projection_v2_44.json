@@ -1,0 +1,47 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_44",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.44",
+  "recorded_at": "2026-08-04T19:00:00+08:00",
+  "sequence_after_projection": "v2_43",
+  "status": "S4_T04_classifier_repaired_replacement_exact_admission_issued_unconsumed",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4_T01_T03": "pass_closed",
+    "S4_T04_input_bridge": "engineering_pass",
+    "S4_T04_R1": "immutable_terminal_failed_RC_P36_116",
+    "S4_T04_R2": "admission_issued_unconsumed",
+    "S4_T05_T08": "blocked_not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-REPLACEMENT-EXACT-LIVE-R2"
+  },
+  "issue_state": {
+    "RC_P36_115": "open_nonblocking_S4_assigned_to_S5_release_hardening",
+    "RC_P36_116": "zero_call_repaired_replacement_live_proof_pending",
+    "model_or_provider_fault_established": false,
+    "financial_numeric_gate_relaxed": false
+  },
+  "replacement_execution": {
+    "admission_digest": "b6d66b6821cbf5d6abe18239689a00a81db5ca76649cbaf9011e614445a2180e",
+    "execution_identity": "fin012-s4-t04-nvda-current-evidence-replacement-exact-live-r2",
+    "input_digest": "41d38e733f4800e4c4e9a19e6200f4336ae73baf2044498dbe3ea8e8b18918e8",
+    "predicted_run_attempt_work_unit": [
+      "research_run_fin01_49a0f03410cef14ff87c3263",
+      "attempt_fin01_9eb741a8305c6c29840a5655",
+      "wu_p02_5_59ee2eca83eeb86887a0aa8e"
+    ],
+    "provider_call_retry_cost_ceiling": [9, 0, 0.06],
+    "consumed": false
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_43.json",
+    "R1_admission_capture_terminal_rewritten": false,
+    "new_product_version_created": false
+  }
+}

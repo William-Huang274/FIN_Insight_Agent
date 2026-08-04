@@ -67,21 +67,31 @@ def _load(path: Path) -> dict[str, Any]:
     return value
 
 
-def load_exact_target() -> tuple[S3ThreeCellBoundedAgentAdmission, dict[str, Any]]:
-    admission = S3ThreeCellBoundedAgentAdmission.model_validate(_load(ADMISSION))
-    issuance = _load(ISSUANCE)
+def load_exact_target_for(
+    *,
+    admission_path: Path,
+    issuance_path: Path,
+    expected_admission_digest: str,
+    expected_issuance_digest: str,
+    execution_identity: str,
+) -> tuple[S3ThreeCellBoundedAgentAdmission, dict[str, Any]]:
+    admission = S3ThreeCellBoundedAgentAdmission.model_validate(
+        _load(admission_path)
+    )
+    issuance = _load(issuance_path)
     admission.assert_profile_admissible()
     if (
-        canonical_digest(admission.digest_payload()) != EXPECTED_ADMISSION_DIGEST
-        or issuance.get("issuance_digest") != EXPECTED_ISSUANCE_DIGEST
+        canonical_digest(admission.digest_payload()) != expected_admission_digest
+        or issuance.get("issuance_digest") != expected_issuance_digest
         or issuance.get("issuance_digest")
         != canonical_digest(
             {key: value for key, value in issuance.items() if key != "issuance_digest"}
         )
         or issuance.get("status") != "issued_unconsumed_zero_call_preflight_pass"
         or issuance["issued_admission"]["admission_digest"]
-        != EXPECTED_ADMISSION_DIGEST
-        or issuance["issued_admission"]["execution_identity"] != EXECUTION_IDENTITY
+        != expected_admission_digest
+        or issuance["issued_admission"]["execution_identity"]
+        != execution_identity
         or issuance["issued_admission"]["consumed"] is not False
         or admission.input_digest != issuance["exact_binding"]["complete_input_digest"]
     ):
@@ -89,10 +99,22 @@ def load_exact_target() -> tuple[S3ThreeCellBoundedAgentAdmission, dict[str, Any
     return admission, issuance
 
 
+def load_exact_target() -> tuple[S3ThreeCellBoundedAgentAdmission, dict[str, Any]]:
+    return load_exact_target_for(
+        admission_path=ADMISSION,
+        issuance_path=ISSUANCE,
+        expected_admission_digest=EXPECTED_ADMISSION_DIGEST,
+        expected_issuance_digest=EXPECTED_ISSUANCE_DIGEST,
+        execution_identity=EXECUTION_IDENTITY,
+    )
+
+
 def prepare_exact_current_input(
     preparation_root: Path,
     admission: S3ThreeCellBoundedAgentAdmission,
     issuance: Mapping[str, Any],
+    *,
+    execution_identity: str = EXECUTION_IDENTITY,
 ) -> S3ThreeCellPreparedExecution:
     local, evidence, case, accepted = rehydrate_exact_input_services(preparation_root)
     baseline = prepare_s3_three_cell_bounded_agent_exact_input(
@@ -101,7 +123,7 @@ def prepare_exact_current_input(
         str(case["case_id"]),
         _principal(),
         decision_surface_contract_ref=str(accepted["contract_version_id"]),
-        execution_identity=EXECUTION_IDENTITY,
+        execution_identity=execution_identity,
     )
     pack = validate_current_nvda_evidence_pack(_load(PACK))
     prepared = prepare_current_nvda_agent_execution(
@@ -109,7 +131,7 @@ def prepare_exact_current_input(
         pack,
         t01_entry=load_current_fin_0_1_2_s4_t01_case_entry("NVDA"),
         principal=_principal(),
-        execution_identity=EXECUTION_IDENTITY,
+        execution_identity=execution_identity,
     )
     expected = issuance["exact_binding"]
     observed = {
@@ -158,6 +180,53 @@ def zero_call_preflight() -> dict[str, Any]:
     }
 
 
+def zero_call_preflight_for(
+    *,
+    admission_path: Path,
+    issuance_path: Path,
+    expected_admission_digest: str,
+    expected_issuance_digest: str,
+    execution_identity: str,
+) -> dict[str, Any]:
+    admission, issuance = load_exact_target_for(
+        admission_path=admission_path,
+        issuance_path=issuance_path,
+        expected_admission_digest=expected_admission_digest,
+        expected_issuance_digest=expected_issuance_digest,
+        execution_identity=execution_identity,
+    )
+    with tempfile.TemporaryDirectory(prefix="fin012-s4-t04-r2-preflight-") as temporary:
+        prepared = prepare_exact_current_input(
+            Path(temporary),
+            admission,
+            issuance,
+            execution_identity=execution_identity,
+        )
+    calls = 0
+
+    def forbidden(**_: Any) -> Mapping[str, Any]:
+        nonlocal calls
+        calls += 1
+        raise AssertionError("s4_t04_preflight_provider_call_forbidden")
+
+    build_s3_three_cell_bounded_agent_executor_for_admission(
+        admission, chat_completion_fn=forbidden
+    )
+    return {
+        "schema_version": "fin_ia_0_1_2_s4_t04_exact_live_zero_call_preflight_v1_0",
+        "status": "pass_exact_input_admission_transport_wiring_zero_call",
+        "execution_identity": prepared.execution_identity,
+        "input_digest": prepared.input_digest,
+        "admission_digest": expected_admission_digest,
+        "envelope_digest": issuance["execution_envelope"]["envelope_digest"],
+        "provider_callback_calls": calls,
+        "model_provider_network_calls": [0, 0, 0],
+        "credential_present": bool(os.environ.get(admission.api_key_env)),
+        "credential_value_output_or_persisted": False,
+        "provider_health_probe_performed": False,
+    }
+
+
 def execute_exact_once(
     runtime_root: Path,
     *,
@@ -172,6 +241,45 @@ def execute_exact_once(
         raise ValueError("s4_t04_transport_retries_not_zero")
     with tempfile.TemporaryDirectory(prefix="fin012-s4-t04-exact-") as temporary:
         prepared = prepare_exact_current_input(Path(temporary), admission, issuance)
+        return execute_bound_s3_t03(
+            runtime_root=runtime_root,
+            prepared=prepared,
+            admission=admission,
+            execution_envelope=issuance["execution_envelope"],
+            completion=completion,
+        )
+
+
+def execute_exact_once_for(
+    runtime_root: Path,
+    *,
+    admission_path: Path,
+    issuance_path: Path,
+    expected_admission_digest: str,
+    expected_issuance_digest: str,
+    execution_identity: str,
+    completion: Callable[..., Mapping[str, Any]] = _default_completion,
+) -> dict[str, Any]:
+    admission, issuance = load_exact_target_for(
+        admission_path=admission_path,
+        issuance_path=issuance_path,
+        expected_admission_digest=expected_admission_digest,
+        expected_issuance_digest=expected_issuance_digest,
+        execution_identity=execution_identity,
+    )
+    if runtime_root.exists():
+        raise ValueError("s4_t04_exact_live_runtime_identity_already_exists")
+    if not os.environ.get(admission.api_key_env):
+        raise ValueError("s4_t04_provider_credential_missing")
+    if os.environ.get("LLM_GATEWAY_TRANSPORT_RETRIES") != "0":
+        raise ValueError("s4_t04_transport_retries_not_zero")
+    with tempfile.TemporaryDirectory(prefix="fin012-s4-t04-r2-exact-") as temporary:
+        prepared = prepare_exact_current_input(
+            Path(temporary),
+            admission,
+            issuance,
+            execution_identity=execution_identity,
+        )
         return execute_bound_s3_t03(
             runtime_root=runtime_root,
             prepared=prepared,

@@ -54,7 +54,14 @@ def _load(path: Path) -> dict[str, Any]:
     return value
 
 
-def render_issuance() -> tuple[dict[str, Any], dict[str, Any]]:
+def render_issuance_for(
+    *,
+    admission_ref: str,
+    execution_identity: str,
+    admission_id: str,
+    execution_mode: str,
+    issuance_schema_version: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     pack = validate_current_nvda_evidence_pack(_load(PACK))
     template = S3ThreeCellBoundedAgentAdmission.model_validate(_load(TEMPLATE))
     with tempfile.TemporaryDirectory(prefix="fin012-s4-t04-admission-") as temporary:
@@ -67,19 +74,19 @@ def render_issuance() -> tuple[dict[str, Any], dict[str, Any]]:
             str(case["case_id"]),
             _principal(),
             decision_surface_contract_ref=str(accepted["contract_version_id"]),
-            execution_identity=EXECUTION_IDENTITY,
+            execution_identity=execution_identity,
         )
     prepared = prepare_current_nvda_agent_execution(
         baseline,
         pack,
         t01_entry=load_current_fin_0_1_2_s4_t01_case_entry("NVDA"),
         principal=_principal(),
-        execution_identity=EXECUTION_IDENTITY,
+        execution_identity=execution_identity,
     )
     admission = template.model_copy(
         update={
-            "admission_id": "fin012-s4-t04-nvda-current-evidence-exact-admission-r1",
-            "execution_mode": "exact_live_fin_0_1_2_s4_t04_current_evidence_r1",
+            "admission_id": admission_id,
+            "execution_mode": execution_mode,
             "case_id": prepared.case_id,
             "case_version": prepared.case_version,
             "as_of": prepared.input_pack.as_of,
@@ -105,19 +112,16 @@ def render_issuance() -> tuple[dict[str, Any], dict[str, Any]]:
     envelope = compile_current_t04_execution_envelope(
         prepared,
         pack,
-        admission_ref=ADMISSION_REF,
+        admission_ref=admission_ref,
     )
     issuance_body = {
-        "schema_version": (
-            "fin_ia_0_1_2_s4_t04_current_evidence_fresh_exact_admission_"
-            "issuance_v1_0"
-        ),
+        "schema_version": issuance_schema_version,
         "status": "issued_unconsumed_zero_call_preflight_pass",
         "issued_admission": {
             "admission_id": admission.admission_id,
             "admission_digest": admission_digest,
-            "admission_ref": ADMISSION_REF,
-            "execution_identity": EXECUTION_IDENTITY,
+            "admission_ref": admission_ref,
+            "execution_identity": execution_identity,
             "consumed": False,
             "execution_started": False,
         },
@@ -154,6 +158,19 @@ def render_issuance() -> tuple[dict[str, Any], dict[str, Any]]:
         "issuance_digest": canonical_digest(issuance_body),
     }
     return admission_payload, issuance
+
+
+def render_issuance() -> tuple[dict[str, Any], dict[str, Any]]:
+    return render_issuance_for(
+        admission_ref=ADMISSION_REF,
+        execution_identity=EXECUTION_IDENTITY,
+        admission_id="fin012-s4-t04-nvda-current-evidence-exact-admission-r1",
+        execution_mode="exact_live_fin_0_1_2_s4_t04_current_evidence_r1",
+        issuance_schema_version=(
+            "fin_ia_0_1_2_s4_t04_current_evidence_fresh_exact_admission_"
+            "issuance_v1_0"
+        ),
+    )
 
 
 def main() -> int:

@@ -1821,16 +1821,19 @@ class CaseNumericAuthorityPolicy:
         r"|\d+(?:\.\d+)?|\.\d+)(?![A-Za-z_])"
     )
     _V2_REPORTING_PERIOD: ClassVar[re.Pattern[str]] = re.compile(
-        r"(?i)(?:\b(?:FQ|Q)\s*[1-4]"
-        r"(?:\s*[-_:/]?\s*(?:FY)?\s*\d{2,4})?\b"
-        r"|\b(?:FY|CY)\s*[-_:]?\s*\d{2,4}\b"
-        r"|\bH[12](?:\s*[-_:/]?\s*\d{2,4})?\b"
-        r"|\b\d{4}\s*(?:FY|FQ|Q|CY|H)\s*\d{0,2}\b"
-        r"|\b\d{4}[-/]\d{1,2}(?:[-/]\d{1,2})?\b)"
+        r"(?i)(?<![A-Za-z0-9_])(?:(?:FQ|Q)\s*[1-4]"
+        r"(?:\s*[-_:/]?\s*(?:FY)?\s*\d{2,4})?"
+        r"|(?:FY|CY)\s*[-_:]?\s*\d{2,4}"
+        r"|H[12](?:\s*[-_:/]?\s*\d{2,4})?"
+        r"|\d{4}\s*(?:FY|FQ|Q|CY|H)\s*\d{0,2}"
+        r"|\d{4}[-/]\d{1,2}(?:[-/]\d{1,2})?)"
+        r"(?![A-Za-z0-9_])"
     )
     _V2_REQUEST_LOCAL_IDENTIFIER: ClassVar[re.Pattern[str]] = re.compile(
-        r"(?i)(?:\b(?:N|C|F|J|T|E|G|D)\d{3,}\b"
-        r"|\b(?:claim|fact|task|gap|cell)\s*[:#_-]?\s*\d+\b"
+        r"(?i)(?:(?<![A-Za-z0-9_])(?:N|C|F|J|T|E|G|D)\d{3,}"
+        r"(?![A-Za-z0-9_])"
+        r"|(?<![A-Za-z0-9_])(?:claim|fact|task|gap|cell)"
+        r"\s*[:#_-]?\s*\d+(?![A-Za-z0-9_])"
         r"|第\s*\d+\s*(?:项|条|步|阶段|组|个))"
     )
     _V2_PERCENT_SUFFIX: ClassVar[re.Pattern[str]] = re.compile(r"^\s*[%％]")

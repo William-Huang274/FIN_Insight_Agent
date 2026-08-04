@@ -1,0 +1,22 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t03_agentic_search_admission_v1_0",
+  "contract_ref": "fin_0_1_2.S4.T03.executable_agentic_search:v1",
+  "admission_id": "s4_t03_search_admission_6cdde650d9647975bcfb",
+  "admission_digest": "6cdde650d9647975bcfb1ea6bb6b4b498d1bcc764db107776885b5e699ceabf7",
+  "issued_at": "2026-08-04T06:10:00Z",
+  "expires_at": "2026-08-04T08:10:00Z",
+  "case_key": "NVDA",
+  "request_digests": [
+    "bfc502e4f0b493a6a8722372a9fbc97263a51f3571effdbc17d44a845c418ece",
+    "d39c2a0d3c9c1b060ee5c6027104984b8a6a40607d6b3097badc56bb60eaf56d",
+    "7392a601fbc98741babd3158339c2e9992dbd820c1406a3871b8fa221d1a6f9b"
+  ],
+  "source_network_call_ceiling": 2,
+  "local_invocation_ceiling": 8,
+  "retry_ceiling": 0,
+  "fallback_ceiling": 1,
+  "wall_clock_seconds": 300,
+  "model_calls": 0,
+  "provider_calls": 0,
+  "paid_api_cost_usd": 0.0
+}

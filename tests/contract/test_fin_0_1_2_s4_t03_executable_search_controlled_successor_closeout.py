@@ -12,13 +12,14 @@ IMPLEMENTATION = Path(
     "controlled_successor_zero_call_implementation_v1_0.json"
 )
 PROJECTION = Path(
-    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_39.json"
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_40.json"
 )
 BACKLOG = Path("configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json")
-NEXT = (
+IMPLEMENTATION_NEXT = (
     "FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-"
     "FRESH-ADMISSION-AUTHORITY-DECISION"
 )
+CURRENT_NEXT = "FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-EXACT-LIVE-EXECUTION"
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -56,7 +57,7 @@ def test_zero_call_proof_closes_only_the_execution_integration_gap() -> None:
     assert proof["model_provider_calls"] == [0, 0]
     assert proof["business_artifacts"] == 0
     assert implementation["root_cause_disposition"]["status"].startswith("closed_")
-    assert implementation["next_action"] == NEXT
+    assert implementation["next_action"] == IMPLEMENTATION_NEXT
 
 
 def test_projection_backlog_and_latest_issue_row_agree_on_fresh_authority_next() -> None:
@@ -65,10 +66,12 @@ def test_projection_backlog_and_latest_issue_row_agree_on_fresh_authority_next()
     issue_rows = _jsonl(Path("docs/project_os/root_cause_issue_ledger.jsonl"))
     rc114 = [row for row in issue_rows if row.get("issue_id", "").startswith("RC-P36-114-")][-1]
 
-    assert projection["current_truth"]["current_next_action"] == NEXT
+    assert projection["current_truth"]["current_next_action"] == CURRENT_NEXT
     assert projection["current_truth"]["current_NVDA_R2"] is False
-    assert projection["S4_T03_controlled_successor"]["live_canary_executed"] is False
+    assert projection["S4_T03_live_canary"]["issued"] is True
+    assert projection["S4_T03_live_canary"]["consumed"] is False
+    assert projection["S4_T03_live_canary"]["executed"] is False
     assert backlog["current_version_rebaseline"]["projection_ref"] == PROJECTION.as_posix()
-    assert backlog["next_action"]["item_id"] == NEXT
+    assert backlog["next_action"]["item_id"] == CURRENT_NEXT
     assert rc114["status"] == "closed"
     assert rc114["full_chain_blocker"] is False

@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_40",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.40",
+  "recorded_at": "2026-08-04T14:20:00+08:00",
+  "sequence_after_projection": "v2_39",
+  "status": "S3_bounded_anchor_pass_closed_S4_T01_T02_pass_T03_live_canary_admission_issued_execution_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4": "entered_T01_T02_pass_T03_live_canary_admission_issued_execution_pending",
+    "S4_T01": "pass_closed_zero_call_runtime_injected_node_level_consumed",
+    "S4_T02": "pass_closed_zero_call_retrieval_evidence_readiness",
+    "S4_T03": "engineering_pass_live_canary_admission_issued_unconsumed",
+    "S4_T04_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-EXACT-LIVE-EXECUTION"
+  },
+  "S4_T03_live_canary": {
+    "implementation_ref": "configs/releases/fin_ia_0_1_2_s4_t03_executable_search_controlled_successor_zero_call_implementation_v1_0.json",
+    "implementation_sha256": "007758af9b15ffb35649db326d7f0d5d8f2cdecfb012d6ee022b8ad67754d52a",
+    "authority_ref": "configs/releases/fin_ia_0_1_2_s4_t03_nvda_current_search_canary_fresh_admission_authority_decision_v1_0.json",
+    "authority_sha256": "02fb9d61d07500eb30fbc309bcf42faa607faa23fb03706737487f21e101a179",
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s4_t03_nvda_current_search_canary_fresh_admission_r1.json",
+    "admission_sha256": "ee49e039c3448e47cdb2c402ed03e2fb86779af6f726e2fd06864e9d7d52d468",
+    "admission_id": "s4_t03_search_admission_6cdde650d9647975bcfb",
+    "admission_digest": "6cdde650d9647975bcfb1ea6bb6b4b498d1bcc764db107776885b5e699ceabf7",
+    "request_count": 3,
+    "source_network_ceiling": 2,
+    "local_invocation_ceiling": 8,
+    "retry_ceiling": 0,
+    "fallback_ceiling": 1,
+    "model_provider_paid_cost": [0, 0, 0.0],
+    "issued": true,
+    "consumed": false,
+    "executed": false
+  },
+  "issue_state": {
+    "RC_P36_109": "delivery_surface_closed_for_S3_evidence_density_carried_to_S4_T04",
+    "RC_P36_110": "planning_rebaseline_consumed_S4_execution_gates_pending",
+    "RC_P36_112": "closed_owner_stage_boundary_realignment_selected",
+    "RC_P36_113": "closed_shared_default_registry_aligned_and_readback_proven",
+    "RC_P36_114": "closed_zero_call_executable_binding_and_capture_first_proven",
+    "historical_T02_tail_assertion_test_debt": "open_nonblocking_immutable_evidence_test_design_debt"
+  },
+  "execution_policy": {
+    "S4_T03_live_canary_authority_pass": true,
+    "S4_T03_live_canary_admission_issued": true,
+    "S4_T03_live_canary_executed": false,
+    "source_network_execution_authorized_by_exact_admission": true,
+    "model_provider_execution_authorized": false,
+    "historical_fixture_auto_promoted_to_current_Evidence": false,
+    "current_NVDA_R2_auto_reclassified": false,
+    "new_product_version_created": false
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_39.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "prior_owner_product_rejection_rewritten": false,
+    "historical_source_pack_promoted_to_current_Evidence": false
+  }
+}

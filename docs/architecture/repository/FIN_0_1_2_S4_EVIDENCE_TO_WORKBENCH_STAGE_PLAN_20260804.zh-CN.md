@@ -114,8 +114,8 @@ fresh zero-call proof 使用模拟 SEC identity response 与真实本地索引/S
 
 ## 8. 当前边界
 
-当前 S4-T01、T02 已通过并关闭；S4-T03 executor 与 fresh zero-call proof 已通过，live current-search canary 尚未签发 admission 或执行；S4-T04–T08 未开始。本次实现的 live source、model、Provider、business Artifact、Human Review 均为 0。current NVDA R2=false，release=false，production=false。
+当前 S4-T01、T02 已通过并关闭；S4-T03 executor 与 fresh zero-call proof 已通过，fresh exact admission 已签发但尚未消费，live current-search canary 尚未执行；S4-T04–T08 未开始。当前 model、Provider、business Artifact、Human Review 均为 0。current NVDA R2=false，release=false，production=false。
 
 当前 next：
 
-`FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-FRESH-ADMISSION-AUTHORITY-DECISION`
+`FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-EXACT-LIVE-EXECUTION`

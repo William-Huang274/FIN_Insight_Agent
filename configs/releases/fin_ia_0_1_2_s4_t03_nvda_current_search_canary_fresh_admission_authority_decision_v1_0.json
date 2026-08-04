@@ -1,0 +1,60 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t03_nvda_current_search_canary_fresh_admission_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-FRESH-ADMISSION-AUTHORITY-DECISION-R1",
+  "recorded_at": "2026-08-04T14:15:00+08:00",
+  "status": "pass_fresh_exact_admission_issued_live_execution_pending",
+  "authority": {
+    "user_instruction": "按冻结顺序继续执行，无需逐步询问",
+    "authorized_scope": "one fresh NVDA source-only current-search canary with exact budgets and no model calls",
+    "source_network_access_authorized": true,
+    "model_provider_paid_api_authorized": false,
+    "same_target_retry_authorized": false,
+    "admission_exact_once": true
+  },
+  "candidate_binding": {
+    "git_commit": "d6efe7313652c0cb15010f603feb83e0cddffc4e",
+    "branch": "codex/layered-data-source-expansion",
+    "git_clean_and_upstream_synced_before_issuance": true,
+    "implementation_ref": "configs/releases/fin_ia_0_1_2_s4_t03_executable_search_controlled_successor_zero_call_implementation_v1_0.json",
+    "implementation_sha256": "007758af9b15ffb35649db326d7f0d5d8f2cdecfb012d6ee022b8ad67754d52a",
+    "program_projection_ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_39.json",
+    "program_projection_sha256": "26d44825b2a28e9564de642f14288efbe9af6b680894b018739818718778706f"
+  },
+  "project_os_preflight": {
+    "run_scope": "FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-FRESH-ADMISSION-AUTHORITY-DECISION",
+    "status": "pass",
+    "open_full_chain_blocker_count": 0
+  },
+  "exact_request_digests": [
+    "bfc502e4f0b493a6a8722372a9fbc97263a51f3571effdbc17d44a845c418ece",
+    "d39c2a0d3c9c1b060ee5c6027104984b8a6a40607d6b3097badc56bb60eaf56d",
+    "7392a601fbc98741babd3158339c2e9992dbd820c1406a3871b8fa221d1a6f9b"
+  ],
+  "admission": {
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t03_nvda_current_search_canary_fresh_admission_r1.json",
+    "admission_id": "s4_t03_search_admission_6cdde650d9647975bcfb",
+    "admission_digest": "6cdde650d9647975bcfb1ea6bb6b4b498d1bcc764db107776885b5e699ceabf7",
+    "issued_at": "2026-08-04T06:10:00Z",
+    "expires_at": "2026-08-04T08:10:00Z"
+  },
+  "fixed_ceiling": {
+    "case_count": 1,
+    "evidence_request_count": 3,
+    "source_network_calls": 2,
+    "local_invocations": 8,
+    "same_target_retries": 0,
+    "controlled_fallbacks": 1,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "paid_api_cost_usd": 0.0,
+    "wall_clock_seconds": 300
+  },
+  "stop_policy": {
+    "capture_before_parse": true,
+    "first_project_owned_failure_stops_without_rerun": true,
+    "source_has_no_eligible_result_becomes_typed_gap": true,
+    "failed_or_rejected_candidate_never_becomes_Evidence_or_Artifact": true
+  },
+  "next_action": "FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-EXACT-LIVE-EXECUTION",
+  "known_boundary": "This authority issues one source-only canary admission. It does not prove T03 live success, authorize DeepSeek, promote Evidence, create business Artifacts, establish NVDA R2, or enter T04."
+}

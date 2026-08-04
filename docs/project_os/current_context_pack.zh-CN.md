@@ -3,6 +3,9 @@
 更新时间：2026-08-04
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T03 live current-search canary admission 已签发、尚未消费（current，2026-08-04）**：在 clean/synced commit `d6efe731…ffc4e` 上完成 Project OS authority preflight（open blocker=0），签发 `s4_t03_search_admission_6cdde650d9647975bcfb`。它只绑定 NVDA 三个固定 request digest、最多 2 次官方来源访问、8 次本地只读调用、0 retry、1 次 SEC→NVDA IR fallback、0 模型/Provider/费用、300 秒；时效为 `2026-08-04T06:10:00Z` 至 `08:10:00Z`。admission round-trip 与 active 校验通过，尚未 source live、未消费、未形成 current Evidence 或 Artifact。current next=`FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-EXACT-LIVE-EXECUTION`；只允许一次，首个项目内阻断即停，不自动重跑。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T03 executable controlled successor 与 fresh zero-call proof 已通过，live canary fresh admission authority 待执行（current，2026-08-04）**：三份 NVDA EvidenceRequest 已编译为精确 query/source/allowlist/adapter/parser/as-of 合同，四个 metadata route 已唯一绑定 SEC identity、只读本地 BM25、relationship graph 和 exact-value SQL。source request/response 在 parse 前完整内容寻址保存，本地 raw rows 在 projection 前保存；非法 redirect、跨案、未来日期、重复、缺引用、parser failure、单一 fallback、预算和 terminal failure 均有 mutation/fault proof。fresh zero-call=`3 requests / 1 simulated official source / 6 real local invocations / accepted 6+6+6 / rejected 10+0+3 / 8 captures / 0 live source / 0 model/provider / 0 Artifact`，terminal=`a7e9c89b…fd05`；focused/related=`16/59 passed`。RC-P36-114 已按工程边界关闭；图数据没有 source publication date 的候选被拒绝，没有用 graph build time 冒充 evidence time。另修复一个进入 T04 会触发的既有 API schema 漂移：analysis preview 返回 `as_of`，response model 现已声明。implementation=`configs/releases/fin_ia_0_1_2_s4_t03_executable_search_controlled_successor_zero_call_implementation_v1_0.json`，projection=`configs/runtime/fin_ia_0_1_2_current_program_projection_v2_39.json`。current next=`FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-FRESH-ADMISSION-AUTHORITY-DECISION`；尚未 live source、未形成产品 current Evidence pack、未进入 T04、current NVDA R2=false。
 
 > [!IMPORTANT]

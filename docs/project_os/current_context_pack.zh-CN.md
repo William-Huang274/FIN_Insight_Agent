@@ -3,6 +3,9 @@
 更新时间：2026-08-04
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T04 已获 Product Owner 接受并关闭，S4-T05 entry authorized 但尚未执行（current，2026-08-04）**：用户对明确的“接受当前 NVDA R2，进入 S4-T05”请求回复“接受”。该决定绑定 R3 exact result SHA=`6f06be07…2fc9`、正式 paired digest=`f088af2a…b625` 和 final preview digest=`0255e854…5521`；current source-grounded NVDA R2=true，S4-T04=`pass_closed_owner_accepted`。RC-P36-119 作为已接受的非阻断 L3 finding 后传 T08–T10/S5，不重开 T04、不触发 R4。此次没有模型、Provider、网络、source、admission、Run、Artifact 或 Human Review；DELL/MU/post-transfer NVDA R2、qualified Human Review、NVDA R3、release 和 production 均未成立。current next=`FIN-0.1.2-S4-T05-DELL-MU-TRANSFER-AND-POST-TRANSFER-NVDA-SCOPE-ENTRY-DECISION`；先做零调用范围与复用边界决策，不自动 exact-live。
+
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T04 current Evidence exact-live 已 immutable failed，根因为项目 classifier CJK 假阳性（current，2026-08-04）**：唯一 admission 已消费；三位 Specialist 完成，`7 calls / 7 captures / 3 local Fact receipts / 0 Artifacts`，tokens=`38,724/2,315`、cost=`USD 0.01885899`、retry/fallback/replay=`0/0/0`，terminal=`e6859a91…fd9`，phase/code=`research_lead / s4_case_numeric_authority_provider_narrative_invalid`。受限 capture 证明 Lead 没有财务数字，只有 schema 允许的 `C001/C002/C005/C006`；local-ID 正则使用 Unicode `\b`，ID 后直接接中文“有”时边界失效，内部 `001/002/005/006` 被误判 material numeric。登记项目内 `RC-P36-116`，不归因 DeepSeek/Provider，也不否定 T03/current Evidence 或 T04 input bridge engineering pass。按 exact-once stop rule 未修复、未重跑、未签第二 admission；current NVDA R2=false，T05 blocked。current next=`FIN-0.1.2-S4-T04-CJK-LOCAL-IDENTIFIER-NUMERIC-CLASSIFIER-FALSE-POSITIVE-ZERO-CALL-DISPOSITION`。
 >
 > [!IMPORTANT]

@@ -1,0 +1,60 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_49",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.49",
+  "recorded_at": "2026-08-04T23:20:00+08:00",
+  "sequence_after_projection": "v2_48",
+  "status": "S4_T04_owner_accepted_current_NVDA_R2_S4_T05_entry_authorized_not_executed",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4_T01_T03": "pass_closed",
+    "S4_T04": "pass_closed_owner_accepted_current_source_grounded_NVDA_R2",
+    "S4_T05": "entry_authorized_scope_decision_pending_execution_not_started",
+    "S4_T06_T08": "blocked_not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": true,
+    "DELL_current_R2": false,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T05-DELL-MU-TRANSFER-AND-POST-TRANSFER-NVDA-SCOPE-ENTRY-DECISION"
+  },
+  "owner_acceptance": {
+    "record_ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_r2_product_owner_acceptance_and_t05_entry_v1_0.json",
+    "decision_digest": "9324d7415c0cca34d946d9fdfa66269005c1c9a7874e8ded8be4e5349dae7143",
+    "user_instruction": "接受",
+    "product_owner_acceptance": true,
+    "qualified_human_review": false,
+    "NVDA_R3": false
+  },
+  "accepted_T04_evidence": {
+    "exact_result_sha256": "6f06be07041afc6c46d991ea9372ff487293bf7f1ba9ded96f2194659b302fc9",
+    "paired_assessment_digest": "f088af2aa5460c92f3de302b9e98311fbb5e43931affe77b8394c6428218b625",
+    "preview_digest": "0255e854a2fdc528dd8b248a1c61fca2475ca6969bcfcbbda247cf3c0c765521",
+    "qualified_evidence_authority_cells": [2, 3],
+    "formal_paired_L1_L2_L3_L4": ["pass", "pass", "pass_with_nonblocking_quality_finding", "pass"]
+  },
+  "issue_state": {
+    "RC_P36_115": "open_nonblocking_assigned_S5_release_hardening",
+    "RC_P36_116": "closed",
+    "RC_P36_117": "closed",
+    "RC_P36_118": "closed",
+    "RC_P36_119": "open_nonblocking_owner_accepted_and_assigned_T08_T10_S5",
+    "model_or_provider_fault_established_for_current_state": false
+  },
+  "authority_boundary": {
+    "S4_T04_owner_acceptance_count": 1,
+    "S4_T05_entry_authorized": true,
+    "S4_T05_execution_started": false,
+    "new_model_provider_network_source_calls": [0, 0, 0, 0],
+    "new_human_reviews": 0,
+    "automatic_T05_exact_live": false,
+    "new_product_version_created": false
+  }
+}

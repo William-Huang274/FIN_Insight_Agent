@@ -1,0 +1,87 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t04_nvda_current_evidence_r2_product_owner_acceptance_and_t05_entry_v1_0",
+  "decision_id": "FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-R2-PRODUCT-OWNER-ACCEPTANCE-AND-T05-ENTRY-R1",
+  "recorded_at": "2026-08-04T23:20:00+08:00",
+  "status": "owner_accepted_current_source_grounded_NVDA_R2_S4_T04_closed_S4_T05_entry_authorized",
+  "authority": {
+    "user_instruction": "接受",
+    "instruction_context": "The user replied to the explicit request 'If accepted, reply: accept NVDA R2 and enter S4-T05.'",
+    "product_owner_acceptance": true,
+    "material_agent_gain_accepted": true,
+    "acceptance_with_nonblocking_quality_finding": true,
+    "S4_T04_closeout_authorized": true,
+    "S4_T05_entry_authorized": true,
+    "S4_T05_execution_performed_by_this_decision": false,
+    "qualified_human_review_performed": false,
+    "NVDA_R3_established": false,
+    "release_or_production_authorized": false,
+    "new_model_provider_network_or_source_calls_authorized": false
+  },
+  "immutable_bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_r3_formal_paired_assessment_and_owner_decision_request_v1_0.json",
+      "sha256": "3b9fda106989faa5bc3275ee984df5e7dd53826bfb722bf0163f65827bcc3cb4",
+      "role": "formal_same_input_distinct_run_L1_L4_assessment_and_owner_request_preserved"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_r3_verified_product_surface_and_read_only_assessment_v1_0.json",
+      "sha256": "126c5336c1ef10da7f9fa33a3e14d48d2d25d8d5add855171ded92893d0fb388",
+      "role": "verified_final_delivery_product_surface_preserved"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_48.json",
+      "sha256": "3f25f5ba0c7906534ded4cf6a23ca185abb234a2a5e592642f79f5549f9f03d4",
+      "role": "pre_owner_decision_current_truth_preserved"
+    },
+    {
+      "ref": ".codex_runtime/fin012-s4-t04-nvda-current-evidence-capacity-reproof-exact-live-r3/execution-result.json",
+      "sha256": "6f06be07041afc6c46d991ea9372ff487293bf7f1ba9ded96f2194659b302fc9",
+      "role": "immutable_R3_exact_live_result"
+    }
+  ],
+  "accepted_product_meaning": {
+    "S4_T04": "pass_closed_owner_accepted",
+    "current_source_grounded_NVDA_R2": true,
+    "formal_paired_L1_L4": ["pass", "pass", "pass_with_nonblocking_quality_finding", "pass"],
+    "qualified_evidence_cells": 2,
+    "qualified_authority_cells": 3,
+    "agent_claim_dependency_conflict_gap_WWC": [6, 1, 2, 3, 9],
+    "preview_digest": "0255e854a2fdc528dd8b248a1c61fca2475ca6969bcfcbbda247cf3c0c765521",
+    "paired_assessment_digest": "f088af2aa5460c92f3de302b9e98311fbb5e43931affe77b8394c6428218b625"
+  },
+  "explicit_non_claims": {
+    "DELL_current_R2": false,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_T05_execution_started": false,
+    "S4_T06_or_later_entered": false,
+    "S4_closed": false,
+    "S5_entered": false,
+    "release_qualified": false,
+    "production_qualified": false
+  },
+  "quality_finding_disposition": {
+    "issue_id": "RC-P36-119-fin-0-1-2-current-evidence-WWC-generic-threshold-quality-finding",
+    "status": "accepted_nonblocking_carried_forward",
+    "assigned_to": ["S4-T08", "S4-T09", "S4-T10", "S5"],
+    "reopens_S4_T04": false,
+    "triggers_R4": false
+  },
+  "observed_counts": {
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_execution_network_calls": 0,
+    "new_source_network_calls": 0,
+    "new_external_tool_calls": 0,
+    "new_admissions": 0,
+    "new_research_runs": 0,
+    "new_business_artifacts": 0,
+    "new_human_reviews": 0,
+    "exact_live_reruns": 0
+  },
+  "next_action": "FIN-0.1.2-S4-T05-DELL-MU-TRANSFER-AND-POST-TRANSFER-NVDA-SCOPE-ENTRY-DECISION",
+  "known_boundary": "This decision accepts the current source-grounded NVDA R2 product result and closes S4-T04. It authorizes entry into S4-T05, but it does not execute DELL, MU or post-transfer NVDA, does not perform qualified Human Review, does not establish NVDA R3, and does not qualify release or production.",
+  "decision_digest": "9324d7415c0cca34d946d9fdfa66269005c1c9a7874e8ded8be4e5349dae7143"
+}

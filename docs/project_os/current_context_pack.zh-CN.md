@@ -3,6 +3,9 @@
 更新时间：2026-08-04
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T04 current Evidence → Agentic Research 零调用工程通过，fresh exact admission 已签发未消费（current，2026-08-04）**：T03 accepted candidates 被严格投影为 `15 Evidence / 3 exact numeric / 3 typed gaps`，pack=`fdc1a100…bf65`；原始长文本仍在 T03 capture，T04 模型副本最长 300 字符。封闭 metric/semantic-role alias、当前数值 lineage、本地 derived metrics、unknown/cross-case/date/digest mutation 均 fail closed；未修改冻结 DELL/MU 合同。正确的 FIN 0.1.2 NVDA V9 runtime fake 全链达到 `6 nodes / 9 captures / 3 local Fact receipts / 9 Artifacts`；focused/admission/runner/related=`8/1/2/20 passed`，真实 model/provider/network=`0/0/0`。fresh admission=`55ac6d92…7812`，DeepSeek Pro、9 calls、USD 0.06、retry/source calls=0，Run/Attempt=`research_run_fin01_82b97a80f3a0d79c126f7d16 / attempt_fin01_b28c8f773a80e5803dfb157e`，尚未消费。T04 live、独立 L1–L4、Owner acceptance、current NVDA R2 仍未成立。current next=`FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-EXACT-LIVE-EXECUTION-AND-TERMINAL-MATERIALIZATION`；只执行一次，首个可信失败终止，不自动重试。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T03 NVDA current-search canary 已 live pass 并关闭（current，2026-08-04）**：fresh admission 只消费一次，Run/Attempt=`s4_t03_search_run_cd50270d5d2cdae6e925 / s4_t03_search_attempt_f2b66dda1d3a6db3b9be`。实际 SEC submissions 请求 HTTP 200，160,740 bytes 在 parse 前完整 capture，body SHA=`3e9a0f2b…5b60`；1 次 live source、6 次本地只读调用、0 fallback/retry/model/provider/cost。三个 Cell accepted/rejected=`6/10, 6/0, 6/3`，terminal=`7ec970b6…f156`；候选实体、as-of、HTTPS locator、snapshot/parser lineage 和非晋升边界独立通过，T03 业务 Artifact=0。T03=`pass_closed_live_current_evidence_candidate_pack_ready`，current NVDA R2 仍 false。另登记非阻断 `RC-P36-115`：admission 缺少跨 runtime 共享消费锁，本次历史确为唯一执行，修复后传 S5 release hardening。current next=`FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-PACK-AND-AGENTIC-RESEARCH-INTEGRATION-ZERO-CALL-IMPLEMENTATION`。
 >
 > [!IMPORTANT]

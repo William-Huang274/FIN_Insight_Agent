@@ -1,0 +1,57 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t04_current_evidence_agentic_research_zero_call_implementation_and_fresh_admission_v1_0",
+  "recorded_at": "2026-08-04T16:05:00+08:00",
+  "status": "engineering_pass_fresh_admission_issued_unconsumed_exact_live_ready",
+  "scope": "NVDA_T03_current_candidate_pack_to_T04_mature_S3_agent_runtime",
+  "evidence_pack": {
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_pack_v1_0.json",
+    "sha256": "9fd5484d403814b59fd497b85c0904836571caaae439207438e295dc554aecd2",
+    "digest": "fdc1a10010f0d47ba7be5b420fc5cac860c3044d6690696463865ecce4b7bf65",
+    "T03_terminal_digest": "7ec970b6c2f10983852c9cd52357499baccb08f50a00262de64d8f74a6f6f156",
+    "evidence_numeric_typed_gap_counts": [15, 3, 3],
+    "maximum_projected_statement_characters": 300,
+    "raw_source_and_candidate_text_remains_in_T03_capture": true
+  },
+  "implemented_boundaries": [
+    "closed_metric_aliases_map_SEC_labels_to_revenue_gross_profit_operating_income",
+    "closed_evidence_role_aliases_map_T03_search_roles_to_NVDA_research_profile_roles",
+    "current_numeric_rows_rebind_proven_calculation_surface_without_fixture_authority",
+    "unknown_metric_or_semantic_role_fails_closed",
+    "typed_future_segment_profit_and_independent_corroboration_gaps_retained",
+    "T01_T03_T04_lineage_bound_and_historical_DELL_MU_contract_unchanged",
+    "V9_local_fact_interaction_uses_3_local_receipts_and_9_provider_interactions"
+  ],
+  "verification": {
+    "focused_integration": "8 passed",
+    "fresh_admission": "1 passed",
+    "exact_runner": "2 passed",
+    "related_regression": "20 passed",
+    "fake_full_chain": "six_nodes_9_captures_3_local_fact_receipts_9_artifacts",
+    "model_provider_source_network_calls": [0, 0, 0],
+    "business_artifacts_promoted": 0
+  },
+  "fresh_admission": {
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_fresh_exact_admission_r1.json",
+    "file_sha256": "294da11612105ea90942a586553c401b70e81213f446cac7df8af85ccd63b647",
+    "admission_digest": "55ac6d9299efa1ca91fa680095818d63e2a1a5c67eda5d4d27e49b5d575f7812",
+    "issuance_ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_fresh_exact_admission_issuance_v1_0.json",
+    "issuance_file_sha256": "6a9aa1e908c0d10b618e717f7948d8bedda798b985c1e664e3080a1b57e30870",
+    "execution_identity": "fin012-s4-t04-nvda-current-evidence-exact-live-r1",
+    "input_digest": "da17432b1912e9634a8b12f74f5015cb0ac0f316d308e2232e53618f16026499",
+    "attempt_id": "attempt_fin01_b28c8f773a80e5803dfb157e",
+    "research_run_id": "research_run_fin01_82b97a80f3a0d79c126f7d16",
+    "model": "deepseek-v4-pro",
+    "budget": "9_provider_calls_60k_input_10k_output_USD_0.06_0_retry_0_source_calls",
+    "consumed": false
+  },
+  "acceptance_boundary": {
+    "T04_engineering_pass": true,
+    "T04_exact_live_pass": false,
+    "nine_live_artifacts": false,
+    "independent_L1_L4": false,
+    "owner_acceptance": false,
+    "current_NVDA_R2": false,
+    "release_or_production": false
+  },
+  "current_next": "FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-EXACT-LIVE-EXECUTION-AND-TERMINAL-MATERIALIZATION"
+}

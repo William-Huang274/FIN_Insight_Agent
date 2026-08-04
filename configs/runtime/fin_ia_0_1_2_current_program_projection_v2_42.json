@@ -1,0 +1,55 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_42",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.42",
+  "recorded_at": "2026-08-04T16:05:00+08:00",
+  "sequence_after_projection": "v2_41",
+  "status": "S3_bounded_anchor_pass_closed_S4_T01_T02_T03_pass_T04_engineering_pass_admission_issued_unconsumed",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4": "entered_T01_T02_T03_pass_T04_engineering_pass_exact_live_pending",
+    "S4_T01": "pass_closed",
+    "S4_T02": "pass_closed",
+    "S4_T03": "pass_closed_live_current_evidence_candidate_pack_ready",
+    "S4_T04": "engineering_pass_fresh_admission_issued_unconsumed",
+    "S4_T05_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-EXACT-LIVE-EXECUTION-AND-TERMINAL-MATERIALIZATION"
+  },
+  "S4_T04_zero_call_and_admission": {
+    "implementation_ref": "configs/releases/fin_ia_0_1_2_s4_t04_current_evidence_agentic_research_zero_call_implementation_and_fresh_admission_v1_0.json",
+    "pack_digest": "fdc1a10010f0d47ba7be5b420fc5cac860c3044d6690696463865ecce4b7bf65",
+    "input_digest": "da17432b1912e9634a8b12f74f5015cb0ac0f316d308e2232e53618f16026499",
+    "evidence_numeric_gap_counts": [15,3,3],
+    "fake_provider_local_fact_artifact_counts": [9,3,9],
+    "admission_digest": "55ac6d9299efa1ca91fa680095818d63e2a1a5c67eda5d4d27e49b5d575f7812",
+    "admission_consumed": false,
+    "model_provider_network_calls": [0,0,0]
+  },
+  "issue_state": {
+    "RC_P36_109": "delivery_surface_closed_and_current_evidence_density_now_T04_bound_live_acceptance_pending",
+    "RC_P36_115": "open_nonblocking_S4_assigned_to_S5_release_hardening",
+    "new_T04_runtime_L1_failure": false
+  },
+  "execution_policy": {
+    "T04_zero_call_integration_and_fresh_admission_authorized": true,
+    "T04_exact_live_authorized_by_user_continuation_sequence": true,
+    "T04_exact_live_started": false,
+    "T04_automatic_retry_or_second_admission": false,
+    "owner_acceptance_auto_granted": false,
+    "new_product_version_created": false
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_41.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "T03_live_terminal_or_capture_rewritten": false,
+    "DELL_MU_frozen_S4_contract_rewritten": false,
+    "prior_owner_product_rejection_rewritten": false
+  }
+}

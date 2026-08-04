@@ -1,0 +1,51 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_43",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.43",
+  "recorded_at": "2026-08-04T16:22:00+08:00",
+  "sequence_after_projection": "v2_42",
+  "status": "S4_T04_exact_live_terminal_failed_project_classifier_false_positive_disposition_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4_T01_T03": "pass_closed",
+    "S4_T04_input_bridge": "engineering_pass",
+    "S4_T04_exact_live": "terminal_failed_RC_P36_116",
+    "S4_T05_T08": "blocked_not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T04-CJK-LOCAL-IDENTIFIER-NUMERIC-CLASSIFIER-FALSE-POSITIVE-ZERO-CALL-DISPOSITION"
+  },
+  "S4_T04_exact_live_terminal": {
+    "closeout_ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_exact_live_terminal_failure_and_root_cause_disposition_v1_0.json",
+    "admission_consumed": true,
+    "terminal_digest": "e6859a913ac78a3074a1ddd16ce27acfa82604c1422df6be99623d1a36046fd9",
+    "phase_code": ["research_lead", "s4_case_numeric_authority_provider_narrative_invalid"],
+    "provider_capture_local_fact_artifact_counts": [7,7,3,0],
+    "input_output_tokens_cost": [38724,2315,0.01885899],
+    "automatic_retry_or_second_live": false
+  },
+  "issue_state": {
+    "RC_P36_115": "open_nonblocking_S4_assigned_to_S5_release_hardening",
+    "RC_P36_116": "open_T04_blocker_project_classifier_CJK_local_identifier_false_positive",
+    "model_or_provider_fault_established": false,
+    "actual_material_numeric_violation_established": false
+  },
+  "execution_policy": {
+    "failed_run_and_captures_immutable": true,
+    "same_admission_reuse_forbidden": true,
+    "runtime_fix_or_replacement_admission_in_closeout": false,
+    "owner_acceptance_auto_granted": false,
+    "new_product_version_created": false
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_42.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "T03_live_terminal_or_T04_failed_capture_rewritten": false,
+    "DELL_MU_frozen_S4_contract_rewritten": false
+  }
+}

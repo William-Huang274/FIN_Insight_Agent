@@ -3,6 +3,9 @@
 更新时间：2026-08-04
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T04 current Evidence exact-live 已 immutable failed，根因为项目 classifier CJK 假阳性（current，2026-08-04）**：唯一 admission 已消费；三位 Specialist 完成，`7 calls / 7 captures / 3 local Fact receipts / 0 Artifacts`，tokens=`38,724/2,315`、cost=`USD 0.01885899`、retry/fallback/replay=`0/0/0`，terminal=`e6859a91…fd9`，phase/code=`research_lead / s4_case_numeric_authority_provider_narrative_invalid`。受限 capture 证明 Lead 没有财务数字，只有 schema 允许的 `C001/C002/C005/C006`；local-ID 正则使用 Unicode `\b`，ID 后直接接中文“有”时边界失效，内部 `001/002/005/006` 被误判 material numeric。登记项目内 `RC-P36-116`，不归因 DeepSeek/Provider，也不否定 T03/current Evidence 或 T04 input bridge engineering pass。按 exact-once stop rule 未修复、未重跑、未签第二 admission；current NVDA R2=false，T05 blocked。current next=`FIN-0.1.2-S4-T04-CJK-LOCAL-IDENTIFIER-NUMERIC-CLASSIFIER-FALSE-POSITIVE-ZERO-CALL-DISPOSITION`。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T04 current Evidence → Agentic Research 零调用工程通过，fresh exact admission 已签发未消费（current，2026-08-04）**：T03 accepted candidates 被严格投影为 `15 Evidence / 3 exact numeric / 3 typed gaps`，pack=`fdc1a100…bf65`；原始长文本仍在 T03 capture，T04 模型副本最长 300 字符。封闭 metric/semantic-role alias、当前数值 lineage、本地 derived metrics、unknown/cross-case/date/digest mutation 均 fail closed；未修改冻结 DELL/MU 合同。正确的 FIN 0.1.2 NVDA V9 runtime fake 全链达到 `6 nodes / 9 captures / 3 local Fact receipts / 9 Artifacts`；focused/admission/runner/related=`8/1/2/20 passed`，真实 model/provider/network=`0/0/0`。fresh admission=`55ac6d92…7812`，DeepSeek Pro、9 calls、USD 0.06、retry/source calls=0，Run/Attempt=`research_run_fin01_82b97a80f3a0d79c126f7d16 / attempt_fin01_b28c8f773a80e5803dfb157e`，尚未消费。T04 live、独立 L1–L4、Owner acceptance、current NVDA R2 仍未成立。current next=`FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-EXACT-LIVE-EXECUTION-AND-TERMINAL-MATERIALIZATION`；只执行一次，首个可信失败终止，不自动重试。
 >
 > [!IMPORTANT]

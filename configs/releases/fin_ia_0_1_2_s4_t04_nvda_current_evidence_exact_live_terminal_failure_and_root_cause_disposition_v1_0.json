@@ -1,0 +1,54 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t04_nvda_current_evidence_exact_live_terminal_failure_and_root_cause_disposition_v1_0",
+  "recorded_at": "2026-08-04T16:22:00+08:00",
+  "status": "exact_live_terminal_failed_admission_consumed_zero_call_classifier_disposition_required",
+  "execution": {
+    "execution_identity": "fin012-s4-t04-nvda-current-evidence-exact-live-r1",
+    "admission_digest": "55ac6d9299efa1ca91fa680095818d63e2a1a5c67eda5d4d27e49b5d575f7812",
+    "research_run_id": "research_run_fin01_82b97a80f3a0d79c126f7d16",
+    "attempt_id": "attempt_fin01_b28c8f773a80e5803dfb157e",
+    "result_ref": ".codex_runtime/fin012-s4-t04-nvda-current-evidence-exact-live-r1/execution-result.json",
+    "result_sha256": "32cb7e6e22984eebe8b0d4d732e96226d8f4a70b06efd6e1bf1e0a118b008b43",
+    "result_bytes": 9891,
+    "terminal_digest": "e6859a913ac78a3074a1ddd16ce27acfa82604c1422df6be99623d1a36046fd9",
+    "terminal_phase": "research_lead",
+    "terminal_code": "s4_case_numeric_authority_provider_narrative_invalid",
+    "provider_calls_captures_local_fact_receipts_artifacts": [7, 7, 3, 0],
+    "input_output_tokens": [38724, 2315],
+    "estimated_cost_usd": 0.01885899,
+    "retry_fallback_replay_second_live": [0, 0, 0, 0]
+  },
+  "immutable_evidence": {
+    "all_three_specialists_completed": true,
+    "research_lead_output_captured_before_validation": true,
+    "failed_output_quarantined": true,
+    "credential_private_reasoning_raw_provider_response_persisted": [false, false, false],
+    "business_promotable": false,
+    "artifact_count": 0
+  },
+  "root_cause": {
+    "issue_id": "RC-P36-116-fin-0-1-2-CJK-adjacent-local-claim-id-numeric-classifier-false-positive",
+    "owned_by_project": true,
+    "model_or_provider_instruction_failure_established": false,
+    "actual_financial_numeric_violation_established": false,
+    "observed_provider_tokens": ["C001", "C002", "C005", "C006"],
+    "offending_paths": [
+      "$.conflict_adjudications[0].statement",
+      "$.conflict_adjudications[1].statement"
+    ],
+    "mechanism": "The v2 request-local identifier regex uses Unicode word boundaries. C001 followed by a Chinese opening parenthesis is recognized as a nonterminal local identifier, while C001 followed directly by the CJK character 有 has no Unicode word boundary; the nested numeric regex then classifies 001 as a terminal material numeric value.",
+    "evidence_classification": "classifier_false_positive_on_schema_permitted_local_claim_ids",
+    "first_failure_owner": "CaseNumericAuthorityPolicy._V2_REQUEST_LOCAL_IDENTIFIER_and_preassembly_narrative_gate"
+  },
+  "disposition": {
+    "current_admission_consumed": true,
+    "automatic_retry_or_same_admission_reuse": false,
+    "runtime_fix_applied_in_this_closeout": false,
+    "recommended_zero_call_fix": "Replace Unicode word-boundary dependence with ASCII identifier boundaries and prove CJK punctuation/CJK adjacency/Latin adjacency/real material numeric mutations; then decide one fresh replacement admission separately.",
+    "S4_T04_engineering_input_bridge": "pass_retained",
+    "S4_T04_exact_live": "failed_terminal",
+    "current_NVDA_R2": false,
+    "S4_T05_entry": "blocked"
+  },
+  "current_next": "FIN-0.1.2-S4-T04-CJK-LOCAL-IDENTIFIER-NUMERIC-CLASSIFIER-FALSE-POSITIVE-ZERO-CALL-DISPOSITION"
+}

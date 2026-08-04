@@ -12,14 +12,17 @@ IMPLEMENTATION = Path(
     "controlled_successor_zero_call_implementation_v1_0.json"
 )
 PROJECTION = Path(
-    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_40.json"
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_41.json"
 )
 BACKLOG = Path("configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json")
 IMPLEMENTATION_NEXT = (
     "FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-"
     "FRESH-ADMISSION-AUTHORITY-DECISION"
 )
-CURRENT_NEXT = "FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-EXACT-LIVE-EXECUTION"
+CURRENT_NEXT = (
+    "FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-PACK-AND-"
+    "AGENTIC-RESEARCH-INTEGRATION-ZERO-CALL-IMPLEMENTATION"
+)
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -68,9 +71,10 @@ def test_projection_backlog_and_latest_issue_row_agree_on_fresh_authority_next()
 
     assert projection["current_truth"]["current_next_action"] == CURRENT_NEXT
     assert projection["current_truth"]["current_NVDA_R2"] is False
-    assert projection["S4_T03_live_canary"]["issued"] is True
-    assert projection["S4_T03_live_canary"]["consumed"] is False
-    assert projection["S4_T03_live_canary"]["executed"] is False
+    assert projection["current_truth"]["S4_T03"] == (
+        "pass_closed_live_current_evidence_candidate_pack_ready"
+    )
+    assert projection["S4_T03_live_acceptance"]["T04_consumption_boundary_ready"] is True
     assert backlog["current_version_rebaseline"]["projection_ref"] == PROJECTION.as_posix()
     assert backlog["next_action"]["item_id"] == CURRENT_NEXT
     assert rc114["status"] == "closed"

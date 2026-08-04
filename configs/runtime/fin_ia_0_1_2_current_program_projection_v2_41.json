@@ -1,0 +1,59 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_41",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.41",
+  "recorded_at": "2026-08-04T14:22:31+08:00",
+  "sequence_after_projection": "v2_40",
+  "status": "S3_bounded_anchor_pass_closed_S4_T01_T02_T03_pass_closed_T04_integration_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4": "entered_T01_T02_T03_pass_T04_pending",
+    "S4_T01": "pass_closed_zero_call_runtime_injected_node_level_consumed",
+    "S4_T02": "pass_closed_zero_call_retrieval_evidence_readiness",
+    "S4_T03": "pass_closed_live_current_evidence_candidate_pack_ready",
+    "S4_T04_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-PACK-AND-AGENTIC-RESEARCH-INTEGRATION-ZERO-CALL-IMPLEMENTATION"
+  },
+  "S4_T03_live_acceptance": {
+    "result_ref": "configs/releases/fin_ia_0_1_2_s4_t03_nvda_current_search_canary_exact_live_result_and_acceptance_v1_0.json",
+    "run_id": "s4_t03_search_run_cd50270d5d2cdae6e925",
+    "attempt_id": "s4_t03_search_attempt_f2b66dda1d3a6db3b9be",
+    "terminal_digest": "7ec970b6c2f10983852c9cd52357499baccb08f50a00262de64d8f74a6f6f156",
+    "accepted_rejected_by_cell": [[6,10],[6,0],[6,3]],
+    "source_live_local_model_provider_calls": [1,6,0,0],
+    "fallback_retry_business_artifacts": [0,0,0],
+    "source_capture_before_parse": true,
+    "T04_consumption_boundary_ready": true
+  },
+  "issue_state": {
+    "RC_P36_109": "delivery_surface_closed_for_S3_evidence_density_carried_to_S4_T04",
+    "RC_P36_110": "planning_rebaseline_consumed_S4_execution_gates_pending",
+    "RC_P36_112": "closed_owner_stage_boundary_realignment_selected",
+    "RC_P36_113": "closed_shared_default_registry_aligned_and_readback_proven",
+    "RC_P36_114": "closed_zero_call_and_live_positive_path_proven",
+    "RC_P36_115": "open_nonblocking_T03_assigned_to_S5_release_hardening",
+    "historical_T02_tail_assertion_test_debt": "open_nonblocking_immutable_evidence_test_design_debt"
+  },
+  "execution_policy": {
+    "S4_T03_live_canary_executed_exactly_once_in_observed_history": true,
+    "S4_T03_second_live_or_retry_authorized": false,
+    "T04_zero_call_integration_authorized_by_user_sequence": true,
+    "T04_model_provider_execution_authorized": false,
+    "current_candidate_auto_promoted_to_Evidence": false,
+    "current_NVDA_R2_auto_reclassified": false,
+    "new_product_version_created": false
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_40.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "T03_runtime_or_failed_candidate_rewritten": false,
+    "prior_owner_product_rejection_rewritten": false
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t03_nvda_current_search_canary_exact_live_result_and_acceptance_v1_0",
+  "result_id": "FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-EXACT-LIVE-R1",
+  "recorded_at": "2026-08-04T14:22:31+08:00",
+  "status": "pass_closed_live_current_evidence_candidate_pack_ready_T04_pending",
+  "execution_binding": {
+    "candidate_commit": "d6efe7313652c0cb15010f603feb83e0cddffc4e",
+    "admission_commit": "6379cf5c2ec1bafa1255f7f006cb1ace87beeed4",
+    "admission_id": "s4_t03_search_admission_6cdde650d9647975bcfb",
+    "admission_digest": "6cdde650d9647975bcfb1ea6bb6b4b498d1bcc764db107776885b5e699ceabf7",
+    "run_id": "s4_t03_search_run_cd50270d5d2cdae6e925",
+    "attempt_id": "s4_t03_search_attempt_f2b66dda1d3a6db3b9be",
+    "run_nonce": "fin012-s4-t03-nvda-live-r1-20260804T1425",
+    "runtime_ref": ".codex_runtime/fin012-s4-t03-nvda-live-r1-20260804T1425"
+  },
+  "terminal": {
+    "status": "success",
+    "phase": "terminalize",
+    "code": "three_request_current_evidence_candidate_pack_ready",
+    "object_key": "s4-t03/terminal-results/7e/c9/7ec970b6c2f10983852c9cd52357499baccb08f50a00262de64d8f74a6f6f156.json",
+    "digest": "7ec970b6c2f10983852c9cd52357499baccb08f50a00262de64d8f74a6f6f156",
+    "byte_size": 50600,
+    "run_digest": "cd50270d5d2cdae6e92504eb9d91a87f288de6c5282c24c442d53f553eefa6db"
+  },
+  "observed_counts": {
+    "requests": 3,
+    "source_calls": 1,
+    "live_source_network_calls": 1,
+    "local_retrieval_or_tool_invocations": 6,
+    "fallbacks": 0,
+    "same_target_retries": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "paid_api_cost_usd": 0.0,
+    "accepted_candidates": 18,
+    "rejected_candidates": 13,
+    "business_artifacts": 0,
+    "capture_objects": 8
+  },
+  "cell_results": [
+    {
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "accepted": 6,
+      "rejected": 10,
+      "typed_gaps": [],
+      "rejection_summary": {"candidate_date_invalid": 10}
+    },
+    {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "accepted": 6,
+      "rejected": 0,
+      "typed_gaps": []
+    },
+    {
+      "program_cell_id": "value_and_profit_capture",
+      "accepted": 6,
+      "rejected": 3,
+      "typed_gaps": [],
+      "rejection_summary": {"request_candidate_ceiling_reached": 3}
+    }
+  ],
+  "source_acceptance": {
+    "request_url": "https://data.sec.gov/submissions/CIK0001045810.json",
+    "final_url": "https://data.sec.gov/submissions/CIK0001045810.json",
+    "status_code": 200,
+    "response_body_bytes": 160740,
+    "response_body_sha256": "3e9a0f2bccfc5c98df7489400aa1908a0ee1aa3de6410c1eabfe44bb3c495b60",
+    "source_request_capture_digest": "138ac6c3fc35e5774fc47e377be636fbf3998f72a33e0dec747d25237e81b1c9",
+    "source_response_capture_digest": "4c87e82ab8999130ed142901d4841f13cd7be972f8b547ef48f18e976701ee9f",
+    "response_persisted_before_parse": true,
+    "credential_cookie_authorization_present": false
+  },
+  "independent_acceptance": {
+    "entity_exact_NVDA": true,
+    "all_accepted_not_after_case_as_of": true,
+    "all_accepted_https_and_locator_bound": true,
+    "source_snapshot_and_parser_lineage_present": true,
+    "graph_build_time_not_used_as_publication_time": true,
+    "writer_citable_in_T03": false,
+    "domain_judgment_eligible_in_T03": false,
+    "failed_or_rejected_rows_promoted": false,
+    "T04_consumption_boundary_ready": true
+  },
+  "governance_finding": {
+    "issue_id": "RC-P36-115-fin-0-1-2-cross-runtime-admission-consumption-ledger-missing",
+    "severity": "medium_release_hardening",
+    "blocks_this_observed_single_canary": false,
+    "reason": "The admission validates identity, time and budgets, but a different runtime root could consume the same file again because no shared durable consumption ledger is consulted. The observed canary was executed only once; the gap must be closed before release qualification, not by reopening successful T03 search semantics."
+  },
+  "stage_acceptance": {
+    "FIN_0_1_2_S4_T03": "pass_closed_live_current_evidence_candidate_pack_ready",
+    "FIN_0_1_2_S4_T04": "not_started",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified"
+  },
+  "next_action": "FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-PACK-AND-AGENTIC-RESEARCH-INTEGRATION-ZERO-CALL-IMPLEMENTATION",
+  "known_boundary": "T03 proves bounded current search and a gated candidate pack. It does not itself promote writer-citable Evidence, run DeepSeek, create nine business Artifacts, complete L1-L4 or establish current source-grounded NVDA R2."
+}

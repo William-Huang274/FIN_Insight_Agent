@@ -3,6 +3,9 @@
 更新时间：2026-08-04
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T03 NVDA current-search canary 已 live pass 并关闭（current，2026-08-04）**：fresh admission 只消费一次，Run/Attempt=`s4_t03_search_run_cd50270d5d2cdae6e925 / s4_t03_search_attempt_f2b66dda1d3a6db3b9be`。实际 SEC submissions 请求 HTTP 200，160,740 bytes 在 parse 前完整 capture，body SHA=`3e9a0f2b…5b60`；1 次 live source、6 次本地只读调用、0 fallback/retry/model/provider/cost。三个 Cell accepted/rejected=`6/10, 6/0, 6/3`，terminal=`7ec970b6…f156`；候选实体、as-of、HTTPS locator、snapshot/parser lineage 和非晋升边界独立通过，T03 业务 Artifact=0。T03=`pass_closed_live_current_evidence_candidate_pack_ready`，current NVDA R2 仍 false。另登记非阻断 `RC-P36-115`：admission 缺少跨 runtime 共享消费锁，本次历史确为唯一执行，修复后传 S5 release hardening。current next=`FIN-0.1.2-S4-T04-NVDA-CURRENT-EVIDENCE-PACK-AND-AGENTIC-RESEARCH-INTEGRATION-ZERO-CALL-IMPLEMENTATION`。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T03 live current-search canary admission 已签发、尚未消费（current，2026-08-04）**：在 clean/synced commit `d6efe731…ffc4e` 上完成 Project OS authority preflight（open blocker=0），签发 `s4_t03_search_admission_6cdde650d9647975bcfb`。它只绑定 NVDA 三个固定 request digest、最多 2 次官方来源访问、8 次本地只读调用、0 retry、1 次 SEC→NVDA IR fallback、0 模型/Provider/费用、300 秒；时效为 `2026-08-04T06:10:00Z` 至 `08:10:00Z`。admission round-trip 与 active 校验通过，尚未 source live、未消费、未形成 current Evidence 或 Artifact。current next=`FIN-0.1.2-S4-T03-NVDA-CURRENT-SEARCH-CANARY-EXACT-LIVE-EXECUTION`；只允许一次，首个项目内阻断即停，不自动重跑。
 >
 > [!IMPORTANT]

@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL Search fresh proof passed，admission issuance authorized but not issued / S4-T06–T08 not started`
+状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL Search admission issued-unconsumed，exact-live next / S4-T06–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -123,7 +123,7 @@ RC-P36-117 现已完成结构处置：完整本地 payload 继续作为审计和
 
 当前 next：
 
-`FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-FRESH-ADMISSION-ISSUANCE`
+`FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-EXACT-LIVE-EXECUTION`
 
 R3 exact-live 已 exact-once 成功：9 calls / 9 captures / 3 local Fact receipts / 9 formal Artifacts，input/output=`55,906/3,038`，cost=`USD 0.02696216`，独立 L1 通过，RC-P36-117 live-close。T04 仍不能关闭：最终本地 delivery 暴露内部 scope/period token、重复币种单位并混入英文限制项，且 Verifier 未绑定 final delivery preview；登记 RC-P36-118。该问题属于 T04 产品表面与验收绑定，不属于模型重试事项。后继只允许零调用、有界本地 renderer/preview-binding 处置；不得自动 R4。paired/Owner 与 current NVDA R2 仍未成立，T05 继续 blocked。
 
@@ -153,4 +153,4 @@ DELL Search 已在两个独立 disposable root 中零调用通过。两次 norma
 
 审计同时在 live 前发现 DELL fallback 是直接官方 PDF，而冻结共享 parser 只解析 HTML anchor。该缺口留在 T05-B 并由新的 case-aware runner 以受控后继关闭：只接受官方 HTTPS allowlist、`application/pdf` 与 `%PDF`、可信 `Last-Modified` 且不晚于 as-of；source request/response 仍在解析前 capture。非 PDF、无日期/非法日期、未来日期和跨案 admission 均 fail closed。历史 T03 NVDA runner 与 T05-A immutable bindings 未改写。
 
-当前 authority 只允许下一项签发一份 DELL Search fresh admission；本轮 admission 未生成、未消费，也没有访问外网或 DeepSeek。DELL current R2 仍为 false。Search live 后若来源没有合格结果，应保留 typed gap；若出现项目内 adapter/parser/capture/budget failure，应 terminalize 并停止，不自动第二次搜索。RC-P36-115 的跨 runtime 共享消费锁仍按既定边界留给 S5，当前执行必须固定一个 runtime root 且不得重放。
+DELL Search fresh admission 已原子签发，digest=`b5dd2c46…167f2`，有效期为 `2026-08-04T17:01:00Z–19:01:00Z`；状态严格为 issued/unconsumed/not-started。它绑定三份 DELL request digest、`2 source / 8 local / retry 0 / fallback 1 / 300s / model 0`，并保留 admission 已写但 issuance 中断时仅对 exact payload 的恢复路径。reserved runtime root 仍不存在，source/model/Provider/Run/Artifact 均为 0。DELL current R2 仍为 false。下一项只允许在该单一 runtime root 执行一次 Search exact-live；若来源没有合格结果则保留 typed gap，项目内 adapter/parser/capture/budget failure 则 terminalize 并停止，不自动第二次搜索。RC-P36-115 的跨 runtime 共享消费锁仍留给 S5，不得宣称已全局解决。

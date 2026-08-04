@@ -3,6 +3,9 @@
 更新时间：2026-08-04
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-B DELL Search fresh admission 已签发未消费，exact-live 待续行（current，2026-08-05）**：admission=`s4_t03_search_admission_b5dd2c46346d81088e4b`、digest=`b5dd2c46…167f2`，有效期=`2026-08-04T17:01:00Z–19:01:00Z`；精确绑定三份 DELL request、`2 source / 8 local / retry 0 / fallback 1 / 300s / model/provider/cost 0`。原子 issuer 证明首次写入、完整重复拒绝、exact orphan admission 恢复和 mutated orphan 拒绝；reserved root=`.codex_runtime/fin012-s4-t05b-dell-current-search-r1` 仍 absent。当前 issued/consumed/executed=`true/false/false`，source/model/Provider/Run/Artifact=`0/0/0/0/0`，DELL R2=false。RC-P36-115 的跨 runtime 锁仍后传 S5，因此下一次只可在声明 root 执行一次。current next=`FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-EXACT-LIVE-EXECUTION`；不得同步进入 Agent admission/DeepSeek。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-B DELL Search fresh proof 与 admission authority 已通过，签发待续行（current，2026-08-05）**：T05-B 已按真实依赖拆为 Search proof/签发/live → current Evidence Pack/Agent exact input → Agent proof/签发/live/L1/paired/Owner，未创建新版本或阶段。两个独立 disposable root 的 DELL Search 零调用结果一致且身份新鲜，三 Cell accepted/rejected=`6/9、6/0、6/3`，每次 `1 simulated source / 6 local / 8 captures / 18 accepted / 0 live source/model/provider/cost/Artifact`。审计在 live 前发现 DELL IR fallback 是直接 PDF、共享旧 parser 只认 HTML；新的 T05 case-aware runner 以官方 HTTPS allowlist、PDF magic/content-type、可信 Last-Modified≤as-of 和 capture-first 收敛，不改写冻结 T03 runner；非 PDF、缺日期、未来日期、跨案 admission 均 fail closed。authority 只允许下一步签发 DELL Search admission；当前 admission/source live/Agent admission/DeepSeek/DELL R2=`0/0/0/0/false`。current next=`FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-FRESH-ADMISSION-ISSUANCE`。
 >
 > [!IMPORTANT]

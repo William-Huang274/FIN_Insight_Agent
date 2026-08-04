@@ -1,11 +1,13 @@
 # FIN 0.1.1 / 0.1.2 PRD 能力对账与 S0–S5 重基线
 
 日期：2026-08-04
-状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T04 pass closed，current NVDA R2 Owner accepted / S4-T05-A zero-call transfer engineering pass / T05-B DELL Search fresh proof pass，admission issuance next / no product version change`
+状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T04 pass closed，current NVDA R2 Owner accepted / S4-T05-A zero-call transfer engineering pass / T05-B DELL Search admission issued-unconsumed，exact-live next / no product version change`
 
 > 2026-08-04 S4-T03 零调用权限审计确认：F05 当前不是“模型效果差”，而是 metadata route 尚未接成 executable search，来源 request/response capture-first 与 fresh execution-control chain 也未建立。`RC-P36-114` 留在 T03；必须先做一个合并的零调用可执行接入包，再另行判断 current canary admission，不能把 state stub、URL metadata wrapper 或历史 fixture 写成 current Agentic Search。
 
-当前 next：`FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-FRESH-ADMISSION-ISSUANCE`
+当前 next：`FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-EXACT-LIVE-EXECUTION`
+
+> 2026-08-05 T05-B DELL Search admission issuance：fresh admission=`b5dd2c46…167f2` 已签发但未消费，绑定三份 DELL request、最多 `2 source / 8 local / retry 0 / fallback 1 / model/provider/cost 0`，reserved runtime root 仍不存在；admission/source live/Agent admission/DeepSeek/DELL R2=`1/0/0/0/false`。下一步只执行一次 Search exact-live，不能同步跳到 Agent 或把 Search candidate 自动晋升为 Evidence。
 
 > 2026-08-05 T05-B DELL Search fresh proof/authority：两个独立 disposable root 的 DELL Search 零调用结果一致，三 Cell accepted/rejected=`6/9、6/0、6/3`，每次 `1 simulated source / 6 local / 8 captures / 0 live/model/provider/Artifact`。live 前发现 DELL IR fallback 是直接 PDF、冻结共享 parser 只处理 HTML；以不改写历史 T03 runner 的 T05 case-aware successor 增加官方 PDF＋可信 Last-Modified 身份解析，相关 mutation fail closed。只授权下一步签发 Search admission，当前 admission/source live/Agent admission/DeepSeek/DELL R2 均未发生。Agent admission 必须等 Search live terminal 和 current Evidence Pack 后单独决定。
 

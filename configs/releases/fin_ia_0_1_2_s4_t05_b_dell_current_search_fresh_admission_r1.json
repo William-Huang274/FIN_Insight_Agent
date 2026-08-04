@@ -1,0 +1,22 @@
+{
+  "admission_digest": "b5dd2c46346d81088e4bced4ceeb680c614febfbe8c2303bbd802fe7590167f2",
+  "admission_id": "s4_t03_search_admission_b5dd2c46346d81088e4b",
+  "case_key": "DELL",
+  "contract_ref": "fin_0_1_2.S4.T03.executable_agentic_search:v1",
+  "expires_at": "2026-08-04T19:01:00Z",
+  "fallback_ceiling": 1,
+  "issued_at": "2026-08-04T17:01:00Z",
+  "local_invocation_ceiling": 8,
+  "model_calls": 0,
+  "paid_api_cost_usd": 0.0,
+  "provider_calls": 0,
+  "request_digests": [
+    "be255ecdf977f6f1db1fd0518b51c971cf87514685383fb7c7edd1eed5c04bd6",
+    "39d1c34d94254a45be8fcdf35630721abd44ca04ebd1e8d9215ca6682bd2f214",
+    "1d5ecad23a19cb1fa29bb7a4d3cfd21047bae42464c2b9c32639c7956ce30ec0"
+  ],
+  "retry_ceiling": 0,
+  "schema_version": "fin_ia_0_1_2_s4_t03_agentic_search_admission_v1_0",
+  "source_network_call_ceiling": 2,
+  "wall_clock_seconds": 300
+}

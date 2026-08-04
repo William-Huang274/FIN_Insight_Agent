@@ -1,0 +1,88 @@
+{
+  "atomic_issuance": {
+    "admission_written_atomically": true,
+    "partial_admission_recovery_requires_exact_payload": true,
+    "recovered_from_exact_admission_without_issuance": false,
+    "second_complete_issuance_fails_closed": true
+  },
+  "authority": {
+    "admission_issuance_authorized": true,
+    "agent_or_model_execution_authorized": false,
+    "automatic_retry_or_second_search_authorized": false,
+    "source_live_execution_authorized_this_issuance": false,
+    "user_instruction": "继续"
+  },
+  "base_commit": "27eb4244eacf96fb922b53a95942e474d44b3ffb",
+  "exact_budget": {
+    "fallback_budget": 1,
+    "local_retrieval_or_tool_invocations": 8,
+    "model_calls": 0,
+    "paid_api_cost_usd": 0.0,
+    "provider_calls": 0,
+    "retry_budget": 0,
+    "source_network_calls": 2,
+    "wall_clock_seconds": 300
+  },
+  "immutable_bindings": [
+    {
+      "decision_digest": "3cb04ffb32c7bbd3a248549c87493b1907d8cb6d4e582eb70e49ee76ee9a88f2",
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_current_search_fresh_zero_call_proof_and_admission_authority_decision_v1_0.json",
+      "sha256": "a5ea75a31b31e96b78bd68e49b50ae0d943889ec9447911a98fbe793c7b1de5e"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s4_t05_current_search.py",
+      "sha256": "583685c4b48659d2f64e39f940705f5dd7e6bc87b38fb12e244bf7794b5519b8"
+    },
+    {
+      "ref": "scripts/releases/issue_fin_ia_0_1_2_s4_t05_b_dell_current_search_fresh_admission.py",
+      "sha256": "14c3aa4e8a1096313a4db7f14e91f270dd587ace02e25c99b515df3823dd682f"
+    }
+  ],
+  "issuance_digest": "a9a6c059a1a46aebda3c7b6afdfcfb5c5bcd0e23161c04958c92387e3d3f586c",
+  "issuance_id": "FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-FRESH-ADMISSION-ISSUANCE-R1",
+  "issued_admission": {
+    "admission_digest": "b5dd2c46346d81088e4bced4ceeb680c614febfbe8c2303bbd802fe7590167f2",
+    "admission_id": "s4_t03_search_admission_b5dd2c46346d81088e4b",
+    "case_key": "DELL",
+    "consumed": false,
+    "execution_started": false,
+    "expires_at": "2026-08-04T19:01:00Z",
+    "issued": true,
+    "issued_at": "2026-08-04T17:01:00Z",
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_current_search_fresh_admission_r1.json",
+    "request_digests": [
+      "be255ecdf977f6f1db1fd0518b51c971cf87514685383fb7c7edd1eed5c04bd6",
+      "39d1c34d94254a45be8fcdf35630721abd44ca04ebd1e8d9215ca6682bd2f214",
+      "1d5ecad23a19cb1fa29bb7a4d3cfd21047bae42464c2b9c32639c7956ce30ec0"
+    ],
+    "sha256": "b482ff19adfb3539b49e9857b3666965b2d80fdbf552611dbe482dff500e7071"
+  },
+  "known_boundary": "Issuance is not source live, current Evidence Pack, Agent exact input, DeepSeek execution, DELL R2, paired assessment, Owner acceptance, MU entry, release or production.",
+  "next_action": "FIN-0.1.2-S4-T05-B-DELL-CURRENT-SEARCH-EXACT-LIVE-EXECUTION",
+  "observed_counts": {
+    "admission_consumptions": 0,
+    "business_artifacts": 0,
+    "business_runs": 0,
+    "local_retrieval_or_tool_invocations": 0,
+    "model_calls": 0,
+    "new_admissions": 1,
+    "provider_calls": 0,
+    "source_network_calls": 0
+  },
+  "recorded_at": "2026-08-05T01:01:00+08:00",
+  "reserved_execution_boundary": {
+    "cross_runtime_boundary_issue": "RC-P36-115",
+    "cross_runtime_global_lock_proven": false,
+    "runtime_root": ".codex_runtime/fin012-s4-t05b-dell-current-search-r1",
+    "runtime_root_absent": true,
+    "single_declared_runtime_root_only": true
+  },
+  "schema_version": "fin_ia_0_1_2_s4_t05_b_dell_current_search_fresh_admission_issuance_v1_0",
+  "stage_truth": {
+    "DELL_current_R2": false,
+    "MU_current_R2": false,
+    "S4_T05_B_DELL": "search_admission_issued_unconsumed",
+    "post_transfer_NVDA_R2": false
+  },
+  "status": "issued_unconsumed_zero_call_preflight_pass"
+}

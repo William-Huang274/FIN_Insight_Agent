@@ -27,6 +27,10 @@ NEXT = (
     "FIN-0.1.2-S4-T02-THREE-CASE-RETRIEVAL-EVIDENCE-"
     "DETERMINISTIC-READINESS-ZERO-CALL-IMPLEMENTATION"
 )
+CURRENT_SUCCESSOR = (
+    "FIN-0.1.2-S4-T03-NVDA-BOUNDED-AGENTIC-SEARCH-"
+    "CURRENT-CANARY-AUTHORITY-DECISION"
+)
 
 
 def _load(path: Path) -> dict:
@@ -73,7 +77,7 @@ def test_t01_pass_does_not_promote_snapshots_or_enter_t02() -> None:
     assert set(implementation["observed_counts"].values()) == {0}
 
 
-def test_projection_and_backlog_advance_only_to_t02_zero_call() -> None:
+def test_historical_projection_stays_at_t02_while_current_backlog_advances_once() -> None:
     projection = _load(PROJECTION)
     backlog = _load(BACKLOG)
     next_action = backlog["next_action"]
@@ -85,10 +89,14 @@ def test_projection_and_backlog_advance_only_to_t02_zero_call() -> None:
     assert projection["current_truth"]["current_NVDA_R2"] is False
     assert projection["current_truth"]["current_next_action"] == NEXT
     assert projection["S4_T02_entry"]["live_search_or_model_authorized"] is False
-    assert next_action["item_id"] == NEXT
-    assert next_action["current_projection_sha256"] == _sha256(PROJECTION)
+    assert next_action["item_id"] == CURRENT_SUCCESSOR
+    assert next_action["current_projection_ref"].endswith(
+        "fin_ia_0_1_2_current_program_projection_v2_37.json"
+    )
     assert next_action["S4_T01_completed"] is True
-    assert next_action["S4_T02_started"] is False
+    assert next_action["S4_T02_started"] is True
+    assert next_action["S4_T02_completed"] is True
+    assert next_action["S4_T02_T03_authorized"] is False
     assert next_action["S4_T01_snapshots_are_current_Evidence"] is False
 
 

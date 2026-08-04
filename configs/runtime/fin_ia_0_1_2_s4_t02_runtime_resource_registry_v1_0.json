@@ -1,0 +1,85 @@
+{
+  "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
+  "registry_id": "FIN-0.1.2-S4-T02-RUNTIME-RESOURCE-REGISTRY-R1",
+  "status": "tracked_typed_runtime_resource_authority",
+  "policy": {
+    "registry_is_source_of_truth": true,
+    "static_scanner_is_detector_only": true,
+    "direct_unregistered_runtime_read_fails_closed": true,
+    "missing_unknown_duplicate_or_digest_drift_fails_closed": true,
+    "permutation_or_cross_version_fails_closed": true,
+    "ignored_untracked_codex_runtime_and_git_forbidden": true,
+    "traversal_and_symlink_escape_forbidden": true
+  },
+  "detector_python_refs": [],
+  "resource_count": 5,
+  "resource_bytes": 129282,
+  "resource_canonical_digest": "ae0f21527ef0bcde900ca435005d09605681c20342cfe4f6e94eb3c49ab2a606",
+  "resources": [
+    {
+      "resource_id": "fin_0_1_2.s4.t02.authority",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_s4_t02_retrieval_evidence_readiness_authority_v1_0.json",
+      "sha256": "6e89c3a8e8a335c96d248059a4e3bd50f6663eb7377ddc7dcf0e0fcde42a7452",
+      "bytes": 4838,
+      "classification": "deterministic_retrieval_evidence_readiness_authority",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s4_retrieval_evidence_readiness.load_current_fin_0_1_2_s4_t02_readiness"
+      ],
+      "load_phase": "S4_T02_zero_call_readiness_compilation",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s4_retrieval_evidence_readiness"
+    },
+    {
+      "resource_id": "fin_0_1_2.s4.t02.index_snapshot.public_source_summary",
+      "repo_relative_path": "data/manifests/public_source_normalized_snapshot_summary_v0_1.json",
+      "sha256": "af8058ac1d9051401590c7efdd44171782e67c4f8f649533314336ad681828cf",
+      "bytes": 4247,
+      "classification": "historical_public_source_index_summary",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s4_retrieval_evidence_readiness.load_current_fin_0_1_2_s4_t02_readiness"
+      ],
+      "load_phase": "S4_T02_zero_call_readiness_compilation",
+      "required": true,
+      "source_owner": "data.manifests.public_source_normalized_snapshot_summary"
+    },
+    {
+      "resource_id": "fin_0_1_2.s4.t02.source_snapshot.dell",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_s4_t04_dell_source_grounded_input_pack_v1_0.json",
+      "sha256": "1a173ac6097195bdc6d2dd0f3d43544a947069d6848786f4fe9ca9eb805c8ec9",
+      "bytes": 62638,
+      "classification": "historical_source_grounded_readiness_fixture",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s4_retrieval_evidence_readiness.load_current_fin_0_1_2_s4_t02_readiness"
+      ],
+      "load_phase": "S4_T02_zero_call_readiness_compilation",
+      "required": true,
+      "source_owner": "configs.releases.fin_ia_0_1_s4_t04_dell_source_grounded_input_pack"
+    },
+    {
+      "resource_id": "fin_0_1_2.s4.t02.source_snapshot.mu",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_s4_t06_mu_source_grounded_input_pack_v1_0.json",
+      "sha256": "c97add3afee69278084c090b05e114436f426266c40d91c8e4ce916774e33d09",
+      "bytes": 54657,
+      "classification": "historical_source_grounded_readiness_fixture",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s4_retrieval_evidence_readiness.load_current_fin_0_1_2_s4_t02_readiness"
+      ],
+      "load_phase": "S4_T02_zero_call_readiness_compilation",
+      "required": true,
+      "source_owner": "configs.releases.fin_ia_0_1_s4_t06_mu_source_grounded_input_pack"
+    },
+    {
+      "resource_id": "fin_0_1_2.s4.t02.source_snapshot.nvda_manifest",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_2_s3_nvda_exact_product_input_v1_0.json",
+      "sha256": "1f5bf2ba07a917f13f123c72e27e644af43c47ecf68ae34d2983fba7c724991b",
+      "bytes": 2902,
+      "classification": "historical_exact_input_manifest_without_source_content",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_s4_retrieval_evidence_readiness.load_current_fin_0_1_2_s4_t02_readiness"
+      ],
+      "load_phase": "S4_T02_zero_call_readiness_compilation",
+      "required": true,
+      "source_owner": "configs.releases.fin_ia_0_1_2_s3_nvda_exact_product_input"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01 pass closed / S4-T02 zero-call implementation pending / S4-T03–T08 not started`
+状态：`S4 entered / S4-T01–T02 pass closed / S4-T03 authority pending / S4-T04–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -27,8 +27,8 @@ S4 只有在以下结果同时成立时才能关闭：
 | Task | 本阶段只解决什么 | 通过条件 | 明确不做 |
 | --- | --- | --- | --- |
 | S4-T01 | PRD/current Runtime 自然 Case 入口与 exact binding（已通过） | 用户式 Objective、as-of、预算、三 Cell、current repository source/index snapshot refs 和 fresh identity projection 在 DELL/MU/NVDA fixture 中可重建；mutation/cross-case fail closed；snapshot 明确不是 current Evidence | 不检索、不调用模型、不生成业务 Artifact |
-| S4-T02 | Retrieval/Evidence deterministic readiness（当前） | 三案 EvidenceRequest、route、candidate ceiling、metadata、parser/authority、accepted/rejected/gap、citation 由 fixture/mutation 证明；历史 source pack 与 2026-06-11 index snapshot 完成 freshness/reachability 处置；RC-P36-113 在 T03 前关闭 | 不用 live 搜索发现合同问题 |
-| S4-T03 | NVDA bounded Agentic Search current canary | 当前 Runtime 实际调用批准的 public/local RAG/SQL/Graph/official routes；零 false promotion；完整 ToolUse/Evidence lineage | 不自动扩大来源或进行 full research |
+| S4-T02 | Retrieval/Evidence deterministic readiness（已通过） | 三案 EvidenceRequest、route、candidate ceiling、metadata、parser/authority、accepted/rejected/gap、citation 由 fixture/mutation 证明；历史 source pack 与 2026-06-11 index snapshot 完成 freshness/reachability 处置；RC-P36-113 已关闭 | 不用 live 搜索发现合同问题 |
+| S4-T03 | NVDA bounded Agentic Search current canary（authority pending） | 当前 Runtime 实际调用批准的 public/local RAG/SQL/Graph/official routes；零 false promotion；完整 ToolUse/Evidence lineage | 不自动扩大来源或进行 full research |
 | S4-T04 | NVDA natural-Case Agentic Research integration | EvidenceRequest→approved pack→Judgment→Lead/Writer/Verifier→九件套；与 S3 frozen-input 对照；完成 source-grounded NVDA R2 产品验收 | 不用 S3 frozen 结果冒充 current source proof |
 | S4-T05 | DELL/MU transfer 与 post-transfer NVDA | DELL/MU R2、post-transfer NVDA R2；同一 Runtime；新 L1 按 owner 阻断 | 不逐字段无限修复 |
 | S4-T06 | Workbench current product projection | Case/Run/Evidence/Numeric/Graph/Gap/Workpaper/Report/Trace/quality 可审、可回放、可退回 | 不用 fallback 冒充 Agent |
@@ -77,7 +77,20 @@ S4 只有在以下结果同时成立时才能关闭：
 
 组合审计另复现一个本轮前已存在的共享问题：默认 S0 Runtime resource detector 已能看到 S3 新增的 fact-candidate profile literal，但默认 registry 未登记该资源，相关历史测试为 `44 passed / 2 failed`。登记 `RC-P36-113`；它不否定 T01 isolated registry/readback，但必须在 S4-T03 paid canary 前由 T02 的 pre-T03 prerequisite 关闭，不能拖到 live 才发现。
 
-## 5. 阶段止损与工程纪律
+## 5. S4-T02 实现结果
+
+T02 已以合同 `fin_0_1_2.S4.three_case_retrieval_evidence_deterministic_readiness:v1` 零调用通过并关闭。current Runtime 对每案生成三个 `RetrievalEvidenceRequest` 和确定性 route plan，逐候选检查 case/as-of、source snapshot、HTTPS citation、parser adapter、route receipt、authority 与 ceiling，并只返回元数据、资格决定、citation projection 和 typed gap；原始 statement 与数值内容不进入 readiness 输出。
+
+- DELL：历史 fixture `2 accepted / 8 rejected / 2 citations / 0 promoted`；
+- MU：历史 fixture `13 accepted / 1 rejected / 13 citations / 0 promoted`，唯一拒绝是显式 ceiling overflow；
+- NVDA：manifest-only，`0/0/0/0`，保留 demand、counterevidence、value 三个 `current_*_search_required` gap；
+- shared public index 只证明 catalog 可寻址，as-of=`2026-06-11`，对当前 Evidence 判为 stale；
+- focused 与默认 registry 合并回归=`29 passed`，连同 T01、M6 主链和历史 successor 兼容回归=`93 passed`；RC-P36-113 通过原子补登 S3 profile、保持 unknown-resource fail-closed 并完成 readback 后关闭；
+- model、Provider、execution/source network、tool、retrieval、store write、business Artifact 均为 0。
+
+这意味着“检索与 Evidence 资格判断的管道已准备好”，不意味着已经执行 RAG/Agentic Search。DELL/MU 历史包只用于 parser/citation/readiness 回归；NVDA 当前证据仍不存在，必须由 T03 的受控 current canary 获取。
+
+## 6. 阶段止损与工程纪律
 
 - 每个技术层最多一个合并结构修复包和一个预先声明的 replacement canary；
 - fixture 或测试失败留在 owning task 原地修，不创建产品版本；
@@ -87,10 +100,10 @@ S4 只有在以下结果同时成立时才能关闭：
 - paid/live 前必须先过 Project OS full-chain preflight 和对应 deterministic ceiling gate；
 - S4-T01 不通过，不得进入 S4-T02；S4-T02 不通过，不得用 S4-T03 live 搜索暴露基础合同问题。
 
-## 6. 当前边界
+## 7. 当前边界
 
-当前 S4-T01 已通过并关闭，S4-T02 尚未开始；S4-T03–T08 未开始。model、Provider、network、source、tool、admission、Run、Artifact、Human Review 均未发生。current NVDA R2=false，release=false，production=false。
+当前 S4-T01、T02 已通过并关闭；S4-T03 尚未开始，先做独立零调用 authority decision；S4-T04–T08 未开始。T02 的 model、Provider、network、source、tool、retrieval、admission、Run、Artifact、Human Review 均未发生。current NVDA R2=false，release=false，production=false。
 
 当前 next：
 
-`FIN-0.1.2-S4-T02-THREE-CASE-RETRIEVAL-EVIDENCE-DETERMINISTIC-READINESS-ZERO-CALL-IMPLEMENTATION`
+`FIN-0.1.2-S4-T03-NVDA-BOUNDED-AGENTIC-SEARCH-CURRENT-CANARY-AUTHORITY-DECISION`

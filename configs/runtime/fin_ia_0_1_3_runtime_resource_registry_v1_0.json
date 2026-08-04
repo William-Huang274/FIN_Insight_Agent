@@ -21,9 +21,9 @@
     "src/sec_agent/research_skills.py",
     "src/sec_agent/s4_case_runtime.py"
   ],
-  "resource_count": 29,
-  "resource_bytes": 323829,
-  "resource_canonical_digest": "d2126d8c5e8c94c1d435ba0b9cada37e70ee6bd5e7d38a6233ed0db2e19079a4",
+  "resource_count": 30,
+  "resource_bytes": 327491,
+  "resource_canonical_digest": "f907ce949ed55e0582ce918ccd6c1eb3f51bcee66e98df3b96ac9b19116d284b",
   "resources": [
     {
       "resource_id": "application.config.point01_feature_flags",
@@ -101,6 +101,19 @@
       "load_phase": "deterministic_contract_compilation",
       "required": true,
       "source_owner": "apps.workbench.backend.application.fin_0_1_2_runtime_contract_binding"
+    },
+    {
+      "resource_id": "fin_0_1_2.s3.fact_candidate_pool_profiles",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_s3_nvda_fact_candidate_pool_profiles_v1_0.json",
+      "sha256": "717af44f48f63358da6bbeae7c0a5c2c5eae5530766e71e66800aeb80ce4f7d0",
+      "bytes": 3662,
+      "classification": "deterministic_fact_candidate_profile_set",
+      "consumer_ids": [
+        "apps.workbench.deterministic_judgment_atom_contract.DeterministicJudgmentAtomCompiledContract.fact_candidate_pool_plan"
+      ],
+      "load_phase": "S3_T02_local_fact_planning",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.deterministic_judgment_atom_contract"
     },
     {
       "resource_id": "research_skill.coverage_reflection",

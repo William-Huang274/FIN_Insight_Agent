@@ -1,9 +1,9 @@
 # FIN 0.1.2 合并后统一 S0–S5 产品推进计划
 
 日期：2026-08-02
-状态：`current canonical plan / S0-S2 pass closed / S3 bounded anchor pass closed / S4-T01 pass closed / S4-T02 zero-call pending / S5 not started`
+状态：`current canonical plan / S0-S2 pass closed / S3 bounded anchor pass closed / S4-T01–T02 pass closed / S4-T03 authority pending / S5 not started`
 
-> 2026-08-04 S4-T01 已完成：DELL/MU/NVDA 的自然 Objective、as-of、三 Cell、零调用预算、内容寻址 source/index entry snapshot 和 prospective nonreusable identity 已由 current Runtime consumer 编译，focused/relevant=`15/71 passed`。这些 snapshot 不是 current Evidence；2026-06-11 index 与历史 source pack 的 freshness/reachability 归 S4-T02。组合审计同时登记 RC-P36-113 默认 registry 漂移，它在 T03 paid canary 前关闭，不倒灌 T01。当前 next 为 S4-T02 zero-call retrieval/evidence deterministic readiness。
+> 2026-08-04 S4-T02 已完成：三案 current Runtime 已编译 EvidenceRequest、route、candidate ceiling、parser/authority、accepted/rejected/gap 与 citation readiness，focused＋共享 registry=`29 passed`。DELL/MU 历史 fixture 分别为 `2/8/2/0`、`13/1/13/0`（accepted/rejected/citation/promoted）；NVDA manifest-only 为 `0/0/0/0` 并保留三个 current-search gap。RC-P36-113 已关闭。历史 fixture 仍不是 current Evidence；下一项只做 T03 bounded NVDA canary 的零调用 authority decision。
 
 > 2026-08-04 Owner 已批准阶段边界重划：S3 以有限 frozen-input Runtime/交付锚点通过并关闭，不等于 current source-grounded NVDA R2；Evidence density 与自然 Case 产品验收回到既有 S4-T02/T03/T04 owner。
 
@@ -18,7 +18,7 @@ FIN 0.1.1 已完整经历第一轮 S0–S5，并在 S4 暴露共同 Runtime、�
 ## 2. 当前产品真值
 
 - FIN 0.1.1：冻结的第一轮内部 honest-block 基线；
-- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；S3 replacement exact-live、独立 L1 与 verified delivery surface 已完成，Owner 以有限 frozen-input Runtime/交付锚点范围关闭 S3，明确不接受 current source-grounded NVDA R2；Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 由本地确定性 planner 掌管；S4-T01 已通过，当前为 S4-T02 retrieval/evidence deterministic readiness 待执行；
+- FIN 0.1.2：当前唯一开发版本，S0、S1、S2 已通过并关闭；S3 replacement exact-live、独立 L1 与 verified delivery surface 已完成，Owner 以有限 frozen-input Runtime/交付锚点范围关闭 S3，明确不接受 current source-grounded NVDA R2；Pro 只保留 Claim/WWC 的 bounded alias/enum atom surface，Fact 由本地确定性 planner 掌管；S4-T01、T02 已通过，当前为 S4-T03 bounded NVDA Agentic Search canary 的 authority decision；
 - 原 FIN 0.1.3：FIN 0.1.2 S0 的历史 recovery/proof attempts，不再是当前产品版本；
 - 原 FIN 0.1.4：未执行的 S0 改进提案，不再是当前入口；
 - FIN 0.2：继续是 Earnings Review Alpha，定义不变；

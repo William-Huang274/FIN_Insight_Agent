@@ -1,0 +1,136 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t02_retrieval_evidence_readiness_authority_v1_0",
+  "contract_ref": "fin_0_1_2.S4.three_case_retrieval_evidence_deterministic_readiness:v1",
+  "status": "tracked_zero_call_readiness_authority_not_retrieval_or_evidence_promotion",
+  "t01_contract_ref": "fin_0_1_2.S4.natural_case_entry_and_exact_binding:v1",
+  "zero_call_budget": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "retrieval_calls": 0,
+    "store_writes": 0,
+    "token_budget": 0,
+    "cost_usd": 0.0,
+    "wall_clock_seconds": 90
+  },
+  "candidate_policy": {
+    "per_request_candidate_ceiling": 6,
+    "per_case_candidate_ceiling": 18,
+    "stable_order": [
+      "source_authority_rank_desc",
+      "published_at_desc",
+      "evidence_ref_asc"
+    ],
+    "required_metadata": [
+      "entity_ref",
+      "evidence_ref",
+      "source_url",
+      "citation",
+      "source_snapshot_ref",
+      "normalized_locator_snapshot_digest",
+      "parser_adapter",
+      "authority_scope"
+    ],
+    "candidate_or_graph_hypothesis_is_current_evidence": false,
+    "silent_truncation_allowed": false
+  },
+  "parser_authority_policy": {
+    "required_fetch_status": "success",
+    "required_route_status_prefix": "executed_",
+    "required_https_citation": true,
+    "source_snapshot_and_parser_lineage_must_match": true,
+    "cross_case_entity_is_hard_failure": true,
+    "missing_citation_is_rejected_not_promoted": true,
+    "historical_promoted_row_is_current_evidence": false
+  },
+  "index_snapshot_policy": {
+    "snapshot_id": "public_source_normalized_materialized_v0_3",
+    "as_of_date": "2026-06-11",
+    "required_successful_sources": [
+      "openalex_api",
+      "sec_edgar_apis",
+      "wikidata",
+      "yahoo_chart"
+    ],
+    "required_failed_source_count": 0,
+    "current_case_evidence_status": "catalog_reachable_snapshot_stale_for_current_case_evidence",
+    "allowed_use": "route_catalog_and_fixture_metadata_only"
+  },
+  "route_profiles": [
+    {
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "route_ids": [
+        "official_issuer_disclosure_metadata_route",
+        "local_relationship_graph_metadata_route",
+        "public_source_index_metadata_route"
+      ],
+      "accepted_candidate_roles": [
+        "issuer_counterevidence_statement",
+        "relationship_context"
+      ],
+      "empty_candidate_gap_code": "current_counterevidence_search_required"
+    },
+    {
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "route_ids": [
+        "official_issuer_disclosure_metadata_route",
+        "local_relationship_graph_metadata_route",
+        "public_source_index_metadata_route"
+      ],
+      "accepted_candidate_roles": [
+        "issuer_demand_statement",
+        "relationship_context"
+      ],
+      "empty_candidate_gap_code": "current_demand_evidence_search_required"
+    },
+    {
+      "program_cell_id": "value_and_profit_capture",
+      "route_ids": [
+        "local_exact_value_sql_metadata_route",
+        "official_issuer_disclosure_metadata_route"
+      ],
+      "accepted_candidate_roles": [
+        "issuer_financial_statement",
+        "exact_numeric_context"
+      ],
+      "empty_candidate_gap_code": "current_value_evidence_search_required"
+    }
+  ],
+  "cases": [
+    {
+      "case_key": "DELL",
+      "expected_as_of": "2026-07-26T00:00:00Z",
+      "source_mode": "historical_source_pack_readiness_fixture",
+      "source_resource_id": "fin_0_1_2.s4.t02.source_snapshot.dell",
+      "freshness_disposition": "historical_exact_as_of_match_not_current_evidence"
+    },
+    {
+      "case_key": "MU",
+      "expected_as_of": "2026-07-26T00:00:00Z",
+      "source_mode": "historical_source_pack_readiness_fixture",
+      "source_resource_id": "fin_0_1_2.s4.t02.source_snapshot.mu",
+      "freshness_disposition": "historical_exact_as_of_match_not_current_evidence"
+    },
+    {
+      "case_key": "NVDA",
+      "expected_as_of": "2026-07-21T00:00:00Z",
+      "source_mode": "manifest_only_current_search_required",
+      "source_resource_id": "fin_0_1_2.s4.t02.source_snapshot.nvda_manifest",
+      "freshness_disposition": "exact_as_of_manifest_without_source_content_current_search_required"
+    }
+  ],
+  "nonpromotion_boundary": {
+    "fixture_decision_scope": "deterministic_readiness_only",
+    "runtime_promotion_authorized": false,
+    "writer_citable": false,
+    "domain_judgment_eligible": false,
+    "persistence_authorized": false,
+    "T03_execution_admission_created": false,
+    "business_artifact_created": false,
+    "NVDA_manifest_is_current_evidence": false,
+    "DELL_MU_historical_rows_are_current_evidence": false
+  },
+  "authority_digest": "03c48307f33240fa9946496f20a33edefe1c19deae70f7825c2eff0233f21d4f"
+}

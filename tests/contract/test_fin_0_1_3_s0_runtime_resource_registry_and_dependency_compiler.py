@@ -72,10 +72,10 @@ def _assert_code(root: Path, expected: str) -> None:
 
 def test_registry_is_one_validated_authority_for_all_declared_consumers() -> None:
     registry = load_runtime_resource_registry(ROOT)
-    assert len(registry.resources) == 29
-    assert sum(row.bytes for row in registry.resources) == 323829
+    assert len(registry.resources) == 30
+    assert sum(row.bytes for row in registry.resources) == 327491
     assert registry.resource_canonical_digest == (
-        "d2126d8c5e8c94c1d435ba0b9cada37e70ee6bd5e7d38a6233ed0db2e19079a4"
+        "f907ce949ed55e0582ce918ccd6c1eb3f51bcee66e98df3b96ac9b19116d284b"
     )
     assert registry.package_paths()[0].as_posix().startswith("configs/")
     assert all(row.required for row in registry.resources)
@@ -85,7 +85,7 @@ def test_registry_is_one_validated_authority_for_all_declared_consumers() -> Non
 def test_static_detector_finds_no_direct_unregistered_runtime_literal() -> None:
     registry = load_runtime_resource_registry(ROOT)
     detected = detect_repo_relative_runtime_resource_literals(ROOT, registry)
-    assert len(detected) == 28
+    assert len(detected) == 29
     assert set(detected).issubset(registry.by_path())
     assert assert_no_unregistered_runtime_resource_literals(ROOT) == detected
 

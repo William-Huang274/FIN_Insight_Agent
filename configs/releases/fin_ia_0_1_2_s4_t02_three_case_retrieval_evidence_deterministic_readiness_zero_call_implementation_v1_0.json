@@ -1,0 +1,141 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t02_three_case_retrieval_evidence_deterministic_readiness_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.2-S4-T02-THREE-CASE-RETRIEVAL-EVIDENCE-DETERMINISTIC-READINESS-ZERO-CALL-IMPLEMENTATION-R1",
+  "recorded_at": "2026-08-04T12:05:00+08:00",
+  "sequence_after_projection": "v2_36",
+  "status": "pass_closed_zero_call_retrieval_evidence_readiness_T03_not_started",
+  "authority": {
+    "user_instruction": "继续",
+    "authorized_scope": "S4-T02 three-case retrieval and Evidence deterministic readiness plus the bounded pre-T03 RC-P36-113 registry closure",
+    "S4_T02_implementation_executed": true,
+    "S4_T03_or_later_started": false,
+    "model_provider_network_source_tool_retrieval_execution_authorized": false,
+    "admission_Run_Artifact_Human_or_Evidence_promotion_authorized": false
+  },
+  "implementation_bindings": [
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_retrieval_evidence_readiness.py",
+      "sha256": "fcc97e851147196bbf1daa254dd36db8136c684dbccb11dcb492cf8f466487c4",
+      "bytes": 35639,
+      "role": "typed_current_Runtime_readiness_compiler_and_fail_closed_candidate_qualification"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s4_t02_retrieval_evidence_readiness_authority_v1_0.json",
+      "sha256": "6e89c3a8e8a335c96d248059a4e3bd50f6663eb7377ddc7dcf0e0fcde42a7452",
+      "bytes": 4838,
+      "role": "three_case_route_candidate_parser_citation_freshness_and_nonpromotion_authority"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s4_t02_runtime_resource_registry_v1_0.json",
+      "sha256": "7aa04aa33dc3c581a5103c18cf902e99c9dac4c822cfa6e1a92feea91ec2d99d",
+      "bytes": 4181,
+      "role": "isolated_content_addressed_source_index_and_authority_registry"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+      "sha256": "e510e72945a9f8042f342b87c37b84ca305280a85ccf7dc3ad39f29d1328b25d",
+      "bytes": 17932,
+      "role": "shared_pre_paid_registry_closed_for_RC_P36_113"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t02_retrieval_evidence_deterministic_readiness.py",
+      "sha256": "dfab3426ae5a49c626be803d40ad1b28a6130f5a87dcf718eabb0ee7d10a4df6",
+      "bytes": 11147,
+      "role": "three_case_positive_mutation_cross_case_ceiling_freshness_citation_and_nonpromotion_matrix"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t02_closeout_and_t03_entry.py",
+      "sha256": "067323d5ad1ec18e62e392a963226462d492432183d737ab292fc687015d0bc9",
+      "bytes": 4611,
+      "role": "implementation_projection_backlog_Project_OS_and_T03_nonauthorization_closeout"
+    }
+  ],
+  "contract": {
+    "contract_ref": "fin_0_1_2.S4.three_case_retrieval_evidence_deterministic_readiness:v1",
+    "authority_digest": "03c48307f33240fa9946496f20a33edefe1c19deae70f7825c2eff0233f21d4f",
+    "required_outputs": [
+      "RetrievalEvidenceRequest",
+      "RetrievalRoutePlan",
+      "CandidateQualificationDecision",
+      "CitationProjection",
+      "S4T02CaseReadinessReceipt"
+    ],
+    "current_runtime_consumers": [
+      "load_current_fin_0_1_2_s4_t02_readiness",
+      "load_current_fin_0_1_2_s4_t02_three_case_readiness"
+    ],
+    "per_request_candidate_ceiling": 6,
+    "per_case_candidate_ceiling": 18,
+    "silent_truncation_allowed": false,
+    "T03_authorized": false
+  },
+  "three_case_results": [
+    {
+      "case_key": "DELL",
+      "source_disposition": "historical_exact_as_of_match_not_current_evidence",
+      "accepted_rejected_citations_promoted": [2, 8, 2, 0],
+      "typed_gap_count": 9,
+      "readiness_digest": "7efdacd5133907488a534dd6bf79dd1a51ca6e6aa27f0d42047fab897aa4c27f"
+    },
+    {
+      "case_key": "MU",
+      "source_disposition": "historical_exact_as_of_match_not_current_evidence",
+      "accepted_rejected_citations_promoted": [13, 1, 13, 0],
+      "typed_gap_count": 9,
+      "readiness_digest": "5a609ec12fe2e37aa4a0d2c3496a51cc26cadf130a55d1f9359b63d83de4d50a"
+    },
+    {
+      "case_key": "NVDA",
+      "source_disposition": "exact_as_of_manifest_without_source_content_current_search_required",
+      "accepted_rejected_citations_promoted": [0, 0, 0, 0],
+      "typed_gap_codes": [
+        "current_counterevidence_search_required",
+        "current_demand_evidence_search_required",
+        "current_value_evidence_search_required"
+      ],
+      "readiness_digest": "966b1e0da93978a65673bc6f86279509e3475d4ad84e1d463c979b19b2d968a2"
+    }
+  ],
+  "acceptance": {
+    "DELL_MU_NVDA_current_Runtime_readback": true,
+    "three_cells_and_exact_routes": true,
+    "candidate_ceiling_and_explicit_overflow_rejection": true,
+    "parser_snapshot_authority_and_HTTPS_citation_qualification": true,
+    "accepted_rejected_and_typed_gap_outputs": true,
+    "cross_case_as_of_route_parser_citation_index_and_promotion_mutation_fail_closed": true,
+    "permutation_digest_stable": true,
+    "historical_rows_return_statement_or_numeric_content": false,
+    "historical_rows_promoted_to_current_Evidence": false,
+    "current_NVDA_Evidence_created": false
+  },
+  "RC_P36_113_closure": {
+    "status": "closed_shared_default_registry_aligned_without_detector_weakening",
+    "registered_resource": "configs/runtime/fin_ia_0_1_2_s3_nvda_fact_candidate_pool_profiles_v1_0.json",
+    "default_registry_resource_count": 30,
+    "default_registry_detector_count": 29,
+    "default_registry_tests": "14 passed",
+    "S0_or_S3_reopened": false
+  },
+  "verification": {
+    "T02_focused_tests": "15 passed",
+    "T02_plus_default_registry_tests": "29 passed",
+    "T01_T02_M6_and_historical_successor_regression": "93 passed",
+    "real_retrieval_or_search_calls": 0,
+    "paid_or_model_calls": 0
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "execution_network_calls": 0,
+    "source_network_calls": 0,
+    "external_tool_calls": 0,
+    "retrieval_calls": 0,
+    "store_writes": 0,
+    "execution_admissions": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "human_reviews": 0
+  },
+  "next_action": "FIN-0.1.2-S4-T03-NVDA-BOUNDED-AGENTIC-SEARCH-CURRENT-CANARY-AUTHORITY-DECISION",
+  "known_boundary": "T02 pass proves deterministic request routing candidate qualification citation projection typed gaps and resource integrity. Historical DELL and MU rows remain readiness fixtures, NVDA still has no current source content, and no live search current Evidence Agentic Research current NVDA R2 product acceptance T03 execution release or production claim exists."
+}

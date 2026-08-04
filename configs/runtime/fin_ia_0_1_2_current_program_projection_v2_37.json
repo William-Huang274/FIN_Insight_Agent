@@ -1,0 +1,82 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_37",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.37",
+  "recorded_at": "2026-08-04T12:08:00+08:00",
+  "sequence_after_projection": "v2_36",
+  "status": "S3_bounded_anchor_pass_closed_S4_T01_T02_pass_closed_T03_authority_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor_not_source_grounded_NVDA_R2",
+    "S4": "entered_T01_T02_pass_T03_authority_pending",
+    "S4_T01": "pass_closed_zero_call_runtime_injected_node_level_consumed",
+    "S4_T02": "pass_closed_zero_call_retrieval_evidence_readiness",
+    "S4_T03": "not_started_authority_decision_pending",
+    "S4_T04_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T03-NVDA-BOUNDED-AGENTIC-SEARCH-CURRENT-CANARY-AUTHORITY-DECISION"
+  },
+  "S4_T02_closeout": {
+    "implementation_ref": "configs/releases/fin_ia_0_1_2_s4_t02_three_case_retrieval_evidence_deterministic_readiness_zero_call_implementation_v1_0.json",
+    "implementation_sha256": "e8b1dd46ffef4d432e33e1d610adee4cf2e96f7c17d626e22c7a1e26de7ebb0a",
+    "contract_ref": "fin_0_1_2.S4.three_case_retrieval_evidence_deterministic_readiness:v1",
+    "authority_digest": "03c48307f33240fa9946496f20a33edefe1c19deae70f7825c2eff0233f21d4f",
+    "case_keys": ["DELL", "MU", "NVDA"],
+    "readiness_receipt_digests": [
+      "7efdacd5133907488a534dd6bf79dd1a51ca6e6aa27f0d42047fab897aa4c27f",
+      "5a609ec12fe2e37aa4a0d2c3496a51cc26cadf130a55d1f9359b63d83de4d50a",
+      "966b1e0da93978a65673bc6f86279509e3475d4ad84e1d463c979b19b2d968a2"
+    ],
+    "accepted_rejected_citations_promoted_by_case": {
+      "DELL": [2, 8, 2, 0],
+      "MU": [13, 1, 13, 0],
+      "NVDA": [0, 0, 0, 0]
+    },
+    "historical_Dell_and_MU_rows_are_current_Evidence": false,
+    "NVDA_current_search_required": true,
+    "T03_authorized": false,
+    "focused_and_registry_tests": [15, 14]
+  },
+  "S4_T03_entry": {
+    "status": "pending_separate_zero_call_authority_decision",
+    "scope": "one_bounded_NVDA_current_agentic_search_canary_with_capture_first_source_and_Evidence_qualification",
+    "must_bind": [
+      "current_NVDA_natural_case_and_three_EvidenceRequests",
+      "exact_route_and_candidate_ceiling_authority",
+      "source_access_and_parser_snapshot_authority",
+      "capture_first_candidate_and_citation_lineage",
+      "zero_false_Evidence_promotion",
+      "hard_cost_call_and_stop_ceiling"
+    ],
+    "live_search_model_provider_network_or_tool_authorized": false,
+    "admission_issued": false
+  },
+  "issue_state": {
+    "RC_P36_109": "delivery_surface_closed_for_S3_evidence_density_carried_to_S4_T04",
+    "RC_P36_110": "planning_rebaseline_consumed_S4_execution_gates_pending",
+    "RC_P36_112": "closed_owner_stage_boundary_realignment_selected",
+    "RC_P36_113": "closed_shared_default_registry_aligned_and_readback_proven"
+  },
+  "execution_policy": {
+    "S4_T01_zero_call_implementation_executed": true,
+    "S4_T02_zero_call_implementation_executed": true,
+    "S4_T03_or_later_execution_authorized": false,
+    "model_provider_execution_network_source_network_tool_or_retrieval_execution_authorized": false,
+    "admission_or_business_run_authorized": false,
+    "historical_fixture_auto_promoted_to_current_Evidence": false,
+    "current_NVDA_R2_auto_reclassified": false,
+    "new_product_version_created": false
+  },
+  "historical_projection_policy": {
+    "superseded_projection": "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_36.json",
+    "superseded_projection_deleted_or_rewritten": false,
+    "prior_owner_product_rejection_rewritten": false,
+    "historical_source_pack_promoted_to_current_Evidence": false,
+    "wall_clock_note": "projection_sequence_is_authoritative_if_prior_authored_timestamp_exceeds_current_observed_host_time"
+  }
+}

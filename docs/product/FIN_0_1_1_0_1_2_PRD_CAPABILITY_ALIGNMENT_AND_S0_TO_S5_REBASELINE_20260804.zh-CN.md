@@ -1,9 +1,9 @@
 # FIN 0.1.1 / 0.1.2 PRD 能力对账与 S0–S5 重基线
 
 日期：2026-08-04
-状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01 pass closed / S4-T02 zero-call pending / no product version change`
+状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T02 pass closed / S4-T03 authority pending / no product version change`
 
-> 2026-08-04 S4-T01 已通过：三案自然 Objective/as-of/三 Cell、零调用预算、内容寻址 entry snapshot 和 prospective identity 由 current Runtime consumer 重建，mutation/cross-case/nonreuse/permutation/readback 均通过。历史 source pack 与 2026-06-11 index summary 只作为 entry snapshot，不是 current Evidence；freshness、candidate ceiling、parser/authority 与 promotion 继续由 S4-T02 负责。RC-P36-113 默认 registry 漂移必须在 T03 paid canary 前关闭。current NVDA R2 仍为 false。
+> 2026-08-04 S4-T02 已通过：DELL/MU/NVDA 的 EvidenceRequest、route、ceiling、parser/authority、candidate decision、citation 与 typed gap 已由 current Runtime 零调用证明，合并回归=`29 passed`；RC-P36-113 已关闭。DELL/MU 只是历史 readiness fixture，NVDA 仍是 manifest-only 并需要 current search，promoted Evidence 仍为 `0/3`，current NVDA R2 仍为 false。
 
 > 2026-08-04 Owner 边界决定：接受 S3 为“有限 frozen-input Runtime 与 verified delivery anchor”，但继续拒绝把它解释为 source-grounded NVDA R2。`0/3` promoted Evidence 义务按本文件既有 owner 转入 S4-T02/T03/T04，循环入口门禁已解除。
 
@@ -53,10 +53,10 @@ FIN 0.1.2 重排后的 S0–S3 主要解决共同 Runtime、hermetic proof、模
 | Feature | FIN 0.1.1 冻结真值 | FIN 0.1.2 当前真值 | 未关闭项与 owner |
 | --- | --- | --- | --- |
 | F01 Dashboard / Task Center | 旧 Workbench 内部可用，未 release | 继承代码，未对当前 Runtime/Artifacts 重验 | S4-T06 当前运行投影与 dogfood |
-| F02 ResearchCase / Objective | 本地 Case/API 可用 | S3 使用内部 frozen fixture，不是自然用户 Case | S4-T01 自然 Case 入口与 exact binding |
+| F02 ResearchCase / Objective | 本地 Case/API 可用 | S4-T01 已证明三案自然 Case 入口与 exact binding，尚未连到 current live search | S4-T03/T04 current execution integration |
 | F03 Dynamic DecisionSurface | 10-cell deterministic + 3-cell Agent scope；NVDA historical anchor | 三-cell current input/full-fake 已证明；current exact-live 未通过 | S3-T03/T04 单案，S4-T05 三案 |
 | F04 Durable execution | cancel/typed stop/恢复骨架，operational qualification 不完整 | exact-once、capture-first、terminal/supervisor 工程显著增强；未接 Workbench business Run | S4-T06 产品运行；S5 RG1/RG5 |
-| F05 Agentic Search | local RAG/SQL/Graph/official-asset `implemented_scoped`，无 current live loop acceptance | S3 source/tool=0，尚无当前证明 | S4-T02/T03 独立 release-critical gate |
+| F05 Agentic Search | local RAG/SQL/Graph/official-asset `implemented_scoped`，无 current live loop acceptance | S4-T02 deterministic readiness 已通过，真实 current search 仍为 0 | S4-T03 独立 release-critical canary |
 | F06 Evidence Workbench | candidate/gap/authority/reject/repair UI scoped | 未消费当前三案例 live evidence/artifacts | S4-T03/T06 |
 | F07 Numeric / Fact audit | P36 scoped exact facts/margins，三案工程资产存在 | S1 三案 deterministic truth 与本地 Fact ownership 已证明；产品态未验收 | S3-T04 + S4-T03/T05/T06 |
 | F08 Workpaper / Domain Judgment | NVDA historical R2；DELL/MU diagnostic only | S3 formal primary failed，诊断九件套不可晋升 | S3-T03/T04；S4-T04/T05 |
@@ -115,7 +115,7 @@ S3 通过继续写明：`F05 Agentic Search not assessed`、`natural Case entry 
 | Task | 目标 | 主要 PRD owner | 通过条件 |
 | --- | --- | --- | --- |
 | S4-T01（pass closed） | PRD/current Runtime 入口与自然 Case binding | F01/F02/F03/F04 | 用户式 Objective、as-of、预算、三 cells、current repository source/index entry snapshot 和 exact identity projection 可重建；明确不等于 current Evidence |
-| S4-T02（current） | Retrieval/Evidence deterministic readiness | F05/F06/F07/F13 | 三案 EvidenceRequest、route、candidate ceiling、metadata、parser/authority、accepted/rejected/gap、citation 以零模型 fixture/mutation 证明；重验 snapshot freshness/reachability 并关闭 RC-P36-113 |
+| S4-T02（pass closed） | Retrieval/Evidence deterministic readiness | F05/F06/F07/F13 | 三案 EvidenceRequest、route、candidate ceiling、metadata、parser/authority、accepted/rejected/gap、citation 已以零模型 fixture/mutation 证明；RC-P36-113 已关闭；历史 fixture 未晋升 current Evidence |
 | S4-T03 | NVDA bounded Agentic Search current canary | F05/F06/F07/F09/F13 + bounded Graph | 当前 Runtime 实际使用 public/local RAG/SQL/Graph/official route；允许一次受控 fallback/repair；零 false promotion；完整 ToolUse/Evidence lineage |
 | S4-T04 | NVDA natural-Case Agentic Research integration | F03/F08/F09/F10/F11/F13 | 自然 Case 从 EvidenceRequest 到 approved pack、judgment、Lead/Writer/Verifier；与 S3 frozen-input 输出分开比较；缺口不被伪装 |
 | S4-T05 | DELL/MU transfer 与 post-transfer NVDA | F03/F05/F07/F08 | DELL/MU R2、post-transfer NVDA R2；同一冻结 Runtime；新 L1 按 owner 阻断，不逐字段无限修补 |
@@ -156,8 +156,8 @@ Owner 决定已经消费原 S3 入口并推进到：
 ```text
 S3 bounded anchor pass closed
   -> revised S4-T01 natural Case entry / exact binding（pass closed）
-  -> S4-T02 retrieval/evidence deterministic readiness（current）
-  -> S4-T03 NVDA Agentic Search canary
+  -> S4-T02 retrieval/evidence deterministic readiness（pass closed）
+  -> S4-T03 NVDA Agentic Search canary（authority pending）
   -> S4-T04 natural-Case Agentic Research / current NVDA R2
   -> S4-T05 ... S4-T08
   -> revised S5-T01 ... S5-T06

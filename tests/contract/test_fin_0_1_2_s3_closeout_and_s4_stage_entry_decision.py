@@ -18,7 +18,7 @@ PROJECTION = ROOT / (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_35.json"
 )
 CURRENT_PROJECTION = ROOT / (
-    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_36.json"
+    "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_37.json"
 )
 BACKLOG = ROOT / "configs/releases/fin_ia_0_1_program_release_backlog_v2_0.json"
 PRIOR_REJECTION = ROOT / (
@@ -35,6 +35,10 @@ NEXT = (
 T02_NEXT = (
     "FIN-0.1.2-S4-T02-THREE-CASE-RETRIEVAL-EVIDENCE-"
     "DETERMINISTIC-READINESS-ZERO-CALL-IMPLEMENTATION"
+)
+T03_NEXT = (
+    "FIN-0.1.2-S4-T03-NVDA-BOUNDED-AGENTIC-SEARCH-"
+    "CURRENT-CANARY-AUTHORITY-DECISION"
 )
 
 
@@ -120,10 +124,12 @@ def test_projection_and_backlog_have_one_current_authority() -> None:
         CURRENT_PROJECTION.relative_to(ROOT)
     ).replace("\\", "/")
     assert next_action["current_projection_sha256"] == _sha256(CURRENT_PROJECTION)
-    assert next_action["item_id"] == T02_NEXT
+    assert next_action["item_id"] == T03_NEXT
     assert next_action["S4_T01_started"] is True
     assert next_action["S4_T01_completed"] is True
-    assert next_action["S4_T02_started"] is False
+    assert next_action["S4_T02_started"] is True
+    assert next_action["S4_T02_completed"] is True
+    assert next_action["S4_T02_T03_authorized"] is False
 
 
 def test_t01_contract_is_zero_call_and_does_not_contain_evidence_payload() -> None:

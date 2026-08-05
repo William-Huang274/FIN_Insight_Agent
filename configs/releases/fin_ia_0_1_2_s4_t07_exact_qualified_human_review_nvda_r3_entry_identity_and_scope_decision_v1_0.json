@@ -1,0 +1,140 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t07_exact_qualified_human_review_nvda_r3_entry_identity_and_scope_decision_v1_0",
+  "recorded_at": "2026-08-05T23:59:00+08:00",
+  "status": "T07_entry_pass_authenticated_reviewer_identity_blocked",
+  "authority": {
+    "user_instruction": "继续",
+    "entry_and_scope_audit_authorized": true,
+    "reviewer_identity_implementation_authorized": false,
+    "qualified_review_action_authorized": false,
+    "NVDA_R3_decision_authorized": false,
+    "model_provider_network_financial_source_calls_authorized": false
+  },
+  "predecessor": {
+    "T06_C_record_ref": "configs/releases/fin_ia_0_1_2_s4_t06_c_current_review_control_and_t07_handoff_zero_call_implementation_v1_0.json",
+    "T06_C_record_digest": "c4990c2e188bc03fd071cf3939cbf3e6e68479bb30edf75140d73668298bd41a",
+    "T06_pass_closed": true,
+    "T07_handoff_ready_only": true
+  },
+  "source_observation": {
+    "predecessor_record_digest": "c4990c2e188bc03fd071cf3939cbf3e6e68479bb30edf75140d73668298bd41a",
+    "predecessor_T07_entered": false,
+    "predecessor_authenticated_reviewer_identity": false,
+    "contract_authenticated_reviewer_identity": false,
+    "contract_qualified_human_review": false,
+    "api_principal_from_client_headers_only": true,
+    "frontend_asserts_current_actor_and_permissions": true,
+    "frontend_has_qualified_review_permission": false,
+    "legacy_real_human_evidence_is_content_validated_self_declaration": true,
+    "trusted_identity_provider_or_server_session_found": false,
+    "observation_digest": "f8abcff3a300bcdd0a23b652833b889bdd48d4c12fef96fbdeb334a8a24d12a0"
+  },
+  "earliest_owned_blocker": {
+    "issue": "RC-P36-129",
+    "layer": "S4_T07_authenticated_reviewer_identity_and_authority_boundary",
+    "status": "open_T07_qualified_action_blocker",
+    "root_cause": "The current product and historical reviewer paths validate actor, role, session and permissions supplied by the caller, but no server-trusted identity or credential binds those claims to a qualified human.",
+    "model_or_provider_fault": false,
+    "external_boundary": false,
+    "blocks": [
+      "qualified_human_accept_or_return",
+      "NVDA_R3",
+      "claiming_authenticated_reviewer_identity"
+    ],
+    "does_not_block": [
+      "zero_call_exact_reviewer_packet",
+      "review_burden_measurement",
+      "bounded_why_gap_WWC_projection",
+      "identity_mechanism_design_and_tests"
+    ]
+  },
+  "identity_disposition_options": [
+    {
+      "option": "A",
+      "name": "bounded_internal_server_issued_review_session",
+      "recommendation": "recommended_for_FIN_0_1_2_internal_dogfood",
+      "scope": [
+        "admin-only offline session issuance",
+        "server-generated opaque credential returned once",
+        "credential digest only in append-only control store",
+        "qualified reviewer identity and role allowlist",
+        "expiry, revocation, single-session scope and audit events",
+        "exact case, manifest and T07 handoff digest binding",
+        "accept_exact_version or return_for_repair permission"
+      ],
+      "secret_boundary": "No plaintext credential, signing key or bearer token may enter Git, telemetry, capture, Artifact or worklog.",
+      "non_goals": [
+        "production SSO",
+        "enterprise OIDC lifecycle",
+        "multi-tenant IAM",
+        "release or production qualification"
+      ],
+      "tradeoff": "Smallest honest internal authentication boundary; still requires a later S5 production IAM decision."
+    },
+    {
+      "option": "B",
+      "name": "external_OIDC_or_enterprise_identity_provider",
+      "recommendation": "stronger_but_defer_FIN_0_1_2_T07_until_available",
+      "tradeoff": "Best production identity semantics, but it expands infrastructure and blocks the current internal dogfood milestone."
+    },
+    {
+      "option": "C",
+      "name": "explicit_chat_owner_decision_only",
+      "recommendation": "allowed_as_owner_feedback_not_qualified_product_review",
+      "tradeoff": "Preserves useful human feedback but authenticated reviewer identity, qualified review and NVDA R3 must remain false."
+    }
+  ],
+  "recommended_bounded_T07_sequence": [
+    {
+      "task": "T07-A",
+      "scope": "NVDA exact reviewer packet, audit replay, burden metrics and bounded why/gap/WWC projection; zero external calls",
+      "status": "safe_after_entry_decision"
+    },
+    {
+      "task": "T07-B",
+      "scope": "selected authenticated reviewer session mechanism, append-only decision events and negative permission/session mutation",
+      "status": "blocked_user_security_scope_choice"
+    },
+    {
+      "task": "T07-C",
+      "scope": "real qualified reviewer opens exact NVDA packet and explicitly accepts or returns; successful acceptance establishes bounded NVDA R3",
+      "status": "blocked_T07_A_and_T07_B_and_real_human_action"
+    }
+  ],
+  "hard_boundaries": {
+    "current_header_promoted_to_authenticated_identity": false,
+    "legacy_self_declared_role_promoted_to_authenticated_identity": false,
+    "automation_or_Codex_may_sign_human_acceptance": false,
+    "qualified_human_review_executed": false,
+    "NVDA_R3": false,
+    "DELL_or_MU_re_review_required_for_T07": false,
+    "new_model_provider_network_financial_source_calls": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "T08_quality_calibration_reentered": false,
+    "S5_release_qualification_entered": false
+  },
+  "acceptance_boundary": {
+    "S4_T06": "pass_closed",
+    "S4_T07_entry": "pass",
+    "S4_T07_engineering": "not_started",
+    "authenticated_reviewer_identity": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_T08": "not_entered",
+    "S5": "not_entered",
+    "release": "not_qualified"
+  },
+  "security_scope_choice": {
+    "status": "user_decision_required_before_T07_B",
+    "recommended_option": "A",
+    "safe_work_while_pending": [
+      "T07-A"
+    ]
+  },
+  "recommended_next": "FIN-0.1.2-S4-T07-A-NVDA-EXACT-REVIEWER-PACKET-AUDIT-REPLAY-BURDEN-AND-BOUNDED-EXPLANATION-ZERO-CALL-IMPLEMENTATION",
+  "decision_digest": "974eea932ec755eba88e32389b13142b4e192578a32b8b5a883bf1d7aac00068"
+}

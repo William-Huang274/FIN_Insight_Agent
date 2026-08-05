@@ -354,3 +354,13 @@ Workbench `/current` 已显示 replay integrity、event count、history、handof
 验证结果：T06-A/B/C 与历史 fixture focused=`36 passed`；Chromium desktop/mobile=`8 passed`；TypeScript 和 Vite production build 通过，保留既有单 chunk >500KB 非阻塞 warning。扩大 T05→T06/Workbench 回归=`158 passed / 4 failed`，失败仍精确等于 RC-P36-128 的三条已消费 fresh identity 与一条旧 mutable-source SHA 绑定，新增 T06-C 回归=`0`。测试中发现旧 T06-B 测试仍会调用历史 materializer 并重写证据，已移除副作用并从 Git 精确恢复 T06-B record；T06-C 只以 successor record 引用 predecessor digest。
 
 因此 S4-T06=`pass_closed / current product projection and repair-control available`。当前 `current_internal_operator` 和权限 header 仍由本地客户端声明，不是经过认证的 reviewer authority；这不等于执行 qualified Human Review、关闭真实返修、建立 NVDA R3、完成 S4-T08、进入 S5 或 release。implementation=`c4990c2e…d41a`；下一项限定为 `FIN-0.1.2-S4-T07-EXACT-QUALIFIED-HUMAN-REVIEW-NVDA-R3-AND-BOUNDED-EXPLANATION-ENTRY-DECISION`，先做 T07 入口与 reviewer 身份、资格、权限和任务边界决策，不自动代签 reviewer 接受。
+
+## 34. S4-T07 入口、reviewer 身份与任务边界决策
+
+T07 入口审计已经通过，但 qualified action 被新的项目内身份边界 `RC-P36-129` 阻断。T06-C 明确记录 `authenticated_reviewer_identity=false`；当前 API 只把 `X-Fin-Current-Actor` 和 `X-Fin-Case-Permissions` 解析成 principal，前端又固定声明 `current_internal_operator`。历史 P24/B04 所谓 real-human 路径也只检查调用者填写的 `action_source`、role 和 session ID，没有服务端可信会话、签名凭证或身份提供方。它能证明表单内容完整，不能证明调用者是谁。
+
+因此不得把当前 header、旧 reviewer 表单、Codex 自动化或普通聊天“继续”晋升为 qualified Human Review。T07 重新有界拆分为：T07-A 零调用生成 NVDA exact reviewer packet、audit replay、review burden 和 bounded why/gap/WWC；T07-B 实现经用户确认的 reviewer 身份机制与 append-only decision event；T07-C 才允许真实 reviewer 对 exact NVDA digest 接受或退回，成功接受后才能建立 bounded NVDA R3。
+
+FIN 0.1.2 内部 dogfood 的首选是 option A：服务端签发有期限、可撤销、精确绑定 case/manifest/handoff 的 opaque review session，控制库只保存 credential digest，明文凭据与签名密钥不得进入 Git、telemetry、capture、Artifact 或 worklog。Option B 是外接 OIDC/企业 IdP，但会扩大基础设施并阻断当前内部里程碑；option C 只把聊天中的 Owner 反馈作为反馈证据，qualified review 与 R3 必须保持 false。身份安全范围需用户确认后才能进入 T07-B。
+
+decision=`974eea93…0068`，mutation=`9 passed`，model/provider/network/financial-source=`0/0/0/0`。当前只能声明 `S4-T07 entry=pass / authenticated reviewer identity blocked`；T07 engineering、qualified Human Review、NVDA R3、T08、S5 和 release 均未成立。安全可继续项仅为 `FIN-0.1.2-S4-T07-A-NVDA-EXACT-REVIEWER-PACKET-AUDIT-REPLAY-BURDEN-AND-BOUNDED-EXPLANATION-ZERO-CALL-IMPLEMENTATION`。

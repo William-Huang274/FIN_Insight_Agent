@@ -140,6 +140,12 @@ Workbench 现在公开返修原因、说明、owner、resolution、replay digest
 
 T06-A 的 read adapter、T06-B 的 current frontend/runtime isolation 和 T06-C 的 typed return/replay/handoff 已依次成立，所以 S4-T06 现为 pass closed。该通过只覆盖 current product projection 与 control-plane capability；qualified Human Review/NVDA R3 仍归 T07，三案集成收口归 T08，S5/release 仍未进入。
 
+### 2026-08-05 S4-T07 入口与身份边界校正
+
+T07 入口审计确认产品已有 exact review handoff，但还没有可信 reviewer 身份。当前 header 与历史 B04 real-human 表单都属于调用者自报 actor、role、session 和 permission；没有服务端签发会话、签名凭证、可信身份提供方或资格绑定，所以不得据此建立 F12 `product_accepted` 或 NVDA R3。登记 `RC-P36-129`，属于 T07 项目内安全/权限缺口，不是 DeepSeek、研究产物或 T06 返修机制失败。
+
+T07 细分为 A）零调用 exact reviewer packet、audit replay、review burden 与 bounded F14 explanation；B）经用户确认的服务端 reviewer session/identity boundary；C）真实 qualified reviewer 对 exact NVDA version 接受或退回。FIN 0.1.2 内部 dogfood 推荐有期限、可撤销、只保存 credential digest 的服务端 opaque session；企业 OIDC/SSO 留作更强但更重的方案。身份机制未选定前可安全做 T07-A，但 T07-B/C、qualified review 和 NVDA R3 必须保持 blocked。
+
 ### S0：可靠基础（已关闭，不重开）
 
 证明代码、资源、合同、测试和独立目录可复现。它不证明金融产品、检索质量或模型质量。

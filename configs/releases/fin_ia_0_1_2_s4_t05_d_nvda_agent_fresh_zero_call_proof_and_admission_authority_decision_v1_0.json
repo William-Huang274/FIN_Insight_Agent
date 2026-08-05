@@ -1,0 +1,115 @@
+{
+  "authority_boundary": {
+    "admission_issuance_and_one_exact_live_authorized": true,
+    "automatic_retry_or_second_live": false,
+    "paired_or_owner_auto_authorized": false,
+    "user_authorized_continuous_sequence": true
+  },
+  "capacity_proof": {
+    "aggregate_estimated_input_tokens": 85614,
+    "artifacts": 9,
+    "contract_ref": "fin_0_1_2.S4.T05.current_case_agent_compiled_capacity:v1",
+    "cost_derived_absolute_maximum_input_tokens": 117931,
+    "input_token_headroom": 22386,
+    "local_fact_receipts": 3,
+    "maximum_input_tokens": 108000,
+    "maximum_output_tokens": 10000,
+    "maximum_single_interaction_estimated_input_tokens": 15678,
+    "maximum_total_cost_usd": 0.06,
+    "per_interaction_estimated_input_tokens": [
+      7208,
+      7251,
+      8857,
+      9083,
+      7249,
+      7290,
+      13881,
+      9117,
+      15678
+    ],
+    "provider_callbacks": 9
+  },
+  "decision_digest": "97040bb806d3f73cc2b4813bcb7f2e4d5a9fb511ee4366b116897e9316540947",
+  "exact_binding": {
+    "as_of": "2026-07-21T00:00:00Z",
+    "case_id": "fin012-s4-t05-nvda-current-evidence-34ecb73ab7539e5156bd",
+    "case_version": 1,
+    "complete_input_digest": "75fa19a87bfbd1aa37eb4b3613a74f204fd99a49b9dee8d353e659fed9c19216",
+    "evidence_pack_digest": "fdc1a10010f0d47ba7be5b420fc5cac860c3044d6690696463865ecce4b7bf65",
+    "predicted_attempt_id": "attempt_fin01_63d075144464d2ddfec5df31",
+    "predicted_research_run_id": "research_run_fin01_30989d1901a40fef95ce09aa",
+    "predicted_work_unit_id": "wu_p02_5_af752cb27b42096902e828d0",
+    "preparation_digest": "9e3dda6987a5517de3457597b8cf5127a1fa84c8a37c3a0888bbe2ce59681c99",
+    "t03_terminal_digest": "7ec970b6c2f10983852c9cd52357499baccb08f50a00262de64d8f74a6f6f156"
+  },
+  "fresh_proof": {
+    "independent_disposable_roots": 2,
+    "model_provider_network_calls": [
+      0,
+      0,
+      0
+    ],
+    "normalized_outputs_equal": true,
+    "target_runtime_root_absent": true,
+    "topology_each": [
+      9,
+      3,
+      9,
+      9
+    ]
+  },
+  "immutable_bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t05_d_post_transfer_nvda_entry_and_dependency_decision_v1_0.json",
+      "sha256": "7f7895abeb31a707d8e6d1f74a1602490a8d0e199ad64e3a0d3bb01ab475dcdd"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_pack_v1_0.json",
+      "sha256": "9fd5484d403814b59fd497b85c0904836571caaae439207438e295dc554aecd2"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t05_d_nvda_post_transfer_agent_exact_input_v1_0.json",
+      "sha256": "2c452dd99afab49b70f0ef9fde5c3dca008549f896ca067b2cb227b1418be91c"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_capacity_reproof_fresh_exact_admission_r3.json",
+      "sha256": "135cc61ef18d1bb9b67d09f066d7e8567e842584ddfcdd806433e09ecb2b4d1c"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t05_current_case_agent_exact_execution.py",
+      "sha256": "132a47699f1b60a0a7cb6ff0e92c0e2b2917f07813389310e9914c22bfefb6ad"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s3_t03_exact_live_runner.py",
+      "sha256": "4e4777d10a83fe1cdc1c02727244005be2199bb434b889994c954e4d8c935659"
+    },
+    {
+      "ref": "scripts/releases/prepare_and_issue_fin_ia_0_1_2_s4_t05_d_nvda_post_transfer_agent_fresh_exact_admission.py",
+      "sha256": "7ba208bb9aba809f3c11fce9c36038c4f1e16c84377d7f5124a0db084b9ddc5d"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s4_t05_d_nvda_post_transfer_agent_exact_live.py",
+      "sha256": "ac36cfaf93e0b8980abcb5a820812a9625deb36d5c7003a95f95985cd3bed9c0"
+    }
+  ],
+  "next_action": "FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-AGENT-EXACT-LIVE-EXECUTION",
+  "project_os_preflight": {
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-AGENT-EXACT-LIVE-EXECUTION",
+    "status": "pass"
+  },
+  "recorded_at": "2026-08-05T17:25:00+08:00",
+  "runtime_contract": {
+    "business_artifacts_on_success": 9,
+    "captures": 9,
+    "external_tool_calls": 0,
+    "local_fact_receipts": 3,
+    "model": "deepseek-v4-pro",
+    "provider": "deepseek",
+    "provider_calls": 9,
+    "retry_budget": 0,
+    "source_network_calls": 0
+  },
+  "schema_version": "fin_ia_0_1_2_s4_t05_d_nvda_agent_fresh_zero_call_proof_and_admission_authority_decision_v1_0",
+  "status": "pass_fresh_zero_call_proof_capacity_and_admission_authority"
+}

@@ -3,6 +3,9 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-D post-transfer NVDA fresh proof/容量已通过，唯一 admission 已签发未消费（current，2026-08-05）**：独立 Project OS preflight 的 open blocker=`0`，两个 disposable Runtime 归一化一致，均为 `9 Provider callbacks / 3 local Fact receipts / 9 captures / 9 Artifacts`；输入容量=`85,614/108,000`、余量=`22,386`。admission=`0bdf1ba…f55b`，execution identity=`fin012-s4-t05d-nvda-post-transfer-agent-exact-live-r1`，issued/consumed/started=`true/false/false`。零调用 runner preflight 确认凭据存在且未输出/持久化值，fresh 与 DELL/MU 相邻回归=`10 passed`；source/model/Provider/network/Artifact=`0/0/0/0/0`。post-transfer NVDA R2 仍=false。current next=`FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-AGENT-EXACT-LIVE-EXECUTION`；仅允许消费该 admission 一次，DeepSeek 9 calls、retry 0，首个可信失败停止，不自动第二次 live。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-D post-transfer NVDA 入口/依赖审计与零调用全链复证已通过，fresh live 尚未授权（current，2026-08-05）**：T03 terminal=`7ec970b6…f156`、8 份 raw capture 和 T04 Evidence Pack=`fdc1a100…bf65` 仍可按相同 as-of/content digest 完整回读，因此当前不重跑 Search。审计发现 shared exact-execution wrapper 只读取 DELL/MU 的 `S4_T04_source_grounded_input`，与 NVDA 已冻结的 legacy `T04_financial_pack` lineage 不兼容；RC-P36-123 已在 T05-D 以按 case-family 选择槽位且仍要求 exact Evidence digest 的受控修复关闭，不是模型/Provider 问题。新 post-transfer input=`75fa19a8…9216`；两个 fresh zero-call Runtime 归一化一致，均为 `9 Provider callbacks / 3 local Fact receipts / 9 captures / 9 Artifacts`，容量=`85,614/108,000`、余量=`22,386`，聚焦与相邻回归=`18 passed`。本项 source/model/Provider/admission/exact-live=`0/0/0/0/0`；post-transfer NVDA R2 仍=false。current next=`FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-FRESH-AGENT-PROOF-CAPACITY-AND-ADMISSION-AUTHORITY-DECISION`；下一步只可做独立 fresh proof/权限决策，不自动签发或调用 DeepSeek。
 >
 > [!IMPORTANT]

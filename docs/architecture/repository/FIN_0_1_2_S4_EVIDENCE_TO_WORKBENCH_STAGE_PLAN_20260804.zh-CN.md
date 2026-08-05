@@ -264,3 +264,11 @@ T03 current Search terminal、8 份 source/raw capture 与 T04 Evidence Pack 均
 新的 current product case/input 已从相同 Evidence Pack 经当前 T05 compiler 重建：case=`fin012-s4-t05-nvda-current-evidence-34ecb73ab7539e5156bd`，input=`75fa19a8…9216`。两个独立 fresh temporary Runtime 均通过 input preparation、9-call capacity compiler、capture/terminal 物化与 9 Artifact assembly；normalized result 完全一致，拓扑=`9 Provider callbacks / 3 local Fact receipts / 9 captures / 9 Artifacts`，预计输入=`85,614/108,000`、最大单次=`15,678`、余量=`22,386`。聚焦和 DELL/MU/T05-A 相邻回归=`18 passed`。
 
 本项只建立 Search reuse、current input 和 zero-call engineering reproof。新增 source/model/Provider/admission/exact-live/业务 Artifact 均为 0，post-transfer NVDA R2=false。下一项限定为 `FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-FRESH-AGENT-PROOF-CAPACITY-AND-ADMISSION-AUTHORITY-DECISION`：独立重验当前 input/code/fresh identity、Project OS 与预算后，才可决定是否签发最多一次 post-transfer DeepSeek exact-live。RC-P36-119/122 继续后传 T08–T10/S5；qualified Human Review、NVDA R3、Workbench、S5、release 和 production 不属于 T05-D。
+
+## 25. S4-T05-D post-transfer NVDA fresh proof、容量与 admission 签发
+
+独立 fresh proof 重新验证 current input=`75fa19a8…9216`、当前代码 digest、T03 terminal/T04 Evidence lineage、Project OS open blocker 和目标 identity 不存在。两个 disposable Runtime 的归一化结果相同，每套拓扑=`9 Provider callbacks / 3 local Fact receipts / 9 captures / 9 Artifacts`；9 次预计输入合计=`85,614/108,000`，最大单次=`15,678`、余量=`22,386`。
+
+唯一 admission=`0bdf1ba…f55b` 已绑定 execution identity=`fin012-s4-t05d-nvda-post-transfer-agent-exact-live-r1` 并签发；issued/consumed/started=`true/false/false`。runner 零调用预检确认凭据存在且不输出/持久化值，transport retry=`0`，聚焦与 DELL/MU 相邻回归=`10 passed`。本项 source/model/Provider/network/business Artifact 仍为 0。
+
+下一项只允许 `FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-AGENT-EXACT-LIVE-EXECUTION`：最多 9 次 DeepSeek Provider call、0 retry、0 source network、0 external tool、USD 0.06。首个可信失败即停止且不得自动第二次 live。成功也只进入 immutable result 物化和独立 L1；formal pair、Owner acceptance、Human Review/R3、S5、release 与 production 不自动成立。

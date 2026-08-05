@@ -1,0 +1,97 @@
+{
+  "authority_decision_digest": "97040bb806d3f73cc2b4813bcb7f2e4d5a9fb511ee4366b116897e9316540947",
+  "authority_decision_ref": "configs/releases/fin_ia_0_1_2_s4_t05_d_nvda_agent_fresh_zero_call_proof_and_admission_authority_decision_v1_0.json",
+  "exact_binding": {
+    "as_of": "2026-07-21T00:00:00Z",
+    "case_id": "fin012-s4-t05-nvda-current-evidence-34ecb73ab7539e5156bd",
+    "case_version": 1,
+    "complete_input_digest": "75fa19a87bfbd1aa37eb4b3613a74f204fd99a49b9dee8d353e659fed9c19216",
+    "evidence_pack_digest": "fdc1a10010f0d47ba7be5b420fc5cac860c3044d6690696463865ecce4b7bf65",
+    "predicted_attempt_id": "attempt_fin01_63d075144464d2ddfec5df31",
+    "predicted_research_run_id": "research_run_fin01_30989d1901a40fef95ce09aa",
+    "predicted_work_unit_id": "wu_p02_5_af752cb27b42096902e828d0",
+    "preparation_digest": "9e3dda6987a5517de3457597b8cf5127a1fa84c8a37c3a0888bbe2ce59681c99",
+    "t03_terminal_digest": "7ec970b6c2f10983852c9cd52357499baccb08f50a00262de64d8f74a6f6f156"
+  },
+  "execution_envelope": {
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s4_t05_d_nvda_agent_fresh_exact_admission_r1.json",
+    "business_promotable": false,
+    "case_key": "NVDA",
+    "current_evidence": {
+      "evidence_numeric_gap_counts": [
+        15,
+        3,
+        3
+      ],
+      "evidence_pack_digest": "fdc1a10010f0d47ba7be5b420fc5cac860c3044d6690696463865ecce4b7bf65",
+      "t03_terminal_digest": "7ec970b6c2f10983852c9cd52357499baccb08f50a00262de64d8f74a6f6f156"
+    },
+    "envelope_digest": "36f106321ee6942c17c4fdec213da20e7422bc7d2234e24364fc24de11896e2b",
+    "fresh_t03": {
+      "attempt_id": "attempt_fin01_63d075144464d2ddfec5df31",
+      "execution_identity": "fin012-s4-t05d-nvda-post-transfer-agent-exact-live-r1",
+      "input_digest": "75fa19a87bfbd1aa37eb4b3613a74f204fd99a49b9dee8d353e659fed9c19216",
+      "preparation_digest": "9e3dda6987a5517de3457597b8cf5127a1fa84c8a37c3a0888bbe2ce59681c99",
+      "research_run_id": "research_run_fin01_30989d1901a40fef95ce09aa",
+      "work_unit_id": "wu_p02_5_af752cb27b42096902e828d0"
+    },
+    "hard_budget": {
+      "execution_network_calls": 9,
+      "external_tool_calls": 0,
+      "failed_output_business_promotions": 0,
+      "fallback_budget": 0,
+      "live_case_head_writes": 0,
+      "maximum_input_tokens": 108000,
+      "maximum_output_tokens": 10000,
+      "maximum_total_cost_usd": 0.06,
+      "maximum_transport_attempts_per_call": 1,
+      "maximum_wall_clock_seconds": 900,
+      "provider_calls": 9,
+      "provider_hopping_budget": 0,
+      "retry_budget": 0,
+      "semantic_model_calls": 9,
+      "source_network_calls": 0
+    },
+    "input_capacity_contract": {
+      "aggregate_estimated_input_tokens": 85614,
+      "contract_ref": "fin_0_1_2.S4.T05.current_case_agent_compiled_capacity:v1",
+      "cost_derived_absolute_maximum_input_tokens": 117931,
+      "input_token_headroom": 22386,
+      "maximum_input_tokens": 108000,
+      "maximum_single_interaction_estimated_input_tokens": 15678,
+      "maximum_total_cost_usd": 0.06,
+      "per_interaction_estimated_input_tokens": [
+        7208,
+        7251,
+        8857,
+        9083,
+        7249,
+        7290,
+        13881,
+        9117,
+        15678
+      ],
+      "reserved_maximum_output_tokens": 10000
+    },
+    "schema_version": "fin_ia_0_1_2_s4_t05_current_case_agent_exact_execution_envelope_v1_0",
+    "status": "fresh_T05_current_NVDA_Agent_exact_execution_not_started"
+  },
+  "issuance_digest": "827a5744187f5a2a5c58798133cebe089c39acf56550681adba0c636971fa04d",
+  "issued_admission": {
+    "admission_digest": "0bdf1ba316d1f19e0f03a60b998f8ddeb97e7ffd482d870d37d61a9a3a01f55b",
+    "admission_id": "fin012-s4-t05d-nvda-post-transfer-agent-fresh-exact-admission-r1",
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s4_t05_d_nvda_agent_fresh_exact_admission_r1.json",
+    "consumed": false,
+    "execution_identity": "fin012-s4-t05d-nvda-post-transfer-agent-exact-live-r1",
+    "execution_started": false
+  },
+  "observed_counts": {
+    "business_artifacts": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0
+  },
+  "recorded_at": "2026-08-05T17:25:00+08:00",
+  "schema_version": "fin_ia_0_1_2_s4_t05_d_nvda_agent_fresh_exact_admission_issuance_v1_0",
+  "status": "issued_unconsumed_zero_call_preflight_pass"
+}

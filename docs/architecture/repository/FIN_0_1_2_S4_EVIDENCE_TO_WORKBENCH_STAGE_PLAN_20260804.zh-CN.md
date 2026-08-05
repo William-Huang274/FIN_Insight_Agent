@@ -202,3 +202,13 @@ formal assessment=`c86bf7bf…83c4`，推荐 Owner 决定为 `accept_current_DEL
 用户在完整看见 formal paired 结果、有限 L3 增益、RC-P36-119 finding 及接受/拒绝影响后明确回复“接受”。decision=`a03a1071…6468` 绑定 assessment=`c86bf7bf…83c4`；S4-T05-B=`pass_closed_owner_accepted`，DELL current R2=true，T05-C MU entry authorized/not started。
 
 该接受不关闭 RC-P36-119 或 RC-P36-115，也不建立 MU R2、post-transfer NVDA R2、qualified Human Review、NVDA R3、S4 整体验收、S5、release 或 production。本项没有新模型、Provider、网络、Search、exact-live 或 T05-C Run。下一项仅为 `FIN-0.1.2-S4-T05-C-MU-CURRENT-R2-FRESH-ZERO-CALL-ENTRY-AND-DEPENDENCY-DECISION`，不得直接启动 Search/DeepSeek。
+
+## 18. S4-T05-C MU 入口审计、fresh proof 与 Search admission
+
+用户明确授权按既定 1–5 顺序连续执行，不要求每步重复授权；停止边界仍是入口真实阻断或新的 Agent L1，不包含自动 retry/第二次 Search/第二次 Agent live。
+
+MU 入口审计已完成：case=`MU`、legal name=`Micron Technology, Inc.`、CIK=`0000723125`、as-of=`2026-07-26T00:00:00Z`，SEC primary、Micron 官方 IR fallback、allowlist、三 Cell query、capture-before-parse 和 `2 source / 8 local / fallback 1 / retry 0 / model 0` 均绑定。Micron IR HTML-link parser 以自然日期、allowlisted link 和未来日期边界完成零调用证明；这不是 source-live。
+
+两个 disposable root 的 MU Search proof 各自得到 `1 simulated source / 6 local read-only / 8 captures / 18 accepted / 18 rejected`，Cell accepted/rejected=`6/9、6/6、6/3`，normalized output 一致且 Run/Attempt/terminal identity 全新；model/provider/live source/business Artifact 均为 0。入口与共享回归通过后，MU Search R1 admission 已原子签发、未消费，admission digest=`c40305bd…c037`，issuance digest=`58b19808…80e0`。
+
+当前只建立一次 MU Search exact-live 资格。若 SEC primary 成功，不调用 IR fallback；若官方来源没有合格结果，保留 typed gap；若 adapter/parser/capture/budget 属于项目缺陷，则 terminalize 并停止，不执行第二次 Search。DeepSeek、Agent 9 Artifacts、paired、Owner 和 MU current R2 均未发生。

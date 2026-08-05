@@ -1,0 +1,22 @@
+{
+  "admission_digest": "c40305bd66501439eb981ce35689843898b2c5f4a152147df57a7020571ac037",
+  "admission_id": "s4_t03_search_admission_c40305bd66501439eb98",
+  "case_key": "MU",
+  "contract_ref": "fin_0_1_2.S4.T03.executable_agentic_search:v1",
+  "expires_at": "2026-08-05T08:04:34.970596Z",
+  "fallback_ceiling": 1,
+  "issued_at": "2026-08-05T06:03:34.970596Z",
+  "local_invocation_ceiling": 8,
+  "model_calls": 0,
+  "paid_api_cost_usd": 0.0,
+  "provider_calls": 0,
+  "request_digests": [
+    "4db7b94415f0c0651f4067e11d5c3133c355fb6e77c2edca3baceb824d63805a",
+    "0fd64d565a4aa5021643accf544d0217af4e577e553cc286015f1d77c73312e7",
+    "0e7b6cc7d244700f8dfe9429a44c8495dccb60962d71786dadab980beb856d95"
+  ],
+  "retry_ceiling": 0,
+  "schema_version": "fin_ia_0_1_2_s4_t03_agentic_search_admission_v1_0",
+  "source_network_call_ceiling": 2,
+  "wall_clock_seconds": 300
+}

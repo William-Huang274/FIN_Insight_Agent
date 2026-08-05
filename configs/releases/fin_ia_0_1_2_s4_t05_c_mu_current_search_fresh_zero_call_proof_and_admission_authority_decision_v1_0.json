@@ -1,0 +1,91 @@
+{
+  "authority_boundary": {
+    "DeepSeek_not_part_of_Search_admission": true,
+    "automatic_retry_or_second_search": false,
+    "one_search_exact_live_authorized_after_clean_synced_preflight": true,
+    "search_admission_issuance_authorized": true,
+    "user_authorized_sequence_steps_1_to_5": true
+  },
+  "budget_and_stop_policy": {
+    "automatic_second_search": false,
+    "fallbacks": 1,
+    "local_invocations": 8,
+    "model_calls": 0,
+    "official_source_no_result": "typed_gap_no_fabrication",
+    "project_owned_adapter_parser_capture_failure": "terminalize_and_stop",
+    "provider_calls": 0,
+    "retries": 0,
+    "source_network_calls": 2,
+    "wall_clock_seconds": 300
+  },
+  "decision_digest": "17f181eea4e389a17df37abc6cae7390b9480005051ada3396546f70e3cdd81f",
+  "decision_id": "FIN-0.1.2-S4-T05-C-MU-CURRENT-SEARCH-FRESH-PROOF-AND-ADMISSION-AUTHORITY",
+  "entry_audit": {
+    "IR_fallback_shape_proven": "allowlisted_HTML_link_parser_zero_call_fixture",
+    "as_of": "2026-07-26T00:00:00Z",
+    "case_key": "MU",
+    "issuer_cik": "0000723125",
+    "legal_name": "Micron Technology, Inc.",
+    "request_cells": [
+      "bottleneck_counterevidence_and_what_would_change",
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture"
+    ],
+    "request_digests": [
+      "4db7b94415f0c0651f4067e11d5c3133c355fb6e77c2edca3baceb824d63805a",
+      "0fd64d565a4aa5021643accf544d0217af4e577e553cc286015f1d77c73312e7",
+      "0e7b6cc7d244700f8dfe9429a44c8495dccb60962d71786dadab980beb856d95"
+    ],
+    "source_request_response_capture_before_parse": true,
+    "source_route": "SEC_primary_then_at_most_one_official_Micron_IR_fallback"
+  },
+  "fresh_zero_call_proof": {
+    "accepted_rejected_by_cell": [
+      [
+        6,
+        9
+      ],
+      [
+        6,
+        6
+      ],
+      [
+        6,
+        3
+      ]
+    ],
+    "captures": 8,
+    "distinct_run_attempt_terminal_identities": true,
+    "independent_disposable_roots": 2,
+    "local_read_only_invocations": 6,
+    "model_provider_live_source_calls": [
+      0,
+      0,
+      0
+    ],
+    "normalized_results_equal": true,
+    "source_calls_simulated": 1
+  },
+  "immutable_bindings": [
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s4_t05_current_search.py",
+      "sha256": "583685c4b48659d2f64e39f940705f5dd7e6bc87b38fb12e244bf7794b5519b8"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t03_executable_agentic_search.py",
+      "sha256": "8e441c9fc497e44af3fc3d98bd4f5dda3757ba0c38454c8d662dae5f3d507e23"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s4_t05_three_case_current_evidence_transfer_profiles_v1_0.json",
+      "sha256": "06e43082dc0c20923d0778d8b259f6bab934702040b1f67af97cfe1c86f2ad5a"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s4_t05_c_mu_current_search_sequence.py",
+      "sha256": "44f5ef134d45af2eea3ecdd98bacdfb0c7f338763d40584226e47418611d74ff"
+    }
+  ],
+  "next_action": "FIN-0.1.2-S4-T05-C-MU-CURRENT-SEARCH-EXACT-LIVE",
+  "recorded_at": "2026-08-05T06:04:34.970596Z",
+  "schema_version": "fin_ia_0_1_2_s4_t05_c_mu_current_search_fresh_zero_call_proof_and_admission_authority_decision_v1_0",
+  "status": "pass_MU_current_search_fresh_proof_and_admission_authority"
+}

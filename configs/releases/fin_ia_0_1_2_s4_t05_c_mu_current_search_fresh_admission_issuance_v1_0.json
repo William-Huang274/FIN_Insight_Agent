@@ -1,0 +1,27 @@
+{
+  "authority_decision_digest": "17f181eea4e389a17df37abc6cae7390b9480005051ada3396546f70e3cdd81f",
+  "authority_decision_ref": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_current_search_fresh_zero_call_proof_and_admission_authority_decision_v1_0.json",
+  "issuance_digest": "58b19808c24de77be5e2d02eb37c425dcd492346221542b8a676e2fccdfe80e0",
+  "issued_admission": {
+    "admission_digest": "c40305bd66501439eb981ce35689843898b2c5f4a152147df57a7020571ac037",
+    "admission_id": "s4_t03_search_admission_c40305bd66501439eb98",
+    "case_key": "MU",
+    "consumed": false,
+    "execution_started": false,
+    "expires_at": "2026-08-05T08:04:34.970596Z",
+    "issued_at": "2026-08-05T06:03:34.970596Z",
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_current_search_fresh_admission_r1.json"
+  },
+  "observed_counts": {
+    "business_artifacts": 0,
+    "local_invocations": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "source_network_calls": 0
+  },
+  "recorded_at": "2026-08-05T06:04:34.970596Z",
+  "reserved_runtime_root": ".codex_runtime/fin012-s4-t05c-mu-current-search-r1",
+  "runtime_root_absent": true,
+  "schema_version": "fin_ia_0_1_2_s4_t05_c_mu_current_search_fresh_admission_issuance_v1_0",
+  "status": "issued_unconsumed_zero_call_preflight_pass"
+}

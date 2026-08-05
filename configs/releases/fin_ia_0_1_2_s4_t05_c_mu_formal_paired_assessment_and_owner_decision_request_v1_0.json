@@ -1,0 +1,116 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_c_mu_formal_paired_assessment_and_owner_decision_request_v1_0",
+  "recorded_at": "2026-08-05T15:30:00+08:00",
+  "status": "paired_L1_L4_pass_limited_gain_quality_findings_owner_decision_required",
+  "pair_binding": {
+    "same_input_digest": "c15ce68c6685ffdc2581c858e26ed6a76c3c7e56bb824590ea4ed66bc10e69ec",
+    "same_input_head_digest": "96725faf4357ca4d1488ac875c2922d635daa73fd6d64f27385fa03eae65714b",
+    "agent_research_run_id": "research_run_fin01_50d32f3b323460d56b37b44b",
+    "deterministic_research_run_id": "research_run_s4_t05_baseline_15276c3cd53d1bae8fbb",
+    "runs_are_distinct": true,
+    "agent_artifacts": 9,
+    "deterministic_artifacts": 1,
+    "baseline_output_body_exposed_to_agent": false
+  },
+  "L1_deterministic_integrity": {
+    "status": "pass",
+    "basis": {
+      "status": "pass",
+      "case_identity_MU": true,
+      "input_and_current_evidence_lineage": true,
+      "exact_numeric_correspondence": true,
+      "capture_first_and_content_address_readback": true,
+      "credential_cookie_private_reasoning_persisted": false,
+      "machine_verifier_four_layers_self_pass": true,
+      "machine_verifier_is_owner_acceptance": false
+    }
+  },
+  "L2_evidence_reliability_and_coverage": {
+    "status": "pass_bounded_authority_coverage",
+    "evidence_cells": 3,
+    "authority_cells": 3,
+    "basis": "All three MU Cells are bound to approved current Evidence or exact company Numeric authority; candidate metadata and HBM profit attribution are not promoted beyond their authority."
+  },
+  "L3_agent_gain": {
+    "status": "pass_limited_material_gain_with_quality_findings",
+    "baseline_claim_dependency_conflict_gap_WWC": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "agent_claim_dependency_conflict_gap_WWC": [
+      6,
+      1,
+      3,
+      4,
+      9
+    ],
+    "material_gain": "The Agent adds six bounded Claim Cards, one cross-cell dependency, three explicit unresolved conflict cards, four typed gaps and nine claim-bound follow-up tasks over the authority-only baseline.",
+    "comparison_limitation": "The deterministic baseline intentionally inventories authority without judgment. MU's gain is organizational and auditable, but the current memo does not yet provide a strong company-specific investment thesis or resolved cross-cell synthesis.",
+    "quality_findings": [
+      {
+        "issue": "RC-P36-119",
+        "finding": "9/9 what-would-change tasks retain generic threshold wording instead of measurable MU observations.",
+        "disposition": "nonblocking_deferred_T08_T10_S5"
+      },
+      {
+        "issue": "RC-P36-122",
+        "finding": "The single dependency, three conflicts and four gaps mostly restate epistemic states and review status; all conflicts remain unresolved and MU/HBM-specific synthesis is weak.",
+        "disposition": "nonblocking_deferred_T08_T10_S5"
+      }
+    ]
+  },
+  "L4_final_delivery": {
+    "status": "pass",
+    "preview_digest": "4763544af804fbf7fd7e37d1172a3b7c7465069cd3a7ed47e9c5cf1e909a973f",
+    "local_verifier_digest": "0dc815a5120d6949c8ae9437cb1eae06d5ad2aa685cb74054b3ac51d552f5c0c",
+    "case_identity": "pass_MU",
+    "internal_tokens_currency_duplication_or_unlocalized_limitation": 0
+  },
+  "owner_decision_request": {
+    "status": "awaiting_explicit_user_owner_decision",
+    "recommended_decision": "accept_current_MU_R2_with_RC_P36_119_and_RC_P36_122_deferred",
+    "recommendation_rationale": "Accept only as a bounded internal R2 transfer proof: L1, authority coverage and delivery integrity pass, while the limited research-quality findings remain explicit and are not used to claim R3, release or production quality.",
+    "material_gain_accepted": null,
+    "owner_comment": null,
+    "accept_effect": "Close T05-C, set MU current R2=true, and authorize T05-D post-transfer NVDA entry while carrying RC-P36-119/122 to T08-T10/S5.",
+    "reject_effect": "Keep MU R2=false and T05-D blocked; record the product reason without rerunning the successful MU Search or Agent chain."
+  },
+  "acceptance_boundary": {
+    "S4_T05_C_MU_engineering": "pass",
+    "S4_T05_C_MU_search_exact_live": "pass",
+    "S4_T05_C_MU_agent_exact_live": "pass",
+    "S4_T05_C_MU_final_delivery": "pass",
+    "formal_paired_L1_L4": "pass_limited_gain_with_findings",
+    "MU_current_R2": false,
+    "S4_T05_C_closeout": "blocked_pending_owner_decision",
+    "S4_T05_D_entry": "blocked_pending_owner_decision",
+    "release": "not_qualified",
+    "production": "not_qualified"
+  },
+  "observed_counts": {
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_execution_network_calls": 0,
+    "new_source_network_calls": 0,
+    "new_external_tool_calls": 0,
+    "exact_live_reruns": 0,
+    "deterministic_baseline_runs": 0,
+    "formal_paired_assessments": 1,
+    "owner_decisions": 0
+  },
+  "source_refs": {
+    "exact_result": ".codex_runtime/fin012-s4-t05c-mu-agent-exact-live-r1/execution-result.json",
+    "exact_result_sha256": "c7bdf239e3f6fe1e980be856448ae7549e3401276c91805444b41e39cd1b3602",
+    "exact_assessment": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_agent_exact_live_result_and_independent_assessment_v1_0.json",
+    "exact_assessment_sha256": "e55a1e136c530558cdc0e4e35890c74061c028f2f8707f60b605c3a608fb86a8",
+    "product_surface": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_verified_product_surface_and_paired_readiness_v1_0.json",
+    "product_surface_sha256": "a4f5d9e26f408484e1aa234323e28269360a66d41128485b0a7d50d0992c4e58",
+    "deterministic_baseline": ".codex_runtime/fin012-s4-t05c-mu-current-evidence-deterministic-baseline-r1/execution-result.json",
+    "deterministic_baseline_sha256": "bf20e5de9403aec9a00ca15fb1749ed64874ac1a3bf14312c6c0052f6ebee8a9"
+  },
+  "recommended_next": "USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-MU-R2-THEN-CLOSE-T05-C-OR-HOLD",
+  "assessment_digest": "2321fd49cfe56610c1d28b933ea719b3c2105bcc3e5aae715df4a1c4978b0e0f"
+}

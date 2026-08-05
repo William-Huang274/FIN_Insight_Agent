@@ -1,0 +1,70 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_63",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.63",
+  "recorded_at": "2026-08-05T15:30:00+08:00",
+  "sequence_after_projection": "v2_62",
+  "status": "S4_T05_C_MU_formal_paired_pass_limited_gain_quality_findings_owner_decision_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor",
+    "S4_T01_T04": "pass_closed",
+    "S4_T05_A": "engineering_pass_zero_call",
+    "S4_T05_B_DELL": "pass_closed_owner_accepted_current_R2",
+    "S4_T05_C_MU_Search": "pass_exact_live",
+    "S4_T05_C_MU_Evidence_and_Agent_input": "pass_engineering",
+    "S4_T05_C_MU_Agent_exact_live": "pass_independent_L1",
+    "S4_T05_C_MU_final_delivery": "pass_local_verifier_bound",
+    "S4_T05_C_MU_formal_paired": "pass_limited_gain_with_findings",
+    "S4_T05_C_MU_owner_acceptance": "pending",
+    "S4_T05_D_post_transfer_NVDA": "not_started",
+    "S4_T06_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": true,
+    "DELL_current_R2": true,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-MU-R2-THEN-CLOSE-T05-C-OR-HOLD"
+  },
+  "T05_C_MU_formal_pair": {
+    "assessment_digest": "2321fd49cfe56610c1d28b933ea719b3c2105bcc3e5aae715df4a1c4978b0e0f",
+    "assessment_file_sha256": "63810831246870b41503575835293d3202c85b8bfc818cbde587357ef8b1198f",
+    "same_input_and_head": true,
+    "distinct_runs_and_artifacts": true,
+    "baseline_agent_claim_dependency_conflict_gap_WWC": [
+      [0, 0, 0, 0, 0],
+      [6, 1, 3, 4, 9]
+    ],
+    "L1_L2_L3_L4": [
+      "pass",
+      "pass",
+      "pass_limited_material_gain_with_quality_findings",
+      "pass"
+    ],
+    "quality_findings": {
+      "RC_P36_119": "9_of_9_WWC_generic_thresholds_deferred_T08_T10_S5",
+      "RC_P36_122": "MU_cross_cell_synthesis_epistemic_scaffolding_weak_deferred_T08_T10_S5"
+    },
+    "recommended_owner_decision": "accept_current_MU_R2_with_RC_P36_119_and_RC_P36_122_deferred",
+    "new_model_provider_network_source_exact_rerun": [0, 0, 0, 0, 0]
+  },
+  "preserved_boundaries": {
+    "owner_acceptance": false,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_product_acceptance": false,
+    "S5_entered": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "RC_P36_115": "open_S5_cross_runtime_lock",
+    "RC_P36_119": "open_nonblocking_T08_T10_S5",
+    "RC_P36_121": "closed_current_result_controlled_successor",
+    "RC_P36_122": "open_nonblocking_T08_T10_S5"
+  }
+}

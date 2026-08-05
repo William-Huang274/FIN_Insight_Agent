@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL Owner accepted current R2 and closed / T05-C MU entry authorized not started / S4-T06–T08 not started`
+状态：`S4 entered / S4-T01–T04 pass closed / T05-A pass / T05-B DELL Owner accepted current R2 and closed / T05-C MU formal paired pass with limited gain and findings, Owner decision pending / T05-D and S4-T06–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -240,3 +240,11 @@ raw business report 仍含内部 scope/period token、重复币种和英文 limi
 exact result SHA 保持 `c7bdf239…3602`；surface record=`c9608e31…5272`，preview=`4763544a…973f`，local Verifier=`0dc815a5…5c0c`。同 input/head、不同 execution identity/Artifacts 的 deterministic baseline 已物化，paired readiness=`ready_for_formal_paired_assessment`。MU、DELL、NVDA 共用 renderer 与 cross-case/lineage/numeric/preview/pair mutation 组合回归=`31 passed`；model/provider/network/source/exact rerun=`0/0/0/0/0`。
 
 当前仅能把 L4 final delivery 与 paired readiness 记为 pass。formal paired、Owner acceptance 和 MU current R2 仍未成立；通用 gap wording 与 WWC 可操作性作为 L2–L4 finding 后传 T08–T10/S5，不触发 paid rerun。下一项为 `FIN-0.1.2-S4-T05-C-MU-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION`。
+
+## 22. S4-T05-C MU formal paired 与 Owner gate
+
+正式 paired 已确认 Agent 与 authority-only baseline 具有相同 input/head、不同 Run/Artifacts，且 baseline body 未暴露给 Agent。L1、L2、L4 通过；L3 从 baseline 的 `0/0/0/0/0` 增加到 Agent 的 `6 Claims / 1 dependency / 3 conflicts / 4 gaps / 9 WWC`，记为有限结构增益，不宣称强 MU 投资 thesis。
+
+本次不能机械照搬 DELL 的数量结论。MU 的 9/9 WWC 都是通用阈值，继续归 RC-P36-119；唯一 dependency、三个 unresolved conflicts 与四个 gaps 主要复述 epistemic state 和待复核状态，新增非阻断 RC-P36-122，后传 T08–T10/S5。两项都不触发第二次 Search/DeepSeek，也不阻断 bounded internal R2，但必须在 Owner 决定里明示。
+
+formal assessment=`2321fd49…0e0f`，推荐 `accept_current_MU_R2_with_RC_P36_119_and_RC_P36_122_deferred`。Owner 未自动代签，所以 MU current R2=false、T05-C closeout 与 T05-D entry 仍 blocked。下一项只等待 `USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-MU-R2-THEN-CLOSE-T05-C-OR-HOLD`。

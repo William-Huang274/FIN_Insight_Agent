@@ -1,0 +1,117 @@
+{
+  "authority_boundary": {
+    "admission_issuance_authorized": true,
+    "automatic_retry_or_second_live": false,
+    "exact_live_execution_authorized_after_clean_synced_preflight": true,
+    "paired_or_owner_auto_authorized": false,
+    "user_authorized_issue_and_execute_if_proof_passes": true
+  },
+  "authority_decision_digest": "33768bd63c0fa23b08e0f6a3878b6f1f67c72ef59922e64222d7a45da5237b8e",
+  "authority_decision_ref": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_agent_fresh_zero_call_proof_and_admission_authority_decision_v1_0.json",
+  "exact_binding": {
+    "as_of": "2026-07-26T00:00:00Z",
+    "case_id": "fin012-s4-t05-dell-current-evidence-b70d1cb333198e22a6b0",
+    "case_version": 1,
+    "complete_input_digest": "8b00e023197e935b7cbb25d9d50bac9e2e859441d6e34405e6649ac8b6ba5bae",
+    "evidence_pack_digest": "2a3379f08c2207f914ddd4ca7e8b656f8a860847a2a7d660f845f35eed469502",
+    "predicted_attempt_id": "attempt_fin01_de8c394da757e600d333492f",
+    "predicted_research_run_id": "research_run_fin01_051c32eff55f90416149c40e",
+    "predicted_work_unit_id": "wu_p02_5_2d5297485d0805b287ddf51b",
+    "preparation_digest": "329206ad48a0a6d4c354fd8a54c95624d075ffa85a299a1210d310323f66637a",
+    "t03_terminal_digest": "4e84de38690d4ffed835092acc2aed94968b23ea8547f7d4e1db1ccbf3db0871"
+  },
+  "execution_envelope": {
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_agent_fresh_exact_admission_r1.json",
+    "business_promotable": false,
+    "current_evidence": {
+      "evidence_numeric_gap_counts": [
+        15,
+        3,
+        3
+      ],
+      "evidence_pack_digest": "2a3379f08c2207f914ddd4ca7e8b656f8a860847a2a7d660f845f35eed469502",
+      "t03_terminal_digest": "4e84de38690d4ffed835092acc2aed94968b23ea8547f7d4e1db1ccbf3db0871"
+    },
+    "envelope_digest": "eba33b9f3706123e8cf26aed749f018973d6128b03dccb5becea63a0fddc7c90",
+    "fresh_t03": {
+      "attempt_id": "attempt_fin01_de8c394da757e600d333492f",
+      "execution_identity": "fin012-s4-t05b-dell-agent-exact-live-r1",
+      "input_digest": "8b00e023197e935b7cbb25d9d50bac9e2e859441d6e34405e6649ac8b6ba5bae",
+      "preparation_digest": "329206ad48a0a6d4c354fd8a54c95624d075ffa85a299a1210d310323f66637a",
+      "research_run_id": "research_run_fin01_051c32eff55f90416149c40e",
+      "work_unit_id": "wu_p02_5_2d5297485d0805b287ddf51b"
+    },
+    "hard_budget": {
+      "execution_network_calls": 9,
+      "external_tool_calls": 0,
+      "failed_output_business_promotions": 0,
+      "fallback_budget": 0,
+      "live_case_head_writes": 0,
+      "maximum_input_tokens": 108000,
+      "maximum_output_tokens": 10000,
+      "maximum_total_cost_usd": 0.06,
+      "maximum_transport_attempts_per_call": 1,
+      "maximum_wall_clock_seconds": 900,
+      "provider_calls": 9,
+      "provider_hopping_budget": 0,
+      "retry_budget": 0,
+      "semantic_model_calls": 9,
+      "source_network_calls": 0
+    },
+    "input_capacity_contract": {
+      "aggregate_estimated_input_tokens": 86688,
+      "contract_ref": "fin_0_1_2.S4.T05_B.DELL.current_agent_compiled_capacity:v1",
+      "cost_derived_absolute_maximum_input_tokens": 117931,
+      "input_token_headroom": 21312,
+      "maximum_input_tokens": 108000,
+      "maximum_single_interaction_estimated_input_tokens": 15727,
+      "maximum_total_cost_usd": 0.06,
+      "minimum_cost_headroom_usd": 0.00432,
+      "per_interaction_estimated_input_tokens": [
+        7387,
+        7487,
+        8973,
+        9199,
+        7344,
+        7414,
+        13991,
+        9166,
+        15727
+      ],
+      "pricing_assumption_usd_per_million": {
+        "input_cache_miss": 0.435,
+        "output": 0.87
+      },
+      "requires_zero_call_full_chain_capacity_proof": true,
+      "reserved_maximum_output_tokens": 10000
+    },
+    "observed_counts": {
+      "admissions_consumed": 0,
+      "business_artifacts": 0,
+      "credential_reads_or_probes": 0,
+      "model_calls": 0,
+      "network_calls": 0,
+      "provider_calls": 0
+    },
+    "schema_version": "fin_ia_0_1_2_s4_t05_b_dell_agent_exact_execution_envelope_v1_0",
+    "status": "fresh_T05_B_DELL_Agent_exact_execution_not_started"
+  },
+  "issuance_digest": "74d0ff3aebcf5a8eada309a65499c17b12b776fe2201407b6a8123903bddc7b2",
+  "issued_admission": {
+    "admission_digest": "de7f118d9e710749df6ca0b680953a035d99f3f02698b0af95706abf3ffb3a56",
+    "admission_id": "fin012-s4-t05b-dell-agent-fresh-exact-admission-r1",
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_agent_fresh_exact_admission_r1.json",
+    "consumed": false,
+    "execution_identity": "fin012-s4-t05b-dell-agent-exact-live-r1",
+    "execution_started": false
+  },
+  "observed_counts": {
+    "business_artifacts": 0,
+    "credential_value_reads_or_probes": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0
+  },
+  "schema_version": "fin_ia_0_1_2_s4_t05_b_dell_agent_fresh_exact_admission_issuance_v1_0",
+  "status": "issued_unconsumed_zero_call_preflight_pass"
+}

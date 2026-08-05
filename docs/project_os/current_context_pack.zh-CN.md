@@ -3,6 +3,9 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-B DELL Agent fresh proof 已通过且 admission 已签发未消费，exact-live 待执行（current，2026-08-05）**：current transport-v9/Lead-v8 正式拓扑为 `9 Provider calls / 3 local Fact receipts / 9 captures / 9 Artifacts`；两个独立 disposable runtime 的 full-fake payload 等价，外部 model/provider/network=`0/0/0`。编译输入估算=`86,688`，硬上限=`108,000`，余量=`21,312`，最大输出=`10,000`、成本=`USD 0.06`、retry=`0`。admission digest=`de7f118d…3a56`，execution identity=`fin012-s4-t05b-dell-agent-exact-live-r1`，状态 issued/unconsumed/not-started；实际环境与 Project OS preflight 均通过，credential 只检查存在性。用户已预授权证明通过后执行唯一一次 DeepSeek exact-live；首个可信失败停止，不自动 retry/第二次 live。DELL R2=false。current next=`FIN-0.1.2-S4-T05-B-DELL-AGENT-EXACT-LIVE-EXECUTION-AND-TERMINAL-MATERIALIZATION`。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-B DELL current Evidence Pack 与 Agent exact input 已零调用工程通过，Agent fresh proof 待续行（current，2026-08-05）**：唯一 DELL Search terminal 已被不可变回读并编译为 `15 writer-citable Evidence / 3 exact Numeric / 3 typed gaps`，三 Cell Evidence=`6/3/6`；pack=`2a3379f0…9502`，Agent input=`8b00e023…5bae`，current case ID=`fin012-s4-t05-dell-current-evidence-b70d1cb333198e22a6b0`。审计发现直接改冻结 T05-A 编译器会使旧 immutable binding 失效；已恢复原 SHA，并以 T05-B controlled successor 隔离 current product identity。初次回归 `21 pass/1 fail` 被保留，纠偏后组合回归=`22 passed`，历史 T05-A 与当前 T05-B 同时成立。本轮 Search/model/Provider/network/admission/Run/business Artifact=`0`；Agent live 未开始、DELL R2=false。current next=`FIN-0.1.2-S4-T05-B-DELL-AGENT-FRESH-ZERO-CALL-PROOF-CAPACITY-AND-ADMISSION-AUTHORITY-DECISION`；RC-P36-115 仍禁止第二次 Search并阻断 S5。
 >
 > [!IMPORTANT]

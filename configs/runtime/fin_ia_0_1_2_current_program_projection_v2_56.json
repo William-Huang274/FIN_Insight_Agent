@@ -1,0 +1,74 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_56",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.56",
+  "recorded_at": "2026-08-05T11:34:38+08:00",
+  "sequence_after_projection": "v2_55",
+  "status": "S4_T05_B_DELL_agent_fresh_proof_pass_admission_issued_unconsumed_exact_live_next",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor",
+    "S4_T01_T04": "pass_closed",
+    "S4_T05_A": "engineering_pass_zero_call",
+    "S4_T05_B_DELL_Search": "pass_live_current_evidence_candidate_pack_ready",
+    "S4_T05_B_DELL_Evidence_and_Agent_input": "engineering_pass_zero_call",
+    "S4_T05_B_DELL_Agent_admission": "issued_unconsumed",
+    "S4_T05_B_DELL_Agent_live": "not_started",
+    "S4_T05_C_MU": "not_started",
+    "S4_T05_D_post_transfer_NVDA": "not_started",
+    "S4_T06_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": true,
+    "DELL_current_R2": false,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T05-B-DELL-AGENT-EXACT-LIVE-EXECUTION-AND-TERMINAL-MATERIALIZATION"
+  },
+  "T05_B_DELL_agent_fresh_proof_and_admission": {
+    "decision_digest": "33768bd63c0fa23b08e0f6a3878b6f1f67c72ef59922e64222d7a45da5237b8e",
+    "admission_digest": "de7f118d9e710749df6ca0b680953a035d99f3f02698b0af95706abf3ffb3a56",
+    "issuance_digest": "74d0ff3aebcf5a8eada309a65499c17b12b776fe2201407b6a8123903bddc7b2",
+    "execution_identity": "fin012-s4-t05b-dell-agent-exact-live-r1",
+    "transport_contract": "fin01.s3.bounded_agent.deepseek_segmented_owner_grade_specialist:v9",
+    "research_lead_contract": "fin01.s3.bounded_agent.research_lead_owner_grade:v8",
+    "projected_topology": {
+      "provider_calls": 9,
+      "local_fact_receipts": 3,
+      "captures": 9,
+      "business_artifacts": 9
+    },
+    "capacity": {
+      "estimated_input_tokens": 86688,
+      "maximum_input_tokens": 108000,
+      "input_token_headroom": 21312,
+      "maximum_output_tokens": 10000,
+      "maximum_cost_usd": 0.06
+    },
+    "fresh_disposable_proofs": 2,
+    "admission_issued": true,
+    "admission_consumed": false,
+    "execution_started": false
+  },
+  "acceptance_boundary": {
+    "zero_call_proof_and_capacity_pass": true,
+    "Project_OS_preflight_open_blockers": 0,
+    "credential_presence_only": true,
+    "model_provider_network_calls": [0, 0, 0],
+    "DELL_nine_business_Artifacts": false,
+    "DELL_R2": false,
+    "automatic_retry_or_second_live_allowed": false,
+    "new_product_version_created": false
+  },
+  "issue_state": {
+    "proof_capture_ref_nondeterminism": "closed_by_separating_content_addressed_refs_from_payload_equivalence",
+    "RC_P36_115": "open_nonblocking_this_agent_run_blocking_S5_and_second_search",
+    "RC_P36_119": "open_nonblocking_T08_T10_S5",
+    "new_open_issue": false
+  }
+}

@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
 from .api.v1.cases import build_cases_router
+from .api.v1.current_product import build_current_product_router
 from .api.v1.evidence import build_evidence_router
 from .api.v1.deliverables import build_deliverables_router
 from .api.v1.execution import build_execution_router
@@ -22,6 +23,9 @@ from .api.v1.human_baseline import build_human_baseline_router
 from .api.v1.local_research import build_local_research_router
 from .api.v1.planning import build_planning_router
 from .application.case_service import CaseService, case_service_from_env
+from .application.fin_0_1_2_s4_t06_current_product_projection import (
+    CurrentProductProjectionService,
+)
 from .application.evidence_service import EvidenceService
 from .application.deliverable_service import DeliverableService
 from .application.execution_service import ExecutionService
@@ -366,6 +370,7 @@ def create_app(
     s4_deterministic_research_profile_overlay: (
         S4CaseRuntimeResearchProfileOverlay | None
     ) = None,
+    current_product_projection_service: CurrentProductProjectionService | None = None,
 ) -> FastAPI:
     store = WorkbenchStore(store_path or default_store_path(REPO_ROOT))
     case_service = p02_case_service or case_service_from_env(REPO_ROOT)
@@ -417,6 +422,10 @@ def create_app(
     deliverable_service = vt3_deliverable_service or DeliverableService.from_services(
         case_service, evidence_service, repo_root=REPO_ROOT
     )
+    current_product_service = (
+        current_product_projection_service
+        or CurrentProductProjectionService.from_repository(REPO_ROOT)
+    )
     app = FastAPI(
         title="FinSight Workbench API",
         version="0.1.0",
@@ -438,6 +447,9 @@ def create_app(
     app.include_router(build_human_baseline_router(baseline_service), prefix="/api/v1")
     app.include_router(build_integrity_router(integrity_service), prefix="/api/v1")
     app.include_router(build_deliverables_router(deliverable_service), prefix="/api/v1")
+    app.include_router(
+        build_current_product_router(current_product_service), prefix="/api/v1"
+    )
     if (FRONTEND_DIST_ROOT / "assets").exists():
         app.mount("/assets", StaticFiles(directory=FRONTEND_DIST_ROOT / "assets"), name="assets")
     if (FRONTEND_ROOT / "static").exists():

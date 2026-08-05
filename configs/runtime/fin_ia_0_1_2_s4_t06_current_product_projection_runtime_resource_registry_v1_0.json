@@ -1,0 +1,35 @@
+{
+  "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
+  "registry_id": "FIN-0.1.2-S4-T06-A-CURRENT-PRODUCT-PROJECTION-REGISTRY-R1",
+  "status": "tracked_typed_runtime_resource_authority",
+  "policy": {
+    "registry_is_source_of_truth": true,
+    "static_scanner_is_detector_only": true,
+    "direct_unregistered_runtime_read_fails_closed": true,
+    "missing_unknown_duplicate_or_digest_drift_fails_closed": true,
+    "permutation_or_cross_version_fails_closed": true,
+    "ignored_untracked_codex_runtime_and_git_forbidden": true,
+    "traversal_and_symlink_escape_forbidden": true
+  },
+  "detector_python_refs": [
+    "apps/workbench/backend/application/fin_0_1_2_s4_t06_current_product_projection.py"
+  ],
+  "resource_count": 1,
+  "resource_bytes": 406461,
+  "resource_canonical_digest": "78c992cb3f60e772c11e5656605e19b1e4ad4ba1a1afe40cc20313c19fef205e",
+  "resources": [
+    {
+      "resource_id": "fin_0_1_2.s4.t06.current_product_projection_manifest",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_2_s4_t06_a_current_product_projection_manifest_v1_0.json",
+      "sha256": "fc7e60234e0cbff98fdc8c44bad231073d167820205715f78425121b1340c503",
+      "bytes": 406461,
+      "classification": "current_product_read_only_projection_manifest",
+      "consumer_ids": [
+        "apps.workbench.current_product_projection.read_only_service"
+      ],
+      "load_phase": "S4_T06_A_current_product_projection",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s4_t06_current_product_projection"
+    }
+  ]
+}

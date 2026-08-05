@@ -1,0 +1,128 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t06_a_current_product_projection_read_only_service_and_api_zero_call_implementation_v1_0",
+  "recorded_at": "2026-08-05T20:35:00+08:00",
+  "status": "T06_A_engineering_pass_read_only_current_projection_available",
+  "source_entry_decision": {
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t06_workbench_current_product_projection_entry_and_dependency_decision_v1_0.json",
+    "digest": "55d06706f2f0bc1210728aa18a5767073f1c90e90ad3bcf36080e49b14c25527"
+  },
+  "product_increment": {
+    "current_cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "projection_surfaces": [
+      "case",
+      "run",
+      "evidence",
+      "numeric",
+      "graph",
+      "gaps",
+      "workpaper",
+      "report",
+      "trace",
+      "quality"
+    ],
+    "api_paths": [
+      "GET /api/v1/current-product/cases",
+      "GET /api/v1/current-product/cases/{case_key}",
+      "GET /api/v1/current-product/cases/{case_key}/{surface}"
+    ],
+    "explicit_mode": "current",
+    "required_permission": "current_product:read",
+    "fixture_case_service_required": false,
+    "frontend_integrated": false,
+    "request_repair_available": false
+  },
+  "manifest": {
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t06_a_current_product_projection_manifest_v1_0.json",
+    "digest": "4ee7df3c46a87939412c6ea4d303590d91622a2f7216367b6a62cbc15f357250",
+    "sha256": "fc7e60234e0cbff98fdc8c44bad231073d167820205715f78425121b1340c503",
+    "bytes": 406461,
+    "current_three_case_evidence_numeric_gap_graph_artifact_owner": [
+      45,
+      9,
+      9,
+      0,
+      27,
+      3
+    ]
+  },
+  "code_and_contract_bindings": [
+    {
+      "ref": "apps/workbench/backend/app.py",
+      "sha256": "018698ac16668cc02496df2260c682a0be3113e1ddf3c8b2f1e3d06378374297",
+      "bytes": 49226
+    },
+    {
+      "ref": "apps/workbench/backend/api/v1/current_product.py",
+      "sha256": "f6bf8c7b6f4edc6875d76b0feb0a308dbff737fcc3f8b427f298177855eebf93",
+      "bytes": 4396
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t06_current_product_projection.py",
+      "sha256": "f5aaee05a9b41c16decf4ea41a43f567c3d404e5bac70748c5b50eed848c761d",
+      "bytes": 10373
+    },
+    {
+      "ref": "scripts/releases/materialize_fin_ia_0_1_2_s4_t06_a_current_product_projection_manifest.py",
+      "sha256": "45f94a14a433b4ece3fbc958a08b2fb92b9b4b8111b38189a0b4d99d8c431697",
+      "bytes": 23841
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t06_a_current_product_projection.py",
+      "sha256": "3612f1dae64792b2930441f3b48b98d91a92ff2e2a8f3a62daf901643395599b",
+      "bytes": 10490
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t06_a_current_product_projection_manifest_v1_0.json",
+      "sha256": "fc7e60234e0cbff98fdc8c44bad231073d167820205715f78425121b1340c503",
+      "bytes": 406461
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s4_t06_current_product_projection_runtime_resource_registry_v1_0.json",
+      "sha256": "65bbfdbae91e6d882611e1c2ac4b8f7ec288429977478efdc8e26e1d569b5336",
+      "bytes": 1607
+    }
+  ],
+  "verification": {
+    "focused_T06_A_contracts": "12 passed",
+    "current_T06_A_T05_Case_regression": "55 passed",
+    "historical_fixture_RC_P36_127_regression": "1 passed / 10 failed",
+    "historical_fixture_failure_set_changed": false,
+    "manifest_regeneration_exact": true,
+    "service_defensive_copy": true,
+    "cross_case_digest_graph_raw_mutations_fail_closed": true,
+    "current_API_methods": [
+      "GET"
+    ],
+    "new_model_provider_network_source_tool_calls": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "new_business_runtime_writes": 0
+  },
+  "issue_disposition": {
+    "RC_P36_126": "root_cause_fixed_by_T06_A_product_integration_pending_T06_B",
+    "RC_P36_127": "unchanged_open_owned_by_T06_B_mode_isolation",
+    "RC_P36_119_125": "unchanged_deferred_T08_T10_S5",
+    "RC_P36_115": "unchanged_deferred_S5"
+  },
+  "acceptance_boundary": {
+    "S4_T06_A_engineering": "pass",
+    "S4_T06_current_backend_projection": "available_read_only",
+    "S4_T06_B": "not_started",
+    "S4_T06_product_acceptance": false,
+    "qualified_human_review": false,
+    "S4_T07": "not_entered",
+    "S5": "not_entered",
+    "release": "not_qualified",
+    "production": "not_qualified"
+  },
+  "recommended_next": "FIN-0.1.2-S4-T06-B-WORKBENCH-FRONTEND-CURRENT-MODE-CURRENT-FIXTURE-RUNTIME-ISOLATION-AND-BROWSER-MUTATION-ZERO-CALL-IMPLEMENTATION",
+  "record_digest": "f30c387cfe7c4ae8c999ed75eeb82a18ea83ed7b57c98d6fd4466faa6817617d"
+}

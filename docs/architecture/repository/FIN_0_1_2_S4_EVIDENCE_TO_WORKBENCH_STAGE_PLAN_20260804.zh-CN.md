@@ -320,3 +320,13 @@ Graph 必须按当前事实投影：三个 approved Evidence Pack 都没有已�
 T06 被有界拆为三个包：T06-A 只做三案 `CurrentProductProjectionManifest`、只读 compiler/service/API，不修 RC-P36-127；T06-B 做 frontend current mode、current/fixture runtime-mode 隔离、RC-P36-127 收敛和 browser/cross-case mutation；T06-C 只做 typed return/request-repair envelope、replay 与 T07 handoff readiness，不执行 qualified Human Review。RC-P36-119/125 留在 T08–T10/S5，RC-P36-115 留在 S5；不得回塞 T06-A。
 
 decision=`55d06706…5527`，SHA=`941bc7c6…de3b`，mutation=`6 passed`，model/provider/network/source/tool/runtime-write=`0`。当前只能声明 T06 entry=pass；T06 engineering/product projection 仍 blocked。下一项为 `FIN-0.1.2-S4-T06-A-THREE-CASE-CURRENT-PRODUCT-PROJECTION-MANIFEST-READ-ONLY-SERVICE-AND-API-ZERO-CALL-IMPLEMENTATION`。
+
+## 31. S4-T06-A 三案例 current product 只读投影与 API
+
+T06-A 已把 T05 的三案例 immutable 产品锚点编译成一份内容寻址的 `CurrentProductProjectionManifest`。DELL、MU、NVDA 每案提供 `case / run / evidence / numeric / graph / gaps / workpaper / report / trace / quality` 十个只读视图；聚合仍为 `45 Evidence / 9 Numeric / 9 typed gaps / 0 approved Graph edges / 27 business Artifacts / 3 Owner acceptances`。Graph 明确返回 `typed_empty_no_approved_current_graph_evidence`，没有读取 candidate、snapshot 或 fixture 补边。
+
+Workbench 新增独立 current projection service 与三个 GET-only API：case 列表、单 case 汇总、单 surface 读取。入口强制 `mode=current` 和 `current_product:read`，默认应用可在旧 fixture `CaseService` 不可用时独立提供 current API；返回值 defensive copy，manifest、case projection 与各 view 都验证 canonical digest。跨案替换、digest 漂移、伪造 Graph、raw/capture/private 字段和 `.codex_runtime` 依赖均 fail closed。产品正文只读取 verified final preview；Trace 只暴露安全 receipt/lineage 摘要，不暴露 Provider 原始输出或凭据。
+
+manifest digest=`4ee7df3c…7250`，implementation digest=`f30c387c…617d`。T06-A focused=`12 passed`，T06-A + T05 + current Case 选择性回归=`55 passed`；没有新增 model/provider/network/source/tool call 或 business runtime write。RC-P36-126 的“没有 digest-bound current read adapter”根因已经关闭，但产品集成仍需 T06-B 的前端 current mode。历史 fixture 漂移回归仍为 `1 passed / 10 failed`，失败集合未改变；RC-P36-127 保持 open 且只归 T06-B，T06-A 没有通过禁用默认 runtime 或放宽 Evidence 状态来掩盖它。
+
+因此只能声明 `T06-A engineering pass / current backend projection available`，不能声明 T06 产品通过、qualified Human Review、NVDA R3、S4 closeout、S5 或 release。下一项为 `FIN-0.1.2-S4-T06-B-WORKBENCH-FRONTEND-CURRENT-MODE-CURRENT-FIXTURE-RUNTIME-ISOLATION-AND-BROWSER-MUTATION-ZERO-CALL-IMPLEMENTATION`；T06-C 的 return/request-repair 与 T07 handoff 不得提前塞入 T06-B。

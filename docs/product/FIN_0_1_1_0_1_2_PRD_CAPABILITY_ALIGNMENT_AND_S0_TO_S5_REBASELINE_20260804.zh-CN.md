@@ -122,6 +122,12 @@ T05 已完成 DELL、MU、post-transfer NVDA 三案例 current R2 与显式 Owne
 
 S4-T06 因此保持原产品目标不变，但工程顺序细分为：A）digest-bound 三案例 current manifest 与只读 service/API；B）frontend current mode、current/fixture runtime-mode 隔离、RC-P36-127 收敛与 browser replay；C）typed return/request-repair 和 T07 handoff。无 approved Graph Evidence 时必须显示真实空态，不能用 snapshot、candidate 或 fixture 补图。qualified Human Review 与 NVDA R3 仍只归 T07，WWC/Lead 跨案质量校准只归 T08–T10/S5。
 
+### 2026-08-05 S4-T06-A 实现校正
+
+T06-A 已工程通过：DELL/MU/NVDA 的 accepted current assets 被编译为单一 digest-bound manifest，并由独立只读 service/API 投影为 Case、Run、Evidence、Numeric、typed-empty Graph、Gap、Workpaper、Report、Trace 和 quality。产品后端不再依赖 fixture CaseService 才能读取这三案，且不读取未跟踪 `.codex_runtime` 或向第二个可变业务库复制真值。跨案、digest、Graph fabrication 与 raw-capture 注入均 fail closed。
+
+这只关闭 RC-P36-126 的后端 read-model 根因，不等于 F01/F04/F06/F07/F09/F11/F13/F15 已完整产品验收：前端仍未切入 current mode，旧 fixture workflow 的 RC-P36-127 仍需在 T06-B 隔离，return/request-repair 仍归 T06-C，qualified Human Review/NVDA R3 仍归 T07。因此 S4-T06 继续为进行中，不能因 API 可读就提前进入 S5。
+
 ### S0：可靠基础（已关闭，不重开）
 
 证明代码、资源、合同、测试和独立目录可复现。它不证明金融产品、检索质量或模型质量。

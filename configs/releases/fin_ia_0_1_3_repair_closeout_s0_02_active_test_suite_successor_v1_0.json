@@ -14,7 +14,7 @@
   ],
   "historical_FIN_0_1_3_test_names_establish_current_authority": false,
   "decision_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt_v1_0.json",
-  "decision_sha256": "f93b3606cbf68248e245f33d9be7807d117541241b36299b8f0474ba400e8b30",
+  "decision_sha256": "5f60d7c326b8710147d62256af66e5878e720fb9f089aae2ee2ebcbcc879552e",
   "next_action": "FIN-0.1.3-013-S0-03-FINANCIAL-SEMANTIC-TRUTH-ORACLE-CLASSIFICATION",
-  "suite_digest": "484fd480369883544de38eb9cad0cfdb99b71aeeb53a3252c9c12f78b7fbfde0"
+  "suite_digest": "9355b40fdfc93ad7f4e625e2dabfce119df52bd8ec4df7a864735b4a439fbe6b"
 }

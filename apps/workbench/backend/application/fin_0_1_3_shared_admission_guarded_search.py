@@ -25,6 +25,13 @@ class Fin013SharedAdmissionGuardedSearchRunner(Fin012S4T03SearchRunner):
             SharedAdmissionConsumptionLedger,
         ):
             raise TypeError("fin_0_1_3_shared_admission_ledger_required")
+        resolved_runtime_root = Path(runtime_root).resolve()
+        if shared_admission_ledger.path == resolved_runtime_root or (
+            shared_admission_ledger.path.is_relative_to(resolved_runtime_root)
+        ):
+            raise ValueError(
+                "fin_0_1_3_shared_admission_ledger_inside_disposable_runtime"
+            )
         super().__init__(
             repository_root=repository_root,
             runtime_root=runtime_root,

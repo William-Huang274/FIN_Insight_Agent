@@ -11,6 +11,7 @@
 
 - 新增 `src/sec_agent/shared_admission_ledger.py`：
   - repository-independent SQLite control plane；
+  - connection 使用 `busy_timeout=30s`、`synchronous=FULL`；不在每次并发连接上重设 journal mode，避免初始化锁竞争；
   - `admission_digest` 为唯一键；
   - `BEGIN IMMEDIATE` 原子 reserve；
   - reserve 先于 source/model/provider/business side effect；
@@ -18,6 +19,7 @@
   - terminal 精确绑定 admission、Run、Attempt、status、phase、code 和 result digest；
   - receipt digest mutation fail closed。
 - 旧 S4-T03 runner 增加可选 compatibility hook，保持 FIN 0.1.2 历史调用形状；新增 `Fin013SharedAdmissionGuardedSearchRunner`，FIN 0.1.3 current 路径必须显式提供 shared ledger。
+- current wrapper 代码级拒绝把 shared ledger 放进本次 disposable runtime root，避免调用者用错路径后重新引入跨目录 replay 缺口。
 - RC-P36-128：
   - MU one-time issuance 生成测试改用测试注入的 disposable、未消费 runtime root；
   - historical scope decision 对不可变 config 继续精确重算，对历史绑定的 mutable source code 只校验 ref 与原摘要形状；
@@ -35,9 +37,9 @@
 
 ## 验证
 
-- canonical S0-02 contract/mutation：`8 passed`，其中两个线程同时 reserve 只有一个 winner。
-- S0-01 + S0-02 + RC-P36-128 历史债务 focused：`24 passed`。
-- 加入旧 T03 runner、DELL issuance/acceptance 的相邻兼容回归：`39 passed`；新 hook 未改变未注入 ledger 的 FIN 0.1.2 返回形状。
+- canonical S0-02 contract/mutation：`9 passed`，其中两个线程同时 reserve 只有一个 winner，ledger-inside-runtime 负向测试 fail closed。
+- S0-01 + S0-02 + RC-P36-128 历史债务 focused：`25 passed`。
+- 加入旧 T03 runner、DELL issuance/acceptance 的相邻兼容回归：`40 passed`；新 hook 未改变未注入 ledger 的 FIN 0.1.2 返回形状。
 - 同一 admission 在 runtime A 成功终结后，runtime B 在任何来源调用前得到 `shared_admission_already_consumed:terminal`。
 - 模拟 crash：只 reserve 后重开数据库，同一 admission 得到 `shared_admission_already_consumed:reserved`。
 - Run/Attempt mutation、terminal receipt tamper 均 fail closed。

@@ -163,6 +163,24 @@ def test_current_guarded_runner_denies_same_admission_across_runtime_roots(
     assert not ledger_path.is_relative_to(second_root)
 
 
+def test_current_guarded_runner_rejects_ledger_inside_disposable_runtime(
+    tmp_path: Path,
+) -> None:
+    runtime_root = tmp_path / "runtime"
+    with pytest.raises(
+        ValueError,
+        match="fin_0_1_3_shared_admission_ledger_inside_disposable_runtime",
+    ):
+        Fin013SharedAdmissionGuardedSearchRunner(
+            repository_root=ROOT,
+            runtime_root=runtime_root,
+            transport=ZeroCallIssuerTransport("NVDA"),
+            shared_admission_ledger=SharedAdmissionConsumptionLedger(
+                runtime_root / "control-plane" / "admissions.sqlite3"
+            ),
+        )
+
+
 def test_terminal_binding_and_receipt_digest_mutations_fail_closed(
     tmp_path: Path,
 ) -> None:

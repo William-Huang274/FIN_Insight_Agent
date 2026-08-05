@@ -3,6 +3,9 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T06 Workbench current product projection 入口已通过，当前被项目内读模型绑定缺口 RC-P36-126 阻断（current，2026-08-05）**：零调用盘点确认三案例已具 `45 Evidence / 9 Numeric / 9 typed gaps / 27 business Artifacts / 3 Owner acceptances`，但现有 Workbench `CaseService` 明确为 fixture-only、默认依赖 `FINSIGHT_P02_FIXTURE_ROOT`，Evidence/Execution/Deliverable API 与前端 `fixture_internal` 主体没有绑定 T05 current assets。当前三个 Evidence Pack 的 approved Graph evidence 都为 0，产品必须显示 typed empty，不能补假边。选择性回归=`44 passed / 10 failed`，10 项均由旧 fixture pending 前置条件与默认共享 runtime 自动后台调度冲突触发；默认路径 WorkUnit=`succeeded`/compile=409，显式 no-runtime=`pending`/compile=202。登记 RC-P36-127，T06-A 不修，归 T06-B current/fixture runtime-mode 隔离。decision=`55d06706…5527`，SHA=`941bc7c6…de3b`，mutation=`6 passed`，model/provider/network/source/tool/runtime-write=`0`。T06 固定为 A manifest/read-only service/API → B frontend current mode、mode isolation/browser → C typed return/replay/T07 handoff；T06 engineering/product 尚未通过。current next=`FIN-0.1.2-S4-T06-A-THREE-CASE-CURRENT-PRODUCT-PROJECTION-MANIFEST-READ-ONLY-SERVICE-AND-API-ZERO-CALL-IMPLEMENTATION`。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-D post-transfer NVDA 已获显式 Owner 接受并关闭，S4-T06 入口已授权未开始（current，2026-08-05）**：用户在看见 formal paired 的有限 L3 增益、9/9 WWC 泛化 RC-P36-119 和跨案例 Lead 综合偏弱 RC-P36-125 后明确回复“接受”；decision=`4e15a44d…7a9d` 精确绑定 assessment=`ff93cea5…4f21`。S4-T05-D=`pass_closed_owner_accepted`，post-transfer NVDA R2=true，T05 三案例 current-R2 transfer 关闭；S4-T06 entry=`authorized_not_started`。RC-P36-119/125 后传 T08–T10/S5，RC-P36-115 仍阻断 S5/release。接受不等于 strong NVDA thesis、qualified Human Review、NVDA R3、S4 整体验收或 release。本项 model/provider/network/source/exact-live/T06 Run=`0`。current next=`FIN-0.1.2-S4-T06-WORKBENCH-CURRENT-PRODUCT-PROJECTION-ENTRY-AND-DEPENDENCY-DECISION`；先做零调用入口、资产和产品投影边界审计，不得自动启动新模型调用。
 >
 > [!IMPORTANT]

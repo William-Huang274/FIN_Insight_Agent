@@ -116,6 +116,12 @@ WWC atom、known gaps、eval 和 release feedback 已有工程基础，但没有
 
 ## 6. 修正后的 FIN 0.1.2 S0–S5
 
+### 2026-08-05 S4-T06 入口校正
+
+T05 已完成 DELL、MU、post-transfer NVDA 三案例 current R2 与显式 Owner acceptance，但这不会自动把 F01/F04/F06/F07/F09/F11/F13/F15 标为当前产品通过。零调用审计确认现有 Workbench 的 API 与 React 组件形状可复用，真实数据绑定仍停留在 fixture/shadow canonical store；T05 current Evidence、exact Artifacts、final surface 和 quality/Owner state 尚未进入同一个产品读模型，登记 RC-P36-126。旧 fixture Evidence/VT2/VT3 链另有默认 runtime 自动调度与 pending 前置条件冲突 RC-P36-127，因此“形状可复用”不再等于“旧完整工作流当前全绿”。
+
+S4-T06 因此保持原产品目标不变，但工程顺序细分为：A）digest-bound 三案例 current manifest 与只读 service/API；B）frontend current mode、current/fixture runtime-mode 隔离、RC-P36-127 收敛与 browser replay；C）typed return/request-repair 和 T07 handoff。无 approved Graph Evidence 时必须显示真实空态，不能用 snapshot、candidate 或 fixture 补图。qualified Human Review 与 NVDA R3 仍只归 T07，WWC/Lead 跨案质量校准只归 T08–T10/S5。
+
 ### S0：可靠基础（已关闭，不重开）
 
 证明代码、资源、合同、测试和独立目录可复现。它不证明金融产品、检索质量或模型质量。

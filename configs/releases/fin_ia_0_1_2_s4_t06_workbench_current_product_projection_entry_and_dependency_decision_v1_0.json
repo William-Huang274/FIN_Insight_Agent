@@ -1,0 +1,254 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t06_workbench_current_product_projection_entry_and_dependency_decision_v1_0",
+  "recorded_at": "2026-08-05T19:10:00+08:00",
+  "status": "T06_entry_authorized_current_product_projection_binding_blocked",
+  "authority": {
+    "source_T05_D_owner_decision": "4e15a44d442cd42dc6c16edd61510d8a3518048eae63456904d153888c467a9d",
+    "S4_T06_entry_authorized": true,
+    "implementation_authorized": false,
+    "model_provider_network_source_calls_authorized": false,
+    "current_product_projection_claim_authorized": false
+  },
+  "current_three_case_assets": [
+    {
+      "ticker": "DELL",
+      "case_key": "DELL",
+      "as_of": "2026-07-26T00:00:00Z",
+      "natural_objective": "评估 Dell AI 服务器需求能否持续转化为收入、利润和现金流，并识别订单质量、供应链与营运资本风险。",
+      "evidence_pack_ref": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_current_evidence_pack_v1_0.json",
+      "evidence_pack_digest": "2a3379f08c2207f914ddd4ca7e8b656f8a860847a2a7d660f845f35eed469502",
+      "evidence_numeric_typed_gap": [
+        15,
+        3,
+        3
+      ],
+      "approved_graph_evidence": 0,
+      "graph_product_state": "typed_empty_no_approved_current_graph_evidence",
+      "exact_result_ref": ".codex_runtime/fin012-s4-t05b-dell-agent-exact-live-r1/execution-result.json",
+      "exact_result_sha256": "b4edc0927e958b812c5e5dd04d982defa97e64255d24e3a569e5311b78f5dd32",
+      "provider_capture_artifact": [
+        9,
+        9,
+        9
+      ],
+      "artifact_types": [
+        "bounded_agent_manifest",
+        "bounded_agent_evidence",
+        "bounded_agent_numeric",
+        "bounded_agent_judgment",
+        "bounded_agent_workpaper",
+        "bounded_agent_report",
+        "bounded_agent_trace",
+        "bounded_agent_verification",
+        "agent_fallback_comparison"
+      ],
+      "surface_ref": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_verified_product_surface_and_paired_readiness_v1_0.json",
+      "surface_record_digest": "9bb1cfa91c35980fbc1cc323fb0fe996298595c86f1128fec5a37e9c4072a529",
+      "owner_ref": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_owner_acceptance_and_closeout_v1_0.json",
+      "owner_decision_digest": "a03a10716d816d32835f6e691057a43c439e9f6675c8e53f7db0eeb37d836468",
+      "R2": true
+    },
+    {
+      "ticker": "MU",
+      "case_key": "MU",
+      "as_of": "2026-07-26T00:00:00Z",
+      "natural_objective": "评估 Micron HBM 需求、供给扩张和产品组合能否持续转化为收入、利润与现金流，并识别周期和客户风险。",
+      "evidence_pack_ref": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_current_evidence_pack_v1_0.json",
+      "evidence_pack_digest": "ef1895fe4c113c5e2d952178fc715fb3f5a4eb1ca30a784431c74cf744df433d",
+      "evidence_numeric_typed_gap": [
+        15,
+        3,
+        3
+      ],
+      "approved_graph_evidence": 0,
+      "graph_product_state": "typed_empty_no_approved_current_graph_evidence",
+      "exact_result_ref": ".codex_runtime/fin012-s4-t05c-mu-agent-exact-live-r1/execution-result.json",
+      "exact_result_sha256": "c7bdf239e3f6fe1e980be856448ae7549e3401276c91805444b41e39cd1b3602",
+      "provider_capture_artifact": [
+        9,
+        9,
+        9
+      ],
+      "artifact_types": [
+        "bounded_agent_manifest",
+        "bounded_agent_evidence",
+        "bounded_agent_numeric",
+        "bounded_agent_judgment",
+        "bounded_agent_workpaper",
+        "bounded_agent_report",
+        "bounded_agent_trace",
+        "bounded_agent_verification",
+        "agent_fallback_comparison"
+      ],
+      "surface_ref": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_verified_product_surface_and_paired_readiness_v1_0.json",
+      "surface_record_digest": "c9608e312fe7bf6e3b77ba86b50b533456461c45297060311cc3fc85dea15272",
+      "owner_ref": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_owner_acceptance_and_closeout_v1_0.json",
+      "owner_decision_digest": "70fc169f38cd4ee73a6be057c089894bc3dae02c19ab4e2ed016398b86265912",
+      "R2": true
+    },
+    {
+      "ticker": "NVDA",
+      "case_key": "NVDA",
+      "as_of": "2026-07-21T00:00:00Z",
+      "natural_objective": "评估 NVIDIA AI 基础设施需求的真实性与持续性、公司可获得的利润和现金流，以及供应链和客户侧反证。",
+      "evidence_pack_ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_pack_v1_0.json",
+      "evidence_pack_digest": "fdc1a10010f0d47ba7be5b420fc5cac860c3044d6690696463865ecce4b7bf65",
+      "evidence_numeric_typed_gap": [
+        15,
+        3,
+        3
+      ],
+      "approved_graph_evidence": 0,
+      "graph_product_state": "typed_empty_no_approved_current_graph_evidence",
+      "exact_result_ref": ".codex_runtime/fin012-s4-t05d-nvda-post-transfer-agent-exact-live-r1/execution-result.json",
+      "exact_result_sha256": "200907cf4c0f6a58748b12f44a4c874ff0b53bd74fe69e22e2d28d117f72bbc4",
+      "provider_capture_artifact": [
+        9,
+        9,
+        9
+      ],
+      "artifact_types": [
+        "bounded_agent_manifest",
+        "bounded_agent_evidence",
+        "bounded_agent_numeric",
+        "bounded_agent_judgment",
+        "bounded_agent_workpaper",
+        "bounded_agent_report",
+        "bounded_agent_trace",
+        "bounded_agent_verification",
+        "agent_fallback_comparison"
+      ],
+      "surface_ref": "configs/releases/fin_ia_0_1_2_s4_t05_d_nvda_verified_product_surface_and_paired_readiness_v1_0.json",
+      "surface_record_digest": "6b6098cc17817e2f1fd9636262144060a300ce7edb8071b79f4f4e84b3931ec8",
+      "owner_ref": "configs/releases/fin_ia_0_1_2_s4_t05_d_nvda_owner_acceptance_and_closeout_v1_0.json",
+      "owner_decision_digest": "4e15a44d442cd42dc6c16edd61510d8a3518048eae63456904d153888c467a9d",
+      "R2": true
+    }
+  ],
+  "workbench_existing_reusable_surfaces": {
+    "backend_routes": [
+      "Case and Task Center",
+      "Execution and Research Run",
+      "Evidence review",
+      "Numeric and Workpaper",
+      "Deliverable review and Trace"
+    ],
+    "frontend_components": [
+      "TaskCenter",
+      "CaseOverview",
+      "ActivityTrace",
+      "EvidenceWorkbench",
+      "NumericWorkbench",
+      "WorkpaperReview",
+      "DeliverableReview"
+    ],
+    "reusable_boundary": "Reuse typed route/component shapes and canonical read-model patterns; do not reuse fixture content as current product evidence, and do not assume the historical fixture workflow is regression-green."
+  },
+  "historical_workbench_regression_audit": {
+    "issue": "RC-P36-127",
+    "status": "open_nonblocking_for_T06_A_owned_by_T06_B_mode_isolation",
+    "observed_selected_regression": {
+      "total": 54,
+      "passed": 44,
+      "failed": 10,
+      "common_failure": "exactly_one_pending_evidence_fixture_work_unit_required"
+    },
+    "root_cause_proof": {
+      "default_create_app_work_unit_state": "succeeded",
+      "default_create_app_evidence_compile_status": 409,
+      "explicit_no_runtime_work_unit_state": "pending",
+      "explicit_no_runtime_evidence_compile_status": 202,
+      "cause": "create_app now auto-wires Fin01ResearchRuntime and background-dispatches the legacy fixture WorkUnit before the historical Evidence compiler can consume its required pending state."
+    },
+    "disposition": "Do not repair this inside T06-A. T06-B must separate current read-only mode from legacy fixture execution mode and restore or replace the fixture contract without weakening current-product truth.",
+    "model_or_provider_fault": false,
+    "T05_current_asset_failure": false
+  },
+  "earliest_owned_blocker": {
+    "issue": "RC-P36-126",
+    "status": "open_T06_blocker",
+    "layer": "S4_T06_Workbench_current_product_read_projection_binding",
+    "evidence": [
+      "CaseService is explicitly fixture-only and defaults to unavailable without FINSIGHT_P02_FIXTURE_ROOT.",
+      "EvidenceService consumes the zero-call fixture contract through the fixture CaseService facade.",
+      "The frontend default principal remains tenant=fixture_internal.",
+      "No Workbench service binds the three accepted T05 Evidence Packs, exact results, product surfaces and Owner decisions into one current read model.",
+      "There is no explicit current Graph or quality/Owner projection; approved Graph evidence is empty in all three current Evidence Packs."
+    ],
+    "root_cause": "Current live research assets and the historical Workbench evolved in separate stores and contracts. T05 proved immutable product artifacts, while Workbench still reads fixture/shadow canonical rows and has no digest-bound adapter.",
+    "model_or_provider_fault": false,
+    "external_boundary": false
+  },
+  "scope_disposition": {
+    "T06_owned": [
+      "digest-bound three-case CurrentProductProjectionManifest",
+      "read-only projection compiler/service/API",
+      "current Case/Run/Evidence/Numeric/Graph-empty/Gap/Workpaper/Report/Trace/quality views",
+      "explicit current-versus-fixture labeling with no automatic fallback",
+      "typed return/request-repair action contract and browser product replay",
+      "current/fixture execution-mode isolation for RC-P36-127 in T06-B"
+    ],
+    "T07_owned": [
+      "qualified Human Review execution",
+      "exact review digest binding",
+      "NVDA R3 decision and review burden"
+    ],
+    "T08_T10_S5_owned": [
+      "RC-P36-119 WWC calibration",
+      "RC-P36-125 Lead synthesis calibration",
+      "cross-runtime exact-once lock and release hardening"
+    ],
+    "not_allowed": [
+      "copy fixture rows and relabel them current",
+      "promote raw provider captures into product content",
+      "invent Graph edges when approved graph evidence is absent",
+      "write T05 immutable artifacts into a second business source of truth",
+      "call a model, Provider, source network or external tool in T06 entry"
+    ]
+  },
+  "bounded_T06_sequence": [
+    {
+      "task": "T06-A",
+      "scope": "three-case manifest plus read-only projection compiler/service/API",
+      "status": "authorized_next_not_started"
+    },
+    {
+      "task": "T06-B",
+      "scope": "frontend current-mode integration, current/fixture runtime-mode isolation for RC-P36-127, and cross-case/browser mutation",
+      "status": "blocked_by_T06_A"
+    },
+    {
+      "task": "T06-C",
+      "scope": "typed return/request-repair envelope, replay and T07 handoff readiness",
+      "status": "blocked_by_T06_B"
+    }
+  ],
+  "acceptance_boundary": {
+    "T05_three_case_R2": "pass_closed",
+    "S4_T06_entry": "pass",
+    "S4_T06_engineering": "not_started",
+    "S4_T06_product_projection": "blocked_RC_P36_126",
+    "S4_T07": "not_entered",
+    "S4_product_acceptance": false,
+    "S5": "not_entered",
+    "release": "not_qualified",
+    "production": "not_qualified"
+  },
+  "observed_counts": {
+    "cases": 3,
+    "evidence_rows": 45,
+    "numeric_rows": 9,
+    "typed_gaps": 9,
+    "approved_graph_evidence": 0,
+    "business_artifacts": 27,
+    "owner_acceptances": 3,
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_network_calls": 0,
+    "new_source_calls": 0,
+    "new_external_tool_calls": 0,
+    "new_runtime_writes": 0
+  },
+  "recommended_next": "FIN-0.1.2-S4-T06-A-THREE-CASE-CURRENT-PRODUCT-PROJECTION-MANIFEST-READ-ONLY-SERVICE-AND-API-ZERO-CALL-IMPLEMENTATION",
+  "decision_digest": "55d06706f2f0bc1210728aa18a5767073f1c90e90ad3bcf36080e49b14c25527"
+}

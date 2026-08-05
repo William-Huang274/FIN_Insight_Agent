@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T04 pass closed / T05-A pass / T05-B DELL、T05-C MU、T05-D post-transfer NVDA Owner accepted current R2 and closed / S4-T06 entry authorized not started / S4-T07–T08 not started`
+状态：`S4 entered / S4-T01–T05 pass closed / S4-T06 entry pass、current projection blocked by RC-P36-126、T06-A authorized next / S4-T07–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -306,3 +306,17 @@ formal assessment=`ff93cea5…4f21`，三案例 formal pair、MU/NVDA product su
 接受仅覆盖 bounded internal post-transfer NVDA R2。RC-P36-119/125 继续后传 T08–T10/S5，RC-P36-122 保留为历史 MU trigger，RC-P36-115 仍阻断 S5 release hardening；strong NVDA thesis、qualified Human Review、NVDA R3、S4 整体验收、S5、release 和 production 均未成立。本项 model/provider/network/source/exact-live/T06 Run=`0`，Owner 语义、非接受消息、T06 未启动和 release boundary mutation=`6 passed`。
 
 S4-T06 entry=`authorized_not_started`。下一项限定为 `FIN-0.1.2-S4-T06-WORKBENCH-CURRENT-PRODUCT-PROJECTION-ENTRY-AND-DEPENDENCY-DECISION`：先零调用审计当前 Case/Run/Evidence/Numeric/Graph/Gap/Workpaper/Report/Trace/quality 资产能否诚实投影到 Workbench，以及历史 UI/后端哪些必须重证；不得把 fallback、fixture 或旧历史 Run 冒充 current product，也不得直接启动模型、Source 或 paid full-chain。
+
+## 30. S4-T06 Workbench current product projection 入口与依赖决策
+
+零调用资产盘点确认 T05 已提供三案例 current product anchor：合计 `45 Evidence / 9 Numeric / 9 typed gaps / 27 business Artifacts / 3 Owner acceptances`，每案均有 current Evidence Pack、成功 exact result、verified final surface 和显式 R2 acceptance。现有 Workbench 也不是空白：已有 Case/Task Center、Execution/Run、Evidence、Numeric/Workpaper、Deliverable/Trace API 和对应 React components。
+
+但这些两端尚未连接。`CaseService` 的正式注释和构造入口都限定为 internal fixture，默认没有 `FINSIGHT_P02_FIXTURE_ROOT` 即 unavailable；`EvidenceService` 继续消费 zero-call fixture contract；前端默认 principal 仍为 `fixture_internal`。没有 service 将三案 T05 Evidence Pack、exact result、final surface、quality finding 与 Owner decision 内容寻址绑定成 current read model。登记 RC-P36-126，属于 T06 project-owned product projection gap，不是 DeepSeek、Provider 或数据来源问题。
+
+Graph 必须按当前事实投影：三个 approved Evidence Pack 都没有已晋升 Graph Evidence，因此 T06 显示 `typed_empty_no_approved_current_graph_evidence`；不得读取 raw candidate 后补边，也不得把 graph snapshot 存在误写成 graph Evidence 已成立。raw Provider capture 只保留审计引用，永不进入产品正文。
+
+选择性入口回归同时得到 `44 passed / 10 failed`。10 项均是旧 Evidence/VT2/VT3 fixture 链要求 WorkUnit 保持 `pending`，而 2026-07-31 后默认 `create_app` 已自动挂接共享 runtime 并在后台把它执行为 `succeeded`；默认模式随后 compile=409，显式 no-runtime 则 pending/202。登记 RC-P36-127，属于历史 fixture/runtime-mode 合同漂移，不是 T05 current asset、DeepSeek 或 Provider 失败。
+
+T06 被有界拆为三个包：T06-A 只做三案 `CurrentProductProjectionManifest`、只读 compiler/service/API，不修 RC-P36-127；T06-B 做 frontend current mode、current/fixture runtime-mode 隔离、RC-P36-127 收敛和 browser/cross-case mutation；T06-C 只做 typed return/request-repair envelope、replay 与 T07 handoff readiness，不执行 qualified Human Review。RC-P36-119/125 留在 T08–T10/S5，RC-P36-115 留在 S5；不得回塞 T06-A。
+
+decision=`55d06706…5527`，SHA=`941bc7c6…de3b`，mutation=`6 passed`，model/provider/network/source/tool/runtime-write=`0`。当前只能声明 T06 entry=pass；T06 engineering/product projection 仍 blocked。下一项为 `FIN-0.1.2-S4-T06-A-THREE-CASE-CURRENT-PRODUCT-PROJECTION-MANIFEST-READ-ONLY-SERVICE-AND-API-ZERO-CALL-IMPLEMENTATION`。

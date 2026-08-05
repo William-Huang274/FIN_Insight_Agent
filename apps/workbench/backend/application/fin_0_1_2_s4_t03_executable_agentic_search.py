@@ -22,6 +22,7 @@ from apps.workbench.backend.application.fin_0_1_2_s4_retrieval_evidence_readines
 from retrieval.bm25_retriever import BM25Retriever
 from sec_agent.canonical_runtime.models import canonical_digest
 from sec_agent.canonical_runtime.object_store import FileCanonicalObjectStore
+from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger
 
 
 CONTRACT_REF = "fin_0_1_2.S4.T03.executable_agentic_search:v1"
@@ -1288,6 +1289,7 @@ class Fin012S4T03SearchRunner:
         repository_root: str | Path,
         runtime_root: str | Path,
         transport: SourceTransport,
+        shared_admission_ledger: SharedAdmissionConsumptionLedger | None = None,
     ) -> None:
         self.repository_root = Path(repository_root).resolve()
         self.runtime_root = Path(runtime_root).resolve()
@@ -1298,6 +1300,7 @@ class Fin012S4T03SearchRunner:
             transport=transport,
         )
         self.local_capture = LocalCaptureWriter(self.store)
+        self.shared_admission_ledger = shared_admission_ledger
 
     def execute(
         self,
@@ -1330,6 +1333,16 @@ class Fin012S4T03SearchRunner:
         run_digest = canonical_digest(run_base)
         run_id = f"s4_t03_search_run_{run_digest[:20]}"
         attempt_id = f"s4_t03_search_attempt_{canonical_digest({'run': run_id, 'nonce': run_nonce})[:20]}"
+        if self.shared_admission_ledger is not None:
+            self.shared_admission_ledger.reserve(
+                admission_digest=admission.admission_digest,
+                admission_id=admission.admission_id,
+                scope=CONTRACT_REF,
+                run_id=run_id,
+                attempt_id=attempt_id,
+                runtime_identity=str(self.runtime_root),
+                reserved_at=observed_at,
+            )
         budget = _BudgetState()
         status = "failed"
         phase = "initialize"
@@ -1456,7 +1469,25 @@ class Fin012S4T03SearchRunner:
         )
         if canonical_digest(readback) != terminal_object["digest"]:
             raise Fin012S4T03SearchError("t03_terminal_result_readback_mismatch")
-        return {**terminal, "terminal_object": terminal_object}
+        shared_receipt = None
+        if self.shared_admission_ledger is not None:
+            shared_receipt = self.shared_admission_ledger.finalize(
+                admission_digest=admission.admission_digest,
+                run_id=run_id,
+                attempt_id=attempt_id,
+                terminal_status=status,
+                terminal_phase=phase,
+                terminal_code=code,
+                terminal_result_digest=terminal_object["digest"],
+                finalized_at=terminal["completed_at"],
+            ).as_dict()
+        result = {
+            **terminal,
+            "terminal_object": terminal_object,
+        }
+        if shared_receipt is not None:
+            result["shared_admission_receipt"] = shared_receipt
+        return result
 
     def _load_official_filing_identities(
         self,

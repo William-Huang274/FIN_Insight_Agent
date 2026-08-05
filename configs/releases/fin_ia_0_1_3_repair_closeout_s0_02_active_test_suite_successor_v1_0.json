@@ -1,0 +1,20 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s0_02_active_test_suite_successor_v1_0",
+  "suite_id": "FIN-0.1.3-REPAIR-CLOSEOUT-S0-ACTIVE-SUITE-R2",
+  "status": "current_S0_01_and_S0_02_only",
+  "selected_tests": [
+    {
+      "ref": "tests/contract/test_fin_0_1_3_repair_closeout_s0_01_delta_inheritance_namespace_and_current_truth_baseline.py",
+      "stage": "013-S0-01"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py",
+      "stage": "013-S0-02"
+    }
+  ],
+  "historical_FIN_0_1_3_test_names_establish_current_authority": false,
+  "decision_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt_v1_0.json",
+  "decision_sha256": "f93b3606cbf68248e245f33d9be7807d117541241b36299b8f0474ba400e8b30",
+  "next_action": "FIN-0.1.3-013-S0-03-FINANCIAL-SEMANTIC-TRUTH-ORACLE-CLASSIFICATION",
+  "suite_digest": "484fd480369883544de38eb9cad0cfdb99b71aeeb53a3252c9c12f78b7fbfde0"
+}

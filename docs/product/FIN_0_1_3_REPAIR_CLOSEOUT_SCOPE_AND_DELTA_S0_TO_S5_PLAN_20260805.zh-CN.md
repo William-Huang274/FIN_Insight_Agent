@@ -59,6 +59,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 
 > **2026-08-06 `013-S0-01` 完成**：新增 `fin_ia_0_1_3_repair_closeout_*` canonical namespace；按 SHA 将 47 个旧 `0.1.3` 资产分为 historical、superseded projection 和 8 个待 S0-02 复证的 version-neutral candidate。新 active-suite 只选择本轮 S0-01 gate，旧同名 proof 不再自动建立 current authority。T07-C 以只读字段白名单投影为 `1/4/1 + accept NVDA`，未保存 credential digest、session ID、reviewer identity 或 note。focused=`5 passed`，S0 整体尚未完成。
 
+> **2026-08-06 `013-S0-02` 完成**：新增 repository-independent shared SQLite admission ledger，以 `admission_digest` 做原子占用键，并在任何 source/model/provider/business side effect 前 reserve；reservation 即 consumption，进程崩溃也不自动释放，并发竞争只有一个 winner，跨 runtime root 第二次消费 fail closed，terminal 精确绑定 Run/Attempt/result digest。FIN 0.1.3 current runner 强制注入该 ledger，旧 0.1.2 runner 只保留历史兼容钩子。RC-P36-128 通过 disposable issuance root 与 historical receipt / living source role 分离关闭，未重写旧 decision、receipt 或已消费 runtime。8 个候选复证后：reference-role v1.1、reference proof policy v3、typed environment parity 原摘要复用；reference-role v1.0 被 supersede；旧 runtime resource registry 因漏注册 1 个真实资源而拒绝并生成 31-resource canonical successor；三项旧测试仅复用两组逻辑，固定计数测试不再作为 current gate。S0-01+S0-02 canonical suite=`13 passed`，S0 整体仍需 S0-03 financial semantic truth-oracle taxonomy。
+
 ### S1：数据、检索、Numeric 与 Graph 真值链
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |
@@ -151,7 +153,7 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 1. [x] 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。
 2. [x] 完成 FIN 0.1.2 S5 decision-only honest-block/freeze 包；`release_qualified=false`，没有机械执行 RG1–RG5。
 3. [x] 完成 FIN 0.1.3 `013-S0-01` delta inheritance、旧 `0.1.3` namespace 分类和 secret-safe current truth baseline。
-4. [ ] 执行 `013-S0-02` shared runtime admission/replay 与 historical receipt/living source debt，复证 8 个 version-neutral candidates。
+4. [x] 完成 `013-S0-02` shared runtime admission/replay、historical receipt/living source debt和 8 个 version-neutral candidate 复证。
 5. [ ] 完成 `013-S0-03` 后进入 S1 财务真值链。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

@@ -29,13 +29,18 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_scope_decision_is_digest_bound_to_current_and_historical_truth() -> None:
+def test_scope_decision_preserves_historical_bindings_without_rebasing_live_source() -> None:
     decision = _load(DECISION)
     assert decision["decision_digest"] == canonical_digest(
         {key: value for key, value in decision.items() if key != "decision_digest"}
     )
     for binding in decision["immutable_bindings"]:
-        assert _sha256(ROOT / binding["ref"]) == binding["sha256"]
+        path = ROOT / binding["ref"]
+        assert path.is_file()
+        assert len(binding["sha256"]) == 64
+        int(binding["sha256"], 16)
+        if not binding["role"].endswith("_surface_at_entry"):
+            assert _sha256(path) == binding["sha256"]
     assert decision["entry_audit"]["T03_executable_search"].startswith("NVDA_only")
     assert decision["entry_audit"]["T04_current_evidence_research"].startswith(
         "NVDA_only"

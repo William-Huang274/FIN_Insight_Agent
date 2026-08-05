@@ -24,9 +24,12 @@ from run_fin_ia_0_1_2_s4_t05_c_mu_current_search_sequence import (  # noqa: E402
 from sec_agent.canonical_runtime.models import canonical_digest  # noqa: E402
 
 
-def test_mu_entry_fresh_proof_and_issuance_are_exact_and_zero_call() -> None:
+def test_mu_entry_fresh_proof_and_issuance_are_exact_and_zero_call(
+    tmp_path: Path,
+) -> None:
     decision, admission, issuance = build_proof_and_issuance(
-        recorded_at="2026-08-05T08:00:00Z"
+        recorded_at="2026-08-05T08:00:00Z",
+        reserved_runtime_root=tmp_path / "reserved-runtime",
     )
     assert decision["status"] == (
         "pass_MU_current_search_fresh_proof_and_admission_authority"
@@ -62,6 +65,7 @@ def test_prepare_and_issue_is_atomic_and_second_different_issue_fails_closed(
         authority_path=paths[0],
         admission_path=paths[1],
         issuance_path=paths[2],
+        reserved_runtime_root=tmp_path / "reserved-runtime",
     )
     assert first["status"].startswith("pass_entry_audit")
     assert all(path.is_file() for path in paths)
@@ -72,12 +76,14 @@ def test_prepare_and_issue_is_atomic_and_second_different_issue_fails_closed(
             authority_path=paths[0],
             admission_path=paths[1],
             issuance_path=paths[2],
+            reserved_runtime_root=tmp_path / "reserved-runtime",
         )
 
 
-def test_admission_window_is_active_for_declared_issue_time() -> None:
+def test_admission_window_is_active_for_declared_issue_time(tmp_path: Path) -> None:
     _, admission, _ = build_proof_and_issuance(
-        recorded_at="2026-08-05T08:00:00Z"
+        recorded_at="2026-08-05T08:00:00Z",
+        reserved_runtime_root=tmp_path / "reserved-runtime",
     )
     issued = datetime.fromisoformat(admission["issued_at"].replace("Z", "+00:00"))
     expires = datetime.fromisoformat(admission["expires_at"].replace("Z", "+00:00"))

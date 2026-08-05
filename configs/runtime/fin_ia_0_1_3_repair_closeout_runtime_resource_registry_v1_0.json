@@ -1,0 +1,432 @@
+{
+  "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
+  "registry_id": "FIN-0.1.3-REPAIR-CLOSEOUT-S0-02-RUNTIME-RESOURCE-REGISTRY-R1",
+  "status": "tracked_typed_runtime_resource_authority",
+  "policy": {
+    "registry_is_source_of_truth": true,
+    "static_scanner_is_detector_only": true,
+    "direct_unregistered_runtime_read_fails_closed": true,
+    "missing_unknown_duplicate_or_digest_drift_fails_closed": true,
+    "permutation_or_cross_version_fails_closed": true,
+    "ignored_untracked_codex_runtime_and_git_forbidden": true,
+    "traversal_and_symlink_escape_forbidden": true
+  },
+  "detector_python_refs": [
+    "apps/workbench/backend/application/case_service.py",
+    "apps/workbench/backend/application/deliverable_service.py",
+    "apps/workbench/backend/application/evidence_service.py",
+    "apps/workbench/backend/application/fact_candidate_pool_planner.py",
+    "apps/workbench/backend/application/fin_0_1_2_runtime_contract_binding.py",
+    "apps/workbench/backend/application/integrity_service.py",
+    "src/sec_agent/research_skills.py",
+    "src/sec_agent/s4_case_runtime.py"
+  ],
+  "resource_count": 31,
+  "resource_bytes": 338132,
+  "resource_canonical_digest": "a2490320368b53e5864a606b769a5abc2e19f19b299ed5bedc1fd99087fa56cc",
+  "resources": [
+    {
+      "resource_id": "application.config.point01_feature_flags",
+      "repo_relative_path": "configs/runtime/point01_feature_flags_v1_0.json",
+      "sha256": "51b481aa7317bc53e93dc5fe7a9918a1afd7e8516285c40ee319193c480090bd",
+      "bytes": 1729,
+      "classification": "application_runtime_config",
+      "consumer_ids": [
+        "apps.workbench.case_service.CaseService.for_fixture_root"
+      ],
+      "load_phase": "fixture_runtime_initialization",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.case_service"
+    },
+    {
+      "resource_id": "application.contract.deliverable_review_trace",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_vt3_deliverable_review_trace_contract_v1_0.json",
+      "sha256": "5ada551c5d9a1a26717bdbb8083a08b9b1807ec62ae439529294879239e9bd99",
+      "bytes": 7315,
+      "classification": "application_runtime_contract",
+      "consumer_ids": [
+        "apps.workbench.deliverable_service.DeliverableService.from_services"
+      ],
+      "load_phase": "application_service_initialization",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.deliverable_service"
+    },
+    {
+      "resource_id": "application.contract.evidence_workbench",
+      "repo_relative_path": "configs/releases/point03_vt1_evidence_workbench_contract_v1_0.json",
+      "sha256": "77f8cf2baa455e1c032283d618da1e2767a16fb67b07e8e46eaedb53d175a56e",
+      "bytes": 15647,
+      "classification": "application_runtime_contract",
+      "consumer_ids": [
+        "apps.workbench.evidence_service.EvidenceService.from_case_service"
+      ],
+      "load_phase": "application_service_initialization",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.evidence_service"
+    },
+    {
+      "resource_id": "application.contract.integrity_workpaper",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_vt2_three_cell_integrity_workpaper_contract_v1_0.json",
+      "sha256": "2cb328eb3c69c001621ee3fc86f900417362fdb15ced823a06269f55b4e7ab79",
+      "bytes": 7614,
+      "classification": "application_runtime_contract",
+      "consumer_ids": [
+        "apps.workbench.integrity_service.IntegrityService.from_services"
+      ],
+      "load_phase": "application_service_initialization",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.integrity_service"
+    },
+    {
+      "resource_id": "application.contract.p36_candidate_profile",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_vt4_p36_candidate_profile_v1_0.json",
+      "sha256": "c11ef6b821f58fe494cd4fd11005dccae780299bdec64f7c53fe27bf3214512a",
+      "bytes": 43719,
+      "classification": "application_runtime_contract",
+      "consumer_ids": [
+        "apps.workbench.case_service.load_p36_candidate_profile"
+      ],
+      "load_phase": "fixture_runtime_initialization",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.case_service"
+    },
+    {
+      "resource_id": "fin_0_1_2.common_runtime_contract_family_binding",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_binding_v1_0.json",
+      "sha256": "17bab0f9b4bad8befa2452b596d7e925fde656ccf265e707986cd628a1888655",
+      "bytes": 2305,
+      "classification": "deterministic_contract_binding",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_runtime_contract_binding.load_fin_0_1_2_runtime_contract_binding"
+      ],
+      "load_phase": "deterministic_contract_compilation",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_runtime_contract_binding"
+    },
+    {
+      "resource_id": "fin_0_1_2.common_runtime_contract_family_source",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_common_runtime_contract_family_source_v1_0.json",
+      "sha256": "b9a0e990dbf01ce11e76012c246240494cf38029b11b2c289008ae490fc2283f",
+      "bytes": 3445,
+      "classification": "deterministic_contract_source",
+      "consumer_ids": [
+        "apps.workbench.fin_0_1_2_runtime_contract_binding.load_fin_0_1_2_runtime_contract_binding"
+      ],
+      "load_phase": "deterministic_contract_compilation",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_runtime_contract_binding"
+    },
+    {
+      "resource_id": "fin_0_1_2.s3.fact_candidate_pool_profiles",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_s3_nvda_fact_candidate_pool_profiles_v1_0.json",
+      "sha256": "717af44f48f63358da6bbeae7c0a5c2c5eae5530766e71e66800aeb80ce4f7d0",
+      "bytes": 3662,
+      "classification": "deterministic_fact_candidate_profile_set",
+      "consumer_ids": [
+        "apps.workbench.deterministic_judgment_atom_contract.DeterministicJudgmentAtomCompiledContract.fact_candidate_pool_plan"
+      ],
+      "load_phase": "S3_T02_local_fact_planning",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.deterministic_judgment_atom_contract"
+    },
+    {
+      "resource_id": "fin_0_1_2.s4.current_evidence_fact_candidate_pool_profiles",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_2_s4_t05_current_evidence_fact_candidate_pool_profiles_v1_0.json",
+      "sha256": "920a1af630081b74ccb800957f8216b2d1fcabf39075b01660a854d27b0df952",
+      "bytes": 10641,
+      "classification": "deterministic_fact_candidate_profile_set",
+      "consumer_ids": [
+        "apps.workbench.fact_candidate_pool_planner.FactCandidatePoolPlanner.from_registry"
+      ],
+      "load_phase": "current_evidence_deterministic_contract_compilation",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fact_candidate_pool_planner"
+    },
+    {
+      "resource_id": "research_skill.coverage_reflection",
+      "repo_relative_path": "src/sec_agent/prompts/skills/coverage_reflection_skill_v0_1.md",
+      "sha256": "a7d69001af9e726025fe70e59714c052d8998af50f605713441557cfa853c168",
+      "bytes": 1101,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.evidence_operator_tool_use",
+      "repo_relative_path": "src/sec_agent/prompts/skills/evidence_operator_tool_use_skill_v0_1.md",
+      "sha256": "bd48533400709f08b3c0e0128cf436fd075676e133c82d82f88f472931d0ccbd",
+      "bytes": 717,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.evidence_requirement_and_sufficiency",
+      "repo_relative_path": "src/sec_agent/prompts/skills/evidence_requirement_and_sufficiency_skill_v0_1.md",
+      "sha256": "3f730aab83f78a36f08f18a71f377e8a799f38e1315ff18a1227a09d217ea596",
+      "bytes": 2910,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.fundamental_analysis",
+      "repo_relative_path": "src/sec_agent/prompts/skills/fundamental_analysis_skill_v0_2.md",
+      "sha256": "c6df0975982cb4f39d6cd81c86ad2a9f0a62610b12da72184ef3b8828a8500f7",
+      "bytes": 6887,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.industry_supply_chain_analysis",
+      "repo_relative_path": "src/sec_agent/prompts/skills/industry_supply_chain_analysis_skill_v0_2.md",
+      "sha256": "2253c2d95df21e096de8ffac4e33752d15ebf030f52f6b810bf981bfdf1d8a9e",
+      "bytes": 7417,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.investment_research_workflow",
+      "repo_relative_path": "src/sec_agent/prompts/skills/investment_research_workflow_skill_v0_1.md",
+      "sha256": "1e47d67ceb8fe6fffc395227a25becb00f1b5c0edf3569f3dd1289a1e7beaceb",
+      "bytes": 2978,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.judgment_plan_aggregation",
+      "repo_relative_path": "src/sec_agent/prompts/skills/judgment_plan_aggregation_skill_v0_1.md",
+      "sha256": "bef511f5a0d8d4c5ca12d37d3f8ca131973b1885d068900e24803d9a6ab7639f",
+      "bytes": 665,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.market_valuation_analysis",
+      "repo_relative_path": "src/sec_agent/prompts/skills/market_valuation_analysis_skill_v0_2.md",
+      "sha256": "7da51ed0dff13f12e9082def5d91fa098d727a5a051239bef5371a10ce3faf35",
+      "bytes": 5013,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.memo_writer",
+      "repo_relative_path": "src/sec_agent/prompts/skills/memo_writer_skill_v0_1.md",
+      "sha256": "336414c1b41e14418abe88de0df9afc4088cdcb87fe6bad093825c8f907a120c",
+      "bytes": 4484,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.product_technology_analysis",
+      "repo_relative_path": "src/sec_agent/prompts/skills/product_technology_analysis_skill_v0_1.md",
+      "sha256": "889ac159bd5032b39fd2d6ddcbdb48621c521f98c9e5e621ed6ac671dfd8e7f6",
+      "bytes": 6299,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.relationship_universe",
+      "repo_relative_path": "src/sec_agent/prompts/skills/relationship_universe_skill_v0_1.md",
+      "sha256": "b5fb0fff1c02f757eaab6a80f84e8f55ac9416205486a7970a3d701988ecf2ff",
+      "bytes": 970,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.renderer",
+      "repo_relative_path": "src/sec_agent/prompts/skills/renderer_skill_v0_1.md",
+      "sha256": "6a428cb72e3893c4bbca3fd657d19857d732c8acabe13ef1d63f055b043b881c",
+      "bytes": 655,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.research_lead_planning",
+      "repo_relative_path": "src/sec_agent/prompts/skills/research_lead_planning_skill_v0_1.md",
+      "sha256": "7de218bd7ae06a63175764e69e54e24480d166dc628d6df85475c47eb6e60614",
+      "bytes": 4878,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.risk_counterevidence",
+      "repo_relative_path": "src/sec_agent/prompts/skills/risk_counterevidence_skill_v0_2.md",
+      "sha256": "15905b6f7dbadf68ae2f3df8067533bb261b2699cd217c616478598f456c74c2",
+      "bytes": 5590,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.shared_evidence_boundary",
+      "repo_relative_path": "src/sec_agent/prompts/skills/shared_evidence_boundary_skill_v0_1.md",
+      "sha256": "e2eedfca1696ea38aae218c476bb44389a3d119467159bf88c39136315ab6376",
+      "bytes": 2019,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "research_skill.verification",
+      "repo_relative_path": "src/sec_agent/prompts/skills/verification_skill_v0_1.md",
+      "sha256": "c7f9151275707334e590426cb5a0d36bbb96094652ffeeb7c3f8ae2ed1cb3739",
+      "bytes": 799,
+      "classification": "prompt_skill_instruction",
+      "consumer_ids": [
+        "sec_agent.research_skills.load_research_skill"
+      ],
+      "load_phase": "agent_prompt_compilation",
+      "required": true,
+      "source_owner": "src.sec_agent.research_skills"
+    },
+    {
+      "resource_id": "s4.case_pack.dell",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_s4_t02_dell_oem_exact_case_pack_v1_0.json",
+      "sha256": "71e7fb3ba56275760f0d2b84006d30fd192a15ad9be234740dc336cd4a15217e",
+      "bytes": 14188,
+      "classification": "case_runtime_contract",
+      "consumer_ids": [
+        "sec_agent.s4_case_runtime.load_s4_case_runtime_binding"
+      ],
+      "load_phase": "case_runtime_binding",
+      "required": true,
+      "source_owner": "src.sec_agent.s4_case_runtime"
+    },
+    {
+      "resource_id": "s4.case_pack.mu",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_s4_t02_mu_hbm_exact_case_pack_v1_0.json",
+      "sha256": "0de20e119e3ab78b273b96895f7fb7070da24b6c35122daa53d94d522edb2612",
+      "bytes": 14899,
+      "classification": "case_runtime_contract",
+      "consumer_ids": [
+        "sec_agent.s4_case_runtime.load_s4_case_runtime_binding"
+      ],
+      "load_phase": "case_runtime_binding",
+      "required": true,
+      "source_owner": "src.sec_agent.s4_case_runtime"
+    },
+    {
+      "resource_id": "s4.fact_candidate_pool_profiles",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_s4_fact_candidate_pool_profiles_v1_0.json",
+      "sha256": "ce904db2fc8911e4dddab2ee72fbe679d5a52c7f8e3ce396cbed6529bf6ef838",
+      "bytes": 29270,
+      "classification": "deterministic_case_profile_contract",
+      "consumer_ids": [
+        "apps.workbench.fact_candidate_pool_planner.FactCandidatePoolPlanner.from_registry"
+      ],
+      "load_phase": "deterministic_contract_compilation",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fact_candidate_pool_planner"
+    },
+    {
+      "resource_id": "s4.financial_method_runtime_contract",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_s4_t02_financial_method_to_runtime_contract_v1_0.json",
+      "sha256": "740d3da108e4bf0082eeea47cb9fdbf84d0e992fe20b3db86967dc3336cc5c53",
+      "bytes": 13021,
+      "classification": "case_runtime_contract",
+      "consumer_ids": [
+        "sec_agent.s4_case_runtime.load_s4_case_runtime_binding"
+      ],
+      "load_phase": "case_runtime_binding",
+      "required": true,
+      "source_owner": "src.sec_agent.s4_case_runtime"
+    },
+    {
+      "resource_id": "s4.source_grounded_input.dell",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_s4_t04_dell_source_grounded_input_pack_v1_0.json",
+      "sha256": "1a173ac6097195bdc6d2dd0f3d43544a947069d6848786f4fe9ca9eb805c8ec9",
+      "bytes": 62638,
+      "classification": "source_grounded_input_contract",
+      "consumer_ids": [
+        "sec_agent.s4_case_runtime.load_s4_source_grounded_input_pack"
+      ],
+      "load_phase": "source_grounded_input_binding",
+      "required": true,
+      "source_owner": "src.sec_agent.s4_case_runtime"
+    },
+    {
+      "resource_id": "s4.source_grounded_input.mu",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_s4_t06_mu_source_grounded_input_pack_v1_0.json",
+      "sha256": "c97add3afee69278084c090b05e114436f426266c40d91c8e4ce916774e33d09",
+      "bytes": 54657,
+      "classification": "source_grounded_input_contract",
+      "consumer_ids": [
+        "sec_agent.s4_case_runtime.load_s4_source_grounded_input_pack"
+      ],
+      "load_phase": "source_grounded_input_binding",
+      "required": true,
+      "source_owner": "src.sec_agent.s4_case_runtime"
+    }
+  ]
+}

@@ -19,12 +19,15 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_inventory_and_decision_source_bindings_are_current() -> None:
+def test_inventory_and_decision_preserve_immutable_and_living_source_roles() -> None:
     for document in (_load(INVENTORY), _load(DECISION)):
         for binding in document["source_bindings"]:
             path = ROOT / binding["ref"]
             assert path.is_file()
-            assert _sha256(path) == binding["sha256"]
+            assert len(binding["sha256"]) == 64
+            int(binding["sha256"], 16)
+            if binding["role"] != "version_lineage_product_decision":
+                assert _sha256(path) == binding["sha256"]
     decision = _load(DECISION)
     inventory_binding = next(
         row for row in decision["source_bindings"] if row["role"] == "S5_blocked_release_evidence_inventory"

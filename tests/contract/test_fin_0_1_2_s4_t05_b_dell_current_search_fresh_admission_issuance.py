@@ -16,6 +16,8 @@ sys.path[:0] = [
 ]
 
 from apps.workbench.backend.application.fin_0_1_2_s4_t03_executable_agentic_search import (
+    Fin012S4T03SearchError,
+    SearchAdmission,
     compile_current_case_executable_requests,
 )
 import issue_fin_ia_0_1_2_s4_t05_b_dell_current_search_fresh_admission as issuer_module
@@ -42,7 +44,7 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_disposable_issuance_is_exact_unconsumed_and_zero_call(
+def test_historical_issuer_fails_closed_after_bound_source_evolves(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
@@ -51,10 +53,28 @@ def test_disposable_issuance_is_exact_unconsumed_and_zero_call(
     admission_path = tmp_path / "admission.json"
     issuance_path = tmp_path / "issuance.json"
     runtime_root = tmp_path / "runtime"
-    result = issue(
-        admission_output=admission_path,
-        issuance_output=issuance_path,
-        runtime_root=runtime_root,
+    with pytest.raises(
+        AdmissionIssuanceError,
+        match="t05_b_dell_search_authority_binding_drift",
+    ):
+        issue(
+            admission_output=admission_path,
+            issuance_output=issuance_path,
+            runtime_root=runtime_root,
+        )
+    assert not admission_path.exists()
+    assert not issuance_path.exists()
+    assert not runtime_root.exists()
+
+
+def test_historical_admission_payload_still_round_trips_and_mutation_fails_closed(
+    tmp_path: Path,
+) -> None:
+    exact_dir = tmp_path / "exact"
+    exact_dir.mkdir()
+    admission_path = exact_dir / "admission.json"
+    admission_path.write_text(
+        json.dumps(compile_exact_admission().as_dict(), indent=2), encoding="utf-8"
     )
     loaded = load_exact_admission(admission_path, case_key="DELL")
     loaded.require_active(
@@ -62,67 +82,16 @@ def test_disposable_issuance_is_exact_unconsumed_and_zero_call(
         requests=compile_current_case_executable_requests("DELL"),
     )
     assert loaded.as_dict() == compile_exact_admission().as_dict()
-    assert loaded.issued_at == ISSUED_AT
-    assert loaded.expires_at == EXPIRES_AT
-    assert result["status"] == "issued_unconsumed_zero_call_preflight_pass"
-    assert result["issued_admission"]["consumed"] is False
-    assert result["issued_admission"]["execution_started"] is False
-    assert result["reserved_execution_boundary"]["runtime_root_absent"] is True
-    assert not runtime_root.exists()
-    assert result["observed_counts"] == {
-        "new_admissions": 1,
-        "admission_consumptions": 0,
-        "source_network_calls": 0,
-        "local_retrieval_or_tool_invocations": 0,
-        "model_calls": 0,
-        "provider_calls": 0,
-        "business_runs": 0,
-        "business_artifacts": 0,
-    }
-    with pytest.raises(
-        AdmissionIssuanceError, match="t05_b_dell_search_issuance_already_exists"
-    ):
-        issue(
-            admission_output=admission_path,
-            issuance_output=issuance_path,
-            runtime_root=runtime_root,
-        )
 
-
-def test_exact_partial_admission_can_recover_but_mutation_fails_closed(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setattr(
-        issuer_module, "_current_commit", lambda: issuer_module.BASE_COMMIT
-    )
-    exact_dir = tmp_path / "exact"
-    exact_dir.mkdir()
-    admission_path = exact_dir / "admission.json"
-    admission_path.write_text(
-        json.dumps(compile_exact_admission().as_dict(), indent=2), encoding="utf-8"
-    )
-    result = issue(
-        admission_output=admission_path,
-        issuance_output=exact_dir / "issuance.json",
-        runtime_root=exact_dir / "runtime",
-    )
-    assert result["atomic_issuance"][
-        "recovered_from_exact_admission_without_issuance"
-    ] is True
-
-    mutated_dir = tmp_path / "mutated"
-    mutated_dir.mkdir()
     mutated = compile_exact_admission().as_dict()
     mutated["case_key"] = "MU"
-    mutated_path = mutated_dir / "admission.json"
-    mutated_path.write_text(json.dumps(mutated), encoding="utf-8")
     with pytest.raises(
-        AdmissionIssuanceError, match="t05_b_dell_search_existing_admission_not_exact"
+        Fin012S4T03SearchError,
+        match="t03_admission_digest_mismatch",
     ):
-        issue(
-            admission_output=mutated_path,
-            issuance_output=mutated_dir / "issuance.json",
-            runtime_root=mutated_dir / "runtime",
+        SearchAdmission.from_dict(mutated).require_active(
+            now=ISSUED_AT,
+            requests=compile_current_case_executable_requests("DELL"),
         )
 
 

@@ -132,7 +132,11 @@ def _compile_admission(now: datetime) -> SearchAdmission:
     )
 
 
-def build_proof_and_issuance(*, recorded_at: str) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+def build_proof_and_issuance(
+    *,
+    recorded_at: str,
+    reserved_runtime_root: Path = RUNTIME_ROOT,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     now = datetime.fromisoformat(recorded_at.replace("Z", "+00:00"))
     if now.tzinfo is None:
         now = now.replace(tzinfo=timezone.utc)
@@ -299,8 +303,12 @@ def build_proof_and_issuance(*, recorded_at: str) -> tuple[dict[str, Any], dict[
             "consumed": False,
             "execution_started": False,
         },
-        "reserved_runtime_root": RUNTIME_ROOT.relative_to(ROOT).as_posix(),
-        "runtime_root_absent": not RUNTIME_ROOT.exists(),
+        "reserved_runtime_root": (
+            reserved_runtime_root.relative_to(ROOT).as_posix()
+            if reserved_runtime_root.is_relative_to(ROOT)
+            else str(reserved_runtime_root)
+        ),
+        "runtime_root_absent": not reserved_runtime_root.exists(),
         "observed_counts": {
             "source_network_calls": 0,
             "local_invocations": 0,
@@ -315,9 +323,17 @@ def build_proof_and_issuance(*, recorded_at: str) -> tuple[dict[str, Any], dict[
 
 
 def prepare_and_issue(
-    *, recorded_at: str, authority_path: Path, admission_path: Path, issuance_path: Path
+    *,
+    recorded_at: str,
+    authority_path: Path,
+    admission_path: Path,
+    issuance_path: Path,
+    reserved_runtime_root: Path = RUNTIME_ROOT,
 ) -> dict[str, Any]:
-    authority, admission, issuance = build_proof_and_issuance(recorded_at=recorded_at)
+    authority, admission, issuance = build_proof_and_issuance(
+        recorded_at=recorded_at,
+        reserved_runtime_root=reserved_runtime_root,
+    )
     statuses = {
         "authority": _write_atomic(authority_path, authority),
         "admission": _write_atomic(admission_path, admission),

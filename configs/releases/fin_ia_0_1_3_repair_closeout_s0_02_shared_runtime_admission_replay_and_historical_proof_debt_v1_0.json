@@ -1,0 +1,167 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt_v1_0",
+  "decision_id": "FIN-0.1.3-013-S0-02-SHARED-RUNTIME-ADMISSION-REPLAY-AND-HISTORICAL-PROOF-DEBT",
+  "recorded_at": "2026-08-06T00:00:00Z",
+  "status": "engineering_pass_zero_call_current_successor",
+  "shared_admission_contract": {
+    "key": "admission_digest",
+    "store": "shared_SQLite_outside_disposable_runtime_roots",
+    "reservation_before_any_source_model_provider_or_business_side_effect": true,
+    "reservation_is_consumption_even_if_process_crashes": true,
+    "automatic_release_retry_replay_or_renewal_after_crash": false,
+    "cross_runtime_second_consumption": "fail_closed",
+    "terminal_binding": [
+      "admission_digest",
+      "run_id",
+      "attempt_id",
+      "terminal_status",
+      "terminal_phase",
+      "terminal_code",
+      "terminal_result_digest"
+    ],
+    "current_FIN_0_1_3_runner_requires_shared_ledger": true,
+    "legacy_FIN_0_1_2_runner_optional_hook_is_history_compatibility_only": true
+  },
+  "historical_proof_policy": {
+    "old_decisions_and_receipts_are_never_rewritten_to_match_today": true,
+    "immutable_artifact_binding_revalidated_against_current_bytes": true,
+    "historical_mutable_code_or_living_document_binding": "recorded_ref_and_digest_shape_preserved_not_rebased",
+    "current_successor_must_bind_current_digest_at_new_issuance": true,
+    "one_time_fresh_issuance_tests_use_disposable_unconsumed_roots": true,
+    "fixed_consumed_runtime_root_is_not_a_replayable_test_fixture": true
+  },
+  "candidate_revalidation": [
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_0.json",
+      "sha256": "240d6f7beadd1554c58d95f99bd7fbe85bd3ecea07b8556d2c95a283704fe209",
+      "disposition": "rejected_superseded_by_v1_1",
+      "reason": "v1_0 lacks execution_started package-relative audit role"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_1.json",
+      "sha256": "0d4b388cbb16cfac9cac8ea883e3d65a64473cfb6733311354d64de4bd2def75",
+      "disposition": "reused_by_exact_digest",
+      "reason": "latest typed role registry; closure and mutation tests pass"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_repository_reference_proof_policy_v3_0.json",
+      "sha256": "52eabb953ccbf5c2a64685fea3012ec311229233450c080eacc52bda2ea35253",
+      "disposition": "reused_by_exact_digest",
+      "reason": "binds reference registry v1_1 by exact digest"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+      "sha256": "e510e72945a9f8042f342b87c37b84ca305280a85ccf7dc3ad39f29d1328b25d",
+      "disposition": "rejected_incomplete_then_successor_materialized",
+      "reason": "static detector finds one legitimate runtime resource absent from old registry"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_typed_environment_semantic_parity_v1_0.json",
+      "sha256": "7e523a536f539c8e509ab1b9402296ce9ff20ff396ef2bce0da3262668b1c4f3",
+      "disposition": "reused_by_exact_digest",
+      "reason": "typed roots and semantic projection mutation tests pass"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py",
+      "sha256": "fcd21d56b33342a4a464132db1174465e9f006cedcc0b471433966424f507a20",
+      "disposition": "logic_reused_via_canonical_successor_test",
+      "reason": "historical filename is not promoted as current authority"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_3_s0_runtime_resource_registry_and_dependency_compiler.py",
+      "sha256": "7fbe2699e64dc32bde59cee1f7685bf0185cdc0feb1fc17de978edb74237fa58",
+      "disposition": "rejected_stale_fixed_counts_then_replaced",
+      "reason": "correctly exposed incomplete old registry but fixed counts are not a successor gate"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_3_s0_typed_environment_semantic_parity.py",
+      "sha256": "bf98541da1d22e67f2a49ffb93217a2b02ecf244c4d81d5f54af7c4b6b04a962",
+      "disposition": "logic_reused_via_canonical_successor_test",
+      "reason": "historical filename is not promoted as current authority"
+    }
+  ],
+  "successor_runtime_resource_registry": {
+    "ref": "configs/runtime/fin_ia_0_1_3_repair_closeout_runtime_resource_registry_v1_0.json",
+    "sha256": "e2c193d2d0c6664353bdaf33079961eec1007f257fefb124da595c9523ce37d9",
+    "resource_count": 31,
+    "missing_old_candidate_resource_closed": "configs/runtime/fin_ia_0_1_2_s4_t05_current_evidence_fact_candidate_pool_profiles_v1_0.json"
+  },
+  "source_bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s0_01_delta_inheritance_namespace_and_current_truth_baseline_v1_0.json",
+      "sha256": "78588ba7a889e23db928d4fc7035963aa0d4e4968b0daf42360951fe36f2a837",
+      "role": "canonical_S0_01_baseline"
+    },
+    {
+      "ref": "src/sec_agent/shared_admission_ledger.py",
+      "sha256": "a738bd4cb2a5578762326e15045c30d83434a3896cca66119187b296c6b3aabf",
+      "role": "shared_content_addressed_consumption_ledger"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_3_shared_admission_guarded_search.py",
+      "sha256": "263892acb4783bee58f2438addd5163648894ba6927d9a6ae460548f4a583e86",
+      "role": "current_FIN_0_1_3_mandatory_guarded_runner"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t03_executable_agentic_search.py",
+      "sha256": "7d723af1d0381e4d4280c38be32357dd78540632fef75033bde7c27d42bd69fa",
+      "role": "legacy_runner_with_optional_compatibility_hook"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_repair_closeout_runtime_resource_registry_v1_0.json",
+      "sha256": "e2c193d2d0c6664353bdaf33079961eec1007f257fefb124da595c9523ce37d9",
+      "role": "canonical_runtime_resource_registry_successor"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t05_b_dell_current_search_fresh_admission_issuance.py",
+      "sha256": "54abe7da45791269cd394ee1816ceb5d85ebe05d5865be1e27840fb0b5d0fd65",
+      "role": "historical_issuer_nonreplayable_receipt_test"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t05_c_mu_current_search_sequence.py",
+      "sha256": "dfbfaacedba9de28f77fd2742dee5f4871aa35f58dfbbf3b6628a616e56a95e2",
+      "role": "disposable_identity_historical_issuance_test"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t05_scope_entry_decision.py",
+      "sha256": "6d6bd13e6f3c7571f8d06faf756033b72e52186c43cb8268f8b507aecbbe867d",
+      "role": "historical_source_binding_role_test"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_s5_decision_only_honest_block_handoff.py",
+      "sha256": "b5a250ea0bf078e5ff4bd02848f3784e5856a5e215e1308b4e3f12e7a569157b",
+      "role": "historical_living_document_role_test"
+    },
+    {
+      "ref": "scripts/releases/materialize_fin_ia_0_1_3_repair_closeout_s0_02_shared_runtime_and_historical_proof.py",
+      "sha256": "04e19bbc06e23fbf682e38aaff342e9fb3d773b5e66683b35de288cfd5ddaecf",
+      "role": "deterministic_materializer"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py",
+      "sha256": "ec263eda4a041b622fd6e17e58426a0c0bed1fcbeb1ca5cf8b0fcf111cd2909a",
+      "role": "canonical_S0_02_contract_and_mutation_test"
+    }
+  ],
+  "root_cause_disposition": {
+    "RC-P36-115": "closed_by_current_mandatory_shared_exact_once_ledger",
+    "RC-P36-128": "closed_by_historical_receipt_role_and_disposable_issuance_policy",
+    "new_product_or_research_pass_created": false
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_or_source_calls": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "historical_receipts_rewritten": 0
+  },
+  "stage_truth": {
+    "FIN_0_1_3_S0_02": "engineering_pass",
+    "FIN_0_1_3_S0": "in_progress_S0_03_pending",
+    "FIN_0_1_3_S1_to_S5": "not_started",
+    "release_qualified": false
+  },
+  "next_action": "FIN-0.1.3-013-S0-03-FINANCIAL-SEMANTIC-TRUTH-ORACLE-CLASSIFICATION",
+  "decision_digest": "3b1cca3d83e08bdf296739f75cef9807f308fb3905d98b9bcf68d29eac9bfd06"
+}

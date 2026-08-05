@@ -3,6 +3,8 @@
 日期：2026-08-04
 状态：`accepted planning correction / FIN 0.1.2 S4-T08 audit complete product closeout blocked / FIN 0.1.3 delta repair planning ready / release blocked`
 
+> **2026-08-06 FIN 0.1.3 研究内容质量覆盖条款**：用户明确要求把研究内容输出质量纳入本轮正式考核。自 FIN 0.1.3 起，本文旧有 L3 “研究质量 finding 可后传”的宽松解释不再适用于 release acceptance；S2 必须提供足够的公司专属判断原子和上下文，S3 必须把八维内容 Rubric 编译进 evaluator/Verifier，S4 必须由 qualified reviewer 单独验收内容用途，S5 RG3 必须逐案证明绝对质量与 paired material gain。正式门槛见 `docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md`。
+
 > **2026-08-05 T08 扩大审计与 FIN 0.1.3 修复交接（supersedes 本文“不创建 FIN 0.1.3”的规划假设）**：三案例 current projection、review control 和大量 exact 工程证据已成立，但审计发现 DELL quarterly/annual duration L1、SEC-only/Graph-empty evidence coverage、三 Cell 与通用 Claim/WWC/Lead/Writer、current create→repair→review 未闭环。按共同根因合并为 21 个修复包：S0/S1/S2/S3/S4=`3/5/3/5/5`，16/21 最早属于 S0–S3；S5 另有 RG1–RG5 五个 gate。S4-T08 只做 audit/honest-block handoff，不在末端修上游。用户明确同意将问题流转到 FIN 0.1.3 专项修复收口版本，FIN 0.2 Earnings Review Alpha 定义不变。0.1.3 采用 delta S0–S5，继承未变 immutable evidence，只执行 changed stages/dependencies；最终 S5 不得跳过。源计划见 `FIN_0_1_3_REPAIR_CLOSEOUT_SCOPE_AND_DELTA_S0_TO_S5_PLAN_20260805.zh-CN.md`。
 
 > 2026-08-04 S4-T03 零调用权限审计确认：F05 当前不是“模型效果差”，而是 metadata route 尚未接成 executable search，来源 request/response capture-first 与 fresh execution-control chain 也未建立。`RC-P36-114` 留在 T03；必须先做一个合并的零调用可执行接入包，再另行判断 current canary admission，不能把 state stub、URL metadata wrapper 或历史 fixture 写成 current Agentic Search。

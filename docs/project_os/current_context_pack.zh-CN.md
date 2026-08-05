@@ -1,6 +1,9 @@
 # Current Context Pack: P38 Point 01 Canonical Runtime Foundation
 
-更新时间：2026-08-05
+更新时间：2026-08-06
+
+> [!IMPORTANT]
+> **FIN 0.1.3 研究内容输出质量已升级为 release-blocking 硬门禁（current，2026-08-06）**：用户明确要求本轮必须考核“研究底稿和交付报告是否有实质研究价值”，不能再让 Artifact 齐全、lineage 正确、Verifier/Workbench 工程绿灯掩盖通用 Claim、机械 Writer、弱 Numeric 解释、浅 dependency/conflict 或不可执行 WWC。正式 Rubric 采用八维 0–4 分：公司/问题专属性、证据论证、财务数字解释、因果机制、跨 Cell 综合、反方/gap、WWC 行动价值、senior 决策可用性。DELL/MU/NVDA 必须逐案 `>=24/32`，Q1–Q7 无低于 2，Q1/Q2/Q3/Q8 各 `>=3`，另需 material paired gain 与 qualified human content acceptance；不得跨案平均或由 L1/L2/L4、数量、UI 接受补偿。当前状态仅为 `accepted_documented_contract_translation_pending`，尚未编译进 schema/prompt/eval/Verifier/Workbench，也未建立新 product pass。source=`docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md`；current next 仍为 `FIN-0.1.2-S5-DECISION-ONLY-HONEST-BLOCK-CANDIDATE-FREEZE-AND-FIN-0.1.3-HANDOFF`；本项 model/provider/source/full-chain=0。
 
 > [!IMPORTANT]
 > **FIN 0.1.2 S4-T08 扩大阶段归属审计完成，产品收口 honest-block，FIN 0.1.3 修复交接已规划（current，2026-08-05）**：T08 只读扩大审计按共同根因识别 21 个修复包，S0/S1/S2/S3/S4=`3/5/3/5/5`，其中 16/21 最早属于 S0–S3；S5 另有 RG1–RG5 五个未执行 gate。confirmed L1：DELL `USD 23.931B` 是 FY2025 Q4 营收，却在 current Numeric 被标为 FY2025 全年；相关 72 项 shape/integrity 回归仍全绿，证明 semantic truth oracle 缺失。三案均为 `15 Evidence / 3 Numeric / 3 Cell / 6 Claim / 9 WWC / 9 Artifacts`，但 Evidence 使用 7/15、来源 SEC-only、Graph edge=0、Claim/WWC/gap/Lead 高度通用，F08/F10/F11 不具 release product quality。current Workbench exact projection/review control 成立，但 create→run→actual repair→review 与 burden 未闭环。T08=`audit_complete_product_closeout_blocked`，不得在 T08 修上游或进入普通 S5 release proof。用户同意 FIN 0.1.3 作为 0.1 最后专项修复收口，FIN 0.2 定义不变；采用 delta S0–S5，继承未变化 immutable evidence，最终 S5 RG1–RG5 不跳过。source=`docs/product/FIN_0_1_3_REPAIR_CLOSEOUT_SCOPE_AND_DELTA_S0_TO_S5_PLAN_20260805.zh-CN.md`；eval=`docs/eval/FIN_0_1_3_EXPANDED_PRODUCT_PERFORMANCE_CASE_AND_ADVERSARIAL_TEST_PLAN_20260805.zh-CN.md`。current next=`FIN-0.1.2-S5-DECISION-ONLY-HONEST-BLOCK-CANDIDATE-FREEZE-AND-FIN-0.1.3-HANDOFF`；本项 model/provider/source/full-chain=0。

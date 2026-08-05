@@ -3,6 +3,8 @@
 日期：2026-08-05
 状态：`planned / no_new_case_execution / no_model_calls`
 
+> **2026-08-06 research-quality gate**：研究内容质量从普通 finding 升级为 release-blocking。三正式案例必须逐案通过 `FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md` 的八维绝对门槛、paired material gain 和 qualified human content acceptance；工程完整性、Artifact 数量和模型自评均不能替代。
+
 ## 1. 目标
 
 本计划用于证明 FIN 0.1.3 修复后的产品表现，不以增加 full-chain 次数为目标。测试分层执行：大量 deterministic truth/adversarial fixture、少量 changed-node natural canary、一次最终三案例 product qualification。
@@ -49,8 +51,8 @@
 | L0 schema/unit | 所有合同与纯函数 | 0 | 类型、enum、duration、unit、identity、digest |
 | L1 financial truth fixture | 三正式案例＋对抗矩阵 | 0 | 100% reviewed material facts entity/period/duration/unit/scale 正确 |
 | L2 retrieval/parser/Graph | required slot gold/negative set | 默认 0；受控 source canary 单独签权 | known reachable source 可达，零 false promotion，失败 typed |
-| L3 node quality | changed Specialist/Lead/Writer/Verifier family | 每 changed node family 最多一次自然 canary | 公司专属机制、证据边界、冲突、gap、WWC rubric 通过 |
-| L4 product integration | DELL/MU/NVDA fake/replay＋一次正式 candidate | deterministic 先行；最终候选一次 | create→run→repair→review、9 Artifacts、三案 current R2、NVDA R3 |
+| L3 node quality | changed Specialist/Lead/Writer/Verifier family | 每 changed node family 最多一次自然 canary | 公司专属机制、证据边界、冲突、gap、WWC 通过八维内容 Rubric 的 node-relevant dimensions |
+| L4 product integration | DELL/MU/NVDA fake/replay＋一次正式 candidate | deterministic 先行；最终候选一次 | create→run→repair→review、9 Artifacts、三案逐案内容 `>=24/32`、current R2、NVDA R3 |
 | L5 release | RG1–RG5 | 不允许临时 debug rerun | rollback、成本、安全、burden、honest release decision |
 
 ## 4. 预注册质量断言
@@ -76,6 +78,10 @@
 - conflict 必须 resolve/defer/block；gap 必须有影响、优先级、owner 和下一步。
 - WWC 必须具有 observable indicator、direction、time/threshold 和 evidence route。
 - Report 必须形成 thesis/counter-thesis/valuation-or-price-in boundary，而不是 Claim 数量汇总。
+- 最终 verifier-bound 产品按 Q1–Q8 评分；每案总分 `>=24/32`，Q1–Q7 无低于 2，Q1/Q2/Q3/Q8 各 `>=3`。
+- Agent 相对 same-input deterministic baseline 至少在三个内容维度产生 reviewer-confirmed material gain；数量增加不算增益。
+- qualified reviewer 必须单独签署 research-content acceptance，不能复用 workflow identity、Owner entry 或 exact-version 技术接受。
+- generic placeholder、机械拼接、无数字解释、无 strongest counter-thesis 或无可执行 WWC 任一成立，均阻断 S4/S5。
 
 ### Product usability
 

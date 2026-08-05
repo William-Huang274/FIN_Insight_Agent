@@ -3,6 +3,8 @@
 日期：2026-08-05
 状态：`accepted_planning_direction / implementation_not_started / FIN_0_2_definition_unchanged`
 
+> **2026-08-06 用户新增硬要求**：FIN 0.1.3 必须把研究内容输出质量作为 release-blocking 考核，不得再将 L3 的通用 Claim、弱综合、机械 Writer 或不可执行 WWC 降级为 nonblocking finding。八维绝对质量＋paired gain＋qualified human content acceptance 的正式标准见 `docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md`。
+
 ## 1. 决策
 
 FIN 0.1.2 在 S4-T08 扩大审计中证明了完整的工程链路形状、三案例产品投影、exact review 控制和大量不可变执行证据，但同时暴露出财务真值、证据覆盖、研究语义和 current 产品闭环仍未达到 FIN 0.1 PRD 的 release 定义。
@@ -38,6 +40,12 @@ FIN 0.1.2 在 S4-T08 扩大审计中证明了完整的工程链路形状、三�
 - 三案例均能形成 15 Evidence、3 Numeric、3 Cell、6 Claim、9 WWC 和 9 Artifacts，但 Claim/WWC/gap 高度通用，Graph 为 typed empty，报告主要是结构投影而非公司专属研究备忘录。
 - current Workbench 已能只读展示、exact return/replay 和 authenticated NVDA review，但它还不是从新建 Case 到实际 repair 再到重新验收的完整 current workflow。
 - T07-C 本地私有 SQLite 已存在一次 `accept_exact_version`，`qualified_human_review=true`、`bounded_NVDA_R3=true`、`release_qualified=false`；该状态尚未持久投影到 Project OS，属于 S0 状态一致性欠账，不推翻本地真实动作。
+
+### 2.3 研究内容输出质量是硬门禁
+
+FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和页面渲染。DELL、MU、NVDA 最终 verifier-bound Workpaper/Report 必须分别通过八维内容 Rubric：公司与问题专属性、证据论证、Numeric 解释、因果机制、跨 Cell 综合、反方/gap、WWC 行动价值和 senior 决策可用性。
+
+每案必须达到 `>=24/32`，Q1–Q7 无低于 2，Q1/Q2/Q3/Q8 各不低于 3，并由 qualified reviewer 单独签署 content acceptance。任何 material financial L1/L2 失败不可由内容分补偿；任何通用模板化内容也不可由工程绿灯、Claim/WWC 数量或 Owner workflow acceptance 补偿。
 
 ## 3. 21 个修复包的阶段归属
 
@@ -75,7 +83,7 @@ FIN 0.1.2 在 S4-T08 扩大审计中证明了完整的工程链路形状、三�
 | `013-S3-02` | 修复通用 Claim、重复 gap、9/9 通用 WWC；形成公司专属机制、证据边界和可观测触发条件 | F08/F10 | 每个核心 Claim 包含本案对象、机制、证据/数字或 gap；WWC 有指标、方向、时间/阈值和下一证据路线 |
 | `013-S3-03` | 让 dependency、conflict 和 gap 成为真正的跨 Cell 综合，而不是复述 supported/cannot infer 状态 | F08/F10 | Lead 对冲突给出 resolve/defer/block 理由；gap 有影响、优先级、owner 和 stop condition |
 | `013-S3-04` | 提升 Workpaper/Writer 的产品、财务、客户/供应链、竞争、资本/price-in、估值边界、风险和 counter-thesis 内容 | F08/F11 | 报告能回答“结论、为什么、反方、缺什么、什么会改变”，不是六个 atom 的排版投影 |
-| `013-S3-05` | 重做 Verifier/paired rubric：完整性 gate 与研究质量 rubric 分离，加入财务期间真值、因果链、证据使用和行动价值 | F07/F08/F10/F11/F15 | DELL period 错误必须 L1 fail；通用 Claim/WWC 不得仅凭数量获得 L3/L4 pass |
+| `013-S3-05` | 重做 Verifier/paired rubric：完整性 gate 与研究内容质量硬门禁分离，正式消费八维 Rubric | F07/F08/F10/F11/F15 | DELL period 错误必须 L1 fail；三案逐案达到 `>=24/32`、核心维度下限、material paired gain 和 qualified human content acceptance；通用 Claim/WWC 不得凭数量获得 L3/L4 pass |
 
 ### S4：current 产品工作流与真实 dogfood
 
@@ -125,9 +133,9 @@ FIN 0.1.2 在 S4-T08 扩大审计中证明了完整的工程链路形状、三�
 | S0 | delta manifest、Project OS/private projection 对齐、shared admission/replay、truth-oracle test taxonomy | 不重跑未变化的全部 hermetic 历史包 |
 | S1 | period/numeric/source/Graph/retrieval quality 修复与扩展 fixture | 不调用模型，不做报告润色 |
 | S2 | changed contract、代表性 node canary、context economy | 不做三案例 full-chain，不重新比较所有模型 |
-| S3 | dynamic DecisionSurface、semantic Lead/Writer/Verifier、一个 Anchor product proof | 不做 Workbench repair/UI 扩展 |
+| S3 | dynamic DecisionSurface、semantic Lead/Writer/Verifier、八维内容质量硬门禁、一个 Anchor product proof | 不做 Workbench repair/UI 扩展 |
 | S4 | current create→run→repair→review dogfood、三案 transfer、burden measurement | 不回修 S1/S3 缺陷，不新增 release feature |
-| S5 | 一次 RG1–RG5、rollback、成本、安全和 release/honest-block | 不在 gate 中临时补丁或自动重跑 |
+| S5 | 一次 RG1–RG5；RG3 必须逐案通过研究内容质量，另含 rollback、成本、安全和 release/honest-block | 不在 gate 中临时补丁、降级内容标准或自动重跑 |
 
 ## 7. 版本边界
 

@@ -1,0 +1,87 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t07_b_reviewer_session_contract_v1_0",
+  "status": "T07_B_bounded_internal_reviewer_session_authorized",
+  "authority": {
+    "user_instruction": "接受",
+    "selected_security_option": "A",
+    "T07_B_implementation_authorized": true,
+    "real_session_issuance_executed": false,
+    "T07_C_real_human_action_executed": false
+  },
+  "predecessor": {
+    "T07_A_ref": "configs/releases/fin_ia_0_1_2_s4_t07_a_nvda_exact_reviewer_packet_contract_v1_0.json",
+    "T07_A_contract_digest": "ebd856e69e029b4f51799943de0577a224243bd7cb03ee1daf475c12553757fa"
+  },
+  "qualified_identity_allowlist": {
+    "FIN_OWNER_A": [
+      "qualified_product_owner"
+    ]
+  },
+  "offline_admin_allowlist": [
+    "local_security_admin"
+  ],
+  "session_policy": {
+    "credential_prefix": "finrvw_",
+    "minimum_credential_entropy_bytes": 32,
+    "credential_returned_once": true,
+    "credential_digest_algorithm": "sha256",
+    "plaintext_credential_persisted": false,
+    "maximum_ttl_seconds": 28800,
+    "single_active_session_per_reviewer_case_handoff": true,
+    "revocation_supported": true,
+    "required_permission": "current_product:qualified_review"
+  },
+  "exact_scope": {
+    "case_key": "NVDA",
+    "manifest_digest": "4ee7df3c46a87939412c6ea4d303590d91622a2f7216367b6a62cbc15f357250",
+    "case_projection_digest": "3ad4d03ab389d987d9935e2e202f837b48487467ff74f0fa4fb2df5ffd12c0b0",
+    "view_digests": {
+      "case": "a3647b63d513cfb54c0ca77f6bc9c0e34665939ab1e114847ebbf1d59d96ffef",
+      "run": "3696dc4bf96dea1114f230fd57c89b2b523be7b79ba03f8bc713a1c591d62002",
+      "evidence": "1ac24db608915c60f74c0d05bdf981946d48654a1d7f010fe6de5b98036c8f95",
+      "numeric": "110fe2d4a4e9927b79d021800335b81c6b6f6e953b90ef71f66dfecedea353ec",
+      "graph": "1fad8ed744bd5b51e41b00301663e97a26e9973aee52b661ec6e15aa2abf0ecf",
+      "gaps": "c92b68d9ad5dbbe0539f5ae13a864be608c19884898345a74f8c14e2a9f11655",
+      "workpaper": "66cabd1b0806090c03a724e1816e5243d96c782513361503f8e3da63b7ebb3b8",
+      "report": "d7eb7b0687fd74cc3b14c024ba93a966f70ea288d816bbcafa05f68171a41a72",
+      "trace": "945b4998b45e6dd148eb13a5a9f20a90b32020b70fc2f77edace9c1b688b6a70",
+      "quality": "b86ba3a59ce89717f644a19bd21e28a6c03c610babd77c9d07d716af68338216"
+    }
+  },
+  "decision_policy": {
+    "allowed_actions": [
+      "accept_exact_version",
+      "return_for_repair"
+    ],
+    "single_terminal_decision_per_packet": true,
+    "idempotency_required": true,
+    "reviewer_note_max_length": 1000,
+    "return_requires_exact_surface_reason_and_view_digest": true,
+    "accept_establishes_bounded_NVDA_R3_only": true
+  },
+  "event_policy": {
+    "append_only_hash_chain": true,
+    "event_types": [
+      "REVIEW_SESSION_ISSUED",
+      "REVIEW_SESSION_AUTHENTICATED",
+      "REVIEW_SESSION_AUTHENTICATION_REJECTED",
+      "REVIEW_SESSION_REVOKED",
+      "QUALIFIED_REVIEW_DECISION_RECORDED"
+    ],
+    "failed_auth_event_is_content_free": true
+  },
+  "hard_boundaries": {
+    "public_session_issuance_API": false,
+    "client_asserted_identity_is_authenticated": false,
+    "credential_or_digest_in_business_artifact": false,
+    "credential_plaintext_persisted": false,
+    "model_provider_network_financial_source_calls": 0,
+    "accepted_R2_business_truth_mutation": false,
+    "automatic_repair_execution_or_T06_queue_mutation": false,
+    "production_OIDC_or_SSO": false,
+    "real_human_review_executed": false,
+    "NVDA_R3": false,
+    "release_qualified": false
+  },
+  "contract_digest": "e7c7ef1ccf52d63692bbabbb5fc222ad40e909e7d90ccddaefee0bc64525f52b"
+}

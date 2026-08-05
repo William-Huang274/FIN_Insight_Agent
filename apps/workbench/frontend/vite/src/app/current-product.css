@@ -242,3 +242,49 @@ button { font: inherit; }
   .current-repair-control > header { align-items: flex-start; flex-direction: column; }
   .current-footer { flex-direction: column; }
 }
+.current-qualified-review {
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid rgba(71, 162, 145, 0.35);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(13, 35, 35, 0.96), rgba(10, 25, 31, 0.96));
+}
+
+.current-qualified-review > header,
+.current-qualified-review > header > div,
+.current-authenticated-reviewer,
+.current-review-decision > div:last-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.current-qualified-review > header { justify-content: space-between; margin-bottom: 16px; }
+.current-qualified-review > header code { color: #9fd9cc; }
+.current-review-burden { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.current-review-lead { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.current-review-lead > div { padding: 14px; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; background: rgba(255,255,255,.025); }
+.current-review-lead p { color: #b8c9c7; font-size: 12px; line-height: 1.55; }
+.current-review-checklist { display: grid; gap: 8px; }
+.current-review-checklist article { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,.06); }
+.current-review-checklist p { margin: 4px 0 0; color: #9eb0af; font-size: 12px; }
+.current-review-checklist span { color: #e2b56f; font-size: 11px; }
+.current-review-auth, .current-review-decision { margin-top: 16px; padding: 16px; border-radius: 12px; background: rgba(0,0,0,.18); }
+.current-review-auth { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 12px; }
+.current-review-auth label, .current-review-decision label { display: grid; gap: 7px; color: #bcd0cd; font-size: 12px; }
+.current-review-auth input, .current-review-decision input, .current-review-decision textarea { width: 100%; box-sizing: border-box; border: 1px solid rgba(255,255,255,.14); border-radius: 9px; padding: 10px; background: #081719; color: #eff8f6; }
+.current-review-decision { display: grid; gap: 12px; }
+.current-review-decision textarea { min-height: 96px; resize: vertical; }
+.current-authenticated-reviewer b { margin-left: auto; color: #79d3bb; }
+.current-review-terminal { margin: 0; color: #d9e9e6; }
+
+@media (max-width: 800px) {
+  .current-review-burden, .current-review-lead { grid-template-columns: 1fr 1fr; }
+  .current-review-auth { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 520px) {
+  .current-review-burden, .current-review-lead { grid-template-columns: 1fr; }
+  .current-review-checklist article { grid-template-columns: auto 1fr; }
+  .current-review-checklist span { grid-column: 2; }
+}

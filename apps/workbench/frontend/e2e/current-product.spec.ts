@@ -22,6 +22,10 @@ test("current product exposes three isolated cases, ten immutable surfaces, and 
   await expect(page.getByTestId("current-repair-control")).toContainText("返修控制与历史回放");
   await expect(page.getByTestId("current-repair-control")).toContainText("Reviewer authority");
   await expect(page.getByTestId("current-repair-control")).toContainText("未认证 · 尚未执行（归 T07）");
+  await expect(page.getByTestId("current-qualified-review")).toContainText("NVDA exact qualified review");
+  await expect(page.getByTestId("current-qualified-review")).toContainText("跨单元依赖 · 1");
+  await expect(page.getByTestId("current-qualified-review")).toContainText("未决冲突 · 2");
+  await expect(page.getByTestId("current-qualified-review")).toContainText("Lead gaps · 4");
   for (const surface of ["case", "run", "evidence", "numeric", "graph", "gaps", "workpaper", "report", "trace", "quality"]) {
     await expect(page.getByTestId(`surface-${surface}`)).toBeVisible();
   }
@@ -43,6 +47,53 @@ test("current product exposes three isolated cases, ten immutable surfaces, and 
   expect(currentRequests.every((request) => request.mode === "current")).toBeTruthy();
   expect(currentRequests.every((request) => request.permission === "current_product:read,current_product:request_repair")).toBeTruthy();
   expect(currentRequests.every((request) => request.actor === "current_internal_operator")).toBeTruthy();
+});
+
+test("reviewer credential stays in page memory and opens only the authenticated decision surface", async ({ page }) => {
+  const credential = `finrvw_${"B".repeat(48)}`;
+  let observedAuthorization = "";
+  await page.route("**/api/v1/current-product/cases/NVDA/qualified-review", async (route) => {
+    observedAuthorization = route.request().headers().authorization ?? "";
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        schema_version: "fin_ia_0_1_2_s4_t07_b_reviewer_session_api_v1_0",
+        case_key: "NVDA",
+        session: {
+          session_id: "review_session_browser_test",
+          reviewer_ref: "FIN_OWNER_A",
+          reviewer_role: "qualified_product_owner",
+          permission: "current_product:qualified_review",
+          authenticated: true,
+          credential_plaintext_persisted: false,
+        },
+        exact_binding: {
+          manifest_digest: "a".repeat(64),
+          case_projection_digest: "b".repeat(64),
+          handoff_digest: "c".repeat(64),
+          packet_digest: "d".repeat(64),
+        },
+        decision: null,
+        event_replay: { integrity: "pass", event_count: 2, head_event_digest: "e".repeat(64) },
+        acceptance: {
+          authenticated_reviewer_identity: true,
+          qualified_human_review: false,
+          NVDA_R3: false,
+          release_qualified: false,
+        },
+        state_digest: "f".repeat(64),
+      }),
+    });
+  });
+  await page.goto("/current/NVDA/report");
+  await page.getByLabel("离线签发的一次性 reviewer credential").fill(credential);
+  await page.getByRole("button", { name: "认证并打开决策区" }).click();
+  await expect(page.getByTestId("current-qualified-review")).toContainText("FIN_OWNER_A");
+  await expect(page.getByRole("button", { name: "接受 exact NVDA R3" })).toBeDisabled();
+  expect(observedAuthorization).toBe(`Bearer ${credential}`);
+  const stored = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }));
+  expect(stored).not.toContain(credential);
 });
 
 test("report and quality remain honest about acceptance boundaries", async ({ page }, testInfo) => {

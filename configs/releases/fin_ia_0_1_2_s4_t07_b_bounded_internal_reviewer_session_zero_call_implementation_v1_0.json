@@ -1,0 +1,98 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t07_b_bounded_internal_reviewer_session_zero_call_implementation_v1_0",
+  "recorded_at": "2026-08-05T23:59:50+08:00",
+  "status": "T07_B_engineering_pass_real_issuance_and_T07_C_pending",
+  "authority": {
+    "user_instruction": "接受",
+    "selected_security_option": "A",
+    "T07_B_implementation_authorized": true,
+    "real_session_issuance_executed": false,
+    "real_human_decision_executed": false
+  },
+  "contract": {
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t07_b_bounded_internal_reviewer_session_contract_v1_0.json",
+    "digest": "e7c7ef1ccf52d63692bbabbb5fc222ad40e909e7d90ccddaefee0bc64525f52b"
+  },
+  "implementation_bindings": [
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t07_reviewer_session.py",
+      "sha256": "441bf1089dce34e1b8c03d8fca85608cafe5196f8752ecf6983673f36fcb62f4"
+    },
+    {
+      "ref": "apps/workbench/backend/api/v1/current_product.py",
+      "sha256": "8a9869145327139287cdaaac39e872508c6cefda7eebfbeae2e431cdbc0cfdc8"
+    },
+    {
+      "ref": "apps/workbench/backend/app.py",
+      "sha256": "4b0b24c411f8ff3ad976a65862b6509c240cfeb19024ab58b9fb3c098895efee"
+    },
+    {
+      "ref": "apps/workbench/frontend/vite/src/api/currentProduct.ts",
+      "sha256": "1be45daebb704374375387a684557c30aec48fcaf4b1009bb6c9ce334a727719"
+    },
+    {
+      "ref": "apps/workbench/frontend/vite/src/app/CurrentProductWorkbench.tsx",
+      "sha256": "d3f5e57ee390cdb14ad3be487db19ad0789f63f5f314f40a3d04feb190e99fc1"
+    },
+    {
+      "ref": "apps/workbench/frontend/vite/src/app/current-product.css",
+      "sha256": "20d81e181ab94cb8c43180f4632a5528ef22b554b9edf77e430483145c47a4b4"
+    },
+    {
+      "ref": "scripts/workbench/manage_fin_0_1_2_t07_reviewer_session.py",
+      "sha256": "9e9183f6af11043fcbd89fedbdad32874633b61b85150fed3d5198587c25a448"
+    }
+  ],
+  "capabilities": {
+    "offline_admin_only_session_issuance": true,
+    "server_generated_opaque_credential": true,
+    "credential_plaintext_returned_once": true,
+    "credential_digest_only_persisted": true,
+    "qualified_reviewer_identity_and_role_allowlist": true,
+    "expiry_and_revocation": true,
+    "exact_NVDA_manifest_case_handoff_packet_binding": true,
+    "append_only_hash_chained_auth_and_decision_events": true,
+    "authenticated_accept_or_return_endpoint": true,
+    "public_issuance_endpoint": false,
+    "frontend_memory_only_credential": true
+  },
+  "verification": {
+    "T06_through_T07_B_adjacent_contracts": "46 passed",
+    "T07_B_focused_contracts": "7 passed",
+    "desktop_and_mobile_browser": "10 passed",
+    "typescript_compile": "pass",
+    "vite_production_build": "pass_with_existing_chunk_warning",
+    "contract_materializer_check": "pass",
+    "default_private_store_session_event_decision_counts": [
+      0,
+      0,
+      0
+    ],
+    "secret_scan_plaintext_credentials_found": 0,
+    "new_model_provider_network_financial_source_calls": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "stage_acceptance": {
+    "S4_T07_A_engineering": "pass",
+    "S4_T07_B_engineering": "pass",
+    "authenticated_reviewer_mechanism": "available_not_real_session_issued",
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_T07_C": "pending_real_user_action",
+    "S4_T08": "not_entered",
+    "S5": "not_entered",
+    "release": false
+  },
+  "hard_boundaries": {
+    "test_session_or_Codex_action_counts_as_real_review": false,
+    "credential_in_Git_telemetry_capture_artifact_or_worklog": false,
+    "accepted_R2_business_truth_mutated": false,
+    "production_OIDC_or_SSO_implemented": false
+  },
+  "recommended_next": "USER-T07-C-OFFLINE-ISSUE-ONE-FIN-OWNER-A-SESSION-OPEN-EXACT-NVDA-PACKET-AND-ACCEPT-OR-RETURN",
+  "record_digest": "d2859b7e06b3544d0c0db5e5bcb85c47785a0e03b107feab3c1403ae6709ce56"
+}

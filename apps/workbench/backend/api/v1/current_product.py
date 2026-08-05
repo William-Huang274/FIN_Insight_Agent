@@ -21,6 +21,11 @@ from ...application.fin_0_1_2_s4_t07_reviewer_packet import (
     CurrentProductReviewerPacketError,
     CurrentProductReviewerPacketService,
 )
+from ...application.fin_0_1_2_s4_t07_reviewer_session import (
+    CurrentProductReviewerSessionService,
+    QualifiedReviewDecisionDraft,
+    ReviewerSessionError,
+)
 
 
 CurrentProductSurface = Literal[
@@ -114,10 +119,37 @@ class CurrentReviewerPacketResponse(BaseModel):
     packet_digest: str
 
 
+class QualifiedReviewDecisionCommand(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    action: Literal["accept_exact_version", "return_for_repair"]
+    reviewer_note: str = Field(min_length=1, max_length=1000)
+    idempotency_key: str = Field(min_length=1, max_length=160)
+    target_surface: CurrentProductSurface | None = None
+    expected_target_view_digest: str | None = Field(
+        default=None, min_length=64, max_length=64
+    )
+    reason_code: str | None = Field(default=None, min_length=1, max_length=120)
+
+
+class QualifiedReviewStateResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str
+    case_key: Literal["NVDA"]
+    session: dict[str, Any]
+    exact_binding: dict[str, Any]
+    decision: dict[str, Any] | None
+    event_replay: dict[str, Any]
+    acceptance: dict[str, Any]
+    state_digest: str
+
+
 def build_current_product_router(
     service: CurrentProductProjectionService,
     review_control_service: CurrentProductReviewControlService | None = None,
     reviewer_packet_service: CurrentProductReviewerPacketService | None = None,
+    reviewer_session_service: CurrentProductReviewerSessionService | None = None,
 ) -> APIRouter:
     router = APIRouter(tags=["fin-0.1.2-current-product-projection"])
 
@@ -196,6 +228,52 @@ def build_current_product_router(
                 f'"review-replay={projection["replay_digest"]}"'
             )
             return projection
+
+    if reviewer_session_service is not None:
+
+        @router.get(
+            "/current-product/cases/NVDA/qualified-review",
+            response_model=QualifiedReviewStateResponse,
+        )
+        def get_qualified_review_state(
+            response: Response,
+            authorization: Annotated[
+                str | None, Header(alias="Authorization")
+            ] = None,
+        ) -> dict[str, Any]:
+            try:
+                state = reviewer_session_service.get_review_state(
+                    _bearer_credential(authorization)
+                )
+            except ReviewerSessionError as exc:
+                raise HTTPException(
+                    status_code=exc.status_code, detail=exc.detail
+                ) from exc
+            response.headers["ETag"] = f'"qualified-review={state["state_digest"]}"'
+            return state
+
+        @router.post(
+            "/current-product/cases/NVDA/qualified-review/decisions",
+            response_model=QualifiedReviewStateResponse,
+        )
+        def record_qualified_review_decision(
+            command: QualifiedReviewDecisionCommand,
+            response: Response,
+            authorization: Annotated[
+                str | None, Header(alias="Authorization")
+            ] = None,
+        ) -> dict[str, Any]:
+            try:
+                state = reviewer_session_service.record_decision(
+                    _bearer_credential(authorization),
+                    QualifiedReviewDecisionDraft(**command.model_dump()),
+                )
+            except ReviewerSessionError as exc:
+                raise HTTPException(
+                    status_code=exc.status_code, detail=exc.detail
+                ) from exc
+            response.headers["ETag"] = f'"qualified-review={state["state_digest"]}"'
+            return state
 
     if reviewer_packet_service is not None:
 
@@ -303,6 +381,13 @@ def _principal(
             if item.strip()
         ),
     )
+
+
+def _bearer_credential(authorization: str | None) -> str:
+    value = (authorization or "").strip()
+    if not value.startswith("Bearer ") or not value[7:].strip():
+        raise ReviewerSessionError("t07_reviewer_bearer_credential_required", 401)
+    return value[7:].strip()
 
 
 def _review_principal(

@@ -3,6 +3,9 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T07-B bounded internal reviewer session engineering pass（current，2026-08-05）**：用户选择的方案 A 已实现：本机 offline admin-only issuance、随机 opaque credential 一次显示、SQLite digest-only、`FIN_OWNER_A / qualified_product_owner` allowlist、8h 内 TTL、single active、revocation、exact NVDA manifest/case/handoff/packet binding，以及 append-only auth/decision hash chain。API 无 public issuance；Workbench credential 仅 page memory，不入 local/session storage；accept 需 `ACCEPT NVDA R3` 明确确认，return 需 exact surface/view/reason。focused/adjacent/browser=`7/46/10 passed`，TypeScript/Vite pass，默认 private store session/event/decision=`0/0/0`，external calls=0。T07-B=engineering pass/auth mechanism available；真实 session 尚未签发，qualified Human Review/NVDA R3=false。RC-P36-129 剩余范围仅为 T07-C real user action。current next=`USER-T07-C-OFFLINE-ISSUE-ONE-FIN-OWNER-A-SESSION-OPEN-EXACT-NVDA-PACKET-AND-ACCEPT-OR-RETURN`；T08/S5/release=false。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T07-A NVDA exact reviewer packet engineering pass（current，2026-08-05）**：用户已接受身份方案 A，并授权依次实现 T07-A/T07-B；真实 T07-C action 仍不得由 Codex/自动化代签。T07-A 已新增内容寻址、NVDA-only、GET-only reviewer packet，精确绑定 current manifest、NVDA case、十个 view、review replay 与 handoff digest；覆盖 `15 Evidence / 3 Numeric / 3 typed product gaps / 3 research cells / 6 Claims / 9 WWC`。审计发现 T06 产品面此前只显示 Lead `1 dependency / 2 conflicts / 4 gaps` 数量，未显示具体业务内容；现从已校验 `bounded_agent_judgment` Artifact 安全投影到 reviewer packet，不读取 restricted capture。五项 checklist 全部 pending human，review duration 未虚构，authenticated session/qualified review/decision/NVDA R3=false。focused/adjacent=`5/39 passed`，external/model/provider/source/business writes=0。T07-A=engineering pass；RC-P36-129 仍 open 但范围已缩为 T07-B trusted session 与 T07-C real action。current next=`FIN-0.1.2-S4-T07-B-BOUNDED-INTERNAL-SERVER-ISSUED-REVIEWER-SESSION-DIGEST-ONLY-AUTH-AND-APPEND-ONLY-DECISION-CONTROL`；T07-C、T08、S5、release=false。
 >
 > [!IMPORTANT]

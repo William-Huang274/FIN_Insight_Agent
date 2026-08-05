@@ -8,6 +8,8 @@ import {
   FileCheck2,
   FileText,
   GitBranch,
+  KeyRound,
+  LockKeyhole,
   Network,
   RefreshCw,
   RotateCcw,
@@ -23,12 +25,17 @@ import {
   CurrentProductCase,
   CurrentRepairReason,
   CurrentReviewControlState,
+  CurrentReviewerPacket,
+  QualifiedReviewState,
   CurrentProductSurface,
   CurrentProductSurfaceResponse,
   getCurrentProductSurface,
+  getCurrentReviewerPacket,
+  getQualifiedReviewState,
   getCurrentReviewControl,
   listCurrentProductCases,
   requestCurrentReturnForRepair,
+  submitQualifiedReviewDecision,
 } from "../api/currentProduct";
 import "./current-product.css";
 
@@ -71,6 +78,7 @@ export function CurrentProductWorkbench({ online }: CurrentProductWorkbenchProps
   const [surface, setSurface] = useState<CurrentProductSurface>(initial.surface);
   const [view, setView] = useState<CurrentProductSurfaceResponse | null>(null);
   const [reviewControl, setReviewControl] = useState<CurrentReviewControlState | null>(null);
+  const [reviewerPacket, setReviewerPacket] = useState<CurrentReviewerPacket | null>(null);
   const [manifestDigest, setManifestDigest] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,18 +106,21 @@ export function CurrentProductWorkbench({ online }: CurrentProductWorkbenchProps
     try {
       const resolvedCase = await loadCases(controller.signal);
       if (resolvedCase) {
-        const [response, control] = await Promise.all([
+        const [response, control, packet] = await Promise.all([
           getCurrentProductSurface(resolvedCase, surface, controller.signal),
           getCurrentReviewControl(resolvedCase, controller.signal),
+          resolvedCase === "NVDA" ? getCurrentReviewerPacket(resolvedCase, controller.signal) : Promise.resolve(null),
         ]);
         setView(response);
         setReviewControl(control);
+        setReviewerPacket(packet);
       }
     } catch (caught) {
       if (!controller.signal.aborted) {
         setError(caught instanceof Error ? caught.message : "current_product_load_failed");
         setView(null);
         setReviewControl(null);
+        setReviewerPacket(null);
       }
     } finally {
       if (!controller.signal.aborted) setLoading(false);
@@ -134,13 +145,15 @@ export function CurrentProductWorkbench({ online }: CurrentProductWorkbenchProps
           setCaseKey(resolvedCase);
         }
         if (resolvedCase) {
-          const [nextView, control] = await Promise.all([
+          const [nextView, control, packet] = await Promise.all([
             getCurrentProductSurface(resolvedCase, surface, controller.signal),
             getCurrentReviewControl(resolvedCase, controller.signal),
+            resolvedCase === "NVDA" ? getCurrentReviewerPacket(resolvedCase, controller.signal) : Promise.resolve(null),
           ]);
           if (!disposed) {
             setView(nextView);
             setReviewControl(control);
+            setReviewerPacket(packet);
           }
         }
       })
@@ -149,6 +162,7 @@ export function CurrentProductWorkbench({ online }: CurrentProductWorkbenchProps
           setError(caught instanceof Error ? caught.message : "current_product_load_failed");
           setView(null);
           setReviewControl(null);
+          setReviewerPacket(null);
         }
       })
       .finally(() => {
@@ -307,6 +321,10 @@ export function CurrentProductWorkbench({ online }: CurrentProductWorkbenchProps
             />
           ) : null}
 
+          {!loading && !error && view && reviewerPacket ? (
+            <QualifiedReviewPanel packet={reviewerPacket} surface={surface} viewDigest={view.view_digest} />
+          ) : null}
+
           <footer className="current-footer">
             <span>Manifest {shortDigest(manifestDigest)}</span>
             <span>业务真值只读 · 返修请求追加留痕 · 原始 capture 与私有推理不暴露</span>
@@ -398,6 +416,121 @@ function RepairControl({
       ) : <p className="current-muted">当前视图没有可用的返修类型；请切换到 Evidence、Numeric、Gap、Workpaper、Report、Trace 或 Quality。</p>}
     </section>
   );
+}
+
+function QualifiedReviewPanel({
+  packet,
+  surface,
+  viewDigest,
+}: {
+  packet: CurrentReviewerPacket;
+  surface: CurrentProductSurface;
+  viewDigest: string;
+}) {
+  const [credential, setCredential] = useState("");
+  const [state, setState] = useState<QualifiedReviewState | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const burden = packet.review_burden;
+  const lead = asRecord(packet.sections.cross_cell_lead);
+  const dependencies = asArray(lead.cross_cell_dependencies).map(asRecord);
+  const conflicts = asArray(lead.conflict_adjudications).map(asRecord);
+  const gaps = asArray(lead.remaining_gaps).map(asRecord);
+  const decision = state?.decision;
+
+  const authenticate = async () => {
+    if (!credential.trim()) return;
+    setBusy(true);
+    setAuthError(null);
+    try {
+      setState(await getQualifiedReviewState(credential.trim()));
+    } catch (caught) {
+      setState(null);
+      setAuthError(caught instanceof Error ? caught.message : "qualified_review_authentication_failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitDecision = async (action: "accept_exact_version" | "return_for_repair") => {
+    if (!state || !credential.trim() || !note.trim()) return;
+    if (action === "accept_exact_version" && confirmation !== "ACCEPT NVDA R3") return;
+    const reason = REPAIR_REASON_OPTIONS.find((item) => item.surfaces.includes(surface))?.value ?? "delivery_clarity";
+    setBusy(true);
+    setAuthError(null);
+    try {
+      const next = await submitQualifiedReviewDecision(credential.trim(), {
+        action,
+        reviewer_note: note.trim(),
+        idempotency_key: `${action}-${crypto.randomUUID()}`,
+        ...(action === "return_for_repair" ? {
+          target_surface: surface,
+          expected_target_view_digest: viewDigest,
+          reason_code: reason,
+        } : {}),
+      });
+      setState(next);
+      setCredential("");
+      setNote("");
+      setConfirmation("");
+    } catch (caught) {
+      setAuthError(caught instanceof Error ? caught.message : "qualified_review_decision_failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="current-qualified-review" data-testid="current-qualified-review">
+      <header>
+        <div><LockKeyhole size={18} /><span>NVDA exact qualified review</span></div>
+        <code>packet {shortDigest(packet.packet_digest)}</code>
+      </header>
+      <div className="current-review-burden">
+        <Metric value={Number(burden.evidence_rows ?? 0)} label="Evidence" />
+        <Metric value={Number(burden.claims ?? 0)} label="Claims" />
+        <Metric value={Number(burden.what_would_change_items ?? 0)} label="WWC" />
+        <Metric value={Number(burden.unresolved_conflicts ?? 0)} label="Unresolved" tone="amber" />
+      </div>
+      <div className="current-review-lead">
+        <ReviewLeadGroup title="跨单元依赖" rows={dependencies} />
+        <ReviewLeadGroup title="未决冲突" rows={conflicts} />
+        <ReviewLeadGroup title="Lead gaps" rows={gaps} />
+      </div>
+      <div className="current-review-checklist">
+        {packet.review_checklist.map((item) => (
+          <article key={item.check_id}><CheckCircle2 size={15} /><div><b>{humanize(item.check_id)}</b><p>{item.instruction}</p></div><span>{humanize(item.review_status)}</span></article>
+        ))}
+      </div>
+      {!state ? (
+        <div className="current-review-auth">
+          <label><span>离线签发的一次性 reviewer credential</span><input type="password" name="fin-t07-reviewer-credential" autoComplete="off" value={credential} onChange={(event) => setCredential(event.target.value)} /></label>
+          <button type="button" onClick={() => void authenticate()} disabled={busy || !credential.trim()}><KeyRound size={15} />{busy ? "正在认证…" : "认证并打开决策区"}</button>
+        </div>
+      ) : (
+        <div className="current-review-decision">
+          <div className="current-authenticated-reviewer"><ShieldCheck size={16} /><span>{state.session.reviewer_ref} · {humanize(state.session.reviewer_role)}</span><b>authenticated</b></div>
+          {decision ? (
+            <p className="current-review-terminal">已记录 terminal decision：<b>{humanize(decision.action)}</b>。NVDA R3：{state.acceptance.NVDA_R3 ? "成立" : "不成立"}；release 仍未放行。</p>
+          ) : (
+            <>
+              <label>审核说明<textarea maxLength={1000} value={note} onChange={(event) => setNote(event.target.value)} placeholder="记录证据、数值、推断、冲突、gap 与最终交付的审核结论。" /></label>
+              <label>接受确认<input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} placeholder="接受时输入：ACCEPT NVDA R3" /></label>
+              <div><button type="button" className="is-secondary" disabled={busy || !note.trim()} onClick={() => void submitDecision("return_for_repair")}><RotateCcw size={15} />退回当前视图</button><button type="button" disabled={busy || !note.trim() || confirmation !== "ACCEPT NVDA R3"} onClick={() => void submitDecision("accept_exact_version")}><ShieldCheck size={15} />接受 exact NVDA R3</button></div>
+            </>
+          )}
+        </div>
+      )}
+      {authError ? <code className="current-repair-error">{authError}</code> : null}
+      <p className="current-muted">Credential 只保存在当前页面内存，不写入 localStorage、日志或 Artifact；“退回”只记录 exact decision，不自动启动返修或改写 T06 queue；生产 OIDC/SSO 仍属于 S5。</p>
+    </section>
+  );
+}
+
+function ReviewLeadGroup({ title, rows }: { title: string; rows: Array<Record<string, unknown>> }) {
+  return <div><b>{title} · {rows.length}</b>{rows.map((row, index) => <p key={`${title}-${index}`}>{String(row.statement ?? row.terminal_state_summary ?? "—")}</p>)}</div>;
 }
 
 function SurfaceRenderer({ surface, data }: { surface: CurrentProductSurface; data: Record<string, unknown> }) {

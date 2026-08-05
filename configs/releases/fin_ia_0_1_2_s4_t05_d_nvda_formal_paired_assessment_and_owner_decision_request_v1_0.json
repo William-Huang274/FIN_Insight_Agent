@@ -1,0 +1,116 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_d_nvda_formal_paired_assessment_and_owner_decision_request_v1_0",
+  "recorded_at": "2026-08-05T18:35:00+08:00",
+  "status": "paired_L1_L4_pass_limited_gain_quality_findings_owner_decision_required",
+  "pair_binding": {
+    "same_input_digest": "75fa19a87bfbd1aa37eb4b3613a74f204fd99a49b9dee8d353e659fed9c19216",
+    "same_input_head_digest": "04e691991ffa24f6216ab967de45bebb540dfb85bce1d3bcb572c2c05f4534ac",
+    "agent_research_run_id": "research_run_fin01_30989d1901a40fef95ce09aa",
+    "deterministic_research_run_id": "research_run_s4_t05_baseline_adf0c6f439bbbac8d3b3",
+    "runs_are_distinct": true,
+    "agent_artifacts": 9,
+    "deterministic_artifacts": 1,
+    "baseline_output_body_exposed_to_agent": false
+  },
+  "L1_deterministic_integrity": {
+    "status": "pass",
+    "basis": {
+      "status": "pass",
+      "case_identity_NVDA": true,
+      "input_and_current_evidence_lineage": true,
+      "exact_numeric_correspondence": true,
+      "capture_first_and_content_address_readback": true,
+      "credential_cookie_private_reasoning_persisted": false,
+      "machine_verifier_four_layers_self_pass": true,
+      "machine_verifier_is_owner_acceptance": false
+    }
+  },
+  "L2_evidence_reliability_and_coverage": {
+    "status": "pass_bounded_authority_coverage",
+    "evidence_cells": 3,
+    "authority_cells": 3,
+    "basis": "All three NVDA Cells are bound to approved current Evidence or exact company Numeric authority; unsupported causal or investment claims are not promoted beyond their authority."
+  },
+  "L3_agent_gain": {
+    "status": "pass_limited_material_gain_with_quality_findings",
+    "baseline_claim_dependency_conflict_gap_WWC": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "agent_claim_dependency_conflict_gap_WWC": [
+      6,
+      1,
+      2,
+      4,
+      9
+    ],
+    "material_gain": "The Agent adds six bounded Claim Cards, one cross-cell dependency, two explicit unresolved conflict cards, four typed gaps and nine claim-bound follow-up tasks over the authority-only baseline.",
+    "comparison_limitation": "The deterministic baseline intentionally inventories authority without judgment. NVDA's gain is organizational and auditable, but the cross-cell Lead layer largely restates epistemic states instead of producing a strong company-specific causal synthesis.",
+    "quality_findings": [
+      {
+        "issue": "RC-P36-119",
+        "finding": "9/9 what-would-change tasks retain generic threshold wording instead of measurable NVDA observations.",
+        "disposition": "nonblocking_deferred_T08_T10_S5"
+      },
+      {
+        "issue": "RC-P36-125",
+        "finding": "The single dependency mainly enumerates claim evidence states; both conflicts remain unresolved, and two of four gaps point to already fact-supported claims. Together with MU, this establishes a cross-case Lead synthesis weakness rather than an NVDA-only defect.",
+        "disposition": "nonblocking_deferred_T08_T10_S5"
+      }
+    ]
+  },
+  "L4_final_delivery": {
+    "status": "pass",
+    "preview_digest": "092e0f59d2f064e84193924a0408ce8b5ae63931d41f08e0ac9ae0efdfc39fab",
+    "local_verifier_digest": "57bc4849da28411517cb5a64a5326b75af3f2ff2c032b01811ef56219cc58aed",
+    "case_identity": "pass_NVDA",
+    "internal_tokens_currency_duplication_or_unlocalized_limitation": 0
+  },
+  "owner_decision_request": {
+    "status": "awaiting_explicit_user_owner_decision",
+    "recommended_decision": "accept_post_transfer_NVDA_R2_with_RC_P36_119_and_RC_P36_125_deferred",
+    "recommendation_rationale": "Accept only as a bounded internal post-transfer R2 proof: L1, authority coverage and delivery integrity pass, while limited Agent gain and the cross-case Lead findings remain explicit and cannot qualify R3, release or production quality.",
+    "material_gain_accepted": null,
+    "owner_comment": null,
+    "accept_effect": "Close T05-D, set post-transfer NVDA R2=true, authorize S4-T06 entry, and carry RC-P36-119/125 to T08-T10/S5.",
+    "reject_effect": "Keep post-transfer NVDA R2=false and T05-D held; record the product reason without rerunning the successful NVDA Search or Agent chain."
+  },
+  "acceptance_boundary": {
+    "S4_T05_D_NVDA_engineering": "pass",
+    "S4_T05_D_NVDA_search_evidence_transfer": "pass",
+    "S4_T05_D_NVDA_agent_exact_live": "pass",
+    "S4_T05_D_NVDA_final_delivery": "pass",
+    "formal_paired_L1_L4": "pass_limited_gain_with_findings",
+    "post_transfer_NVDA_R2": false,
+    "S4_T05_D_closeout": "blocked_pending_owner_decision",
+    "S4_T06_entry": "blocked_pending_owner_decision",
+    "release": "not_qualified",
+    "production": "not_qualified"
+  },
+  "observed_counts": {
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_execution_network_calls": 0,
+    "new_source_network_calls": 0,
+    "new_external_tool_calls": 0,
+    "exact_live_reruns": 0,
+    "deterministic_baseline_runs": 0,
+    "formal_paired_assessments": 1,
+    "owner_decisions": 0
+  },
+  "source_refs": {
+    "exact_result": ".codex_runtime/fin012-s4-t05d-nvda-post-transfer-agent-exact-live-r1/execution-result.json",
+    "exact_result_sha256": "200907cf4c0f6a58748b12f44a4c874ff0b53bd74fe69e22e2d28d117f72bbc4",
+    "exact_assessment": "configs/releases/fin_ia_0_1_2_s4_t05_d_nvda_agent_exact_live_result_and_independent_assessment_v1_0.json",
+    "exact_assessment_sha256": "e105dcf40d577e8a3f10ec2cfaf0d14e617ba0feba27e2bbc8b9d92399b1840c",
+    "product_surface": "configs/releases/fin_ia_0_1_2_s4_t05_d_nvda_verified_product_surface_and_paired_readiness_v1_0.json",
+    "product_surface_sha256": "3ad7528dffdee0cdcd726c641981662930459565b683444a42863cce8a8cd9e0",
+    "deterministic_baseline": ".codex_runtime/fin012-s4-t05d-nvda-current-evidence-deterministic-baseline-r1/execution-result.json",
+    "deterministic_baseline_sha256": "16c3dceb3213c55708b4712f30903f7357bfc001ed017a5a200c5e4baafc1277"
+  },
+  "recommended_next": "USER-OWNER-DECISION-ACCEPT-OR-REJECT-POST-TRANSFER-NVDA-R2-THEN-CLOSE-T05-D-OR-HOLD",
+  "assessment_digest": "ff93cea5292921b78627f93ac61fc8be942d802f5aabeef29b325557258c4f21"
+}

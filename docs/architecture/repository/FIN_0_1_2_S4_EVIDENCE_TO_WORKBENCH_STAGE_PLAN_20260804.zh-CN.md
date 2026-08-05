@@ -290,3 +290,11 @@ immutable exact result=`200907cf…bbc4` 经现有 DELL/MU/NVDA 通用 renderer 
 首轮共享回归暴露测试误用 DELL/MU runtime overlay；没有给 NVDA legacy Artifact 补假字段。进一步审计关闭 RC-P36-124：通用产品表面在处理三案前重算 input canonical digest，防止 body 已变但声明 digest 未更新；正常三案输出不漂移，NVDA legacy lineage stale-digest mutation 在渲染前 fail closed。
 
 当前 T05-D final delivery 与 paired readiness=pass，但 formal paired、Owner acceptance 和 post-transfer NVDA R2 仍未成立。下一项为 `FIN-0.1.2-S4-T05-D-NVDA-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION`；RC-P36-119 后传 T08–T10/S5，RC-P36-122 保持 MU-specific，RC-P36-115 继续阻断 S5/release。
+
+## 28. S4-T05-D NVDA formal paired 与 Owner gate
+
+正式 paired 已确认 Agent 与 authority-only baseline 使用相同 input/head、不同 Run/Artifacts，且 baseline body 未暴露给 Agent。L1、L2、L4 通过；L3 从 baseline 的 `0/0/0/0/0` 增加到 Agent 的 `6 Claims / 1 dependency / 2 conflicts / 4 gaps / 9 WWC`，记为有限结构增益，不宣称 strong NVDA thesis 或 R3。
+
+9/9 WWC 仍使用通用阈值，归 RC-P36-119。独立语义审阅发现：唯一 dependency 主要枚举六个 claim 的 epistemic state；两个 conflict 均 unresolved；四个 gap 中两个指向已是 fact-supported 的 claim。该形态与 MU RC-P36-122 同源，因此新建跨案例 RC-P36-125，吸收其后续质量校准范围；RC-P36-122 保留为 MU 首次触发的历史记录。RC-P36-125 后传 T08–T10/S5，不重开 T05-C/T05-D，也不触发第二次 paid run。
+
+formal assessment=`ff93cea5…4f21`，三案例 formal pair、MU/NVDA product surface 及 mutation regression=`35 passed`；model/provider/network/source/exact rerun=`0`。推荐 Owner 决定为 `accept_post_transfer_NVDA_R2_with_RC_P36_119_and_RC_P36_125_deferred`，仅代表 bounded internal post-transfer R2，不代表 strong thesis、Human Review、NVDA R3、S4 整体验收、release 或 production。Owner 尚未签署，因此 post-transfer NVDA R2=false，T05-D closeout 与 S4-T06 entry 仍 blocked；下一项只等待 `USER-OWNER-DECISION-ACCEPT-OR-REJECT-POST-TRANSFER-NVDA-R2-THEN-CLOSE-T05-D-OR-HOLD`。

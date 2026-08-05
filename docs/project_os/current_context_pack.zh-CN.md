@@ -3,6 +3,9 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-D post-transfer NVDA formal paired L1–L4 已通过，当前只等待显式 Owner 决策（current，2026-08-05）**：Agent/baseline 同 input/head、不同 Run 与 `9/1` Artifacts，baseline body 未暴露给 Agent。L1/L2/L4=pass；L3 从 `0/0/0/0/0` 增加到 `6 Claims / 1 dependency / 2 conflicts / 4 gaps / 9 WWC`，记为有限真实增益。9/9 WWC 泛化继续归 RC-P36-119；NVDA 的 dependency 仅枚举证据状态、2 个 conflict 均 unresolved、4 个 gap 中 2 个指向 fact-supported claim，与 MU 共同建立跨案例 RC-P36-125，后传 T08–T10/S5，不重开 T05-D。assessment=`ff93cea5…4f21`，相邻三案例 regression=`35 passed`，model/provider/network/source/exact rerun=`0`。普通“继续”不能自动成为 Owner 接受，故 post-transfer NVDA R2=false、T05-D/T06 blocked。建议 Owner=`accept_post_transfer_NVDA_R2_with_RC_P36_119_and_RC_P36_125_deferred`；current next=`USER-OWNER-DECISION-ACCEPT-OR-REJECT-POST-TRANSFER-NVDA-R2-THEN-CLOSE-T05-D-OR-HOLD`。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-D post-transfer NVDA final delivery L4 与 paired readiness 已零调用通过，formal pair/Owner 待续行（current，2026-08-05）**：immutable exact SHA=`200907cf…bbc4` 经三案通用 renderer 形成 final preview=`092e0f59…9fab`，内部 scope/period token、重复币种和英文 limitation 清零；local Verifier=`57bc4849…8aed`，三 Cell Evidence/authority=`3/3`。同 input/head、不同 Run/Artifact 的 deterministic baseline=`891e00a5…45df`，paired readiness=`a825f345…56ea`。三案 renderer、跨案、legacy lineage、Numeric、preview/verifier 与 pair mutation=`45 passed`，model/provider/network/source/exact rerun=`0`。审计补强关闭 RC-P36-124：产品表面现在重算完整 input digest，stale-digest lineage mutation 在渲染前 fail closed。formal paired/Owner 未执行，post-transfer NVDA R2=false。current next=`FIN-0.1.2-S4-T05-D-NVDA-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION`。
 >
 > [!IMPORTANT]

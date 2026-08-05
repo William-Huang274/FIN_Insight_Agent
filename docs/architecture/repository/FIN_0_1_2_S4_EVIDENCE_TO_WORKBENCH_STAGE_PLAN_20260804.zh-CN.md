@@ -222,3 +222,13 @@ current terminal 经 Evidence Gate 编译为 `15 Evidence / 3 exact company Nume
 通用 gap code `company_total_numeric_does_not_attribute_AI_segment_profit_capture` 对 MU 的产品措辞不如 `HBM-specific profit attribution` 精确；但它仍然表达“公司整体数值不能证明目标子业务利润”的正确权限边界，没有改变 Evidence/Numeric authority，故作为 L2–L4 wording finding 后传 T08–T10/S5，不阻断 T05-C，也不触发 Search 重跑。
 
 Agent current-case successor 已以三案通用 case parameter 取代 DELL-only exact preparation，但没有修改 DELL immutable module。两个 fresh full-fake root normalized 一致，拓扑=`9 Provider / 3 local Fact / 9 captures / 9 Artifacts`；预计输入=`86,519`、上限=`108,000`、余量=`21,481`，最大单次=`15,693`，USD cap=`0.06`、retry=`0`。MU Agent admission digest=`fbd186e4…3526` 已签发未消费。下一项只执行一次 DeepSeek Pro exact-live；新 L1 立即停止，不自动 retry/replacement。
+
+## 20. S4-T05-C MU Agent exact-live 与独立 L1
+
+唯一 MU Agent admission 已 exact-once 消费并成功。DeepSeek Pro 9 次调用全部 `stop` 且 transport attempt=1，拓扑=`9 Provider / 3 local Fact / 9 captures / 9 Artifacts`；input/output=`56,762/3,162`，estimated cost=`USD 0.02744241`，retry/second live=`0/0`。exact result SHA=`c7bdf239…3602`，terminal digest=`0eaeb000…fcd4`。
+
+独立 readback 重新核对 capture content address、MU identity、current Evidence lineage 和三条 exact Numeric，L1 通过；机器 Verifier 四层自报 pass，Agent 形成 `6 Claims / 9 WWC / 1 dependency / 3 conflicts / 4 gaps`。这说明步骤 1–5 的真实 Search→Evidence→Agent exact-live 已完整跑通。
+
+raw business report 仍含内部 scope/period token、重复币种和英文 limitation；这是 DELL 已证明可由现有三案通用 renderer 零调用清理并绑定 final preview 的产品表面步骤，不是模型 L1，也不需要第二次 DeepSeek。formal paired、Owner acceptance 和 MU current R2 尚未执行，下一项限定为 MU verified product surface 与 paired readiness 的零调用物化。
+
+执行结果落盘后，原 runner 将完整 JSON 打印到 Windows GBK stdout 时因 Unicode bullet 退出 1；immutable result/terminal/Artifacts 不受影响，不重跑 admission。Consumed runner 绑定保持不可变，新增 ASCII-safe 只读 inspector 并回归关闭当前结果的可读性问题；后续共享 CLI hardening 仍应在 S5 统一完成。

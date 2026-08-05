@@ -1,0 +1,64 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_c_mu_agent_exact_live_result_and_independent_assessment_v1_0",
+  "result_id": "FIN-0.1.2-S4-T05-C-MU-AGENT-EXACT-LIVE-R1",
+  "recorded_at": "2026-08-05T06:45:00Z",
+  "status": "exact_live_success_independent_L1_pass_product_surface_pending",
+  "source_exact_result": {
+    "ref": ".codex_runtime/fin012-s4-t05c-mu-agent-exact-live-r1/execution-result.json",
+    "sha256": "c7bdf239e3f6fe1e980be856448ae7549e3401276c91805444b41e39cd1b3602",
+    "terminal_digest": "0eaeb000e819de99418fd2bb0b2080c638dd4b7fade25b4552461c153e44fcd4",
+    "immutable": true
+  },
+  "execution": {
+    "provider_model": "deepseek-v4-pro",
+    "provider_calls": 9,
+    "local_fact_receipts": 3,
+    "captures": 9,
+    "business_artifacts": 9,
+    "input_tokens": 56762,
+    "output_tokens": 3162,
+    "estimated_cost_usd": 0.02744241,
+    "retry_count": 0,
+    "all_finish_reason_stop": true,
+    "all_transport_attempt_count_one": true
+  },
+  "independent_L1": {
+    "status": "pass",
+    "case_identity_MU": true,
+    "input_and_current_evidence_lineage": true,
+    "exact_numeric_correspondence": true,
+    "capture_first_and_content_address_readback": true,
+    "credential_cookie_private_reasoning_persisted": false,
+    "machine_verifier_four_layers_self_pass": true,
+    "machine_verifier_is_owner_acceptance": false
+  },
+  "agent_output_counts": {
+    "claims": 6,
+    "what_would_change": 9,
+    "dependencies": 1,
+    "conflicts": 3,
+    "gaps": 4
+  },
+  "product_surface_boundary": {
+    "raw_delivery_findings": {
+      "internal_scope_token": true,
+      "internal_period_token": true,
+      "duplicated_currency_unit": true,
+      "mixed_language_limitation": true
+    },
+    "generic_current_case_renderer_already_exists": true,
+    "renderer_and_final_preview_binding_executed_this_step": false,
+    "formal_paired_assessment_executed": false,
+    "owner_acceptance": false,
+    "MU_current_R2": false
+  },
+  "operational_finding": {
+    "code": "windows_gbk_stdout_unicode_encode_after_result_materialization",
+    "business_chain_impact": "none_result_and_terminal_already_immutable_success",
+    "rerun_required": false,
+    "read_only_inspection_workaround": "PYTHONIOENCODING=utf-8",
+    "disposition": "controlled_successor_CLI_output_hardening_without_mutating_consumed_runner_binding"
+  },
+  "next_action": "FIN-0.1.2-S4-T05-C-MU-VERIFIED-PRODUCT-SURFACE-AND-PAIRED-READINESS-ZERO-CALL",
+  "assessment_digest": "b268c46883013e4999531dcc92e5831792430c41fc948656f8bbe419b8f8f926"
+}

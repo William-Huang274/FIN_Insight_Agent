@@ -1,11 +1,13 @@
 # FIN 0.1.1 / 0.1.2 PRD 能力对账与 S0–S5 重基线
 
 日期：2026-08-04
-状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T04 pass closed，current NVDA R2 Owner accepted / S4-T05-A zero-call transfer engineering pass / T05-B DELL Owner accepted current R2 and closed / T05-C MU entry authorized not started / no product version change`
+状态：`accepted planning correction / FIN 0.1.2 S4-T08 audit complete product closeout blocked / FIN 0.1.3 delta repair planning ready / release blocked`
+
+> **2026-08-05 T08 扩大审计与 FIN 0.1.3 修复交接（supersedes 本文“不创建 FIN 0.1.3”的规划假设）**：三案例 current projection、review control 和大量 exact 工程证据已成立，但审计发现 DELL quarterly/annual duration L1、SEC-only/Graph-empty evidence coverage、三 Cell 与通用 Claim/WWC/Lead/Writer、current create→repair→review 未闭环。按共同根因合并为 21 个修复包：S0/S1/S2/S3/S4=`3/5/3/5/5`，16/21 最早属于 S0–S3；S5 另有 RG1–RG5 五个 gate。S4-T08 只做 audit/honest-block handoff，不在末端修上游。用户明确同意将问题流转到 FIN 0.1.3 专项修复收口版本，FIN 0.2 Earnings Review Alpha 定义不变。0.1.3 采用 delta S0–S5，继承未变 immutable evidence，只执行 changed stages/dependencies；最终 S5 不得跳过。源计划见 `FIN_0_1_3_REPAIR_CLOSEOUT_SCOPE_AND_DELTA_S0_TO_S5_PLAN_20260805.zh-CN.md`。
 
 > 2026-08-04 S4-T03 零调用权限审计确认：F05 当前不是“模型效果差”，而是 metadata route 尚未接成 executable search，来源 request/response capture-first 与 fresh execution-control chain 也未建立。`RC-P36-114` 留在 T03；必须先做一个合并的零调用可执行接入包，再另行判断 current canary admission，不能把 state stub、URL metadata wrapper 或历史 fixture 写成 current Agentic Search。
 
-当前 next：`FIN-0.1.2-S4-T05-C-MU-CURRENT-R2-FRESH-ZERO-CALL-ENTRY-AND-DEPENDENCY-DECISION`
+当前 next：`FIN-0.1.2-S5-DECISION-ONLY-HONEST-BLOCK-CANDIDATE-FREEZE-AND-FIN-0.1.3-HANDOFF`
 
 > 2026-08-05 T05-B DELL Owner acceptance：用户在看见 formal paired 结果、有限 L3 增益、9/9 WWC finding 和接受/拒绝影响后明确回复“接受”。S4-T05-B=`pass_closed_owner_accepted`，DELL current R2=true，T05-C MU entry authorized/not started；RC-P36-119、S5/release/production 边界均不变。下一项只做 MU 零调用入口与依赖决策，不直接 Search/DeepSeek。
 
@@ -44,7 +46,7 @@ FIN 0.1.1 确实做过相关能力，但成熟度必须分开：
 
 FIN 0.1.2 重排后的 S0–S3 主要解决共同 Runtime、hermetic proof、模型权限边界和冻结证据后的九件套。该重排遗漏了对 F01–F15、五个产品平面和真实 Agentic Search 的逐项 stage gate。当前 S3 明确禁止 source network 和 external tools，只能证明“证据已准备好以后”的研究判断与交付，不能证明 F05。
 
-本文件修正 S4/S5 的后续规划，不重开已关闭的 S0–S2，不扩大当前 S3-T03，不改变 FIN 0.2 定义，也不创建 FIN 0.1.3。
+本句保留为 2026-08-04 当时的规划真值。2026-08-05 T08 扩大审计以新的产品与金融事实证据 supersede “不创建 FIN 0.1.3”：0.1.2 的历史 S0–S3 不回写重开，问题由新的 0.1.3 delta stage 按最早责任层修复；FIN 0.2 定义仍不改变。
 
 ## 2. 证据等级
 
@@ -196,6 +198,7 @@ S4 固定 stop rule：每个技术层最多一个合并结构修复包和一个�
 
 | 版本 | S0 | S1 | S2 | S3 | S4 | S5 |
 | --- | --- | --- | --- | --- | --- | --- |
+| FIN 0.1.3 Repair Closeout | 继承 0.1.2 exact candidate，冻结 delta manifest、状态投影和 semantic truth oracle | 修 period/numeric/source/Graph/retrieval quality | 修 changed model contract、代表性 node quality 和 context economy | dynamic DecisionSurface、semantic Lead/Writer/Verifier、Anchor proof | current create→run→repair→review、三案 transfer、burden dogfood | 完整 RG1–RG5，签发 FIN 0.1 或 honest block |
 | FIN 0.2 Earnings Review Alpha | 继承 FIN 0.1 candidate，冻结季度/财务源/period schema | 三案两期三表、segment、guidance、同比环比 deterministic truth | Earnings commentary/market reaction/model boundary | 单一 earnings anchor 的 live evidence→workpaper→report | 多公司/季度 transfer、Workbench、Human review | Earnings RG1–RG5 release decision |
 | FIN 0.3 Review & Memory Beta | 冻结 correction/supersession/memory authority | deterministic revision、stale、refresh、replay | follow-up/correction 的模型与自动化权限 | 单 Case selective refresh / correction anchor | 多 Case memory reuse、R4、review lifecycle dogfood | Memory/refresh RG1–RG5 |
 | FIN 0.4 Cross-sector Beta | 冻结 sector ontology/pack/source policy | SaaS/Bank/Consumer/Industrial deterministic packs | 跨行业 model/skill/graph boundary | 每个新增 sector 至少一个 anchor | 跨 sector transfer、graph/numeric/judgment calibration | Cross-sector RG1–RG5 |

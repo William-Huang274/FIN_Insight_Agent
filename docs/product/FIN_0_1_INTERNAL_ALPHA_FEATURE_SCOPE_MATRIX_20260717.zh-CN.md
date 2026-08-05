@@ -6,6 +6,8 @@
 
 > **2026-07-19 implementation overlay**：本文的 `P001-F01`-`F15`、surface、acceptance 和 deferred boundary 继续有效；机器文件 v1.0 中的 `implementation_not_started` 是 2026-07-17 immutable scope-freeze 快照，不是当前实现进度。当前已实现/部分实现/阻断状态见 `FIN_0_1_STAGE_REVIEW_20260719.zh-CN.md`。当前 release 仍为 `FIN_0_1_INTERNAL_ALPHA_BLOCKED`，`production_readiness=not_admitted`。
 
+> **2026-08-05 T08 扩大审计 overlay**：本文 F01–F15 与 release gate 继续是 FIN 0.1 source of truth。FIN 0.1.2 已建立三案例 current projection、exact trace 和 bounded review，但 DELL financial duration L1、dynamic DecisionSurface/研究语义、actual repair workflow 与 RG1–RG5 仍阻断 release。用户批准 FIN 0.1.3 作为不改变本文产品范围的专项修复收口版本；FIN 0.2 Earnings Review Alpha 定义不变。阶段归属和 delta 计划见 `FIN_0_1_3_REPAIR_CLOSEOUT_SCOPE_AND_DELTA_S0_TO_S5_PLAN_20260805.zh-CN.md`。
+
 ## 1. 范围纠正
 
 FIN 0.1 不是“生成一份 P36 报告”的单功能版本。它是 PRD 中 `B0 产品壳与任务闭环 + B2 公司深度底稿 + B3 产品/竞品/供应链 bounded subset + B7 DecisionSurface/Evidence repair` 的首个内部纵向产品切片。

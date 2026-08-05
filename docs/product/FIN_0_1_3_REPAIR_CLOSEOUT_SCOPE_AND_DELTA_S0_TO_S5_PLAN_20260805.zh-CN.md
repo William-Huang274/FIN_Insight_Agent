@@ -1,0 +1,143 @@
+# FIN 0.1.3 修复收口版范围与差量 S0–S5 计划
+
+日期：2026-08-05
+状态：`accepted_planning_direction / implementation_not_started / FIN_0_2_definition_unchanged`
+
+## 1. 决策
+
+FIN 0.1.2 在 S4-T08 扩大审计中证明了完整的工程链路形状、三案例产品投影、exact review 控制和大量不可变执行证据，但同时暴露出财务真值、证据覆盖、研究语义和 current 产品闭环仍未达到 FIN 0.1 PRD 的 release 定义。
+
+因此：
+
+1. FIN 0.1.2 不继续在 T08 内展开实现修补；T08 只负责完成审计、阶段归属和 honest-block handoff。
+2. FIN 0.1.2 的 S5 只做一次 decision-only closeout：冻结候选、已知失败、成本和 rollback 边界，并明确 `release_not_qualified`；不在已知 RG2/RG3 失败时机械执行六轮发布证明。
+3. 新建 FIN 0.1.3 作为 **FIN 0.1 最后一个专项修复与正式收口候选**。FIN 0.2 仍保持 Earnings Review Alpha 的原定义，不吸收本轮欠账。
+4. FIN 0.1.3 仍使用 S0–S5 表达责任层和成熟顺序，但采用差量执行：继承 FIN 0.1.2 未受影响的 immutable evidence，只运行发生变化的阶段、依赖回归和最终 release gate。
+5. 失败必须留在最早责任阶段；不得因为 S4 暴露问题，就在 Workbench、renderer 或 T08 末端加补丁掩盖上游缺陷。
+
+## 2. 扩大审计结论
+
+### 2.1 数量
+
+按共同根因合并、避免把每个字段或页面症状重复计数后，识别出 21 个修复包：
+
+| 最早责任阶段 | 修复包数量 | 占 21 个修复包 | 核心结论 |
+| --- | ---: | ---: | --- |
+| S0 | 3 | 14% | 版本继承、持久状态、共享执行治理和金融语义测试基线不完整 |
+| S1 | 5 | 24% | 财务期间真值、数值程序、来源覆盖、Graph 和检索质量未达到产品门槛 |
+| S2 | 3 | 14% | 模型权限边界已较强，但模型合同与评测仍无法证明产品级研究能力 |
+| S3 | 5 | 24% | 三 Cell、通用 Claim/WWC、弱 Lead/Writer 和计数型 Verifier 未达到 PRD Workpaper |
+| S4 | 5 | 24% | current 产品仍是三案例投影，真实任务、执行、repair、review 和 burden 闭环不完整 |
+
+合计 S0–S3 为 16/21，约 76%；S4 为 5/21，约 24%。S5 另有 RG1–RG5 五个发布门禁尚未执行，它们是验证义务，不重复计作根因修复包。
+
+### 2.2 关键判断
+
+- S4 不是大多数问题的根因层；S4 首次把前面阶段接成可见产品，因而集中暴露了早期缺口。
+- DELL 的 `USD 23.931B` 被标为 FY2025 全年营收，实际是 FY2025 Q4 营收；现有 72 项相关合同测试仍全绿，证明当前测试主要覆盖 identity/cardinality/digest，而不是财务 duration 真值。
+- 三案例均能形成 15 Evidence、3 Numeric、3 Cell、6 Claim、9 WWC 和 9 Artifacts，但 Claim/WWC/gap 高度通用，Graph 为 typed empty，报告主要是结构投影而非公司专属研究备忘录。
+- current Workbench 已能只读展示、exact return/replay 和 authenticated NVDA review，但它还不是从新建 Case 到实际 repair 再到重新验收的完整 current workflow。
+- T07-C 本地私有 SQLite 已存在一次 `accept_exact_version`，`qualified_human_review=true`、`bounded_NVDA_R3=true`、`release_qualified=false`；该状态尚未持久投影到 Project OS，属于 S0 状态一致性欠账，不推翻本地真实动作。
+
+## 3. 21 个修复包的阶段归属
+
+### S0：继承、状态与测试真值基线
+
+| ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |
+| --- | --- | --- | --- |
+| `013-S0-01` | 建立 FIN 0.1.2→0.1.3 delta inheritance manifest；同步 T07-C 本地真实决定、Project OS、产品版本、S-stage、合同版本和 attempt 状态 | F04/F12/F15 | 同一 current truth 在 repo ledger、private store projection 和 UI 中不矛盾；不保存 credential |
+| `013-S0-02` | 收口 shared Runtime admission ledger `RC-P36-115` 与 historical proof replay/mutable-SHA debt `RC-P36-128` | F04/F13/F15 | exact-once、replay denial、历史证据不可变和 current successor 回归共同通过 |
+| `013-S0-03` | 建立金融语义 truth-oracle 测试分类，区分 shape/integrity、financial truth、analysis quality、product usability | F07/F08/F15 | 任何季度/全年、entity、unit、scale、formula 错配均能在 S1/S3 前失败；不得再以 72 个 shape test 代替金融正确性 |
+
+### S1：数据、检索、Numeric 与 Graph 真值链
+
+| ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |
+| --- | --- | --- | --- |
+| `013-S1-01` | 修复 DELL annual/quarter duration 与 `source_filed_at`/`as_of_date` 语义；从最早错误 mart/staging artifact 修复，不在 renderer 改数 | F05/F07/F13 | DELL/MU/NVDA annual、quarter、YTD、filing date 真值 fixture 全部通过；0 known material period mismatch |
+| `013-S1-02` | 扩展 material Numeric 程序、公式和重算覆盖，避免每案只有三条 consolidated number 就宣称 F07 完成 | F07/F08 | 所有进入核心 Claim/表格的 material number 均绑定 entity/period/duration/unit/scale/source/formula 或 typed gap |
+| `013-S1-03` | 补齐 official IR、SEC、PDF/redirect/parser fallback 和 source exhaustion 的 current 证明 | F05/F06/F09/F13 | 每个 required EvidenceSlot 有 accepted evidence 或 attempt-backed typed gap；request/response capture-first，零 false promotion |
+| `013-S1-04` | 让 relationship/Product Graph 至少在有权威关系证据时形成 approved edge；无证据时继续 typed empty | F05/F06/F08/F13 | 正向 edge、无证据空态、跨案污染、无日期候选和错误实体 mutation 均通过 |
+| `013-S1-05` | 建立 retrieval/evidence usefulness eval，而不是只数 accepted rows；覆盖 candidate ceiling、required-slot recall、来源多样性、证据利用率和冲突证据 | F05/F06/F08 | 预注册 gold slot/negative set；已知可达证据必须进入候选，失败必须归因到 router/parser/ranker 或外部 gap |
+
+### S2：模型表面、合同与代表性评测
+
+| ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |
+| --- | --- | --- | --- |
+| `013-S2-01` | 保留 alias/enum/local truth ownership，同时允许模型输出公司专属机制原子，禁止合同把所有结果压成通用句式 | F08/F10 | prompt/schema/validator/fake/selector 同源；公司专属语义可表达，数字/日期/identity 权限不回退 |
+| `013-S2-02` | 将模型评测从 MU 三 family 小 canary 扩展到代表性的 evidence→Claim→Lead synthesis node；区分模型能力、合同限制和上下文缺陷 | F08/F10/F11 | changed family/node 的自然输出通过预注册 rubric；不以一个全局模型 winner 覆盖所有 family |
+| `013-S2-03` | 收敛 55k–58k input 对约 3k output 的低产出上下文结构，去重 role view，保留必要反证和 lineage | F04/F08/F15 | node-level 信息利用率、容量、成本和质量同时满足预算；不得通过隐藏证据获得绿色容量 |
+
+### S3：研究计划、判断、Lead、Writer 与 Verifier
+
+| ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |
+| --- | --- | --- | --- |
+| `013-S3-01` | 把 current exact product 从固定三 Cell 升级为动态 DecisionSurface；Anchor 覆盖 10–20 Cell、目标 12–16 和六个必选 family | F03/F08 | reviewer 可审阅/裁剪计划；每 Cell 有问题、owner、slot、stop rule 和 WWC，不硬编码标题 |
+| `013-S3-02` | 修复通用 Claim、重复 gap、9/9 通用 WWC；形成公司专属机制、证据边界和可观测触发条件 | F08/F10 | 每个核心 Claim 包含本案对象、机制、证据/数字或 gap；WWC 有指标、方向、时间/阈值和下一证据路线 |
+| `013-S3-03` | 让 dependency、conflict 和 gap 成为真正的跨 Cell 综合，而不是复述 supported/cannot infer 状态 | F08/F10 | Lead 对冲突给出 resolve/defer/block 理由；gap 有影响、优先级、owner 和 stop condition |
+| `013-S3-04` | 提升 Workpaper/Writer 的产品、财务、客户/供应链、竞争、资本/price-in、估值边界、风险和 counter-thesis 内容 | F08/F11 | 报告能回答“结论、为什么、反方、缺什么、什么会改变”，不是六个 atom 的排版投影 |
+| `013-S3-05` | 重做 Verifier/paired rubric：完整性 gate 与研究质量 rubric 分离，加入财务期间真值、因果链、证据使用和行动价值 | F07/F08/F10/F11/F15 | DELL period 错误必须 L1 fail；通用 Claim/WWC 不得仅凭数量获得 L3/L4 pass |
+
+### S4：current 产品工作流与真实 dogfood
+
+| ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |
+| --- | --- | --- | --- |
+| `013-S4-01` | 把 current 三案例只读 projection 接回真实 Task Center/Case create/search/open、Objective 和 Plan 编辑 | F01/F02/F03 | 用户不编辑 JSON 即可创建、恢复和审阅 current Case；legacy/fixture 不冒充 current |
+| `013-S4-02` | 将 current exact execution 与 cancel/resume/checkpoint/typed stop 连接；现有 legacy/fixture primitive 只作复用资产 | F04/F15 | 至少一次 current 中断恢复和局部 retry/stop 可回放，exact attempt 与 artifact lineage 不漂移 |
+| `013-S4-03` | 把 `return_for_repair` 从 append-only 请求推进到实际 source/numeric/domain repair、重建、diff 和 closeout | F06/F09/F12/F13 | 至少一条真实 targeted repair 被执行并关闭，或以 attempt-backed stop 终止；Writer 不补源 |
+| `013-S4-04` | 将 authenticated exact review 从 NVDA 单案扩展为三案一致流程，并把真实决定安全投影进 Project OS | F10/F12/F15 | 三案 review target/version/hash 一致；credential 不入 Git/telemetry；accept 不等于 release |
+| `013-S4-05` | 真实测量 task completion、review burden、编辑量、失败理解和继续使用意愿 | F01/F12/F15 | 有预注册任务、计时、review edits、repair 次数和用户结论；不再用测试数代替用户价值 |
+
+## 4. F01–F15 当前校正
+
+| Feature | 当前诚实状态 | 最早主要修复阶段 |
+| --- | --- | --- |
+| F01 Dashboard / Task Center | legacy 能力存在；current 主要是固定三案例入口，未证明新建到完成 | S4 |
+| F02 ResearchCase / Objective | typed Case/identity 可编译；current UI 与真实 live chain 未完整绑定 | S4 |
+| F03 Plan / DecisionSurface | 三 Cell bounded product 可运行；不满足 10–20 Cell 和六 family | S3 |
+| F04 Durable execution | exact-once/capture/terminal 很强；current 产品 cancel/resume/repair execution 未闭环 | S0/S4 |
+| F05 Agentic Search | SEC/local BM25/SQL canary 成立；IR/Graph/market/多路覆盖和质量 eval 不完整 | S1 |
+| F06 Evidence Workbench | current evidence 可读、可退回；真实 evidence repair 未执行 | S1/S4 |
+| F07 Numeric / Fact audit | UI 和 lineage 存在；DELL duration L1 失败，material coverage 不足 | S1 |
+| F08 Workpaper / Domain Judgment | 结构存在；内容通用、三 Cell、弱综合，不满足 PRD 深研 | S3 |
+| F09 Gap / Repair Queue | typed request/replay 成立；actual repair loop 未成立 | S4 |
+| F10 Lead Review / Writer Admission | 合同和 Artifact 存在；Lead semantic adjudication 偏弱 | S3 |
+| F11 Internal Deliverable | renderer/preview/trace 工程可用；研究内容和产品可用性不足 | S3/S4 |
+| F12 Human Review | bounded authenticated NVDA action 本地成立；三案与 durable projection 不完整 | S4 |
+| F13 Provenance / Trace | 工程强项；错误上游事实仍可被完整追踪到错误结果 | S0/S1 |
+| F14 Same-Case explanation | bounded demo/nonblocking；不作为 0.1.3 release blocker | S4 optional |
+| F15 Quality / Release Feedback | quality surface 存在；RG1–RG5 和 honest release decision 未完成 | S5 |
+
+## 5. FIN 0.1.3 差量执行规则
+
+1. 每阶段先读取 inheritance manifest；若该阶段没有 changed contract、root cause 或下游依赖，可记为 `inherited_pass_no_execution`，不重复历史 authority/proof。
+2. 已知问题直接进入修复和 deterministic regression，不重复“发现问题→单独处置→单独签权”的多轮流程。
+3. 每个共同根因 family 最多一个合并实现包；同一根因的多个症状不得拆成无限 R 编号。
+4. S0/S1 先于 S2/S3；truth ceiling 未通过时禁止模型或 full-chain 用于发现已知数据问题。
+5. changed model contract 先做 node-level natural canary；三案例 full-chain 只在全部 deterministic gate 通过后执行一次正式候选证明。
+6. FIN 0.1.2 exact runs 保持 immutable，可作为回归 anchor；修复导致 input/data/contract digest 改变后，旧 R2/R3 不能自动继承为新 candidate 的产品通过。
+7. 新 L1 留在所属阶段修；不因为失败自动创建 FIN 0.1.4。只有 0.1.3 完整终止或产品范围再次实质变化，才讨论新版本。
+8. S5 RG1–RG5 不采用差量跳过：只有最终 candidate 才执行一次完整 release qualification。
+
+## 6. 0.1.3 S0–S5 最小程序
+
+| Stage | 只做什么 | 明确不做什么 |
+| --- | --- | --- |
+| S0 | delta manifest、Project OS/private projection 对齐、shared admission/replay、truth-oracle test taxonomy | 不重跑未变化的全部 hermetic 历史包 |
+| S1 | period/numeric/source/Graph/retrieval quality 修复与扩展 fixture | 不调用模型，不做报告润色 |
+| S2 | changed contract、代表性 node canary、context economy | 不做三案例 full-chain，不重新比较所有模型 |
+| S3 | dynamic DecisionSurface、semantic Lead/Writer/Verifier、一个 Anchor product proof | 不做 Workbench repair/UI 扩展 |
+| S4 | current create→run→repair→review dogfood、三案 transfer、burden measurement | 不回修 S1/S3 缺陷，不新增 release feature |
+| S5 | 一次 RG1–RG5、rollback、成本、安全和 release/honest-block | 不在 gate 中临时补丁或自动重跑 |
+
+## 7. 版本边界
+
+- FIN 0.1.3 是 FIN 0.1 Internal Alpha 的修复收口版本，不改变 FIN 0.1 的产品范围。
+- FIN 0.2 继续是 Earnings Review Alpha；季度财报 workflow 的新增产品能力不能提前塞入 0.1.3。
+- SaaS/Bank 只作为 universal archetype、period/metric policy 和 gap boundary 的结构回归；不在 0.1.3 建全行业 Sector Pack。
+- 20-F、多币种和 PDF/redirect 可以作为 deterministic/adversarial portability fixture，不自动扩大正式三案例产品验收范围。
+
+## 8. 下一步
+
+1. 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。
+2. 完成一个 FIN 0.1.2 S5 decision-only honest-block/freeze 包。
+3. 从 FIN 0.1.3 S0 delta baseline 开始，先处理 `013-S0-01..03`，随后进入 S1 财务真值链。

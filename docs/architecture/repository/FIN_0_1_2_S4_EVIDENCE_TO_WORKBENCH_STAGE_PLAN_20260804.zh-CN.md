@@ -280,3 +280,13 @@ T03 current Search terminal、8 份 source/raw capture 与 T04 Evidence Pack 均
 独立只读物化重新核对全部 capture digest、NVDA identity、input/current Evidence lineage 和三条 exact Numeric，L1 通过；Agent 形成 `6 Claims / 9 WWC / 1 dependency / 2 conflicts / 4 gaps`。raw report 仍包含内部 scope/period token、重复 USD 和英文 limitation，它们归零调用 L4 renderer，不触发 paid rerun。
 
 当前 post-transfer NVDA R2 仍=false，下一项仅为 `FIN-0.1.2-S4-T05-D-NVDA-VERIFIED-PRODUCT-SURFACE-AND-PAIRED-READINESS-ZERO-CALL`。formal pair、Owner acceptance、Human Review/R3、S5、release 与 production 均未执行。
+
+## 27. S4-T05-D NVDA verified product surface 与 paired readiness
+
+immutable exact result=`200907cf…bbc4` 经现有 DELL/MU/NVDA 通用 renderer 零调用形成 final preview=`092e0f59…9fab`，内部 scope/period token、重复币种和英文 limitation 均清零；local Verifier=`57bc4849…8aed` 与 preview、source report、judgment 和 NVDA identity 绑定，三 Cell Evidence/authority coverage=`3/3`。
+
+不同 execution identity/Artifacts 的 deterministic authority-inventory baseline=`891e00a5…45df` 与 Agent 使用相同 input/head；paired readiness=`a825f345…56ea / ready_for_formal_paired_assessment`。三案 renderer、跨案、legacy lineage、Numeric、preview/verifier、pair mutation 与 current Evidence 回归=`45 passed`，新增 model/provider/network/source/exact rerun=`0`。
+
+首轮共享回归暴露测试误用 DELL/MU runtime overlay；没有给 NVDA legacy Artifact 补假字段。进一步审计关闭 RC-P36-124：通用产品表面在处理三案前重算 input canonical digest，防止 body 已变但声明 digest 未更新；正常三案输出不漂移，NVDA legacy lineage stale-digest mutation 在渲染前 fail closed。
+
+当前 T05-D final delivery 与 paired readiness=pass，但 formal paired、Owner acceptance 和 post-transfer NVDA R2 仍未成立。下一项为 `FIN-0.1.2-S4-T05-D-NVDA-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION`；RC-P36-119 后传 T08–T10/S5，RC-P36-122 保持 MU-specific，RC-P36-115 继续阻断 S5/release。

@@ -3,6 +3,9 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-D post-transfer NVDA final delivery L4 与 paired readiness 已零调用通过，formal pair/Owner 待续行（current，2026-08-05）**：immutable exact SHA=`200907cf…bbc4` 经三案通用 renderer 形成 final preview=`092e0f59…9fab`，内部 scope/period token、重复币种和英文 limitation 清零；local Verifier=`57bc4849…8aed`，三 Cell Evidence/authority=`3/3`。同 input/head、不同 Run/Artifact 的 deterministic baseline=`891e00a5…45df`，paired readiness=`a825f345…56ea`。三案 renderer、跨案、legacy lineage、Numeric、preview/verifier 与 pair mutation=`45 passed`，model/provider/network/source/exact rerun=`0`。审计补强关闭 RC-P36-124：产品表面现在重算完整 input digest，stale-digest lineage mutation 在渲染前 fail closed。formal paired/Owner 未执行，post-transfer NVDA R2=false。current next=`FIN-0.1.2-S4-T05-D-NVDA-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION`。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-D post-transfer NVDA 唯一 Agent exact-live 已成功，独立 L1 通过，产品表面待零调用物化（current，2026-08-05）**：execution=`fin012-s4-t05d-nvda-post-transfer-agent-exact-live-r1` 完成 `9 Provider calls / 3 local Fact receipts / 9 captures / 9 Artifacts`，全部 stop/attempt=1，input/output=`55,060/3,148`，cost=`USD 0.02668987`，retry/第二次 live=`0/0`。result SHA=`200907cf…bbc4`，terminal=`bc7a78a7…eb93`；独立回读确认 NVDA identity、input/current Evidence lineage、三条 exact Numeric 和 capture-first 内容寻址全部通过，Agent=`6 Claims / 9 WWC / 1 dependency / 2 conflicts / 4 gaps`。raw report 的内部 scope/period token、重复币种和英文 limitation 是已知零调用 L4 renderer finding，不是模型 L1。post-transfer NVDA R2 仍=false。current next=`FIN-0.1.2-S4-T05-D-NVDA-VERIFIED-PRODUCT-SURFACE-AND-PAIRED-READINESS-ZERO-CALL`；不得第二次 live。
 >
 > [!IMPORTANT]

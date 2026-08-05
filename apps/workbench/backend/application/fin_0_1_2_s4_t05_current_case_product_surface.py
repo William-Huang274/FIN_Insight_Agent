@@ -75,6 +75,13 @@ def _validate_source_case_binding(
         and input_digest != "",
         "s4_t05_product_surface_case_or_input_identity_mismatch",
     )
+    input_body = {
+        key: value for key, value in input_pack.items() if key != "input_digest"
+    }
+    _require(
+        canonical_digest(input_body) == input_digest,
+        "s4_t05_product_surface_input_digest_mismatch",
+    )
     for payload in artifacts.values():
         if "input_digest" in payload:
             _require(

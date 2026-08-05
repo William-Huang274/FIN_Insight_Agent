@@ -22,14 +22,14 @@ from apps.workbench.backend.application.fin_0_1_2_s4_t05_current_case_product_su
 from apps.workbench.backend.application.fin_0_1_2_s3_t04_product_surface import (  # noqa: E402
     S3T04ProductSurfaceError,
 )
-from scripts.releases.materialize_fin_ia_0_1_2_s4_t05_b_dell_verified_product_surface_and_paired_readiness import (  # noqa: E402
+from scripts.releases.materialize_fin_ia_0_1_2_s4_t05_d_nvda_verified_product_surface_and_paired_readiness import (  # noqa: E402
     BASELINE_RESULT,
     DEFAULT_OUTPUT,
     EXACT_RESULT,
-    EXPECTED_EXACT_RESULT_SHA256,
+    EXPECTED_RESULT_SHA256,
     materialize,
 )
-from scripts.releases.run_fin_ia_0_1_2_s4_t05_b_dell_agent_exact_live import (  # noqa: E402
+from scripts.releases.materialize_fin_ia_0_1_2_s4_t05_d_nvda_agent_exact_live_result_and_assessment import (  # noqa: E402
     AGENT_INPUT,
 )
 from sec_agent.canonical_runtime.models import canonical_digest  # noqa: E402
@@ -39,40 +39,25 @@ def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _replace_case(value, case_ticker: str):
-    if isinstance(value, str):
-        return value.replace("DELL", case_ticker).replace(
-            "dell", case_ticker.lower()
-        )
-    if isinstance(value, list):
-        return [_replace_case(row, case_ticker) for row in value]
-    if isinstance(value, dict):
-        return {
-            key: _replace_case(row, case_ticker) for key, row in value.items()
-        }
-    return deepcopy(value)
-
-
-def test_dell_surface_closes_L4_and_materializes_paired_readiness() -> None:
+def test_nvda_surface_materializes_without_rerunning_exact_live() -> None:
     before = hashlib.sha256(EXACT_RESULT.read_bytes()).hexdigest()
     baseline, record = materialize()
     assert record == _load(DEFAULT_OUTPUT)
     assert baseline == _load(BASELINE_RESULT)
-    assert before == EXPECTED_EXACT_RESULT_SHA256
+    assert before == EXPECTED_RESULT_SHA256
     assert hashlib.sha256(EXACT_RESULT.read_bytes()).hexdigest() == before
-    assert record["status"].startswith("RC_P36_120_zero_call_closed")
     assert record["paired_readiness"]["status"] == (
         "ready_for_formal_paired_assessment"
     )
-    assert record["acceptance_boundary"]["DELL_current_R2"] is False
+    assert record["acceptance_boundary"]["post_transfer_NVDA_R2"] is False
     assert record["observed_counts"]["new_model_calls"] == 0
     assert record["observed_counts"]["exact_live_reruns"] == 0
 
 
-def test_dell_preview_is_normalized_localized_and_digest_bound() -> None:
+def test_nvda_preview_is_normalized_localized_and_digest_bound() -> None:
     record = _load(DEFAULT_OUTPUT)
     surface = validate_current_case_verified_product_surface(
-        record["product_surface"], expected_case_ticker="DELL"
+        record["product_surface"], expected_case_ticker="NVDA"
     )
     preview = surface["final_delivery_preview"]
     verifier = surface["final_delivery_verification"]
@@ -84,37 +69,17 @@ def test_dell_preview_is_normalized_localized_and_digest_bound() -> None:
         row.startswith("Issuer disclosure")
         for row in preview["limitations_zh_cn"]
     )
-    assert preview["case_ticker"] == "DELL"
-    assert verifier["bound_case_ticker"] == "DELL"
+    assert preview["case_ticker"] == "NVDA"
+    assert verifier["bound_case_ticker"] == "NVDA"
     assert verifier["final_delivery_preview_digest"] == preview[
         "final_delivery_preview_digest"
     ]
     assert surface["fixture_evidence_qualification"][
+        "qualified_evidence_cells"
+    ] == 3
+    assert surface["fixture_evidence_qualification"][
         "qualified_authority_cells"
     ] == 3
-
-
-@pytest.mark.parametrize("case_ticker", ["DELL", "MU", "NVDA"])
-def test_closed_three_case_fixture_uses_the_same_renderer(case_ticker: str) -> None:
-    exact = _replace_case(_load(EXACT_RESULT), case_ticker)
-    input_pack = _replace_case(_load(AGENT_INPUT), case_ticker)
-    input_pack["input_digest"] = canonical_digest(
-        {key: value for key, value in input_pack.items() if key != "input_digest"}
-    )
-    for artifact in exact["artifacts"]:
-        payload = artifact["payload"]
-        if "input_digest" in payload:
-            payload["input_digest"] = input_pack["input_digest"]
-    surface = materialize_current_case_verified_product_surface(
-        execution_result=exact,
-        input_pack=input_pack,
-        expected_case_ticker=case_ticker,
-    )
-    assert surface["case_ticker"] == case_ticker
-    assert surface["final_delivery_preview"]["case_ticker"] == case_ticker
-    assert surface["final_delivery_verification"]["checks"][
-        "case_identity"
-    ] == f"pass_{case_ticker}"
 
 
 @pytest.mark.parametrize(
@@ -125,10 +90,10 @@ def test_closed_three_case_fixture_uses_the_same_renderer(case_ticker: str) -> N
         ("workpaper_case", "artifact_case_identity_mismatch"),
         ("numeric_case", "numeric_case_identity_mismatch"),
         ("artifact_input_digest", "artifact_input_digest_mismatch"),
-        ("runtime_case", "runtime_case_identity_mismatch"),
+        ("legacy_lineage", "input_digest_mismatch"),
     ],
 )
-def test_cross_case_and_lineage_mutations_fail_closed(
+def test_nvda_cross_case_and_lineage_mutations_fail_closed(
     mutation: str, error: str
 ) -> None:
     exact = _load(EXACT_RESULT)
@@ -139,33 +104,31 @@ def test_cross_case_and_lineage_mutations_fail_closed(
     elif mutation == "manifest_case":
         artifacts["bounded_agent_manifest"]["case_ticker"] = "MU"
     elif mutation == "workpaper_case":
-        artifacts["bounded_agent_workpaper"]["entity_label"] = "NVDA"
+        artifacts["bounded_agent_workpaper"]["entity_label"] = "MU"
     elif mutation == "numeric_case":
         artifacts["bounded_agent_numeric"]["case_numeric_authority_projections"][
             1
         ]["rows"][0]["entity_ref"] = "MU"
     elif mutation == "artifact_input_digest":
         artifacts["bounded_agent_evidence"]["input_digest"] = "mutated"
-    elif mutation == "runtime_case":
-        artifacts["bounded_agent_report"]["s4_case_runtime"][
-            "case_ticker"
-        ] = "MU"
+    elif mutation == "legacy_lineage":
+        input_pack["lineage"]["T04_financial_pack"]["digest"] = "0" * 64
     with pytest.raises(S4T05CurrentCaseProductSurfaceError, match=error):
         materialize_current_case_verified_product_surface(
             execution_result=exact,
             input_pack=input_pack,
-            expected_case_ticker="DELL",
+            expected_case_ticker="NVDA",
         )
 
 
-def test_preview_and_verifier_mutations_break_binding() -> None:
+def test_nvda_preview_and_verifier_mutations_break_binding() -> None:
     surface = deepcopy(_load(DEFAULT_OUTPUT)["product_surface"])
     surface["final_delivery_preview"]["sections"][0]["claims"][0][
         "rendered_text_zh_cn"
     ] += "突变"
     with pytest.raises(S3T04ProductSurfaceError, match="result_digest_mismatch"):
         validate_current_case_verified_product_surface(
-            surface, expected_case_ticker="DELL"
+            surface, expected_case_ticker="NVDA"
         )
 
     surface = deepcopy(_load(DEFAULT_OUTPUT)["product_surface"])
@@ -183,11 +146,11 @@ def test_preview_and_verifier_mutations_break_binding() -> None:
     )
     with pytest.raises(S3T04ProductSurfaceError, match="preview_digest_mismatch"):
         validate_current_case_verified_product_surface(
-            surface, expected_case_ticker="DELL"
+            surface, expected_case_ticker="NVDA"
         )
 
 
-def test_pair_mutation_cannot_become_ready() -> None:
+def test_nvda_pair_mutation_cannot_become_ready() -> None:
     baseline, record = materialize()
     changed = deepcopy(baseline)
     changed["input_head_digest"] = "mutated"
@@ -201,5 +164,5 @@ def test_pair_mutation_cannot_become_ready() -> None:
             exact_result=_load(EXACT_RESULT),
             baseline_result=changed,
             surface_result=record["product_surface"],
-            expected_case_ticker="DELL",
+            expected_case_ticker="NVDA",
         )

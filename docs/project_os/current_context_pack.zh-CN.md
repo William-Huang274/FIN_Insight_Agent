@@ -3,6 +3,9 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-B DELL final-delivery L4 与 paired readiness 已零调用通过，formal paired/Owner 待续行（current，2026-08-05）**：T04 renderer 核心已以受控后继泛化为 DELL/MU/NVDA closed profile，冻结 NVDA 输出字节不漂移。DELL immutable replay 清零内部 scope/period token、重复币种和英文 limitation，三 Cell Evidence/authority=`3/3`；preview=`46e4766d…291c`，case=`pass_DELL`，并与 local Verifier/source report/judgment 内容寻址绑定。派生利润率只允许同 Cell 已验证 Numeric projection。三案、cross-case、lineage、Numeric、preview/verifier、pair mutation focused=`17 passed`；model/Provider/network/source/exact rerun=`0`。RC-P36-120 closed，paired readiness=pass；formal paired/Owner 尚未执行，DELL R2=false，T05-C blocked。current next=`FIN-0.1.2-S4-T05-B-DELL-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION`；RC-P36-119 仍后传 T08–T10/S5。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-B DELL Agent exact-live 已成功且独立 L1 通过，但产品 L4 被本地交付表面阻断（current，2026-08-05）**：唯一 admission 已消费；DeepSeek `deepseek-v4-pro` 完成 `9 calls / 3 local Fact receipts / 9 captures / 9 Artifacts`，9 次均 stop、attempt=1，input/output=`57,739/3,323`，cost=`USD 0.02800749`，retry/第二次 live=`0/0`。terminal=`b22f6faa…b5a6`，exact result SHA=`b4edc092…dd32`，capture/usage/DELL identity/current Evidence lineage/三条 exact Numeric 独立回算通过；L1/L2=pass，L3 保留 RC-P36-119。最终中文报告仍暴露内部 scope/period token、重复 USD、英文 limitation，且 Verifier 未绑定 final preview；登记 RC-P36-120，根因是 T04 renderer/preview-binding 仍为 NVDA 专用，未泛化到 DELL，不是模型/Provider 故障。exact-live 成功不等于 DELL R2；paired/Owner 未执行，DELL R2=false。current next=`FIN-0.1.2-S4-T05-B-DELL-FINAL-DELIVERY-GENERIC-CURRENT-CASE-RENDERER-PREVIEW-BINDING-AND-PAIRED-READINESS-ZERO-CALL-DISPOSITION`；禁止第二次 DELL live。
 >
 > [!IMPORTANT]

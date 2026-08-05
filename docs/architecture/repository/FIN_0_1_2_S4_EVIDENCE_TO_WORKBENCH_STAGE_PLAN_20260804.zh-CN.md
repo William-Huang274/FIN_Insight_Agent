@@ -182,3 +182,11 @@ current Agent 合同按 transport-v9 / Lead-v8 编译，正式形态为 `9 Provi
 唯一 exact-live 已成功：`deepseek-v4-pro` 9 次调用全部 stop，`3 local Fact receipts / 9 captures / 9 Artifacts`；input/output=`57,739/3,323`，cost=`USD 0.02800749`，retry/第二次 live=`0/0`。capture-first readback、DELL/current input/Evidence lineage、三条 exact Numeric 与 Artifact topology 独立 L1 全部通过。三个 Cell authority coverage 通过；6 Claims、9 WWC、3 dependencies、3 conflicts、3 gaps 已形成，WWC 泛化措辞继续后传 RC-P36-119。
 
 产品 L4 未通过：raw report 仍含内部 scope/period token、重复货币单位和英文 limitation，machine Verifier 未绑定最终本地 preview。T04 的 RC-P36-118 修复只消费 NVDA surface，未成为三案例 case-generic renderer；登记 RC-P36-120，留在 T05-B 做一次零调用泛化、mutation 与 paired readiness，不重跑 DeepSeek。DELL R2、paired、Owner 和 T05-C 仍 blocked。
+
+## 15. S4-T05-B DELL current-case 交付表面与 paired readiness
+
+RC-P36-120 已在零模型条件下关闭。既有 T04 公共入口和冻结 NVDA 输出保持不变；T05 受控后继把同一 renderer 核心限定为 DELL/MU/NVDA closed profile，并同时校验 input/manifest/Artifact/runtime/Numeric/report/preview/verifier 的 current-case identity。DELL 的派生毛利率与营业利润率只在“同 Cell 且已进入已验证 Numeric projection”时可被 WWC 引用，没有放宽 unknown、cross-cell 或 cross-case authority。
+
+DELL immutable exact result 重渲染后，内部 scope/period token、重复币种和未本地化 limitation 均为 0，三 Cell Evidence/authority coverage=`3/3`；preview digest=`46e4766d…291c`，与本地 Verifier、source report 和 source judgment 内容寻址绑定。DELL/MU/NVDA 同一 renderer fixture、跨案/lineage/Numeric/preview/pair mutation 与冻结 NVDA 不漂移 focused=`17 passed`；model/Provider/network/source/exact rerun=`0`。
+
+同 input digest/head 的独立 deterministic authority-inventory baseline 已形成，与 Agent Run/Artifacts 区分，paired readiness=pass；但 formal paired assessment 和 Owner decision 尚未执行，故 DELL current R2=false，T05-C 仍 blocked。下一项为 `FIN-0.1.2-S4-T05-B-DELL-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION`。RC-P36-119 继续后传 T08–T10/S5，不重开本轮。

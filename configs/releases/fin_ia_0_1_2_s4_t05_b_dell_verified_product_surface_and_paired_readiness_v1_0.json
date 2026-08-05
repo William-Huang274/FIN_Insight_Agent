@@ -1,0 +1,585 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_b_dell_verified_product_surface_and_paired_readiness_v1_0",
+  "recorded_at": "2026-08-05T14:20:00+08:00",
+  "status": "RC_P36_120_zero_call_closed_L4_pass_paired_readiness_pass_formal_paired_and_owner_pending",
+  "source_exact_result": {
+    "ref": ".codex_runtime/fin012-s4-t05b-dell-agent-exact-live-r1/execution-result.json",
+    "sha256": "b4edc0927e958b812c5e5dd04d982defa97e64255d24e3a569e5311b78f5dd32",
+    "terminal_object_digest": "b22f6faac7149ff7b9b437b8f1e1d2e82ce3c81b497e95f2fa97f2feba01b5a6",
+    "immutable": true
+  },
+  "source_independent_assessment": {
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_agent_exact_live_result_and_independent_assessment_v1_0.json",
+    "sha256": "dc72d8e6c1decc8cf6bb8dbe5942361894730972e260153c489d117746bb01f8",
+    "result_digest": "3a5c99a8e900ad4ae49503602de0bf3fe486947a627927fe9e73e995abb01e39"
+  },
+  "product_surface": {
+    "schema_version": "fin_ia_0_1_2_s4_t05_current_case_product_surface_result_v1_0",
+    "case_ticker": "DELL",
+    "status": "delivery_and_fixture_qualification_pass",
+    "immutable_exact_result_preserved": true,
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_network_calls": 0,
+    "final_delivery_preview": {
+      "contract_ref": "fin_0_1_2.s4_t05.current_case_verified_final_delivery_surface:v1",
+      "case_ticker": "DELL",
+      "source_input_digest": "8b00e023197e935b7cbb25d9d50bac9e2e859441d6e34405e6649ac8b6ba5bae",
+      "source_report_digest": "e75a9e612357b5b9d05a4ea9f817fb69339640123a9516d9ad823b1761cf7856",
+      "source_judgment_digest": "fb584adf475890823de6ccd4072dbd0c916b242f56a596e85426464f2c2a2621",
+      "title_zh_cn": "DELL 三单元内部研究备忘录",
+      "executive_summary_zh_cn": "需求真实性及可持续性单元：当前证据方向支持该判断，但仅限于发行人披露的特定期间和定位，因果及前瞻性结论仍属分析师判断。；需求真实性及可持续性单元：现有证据不足以支持该判断，存在证据缺口，需进一步验证。；价值与利润捕获单元：当前证据不足以支持该判断，需补充更多事实依据。；DELL 公司整体 FY2025 毛利润 reported_exact USD 21,250,000,000；DELL 公司整体 FY2025 营收 reported_exact USD 23,931,000,000；本地绑定数值事实仅支持上述财务指标，不足以单独证明该判断的因果机制。；瓶颈反证与条件变化单元：反证机制削弱了当前判断，但仅限于发行人披露的特定期间和定位。；瓶颈反证与条件变化单元：经济机制形成混合证据，当前判断存在不确定性。",
+      "sections": [
+        {
+          "program_cell_id": "demand_authenticity_and_sustainability",
+          "decision_question": "Are DELL infrastructure and server demand signals company-specific, convertible into recognized revenue, and durable rather than pull-forward or channel accumulation?",
+          "claims": [
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "demand_authenticity_and_sustainability:local_claim:001",
+                "program_cell_id": "demand_authenticity_and_sustainability"
+              },
+              "epistemic_status": "fact_supported",
+              "rendered_text_zh_cn": "需求真实性及可持续性单元：当前证据方向支持该判断，但仅限于发行人披露的特定期间和定位，因果及前瞻性结论仍属分析师判断。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [
+                "current_evidence:s4_t03_candidate_a4d458bcae20aefe54f3f248",
+                "current_evidence:s4_t03_candidate_4f3d30f8fda11b006c909f83"
+              ],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "c53bc337cf7c04cf41968173f9719ffd087a0b342b8d9e41aad4417c60351395",
+              "qualification_preserved": true
+            },
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "demand_authenticity_and_sustainability:local_claim:002",
+                "program_cell_id": "demand_authenticity_and_sustainability"
+              },
+              "epistemic_status": "cannot_infer",
+              "rendered_text_zh_cn": "需求真实性及可持续性单元：现有证据不足以支持该判断，存在证据缺口，需进一步验证。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "2caddbd5469c5721aa19a8b0e9df0c2415c361dff18f2c1aa710d9a3341a037d",
+              "qualification_preserved": true
+            }
+          ],
+          "what_would_change": [
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_4f3d30f8fda11b006c909f83",
+                "current_evidence:s4_t03_candidate_6b78d6573efe8e6128651ada",
+                "current_evidence:s4_t03_candidate_7b5a20f840861d531c3b2ffc",
+                "current_evidence:s4_t03_candidate_a4d458bcae20aefe54f3f248",
+                "current_evidence:s4_t03_candidate_b16b0aac189621c291fcb16d",
+                "current_evidence:s4_t03_candidate_f81eb985a34b9121a51599f0"
+              ],
+              "claim_id": "demand_authenticity_and_sustainability:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源出现相反证据",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_demand_or_order_signal",
+              "source_target": {
+                "document_event_or_dataset": "issuer_demand_or_order_signal",
+                "entity_or_owner": "DELL",
+                "source_type": "Evidence"
+              },
+              "task_id": "demand_authenticity_and_sustainability:what_would_change:001",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "next authority event",
+                "start_or_trigger": "when bound rule condition is met"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_4f3d30f8fda11b006c909f83",
+                "current_evidence:s4_t03_candidate_6b78d6573efe8e6128651ada",
+                "current_evidence:s4_t03_candidate_7b5a20f840861d531c3b2ffc",
+                "current_evidence:s4_t03_candidate_a4d458bcae20aefe54f3f248",
+                "current_evidence:s4_t03_candidate_b16b0aac189621c291fcb16d",
+                "current_evidence:s4_t03_candidate_f81eb985a34b9121a51599f0"
+              ],
+              "claim_id": "demand_authenticity_and_sustainability:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察支持当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "strengthen the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_demand_or_order_signal",
+              "source_target": {
+                "document_event_or_dataset": "issuer_demand_or_order_signal",
+                "entity_or_owner": "DELL",
+                "source_type": "Evidence"
+              },
+              "task_id": "demand_authenticity_and_sustainability:what_would_change:002",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "next authority event",
+                "start_or_trigger": "when bound rule condition is met"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_4f3d30f8fda11b006c909f83",
+                "current_evidence:s4_t03_candidate_6b78d6573efe8e6128651ada",
+                "current_evidence:s4_t03_candidate_7b5a20f840861d531c3b2ffc",
+                "current_evidence:s4_t03_candidate_a4d458bcae20aefe54f3f248",
+                "current_evidence:s4_t03_candidate_b16b0aac189621c291fcb16d",
+                "current_evidence:s4_t03_candidate_f81eb985a34b9121a51599f0"
+              ],
+              "claim_id": "demand_authenticity_and_sustainability:local_claim:002",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察支持当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "resolve the linked claim from cannot_infer",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_demand_or_order_signal",
+              "source_target": {
+                "document_event_or_dataset": "issuer_demand_or_order_signal",
+                "entity_or_owner": "DELL",
+                "source_type": "Evidence"
+              },
+              "task_id": "demand_authenticity_and_sustainability:what_would_change:003",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "next authority event",
+                "start_or_trigger": "when bound rule condition is met"
+              }
+            }
+          ],
+          "stop_rule": "Stop before a durable-demand judgment if no issuer or company-bound official signal and no independent counterindicator are both available."
+        },
+        {
+          "program_cell_id": "value_and_profit_capture",
+          "decision_question": "How much revenue, gross profit, operating profit, working-capital burden and cash conversion can be attributed to DELL at company or exact issuer-disclosed segment scope?",
+          "claims": [
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "value_and_profit_capture:local_claim:001",
+                "program_cell_id": "value_and_profit_capture"
+              },
+              "epistemic_status": "cannot_infer",
+              "rendered_text_zh_cn": "价值与利润捕获单元：当前证据不足以支持该判断，需补充更多事实依据。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "2caddbd5469c5721aa19a8b0e9df0c2415c361dff18f2c1aa710d9a3341a037d",
+              "qualification_preserved": true
+            },
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "value_and_profit_capture:local_claim:002",
+                "program_cell_id": "value_and_profit_capture"
+              },
+              "epistemic_status": "bounded_inference",
+              "rendered_text_zh_cn": "DELL 公司整体 FY2025 毛利润 reported_exact USD 21,250,000,000；DELL 公司整体 FY2025 营收 reported_exact USD 23,931,000,000；本地绑定数值事实仅支持上述财务指标，不足以单独证明该判断的因果机制。",
+              "numeric_support_refs": [
+                "sec_financial_statement_metric:8c1abb51d8e9cfc8",
+                "sec_financial_statement_metric:bdfb57d39b5a37aa"
+              ],
+              "evidence_support_refs": [],
+              "numeric_only_qualification_applied": true,
+              "scope_digest": "80308154de4367258892c0ed2ad463741dba0618798e61770bbcd5e972520c34",
+              "qualification_preserved": true
+            }
+          ],
+          "what_would_change": [
+            {
+              "authority_refs": [
+                "sec_financial_statement_metric:565b04d525d0d3a3",
+                "sec_financial_statement_metric:8c1abb51d8e9cfc8",
+                "sec_financial_statement_metric:bdfb57d39b5a37aa"
+              ],
+              "claim_id": "value_and_profit_capture:local_claim:002",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察支持当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "strengthen the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "operating_income@FY2025",
+              "source_target": {
+                "document_event_or_dataset": "operating_income@FY2025",
+                "entity_or_owner": "DELL",
+                "source_type": "Numeric"
+              },
+              "task_id": "value_and_profit_capture:what_would_change:001",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "next reporting event",
+                "start_or_trigger": "2025-12-09"
+              }
+            },
+            {
+              "authority_refs": [
+                "s4_t05_current_derived_889a82594db3345cd6fd331e",
+                "s4_t05_current_derived_b6674b89a4239605db4bfdf9"
+              ],
+              "claim_id": "value_and_profit_capture:local_claim:002",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威观察持续",
+                "rule_type": "trend_persists",
+                "threshold_or_observation": "绑定权威观察支持当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "strengthen the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "operating_margin_percent",
+              "source_target": {
+                "document_event_or_dataset": "operating_margin_percent",
+                "entity_or_owner": "consolidated_company_total_only",
+                "source_type": "Numeric"
+              },
+              "task_id": "value_and_profit_capture:what_would_change:002",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "next quarter end",
+                "start_or_trigger": "2025-12-09"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_3d44804de704261da4bcaa0b",
+                "current_evidence:s4_t03_candidate_4af17744966a6f0613628501",
+                "current_evidence:s4_t03_candidate_f11f0063fce5ff4dcd4cbb52"
+              ],
+              "claim_id": "value_and_profit_capture:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威事件发生",
+                "rule_type": "event_occurs",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "resolve the linked claim from cannot_infer",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_financial_statement",
+              "source_target": {
+                "document_event_or_dataset": "issuer_financial_statement",
+                "entity_or_owner": "DELL",
+                "source_type": "Evidence"
+              },
+              "task_id": "value_and_profit_capture:what_would_change:003",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "2026-07-26",
+                "start_or_trigger": "2025-12-09"
+              }
+            }
+          ],
+          "stop_rule": "Do not allocate company-total or broad segment economics to AI servers, products or customers without exact issuer-bound rows and period/unit scope."
+        },
+        {
+          "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+          "decision_question": "Which component, supply, channel, competitive, customer and working-capital mechanisms could break or qualify the DELL transfer thesis?",
+          "claims": [
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "bottleneck_counterevidence_and_what_would_change:local_claim:001",
+                "program_cell_id": "bottleneck_counterevidence_and_what_would_change"
+              },
+              "epistemic_status": "fact_supported",
+              "rendered_text_zh_cn": "瓶颈反证与条件变化单元：反证机制削弱了当前判断，但仅限于发行人披露的特定期间和定位。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [
+                "current_evidence:s4_t03_candidate_b1f036bb71329df20cb1edcf"
+              ],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "d8d9999a0a6dcb3d0c497ef750ca4642521759a89554547e4d9d566005a0ec09",
+              "qualification_preserved": true
+            },
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "bottleneck_counterevidence_and_what_would_change:local_claim:002",
+                "program_cell_id": "bottleneck_counterevidence_and_what_would_change"
+              },
+              "epistemic_status": "bounded_inference",
+              "rendered_text_zh_cn": "瓶颈反证与条件变化单元：经济机制形成混合证据，当前判断存在不确定性。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [
+                "current_evidence:s4_t03_candidate_34bf2d5ffb0bb589c981d4d9",
+                "current_evidence:s4_t03_candidate_f30e0cc04ec5fb749c0c8574"
+              ],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "c23e293a883b40913bfdc9b9f3623bbcbee6b5888fc75172fa21ac50c3483a6e",
+              "qualification_preserved": true
+            }
+          ],
+          "what_would_change": [
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_5300b72a8dc91b7a368f37ed"
+              ],
+              "claim_id": "bottleneck_counterevidence_and_what_would_change:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源出现相反证据",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_counterevidence",
+              "source_target": {
+                "document_event_or_dataset": "issuer_counterevidence",
+                "entity_or_owner": "DELL",
+                "source_type": "Evidence"
+              },
+              "task_id": "bottleneck_counterevidence_and_what_would_change:what_would_change:001",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "next reporting event",
+                "start_or_trigger": "2025-03-25"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_34bf2d5ffb0bb589c981d4d9"
+              ],
+              "claim_id": "bottleneck_counterevidence_and_what_would_change:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_counterevidence",
+              "source_target": {
+                "document_event_or_dataset": "issuer_counterevidence",
+                "entity_or_owner": "DELL",
+                "source_type": "Evidence"
+              },
+              "task_id": "bottleneck_counterevidence_and_what_would_change:what_would_change:002",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "next authority event",
+                "start_or_trigger": "2025-03-25"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_3831f50f83fc56c286b3085f"
+              ],
+              "claim_id": "bottleneck_counterevidence_and_what_would_change:local_claim:002",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威事件发生",
+                "rule_type": "event_occurs",
+                "threshold_or_observation": "绑定权威观察形成混合证据当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "retain the linked claim state",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_counterevidence",
+              "source_target": {
+                "document_event_or_dataset": "issuer_counterevidence",
+                "entity_or_owner": "DELL",
+                "source_type": "Evidence"
+              },
+              "task_id": "bottleneck_counterevidence_and_what_would_change:what_would_change:003",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "2026-07-26",
+                "start_or_trigger": "2025-03-25"
+              }
+            }
+          ],
+          "stop_rule": "Do not close the Case without at least one company-bound counterevidence route and one independent official followup target."
+        }
+      ],
+      "limitations_zh_cn": [
+        "发行人披露仅支持所引期间和定位中的公司陈述；因果、前瞻和跨公司结论仍属于分析师判断。",
+        "仅限本地绑定的实体、期间、口径、单位、符号与精度",
+        "当前绑定事实不足以支持更强结论"
+      ],
+      "source_calls": 0,
+      "tool_calls": 0,
+      "final_delivery_preview_digest": "46e4766db4c149a8871da00eae370da7409f24e21c24045081a2d4a7f30d291c"
+    },
+    "final_delivery_verification": {
+      "contract_ref": "fin_0_1_2.s4_t05.current_case_local_final_delivery_verifier:v1",
+      "bound_case_ticker": "DELL",
+      "status": "pass",
+      "final_delivery_preview_digest": "46e4766db4c149a8871da00eae370da7409f24e21c24045081a2d4a7f30d291c",
+      "bound_source_report_digest": "e75a9e612357b5b9d05a4ea9f817fb69339640123a9516d9ad823b1761cf7856",
+      "bound_source_judgment_digest": "fb584adf475890823de6ccd4072dbd0c916b242f56a596e85426464f2c2a2621",
+      "checks": {
+        "case_identity": "pass_DELL",
+        "cell_and_claim_cardinality": "pass",
+        "numeric_authority_correspondence": "pass",
+        "internal_scope_token_exclusion": "pass",
+        "period_label_normalization": "pass",
+        "currency_unit_deduplication": "pass",
+        "epistemic_qualification_preservation": "pass",
+        "numeric_only_support_not_overstated_as_evidence": "pass",
+        "limitations_localization": "pass",
+        "final_delivery_preview_digest_binding": "pass",
+        "validated_current_WWC_authority_and_time_binding": "pass"
+      },
+      "machine_verifier_is_human_acceptance": false,
+      "verification_digest": "e7c390e6064999e247b29eac3fd4bf1815e9326a3fbe208267e528d033ad003c"
+    },
+    "fixture_evidence_qualification": {
+      "contract_ref": "fin_0_1_2.s4_t04.current_evidence_authority_qualification:v1",
+      "status": "pass_three_cell_authority_coverage",
+      "qualified_evidence_cells": 3,
+      "qualified_authority_cells": 3,
+      "total_cells": 3,
+      "candidate_metadata_promotion_allowed": false,
+      "all_accepted_evidence_must_be_consumed": false,
+      "current_numeric_only_fact_cell_does_not_count_as_evidence_cell": true,
+      "cells": [
+        {
+          "program_cell_id": "demand_authenticity_and_sustainability",
+          "qualified_evidence_fact_count": 3,
+          "qualified_numeric_fact_count": 0,
+          "authority_qualified": true,
+          "accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_4f3d30f8fda11b006c909f83",
+            "current_evidence:s4_t03_candidate_6b78d6573efe8e6128651ada",
+            "current_evidence:s4_t03_candidate_7b5a20f840861d531c3b2ffc",
+            "current_evidence:s4_t03_candidate_a4d458bcae20aefe54f3f248",
+            "current_evidence:s4_t03_candidate_b16b0aac189621c291fcb16d",
+            "current_evidence:s4_t03_candidate_f81eb985a34b9121a51599f0"
+          ],
+          "used_evidence_refs": [
+            "current_evidence:s4_t03_candidate_4f3d30f8fda11b006c909f83",
+            "current_evidence:s4_t03_candidate_7b5a20f840861d531c3b2ffc",
+            "current_evidence:s4_t03_candidate_a4d458bcae20aefe54f3f248"
+          ],
+          "unused_accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_6b78d6573efe8e6128651ada",
+            "current_evidence:s4_t03_candidate_b16b0aac189621c291fcb16d",
+            "current_evidence:s4_t03_candidate_f81eb985a34b9121a51599f0"
+          ],
+          "candidate_refs_not_evidence": [],
+          "status": "qualified_promoted_evidence_present"
+        },
+        {
+          "program_cell_id": "value_and_profit_capture",
+          "qualified_evidence_fact_count": 1,
+          "qualified_numeric_fact_count": 2,
+          "authority_qualified": true,
+          "accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_3d44804de704261da4bcaa0b",
+            "current_evidence:s4_t03_candidate_4af17744966a6f0613628501",
+            "current_evidence:s4_t03_candidate_f11f0063fce5ff4dcd4cbb52"
+          ],
+          "used_evidence_refs": [
+            "current_evidence:s4_t03_candidate_4af17744966a6f0613628501"
+          ],
+          "unused_accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_3d44804de704261da4bcaa0b",
+            "current_evidence:s4_t03_candidate_f11f0063fce5ff4dcd4cbb52"
+          ],
+          "candidate_refs_not_evidence": [],
+          "status": "qualified_promoted_evidence_present"
+        },
+        {
+          "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+          "qualified_evidence_fact_count": 3,
+          "qualified_numeric_fact_count": 0,
+          "authority_qualified": true,
+          "accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_34bf2d5ffb0bb589c981d4d9",
+            "current_evidence:s4_t03_candidate_3831f50f83fc56c286b3085f",
+            "current_evidence:s4_t03_candidate_5300b72a8dc91b7a368f37ed",
+            "current_evidence:s4_t03_candidate_8ff8f9035e66130054df1d4f",
+            "current_evidence:s4_t03_candidate_b1f036bb71329df20cb1edcf",
+            "current_evidence:s4_t03_candidate_f30e0cc04ec5fb749c0c8574"
+          ],
+          "used_evidence_refs": [
+            "current_evidence:s4_t03_candidate_34bf2d5ffb0bb589c981d4d9",
+            "current_evidence:s4_t03_candidate_b1f036bb71329df20cb1edcf",
+            "current_evidence:s4_t03_candidate_f30e0cc04ec5fb749c0c8574"
+          ],
+          "unused_accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_3831f50f83fc56c286b3085f",
+            "current_evidence:s4_t03_candidate_5300b72a8dc91b7a368f37ed",
+            "current_evidence:s4_t03_candidate_8ff8f9035e66130054df1d4f"
+          ],
+          "candidate_refs_not_evidence": [],
+          "status": "qualified_promoted_evidence_present"
+        }
+      ],
+      "qualification_digest": "cb1dfb662a1d31f8d4f6340d214cef5aa6c02684a56c23d2702141109ab6e0ac"
+    },
+    "owner_acceptance_eligible": true,
+    "result_digest": "c81cad6b7dfe84f87e791d8d012c85e4f5e44b9e6120ccdfc5b473fe7feedb84"
+  },
+  "deterministic_baseline": {
+    "ref": ".codex_runtime/fin012-s4-t05b-dell-current-evidence-deterministic-baseline-r1/execution-result.json",
+    "execution_identity": "fin012-s4-t05b-dell-current-evidence-deterministic-baseline-r1",
+    "result_digest": "8efdb2f20351e57fe1dd73b705705ca89ef4e087fc3136fc9dc0daa666c819d1",
+    "business_promotable": false
+  },
+  "paired_readiness": {
+    "status": "ready_for_formal_paired_assessment",
+    "case_ticker": "DELL",
+    "same_input_digest": "8b00e023197e935b7cbb25d9d50bac9e2e859441d6e34405e6649ac8b6ba5bae",
+    "same_input_head_digest": "e957d14dc130d3a9a1f7b84131fc4db897a882081b31d868f7953ede52e4681d",
+    "agent_research_run_id": "research_run_fin01_051c32eff55f90416149c40e",
+    "deterministic_research_run_id": "research_run_s4_t05_baseline_cf69a7e76b9623bcf486",
+    "runs_are_distinct": true,
+    "agent_artifact_count": 9,
+    "deterministic_artifact_count": 1,
+    "final_delivery_preview_digest": "46e4766db4c149a8871da00eae370da7409f24e21c24045081a2d4a7f30d291c",
+    "formal_paired_assessment_performed": false,
+    "owner_decision_performed": false,
+    "readiness_digest": "b13cd73082fda37d6098074e7dc35c11d0db98e5d616ff2016dac9202d8a6010"
+  },
+  "layered_assessment": {
+    "L1_deterministic_integrity": "pass_independent_readback_recomputation",
+    "L2_authority_coverage": "pass_three_cells_evidence_or_exact_numeric",
+    "L3_agent_gain": "pass_with_known_generic_WWC_quality_finding",
+    "L4_final_delivery": "pass_after_case_generic_local_rendering",
+    "qualified_evidence_cells": 3,
+    "qualified_authority_cells": 3,
+    "preview_digest": "46e4766db4c149a8871da00eae370da7409f24e21c24045081a2d4a7f30d291c",
+    "local_verifier_digest": "e7c390e6064999e247b29eac3fd4bf1815e9326a3fbe208267e528d033ad003c",
+    "internal_token_currency_duplication_or_unlocalized_limitation": 0
+  },
+  "observed_counts": {
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_execution_network_calls": 0,
+    "new_source_network_calls": 0,
+    "new_external_tool_calls": 0,
+    "exact_live_reruns": 0,
+    "deterministic_baseline_runs": 1,
+    "formal_paired_assessments": 0,
+    "owner_decisions": 0
+  },
+  "acceptance_boundary": {
+    "RC_P36_120": "closed_zero_call_case_generic_renderer_and_binding",
+    "S4_T05_B_engineering": "pass",
+    "S4_T05_B_exact_live": "pass",
+    "DELL_current_R2": false,
+    "formal_paired_L1_L4": "pending",
+    "owner_acceptance": "pending",
+    "S4_T05_C_entry": "blocked_pending_DELL_owner_acceptance",
+    "RC_P36_119": "deferred_nonblocking_T08_T10_S5"
+  },
+  "recommended_next": "FIN-0.1.2-S4-T05-B-DELL-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION",
+  "record_digest": "9bb1cfa91c35980fbc1cc323fb0fe996298595c86f1128fec5a37e9c4072a529"
+}

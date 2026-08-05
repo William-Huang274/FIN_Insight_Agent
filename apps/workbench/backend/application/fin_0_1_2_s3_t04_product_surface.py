@@ -366,10 +366,15 @@ def _fixture_evidence_qualification(
     return {**body, "qualification_digest": canonical_digest(body)}
 
 
-def materialize_verified_product_surface(
+def materialize_verified_product_surface_for_case(
     *,
     execution_result: Mapping[str, Any],
     input_pack: Mapping[str, Any],
+    expected_case_ticker: str,
+    current_surface_contract_ref: str,
+    current_verifier_contract_ref: str,
+    current_result_schema_version: str,
+    include_explicit_case_binding: bool,
 ) -> dict[str, Any]:
     """Materialize and locally verify the final analyst-facing T04 surface.
 
@@ -397,10 +402,15 @@ def materialize_verified_product_surface(
         required_types.issubset(artifacts),
         "s3_t04_required_artifacts_missing",
     )
+    _require(
+        expected_case_ticker in {"DELL", "MU", "NVDA"},
+        "s3_t04_expected_case_ticker_invalid",
+    )
     manifest = artifacts["bounded_agent_manifest"]
     _require(
-        manifest.get("case_ticker") == "NVDA",
-        "s3_t04_current_case_must_be_NVDA",
+        manifest.get("case_ticker") == expected_case_ticker
+        and input_pack.get("company") == expected_case_ticker,
+        "s3_t04_current_case_identity_mismatch",
     )
     judgment = artifacts["bounded_agent_judgment"]
     specialists = judgment.get("specialist_outputs")
@@ -432,6 +442,17 @@ def materialize_verified_product_surface(
         for cell_id in EXPECTED_CELLS
     )
     numeric_rows = _numeric_rows(artifacts["bounded_agent_numeric"])
+    numeric_refs_by_cell = {
+        str(projection.get("program_cell_id") or ""): {
+            str(row.get("numeric_ref") or "")
+            for row in projection.get("rows", ())
+            if isinstance(row, Mapping) and row.get("numeric_ref")
+        }
+        for projection in artifacts["bounded_agent_numeric"].get(
+            "case_numeric_authority_projections", ()
+        )
+        if isinstance(projection, Mapping)
+    }
     source_report = artifacts["bounded_agent_report"].get("report")
     _require(
         isinstance(source_report, Mapping),
@@ -559,7 +580,7 @@ def materialize_verified_product_surface(
             str(ref)
             for field in ("accepted_evidence_refs", "numeric_refs")
             for ref in input_authority.get(field, ())
-        }
+        } | numeric_refs_by_cell.get(cell_id, set())
         case_threshold = str(runtime_branch.get("what_would_change") or "").strip()
         tasks: list[dict[str, Any]] = []
         for task in specialist.get("what_would_change", ()):
@@ -569,7 +590,7 @@ def materialize_verified_product_surface(
             )
             enriched = deepcopy(dict(task))
             decision_rule = deepcopy(dict(enriched.get("decision_rule") or {}))
-            if case_threshold:
+            if case_threshold and not current_evidence_surface:
                 decision_rule["threshold_or_observation"] = case_threshold
                 decision_rule["threshold_source"] = (
                     "frozen_runtime_branch.what_would_change"
@@ -615,9 +636,14 @@ def materialize_verified_product_surface(
 
     preview_body = {
         "contract_ref": (
-            CURRENT_EVIDENCE_PRODUCT_SURFACE_CONTRACT_REF
+            current_surface_contract_ref
             if current_evidence_surface
             else PRODUCT_SURFACE_CONTRACT_REF
+        ),
+        **(
+            {"case_ticker": expected_case_ticker}
+            if include_explicit_case_binding
+            else {}
         ),
         "source_input_digest": str(manifest.get("input_digest") or ""),
         "source_report_digest": canonical_digest(source_report),
@@ -698,7 +724,7 @@ def materialize_verified_product_surface(
         "s3_t04_numeric_only_epistemic_qualification_missing",
     )
     verifier_checks = {
-        "case_identity": "pass_NVDA",
+        "case_identity": f"pass_{expected_case_ticker}",
         "cell_and_claim_cardinality": "pass",
         "numeric_authority_correspondence": "pass",
         "internal_scope_token_exclusion": "pass",
@@ -716,9 +742,14 @@ def materialize_verified_product_surface(
     }
     verifier_body = {
         "contract_ref": (
-            CURRENT_EVIDENCE_FINAL_PREVIEW_VERIFIER_CONTRACT_REF
+            current_verifier_contract_ref
             if current_evidence_surface
             else FINAL_PREVIEW_VERIFIER_CONTRACT_REF
+        ),
+        **(
+            {"bound_case_ticker": expected_case_ticker}
+            if include_explicit_case_binding
+            else {}
         ),
         "status": "pass",
         "final_delivery_preview_digest": preview[
@@ -747,9 +778,14 @@ def materialize_verified_product_surface(
     )
     result_body = {
         "schema_version": (
-            "fin_ia_0_1_2_s4_t04_current_evidence_product_surface_result_v1_0"
+            current_result_schema_version
             if current_evidence_surface
             else "fin_ia_0_1_2_s3_t04_product_surface_result_v1_0"
+        ),
+        **(
+            {"case_ticker": expected_case_ticker}
+            if include_explicit_case_binding
+            else {}
         ),
         "status": product_status,
         "immutable_exact_result_preserved": True,
@@ -762,6 +798,30 @@ def materialize_verified_product_surface(
         "owner_acceptance_eligible": fixture["status"].startswith("pass_"),
     }
     return {**result_body, "result_digest": canonical_digest(result_body)}
+
+
+def materialize_verified_product_surface(
+    *,
+    execution_result: Mapping[str, Any],
+    input_pack: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Preserve the frozen NVDA T04 public contract and output bytes."""
+
+    return materialize_verified_product_surface_for_case(
+        execution_result=execution_result,
+        input_pack=input_pack,
+        expected_case_ticker="NVDA",
+        current_surface_contract_ref=(
+            CURRENT_EVIDENCE_PRODUCT_SURFACE_CONTRACT_REF
+        ),
+        current_verifier_contract_ref=(
+            CURRENT_EVIDENCE_FINAL_PREVIEW_VERIFIER_CONTRACT_REF
+        ),
+        current_result_schema_version=(
+            "fin_ia_0_1_2_s4_t04_current_evidence_product_surface_result_v1_0"
+        ),
+        include_explicit_case_binding=False,
+    )
 
 
 def validate_verified_product_surface(result: Mapping[str, Any]) -> dict[str, Any]:

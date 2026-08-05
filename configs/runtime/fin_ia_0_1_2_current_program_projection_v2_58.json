@@ -1,0 +1,63 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_58",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.58",
+  "recorded_at": "2026-08-05T14:20:00+08:00",
+  "sequence_after_projection": "v2_57",
+  "status": "S4_T05_B_DELL_L4_pass_paired_readiness_pass_owner_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor",
+    "S4_T01_T04": "pass_closed",
+    "S4_T05_A": "engineering_pass_zero_call",
+    "S4_T05_B_DELL_Search": "pass_live_current_evidence_candidate_pack_ready",
+    "S4_T05_B_DELL_Agent_exact_live": "success_nine_artifacts_independent_L1_pass",
+    "S4_T05_B_DELL_product_L4": "pass_case_generic_preview_bound",
+    "S4_T05_B_DELL_paired_readiness": "pass_formal_paired_not_performed",
+    "S4_T05_C_MU": "not_started",
+    "S4_T05_D_post_transfer_NVDA": "not_started",
+    "S4_T06_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": true,
+    "DELL_current_R2": false,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T05-B-DELL-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION"
+  },
+  "T05_B_DELL_product_surface": {
+    "source_exact_result_sha256": "b4edc0927e958b812c5e5dd04d982defa97e64255d24e3a569e5311b78f5dd32",
+    "source_terminal_digest": "b22f6faac7149ff7b9b437b8f1e1d2e82ce3c81b497e95f2fa97f2feba01b5a6",
+    "record_digest": "9bb1cfa91c35980fbc1cc323fb0fe996298595c86f1128fec5a37e9c4072a529",
+    "preview_digest": "46e4766db4c149a8871da00eae370da7409f24e21c24045081a2d4a7f30d291c",
+    "case_ticker": "DELL",
+    "qualified_evidence_cells": 3,
+    "qualified_authority_cells": 3,
+    "internal_token_currency_duplication_or_unlocalized_limitation": 0,
+    "new_model_provider_network_exact_rerun": [0, 0, 0, 0]
+  },
+  "paired_readiness": {
+    "status": "ready_for_formal_paired_assessment",
+    "same_input_digest": "8b00e023197e935b7cbb25d9d50bac9e2e859441d6e34405e6649ac8b6ba5bae",
+    "same_input_head_digest": "e957d14dc130d3a9a1f7b84131fc4db897a882081b31d868f7953ede52e4681d",
+    "agent_research_run_id": "research_run_fin01_051c32eff55f90416149c40e",
+    "deterministic_research_run_id": "research_run_s4_t05_baseline_cf69a7e76b9623bcf486",
+    "runs_are_distinct": true,
+    "agent_artifacts": 9,
+    "deterministic_artifacts": 1,
+    "formal_paired_assessment": "not_performed",
+    "owner_acceptance": false
+  },
+  "issue_state": {
+    "RC_P36_120": "closed_zero_call_case_generic_renderer_and_preview_binding",
+    "RC_P36_119": "open_nonblocking_T08_T10_S5_generic_WWC_9_of_9",
+    "RC_P36_115": "open_S5_cross_runtime_lock",
+    "model_or_provider_fault_established": false,
+    "automatic_model_rerun_required": false
+  }
+}

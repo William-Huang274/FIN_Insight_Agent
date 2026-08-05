@@ -62,7 +62,11 @@ def _contract() -> dict[str, Any]:
 def runtime(tmp_path: Path) -> SimpleNamespace:
     fixture_root = tmp_path / "canonical-runtime"
     case_service = CaseService.for_fixture_root(fixture_root, repo_root=REPO_ROOT)
-    app = create_app(tmp_path / "workbench.sqlite", p02_case_service=case_service)
+    app = create_app(
+        tmp_path / "workbench.sqlite",
+        p02_case_service=case_service,
+        workbench_runtime_mode="fixture",
+    )
     with TestClient(app) as client:
         yield SimpleNamespace(
             client=client,
@@ -435,7 +439,11 @@ def test_vt3_permissions_and_restart_restore_preview_actions_and_trace(
     trace = runtime.client.get(trace_path, headers=_headers()).json()
 
     reconstructed = CaseService.for_fixture_root(runtime.fixture_root, repo_root=REPO_ROOT)
-    app = create_app(runtime.workbench_path, p02_case_service=reconstructed)
+    app = create_app(
+        runtime.workbench_path,
+        p02_case_service=reconstructed,
+        workbench_runtime_mode="fixture",
+    )
     with TestClient(app) as client:
         latest = client.get(
             f"/api/v1/cases/{case['case_id']}/deliverables", headers=_headers()

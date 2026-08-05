@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T05 pass closed / S4-T06 entry pass、current projection blocked by RC-P36-126、T06-A authorized next / S4-T07–T08 not started`
+状态：`S4 entered / S4-T01–T05 pass closed / S4-T06-A、T06-B engineering pass，T06-C pending / S4-T07–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -330,3 +330,15 @@ Workbench 新增独立 current projection service 与三个 GET-only API：case 
 manifest digest=`4ee7df3c…7250`，implementation digest=`f30c387c…617d`。T06-A focused=`12 passed`，T06-A + T05 + current Case 选择性回归=`55 passed`；没有新增 model/provider/network/source/tool call 或 business runtime write。RC-P36-126 的“没有 digest-bound current read adapter”根因已经关闭，但产品集成仍需 T06-B 的前端 current mode。历史 fixture 漂移回归仍为 `1 passed / 10 failed`，失败集合未改变；RC-P36-127 保持 open 且只归 T06-B，T06-A 没有通过禁用默认 runtime 或放宽 Evidence 状态来掩盖它。
 
 因此只能声明 `T06-A engineering pass / current backend projection available`，不能声明 T06 产品通过、qualified Human Review、NVDA R3、S4 closeout、S5 或 release。下一项为 `FIN-0.1.2-S4-T06-B-WORKBENCH-FRONTEND-CURRENT-MODE-CURRENT-FIXTURE-RUNTIME-ISOLATION-AND-BROWSER-MUTATION-ZERO-CALL-IMPLEMENTATION`；T06-C 的 return/request-repair 与 T07 handoff 不得提前塞入 T06-B。
+
+## 32. S4-T06-B current 前端、runtime mode 隔离与浏览器验收
+
+T06-B 已把 T06-A 的只读 current projection 接入独立 `/current` 产品面。DELL、MU、NVDA 可在十个视图间切换；Evidence、Numeric、底稿、交付报告、trace 和 L1–L4/Owner 边界按 case-local digest 展示，Graph 在三案均明确显示 `typed_empty_no_approved_current_graph_evidence`，没有为了视觉完整补 candidate、fixture 或推测性边。
+
+runtime 侧没有全局关闭共享执行器。`create_app` 默认仍是 `current` 并保留后台 dispatch；只有旧 Evidence/VT2/VT3 workflow 显式声明 `fixture` 时才关闭后台调度，以恢复 pending-before-compile 合同。原 RC-P36-127 失败集合由 `1 passed / 10 failed` 收敛为 `11 passed`，加上 T06-B mode/API/frontend/record 合同共 `17 passed`。
+
+真实浏览器验收使用 Playwright Test/CLI（当前 Codex 会话无 `js_repl`，因此不冒充 interactive Playwright skill）：Chromium desktop/mobile 共 `6 passed`，覆盖三案例、十视图、current 权限头、跨案切换、诚实 Graph 空态、报告与质量边界、未知案例 fail-closed 回退。TypeScript 与 Vite production build 通过；定向更新 Vite/PostCSS/esbuild 后 npm audit 为 0。build 仍有单 chunk >500k 的非阻塞性能 warning，后传而不扩张 T06-B。
+
+扩大选择性回归为 `148 passed / 4 failed`。3 项属于 T05-C 已实际执行后再要求 `runtime_root_absent` 的一次性 fresh proof，1 项属于早期 T05 entry 把后续 T03/T04 源码 SHA 当作永久 immutable binding；两类都早于并独立于 T06-B，不能靠删除真实运行证据或重写历史决策伪造全绿。T06-B 当前实现由 successor record `3eb7532a…58c4` 绑定，T06-A 历史 implementation record 保持原样。
+
+因此当前只能声明 `T06-A/B engineering pass / current read-only product frontend available`。T06 产品验收仍为 false，因为 typed return/request-repair/replay 和 T07 handoff readiness 尚未实现；qualified Human Review 与 NVDA R3 仍只归 T07。下一项固定为 `FIN-0.1.2-S4-T06-C-TYPED-RETURN-REQUEST-REPAIR-REPLAY-AND-T07-HANDOFF-READINESS-ZERO-CALL-IMPLEMENTATION`。

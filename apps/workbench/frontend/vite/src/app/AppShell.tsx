@@ -19,6 +19,7 @@ import { NewCase, TaskCenter } from "../features/task-center/TaskCenter";
 import { WorkpaperReview } from "../features/workpaper-review/WorkpaperReview";
 import { WorkbenchLocaleProvider } from "../i18n/WorkbenchLocale";
 import { isWorkbenchNextPath, WorkbenchNext } from "./WorkbenchNext";
+import { CurrentProductWorkbench, isCurrentProductPath } from "./CurrentProductWorkbench";
 import "./p02-shell.css";
 
 type AppShellProps = {
@@ -52,6 +53,7 @@ function LocalizedAppShell({ legacyApp }: AppShellProps) {
   const activeCaseId = caseIdForRoute(route);
   const [recentCaseId, setRecentCaseId] = useState<string | null>(null);
 
+  if (isCurrentProductPath(window.location.pathname)) return <CurrentProductWorkbench online={online} />;
   if (isWorkbenchNextPath(window.location.pathname)) return <WorkbenchNext online={online} />;
   if (route.kind === "legacy") return <>{legacyApp}</>;
 
@@ -81,6 +83,7 @@ function LocalizedAppShell({ legacyApp }: AppShellProps) {
           onTasks={() => navigate({ kind: "tasks" })}
           onNewCase={() => navigate({ kind: "newCase" })}
           onNavigateCase={navigateCaseTab}
+          onCurrentProduct={() => { window.location.href = "/current"; }}
           onLegacy={() => navigate({ kind: "legacy" })}
         />
         {activeCaseId ? <TaskQueueRail activeCaseId={activeCaseId} onOpenCase={openCase} /> : null}

@@ -59,6 +59,7 @@ type GlobalProductNavProps = {
   onTasks: () => void;
   onNewCase: () => void;
   onNavigateCase: (kind: CaseRouteKind) => void;
+  onCurrentProduct: () => void;
   onLegacy: () => void;
 };
 
@@ -218,7 +219,7 @@ function TaskSearch({ onOpenCase }: { onOpenCase: (caseId: string) => void }) {
   );
 }
 
-export function GlobalProductNav({ active, activeCaseKind, caseAvailable, onTasks, onNewCase, onNavigateCase, onLegacy }: GlobalProductNavProps) {
+export function GlobalProductNav({ active, activeCaseKind, caseAvailable, onTasks, onNewCase, onNavigateCase, onCurrentProduct, onLegacy }: GlobalProductNavProps) {
   const { copy } = useWorkbenchLocale();
   const caseTitle = caseAvailable
     ? undefined
@@ -260,6 +261,10 @@ export function GlobalProductNav({ active, activeCaseKind, caseAvailable, onTask
         </button>
       </div>
       <div className="analyst-nav-group analyst-nav-secondary">
+        <button type="button" onClick={onCurrentProduct}>
+          <LayoutDashboard size={16} aria-hidden="true" />
+          <span>{copy("Current 成品", "Current product")}</span>
+        </button>
         <button type="button" className={active === "newCase" ? "is-active" : undefined} onClick={onNewCase}>
           <BookOpenText size={16} aria-hidden="true" />
           <span>{copy("发起研究", "Start research")}</span>

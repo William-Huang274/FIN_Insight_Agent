@@ -126,6 +126,12 @@ S4-T06 因此保持原产品目标不变，但工程顺序细分为：A）digest
 
 T06-A 已工程通过：DELL/MU/NVDA 的 accepted current assets 被编译为单一 digest-bound manifest，并由独立只读 service/API 投影为 Case、Run、Evidence、Numeric、typed-empty Graph、Gap、Workpaper、Report、Trace 和 quality。产品后端不再依赖 fixture CaseService 才能读取这三案，且不读取未跟踪 `.codex_runtime` 或向第二个可变业务库复制真值。跨案、digest、Graph fabrication 与 raw-capture 注入均 fail closed。
 
+### 2026-08-05 S4-T06-B 产品面校正
+
+T06-B 已把三案 current read model 接到用户可见的 `/current` Workbench：用户可以切换 DELL、MU、NVDA，查看十类只读研究资产，并从旧内部 fixture 任务台进入成品面。产品明确展示 Owner accepted R2，同时继续展示 `qualified human review=false`、`NVDA R3=false`、release not qualified 等边界，不把工程通过伪装成发布通过。Graph 没有 approved edge 时显示诚实空态。
+
+旧 Evidence/VT2/VT3 测试因默认 runtime 自动调度而失败的 RC-P36-127 已由显式 `current/fixture` app construction mode 关闭：默认 current 行为不变，历史 fixture workflow 单独保持 pending-before-compile。桌面和移动真实 Chromium 验收通过。T06-C 仍需实现 typed return/request-repair 与 replay；因此 F01/F04/F06/F07/F09/F11/F13/F15 只能记为“current read-only product surface available”，不能记为完整闭环或 qualified product acceptance。
+
 这只关闭 RC-P36-126 的后端 read-model 根因，不等于 F01/F04/F06/F07/F09/F11/F13/F15 已完整产品验收：前端仍未切入 current mode，旧 fixture workflow 的 RC-P36-127 仍需在 T06-B 隔离，return/request-repair 仍归 T06-C，qualified Human Review/NVDA R3 仍归 T07。因此 S4-T06 继续为进行中，不能因 API 可读就提前进入 S5。
 
 ### S0：可靠基础（已关闭，不重开）

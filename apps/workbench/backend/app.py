@@ -371,7 +371,10 @@ def create_app(
         S4CaseRuntimeResearchProfileOverlay | None
     ) = None,
     current_product_projection_service: CurrentProductProjectionService | None = None,
+    workbench_runtime_mode: Literal["current", "fixture"] = "current",
 ) -> FastAPI:
+    if workbench_runtime_mode not in {"current", "fixture"}:
+        raise ValueError("workbench_runtime_mode_invalid")
     store = WorkbenchStore(store_path or default_store_path(REPO_ROOT))
     case_service = p02_case_service or case_service_from_env(REPO_ROOT)
     planning_service = p02_planning_service or PlanningService.from_case_service(case_service)
@@ -381,6 +384,12 @@ def create_app(
     local_research_service = p36_local_research_service or P36LocalResearchService.from_case_service(
         case_service, repo_root=REPO_ROOT
     )
+    if (
+        workbench_runtime_mode == "fixture"
+        and p02_execution_service is not None
+        and p02_execution_service.background_dispatch_enabled
+    ):
+        raise ValueError("fixture_mode_background_runtime_forbidden")
     if p02_execution_service is not None:
         execution_service = p02_execution_service
     else:
@@ -406,7 +415,7 @@ def create_app(
                     s4_deterministic_research_profile_overlay
                 ),
             )
-            if facade is not None
+            if facade is not None and workbench_runtime_mode == "current"
             else None
         )
         execution_service = ExecutionService.from_case_service(
@@ -430,6 +439,10 @@ def create_app(
         title="FinSight Workbench API",
         version="0.1.0",
         description="Local API for FinSight-Agent profile import and source readiness checks.",
+    )
+    app.state.workbench_runtime_mode = workbench_runtime_mode
+    app.state.background_dispatch_enabled = (
+        execution_service.background_dispatch_enabled
     )
     install_api_contracts(app)
     app.add_middleware(
@@ -1083,6 +1096,8 @@ def create_app(
 
     @app.get("/tasks", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/legacy", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/current", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/current/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/cases/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
     def point02_frontend_entrypoint(frontend_path: str = "") -> str:
         return index()

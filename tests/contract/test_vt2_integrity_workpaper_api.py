@@ -47,7 +47,11 @@ PERMISSIONS = ",".join(
 def runtime(tmp_path: Path) -> SimpleNamespace:
     fixture_root = tmp_path / "canonical-runtime"
     case_service = CaseService.for_fixture_root(fixture_root, repo_root=REPO_ROOT)
-    app = create_app(tmp_path / "workbench.sqlite", p02_case_service=case_service)
+    app = create_app(
+        tmp_path / "workbench.sqlite",
+        p02_case_service=case_service,
+        workbench_runtime_mode="fixture",
+    )
     with TestClient(app) as client:
         yield SimpleNamespace(
             client=client,
@@ -301,7 +305,11 @@ def test_vt2_state_restores_after_backend_reconstruction(runtime: SimpleNamespac
     )
 
     reconstructed = CaseService.for_fixture_root(runtime.fixture_root, repo_root=REPO_ROOT)
-    app = create_app(runtime.workbench_path, p02_case_service=reconstructed)
+    app = create_app(
+        runtime.workbench_path,
+        p02_case_service=reconstructed,
+        workbench_runtime_mode="fixture",
+    )
     with TestClient(app) as client:
         evidence_read = client.get(
             f"/api/v1/cases/{case['case_id']}/evidence", headers=_headers()

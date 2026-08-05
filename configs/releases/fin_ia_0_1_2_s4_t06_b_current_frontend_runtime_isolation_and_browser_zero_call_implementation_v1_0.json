@@ -1,0 +1,171 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t06_b_current_frontend_runtime_isolation_and_browser_zero_call_implementation_v1_0",
+  "recorded_at": "2026-08-05T22:00:00+08:00",
+  "status": "T06_B_engineering_pass_current_frontend_available_T06_C_pending",
+  "source_T06_A": {
+    "manifest_ref": "configs/releases/fin_ia_0_1_2_s4_t06_a_current_product_projection_manifest_v1_0.json",
+    "manifest_digest": "4ee7df3c46a87939412c6ea4d303590d91622a2f7216367b6a62cbc15f357250",
+    "historical_implementation_ref": "configs/releases/fin_ia_0_1_2_s4_t06_a_current_product_projection_read_only_service_and_api_zero_call_implementation_v1_0.json",
+    "historical_implementation_digest": "f30c387cfe7c4ae8c999ed75eeb82a18ea83ed7b57c98d6fd4466faa6817617d",
+    "historical_record_preserved_not_rewritten": true,
+    "T06_B_is_controlled_successor_code_binding": true
+  },
+  "product_increment": {
+    "entry_path": "/current",
+    "current_cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "surfaces": [
+      "case",
+      "run",
+      "evidence",
+      "numeric",
+      "graph",
+      "gaps",
+      "workpaper",
+      "report",
+      "trace",
+      "quality"
+    ],
+    "desktop_and_mobile_layout": true,
+    "explicit_current_headers": [
+      "current",
+      "current_product:read"
+    ],
+    "API_methods": [
+      "GET"
+    ],
+    "typed_empty_graph_rendered": true,
+    "raw_capture_or_private_reasoning_exposed": false,
+    "current_fixture_product_truth_mixed": false,
+    "return_request_repair_available": false
+  },
+  "runtime_mode_isolation": {
+    "default_mode": "current",
+    "explicit_fixture_mode": "fixture",
+    "current_background_dispatch_enabled": true,
+    "fixture_background_dispatch_enabled": false,
+    "evidence_state_checks_weakened": false,
+    "current_runtime_globally_disabled": false,
+    "RC_P36_127": "closed_root_cause_explicit_runtime_mode_and_11_of_11_regression_green"
+  },
+  "code_and_test_bindings": [
+    {
+      "ref": "apps/workbench/backend/app.py",
+      "sha256": "87ab6993028b159f1ebf3a9bd159c33229a059dd79752339d63c8e7fda4f70b2",
+      "bytes": 50042
+    },
+    {
+      "ref": "apps/workbench/frontend/package.json",
+      "sha256": "adb723a29de562ae054a57f61ee9522ef7a4546d61a626b056e5d2799724e2ca",
+      "bytes": 775
+    },
+    {
+      "ref": "apps/workbench/frontend/package-lock.json",
+      "sha256": "2b2fbab1b56bc5252b2898c7df1671b4263386f402b51107f4682db353d80ba7",
+      "bytes": 63176
+    },
+    {
+      "ref": "apps/workbench/frontend/playwright.config.ts",
+      "sha256": "b4496b2300a956c52bfb41575354b7baafab7ee152da09ad2cea91120a95f0ac",
+      "bytes": 1178
+    },
+    {
+      "ref": "apps/workbench/frontend/e2e/current-product.spec.ts",
+      "sha256": "c4d6e6c4e2d797724d32d38a5d6aeaf77f0280d4914136ebd2fe9592677dc221",
+      "bytes": 3290
+    },
+    {
+      "ref": "apps/workbench/frontend/vite/src/api/currentProduct.ts",
+      "sha256": "5fb7d451a0f7f78527e975d4fb24a95d0c4a03af8ac9654405800ebd62422727",
+      "bytes": 2633
+    },
+    {
+      "ref": "apps/workbench/frontend/vite/src/app/CurrentProductWorkbench.tsx",
+      "sha256": "e9a5adb5a83be3531bbc736d6b3c8415068bf05617ada7c8566ed380fec7d58f",
+      "bytes": 22635
+    },
+    {
+      "ref": "apps/workbench/frontend/vite/src/app/current-product.css",
+      "sha256": "b5103fe5af7587185ba405e005966e8c3f3a5d2f72de5350e61ea83ea113b250",
+      "bytes": 17055
+    },
+    {
+      "ref": "apps/workbench/frontend/vite/src/app/AppShell.tsx",
+      "sha256": "eb2ef0898842b86a428f42f7a9667d5ffd9c8cf19f82b306a9cffdfac2fa4e92",
+      "bytes": 11363
+    },
+    {
+      "ref": "apps/workbench/frontend/vite/src/app/AnalystWorkspaceChrome.tsx",
+      "sha256": "3d71862391967c4303ff18b644495ee2a6b0e7e36a99c2211cfc5b0378663917",
+      "bytes": 26946
+    },
+    {
+      "ref": "scripts/dev/run_workbench_backend.py",
+      "sha256": "a1caed6e98d8a0e3418d34391af13dd816acdc4a5e25b596ae0eb2f359f4c00d",
+      "bytes": 429
+    },
+    {
+      "ref": "scripts/releases/materialize_fin_ia_0_1_2_s4_t06_b_current_frontend_and_runtime_isolation.py",
+      "sha256": "d92f155b2cfd0f69acc5f54f6c9bdfefd321f5dafa602c5cb9cbfa157423dc00",
+      "bytes": 6227
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t06_b_current_mode_frontend_and_runtime_isolation.py",
+      "sha256": "99f1d7ddf476547e0dcfb3291ceb15e2722c799f627ddb389fc76da4cba6acf8",
+      "bytes": 4989
+    },
+    {
+      "ref": "tests/contract/test_point03_evidence_fixture_api.py",
+      "sha256": "9cd80ebb2438c4d23cbd1fe7156afa957e1877843dd3380e7aff0600af52542d",
+      "bytes": 14351
+    },
+    {
+      "ref": "tests/contract/test_vt2_integrity_workpaper_api.py",
+      "sha256": "f834d47d2ac42469d760ea2f492fbbbc9c815ed40f7fb35cc389e83628222b0b",
+      "bytes": 12548
+    },
+    {
+      "ref": "tests/contract/test_vt3_deliverable_review_trace_api.py",
+      "sha256": "05c854de87a5bd93349457713e1430773822a6f153f158aa2909f170bc271ba7",
+      "bytes": 17186
+    }
+  ],
+  "verification": {
+    "T06_B_plus_historical_fixture_contracts": "17 passed",
+    "playwright_chromium_desktop_mobile": "6 passed",
+    "typescript": "pass",
+    "vite_production_build": "pass_with_existing_chunk_size_warning",
+    "npm_audit_after_bounded_security_update": "0 vulnerabilities",
+    "broad_selected_T05_T06_Workbench_regression": "148 passed / 4 historical_non_replayable_or_stale_binding_failures",
+    "broad_failure_classification": {
+      "T05_C_consumed_fresh_runtime_identity": 3,
+      "T05_entry_historical_mutable_code_sha_binding": 1,
+      "T06_B_regression_established": 0
+    },
+    "business_model_provider_financial_source_calls": [
+      0,
+      0,
+      0
+    ],
+    "business_runtime_writes": 0,
+    "dependency_install_network_access": true,
+    "dependency_install_authorized_by_user": true
+  },
+  "acceptance_boundary": {
+    "S4_T06_A": "engineering_pass_historical_record_preserved",
+    "S4_T06_B": "engineering_pass",
+    "S4_T06_product_acceptance": false,
+    "S4_T06_C": "not_started",
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_T07": "not_entered",
+    "S5": "not_entered",
+    "release": "not_qualified",
+    "production": "not_qualified"
+  },
+  "recommended_next": "FIN-0.1.2-S4-T06-C-TYPED-RETURN-REQUEST-REPAIR-REPLAY-AND-T07-HANDOFF-READINESS-ZERO-CALL-IMPLEMENTATION",
+  "record_digest": "3eb7532aff2d7189d5b46c433735f5e675b8da6c43a1cfa5f2bfa11f04d958c4"
+}

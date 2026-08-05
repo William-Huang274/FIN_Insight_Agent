@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_73",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.73",
+  "recorded_at": "2026-08-05T22:00:00+08:00",
+  "sequence_after_projection": "v2_72",
+  "status": "S4_T06_A_B_engineering_pass_current_product_frontend_available_T06_C_pending",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor",
+    "S4_T01_T05": "pass_closed",
+    "S4_T06_A": "engineering_pass_current_backend_projection_available",
+    "S4_T06_B": "engineering_pass_current_frontend_and_runtime_mode_isolation",
+    "S4_T06_C": "not_started",
+    "S4_T06_product_acceptance": false,
+    "S4_T07_T08": "not_started",
+    "S5": "not_entered",
+    "DELL_current_R2": true,
+    "MU_current_R2": true,
+    "post_transfer_NVDA_R2": true,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T06-C-TYPED-RETURN-REQUEST-REPAIR-REPLAY-AND-T07-HANDOFF-READINESS-ZERO-CALL-IMPLEMENTATION"
+  },
+  "T06_B_current_frontend_and_mode_isolation": {
+    "implementation_ref": "configs/releases/fin_ia_0_1_2_s4_t06_b_current_frontend_runtime_isolation_and_browser_zero_call_implementation_v1_0.json",
+    "implementation_digest": "3eb7532aff2d7189d5b46c433735f5e675b8da6c43a1cfa5f2bfa11f04d958c4",
+    "entry_path": "/current",
+    "current_cases": ["DELL", "MU", "NVDA"],
+    "surfaces": ["case", "run", "evidence", "numeric", "graph", "gaps", "workpaper", "report", "trace", "quality"],
+    "desktop_and_mobile": true,
+    "typed_empty_graph": true,
+    "API_methods": ["GET"],
+    "runtime_modes": {
+      "current": "background_dispatch_enabled",
+      "fixture": "background_dispatch_disabled"
+    },
+    "verification": {
+      "focused_and_historical_fixture_contracts": "17 passed",
+      "playwright_chromium_desktop_mobile": "6 passed",
+      "typescript_and_vite_build": "pass",
+      "npm_audit": "0 vulnerabilities",
+      "selected_broad_regression": "148 passed / 4 historical_non_replayable_or_stale_binding_failures"
+    }
+  },
+  "preserved_boundaries": {
+    "RC_P36_115": "open_blocks_S5_release",
+    "RC_P36_119": "open_nonblocking_T08_T10_S5",
+    "RC_P36_125": "open_nonblocking_cross_case_T08_T10_S5",
+    "RC_P36_126": "closed_by_T06_A",
+    "RC_P36_127": "closed_by_T06_B_explicit_runtime_mode_isolation",
+    "T05_C_fresh_admission_tests": "historical_consumed_identity_not_replayable_not_T06_B_regression",
+    "T05_entry_code_SHA_test": "historical_mutable_code_binding_stale_not_T06_B_regression",
+    "frontend_chunk_size_warning": "open_nonblocking_build_performance_debt",
+    "fixture_relabel_as_current": "forbidden",
+    "raw_capture_product_promotion": "forbidden",
+    "invented_graph_edges": "forbidden",
+    "T06_product_acceptance": false,
+    "S5_entered": false,
+    "release": "not_qualified",
+    "production": "not_qualified"
+  }
+}

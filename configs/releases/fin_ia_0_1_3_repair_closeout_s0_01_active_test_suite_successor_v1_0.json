@@ -1,0 +1,85 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_active_test_suite_v1_0",
+  "manifest_id": "FIN-0.1.3-REPAIR-CLOSEOUT-S0-01-ACTIVE-SUITE-R1",
+  "created_at": "2026-08-06T14:00:00+08:00",
+  "status": "canonical_S0_01_gate_only_old_namespace_not_current_authority",
+  "predecessor": {
+    "role": "FIN_0_1_2_active_suite",
+    "ref": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_3.json",
+    "sha256": "ff7123a382c655a40ce22377d881bc8bc240839cf8e3fddd4345b012909b1b12"
+  },
+  "suites": [
+    {
+      "suite_id": "canonical_repair_closeout_S0_01",
+      "proof_class": "current_delta_inheritance_and_namespace_gate",
+      "selected": true,
+      "gates_current_release": true,
+      "test_paths": [
+        "tests/contract/test_fin_0_1_3_repair_closeout_s0_01_delta_inheritance_namespace_and_current_truth_baseline.py"
+      ]
+    },
+    {
+      "suite_id": "old_FIN_0_1_3_reusable_candidates",
+      "proof_class": "pending_exact_digest_semantic_revalidation",
+      "selected": false,
+      "gates_current_release": false,
+      "candidate_assets": [
+        {
+          "ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_0.json",
+          "sha256": "240d6f7beadd1554c58d95f99bd7fbe85bd3ecea07b8556d2c95a283704fe209",
+          "classification": "reusable_version_neutral_candidate_pending_013_S0_02",
+          "disposition": "may_reuse_only_by_exact_digest_after_semantic_and_dependency_revalidation"
+        },
+        {
+          "ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_1.json",
+          "sha256": "0d4b388cbb16cfac9cac8ea883e3d65a64473cfb6733311354d64de4bd2def75",
+          "classification": "reusable_version_neutral_candidate_pending_013_S0_02",
+          "disposition": "may_reuse_only_by_exact_digest_after_semantic_and_dependency_revalidation"
+        },
+        {
+          "ref": "configs/runtime/fin_ia_0_1_3_repository_reference_proof_policy_v3_0.json",
+          "sha256": "52eabb953ccbf5c2a64685fea3012ec311229233450c080eacc52bda2ea35253",
+          "classification": "reusable_version_neutral_candidate_pending_013_S0_02",
+          "disposition": "may_reuse_only_by_exact_digest_after_semantic_and_dependency_revalidation"
+        },
+        {
+          "ref": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+          "sha256": "e510e72945a9f8042f342b87c37b84ca305280a85ccf7dc3ad39f29d1328b25d",
+          "classification": "reusable_version_neutral_candidate_pending_013_S0_02",
+          "disposition": "may_reuse_only_by_exact_digest_after_semantic_and_dependency_revalidation"
+        },
+        {
+          "ref": "configs/runtime/fin_ia_0_1_3_typed_environment_semantic_parity_v1_0.json",
+          "sha256": "7e523a536f539c8e509ab1b9402296ce9ff20ff396ef2bce0da3262668b1c4f3",
+          "classification": "reusable_version_neutral_candidate_pending_013_S0_02",
+          "disposition": "may_reuse_only_by_exact_digest_after_semantic_and_dependency_revalidation"
+        },
+        {
+          "ref": "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py",
+          "sha256": "fcd21d56b33342a4a464132db1174465e9f006cedcc0b471433966424f507a20",
+          "classification": "reusable_test_candidate_pending_013_S0_02",
+          "disposition": "not_a_current_gate_until_renamed_or_bound_by_canonical_successor"
+        },
+        {
+          "ref": "tests/contract/test_fin_0_1_3_s0_runtime_resource_registry_and_dependency_compiler.py",
+          "sha256": "7fbe2699e64dc32bde59cee1f7685bf0185cdc0feb1fc17de978edb74237fa58",
+          "classification": "reusable_test_candidate_pending_013_S0_02",
+          "disposition": "not_a_current_gate_until_renamed_or_bound_by_canonical_successor"
+        },
+        {
+          "ref": "tests/contract/test_fin_0_1_3_s0_typed_environment_semantic_parity.py",
+          "sha256": "bf98541da1d22e67f2a49ffb93217a2b02ecf244c4d81d5f54af7c4b6b04a962",
+          "classification": "reusable_test_candidate_pending_013_S0_02",
+          "disposition": "not_a_current_gate_until_renamed_or_bound_by_canonical_successor"
+        }
+      ],
+      "promotion_owner": "013-S0-02"
+    }
+  ],
+  "selection_policy": {
+    "filename_version_match_establishes_authority": false,
+    "historical_event_mutation_allowed": false,
+    "reusable_candidate_requires_exact_digest": true,
+    "reusable_candidate_requires_semantic_and_dependency_revalidation": true
+  }
+}

@@ -88,9 +88,21 @@ def test_old_FIN_0_1_3_namespace_is_visible_but_not_promoted() -> None:
     decision = _load(DECISION)
     namespace = decision["historical_FIN_0_1_3_namespace_collision"]
     observed = {
-        "release_configs": len(list(RELEASES.glob("fin_ia_0_1_3*.json"))),
+        "release_configs": len(
+            [
+                path
+                for path in RELEASES.glob("fin_ia_0_1_3*.json")
+                if not path.name.startswith("fin_ia_0_1_3_repair_closeout_")
+            ]
+        ),
         "runtime_configs": len(list(RUNTIME.glob("fin_ia_0_1_3*.json"))),
-        "contract_tests": len(list(CONTRACT_TESTS.glob("test_fin_0_1_3*.py"))),
+        "contract_tests": len(
+            [
+                path
+                for path in CONTRACT_TESTS.glob("test_fin_0_1_3*.py")
+                if not path.name.startswith("test_fin_0_1_3_repair_closeout_")
+            ]
+        ),
     }
     assert observed == {
         "release_configs": 18,

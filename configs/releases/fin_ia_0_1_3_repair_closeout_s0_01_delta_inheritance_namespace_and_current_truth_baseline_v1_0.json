@@ -1,0 +1,407 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s0_01_delta_baseline_v1_0",
+  "baseline_id": "FIN-0.1.3-REPAIR-CLOSEOUT-S0-01-DELTA-BASELINE-R1",
+  "recorded_at": "2026-08-06T14:00:00+08:00",
+  "status": "S0_01_engineering_pass_canonical_namespace_and_current_truth_baseline_ready_S0_02_next",
+  "authority": {
+    "user_instruction": "你可以开始下一步了",
+    "S0_01_implementation_authorized": true,
+    "S0_02_or_later_implementation_authorized_by_this_record": false,
+    "model_provider_network_source_or_external_tool_authorized": false
+  },
+  "source_bindings": [
+    {
+      "role": "FIN_0_1_2_terminal_handoff",
+      "ref": "configs/releases/fin_ia_0_1_2_s5_decision_only_honest_block_candidate_freeze_and_fin_0_1_3_handoff_v1_0.json",
+      "sha256": "035b8a8f365ef2ac556d29bf6e86274d4e90ec47ae524623285812d063569703"
+    },
+    {
+      "role": "predecessor_active_suite",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_3.json",
+      "sha256": "ff7123a382c655a40ce22377d881bc8bc240839cf8e3fddd4345b012909b1b12"
+    },
+    {
+      "role": "three_case_current_projection",
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t06_a_current_product_projection_manifest_v1_0.json",
+      "sha256": "fc7e60234e0cbff98fdc8c44bad231073d167820205715f78425121b1340c503"
+    },
+    {
+      "role": "typed_return_replay_handoff",
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t06_c_current_review_control_and_t07_handoff_zero_call_implementation_v1_0.json",
+      "sha256": "9d04e4cbcd0e6d4491faa2cf079eb06b8722fe0dff4952f577f33fa55d9b36cb"
+    },
+    {
+      "role": "bounded_reviewer_session_engineering",
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t07_b_bounded_internal_reviewer_session_zero_call_implementation_v1_0.json",
+      "sha256": "8b5fe981162201f0c2b1e9c47df38f37f1d07c204f3a33b37beaaeba3afc29ee"
+    },
+    {
+      "role": "research_content_quality_hard_gate",
+      "ref": "docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md",
+      "sha256": "312051167d0b670b9e9a2bcb34c0d3f74f902abf28c2b13f98b0e3e9fbd1e2b7"
+    },
+    {
+      "role": "canonical_active_suite_successor",
+      "ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s0_01_active_test_suite_successor_v1_0.json",
+      "sha256": "9cdf4f73ef8a7aa2aa5c9746ac719714faa063b2219b8c71a70b671c2201fbdf"
+    }
+  ],
+  "historical_namespace_inventory": {
+    "counts": {
+      "release_configs": 18,
+      "runtime_configs": 16,
+      "contract_tests": 13,
+      "total": 47
+    },
+    "classification_counts": {
+      "historical_event_not_current_authority": 18,
+      "superseded_projection_not_reusable_as_current_truth": 11,
+      "reusable_version_neutral_candidate_pending_013_S0_02": 5,
+      "reusable_test_candidate_pending_013_S0_02": 3,
+      "historical_test_not_current_gate": 10
+    },
+    "assets": [
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_0.json",
+        "sha256": "ec3be712618a03e5792984e46054954571c98c52a767cab0aa261bb31ef614be",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_1.json",
+        "sha256": "9d6ec2a0acc56c9247e00f26b8574667877dde55d07211392896a59a7478a045",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_2.json",
+        "sha256": "3353650956fa4b32ce252abde2814c122382b0773ffeb049e0756ad00908f8e1",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_active_test_suite_manifest_v1_3.json",
+        "sha256": "bd8ece123ed959183a6e9a696759892e51b2c7798982dcb6c66e4123a371ea34",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_exit_contract_v3_eligibility_authority_transition_structural_blocker_terminal_decision_v1_0.json",
+        "sha256": "10f20dd36bfeafcd65a8dac0beb71cc1cfbc47094b2eb250cf54f56ae8c8f3a7",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_exit_contract_v3_proof_policy_single_source_and_pre_consumption_boundary_minimum_zero_call_implementation_v1_0.json",
+        "sha256": "0043ae6933621e9b84a1df91a4fe70714a5874ecea474275d8b54518a5820a48",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_hermetic_runtime_dependency_and_semantic_parity_stage_plan_v1_0.json",
+        "sha256": "034c7714e5773fe48b0d69ed6ab373ba02074e497d803bcd73349932f2177000",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_and_current_runtime_host_zero_call_engineering_proof_authority_decision_v1_0.json",
+        "sha256": "e1ab2dbfea350f309a19981fb9b625bfbff3892f6b1510e6bb3d6841d69486e8",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_reference_role_taxonomy_registry_and_collect_all_compiler_minimum_zero_call_implementation_v1_0.json",
+        "sha256": "9bf91966018e6e0a3b5378f073f44039f9690fce23d80412397bc7764292ee63",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_t02_runtime_resource_registry_and_typed_environment_projection_minimum_zero_call_implementation_v1_0.json",
+        "sha256": "743c4c9933c1b7b2c13e4f7cc7cf015cfd554f19a35c2235d9d06a6908a3606f",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_t03_host_zero_call_engineering_proof_execution_manifest_v1_0.json",
+        "sha256": "26c6fdb9793ce9df50d1ccc7a08b4b446494f715ca39702d7084f93715a6f8b4",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_t03_host_zero_call_engineering_proof_terminal_honest_block_closeout_v1_0.json",
+        "sha256": "51dce03056792a85bc6615d845476543205b7cbb9754bcbc44ac9b72a39131b9",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_t03_terminal_honest_block_reference_role_taxonomy_owner_and_exit_contract_v2_disposition_v1_0.json",
+        "sha256": "2c040ff28f499b03e36cc5d3b5b31df7827fe27d8a1448958d6dd965f368fcba",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_v2_host_proof_first_credible_failure_project_level_disposition_and_exit_contract_v3_decision_v1_0.json",
+        "sha256": "273e0383c133fa6530205357beb722453830f9e6aff03564f8e5765a962fdc30",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_v2_host_zero_call_engineering_proof_active_suite_manifest_v1_0.json",
+        "sha256": "06ba3cd35ce35ab1325babec9cba458f1b96eadf477b0f0f31751a4f4dcd0e4d",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_v2_host_zero_call_engineering_proof_execution_manifest_v1_0.json",
+        "sha256": "84f68b31511bfa17d3ee12fad752bbb696020c81781ccb62afd4a9defc5d79ac",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s0_v2_host_zero_call_engineering_proof_terminal_failure_and_project_level_disposition_required_v1_0.json",
+        "sha256": "5e452fdef23b8492feeabef994731a2997c3eee11b9ed0865ff6ec584d57f6b1",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_terminal_honest_block_and_fin_0_1_4_s0_version_scope_disposition_v1_0.json",
+        "sha256": "6991bfa371120ce9422242417884651bcc6f03703b4986bbbb54c0f387f85856",
+        "classification": "historical_event_not_current_authority",
+        "disposition": "preserve_immutable_stage_decision_or_projection_but_do_not_gate_new_FIN_0_1_3"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_0.json",
+        "sha256": "b46ab422eedd1fdbd7580eba181387d7712df877f145f1838d49fd5ac066bc23",
+        "classification": "superseded_projection_not_reusable_as_current_truth",
+        "disposition": "retain_for_history_only"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_1.json",
+        "sha256": "38335795892eb4253b7ac867d8c99f7d7c6ba82d0f56bbc0a59a5b94b7cbd44e",
+        "classification": "superseded_projection_not_reusable_as_current_truth",
+        "disposition": "retain_for_history_only"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_10.json",
+        "sha256": "8e59c15de843408c23f9ea76b118e7750f81c55b4e38ec3dbf76f879f33f9292",
+        "classification": "superseded_projection_not_reusable_as_current_truth",
+        "disposition": "retain_for_history_only"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_2.json",
+        "sha256": "7ee62e46f06f379860644073d54a39de2d4a052bbcd15d2df48377d75ca02bb1",
+        "classification": "superseded_projection_not_reusable_as_current_truth",
+        "disposition": "retain_for_history_only"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_3.json",
+        "sha256": "a2ce25999db6272af38f8b92d79a698058ae32f014b345486afed78304aca749",
+        "classification": "superseded_projection_not_reusable_as_current_truth",
+        "disposition": "retain_for_history_only"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_4.json",
+        "sha256": "162e27c7a61a101299efb39bb473442e12509f56a5c036431ee4214cb7436980",
+        "classification": "superseded_projection_not_reusable_as_current_truth",
+        "disposition": "retain_for_history_only"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_5.json",
+        "sha256": "352bb59919517a165371855d4090ca46a8d73ca773f7526d876368731ef7a9e7",
+        "classification": "superseded_projection_not_reusable_as_current_truth",
+        "disposition": "retain_for_history_only"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_6.json",
+        "sha256": "49d1f1eccff21e11f1cd57699e4ea205b3962f3d222e53353886b3cc0640960a",
+        "classification": "superseded_projection_not_reusable_as_current_truth",
+        "disposition": "retain_for_history_only"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_7.json",
+        "sha256": "67f7a75058b1d65be27cc99debab05d35ec266c0fea61e3b05ba3575249d2d0d",
+        "classification": "superseded_projection_not_reusable_as_current_truth",
+        "disposition": "retain_for_history_only"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_8.json",
+        "sha256": "9413590a956ea5290672d8af494ac759c29e9eab05c6b0a033761ef4775c816a",
+        "classification": "superseded_projection_not_reusable_as_current_truth",
+        "disposition": "retain_for_history_only"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_current_program_projection_v1_9.json",
+        "sha256": "402bdf42a69ca9ffaa7fedcfa43764346872b56e6e96841c41e5537319ea4c67",
+        "classification": "superseded_projection_not_reusable_as_current_truth",
+        "disposition": "retain_for_history_only"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_0.json",
+        "sha256": "240d6f7beadd1554c58d95f99bd7fbe85bd3ecea07b8556d2c95a283704fe209",
+        "classification": "reusable_version_neutral_candidate_pending_013_S0_02",
+        "disposition": "may_reuse_only_by_exact_digest_after_semantic_and_dependency_revalidation"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_reference_role_registry_v1_1.json",
+        "sha256": "0d4b388cbb16cfac9cac8ea883e3d65a64473cfb6733311354d64de4bd2def75",
+        "classification": "reusable_version_neutral_candidate_pending_013_S0_02",
+        "disposition": "may_reuse_only_by_exact_digest_after_semantic_and_dependency_revalidation"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_repository_reference_proof_policy_v3_0.json",
+        "sha256": "52eabb953ccbf5c2a64685fea3012ec311229233450c080eacc52bda2ea35253",
+        "classification": "reusable_version_neutral_candidate_pending_013_S0_02",
+        "disposition": "may_reuse_only_by_exact_digest_after_semantic_and_dependency_revalidation"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json",
+        "sha256": "e510e72945a9f8042f342b87c37b84ca305280a85ccf7dc3ad39f29d1328b25d",
+        "classification": "reusable_version_neutral_candidate_pending_013_S0_02",
+        "disposition": "may_reuse_only_by_exact_digest_after_semantic_and_dependency_revalidation"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_typed_environment_semantic_parity_v1_0.json",
+        "sha256": "7e523a536f539c8e509ab1b9402296ce9ff20ff396ef2bce0da3262668b1c4f3",
+        "classification": "reusable_version_neutral_candidate_pending_013_S0_02",
+        "disposition": "may_reuse_only_by_exact_digest_after_semantic_and_dependency_revalidation"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s0_active_suite.py",
+        "sha256": "b7b501f23ba0c3c6bd08e650958492967d9978cf0d0c3d9876c47600bbebbc2b",
+        "classification": "historical_test_not_current_gate",
+        "disposition": "preserve_historical_assertion_without_promoting_old_product_version_authority"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s0_exit_contract_v3_proof_control_plane.py",
+        "sha256": "411fdcdf3c5f3aafc61c55bfc05f13699dad875c90d2af49462703a4317d9c52",
+        "classification": "historical_test_not_current_gate",
+        "disposition": "preserve_historical_assertion_without_promoting_old_product_version_authority"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s0_hermetic_runtime_dependency_and_semantic_parity_stage_plan.py",
+        "sha256": "95d07c62f3175b76eea8f9cb12e7a2cd344015e00619aa4bb1736aed694ec7f6",
+        "classification": "historical_test_not_current_gate",
+        "disposition": "preserve_historical_assertion_without_promoting_old_product_version_authority"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s0_reference_role_current_runtime_host_zero_call_proof_authority_decision.py",
+        "sha256": "b24ebec0db093266f5fdc66ca3179ef5ddd6634a910609406fa3e67ad42dd65c",
+        "classification": "historical_test_not_current_gate",
+        "disposition": "preserve_historical_assertion_without_promoting_old_product_version_authority"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s0_reference_role_registry_and_collect_all_compiler.py",
+        "sha256": "fcd21d56b33342a4a464132db1174465e9f006cedcc0b471433966424f507a20",
+        "classification": "reusable_test_candidate_pending_013_S0_02",
+        "disposition": "not_a_current_gate_until_renamed_or_bound_by_canonical_successor"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s0_reference_role_taxonomy_owner_and_exit_contract_v2_disposition.py",
+        "sha256": "419941c34b19cef3d9c704f0f1157eaf86974ca727c4f32d8c64a3a079181b31",
+        "classification": "historical_test_not_current_gate",
+        "disposition": "preserve_historical_assertion_without_promoting_old_product_version_authority"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s0_runtime_resource_registry_and_dependency_compiler.py",
+        "sha256": "7fbe2699e64dc32bde59cee1f7685bf0185cdc0feb1fc17de978edb74237fa58",
+        "classification": "reusable_test_candidate_pending_013_S0_02",
+        "disposition": "not_a_current_gate_until_renamed_or_bound_by_canonical_successor"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s0_t03_host_zero_call_engineering_proof_terminal_honest_block_closeout.py",
+        "sha256": "97ca1a87f484fe9879078fbabbbb6a82b1c4bec722a879ed95716f75c98c12b5",
+        "classification": "historical_test_not_current_gate",
+        "disposition": "preserve_historical_assertion_without_promoting_old_product_version_authority"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s0_typed_environment_semantic_parity.py",
+        "sha256": "bf98541da1d22e67f2a49ffb93217a2b02ecf244c4d81d5f54af7c4b6b04a962",
+        "classification": "reusable_test_candidate_pending_013_S0_02",
+        "disposition": "not_a_current_gate_until_renamed_or_bound_by_canonical_successor"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s0_v2_failure_project_disposition_and_exit_contract_v3.py",
+        "sha256": "2d0aacbb9f79f3fd4afbfd05e0254e8a4e455c74001ec3dbeefc94e8e083931d",
+        "classification": "historical_test_not_current_gate",
+        "disposition": "preserve_historical_assertion_without_promoting_old_product_version_authority"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s0_v2_host_zero_call_engineering_proof_terminal_failure.py",
+        "sha256": "f5937765607593a90e64840154f5fa08fd26a34ffdd64a7882f763313499394e",
+        "classification": "historical_test_not_current_gate",
+        "disposition": "preserve_historical_assertion_without_promoting_old_product_version_authority"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s0_v3_eligibility_authority_transition_terminal_decision.py",
+        "sha256": "c12c23a965226c4d5c9b1acddee963b180bf8b08177304118b4fde7127f95454",
+        "classification": "historical_test_not_current_gate",
+        "disposition": "preserve_historical_assertion_without_promoting_old_product_version_authority"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_terminal_closeout_fin_0_1_4_s0_version_scope_disposition.py",
+        "sha256": "c37c4dfd8e902424442b2a26c24fde977f166a665e4fd2595f520c891ad81a2b",
+        "classification": "historical_test_not_current_gate",
+        "disposition": "preserve_historical_assertion_without_promoting_old_product_version_authority"
+      }
+    ],
+    "inventory_digest": "db39c342952dcf1475dd99c79b98659db915aa0a6bf134db317d52865c37e207"
+  },
+  "secret_safe_T07_C_current_truth": {
+    "private_store_counts": {
+      "review_sessions": 1,
+      "security_events": 4,
+      "qualified_decisions": 1
+    },
+    "allowlisted_decision_projection": {
+      "case_key": "NVDA",
+      "action": "accept_exact_version",
+      "decided_at": "2026-08-05T15:34:06+00:00",
+      "manifest_digest": "4ee7df3c46a87939412c6ea4d303590d91622a2f7216367b6a62cbc15f357250",
+      "case_projection_digest": "3ad4d03ab389d987d9935e2e202f837b48487467ff74f0fa4fb2df5ffd12c0b0",
+      "handoff_digest": "73f51b8421db04a56e67c33feb65c240531dea84176ae415678acc28d1ed8999",
+      "packet_digest": "a514ee653c63b29f643e0490788828481b422ad7d5ab5b29b07cf70bc4c2ab42",
+      "authenticated_reviewer_identity": true,
+      "qualified_human_review": true,
+      "bounded_NVDA_R3": true,
+      "release_qualified": false
+    },
+    "projection_policy": {
+      "database_open_mode": "read_only",
+      "private_identity_projected": false,
+      "review_text_projected": false,
+      "secret_material_projected": false
+    },
+    "projection_digest": "02ffde001c721ee7450c5d1cbb267d95c6c35cde1e62c4aab7850b68a113b59d"
+  },
+  "inheritance_policy": {
+    "unchanged_engineering_contract_may_be_reused_by_exact_digest": true,
+    "old_product_attempts_remain_immutable": true,
+    "old_R2_R3_auto_promotable_after_changed_input_data_or_contract": false,
+    "old_FIN_0_1_3_filename_establishes_current_authority": false,
+    "current_repair_closeout_namespace_prefix": "fin_ia_0_1_3_repair_closeout"
+  },
+  "inherited_capabilities": {
+    "three_case_current_projection_shape_and_lineage_anchor": "inherited_engineering_anchor_not_release_truth",
+    "typed_return_replay_and_handoff": "inherited_engineering_contract",
+    "bounded_reviewer_session": "inherited_engineering_contract",
+    "bounded_NVDA_R3_local_action": "projected_current_truth_not_new_candidate_acceptance",
+    "research_content_quality_rubric": "current_requirement_runtime_translation_pending"
+  },
+  "stage_truth": {
+    "FIN_0_1_2": "terminal_honest_block_release_not_qualified",
+    "FIN_0_1_3_S0_01": "engineering_pass",
+    "FIN_0_1_3_S0_02": "next_not_started",
+    "FIN_0_1_3_S1_to_S5": "not_started",
+    "FIN_0_2_definition": "unchanged",
+    "release_qualified": false
+  },
+  "observed_counts": {
+    "credential_or_private_identity_reads": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_or_source_calls": 0,
+    "business_runs_or_artifacts": 0,
+    "private_store_writes": 0
+  },
+  "next_action": "FIN-0.1.3-013-S0-02-SHARED-RUNTIME-ADMISSION-REPLAY-AND-HISTORICAL-PROOF-DEBT"
+}

@@ -3,6 +3,9 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-B DELL Agent exact-live 已成功且独立 L1 通过，但产品 L4 被本地交付表面阻断（current，2026-08-05）**：唯一 admission 已消费；DeepSeek `deepseek-v4-pro` 完成 `9 calls / 3 local Fact receipts / 9 captures / 9 Artifacts`，9 次均 stop、attempt=1，input/output=`57,739/3,323`，cost=`USD 0.02800749`，retry/第二次 live=`0/0`。terminal=`b22f6faa…b5a6`，exact result SHA=`b4edc092…dd32`，capture/usage/DELL identity/current Evidence lineage/三条 exact Numeric 独立回算通过；L1/L2=pass，L3 保留 RC-P36-119。最终中文报告仍暴露内部 scope/period token、重复 USD、英文 limitation，且 Verifier 未绑定 final preview；登记 RC-P36-120，根因是 T04 renderer/preview-binding 仍为 NVDA 专用，未泛化到 DELL，不是模型/Provider 故障。exact-live 成功不等于 DELL R2；paired/Owner 未执行，DELL R2=false。current next=`FIN-0.1.2-S4-T05-B-DELL-FINAL-DELIVERY-GENERIC-CURRENT-CASE-RENDERER-PREVIEW-BINDING-AND-PAIRED-READINESS-ZERO-CALL-DISPOSITION`；禁止第二次 DELL live。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-B DELL Agent fresh proof 已通过且 admission 已签发未消费，exact-live 待执行（current，2026-08-05）**：current transport-v9/Lead-v8 正式拓扑为 `9 Provider calls / 3 local Fact receipts / 9 captures / 9 Artifacts`；两个独立 disposable runtime 的 full-fake payload 等价，外部 model/provider/network=`0/0/0`。编译输入估算=`86,688`，硬上限=`108,000`，余量=`21,312`，最大输出=`10,000`、成本=`USD 0.06`、retry=`0`。admission digest=`de7f118d…3a56`，execution identity=`fin012-s4-t05b-dell-agent-exact-live-r1`，状态 issued/unconsumed/not-started；实际环境与 Project OS preflight 均通过，credential 只检查存在性。用户已预授权证明通过后执行唯一一次 DeepSeek exact-live；首个可信失败停止，不自动 retry/第二次 live。DELL R2=false。current next=`FIN-0.1.2-S4-T05-B-DELL-AGENT-EXACT-LIVE-EXECUTION-AND-TERMINAL-MATERIALIZATION`。
 >
 > [!IMPORTANT]

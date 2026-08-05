@@ -1,11 +1,13 @@
 # FIN 0.1.1 / 0.1.2 PRD 能力对账与 S0–S5 重基线
 
 日期：2026-08-04
-状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T04 pass closed，current NVDA R2 Owner accepted / S4-T05-A zero-call transfer engineering pass / T05-B DELL Agent fresh proof pass + admission issued unconsumed，exact-live next / no product version change`
+状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T04 pass closed，current NVDA R2 Owner accepted / S4-T05-A zero-call transfer engineering pass / T05-B DELL Agent exact-live success + independent L1 pass，product L4 blocked / no product version change`
 
 > 2026-08-04 S4-T03 零调用权限审计确认：F05 当前不是“模型效果差”，而是 metadata route 尚未接成 executable search，来源 request/response capture-first 与 fresh execution-control chain 也未建立。`RC-P36-114` 留在 T03；必须先做一个合并的零调用可执行接入包，再另行判断 current canary admission，不能把 state stub、URL metadata wrapper 或历史 fixture 写成 current Agentic Search。
 
-当前 next：`FIN-0.1.2-S4-T05-B-DELL-AGENT-EXACT-LIVE-EXECUTION-AND-TERMINAL-MATERIALIZATION`
+当前 next：`FIN-0.1.2-S4-T05-B-DELL-FINAL-DELIVERY-GENERIC-CURRENT-CASE-RENDERER-PREVIEW-BINDING-AND-PAIRED-READINESS-ZERO-CALL-DISPOSITION`
+
+> 2026-08-05 T05-B DELL Agent exact-live：`deepseek-v4-pro` 以 `9 calls / 3 local receipts / 9 captures / 9 Artifacts` 一次成功，input/output=`57,739/3,323`、cost=`USD 0.02800749`、retry=`0`，独立 L1/L2 通过。L4 发现 T04 已修的 final renderer/preview-binding 仍是 NVDA 专用，DELL 报告暴露内部 token、重复 USD 和英文 limitation；登记 RC-P36-120，禁止模型重跑，先做零调用 case-generic 产品表面。paired/Owner/DELL R2 仍未成立。
 
 > 2026-08-05 T05-B DELL Agent fresh proof/admission：current transport-v9/Lead-v8 的正式拓扑是 `9 calls / 3 local Fact receipts / 9 captures / 9 Artifacts`，两个 disposable runtime 零调用等价；估算输入=`86,688/108,000`，余量=`21,312`，retry=`0`。admission=`de7f118d…3a56` 已签发未消费，实际环境与 Project OS preflight 通过；用户预授权下一步唯一一次 DeepSeek exact-live。当前没有真实模型调用、业务 Artifact、paired/Owner 或 DELL R2。
 

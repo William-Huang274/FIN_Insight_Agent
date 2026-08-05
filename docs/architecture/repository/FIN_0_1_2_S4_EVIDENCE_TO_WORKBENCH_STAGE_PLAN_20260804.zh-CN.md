@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL Agent fresh proof pass + admission issued unconsumed，exact-live next / S4-T06–T08 not started`
+状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL Agent exact-live success + L1 pass，product L4 blocked / S4-T06–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -123,7 +123,7 @@ RC-P36-117 现已完成结构处置：完整本地 payload 继续作为审计和
 
 当前 next：
 
-`FIN-0.1.2-S4-T05-B-DELL-AGENT-EXACT-LIVE-EXECUTION-AND-TERMINAL-MATERIALIZATION`
+`FIN-0.1.2-S4-T05-B-DELL-FINAL-DELIVERY-GENERIC-CURRENT-CASE-RENDERER-PREVIEW-BINDING-AND-PAIRED-READINESS-ZERO-CALL-DISPOSITION`
 
 R3 exact-live 已 exact-once 成功：9 calls / 9 captures / 3 local Fact receipts / 9 formal Artifacts，input/output=`55,906/3,038`，cost=`USD 0.02696216`，独立 L1 通过，RC-P36-117 live-close。T04 仍不能关闭：最终本地 delivery 暴露内部 scope/period token、重复币种单位并混入英文限制项，且 Verifier 未绑定 final delivery preview；登记 RC-P36-118。该问题属于 T04 产品表面与验收绑定，不属于模型重试事项。后继只允许零调用、有界本地 renderer/preview-binding 处置；不得自动 R4。paired/Owner 与 current NVDA R2 仍未成立，T05 继续 blocked。
 
@@ -176,3 +176,9 @@ Agent exact input 采用 Evidence Pack 内容寻址身份，不再沿用 regress
 current Agent 合同按 transport-v9 / Lead-v8 编译，正式形态为 `9 Provider calls / 3 local Fact receipts / 9 captures / 9 Artifacts`。T05-A 的 `12 callbacks` 是 compatibility regression 形态，不得倒退成 current live 拓扑。两个 fresh disposable runtime 的完整 payload 等价证明通过；内容寻址 capture ref 因 Run identity 新鲜而不同，已与 payload equivalence 分层校验，未丢弃原始 capture。
 
 九节点估算输入合计 `86,688` tokens，低于 `108,000` 硬边界并保留 `21,312` 余量；最大输出 `10,000`、最大成本 `USD 0.06`、retry=`0`。admission=`de7f118d…3a56` 已签发但未消费，实际环境和 Project OS preflight 均通过。用户已授权通过后执行一次 exact-live；失败时以首个可信 terminal 为准，不自动重试。DeepSeek live、真实 9 Artifacts、独立 L1、paired、Owner 和 DELL R2 仍未成立。
+
+## 14. S4-T05-B DELL Agent exact-live 与独立产品验收
+
+唯一 exact-live 已成功：`deepseek-v4-pro` 9 次调用全部 stop，`3 local Fact receipts / 9 captures / 9 Artifacts`；input/output=`57,739/3,323`，cost=`USD 0.02800749`，retry/第二次 live=`0/0`。capture-first readback、DELL/current input/Evidence lineage、三条 exact Numeric 与 Artifact topology 独立 L1 全部通过。三个 Cell authority coverage 通过；6 Claims、9 WWC、3 dependencies、3 conflicts、3 gaps 已形成，WWC 泛化措辞继续后传 RC-P36-119。
+
+产品 L4 未通过：raw report 仍含内部 scope/period token、重复货币单位和英文 limitation，machine Verifier 未绑定最终本地 preview。T04 的 RC-P36-118 修复只消费 NVDA surface，未成为三案例 case-generic renderer；登记 RC-P36-120，留在 T05-B 做一次零调用泛化、mutation 与 paired readiness，不重跑 DeepSeek。DELL R2、paired、Owner 和 T05-C 仍 blocked。

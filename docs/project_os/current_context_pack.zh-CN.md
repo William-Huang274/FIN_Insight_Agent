@@ -3,6 +3,12 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-D post-transfer NVDA 入口/依赖审计与零调用全链复证已通过，fresh live 尚未授权（current，2026-08-05）**：T03 terminal=`7ec970b6…f156`、8 份 raw capture 和 T04 Evidence Pack=`fdc1a100…bf65` 仍可按相同 as-of/content digest 完整回读，因此当前不重跑 Search。审计发现 shared exact-execution wrapper 只读取 DELL/MU 的 `S4_T04_source_grounded_input`，与 NVDA 已冻结的 legacy `T04_financial_pack` lineage 不兼容；RC-P36-123 已在 T05-D 以按 case-family 选择槽位且仍要求 exact Evidence digest 的受控修复关闭，不是模型/Provider 问题。新 post-transfer input=`75fa19a8…9216`；两个 fresh zero-call Runtime 归一化一致，均为 `9 Provider callbacks / 3 local Fact receipts / 9 captures / 9 Artifacts`，容量=`85,614/108,000`、余量=`22,386`，聚焦与相邻回归=`18 passed`。本项 source/model/Provider/admission/exact-live=`0/0/0/0/0`；post-transfer NVDA R2 仍=false。current next=`FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-FRESH-AGENT-PROOF-CAPACITY-AND-ADMISSION-AUTHORITY-DECISION`；下一步只可做独立 fresh proof/权限决策，不自动签发或调用 DeepSeek。
+>
+> [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-C MU 已获显式 Owner 接受并关闭，T05-D post-transfer NVDA 入口已授权（current，2026-08-05）**：用户在看见 formal paired 的有限结构增益、9/9 WWC 泛化 RC-P36-119 和 Lead 综合偏弱 RC-P36-122 后明确回复“接受”；decision=`70fc169f…5912` 精确绑定 assessment=`2321fd49…0e0f`。S4-T05-C=`pass_closed_owner_accepted`，MU current R2=true；T05-D entry=`authorized_not_started`，post-transfer NVDA R2=false。接受不等于 strong MU thesis、Human Review、NVDA R3、S4 整体验收或 release。本项 model/Provider/network/source/exact-live=`0`。current next=`FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-CURRENT-R2-ENTRY-AND-DEPENDENCY-DECISION`；先做零调用复用/重证边界，不得直接 Search/DeepSeek。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-B DELL 已获显式 Owner 接受并关闭，T05-C MU 入口已授权未开始（current，2026-08-05）**：用户在看见 paired L1–L4、有限 L3 增益、9/9 WWC finding 与接受/拒绝影响后明确回复“接受”；decision=`a03a1071…6468` 精确绑定 assessment=`c86bf7bf…83c4`。S4-T05-B=`pass_closed_owner_accepted`，DELL current R2=true；T05-C entry=`authorized_not_started`，MU R2=false、T05-C Run=0。RC-P36-119 继续后传 T08–T10/S5，RC-P36-115 继续阻断 S5；Human Review、NVDA R3、S4 整体验收、release/production 均未成立。本项 model/Provider/network/source/exact-live=`0`。current next=`FIN-0.1.2-S4-T05-C-MU-CURRENT-R2-FRESH-ZERO-CALL-ENTRY-AND-DEPENDENCY-DECISION`；不得直接 Search/DeepSeek。
 >
 > [!IMPORTANT]

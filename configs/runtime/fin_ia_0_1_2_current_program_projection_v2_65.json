@@ -1,0 +1,53 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_65",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.65",
+  "recorded_at": "2026-08-05T16:35:00+08:00",
+  "sequence_after_projection": "v2_64",
+  "status": "S4_T05_D_entry_dependency_pass_search_reuse_zero_call_chain_proven_fresh_live_not_authorized",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor",
+    "S4_T01_T04": "pass_closed",
+    "S4_T05_A": "engineering_pass_zero_call",
+    "S4_T05_B_DELL": "pass_closed_owner_accepted_current_R2",
+    "S4_T05_C_MU": "pass_closed_owner_accepted_current_R2",
+    "S4_T05_D_post_transfer_NVDA": "entry_dependency_pass_zero_call_live_pending",
+    "S4_T06_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": true,
+    "DELL_current_R2": true,
+    "MU_current_R2": true,
+    "post_transfer_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-FRESH-AGENT-PROOF-CAPACITY-AND-ADMISSION-AUTHORITY-DECISION"
+  },
+  "T05_D_entry_and_dependency": {
+    "decision_digest": "15d4c9f017b1345941a6f04c71d7fe19fa6b16bc02e5360d7313eca310c5c877",
+    "search_and_evidence_decision": "reuse_content_addressed_T03_terminal_and_T04_Evidence_pack_no_refresh",
+    "post_transfer_agent_input_digest": "75fa19a87bfbd1aa37eb4b3613a74f204fd99a49b9dee8d353e659fed9c19216",
+    "fresh_zero_call_runtime_roots": 2,
+    "provider_local_capture_artifact": [9, 3, 9, 9],
+    "aggregate_input_capacity": [85614, 108000, 22386],
+    "focused_and_adjacent_tests": "18 passed",
+    "new_source_model_provider_admission_exact_live": [0, 0, 0, 0, 0],
+    "fresh_live_authorized": false
+  },
+  "preserved_boundaries": {
+    "RC_P36_115": "open_S5_cross_runtime_lock",
+    "RC_P36_119": "open_nonblocking_T08_T10_S5",
+    "RC_P36_121": "closed_current_result_controlled_successor",
+    "RC_P36_122": "open_nonblocking_T08_T10_S5",
+    "RC_P36_123": "closed_T05_D_lineage_family_exact_execution_compatibility",
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_product_acceptance": false,
+    "S5_entered": false,
+    "release": "not_qualified",
+    "production": "not_qualified"
+  }
+}

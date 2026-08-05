@@ -254,3 +254,13 @@ formal assessment=`2321fd49…0e0f`，推荐 `accept_current_MU_R2_with_RC_P36_1
 用户在完整看见 L3 仅为有限结构增益、9/9 WWC 泛化和 Lead 综合偏弱后明确回复“接受”。decision=`70fc169f…5912` 绑定 formal assessment=`2321fd49…0e0f`；S4-T05-C=`pass_closed_owner_accepted`，MU current R2=true，T05-D post-transfer NVDA entry=`authorized_not_started`。
 
 该接受不关闭 RC-P36-119/122，也不证明 strong MU thesis、post-transfer NVDA R2、qualified Human Review、NVDA R3、S4 整体验收、S5、release 或 production。本项没有模型、Provider、网络、Search、exact-live 或 T05-D Run。下一项仅做 `FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-CURRENT-R2-ENTRY-AND-DEPENDENCY-DECISION`，必须先零调用界定 T04 已接受 NVDA 资产的可复用范围和必须重证的 post-transfer 边界。
+
+## 24. S4-T05-D post-transfer NVDA 入口、依赖与零调用全链复证
+
+T03 current Search terminal、8 份 source/raw capture 与 T04 Evidence Pack 均按原 content digest、相同 as-of=`2026-07-21T00:00:00Z` 完整回读；T05 profile 中的 NVDA regression-oracle SHA 也与 Evidence Pack 文件一致。因此 T05-D 复用这份 current source snapshot，不再为迁移验证重跑 Search。旧 T04 exact result 与 Owner acceptance 只作为 pre-transfer 产品锚点，不能替代 post-transfer shared Runtime 的新证明。
+
+入口审计发现一个真正属于 T05-D 的项目兼容缺口：T05-A 有意保留 NVDA legacy six-slot lineage，但 shared exact-execution wrapper 仍硬编码读取 DELL/MU 的 `S4_T04_source_grounded_input`。这会使 post-transfer NVDA 在 Provider 之前失败，即使 T05-A 直接 Agent fake 已通过。RC-P36-123 已以受控修复关闭：按冻结 case-family 选择 `T04_financial_pack` 或 `S4_T04_source_grounded_input`，两条路径仍必须逐字匹配本案 current Evidence digest；没有放宽 identity、Numeric、citation 或 lineage 校验。
+
+新的 current product case/input 已从相同 Evidence Pack 经当前 T05 compiler 重建：case=`fin012-s4-t05-nvda-current-evidence-34ecb73ab7539e5156bd`，input=`75fa19a8…9216`。两个独立 fresh temporary Runtime 均通过 input preparation、9-call capacity compiler、capture/terminal 物化与 9 Artifact assembly；normalized result 完全一致，拓扑=`9 Provider callbacks / 3 local Fact receipts / 9 captures / 9 Artifacts`，预计输入=`85,614/108,000`、最大单次=`15,678`、余量=`22,386`。聚焦和 DELL/MU/T05-A 相邻回归=`18 passed`。
+
+本项只建立 Search reuse、current input 和 zero-call engineering reproof。新增 source/model/Provider/admission/exact-live/业务 Artifact 均为 0，post-transfer NVDA R2=false。下一项限定为 `FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-FRESH-AGENT-PROOF-CAPACITY-AND-ADMISSION-AUTHORITY-DECISION`：独立重验当前 input/code/fresh identity、Project OS 与预算后，才可决定是否签发最多一次 post-transfer DeepSeek exact-live。RC-P36-119/122 继续后传 T08–T10/S5；qualified Human Review、NVDA R3、Workbench、S5、release 和 production 不属于 T05-D。

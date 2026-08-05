@@ -44,6 +44,27 @@ def _require(condition: bool, code: str) -> None:
         raise Fin012S4T05CurrentCaseAgentExecutionError(code)
 
 
+def _bound_current_evidence_digest(
+    input_pack: S3ThreeCellBoundedAgentInputPack,
+    *,
+    case_key: str,
+) -> str:
+    """Read the current Evidence binding from the case's frozen lineage family."""
+
+    lineage_key = (
+        "T04_financial_pack"
+        if case_key == "NVDA"
+        else "S4_T04_source_grounded_input"
+    )
+    row = input_pack.lineage.get(lineage_key)
+    _require(
+        isinstance(row, Mapping)
+        and len(str(row.get("digest") or "")) == 64,
+        "s4_t05_current_case_evidence_lineage_missing",
+    )
+    return str(row["digest"])
+
+
 def prepare_current_case_agent_execution(
     input_pack: S3ThreeCellBoundedAgentInputPack,
     evidence_pack: Mapping[str, Any],
@@ -56,14 +77,17 @@ def prepare_current_case_agent_execution(
     _require(case_key in SUPPORTED_CASES, "s4_t05_current_case_unsupported")
     current = validate_transfer_evidence_pack(evidence_pack, case_key=case_key)
     expected_prefix = f"fin012-s4-t05-{case_key.lower()}-current-evidence-"
+    bound_evidence_digest = _bound_current_evidence_digest(
+        input_pack,
+        case_key=case_key,
+    )
     _require(
         bool(execution_identity.strip())
         and input_pack.company == case_key
         and "oracle" not in input_pack.case_id
         and input_pack.case_id.startswith(expected_prefix)
         and input_pack.decision_surface_contract_ref == T05_TRANSFER_CONTRACT_REF
-        and input_pack.lineage["S4_T04_source_grounded_input"]["digest"]
-        == current["evidence_pack_digest"]
+        and bound_evidence_digest == current["evidence_pack_digest"]
         and input_pack.input_digest
         == canonical_digest(input_pack.model_dump(mode="json", exclude={"input_digest"})),
         "s4_t05_current_case_agent_exact_input_binding_invalid",
@@ -115,11 +139,14 @@ def compile_current_case_agent_execution_envelope(
     projected_per_call_input_tokens: Sequence[int],
 ) -> dict[str, Any]:
     current = validate_transfer_evidence_pack(evidence_pack, case_key=case_key)
+    bound_evidence_digest = _bound_current_evidence_digest(
+        prepared.input_pack,
+        case_key=case_key,
+    )
     projected = tuple(int(value) for value in projected_per_call_input_tokens)
     _require(
         prepared.input_pack.company == case_key
-        and prepared.input_pack.lineage["S4_T04_source_grounded_input"]["digest"]
-        == current["evidence_pack_digest"]
+        and bound_evidence_digest == current["evidence_pack_digest"]
         and len(projected) == 9
         and min(projected) > 0
         and sum(projected) <= MAXIMUM_INPUT_TOKENS,

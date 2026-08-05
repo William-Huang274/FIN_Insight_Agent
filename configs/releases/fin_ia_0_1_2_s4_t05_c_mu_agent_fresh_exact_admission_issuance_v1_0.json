@@ -1,0 +1,97 @@
+{
+  "authority_decision_digest": "d7bc2f417d8490eafd1a8c8bcb7112cb831dd903ad36ffab6a287b911fb55758",
+  "authority_decision_ref": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_agent_fresh_zero_call_proof_and_admission_authority_decision_v1_0.json",
+  "exact_binding": {
+    "as_of": "2026-07-26T00:00:00Z",
+    "case_id": "fin012-s4-t05-mu-current-evidence-805cc63d45846e9db688",
+    "case_version": 1,
+    "complete_input_digest": "c15ce68c6685ffdc2581c858e26ed6a76c3c7e56bb824590ea4ed66bc10e69ec",
+    "evidence_pack_digest": "ef1895fe4c113c5e2d952178fc715fb3f5a4eb1ca30a784431c74cf744df433d",
+    "predicted_attempt_id": "attempt_fin01_0d37012c089d27cb0f39f02a",
+    "predicted_research_run_id": "research_run_fin01_50d32f3b323460d56b37b44b",
+    "predicted_work_unit_id": "wu_p02_5_d17dc07be2706d310c9e33bc",
+    "preparation_digest": "e03c43dafb56855e8ece09be59e4c904cf810d6cc3cd90b24af187d4b98083f2",
+    "t03_terminal_digest": "3f2c0615aa5695d92ea885403d600238ee2e4080a9e31701b261cb94fb4ef1ff"
+  },
+  "execution_envelope": {
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_agent_fresh_exact_admission_r1.json",
+    "business_promotable": false,
+    "case_key": "MU",
+    "current_evidence": {
+      "evidence_numeric_gap_counts": [
+        15,
+        3,
+        3
+      ],
+      "evidence_pack_digest": "ef1895fe4c113c5e2d952178fc715fb3f5a4eb1ca30a784431c74cf744df433d",
+      "t03_terminal_digest": "3f2c0615aa5695d92ea885403d600238ee2e4080a9e31701b261cb94fb4ef1ff"
+    },
+    "envelope_digest": "5fd668f4158ed5a090ac39eaf3aded28a4140a6160fe282c2041bb681bc72684",
+    "fresh_t03": {
+      "attempt_id": "attempt_fin01_0d37012c089d27cb0f39f02a",
+      "execution_identity": "fin012-s4-t05c-mu-agent-exact-live-r1",
+      "input_digest": "c15ce68c6685ffdc2581c858e26ed6a76c3c7e56bb824590ea4ed66bc10e69ec",
+      "preparation_digest": "e03c43dafb56855e8ece09be59e4c904cf810d6cc3cd90b24af187d4b98083f2",
+      "research_run_id": "research_run_fin01_50d32f3b323460d56b37b44b",
+      "work_unit_id": "wu_p02_5_d17dc07be2706d310c9e33bc"
+    },
+    "hard_budget": {
+      "execution_network_calls": 9,
+      "external_tool_calls": 0,
+      "failed_output_business_promotions": 0,
+      "fallback_budget": 0,
+      "live_case_head_writes": 0,
+      "maximum_input_tokens": 108000,
+      "maximum_output_tokens": 10000,
+      "maximum_total_cost_usd": 0.06,
+      "maximum_transport_attempts_per_call": 1,
+      "maximum_wall_clock_seconds": 900,
+      "provider_calls": 9,
+      "provider_hopping_budget": 0,
+      "retry_budget": 0,
+      "semantic_model_calls": 9,
+      "source_network_calls": 0
+    },
+    "input_capacity_contract": {
+      "aggregate_estimated_input_tokens": 86519,
+      "contract_ref": "fin_0_1_2.S4.T05.current_case_agent_compiled_capacity:v1",
+      "cost_derived_absolute_maximum_input_tokens": 117931,
+      "input_token_headroom": 21481,
+      "maximum_input_tokens": 108000,
+      "maximum_single_interaction_estimated_input_tokens": 15693,
+      "maximum_total_cost_usd": 0.06,
+      "per_interaction_estimated_input_tokens": [
+        7382,
+        7442,
+        8952,
+        9175,
+        7380,
+        7409,
+        13949,
+        9137,
+        15693
+      ],
+      "reserved_maximum_output_tokens": 10000
+    },
+    "schema_version": "fin_ia_0_1_2_s4_t05_current_case_agent_exact_execution_envelope_v1_0",
+    "status": "fresh_T05_current_MU_Agent_exact_execution_not_started"
+  },
+  "issuance_digest": "205770c793171bed50ce6fbf9b55256e8a016b7b365aad0f74589ba6df0710b9",
+  "issued_admission": {
+    "admission_digest": "fbd186e4088de1f77d5cb0dec580154fccd04ddf3dcd77d77beb38766cff3526",
+    "admission_id": "fin012-s4-t05c-mu-agent-fresh-exact-admission-r1",
+    "admission_ref": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_agent_fresh_exact_admission_r1.json",
+    "consumed": false,
+    "execution_identity": "fin012-s4-t05c-mu-agent-exact-live-r1",
+    "execution_started": false
+  },
+  "observed_counts": {
+    "business_artifacts": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0
+  },
+  "recorded_at": "2026-08-05T06:30:00Z",
+  "schema_version": "fin_ia_0_1_2_s4_t05_c_mu_agent_fresh_exact_admission_issuance_v1_0",
+  "status": "issued_unconsumed_zero_call_preflight_pass"
+}

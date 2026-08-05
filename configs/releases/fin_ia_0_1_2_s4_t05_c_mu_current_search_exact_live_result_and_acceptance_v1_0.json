@@ -1,0 +1,70 @@
+{
+  "cell_results": [
+    {
+      "accepted": 6,
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "rejected": 9,
+      "typed_gaps": []
+    },
+    {
+      "accepted": 6,
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "rejected": 6,
+      "typed_gaps": []
+    },
+    {
+      "accepted": 6,
+      "program_cell_id": "value_and_profit_capture",
+      "rejected": 3,
+      "typed_gaps": []
+    }
+  ],
+  "execution_binding": {
+    "admission_digest": "c40305bd66501439eb981ce35689843898b2c5f4a152147df57a7020571ac037",
+    "admission_id": "s4_t03_search_admission_c40305bd66501439eb98",
+    "attempt_id": "s4_t03_search_attempt_3ee475644c72bdd9a4b4",
+    "run_id": "s4_t03_search_run_c7c7ec6f24aa0db493d6",
+    "run_nonce": "20260805_mu_s4_t05c_current_search_exact_live_r1",
+    "runtime_ref": ".codex_runtime/fin012-s4-t05c-mu-current-search-r1"
+  },
+  "independent_acceptance": {
+    "agent_input_compilation_boundary_ready": true,
+    "all_accepted_not_after_case_as_of": true,
+    "capture_object_content_addresses_match": true,
+    "domain_judgment_eligible_in_search": false,
+    "entity_exact_MU": true,
+    "source_snapshot_and_parser_lineage_present": true,
+    "writer_citable_in_search": false
+  },
+  "next_action": "FIN-0.1.2-S4-T05-C-MU-CURRENT-EVIDENCE-PACK-AND-AGENT-EXACT-INPUT-COMPILATION",
+  "observed_counts": {
+    "accepted_candidates": 18,
+    "business_artifacts": 0,
+    "capture_objects": 8,
+    "fallbacks": 0,
+    "live_source_network_calls": 1,
+    "local_retrieval_or_tool_invocations": 6,
+    "model_calls": 0,
+    "paid_api_cost_usd": 0.0,
+    "provider_calls": 0,
+    "rejected_candidates": 18,
+    "requests": 3,
+    "same_target_retries": 0,
+    "source_calls": 1
+  },
+  "recorded_at": "2026-08-05T06:07:04.301755Z",
+  "result_digest": "35259ec5e12918856ac31c234ceb1b837df8aff4374e7168b77f59af75536994",
+  "result_id": "FIN-0.1.2-S4-T05-C-MU-CURRENT-SEARCH-EXACT-LIVE-R1",
+  "schema_version": "fin_ia_0_1_2_s4_t05_c_mu_current_search_exact_live_result_and_acceptance_v1_0",
+  "status": "pass_live_current_evidence_candidate_pack_ready_agent_input_compilation_next",
+  "terminal": {
+    "byte_size": 52697,
+    "code": "three_request_current_evidence_candidate_pack_ready",
+    "digest": "3f2c0615aa5695d92ea885403d600238ee2e4080a9e31701b261cb94fb4ef1ff",
+    "elapsed_seconds": 8.094,
+    "object_key": "s4-t03/terminal-results/3f/2c/3f2c0615aa5695d92ea885403d600238ee2e4080a9e31701b261cb94fb4ef1ff.json",
+    "phase": "terminalize",
+    "runtime_object_ref": ".codex_runtime/fin012-s4-t05c-mu-current-search-r1/objects/s4-t03/terminal-results/3f/2c/3f2c0615aa5695d92ea885403d600238ee2e4080a9e31701b261cb94fb4ef1ff.json",
+    "status": "success"
+  }
+}

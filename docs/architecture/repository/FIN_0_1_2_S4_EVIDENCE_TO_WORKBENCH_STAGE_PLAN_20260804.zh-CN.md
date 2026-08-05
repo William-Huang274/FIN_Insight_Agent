@@ -212,3 +212,13 @@ MU 入口审计已完成：case=`MU`、legal name=`Micron Technology, Inc.`、CI
 两个 disposable root 的 MU Search proof 各自得到 `1 simulated source / 6 local read-only / 8 captures / 18 accepted / 18 rejected`，Cell accepted/rejected=`6/9、6/6、6/3`，normalized output 一致且 Run/Attempt/terminal identity 全新；model/provider/live source/business Artifact 均为 0。入口与共享回归通过后，MU Search R1 admission 已原子签发、未消费，admission digest=`c40305bd…c037`，issuance digest=`58b19808…80e0`。
 
 当前只建立一次 MU Search exact-live 资格。若 SEC primary 成功，不调用 IR fallback；若官方来源没有合格结果，保留 typed gap；若 adapter/parser/capture/budget 属于项目缺陷，则 terminalize 并停止，不执行第二次 Search。DeepSeek、Agent 9 Artifacts、paired、Owner 和 MU current R2 均未发生。
+
+## 19. S4-T05-C MU current Search、Evidence Pack 与 Agent admission
+
+唯一 MU Search admission 已 exact-once 消费并成功：SEC submissions source live=`1`、本地只读检索=`6`、capture=`8`、accepted/rejected=`18/18`，Cell=`6/9、6/6、6/3`；fallback/retry/model/provider/business Artifact 均为 0。primary 成功，所以 Micron IR 没有被调用。terminal digest=`3f2c0615…f1ff`，Search result digest=`35259ec5…6994`。
+
+current terminal 经 Evidence Gate 编译为 `15 Evidence / 3 exact company Numeric / 3 typed gaps`，Evidence Cell coverage=`6/3/6`。MU current case ID=`fin012-s4-t05-mu-current-evidence-805cc63d45846e9db688`，Evidence digest=`ef1895fe…433d`，Agent input digest=`c15ce68c…e69ec`。历史 MU oracle 只提供合同形状，没有保留其 case identity 或晋升旧事实。
+
+通用 gap code `company_total_numeric_does_not_attribute_AI_segment_profit_capture` 对 MU 的产品措辞不如 `HBM-specific profit attribution` 精确；但它仍然表达“公司整体数值不能证明目标子业务利润”的正确权限边界，没有改变 Evidence/Numeric authority，故作为 L2–L4 wording finding 后传 T08–T10/S5，不阻断 T05-C，也不触发 Search 重跑。
+
+Agent current-case successor 已以三案通用 case parameter 取代 DELL-only exact preparation，但没有修改 DELL immutable module。两个 fresh full-fake root normalized 一致，拓扑=`9 Provider / 3 local Fact / 9 captures / 9 Artifacts`；预计输入=`86,519`、上限=`108,000`、余量=`21,481`，最大单次=`15,693`，USD cap=`0.06`、retry=`0`。MU Agent admission digest=`fbd186e4…3526` 已签发未消费。下一项只执行一次 DeepSeek Pro exact-live；新 L1 立即停止，不自动 retry/replacement。

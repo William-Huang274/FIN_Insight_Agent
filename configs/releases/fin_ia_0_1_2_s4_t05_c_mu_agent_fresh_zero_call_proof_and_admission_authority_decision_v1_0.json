@@ -1,0 +1,106 @@
+{
+  "authority_boundary": {
+    "admission_issuance_and_one_exact_live_authorized": true,
+    "automatic_retry_or_second_live": false,
+    "paired_or_owner_auto_authorized": false,
+    "user_authorized_sequence_steps_1_to_5": true
+  },
+  "capacity_proof": {
+    "aggregate_estimated_input_tokens": 86519,
+    "contract_ref": "fin_0_1_2.S4.T05.current_case_agent_compiled_capacity:v1",
+    "cost_derived_absolute_maximum_input_tokens": 117931,
+    "input_token_headroom": 21481,
+    "maximum_input_tokens": 108000,
+    "maximum_output_tokens": 10000,
+    "maximum_single_interaction_estimated_input_tokens": 15693,
+    "maximum_total_cost_usd": 0.06,
+    "per_interaction_estimated_input_tokens": [
+      7382,
+      7442,
+      8952,
+      9175,
+      7380,
+      7409,
+      13949,
+      9137,
+      15693
+    ]
+  },
+  "decision_digest": "d7bc2f417d8490eafd1a8c8bcb7112cb831dd903ad36ffab6a287b911fb55758",
+  "exact_binding": {
+    "as_of": "2026-07-26T00:00:00Z",
+    "case_id": "fin012-s4-t05-mu-current-evidence-805cc63d45846e9db688",
+    "case_version": 1,
+    "complete_input_digest": "c15ce68c6685ffdc2581c858e26ed6a76c3c7e56bb824590ea4ed66bc10e69ec",
+    "evidence_pack_digest": "ef1895fe4c113c5e2d952178fc715fb3f5a4eb1ca30a784431c74cf744df433d",
+    "predicted_attempt_id": "attempt_fin01_0d37012c089d27cb0f39f02a",
+    "predicted_research_run_id": "research_run_fin01_50d32f3b323460d56b37b44b",
+    "predicted_work_unit_id": "wu_p02_5_d17dc07be2706d310c9e33bc",
+    "preparation_digest": "e03c43dafb56855e8ece09be59e4c904cf810d6cc3cd90b24af187d4b98083f2",
+    "t03_terminal_digest": "3f2c0615aa5695d92ea885403d600238ee2e4080a9e31701b261cb94fb4ef1ff"
+  },
+  "fresh_proof": {
+    "independent_disposable_roots": 2,
+    "model_provider_network_calls": [
+      0,
+      0,
+      0
+    ],
+    "normalized_outputs_equal": true,
+    "topology_each": [
+      9,
+      3,
+      9,
+      9
+    ]
+  },
+  "immutable_bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_current_evidence_pack_v1_0.json",
+      "sha256": "805ca00b088ee73b292cc384a47577480c60b0e710d4cb166ebfebbc6b979ff4"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_agent_exact_input_v1_0.json",
+      "sha256": "6ab0f8c6b81caef94bbef65548bf9566d80a31895689d4632d4297cb3995c9cd"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_current_evidence_and_agent_exact_input_zero_call_materialization_v1_0.json",
+      "sha256": "cce8b54dad4da54f82edad3ca33dfc53b821f421df8805e0a3fae1922ae05c0d"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_capacity_reproof_fresh_exact_admission_r3.json",
+      "sha256": "135cc61ef18d1bb9b67d09f066d7e8567e842584ddfcdd806433e09ecb2b4d1c"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t05_current_case_agent_exact_execution.py",
+      "sha256": "d4dcb4969965a516bf3e06efa93a6a676cb8bf2fda994665aa2f4a905f2913b9"
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s3_t03_exact_live_runner.py",
+      "sha256": "4e4777d10a83fe1cdc1c02727244005be2199bb434b889994c954e4d8c935659"
+    },
+    {
+      "ref": "scripts/releases/prepare_and_issue_fin_ia_0_1_2_s4_t05_c_mu_agent_fresh_exact_admission.py",
+      "sha256": "d78db51a23b8a36ffdaa33901ac00b3a54ad8f3fda59e0e16625dda5be4cf66f"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_2_s4_t05_c_mu_agent_exact_live.py",
+      "sha256": "88dd4b6c20c233e3ce32dd69ca7f8725a679440e16d5a9e45a759693ac7ffed4"
+    }
+  ],
+  "next_action": "FIN-0.1.2-S4-T05-C-MU-AGENT-EXACT-LIVE-EXECUTION",
+  "recorded_at": "2026-08-05T06:30:00Z",
+  "runtime_contract": {
+    "business_artifacts_on_success": 9,
+    "captures": 9,
+    "external_tool_calls": 0,
+    "local_fact_receipts": 3,
+    "model": "deepseek-v4-pro",
+    "provider": "deepseek",
+    "provider_calls": 9,
+    "retry_budget": 0,
+    "source_network_calls": 0
+  },
+  "schema_version": "fin_ia_0_1_2_s4_t05_c_mu_agent_fresh_zero_call_proof_and_admission_authority_decision_v1_0",
+  "status": "pass_fresh_zero_call_proof_capacity_and_admission_authority"
+}

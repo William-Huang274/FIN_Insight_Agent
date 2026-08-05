@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T04 pass closed / T05-A pass / T05-B DELL and T05-C MU Owner accepted current R2 and closed / T05-D post-transfer NVDA entry authorized not started / S4-T06–T08 not started`
+状态：`S4 entered / S4-T01–T04 pass closed / T05-A pass / T05-B DELL、T05-C MU、T05-D post-transfer NVDA Owner accepted current R2 and closed / S4-T06 entry authorized not started / S4-T07–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -298,3 +298,11 @@ immutable exact result=`200907cf…bbc4` 经现有 DELL/MU/NVDA 通用 renderer 
 9/9 WWC 仍使用通用阈值，归 RC-P36-119。独立语义审阅发现：唯一 dependency 主要枚举六个 claim 的 epistemic state；两个 conflict 均 unresolved；四个 gap 中两个指向已是 fact-supported 的 claim。该形态与 MU RC-P36-122 同源，因此新建跨案例 RC-P36-125，吸收其后续质量校准范围；RC-P36-122 保留为 MU 首次触发的历史记录。RC-P36-125 后传 T08–T10/S5，不重开 T05-C/T05-D，也不触发第二次 paid run。
 
 formal assessment=`ff93cea5…4f21`，三案例 formal pair、MU/NVDA product surface 及 mutation regression=`35 passed`；model/provider/network/source/exact rerun=`0`。推荐 Owner 决定为 `accept_post_transfer_NVDA_R2_with_RC_P36_119_and_RC_P36_125_deferred`，仅代表 bounded internal post-transfer R2，不代表 strong thesis、Human Review、NVDA R3、S4 整体验收、release 或 production。Owner 尚未签署，因此 post-transfer NVDA R2=false，T05-D closeout 与 S4-T06 entry 仍 blocked；下一项只等待 `USER-OWNER-DECISION-ACCEPT-OR-REJECT-POST-TRANSFER-NVDA-R2-THEN-CLOSE-T05-D-OR-HOLD`。
+
+## 29. S4-T05-D NVDA Owner acceptance 与关闭
+
+用户在完整看见 formal pair 的有限 L3 增益、RC-P36-119 与跨案例 RC-P36-125 以及接受/拒绝影响后明确回复“接受”。decision=`4e15a44d…7a9d` 精确绑定 assessment=`ff93cea5…4f21`，S4-T05-D=`pass_closed_owner_accepted`，post-transfer NVDA R2=true；至此 T05 的 DELL/MU/post-transfer NVDA 三案例 current-R2 transfer 均完成各自 engineering、current Evidence、Agent exact-live、L1–L4 paired 和显式 Owner gate。
+
+接受仅覆盖 bounded internal post-transfer NVDA R2。RC-P36-119/125 继续后传 T08–T10/S5，RC-P36-122 保留为历史 MU trigger，RC-P36-115 仍阻断 S5 release hardening；strong NVDA thesis、qualified Human Review、NVDA R3、S4 整体验收、S5、release 和 production 均未成立。本项 model/provider/network/source/exact-live/T06 Run=`0`，Owner 语义、非接受消息、T06 未启动和 release boundary mutation=`6 passed`。
+
+S4-T06 entry=`authorized_not_started`。下一项限定为 `FIN-0.1.2-S4-T06-WORKBENCH-CURRENT-PRODUCT-PROJECTION-ENTRY-AND-DEPENDENCY-DECISION`：先零调用审计当前 Case/Run/Evidence/Numeric/Graph/Gap/Workpaper/Report/Trace/quality 资产能否诚实投影到 Workbench，以及历史 UI/后端哪些必须重证；不得把 fallback、fixture 或旧历史 Run 冒充 current product，也不得直接启动模型、Source 或 paid full-chain。

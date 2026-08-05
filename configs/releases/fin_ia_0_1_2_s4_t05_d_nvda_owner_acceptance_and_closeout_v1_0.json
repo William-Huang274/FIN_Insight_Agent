@@ -1,0 +1,63 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_d_nvda_owner_acceptance_and_closeout_v1_0",
+  "decision_id": "FIN-0.1.2-S4-T05-D-NVDA-OWNER-ACCEPTANCE-R1",
+  "recorded_at": "2026-08-05T18:45:00+08:00",
+  "status": "owner_accepted_post_transfer_NVDA_R2_T05_D_closed",
+  "authority": {
+    "user_message": "接受",
+    "user_message_interpreted_as": "explicit_acceptance_of_the_presented_post_transfer_NVDA_owner_decision",
+    "formal_assessment_presented_before_decision": true,
+    "limited_gain_and_quality_findings_presented_before_decision": true,
+    "owner_acceptance_authorized": true,
+    "S4_T06_entry_authorized": true,
+    "S4_T06_execution_started": false
+  },
+  "source_formal_assessment": {
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t05_d_nvda_formal_paired_assessment_and_owner_decision_request_v1_0.json",
+    "sha256": "450fa1e3378aaf7c902cc07d86c7cdd85276b41ab98aa983cdb16ca3866c7b43",
+    "assessment_digest": "ff93cea5292921b78627f93ac61fc8be942d802f5aabeef29b325557258c4f21",
+    "L1_L2_L3_L4": [
+      "pass",
+      "pass_bounded_authority_coverage",
+      "pass_limited_material_gain_with_quality_findings",
+      "pass"
+    ]
+  },
+  "owner_decision": {
+    "decision": "accept_post_transfer_NVDA_R2_with_RC_P36_119_and_RC_P36_125_deferred",
+    "material_gain_accepted": true,
+    "owner_comment": "接受",
+    "accepted_product_scope": "bounded post-transfer current source-grounded NVDA R2 within FIN 0.1.2 S4-T05-D, with limited research gain explicitly retained"
+  },
+  "acceptance_effect": {
+    "S4_T05_D": "pass_closed_owner_accepted",
+    "S4_T05_three_case_transfer": "pass_closed_three_case_current_R2",
+    "post_transfer_NVDA_R2": true,
+    "S4_T06_entry": "authorized_not_started"
+  },
+  "preserved_boundaries": {
+    "RC_P36_119": "open_nonblocking_deferred_T08_T10_S5",
+    "RC_P36_122": "historical_MU_trigger_superseded_quality_scope",
+    "RC_P36_125": "open_nonblocking_deferred_T08_T10_S5",
+    "RC_P36_115": "open_S5_cross_runtime_lock",
+    "strong_NVDA_investment_thesis": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_product_acceptance": false,
+    "S5_entered": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "additional_model_provider_network_source_calls": 0
+  },
+  "observed_counts": {
+    "owner_decisions": 1,
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_execution_network_calls": 0,
+    "new_source_network_calls": 0,
+    "exact_live_reruns": 0,
+    "S4_T06_runs": 0
+  },
+  "recommended_next": "FIN-0.1.2-S4-T06-WORKBENCH-CURRENT-PRODUCT-PROJECTION-ENTRY-AND-DEPENDENCY-DECISION",
+  "decision_digest": "4e15a44d442cd42dc6c16edd61510d8a3518048eae63456904d153888c467a9d"
+}

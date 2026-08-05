@@ -1,0 +1,52 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_70",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.70",
+  "recorded_at": "2026-08-05T18:45:00+08:00",
+  "sequence_after_projection": "v2_69",
+  "status": "S4_T05_D_NVDA_owner_accepted_closed_T06_entry_authorized",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor",
+    "S4_T01_T04": "pass_closed",
+    "S4_T05_A": "engineering_pass_zero_call",
+    "S4_T05_B_DELL": "pass_closed_owner_accepted_current_R2",
+    "S4_T05_C_MU": "pass_closed_owner_accepted_current_R2",
+    "S4_T05_D_post_transfer_NVDA": "pass_closed_owner_accepted_current_R2",
+    "S4_T05_three_case_transfer": "pass_closed",
+    "S4_T06": "entry_authorized_not_started",
+    "S4_T07_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": true,
+    "DELL_current_R2": true,
+    "MU_current_R2": true,
+    "post_transfer_NVDA_R2": true,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T06-WORKBENCH-CURRENT-PRODUCT-PROJECTION-ENTRY-AND-DEPENDENCY-DECISION"
+  },
+  "T05_D_owner_acceptance": {
+    "source_formal_assessment_digest": "ff93cea5292921b78627f93ac61fc8be942d802f5aabeef29b325557258c4f21",
+    "owner_decision_digest": "4e15a44d442cd42dc6c16edd61510d8a3518048eae63456904d153888c467a9d",
+    "owner_decision_sha256": "8d5cabe1449067e98582580dc21608ed53b4a2cc3d0a1100bd1b29657f3a5cf4",
+    "accepted_scope": "bounded_internal_post_transfer_NVDA_R2",
+    "quality_findings_deferred": ["RC-P36-119", "RC-P36-125"],
+    "new_model_provider_network_source_exact_T06_runs": [0, 0, 0, 0, 0, 0]
+  },
+  "preserved_boundaries": {
+    "RC_P36_115": "open_blocks_S5_release",
+    "RC_P36_119": "open_nonblocking_T08_T10_S5",
+    "RC_P36_122": "historical_MU_trigger_quality_scope_superseded_by_RC_P36_125",
+    "RC_P36_125": "open_nonblocking_cross_case_T08_T10_S5",
+    "strong_NVDA_investment_thesis": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_product_acceptance": false,
+    "S4_T06_entered": false,
+    "S5_entered": false,
+    "release": "not_qualified",
+    "production": "not_qualified"
+  }
+}

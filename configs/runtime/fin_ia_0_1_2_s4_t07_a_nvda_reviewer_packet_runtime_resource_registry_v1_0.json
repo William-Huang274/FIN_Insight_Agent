@@ -1,0 +1,35 @@
+{
+  "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
+  "registry_id": "FIN-0.1.2-S4-T07-A-NVDA-REVIEWER-PACKET-REGISTRY-R1",
+  "status": "tracked_typed_runtime_resource_authority",
+  "policy": {
+    "registry_is_source_of_truth": true,
+    "static_scanner_is_detector_only": true,
+    "direct_unregistered_runtime_read_fails_closed": true,
+    "missing_unknown_duplicate_or_digest_drift_fails_closed": true,
+    "permutation_or_cross_version_fails_closed": true,
+    "ignored_untracked_codex_runtime_and_git_forbidden": true,
+    "traversal_and_symlink_escape_forbidden": true
+  },
+  "detector_python_refs": [
+    "apps/workbench/backend/application/fin_0_1_2_s4_t07_reviewer_packet.py"
+  ],
+  "resource_count": 1,
+  "resource_bytes": 15499,
+  "resource_canonical_digest": "a9d2e3da15b4c1e4102182c5eef83d587faff016e84ae3a5568c92d3dd05964b",
+  "resources": [
+    {
+      "resource_id": "fin_0_1_2.s4.t07_a.nvda_reviewer_packet_contract",
+      "repo_relative_path": "configs/releases/fin_ia_0_1_2_s4_t07_a_nvda_exact_reviewer_packet_contract_v1_0.json",
+      "sha256": "e53d3b472c02972d5c96b26c6c674851008e1ceef418ca5dc2686239da45f7aa",
+      "bytes": 15499,
+      "classification": "current_product_exact_reviewer_packet_contract",
+      "consumer_ids": [
+        "apps.workbench.current_product_reviewer_packet.service"
+      ],
+      "load_phase": "S4_T07_A_exact_reviewer_packet",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.fin_0_1_2_s4_t07_reviewer_packet"
+    }
+  ]
+}

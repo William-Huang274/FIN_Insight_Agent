@@ -359,6 +359,8 @@ Workbench `/current` 已显示 replay integrity、event count、history、handof
 
 T07 入口审计已经通过，但 qualified action 被新的项目内身份边界 `RC-P36-129` 阻断。T06-C 明确记录 `authenticated_reviewer_identity=false`；当前 API 只把 `X-Fin-Current-Actor` 和 `X-Fin-Case-Permissions` 解析成 principal，前端又固定声明 `current_internal_operator`。历史 P24/B04 所谓 real-human 路径也只检查调用者填写的 `action_source`、role 和 session ID，没有服务端可信会话、签名凭证或身份提供方。它能证明表单内容完整，不能证明调用者是谁。
 
+T07-A 已按后继任务实现 NVDA exact reviewer packet：十个 current view、review-control replay、handoff、Evidence/Numeric/Claim/WWC/final delivery/quality 均精确绑定，并补齐原产品面只给数量、未给正文的 cross-cell dependency/conflict/Lead-gap 审核内容。该包是只读待审材料，不建立 identity、Human decision 或 NVDA R3。用户已选择内部方案 A；T07-B 接下来实现 server-issued opaque session，生产 OIDC/SSO 仍后传 S5。
+
 因此不得把当前 header、旧 reviewer 表单、Codex 自动化或普通聊天“继续”晋升为 qualified Human Review。T07 重新有界拆分为：T07-A 零调用生成 NVDA exact reviewer packet、audit replay、review burden 和 bounded why/gap/WWC；T07-B 实现经用户确认的 reviewer 身份机制与 append-only decision event；T07-C 才允许真实 reviewer 对 exact NVDA digest 接受或退回，成功接受后才能建立 bounded NVDA R3。
 
 FIN 0.1.2 内部 dogfood 的首选是 option A：服务端签发有期限、可撤销、精确绑定 case/manifest/handoff 的 opaque review session，控制库只保存 credential digest，明文凭据与签名密钥不得进入 Git、telemetry、capture、Artifact 或 worklog。Option B 是外接 OIDC/企业 IdP，但会扩大基础设施并阻断当前内部里程碑；option C 只把聊天中的 Owner 反馈作为反馈证据，qualified review 与 R3 必须保持 false。身份安全范围需用户确认后才能进入 T07-B。

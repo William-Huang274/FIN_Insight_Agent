@@ -17,6 +17,10 @@ from ...application.fin_0_1_2_s4_t06_current_review_control import (
     CurrentReviewControlPrincipal,
     CurrentReturnForRepairDraft,
 )
+from ...application.fin_0_1_2_s4_t07_reviewer_packet import (
+    CurrentProductReviewerPacketError,
+    CurrentProductReviewerPacketService,
+)
 
 
 CurrentProductSurface = Literal[
@@ -94,9 +98,26 @@ class CurrentReviewControlStateResponse(BaseModel):
     hard_boundaries: dict[str, Any]
 
 
+class CurrentReviewerPacketResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str
+    projection_mode: Literal["current"]
+    status: Literal["ready_for_authenticated_qualified_human_review"]
+    case_key: Literal["NVDA"]
+    exact_binding: dict[str, Any]
+    review_checklist: list[dict[str, Any]]
+    review_burden: dict[str, Any]
+    sections: dict[str, Any]
+    decision_boundary: dict[str, Any]
+    hard_boundaries: dict[str, Any]
+    packet_digest: str
+
+
 def build_current_product_router(
     service: CurrentProductProjectionService,
     review_control_service: CurrentProductReviewControlService | None = None,
+    reviewer_packet_service: CurrentProductReviewerPacketService | None = None,
 ) -> APIRouter:
     router = APIRouter(tags=["fin-0.1.2-current-product-projection"])
 
@@ -175,6 +196,35 @@ def build_current_product_router(
                 f'"review-replay={projection["replay_digest"]}"'
             )
             return projection
+
+    if reviewer_packet_service is not None:
+
+        @router.get(
+            "/current-product/cases/{case_key}/reviewer-packet",
+            response_model=CurrentReviewerPacketResponse,
+        )
+        def get_current_product_reviewer_packet(
+            case_key: str,
+            response: Response,
+            product_mode: Annotated[
+                str | None, Header(alias="X-Fin-Product-Mode")
+            ] = None,
+            permissions: Annotated[
+                str | None, Header(alias="X-Fin-Case-Permissions")
+            ] = None,
+        ) -> dict[str, Any]:
+            try:
+                packet = reviewer_packet_service.get_packet(
+                    case_key, _principal(product_mode, permissions)
+                )
+            except CurrentProductReviewerPacketError as exc:
+                raise HTTPException(
+                    status_code=exc.status_code, detail=exc.detail
+                ) from exc
+            response.headers["ETag"] = f'"review-packet={packet["packet_digest"]}"'
+            return packet
+
+    if review_control_service is not None:
 
         @router.post(
             "/current-product/cases/{case_key}/return-requests",

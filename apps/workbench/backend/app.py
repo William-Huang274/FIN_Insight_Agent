@@ -29,6 +29,9 @@ from .application.fin_0_1_2_s4_t06_current_product_projection import (
 from .application.fin_0_1_2_s4_t06_current_review_control import (
     CurrentProductReviewControlService,
 )
+from .application.fin_0_1_2_s4_t07_reviewer_packet import (
+    CurrentProductReviewerPacketService,
+)
 from .application.evidence_service import EvidenceService
 from .application.deliverable_service import DeliverableService
 from .application.execution_service import ExecutionService
@@ -377,6 +380,9 @@ def create_app(
     current_product_review_control_service: (
         CurrentProductReviewControlService | None
     ) = None,
+    current_product_reviewer_packet_service: (
+        CurrentProductReviewerPacketService | None
+    ) = None,
     workbench_runtime_mode: Literal["current", "fixture"] = "current",
 ) -> FastAPI:
     if workbench_runtime_mode not in {"current", "fixture"}:
@@ -449,6 +455,14 @@ def create_app(
             store.db_path,
         )
     )
+    current_reviewer_packet_service = (
+        current_product_reviewer_packet_service
+        or CurrentProductReviewerPacketService.from_repository(
+            REPO_ROOT,
+            current_product_service,
+            current_review_control_service,
+        )
+    )
     app = FastAPI(
         title="FinSight Workbench API",
         version="0.1.0",
@@ -477,7 +491,9 @@ def create_app(
     app.include_router(build_deliverables_router(deliverable_service), prefix="/api/v1")
     app.include_router(
         build_current_product_router(
-            current_product_service, current_review_control_service
+            current_product_service,
+            current_review_control_service,
+            current_reviewer_packet_service,
         ),
         prefix="/api/v1",
     )

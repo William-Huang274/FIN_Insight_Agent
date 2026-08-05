@@ -1,11 +1,13 @@
 # FIN 0.1.1 / 0.1.2 PRD 能力对账与 S0–S5 重基线
 
 日期：2026-08-04
-状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T04 pass closed，current NVDA R2 Owner accepted / S4-T05-A zero-call transfer engineering pass / T05-B DELL Search exact-live pass，Evidence Pack/Agent input compilation next / no product version change`
+状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T04 pass closed，current NVDA R2 Owner accepted / S4-T05-A zero-call transfer engineering pass / T05-B DELL Search live pass + Evidence Pack/Agent input zero-call pass，Agent fresh proof next / no product version change`
 
 > 2026-08-04 S4-T03 零调用权限审计确认：F05 当前不是“模型效果差”，而是 metadata route 尚未接成 executable search，来源 request/response capture-first 与 fresh execution-control chain 也未建立。`RC-P36-114` 留在 T03；必须先做一个合并的零调用可执行接入包，再另行判断 current canary admission，不能把 state stub、URL metadata wrapper 或历史 fixture 写成 current Agentic Search。
 
-当前 next：`FIN-0.1.2-S4-T05-B-DELL-CURRENT-EVIDENCE-PACK-AND-AGENT-EXACT-INPUT-COMPILATION`
+当前 next：`FIN-0.1.2-S4-T05-B-DELL-AGENT-FRESH-ZERO-CALL-PROOF-CAPACITY-AND-ADMISSION-AUTHORITY-DECISION`
+
+> 2026-08-05 T05-B DELL Evidence/Agent input：唯一 Search terminal 已零调用编译为 `15 Evidence / 3 exact Numeric / 3 typed gaps`，三 Cell 覆盖=`6/3/6`；Agent 使用 current content-addressed DELL case ID，不继承 oracle 身份，且后续 source/tool/write/paid 边界关闭。共享回归先发现修改冻结 T05-A 编译器会破坏旧 immutable binding，已恢复旧文件并以 T05-B controlled successor 隔离，最终 `22 passed`。这增加的是当前可审计研究输入，不是 Agent live、9 Artifacts 或 DELL R2。
 
 > 2026-08-05 T05-B DELL Search exact-live：唯一 admission 已在声明 runtime 中一次消费并成功，实际 `1 SEC source / 6 local / 0 fallback / 0 retry / 8 captures / 18 accepted / 12 rejected / 0 model/provider/Artifact`；三 Cell accepted/rejected=`6/9、6/0、6/3`，无 typed gap。SEC response capture-first、body SHA 与对象地址均回算一致，accepted 全为 DELL、日期≤as-of、HTTPS 且 lineage 完整。候选仍不可直接引用或作 domain judgment；Agent admission/DeepSeek/9 Artifacts/paired/Owner 均未授权，DELL R2=false。下一步只做零调用 Evidence Pack 与 Agent exact input 编译，不能重跑 Search。
 

@@ -3,6 +3,9 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-B DELL current Evidence Pack 与 Agent exact input 已零调用工程通过，Agent fresh proof 待续行（current，2026-08-05）**：唯一 DELL Search terminal 已被不可变回读并编译为 `15 writer-citable Evidence / 3 exact Numeric / 3 typed gaps`，三 Cell Evidence=`6/3/6`；pack=`2a3379f0…9502`，Agent input=`8b00e023…5bae`，current case ID=`fin012-s4-t05-dell-current-evidence-b70d1cb333198e22a6b0`。审计发现直接改冻结 T05-A 编译器会使旧 immutable binding 失效；已恢复原 SHA，并以 T05-B controlled successor 隔离 current product identity。初次回归 `21 pass/1 fail` 被保留，纠偏后组合回归=`22 passed`，历史 T05-A 与当前 T05-B 同时成立。本轮 Search/model/Provider/network/admission/Run/business Artifact=`0`；Agent live 未开始、DELL R2=false。current next=`FIN-0.1.2-S4-T05-B-DELL-AGENT-FRESH-ZERO-CALL-PROOF-CAPACITY-AND-ADMISSION-AUTHORITY-DECISION`；RC-P36-115 仍禁止第二次 Search并阻断 S5。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-B DELL Search exact-live 已一次成功，Evidence Pack/Agent exact input 编译待续行（current，2026-08-05）**：唯一声明 runtime 中 admission 已消费，Run/Attempt=`s4_t03_search_run_0494f423fd9c9c9d7571 / s4_t03_search_attempt_c5a9c85cfcf6f8eb4542`，terminal=`4e84de38…b0871`。实际 `1 SEC source / 6 local / 0 fallback / 0 retry / 8 captures / 18 accepted / 12 rejected / 0 model/provider/cost/Artifact`；三 Cell accepted/rejected=`6/9、6/0、6/3`，无 typed gap。SEC response HTTP 200、157,813 bytes，capture-first 且 body SHA 回算一致；accepted 全为 DELL、日期≤as-of、HTTPS 并具 snapshot/parser lineage。候选仍为 `writer_citable=false / domain_judgment=false`，DELL R2=false；不能自动进入 DeepSeek。current next=`FIN-0.1.2-S4-T05-B-DELL-CURRENT-EVIDENCE-PACK-AND-AGENT-EXACT-INPUT-COMPILATION`。RC-P36-115 仍后传 S5，禁止第二次 Search。
 >
 > [!IMPORTANT]

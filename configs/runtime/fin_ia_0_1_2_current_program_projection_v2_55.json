@@ -1,0 +1,69 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_55",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.55",
+  "recorded_at": "2026-08-05T11:02:03+08:00",
+  "sequence_after_projection": "v2_54",
+  "status": "S4_T05_B_DELL_current_evidence_and_agent_exact_input_engineering_pass_agent_fresh_proof_next",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor",
+    "S4_T01_T04": "pass_closed",
+    "S4_T05_A": "engineering_pass_zero_call",
+    "S4_T05_B_DELL_Search": "pass_live_current_evidence_candidate_pack_ready",
+    "S4_T05_B_DELL_Evidence_and_Agent_input": "engineering_pass_zero_call",
+    "S4_T05_B_DELL_Agent_live": "not_started",
+    "S4_T05_C_MU": "not_started",
+    "S4_T05_D_post_transfer_NVDA": "not_started",
+    "S4_T06_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": true,
+    "DELL_current_R2": false,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T05-B-DELL-AGENT-FRESH-ZERO-CALL-PROOF-CAPACITY-AND-ADMISSION-AUTHORITY-DECISION"
+  },
+  "T05_B_DELL_compiled_current_surface": {
+    "materialization_ref": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_current_evidence_and_agent_exact_input_zero_call_materialization_v1_0.json",
+    "materialization_sha256": "ea5c44ef3aa46bb1fff0c6156b752be462845ba90c0364dc2a76b1396d906873",
+    "materialization_digest": "ac46f1d943966f022a19e653c4e0954af762764725fe72d56fcff26ee831091a",
+    "evidence_pack_digest": "2a3379f08c2207f914ddd4ca7e8b656f8a860847a2a7d660f845f35eed469502",
+    "agent_input_digest": "8b00e023197e935b7cbb25d9d50bac9e2e859441d6e34405e6649ac8b6ba5bae",
+    "current_case_id": "fin012-s4-t05-dell-current-evidence-b70d1cb333198e22a6b0",
+    "writer_citable_evidence": 15,
+    "exact_numeric_authority": 3,
+    "typed_gaps": 3,
+    "evidence_by_cell": [6, 3, 6],
+    "numeric_metric_families": ["gross_profit", "operating_income", "revenue"]
+  },
+  "acceptance_boundary": {
+    "frozen_T05_A_compiler_and_immutable_result_preserved": true,
+    "T05_B_current_identity_isolated_in_controlled_successor": true,
+    "DELL_current_Evidence_and_Agent_input_compiled": true,
+    "DELL_Agent_admission_issued": false,
+    "DELL_DeepSeek_live_executed": false,
+    "DELL_nine_business_Artifacts": false,
+    "DELL_R2": false,
+    "new_external_calls": 0,
+    "new_product_version_created": false
+  },
+  "verification": {
+    "identity_boundary_focused": "1 passed",
+    "materialization_contract": "3 passed",
+    "shared_T05_T04_regression": "22 passed",
+    "initial_shared_compiler_binding_failure_preserved": "21 passed / 1 failed; fixed by restoring frozen T05-A compiler and isolating T05-B adapter",
+    "cross_case_numeric_date_lineage_and_artifact_mutation": "pass_fail_closed"
+  },
+  "issue_state": {
+    "T05_B_oracle_identity_leak": "closed_in_T05_B_controlled_successor_without_rewriting_T05_A",
+    "RC_P36_115": "open_nonblocking_S5_cross_runtime_lock_no_second_search_allowed",
+    "RC_P36_119": "open_nonblocking_T08_T10_S5",
+    "new_open_issue": false
+  }
+}

@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL Search exact-live pass，Evidence Pack/Agent exact input compilation next / S4-T06–T08 not started`
+状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL Search live pass + Evidence Pack/Agent exact input zero-call pass，Agent fresh proof next / S4-T06–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -123,7 +123,7 @@ RC-P36-117 现已完成结构处置：完整本地 payload 继续作为审计和
 
 当前 next：
 
-`FIN-0.1.2-S4-T05-B-DELL-CURRENT-EVIDENCE-PACK-AND-AGENT-EXACT-INPUT-COMPILATION`
+`FIN-0.1.2-S4-T05-B-DELL-AGENT-FRESH-ZERO-CALL-PROOF-CAPACITY-AND-ADMISSION-AUTHORITY-DECISION`
 
 R3 exact-live 已 exact-once 成功：9 calls / 9 captures / 3 local Fact receipts / 9 formal Artifacts，input/output=`55,906/3,038`，cost=`USD 0.02696216`，独立 L1 通过，RC-P36-117 live-close。T04 仍不能关闭：最终本地 delivery 暴露内部 scope/period token、重复币种单位并混入英文限制项，且 Verifier 未绑定 final delivery preview；登记 RC-P36-118。该问题属于 T04 产品表面与验收绑定，不属于模型重试事项。后继只允许零调用、有界本地 renderer/preview-binding 处置；不得自动 R4。paired/Owner 与 current NVDA R2 仍未成立，T05 继续 blocked。
 
@@ -162,3 +162,11 @@ DELL Search fresh admission 已原子签发，digest=`b5dd2c46…167f2`，有效
 SEC response HTTP 200、157,813 bytes，request/response 均在解析边界完整留存且没有 Authorization、Cookie 或凭据；body SHA 与 content-addressed object 均回算一致。18 条 accepted 全部绑定 DELL、HTTPS、各自 as-of 以内的发布日期以及 source snapshot/parser lineage；9 条无效日期和 3 条超候选上限记录被拒绝且没有晋升。primary SEC 路径成功，因此 direct-PDF fallback 未被调用。
 
 Search success 只证明 gated current candidate pack。所有候选继续保持 `writer_citable=false / domain_judgment=false`，不得直接交给 Writer 或作为金融结论；DeepSeek admission、Agent live、9 Artifacts、L1–L4、paired 与 Owner 均未授权，DELL R2 仍为 false。下一项只做零调用 current Evidence Pack 与 Agent exact input 编译；之后再独立做 Agent fresh proof、capacity 和 admission authority。RC-P36-115 不阻断本次观察到的一次执行，但禁止第二次 Search，并继续阻断 S5/release。
+
+## 12. S4-T05-B DELL current Evidence 与 Agent exact input
+
+唯一 Search terminal 已在不新增外部调用的条件下编译为 `15 Evidence / 3 Numeric / 3 typed gaps`，三 Cell Evidence 覆盖为 `6/3/6`。所有 Evidence 仍绑定 DELL、as-of、HTTPS source、citation、snapshot/parser lineage；Numeric 只接受 revenue、gross profit、operating income 的公司整体 exact authority。未来需求持续性、AI 分部利润归因与独立反证不足继续以 typed gap 表达。
+
+Agent exact input 采用 Evidence Pack 内容寻址身份，不再沿用 regression-oracle ID；source network、external tool、paid execution 和业务 head write 均关闭。最初若直接修改冻结 T05-A 共享编译器，会使旧 immutable result 的 code binding 失效；回归已捕获该问题。最终方案恢复 T05-A 原字节，在 T05-B 建立 controlled successor，纠偏后共享组合回归 `22 passed`。
+
+本项只记 `engineering_pass_zero_call`。Agent admission、DeepSeek live、9 Artifacts、L1–L4、paired、Owner 与 DELL R2 均未成立。下一步只做 Agent fresh zero-call proof、capacity 与 admission authority decision；不得重跑 Search，也不得把本项直接解释为 DELL R2。

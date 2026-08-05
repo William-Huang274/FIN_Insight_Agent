@@ -3,6 +3,9 @@
 更新时间：2026-08-06
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S5 decision-only honest-block 已冻结，FIN 0.1.3 S0-01 入口就绪（current，2026-08-06）**：新 closeout 保留三案 current exact、`45 Evidence / 9 Numeric / 9 typed gaps / 27 Artifacts / 3 bounded R2`、Workbench read-only projection、typed return/replay 和本地 bounded NVDA R3 等真实进展，但因 DELL period-duration L1、来源/Graph 覆盖、三案研究内容硬门禁、current actual repair workflow 和正式 RG1–RG5 均未关闭，FIN 0.1.2=`closed_honestly_blocked_decision_only`、release/release candidate/production=false。没有机械运行已知会失败的 RG。另发现早先已合并/放弃的 `FIN 0.1.3` 命名资产仍有 release/runtime/test=`18/16/13` 共 47 个，0.1.2 active-suite 有 7 个旧引用；登记 RC-P36-133，必须在 `013-S0-01` 做 historical/reusable 精确分类和 canonical successor，不能删除历史 proof 或直接晋升为新 0.1.3 authority。新合同=`5 passed`；相邻历史 S5 集=`12 passed / 1 known RC-P36-128 mutable-doc-SHA failure`，未改写旧 decision，交 `013-S0-02`。contract=`configs/releases/fin_ia_0_1_2_s5_decision_only_honest_block_candidate_freeze_and_fin_0_1_3_handoff_v1_0.json`；本项 model/provider/source/full-chain/formal-RG=0。current next=`FIN-0.1.3-S0-01-DELTA-INHERITANCE-NAMESPACE-AND-SECRET-SAFE-CURRENT-TRUTH-BASELINE`。
+
+> [!IMPORTANT]
 > **FIN 0.1.3 研究内容输出质量已升级为 release-blocking 硬门禁（current，2026-08-06）**：用户明确要求本轮必须考核“研究底稿和交付报告是否有实质研究价值”，不能再让 Artifact 齐全、lineage 正确、Verifier/Workbench 工程绿灯掩盖通用 Claim、机械 Writer、弱 Numeric 解释、浅 dependency/conflict 或不可执行 WWC。正式 Rubric 采用八维 0–4 分：公司/问题专属性、证据论证、财务数字解释、因果机制、跨 Cell 综合、反方/gap、WWC 行动价值、senior 决策可用性。DELL/MU/NVDA 必须逐案 `>=24/32`，Q1–Q7 无低于 2，Q1/Q2/Q3/Q8 各 `>=3`，另需 material paired gain 与 qualified human content acceptance；不得跨案平均或由 L1/L2/L4、数量、UI 接受补偿。当前状态仅为 `accepted_documented_contract_translation_pending`，尚未编译进 schema/prompt/eval/Verifier/Workbench，也未建立新 product pass。source=`docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md`；current next 仍为 `FIN-0.1.2-S5-DECISION-ONLY-HONEST-BLOCK-CANDIDATE-FREEZE-AND-FIN-0.1.3-HANDOFF`；本项 model/provider/source/full-chain=0。
 
 > [!IMPORTANT]

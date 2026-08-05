@@ -1,0 +1,160 @@
+{
+  "schema_version": "fin_ia_0_1_2_s5_decision_only_honest_block_candidate_freeze_and_fin_0_1_3_handoff_v1_0",
+  "decision_id": "FIN-0.1.2-S5-DECISION-ONLY-HONEST-BLOCK-CANDIDATE-FREEZE-AND-FIN-0.1.3-HANDOFF-R1",
+  "decided_at": "2026-08-06T13:00:00+08:00",
+  "status": "FIN_0_1_2_closed_honestly_blocked_release_not_qualified_FIN_0_1_3_S0_handoff_ready",
+  "authority": {
+    "user_instruction": "你可以开始下一步了",
+    "FIN_0_1_2_S5_decision_only_closeout_authorized": true,
+    "FIN_0_1_3_S0_entry_authorized": true,
+    "formal_RG1_to_RG5_candidate_execution_authorized": false,
+    "model_provider_network_source_or_external_tool_authorized": false,
+    "release_tag_release_or_production_authorized": false
+  },
+  "source_git": {
+    "branch": "codex/layered-data-source-expansion",
+    "source_head_before_closeout_materialization": "33a59adf",
+    "source_head_subject": "docs(fin-0.1.3): make research quality release-blocking"
+  },
+  "source_bindings": [
+    {
+      "role": "three_case_current_product_projection",
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t06_a_current_product_projection_manifest_v1_0.json",
+      "sha256": "fc7e60234e0cbff98fdc8c44bad231073d167820205715f78425121b1340c503"
+    },
+    {
+      "role": "current_review_control_and_T07_handoff",
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t06_c_current_review_control_and_t07_handoff_zero_call_implementation_v1_0.json",
+      "sha256": "9d04e4cbcd0e6d4491faa2cf079eb06b8722fe0dff4952f577f33fa55d9b36cb"
+    },
+    {
+      "role": "bounded_internal_reviewer_session_engineering",
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t07_b_bounded_internal_reviewer_session_zero_call_implementation_v1_0.json",
+      "sha256": "8b5fe981162201f0c2b1e9c47df38f37f1d07c204f3a33b37beaaeba3afc29ee"
+    },
+    {
+      "role": "pre_handoff_active_test_suite_with_historical_namespace_collision",
+      "ref": "configs/releases/fin_ia_0_1_2_s0_current_active_test_suite_manifest_v2_3.json",
+      "sha256": "ff7123a382c655a40ce22377d881bc8bc240839cf8e3fddd4345b012909b1b12"
+    },
+    {
+      "role": "expanded_stage_ownership_audit",
+      "ref": "docs/worklog/product_strategy/630_fin_0_1_2_s4_t08_expanded_stage_ownership_audit_and_fin_0_1_3_repair_handoff.md",
+      "sha256": "819a2c3f10ee40a1b92d412bff5242e120ae7ae319c4d0bfb245e183a557428d"
+    },
+    {
+      "role": "FIN_0_1_3_research_content_quality_gate",
+      "ref": "docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md",
+      "sha256": "312051167d0b670b9e9a2bcb34c0d3f74f902abf28c2b13f98b0e3e9fbd1e2b7"
+    }
+  ],
+  "frozen_product_truth": {
+    "current_projection": {
+      "cases": 3,
+      "case_keys": ["DELL", "MU", "NVDA"],
+      "evidence_rows": 45,
+      "numeric_rows": 9,
+      "typed_gaps": 9,
+      "approved_graph_edges": 0,
+      "business_artifacts": 27,
+      "bounded_owner_R2_acceptances": 3
+    },
+    "preserved_progress": {
+      "three_case_current_source_grounded_exact_runs": true,
+      "three_case_verified_product_surfaces": true,
+      "three_case_bounded_R2_owner_acceptance_history": true,
+      "current_read_only_Workbench_projection": true,
+      "typed_return_replay_and_exact_handoff": true,
+      "bounded_NVDA_qualified_human_review_and_R3_local_action": true
+    },
+    "release_blockers": {
+      "DELL_financial_period_duration_L1": "confirmed_open_RC_P36_130",
+      "source_graph_and_retrieval_coverage": "open_FIN_0_1_3_S1",
+      "three_case_research_content_absolute_quality": "not_proven_RC_P36_131",
+      "current_create_run_actual_repair_rebuild_review_workflow": "not_proven_RC_P36_132",
+      "historical_mutable_document_SHA_replay_debt": "confirmed_open_RC_P36_128",
+      "RG1_to_RG5_formal_candidate_qualification": "not_executed"
+    },
+    "release_qualified": false,
+    "production_ready": false
+  },
+  "decision_only_release_gate_reconciliation": {
+    "formal_candidate_gate_execution_performed": false,
+    "RG1_vertical_current_workflow": {
+      "verdict": "blocked_known_input",
+      "reason": "current_create_run_actual_repair_rebuild_review_not_closed"
+    },
+    "RG2_financial_truth_and_evidence_authority": {
+      "verdict": "blocked_known_input",
+      "reason": "DELL_quarterly_value_is_mislabeled_as_FY2025_annual_and_source_graph_coverage_is_incomplete"
+    },
+    "RG3_research_content_outcome": {
+      "verdict": "blocked_known_input",
+      "reason": "three_case_final_content_does_not_yet_pass_the_FIN_0_1_3_eight_dimension_hard_gate"
+    },
+    "RG4_qualified_product_use": {
+      "verdict": "blocked_known_input",
+      "reason": "three_case_content_acceptance_actual_repair_and_burden_are_not_proven"
+    },
+    "RG5_release_recovery_security_and_cost": {
+      "verdict": "pass_internal_recoverability_only",
+      "reason": "Git_recovery_capture_and_bounded_security_assets_exist_but_no_final_candidate_rollback_was_executed",
+      "may_override_RG1_to_RG4": false
+    }
+  },
+  "historical_FIN_0_1_3_namespace_collision": {
+    "status": "open_owned_by_013_S0_01",
+    "historical_files_present": {
+      "release_configs": 18,
+      "runtime_configs": 16,
+      "contract_tests": 13,
+      "total": 47
+    },
+    "pre_handoff_active_manifest_old_FIN_0_1_3_references": 7,
+    "risk": "old_abandoned_or_merged_FIN_0_1_3_proofs_may_be_mistaken_for_the_new_repair_closeout_version",
+    "S5_disposition": "record_and_handoff_without_rewriting_historical_evidence",
+    "required_S0_action": "classify_old_namespace_as_historical_or_reusable_by_exact_digest_then_issue_a_new_canonical_delta_inheritance_and_active_suite_successor"
+  },
+  "FIN_0_1_3_handoff": {
+    "product_scope": "FIN_0_1_internal_alpha_repair_closeout_only",
+    "FIN_0_2_definition_changed": false,
+    "delta_execution_allowed": true,
+    "inherited_evidence_requires_exact_digest_and_unchanged_contract": true,
+    "old_R2_or_R3_may_auto_promote_after_changed_input_data_or_contract": false,
+    "S0_work_packages": [
+      "013-S0-01_delta_inheritance_namespace_and_secret_safe_current_truth_baseline",
+      "013-S0-02_shared_runtime_admission_replay_and_historical_proof_debt",
+      "013-S0-03_financial_semantic_truth_oracle_test_taxonomy"
+    ],
+    "research_content_quality_gate": "release_blocking_contract_translation_pending",
+    "first_engineering_root_cause_after_S0": "FIN_0_1_3_S1_financial_temporal_truth"
+  },
+  "release_decision": {
+    "FIN_0_1_2_S5": "closed_honestly_blocked_decision_only",
+    "FIN_0_1_2_release_candidate_created": false,
+    "FIN_0_1_2_release_qualified": false,
+    "FIN_0_1_2_internal_alpha_released": false,
+    "historical_attempts_mutated": false,
+    "FIN_0_1_3_S0_entry": "ready_authorized",
+    "decision_is_terminal_for_FIN_0_1_2": true
+  },
+  "deterministic_verification": {
+    "new_closeout_contract": "5 passed",
+    "adjacent_new_and_historical_S5_freeze_tests": "12 passed / 1 known historical failure",
+    "known_historical_failure": "old_FIN_0_1_1_S5_source_binding_tracks_a_living_version_lineage_document_by_SHA",
+    "failure_present_without_this_slice_changes": true,
+    "issue_id": "RC-P36-128-fin-0-1-2-historical-fresh-proof-replayability-and-mutable-source-sha-binding-test-debt",
+    "disposition": "preserve_old_decision_and_fix_receipt_vs_living_source_semantics_in_013_S0_02"
+  },
+  "observed_counts": {
+    "credential_reads_or_probes": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_network_source_or_external_tool_calls": 0,
+    "new_admissions_runs_or_business_artifacts": 0,
+    "formal_release_gate_runs": 0,
+    "release_candidates": 0,
+    "tags_or_releases": 0
+  },
+  "next_action": "FIN-0.1.3-S0-01-DELTA-INHERITANCE-NAMESPACE-AND-SECRET-SAFE-CURRENT-TRUTH-BASELINE"
+}

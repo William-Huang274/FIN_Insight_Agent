@@ -1,7 +1,7 @@
 # FIN 0.1.3 修复收口版范围与差量 S0–S5 计划
 
 日期：2026-08-05
-状态：`accepted_planning_direction / implementation_not_started / FIN_0_2_definition_unchanged`
+状态：`FIN_0_1_2_honest_block_frozen / FIN_0_1_3_S0_entry_ready / implementation_not_started / FIN_0_2_definition_unchanged`
 
 > **2026-08-06 用户新增硬要求**：FIN 0.1.3 必须把研究内容输出质量作为 release-blocking 考核，不得再将 L3 的通用 Claim、弱综合、机械 Writer 或不可执行 WWC 降级为 nonblocking finding。八维绝对质量＋paired gain＋qualified human content acceptance 的正式标准见 `docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md`。
 
@@ -146,6 +146,9 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 
 ## 8. 下一步
 
-1. 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。
-2. 完成一个 FIN 0.1.2 S5 decision-only honest-block/freeze 包。
-3. 从 FIN 0.1.3 S0 delta baseline 开始，先处理 `013-S0-01..03`，随后进入 S1 财务真值链。
+1. [x] 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。
+2. [x] 完成 FIN 0.1.2 S5 decision-only honest-block/freeze 包；`release_qualified=false`，没有机械执行 RG1–RG5。
+3. [ ] 从 FIN 0.1.3 `013-S0-01` 开始建立 delta inheritance、旧 `0.1.3` namespace 分类和 secret-safe current truth baseline。
+4. [ ] 完成 `013-S0-02..03` 后进入 S1 财务真值链。
+
+> **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

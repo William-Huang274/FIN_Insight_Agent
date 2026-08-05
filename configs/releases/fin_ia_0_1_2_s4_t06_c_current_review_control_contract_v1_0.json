@@ -1,0 +1,81 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t06_c_current_review_control_contract_v1_0",
+  "status": "T06_C_zero_call_control_contract",
+  "action_type": "return_for_repair",
+  "reason_contract": {
+    "missing_authority": {
+      "allowed_surfaces": ["evidence", "gaps", "workpaper", "report"],
+      "repair_owner": "evidence_operator",
+      "requested_resolution": "current_evidence_repair"
+    },
+    "numeric_scope_or_unit": {
+      "allowed_surfaces": ["numeric", "workpaper", "report"],
+      "repair_owner": "numeric_operator",
+      "requested_resolution": "deterministic_numeric_recalculation"
+    },
+    "unsupported_inference": {
+      "allowed_surfaces": ["workpaper", "report", "quality"],
+      "repair_owner": "research_lead",
+      "requested_resolution": "judgment_rework"
+    },
+    "missing_counterevidence": {
+      "allowed_surfaces": ["evidence", "gaps", "workpaper", "report"],
+      "repair_owner": "evidence_operator",
+      "requested_resolution": "counterevidence_repair"
+    },
+    "lineage_mismatch": {
+      "allowed_surfaces": ["evidence", "numeric", "workpaper", "report", "trace"],
+      "repair_owner": "verifier",
+      "requested_resolution": "lineage_reverification"
+    },
+    "delivery_clarity": {
+      "allowed_surfaces": ["report", "quality"],
+      "repair_owner": "writer",
+      "requested_resolution": "delivery_rerender_and_verify"
+    }
+  },
+  "permissions": {
+    "read": "current_product:read",
+    "request_repair": "current_product:request_repair",
+    "qualified_review_T07": "current_product:qualified_review"
+  },
+  "wire_contract": {
+    "command_fields": [
+      "expected_manifest_digest",
+      "expected_case_projection_digest",
+      "target_surface",
+      "expected_target_view_digest",
+      "target_ref",
+      "reason_code",
+      "reviewer_note",
+      "actor_ref",
+      "idempotency_key"
+    ],
+    "target_ref_prefix": "surface:",
+    "reviewer_note_max_length": 500
+  },
+  "replay_contract": {
+    "event_log": "append_only_sqlite_hash_chain",
+    "revalidates_current_exact_bindings": true,
+    "reconstructs_from_events": true,
+    "mutable_business_truth_write": false,
+    "model_provider_network_source_calls": 0
+  },
+  "T07_handoff_contract": {
+    "ready_status": "ready_for_qualified_review",
+    "blocked_status": "repair_required_before_qualified_review",
+    "qualified_review_executed_in_T06": false,
+    "allowed_T07_actions": ["accept_exact_version", "return_for_repair"],
+    "NVDA_R3_executed_in_T06": false
+  },
+  "hard_boundaries": {
+    "accepted_R2_business_truth_mutation": false,
+    "raw_capture_product_exposure": false,
+    "fixture_fallback": false,
+    "automatic_repair_execution": false,
+    "authenticated_reviewer_identity": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "model_provider_network_source_calls": 0
+  }
+}

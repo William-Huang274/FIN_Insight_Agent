@@ -10,18 +10,25 @@ import {
   GitBranch,
   Network,
   RefreshCw,
+  RotateCcw,
   SearchCheck,
+  Send,
   ShieldCheck,
 } from "lucide-react";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   CURRENT_PRODUCT_SURFACES,
+  CURRENT_INTERNAL_ACTOR,
   CurrentProductCase,
+  CurrentRepairReason,
+  CurrentReviewControlState,
   CurrentProductSurface,
   CurrentProductSurfaceResponse,
   getCurrentProductSurface,
+  getCurrentReviewControl,
   listCurrentProductCases,
+  requestCurrentReturnForRepair,
 } from "../api/currentProduct";
 import "./current-product.css";
 
@@ -63,9 +70,12 @@ export function CurrentProductWorkbench({ online }: CurrentProductWorkbenchProps
   const [caseKey, setCaseKey] = useState(initial.caseKey);
   const [surface, setSurface] = useState<CurrentProductSurface>(initial.surface);
   const [view, setView] = useState<CurrentProductSurfaceResponse | null>(null);
+  const [reviewControl, setReviewControl] = useState<CurrentReviewControlState | null>(null);
   const [manifestDigest, setManifestDigest] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [repairSubmitting, setRepairSubmitting] = useState(false);
+  const [repairError, setRepairError] = useState<string | null>(null);
   const selectedCase = cases.find((item) => item.case_key === caseKey) ?? cases[0] ?? null;
 
   const loadCases = useCallback(async (signal?: AbortSignal) => {
@@ -88,13 +98,18 @@ export function CurrentProductWorkbench({ online }: CurrentProductWorkbenchProps
     try {
       const resolvedCase = await loadCases(controller.signal);
       if (resolvedCase) {
-        const response = await getCurrentProductSurface(resolvedCase, surface, controller.signal);
+        const [response, control] = await Promise.all([
+          getCurrentProductSurface(resolvedCase, surface, controller.signal),
+          getCurrentReviewControl(resolvedCase, controller.signal),
+        ]);
         setView(response);
+        setReviewControl(control);
       }
     } catch (caught) {
       if (!controller.signal.aborted) {
         setError(caught instanceof Error ? caught.message : "current_product_load_failed");
         setView(null);
+        setReviewControl(null);
       }
     } finally {
       if (!controller.signal.aborted) setLoading(false);
@@ -119,14 +134,21 @@ export function CurrentProductWorkbench({ online }: CurrentProductWorkbenchProps
           setCaseKey(resolvedCase);
         }
         if (resolvedCase) {
-          const nextView = await getCurrentProductSurface(resolvedCase, surface, controller.signal);
-          if (!disposed) setView(nextView);
+          const [nextView, control] = await Promise.all([
+            getCurrentProductSurface(resolvedCase, surface, controller.signal),
+            getCurrentReviewControl(resolvedCase, controller.signal),
+          ]);
+          if (!disposed) {
+            setView(nextView);
+            setReviewControl(control);
+          }
         }
       })
       .catch((caught) => {
         if (!disposed && !controller.signal.aborted) {
           setError(caught instanceof Error ? caught.message : "current_product_load_failed");
           setView(null);
+          setReviewControl(null);
         }
       })
       .finally(() => {
@@ -154,6 +176,31 @@ export function CurrentProductWorkbench({ online }: CurrentProductWorkbenchProps
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
+  const submitRepair = async (reasonCode: CurrentRepairReason, reviewerNote: string) => {
+    if (!selectedCase || !view || view.case_key !== selectedCase.case_key || view.surface !== surface) return;
+    setRepairSubmitting(true);
+    setRepairError(null);
+    try {
+      const next = await requestCurrentReturnForRepair(selectedCase.case_key, {
+        expected_manifest_digest: view.manifest_digest,
+        expected_case_projection_digest: view.case_projection_digest,
+        target_surface: surface,
+        expected_target_view_digest: view.view_digest,
+        target_ref: `surface:${surface}`,
+        reason_code: reasonCode,
+        reviewer_note: reviewerNote.trim(),
+        actor_ref: CURRENT_INTERNAL_ACTOR,
+        idempotency_key: `${selectedCase.case_key}-${surface}-${crypto.randomUUID()}`,
+      });
+      setReviewControl(next);
+    } catch (caught) {
+      setRepairError(caught instanceof Error ? caught.message : "current_repair_request_failed");
+      throw caught;
+    } finally {
+      setRepairSubmitting(false);
+    }
+  };
+
   return (
     <div
       className="current-product"
@@ -171,7 +218,7 @@ export function CurrentProductWorkbench({ online }: CurrentProductWorkbenchProps
         <div className="current-status-cluster">
           <a className="current-back" href="/tasks">内部任务台</a>
           <span className={`current-online ${online ? "is-online" : ""}`}>{online ? "本机在线" : "本机离线"}</span>
-          <span className="current-readonly"><ShieldCheck size={14} /> CURRENT · READ ONLY</span>
+          <span className="current-readonly"><ShieldCheck size={14} /> BUSINESS TRUTH · READ ONLY</span>
           <button type="button" className="current-refresh" onClick={() => void load()} aria-label="刷新 current product">
             <RefreshCw size={16} /> 刷新
           </button>
@@ -249,13 +296,107 @@ export function CurrentProductWorkbench({ online }: CurrentProductWorkbenchProps
             {!loading && !error && view ? <SurfaceRenderer surface={surface} data={view.data} /> : null}
           </section>
 
+          {!loading && !error && view && reviewControl ? (
+            <RepairControl
+              key={`${view.case_key}:${surface}`}
+              surface={surface}
+              state={reviewControl}
+              submitting={repairSubmitting}
+              error={repairError}
+              onSubmit={submitRepair}
+            />
+          ) : null}
+
           <footer className="current-footer">
             <span>Manifest {shortDigest(manifestDigest)}</span>
-            <span>原始 capture 与私有推理不暴露 · 所有视图均为 GET-only</span>
+            <span>业务真值只读 · 返修请求追加留痕 · 原始 capture 与私有推理不暴露</span>
           </footer>
         </main>
       </div>
     </div>
+  );
+}
+
+const REPAIR_REASON_OPTIONS: Array<{
+  value: CurrentRepairReason;
+  label: string;
+  surfaces: CurrentProductSurface[];
+}> = [
+  { value: "missing_authority", label: "权威证据不足", surfaces: ["evidence", "gaps", "workpaper", "report"] },
+  { value: "numeric_scope_or_unit", label: "数值期间 / 单位 / 口径问题", surfaces: ["numeric", "workpaper", "report"] },
+  { value: "unsupported_inference", label: "推断缺少证据支持", surfaces: ["workpaper", "report", "quality"] },
+  { value: "missing_counterevidence", label: "缺少反方证据", surfaces: ["evidence", "gaps", "workpaper", "report"] },
+  { value: "lineage_mismatch", label: "引用或 lineage 不一致", surfaces: ["evidence", "numeric", "workpaper", "report", "trace"] },
+  { value: "delivery_clarity", label: "交付表达不清晰", surfaces: ["report", "quality"] },
+];
+
+function RepairControl({
+  surface,
+  state,
+  submitting,
+  error,
+  onSubmit,
+}: {
+  surface: CurrentProductSurface;
+  state: CurrentReviewControlState;
+  submitting: boolean;
+  error: string | null;
+  onSubmit: (reason: CurrentRepairReason, note: string) => Promise<void>;
+}) {
+  const options = REPAIR_REASON_OPTIONS.filter((item) => item.surfaces.includes(surface));
+  const [reason, setReason] = useState<CurrentRepairReason | "">(options[0]?.value ?? "");
+  const [note, setNote] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const open = state.return_requests.filter((item) => item.status === "repair_requested");
+  const ready = state.T07_handoff.status === "ready_for_qualified_review";
+
+  const submit = async () => {
+    if (!reason || !note.trim()) return;
+    await onSubmit(reason, note);
+    setNote("");
+    setExpanded(false);
+  };
+
+  return (
+    <section className="current-repair-control" data-testid="current-repair-control">
+      <header>
+        <div><RotateCcw size={18} /><span>返修控制与历史回放</span></div>
+        <div className={ready ? "current-handoff is-ready" : "current-handoff is-blocked"}>
+          {ready ? "T07 handoff ready" : `${open.length} 个返修请求待处理`}
+        </div>
+      </header>
+      <div className="current-repair-summary">
+        <div><span>Replay integrity</span><b>{state.replay_integrity}</b></div>
+        <div><span>Event count</span><b>{state.event_count}</b></div>
+        <div><span>Replay digest</span><code>{shortDigest(state.replay_digest)}</code></div>
+        <div><span>Reviewer authority</span><b>未认证 · 尚未执行（归 T07）</b></div>
+      </div>
+      {open.length ? (
+        <div className="current-repair-history">
+          {open.map((item) => (
+            <article key={item.request_id}>
+              <span>{humanize(item.reason_code)}</span>
+              <p>{item.reviewer_note}</p>
+              <small>{humanize(item.repair_owner)} · {humanize(item.requested_resolution)} · {formatDate(item.requested_at)}</small>
+            </article>
+          ))}
+        </div>
+      ) : <p className="current-muted">当前没有返修请求；exact digest handoff 已准备好，但这不代表 qualified reviewer 已接受。</p>}
+      {options.length ? (
+        <div className="current-repair-actions">
+          {!expanded ? (
+            <button type="button" onClick={() => setExpanded(true)}>针对当前“{SURFACE_LABELS[surface]}”请求返修</button>
+          ) : (
+            <div className="current-repair-form">
+              <label>问题类型<select value={reason} onChange={(event) => setReason(event.target.value as CurrentRepairReason)}>{options.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+              <label>返修说明<textarea maxLength={500} value={note} onChange={(event) => setNote(event.target.value)} placeholder="说明需要补什么、为何影响当前判断；不会自动启动模型或来源调用。" /></label>
+              {error ? <code className="current-repair-error">{error}</code> : null}
+              <div><button type="button" className="is-secondary" onClick={() => setExpanded(false)} disabled={submitting}>取消</button><button type="button" onClick={() => void submit()} disabled={submitting || !reason || !note.trim()}><Send size={15} />{submitting ? "正在记录…" : "记录返修请求"}</button></div>
+            </div>
+          )}
+        </div>
+      ) : <p className="current-muted">当前视图没有可用的返修类型；请切换到 Evidence、Numeric、Gap、Workpaper、Report、Trace 或 Quality。</p>}
+    </section>
   );
 }
 

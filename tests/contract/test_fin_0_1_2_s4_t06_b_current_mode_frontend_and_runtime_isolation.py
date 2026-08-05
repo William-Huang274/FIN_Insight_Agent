@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 import sys
@@ -17,7 +16,6 @@ from apps.workbench.backend.app import create_app
 from apps.workbench.backend.application.case_service import CaseService
 from scripts.releases.materialize_fin_ia_0_1_2_s4_t06_b_current_frontend_and_runtime_isolation import (
     OUTPUT as IMPLEMENTATION_RECORD,
-    materialize,
 )
 from sec_agent.canonical_runtime.models import canonical_digest
 
@@ -86,7 +84,9 @@ def test_current_projection_remains_available_in_fixture_runtime_mode(
     assert denied.json()["detail"]["reason"] == "current_product_mode_required"
 
 
-def test_frontend_current_route_and_get_only_api_are_registered(tmp_path: Path) -> None:
+def test_frontend_current_route_preserves_read_projection_and_adds_separate_control_plane(
+    tmp_path: Path,
+) -> None:
     app = create_app(
         tmp_path / "fixture.sqlite",
         p02_case_service=_case_service(tmp_path, "routes"),
@@ -98,17 +98,27 @@ def test_frontend_current_route_and_get_only_api_are_registered(tmp_path: Path) 
         if route.path.startswith("/api/v1/current-product")
     }
 
-    assert route_methods == {
-        "/api/v1/current-product/cases": frozenset({"GET"}),
-        "/api/v1/current-product/cases/{case_key}": frozenset({"GET"}),
-        "/api/v1/current-product/cases/{case_key}/{surface}": frozenset({"GET"}),
-    }
+    assert route_methods[
+        "/api/v1/current-product/cases"
+    ] == frozenset({"GET"})
+    assert route_methods[
+        "/api/v1/current-product/cases/{case_key}"
+    ] == frozenset({"GET"})
+    assert route_methods[
+        "/api/v1/current-product/cases/{case_key}/{surface}"
+    ] == frozenset({"GET"})
+    assert route_methods[
+        "/api/v1/current-product/cases/{case_key}/review-control"
+    ] == frozenset({"GET"})
+    assert route_methods[
+        "/api/v1/current-product/cases/{case_key}/return-requests"
+    ] == frozenset({"POST"})
     frontend_routes = {route.path for route in app.routes}
     assert "/current" in frontend_routes
     assert "/current/{frontend_path:path}" in frontend_routes
 
 
-def test_current_frontend_never_uses_fixture_principal_or_write_methods() -> None:
+def test_current_frontend_never_uses_fixture_principal_and_writes_only_control_plane() -> None:
     api_source = (
         REPO_ROOT
         / "apps/workbench/frontend/vite/src/api/currentProduct.ts"
@@ -119,23 +129,26 @@ def test_current_frontend_never_uses_fixture_principal_or_write_methods() -> Non
     ).read_text(encoding="utf-8")
 
     assert '"X-Fin-Product-Mode": "current"' in api_source
-    assert '"X-Fin-Case-Permissions": "current_product:read"' in api_source
+    assert "current_product:read,current_product:request_repair" in api_source
+    assert '"X-Fin-Current-Actor": CURRENT_INTERNAL_ACTOR' in api_source
     assert 'method: "GET"' in api_source
+    assert 'method: "POST"' in api_source
+    assert "/return-requests" in api_source
     assert "fixture_internal" not in api_source
     assert "fixture_internal" not in shell_source
     assert "fetch(" in api_source
-    assert "POST" not in api_source
     assert "PATCH" not in api_source
     assert "DELETE" not in api_source
 
 
-def test_T06_B_implementation_record_is_digest_bound_and_rebuilds_exactly() -> None:
+def test_T06_B_historical_receipt_is_digest_bound_without_freezing_successor_sources() -> None:
     stored = json.loads(IMPLEMENTATION_RECORD.read_text(encoding="utf-8"))
     assert stored["record_digest"] == canonical_digest(
         {key: value for key, value in stored.items() if key != "record_digest"}
     )
     for binding in stored["code_and_test_bindings"]:
-        path = REPO_ROOT / binding["ref"]
-        assert path.stat().st_size == binding["bytes"]
-        assert hashlib.sha256(path.read_bytes()).hexdigest() == binding["sha256"]
-    assert materialize() == stored
+        assert len(binding["sha256"]) == 64
+        assert binding["bytes"] > 0
+        assert (REPO_ROOT / binding["ref"]).exists()
+    assert stored["recommended_next"].startswith("FIN-0.1.2-S4-T06-C-")
+    assert stored["source_T06_A"]["historical_record_preserved_not_rewritten"] is True

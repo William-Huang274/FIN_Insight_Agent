@@ -2,14 +2,20 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Header, HTTPException, Response
-from pydantic import BaseModel, ConfigDict
+from fastapi import APIRouter, Header, HTTPException, Response, status
+from pydantic import BaseModel, ConfigDict, Field
 
 from ...application.fin_0_1_2_s4_t06_current_product_projection import (
     CURRENT_PRODUCT_SURFACES,
     CurrentProductPrincipal,
     CurrentProductProjectionError,
     CurrentProductProjectionService,
+)
+from ...application.fin_0_1_2_s4_t06_current_review_control import (
+    CurrentProductReviewControlService,
+    CurrentReviewControlError,
+    CurrentReviewControlPrincipal,
+    CurrentReturnForRepairDraft,
 )
 
 
@@ -50,8 +56,47 @@ class CurrentProductSurfaceResponse(BaseModel):
     data: dict[str, Any]
 
 
+class CurrentReturnForRepairCommand(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_manifest_digest: str = Field(min_length=64, max_length=64)
+    expected_case_projection_digest: str = Field(min_length=64, max_length=64)
+    target_surface: CurrentProductSurface
+    expected_target_view_digest: str = Field(min_length=64, max_length=64)
+    target_ref: str = Field(min_length=1, max_length=160)
+    reason_code: Literal[
+        "missing_authority",
+        "numeric_scope_or_unit",
+        "unsupported_inference",
+        "missing_counterevidence",
+        "lineage_mismatch",
+        "delivery_clarity",
+    ]
+    reviewer_note: str = Field(min_length=1, max_length=500)
+    actor_ref: str = Field(min_length=1, max_length=120)
+    idempotency_key: str = Field(min_length=1, max_length=160)
+
+
+class CurrentReviewControlStateResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str
+    projection_mode: Literal["current"]
+    case_key: str
+    manifest_digest: str
+    case_projection_digest: str
+    event_count: int
+    head_event_digest: str | None
+    return_requests: list[dict[str, Any]]
+    replay_integrity: Literal["pass"]
+    replay_digest: str
+    T07_handoff: dict[str, Any]
+    hard_boundaries: dict[str, Any]
+
+
 def build_current_product_router(
     service: CurrentProductProjectionService,
+    review_control_service: CurrentProductReviewControlService | None = None,
 ) -> APIRouter:
     router = APIRouter(tags=["fin-0.1.2-current-product-projection"])
 
@@ -100,6 +145,69 @@ def build_current_product_router(
         response.headers["ETag"] = f'"view={projection["view_digest"]}"'
         return projection
 
+    if review_control_service is not None:
+
+        @router.get(
+            "/current-product/cases/{case_key}/review-control",
+            response_model=CurrentReviewControlStateResponse,
+        )
+        def get_current_review_control(
+            case_key: str,
+            response: Response,
+            product_mode: Annotated[
+                str | None, Header(alias="X-Fin-Product-Mode")
+            ] = None,
+            actor_id: Annotated[
+                str | None, Header(alias="X-Fin-Current-Actor")
+            ] = None,
+            permissions: Annotated[
+                str | None, Header(alias="X-Fin-Case-Permissions")
+            ] = None,
+        ) -> dict[str, Any]:
+            try:
+                projection = review_control_service.get_state(
+                    case_key,
+                    _review_principal(product_mode, actor_id, permissions),
+                )
+            except CurrentReviewControlError as exc:
+                _raise_review_control_error(exc)
+            response.headers["ETag"] = (
+                f'"review-replay={projection["replay_digest"]}"'
+            )
+            return projection
+
+        @router.post(
+            "/current-product/cases/{case_key}/return-requests",
+            status_code=status.HTTP_202_ACCEPTED,
+            response_model=CurrentReviewControlStateResponse,
+        )
+        def request_current_product_repair(
+            case_key: str,
+            command: CurrentReturnForRepairCommand,
+            response: Response,
+            product_mode: Annotated[
+                str | None, Header(alias="X-Fin-Product-Mode")
+            ] = None,
+            actor_id: Annotated[
+                str | None, Header(alias="X-Fin-Current-Actor")
+            ] = None,
+            permissions: Annotated[
+                str | None, Header(alias="X-Fin-Case-Permissions")
+            ] = None,
+        ) -> dict[str, Any]:
+            try:
+                projection = review_control_service.request_return_for_repair(
+                    case_key,
+                    CurrentReturnForRepairDraft(**command.model_dump()),
+                    _review_principal(product_mode, actor_id, permissions),
+                )
+            except CurrentReviewControlError as exc:
+                _raise_review_control_error(exc)
+            response.headers["ETag"] = (
+                f'"review-replay={projection["replay_digest"]}"'
+            )
+            return projection
+
     @router.get(
         "/current-product/cases/{case_key}/{surface}",
         response_model=CurrentProductSurfaceResponse,
@@ -116,7 +224,10 @@ def build_current_product_router(
         ] = None,
     ) -> dict[str, Any]:
         if surface not in CURRENT_PRODUCT_SURFACES:
-            raise HTTPException(status_code=404, detail={"reason": "current_product_surface_not_found"})
+            raise HTTPException(
+                status_code=404,
+                detail={"reason": "current_product_surface_not_found"},
+            )
         try:
             projection = service.get_surface(
                 case_key,
@@ -144,7 +255,29 @@ def _principal(
     )
 
 
+def _review_principal(
+    product_mode: str | None,
+    actor_id: str | None,
+    permissions: str | None,
+) -> CurrentReviewControlPrincipal:
+    return CurrentReviewControlPrincipal(
+        mode=(product_mode or "").strip(),
+        actor_id=(actor_id or "").strip(),
+        permissions=frozenset(
+            item.strip()
+            for item in (permissions or "").split(",")
+            if item.strip()
+        ),
+    )
+
+
 def _raise_service_error(error: CurrentProductProjectionError) -> None:
+    raise HTTPException(
+        status_code=error.status_code, detail=error.detail
+    ) from error
+
+
+def _raise_review_control_error(error: CurrentReviewControlError) -> None:
     raise HTTPException(
         status_code=error.status_code, detail=error.detail
     ) from error

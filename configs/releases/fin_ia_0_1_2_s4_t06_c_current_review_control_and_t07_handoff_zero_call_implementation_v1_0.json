@@ -1,0 +1,160 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t06_c_current_review_control_and_t07_handoff_zero_call_implementation_v1_0",
+  "recorded_at": "2026-08-05T23:45:00+08:00",
+  "status": "T06_C_engineering_pass_T07_handoff_ready",
+  "predecessor": {
+    "T06_B_record_ref": "configs/releases/fin_ia_0_1_2_s4_t06_b_current_frontend_runtime_isolation_and_browser_zero_call_implementation_v1_0.json",
+    "T06_B_record_digest": "3eb7532aff2d7189d5b46c433735f5e675b8da6c43a1cfa5f2bfa11f04d958c4",
+    "current_product_manifest_ref": "configs/releases/fin_ia_0_1_2_s4_t06_a_current_product_projection_manifest_v1_0.json",
+    "current_product_manifest_digest": "4ee7df3c46a87939412c6ea4d303590d91622a2f7216367b6a62cbc15f357250",
+    "historical_records_preserved_not_rewritten": true,
+    "T06_C_is_controlled_successor_code_binding": true
+  },
+  "product_increment": {
+    "current_cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "immutable_business_surfaces": [
+      "case",
+      "run",
+      "evidence",
+      "numeric",
+      "graph",
+      "gaps",
+      "workpaper",
+      "report",
+      "trace",
+      "quality"
+    ],
+    "typed_action": "return_for_repair",
+    "typed_reason_count": 6,
+    "exact_bindings": [
+      "manifest_digest",
+      "case_projection_digest",
+      "target_view_digest"
+    ],
+    "append_only_hash_chained_review_events": true,
+    "idempotent_control_writes": true,
+    "restart_replay": true,
+    "three_case_isolation": true,
+    "T07_handoff_packet": true,
+    "business_truth_mutated": false,
+    "automatic_repair_executed": false
+  },
+  "T07_handoff_boundary": {
+    "empty_queue_status": "ready_for_qualified_review",
+    "open_request_status": "repair_required_before_qualified_review",
+    "qualified_review_executed": false,
+    "authenticated_reviewer_identity_established": false,
+    "NVDA_R3_executed": false,
+    "T07_entered": false,
+    "required_permission": "current_product:qualified_review"
+  },
+  "test_governance": {
+    "T06_A_T06_B_historical_receipts_remain_digest_bound": true,
+    "successor_sources_not_frozen_to_predecessor_SHA": true,
+    "RC_P36_128_original_four_historical_debts_closed": false,
+    "historical_results_rewritten": false
+  },
+  "code_and_test_bindings": [
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t06_c_current_review_control_contract_v1_0.json",
+      "sha256": "79c18efb4a004466ba116ca470ebdb9a1a4064c7e50450f1bed73e102ab45109",
+      "bytes": 2841
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_2_s4_t06_current_product_review_control_runtime_resource_registry_v1_0.json",
+      "sha256": "ef87a491c5bd1a044ce6e397127ef9fbe2265d87eaefcdb6614133fb852bbd3e",
+      "bytes": 1556
+    },
+    {
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t06_current_review_control.py",
+      "sha256": "03acc2a6b906aaed3d32f8e4a155c4005f41573d3187a860e7fdfabb7bfec0f1",
+      "bytes": 20587
+    },
+    {
+      "ref": "apps/workbench/backend/api/v1/current_product.py",
+      "sha256": "5469780c438f8be702331c62e2c2da883d2c83e99c58a40666f67f5248d13e20",
+      "bytes": 9099
+    },
+    {
+      "ref": "apps/workbench/backend/app.py",
+      "sha256": "d6ac9c78383745d3329cf56963db93f35786e61cfd9cd1554cc89018bc51891e",
+      "bytes": 50628
+    },
+    {
+      "ref": "apps/workbench/frontend/vite/src/api/currentProduct.ts",
+      "sha256": "f2109a8dae1fc4e8865660a64e7ea36a0d3c5b8f5bfdec1c977651bf6e320a73",
+      "bytes": 5716
+    },
+    {
+      "ref": "apps/workbench/frontend/vite/src/app/CurrentProductWorkbench.tsx",
+      "sha256": "9c99f3b8f022c52229d536bb016f7d34f97de019ffc16b8fa9f1e035239e8ba3",
+      "bytes": 29417
+    },
+    {
+      "ref": "apps/workbench/frontend/vite/src/app/current-product.css",
+      "sha256": "9e90fb124790b3080cf9471060e3392edfff0010abc84935ef7101189c926e01",
+      "bytes": 20328
+    },
+    {
+      "ref": "apps/workbench/frontend/e2e/current-product.spec.ts",
+      "sha256": "7ba89df82019872936abe1eccf39779edfa747ad5c1652e00171062ef7faaea8",
+      "bytes": 6835
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t06_a_current_product_projection.py",
+      "sha256": "11b1fa269139d4380ff368ab3b5febba848159a916303a7a158073c3b71f7bf3",
+      "bytes": 11116
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t06_b_current_mode_frontend_and_runtime_isolation.py",
+      "sha256": "a1c7a9347d7d79614057ca623c73f58a19283aa81e883cdb819dd5aca17eda7a",
+      "bytes": 5523
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_2_s4_t06_c_current_review_control_and_t07_handoff.py",
+      "sha256": "0561cfaa3721f4ac09205366f207d2b05ef1d698ebc40a6a041063b5a1674b91",
+      "bytes": 12995
+    },
+    {
+      "ref": "scripts/releases/materialize_fin_ia_0_1_2_s4_t06_c_current_review_control_and_t07_handoff.py",
+      "sha256": "9b4a1225800a0f92147c63aec71b40387b31e8209a502fee137a27ae3894979e",
+      "bytes": 6497
+    }
+  ],
+  "verification": {
+    "T06_A_B_C_plus_historical_fixture_contracts": "36 passed",
+    "playwright_chromium_desktop_mobile": "8 passed",
+    "typescript": "pass",
+    "vite_production_build": "pass_with_existing_chunk_size_warning",
+    "broad_selected_T05_T06_Workbench_regression": "158 passed / 4 known RC-P36-128 historical failures",
+    "new_T06_C_regression_failures": 0,
+    "three_case_default_handoff_ready": true,
+    "model_provider_network_financial_source_calls": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "accepted_R2_business_truth_writes": 0,
+    "control_plane_test_writes": "temporary_SQLite_only"
+  },
+  "acceptance_boundary": {
+    "S4_T06_A": "engineering_pass",
+    "S4_T06_B": "engineering_pass",
+    "S4_T06_C": "engineering_pass",
+    "S4_T06_product_projection": "pass_ready_for_T07_entry",
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_T07": "not_entered",
+    "S4_T08": "not_entered",
+    "S5": "not_entered",
+    "release": "not_qualified",
+    "production": "not_qualified"
+  },
+  "recommended_next": "FIN-0.1.2-S4-T07-EXACT-QUALIFIED-HUMAN-REVIEW-NVDA-R3-AND-BOUNDED-EXPLANATION-ENTRY-DECISION",
+  "record_digest": "c4990c2e188bc03fd071cf3939cbf3e6e68479bb30edf75140d73668298bd41a"
+}

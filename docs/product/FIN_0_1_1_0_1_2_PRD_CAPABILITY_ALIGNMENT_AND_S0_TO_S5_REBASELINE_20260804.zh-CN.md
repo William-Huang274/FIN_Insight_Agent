@@ -132,7 +132,13 @@ T06-B 已把三案 current read model 接到用户可见的 `/current` Workbench
 
 旧 Evidence/VT2/VT3 测试因默认 runtime 自动调度而失败的 RC-P36-127 已由显式 `current/fixture` app construction mode 关闭：默认 current 行为不变，历史 fixture workflow 单独保持 pending-before-compile。桌面和移动真实 Chromium 验收通过。T06-C 仍需实现 typed return/request-repair 与 replay；因此 F01/F04/F06/F07/F09/F11/F13/F15 只能记为“current read-only product surface available”，不能记为完整闭环或 qualified product acceptance。
 
-这只关闭 RC-P36-126 的后端 read-model 根因，不等于 F01/F04/F06/F07/F09/F11/F13/F15 已完整产品验收：前端仍未切入 current mode，旧 fixture workflow 的 RC-P36-127 仍需在 T06-B 隔离，return/request-repair 仍归 T06-C，qualified Human Review/NVDA R3 仍归 T07。因此 S4-T06 继续为进行中，不能因 API 可读就提前进入 S5。
+### 2026-08-05 S4-T06-C 产品闭环校正
+
+T06-C 已把“可退回、可回放”从历史 fixture 形状接到 current 三案例。业务真值仍为只读；内部操作者只能针对 exact manifest/case/view digest 提交 typed `return_for_repair`，系统本地确定 repair owner，并把动作写入 append-only hash chain。重启后可以重建返修历史；开放请求会阻断 T07 handoff，空队列才显示 `ready_for_qualified_review`。这满足 F01/F04/F06/F09/F11/F13/F15 在 T06 的 current product projection 与 control-plane 范围，但不代表实际证据已修复，也不代表 qualified reviewer 已签署。
+
+Workbench 现在公开返修原因、说明、owner、resolution、replay digest 和 T07 readiness，且明确保留 `authenticated reviewer identity=false`、`qualified human review=false` 与 `NVDA R3=false`。当前本地 header 只是内部操作者声明，不能作为 reviewer 身份认证。T06 因此可关闭并进入 T07 入口决策；真正 reviewer 的身份/权限、exact accept/return、repair closeout、review burden 和 NVDA R3 继续只归 T07。F14 bounded explanation 仍为 nonblocking，不得为了展示完整性重新扩大 T06。
+
+T06-A 的 read adapter、T06-B 的 current frontend/runtime isolation 和 T06-C 的 typed return/replay/handoff 已依次成立，所以 S4-T06 现为 pass closed。该通过只覆盖 current product projection 与 control-plane capability；qualified Human Review/NVDA R3 仍归 T07，三案集成收口归 T08，S5/release 仍未进入。
 
 ### S0：可靠基础（已关闭，不重开）
 

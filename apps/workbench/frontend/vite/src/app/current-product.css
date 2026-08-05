@@ -177,6 +177,32 @@ button { font: inherit; }
 .current-boundaries span { color: var(--current-muted); }
 .current-boundaries b { text-align: right; font-weight: 600; }
 .current-json { overflow: auto; max-height: 600px; background: #14211d; color: #cde5db; padding: 20px; border-radius: 12px; font: 10px/1.6 "Cascadia Mono", Consolas, monospace; }
+.current-repair-control { max-width: 1400px; margin: 16px auto 24px; border: 1px solid var(--current-border); border-radius: 14px; background: #fff; overflow: hidden; }
+.current-repair-control > header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 15px 18px; border-bottom: 1px solid #e7ece9; background: #f7faf8; }
+.current-repair-control > header > div:first-child { display: flex; align-items: center; gap: 8px; color: var(--current-green); font-size: 11px; font-weight: 700; }
+.current-handoff { border-radius: 999px; padding: 5px 9px; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.current-handoff.is-ready { color: var(--current-green); background: var(--current-green-soft); }
+.current-handoff.is-blocked { color: #965b12; background: #fff1d9; }
+.current-repair-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #e7ece9; }
+.current-repair-summary > div { display: grid; gap: 5px; min-width: 0; padding: 12px 16px; background: white; }
+.current-repair-summary span { color: var(--current-muted); font-size: 8px; text-transform: uppercase; }
+.current-repair-summary b, .current-repair-summary code { overflow: hidden; color: var(--current-ink); font: 600 10px/1.4 "Cascadia Mono", Consolas, monospace; text-overflow: ellipsis; white-space: nowrap; }
+.current-repair-history { display: grid; gap: 8px; padding: 14px 18px 0; }
+.current-repair-history article { border-left: 3px solid #d49443; border-radius: 8px; padding: 11px 13px; background: #fff9f0; }
+.current-repair-history span { color: #965b12; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+.current-repair-history p { margin: 6px 0; font-size: 11px; line-height: 1.55; }
+.current-repair-history small { color: var(--current-muted); font-size: 8px; }
+.current-repair-control > .current-muted { padding: 0 18px; }
+.current-repair-actions { display: flex; justify-content: flex-end; padding: 14px 18px 18px; }
+.current-repair-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; border-radius: 8px; padding: 9px 13px; background: var(--current-ink); color: white; cursor: pointer; font-size: 10px; }
+.current-repair-actions button:disabled { cursor: not-allowed; opacity: .5; }
+.current-repair-actions button.is-secondary { border: 1px solid var(--current-border); background: white; color: var(--current-ink); }
+.current-repair-form { display: grid; gap: 11px; width: min(680px, 100%); }
+.current-repair-form label { display: grid; gap: 6px; color: var(--current-muted); font-size: 9px; }
+.current-repair-form select, .current-repair-form textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--current-border); border-radius: 8px; background: white; padding: 9px 10px; color: var(--current-ink); font: 11px/1.5 inherit; }
+.current-repair-form textarea { min-height: 82px; resize: vertical; }
+.current-repair-form > div { display: flex; justify-content: flex-end; gap: 8px; }
+.current-repair-error { color: #a34b3e; font-size: 9px; white-space: pre-wrap; }
 .current-loading { display: grid; gap: 10px; }
 .current-loading span { height: 90px; border-radius: 10px; background: linear-gradient(90deg, #edf1ef 25%, #f7f9f8 45%, #edf1ef 65%); background-size: 300% 100%; animation: current-shimmer 1.4s infinite; }
 @keyframes current-shimmer { to { background-position: -150% 0; } }
@@ -212,5 +238,7 @@ button { font: inherit; }
   .current-content-heading code { display: none; }
   .current-workpaper > article { grid-template-columns: 30px 1fr; }
   .current-boundaries { grid-template-columns: 1fr; }
+  .current-repair-summary { grid-template-columns: 1fr 1fr; }
+  .current-repair-control > header { align-items: flex-start; flex-direction: column; }
   .current-footer { flex-direction: column; }
 }

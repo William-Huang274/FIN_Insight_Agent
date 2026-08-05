@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T05 pass closed / S4-T06-A、T06-B engineering pass，T06-C pending / S4-T07–T08 not started`
+状态：`S4 entered / S4-T01–T06 pass closed / S4-T07–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -30,8 +30,8 @@ S4 只有在以下结果同时成立时才能关闭：
 | S4-T02 | Retrieval/Evidence deterministic readiness（已通过） | 三案 EvidenceRequest、route、candidate ceiling、metadata、parser/authority、accepted/rejected/gap、citation 由 fixture/mutation 证明；历史 source pack 与 2026-06-11 index snapshot 完成 freshness/reachability 处置；RC-P36-113 已关闭 | 不用 live 搜索发现合同问题 |
 | S4-T03 | NVDA bounded Agentic Search current canary（已通过并关闭） | 当前 Runtime 实际调用批准的 public/local RAG/SQL/Graph/official routes；零 false promotion；完整 ToolUse/Evidence lineage | 不把 metadata route、state stub 或 URL wrapper 冒充真实检索，不自动扩大来源或进行 full research |
 | S4-T04 | NVDA natural-Case Agentic Research integration（已通过并由 Owner 验收关闭） | EvidenceRequest→approved pack→Judgment→Lead/Writer/Verifier→九件套；与 S3 frozen-input 对照；完成 source-grounded NVDA R2 产品验收 | 不用 S3 frozen 结果冒充 current source proof；不以固定 token 上限或删减财务证据换取通过 |
-| S4-T05 | DELL/MU transfer 与 post-transfer NVDA（已进入，T05-A 工程通过） | 零调用 transfer package 已把 NVDA-only search/research surface 收敛为 DELL/MU/NVDA closed profile；随后依次 DELL R2、MU R2、post-transfer NVDA R2 | 不复用历史结果冒充当前证明；不逐字段无限修复；新 L1 立即停止剩余 paid sequence |
-| S4-T06 | Workbench current product projection | Case/Run/Evidence/Numeric/Graph/Gap/Workpaper/Report/Trace/quality 可审、可回放、可退回 | 不用 fallback 冒充 Agent |
+| S4-T05 | DELL/MU transfer 与 post-transfer NVDA（已通过并关闭） | DELL R2、MU R2、post-transfer NVDA R2 均以 current Evidence、exact Agent、paired assessment 与 Owner acceptance 成立 | 不复用历史结果冒充当前证明；不逐字段无限修复；新 L1 立即停止剩余 paid sequence |
+| S4-T06 | Workbench current product projection（已通过并关闭） | Case/Run/Evidence/Numeric/Graph/Gap/Workpaper/Report/Trace/quality 可审、可回放、可退回；business truth 保持只读 | 不用 fallback 冒充 Agent；返修请求不等于 qualified review |
 | S4-T07 | Exact Human Review、NVDA R3 与 bounded explanation | qualified reviewer 接受/退回/repair 绑定 exact digest；NVDA R3；记录 review burden | F14 why/gap/WWC demo 不阻断 release |
 | S4-T08 | 三案集成收口 | F01–F15 evidence inventory、三案 regression、成本、gap owner 和 rollback 完整 | 不新增模型或检索实现 |
 
@@ -342,3 +342,15 @@ runtime 侧没有全局关闭共享执行器。`create_app` 默认仍是 `curren
 扩大选择性回归为 `148 passed / 4 failed`。3 项属于 T05-C 已实际执行后再要求 `runtime_root_absent` 的一次性 fresh proof，1 项属于早期 T05 entry 把后续 T03/T04 源码 SHA 当作永久 immutable binding；两类都早于并独立于 T06-B，不能靠删除真实运行证据或重写历史决策伪造全绿。T06-B 当前实现由 successor record `3eb7532a…58c4` 绑定，T06-A 历史 implementation record 保持原样。
 
 因此当前只能声明 `T06-A/B engineering pass / current read-only product frontend available`。T06 产品验收仍为 false，因为 typed return/request-repair/replay 和 T07 handoff readiness 尚未实现；qualified Human Review 与 NVDA R3 仍只归 T07。下一项固定为 `FIN-0.1.2-S4-T06-C-TYPED-RETURN-REQUEST-REPAIR-REPLAY-AND-T07-HANDOFF-READINESS-ZERO-CALL-IMPLEMENTATION`。
+
+## 33. S4-T06-C typed return、replay 与 T07 handoff
+
+T06-C 已以独立 control plane 关闭 Workbench 的最后一段产品闭环。`case/run/evidence/numeric/graph/gaps/workpaper/report/trace/quality` 十个业务视图继续保持 GET-only 和 immutable；返修动作只写入单独命名空间的 SQLite append-only event log，不修改 T05 accepted R2、Evidence、Numeric、Workpaper 或 final report。
+
+每条 `return_for_repair` 请求强制绑定 current manifest、case projection 和目标 view 三层 exact digest，并使用六类 typed reason 在本地确定 repair owner 与 requested resolution。actor、权限、reason/surface、target ref、幂等 key、跨案替换和 stale digest 均 fail closed。事件按 case 独立哈希链保存；服务重启后从 event 重建 replay projection，任一 payload、链头、case 或 disposition 漂移都会拒绝。空队列生成 `ready_for_qualified_review` T07 handoff；存在 open request 时生成 `repair_required_before_qualified_review`，不得越过返修进入 review。
+
+Workbench `/current` 已显示 replay integrity、event count、history、handoff 状态和当前 surface 的 typed 返修表单。界面明确写明 qualified review 尚未执行且归 T07；browser proof 的 POST 使用拦截响应验证 UI 状态转换，正式默认库没有制造返修事件。默认 DELL/MU/NVDA 均为 `0 event / ready_for_qualified_review`，各自 replay 与 handoff digest 独立。
+
+验证结果：T06-A/B/C 与历史 fixture focused=`36 passed`；Chromium desktop/mobile=`8 passed`；TypeScript 和 Vite production build 通过，保留既有单 chunk >500KB 非阻塞 warning。扩大 T05→T06/Workbench 回归=`158 passed / 4 failed`，失败仍精确等于 RC-P36-128 的三条已消费 fresh identity 与一条旧 mutable-source SHA 绑定，新增 T06-C 回归=`0`。测试中发现旧 T06-B 测试仍会调用历史 materializer 并重写证据，已移除副作用并从 Git 精确恢复 T06-B record；T06-C 只以 successor record 引用 predecessor digest。
+
+因此 S4-T06=`pass_closed / current product projection and repair-control available`。当前 `current_internal_operator` 和权限 header 仍由本地客户端声明，不是经过认证的 reviewer authority；这不等于执行 qualified Human Review、关闭真实返修、建立 NVDA R3、完成 S4-T08、进入 S5 或 release。implementation=`c4990c2e…d41a`；下一项限定为 `FIN-0.1.2-S4-T07-EXACT-QUALIFIED-HUMAN-REVIEW-NVDA-R3-AND-BOUNDED-EXPLANATION-ENTRY-DECISION`，先做 T07 入口与 reviewer 身份、资格、权限和任务边界决策，不自动代签 reviewer 接受。

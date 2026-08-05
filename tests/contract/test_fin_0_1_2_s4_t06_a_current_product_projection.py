@@ -275,7 +275,7 @@ def test_api_fails_closed_on_fixture_mode_permission_and_unknown_case(
     assert unknown.json()["detail"]["reason"] == "current_product_case_not_found"
 
 
-def test_openapi_exposes_only_get_for_current_product_surfaces(
+def test_openapi_keeps_business_projection_get_only_and_namespaces_control_writes(
     api: SimpleNamespace,
 ) -> None:
     paths = api.client.get("/openapi.json").json()["paths"]
@@ -287,6 +287,24 @@ def test_openapi_exposes_only_get_for_current_product_surfaces(
     assert set(current_paths) == {
         "/api/v1/current-product/cases",
         "/api/v1/current-product/cases/{case_key}",
+        "/api/v1/current-product/cases/{case_key}/review-control",
+        "/api/v1/current-product/cases/{case_key}/return-requests",
         "/api/v1/current-product/cases/{case_key}/{surface}",
     }
-    assert all(set(operations) == {"get"} for operations in current_paths.values())
+    assert set(current_paths["/api/v1/current-product/cases"]) == {"get"}
+    assert set(current_paths["/api/v1/current-product/cases/{case_key}"]) == {
+        "get"
+    }
+    assert set(
+        current_paths["/api/v1/current-product/cases/{case_key}/{surface}"]
+    ) == {"get"}
+    assert set(
+        current_paths[
+            "/api/v1/current-product/cases/{case_key}/review-control"
+        ]
+    ) == {"get"}
+    assert set(
+        current_paths[
+            "/api/v1/current-product/cases/{case_key}/return-requests"
+        ]
+    ) == {"post"}

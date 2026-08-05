@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T04 pass closed / T05-A pass / T05-B DELL Owner accepted current R2 and closed / T05-C MU formal paired pass with limited gain and findings, Owner decision pending / T05-D and S4-T06–T08 not started`
+状态：`S4 entered / S4-T01–T04 pass closed / T05-A pass / T05-B DELL and T05-C MU Owner accepted current R2 and closed / T05-D post-transfer NVDA entry authorized not started / S4-T06–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -248,3 +248,9 @@ exact result SHA 保持 `c7bdf239…3602`；surface record=`c9608e31…5272`，p
 本次不能机械照搬 DELL 的数量结论。MU 的 9/9 WWC 都是通用阈值，继续归 RC-P36-119；唯一 dependency、三个 unresolved conflicts 与四个 gaps 主要复述 epistemic state 和待复核状态，新增非阻断 RC-P36-122，后传 T08–T10/S5。两项都不触发第二次 Search/DeepSeek，也不阻断 bounded internal R2，但必须在 Owner 决定里明示。
 
 formal assessment=`2321fd49…0e0f`，推荐 `accept_current_MU_R2_with_RC_P36_119_and_RC_P36_122_deferred`。Owner 未自动代签，所以 MU current R2=false、T05-C closeout 与 T05-D entry 仍 blocked。下一项只等待 `USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-MU-R2-THEN-CLOSE-T05-C-OR-HOLD`。
+
+## 23. S4-T05-C MU Owner acceptance 与关闭
+
+用户在完整看见 L3 仅为有限结构增益、9/9 WWC 泛化和 Lead 综合偏弱后明确回复“接受”。decision=`70fc169f…5912` 绑定 formal assessment=`2321fd49…0e0f`；S4-T05-C=`pass_closed_owner_accepted`，MU current R2=true，T05-D post-transfer NVDA entry=`authorized_not_started`。
+
+该接受不关闭 RC-P36-119/122，也不证明 strong MU thesis、post-transfer NVDA R2、qualified Human Review、NVDA R3、S4 整体验收、S5、release 或 production。本项没有模型、Provider、网络、Search、exact-live 或 T05-D Run。下一项仅做 `FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-CURRENT-R2-ENTRY-AND-DEPENDENCY-DECISION`，必须先零调用界定 T04 已接受 NVDA 资产的可复用范围和必须重证的 post-transfer 边界。

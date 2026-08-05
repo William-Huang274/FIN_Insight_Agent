@@ -1,0 +1,53 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_64",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.64",
+  "recorded_at": "2026-08-05T15:45:00+08:00",
+  "sequence_after_projection": "v2_63",
+  "status": "S4_T05_C_MU_owner_accepted_current_R2_true_T05_C_closed_T05_D_entry_authorized",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor",
+    "S4_T01_T04": "pass_closed",
+    "S4_T05_A": "engineering_pass_zero_call",
+    "S4_T05_B_DELL": "pass_closed_owner_accepted_current_R2",
+    "S4_T05_C_MU": "pass_closed_owner_accepted_current_R2",
+    "S4_T05_D_post_transfer_NVDA": "entry_authorized_not_started",
+    "S4_T06_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": true,
+    "DELL_current_R2": true,
+    "MU_current_R2": true,
+    "post_transfer_NVDA_R2": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-CURRENT-R2-ENTRY-AND-DEPENDENCY-DECISION"
+  },
+  "T05_C_MU_owner_acceptance": {
+    "decision_digest": "70fc169f38cd4ee73a6be057c089894bc3dae02c19ab4e2ed016398b86265912",
+    "source_formal_assessment_digest": "2321fd49cfe56610c1d28b933ea719b3c2105bcc3e5aae715df4a1c4978b0e0f",
+    "user_message": "接受",
+    "accepted_scope": "bounded_current_source_grounded_MU_R2_with_limited_gain_findings",
+    "S4_T05_C": "pass_closed_owner_accepted",
+    "MU_current_R2": true,
+    "S4_T05_D_entry": "authorized_not_started",
+    "T05_D_runs": 0,
+    "new_model_provider_network_source_exact_rerun": [0, 0, 0, 0, 0]
+  },
+  "preserved_boundaries": {
+    "RC_P36_115": "open_S5_cross_runtime_lock",
+    "RC_P36_119": "open_nonblocking_T08_T10_S5",
+    "RC_P36_121": "closed_current_result_controlled_successor",
+    "RC_P36_122": "open_nonblocking_T08_T10_S5",
+    "strong_MU_investment_thesis": false,
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_product_acceptance": false,
+    "S5_entered": false,
+    "release": "not_qualified",
+    "production": "not_qualified"
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s0_03_financial_semantic_truth_oracle_classification_v1_0",
+  "decision_id": "FIN-0.1.3-013-S0-03-FINANCIAL-SEMANTIC-TRUTH-ORACLE-CLASSIFICATION",
+  "recorded_at": "2026-08-06T00:00:00Z",
+  "status": "engineering_pass_known_product_truth_failure_correctly_blocked",
+  "classification_contract": {
+    "layers": [
+      {
+        "layer": "shape_integrity",
+        "owner": "S0_contract_and_integrity",
+        "blocks_financial_truth_entry": true
+      },
+      {
+        "layer": "financial_truth",
+        "owner": "S1_financial_truth_chain",
+        "blocks_financial_truth_entry": true
+      },
+      {
+        "layer": "analysis_quality",
+        "owner": "S2_S3_research_quality",
+        "blocks_financial_truth_entry": false,
+        "release_blocking_at_owner_stage": true
+      },
+      {
+        "layer": "product_usability",
+        "owner": "S4_product_workflow",
+        "blocks_financial_truth_entry": false,
+        "release_blocking_at_owner_stage": true
+      }
+    ],
+    "financial_truth_dimensions": [
+      "case_key",
+      "entity_ref",
+      "issuer_id",
+      "metric_family",
+      "aggregation_scope",
+      "raw_value",
+      "normalized_value",
+      "currency",
+      "unit",
+      "scale_multiplier",
+      "fiscal_year",
+      "fiscal_period",
+      "period_role",
+      "period_start",
+      "period_end",
+      "duration_days",
+      "source_filed_at",
+      "published_at",
+      "as_of_date",
+      "snapshot_at",
+      "source_ref",
+      "source_locator",
+      "formula"
+    ],
+    "truth_gate_blocks": [
+      "shape_integrity",
+      "financial_truth"
+    ],
+    "analysis_quality_is_release_blocking_at_owner_stage": true,
+    "product_usability_is_release_blocking_at_owner_stage": true,
+    "shape_test_count_never_substitutes_for_financial_truth": true
+  },
+  "reviewed_fixture_result": {
+    "case_keys": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "reviewed_positive_count": 3,
+    "reviewed_positive_pass_count": 3,
+    "known_current_DELL_result": {
+      "record_id": "DELL_current_wrong_FY2025_revenue",
+      "reviewed_truth_id": "DELL_FY2025_Q4_revenue_reviewed",
+      "status": "blocked_before_s1_s3",
+      "financial_truth_entry_allowed": false,
+      "finding_count": 4,
+      "findings_by_layer": {
+        "shape_integrity": 0,
+        "financial_truth": 4,
+        "analysis_quality": 0,
+        "product_usability": 0
+      },
+      "findings": [
+        {
+          "code": "fiscal_period_mismatch",
+          "layer": "financial_truth",
+          "owner": "S1_financial_truth_chain",
+          "field": "fiscal_period",
+          "expected": "Q4",
+          "observed": "FY",
+          "detail": "fiscal_period: expected 'Q4', observed 'FY'",
+          "blocks_financial_truth_entry": true
+        },
+        {
+          "code": "period_role_mismatch",
+          "layer": "financial_truth",
+          "owner": "S1_financial_truth_chain",
+          "field": "period_role",
+          "expected": "quarter",
+          "observed": "annual",
+          "detail": "period_role: expected 'quarter', observed 'annual'",
+          "blocks_financial_truth_entry": true
+        },
+        {
+          "code": "source_filed_at_mismatch",
+          "layer": "financial_truth",
+          "owner": "S1_financial_truth_chain",
+          "field": "source_filed_at",
+          "expected": "2025-03-25",
+          "observed": "2026-06-23",
+          "detail": "source_filed_at: expected '2025-03-25', observed '2026-06-23'",
+          "blocks_financial_truth_entry": true
+        },
+        {
+          "code": "annual_duration_out_of_range",
+          "layer": "financial_truth",
+          "owner": "S1_financial_truth_chain",
+          "field": "duration_days",
+          "expected": "330..380",
+          "observed": 91,
+          "detail": "duration_days: expected '330..380', observed 91",
+          "blocks_financial_truth_entry": true
+        }
+      ]
+    },
+    "current_DELL_product_truth_pass": false,
+    "current_DELL_repair_owner": "013-S1-01"
+  },
+  "mutation_coverage": [
+    "entity_and_issuer",
+    "annual_quarter_and_duration",
+    "unit_and_currency",
+    "scale_and_normalized_value",
+    "formula_recalculation",
+    "filed_published_as_of_snapshot_roles",
+    "shape_vs_financial_truth",
+    "analysis_quality_vs_product_usability_stage_routing"
+  ],
+  "source_bindings": [
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_repair_closeout_financial_semantic_truth_oracle_v1_0.json",
+      "sha256": "5f26a6ac4f039b98503d9fd3a7cb0863e95c805e908c3a7c0634af9a9a7ac140",
+      "role": "current_financial_semantic_oracle_policy"
+    },
+    {
+      "ref": "tests/fixtures/fin_0_1_3/financial_semantic_truth_oracle_three_case_v1.json",
+      "sha256": "087f08c21e7cd2a3f8e49ef3dccf30c5cd0e605890a9883d666340517d679edb",
+      "role": "reviewed_three_case_truth_fixture_and_known_failure"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_current_evidence_pack_v1_0.json",
+      "sha256": "34ad6a388e08c7b8518487902f2934a2d046131676d519c5f84a28bc157ec3ae",
+      "role": "immutable_current_DELL_wrong_numeric_projection"
+    },
+    {
+      "ref": "docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md",
+      "sha256": "3dd840bedcc2ad45e46d262213260d9996f833eed0e799103e45c30238a14b79",
+      "role": "current_research_quality_layer_requirement_successor"
+    },
+    {
+      "ref": "src/sec_agent/financial_semantic_truth_oracle.py",
+      "sha256": "a822493f961ab3f44cc8ce9ee2e4e8feb915bc313524414baf656c4700d0d34c",
+      "role": "deterministic_truth_oracle_classifier"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_3_repair_closeout_s0_03_financial_semantic_truth_oracle_classification.py",
+      "sha256": "83c6638dcbf7601521be7f17b0938f1a53a57324b8bd70c94f089779405ac5e0",
+      "role": "canonical_S0_03_contract_and_mutation_test"
+    },
+    {
+      "ref": "scripts/releases/materialize_fin_ia_0_1_3_repair_closeout_s0_03_financial_truth_oracle.py",
+      "sha256": "15fd7528469f0f29d9ca78d39a0f095a18da058dfa9e595f59f4c45d8172e3d1",
+      "role": "deterministic_materializer"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s0_02_active_test_suite_successor_v1_0.json",
+      "sha256": "6ddacc73b1290cb06e245da437df4bb7c179ebf4596333145a6dfd29fba98b49",
+      "role": "S0_01_S0_02_active_suite_predecessor"
+    }
+  ],
+  "root_cause_disposition": {
+    "RC-P36-130": "oracle_classification_closed_underlying_DELL_truth_repair_open_S1_01",
+    "RC-P36-131": "unchanged_open_S2_S3_research_quality_runtime_translation",
+    "RC-P36-132": "unchanged_open_S4_S5_product_workflow_and_release"
+  },
+  "observed_counts": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_or_source_calls": 0,
+    "business_runs": 0,
+    "business_artifacts": 0,
+    "current_data_rows_rewritten": 0
+  },
+  "stage_truth": {
+    "FIN_0_1_3_S0_03": "engineering_pass",
+    "FIN_0_1_3_S0": "complete",
+    "FIN_0_1_3_S1": "not_started_entry_authorized_for_repair_only",
+    "FIN_0_1_3_S2_to_S5": "not_started",
+    "release_qualified": false
+  },
+  "known_boundary": "S0 completion means the gate detects and routes semantic truth failures. It does not make the current DELL number correct or authorize model/full-chain work.",
+  "next_action": "FIN-0.1.3-013-S1-01-DELL-FINANCIAL-TEMPORAL-TRUTH-AND-TIME-ROLE-REPAIR",
+  "decision_digest": "b62f681aaae881466f9be20fe62aa17bcde1cf03f490e0ab5e91365314d96c33"
+}

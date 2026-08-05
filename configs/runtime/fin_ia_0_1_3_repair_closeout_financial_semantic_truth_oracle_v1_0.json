@@ -1,0 +1,34 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_financial_semantic_truth_oracle_v1_0",
+  "oracle_id": "FIN-0.1.3-013-S0-03-FINANCIAL-SEMANTIC-TRUTH-ORACLE-R1",
+  "status": "current_zero_call_financial_truth_entry_gate",
+  "layers": [
+    {"layer": "shape_integrity", "owner": "S0_contract_and_integrity", "blocks_financial_truth_entry": true},
+    {"layer": "financial_truth", "owner": "S1_financial_truth_chain", "blocks_financial_truth_entry": true},
+    {"layer": "analysis_quality", "owner": "S2_S3_research_quality", "blocks_financial_truth_entry": false, "release_blocking_at_owner_stage": true},
+    {"layer": "product_usability", "owner": "S4_product_workflow", "blocks_financial_truth_entry": false, "release_blocking_at_owner_stage": true}
+  ],
+  "material_financial_dimensions": [
+    "case_key", "entity_ref", "issuer_id", "metric_family", "aggregation_scope",
+    "raw_value", "normalized_value", "currency", "unit", "scale_multiplier",
+    "fiscal_year", "fiscal_period", "period_role", "period_start", "period_end",
+    "duration_days", "source_filed_at", "published_at", "as_of_date", "snapshot_at",
+    "source_ref", "source_locator", "formula"
+  ],
+  "period_invariants": {
+    "annual_duration_days_inclusive": [330, 380],
+    "quarter_duration_days_inclusive": [75, 110],
+    "instant_requires_empty_period_start": true,
+    "filing_type_never_determines_fact_duration": true,
+    "same_period_end_does_not_imply_same_duration": true
+  },
+  "time_role_policy": {
+    "source_filed_at": "issuer_or_regulator_filing_timestamp_only",
+    "published_at": "source_publication_timestamp_only",
+    "as_of_date": "research_information_cutoff_only",
+    "snapshot_at": "local_capture_or_materialization_timestamp_only",
+    "cross_role_substitution_forbidden": true
+  },
+  "gate_order": ["shape_integrity", "financial_truth", "evidence_authority", "analysis_quality", "product_usability"],
+  "known_boundary": "S0-03 proves classification and early failure only. It does not repair DELL staging/mart rows, qualify research content, or authorize model/full-chain execution."
+}

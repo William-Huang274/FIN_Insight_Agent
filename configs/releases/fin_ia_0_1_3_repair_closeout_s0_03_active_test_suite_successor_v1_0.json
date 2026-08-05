@@ -1,0 +1,26 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s0_03_active_test_suite_successor_v1_0",
+  "suite_id": "FIN-0.1.3-REPAIR-CLOSEOUT-S0-ACTIVE-SUITE-R3",
+  "status": "current_S0_complete_truth_repair_still_blocked",
+  "selected_tests": [
+    {
+      "ref": "tests/contract/test_fin_0_1_3_repair_closeout_s0_01_delta_inheritance_namespace_and_current_truth_baseline.py",
+      "stage": "013-S0-01"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py",
+      "stage": "013-S0-02"
+    },
+    {
+      "ref": "tests/contract/test_fin_0_1_3_repair_closeout_s0_03_financial_semantic_truth_oracle_classification.py",
+      "stage": "013-S0-03"
+    }
+  ],
+  "historical_FIN_0_1_3_test_names_establish_current_authority": false,
+  "decision_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s0_03_financial_semantic_truth_oracle_classification_v1_0.json",
+  "decision_sha256": "074e09283e3c8664e75bb665bfab4b819fac74e9e6823b0b314d625ecc5c3c44",
+  "current_DELL_financial_truth_pass": false,
+  "model_or_full_chain_authorized": false,
+  "next_action": "FIN-0.1.3-013-S1-01-DELL-FINANCIAL-TEMPORAL-TRUTH-AND-TIME-ROLE-REPAIR",
+  "suite_digest": "a99e0ed0253c1da54dfd60a82df62865ed3a81e8c7be8783246650ef54694611"
+}

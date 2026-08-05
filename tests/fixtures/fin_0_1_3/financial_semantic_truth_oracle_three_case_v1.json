@@ -1,0 +1,74 @@
+{
+  "schema_version": "fin_0_1_3_financial_semantic_truth_oracle_three_case_fixture_v1",
+  "review_status": "source_bound_zero_call_fixture_for_oracle_classification",
+  "reviewed_truth_rows": [
+    {
+      "record_id": "DELL_FY2025_revenue_reviewed",
+      "case_key": "DELL", "entity_ref": "DELL", "issuer_id": "0001571996",
+      "metric_family": "revenue", "aggregation_scope": "consolidated_company_total",
+      "raw_value": "95567000000", "normalized_value": "95567000000", "currency": "USD", "unit": "USD", "scale_multiplier": "1",
+      "fiscal_year": 2025, "fiscal_period": "FY", "period_role": "annual",
+      "period_start": "2024-02-03", "period_end": "2025-01-31", "duration_days": 364,
+      "source_filed_at": "2025-03-25", "published_at": "2025-03-25", "as_of_date": "2026-07-26", "snapshot_at": "2026-06-23",
+      "source_ref": "SECFACT::DELL::US_GAAP::REVENUES::USD::0a31e5cebf27",
+      "source_locator": "0001571996-25-000034/us-gaap:Revenues/2024-02-03..2025-01-31",
+      "formula": null
+    },
+    {
+      "record_id": "MU_FY2025_revenue_reviewed",
+      "case_key": "MU", "entity_ref": "MU", "issuer_id": "0000723125",
+      "metric_family": "revenue", "aggregation_scope": "consolidated_company_total",
+      "raw_value": "37378000000", "normalized_value": "37378000000", "currency": "USD", "unit": "USD", "scale_multiplier": "1",
+      "fiscal_year": 2025, "fiscal_period": "FY", "period_role": "annual",
+      "period_start": "2024-08-30", "period_end": "2025-08-28", "duration_days": 364,
+      "source_filed_at": "2025-10-03", "published_at": "2025-10-03", "as_of_date": "2026-07-26", "snapshot_at": "2026-06-23",
+      "source_ref": "SECFACT::MU::US_GAAP::REVENUEFROMCONTRACTWITHCUSTOMEREXCLUDINGASSESSEDTAX::USD::be4f989f13a7",
+      "source_locator": "0000723125-25-000028/us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax/2024-08-30..2025-08-28",
+      "formula": null
+    },
+    {
+      "record_id": "NVDA_FY2025_revenue_reviewed",
+      "case_key": "NVDA", "entity_ref": "NVDA", "issuer_id": "0001045810",
+      "metric_family": "revenue", "aggregation_scope": "consolidated_company_total",
+      "raw_value": "130497000000", "normalized_value": "130497000000", "currency": "USD", "unit": "USD", "scale_multiplier": "1",
+      "fiscal_year": 2025, "fiscal_period": "FY", "period_role": "annual",
+      "period_start": "2024-01-29", "period_end": "2025-01-26", "duration_days": 364,
+      "source_filed_at": "2025-02-26", "published_at": "2025-02-26", "as_of_date": "2026-07-26", "snapshot_at": "2026-06-23",
+      "source_ref": "SECFACT::NVDA::US_GAAP::REVENUES::USD::f71c0cd7df67",
+      "source_locator": "0001045810-25-000023/us-gaap:Revenues/2024-01-29..2025-01-26",
+      "formula": null
+    }
+  ],
+  "known_current_failure": {
+    "candidate": {
+      "record_id": "DELL_current_wrong_FY2025_revenue",
+      "case_key": "DELL", "entity_ref": "DELL", "issuer_id": "0001571996",
+      "metric_family": "revenue", "aggregation_scope": "consolidated_company_total",
+      "raw_value": "23931000000", "normalized_value": "23931000000", "currency": "USD", "unit": "USD", "scale_multiplier": "1",
+      "fiscal_year": 2025, "fiscal_period": "FY", "period_role": "annual",
+      "period_start": "2024-11-02", "period_end": "2025-01-31", "duration_days": 91,
+      "source_filed_at": "2026-06-23", "published_at": "2025-03-25", "as_of_date": "2026-07-26", "snapshot_at": "2026-06-23",
+      "source_ref": "SECFACT::DELL::US_GAAP::REVENUES::USD::6ee06e741f3b",
+      "source_locator": "0001571996-25-000034/us-gaap:Revenues/2024-11-02..2025-01-31",
+      "formula": null
+    },
+    "reviewed_truth": {
+      "record_id": "DELL_FY2025_Q4_revenue_reviewed",
+      "case_key": "DELL", "entity_ref": "DELL", "issuer_id": "0001571996",
+      "metric_family": "revenue", "aggregation_scope": "consolidated_company_total",
+      "raw_value": "23931000000", "normalized_value": "23931000000", "currency": "USD", "unit": "USD", "scale_multiplier": "1",
+      "fiscal_year": 2025, "fiscal_period": "Q4", "period_role": "quarter",
+      "period_start": "2024-11-02", "period_end": "2025-01-31", "duration_days": 91,
+      "source_filed_at": "2025-03-25", "published_at": "2025-03-25", "as_of_date": "2026-07-26", "snapshot_at": "2026-06-23",
+      "source_ref": "SECFACT::DELL::US_GAAP::REVENUES::USD::6ee06e741f3b",
+      "source_locator": "0001571996-25-000034/us-gaap:Revenues/2024-11-02..2025-01-31",
+      "formula": null
+    }
+  },
+  "fixture_boundaries": {
+    "source_rows": "data/staging/structured_financial_facts/sec_companyfacts_financial_fact_rows_v0_1.jsonl",
+    "current_wrong_projection": "data/workbench_private/research_data/gold_fact_signal_mart_v0_1.sqlite",
+    "no_current_data_rewritten": true,
+    "S1_01_must_rebuild_earliest_wrong_row": true
+  }
+}

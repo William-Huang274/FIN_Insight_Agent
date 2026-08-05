@@ -1,7 +1,7 @@
 # FIN 0.1.3 研究内容输出质量硬门禁 Rubric
 
 日期：2026-08-06
-状态：`accepted_product_quality_gate / runtime_compilation_pending / release_blocking`
+状态：`accepted_product_quality_gate / S0_layer_registry_implemented / S2_S5_runtime_compilation_pending / release_blocking`
 
 ## 1. 目的
 
@@ -111,4 +111,4 @@ L1/L2 deterministic gate
 
 ## 9. 当前状态
 
-本 Rubric 已成为 FIN 0.1.3 产品与 release 约束，但尚未编译为 runtime schema、deterministic gate、score packet 或 Workbench surface。当前状态只能标记为 `documented_accepted / contract_translation_pending`，不得宣称已实现或已通过。
+本 Rubric 已成为 FIN 0.1.3 产品与 release 约束。`013-S0-03` 已完成四层分类 registry：analysis quality 不会再被误标成 financial truth 或 product usability，并保持其在 S2/S3/S4/S5 的 release-blocking 属性。但八维评分 schema、node evaluator、Verifier、score packet、Workbench 和 qualified human content acceptance 仍未实现。当前只能标记为 `S0_registry_implemented / downstream_contract_translation_pending`，不得宣称三案例内容质量已实现或已通过。

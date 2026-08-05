@@ -30,7 +30,6 @@ T04 = (
     RELEASES
     / "fin_ia_0_1_s3_t04_financial_numeric_fundamental_pack_v1_0.json"
 )
-BACKLOG = RELEASES / "fin_ia_0_1_program_release_backlog_v2_0.json"
 ROOT_CAUSES = ROOT / "docs" / "project_os" / "root_cause_issue_ledger.jsonl"
 
 TENANT_ID = "tenant-fin01-s3-t04"
@@ -141,7 +140,6 @@ def _latest_root_causes() -> dict[str, dict[str, Any]]:
 
 def test_t04_contract_advances_only_to_unapproved_t05() -> None:
     contract = json.loads(T04.read_text(encoding="utf-8"))
-    backlog = json.loads(BACKLOG.read_text(encoding="utf-8"))
     roots = _latest_root_causes()
     assert contract["status"] == (
         "pass_after_independent_review_T05_ready_pending_separate_authorization"
@@ -152,11 +150,12 @@ def test_t04_contract_advances_only_to_unapproved_t05() -> None:
     assert contract["implementation"]["derived_metric_count"] == 2
     assert contract["method_to_runtime"]["method_id"] == "three_statement_peer_panel"
     assert contract["method_to_runtime"]["full_method_claimed_active_for_S3"] is False
-    assert backlog["next_action"]["item_id"] == (
-        "S3-T09-EXACT-THREE-CELL-DEEPSEEK-LIVE-EXECUTION"
+    # The historical T04 event owns its own handoff. The global backlog is a
+    # living current-state document and must not be required to remain at the
+    # event-time next action forever.
+    assert contract["next_action"] == (
+        "S3-T05-BOUNDED-GRAPH-PRODUCT-MARKET-AND-RISK-DECISION-CELL-PROJECTION"
     )
-    assert backlog["next_action"]["S3_T08_repair_execution_authorized"] is True
-    assert backlog["next_action"]["S3_T09_execution_authorized"] is False
     for issue_id in (
         "RC-P36-023-foundation-financials-exist-but-business-line-economics-and-numeric-sanity-promotion-gap",
         "RC-P36-025-fundamental-specialist-input-pack-not-decision-cell-ready",

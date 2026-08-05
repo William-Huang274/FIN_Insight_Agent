@@ -1,7 +1,7 @@
 # FIN 0.1.3 修复收口版范围与差量 S0–S5 计划
 
 日期：2026-08-05
-状态：`FIN_0_1_2_honest_block_frozen / FIN_0_1_3_S0_01_engineering_pass / S0_02_next / FIN_0_2_definition_unchanged`
+状态：`FIN_0_1_2_honest_block_frozen / FIN_0_1_3_S0_complete / S1_01_next / FIN_0_2_definition_unchanged`
 
 > **2026-08-06 用户新增硬要求**：FIN 0.1.3 必须把研究内容输出质量作为 release-blocking 考核，不得再将 L3 的通用 Claim、弱综合、机械 Writer 或不可执行 WWC 降级为 nonblocking finding。八维绝对质量＋paired gain＋qualified human content acceptance 的正式标准见 `docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md`。
 
@@ -60,6 +60,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 > **2026-08-06 `013-S0-01` 完成**：新增 `fin_ia_0_1_3_repair_closeout_*` canonical namespace；按 SHA 将 47 个旧 `0.1.3` 资产分为 historical、superseded projection 和 8 个待 S0-02 复证的 version-neutral candidate。新 active-suite 只选择本轮 S0-01 gate，旧同名 proof 不再自动建立 current authority。T07-C 以只读字段白名单投影为 `1/4/1 + accept NVDA`，未保存 credential digest、session ID、reviewer identity 或 note。focused=`5 passed`，S0 整体尚未完成。
 
 > **2026-08-06 `013-S0-02` 完成**：新增 repository-independent shared SQLite admission ledger，以 `admission_digest` 做原子占用键，并在任何 source/model/provider/business side effect 前 reserve；reservation 即 consumption，进程崩溃也不自动释放，并发竞争只有一个 winner，ledger 位于本次 disposable runtime 内会 fail closed，跨 runtime root 第二次消费 fail closed，terminal 精确绑定 Run/Attempt/result digest。FIN 0.1.3 current runner 强制注入该 ledger，旧 0.1.2 runner 只保留历史兼容钩子。RC-P36-128 通过 disposable issuance root 与 historical receipt / living source role 分离关闭，未重写旧 decision、receipt 或已消费 runtime。8 个候选复证后：reference-role v1.1、reference proof policy v3、typed environment parity 原摘要复用；reference-role v1.0 被 supersede；旧 runtime resource registry 因漏注册 1 个真实资源而拒绝并生成 31-resource canonical successor；三项旧测试仅复用两组逻辑，固定计数测试不再作为 current gate。S0-01+S0-02 canonical suite=`14 passed`，S0 整体仍需 S0-03 financial semantic truth-oracle taxonomy。
+
+> **2026-08-06 `013-S0-03` 完成，S0 关闭**：新增四层 oracle，明确区分 `shape/integrity`、`financial truth`、`analysis quality` 和 `product usability`，并为每层绑定最早 owner；前两层阻断 S1/S3 输入，后两层在 S2/S3 与 S4/S5 继续作为 release-blocking 要求，不能互相补偿。三案 reviewed annual revenue 对照通过；当前 DELL `23.931B` 结果被稳定识别为 91 天 Q4 事实冒充全年，另检出 `source_filed_at=2026-06-23` 以本地快照时间代替真实 filing date `2025-03-25`。entity/issuer、annual/quarter/duration、unit/currency、scale/normalized value、formula 重算和四类时间角色 mutation 均可在下游前失败。canonical S0-01/S0-02/S0-03 suite=`29 passed`，model/provider/network/source/business=0，current 数据行重写=0。S0 的通过只说明门禁能正确发现问题；DELL 真值仍失败并归 `013-S1-01` 从最早 staging/mart 修复，模型与 full-chain 继续禁止。
 
 ### S1：数据、检索、Numeric 与 Graph 真值链
 
@@ -154,6 +156,7 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 2. [x] 完成 FIN 0.1.2 S5 decision-only honest-block/freeze 包；`release_qualified=false`，没有机械执行 RG1–RG5。
 3. [x] 完成 FIN 0.1.3 `013-S0-01` delta inheritance、旧 `0.1.3` namespace 分类和 secret-safe current truth baseline。
 4. [x] 完成 `013-S0-02` shared runtime admission/replay、historical receipt/living source debt和 8 个 version-neutral candidate 复证。
-5. [ ] 完成 `013-S0-03` 后进入 S1 财务真值链。
+5. [x] 完成 `013-S0-03` 四层金融语义 oracle；S0 canonical suite 29/29，通过的是分类与早期阻断，不是当前 DELL 真值。
+6. [ ] 进入 `013-S1-01`，从最早 staging/mart 修复 DELL annual/Q4 duration 与 filed/published/as-of/snapshot 时间角色，再重建下游事实链。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

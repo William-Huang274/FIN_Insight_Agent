@@ -232,3 +232,11 @@ Agent current-case successor 已以三案通用 case parameter 取代 DELL-only 
 raw business report 仍含内部 scope/period token、重复币种和英文 limitation；这是 DELL 已证明可由现有三案通用 renderer 零调用清理并绑定 final preview 的产品表面步骤，不是模型 L1，也不需要第二次 DeepSeek。formal paired、Owner acceptance 和 MU current R2 尚未执行，下一项限定为 MU verified product surface 与 paired readiness 的零调用物化。
 
 执行结果落盘后，原 runner 将完整 JSON 打印到 Windows GBK stdout 时因 Unicode bullet 退出 1；immutable result/terminal/Artifacts 不受影响，不重跑 admission。Consumed runner 绑定保持不可变，新增 ASCII-safe 只读 inspector 并回归关闭当前结果的可读性问题；后续共享 CLI hardening 仍应在 S5 统一完成。
+
+## 21. S4-T05-C MU verified product surface 与 paired readiness
+
+以三案例通用 current-case renderer 直接消费 immutable MU exact result，未重跑 Search 或 DeepSeek。最终 analyst preview 已清除 `__company_total__`、`FY2025-FY`、重复币种和英文 limitation；case=`MU`、精确 Numeric、input lineage 与三个研究单元的 Evidence/authority coverage 均重新绑定，本地 Verifier 对 preview digest 完成独立校验。
+
+exact result SHA 保持 `c7bdf239…3602`；surface record=`c9608e31…5272`，preview=`4763544a…973f`，local Verifier=`0dc815a5…5c0c`。同 input/head、不同 execution identity/Artifacts 的 deterministic baseline 已物化，paired readiness=`ready_for_formal_paired_assessment`。MU、DELL、NVDA 共用 renderer 与 cross-case/lineage/numeric/preview/pair mutation 组合回归=`31 passed`；model/provider/network/source/exact rerun=`0/0/0/0/0`。
+
+当前仅能把 L4 final delivery 与 paired readiness 记为 pass。formal paired、Owner acceptance 和 MU current R2 仍未成立；通用 gap wording 与 WWC 可操作性作为 L2–L4 finding 后传 T08–T10/S5，不触发 paid rerun。下一项为 `FIN-0.1.2-S4-T05-C-MU-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION`。

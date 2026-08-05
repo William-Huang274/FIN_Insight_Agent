@@ -1,0 +1,579 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_c_mu_verified_product_surface_and_paired_readiness_v1_0",
+  "recorded_at": "2026-08-05T15:00:00+08:00",
+  "status": "MU_zero_call_product_surface_L4_pass_paired_readiness_pass_formal_paired_and_owner_pending",
+  "source_exact_result": {
+    "ref": ".codex_runtime/fin012-s4-t05c-mu-agent-exact-live-r1/execution-result.json",
+    "sha256": "c7bdf239e3f6fe1e980be856448ae7549e3401276c91805444b41e39cd1b3602",
+    "terminal_object_digest": "0eaeb000e819de99418fd2bb0b2080c638dd4b7fade25b4552461c153e44fcd4",
+    "immutable": true
+  },
+  "source_independent_assessment": {
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_agent_exact_live_result_and_independent_assessment_v1_0.json",
+    "sha256": "e55a1e136c530558cdc0e4e35890c74061c028f2f8707f60b605c3a608fb86a8",
+    "assessment_digest": "b268c46883013e4999531dcc92e5831792430c41fc948656f8bbe419b8f8f926"
+  },
+  "product_surface": {
+    "schema_version": "fin_ia_0_1_2_s4_t05_current_case_product_surface_result_v1_0",
+    "case_ticker": "MU",
+    "status": "delivery_and_fixture_qualification_pass",
+    "immutable_exact_result_preserved": true,
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_network_calls": 0,
+    "final_delivery_preview": {
+      "contract_ref": "fin_0_1_2.s4_t05.current_case_verified_final_delivery_surface:v1",
+      "case_ticker": "MU",
+      "source_input_digest": "c15ce68c6685ffdc2581c858e26ed6a76c3c7e56bb824590ea4ed66bc10e69ec",
+      "source_report_digest": "43de98be6a2f77bd9af71265428f1d885972613f228784793ea207fdccacd1ee",
+      "source_judgment_digest": "b42bdfb5f54e11f87a0d80c923d2b43b29d0d5134d3166791c76ce64488ead96",
+      "title_zh_cn": "MU 三单元内部研究备忘录",
+      "executive_summary_zh_cn": "需求真实性及可持续性单元：当前证据方向尚不足以形成明确判断，需进一步验证本地绑定事实。；需求真实性及可持续性单元：证据缺口导致无法推断，需补充本地绑定事实以支持判断。；价值与利润捕获单元：证据缺口导致无法推断，需补充本地绑定事实以支持判断。；MU 公司整体 FY2025 毛利润 reported_exact USD 14,873,000,000；MU 公司整体 FY2025 营收 reported_exact USD 37,378,000,000；本地绑定数值事实仅支持上述财务指标，不足以单独证明该判断的因果机制。；瓶颈反证与条件变化单元：反证机制削弱当前单元判断，需关注本地绑定事实中的反证证据。；瓶颈反证与条件变化单元：经济机制削弱当前单元判断，需关注本地绑定事实中的经济因素。",
+      "sections": [
+        {
+          "program_cell_id": "demand_authenticity_and_sustainability",
+          "decision_question": "Are MU HBM demand signals company-specific, convertible into recognized revenue, and durable after separating structural AI demand from memory-cycle and inventory effects?",
+          "claims": [
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "demand_authenticity_and_sustainability:local_claim:001",
+                "program_cell_id": "demand_authenticity_and_sustainability"
+              },
+              "epistemic_status": "bounded_inference",
+              "rendered_text_zh_cn": "需求真实性及可持续性单元：当前证据方向尚不足以形成明确判断，需进一步验证本地绑定事实。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [
+                "current_evidence:s4_t03_candidate_d50b8536c01022615b9d5075",
+                "current_evidence:s4_t03_candidate_2fdc02534ee2a7fd69462e2d"
+              ],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "c53bc337cf7c04cf41968173f9719ffd087a0b342b8d9e41aad4417c60351395",
+              "qualification_preserved": true
+            },
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "demand_authenticity_and_sustainability:local_claim:002",
+                "program_cell_id": "demand_authenticity_and_sustainability"
+              },
+              "epistemic_status": "cannot_infer",
+              "rendered_text_zh_cn": "需求真实性及可持续性单元：证据缺口导致无法推断，需补充本地绑定事实以支持判断。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "2caddbd5469c5721aa19a8b0e9df0c2415c361dff18f2c1aa710d9a3341a037d",
+              "qualification_preserved": true
+            }
+          ],
+          "what_would_change": [
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_2fdc02534ee2a7fd69462e2d"
+              ],
+              "claim_id": "demand_authenticity_and_sustainability:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察支持当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "strengthen the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_demand_or_order_signal",
+              "source_target": {
+                "document_event_or_dataset": "issuer_demand_or_order_signal",
+                "entity_or_owner": "MU",
+                "source_type": "Evidence"
+              },
+              "task_id": "demand_authenticity_and_sustainability:what_would_change:001",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "2026-07-26",
+                "start_or_trigger": "2025-10-03"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_3562e68207166b4e29379cd2"
+              ],
+              "claim_id": "demand_authenticity_and_sustainability:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察支持当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "strengthen the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_demand_or_order_signal",
+              "source_target": {
+                "document_event_or_dataset": "issuer_demand_or_order_signal",
+                "entity_or_owner": "MU",
+                "source_type": "Evidence"
+              },
+              "task_id": "demand_authenticity_and_sustainability:what_would_change:002",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "2026-07-26",
+                "start_or_trigger": "2025-10-03"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_4477f12137d49f03c8737fbc"
+              ],
+              "claim_id": "demand_authenticity_and_sustainability:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察支持当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "strengthen the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_demand_or_order_signal",
+              "source_target": {
+                "document_event_or_dataset": "issuer_demand_or_order_signal",
+                "entity_or_owner": "MU",
+                "source_type": "Evidence"
+              },
+              "task_id": "demand_authenticity_and_sustainability:what_would_change:003",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "2026-07-26",
+                "start_or_trigger": "2025-10-03"
+              }
+            }
+          ],
+          "stop_rule": "Stop before a durable-demand judgment if official company-bound HBM evidence and a memory-cycle or inventory counterindicator are not both available."
+        },
+        {
+          "program_cell_id": "value_and_profit_capture",
+          "decision_question": "How much revenue, pricing, mix, gross profit, operating leverage and cash economics can be attributed to MU at company or exact issuer-disclosed product or segment scope?",
+          "claims": [
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "value_and_profit_capture:local_claim:001",
+                "program_cell_id": "value_and_profit_capture"
+              },
+              "epistemic_status": "cannot_infer",
+              "rendered_text_zh_cn": "价值与利润捕获单元：证据缺口导致无法推断，需补充本地绑定事实以支持判断。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "2caddbd5469c5721aa19a8b0e9df0c2415c361dff18f2c1aa710d9a3341a037d",
+              "qualification_preserved": true
+            },
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "value_and_profit_capture:local_claim:002",
+                "program_cell_id": "value_and_profit_capture"
+              },
+              "epistemic_status": "bounded_inference",
+              "rendered_text_zh_cn": "MU 公司整体 FY2025 毛利润 reported_exact USD 14,873,000,000；MU 公司整体 FY2025 营收 reported_exact USD 37,378,000,000；本地绑定数值事实仅支持上述财务指标，不足以单独证明该判断的因果机制。",
+              "numeric_support_refs": [
+                "sec_financial_statement_metric:c0eab34b492cba91",
+                "sec_financial_statement_metric:e8d42df70281f893"
+              ],
+              "evidence_support_refs": [],
+              "numeric_only_qualification_applied": true,
+              "scope_digest": "1cf3c8205b4a45c2e30069955af089acf7de66d2fa674333c1c448ebba39775f",
+              "qualification_preserved": true
+            }
+          ],
+          "what_would_change": [
+            {
+              "authority_refs": [
+                "s4_t05_current_derived_3f456bfd6f9b93a0bcebf961",
+                "s4_t05_current_derived_f0a4bc672f6b766db2d89504"
+              ],
+              "claim_id": "value_and_profit_capture:local_claim:002",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源出现相反证据",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察形成混合证据当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "gross_margin_percent",
+              "source_target": {
+                "document_event_or_dataset": "gross_margin_percent",
+                "entity_or_owner": "consolidated_company_total_only",
+                "source_type": "Numeric"
+              },
+              "task_id": "value_and_profit_capture:what_would_change:001",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "next quarter end",
+                "start_or_trigger": "2026-03-19"
+              }
+            },
+            {
+              "authority_refs": [
+                "sec_financial_statement_metric:5648e0a2f58aa563",
+                "sec_financial_statement_metric:c0eab34b492cba91",
+                "sec_financial_statement_metric:e8d42df70281f893"
+              ],
+              "claim_id": "value_and_profit_capture:local_claim:002",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威观察持续",
+                "rule_type": "trend_persists",
+                "threshold_or_observation": "绑定权威观察支持当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "strengthen the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "revenue@FY2025",
+              "source_target": {
+                "document_event_or_dataset": "revenue@FY2025",
+                "entity_or_owner": "MU",
+                "source_type": "Numeric"
+              },
+              "task_id": "value_and_profit_capture:what_would_change:002",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "2026-07-26",
+                "start_or_trigger": "2026-03-19"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_748f17b39727464b532125d2",
+                "current_evidence:s4_t03_candidate_7b2de07bd04b011736f6ccb3",
+                "current_evidence:s4_t03_candidate_b7a7a2aa6229b08a6fa99187"
+              ],
+              "claim_id": "value_and_profit_capture:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察尚不足以判断当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "resolve the linked claim from cannot_infer",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_financial_statement",
+              "source_target": {
+                "document_event_or_dataset": "issuer_financial_statement",
+                "entity_or_owner": "MU",
+                "source_type": "Evidence"
+              },
+              "task_id": "value_and_profit_capture:what_would_change:003",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "next reporting event",
+                "start_or_trigger": "2026-03-19"
+              }
+            }
+          ],
+          "stop_rule": "Do not allocate company-total or broad memory economics to HBM, a generation, customer or shipment cohort without exact issuer-bound rows and period/unit scope."
+        },
+        {
+          "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+          "decision_question": "Which capacity, yield, customer-concentration, technology-ramp, export-control and memory-cycle mechanisms could break or qualify the MU HBM thesis?",
+          "claims": [
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "bottleneck_counterevidence_and_what_would_change:local_claim:001",
+                "program_cell_id": "bottleneck_counterevidence_and_what_would_change"
+              },
+              "epistemic_status": "fact_supported",
+              "rendered_text_zh_cn": "瓶颈反证与条件变化单元：反证机制削弱当前单元判断，需关注本地绑定事实中的反证证据。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [
+                "current_evidence:s4_t03_candidate_af3d2e0cd5f326a21d46d551",
+                "current_evidence:s4_t03_candidate_90776eb835e226f386543905"
+              ],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "d8d9999a0a6dcb3d0c497ef750ca4642521759a89554547e4d9d566005a0ec09",
+              "qualification_preserved": true
+            },
+            {
+              "claim_ref": {
+                "identity_kind": "claim",
+                "local_id": "bottleneck_counterevidence_and_what_would_change:local_claim:002",
+                "program_cell_id": "bottleneck_counterevidence_and_what_would_change"
+              },
+              "epistemic_status": "fact_supported",
+              "rendered_text_zh_cn": "瓶颈反证与条件变化单元：经济机制削弱当前单元判断，需关注本地绑定事实中的经济因素。",
+              "numeric_support_refs": [],
+              "evidence_support_refs": [
+                "current_evidence:s4_t03_candidate_07061b113f8d7d98bf20e55e"
+              ],
+              "numeric_only_qualification_applied": false,
+              "scope_digest": "c23e293a883b40913bfdc9b9f3623bbcbee6b5888fc75172fa21ac50c3483a6e",
+              "qualification_preserved": true
+            }
+          ],
+          "what_would_change": [
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_50bfe877b1a24727b5f1b9ac"
+              ],
+              "claim_id": "bottleneck_counterevidence_and_what_would_change:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_counterevidence",
+              "source_target": {
+                "document_event_or_dataset": "issuer_counterevidence",
+                "entity_or_owner": "MU",
+                "source_type": "Evidence"
+              },
+              "task_id": "bottleneck_counterevidence_and_what_would_change:what_would_change:001",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "next authority event",
+                "start_or_trigger": "2025-10-03"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_07061b113f8d7d98bf20e55e"
+              ],
+              "claim_id": "bottleneck_counterevidence_and_what_would_change:local_claim:001",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_counterevidence",
+              "source_target": {
+                "document_event_or_dataset": "issuer_counterevidence",
+                "entity_or_owner": "MU",
+                "source_type": "Evidence"
+              },
+              "task_id": "bottleneck_counterevidence_and_what_would_change:what_would_change:002",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "next authority event",
+                "start_or_trigger": "2025-10-03"
+              }
+            },
+            {
+              "authority_refs": [
+                "current_evidence:s4_t03_candidate_85a52b6e5cf6d17e99a1f939"
+              ],
+              "claim_id": "bottleneck_counterevidence_and_what_would_change:local_claim:002",
+              "decision_rule": {
+                "comparator_or_condition": "绑定权威来源确认当前方向",
+                "rule_type": "evidence_confirmation",
+                "threshold_or_observation": "绑定权威观察削弱当前判断",
+                "threshold_source": "validated_current_specialist_output"
+              },
+              "expected_claim_transition": "weaken the linked claim",
+              "fallback_stop_condition": "若绑定权威来源未出现可验证变化则保留当前边界",
+              "metric_or_observation": "issuer_counterevidence",
+              "source_target": {
+                "document_event_or_dataset": "issuer_counterevidence",
+                "entity_or_owner": "MU",
+                "source_type": "Evidence"
+              },
+              "task_id": "bottleneck_counterevidence_and_what_would_change:what_would_change:003",
+              "time_window": {
+                "as_of": "2026-07-26",
+                "deadline_or_review_date": "next authority event",
+                "start_or_trigger": "2025-10-03"
+              }
+            }
+          ],
+          "stop_rule": "Do not close the Case without at least one company-bound cycle or capacity counterevidence route and one independent official followup target."
+        }
+      ],
+      "limitations_zh_cn": [
+        "发行人披露仅支持所引期间和定位中的公司陈述；因果、前瞻和跨公司结论仍属于分析师判断。",
+        "仅限本地绑定的实体、期间、口径、单位、符号与精度",
+        "当前绑定事实不足以支持更强结论"
+      ],
+      "source_calls": 0,
+      "tool_calls": 0,
+      "final_delivery_preview_digest": "4763544af804fbf7fd7e37d1172a3b7c7465069cd3a7ed47e9c5cf1e909a973f"
+    },
+    "final_delivery_verification": {
+      "contract_ref": "fin_0_1_2.s4_t05.current_case_local_final_delivery_verifier:v1",
+      "bound_case_ticker": "MU",
+      "status": "pass",
+      "final_delivery_preview_digest": "4763544af804fbf7fd7e37d1172a3b7c7465069cd3a7ed47e9c5cf1e909a973f",
+      "bound_source_report_digest": "43de98be6a2f77bd9af71265428f1d885972613f228784793ea207fdccacd1ee",
+      "bound_source_judgment_digest": "b42bdfb5f54e11f87a0d80c923d2b43b29d0d5134d3166791c76ce64488ead96",
+      "checks": {
+        "case_identity": "pass_MU",
+        "cell_and_claim_cardinality": "pass",
+        "numeric_authority_correspondence": "pass",
+        "internal_scope_token_exclusion": "pass",
+        "period_label_normalization": "pass",
+        "currency_unit_deduplication": "pass",
+        "epistemic_qualification_preservation": "pass",
+        "numeric_only_support_not_overstated_as_evidence": "pass",
+        "limitations_localization": "pass",
+        "final_delivery_preview_digest_binding": "pass",
+        "validated_current_WWC_authority_and_time_binding": "pass"
+      },
+      "machine_verifier_is_human_acceptance": false,
+      "verification_digest": "0dc815a5120d6949c8ae9437cb1eae06d5ad2aa685cb74054b3ac51d552f5c0c"
+    },
+    "fixture_evidence_qualification": {
+      "contract_ref": "fin_0_1_2.s4_t04.current_evidence_authority_qualification:v1",
+      "status": "pass_three_cell_authority_coverage",
+      "qualified_evidence_cells": 3,
+      "qualified_authority_cells": 3,
+      "total_cells": 3,
+      "candidate_metadata_promotion_allowed": false,
+      "all_accepted_evidence_must_be_consumed": false,
+      "current_numeric_only_fact_cell_does_not_count_as_evidence_cell": true,
+      "cells": [
+        {
+          "program_cell_id": "demand_authenticity_and_sustainability",
+          "qualified_evidence_fact_count": 3,
+          "qualified_numeric_fact_count": 0,
+          "authority_qualified": true,
+          "accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_2fdc02534ee2a7fd69462e2d",
+            "current_evidence:s4_t03_candidate_3562e68207166b4e29379cd2",
+            "current_evidence:s4_t03_candidate_4477f12137d49f03c8737fbc",
+            "current_evidence:s4_t03_candidate_a415da11abb5735d6efd766e",
+            "current_evidence:s4_t03_candidate_a71adf7925067980bb28754f",
+            "current_evidence:s4_t03_candidate_d50b8536c01022615b9d5075"
+          ],
+          "used_evidence_refs": [
+            "current_evidence:s4_t03_candidate_2fdc02534ee2a7fd69462e2d",
+            "current_evidence:s4_t03_candidate_3562e68207166b4e29379cd2",
+            "current_evidence:s4_t03_candidate_d50b8536c01022615b9d5075"
+          ],
+          "unused_accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_4477f12137d49f03c8737fbc",
+            "current_evidence:s4_t03_candidate_a415da11abb5735d6efd766e",
+            "current_evidence:s4_t03_candidate_a71adf7925067980bb28754f"
+          ],
+          "candidate_refs_not_evidence": [],
+          "status": "qualified_promoted_evidence_present"
+        },
+        {
+          "program_cell_id": "value_and_profit_capture",
+          "qualified_evidence_fact_count": 1,
+          "qualified_numeric_fact_count": 2,
+          "authority_qualified": true,
+          "accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_748f17b39727464b532125d2",
+            "current_evidence:s4_t03_candidate_7b2de07bd04b011736f6ccb3",
+            "current_evidence:s4_t03_candidate_b7a7a2aa6229b08a6fa99187"
+          ],
+          "used_evidence_refs": [
+            "current_evidence:s4_t03_candidate_7b2de07bd04b011736f6ccb3"
+          ],
+          "unused_accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_748f17b39727464b532125d2",
+            "current_evidence:s4_t03_candidate_b7a7a2aa6229b08a6fa99187"
+          ],
+          "candidate_refs_not_evidence": [],
+          "status": "qualified_promoted_evidence_present"
+        },
+        {
+          "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+          "qualified_evidence_fact_count": 3,
+          "qualified_numeric_fact_count": 0,
+          "authority_qualified": true,
+          "accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_07061b113f8d7d98bf20e55e",
+            "current_evidence:s4_t03_candidate_50bfe877b1a24727b5f1b9ac",
+            "current_evidence:s4_t03_candidate_85a52b6e5cf6d17e99a1f939",
+            "current_evidence:s4_t03_candidate_90776eb835e226f386543905",
+            "current_evidence:s4_t03_candidate_af3d2e0cd5f326a21d46d551",
+            "current_evidence:s4_t03_candidate_f497a66a9933aea473bdc20b"
+          ],
+          "used_evidence_refs": [
+            "current_evidence:s4_t03_candidate_07061b113f8d7d98bf20e55e",
+            "current_evidence:s4_t03_candidate_90776eb835e226f386543905",
+            "current_evidence:s4_t03_candidate_af3d2e0cd5f326a21d46d551"
+          ],
+          "unused_accepted_evidence_refs": [
+            "current_evidence:s4_t03_candidate_50bfe877b1a24727b5f1b9ac",
+            "current_evidence:s4_t03_candidate_85a52b6e5cf6d17e99a1f939",
+            "current_evidence:s4_t03_candidate_f497a66a9933aea473bdc20b"
+          ],
+          "candidate_refs_not_evidence": [],
+          "status": "qualified_promoted_evidence_present"
+        }
+      ],
+      "qualification_digest": "1a4287797a7e036ac014301bac53fc08cd50856aa6d6be70aec6d347656713e0"
+    },
+    "owner_acceptance_eligible": true,
+    "result_digest": "f97ef8191ae09253daf6f0764e3c1c52b9a9efc5befb1008c54adadbf1a974d2"
+  },
+  "deterministic_baseline": {
+    "ref": ".codex_runtime/fin012-s4-t05c-mu-current-evidence-deterministic-baseline-r1/execution-result.json",
+    "execution_identity": "fin012-s4-t05c-mu-current-evidence-deterministic-baseline-r1",
+    "result_digest": "ac739cdd5412d503c9b3bb77964a637d6673f3d73b95e047982c702bc497d6a1",
+    "business_promotable": false
+  },
+  "paired_readiness": {
+    "status": "ready_for_formal_paired_assessment",
+    "case_ticker": "MU",
+    "same_input_digest": "c15ce68c6685ffdc2581c858e26ed6a76c3c7e56bb824590ea4ed66bc10e69ec",
+    "same_input_head_digest": "96725faf4357ca4d1488ac875c2922d635daa73fd6d64f27385fa03eae65714b",
+    "agent_research_run_id": "research_run_fin01_50d32f3b323460d56b37b44b",
+    "deterministic_research_run_id": "research_run_s4_t05_baseline_15276c3cd53d1bae8fbb",
+    "runs_are_distinct": true,
+    "agent_artifact_count": 9,
+    "deterministic_artifact_count": 1,
+    "final_delivery_preview_digest": "4763544af804fbf7fd7e37d1172a3b7c7465069cd3a7ed47e9c5cf1e909a973f",
+    "formal_paired_assessment_performed": false,
+    "owner_decision_performed": false,
+    "readiness_digest": "678808ca959061446d5a221c2ac412d210b17eab8222bcc16cc2a5f4b23c962c"
+  },
+  "layered_assessment": {
+    "L1_deterministic_integrity": "pass",
+    "L2_authority_coverage": "pass_three_of_three_cells",
+    "L3_agent_gain": "pending_formal_paired_assessment",
+    "L4_final_delivery": "pass_after_case_generic_local_rendering",
+    "agent_output_counts": {
+      "claims": 6,
+      "what_would_change": 9,
+      "dependencies": 1,
+      "conflicts": 3,
+      "gaps": 4
+    },
+    "qualified_evidence_cells": 3,
+    "qualified_authority_cells": 3,
+    "preview_digest": "4763544af804fbf7fd7e37d1172a3b7c7465069cd3a7ed47e9c5cf1e909a973f",
+    "local_verifier_digest": "0dc815a5120d6949c8ae9437cb1eae06d5ad2aa685cb74054b3ac51d552f5c0c",
+    "internal_token_currency_duplication_or_unlocalized_limitation": 0
+  },
+  "observed_counts": {
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_execution_network_calls": 0,
+    "new_source_network_calls": 0,
+    "new_external_tool_calls": 0,
+    "exact_live_reruns": 0,
+    "deterministic_baseline_runs": 1,
+    "formal_paired_assessments": 0,
+    "owner_decisions": 0
+  },
+  "acceptance_boundary": {
+    "S4_T05_C_MU_engineering": "pass",
+    "S4_T05_C_MU_search_exact_live": "pass",
+    "S4_T05_C_MU_agent_exact_live": "pass",
+    "S4_T05_C_MU_final_delivery": "pass",
+    "MU_current_R2": false,
+    "formal_paired_L1_L4": "pending",
+    "owner_acceptance": "pending",
+    "S4_T05_D_entry": "blocked_pending_MU_owner_acceptance",
+    "RC_P36_119": "deferred_nonblocking_T08_T10_S5",
+    "RC_P36_121": "closed_current_result_controlled_successor"
+  },
+  "recommended_next": "FIN-0.1.2-S4-T05-C-MU-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION",
+  "record_digest": "c9608e312fe7bf6e3b77ba86b50b533456461c45297060311cc3fc85dea15272"
+}

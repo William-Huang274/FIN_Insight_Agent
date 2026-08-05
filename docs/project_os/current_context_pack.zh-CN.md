@@ -3,6 +3,9 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-B DELL formal paired L1–L4 已通过，当前只等待显式 Owner 决策（current，2026-08-05）**：Agent/baseline 同 input=`8b00e023…5bae`、同 head=`e957d14d…681d`，不同 Run 与 `9/1` Artifacts；baseline 未暴露给 Agent。L1/L2/L4=pass，L3=`pass_limited_material_gain_with_quality_finding`，baseline→Agent 的 Claim/dependency/conflict/gap/WWC=`0/0/0/0/0 → 6/3/3/3/9`；9/9 WWC 泛化仍归 RC-P36-119。assessment=`c86bf7bf…83c4`；model/Provider/network/source/exact rerun=`0`。普通“继续”不能自动成为 Owner 接受，故 DELL R2=false、T05-B/T05-C blocked。建议 Owner=`accept_current_DELL_R2_with_RC_P36_119_deferred`；current next=`USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-DELL-R2-THEN-CLOSE-T05-B-OR-HOLD`。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-B DELL final-delivery L4 与 paired readiness 已零调用通过，formal paired/Owner 待续行（current，2026-08-05）**：T04 renderer 核心已以受控后继泛化为 DELL/MU/NVDA closed profile，冻结 NVDA 输出字节不漂移。DELL immutable replay 清零内部 scope/period token、重复币种和英文 limitation，三 Cell Evidence/authority=`3/3`；preview=`46e4766d…291c`，case=`pass_DELL`，并与 local Verifier/source report/judgment 内容寻址绑定。派生利润率只允许同 Cell 已验证 Numeric projection。三案、cross-case、lineage、Numeric、preview/verifier、pair mutation focused=`17 passed`；model/Provider/network/source/exact rerun=`0`。RC-P36-120 closed，paired readiness=pass；formal paired/Owner 尚未执行，DELL R2=false，T05-C blocked。current next=`FIN-0.1.2-S4-T05-B-DELL-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION`；RC-P36-119 仍后传 T08–T10/S5。
 >
 > [!IMPORTANT]

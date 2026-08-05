@@ -1,11 +1,13 @@
 # FIN 0.1.1 / 0.1.2 PRD 能力对账与 S0–S5 重基线
 
 日期：2026-08-04
-状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T04 pass closed，current NVDA R2 Owner accepted / S4-T05-A zero-call transfer engineering pass / T05-B DELL exact-live + L1–L4 engineering pass，formal paired and Owner pending / no product version change`
+状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T04 pass closed，current NVDA R2 Owner accepted / S4-T05-A zero-call transfer engineering pass / T05-B DELL exact-live + formal paired L1–L4 pass，Owner pending / no product version change`
 
 > 2026-08-04 S4-T03 零调用权限审计确认：F05 当前不是“模型效果差”，而是 metadata route 尚未接成 executable search，来源 request/response capture-first 与 fresh execution-control chain 也未建立。`RC-P36-114` 留在 T03；必须先做一个合并的零调用可执行接入包，再另行判断 current canary admission，不能把 state stub、URL metadata wrapper 或历史 fixture 写成 current Agentic Search。
 
-当前 next：`FIN-0.1.2-S4-T05-B-DELL-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION`
+当前 next：`USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-DELL-R2-THEN-CLOSE-T05-B-OR-HOLD`
+
+> 2026-08-05 T05-B DELL formal paired：Agent/baseline 同 input/head、不同 Run 与 `9/1` Artifacts；L1/L2/L4 通过，L3 从 baseline 的 `0/0/0/0/0` 增加为 `6 Claims / 3 dependencies / 3 conflicts / 3 gaps / 9 WWC`，记有限真实增益，9/9 WWC 泛化继续后传。assessment=`c86bf7bf…83c4`，推荐接受 DELL current R2 并保留 RC-P36-119；但 Owner 尚未明确接受，故 DELL R2=false、T05-C blocked。
 
 > 2026-08-05 T05-B DELL final-delivery closeout：T04 renderer 核心已由受控后继泛化为 DELL/MU/NVDA closed profile，冻结 NVDA 输出不漂移。DELL immutable replay 的内部 token、重复币种和英文 limitation 已清零，三 Cell authority=`3/3`，preview=`46e4766d…291c` 并由 local Verifier 绑定；三案例与 mutation focused=`17 passed`，外部调用和 exact rerun 均为 0。RC-P36-120 关闭，paired readiness 通过；formal paired/Owner 尚未执行，因此 DELL R2=false、T05-C 尚未进入。
 

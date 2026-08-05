@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL Agent exact-live success + L1 pass，product L4 blocked / S4-T06–T08 not started`
+状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL exact-live + formal paired L1–L4 pass，Owner pending / S4-T06–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -190,3 +190,9 @@ RC-P36-120 已在零模型条件下关闭。既有 T04 公共入口和冻结 NVD
 DELL immutable exact result 重渲染后，内部 scope/period token、重复币种和未本地化 limitation 均为 0，三 Cell Evidence/authority coverage=`3/3`；preview digest=`46e4766d…291c`，与本地 Verifier、source report 和 source judgment 内容寻址绑定。DELL/MU/NVDA 同一 renderer fixture、跨案/lineage/Numeric/preview/pair mutation 与冻结 NVDA 不漂移 focused=`17 passed`；model/Provider/network/source/exact rerun=`0`。
 
 同 input digest/head 的独立 deterministic authority-inventory baseline 已形成，与 Agent Run/Artifacts 区分，paired readiness=pass；但 formal paired assessment 和 Owner decision 尚未执行，故 DELL current R2=false，T05-C 仍 blocked。下一项为 `FIN-0.1.2-S4-T05-B-DELL-FORMAL-PAIRED-L1-L4-ASSESSMENT-AND-OWNER-DECISION`。RC-P36-119 继续后传 T08–T10/S5，不重开本轮。
+
+## 16. S4-T05-B DELL formal paired 与 Owner gate
+
+正式 paired 已绑定同一 input=`8b00e023…5bae`、同一 input head=`e957d14d…681d`，并确认 Agent/baseline Run 与 Artifacts 均不同，baseline body 未暴露给 Agent。L1/L2/L4 通过；L3 从 authority-only baseline 的 `0/0/0/0/0` 增加至 Agent 的 `6 Claims / 3 dependencies / 3 conflicts / 3 gaps / 9 WWC`，记为有限真实增益。baseline 故意不生成判断，因此该比较不能宣称大幅模型优势；9/9 WWC 泛化继续归 RC-P36-119。
+
+formal assessment=`c86bf7bf…83c4`，推荐 Owner 决定为 `accept_current_DELL_R2_with_RC_P36_119_deferred`。本项没有模型、Provider、网络、Search、baseline rerun 或 exact rerun。Owner 接受尚未发生，所以 DELL R2=false、T05-B closeout 与 T05-C entry 仍 blocked；普通“继续”不得自动改写产品接受。下一项只等待 `USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-DELL-R2-THEN-CLOSE-T05-B-OR-HOLD`。

@@ -1,0 +1,94 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_b_dell_formal_paired_assessment_and_owner_decision_request_v1_0",
+  "recorded_at": "2026-08-05T15:05:00+08:00",
+  "status": "paired_L1_L4_pass_owner_decision_required",
+  "pair_binding": {
+    "same_input_digest": "8b00e023197e935b7cbb25d9d50bac9e2e859441d6e34405e6649ac8b6ba5bae",
+    "same_input_head_digest": "e957d14dc130d3a9a1f7b84131fc4db897a882081b31d868f7953ede52e4681d",
+    "agent_research_run_id": "research_run_fin01_051c32eff55f90416149c40e",
+    "deterministic_research_run_id": "research_run_s4_t05_baseline_cf69a7e76b9623bcf486",
+    "runs_are_distinct": true,
+    "agent_artifacts": 9,
+    "deterministic_artifacts": 1,
+    "baseline_output_body_exposed_to_agent": false
+  },
+  "L1_deterministic_integrity": {
+    "status": "pass",
+    "basis": "pass_independent_readback_recomputation"
+  },
+  "L2_evidence_reliability_and_coverage": {
+    "status": "pass_bounded_authority_coverage",
+    "evidence_cells": 3,
+    "authority_cells": 3,
+    "basis": "All three DELL Cells are bound to approved current Evidence or exact Numeric authority; candidate metadata is not promoted."
+  },
+  "L3_agent_gain": {
+    "status": "pass_limited_material_gain_with_quality_finding",
+    "baseline_claim_dependency_conflict_gap_WWC": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "agent_claim_dependency_conflict_gap_WWC": [
+      6,
+      3,
+      3,
+      3,
+      9
+    ],
+    "material_gain": "The Agent adds bounded claims, cross-cell dependency and conflict organization, typed gaps and reviewable follow-up tasks over the authority-only baseline.",
+    "comparison_limitation": "The deterministic baseline intentionally inventories authority without judgment; the observed gain is real but should be rated limited rather than a large model advantage.",
+    "quality_finding": "9/9 what-would-change tasks retain generic threshold wording. RC-P36-119 remains nonblocking and deferred to T08-T10/S5."
+  },
+  "L4_final_delivery": {
+    "status": "pass",
+    "preview_digest": "46e4766db4c149a8871da00eae370da7409f24e21c24045081a2d4a7f30d291c",
+    "local_verifier_digest": "e7c390e6064999e247b29eac3fd4bf1815e9326a3fbe208267e528d033ad003c",
+    "case_identity": "pass_DELL",
+    "internal_tokens_currency_duplication_or_unlocalized_limitation": 0
+  },
+  "owner_decision_request": {
+    "status": "awaiting_explicit_user_owner_decision",
+    "recommended_decision": "accept_current_DELL_R2_with_RC_P36_119_deferred",
+    "material_gain_accepted": null,
+    "owner_comment": null,
+    "accept_effect": "Close T05-B, set DELL current R2=true, and authorize T05-C MU entry without claiming release, production or RC-P36-119 closure.",
+    "reject_effect": "Keep DELL R2=false and T05-C blocked; record the product reason without rerunning the already successful DELL model chain."
+  },
+  "acceptance_boundary": {
+    "RC_P36_120": "closed",
+    "S4_T05_B_engineering": "pass",
+    "S4_T05_B_exact_live": "pass",
+    "formal_paired_L1_L4": "pass",
+    "DELL_current_R2": false,
+    "S4_T05_B_closeout": "blocked_pending_owner_decision",
+    "S4_T05_C_entry": "blocked_pending_owner_decision",
+    "release": "not_qualified",
+    "production": "not_qualified"
+  },
+  "observed_counts": {
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_execution_network_calls": 0,
+    "new_source_network_calls": 0,
+    "new_external_tool_calls": 0,
+    "exact_live_reruns": 0,
+    "deterministic_baseline_runs": 0,
+    "formal_paired_assessments": 1,
+    "owner_decisions": 0
+  },
+  "source_refs": {
+    "exact_result": ".codex_runtime/fin012-s4-t05b-dell-agent-exact-live-r1/execution-result.json",
+    "exact_result_sha256": "b4edc0927e958b812c5e5dd04d982defa97e64255d24e3a569e5311b78f5dd32",
+    "exact_assessment": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_agent_exact_live_result_and_independent_assessment_v1_0.json",
+    "exact_assessment_sha256": "dc72d8e6c1decc8cf6bb8dbe5942361894730972e260153c489d117746bb01f8",
+    "product_surface": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_verified_product_surface_and_paired_readiness_v1_0.json",
+    "product_surface_sha256": "9d3395ae846c43d3e72d5151e98f710821fe1b4a07d1faa3f7ead177fd7593ef",
+    "deterministic_baseline": ".codex_runtime/fin012-s4-t05b-dell-current-evidence-deterministic-baseline-r1/execution-result.json",
+    "deterministic_baseline_sha256": "46a417fe4d3eddccf5b91162f9f4b5815c9a898e62ecbf3fc52e18f2b2e01903"
+  },
+  "recommended_next": "USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-DELL-R2-THEN-CLOSE-T05-B-OR-HOLD",
+  "assessment_digest": "c86bf7bfa55d2dd15eab3f27557ffe5c1e5038e40f4820bec5659aa30d2383c4"
+}

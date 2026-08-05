@@ -1,0 +1,53 @@
+{
+  "schema_version": "fin_ia_0_1_2_current_program_projection_v2_60",
+  "projection_id": "FIN-0.1.2-CURRENT-PROGRAM-PROJECTION-V2.60",
+  "recorded_at": "2026-08-05T15:25:00+08:00",
+  "sequence_after_projection": "v2_59",
+  "status": "S4_T05_B_DELL_owner_accepted_R2_true_T05_C_entry_authorized",
+  "product_version": "FIN_0_1_2",
+  "current_truth": {
+    "S0": "closed_pass",
+    "S1": "closed_pass",
+    "S2": "closed_pass",
+    "S3": "pass_closed_bounded_anchor",
+    "S4_T01_T04": "pass_closed",
+    "S4_T05_A": "engineering_pass_zero_call",
+    "S4_T05_B_DELL": "pass_closed_owner_accepted_current_R2",
+    "S4_T05_C_MU": "entry_authorized_not_started",
+    "S4_T05_D_post_transfer_NVDA": "not_started",
+    "S4_T06_T08": "not_started",
+    "S5": "not_entered",
+    "current_NVDA_R2": true,
+    "DELL_current_R2": true,
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "current_next_action": "FIN-0.1.2-S4-T05-C-MU-CURRENT-R2-FRESH-ZERO-CALL-ENTRY-AND-DEPENDENCY-DECISION"
+  },
+  "T05_B_DELL_owner_acceptance": {
+    "decision_digest": "a03a10716d816d32835f6e691057a43c439e9f6675c8e53f7db0eeb37d836468",
+    "source_formal_assessment_digest": "c86bf7bfa55d2dd15eab3f27557ffe5c1e5038e40f4820bec5659aa30d2383c4",
+    "user_message": "接受",
+    "decision": "accept_current_DELL_R2_with_RC_P36_119_deferred",
+    "material_gain_accepted": true,
+    "S4_T05_B": "pass_closed_owner_accepted",
+    "DELL_current_R2": true,
+    "S4_T05_C_entry": "authorized_not_started"
+  },
+  "preserved_boundaries": {
+    "RC_P36_119": "open_nonblocking_deferred_T08_T10_S5",
+    "RC_P36_115": "open_S5_cross_runtime_lock",
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false,
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_product_acceptance": false,
+    "S5_entered": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "T05_C_runs": 0
+  }
+}

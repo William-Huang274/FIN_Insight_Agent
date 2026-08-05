@@ -3,6 +3,9 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-B DELL 已获显式 Owner 接受并关闭，T05-C MU 入口已授权未开始（current，2026-08-05）**：用户在看见 paired L1–L4、有限 L3 增益、9/9 WWC finding 与接受/拒绝影响后明确回复“接受”；decision=`a03a1071…6468` 精确绑定 assessment=`c86bf7bf…83c4`。S4-T05-B=`pass_closed_owner_accepted`，DELL current R2=true；T05-C entry=`authorized_not_started`，MU R2=false、T05-C Run=0。RC-P36-119 继续后传 T08–T10/S5，RC-P36-115 继续阻断 S5；Human Review、NVDA R3、S4 整体验收、release/production 均未成立。本项 model/Provider/network/source/exact-live=`0`。current next=`FIN-0.1.2-S4-T05-C-MU-CURRENT-R2-FRESH-ZERO-CALL-ENTRY-AND-DEPENDENCY-DECISION`；不得直接 Search/DeepSeek。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-B DELL formal paired L1–L4 已通过，当前只等待显式 Owner 决策（current，2026-08-05）**：Agent/baseline 同 input=`8b00e023…5bae`、同 head=`e957d14d…681d`，不同 Run 与 `9/1` Artifacts；baseline 未暴露给 Agent。L1/L2/L4=pass，L3=`pass_limited_material_gain_with_quality_finding`，baseline→Agent 的 Claim/dependency/conflict/gap/WWC=`0/0/0/0/0 → 6/3/3/3/9`；9/9 WWC 泛化仍归 RC-P36-119。assessment=`c86bf7bf…83c4`；model/Provider/network/source/exact rerun=`0`。普通“继续”不能自动成为 Owner 接受，故 DELL R2=false、T05-B/T05-C blocked。建议 Owner=`accept_current_DELL_R2_with_RC_P36_119_deferred`；current next=`USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-DELL-R2-THEN-CLOSE-T05-B-OR-HOLD`。
 >
 > [!IMPORTANT]

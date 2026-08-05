@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL exact-live + formal paired L1–L4 pass，Owner pending / S4-T06–T08 not started`
+状态：`S4 entered / S4-T01–T03 pass closed / S4-T04 Owner accepted current NVDA R2 and closed / S4-T05-A zero-call transfer package engineering pass / T05-B DELL Owner accepted current R2 and closed / T05-C MU entry authorized not started / S4-T06–T08 not started`
 
 ## 1. S4 为什么现在可以进入
 
@@ -196,3 +196,9 @@ DELL immutable exact result 重渲染后，内部 scope/period token、重复币
 正式 paired 已绑定同一 input=`8b00e023…5bae`、同一 input head=`e957d14d…681d`，并确认 Agent/baseline Run 与 Artifacts 均不同，baseline body 未暴露给 Agent。L1/L2/L4 通过；L3 从 authority-only baseline 的 `0/0/0/0/0` 增加至 Agent 的 `6 Claims / 3 dependencies / 3 conflicts / 3 gaps / 9 WWC`，记为有限真实增益。baseline 故意不生成判断，因此该比较不能宣称大幅模型优势；9/9 WWC 泛化继续归 RC-P36-119。
 
 formal assessment=`c86bf7bf…83c4`，推荐 Owner 决定为 `accept_current_DELL_R2_with_RC_P36_119_deferred`。本项没有模型、Provider、网络、Search、baseline rerun 或 exact rerun。Owner 接受尚未发生，所以 DELL R2=false、T05-B closeout 与 T05-C entry 仍 blocked；普通“继续”不得自动改写产品接受。下一项只等待 `USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-DELL-R2-THEN-CLOSE-T05-B-OR-HOLD`。
+
+## 17. S4-T05-B DELL Owner acceptance 与关闭
+
+用户在完整看见 formal paired 结果、有限 L3 增益、RC-P36-119 finding 及接受/拒绝影响后明确回复“接受”。decision=`a03a1071…6468` 绑定 assessment=`c86bf7bf…83c4`；S4-T05-B=`pass_closed_owner_accepted`，DELL current R2=true，T05-C MU entry authorized/not started。
+
+该接受不关闭 RC-P36-119 或 RC-P36-115，也不建立 MU R2、post-transfer NVDA R2、qualified Human Review、NVDA R3、S4 整体验收、S5、release 或 production。本项没有新模型、Provider、网络、Search、exact-live 或 T05-C Run。下一项仅为 `FIN-0.1.2-S4-T05-C-MU-CURRENT-R2-FRESH-ZERO-CALL-ENTRY-AND-DEPENDENCY-DECISION`，不得直接启动 Search/DeepSeek。

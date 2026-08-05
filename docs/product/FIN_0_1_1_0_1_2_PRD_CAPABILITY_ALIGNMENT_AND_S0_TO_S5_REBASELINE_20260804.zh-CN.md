@@ -1,11 +1,13 @@
 # FIN 0.1.1 / 0.1.2 PRD 能力对账与 S0–S5 重基线
 
 日期：2026-08-04
-状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T04 pass closed，current NVDA R2 Owner accepted / S4-T05-A zero-call transfer engineering pass / T05-B DELL exact-live + formal paired L1–L4 pass，Owner pending / no product version change`
+状态：`accepted planning correction / S3 bounded anchor pass closed / S4-T01–T04 pass closed，current NVDA R2 Owner accepted / S4-T05-A zero-call transfer engineering pass / T05-B DELL Owner accepted current R2 and closed / T05-C MU entry authorized not started / no product version change`
 
 > 2026-08-04 S4-T03 零调用权限审计确认：F05 当前不是“模型效果差”，而是 metadata route 尚未接成 executable search，来源 request/response capture-first 与 fresh execution-control chain 也未建立。`RC-P36-114` 留在 T03；必须先做一个合并的零调用可执行接入包，再另行判断 current canary admission，不能把 state stub、URL metadata wrapper 或历史 fixture 写成 current Agentic Search。
 
-当前 next：`USER-OWNER-DECISION-ACCEPT-OR-REJECT-CURRENT-DELL-R2-THEN-CLOSE-T05-B-OR-HOLD`
+当前 next：`FIN-0.1.2-S4-T05-C-MU-CURRENT-R2-FRESH-ZERO-CALL-ENTRY-AND-DEPENDENCY-DECISION`
+
+> 2026-08-05 T05-B DELL Owner acceptance：用户在看见 formal paired 结果、有限 L3 增益、9/9 WWC finding 和接受/拒绝影响后明确回复“接受”。S4-T05-B=`pass_closed_owner_accepted`，DELL current R2=true，T05-C MU entry authorized/not started；RC-P36-119、S5/release/production 边界均不变。下一项只做 MU 零调用入口与依赖决策，不直接 Search/DeepSeek。
 
 > 2026-08-05 T05-B DELL formal paired：Agent/baseline 同 input/head、不同 Run 与 `9/1` Artifacts；L1/L2/L4 通过，L3 从 baseline 的 `0/0/0/0/0` 增加为 `6 Claims / 3 dependencies / 3 conflicts / 3 gaps / 9 WWC`，记有限真实增益，9/9 WWC 泛化继续后传。assessment=`c86bf7bf…83c4`，推荐接受 DELL current R2 并保留 RC-P36-119；但 Owner 尚未明确接受，故 DELL R2=false、T05-C blocked。
 

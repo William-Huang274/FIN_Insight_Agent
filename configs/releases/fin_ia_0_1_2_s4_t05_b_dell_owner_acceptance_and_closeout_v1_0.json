@@ -1,0 +1,60 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_b_dell_owner_acceptance_and_closeout_v1_0",
+  "decision_id": "FIN-0.1.2-S4-T05-B-DELL-OWNER-ACCEPTANCE-R1",
+  "recorded_at": "2026-08-05T15:25:00+08:00",
+  "status": "owner_accepted_DELL_current_R2_T05_B_closed",
+  "authority": {
+    "user_message": "接受",
+    "user_message_interpreted_as": "explicit_acceptance_of_the_presented_DELL_owner_decision",
+    "formal_assessment_presented_before_decision": true,
+    "owner_acceptance_authorized": true,
+    "T05_C_entry_authorized": true,
+    "T05_C_execution_started": false
+  },
+  "source_formal_assessment": {
+    "ref": "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_formal_paired_assessment_and_owner_decision_request_v1_0.json",
+    "sha256": "165607b9f5561e55e893f4b1e7cbb7af0ae26490ec25e336e36bc46c7b0f8d79",
+    "assessment_digest": "c86bf7bfa55d2dd15eab3f27557ffe5c1e5038e40f4820bec5659aa30d2383c4",
+    "L1_L2_L3_L4": [
+      "pass",
+      "pass_bounded_authority_coverage",
+      "pass_limited_material_gain_with_quality_finding",
+      "pass"
+    ]
+  },
+  "owner_decision": {
+    "decision": "accept_current_DELL_R2_with_RC_P36_119_deferred",
+    "material_gain_accepted": true,
+    "owner_comment": "接受",
+    "accepted_product_scope": "current source-grounded DELL R2 within FIN 0.1.2 S4-T05-B"
+  },
+  "acceptance_effect": {
+    "S4_T05_B": "pass_closed_owner_accepted",
+    "DELL_current_R2": true,
+    "S4_T05_C_entry": "authorized_not_started",
+    "MU_current_R2": false,
+    "post_transfer_NVDA_R2": false
+  },
+  "preserved_boundaries": {
+    "RC_P36_119": "open_nonblocking_deferred_T08_T10_S5",
+    "RC_P36_115": "open_S5_cross_runtime_lock",
+    "qualified_human_review": false,
+    "NVDA_R3": false,
+    "S4_product_acceptance": false,
+    "S5_entered": false,
+    "release": "not_qualified",
+    "production": "not_qualified",
+    "additional_model_provider_network_source_calls": 0
+  },
+  "observed_counts": {
+    "owner_decisions": 1,
+    "new_model_calls": 0,
+    "new_provider_calls": 0,
+    "new_execution_network_calls": 0,
+    "new_source_network_calls": 0,
+    "exact_live_reruns": 0,
+    "T05_C_runs": 0
+  },
+  "recommended_next": "FIN-0.1.2-S4-T05-C-MU-CURRENT-R2-FRESH-ZERO-CALL-ENTRY-AND-DEPENDENCY-DECISION",
+  "decision_digest": "a03a10716d816d32835f6e691057a43c439e9f6675c8e53f7db0eeb37d836468"
+}

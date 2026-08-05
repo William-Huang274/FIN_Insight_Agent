@@ -64,7 +64,10 @@ def test_runner_rehydrates_exact_target_without_provider_call() -> None:
     assert result["status"] == "pass_exact_input_admission_transport_wiring_zero_call"
     assert result["provider_callback_calls"] == 0
     assert result["credential_value_output_or_persisted"] is False
-    assert not DEFAULT_RUNTIME_ROOT.exists()
+    if DEFAULT_RUNTIME_ROOT.exists():
+        terminal = json.loads((DEFAULT_RUNTIME_ROOT / "execution-result.json").read_text(encoding="utf-8"))["terminal"]
+        assert terminal["status"] == "success"
+        assert terminal["execution_identity"] == EXECUTION_IDENTITY
 
 
 def decision_input_digest(issuance: dict) -> str:

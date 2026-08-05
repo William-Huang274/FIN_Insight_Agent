@@ -272,3 +272,11 @@ T03 current Search terminal、8 份 source/raw capture 与 T04 Evidence Pack 均
 唯一 admission=`0bdf1ba…f55b` 已绑定 execution identity=`fin012-s4-t05d-nvda-post-transfer-agent-exact-live-r1` 并签发；issued/consumed/started=`true/false/false`。runner 零调用预检确认凭据存在且不输出/持久化值，transport retry=`0`，聚焦与 DELL/MU 相邻回归=`10 passed`。本项 source/model/Provider/network/business Artifact 仍为 0。
 
 下一项只允许 `FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-AGENT-EXACT-LIVE-EXECUTION`：最多 9 次 DeepSeek Provider call、0 retry、0 source network、0 external tool、USD 0.06。首个可信失败即停止且不得自动第二次 live。成功也只进入 immutable result 物化和独立 L1；formal pair、Owner acceptance、Human Review/R3、S5、release 与 production 不自动成立。
+
+## 26. S4-T05-D post-transfer NVDA Agent exact-live 与独立 L1
+
+唯一 admission 已消费并成功完成。DeepSeek `deepseek-v4-pro` 产生 `9 calls / 3 local Fact receipts / 9 captures / 9 Artifacts`，全部 stop/attempt=1；input/output=`55,060/3,148`，cost=`USD 0.02668987`，retry/第二次 live=`0/0`。terminal=`bc7a78a7…eb93`，exact result SHA=`200907cf…bbc4`。
+
+独立只读物化重新核对全部 capture digest、NVDA identity、input/current Evidence lineage 和三条 exact Numeric，L1 通过；Agent 形成 `6 Claims / 9 WWC / 1 dependency / 2 conflicts / 4 gaps`。raw report 仍包含内部 scope/period token、重复 USD 和英文 limitation，它们归零调用 L4 renderer，不触发 paid rerun。
+
+当前 post-transfer NVDA R2 仍=false，下一项仅为 `FIN-0.1.2-S4-T05-D-NVDA-VERIFIED-PRODUCT-SURFACE-AND-PAIRED-READINESS-ZERO-CALL`。formal pair、Owner acceptance、Human Review/R3、S5、release 与 production 均未执行。

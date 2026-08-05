@@ -1,0 +1,57 @@
+{
+  "schema_version": "fin_ia_0_1_2_s4_t05_d_nvda_agent_exact_live_result_and_independent_assessment_v1_0",
+  "result_id": "FIN-0.1.2-S4-T05-D-NVDA-AGENT-EXACT-LIVE-R1",
+  "recorded_at": "2026-08-05T18:05:00+08:00",
+  "status": "exact_live_success_independent_L1_pass_product_surface_pending",
+  "source_exact_result": {
+    "ref": ".codex_runtime/fin012-s4-t05d-nvda-post-transfer-agent-exact-live-r1/execution-result.json",
+    "sha256": "200907cf4c0f6a58748b12f44a4c874ff0b53bd74fe69e22e2d28d117f72bbc4",
+    "terminal_digest": "bc7a78a77eb7f99aaf805ce699b35fdee8ca76bd532f34d82dc4d3bb7300eb93",
+    "immutable": true
+  },
+  "execution": {
+    "provider_model": "deepseek-v4-pro",
+    "provider_calls": 9,
+    "local_fact_receipts": 3,
+    "captures": 9,
+    "business_artifacts": 9,
+    "input_tokens": 55060,
+    "output_tokens": 3148,
+    "estimated_cost_usd": 0.02668987,
+    "retry_count": 0,
+    "all_finish_reason_stop": true,
+    "all_transport_attempt_count_one": true
+  },
+  "independent_L1": {
+    "status": "pass",
+    "case_identity_NVDA": true,
+    "input_and_current_evidence_lineage": true,
+    "exact_numeric_correspondence": true,
+    "capture_first_and_content_address_readback": true,
+    "credential_cookie_private_reasoning_persisted": false,
+    "machine_verifier_four_layers_self_pass": true,
+    "machine_verifier_is_owner_acceptance": false
+  },
+  "agent_output_counts": {
+    "claims": 6,
+    "what_would_change": 9,
+    "dependencies": 1,
+    "conflicts": 2,
+    "gaps": 4
+  },
+  "product_surface_boundary": {
+    "raw_delivery_findings": {
+      "internal_scope_token": true,
+      "internal_period_token": true,
+      "duplicated_currency_unit": true,
+      "mixed_language_limitation": true
+    },
+    "generic_current_case_renderer_already_exists": true,
+    "renderer_and_final_preview_binding_executed_this_step": false,
+    "formal_paired_assessment_executed": false,
+    "owner_acceptance": false,
+    "post_transfer_NVDA_R2": false
+  },
+  "next_action": "FIN-0.1.2-S4-T05-D-NVDA-VERIFIED-PRODUCT-SURFACE-AND-PAIRED-READINESS-ZERO-CALL",
+  "assessment_digest": "91062eab0cb1ed60350012e18357dcc70ee1bd677ec8d8e7d6d6b1c5b1a87770"
+}

@@ -3,6 +3,9 @@
 更新时间：2026-08-05
 
 > [!IMPORTANT]
+> **FIN 0.1.2 S4-T05-D post-transfer NVDA 唯一 Agent exact-live 已成功，独立 L1 通过，产品表面待零调用物化（current，2026-08-05）**：execution=`fin012-s4-t05d-nvda-post-transfer-agent-exact-live-r1` 完成 `9 Provider calls / 3 local Fact receipts / 9 captures / 9 Artifacts`，全部 stop/attempt=1，input/output=`55,060/3,148`，cost=`USD 0.02668987`，retry/第二次 live=`0/0`。result SHA=`200907cf…bbc4`，terminal=`bc7a78a7…eb93`；独立回读确认 NVDA identity、input/current Evidence lineage、三条 exact Numeric 和 capture-first 内容寻址全部通过，Agent=`6 Claims / 9 WWC / 1 dependency / 2 conflicts / 4 gaps`。raw report 的内部 scope/period token、重复币种和英文 limitation 是已知零调用 L4 renderer finding，不是模型 L1。post-transfer NVDA R2 仍=false。current next=`FIN-0.1.2-S4-T05-D-NVDA-VERIFIED-PRODUCT-SURFACE-AND-PAIRED-READINESS-ZERO-CALL`；不得第二次 live。
+>
+> [!IMPORTANT]
 > **FIN 0.1.2 S4-T05-D post-transfer NVDA fresh proof/容量已通过，唯一 admission 已签发未消费（current，2026-08-05）**：独立 Project OS preflight 的 open blocker=`0`，两个 disposable Runtime 归一化一致，均为 `9 Provider callbacks / 3 local Fact receipts / 9 captures / 9 Artifacts`；输入容量=`85,614/108,000`、余量=`22,386`。admission=`0bdf1ba…f55b`，execution identity=`fin012-s4-t05d-nvda-post-transfer-agent-exact-live-r1`，issued/consumed/started=`true/false/false`。零调用 runner preflight 确认凭据存在且未输出/持久化值，fresh 与 DELL/MU 相邻回归=`10 passed`；source/model/Provider/network/Artifact=`0/0/0/0/0`。post-transfer NVDA R2 仍=false。current next=`FIN-0.1.2-S4-T05-D-POST-TRANSFER-NVDA-AGENT-EXACT-LIVE-EXECUTION`；仅允许消费该 admission 一次，DeepSeek 9 calls、retry 0，首个可信失败停止，不自动第二次 live。
 >
 > [!IMPORTANT]

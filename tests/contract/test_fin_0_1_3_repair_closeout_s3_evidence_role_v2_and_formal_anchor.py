@@ -48,6 +48,8 @@ CANARY_READINESS = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evid
 CANARY_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_readiness_active_test_suite_successor_v1_0.json"
 CANARY_RESULT = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_result_and_replacement_authority_v1_0.json"
 CANARY_RESULT_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_result_active_test_suite_successor_v1_0.json"
+R2_FAILURE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r2_terminal_failure_v1_0.json"
+R2_FAILURE_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r2_failure_active_test_suite_successor_v1_0.json"
 
 
 def _load(ref: str) -> dict:
@@ -343,4 +345,17 @@ def test_canary_readiness_is_digest_bound_and_does_not_authorize_full_replacemen
     assert result_active["decision_sha256"] == hashlib.sha256(CANARY_RESULT.read_bytes()).hexdigest()
     assert result_active["suite_digest"] == canonical_digest(
         {key: value for key, value in result_active.items() if key != "suite_digest"}
+    )
+    failure = json.loads(R2_FAILURE.read_text(encoding="utf-8"))
+    failure_active = json.loads(R2_FAILURE_ACTIVE.read_text(encoding="utf-8"))
+    assert failure["record_digest"] == canonical_digest(
+        {key: value for key, value in failure.items() if key != "record_digest"}
+    )
+    assert failure["execution"]["completed_calls"] == 5
+    assert failure["execution"]["passed_calls"] == 4
+    assert failure["root_cause_disposition"]["upstream_request_gap_options"] == 0
+    assert failure["authority"]["R3_or_retry_authorized"] is False
+    assert failure_active["decision_sha256"] == hashlib.sha256(R2_FAILURE.read_bytes()).hexdigest()
+    assert failure_active["suite_digest"] == canonical_digest(
+        {key: value for key, value in failure_active.items() if key != "suite_digest"}
     )

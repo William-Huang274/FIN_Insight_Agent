@@ -1,0 +1,156 @@
+{
+  "authority": {
+    "R2": "terminal_failed_preserved",
+    "R3_or_retry_authorized": false,
+    "automatic_replay": false,
+    "successor_zero_call_disposition_only": true
+  },
+  "execution": {
+    "attempt_id": "fin013_s3_formal_anchor_v2_bd7e01799ab809808b0f::attempt_1",
+    "business_artifact_promotions": 0,
+    "completed_calls": 5,
+    "execution_git_commit": "136225a9e5670cde7f984deceb1c53140325676c",
+    "failed_call_index": 5,
+    "failed_request_id": "FIN013-S2-MU-value_and_profit_capture",
+    "fallback_count": 0,
+    "passed_calls": 4,
+    "retry_count": 0,
+    "run_id": "fin013_s3_formal_anchor_v2_bd7e01799ab809808b0f",
+    "skipped_request_ids": [
+      "FIN013-S2-MU-bottleneck_counterevidence_and_what_would_change",
+      "FIN013-S2-NVDA-demand_authenticity_and_sustainability",
+      "FIN013-S2-NVDA-value_and_profit_capture",
+      "FIN013-S2-NVDA-bottleneck_counterevidence_and_what_would_change"
+    ],
+    "terminal_code": "s3_formal_provider_output_contract_invalid:s3_evidence_selection_gap_required",
+    "terminal_result_digest": "5f811d3b26535e22eca7fbf61e9853b20a03fa9f96847d7478a64944c72e8fd6",
+    "usage": {
+      "input_tokens": 3371,
+      "output_tokens": 606,
+      "total_tokens": 3977
+    }
+  },
+  "failed_capture_digest": "96c672fc30a8d0826c1040914bffba671b4668d993f9e55d6df365c5062811cd",
+  "next_action": "S3_FORMAL_ANCHOR_V2_GAPLESS_REQUEST_LOCAL_DEFAULT_TYPED_GAP_AND_RAW_TERMINAL_PROJECTION_ZERO_CALL_DISPOSITION",
+  "record_digest": "7498f1c604d88973232d99f6da554f325dc53cf943cb51896fead8c9a3b1c2a6",
+  "root_cause_disposition": {
+    "json_shape": "pass",
+    "model_or_provider_incapacity_established": false,
+    "model_research_semantics": "honest_cannot_infer_for_HBM_economics_from_consolidated_facts",
+    "primary": "project_contract_has_no_local_default_typed_gap_when_provider_has_no_gap_option",
+    "provider_transport": "pass",
+    "renamed_field_contract": "pass",
+    "upstream_request_gap_options": 0,
+    "validator_rule": "cannot_infer_requires_typed_gap"
+  },
+  "safe_failed_raw_output": {
+    "answer_direction": "cannot_infer",
+    "confidence": "low",
+    "epistemic_state": "cannot_infer",
+    "gap_aliases": [],
+    "mechanism_alias": "MU_M_BASELINE_NOT_HBM_ECONOMICS",
+    "selected_counterevidence_aliases": [],
+    "selected_evidence_aliases": [
+      "MU_E01",
+      "MU_E02",
+      "MU_E03",
+      "MU_E04"
+    ],
+    "what_would_change_aliases": [
+      "MU_W_HBM_ECONOMICS",
+      "MU_W_HBM_CASH"
+    ]
+  },
+  "safe_passed_outputs": [
+    {
+      "capture_digest": "65590674cd6685271477b67b09c017158dcacab0cf071d3a7f239abd9f73ae8e",
+      "provider_output": {
+        "answer_direction": "cannot_infer",
+        "confidence": "low",
+        "epistemic_state": "cannot_infer",
+        "gap_aliases": [
+          "DELL_G01"
+        ],
+        "mechanism_alias": "DELL_M_DURABILITY_GAP",
+        "selected_counterevidence_aliases": [],
+        "selected_evidence_aliases": [
+          "DELL_E01"
+        ],
+        "what_would_change_aliases": [
+          "DELL_W_DEMAND_BACKLOG",
+          "DELL_W_DEMAND_REVERSAL"
+        ]
+      },
+      "request_id": "FIN013-S2-DELL-demand_authenticity_and_sustainability"
+    },
+    {
+      "capture_digest": "095d8b6a63ae9e24d8ce5c4a6c550c62939bb021e35cf1b29b8201549feb1fbd",
+      "provider_output": {
+        "answer_direction": "mixed",
+        "confidence": "medium",
+        "epistemic_state": "bounded_inference",
+        "gap_aliases": [],
+        "mechanism_alias": "DELL_M_SCALE_NOT_PRODUCT_PROFIT",
+        "selected_counterevidence_aliases": [],
+        "selected_evidence_aliases": [
+          "DELL_E03",
+          "DELL_E02"
+        ],
+        "what_would_change_aliases": [
+          "DELL_W_AI_MARGIN",
+          "DELL_W_CASH_CONVERSION"
+        ]
+      },
+      "request_id": "FIN013-S2-DELL-value_and_profit_capture"
+    },
+    {
+      "capture_digest": "0b9e06f0a104b8ccc4aa1fce3e0bdefcdc4f030ffab5f463b2a81149886822f2",
+      "provider_output": {
+        "answer_direction": "mixed",
+        "confidence": "medium",
+        "epistemic_state": "bounded_inference",
+        "gap_aliases": [],
+        "mechanism_alias": "DELL_M_SUPPLIER_COMPETITION_CONSTRAINT",
+        "selected_counterevidence_aliases": [],
+        "selected_evidence_aliases": [
+          "DELL_E01"
+        ],
+        "what_would_change_aliases": [
+          "DELL_W_SUPPLY_RELIEF",
+          "DELL_W_MARGIN_PRESSURE"
+        ]
+      },
+      "request_id": "FIN013-S2-DELL-bottleneck_counterevidence_and_what_would_change"
+    },
+    {
+      "capture_digest": "e33e8ae66a08b447043f5280e2fa2d0af14fef12a8dcc70f30cb7042c6eb8487",
+      "provider_output": {
+        "answer_direction": "mixed",
+        "confidence": "medium",
+        "epistemic_state": "bounded_inference",
+        "gap_aliases": [],
+        "mechanism_alias": "MU_M_HBM_DEMAND_WITH_CYCLE_BOUNDARY",
+        "selected_counterevidence_aliases": [],
+        "selected_evidence_aliases": [
+          "MU_E01"
+        ],
+        "what_would_change_aliases": [
+          "MU_W_HBM_COMMITMENT",
+          "MU_W_HBM_WEAKENING"
+        ]
+      },
+      "request_id": "FIN013-S2-MU-demand_authenticity_and_sustainability"
+    }
+  ],
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r2_terminal_failure_v1_0",
+  "stage_boundary": {
+    "S3_formal_anchor_v2_R2": "terminal_failed_no_retry",
+    "S3_product_proof": false,
+    "S4_entry": false,
+    "formal_case_scores": 0,
+    "human_acceptance": 0,
+    "paired": 0,
+    "release": false
+  },
+  "status": "formal_anchor_v2_R2_terminal_failed_preserved_R3_not_authorized"
+}

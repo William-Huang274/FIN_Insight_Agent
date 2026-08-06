@@ -3,6 +3,9 @@
 更新时间：2026-08-06
 
 > [!IMPORTANT]
+> **FIN 0.1.3 `013-S2-02` 三 family natural canary runner 工程通过（current，2026-08-06）**：新增 fresh admission、clean/synced Git head＋runner/decision/policy/request digest binding、repository-independent shared SQLite exact-once reservation、capture-first raw request/response retention、首错停止和 terminal receipt。fake success=`3 calls / 3 captures / 3 Claims / terminal`；首 call failure=`1 call / 1 capture / 2 skipped / 0 retry`；第二消费 fail closed。runner focused=`6 passed`，加入 canonical suite=`167 passed / 1 historical event-time assertion deselected`。DeepSeek 凭据仅检查 presence，明文不落 admission/capture/Git；真实模型/Provider/网络仍为 0。current next=`FIN-0.1.3-013-S2-02-THREE-FAMILY-NATURAL-OUTPUT-CANARY-CLEAN-HEAD-ADMISSION-ISSUANCE-AND-EXACT-ONCE-EXECUTION`；必须先提交推送 runner，再签发唯一 admission。
+
+> [!IMPORTANT]
 > **FIN 0.1.3 `013-S2-02` 零调用代表节点与上下文优先级通过（current，2026-08-06）**：RC-P36-138 已在最早责任层修复。低层 `build_agent_data_view`/Specialist request 在没有 Research Lead 显式策略时不再从当前工作目录隐式读取 Product Intelligence；生产 LangGraph 仍由 Research Lead 显式签发 enable/disable，真实 autoload 能力未删除。原扩大 Specialist 回归由 `60 passed / 3 failed` 恢复为 `63 passed`，同一显式 Evidence 在 repo 与空目录生成相同 context digest。S2-01 的 9 个 alias-only request 已实际进入零调用代表链并形成 `9 Specialist nodes / 9 local Claims / 3 local Lead syntheses`；跨案 alias、自由文本、Claim digest、autoload mutation 均 fail closed。canonical active suite=`161 passed / 1 historical event-time assertion deselected`，model/provider/network/source/business run=0。三 family 自然 canary 已预注册为 DELL demand、MU value/profit、NVDA bottleneck 各 1 次，合计最多 3 calls、0 retry/0 fallback，尚未签发或执行；因此当前只达到 `runtime_injected + node_level_consumed`，不是 DeepSeek 能力、S3 动态 DecisionSurface、八维研究质量或产品通过。current next=`FIN-0.1.3-013-S2-02-THREE-FAMILY-NATURAL-OUTPUT-CANARY-FRESH-ADMISSION-AUTHORITY-DECISION`。
 
 > [!IMPORTANT]

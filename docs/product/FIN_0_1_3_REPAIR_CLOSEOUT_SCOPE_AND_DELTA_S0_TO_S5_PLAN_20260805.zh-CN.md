@@ -119,6 +119,10 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 
 > **2026-08-06 `013-S3-04` 工程通过**：三案已形成 no-source Workpaper/Writer decision-ready 内容合同，每案固定覆盖 8 个研究 lens，并逐 lens 回答结论、原因、反方、缺口和改变条件；共 `24 lens = 21 bounded judgment + 3 explicit research gap`。现有 Claim、精确 Numeric、Lead dependency/conflict/gap 与 observable WWC 被连接为公司专属内容；没有 Claim 的资本/price-in 或竞争维度明确不作结论，29 个 planned Cell 没有被当成 finding。由于当前三案仍是 4 个 natural choice 加 5 个 fixture choice，三个预览均为 `fixture_mixed_engineering_only`，不是产品交付；Provider-visible Writer input 未激活，也未新增 paid canary。current suite=`226 passed / 1 historical assertion deselected`；下一项为 `013-S3-05`，先实现八维 Verifier/paired 硬门禁，再决定唯一正式 full-chain。
 
+> **2026-08-06 `013-S3-05` deterministic gate 工程通过**：八维逐案 ScorePacket 已正式区分 L1/L2 与 L3，要求总分 `>=24/32`、核心维度下限、dimension-specific reason refs、最强反方/跨 Cell 裁决/可执行 WWC。paired 必须同 input head、不同 Run/Artifact 且至少三维实质增益；qualified-human content acceptance 与 workflow/identity acceptance 分开，Codex/自动化不能代签。三份 fixture-mixed 预览均在评分前拒绝，正式分数与通过数为 0。
+
+> **2026-08-06 S3 formal Anchor readiness 工程通过**：入口审计发现旧 successor validator 冻结在 `4/9 natural + 5 fixture`，且缺 FIN 0.1.3 九节点 runner；已在 S3 原地修复，不改写 S0 历史基线。零调用 full-fake 已证明 `9 capture-first calls -> 9 natural Claim -> 3 all-natural Lead -> 3 all-natural Workpaper -> quality entry`，第 4 call fault injection 后 5 项跳过、0 retry/0 fallback、admission 二次消费 fail closed。current suite=`240 passed / 1 historical assertion deselected`。下一步仅在 clean/synced commit 上签发并执行一次 fresh DeepSeek Pro formal Anchor；真实评分、paired、人工接受和 S3 product proof 仍未成立。
+
 ### S4：current 产品工作流与真实 dogfood
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |

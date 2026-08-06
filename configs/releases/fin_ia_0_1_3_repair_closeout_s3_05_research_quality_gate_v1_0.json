@@ -1,0 +1,352 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_05_research_quality_gate_decision_v1_0",
+  "recorded_at": "2026-08-06T18:05:00+08:00",
+  "acceptance": {
+    "S3_05_deterministic_gate": "engineering_pass",
+    "rubric_dimensions_compiled": "8/8",
+    "case_gate_contexts": "3/3",
+    "current_fixture_previews_formally_scored": 0,
+    "formal_case_passes": 0,
+    "paired_assessments": 0,
+    "qualified_human_content_acceptances": 0
+  },
+  "research_quality_gate_program": {
+    "schema_version": "fin_ia_0_1_3_s3_research_quality_gate_program_v1_0",
+    "contract_ref": "fin_0_1_3.S3.eight_dimension_verifier_paired_quality:v1",
+    "policy_digest": "635f2f372e5b3bc312d912d90a11f37f2f9b289b9efe679cded62e24fb504229",
+    "upstream_digests": {
+      "S3_02": "1a2c0e8e217a827f969ebd29b54f68a87ea0e433e41e10900893b3e8a199aec6",
+      "S3_04": "9db1dac9074303e01f5c63014947557458768d0179615c3aecef7d230dc442df"
+    },
+    "rubric_contract": {
+      "dimension_ids": [
+        "Q1",
+        "Q2",
+        "Q3",
+        "Q4",
+        "Q5",
+        "Q6",
+        "Q7",
+        "Q8"
+      ],
+      "maximum_score": 32,
+      "thresholds": {
+        "total_minimum": 24,
+        "Q1_to_Q7_minimum": 2,
+        "core_dimensions": [
+          "Q1",
+          "Q2",
+          "Q3",
+          "Q8"
+        ],
+        "core_dimension_minimum": 3,
+        "dimensions_at_or_above_three_minimum": 4,
+        "paired_material_gain_dimensions_minimum": 3
+      },
+      "formal_scoring_object": "final_verifier_bound_product_delivery",
+      "reason_reference_types": [
+        "claim",
+        "section",
+        "evidence",
+        "numeric",
+        "wwc"
+      ],
+      "case_averaging_allowed": false
+    },
+    "candidate_contexts": [
+      {
+        "case_key": "DELL",
+        "workpaper_id": "fin013_s3_workpaper_e162c1bb75021ef712afb2f9",
+        "workpaper_digest": "7428eb15a9e20a3f9b93f5963d6687a72563e913ec1f826d4751e60456e55abb",
+        "authority": "fixture_mixed_engineering_only",
+        "generic_precheck_status": "pass",
+        "L1_status": "not_performed",
+        "L2_status": "not_performed",
+        "final_delivery_digest": null,
+        "verifier_binding_digest": null,
+        "identity_sealed": false,
+        "input_head_digest": null,
+        "run_id": null,
+        "artifact_digest": null,
+        "allowed_reason_refs": {
+          "claim": [
+            "fin013_s3_claim_card_a245f55d3efcd50f13fa12fe",
+            "fin013_s3_claim_card_bccdaa9e18265e8f670e3152",
+            "fin013_s3_claim_card_c21e89d1f79842e91021ddd9"
+          ],
+          "section": [
+            "capital_price_in_and_valuation_boundary",
+            "competition_and_market_position",
+            "customer_and_supply_chain",
+            "executive_thesis",
+            "financial_and_value_capture",
+            "gaps_and_what_would_change",
+            "product_and_demand",
+            "risk_and_counter_thesis"
+          ],
+          "evidence": [
+            "fin013_retrieval_candidate_2e76f847e2a757e1e783ae0a",
+            "fin013_retrieval_candidate_434ec5345cf54652db3788de",
+            "fin013_retrieval_candidate_4f331ad1344c2a1bfc9dcc13",
+            "fin013_retrieval_candidate_724c8babff17dc48d4f5c79c",
+            "fin013_retrieval_candidate_7c6c533159b1372c28e64246",
+            "fin013_retrieval_candidate_8cdd812d43f4e57d9a368df3",
+            "fin013_retrieval_candidate_bfb80429e836783ff28a5c81",
+            "fin013_retrieval_candidate_eb38786cad670180bbf7cca6"
+          ],
+          "numeric": [
+            "fin013_retrieval_candidate_2e76f847e2a757e1e783ae0a",
+            "fin013_retrieval_candidate_434ec5345cf54652db3788de",
+            "fin013_retrieval_candidate_724c8babff17dc48d4f5c79c",
+            "fin013_retrieval_candidate_7c6c533159b1372c28e64246",
+            "fin013_retrieval_candidate_8cdd812d43f4e57d9a368df3",
+            "fin013_retrieval_candidate_eb38786cad670180bbf7cca6"
+          ],
+          "wwc": [
+            "DELL_W_AI_MARGIN",
+            "DELL_W_DEMAND_BACKLOG",
+            "DELL_W_DEMAND_REVERSAL",
+            "DELL_W_SUPPLY_RELIEF"
+          ]
+        },
+        "candidate_context_digest": "b8a26a94e6b6de41d55e838bd6e8e3d8c144b1cce5c049df641db031fb18730f"
+      },
+      {
+        "case_key": "MU",
+        "workpaper_id": "fin013_s3_workpaper_3119bbdf9a54e7076c558e65",
+        "workpaper_digest": "8c69d39ed1c1bc5b92024ffbb526d8cd84ac0e330a4e4bd4a60e58c1dc746dfa",
+        "authority": "fixture_mixed_engineering_only",
+        "generic_precheck_status": "pass",
+        "L1_status": "not_performed",
+        "L2_status": "not_performed",
+        "final_delivery_digest": null,
+        "verifier_binding_digest": null,
+        "identity_sealed": false,
+        "input_head_digest": null,
+        "run_id": null,
+        "artifact_digest": null,
+        "allowed_reason_refs": {
+          "claim": [
+            "fin013_s3_claim_card_4c77ff515399bcaa6230a717",
+            "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5",
+            "fin013_s3_claim_card_911e27e739aebc1baf84f789"
+          ],
+          "section": [
+            "capital_price_in_and_valuation_boundary",
+            "competition_and_market_position",
+            "customer_and_supply_chain",
+            "executive_thesis",
+            "financial_and_value_capture",
+            "gaps_and_what_would_change",
+            "product_and_demand",
+            "risk_and_counter_thesis"
+          ],
+          "evidence": [
+            "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+            "fin013_retrieval_candidate_47346a7cde9364911be4452e",
+            "fin013_retrieval_candidate_9aeb9f542d0c2ad049bdf228",
+            "fin013_retrieval_candidate_e9a600976b693b3c7f877e97",
+            "fin013_retrieval_candidate_f3a30894728557766f4d7aca",
+            "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+            "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a",
+            "fin013_retrieval_candidate_fbf2ee2b42d945f83cd8fcea"
+          ],
+          "numeric": [
+            "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+            "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+            "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a"
+          ],
+          "wwc": [
+            "MU_W_CAPACITY_DISCIPLINE",
+            "MU_W_HBM_CASH",
+            "MU_W_HBM_COMMITMENT",
+            "MU_W_HBM_ECONOMICS"
+          ]
+        },
+        "candidate_context_digest": "e998c8d51c1589ba0d5c2d4e8dca52c59ba407d0fd4b84d61449054b63aa6b9b"
+      },
+      {
+        "case_key": "NVDA",
+        "workpaper_id": "fin013_s3_workpaper_68034bf019cb646cc4df676c",
+        "workpaper_digest": "5507ecac1abcac95eb4eefcd857f36d3b2dab280f38c08730344bc59e1815128",
+        "authority": "fixture_mixed_engineering_only",
+        "generic_precheck_status": "pass",
+        "L1_status": "not_performed",
+        "L2_status": "not_performed",
+        "final_delivery_digest": null,
+        "verifier_binding_digest": null,
+        "identity_sealed": false,
+        "input_head_digest": null,
+        "run_id": null,
+        "artifact_digest": null,
+        "allowed_reason_refs": {
+          "claim": [
+            "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+            "fin013_s3_claim_card_a39c37b6931999e1e17d6057",
+            "fin013_s3_claim_card_f82a61215231355f35c17020"
+          ],
+          "section": [
+            "capital_price_in_and_valuation_boundary",
+            "competition_and_market_position",
+            "customer_and_supply_chain",
+            "executive_thesis",
+            "financial_and_value_capture",
+            "gaps_and_what_would_change",
+            "product_and_demand",
+            "risk_and_counter_thesis"
+          ],
+          "evidence": [
+            "fin013_retrieval_candidate_188d29e1707ad57269910e99",
+            "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+            "fin013_retrieval_candidate_3512b0478a3b12318b10136e",
+            "fin013_retrieval_candidate_3d8b637b4c94474ffa9f8e5a",
+            "fin013_retrieval_candidate_4edf79e04af34ec1ecde9470",
+            "fin013_retrieval_candidate_7c841b20f9f56885f5ac75f8",
+            "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+            "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+            "fin013_retrieval_candidate_c1da6be578c29a564d884058",
+            "fin013_retrieval_candidate_ee0f6469ef03752279a9c3eb"
+          ],
+          "numeric": [
+            "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+            "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+            "fin013_retrieval_candidate_abc6d9f7958160123c87267f"
+          ],
+          "wwc": [
+            "NVDA_W_CONSTRAINT_ABSENCE",
+            "NVDA_W_DEMAND_DIGESTION",
+            "NVDA_W_PRODUCT_ECONOMICS",
+            "NVDA_W_REALIZED_CONSTRAINT",
+            "NVDA_W_REPEAT_DEPLOYMENT"
+          ]
+        },
+        "candidate_context_digest": "81d69ff2237394489aad977c5b72813c37bc3b93ed8e7e263fc386684bec3f20"
+      }
+    ],
+    "current_case_dispositions": [
+      {
+        "case_key": "DELL",
+        "candidate_context_digest": "b8a26a94e6b6de41d55e838bd6e8e3d8c144b1cce5c049df641db031fb18730f",
+        "scoreability": "ineligible_not_scored",
+        "reasons": [
+          "fixture_mixed_authority",
+          "L1_not_passed",
+          "L2_not_passed",
+          "final_delivery_not_bound",
+          "verifier_binding_missing",
+          "reviewer_packet_identity_not_sealed",
+          "run_artifact_identity_incomplete"
+        ],
+        "dimension_scores": null,
+        "total_score": null,
+        "formal_case_pass": false,
+        "qualified_human_content_acceptance": false
+      },
+      {
+        "case_key": "MU",
+        "candidate_context_digest": "e998c8d51c1589ba0d5c2d4e8dca52c59ba407d0fd4b84d61449054b63aa6b9b",
+        "scoreability": "ineligible_not_scored",
+        "reasons": [
+          "fixture_mixed_authority",
+          "L1_not_passed",
+          "L2_not_passed",
+          "final_delivery_not_bound",
+          "verifier_binding_missing",
+          "reviewer_packet_identity_not_sealed",
+          "run_artifact_identity_incomplete"
+        ],
+        "dimension_scores": null,
+        "total_score": null,
+        "formal_case_pass": false,
+        "qualified_human_content_acceptance": false
+      },
+      {
+        "case_key": "NVDA",
+        "candidate_context_digest": "81d69ff2237394489aad977c5b72813c37bc3b93ed8e7e263fc386684bec3f20",
+        "scoreability": "ineligible_not_scored",
+        "reasons": [
+          "fixture_mixed_authority",
+          "L1_not_passed",
+          "L2_not_passed",
+          "final_delivery_not_bound",
+          "verifier_binding_missing",
+          "reviewer_packet_identity_not_sealed",
+          "run_artifact_identity_incomplete"
+        ],
+        "dimension_scores": null,
+        "total_score": null,
+        "formal_case_pass": false,
+        "qualified_human_content_acceptance": false
+      }
+    ],
+    "paired_contract": {
+      "same_evidence_and_input_head_required": true,
+      "distinct_run_and_artifact_required": true,
+      "agent_absolute_threshold_required": true,
+      "L1_L2_regression_allowed": false,
+      "claim_or_WWC_count_is_material_gain": false,
+      "reviewer_confirmed_material_gain_dimensions_minimum": 3
+    },
+    "qualified_human_contract": {
+      "reviewer_role": "qualified_research_reviewer",
+      "authenticated_session_required": true,
+      "content_decision_separate_from_workflow_identity_acceptance": true,
+      "actions": [
+        "accept_content",
+        "return_for_research_repair"
+      ],
+      "codex_or_automation_may_sign": false
+    },
+    "observed_counts": {
+      "case_contexts": 3,
+      "dimension_slots_compiled": 24,
+      "formally_scoreable_cases": 0,
+      "fixture_mixed_cases_rejected_before_scoring": 3,
+      "formal_case_scores": 0,
+      "formal_case_passes": 0,
+      "paired_assessments": 0,
+      "qualified_human_content_acceptances": 0,
+      "model_calls": 0,
+      "provider_calls": 0,
+      "network_calls": 0,
+      "source_calls": 0,
+      "business_runs": 0
+    },
+    "stage_boundary": {
+      "S3_05": "deterministic_quality_gate_engineering_pass_formal_candidate_pending",
+      "current_fixture_previews_scored": false,
+      "formal_full_chain_authorized": false,
+      "formal_case_passes": 0,
+      "paired_assessment": false,
+      "qualified_human_content_acceptance": false,
+      "product_acceptance": false,
+      "release": false
+    },
+    "program_digest": "741c0c69e60b571fe29258eb6302e4a5e0433603d1bb9be0d832bdc5a77fd906"
+  },
+  "admission_disposition": {
+    "formal_full_chain_authorized_now": false,
+    "reason": "The deterministic gate is executable, but every current case remains fixture-mixed and lacks a verifier-bound natural final delivery, L1/L2 result, sealed reviewer packet, and distinct paired Run/Artifact identities. A separate fresh admission-readiness audit must bind those surfaces before one formal full chain.",
+    "automatic_exact_live_or_retry": false
+  },
+  "model_provider_network_source_business_runs": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "stage_boundary": {
+    "S3_05_deterministic_contract": "engineering_pass",
+    "natural_final_delivery": false,
+    "formal_case_quality_pass": false,
+    "paired_material_gain": false,
+    "qualified_human_content_acceptance": false,
+    "S3_product_proof": false,
+    "S4_entry": false,
+    "release": false
+  },
+  "known_boundary": "This record proves fail-closed quality, paired and human-decision contracts. It intentionally does not score fixture previews or claim that DELL, MU or NVDA meet the 24/32 product threshold.",
+  "current_next": "FIN-0.1.3-S3-FORMAL-ANCHOR-FULL-CHAIN-ADMISSION-READINESS-AUDIT",
+  "record_digest": "c3aa4dc1b183c0f5c35a7e85e1e8bd7c638a622a59932b031bdf3d0673016695"
+}

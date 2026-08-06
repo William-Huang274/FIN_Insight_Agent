@@ -1,0 +1,83 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_formal_anchor_admission_readiness_v1_0",
+  "recorded_at": "2026-08-06T19:10:00+08:00",
+  "status": "engineering_pass_fresh_admission_eligible_after_clean_synced_commit",
+  "authority": {
+    "user_instruction": "继续",
+    "formal_full_chain_scope": "nine bounded Specialist selectors followed by local Claim, Lead, Workpaper and quality-gate compilation",
+    "admission_issued": false,
+    "execution_started": false,
+    "automatic_retry_fallback_or_second_run": false
+  },
+  "entry_corrections": {
+    "missing_FIN_0_1_3_formal_runner": "closed_by_exact_once_capture_first_nine_request_runner",
+    "fixture_count_frozen_successor_validators": "closed_by_authority_derived_claim_lead_writer_quality_validation",
+    "writer_model_free_text_required": false,
+    "writer_model_free_text_reason": "The accepted architecture keeps model authority at bounded judgment aliases and compiles final content locally; the rubric explicitly permits reducing model surface when local composition is equal or better."
+  },
+  "zero_call_full_fake_proof": {
+    "provider_callbacks": 9,
+    "capture_first_objects": 9,
+    "natural_claim_cards": 9,
+    "all_natural_case_syntheses": 3,
+    "all_natural_workpapers": 3,
+    "quality_gate_entries": 3,
+    "formal_scores_or_human_acceptances": 0,
+    "first_failure_stop_proven_at_call": 4,
+    "skipped_after_failure": 5,
+    "shared_admission_second_consumption": "fail_closed",
+    "focused_tests": "5 passed before materialized-record assertion"
+  },
+  "capacity": {
+    "request_count": 9,
+    "aggregate_compact_characters": 24289,
+    "maximum_single_request_compact_characters": 4169,
+    "maximum_provider_calls": 9,
+    "retry_count": 0,
+    "fallback_count": 0
+  },
+  "bindings": {
+    "context_program_sha256": "1c76a792bb55ef81e1911196798de6fd485c01e7e5c2161eb526c3ba1606aa33",
+    "quality_gate_sha256": "cc3e26c6fa846267d5c37918e5dfd0abcf4394851bfbc5597616da569a47f74e",
+    "execution_policy_sha256": "bcf97f351b17bc19c6aecb91b2d7faf34cde5ddb7e7863912ff3252cd4e494fe",
+    "code_sha256": {
+      "src/sec_agent/s3_formal_anchor_runtime.py": "779042f40dd7b7d704fef2b01ede0020a4e51c78dd5368a020de6435c0109529",
+      "scripts/releases/run_fin_ia_0_1_3_repair_closeout_s3_formal_anchor.py": "0d656307c131394d96791417c532f2eea34e29ff7bbbee977cea2b4a40f05e26",
+      "src/sec_agent/s3_claim_quality_program.py": "c3baa8a98d5d34c8a68c2f162d41f8aa0df26991f03a57a90a611ac91f59cd11",
+      "src/sec_agent/s3_cross_cell_synthesis_program.py": "493465507df38513c8024bae4d1330a4eeaed891768d7ef716239695100ede05",
+      "src/sec_agent/s3_workpaper_writer_content_program.py": "24cf3e472030b511b6852d6758fe9fe344a4c20cecab540ba81c45593fb13758",
+      "src/sec_agent/s3_research_quality_gate.py": "03a29b78bd2502b2d2c0a85d35978ac940491d572d522219999d694d0c87dd1e"
+    }
+  },
+  "admission_disposition": {
+    "eligible_after_clean_synced_commit": true,
+    "credential_presence_required": true,
+    "one_fresh_admission": true,
+    "one_exact_once_execution": true,
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "request_count": 9,
+    "retry_or_fallback": 0
+  },
+  "stage_boundary": {
+    "S3_05_deterministic_gate": "engineering_pass",
+    "formal_anchor_runner": "engineering_pass_full_fake",
+    "formal_anchor_live": false,
+    "formal_case_quality_pass": false,
+    "paired_material_gain": false,
+    "qualified_human_content_acceptance": false,
+    "S3_product_proof": false,
+    "S4_entry": false,
+    "release": false
+  },
+  "model_provider_network_source_business_runs": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "known_boundary": "Full-fake proves exact-once execution and all-natural successor materialization shape, not DeepSeek natural output quality, final L1/L2, eight-dimension scores, paired gain, human content acceptance or product pass.",
+  "current_next": "COMMIT_PUSH_THEN_ISSUE_ONE_FRESH_S3_FORMAL_ANCHOR_ADMISSION_AND_EXECUTE_EXACT_ONCE",
+  "record_digest": "a7b01306a79efdcdfc29add8236b07c4a20a88b400a7e218cd7814d9b9f30ab5"
+}

@@ -152,6 +152,90 @@ def compile_s3_claim_quality_program(
     return program
 
 
+def compile_s3_claim_quality_all_natural_successor(
+    *,
+    policy: Mapping[str, Any],
+    s1_decision: Mapping[str, Any],
+    s2_decision: Mapping[str, Any],
+    representative_decision: Mapping[str, Any],
+    s3_surface_decision: Mapping[str, Any],
+    natural_s2_result: Mapping[str, Any],
+    natural_s2_03_result: Mapping[str, Any],
+    formal_anchor_result: Mapping[str, Any],
+) -> dict[str, Any]:
+    base = compile_s3_claim_quality_program(
+        policy=policy,
+        s1_decision=s1_decision,
+        s2_decision=s2_decision,
+        representative_decision=representative_decision,
+        s3_surface_decision=s3_surface_decision,
+        natural_s2_result=natural_s2_result,
+        natural_s2_03_result=natural_s2_03_result,
+    )
+    if (
+        not _assert_digest(formal_anchor_result)
+        or formal_anchor_result.get("status") != "terminal_succeeded_exact_once"
+        or len(formal_anchor_result.get("family_results") or []) != 9
+    ):
+        raise S3ClaimQualityError("s3_claim_quality_formal_anchor_invalid")
+    requests = {
+        str(row["request_id"]): row
+        for row in s2_decision["research_question_method_program"]["representative_requests"]
+    }
+    candidate_map = {
+        str(candidate["candidate_id"]): candidate
+        for query in s1_decision["retrieval_usefulness_program"]["query_results"]
+        for candidate in query.get("selected_candidates") or []
+    }
+    result_map = {str(row["request_id"]): row for row in formal_anchor_result["family_results"]}
+    if set(result_map) != set(requests) or any(row.get("status") != "passed" for row in result_map.values()):
+        raise S3ClaimQualityError("s3_claim_quality_formal_anchor_surface_invalid")
+    cards = []
+    for request in requests.values():
+        row = result_map[request["request_id"]]
+        claim = consume_representative_specialist_output(
+            request=request,
+            provider_output=row["provider_output"],
+        )
+        cards.append(
+            _compile_card(
+                claim=claim,
+                candidate_map=candidate_map,
+                policy=policy,
+                choice_authority="live_natural_exact_once",
+                natural_ref={
+                    "result": "S3_formal_anchor",
+                    "record_digest": formal_anchor_result["record_digest"],
+                    "request_id": request["request_id"],
+                    "provider_output_digest": row["provider_output_digest"],
+                    "capture_digest": row["capture_digest"],
+                },
+            )
+        )
+    body = {key: deepcopy(value) for key, value in base.items() if key != "program_digest"}
+    body["upstream_digests"]["S3_formal_anchor"] = formal_anchor_result["record_digest"]
+    body["core_claim_cards"] = cards
+    body["observed_counts"].update(
+        {
+            "live_natural_claim_cards": 9,
+            "fixture_only_claim_cards": 0,
+            "structured_wwc": sum(len(row["what_would_change"]) for row in cards),
+            "numeric_fact_bindings": sum(len(row["numeric_facts"]) for row in cards),
+            "typed_gap_bindings": sum(len(row["typed_gaps"]) for row in cards),
+        }
+    )
+    body["stage_boundary"].update(
+        {
+            "S3_02": "formal_all_natural_successor_compiled",
+            "live_natural_core_claim_coverage": "9/9",
+            "remaining_natural_choices": "none_for_core_claim_surface",
+        }
+    )
+    program = {**body, "program_digest": canonical_digest(body)}
+    validate_s3_claim_quality_program(program, policy=policy)
+    return program
+
+
 def validate_s3_claim_quality_program(program: Mapping[str, Any], *, policy: Mapping[str, Any]) -> None:
     body = {key: deepcopy(value) for key, value in program.items() if key != "program_digest"}
     if (
@@ -169,11 +253,15 @@ def validate_s3_claim_quality_program(program: Mapping[str, Any], *, policy: Map
     for card in cards:
         validate_s3_claim_card(card, policy=policy)
     observed = program.get("observed_counts") or {}
+    expected_live = sum(row.get("choice_authority") == "live_natural_exact_once" for row in cards)
+    expected_fixture = 9 - expected_live
     if (
         observed.get("core_claim_cards") != 9
-        or observed.get("live_natural_claim_cards") != 4
-        or observed.get("fixture_only_claim_cards") != 5
-        or observed.get("typed_gap_bindings") != 2
+        or observed.get("live_natural_claim_cards") != expected_live
+        or observed.get("fixture_only_claim_cards") != expected_fixture
+        or observed.get("structured_wwc") != sum(len(row.get("what_would_change") or []) for row in cards)
+        or observed.get("numeric_fact_bindings") != sum(len(row.get("numeric_facts") or []) for row in cards)
+        or observed.get("typed_gap_bindings") != sum(len(row.get("typed_gaps") or []) for row in cards)
         or observed.get("planned_dynamic_cells_without_claim_choice") != 29
         or any(observed.get(field) != 0 for field in ("model_calls", "provider_calls", "network_calls", "source_calls", "business_runs"))
     ):

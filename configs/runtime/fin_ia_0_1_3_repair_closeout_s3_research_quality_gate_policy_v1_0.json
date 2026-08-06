@@ -1,0 +1,47 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_research_quality_gate_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S3.eight_dimension_verifier_paired_quality:v1",
+  "rubric_version": "FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806",
+  "dimensions": [
+    {"dimension_id": "Q1", "name": "company_and_problem_specificity", "required_reason_ref_types": ["claim"]},
+    {"dimension_id": "Q2", "name": "evidence_to_conclusion_reasoning", "required_reason_ref_types": ["evidence", "claim"]},
+    {"dimension_id": "Q3", "name": "financial_and_numeric_explanation", "required_reason_ref_types": ["numeric"]},
+    {"dimension_id": "Q4", "name": "causal_mechanism_and_industry_logic", "required_reason_ref_types": ["claim", "section"]},
+    {"dimension_id": "Q5", "name": "cross_cell_synthesis_and_conflict", "required_reason_ref_types": ["section"]},
+    {"dimension_id": "Q6", "name": "counter_thesis_risk_and_gap_discipline", "required_reason_ref_types": ["section", "claim"]},
+    {"dimension_id": "Q7", "name": "what_would_change_action_value", "required_reason_ref_types": ["wwc"]},
+    {"dimension_id": "Q8", "name": "writing_and_senior_decision_usability", "required_reason_ref_types": ["section"]}
+  ],
+  "thresholds": {
+    "total_minimum": 24,
+    "Q1_to_Q7_minimum": 2,
+    "core_dimensions": ["Q1", "Q2", "Q3", "Q8"],
+    "core_dimension_minimum": 3,
+    "dimensions_at_or_above_three_minimum": 4,
+    "paired_material_gain_dimensions_minimum": 3
+  },
+  "authority_boundary": {
+    "L1_L2_must_pass_before_scoring": true,
+    "fixture_mixed_may_be_formally_scored": false,
+    "case_averaging_allowed": false,
+    "final_verifier_bound_delivery_is_scoring_object": true,
+    "LLM_judge_may_sign_acceptance": false,
+    "qualified_human_content_acceptance_required": true,
+    "workflow_acceptance_is_content_acceptance": false
+  },
+  "paired_contract": {
+    "same_evidence_and_input_head_required": true,
+    "distinct_run_and_artifact_required": true,
+    "agent_absolute_threshold_required": true,
+    "L1_L2_regression_allowed": false,
+    "claim_or_WWC_count_is_material_gain": false,
+    "reviewer_confirmed_material_gain_dimensions_minimum": 3
+  },
+  "qualified_human_contract": {
+    "reviewer_role": "qualified_research_reviewer",
+    "authenticated_session_required": true,
+    "content_decision_separate_from_workflow_identity_acceptance": true,
+    "actions": ["accept_content", "return_for_research_repair"],
+    "codex_or_automation_may_sign": false
+  }
+}

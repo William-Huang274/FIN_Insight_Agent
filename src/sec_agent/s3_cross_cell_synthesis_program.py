@@ -87,9 +87,9 @@ def compile_s3_cross_cell_synthesis_program(*, policy: Mapping[str, Any], claim_
         "case_syntheses": syntheses,
         "observed_counts": observed,
         "stage_boundary": {
-            "S3_03": "engineering_pass_fixture_mixed_synthesis_proven",
+            "S3_03": "formal_all_natural_successor_compiled" if observed["all_natural_case_syntheses"] == 3 else "engineering_pass_fixture_mixed_synthesis_proven",
             "business_synthesis_accepted": False,
-            "all_natural_case_syntheses": False,
+            "all_natural_case_syntheses": observed["all_natural_case_syntheses"] == 3,
             "planned_no_claim_cells_synthesized": False,
             "model_contract_changed": False,
             "additional_canary_required": False,
@@ -118,21 +118,22 @@ def validate_s3_cross_cell_synthesis_program(program: Mapping[str, Any], *, poli
         raise S3CrossCellSynthesisError("s3_cross_cell_case_surface_invalid")
     for synthesis in syntheses:
         validate_s3_case_synthesis(synthesis, policy=policy)
-    if program.get("observed_counts") != {
+    expected = {
         "case_syntheses": 3,
         "dependencies": 3,
         "conflicts": 3,
         "gaps": 5,
-        "resolved_conflicts": 0,
-        "deferred_conflicts": 3,
-        "blocked_conflicts": 0,
-        "all_natural_case_syntheses": 0,
+        "resolved_conflicts": sum(item["disposition"] == "resolve" for row in syntheses for item in row["conflicts"]),
+        "deferred_conflicts": sum(item["disposition"] == "defer" for row in syntheses for item in row["conflicts"]),
+        "blocked_conflicts": sum(item["disposition"] == "block" for row in syntheses for item in row["conflicts"]),
+        "all_natural_case_syntheses": sum(row["synthesis_authority"] == "all_natural_candidate" for row in syntheses),
         "planned_no_claim_cells_included": 0,
         "model_calls": 0,
         "provider_calls": 0,
         "network_calls": 0,
         "business_runs": 0,
-    }:
+    }
+    if program.get("observed_counts") != expected:
         raise S3CrossCellSynthesisError("s3_cross_cell_observed_counts_invalid")
 
 

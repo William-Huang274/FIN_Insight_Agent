@@ -1,0 +1,38 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_formal_anchor_execution_policy_v1_0",
+  "scope": "FIN_0_1_3_S3_FORMAL_ANCHOR_NINE_SPECIALIST_EXACT_ONCE",
+  "request_order": [
+    "FIN013-S2-DELL-demand_authenticity_and_sustainability",
+    "FIN013-S2-DELL-value_and_profit_capture",
+    "FIN013-S2-DELL-bottleneck_counterevidence_and_what_would_change",
+    "FIN013-S2-MU-demand_authenticity_and_sustainability",
+    "FIN013-S2-MU-value_and_profit_capture",
+    "FIN013-S2-MU-bottleneck_counterevidence_and_what_would_change",
+    "FIN013-S2-NVDA-demand_authenticity_and_sustainability",
+    "FIN013-S2-NVDA-value_and_profit_capture",
+    "FIN013-S2-NVDA-bottleneck_counterevidence_and_what_would_change"
+  ],
+  "provider": {
+    "backend": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "chat_completions_path": "/chat/completions",
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "wire_api": "chat_completions_json_object"
+  },
+  "budget": {
+    "maximum_provider_calls": 9,
+    "maximum_calls_per_request": 1,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "maximum_output_tokens_per_call": 900,
+    "timeout_seconds_per_call": 180
+  },
+  "failure_policy": {
+    "capture_before_validation": true,
+    "first_credible_failure_stops_run": true,
+    "automatic_retry_or_fallback": false,
+    "automatic_second_formal_run": false
+  }
+}

@@ -1,7 +1,7 @@
 # FIN 0.1.3 研究内容输出质量硬门禁 Rubric
 
 日期：2026-08-06
-状态：`accepted_product_quality_gate / S0_layer_registry_implemented / S2_S5_runtime_compilation_pending / release_blocking`
+状态：`accepted_product_quality_gate / S0_registry_implemented / S3_score_paired_human_contract_engineering_pass / formal_scoring_and_S4_S5_consumption_pending / release_blocking`
 
 ## 1. 目的
 
@@ -111,4 +111,4 @@ L1/L2 deterministic gate
 
 ## 9. 当前状态
 
-本 Rubric 已成为 FIN 0.1.3 产品与 release 约束。`013-S0-03` 已完成四层分类 registry：analysis quality 不会再被误标成 financial truth 或 product usability，并保持其在 S2/S3/S4/S5 的 release-blocking 属性。但八维评分 schema、node evaluator、Verifier、score packet、Workbench 和 qualified human content acceptance 仍未实现。当前只能标记为 `S0_registry_implemented / downstream_contract_translation_pending`，不得宣称三案例内容质量已实现或已通过。
+本 Rubric 已成为 FIN 0.1.3 产品与 release 约束。`013-S0-03` 已完成四层分类 registry；`013-S3-05` 已将逐案八维 ScorePacket、L1/L2 前置阻断、dimension-specific reason refs、paired material gain 和独立 qualified-human content decision 编译为 fail-closed 工程合同。当前三份 fixture-mixed 预览均在评分前拒绝；三案正式评分、paired 与人工内容接受仍为 0。Workbench 展示、真实 reviewer action 和 S5 RG3/RG4 仍待 S4/S5 消费。因此当前状态是 `S3_contract_engineering_pass / formal_natural_candidate_scoring_pending`，不得宣称三案例内容质量已实现或已通过。

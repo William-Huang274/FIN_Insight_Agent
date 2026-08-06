@@ -124,12 +124,12 @@ def compile_s3_workpaper_writer_content_program(
         "stage_boundary": {
             "S3_04": "engineering_pass_decision_ready_content_contract_and_fixture_preview",
             "fixture_preview_is_product_delivery": False,
-            "all_natural_workpapers": 0,
+            "all_natural_workpapers": observed["natural_product_candidates"],
             "writer_no_source_contract": True,
             "provider_output_schema_changed": False,
             "model_visible_writer_input_activated": False,
             "additional_paid_canary_required_now": False,
-            "formal_full_chain": False,
+            "formal_full_chain": observed["natural_product_candidates"] == 3,
             "eight_dimension_quality_acceptance": False,
             "qualified_human_content_acceptance": False,
             "product_acceptance": False,
@@ -159,10 +159,10 @@ def validate_s3_workpaper_writer_content_program(program: Mapping[str, Any], *, 
     expected = {
         "case_workpapers": 3,
         "content_lenses": 24,
-        "bounded_judgment_lenses": 21,
-        "explicit_research_gap_lenses": 3,
-        "natural_product_candidates": 0,
-        "fixture_mixed_engineering_previews": 3,
+        "bounded_judgment_lenses": sum(section["coverage_status"] == "bounded_judgment" for row in workpapers for section in row["sections"]),
+        "explicit_research_gap_lenses": sum(section["coverage_status"] == "explicit_research_gap" for row in workpapers for section in row["sections"]),
+        "natural_product_candidates": sum(row["workpaper_authority"] == "all_natural_candidate" for row in workpapers),
+        "fixture_mixed_engineering_previews": sum(row["workpaper_authority"] == "fixture_mixed_engineering_only" for row in workpapers),
         "planned_cells_rendered_as_findings": 0,
         "writer_raw_source_rows": 0,
         "model_calls": 0,
@@ -186,9 +186,11 @@ def validate_s3_case_workpaper(workpaper: Mapping[str, Any], *, policy: Mapping[
     if [row.get("lens_id") for row in sections] != list(policy["required_lenses"]):
         raise S3WorkpaperWriterContentError("s3_writer_lens_surface_invalid")
     claim_ids = set(workpaper.get("claim_card_ids") or [])
-    if len(claim_ids) != 3 or workpaper.get("workpaper_authority") != "fixture_mixed_engineering_only":
+    authority = workpaper.get("workpaper_authority")
+    if len(claim_ids) != 3 or authority not in {"fixture_mixed_engineering_only", "all_natural_candidate"}:
         raise S3WorkpaperWriterContentError("s3_writer_authority_invalid")
-    if workpaper.get("display_ready") is not False or workpaper.get("product_candidate") is not False:
+    expected_ready = authority == "all_natural_candidate"
+    if workpaper.get("display_ready") is not expected_ready or workpaper.get("product_candidate") is not expected_ready:
         raise S3WorkpaperWriterContentError("s3_writer_fixture_promotion_forbidden")
     forbidden = [str(value).lower() for value in policy["forbidden_generic_fragments"]]
     seen_substantive = 0

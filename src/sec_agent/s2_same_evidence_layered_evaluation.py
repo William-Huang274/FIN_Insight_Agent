@@ -7,12 +7,23 @@ from typing import Any, Mapping, Sequence
 
 
 NUMERIC_TOKEN = re.compile(
-    r"(?<![A-Za-z0-9_])[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:%|[kKmMbBtT]|x)?(?![A-Za-z0-9_.])"
+    r"(?<![A-Za-z0-9_])[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:%|[kKmMbBtT]|x)?(?![A-Za-z0-9_.]|-(?:K|Q|F)\b)"
 )
 _HYPOTHETICAL_PATHS = (".stop_condition", ".what_would_change")
 _CONDITIONAL_MARKERS = (
     "if ", "scenario", "assumption", "threshold", "would change",
-    "若", "如果", "假设", "情景", "阈值", "触发",
+    " would ", " could ", "below ", "above ", "drop ", "decline ",
+    "trigger", "若", "如果", "假设", "情景", "阈值", "触发",
+)
+_PERCENT_RANGE = re.compile(
+    r"(?<![A-Za-z0-9_])(?P<low>\d(?:\.\d+)?)\s*(?:-|–|—|to)\s*(?P<high>\d(?:\.\d+)?)\s*%",
+    re.IGNORECASE,
+)
+_DIRECTIONAL_PERCENT_TERMS = (
+    "mid-single-digit", "mid single digit", "中个位数",
+)
+_DIRECTIONAL_PERCENT_CONTEXT_TERMS = (
+    "margin", "profit", "profitability", "营业利润", "利润率", "盈利",
 )
 
 
@@ -176,18 +187,29 @@ def evaluate_raw_chain(
         if isinstance(specialist, Mapping) and not specialist.get("counterevidence_ids"):
             _finding(findings, "L3", "explicit_counterevidence_surface_empty", f"specialist[{index}]")
 
-    writer_text = json.dumps(writer, ensure_ascii=False).lower() if isinstance(writer, Mapping) else ""
-    semantic_codes = _financial_semantic_codes(writer_text, case_input)
-    for code in semantic_codes:
-        _finding(findings, "L1", code, "writer")
-    verifier_text = json.dumps(verifier, ensure_ascii=False).lower() if isinstance(verifier, Mapping) else ""
-    if semantic_codes and not any(code.lower() in verifier_text for code in semantic_codes):
+    semantic_codes: set[str] = set()
+    if isinstance(writer, Mapping):
+        for path, text in _text_surfaces(writer):
+            for code in _financial_semantic_codes(text.lower(), case_input):
+                semantic_codes.add(code)
+                _finding(findings, "L1", code, "writer", path=path)
+
+    verifier_l1 = False
+    if isinstance(verifier, Mapping) and isinstance(verifier.get("findings"), list):
+        verifier_l1 = any(
+            isinstance(row, Mapping) and row.get("severity") == "L1"
+            for row in verifier["findings"]
+        )
+    upstream_l1 = any(row["severity"] == "L1" and row["node_ref"] != "verifier" for row in findings)
+    if semantic_codes and not verifier_l1:
         _finding(findings, "L2", "verifier_missed_material_financial_semantics", "verifier")
+    if upstream_l1 and not verifier_l1:
+        _finding(findings, "L2", "verifier_missed_material_failure", "verifier")
 
     material = any(row["severity"] == "L1" for row in findings)
     verifier_accepts = isinstance(verifier, Mapping) and verifier.get("decision") == "accept_raw_candidate"
     return {
-        "schema_version": "fin_ia_0_1_3_s2_05_layered_raw_evaluation_v1_0",
+        "schema_version": "fin_ia_0_1_3_s2_05_layered_raw_evaluation_v1_1",
         "case_key": case_input.get("case_key"),
         "raw_chain_complete": complete,
         "raw_experiment_candidate": complete,
@@ -216,21 +238,45 @@ def _walk_numeric(value: Any, path: str, node_ref: str, case_input: Mapping[str,
             _walk_numeric(child, f"{path}[{index}]", node_ref, case_input, findings)
     elif isinstance(value, str):
         allowed = allowed_numeric_surfaces(case_input)
-        unbound = sorted({_normalize(token) for token in NUMERIC_TOKEN.findall(value)} - allowed)
+        occurrences = [
+            (match.start(), match.end(), _normalize(match.group(0)))
+            for match in NUMERIC_TOKEN.finditer(value)
+            if _normalize(match.group(0)) not in allowed
+        ]
+        unbound = {token for _, _, token in occurrences}
         if not unbound:
             return
-        # The field path is the authority boundary.  Wording quality (whether
-        # the prose visibly says "if"/"假设") is scored separately; it must not
-        # turn a planning threshold into an asserted financial fact.
-        conditional = path.endswith(_HYPOTHETICAL_PATHS)
-        _finding(
-            findings,
-            "L3" if conditional else "L1",
-            "hypothetical_planning_threshold" if conditional else "unbound_material_numeric_surface",
-            node_ref,
-            path=path,
-            tokens=unbound,
-        )
+
+        sharpened = _directional_percent_range_tokens(value, case_input) & unbound
+        if sharpened:
+            _finding(
+                findings, "L1", "directional_margin_sharpened_to_unsupported_range",
+                node_ref, path=path, tokens=sorted(sharpened),
+            )
+            unbound -= sharpened
+        if not unbound:
+            return
+
+        conditional: set[str] = set()
+        asserted: set[str] = set()
+        for start, end, token in occurrences:
+            if token not in unbound:
+                continue
+            context = value[max(0, start - 96):min(len(value), end + 96)].lower()
+            if path.endswith(_HYPOTHETICAL_PATHS) or any(marker in context for marker in _CONDITIONAL_MARKERS):
+                conditional.add(token)
+            else:
+                asserted.add(token)
+        if conditional:
+            _finding(
+                findings, "L3", "hypothetical_planning_threshold", node_ref,
+                path=path, tokens=sorted(conditional),
+            )
+        if asserted:
+            _finding(
+                findings, "L1", "unbound_material_numeric_surface", node_ref,
+                path=path, tokens=sorted(asserted),
+            )
 
 
 def _shape_findings(synthesis: Any, writer: Any, verifier: Any, findings: list[dict[str, Any]]) -> None:
@@ -263,6 +309,33 @@ def _financial_semantic_codes(text: str, case_input: Mapping[str, Any]) -> list[
     if historical and not any(term in input_text for term in ("historical average", "历史平均", "历史均值")):
         codes.append("unsupported_historical_valuation_comparison")
     return codes
+
+
+def _directional_percent_range_tokens(text: str, case_input: Mapping[str, Any]) -> set[str]:
+    input_text = json.dumps(case_input, ensure_ascii=False).lower()
+    if not any(term in input_text for term in _DIRECTIONAL_PERCENT_TERMS):
+        return set()
+    tokens: set[str] = set()
+    for match in _PERCENT_RANGE.finditer(text):
+        context = text[max(0, match.start() - 96):min(len(text), match.end() + 96)].lower()
+        if not any(term in context for term in _DIRECTIONAL_PERCENT_CONTEXT_TERMS):
+            continue
+        tokens.add(_normalize(match.group("low")))
+        tokens.add(_normalize(match.group("high") + "%"))
+    return tokens
+
+
+def _text_surfaces(value: Any, path: str = "$") -> list[tuple[str, str]]:
+    surfaces: list[tuple[str, str]] = []
+    if isinstance(value, Mapping):
+        for key, child in value.items():
+            surfaces.extend(_text_surfaces(child, f"{path}.{key}"))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            surfaces.extend(_text_surfaces(child, f"{path}[{index}]"))
+    elif isinstance(value, str):
+        surfaces.append((path, value))
+    return surfaces
 
 
 def _typed_rows(value: Any, keys: set[str]) -> bool:

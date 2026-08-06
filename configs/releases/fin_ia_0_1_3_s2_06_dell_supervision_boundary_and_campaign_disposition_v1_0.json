@@ -1,0 +1,136 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_dell_supervision_boundary_and_campaign_disposition_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "zero_call_engineering_pass_dell_raw_complete_quality_fail_campaign_boundary_frozen",
+  "source_raw_result": {
+    "run_id": "fin013_s2_05_exp_a_dell_f9e9264951d69da5ed86",
+    "terminal_digest": "7c9a0eb56511f5df0cf0c729637fe59365eef0c24fdf1c8c295eae82997d235d",
+    "raw_model_only_immutable": true,
+    "raw_chain_complete": true,
+    "hidden_scoring_eligible": true,
+    "autonomous_model_result": "raw_complete_quality_fail",
+    "business_promotable": false
+  },
+  "evaluator_recalibration": {
+    "previous_schema": "fin_ia_0_1_3_s2_05_layered_raw_evaluation_v1_0",
+    "current_schema": "fin_ia_0_1_3_s2_05_layered_raw_evaluation_v1_1",
+    "previous_findings": {
+      "total": 29,
+      "L1": 11,
+      "L2": 1,
+      "L3": 17
+    },
+    "current_findings": {
+      "total": 26,
+      "L1": 2,
+      "L2": 1,
+      "L3": 23,
+      "classes": {
+        "directional_margin_sharpened_to_unsupported_range": 2,
+        "verifier_missed_material_failure": 1,
+        "explicit_counterevidence_surface_empty": 4,
+        "hypothetical_planning_threshold": 19
+      }
+    },
+    "closed_false_positive_classes": [
+      "document_form_10_K_tokenized_as_material_number",
+      "conditional_threshold_outside_dedicated_WWC_field_misclassified_as_L1",
+      "cash_flow_and_valuation_terms_in_different_writer_sections_misclassified_as_one_bridge"
+    ],
+    "material_failure_preserved": true,
+    "reason": "The source-bound phrase mid-single-digit was still sharpened into an unsupported 4-6% range, and the Verifier still accepted the raw candidate without an L1 finding."
+  },
+  "supervision_boundary": {
+    "tracks": {
+      "raw_model_only": "immutable_read_only",
+      "runtime_deterministic": "may_delete_downgrade_or_render_only_source_bound_authority",
+      "supervisor_augmented": "may expose visible finding class and case-local evidence refs but never hidden answers",
+      "corrected_candidate": "fresh identity required and never rewrites raw",
+      "evaluator_only": "scoring only and never visible to model or supervisor prompt",
+      "qualified_human": "separate final content acceptance"
+    },
+    "actual_DELL_correction_ledger": {
+      "runtime_ref": ".codex_runtime/fin013_s2_06/DELL/fin013_s2_05_exp_a_dell_f9e9264951d69da5ed86_supervision_boundary_v1_0.json",
+      "sha256": "a8640de22eaced2167ea2c030c245de292605fc3cbf7d62821dbd7256a466c47",
+      "corrections": 26,
+      "source_bound_precision_repairs": 2,
+      "uncalibrated_scenario_findings": 19,
+      "research_content_returns": 4,
+      "verifier_false_green_returns": 1
+    },
+    "deterministic_repair_boundary": [
+      "remove or downgrade unsupported precision to the exact source-authorized directional phrase",
+      "classify a threshold as unvalidated hypothesis without asserting it as fact",
+      "block business promotion when a model Verifier misses a local L1"
+    ],
+    "deterministic_repair_forbidden": [
+      "write new counterevidence analysis",
+      "invent a strongest counter-thesis",
+      "calibrate an unsupported threshold",
+      "add a thesis or valuation conclusion",
+      "claim model gain from local rendering"
+    ],
+    "supervisor_model_repair": {
+      "performed": false,
+      "requires_separate_authority": true,
+      "must_use_fresh_corrected_candidate_identity": true,
+      "may_receive_hidden_gold": false,
+      "may_receive_visible_findings_and_case_local_evidence_refs": true,
+      "supervised_recoverability": "not_proven"
+    }
+  },
+  "campaign_disposition": {
+    "DELL_raw_measurement": "complete_quality_fail",
+    "DELL_formal_or_human_score": false,
+    "DELL_corrected_candidate": false,
+    "automatic_next_case": false,
+    "MU_raw_admission_may_be_considered_by_separate_authority": true,
+    "DELL_correction_required_before_MU_raw": false,
+    "reason": "Experiment A measures natural raw performance. Requiring DELL to pass before measuring MU/NVDA would turn a benchmark failure into campaign censorship and prevent the three-case capability boundary.",
+    "fairness_guard": "Freeze the same model-visible contract for MU and NVDA; do not feed DELL hidden targets, correction text or corrected output into later raw runs.",
+    "DELL_supervisor_model_calls_before_three_case_raw_campaign_complete": 0
+  },
+  "stage_ownership": {
+    "S2_05": [
+      "raw candidate capture and immutable autonomous score",
+      "path-aware post-hoc evaluator correctness"
+    ],
+    "S2_06": [
+      "correction ledger",
+      "raw/runtime/supervisor contribution attribution",
+      "model surface versus deterministic authority decision"
+    ],
+    "S3_06_to_07": [
+      "general dynamic research loop and targeted evidence repair runtime"
+    ],
+    "S3_09": [
+      "formal eight-dimension and qualified-human product acceptance"
+    ]
+  },
+  "implementation": {
+    "layered_evaluator": {
+      "ref": "src/sec_agent/s2_same_evidence_layered_evaluation.py",
+      "sha256": "a9e1f94fdf897c01de25f111806cdac055b0c94ea8c769456fc95dca307761fa"
+    },
+    "supervision_compiler": {
+      "ref": "src/sec_agent/s2_same_evidence_supervision.py",
+      "sha256": "f54b4d4bddf0e0d471efcfb37931f9c58b0a06801052205c6462163c9727418d"
+    },
+    "materializer": {
+      "ref": "scripts/releases/materialize_fin_ia_0_1_3_s2_06_supervision_boundary.py",
+      "sha256": "973147c302f2e029ab2ab9537c5f63cf12c7184ba15bd8aabba3ef7fea9393de"
+    }
+  },
+  "verification": {
+    "focused_tests": "17 passed",
+    "broader_S2_05_S2_06_tests": "70 passed",
+    "actual_DELL_zero_call_materialization": "pass",
+    "immutable_raw_capture_hashes": "pass",
+    "compileall": "pass",
+    "model_provider_network_mcp_calls": [0, 0, 0, 0],
+    "raw_capture_mutations": 0,
+    "business_promotions": 0
+  },
+  "next_action": "COMMIT_PUSH_THEN_SEPARATE_MU_RAW_EXPERIMENT_A_ADMISSION_AUTHORITY_DECISION",
+  "known_boundary": "This closes the DELL per-case supervision-boundary decision, not S2-06 across all three cases. It does not correct DELL, call a model, issue MU authority, score a product report or authorize release."
+}

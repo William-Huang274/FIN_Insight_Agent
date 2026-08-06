@@ -14,6 +14,7 @@ from sec_agent.s2_same_evidence_layered_evaluation import (
     compile_output_contract,
     evaluate_raw_chain,
 )
+from sec_agent.s2_same_evidence_supervision import compile_supervision_boundary
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -126,6 +127,7 @@ def test_layered_evaluation_blocks_business_promotion_for_financial_semantic_bri
     assert "cash_flow_margin_used_in_earnings_or_valuation_bridge" in codes
     assert "unsupported_backlog_to_eps_or_price_bridge" in codes
     assert "verifier_missed_material_financial_semantics" in codes
+    assert "verifier_missed_material_failure" in codes
     assert result["hidden_scoring_eligible"] is True
     assert result["business_promotable"] is False
     assert result["status"] == "complete_with_material_findings"
@@ -158,3 +160,80 @@ def test_layered_evaluation_full_fake_is_case_local_for_dell_mu_nvda() -> None:
         assert result["hidden_scoring_eligible"] is True
         assert result["business_promotion_gate_pass"] is True
         assert result["business_promotable"] is False
+
+
+def test_document_form_and_cross_section_terms_do_not_create_numeric_or_semantic_false_positive() -> None:
+    case, policy = _case_and_policy()
+    chain = _chain(case, policy)
+    chain["specialists"][0]["mechanism"] = "The 10-K describes working-capital risk."
+    chain["writer"]["sections"][2]["narrative"] = "Operating cash flow may be pressured by working capital."
+    chain["writer"]["sections"][3]["narrative"] = "The trailing P/E is only a static market boundary."
+    result = evaluate_raw_chain(chain, case_input=case, policy=policy, section_ids=SECTION_IDS)
+    codes = {row["code"] for row in result["findings"]}
+    assert "unbound_material_numeric_surface" not in codes
+    assert "cash_flow_margin_used_in_earnings_or_valuation_bridge" not in codes
+    assert result["material_failure"] is False
+
+
+def test_conditional_threshold_outside_dedicated_field_remains_L3() -> None:
+    case, policy = _case_and_policy()
+    chain = _chain(case, policy)
+    chain["writer"]["sections"][4]["narrative"] = (
+        "A sequential decline or a greater than 10% backlog drop would trigger reassessment."
+    )
+    result = evaluate_raw_chain(chain, case_input=case, policy=policy, section_ids=SECTION_IDS)
+    matching = [row for row in result["findings"] if "10%" in row.get("tokens", [])]
+    assert matching
+    assert all(row["severity"] == "L3" for row in matching)
+    assert result["material_failure"] is False
+
+
+def test_directional_margin_cannot_be_sharpened_into_invented_percent_range() -> None:
+    case, policy = _case_and_policy()
+    chain = _chain(case, policy)
+    chain["specialists"][3]["judgment"] = (
+        "Management's mid-single-digit statement implies a 4-6% AI server operating margin."
+    )
+    result = evaluate_raw_chain(chain, case_input=case, policy=policy, section_ids=SECTION_IDS)
+    codes = {row["code"] for row in result["findings"]}
+    assert "directional_margin_sharpened_to_unsupported_range" in codes
+    assert "verifier_missed_material_failure" in codes
+    assert result["material_failure"] is True
+
+
+def test_unrelated_conditional_percent_range_is_not_misattributed_to_directional_margin() -> None:
+    case, policy = _case_and_policy()
+    chain = _chain(case, policy)
+    chain["writer"]["sections"][4]["narrative"] = (
+        "If a hypothetical backlog cancellation range reaches 4-6%, reassess demand quality."
+    )
+    result = evaluate_raw_chain(chain, case_input=case, policy=policy, section_ids=SECTION_IDS)
+    matching = [row for row in result["findings"] if set(row.get("tokens", [])) == {"4", "6%"}]
+    assert matching
+    assert all(row["code"] == "hypothetical_planning_threshold" for row in matching)
+    assert all(row["severity"] == "L3" for row in matching)
+    assert result["material_failure"] is False
+
+
+def test_s2_06_boundary_separates_raw_correction_and_next_case_authority() -> None:
+    case, policy = _case_and_policy()
+    chain = _chain(case, policy)
+    chain["specialists"][3]["judgment"] = "Mid-single-digit profitability was sharpened to a 4-6% margin."
+    result = evaluate_raw_chain(chain, case_input=case, policy=policy, section_ids=SECTION_IDS)
+    boundary = compile_supervision_boundary(
+        result,
+        raw_run_id="immutable-DELL-run",
+        raw_terminal_digest="a" * 64,
+    )
+    assert boundary["raw_binding"]["raw_model_only_immutable"] is True
+    assert boundary["capability_attribution"]["autonomous_model_result"] == "raw_complete_quality_fail"
+    assert boundary["campaign_boundary"]["automatic_next_case"] is False
+    assert boundary["campaign_boundary"]["next_case_may_be_considered_by_separate_authority"] is True
+    assert boundary["campaign_boundary"]["corrected_DELL_required_before_MU_raw_measurement"] is False
+    assert all(row["hidden_gold_visible"] is False for row in boundary["corrections"])
+    precision = next(
+        row for row in boundary["corrections"]
+        if row["source_finding"]["code"] == "directional_margin_sharpened_to_unsupported_range"
+    )
+    assert precision["deterministic_correction_allowed"] is True
+    assert precision["new_model_call_required"] is False

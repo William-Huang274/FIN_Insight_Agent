@@ -1,0 +1,107 @@
+{
+  "admission_digest": "beb6cc39f7ff7d89518e6d5e7d3b347d7c279f06abbb6b618d132dcdf1b92bba",
+  "capacity": {
+    "aggregate_character_reduction_ratio": 0.397684,
+    "aggregate_compact_to_baseline_character_ratio": 0.602316,
+    "baseline_characters": 40326,
+    "baseline_estimated_input_tokens": 20165,
+    "compact_characters": 24289,
+    "compact_estimated_input_tokens": 12147,
+    "estimated_input_token_reduction": 8018,
+    "maximum_compact_estimated_input_tokens": 2085,
+    "request_count": 9
+  },
+  "capture_digest": "ca62a79f58ffc47652749f9b2099e2b9e14c8c3783ec961d1b20a28657a7ecf1",
+  "context_digest": "80b883a1735f236ea786e887e3880da9d2285ce2f8559e3e43fa32f822bf35c8",
+  "disposition": {
+    "S2_03": "pass_closed",
+    "current_next": "FIN-0.1.3-013-S3-01-DYNAMIC-DECISION-SURFACE-ENTRY-AUDIT"
+  },
+  "execution_git_commit": "489ec11260cf1847cca29008ce29cc89450f78b1",
+  "known_boundary": "This closes bounded S2 context economy and one-node compact-contract behavior only. It does not prove dynamic planning, cross-cell synthesis, final research-content quality, product acceptance or release.",
+  "natural_reproof": {
+    "business_artifact_promotions": 0,
+    "claim_digest": "fac4a485e607f79fda7519ab48475ade25eb9fc4605cbe01870413aaace7a276",
+    "fallback_count": 0,
+    "finish_reason": "stop",
+    "local_claim_case": "NVDA",
+    "local_claim_cell": "demand_authenticity_and_sustainability",
+    "provider_output": {
+      "answer_direction": "mixed",
+      "confidence": "medium",
+      "counterevidence_aliases": [],
+      "epistemic_state": "mixed_evidence",
+      "gap_aliases": [],
+      "mechanism_alias": "NVDA_M_DURABILITY_REQUIRES_REPEAT_EVIDENCE",
+      "support_aliases": [
+        "NVDA_E01",
+        "NVDA_E02",
+        "NVDA_E03",
+        "NVDA_E04",
+        "NVDA_E05",
+        "NVDA_E06"
+      ],
+      "what_would_change_aliases": [
+        "NVDA_W_REPEAT_DEPLOYMENT",
+        "NVDA_W_DEMAND_DIGESTION"
+      ]
+    },
+    "provider_output_digest": "61f0b527f1cda10fb687149c2a9fb83e3a03e5a7a02e9d85d91f34afafc0886f",
+    "retry_count": 0,
+    "status": "terminal_succeeded_exact_once",
+    "terminal_code": "compact_context_natural_reproof_pass",
+    "usage": {
+      "input_tokens": 927,
+      "output_tokens": 149,
+      "total_tokens": 1076,
+      "transport_attempt_count": 1
+    }
+  },
+  "owning_stage": "FIN_0_1_3_S2_03",
+  "policy_sha256": "d926ac32fcb9fc50f1f9082fdb2267951d2bfc8fdd99757846a6a1cd33cc099e",
+  "program_digest": "6f2d6d142469bf4e5df7bba48cc32a70ae72419ffd3fd5fe5578f882bfbf80b4",
+  "program_sha256": "1c76a792bb55ef81e1911196798de6fd485c01e7e5c2161eb526c3ba1606aa33",
+  "provider": {
+    "backend": "deepseek",
+    "model": "deepseek-v4-pro",
+    "wire_api": "chat_completions_json_object"
+  },
+  "public_private_separation": {
+    "capture_ref_in_git": false,
+    "credential_or_authorization_in_git": false,
+    "private_capture_retained_outside_git": true,
+    "raw_request_response_in_git": false
+  },
+  "record_digest": "0c1b27597496931f35cedc35419a50b2c317d178a7d5e0351cb7d3d3b1adb3ca",
+  "recorded_at": "2026-08-06T06:52:46.180009Z",
+  "request_digest": "3666b06a629e7296d3541b15a067746ffe60dc876a75438fc35e6e89051e652f",
+  "request_id": "FIN013-S2-NVDA-demand_authenticity_and_sustainability",
+  "schema_version": "fin_ia_0_1_3_s2_03_context_yield_natural_reproof_public_result_v1_0",
+  "semantic_retention": {
+    "candidate_ids_digests_and_slot_ids_model_visible": false,
+    "counterevidence_and_gap_hidden_for_capacity": false,
+    "evidence_alias_retention_ratio": 1.0,
+    "evidence_aliases_retained": 26,
+    "full_lineage_retained_in_local_sidecar": true,
+    "gap_alias_retention_ratio": 1.0,
+    "gap_aliases_retained": 2,
+    "mechanism_alias_retention_ratio": 1.0,
+    "mechanism_aliases_retained": 18,
+    "what_would_change_alias_retention_ratio": 1.0,
+    "what_would_change_aliases_retained": 18
+  },
+  "stage_boundary": {
+    "S0": "pass_closed",
+    "S1": "pass_closed",
+    "S2_01": "engineering_pass",
+    "S2_02": "pass_closed",
+    "S2_03": "pass_closed",
+    "S3_to_S5": "not_started",
+    "dynamic_10_to_20_cell_surface": false,
+    "eight_dimension_research_quality": false,
+    "full_chain_authorized": false,
+    "product_acceptance": false,
+    "release": false
+  },
+  "terminal_result_digest": "ba6faf02e8ecbf232aa1a90aabfa5f4839efd53cf346b781ed2d8d75a5b29080"
+}

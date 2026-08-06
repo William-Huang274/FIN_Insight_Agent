@@ -99,6 +99,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 
 > **2026-08-06 `013-S2-03` 零调用工程通过、自然复证待执行**：9 个代表性节点的模型可见输入由 `40,326` 字符降至 `24,289`，缩减 `39.7684%`；Evidence、typed gap、mechanism、what-would-change alias 保留率均为 `100%`。模型不需要的 candidate/slot/gap ID、digest 和 S1 lineage 改由本地 sidecar 保留。canonical successor=`191 passed / 1 historical event-time assertion deselected`。因模型可见 bytes 改变，阶段仍需一次最高负载 NVDA demand compact-context natural reproof；不得扩大为 full-chain，也不得把容量工程结果冒充 S3 研究内容质量。
 
+> **2026-08-06 `013-S2-03` 自然复证通过并关闭**：clean/synced commit 上只执行预注册最高负载 NVDA demand compact-context request，DeepSeek Pro `1 call / 1 transport / finish_reason=stop / 927 input / 149 output / 0 retry / 0 fallback`，输出仅含本案 alias/enum 并成功物化本地 Claim。canonical successor=`195 passed / 1 historical event-time assertion deselected`。S2-03=`pass_closed`，下一项为 `013-S3-01` 动态 DecisionSurface 入口审计；S3 的内容质量责任不回塞 S2。
+
 ### S3：研究计划、判断、Lead、Writer 与 Verifier
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |
@@ -182,6 +184,6 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 10. [x] 完成 `013-S1-05`：semantic successor=`7 useful / 2 typed gap`，governed retrieval=`9/9 query / 26/26 required candidate / 0 false promotion`，旧 BM25 明确 non-authority；S1 pass closed。
 11. [x] 完成 `013-S2-01`：RC-P36-134 关闭；9 个 representative request 绑定 `26 Evidence / 2 gap / 18 mechanism / 18 WWC`，Provider 只选 alias/enum，本地拥有数字/日期/identity/lineage/final narrative；active suite 87 passed / 1 historical deselected。
 12. [x] 完成 `013-S2-02`：RC-P36-138、显式 pack precedence、hermetic 注入、`9 Specialist / 9 Claim / 3 Lead` 零调用消费均通过；fresh exact-once DeepSeek canary=`3/3 pass, 10/10 each, 0 retry/0 fallback`，原始捕获与公开摘要分离。
-13. [ ] 完成 `013-S2-03`：审计 node context yield、重复 role view、Evidence 利用率、容量和成本；先零调用编译与 mutation，再只对真正改变的模型合同决定是否需要单节点 canary，不直接运行三案例 full-chain。
+13. [x] 完成 `013-S2-03`：审计 node context yield、重复 role view、Evidence 利用率、容量和成本；零调用编译与 mutation 通过，模型可见 bytes 改变后只执行一次最高负载单节点 natural reproof 并通过，未运行三案例 full-chain。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

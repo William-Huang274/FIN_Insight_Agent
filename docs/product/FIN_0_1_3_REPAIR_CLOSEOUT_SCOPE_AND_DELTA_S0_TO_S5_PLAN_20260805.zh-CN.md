@@ -1,7 +1,7 @@
 # FIN 0.1.3 修复收口版范围与差量 S0–S5 计划
 
 日期：2026-08-05
-状态：`FIN_0_1_2_honest_block_frozen / FIN_0_1_3_S2_02_complete / S2_03_next / FIN_0_2_definition_unchanged`
+状态：`FIN_0_1_2_honest_block_frozen / FIN_0_1_3_minimum_anchor_complete / three_case_gold_candidates_complete / two_track_rebaseline_active / S2_04_next / FIN_0_2_definition_unchanged`
 
 > **2026-08-06 用户新增硬要求**：FIN 0.1.3 必须把研究内容输出质量作为 release-blocking 考核，不得再将 L3 的通用 Claim、弱综合、机械 Writer 或不可执行 WWC 降级为 nonblocking finding。八维绝对质量＋paired gain＋qualified human content acceptance 的正式标准见 `docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md`。
 
@@ -16,6 +16,8 @@ FIN 0.1.2 在 S4-T08 扩大审计中证明了完整的工程链路形状、三�
 3. 新建 FIN 0.1.3 作为 **FIN 0.1 最后一个专项修复与正式收口候选**。FIN 0.2 仍保持 Earnings Review Alpha 的原定义，不吸收本轮欠账。
 4. FIN 0.1.3 仍使用 S0–S5 表达责任层和成熟顺序，但采用差量执行：继承 FIN 0.1.2 未受影响的 immutable evidence，只运行发生变化的阶段、依赖回归和最终 release gate。
 5. 失败必须留在最早责任阶段；不得因为 S4 暴露问题，就在 Workbench、renderer 或 T08 末端加补丁掩盖上游缺陷。
+
+> **2026-08-07 二轨重排**：三案 Gold dogfood 证明，继续把精力集中在固定九次 DeepSeek 调用的合同遵循，无法证明 PRD 所要求的 Agentic Search/Research。FIN 0.1.3 不升级版本、不推翻已完成的 S0–S3 工程资产，但把后续执行重排为：先在同一冻结 Evidence Pack 上隔离测量 DeepSeek 的分析与综合能力；再修复 MCP、当前外部来源与 Agentic Search；最后才让 DeepSeek 从检索开始完成端到端研究。工具缺陷不得记为模型缺陷，模型推理缺陷也不得通过扩大工具范围掩盖。
 
 ## 2. 扩大审计结论
 
@@ -192,6 +194,51 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 - SaaS/Bank 只作为 universal archetype、period/metric policy 和 gap boundary 的结构回归；不在 0.1.3 建全行业 Sector Pack。
 - 20-F、多币种和 PDF/redirect 可以作为 deterministic/adversarial portability fixture，不自动扩大正式三案例产品验收范围。
 
+## 7A. 2026-08-07 三案 Gold dogfood 后的二轨执行重排
+
+### 7A.1 为什么重排
+
+三案参考研究与现有 S3 R3 的差异表明，当前最小 Anchor 已证明合同、exact-once、lineage 和基本 L1/L2，但没有证明完整产品研究能力：R3 只有 9 个模型选择、0 条自然 thesis-support、0 条自然 counterevidence 选择，另有 29 个 planned Cell 未研究。Codex 三案 Gold candidate 虽形成更完整的事实、机制、反方、price-in 和 WWC，但实际是“Codex supervisor＋产品本地数据/部分 MCP＋外部一手来源”的混合研究；当前 stdio MCP 仅证明初始化、工具注册和 market handler，SEC search/exact-ledger 仍有资源绑定或超时问题（RC-P36-140）。
+
+因此不能把两者直接比较为“Codex 比 DeepSeek 强”或“DeepSeek 不会研究”。必须先隔离变量，再验证完整系统。
+
+### 7A.2 两个实验严格分开
+
+| 实验 | DeepSeek 可见输入 | 目的 | 不允许得出的结论 |
+| --- | --- | --- | --- |
+| A：同证据分析与综合 | 同一 objective、as-of、共享 Benchmark Evidence Pack、数值/来源 lineage；不开放检索工具，不提供 Codex thesis、推理、评分或修订 | 测量 Specialist、Lead、Writer、Verifier 的机制判断、反证、跨证据综合和报告能力 | 不评价 Agentic Search、MCP、抓取器或数据源覆盖 |
+| B：端到端 Agentic Search/Research | 同一 objective、as-of、source authority 和预算；开放修复后的产品检索/MCP/外源工具，不提供 Gold 答案 | 测量问题分解、查询迭代、证据晋升、gap repair、综合、写作和停止能力 | MCP/source/parser 失败不得直接归因模型；supervisor 扶正后的结果不得冒充独立成功 |
+
+Experiment A 的共享 Evidence Pack 必须包含 Codex Gold candidate 使用的重要官方事实与来源，但不得包含 Gold 的 thesis、机制综合、counter-thesis 结论、WWC 答案或分数。Gold scoring objects 保持隐藏；DeepSeek raw、supervisor correction 与 corrected candidate 分开保存。
+
+### 7A.3 阶段仍是 owner，不再是机械流水号
+
+| 新 ID | owning stage | 工作 | 通过条件 |
+| --- | --- | --- | --- |
+| `013-S2-04` | S2 | 冻结三案共享 Benchmark Evidence Pack、blind input、hidden Gold scoring objects 和泄漏检测 | 同案、同 as-of、同 source authority；事实可追溯；无 Gold 结论泄漏；Codex/DeepSeek 可见差异为 0 或显式登记 |
+| `013-S2-05` | S2 | 执行 Experiment A：DeepSeek 在零检索下逐节点消费共享 Pack | raw capture-first；节点首个 material 偏离暂停；三案分别形成可评分 raw candidate，不用 supervisor 修订换取“自然通过” |
+| `013-S2-06` | S2 | 形成 supervisor correction ledger 与模型能力边界 | 每个差异归因到模型分析、合同、证据或评分；决定哪些面留给模型、哪些由本地 planner/renderer/authority 拥有 |
+| `013-S1-06` | S1 | MCP operational truth：registry parity、canonical resource binding、cold/warm start、handler phase telemetry、timeout/cancel/no-orphan | SEC search/exact-ledger/market 等目标 handler 均有有界成功或 typed failure；禁止无期限 stall |
+| `013-S1-07` | S1 | 当前外部来源 runtime：SEC/IR/web/PDF/redirect/crawler/parser、capture-first、source admission 与 fallback | 三案能抓到并解析真实正文，不以 URL/metadata wrapper 冒充 Evidence；失败保留原始 capture 和原因 |
+| `013-S1-08` | S1 | Agentic Search 质量评测 | 以 Gold evidence slots 检查 query revision、required recall、false promotion、currentness、source diversity、accepted/rejected/gap；三案均通过预注册门槛 |
+| `013-S3-06` | S3 | 动态 Research Lead loop | Lead 可按 hypothesis、Cell、evidence gap 和信息增益增删/拆分/重排任务，不再固定 fan-out 或固定调用数 |
+| `013-S3-07` | S3 | EvidenceRequest→operator→Evidence Pack→targeted repair 闭环 | 缺口能触发可执行查询、证据晋升或 typed stop；Writer 不补源；repair 有 diff、lineage 与关闭条件 |
+| `013-S3-08` | S3 | 执行 Experiment B：DELL/MU/NVDA 端到端 DeepSeek Agentic Research | 每案保留 ToolUseLedger、raw/corrected 分轨、停止理由、成本和完整研究产物；MCP 与模型问题分账 |
+| `013-S3-09` | S3 | 对隐藏 Gold 做正式八维、paired 与 qualified-human 内容验收 | 每案 L1/L2 通过、八维 `>=24/32` 及核心下限、实质增益、人工接受；旧九调用 R3 仅作 minimum control |
+| `013-S4-06` | S4 | current Workbench 三案 dogfood | create→plan→run→pause/intervene→repair→resume→report→review 全链可操作；UI 显示来源/工具状态、未决 gap、supervisor correction 和 provenance |
+| `013-S5-01` | S5 | 最终 RG1–RG5 与扩大回归 | RG1 工具/数据可靠性；RG2 自主研究与恢复；RG3 三案内容质量；RG4 用户/审阅负担；RG5 安全、成本、重放、回滚均有诚实结论 |
+
+S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成项不撤销。上述 successor 只处理 Gold dogfood 新暴露的能力缺口。执行次序按依赖而不是编号：`S2-04 → Experiment A(S2-05/06) → S1-06/07/08 → S3-06/07 → Experiment B(S3-08/09) → S4 → S5`。
+
+### 7A.4 调用、扶正与停止规则
+
+1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。
+2. formal run 在首个 material 失败处停止并保存 terminal。若为了集中暴露问题需要 collect-all diagnostic，必须预先标记 `quarantined_non_promotable`；其下游结果不得成为产品通过证据。
+3. supervisor 可暂停、补证、缩小任务或退回节点，但 raw model-only、correction ledger 和 corrected result 必须分开。扶正后的链只证明“受监督可恢复”，不证明 autonomous success。
+4. Experiment A 的模型问题留在 S2/S3；MCP/source/parser 问题留在 S1；产品交互问题留在 S4；release 只在 S5 判断。S4 不得再次吸收 S1/S3 根因。
+5. 三案是正式 anchor；stale/future source、冲突证据、证据缺失、quarter/annual、跨案污染、20-F/多币种/PDF redirect 作为 deterministic/adversarial fixtures。新增行业或全新正式案例只在不改变 FIN 0.1.3 范围的有界 transfer 集中执行。
+6. 任一失败 attempt 不创建 FIN 0.1.4；只有 FIN 0.1.3 完整结束或产品范围/兼容性发生实质变化时才讨论新版本。
+
 ## 8. 下一步
 
 1. [x] 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。
@@ -207,5 +254,13 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 11. [x] 完成 `013-S2-01`：RC-P36-134 关闭；9 个 representative request 绑定 `26 Evidence / 2 gap / 18 mechanism / 18 WWC`，Provider 只选 alias/enum，本地拥有数字/日期/identity/lineage/final narrative；active suite 87 passed / 1 historical deselected。
 12. [x] 完成 `013-S2-02`：RC-P36-138、显式 pack precedence、hermetic 注入、`9 Specialist / 9 Claim / 3 Lead` 零调用消费均通过；fresh exact-once DeepSeek canary=`3/3 pass, 10/10 each, 0 retry/0 fallback`，原始捕获与公开摘要分离。
 13. [x] 完成 `013-S2-03`：审计 node context yield、重复 role view、Evidence 利用率、容量和成本；零调用编译与 mutation 通过，模型可见 bytes 改变后只执行一次最高负载单节点 natural reproof 并通过，未运行三案例 full-chain。
+14. [x] 保留 `013-S3-01`–`013-S3-05` 与 R3 为 minimum engineering/control anchor：结构、exact-once、9 natural Claim、3 Lead、3 Workpaper、L1/L2 成立；0 thesis-support、0 natural counterevidence 与 29 个未研究 Cell 使其不构成产品级研究证明。
+15. [x] 完成 DELL/MU/NVDA 三份 Codex-authored Gold candidate 与交叉订正；明确它们是混合研究候选，不是当前产品或完整 MCP 已独立产出的报告。
+16. [ ] 执行 `013-S2-04`：从三案研究证据编译共享 Benchmark Evidence Pack、blind input 和隐藏 Gold scoring objects，完成公平性与泄漏检查。
+17. [ ] 执行 `013-S2-05/06` Experiment A：同证据、零检索的 DeepSeek 分析/综合对照；保留 raw、correction 与 corrected 三条轨道并冻结模型能力边界。
+18. [ ] 执行 `013-S1-06/07/08`：修复 MCP operational truth、当前外部来源 runtime 和 Agentic Search 质量门；不调用 DeepSeek 来发现确定性工具缺陷。
+19. [ ] 执行 `013-S3-06/07`：动态 Lead loop 与 EvidenceRequest/targeted repair 闭环。
+20. [ ] 执行 `013-S3-08/09` Experiment B：三案端到端 DeepSeek Agentic Search/Research、隐藏 Gold 八维对照和 qualified-human 内容验收。
+21. [ ] 执行 current S4 Workbench dogfood，再执行 S5 RG1–RG5；只有最终 candidate 可获得 FIN 0.1.3 内部版本收口结论。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

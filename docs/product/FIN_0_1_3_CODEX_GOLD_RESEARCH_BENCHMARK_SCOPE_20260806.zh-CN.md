@@ -1,13 +1,13 @@
 # FIN 0.1.3 Codex 三案例 Gold Research Benchmark 范围
 
 日期：2026-08-06  
-状态：`active / pre-S3 product benchmark / three gold candidates complete / DeepSeek comparison pending`
+状态：`active / three gold candidates complete / hybrid-tool truth recorded / shared benchmark evidence freeze next`
 
 ## 1. 决策
 
 暂停把当前九次模型调用的 formal Anchor 当作 S3 产品级研究证明。当前 Anchor 继续保留为最小合同与链路诊断证据，不撤销、不追认产品质量。
 
-在继续 S3 前，Codex 先作为完整研究 Agent，针对 DELL、MU、NVDA 三个案例执行一次真实 agentic search 与 agentic research，形成三份可追溯、可订正、可由合格研究者复核的参考研报。完成三份参考答案后，DeepSeek 才在相同研究合同、数据时点和证据权限下运行，并接受节点级对照、暂停、诊断和扶正。
+在继续产品级 S3 证明前，Codex 先作为研究 supervisor，针对 DELL、MU、NVDA 三个案例执行一次真实研究，形成三份可追溯、可订正、可由合格研究者复核的参考研报。完成三份参考答案后，先让 DeepSeek 在相同冻结 Evidence Pack 上做零检索分析对照；待 MCP 与外部来源链修复后，再执行从检索开始的端到端 Agentic Search/Research 对照。
 
 ## 2. Gold 的诚实含义
 
@@ -34,6 +34,12 @@
 - 必要的高质量二手来源，但必须与一手来源区分 authority。
 
 工具或数据只是合同、fixture、历史 PoC 或未接入 runtime 时，必须如实标注，不能冒充当前 MCP 已执行能力。
+
+### 3.1 2026-08-07 工具使用完成审计
+
+三份 Gold candidate 是混合研究产物：Codex 使用了产品已有本地数据和研究合同、可正常工作的 MCP market handler，并通过允许的外部公开来源补足官方证据。当前 stdio MCP 的 initialize/list-tools 成功，但 SEC search 与 exact-ledger 出现资源绑定或超时，登记 RC-P36-140；因此不得把三份报告表述为“完全由当前产品工具自主产出”。
+
+下一项不是直接比较最终报告，而是把 Gold 使用的重要官方事实、数值、来源和 lineage 编译成共享 Benchmark Evidence Pack；Gold 的 thesis、机制综合、反方结论、WWC 答案与评分保持隐藏。只有输入证据真正一致，Experiment A 才能评价模型分析能力。
 
 ## 4. 研究交付最低内容
 
@@ -67,5 +73,7 @@
 
 - 当前 formal Anchor：保留为 `minimum formal anchor / diagnostic`；
 - Codex 三案研报：`gold candidate`；
-- DeepSeek 对照：三案 gold candidate 冻结后开始；
+- DeepSeek 对照 A：共享 Evidence Pack 冻结后开始，只评价同证据分析与综合；
+- 工具修复：RC-P36-140、当前外部来源和 Agentic Search 质量门归 S1 successor；
+- DeepSeek 对照 B：工具门通过后，从检索开始评价端到端 Agentic Search/Research；
 - S3 product proof：只有 DeepSeek/产品 runtime 在相同合同下形成可接受内容，并通过八维质量与人工接受后才成立。

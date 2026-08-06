@@ -1,5 +1,6 @@
 # Worklog
 
+- [662 — FIN 0.1.3 模型/工具二轨 Agentic Research 重排](product_strategy/662_fin_0_1_3_two_track_model_then_tool_agentic_research_replan.md)
 - [661 — FIN 0.1.3 Codex 三案例 Gold Research Benchmark 启动](product_strategy/661_fin_0_1_3_codex_three_case_gold_research_benchmark_start.md)
 
 - [646 — FIN 0.1.3 S2-03 自然复证结果与关闭](product_strategy/646_fin_0_1_3_s2_03_natural_reproof_result_and_closeout.md)

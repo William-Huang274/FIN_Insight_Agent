@@ -22,6 +22,10 @@ from sec_agent.s3_evidence_role_contract import (
     consume_s3_evidence_selection_output,
     validate_s3_evidence_selection_output,
 )
+from sec_agent.s3_evidence_role_canary_runtime import (
+    execute_evidence_role_canary,
+    issue_evidence_role_canary_admission,
+)
 from sec_agent.s3_formal_anchor_runtime import (
     execute_formal_anchor,
     issue_formal_anchor_admission,
@@ -40,6 +44,8 @@ from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger
 ROOT = Path(__file__).resolve().parents[2]
 DECISION = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_disposition_v1_0.json"
 ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_active_test_suite_successor_v1_0.json"
+CANARY_READINESS = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_readiness_v1_0.json"
+CANARY_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_readiness_active_test_suite_successor_v1_0.json"
 
 
 def _load(ref: str) -> dict:
@@ -266,3 +272,61 @@ def test_materialized_disposition_is_digest_bound_and_does_not_authorize_r2() ->
     assert decision["root_cause_disposition"]["primary"] == "project_contract_conflated_observation_selection_with_thesis_support"
     assert decision["authority"]["nine_call_replacement_authorized"] is False
     assert decision["authority"]["single_node_natural_canary_required"] is True
+
+
+def test_single_node_canary_is_capture_first_exact_once_and_preserves_boundary(tmp_path: Path) -> None:
+    requests, contexts, _ = _surface()
+    request_id = next(iter(requests))
+    request = requests[request_id]
+    compiled = contexts[request_id]
+    policy = _load("configs/runtime/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_policy_v1_0.json")
+    issued = datetime(2026, 8, 6, 20, 0, tzinfo=timezone.utc)
+    admission = issue_evidence_role_canary_admission(
+        execution_git_commit="1" * 40,
+        runner_sha256="2" * 64,
+        context_source_sha256="3" * 64,
+        policy_sha256="4" * 64,
+        request_binding={"request_id": request_id, "request_digest": request["request_digest"], "context_digest": compiled["context_digest"]},
+        issued_at=issued.isoformat(),
+        expires_at=(issued + timedelta(minutes=30)).isoformat(),
+        run_nonce="v2-canary",
+        credential_present=True,
+        provider=policy["provider"],
+        budget=policy["budget"],
+    )
+
+    def provider(**kwargs: dict) -> dict:
+        context = json.loads(kwargs["messages"][1]["content"])
+        output = _selection(context, cannot_infer_with_observation=True)
+        return {"status": "ok", "content": json.dumps(output), "finish_reason": "stop", "input_tokens": 100, "output_tokens": 40, "total_tokens": 140, "transport_attempt_count": 1}
+
+    ledger = SharedAdmissionConsumptionLedger(tmp_path / "shared" / "ledger.sqlite")
+    kwargs = dict(
+        admission=admission, request=request, compiled=compiled,
+        execution_git_commit="1" * 40, runner_sha256="2" * 64, context_source_sha256="3" * 64, policy_sha256="4" * 64,
+        shared_ledger=ledger, provider_call=provider, observed_at="2026-08-06T20:10:00+00:00",
+    )
+    result = execute_evidence_role_canary(runtime_root=tmp_path / "runtime", **kwargs)
+    assert result["status"] == "terminal_succeeded_exact_once"
+    assert result["local_claim"]["evidence_role_projection"]["boundary_only"] == ["DELL_E01"]
+    assert len(list((tmp_path / "runtime" / "captures").glob("*.json"))) == 1
+    with pytest.raises(Exception):
+        execute_evidence_role_canary(runtime_root=tmp_path / "runtime_second", **kwargs)
+
+
+def test_canary_readiness_is_digest_bound_and_does_not_authorize_full_replacement() -> None:
+    import hashlib
+
+    readiness = json.loads(CANARY_READINESS.read_text(encoding="utf-8"))
+    active = json.loads(CANARY_ACTIVE.read_text(encoding="utf-8"))
+    assert readiness["record_digest"] == canonical_digest(
+        {key: value for key, value in readiness.items() if key != "record_digest"}
+    )
+    assert readiness["authority_basis"]["maximum_provider_calls"] == 1
+    assert readiness["authority_basis"]["nine_call_replacement_authorized"] is False
+    assert readiness["stage_boundary"]["single_node_v2_canary_live"] is False
+    assert active["decision_sha256"] == hashlib.sha256(CANARY_READINESS.read_bytes()).hexdigest()
+    assert active["suite_digest"] == canonical_digest(
+        {key: value for key, value in active.items() if key != "suite_digest"}
+    )
+    assert active["observed_result"] == "249 passed / 1 historical assertion deselected"

@@ -1,0 +1,55 @@
+{
+  "authority_basis": {
+    "business_artifact_promotions": 0,
+    "capture_first": true,
+    "fallback_count": 0,
+    "maximum_provider_calls": 1,
+    "nine_call_replacement_authorized": false,
+    "retry_count": 0,
+    "selected_request_id": "FIN013-S2-DELL-demand_authenticity_and_sustainability",
+    "structural_disposition_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_disposition_v1_0.json",
+    "user_instruction": "可以的，继续"
+  },
+  "engineering_proof": {
+    "canonical": "249 passed / 1 historical assertion deselected",
+    "fake_success": "1 call / 1 capture / boundary_only local claim / terminal",
+    "focused": "7 passed",
+    "model_provider_network_source_business_runs": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "same_admission_second_consumption": "fail_closed"
+  },
+  "execution_preconditions": [
+    "clean_synced_git_head",
+    "fresh_unexpired_admission",
+    "credential_present",
+    "shared_ledger_outside_runtime_root"
+  ],
+  "failure_disposition": "preserve_capture_and_terminal_stop_without_retry_or_full_replacement",
+  "owning_stage": "FIN_0_1_3_S3_FORMAL_ANCHOR",
+  "record_digest": "6f667fd8da1fd80e9d07d20913d3dd349f36458e9ad2861db1fc6745aa9a805d",
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_readiness_v1_0",
+  "source_sha256": {
+    "configs/runtime/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_policy_v1_0.json": "4ac2d7c6e065e57948eff6973e69fbb0011c7c4c64a08a57a4fb7f7dc949d59d",
+    "scripts/releases/run_fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary.py": "09880366a7272826976eaab55109b8478645f8a23ac51e852b5937d8f2eb07b7",
+    "src/sec_agent/s3_evidence_role_canary_runtime.py": "30028e3398d9cad2f0aa5aed0ea2dcec4362398e5fcfeb19cfa09e55d9bbba5c",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s3_evidence_role_v2_and_formal_anchor.py": "f30416c2268f9dd93dbc241f00573e1895e6158199517c1b2311c7d1ac3ca30e"
+  },
+  "stage_boundary": {
+    "S3_product_proof": false,
+    "S4_entry": false,
+    "formal_anchor_R1": "terminal_failed_preserved",
+    "formal_case_scores": 0,
+    "human_acceptance": 0,
+    "nine_call_replacement": false,
+    "paired": 0,
+    "release": false,
+    "single_node_v2_canary_live": false
+  },
+  "status": "single_node_natural_canary_engineering_ready_and_authorized",
+  "success_disposition": "materialize_public_safe_result_then_decide_nine_call_replacement"
+}

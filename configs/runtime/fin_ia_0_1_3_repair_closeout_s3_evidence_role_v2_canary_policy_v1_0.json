@@ -1,0 +1,29 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_evidence_role_v2_canary_policy_v1_0",
+  "scope": "FIN_0_1_3_S3_DELL_DEMAND_EVIDENCE_ROLE_V2_NATURAL_CANARY",
+  "selected_request_id": "FIN013-S2-DELL-demand_authenticity_and_sustainability",
+  "provider": {
+    "backend": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "chat_completions_path": "/chat/completions",
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "wire_api": "chat_completions_json_object"
+  },
+  "budget": {
+    "maximum_provider_calls": 1,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "maximum_output_tokens": 900,
+    "timeout_seconds": 180
+  },
+  "success_gate": {
+    "transport_status": "ok",
+    "finish_reason": "stop",
+    "renamed_schema_valid": true,
+    "local_role_projection_valid": true,
+    "capture_first": true,
+    "business_artifact_promotions": 0
+  }
+}

@@ -21,7 +21,7 @@ DEFAULT_CONFIG = REPO_ROOT / "configs" / "data_sources" / "structured_financial_
 DEFAULT_FACT_OUTPUT = REPO_ROOT / "data" / "staging" / "structured_financial_facts" / "sec_companyfacts_financial_fact_rows_v0_1.jsonl"
 DEFAULT_SUBMISSIONS_OUTPUT = REPO_ROOT / "data" / "staging" / "structured_financial_facts" / "sec_submissions_filing_rows_v0_1.jsonl"
 DEFAULT_SUMMARY_OUTPUT = REPO_ROOT / "data" / "manifests" / "sec_structured_facts_download_summary_v0_1.json"
-FACT_ROW_SCHEMA_VERSION = "fin_agent_sec_companyfacts_financial_fact_row_v0.1"
+FACT_ROW_SCHEMA_VERSION = "fin_agent_sec_companyfacts_financial_fact_row_v0.2"
 SUBMISSION_ROW_SCHEMA_VERSION = "fin_agent_sec_submissions_filing_row_v0.1"
 
 
@@ -275,10 +275,17 @@ def normalize_companyfacts_payload(
                     end_date = str(fact.get("end") or "").strip()
                     fiscal_period = str(fact.get("fp") or "").upper().strip()
                     metric_family = classify_metric_family(concept=concept, label=label, description=description)
+                    start_date = str(fact.get("start") or "").strip()
                     period_role, duration_months = infer_period_role_and_duration(
-                        start=str(fact.get("start") or "").strip(),
+                        start=start_date,
                         end=end_date,
                         fiscal_period=fiscal_period,
+                    )
+                    duration_days = _duration_days(start_date, end_date)
+                    canonical_fiscal_period = infer_canonical_fiscal_period(
+                        fiscal_period=fiscal_period,
+                        period_role=period_role,
+                        form_type=form_type,
                     )
                     rows.append(
                         {
@@ -303,15 +310,20 @@ def normalize_companyfacts_payload(
                             "value": value,
                             "value_text": str(value),
                             "display_value_zh": format_display_value(value, str(unit)),
-                            "start_date": str(fact.get("start") or "").strip(),
+                            "start_date": start_date,
                             "end_date": end_date,
                             "period_end": end_date,
                             "period_role": period_role,
+                            "duration_days": duration_days,
                             "duration_months": duration_months,
                             "fiscal_year": fiscal_year,
-                            "fiscal_period": fiscal_period,
+                            "fiscal_period": canonical_fiscal_period,
+                            "raw_fiscal_period": fiscal_period,
                             "form_type": form_type,
                             "filed_date": fact.get("filed"),
+                            "source_filed_at": fact.get("filed"),
+                            "published_at": fact.get("filed"),
+                            "snapshot_at": (metadata or {}).get("downloaded_at_utc"),
                             "accession_number": accession_number,
                             "frame": fact.get("frame"),
                             "source_url": plan_row.get("source_url"),
@@ -412,14 +424,31 @@ def classify_metric_family(*, concept: str, label: str, description: str = "") -
 def infer_period_role_and_duration(*, start: str, end: str, fiscal_period: str) -> tuple[str, int | None]:
     if not start:
         return "instant", None
+    days = _duration_days(start, end)
     months = _duration_months(start, end)
-    if fiscal_period == "FY" or (months is not None and months >= 11):
+    # SEC CompanyFacts uses fp=FY for both the full-year fact and the discrete
+    # fourth-quarter fact disclosed in a 10-K.  Dates are therefore the semantic
+    # authority; fp is only a presentation hint.
+    if days is not None and 330 <= days <= 380:
         return "annual", months
-    if months is not None and months <= 4:
+    if days is not None and 75 <= days <= 110:
         return "qtd", months
-    if months is not None:
+    if days is not None and 111 <= days < 330:
         return "ytd", months
-    return "period", None
+    return "period", months
+
+
+def infer_canonical_fiscal_period(*, fiscal_period: str, period_role: str, form_type: str) -> str:
+    raw = str(fiscal_period or "").upper().strip()
+    role = str(period_role or "").lower().strip()
+    if role == "annual":
+        return "FY"
+    if role == "qtd":
+        if raw in {"Q1", "Q2", "Q3", "Q4"}:
+            return raw
+        if raw == "FY" and str(form_type or "").upper().strip() in {"10-K", "10-K/A", "20-F", "20-F/A", "40-F", "40-F/A"}:
+            return "Q4"
+    return raw
 
 
 def format_display_value(value: Any, unit: str) -> str:
@@ -453,6 +482,13 @@ def _submission_row_id(ticker: str, accession_number: str, form_type: str, index
 
 
 def _duration_months(start: str, end: str) -> int | None:
+    days = _duration_days(start, end)
+    if days is None:
+        return None
+    return max(1, round(days / 30.4375))
+
+
+def _duration_days(start: str, end: str) -> int | None:
     try:
         from datetime import date
 
@@ -460,8 +496,10 @@ def _duration_months(start: str, end: str) -> int | None:
         e = date.fromisoformat(end)
     except (TypeError, ValueError):
         return None
-    days = max(0, (e - s).days)
-    return max(1, round(days / 30.4375))
+    if e < s:
+        return None
+    # XBRL duration contexts are inclusive of both boundary dates.
+    return (e - s).days + 1
 
 
 def _value_at(block: Mapping[str, Any], key: str, index: int) -> Any:

@@ -93,6 +93,38 @@ def test_sec_financial_statement_runtime_rows_include_working_capital_metrics() 
     assert "product_sales_without_product_kpi" in by_family["short_term_debt"]["forbidden_claims"]
 
 
+def test_sec_runtime_prefers_date_proven_annual_over_ten_k_q4_with_raw_fy_label() -> None:
+    annual = _fact("DELL", "revenue", 2025, "FY", "10-K", "2025-03-25", 95567000000)
+    annual.update({"start_date": "2024-02-03", "end_date": "2025-01-31", "period_end": "2025-01-31"})
+    q4 = _fact("DELL", "revenue", 2025, "FY", "10-K", "2025-03-25", 23931000000)
+    q4.update(
+        {
+            "fact_id": "SECFACT::DELL::revenue::2025::Q4",
+            "start_date": "2024-11-02",
+            "end_date": "2025-01-31",
+            "period_end": "2025-01-31",
+            # Reproduce the stale v0.1 label: runtime must recompute from dates.
+            "period_role": "annual",
+        }
+    )
+
+    result = MODULE.build_sec_financial_statement_metric_runtime_rows(
+        fact_rows=[q4, annual],
+        universe={"DELL"},
+        generated_at="2026-08-06T00:00:00Z",
+    )
+
+    row = result["rows"][0]
+    assert row["value"] == 95567000000
+    assert row["period_role"] == "annual"
+    assert row["duration_days"] == 364
+    assert row["period"] == "FY2025-FY"
+    assert row["source_filed_at"] == "2025-03-25"
+    assert row["published_at"] == "2025-03-25"
+    assert row["as_of_date"] == ""
+    assert row["snapshot_at"] == "2026-08-06T00:00:00Z"
+
+
 def _fact(
     ticker: str,
     metric_family: str,
@@ -126,6 +158,7 @@ def _fact(
         "concept": concept_by_metric.get(metric_family, metric_family.title().replace("_", "")),
         "value": value,
         "unit": "USD",
+        "start_date": "" if period_role == "instant" else f"{fiscal_year}-01-01",
         "period_end": f"{fiscal_year}-12-31",
         "end_date": f"{fiscal_year}-12-31",
         "fiscal_year": fiscal_year,

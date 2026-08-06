@@ -76,7 +76,10 @@ def test_normalize_companyfacts_filters_years_forms_and_classifies_revenue() -> 
     assert rows[0]["concept"] == "Revenues"
     assert rows[0]["metric_family"] == "revenue"
     assert rows[0]["period_role"] == "annual"
+    assert rows[0]["duration_days"] == 366
     assert rows[0]["duration_months"] == 12
+    assert rows[0]["fiscal_period"] == "FY"
+    assert rows[0]["raw_fiscal_period"] == "FY"
     assert rows[0]["accession_number"] == "0000789019-24-000021"
     assert rows[0]["exact_value_ledger_candidate"] is True
 
@@ -111,6 +114,59 @@ def test_normalize_companyfacts_infers_instant_balance_sheet_fact() -> None:
     assert rows[0]["period_role"] == "instant"
     assert rows[0]["duration_months"] is None
     assert rows[0]["metric_role"] == "point_in_time"
+
+
+def test_normalize_companyfacts_does_not_launder_ten_k_q4_fact_into_full_year() -> None:
+    payload = {
+        "entityName": "DELL TECHNOLOGIES INC.",
+        "facts": {
+            "us-gaap": {
+                "RevenueFromContractWithCustomerIncludingAssessedTax": {
+                    "label": "Net revenue",
+                    "units": {
+                        "USD": [
+                            {
+                                "start": "2024-11-02",
+                                "end": "2025-01-31",
+                                "val": 23931000000,
+                                "accn": "0001571996-25-000010",
+                                "fy": 2025,
+                                "fp": "FY",
+                                "form": "10-K",
+                                "filed": "2025-03-25",
+                            }
+                        ]
+                    },
+                }
+            }
+        },
+    }
+    plan = {**_companyfacts_plan_row(), "ticker": "DELL", "company_name": "Dell Technologies Inc."}
+
+    row = MODULE.normalize_companyfacts_payload(plan, payload, years={2025}, forms={"10-K"})[0]
+
+    assert row["period_role"] == "qtd"
+    assert row["duration_days"] == 91
+    assert row["duration_months"] == 3
+    assert row["fiscal_period"] == "Q4"
+    assert row["raw_fiscal_period"] == "FY"
+    assert row["source_filed_at"] == "2025-03-25"
+    assert row["published_at"] == "2025-03-25"
+
+
+def test_period_semantics_preserve_annual_quarter_ytd_and_instant_as_distinct_roles() -> None:
+    assert MODULE.infer_period_role_and_duration(
+        start="2024-02-03", end="2025-01-31", fiscal_period="FY"
+    ) == ("annual", 12)
+    assert MODULE.infer_period_role_and_duration(
+        start="2024-11-02", end="2025-01-31", fiscal_period="FY"
+    ) == ("qtd", 3)
+    assert MODULE.infer_period_role_and_duration(
+        start="2024-02-03", end="2024-10-31", fiscal_period="Q3"
+    ) == ("ytd", 9)
+    assert MODULE.infer_period_role_and_duration(
+        start="", end="2025-01-31", fiscal_period="FY"
+    ) == ("instant", None)
 
 
 def test_normalize_submissions_filters_recent_rows() -> None:

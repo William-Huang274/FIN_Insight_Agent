@@ -1,0 +1,25 @@
+{
+  "adjacent_result": "19 passed / 2 historical digest assertions deselected",
+  "current_DELL_financial_temporal_truth_pass": true,
+  "decision_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s1_01_financial_temporal_truth_and_time_role_repair_v1_0.json",
+  "decision_sha256": "f210c1fe938c2944a7a1e1f6c3cdc89aed757f5ddf6c1cd9c4227e3a06f741b4",
+  "focused_result": "46 passed / 1 deselected",
+  "historical_event_time_deselections": [
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py::test_decision_and_active_suite_are_digest_bound_and_do_not_promote_old_names"
+  ],
+  "model_or_full_chain_authorized": false,
+  "next_action": "FIN-0.1.3-013-S1-02-MATERIAL-NUMERIC-PROGRAM-FORMULA-RECALCULATION-AND-TYPED-GAP-COVERAGE",
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s1_01_active_test_suite_successor_v1_0",
+  "selected_test_files": [
+    "tests/test_sec_structured_facts_download.py",
+    "tests/test_sec_financial_statement_metric_runtime_rows.py",
+    "tests/test_gold_fact_signal_mart.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_01_delta_inheritance_namespace_and_current_truth_baseline.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_03_financial_semantic_truth_oracle_classification.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_01_financial_temporal_truth_and_time_role_repair.py"
+  ],
+  "status": "current_S1_01_pass_S1_02_next",
+  "suite_digest": "6c416610c34f2f74562223ce488301bd1db7adf340322904c10765a310adf59d",
+  "suite_id": "FIN-0.1.3-REPAIR-CLOSEOUT-S1-ACTIVE-SUITE-R4"
+}

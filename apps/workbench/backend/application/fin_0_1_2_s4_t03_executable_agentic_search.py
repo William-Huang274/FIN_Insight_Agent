@@ -1098,19 +1098,27 @@ class ExactValueSqlSearchAdapter:
         query = """
             WITH ranked AS (
                 SELECT gold_row_id, ticker, metric_family, metric_name, value,
-                       unit, period, as_of_date, fiscal_year, authority_mode,
+                       unit, period, period_role, period_start, period_end,
+                       duration_days, fiscal_year, fiscal_period,
+                       raw_fiscal_period, source_filed_at, published_at,
+                       as_of_date, snapshot_at, authority_mode,
                        claim_boundary, citation_url, citation_span, evidence_ref,
                        source_url,
                        ROW_NUMBER() OVER (
                          PARTITION BY metric_family
-                         ORDER BY as_of_date DESC, fiscal_year DESC, period DESC, gold_row_id
+                         ORDER BY fiscal_year DESC, period_end DESC,
+                                  published_at DESC, source_filed_at DESC, gold_row_id
                        ) AS metric_rank
                 FROM gold_fact_signal_mart
                 WHERE ticker = ?
                   AND metric_family IN ('revenue', 'gross_profit', 'operating_income')
+                  AND period_role = 'annual'
                   AND can_enter_evidence_bundle = 1
                   AND exact_value_authority = 1
-                  AND date(substr(as_of_date, 1, 10)) <= date(?)
+                  AND date(substr(
+                        COALESCE(NULLIF(published_at, ''), NULLIF(source_filed_at, '')),
+                        1, 10
+                      )) <= date(?)
             )
             SELECT * FROM ranked WHERE metric_rank = 1
             ORDER BY CASE metric_family
@@ -1150,7 +1158,7 @@ class ExactValueSqlSearchAdapter:
                     route_id=self.route_id,
                     title=str(row.get("metric_name") or row.get("metric_family") or "Reported metric"),
                     excerpt=excerpt,
-                    published_at=str(row.get("as_of_date") or row.get("period") or request.as_of[:10]),
+                    published_at=str(row.get("published_at") or row.get("source_filed_at") or ""),
                     source_url=source_url,
                     locator=str(row.get("evidence_ref") or row.get("gold_row_id") or ""),
                     source_snapshot_ref=str(capture["object_key"]),
@@ -1170,7 +1178,17 @@ class ExactValueSqlSearchAdapter:
                         "value": str(row.get("value") or ""),
                         "unit": str(row.get("unit") or ""),
                         "period": str(row.get("period") or ""),
-                        "source_filed_at": str(row.get("as_of_date") or "")[:10],
+                        "period_role": str(row.get("period_role") or ""),
+                        "period_start": str(row.get("period_start") or ""),
+                        "period_end": str(row.get("period_end") or ""),
+                        "duration_days": str(row.get("duration_days") or ""),
+                        "fiscal_year": str(row.get("fiscal_year") or ""),
+                        "fiscal_period": str(row.get("fiscal_period") or ""),
+                        "raw_fiscal_period": str(row.get("raw_fiscal_period") or ""),
+                        "source_filed_at": str(row.get("source_filed_at") or "")[:10],
+                        "published_at": str(row.get("published_at") or "")[:10],
+                        "as_of_date": request.as_of[:10],
+                        "snapshot_at": str(row.get("snapshot_at") or ""),
                     },
                 )
             )

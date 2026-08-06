@@ -75,6 +75,16 @@ def _numeric_projection(
         unit = str(structured.get("unit") or "").strip()
         period_value = str(structured.get("period") or "").strip()
         filed_value = str(structured.get("source_filed_at") or "").strip()
+        published_value = str(structured.get("published_at") or "").strip()
+        as_of_value = str(structured.get("as_of_date") or "").strip()
+        snapshot_value = str(structured.get("snapshot_at") or "").strip()
+        period_role = str(structured.get("period_role") or "").strip()
+        period_start = str(structured.get("period_start") or "").strip()
+        period_end = str(structured.get("period_end") or "").strip()
+        duration_days = str(structured.get("duration_days") or "").strip()
+        fiscal_year = str(structured.get("fiscal_year") or "").strip()
+        fiscal_period = str(structured.get("fiscal_period") or "").strip()
+        raw_fiscal_period = str(structured.get("raw_fiscal_period") or "").strip()
         if (
             metric_family not in {"revenue", "gross_profit", "operating_income"}
             or not metric_name
@@ -82,32 +92,27 @@ def _numeric_projection(
             or not unit
             or not period_value
             or re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", filed_value) is None
+            or re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", published_value) is None
+            or re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", as_of_value) is None
+            or not snapshot_value
+            or period_role != "annual"
+            or re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", period_start) is None
+            or re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", period_end) is None
+            or not duration_days.isdigit()
+            or not 330 <= int(duration_days) <= 380
+            or not fiscal_year.isdigit()
+            or fiscal_period != "FY"
         ):
             raise Fin012S4T04EvidenceError(
                 "s4_t04_structured_numeric_candidate_invalid"
             )
     else:
-        match = re.match(
-            r"^([^:]+):\s*(-?[0-9]+(?:\.[0-9]+)?)\s+([A-Za-z_]+);",
-            excerpt,
+        # The legacy text parser cannot recover duration or distinguish filing,
+        # research-cutoff and snapshot time.  It is historical compatibility
+        # evidence only and must not be promoted into the current truth chain.
+        raise Fin012S4T04EvidenceError(
+            "s4_t04_legacy_unstructured_numeric_candidate_not_current_authority"
         )
-        period = re.search(r"\sfor\s+([^;]+);", excerpt)
-        filed = re.search(r"filed=([0-9]{4}-[0-9]{2}-[0-9]{2})", excerpt)
-        if match is None or period is None or filed is None:
-            raise Fin012S4T04EvidenceError(
-                "s4_t04_numeric_candidate_not_structurally_parseable"
-            )
-        metric_name, value, unit = match.groups()
-        metric_aliases = {
-            "Revenues": "revenue",
-            "Gross Profit": "gross_profit",
-            "Operating Income (Loss)": "operating_income",
-        }
-        metric_family = metric_aliases.get(metric_name.strip())
-        if metric_family is None:
-            raise Fin012S4T04EvidenceError("s4_t04_numeric_metric_alias_unknown")
-        period_value = period.group(1).strip()
-        filed_value = filed.group(1)
     payload = {
         "numeric_ref": str(candidate["locator"]),
         "candidate_id": str(candidate["candidate_id"]),
@@ -118,7 +123,17 @@ def _numeric_projection(
         "value": value,
         "unit": unit,
         "period": period_value,
+        "period_role": period_role,
+        "period_start": period_start,
+        "period_end": period_end,
+        "duration_days": duration_days,
+        "fiscal_year": fiscal_year,
+        "fiscal_period": fiscal_period,
+        "raw_fiscal_period": raw_fiscal_period,
         "source_filed_at": filed_value,
+        "published_at": published_value,
+        "as_of_date": as_of_value,
+        "snapshot_at": snapshot_value,
         "source_url": str(candidate["source_url"]),
         "source_coordinate": str(candidate["locator"]),
         "citation": excerpt,

@@ -73,6 +73,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 | `013-S1-04` | 让 relationship/Product Graph 至少在有权威关系证据时形成 approved edge；无证据时继续 typed empty | F05/F06/F08/F13 | 正向 edge、无证据空态、跨案污染、无日期候选和错误实体 mutation 均通过 |
 | `013-S1-05` | 建立 retrieval/evidence usefulness eval，而不是只数 accepted rows；覆盖 candidate ceiling、required-slot recall、来源多样性、证据利用率和冲突证据 | F05/F06/F08 | 预注册 gold slot/negative set；已知可达证据必须进入候选，失败必须归因到 router/parser/ranker 或外部 gap |
 
+> **2026-08-06 `013-S1-01` 完成**：从最早 SEC CompanyFacts duration 分类修复，日期区间成为 annual/qtd/ytd/instant 的语义权威，`fp=FY` 与 10-K 不再把 91 天 Q4 洗成全年；Runtime 即使读取旧 staging 标签也会重算 duration，Gold Mart v0.2 以非破坏迁移增加 period/time 字段，SQL 仅选择截止日前 annual authority。`source_filed_at / published_at / as_of_date / snapshot_at` 已拆分：前两者来自来源、`as_of` 由研究请求绑定、snapshot 只表示本地物化。完整本地重建产生 10,146 Runtime rows 和 74,897 Mart rows；三案实际 SQL→Numeric 为 DELL `95.567B`、MU `37.378B`、NVDA `130.497B`，均 364 天且 filing date 与 reviewed oracle 一致。RC-P36-130 关闭。旧 0.1.2 Evidence Pack 与 acceptance 保持历史不可变；三个旧 byte/digest 断言因合法 changed source/data 被标为 event-time non-gating，不能更新旧证明冒充新 acceptance。S1 继续进入 `013-S1-02`，不调用模型/full-chain。
+
 ### S2：模型表面、合同与代表性评测
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |
@@ -157,6 +159,7 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 3. [x] 完成 FIN 0.1.3 `013-S0-01` delta inheritance、旧 `0.1.3` namespace 分类和 secret-safe current truth baseline。
 4. [x] 完成 `013-S0-02` shared runtime admission/replay、historical receipt/living source debt和 8 个 version-neutral candidate 复证。
 5. [x] 完成 `013-S0-03` 四层金融语义 oracle；S0 canonical suite 29/29，通过的是分类与早期阻断，不是当前 DELL 真值。
-6. [ ] 进入 `013-S1-01`，从最早 staging/mart 修复 DELL annual/Q4 duration 与 filed/published/as-of/snapshot 时间角色，再重建下游事实链。
+6. [x] 完成 `013-S1-01`，从最早 staging/runtime/mart 修复 DELL annual/Q4 duration 与四类时间角色，并重建三案下游事实链；RC-P36-130 关闭。
+7. [ ] 进入 `013-S1-02`，扩展 material Numeric 程序、公式重算和 typed-gap 覆盖；不得把 S1-03 来源补齐、S1-04 Graph 或 S2/S3 研究质量提前塞入本项。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

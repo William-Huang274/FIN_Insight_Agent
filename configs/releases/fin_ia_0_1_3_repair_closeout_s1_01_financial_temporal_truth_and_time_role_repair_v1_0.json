@@ -1,0 +1,195 @@
+{
+  "decision_digest": "522390adc59c9a574e8bf58802d115fe48d145a019f22432133304b9b4e1c943",
+  "decision_id": "FIN-0.1.3-013-S1-01-DELL-FINANCIAL-TEMPORAL-TRUTH-AND-TIME-ROLE-REPAIR",
+  "historical_proof_disposition": {
+    "disposition": "preserve as historical evidence; changed data/source digests cannot inherit old product acceptance",
+    "event_time_assertions_deselected_from_current_suite": [
+      "S0_02 decision binding to the changed legacy-compatible T03 source hash",
+      "S4_T04 historical exact input digest before the v0.2 data rebuild",
+      "S4_T05_B materialization binding to the changed T04 source hash"
+    ],
+    "immutable_FIN_0_1_2_evidence_packs_rewritten": 0
+  },
+  "known_boundary": "S1-01 repairs period and time truth only. Material numeric coverage, formula program expansion, source breadth, Graph, retrieval usefulness, research content, product workflow and release remain owned by S1-02 onward.",
+  "local_rebuild_evidence": {
+    "generated_artifacts_are_local_not_git_payloads": true,
+    "gold_mart": {
+      "bytes": 429621248,
+      "missing_source_rowset_count": 0,
+      "ref": "data/workbench_private/research_data/gold_fact_signal_mart_v0_1.sqlite",
+      "row_count": 74897,
+      "schema_version": "finsight_gold_fact_signal_mart_summary_v0_2",
+      "sha256": "d997d588fff4ede3f249a7a18a149fb409eaafd4f34abd990006ebd8459c0125",
+      "source_rowset_count": 17,
+      "sqlite_row_count": 74897
+    },
+    "runtime_rows": {
+      "bytes": 43460692,
+      "ref": "data/manifests/sec_financial_statement_metric_runtime_rows_v0_1.jsonl",
+      "row_count": 10146,
+      "schema_version": "finsight_sec_financial_statement_metric_runtime_summary_v0_2",
+      "sha256": "c6607942613df925a571d99ef5f0647e28c10a9b51f170ce2f355bbbe666f3f8",
+      "ticker_count": 587
+    },
+    "three_case_annual_revenue_rows": [
+      {
+        "as_of_date": "",
+        "duration_days": "364",
+        "fiscal_period": "FY",
+        "fiscal_year": "2025",
+        "period": "FY2025-FY",
+        "period_end": "2025-01-31",
+        "period_role": "annual",
+        "period_start": "2024-02-03",
+        "published_at": "2025-03-25",
+        "raw_fiscal_period": "FY",
+        "schema_version": "finsight_gold_fact_signal_mart_row_v0_2",
+        "snapshot_at": "2026-08-06T01:41:27Z",
+        "source_filed_at": "2025-03-25",
+        "ticker": "DELL",
+        "value": "95567000000"
+      },
+      {
+        "as_of_date": "",
+        "duration_days": "364",
+        "fiscal_period": "FY",
+        "fiscal_year": "2025",
+        "period": "FY2025-FY",
+        "period_end": "2025-08-28",
+        "period_role": "annual",
+        "period_start": "2024-08-30",
+        "published_at": "2025-10-03",
+        "raw_fiscal_period": "FY",
+        "schema_version": "finsight_gold_fact_signal_mart_row_v0_2",
+        "snapshot_at": "2026-08-06T01:41:27Z",
+        "source_filed_at": "2025-10-03",
+        "ticker": "MU",
+        "value": "37378000000"
+      },
+      {
+        "as_of_date": "",
+        "duration_days": "364",
+        "fiscal_period": "FY",
+        "fiscal_year": "2025",
+        "period": "FY2025-FY",
+        "period_end": "2025-01-26",
+        "period_role": "annual",
+        "period_start": "2024-01-29",
+        "published_at": "2025-02-26",
+        "raw_fiscal_period": "FY",
+        "schema_version": "finsight_gold_fact_signal_mart_row_v0_2",
+        "snapshot_at": "2026-08-06T01:41:27Z",
+        "source_filed_at": "2025-02-26",
+        "ticker": "NVDA",
+        "value": "130497000000"
+      }
+    ]
+  },
+  "next_action": "FIN-0.1.3-013-S1-02-MATERIAL-NUMERIC-PROGRAM-FORMULA-RECALCULATION-AND-TYPED-GAP-COVERAGE",
+  "observed_counts": {
+    "business_artifacts": 0,
+    "business_runs": 0,
+    "gold_mart_rows_materialized": 74897,
+    "model_calls": 0,
+    "network_or_source_calls": 0,
+    "provider_calls": 0,
+    "runtime_rows_materialized": 10146
+  },
+  "recorded_at": "2026-08-06T09:00:00Z",
+  "root_cause_disposition": {
+    "RC-P36-130": "closed_by_S1_01_underlying_financial_temporal_truth_chain_rebuild",
+    "RC-P36-131": "unchanged_open_S2_S3_research_content_quality",
+    "RC-P36-132": "unchanged_open_S4_S5_product_workflow_release"
+  },
+  "root_cause_repair": {
+    "annual_quarter_ytd_instant_are_distinct": true,
+    "earliest_fault": "SEC CompanyFacts fp=FY was trusted over inclusive start/end duration, so a 91-day 10-K Q4 fact became annual.",
+    "renderer_manual_value_patch_used": false,
+    "selection_repair": "Runtime recomputes duration semantics from dates and ranks semantic period authority before fiscal year/form metadata.",
+    "time_roles": {
+      "as_of_date": "research request cutoff bound at retrieval",
+      "published_at": "source public availability date",
+      "snapshot_at": "local capture or materialization time",
+      "source_filed_at": "issuer filing receipt date"
+    }
+  },
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s1_01_financial_temporal_truth_and_time_role_repair_v1_0",
+  "source_bindings": [
+    {
+      "bytes": 26671,
+      "ref": "scripts/data_expansion/download_sec_structured_facts.py",
+      "role": "date_authoritative_structured_fact_period_classifier_v0_2",
+      "sha256": "d9dc71f1ad3a02a5431f55550147a71dec6a0a32b44c6fadfe1d69684063e638"
+    },
+    {
+      "bytes": 23878,
+      "ref": "scripts/data_expansion/build_sec_financial_statement_metric_runtime_rows.py",
+      "role": "date_revalidated_runtime_selector_and_temporal_projection_v0_2",
+      "sha256": "e93ca995c24ce9acae32fef743f670cc9cbe76d7122ce3deaca576eb483f591b"
+    },
+    {
+      "bytes": 26560,
+      "ref": "src/sec_agent/gold_fact_signal_mart.py",
+      "role": "four_time_role_gold_mart_and_non_destructive_sqlite_migration_v0_2",
+      "sha256": "53a2429be5e983c28427e939f54c5b86007f1ba2d6bfc333726db6e08d54ee0c"
+    },
+    {
+      "bytes": 64600,
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t03_executable_agentic_search.py",
+      "role": "current_exact_sql_annual_authority_and_cutoff_projection",
+      "sha256": "782ce064ce7e1b37336ed6bafa85b396346eee196b34fcfc9fa7ad83e77bcdde"
+    },
+    {
+      "bytes": 39360,
+      "ref": "apps/workbench/backend/application/fin_0_1_2_s4_t04_current_evidence_research.py",
+      "role": "current_numeric_four_time_role_projection",
+      "sha256": "68d1c82c6a3afaeb401e1a89980127601cd2d9228fadca0b1c48c624c804ab05"
+    },
+    {
+      "bytes": 4807,
+      "ref": "tests/fixtures/fin_0_1_3/financial_semantic_truth_oracle_three_case_v1.json",
+      "role": "reviewed_three_case_financial_truth_oracle",
+      "sha256": "087f08c21e7cd2a3f8e49ef3dccf30c5cd0e605890a9883d666340517d679edb"
+    },
+    {
+      "bytes": 8725,
+      "ref": "tests/contract/test_fin_0_1_3_repair_closeout_s1_01_financial_temporal_truth_and_time_role_repair.py",
+      "role": "canonical_S1_01_end_to_end_and_adversarial_contract_test",
+      "sha256": "7836dadf2c67fb5441826846d7e7332a7ab2cdf2a71ca7254c31df3a7752ab15"
+    },
+    {
+      "bytes": 2083,
+      "ref": "data/manifests/sec_financial_statement_metric_runtime_summary_v0_1.json",
+      "role": "tracked_full_runtime_rebuild_summary_v0_2",
+      "sha256": "28c711cc7e84733298145f71a2beb99f6949df1a73f086100a0ad93f0851e03e"
+    },
+    {
+      "bytes": 12750,
+      "ref": "scripts/releases/materialize_fin_ia_0_1_3_repair_closeout_s1_01_financial_temporal_truth.py",
+      "role": "deterministic_S1_01_closeout_materializer",
+      "sha256": "0e4caf5840c0a2984052d79f49d88d3a36384ddf04fd116ef4d0ef5ad742b0a7"
+    }
+  ],
+  "stage_truth": {
+    "FIN_0_1_3_S1": "in_progress_S1_02_next",
+    "FIN_0_1_3_S1_01": "engineering_pass",
+    "FIN_0_1_3_S2_to_S5": "not_started",
+    "model_or_full_chain_authorized": false,
+    "old_FIN_0_1_2_product_acceptance_inherited": false,
+    "release_qualified": false
+  },
+  "status": "engineering_pass_financial_temporal_root_cause_closed_S1_02_next",
+  "verification": {
+    "actual_SQL_to_numeric_three_case_projection": "3/3 reviewed annual facts pass",
+    "adjacent_T03_T05_functional": "19 passed / 2 historical digest assertions deselected",
+    "focused_current_suite": "46 passed / 1 historical event-time assertion deselected",
+    "mutations": [
+      "10-K Q4 raw FY label cannot enter annual selection",
+      "post-cutoff annual fact excluded",
+      "annual_quarter_ytd_instant_roles_distinct",
+      "legacy SQLite migration preserves four time roles",
+      "snapshot time cannot become source filing time",
+      "legacy text-only numeric candidate cannot enter current authority"
+    ]
+  }
+}

@@ -9,9 +9,9 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 
-GOLD_FACT_SIGNAL_MART_SCHEMA_VERSION = "finsight_gold_fact_signal_mart_row_v0_1"
-GOLD_FACT_SIGNAL_MART_SUMMARY_SCHEMA_VERSION = "finsight_gold_fact_signal_mart_summary_v0_1"
-GOLD_FACT_SIGNAL_MART_SQLITE_SCHEMA_VERSION = "finsight_gold_fact_signal_mart_sqlite_v0_1"
+GOLD_FACT_SIGNAL_MART_SCHEMA_VERSION = "finsight_gold_fact_signal_mart_row_v0_2"
+GOLD_FACT_SIGNAL_MART_SUMMARY_SCHEMA_VERSION = "finsight_gold_fact_signal_mart_summary_v0_2"
+GOLD_FACT_SIGNAL_MART_SQLITE_SCHEMA_VERSION = "finsight_gold_fact_signal_mart_sqlite_v0_2"
 
 
 DEFAULT_SOURCE_ROWSETS: tuple[str, ...] = (
@@ -58,8 +58,17 @@ SQLITE_COLUMNS: tuple[str, ...] = (
     "value",
     "unit",
     "period",
+    "period_role",
+    "period_start",
+    "period_end",
+    "duration_days",
     "fiscal_year",
+    "fiscal_period",
+    "raw_fiscal_period",
+    "source_filed_at",
+    "published_at",
     "as_of_date",
+    "snapshot_at",
     "product_family",
     "product_or_segment",
     "counterparty",
@@ -205,8 +214,17 @@ def write_gold_fact_signal_mart_sqlite(
                 value text,
                 unit text,
                 period text,
+                period_role text,
+                period_start text,
+                period_end text,
+                duration_days text,
                 fiscal_year text,
+                fiscal_period text,
+                raw_fiscal_period text,
+                source_filed_at text,
+                published_at text,
                 as_of_date text,
+                snapshot_at text,
                 product_family text,
                 product_or_segment text,
                 counterparty text,
@@ -229,6 +247,23 @@ def write_gold_fact_signal_mart_sqlite(
             )
             """
         )
+        existing_columns = {
+            str(row[1]) for row in conn.execute("pragma table_info(gold_fact_signal_mart)").fetchall()
+        }
+        temporal_columns = {
+            "period_role": "text",
+            "period_start": "text",
+            "period_end": "text",
+            "duration_days": "text",
+            "fiscal_period": "text",
+            "raw_fiscal_period": "text",
+            "source_filed_at": "text",
+            "published_at": "text",
+            "snapshot_at": "text",
+        }
+        for column, sql_type in temporal_columns.items():
+            if column not in existing_columns:
+                conn.execute(f"alter table gold_fact_signal_mart add column {column} {sql_type}")
         conn.execute(
             """
             create table if not exists gold_fact_signal_mart_metadata (
@@ -342,8 +377,18 @@ def _mart_row(root: Path, source_path: Path, row: Mapping[str, Any], *, ordinal:
         "value": _string_value(row.get("value") if "value" in row else row.get("source_value") or row.get("spec_value")),
         "unit": _first_text(row, "unit", "source_unit", "spec_unit"),
         "period": _first_text(row, "period", "period_end", "as_of_date", "filing_date", "report_date"),
+        "period_role": _first_text(row, "period_role"),
+        "period_start": _first_text(row, "period_start", "start_date"),
+        "period_end": _first_text(row, "period_end", "end_date"),
+        "duration_days": _first_text(row, "duration_days"),
         "fiscal_year": _first_text(row, "fiscal_year"),
-        "as_of_date": _first_text(row, "as_of_date", "as_of_datetime", "generated_at"),
+        "fiscal_period": _first_text(row, "fiscal_period"),
+        "raw_fiscal_period": _first_text(row, "raw_fiscal_period"),
+        "source_filed_at": _first_text(row, "source_filed_at", "filing_date", "filed_date"),
+        "published_at": _first_text(row, "published_at", "source_filed_at", "filing_date", "filed_date"),
+        # as_of_date is a research cutoff, not a local materialization timestamp.
+        "as_of_date": _first_text(row, "as_of_date", "as_of_datetime"),
+        "snapshot_at": _first_text(row, "snapshot_at", "generated_at"),
         "product_family": _first_text(row, "product_family"),
         "product_or_segment": _first_text(row, "product_or_segment", "profile_value", "spec_label"),
         "counterparty": _first_text(row, "counterparty"),

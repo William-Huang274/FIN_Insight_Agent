@@ -32,6 +32,16 @@ def test_rd3_unifies_exact_and_bounded_rows_with_authority_modes(tmp_path: Path)
                 "value": 130497000000,
                 "unit": "USD",
                 "period": "FY2026",
+                "period_role": "annual",
+                "period_start": "2025-01-27",
+                "period_end": "2026-01-25",
+                "duration_days": 364,
+                "fiscal_period": "FY",
+                "raw_fiscal_period": "FY",
+                "source_filed_at": "2026-02-25",
+                "published_at": "2026-02-25",
+                "as_of_date": "",
+                "snapshot_at": "2026-06-27T00:00:00+00:00",
                 "exact_value_authority": True,
                 "can_support_company_exact_fact": True,
                 "runtime_ready_context": True,
@@ -82,6 +92,11 @@ def test_rd3_unifies_exact_and_bounded_rows_with_authority_modes(tmp_path: Path)
     assert financial["fact_domain"] == "financial_statement_fact"
     assert financial["authority_mode"] == "exact_company_fact_authority"
     assert financial["can_enter_evidence_bundle"] is True
+    assert financial["period_role"] == "annual"
+    assert financial["source_filed_at"] == "2026-02-25"
+    assert financial["published_at"] == "2026-02-25"
+    assert financial["as_of_date"] == ""
+    assert financial["snapshot_at"] == "2026-06-27T00:00:00+00:00"
     product = rows_by_ref["spec:nvda:h100"]
     assert product["fact_domain"] == "product_profile_or_spec_fact"
     assert product["authority_mode"] == "bounded_thesis_driver_authority"
@@ -151,3 +166,52 @@ def test_rd3_sqlite_row_count_matches_jsonl_rows(tmp_path: Path) -> None:
 
     assert count == 1
     assert stored == ("MSFT", "market_liquidity_signal")
+
+
+def test_rd3_sqlite_migrates_legacy_table_without_conflating_snapshot_and_as_of(tmp_path: Path) -> None:
+    sqlite_path = tmp_path / "legacy.sqlite"
+    with sqlite3.connect(str(sqlite_path)) as conn:
+        conn.execute(
+            "create table gold_fact_signal_mart (gold_row_id text primary key, schema_version text not null, "
+            "generated_at text not null, source_rowset_path text not null, source_row_id text not null, "
+            "ticker text, company_name text, fact_domain text not null, fact_type text, support_surface text, "
+            "authority_mode text, can_enter_evidence_bundle integer, exact_value_authority integer, "
+            "can_support_company_exact_fact integer, source_layer text, source_role text, source_id text, "
+            "metric_family text, metric_name text, canonical_metric_id text, value text, unit text, period text, "
+            "fiscal_year text, as_of_date text, product_family text, product_or_segment text, counterparty text, "
+            "event_type text, object_type text, claim_types_json text, allowed_claims_json text, "
+            "forbidden_claims_json text, claim_boundary text, citation_url text, citation_span text, "
+            "evidence_ref text, source_url text, raw_path text, parser_status text, structured_fact_status text, "
+            "runtime_contract text, source_specific_parser text, payload_json text)"
+        )
+    row = {
+        "gold_row_id": "gold:dell:revenue",
+        "schema_version": GOLD_FACT_SIGNAL_MART_SCHEMA_VERSION,
+        "generated_at": "2026-08-06T00:00:00Z",
+        "source_rowset_path": "runtime.jsonl",
+        "source_row_id": "dell:revenue",
+        "ticker": "DELL",
+        "fact_domain": "financial_statement_fact",
+        "period": "FY2025-FY",
+        "period_role": "annual",
+        "period_start": "2024-02-03",
+        "period_end": "2025-01-31",
+        "duration_days": "364",
+        "fiscal_year": "2025",
+        "fiscal_period": "FY",
+        "raw_fiscal_period": "FY",
+        "source_filed_at": "2025-03-25",
+        "published_at": "2025-03-25",
+        "as_of_date": "",
+        "snapshot_at": "2026-08-06T00:00:00Z",
+    }
+
+    write_gold_fact_signal_mart_sqlite(sqlite_path, [row])
+
+    with sqlite3.connect(str(sqlite_path)) as conn:
+        stored = conn.execute(
+            "select period_role, source_filed_at, published_at, as_of_date, snapshot_at "
+            "from gold_fact_signal_mart where gold_row_id = ?",
+            ("gold:dell:revenue",),
+        ).fetchone()
+    assert stored == ("annual", "2025-03-25", "2025-03-25", "", "2026-08-06T00:00:00Z")

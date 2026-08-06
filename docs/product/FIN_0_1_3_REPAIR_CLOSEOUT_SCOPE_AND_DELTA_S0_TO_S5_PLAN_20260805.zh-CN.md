@@ -113,6 +113,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 
 > **2026-08-06 `013-S3-01` 工程通过**：current S1 governed pack＋S2 公司专属研究合同＋case delta 已编译为 DELL `13`、MU `12`、NVDA `13` 个动态 Cell，三案均覆盖 P36 六个必选 family。每 Cell 均有本案问题、owner、EvidenceSlot、stop rule、WWC、dependency 和 current/planned evidence binding；DELL/NVDA 的附加 Cell 由真实 typed gap 触发，并非固定标题。Reviewer inspect/prune/split/add/return 和 immutable revision 已零调用证明，material numeric sanity、risk/counterevidence、Writer boundary 不可静默删除。shared composition 遗漏 WWC 投影的根因已修复。current suite=`207 passed / 1 historical assertion deselected`，model/provider/network/source/business run=0。S3-01 只达到 `engineering_pass`，不等于 12–13 Cell 已产生高质量判断；下一项为 `013-S3-02`。
 
+> **2026-08-06 `013-S3-02` 工程通过**：九个代表性 Claim 已形成公司、机制、证据边界、Numeric 或 typed gap、选择权威和 lineage 完整的 Claim Card；12 个 Numeric、2 个 typed gap 被本地精确绑定，13 条已选 WWC 全部具指标/事件、方向、时间窗、阈值和下一证据路线。既有 exact-once natural choice 只有 4/9，其余 5/9 明确为 fixture-only；29 个新动态 Cell 明确为 planned/no-claim，没有制造结论。S3-02 未改变模型 alias/enum 合同，不重复付费 canary。current suite=`214 passed / 1 historical assertion deselected`；下一项为 `013-S3-03`，full-chain 与内容验收仍禁止。
+
 ### S4：current 产品工作流与真实 dogfood
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |

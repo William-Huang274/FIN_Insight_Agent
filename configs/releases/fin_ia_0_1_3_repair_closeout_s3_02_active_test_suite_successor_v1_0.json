@@ -1,0 +1,53 @@
+{
+  "decision_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s3_02_claim_and_observable_wwc_v1_0.json",
+  "decision_sha256": "78f05135f3601083465d8ab5834dfbbb2b6fce302e5db40cd81c306328736cd9",
+  "historical_event_time_deselections": [
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py::test_decision_and_active_suite_are_digest_bound_and_do_not_promote_old_names"
+  ],
+  "observed_result": "214 passed / 1 historical assertion deselected",
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_02_active_test_suite_successor_v1_0",
+  "selected_test_files": [
+    "tests/test_sec_structured_facts_download.py",
+    "tests/test_sec_financial_statement_metric_runtime_rows.py",
+    "tests/test_gold_fact_signal_mart.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_01_delta_inheritance_namespace_and_current_truth_baseline.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_03_financial_semantic_truth_oracle_classification.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_01_financial_temporal_truth_and_time_role_repair.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_02_material_numeric_program_formula_and_typed_gap.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_03_official_source_attempt_program.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_03_closeout.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_04_authoritative_relationship_graph.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_05_retrieval_evidence_usefulness_and_closeout.py",
+    "tests/test_financial_statement_analysis.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s2_01_research_question_method_contract_translation.py",
+    "tests/test_multi_agent_specialist_llm.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s2_02_representative_node_and_context_precedence.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s2_02_natural_canary_runtime.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s2_02_three_family_natural_canary_result.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s2_03_context_yield_and_capacity.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s2_03_context_yield_canary_runtime.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s2_03_context_yield_natural_reproof_result.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s3_01_dynamic_decision_surface.py",
+    "tests/contract/test_point01_m2_cell_composition.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s3_02_claim_and_observable_wwc.py"
+  ],
+  "stage_boundary": {
+    "S0": "pass_closed",
+    "S1": "pass_closed",
+    "S2_01": "engineering_pass",
+    "S2_02": "pass_closed",
+    "S2_03": "pass_closed",
+    "S3_01": "engineering_pass",
+    "S3_02": "engineering_pass",
+    "S3_03_to_S3_05": "not_started",
+    "all_dynamic_cells_naturally_judged": false,
+    "eight_dimension_research_quality": false,
+    "full_chain_authorized": false,
+    "product_acceptance": false,
+    "release": false
+  },
+  "status": "current_S3_02_engineering_pass_S3_03_next",
+  "suite_digest": "23ddc630a91a87b0c196181e7ef57faf66cfd8f1b6547fa8a2aa958d8fb263ac",
+  "suite_id": "FIN-0.1.3-REPAIR-CLOSEOUT-S3-02-ACTIVE-SUITE-R15"
+}

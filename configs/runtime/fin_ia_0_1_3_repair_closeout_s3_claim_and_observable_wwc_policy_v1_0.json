@@ -1,0 +1,57 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_claim_and_observable_wwc_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S3.company_specific_claim_and_observable_wwc:v1",
+  "required_claim_fields": [
+    "case_key",
+    "company_name",
+    "program_cell_id",
+    "mechanism_atom",
+    "evidence_boundary",
+    "numeric_facts",
+    "typed_gaps",
+    "what_would_change",
+    "choice_authority",
+    "lineage"
+  ],
+  "forbidden_generic_fragments": [
+    "证据方向支持当前单元判断",
+    "详见本地绑定事实",
+    "仍需持续核对新增反证与口径变化",
+    "current evidence supports the current cell"
+  ],
+  "required_wwc_fields": [
+    "metric_or_event",
+    "direction",
+    "time_window",
+    "threshold",
+    "next_evidence_route"
+  ],
+  "wwc_profiles": {
+    "DELL_W_DEMAND_BACKLOG": {"metric_or_event": "AI-server orders, backlog, deployment or repeat demand", "direction": "increase_or_explicit_confirmation", "time_window": "next_quarter_or_annual_update", "threshold": "one current quantified or named company disclosure", "next_evidence_route": "Dell earnings release, 10-Q/10-K or investor presentation"},
+    "DELL_W_DEMAND_REVERSAL": {"metric_or_event": "AI-server cancellation, digestion or demand slowdown", "direction": "material_deterioration", "time_window": "next_two_reporting_periods", "threshold": "issuer identifies a material slowdown, cancellation or digestion event", "next_evidence_route": "Dell earnings release, call transcript or filing risk update"},
+    "DELL_W_AI_MARGIN": {"metric_or_event": "AI-server gross or operating profit and mix-to-margin bridge", "direction": "explicit_product_or_segment_attribution", "time_window": "next_quarter_or_annual_update", "threshold": "issuer isolates AI-server profit or supplies a reproducible mix bridge", "next_evidence_route": "Dell segment note, earnings tables or investor presentation"},
+    "DELL_W_CASH_CONVERSION": {"metric_or_event": "AI-server working capital and cash conversion", "direction": "improving_or_deteriorating", "time_window": "next_two_reporting_periods", "threshold": "issuer separates AI-server inventory, receivables or cash impact", "next_evidence_route": "Dell cash-flow statement, working-capital commentary or segment disclosure"},
+    "DELL_W_SUPPLY_RELIEF": {"metric_or_event": "component availability, lead time and supplier diversification", "direction": "improvement", "time_window": "next_reporting_period", "threshold": "issuer reports shorter lead time, broader sourcing or fewer constraints", "next_evidence_route": "Dell earnings commentary and supplier disclosures"},
+    "DELL_W_MARGIN_PRESSURE": {"metric_or_event": "AI-server pricing, component cost and ISG margin", "direction": "material_deterioration", "time_window": "next_reporting_period", "threshold": "issuer links pricing or component cost to a material ISG margin decline", "next_evidence_route": "Dell segment results and earnings commentary"},
+    "MU_W_HBM_COMMITMENT": {"metric_or_event": "HBM commitments, capacity allocation and shipment coverage", "direction": "increase_or_extension", "time_window": "next_two_reporting_periods", "threshold": "issuer quantifies multi-period commitments, allocation or shipment coverage", "next_evidence_route": "Micron earnings release, 10-Q/10-K or investor presentation"},
+    "MU_W_HBM_WEAKENING": {"metric_or_event": "HBM orders, qualification and deployment demand", "direction": "material_deterioration", "time_window": "next_two_reporting_periods", "threshold": "issuer reports order reduction, reallocation or weaker qualification demand", "next_evidence_route": "Micron earnings commentary and customer qualification updates"},
+    "MU_W_HBM_ECONOMICS": {"metric_or_event": "HBM revenue, gross margin, operating profit or price-volume-mix", "direction": "explicit_product_attribution", "time_window": "next_quarter_or_annual_update", "threshold": "issuer isolates HBM economics or provides a reproducible PVM bridge", "next_evidence_route": "Micron segment/product disclosure and earnings tables"},
+    "MU_W_HBM_CASH": {"metric_or_event": "HBM capex, inventory, prepayment and cash conversion", "direction": "improving_or_deteriorating", "time_window": "next_two_reporting_periods", "threshold": "issuer isolates an HBM-specific capital or cash item", "next_evidence_route": "Micron cash-flow, capex and inventory disclosures"},
+    "MU_W_CAPACITY_DISCIPLINE": {"metric_or_event": "HBM and conventional DRAM capacity allocation", "direction": "disciplined_supply_growth", "time_window": "next_two_reporting_periods", "threshold": "Micron and at least one named peer retain bounded capacity plans despite volatility", "next_evidence_route": "Micron, Samsung and SK hynix official capacity commentary"},
+    "MU_W_PRICING_BREAK": {"metric_or_event": "DRAM pricing and HBM demand", "direction": "material_deterioration", "time_window": "next_two_reporting_periods", "threshold": "issuer reports a material price decline or HBM weakening tied to supply or competition", "next_evidence_route": "Micron earnings tables and named-peer official disclosures"},
+    "NVDA_W_REPEAT_DEPLOYMENT": {"metric_or_event": "named-cloud deployment, capacity expansion or utilization", "direction": "repeat_or_expand", "time_window": "next_reporting_period", "threshold": "NVIDIA or a named cloud partner reports another deployment or expansion event", "next_evidence_route": "NVIDIA and named-cloud official releases or filings"},
+    "NVDA_W_DEMAND_DIGESTION": {"metric_or_event": "deployment delay, concentration loss or accelerator demand slowdown", "direction": "material_deterioration", "time_window": "next_two_reporting_periods", "threshold": "issuer or named customer identifies a material digestion or delay event", "next_evidence_route": "NVIDIA and named-customer official releases or filings"},
+    "NVDA_W_PRODUCT_ECONOMICS": {"metric_or_event": "accelerator or Data Center product revenue and profit", "direction": "explicit_product_attribution", "time_window": "next_quarter_or_annual_update", "threshold": "issuer publishes comparable product revenue and profit authority", "next_evidence_route": "NVIDIA earnings tables, segment note or investor presentation"},
+    "NVDA_W_MARGIN_MIX": {"metric_or_event": "product mix, supply cost, service mix and margin", "direction": "quantified_bridge", "time_window": "next_reporting_period", "threshold": "issuer quantifies a bridge explaining gross or operating margin movement", "next_evidence_route": "NVIDIA earnings release and margin commentary"},
+    "NVDA_W_REALIZED_CONSTRAINT": {"metric_or_event": "realized supply, export, deployment or concentration constraint", "direction": "material_adverse_event", "time_window": "current_or_next_reporting_period", "threshold": "issuer or official named counterparty reports a realized constraint with material scope", "next_evidence_route": "NVIDIA, named-counterparty or effective-policy official source"},
+    "NVDA_W_CONSTRAINT_ABSENCE": {"metric_or_event": "deployment expansion without the hypothesized bottleneck", "direction": "repeated_absence_with_expansion", "time_window": "two_consecutive_reporting_periods", "threshold": "two bounded official updates show expansion without the hypothesized constraint", "next_evidence_route": "NVIDIA and named-cloud official releases or filings"}
+  },
+  "authority_boundary": {
+    "live_natural_choices": "only public exact-once S2-02/S2-03 results",
+    "fixture_choices": "engineering proof only, never business truth",
+    "numbers_dates_identity_lineage": "local deterministic authority",
+    "provider_free_text": false,
+    "new_model_contract": false,
+    "natural_canary_required": false
+  }
+}

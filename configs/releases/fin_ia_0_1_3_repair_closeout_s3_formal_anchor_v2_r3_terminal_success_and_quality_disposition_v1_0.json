@@ -1,0 +1,123 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_terminal_success_and_quality_disposition_v1_0",
+  "status": "R3_terminal_succeeded_successor_materialized_formal_quality_binding_pending",
+  "execution": {
+    "execution_git_commit": "ad3e5bc4d45e1442f3e525473283957eda1cb6e7",
+    "run_id": "fin013_s3_formal_anchor_v2_532e320b78032dc6b27f",
+    "attempt_id": "fin013_s3_formal_anchor_v2_532e320b78032dc6b27f::attempt_1",
+    "admission_digest": "e7b6e357a8c56737dc86a95d817239937afc5630b85241495e4fd829cf7d8ae1",
+    "terminal_result_digest": "660ae2eec7ebe0572e686f43aee0736caa06a13222594e7490d18f80f2ba36c4",
+    "runtime_record_digest": "c671e711dfc49d920f9fc15fbceded3d1a7b1ced64e52787e6e479f06dd5fcf8",
+    "terminal_code": "nine_specialist_exact_once_pass",
+    "completed_calls": 9,
+    "skipped_calls": 0,
+    "captures": 9,
+    "retry": 0,
+    "fallback": 0,
+    "business_artifact_promotions": 0,
+    "usage": {
+      "input_tokens": 6410,
+      "output_tokens": 1140,
+      "total_tokens": 7550
+    },
+    "capture_secret_scan": "pass_no_matches"
+  },
+  "natural_selection_summary": {
+    "epistemic_states": {
+      "cannot_infer": 3,
+      "bounded_inference": 5,
+      "mixed_evidence": 1
+    },
+    "answer_directions": {
+      "cannot_infer": 3,
+      "mixed": 5,
+      "positive": 1
+    },
+    "selected_evidence_aliases": 21,
+    "selected_counterevidence_aliases": 0,
+    "evidence_role_projection": {
+      "observation_support_aliases": 16,
+      "thesis_support_aliases": 0,
+      "boundary_only_aliases": 5
+    },
+    "typed_gap_bindings": 3,
+    "local_default_gap_bindings": 1,
+    "what_would_change_bindings": 17,
+    "cross_case_or_unknown_aliases": 0,
+    "free_text_provider_fields": 0
+  },
+  "zero_model_successor": {
+    "claim_cards": 9,
+    "all_natural_claim_cards": 9,
+    "fixture_claim_cards": 0,
+    "numeric_fact_bindings": 9,
+    "all_natural_case_syntheses": 3,
+    "dependencies": 3,
+    "conflicts": 3,
+    "deferred_conflicts": 3,
+    "gaps": 5,
+    "case_workpapers": 3,
+    "content_lenses": 24,
+    "bounded_judgment_lenses": 21,
+    "explicit_research_gap_lenses": 3,
+    "natural_product_candidates": 3,
+    "planned_cells_promoted_as_findings": 0,
+    "additional_model_provider_network_source_calls": [0, 0, 0, 0]
+  },
+  "research_content_assessment": {
+    "positive_findings": [
+      "The previous placeholder output is replaced by company-specific conclusions, mechanism boundaries, exact numeric facts, opposing views, explicit gaps and observable what-would-change conditions.",
+      "All nine core choices are natural exact-once outputs and all three Workpapers are free of fixture authority.",
+      "The model preserved three honest cannot-infer boundaries instead of inventing unsupported financial conclusions."
+    ],
+    "quality_findings": [
+      "No natural output reached fact_supported, so local thesis_support is empty across all nine Claims; current conclusions remain bounded judgments over observations rather than strongly supported theses.",
+      "The model selected zero counterevidence aliases. Risk and opposing-view content therefore comes mainly from local evidence boundaries and deterministic synthesis, not natural counterevidence selection.",
+      "Only nine numeric bindings survive the natural selection surface and some Workpaper sections repeat the same facts; 29 dynamic planned Cells remain explicitly unresearched.",
+      "The three candidates are not yet final-delivery or Verifier bound, and L1/L2 plus the eight-dimensional score have not been performed."
+    ],
+    "disposition": "structure_and_natural_completion_pass_content_materially_improved_but_formal_product_quality_not_yet_passed"
+  },
+  "formal_quality_gate": {
+    "case_contexts": 3,
+    "fixture_mixed_rejections": 0,
+    "formally_scoreable_cases": 0,
+    "formal_case_scores": 0,
+    "formal_case_passes": 0,
+    "paired_assessments": 0,
+    "qualified_human_acceptances": 0,
+    "shared_ineligibility_reasons": [
+      "L1_not_passed",
+      "L2_not_passed",
+      "final_delivery_not_bound",
+      "verifier_binding_missing",
+      "reviewer_packet_identity_not_sealed",
+      "run_artifact_identity_incomplete"
+    ]
+  },
+  "authority": {
+    "R3_replayed_or_reclassified": false,
+    "R4_or_retry_authorized": false,
+    "additional_model_run_for_quality_binding": false,
+    "zero_model_final_delivery_verifier_L1_L2_disposition_authorized_next": true,
+    "codex_may_sign_qualified_human_acceptance": false
+  },
+  "stage_boundary": {
+    "S3_formal_anchor_v2_R3": "terminal_succeeded_exact_once",
+    "S3_all_natural_successor": "materialized_zero_model",
+    "S3_structure_and_lineage": "pass",
+    "formal_case_quality_pass": false,
+    "paired_material_gain": false,
+    "qualified_human_content_acceptance": false,
+    "S3_product_proof": false,
+    "S4_entry": false,
+    "release": false
+  },
+  "source_refs": [
+    "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_fresh_admission_authority_decision_v1_0.json",
+    "scripts/releases/run_fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2.py",
+    "scripts/releases/materialize_fin_ia_0_1_3_s3_formal_anchor_v2_r3_successor.py"
+  ],
+  "next_action": "S3_R3_ALL_NATURAL_FINAL_DELIVERY_VERIFIER_L1_L2_AND_SCOREABILITY_ZERO_CALL_DISPOSITION",
+  "record_digest": "e966f08323828384d9441c6c46ffa69ab0df599789f7264fe9a309ee67bea5bc"
+}

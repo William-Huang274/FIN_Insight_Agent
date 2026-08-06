@@ -1,0 +1,26 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_success_active_suite_v1_0",
+  "suite_id": "FIN-0.1.3-REPAIR-CLOSEOUT-S3-FORMAL-ANCHOR-V2-R3-SUCCESS-R27",
+  "status": "R3_terminal_success_successor_materialized_quality_binding_pending",
+  "decision_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_terminal_success_and_quality_disposition_v1_0.json",
+  "decision_sha256": "961b4a5e01aaa89947d39d1389933c0a231fc073d5347cb7c48b476b9f120c19",
+  "parent_suite_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_authority_active_test_suite_successor_v1_0.json",
+  "parent_suite_sha256": "bafcbebb26f67f24717822dd71cbe17ec19287cd60d3b0a6da80b85088292145",
+  "additive_bindings": {
+    "scripts/releases/materialize_fin_ia_0_1_3_s3_formal_anchor_v2_r3_successor.py": "b968d759aad27f7170aeafbc1ffbfab43241ddce4227889cb3303511d01596fd",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s3_evidence_role_v2_and_formal_anchor.py": "56fdfea159b395f40496b2e63edbbb45463cd732ba21f0bad2e26d0bc49f4be3"
+  },
+  "historical_event_time_deselections": [
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py::test_decision_and_active_suite_are_digest_bound_and_do_not_promote_old_names"
+  ],
+  "observed_result": "250 passed / 1 historical assertion deselected",
+  "stage_boundary": {
+    "R3": "terminal_succeeded_exact_once",
+    "all_natural_successor": "zero_model_materialized",
+    "formal_quality": "binding_and_assessment_pending",
+    "S3_product_proof": false,
+    "S4_entry": false,
+    "release": false
+  },
+  "suite_digest": "7f4dd65839f486ba91813bb9591b70ede03009f080e84aa5682a14a5e39ff85d"
+}

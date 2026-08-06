@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -55,6 +57,8 @@ GAPLESS_DISPOSITION = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_g
 GAPLESS_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_gapless_local_default_active_test_suite_successor_v1_0.json"
 R3_AUTHORITY = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_fresh_admission_authority_decision_v1_0.json"
 R3_AUTHORITY_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_authority_active_test_suite_successor_v1_0.json"
+R3_SUCCESS = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_terminal_success_and_quality_disposition_v1_0.json"
+R3_SUCCESS_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_success_active_test_suite_successor_v1_0.json"
 
 
 def _load(ref: str) -> dict:
@@ -288,6 +292,50 @@ def test_mutating_boundary_only_into_thesis_support_fails_card_validation(tmp_pa
             natural_s2_03_result=_load("configs/releases/fin_ia_0_1_3_repair_closeout_s2_03_context_yield_natural_reproof_result_v1_0.json"),
             formal_anchor_result=result,
         )
+
+
+def test_successful_v2_terminal_materializes_all_natural_quality_successor(tmp_path: Path) -> None:
+    import hashlib
+
+    _execute(tmp_path)
+    output_dir = tmp_path / "successor"
+    subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/releases/materialize_fin_ia_0_1_3_s3_formal_anchor_v2_r3_successor.py"),
+            "--formal-result",
+            str(tmp_path / "runtime/terminal_result.json"),
+            "--output-dir",
+            str(output_dir),
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    outputs = {
+        name: json.loads((output_dir / f"{name}.json").read_text(encoding="utf-8"))
+        for name in ("claim", "synthesis", "writer", "quality")
+    }
+    assert outputs["claim"]["claim_quality_program"]["observed_counts"]["live_natural_claim_cards"] == 9
+    assert outputs["synthesis"]["cross_cell_synthesis_program"]["observed_counts"]["all_natural_case_syntheses"] == 3
+    assert outputs["writer"]["workpaper_writer_content_program"]["observed_counts"]["natural_product_candidates"] == 3
+    quality = outputs["quality"]["research_quality_gate_program"]
+    assert quality["observed_counts"]["fixture_mixed_cases_rejected_before_scoring"] == 0
+    assert quality["observed_counts"]["formally_scoreable_cases"] == 0
+    assert all("final_delivery_not_bound" in row["reasons"] for row in quality["current_case_dispositions"])
+    result = json.loads(R3_SUCCESS.read_text(encoding="utf-8"))
+    active = json.loads(R3_SUCCESS_ACTIVE.read_text(encoding="utf-8"))
+    assert result["record_digest"] == canonical_digest(
+        {key: value for key, value in result.items() if key != "record_digest"}
+    )
+    assert result["execution"]["completed_calls"] == 9
+    assert result["natural_selection_summary"]["evidence_role_projection"]["thesis_support_aliases"] == 0
+    assert result["formal_quality_gate"]["formally_scoreable_cases"] == 0
+    assert active["decision_sha256"] == hashlib.sha256(R3_SUCCESS.read_bytes()).hexdigest()
+    assert active["suite_digest"] == canonical_digest(
+        {key: value for key, value in active.items() if key != "suite_digest"}
+    )
 
 
 def test_materialized_disposition_is_digest_bound_and_does_not_authorize_r2() -> None:

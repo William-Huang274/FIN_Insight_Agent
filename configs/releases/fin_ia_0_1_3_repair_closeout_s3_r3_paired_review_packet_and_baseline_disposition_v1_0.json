@@ -1,0 +1,111 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_r3_paired_review_packet_and_baseline_disposition_v1_0",
+  "status": "three_case_same_input_claim_only_baseline_review_packets_prepared_unscored",
+  "authority": {
+    "source_R3_replayed_or_modified": false,
+    "model_provider_network_source_business_runs": [0, 0, 0, 0, 0],
+    "codex_or_automation_scoring_allowed": false,
+    "formal_score_or_acceptance_signed": false,
+    "paired_assessment_performed": false,
+    "qualified_human_acceptance_performed": false
+  },
+  "baseline_disposition": {
+    "selected": "deterministic_claim_only_same_input",
+    "why_valid": [
+      "uses the exact R3 input-head and the same three all-natural Claim Cards per case",
+      "has a distinct deterministic Run and Artifact identity",
+      "does not reuse Agent Lead synthesis, executive thesis or eight-lens Workpaper"
+    ],
+    "rejected": [
+      {
+        "candidate": "FIN_0_1_2_historical_delivery",
+        "reason": "different governed evidence, input and contracts"
+      },
+      {
+        "candidate": "fixture_mixed_preview",
+        "reason": "not an all-natural same-input product comparator"
+      },
+      {
+        "candidate": "another_model_generated_baseline",
+        "reason": "would add model cost and a second model-quality confounder"
+      }
+    ]
+  },
+  "review_packet_result": {
+    "program_digest": "e5ca37ff3e3176e35384f19fbe73013815d34884be3f25c5dbf6307e36e7de3c",
+    "private_json_sha256": "d0038727c6ae4c7b5a5cdc6da27fb1b96068819e2a8ced783dcdfd9d00a56f68",
+    "private_markdown_sha256": "35b7f70f469063dbee29b8483517d7c3dbc137b88df05d889974cc48e5b77278",
+    "local_review_ref": ".codex_runtime/fin013-s3-formal-anchor-v2-r3/review-packet-r1/paired_review_packet.md",
+    "case_packets": 3,
+    "baseline_deliveries": 3,
+    "agent_deliveries": 3,
+    "unscored_dimension_rows": 24,
+    "formal_score_packets": 0,
+    "paired_assessments": 0,
+    "qualified_human_acceptances": 0,
+    "cases": [
+      {
+        "case_key": "DELL",
+        "packet_digest": "dbc417994b20c42ec553228a062d735769eb286e08489f883605a43132f10431",
+        "input_head_digest": "f375dd1c4f90f48d2054325fc72b2c3e9d29bb6b4f608770b421aea980459926",
+        "baseline_run_id": "fin013_s3_claim_only_baseline_b87da6ca872398d930e4",
+        "baseline_artifact_id": "fin013_s3_claim_only_baseline_dell",
+        "agent_run_id": "fin013_s3_formal_anchor_v2_532e320b78032dc6b27f",
+        "agent_artifact_id": "fin013_s3_workpaper_a7145bf9c1ed78fb3de65c9b"
+      },
+      {
+        "case_key": "MU",
+        "packet_digest": "60f4e8d762094ecaed44a480649cd9ee80ca51a9433abe25ced190fed3efd7bf",
+        "input_head_digest": "4aaa6f358b975925bc91401741bbbc0eb421326e4302d8b50eede0d13095e897",
+        "baseline_run_id": "fin013_s3_claim_only_baseline_5ce7df512e5c45356779",
+        "baseline_artifact_id": "fin013_s3_claim_only_baseline_mu",
+        "agent_run_id": "fin013_s3_formal_anchor_v2_532e320b78032dc6b27f",
+        "agent_artifact_id": "fin013_s3_workpaper_2c0eac7014d789a9d233f2e5"
+      },
+      {
+        "case_key": "NVDA",
+        "packet_digest": "6db075401e7545f201a5b305f62fc76f7d0864ef5c17996174ce48493c15daee",
+        "input_head_digest": "1c78955bb91e7adbcfa412588743b74f571c3128b68a826eac1fc9c2b036eee5",
+        "baseline_run_id": "fin013_s3_claim_only_baseline_f432fd7e1ff07c7668f2",
+        "baseline_artifact_id": "fin013_s3_claim_only_baseline_nvda",
+        "agent_run_id": "fin013_s3_formal_anchor_v2_532e320b78032dc6b27f",
+        "agent_artifact_id": "fin013_s3_workpaper_e39650472d0eec486a472c6c"
+      }
+    ]
+  },
+  "review_contract": {
+    "dimensions": 8,
+    "score_range": "0_to_4",
+    "case_total_minimum": 24,
+    "Q1_Q2_Q3_Q8_minimum": 3,
+    "Q1_to_Q7_floor": 2,
+    "dimensions_at_or_above_3_minimum": 4,
+    "paired_material_gain_dimensions_minimum": 3,
+    "reason_refs_required": true,
+    "authenticated_qualified_human_decision_required": true
+  },
+  "known_quality_findings_exposed_to_reviewer": [
+    "agent_thesis_support_aliases_are_zero",
+    "agent_selected_counterevidence_aliases_are_zero",
+    "some_agent_sections_repeat_numeric_facts",
+    "twenty_nine_dynamic_cells_remain_unresearched"
+  ],
+  "stage_boundary": {
+    "R3_exact_once": "pass",
+    "final_delivery_Verifier_L1_L2": "pass_3_of_3",
+    "paired_review_material": "prepared_3_of_3_unscored",
+    "formal_case_quality_pass": false,
+    "paired_material_gain": false,
+    "qualified_human_content_acceptance": false,
+    "S3_product_proof": false,
+    "S4_entry": false,
+    "release": false
+  },
+  "source_refs": [
+    "src/sec_agent/s3_paired_review_packet.py",
+    "scripts/releases/materialize_fin_ia_0_1_3_s3_formal_anchor_v2_r3_successor.py",
+    "configs/releases/fin_ia_0_1_3_repair_closeout_s3_r3_final_delivery_verifier_l1_l2_binding_v1_0.json"
+  ],
+  "next_action": "QUALIFIED_REVIEWER_EIGHT_DIMENSION_SCORING_PAIRED_MATERIAL_GAIN_AND_CONTENT_ACCEPT_OR_RETURN",
+  "record_digest": "8596e830a4e95954d75c188dd5fb2b4f6c87daa91e6f09a68a719a3aaf2c47bd"
+}

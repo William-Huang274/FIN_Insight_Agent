@@ -29,6 +29,10 @@ from sec_agent.s3_final_delivery_binding import (
     S3FinalDeliveryBindingError,
     validate_s3_final_delivery_binding,
 )
+from sec_agent.s3_paired_review_packet import (
+    S3PairedReviewPacketError,
+    validate_s3_paired_review_packet,
+)
 from sec_agent.s3_evidence_role_canary_runtime import (
     execute_evidence_role_canary,
     issue_evidence_role_canary_admission,
@@ -65,6 +69,8 @@ R3_SUCCESS = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anc
 R3_SUCCESS_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_success_active_test_suite_successor_v1_0.json"
 R3_BINDING = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_r3_final_delivery_verifier_l1_l2_binding_v1_0.json"
 R3_BINDING_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_r3_final_binding_active_test_suite_successor_v1_0.json"
+R3_PAIRED_REVIEW = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_r3_paired_review_packet_and_baseline_disposition_v1_0.json"
+R3_PAIRED_REVIEW_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_r3_paired_review_active_test_suite_successor_v1_0.json"
 
 
 def _load(ref: str) -> dict:
@@ -321,7 +327,7 @@ def test_successful_v2_terminal_materializes_all_natural_quality_successor(tmp_p
     )
     outputs = {
         name: json.loads((output_dir / f"{name}.json").read_text(encoding="utf-8"))
-        for name in ("claim", "synthesis", "writer", "quality", "binding")
+        for name in ("claim", "synthesis", "writer", "quality", "binding", "paired_review")
     }
     assert outputs["claim"]["claim_quality_program"]["observed_counts"]["live_natural_claim_cards"] == 9
     assert outputs["synthesis"]["cross_cell_synthesis_program"]["observed_counts"]["all_natural_case_syntheses"] == 3
@@ -341,6 +347,40 @@ def test_successful_v2_terminal_materializes_all_natural_quality_successor(tmp_p
     )
     with pytest.raises(S3FinalDeliveryBindingError, match="context_digest_invalid"):
         validate_s3_final_delivery_binding(mutated)
+    paired = outputs["paired_review"]["paired_review_packet_program"]
+    review_markdown = (output_dir / "paired_review_packet.md").read_text(encoding="utf-8")
+    assert paired["observed_counts"]["case_packets"] == 3
+    assert paired["observed_counts"]["formal_score_packets"] == 0
+    assert "本案允许的评分理由引用" in review_markdown
+    assert "normalized_value" not in review_markdown
+    assert "24683000000 USD" in review_markdown
+    assert "DELL_W_DEMAND_BACKLOG" in review_markdown
+    first = paired["case_packets"][0]
+    assert first["baseline"]["sealed_candidate_context"]["input_head_digest"] == first["agent"]["sealed_candidate_context"]["input_head_digest"]
+    assert first["baseline"]["sealed_candidate_context"]["run_id"] != first["agent"]["sealed_candidate_context"]["run_id"]
+    assert first["baseline"]["sealed_candidate_context"]["artifact_digest"] != first["agent"]["sealed_candidate_context"]["artifact_digest"]
+    mutated_pair = json.loads(json.dumps(paired))
+    mutated_pair["case_packets"][0]["dimension_review_rows"][0]["agent_score"] = 4
+    packet = mutated_pair["case_packets"][0]
+    packet["packet_digest"] = canonical_digest(
+        {key: value for key, value in packet.items() if key != "packet_digest"}
+    )
+    mutated_pair["program_digest"] = canonical_digest(
+        {key: value for key, value in mutated_pair.items() if key != "program_digest"}
+    )
+    with pytest.raises(S3PairedReviewPacketError, match="premature_score_or_gain"):
+        validate_s3_paired_review_packet(mutated_pair)
+    mutated_pair = json.loads(json.dumps(paired))
+    mutated_pair["case_packets"][0]["baseline"]["delivery"]["claim_cards"][0]["mechanism_atom"] = "tampered"
+    packet = mutated_pair["case_packets"][0]
+    packet["packet_digest"] = canonical_digest(
+        {key: value for key, value in packet.items() if key != "packet_digest"}
+    )
+    mutated_pair["program_digest"] = canonical_digest(
+        {key: value for key, value in mutated_pair.items() if key != "program_digest"}
+    )
+    with pytest.raises(S3PairedReviewPacketError, match="baseline_internal_binding_invalid"):
+        validate_s3_paired_review_packet(mutated_pair)
     binding_result = json.loads(R3_BINDING.read_text(encoding="utf-8"))
     binding_active = json.loads(R3_BINDING_ACTIVE.read_text(encoding="utf-8"))
     assert binding_result["record_digest"] == canonical_digest(
@@ -351,6 +391,18 @@ def test_successful_v2_terminal_materializes_all_natural_quality_successor(tmp_p
     assert binding_active["decision_sha256"] == hashlib.sha256(R3_BINDING.read_bytes()).hexdigest()
     assert binding_active["suite_digest"] == canonical_digest(
         {key: value for key, value in binding_active.items() if key != "suite_digest"}
+    )
+    paired_result = json.loads(R3_PAIRED_REVIEW.read_text(encoding="utf-8"))
+    paired_active = json.loads(R3_PAIRED_REVIEW_ACTIVE.read_text(encoding="utf-8"))
+    assert paired_result["record_digest"] == canonical_digest(
+        {key: value for key, value in paired_result.items() if key != "record_digest"}
+    )
+    assert paired_result["review_packet_result"]["case_packets"] == 3
+    assert paired_result["review_packet_result"]["formal_score_packets"] == 0
+    assert paired_result["stage_boundary"]["S3_product_proof"] is False
+    assert paired_active["decision_sha256"] == hashlib.sha256(R3_PAIRED_REVIEW.read_bytes()).hexdigest()
+    assert paired_active["suite_digest"] == canonical_digest(
+        {key: value for key, value in paired_active.items() if key != "suite_digest"}
     )
     result = json.loads(R3_SUCCESS.read_text(encoding="utf-8"))
     active = json.loads(R3_SUCCESS_ACTIVE.read_text(encoding="utf-8"))

@@ -28,6 +28,9 @@ from sec_agent.s3_research_quality_gate import (  # noqa: E402
     compile_s3_research_quality_gate_program,
     load_s3_research_quality_gate_policy,
 )
+from sec_agent.s3_paired_review_packet import (  # noqa: E402
+    compile_s3_paired_review_packet,
+)
 from sec_agent.s3_workpaper_writer_content_program import (  # noqa: E402
     compile_s3_workpaper_writer_content_program,
     load_s3_workpaper_writer_content_policy,
@@ -81,8 +84,11 @@ def compile_successor(formal_result: dict[str, Any]) -> dict[str, dict[str, Any]
         program_key="workpaper_writer_content_program",
         program=writer_program,
     )
+    quality_policy = load_s3_research_quality_gate_policy(
+        ROOT / "configs/runtime/fin_ia_0_1_3_repair_closeout_s3_research_quality_gate_policy_v1_0.json"
+    )
     quality_program = compile_s3_research_quality_gate_program(
-        policy=load_s3_research_quality_gate_policy(ROOT / "configs/runtime/fin_ia_0_1_3_repair_closeout_s3_research_quality_gate_policy_v1_0.json"),
+        policy=quality_policy,
         writer_decision=writer,
         claim_decision=claim,
     )
@@ -103,7 +109,123 @@ def compile_successor(formal_result: dict[str, Any]) -> dict[str, dict[str, Any]
         program_key="final_delivery_binding_program",
         program=binding_program,
     )
-    return {"claim": claim, "synthesis": synthesis, "writer": writer, "quality": quality, "binding": binding}
+    paired_program = compile_s3_paired_review_packet(
+        binding_decision=binding,
+        claim_decision=claim,
+        writer_decision=writer,
+        quality_policy=quality_policy,
+    )
+    paired = _decision(
+        acceptance={"S3_paired_review_packet": "prepared_unscored"},
+        program_key="paired_review_packet_program",
+        program=paired_program,
+    )
+    return {
+        "claim": claim,
+        "synthesis": synthesis,
+        "writer": writer,
+        "quality": quality,
+        "binding": binding,
+        "paired_review": paired,
+    }
+
+
+def _render_review_markdown(paired: dict[str, Any]) -> str:
+    lines = [
+        "# FIN 0.1.3 S3 R3 三案 paired review packet",
+        "",
+        "> 本材料尚未评分。baseline 与 Agent 使用同一批 R3 Claim/Evidence；baseline 仅逐 Claim 展示，Agent 增加跨 Cell 综合与 8-lens Workpaper。",
+        "",
+        "评分范围：每维 0–4；正式通过要求总分 >=24，Q1/Q2/Q3/Q8 >=3，Q1–Q7 >=2，且至少四维 >=3。",
+        "",
+    ]
+    program = paired["paired_review_packet_program"]
+    for packet in program["case_packets"]:
+        lines.extend([f"## {packet['case_key']}", "", "### Claim-only baseline", ""])
+        for claim in packet["baseline"]["delivery"]["claim_cards"]:
+            lines.extend(
+                [
+                    f"- **{claim['program_cell_id']}**（`{claim['claim_card_id']}`）：{claim['mechanism_atom']}",
+                    f"  - epistemic：`{claim['epistemic_state']}` / `{claim['answer_direction']}`",
+                    f"  - evidence boundary：{'；'.join(claim['evidence_boundary']) or '无'}",
+                ]
+            )
+            if claim["numeric_facts"]:
+                lines.append("  - Numeric：")
+                for fact in claim["numeric_facts"]:
+                    lines.append(
+                        "    - "
+                        f"`{fact['candidate_id']}`：{fact['metric_family']}="
+                        f"{fact['normalized_value']} {fact['unit']}，published_at={fact['published_at']}"
+                    )
+            else:
+                lines.append("  - Numeric：无")
+            if claim["typed_gaps"]:
+                lines.append("  - typed gaps：")
+                for gap in claim["typed_gaps"]:
+                    lines.append(
+                        f"    - `{gap['alias']}` / `{gap['gap_code']}`：{gap['cannot_infer']}"
+                    )
+            else:
+                lines.append("  - typed gaps：无")
+            if claim["what_would_change"]:
+                lines.append("  - What-Would-Change：")
+                for wwc in claim["what_would_change"]:
+                    lines.append(
+                        "    - "
+                        f"`{wwc['alias']}`：{wwc['metric_or_event']} → {wwc['direction']}；"
+                        f"窗口={wwc['time_window']}；阈值={wwc['threshold']}；"
+                        f"下一路线={wwc['next_evidence_route']}"
+                    )
+            else:
+                lines.append("  - What-Would-Change：无")
+        lines.extend(["", "### Agent Workpaper", ""])
+        for section in packet["agent"]["workpaper"]["sections"]:
+            answers = section["answers"]
+            lines.extend(
+                [
+                    f"#### {section['lens_id']}",
+                    "",
+                    f"- 结论：{answers['conclusion']}",
+                    f"- 为什么：{answers['why']}",
+                    f"- 最强反方：{answers['opposing_view']}",
+                    f"- 缺失证据：{answers['missing_evidence']}",
+                    f"- 什么会改变：{answers['what_would_change']}",
+                    f"- Claim refs：{', '.join(f'`{value}`' for value in section['claim_card_ids'])}",
+                    "",
+                ]
+            )
+        lines.extend(["### 本案允许的评分理由引用", ""])
+        allowed_refs = packet["agent"]["sealed_candidate_context"]["allowed_reason_refs"]
+        for ref_type in ("claim", "evidence", "numeric", "section", "wwc"):
+            lines.append(
+                f"- {ref_type}："
+                + (", ".join(f"`{value}`" for value in allowed_refs[ref_type]) or "无")
+            )
+        lines.extend(
+            [
+                "### 八维评分表（待 qualified reviewer 填写）",
+                "",
+                "| 维度 | Baseline 0–4 | Agent 0–4 | 实质增益？ | 理由与引用 |",
+                "|---|---:|---:|---|---|",
+            ]
+        )
+        for row in packet["dimension_review_rows"]:
+            lines.append(f"| {row['dimension_id']} {row['name']} |  |  |  |  |")
+        lines.extend(["", "已知质量 finding：" + "；".join(packet["known_quality_findings"]), ""])
+    lines.extend(
+        [
+            "## Reviewer 决策区",
+            "",
+            "- [ ] 三案分别达到绝对阈值；",
+            "- [ ] 每案至少三个维度存在 reviewer-confirmed material gain；",
+            "- [ ] 接受内容 / 退回研究修复；",
+            "- Reviewer identity / authenticated session digest / reason refs：待填写。",
+            "",
+            "Codex/自动化不得勾选或代签以上项目。",
+        ]
+    )
+    return "\n".join(lines) + "\n"
 
 
 def main() -> int:
@@ -118,6 +240,9 @@ def main() -> int:
             json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
+    (args.output_dir / "paired_review_packet.md").write_text(
+        _render_review_markdown(outputs["paired_review"]), encoding="utf-8"
+    )
     summary = {
         "status": "successor_materialized_zero_model",
         "claim_counts": outputs["claim"]["claim_quality_program"]["observed_counts"],
@@ -126,6 +251,7 @@ def main() -> int:
         "quality_counts": outputs["quality"]["research_quality_gate_program"]["observed_counts"],
         "quality_dispositions": outputs["quality"]["research_quality_gate_program"]["current_case_dispositions"],
         "binding_counts": outputs["binding"]["final_delivery_binding_program"]["observed_counts"],
+        "paired_review_counts": outputs["paired_review"]["paired_review_packet_program"]["observed_counts"],
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
     return 0

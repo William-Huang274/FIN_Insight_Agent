@@ -1,7 +1,7 @@
 # FIN 0.1.3 修复收口版范围与差量 S0–S5 计划
 
 日期：2026-08-05
-状态：`FIN_0_1_2_honest_block_frozen / FIN_0_1_3_S0_complete / S1_01_next / FIN_0_2_definition_unchanged`
+状态：`FIN_0_1_2_honest_block_frozen / FIN_0_1_3_S2_02_complete / S2_03_next / FIN_0_2_definition_unchanged`
 
 > **2026-08-06 用户新增硬要求**：FIN 0.1.3 必须把研究内容输出质量作为 release-blocking 考核，不得再将 L3 的通用 Claim、弱综合、机械 Writer 或不可执行 WWC 降级为 nonblocking finding。八维绝对质量＋paired gain＋qualified human content acceptance 的正式标准见 `docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md`。
 
@@ -95,6 +95,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 
 > **2026-08-06 `013-S2-02` 零调用部分完成**：RC-P36-138 已通过 hermetic low-level builder 语义关闭：没有 Research Lead 显式决策时，直接构建 Agent data view 不再读取 repository/environment Product Intelligence；生产 LangGraph 仍保留 Research Lead 明确开启 autoload 的路径。扩大 Specialist 回归恢复为 `63 passed`，并证明相同显式 Evidence 在 repo 与空工作目录形成相同 digest。S2-01 九个 request 已被代表性 runtime 消费，物化 `9 Claim / 3 Lead synthesis`，而非继续停留在 registry/fixture；Claim、execution、Lead 均有内容 digest 和 S1/S2 lineage。三类自然 canary 已在执行前冻结 request、rubric、硬失败与 `3 calls / 0 retry / 0 fallback` 预算，但尚未 admission 或调用模型。canonical suite=`161 passed / 1 historical event-time assertion deselected`。因此 S2-02 当前为 `zero_call_node_consumption_pass / natural_canary_pending`，不能提前标记完整完成，也不能把本地 synthesis 当作最终研究内容质量。
 
+> **2026-08-06 `013-S2-02` 完成并关闭**：clean-head fresh admission 已由 shared ledger exact-once 消费；DELL demand、MU value/profit、NVDA bottleneck 三项 DeepSeek Pro 自然输出均为单次 transport、`finish_reason=stop`、预注册五维 Rubric `10/10`。总计 `3 calls / 3 raw capture-first objects / 3 local Claims / 0 retry / 0 fallback / 0 business promotion`，`3093 input / 362 output / 3455 total tokens`。三项仅选择 request-local alias/enum；DELL、NVDA 未把 gap 洗成正面结论，MU 未把 consolidated/DRAM 总量冒充 HBM economics。该结果证明受限代表性 Specialist 合同的自然遵循，不等于自由叙事能力、最终研究质量或产品通过。private raw request/response 留在 Git 外，可公开 successor 只保存选择、Claim/capture digest、usage 和边界。S2-02=`pass_closed`，下一项为 `013-S2-03` context yield/capacity；不得直接跳到 full-chain。
+
 ### S3：研究计划、判断、Lead、Writer 与 Verifier
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |
@@ -177,6 +179,7 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 9. [x] 完成 `013-S1-04`：MU/NVDA 共 7 条 current approved relationship edge，DELL 诚实 typed empty；所有 edge 非财务事实权威，旧 Workbench 空图历史未改写。
 10. [x] 完成 `013-S1-05`：semantic successor=`7 useful / 2 typed gap`，governed retrieval=`9/9 query / 26/26 required candidate / 0 false promotion`，旧 BM25 明确 non-authority；S1 pass closed。
 11. [x] 完成 `013-S2-01`：RC-P36-134 关闭；9 个 representative request 绑定 `26 Evidence / 2 gap / 18 mechanism / 18 WWC`，Provider 只选 alias/enum，本地拥有数字/日期/identity/lineage/final narrative；active suite 87 passed / 1 historical deselected。
-12. [ ] 完成 `013-S2-02`：RC-P36-138、显式 pack precedence、hermetic 注入、`9 Specialist / 9 Claim / 3 Lead` 零调用消费与自然输出 Rubric 已完成；剩余仅为 clean-head fresh admission 后的三 family DeepSeek natural canary（最多 3 calls、0 retry/0 fallback）及结果处置，不得直接跑 full-chain。
+12. [x] 完成 `013-S2-02`：RC-P36-138、显式 pack precedence、hermetic 注入、`9 Specialist / 9 Claim / 3 Lead` 零调用消费均通过；fresh exact-once DeepSeek canary=`3/3 pass, 10/10 each, 0 retry/0 fallback`，原始捕获与公开摘要分离。
+13. [ ] 完成 `013-S2-03`：审计 node context yield、重复 role view、Evidence 利用率、容量和成本；先零调用编译与 mutation，再只对真正改变的模型合同决定是否需要单节点 canary，不直接运行三案例 full-chain。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

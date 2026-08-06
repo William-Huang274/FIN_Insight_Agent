@@ -3,6 +3,9 @@
 更新时间：2026-08-06
 
 > [!IMPORTANT]
+> **FIN 0.1.3 `013-S2-02` 三 family DeepSeek natural canary 通过并关闭（current，2026-08-06）**：在 clean/synced commit `263b297c…eac4` 上签发 fresh admission，并由 shared SQLite ledger exact-once 消费。DELL demand、MU value/profit、NVDA bottleneck 三个预注册 request 均 `1 transport attempt / finish_reason=stop / rubric=10/10`，合计 `3 provider calls / 3 capture-first raw request-response objects / 3 local Claims / 0 retry / 0 fallback / 0 business promotion`，token=`3093 input / 362 output / 3455 total`。三项都选择本案 alias/enum，没有跨案、自由文本、模型自造数字/日期/身份或 lineage；DELL 与 NVDA 诚实保留现有 gap，MU 明确 consolidated/DRAM authority 不能推出 HBM economics。raw capture、完整 assistant response、finish reason、usage 与 request binding 留在 Git 外，capture 中未发现 credential、Authorization、Cookie 或 key-like literal；Git 只保存安全摘要与 digest。由此只能得出：DeepSeek Pro 对这三个受限代表性 Specialist family 的自然合同遵循成立，未发现模型能力硬失败；不能推导 S3 动态 10–20 Cell、最终 Lead/Writer 深度、八维内容质量、产品验收或 release。`013-S2-02=pass_closed`，current next=`FIN-0.1.3-013-S2-03-CONTEXT-YIELD-CAPACITY-AND-EVIDENCE-UTILIZATION-ENTRY-AUDIT`。
+
+> [!IMPORTANT]
 > **FIN 0.1.3 `013-S2-02` 三 family natural canary runner 工程通过（current，2026-08-06）**：新增 fresh admission、clean/synced Git head＋runner/decision/policy/request digest binding、repository-independent shared SQLite exact-once reservation、capture-first raw request/response retention、首错停止和 terminal receipt。fake success=`3 calls / 3 captures / 3 Claims / terminal`；首 call failure=`1 call / 1 capture / 2 skipped / 0 retry`；第二消费 fail closed。runner focused=`6 passed`，加入 canonical suite=`167 passed / 1 historical event-time assertion deselected`。DeepSeek 凭据仅检查 presence，明文不落 admission/capture/Git；真实模型/Provider/网络仍为 0。current next=`FIN-0.1.3-013-S2-02-THREE-FAMILY-NATURAL-OUTPUT-CANARY-CLEAN-HEAD-ADMISSION-ISSUANCE-AND-EXACT-ONCE-EXECUTION`；必须先提交推送 runner，再签发唯一 admission。
 
 > [!IMPORTANT]

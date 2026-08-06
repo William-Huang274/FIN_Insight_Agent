@@ -1,0 +1,178 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_02_three_family_natural_canary_public_result_v1_0",
+  "recorded_at": "2026-08-06T06:05:54.847565Z",
+  "execution_git_commit": "263b297cda38ffba953f19e4ff853c3e798beac4",
+  "admission_digest": "e497732ddbd4134bce307a6abb0d0c222d1bb471c130ed3b7b20c55681720e83",
+  "terminal_result_digest": "aed71202f5aa4d882b900474a2784e0c05ec8ae5d8f21c07eb9b47d297b597bb",
+  "shared_admission_receipt_state": "terminal",
+  "provider": {
+    "backend": "deepseek",
+    "model": "deepseek-v4-pro",
+    "model_ref": "deepseek:deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "chat_completions_path": "/chat/completions"
+  },
+  "execution": {
+    "status": "terminal_succeeded_exact_once",
+    "terminal_code": "three_family_canary_pass",
+    "provider_calls": 3,
+    "captures": 3,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "business_artifact_promotions": 0,
+    "skipped_request_ids": [],
+    "total_usage": {
+      "input_tokens": 3093,
+      "output_tokens": 362,
+      "total_tokens": 3455
+    }
+  },
+  "family_results": [
+    {
+      "request_id": "FIN013-S2-DELL-demand_authenticity_and_sustainability",
+      "case_key": "DELL",
+      "program_cell_id": "demand_authenticity_and_sustainability",
+      "provider_output": {
+        "answer_direction": "cannot_infer",
+        "confidence": "low",
+        "counterevidence_aliases": [],
+        "epistemic_state": "bounded_inference",
+        "gap_aliases": [
+          "DELL_G01"
+        ],
+        "mechanism_alias": "DELL_M_DEMAND_PROXY",
+        "support_aliases": [
+          "DELL_E01"
+        ],
+        "what_would_change_aliases": [
+          "DELL_W_DEMAND_BACKLOG",
+          "DELL_W_DEMAND_REVERSAL"
+        ]
+      },
+      "provider_output_digest": "8fd07395efd5fad434b3262409cb5bf6ed9eba12b3fae6e02392a0b065064b9a",
+      "claim_digest": "3c4713882a69e29e79c5fb2ef69e3572f094d8aee978fbd5dcb138d70b145d4a",
+      "capture_digest": "7cb625ed09df4a4d46e14ab07cdc682fb11f6441d77aa39da52e4e3f35aca6aa",
+      "finish_reason": "stop",
+      "usage": {
+        "input_tokens": 957,
+        "output_tokens": 118,
+        "total_tokens": 1075,
+        "transport_attempt_count": 1
+      },
+      "rubric": {
+        "contract_adherence_minimum": 2,
+        "pass": true,
+        "scores": {
+          "company_specific_mechanism_selection": 2,
+          "contract_adherence": 2,
+          "epistemic_consistency": 2,
+          "evidence_selection_relevance": 2,
+          "what_would_change_actionability": 2
+        },
+        "threshold": 8,
+        "total": 10
+      }
+    },
+    {
+      "request_id": "FIN013-S2-MU-value_and_profit_capture",
+      "case_key": "MU",
+      "program_cell_id": "value_and_profit_capture",
+      "provider_output": {
+        "answer_direction": "cannot_infer",
+        "confidence": "high",
+        "counterevidence_aliases": [],
+        "epistemic_state": "bounded_inference",
+        "gap_aliases": [],
+        "mechanism_alias": "MU_M_BASELINE_NOT_HBM_ECONOMICS",
+        "support_aliases": [
+          "MU_E01",
+          "MU_E02",
+          "MU_E03",
+          "MU_E04"
+        ],
+        "what_would_change_aliases": [
+          "MU_W_HBM_ECONOMICS",
+          "MU_W_HBM_CASH"
+        ]
+      },
+      "provider_output_digest": "53298bfc0dbdb49319dd667e345c10541f1430c250c19e448d0e2aaa2e10c9df",
+      "claim_digest": "79a60abafc31fd1151cebd5aec03b32211a960f75ffd6b58a241d0bd37532057",
+      "capture_digest": "45b7faa93d2449a1ad07c2937aef7c8b29ac4c17345768f7d66fc79e6b5b1c61",
+      "finish_reason": "stop",
+      "usage": {
+        "input_tokens": 1327,
+        "output_tokens": 127,
+        "total_tokens": 1454,
+        "transport_attempt_count": 1
+      },
+      "rubric": {
+        "contract_adherence_minimum": 2,
+        "pass": true,
+        "scores": {
+          "company_specific_mechanism_selection": 2,
+          "contract_adherence": 2,
+          "epistemic_consistency": 2,
+          "evidence_selection_relevance": 2,
+          "what_would_change_actionability": 2
+        },
+        "threshold": 8,
+        "total": 10
+      }
+    },
+    {
+      "request_id": "FIN013-S2-NVDA-bottleneck_counterevidence_and_what_would_change",
+      "case_key": "NVDA",
+      "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "provider_output": {
+        "answer_direction": "cannot_infer",
+        "confidence": "low",
+        "counterevidence_aliases": [],
+        "epistemic_state": "cannot_infer",
+        "gap_aliases": [
+          "NVDA_G01"
+        ],
+        "mechanism_alias": "NVDA_M_REALIZED_COUNTEREVIDENCE_GAP",
+        "support_aliases": [],
+        "what_would_change_aliases": [
+          "NVDA_W_REALIZED_CONSTRAINT",
+          "NVDA_W_CONSTRAINT_ABSENCE"
+        ]
+      },
+      "provider_output_digest": "9fbeb431916b604d0b422ca50703df3e8484282f87b2e09e69bdc245be9e8ac5",
+      "claim_digest": "e3e073888d67e9fe3d5cfa8482d0310a67ae460a62a127edc9e4e7700b8b7876",
+      "capture_digest": "9543f93714b9a7eb884b461d916c063560c83d105c3c27a006f91c6868a497a2",
+      "finish_reason": "stop",
+      "usage": {
+        "input_tokens": 809,
+        "output_tokens": 117,
+        "total_tokens": 926,
+        "transport_attempt_count": 1
+      },
+      "rubric": {
+        "contract_adherence_minimum": 2,
+        "pass": true,
+        "scores": {
+          "company_specific_mechanism_selection": 2,
+          "contract_adherence": 2,
+          "epistemic_consistency": 2,
+          "evidence_selection_relevance": 2,
+          "what_would_change_actionability": 2
+        },
+        "threshold": 8,
+        "total": 10
+      }
+    }
+  ],
+  "disposition": {
+    "S2_02": "pass_closed",
+    "natural_contract_adherence": "3/3 pass at 10/10",
+    "model_capability_failure_established": false,
+    "S2_03": "next_context_yield_capacity",
+    "S3_dynamic_decision_surface": "not_proven",
+    "eight_dimension_research_content_quality": "not_proven",
+    "product_acceptance": false,
+    "release": false
+  },
+  "known_boundary": "This exact-once canary proves natural DeepSeek contract adherence for three representative alias-only Specialist families. It does not prove context economy, dynamic 10-20 Cell planning, final Lead/Writer/Verifier research depth, human content acceptance, product usability or release.",
+  "record_digest": "3e30765606fc93a5392ed5d27f72346e4acecde6a962be94597cfb4de319fef4"
+}

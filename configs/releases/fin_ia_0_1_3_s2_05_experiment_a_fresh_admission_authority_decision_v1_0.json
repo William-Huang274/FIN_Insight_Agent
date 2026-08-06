@@ -1,0 +1,139 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_experiment_a_fresh_admission_authority_decision_v1_0",
+  "status": "DELL_admission_issuance_authorized_not_issued_execution_not_authorized",
+  "recorded_at": "2026-08-07T03:30:00+08:00",
+  "scope_id": "FIN-0.1.3-013-S2-05-EXPERIMENT-A-FRESH-ADMISSION-AUTHORITY-DECISION",
+  "audited_repository_state": {
+    "branch": "codex/layered-data-source-expansion",
+    "head": "3aab9f0d93de44747983f883652957e80bcc483b",
+    "upstream": "origin/codex/layered-data-source-expansion",
+    "ahead": 0,
+    "behind": 0,
+    "tracked_worktree_clean": true,
+    "untracked_worktree_clean": true
+  },
+  "frozen_bindings": {
+    "runtime": {
+      "ref": "src/sec_agent/s2_same_evidence_experiment_runtime.py",
+      "sha256": "f08a863cbdfbac3f727ceabb37c7edbeee8d66feca72210b35130af458b5d72d"
+    },
+    "entrypoint": {
+      "ref": "scripts/releases/run_fin_ia_0_1_3_s2_05_experiment_a.py",
+      "sha256": "931d71076feddee4ff98e534cde7ce000a5df3cb094caa47996aa9ba774196c5"
+    },
+    "policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_05_experiment_a_runtime_policy_v1_0.json",
+      "sha256": "90eba779603d9b501b70f960d77fdb93d0ca3ee27dd49785543bd8cd5269ec86"
+    },
+    "blind_input": {
+      "ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json",
+      "sha256": "689a4f957015c6b16f4d3ecdde6292450c044f9641af09537b1f0190176bdb59",
+      "canonical_digest": "55b474867594c002cd87494fc3d825b39cc60f3000adae06253f8e2256a61688"
+    },
+    "shared_admission_ledger": {
+      "ref": "src/sec_agent/shared_admission_ledger.py",
+      "sha256": "ef0611378b4aa4419f8782feceb8ddd89603e79c9d7a5753452f3ddbcb725455"
+    },
+    "zero_call_implementation": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_05_experiment_a_dynamic_node_runner_zero_call_implementation_v1_0.json",
+      "sha256": "737cfaa64014839ec7f83df1efc76c0527f27061fb5d972bd65b419713097b2b",
+      "implementation_digest": "9a06fe364b01680383ec69282bc7dab35557079f025f5d31a5574bbec9693873"
+    }
+  },
+  "provider_qualification": {
+    "backend": "deepseek",
+    "model": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "chat_completions_path": "/chat/completions",
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "credential_present": true,
+    "credential_value_read_or_persisted": false,
+    "provider_probe_performed": false,
+    "transport_retry_env_state": "unset",
+    "runtime_explicit_max_transport_attempts": 1,
+    "implicit_transport_retry_possible": false
+  },
+  "preflight_evidence": {
+    "production_preflight_status": "zero_call_preflight_ready_admission_not_issued",
+    "focused_runtime_and_prior_authority": "34 passed",
+    "current_FIN_0_1_3_S2_named_contracts": "95 passed",
+    "three_case_full_fake_calls": 30,
+    "maximum_case_full_fake_calls": 12,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "mcp_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "business_artifact_promotions": 0
+  },
+  "authority": {
+    "decision": "proceed_to_one_DELL_admission_issuance_only",
+    "admission_issuance_authorized": true,
+    "admission_consumption_authorized": false,
+    "exact_live_execution_authorized": false,
+    "maximum_new_admissions": 1,
+    "authorized_case": "DELL",
+    "MU_admission_authorized": false,
+    "NVDA_admission_authorized": false,
+    "automatic_next_case_authorized": false,
+    "model_calls_authorized": 0,
+    "provider_calls_authorized": 0,
+    "network_calls_authorized": 0,
+    "mcp_calls_authorized": 0
+  },
+  "issuance_preconditions": [
+    "issuance_runs_after_this_decision_is_committed_and_pushed",
+    "issuance_head_is_clean_and_synced_and_descends_from_audited_repository_head",
+    "runtime_entrypoint_policy_blind_input_and_shared_ledger_sha256_remain_exact",
+    "credential_presence_is_rechecked_without_reading_or_persisting_credential_value",
+    "admission_binds_then_current_clean_execution_git_commit_and_Dell_case_digest",
+    "admission_expiry_is_no_more_than_four_hours_after_issuance",
+    "admission_is_written_under_git_ignored_restricted_codex_runtime_authority_root",
+    "shared_ledger_is_outside_the_disposable_case_runtime_root",
+    "no_provider_or_network_probe_occurs_during_issuance"
+  ],
+  "admission_storage_boundary": {
+    "tracked_config_or_source_write_forbidden": true,
+    "required_root": ".codex_runtime/fin013_s2_05/authorities/DELL",
+    "git_ignore_rule": "/.codex_runtime/",
+    "reason": "The admission must bind the clean execution HEAD without creating a self-referential Git commit. It remains locally durable and restricted but is not tracked as source code.",
+    "plaintext_secret_storage_forbidden": true
+  },
+  "case_sequence_gate": {
+    "order": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "DELL_success_required_before_MU_authority": true,
+    "MU_success_required_before_NVDA_authority": true,
+    "material_failure_stops_case_and_campaign": true,
+    "no_automatic_patch_retry_rerun_or_next_case": true
+  },
+  "budget": {
+    "provider_calls_per_case": {
+      "minimum": 10,
+      "maximum": 12
+    },
+    "maximum_input_tokens_per_case": 200000,
+    "maximum_output_tokens_per_case": 30200,
+    "maximum_total_tokens_per_case": 230200,
+    "maximum_estimated_cost_usd_per_case": 0.18,
+    "timeout_seconds_per_call": 240,
+    "retry_count": 0,
+    "fallback_count": 0
+  },
+  "open_nonblocking_boundaries": {
+    "RC-P36-140": "S1-owned MCP/source runtime issue; Experiment A has zero tool access and does not use it",
+    "model_reasoning_quality": "unproven until raw DeepSeek execution and hidden evaluation",
+    "semantic_depth": "structural full-pack coverage cannot prove investment insight quality",
+    "provider_model_availability": "not re-probed in this zero-call authority decision; prior successful DeepSeek Pro runs and current credential presence are the available evidence"
+  },
+  "material_blockers": [],
+  "known_boundary": "This decision authorizes only one DELL admission issuance. It does not create an admission, authorize consumption or execution, call DeepSeek, score model reasoning, enable supervisor correction, repair MCP, produce a report, or authorize MU/NVDA.",
+  "next_action": "FIN-0.1.3-013-S2-05-EXPERIMENT-A-DELL-FRESH-EXACT-ADMISSION-ISSUANCE",
+  "decision_digest": "94418ea11cbc63ac5f459fb58839f63e496846c0bfbf855907f8055a4dbec17a"
+}

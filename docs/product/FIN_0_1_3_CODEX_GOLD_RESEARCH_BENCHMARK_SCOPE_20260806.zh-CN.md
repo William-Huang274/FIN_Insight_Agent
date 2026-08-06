@@ -1,7 +1,7 @@
 # FIN 0.1.3 Codex 三案例 Gold Research Benchmark 范围
 
 日期：2026-08-06  
-状态：`active / three gold candidates complete / shared benchmark evidence frozen / Experiment A admission not issued / dynamic runner preflight next`
+状态：`active / three gold candidates complete / shared evidence frozen / dynamic runner zero-call pass / DELL issuance authorized not issued`
 
 ## 1. 决策
 
@@ -52,6 +52,12 @@
 入口审计没有签发 admission。原因不是输入或 DeepSeek credential，而是产品当前没有能自然执行 Lead→动态 Specialist→Synthesis→Writer→Verifier 的 Experiment A runner。复用旧三调用 canary 或九次最小 Anchor 会再次把产品级研报目标压缩成合同遵循测试。
 
 后继实现按每案 6–8 个研究单元、10–12 次模型调用设计，三案最多 36 次；调用上限来自节点和研究覆盖，不是为了省钱任意设为 9。runner 零调用 full-fake/preflight 通过并重新取得 authority 前，Gold benchmark 不启动 paid comparison。
+
+### 3.4 动态 Runner 与 DELL 签发 authority
+
+Experiment A 专用 runner 已通过零调用 full-fake/preflight：Lead 覆盖六 mandatory family 并分配完整冻结 Evidence/Gap，6–8 个 Specialist 分别消费 assigned pack，synthesis、Writer、Verifier 继续保持 evidence/gap lineage；raw capture、exact-once、首错停止、数值/identity/cross-case 和四轨权限均有 mutation 证明。三案 full-fake 共 30 calls，当前 S2 命名合同 95 passed。
+
+fresh authority 仅批准下一步签发 DELL 一份 admission，尚未签发，也未批准执行。DELL raw candidate 成功前不批准 MU；MU 成功前不批准 NVDA。admission 作为运行权限保存在 Git 忽略的 restricted runtime authority 区，而不是提交到 source/config，从而既绑定干净 execution HEAD，又避免 admission 自指提交。这个 authority 不改变 Gold 的 candidate 身份，也不构成模型或产品质量结论。
 
 ## 4. 研究交付最低内容
 

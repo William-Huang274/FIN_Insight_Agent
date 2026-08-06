@@ -2,7 +2,7 @@
 
 日期：2026-08-06  
 更新：2026-08-07
-状态：`active / Codex gold candidates complete / shared evidence frozen / Experiment A admission not issued / dynamic runner preflight next`
+状态：`active / shared evidence frozen / dynamic runner zero-call pass / DELL admission issuance authorized but not issued`
 
 ## 1. 比较目标
 
@@ -60,6 +60,14 @@ S2-04 input 已满足公平性，但当前仓库只有三调用窄 canary 和九
 - 首个 material failure capture-first 后暂停本案，且不自动开始下一案。
 
 当前 decision=`configs/releases/fin_ia_0_1_3_s2_05_experiment_a_admission_authority_decision_v1_0.json`。它只授权一个零调用 runner/full-fake/preflight 实现包；不授权 admission issuance、consumption 或 DeepSeek 调用。
+
+### 3.1.2 S2-05 动态 Runner 与 fresh authority 结果
+
+专用 runtime policy、dynamic runner 和 production entrypoint 已完成零调用证明。Lead=`1`、Specialist=`6–8`、synthesis/Writer/Verifier=`1/1/1`；六 mandatory family 和完整 case Evidence/Gap 必须贯穿到 Writer，identity、as-of、跨案引用、未绑定数值、漏证据与 Verifier material failure 均 fail closed。每次完整 request/gateway result 在 parse/validation 前保存在 raw-only track；admission shared-ledger exact-once，首错停本案和 campaign。三案 full-fake=`30 calls`，8-unit 上界=`12 calls`，当前 S2 命名合同=`95 passed`。
+
+fresh authority 只批准下一步签发一份 DELL admission，不批准消费、模型调用或 MU/NVDA。admission 必须在本 decision 提交后绑定 then-current clean/synced HEAD，并保存到 Git 忽略的 `.codex_runtime/fin013_s2_05/authorities/DELL`，避免把 admission 本身做成自指 Git commit。真实 DELL 成功前不得取得 MU authority；任一 material failure 停止，不自动 patch/retry/rerun/next-case。
+
+当前 decision=`configs/releases/fin_ia_0_1_3_s2_05_experiment_a_fresh_admission_authority_decision_v1_0.json`。它仍是零调用治理结果，不证明 DeepSeek 分析质量。
 
 ### 3.2 Experiment A 只回答
 

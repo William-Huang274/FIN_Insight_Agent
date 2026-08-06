@@ -1,0 +1,116 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_dell_layered_replacement_exact_live_result_v1_0",
+  "recorded_at": "2026-08-07",
+  "case_key": "DELL",
+  "run_id": "fin013_s2_05_exp_a_dell_f9e9264951d69da5ed86",
+  "execution_commit": "3cb7b24403abbe6ec940be28366256feda65de18",
+  "admission_digest": "d6812f3e002c0c01c7fd566a73f81f47e049e1374fda68781043995c4c1803a4",
+  "terminal": {
+    "status": "terminal_completed_layered_raw_evaluation",
+    "code": "experiment_a_layered_raw_candidate_with_material_findings",
+    "digest": "7c9a0eb56511f5df0cf0c729637fe59365eef0c24fdf1c8c295eae82997d235d",
+    "receipt_digest": "dc463ab63e7b25d5e75006543685ccf730a12595b5e0ac40b9ca65f1689bf6b1"
+  },
+  "execution": {
+    "logical_nodes": 10,
+    "provider_calls": 10,
+    "captures": 10,
+    "transport_attempts_per_call": 1,
+    "all_gateway_status_ok": true,
+    "all_finish_reason_stop": true,
+    "retry": 0,
+    "fallback": 0,
+    "supervisor_corrections": 0,
+    "business_promotions": 0,
+    "usage": {
+      "input_tokens": 29767,
+      "output_tokens": 6557,
+      "total_tokens": 36324,
+      "estimated_cost_usd": "0.0290071"
+    }
+  },
+  "layered_evaluation": {
+    "raw_chain_complete": true,
+    "raw_experiment_candidate": true,
+    "hidden_scoring_eligible": true,
+    "business_promotion_gate_pass": false,
+    "business_promotable": false,
+    "material_failure": true,
+    "finding_count": 29,
+    "runtime_finding_breakdown": {
+      "L1": 11,
+      "L2": 1,
+      "L3": 17
+    },
+    "independent_disposition": {
+      "confirmed_material_model_defects": [
+        "mid_single_digit_profitability_was_invented_as_4_to_6_percent_precision",
+        "verifier_returned_accept_raw_candidate_with_no_findings_despite_that_material_precision_error"
+      ],
+      "confirmed_research_quality_findings": [
+        "four_of_six_specialists_left_counterevidence_ids_empty",
+        "most_what_would_change_thresholds_were_model_authored_without_calibration_or_evidence_route",
+        "microsoft_industry_demand_evidence_was_not_explicitly_distinguished_or_integrated",
+        "counter_thesis_omitted_upstream_rent_capture_and_cyclical_OEM_repricing"
+      ],
+      "runtime_false_positive_classes": [
+        "10_in_10_K_was_tokenized_as_an_unbound_material_number",
+        "hypothetical_WWC_thresholds_outside_dedicated_WWC_fields_were_misclassified_as_L1",
+        "bounded_operating_cash_flow_working_capital_language_was_misclassified_as_an_earnings_or_valuation_bridge"
+      ]
+    }
+  },
+  "hidden_gold_shadow_assessment": {
+    "formal_score": false,
+    "qualified_human_review": false,
+    "reason": "The rubric requires L1/L2 to pass before formal scoring and requires qualified-human acceptance. This candidate has a confirmed L1 precision error and a Verifier L2 miss.",
+    "diagnostic_scores": {
+      "Q1": 3,
+      "Q2": 2,
+      "Q3": 2,
+      "Q4": 3,
+      "Q5": 2,
+      "Q6": 2,
+      "Q7": 2,
+      "Q8": 2,
+      "total": 18,
+      "maximum": 32,
+      "threshold": 24
+    },
+    "hidden_target_coverage": {
+      "DELL_T01": "partial",
+      "DELL_T02": "partial_with_material_numeric_precision_error",
+      "DELL_T03": "covered",
+      "DELL_T04": "covered",
+      "required_conflict": "partial",
+      "required_WWC": "partial_three_of_four_themes",
+      "strongest_counter_thesis": "partial"
+    }
+  },
+  "decision": {
+    "DELL_Experiment_A_pass": false,
+    "S2_05_pass": false,
+    "automatic_rerun": false,
+    "MU_NVDA_authorized": false,
+    "business_report_authorized": false,
+    "next": "S2_05_DELL_LAYERED_RESULT_ROOT_CAUSE_AND_S2_06_SUPERVISION_BOUNDARY_DECISION"
+  },
+  "security": {
+    "raw_capture_secret_scan": "pass",
+    "credential_value_read_or_persisted": false,
+    "raw_capture_tracking": "git_ignored_runtime_only",
+    "raw_capture_root": ".codex_runtime/fin013_s2_05/runs/fin013_s2_05_exp_a_dell_f9e9264951d69da5ed86/raw_model_only",
+    "capture_sha256": {
+      "01_lead_planning": "6a1fb7f66ff356657fa792cb0695a0c90e771e239087e24fafc54ef28c55aec2",
+      "02_specialist_U1": "00cc2ef4a4215ed82e44934313d4800308b75eaca68134a224ef727dccb8e964",
+      "03_specialist_U2": "fb548c97fef036f489250df3a3f1756496170f0f1205ad031a8f398527d3b7f5",
+      "04_specialist_U3": "899e8728133edb5a20944d641756dc29ae2c9683e7f1e43d7ef5b4b53f662f45",
+      "05_specialist_U4": "95437584484cde007b7b364cbdc86c210fbddb6eade0acdac1b8cc046c34d061",
+      "06_specialist_U5": "d05b1b43484fa49409e032d2e8c270c9757636ce3799f04ac303065c1243d9d9",
+      "07_specialist_U6": "ec0540aa68caaee5828e0eb231199f16b6d1eb881c6a3c78a30c218180c827bc",
+      "08_synthesis": "84236afb2e41d140b36d1c13e10eebc138aa3a00f53252a575d9efb7bed3f3da",
+      "09_writer": "00ed78eff870139b8ff42f2f77877c75bcb1065eb6eee2e245fd60da36e10da7",
+      "10_verifier": "866f772b333a0537b2511102b1f01e01cb10dfdb56b94f524002f56174b6fad4"
+    }
+  }
+}

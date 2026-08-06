@@ -2,7 +2,7 @@
 
 日期：2026-08-06  
 更新：2026-08-07
-状态：`active / Codex gold candidates complete / two-track comparison rebaselined / shared evidence freeze next`
+状态：`active / Codex gold candidates complete / two-track comparison rebaselined / shared evidence frozen / Experiment A admission decision next`
 
 ## 1. 比较目标
 
@@ -24,6 +24,16 @@
 5. leakage checks、input digest、case/version identity 和预算。
 
 Codex Gold candidate 实际使用了产品本地数据、部分可用 MCP 与额外官方公开来源，不能笼统声称“当前完整 MCP 已跑通”。Experiment A 必须先把这些事实编译进共享 Pack；若仍有可见证据差异，必须逐项登记，相关维度不得用于模型强弱结论。
+
+### 2.1 S2-04 冻结结果
+
+- model-visible Pack：`eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json`，digest=`93a75f3d…0030d`；
+- model-visible blind input：`eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json`，digest=`55b47486…61688`；
+- evaluator-only hidden objects：`eval_sets/fin_0_1_3_same_evidence_v1/evaluator_only/hidden_gold_scoring_objects_v1.json`，digest=`4ec201a5…4ebab`；
+- 内容规模：`3 cases / 10 sources / 33 evidence / 12 derived numeric / 12 explicit gaps / 12 hidden targets`；
+- 冻结 manifest：`configs/releases/fin_ia_0_1_3_s2_04_shared_benchmark_evidence_freeze_v1_0.json`。
+
+模型可见材料由原始事实重新编译，不沿用 Gold 报告的章节顺序或结论式标题。可见与 evaluator-only 对象物理隔离，validator 同时阻断未来来源、跨案证据、隐藏 key/phrase、公式漂移、digest 篡改及 hidden target 跨案绑定。S2-04 没有模型、MCP、网络或产品运行；Experiment A 的 admission 尚未签发。
 
 ## 3. Experiment A：同证据、零检索
 

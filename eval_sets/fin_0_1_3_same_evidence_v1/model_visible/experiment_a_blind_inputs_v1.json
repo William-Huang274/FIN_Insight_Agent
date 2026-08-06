@@ -1,0 +1,1004 @@
+{
+  "blind_input_digest": "55b474867594c002cd87494fc3d825b39cc60f3000adae06253f8e2256a61688",
+  "cases": [
+    {
+      "as_of": "2026-08-06",
+      "case_key": "DELL",
+      "derived_numeric": [
+        {
+          "formula": "16.1/43.842*100",
+          "metric": "ai_server_revenue_share_of_company",
+          "unit": "percent",
+          "value": "36.72"
+        },
+        {
+          "formula": "16.1/29.009*100",
+          "metric": "ai_server_revenue_share_of_isg",
+          "unit": "percent",
+          "value": "55.50"
+        },
+        {
+          "formula": "3.055/29.009*100",
+          "metric": "isg_operating_margin",
+          "unit": "percent",
+          "value": "10.53"
+        },
+        {
+          "formula": "4.081/43.842*100",
+          "metric": "operating_cash_flow_margin",
+          "unit": "percent",
+          "value": "9.31"
+        },
+        {
+          "formula": "24.4/16.1",
+          "metric": "orders_to_revenue",
+          "unit": "ratio",
+          "value": "1.52"
+        },
+        {
+          "formula": "51.3/16.1",
+          "metric": "backlog_to_quarter_revenue",
+          "unit": "ratio",
+          "value": "3.19"
+        }
+      ],
+      "evidence_items": [
+        {
+          "authority_boundary": "订单、收入、backlog 与客户数口径不同；不能把 backlog 视为不可撤销收入，也不能由客户数推出收入集中度。",
+          "evidence_digest": "bc0873731ddfd173f031256f2f8f0a24c9844eec3beb84ba70e2ba5650289991",
+          "evidence_id": "DELL_E01",
+          "numeric_facts": [
+            {
+              "metric": "ai_orders",
+              "unit": "USD_billion",
+              "value": "24.4"
+            },
+            {
+              "metric": "ai_server_revenue",
+              "unit": "USD_billion",
+              "value": "16.1"
+            },
+            {
+              "metric": "ai_backlog",
+              "unit": "USD_billion",
+              "value": "51.3"
+            },
+            {
+              "metric": "ai_customers",
+              "unit": "count_lower_bound",
+              "value": "5000"
+            }
+          ],
+          "observed_period": "Q1 FY2027",
+          "source_id": "SRC_DELL_Q1_FY27_CALL",
+          "statement": "Dell 披露 AI 服务器订单 244 亿美元、AI 服务器收入 161 亿美元、期末 AI backlog 513 亿美元，AI 客户超过 5,000。",
+          "topics": [
+            "orders",
+            "revenue",
+            "backlog",
+            "customers"
+          ]
+        },
+        {
+          "authority_boundary": "ISG 包含 AI server、传统 server、networking 与 storage；分部利润不能直接当作 AI server 独立利润。",
+          "evidence_digest": "b9af0b5a6fdcc70a9668df25a36930a383d5477de15115a74d619c18f2b45f4d",
+          "evidence_id": "DELL_E02",
+          "numeric_facts": [
+            {
+              "metric": "revenue",
+              "unit": "USD_billion",
+              "value": "43.842"
+            },
+            {
+              "metric": "isg_revenue",
+              "unit": "USD_billion",
+              "value": "29.009"
+            },
+            {
+              "metric": "isg_operating_income",
+              "unit": "USD_billion",
+              "value": "3.055"
+            },
+            {
+              "metric": "operating_cash_flow",
+              "unit": "USD_billion",
+              "value": "4.081"
+            }
+          ],
+          "observed_period": "Q1 FY2027",
+          "source_id": "SRC_DELL_Q1_FY27_EXHIBIT",
+          "statement": "公司收入 438.42 亿美元；ISG 收入 290.09 亿美元、营业利润 30.55 亿美元；经营现金流 40.81 亿美元。",
+          "topics": [
+            "company_financials",
+            "segment_profit",
+            "cash_flow"
+          ]
+        },
+        {
+          "authority_boundary": "这是方向性管理层披露，不是可重算的 AI server 独立 gross margin、operating income 或 FCF。",
+          "evidence_digest": "f7ed96f20930a37af0ff0f04c3988c4c8231a70df104521e0a3aaaa7d1b4dbf5",
+          "evidence_id": "DELL_E03",
+          "numeric_facts": [],
+          "observed_period": "Q1 FY2027",
+          "source_id": "SRC_DELL_Q1_FY27_CALL",
+          "statement": "管理层称 AI server profitability 符合中个位数营业利润率目标，并称 Dell IP storage 是 ISG 盈利的重要驱动。",
+          "topics": [
+            "unit_economics",
+            "storage",
+            "profitability"
+          ]
+        },
+        {
+          "authority_boundary": "不能由供应约束单独量化未来订单、取消率、部署利用率或约束持续期。",
+          "evidence_digest": "a514539f1e5357ef85aac61b0cb7bfb5c583806c9de1c1360072bc1356715a9d",
+          "evidence_id": "DELL_E04",
+          "numeric_facts": [],
+          "observed_period": "Q1 FY2027",
+          "source_id": "SRC_DELL_Q1_FY27_CALL",
+          "statement": "管理层称 memory 是主要供应约束、需求超过供给，并承认客户存在 buy-ahead 或 pull-forward。",
+          "topics": [
+            "supply",
+            "memory",
+            "order_timing"
+          ]
+        },
+        {
+          "authority_boundary": "披露说明机制与风险，不提供 Q1 FY2027 AI 独立利润或未来营运资本结果。",
+          "evidence_digest": "5a1ca4afdc670073852e59f98b44e36dfc29f7dbdc0912b28c2becac81f38e1a",
+          "evidence_id": "DELL_E05",
+          "numeric_facts": [],
+          "observed_period": "FY2026",
+          "source_id": "SRC_DELL_FY26_10K",
+          "statement": "Dell 披露 AI 需求到出货具有非线性，业务组合向 AI-optimized servers 转移会降低 gross-margin rate，并影响 inventory、receivables 与 payables。",
+          "topics": [
+            "mix",
+            "gross_margin",
+            "working_capital",
+            "timing"
+          ]
+        },
+        {
+          "authority_boundary": "公司 guidance 不是已实现收入；需要后续订单转换、利润率与现金流验证。",
+          "evidence_digest": "9ac1151bacc95b331cb2bd52a27a57e4ed1f9079cb7cd7e4a097ca66619fd1c3",
+          "evidence_id": "DELL_E06",
+          "numeric_facts": [
+            {
+              "metric": "ai_server_revenue_guidance",
+              "unit": "USD_billion",
+              "value": "60"
+            }
+          ],
+          "observed_period": "FY2027 guidance",
+          "source_id": "SRC_DELL_Q1_FY27_CALL",
+          "statement": "Dell 给出 FY2027 约 600 亿美元 AI server revenue guidance。",
+          "topics": [
+            "guidance",
+            "expectations"
+          ]
+        },
+        {
+          "authority_boundary": "Microsoft 的行业需求披露不证明其为 Dell 客户，也不能直接映射 Dell 收入。",
+          "evidence_digest": "b9dcfffe2fb8c461fc8c39d9051eafbc2711ec6e35c1a838e725136457451e63",
+          "evidence_id": "DELL_E07",
+          "numeric_facts": [
+            {
+              "metric": "microsoft_2026_capex",
+              "unit": "USD_billion",
+              "value": "190"
+            }
+          ],
+          "observed_period": "calendar 2026 outlook",
+          "source_id": "SRC_MSFT_Q3_FY26_CALL",
+          "statement": "Microsoft 预计 2026 年资本开支约 1,900 亿美元，称至少到 2026 年仍有容量约束，并继续采购多家加速器与服务器基础设施。",
+          "topics": [
+            "downstream_capex",
+            "capacity",
+            "industry_demand"
+          ]
+        },
+        {
+          "authority_boundary": "Micron 的价格和出货数据说明内存市场背景，不能直接给出 Dell 采购价、转嫁能力或毛利影响。",
+          "evidence_digest": "5007ab0ed0e31b0c111b68f93872f780bf3ba0c7695cd5603c63765c677461e7",
+          "evidence_id": "DELL_E08",
+          "numeric_facts": [],
+          "observed_period": "Q3 FY2026",
+          "source_id": "SRC_MU_Q3_FY26_REMARKS",
+          "statement": "Micron 披露 DRAM 与 NAND 价格大幅环比上涨，而 bit shipments 仅低至中个位数增长。",
+          "topics": [
+            "memory_pricing",
+            "component_cost",
+            "industry_supply"
+          ]
+        },
+        {
+          "authority_boundary": "快照为非权威时点语境，不是 forward valuation、目标价或交易建议。",
+          "evidence_digest": "d9f6ad745a5d7344a8fadcb8413db7afc4767ce59b3c625fe9d986d8d33bf1a6",
+          "evidence_id": "DELL_E09",
+          "numeric_facts": [
+            {
+              "metric": "share_price",
+              "unit": "USD_per_share",
+              "value": "450.50"
+            },
+            {
+              "metric": "market_cap",
+              "unit": "USD_billion",
+              "value": "296.6"
+            },
+            {
+              "metric": "trailing_pe",
+              "unit": "multiple",
+              "value": "36.0"
+            }
+          ],
+          "observed_period": "2026-08-06 snapshot",
+          "source_id": "SRC_MARKET_SNAPSHOT_20260806",
+          "statement": "市场快照记录 DELL 价格 450.50 美元、市值约 2,966 亿美元、静态 P/E 约 36.0 倍。",
+          "topics": [
+            "market_context",
+            "price_in"
+          ]
+        }
+      ],
+      "explicit_gaps": [
+        {
+          "gap_id": "DELL_G01",
+          "statement": "缺少 AI server 独立 gross margin、精确 operating margin 与 FCF。"
+        },
+        {
+          "gap_id": "DELL_G02",
+          "statement": "缺少 backlog 取消权、融资条件、客户集中与交付时间分布。"
+        },
+        {
+          "gap_id": "DELL_G03",
+          "statement": "缺少独立可审计的部署利用率与终端业务价值数据。"
+        },
+        {
+          "gap_id": "DELL_G04",
+          "statement": "缺少一致口径的 forward EV/EBITDA、同行和情景估值面板。"
+        }
+      ],
+      "instructions": [
+        "只使用本输入中的 Evidence、Numeric、来源边界和明确 gap；不得补充外部事实。",
+        "区分事实、bounded inference、cannot infer 和需要补证的判断。",
+        "形成公司专属 thesis、最强反方、跨证据冲突/依赖、price-in 边界和可观测 What-Would-Change。",
+        "引用 Evidence ID；不得把 source boundary 或 gap 改写成正面事实。"
+      ],
+      "issuer": {
+        "cik": "0001571996",
+        "legal_name": "Dell Technologies Inc.",
+        "ticker": "DELL"
+      },
+      "model_visible_digest": "90353a5c0a8b82cec630403e9f890245168118c8e03371aeb5967bb5e256ed63",
+      "research_objective": "评估 Dell AI 基础设施业务的需求真实性与持续性、利润和现金价值捕获、供应与客户风险、市场预期及可证伪条件。",
+      "rubric_ref": "docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md",
+      "tool_access": "none_experiment_A_same_evidence_only"
+    },
+    {
+      "as_of": "2026-08-06",
+      "case_key": "MU",
+      "derived_numeric": [
+        {
+          "formula": "18.3/41.456*100",
+          "metric": "adjusted_fcf_margin",
+          "unit": "percent",
+          "value": "44.14"
+        },
+        {
+          "formula": "7.1/41.456*100",
+          "metric": "capex_to_revenue",
+          "unit": "percent",
+          "value": "17.13"
+        },
+        {
+          "formula": "25.293/41.456*100",
+          "metric": "cloud_plus_core_data_center_share",
+          "unit": "percent",
+          "value": "61.01"
+        }
+      ],
+      "evidence_items": [
+        {
+          "authority_boundary": "单季历史高利润不能直接代表中周期盈利；adjusted FCF 口径需与融资性 deposits 区分。",
+          "evidence_digest": "0692d69ca987ca40d7346d2f0bc7bab0ba0a50d1b1bb2c31a8e3030fda134fef",
+          "evidence_id": "MU_E01",
+          "numeric_facts": [
+            {
+              "metric": "revenue",
+              "unit": "USD_billion",
+              "value": "41.456"
+            },
+            {
+              "metric": "gaap_gross_margin",
+              "unit": "percent",
+              "value": "84.6"
+            },
+            {
+              "metric": "gaap_operating_margin",
+              "unit": "percent",
+              "value": "80.4"
+            },
+            {
+              "metric": "adjusted_fcf",
+              "unit": "USD_billion",
+              "value": "18.3"
+            },
+            {
+              "metric": "capex",
+              "unit": "USD_billion",
+              "value": "7.1"
+            }
+          ],
+          "observed_period": "Q3 FY2026",
+          "source_id": "SRC_MU_Q3_FY26_RESULTS",
+          "statement": "Micron 披露收入 414.56 亿美元、GAAP gross margin 84.6%、GAAP operating margin 80.4%、adjusted FCF 183 亿美元、capex 71 亿美元。",
+          "topics": [
+            "company_financials",
+            "margin",
+            "cash_flow",
+            "capex"
+          ]
+        },
+        {
+          "authority_boundary": "业务单元收入不是 HBM 独立收入，不能直接归因于单一产品或客户。",
+          "evidence_digest": "ba8818ea1939d02def91ff550cadbc46073cb52e779067a9c1b8489d28ac0636",
+          "evidence_id": "MU_E02",
+          "numeric_facts": [
+            {
+              "metric": "cloud_plus_core_data_center_revenue",
+              "unit": "USD_billion",
+              "value": "25.293"
+            }
+          ],
+          "observed_period": "Q3 FY2026",
+          "source_id": "SRC_MU_Q3_FY26_RESULTS",
+          "statement": "Cloud 与 Core Data Center 合计收入 252.93 亿美元。",
+          "topics": [
+            "data_center",
+            "business_mix"
+          ]
+        },
+        {
+          "authority_boundary": "DRAM 总量包含 HBM 与非 HBM；区间描述不能被伪装为精确百分比。",
+          "evidence_digest": "6cbc68a811cc2f704e4413b74f848256a1b1a3e5ed786328c64218e36d9384d2",
+          "evidence_id": "MU_E03",
+          "numeric_facts": [
+            {
+              "metric": "dram_revenue",
+              "unit": "USD_billion",
+              "value": "31.3"
+            },
+            {
+              "metric": "dram_revenue_share",
+              "unit": "percent",
+              "value": "76"
+            }
+          ],
+          "observed_period": "Q3 FY2026",
+          "source_id": "SRC_MU_Q3_FY26_REMARKS",
+          "statement": "DRAM 收入约 313 亿美元、占总收入 76%；环比 bit shipments 低个位数增长，价格上涨低 60% 区间。",
+          "topics": [
+            "dram",
+            "price_volume_mix"
+          ]
+        },
+        {
+          "authority_boundary": "NAND 价格/出货区间是公司披露，不代表未来价格或行业精确份额。",
+          "evidence_digest": "649202cabcf7db5d9e7c06ded45ea49b898dd7698c854cf26dc34a79e0a33fa2",
+          "evidence_id": "MU_E04",
+          "numeric_facts": [
+            {
+              "metric": "nand_revenue",
+              "unit": "USD_billion",
+              "value": "9.9"
+            },
+            {
+              "metric": "nand_revenue_share",
+              "unit": "percent",
+              "value": "24"
+            }
+          ],
+          "observed_period": "Q3 FY2026",
+          "source_id": "SRC_MU_Q3_FY26_REMARKS",
+          "statement": "NAND 收入约 99 亿美元、占总收入 24%；环比 bit shipments 中个位数增长，价格上涨中 80% 区间。",
+          "topics": [
+            "nand",
+            "price_volume_mix"
+          ]
+        },
+        {
+          "authority_boundary": "RPO 是最低量价口径，不等于总收入、不可撤销利润、固定毛利率或自由现金流。",
+          "evidence_digest": "92a6792993f4434fa611395f19ce8cfb307c1a762f857a5692128684ce3d881a",
+          "evidence_id": "MU_E05",
+          "numeric_facts": [
+            {
+              "metric": "strategic_customer_agreements",
+              "unit": "count",
+              "value": "16"
+            },
+            {
+              "metric": "rpo",
+              "unit": "USD_billion_approx",
+              "value": "100"
+            },
+            {
+              "metric": "deposits_and_commitments",
+              "unit": "USD_billion_approx",
+              "value": "22"
+            },
+            {
+              "metric": "dram_volume_coverage",
+              "unit": "percent_approx",
+              "value": "20"
+            },
+            {
+              "metric": "nand_volume_coverage",
+              "unit": "percent_approx",
+              "value": "33.33"
+            }
+          ],
+          "observed_period": "current agreements",
+          "source_id": "SRC_MU_Q3_FY26_REMARKS",
+          "statement": "Micron 披露 16 份通常为五年且带 take-or-pay 的 Strategic Customer Agreements，约 1,000 亿美元 RPO 和约 220 亿美元 deposits/financial commitments；约覆盖期间 DRAM volume 的 20% 和 NAND volume 的三分之一。",
+          "topics": [
+            "contracts",
+            "rpo",
+            "deposits",
+            "volume_visibility"
+          ]
+        },
+        {
+          "authority_boundary": "不披露 HBM 独立 gross margin、份额、客户身份或长期资格结果；lead customer 不等于唯一客户。",
+          "evidence_digest": "8a117c46574b28737a56fb903d2091969d96adc33475f3accc3b4b0c84e416fb",
+          "evidence_id": "MU_E06",
+          "numeric_facts": [
+            {
+              "metric": "hbm4_revenue",
+              "unit": "USD_billion_lower_bound",
+              "value": "1"
+            }
+          ],
+          "observed_period": "current product roadmap",
+          "source_id": "SRC_MU_Q3_FY26_REMARKS",
+          "statement": "Micron 披露 HBM4 已面向 lead customer 平台高量出货并向多个终端客户送样，HBM4 ramp 速度约为 HBM3E 的两倍且收入已超过 10 亿美元；HBM4E 预计 2027 年量产。",
+          "topics": [
+            "hbm4",
+            "qualification",
+            "roadmap"
+          ]
+        },
+        {
+          "authority_boundary": "NVIDIA 路线图提供需求时点语境，不证明 Micron 的指定份额、资格或收入。",
+          "evidence_digest": "f5d7442d27eb84d83fb213be7afd0d33e0b6de2d5ce04decd593d0eb66043dd3",
+          "evidence_id": "MU_E07",
+          "numeric_facts": [],
+          "observed_period": "FY2027 roadmap",
+          "source_id": "SRC_NVDA_Q1_FY27_10Q",
+          "statement": "NVIDIA 预计 Rubin 在 FY2027 下半年推出。",
+          "topics": [
+            "customer_platform_roadmap",
+            "product_timing"
+          ]
+        },
+        {
+          "authority_boundary": "Dell 的供应评论不是 Micron 订单、客户或价格的直接证明。",
+          "evidence_digest": "3c7be26dffd78077088f0db281726eb488c9729e150b7a60b03030045e486cb4",
+          "evidence_id": "MU_E08",
+          "numeric_facts": [],
+          "observed_period": "Q1 FY2027",
+          "source_id": "SRC_DELL_Q1_FY27_CALL",
+          "statement": "Dell 称 memory 是 AI 与传统服务器的主要供应约束，客户正在更长周期锁定基础设施。",
+          "topics": [
+            "downstream_demand",
+            "memory_supply"
+          ]
+        },
+        {
+          "authority_boundary": "行业下游披露不证明 Micron 具体客户、合同或收入归因。",
+          "evidence_digest": "22afcd50eef6b71993e80be1b4c0c9b124b97bcaf58ae0fa3160c7f5790ccf0e",
+          "evidence_id": "MU_E09",
+          "numeric_facts": [
+            {
+              "metric": "microsoft_2026_capex",
+              "unit": "USD_billion",
+              "value": "190"
+            },
+            {
+              "metric": "higher_component_price_effect",
+              "unit": "USD_billion_approx",
+              "value": "25"
+            }
+          ],
+          "observed_period": "calendar 2026 outlook",
+          "source_id": "SRC_MSFT_Q3_FY26_CALL",
+          "statement": "Microsoft 预计 2026 年资本开支约 1,900 亿美元，其中约 250 亿美元与更高组件价格有关，并称容量至少到 2026 年仍受限。",
+          "topics": [
+            "downstream_capex",
+            "component_pricing",
+            "capacity"
+          ]
+        },
+        {
+          "authority_boundary": "TSMC 数据是 AI 供应链扩容语境，不能直接量化 Micron HBM 产能、良率或份额。",
+          "evidence_digest": "1f528677f97ceaf80f6a52592ee110b786cf4633f3d0c8bea086bd2e91ce570a",
+          "evidence_id": "MU_E10",
+          "numeric_facts": [
+            {
+              "metric": "tsmc_revenue",
+              "unit": "USD_billion",
+              "value": "40.2"
+            },
+            {
+              "metric": "tsmc_gross_margin",
+              "unit": "percent",
+              "value": "67.7"
+            }
+          ],
+          "observed_period": "Q2 2026",
+          "source_id": "SRC_TSMC_Q2_2026_RESULTS",
+          "statement": "TSMC 披露收入 402 亿美元、gross margin 67.7%，并继续扩张先进制程与先进封装。",
+          "topics": [
+            "upstream_capacity",
+            "advanced_packaging",
+            "industry_supply"
+          ]
+        },
+        {
+          "authority_boundary": "静态 P/E 使用周期高位盈利，不能直接代表中周期估值或目标价。",
+          "evidence_digest": "5dc6156ed35b7cdefc04c2f4eccc03a8f5bb619891499c91f45309b7f803ad38",
+          "evidence_id": "MU_E11",
+          "numeric_facts": [
+            {
+              "metric": "share_price",
+              "unit": "USD_per_share",
+              "value": "898.90"
+            },
+            {
+              "metric": "market_cap",
+              "unit": "USD_billion",
+              "value": "1030"
+            },
+            {
+              "metric": "trailing_pe",
+              "unit": "multiple",
+              "value": "20.4"
+            }
+          ],
+          "observed_period": "2026-08-06 snapshot",
+          "source_id": "SRC_MARKET_SNAPSHOT_20260806",
+          "statement": "市场快照记录 MU 价格 898.90 美元、市值约 1.030 万亿美元、静态 P/E 约 20.4 倍。",
+          "topics": [
+            "market_context",
+            "price_in"
+          ]
+        }
+      ],
+      "explicit_gaps": [
+        {
+          "gap_id": "MU_G01",
+          "statement": "缺少 HBM 独立收入、gross margin、客户集中和份额。"
+        },
+        {
+          "gap_id": "MU_G02",
+          "statement": "缺少 SCA 客户、floor/ceiling、取消条款和产品级利润口径。"
+        },
+        {
+          "gap_id": "MU_G03",
+          "statement": "缺少 SK hynix、Samsung 同期同口径 HBM 供给/份额面板。"
+        },
+        {
+          "gap_id": "MU_G04",
+          "statement": "缺少 2027–2028 DRAM/NAND 有效产能、库存和中周期估值模型。"
+        }
+      ],
+      "instructions": [
+        "只使用本输入中的 Evidence、Numeric、来源边界和明确 gap；不得补充外部事实。",
+        "区分事实、bounded inference、cannot infer 和需要补证的判断。",
+        "形成公司专属 thesis、最强反方、跨证据冲突/依赖、price-in 边界和可观测 What-Would-Change。",
+        "引用 Evidence ID；不得把 source boundary 或 gap 改写成正面事实。"
+      ],
+      "issuer": {
+        "cik": "0000723125",
+        "legal_name": "Micron Technology, Inc.",
+        "ticker": "MU"
+      },
+      "model_visible_digest": "c11bbfab503026587415f07ff7ba1902b0931e381de28216299a6d39d53f6393",
+      "research_objective": "评估 Micron HBM 与数据中心内存增长的结构性和周期性来源、价格/出货/利润/现金传导、长期协议质量、供给响应和市场预期。",
+      "rubric_ref": "docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md",
+      "tool_access": "none_experiment_A_same_evidence_only"
+    },
+    {
+      "as_of": "2026-08-06",
+      "case_key": "NVDA",
+      "derived_numeric": [
+        {
+          "formula": "75.2/81.615*100",
+          "metric": "data_center_share_of_revenue",
+          "unit": "percent",
+          "value": "92.14"
+        },
+        {
+          "formula": "53.536/81.615*100",
+          "metric": "gaap_operating_margin",
+          "unit": "percent",
+          "value": "65.60"
+        },
+        {
+          "formula": "50.344/81.615*100",
+          "metric": "operating_cash_flow_margin",
+          "unit": "percent",
+          "value": "61.68"
+        }
+      ],
+      "evidence_items": [
+        {
+          "authority_boundary": "Data Center 收入不等于终端应用 ROI，也不单独证明未来增速。",
+          "evidence_digest": "c2207dbda1d40e0412e03caf438a3fec4b0451cb64b1be0cb781a34c0e17a32b",
+          "evidence_id": "NVDA_E01",
+          "numeric_facts": [
+            {
+              "metric": "revenue",
+              "unit": "USD_billion",
+              "value": "81.615"
+            },
+            {
+              "metric": "data_center_revenue",
+              "unit": "USD_billion",
+              "value": "75.2"
+            },
+            {
+              "metric": "data_center_compute",
+              "unit": "USD_billion",
+              "value": "60.4"
+            },
+            {
+              "metric": "data_center_networking",
+              "unit": "USD_billion",
+              "value": "14.8"
+            }
+          ],
+          "observed_period": "Q1 FY2027",
+          "source_id": "SRC_NVDA_Q1_FY27_RESULTS",
+          "statement": "NVIDIA 披露收入 816.15 亿美元，Data Center 收入 752 亿美元，其中 compute 604 亿美元、networking 148 亿美元。",
+          "topics": [
+            "revenue",
+            "data_center",
+            "compute",
+            "networking"
+          ]
+        },
+        {
+          "authority_boundary": "当季利润与现金质量不保证长期 margin、客户资本回报或估值回报。",
+          "evidence_digest": "0d49ab02e26f2a0214dac1bf81c071bea298621b44b803ae0a2e2242edbdf320",
+          "evidence_id": "NVDA_E02",
+          "numeric_facts": [
+            {
+              "metric": "gaap_gross_margin",
+              "unit": "percent",
+              "value": "74.9"
+            },
+            {
+              "metric": "gaap_operating_income",
+              "unit": "USD_billion",
+              "value": "53.536"
+            },
+            {
+              "metric": "operating_cash_flow",
+              "unit": "USD_billion",
+              "value": "50.344"
+            }
+          ],
+          "observed_period": "Q1 FY2027",
+          "source_id": "SRC_NVDA_Q1_FY27_RESULTS",
+          "statement": "GAAP gross margin 为 74.9%，GAAP operating income 为 535.36 亿美元，operating cash flow 为 503.44 亿美元。",
+          "topics": [
+            "margin",
+            "operating_income",
+            "cash_flow"
+          ]
+        },
+        {
+          "authority_boundary": "展望不是已实现收入；不包含中国 DC compute 的假设也不消除其他政策风险。",
+          "evidence_digest": "3466f5b2c16e462b1fa95a4ade198311bc9bdc77d589214892ec1458a0123f2d",
+          "evidence_id": "NVDA_E03",
+          "numeric_facts": [
+            {
+              "metric": "q2_revenue_outlook",
+              "unit": "USD_billion",
+              "value": "91"
+            },
+            {
+              "metric": "outlook_range",
+              "unit": "percent_plus_minus",
+              "value": "2"
+            }
+          ],
+          "observed_period": "Q2 FY2027 outlook",
+          "source_id": "SRC_NVDA_Q1_FY27_RESULTS",
+          "statement": "NVIDIA 给出 Q2 FY2027 收入 910 亿美元±2% 的展望，且未假设中国 Data Center compute 收入。",
+          "topics": [
+            "guidance",
+            "china",
+            "expectations"
+          ]
+        },
+        {
+          "authority_boundary": "直接客户可能是云厂商、ODM 或分销渠道，不能自动映射到最终客户身份或终端需求集中。",
+          "evidence_digest": "c02b59661d5277183c77c14deef8de55b810a03c06cbbf9357e3c1ffd1cf0e7b",
+          "evidence_id": "NVDA_E04",
+          "numeric_facts": [
+            {
+              "metric": "direct_customer_1_share",
+              "unit": "percent",
+              "value": "21"
+            },
+            {
+              "metric": "direct_customer_2_share",
+              "unit": "percent",
+              "value": "17"
+            },
+            {
+              "metric": "direct_customer_3_share",
+              "unit": "percent",
+              "value": "16"
+            },
+            {
+              "formula": "21+17+16",
+              "metric": "top_three_direct_customer_share",
+              "unit": "percent",
+              "value": "54"
+            }
+          ],
+          "observed_period": "Q1 FY2027",
+          "source_id": "SRC_NVDA_Q1_FY27_10Q",
+          "statement": "三个直接客户分别占收入 21%、17% 和 16%，合计 54%。",
+          "topics": [
+            "customer_concentration",
+            "credit",
+            "demand_timing"
+          ]
+        },
+        {
+          "authority_boundary": "库存增长可来自增长备货或错配；仅凭余额不能判定减值概率。",
+          "evidence_digest": "021212199f3672ce86c00c8f2c6e7c17f123692a37bd5a26acf8dfc308908887",
+          "evidence_id": "NVDA_E05",
+          "numeric_facts": [
+            {
+              "metric": "inventory",
+              "unit": "USD_billion",
+              "value": "25.797"
+            },
+            {
+              "metric": "inventory_qoq_growth",
+              "unit": "percent_approx",
+              "value": "20.5"
+            },
+            {
+              "metric": "excess_inventory_purchase_obligations",
+              "unit": "USD_billion",
+              "value": "3.121"
+            }
+          ],
+          "observed_period": "Q1 FY2027",
+          "source_id": "SRC_NVDA_Q1_FY27_10Q",
+          "statement": "期末 inventory 为 257.97 亿美元、环比增长约 20.5%；excess inventory purchase obligations 为 31.21 亿美元。",
+          "topics": [
+            "inventory",
+            "purchase_commitments",
+            "supply_demand_mismatch"
+          ]
+        },
+        {
+          "authority_boundary": "披露不提供被投对象采购 NVIDIA 的完整映射，不能由投资额推出收入因果或循环融资规模。",
+          "evidence_digest": "a7db75b4e0b737d66e605a5f8aac8a84d0b9e306686e46d3825c4f5769bc9289",
+          "evidence_id": "NVDA_E06",
+          "numeric_facts": [
+            {
+              "metric": "private_company_and_infrastructure_fund_investment",
+              "unit": "USD_billion_approx",
+              "value": "18.6"
+            }
+          ],
+          "observed_period": "Q1 FY2027",
+          "source_id": "SRC_NVDA_Q1_FY27_10Q",
+          "statement": "NVIDIA 披露本季对 private companies 与 infrastructure funds 的投资约 186 亿美元。",
+          "topics": [
+            "ecosystem_investment",
+            "capital_allocation"
+          ]
+        },
+        {
+          "authority_boundary": "历史 charge 证明政策可产生财务影响，但不量化未来规则、许可或损失。",
+          "evidence_digest": "a7f456ee8f2efd62d7cf570a6ab3292654b213a395dfb71ba64ab89b5b1f68a2",
+          "evidence_id": "NVDA_E07",
+          "numeric_facts": [
+            {
+              "metric": "h20_charge",
+              "unit": "USD_billion",
+              "value": "4.5"
+            }
+          ],
+          "observed_period": "prior policy impact and current risks",
+          "source_id": "SRC_NVDA_Q1_FY27_10Q",
+          "statement": "公司披露此前 H20 出口限制造成 45 亿美元 excess inventory/purchase obligation charge，并警告非取消采购承诺和提前下单会放大需求估计错误。",
+          "topics": [
+            "export_controls",
+            "inventory_charge",
+            "commitments"
+          ]
+        },
+        {
+          "authority_boundary": "路线图不保证量产时点、良率、客户采用、旧产品库存或每次转代的 margin。",
+          "evidence_digest": "5db6d437e6255b2d946d741d9f227c003a27fff5e836f606e23708b3ba907883",
+          "evidence_id": "NVDA_E08",
+          "numeric_facts": [],
+          "observed_period": "FY2027 roadmap",
+          "source_id": "SRC_NVDA_Q1_FY27_10Q",
+          "statement": "公司预计 Rubin 在 FY2027 下半年推出；Blackwell 已成为 Data Center 主要架构。",
+          "topics": [
+            "product_cadence",
+            "architecture_transition"
+          ]
+        },
+        {
+          "authority_boundary": "Dell 的下游系统数据不等于 NVIDIA 最终客户利用率、应用收入或订单归因。",
+          "evidence_digest": "7ef68815ee35b4b116c90710e4673845151e932995f0856d71a661bbf8259c52",
+          "evidence_id": "NVDA_E09",
+          "numeric_facts": [
+            {
+              "metric": "dell_ai_orders",
+              "unit": "USD_billion",
+              "value": "24.4"
+            },
+            {
+              "metric": "dell_ai_server_revenue",
+              "unit": "USD_billion",
+              "value": "16.1"
+            },
+            {
+              "metric": "dell_ai_backlog",
+              "unit": "USD_billion",
+              "value": "51.3"
+            }
+          ],
+          "observed_period": "Q1 FY2027",
+          "source_id": "SRC_DELL_Q1_FY27_CALL",
+          "statement": "Dell 披露 AI orders 244 亿美元、AI server revenue 161 亿美元、AI backlog 513 亿美元。",
+          "topics": [
+            "downstream_system_demand",
+            "orders",
+            "deployment_chain"
+          ]
+        },
+        {
+          "authority_boundary": "Micron 未在该披露中确认 NVIDIA 客户映射、份额或供给量。",
+          "evidence_digest": "aca10a64c899a1ac096c66901d1efaf13bf581b29e6ba3ba84adaef51a8f54f7",
+          "evidence_id": "NVDA_E10",
+          "numeric_facts": [],
+          "observed_period": "current product roadmap",
+          "source_id": "SRC_MU_Q3_FY26_REMARKS",
+          "statement": "Micron 披露 HBM4 已面向 lead customer 平台高量出货。",
+          "topics": [
+            "hbm_supply",
+            "platform_readiness"
+          ]
+        },
+        {
+          "authority_boundary": "Microsoft 的资本开支不能完整映射到 NVIDIA 收入或终端 AI 应用回报。",
+          "evidence_digest": "5c6069fffe220d2fb0462ffc421f2e5c320e025d7d23e2d5006fd05d7a1a40bc",
+          "evidence_id": "NVDA_E11",
+          "numeric_facts": [
+            {
+              "metric": "microsoft_2026_capex",
+              "unit": "USD_billion",
+              "value": "190"
+            }
+          ],
+          "observed_period": "calendar 2026 outlook",
+          "source_id": "SRC_MSFT_Q3_FY26_CALL",
+          "statement": "Microsoft 预计 2026 年资本开支约 1,900 亿美元且容量至少到 2026 年仍受限。",
+          "topics": [
+            "hyperscaler_capex",
+            "capacity",
+            "downstream_demand"
+          ]
+        },
+        {
+          "authority_boundary": "TSMC 扩容是产业供给语境，不直接证明 NVIDIA 获得的产能、成本、良率或长期 margin。",
+          "evidence_digest": "9ef37a65b6a9219f57b502d5a0d3c67901917ae2fa9063bea19f23df0977623f",
+          "evidence_id": "NVDA_E12",
+          "numeric_facts": [
+            {
+              "metric": "tsmc_revenue",
+              "unit": "USD_billion",
+              "value": "40.2"
+            },
+            {
+              "metric": "tsmc_gross_margin",
+              "unit": "percent",
+              "value": "67.7"
+            }
+          ],
+          "observed_period": "Q2 2026",
+          "source_id": "SRC_TSMC_Q2_2026_RESULTS",
+          "statement": "TSMC 披露收入 402 亿美元、gross margin 67.7%，并继续扩张先进制程与先进封装。",
+          "topics": [
+            "foundry",
+            "advanced_packaging",
+            "capacity"
+          ]
+        },
+        {
+          "authority_boundary": "快照不能替代 forward FCF、资本成本、情景概率或目标价。",
+          "evidence_digest": "dc18d842d10720a31db0b3f6df902a981797783a369a1a843cfdd46c6fa7b398",
+          "evidence_id": "NVDA_E13",
+          "numeric_facts": [
+            {
+              "metric": "share_price",
+              "unit": "USD_per_share",
+              "value": "219.70"
+            },
+            {
+              "metric": "market_cap",
+              "unit": "USD_billion",
+              "value": "5359"
+            },
+            {
+              "metric": "trailing_pe",
+              "unit": "multiple",
+              "value": "33.4"
+            }
+          ],
+          "observed_period": "2026-08-06 snapshot",
+          "source_id": "SRC_MARKET_SNAPSHOT_20260806",
+          "statement": "市场快照记录 NVDA 价格 219.70 美元、市值约 5.359 万亿美元、静态 P/E 约 33.4 倍。",
+          "topics": [
+            "market_context",
+            "price_in"
+          ]
+        }
+      ],
+      "explicit_gaps": [
+        {
+          "gap_id": "NVDA_G01",
+          "statement": "缺少直接客户到最终客户的完整映射、信用和付款条件。"
+        },
+        {
+          "gap_id": "NVDA_G02",
+          "statement": "缺少统一可审计的 GPU/ASIC 利用率、token economics 与客户 AI ROI 面板。"
+        },
+        {
+          "gap_id": "NVDA_G03",
+          "statement": "缺少生态投资与被投对象 NVIDIA 采购之间的因果和金额映射。"
+        },
+        {
+          "gap_id": "NVDA_G04",
+          "statement": "缺少一致口径的 forward FCF、资本成本和情景估值面板。"
+        }
+      ],
+      "instructions": [
+        "只使用本输入中的 Evidence、Numeric、来源边界和明确 gap；不得补充外部事实。",
+        "区分事实、bounded inference、cannot infer 和需要补证的判断。",
+        "形成公司专属 thesis、最强反方、跨证据冲突/依赖、price-in 边界和可观测 What-Would-Change。",
+        "引用 Evidence ID；不得把 source boundary 或 gap 改写成正面事实。"
+      ],
+      "issuer": {
+        "cik": "0001045810",
+        "legal_name": "NVIDIA Corporation",
+        "ticker": "NVDA"
+      },
+      "model_visible_digest": "454227271c5b6c96f95ab17413747d6cc9f395429465e6cac663bdeabdcf81c5",
+      "research_objective": "评估 NVIDIA AI 基础设施需求与平台价值、利润和现金捕获、客户及供应集中、生态与政策风险、市场预期及可证伪条件。",
+      "rubric_ref": "docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md",
+      "tool_access": "none_experiment_A_same_evidence_only"
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S2.same_evidence_reasoning_benchmark:v1",
+  "schema_version": "fin_ia_0_1_3_s2_shared_benchmark_evidence_freeze_v1_0",
+  "shared_pack_digest": "93a75f3d4863a240ea58824429fe697427edefda31a0a671dddc15f51710030d",
+  "visibility_policy": {
+    "gold_reports_included": false,
+    "hidden_scoring_objects_included": false,
+    "model_visible": true
+  }
+}

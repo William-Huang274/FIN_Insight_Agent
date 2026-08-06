@@ -1,0 +1,230 @@
+{
+  "access_scope": "evaluator_only_never_model_visible",
+  "blind_input_digest": "55b474867594c002cd87494fc3d825b39cc60f3000adae06253f8e2256a61688",
+  "cases": [
+    {
+      "case_key": "DELL",
+      "disallowed_shortcuts": [
+        "backlog 按 100% 转收入",
+        "把 ISG margin 当 AI server margin",
+        "把 Microsoft 写成 Dell 客户",
+        "仅凭静态 P/E 给目标价"
+      ],
+      "expected_thesis": "需求已由订单、收入、backlog 与客户广度共同验证，但投资争议转向低利润 AI server mix、storage/service attach、营运资本和现金转换。",
+      "hidden_case_digest": "9c74dbec60c718f2173a05e8707d6f6bccb26683a1dbf4e37bba50baba791da5",
+      "required_conflict": "业务需求强与当前风险回报未必强必须同时成立并被裁决。",
+      "required_insights": [
+        {
+          "dimensions": [
+            "Q1",
+            "Q2"
+          ],
+          "evidence_ids": [
+            "DELL_E01",
+            "DELL_E07"
+          ],
+          "expected_insight": "区分 Dell 自身订单/收入证据与 Microsoft 产业背景，不虚构客户映射。",
+          "target_id": "DELL_T01"
+        },
+        {
+          "dimensions": [
+            "Q3",
+            "Q4"
+          ],
+          "evidence_ids": [
+            "DELL_E02",
+            "DELL_E03"
+          ],
+          "expected_insight": "区分 10.5% ISG margin 与中个位数 AI server profitability，并解释 storage 对利润捕获的重要性。",
+          "target_id": "DELL_T02"
+        },
+        {
+          "dimensions": [
+            "Q5",
+            "Q6"
+          ],
+          "evidence_ids": [
+            "DELL_E04",
+            "DELL_E05",
+            "DELL_E08"
+          ],
+          "expected_insight": "同时处理供应约束带来的收入可见度、pull-forward、mix 和营运资本风险。",
+          "target_id": "DELL_T03"
+        },
+        {
+          "dimensions": [
+            "Q3",
+            "Q7"
+          ],
+          "evidence_ids": [
+            "DELL_E06",
+            "DELL_E09"
+          ],
+          "expected_insight": "把 600 亿美元 guidance 与静态估值写成待验证预期，不给目标价。",
+          "target_id": "DELL_T04"
+        }
+      ],
+      "required_wwc": [
+        "backlog 转收入和取消/延期",
+        "ISG/AI margin 与 FCF/营运资本",
+        "企业/主权重复采购与 attach",
+        "供应缓解后的订单韧性"
+      ],
+      "strongest_counter_thesis": "backlog 可能含供应恐慌和提前采购，主要经济租流向上游；若供应缓解后订单、margin 与现金转弱，Dell 会重新按周期性 OEM 定价。"
+    },
+    {
+      "case_key": "MU",
+      "disallowed_shortcuts": [
+        "把 DRAM 总收入当 HBM 收入",
+        "把 RPO 当全部收入或利润",
+        "把 84.6% margin 永续化",
+        "用峰值静态 P/E 直接称便宜"
+      ],
+      "expected_thesis": "HBM 产品升级和客户承诺具有结构性，但 Q3 盈利爆发首先由 DRAM/NAND 价格而非 bit growth 驱动；协议缓冲周期而不消灭周期。",
+      "hidden_case_digest": "482b2dc7553e1b5bb188cdeed8a884306fb10c7684b3c1a5b224565100c59dde",
+      "required_conflict": "HBM 结构升级与传统内存价格周期必须同时进入 thesis，不能二选一。",
+      "required_insights": [
+        {
+          "dimensions": [
+            "Q2",
+            "Q3",
+            "Q4"
+          ],
+          "evidence_ids": [
+            "MU_E01",
+            "MU_E03",
+            "MU_E04"
+          ],
+          "expected_insight": "用 DRAM/NAND 量价分解证明当季增长以价格为主，不把全部利润归因 HBM。",
+          "target_id": "MU_T01"
+        },
+        {
+          "dimensions": [
+            "Q1",
+            "Q6"
+          ],
+          "evidence_ids": [
+            "MU_E02",
+            "MU_E06",
+            "MU_E07"
+          ],
+          "expected_insight": "承认 HBM4 产品验证，同时保留 HBM 独立利润、份额和多客户资格缺口。",
+          "target_id": "MU_T02"
+        },
+        {
+          "dimensions": [
+            "Q5",
+            "Q6"
+          ],
+          "evidence_ids": [
+            "MU_E05"
+          ],
+          "expected_insight": "解释 take-or-pay/RPO/deposit 增强可见度但不保证全部收入、固定 margin 或 FCF。",
+          "target_id": "MU_T03"
+        },
+        {
+          "dimensions": [
+            "Q4",
+            "Q7"
+          ],
+          "evidence_ids": [
+            "MU_E08",
+            "MU_E09",
+            "MU_E10",
+            "MU_E11"
+          ],
+          "expected_insight": "同时写出下游紧张与上游扩容，并以价格、bit、资格、产能/库存和中周期盈利作为 WWC。",
+          "target_id": "MU_T04"
+        }
+      ],
+      "required_wwc": [
+        "价格与 bit growth 的接棒",
+        "HBM4/HBM4E 多客户资格和利润池",
+        "SCA 实际确认与重谈",
+        "2027–2028 有效供给、库存和 capex"
+      ],
+      "strongest_counter_thesis": "极端毛利率主要来自短缺，微弱 bit 增长和高价格会刺激供给响应；一旦 ASP 回落，峰值盈利下的静态估值会迅速失真。"
+    },
+    {
+      "case_key": "NVDA",
+      "disallowed_shortcuts": [
+        "把 Dell/Microsoft 直接写成 NVIDIA 收入归因",
+        "把直接客户当最终客户",
+        "把投资额当循环采购证明",
+        "把当前增长直接等同估值上行"
+      ],
+      "expected_thesis": "平台收入、利润和现金质量强，争议已转向客户集中、生态投资反身性、供应承诺、出口、转代和终端 ROI 是否达到高估值门槛。",
+      "hidden_case_digest": "3fe1b3e020887cc948ef19aa151bb61cad0a52241adf0ddd088762a5b4e40dd5",
+      "required_conflict": "强业务、强现金与强集中、强预期必须同时成立；收入确认不能替代终端 ROI 证明。",
+      "required_insights": [
+        {
+          "dimensions": [
+            "Q1",
+            "Q2",
+            "Q3"
+          ],
+          "evidence_ids": [
+            "NVDA_E01",
+            "NVDA_E02",
+            "NVDA_E09",
+            "NVDA_E11"
+          ],
+          "expected_insight": "以发行人收入/利润/现金和下游系统/capex 互证需求，但不把 capex 等同终端 ROI。",
+          "target_id": "NVDA_T01"
+        },
+        {
+          "dimensions": [
+            "Q3",
+            "Q4"
+          ],
+          "evidence_ids": [
+            "NVDA_E01",
+            "NVDA_E08"
+          ],
+          "expected_insight": "用 networking 与系统迭代说明平台价值不只是单颗 GPU，同时保留转代风险。",
+          "target_id": "NVDA_T02"
+        },
+        {
+          "dimensions": [
+            "Q5",
+            "Q6"
+          ],
+          "evidence_ids": [
+            "NVDA_E04",
+            "NVDA_E06"
+          ],
+          "expected_insight": "直接客户 54% 集中与生态投资反身性必须进入主 thesis，且不得虚构最终客户映射或采购因果。",
+          "target_id": "NVDA_T03"
+        },
+        {
+          "dimensions": [
+            "Q6",
+            "Q7"
+          ],
+          "evidence_ids": [
+            "NVDA_E05",
+            "NVDA_E07",
+            "NVDA_E10",
+            "NVDA_E12",
+            "NVDA_E13"
+          ],
+          "expected_insight": "把供给扩容、库存/承诺、出口和高绝对估值写成不同时间尺度的 WWC，而不是抽象风险清单。",
+          "target_id": "NVDA_T04"
+        }
+      ],
+      "required_wwc": [
+        "客户/终端分散和利用率",
+        "networking/software attach 与 Rubin 转代",
+        "库存/承诺相对需求",
+        "出口政策",
+        "自研 ASIC 对价格和 margin 的影响"
+      ],
+      "strongest_counter_thesis": "少数云厂商和模型公司驱动并受产业资本支持的 capex 可能在利用率或应用 ROI 不及预期时减速，叠加库存和不可取消承诺形成双重下修。"
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S2.same_evidence_reasoning_benchmark:v1",
+  "hidden_scoring_digest": "4ec201a52eb0d796658faf9a71c22cfcb1902b73ab52d2c3af9d72ecb9a4ebab",
+  "rubric_ref": "docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md",
+  "schema_version": "fin_ia_0_1_3_s2_shared_benchmark_evidence_freeze_v1_0",
+  "shared_pack_digest": "93a75f3d4863a240ea58824429fe697427edefda31a0a671dddc15f51710030d"
+}

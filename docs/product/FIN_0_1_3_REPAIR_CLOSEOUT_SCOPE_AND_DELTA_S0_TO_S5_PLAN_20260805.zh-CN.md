@@ -1,7 +1,7 @@
 # FIN 0.1.3 修复收口版范围与差量 S0–S5 计划
 
 日期：2026-08-05
-状态：`FIN_0_1_2_honest_block_frozen / FIN_0_1_3_minimum_anchor_complete / three_case_gold_candidates_complete / two_track_rebaseline_active / S2_04_next / FIN_0_2_definition_unchanged`
+状态：`FIN_0_1_2_honest_block_frozen / FIN_0_1_3_minimum_anchor_complete / three_case_gold_candidates_complete / two_track_rebaseline_active / S2_04_complete / S2_05_next / FIN_0_2_definition_unchanged`
 
 > **2026-08-06 用户新增硬要求**：FIN 0.1.3 必须把研究内容输出质量作为 release-blocking 考核，不得再将 L3 的通用 Claim、弱综合、机械 Writer 或不可执行 WWC 降级为 nonblocking finding。八维绝对质量＋paired gain＋qualified human content acceptance 的正式标准见 `docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md`。
 
@@ -230,6 +230,8 @@ Experiment A 的共享 Evidence Pack 必须包含 Codex Gold candidate 使用的
 
 S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成项不撤销。上述 successor 只处理 Gold dogfood 新暴露的能力缺口。执行次序按依赖而不是编号：`S2-04 → Experiment A(S2-05/06) → S1-06/07/08 → S3-06/07 → Experiment B(S3-08/09) → S4 → S5`。
 
+> **2026-08-07 `013-S2-04` 完成并冻结**：DELL、MU、NVDA 的 Gold candidate 被重新编译为中性的 model-visible 事实卡，而不是从 Gold 报告中简单删结论。共享 Pack 固定 `3 cases / 10 sources / 33 evidence items / 12 derived numeric / 12 explicit gaps`；另有 evaluator-only `12 hidden targets`。model-visible blind input 与共享 Pack 的事实、数值、来源边界和 gap 精确相同；Gold thesis、机制综合、counter-thesis、WWC 答案、分数及 evaluator key/phrase 均不可见。两个可见对象与隐藏评分对象物理分目录，逐对象 digest、三案 identity、as-of、source publication date、numeric/formula 重算、跨案污染和隐藏证据 case-local binding 均 fail closed。focused=`10 passed`，current S1–S3 successor=`146 passed`；模型/Provider/网络/MCP=`0/0/0/0`。扩大历史命名回归为 `276 passed / 8 failed`，8 项均属于旧快照的固定资产计数、旧哈希、旧 0.1.4 next-action 或 latest-ledger 假设，不作为 S2-04 失败，也没有改写历史证据换绿。S2-04 只建立公平输入与评估隔离，不证明 DeepSeek 推理质量；下一项是 `013-S2-05` Experiment A admission authority decision，尚未签发模型执行权限。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。
@@ -256,7 +258,7 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 13. [x] 完成 `013-S2-03`：审计 node context yield、重复 role view、Evidence 利用率、容量和成本；零调用编译与 mutation 通过，模型可见 bytes 改变后只执行一次最高负载单节点 natural reproof 并通过，未运行三案例 full-chain。
 14. [x] 保留 `013-S3-01`–`013-S3-05` 与 R3 为 minimum engineering/control anchor：结构、exact-once、9 natural Claim、3 Lead、3 Workpaper、L1/L2 成立；0 thesis-support、0 natural counterevidence 与 29 个未研究 Cell 使其不构成产品级研究证明。
 15. [x] 完成 DELL/MU/NVDA 三份 Codex-authored Gold candidate 与交叉订正；明确它们是混合研究候选，不是当前产品或完整 MCP 已独立产出的报告。
-16. [ ] 执行 `013-S2-04`：从三案研究证据编译共享 Benchmark Evidence Pack、blind input 和隐藏 Gold scoring objects，完成公平性与泄漏检查。
+16. [x] 完成 `013-S2-04`：三案共享 Benchmark Evidence Pack、blind input 和 evaluator-only hidden Gold scoring objects 已按 digest 冻结，公平性、泄漏、跨案污染、日期和数值重算检查通过。
 17. [ ] 执行 `013-S2-05/06` Experiment A：同证据、零检索的 DeepSeek 分析/综合对照；保留 raw、correction 与 corrected 三条轨道并冻结模型能力边界。
 18. [ ] 执行 `013-S1-06/07/08`：修复 MCP operational truth、当前外部来源 runtime 和 Agentic Search 质量门；不调用 DeepSeek 来发现确定性工具缺陷。
 19. [ ] 执行 `013-S3-06/07`：动态 Lead loop 与 EvidenceRequest/targeted repair 闭环。

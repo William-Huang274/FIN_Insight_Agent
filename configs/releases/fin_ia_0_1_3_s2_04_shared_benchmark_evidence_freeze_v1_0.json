@@ -1,0 +1,46 @@
+{
+  "artifact_refs": {
+    "evaluator_only": "eval_sets/fin_0_1_3_same_evidence_v1/evaluator_only/hidden_gold_scoring_objects_v1.json",
+    "model_visible": [
+      "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json",
+      "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json"
+    ]
+  },
+  "as_of": "2026-08-06",
+  "blind_input_digest": "55b474867594c002cd87494fc3d825b39cc60f3000adae06253f8e2256a61688",
+  "cases": [
+    "DELL",
+    "MU",
+    "NVDA"
+  ],
+  "contract_ref": "fin_0_1_3.S2.same_evidence_reasoning_benchmark:v1",
+  "fairness": {
+    "external_tools_enabled": false,
+    "gold_reasoning_visible_to_model": false,
+    "hidden_scores_visible_to_model": false,
+    "mcp_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "same_objective_as_of_source_authority": true
+  },
+  "gold_candidate_refs": [
+    "docs/research/fin_0_1_3_gold_candidates/DELL_research_gold_candidate_20260806.zh-CN.md",
+    "docs/research/fin_0_1_3_gold_candidates/MU_research_gold_candidate_20260806.zh-CN.md",
+    "docs/research/fin_0_1_3_gold_candidates/NVDA_research_gold_candidate_20260806.zh-CN.md"
+  ],
+  "hidden_scoring_digest": "4ec201a52eb0d796658faf9a71c22cfcb1902b73ab52d2c3af9d72ecb9a4ebab",
+  "manifest_digest": "db9c1426b7d80c1d541b34507c76049df08e8f94621c3a28b6183b79cf4c9214",
+  "next_action": "S2_05_EXPERIMENT_A_DEEPSEEK_SAME_EVIDENCE_ADMISSION_AUTHORITY_DECISION",
+  "observed_counts": {
+    "cases": 3,
+    "derived_numeric": 12,
+    "evidence_items": 33,
+    "explicit_gaps": 12,
+    "hidden_targets": 12,
+    "sources": 10
+  },
+  "schema_version": "fin_ia_0_1_3_s2_shared_benchmark_evidence_freeze_v1_0",
+  "shared_pack_digest": "93a75f3d4863a240ea58824429fe697427edefda31a0a671dddc15f51710030d",
+  "status": "S2_04_frozen_experiment_A_admission_not_issued"
+}

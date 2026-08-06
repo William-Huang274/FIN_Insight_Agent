@@ -1,7 +1,7 @@
 # FIN 0.1.3 Codex 三案例 Gold Research Benchmark 范围
 
 日期：2026-08-06  
-状态：`active / three gold candidates complete / hybrid-tool truth recorded / shared benchmark evidence freeze next`
+状态：`active / three gold candidates complete / hybrid-tool truth recorded / shared benchmark evidence frozen / Experiment A admission decision next`
 
 ## 1. 决策
 
@@ -40,6 +40,12 @@
 三份 Gold candidate 是混合研究产物：Codex 使用了产品已有本地数据和研究合同、可正常工作的 MCP market handler，并通过允许的外部公开来源补足官方证据。当前 stdio MCP 的 initialize/list-tools 成功，但 SEC search 与 exact-ledger 出现资源绑定或超时，登记 RC-P36-140；因此不得把三份报告表述为“完全由当前产品工具自主产出”。
 
 下一项不是直接比较最终报告，而是把 Gold 使用的重要官方事实、数值、来源和 lineage 编译成共享 Benchmark Evidence Pack；Gold 的 thesis、机制综合、反方结论、WWC 答案与评分保持隐藏。只有输入证据真正一致，Experiment A 才能评价模型分析能力。
+
+### 3.2 共享 Benchmark Evidence 冻结结果
+
+`013-S2-04` 已完成。三案模型可见材料被重新编译为 `10 source / 33 evidence / 12 derived numeric / 12 explicit gap` 的中性事实面；`12` 个 Gold 评分目标仅存在 evaluator-only 对象中。可见材料与隐藏材料分别位于 `eval_sets/fin_0_1_3_same_evidence_v1/model_visible/` 和 `eval_sets/fin_0_1_3_same_evidence_v1/evaluator_only/`，不得由同一 runner 目录通配读取。
+
+这一步只解决“给 DeepSeek 的证据是否与 Gold 使用的重要事实一致、是否泄漏答案”的公平性问题。它没有证明 DeepSeek 会分析，也没有修复 RC-P36-140 或证明 Agentic Search。下一步先做 Experiment A 的 fresh admission authority decision，再决定是否启动模型调用。
 
 ## 4. 研究交付最低内容
 

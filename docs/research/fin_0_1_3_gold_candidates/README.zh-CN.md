@@ -13,6 +13,15 @@
 - `NVDA_research_gold_candidate_20260806.zh-CN.md`
 - `THREE_CASE_CROSS_REVIEW_20260806.zh-CN.md`：三案互证、订正与 DeepSeek 对比基线。
 
+## S2-04 共享评测输入
+
+Gold 报告不是 DeepSeek 的直接输入。为了避免章节标题、论证顺序和结论措辞泄漏，Experiment A 使用重新编译的中性事实对象：
+
+- `eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json`
+- `eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json`
+
+评分目标单独保存在 `eval_sets/fin_0_1_3_same_evidence_v1/evaluator_only/hidden_gold_scoring_objects_v1.json`。该目录只能由评估器读取，不得进入模型 runner 的文件 allowlist。三者的 digest 与计数由 `configs/releases/fin_ia_0_1_3_s2_04_shared_benchmark_evidence_freeze_v1_0.json` 冻结。
+
 ## 证据边界
 
 - 公司财务与经营事实优先使用发行人公告、SEC filing 和发行人会议材料。
@@ -40,4 +49,3 @@
 - [NVIDIA Q1 FY2027 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/nvda-20260426.htm)
 - [TSMC Q2 2026 results](https://investor.tsmc.com/english/quarterly-results/2026/q2)
 - [Microsoft FY2026 Q3 earnings call](https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3)
-

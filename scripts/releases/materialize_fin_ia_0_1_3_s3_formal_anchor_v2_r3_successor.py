@@ -21,6 +21,9 @@ from sec_agent.s3_cross_cell_synthesis_program import (  # noqa: E402
     compile_s3_cross_cell_synthesis_program,
     load_s3_cross_cell_policy,
 )
+from sec_agent.s3_final_delivery_binding import (  # noqa: E402
+    compile_s3_final_delivery_binding,
+)
 from sec_agent.s3_research_quality_gate import (  # noqa: E402
     compile_s3_research_quality_gate_program,
     load_s3_research_quality_gate_policy,
@@ -88,7 +91,19 @@ def compile_successor(formal_result: dict[str, Any]) -> dict[str, dict[str, Any]
         program_key="research_quality_gate_program",
         program=quality_program,
     )
-    return {"claim": claim, "synthesis": synthesis, "writer": writer, "quality": quality}
+    binding_program = compile_s3_final_delivery_binding(
+        claim_decision=claim,
+        writer_decision=writer,
+        quality_decision=quality,
+        s1_decision=_load("configs/releases/fin_ia_0_1_3_repair_closeout_s1_05_retrieval_evidence_usefulness_and_s1_closeout_v1_0.json"),
+        formal_result=formal_result,
+    )
+    binding = _decision(
+        acceptance={"S3_final_binding": "engineering_pass"},
+        program_key="final_delivery_binding_program",
+        program=binding_program,
+    )
+    return {"claim": claim, "synthesis": synthesis, "writer": writer, "quality": quality, "binding": binding}
 
 
 def main() -> int:
@@ -110,6 +125,7 @@ def main() -> int:
         "writer_counts": outputs["writer"]["workpaper_writer_content_program"]["observed_counts"],
         "quality_counts": outputs["quality"]["research_quality_gate_program"]["observed_counts"],
         "quality_dispositions": outputs["quality"]["research_quality_gate_program"]["current_case_dispositions"],
+        "binding_counts": outputs["binding"]["final_delivery_binding_program"]["observed_counts"],
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
     return 0

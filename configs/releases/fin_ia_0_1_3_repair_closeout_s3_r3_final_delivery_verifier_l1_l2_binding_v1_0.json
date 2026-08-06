@@ -1,0 +1,94 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_r3_final_delivery_verifier_l1_l2_binding_v1_0",
+  "status": "three_all_natural_candidates_sealed_L1_L2_pass_formal_score_pending",
+  "authority": {
+    "source_R3_replayed_or_modified": false,
+    "model_provider_network_source_business_runs": [0, 0, 0, 0, 0],
+    "formal_score_or_acceptance_signed": false,
+    "paired_assessment_performed": false,
+    "qualified_human_acceptance_performed": false
+  },
+  "binding_result": {
+    "final_deliveries": 3,
+    "verifier_bindings": 3,
+    "L1_passes": 3,
+    "L1_findings": 0,
+    "L2_passes": 3,
+    "L2_findings": 0,
+    "sealed_scoreable_candidates": 3,
+    "cases": [
+      {
+        "case_key": "DELL",
+        "final_delivery_digest": "3888d92d5e7b10cf808846101d491cf88cbfb800a95e7e12f10afc9e3b49e152",
+        "verifier_binding_digest": "96b869f82cea70d06b650e628882acb41a586b4ddba373083832e0d930fda1d7",
+        "candidate_context_digest": "4ea49082b9060560f99f7b07d227572137eb22e384161e4a1c1cb2c3732df223",
+        "scoreability": "eligible_pending_formal_score"
+      },
+      {
+        "case_key": "MU",
+        "final_delivery_digest": "d895b35b60d7d67d91ad4bb0912e0c102de3f8838fde58e7fc7fc5f0c429e76d",
+        "verifier_binding_digest": "2ec8a360d4739e7cb785422b6067c10eebb2b6b106b311e462cd225b68361e77",
+        "candidate_context_digest": "53d7a9833a52a002a37e134a4f9c434c8e7e1b719aac0274b8df907f0345e078",
+        "scoreability": "eligible_pending_formal_score"
+      },
+      {
+        "case_key": "NVDA",
+        "final_delivery_digest": "46c625bd737336d5feef950713d449c759439d4ae55e4fa699504cd19ec0388a",
+        "verifier_binding_digest": "543aee49410e87b2c310123ce8633430c849186c4361575151012698a03795e8",
+        "candidate_context_digest": "eb37c837ea2f4af3641caa08d3a14365a220cb2081d3d3c2d30ce9503c3e0933",
+        "scoreability": "eligible_pending_formal_score"
+      }
+    ]
+  },
+  "L1_contract": {
+    "checks": [
+      "case_identity",
+      "numeric_candidate_authority",
+      "metric_family",
+      "normalized_value",
+      "unit",
+      "published_at"
+    ],
+    "duplicate_numeric_is_quality_finding_not_truth_failure": true
+  },
+  "L2_contract": {
+    "checks": [
+      "evidence_candidate_authority_and_case",
+      "cannot_infer_has_typed_gap_and_no_observation_or_thesis_promotion",
+      "claim_has_evidence_boundary_or_gap",
+      "workpaper_is_all_natural",
+      "section_claim_ids_are_known"
+    ],
+    "zero_thesis_support_or_counterevidence_is_quality_finding_not_fidelity_failure": true
+  },
+  "remaining_quality_findings": [
+    "thesis_support_aliases=0",
+    "selected_counterevidence_aliases=0",
+    "repeated_numeric_rendering_exists_in_some_sections",
+    "29_dynamic_cells_remain_planned_without_claim",
+    "formal_eight_dimension_scores_not_yet_created",
+    "same_input_distinct_baseline_for_paired_assessment_not_yet_bound",
+    "qualified_human_content_acceptance_not_performed"
+  ],
+  "stage_boundary": {
+    "R3_exact_once": "pass",
+    "final_delivery_binding": "pass",
+    "Verifier": "pass",
+    "L1": "pass_3_of_3",
+    "L2": "pass_3_of_3",
+    "formal_scoreability": "eligible_3_of_3",
+    "formal_case_quality_pass": false,
+    "paired_material_gain": false,
+    "qualified_human_content_acceptance": false,
+    "S3_product_proof": false,
+    "S4_entry": false,
+    "release": false
+  },
+  "source_refs": [
+    "src/sec_agent/s3_final_delivery_binding.py",
+    "scripts/releases/materialize_fin_ia_0_1_3_s3_formal_anchor_v2_r3_successor.py",
+    "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_terminal_success_and_quality_disposition_v1_0.json"
+  ],
+  "next_action": "S3_R3_EIGHT_DIMENSION_REVIEW_PACKET_AND_SAME_INPUT_PAIRED_BASELINE_DISPOSITION",
+  "record_digest": "b264dfaa0fb26278cab24c54a08e0ffb8deff31024061737f435bae6af454d60"
+}

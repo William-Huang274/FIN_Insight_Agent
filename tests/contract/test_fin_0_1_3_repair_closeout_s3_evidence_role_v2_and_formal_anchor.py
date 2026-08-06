@@ -25,6 +25,10 @@ from sec_agent.s3_evidence_role_contract import (
     normalize_s3_evidence_selection_output,
     validate_s3_evidence_selection_output,
 )
+from sec_agent.s3_final_delivery_binding import (
+    S3FinalDeliveryBindingError,
+    validate_s3_final_delivery_binding,
+)
 from sec_agent.s3_evidence_role_canary_runtime import (
     execute_evidence_role_canary,
     issue_evidence_role_canary_admission,
@@ -59,6 +63,8 @@ R3_AUTHORITY = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_a
 R3_AUTHORITY_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_authority_active_test_suite_successor_v1_0.json"
 R3_SUCCESS = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_terminal_success_and_quality_disposition_v1_0.json"
 R3_SUCCESS_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_success_active_test_suite_successor_v1_0.json"
+R3_BINDING = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_r3_final_delivery_verifier_l1_l2_binding_v1_0.json"
+R3_BINDING_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_r3_final_binding_active_test_suite_successor_v1_0.json"
 
 
 def _load(ref: str) -> dict:
@@ -315,7 +321,7 @@ def test_successful_v2_terminal_materializes_all_natural_quality_successor(tmp_p
     )
     outputs = {
         name: json.loads((output_dir / f"{name}.json").read_text(encoding="utf-8"))
-        for name in ("claim", "synthesis", "writer", "quality")
+        for name in ("claim", "synthesis", "writer", "quality", "binding")
     }
     assert outputs["claim"]["claim_quality_program"]["observed_counts"]["live_natural_claim_cards"] == 9
     assert outputs["synthesis"]["cross_cell_synthesis_program"]["observed_counts"]["all_natural_case_syntheses"] == 3
@@ -324,6 +330,28 @@ def test_successful_v2_terminal_materializes_all_natural_quality_successor(tmp_p
     assert quality["observed_counts"]["fixture_mixed_cases_rejected_before_scoring"] == 0
     assert quality["observed_counts"]["formally_scoreable_cases"] == 0
     assert all("final_delivery_not_bound" in row["reasons"] for row in quality["current_case_dispositions"])
+    binding = outputs["binding"]["final_delivery_binding_program"]
+    assert binding["observed_counts"]["L1_passes"] == 3
+    assert binding["observed_counts"]["L2_passes"] == 3
+    assert binding["observed_counts"]["sealed_scoreable_candidates"] == 3
+    mutated = json.loads(json.dumps(binding))
+    mutated["case_bindings"][0]["sealed_candidate_context"]["L1_status"] = "fail"
+    mutated["program_digest"] = canonical_digest(
+        {key: value for key, value in mutated.items() if key != "program_digest"}
+    )
+    with pytest.raises(S3FinalDeliveryBindingError, match="context_digest_invalid"):
+        validate_s3_final_delivery_binding(mutated)
+    binding_result = json.loads(R3_BINDING.read_text(encoding="utf-8"))
+    binding_active = json.loads(R3_BINDING_ACTIVE.read_text(encoding="utf-8"))
+    assert binding_result["record_digest"] == canonical_digest(
+        {key: value for key, value in binding_result.items() if key != "record_digest"}
+    )
+    assert binding_result["binding_result"]["sealed_scoreable_candidates"] == 3
+    assert binding_result["stage_boundary"]["formal_case_quality_pass"] is False
+    assert binding_active["decision_sha256"] == hashlib.sha256(R3_BINDING.read_bytes()).hexdigest()
+    assert binding_active["suite_digest"] == canonical_digest(
+        {key: value for key, value in binding_active.items() if key != "suite_digest"}
+    )
     result = json.loads(R3_SUCCESS.read_text(encoding="utf-8"))
     active = json.loads(R3_SUCCESS_ACTIVE.read_text(encoding="utf-8"))
     assert result["record_digest"] == canonical_digest(

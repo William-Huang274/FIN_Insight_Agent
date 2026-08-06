@@ -1,0 +1,24 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_r3_final_binding_active_suite_v1_0",
+  "suite_id": "FIN-0.1.3-REPAIR-CLOSEOUT-S3-R3-FINAL-BINDING-R28",
+  "status": "three_scoreable_candidates_formal_review_pending",
+  "decision_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s3_r3_final_delivery_verifier_l1_l2_binding_v1_0.json",
+  "decision_sha256": "860f6cb6d6b9ae0caa39ee75075daa100015e50f4381926df9be88bf17e3264a",
+  "parent_suite_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_success_active_test_suite_successor_v1_0.json",
+  "parent_suite_sha256": "e3f77f2e36c68db6f48d77df3dad7c0852f5f32fadbec9a7ead39ce13cf3b441",
+  "additive_bindings": {
+    "src/sec_agent/s3_final_delivery_binding.py": "ad654fb1251978b00370cd84b755b14022fcb6e00c235ebbbd0988b39de0db83",
+    "scripts/releases/materialize_fin_ia_0_1_3_s3_formal_anchor_v2_r3_successor.py": "651325f6e9722ad91d2cb28b59f20508b2e9a954e83fef31486a05d8d7af7e4d",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s3_evidence_role_v2_and_formal_anchor.py": "e4c68dfa3d6c49bb8da1be66f349175b06e9ddb108c78a67b0c3f866d41eb934"
+  },
+  "observed_result": "250 passed / 1 historical assertion deselected",
+  "stage_boundary": {
+    "final_delivery_Verifier_L1_L2": "pass_3_of_3",
+    "formal_scoreability": "eligible_3_of_3",
+    "formal_case_quality_pass": false,
+    "paired_material_gain": false,
+    "qualified_human_acceptance": false,
+    "S3_product_proof": false
+  },
+  "suite_digest": "a4f749fefd2f61e209a1d29815de7ab83cde361935b8e39336c32ff0eb860eef"
+}

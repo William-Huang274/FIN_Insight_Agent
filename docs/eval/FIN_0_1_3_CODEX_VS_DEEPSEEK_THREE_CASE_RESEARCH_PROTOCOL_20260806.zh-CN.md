@@ -2,7 +2,7 @@
 
 日期：2026-08-06  
 更新：2026-08-07
-状态：`active / shared evidence frozen / dynamic runner zero-call pass / DELL admission issuance authorized but not issued`
+状态：`active / shared evidence frozen / DELL R1+collect-all complete / layered successor ready / replacement authority pending commit`
 
 ## 1. 比较目标
 
@@ -43,7 +43,7 @@ Codex Gold candidate 实际使用了产品本地数据、部分可用 MCP 与额
 2. `013-S2-05` 依次执行 Research Lead planning、Specialist judgment、cross-cell synthesis、Writer 和 Verifier；
 3. 不开放 MCP、网页、搜索或额外知识补充，不用工具缺口解释当前实验的分析结果；
 4. 每个节点保存完整 model-visible request、raw assistant output、usage、finish reason、capture digest 与 terminal；
-5. 首个 material 偏离暂停当前 formal case，记录原因后才允许 supervisor 扶正；
+5. transport、parse、capacity、不可用 Lead 拓扑、身份或跨案例污染立即停止；Lead 后的内容/schema finding 在 raw-only 隔离轨完整收集到 Verifier，任一 L1 阻止业务晋升但不抹掉 hidden-scoreable raw candidate；
 6. `013-S2-06` 汇总 raw model-only、supervisor correction 和 corrected candidate，形成模型能力边界。
 
 ### 3.1.1 S2-05 admission 入口审计结果
@@ -143,3 +143,7 @@ formal case 遇到以下 material failure 立即暂停：
 ## 9. Experiment A 当前执行记录
 
 2026-08-07 DELL R1 已执行且首错停止。Lead 返回 6 个 case-specific research units，但在输入外引入若干 hypothetical threshold；本地 numeric classifier 同时对 `B` suffix、value＋percent unit 和自然 rounding 产生假阳性。terminal=`experiment_a_unbound_numeric_surface`，calls/captures=`1/1`，tokens=`3766`，retry/fallback/Artifact=`0/0/0`。该结果登记为 RC-P36-141，并按 `contract_or_local_authority_gap + provider instruction noncompliance` 混合归因；不能归因为工具缺陷，也不能外推 DeepSeek 的完整分析/写作质量。DELL replacement、MU/NVDA 与 supervisor correction 均需在零调用处置后另行授权。
+
+随后经用户明确授权执行一次 quarantined collect-all：复用 immutable Lead，再调用六个 Specialist、Synthesis、Writer、Verifier，新增 `9/9 ok/stop`、33,034 tokens、估算 USD 0.0275886、retry/fallback/placeholder=`0/0/0`。完整链暴露了 prompt/schema 类型漂移、模型遗漏 identity、Verifier boolean 类型错误，以及把 OCF margin 当净利率外推净利润/P-E、把 backlog 情景外推 EPS 与股价跌幅等实质金融错误。该链仅为不可晋升诊断，不改写 R1。
+
+结构修复已用单一 typed contract 编译模型 prompt；numeric authority 现在区分合法 suffix/unit/rounding、WWC/stop-condition 假设阈值和无权财务推导；新增 OCF→盈利/估值与 backlog→EPS/股价门禁。successor runner 三案 full-fake 30 calls、material mutation 10 calls 均到达 Verifier，宽 S2 回归 115 passed；immutable DELL replay=`complete_with_material_findings / hidden_scoring_eligible=true / business_promotable=false`。production entrypoint 已改为调用 layered successor。下一步仅允许在 clean/synced commit 上签发并消费一次 DELL replacement exact-live；retry/fallback=0，不自动进入 MU/NVDA 或 S2-06。

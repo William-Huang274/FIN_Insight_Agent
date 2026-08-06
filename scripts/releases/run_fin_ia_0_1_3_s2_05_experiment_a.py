@@ -17,7 +17,7 @@ if str(SRC) not in sys.path:
 from sec_agent.llm_gateway import chat_completion  # noqa: E402
 from sec_agent.s2_same_evidence_experiment_runtime import (  # noqa: E402
     POLICY_REF,
-    execute_case,
+    execute_case_layered,
     load_frozen_blind_inputs,
     load_runtime_policy,
 )
@@ -50,7 +50,8 @@ def main() -> int:
         print(
             json.dumps(
                 {
-                    "status": "zero_call_preflight_ready_admission_not_issued",
+                    "status": "zero_call_layered_preflight_ready_admission_not_issued",
+                    "execution_mode": "capture_first_full_chain_then_layered_evaluation",
                     "cases": [row["case_key"] for row in blind["cases"]],
                     "runner_ref": RUNNER.relative_to(ROOT).as_posix(),
                     "runner_sha256": runner_sha,
@@ -83,7 +84,7 @@ def main() -> int:
         parser.error("--execute requires " + ", ".join(missing))
     admission = _read_json(args.admission.resolve())
     case_input = next(row for row in blind["cases"] if row["case_key"] == args.case)
-    result = execute_case(
+    result = execute_case_layered(
         admission=admission,
         case_input=case_input,
         policy=policy,
@@ -96,7 +97,7 @@ def main() -> int:
         observed_at=args.observed_at,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
-    return 0 if result["status"] == "terminal_succeeded_raw_candidate" else 2
+    return 0 if result["status"] == "terminal_completed_layered_raw_evaluation" else 2
 
 
 def _read_json(path: Path) -> dict[str, Any]:

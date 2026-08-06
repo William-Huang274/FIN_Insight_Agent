@@ -1,0 +1,105 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_experiment_a_runtime_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S2.same_evidence_reasoning_benchmark:v1",
+  "purpose": "Run one case-scoped, exact-once, same-evidence raw DeepSeek research candidate without tools, hidden gold, correction, or business promotion.",
+  "frozen_input": {
+    "ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json",
+    "sha256": "689a4f957015c6b16f4d3ecdde6292450c044f9641af09537b1f0190176bdb59",
+    "canonical_digest": "55b474867594c002cd87494fc3d825b39cc60f3000adae06253f8e2256a61688",
+    "case_order": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "hidden_ref_forbidden": "eval_sets/fin_0_1_3_same_evidence_v1/evaluator_only/hidden_gold_scoring_objects_v1.json",
+    "parent_directory_or_glob_read_forbidden": true,
+    "external_tools_forbidden": true
+  },
+  "provider": {
+    "backend": "deepseek",
+    "model": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "chat_completions_path": "/chat/completions",
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "temperature": 0.0,
+    "stream": false,
+    "enable_thinking": false,
+    "max_transport_attempts": 1
+  },
+  "capacity": {
+    "specialist_units_per_case": {
+      "minimum": 6,
+      "maximum": 8
+    },
+    "provider_calls_per_case": {
+      "minimum": 10,
+      "maximum": 12
+    },
+    "provider_calls_campaign_maximum": 36,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "timeout_seconds_per_call": 240,
+    "maximum_input_characters_per_call": 90000,
+    "maximum_input_tokens_per_case": 200000,
+    "maximum_output_tokens": {
+      "lead_planning": 2200,
+      "specialist_judgment": 2200,
+      "cross_cell_synthesis": 3000,
+      "writer": 5000,
+      "verifier": 2400
+    },
+    "maximum_output_tokens_per_case": 30200,
+    "maximum_output_tokens_campaign": 90600,
+    "maximum_total_tokens_per_case": 230200,
+    "maximum_total_tokens_campaign": 690600,
+    "cost_ceiling": {
+      "input_usd_per_million_tokens": 0.6,
+      "output_usd_per_million_tokens": 1.7,
+      "maximum_estimated_usd_per_case": 0.18,
+      "maximum_estimated_usd_campaign": 0.54
+    }
+  },
+  "mandatory_research_families": [
+    "demand_and_customer_authenticity",
+    "product_and_technology_position",
+    "supply_chain_and_competition",
+    "financial_transmission_profit_and_cash",
+    "capital_market_and_price_in_boundary",
+    "counter_thesis_risk_and_what_would_change"
+  ],
+  "epistemic_states": [
+    "supported",
+    "mixed",
+    "cannot_infer"
+  ],
+  "persistence": {
+    "writable_track": "raw_model_only",
+    "capture_before_parse_or_validation": true,
+    "terminal_result_required": true,
+    "immutable_exclusive_create": true,
+    "business_artifact_promotions": 0,
+    "forbidden_write_tracks": [
+      "supervisor_corrections",
+      "corrected_candidates",
+      "evaluator_only"
+    ]
+  },
+  "node_sequence": [
+    "lead_planning",
+    "specialist_judgment_dynamic_6_to_8",
+    "cross_cell_synthesis",
+    "writer",
+    "verifier"
+  ],
+  "acceptance": {
+    "all_six_families_required": true,
+    "case_local_evidence_and_gap_ids_only": true,
+    "specialist_citations_required": true,
+    "writer_section_citations_required": true,
+    "unbound_numeric_surface_rejected": true,
+    "verifier_material_failure_stops_case": true,
+    "first_material_failure_stops_campaign": true,
+    "hidden_gold_is_not_a_verifier_input": true
+  },
+  "known_boundary": "Structural and numeric-surface guards cannot prove semantic research quality. S2-05 produces a raw candidate only; hidden rubric scoring, supervisor correction, corrected-candidate comparison, and product acceptance remain separate tracks and later tasks."
+}

@@ -1,0 +1,104 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_experiment_a_dynamic_node_runner_zero_call_implementation_v1_0",
+  "status": "zero_call_preflight_pass_fresh_admission_authority_required",
+  "recorded_at": "2026-08-07T03:10:00+08:00",
+  "execution_head_before_implementation": "e2b4b370537fb1ac94adb45b5edf7e8ad453d5b9",
+  "scope_id": "FIN-0.1.3-013-S2-05-EXPERIMENT-A-DYNAMIC-NODE-RUNNER-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION",
+  "implementation": {
+    "runtime": {
+      "ref": "src/sec_agent/s2_same_evidence_experiment_runtime.py",
+      "sha256": "f08a863cbdfbac3f727ceabb37c7edbeee8d66feca72210b35130af458b5d72d"
+    },
+    "production_entrypoint": {
+      "ref": "scripts/releases/run_fin_ia_0_1_3_s2_05_experiment_a.py",
+      "sha256": "931d71076feddee4ff98e534cde7ce000a5df3cb094caa47996aa9ba774196c5",
+      "preflight_status": "zero_call_preflight_ready_admission_not_issued"
+    },
+    "runtime_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_05_experiment_a_runtime_policy_v1_0.json",
+      "sha256": "90eba779603d9b501b70f960d77fdb93d0ca3ee27dd49785543bd8cd5269ec86"
+    },
+    "contract_test": {
+      "ref": "tests/contract/test_fin_0_1_3_s2_05_experiment_a_dynamic_node_runtime.py",
+      "sha256": "cb3f69f358365dbea383e49fec639dae1bf680c89244c0a0ea884dca71b88e6b"
+    }
+  },
+  "frozen_input_binding": {
+    "ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json",
+    "sha256": "689a4f957015c6b16f4d3ecdde6292450c044f9641af09537b1f0190176bdb59",
+    "canonical_digest": "55b474867594c002cd87494fc3d825b39cc60f3000adae06253f8e2256a61688",
+    "cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "hidden_gold_readable_by_runner": false,
+    "external_tools_enabled": false
+  },
+  "compiled_runtime_envelope": {
+    "research_lead_calls_per_case": 1,
+    "specialist_units_per_case": {
+      "minimum": 6,
+      "maximum": 8
+    },
+    "synthesis_writer_verifier_calls_per_case": 3,
+    "provider_calls_per_case": {
+      "minimum": 10,
+      "maximum": 12
+    },
+    "provider_calls_campaign_maximum": 36,
+    "maximum_output_tokens_per_case": 30200,
+    "maximum_output_tokens_campaign": 90600,
+    "maximum_input_tokens_per_case": 200000,
+    "maximum_total_tokens_per_case": 230200,
+    "maximum_estimated_cost_usd_per_case": 0.18,
+    "maximum_estimated_cost_usd_campaign": 0.54,
+    "timeout_seconds_per_call": 240,
+    "retry_count": 0,
+    "fallback_count": 0
+  },
+  "proven_invariants": [
+    "exact_physical_and_canonical_blind_input_binding",
+    "case_local_identity_evidence_gap_and_numeric_surface_validation",
+    "all_six_research_families_and_full_frozen_pack_coverage",
+    "dynamic_six_to_eight_specialist_fanout",
+    "capture_full_provider_visible_request_and_gateway_result_before_parse_or_validation",
+    "one_case_one_shared_exact_once_admission_consumption",
+    "first_material_failure_stops_case_and_campaign",
+    "raw_model_only_write_track_with_zero_correction_corrected_or_evaluator_writes",
+    "DELL_MU_NVDA_thirty_call_full_fake_and_twelve_call_ceiling",
+    "invalid_json_transport_cross_case_wrong_date_unbound_numeric_omission_and_verifier_failure_mutations_fail_closed"
+  ],
+  "verification": {
+    "focused_runtime_and_authority": "34 passed",
+    "all_current_FIN_0_1_3_S2_named_contracts": "95 passed",
+    "compileall": "pass",
+    "git_diff_check": "pass",
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "mcp_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "business_artifact_promotions": 0
+  },
+  "resolved_blockers": [
+    "experiment_a_dedicated_runner_absent",
+    "experiment_a_node_output_contracts_not_compiled",
+    "experiment_a_case_scoped_exact_once_capture_terminal_not_proven",
+    "experiment_a_capacity_cost_and_timeout_envelope_not_compiled",
+    "experiment_a_raw_correction_corrected_write_boundary_not_proven"
+  ],
+  "stage_acceptance": {
+    "S2_05_zero_call_engineering": "pass",
+    "S2_05_fresh_admission_authority": "pending_separate_decision",
+    "Experiment_A_raw_DeepSeek_execution": false,
+    "Experiment_A_model_reasoning": false,
+    "S2_06_supervisor_correction": false,
+    "product_quality_research": false,
+    "release": false
+  },
+  "known_boundary": "This package proves deterministic orchestration, failure retention, exact-once authority and track isolation with a fake provider. It does not prove DeepSeek instruction following, financial reasoning quality, hidden-rubric performance, supervisor correction, MCP reliability, agentic search, product report quality or release readiness.",
+  "next_action": "FIN-0.1.3-013-S2-05-EXPERIMENT-A-FRESH-ADMISSION-AUTHORITY-DECISION",
+  "implementation_digest": "9a06fe364b01680383ec69282bc7dab35557079f025f5d31a5574bbec9693873"
+}

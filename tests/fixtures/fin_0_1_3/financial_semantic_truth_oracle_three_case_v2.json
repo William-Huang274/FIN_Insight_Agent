@@ -1,0 +1,53 @@
+{
+  "schema_version": "fin_0_1_3_financial_semantic_truth_oracle_three_case_fixture_v2",
+  "review_status": "current_as_of_latest_available_annual_source_bound_zero_call_fixture",
+  "selection_rule": "For an objective without an explicit historical period, select the latest issuer annual period whose public filing date is on or before as_of_date; fiscal-year comparability does not override freshness silently.",
+  "reviewed_truth_rows": [
+    {
+      "record_id": "DELL_latest_available_annual_revenue_as_of_2026_07_26",
+      "case_key": "DELL", "entity_ref": "DELL", "issuer_id": "0001571996",
+      "metric_family": "revenue", "aggregation_scope": "consolidated_company_total",
+      "raw_value": "113538000000", "normalized_value": "113538000000", "currency": "USD", "unit": "USD", "scale_multiplier": "1",
+      "fiscal_year": 2026, "fiscal_period": "FY", "period_role": "annual",
+      "period_start": "2025-02-01", "period_end": "2026-01-30", "duration_days": 364,
+      "source_filed_at": "2026-03-16", "published_at": "2026-03-16", "as_of_date": "2026-07-26", "snapshot_at": "2026-08-06",
+      "source_ref": "SECFACT::DELL::US_GAAP::REVENUES::USD::4f74d83954a8",
+      "source_locator": "0001571996-26-000008/us-gaap:Revenues/2025-02-01..2026-01-30",
+      "formula": null
+    },
+    {
+      "record_id": "MU_latest_available_annual_revenue_as_of_2026_07_26",
+      "case_key": "MU", "entity_ref": "MU", "issuer_id": "0000723125",
+      "metric_family": "revenue", "aggregation_scope": "consolidated_company_total",
+      "raw_value": "37378000000", "normalized_value": "37378000000", "currency": "USD", "unit": "USD", "scale_multiplier": "1",
+      "fiscal_year": 2025, "fiscal_period": "FY", "period_role": "annual",
+      "period_start": "2024-08-30", "period_end": "2025-08-28", "duration_days": 364,
+      "source_filed_at": "2025-10-03", "published_at": "2025-10-03", "as_of_date": "2026-07-26", "snapshot_at": "2026-08-06",
+      "source_ref": "SECFACT::MU::US_GAAP::REVENUEFROMCONTRACTWITHCUSTOMEREXCLUDINGASSESSEDTAX::USD::be4f989f13a7",
+      "source_locator": "0000723125-25-000028/us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax/2024-08-30..2025-08-28",
+      "formula": null
+    },
+    {
+      "record_id": "NVDA_latest_available_annual_revenue_as_of_2026_07_26",
+      "case_key": "NVDA", "entity_ref": "NVDA", "issuer_id": "0001045810",
+      "metric_family": "revenue", "aggregation_scope": "consolidated_company_total",
+      "raw_value": "215938000000", "normalized_value": "215938000000", "currency": "USD", "unit": "USD", "scale_multiplier": "1",
+      "fiscal_year": 2026, "fiscal_period": "FY", "period_role": "annual",
+      "period_start": "2025-01-27", "period_end": "2026-01-25", "duration_days": 364,
+      "source_filed_at": "2026-02-25", "published_at": "2026-02-25", "as_of_date": "2026-07-26", "snapshot_at": "2026-08-06",
+      "source_ref": "SECFACT::NVDA::US_GAAP::REVENUES::USD::1a4ff12eaf90",
+      "source_locator": "0001045810-26-000021/us-gaap:Revenues/2025-01-27..2026-01-25",
+      "formula": null
+    }
+  ],
+  "superseded_current_anchor_examples": [
+    {"case_key": "DELL", "value": "95567000000", "period_end": "2025-01-31", "reason": "a newer FY2026 annual filing was public before the as-of date"},
+    {"case_key": "NVDA", "value": "130497000000", "period_end": "2025-01-26", "reason": "a newer FY2026 annual filing was public before the as-of date"}
+  ],
+  "fixture_boundaries": {
+    "current_targeted_refresh": "data/workbench_private/fin_0_1_3_s1_01_reopen/current_three_case_companyfacts_2025_2026.jsonl",
+    "current_targeted_gold": "data/workbench_private/fin_0_1_3_s1_01_reopen/current_three_case_gold_mart_v0_2.sqlite",
+    "v1_fixture_preserved_as_historical_period_semantics_evidence": true,
+    "no_failed_run_rewritten": true
+  }
+}

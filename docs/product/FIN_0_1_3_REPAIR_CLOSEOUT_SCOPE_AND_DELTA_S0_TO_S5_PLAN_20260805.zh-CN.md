@@ -77,6 +77,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 
 > **2026-08-06 `013-S1-02` 完成**：新增 versioned material Numeric policy 与本地确定性编译/校验器，直接消费 current Gold Mart 和同份 current 10-K 的比较期 instant staging。DELL/MU/NVDA 共形成 `23 base facts / 14 derived metrics / 8 typed gaps / 45 governed slots / 0 ungoverned`；公式覆盖 gross margin、operating margin、free cash flow、average-inventory days，并在 MU/NVDA 覆盖 capex intensity。DELL 的 current 年度公式现为 gross margin `22.2357%`、operating margin `6.5263%`、FCF `1.869B USD`、inventory days `25.32`，旧 0.1.2 以 Q4 revenue 计算出的 `88.797%/26.0624%` 不再进入 current authority。缺少的 server/ISG、HBM、Data Center product 级收入/利润及 PVM、可比营运资本变化均保留为 case-specific typed gap，`source_exhaustion_proven=false` 并交 `013-S1-03`，没有为了补齐数量虚构事实。S1-02 仅证明本地 Numeric 真值、公式可复算和 Claim/表格准入治理；未调用模型/Provider/网络，也未继承旧 R2/R3 或宣称 F07 产品完成。
 
+> **2026-08-06 `013-S1-01/S1-02` 有界返工与 `013-S1-03` 完成**：S1-03 current official-source proof 暴露出一个更早的 truth 问题：S1-01 虽修复了 quarter/annual 误分类，但当时 staging 只到 2026-06-06，S1-02 又把 fiscal year 固定在策略文件中，导致截至 2026-07-26 的 DELL/NVDA 仍选择 FY2025，而非已经公开的 FY2026。该问题没有伪装成 S1-03 parser 缺陷；RC-P36-135 归回 S1-01/S1-02。targeted capture-first SEC refresh、Runtime/Gold successor 和 material v1.1 已将“截至日之前最新可用年报”编译为确定性选择规则，未来 filing 不可越过 as-of；当前三案年度营收为 DELL FY2026 `113.538B`、MU FY2025 `37.378B`、NVDA FY2026 `215.938B`。数值面形成 `25 base / 16 formula / 7 gaps / 48 governed`，再由官方 DELL FY2026 文档确定性提取 AI-optimized server revenue `24.683B` 与 ISG operating income `7.111B`，消解两条 gap，最终为 `27 exact facts / 16 formulas / 5 attempt-backed gaps / 0 ungoverned`。official-source R4 使用 shared exact-once admission，完成 `10 network calls / 11 accepted / 6 attempt-backed gaps / 0 model`；其中 9 条为三案 current semantic evidence，旧 DELL working-cap gap 已由结构化 AR/AP 变化 successor 取代。剩余 5 条仅为 MU HBM revenue/profit/PVM 与 NVDA product/accelerator revenue/profit；SEC archive 的 403 已 capture-first 保存，但不冒充 source exhaustion。JSON/HTML/PDF/redirect/parser failure、binary junk、false promotion 与 exact-once replay 均有 deterministic coverage。S1-03=`engineering_pass`；Graph、retrieval usefulness、Agent/研究质量、full-chain 和 release 仍未开始，下一项严格归 `013-S1-04`。
+
 ### S2：模型表面、合同与代表性评测
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |
@@ -115,7 +117,7 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 | F04 Durable execution | exact-once/capture/terminal 很强；current 产品 cancel/resume/repair execution 未闭环 | S0/S4 |
 | F05 Agentic Search | SEC/local BM25/SQL canary 成立；IR/Graph/market/多路覆盖和质量 eval 不完整 | S1 |
 | F06 Evidence Workbench | current evidence 可读、可退回；真实 evidence repair 未执行 | S1/S4 |
-| F07 Numeric / Fact audit | period 真值已修复；三案 45 个 material slot 已绑定为 23 base、14 formula、8 typed gap，0 ungoverned；来源 exhaustion、current Claim/表格消费与最终 UI/产品验收仍未完成 | S1/S3/S4 |
+| F07 Numeric / Fact audit | period 与 latest-available annual 真值已修复；三案 48 个 material slot 当前为 27 exact facts、16 formula、5 attempt-backed gap，0 ungoverned；current Claim/表格消费与最终 UI/产品验收仍未完成 | S1/S3/S4 |
 | F08 Workpaper / Domain Judgment | 结构存在；内容通用、三 Cell、弱综合，不满足 PRD 深研 | S3 |
 | F09 Gap / Repair Queue | typed request/replay 成立；actual repair loop 未成立 | S4 |
 | F10 Lead Review / Writer Admission | 合同和 Artifact 存在；Lead semantic adjudication 偏弱 | S3 |
@@ -161,8 +163,9 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 3. [x] 完成 FIN 0.1.3 `013-S0-01` delta inheritance、旧 `0.1.3` namespace 分类和 secret-safe current truth baseline。
 4. [x] 完成 `013-S0-02` shared runtime admission/replay、historical receipt/living source debt和 8 个 version-neutral candidate 复证。
 5. [x] 完成 `013-S0-03` 四层金融语义 oracle；S0 canonical suite 29/29，通过的是分类与早期阻断，不是当前 DELL 真值。
-6. [x] 完成 `013-S1-01`，从最早 staging/runtime/mart 修复 DELL annual/Q4 duration 与四类时间角色，并重建三案下游事实链；RC-P36-130 关闭。
-7. [x] 完成 `013-S1-02`：三案 `23 base / 14 formula / 8 typed gap / 45 governed / 0 ungoverned`；不把声明 gap 冒充 source exhaustion，也不提前执行模型/full-chain。
-8. [ ] 进入 `013-S1-03`，补齐 official source、PDF/redirect/parser fallback 与 attempt-backed source-exhaustion；不得提前做 S1-04 Graph、S1-05 usefulness 或 S2/S3 研究质量。
+6. [x] 完成 `013-S1-01` 主修与有界 freshness successor：annual/Q4 duration、四类时间角色和截至日之前 latest-available annual 都由本地确定性链拥有；RC-P36-130/135 关闭。
+7. [x] 完成 `013-S1-02` current successor：三案 `25 base / 16 formula / 7 typed gap / 48 governed / 0 ungoverned`，并允许 S1-03 官方精确数值按 typed-gap digest 消解，不使用自由数字叙事。
+8. [x] 完成 `013-S1-03`：R4 为 `10 source calls / 11 accepted / 6 attempt-backed gaps / 0 model`；组合后是 `27 exact / 16 formula / 5 gap / 9 semantic slots / 57 governed surface`。403 不冒充 source exhaustion，历史 R1–R3 保持 immutable。
+9. [ ] 进入 `013-S1-04`，只做权威 relationship/Product Graph edge 与 typed empty；不得提前做 S1-05 usefulness 或 S2/S3 研究质量。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

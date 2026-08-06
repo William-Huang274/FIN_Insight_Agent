@@ -1,0 +1,366 @@
+{
+  "acceptance": {
+    "accepted_or_attempt_backed_gap_only": true,
+    "every_required_official_slot_terminal": true,
+    "future_after_as_of_ineligible": true,
+    "latest_available_annual_as_of_selection_compiled": true,
+    "model_provider_business_runs": [
+      0,
+      0,
+      0
+    ],
+    "raw_failure_evidence_not_promoted": true,
+    "request_response_capture_first": true,
+    "shared_exact_once_admission_terminal": true,
+    "source_network_calls_in_R4": 10
+  },
+  "current_annual_truth": [
+    {
+      "case_key": "DELL",
+      "fiscal_year": 2026,
+      "period_end": "2026-01-30",
+      "period_start": "2025-02-01",
+      "revenue_normalized_value": "113538000000",
+      "selection": {
+        "mode": "latest_available_annual_as_of",
+        "selected_period_end": "2026-01-30",
+        "selected_source_filed_at": "2026-03-16"
+      },
+      "source_filed_at": "2026-03-16"
+    },
+    {
+      "case_key": "MU",
+      "fiscal_year": 2025,
+      "period_end": "2025-08-28",
+      "period_start": "2024-08-30",
+      "revenue_normalized_value": "37378000000",
+      "selection": {
+        "mode": "latest_available_annual_as_of",
+        "selected_period_end": "2025-08-28",
+        "selected_source_filed_at": "2025-10-03"
+      },
+      "source_filed_at": "2025-10-03"
+    },
+    {
+      "case_key": "NVDA",
+      "fiscal_year": 2026,
+      "period_end": "2026-01-25",
+      "period_start": "2025-01-27",
+      "revenue_normalized_value": "215938000000",
+      "selection": {
+        "mode": "latest_available_annual_as_of",
+        "selected_period_end": "2026-01-25",
+        "selected_source_filed_at": "2026-02-25"
+      },
+      "source_filed_at": "2026-02-25"
+    }
+  ],
+  "current_next": "FIN-0.1.3-013-S1-04-AUTHORITATIVE-RELATIONSHIP-GRAPH-EDGE-AND-TYPED-EMPTY-COVERAGE",
+  "effective_governed_surface": {
+    "deterministic_formulas": 16,
+    "effective_exact_numeric_facts": 27,
+    "material_numeric_slots": 48,
+    "official_semantic_evidence_slots": 9,
+    "remaining_numeric_typed_gaps": 5,
+    "source_resolved_exact_numeric": 2,
+    "total_governed_numeric_plus_semantic_slots": 57,
+    "ungoverned_slots": 0
+  },
+  "input_authority": {
+    "admission_digest": "56d527ea21140bcec3a3659f99a302db6d3888566206b57b0073443895332099",
+    "attempt_id": "fin013_s1_03_attempt_887b9051575101c0abcd",
+    "historical_attempts": [
+      {
+        "attempt": "R1",
+        "disposition": "semantic_false_match_failed_post_run_audit",
+        "ref": "data/workbench_private/fin_0_1_3_s1_03/formal-current-proof-r1-result.json",
+        "sha256": "241c20e1a8126324eb4c4c8f05e1bebb297effeba66c5f666d5d0db02cf21b39"
+      },
+      {
+        "attempt": "R2",
+        "disposition": "first_occurrence_matching_and_transient_route_failure_failed_post_run_audit",
+        "ref": "data/workbench_private/fin_0_1_3_s1_03/formal-current-proof-r2-result.json",
+        "sha256": "667108fc4d80645afca8b0d68ad48a16d91bce0bb57c004dcdd972a1cc7e3851"
+      },
+      {
+        "attempt": "R3",
+        "disposition": "terminal_but_superseded_by_current_freshness_and_numeric_surface",
+        "ref": "data/workbench_private/fin_0_1_3_s1_03/formal-current-proof-r3-result.json",
+        "sha256": "556ae43bfac14432b540a99472e77213f75085c42fa6b1f58d9b0dacac685e11"
+      }
+    ],
+    "material_program_set_digest": "6aa5f7bb597302ceceab8db2e516445486d6eee9544f92d42c77fbd942de4836",
+    "material_record_ref": "data/workbench_private/fin_0_1_3_s1_01_reopen/current_material_numeric_program_v1_1.json",
+    "material_record_sha256": "4dd54b372ba136aef39241595fc159f06c250e459728fa8a77e4316c58560e8d",
+    "official_R4_ref": "data/workbench_private/fin_0_1_3_s1_03/formal-current-proof-r4-result.json",
+    "official_R4_sha256": "7913c3238a4777aac97d5e6d3a1cdc047a3ff1693a6a86974bf2dbb93467d5db",
+    "official_program_digest": "24e75950ec26b956da0f83c6677b50233d528e55e077c6ea137588e36dcbacc5",
+    "raw_request_response_captures": "private_content_addressed_immutable_not_embedded_in_release_record",
+    "run_id": "fin013_s1_03_run_a1e75c77455e62d8f1a4",
+    "terminal_receipt_digest": "b04c4161495cef5c039598d9b90a215cb54039d6315dea6f16a29d6468ba886b"
+  },
+  "known_boundary": "S1-03 proves bounded official-source acquisition, parsing, capture and honest gaps. It does not prove Graph edges, retrieval usefulness, Agent consumption, research-content quality, product acceptance or release. SEC archive 403 is an external route failure, not proof that the requested facts do not exist.",
+  "material_numeric_successor": {
+    "contract_ref": "fin_0_1_3.S1.material_numeric_official_source_successor:v1",
+    "coverage": {
+      "material_slots": 48,
+      "material_typed_gaps_before_source": 7,
+      "remaining_typed_gaps": 5,
+      "resolved_by_official_source": 2,
+      "ungoverned_slots": 0
+    },
+    "material_program_set_digest": "6aa5f7bb597302ceceab8db2e516445486d6eee9544f92d42c77fbd942de4836",
+    "official_source_program_digest": "24e75950ec26b956da0f83c6677b50233d528e55e077c6ea137588e36dcbacc5",
+    "remaining_typed_gaps": [
+      {
+        "case_key": "MU",
+        "slot_id": "mu_hbm_profit",
+        "typed_gap_digest": "36bf0bd08ffeb966649d0f6e1e19f08a9c920ddcbec0e3b9023e0224a1e19f1d",
+        "typed_gap_ref": "fin013_numeric_gap_36bf0bd08ffeb966649d0f6e"
+      },
+      {
+        "case_key": "MU",
+        "slot_id": "mu_hbm_revenue",
+        "typed_gap_digest": "676ecec6efbb83b31a47d13c1d7ee06e66ef624c4a63f0f398c7303086ea2023",
+        "typed_gap_ref": "fin013_numeric_gap_676ecec6efbb83b31a47d13c"
+      },
+      {
+        "case_key": "MU",
+        "slot_id": "mu_price_volume_mix",
+        "typed_gap_digest": "5f76761ff3b7d6f148e9d3dc95300c15f6b8e4df41815bb1963a775dedca8332",
+        "typed_gap_ref": "fin013_numeric_gap_5f76761ff3b7d6f148e9d3dc"
+      },
+      {
+        "case_key": "NVDA",
+        "slot_id": "nvda_data_center_product_profit",
+        "typed_gap_digest": "60cf25f2bd6a79446b05fdf9c2eb2d3635ff5508163e49c3981dcdf5c18039ea",
+        "typed_gap_ref": "fin013_numeric_gap_60cf25f2bd6a79446b05fdf9"
+      },
+      {
+        "case_key": "NVDA",
+        "slot_id": "nvda_data_center_product_revenue",
+        "typed_gap_digest": "eabc7f50776412c7e63d24f1dff384a788d618359c42d14fb2220546a70d038d",
+        "typed_gap_ref": "fin013_numeric_gap_eabc7f50776412c7e63d24f1"
+      }
+    ],
+    "resolved_source_numeric_facts": [
+      {
+        "as_of_date": "2026-07-26",
+        "case_key": "DELL",
+        "claim_boundary": "Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers.",
+        "free_numeric_narrative_authorized": false,
+        "numeric_fact": {
+          "aggregation_scope": "Infrastructure_Solutions_Group",
+          "fiscal_period": "FY",
+          "fiscal_year": 2026,
+          "formula": null,
+          "metric_family": "ISG_operating_income",
+          "normalized_value": "7111000000",
+          "period_role": "annual",
+          "raw_value": "7,111",
+          "scale_multiplier": "1000000",
+          "unit": "USD"
+        },
+        "parser_adapter": "official_source_pdf_text_v1",
+        "parser_text_digest": "2c4401e61e330ff457ad25d582938d950ee235a0a512e3f23966db25b55f1d40",
+        "resolution_digest": "c1d328d45b01c25149dd7f57fa658ac5ae6b5364de1f1a499eb2a95d2deb8965",
+        "resolved_typed_gap_digest": "2fd75be53ab767491d939709c43b0be3099f73310bc1bb20a861031ea416c9cc",
+        "resolved_typed_gap_ref": "fin013_numeric_gap_2fd75be53ab767491d939709",
+        "slot_id": "dell_server_or_isg_profit",
+        "source_capture_digest": "2757573d491ecd348b065d6a5631ac4885b9ba92f591e1ee260e37c34ea0d691",
+        "source_capture_ref": "fin-0.1.3/s1-03/official-source-captures/27/57/2757573d491ecd348b065d6a5631ac4885b9ba92f591e1ee260e37c34ea0d691.json",
+        "source_url": "https://investors.delltechnologies.com/node/19176/pdf"
+      },
+      {
+        "as_of_date": "2026-07-26",
+        "case_key": "DELL",
+        "claim_boundary": "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.",
+        "free_numeric_narrative_authorized": false,
+        "numeric_fact": {
+          "aggregation_scope": "AI_optimized_servers",
+          "fiscal_period": "FY",
+          "fiscal_year": 2026,
+          "formula": null,
+          "metric_family": "AI_optimized_server_revenue",
+          "normalized_value": "24683000000",
+          "period_role": "annual",
+          "raw_value": "24,683",
+          "scale_multiplier": "1000000",
+          "unit": "USD"
+        },
+        "parser_adapter": "official_source_pdf_text_v1",
+        "parser_text_digest": "2c4401e61e330ff457ad25d582938d950ee235a0a512e3f23966db25b55f1d40",
+        "resolution_digest": "d008da7b5e13e1e1b62e21c074dc6c411e98d8c42f8885a2e94900a76144298e",
+        "resolved_typed_gap_digest": "7a0fe802ba2c0702909d186389e16e32d3d85d8b3d59a2999aebff3040f0f226",
+        "resolved_typed_gap_ref": "fin013_numeric_gap_7a0fe802ba2c0702909d1863",
+        "slot_id": "dell_server_or_isg_revenue",
+        "source_capture_digest": "2757573d491ecd348b065d6a5631ac4885b9ba92f591e1ee260e37c34ea0d691",
+        "source_capture_ref": "fin-0.1.3/s1-03/official-source-captures/27/57/2757573d491ecd348b065d6a5631ac4885b9ba92f591e1ee260e37c34ea0d691.json",
+        "source_url": "https://investors.delltechnologies.com/node/19176/pdf"
+      }
+    ],
+    "schema_version": "fin_ia_0_1_3_material_numeric_official_source_successor_v1_0",
+    "stage_boundary": {
+      "graph_ready": false,
+      "model_or_full_chain_run": false,
+      "retrieval_usefulness_ready": false
+    },
+    "successor_digest": "dfcf6a017832317b56fadb23a90ce20f85dcb289ec2213d52c186901044530c9",
+    "unmatched_official_numeric_slots": []
+  },
+  "official_source_proof": {
+    "SEC_archive_http_403_route_results": 3,
+    "false_promotion_count": 0,
+    "observed_counts": {
+      "accepted_evidence": 11,
+      "attempt_backed_typed_gaps": 6,
+      "business_runs": 0,
+      "cases": 3,
+      "model_calls": 0,
+      "network_calls": 10,
+      "provider_calls": 0,
+      "required_source_slots": 17
+    },
+    "parser_fallbacks_proven": [
+      "JSON",
+      "HTML",
+      "PDF",
+      "redirect",
+      "typed_parser_failure"
+    ],
+    "remaining_attempt_backed_typed_gaps": [
+      {
+        "attempt_count": 4,
+        "case_key": "MU",
+        "failure_codes": [
+          "official_source_http_403"
+        ],
+        "slot_id": "mu_hbm_profit",
+        "source_exhaustion_proven": false,
+        "writer_citable": false
+      },
+      {
+        "attempt_count": 4,
+        "case_key": "MU",
+        "failure_codes": [
+          "official_source_http_403"
+        ],
+        "slot_id": "mu_hbm_revenue",
+        "source_exhaustion_proven": false,
+        "writer_citable": false
+      },
+      {
+        "attempt_count": 4,
+        "case_key": "MU",
+        "failure_codes": [
+          "official_source_http_403"
+        ],
+        "slot_id": "mu_price_volume_mix",
+        "source_exhaustion_proven": false,
+        "writer_citable": false
+      },
+      {
+        "attempt_count": 3,
+        "case_key": "NVDA",
+        "failure_codes": [
+          "official_source_http_403"
+        ],
+        "slot_id": "nvda_data_center_product_profit",
+        "source_exhaustion_proven": false,
+        "writer_citable": false
+      },
+      {
+        "attempt_count": 3,
+        "case_key": "NVDA",
+        "failure_codes": [
+          "official_source_http_403"
+        ],
+        "slot_id": "nvda_data_center_product_revenue",
+        "source_exhaustion_proven": false,
+        "writer_citable": false
+      }
+    ],
+    "semantic_evidence_slots": [
+      {
+        "case_key": "DELL",
+        "parser_adapter": "official_source_pdf_text_v1",
+        "slot_id": "current_issuer_counterevidence",
+        "source_url": "https://investors.delltechnologies.com/node/19176/pdf"
+      },
+      {
+        "case_key": "DELL",
+        "parser_adapter": "official_source_pdf_text_v1",
+        "slot_id": "current_issuer_demand_signal",
+        "source_url": "https://investors.delltechnologies.com/node/19176/pdf"
+      },
+      {
+        "case_key": "DELL",
+        "parser_adapter": "official_source_pdf_text_v1",
+        "slot_id": "current_issuer_financial_statement",
+        "source_url": "https://investors.delltechnologies.com/node/19176/pdf"
+      },
+      {
+        "case_key": "MU",
+        "parser_adapter": "official_source_pdf_text_v1",
+        "slot_id": "current_issuer_counterevidence",
+        "source_url": "https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550"
+      },
+      {
+        "case_key": "MU",
+        "parser_adapter": "official_source_pdf_text_v1",
+        "slot_id": "current_issuer_demand_signal",
+        "source_url": "https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550"
+      },
+      {
+        "case_key": "MU",
+        "parser_adapter": "official_source_pdf_text_v1",
+        "slot_id": "current_issuer_financial_statement",
+        "source_url": "https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550"
+      },
+      {
+        "case_key": "NVDA",
+        "parser_adapter": "official_source_html_text_v1",
+        "slot_id": "current_issuer_counterevidence",
+        "source_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/"
+      },
+      {
+        "case_key": "NVDA",
+        "parser_adapter": "official_source_html_text_v1",
+        "slot_id": "current_issuer_demand_signal",
+        "source_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/"
+      },
+      {
+        "case_key": "NVDA",
+        "parser_adapter": "official_source_html_text_v1",
+        "slot_id": "current_issuer_financial_statement",
+        "source_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/"
+      }
+    ],
+    "source_exhaustion_claimed_for_remaining_gaps": false
+  },
+  "record_digest": "fa3a2c347c20701cdf10d47234e46f53cc3358a8a66230b90532d3293e4a89b8",
+  "root_cause_correction": {
+    "fix": "The v1.1 compiler now selects the latest issuer annual period filed on or before as_of_date, rebuilds the targeted three-case mart, and keeps future-after-as-of filings ineligible.",
+    "historical_S1_01_S1_02_records_rewritten": false,
+    "issue_id": "RC-P36-135-fin-0-1-3-s1-01-latest-available-annual-selection-not-enforced",
+    "owning_stages": [
+      "013-S1-01",
+      "013-S1-02"
+    ],
+    "problem": "The first S1-01 repair fixed quarter-versus-annual semantics but the S1-02 policy still fixed fiscal_year manually, so DELL and NVDA could remain one annual filing stale at the 2026-07-26 as-of date."
+  },
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s1_03_closeout_v1_0",
+  "stage_boundary": {
+    "S1": "in_progress",
+    "S1_01": "successor_pass_latest_available_annual_selection",
+    "S1_02": "successor_pass_48_material_slots_5_remaining_gaps",
+    "S1_03": "engineering_pass",
+    "S1_04_graph": "next_not_started",
+    "S1_05_retrieval_usefulness": "not_started",
+    "S2_to_S5": "not_started",
+    "model_or_full_chain": false,
+    "release": false
+  },
+  "status": "S1_01_freshness_successor_pass_S1_02_numeric_successor_pass_S1_03_engineering_pass_S1_04_next",
+  "task_id": "FIN-0.1.3-013-S1-03-OFFICIAL-SOURCE-PARSER-FALLBACK-AND-ATTEMPT-BACKED-TYPED-GAP-COVERAGE"
+}

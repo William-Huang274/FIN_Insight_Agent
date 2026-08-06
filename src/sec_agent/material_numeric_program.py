@@ -13,6 +13,13 @@ from typing import Any, Iterable, Mapping, Sequence
 POLICY_SCHEMA = "fin_ia_0_1_3_material_numeric_program_policy_v1_0"
 PROGRAM_SCHEMA = "fin_ia_0_1_3_material_numeric_program_v1_0"
 PROGRAM_CONTRACT_REF = "fin_0_1_3.S1.material_numeric_program_formula_and_typed_gap:v1"
+POLICY_SCHEMA_V1_1 = "fin_ia_0_1_3_material_numeric_program_policy_v1_1"
+PROGRAM_SCHEMA_V1_1 = "fin_ia_0_1_3_material_numeric_program_v1_1"
+PROGRAM_CONTRACT_REF_V1_1 = "fin_0_1_3.S1.material_numeric_program_formula_and_typed_gap:v1.1"
+_POLICY_CONTRACTS = {
+    POLICY_SCHEMA: (PROGRAM_SCHEMA, PROGRAM_CONTRACT_REF),
+    POLICY_SCHEMA_V1_1: (PROGRAM_SCHEMA_V1_1, PROGRAM_CONTRACT_REF_V1_1),
+}
 PROGRAM_CELL_ID = "value_and_profit_capture"
 
 _ANNUAL_FLOW_METRICS = {
@@ -24,6 +31,17 @@ _ANNUAL_FLOW_METRICS = {
 }
 _INSTANT_METRICS = {"inventory", "accounts_receivable", "accounts_payable"}
 _INVENTORY_CONCEPTS = {"inventorynet", "inventorycurrent", "inventoriesnet"}
+_ACCOUNTS_RECEIVABLE_CONCEPTS = {
+    "accountsreceivablenetcurrent",
+    "accountsreceivablenet",
+    "accountsreceivablecurrent",
+}
+_ACCOUNTS_PAYABLE_CONCEPTS = {"accountspayablecurrent", "accountspayable"}
+_COMPARATIVE_CONCEPTS = {
+    "inventory": _INVENTORY_CONCEPTS,
+    "accounts_receivable": _ACCOUNTS_RECEIVABLE_CONCEPTS,
+    "accounts_payable": _ACCOUNTS_PAYABLE_CONCEPTS,
+}
 _ALLOWED_CASES = {"DELL", "MU", "NVDA"}
 
 
@@ -45,14 +63,29 @@ def canonical_digest(value: Any) -> str:
 
 def load_material_numeric_policy(path: str | Path) -> dict[str, Any]:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    expected = _POLICY_CONTRACTS.get(str(payload.get("schema_version") or ""))
     if (
-        payload.get("schema_version") != POLICY_SCHEMA
-        or payload.get("contract_ref") != PROGRAM_CONTRACT_REF
+        expected is None
+        or payload.get("contract_ref") != expected[1]
         or set(payload.get("case_profiles") or {}) != _ALLOWED_CASES
         or not isinstance(payload.get("formula_contracts"), Mapping)
     ):
         raise MaterialNumericProgramError("material_numeric_policy_invalid")
+    if payload.get("schema_version") == POLICY_SCHEMA_V1_1 and any(
+        profile.get("annual_selection_mode") != "latest_available_annual_as_of"
+        for profile in payload["case_profiles"].values()
+    ):
+        raise MaterialNumericProgramError("material_numeric_policy_invalid")
     return payload
+
+
+def _program_contract(policy: Mapping[str, Any]) -> tuple[str, str, str]:
+    policy_schema = str(policy.get("schema_version") or "")
+    pair = _POLICY_CONTRACTS.get(policy_schema)
+    if pair is None or policy.get("contract_ref") != pair[1]:
+        raise MaterialNumericProgramError("material_numeric_policy_invalid")
+    suffix = "v1_0" if policy_schema == POLICY_SCHEMA else "v1_1"
+    return pair[0], pair[1], f"fin_ia_0_1_3_three_case_material_numeric_program_set_{suffix}"
 
 
 def read_current_gold_numeric_rows(
@@ -105,7 +138,7 @@ def read_comparative_staging_rows(
                 if character.isalnum()
             )
             if (
-                concept in _INVENTORY_CONCEPTS
+                concept in set().union(*_COMPARATIVE_CONCEPTS.values())
                 and str(candidate.get("period_end") or candidate.get("end_date") or "")
                 == targets[ticker]
                 and str(candidate.get("filed_date") or "") == filed[ticker]
@@ -123,16 +156,23 @@ def compile_three_case_material_numeric_programs_from_files(
     staging_path: str | Path,
 ) -> dict[str, Any]:
     policy = load_material_numeric_policy(policy_path)
+    _, contract_ref, set_schema = _program_contract(policy)
     gold_rows = read_current_gold_numeric_rows(
         gold_sqlite_path,
         case_keys=tuple(policy["case_profiles"]),
     )
     anchors: dict[str, Mapping[str, Any]] = {}
     for case_key, profile in policy["case_profiles"].items():
+        fiscal_year = _resolve_profile_fiscal_year(
+            policy=policy,
+            profile=profile,
+            gold_rows=gold_rows,
+            case_key=case_key,
+        )
         anchors[case_key] = _select_unique_gold_row(
             gold_rows,
             case_key=case_key,
-            fiscal_year=int(profile["fiscal_year"]),
+            fiscal_year=fiscal_year,
             metric_family="revenue",
             temporal_role="annual_current",
             as_of_date=str(profile["as_of_date"]),
@@ -162,8 +202,8 @@ def compile_three_case_material_numeric_programs_from_files(
         for case_key in sorted(policy["case_profiles"])
     ]
     body = {
-        "schema_version": "fin_ia_0_1_3_three_case_material_numeric_program_set_v1_0",
-        "contract_ref": PROGRAM_CONTRACT_REF,
+        "schema_version": set_schema,
+        "contract_ref": contract_ref,
         "policy_digest": canonical_digest(policy),
         "case_programs": programs,
         "observed_counts": {
@@ -191,9 +231,15 @@ def compile_material_numeric_program(
 ) -> dict[str, Any]:
     case_key = case_key.upper()
     profile = deepcopy(dict((policy.get("case_profiles") or {}).get(case_key) or {}))
+    program_schema, contract_ref, _ = _program_contract(policy)
     if not profile or case_key not in _ALLOWED_CASES:
         raise MaterialNumericProgramError("material_numeric_case_profile_missing")
-    fiscal_year = int(profile["fiscal_year"])
+    fiscal_year = _resolve_profile_fiscal_year(
+        policy=policy,
+        profile=profile,
+        gold_rows=gold_rows,
+        case_key=case_key,
+    )
     as_of_date = str(profile["as_of_date"])
     annual_anchor = _select_unique_gold_row(
         gold_rows,
@@ -226,6 +272,7 @@ def compile_material_numeric_program(
                     case_key=case_key,
                     issuer_id=str(profile["issuer_id"]),
                     slot_id=slot_id,
+                    metric_family=metric_family,
                     as_of_date=as_of_date,
                 )
             else:
@@ -291,6 +338,7 @@ def compile_material_numeric_program(
                 case_key=case_key,
                 formula_id=str(formula_id),
                 contract=contract,
+                contract_ref=contract_ref,
                 inputs={key: base_by_slot[key] for key in required_inputs},
                 annual_anchor=annual_anchor,
                 fiscal_year=fiscal_year,
@@ -319,8 +367,8 @@ def compile_material_numeric_program(
     if requested_slots != governed_slots:
         raise MaterialNumericProgramError("material_numeric_coverage_not_exhaustive")
     body = {
-        "schema_version": PROGRAM_SCHEMA,
-        "contract_ref": PROGRAM_CONTRACT_REF,
+        "schema_version": program_schema,
+        "contract_ref": contract_ref,
         "case_key": case_key,
         "issuer_id": str(profile["issuer_id"]),
         "fiscal_year": fiscal_year,
@@ -352,6 +400,12 @@ def compile_material_numeric_program(
             "model_or_full_chain_run": False,
         },
     }
+    if policy.get("schema_version") == POLICY_SCHEMA_V1_1:
+        body["annual_selection"] = {
+            "mode": profile["annual_selection_mode"],
+            "selected_period_end": str(annual_anchor["period_end"]),
+            "selected_source_filed_at": str(annual_anchor["source_filed_at"]),
+        }
     result = {**body, "program_digest": canonical_digest(body)}
     validate_material_numeric_program(result, policy=policy)
     return result
@@ -362,10 +416,10 @@ def validate_three_case_material_numeric_program_set(
 ) -> dict[str, Any]:
     normalized = deepcopy(dict(program_set))
     digest = normalized.pop("program_set_digest", None)
+    _, contract_ref, set_schema = _program_contract(policy)
     if (
-        normalized.get("schema_version")
-        != "fin_ia_0_1_3_three_case_material_numeric_program_set_v1_0"
-        or normalized.get("contract_ref") != PROGRAM_CONTRACT_REF
+        normalized.get("schema_version") != set_schema
+        or normalized.get("contract_ref") != contract_ref
         or digest != canonical_digest(normalized)
     ):
         raise MaterialNumericProgramError("material_numeric_program_set_invalid")
@@ -401,15 +455,30 @@ def validate_material_numeric_program(
     digest = normalized.pop("program_digest", None)
     case_key = str(normalized.get("case_key") or "")
     profile = (policy.get("case_profiles") or {}).get(case_key, {})
+    program_schema, contract_ref, _ = _program_contract(policy)
     if (
-        normalized.get("schema_version") != PROGRAM_SCHEMA
-        or normalized.get("contract_ref") != PROGRAM_CONTRACT_REF
+        normalized.get("schema_version") != program_schema
+        or normalized.get("contract_ref") != contract_ref
         or case_key not in _ALLOWED_CASES
         or digest != canonical_digest(normalized)
         or normalized.get("issuer_id")
         != profile.get("issuer_id")
     ):
         raise MaterialNumericProgramError("material_numeric_program_invalid")
+    fiscal_year = int(normalized.get("fiscal_year", -1))
+    if policy.get("schema_version") == POLICY_SCHEMA_V1_1:
+        annual_selection = normalized.get("annual_selection") or {}
+        if (
+            fiscal_year < 1900
+            or annual_selection.get("mode") != profile.get("annual_selection_mode")
+            or not str(annual_selection.get("selected_period_end") or "")
+            or not str(annual_selection.get("selected_source_filed_at") or "")
+            or str(annual_selection["selected_source_filed_at"])
+            > str(profile.get("as_of_date") or "")
+        ):
+            raise MaterialNumericProgramError("material_numeric_annual_selection_invalid")
+    elif fiscal_year != int(profile["fiscal_year"]):
+        raise MaterialNumericProgramError("material_numeric_annual_selection_invalid")
     expected_base_slots = {
         str(row["slot_id"]): dict(row) for row in profile.get("base_slots") or ()
     }
@@ -431,7 +500,7 @@ def validate_material_numeric_program(
             fact,
             case_key=case_key,
             issuer_id=str(profile["issuer_id"]),
-            fiscal_year=int(profile["fiscal_year"]),
+            fiscal_year=fiscal_year,
             as_of_date=str(profile["as_of_date"]),
             slot_contract=slot_contract,
         )
@@ -454,6 +523,7 @@ def validate_material_numeric_program(
             derived,
             case_key=case_key,
             contract=contract,
+            contract_ref=contract_ref,
             inputs=by_slot,
         )
         ref = str(derived["derived_metric_ref"])
@@ -517,6 +587,37 @@ def validate_material_numeric_program(
     return deepcopy(dict(program))
 
 
+def _resolve_profile_fiscal_year(
+    *,
+    policy: Mapping[str, Any],
+    profile: Mapping[str, Any],
+    gold_rows: Sequence[Mapping[str, Any]],
+    case_key: str,
+) -> int:
+    if policy.get("schema_version") != POLICY_SCHEMA_V1_1:
+        return int(profile["fiscal_year"])
+    if profile.get("annual_selection_mode") != "latest_available_annual_as_of":
+        raise MaterialNumericProgramError("material_numeric_annual_selection_mode_invalid")
+    as_of_date = str(profile["as_of_date"])
+    candidates = [
+        row
+        for row in gold_rows
+        if str(row.get("ticker") or "").upper() == case_key
+        and str(row.get("metric_family") or "") == "revenue"
+        and str(row.get("period_role") or "") == "annual"
+        and str(row.get("source_filed_at") or "") <= as_of_date
+        and str(row.get("period_end") or "")
+    ]
+    if not candidates:
+        raise MaterialNumericProgramError("material_numeric_required_row_missing")
+    latest_period_end = max(str(row["period_end"]) for row in candidates)
+    latest = [row for row in candidates if str(row["period_end"]) == latest_period_end]
+    selected_year = max(int(row["fiscal_year"]) for row in latest)
+    selected = [row for row in latest if int(row["fiscal_year"]) == selected_year]
+    _reject_conflicting_authorities(selected)
+    return selected_year
+
+
 def _select_unique_gold_row(
     rows: Sequence[Mapping[str, Any]],
     *,
@@ -566,7 +667,8 @@ def _select_unique_comparative_row(
     annual_anchor: Mapping[str, Any],
     as_of_date: str,
 ) -> Mapping[str, Any]:
-    if metric_family != "inventory":
+    concepts = _COMPARATIVE_CONCEPTS.get(metric_family)
+    if concepts is None:
         raise MaterialNumericProgramError("material_numeric_comparative_metric_invalid")
     target_date = (
         date.fromisoformat(str(annual_anchor["period_start"])) - timedelta(days=1)
@@ -576,6 +678,11 @@ def _select_unique_comparative_row(
         row
         for row in rows
         if str(row.get("ticker") or "").upper() == case_key
+        and "".join(
+            character
+            for character in str(row.get("concept") or "").lower()
+            if character.isalnum()
+        ) in concepts
         and str(row.get("period_end") or row.get("end_date") or "") == target_date
         and str(row.get("filed_date") or "") == source_filed_at
         and str(row.get("filed_date") or "") <= as_of_date
@@ -652,6 +759,7 @@ def _staging_fact(
     case_key: str,
     issuer_id: str,
     slot_id: str,
+    metric_family: str,
     as_of_date: str,
 ) -> dict[str, Any]:
     filed = str(row["filed_date"])
@@ -661,8 +769,8 @@ def _staging_fact(
         "entity_ref": case_key,
         "issuer_id": issuer_id,
         "aggregation_scope": "consolidated_company_total",
-        "metric_family": "inventory",
-        "metric_name": str(row.get("label") or row.get("concept") or "Inventory"),
+        "metric_family": metric_family,
+        "metric_name": str(row.get("label") or row.get("concept") or metric_family),
         "raw_value": str(row["value"]),
         "normalized_value": str(row["value"]),
         "currency": "USD",
@@ -696,6 +804,7 @@ def _derive_formula(
     case_key: str,
     formula_id: str,
     contract: Mapping[str, Any],
+    contract_ref: str,
     inputs: Mapping[str, Mapping[str, Any]],
     annual_anchor: Mapping[str, Any],
     fiscal_year: int,
@@ -716,7 +825,7 @@ def _derive_formula(
         "aggregation_scope": "consolidated_company_total",
         "metric_family": formula_id,
         "formula_expression": str(contract["expression"]),
-        "formula_contract_ref": f"{PROGRAM_CONTRACT_REF}#{formula_id}",
+        "formula_contract_ref": f"{contract_ref}#{formula_id}",
         "required_scope": str(contract["required_scope"]),
         "input_numeric_refs": input_refs,
         "source_refs": source_refs,
@@ -769,6 +878,10 @@ def _calculate_formula(
                 values["beginning_inventory"] + values["ending_inventory"]
             ) / Decimal("2")
             return average_inventory / cost_of_revenue * Decimal(duration_days)
+        if formula_id == "accounts_receivable_change":
+            return values["ending_accounts_receivable"] - values["beginning_accounts_receivable"]
+        if formula_id == "accounts_payable_change":
+            return values["ending_accounts_payable"] - values["beginning_accounts_payable"]
     except (InvalidOperation, ZeroDivisionError) as exc:
         raise MaterialNumericProgramError("material_numeric_formula_domain_invalid") from exc
     raise MaterialNumericProgramError("material_numeric_formula_unknown")
@@ -896,7 +1009,7 @@ def _validate_program_temporal_alignment(
             raise MaterialNumericProgramError("material_numeric_instant_authority_misaligned")
         expected_end = (
             (date.fromisoformat(str(period_start)) - timedelta(days=1)).isoformat()
-            if slot_id == "beginning_inventory"
+            if slot_id.startswith("beginning_")
             else period_end
         )
         if row.get("period_end") != expected_end:
@@ -908,6 +1021,7 @@ def _validate_derived_metric(
     *,
     case_key: str,
     contract: Mapping[str, Any],
+    contract_ref: str,
     inputs: Mapping[str, Mapping[str, Any]],
 ) -> None:
     body = {
@@ -938,8 +1052,17 @@ def _validate_derived_metric(
     values = {key: _decimal(inputs[key]["normalized_value"]) for key in required}
     annual_inputs = [inputs[key] for key in required if inputs[key].get("period_role") == "annual"]
     if not annual_inputs:
-        raise MaterialNumericProgramError("material_numeric_derived_annual_anchor_missing")
-    annual_anchor = annual_inputs[0]
+        if any(inputs[key].get("period_role") != "instant" for key in required):
+            raise MaterialNumericProgramError("material_numeric_derived_annual_anchor_missing")
+        annual_anchor = {
+            "fiscal_year": derived.get("fiscal_year"),
+            "period_start": derived.get("period_start"),
+            "period_end": derived.get("period_end"),
+            "duration_days": derived.get("duration_days"),
+            "as_of_date": derived.get("as_of_date"),
+        }
+    else:
+        annual_anchor = annual_inputs[0]
     if any(
         (
             row.get("fiscal_year"),
@@ -968,7 +1091,7 @@ def _validate_derived_metric(
         or derived.get("as_of_date") != annual_anchor.get("as_of_date")
         or derived.get("required_scope") != contract.get("required_scope")
         or derived.get("formula_contract_ref")
-        != f"{PROGRAM_CONTRACT_REF}#{formula_id}"
+        != f"{contract_ref}#{formula_id}"
         or set(derived.get("source_refs") or ())
         != {str(inputs[key]["source_ref"]) for key in required}
         or str(derived.get("scale_multiplier")) != "1"

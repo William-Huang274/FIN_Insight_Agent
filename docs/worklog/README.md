@@ -1,5 +1,7 @@
 # Worklog
 
+- [638 — FIN 0.1.3 S1-03 official source 与上游 freshness successor](product_strategy/638_fin_0_1_3_s1_03_official_source_and_upstream_freshness_successor.md)
+
 - [588 — FIN 0.1.2 S4-T03 Agentic Search canary authority fail-closed](product_strategy/588_fin_0_1_2_s4_t03_agentic_search_canary_authority_fail_closed.md)
 - [587 — FIN 0.1.2 S4-T02 Retrieval/Evidence deterministic readiness](product_strategy/587_fin_0_1_2_s4_t02_retrieval_evidence_deterministic_readiness.md)
 - [586 — FIN 0.1.2 S4-T01 natural Case entry 与 exact binding](product_strategy/586_fin_0_1_2_s4_t01_natural_case_entry_and_exact_binding.md)

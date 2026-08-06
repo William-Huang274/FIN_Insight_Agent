@@ -1,0 +1,81 @@
+{
+  "schema_version": "fin_ia_0_1_3_official_source_attempt_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.official_source_attempt_and_typed_gap:v1",
+  "purpose": "Prove capture-first bounded official-source attempts, parser fallback, redirect lineage, and terminal evidence-or-gap coverage without promoting candidates into research claims.",
+  "budgets": {
+    "timeout_seconds_per_route": 30,
+    "byte_ceiling_per_response": 12582912,
+    "retry_ceiling": 0,
+    "model_calls": 0,
+    "provider_calls": 0
+  },
+  "current_slot_boundary": {
+    "numeric_slots_inherited_from_S1_02": 45,
+    "official_source_semantic_slots_added_here": 9,
+    "S1_02_declared_numeric_gaps_requiring_attempt_lineage": 8,
+    "dynamic_10_to_20_cell_DecisionSurface_owner": "013-S3-01",
+    "retrieval_recall_ranking_diversity_and_utilization_owner": "013-S1-05"
+  },
+  "case_profiles": {
+    "DELL": {
+      "issuer_id": "0001571996",
+      "as_of_date": "2026-07-26",
+      "allowed_hosts": ["data.sec.gov", "www.sec.gov", "investors.delltechnologies.com"],
+      "source_routes": [
+        {"route_id": "sec_submissions", "url": "https://data.sec.gov/submissions/CIK0001571996.json"},
+        {"route_id": "sec_current_10k", "url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199625000034/dell-20250131.htm"},
+        {"route_id": "issuer_ir", "url": "https://investors.delltechnologies.com/node/19176/pdf"}
+      ],
+      "required_slots": [
+        {"slot_id": "current_issuer_demand_signal", "evidence_role": "issuer_demand_or_order_signal", "match_groups": [["ai-optimized", "demand"], ["server", "backlog"], ["artificial intelligence", "demand"]], "gap_code": "dell_current_issuer_demand_signal_not_found", "cannot_infer": "current AI-server demand durability from company totals alone", "claim_boundary": "Issuer wording supports only the quoted demand statement; durability and causality remain analyst judgments."},
+        {"slot_id": "current_issuer_financial_statement", "evidence_role": "issuer_financial_statement", "match_any": ["net revenue", "gross profit", "operating income", "consolidated statements"], "gap_code": "dell_current_financial_statement_not_found", "cannot_infer": "current issuer financial statement support", "claim_boundary": "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program."},
+        {"slot_id": "current_issuer_counterevidence", "evidence_role": "issuer_counterevidence", "match_any": ["risk factors", "supply constraints", "customer demand", "inventory"], "gap_code": "dell_current_counterevidence_not_found", "cannot_infer": "current issuer-side counterevidence", "claim_boundary": "Risk disclosure identifies a possible constraint and does not establish realized impact."},
+        {"slot_id": "dell_server_or_isg_revenue", "evidence_role": "exact_issuer_segment_or_AI_server_revenue", "promotion_mode": "numeric_regex", "numeric_extractor": {"pattern": "Net revenue:\\s*AI-optimized servers\\s*\\$?\\s*8,952\\s*\\$?\\s*2,026\\s*342%\\s*\\$?\\s*(?P<value>24,683)\\s*\\$?\\s*9,286\\s*166%", "value_group": "value", "scale_multiplier": 1000000, "unit": "USD", "fiscal_year": 2026, "period_start": "2025-02-01", "period_end": "2026-01-30", "source_filed_at": "2026-02-26", "aggregation_scope": "AI_optimized_servers", "metric_family": "AI_optimized_server_revenue"}, "gap_code": "exact_issuer_segment_or_AI_server_revenue_not_deterministically_extracted", "cannot_infer": "AI-server or exact infrastructure-segment revenue from consolidated company revenue", "claim_boundary": "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion."},
+        {"slot_id": "dell_server_or_isg_profit", "evidence_role": "exact_issuer_segment_or_AI_server_profit", "promotion_mode": "numeric_regex", "numeric_extractor": {"pattern": "ISG operating income\\s*\\$?\\s*2,900\\s*\\$?\\s*2,051\\s*41%\\s*\\$?\\s*(?P<value>7,111)\\s*\\$?\\s*5,579\\s*27%", "value_group": "value", "scale_multiplier": 1000000, "unit": "USD", "fiscal_year": 2026, "period_start": "2025-02-01", "period_end": "2026-01-30", "source_filed_at": "2026-02-26", "aggregation_scope": "Infrastructure_Solutions_Group", "metric_family": "ISG_operating_income"}, "gap_code": "exact_issuer_segment_or_AI_server_profit_not_deterministically_extracted", "cannot_infer": "AI-server or exact infrastructure-segment gross or operating profit from consolidated margins", "claim_boundary": "Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers."},
+        {"slot_id": "dell_period_comparable_receivable_payable_change", "evidence_role": "period_comparable_working_capital_change", "promotion_mode": "attempt_only", "gap_code": "period_comparable_receivable_payable_change_not_deterministically_extracted", "cannot_infer": "working-capital cash-conversion direction from ending receivable and payable balances alone"}
+      ]
+    },
+    "MU": {
+      "issuer_id": "0000723125",
+      "as_of_date": "2026-07-26",
+      "allowed_hosts": ["data.sec.gov", "www.sec.gov", "investors.micron.com"],
+      "source_routes": [
+        {"route_id": "sec_submissions", "url": "https://data.sec.gov/submissions/CIK0000723125.json"},
+        {"route_id": "sec_current_10k", "url": "https://www.sec.gov/Archives/edgar/data/723125/000072312525000028/mu-20250828.htm"},
+        {"route_id": "issuer_ir", "url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-results-fourth-quarter-and-full-8"},
+        {"route_id": "issuer_annual_pdf", "url": "https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550"}
+      ],
+      "required_slots": [
+        {"slot_id": "current_issuer_demand_signal", "evidence_role": "issuer_demand_or_order_signal", "match_groups": [["high bandwidth memory", "demand"], ["hbm", "demand"], ["hbm", "revenue"]], "gap_code": "mu_current_issuer_demand_signal_not_found", "cannot_infer": "current HBM demand durability", "claim_boundary": "Issuer wording supports only the quoted demand or capacity statement; conversion and durability remain analyst judgments."},
+        {"slot_id": "current_issuer_financial_statement", "evidence_role": "issuer_financial_statement", "match_any": ["revenue", "gross margin", "operating income", "consolidated statements"], "gap_code": "mu_current_financial_statement_not_found", "cannot_infer": "current issuer financial statement support", "claim_boundary": "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program."},
+        {"slot_id": "current_issuer_counterevidence", "evidence_role": "issuer_counterevidence", "match_any": ["risk factors", "inventory", "export", "supply"], "gap_code": "mu_current_counterevidence_not_found", "cannot_infer": "current issuer-side counterevidence", "claim_boundary": "Risk or cycle wording identifies a possible constraint and does not establish realized impact."},
+        {"slot_id": "mu_hbm_revenue", "evidence_role": "exact_HBM_revenue", "promotion_mode": "attempt_only", "gap_code": "exact_HBM_revenue_not_deterministically_extracted", "cannot_infer": "HBM revenue or shipment conversion from consolidated Micron revenue"},
+        {"slot_id": "mu_hbm_profit", "evidence_role": "exact_HBM_profit", "promotion_mode": "attempt_only", "gap_code": "exact_HBM_profit_not_deterministically_extracted", "cannot_infer": "HBM gross or operating profit from consolidated Micron margins"},
+        {"slot_id": "mu_price_volume_mix", "evidence_role": "exact_price_volume_mix", "promotion_mode": "attempt_only", "gap_code": "exact_price_volume_mix_not_deterministically_extracted", "cannot_infer": "price, volume and product-mix decomposition from consolidated financial statements"}
+      ]
+    },
+    "NVDA": {
+      "issuer_id": "0001045810",
+      "as_of_date": "2026-07-26",
+      "allowed_hosts": ["data.sec.gov", "www.sec.gov", "investor.nvidia.com"],
+      "source_routes": [
+        {"route_id": "sec_submissions", "url": "https://data.sec.gov/submissions/CIK0001045810.json"},
+        {"route_id": "sec_current_10k", "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581025000023/nvda-20250126.htm"},
+        {"route_id": "issuer_ir", "url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/"}
+      ],
+      "required_slots": [
+        {"slot_id": "current_issuer_demand_signal", "evidence_role": "issuer_demand_or_order_signal", "match_groups": [["data center", "revenue"], ["artificial intelligence", "demand"], ["accelerated computing", "revenue"]], "gap_code": "nvda_current_issuer_demand_signal_not_found", "cannot_infer": "current AI infrastructure demand durability", "claim_boundary": "Issuer wording supports only the quoted demand statement; durability and causality remain analyst judgments."},
+        {"slot_id": "current_issuer_financial_statement", "evidence_role": "issuer_financial_statement", "match_any": ["revenue", "gross margin", "operating income", "consolidated statements"], "gap_code": "nvda_current_financial_statement_not_found", "cannot_infer": "current issuer financial statement support", "claim_boundary": "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program."},
+        {"slot_id": "current_issuer_counterevidence", "evidence_role": "issuer_counterevidence", "match_any": ["risk factors", "export control", "supply", "customer concentration"], "gap_code": "nvda_current_counterevidence_not_found", "cannot_infer": "current issuer-side counterevidence", "claim_boundary": "Risk disclosure identifies a possible constraint and does not establish realized impact."},
+        {"slot_id": "nvda_data_center_product_revenue", "evidence_role": "exact_data_center_product_revenue", "promotion_mode": "attempt_only", "gap_code": "exact_data_center_product_revenue_not_deterministically_extracted", "cannot_infer": "accelerator or product-level revenue from consolidated NVIDIA revenue"},
+        {"slot_id": "nvda_data_center_product_profit", "evidence_role": "exact_data_center_product_profit", "promotion_mode": "attempt_only", "gap_code": "exact_data_center_product_profit_not_deterministically_extracted", "cannot_infer": "accelerator or Data Center product gross or operating profit from consolidated margins"}
+      ]
+    }
+  },
+  "non_goals": [
+    "No dynamic DecisionSurface or new research-cell role design; that belongs to 013-S3-01.",
+    "No retrieval recall, ranking, diversity, utilization, or conflict-evidence scoring; that belongs to 013-S1-05.",
+    "No Graph edge creation; that belongs to 013-S1-04.",
+    "No model, Agent, Writer, Verifier, full-chain, product acceptance, or release claim."
+  ]
+}

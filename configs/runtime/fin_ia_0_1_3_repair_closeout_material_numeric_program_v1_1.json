@@ -1,0 +1,84 @@
+{
+  "schema_version": "fin_ia_0_1_3_material_numeric_program_policy_v1_1",
+  "contract_ref": "fin_0_1_3.S1.material_numeric_program_formula_and_typed_gap:v1.1",
+  "purpose": "Govern every current-as-of material numeric value with latest-available annual selection, exact source lineage, deterministic recalculation, or an explicit typed gap.",
+  "selection_rule": "Unless the ResearchCase explicitly fixes a historical period, select the latest issuer annual period publicly filed on or before as_of_date; never silently prefer same-fiscal-year comparability over freshness.",
+  "claim_table_admission_rule": "Only base_fact_refs and derived_metric_refs emitted by this program, or typed_gap_refs emitted for an unavailable required slot, may enter downstream core Claims and tables.",
+  "source_priority": [
+    "current_targeted_capture_first_SEC_CompanyFacts_refresh",
+    "current_latest_available_annual_gold_mart_exact_authority",
+    "same_filing_comparative_instant_from_normalized_SEC_staging"
+  ],
+  "formula_contracts": {
+    "gross_margin_percent": {"expression": "gross_profit/revenue*100", "required_inputs": ["gross_profit", "revenue"], "output_unit": "percent", "decimal_places": 4, "required_scope": "same_entity_annual_period_currency_unit"},
+    "operating_margin_percent": {"expression": "operating_income/revenue*100", "required_inputs": ["operating_income", "revenue"], "output_unit": "percent", "decimal_places": 4, "required_scope": "same_entity_annual_period_currency_unit"},
+    "free_cash_flow": {"expression": "operating_cash_flow-capital_expenditure_proxy", "required_inputs": ["operating_cash_flow", "capital_expenditure_proxy"], "output_unit": "USD", "decimal_places": 0, "required_scope": "same_entity_annual_period_currency_unit_and_positive_cash_outflow_capex"},
+    "inventory_days": {"expression": "average(beginning_inventory,ending_inventory)/(revenue-gross_profit)*duration_days", "required_inputs": ["beginning_inventory", "ending_inventory", "revenue", "gross_profit"], "output_unit": "days", "decimal_places": 2, "required_scope": "same_entity_currency_unit_begin_end_inventory_and_exact_annual_duration"},
+    "capital_intensity_percent": {"expression": "capital_expenditure_proxy/revenue*100", "required_inputs": ["capital_expenditure_proxy", "revenue"], "output_unit": "percent", "decimal_places": 4, "required_scope": "same_entity_annual_period_currency_unit_and_positive_cash_outflow_capex"}
+    ,"accounts_receivable_change": {"expression": "ending_accounts_receivable-beginning_accounts_receivable", "required_inputs": ["ending_accounts_receivable", "beginning_accounts_receivable"], "output_unit": "USD", "decimal_places": 0, "required_scope": "same_entity_currency_unit_begin_end_balance_sheet_instants"}
+    ,"accounts_payable_change": {"expression": "ending_accounts_payable-beginning_accounts_payable", "required_inputs": ["ending_accounts_payable", "beginning_accounts_payable"], "output_unit": "USD", "decimal_places": 0, "required_scope": "same_entity_currency_unit_begin_end_balance_sheet_instants"}
+  },
+  "case_profiles": {
+    "DELL": {
+      "issuer_id": "0001571996", "annual_selection_mode": "latest_available_annual_as_of", "as_of_date": "2026-07-26",
+      "base_slots": [
+        {"slot_id": "revenue", "metric_family": "revenue", "temporal_role": "annual_current"},
+        {"slot_id": "gross_profit", "metric_family": "gross_profit", "temporal_role": "annual_current"},
+        {"slot_id": "operating_income", "metric_family": "operating_income", "temporal_role": "annual_current"},
+        {"slot_id": "operating_cash_flow", "metric_family": "operating_cash_flow", "temporal_role": "annual_current"},
+        {"slot_id": "capital_expenditure_proxy", "metric_family": "capital_expenditure_proxy", "temporal_role": "annual_current"},
+        {"slot_id": "ending_inventory", "metric_family": "inventory", "temporal_role": "annual_end_instant"},
+        {"slot_id": "beginning_inventory", "metric_family": "inventory", "temporal_role": "annual_begin_comparative_instant"},
+        {"slot_id": "ending_accounts_receivable", "metric_family": "accounts_receivable", "temporal_role": "annual_end_instant"},
+        {"slot_id": "beginning_accounts_receivable", "metric_family": "accounts_receivable", "temporal_role": "annual_begin_comparative_instant"},
+        {"slot_id": "ending_accounts_payable", "metric_family": "accounts_payable", "temporal_role": "annual_end_instant"},
+        {"slot_id": "beginning_accounts_payable", "metric_family": "accounts_payable", "temporal_role": "annual_begin_comparative_instant"}
+      ],
+      "formula_slots": ["gross_margin_percent", "operating_margin_percent", "free_cash_flow", "inventory_days", "accounts_receivable_change", "accounts_payable_change"],
+      "declared_gap_slots": [
+        {"slot_id": "dell_server_or_isg_revenue", "gap_code": "exact_issuer_segment_or_AI_server_revenue_requires_official_document_numeric_parser", "cannot_infer": "AI-server or exact infrastructure-segment revenue from consolidated company revenue", "next_owner": "013-S1-03"},
+        {"slot_id": "dell_server_or_isg_profit", "gap_code": "exact_issuer_segment_or_AI_server_profit_requires_official_document_numeric_parser", "cannot_infer": "AI-server or exact infrastructure-segment gross or operating profit from consolidated margins", "next_owner": "013-S1-03"}
+      ]
+    },
+    "MU": {
+      "issuer_id": "0000723125", "annual_selection_mode": "latest_available_annual_as_of", "as_of_date": "2026-07-26",
+      "base_slots": [
+        {"slot_id": "revenue", "metric_family": "revenue", "temporal_role": "annual_current"},
+        {"slot_id": "gross_profit", "metric_family": "gross_profit", "temporal_role": "annual_current"},
+        {"slot_id": "operating_income", "metric_family": "operating_income", "temporal_role": "annual_current"},
+        {"slot_id": "operating_cash_flow", "metric_family": "operating_cash_flow", "temporal_role": "annual_current"},
+        {"slot_id": "capital_expenditure_proxy", "metric_family": "capital_expenditure_proxy", "temporal_role": "annual_current"},
+        {"slot_id": "ending_inventory", "metric_family": "inventory", "temporal_role": "annual_end_instant"},
+        {"slot_id": "beginning_inventory", "metric_family": "inventory", "temporal_role": "annual_begin_comparative_instant"}
+      ],
+      "formula_slots": ["gross_margin_percent", "operating_margin_percent", "free_cash_flow", "inventory_days", "capital_intensity_percent"],
+      "declared_gap_slots": [
+        {"slot_id": "mu_hbm_revenue", "gap_code": "exact_HBM_revenue_not_in_current_structured_numeric_authority", "cannot_infer": "HBM revenue or shipment conversion from consolidated Micron revenue", "next_owner": "013-S1-03"},
+        {"slot_id": "mu_hbm_profit", "gap_code": "exact_HBM_gross_or_operating_profit_not_in_current_structured_numeric_authority", "cannot_infer": "HBM gross or operating profit from consolidated Micron margins", "next_owner": "013-S1-03"},
+        {"slot_id": "mu_price_volume_mix", "gap_code": "exact_price_volume_mix_inputs_not_in_current_structured_numeric_authority", "cannot_infer": "price, volume and product-mix decomposition from consolidated financial statements", "next_owner": "013-S1-03"}
+      ]
+    },
+    "NVDA": {
+      "issuer_id": "0001045810", "annual_selection_mode": "latest_available_annual_as_of", "as_of_date": "2026-07-26",
+      "base_slots": [
+        {"slot_id": "revenue", "metric_family": "revenue", "temporal_role": "annual_current"},
+        {"slot_id": "gross_profit", "metric_family": "gross_profit", "temporal_role": "annual_current"},
+        {"slot_id": "operating_income", "metric_family": "operating_income", "temporal_role": "annual_current"},
+        {"slot_id": "operating_cash_flow", "metric_family": "operating_cash_flow", "temporal_role": "annual_current"},
+        {"slot_id": "capital_expenditure_proxy", "metric_family": "capital_expenditure_proxy", "temporal_role": "annual_current"},
+        {"slot_id": "ending_inventory", "metric_family": "inventory", "temporal_role": "annual_end_instant"},
+        {"slot_id": "beginning_inventory", "metric_family": "inventory", "temporal_role": "annual_begin_comparative_instant"}
+      ],
+      "formula_slots": ["gross_margin_percent", "operating_margin_percent", "free_cash_flow", "inventory_days", "capital_intensity_percent"],
+      "declared_gap_slots": [
+        {"slot_id": "nvda_data_center_product_revenue", "gap_code": "exact_data_center_or_accelerator_revenue_requires_scope_specific_official_document_parser", "cannot_infer": "accelerator or product-level revenue from consolidated NVIDIA revenue", "next_owner": "013-S1-03"},
+        {"slot_id": "nvda_data_center_product_profit", "gap_code": "exact_data_center_product_profit_not_in_current_structured_numeric_authority", "cannot_infer": "accelerator or Data Center product gross or operating profit from consolidated margins", "next_owner": "013-S1-03"}
+      ]
+    }
+  },
+  "non_goals": [
+    "No Graph edge creation; that belongs to 013-S1-04.",
+    "No retrieval usefulness scoring; that belongs to 013-S1-05.",
+    "No model, Agent, Claim, Writer, Verifier, Workbench product acceptance, or full-chain run."
+  ]
+}

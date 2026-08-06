@@ -1,0 +1,32 @@
+{
+  "decision_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s1_04_authoritative_relationship_graph_and_typed_empty_v1_0.json",
+  "decision_sha256": "41d7bcde76239f88d633ceb02d55d608b3e30857106e0da248c9501b686caafa",
+  "historical_event_time_deselections": [
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py::test_decision_and_active_suite_are_digest_bound_and_do_not_promote_old_names"
+  ],
+  "observed_result": "70 passed / 1 historical event-time assertion deselected",
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s1_04_active_test_suite_successor_v1_0",
+  "selected_test_files": [
+    "tests/test_sec_structured_facts_download.py",
+    "tests/test_sec_financial_statement_metric_runtime_rows.py",
+    "tests/test_gold_fact_signal_mart.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_01_delta_inheritance_namespace_and_current_truth_baseline.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_03_financial_semantic_truth_oracle_classification.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_01_financial_temporal_truth_and_time_role_repair.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_02_material_numeric_program_formula_and_typed_gap.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_03_official_source_attempt_program.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_03_closeout.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_04_authoritative_relationship_graph.py"
+  ],
+  "stage_boundary": {
+    "S1_04": "engineering_pass",
+    "S1_05": "next",
+    "S2_to_S5": "not_started",
+    "model_or_full_chain_authorized": false,
+    "release": false
+  },
+  "status": "current_S1_04_pass_S1_05_next",
+  "suite_digest": "1d0f29c775a644dc398a44f8a2ce21eb8e6a087d8d875f4283670cdebd989ad3",
+  "suite_id": "FIN-0.1.3-REPAIR-CLOSEOUT-S1-ACTIVE-SUITE-R7"
+}

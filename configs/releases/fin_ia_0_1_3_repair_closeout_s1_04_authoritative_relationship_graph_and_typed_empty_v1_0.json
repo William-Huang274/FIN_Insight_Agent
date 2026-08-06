@@ -1,0 +1,418 @@
+{
+  "acceptance": {
+    "cross_case_wrong_entity_date_and_digest_mutations_fail_closed": true,
+    "honest_typed_empty_cases": 1,
+    "model_provider_network_business_runs": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "old_FIN_0_1_2_three_case_typed_empty_projection_rewritten": false,
+    "positive_approved_edges": 7,
+    "relationship_edges_are_not_financial_fact_authority": true
+  },
+  "current_next": "FIN-0.1.3-013-S1-05-RETRIEVAL-EVIDENCE-USEFULNESS-EVAL-AND-S1-CLOSEOUT",
+  "graph_program": {
+    "case_graphs": [
+      {
+        "approved_edge_count": 0,
+        "case_graph_digest": "817a849dce18eeacf0b58dceb7db428d05127dda07792b6e7e692b34185b3f08",
+        "case_key": "DELL",
+        "contract_ref": "fin_0_1_3.S1.authoritative_relationship_graph_and_typed_empty:v1",
+        "edges": [],
+        "inspected_source": {
+          "date_authority_digest": "8c98d99378f2504e5c0a57ded0bacf2e5fdd6e9a88a556e2f28dc94bb5c53366",
+          "date_authority_ref": "fin013_numeric_8c98d99378f2504e5c0a57de",
+          "parser_adapter": "official_source_pdf_text_v1",
+          "parser_text_digest": "2c4401e61e330ff457ad25d582938d950ee235a0a512e3f23966db25b55f1d40",
+          "published_at": "2026-03-16",
+          "route_id": "issuer_ir",
+          "source_capture_digest": "2757573d491ecd348b065d6a5631ac4885b9ba92f591e1ee260e37c34ea0d691",
+          "source_capture_ref": "fin-0.1.3/s1-03/official-source-captures/27/57/2757573d491ecd348b065d6a5631ac4885b9ba92f591e1ee260e37c34ea0d691.json",
+          "source_url": "https://investors.delltechnologies.com/node/19176/pdf"
+        },
+        "issuer_id": "0001571996",
+        "model_provider_network_calls": [
+          0,
+          0,
+          0
+        ],
+        "nodes": [
+          {
+            "entity_id": "DELL",
+            "node_id": "issuer:DELL",
+            "node_role": "current_case_issuer",
+            "ticker": "DELL"
+          }
+        ],
+        "schema_version": "fin_ia_0_1_3_authoritative_relationship_case_graph_v1_0",
+        "status": "typed_empty_no_approved_current_relationship_evidence",
+        "typed_empty": {
+          "case_key": "DELL",
+          "inspected_source_capture_digest": "2757573d491ecd348b065d6a5631ac4885b9ba92f591e1ee260e37c34ea0d691",
+          "invented_edge_count": 0,
+          "reason": "bounded_current_official_source_contains_only_unnamed_customer_supplier_or_channel_language",
+          "source_exhaustion_proven": false,
+          "status": "typed_empty_no_approved_current_relationship_evidence",
+          "typed_empty_digest": "0aabe433c03923aa93b31a77b69c041915e8c8ebf0565307df10313a26c51f11"
+        }
+      },
+      {
+        "approved_edge_count": 2,
+        "case_graph_digest": "cc96b390e5cb4fabf868cfea626aedb172d65273820416921fafc827af32c223",
+        "case_key": "MU",
+        "contract_ref": "fin_0_1_3.S1.authoritative_relationship_graph_and_typed_empty:v1",
+        "edges": [
+          {
+            "approval_status": "approved_current_official_relationship_edge",
+            "as_of_date": "2026-07-26",
+            "claim_boundary": "The issuer identifies Samsung as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome.",
+            "date_authority_digest": "e90ff0eba555f1d41bf6226ad758101bf3a7a776319d7c160b965041e23174b4",
+            "date_authority_ref": "fin013_numeric_e90ff0eba555f1d41bf6226a",
+            "direction": "bidirectional_competition",
+            "edge_digest": "ee42d0737f01e4ffafe58e5ccca41f948a60bf08882dd4bed0c27b08cc080e6c",
+            "edge_id": "fin013_graph_edge_ee42d0737f01e4ffafe58e5c",
+            "edge_type": "competitive_landscape",
+            "financial_fact_authority": false,
+            "model_authored": false,
+            "parser_adapter": "official_source_pdf_text_v1",
+            "parser_text_digest": "dbf68b9263952e2414eef6f38329a0e45f4acf7d61cc202bc6ad8f82687475ee",
+            "published_at": "2025-10-03",
+            "relationship_fact_only": true,
+            "rule_id": "mu_samsung_named_competitor",
+            "source_capture_digest": "7354ed16485673f5b60a0d1fd6546a5d51cf2f12f0e12765379b44333fad4ed0",
+            "source_capture_ref": "fin-0.1.3/s1-03/official-source-captures/73/54/7354ed16485673f5b60a0d1fd6546a5d51cf2f12f0e12765379b44333fad4ed0.json",
+            "source_case_key": "MU",
+            "source_issuer_id": "0000723125",
+            "source_route_id": "issuer_annual_pdf",
+            "source_url": "https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550",
+            "statement": "We face intense competition in the semiconductor memory and storage markets from a number of companies, including Samsung Electronics Co., Ltd.; SK hynix Inc.",
+            "target_entity_id": "SAMSUNG",
+            "target_name": "Samsung Electronics Co., Ltd.",
+            "target_ticker": "005930.KS"
+          },
+          {
+            "approval_status": "approved_current_official_relationship_edge",
+            "as_of_date": "2026-07-26",
+            "claim_boundary": "The issuer identifies SK hynix as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome.",
+            "date_authority_digest": "e90ff0eba555f1d41bf6226ad758101bf3a7a776319d7c160b965041e23174b4",
+            "date_authority_ref": "fin013_numeric_e90ff0eba555f1d41bf6226a",
+            "direction": "bidirectional_competition",
+            "edge_digest": "a78aae51d1132ec416d43e246426ffe486910e4ce160c8d1989700151fab202b",
+            "edge_id": "fin013_graph_edge_a78aae51d1132ec416d43e24",
+            "edge_type": "competitive_landscape",
+            "financial_fact_authority": false,
+            "model_authored": false,
+            "parser_adapter": "official_source_pdf_text_v1",
+            "parser_text_digest": "dbf68b9263952e2414eef6f38329a0e45f4acf7d61cc202bc6ad8f82687475ee",
+            "published_at": "2025-10-03",
+            "relationship_fact_only": true,
+            "rule_id": "mu_sk_hynix_named_competitor",
+            "source_capture_digest": "7354ed16485673f5b60a0d1fd6546a5d51cf2f12f0e12765379b44333fad4ed0",
+            "source_capture_ref": "fin-0.1.3/s1-03/official-source-captures/73/54/7354ed16485673f5b60a0d1fd6546a5d51cf2f12f0e12765379b44333fad4ed0.json",
+            "source_case_key": "MU",
+            "source_issuer_id": "0000723125",
+            "source_route_id": "issuer_annual_pdf",
+            "source_url": "https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550",
+            "statement": "We face intense competition in the semiconductor memory and storage markets from a number of companies, including Samsung Electronics Co., Ltd.; SK hynix Inc.",
+            "target_entity_id": "SK_HYNIX",
+            "target_name": "SK hynix Inc.",
+            "target_ticker": "000660.KS"
+          }
+        ],
+        "inspected_source": {
+          "date_authority_digest": "e90ff0eba555f1d41bf6226ad758101bf3a7a776319d7c160b965041e23174b4",
+          "date_authority_ref": "fin013_numeric_e90ff0eba555f1d41bf6226a",
+          "parser_adapter": "official_source_pdf_text_v1",
+          "parser_text_digest": "dbf68b9263952e2414eef6f38329a0e45f4acf7d61cc202bc6ad8f82687475ee",
+          "published_at": "2025-10-03",
+          "route_id": "issuer_annual_pdf",
+          "source_capture_digest": "7354ed16485673f5b60a0d1fd6546a5d51cf2f12f0e12765379b44333fad4ed0",
+          "source_capture_ref": "fin-0.1.3/s1-03/official-source-captures/73/54/7354ed16485673f5b60a0d1fd6546a5d51cf2f12f0e12765379b44333fad4ed0.json",
+          "source_url": "https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550"
+        },
+        "issuer_id": "0000723125",
+        "model_provider_network_calls": [
+          0,
+          0,
+          0
+        ],
+        "nodes": [
+          {
+            "entity_id": "MU",
+            "node_id": "issuer:MU",
+            "node_role": "current_case_issuer",
+            "ticker": "MU"
+          },
+          {
+            "entity_id": "SAMSUNG",
+            "node_id": "entity:SAMSUNG",
+            "node_role": "approved_named_counterparty",
+            "ticker": "005930.KS"
+          },
+          {
+            "entity_id": "SK_HYNIX",
+            "node_id": "entity:SK_HYNIX",
+            "node_role": "approved_named_counterparty",
+            "ticker": "000660.KS"
+          }
+        ],
+        "schema_version": "fin_ia_0_1_3_authoritative_relationship_case_graph_v1_0",
+        "status": "approved_edges_present",
+        "typed_empty": null
+      },
+      {
+        "approved_edge_count": 5,
+        "case_graph_digest": "9734eb3255cb256b3ffcb7a3690a57e2a60e09bc3261e1621b9d3cbd1ca4f5f1",
+        "case_key": "NVDA",
+        "contract_ref": "fin_0_1_3.S1.authoritative_relationship_graph_and_typed_empty:v1",
+        "edges": [
+          {
+            "approval_status": "approved_current_official_relationship_edge",
+            "as_of_date": "2026-07-26",
+            "claim_boundary": "The issuer announcement supports AWS being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+            "date_authority_digest": "afc3d82ac9ef5c142f65d4b53f1a15468051f05140f01b2041b8ce0c336666bf",
+            "date_authority_ref": "fin013_numeric_afc3d82ac9ef5c142f65d4b5",
+            "direction": "target_deploys_source_platform",
+            "edge_digest": "4df3bd788b3fc5ec1dc836b191479c1081e120b34ca766e331d3f3c15dda5b5e",
+            "edge_id": "fin013_graph_edge_4df3bd788b3fc5ec1dc836b1",
+            "edge_type": "official_deployment_event",
+            "financial_fact_authority": false,
+            "model_authored": false,
+            "parser_adapter": "official_source_html_text_v1",
+            "parser_text_digest": "4d74781372700c55b1c8301bc43a0dff42584e703373dd04a38b2eb6ed518663",
+            "published_at": "2026-02-25",
+            "relationship_fact_only": true,
+            "rule_id": "nvda_aws_rubin_deployment",
+            "source_capture_digest": "42343cc20f627898746cbc80df3d4cdb5342a8717d3e0c724e5406f61bd7eb98",
+            "source_capture_ref": "fin-0.1.3/s1-03/official-source-captures/42/34/42343cc20f627898746cbc80df3d4cdb5342a8717d3e0c724e5406f61bd7eb98.json",
+            "source_case_key": "NVDA",
+            "source_issuer_id": "0001045810",
+            "source_route_id": "issuer_ir",
+            "source_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/",
+            "statement": "cloud providers Amazon Web Services (AWS), Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure will be among the first to deploy Vera Rubin-based instances",
+            "target_entity_id": "AWS",
+            "target_name": "Amazon Web Services (AWS)",
+            "target_ticker": "AMZN"
+          },
+          {
+            "approval_status": "approved_current_official_relationship_edge",
+            "as_of_date": "2026-07-26",
+            "claim_boundary": "The issuer announcement supports Google Cloud being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+            "date_authority_digest": "afc3d82ac9ef5c142f65d4b53f1a15468051f05140f01b2041b8ce0c336666bf",
+            "date_authority_ref": "fin013_numeric_afc3d82ac9ef5c142f65d4b5",
+            "direction": "target_deploys_source_platform",
+            "edge_digest": "835a0b01e0570233f2886107c6c211b357418bb205731165182f1ced4d2aea01",
+            "edge_id": "fin013_graph_edge_835a0b01e0570233f2886107",
+            "edge_type": "official_deployment_event",
+            "financial_fact_authority": false,
+            "model_authored": false,
+            "parser_adapter": "official_source_html_text_v1",
+            "parser_text_digest": "4d74781372700c55b1c8301bc43a0dff42584e703373dd04a38b2eb6ed518663",
+            "published_at": "2026-02-25",
+            "relationship_fact_only": true,
+            "rule_id": "nvda_google_cloud_rubin_deployment",
+            "source_capture_digest": "42343cc20f627898746cbc80df3d4cdb5342a8717d3e0c724e5406f61bd7eb98",
+            "source_capture_ref": "fin-0.1.3/s1-03/official-source-captures/42/34/42343cc20f627898746cbc80df3d4cdb5342a8717d3e0c724e5406f61bd7eb98.json",
+            "source_case_key": "NVDA",
+            "source_issuer_id": "0001045810",
+            "source_route_id": "issuer_ir",
+            "source_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/",
+            "statement": "cloud providers Amazon Web Services (AWS), Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure will be among the first to deploy Vera Rubin-based instances",
+            "target_entity_id": "GOOGLE_CLOUD",
+            "target_name": "Google Cloud",
+            "target_ticker": "GOOGL"
+          },
+          {
+            "approval_status": "approved_current_official_relationship_edge",
+            "as_of_date": "2026-07-26",
+            "claim_boundary": "The issuer announcement supports the existence and disclosed scope of the Meta partnership; it does not establish exact order value, recognized revenue, margin, timing certainty, or exclusivity.",
+            "date_authority_digest": "afc3d82ac9ef5c142f65d4b53f1a15468051f05140f01b2041b8ce0c336666bf",
+            "date_authority_ref": "fin013_numeric_afc3d82ac9ef5c142f65d4b5",
+            "direction": "bidirectional_partnership",
+            "edge_digest": "d6f1ed58b297679a2ebbe3a46857ea88639036ea34ff111bdc3e62bdbbea87cc",
+            "edge_id": "fin013_graph_edge_d6f1ed58b297679a2ebbe3a4",
+            "edge_type": "strategic_partnership",
+            "financial_fact_authority": false,
+            "model_authored": false,
+            "parser_adapter": "official_source_html_text_v1",
+            "parser_text_digest": "4d74781372700c55b1c8301bc43a0dff42584e703373dd04a38b2eb6ed518663",
+            "published_at": "2026-02-25",
+            "relationship_fact_only": true,
+            "rule_id": "nvda_meta_strategic_partnership",
+            "source_capture_digest": "42343cc20f627898746cbc80df3d4cdb5342a8717d3e0c724e5406f61bd7eb98",
+            "source_capture_ref": "fin-0.1.3/s1-03/official-source-captures/42/34/42343cc20f627898746cbc80df3d4cdb5342a8717d3e0c724e5406f61bd7eb98.json",
+            "source_case_key": "NVDA",
+            "source_issuer_id": "0001045810",
+            "source_route_id": "issuer_ir",
+            "source_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/",
+            "statement": "Announced a multiyear, multigenerational strategic partnership with Meta spanning on-premises, cloud and AI infrastructure, including the large-scale deployment of NVIDIA CPUs, networking and millions of NVIDIA Blackwell and Rubin GPUs",
+            "target_entity_id": "META",
+            "target_name": "Meta",
+            "target_ticker": "META"
+          },
+          {
+            "approval_status": "approved_current_official_relationship_edge",
+            "as_of_date": "2026-07-26",
+            "claim_boundary": "The issuer announcement supports Microsoft Azure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+            "date_authority_digest": "afc3d82ac9ef5c142f65d4b53f1a15468051f05140f01b2041b8ce0c336666bf",
+            "date_authority_ref": "fin013_numeric_afc3d82ac9ef5c142f65d4b5",
+            "direction": "target_deploys_source_platform",
+            "edge_digest": "d5f5a10ccc0ca5407de84243c5aa84bcbbaa5c730bfffd42d37470ebe16054ee",
+            "edge_id": "fin013_graph_edge_d5f5a10ccc0ca5407de84243",
+            "edge_type": "official_deployment_event",
+            "financial_fact_authority": false,
+            "model_authored": false,
+            "parser_adapter": "official_source_html_text_v1",
+            "parser_text_digest": "4d74781372700c55b1c8301bc43a0dff42584e703373dd04a38b2eb6ed518663",
+            "published_at": "2026-02-25",
+            "relationship_fact_only": true,
+            "rule_id": "nvda_microsoft_azure_rubin_deployment",
+            "source_capture_digest": "42343cc20f627898746cbc80df3d4cdb5342a8717d3e0c724e5406f61bd7eb98",
+            "source_capture_ref": "fin-0.1.3/s1-03/official-source-captures/42/34/42343cc20f627898746cbc80df3d4cdb5342a8717d3e0c724e5406f61bd7eb98.json",
+            "source_case_key": "NVDA",
+            "source_issuer_id": "0001045810",
+            "source_route_id": "issuer_ir",
+            "source_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/",
+            "statement": "cloud providers Amazon Web Services (AWS), Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure will be among the first to deploy Vera Rubin-based instances",
+            "target_entity_id": "MICROSOFT_AZURE",
+            "target_name": "Microsoft Azure",
+            "target_ticker": "MSFT"
+          },
+          {
+            "approval_status": "approved_current_official_relationship_edge",
+            "as_of_date": "2026-07-26",
+            "claim_boundary": "The issuer announcement supports Oracle Cloud Infrastructure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+            "date_authority_digest": "afc3d82ac9ef5c142f65d4b53f1a15468051f05140f01b2041b8ce0c336666bf",
+            "date_authority_ref": "fin013_numeric_afc3d82ac9ef5c142f65d4b5",
+            "direction": "target_deploys_source_platform",
+            "edge_digest": "57916f6fc5fa1fe9b0c22a4e1948fc4b46db97f158be5cd5f9b7ede9cef71ae5",
+            "edge_id": "fin013_graph_edge_57916f6fc5fa1fe9b0c22a4e",
+            "edge_type": "official_deployment_event",
+            "financial_fact_authority": false,
+            "model_authored": false,
+            "parser_adapter": "official_source_html_text_v1",
+            "parser_text_digest": "4d74781372700c55b1c8301bc43a0dff42584e703373dd04a38b2eb6ed518663",
+            "published_at": "2026-02-25",
+            "relationship_fact_only": true,
+            "rule_id": "nvda_oracle_cloud_rubin_deployment",
+            "source_capture_digest": "42343cc20f627898746cbc80df3d4cdb5342a8717d3e0c724e5406f61bd7eb98",
+            "source_capture_ref": "fin-0.1.3/s1-03/official-source-captures/42/34/42343cc20f627898746cbc80df3d4cdb5342a8717d3e0c724e5406f61bd7eb98.json",
+            "source_case_key": "NVDA",
+            "source_issuer_id": "0001045810",
+            "source_route_id": "issuer_ir",
+            "source_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/",
+            "statement": "cloud providers Amazon Web Services (AWS), Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure will be among the first to deploy Vera Rubin-based instances",
+            "target_entity_id": "ORACLE_CLOUD",
+            "target_name": "Oracle Cloud Infrastructure",
+            "target_ticker": "ORCL"
+          }
+        ],
+        "inspected_source": {
+          "date_authority_digest": "afc3d82ac9ef5c142f65d4b53f1a15468051f05140f01b2041b8ce0c336666bf",
+          "date_authority_ref": "fin013_numeric_afc3d82ac9ef5c142f65d4b5",
+          "parser_adapter": "official_source_html_text_v1",
+          "parser_text_digest": "4d74781372700c55b1c8301bc43a0dff42584e703373dd04a38b2eb6ed518663",
+          "published_at": "2026-02-25",
+          "route_id": "issuer_ir",
+          "source_capture_digest": "42343cc20f627898746cbc80df3d4cdb5342a8717d3e0c724e5406f61bd7eb98",
+          "source_capture_ref": "fin-0.1.3/s1-03/official-source-captures/42/34/42343cc20f627898746cbc80df3d4cdb5342a8717d3e0c724e5406f61bd7eb98.json",
+          "source_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/"
+        },
+        "issuer_id": "0001045810",
+        "model_provider_network_calls": [
+          0,
+          0,
+          0
+        ],
+        "nodes": [
+          {
+            "entity_id": "NVDA",
+            "node_id": "issuer:NVDA",
+            "node_role": "current_case_issuer",
+            "ticker": "NVDA"
+          },
+          {
+            "entity_id": "AWS",
+            "node_id": "entity:AWS",
+            "node_role": "approved_named_counterparty",
+            "ticker": "AMZN"
+          },
+          {
+            "entity_id": "GOOGLE_CLOUD",
+            "node_id": "entity:GOOGLE_CLOUD",
+            "node_role": "approved_named_counterparty",
+            "ticker": "GOOGL"
+          },
+          {
+            "entity_id": "META",
+            "node_id": "entity:META",
+            "node_role": "approved_named_counterparty",
+            "ticker": "META"
+          },
+          {
+            "entity_id": "MICROSOFT_AZURE",
+            "node_id": "entity:MICROSOFT_AZURE",
+            "node_role": "approved_named_counterparty",
+            "ticker": "MSFT"
+          },
+          {
+            "entity_id": "ORACLE_CLOUD",
+            "node_id": "entity:ORACLE_CLOUD",
+            "node_role": "approved_named_counterparty",
+            "ticker": "ORCL"
+          }
+        ],
+        "schema_version": "fin_ia_0_1_3_authoritative_relationship_case_graph_v1_0",
+        "status": "approved_edges_present",
+        "typed_empty": null
+      }
+    ],
+    "contract_ref": "fin_0_1_3.S1.authoritative_relationship_graph_and_typed_empty:v1",
+    "observed_counts": {
+      "approved_edges": 7,
+      "business_runs": 0,
+      "cases": 3,
+      "model_calls": 0,
+      "network_calls": 0,
+      "provider_calls": 0,
+      "typed_empty_cases": 1
+    },
+    "official_source_program_digest": "24e75950ec26b956da0f83c6677b50233d528e55e077c6ea137588e36dcbacc5",
+    "policy_digest": "ad35b05a56fdcb3a26d8be3da7b74008369de2d6618a4c5771c192476178c931",
+    "program_digest": "ffa447954955e6bb20f2e998e18492cd65394c4072d040c51ad857f79e52d119",
+    "schema_version": "fin_ia_0_1_3_authoritative_relationship_graph_program_v1_0",
+    "stage_boundary": {
+      "S1_04_graph_ready": true,
+      "S1_05_retrieval_usefulness_ready": false,
+      "S2_S3_research_content_ready": false,
+      "model_or_full_chain_run": false,
+      "release": false
+    }
+  },
+  "input_authority": {
+    "material_record_ref": "data/workbench_private/fin_0_1_3_s1_01_reopen/current_material_numeric_program_v1_1.json",
+    "material_record_sha256": "4dd54b372ba136aef39241595fc159f06c250e459728fa8a77e4316c58560e8d",
+    "official_R4_ref": "data/workbench_private/fin_0_1_3_s1_03/formal-current-proof-r4-result.json",
+    "official_R4_sha256": "7913c3238a4777aac97d5e6d3a1cdc047a3ff1693a6a86974bf2dbb93467d5db",
+    "official_program_digest": "24e75950ec26b956da0f83c6677b50233d528e55e077c6ea137588e36dcbacc5",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_repair_closeout_authoritative_relationship_graph_policy_v1_0.json",
+    "policy_sha256": "39313a6f7ae8a4013c31e43093a58bc6a020b2da64c50238f5d49b5dc6b44ab7",
+    "raw_source_capture_embedded": false
+  },
+  "known_boundary": "S1-04 proves graph authority, entity/date/lineage binding and honest empty state only. It does not prove candidate recall, ranking, diversity, conflict coverage, Agent use, research quality, product acceptance or release.",
+  "product_capability_delta": "The current graph surface no longer forces all three cases to empty. Issuer-authored named competition, partnership and deployment statements now become bounded approved relationship edges, while DELL remains an honest typed empty because its bounded current source names no counterparty.",
+  "record_digest": "c70633ca2a1c57a10550db76d0d9f47a310693fb6103a6d0f1a890dc8cd5da90",
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s1_04_release_record_v1_0",
+  "stage_boundary": {
+    "S1": "in_progress",
+    "S1_04": "engineering_pass",
+    "S1_05_retrieval_usefulness": "next_not_started",
+    "S2_to_S5": "not_started",
+    "model_or_full_chain": false,
+    "release": false
+  },
+  "status": "S1_04_engineering_pass_S1_05_next_S1_in_progress",
+  "task_id": "FIN-0.1.3-013-S1-04-AUTHORITATIVE-RELATIONSHIP-GRAPH-EDGE-AND-TYPED-EMPTY-COVERAGE"
+}

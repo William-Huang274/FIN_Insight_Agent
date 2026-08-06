@@ -1,0 +1,109 @@
+{
+  "schema_version": "fin_ia_0_1_3_authoritative_relationship_graph_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.authoritative_relationship_graph_and_typed_empty:v1",
+  "purpose": "Compile only explicit, current, issuer-authored named relationships into approved graph edges; preserve typed empty when the bounded current source contains no approved named relationship.",
+  "as_of_date": "2026-07-26",
+  "edge_types": [
+    "competitive_landscape",
+    "strategic_partnership",
+    "official_deployment_event"
+  ],
+  "entity_registry": {
+    "SAMSUNG": {"ticker": "005930.KS", "name": "Samsung Electronics Co., Ltd."},
+    "SK_HYNIX": {"ticker": "000660.KS", "name": "SK hynix Inc."},
+    "META": {"ticker": "META", "name": "Meta"},
+    "AWS": {"ticker": "AMZN", "name": "Amazon Web Services (AWS)"},
+    "GOOGLE_CLOUD": {"ticker": "GOOGL", "name": "Google Cloud"},
+    "MICROSOFT_AZURE": {"ticker": "MSFT", "name": "Microsoft Azure"},
+    "ORACLE_CLOUD": {"ticker": "ORCL", "name": "Oracle Cloud Infrastructure"}
+  },
+  "case_profiles": {
+    "DELL": {
+      "issuer_id": "0001571996",
+      "source_route_id": "issuer_ir",
+      "relationship_rules": [],
+      "typed_empty_reason": "bounded_current_official_source_contains_only_unnamed_customer_supplier_or_channel_language"
+    },
+    "MU": {
+      "issuer_id": "0000723125",
+      "source_route_id": "issuer_annual_pdf",
+      "relationship_rules": [
+        {
+          "rule_id": "mu_samsung_named_competitor",
+          "target_entity_id": "SAMSUNG",
+          "edge_type": "competitive_landscape",
+          "direction": "bidirectional_competition",
+          "statement_pattern": "We face intense competition in the semiconductor memory and storage markets from a number of companies, including Samsung Electronics Co\\., Ltd\\.; SK hynix Inc\\.",
+          "claim_boundary": "The issuer identifies Samsung as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome."
+        },
+        {
+          "rule_id": "mu_sk_hynix_named_competitor",
+          "target_entity_id": "SK_HYNIX",
+          "edge_type": "competitive_landscape",
+          "direction": "bidirectional_competition",
+          "statement_pattern": "We face intense competition in the semiconductor memory and storage markets from a number of companies, including Samsung Electronics Co\\., Ltd\\.; SK hynix Inc\\.",
+          "claim_boundary": "The issuer identifies SK hynix as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome."
+        }
+      ]
+    },
+    "NVDA": {
+      "issuer_id": "0001045810",
+      "source_route_id": "issuer_ir",
+      "relationship_rules": [
+        {
+          "rule_id": "nvda_meta_strategic_partnership",
+          "target_entity_id": "META",
+          "edge_type": "strategic_partnership",
+          "direction": "bidirectional_partnership",
+          "statement_pattern": "Announced a multiyear, multigenerational strategic partnership with Meta spanning on-premises, cloud and AI infrastructure, including the large-scale deployment of NVIDIA CPUs, networking and millions of NVIDIA Blackwell and Rubin GPUs",
+          "claim_boundary": "The issuer announcement supports the existence and disclosed scope of the Meta partnership; it does not establish exact order value, recognized revenue, margin, timing certainty, or exclusivity."
+        },
+        {
+          "rule_id": "nvda_aws_rubin_deployment",
+          "target_entity_id": "AWS",
+          "edge_type": "official_deployment_event",
+          "direction": "target_deploys_source_platform",
+          "statement_pattern": "cloud providers Amazon Web Services \\(AWS\\), Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure will be among the first to deploy Vera Rubin-based instances",
+          "claim_boundary": "The issuer announcement supports AWS being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion."
+        },
+        {
+          "rule_id": "nvda_google_cloud_rubin_deployment",
+          "target_entity_id": "GOOGLE_CLOUD",
+          "edge_type": "official_deployment_event",
+          "direction": "target_deploys_source_platform",
+          "statement_pattern": "cloud providers Amazon Web Services \\(AWS\\), Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure will be among the first to deploy Vera Rubin-based instances",
+          "claim_boundary": "The issuer announcement supports Google Cloud being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion."
+        },
+        {
+          "rule_id": "nvda_microsoft_azure_rubin_deployment",
+          "target_entity_id": "MICROSOFT_AZURE",
+          "edge_type": "official_deployment_event",
+          "direction": "target_deploys_source_platform",
+          "statement_pattern": "cloud providers Amazon Web Services \\(AWS\\), Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure will be among the first to deploy Vera Rubin-based instances",
+          "claim_boundary": "The issuer announcement supports Microsoft Azure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion."
+        },
+        {
+          "rule_id": "nvda_oracle_cloud_rubin_deployment",
+          "target_entity_id": "ORACLE_CLOUD",
+          "edge_type": "official_deployment_event",
+          "direction": "target_deploys_source_platform",
+          "statement_pattern": "cloud providers Amazon Web Services \\(AWS\\), Google Cloud, Microsoft Azure and Oracle Cloud Infrastructure will be among the first to deploy Vera Rubin-based instances",
+          "claim_boundary": "The issuer announcement supports Oracle Cloud Infrastructure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion."
+        }
+      ]
+    }
+  },
+  "hard_boundaries": {
+    "graph_edge_is_not_financial_fact": true,
+    "named_target_and_explicit_relationship_language_required": true,
+    "current_source_capture_and_parser_digest_required": true,
+    "source_date_must_not_exceed_as_of": true,
+    "unknown_or_cross_case_entity": "fail_closed",
+    "raw_source_capture_product_exposure": false,
+    "model_provider_network_calls": [0, 0, 0]
+  },
+  "non_goals": [
+    "No retrieval recall, reranking, source diversity, utilization, or conflict scoring; those belong to 013-S1-05.",
+    "No dynamic DecisionSurface, Agent judgment, report, Workbench product acceptance, full-chain, or release claim."
+  ]
+}

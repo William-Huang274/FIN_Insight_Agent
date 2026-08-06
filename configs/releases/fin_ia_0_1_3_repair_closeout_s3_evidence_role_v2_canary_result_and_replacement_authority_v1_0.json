@@ -1,0 +1,75 @@
+{
+  "authority": {
+    "automatic_retry_or_R3": false,
+    "canary": "pass_closed",
+    "first_credible_failure_stops": true,
+    "maximum_replacement_admissions": 1,
+    "one_fresh_nine_call_v2_replacement_admission": true,
+    "success_only_successor_materialization": true
+  },
+  "execution": {
+    "attempt_id": "fin013_s3_evidence_role_canary_8b17e01e3aece91ce0ec::attempt_1",
+    "business_artifact_promotions": 0,
+    "capture_digest": "a3f710affd40c31e84c9206f0cc47082c57f34fdb18dc90360f4ee039711413f",
+    "completed_calls": 1,
+    "execution_git_commit": "cd041665cbf20cf7c5fded8ca44b26320792fd90",
+    "fallback_count": 0,
+    "finish_reason": "stop",
+    "request_id": "FIN013-S2-DELL-demand_authenticity_and_sustainability",
+    "retry_count": 0,
+    "run_id": "fin013_s3_evidence_role_canary_8b17e01e3aece91ce0ec",
+    "terminal_result_digest": "06fcc5779276692c10720999afa20d557d514eb97307a17750583798618a1c56",
+    "usage": {
+      "input_tokens": 618,
+      "output_tokens": 120,
+      "total_tokens": 738,
+      "transport_attempt_count": 1
+    }
+  },
+  "local_evidence_role_projection": {
+    "boundary_only": [
+      "DELL_E01"
+    ],
+    "observation_support": [],
+    "thesis_support": []
+  },
+  "next_action": "COMMIT_PUSH_THEN_ISSUE_ONE_FRESH_S3_FORMAL_ANCHOR_V2_NINE_CALL_REPLACEMENT_ADMISSION_AND_EXECUTE_EXACT_ONCE",
+  "record_digest": "2a8637ab4cdaab79e5af35a20c4dc43098d4db4e6f7ef5672543c4615fbb7c26",
+  "result_disposition": {
+    "broad_nine_request_model_quality_proven": false,
+    "cannot_infer_typed_gap_retained": true,
+    "formal_content_quality_proven": false,
+    "observation_promoted_to_thesis_support": false,
+    "renamed_schema_natural_adherence": "pass_one_DELL_demand_request"
+  },
+  "safe_natural_output": {
+    "answer_direction": "cannot_infer",
+    "confidence": "low",
+    "epistemic_state": "cannot_infer",
+    "gap_aliases": [
+      "DELL_G01"
+    ],
+    "mechanism_alias": "DELL_M_DURABILITY_GAP",
+    "selected_counterevidence_aliases": [],
+    "selected_evidence_aliases": [
+      "DELL_E01"
+    ],
+    "what_would_change_aliases": [
+      "DELL_W_DEMAND_BACKLOG",
+      "DELL_W_DEMAND_REVERSAL"
+    ]
+  },
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_result_and_replacement_authority_v1_0",
+  "stage_boundary": {
+    "S3_product_proof": false,
+    "S4_entry": false,
+    "formal_anchor_R1": "terminal_failed_preserved",
+    "formal_case_scores": 0,
+    "human_acceptance": 0,
+    "paired": 0,
+    "release": false,
+    "v2_nine_call_replacement": "authorized_not_executed",
+    "v2_single_node_canary": "pass_closed"
+  },
+  "status": "single_node_natural_canary_pass_closed_one_nine_call_replacement_authorized"
+}

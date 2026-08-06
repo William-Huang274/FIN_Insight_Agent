@@ -46,6 +46,8 @@ DECISION = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_rol
 ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_active_test_suite_successor_v1_0.json"
 CANARY_READINESS = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_readiness_v1_0.json"
 CANARY_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_readiness_active_test_suite_successor_v1_0.json"
+CANARY_RESULT = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_result_and_replacement_authority_v1_0.json"
+CANARY_RESULT_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_result_active_test_suite_successor_v1_0.json"
 
 
 def _load(ref: str) -> dict:
@@ -330,3 +332,15 @@ def test_canary_readiness_is_digest_bound_and_does_not_authorize_full_replacemen
         {key: value for key, value in active.items() if key != "suite_digest"}
     )
     assert active["observed_result"] == "249 passed / 1 historical assertion deselected"
+    result = json.loads(CANARY_RESULT.read_text(encoding="utf-8"))
+    result_active = json.loads(CANARY_RESULT_ACTIVE.read_text(encoding="utf-8"))
+    assert result["record_digest"] == canonical_digest(
+        {key: value for key, value in result.items() if key != "record_digest"}
+    )
+    assert result["local_evidence_role_projection"]["boundary_only"] == ["DELL_E01"]
+    assert result["local_evidence_role_projection"]["thesis_support"] == []
+    assert result["authority"]["one_fresh_nine_call_v2_replacement_admission"] is True
+    assert result_active["decision_sha256"] == hashlib.sha256(CANARY_RESULT.read_bytes()).hexdigest()
+    assert result_active["suite_digest"] == canonical_digest(
+        {key: value for key, value in result_active.items() if key != "suite_digest"}
+    )

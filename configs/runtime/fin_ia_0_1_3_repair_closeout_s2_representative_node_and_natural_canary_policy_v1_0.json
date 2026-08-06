@@ -1,0 +1,93 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s2_representative_node_and_natural_canary_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S2.representative_evidence_claim_lead_node:v1",
+  "owning_stage": "FIN_0_1_3_S2_02",
+  "context_injection": {
+    "authority": "explicit_current_governed_pack",
+    "implicit_repository_autoload": false,
+    "production_autoload_decision_owner": "research_lead_lane_policy",
+    "explicit_operator_override_allowed": true,
+    "working_directory_may_change_model_visible_input": false,
+    "input_digest_required": true
+  },
+  "representative_runtime": {
+    "cases": ["DELL", "MU", "NVDA"],
+    "cell_families": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "specialist_node_count": 9,
+    "lead_node_count": 3,
+    "provider_output_surface": "alias_and_enum_only",
+    "local_ownership": [
+      "company_identity",
+      "financial_values",
+      "dates",
+      "claim_ids",
+      "ordering",
+      "lineage",
+      "mechanism_text",
+      "what_would_change_text",
+      "lead_synthesis",
+      "final_narrative"
+    ]
+  },
+  "natural_canary": {
+    "status": "preregistered_not_authorized_not_run",
+    "purpose": "Measure whether the current DeepSeek route can obey each changed representative contract family without using a full chain or discovering deterministic defects live.",
+    "selected_requests": [
+      {
+        "request_id": "FIN013-S2-DELL-demand_authenticity_and_sustainability",
+        "family": "demand_authenticity_and_sustainability"
+      },
+      {
+        "request_id": "FIN013-S2-MU-value_and_profit_capture",
+        "family": "value_and_profit_capture"
+      },
+      {
+        "request_id": "FIN013-S2-NVDA-bottleneck_counterevidence_and_what_would_change",
+        "family": "bottleneck_counterevidence_and_what_would_change"
+      }
+    ],
+    "budgets": {
+      "maximum_provider_calls": 3,
+      "maximum_calls_per_changed_family": 1,
+      "retry_count": 0,
+      "fallback_count": 0,
+      "full_chain_calls": 0
+    },
+    "hard_fail_conditions": [
+      "invalid_JSON_or_contract_shape",
+      "unknown_or_cross_case_alias",
+      "raw_numeric_date_identity_or_free_text_field",
+      "empty_support_and_gap_selection",
+      "cannot_infer_with_support_evidence",
+      "capture_or_request_digest_missing",
+      "second_call_for_same_family"
+    ],
+    "rubric": {
+      "scale": "0_to_2_each",
+      "dimensions": [
+        "contract_adherence",
+        "evidence_selection_relevance",
+        "epistemic_consistency",
+        "company_specific_mechanism_selection",
+        "what_would_change_actionability"
+      ],
+      "pass_threshold_per_request": 8,
+      "contract_adherence_minimum": 2,
+      "no_cross_request_averaging": true,
+      "all_three_requests_must_pass": true
+    },
+    "stop_rule": "First hard failure stops the canary. Do not patch or rerun inside the same admission; classify model capability, contract restriction, or context defect first."
+  },
+  "stage_boundary": {
+    "zero_call_node_consumption_required_before_canary": true,
+    "canary_is_not_full_chain": true,
+    "canary_is_not_product_acceptance": true,
+    "dynamic_decision_surface_owned_by": "S3",
+    "context_economy_owned_by": "S2_03",
+    "eight_dimension_final_content_quality_owned_by": "S3_S5"
+  }
+}

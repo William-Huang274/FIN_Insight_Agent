@@ -1,0 +1,1144 @@
+{
+  "acceptance": {
+    "cross_case_and_free_text_mutations": "fail_closed",
+    "eight_dimension_product_content_quality": "not_proven",
+    "explicit_pack_precedence": "pass",
+    "natural_model_output": "not_run",
+    "production_autoload_explicit_path": "pass",
+    "representative_claims": "9/9 materialized",
+    "representative_leads": "3/3 synthesized",
+    "representative_specialist_nodes": "9/9 consumed",
+    "working_directory_invariance": "pass"
+  },
+  "current_next": "FIN-0.1.3-013-S2-02-THREE-FAMILY-NATURAL-OUTPUT-CANARY-FRESH-ADMISSION-AUTHORITY-DECISION",
+  "known_boundary": "This decision closes RC-P36-138 and proves deterministic representative node consumption. It does not prove DeepSeek natural contract adherence, S2-03 context economy, S3 dynamic DecisionSurface, final research-content quality, product acceptance or release.",
+  "model_provider_network_source_business_runs": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "natural_canary_entry": {
+    "aggregate_model_visible_characters": 10981,
+    "fallback_count": 0,
+    "full_chain_calls": 0,
+    "hard_fail_conditions": [
+      "invalid_JSON_or_contract_shape",
+      "unknown_or_cross_case_alias",
+      "raw_numeric_date_identity_or_free_text_field",
+      "empty_support_and_gap_selection",
+      "cannot_infer_with_support_evidence",
+      "capture_or_request_digest_missing",
+      "second_call_for_same_family"
+    ],
+    "maximum_provider_calls": 3,
+    "retry_count": 0,
+    "rubric": {
+      "all_three_requests_must_pass": true,
+      "contract_adherence_minimum": 2,
+      "dimensions": [
+        "contract_adherence",
+        "evidence_selection_relevance",
+        "epistemic_consistency",
+        "company_specific_mechanism_selection",
+        "what_would_change_actionability"
+      ],
+      "no_cross_request_averaging": true,
+      "pass_threshold_per_request": 8,
+      "scale": "0_to_2_each"
+    },
+    "selected_families": [
+      "demand_authenticity_and_sustainability",
+      "value_and_profit_capture",
+      "bottleneck_counterevidence_and_what_would_change"
+    ],
+    "selected_request_ids": [
+      "FIN013-S2-DELL-demand_authenticity_and_sustainability",
+      "FIN013-S2-MU-value_and_profit_capture",
+      "FIN013-S2-NVDA-bottleneck_counterevidence_and_what_would_change"
+    ],
+    "status": "eligible_for_fresh_admission_not_issued_not_run",
+    "stop_rule": "First hard failure stops the canary. Do not patch or rerun inside the same admission; classify model capability, contract restriction, or context defect first."
+  },
+  "policy_ref": "configs/runtime/fin_ia_0_1_3_repair_closeout_s2_representative_node_and_natural_canary_policy_v1_0.json",
+  "policy_sha256": "6d9905647acba7148005bf5b716c940a36b09d7e273387e1e0080d6c60a57bbb",
+  "record_digest": "197000c0b6687483e9638a7cdbfeba5904c1eac579601b318e1c625ca9411b63",
+  "representative_node_program": {
+    "context_injection_contract": {
+      "authority": "explicit_current_governed_pack",
+      "implicit_working_directory_reads": false,
+      "provider_may_author_final_narrative": false,
+      "provider_may_expand_evidence_surface": false,
+      "repository_environment_autoload": false,
+      "request_digest_required": true
+    },
+    "contract_ref": "fin_0_1_3.S2.representative_evidence_claim_lead_node:v1",
+    "lead_syntheses": [
+      {
+        "case_key": "DELL",
+        "conflicts": [
+          {
+            "claim_ids": [
+              "fin013_s2_claim_b907ad64a35d871677ff2eb4",
+              "fin013_s2_claim_357bb3075aa3ecfe38cbb8bf",
+              "fin013_s2_claim_6a16d44ed69609c6b305ba96"
+            ],
+            "disposition": "defer_to_dynamic_decision_surface",
+            "reason": "cross_cell_direction_divergence_requires_S3_adjudication"
+          }
+        ],
+        "dependencies": [
+          {
+            "from_claim_id": "fin013_s2_claim_b907ad64a35d871677ff2eb4",
+            "reason": "value_capture_judgment_depends_on_demand_evidence",
+            "to_claim_id": "fin013_s2_claim_357bb3075aa3ecfe38cbb8bf"
+          }
+        ],
+        "lead_boundary": "Representative S2 synthesis only; S3 owns dynamic cells, semantic adjudication, final narrative and eight-dimension content quality.",
+        "lead_digest": "0c9f6d4212ef0786538dc4b7ab17a043963833ef27415a2ed49c9f30eebe8950",
+        "lead_id": "fin013_s2_lead_b542e15d23c710bf9d4ad953",
+        "specialist_claim_refs": [
+          "fin013_s2_claim_b907ad64a35d871677ff2eb4",
+          "fin013_s2_claim_357bb3075aa3ecfe38cbb8bf",
+          "fin013_s2_claim_6a16d44ed69609c6b305ba96"
+        ],
+        "typed_gaps": [
+          {
+            "alias": "DELL_G01",
+            "cannot_infer": "AI-server demand durability from a forward-looking caution list or revenue alone",
+            "claim_id": "fin013_s2_claim_b907ad64a35d871677ff2eb4",
+            "gap_code": "bounded_current_source_has_revenue_proxy_but_no_explicit_observed_demand_statement",
+            "slot_id": "current_issuer_demand_signal",
+            "source_exhaustion_proven": false
+          }
+        ],
+        "what_would_change": [
+          {
+            "alias": "DELL_W_DEMAND_BACKLOG",
+            "claim_id": "fin013_s2_claim_b907ad64a35d871677ff2eb4",
+            "condition": "A current Dell order, backlog, deployment, or repeat-demand disclosure tied to AI servers."
+          },
+          {
+            "alias": "DELL_W_AI_MARGIN",
+            "claim_id": "fin013_s2_claim_357bb3075aa3ecfe38cbb8bf",
+            "condition": "Dell discloses AI-server gross profit, operating profit, or a credible mix-to-margin bridge."
+          },
+          {
+            "alias": "DELL_W_SUPPLY_RELIEF",
+            "claim_id": "fin013_s2_claim_6a16d44ed69609c6b305ba96",
+            "condition": "Dell reports improved component availability, lead times, or supplier diversification for AI-server systems."
+          }
+        ]
+      },
+      {
+        "case_key": "MU",
+        "conflicts": [
+          {
+            "claim_ids": [
+              "fin013_s2_claim_5cf7bcab137fe026b6e8a5ee",
+              "fin013_s2_claim_51833b0556636a53e337ebcc",
+              "fin013_s2_claim_776c3f630c290b0e64541122"
+            ],
+            "disposition": "defer_to_dynamic_decision_surface",
+            "reason": "cross_cell_direction_divergence_requires_S3_adjudication"
+          }
+        ],
+        "dependencies": [
+          {
+            "from_claim_id": "fin013_s2_claim_5cf7bcab137fe026b6e8a5ee",
+            "reason": "value_capture_judgment_depends_on_demand_evidence",
+            "to_claim_id": "fin013_s2_claim_51833b0556636a53e337ebcc"
+          }
+        ],
+        "lead_boundary": "Representative S2 synthesis only; S3 owns dynamic cells, semantic adjudication, final narrative and eight-dimension content quality.",
+        "lead_digest": "ea7b40811138f680a75aec4065600dfa7b7c04217288ab11067910f4bcd04985",
+        "lead_id": "fin013_s2_lead_5d180bb5c29b35bde32da1fc",
+        "specialist_claim_refs": [
+          "fin013_s2_claim_5cf7bcab137fe026b6e8a5ee",
+          "fin013_s2_claim_51833b0556636a53e337ebcc",
+          "fin013_s2_claim_776c3f630c290b0e64541122"
+        ],
+        "typed_gaps": [],
+        "what_would_change": [
+          {
+            "alias": "MU_W_HBM_COMMITMENT",
+            "claim_id": "fin013_s2_claim_5cf7bcab137fe026b6e8a5ee",
+            "condition": "Micron reports current multi-period HBM commitments, capacity allocation, or shipment coverage with a bounded time horizon."
+          },
+          {
+            "alias": "MU_W_HBM_ECONOMICS",
+            "claim_id": "fin013_s2_claim_51833b0556636a53e337ebcc",
+            "condition": "Micron discloses HBM revenue, gross margin, operating profit, or a bounded price-volume-mix bridge."
+          },
+          {
+            "alias": "MU_W_CAPACITY_DISCIPLINE",
+            "claim_id": "fin013_s2_claim_776c3f630c290b0e64541122",
+            "condition": "Micron and peer disclosures show disciplined HBM and conventional DRAM capacity allocation despite demand volatility."
+          }
+        ]
+      },
+      {
+        "case_key": "NVDA",
+        "conflicts": [],
+        "dependencies": [
+          {
+            "from_claim_id": "fin013_s2_claim_b93e3ef3e25bd14e7ea5f008",
+            "reason": "value_capture_judgment_depends_on_demand_evidence",
+            "to_claim_id": "fin013_s2_claim_324c9033bf09bcd485c845f2"
+          }
+        ],
+        "lead_boundary": "Representative S2 synthesis only; S3 owns dynamic cells, semantic adjudication, final narrative and eight-dimension content quality.",
+        "lead_digest": "28c4d5acbfd23a665400fa30b9e78c821d68fe88434bfad4f9ca04b9e1fd2ed4",
+        "lead_id": "fin013_s2_lead_ce04fa713f2068df2810b5d7",
+        "specialist_claim_refs": [
+          "fin013_s2_claim_b93e3ef3e25bd14e7ea5f008",
+          "fin013_s2_claim_324c9033bf09bcd485c845f2",
+          "fin013_s2_claim_4e8ebc97bd91899ad8fe3a73"
+        ],
+        "typed_gaps": [
+          {
+            "alias": "NVDA_G01",
+            "cannot_infer": "a realized supply, export-control or customer-concentration constraint from a generic forward-looking statement list",
+            "claim_id": "fin013_s2_claim_4e8ebc97bd91899ad8fe3a73",
+            "gap_code": "bounded_current_press_release_has_forward_looking_caution_but_no_specific_realized_counterevidence",
+            "slot_id": "current_issuer_counterevidence",
+            "source_exhaustion_proven": false
+          }
+        ],
+        "what_would_change": [
+          {
+            "alias": "NVDA_W_REPEAT_DEPLOYMENT",
+            "claim_id": "fin013_s2_claim_b93e3ef3e25bd14e7ea5f008",
+            "condition": "NVIDIA or named cloud partners report repeat deployment, capacity expansion, or sustained utilization across another period."
+          },
+          {
+            "alias": "NVDA_W_PRODUCT_ECONOMICS",
+            "claim_id": "fin013_s2_claim_324c9033bf09bcd485c845f2",
+            "condition": "NVIDIA discloses accelerator or Data Center product revenue and profit on a comparable current basis."
+          },
+          {
+            "alias": "NVDA_W_REALIZED_CONSTRAINT",
+            "claim_id": "fin013_s2_claim_4e8ebc97bd91899ad8fe3a73",
+            "condition": "NVIDIA or an official named counterparty reports a realized supply, export-control, deployment, or concentration constraint with material scope."
+          }
+        ]
+      }
+    ],
+    "materialized_claims": [
+      {
+        "answer_direction": "mixed",
+        "case_key": "DELL",
+        "claim_digest": "9933249d799d2a2edc8639e5897109c47aef55ff9a8be8d0f5b16779a8086f33",
+        "claim_id": "fin013_s2_claim_b907ad64a35d871677ff2eb4",
+        "company_name": "Dell Technologies",
+        "confidence": "medium",
+        "counterevidence": [],
+        "decision_question": "Does Dell's observed AI-optimized server revenue represent durable company-specific demand, or only a current revenue proxy without direct durability evidence?",
+        "epistemic_state": "mixed_evidence",
+        "lineage": {
+          "provider_output_digest": "2ba231ec909c2dce164b86b5a21cea3087159ce97e19f2fb937eb2421d7f3cbc",
+          "request_digest": "cfd0548a8eb4312a340bf30ebc4034ae8ce0be416235293c5595144edd360136",
+          "request_id": "FIN013-S2-DELL-demand_authenticity_and_sustainability",
+          "s1_query_digest": "d119ebb3e8a8de341fe94fa0a5a1c4cc9f8a8f83d2851f9c1ce4c1b81de56c70"
+        },
+        "local_truth_ownership": {
+          "case_identity": "DELL",
+          "lineage_from_s1_query_digest": "d119ebb3e8a8de341fe94fa0a5a1c4cc9f8a8f83d2851f9c1ce4c1b81de56c70",
+          "numeric_and_date_values_from_candidate_ids": [
+            "fin013_retrieval_candidate_2e76f847e2a757e1e783ae0a"
+          ],
+          "provider_may_not_create_final_narrative": true
+        },
+        "mechanism_alias": "DELL_M_DEMAND_PROXY",
+        "mechanism_atom": "Dell AI-optimized server revenue is an observed company revenue proxy, not standalone proof of durable end-demand.",
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "provider_free_text_fields": [],
+        "support_evidence": [
+          {
+            "alias": "DELL_E01",
+            "candidate_digest": "2e76f847e2a757e1e783ae0a2c8ddc32491d3308fd0494e3329977950008d092",
+            "candidate_id": "fin013_retrieval_candidate_2e76f847e2a757e1e783ae0a",
+            "candidate_role": "current_official_exact_numeric",
+            "claim_boundary": "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.",
+            "edge_type": null,
+            "financial_fact_authority": true,
+            "metric_family": "AI_optimized_server_revenue",
+            "relationship_fact_only": false,
+            "slot_id": "dell_server_or_isg_revenue",
+            "target_entity_id": null
+          }
+        ],
+        "typed_gaps": [
+          {
+            "alias": "DELL_G01",
+            "cannot_infer": "AI-server demand durability from a forward-looking caution list or revenue alone",
+            "gap_code": "bounded_current_source_has_revenue_proxy_but_no_explicit_observed_demand_statement",
+            "slot_id": "current_issuer_demand_signal",
+            "source_exhaustion_proven": false
+          }
+        ],
+        "what_would_change": [
+          {
+            "alias": "DELL_W_DEMAND_BACKLOG",
+            "condition": "A current Dell order, backlog, deployment, or repeat-demand disclosure tied to AI servers."
+          }
+        ]
+      },
+      {
+        "answer_direction": "positive",
+        "case_key": "DELL",
+        "claim_digest": "690c1bdc3f87383fb3ed7fa7785c17358af32e80b9e942879eed63825ded0aa2",
+        "claim_id": "fin013_s2_claim_357bb3075aa3ecfe38cbb8bf",
+        "company_name": "Dell Technologies",
+        "confidence": "medium",
+        "counterevidence": [],
+        "decision_question": "How much of Dell's AI-server scale is visible in company revenue, and what can or cannot be inferred about profit capture from ISG and consolidated financial authority?",
+        "epistemic_state": "bounded_inference",
+        "lineage": {
+          "provider_output_digest": "726d16e46796dc2c237be9482a9a821f5ce1128eae9486ed0542b2193d9183f7",
+          "request_digest": "c96b64ac52d71710f92356a79611ebaf6122e892f8c4da524aa58a76572a0d82",
+          "request_id": "FIN013-S2-DELL-value_and_profit_capture",
+          "s1_query_digest": "3763744f9442ed1647026875b857b3d121cb9703ad59d0a342bc37b71898544c"
+        },
+        "local_truth_ownership": {
+          "case_identity": "DELL",
+          "lineage_from_s1_query_digest": "3763744f9442ed1647026875b857b3d121cb9703ad59d0a342bc37b71898544c",
+          "numeric_and_date_values_from_candidate_ids": [
+            "fin013_retrieval_candidate_4f331ad1344c2a1bfc9dcc13",
+            "fin013_retrieval_candidate_434ec5345cf54652db3788de",
+            "fin013_retrieval_candidate_eb38786cad670180bbf7cca6",
+            "fin013_retrieval_candidate_8cdd812d43f4e57d9a368df3",
+            "fin013_retrieval_candidate_724c8babff17dc48d4f5c79c",
+            "fin013_retrieval_candidate_7c6c533159b1372c28e64246"
+          ],
+          "provider_may_not_create_final_narrative": true
+        },
+        "mechanism_alias": "DELL_M_SCALE_NOT_PRODUCT_PROFIT",
+        "mechanism_atom": "Dell AI-server revenue establishes scale while ISG operating income remains a segment boundary rather than AI-server product profit.",
+        "program_cell_id": "value_and_profit_capture",
+        "provider_free_text_fields": [],
+        "support_evidence": [
+          {
+            "alias": "DELL_E01",
+            "candidate_digest": "4f331ad1344c2a1bfc9dcc135367a38ebb64d08e0c79817e1fb83d6278a0942c",
+            "candidate_id": "fin013_retrieval_candidate_4f331ad1344c2a1bfc9dcc13",
+            "candidate_role": "current_official_semantic_evidence",
+            "claim_boundary": "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+            "edge_type": null,
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": false,
+            "slot_id": "current_issuer_financial_statement",
+            "target_entity_id": null
+          },
+          {
+            "alias": "DELL_E02",
+            "candidate_digest": "434ec5345cf54652db3788de4b5d79af8295acc12ebd4826dbd272135bc7813f",
+            "candidate_id": "fin013_retrieval_candidate_434ec5345cf54652db3788de",
+            "candidate_role": "current_official_exact_numeric",
+            "claim_boundary": "Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers.",
+            "edge_type": null,
+            "financial_fact_authority": true,
+            "metric_family": "ISG_operating_income",
+            "relationship_fact_only": false,
+            "slot_id": "dell_server_or_isg_profit",
+            "target_entity_id": null
+          },
+          {
+            "alias": "DELL_E03",
+            "candidate_digest": "eb38786cad670180bbf7cca6e3d070a7f7d9c499d554c4c5c458ab0d6c3d28be",
+            "candidate_id": "fin013_retrieval_candidate_eb38786cad670180bbf7cca6",
+            "candidate_role": "current_official_exact_numeric",
+            "claim_boundary": "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.",
+            "edge_type": null,
+            "financial_fact_authority": true,
+            "metric_family": "AI_optimized_server_revenue",
+            "relationship_fact_only": false,
+            "slot_id": "dell_server_or_isg_revenue",
+            "target_entity_id": null
+          },
+          {
+            "alias": "DELL_E04",
+            "candidate_digest": "8cdd812d43f4e57d9a368df364cc09907bf99b767ca16e7837aabf3f0f58568f",
+            "candidate_id": "fin013_retrieval_candidate_8cdd812d43f4e57d9a368df3",
+            "candidate_role": "current_exact_numeric_sql",
+            "claim_boundary": "consolidated_company_total",
+            "edge_type": null,
+            "financial_fact_authority": true,
+            "metric_family": "gross_profit",
+            "relationship_fact_only": false,
+            "slot_id": "gross_profit",
+            "target_entity_id": null
+          },
+          {
+            "alias": "DELL_E05",
+            "candidate_digest": "724c8babff17dc48d4f5c79c777b4e65d330a440f5bf1f02eedce42dd80549b2",
+            "candidate_id": "fin013_retrieval_candidate_724c8babff17dc48d4f5c79c",
+            "candidate_role": "current_exact_numeric_sql",
+            "claim_boundary": "consolidated_company_total",
+            "edge_type": null,
+            "financial_fact_authority": true,
+            "metric_family": "operating_income",
+            "relationship_fact_only": false,
+            "slot_id": "operating_income",
+            "target_entity_id": null
+          },
+          {
+            "alias": "DELL_E06",
+            "candidate_digest": "7c6c533159b1372c28e642460dee7e67e106f81d13e5d9199a32769d1035e902",
+            "candidate_id": "fin013_retrieval_candidate_7c6c533159b1372c28e64246",
+            "candidate_role": "current_exact_numeric_sql",
+            "claim_boundary": "consolidated_company_total",
+            "edge_type": null,
+            "financial_fact_authority": true,
+            "metric_family": "revenue",
+            "relationship_fact_only": false,
+            "slot_id": "revenue",
+            "target_entity_id": null
+          }
+        ],
+        "typed_gaps": [],
+        "what_would_change": [
+          {
+            "alias": "DELL_W_AI_MARGIN",
+            "condition": "Dell discloses AI-server gross profit, operating profit, or a credible mix-to-margin bridge."
+          }
+        ]
+      },
+      {
+        "answer_direction": "negative",
+        "case_key": "DELL",
+        "claim_digest": "0d37b3ac535538e82597c3d67b7b839fb225c8ad00a156be8e5e35aecbe31e64",
+        "claim_id": "fin013_s2_claim_6a16d44ed69609c6b305ba96",
+        "company_name": "Dell Technologies",
+        "confidence": "medium",
+        "counterevidence": [
+          {
+            "alias": "DELL_E01",
+            "candidate_digest": "bfb80429e836783ff28a5c816b000178fa27613cd21f7f0fa44a70acf11ab6cd",
+            "candidate_id": "fin013_retrieval_candidate_bfb80429e836783ff28a5c81",
+            "candidate_role": "current_official_semantic_evidence",
+            "claim_boundary": "The issuer lists competition, limited-source suppliers and AI-demand sensitivity as risks; it does not establish realized impact.",
+            "edge_type": null,
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": false,
+            "slot_id": "current_issuer_counterevidence",
+            "target_entity_id": null
+          }
+        ],
+        "decision_question": "Which Dell-specific competitive, supplier, and AI-demand constraints could prevent observed server scale from converting into durable profit and cash flow?",
+        "epistemic_state": "bounded_inference",
+        "lineage": {
+          "provider_output_digest": "cf4ec6bbf29009eb4fbd2ab7c26fe0b5d7dc15015a8832c73a90263f24099441",
+          "request_digest": "d1e3abec4361c2d00a8e7072de100e03cd6469a1c8b4a6f9d9e24e417d37a5dc",
+          "request_id": "FIN013-S2-DELL-bottleneck_counterevidence_and_what_would_change",
+          "s1_query_digest": "703ccc706a3dbaf20c220248cc6e1204c8df5bc6f3da1088fe7bb977226caaf2"
+        },
+        "local_truth_ownership": {
+          "case_identity": "DELL",
+          "lineage_from_s1_query_digest": "703ccc706a3dbaf20c220248cc6e1204c8df5bc6f3da1088fe7bb977226caaf2",
+          "numeric_and_date_values_from_candidate_ids": [
+            "fin013_retrieval_candidate_bfb80429e836783ff28a5c81"
+          ],
+          "provider_may_not_create_final_narrative": true
+        },
+        "mechanism_alias": "DELL_M_SUPPLIER_COMPETITION_CONSTRAINT",
+        "mechanism_atom": "Dell's limited-source supplier exposure and competitive pressure can weaken the conversion of AI-server demand into margin and cash.",
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "provider_free_text_fields": [],
+        "support_evidence": [
+          {
+            "alias": "DELL_E01",
+            "candidate_digest": "bfb80429e836783ff28a5c816b000178fa27613cd21f7f0fa44a70acf11ab6cd",
+            "candidate_id": "fin013_retrieval_candidate_bfb80429e836783ff28a5c81",
+            "candidate_role": "current_official_semantic_evidence",
+            "claim_boundary": "The issuer lists competition, limited-source suppliers and AI-demand sensitivity as risks; it does not establish realized impact.",
+            "edge_type": null,
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": false,
+            "slot_id": "current_issuer_counterevidence",
+            "target_entity_id": null
+          }
+        ],
+        "typed_gaps": [],
+        "what_would_change": [
+          {
+            "alias": "DELL_W_SUPPLY_RELIEF",
+            "condition": "Dell reports improved component availability, lead times, or supplier diversification for AI-server systems."
+          }
+        ]
+      },
+      {
+        "answer_direction": "positive",
+        "case_key": "MU",
+        "claim_digest": "5553a983132cbc2b7335019fcbab6b342a664d68a4bb9c5c0cc4b2c680ee4a40",
+        "claim_id": "fin013_s2_claim_5cf7bcab137fe026b6e8a5ee",
+        "company_name": "Micron Technology",
+        "confidence": "medium",
+        "counterevidence": [],
+        "decision_question": "Is Micron's reported HBM demand a durable company-specific AI demand signal after separating structural bandwidth demand from memory-cycle fluctuation?",
+        "epistemic_state": "bounded_inference",
+        "lineage": {
+          "provider_output_digest": "621f65bba816a2baef5d0c4bad4138e6774858aae9de20a8369ca85ee29fb2f9",
+          "request_digest": "bfa15552859b56f6c8c5e88f2ee4bceb6b15446f7a371a2f3d97e8272bfb5111",
+          "request_id": "FIN013-S2-MU-demand_authenticity_and_sustainability",
+          "s1_query_digest": "44176b2d08a2f6db3e17ef72cbb3b318059b11567675e02e76d299f930197a99"
+        },
+        "local_truth_ownership": {
+          "case_identity": "MU",
+          "lineage_from_s1_query_digest": "44176b2d08a2f6db3e17ef72cbb3b318059b11567675e02e76d299f930197a99",
+          "numeric_and_date_values_from_candidate_ids": [
+            "fin013_retrieval_candidate_9aeb9f542d0c2ad049bdf228"
+          ],
+          "provider_may_not_create_final_narrative": true
+        },
+        "mechanism_alias": "MU_M_HBM_DEMAND_WITH_CYCLE_BOUNDARY",
+        "mechanism_atom": "Micron reports increased HBM demand, while the company also states that the long-term trajectory is unknown and may fluctuate.",
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "provider_free_text_fields": [],
+        "support_evidence": [
+          {
+            "alias": "MU_E01",
+            "candidate_digest": "9aeb9f542d0c2ad049bdf228aec2876d75aa89bf02878d33cf58b0b529aff5ee",
+            "candidate_id": "fin013_retrieval_candidate_9aeb9f542d0c2ad049bdf228",
+            "candidate_role": "current_official_semantic_evidence",
+            "claim_boundary": "The issuer reports increased HBM demand while explicitly warning that its long-term trajectory is unknown; durability remains an analyst judgment.",
+            "edge_type": null,
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": false,
+            "slot_id": "current_issuer_demand_signal",
+            "target_entity_id": null
+          }
+        ],
+        "typed_gaps": [],
+        "what_would_change": [
+          {
+            "alias": "MU_W_HBM_COMMITMENT",
+            "condition": "Micron reports current multi-period HBM commitments, capacity allocation, or shipment coverage with a bounded time horizon."
+          }
+        ]
+      },
+      {
+        "answer_direction": "positive",
+        "case_key": "MU",
+        "claim_digest": "2ee72b0eb4d0e8cdfd2eb2474506914cea0c38e43dc722b00492cf23fdabb96a",
+        "claim_id": "fin013_s2_claim_51833b0556636a53e337ebcc",
+        "company_name": "Micron Technology",
+        "confidence": "medium",
+        "counterevidence": [],
+        "decision_question": "Can Micron's HBM thesis be connected to revenue, margin, and cash using current authority without treating consolidated or DRAM totals as HBM-specific economics?",
+        "epistemic_state": "bounded_inference",
+        "lineage": {
+          "provider_output_digest": "5f675449302449a30976f70861c9cbbcd0ab0250ed10b556f850a42b0bdffa74",
+          "request_digest": "63d3f5bee163dbf364a5f5cd42ef63b5fc60cb3487c2fb3f7e2b5c97076748fd",
+          "request_id": "FIN013-S2-MU-value_and_profit_capture",
+          "s1_query_digest": "bb1eb5e5605b54e4eb58f087ecf42a08a2d043df8202783e1ebf9e14b8d3b343"
+        },
+        "local_truth_ownership": {
+          "case_identity": "MU",
+          "lineage_from_s1_query_digest": "bb1eb5e5605b54e4eb58f087ecf42a08a2d043df8202783e1ebf9e14b8d3b343",
+          "numeric_and_date_values_from_candidate_ids": [
+            "fin013_retrieval_candidate_47346a7cde9364911be4452e",
+            "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+            "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a",
+            "fin013_retrieval_candidate_203c35a513e888c3e36da9ed"
+          ],
+          "provider_may_not_create_final_narrative": true
+        },
+        "mechanism_alias": "MU_M_BASELINE_NOT_HBM_ECONOMICS",
+        "mechanism_atom": "Micron consolidated and DRAM financial facts establish company scale but do not isolate HBM revenue, profit, or price-volume-mix.",
+        "program_cell_id": "value_and_profit_capture",
+        "provider_free_text_fields": [],
+        "support_evidence": [
+          {
+            "alias": "MU_E01",
+            "candidate_digest": "47346a7cde9364911be4452ec69f213c010cd8912f2d86c622417cb36e4d5988",
+            "candidate_id": "fin013_retrieval_candidate_47346a7cde9364911be4452e",
+            "candidate_role": "current_official_semantic_evidence",
+            "claim_boundary": "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+            "edge_type": null,
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": false,
+            "slot_id": "current_issuer_financial_statement",
+            "target_entity_id": null
+          },
+          {
+            "alias": "MU_E02",
+            "candidate_digest": "f7f286175664f9db06cbfbc78592e246d153ec7f234d25d71f55aa403883ba10",
+            "candidate_id": "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+            "candidate_role": "current_exact_numeric_sql",
+            "claim_boundary": "consolidated_company_total",
+            "edge_type": null,
+            "financial_fact_authority": true,
+            "metric_family": "gross_profit",
+            "relationship_fact_only": false,
+            "slot_id": "gross_profit",
+            "target_entity_id": null
+          },
+          {
+            "alias": "MU_E03",
+            "candidate_digest": "f8d39a54e843b1ca5ffb638a142d3bb943f6f9573f3d03a2522279bfa617cdf0",
+            "candidate_id": "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a",
+            "candidate_role": "current_exact_numeric_sql",
+            "claim_boundary": "consolidated_company_total",
+            "edge_type": null,
+            "financial_fact_authority": true,
+            "metric_family": "operating_income",
+            "relationship_fact_only": false,
+            "slot_id": "operating_income",
+            "target_entity_id": null
+          },
+          {
+            "alias": "MU_E04",
+            "candidate_digest": "203c35a513e888c3e36da9ede60ca38fc0137757feb6a5f0e03156f99136cc41",
+            "candidate_id": "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+            "candidate_role": "current_exact_numeric_sql",
+            "claim_boundary": "consolidated_company_total",
+            "edge_type": null,
+            "financial_fact_authority": true,
+            "metric_family": "revenue",
+            "relationship_fact_only": false,
+            "slot_id": "revenue",
+            "target_entity_id": null
+          }
+        ],
+        "typed_gaps": [],
+        "what_would_change": [
+          {
+            "alias": "MU_W_HBM_ECONOMICS",
+            "condition": "Micron discloses HBM revenue, gross margin, operating profit, or a bounded price-volume-mix bridge."
+          }
+        ]
+      },
+      {
+        "answer_direction": "negative",
+        "case_key": "MU",
+        "claim_digest": "94fb2f75705ea0fbabcb6e55a726187ae9e3d025153c8f9e8962564696bd1db7",
+        "claim_id": "fin013_s2_claim_776c3f630c290b0e64541122",
+        "company_name": "Micron Technology",
+        "confidence": "medium",
+        "counterevidence": [
+          {
+            "alias": "MU_E01",
+            "candidate_digest": "e9a600976b693b3c7f877e9727cf011ed38c512269ae969b2594491f0bd143be",
+            "candidate_id": "fin013_retrieval_candidate_e9a600976b693b3c7f877e97",
+            "candidate_role": "current_official_semantic_evidence",
+            "claim_boundary": "The issuer states that HBM demand may fluctuate and that capacity shifts could pressure DRAM pricing; it does not establish a realized downturn.",
+            "edge_type": null,
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": false,
+            "slot_id": "current_issuer_counterevidence",
+            "target_entity_id": null
+          },
+          {
+            "alias": "MU_E02",
+            "candidate_digest": "f3a30894728557766f4d7acabe18cec5df7e41fe15da5d2348e2c58069c4e422",
+            "candidate_id": "fin013_retrieval_candidate_f3a30894728557766f4d7aca",
+            "candidate_role": "current_official_relationship_context",
+            "claim_boundary": "The issuer identifies Samsung as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome.",
+            "edge_type": "competitive_landscape",
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": true,
+            "slot_id": "mu_samsung_named_competitor",
+            "target_entity_id": "SAMSUNG"
+          },
+          {
+            "alias": "MU_E03",
+            "candidate_digest": "fbf2ee2b42d945f83cd8fcea15e7169d375e1d0c4d8a21e2cf71000dd4525110",
+            "candidate_id": "fin013_retrieval_candidate_fbf2ee2b42d945f83cd8fcea",
+            "candidate_role": "current_official_relationship_context",
+            "claim_boundary": "The issuer identifies SK hynix as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome.",
+            "edge_type": "competitive_landscape",
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": true,
+            "slot_id": "mu_sk_hynix_named_competitor",
+            "target_entity_id": "SK_HYNIX"
+          }
+        ],
+        "decision_question": "Could Micron's HBM capacity choices, demand fluctuation, and competition with Samsung and SK hynix reverse the expected pricing and profit benefit?",
+        "epistemic_state": "bounded_inference",
+        "lineage": {
+          "provider_output_digest": "6aca2eb7c8a9944edff25625c0cb837ab06c934f62a8fa210cc72ddd49aad0c7",
+          "request_digest": "058b80b78f33640a498441b6e981df2ada8bc5b6e016ab0ebaf9bd6bd27a07b4",
+          "request_id": "FIN013-S2-MU-bottleneck_counterevidence_and_what_would_change",
+          "s1_query_digest": "6e38f5d8aa20c27770a023aee5ed8cecba78ded5f38e765a3bc781ba113bf50a"
+        },
+        "local_truth_ownership": {
+          "case_identity": "MU",
+          "lineage_from_s1_query_digest": "6e38f5d8aa20c27770a023aee5ed8cecba78ded5f38e765a3bc781ba113bf50a",
+          "numeric_and_date_values_from_candidate_ids": [
+            "fin013_retrieval_candidate_e9a600976b693b3c7f877e97",
+            "fin013_retrieval_candidate_f3a30894728557766f4d7aca",
+            "fin013_retrieval_candidate_fbf2ee2b42d945f83cd8fcea"
+          ],
+          "provider_may_not_create_final_narrative": true
+        },
+        "mechanism_alias": "MU_M_CAPACITY_REALLOCATION_PRICING_RISK",
+        "mechanism_atom": "Micron states that weaker HBM demand could shift capacity toward conventional DRAM, increase supply, and pressure pricing.",
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "provider_free_text_fields": [],
+        "support_evidence": [
+          {
+            "alias": "MU_E01",
+            "candidate_digest": "e9a600976b693b3c7f877e9727cf011ed38c512269ae969b2594491f0bd143be",
+            "candidate_id": "fin013_retrieval_candidate_e9a600976b693b3c7f877e97",
+            "candidate_role": "current_official_semantic_evidence",
+            "claim_boundary": "The issuer states that HBM demand may fluctuate and that capacity shifts could pressure DRAM pricing; it does not establish a realized downturn.",
+            "edge_type": null,
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": false,
+            "slot_id": "current_issuer_counterevidence",
+            "target_entity_id": null
+          },
+          {
+            "alias": "MU_E02",
+            "candidate_digest": "f3a30894728557766f4d7acabe18cec5df7e41fe15da5d2348e2c58069c4e422",
+            "candidate_id": "fin013_retrieval_candidate_f3a30894728557766f4d7aca",
+            "candidate_role": "current_official_relationship_context",
+            "claim_boundary": "The issuer identifies Samsung as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome.",
+            "edge_type": "competitive_landscape",
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": true,
+            "slot_id": "mu_samsung_named_competitor",
+            "target_entity_id": "SAMSUNG"
+          },
+          {
+            "alias": "MU_E03",
+            "candidate_digest": "fbf2ee2b42d945f83cd8fcea15e7169d375e1d0c4d8a21e2cf71000dd4525110",
+            "candidate_id": "fin013_retrieval_candidate_fbf2ee2b42d945f83cd8fcea",
+            "candidate_role": "current_official_relationship_context",
+            "claim_boundary": "The issuer identifies SK hynix as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome.",
+            "edge_type": "competitive_landscape",
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": true,
+            "slot_id": "mu_sk_hynix_named_competitor",
+            "target_entity_id": "SK_HYNIX"
+          }
+        ],
+        "typed_gaps": [],
+        "what_would_change": [
+          {
+            "alias": "MU_W_CAPACITY_DISCIPLINE",
+            "condition": "Micron and peer disclosures show disciplined HBM and conventional DRAM capacity allocation despite demand volatility."
+          }
+        ]
+      },
+      {
+        "answer_direction": "positive",
+        "case_key": "NVDA",
+        "claim_digest": "15c4a729d6b540fc43e2f1315e4b082b474ecdac28ae09975d2eaaf2923d8c2d",
+        "claim_id": "fin013_s2_claim_b93e3ef3e25bd14e7ea5f008",
+        "company_name": "NVIDIA",
+        "confidence": "medium",
+        "counterevidence": [],
+        "decision_question": "Do NVIDIA's current company revenue and named cloud deployment signals support durable AI infrastructure demand beyond a single strong reporting period?",
+        "epistemic_state": "bounded_inference",
+        "lineage": {
+          "provider_output_digest": "229a8d0939195f39c918bed6a309194f83bf51b23b8c9bdd456b2ffec37d7038",
+          "request_digest": "3666b06a629e7296d3541b15a067746ffe60dc876a75438fc35e6e89051e652f",
+          "request_id": "FIN013-S2-NVDA-demand_authenticity_and_sustainability",
+          "s1_query_digest": "6a6603024ef687fd19d357ba5772b974c6d09a90e764236df111938a5f588a92"
+        },
+        "local_truth_ownership": {
+          "case_identity": "NVDA",
+          "lineage_from_s1_query_digest": "6a6603024ef687fd19d357ba5772b974c6d09a90e764236df111938a5f588a92",
+          "numeric_and_date_values_from_candidate_ids": [
+            "fin013_retrieval_candidate_4edf79e04af34ec1ecde9470",
+            "fin013_retrieval_candidate_3512b0478a3b12318b10136e",
+            "fin013_retrieval_candidate_3d8b637b4c94474ffa9f8e5a",
+            "fin013_retrieval_candidate_c1da6be578c29a564d884058",
+            "fin013_retrieval_candidate_188d29e1707ad57269910e99",
+            "fin013_retrieval_candidate_7c841b20f9f56885f5ac75f8"
+          ],
+          "provider_may_not_create_final_narrative": true
+        },
+        "mechanism_alias": "NVDA_M_REVENUE_AND_DEPLOYMENT_SIGNAL",
+        "mechanism_atom": "NVIDIA's current revenue scale and named cloud deployment relationships jointly support strong adoption context without proving each customer's spend.",
+        "program_cell_id": "demand_authenticity_and_sustainability",
+        "provider_free_text_fields": [],
+        "support_evidence": [
+          {
+            "alias": "NVDA_E01",
+            "candidate_digest": "4edf79e04af34ec1ecde9470cb987afb2e22efdc31dfc8a01ddd4ac987b9d2fc",
+            "candidate_id": "fin013_retrieval_candidate_4edf79e04af34ec1ecde9470",
+            "candidate_role": "current_official_semantic_evidence",
+            "claim_boundary": "Issuer wording supports only the quoted demand statement; durability and causality remain analyst judgments.",
+            "edge_type": null,
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": false,
+            "slot_id": "current_issuer_demand_signal",
+            "target_entity_id": null
+          },
+          {
+            "alias": "NVDA_E02",
+            "candidate_digest": "3512b0478a3b12318b10136eb0c4ee0db4a6db563bd94d497c0df2a2424ee01a",
+            "candidate_id": "fin013_retrieval_candidate_3512b0478a3b12318b10136e",
+            "candidate_role": "current_official_relationship_context",
+            "claim_boundary": "The issuer announcement supports AWS being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+            "edge_type": "official_deployment_event",
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": true,
+            "slot_id": "nvda_aws_rubin_deployment",
+            "target_entity_id": "AWS"
+          },
+          {
+            "alias": "NVDA_E03",
+            "candidate_digest": "3d8b637b4c94474ffa9f8e5af2b686a6575b57fc656fdf8b75861e7d9bb74610",
+            "candidate_id": "fin013_retrieval_candidate_3d8b637b4c94474ffa9f8e5a",
+            "candidate_role": "current_official_relationship_context",
+            "claim_boundary": "The issuer announcement supports Google Cloud being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+            "edge_type": "official_deployment_event",
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": true,
+            "slot_id": "nvda_google_cloud_rubin_deployment",
+            "target_entity_id": "GOOGLE_CLOUD"
+          },
+          {
+            "alias": "NVDA_E04",
+            "candidate_digest": "c1da6be578c29a564d884058ae6f3b29affd0c89c3c30c8a848fd9190287073e",
+            "candidate_id": "fin013_retrieval_candidate_c1da6be578c29a564d884058",
+            "candidate_role": "current_official_relationship_context",
+            "claim_boundary": "The issuer announcement supports the existence and disclosed scope of the Meta partnership; it does not establish exact order value, recognized revenue, margin, timing certainty, or exclusivity.",
+            "edge_type": "strategic_partnership",
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": true,
+            "slot_id": "nvda_meta_strategic_partnership",
+            "target_entity_id": "META"
+          },
+          {
+            "alias": "NVDA_E05",
+            "candidate_digest": "188d29e1707ad57269910e994ee99893bf0102c2c35a90cb3978c2d3c4c1f9e4",
+            "candidate_id": "fin013_retrieval_candidate_188d29e1707ad57269910e99",
+            "candidate_role": "current_official_relationship_context",
+            "claim_boundary": "The issuer announcement supports Microsoft Azure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+            "edge_type": "official_deployment_event",
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": true,
+            "slot_id": "nvda_microsoft_azure_rubin_deployment",
+            "target_entity_id": "MICROSOFT_AZURE"
+          },
+          {
+            "alias": "NVDA_E06",
+            "candidate_digest": "7c841b20f9f56885f5ac75f88387f3f5e7942caaac55dc8b04697075af8ebf00",
+            "candidate_id": "fin013_retrieval_candidate_7c841b20f9f56885f5ac75f8",
+            "candidate_role": "current_official_relationship_context",
+            "claim_boundary": "The issuer announcement supports Oracle Cloud Infrastructure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+            "edge_type": "official_deployment_event",
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": true,
+            "slot_id": "nvda_oracle_cloud_rubin_deployment",
+            "target_entity_id": "ORACLE_CLOUD"
+          }
+        ],
+        "typed_gaps": [],
+        "what_would_change": [
+          {
+            "alias": "NVDA_W_REPEAT_DEPLOYMENT",
+            "condition": "NVIDIA or named cloud partners report repeat deployment, capacity expansion, or sustained utilization across another period."
+          }
+        ]
+      },
+      {
+        "answer_direction": "positive",
+        "case_key": "NVDA",
+        "claim_digest": "1e44684fbe371b205ece06b03bf8b0be707d2a43382fe4aece4a6b446fe934be",
+        "claim_id": "fin013_s2_claim_324c9033bf09bcd485c845f2",
+        "company_name": "NVIDIA",
+        "confidence": "medium",
+        "counterevidence": [],
+        "decision_question": "How do NVIDIA's consolidated revenue, gross profit, operating income, and cash economics support value capture while product-level accelerator profit remains unobserved?",
+        "epistemic_state": "bounded_inference",
+        "lineage": {
+          "provider_output_digest": "9dc180e9171e5868e52bc03c924be282e0a0ffec1a383a44ae4dcbdded4153c3",
+          "request_digest": "257bb7efb51b314fc4573d64a01a340b29dd948ff696c985ed7d0d9de8f0133c",
+          "request_id": "FIN013-S2-NVDA-value_and_profit_capture",
+          "s1_query_digest": "732e72f4793805b9116026466c44e76c6118d153a212666ccce8553d67fe9232"
+        },
+        "local_truth_ownership": {
+          "case_identity": "NVDA",
+          "lineage_from_s1_query_digest": "732e72f4793805b9116026466c44e76c6118d153a212666ccce8553d67fe9232",
+          "numeric_and_date_values_from_candidate_ids": [
+            "fin013_retrieval_candidate_ee0f6469ef03752279a9c3eb",
+            "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+            "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+            "fin013_retrieval_candidate_92cbcc0fc9ae618289831430"
+          ],
+          "provider_may_not_create_final_narrative": true
+        },
+        "mechanism_alias": "NVDA_M_CONSOLIDATED_VALUE_CAPTURE",
+        "mechanism_atom": "NVIDIA's consolidated revenue, gross profit, and operating income establish company-level value capture while accelerator product profit remains unisolated.",
+        "program_cell_id": "value_and_profit_capture",
+        "provider_free_text_fields": [],
+        "support_evidence": [
+          {
+            "alias": "NVDA_E01",
+            "candidate_digest": "ee0f6469ef03752279a9c3eb6da63c8ece98e7eb3eefcd9a330bd924b92168cd",
+            "candidate_id": "fin013_retrieval_candidate_ee0f6469ef03752279a9c3eb",
+            "candidate_role": "current_official_semantic_evidence",
+            "claim_boundary": "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+            "edge_type": null,
+            "financial_fact_authority": false,
+            "metric_family": null,
+            "relationship_fact_only": false,
+            "slot_id": "current_issuer_financial_statement",
+            "target_entity_id": null
+          },
+          {
+            "alias": "NVDA_E02",
+            "candidate_digest": "3055c273b690303470c3ed22ed19049185a0a05ad242bce3c7c7d86211f39e9c",
+            "candidate_id": "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+            "candidate_role": "current_exact_numeric_sql",
+            "claim_boundary": "consolidated_company_total",
+            "edge_type": null,
+            "financial_fact_authority": true,
+            "metric_family": "gross_profit",
+            "relationship_fact_only": false,
+            "slot_id": "gross_profit",
+            "target_entity_id": null
+          },
+          {
+            "alias": "NVDA_E03",
+            "candidate_digest": "abc6d9f7958160123c87267f5af79d4c5130f83dee32c9038e78eeb0aa64562a",
+            "candidate_id": "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+            "candidate_role": "current_exact_numeric_sql",
+            "claim_boundary": "consolidated_company_total",
+            "edge_type": null,
+            "financial_fact_authority": true,
+            "metric_family": "operating_income",
+            "relationship_fact_only": false,
+            "slot_id": "operating_income",
+            "target_entity_id": null
+          },
+          {
+            "alias": "NVDA_E04",
+            "candidate_digest": "92cbcc0fc9ae6182898314308e593d519fec4dc72b85be2ca16b0fbcb18f15f3",
+            "candidate_id": "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+            "candidate_role": "current_exact_numeric_sql",
+            "claim_boundary": "consolidated_company_total",
+            "edge_type": null,
+            "financial_fact_authority": true,
+            "metric_family": "revenue",
+            "relationship_fact_only": false,
+            "slot_id": "revenue",
+            "target_entity_id": null
+          }
+        ],
+        "typed_gaps": [],
+        "what_would_change": [
+          {
+            "alias": "NVDA_W_PRODUCT_ECONOMICS",
+            "condition": "NVIDIA discloses accelerator or Data Center product revenue and profit on a comparable current basis."
+          }
+        ]
+      },
+      {
+        "answer_direction": "cannot_infer",
+        "case_key": "NVDA",
+        "claim_digest": "ae98aae38f666405b522536fd5abb1f496629ae26a2196eb9687e1175d9ce819",
+        "claim_id": "fin013_s2_claim_4e8ebc97bd91899ad8fe3a73",
+        "company_name": "NVIDIA",
+        "confidence": "low",
+        "counterevidence": [],
+        "decision_question": "What realized NVIDIA-specific supply, regulatory, customer-concentration, or deployment constraint could invalidate the current demand and value-capture thesis?",
+        "epistemic_state": "cannot_infer",
+        "lineage": {
+          "provider_output_digest": "cdc82637e000423b9a94ae311d804c6c41caac50ebe446413ed7e266a81bbff5",
+          "request_digest": "77db1dd903ab064b56a5c2e422ed1041e0c455580c821e652816e1ece75066f2",
+          "request_id": "FIN013-S2-NVDA-bottleneck_counterevidence_and_what_would_change",
+          "s1_query_digest": "4b3b0f6211d4373f7558251da086a940ce2a9a7b50e0939eb6dd2958123f68f1"
+        },
+        "local_truth_ownership": {
+          "case_identity": "NVDA",
+          "lineage_from_s1_query_digest": "4b3b0f6211d4373f7558251da086a940ce2a9a7b50e0939eb6dd2958123f68f1",
+          "numeric_and_date_values_from_candidate_ids": [],
+          "provider_may_not_create_final_narrative": true
+        },
+        "mechanism_alias": "NVDA_M_REALIZED_COUNTEREVIDENCE_GAP",
+        "mechanism_atom": "NVIDIA's bounded current source does not establish a realized supply, regulatory, or customer-concentration constraint, so the counter-thesis remains an explicit gap.",
+        "program_cell_id": "bottleneck_counterevidence_and_what_would_change",
+        "provider_free_text_fields": [],
+        "support_evidence": [],
+        "typed_gaps": [
+          {
+            "alias": "NVDA_G01",
+            "cannot_infer": "a realized supply, export-control or customer-concentration constraint from a generic forward-looking statement list",
+            "gap_code": "bounded_current_press_release_has_forward_looking_caution_but_no_specific_realized_counterevidence",
+            "slot_id": "current_issuer_counterevidence",
+            "source_exhaustion_proven": false
+          }
+        ],
+        "what_would_change": [
+          {
+            "alias": "NVDA_W_REALIZED_CONSTRAINT",
+            "condition": "NVIDIA or an official named counterparty reports a realized supply, export-control, deployment, or concentration constraint with material scope."
+          }
+        ]
+      }
+    ],
+    "method_lifecycle": {
+      "contract_translated": true,
+      "documented": true,
+      "dogfood_accepted": false,
+      "fixture_proven": true,
+      "node_level_consumed": true,
+      "paid_artifact_proven": false,
+      "runtime_injected_into_representative_node": true
+    },
+    "node_executions": [
+      {
+        "claim_digest": "9933249d799d2a2edc8639e5897109c47aef55ff9a8be8d0f5b16779a8086f33",
+        "claim_id": "fin013_s2_claim_b907ad64a35d871677ff2eb4",
+        "input_digest": "7ef10e1b90e5e61a03d09e950ee92ddbb3fb1af38e4e6684087ac8093e3ea756",
+        "node_id": "representative_specialist::FIN013-S2-DELL-demand_authenticity_and_sustainability",
+        "node_type": "representative_specialist_judgment_choice",
+        "provider_output_digest": "2ba231ec909c2dce164b86b5a21cea3087159ce97e19f2fb937eb2421d7f3cbc",
+        "request_digest": "cfd0548a8eb4312a340bf30ebc4034ae8ce0be416235293c5595144edd360136",
+        "request_id": "FIN013-S2-DELL-demand_authenticity_and_sustainability",
+        "status": "consumed"
+      },
+      {
+        "claim_digest": "690c1bdc3f87383fb3ed7fa7785c17358af32e80b9e942879eed63825ded0aa2",
+        "claim_id": "fin013_s2_claim_357bb3075aa3ecfe38cbb8bf",
+        "input_digest": "7e52002493f539ebe41bd205f07c675e5dfd532ae9d0179e7c635d24ec8ec11e",
+        "node_id": "representative_specialist::FIN013-S2-DELL-value_and_profit_capture",
+        "node_type": "representative_specialist_judgment_choice",
+        "provider_output_digest": "726d16e46796dc2c237be9482a9a821f5ce1128eae9486ed0542b2193d9183f7",
+        "request_digest": "c96b64ac52d71710f92356a79611ebaf6122e892f8c4da524aa58a76572a0d82",
+        "request_id": "FIN013-S2-DELL-value_and_profit_capture",
+        "status": "consumed"
+      },
+      {
+        "claim_digest": "0d37b3ac535538e82597c3d67b7b839fb225c8ad00a156be8e5e35aecbe31e64",
+        "claim_id": "fin013_s2_claim_6a16d44ed69609c6b305ba96",
+        "input_digest": "c208f7468a7d0c469a3d5eb8d023a2264668f6d70182064fc610f1a438dac141",
+        "node_id": "representative_specialist::FIN013-S2-DELL-bottleneck_counterevidence_and_what_would_change",
+        "node_type": "representative_specialist_judgment_choice",
+        "provider_output_digest": "cf4ec6bbf29009eb4fbd2ab7c26fe0b5d7dc15015a8832c73a90263f24099441",
+        "request_digest": "d1e3abec4361c2d00a8e7072de100e03cd6469a1c8b4a6f9d9e24e417d37a5dc",
+        "request_id": "FIN013-S2-DELL-bottleneck_counterevidence_and_what_would_change",
+        "status": "consumed"
+      },
+      {
+        "claim_digest": "5553a983132cbc2b7335019fcbab6b342a664d68a4bb9c5c0cc4b2c680ee4a40",
+        "claim_id": "fin013_s2_claim_5cf7bcab137fe026b6e8a5ee",
+        "input_digest": "f93c8077a5c68f712372305905c328b78234f1f13addbf6e8bef41a38aa6b645",
+        "node_id": "representative_specialist::FIN013-S2-MU-demand_authenticity_and_sustainability",
+        "node_type": "representative_specialist_judgment_choice",
+        "provider_output_digest": "621f65bba816a2baef5d0c4bad4138e6774858aae9de20a8369ca85ee29fb2f9",
+        "request_digest": "bfa15552859b56f6c8c5e88f2ee4bceb6b15446f7a371a2f3d97e8272bfb5111",
+        "request_id": "FIN013-S2-MU-demand_authenticity_and_sustainability",
+        "status": "consumed"
+      },
+      {
+        "claim_digest": "2ee72b0eb4d0e8cdfd2eb2474506914cea0c38e43dc722b00492cf23fdabb96a",
+        "claim_id": "fin013_s2_claim_51833b0556636a53e337ebcc",
+        "input_digest": "61bcabb9d9a99670dbf7e562e48d4205505815774f531548e45066c61c878d76",
+        "node_id": "representative_specialist::FIN013-S2-MU-value_and_profit_capture",
+        "node_type": "representative_specialist_judgment_choice",
+        "provider_output_digest": "5f675449302449a30976f70861c9cbbcd0ab0250ed10b556f850a42b0bdffa74",
+        "request_digest": "63d3f5bee163dbf364a5f5cd42ef63b5fc60cb3487c2fb3f7e2b5c97076748fd",
+        "request_id": "FIN013-S2-MU-value_and_profit_capture",
+        "status": "consumed"
+      },
+      {
+        "claim_digest": "94fb2f75705ea0fbabcb6e55a726187ae9e3d025153c8f9e8962564696bd1db7",
+        "claim_id": "fin013_s2_claim_776c3f630c290b0e64541122",
+        "input_digest": "2ece4d202f6c78f4eb634bebd3c9cf15babb75b5b7a13148516c02cfa60a6368",
+        "node_id": "representative_specialist::FIN013-S2-MU-bottleneck_counterevidence_and_what_would_change",
+        "node_type": "representative_specialist_judgment_choice",
+        "provider_output_digest": "6aca2eb7c8a9944edff25625c0cb837ab06c934f62a8fa210cc72ddd49aad0c7",
+        "request_digest": "058b80b78f33640a498441b6e981df2ada8bc5b6e016ab0ebaf9bd6bd27a07b4",
+        "request_id": "FIN013-S2-MU-bottleneck_counterevidence_and_what_would_change",
+        "status": "consumed"
+      },
+      {
+        "claim_digest": "15c4a729d6b540fc43e2f1315e4b082b474ecdac28ae09975d2eaaf2923d8c2d",
+        "claim_id": "fin013_s2_claim_b93e3ef3e25bd14e7ea5f008",
+        "input_digest": "5f569d3598b5a30e5c0194b3986749a9d59bf451a1d12a9199db3b262f8cfa29",
+        "node_id": "representative_specialist::FIN013-S2-NVDA-demand_authenticity_and_sustainability",
+        "node_type": "representative_specialist_judgment_choice",
+        "provider_output_digest": "229a8d0939195f39c918bed6a309194f83bf51b23b8c9bdd456b2ffec37d7038",
+        "request_digest": "3666b06a629e7296d3541b15a067746ffe60dc876a75438fc35e6e89051e652f",
+        "request_id": "FIN013-S2-NVDA-demand_authenticity_and_sustainability",
+        "status": "consumed"
+      },
+      {
+        "claim_digest": "1e44684fbe371b205ece06b03bf8b0be707d2a43382fe4aece4a6b446fe934be",
+        "claim_id": "fin013_s2_claim_324c9033bf09bcd485c845f2",
+        "input_digest": "8efb2dd565393d4fbb31720dea26225ab088093a386ed90e21563481b9beca86",
+        "node_id": "representative_specialist::FIN013-S2-NVDA-value_and_profit_capture",
+        "node_type": "representative_specialist_judgment_choice",
+        "provider_output_digest": "9dc180e9171e5868e52bc03c924be282e0a0ffec1a383a44ae4dcbdded4153c3",
+        "request_digest": "257bb7efb51b314fc4573d64a01a340b29dd948ff696c985ed7d0d9de8f0133c",
+        "request_id": "FIN013-S2-NVDA-value_and_profit_capture",
+        "status": "consumed"
+      },
+      {
+        "claim_digest": "ae98aae38f666405b522536fd5abb1f496629ae26a2196eb9687e1175d9ce819",
+        "claim_id": "fin013_s2_claim_4e8ebc97bd91899ad8fe3a73",
+        "input_digest": "2899428aaf0598e662d323dc11cc69d973b62e04413de6e09c234e68222c170e",
+        "node_id": "representative_specialist::FIN013-S2-NVDA-bottleneck_counterevidence_and_what_would_change",
+        "node_type": "representative_specialist_judgment_choice",
+        "provider_output_digest": "cdc82637e000423b9a94ae311d804c6c41caac50ebe446413ed7e266a81bbff5",
+        "request_digest": "77db1dd903ab064b56a5c2e422ed1041e0c455580c821e652816e1ece75066f2",
+        "request_id": "FIN013-S2-NVDA-bottleneck_counterevidence_and_what_would_change",
+        "status": "consumed"
+      }
+    ],
+    "observed_counts": {
+      "business_runs": 0,
+      "case_count": 3,
+      "materialized_claims": 9,
+      "model_calls": 0,
+      "network_calls": 0,
+      "provider_calls": 0,
+      "representative_lead_nodes": 3,
+      "representative_specialist_nodes": 9,
+      "source_calls": 0
+    },
+    "program_digest": "997d42be8e82831e7f28bf94148485c6ea628bd0a1c6c56b290d6d72cf81ee49",
+    "s2_decision_record_digest": "3aec0ac1da27c1c02c09c03993ac16654fff974ffb330d1cdac9c52b1ee2e7c8",
+    "s2_research_contract_ref": "fin_0_1_3.S2.research_question_method_and_judgment_choice:v1",
+    "s2_research_program_digest": "92bc805d99a81429fa89a4dd44641bbf17e529d885eff1b6113a6046d6f31bab",
+    "schema_version": "fin_ia_0_1_3_s2_representative_node_program_v1_0",
+    "stage_boundary": {
+      "S2_02_zero_call_node_consumption": "pass",
+      "S2_03_context_economy": "not_started",
+      "S3_dynamic_decision_surface": "not_started",
+      "eight_dimension_final_content_quality": "not_proven",
+      "natural_output_canary": "not_run",
+      "product_acceptance": false,
+      "release": false
+    }
+  },
+  "root_cause_corrections": {
+    "RC-P36-138": {
+      "earliest_fault": "low-level Specialist data-view builders inherited repository Product Intelligence autoload when no explicit policy was present",
+      "legacy_specialist_regression": "63 passed",
+      "repair": "direct builders default to hermetic no-autoload; production Research Lead retains explicit enable/disable ownership",
+      "status": "closed_zero_call"
+    }
+  },
+  "s2_01_decision_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s2_01_research_question_method_contract_translation_v1_0.json",
+  "s2_01_decision_sha256": "63761329bf4f2f975be732dc2ffe5267e6d4f754cfcc66eaa639bc798ecb8480",
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s2_02_representative_node_context_precedence_and_canary_entry_v1_0",
+  "status": "S2_02_zero_call_node_consumption_pass_natural_canary_entry_ready",
+  "task_id": "FIN-0.1.3-013-S2-02"
+}

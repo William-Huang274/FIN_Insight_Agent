@@ -8588,7 +8588,13 @@ def _execution_mode_from_state(state: Mapping[str, Any]) -> str:
 def _product_intelligence_autoload_arg(state: Mapping[str, Any]) -> bool | None:
     if "product_intelligence_runtime_autoload" in state:
         return bool(state.get("product_intelligence_runtime_autoload"))
-    return None
+    # Low-level view/request builders must be hermetic.  The LangGraph research
+    # lead owns the production autoload decision and writes an explicit boolean
+    # into state before these helpers run.  Falling back to ``None`` here made
+    # direct callers silently read repository-local Product Intelligence data,
+    # so an identical supplied evidence pack produced different prompts across
+    # worktrees and machines.
+    return False
 
 
 def _product_intelligence_context_candidate_budget(*, max_rows: int, focus_ticker_count: int) -> int:

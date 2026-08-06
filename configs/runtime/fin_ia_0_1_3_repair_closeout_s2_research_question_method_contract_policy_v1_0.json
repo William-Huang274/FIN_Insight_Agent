@@ -1,0 +1,230 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_research_question_method_contract_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S2.research_question_method_and_judgment_choice:v1",
+  "s1_contract_ref": "fin_0_1_3.S1.retrieval_evidence_usefulness_and_closeout:v1",
+  "metadata_type_policy_ref": "fin_0_1_3.S2.prompt_metadata_native_scalar_policy:v1",
+  "representative_cell_scope": [
+    "demand_authenticity_and_sustainability",
+    "value_and_profit_capture",
+    "bottleneck_counterevidence_and_what_would_change"
+  ],
+  "provider_output_contract": {
+    "required_fields": [
+      "epistemic_state",
+      "answer_direction",
+      "mechanism_alias",
+      "support_aliases",
+      "counterevidence_aliases",
+      "gap_aliases",
+      "confidence",
+      "what_would_change_aliases"
+    ],
+    "epistemic_states": [
+      "fact_supported",
+      "bounded_inference",
+      "mixed_evidence",
+      "cannot_infer"
+    ],
+    "answer_directions": [
+      "positive",
+      "negative",
+      "mixed",
+      "cannot_infer"
+    ],
+    "confidence_values": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "forbidden_provider_fields": [
+      "case_key",
+      "company",
+      "ticker",
+      "program_cell_id",
+      "research_question_id",
+      "numeric_value",
+      "normalized_value",
+      "unit",
+      "currency",
+      "date",
+      "published_at",
+      "claim_id",
+      "artifact_id",
+      "narrative",
+      "direct_answer_atom",
+      "counterevidence_atom",
+      "boundary_atom"
+    ],
+    "local_ownership": [
+      "case_identity",
+      "research_question_id",
+      "numeric_value_and_unit",
+      "date_and_period",
+      "claim_and_artifact_ids",
+      "ordering",
+      "lineage",
+      "final_narrative_rendering"
+    ]
+  },
+  "case_profiles": {
+    "DELL": {
+      "company_name": "Dell Technologies",
+      "cells": {
+        "demand_authenticity_and_sustainability": {
+          "decision_question": "Does Dell's observed AI-optimized server revenue represent durable company-specific demand, or only a current revenue proxy without direct durability evidence?",
+          "method_steps": [
+            "separate_observed_revenue_proxy_from_direct_demand_statement",
+            "test_durability_against_supplier_and_competitive_constraints",
+            "preserve_gap_when_current_source_does_not_state_realized_durability"
+          ],
+          "mechanism_aliases": {
+            "DELL_M_DEMAND_PROXY": "Dell AI-optimized server revenue is an observed company revenue proxy, not standalone proof of durable end-demand.",
+            "DELL_M_DURABILITY_GAP": "Dell demand durability remains unresolved until a direct company-specific order, backlog, deployment, or repeat-demand signal is available."
+          },
+          "what_would_change_aliases": {
+            "DELL_W_DEMAND_BACKLOG": "A current Dell order, backlog, deployment, or repeat-demand disclosure tied to AI servers.",
+            "DELL_W_DEMAND_REVERSAL": "A current Dell disclosure showing AI-server cancellations, digestion, or a material demand slowdown."
+          }
+        },
+        "value_and_profit_capture": {
+          "decision_question": "How much of Dell's AI-server scale is visible in company revenue, and what can or cannot be inferred about profit capture from ISG and consolidated financial authority?",
+          "method_steps": [
+            "bind_ai_server_revenue_to_exact_company_authority",
+            "separate_ISG_operating_income_from_AI_server_profit",
+            "bridge_scale_to_margin_and_cash_without_product_profit_invention"
+          ],
+          "mechanism_aliases": {
+            "DELL_M_SCALE_NOT_PRODUCT_PROFIT": "Dell AI-server revenue establishes scale while ISG operating income remains a segment boundary rather than AI-server product profit.",
+            "DELL_M_PASS_THROUGH_RISK": "Dell can grow AI-server revenue without equal profit capture when system mix, component cost, or competitive pricing creates pass-through economics."
+          },
+          "what_would_change_aliases": {
+            "DELL_W_AI_MARGIN": "Dell discloses AI-server gross profit, operating profit, or a credible mix-to-margin bridge.",
+            "DELL_W_CASH_CONVERSION": "Dell discloses AI-server working-capital or cash-conversion evidence that separates growth quality from inventory funding."
+          }
+        },
+        "bottleneck_counterevidence_and_what_would_change": {
+          "decision_question": "Which Dell-specific competitive, supplier, and AI-demand constraints could prevent observed server scale from converting into durable profit and cash flow?",
+          "method_steps": [
+            "bind_each_counter_read_to_current_issuer_risk_language",
+            "connect_supplier_or_competitive_constraint_to_profit_conversion",
+            "state_the_next_observable_evidence_needed_to_resolve_the_risk"
+          ],
+          "mechanism_aliases": {
+            "DELL_M_SUPPLIER_COMPETITION_CONSTRAINT": "Dell's limited-source supplier exposure and competitive pressure can weaken the conversion of AI-server demand into margin and cash.",
+            "DELL_M_REALIZED_IMPACT_UNPROVEN": "Dell's current issuer risk language names constraints but does not prove that a material adverse impact has already occurred."
+          },
+          "what_would_change_aliases": {
+            "DELL_W_SUPPLY_RELIEF": "Dell reports improved component availability, lead times, or supplier diversification for AI-server systems.",
+            "DELL_W_MARGIN_PRESSURE": "Dell reports material AI-server pricing pressure, component-cost inflation, or ISG margin deterioration."
+          }
+        }
+      }
+    },
+    "MU": {
+      "company_name": "Micron Technology",
+      "cells": {
+        "demand_authenticity_and_sustainability": {
+          "decision_question": "Is Micron's reported HBM demand a durable company-specific AI demand signal after separating structural bandwidth demand from memory-cycle fluctuation?",
+          "method_steps": [
+            "bind_HBM_demand_to_current_issuer_statement",
+            "separate_structural_AI_driver_from_memory_cycle_volatility",
+            "retain_long_term_trajectory_uncertainty_in_the_judgment"
+          ],
+          "mechanism_aliases": {
+            "MU_M_HBM_DEMAND_WITH_CYCLE_BOUNDARY": "Micron reports increased HBM demand, while the company also states that the long-term trajectory is unknown and may fluctuate.",
+            "MU_M_HBM_WAFER_INTENSITY": "Micron's HBM wafer and cleanroom intensity can tighten supply during strong demand but can amplify conventional DRAM supply if HBM demand weakens."
+          },
+          "what_would_change_aliases": {
+            "MU_W_HBM_COMMITMENT": "Micron reports current multi-period HBM commitments, capacity allocation, or shipment coverage with a bounded time horizon.",
+            "MU_W_HBM_WEAKENING": "Micron reports HBM order reductions, capacity reallocation, or weaker customer qualification and deployment demand."
+          }
+        },
+        "value_and_profit_capture": {
+          "decision_question": "Can Micron's HBM thesis be connected to revenue, margin, and cash using current authority without treating consolidated or DRAM totals as HBM-specific economics?",
+          "method_steps": [
+            "use_consolidated_and_DRAM_facts_only_as_company_baseline",
+            "preserve_HBM_revenue_profit_and_price_volume_mix_gaps",
+            "test_whether_capex_and_inventory_requirements_dilute_cash_conversion"
+          ],
+          "mechanism_aliases": {
+            "MU_M_BASELINE_NOT_HBM_ECONOMICS": "Micron consolidated and DRAM financial facts establish company scale but do not isolate HBM revenue, profit, or price-volume-mix.",
+            "MU_M_CAPITAL_INTENSITY_BRIDGE": "Micron HBM growth may improve mix while its wafer, cleanroom, capex, and inventory requirements can delay or dilute cash conversion."
+          },
+          "what_would_change_aliases": {
+            "MU_W_HBM_ECONOMICS": "Micron discloses HBM revenue, gross margin, operating profit, or a bounded price-volume-mix bridge.",
+            "MU_W_HBM_CASH": "Micron discloses HBM-specific capex, inventory, prepayment, or cash-conversion evidence."
+          }
+        },
+        "bottleneck_counterevidence_and_what_would_change": {
+          "decision_question": "Could Micron's HBM capacity choices, demand fluctuation, and competition with Samsung and SK hynix reverse the expected pricing and profit benefit?",
+          "method_steps": [
+            "connect_HBM_demand_weakness_to_capacity_reallocation",
+            "connect_reallocated_capacity_to_conventional_DRAM_supply_and_pricing",
+            "treat_named_competitors_as_context_not_outcome_proof"
+          ],
+          "mechanism_aliases": {
+            "MU_M_CAPACITY_REALLOCATION_PRICING_RISK": "Micron states that weaker HBM demand could shift capacity toward conventional DRAM, increase supply, and pressure pricing.",
+            "MU_M_COMPETITOR_CONTEXT_NOT_OUTCOME": "Micron names Samsung and SK hynix as competitors, which frames substitution pressure but does not establish relative share, pricing, or product outcome."
+          },
+          "what_would_change_aliases": {
+            "MU_W_CAPACITY_DISCIPLINE": "Micron and peer disclosures show disciplined HBM and conventional DRAM capacity allocation despite demand volatility.",
+            "MU_W_PRICING_BREAK": "Micron reports a material DRAM pricing decline or HBM demand weakening attributable to capacity reallocation or competition."
+          }
+        }
+      }
+    },
+    "NVDA": {
+      "company_name": "NVIDIA",
+      "cells": {
+        "demand_authenticity_and_sustainability": {
+          "decision_question": "Do NVIDIA's current company revenue and named cloud deployment signals support durable AI infrastructure demand beyond a single strong reporting period?",
+          "method_steps": [
+            "bind_current_revenue_growth_to_issuer_authority",
+            "use_named_deployments_as_adoption_context_not_exact_sales",
+            "separate_current_scale_from_unproven_multi_period_durability"
+          ],
+          "mechanism_aliases": {
+            "NVDA_M_REVENUE_AND_DEPLOYMENT_SIGNAL": "NVIDIA's current revenue scale and named cloud deployment relationships jointly support strong adoption context without proving each customer's spend.",
+            "NVDA_M_DURABILITY_REQUIRES_REPEAT_EVIDENCE": "NVIDIA's current growth does not alone prove multi-period demand durability without repeat deployment, capacity, or customer concentration evidence."
+          },
+          "what_would_change_aliases": {
+            "NVDA_W_REPEAT_DEPLOYMENT": "NVIDIA or named cloud partners report repeat deployment, capacity expansion, or sustained utilization across another period.",
+            "NVDA_W_DEMAND_DIGESTION": "NVIDIA or named customers report material digestion, deployment delay, concentration loss, or accelerator demand slowdown."
+          }
+        },
+        "value_and_profit_capture": {
+          "decision_question": "How do NVIDIA's consolidated revenue, gross profit, operating income, and cash economics support value capture while product-level accelerator profit remains unobserved?",
+          "method_steps": [
+            "bind_consolidated_financial_facts_and_recalculate_ratios_locally",
+            "separate_company_profitability_from_accelerator_product_profit",
+            "connect_adoption_context_to_financial_scale_without_customer_spend_invention"
+          ],
+          "mechanism_aliases": {
+            "NVDA_M_CONSOLIDATED_VALUE_CAPTURE": "NVIDIA's consolidated revenue, gross profit, and operating income establish company-level value capture while accelerator product profit remains unisolated.",
+            "NVDA_M_DEPLOYMENT_NOT_CUSTOMER_REVENUE": "NVIDIA deployment relationships can support adoption and ecosystem reach but cannot allocate exact revenue or profit to a named cloud customer."
+          },
+          "what_would_change_aliases": {
+            "NVDA_W_PRODUCT_ECONOMICS": "NVIDIA discloses accelerator or Data Center product revenue and profit on a comparable current basis.",
+            "NVDA_W_MARGIN_MIX": "NVIDIA discloses a bounded product-mix, supply-cost, or service-mix bridge explaining changes in gross or operating margin."
+          }
+        },
+        "bottleneck_counterevidence_and_what_would_change": {
+          "decision_question": "What realized NVIDIA-specific supply, regulatory, customer-concentration, or deployment constraint could invalidate the current demand and value-capture thesis?",
+          "method_steps": [
+            "reject_generic_forward_looking_caution_as_realized_counterevidence",
+            "preserve_the_current_counterevidence_gap",
+            "define_specific_official_sources_and_observations_that_would_resolve_the_gap"
+          ],
+          "mechanism_aliases": {
+            "NVDA_M_REALIZED_COUNTEREVIDENCE_GAP": "NVIDIA's bounded current source does not establish a realized supply, regulatory, or customer-concentration constraint, so the counter-thesis remains an explicit gap.",
+            "NVDA_M_DEPLOYMENT_CONCENTRATION_WATCH": "NVIDIA's named cloud deployment relationships create a concentration and execution watchpoint but do not prove a realized adverse outcome."
+          },
+          "what_would_change_aliases": {
+            "NVDA_W_REALIZED_CONSTRAINT": "NVIDIA or an official named counterparty reports a realized supply, export-control, deployment, or concentration constraint with material scope.",
+            "NVDA_W_CONSTRAINT_ABSENCE": "Repeated current official disclosures show deployment expansion without the hypothesized bottleneck across a bounded review period."
+          }
+        }
+      }
+    }
+  }
+}

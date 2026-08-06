@@ -1,5 +1,6 @@
 # Worklog
 
+- [641 — FIN 0.1.3 S2-01 typed metadata 与研究方法合同翻译](product_strategy/641_fin_0_1_3_s2_01_typed_metadata_and_research_method_contract_translation.md)
 - [640 — FIN 0.1.3 S1-05 retrieval/evidence usefulness 与 S1 closeout](product_strategy/640_fin_0_1_3_s1_05_retrieval_evidence_usefulness_and_s1_closeout.md)
 - [639 — FIN 0.1.3 S1-04 authoritative relationship Graph 与 typed empty](product_strategy/639_fin_0_1_3_s1_04_authoritative_relationship_graph_and_typed_empty.md)
 - [638 — FIN 0.1.3 S1-03 official source 与上游 freshness successor](product_strategy/638_fin_0_1_3_s1_03_official_source_and_upstream_freshness_successor.md)

@@ -91,6 +91,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 | `013-S2-02` | 将模型评测从 MU 三 family 小 canary 扩展到代表性的 evidence→Claim→Lead synthesis node；区分模型能力、合同限制和上下文缺陷 | F08/F10/F11 | changed family/node 的自然输出通过预注册 rubric；不以一个全局模型 winner 覆盖所有 family |
 | `013-S2-03` | 收敛 55k–58k input 对约 3k output 的低产出上下文结构，去重 role view，保留必要反证和 lineage | F04/F08/F15 | node-level 信息利用率、容量、成本和质量同时满足预算；不得通过隐藏证据获得绿色容量 |
 
+> **2026-08-06 `013-S2-01` 完成**：入口审计确认旧合同的问题不只是 `line_item_count` 类型错误。旧 0.1.2 虽称 judgment atom，Provider 仍可自由写 `direct_answer_atom/counterevidence_atom/boundary_atom`，因此结构化外观不能阻止三案通用套话。本轮先从共享 `specialist_llm._compact_pack_metadata` 根因修复 RC-P36-134：显式字段类型策略由 prompt projection 与 validator 共用，int/bool 保持 native type；ratio/score Decimal 仅按显式 decimal-string 合同编码；未知 numeric/bool 不再静默转字符串。随后只读消费 S1 current governed pack，将三案三个代表性 Cell 编译成 9 个公司专属 decision question/method request，绑定 26 个 Evidence alias、2 个 typed-gap alias、18 个公司专属 mechanism choice 和 18 个 WWC choice。Provider schema/fake/validator/selector 均来自同一合同源，输出面只允许 closed enum 与 request-local alias，禁止 raw numeric/date/identity/ID/free narrative；本地继续掌握事实值、日期、身份、lineage 与最终渲染。focused=`11 passed`，active S0–S2 suite=`87 passed / 1 historical event-time assertion deselected`，模型/网络=0。扩大 legacy Specialist suite=`60 passed / 3 failed`，三项失败均发生在 compactor 之前：repository Product Intelligence autoload 抢占单测显式 Evidence，造成 source-family 与 row-selection 预期漂移；登记 RC-P36-138 并归 S2-02 上下文 precedence/isolation，不在 S2-01 关闭真实 autoload 来换绿。该完成状态是 `contract_translated + fixture_proven`，不是 node runtime consumption 或 DeepSeek 能力证明；固定三 Cell 只是 S2 代表性面，不替代 S3 的 10–20 Cell 动态 DecisionSurface。下一项进入 `013-S2-02`，先明确 explicit current governed pack 优先级，再做代表性 evidence→Claim→Lead node 注入与评测。
+
 ### S3：研究计划、判断、Lead、Writer 与 Verifier
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |
@@ -172,6 +174,7 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 8. [x] 完成 `013-S1-03`：R4 为 `10 source calls / 11 accepted / 6 attempt-backed gaps / 0 model`；组合后是 `27 exact / 16 formula / 5 gap / 9 semantic slots / 57 governed surface`。403 不冒充 source exhaustion，历史 R1–R3 保持 immutable。
 9. [x] 完成 `013-S1-04`：MU/NVDA 共 7 条 current approved relationship edge，DELL 诚实 typed empty；所有 edge 非财务事实权威，旧 Workbench 空图历史未改写。
 10. [x] 完成 `013-S1-05`：semantic successor=`7 useful / 2 typed gap`，governed retrieval=`9/9 query / 26/26 required candidate / 0 false promotion`，旧 BM25 明确 non-authority；S1 pass closed。
-11. [ ] 进入 `013-S2-01` entry audit，先修 `RC-P36-134` typed metadata 漂移并冻结 research question/method contract translation；不得直接执行旧 0.1.2 exact-live。
+11. [x] 完成 `013-S2-01`：RC-P36-134 关闭；9 个 representative request 绑定 `26 Evidence / 2 gap / 18 mechanism / 18 WWC`，Provider 只选 alias/enum，本地拥有数字/日期/identity/lineage/final narrative；active suite 87 passed / 1 historical deselected。
+12. [ ] 进入 `013-S2-02` entry audit，先关闭 RC-P36-138：明确显式 current governed pack 与 repository/environment autoload 的 precedence 和测试隔离；再把 S2-01 合同注入代表性 Specialist→Claim→Lead 节点并预注册自然输出 Rubric。先零调用证明消费路径，再决定有界 DeepSeek canary，不得直接跑 full-chain。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

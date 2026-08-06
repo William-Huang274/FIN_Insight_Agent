@@ -22,6 +22,7 @@ from sec_agent.multi_agent_contracts import (
     validate_specialist_memolet,
 )
 from sec_agent.multi_agent_runtime import active_specialists_for_state, build_agent_data_view, specialist_activation_decisions
+from sec_agent.prompt_metadata_contract import compact_prompt_metadata
 from sec_agent.role_evidence_selector import build_role_source_layer_distribution
 from sec_agent.research_skills import research_skill_prompt
 
@@ -1565,133 +1566,19 @@ def _compact_pack_prompt_row(item: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _compact_pack_metadata(value: Any, *, max_items: int, text_limit: int) -> dict[str, Any]:
-    if not isinstance(value, Mapping):
-        return {}
-    allowed_scalar_keys = {
-        "schema_version",
-        "pack_id",
-        "artifact_ref",
-        "artifact_uri",
-        "path",
-        "source_id",
-        "source_family",
-        "source_role",
-        "source_url",
-        "snapshot_url",
-        "url",
-        "ticker",
-        "company",
-        "product",
-        "product_family",
-        "metric",
-        "metric_family",
-        "period",
-        "confidence",
-        "authority_boundary",
-        "status",
-        "coverage_status",
-        "count",
-        "row_count",
-        "ready_count",
-        "gap_count",
-        "line_item_count",
-        "input_row_count",
-        "product_spec_count",
-        "product_kpi_count",
-        "customer_deployment_count",
-        "source_entity_role",
-        "issuer_binding_status",
-        "product_binding_status",
-        "counterparty_binding_status",
-        "issuer_matched_terms",
-        "product_matched_terms",
-        "counterparty_matched_terms",
-        "binding_claim_boundary",
-    }
-    compact: dict[str, Any] = {}
-    omitted_keys: list[str] = []
-    for key, item in list(value.items())[:max_items]:
-        key_text = str(key)
-        if _prompt_value_empty(item):
-            continue
-        if isinstance(item, Mapping):
-            compact[key_text] = _compact_metadata_mapping(item, max_items=max_items, text_limit=text_limit)
-        elif isinstance(item, (list, tuple, set)):
-            if key_text in allowed_scalar_keys:
-                compact[key_text] = [
-                    _truncate(str(part), text_limit)
-                    for part in list(item)[:4]
-                    if not isinstance(part, Mapping) and not _prompt_value_empty(part)
-                ]
-            else:
-                omitted_keys.append(key_text)
-        else:
-            text = str(item)
-            if key_text in allowed_scalar_keys or len(text) <= min(text_limit, 80):
-                compact[key_text] = _truncate(text, text_limit)
-            else:
-                omitted_keys.append(key_text)
-    if omitted_keys:
-        compact["omitted_keys"] = omitted_keys[:6]
-        compact["omitted_key_count"] = len(omitted_keys)
-        compact["content_policy"] = "metadata_ref_only_nested_payload_omitted"
-    return compact
+    return compact_prompt_metadata(
+        value,
+        max_items=max_items,
+        text_limit=text_limit,
+    )
 
 
 def _compact_metadata_mapping(value: Mapping[str, Any], *, max_items: int, text_limit: int) -> dict[str, Any]:
-    allowed_scalar_keys = {
-        "schema_version",
-        "pack_id",
-        "artifact_ref",
-        "artifact_uri",
-        "path",
-        "source_id",
-        "source_family",
-        "source_role",
-        "source_url",
-        "snapshot_url",
-        "url",
-        "ticker",
-        "company",
-        "product",
-        "product_family",
-        "metric",
-        "metric_family",
-        "period",
-        "confidence",
-        "authority_boundary",
-        "status",
-        "coverage_status",
-        "count",
-        "row_count",
-        "ready_count",
-        "gap_count",
-    }
-    compact: dict[str, Any] = {}
-    for key, item in list(value.items())[:max_items]:
-        key_text = str(key)
-        if _prompt_value_empty(item):
-            continue
-        if key_text in allowed_scalar_keys and not isinstance(item, Mapping):
-            if isinstance(item, (list, tuple, set)):
-                compact[key_text] = [
-                    _truncate(str(part), text_limit)
-                    for part in list(item)[:4]
-                    if not isinstance(part, Mapping) and not _prompt_value_empty(part)
-                ]
-            else:
-                compact[key_text] = _truncate(str(item), text_limit)
-    if compact:
-        omitted = [str(key) for key in value.keys() if str(key) not in compact]
-        if omitted:
-            compact["omitted_keys"] = omitted[:6]
-            compact["omitted_key_count"] = len(omitted)
-        return compact
-    return {
-        "keys": [str(key) for key in list(value.keys())[:6]],
-        "key_count": len(value),
-        "content_policy": "metadata_ref_only_nested_payload_omitted",
-    }
+    return compact_prompt_metadata(
+        value,
+        max_items=max_items,
+        text_limit=text_limit,
+    )
 
 
 def _compact_rows_for_model_payload(agent_id: str, rows: Any, *, execution_mode: str = "") -> list[dict[str, Any]]:

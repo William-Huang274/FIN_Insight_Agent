@@ -134,6 +134,7 @@ class CellCompositionEngine:
                     owner_role=canonical.owner_role,
                     materiality=canonical.materiality,
                     stop_rule=canonical.stop_rule,
+                    what_would_change="; ".join(canonical.what_would_change),
                     dependency_cell_keys=dependencies,
                     evidence_slots=slots,
                 )

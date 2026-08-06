@@ -111,6 +111,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 | `013-S3-04` | 提升 Workpaper/Writer 的产品、财务、客户/供应链、竞争、资本/price-in、估值边界、风险和 counter-thesis 内容 | F08/F11 | 报告能回答“结论、为什么、反方、缺什么、什么会改变”，不是六个 atom 的排版投影 |
 | `013-S3-05` | 重做 Verifier/paired rubric：完整性 gate 与研究内容质量硬门禁分离，正式消费八维 Rubric | F07/F08/F10/F11/F15 | DELL period 错误必须 L1 fail；三案逐案达到 `>=24/32`、核心维度下限、material paired gain 和 qualified human content acceptance；通用 Claim/WWC 不得凭数量获得 L3/L4 pass |
 
+> **2026-08-06 `013-S3-01` 工程通过**：current S1 governed pack＋S2 公司专属研究合同＋case delta 已编译为 DELL `13`、MU `12`、NVDA `13` 个动态 Cell，三案均覆盖 P36 六个必选 family。每 Cell 均有本案问题、owner、EvidenceSlot、stop rule、WWC、dependency 和 current/planned evidence binding；DELL/NVDA 的附加 Cell 由真实 typed gap 触发，并非固定标题。Reviewer inspect/prune/split/add/return 和 immutable revision 已零调用证明，material numeric sanity、risk/counterevidence、Writer boundary 不可静默删除。shared composition 遗漏 WWC 投影的根因已修复。current suite=`207 passed / 1 historical assertion deselected`，model/provider/network/source/business run=0。S3-01 只达到 `engineering_pass`，不等于 12–13 Cell 已产生高质量判断；下一项为 `013-S3-02`。
+
 ### S4：current 产品工作流与真实 dogfood
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |

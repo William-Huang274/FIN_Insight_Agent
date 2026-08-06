@@ -1,0 +1,73 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_experiment_a_dell_exact_live_r1_terminal_result_v1_0",
+  "status": "terminal_failed_no_retry",
+  "recorded_at": "2026-08-07T00:49:46+08:00",
+  "scope_id": "FIN-0.1.3-013-S2-05-EXPERIMENT-A-DELL-EXACT-LIVE-R1",
+  "execution_binding": {
+    "git_commit": "a3f2edf8f62a74f87dc45a56edefcdb19f5c1989",
+    "case_key": "DELL",
+    "run_id": "fin013_s2_05_exp_a_dell_9af8699f8f545103d2be",
+    "attempt_id": "fin013_s2_05_exp_a_dell_9af8699f8f545103d2be::attempt_1",
+    "admission_digest": "de2ae5a5f9a4847784245457c00ab4ee7a46ab538a7d0d54b858e68c10bfe1d0",
+    "reservation_digest": "ba83646b418b42a3b4cbf836e00610103cc9b23fae543a909c3a4c97714ed476",
+    "receipt_digest": "8402997952fcb23eff6da7f61fdbea200c20ca5d89cd8b722376747fdafdeb86"
+  },
+  "provider": {
+    "backend": "deepseek",
+    "model": "deepseek-v4-pro",
+    "finish_reason": "stop",
+    "transport_attempt_count": 1,
+    "retry_count": 0,
+    "fallback_count": 0
+  },
+  "terminal": {
+    "phase": "lead_planning",
+    "code": "experiment_a_unbound_numeric_surface",
+    "terminal_result_digest": "8f9729b086f86aca630b655de5f10487652a755479b24ba2e484adb9d0d99c0c",
+    "completed_calls": 1,
+    "expected_calls": null,
+    "business_artifact_promotions": 0,
+    "correction_track_writes": 0,
+    "corrected_candidate_track_writes": 0,
+    "evaluator_track_reads_or_writes": 0
+  },
+  "usage": {
+    "input_tokens": 2604,
+    "output_tokens": 1162,
+    "total_tokens": 3766,
+    "estimated_cost_usd": 0.0035378,
+    "cost_method": "policy_ceiling_rates_not_provider_invoice"
+  },
+  "capture_evidence": {
+    "capture_count": 1,
+    "capture_ref": ".codex_runtime/fin013_s2_05/runs/fin013_s2_05_exp_a_dell_9af8699f8f545103d2be/raw_model_only/captures/01_lead_planning_710ad12542688379acd3767e39c012d34b78e2401f01ddee73c3db7fb9abbe5a.json",
+    "capture_digest": "710ad12542688379acd3767e39c012d34b78e2401f01ddee73c3db7fb9abbe5a",
+    "capture_file_sha256": "8ddbca0803586dfa95b1f9eb4183aa0daa9006c7841ac3fb2fee0e516813b7fa",
+    "terminal_ref": ".codex_runtime/fin013_s2_05/runs/fin013_s2_05_exp_a_dell_9af8699f8f545103d2be/raw_model_only/terminal_result.json",
+    "terminal_file_sha256": "b5bf27bb4ae4c667430bfd371fc728df915f5c73076e0b1f365c84754f0ee2f1",
+    "secret_pattern_scan": "pass",
+    "raw_content_promoted_to_git": false
+  },
+  "diagnosis": {
+    "issue_id": "RC-P36-141",
+    "classification": "mixed_project_numeric_authority_contract_and_provider_instruction_noncompliance",
+    "useful_behavior_observed": "Lead produced six case-specific mandatory-family research units with case-local Evidence and Gap references.",
+    "provider_noncompliance": [
+      "The Lead introduced hypothetical thresholds not present in the frozen input, including 20 percent, 12 months, top 3, 10 percent and 3 percent.",
+      "The frozen prompt explicitly required all numbers and dates to come from case-local context."
+    ],
+    "project_classifier_defects": [
+      "The numeric regex truncates natural suffix forms such as 51.3B and 24.4B to 51 and 24.",
+      "The allowlist does not compose value and unit fields, so natural percentage rendering and harmless rounding such as 36.7 percent versus 36.72 are rejected.",
+      "Evidence-fact authority and proposed research-plan scenario thresholds are governed by one undifferentiated hard gate."
+    ],
+    "model_quality_conclusion": "No general DeepSeek reasoning-quality conclusion is permitted because Specialists, synthesis, Writer, Verifier and hidden scoring were not reached."
+  },
+  "authority_boundary": {
+    "automatic_retry_or_rerun_authorized": false,
+    "MU_or_NVDA_authorized": false,
+    "supervisor_correction_authorized": false,
+    "business_promotion_authorized": false,
+    "next_action": "FIN-0.1.3-013-S2-05-DELL-LEAD-NUMERIC-AUTHORITY-AND-PLANNING-THRESHOLD-ZERO-CALL-DISPOSITION"
+  }
+}

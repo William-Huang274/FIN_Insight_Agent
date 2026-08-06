@@ -139,3 +139,7 @@ formal case 遇到以下 material failure 立即暂停：
 - Lead review、repair/correction history、Writer input/output、Verifier findings；
 - Codex Gold candidate、DeepSeek raw candidate、corrected candidate；
 - 八维评分、逐差异、工具/模型分账和 reviewer decision。
+
+## 9. Experiment A 当前执行记录
+
+2026-08-07 DELL R1 已执行且首错停止。Lead 返回 6 个 case-specific research units，但在输入外引入若干 hypothetical threshold；本地 numeric classifier 同时对 `B` suffix、value＋percent unit 和自然 rounding 产生假阳性。terminal=`experiment_a_unbound_numeric_surface`，calls/captures=`1/1`，tokens=`3766`，retry/fallback/Artifact=`0/0/0`。该结果登记为 RC-P36-141，并按 `contract_or_local_authority_gap + provider instruction noncompliance` 混合归因；不能归因为工具缺陷，也不能外推 DeepSeek 的完整分析/写作质量。DELL replacement、MU/NVDA 与 supervisor correction 均需在零调用处置后另行授权。

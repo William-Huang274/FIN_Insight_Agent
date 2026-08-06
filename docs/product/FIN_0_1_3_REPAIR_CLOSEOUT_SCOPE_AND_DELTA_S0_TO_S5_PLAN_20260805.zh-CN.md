@@ -236,6 +236,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-05` dynamic runner 工程通过与 fresh authority**：专用 policy/runner/entrypoint 已完成：Lead=`1`、Specialist=`6–8`、synthesis/Writer/Verifier=`1/1/1`，单案 `10–12`、campaign 最大 `36`；完整 Evidence/Gap 覆盖、identity/as-of、引用、数值、capture-first、shared-ledger exact-once、首错停本案/全 campaign 和 raw/correction/corrected/evaluator 分轨均 fail closed。逐调用累计每案 `200000 input / 30200 output / USD 0.18 estimated` 上限，retry/fallback=0。DELL/MU/NVDA full-fake=`30 calls`，8-unit=`12 calls`，S2 named=`95 passed`。fresh authority 无 material blocker，但只批准下一步在 clean/synced descendant 上签发 DELL 一份 admission；admission 存 Git 忽略的 restricted `.codex_runtime` authority root，避免自指提交。消费/exact-live/MU/NVDA 仍未授权，本项 model/Provider/network/MCP/admission=`0/0/0/0/0`。
 
+> **2026-08-07 `013-S2-05` DELL exact-live R1 首错终止**：一份 fresh admission 已在 clean/synced `a3f2edf8…c1989` 上 exact-once 消费。DeepSeek Pro Lead 正常返回 6 个 DELL-specific research units，但在输入外提出若干 scenario/stop thresholds；同时项目 numeric classifier 对 `51.3B/24.4B` suffix、value＋percent unit 和自然 rounding 存在假阳性。运行按 `experiment_a_unbound_numeric_surface` 在第 1 次调用后停止，calls/captures=`1/1`，tokens=`3766`，估算 USD=`0.0035378`，retry/fallback/Artifact=`0/0/0`；Specialist/Lead synthesis/Writer/Verifier、MU/NVDA 和 hidden scoring 均未到达。RC-P36-141 归 S2：事实数字继续 hard authority，但 hypothetical planning threshold 必须 typed 分轨，suffix/unit classifier 必须零调用修复。本失败不创建新版本、不自动签 replacement，也不支持对 DeepSeek 整体研究能力作结论。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。
@@ -263,7 +265,7 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 14. [x] 保留 `013-S3-01`–`013-S3-05` 与 R3 为 minimum engineering/control anchor：结构、exact-once、9 natural Claim、3 Lead、3 Workpaper、L1/L2 成立；0 thesis-support、0 natural counterevidence 与 29 个未研究 Cell 使其不构成产品级研究证明。
 15. [x] 完成 DELL/MU/NVDA 三份 Codex-authored Gold candidate 与交叉订正；明确它们是混合研究候选，不是当前产品或完整 MCP 已独立产出的报告。
 16. [x] 完成 `013-S2-04`：三案共享 Benchmark Evidence Pack、blind input 和 evaluator-only hidden Gold scoring objects 已按 digest 冻结，公平性、泄漏、跨案污染、日期和数值重算检查通过。
-17. [ ] 执行 `013-S2-05/06` Experiment A：动态 Lead→Specialist→Synthesis→Writer→Verifier runner 零调用工程已通过，fresh authority 仅批准下一步签发 DELL admission；尚未签发、消费或执行。DELL raw success 后才能依次开放 MU/NVDA，随后 S2-06 才做 raw/correction/corrected 三轨对照。
+17. [ ] 执行 `013-S2-05/06` Experiment A：动态 runner 已通过，DELL R1 已 exact-once 消费并在 Lead numeric-authority 首错终止；当前先零调用处置 RC-P36-141，不自动 replacement、不开放 MU/NVDA。只有 DELL coherent raw success 后才依次开放后续案例与 S2-06 三轨对照。
 18. [ ] 执行 `013-S1-06/07/08`：修复 MCP operational truth、当前外部来源 runtime 和 Agentic Search 质量门；不调用 DeepSeek 来发现确定性工具缺陷。
 19. [ ] 执行 `013-S3-06/07`：动态 Lead loop 与 EvidenceRequest/targeted repair 闭环。
 20. [ ] 执行 `013-S3-08/09` Experiment B：三案端到端 DeepSeek Agentic Search/Research、隐藏 Gold 八维对照和 qualified-human 内容验收。

@@ -1,5 +1,7 @@
 # Model Run Index
 
+- `2026-08-07` — FIN 0.1.3 S2-05 Experiment A DELL DeepSeek Pro exact-live R1: Lead 正常返回 6-unit JSON，但 numeric authority 混合失败后首错停止；`1 call / 1 capture / 3766 tokens / USD 0.0035378 / retry 0 / Artifact 0`。Provider 输入外假设阈值与项目 unit/suffix classifier 假阳性并存，登记 RC-P36-141；未启动 MU/NVDA。见 `reports/model_runs/20260807_fin_0_1_3_s2_05_experiment_a_dell_deepseek_pro_exact_live_r1.md`。
+
 - `2026-08-05` — FIN 0.1.2 S4-T05-D post-transfer NVDA DeepSeek Pro exact-live R1: terminal success `9 calls / 9 captures / 3 local Fact receipts / 9 Artifacts`, `55,060/3,148` tokens, cost `USD 0.02668987`, retry/second live `0/0`, independent L1 pass; zero-call product surface remains pending. See `reports/model_runs/20260805_fin_0_1_2_s4_t05_d_nvda_post_transfer_deepseek_pro_exact_live_r1.md`.
 
 - `2026-08-04` — FIN 0.1.2 S3-T03 NVDA DeepSeek Pro replacement exact-live R2: terminal success `9 calls / 9 captures / 3 local Fact receipts / 9 Artifacts`, independent L1 pass; S3-T04 paired review found limited gain and L4 delivery failure, so Owner rejected current NVDA R2 and S3 closed honest-blocked. See `reports/model_runs/20260804_fin_0_1_2_s3_t03_nvda_deepseek_pro_replacement_exact_live_r2.md`.

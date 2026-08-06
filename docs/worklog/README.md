@@ -1,5 +1,6 @@
 # Worklog
 
+- [667 — FIN 0.1.3 S2-05 Experiment A DELL exact-live R1 首错终止](product_strategy/667_fin_0_1_3_s2_05_experiment_a_dell_exact_live_r1_terminal_failure.md)
 - [666 — FIN 0.1.3 S2-05 Experiment A fresh admission authority 决策](product_strategy/666_fin_0_1_3_s2_05_experiment_a_fresh_admission_authority_decision.md)
 - [665 — FIN 0.1.3 S2-05 Experiment A 动态节点 Runner 零调用实现](product_strategy/665_fin_0_1_3_s2_05_experiment_a_dynamic_node_runner_zero_call_implementation.md)
 - [664 — FIN 0.1.3 S2-05 Experiment A admission authority 暂不签发](product_strategy/664_fin_0_1_3_s2_05_experiment_a_admission_authority_honest_block.md)

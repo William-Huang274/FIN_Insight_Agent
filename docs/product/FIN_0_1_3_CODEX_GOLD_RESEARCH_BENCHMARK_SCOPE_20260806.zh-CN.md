@@ -1,7 +1,7 @@
 # FIN 0.1.3 Codex 三案例 Gold Research Benchmark 范围
 
 日期：2026-08-06  
-状态：`active / three gold candidates complete / hybrid-tool truth recorded / shared benchmark evidence frozen / Experiment A admission decision next`
+状态：`active / three gold candidates complete / shared benchmark evidence frozen / Experiment A admission not issued / dynamic runner preflight next`
 
 ## 1. 决策
 
@@ -45,7 +45,13 @@
 
 `013-S2-04` 已完成。三案模型可见材料被重新编译为 `10 source / 33 evidence / 12 derived numeric / 12 explicit gap` 的中性事实面；`12` 个 Gold 评分目标仅存在 evaluator-only 对象中。可见材料与隐藏材料分别位于 `eval_sets/fin_0_1_3_same_evidence_v1/model_visible/` 和 `eval_sets/fin_0_1_3_same_evidence_v1/evaluator_only/`，不得由同一 runner 目录通配读取。
 
-这一步只解决“给 DeepSeek 的证据是否与 Gold 使用的重要事实一致、是否泄漏答案”的公平性问题。它没有证明 DeepSeek 会分析，也没有修复 RC-P36-140 或证明 Agentic Search。下一步先做 Experiment A 的 fresh admission authority decision，再决定是否启动模型调用。
+这一步只解决“给 DeepSeek 的证据是否与 Gold 使用的重要事实一致、是否泄漏答案”的公平性问题。它没有证明 DeepSeek 会分析，也没有修复 RC-P36-140 或证明 Agentic Search。后续 admission 仍必须以专用 Experiment A runner、零调用 full-fake 和独立 authority 为前提。
+
+### 3.3 Experiment A admission 入口结论
+
+入口审计没有签发 admission。原因不是输入或 DeepSeek credential，而是产品当前没有能自然执行 Lead→动态 Specialist→Synthesis→Writer→Verifier 的 Experiment A runner。复用旧三调用 canary 或九次最小 Anchor 会再次把产品级研报目标压缩成合同遵循测试。
+
+后继实现按每案 6–8 个研究单元、10–12 次模型调用设计，三案最多 36 次；调用上限来自节点和研究覆盖，不是为了省钱任意设为 9。runner 零调用 full-fake/preflight 通过并重新取得 authority 前，Gold benchmark 不启动 paid comparison。
 
 ## 4. 研究交付最低内容
 

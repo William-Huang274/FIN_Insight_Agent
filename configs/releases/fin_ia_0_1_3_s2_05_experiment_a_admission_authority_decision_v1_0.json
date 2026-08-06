@@ -1,0 +1,185 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_experiment_a_admission_authority_decision_v1_0",
+  "decision_id": "FIN-0.1.3-013-S2-05-EXPERIMENT-A-ADMISSION-AUTHORITY-R1",
+  "recorded_at": "2026-08-07T02:20:00+08:00",
+  "status": "authority_not_issued_dedicated_runner_and_compiled_node_contract_missing",
+  "execution_head": "5dc7ac4f62fe366c8e4af5df463a2a5d30e8f998",
+  "repository_state": {
+    "clean": true,
+    "upstream_synced": true
+  },
+  "authority": {
+    "admission_issuance_authorized": false,
+    "admission_consumption_authorized": false,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "mcp_calls": 0,
+    "business_runs": 0,
+    "credential_value_read": false,
+    "provider_probe_performed": false
+  },
+  "frozen_input_binding": {
+    "contract_ref": "fin_0_1_3.S2.same_evidence_reasoning_benchmark:v1",
+    "freeze_manifest_ref": "configs/releases/fin_ia_0_1_3_s2_04_shared_benchmark_evidence_freeze_v1_0.json",
+    "freeze_manifest_sha256": "e87e416ff45ebc44f8ce2e7794701d6d38a63402ed4b51c41923a33d7d09e449",
+    "freeze_manifest_digest": "db9c1426b7d80c1d541b34507c76049df08e8f94621c3a28b6183b79cf4c9214",
+    "model_visible_input_ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json",
+    "model_visible_input_sha256": "689a4f957015c6b16f4d3ecdde6292450c044f9641af09537b1f0190176bdb59",
+    "model_visible_input_digest": "55b474867594c002cd87494fc3d825b39cc60f3000adae06253f8e2256a61688",
+    "cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "as_of": "2026-08-06",
+    "model_file_allowlist": [
+      "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json"
+    ],
+    "evaluator_only_ref_forbidden_to_raw_runner": "eval_sets/fin_0_1_3_same_evidence_v1/evaluator_only/hidden_gold_scoring_objects_v1.json",
+    "filesystem_glob_or_parent_directory_read_forbidden": true,
+    "external_fact_or_tool_use_forbidden": true
+  },
+  "compatibility_audit": {
+    "dedicated_experiment_a_runtime_ref": "src/sec_agent/s2_same_evidence_experiment_runtime.py",
+    "dedicated_runtime_present": false,
+    "runtime_policy_ref": "configs/runtime/fin_ia_0_1_3_s2_05_experiment_a_runtime_policy_v1_0.json",
+    "runtime_policy_present": false,
+    "production_entrypoint_ref": "scripts/releases/run_fin_ia_0_1_3_s2_05_experiment_a.py",
+    "production_entrypoint_present": false,
+    "shared_admission_ledger": {
+      "ref": "src/sec_agent/shared_admission_ledger.py",
+      "sha256": "ef0611378b4aa4419f8782feceb8ddd89603e79c9d7a5753452f3ddbcb725455",
+      "reusable": true
+    },
+    "existing_runners": [
+      {
+        "ref": "src/sec_agent/s2_natural_canary_runtime.py",
+        "sha256": "72cd9cc59e7608c537405c8a773740d8a10fd4e7f899a8a102a643da3f757179",
+        "compatible": false,
+        "reason": "three narrow alias-selection calls only; no dynamic Lead, multi-unit Specialist, synthesis, Writer, or Verifier path"
+      },
+      {
+        "ref": "src/sec_agent/s3_formal_anchor_runtime.py",
+        "sha256": "8cb3697bfcca33ecfbe8ecf8fc5388fb9b1663a6c9d3a9124e84b59413425870",
+        "compatible": false,
+        "reason": "nine compact Specialist selections for the minimum Anchor; Lead, Writer, and Verifier are not natural same-evidence Experiment A nodes"
+      }
+    ]
+  },
+  "blocking_findings": [
+    {
+      "code": "experiment_a_dedicated_runner_absent",
+      "owner": "013-S2-05",
+      "material": true
+    },
+    {
+      "code": "experiment_a_node_output_contracts_not_compiled",
+      "owner": "013-S2-05",
+      "material": true
+    },
+    {
+      "code": "experiment_a_case_scoped_exact_once_capture_terminal_not_proven",
+      "owner": "013-S2-05",
+      "material": true
+    },
+    {
+      "code": "experiment_a_capacity_cost_and_timeout_envelope_not_compiled",
+      "owner": "013-S2-05",
+      "material": true
+    },
+    {
+      "code": "experiment_a_raw_correction_corrected_write_boundary_not_proven",
+      "owner": "013-S2-05",
+      "material": true
+    }
+  ],
+  "single_successor_implementation_scope": {
+    "scope_id": "FIN-0.1.3-013-S2-05-EXPERIMENT-A-DYNAMIC-NODE-RUNNER-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION",
+    "implementation_bundles_maximum": 1,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "mcp_calls": 0,
+    "case_admissions": {
+      "maximum": 3,
+      "one_case_per_admission": true,
+      "execution_order": [
+        "DELL",
+        "MU",
+        "NVDA"
+      ],
+      "automatic_next_case_after_material_failure": false
+    },
+    "dynamic_node_envelope": {
+      "research_lead_planning_calls_per_case": 1,
+      "specialist_research_units_per_case": {
+        "minimum": 6,
+        "maximum": 8
+      },
+      "cross_cell_synthesis_calls_per_case": 1,
+      "writer_calls_per_case": 1,
+      "verifier_calls_per_case": 1,
+      "provider_calls_per_case": {
+        "minimum": 10,
+        "maximum": 12
+      },
+      "provider_calls_campaign_maximum": 36,
+      "retry_count": 0,
+      "fallback_count": 0
+    },
+    "mandatory_research_families": [
+      "demand_and_customer_authenticity",
+      "product_and_technology_position",
+      "supply_chain_and_competition",
+      "financial_transmission_profit_and_cash",
+      "capital_market_and_price_in_boundary",
+      "counter_thesis_risk_and_what_would_change"
+    ],
+    "node_contract_requirements": [
+      "lead_plan_uses_case_local_evidence_ids_and_covers_all_mandatory_families",
+      "specialist_receives_only_assigned_case_local_evidence_and_emits_cited_judgment",
+      "synthesis_resolves_or_defers_dependencies_conflicts_and_material_gaps",
+      "writer_uses_only_frozen_evidence_and_prior_raw_node_outputs",
+      "verifier_has_no_hidden_gold_access_and_checks_substance_not_only_shape"
+    ],
+    "persistence_boundaries": {
+      "raw_model_only": "runtime-owned writable capture-first track",
+      "supervisor_corrections": "not writable by S2-05 raw runner",
+      "corrected_candidates": "not writable by S2-05 raw runner",
+      "evaluator_only": "not readable by S2-05 raw runner"
+    },
+    "material_stop_conditions": [
+      "provider_transport_or_finish_failure",
+      "invalid_json_or_node_schema",
+      "wrong_case_as_of_identity_or_cross_case_evidence",
+      "invented_fact_numeric_date_source_or_unsupported_external_knowledge",
+      "material_numeric_mismatch_or_invalid_formula",
+      "lead_misses_mandatory_family_or_uses_out_of_pack_evidence",
+      "material_counterevidence_or_gap_in_pack_omitted_from_final_chain",
+      "synthesis_leaves_material_conflict_unhandled",
+      "writer_introduces_fact_not_bound_to_frozen_evidence",
+      "verifier_accepts_a_material_substantive_failure",
+      "capture_or_terminal_persistence_failure"
+    ],
+    "preflight_acceptance": [
+      "exact_input_allowlist_and_hidden_path_denial_proven",
+      "lead_6_to_8_unit_dynamic_fanout_full_fake_proven",
+      "DELL_MU_NVDA_case_local_positive_and_cross_case_negative_fixtures_proven",
+      "capture_before_validation_and_exact_once_shared_ledger_proven",
+      "first_material_failure_stops_case_and_does_not_start_next_case",
+      "raw_runner_cannot_write_correction_or_corrected_tracks",
+      "per_node_and_campaign_token_cost_timeout_envelope_compiled",
+      "fresh_admission_payloads_absent_until_separate_authority_decision"
+    ]
+  },
+  "stage_ownership": {
+    "RC-P36-140": "remains S1 successor and does not block zero-tool Experiment A",
+    "experiment_a_runner_and_model_reasoning": "013-S2-05",
+    "supervisor_correction_and_capability_boundary": "013-S2-06",
+    "end_to_end_search_research": "013-S1-06_to_08_then_013-S3-06_to_09"
+  },
+  "next_action": "FIN-0.1.3-013-S2-05-EXPERIMENT-A-DYNAMIC-NODE-RUNNER-AND-ZERO-CALL-PREFLIGHT-MINIMUM-IMPLEMENTATION",
+  "known_boundary": "This decision prevents reusing narrow historical runners as product-level same-evidence research proof. It does not issue or consume an admission, call DeepSeek, prove model reasoning, repair MCP, or establish product-quality research.",
+  "decision_digest": "2d959b07f8ff690bd9ffc480d03352fb60d007ff5f13fe24f3254e503242950a"
+}

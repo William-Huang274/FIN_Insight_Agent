@@ -2,7 +2,7 @@
 
 日期：2026-08-06  
 更新：2026-08-07
-状态：`active / Codex gold candidates complete / two-track comparison rebaselined / shared evidence frozen / Experiment A admission decision next`
+状态：`active / Codex gold candidates complete / shared evidence frozen / Experiment A admission not issued / dynamic runner preflight next`
 
 ## 1. 比较目标
 
@@ -45,6 +45,21 @@ Codex Gold candidate 实际使用了产品本地数据、部分可用 MCP 与额
 4. 每个节点保存完整 model-visible request、raw assistant output、usage、finish reason、capture digest 与 terminal；
 5. 首个 material 偏离暂停当前 formal case，记录原因后才允许 supervisor 扶正；
 6. `013-S2-06` 汇总 raw model-only、supervisor correction 和 corrected candidate，形成模型能力边界。
+
+### 3.1.1 S2-05 admission 入口审计结果
+
+S2-04 input 已满足公平性，但当前仓库只有三调用窄 canary 和九次 compact Specialist Anchor；二者都没有自然 Research Lead planning、动态多研究单元、自然 cross-cell synthesis、Writer 和 Verifier，因此不得复用并签发 Experiment A。
+
+唯一允许的下一实现采用“一案一个 exact-once admission”：
+
+- 每案 1 次 Lead planning，动态生成 6–8 个覆盖六个 mandatory family 的研究单元；
+- 每研究单元 1 次 Specialist，随后各 1 次 synthesis、Writer、Verifier；
+- 每案 10–12 次、三案最多 36 次，retry/fallback=0；
+- 模型 runner 只能精确读取冻结的 blind input，不得目录通配、读取 hidden Gold、访问 MCP/外网或补充训练知识事实；
+- raw track、supervisor correction、corrected candidate 和 evaluator-only 四类权限分开；
+- 首个 material failure capture-first 后暂停本案，且不自动开始下一案。
+
+当前 decision=`configs/releases/fin_ia_0_1_3_s2_05_experiment_a_admission_authority_decision_v1_0.json`。它只授权一个零调用 runner/full-fake/preflight 实现包；不授权 admission issuance、consumption 或 DeepSeek 调用。
 
 ### 3.2 Experiment A 只回答
 

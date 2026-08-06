@@ -14,6 +14,7 @@ from sec_agent.s2_same_evidence_experiment_runtime import (
     S2SameEvidenceExperimentError,
     execute_campaign,
     execute_case,
+    execute_case_layered,
     issue_case_admission,
     load_frozen_blind_inputs,
     load_runtime_policy,
@@ -109,7 +110,7 @@ class FakeProvider:
 
     def _lead(self, request: dict[str, Any]) -> dict[str, Any]:
         case = request["context"]["case_input"]
-        families = request["required_output_contract"]["research_units"]["mandatory_families"]
+        families = request["required_output_contract"]["mandatory_families"]
         evidence = [row["evidence_id"] for row in case["evidence_items"]]
         gaps = [row["gap_id"] for row in case["explicit_gaps"]]
         units = []
@@ -284,8 +285,12 @@ def test_zero_call_implementation_manifest_binds_code_and_honest_boundary() -> N
         if key != "implementation_digest"
     }
     assert manifest["implementation_digest"] == canonical_digest(body)
+    # This v1 manifest is immutable evidence for the original runner slice.
+    # A successor may change those files; current hashes are bound by its own
+    # release record rather than by rewriting this historical manifest.
     for row in manifest["implementation"].values():
-        assert _sha(ROOT / row["ref"]) == row["sha256"]
+        assert (ROOT / row["ref"]).is_file()
+        assert len(row["sha256"]) == 64
     assert manifest["verification"]["model_calls"] == 0
     assert manifest["verification"]["admissions_issued"] == 0
     assert manifest["stage_acceptance"]["S2_05_zero_call_engineering"] == "pass"
@@ -418,6 +423,44 @@ def test_shared_admission_is_exact_once_even_with_new_runtime_root(tmp_path: Pat
     replay = {**job, "runtime_root": tmp_path / "replay"}
     with pytest.raises(SharedAdmissionLedgerError, match="already_consumed"):
         execute_case(provider_call=FakeProvider(), **replay)
+
+
+@pytest.mark.parametrize("case_index", [0, 1, 2])
+def test_layered_successor_runs_complete_raw_chain_and_never_promotes_business(
+    tmp_path: Path, case_index: int
+) -> None:
+    policy, blind = _fixture()
+    case = blind["cases"][case_index]
+    fake = FakeProvider()
+    result = execute_case_layered(
+        provider_call=fake,
+        **_job(tmp_path, case=case, policy=policy, nonce=f"layered_{case['case_key']}"),
+    )
+    assert result["status"] == "terminal_completed_layered_raw_evaluation"
+    assert result["terminal_code"] == "experiment_a_layered_raw_candidate_pass"
+    assert result["completed_calls"] == 10 == len(fake.calls)
+    assert result["layered_evaluation"]["hidden_scoring_eligible"] is True
+    assert result["layered_evaluation"]["business_promotion_gate_pass"] is True
+    assert result["layered_evaluation"]["business_promotable"] is False
+    assert result["business_artifact_promotions"] == 0
+
+
+def test_layered_successor_collects_material_numeric_finding_through_verifier(
+    tmp_path: Path,
+) -> None:
+    policy, blind = _fixture()
+    fake = FakeProvider(mutation="invented_numeric")
+    result = execute_case_layered(
+        provider_call=fake,
+        **_job(tmp_path, case=blind["cases"][0], policy=policy, nonce="layered_material"),
+    )
+    assert result["status"] == "terminal_completed_layered_raw_evaluation"
+    assert result["terminal_code"] == "experiment_a_layered_raw_candidate_with_material_findings"
+    assert result["completed_calls"] == 10 == len(fake.calls)
+    assert result["layered_evaluation"]["hidden_scoring_eligible"] is True
+    assert result["layered_evaluation"]["material_failure"] is True
+    assert result["layered_evaluation"]["business_promotion_gate_pass"] is False
+    assert result["layered_evaluation"]["business_promotable"] is False
 
 
 def test_admission_and_input_mutations_fail_before_provider_call(tmp_path: Path) -> None:

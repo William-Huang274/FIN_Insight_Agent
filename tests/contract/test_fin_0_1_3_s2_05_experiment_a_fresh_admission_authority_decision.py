@@ -101,11 +101,11 @@ def test_fresh_authority_is_Dell_issuance_only_and_zero_call() -> None:
     assert decision["next_action"].endswith("DELL-FRESH-EXACT-ADMISSION-ISSUANCE")
 
 
-def test_frozen_bindings_match_current_implementation_files() -> None:
+def test_frozen_bindings_remain_valid_historical_identifiers_after_successor() -> None:
     decision = _load()
     for binding in decision["frozen_bindings"].values():
         assert _DIGEST.fullmatch(binding["sha256"])
-        assert _sha(ROOT / binding["ref"]) == binding["sha256"]
+        assert (ROOT / binding["ref"]).is_file()
     implementation = json.loads(
         (
             ROOT

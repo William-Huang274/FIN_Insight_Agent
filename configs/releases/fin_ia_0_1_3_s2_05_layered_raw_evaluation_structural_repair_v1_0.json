@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_layered_raw_evaluation_structural_repair_v1_0",
+  "status": "zero_call_engineering_pass_replacement_live_not_authorized",
+  "recorded_at": "2026-08-07",
+  "source_git_head": "edeb2b1d09094be22897dd06288d3e0e96cac24c",
+  "source_diagnostic_run_id": "fin013_s2_05_dell_r1_collect_all_4aa141677553d35d1e07",
+  "implementation": {
+    "layered_evaluator": {
+      "ref": "src/sec_agent/s2_same_evidence_layered_evaluation.py",
+      "sha256": "ca1aa9eeb9c81117085d99b424bf45d2f08f186dbdd9345c3ab5c0f45d523c46"
+    },
+    "experiment_runtime": {
+      "ref": "src/sec_agent/s2_same_evidence_experiment_runtime.py",
+      "sha256": "816b2961c5dfe219233e08b606d63799063ea9cb1b6b5e102735e9c5b650c9af"
+    },
+    "layered_tests": {
+      "ref": "tests/contract/test_fin_0_1_3_s2_05_layered_raw_evaluation.py",
+      "sha256": "6055fd88edb9d61595f55b5479098f0eec34b1fcb1aec5d87ab92e7179b6a202"
+    },
+    "runtime_regression_tests": {
+      "ref": "tests/contract/test_fin_0_1_3_s2_05_experiment_a_dynamic_node_runtime.py",
+      "sha256": "d8ea7873560d4001e808a483fe26cbde9a8c7d9f8728dc9fcc05e108c1695c18"
+    }
+  },
+  "structural_repairs": [
+    "one typed output contract compiler now feeds the model-visible prompt contract",
+    "dependency/conflict rows, writer boundary and verifier boolean types are explicit",
+    "numeric tokenization no longer truncates B suffixes or rejects equivalent unit and rounding renderings",
+    "hypothetical planning thresholds are quality findings and cannot become evidence facts",
+    "unbound financial claims remain material L1 findings",
+    "cash-flow-to-earnings/valuation and backlog-to-EPS/price bridges receive deterministic material findings",
+    "a complete raw experiment remains hidden-scoreable while every L1 still blocks business promotion"
+  ],
+  "verification": {
+    "focused_tests": "39 passed",
+    "broader_S2_tests": "115 passed",
+    "three_case_full_fake": true,
+    "layered_successor_execution_binding": {
+      "three_case_calls": 30,
+      "material_mutation_calls": 10,
+      "capture_first_exact_once": true,
+      "continues_material_findings_through_verifier": true,
+      "business_artifact_promotions": 0
+    },
+    "immutable_DELL_replay": {
+      "status": "complete_with_material_findings",
+      "raw_chain_complete": true,
+      "hidden_scoring_eligible": true,
+      "business_promotable": false,
+      "finding_count": 32,
+      "material_failure": true
+    },
+    "compileall": "pass",
+    "git_diff_check": "pass",
+    "model_provider_network_calls": [0, 0, 0]
+  },
+  "acceptance": {
+    "structural_zero_call_repair": "pass",
+    "DELL_R1": "immutable_failed",
+    "DELL_collect_all": "diagnostic_complete_non_promotable",
+    "replacement_exact_live": false,
+    "MU_or_NVDA_authority": false,
+    "business_report": false
+  },
+  "next_action": "Commit and push the clean repair chain, then make a separate one-DELL replacement admission authority decision.",
+  "implementation_digest": "92e33478812173393ccb9f6393876451d7ba1e2e06a0d81c9ef2f9582199b3d9"
+}

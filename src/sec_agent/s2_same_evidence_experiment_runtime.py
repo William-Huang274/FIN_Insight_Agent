@@ -9,6 +9,12 @@ import re
 from typing import Any, Callable, Mapping, Sequence
 
 from sec_agent.retrieval_evidence_usefulness_program import canonical_digest
+from sec_agent.s2_same_evidence_layered_evaluation import (
+    NUMERIC_TOKEN,
+    allowed_numeric_surfaces,
+    compile_output_contract,
+    evaluate_raw_chain,
+)
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger
 
 
@@ -19,6 +25,7 @@ POLICY_REF = (
 ADMISSION_SCHEMA = "fin_ia_0_1_3_s2_05_experiment_a_case_admission_v1_0"
 CAPTURE_SCHEMA = "fin_ia_0_1_3_s2_05_experiment_a_raw_capture_v1_0"
 TERMINAL_SCHEMA = "fin_ia_0_1_3_s2_05_experiment_a_terminal_v1_0"
+LAYERED_TERMINAL_SCHEMA = "fin_ia_0_1_3_s2_05_experiment_a_layered_terminal_v1_0"
 SCOPE = "FIN_0_1_3_S2_05_EXPERIMENT_A_ONE_CASE_RAW_EXACT_ONCE"
 CASE_ORDER = ("DELL", "MU", "NVDA")
 SECTION_IDS = (
@@ -33,7 +40,7 @@ SECTION_IDS = (
 ProviderCall = Callable[..., Mapping[str, Any]]
 _DIGEST = re.compile(r"[0-9a-f]{64}")
 _GIT_ID = re.compile(r"[0-9a-f]{40}")
-_NUMERIC = re.compile(r"(?<![A-Za-z0-9_])[-+]?\d[\d,]*(?:\.\d+)?%?(?![A-Za-z0-9_])")
+_NUMERIC = NUMERIC_TOKEN
 
 
 class S2SameEvidenceExperimentError(RuntimeError):
@@ -422,6 +429,190 @@ def execute_case(
     return {**terminal, "shared_admission_receipt": final_receipt.as_dict()}
 
 
+def execute_case_layered(
+    *,
+    admission: Mapping[str, Any],
+    case_input: Mapping[str, Any],
+    policy: Mapping[str, Any],
+    execution_git_commit: str,
+    runner_sha256: str,
+    policy_sha256: str,
+    runtime_root: Path,
+    shared_ledger: SharedAdmissionConsumptionLedger,
+    provider_call: ProviderCall,
+    observed_at: str,
+) -> dict[str, Any]:
+    """Run a fresh raw experiment to completion and evaluate findings once.
+
+    Transport, parse, capacity, unusable Lead topology and unsafe Lead ID
+    failures still stop immediately.  Node content/schema findings after the
+    usable Lead are retained through Verifier and block promotion, but do not
+    erase the complete raw candidate needed for hidden scoring.
+    """
+
+    validate_case_admission(
+        admission,
+        case_input=case_input,
+        policy=policy,
+        execution_git_commit=execution_git_commit,
+        runner_sha256=runner_sha256,
+        policy_sha256=policy_sha256,
+        observed_at=observed_at,
+    )
+    root = runtime_root.resolve()
+    ledger_path = shared_ledger.path.resolve()
+    if ledger_path == root or root in ledger_path.parents:
+        raise S2SameEvidenceExperimentError("experiment_a_shared_ledger_inside_runtime_root")
+    root.mkdir(parents=True, exist_ok=False)
+    captures_dir = root / "raw_model_only" / "captures"
+    captures_dir.mkdir(parents=True)
+    receipt = shared_ledger.reserve(
+        admission_digest=str(admission["admission_digest"]),
+        admission_id=str(admission["admission_id"]),
+        scope=str(admission["scope"]),
+        run_id=str(admission["run_id"]),
+        attempt_id=str(admission["attempt_id"]),
+        runtime_identity=str(admission["runtime_identity"]),
+        reserved_at=observed_at,
+    )
+    calls: list[dict[str, Any]] = []
+    outputs: dict[str, Any] = {"specialists": []}
+    failure_code: str | None = None
+    terminal_phase = "lead_planning"
+    evaluation: dict[str, Any] | None = None
+    try:
+        row, lead = _perform_node_call(
+            node_type="lead_planning", node_id="lead",
+            context={"case_input": deepcopy(dict(case_input))},
+            case_input=case_input, admission=admission, policy=policy,
+            provider_call=provider_call, captures_dir=captures_dir, call_index=1,
+        )
+        _append_checked(calls, row, policy)
+        # A usable and case-local Lead topology is required to create the
+        # dynamic fan-out.  Numeric planning thresholds no longer fail here.
+        _validate_lead(lead, case_input=case_input, policy=policy)
+        outputs["lead"] = lead
+        for unit in lead["research_units"]:
+            terminal_phase = "specialist_judgment"
+            row, specialist = _perform_node_call(
+                node_type="specialist_judgment", node_id=str(unit["unit_id"]),
+                context=_compile_specialist_context(case_input, unit),
+                case_input=case_input, admission=admission, policy=policy,
+                provider_call=provider_call, captures_dir=captures_dir,
+                call_index=len(calls) + 1,
+            )
+            _append_checked(calls, row, policy)
+            outputs["specialists"].append(specialist)
+
+        terminal_phase = "cross_cell_synthesis"
+        synthesis_context = {
+            "case_identity": _case_identity(case_input),
+            "evidence_index": _evidence_index(case_input),
+            "derived_numeric": deepcopy(case_input["derived_numeric"]),
+            "explicit_gaps": deepcopy(case_input["explicit_gaps"]),
+            "lead_plan": outputs["lead"],
+            "specialist_outputs": outputs["specialists"],
+        }
+        row, synthesis = _perform_node_call(
+            node_type="cross_cell_synthesis", node_id="synthesis",
+            context=synthesis_context, case_input=case_input, admission=admission,
+            policy=policy, provider_call=provider_call, captures_dir=captures_dir,
+            call_index=len(calls) + 1,
+        )
+        _append_checked(calls, row, policy)
+        outputs["synthesis"] = synthesis
+
+        terminal_phase = "writer"
+        writer_context = {
+            "case_identity": _case_identity(case_input),
+            "evidence_index": _evidence_index(case_input),
+            "derived_numeric": deepcopy(case_input["derived_numeric"]),
+            "explicit_gaps": deepcopy(case_input["explicit_gaps"]),
+            "specialist_outputs": outputs["specialists"],
+            "synthesis": synthesis,
+            "required_section_ids": list(SECTION_IDS),
+        }
+        row, writer = _perform_node_call(
+            node_type="writer", node_id="writer", context=writer_context,
+            case_input=case_input, admission=admission, policy=policy,
+            provider_call=provider_call, captures_dir=captures_dir,
+            call_index=len(calls) + 1,
+        )
+        _append_checked(calls, row, policy)
+        outputs["writer"] = writer
+
+        terminal_phase = "verifier"
+        verifier_context = {
+            **synthesis_context,
+            "synthesis": synthesis,
+            "writer": writer,
+            "verifier_scope": "raw candidate substance and evidence binding only; hidden gold unavailable",
+        }
+        row, verifier = _perform_node_call(
+            node_type="verifier", node_id="verifier", context=verifier_context,
+            case_input=case_input, admission=admission, policy=policy,
+            provider_call=provider_call, captures_dir=captures_dir,
+            call_index=len(calls) + 1,
+        )
+        _append_checked(calls, row, policy)
+        outputs["verifier"] = verifier
+        evaluation = evaluate_raw_chain(
+            outputs, case_input=case_input, policy=policy, section_ids=SECTION_IDS
+        )
+    except S2SameEvidenceExperimentError as exc:
+        failure_code = exc.code
+
+    captured_rows = _captured_call_rows(captures_dir)
+    complete = evaluation is not None and evaluation["raw_chain_complete"] is True
+    status = "terminal_completed_layered_raw_evaluation" if complete else "terminal_failed_no_retry"
+    if complete:
+        terminal_code = (
+            "experiment_a_layered_raw_candidate_with_material_findings"
+            if evaluation["material_failure"]
+            else "experiment_a_layered_raw_candidate_pass"
+        )
+        terminal_phase = "case_complete"
+    else:
+        terminal_code = failure_code or "experiment_a_layered_raw_chain_incomplete"
+    terminal_body = {
+        "schema_version": LAYERED_TERMINAL_SCHEMA,
+        "admission_digest": admission["admission_digest"],
+        "run_id": admission["run_id"], "attempt_id": admission["attempt_id"],
+        "case_key": case_input["case_key"], "status": status,
+        "terminal_phase": terminal_phase, "terminal_code": terminal_code,
+        "completed_calls": len(captured_rows),
+        "expected_calls": len(outputs.get("lead", {}).get("research_units", [])) + 4 if outputs.get("lead") else None,
+        "call_results": captured_rows, "usage": _usage_summary(captured_rows, policy),
+        "raw_output_digests": {
+            "lead": canonical_digest(outputs["lead"]) if outputs.get("lead") else None,
+            "specialists": [canonical_digest(row) for row in outputs["specialists"]],
+            "synthesis": canonical_digest(outputs["synthesis"]) if outputs.get("synthesis") else None,
+            "writer": canonical_digest(outputs["writer"]) if outputs.get("writer") else None,
+            "verifier": canonical_digest(outputs["verifier"]) if outputs.get("verifier") else None,
+        },
+        "layered_evaluation": {
+            key: deepcopy(evaluation[key])
+            for key in (
+                "status", "raw_chain_complete", "raw_experiment_candidate",
+                "hidden_scoring_eligible", "business_promotion_gate_pass",
+                "business_promotable", "material_failure", "finding_count", "findings",
+            )
+        } if evaluation else None,
+        "retry_count": 0, "fallback_count": 0,
+        "business_artifact_promotions": 0, "supervisor_corrections": 0,
+        "observed_at": observed_at, "reservation_digest": receipt.reservation_digest,
+    }
+    terminal = {**terminal_body, "terminal_result_digest": canonical_digest(terminal_body)}
+    _write_exclusive(root / "raw_model_only" / "layered_terminal_result.json", terminal)
+    final_receipt = shared_ledger.finalize(
+        admission_digest=str(admission["admission_digest"]), run_id=str(admission["run_id"]),
+        attempt_id=str(admission["attempt_id"]), terminal_status=status,
+        terminal_phase=str(terminal_phase), terminal_code=str(terminal_code),
+        terminal_result_digest=str(terminal["terminal_result_digest"]), finalized_at=observed_at,
+    )
+    return {**terminal, "shared_admission_receipt": final_receipt.as_dict()}
+
+
 def execute_campaign(
     jobs: Sequence[Mapping[str, Any]],
     *,
@@ -665,59 +856,10 @@ def _provider_kwargs(
 
 
 def _output_contract(node_type: str, policy: Mapping[str, Any]) -> dict[str, Any]:
-    common = {"case_key": "exact case ticker", "as_of": "exact case as_of"}
-    if node_type == "lead_planning":
-        return {
-            **common,
-            "research_units": {
-                "count": "6 to 8",
-                "fields": [
-                    "unit_id", "family", "question", "why_material",
-                    "evidence_ids", "gap_ids", "stop_condition",
-                ],
-                "mandatory_families": policy["mandatory_research_families"],
-            },
-        }
-    if node_type == "specialist_judgment":
-        return {
-            **common,
-            "fields": [
-                "unit_id", "epistemic_state", "judgment", "mechanism",
-                "financial_or_valuation_link", "evidence_ids",
-                "counterevidence_ids", "gap_ids", "what_would_change",
-            ],
-            "epistemic_states": policy["epistemic_states"],
-        }
-    if node_type == "cross_cell_synthesis":
-        return {
-            **common,
-            "fields": [
-                "thesis", "confidence", "unit_ids", "dependencies",
-                "conflicts", "material_gap_ids", "counter_thesis",
-                "what_would_change",
-            ],
-        }
-    if node_type == "writer":
-        return {
-            **common,
-            "fields": ["title", "sections", "overall_boundary"],
-            "required_section_ids": list(SECTION_IDS),
-            "section_fields": [
-                "section_id", "heading", "narrative", "evidence_ids",
-                "unit_ids", "gap_ids",
-            ],
-        }
-    if node_type == "verifier":
-        return {
-            **common,
-            "fields": [
-                "decision", "material_failure", "findings",
-                "checked_unit_ids", "checked_section_ids",
-            ],
-            "decision": ["accept_raw_candidate", "return_material_failure"],
-            "finding_fields": ["severity", "code", "node_refs", "evidence_ids", "explanation"],
-        }
-    raise S2SameEvidenceExperimentError("experiment_a_unknown_node_type")
+    try:
+        return compile_output_contract(node_type, policy, SECTION_IDS)
+    except ValueError as exc:
+        raise S2SameEvidenceExperimentError(str(exc)) from exc
 
 
 def _validate_lead(
@@ -756,9 +898,11 @@ def _validate_lead(
             raise S2SameEvidenceExperimentError("experiment_a_lead_cross_case_or_unknown_id")
         covered_evidence.update(assigned)
         covered_gaps.update(gaps)
-        for field in ("question", "why_material", "stop_condition"):
+        for field in ("question", "why_material"):
             _text(unit.get(field), "experiment_a_lead_narrative_invalid")
             _assert_numeric_surface(str(unit[field]), case_input)
+        _text(unit.get("stop_condition"), "experiment_a_lead_narrative_invalid")
+        _assert_numeric_surface(str(unit["stop_condition"]), case_input, allow_hypothetical=True)
     if families != set(policy["mandatory_research_families"]):
         raise S2SameEvidenceExperimentError("experiment_a_lead_mandatory_family_missing")
     if covered_evidence != evidence_ids or covered_gaps != gap_ids:
@@ -797,9 +941,11 @@ def _validate_specialist(
         raise S2SameEvidenceExperimentError("experiment_a_specialist_assigned_pack_coverage_incomplete")
     if not selected and not gaps:
         raise S2SameEvidenceExperimentError("experiment_a_specialist_citation_missing")
-    for field in ("judgment", "mechanism", "financial_or_valuation_link", "what_would_change"):
+    for field in ("judgment", "mechanism", "financial_or_valuation_link"):
         value = _text(output.get(field), "experiment_a_specialist_narrative_invalid")
         _assert_numeric_surface(value, case_input)
+    value = _text(output.get("what_would_change"), "experiment_a_specialist_narrative_invalid")
+    _assert_numeric_surface(value, case_input, allow_hypothetical=True)
 
 
 def _validate_synthesis(
@@ -828,9 +974,11 @@ def _validate_synthesis(
         raise S2SameEvidenceExperimentError("experiment_a_synthesis_unknown_gap")
     if set(gaps) != gap_ids:
         raise S2SameEvidenceExperimentError("experiment_a_synthesis_gap_coverage_incomplete")
-    for field in ("thesis", "confidence", "counter_thesis", "what_would_change"):
+    for field in ("thesis", "confidence", "counter_thesis"):
         value = _text(output.get(field), "experiment_a_synthesis_narrative_invalid")
         _assert_numeric_surface(value, case_input)
+    value = _text(output.get("what_would_change"), "experiment_a_synthesis_narrative_invalid")
+    _assert_numeric_surface(value, case_input, allow_hypothetical=True)
     _validate_relationship_rows(output.get("dependencies"), unit_ids, "dependency")
     _validate_conflict_rows(output.get("conflicts"), unit_ids)
 
@@ -1083,15 +1231,20 @@ def _assert_identity(output: Mapping[str, Any], case_input: Mapping[str, Any]) -
         raise S2SameEvidenceExperimentError("experiment_a_node_identity_or_as_of_invalid")
 
 
-def _assert_numeric_surface(text: str, case_input: Mapping[str, Any]) -> None:
-    allowed = {_normalize_numeric(value) for value in _NUMERIC.findall(json.dumps(case_input, ensure_ascii=False))}
+def _assert_numeric_surface(
+    text: str,
+    case_input: Mapping[str, Any],
+    *,
+    allow_hypothetical: bool = False,
+) -> None:
+    allowed = allowed_numeric_surfaces(case_input)
     observed = {_normalize_numeric(value) for value in _NUMERIC.findall(text)}
-    if not observed <= allowed:
+    if not observed <= allowed and not allow_hypothetical:
         raise S2SameEvidenceExperimentError("experiment_a_unbound_numeric_surface")
 
 
 def _normalize_numeric(value: str) -> str:
-    return value.replace(",", "").lstrip("+")
+    return value.replace(",", "").lstrip("+").lower()
 
 
 def _case_ids(case_input: Mapping[str, Any]) -> tuple[set[str], set[str]]:

@@ -1,0 +1,71 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_dell_r1_quarantined_collect_all_result_v1_0",
+  "status": "quarantined_collect_all_complete_non_promotable",
+  "recorded_at": "2026-08-07",
+  "run_id": "fin013_s2_05_dell_r1_collect_all_4aa141677553d35d1e07",
+  "source_formal_run_id": "fin013_s2_05_exp_a_dell_9af8699f8f545103d2be",
+  "execution": {
+    "reused_lead_calls": 1,
+    "new_provider_calls": 9,
+    "logical_chain_calls": 10,
+    "successful_transport_stop_responses": 9,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "placeholder_count": 0,
+    "usage_new_calls": {
+      "input_tokens": 25972,
+      "output_tokens": 7062,
+      "total_tokens": 33034,
+      "estimated_cost_usd": 0.0275886
+    },
+    "usage_full_chain_including_reused_lead": {
+      "input_tokens": 28576,
+      "output_tokens": 8224,
+      "total_tokens": 36800,
+      "estimated_cost_usd": 0.0311264
+    }
+  },
+  "integrity": {
+    "admission_digest": "0e9475016ba8215522ad9b3be4ec82e7312c568d177de6f48cd6ae4f55d60497",
+    "result_digest": "926a9e5d45a25fa9513909a1c92bbb342856e0e3a1fc34a2ab6529efcfe59cee",
+    "raw_capture_count": 9,
+    "capture_first": true,
+    "secret_pattern_scan": "pass",
+    "raw_outputs_tracked_in_git": false
+  },
+  "observed_findings": {
+    "formal_validator_findings": 10,
+    "project_contract_defects": [
+      "numeric authority rejects valid suffix/unit/rounding renderings",
+      "synthesis dependency and conflict row shapes were not explicit in the prompt contract",
+      "writer overall_boundary type was not explicit in the prompt contract",
+      "verifier material_failure boolean type was not explicit in the prompt contract",
+      "first-failure terminalization prevents full raw-candidate evaluation"
+    ],
+    "model_contract_failures": [
+      "one specialist omitted case_key and as_of",
+      "synthesis emitted string relationships instead of typed rows",
+      "writer emitted an object where the runtime expected a string boundary",
+      "verifier emitted a long string where a boolean material_failure was required"
+    ],
+    "material_financial_reasoning_failures": [
+      "operating-cash-flow margin was treated as a proxy for net margin to infer net income and forward P/E",
+      "quarterly backlog cancellation assumptions were annualized into profit and EPS without an authorized formula",
+      "an unsupported EPS bridge was converted into a 20-30 percent stock-downside claim",
+      "claims about historical valuation averages were made without historical valuation evidence"
+    ],
+    "research_quality_findings": [
+      "all specialists returned an empty explicit counterevidence_ids surface",
+      "speculative scenario thresholds propagated from planning into synthesis and report",
+      "the verifier did not identify the most important financial-semantic errors"
+    ]
+  },
+  "acceptance": {
+    "formal_raw_candidate": false,
+    "hidden_scoring_eligible": false,
+    "business_promotable": false,
+    "paired_or_owner_eligible": false,
+    "Experiment_A_pass": false
+  },
+  "decision": "Implement one zero-call layered raw-evaluation and compiled-contract repair bundle. Do not run another live attempt until immutable replay and DELL/MU/NVDA fake-chain tests pass."
+}

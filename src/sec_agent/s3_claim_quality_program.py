@@ -193,10 +193,12 @@ def compile_s3_claim_quality_all_natural_successor(
     cards = []
     for request in requests.values():
         row = result_map[request["request_id"]]
-        claim = consume_representative_specialist_output(
-            request=request,
-            provider_output=row["provider_output"],
-        )
+        claim = deepcopy(row.get("local_claim"))
+        if not claim:
+            claim = consume_representative_specialist_output(
+                request=request,
+                provider_output=row["provider_output"],
+            )
         cards.append(
             _compile_card(
                 claim=claim,
@@ -283,6 +285,20 @@ def validate_s3_claim_card(card: Mapping[str, Any], *, policy: Mapping[str, Any]
         raise S3ClaimQualityError("s3_claim_quality_generic_statement_forbidden")
     if not card.get("evidence_boundary") and not card.get("typed_gaps"):
         raise S3ClaimQualityError("s3_claim_quality_evidence_or_gap_missing")
+    roles = card.get("evidence_role_projection")
+    if roles is not None:
+        if set(roles) != {"observation_support", "thesis_support", "boundary_only"}:
+            raise S3ClaimQualityError("s3_claim_quality_evidence_role_shape_invalid")
+        flattened = [alias for values in roles.values() for alias in values]
+        if (
+            len(flattened) != len(set(flattened))
+            or set(flattened) != set(card.get("support_candidate_ids") or [])
+        ):
+            raise S3ClaimQualityError("s3_claim_quality_evidence_role_partition_invalid")
+        if card.get("epistemic_state") == "cannot_infer" and (
+            roles["thesis_support"] or roles["observation_support"]
+        ):
+            raise S3ClaimQualityError("s3_claim_quality_cannot_infer_role_promotion")
     for fact in card.get("numeric_facts") or []:
         if fact.get("case_key") != case_key or not all(fact.get(field) for field in ("candidate_id", "metric_family", "normalized_value", "unit", "published_at")):
             raise S3ClaimQualityError("s3_claim_quality_numeric_binding_invalid")
@@ -312,6 +328,10 @@ def _compile_card(
 ) -> dict[str, Any]:
     evidence = list(claim.get("support_evidence") or [])
     candidate_ids = [str(row["candidate_id"]) for row in evidence]
+    alias_to_candidate_id = {
+        str(row["alias"]): str(row["candidate_id"])
+        for row in evidence
+    }
     numeric = []
     boundaries = []
     for candidate_id in candidate_ids:
@@ -345,6 +365,16 @@ def _compile_card(
         "mechanism_atom": claim["mechanism_atom"],
         "evidence_boundary": boundaries,
         "support_candidate_ids": candidate_ids,
+        **(
+            {
+                "evidence_role_projection": {
+                    role: [alias_to_candidate_id[str(alias)] for alias in aliases]
+                    for role, aliases in claim["evidence_role_projection"].items()
+                }
+            }
+            if claim.get("evidence_role_projection") is not None
+            else {}
+        ),
         "counterevidence_candidate_ids": [str(row["candidate_id"]) for row in claim.get("counterevidence") or []],
         "numeric_facts": numeric,
         "typed_gaps": deepcopy(claim.get("typed_gaps") or []),

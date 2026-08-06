@@ -1,0 +1,31 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_evidence_role_contract_policy_v2_0",
+  "contract_ref": "fin_0_1_3.S3.evidence_selection_and_local_role_projection:v2",
+  "owning_stage": "FIN_0_1_3_S3_FORMAL_ANCHOR",
+  "provider_authority": {
+    "may_select_request_local_evidence_aliases": true,
+    "may_select_request_local_counterevidence_aliases": true,
+    "may_select_request_local_gap_mechanism_and_wwc_aliases": true,
+    "may_assign_thesis_support_role": false,
+    "may_author_numbers_dates_identity_lineage_or_narrative": false
+  },
+  "local_role_projection": {
+    "cannot_infer": "boundary_only",
+    "fact_supported": "thesis_support",
+    "bounded_inference": "observation_support",
+    "mixed_evidence": "observation_support",
+    "counterevidence": "selected_counterevidence"
+  },
+  "hard_invariants": [
+    "cannot_infer_requires_typed_gap",
+    "cannot_infer_cannot_have_thesis_support",
+    "selected_evidence_and_counterevidence_must_be_disjoint",
+    "all_aliases_must_be_request_local",
+    "raw_provider_output_is_capture_only_until_local_projection_and_validation"
+  ],
+  "historical_boundary": {
+    "s2_contract_v1_is_immutable": true,
+    "formal_anchor_r1_remains_failed_under_v1": true,
+    "v2_does_not_reclassify_or_promote_r1": true
+  }
+}

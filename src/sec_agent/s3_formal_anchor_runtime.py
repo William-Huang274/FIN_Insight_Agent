@@ -12,12 +12,22 @@ from sec_agent.s2_representative_node_program import (
     S2RepresentativeNodeError,
     consume_representative_specialist_output,
 )
+from sec_agent.s3_evidence_role_contract import (
+    CONTRACT_REF as EVIDENCE_ROLE_CONTRACT_REF,
+    CONTEXT_SCHEMA as EVIDENCE_ROLE_CONTEXT_SCHEMA,
+    S3EvidenceRoleContractError,
+    consume_s3_evidence_selection_output,
+    validate_s3_evidence_selection_output,
+)
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger
 
 
 ADMISSION_SCHEMA = "fin_ia_0_1_3_s3_formal_anchor_admission_v1_0"
 TERMINAL_SCHEMA = "fin_ia_0_1_3_s3_formal_anchor_terminal_v1_0"
 SCOPE = "FIN_0_1_3_S3_FORMAL_ANCHOR_NINE_SPECIALIST_EXACT_ONCE"
+ADMISSION_SCHEMA_V2 = "fin_ia_0_1_3_s3_formal_anchor_admission_v2_0"
+TERMINAL_SCHEMA_V2 = "fin_ia_0_1_3_s3_formal_anchor_terminal_v2_0"
+SCOPE_V2 = "FIN_0_1_3_S3_FORMAL_ANCHOR_EVIDENCE_ROLE_V2_NINE_SPECIALIST_EXACT_ONCE"
 REQUEST_COUNT = 9
 
 
@@ -45,6 +55,7 @@ def issue_formal_anchor_admission(
     credential_present: bool,
     provider: Mapping[str, Any],
     budget: Mapping[str, Any],
+    contract_version: str = "v1",
 ) -> dict[str, Any]:
     if len(request_bindings) != REQUEST_COUNT or len({row.get("request_id") for row in request_bindings}) != REQUEST_COUNT:
         raise S3FormalAnchorRuntimeError("s3_formal_admission_request_surface_invalid")
@@ -56,11 +67,15 @@ def issue_formal_anchor_admission(
     _assert_provider_budget(provider=provider, budget=budget, credential_present=credential_present)
     if _time(expires_at) <= _time(issued_at):
         raise S3FormalAnchorRuntimeError("s3_formal_admission_expiry_invalid")
-    run_id = "fin013_s3_formal_anchor_" + canonical_digest({"nonce": run_nonce, "git": execution_git_commit})[:20]
+    if contract_version not in {"v1", "v2"}:
+        raise S3FormalAnchorRuntimeError("s3_formal_admission_contract_version_invalid")
+    is_v2 = contract_version == "v2"
+    run_prefix = "fin013_s3_formal_anchor_v2_" if is_v2 else "fin013_s3_formal_anchor_"
+    run_id = run_prefix + canonical_digest({"nonce": run_nonce, "git": execution_git_commit})[:20]
     body = {
-        "schema_version": ADMISSION_SCHEMA,
+        "schema_version": ADMISSION_SCHEMA_V2 if is_v2 else ADMISSION_SCHEMA,
         "admission_id": "admission::" + run_id,
-        "scope": SCOPE,
+        "scope": SCOPE_V2 if is_v2 else SCOPE,
         "run_id": run_id,
         "attempt_id": run_id + "::attempt_1",
         "runtime_identity": run_id + "::runtime_1",
@@ -79,6 +94,8 @@ def issue_formal_anchor_admission(
         "run_nonce_digest": canonical_digest(run_nonce),
         "state": "issued_unconsumed",
     }
+    if is_v2:
+        body["evidence_role_contract_ref"] = EVIDENCE_ROLE_CONTRACT_REF
     return {**body, "admission_digest": canonical_digest(body)}
 
 
@@ -96,19 +113,24 @@ def validate_formal_anchor_admission(
     observed_at: str,
 ) -> None:
     body = {key: deepcopy(value) for key, value in admission.items() if key != "admission_digest"}
+    is_v2 = admission.get("schema_version") == ADMISSION_SCHEMA_V2
     if (
-        admission.get("schema_version") != ADMISSION_SCHEMA
-        or admission.get("scope") != SCOPE
+        admission.get("schema_version") not in {ADMISSION_SCHEMA, ADMISSION_SCHEMA_V2}
+        or admission.get("scope") != (SCOPE_V2 if is_v2 else SCOPE)
         or admission.get("state") != "issued_unconsumed"
         or admission.get("admission_digest") != canonical_digest(body)
     ):
         raise S3FormalAnchorRuntimeError("s3_formal_admission_digest_or_state_invalid")
+    if is_v2 and admission.get("evidence_role_contract_ref") != EVIDENCE_ROLE_CONTRACT_REF:
+        raise S3FormalAnchorRuntimeError("s3_formal_admission_evidence_role_contract_invalid")
     expected_bindings = []
     for request_id in requests:
         request = requests[request_id]
         context = contexts.get(request_id)
         if context is None or context.get("source_request_digest") != request.get("request_digest"):
             raise S3FormalAnchorRuntimeError("s3_formal_context_request_binding_invalid")
+        if is_v2 and context.get("schema_version") != EVIDENCE_ROLE_CONTEXT_SCHEMA:
+            raise S3FormalAnchorRuntimeError("s3_formal_context_contract_version_invalid")
         expected_bindings.append(
             {
                 "request_id": request_id,
@@ -197,8 +219,13 @@ def execute_formal_anchor(
                 "transport_attempt_count": 1,
                 "exception_type": type(exc).__name__,
             }
+        is_v2 = admission.get("schema_version") == ADMISSION_SCHEMA_V2
         capture = {
-            "schema_version": "fin_ia_0_1_3_s3_formal_anchor_capture_v1_0",
+            "schema_version": (
+                "fin_ia_0_1_3_s3_formal_anchor_capture_v2_0"
+                if is_v2
+                else "fin_ia_0_1_3_s3_formal_anchor_capture_v1_0"
+            ),
             "call_index": index,
             "request_id": request_id,
             "request_digest": request["request_digest"],
@@ -232,17 +259,31 @@ def execute_formal_anchor(
                 output = json.loads(str(result.get("content") or ""))
                 if not isinstance(output, Mapping):
                     raise ValueError("output_not_object")
-                validate_compact_provider_output(output, compiled=context)
-                claim = consume_representative_specialist_output(request=request, provider_output=output)
+                if is_v2:
+                    validate_s3_evidence_selection_output(output, compiled=context)
+                    claim = consume_s3_evidence_selection_output(
+                        request=request,
+                        compiled=context,
+                        provider_output=output,
+                    )
+                else:
+                    validate_compact_provider_output(output, compiled=context)
+                    claim = consume_representative_specialist_output(request=request, provider_output=output)
                 row.update(
                     {
                         "provider_output": deepcopy(dict(output)),
                         "provider_output_digest": canonical_digest(output),
                         "claim_digest": claim["claim_digest"],
+                        **({"local_claim": claim} if is_v2 else {}),
                         "status": "passed",
                     }
                 )
-            except (S2RepresentativeNodeError, S2ContextYieldError, KeyError) as exc:
+            except (
+                S2RepresentativeNodeError,
+                S2ContextYieldError,
+                S3EvidenceRoleContractError,
+                KeyError,
+            ) as exc:
                 failure_code = "s3_formal_provider_output_contract_invalid:" + str(getattr(exc, "code", type(exc).__name__))
             except (json.JSONDecodeError, ValueError):
                 failure_code = "s3_formal_provider_output_json_invalid"
@@ -254,7 +295,7 @@ def execute_formal_anchor(
             break
     status = "terminal_succeeded_exact_once" if failure_code is None and len(rows) == REQUEST_COUNT else "terminal_failed_no_retry"
     terminal_body = {
-        "schema_version": TERMINAL_SCHEMA,
+        "schema_version": TERMINAL_SCHEMA_V2 if admission.get("schema_version") == ADMISSION_SCHEMA_V2 else TERMINAL_SCHEMA,
         "admission_digest": admission["admission_digest"],
         "run_id": admission["run_id"],
         "attempt_id": admission["attempt_id"],
@@ -295,7 +336,17 @@ def _provider_kwargs(*, context: Mapping[str, Any], admission: Mapping[str, Any]
         "chat_completions_path": provider["chat_completions_path"],
         "model": provider["model"],
         "messages": [
-            {"role": "system", "content": "You are a bounded financial-research judgment selector. Return one JSON object only. Use only request-local aliases and enum values. Do not add fields, prose, markdown, numbers, dates, identities, or explanations."},
+            {
+                "role": "system",
+                "content": (
+                    "You are a bounded financial-research evidence selector. Return one JSON object only. "
+                    "Use only request-local aliases and enum values. Select relevant observations without "
+                    "claiming that they prove the thesis; local code assigns evidence roles. Do not add "
+                    "fields, prose, markdown, numbers, dates, identities, or explanations."
+                    if admission.get("schema_version") == ADMISSION_SCHEMA_V2
+                    else "You are a bounded financial-research judgment selector. Return one JSON object only. Use only request-local aliases and enum values. Do not add fields, prose, markdown, numbers, dates, identities, or explanations."
+                ),
+            },
             {"role": "user", "content": json.dumps(context["model_context"], ensure_ascii=False, sort_keys=True, separators=(",", ":"))},
         ],
         "response_format": {"type": "json_object"},
@@ -305,7 +356,11 @@ def _provider_kwargs(*, context: Mapping[str, Any], admission: Mapping[str, Any]
         "timeout_s": int(budget["timeout_seconds_per_call"]),
         "stream": False,
         "enable_thinking": False,
-        "role": "fin013_s3_formal_anchor_judgment_selector",
+        "role": (
+            "fin013_s3_formal_anchor_evidence_selector_v2"
+            if admission.get("schema_version") == ADMISSION_SCHEMA_V2
+            else "fin013_s3_formal_anchor_judgment_selector"
+        ),
         "profile": str(context["model_context"]["program_cell_id"]),
         "trace_tags": {
             "run_id": admission["run_id"],

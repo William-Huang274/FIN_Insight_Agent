@@ -1,0 +1,92 @@
+{
+  "authority": {
+    "automatic_R2": false,
+    "engineering_disposition": "pass",
+    "formal_case_scores": 0,
+    "nine_call_replacement_authorized": false,
+    "paired_assessments": 0,
+    "qualified_human_content_acceptances": 0,
+    "single_node_canary_authorized_by_this_record": false,
+    "single_node_natural_canary_required": true
+  },
+  "historical_failure_record_digest": "bbf0f8e3e96312b2bf27aa9dc2243cfc7b9e498bd003ab2a2922797b34624314",
+  "historical_failure_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_r1_terminal_failure_v1_0.json",
+  "next_action": "ISSUE_ONE_FRESH_DELL_DEMAND_EVIDENCE_ROLE_V2_SINGLE_NODE_NATURAL_CANARY",
+  "owning_stage": "FIN_0_1_3_S3_FORMAL_ANCHOR",
+  "record_digest": "74fa153eefe65273c3f4a6e7422af30313d16899813c18160d6383107eb450fc",
+  "root_cause_disposition": {
+    "R1_output_research_semantics": "plausible_observation_plus_honest_cannot_infer_boundary",
+    "R1_reclassified_or_promoted": false,
+    "broad_DeepSeek_incapacity_established": false,
+    "old_contract_violation_remains_true": true,
+    "primary": "project_contract_conflated_observation_selection_with_thesis_support",
+    "provider_transport_fault_established": false,
+    "successor_contract_changed": true
+  },
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_disposition_v1_0",
+  "source_sha256": {
+    "configs/runtime/fin_ia_0_1_3_repair_closeout_s3_evidence_role_contract_v2_0.json": "00d1d5898124017c9fc34ab82b16a0cdedbd15e9e78b9b4f0ed977b1b47f61d1",
+    "configs/runtime/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_execution_policy_v2_0.json": "8e0a0d0ce7befd15abd478f89a47690a2461e599204f5dfdabbd6b58a806dc31",
+    "scripts/releases/run_fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2.py": "147e52befb69fbb0527dd36fcc14c857b08b72df721e12370abd9d5d229e7cac",
+    "src/sec_agent/s3_claim_quality_program.py": "5454c760d27d0cdf82b571e505ccd3021dc909c470ea9852f43b97d0ad9ff40e",
+    "src/sec_agent/s3_evidence_role_contract.py": "4416c75d98ace3a3d6fc08b9d26d7dadb5493a89f3bde81c40780df8f0e4184e",
+    "src/sec_agent/s3_formal_anchor_runtime.py": "56c5f59acaafaaf2d6777da1ef41824193eecea05a2e387291bf25f46a0273a8",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s3_evidence_role_v2_and_formal_anchor.py": "1197b44beaeb13d7fda88e28ad2628fb6806dc17160bab7aa8d7af0698a7ed4a"
+  },
+  "stage_boundary": {
+    "S0": "pass_closed",
+    "S1": "pass_closed",
+    "S2": "pass_closed_immutable_v1",
+    "S3_deterministic": "engineering_pass",
+    "S3_product_proof": false,
+    "S4_entry": false,
+    "evidence_role_v2": "zero_call_engineering_pass",
+    "formal_anchor_R1": "terminal_failed_preserved",
+    "release": false
+  },
+  "status": "zero_call_structural_root_cause_repaired_single_node_canary_next",
+  "successor_contract": {
+    "cannot_infer_observation_rule": "selected observations are boundary_only and cannot become thesis_support",
+    "contract_ref": "fin_0_1_3.S3.evidence_selection_and_local_role_projection:v2",
+    "local_roles": [
+      "observation_support",
+      "thesis_support",
+      "boundary_only",
+      "counterevidence"
+    ],
+    "numbers_dates_identity_lineage_narrative_local": true,
+    "provider_selects": [
+      "evidence_alias",
+      "counterevidence_alias",
+      "gap_alias",
+      "mechanism_alias",
+      "what_would_change_alias"
+    ]
+  },
+  "verification": {
+    "R1_shape_replayed_as_v2": "pass_boundary_only",
+    "canonical_active_suite": "247 passed / 1 historical assertion deselected",
+    "focused_S3_successor": "39 passed",
+    "full_fake": {
+      "all_natural_leads": 3,
+      "all_natural_workpapers": 3,
+      "calls": 9,
+      "captures": 9,
+      "natural_claims": 9,
+      "quality_entries": 3
+    },
+    "model_provider_network_source_business_runs": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "mutations": [
+      "missing_gap",
+      "evidence_counterevidence_overlap",
+      "role_projection_tamper",
+      "cross_contract_context"
+    ]
+  }
+}

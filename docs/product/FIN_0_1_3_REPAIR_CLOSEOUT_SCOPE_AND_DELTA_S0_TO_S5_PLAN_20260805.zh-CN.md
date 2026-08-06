@@ -75,11 +75,13 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 
 > **2026-08-06 `013-S1-01` 完成**：从最早 SEC CompanyFacts duration 分类修复，日期区间成为 annual/qtd/ytd/instant 的语义权威，`fp=FY` 与 10-K 不再把 91 天 Q4 洗成全年；Runtime 即使读取旧 staging 标签也会重算 duration，Gold Mart v0.2 以非破坏迁移增加 period/time 字段，SQL 仅选择截止日前 annual authority。`source_filed_at / published_at / as_of_date / snapshot_at` 已拆分：前两者来自来源、`as_of` 由研究请求绑定、snapshot 只表示本地物化。完整本地重建产生 10,146 Runtime rows 和 74,897 Mart rows；三案实际 SQL→Numeric 为 DELL `95.567B`、MU `37.378B`、NVDA `130.497B`，均 364 天且 filing date 与 reviewed oracle 一致。RC-P36-130 关闭。旧 0.1.2 Evidence Pack 与 acceptance 保持历史不可变；三个旧 byte/digest 断言因合法 changed source/data 被标为 event-time non-gating，不能更新旧证明冒充新 acceptance。S1 继续进入 `013-S1-02`，不调用模型/full-chain。
 
+> **2026-08-06 `013-S1-02` 完成**：新增 versioned material Numeric policy 与本地确定性编译/校验器，直接消费 current Gold Mart 和同份 current 10-K 的比较期 instant staging。DELL/MU/NVDA 共形成 `23 base facts / 14 derived metrics / 8 typed gaps / 45 governed slots / 0 ungoverned`；公式覆盖 gross margin、operating margin、free cash flow、average-inventory days，并在 MU/NVDA 覆盖 capex intensity。DELL 的 current 年度公式现为 gross margin `22.2357%`、operating margin `6.5263%`、FCF `1.869B USD`、inventory days `25.32`，旧 0.1.2 以 Q4 revenue 计算出的 `88.797%/26.0624%` 不再进入 current authority。缺少的 server/ISG、HBM、Data Center product 级收入/利润及 PVM、可比营运资本变化均保留为 case-specific typed gap，`source_exhaustion_proven=false` 并交 `013-S1-03`，没有为了补齐数量虚构事实。S1-02 仅证明本地 Numeric 真值、公式可复算和 Claim/表格准入治理；未调用模型/Provider/网络，也未继承旧 R2/R3 或宣称 F07 产品完成。
+
 ### S2：模型表面、合同与代表性评测
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |
 | --- | --- | --- | --- |
-| `013-S2-01` | 保留 alias/enum/local truth ownership，同时允许模型输出公司专属机制原子，禁止合同把所有结果压成通用句式 | F08/F10 | prompt/schema/validator/fake/selector 同源；公司专属语义可表达，数字/日期/identity 权限不回退 |
+| `013-S2-01` | 保留 alias/enum/local truth ownership，同时允许模型输出公司专属机制原子，禁止合同把所有结果压成通用句式；修复 prompt metadata compaction 把 int/bool/decimal 全部字符串化的 typed-contract 漂移 | F08/F10 | prompt/schema/validator/fake/selector 同源；公司专属语义可表达，数字/日期/identity 权限不回退；允许字段的 native scalar type 在 Agent request 中保持一致 |
 | `013-S2-02` | 将模型评测从 MU 三 family 小 canary 扩展到代表性的 evidence→Claim→Lead synthesis node；区分模型能力、合同限制和上下文缺陷 | F08/F10/F11 | changed family/node 的自然输出通过预注册 rubric；不以一个全局模型 winner 覆盖所有 family |
 | `013-S2-03` | 收敛 55k–58k input 对约 3k output 的低产出上下文结构，去重 role view，保留必要反证和 lineage | F04/F08/F15 | node-level 信息利用率、容量、成本和质量同时满足预算；不得通过隐藏证据获得绿色容量 |
 
@@ -113,7 +115,7 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 | F04 Durable execution | exact-once/capture/terminal 很强；current 产品 cancel/resume/repair execution 未闭环 | S0/S4 |
 | F05 Agentic Search | SEC/local BM25/SQL canary 成立；IR/Graph/market/多路覆盖和质量 eval 不完整 | S1 |
 | F06 Evidence Workbench | current evidence 可读、可退回；真实 evidence repair 未执行 | S1/S4 |
-| F07 Numeric / Fact audit | UI 和 lineage 存在；DELL duration L1 失败，material coverage 不足 | S1 |
+| F07 Numeric / Fact audit | period 真值已修复；三案 45 个 material slot 已绑定为 23 base、14 formula、8 typed gap，0 ungoverned；来源 exhaustion、current Claim/表格消费与最终 UI/产品验收仍未完成 | S1/S3/S4 |
 | F08 Workpaper / Domain Judgment | 结构存在；内容通用、三 Cell、弱综合，不满足 PRD 深研 | S3 |
 | F09 Gap / Repair Queue | typed request/replay 成立；actual repair loop 未成立 | S4 |
 | F10 Lead Review / Writer Admission | 合同和 Artifact 存在；Lead semantic adjudication 偏弱 | S3 |
@@ -160,6 +162,7 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 4. [x] 完成 `013-S0-02` shared runtime admission/replay、historical receipt/living source debt和 8 个 version-neutral candidate 复证。
 5. [x] 完成 `013-S0-03` 四层金融语义 oracle；S0 canonical suite 29/29，通过的是分类与早期阻断，不是当前 DELL 真值。
 6. [x] 完成 `013-S1-01`，从最早 staging/runtime/mart 修复 DELL annual/Q4 duration 与四类时间角色，并重建三案下游事实链；RC-P36-130 关闭。
-7. [ ] 进入 `013-S1-02`，扩展 material Numeric 程序、公式重算和 typed-gap 覆盖；不得把 S1-03 来源补齐、S1-04 Graph 或 S2/S3 研究质量提前塞入本项。
+7. [x] 完成 `013-S1-02`：三案 `23 base / 14 formula / 8 typed gap / 45 governed / 0 ungoverned`；不把声明 gap 冒充 source exhaustion，也不提前执行模型/full-chain。
+8. [ ] 进入 `013-S1-03`，补齐 official source、PDF/redirect/parser fallback 与 attempt-backed source-exhaustion；不得提前做 S1-04 Graph、S1-05 usefulness 或 S2/S3 研究质量。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

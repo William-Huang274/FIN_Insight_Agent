@@ -1,0 +1,33 @@
+{
+  "adjacent_result": "19 passed / 2 historical digest assertions deselected",
+  "current_material_numeric_truth_pass": true,
+  "decision_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s1_02_material_numeric_program_formula_recalculation_and_typed_gap_coverage_v1_0.json",
+  "decision_sha256": "2c0a55ec74384ccd8f484a71d25209c0f791bbd95ebf04c5deb61f654aaecf08",
+  "focused_result": "53 passed / 1 historical event-time assertion deselected",
+  "governed_material_numeric_slots": 45,
+  "historical_event_time_deselections": [
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py::test_decision_and_active_suite_are_digest_bound_and_do_not_promote_old_names"
+  ],
+  "material_numeric_counts": {
+    "available_base_facts": 23,
+    "available_derived_metrics": 14,
+    "typed_gaps": 8,
+    "ungoverned_slots": 0
+  },
+  "model_or_full_chain_authorized": false,
+  "next_action": "FIN-0.1.3-013-S1-03-OFFICIAL-SOURCE-PARSER-FALLBACK-AND-ATTEMPT-BACKED-TYPED-GAP-COVERAGE",
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s1_02_active_test_suite_successor_v1_0",
+  "selected_test_files": [
+    "tests/test_sec_structured_facts_download.py",
+    "tests/test_sec_financial_statement_metric_runtime_rows.py",
+    "tests/test_gold_fact_signal_mart.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_01_delta_inheritance_namespace_and_current_truth_baseline.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_03_financial_semantic_truth_oracle_classification.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_01_financial_temporal_truth_and_time_role_repair.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_02_material_numeric_program_formula_and_typed_gap.py"
+  ],
+  "status": "current_S1_02_pass_S1_03_next",
+  "suite_digest": "20e712df8619aac8f00d571f53c33790ee199260cab609ded0d761e60ec32169",
+  "suite_id": "FIN-0.1.3-REPAIR-CLOSEOUT-S1-ACTIVE-SUITE-R5"
+}

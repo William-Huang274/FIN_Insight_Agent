@@ -115,6 +115,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 
 > **2026-08-06 `013-S3-02` 工程通过**：九个代表性 Claim 已形成公司、机制、证据边界、Numeric 或 typed gap、选择权威和 lineage 完整的 Claim Card；12 个 Numeric、2 个 typed gap 被本地精确绑定，13 条已选 WWC 全部具指标/事件、方向、时间窗、阈值和下一证据路线。既有 exact-once natural choice 只有 4/9，其余 5/9 明确为 fixture-only；29 个新动态 Cell 明确为 planned/no-claim，没有制造结论。S3-02 未改变模型 alias/enum 合同，不重复付费 canary。current suite=`214 passed / 1 historical assertion deselected`；下一项为 `013-S3-03`，full-chain 与内容验收仍禁止。
 
+> **2026-08-06 `013-S3-03` 工程通过**：三案各形成 1 条跨 Claim mechanism dependency、1 条带 tension/disposition/reason 的 conflict，合计 5 条具 impact/priority/owner/stop/next-route 的 gap；typed gap 与 Claim-boundary gap 分离，不再复述 supported/cannot-infer 状态。三案 natural Claim coverage 分别为 1/3、1/3、2/3，故 synthesis 全部 fixture-mixed，冲突均 defer；fixture 假 resolve 会 fail closed。29 个 planned/no-claim Cell 未被综合。current suite=`219 passed / 1 historical assertion deselected`，additional canary=0；下一项为 `013-S3-04`。
+
 ### S4：current 产品工作流与真实 dogfood
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |

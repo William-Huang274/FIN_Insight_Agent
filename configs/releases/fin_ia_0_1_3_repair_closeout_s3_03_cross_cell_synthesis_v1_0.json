@@ -1,0 +1,298 @@
+{
+  "acceptance": {
+    "S3_03": "engineering_pass",
+    "all_natural_business_syntheses": 0,
+    "case_syntheses": "3/3",
+    "conflicts_with_disposition": 3,
+    "dependencies": 3,
+    "fabricated_planned_cell_syntheses": 0,
+    "gaps_with_impact_priority_owner_stop": 5
+  },
+  "canary_disposition": {
+    "additional_paid_canary": "not_required",
+    "new_model_contract": false,
+    "reason": "S3-03 is deterministic Lead assembly over Claim Cards; natural business synthesis waits for the single formal full chain."
+  },
+  "cross_cell_synthesis_program": {
+    "case_syntheses": [
+      {
+        "case_key": "DELL",
+        "claim_card_ids": [
+          "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+          "fin013_s3_claim_card_bccdaa9e18265e8f670e3152",
+          "fin013_s3_claim_card_a245f55d3efcd50f13fa12fe"
+        ],
+        "conflicts": [
+          {
+            "claim_ids": [
+              "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+              "fin013_s3_claim_card_bccdaa9e18265e8f670e3152"
+            ],
+            "disposition": "defer",
+            "mechanism_aliases": [
+              "DELL_M_DEMAND_PROXY",
+              "DELL_M_SCALE_NOT_PRODUCT_PROFIT"
+            ],
+            "reason": "The evidence is compatible rather than contradictory, but the missing durability and product-margin bridge prevents resolution.",
+            "tension": "Observed AI-server revenue supports scale while current evidence does not establish durable demand or AI-server product profit."
+          }
+        ],
+        "dependencies": [
+          {
+            "decision_effect": "Profit-capture confidence cannot exceed the demand and attribution evidence boundary.",
+            "evidence_candidate_ids": [
+              "fin013_retrieval_candidate_2e76f847e2a757e1e783ae0a",
+              "fin013_retrieval_candidate_434ec5345cf54652db3788de",
+              "fin013_retrieval_candidate_4f331ad1344c2a1bfc9dcc13",
+              "fin013_retrieval_candidate_724c8babff17dc48d4f5c79c",
+              "fin013_retrieval_candidate_7c6c533159b1372c28e64246",
+              "fin013_retrieval_candidate_8cdd812d43f4e57d9a368df3",
+              "fin013_retrieval_candidate_eb38786cad670180bbf7cca6"
+            ],
+            "from_claim_id": "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+            "mechanism": "AI-server revenue scale is an input to profit-capture analysis, but demand durability and product margin require separate evidence.",
+            "to_claim_id": "fin013_s3_claim_card_bccdaa9e18265e8f670e3152"
+          }
+        ],
+        "display_ready": false,
+        "fixture_claim_count": 2,
+        "gaps": [
+          {
+            "gap_id": "DELL_GAP_DEMAND_DURABILITY",
+            "impact": "Prevents revenue scale from being treated as durable end-demand.",
+            "next_evidence_route": "Dell current filing, earnings release or investor presentation with orders, backlog, deployment or repeat demand.",
+            "owner": "industry_analyst",
+            "priority": "high",
+            "source_basis": {
+              "gap_code": "bounded_current_source_has_revenue_proxy_but_no_explicit_observed_demand_statement",
+              "type": "typed_gap"
+            },
+            "source_claim_id": "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+            "stop_condition": "Stop after one bounded current Dell filing, earnings and investor-presentation route is exhausted."
+          },
+          {
+            "gap_id": "DELL_GAP_AI_SERVER_PROFIT_ATTRIBUTION",
+            "impact": "Prevents AI-server revenue from being converted into product profit or cash conclusions.",
+            "next_evidence_route": "Dell segment note, earnings tables or investor presentation with AI-server profit or mix-to-margin authority.",
+            "owner": "financial_analyst",
+            "priority": "high",
+            "source_basis": {
+              "evidence_boundary": [
+                "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+                "Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers.",
+                "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.",
+                "consolidated_company_total"
+              ],
+              "mechanism_alias": "DELL_M_SCALE_NOT_PRODUCT_PROFIT",
+              "type": "claim_boundary"
+            },
+            "source_claim_id": "fin013_s3_claim_card_bccdaa9e18265e8f670e3152",
+            "stop_condition": "Stop when current Dell segment and product disclosures do not isolate AI-server margin or a reproducible mix bridge."
+          }
+        ],
+        "natural_claim_count": 1,
+        "planned_no_claim_cells_included": 0,
+        "synthesis_authority": "fixture_mixed_engineering_only",
+        "synthesis_digest": "c157e65744a36f9ab41fbfe006994baf23a49b2a4e46caf38150e28f5483b958",
+        "synthesis_id": "fin013_s3_lead_synthesis_bcfe01f9dc656feb881d56b4"
+      },
+      {
+        "case_key": "MU",
+        "claim_card_ids": [
+          "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+          "fin013_s3_claim_card_4c77ff515399bcaa6230a717",
+          "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+        ],
+        "conflicts": [
+          {
+            "claim_ids": [
+              "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+              "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+            ],
+            "disposition": "defer",
+            "mechanism_aliases": [
+              "MU_M_HBM_DEMAND_WITH_CYCLE_BOUNDARY",
+              "MU_M_CAPACITY_REALLOCATION_PRICING_RISK"
+            ],
+            "reason": "Both mechanisms are supported as conditional pathways; current evidence does not establish which path dominates across the next cycle.",
+            "tension": "Current HBM demand is positive while the same capacity mechanism can increase conventional DRAM supply and pricing risk if HBM demand weakens."
+          }
+        ],
+        "dependencies": [
+          {
+            "decision_effect": "Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.",
+            "evidence_candidate_ids": [
+              "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+              "fin013_retrieval_candidate_47346a7cde9364911be4452e",
+              "fin013_retrieval_candidate_9aeb9f542d0c2ad049bdf228",
+              "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+              "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a"
+            ],
+            "from_claim_id": "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+            "mechanism": "HBM demand and wafer intensity can affect mix, capacity and capital needs before appearing in company revenue, margin and cash.",
+            "to_claim_id": "fin013_s3_claim_card_4c77ff515399bcaa6230a717"
+          }
+        ],
+        "display_ready": false,
+        "fixture_claim_count": 2,
+        "gaps": [
+          {
+            "gap_id": "MU_GAP_HBM_ECONOMICS_ATTRIBUTION",
+            "impact": "Prevents consolidated revenue and DRAM facts from proving HBM revenue, profit, price-volume-mix or cash conversion.",
+            "next_evidence_route": "Micron product or segment disclosure with HBM revenue, profit, PVM, capex, inventory or cash authority.",
+            "owner": "financial_analyst",
+            "priority": "critical",
+            "source_basis": {
+              "evidence_boundary": [
+                "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+                "consolidated_company_total"
+              ],
+              "mechanism_alias": "MU_M_BASELINE_NOT_HBM_ECONOMICS",
+              "type": "claim_boundary"
+            },
+            "source_claim_id": "fin013_s3_claim_card_4c77ff515399bcaa6230a717",
+            "stop_condition": "Stop when current Micron product, segment and earnings disclosures do not isolate HBM economics or a reproducible bridge."
+          }
+        ],
+        "natural_claim_count": 1,
+        "planned_no_claim_cells_included": 0,
+        "synthesis_authority": "fixture_mixed_engineering_only",
+        "synthesis_digest": "68b5cc6a92499825f785dfa2d387329cfa638522f907f41a6619f1d7adc5afd3",
+        "synthesis_id": "fin013_s3_lead_synthesis_a0d75d226d74aee6bb531348"
+      },
+      {
+        "case_key": "NVDA",
+        "claim_card_ids": [
+          "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+          "fin013_s3_claim_card_a39c37b6931999e1e17d6057",
+          "fin013_s3_claim_card_f82a61215231355f35c17020"
+        ],
+        "conflicts": [
+          {
+            "claim_ids": [
+              "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+              "fin013_s3_claim_card_f82a61215231355f35c17020"
+            ],
+            "disposition": "defer",
+            "mechanism_aliases": [
+              "NVDA_M_DURABILITY_REQUIRES_REPEAT_EVIDENCE",
+              "NVDA_M_REALIZED_COUNTEREVIDENCE_GAP"
+            ],
+            "reason": "Absence of a realized constraint in the bounded source is a gap, not proof that the bottleneck is absent.",
+            "tension": "Named deployments support current demand while the bounded source set contains no realized constraint evidence sufficient to validate or dismiss the counterthesis."
+          }
+        ],
+        "dependencies": [
+          {
+            "decision_effect": "Value-capture confidence requires product or Data Center attribution beyond consolidated totals.",
+            "evidence_candidate_ids": [
+              "fin013_retrieval_candidate_188d29e1707ad57269910e99",
+              "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+              "fin013_retrieval_candidate_3512b0478a3b12318b10136e",
+              "fin013_retrieval_candidate_3d8b637b4c94474ffa9f8e5a",
+              "fin013_retrieval_candidate_4edf79e04af34ec1ecde9470",
+              "fin013_retrieval_candidate_7c841b20f9f56885f5ac75f8",
+              "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+              "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+              "fin013_retrieval_candidate_c1da6be578c29a564d884058",
+              "fin013_retrieval_candidate_ee0f6469ef03752279a9c3eb"
+            ],
+            "from_claim_id": "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+            "mechanism": "Named cloud deployments and company revenue establish demand transmission before product-level economics can be assessed.",
+            "to_claim_id": "fin013_s3_claim_card_a39c37b6931999e1e17d6057"
+          }
+        ],
+        "display_ready": false,
+        "fixture_claim_count": 1,
+        "gaps": [
+          {
+            "gap_id": "NVDA_GAP_PRODUCT_ECONOMICS_ATTRIBUTION",
+            "impact": "Prevents consolidated revenue and profit from proving accelerator or Data Center product economics.",
+            "next_evidence_route": "NVIDIA earnings tables, segment note or investor presentation with product economics authority.",
+            "owner": "financial_analyst",
+            "priority": "high",
+            "source_basis": {
+              "evidence_boundary": [
+                "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+                "consolidated_company_total"
+              ],
+              "mechanism_alias": "NVDA_M_CONSOLIDATED_VALUE_CAPTURE",
+              "type": "claim_boundary"
+            },
+            "source_claim_id": "fin013_s3_claim_card_a39c37b6931999e1e17d6057",
+            "stop_condition": "Stop when current NVIDIA segment and product disclosures do not isolate comparable product revenue and profit."
+          },
+          {
+            "gap_id": "NVDA_GAP_REALIZED_COUNTEREVIDENCE",
+            "impact": "Prevents the Lead from resolving whether supply, export, deployment or concentration constraints are currently material.",
+            "next_evidence_route": "NVIDIA, named-counterparty or effective-policy official source reporting a realized constraint or repeated bounded absence.",
+            "owner": "risk_reviewer",
+            "priority": "high",
+            "source_basis": {
+              "gap_code": "bounded_current_press_release_has_forward_looking_caution_but_no_specific_realized_counterevidence",
+              "type": "typed_gap"
+            },
+            "source_claim_id": "fin013_s3_claim_card_f82a61215231355f35c17020",
+            "stop_condition": "Stop after bounded NVIDIA, named-counterparty and effective-policy official routes are exhausted."
+          }
+        ],
+        "natural_claim_count": 2,
+        "planned_no_claim_cells_included": 0,
+        "synthesis_authority": "fixture_mixed_engineering_only",
+        "synthesis_digest": "88017c93594072adf1a4e1fec58044646eb1a0bc4bc861c8b14023409c00c5ab",
+        "synthesis_id": "fin013_s3_lead_synthesis_38c316afffdabdf9753dfc8f"
+      }
+    ],
+    "claim_decision_digest": "1a2c0e8e217a827f969ebd29b54f68a87ea0e433e41e10900893b3e8a199aec6",
+    "contract_ref": "fin_0_1_3.S3.cross_cell_dependency_conflict_gap_synthesis:v1",
+    "observed_counts": {
+      "all_natural_case_syntheses": 0,
+      "blocked_conflicts": 0,
+      "business_runs": 0,
+      "case_syntheses": 3,
+      "conflicts": 3,
+      "deferred_conflicts": 3,
+      "dependencies": 3,
+      "gaps": 5,
+      "model_calls": 0,
+      "network_calls": 0,
+      "planned_no_claim_cells_included": 0,
+      "provider_calls": 0,
+      "resolved_conflicts": 0
+    },
+    "policy_digest": "36489f239a1a80f388e855ac850a19e6feac3dcb8eda65364dfe64815a7cef8f",
+    "program_digest": "310bef519d58b769fc134296f44a9140ec1670324fe01a67ff645b8d5a5fa210",
+    "schema_version": "fin_ia_0_1_3_s3_cross_cell_synthesis_program_v1_0",
+    "stage_boundary": {
+      "S3_03": "engineering_pass_fixture_mixed_synthesis_proven",
+      "S3_04_writer_depth": "not_started",
+      "S3_05_quality_acceptance": "not_started",
+      "additional_canary_required": false,
+      "all_natural_case_syntheses": false,
+      "business_synthesis_accepted": false,
+      "model_contract_changed": false,
+      "planned_no_claim_cells_synthesized": false,
+      "product_acceptance": false,
+      "release": false
+    }
+  },
+  "current_next": "FIN-0.1.3-013-S3-04-WORKPAPER-WRITER-DECISION-READY-CONTENT-ENTRY-AUDIT",
+  "known_boundary": "S3-03 proves cross-Cell synthesis semantics with mixed natural/fixture Claim authority. No case has three natural Claim choices, so these syntheses are engineering fixtures, not business conclusions or Writer-ready content.",
+  "model_provider_network_source_business_runs": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "record_digest": "d7777b0012b4c9c29abe9b6ed6cfe2f74bbcadf2d86512193d0ba02d0612fc12",
+  "stage_boundary": {
+    "S3_03": "engineering_pass",
+    "S3_04": "next_not_started",
+    "business_synthesis_accepted": false,
+    "full_chain": false,
+    "product_acceptance": false,
+    "release": false,
+    "writer_ready": false
+  }
+}

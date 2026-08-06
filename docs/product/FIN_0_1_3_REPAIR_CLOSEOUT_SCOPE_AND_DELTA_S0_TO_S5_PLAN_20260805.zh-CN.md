@@ -123,6 +123,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 
 > **2026-08-06 S3 formal Anchor readiness 工程通过**：入口审计发现旧 successor validator 冻结在 `4/9 natural + 5 fixture`，且缺 FIN 0.1.3 九节点 runner；已在 S3 原地修复，不改写 S0 历史基线。零调用 full-fake 已证明 `9 capture-first calls -> 9 natural Claim -> 3 all-natural Lead -> 3 all-natural Workpaper -> quality entry`，第 4 call fault injection 后 5 项跳过、0 retry/0 fallback、admission 二次消费 fail closed。current suite=`240 passed / 1 historical assertion deselected`。下一步仅在 clean/synced commit 上签发并执行一次 fresh DeepSeek Pro formal Anchor；真实评分、paired、人工接受和 S3 product proof 仍未成立。
 
+> **2026-08-06 S3 formal Anchor R1 首错停止**：唯一 admission 在第 1 个 DELL demand request 后 terminal failed；transport/JSON 均成功，真实错误是 DeepSeek 同时选择 `cannot_infer` 与非空 support alias，违反 `s2_compact_output_cannot_infer_support`。只产生 1 capture，后 8 项跳过，0 retry/0 fallback。原 runner 将继承 `ValueError` 的语义异常误分类为 JSON invalid，immutable R1 不改写，successor classifier 已零调用修正。current suite=`242 passed / 1 historical assertion deselected`；不得自动签 R2，下一项是首个可信失败的 root-cause/replacement disposition。
+
 ### S4：current 产品工作流与真实 dogfood
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |

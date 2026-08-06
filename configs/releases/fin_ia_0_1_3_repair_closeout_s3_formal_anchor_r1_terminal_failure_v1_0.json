@@ -1,0 +1,71 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_formal_anchor_r1_terminal_failure_v1_0",
+  "recorded_at": "2026-08-06T19:35:00+08:00",
+  "status": "terminal_failed_no_retry_preserved",
+  "authority": {
+    "execution_git_commit": "7e71e641969901013740ece9ea09f36f2466a9e4",
+    "admission_digest": "61ea733d9aee4042c36b8971e9f342e5eebb62397a26b96b9f5d9649847517e5",
+    "run_id": "fin013_s3_formal_anchor_1d7d2a65f0b36c02d2e9",
+    "attempt_id": "fin013_s3_formal_anchor_1d7d2a65f0b36c02d2e9::attempt_1",
+    "replacement_or_second_run_authorized": false
+  },
+  "execution": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "completed_calls": 1,
+    "skipped_requests": 8,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "terminal_result_digest": "5cb6627365eac986c97d55771f8819f99f6b8648543f65b1fb70797dcb002cee",
+    "raw_capture_digest": "ec5fbbf7036eb7db6355227075b00a6fb31527c75fa364457b473cf3b4562ea8",
+    "finish_reason": "stop",
+    "usage": {
+      "input_tokens": 562,
+      "output_tokens": 117,
+      "total_tokens": 679,
+      "transport_attempt_count": 1
+    }
+  },
+  "safe_provider_output": {
+    "epistemic_state": "cannot_infer",
+    "answer_direction": "cannot_infer",
+    "mechanism_alias": "DELL_M_DURABILITY_GAP",
+    "support_aliases": [
+      "DELL_E01"
+    ],
+    "counterevidence_aliases": [],
+    "gap_aliases": [
+      "DELL_G01"
+    ],
+    "confidence": "high",
+    "what_would_change_aliases": [
+      "DELL_W_DEMAND_BACKLOG",
+      "DELL_W_DEMAND_REVERSAL"
+    ]
+  },
+  "classification_correction": {
+    "immutable_terminal_code": "s3_formal_provider_output_json_invalid",
+    "actual_failure_family": "valid_JSON_but_semantically_inconsistent_bounded_judgment",
+    "actual_failure_code": "s2_compact_output_cannot_infer_support",
+    "detail": "Provider selected cannot_infer while retaining a non-empty support_aliases list. The original runtime caught S2ContextYieldError through ValueError and mislabeled it as JSON invalid; the historical terminal remains immutable and the successor classifier is corrected.",
+    "model_or_provider_contract_adherence_failure_established": true,
+    "project_runtime_error_classification_defect_established": true
+  },
+  "promotion_boundary": {
+    "claims_materialized": 0,
+    "lead_workpaper_or_quality_scores_materialized": 0,
+    "business_artifacts_promoted": 0,
+    "qualified_human_acceptance": false,
+    "S3_product_proof": false
+  },
+  "model_provider_network_source_business_runs": [
+    1,
+    1,
+    1,
+    0,
+    0
+  ],
+  "known_boundary": "The first formal Anchor attempt is a valid failed proof. It establishes one bounded semantic contract failure and one local error-classification defect; it does not establish that all DeepSeek requests fail, and it does not authorize an automatic replacement run.",
+  "current_next": "S3_FORMAL_ANCHOR_R1_FIRST_CREDIBLE_FAILURE_ROOT_CAUSE_AND_REPLACEMENT_DISPOSITION_DECISION",
+  "record_digest": "bbf0f8e3e96312b2bf27aa9dc2243cfc7b9e498bd003ab2a2922797b34624314"
+}

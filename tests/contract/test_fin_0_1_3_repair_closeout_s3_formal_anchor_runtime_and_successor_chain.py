@@ -36,6 +36,8 @@ from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger, 
 ROOT = Path(__file__).resolve().parents[2]
 READINESS = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_admission_readiness_v1_0.json"
 ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_active_test_suite_successor_v1_0.json"
+FAILURE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_r1_terminal_failure_v1_0.json"
+FAILURE_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_r1_failure_active_test_suite_successor_v1_0.json"
 
 
 def _load(ref: str) -> dict:
@@ -79,8 +81,9 @@ def _admission() -> dict:
 
 
 class FakeProvider:
-    def __init__(self, fail_at: int | None = None) -> None:
+    def __init__(self, fail_at: int | None = None, semantic_invalid_at: int | None = None) -> None:
         self.fail_at = fail_at
+        self.semantic_invalid_at = semantic_invalid_at
         self.calls: list[dict] = []
 
     def __call__(self, **kwargs) -> dict:
@@ -100,6 +103,10 @@ class FakeProvider:
             "confidence": "medium" if evidence else "low",
             "what_would_change_aliases": [request["what_would_change_options"][0]["alias"]],
         }
+        if self.semantic_invalid_at == len(self.calls):
+            output["epistemic_state"] = "cannot_infer"
+            output["answer_direction"] = "cannot_infer"
+            output["support_aliases"] = evidence
         return {
             "status": "ok",
             "content": json.dumps(output),
@@ -213,6 +220,16 @@ def test_first_failure_stops_at_four_and_preserves_all_attempted_captures(tmp_pa
     assert len(list((tmp_path / "runtime" / "captures").glob("*.json"))) == 4
 
 
+def test_semantic_contract_error_is_not_misclassified_as_invalid_json(tmp_path: Path) -> None:
+    result = _execute(tmp_path, FakeProvider(semantic_invalid_at=1))
+    assert result["status"] == "terminal_failed_no_retry"
+    assert result["terminal_code"] == (
+        "s3_formal_provider_output_contract_invalid:s2_compact_output_cannot_infer_support"
+    )
+    assert result["completed_calls"] == 1
+    assert len(result["skipped_request_ids"]) == 8
+
+
 def test_same_admission_cannot_be_consumed_twice(tmp_path: Path) -> None:
     admission = _admission()
     requests, contexts, _ = _surface()
@@ -272,3 +289,22 @@ def test_materialized_readiness_and_active_suite_are_digest_bound_without_claimi
     assert active["observed_result"] == "240 passed / 1 historical assertion deselected"
     assert readiness["authority"]["admission_issued"] is False
     assert readiness["stage_boundary"]["formal_anchor_live"] is False
+
+
+def test_materialized_r1_failure_and_successor_suite_preserve_attempt_and_stop() -> None:
+    failure = json.loads(FAILURE.read_text(encoding="utf-8"))
+    active = json.loads(FAILURE_ACTIVE.read_text(encoding="utf-8"))
+    assert failure["record_digest"] == canonical_digest(
+        {key: value for key, value in failure.items() if key != "record_digest"}
+    )
+    import hashlib
+
+    assert active["decision_sha256"] == hashlib.sha256(FAILURE.read_bytes()).hexdigest()
+    assert active["suite_digest"] == canonical_digest(
+        {key: value for key, value in active.items() if key != "suite_digest"}
+    )
+    assert active["observed_result"] == "242 passed / 1 historical assertion deselected"
+    assert failure["execution"]["completed_calls"] == 1
+    assert failure["execution"]["skipped_requests"] == 8
+    assert failure["classification_correction"]["actual_failure_code"] == "s2_compact_output_cannot_infer_support"
+    assert failure["authority"]["replacement_or_second_run_authorized"] is False

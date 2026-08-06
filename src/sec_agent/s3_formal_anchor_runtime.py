@@ -242,10 +242,10 @@ def execute_formal_anchor(
                         "status": "passed",
                     }
                 )
-            except (json.JSONDecodeError, ValueError):
-                failure_code = "s3_formal_provider_output_json_invalid"
             except (S2RepresentativeNodeError, S2ContextYieldError, KeyError) as exc:
                 failure_code = "s3_formal_provider_output_contract_invalid:" + str(getattr(exc, "code", type(exc).__name__))
+            except (json.JSONDecodeError, ValueError):
+                failure_code = "s3_formal_provider_output_json_invalid"
         if failure_code:
             row["status"] = "terminal_failed"
             row["failure_code"] = failure_code

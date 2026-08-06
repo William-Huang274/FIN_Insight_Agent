@@ -1,0 +1,38 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_dell_r1_quarantined_collect_all_authority_v1_0",
+  "status": "authorized_zero_call_implementation_then_one_quarantined_downstream_continuation",
+  "recorded_at": "2026-08-07",
+  "user_instruction": "继续帮把dell的链路跑完，把问题暴露出来然后再一起修复",
+  "source_run": {
+    "run_id": "fin013_s2_05_exp_a_dell_9af8699f8f545103d2be",
+    "admission_digest": "de2ae5a5f9a4847784245457c00ab4ee7a46ab538a7d0d54b858e68c10bfe1d0",
+    "terminal_code": "experiment_a_unbound_numeric_surface",
+    "immutable": true
+  },
+  "authority": {
+    "reuse_original_lead_capture": true,
+    "new_lead_call_authorized": false,
+    "maximum_new_provider_calls": 9,
+    "downstream_nodes": [
+      "six_specialists",
+      "cross_cell_synthesis",
+      "writer",
+      "verifier"
+    ],
+    "retry_count": 0,
+    "fallback_count": 0,
+    "automatic_second_diagnostic": false,
+    "formal_replacement_exact_live": false,
+    "MU_or_NVDA": false
+  },
+  "quarantine": {
+    "business_promotable": false,
+    "formal_raw_candidate": false,
+    "hidden_scoring_eligible": false,
+    "paired_or_owner_eligible": false,
+    "raw_outputs_capture_first": true,
+    "validation_failures_recorded_before_continuation": true,
+    "typed_placeholder_only_after_unusable_raw_output": true
+  },
+  "next_after_diagnostic": "group findings by common root cause and implement one bounded structural zero-call repair bundle before any formal replacement authority"
+}

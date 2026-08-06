@@ -1,0 +1,1842 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_04_workpaper_writer_decision_v1_0",
+  "recorded_at": "2026-08-06T16:17:09+08:00",
+  "acceptance": {
+    "S3_04": "engineering_pass",
+    "decision_ready_content_contracts": "3/3",
+    "content_lenses": "24/24",
+    "all_natural_workpapers": 0,
+    "fixture_mixed_previews": "3/3_not_product_delivery",
+    "planned_cells_promoted_as_findings": 0,
+    "eight_dimension_case_passes": 0
+  },
+  "workpaper_writer_content_program": {
+    "schema_version": "fin_ia_0_1_3_s3_workpaper_writer_content_program_v1_0",
+    "contract_ref": "fin_0_1_3.S3.workpaper_writer_decision_ready_content:v1",
+    "policy_digest": "255a3f1a82a5c8428b77e08e16c2f242f7c9d48e88d0566fff81611ccb692246",
+    "upstream_digests": {
+      "S3_02": "1a2c0e8e217a827f969ebd29b54f68a87ea0e433e41e10900893b3e8a199aec6",
+      "S3_03": "d7777b0012b4c9c29abe9b6ed6cfe2f74bbcadf2d86512193d0ba02d0612fc12"
+    },
+    "case_workpapers": [
+      {
+        "workpaper_id": "fin013_s3_workpaper_e162c1bb75021ef712afb2f9",
+        "case_key": "DELL",
+        "ticker": "DELL",
+        "company_name": "Dell Technologies",
+        "claim_card_ids": [
+          "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+          "fin013_s3_claim_card_bccdaa9e18265e8f670e3152",
+          "fin013_s3_claim_card_a245f55d3efcd50f13fa12fe"
+        ],
+        "claim_authorities": {
+          "fin013_s3_claim_card_c21e89d1f79842e91021ddd9": "live_natural_exact_once",
+          "fin013_s3_claim_card_bccdaa9e18265e8f670e3152": "fixture_choice_engineering_only",
+          "fin013_s3_claim_card_a245f55d3efcd50f13fa12fe": "fixture_choice_engineering_only"
+        },
+        "lead_synthesis_id": "fin013_s3_lead_synthesis_bcfe01f9dc656feb881d56b4",
+        "workpaper_authority": "fixture_mixed_engineering_only",
+        "product_candidate": false,
+        "display_ready": false,
+        "sections": [
+          {
+            "lens_id": "executive_thesis",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+              "fin013_s3_claim_card_bccdaa9e18265e8f670e3152",
+              "fin013_s3_claim_card_a245f55d3efcd50f13fa12fe"
+            ],
+            "planned_cell_ids": [],
+            "mechanism_atoms": [
+              "Dell AI-optimized server revenue is an observed company revenue proxy, not standalone proof of durable end-demand.",
+              "Dell AI-server revenue establishes scale while ISG operating income remains a segment boundary rather than AI-server product profit.",
+              "Dell's limited-source supplier exposure and competitive pressure can weaken the conversion of AI-server demand into margin and cash."
+            ],
+            "numeric_facts": [
+              {
+                "candidate_id": "fin013_retrieval_candidate_2e76f847e2a757e1e783ae0a",
+                "case_key": "DELL",
+                "claim_boundary": "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.",
+                "metric_family": "AI_optimized_server_revenue",
+                "normalized_value": "24683000000",
+                "published_at": "2026-02-26",
+                "unit": "USD",
+                "rendered": "AI_optimized_server_revenue=USD 24,683,000,000（披露日 2026-02-26；口径边界：Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_434ec5345cf54652db3788de",
+                "case_key": "DELL",
+                "claim_boundary": "Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers.",
+                "metric_family": "ISG_operating_income",
+                "normalized_value": "7111000000",
+                "published_at": "2026-02-26",
+                "unit": "USD",
+                "rendered": "ISG_operating_income=USD 7,111,000,000（披露日 2026-02-26；口径边界：Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers.）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_eb38786cad670180bbf7cca6",
+                "case_key": "DELL",
+                "claim_boundary": "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.",
+                "metric_family": "AI_optimized_server_revenue",
+                "normalized_value": "24683000000",
+                "published_at": "2026-02-26",
+                "unit": "USD",
+                "rendered": "AI_optimized_server_revenue=USD 24,683,000,000（披露日 2026-02-26；口径边界：Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_8cdd812d43f4e57d9a368df3",
+                "case_key": "DELL",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "gross_profit",
+                "normalized_value": "22707000000",
+                "published_at": "2026-03-16",
+                "unit": "USD",
+                "rendered": "gross_profit=USD 22,707,000,000（披露日 2026-03-16；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_724c8babff17dc48d4f5c79c",
+                "case_key": "DELL",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "operating_income",
+                "normalized_value": "8149000000",
+                "published_at": "2026-03-16",
+                "unit": "USD",
+                "rendered": "operating_income=USD 8,149,000,000（披露日 2026-03-16；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_7c6c533159b1372c28e64246",
+                "case_key": "DELL",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "revenue",
+                "normalized_value": "113538000000",
+                "published_at": "2026-03-16",
+                "unit": "USD",
+                "rendered": "revenue=USD 113,538,000,000（披露日 2026-03-16；口径边界：consolidated_company_total）"
+              }
+            ],
+            "answers": {
+              "conclusion": "当前最稳健的判断是：Dell 已经证明 AI 优化服务器收入规模，但尚未证明终端需求的跨期耐久性，也未把该收入可靠桥接到 AI 服务器自身利润与现金回报。",
+              "why": "DELL 的机制链：Dell AI-optimized server revenue is an observed company revenue proxy, not standalone proof of durable end-demand.；Dell AI-server revenue establishes scale while ISG operating income remains a segment boundary rather than AI-server product profit.；Dell's limited-source supplier exposure and competitive pressure can weaken the conversion of AI-server demand into margin and cash.；跨判断影响：Profit-capture confidence cannot exceed the demand and attribution evidence boundary.；本地精确数值：AI_optimized_server_revenue=USD 24,683,000,000（披露日 2026-02-26；口径边界：Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.）；ISG_operating_income=USD 7,111,000,000（披露日 2026-02-26；口径边界：Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers.）；AI_optimized_server_revenue=USD 24,683,000,000（披露日 2026-02-26；口径边界：Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.）；gross_profit=USD 22,707,000,000（披露日 2026-03-16；口径边界：consolidated_company_total）；operating_income=USD 8,149,000,000（披露日 2026-03-16；口径边界：consolidated_company_total）；revenue=USD 113,538,000,000（披露日 2026-03-16；口径边界：consolidated_company_total）",
+              "opposing_view": "最强反方：Observed AI-server revenue supports scale while current evidence does not establish durable demand or AI-server product profit. 处置仍为 defer，因为 The evidence is compatible rather than contradictory, but the missing durability and product-margin bridge prevents resolution.",
+              "missing_evidence": "DELL_GAP_DEMAND_DURABILITY：Prevents revenue scale from being treated as durable end-demand.；DELL_GAP_AI_SERVER_PROFIT_ATTRIBUTION：Prevents AI-server revenue from being converted into product profit or cash conclusions.",
+              "what_would_change": "AI-server orders, backlog, deployment or repeat demand 向 increase_or_explicit_confirmation 变化，在 next_quarter_or_annual_update 达到“one current quantified or named company disclosure”；下一证据路线：Dell earnings release, 10-Q/10-K or investor presentation；AI-server cancellation, digestion or demand slowdown 向 material_deterioration 变化，在 next_two_reporting_periods 达到“issuer identifies a material slowdown, cancellation or digestion event”；下一证据路线：Dell earnings release, call transcript or filing risk update；AI-server gross or operating profit and mix-to-margin bridge 向 explicit_product_or_segment_attribution 变化，在 next_quarter_or_annual_update 达到“issuer isolates AI-server profit or supplies a reproducible mix bridge”；下一证据路线：Dell segment note, earnings tables or investor presentation；component availability, lead time and supplier diversification 向 improvement 变化，在 next_reporting_period 达到“issuer reports shorter lead time, broader sourcing or fewer constraints”；下一证据路线：Dell earnings commentary and supplier disclosures"
+            },
+            "evidence_boundary": [
+              "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.",
+              "AI-server demand durability from a forward-looking caution list or revenue alone",
+              "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+              "Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers.",
+              "consolidated_company_total",
+              "The issuer lists competition, limited-source suppliers and AI-demand sensitivity as risks; it does not establish realized impact."
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Profit-capture confidence cannot exceed the demand and attribution evidence boundary.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_2e76f847e2a757e1e783ae0a",
+                  "fin013_retrieval_candidate_434ec5345cf54652db3788de",
+                  "fin013_retrieval_candidate_4f331ad1344c2a1bfc9dcc13",
+                  "fin013_retrieval_candidate_724c8babff17dc48d4f5c79c",
+                  "fin013_retrieval_candidate_7c6c533159b1372c28e64246",
+                  "fin013_retrieval_candidate_8cdd812d43f4e57d9a368df3",
+                  "fin013_retrieval_candidate_eb38786cad670180bbf7cca6"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+                "mechanism": "AI-server revenue scale is an input to profit-capture analysis, but demand durability and product margin require separate evidence.",
+                "to_claim_id": "fin013_s3_claim_card_bccdaa9e18265e8f670e3152"
+              },
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+                  "fin013_s3_claim_card_bccdaa9e18265e8f670e3152"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "DELL_M_DEMAND_PROXY",
+                  "DELL_M_SCALE_NOT_PRODUCT_PROFIT"
+                ],
+                "reason": "The evidence is compatible rather than contradictory, but the missing durability and product-margin bridge prevents resolution.",
+                "tension": "Observed AI-server revenue supports scale while current evidence does not establish durable demand or AI-server product profit."
+              },
+              "gap_ids": [
+                "DELL_GAP_DEMAND_DURABILITY",
+                "DELL_GAP_AI_SERVER_PROFIT_ATTRIBUTION"
+              ]
+            }
+          },
+          {
+            "lens_id": "product_and_demand",
+            "coverage_status": "bounded_judgment",
+            "authority": "all_natural",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_c21e89d1f79842e91021ddd9"
+            ],
+            "planned_cell_ids": [
+              "customer_concentration",
+              "server_oem_order_revenue_conversion"
+            ],
+            "mechanism_atoms": [
+              "Dell AI-optimized server revenue is an observed company revenue proxy, not standalone proof of durable end-demand."
+            ],
+            "numeric_facts": [
+              {
+                "candidate_id": "fin013_retrieval_candidate_2e76f847e2a757e1e783ae0a",
+                "case_key": "DELL",
+                "claim_boundary": "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.",
+                "metric_family": "AI_optimized_server_revenue",
+                "normalized_value": "24683000000",
+                "published_at": "2026-02-26",
+                "unit": "USD",
+                "rendered": "AI_optimized_server_revenue=USD 24,683,000,000（披露日 2026-02-26；口径边界：Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.）"
+              }
+            ],
+            "answers": {
+              "conclusion": "产品与需求层面，DELL 的 AI 服务器收入是已发生的公司收入信号，但收入规模不能单独替代订单、部署、复购和消化周期证据。",
+              "why": "DELL 的机制链：Dell AI-optimized server revenue is an observed company revenue proxy, not standalone proof of durable end-demand.；跨判断影响：Profit-capture confidence cannot exceed the demand and attribution evidence boundary.；本地精确数值：AI_optimized_server_revenue=USD 24,683,000,000（披露日 2026-02-26；口径边界：Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.）",
+              "opposing_view": "Observed AI-server revenue supports scale while current evidence does not establish durable demand or AI-server product profit.；当前处置为 defer，原因是 The evidence is compatible rather than contradictory, but the missing durability and product-margin bridge prevents resolution.",
+              "missing_evidence": "DELL_GAP_DEMAND_DURABILITY：Prevents revenue scale from being treated as durable end-demand.；下一路线：Dell current filing, earnings release or investor presentation with orders, backlog, deployment or repeat demand.",
+              "what_would_change": "AI-server orders, backlog, deployment or repeat demand 向 increase_or_explicit_confirmation 变化，在 next_quarter_or_annual_update 达到“one current quantified or named company disclosure”；下一证据路线：Dell earnings release, 10-Q/10-K or investor presentation；AI-server cancellation, digestion or demand slowdown 向 material_deterioration 变化，在 next_two_reporting_periods 达到“issuer identifies a material slowdown, cancellation or digestion event”；下一证据路线：Dell earnings release, call transcript or filing risk update"
+            },
+            "evidence_boundary": [
+              "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.",
+              "AI-server demand durability from a forward-looking caution list or revenue alone"
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Profit-capture confidence cannot exceed the demand and attribution evidence boundary.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_2e76f847e2a757e1e783ae0a",
+                  "fin013_retrieval_candidate_434ec5345cf54652db3788de",
+                  "fin013_retrieval_candidate_4f331ad1344c2a1bfc9dcc13",
+                  "fin013_retrieval_candidate_724c8babff17dc48d4f5c79c",
+                  "fin013_retrieval_candidate_7c6c533159b1372c28e64246",
+                  "fin013_retrieval_candidate_8cdd812d43f4e57d9a368df3",
+                  "fin013_retrieval_candidate_eb38786cad670180bbf7cca6"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+                "mechanism": "AI-server revenue scale is an input to profit-capture analysis, but demand durability and product margin require separate evidence.",
+                "to_claim_id": "fin013_s3_claim_card_bccdaa9e18265e8f670e3152"
+              },
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+                  "fin013_s3_claim_card_bccdaa9e18265e8f670e3152"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "DELL_M_DEMAND_PROXY",
+                  "DELL_M_SCALE_NOT_PRODUCT_PROFIT"
+                ],
+                "reason": "The evidence is compatible rather than contradictory, but the missing durability and product-margin bridge prevents resolution.",
+                "tension": "Observed AI-server revenue supports scale while current evidence does not establish durable demand or AI-server product profit."
+              },
+              "gap_ids": [
+                "DELL_GAP_DEMAND_DURABILITY"
+              ]
+            }
+          },
+          {
+            "lens_id": "financial_and_value_capture",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_bccdaa9e18265e8f670e3152"
+            ],
+            "planned_cell_ids": [
+              "server_oem_margin_cash_conversion"
+            ],
+            "mechanism_atoms": [
+              "Dell AI-server revenue establishes scale while ISG operating income remains a segment boundary rather than AI-server product profit."
+            ],
+            "numeric_facts": [
+              {
+                "candidate_id": "fin013_retrieval_candidate_434ec5345cf54652db3788de",
+                "case_key": "DELL",
+                "claim_boundary": "Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers.",
+                "metric_family": "ISG_operating_income",
+                "normalized_value": "7111000000",
+                "published_at": "2026-02-26",
+                "unit": "USD",
+                "rendered": "ISG_operating_income=USD 7,111,000,000（披露日 2026-02-26；口径边界：Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers.）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_eb38786cad670180bbf7cca6",
+                "case_key": "DELL",
+                "claim_boundary": "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.",
+                "metric_family": "AI_optimized_server_revenue",
+                "normalized_value": "24683000000",
+                "published_at": "2026-02-26",
+                "unit": "USD",
+                "rendered": "AI_optimized_server_revenue=USD 24,683,000,000（披露日 2026-02-26；口径边界：Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_8cdd812d43f4e57d9a368df3",
+                "case_key": "DELL",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "gross_profit",
+                "normalized_value": "22707000000",
+                "published_at": "2026-03-16",
+                "unit": "USD",
+                "rendered": "gross_profit=USD 22,707,000,000（披露日 2026-03-16；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_724c8babff17dc48d4f5c79c",
+                "case_key": "DELL",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "operating_income",
+                "normalized_value": "8149000000",
+                "published_at": "2026-03-16",
+                "unit": "USD",
+                "rendered": "operating_income=USD 8,149,000,000（披露日 2026-03-16；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_7c6c533159b1372c28e64246",
+                "case_key": "DELL",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "revenue",
+                "normalized_value": "113538000000",
+                "published_at": "2026-03-16",
+                "unit": "USD",
+                "rendered": "revenue=USD 113,538,000,000（披露日 2026-03-16；口径边界：consolidated_company_total）"
+              }
+            ],
+            "answers": {
+              "conclusion": "财务层面，DELL 的 AI 服务器收入和 ISG 利润提供规模与分部边界，但不能据此计算 AI 服务器产品利润率或现金转化。",
+              "why": "DELL 的机制链：Dell AI-server revenue establishes scale while ISG operating income remains a segment boundary rather than AI-server product profit.；跨判断影响：Profit-capture confidence cannot exceed the demand and attribution evidence boundary.；本地精确数值：ISG_operating_income=USD 7,111,000,000（披露日 2026-02-26；口径边界：Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers.）；AI_optimized_server_revenue=USD 24,683,000,000（披露日 2026-02-26；口径边界：Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.）；gross_profit=USD 22,707,000,000（披露日 2026-03-16；口径边界：consolidated_company_total）；operating_income=USD 8,149,000,000（披露日 2026-03-16；口径边界：consolidated_company_total）；revenue=USD 113,538,000,000（披露日 2026-03-16；口径边界：consolidated_company_total）",
+              "opposing_view": "Observed AI-server revenue supports scale while current evidence does not establish durable demand or AI-server product profit.；当前处置为 defer，原因是 The evidence is compatible rather than contradictory, but the missing durability and product-margin bridge prevents resolution.",
+              "missing_evidence": "DELL_GAP_AI_SERVER_PROFIT_ATTRIBUTION：Prevents AI-server revenue from being converted into product profit or cash conclusions.；下一路线：Dell segment note, earnings tables or investor presentation with AI-server profit or mix-to-margin authority.",
+              "what_would_change": "AI-server gross or operating profit and mix-to-margin bridge 向 explicit_product_or_segment_attribution 变化，在 next_quarter_or_annual_update 达到“issuer isolates AI-server profit or supplies a reproducible mix bridge”；下一证据路线：Dell segment note, earnings tables or investor presentation"
+            },
+            "evidence_boundary": [
+              "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+              "Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers.",
+              "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.",
+              "consolidated_company_total"
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Profit-capture confidence cannot exceed the demand and attribution evidence boundary.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_2e76f847e2a757e1e783ae0a",
+                  "fin013_retrieval_candidate_434ec5345cf54652db3788de",
+                  "fin013_retrieval_candidate_4f331ad1344c2a1bfc9dcc13",
+                  "fin013_retrieval_candidate_724c8babff17dc48d4f5c79c",
+                  "fin013_retrieval_candidate_7c6c533159b1372c28e64246",
+                  "fin013_retrieval_candidate_8cdd812d43f4e57d9a368df3",
+                  "fin013_retrieval_candidate_eb38786cad670180bbf7cca6"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+                "mechanism": "AI-server revenue scale is an input to profit-capture analysis, but demand durability and product margin require separate evidence.",
+                "to_claim_id": "fin013_s3_claim_card_bccdaa9e18265e8f670e3152"
+              },
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+                  "fin013_s3_claim_card_bccdaa9e18265e8f670e3152"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "DELL_M_DEMAND_PROXY",
+                  "DELL_M_SCALE_NOT_PRODUCT_PROFIT"
+                ],
+                "reason": "The evidence is compatible rather than contradictory, but the missing durability and product-margin bridge prevents resolution.",
+                "tension": "Observed AI-server revenue supports scale while current evidence does not establish durable demand or AI-server product profit."
+              },
+              "gap_ids": [
+                "DELL_GAP_AI_SERVER_PROFIT_ATTRIBUTION"
+              ]
+            }
+          },
+          {
+            "lens_id": "customer_and_supply_chain",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_a245f55d3efcd50f13fa12fe"
+            ],
+            "planned_cell_ids": [
+              "customer_concentration",
+              "foundry_advanced_packaging_capacity",
+              "hbm_supply_pricing_concentration",
+              "server_oem_order_revenue_conversion"
+            ],
+            "mechanism_atoms": [
+              "Dell's limited-source supplier exposure and competitive pressure can weaken the conversion of AI-server demand into margin and cash."
+            ],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "客户与供应链层面，DELL 对有限来源供应商和组件约束的披露说明交付与现金转化存在依赖，但当前材料不足以量化客户部署节奏或各上游环节的实际瓶颈。",
+              "why": "DELL 的机制链：Dell's limited-source supplier exposure and competitive pressure can weaken the conversion of AI-server demand into margin and cash.；跨判断影响：Profit-capture confidence cannot exceed the demand and attribution evidence boundary.",
+              "opposing_view": "当前证据边界不允许把公司或分部总量直接外推为该维度的完整因果结论。",
+              "missing_evidence": "How concentrated is Dell Technologies's AI demand and what named-customer evidence is actually authoritative?；Which foundry and advanced-packaging constraints can change Dell Technologies's volume, timing or economics?；How do HBM demand, supply, pricing and supplier concentration affect Dell Technologies's thesis?；What does the server-OEM chain show about order-to-revenue conversion relevant to Dell Technologies?",
+              "what_would_change": "component availability, lead time and supplier diversification 向 improvement 变化，在 next_reporting_period 达到“issuer reports shorter lead time, broader sourcing or fewer constraints”；下一证据路线：Dell earnings commentary and supplier disclosures"
+            },
+            "evidence_boundary": [
+              "The issuer lists competition, limited-source suppliers and AI-demand sensitivity as risks; it does not establish realized impact."
+            ],
+            "lead_links": {
+              "dependency": null,
+              "conflict": null,
+              "gap_ids": []
+            }
+          },
+          {
+            "lens_id": "competition_and_market_position",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_a245f55d3efcd50f13fa12fe"
+            ],
+            "planned_cell_ids": [
+              "customer_concentration",
+              "semicap_export_policy_risk"
+            ],
+            "mechanism_atoms": [
+              "Dell's limited-source supplier exposure and competitive pressure can weaken the conversion of AI-server demand into margin and cash."
+            ],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "竞争层面，DELL 已确认竞争压力是利润转化风险，但当前证据没有形成相对同业的份额、定价能力或系统级差异化判断。",
+              "why": "DELL 的机制链：Dell's limited-source supplier exposure and competitive pressure can weaken the conversion of AI-server demand into margin and cash.；跨判断影响：Profit-capture confidence cannot exceed the demand and attribution evidence boundary.",
+              "opposing_view": "当前证据边界不允许把公司或分部总量直接外推为该维度的完整因果结论。",
+              "missing_evidence": "How concentrated is Dell Technologies's AI demand and what named-customer evidence is actually authoritative?；Which export-policy constraints can alter Dell Technologies's addressable demand, supply route or product mix?",
+              "what_would_change": "component availability, lead time and supplier diversification 向 improvement 变化，在 next_reporting_period 达到“issuer reports shorter lead time, broader sourcing or fewer constraints”；下一证据路线：Dell earnings commentary and supplier disclosures"
+            },
+            "evidence_boundary": [
+              "The issuer lists competition, limited-source suppliers and AI-demand sensitivity as risks; it does not establish realized impact."
+            ],
+            "lead_links": {
+              "dependency": null,
+              "conflict": null,
+              "gap_ids": []
+            }
+          },
+          {
+            "lens_id": "capital_price_in_and_valuation_boundary",
+            "coverage_status": "explicit_research_gap",
+            "authority": "planned_no_claim",
+            "claim_card_ids": [],
+            "planned_cell_ids": [
+              "cross_chain_price_in_and_expectations",
+              "semicap_capex_cycle"
+            ],
+            "mechanism_atoms": [],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "DELL 在该维度当前不作实质结论：资本、price-in 与估值层面，本轮没有具备当前权威的市场定价、资本回报或估值桥，禁止从收入规模直接推导估值结论。",
+              "why": "现有核心 Claim 没有覆盖这些问题，写作层不得用行业常识或通用措辞补齐。",
+              "opposing_view": "在形成正面或负面判断前，必须先取得本案、当前、可追溯的证据。",
+              "missing_evidence": "Which operating assumptions about Dell Technologies are already embedded in expectations, and what cannot yet be valued?；What semicap and foundry capex signals lead, confirm or lag Dell Technologies's AI economics?",
+              "what_would_change": "完成上述 planned Cell 的 Evidence Gate、Claim 选择和 Lead 裁决后，才允许改变该维度状态。"
+            },
+            "evidence_boundary": [],
+            "lead_links": {
+              "dependency": null,
+              "conflict": null,
+              "gap_ids": []
+            }
+          },
+          {
+            "lens_id": "risk_and_counter_thesis",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_a245f55d3efcd50f13fa12fe"
+            ],
+            "planned_cell_ids": [
+              "semicap_export_policy_risk",
+              "gap_resolution__demand_authenticity_and_sustainability__current_issuer_demand_signal"
+            ],
+            "mechanism_atoms": [
+              "Dell's limited-source supplier exposure and competitive pressure can weaken the conversion of AI-server demand into margin and cash."
+            ],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "最强反方是供应约束与竞争共同削弱 AI 服务器收入向利润和现金的转化；该反方当前是条件性风险，不是已经实现的损失事实。",
+              "why": "DELL 的机制链：Dell's limited-source supplier exposure and competitive pressure can weaken the conversion of AI-server demand into margin and cash.；跨判断影响：Profit-capture confidence cannot exceed the demand and attribution evidence boundary.",
+              "opposing_view": "当前证据边界不允许把公司或分部总量直接外推为该维度的完整因果结论。",
+              "missing_evidence": "Which export-policy constraints can alter Dell Technologies's addressable demand, supply route or product mix?；What exact current evidence would resolve demand authenticity and sustainability for Dell Technologies without promoting the existing typed gap?",
+              "what_would_change": "component availability, lead time and supplier diversification 向 improvement 变化，在 next_reporting_period 达到“issuer reports shorter lead time, broader sourcing or fewer constraints”；下一证据路线：Dell earnings commentary and supplier disclosures"
+            },
+            "evidence_boundary": [
+              "The issuer lists competition, limited-source suppliers and AI-demand sensitivity as risks; it does not establish realized impact."
+            ],
+            "lead_links": {
+              "dependency": null,
+              "conflict": null,
+              "gap_ids": []
+            }
+          },
+          {
+            "lens_id": "gaps_and_what_would_change",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+              "fin013_s3_claim_card_bccdaa9e18265e8f670e3152",
+              "fin013_s3_claim_card_a245f55d3efcd50f13fa12fe"
+            ],
+            "planned_cell_ids": [],
+            "mechanism_atoms": [
+              "Dell AI-optimized server revenue is an observed company revenue proxy, not standalone proof of durable end-demand.",
+              "Dell AI-server revenue establishes scale while ISG operating income remains a segment boundary rather than AI-server product profit.",
+              "Dell's limited-source supplier exposure and competitive pressure can weaken the conversion of AI-server demand into margin and cash."
+            ],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "DELL 当前判断必须保持有条件：未关闭的高影响缺口不能被写作层补成事实。",
+              "why": "DELL_GAP_DEMAND_DURABILITY 由 industry_analyst 负责，影响为 Prevents revenue scale from being treated as durable end-demand.；DELL_GAP_AI_SERVER_PROFIT_ATTRIBUTION 由 financial_analyst 负责，影响为 Prevents AI-server revenue from being converted into product profit or cash conclusions.",
+              "opposing_view": "Observed AI-server revenue supports scale while current evidence does not establish durable demand or AI-server product profit.；当前处置为 defer。",
+              "missing_evidence": "Dell current filing, earnings release or investor presentation with orders, backlog, deployment or repeat demand.；停止条件：Stop after one bounded current Dell filing, earnings and investor-presentation route is exhausted.；Dell segment note, earnings tables or investor presentation with AI-server profit or mix-to-margin authority.；停止条件：Stop when current Dell segment and product disclosures do not isolate AI-server margin or a reproducible mix bridge.",
+              "what_would_change": "AI-server orders, backlog, deployment or repeat demand 向 increase_or_explicit_confirmation 变化，在 next_quarter_or_annual_update 达到“one current quantified or named company disclosure”；下一证据路线：Dell earnings release, 10-Q/10-K or investor presentation；AI-server cancellation, digestion or demand slowdown 向 material_deterioration 变化，在 next_two_reporting_periods 达到“issuer identifies a material slowdown, cancellation or digestion event”；下一证据路线：Dell earnings release, call transcript or filing risk update；AI-server gross or operating profit and mix-to-margin bridge 向 explicit_product_or_segment_attribution 变化，在 next_quarter_or_annual_update 达到“issuer isolates AI-server profit or supplies a reproducible mix bridge”；下一证据路线：Dell segment note, earnings tables or investor presentation；component availability, lead time and supplier diversification 向 improvement 变化，在 next_reporting_period 达到“issuer reports shorter lead time, broader sourcing or fewer constraints”；下一证据路线：Dell earnings commentary and supplier disclosures"
+            },
+            "evidence_boundary": [
+              "Issuer table supports FY2026 AI-optimized server revenue at reported USD-million precision; it does not establish margin or future conversion.",
+              "AI-server demand durability from a forward-looking caution list or revenue alone",
+              "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+              "Issuer table supports FY2026 ISG operating income; it does not attribute profit specifically to AI-optimized servers.",
+              "consolidated_company_total",
+              "The issuer lists competition, limited-source suppliers and AI-demand sensitivity as risks; it does not establish realized impact."
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Profit-capture confidence cannot exceed the demand and attribution evidence boundary.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_2e76f847e2a757e1e783ae0a",
+                  "fin013_retrieval_candidate_434ec5345cf54652db3788de",
+                  "fin013_retrieval_candidate_4f331ad1344c2a1bfc9dcc13",
+                  "fin013_retrieval_candidate_724c8babff17dc48d4f5c79c",
+                  "fin013_retrieval_candidate_7c6c533159b1372c28e64246",
+                  "fin013_retrieval_candidate_8cdd812d43f4e57d9a368df3",
+                  "fin013_retrieval_candidate_eb38786cad670180bbf7cca6"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+                "mechanism": "AI-server revenue scale is an input to profit-capture analysis, but demand durability and product margin require separate evidence.",
+                "to_claim_id": "fin013_s3_claim_card_bccdaa9e18265e8f670e3152"
+              },
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+                  "fin013_s3_claim_card_bccdaa9e18265e8f670e3152"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "DELL_M_DEMAND_PROXY",
+                  "DELL_M_SCALE_NOT_PRODUCT_PROFIT"
+                ],
+                "reason": "The evidence is compatible rather than contradictory, but the missing durability and product-margin bridge prevents resolution.",
+                "tension": "Observed AI-server revenue supports scale while current evidence does not establish durable demand or AI-server product profit."
+              },
+              "gap_ids": [
+                "DELL_GAP_DEMAND_DURABILITY",
+                "DELL_GAP_AI_SERVER_PROFIT_ATTRIBUTION"
+              ]
+            }
+          }
+        ],
+        "writer_no_source_packet": {
+          "schema_version": "fin_ia_0_1_3_s3_writer_no_source_packet_v1_0",
+          "case_key": "DELL",
+          "company_name": "Dell Technologies",
+          "source_access_allowed": false,
+          "raw_retrieval_rows": [],
+          "claim_card_ids": [
+            "fin013_s3_claim_card_c21e89d1f79842e91021ddd9",
+            "fin013_s3_claim_card_bccdaa9e18265e8f670e3152",
+            "fin013_s3_claim_card_a245f55d3efcd50f13fa12fe"
+          ],
+          "synthesis_id": "fin013_s3_lead_synthesis_bcfe01f9dc656feb881d56b4",
+          "content_lenses": [
+            "executive_thesis",
+            "product_and_demand",
+            "financial_and_value_capture",
+            "customer_and_supply_chain",
+            "competition_and_market_position",
+            "capital_price_in_and_valuation_boundary",
+            "risk_and_counter_thesis",
+            "gaps_and_what_would_change"
+          ],
+          "answer_contract": [
+            "conclusion",
+            "why",
+            "opposing_view",
+            "missing_evidence",
+            "what_would_change"
+          ],
+          "authority": "fixture_mixed_engineering_only",
+          "section_material_ref": "case_workpaper.sections",
+          "section_digests": [
+            "5e346630a4535b86eff8f25d751768993ea25e1a20f90b48ad59892567b080da",
+            "d9cef60910663e7358fe6a0e919bd7655a7e5c1e17e33e65471f2ec59cf70ec2",
+            "89c80ad5cbb4717fd78eac5ef405350ff53f4133931841d01c8983eb43c0b71f",
+            "f38b6761df7453e1e0f69194e0af4f03ef2799f44903cc83b5ee4813cace811f",
+            "f3e3b38eff31d245a9c5e64614fbb9cb0ff425345f4c721d7d36fa7aceec9d78",
+            "b452e63b91db1114fcd0dc386988b9a203a1beed8efab089ee4fe589e40d2908",
+            "824ede3935d602baafc9cbb27f33c6be8e81e2a739fa2e8cbe02300f0186fbec",
+            "0596fbfeccccadd1574249314c7a5e3c1ec7ae7900f8705291bffa74158c2516"
+          ]
+        },
+        "content_precheck": {
+          "required_lenses": "8/8",
+          "answers_conclusion_why_opposing_missing_change": "8/8",
+          "core_claims_bound": "3/3",
+          "lead_dependency_conflict_gap_bound": true,
+          "planned_cells_promoted": 0,
+          "generic_placeholder_fragments": 0,
+          "raw_source_rows_visible_to_writer": 0,
+          "eight_dimension_score": "not_scored_before_natural_final_delivery"
+        },
+        "workpaper_digest": "7428eb15a9e20a3f9b93f5963d6687a72563e913ec1f826d4751e60456e55abb"
+      },
+      {
+        "workpaper_id": "fin013_s3_workpaper_3119bbdf9a54e7076c558e65",
+        "case_key": "MU",
+        "ticker": "MU",
+        "company_name": "Micron Technology",
+        "claim_card_ids": [
+          "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+          "fin013_s3_claim_card_4c77ff515399bcaa6230a717",
+          "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+        ],
+        "claim_authorities": {
+          "fin013_s3_claim_card_911e27e739aebc1baf84f789": "fixture_choice_engineering_only",
+          "fin013_s3_claim_card_4c77ff515399bcaa6230a717": "live_natural_exact_once",
+          "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5": "fixture_choice_engineering_only"
+        },
+        "lead_synthesis_id": "fin013_s3_lead_synthesis_a0d75d226d74aee6bb531348",
+        "workpaper_authority": "fixture_mixed_engineering_only",
+        "product_candidate": false,
+        "display_ready": false,
+        "sections": [
+          {
+            "lens_id": "executive_thesis",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+              "fin013_s3_claim_card_4c77ff515399bcaa6230a717",
+              "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+            ],
+            "planned_cell_ids": [],
+            "mechanism_atoms": [
+              "Micron reports increased HBM demand, while the company also states that the long-term trajectory is unknown and may fluctuate.",
+              "Micron consolidated and DRAM financial facts establish company scale but do not isolate HBM revenue, profit, or price-volume-mix.",
+              "Micron states that weaker HBM demand could shift capacity toward conventional DRAM, increase supply, and pressure pricing."
+            ],
+            "numeric_facts": [
+              {
+                "candidate_id": "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+                "case_key": "MU",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "gross_profit",
+                "normalized_value": "14873000000",
+                "published_at": "2025-10-03",
+                "unit": "USD",
+                "rendered": "gross_profit=USD 14,873,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a",
+                "case_key": "MU",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "operating_income",
+                "normalized_value": "9770000000",
+                "published_at": "2025-10-03",
+                "unit": "USD",
+                "rendered": "operating_income=USD 9,770,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+                "case_key": "MU",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "revenue",
+                "normalized_value": "37378000000",
+                "published_at": "2025-10-03",
+                "unit": "USD",
+                "rendered": "revenue=USD 37,378,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）"
+              }
+            ],
+            "answers": {
+              "conclusion": "当前最稳健的判断是：Micron 披露了 HBM 需求上升，但长期轨迹仍受内存周期和产能再配置影响；合并报表与 DRAM 总量不能替代 HBM 收入、利润、资本投入和现金转化证据。",
+              "why": "MU 的机制链：Micron reports increased HBM demand, while the company also states that the long-term trajectory is unknown and may fluctuate.；Micron consolidated and DRAM financial facts establish company scale but do not isolate HBM revenue, profit, or price-volume-mix.；Micron states that weaker HBM demand could shift capacity toward conventional DRAM, increase supply, and pressure pricing.；跨判断影响：Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.；本地精确数值：gross_profit=USD 14,873,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）；operating_income=USD 9,770,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）；revenue=USD 37,378,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）",
+              "opposing_view": "最强反方：Current HBM demand is positive while the same capacity mechanism can increase conventional DRAM supply and pricing risk if HBM demand weakens. 处置仍为 defer，因为 Both mechanisms are supported as conditional pathways; current evidence does not establish which path dominates across the next cycle.",
+              "missing_evidence": "MU_GAP_HBM_ECONOMICS_ATTRIBUTION：Prevents consolidated revenue and DRAM facts from proving HBM revenue, profit, price-volume-mix or cash conversion.",
+              "what_would_change": "HBM commitments, capacity allocation and shipment coverage 向 increase_or_extension 变化，在 next_two_reporting_periods 达到“issuer quantifies multi-period commitments, allocation or shipment coverage”；下一证据路线：Micron earnings release, 10-Q/10-K or investor presentation；HBM revenue, gross margin, operating profit or price-volume-mix 向 explicit_product_attribution 变化，在 next_quarter_or_annual_update 达到“issuer isolates HBM economics or provides a reproducible PVM bridge”；下一证据路线：Micron segment/product disclosure and earnings tables；HBM capex, inventory, prepayment and cash conversion 向 improving_or_deteriorating 变化，在 next_two_reporting_periods 达到“issuer isolates an HBM-specific capital or cash item”；下一证据路线：Micron cash-flow, capex and inventory disclosures；HBM and conventional DRAM capacity allocation 向 disciplined_supply_growth 变化，在 next_two_reporting_periods 达到“Micron and at least one named peer retain bounded capacity plans despite volatility”；下一证据路线：Micron, Samsung and SK hynix official capacity commentary"
+            },
+            "evidence_boundary": [
+              "The issuer reports increased HBM demand while explicitly warning that its long-term trajectory is unknown; durability remains an analyst judgment.",
+              "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+              "consolidated_company_total",
+              "The issuer states that HBM demand may fluctuate and that capacity shifts could pressure DRAM pricing; it does not establish a realized downturn.",
+              "The issuer identifies Samsung as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome.",
+              "The issuer identifies SK hynix as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome."
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+                  "fin013_retrieval_candidate_47346a7cde9364911be4452e",
+                  "fin013_retrieval_candidate_9aeb9f542d0c2ad049bdf228",
+                  "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+                  "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+                "mechanism": "HBM demand and wafer intensity can affect mix, capacity and capital needs before appearing in company revenue, margin and cash.",
+                "to_claim_id": "fin013_s3_claim_card_4c77ff515399bcaa6230a717"
+              },
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+                  "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "MU_M_HBM_DEMAND_WITH_CYCLE_BOUNDARY",
+                  "MU_M_CAPACITY_REALLOCATION_PRICING_RISK"
+                ],
+                "reason": "Both mechanisms are supported as conditional pathways; current evidence does not establish which path dominates across the next cycle.",
+                "tension": "Current HBM demand is positive while the same capacity mechanism can increase conventional DRAM supply and pricing risk if HBM demand weakens."
+              },
+              "gap_ids": [
+                "MU_GAP_HBM_ECONOMICS_ATTRIBUTION"
+              ]
+            }
+          },
+          {
+            "lens_id": "product_and_demand",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_911e27e739aebc1baf84f789"
+            ],
+            "planned_cell_ids": [
+              "customer_concentration",
+              "hbm_supply_pricing_concentration"
+            ],
+            "mechanism_atoms": [
+              "Micron reports increased HBM demand, while the company also states that the long-term trajectory is unknown and may fluctuate."
+            ],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "产品与需求层面，MU 的 HBM 需求增长是公司专属正面信号，但长期持续性仍需多期承诺、产能分配和出货覆盖来确认。",
+              "why": "MU 的机制链：Micron reports increased HBM demand, while the company also states that the long-term trajectory is unknown and may fluctuate.；跨判断影响：Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.",
+              "opposing_view": "Current HBM demand is positive while the same capacity mechanism can increase conventional DRAM supply and pricing risk if HBM demand weakens.；当前处置为 defer，原因是 Both mechanisms are supported as conditional pathways; current evidence does not establish which path dominates across the next cycle.",
+              "missing_evidence": "How concentrated is Micron Technology's AI demand and what named-customer evidence is actually authoritative?；How do HBM demand, supply, pricing and supplier concentration affect Micron Technology's thesis?",
+              "what_would_change": "HBM commitments, capacity allocation and shipment coverage 向 increase_or_extension 变化，在 next_two_reporting_periods 达到“issuer quantifies multi-period commitments, allocation or shipment coverage”；下一证据路线：Micron earnings release, 10-Q/10-K or investor presentation"
+            },
+            "evidence_boundary": [
+              "The issuer reports increased HBM demand while explicitly warning that its long-term trajectory is unknown; durability remains an analyst judgment."
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+                  "fin013_retrieval_candidate_47346a7cde9364911be4452e",
+                  "fin013_retrieval_candidate_9aeb9f542d0c2ad049bdf228",
+                  "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+                  "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+                "mechanism": "HBM demand and wafer intensity can affect mix, capacity and capital needs before appearing in company revenue, margin and cash.",
+                "to_claim_id": "fin013_s3_claim_card_4c77ff515399bcaa6230a717"
+              },
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+                  "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "MU_M_HBM_DEMAND_WITH_CYCLE_BOUNDARY",
+                  "MU_M_CAPACITY_REALLOCATION_PRICING_RISK"
+                ],
+                "reason": "Both mechanisms are supported as conditional pathways; current evidence does not establish which path dominates across the next cycle.",
+                "tension": "Current HBM demand is positive while the same capacity mechanism can increase conventional DRAM supply and pricing risk if HBM demand weakens."
+              },
+              "gap_ids": []
+            }
+          },
+          {
+            "lens_id": "financial_and_value_capture",
+            "coverage_status": "bounded_judgment",
+            "authority": "all_natural",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_4c77ff515399bcaa6230a717"
+            ],
+            "planned_cell_ids": [
+              "server_oem_margin_cash_conversion"
+            ],
+            "mechanism_atoms": [
+              "Micron consolidated and DRAM financial facts establish company scale but do not isolate HBM revenue, profit, or price-volume-mix."
+            ],
+            "numeric_facts": [
+              {
+                "candidate_id": "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+                "case_key": "MU",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "gross_profit",
+                "normalized_value": "14873000000",
+                "published_at": "2025-10-03",
+                "unit": "USD",
+                "rendered": "gross_profit=USD 14,873,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a",
+                "case_key": "MU",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "operating_income",
+                "normalized_value": "9770000000",
+                "published_at": "2025-10-03",
+                "unit": "USD",
+                "rendered": "operating_income=USD 9,770,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+                "case_key": "MU",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "revenue",
+                "normalized_value": "37378000000",
+                "published_at": "2025-10-03",
+                "unit": "USD",
+                "rendered": "revenue=USD 37,378,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）"
+              }
+            ],
+            "answers": {
+              "conclusion": "财务层面，MU 的合并收入、毛利和营业利润只能建立公司尺度，不能隔离 HBM 的收入、利润、价格—销量—结构或现金贡献。",
+              "why": "MU 的机制链：Micron consolidated and DRAM financial facts establish company scale but do not isolate HBM revenue, profit, or price-volume-mix.；跨判断影响：Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.；本地精确数值：gross_profit=USD 14,873,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）；operating_income=USD 9,770,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）；revenue=USD 37,378,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）",
+              "opposing_view": "当前证据边界不允许把公司或分部总量直接外推为该维度的完整因果结论。",
+              "missing_evidence": "MU_GAP_HBM_ECONOMICS_ATTRIBUTION：Prevents consolidated revenue and DRAM facts from proving HBM revenue, profit, price-volume-mix or cash conversion.；下一路线：Micron product or segment disclosure with HBM revenue, profit, PVM, capex, inventory or cash authority.",
+              "what_would_change": "HBM revenue, gross margin, operating profit or price-volume-mix 向 explicit_product_attribution 变化，在 next_quarter_or_annual_update 达到“issuer isolates HBM economics or provides a reproducible PVM bridge”；下一证据路线：Micron segment/product disclosure and earnings tables；HBM capex, inventory, prepayment and cash conversion 向 improving_or_deteriorating 变化，在 next_two_reporting_periods 达到“issuer isolates an HBM-specific capital or cash item”；下一证据路线：Micron cash-flow, capex and inventory disclosures"
+            },
+            "evidence_boundary": [
+              "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+              "consolidated_company_total"
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+                  "fin013_retrieval_candidate_47346a7cde9364911be4452e",
+                  "fin013_retrieval_candidate_9aeb9f542d0c2ad049bdf228",
+                  "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+                  "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+                "mechanism": "HBM demand and wafer intensity can affect mix, capacity and capital needs before appearing in company revenue, margin and cash.",
+                "to_claim_id": "fin013_s3_claim_card_4c77ff515399bcaa6230a717"
+              },
+              "conflict": null,
+              "gap_ids": [
+                "MU_GAP_HBM_ECONOMICS_ATTRIBUTION"
+              ]
+            }
+          },
+          {
+            "lens_id": "customer_and_supply_chain",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+              "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+            ],
+            "planned_cell_ids": [
+              "foundry_advanced_packaging_capacity",
+              "hbm_supply_pricing_concentration",
+              "server_oem_order_revenue_conversion"
+            ],
+            "mechanism_atoms": [
+              "Micron reports increased HBM demand, while the company also states that the long-term trajectory is unknown and may fluctuate.",
+              "Micron states that weaker HBM demand could shift capacity toward conventional DRAM, increase supply, and pressure pricing."
+            ],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "客户与供应链层面，HBM 需求、晶圆强度和产能分配相互作用；如果 HBM 需求转弱，产能回流传统 DRAM 可能放大供给和价格压力。",
+              "why": "MU 的机制链：Micron reports increased HBM demand, while the company also states that the long-term trajectory is unknown and may fluctuate.；Micron states that weaker HBM demand could shift capacity toward conventional DRAM, increase supply, and pressure pricing.；跨判断影响：Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.",
+              "opposing_view": "Current HBM demand is positive while the same capacity mechanism can increase conventional DRAM supply and pricing risk if HBM demand weakens.；当前处置为 defer，原因是 Both mechanisms are supported as conditional pathways; current evidence does not establish which path dominates across the next cycle.",
+              "missing_evidence": "Which foundry and advanced-packaging constraints can change Micron Technology's volume, timing or economics?；How do HBM demand, supply, pricing and supplier concentration affect Micron Technology's thesis?；What does the server-OEM chain show about order-to-revenue conversion relevant to Micron Technology?",
+              "what_would_change": "HBM commitments, capacity allocation and shipment coverage 向 increase_or_extension 变化，在 next_two_reporting_periods 达到“issuer quantifies multi-period commitments, allocation or shipment coverage”；下一证据路线：Micron earnings release, 10-Q/10-K or investor presentation；HBM and conventional DRAM capacity allocation 向 disciplined_supply_growth 变化，在 next_two_reporting_periods 达到“Micron and at least one named peer retain bounded capacity plans despite volatility”；下一证据路线：Micron, Samsung and SK hynix official capacity commentary"
+            },
+            "evidence_boundary": [
+              "The issuer reports increased HBM demand while explicitly warning that its long-term trajectory is unknown; durability remains an analyst judgment.",
+              "The issuer states that HBM demand may fluctuate and that capacity shifts could pressure DRAM pricing; it does not establish a realized downturn.",
+              "The issuer identifies Samsung as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome.",
+              "The issuer identifies SK hynix as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome."
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+                  "fin013_retrieval_candidate_47346a7cde9364911be4452e",
+                  "fin013_retrieval_candidate_9aeb9f542d0c2ad049bdf228",
+                  "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+                  "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+                "mechanism": "HBM demand and wafer intensity can affect mix, capacity and capital needs before appearing in company revenue, margin and cash.",
+                "to_claim_id": "fin013_s3_claim_card_4c77ff515399bcaa6230a717"
+              },
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+                  "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "MU_M_HBM_DEMAND_WITH_CYCLE_BOUNDARY",
+                  "MU_M_CAPACITY_REALLOCATION_PRICING_RISK"
+                ],
+                "reason": "Both mechanisms are supported as conditional pathways; current evidence does not establish which path dominates across the next cycle.",
+                "tension": "Current HBM demand is positive while the same capacity mechanism can increase conventional DRAM supply and pricing risk if HBM demand weakens."
+              },
+              "gap_ids": []
+            }
+          },
+          {
+            "lens_id": "competition_and_market_position",
+            "coverage_status": "explicit_research_gap",
+            "authority": "planned_no_claim",
+            "claim_card_ids": [],
+            "planned_cell_ids": [
+              "customer_concentration",
+              "semicap_export_policy_risk"
+            ],
+            "mechanism_atoms": [],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "MU 在该维度当前不作实质结论：竞争层面，本轮没有足够的同业 HBM 份额、良率、成本或客户认证证据，不能形成 MU 相对领先程度的结论。",
+              "why": "现有核心 Claim 没有覆盖这些问题，写作层不得用行业常识或通用措辞补齐。",
+              "opposing_view": "在形成正面或负面判断前，必须先取得本案、当前、可追溯的证据。",
+              "missing_evidence": "How concentrated is Micron Technology's AI demand and what named-customer evidence is actually authoritative?；Which export-policy constraints can alter Micron Technology's addressable demand, supply route or product mix?",
+              "what_would_change": "完成上述 planned Cell 的 Evidence Gate、Claim 选择和 Lead 裁决后，才允许改变该维度状态。"
+            },
+            "evidence_boundary": [],
+            "lead_links": {
+              "dependency": null,
+              "conflict": null,
+              "gap_ids": []
+            }
+          },
+          {
+            "lens_id": "capital_price_in_and_valuation_boundary",
+            "coverage_status": "bounded_judgment",
+            "authority": "all_natural",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_4c77ff515399bcaa6230a717"
+            ],
+            "planned_cell_ids": [
+              "cross_chain_price_in_and_expectations",
+              "semicap_capex_cycle"
+            ],
+            "mechanism_atoms": [
+              "Micron consolidated and DRAM financial facts establish company scale but do not isolate HBM revenue, profit, or price-volume-mix."
+            ],
+            "numeric_facts": [
+              {
+                "candidate_id": "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+                "case_key": "MU",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "gross_profit",
+                "normalized_value": "14873000000",
+                "published_at": "2025-10-03",
+                "unit": "USD",
+                "rendered": "gross_profit=USD 14,873,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a",
+                "case_key": "MU",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "operating_income",
+                "normalized_value": "9770000000",
+                "published_at": "2025-10-03",
+                "unit": "USD",
+                "rendered": "operating_income=USD 9,770,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+                "case_key": "MU",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "revenue",
+                "normalized_value": "37378000000",
+                "published_at": "2025-10-03",
+                "unit": "USD",
+                "rendered": "revenue=USD 37,378,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）"
+              }
+            ],
+            "answers": {
+              "conclusion": "资本、price-in 与估值层面，现有公司总量不能回答 HBM 专属资本强度与现金回报，也没有当前市场定价证据，因此估值只能保持明确边界。",
+              "why": "MU 的机制链：Micron consolidated and DRAM financial facts establish company scale but do not isolate HBM revenue, profit, or price-volume-mix.；跨判断影响：Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.；本地精确数值：gross_profit=USD 14,873,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）；operating_income=USD 9,770,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）；revenue=USD 37,378,000,000（披露日 2025-10-03；口径边界：consolidated_company_total）",
+              "opposing_view": "当前证据边界不允许把公司或分部总量直接外推为该维度的完整因果结论。",
+              "missing_evidence": "MU_GAP_HBM_ECONOMICS_ATTRIBUTION：Prevents consolidated revenue and DRAM facts from proving HBM revenue, profit, price-volume-mix or cash conversion.；下一路线：Micron product or segment disclosure with HBM revenue, profit, PVM, capex, inventory or cash authority.",
+              "what_would_change": "HBM revenue, gross margin, operating profit or price-volume-mix 向 explicit_product_attribution 变化，在 next_quarter_or_annual_update 达到“issuer isolates HBM economics or provides a reproducible PVM bridge”；下一证据路线：Micron segment/product disclosure and earnings tables；HBM capex, inventory, prepayment and cash conversion 向 improving_or_deteriorating 变化，在 next_two_reporting_periods 达到“issuer isolates an HBM-specific capital or cash item”；下一证据路线：Micron cash-flow, capex and inventory disclosures"
+            },
+            "evidence_boundary": [
+              "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+              "consolidated_company_total"
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+                  "fin013_retrieval_candidate_47346a7cde9364911be4452e",
+                  "fin013_retrieval_candidate_9aeb9f542d0c2ad049bdf228",
+                  "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+                  "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+                "mechanism": "HBM demand and wafer intensity can affect mix, capacity and capital needs before appearing in company revenue, margin and cash.",
+                "to_claim_id": "fin013_s3_claim_card_4c77ff515399bcaa6230a717"
+              },
+              "conflict": null,
+              "gap_ids": [
+                "MU_GAP_HBM_ECONOMICS_ATTRIBUTION"
+              ]
+            }
+          },
+          {
+            "lens_id": "risk_and_counter_thesis",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+            ],
+            "planned_cell_ids": [
+              "semicap_export_policy_risk",
+              "writer_admission_boundary"
+            ],
+            "mechanism_atoms": [
+              "Micron states that weaker HBM demand could shift capacity toward conventional DRAM, increase supply, and pressure pricing."
+            ],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "最强反方是 HBM 需求放缓触发产能回流传统 DRAM，进而增加供给并压低价格；当前证据尚不能判断该路径是否会主导下一周期。",
+              "why": "MU 的机制链：Micron states that weaker HBM demand could shift capacity toward conventional DRAM, increase supply, and pressure pricing.；跨判断影响：Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.",
+              "opposing_view": "Current HBM demand is positive while the same capacity mechanism can increase conventional DRAM supply and pricing risk if HBM demand weakens.；当前处置为 defer，原因是 Both mechanisms are supported as conditional pathways; current evidence does not establish which path dominates across the next cycle.",
+              "missing_evidence": "Which export-policy constraints can alter Micron Technology's addressable demand, supply route or product mix?；Which conclusions about Micron Technology may enter the deliverable, which remain bounded inference, and which must remain gaps?",
+              "what_would_change": "HBM and conventional DRAM capacity allocation 向 disciplined_supply_growth 变化，在 next_two_reporting_periods 达到“Micron and at least one named peer retain bounded capacity plans despite volatility”；下一证据路线：Micron, Samsung and SK hynix official capacity commentary"
+            },
+            "evidence_boundary": [
+              "The issuer states that HBM demand may fluctuate and that capacity shifts could pressure DRAM pricing; it does not establish a realized downturn.",
+              "The issuer identifies Samsung as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome.",
+              "The issuer identifies SK hynix as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome."
+            ],
+            "lead_links": {
+              "dependency": null,
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+                  "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "MU_M_HBM_DEMAND_WITH_CYCLE_BOUNDARY",
+                  "MU_M_CAPACITY_REALLOCATION_PRICING_RISK"
+                ],
+                "reason": "Both mechanisms are supported as conditional pathways; current evidence does not establish which path dominates across the next cycle.",
+                "tension": "Current HBM demand is positive while the same capacity mechanism can increase conventional DRAM supply and pricing risk if HBM demand weakens."
+              },
+              "gap_ids": []
+            }
+          },
+          {
+            "lens_id": "gaps_and_what_would_change",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+              "fin013_s3_claim_card_4c77ff515399bcaa6230a717",
+              "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+            ],
+            "planned_cell_ids": [],
+            "mechanism_atoms": [
+              "Micron reports increased HBM demand, while the company also states that the long-term trajectory is unknown and may fluctuate.",
+              "Micron consolidated and DRAM financial facts establish company scale but do not isolate HBM revenue, profit, or price-volume-mix.",
+              "Micron states that weaker HBM demand could shift capacity toward conventional DRAM, increase supply, and pressure pricing."
+            ],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "MU 当前判断必须保持有条件：未关闭的高影响缺口不能被写作层补成事实。",
+              "why": "MU_GAP_HBM_ECONOMICS_ATTRIBUTION 由 financial_analyst 负责，影响为 Prevents consolidated revenue and DRAM facts from proving HBM revenue, profit, price-volume-mix or cash conversion.",
+              "opposing_view": "Current HBM demand is positive while the same capacity mechanism can increase conventional DRAM supply and pricing risk if HBM demand weakens.；当前处置为 defer。",
+              "missing_evidence": "Micron product or segment disclosure with HBM revenue, profit, PVM, capex, inventory or cash authority.；停止条件：Stop when current Micron product, segment and earnings disclosures do not isolate HBM economics or a reproducible bridge.",
+              "what_would_change": "HBM commitments, capacity allocation and shipment coverage 向 increase_or_extension 变化，在 next_two_reporting_periods 达到“issuer quantifies multi-period commitments, allocation or shipment coverage”；下一证据路线：Micron earnings release, 10-Q/10-K or investor presentation；HBM revenue, gross margin, operating profit or price-volume-mix 向 explicit_product_attribution 变化，在 next_quarter_or_annual_update 达到“issuer isolates HBM economics or provides a reproducible PVM bridge”；下一证据路线：Micron segment/product disclosure and earnings tables；HBM capex, inventory, prepayment and cash conversion 向 improving_or_deteriorating 变化，在 next_two_reporting_periods 达到“issuer isolates an HBM-specific capital or cash item”；下一证据路线：Micron cash-flow, capex and inventory disclosures；HBM and conventional DRAM capacity allocation 向 disciplined_supply_growth 变化，在 next_two_reporting_periods 达到“Micron and at least one named peer retain bounded capacity plans despite volatility”；下一证据路线：Micron, Samsung and SK hynix official capacity commentary"
+            },
+            "evidence_boundary": [
+              "The issuer reports increased HBM demand while explicitly warning that its long-term trajectory is unknown; durability remains an analyst judgment.",
+              "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+              "consolidated_company_total",
+              "The issuer states that HBM demand may fluctuate and that capacity shifts could pressure DRAM pricing; it does not establish a realized downturn.",
+              "The issuer identifies Samsung as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome.",
+              "The issuer identifies SK hynix as a named competitor; the edge does not establish relative share, pricing, product quality, or future outcome."
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Value-capture confidence depends on separating HBM economics from consolidated and conventional DRAM totals.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_203c35a513e888c3e36da9ed",
+                  "fin013_retrieval_candidate_47346a7cde9364911be4452e",
+                  "fin013_retrieval_candidate_9aeb9f542d0c2ad049bdf228",
+                  "fin013_retrieval_candidate_f7f286175664f9db06cbfbc7",
+                  "fin013_retrieval_candidate_f8d39a54e843b1ca5ffb638a"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+                "mechanism": "HBM demand and wafer intensity can affect mix, capacity and capital needs before appearing in company revenue, margin and cash.",
+                "to_claim_id": "fin013_s3_claim_card_4c77ff515399bcaa6230a717"
+              },
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+                  "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "MU_M_HBM_DEMAND_WITH_CYCLE_BOUNDARY",
+                  "MU_M_CAPACITY_REALLOCATION_PRICING_RISK"
+                ],
+                "reason": "Both mechanisms are supported as conditional pathways; current evidence does not establish which path dominates across the next cycle.",
+                "tension": "Current HBM demand is positive while the same capacity mechanism can increase conventional DRAM supply and pricing risk if HBM demand weakens."
+              },
+              "gap_ids": [
+                "MU_GAP_HBM_ECONOMICS_ATTRIBUTION"
+              ]
+            }
+          }
+        ],
+        "writer_no_source_packet": {
+          "schema_version": "fin_ia_0_1_3_s3_writer_no_source_packet_v1_0",
+          "case_key": "MU",
+          "company_name": "Micron Technology",
+          "source_access_allowed": false,
+          "raw_retrieval_rows": [],
+          "claim_card_ids": [
+            "fin013_s3_claim_card_911e27e739aebc1baf84f789",
+            "fin013_s3_claim_card_4c77ff515399bcaa6230a717",
+            "fin013_s3_claim_card_8a0d2200a972254bc1a4e3c5"
+          ],
+          "synthesis_id": "fin013_s3_lead_synthesis_a0d75d226d74aee6bb531348",
+          "content_lenses": [
+            "executive_thesis",
+            "product_and_demand",
+            "financial_and_value_capture",
+            "customer_and_supply_chain",
+            "competition_and_market_position",
+            "capital_price_in_and_valuation_boundary",
+            "risk_and_counter_thesis",
+            "gaps_and_what_would_change"
+          ],
+          "answer_contract": [
+            "conclusion",
+            "why",
+            "opposing_view",
+            "missing_evidence",
+            "what_would_change"
+          ],
+          "authority": "fixture_mixed_engineering_only",
+          "section_material_ref": "case_workpaper.sections",
+          "section_digests": [
+            "95c6b400cfd9c8a912f7842985eb647cbb3b737916b4d921fe55eeed75d3755e",
+            "d116d71b06dac7b5ced8cf7e3e2c64a6772698797d841287956c89b71f7736f2",
+            "12e30b2a8dbcce692748dece088558657ef7e4d92c47021a3833398f011d72a3",
+            "af85a09f2071073c0e66516427169c59b234a38f80be213a2177a7e1a844dff6",
+            "9c68fa8ceebbc93f09f64580e541a4e3e91988fb901bfa56c01ab3ac04820dba",
+            "f70e11d3c6b7f0e666d02a04b5eef89b8fdc015429d8a5eed75d813ab39c041a",
+            "7087ad2f670221051d04fd7e2f648351a0d83850cdafb2f3751f76d21ac24398",
+            "7bbd909b08ac2a51cfd4ac8495c38b246df802d7288cc3fdead91c723b7c7d9c"
+          ]
+        },
+        "content_precheck": {
+          "required_lenses": "8/8",
+          "answers_conclusion_why_opposing_missing_change": "8/8",
+          "core_claims_bound": "3/3",
+          "lead_dependency_conflict_gap_bound": true,
+          "planned_cells_promoted": 0,
+          "generic_placeholder_fragments": 0,
+          "raw_source_rows_visible_to_writer": 0,
+          "eight_dimension_score": "not_scored_before_natural_final_delivery"
+        },
+        "workpaper_digest": "8c69d39ed1c1bc5b92024ffbb526d8cd84ac0e330a4e4bd4a60e58c1dc746dfa"
+      },
+      {
+        "workpaper_id": "fin013_s3_workpaper_68034bf019cb646cc4df676c",
+        "case_key": "NVDA",
+        "ticker": "NVDA",
+        "company_name": "NVIDIA Corporation",
+        "claim_card_ids": [
+          "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+          "fin013_s3_claim_card_a39c37b6931999e1e17d6057",
+          "fin013_s3_claim_card_f82a61215231355f35c17020"
+        ],
+        "claim_authorities": {
+          "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8": "live_natural_exact_once",
+          "fin013_s3_claim_card_a39c37b6931999e1e17d6057": "fixture_choice_engineering_only",
+          "fin013_s3_claim_card_f82a61215231355f35c17020": "live_natural_exact_once"
+        },
+        "lead_synthesis_id": "fin013_s3_lead_synthesis_38c316afffdabdf9753dfc8f",
+        "workpaper_authority": "fixture_mixed_engineering_only",
+        "product_candidate": false,
+        "display_ready": false,
+        "sections": [
+          {
+            "lens_id": "executive_thesis",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+              "fin013_s3_claim_card_a39c37b6931999e1e17d6057",
+              "fin013_s3_claim_card_f82a61215231355f35c17020"
+            ],
+            "planned_cell_ids": [],
+            "mechanism_atoms": [
+              "NVIDIA's current growth does not alone prove multi-period demand durability without repeat deployment, capacity, or customer concentration evidence.",
+              "NVIDIA's consolidated revenue, gross profit, and operating income establish company-level value capture while accelerator product profit remains unisolated.",
+              "NVIDIA's bounded current source does not establish a realized supply, regulatory, or customer-concentration constraint, so the counter-thesis remains an explicit gap."
+            ],
+            "numeric_facts": [
+              {
+                "candidate_id": "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+                "case_key": "NVDA",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "gross_profit",
+                "normalized_value": "153463000000",
+                "published_at": "2026-02-25",
+                "unit": "USD",
+                "rendered": "gross_profit=USD 153,463,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+                "case_key": "NVDA",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "operating_income",
+                "normalized_value": "130387000000",
+                "published_at": "2026-02-25",
+                "unit": "USD",
+                "rendered": "operating_income=USD 130,387,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+                "case_key": "NVDA",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "revenue",
+                "normalized_value": "215938000000",
+                "published_at": "2026-02-25",
+                "unit": "USD",
+                "rendered": "revenue=USD 215,938,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）"
+              }
+            ],
+            "answers": {
+              "conclusion": "当前最稳健的判断是：NVIDIA 的命名部署和公司级盈利证明 AI 需求与价值捕获已经发生，但跨期耐久性、加速器产品经济性以及供应、监管和客户集中约束仍未被当前证据完全裁决。",
+              "why": "NVDA 的机制链：NVIDIA's current growth does not alone prove multi-period demand durability without repeat deployment, capacity, or customer concentration evidence.；NVIDIA's consolidated revenue, gross profit, and operating income establish company-level value capture while accelerator product profit remains unisolated.；NVIDIA's bounded current source does not establish a realized supply, regulatory, or customer-concentration constraint, so the counter-thesis remains an explicit gap.；跨判断影响：Value-capture confidence requires product or Data Center attribution beyond consolidated totals.；本地精确数值：gross_profit=USD 153,463,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）；operating_income=USD 130,387,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）；revenue=USD 215,938,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）",
+              "opposing_view": "最强反方：Named deployments support current demand while the bounded source set contains no realized constraint evidence sufficient to validate or dismiss the counterthesis. 处置仍为 defer，因为 Absence of a realized constraint in the bounded source is a gap, not proof that the bottleneck is absent.",
+              "missing_evidence": "NVDA_GAP_PRODUCT_ECONOMICS_ATTRIBUTION：Prevents consolidated revenue and profit from proving accelerator or Data Center product economics.；NVDA_GAP_REALIZED_COUNTEREVIDENCE：Prevents the Lead from resolving whether supply, export, deployment or concentration constraints are currently material.",
+              "what_would_change": "named-cloud deployment, capacity expansion or utilization 向 repeat_or_expand 变化，在 next_reporting_period 达到“NVIDIA or a named cloud partner reports another deployment or expansion event”；下一证据路线：NVIDIA and named-cloud official releases or filings；deployment delay, concentration loss or accelerator demand slowdown 向 material_deterioration 变化，在 next_two_reporting_periods 达到“issuer or named customer identifies a material digestion or delay event”；下一证据路线：NVIDIA and named-customer official releases or filings；accelerator or Data Center product revenue and profit 向 explicit_product_attribution 变化，在 next_quarter_or_annual_update 达到“issuer publishes comparable product revenue and profit authority”；下一证据路线：NVIDIA earnings tables, segment note or investor presentation；realized supply, export, deployment or concentration constraint 向 material_adverse_event 变化，在 current_or_next_reporting_period 达到“issuer or official named counterparty reports a realized constraint with material scope”；下一证据路线：NVIDIA, named-counterparty or effective-policy official source；deployment expansion without the hypothesized bottleneck 向 repeated_absence_with_expansion 变化，在 two_consecutive_reporting_periods 达到“two bounded official updates show expansion without the hypothesized constraint”；下一证据路线：NVIDIA and named-cloud official releases or filings"
+            },
+            "evidence_boundary": [
+              "Issuer wording supports only the quoted demand statement; durability and causality remain analyst judgments.",
+              "The issuer announcement supports AWS being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "The issuer announcement supports Google Cloud being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "The issuer announcement supports the existence and disclosed scope of the Meta partnership; it does not establish exact order value, recognized revenue, margin, timing certainty, or exclusivity.",
+              "The issuer announcement supports Microsoft Azure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "The issuer announcement supports Oracle Cloud Infrastructure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+              "consolidated_company_total",
+              "a realized supply, export-control or customer-concentration constraint from a generic forward-looking statement list"
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Value-capture confidence requires product or Data Center attribution beyond consolidated totals.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_188d29e1707ad57269910e99",
+                  "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+                  "fin013_retrieval_candidate_3512b0478a3b12318b10136e",
+                  "fin013_retrieval_candidate_3d8b637b4c94474ffa9f8e5a",
+                  "fin013_retrieval_candidate_4edf79e04af34ec1ecde9470",
+                  "fin013_retrieval_candidate_7c841b20f9f56885f5ac75f8",
+                  "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+                  "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+                  "fin013_retrieval_candidate_c1da6be578c29a564d884058",
+                  "fin013_retrieval_candidate_ee0f6469ef03752279a9c3eb"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+                "mechanism": "Named cloud deployments and company revenue establish demand transmission before product-level economics can be assessed.",
+                "to_claim_id": "fin013_s3_claim_card_a39c37b6931999e1e17d6057"
+              },
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+                  "fin013_s3_claim_card_f82a61215231355f35c17020"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "NVDA_M_DURABILITY_REQUIRES_REPEAT_EVIDENCE",
+                  "NVDA_M_REALIZED_COUNTEREVIDENCE_GAP"
+                ],
+                "reason": "Absence of a realized constraint in the bounded source is a gap, not proof that the bottleneck is absent.",
+                "tension": "Named deployments support current demand while the bounded source set contains no realized constraint evidence sufficient to validate or dismiss the counterthesis."
+              },
+              "gap_ids": [
+                "NVDA_GAP_PRODUCT_ECONOMICS_ATTRIBUTION",
+                "NVDA_GAP_REALIZED_COUNTEREVIDENCE"
+              ]
+            }
+          },
+          {
+            "lens_id": "product_and_demand",
+            "coverage_status": "bounded_judgment",
+            "authority": "all_natural",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8"
+            ],
+            "planned_cell_ids": [
+              "customer_concentration",
+              "server_oem_order_revenue_conversion"
+            ],
+            "mechanism_atoms": [
+              "NVIDIA's current growth does not alone prove multi-period demand durability without repeat deployment, capacity, or customer concentration evidence."
+            ],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "产品与需求层面，NVDA 的命名云部署支持当前需求传导，但单期增长不足以证明重复部署、利用率和客户集中风险下的跨期耐久性。",
+              "why": "NVDA 的机制链：NVIDIA's current growth does not alone prove multi-period demand durability without repeat deployment, capacity, or customer concentration evidence.；跨判断影响：Value-capture confidence requires product or Data Center attribution beyond consolidated totals.",
+              "opposing_view": "Named deployments support current demand while the bounded source set contains no realized constraint evidence sufficient to validate or dismiss the counterthesis.；当前处置为 defer，原因是 Absence of a realized constraint in the bounded source is a gap, not proof that the bottleneck is absent.",
+              "missing_evidence": "How concentrated is NVIDIA's AI demand and what named-customer evidence is actually authoritative?；What does the server-OEM chain show about order-to-revenue conversion relevant to NVIDIA?",
+              "what_would_change": "named-cloud deployment, capacity expansion or utilization 向 repeat_or_expand 变化，在 next_reporting_period 达到“NVIDIA or a named cloud partner reports another deployment or expansion event”；下一证据路线：NVIDIA and named-cloud official releases or filings；deployment delay, concentration loss or accelerator demand slowdown 向 material_deterioration 变化，在 next_two_reporting_periods 达到“issuer or named customer identifies a material digestion or delay event”；下一证据路线：NVIDIA and named-customer official releases or filings"
+            },
+            "evidence_boundary": [
+              "Issuer wording supports only the quoted demand statement; durability and causality remain analyst judgments.",
+              "The issuer announcement supports AWS being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "The issuer announcement supports Google Cloud being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "The issuer announcement supports the existence and disclosed scope of the Meta partnership; it does not establish exact order value, recognized revenue, margin, timing certainty, or exclusivity.",
+              "The issuer announcement supports Microsoft Azure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "The issuer announcement supports Oracle Cloud Infrastructure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion."
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Value-capture confidence requires product or Data Center attribution beyond consolidated totals.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_188d29e1707ad57269910e99",
+                  "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+                  "fin013_retrieval_candidate_3512b0478a3b12318b10136e",
+                  "fin013_retrieval_candidate_3d8b637b4c94474ffa9f8e5a",
+                  "fin013_retrieval_candidate_4edf79e04af34ec1ecde9470",
+                  "fin013_retrieval_candidate_7c841b20f9f56885f5ac75f8",
+                  "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+                  "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+                  "fin013_retrieval_candidate_c1da6be578c29a564d884058",
+                  "fin013_retrieval_candidate_ee0f6469ef03752279a9c3eb"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+                "mechanism": "Named cloud deployments and company revenue establish demand transmission before product-level economics can be assessed.",
+                "to_claim_id": "fin013_s3_claim_card_a39c37b6931999e1e17d6057"
+              },
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+                  "fin013_s3_claim_card_f82a61215231355f35c17020"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "NVDA_M_DURABILITY_REQUIRES_REPEAT_EVIDENCE",
+                  "NVDA_M_REALIZED_COUNTEREVIDENCE_GAP"
+                ],
+                "reason": "Absence of a realized constraint in the bounded source is a gap, not proof that the bottleneck is absent.",
+                "tension": "Named deployments support current demand while the bounded source set contains no realized constraint evidence sufficient to validate or dismiss the counterthesis."
+              },
+              "gap_ids": []
+            }
+          },
+          {
+            "lens_id": "financial_and_value_capture",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_a39c37b6931999e1e17d6057"
+            ],
+            "planned_cell_ids": [
+              "server_oem_margin_cash_conversion"
+            ],
+            "mechanism_atoms": [
+              "NVIDIA's consolidated revenue, gross profit, and operating income establish company-level value capture while accelerator product profit remains unisolated."
+            ],
+            "numeric_facts": [
+              {
+                "candidate_id": "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+                "case_key": "NVDA",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "gross_profit",
+                "normalized_value": "153463000000",
+                "published_at": "2026-02-25",
+                "unit": "USD",
+                "rendered": "gross_profit=USD 153,463,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+                "case_key": "NVDA",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "operating_income",
+                "normalized_value": "130387000000",
+                "published_at": "2026-02-25",
+                "unit": "USD",
+                "rendered": "operating_income=USD 130,387,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+                "case_key": "NVDA",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "revenue",
+                "normalized_value": "215938000000",
+                "published_at": "2026-02-25",
+                "unit": "USD",
+                "rendered": "revenue=USD 215,938,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）"
+              }
+            ],
+            "answers": {
+              "conclusion": "财务层面，NVDA 的合并收入、毛利和营业利润证明公司级价值捕获，但不能把全部利润直接归因于加速器或 Data Center 产品经济性。",
+              "why": "NVDA 的机制链：NVIDIA's consolidated revenue, gross profit, and operating income establish company-level value capture while accelerator product profit remains unisolated.；跨判断影响：Value-capture confidence requires product or Data Center attribution beyond consolidated totals.；本地精确数值：gross_profit=USD 153,463,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）；operating_income=USD 130,387,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）；revenue=USD 215,938,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）",
+              "opposing_view": "当前证据边界不允许把公司或分部总量直接外推为该维度的完整因果结论。",
+              "missing_evidence": "NVDA_GAP_PRODUCT_ECONOMICS_ATTRIBUTION：Prevents consolidated revenue and profit from proving accelerator or Data Center product economics.；下一路线：NVIDIA earnings tables, segment note or investor presentation with product economics authority.",
+              "what_would_change": "accelerator or Data Center product revenue and profit 向 explicit_product_attribution 变化，在 next_quarter_or_annual_update 达到“issuer publishes comparable product revenue and profit authority”；下一证据路线：NVIDIA earnings tables, segment note or investor presentation"
+            },
+            "evidence_boundary": [
+              "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+              "consolidated_company_total"
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Value-capture confidence requires product or Data Center attribution beyond consolidated totals.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_188d29e1707ad57269910e99",
+                  "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+                  "fin013_retrieval_candidate_3512b0478a3b12318b10136e",
+                  "fin013_retrieval_candidate_3d8b637b4c94474ffa9f8e5a",
+                  "fin013_retrieval_candidate_4edf79e04af34ec1ecde9470",
+                  "fin013_retrieval_candidate_7c841b20f9f56885f5ac75f8",
+                  "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+                  "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+                  "fin013_retrieval_candidate_c1da6be578c29a564d884058",
+                  "fin013_retrieval_candidate_ee0f6469ef03752279a9c3eb"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+                "mechanism": "Named cloud deployments and company revenue establish demand transmission before product-level economics can be assessed.",
+                "to_claim_id": "fin013_s3_claim_card_a39c37b6931999e1e17d6057"
+              },
+              "conflict": null,
+              "gap_ids": [
+                "NVDA_GAP_PRODUCT_ECONOMICS_ATTRIBUTION"
+              ]
+            }
+          },
+          {
+            "lens_id": "customer_and_supply_chain",
+            "coverage_status": "bounded_judgment",
+            "authority": "all_natural",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+              "fin013_s3_claim_card_f82a61215231355f35c17020"
+            ],
+            "planned_cell_ids": [
+              "foundry_advanced_packaging_capacity",
+              "hbm_supply_pricing_concentration",
+              "server_oem_order_revenue_conversion",
+              "server_oem_margin_cash_conversion"
+            ],
+            "mechanism_atoms": [
+              "NVIDIA's current growth does not alone prove multi-period demand durability without repeat deployment, capacity, or customer concentration evidence.",
+              "NVIDIA's bounded current source does not establish a realized supply, regulatory, or customer-concentration constraint, so the counter-thesis remains an explicit gap."
+            ],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "客户与供应链层面，命名部署说明需求经过云客户传导，但现有材料仍不足以判定供应、部署、出口管制或客户集中是否已形成实质瓶颈。",
+              "why": "NVDA 的机制链：NVIDIA's current growth does not alone prove multi-period demand durability without repeat deployment, capacity, or customer concentration evidence.；NVIDIA's bounded current source does not establish a realized supply, regulatory, or customer-concentration constraint, so the counter-thesis remains an explicit gap.；跨判断影响：Value-capture confidence requires product or Data Center attribution beyond consolidated totals.",
+              "opposing_view": "Named deployments support current demand while the bounded source set contains no realized constraint evidence sufficient to validate or dismiss the counterthesis.；当前处置为 defer，原因是 Absence of a realized constraint in the bounded source is a gap, not proof that the bottleneck is absent.",
+              "missing_evidence": "NVDA_GAP_REALIZED_COUNTEREVIDENCE：Prevents the Lead from resolving whether supply, export, deployment or concentration constraints are currently material.；下一路线：NVIDIA, named-counterparty or effective-policy official source reporting a realized constraint or repeated bounded absence.",
+              "what_would_change": "named-cloud deployment, capacity expansion or utilization 向 repeat_or_expand 变化，在 next_reporting_period 达到“NVIDIA or a named cloud partner reports another deployment or expansion event”；下一证据路线：NVIDIA and named-cloud official releases or filings；deployment delay, concentration loss or accelerator demand slowdown 向 material_deterioration 变化，在 next_two_reporting_periods 达到“issuer or named customer identifies a material digestion or delay event”；下一证据路线：NVIDIA and named-customer official releases or filings；realized supply, export, deployment or concentration constraint 向 material_adverse_event 变化，在 current_or_next_reporting_period 达到“issuer or official named counterparty reports a realized constraint with material scope”；下一证据路线：NVIDIA, named-counterparty or effective-policy official source；deployment expansion without the hypothesized bottleneck 向 repeated_absence_with_expansion 变化，在 two_consecutive_reporting_periods 达到“two bounded official updates show expansion without the hypothesized constraint”；下一证据路线：NVIDIA and named-cloud official releases or filings"
+            },
+            "evidence_boundary": [
+              "Issuer wording supports only the quoted demand statement; durability and causality remain analyst judgments.",
+              "The issuer announcement supports AWS being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "The issuer announcement supports Google Cloud being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "The issuer announcement supports the existence and disclosed scope of the Meta partnership; it does not establish exact order value, recognized revenue, margin, timing certainty, or exclusivity.",
+              "The issuer announcement supports Microsoft Azure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "The issuer announcement supports Oracle Cloud Infrastructure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "a realized supply, export-control or customer-concentration constraint from a generic forward-looking statement list"
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Value-capture confidence requires product or Data Center attribution beyond consolidated totals.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_188d29e1707ad57269910e99",
+                  "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+                  "fin013_retrieval_candidate_3512b0478a3b12318b10136e",
+                  "fin013_retrieval_candidate_3d8b637b4c94474ffa9f8e5a",
+                  "fin013_retrieval_candidate_4edf79e04af34ec1ecde9470",
+                  "fin013_retrieval_candidate_7c841b20f9f56885f5ac75f8",
+                  "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+                  "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+                  "fin013_retrieval_candidate_c1da6be578c29a564d884058",
+                  "fin013_retrieval_candidate_ee0f6469ef03752279a9c3eb"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+                "mechanism": "Named cloud deployments and company revenue establish demand transmission before product-level economics can be assessed.",
+                "to_claim_id": "fin013_s3_claim_card_a39c37b6931999e1e17d6057"
+              },
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+                  "fin013_s3_claim_card_f82a61215231355f35c17020"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "NVDA_M_DURABILITY_REQUIRES_REPEAT_EVIDENCE",
+                  "NVDA_M_REALIZED_COUNTEREVIDENCE_GAP"
+                ],
+                "reason": "Absence of a realized constraint in the bounded source is a gap, not proof that the bottleneck is absent.",
+                "tension": "Named deployments support current demand while the bounded source set contains no realized constraint evidence sufficient to validate or dismiss the counterthesis."
+              },
+              "gap_ids": [
+                "NVDA_GAP_REALIZED_COUNTEREVIDENCE"
+              ]
+            }
+          },
+          {
+            "lens_id": "competition_and_market_position",
+            "coverage_status": "explicit_research_gap",
+            "authority": "planned_no_claim",
+            "claim_card_ids": [],
+            "planned_cell_ids": [
+              "customer_concentration",
+              "semicap_export_policy_risk"
+            ],
+            "mechanism_atoms": [],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "NVDA 在该维度当前不作实质结论：竞争层面，本轮没有完整的替代方案、生态锁定、份额和定价证据，不能仅凭收入与部署推导持续竞争优势。",
+              "why": "现有核心 Claim 没有覆盖这些问题，写作层不得用行业常识或通用措辞补齐。",
+              "opposing_view": "在形成正面或负面判断前，必须先取得本案、当前、可追溯的证据。",
+              "missing_evidence": "How concentrated is NVIDIA's AI demand and what named-customer evidence is actually authoritative?；Which export-policy constraints can alter NVIDIA's addressable demand, supply route or product mix?",
+              "what_would_change": "完成上述 planned Cell 的 Evidence Gate、Claim 选择和 Lead 裁决后，才允许改变该维度状态。"
+            },
+            "evidence_boundary": [],
+            "lead_links": {
+              "dependency": null,
+              "conflict": null,
+              "gap_ids": []
+            }
+          },
+          {
+            "lens_id": "capital_price_in_and_valuation_boundary",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_a39c37b6931999e1e17d6057"
+            ],
+            "planned_cell_ids": [
+              "cross_chain_price_in_and_expectations",
+              "semicap_capex_cycle"
+            ],
+            "mechanism_atoms": [
+              "NVIDIA's consolidated revenue, gross profit, and operating income establish company-level value capture while accelerator product profit remains unisolated."
+            ],
+            "numeric_facts": [
+              {
+                "candidate_id": "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+                "case_key": "NVDA",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "gross_profit",
+                "normalized_value": "153463000000",
+                "published_at": "2026-02-25",
+                "unit": "USD",
+                "rendered": "gross_profit=USD 153,463,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+                "case_key": "NVDA",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "operating_income",
+                "normalized_value": "130387000000",
+                "published_at": "2026-02-25",
+                "unit": "USD",
+                "rendered": "operating_income=USD 130,387,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）"
+              },
+              {
+                "candidate_id": "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+                "case_key": "NVDA",
+                "claim_boundary": "consolidated_company_total",
+                "metric_family": "revenue",
+                "normalized_value": "215938000000",
+                "published_at": "2026-02-25",
+                "unit": "USD",
+                "rendered": "revenue=USD 215,938,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）"
+              }
+            ],
+            "answers": {
+              "conclusion": "资本、price-in 与估值层面，当前公司级盈利不能回答市场已计价程度、资本回报持续性或估值敏感性，必须与产品经济性和市场快照分开处理。",
+              "why": "NVDA 的机制链：NVIDIA's consolidated revenue, gross profit, and operating income establish company-level value capture while accelerator product profit remains unisolated.；跨判断影响：Value-capture confidence requires product or Data Center attribution beyond consolidated totals.；本地精确数值：gross_profit=USD 153,463,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）；operating_income=USD 130,387,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）；revenue=USD 215,938,000,000（披露日 2026-02-25；口径边界：consolidated_company_total）",
+              "opposing_view": "当前证据边界不允许把公司或分部总量直接外推为该维度的完整因果结论。",
+              "missing_evidence": "NVDA_GAP_PRODUCT_ECONOMICS_ATTRIBUTION：Prevents consolidated revenue and profit from proving accelerator or Data Center product economics.；下一路线：NVIDIA earnings tables, segment note or investor presentation with product economics authority.",
+              "what_would_change": "accelerator or Data Center product revenue and profit 向 explicit_product_attribution 变化，在 next_quarter_or_annual_update 达到“issuer publishes comparable product revenue and profit authority”；下一证据路线：NVIDIA earnings tables, segment note or investor presentation"
+            },
+            "evidence_boundary": [
+              "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+              "consolidated_company_total"
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Value-capture confidence requires product or Data Center attribution beyond consolidated totals.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_188d29e1707ad57269910e99",
+                  "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+                  "fin013_retrieval_candidate_3512b0478a3b12318b10136e",
+                  "fin013_retrieval_candidate_3d8b637b4c94474ffa9f8e5a",
+                  "fin013_retrieval_candidate_4edf79e04af34ec1ecde9470",
+                  "fin013_retrieval_candidate_7c841b20f9f56885f5ac75f8",
+                  "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+                  "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+                  "fin013_retrieval_candidate_c1da6be578c29a564d884058",
+                  "fin013_retrieval_candidate_ee0f6469ef03752279a9c3eb"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+                "mechanism": "Named cloud deployments and company revenue establish demand transmission before product-level economics can be assessed.",
+                "to_claim_id": "fin013_s3_claim_card_a39c37b6931999e1e17d6057"
+              },
+              "conflict": null,
+              "gap_ids": [
+                "NVDA_GAP_PRODUCT_ECONOMICS_ATTRIBUTION"
+              ]
+            }
+          },
+          {
+            "lens_id": "risk_and_counter_thesis",
+            "coverage_status": "bounded_judgment",
+            "authority": "all_natural",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_f82a61215231355f35c17020"
+            ],
+            "planned_cell_ids": [
+              "semicap_export_policy_risk",
+              "gap_resolution__bottleneck_counterevidence_and_what_would_change__current_issuer_counterevidence"
+            ],
+            "mechanism_atoms": [
+              "NVIDIA's bounded current source does not establish a realized supply, regulatory, or customer-concentration constraint, so the counter-thesis remains an explicit gap."
+            ],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "最强反方是供应、出口管制、部署或客户集中约束削弱需求兑现；当前没有已实现约束的证据并不等于这些风险不存在。",
+              "why": "NVDA 的机制链：NVIDIA's bounded current source does not establish a realized supply, regulatory, or customer-concentration constraint, so the counter-thesis remains an explicit gap.；跨判断影响：Value-capture confidence requires product or Data Center attribution beyond consolidated totals.",
+              "opposing_view": "Named deployments support current demand while the bounded source set contains no realized constraint evidence sufficient to validate or dismiss the counterthesis.；当前处置为 defer，原因是 Absence of a realized constraint in the bounded source is a gap, not proof that the bottleneck is absent.",
+              "missing_evidence": "NVDA_GAP_REALIZED_COUNTEREVIDENCE：Prevents the Lead from resolving whether supply, export, deployment or concentration constraints are currently material.；下一路线：NVIDIA, named-counterparty or effective-policy official source reporting a realized constraint or repeated bounded absence.",
+              "what_would_change": "realized supply, export, deployment or concentration constraint 向 material_adverse_event 变化，在 current_or_next_reporting_period 达到“issuer or official named counterparty reports a realized constraint with material scope”；下一证据路线：NVIDIA, named-counterparty or effective-policy official source；deployment expansion without the hypothesized bottleneck 向 repeated_absence_with_expansion 变化，在 two_consecutive_reporting_periods 达到“two bounded official updates show expansion without the hypothesized constraint”；下一证据路线：NVIDIA and named-cloud official releases or filings"
+            },
+            "evidence_boundary": [
+              "a realized supply, export-control or customer-concentration constraint from a generic forward-looking statement list"
+            ],
+            "lead_links": {
+              "dependency": null,
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+                  "fin013_s3_claim_card_f82a61215231355f35c17020"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "NVDA_M_DURABILITY_REQUIRES_REPEAT_EVIDENCE",
+                  "NVDA_M_REALIZED_COUNTEREVIDENCE_GAP"
+                ],
+                "reason": "Absence of a realized constraint in the bounded source is a gap, not proof that the bottleneck is absent.",
+                "tension": "Named deployments support current demand while the bounded source set contains no realized constraint evidence sufficient to validate or dismiss the counterthesis."
+              },
+              "gap_ids": [
+                "NVDA_GAP_REALIZED_COUNTEREVIDENCE"
+              ]
+            }
+          },
+          {
+            "lens_id": "gaps_and_what_would_change",
+            "coverage_status": "bounded_judgment",
+            "authority": "fixture_mixed_engineering_only",
+            "claim_card_ids": [
+              "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+              "fin013_s3_claim_card_a39c37b6931999e1e17d6057",
+              "fin013_s3_claim_card_f82a61215231355f35c17020"
+            ],
+            "planned_cell_ids": [],
+            "mechanism_atoms": [
+              "NVIDIA's current growth does not alone prove multi-period demand durability without repeat deployment, capacity, or customer concentration evidence.",
+              "NVIDIA's consolidated revenue, gross profit, and operating income establish company-level value capture while accelerator product profit remains unisolated.",
+              "NVIDIA's bounded current source does not establish a realized supply, regulatory, or customer-concentration constraint, so the counter-thesis remains an explicit gap."
+            ],
+            "numeric_facts": [],
+            "answers": {
+              "conclusion": "NVDA 当前判断必须保持有条件：未关闭的高影响缺口不能被写作层补成事实。",
+              "why": "NVDA_GAP_PRODUCT_ECONOMICS_ATTRIBUTION 由 financial_analyst 负责，影响为 Prevents consolidated revenue and profit from proving accelerator or Data Center product economics.；NVDA_GAP_REALIZED_COUNTEREVIDENCE 由 risk_reviewer 负责，影响为 Prevents the Lead from resolving whether supply, export, deployment or concentration constraints are currently material.",
+              "opposing_view": "Named deployments support current demand while the bounded source set contains no realized constraint evidence sufficient to validate or dismiss the counterthesis.；当前处置为 defer。",
+              "missing_evidence": "NVIDIA earnings tables, segment note or investor presentation with product economics authority.；停止条件：Stop when current NVIDIA segment and product disclosures do not isolate comparable product revenue and profit.；NVIDIA, named-counterparty or effective-policy official source reporting a realized constraint or repeated bounded absence.；停止条件：Stop after bounded NVIDIA, named-counterparty and effective-policy official routes are exhausted.",
+              "what_would_change": "named-cloud deployment, capacity expansion or utilization 向 repeat_or_expand 变化，在 next_reporting_period 达到“NVIDIA or a named cloud partner reports another deployment or expansion event”；下一证据路线：NVIDIA and named-cloud official releases or filings；deployment delay, concentration loss or accelerator demand slowdown 向 material_deterioration 变化，在 next_two_reporting_periods 达到“issuer or named customer identifies a material digestion or delay event”；下一证据路线：NVIDIA and named-customer official releases or filings；accelerator or Data Center product revenue and profit 向 explicit_product_attribution 变化，在 next_quarter_or_annual_update 达到“issuer publishes comparable product revenue and profit authority”；下一证据路线：NVIDIA earnings tables, segment note or investor presentation；realized supply, export, deployment or concentration constraint 向 material_adverse_event 变化，在 current_or_next_reporting_period 达到“issuer or official named counterparty reports a realized constraint with material scope”；下一证据路线：NVIDIA, named-counterparty or effective-policy official source；deployment expansion without the hypothesized bottleneck 向 repeated_absence_with_expansion 变化，在 two_consecutive_reporting_periods 达到“two bounded official updates show expansion without the hypothesized constraint”；下一证据路线：NVIDIA and named-cloud official releases or filings"
+            },
+            "evidence_boundary": [
+              "Issuer wording supports only the quoted demand statement; durability and causality remain analyst judgments.",
+              "The issuer announcement supports AWS being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "The issuer announcement supports Google Cloud being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "The issuer announcement supports the existence and disclosed scope of the Meta partnership; it does not establish exact order value, recognized revenue, margin, timing certainty, or exclusivity.",
+              "The issuer announcement supports Microsoft Azure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "The issuer announcement supports Oracle Cloud Infrastructure being among the first planned Vera Rubin instance deployers; it does not establish exact capacity, order value, recognized revenue, or deployment completion.",
+              "Issuer filing supports only the quoted period and scope; derived metrics require the Numeric program.",
+              "consolidated_company_total",
+              "a realized supply, export-control or customer-concentration constraint from a generic forward-looking statement list"
+            ],
+            "lead_links": {
+              "dependency": {
+                "decision_effect": "Value-capture confidence requires product or Data Center attribution beyond consolidated totals.",
+                "evidence_candidate_ids": [
+                  "fin013_retrieval_candidate_188d29e1707ad57269910e99",
+                  "fin013_retrieval_candidate_3055c273b690303470c3ed22",
+                  "fin013_retrieval_candidate_3512b0478a3b12318b10136e",
+                  "fin013_retrieval_candidate_3d8b637b4c94474ffa9f8e5a",
+                  "fin013_retrieval_candidate_4edf79e04af34ec1ecde9470",
+                  "fin013_retrieval_candidate_7c841b20f9f56885f5ac75f8",
+                  "fin013_retrieval_candidate_92cbcc0fc9ae618289831430",
+                  "fin013_retrieval_candidate_abc6d9f7958160123c87267f",
+                  "fin013_retrieval_candidate_c1da6be578c29a564d884058",
+                  "fin013_retrieval_candidate_ee0f6469ef03752279a9c3eb"
+                ],
+                "from_claim_id": "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+                "mechanism": "Named cloud deployments and company revenue establish demand transmission before product-level economics can be assessed.",
+                "to_claim_id": "fin013_s3_claim_card_a39c37b6931999e1e17d6057"
+              },
+              "conflict": {
+                "claim_ids": [
+                  "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+                  "fin013_s3_claim_card_f82a61215231355f35c17020"
+                ],
+                "disposition": "defer",
+                "mechanism_aliases": [
+                  "NVDA_M_DURABILITY_REQUIRES_REPEAT_EVIDENCE",
+                  "NVDA_M_REALIZED_COUNTEREVIDENCE_GAP"
+                ],
+                "reason": "Absence of a realized constraint in the bounded source is a gap, not proof that the bottleneck is absent.",
+                "tension": "Named deployments support current demand while the bounded source set contains no realized constraint evidence sufficient to validate or dismiss the counterthesis."
+              },
+              "gap_ids": [
+                "NVDA_GAP_PRODUCT_ECONOMICS_ATTRIBUTION",
+                "NVDA_GAP_REALIZED_COUNTEREVIDENCE"
+              ]
+            }
+          }
+        ],
+        "writer_no_source_packet": {
+          "schema_version": "fin_ia_0_1_3_s3_writer_no_source_packet_v1_0",
+          "case_key": "NVDA",
+          "company_name": "NVIDIA Corporation",
+          "source_access_allowed": false,
+          "raw_retrieval_rows": [],
+          "claim_card_ids": [
+            "fin013_s3_claim_card_3f3a8a4d43c42ff223f886c8",
+            "fin013_s3_claim_card_a39c37b6931999e1e17d6057",
+            "fin013_s3_claim_card_f82a61215231355f35c17020"
+          ],
+          "synthesis_id": "fin013_s3_lead_synthesis_38c316afffdabdf9753dfc8f",
+          "content_lenses": [
+            "executive_thesis",
+            "product_and_demand",
+            "financial_and_value_capture",
+            "customer_and_supply_chain",
+            "competition_and_market_position",
+            "capital_price_in_and_valuation_boundary",
+            "risk_and_counter_thesis",
+            "gaps_and_what_would_change"
+          ],
+          "answer_contract": [
+            "conclusion",
+            "why",
+            "opposing_view",
+            "missing_evidence",
+            "what_would_change"
+          ],
+          "authority": "fixture_mixed_engineering_only",
+          "section_material_ref": "case_workpaper.sections",
+          "section_digests": [
+            "f0fc1f0d06dd39d98fe0607e2b54269b812f0a94ba0867aca71c4e5062c3ea9a",
+            "c974fc108df9a4920a655438bdd618e8ab3c6f98397edcfe8a9dfb881311116b",
+            "3ffae9b78b59e3c969bf4cb20ff52fb4f090b3a15968a36b691c0940783d0443",
+            "5266394528d4b5c20640d85f8f6d10bcc5dbaebf1dd20ace8688ea4825ece5dc",
+            "4ccd205cdc9ff0827f31de9dc2edc82020c30a2494464221bc7daa7ce657e32b",
+            "68a5f114d173ef31fa828e7e867004a0ea36d668df6952508aa7205a205ecf02",
+            "047bcf220d1fa4ba43b56490a3b16a4a6b28f75ca705df19cb7a17fcfb719f41",
+            "cebbc0bfed434a7438096dcf2c030e682585225751090a5a1db31339a3649480"
+          ]
+        },
+        "content_precheck": {
+          "required_lenses": "8/8",
+          "answers_conclusion_why_opposing_missing_change": "8/8",
+          "core_claims_bound": "3/3",
+          "lead_dependency_conflict_gap_bound": true,
+          "planned_cells_promoted": 0,
+          "generic_placeholder_fragments": 0,
+          "raw_source_rows_visible_to_writer": 0,
+          "eight_dimension_score": "not_scored_before_natural_final_delivery"
+        },
+        "workpaper_digest": "5507ecac1abcac95eb4eefcd857f36d3b2dab280f38c08730344bc59e1815128"
+      }
+    ],
+    "observed_counts": {
+      "case_workpapers": 3,
+      "content_lenses": 24,
+      "bounded_judgment_lenses": 21,
+      "explicit_research_gap_lenses": 3,
+      "natural_product_candidates": 0,
+      "fixture_mixed_engineering_previews": 3,
+      "planned_cells_rendered_as_findings": 0,
+      "writer_raw_source_rows": 0,
+      "model_calls": 0,
+      "provider_calls": 0,
+      "network_calls": 0,
+      "source_calls": 0,
+      "business_runs": 0
+    },
+    "stage_boundary": {
+      "S3_04": "engineering_pass_decision_ready_content_contract_and_fixture_preview",
+      "fixture_preview_is_product_delivery": false,
+      "all_natural_workpapers": 0,
+      "writer_no_source_contract": true,
+      "provider_output_schema_changed": false,
+      "model_visible_writer_input_activated": false,
+      "additional_paid_canary_required_now": false,
+      "formal_full_chain": false,
+      "eight_dimension_quality_acceptance": false,
+      "qualified_human_content_acceptance": false,
+      "product_acceptance": false,
+      "release": false,
+      "S3_05_quality_gate": "next_not_started"
+    },
+    "program_digest": "11577468316a5b95120ca6b2e2f59edc471d6f57d99034e924cbeb62284562cd"
+  },
+  "canary_disposition": {
+    "new_provider_output_schema": false,
+    "model_visible_writer_input_activated": false,
+    "additional_paid_canary_now": "not_required",
+    "reason": "S3-04 compiles and validates a local no-source Writer packet and deterministic engineering preview only. Provider-visible Writer activation remains deferred to the single formal full chain after S3-05 deterministic gates."
+  },
+  "model_provider_network_source_business_runs": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "stage_boundary": {
+    "S3_04": "engineering_pass",
+    "S3_05": "next_not_started",
+    "writer_runtime_natural_output": false,
+    "product_delivery": false,
+    "full_chain": false,
+    "product_acceptance": false,
+    "release": false
+  },
+  "known_boundary": "The three Workpapers are substantive deterministic engineering previews over mixed natural/fixture Claim authority. They expose uncovered research lenses and must not be shown as completed business research or used for product/release acceptance.",
+  "current_next": "FIN-0.1.3-013-S3-05-EIGHT-DIMENSION-VERIFIER-PAIRED-QUALITY-GATE-ENTRY-AUDIT",
+  "record_digest": "9db1dac9074303e01f5c63014947557458768d0179615c3aecef7d230dc442df"
+}

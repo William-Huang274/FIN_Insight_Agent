@@ -117,6 +117,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 
 > **2026-08-06 `013-S3-03` 工程通过**：三案各形成 1 条跨 Claim mechanism dependency、1 条带 tension/disposition/reason 的 conflict，合计 5 条具 impact/priority/owner/stop/next-route 的 gap；typed gap 与 Claim-boundary gap 分离，不再复述 supported/cannot-infer 状态。三案 natural Claim coverage 分别为 1/3、1/3、2/3，故 synthesis 全部 fixture-mixed，冲突均 defer；fixture 假 resolve 会 fail closed。29 个 planned/no-claim Cell 未被综合。current suite=`219 passed / 1 historical assertion deselected`，additional canary=0；下一项为 `013-S3-04`。
 
+> **2026-08-06 `013-S3-04` 工程通过**：三案已形成 no-source Workpaper/Writer decision-ready 内容合同，每案固定覆盖 8 个研究 lens，并逐 lens 回答结论、原因、反方、缺口和改变条件；共 `24 lens = 21 bounded judgment + 3 explicit research gap`。现有 Claim、精确 Numeric、Lead dependency/conflict/gap 与 observable WWC 被连接为公司专属内容；没有 Claim 的资本/price-in 或竞争维度明确不作结论，29 个 planned Cell 没有被当成 finding。由于当前三案仍是 4 个 natural choice 加 5 个 fixture choice，三个预览均为 `fixture_mixed_engineering_only`，不是产品交付；Provider-visible Writer input 未激活，也未新增 paid canary。current suite=`226 passed / 1 historical assertion deselected`；下一项为 `013-S3-05`，先实现八维 Verifier/paired 硬门禁，再决定唯一正式 full-chain。
+
 ### S4：current 产品工作流与真实 dogfood
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |

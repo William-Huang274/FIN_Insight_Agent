@@ -1,0 +1,153 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_workpaper_writer_content_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S3.workpaper_writer_decision_ready_content:v1",
+  "required_lenses": [
+    "executive_thesis",
+    "product_and_demand",
+    "financial_and_value_capture",
+    "customer_and_supply_chain",
+    "competition_and_market_position",
+    "capital_price_in_and_valuation_boundary",
+    "risk_and_counter_thesis",
+    "gaps_and_what_would_change"
+  ],
+  "required_answer_fields": [
+    "conclusion",
+    "why",
+    "opposing_view",
+    "missing_evidence",
+    "what_would_change"
+  ],
+  "forbidden_generic_fragments": [
+    "证据方向支持当前单元判断",
+    "详见本地绑定事实",
+    "证据方向尚不足以判断当前单元",
+    "持续核对新增反证与口径变化",
+    "当前信息有限，建议持续关注",
+    "cannot infer; see local facts"
+  ],
+  "case_rules": {
+    "DELL": {
+      "company_name": "Dell Technologies",
+      "ticker": "DELL",
+      "case_thesis_frame": "当前最稳健的判断是：Dell 已经证明 AI 优化服务器收入规模，但尚未证明终端需求的跨期耐久性，也未把该收入可靠桥接到 AI 服务器自身利润与现金回报。",
+      "lens_rules": {
+        "product_and_demand": {
+          "source_cells": ["demand_authenticity_and_sustainability"],
+          "planned_cells": ["customer_concentration", "server_oem_order_revenue_conversion"],
+          "decision_frame": "产品与需求层面，DELL 的 AI 服务器收入是已发生的公司收入信号，但收入规模不能单独替代订单、部署、复购和消化周期证据。"
+        },
+        "financial_and_value_capture": {
+          "source_cells": ["value_and_profit_capture"],
+          "planned_cells": ["server_oem_margin_cash_conversion"],
+          "decision_frame": "财务层面，DELL 的 AI 服务器收入和 ISG 利润提供规模与分部边界，但不能据此计算 AI 服务器产品利润率或现金转化。"
+        },
+        "customer_and_supply_chain": {
+          "source_cells": ["bottleneck_counterevidence_and_what_would_change"],
+          "planned_cells": ["customer_concentration", "foundry_advanced_packaging_capacity", "hbm_supply_pricing_concentration", "server_oem_order_revenue_conversion"],
+          "decision_frame": "客户与供应链层面，DELL 对有限来源供应商和组件约束的披露说明交付与现金转化存在依赖，但当前材料不足以量化客户部署节奏或各上游环节的实际瓶颈。"
+        },
+        "competition_and_market_position": {
+          "source_cells": ["bottleneck_counterevidence_and_what_would_change"],
+          "planned_cells": ["customer_concentration", "semicap_export_policy_risk"],
+          "decision_frame": "竞争层面，DELL 已确认竞争压力是利润转化风险，但当前证据没有形成相对同业的份额、定价能力或系统级差异化判断。"
+        },
+        "capital_price_in_and_valuation_boundary": {
+          "source_cells": [],
+          "planned_cells": ["cross_chain_price_in_and_expectations", "semicap_capex_cycle"],
+          "decision_frame": "资本、price-in 与估值层面，本轮没有具备当前权威的市场定价、资本回报或估值桥，禁止从收入规模直接推导估值结论。"
+        },
+        "risk_and_counter_thesis": {
+          "source_cells": ["bottleneck_counterevidence_and_what_would_change"],
+          "planned_cells": ["semicap_export_policy_risk", "gap_resolution__demand_authenticity_and_sustainability__current_issuer_demand_signal"],
+          "decision_frame": "最强反方是供应约束与竞争共同削弱 AI 服务器收入向利润和现金的转化；该反方当前是条件性风险，不是已经实现的损失事实。"
+        }
+      }
+    },
+    "MU": {
+      "company_name": "Micron Technology",
+      "ticker": "MU",
+      "case_thesis_frame": "当前最稳健的判断是：Micron 披露了 HBM 需求上升，但长期轨迹仍受内存周期和产能再配置影响；合并报表与 DRAM 总量不能替代 HBM 收入、利润、资本投入和现金转化证据。",
+      "lens_rules": {
+        "product_and_demand": {
+          "source_cells": ["demand_authenticity_and_sustainability"],
+          "planned_cells": ["customer_concentration", "hbm_supply_pricing_concentration"],
+          "decision_frame": "产品与需求层面，MU 的 HBM 需求增长是公司专属正面信号，但长期持续性仍需多期承诺、产能分配和出货覆盖来确认。"
+        },
+        "financial_and_value_capture": {
+          "source_cells": ["value_and_profit_capture"],
+          "planned_cells": ["server_oem_margin_cash_conversion"],
+          "decision_frame": "财务层面，MU 的合并收入、毛利和营业利润只能建立公司尺度，不能隔离 HBM 的收入、利润、价格—销量—结构或现金贡献。"
+        },
+        "customer_and_supply_chain": {
+          "source_cells": ["demand_authenticity_and_sustainability", "bottleneck_counterevidence_and_what_would_change"],
+          "planned_cells": ["foundry_advanced_packaging_capacity", "hbm_supply_pricing_concentration", "server_oem_order_revenue_conversion"],
+          "decision_frame": "客户与供应链层面，HBM 需求、晶圆强度和产能分配相互作用；如果 HBM 需求转弱，产能回流传统 DRAM 可能放大供给和价格压力。"
+        },
+        "competition_and_market_position": {
+          "source_cells": [],
+          "planned_cells": ["customer_concentration", "semicap_export_policy_risk"],
+          "decision_frame": "竞争层面，本轮没有足够的同业 HBM 份额、良率、成本或客户认证证据，不能形成 MU 相对领先程度的结论。"
+        },
+        "capital_price_in_and_valuation_boundary": {
+          "source_cells": ["value_and_profit_capture"],
+          "planned_cells": ["cross_chain_price_in_and_expectations", "semicap_capex_cycle"],
+          "decision_frame": "资本、price-in 与估值层面，现有公司总量不能回答 HBM 专属资本强度与现金回报，也没有当前市场定价证据，因此估值只能保持明确边界。"
+        },
+        "risk_and_counter_thesis": {
+          "source_cells": ["bottleneck_counterevidence_and_what_would_change"],
+          "planned_cells": ["semicap_export_policy_risk", "writer_admission_boundary"],
+          "decision_frame": "最强反方是 HBM 需求放缓触发产能回流传统 DRAM，进而增加供给并压低价格；当前证据尚不能判断该路径是否会主导下一周期。"
+        }
+      }
+    },
+    "NVDA": {
+      "company_name": "NVIDIA Corporation",
+      "ticker": "NVDA",
+      "case_thesis_frame": "当前最稳健的判断是：NVIDIA 的命名部署和公司级盈利证明 AI 需求与价值捕获已经发生，但跨期耐久性、加速器产品经济性以及供应、监管和客户集中约束仍未被当前证据完全裁决。",
+      "lens_rules": {
+        "product_and_demand": {
+          "source_cells": ["demand_authenticity_and_sustainability"],
+          "planned_cells": ["customer_concentration", "server_oem_order_revenue_conversion"],
+          "decision_frame": "产品与需求层面，NVDA 的命名云部署支持当前需求传导，但单期增长不足以证明重复部署、利用率和客户集中风险下的跨期耐久性。"
+        },
+        "financial_and_value_capture": {
+          "source_cells": ["value_and_profit_capture"],
+          "planned_cells": ["server_oem_margin_cash_conversion"],
+          "decision_frame": "财务层面，NVDA 的合并收入、毛利和营业利润证明公司级价值捕获，但不能把全部利润直接归因于加速器或 Data Center 产品经济性。"
+        },
+        "customer_and_supply_chain": {
+          "source_cells": ["demand_authenticity_and_sustainability", "bottleneck_counterevidence_and_what_would_change"],
+          "planned_cells": ["foundry_advanced_packaging_capacity", "hbm_supply_pricing_concentration", "server_oem_order_revenue_conversion", "server_oem_margin_cash_conversion"],
+          "decision_frame": "客户与供应链层面，命名部署说明需求经过云客户传导，但现有材料仍不足以判定供应、部署、出口管制或客户集中是否已形成实质瓶颈。"
+        },
+        "competition_and_market_position": {
+          "source_cells": [],
+          "planned_cells": ["customer_concentration", "semicap_export_policy_risk"],
+          "decision_frame": "竞争层面，本轮没有完整的替代方案、生态锁定、份额和定价证据，不能仅凭收入与部署推导持续竞争优势。"
+        },
+        "capital_price_in_and_valuation_boundary": {
+          "source_cells": ["value_and_profit_capture"],
+          "planned_cells": ["cross_chain_price_in_and_expectations", "semicap_capex_cycle"],
+          "decision_frame": "资本、price-in 与估值层面，当前公司级盈利不能回答市场已计价程度、资本回报持续性或估值敏感性，必须与产品经济性和市场快照分开处理。"
+        },
+        "risk_and_counter_thesis": {
+          "source_cells": ["bottleneck_counterevidence_and_what_would_change"],
+          "planned_cells": ["semicap_export_policy_risk", "gap_resolution__bottleneck_counterevidence_and_what_would_change__current_issuer_counterevidence"],
+          "decision_frame": "最强反方是供应、出口管制、部署或客户集中约束削弱需求兑现；当前没有已实现约束的证据并不等于这些风险不存在。"
+        }
+      }
+    }
+  },
+  "authority_boundary": {
+    "writer_is_no_source": true,
+    "raw_retrieval_visible_to_writer": false,
+    "planned_cells_may_be_rendered_as_findings": false,
+    "fixture_mixed_preview_is_product_delivery": false,
+    "all_natural_authority_required_for_product_candidate": true,
+    "provider_output_schema_changed": false,
+    "model_visible_writer_input_activated": false,
+    "additional_paid_canary_required_now": false,
+    "future_formal_full_chain_must_use_natural_claims": true
+  }
+}

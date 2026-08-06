@@ -1,5 +1,7 @@
 # Worklog
 
+- [661 — FIN 0.1.3 Codex 三案例 Gold Research Benchmark 启动](product_strategy/661_fin_0_1_3_codex_three_case_gold_research_benchmark_start.md)
+
 - [646 — FIN 0.1.3 S2-03 自然复证结果与关闭](product_strategy/646_fin_0_1_3_s2_03_natural_reproof_result_and_closeout.md)
 - [645 — FIN 0.1.3 S2-03 Context Yield 零调用与自然复证 readiness](product_strategy/645_fin_0_1_3_s2_03_context_yield_zero_call_and_canary_readiness.md)
 - [644 — FIN 0.1.3 S2-02 三 family natural canary 结果与关闭](product_strategy/644_fin_0_1_3_s2_02_three_family_natural_canary_result_and_closeout.md)

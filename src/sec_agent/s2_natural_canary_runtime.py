@@ -48,8 +48,9 @@ def issue_canary_admission(
         {row.get("request_id") for row in request_bindings}
     ) != 3:
         raise S2NaturalCanaryError("canary_admission_request_surface_invalid")
+    if not _is_git_object_id(execution_git_commit):
+        raise S2NaturalCanaryError("canary_admission_git_commit_invalid")
     for value, code in (
-        (execution_git_commit, "canary_admission_git_commit_invalid"),
         (runner_sha256, "canary_admission_runner_sha_invalid"),
         (decision_sha256, "canary_admission_decision_sha_invalid"),
         (policy_sha256, "canary_admission_policy_sha_invalid"),
@@ -421,6 +422,13 @@ def _parse_time(value: str) -> datetime:
 def _is_digest(value: Any) -> bool:
     text = str(value or "")
     return len(text) == 64 and all(char in "0123456789abcdef" for char in text)
+
+
+def _is_git_object_id(value: Any) -> bool:
+    text = str(value or "")
+    return len(text) in {40, 64} and all(
+        char in "0123456789abcdef" for char in text
+    )
 
 
 __all__ = [

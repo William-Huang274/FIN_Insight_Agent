@@ -56,7 +56,7 @@ def _admission() -> dict:
     _, bindings = _requests()
     issued = datetime(2026, 8, 6, 16, 0, tzinfo=timezone.utc)
     return issue_canary_admission(
-        execution_git_commit="1" * 64,
+        execution_git_commit="1" * 40,
         runner_sha256="2" * 64,
         decision_sha256="3" * 64,
         policy_sha256="4" * 64,
@@ -143,7 +143,7 @@ def test_admission_is_bound_and_contains_no_credential_value() -> None:
 
     validate_canary_admission(
         admission,
-        execution_git_commit="1" * 64,
+        execution_git_commit="1" * 40,
         runner_sha256="2" * 64,
         decision_sha256="3" * 64,
         policy_sha256="4" * 64,
@@ -166,7 +166,7 @@ def test_three_family_success_is_capture_first_and_terminal(
     result = execute_natural_canary(
         admission=admission,
         requests=requests,
-        execution_git_commit="1" * 64,
+        execution_git_commit="1" * 40,
         runner_sha256="2" * 64,
         decision_sha256="3" * 64,
         policy_sha256="4" * 64,
@@ -195,7 +195,7 @@ def test_first_provider_failure_stops_without_retry_and_preserves_capture(
     result = execute_natural_canary(
         admission=admission,
         requests=requests,
-        execution_git_commit="1" * 64,
+        execution_git_commit="1" * 40,
         runner_sha256="2" * 64,
         decision_sha256="3" * 64,
         policy_sha256="4" * 64,
@@ -221,7 +221,7 @@ def test_same_admission_cannot_execute_twice(tmp_path: Path) -> None:
     kwargs = {
         "admission": admission,
         "requests": requests,
-        "execution_git_commit": "1" * 64,
+        "execution_git_commit": "1" * 40,
         "runner_sha256": "2" * 64,
         "decision_sha256": "3" * 64,
         "policy_sha256": "4" * 64,
@@ -238,7 +238,7 @@ def test_same_admission_cannot_execute_twice(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     ("field", "value", "code"),
     [
-        ("execution_git_commit", "9" * 64, "canary_admission_execution_binding_invalid"),
+        ("execution_git_commit", "9" * 40, "canary_admission_execution_binding_invalid"),
         ("expires_at", "2026-08-06T16:01:00+00:00", "canary_admission_expired"),
     ],
 )
@@ -253,7 +253,7 @@ def test_admission_mutations_fail_closed(field: str, value: str, code: str) -> N
         from sec_agent.retrieval_evidence_usefulness_program import canonical_digest
 
         admission["admission_digest"] = canonical_digest(body)
-        observed_commit = "1" * 64
+        observed_commit = "1" * 40
     with pytest.raises(S2NaturalCanaryError) as exc:
         validate_canary_admission(
             admission,

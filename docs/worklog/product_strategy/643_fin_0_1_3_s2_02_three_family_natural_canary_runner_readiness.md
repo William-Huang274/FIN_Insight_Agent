@@ -27,3 +27,7 @@
 ## 下一步与边界
 
 先提交推送 runner，形成干净执行头；随后在 Git 外的受限 runtime 中签发并 exact-once 消费唯一 admission。原始 capture 不进入 Git，公开结果只保存安全摘要和内容 digest。canary 不是 full-chain、S3 研究质量、产品验收或 release 证明。
+
+## 首次签发前失败与修正
+
+clean head `dd705903…c965` 上的首次 `--prepare` 在 admission 生成前 fail closed：runner 把 Git commit 当成固定 64 位内容 digest，而本仓库当前 commit object ID 为 40 位 SHA-1。该失败没有生成 admission、没有 shared-ledger reservation、没有模型/Provider/网络调用。修复后 Git object ID 显式接受 40 或 64 位十六进制，runner、decision、policy 和 request digest 继续只接受 64 位；focused 回归仍为 `6 passed`。修复必须重新提交推送形成新 clean head 后才能再次签发。

@@ -17,6 +17,7 @@ from sec_agent.s3_evidence_role_contract import (
     CONTEXT_SCHEMA as EVIDENCE_ROLE_CONTEXT_SCHEMA,
     S3EvidenceRoleContractError,
     consume_s3_evidence_selection_output,
+    normalize_s3_evidence_selection_output,
     validate_s3_evidence_selection_output,
 )
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger
@@ -259,7 +260,12 @@ def execute_formal_anchor(
                 output = json.loads(str(result.get("content") or ""))
                 if not isinstance(output, Mapping):
                     raise ValueError("output_not_object")
+                row["provider_output_raw"] = deepcopy(dict(output))
+                row["provider_output_raw_digest"] = canonical_digest(output)
                 if is_v2:
+                    output, normalization_receipt = normalize_s3_evidence_selection_output(
+                        output, compiled=context
+                    )
                     validate_s3_evidence_selection_output(output, compiled=context)
                     claim = consume_s3_evidence_selection_output(
                         request=request,
@@ -274,7 +280,14 @@ def execute_formal_anchor(
                         "provider_output": deepcopy(dict(output)),
                         "provider_output_digest": canonical_digest(output),
                         "claim_digest": claim["claim_digest"],
-                        **({"local_claim": claim} if is_v2 else {}),
+                        **(
+                            {
+                                "local_claim": claim,
+                                "normalization_receipt": normalization_receipt,
+                            }
+                            if is_v2
+                            else {}
+                        ),
                         "status": "passed",
                     }
                 )

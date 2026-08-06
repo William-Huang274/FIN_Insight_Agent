@@ -1,0 +1,58 @@
+{
+  "authority": {
+    "R2_reclassified_or_replayed": false,
+    "R3_admission_authorized": false,
+    "automatic_retry": false,
+    "engineering_disposition": "pass",
+    "formal_case_scores": 0,
+    "human_acceptance": 0,
+    "paired": 0
+  },
+  "historical_R2_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r2_terminal_failure_v1_0.json",
+  "next_action": "S3_FORMAL_ANCHOR_V2_R3_FRESH_ADMISSION_AUTHORITY_DECISION",
+  "record_digest": "e7a681865327a2c368ff68dad6990ae31a733733ab8096c75fe496884e5cd584",
+  "repair": {
+    "default_gap_bound_to": [
+      "request_id",
+      "decision_question",
+      "compiled_context_digest"
+    ],
+    "local_default_gap_condition": "provider_cannot_infer_and_zero_upstream_gap_options_only",
+    "model_visible_context_changed": false,
+    "normalization_receipt_digest_bound": true,
+    "parsed_raw_output_saved_before_validation": true,
+    "provider_authored_default_gap": false,
+    "typed_gap_requirement_relaxed": false,
+    "upstream_has_gap_but_provider_omits_it": "still_hard_fail"
+  },
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_gapless_local_default_and_raw_terminal_disposition_v1_0",
+  "source_sha256": {
+    "src/sec_agent/s3_evidence_role_canary_runtime.py": "c2e418ee433f78d1c1683d03cb1efec40a02ce6668547f30bdae783d40ca7203",
+    "src/sec_agent/s3_evidence_role_contract.py": "fdd22bc8c9bdc337ec4c6998c5f58a05b94fbf16058d0e00b7d2fa38d210f690",
+    "src/sec_agent/s3_formal_anchor_runtime.py": "8cb3697bfcca33ecfbe8ecf8fc5388fb9b1663a6c9d3a9124e84b59413425870",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s3_evidence_role_v2_and_formal_anchor.py": "9ccd5eedc36804eab6e710238792b1e06abee6b223712187b5629b137b4d8dce"
+  },
+  "stage_boundary": {
+    "S3_formal_anchor_v2_R2": "terminal_failed_preserved",
+    "S3_product_proof": false,
+    "S4_entry": false,
+    "gapless_local_default_successor": "zero_call_engineering_pass",
+    "release": false
+  },
+  "status": "zero_call_structural_repair_pass_R3_authority_decision_next",
+  "verification": {
+    "R2_MU_value_profit_raw_replay": "pass_with_one_local_default_gap",
+    "alias_overlap_mutation": "fail_closed",
+    "canonical": "249 passed / 1 historical assertion deselected",
+    "existing_gap_omission_mutation": "fail_closed",
+    "focused": "15 passed",
+    "model_provider_network_source_business_runs": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "nine_node_full_fake": "pass_to_Claim_Lead_Workpaper_quality_entry"
+  }
+}

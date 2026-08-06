@@ -74,6 +74,23 @@ def compile_s3_evidence_selection_context(
         "confidence_values": deepcopy(old_contract["confidence_values"]),
         "additional_properties": False,
     }
+    sidecar = deepcopy(s2_context["local_authority_sidecar"])
+    if not model_context["gap_options"]:
+        sidecar["default_cannot_infer_gap"] = {
+            "alias": "S3_LOCAL_GAP_" + canonical_digest(
+                {
+                    "request_id": s2_context["request_id"],
+                    "decision_question": model_context["decision_question"],
+                }
+            )[:16].upper(),
+            "gap_code": "s3_local_selected_evidence_does_not_resolve_decision_question",
+            "cannot_infer": (
+                "Selected evidence does not resolve the request-bound decision question: "
+                + str(model_context["decision_question"])
+            ),
+            "source_exhaustion_proven": False,
+            "local_default_for_zero_upstream_gap_options": True,
+        }
     body = {
         "schema_version": CONTEXT_SCHEMA,
         "contract_ref": CONTRACT_REF,
@@ -81,7 +98,7 @@ def compile_s3_evidence_selection_context(
         "source_request_digest": s2_context["source_request_digest"],
         "source_s2_context_digest": s2_context["context_digest"],
         "model_context": model_context,
-        "local_authority_sidecar": deepcopy(s2_context["local_authority_sidecar"]),
+        "local_authority_sidecar": sidecar,
     }
     return {**body, "context_digest": canonical_digest(body)}
 
@@ -105,11 +122,17 @@ def validate_s3_evidence_selection_output(
     ):
         if provider_output.get(field) not in contract.get(allowed_key, []):
             raise S3EvidenceRoleContractError("s3_evidence_selection_enum_invalid")
+    gap_authority = _aliases(context, "gap_options")
+    local_default = (compiled.get("local_authority_sidecar") or {}).get(
+        "default_cannot_infer_gap"
+    )
+    if local_default:
+        gap_authority.add(str(local_default["alias"]))
     authorities = {
         "mechanism_alias": _aliases(context, "mechanism_options"),
         "selected_evidence_aliases": _aliases(context, "evidence_options"),
         "selected_counterevidence_aliases": _aliases(context, "evidence_options"),
-        "gap_aliases": _aliases(context, "gap_options"),
+        "gap_aliases": gap_authority,
         "what_would_change_aliases": _aliases(
             context, "what_would_change_options"
         ),
@@ -146,6 +169,37 @@ def validate_s3_evidence_selection_output(
         raise S3EvidenceRoleContractError("s3_evidence_selection_gap_required")
 
 
+def normalize_s3_evidence_selection_output(
+    provider_output: Mapping[str, Any], *, compiled: Mapping[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    normalized = deepcopy(dict(provider_output))
+    default_gap = (compiled.get("local_authority_sidecar") or {}).get(
+        "default_cannot_infer_gap"
+    )
+    action = "none"
+    if (
+        normalized.get("epistemic_state") == "cannot_infer"
+        and normalized.get("answer_direction") == "cannot_infer"
+        and normalized.get("gap_aliases") == []
+        and not (compiled.get("model_context") or {}).get("gap_options")
+        and default_gap
+    ):
+        normalized["gap_aliases"] = [str(default_gap["alias"])]
+        action = "attach_local_default_for_zero_upstream_gap_options"
+    receipt_body = {
+        "contract_ref": CONTRACT_REF,
+        "action": action,
+        "raw_provider_output_digest": canonical_digest(provider_output),
+        "normalized_provider_output_digest": canonical_digest(normalized),
+        "default_gap_alias": str(default_gap["alias"]) if action != "none" else None,
+        "provider_authored_default_gap": False,
+    }
+    return normalized, {
+        **receipt_body,
+        "receipt_digest": canonical_digest(receipt_body),
+    }
+
+
 def consume_s3_evidence_selection_output(
     *, request: Mapping[str, Any], compiled: Mapping[str, Any], provider_output: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -153,6 +207,11 @@ def consume_s3_evidence_selection_output(
     visible = request["model_visible_request"]
     evidence_map = _alias_map(visible, "evidence_aliases")
     gap_map = _alias_map(visible, "gap_aliases")
+    default_gap = (compiled.get("local_authority_sidecar") or {}).get(
+        "default_cannot_infer_gap"
+    )
+    if default_gap:
+        gap_map[str(default_gap["alias"])] = deepcopy(dict(default_gap))
     mechanism_map = _alias_map(visible, "mechanism_aliases")
     wwc_map = _alias_map(visible, "what_would_change_aliases")
     selected_aliases = list(provider_output["selected_evidence_aliases"])
@@ -238,5 +297,6 @@ __all__ = [
     "S3EvidenceRoleContractError",
     "compile_s3_evidence_selection_context",
     "consume_s3_evidence_selection_output",
+    "normalize_s3_evidence_selection_output",
     "validate_s3_evidence_selection_output",
 ]

@@ -20,6 +20,7 @@ from sec_agent.s3_evidence_role_contract import (
     S3EvidenceRoleContractError,
     compile_s3_evidence_selection_context,
     consume_s3_evidence_selection_output,
+    normalize_s3_evidence_selection_output,
     validate_s3_evidence_selection_output,
 )
 from sec_agent.s3_evidence_role_canary_runtime import (
@@ -50,6 +51,8 @@ CANARY_RESULT = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidenc
 CANARY_RESULT_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_result_active_test_suite_successor_v1_0.json"
 R2_FAILURE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r2_terminal_failure_v1_0.json"
 R2_FAILURE_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r2_failure_active_test_suite_successor_v1_0.json"
+GAPLESS_DISPOSITION = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_gapless_local_default_and_raw_terminal_disposition_v1_0.json"
+GAPLESS_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_gapless_local_default_active_test_suite_successor_v1_0.json"
 
 
 def _load(ref: str) -> dict:
@@ -192,6 +195,30 @@ def test_cannot_infer_still_requires_gap_and_forbids_alias_overlap() -> None:
     output["selected_counterevidence_aliases"] = list(output["selected_evidence_aliases"])
     with pytest.raises(S3EvidenceRoleContractError, match="role_overlap"):
         validate_s3_evidence_selection_output(output, compiled=context)
+    mu_request_id = "FIN013-S2-MU-value_and_profit_capture"
+    mu_context = contexts[mu_request_id]
+    assert mu_context["model_context"]["gap_options"] == []
+    raw_mu = {
+        "epistemic_state": "cannot_infer",
+        "answer_direction": "cannot_infer",
+        "mechanism_alias": "MU_M_BASELINE_NOT_HBM_ECONOMICS",
+        "selected_evidence_aliases": ["MU_E01", "MU_E02", "MU_E03", "MU_E04"],
+        "selected_counterevidence_aliases": [],
+        "gap_aliases": [],
+        "confidence": "low",
+        "what_would_change_aliases": ["MU_W_HBM_ECONOMICS", "MU_W_HBM_CASH"],
+    }
+    normalized, receipt = normalize_s3_evidence_selection_output(
+        raw_mu, compiled=mu_context
+    )
+    assert raw_mu["gap_aliases"] == []
+    assert receipt["action"] == "attach_local_default_for_zero_upstream_gap_options"
+    assert len(normalized["gap_aliases"]) == 1
+    validate_s3_evidence_selection_output(normalized, compiled=mu_context)
+    claim = consume_s3_evidence_selection_output(
+        request=requests[mu_request_id], compiled=mu_context, provider_output=normalized
+    )
+    assert claim["typed_gaps"][0]["local_default_for_zero_upstream_gap_options"] is True
 
 
 def test_v2_full_fake_preserves_r1_shape_and_compiles_nine_natural_cards(tmp_path: Path) -> None:
@@ -358,4 +385,16 @@ def test_canary_readiness_is_digest_bound_and_does_not_authorize_full_replacemen
     assert failure_active["decision_sha256"] == hashlib.sha256(R2_FAILURE.read_bytes()).hexdigest()
     assert failure_active["suite_digest"] == canonical_digest(
         {key: value for key, value in failure_active.items() if key != "suite_digest"}
+    )
+    disposition = json.loads(GAPLESS_DISPOSITION.read_text(encoding="utf-8"))
+    disposition_active = json.loads(GAPLESS_ACTIVE.read_text(encoding="utf-8"))
+    assert disposition["record_digest"] == canonical_digest(
+        {key: value for key, value in disposition.items() if key != "record_digest"}
+    )
+    assert disposition["repair"]["typed_gap_requirement_relaxed"] is False
+    assert disposition["repair"]["model_visible_context_changed"] is False
+    assert disposition["authority"]["R3_admission_authorized"] is False
+    assert disposition_active["decision_sha256"] == hashlib.sha256(GAPLESS_DISPOSITION.read_bytes()).hexdigest()
+    assert disposition_active["suite_digest"] == canonical_digest(
+        {key: value for key, value in disposition_active.items() if key != "suite_digest"}
     )

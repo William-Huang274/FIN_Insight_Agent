@@ -1,0 +1,98 @@
+{
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_fresh_admission_authority_decision_v1_0",
+  "status": "authorized_one_R3_only_zero_call_preflight_pass",
+  "decision": "authorize_exactly_one_fresh_clean_head_S3_formal_anchor_v2_R3",
+  "authority": {
+    "R3_admission_authorized": true,
+    "maximum_new_admissions": 1,
+    "maximum_provider_calls": 9,
+    "maximum_calls_per_request": 1,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "automatic_R4_or_repair_run": false,
+    "first_credible_failure_stops": true,
+    "success_only_local_successor_quality_assessment": true,
+    "human_acceptance_or_release_granted": false
+  },
+  "project_os_preflight": {
+    "run_scope": "R3_fresh_admission_authority_decision",
+    "status": "pass",
+    "allow_open_blockers": false,
+    "open_full_chain_blocker_count": 0,
+    "required_capabilities_missing": 0
+  },
+  "token_and_capacity_preflight": {
+    "request_count": 9,
+    "aggregate_model_context_characters": 24586,
+    "maximum_single_request_model_context_characters": 4202,
+    "maximum_output_tokens_per_call": 900,
+    "maximum_output_tokens_total": 8100,
+    "maximum_paid_calls": 9,
+    "decision": "pass_bounded_exact_once_surface",
+    "quality_not_implied_by_budget_pass": true
+  },
+  "provider_health_preflight": {
+    "decision": "pass_by_recent_same_route_natural_evidence_no_extra_paid_probe",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "successful_recent_transport_calls": 6,
+    "basis": [
+      "one_v2_single_node_canary_transport_success",
+      "five_R2_transport_successes_before_local_contract_failure"
+    ],
+    "R2_failure_was_provider_transport_failure": false,
+    "extra_connectivity_probe_calls": 0,
+    "credential_present_at_authority_check": true
+  },
+  "evidence_and_information_economy_preflight": {
+    "evidence_mode": "source_frozen_governed_S1_evidence_pack",
+    "new_retrieval_or_source_network_calls": 0,
+    "real_evidence_operator_gate_applicable": false,
+    "reason": "R3 consumes the already governed S1 evidence candidates compiled through S2; it does not execute retrieval adapters",
+    "nine_request_full_fake": "pass_to_Claim_Lead_Workpaper_quality_entry",
+    "model_visible_context_changed_since_R2": false,
+    "local_normalization": "zero_upstream_gap_options_only_digest_bound",
+    "raw_parsed_output_saved_before_validation": true
+  },
+  "clean_head_binding": {
+    "authority_git_commit": "3c4ffd543cfd539ead6e73b8d74c1754fc121d64",
+    "branch": "codex/layered-data-source-expansion",
+    "clean_and_upstream_synced": true,
+    "runner_sha256": "147e52befb69fbb0527dd36fcc14c857b08b72df721e12370abd9d5d229e7cac",
+    "policy_sha256": "8e0a0d0ce7befd15abd478f89a47690a2461e599204f5dfdabbd6b58a806dc31",
+    "s2_decision_sha256": "63761329bf4f2f975be732dc2ffe5267e6d4f754cfcc66eaa639bc798ecb8480",
+    "s2_context_program_sha256": "1c76a792bb55ef81e1911196798de6fd485c01e7e5c2161eb526c3ba1606aa33",
+    "quality_gate_sha256": "cc3e26c6fa846267d5c37918e5dfd0abcf4394851bfbc5597616da569a47f74e",
+    "evidence_role_contract_sha256": "fdd22bc8c9bdc337ec4c6998c5f58a05b94fbf16058d0e00b7d2fa38d210f690",
+    "formal_anchor_runtime_sha256": "8cb3697bfcca33ecfbe8ecf8fc5388fb9b1663a6c9d3a9124e84b59413425870"
+  },
+  "historical_attempts": {
+    "R1": "terminal_failed_preserved_old_support_schema",
+    "R2": "terminal_failed_preserved_gapless_request_local_contract_defect",
+    "R1_or_R2_reclassified_or_replayed": false
+  },
+  "terminal_policy": {
+    "R3_success": "materialize_local_successor_then_run_L1_L2_and_eight_dimension_quality_assessment",
+    "R3_failure": "preserve_raw_capture_and_terminal_result_stop_in_S3_no_R4",
+    "L2_to_L4_only_findings": "record_and_assign_to_owned_later_stage_without_reopening_transport",
+    "new_L1_failure": "project_level_disposition_no_automatic_field_patch_loop"
+  },
+  "stage_boundary": {
+    "S3_engineering_preflight": "pass",
+    "S3_formal_anchor_v2_R3": "authorized_not_executed",
+    "S3_product_proof": false,
+    "S4_entry": false,
+    "qualified_human_acceptance": false,
+    "release": false
+  },
+  "source_refs": [
+    "configs/releases/fin_ia_0_1_3_repair_closeout_s3_gapless_local_default_and_raw_terminal_disposition_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r2_terminal_failure_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_result_and_replacement_authority_v1_0.json",
+    "docs/project_os/full_chain_run_policy.zh-CN.md",
+    "docs/project_os/token_budget_policy.zh-CN.md"
+  ],
+  "next_action": "COMMIT_PUSH_THEN_ISSUE_AND_EXECUTE_EXACTLY_ONE_FRESH_S3_FORMAL_ANCHOR_V2_R3",
+  "record_digest": "093549becddc811b06ee4a0e1b4d5afaab65d9260ee0d0ce20174184a411b199"
+}

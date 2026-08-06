@@ -53,6 +53,8 @@ R2_FAILURE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anc
 R2_FAILURE_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r2_failure_active_test_suite_successor_v1_0.json"
 GAPLESS_DISPOSITION = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_gapless_local_default_and_raw_terminal_disposition_v1_0.json"
 GAPLESS_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_gapless_local_default_active_test_suite_successor_v1_0.json"
+R3_AUTHORITY = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_fresh_admission_authority_decision_v1_0.json"
+R3_AUTHORITY_ACTIVE = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s3_formal_anchor_v2_r3_authority_active_test_suite_successor_v1_0.json"
 
 
 def _load(ref: str) -> dict:
@@ -397,4 +399,18 @@ def test_canary_readiness_is_digest_bound_and_does_not_authorize_full_replacemen
     assert disposition_active["decision_sha256"] == hashlib.sha256(GAPLESS_DISPOSITION.read_bytes()).hexdigest()
     assert disposition_active["suite_digest"] == canonical_digest(
         {key: value for key, value in disposition_active.items() if key != "suite_digest"}
+    )
+    authority = json.loads(R3_AUTHORITY.read_text(encoding="utf-8"))
+    authority_active = json.loads(R3_AUTHORITY_ACTIVE.read_text(encoding="utf-8"))
+    assert authority["record_digest"] == canonical_digest(
+        {key: value for key, value in authority.items() if key != "record_digest"}
+    )
+    assert authority["project_os_preflight"]["status"] == "pass"
+    assert authority["provider_health_preflight"]["extra_connectivity_probe_calls"] == 0
+    assert authority["authority"]["R3_admission_authorized"] is True
+    assert authority["authority"]["automatic_R4_or_repair_run"] is False
+    assert authority["stage_boundary"]["S3_product_proof"] is False
+    assert authority_active["decision_sha256"] == hashlib.sha256(R3_AUTHORITY.read_bytes()).hexdigest()
+    assert authority_active["suite_digest"] == canonical_digest(
+        {key: value for key, value in authority_active.items() if key != "suite_digest"}
     )

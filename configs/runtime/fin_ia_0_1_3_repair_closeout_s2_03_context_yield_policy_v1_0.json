@@ -1,0 +1,88 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_03_context_yield_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S2.context_yield_and_role_scoped_injection:v1",
+  "owning_stage": "FIN_0_1_3_S2_03",
+  "purpose": "Reduce repeated and locally owned model-visible context without hiding governed evidence, counterevidence, gaps, mechanism choices, what-would-change conditions or audit lineage.",
+  "required_model_semantics": [
+    "case_identity",
+    "program_cell_identity",
+    "decision_question",
+    "method_steps",
+    "all_request_local_evidence_aliases",
+    "evidence_role_and_claim_boundary",
+    "financial_vs_relationship_authority",
+    "all_request_local_gap_aliases",
+    "cannot_infer_boundary",
+    "source_exhaustion_state",
+    "all_company_specific_mechanism_choices",
+    "all_what_would_change_choices",
+    "required_output_fields_and_closed_enums"
+  ],
+  "local_only_fields": [
+    "candidate_id",
+    "candidate_digest",
+    "slot_id",
+    "gap_code",
+    "request_digest",
+    "s1_query_digest",
+    "lineage",
+    "numeric_and_date_values",
+    "final_narrative"
+  ],
+  "capacity_gate": {
+    "minimum_aggregate_character_reduction_ratio": 0.25,
+    "maximum_aggregate_compact_to_baseline_ratio": 0.7,
+    "maximum_per_request_compact_to_baseline_ratio": 0.75,
+    "maximum_candidate_options_per_request": 8,
+    "minimum_evidence_alias_retention_ratio": 1.0,
+    "minimum_gap_alias_retention_ratio": 1.0,
+    "minimum_mechanism_alias_retention_ratio": 1.0,
+    "minimum_what_would_change_alias_retention_ratio": 1.0
+  },
+  "historical_fin_0_1_2_baseline": {
+    "scope": "three_current_case_nine_call_exact_live_results",
+    "source_refs": [
+      "configs/releases/fin_ia_0_1_2_s4_t05_b_dell_agent_exact_live_result_and_independent_assessment_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_s4_t05_c_mu_agent_exact_live_result_and_independent_assessment_v1_0.json",
+      "configs/releases/fin_ia_0_1_2_s4_t04_nvda_current_evidence_capacity_reproof_exact_live_r3_result_and_independent_assessment_v1_0.json"
+    ],
+    "cases": {
+      "DELL": {"provider_calls": 9, "input_tokens": 57739, "output_tokens": 3323},
+      "MU": {"provider_calls": 9, "input_tokens": 56762, "output_tokens": 3162},
+      "NVDA": {"provider_calls": 9, "input_tokens": 55906, "output_tokens": 3038}
+    },
+    "known_repetition": [
+      "each_cell_repeated_across_claim_and_what_would_change_segments",
+      "case_identity_numeric_authority_and_compiled_contract_repeated_across_six_specialist_calls",
+      "lead_writer_and_verifier_receive_overlapping_downstream_projections"
+    ],
+    "comparison_boundary": "Historical full-chain token totals are root-cause evidence, not a directly comparable quality or cost baseline for a bounded S2 node."
+  },
+  "natural_reproof": {
+    "required_only_if_model_visible_bytes_change": true,
+    "maximum_provider_calls": 1,
+    "selected_request_id": "FIN013-S2-NVDA-demand_authenticity_and_sustainability",
+    "selection_reason": "largest current representative model-visible request and six-evidence option surface",
+    "retry_count": 0,
+    "fallback_count": 0,
+    "full_chain_calls": 0,
+    "first_failure_stop": true
+  },
+  "stage_boundary": {
+    "S2_03_owns": [
+      "role_scoped_context_compilation",
+      "semantic_retention",
+      "capacity_and_information_yield",
+      "compact_context_natural_contract_reproof"
+    ],
+    "S3_owns": [
+      "dynamic_10_to_20_cell_decision_surface",
+      "semantic_cross_cell_adjudication",
+      "writer_and_verifier_content_quality",
+      "eight_dimension_research_quality"
+    ],
+    "full_chain_authorized": false,
+    "product_acceptance": false,
+    "release": false
+  }
+}

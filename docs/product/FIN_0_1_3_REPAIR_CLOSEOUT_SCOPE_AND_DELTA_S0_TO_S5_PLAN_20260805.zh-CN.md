@@ -97,6 +97,8 @@ FIN 0.1.3 的通过不再只看 Artifact topology、合同完整性、引用和�
 
 > **2026-08-06 `013-S2-02` 完成并关闭**：clean-head fresh admission 已由 shared ledger exact-once 消费；DELL demand、MU value/profit、NVDA bottleneck 三项 DeepSeek Pro 自然输出均为单次 transport、`finish_reason=stop`、预注册五维 Rubric `10/10`。总计 `3 calls / 3 raw capture-first objects / 3 local Claims / 0 retry / 0 fallback / 0 business promotion`，`3093 input / 362 output / 3455 total tokens`。三项仅选择 request-local alias/enum；DELL、NVDA 未把 gap 洗成正面结论，MU 未把 consolidated/DRAM 总量冒充 HBM economics。该结果证明受限代表性 Specialist 合同的自然遵循，不等于自由叙事能力、最终研究质量或产品通过。private raw request/response 留在 Git 外，可公开 successor 只保存选择、Claim/capture digest、usage 和边界。S2-02=`pass_closed`，下一项为 `013-S2-03` context yield/capacity；不得直接跳到 full-chain。
 
+> **2026-08-06 `013-S2-03` 零调用工程通过、自然复证待执行**：9 个代表性节点的模型可见输入由 `40,326` 字符降至 `24,289`，缩减 `39.7684%`；Evidence、typed gap、mechanism、what-would-change alias 保留率均为 `100%`。模型不需要的 candidate/slot/gap ID、digest 和 S1 lineage 改由本地 sidecar 保留。canonical successor=`191 passed / 1 historical event-time assertion deselected`。因模型可见 bytes 改变，阶段仍需一次最高负载 NVDA demand compact-context natural reproof；不得扩大为 full-chain，也不得把容量工程结果冒充 S3 研究内容质量。
+
 ### S3：研究计划、判断、Lead、Writer 与 Verifier
 
 | ID | 修复包 | 受影响 PRD | 0.1.3 通过条件 |

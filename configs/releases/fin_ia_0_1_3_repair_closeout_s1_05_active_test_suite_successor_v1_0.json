@@ -1,0 +1,33 @@
+{
+  "decision_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s1_05_retrieval_evidence_usefulness_and_s1_closeout_v1_0.json",
+  "decision_sha256": "6ed4ed1fef9afd0aafa91ba9ba517c723c5b190422a68071dbb5571dd54ff5a4",
+  "historical_event_time_deselections": [
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py::test_decision_and_active_suite_are_digest_bound_and_do_not_promote_old_names"
+  ],
+  "observed_result": "76 passed / 1 historical event-time assertion deselected",
+  "schema_version": "fin_ia_0_1_3_repair_closeout_s1_05_active_test_suite_successor_v1_0",
+  "selected_test_files": [
+    "tests/test_sec_structured_facts_download.py",
+    "tests/test_sec_financial_statement_metric_runtime_rows.py",
+    "tests/test_gold_fact_signal_mart.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_01_delta_inheritance_namespace_and_current_truth_baseline.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_03_financial_semantic_truth_oracle_classification.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_01_financial_temporal_truth_and_time_role_repair.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_02_material_numeric_program_formula_and_typed_gap.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_03_official_source_attempt_program.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_03_closeout.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_04_authoritative_relationship_graph.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s1_05_retrieval_evidence_usefulness_and_closeout.py"
+  ],
+  "stage_boundary": {
+    "S1": "pass_closed",
+    "S2": "next_not_started",
+    "S3_to_S5": "not_started",
+    "model_or_full_chain_authorized": false,
+    "release": false
+  },
+  "status": "current_S1_pass_closed_S2_next",
+  "suite_digest": "208aae19513e27b38a1d1b1570cfc76b16368db486e119c5e7c80a2b26ae34df",
+  "suite_id": "FIN-0.1.3-REPAIR-CLOSEOUT-S1-ACTIVE-SUITE-R8"
+}

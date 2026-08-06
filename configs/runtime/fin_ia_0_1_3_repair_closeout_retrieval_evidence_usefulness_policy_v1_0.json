@@ -1,0 +1,156 @@
+{
+  "schema_version": "fin_ia_0_1_3_retrieval_evidence_usefulness_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.retrieval_evidence_usefulness_and_closeout:v1",
+  "as_of_date": "2026-07-26",
+  "candidate_ceiling_per_query": 8,
+  "case_profiles": {
+    "DELL": {
+      "official_source_published_at": "2026-02-26",
+      "semantic_successor": {
+        "current_issuer_demand_signal": {
+          "disposition": "typed_gap",
+          "gap_code": "bounded_current_source_has_revenue_proxy_but_no_explicit_observed_demand_statement",
+          "cannot_infer": "AI-server demand durability from a forward-looking caution list or revenue alone"
+        },
+        "current_issuer_financial_statement": {
+          "disposition": "retain_original",
+          "required_pattern": "Fiscal Year Ended.*?Net revenue.*?113,538.*?Operating income.*?8,149"
+        },
+        "current_issuer_counterevidence": {
+          "disposition": "replace_from_source",
+          "required_pattern": "competitive pressures;.*?single-source or limited-source suppliers;.*?demand for AI solutions",
+          "claim_boundary": "The issuer lists competition, limited-source suppliers and AI-demand sensitivity as risks; it does not establish realized impact."
+        }
+      },
+      "cell_profiles": {
+        "demand_authenticity_and_sustainability": {
+          "semantic_slots": ["current_issuer_demand_signal"],
+          "official_numeric_slots": ["dell_server_or_isg_revenue"],
+          "material_metric_families": [],
+          "graph_edge_types": [],
+          "single_source_exception": "Only an observed AI-server revenue proxy is available; explicit demand durability remains a typed gap."
+        },
+        "value_and_profit_capture": {
+          "semantic_slots": ["current_issuer_financial_statement"],
+          "official_numeric_slots": ["dell_server_or_isg_revenue", "dell_server_or_isg_profit"],
+          "material_metric_families": ["revenue", "gross_profit", "operating_income"],
+          "graph_edge_types": [],
+          "single_source_exception": null
+        },
+        "bottleneck_counterevidence_and_what_would_change": {
+          "semantic_slots": ["current_issuer_counterevidence"],
+          "official_numeric_slots": [],
+          "material_metric_families": [],
+          "graph_edge_types": [],
+          "single_source_exception": "The bounded current official source is the only approved counterevidence source in S1."
+        }
+      }
+    },
+    "MU": {
+      "official_source_published_at": "2025-10-03",
+      "semantic_successor": {
+        "current_issuer_demand_signal": {
+          "disposition": "replace_from_source",
+          "required_pattern": "Recent technologies, such as generative AI models have emerged, and while they have driven increased demand for HBM.*?associated demand may fluctuate\\.",
+          "claim_boundary": "The issuer reports increased HBM demand while explicitly warning that its long-term trajectory is unknown; durability remains an analyst judgment."
+        },
+        "current_issuer_financial_statement": {
+          "disposition": "retain_original",
+          "required_pattern": "Total reported DRAM revenue was \\$28\\.58 billion in 2025"
+        },
+        "current_issuer_counterevidence": {
+          "disposition": "replace_from_source",
+          "required_pattern": "associated demand may fluctuate\\..*?downward pressure on pricing, which could adversely impact our financial results\\.",
+          "claim_boundary": "The issuer states that HBM demand may fluctuate and that capacity shifts could pressure DRAM pricing; it does not establish a realized downturn."
+        }
+      },
+      "cell_profiles": {
+        "demand_authenticity_and_sustainability": {
+          "semantic_slots": ["current_issuer_demand_signal"],
+          "official_numeric_slots": [],
+          "material_metric_families": [],
+          "graph_edge_types": [],
+          "single_source_exception": "The bounded current demand statement comes from the current official annual report."
+        },
+        "value_and_profit_capture": {
+          "semantic_slots": ["current_issuer_financial_statement"],
+          "official_numeric_slots": [],
+          "material_metric_families": ["revenue", "gross_profit", "operating_income"],
+          "graph_edge_types": [],
+          "single_source_exception": null
+        },
+        "bottleneck_counterevidence_and_what_would_change": {
+          "semantic_slots": ["current_issuer_counterevidence"],
+          "official_numeric_slots": [],
+          "material_metric_families": [],
+          "graph_edge_types": ["competitive_landscape"],
+          "single_source_exception": "Both the risk statement and named competitors are explicitly supported by the same current official annual report."
+        }
+      }
+    },
+    "NVDA": {
+      "official_source_published_at": "2026-02-25",
+      "semantic_successor": {
+        "current_issuer_demand_signal": {
+          "disposition": "retain_original",
+          "required_pattern": "Record quarterly Data Center revenue of \\$62\\.3 billion.*?Record full-year revenue of \\$215\\.9 billion"
+        },
+        "current_issuer_financial_statement": {
+          "disposition": "retain_original",
+          "required_pattern": "NVIDIA Announces Financial Results for Fourth Quarter and Fiscal 2026.*?Record quarterly revenue of \\$68\\.1 billion"
+        },
+        "current_issuer_counterevidence": {
+          "disposition": "typed_gap",
+          "gap_code": "bounded_current_press_release_has_forward_looking_caution_but_no_specific_realized_counterevidence",
+          "cannot_infer": "a realized supply, export-control or customer-concentration constraint from a generic forward-looking statement list"
+        }
+      },
+      "cell_profiles": {
+        "demand_authenticity_and_sustainability": {
+          "semantic_slots": ["current_issuer_demand_signal"],
+          "official_numeric_slots": [],
+          "material_metric_families": [],
+          "graph_edge_types": ["strategic_partnership", "official_deployment_event"],
+          "single_source_exception": "The current demand statement and named deployment relationships are all supported by the same current official release."
+        },
+        "value_and_profit_capture": {
+          "semantic_slots": ["current_issuer_financial_statement"],
+          "official_numeric_slots": [],
+          "material_metric_families": ["revenue", "gross_profit", "operating_income"],
+          "graph_edge_types": [],
+          "single_source_exception": null
+        },
+        "bottleneck_counterevidence_and_what_would_change": {
+          "semantic_slots": ["current_issuer_counterevidence"],
+          "official_numeric_slots": [],
+          "material_metric_families": [],
+          "graph_edge_types": [],
+          "single_source_exception": "No approved current counterevidence candidate exists; the query must terminate as a typed gap."
+        }
+      }
+    }
+  },
+  "negative_set": [
+    "cross_case_candidate",
+    "future_published_candidate",
+    "stale_annual_substitution_when_current_authority_exists",
+    "table_of_contents_semantic_hit",
+    "forward_looking_caution_only_semantic_hit",
+    "graph_edge_promoted_as_financial_fact",
+    "unknown_candidate_or_slot",
+    "candidate_ceiling_overflow"
+  ],
+  "legacy_bm25_current_qualification": {
+    "snapshot_records": 89112,
+    "latest_annual_record_counts": {"DELL": 0, "MU": 108, "NVDA": 0},
+    "current_authority_allowed": false,
+    "reason": "The legacy main index omits DELL FY2026 and NVDA FY2026 annual documents and ranks stale lexical matches above current authority for some queries."
+  },
+  "hard_boundaries": [
+    "A typed gap is a valid terminal state but is never counted as recalled evidence.",
+    "Graph edges prove only the stated relationship and never financial impact.",
+    "The FIN 0.1.3 governed retrieval pack supersedes, but does not rewrite, the legacy BM25 snapshot for current authority.",
+    "S1 usefulness means deterministic candidate availability and evidence density; Agent consumption and report-quality utilization remain S3.",
+    "No model, provider, network, source call, business run, product acceptance or release is authorized."
+  ]
+}

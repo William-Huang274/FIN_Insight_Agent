@@ -1,0 +1,78 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08q_h_dell_r2_replacement_authority_decision_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "decision_status": "approved_successor_entrypoint_required_before_issuance",
+  "decision_source_commit": "bce4dad1097bc7c6ab62762fde05079998bf04fe",
+  "project_os_preflight": {
+    "run_scope": "S1_08Q_H_DELL_R2_replacement_authority_decision",
+    "status": "pass",
+    "allow_open_blockers": false,
+    "open_full_chain_blocker_count": 0
+  },
+  "basis": {
+    "R1_terminal": "immutable_failed_consumed",
+    "A_to_G_engineering": "independently_proven",
+    "independent_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_independent_fresh_proof_v1_0.json",
+    "independent_proof_source_commit": "ee5ebf3b4773eae839f4646d21cec2f85a517925",
+    "independent_proof_sha256": "8c3a3129796c12ee4f4ff64ce13df68ed5151ee6e14f17ecc72c27af71bdedc1",
+    "tests_per_fresh_worker": 46,
+    "fresh_workers": 2
+  },
+  "replacement_authority": {
+    "case_key": "DELL",
+    "attempt_label": "R2",
+    "maximum_fresh_admissions": 1,
+    "maximum_exact_live_executions": 1,
+    "network_calls_max": 16,
+    "document_ceiling_per_query": 1,
+    "model_calls": 0,
+    "provider_model_calls": 0,
+    "retry_calls": 0,
+    "per_call_timeout_seconds_max": 30,
+    "overall_timeout_seconds_max": 300,
+    "automatic_R3": false
+  },
+  "issuance_state": {
+    "currently_issuable": false,
+    "reason_codes": [
+      "legacy_R1_result_path_already_materialized",
+      "legacy_admission_does_not_bind_Q_H_decision",
+      "legacy_admission_does_not_bind_independent_quality_replay_proof"
+    ],
+    "required_successor_entrypoint": [
+      "new R2-only admission and terminal schemas",
+      "exact binding to this decision, independent proof, v2 catalog, clean implementation commit and R1 immutable terminal",
+      "new R2 result path and namespace",
+      "R1 entrypoint and output remain fail-closed and immutable",
+      "shared-ledger exact-once reservation before network side effects",
+      "capture-first partial and terminal result retention"
+    ]
+  },
+  "live_acceptance": {
+    "DELL_target_in_pool": 1.0,
+    "required_slot_recall_at_8": 1.0,
+    "currentness": 1.0,
+    "diversity_or_typed_exception": 1.0,
+    "reconciliation_coverage": 1.0,
+    "selected_pack_coverage": 1.0,
+    "false_promotion": 0,
+    "qualified_document_yield_min": 0.5,
+    "all_requests_terminally_classified": true
+  },
+  "stop_rules": [
+    "If the successor binding or preflight fails, do not issue an admission.",
+    "If R2 exposes a project defect, preserve the terminal and repair only the owning S1-08 boundary; do not auto-run R3.",
+    "If R2 cannot place required evidence in the pool, remain in candidate coverage; do not tune ranking or start S3.",
+    "If a source is genuinely unavailable, preserve a typed gap rather than fabricate or silently substitute evidence.",
+    "MU, NVDA, ranking, BGE, Milvus, DeepSeek and S3 require separate decisions."
+  ],
+  "observed_calls": {
+    "network": 0,
+    "model": 0,
+    "provider": 0,
+    "retry": 0,
+    "admission": 0
+  },
+  "current_next": "IMPLEMENT_S1_08_DELL_R2_SUCCESSOR_ADMISSION_RUNNER_ZERO_CALL_BINDING"
+}

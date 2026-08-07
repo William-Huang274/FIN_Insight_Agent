@@ -1,0 +1,167 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_nvda_raw_replacement_r2_and_three_case_boundary_result_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "NVDA_R2_raw_complete_quality_fail_three_case_raw_campaign_complete_supervisor_recoverability_pending",
+  "case_key": "NVDA",
+  "execution": {
+    "run_id": "fin013_s2_05_exp_a_nvda_04b01685650a1af46f43",
+    "attempt_id": "fin013_s2_05_exp_a_nvda_04b01685650a1af46f43::attempt_1",
+    "execution_commit": "a5f0adf95ce75b5fd78e35ba3e1751de84645add",
+    "authority_decision_digest": "d353cc3fc10135e88e2396ebe00774f631a8f272628642ed2d004e858c4cb64b",
+    "admission_digest": "7bf2015aa34896af0df053aea4454fc2b08c298061a0293ec008592470351b31",
+    "admission_file_sha256": "dbbb8130063efc67901c914cf60425bb07c6d450723ef7031e364eb36bc46819",
+    "terminal_status": "terminal_completed_layered_raw_evaluation",
+    "terminal_phase": "case_complete",
+    "terminal_code": "experiment_a_layered_raw_candidate_with_material_findings",
+    "terminal_result_digest": "5bcc667d8a417cd8b27f55bd41aef36da870ef821986c1425d42e808ae9f802a",
+    "terminal_file_sha256": "2420df1825a293178a1044ef78e908928c97e2aa041abbaa76bcc96106101218",
+    "reservation_digest": "8c8fd55f0ef8808e8c7f594a52096dc026e54f580467953deeee55799ceedd4f",
+    "receipt_digest": "71d308d74c90b300011d831d5228136a5c393e59304e44ac165cccff302d3148",
+    "logical_nodes": 10,
+    "provider_calls": 10,
+    "captures": 10,
+    "all_gateway_status_ok": true,
+    "all_finish_reason_stop": true,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "supervisor_model_calls": 0,
+    "business_promotions": 0,
+    "usage": {
+      "input_tokens": 31947,
+      "output_tokens": 6649,
+      "total_tokens": 38596,
+      "estimated_cost_usd": "0.0304715",
+      "latency_sum_ms": 163606
+    }
+  },
+  "numeric_scale_reproof": {
+    "R1_observed_surface": "$5.36T",
+    "R1_project_false_positive_recurred": false,
+    "R2_lead_completed": true,
+    "R2_full_raw_chain_completed": true,
+    "RC_P36_144_numeric_scale_repair_live_proven": true
+  },
+  "evaluator_disposition": {
+    "execution_time_v1_3": {
+      "findings": 34,
+      "breakdown": {"L1": 5, "L2": 2, "L3": 27, "L4": 0},
+      "known_noise": "two cash-flow/P-E co-occurrence findings and their semantic Verifier miss were false positives on independent conditional thresholds",
+      "known_miss": "Writer used NVDA_G01-G04 in evidence_ids and v1.3 did not enforce citation ID roles or complete case-pack coverage"
+    },
+    "final_v1_4": {
+      "findings": 32,
+      "breakdown": {"L1": 4, "L2": 1, "L3": 27, "L4": 0},
+      "material_failure": true,
+      "evaluation_digest": "746b777bd8d4b7f06f47b9ce6966d4cf03e04811c3d7d6da85c7ee29d81d8628",
+      "classes": {
+        "unbound_material_numeric_surface": 3,
+        "writer_cross_case_unknown_or_wrong_id_role": 1,
+        "verifier_missed_material_failure": 1,
+        "explicit_counterevidence_surface_empty": 6,
+        "hypothetical_planning_threshold": 21
+      }
+    },
+    "three_case_v1_4_replay": {
+      "replay_digest": "8127d51c6ef99e53cca4c125c211c9b71ded2ac1fe0c96723c41f3c6c32a6f4f",
+      "raw_mutations": 0,
+      "DELL": {
+        "breakdown": {"L1": 3, "L2": 1, "L3": 23, "L4": 0},
+        "evaluation_digest": "68f89f4e33622a3dd5f65c06c7f75857c8a9833066910b723df674ed462c4af4"
+      },
+      "MU": {
+        "breakdown": {"L1": 8, "L2": 2, "L3": 14, "L4": 0},
+        "evaluation_digest": "786ff716e390f16ec3e1e2f9f50970338d11d3f6d436cd338ee1154da6928e6d"
+      },
+      "NVDA": {
+        "breakdown": {"L1": 4, "L2": 1, "L3": 27, "L4": 0},
+        "evaluation_digest": "746b777bd8d4b7f06f47b9ce6966d4cf03e04811c3d7d6da85c7ee29d81d8628"
+      }
+    }
+  },
+  "research_quality": {
+    "strengths": [
+      "Lead produced six NVDA-specific research units and covered all mandatory families",
+      "the chain connected demand concentration, product transition, supply/export risk, margins and cash flow, valuation and counter-thesis",
+      "Writer covered all six required sections and used case-local evidence in five sections",
+      "the run completed without transport, parse, identity or numeric-scale infrastructure failure"
+    ],
+    "material_defects": [
+      "two Specialist non-WWC fields promoted hypothetical $5B and $2B thresholds into asserted analysis surfaces",
+      "Synthesis counter_thesis repeated unbound hypothetical thresholds outside the only permitted what_would_change field",
+      "Writer placed four Gap IDs in the evidence_ids role, creating one citation-role failure",
+      "Verifier accepted the candidate with zero findings despite the material numeric-role and citation-role failures"
+    ],
+    "quality_findings": [
+      "all six Specialists left counterevidence_ids empty",
+      "twenty-one scenario threshold surfaces remained uncalibrated to evidence or a source route",
+      "the report remained a bounded same-evidence memo rather than a full externally researched investment report"
+    ],
+    "formal_hidden_score": false,
+    "formal_score_reason": "L1 and L2 did not pass; the raw candidate is retained for diagnosis and supervisor evaluation only."
+  },
+  "supervision_boundaries": {
+    "evaluator_schema": "fin_ia_0_1_3_s2_05_layered_raw_evaluation_v1_4",
+    "DELL": {
+      "ref": ".codex_runtime/fin013_s2_06/DELL/fin013_s2_05_exp_a_dell_f9e9264951d69da5ed86_evaluator_v1_4_supervision_v1_1.json",
+      "sha256": "dc4d4ff6b77664ddbad60a0cbdff7b220631250b515e3c4b646af30d6ec69337",
+      "correction_rows": 27
+    },
+    "MU": {
+      "ref": ".codex_runtime/fin013_s2_06/MU/fin013_s2_05_exp_a_mu_d94afa12295f83b18870_evaluator_v1_4_supervision_v1_1.json",
+      "sha256": "dfb4ae1a3ff3836b96f7cd5ef5e97bc7578996db7ff9830b79d7de9e2bb7cb08",
+      "correction_rows": 24
+    },
+    "NVDA": {
+      "ref": ".codex_runtime/fin013_s2_06/NVDA/fin013_s2_05_exp_a_nvda_04b01685650a1af46f43_evaluator_v1_4_supervision_v1_1.json",
+      "sha256": "7de99da1a3e5a1d3be09609d7198ce2e86650769471913aaa48f5d674b1d49fd",
+      "correction_rows": 32,
+      "correction_classes": {
+        "material_numeric_authority_return": 3,
+        "typed_manual_disposition_required": 1,
+        "research_content_return": 6,
+        "uncalibrated_scenario_finding": 21,
+        "verifier_false_green": 1
+      }
+    },
+    "supervisor_model_correction_performed": false,
+    "corrected_candidates_created": 0,
+    "hidden_gold_visible_to_correction": false
+  },
+  "campaign_disposition": {
+    "DELL_raw_measurement": "complete_quality_fail",
+    "MU_raw_measurement": "complete_quality_fail",
+    "NVDA_raw_measurement": "complete_quality_fail",
+    "S2_05_three_case_raw_campaign_complete": true,
+    "S2_06_three_case_deterministic_boundaries_materialized": true,
+    "S2_06_supervisor_recoverability_complete": false,
+    "automatic_R3_or_raw_rerun": false,
+    "unified_supervisor_authority_issued": false,
+    "business_promotion": false
+  },
+  "implementation": {
+    "runtime": {"ref": "src/sec_agent/s2_same_evidence_experiment_runtime.py", "sha256": "816b2961c5dfe219233e08b606d63799063ea9cb1b6b5e102735e9c5b650c9af"},
+    "execution_time_evaluator_v1_3": {"ref": "src/sec_agent/s2_same_evidence_layered_evaluation.py", "sha256": "0d3361d87550c4d2a409475d2afc5fdc6ef9065cbb6feb5e06ebd406a71adc80"},
+    "final_evaluator_v1_4": {"ref": "src/sec_agent/s2_same_evidence_layered_evaluation.py", "sha256": "b2fe0a757b44aea6bc669891f8b991cc09492195694927a63c9513ac79bca253"},
+    "three_case_replay": {"ref": "scripts/releases/replay_fin_ia_0_1_3_s2_05_three_case_raw_evaluation.py", "sha256": "6392b7763cd44f004a651645836d62a5be7f4bd03e75bf5659157c78e6a63faa"},
+    "supervision_compiler": {"ref": "src/sec_agent/s2_same_evidence_supervision.py", "sha256": "46cf2ceb0f8724c0a13d11bcfb367027e3985db495ec27d27a939112d2ae8c90"},
+    "supervision_materializer": {"ref": "scripts/releases/materialize_fin_ia_0_1_3_s2_06_supervision_boundary.py", "sha256": "973147c302f2e029ab2ab9537c5f63cf12c7184ba15bd8aabba3ef7fea9393de"}
+  },
+  "security": {
+    "raw_capture_root": ".codex_runtime/fin013_s2_05/runs/fin013_s2_05_exp_a_nvda_04b01685650a1af46f43/raw_model_only",
+    "raw_capture_secret_scan": "pass",
+    "credential_value_read_or_persisted": false,
+    "raw_capture_tracking": "git_ignored_runtime_only",
+    "raw_mutations": 0
+  },
+  "verification": {
+    "focused_tests": "39 passed",
+    "broader_tests": "98 passed / 3201 deselected",
+    "compileall": "pass",
+    "release_json_and_project_os_jsonl_parse": "pass",
+    "admission_ledger_rows": 1,
+    "raw_credential_value_hits": 0
+  },
+  "next_action": "COMMIT_PUSH_THEN_SEPARATE_THREE_CASE_UNIFIED_SUPERVISOR_AUTHORITY_DECISION",
+  "known_boundary": "S2-05 now has three complete raw measurements, all quality-failed. Deterministic supervision boundaries do not prove that a supervisor can repair the reports, do not authorize supervisor model calls or corrected candidates, and do not support release or business promotion.",
+  "result_digest": "8e5d2ac9b140dee0405b1c78a50cb14e8f33e4f3c4ce92b8f73ed231257c5fb5"
+}

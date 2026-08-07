@@ -250,6 +250,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-05` NVDA raw replacement R2 authority 已编译**：用户已单独批准一次修复后 exact-live。R2 沿用 R1/DELL/MU 的 model-visible contract、NVDA case digest、DeepSeek Pro 参数和最多 12-call/0-retry envelope；唯一差异是本地 typed billion→trillion 等价表面修复。R1 admission/root 不复用，前两案 raw/correction、supervisor prompt 与 hidden Gold 不可见。focused=`34 passed`、S2-05/S2-06 broad=`93 passed`；当前 admission/provider=0。需 clean commit/push 后重新 preflight 才能签发；R2 若出现新 L1，停止且不自动进入 R3。
 
+> **2026-08-07 `013-S2-05` 三案例 raw campaign 已完成、全部质量失败**：NVDA R2 exact-once 完成 `10 calls/10 captures`、0 retry，R1 numeric-scale 误杀未复发。post-run evaluator v1.4 删除 cash-flow/P-E 条件清单共现造成的 2 L1＋1 L2 误报，并对三案统一补齐 citation ID-role 检查；immutable replay 最终 DELL=`3 L1/1 L2/23 L3`、MU=`8/2/14`、NVDA=`4/1/27`。三案 raw 与 deterministic supervision boundary 均已物化且 raw mutation=0；三案均 `complete_quality_fail`。`013-S2-05` raw measurement 完成，但 `013-S2-06` supervisor recoverability、corrected candidate、formal hidden score 与业务晋升仍未完成。不得 NVDA R3 或逐案重跑；下一项只可单独裁决统一三案例 supervisor 实验。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。
@@ -277,7 +279,7 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 14. [x] 保留 `013-S3-01`–`013-S3-05` 与 R3 为 minimum engineering/control anchor：结构、exact-once、9 natural Claim、3 Lead、3 Workpaper、L1/L2 成立；0 thesis-support、0 natural counterevidence 与 29 个未研究 Cell 使其不构成产品级研究证明。
 15. [x] 完成 DELL/MU/NVDA 三份 Codex-authored Gold candidate 与交叉订正；明确它们是混合研究候选，不是当前产品或完整 MCP 已独立产出的报告。
 16. [x] 完成 `013-S2-04`：三案共享 Benchmark Evidence Pack、blind input 和 evaluator-only hidden Gold scoring objects 已按 digest 冻结，公平性、泄漏、跨案污染、日期和数值重算检查通过。
-17. [ ] 执行 `013-S2-05/06` Experiment A：DELL、MU 已分别形成完整 hidden-scoreable raw candidate，均以内容质量失败；NVDA R1 因项目 billion→trillion numeric-surface false positive 在 Lead 后终止，修复已零调用通过，单次 replacement R2 authority 已编译待 clean commit/preflight。三案 raw 完成前不向后案暴露前案 correction/hidden Gold；NVDA replacement raw、三案 corrected 与最终能力边界仍待完成。
+17. [ ] 执行 `013-S2-05/06` Experiment A：`013-S2-05` 三案 raw 已全部完成且均为质量失败，v1.4 统一结果 DELL=`3/1/23`、MU=`8/2/14`、NVDA=`4/1/27`；三案 deterministic supervision boundary 已物化。`013-S2-06` 仍待一次统一 supervisor authority/correction/corrected-candidate 与最终能力边界，formal score、业务晋升和 release 均未成立。
 18. [ ] 执行 `013-S1-06/07/08`：修复 MCP operational truth、当前外部来源 runtime 和 Agentic Search 质量门；不调用 DeepSeek 来发现确定性工具缺陷。
 19. [ ] 执行 `013-S3-06/07`：动态 Lead loop 与 EvidenceRequest/targeted repair 闭环。
 20. [ ] 执行 `013-S3-08/09` Experiment B：三案端到端 DeepSeek Agentic Search/Research、隐藏 Gold 八维对照和 qualified-human 内容验收。

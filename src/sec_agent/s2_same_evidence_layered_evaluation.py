@@ -192,6 +192,16 @@ def evaluate_raw_chain(
         _walk_numeric(value, "$", node_ref, case_input, findings)
 
     _shape_findings(synthesis, writer, verifier, findings)
+    _binding_findings(
+        lead=lead,
+        specialists=specialists,
+        synthesis=synthesis,
+        writer=writer,
+        verifier=verifier,
+        case_input=case_input,
+        section_ids=section_ids,
+        findings=findings,
+    )
     for index, specialist in enumerate(specialists or []):
         if isinstance(specialist, Mapping) and not specialist.get("counterevidence_ids"):
             _finding(findings, "L3", "explicit_counterevidence_surface_empty", f"specialist[{index}]")
@@ -238,7 +248,7 @@ def evaluate_raw_chain(
     material = any(row["severity"] == "L1" for row in findings)
     verifier_accepts = isinstance(verifier, Mapping) and verifier.get("decision") == "accept_raw_candidate"
     return {
-        "schema_version": "fin_ia_0_1_3_s2_05_layered_raw_evaluation_v1_3",
+        "schema_version": "fin_ia_0_1_3_s2_05_layered_raw_evaluation_v1_4",
         "case_key": case_input.get("case_key"),
         "raw_chain_complete": complete,
         "raw_experiment_candidate": complete,
@@ -323,11 +333,116 @@ def _shape_findings(synthesis: Any, writer: Any, verifier: Any, findings: list[d
             _finding(findings, "L1", "verifier_findings_not_array", "verifier")
 
 
+def _binding_findings(
+    *,
+    lead: Any,
+    specialists: Any,
+    synthesis: Any,
+    writer: Any,
+    verifier: Any,
+    case_input: Mapping[str, Any],
+    section_ids: Sequence[str],
+    findings: list[dict[str, Any]],
+) -> None:
+    evidence_ids = {
+        str(row.get("evidence_id") or "")
+        for row in case_input.get("evidence_items", [])
+        if isinstance(row, Mapping)
+    }
+    gap_ids = {
+        str(row.get("gap_id") or "")
+        for row in case_input.get("explicit_gaps", [])
+        if isinstance(row, Mapping)
+    }
+    units = lead.get("research_units") if isinstance(lead, Mapping) else None
+    unit_rows = [row for row in units or [] if isinstance(row, Mapping)]
+    unit_ids = {str(row.get("unit_id") or "") for row in unit_rows}
+    unit_index = {str(row.get("unit_id") or ""): row for row in unit_rows}
+
+    covered_evidence: set[str] = set()
+    covered_gaps: set[str] = set()
+    for row in unit_rows:
+        selected = _strings(row.get("evidence_ids"))
+        gaps = _strings(row.get("gap_ids"))
+        covered_evidence.update(selected)
+        covered_gaps.update(gaps)
+        if not selected <= evidence_ids or not gaps <= gap_ids:
+            _finding(findings, "L1", "lead_cross_case_or_wrong_id_role", "lead")
+    if unit_rows and (covered_evidence != evidence_ids or covered_gaps != gap_ids):
+        _finding(findings, "L1", "lead_case_pack_coverage_incomplete", "lead")
+
+    for index, specialist in enumerate(specialists or []):
+        if not isinstance(specialist, Mapping):
+            continue
+        node_ref = f"specialist[{index}]"
+        unit_id = str(specialist.get("unit_id") or "")
+        unit = unit_index.get(unit_id)
+        if unit is None:
+            _finding(findings, "L1", "specialist_unknown_unit_id", node_ref)
+            continue
+        selected = _strings(specialist.get("evidence_ids"))
+        counter = _strings(specialist.get("counterevidence_ids"))
+        gaps = _strings(specialist.get("gap_ids"))
+        allowed_evidence = _strings(unit.get("evidence_ids"))
+        allowed_gaps = _strings(unit.get("gap_ids"))
+        if not (selected | counter) <= allowed_evidence or not gaps <= allowed_gaps:
+            _finding(findings, "L1", "specialist_cross_case_unassigned_or_wrong_id_role", node_ref)
+        if selected | counter != allowed_evidence or gaps != allowed_gaps:
+            _finding(findings, "L1", "specialist_assigned_pack_coverage_incomplete", node_ref)
+
+    if isinstance(synthesis, Mapping):
+        if _strings(synthesis.get("unit_ids")) != unit_ids:
+            _finding(findings, "L1", "synthesis_unit_coverage_or_binding_invalid", "synthesis")
+        if _strings(synthesis.get("material_gap_ids")) != gap_ids:
+            _finding(findings, "L1", "synthesis_gap_coverage_or_binding_invalid", "synthesis")
+
+    sections = writer.get("sections") if isinstance(writer, Mapping) else None
+    section_rows = [row for row in sections or [] if isinstance(row, Mapping)]
+    if section_rows and [row.get("section_id") for row in section_rows] != list(section_ids):
+        _finding(findings, "L1", "writer_section_order_or_coverage_invalid", "writer")
+    writer_evidence: set[str] = set()
+    writer_gaps: set[str] = set()
+    for index, section in enumerate(section_rows):
+        cited = _strings(section.get("evidence_ids"))
+        units_used = _strings(section.get("unit_ids"))
+        gaps = _strings(section.get("gap_ids"))
+        writer_evidence.update(cited)
+        writer_gaps.update(gaps)
+        if not cited <= evidence_ids or not gaps <= gap_ids or not units_used <= unit_ids:
+            _finding(
+                findings,
+                "L1",
+                "writer_cross_case_unknown_or_wrong_id_role",
+                "writer",
+                path=f"$.sections[{index}]",
+            )
+    if section_rows and (
+        not evidence_ids <= writer_evidence or not gap_ids <= writer_gaps
+    ):
+        _finding(findings, "L1", "writer_case_pack_coverage_incomplete", "writer")
+
+    if isinstance(verifier, Mapping):
+        if _strings(verifier.get("checked_unit_ids")) != unit_ids:
+            _finding(findings, "L1", "verifier_unit_coverage_or_binding_invalid", "verifier")
+        if _strings(verifier.get("checked_section_ids")) != set(section_ids):
+            _finding(findings, "L1", "verifier_section_coverage_or_binding_invalid", "verifier")
+        for finding in verifier.get("findings") or []:
+            if isinstance(finding, Mapping) and not _strings(finding.get("evidence_ids")) <= evidence_ids:
+                _finding(findings, "L1", "verifier_finding_wrong_evidence_id_role", "verifier")
+
+
 def _financial_semantic_codes(text: str, case_input: Mapping[str, Any]) -> list[str]:
     codes: list[str] = []
     cash = any(term in text for term in ("operating cash flow", "ocf", "经营现金流"))
     earnings = any(term in text for term in ("net income", "净利润", "eps", "每股收益", "p/e", "市盈率"))
-    if cash and earnings:
+    bridge = any(
+        term in text
+        for term in (
+            "used as", "use as", "to infer", "proxy for", "maps to",
+            "as net income", "implies eps", "推导", "等同于", "作为净利润",
+        )
+    )
+    if cash and earnings and bridge:
         codes.append("cash_flow_margin_used_in_earnings_or_valuation_bridge")
     backlog = "backlog" in text or "积压" in text
     price_bridge = any(term in text for term in ("eps", "每股收益", "stock downside", "股价下跌", "股价跌幅"))
@@ -432,6 +547,12 @@ def _text_surfaces(value: Any, path: str = "$") -> list[tuple[str, str]]:
 
 def _typed_rows(value: Any, keys: set[str]) -> bool:
     return isinstance(value, list) and all(isinstance(row, Mapping) and set(row) == keys for row in value)
+
+
+def _strings(value: Any) -> set[str]:
+    if not isinstance(value, list):
+        return set()
+    return {str(item) for item in value if isinstance(item, str) and item}
 
 
 def _finding(findings: list[dict[str, Any]], severity: str, code: str, node_ref: str, **extra: Any) -> None:

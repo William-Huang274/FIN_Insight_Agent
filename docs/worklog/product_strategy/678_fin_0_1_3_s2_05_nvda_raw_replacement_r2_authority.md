@@ -2,7 +2,9 @@
 
 日期：2026-08-07
 
-状态：`zero-call authority compiled / admission not issued / execution pending clean commit`
+状态：`closed / authority committed / admission exact-once consumed / superseded by worklog 679`
+
+> 后续：R2 已完成完整 raw chain，结果、evaluator v1.4 和三案例处置见 `679_fin_0_1_3_s2_05_nvda_r2_and_three_case_raw_closeout.md`。下文保留签发前权限证据。
 
 ## 问题与决定
 

@@ -200,6 +200,45 @@ def test_document_form_and_cross_section_terms_do_not_create_numeric_or_semantic
     assert result["material_failure"] is False
 
 
+def test_independent_conditional_cash_flow_and_pe_thresholds_do_not_create_bridge_false_positive() -> None:
+    case, policy = _case_and_policy("NVDA")
+    chain = _chain(case, policy)
+    chain["writer"]["overall_boundary"] = (
+        "The thesis changes if operating cash flow margin falls below 50%, "
+        "or separately if forward P/E exceeds 40x."
+    )
+    result = evaluate_raw_chain(chain, case_input=case, policy=policy, section_ids=SECTION_IDS)
+    codes = {row["code"] for row in result["findings"]}
+    assert "cash_flow_margin_used_in_earnings_or_valuation_bridge" not in codes
+    assert "verifier_missed_material_financial_semantics" not in codes
+
+
+def test_writer_cannot_place_gap_ids_in_evidence_id_role() -> None:
+    case, policy = _case_and_policy("NVDA")
+    chain = _chain(case, policy)
+    chain["writer"]["sections"][5]["evidence_ids"] = [
+        row["gap_id"] for row in case["explicit_gaps"]
+    ]
+    result = evaluate_raw_chain(chain, case_input=case, policy=policy, section_ids=SECTION_IDS)
+    matching = [
+        row for row in result["findings"]
+        if row["code"] == "writer_cross_case_unknown_or_wrong_id_role"
+    ]
+    assert matching == [
+        {
+            "severity": "L1",
+            "code": "writer_cross_case_unknown_or_wrong_id_role",
+            "node_ref": "writer",
+            "path": "$.sections[5]",
+        }
+    ]
+    assert not any(
+        row["code"] == "writer_case_pack_coverage_incomplete"
+        for row in result["findings"]
+    )
+    assert result["material_failure"] is True
+
+
 def test_conditional_threshold_outside_dedicated_field_remains_L3() -> None:
     case, policy = _case_and_policy()
     chain = _chain(case, policy)

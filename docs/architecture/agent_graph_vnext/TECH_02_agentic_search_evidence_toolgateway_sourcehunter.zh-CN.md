@@ -622,3 +622,15 @@ Source revision、parser correction、numeric invalidation、license change 或 
 EvidenceRequest created、provider selected、tool invoked、candidate classified、accepted/rejected/revoked 和 gap closed 都必须引用 TECH_06 ActorSnapshot/AccountabilityEvent。Supervisor supplement 保持 `not_runtime_evidence`，只有经过正式 SourceHunter/Evidence Gate 后才能产生新的 runtime EvidenceRecord。
 
 本节状态为 `documented / contract_draft`；不表示现有 retrieval rows 已重新晋升。
+
+## 18. FIN 0.1.3 S1-06 MCP Operational Truth（2026-08-07）
+
+MCP 工具“写进 registry”不等于“stdio server 已暴露并能有界执行”。S1-06 把协议连接、资源绑定、handler 执行和研究质量拆开验收：
+
+1. registry 的九个业务工具必须与 stdio server 业务工具面逐项一致；`list_sec_agent_tools` 只是发现工具，不计入业务工具数。
+2. 本地 manifest、BM25/ObjectBM25、Exact-Value Ledger、market/industry snapshot 通过版本化 runtime profile 绑定；显式请求参数优先，其次环境变量，最后才使用 profile。缺失资源返回 typed binding failure，不进入 handler。
+3. 每个 tool invocation 由独立可复用 worker 进程执行。cold start、warm reuse、resource binding、handler elapsed、typed failure、timeout 和 terminal 都写入 `McpOperationalReceipt`；timeout/cancel 必须终止 worker process tree，下一次调用以 fresh cold worker 恢复。
+4. `sec_search_filings` 在 `rerank_budget=0` 时显式进入 `context_reranker=none / allow_bm25_only_pipeline=true`，不得仍加载 BGE；只有请求 rerank 时才要求已绑定的本地 reranker。没有 reranker 时 typed fail，不允许隐式访问错误的 Linux 路径或远程下载。
+5. BM25-only 只证明 operational availability，不能作为 S1-08 recall、ranking 或 source-diversity 质量证据。BGE/Milvus、新外部来源抓取与 Evidence promotion 分别留给 S1-08、S1-07 和 Evidence Gate。
+
+Runtime owner 为 `src/sec_agent/mcp_operational.py`、`src/sec_agent/mcp_server.py` 和版本化 `configs/mcp/sec_agent_mcp_runtime_profile_v0_1.json`。当前实现已通过 deterministic tests 与 stdio registry parity smoke；clean-commit cold/warm 本地资源 proof 仍是 S1-06 关闭前置，故状态暂为 `runtime_injected / deterministic_proven / clean_operational_proof_pending`。

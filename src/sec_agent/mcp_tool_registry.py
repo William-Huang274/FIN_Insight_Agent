@@ -821,6 +821,11 @@ def _interactive_args_for_sec_search(args: dict[str, Any]) -> argparse.Namespace
     limit = _bounded_int(args.get("limit"), default=120, minimum=1, maximum=500)
     candidate_budget = _bounded_int(args.get("candidate_budget"), default=0, minimum=0, maximum=2000)
     rerank_budget = _bounded_int(args.get("rerank_budget"), default=0, minimum=0, maximum=500)
+    context_reranker = str(args.get("context_reranker") or "").strip().lower()
+    if not context_reranker:
+        context_reranker = "none" if rerank_budget == 0 else "bge"
+    if context_reranker not in {"none", "bge"}:
+        raise ValueError(f"unsupported_context_reranker:{context_reranker}")
     bge_first = _bool_arg(args.get("bge_first"), default=_env_bool("BGE_FIRST"))
     bge_device = str(args.get("bge_device") or os.environ.get("BGE_DEVICE") or ("cuda" if bge_first else "cpu"))
     return argparse.Namespace(
@@ -847,6 +852,8 @@ def _interactive_args_for_sec_search(args: dict[str, Any]) -> argparse.Namespace
         object_bm25_index_dir=str(args.get("object_bm25_index_dir") or os.environ.get("OBJECT_BM25_INDEX_DIR") or "data/indexes/bm25/sec_tech_10k_objects"),
         bge_model=str(args.get("bge_model") or os.environ.get("BGE_MODEL") or "/root/autodl-tmp/modelscope_cache/BAAI/bge-reranker-v2-m3"),
         bge_device=bge_device,
+        context_reranker=context_reranker,
+        allow_bm25_only_pipeline=context_reranker == "none",
         evidence_top_k=_bounded_int(args.get("evidence_top_k"), default=int(os.environ.get("EVIDENCE_TOP_K", "4")), minimum=1, maximum=100),
         object_top_k=_bounded_int(args.get("object_top_k"), default=int(os.environ.get("OBJECT_TOP_K", "4")), minimum=1, maximum=100),
         max_context_rows=limit,
@@ -991,8 +998,7 @@ def _single_evidence_requirement_from_args(args: dict[str, Any], contract: dict[
     }
     if candidate_budget:
         requirement["candidate_budget"] = candidate_budget
-    if rerank_budget:
-        requirement["rerank_budget"] = rerank_budget
+    requirement["rerank_budget"] = rerank_budget
     return requirement
 
 
@@ -1064,8 +1070,7 @@ def _compile_available_sec_requirements(
         }
         if candidate_budget:
             requirement["candidate_budget"] = candidate_budget
-        if rerank_budget:
-            requirement["rerank_budget"] = rerank_budget
+        requirement["rerank_budget"] = rerank_budget
         requirements.append(requirement)
 
     source_gaps: list[dict[str, Any]] = []

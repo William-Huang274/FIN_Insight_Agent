@@ -12,6 +12,7 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from sec_agent.mcp_tool_registry import invoke_mcp_tool, list_registered_tools  # noqa: E402
+from sec_agent.mcp_operational import McpToolProcessSupervisor  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -19,6 +20,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tool", required=True)
     parser.add_argument("--args-json", default="{}")
     parser.add_argument("--list-tools", action="store_true")
+    parser.add_argument(
+        "--supervised",
+        action="store_true",
+        help="Invoke through the canonical resource profile and bounded process supervisor.",
+    )
     return parser.parse_args()
 
 
@@ -35,7 +41,14 @@ def main() -> int:
     if not isinstance(arguments, dict):
         print(json.dumps({"status": "error", "error": "args_json_must_be_object"}, ensure_ascii=False))
         return 2
-    result = invoke_mcp_tool(args.tool, arguments)
+    if args.supervised:
+        supervisor = McpToolProcessSupervisor()
+        try:
+            result = supervisor.invoke(args.tool, arguments)
+        finally:
+            supervisor.close()
+    else:
+        result = invoke_mcp_tool(args.tool, arguments)
     print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
     return 0 if result.get("status") not in {"error"} else 2
 

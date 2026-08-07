@@ -342,4 +342,6 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 20. [ ] 执行 `013-S3-08/09` Experiment B：三案端到端 DeepSeek Agentic Search/Research、隐藏 Gold 八维对照和 qualified-human 内容验收。
 21. [ ] 执行 current S4 Workbench dogfood，再执行 S5 RG1–RG5；只有最终 candidate 可获得 FIN 0.1.3 内部版本收口结论。
 
+> **2026-08-07 `013-S1-06` engineering implementation 已完成、clean proof 待执行**：根因审计确认 registry 有 9 个业务工具而 stdio server 只暴露 6 个；SEC handler 即使 `rerank_budget=0` 仍强制加载 Linux 默认 BGE 路径，约 56 秒后才失败。现已增加 server/registry parity、版本化 canonical resource profile、显式 BM25-only operational mode、可复用进程 supervisor、cold/warm/phase receipt、timeout/cancel/process-tree no-orphan 以及 typed missing-reranker failure。focused=`23 passed`、stdio=`10 tools`；本轮本地 diagnostic 已证明 market、Exact Ledger 与 SEC BM25 handler 可返回，但正式 S1-06 closeout 仍须在 clean commit 上重做 cold/warm proof。S1-07/08、BGE/Milvus 质量、外网 current-source acquisition 与模型调用均未开始。
+
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

@@ -1,0 +1,26 @@
+{
+  "schema_version": "fin_insight_mcp_runtime_profile_v0_1",
+  "profile_id": "fin_0_1_3_s1_06_local_full_source_operational_v0_1",
+  "description": "Canonical local resource bindings and bounded tool timeouts for MCP operational truth. BM25-only SEC retrieval is an operational fallback and is not S1-08 retrieval-quality evidence.",
+  "resources": {
+    "manifest_path": "data/processed_private/manifests/sec_tech_primary_mixed_with_8k_earnings_full30_manifest_fy2023_2027.jsonl",
+    "bm25_index_dir": "data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027",
+    "object_bm25_index_dir": "data/indexes/bm25/sec_tech_primary_mixed_with_8k_earnings_full30_fy2023_2027_objects",
+    "ledger_store_path": "data/processed_private/ledger/sec_investment_coverage_mixed_with_8k_fy2023_2027_core_ledger.duckdb",
+    "market_evidence_path": "data/processed_private/market/evidence_packs/20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1_3m_market_evidence.jsonl",
+    "industry_snapshot_db_path": "data/processed_private/industry_data/20260530_industry_sector_depth_v0_2_with_eia_total_energy_retail_sales/industry_snapshot.duckdb",
+    "industry_evidence_path": "data/processed_private/industry_data/20260530_industry_sector_depth_v0_2_with_eia_total_energy_retail_sales/industry_evidence_rows.jsonl"
+  },
+  "default_timeout_s": 30,
+  "tool_timeouts_s": {
+    "sec_search_filings": 90,
+    "sec_milvus_semantic_search": 45,
+    "sec_query_exact_value_ledger": 30,
+    "market_get_snapshot": 15,
+    "industry_get_snapshot": 30,
+    "relationship_graph_lookup": 20,
+    "web_evidence_snapshot": 20,
+    "run_inspect_artifacts": 15,
+    "run_read_artifact": 15
+  }
+}

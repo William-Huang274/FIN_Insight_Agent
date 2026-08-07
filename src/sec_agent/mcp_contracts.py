@@ -97,6 +97,28 @@ def _tool(
     handler_name: str,
     status: str = "contract",
 ) -> dict[str, Any]:
+    input_schema = dict(input_schema)
+    input_properties = dict(input_schema.get("properties") or {})
+    input_properties.setdefault(
+        "timeout_s",
+        {
+            "type": "number",
+            "minimum": 0.01,
+            "maximum": 900,
+            "description": "Bounded supervisor timeout for this MCP invocation.",
+        },
+    )
+    input_schema["properties"] = input_properties
+    output_schema = dict(output_schema)
+    output_properties = dict(output_schema.get("properties") or {})
+    output_properties.setdefault(
+        "operational",
+        {
+            "type": "object",
+            "description": "Process-supervisor, resource-binding, phase timing, and terminal receipt.",
+        },
+    )
+    output_schema["properties"] = output_properties
     return {
         "name": name,
         "namespace": namespace,

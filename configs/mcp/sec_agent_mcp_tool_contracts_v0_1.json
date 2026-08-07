@@ -110,6 +110,12 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 500
+          },
+          "timeout_s": {
+            "type": "number",
+            "minimum": 0.01,
+            "maximum": 900,
+            "description": "Bounded supervisor timeout for this MCP invocation."
           }
         },
         "required": [
@@ -188,6 +194,10 @@
             "items": {
               "type": "object"
             }
+          },
+          "operational": {
+            "type": "object",
+            "description": "Process-supervisor, resource-binding, phase timing, and terminal receipt."
           }
         },
         "required": [],
@@ -208,6 +218,220 @@
       "handler": {
         "module": "scripts.cloud.sec_agent_interactive",
         "name": "retrieve_context_for_graph"
+      }
+    },
+    {
+      "name": "sec_milvus_semantic_search",
+      "namespace": "sec",
+      "title": "Search Milvus typed semantic evidence",
+      "description": "Run typed semantic recall over a Milvus collection built from SEC evidence vectors. This is a recall supplement for bounded filing evidence, not an exact-value authority.",
+      "status": "contract",
+      "agent_roles": [
+        "evidence_operator"
+      ],
+      "source_tiers": [
+        "primary_sec_filing",
+        "company_authored_unaudited_sec_filing"
+      ],
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "tickers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Uppercase ticker symbols."
+          },
+          "years": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Fiscal years to query."
+          },
+          "filing_types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "10-K",
+                "10-Q",
+                "8-K",
+                "20-F",
+                "40-F",
+                "6-K"
+              ]
+            }
+          },
+          "source_tiers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "primary_sec_filing",
+                "company_authored_unaudited_sec_filing"
+              ]
+            }
+          },
+          "evidence_requirement_id": {
+            "type": "string"
+          },
+          "metric_families": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "period_roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ANNUAL",
+                "QTD",
+                "YTD",
+                "TTM",
+                "INSTANT"
+              ]
+            }
+          },
+          "vector_kinds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "narrative_chunk",
+                "table_chunk",
+                "metric_row",
+                "table_row",
+                "claim_row",
+                "relationship_context",
+                "paraphrase_context"
+              ]
+            }
+          },
+          "typed_filter_required": {
+            "type": "boolean"
+          },
+          "milvus_db_path": {
+            "type": "string"
+          },
+          "milvus_collection_name": {
+            "type": "string"
+          },
+          "embedding_model": {
+            "type": "string"
+          },
+          "milvus_top_k": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "milvus_search_policy": {
+            "type": "object"
+          },
+          "timeout_s": {
+            "type": "number",
+            "minimum": 0.01,
+            "maximum": 900,
+            "description": "Bounded supervisor timeout for this MCP invocation."
+          }
+        },
+        "required": [
+          "query",
+          "vector_kinds"
+        ],
+        "additionalProperties": true
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "partial",
+              "error",
+              "dry_run"
+            ]
+          },
+          "context_rows": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "row_count": {
+            "type": "integer"
+          },
+          "vector_kind_counts": {
+            "type": "object"
+          },
+          "collection_name": {
+            "type": "string"
+          },
+          "typed_filter_required": {
+            "type": "boolean"
+          },
+          "semantic_route_role": {
+            "type": "string"
+          },
+          "artifact_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "artifact_id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "digest": {
+                  "type": "string"
+                },
+                "row_count": {
+                  "type": "integer"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "source_gaps": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "operational": {
+            "type": "object",
+            "description": "Process-supervisor, resource-binding, phase timing, and terminal receipt."
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "source_boundaries": {
+        "allowed_claim_types": [
+          "company_disclosed_business_description",
+          "company_disclosed_management_discussion",
+          "risk_factor",
+          "semantic_recall_context"
+        ],
+        "prohibited_claims": [
+          "Do not use Milvus semantic hits as exact financial values.",
+          "Do not run Milvus semantic search without a typed vector_kind filter.",
+          "Do not treat semantic recall as a source family outside bounded SEC evidence."
+        ]
+      },
+      "handler": {
+        "module": "sec_agent.mcp_tool_registry",
+        "name": "_invoke_milvus_semantic"
       }
     },
     {
@@ -301,6 +525,12 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 10000
+          },
+          "timeout_s": {
+            "type": "number",
+            "minimum": 0.01,
+            "maximum": 900,
+            "description": "Bounded supervisor timeout for this MCP invocation."
           }
         },
         "required": [],
@@ -353,6 +583,10 @@
               "required": [],
               "additionalProperties": false
             }
+          },
+          "operational": {
+            "type": "object",
+            "description": "Process-supervisor, resource-binding, phase timing, and terminal receipt."
           }
         },
         "required": [],
@@ -426,10 +660,19 @@
           "market_evidence_path": {
             "type": "string"
           },
+          "market_catalog_path": {
+            "type": "string"
+          },
           "limit": {
             "type": "integer",
             "minimum": 1,
             "maximum": 1000
+          },
+          "timeout_s": {
+            "type": "number",
+            "minimum": 0.01,
+            "maximum": 900,
+            "description": "Bounded supervisor timeout for this MCP invocation."
           }
         },
         "required": [
@@ -487,6 +730,10 @@
               "required": [],
               "additionalProperties": false
             }
+          },
+          "operational": {
+            "type": "object",
+            "description": "Process-supervisor, resource-binding, phase timing, and terminal receipt."
           }
         },
         "required": [],
@@ -566,6 +813,12 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 10000
+          },
+          "timeout_s": {
+            "type": "number",
+            "minimum": 0.01,
+            "maximum": 900,
+            "description": "Bounded supervisor timeout for this MCP invocation."
           }
         },
         "required": [
@@ -623,6 +876,10 @@
               "required": [],
               "additionalProperties": false
             }
+          },
+          "operational": {
+            "type": "object",
+            "description": "Process-supervisor, resource-binding, phase timing, and terminal receipt."
           }
         },
         "required": [],
@@ -644,6 +901,359 @@
       "handler": {
         "module": "sec_agent.industry_snapshot",
         "name": "query_industry_snapshot"
+      }
+    },
+    {
+      "name": "relationship_graph_lookup",
+      "namespace": "relationship",
+      "title": "Lookup relationship graph scope evidence",
+      "description": "Lookup bounded company relationship graph and sector-depth metadata rows for peer, customer, supplier, sector, and macro-sensitive research-scope expansion. The output supports hypotheses and evidence requirements only.",
+      "status": "contract",
+      "agent_roles": [
+        "research_planner"
+      ],
+      "source_tiers": [
+        "relationship_graph"
+      ],
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "focus_tickers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "search_scope_tickers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowed_universe_tickers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "user_query": {
+            "type": "string"
+          },
+          "relationship_graph_path": {
+            "type": "string"
+          },
+          "sector_depth_pack_path": {
+            "type": "string"
+          },
+          "max_relationships": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "max_expanded_tickers": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "include_sector_depth": {
+            "type": "boolean"
+          },
+          "timeout_s": {
+            "type": "number",
+            "minimum": 0.01,
+            "maximum": 900,
+            "description": "Bounded supervisor timeout for this MCP invocation."
+          }
+        },
+        "required": [
+          "focus_tickers"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "partial",
+              "error"
+            ]
+          },
+          "relationships": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "relationship_rows": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "focus_tickers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expanded_tickers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "included_tickers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "source_gaps": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "summary": {
+            "type": "object"
+          },
+          "artifact_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "artifact_id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "digest": {
+                  "type": "string"
+                },
+                "row_count": {
+                  "type": "integer"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "operational": {
+            "type": "object",
+            "description": "Process-supervisor, resource-binding, phase timing, and terminal receipt."
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "source_boundaries": {
+        "allowed_claim_types": [
+          "research_scope_hypothesis",
+          "peer_relationship_hypothesis",
+          "customer_supplier_hypothesis",
+          "sector_readthrough_hypothesis"
+        ],
+        "prohibited_claims": [
+          "Do not use relationship graph rows as reported revenue, margin, cash flow, capex, or balance-sheet facts.",
+          "Do not expand to unbounded full-market scope without relationship evidence and budget guard."
+        ]
+      },
+      "handler": {
+        "module": "sec_agent.relationship_graph",
+        "name": "query_relationship_graph"
+      }
+    },
+    {
+      "name": "web_evidence_snapshot",
+      "namespace": "web",
+      "title": "Fetch allowlisted web evidence snapshot",
+      "description": "Execute a structured live-web repair request against an allowlisted source scope. The operator binds fetched content to snapshot metadata, source classification, parser output, and an authority gate. Search snippets alone are never evidence rows.",
+      "status": "contract",
+      "agent_roles": [
+        "evidence_operator"
+      ],
+      "source_tiers": [
+        "live_public_web_context"
+      ],
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "source_class": {
+            "type": "string",
+            "enum": [
+              "company_official_product_surface",
+              "company_ir_material",
+              "official_regulatory_page",
+              "government_dataset_endpoint",
+              "commerce_product_surface",
+              "major_financial_news",
+              "research_developer_signal",
+              "social_official_account",
+              "social_unverified_or_influencer"
+            ]
+          },
+          "claim_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "web_scope_policy_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "snapshot_id": {
+            "type": "string"
+          },
+          "snapshot_url": {
+            "type": "string"
+          },
+          "source_title": {
+            "type": "string"
+          },
+          "company_domain_verified": {
+            "type": "boolean"
+          },
+          "company_domains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "web_scope_allowed_domains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "timeout_s": {
+            "type": "number",
+            "minimum": 0.01,
+            "maximum": 900,
+            "description": "Bounded supervisor timeout for this MCP invocation."
+          }
+        },
+        "required": [
+          "url",
+          "source_class",
+          "web_scope_policy_ids"
+        ],
+        "additionalProperties": true
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "partial",
+              "error",
+              "dry_run"
+            ]
+          },
+          "snapshot_id": {
+            "type": "string"
+          },
+          "snapshot_url": {
+            "type": "string"
+          },
+          "as_of_datetime": {
+            "type": "string"
+          },
+          "source_class": {
+            "type": "string"
+          },
+          "web_scope_policy_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "context_rows": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "source_gaps": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "artifact_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "artifact_id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "digest": {
+                  "type": "string"
+                },
+                "row_count": {
+                  "type": "integer"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "operational": {
+            "type": "object",
+            "description": "Process-supervisor, resource-binding, phase timing, and terminal receipt."
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "source_boundaries": {
+        "allowed_claim_types": [
+          "allowlisted_web_context",
+          "product_presence_or_sku_price_availability_when_source_class_allows",
+          "regulatory_or_government_context_when_source_class_allows",
+          "developer_or_research_activity_signal_when_source_class_allows",
+          "major_news_event_or_quote_lead"
+        ],
+        "prohibited_claims": [
+          "Do not turn search snippets into evidence rows or claim cards.",
+          "Do not use ecommerce pages for shipment volume, vendor share, sell-through, channel inventory, margin, or revenue.",
+          "Do not use social or self-media sources to support financial facts.",
+          "Do not overwrite SEC ledger rows or company product runtime facts with live-web context rows.",
+          "Official or regulatory web snapshots need parser and authority-gate success before any future promotion beyond context-only."
+        ]
+      },
+      "handler": {
+        "module": "sec_agent.mcp_tool_registry",
+        "name": "_invoke_web_evidence_snapshot"
       }
     },
     {
@@ -673,6 +1283,12 @@
           },
           "include_preview": {
             "type": "boolean"
+          },
+          "timeout_s": {
+            "type": "number",
+            "minimum": 0.01,
+            "maximum": 900,
+            "description": "Bounded supervisor timeout for this MCP invocation."
           }
         },
         "required": [
@@ -714,6 +1330,10 @@
           },
           "performance_summary": {
             "type": "object"
+          },
+          "operational": {
+            "type": "object",
+            "description": "Process-supervisor, resource-binding, phase timing, and terminal receipt."
           }
         },
         "required": [],
@@ -769,6 +1389,12 @@
           },
           "parse_json": {
             "type": "boolean"
+          },
+          "timeout_s": {
+            "type": "number",
+            "minimum": 0.01,
+            "maximum": 900,
+            "description": "Bounded supervisor timeout for this MCP invocation."
           }
         },
         "required": [
@@ -804,6 +1430,10 @@
           },
           "truncated": {
             "type": "boolean"
+          },
+          "operational": {
+            "type": "object",
+            "description": "Process-supervisor, resource-binding, phase timing, and terminal receipt."
           }
         },
         "required": [],

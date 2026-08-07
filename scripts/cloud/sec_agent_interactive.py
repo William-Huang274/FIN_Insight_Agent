@@ -3458,9 +3458,14 @@ def _run_context_in_process(args: argparse.Namespace, cases_path: Path, trace_di
     bad_cases: list[dict[str, Any]] = []
     context_runtime = {
         "context_runner": "in_process",
-        "bge_device": str(args.bge_device or ""),
-        "bge_model_ref": _model_ref(args.bge_model),
-        "cuda_available": _cuda_available() if str(args.bge_device or "").lower().startswith("cuda") else None,
+        "context_reranker": str(getattr(args, "context_reranker", "bge") or "bge"),
+        "bge_device": str(args.bge_device or "") if context_reranker is not None else "",
+        "bge_model_ref": _model_ref(args.bge_model) if context_reranker is not None else "",
+        "cuda_available": (
+            _cuda_available()
+            if context_reranker is not None and str(args.bge_device or "").lower().startswith("cuda")
+            else None
+        ),
         "reranker_batch_size": int(args.reranker_batch_size),
         "reranker_max_length": int(args.reranker_max_length),
         "reranker_doc_max_chars": int(args.reranker_doc_max_chars),
@@ -3548,6 +3553,7 @@ def _run_context_in_process(args: argparse.Namespace, cases_path: Path, trace_di
 
 
 def _benchmark_context_args(args: argparse.Namespace, cases_path: Path, trace_dir: Path) -> argparse.Namespace:
+    context_reranker = str(getattr(args, "context_reranker", "bge") or "bge").lower()
     return argparse.Namespace(
         cases_path=str(cases_path),
         manifest_path=args.manifest_path,
@@ -3560,7 +3566,7 @@ def _benchmark_context_args(args: argparse.Namespace, cases_path: Path, trace_di
         evidence_top_k=args.evidence_top_k,
         object_top_k=args.object_top_k,
         max_context_rows=args.max_context_rows,
-        context_reranker="bge",
+        context_reranker=context_reranker,
         context_reranker_model=args.bge_model,
         context_reranker_device=args.bge_device,
         context_reranker_batch_size=args.reranker_batch_size,
@@ -3569,7 +3575,7 @@ def _benchmark_context_args(args: argparse.Namespace, cases_path: Path, trace_di
         context_reranker_candidate_limit=args.reranker_candidate_limit,
         context_reranker_top_k=args.reranker_top_k,
         ledger_store_path=getattr(args, "ledger_store_path", ""),
-        allow_bm25_only_pipeline=False,
+        allow_bm25_only_pipeline=bool(getattr(args, "allow_bm25_only_pipeline", False)),
         synthesis_backend="context_only",
         synthesis_command="",
     )
@@ -3596,7 +3602,11 @@ def _get_context_runtime_resources(
     resources = {
         "bm25": BM25Retriever(_repo_path(args.bm25_index_dir)),
         "object_bm25": object_bm25,
-        "context_reranker": benchmark_context._load_context_reranker(bench_args),
+        "context_reranker": (
+            None
+            if str(getattr(bench_args, "context_reranker", "bge") or "bge").lower() == "none"
+            else benchmark_context._load_context_reranker(bench_args)
+        ),
     }
     _CONTEXT_RUNTIME_CACHE.clear()
     _CONTEXT_RUNTIME_CACHE[key] = resources
@@ -3611,6 +3621,7 @@ def _context_runtime_cache_key(args: argparse.Namespace) -> tuple[Any, ...]:
     return (
         _index_cache_token(_repo_path(args.bm25_index_dir)),
         _index_cache_token(_repo_path(args.object_bm25_index_dir)),
+        str(getattr(args, "context_reranker", "bge") or "bge"),
         str(args.bge_model),
         str(args.bge_device),
         int(args.reranker_max_length),

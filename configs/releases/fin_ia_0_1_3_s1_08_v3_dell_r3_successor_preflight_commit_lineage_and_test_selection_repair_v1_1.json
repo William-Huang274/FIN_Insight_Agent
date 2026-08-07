@@ -1,0 +1,69 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_preflight_commit_lineage_and_test_selection_repair_v1_1",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08-P2C",
+  "status": "zero_call_repaired_clean_successor_preflight_pending",
+  "supersedes": {
+    "path": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_successor_preflight_commit_lineage_repair_v1_0.json",
+    "sha256": "9f636a71487b87589cb794513f459e9aa785bc38f9981b029df3228e9b690da1",
+    "reason": "The first clean proof attempt showed that pytest collected the entire contract directory before applying -k s1_08, importing unrelated historical resources absent from a clean archive. The commit-lineage repair remains valid; only the proof-runner test selector was invalid."
+  },
+  "retained_failed_attempt": {
+    "attempt_id": "S1-08-V3-DELL-R3-CLEAN-PREFLIGHT-A1",
+    "source_commit": "04e439bfd1e3f6e248cc6dea2b49789105d48f57",
+    "status": "failed_before_result_materialization",
+    "failure_code": "pytest_broad_collection_imported_unrelated_contract_resources",
+    "diagnostic_reproduction_count": 2,
+    "observed_collection_errors": 144,
+    "runtime_or_product_failure": false,
+    "formal_admission_network_model_provider_retry_live_calls": [0, 0, 0, 0, 0, 0]
+  },
+  "repair": {
+    "test_selection": "ten_explicit_S1_08_contract_files",
+    "copy_unrelated_historical_runtime_resources_into_archive": false,
+    "fallback_or_skip_added": false,
+    "expected_tests_passed": 70,
+    "tests_failed_expected": 0,
+    "tests_skipped_expected": 0,
+    "commit_lineage_ancestry_and_runtime_tree_guard_preserved": true
+  },
+  "superseded_implementation_artifact": {
+    "path": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_successor_entrypoint_zero_call_implementation_v1_0.json",
+    "sha256": "79810a5f4af20c39d3340b38775d3b04a43ab057bb1f7245a504bbf24418fc04",
+    "disposition": "Historical P2B engineering evidence remains immutable; the future clean preflight binds the repaired runner, test and preflight-runner SHA below."
+  },
+  "source_files": [
+    {
+      "path": "src/sec_agent/s1_08_r3_successor.py",
+      "sha256": "3f10f2c61cdaa9f7f3d5fdadacd47d409e908815baf52a31a32e323a8c92195e"
+    },
+    {
+      "path": "scripts/releases/run_fin_ia_0_1_3_s1_08_v3_dell_current_search_r3.py",
+      "sha256": "d799aff3df7383d669bf665f459234adfdc7233bb726d7456f8b9cd792e90dd5"
+    },
+    {
+      "path": "tests/contract/test_fin_0_1_3_s1_08_v3_dell_r3_successor.py",
+      "sha256": "c699ca54c7765f36dcc7567d64278d9c00f78d4b26ac0ec52b54bb046cc41837"
+    },
+    {
+      "path": "scripts/releases/prepare_fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight.py",
+      "sha256": "8bb26482890ca013cce0610ba533716d71867ffd1d00360bd7bfd59680e1b161"
+    }
+  ],
+  "verification": {
+    "focused_R3_contract_tests_passed": 7,
+    "compileall": "pass",
+    "explicit_test_file_selector_regression": "pass",
+    "broad_contract_collection_forbidden": true,
+    "formal_admission_network_model_provider_retry_live_calls": [0, 0, 0, 0, 0, 0]
+  },
+  "decision": {
+    "proof_runner_input_selection": "zero_call_repaired",
+    "clean_successor_preflight": false,
+    "formal_admission_issued": false,
+    "DELL_R3_executed": false,
+    "exact_live_authorized": false
+  },
+  "current_next": "COMMIT_PUSH_THEN_S1_08_V3_DELL_R3_SUCCESSOR_CLEAN_ZERO_CALL_PREFLIGHT_A2",
+  "known_boundary": "This repair narrows pytest collection to the exact S1-08 suite and preserves A1 as failed evidence. It is not the clean proof, an admission, source access, candidate-quality evidence or live authority."
+}

@@ -35,6 +35,10 @@ R2_RESULT_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search
 R2_QUALITY_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_source_quality_evaluation_v1_0.json"
 RUNTIME_PATH = ROOT / "src/sec_agent/s1_08_r3_successor.py"
 RUNNER_PATH = ROOT / "scripts/releases/run_fin_ia_0_1_3_s1_08_v3_dell_current_search_r3.py"
+PREFLIGHT_RUNNER_PATH = ROOT / (
+    "scripts/releases/prepare_fin_ia_0_1_3_s1_08_v3_"
+    "dell_r3_successor_clean_zero_call_preflight.py"
+)
 OLD_R2_RUNTIME_PATH = ROOT / "src/sec_agent/s1_08_r2_successor.py"
 OLD_R2_RUNNER_PATH = ROOT / "scripts/releases/run_fin_ia_0_1_3_s1_08_dell_current_search_r2.py"
 OLD_R2_PREFLIGHT_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_r2_successor_clean_zero_call_preflight_v1_1.json"
@@ -392,6 +396,12 @@ def test_R3_runner_is_zero_call_until_explicit_main_and_cannot_reuse_R2(
     assert 'if __name__ == "__main__"' in source
     assert "implementation_commit=proven_source_commit" in source
     assert not (ROOT / "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_result_v1_0.json").exists()
+
+    preflight_source = PREFLIGHT_RUNNER_PATH.read_text(encoding="utf-8")
+    assert '"tests/contract", "-k", "s1_08"' not in preflight_source
+    assert "PYTEST_TARGETS" in preflight_source
+    assert "test_fin_0_1_3_s1_08_v3_dell_r3_fresh_live_authority_decision.py" in preflight_source
+    assert "test_fin_0_1_3_s1_08_v3_dell_r3_successor.py" in preflight_source
 
     spec = importlib.util.spec_from_file_location("r3_runner_contract_test", RUNNER_PATH)
     assert spec is not None and spec.loader is not None

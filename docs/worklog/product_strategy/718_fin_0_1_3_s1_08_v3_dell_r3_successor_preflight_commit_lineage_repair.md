@@ -35,3 +35,9 @@ runner 要求后者必须是前者的 Git 后代，同时 `src/`、`scripts/`、
 当前仍不是 clean proof，也没有解锁 exact-live。下一步必须先把本修复提交并推送，再执行：
 
 `S1_08_V3_DELL_R3_SUCCESSOR_CLEAN_ZERO_CALL_PREFLIGHT`
+
+## 4. P2C-A1 proof-runner 失败与处置
+
+clean `04e439bf...8f57` 上的第一份 proof 在结果物化前失败；同一错误诊断重放后确认：runner 使用 `pytest tests/contract -k s1_08`，而 pytest 会先导入整个 contract 目录再筛选，clean archive 因缺少与 S1-08 无关的历史生成资源出现 `144` 个 collection error。两次 observed formal admission/network/model/provider/retry/live 均为 `0`。
+
+该失败归 proof-runner test selection，不归 R3 Runtime 或产品检索。修复没有把无关历史资源复制进 archive，也没有 skip/fallback；改为显式列出 `10` 个 S1-08 contract 文件，预期仍为完整 `70 passed / 0 failed / 0 skipped`。A1 保留在 v1.1 repair artifact 和未来 proof attempt history；下一步改为提交并推送 v1.1 后执行 A2。

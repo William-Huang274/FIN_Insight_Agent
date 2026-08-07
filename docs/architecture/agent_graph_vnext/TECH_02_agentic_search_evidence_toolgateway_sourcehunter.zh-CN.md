@@ -810,3 +810,5 @@ P2C 在 proof 前发现，若把 `preflight.source_commit` 强制等于未来执
 R3 因此区分 `proven_source_commit` 与 `execution_commit`：前者是 clean Git archive 实际证明的提交，并继续作为 admission/terminal 的 `implementation_commit`；后者可以包含 proof artifact、Project OS 投影和 durable docs，但必须是前者的 Git 后代。runner 同时要求两提交间 `src/`、`scripts/`、`configs/runtime/`、`pyproject.toml`、`requirements*.txt` 零漂移，且所有既有 Runtime/Runner/v3 implementation/authority SHA 继续重算。任何 Runtime tree 变化都需要新 proof，不得沿用旧 preflight。
 
 clean-preflight runner 复用既有 v3 proof 的 archive、restricted R1/R2 capture 注入和 credential-scrubbed fresh-process 组件，只新增 R3-specific compile、完整 S1-08 suite、commit/tree mutation、exact-once 和 result-absence 验证。该修复本身仍为零调用，clean proof、formal admission 与 exact-live 均未完成。
+
+clean A1 进一步证明不能用 `pytest tests/contract -k s1_08` 表示“只运行 S1-08”：pytest collection 先导入全目录，clean archive 因缺少 144 组无关历史 runtime resources 而在结果前失败。proof runner 现显式列出 10 个 S1-08 contract 文件；不得复制无关 runtime 资源、加 skip 或吞掉 collection error 来制造绿色 proof。A1 与诊断重放均保留为 proof-harness input-selection failure，未触发 formal admission 或外部调用。

@@ -1172,4 +1172,5 @@
 - [x] FIN-0.1.3 S1-08 v3 DELL fresh-live authority decision: 条件批准一个 DELL R3 successor，但当前不可签发；旧 R2 runner/v2 catalog/result 禁止复用。预算保持 `1 admission / 1 exact-live / <=16 network / 0 model-provider-retry / no R4`，本 decision 外部调用=0。
 - [x] FIN-0.1.3 S1-08 v3 DELL R3 successor entrypoint zero-call implementation: R3-only schema/module/runner/namespace/result 与 decision/R2/v3 proof/catalog/source-SHA/exact-once binding 已完成；focused=`7`、S1-08=`70`，正式 admission/live=0。
 - [x] FIN-0.1.3 S1-08 v3 DELL R3 clean-preflight commit-lineage repair: P2C 发现 proof artifact 提交必然推进 HEAD 的自引用；现改为 proven source commit＋execution descendant，并要求 Runtime tree 零漂移。focused=`7`、compile pass，正式 admission/live=0。
+- [x] FIN-0.1.3 S1-08 v3 DELL R3 clean-preflight explicit selector repair: clean A1 因 `pytest -k` 预导入全 contract 目录产生 144 个无关 collection error；失败保留，现显式选择 10 个 S1-08 文件，未复制无关资源或增加 skip/fallback。
 - [ ] FIN-0.1.3 S1-08 v3 DELL R3 successor clean zero-call preflight: commit/push 后从 clean archive/fresh process 复证 exact source、mutation、exact-once、terminal 和零外部调用；通过前不得签发或 live。

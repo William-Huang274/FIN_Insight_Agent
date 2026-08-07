@@ -38,7 +38,7 @@ RESULT_PATH = ROOT / (
 )
 REPAIR_ARTIFACT_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_"
-    "successor_preflight_commit_lineage_repair_v1_0.json"
+    "successor_preflight_commit_lineage_and_test_selection_repair_v1_1.json"
 )
 IMPLEMENTATION_ARTIFACT_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_"
@@ -78,6 +78,18 @@ CONTRACT_TEST_PATH = ROOT / (
     "dell_r3_successor.py"
 )
 EXPECTED_TESTS = 70
+PYTEST_TARGETS = (
+    "tests/contract/test_fin_0_1_3_s1_08_agentic_search_entry_audit.py",
+    "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py",
+    "tests/contract/test_fin_0_1_3_s1_08_dell_current_search_r1_terminal.py",
+    "tests/contract/test_fin_0_1_3_s1_08_dell_r2_successor.py",
+    "tests/contract/test_fin_0_1_3_s1_08_live_canary.py",
+    "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py",
+    "tests/contract/test_fin_0_1_3_s1_08_quality_first_sourcehunter_capture_replay.py",
+    "tests/contract/test_fin_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_plan.py",
+    "tests/contract/test_fin_0_1_3_s1_08_v3_dell_r3_fresh_live_authority_decision.py",
+    "tests/contract/test_fin_0_1_3_s1_08_v3_dell_r3_successor.py",
+)
 REQUIRED_TEST_FRAGMENTS = (
     "test_R3_admission_binds_decision_R2_v3_sources_and_budget_without_secret",
     "test_R3_admission_or_bound_source_mutation_fails_closed",
@@ -222,7 +234,7 @@ def _worker_payload(runtime_root: Path) -> dict[str, Any]:
 
     plugin = _StablePytestResult()
     exit_code = pytest.main(
-        ["-q", "--disable-warnings", "tests/contract", "-k", "s1_08"],
+        ["-q", "--disable-warnings", *PYTEST_TARGETS],
         plugins=[plugin],
     )
     _require(exit_code == 0, f"pytest_failed:{exit_code}")
@@ -265,6 +277,7 @@ def _worker_payload(runtime_root: Path) -> dict[str, Any]:
                 "\n".join(nodeids).encode("utf-8")
             ).hexdigest(),
             "required_R3_contract_fragments": len(REQUIRED_TEST_FRAGMENTS),
+            "explicit_test_files": len(PYTEST_TARGETS),
             "R3_result_absent": True,
         },
         "hard_boundaries": {
@@ -376,6 +389,21 @@ def build_result() -> dict[str, Any]:
         ),
         "stage": "013-S1-08-P2C",
         "status": "pass",
+        "proof_attempt_history": [
+            {
+                "attempt_id": "S1-08-V3-DELL-R3-CLEAN-PREFLIGHT-A1",
+                "source_commit": "04e439bfd1e3f6e248cc6dea2b49789105d48f57",
+                "status": "failed_before_result_materialization",
+                "failure_code": "pytest_broad_collection_imported_unrelated_contract_resources",
+                "reproduced_invocations": 2,
+                "observed_collection_errors": 144,
+                "disposition": (
+                    "Retained as a proof-runner test-selection failure. The repair "
+                    "uses the ten explicit S1-08 contract files; Runtime, authority, "
+                    "network and formal admission behavior were not changed."
+                ),
+            }
+        ],
         "source_commit": git_state["commit"],
         "source_branch": git_state["branch"],
         "project_os_preflight": {

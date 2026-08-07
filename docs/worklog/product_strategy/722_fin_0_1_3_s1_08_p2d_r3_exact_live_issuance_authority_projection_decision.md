@@ -11,8 +11,8 @@
 - Project OS：typed preflight v0.2、RunScopeRegistry v1.0，P2D scope=`pass / 0 blocker / 0 contract error`；
 - S0-04G result SHA=`fb18617f...15583`；
 - R3 successor proof v1.1 SHA=`7ae6f46f...bd2f1e`，source commit=`2f14684e`，clean archive/fresh process=`85/85`；
-- decision source=`0f20934e`，与 proof source 之间 `src/scripts/configs/runtime/pyproject/requirements` 漂移=`0`；
-- R3 Runtime/Runner SHA=`4e1dcc63...10c36 / 3f62ed6e...d6779`；
+- superseded v1.0 candidate source=`0f20934e`，当时的 pre-transition Runtime/Runner SHA=`4e1dcc63...10c36 / 3f62ed6e...d6779`；
+- 最终 v1.1 decision 与 v1.2 proof source=`4358edcb`，有效 R3 Runtime/Runner SHA=`b02ac0e9...9b81e / efbf908e...aa7b`，proof source 到当前受保护 Runtime 树漂移=`0`；
 - runtime-only SEC contact=`configured + valid format`，值未写入命令输出或版本化产物；
 - R3 result path 不存在；
 - 本项 network/model/Provider/retry/formal admission/live=`0/0/0/0/0/0`。

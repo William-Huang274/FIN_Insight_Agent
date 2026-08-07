@@ -9,7 +9,8 @@
     "ledger_store_path": "data/processed_private/ledger/sec_investment_coverage_mixed_with_8k_fy2023_2027_core_ledger.duckdb",
     "market_evidence_path": "data/processed_private/market/evidence_packs/20260525_market_yahoo_chart_full30_3m_fmp_valuation_v1_3m_market_evidence.jsonl",
     "industry_snapshot_db_path": "data/processed_private/industry_data/20260530_industry_sector_depth_v0_2_with_eia_total_energy_retail_sales/industry_snapshot.duckdb",
-    "industry_evidence_path": "data/processed_private/industry_data/20260530_industry_sector_depth_v0_2_with_eia_total_energy_retail_sales/industry_evidence_rows.jsonl"
+    "industry_evidence_path": "data/processed_private/industry_data/20260530_industry_sector_depth_v0_2_with_eia_total_energy_retail_sales/industry_evidence_rows.jsonl",
+    "web_capture_root": ".codex_runtime/mcp_web_evidence"
   },
   "default_timeout_s": 30,
   "tool_timeouts_s": {

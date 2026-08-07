@@ -8,6 +8,8 @@ from io import BytesIO
 import json
 from pathlib import Path
 import re
+import ipaddress
+import socket
 from typing import Any, Mapping, Protocol, Sequence
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
@@ -148,6 +150,8 @@ class _RecordingRedirectHandler(HTTPRedirectHandler):
         headers: Any,
         newurl: str,
     ) -> Request | None:
+        if len(self.chain) >= 3:
+            raise OfficialSourceAttemptError("official_source_redirect_ceiling_exceeded")
         parsed = urlparse(newurl)
         if parsed.scheme != "https" or (parsed.hostname or "").lower() not in self.allowed_hosts:
             raise OfficialSourceAttemptError("official_source_redirect_not_allowlisted")
@@ -177,6 +181,7 @@ class UrllibOfficialSourceTransport:
         parsed = urlparse(url)
         if parsed.scheme != "https" or (parsed.hostname or "").lower() not in allowed_hosts:
             raise OfficialSourceAttemptError("official_source_url_not_allowlisted")
+        _require_public_network_host(parsed.hostname or "")
         redirect_handler = _RecordingRedirectHandler(allowed_hosts)
         opener = build_opener(redirect_handler)
         request = Request(url, headers=dict(headers), method="GET")
@@ -233,9 +238,16 @@ def load_official_source_policy(path: str | Path) -> dict[str, Any]:
 
 
 class CaptureFirstOfficialSourceClient:
-    def __init__(self, *, store: FileCanonicalObjectStore, transport: SourceTransport) -> None:
+    def __init__(
+        self,
+        *,
+        store: FileCanonicalObjectStore,
+        transport: SourceTransport,
+        namespace: str = CAPTURE_NAMESPACE,
+    ) -> None:
         self.store = store
         self.transport = transport
+        self.namespace = namespace
         self.capture_refs: list[dict[str, Any]] = []
         self.network_calls = 0
 
@@ -330,12 +342,39 @@ class CaptureFirstOfficialSourceClient:
         }
 
     def _persist(self, payload: Mapping[str, Any], artifact_type: str) -> dict[str, Any]:
-        ref = self.store.put_json(payload, namespace=CAPTURE_NAMESPACE, artifact_type=artifact_type)
+        ref = self.store.put_json(payload, namespace=self.namespace, artifact_type=artifact_type)
         observed = self.store.get_json(ref["object_key"], expected_digest=ref["digest"])
         if canonical_digest(observed) != ref["digest"]:
             raise OfficialSourceAttemptError("official_source_capture_readback_failed")
         self.capture_refs.append(ref)
         return ref
+
+
+def _require_public_network_host(hostname: str) -> None:
+    """Reject literal or resolved private/local destinations before outbound fetch."""
+    lowered = hostname.strip().lower().rstrip(".")
+    if not lowered or lowered == "localhost" or lowered.endswith(".localhost"):
+        raise OfficialSourceAttemptError("official_source_private_network_forbidden")
+    try:
+        candidates = {ipaddress.ip_address(lowered)}
+    except ValueError:
+        try:
+            candidates = {
+                ipaddress.ip_address(row[4][0])
+                for row in socket.getaddrinfo(lowered, 443, type=socket.SOCK_STREAM)
+            }
+        except OSError as exc:
+            raise OfficialSourceAttemptError("official_source_dns_resolution_failed") from exc
+    if not candidates or any(
+        address.is_private
+        or address.is_loopback
+        or address.is_link_local
+        or address.is_multicast
+        or address.is_reserved
+        or address.is_unspecified
+        for address in candidates
+    ):
+        raise OfficialSourceAttemptError("official_source_private_network_forbidden")
 
 
 def parse_source_document(response: SourceResponse) -> dict[str, Any]:

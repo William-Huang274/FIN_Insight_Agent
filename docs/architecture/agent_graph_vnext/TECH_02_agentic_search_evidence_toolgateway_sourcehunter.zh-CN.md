@@ -634,3 +634,16 @@ MCP 工具“写进 registry”不等于“stdio server 已暴露并能有界执
 5. BM25-only 只证明 operational availability，不能作为 S1-08 recall、ranking 或 source-diversity 质量证据。BGE/Milvus、新外部来源抓取与 Evidence promotion 分别留给 S1-08、S1-07 和 Evidence Gate。
 
 Runtime owner 为 `src/sec_agent/mcp_operational.py`、`src/sec_agent/mcp_server.py` 和版本化 `configs/mcp/sec_agent_mcp_runtime_profile_v0_1.json`。当前实现已通过 deterministic tests、stdio registry parity smoke 与 clean-commit cold/warm 本地资源 proof：SEC cold/warm=`13,750/104 ms`、Exact Ledger=`1,317 ms`、market=`3 ms`，missing reranker 在 handler 前 typed fail，worker close 后无 orphan。S1-06 状态为 `L4_scope_pass`。该结论不包含 S1-07 外部 source fetch/parser，也不包含 S1-08 排序质量。
+
+## 19. S1-07 current-source fetch / capture / parser / promotion runtime
+
+S1-03 已有 `CaptureFirstOfficialSourceClient`、官方来源 transport、HTML/PDF/JSON parser 与 content-addressed object store；S1-07 不再平行造爬虫，而是把这些底层件接入当前 MCP `web_evidence_snapshot`。当前合同必须满足：
+
+1. 只允许 HTTPS、明确 allowlist 且 public-network 的 host；阻断 URL credential、localhost/private/link-local/reserved address、跨域 redirect，并把 redirect ceiling 固定为 3。
+2. request capture 必须先于网络调用持久化；无论 HTTP、transport 或 parser 成败，response/failure capture 都先于解析/晋升落盘。Authorization、Cookie 和凭据不得进入 capture。
+3. 原始 body 以 content-addressed base64 capture 保留；HTML/PDF/JSON parser 输出另存 parser capture，并绑定 response digest、parser adapter、text digest 和完整 lineage。
+4. `company_ir_material` / `company_official_product_surface` 必须通过 verified company domain；`official_regulatory_page` / `government_dataset_endpoint` 才能在 parser 成功后晋升为 writer-citable parsed Evidence。news、commerce、developer、social 只可 context-only。
+5. web parser 永远不获得 exact numeric authority；精确财务数字仍须 Numeric/SEC Ledger 或独立结构化 parser gate。URL metadata、search snippet、无法解析正文都不得冒充 Evidence。
+6. timeout、body size、redirect、domain 与 source call 数均受预算约束；失败保留 attempt-backed typed gap，不以弱来源补齐。
+
+Runtime owner 为 `src/sec_agent/web_evidence_runtime.py`，复用 `src/sec_agent/official_source_attempt_program.py`。当前 deterministic/mutation/broader tests=`82 passed`，真实网络尚未执行；S1-07 只有在 clean/synced commit 上完成一次 DELL/MU/NVDA 三官方来源 exact-once canary 后才可关闭。

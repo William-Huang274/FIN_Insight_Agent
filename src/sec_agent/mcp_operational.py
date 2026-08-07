@@ -76,6 +76,7 @@ _RESOURCE_ENV = {
     "milvus_collection_name": "MILVUS_COLLECTION_NAME",
     "embedding_model": "MILVUS_EMBEDDING_MODEL",
     "bge_model": "BGE_MODEL",
+    "web_capture_root": "FINSIGHT_WEB_CAPTURE_ROOT",
 }
 
 _TOOL_RESOURCES = {
@@ -102,6 +103,7 @@ _TOOL_RESOURCES = {
         ("milvus_db_path", "file", False),
         ("embedding_model", "directory", False),
     ),
+    "web_evidence_snapshot": (("web_capture_root", "directory", False),),
 }
 
 

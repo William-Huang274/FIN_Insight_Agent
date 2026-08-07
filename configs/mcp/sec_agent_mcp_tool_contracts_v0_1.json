@@ -1141,6 +1141,24 @@
               "type": "string"
             }
           },
+          "web_capture_root": {
+            "type": "string"
+          },
+          "byte_ceiling": {
+            "type": "integer",
+            "minimum": 1024,
+            "maximum": 16777216
+          },
+          "fetch_timeout_s": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 120
+          },
+          "excerpt_chars": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 4000
+          },
           "limit": {
             "type": "integer",
             "minimum": 1,
@@ -1198,6 +1216,24 @@
             "items": {
               "type": "object"
             }
+          },
+          "evidence_rows": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "request_capture": {
+            "type": "object"
+          },
+          "response_capture": {
+            "type": "object"
+          },
+          "parser": {
+            "type": "object"
+          },
+          "promotion": {
+            "type": "object"
           },
           "source_gaps": {
             "type": "array",

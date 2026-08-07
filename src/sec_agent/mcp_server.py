@@ -260,10 +260,14 @@ def create_mcp_server() -> Any:
         company_domain_verified: bool = False,
         company_domains: list[str] | None = None,
         web_scope_allowed_domains: list[str] | None = None,
+        web_capture_root: str = "",
+        byte_ceiling: int = 8388608,
+        fetch_timeout_s: float = 20,
+        excerpt_chars: int = 2400,
         limit: int = 1,
         timeout_s: float = 20,
     ) -> dict[str, Any]:
-        """Create a bounded allowlisted web snapshot request receipt."""
+        """Fetch, capture, parse and gate one bounded allowlisted web source."""
         return call_tool(
             "web_evidence_snapshot",
             {
@@ -279,6 +283,10 @@ def create_mcp_server() -> Any:
                 "company_domain_verified": company_domain_verified,
                 "company_domains": company_domains or [],
                 "web_scope_allowed_domains": web_scope_allowed_domains or [],
+                "web_capture_root": web_capture_root,
+                "byte_ceiling": byte_ceiling,
+                "fetch_timeout_s": fetch_timeout_s,
+                "excerpt_chars": excerpt_chars,
                 "limit": limit,
                 "timeout_s": timeout_s,
             },

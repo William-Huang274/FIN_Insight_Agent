@@ -20,6 +20,7 @@ from sec_agent.mcp_contracts import get_mcp_tool_contract, list_mcp_tool_contrac
 from sec_agent.mcp_runtime import read_bounded_artifact
 from sec_agent.relationship_graph import query_relationship_graph
 from sec_agent.workbench.artifacts import inspect_run_artifacts
+from sec_agent.web_evidence_runtime import execute_web_evidence_snapshot
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -733,74 +734,7 @@ def _invoke_relationship_graph(args: dict[str, Any]) -> dict[str, Any]:
 
 
 def _invoke_web_evidence_snapshot(args: dict[str, Any]) -> dict[str, Any]:
-    url = str(args.get("url") or args.get("snapshot_url") or "").strip()
-    domain = _web_domain(args.get("domain") or url)
-    source_class = str(args.get("source_class") or "").strip()
-    policy_ids = [str(item) for item in _list_arg(args.get("web_scope_policy_ids")) if str(item).strip()]
-    claim_types = [str(item).strip().lower() for item in _list_arg(args.get("claim_types") or args.get("claim_type")) if str(item).strip()]
-    missing = []
-    if not url:
-        missing.append("url")
-    if not source_class:
-        missing.append("source_class")
-    if not policy_ids:
-        missing.append("web_scope_policy_ids")
-    if missing:
-        return {
-            "schema_version": "sec_agent_web_evidence_snapshot_v0.1",
-            "status": "error",
-            "error": "web_evidence_request_missing_fields",
-            "context_rows": [],
-            "source_gaps": [
-                {
-                    "source_family": "live_public_web_context",
-                    "reason_code": "web_evidence_request_missing_fields",
-                    "missing": missing,
-                    "source_available": False,
-                }
-            ],
-            "artifact_refs": [],
-        }
-    seed = "|".join([url, source_class, ",".join(policy_ids), ",".join(claim_types)])
-    snapshot_id = str(args.get("snapshot_id") or "websnap_" + hashlib.sha1(seed.encode("utf-8", errors="ignore")).hexdigest()[:12])
-    as_of_datetime = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
-    row = {
-        "evidence_ref": snapshot_id,
-        "source_family": "live_public_web_context",
-        "retrieval_route": "live_public_web_context",
-        "source_class": source_class,
-        "web_scope_policy_ids": policy_ids,
-        "claim_types": claim_types,
-        "url": url,
-        "domain": domain,
-        "snapshot_id": snapshot_id,
-        "snapshot_url": url,
-        "as_of_datetime": as_of_datetime,
-        "citation": {"url": url, "title": str(args.get("source_title") or domain or url)},
-        "context_only": True,
-        "lead_only": True,
-        "exact_value_authority": False,
-        "authority_boundary": "live_web_snapshot_context_only_no_sec_or_product_fact_overwrite",
-    }
-    return {
-        "schema_version": "sec_agent_web_evidence_snapshot_v0.1",
-        "status": "ok",
-        "snapshot_id": snapshot_id,
-        "snapshot_url": url,
-        "as_of_datetime": as_of_datetime,
-        "source_class": source_class,
-        "web_scope_policy_ids": policy_ids,
-        "context_rows": [row],
-        "source_gaps": [],
-        "artifact_refs": [
-            {
-                "artifact_id": snapshot_id,
-                "path": "",
-                "digest": hashlib.sha1(json.dumps(row, sort_keys=True).encode("utf-8", errors="ignore")).hexdigest(),
-                "row_count": 1,
-            }
-        ],
-    }
+    return execute_web_evidence_snapshot(args)
 
 
 def _load_interactive_module() -> ModuleType:

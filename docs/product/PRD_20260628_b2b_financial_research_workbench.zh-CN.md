@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-08 | 唯一 DELL R3 current-search exact-live 已执行：控制面以 `15 network / 0 model-provider-retry` 完整 terminalize，但得到 `0 candidate / 0 source / 5 typed gaps`，产品来源质量失败。229 条 locator 通过初筛后没有发生正文抓取，根因包含项目内共享 discovery/document allowance 与跨 attempt budget-stop negative cache；既有 deterministic fixture 未覆盖该自然拓扑。no-R4 生效，下一项只能先做零调用 P3，联合处置 owned Runtime 缺陷、运营 Provider 能力和 Internal Alpha source claim；不得把本结果归因 DeepSeek、先调 ranking 或直接购买 Provider 后重跑。 |
 | 2026-08-08 | 完成 FIN 0.1.3 中段 PRD／TECH／Runtime／产品实证对齐：确认当前工程控制面成熟度高于研究内容与用户验收，要求先用最小 S0-04G 关闭共享 run-scope fail-open，再给 S1-08 一次有界 DELL candidate-ceiling live；若仍失败，进入 Provider 获取或 Internal Alpha 来源范围决策，不得追加 R4。进一步明确“方法写入 registry”不等于研究能力落地，S3 必须证明方法注入、节点消费、实质性研报和 qualified-human 内容验收。 |
 | 2026-08-08 | S0-04G 已以 typed blocker state、RunScopeRegistry v1.0 和 post-adoption lineage 关闭共享 scope fail-open；clean archive/fresh process 85/85 兼容复证通过，且不放宽旧 R3 Runtime-tree drift guard。该治理通过不计为检索、Evidence、研究内容或产品能力提升；唯一下一项仅为零调用 P2D，direct R3 仍须独立签发与执行。 |
 | 2026-08-08 | 根据 FIN 0.1.3 S1-08 真实 DELL current-search 与 capture replay 完成产品反向校准：Agentic Search 必须按 provider 可运行性、目标资料进入候选池、排序、Evidence 晋升和下游利用逐层验收；target-in-pool 未通过时禁止用 NDCG/MRR 或 reranker 绿色结果掩盖上游缺口。新增 typed blocker/run-scope fail-closed、唯一网络文档收益率和阶段准入要求。 |
@@ -2053,15 +2054,15 @@ FIN 的产品重心进一步收敛为“机构研究控制与记忆系统”：
 
 ### 16.1 当前已经拥有与仍未拥有的产品能力
 
-截至本次互校准，FIN 已经拥有可复用的 Case／Run 身份、exact-once 与失败留存、受控官方来源 fetch/capture/parse/promotion、财务数值确定性控制、Evidence/Numeric/Workpaper/Report/Trace 的基础页面，以及三案例的测试和历史运行证据。它们构成可信研究平台的控制骨架。
+截至 DELL R3 终态复盘，FIN 已经拥有可复用的 Case／Run 身份、exact-once 与失败留存、受控官方来源 fetch/capture/parse/promotion、财务数值确定性控制、Evidence/Numeric/Workpaper/Report/Trace 的基础页面，以及三案例的测试和历史运行证据。它们构成可信研究平台的控制骨架。S0-04G 还已关闭 shared run-scope fail-open；这提升的是治理可靠性，不是搜索召回。
 
 但 FIN 0.1.3 尚未形成一份由 current Agentic Search、动态研究规划、真实模型综合和人工内容验收共同产出的 reviewer-ready 研报。当前 Workbench 中可见的通用判断原子和边界说明只能证明投影链存在，不能证明产品已经实现“有实质内容的金融研究”。因此产品状态必须拆开报告：
 
 | 轴 | 当前状态 | 产品含义 |
 | --- | --- | --- |
-| 执行与审计 | scoped pass，shared run-scope 治理仍有缺口 | 能保留和复现运行，但权限控制尚未统一收口 |
+| 执行与审计 | S0-04G 与 R3 terminal/capture integrity pass | 能 fail-closed 执行并保留失败；不等于来源或内容通过 |
 | 官方来源与数值真值 | scoped pass | 能安全取得和约束部分事实，不等于搜索覆盖完整 |
-| Agentic Search | DELL candidate ceiling 未通过 | 目标资料尚不能稳定进入候选池，ranking 不准入 |
+| Agentic Search | DELL R3=`15 network / 0 candidate / 5 gaps`，candidate ceiling 未通过 | 229 条 qualified locator 后仍无 document fetch；S1 scheduler/cache 与运营 route 均需 P3，ranking 不准入 |
 | 模型合同 | deterministic guard pass，DeepSeek natural closure fail | Harness 能拒绝错误，模型自主权仍需 profile 化 |
 | 研究内容 | minimum engineering anchor only | 尚无 current 三案产品级 thesis、机制、反方和 WWC 证明 |
 | Workbench 与发布 | historical projection only / blocked | 尚未完成 current candidate dogfood、human acceptance 与 RG1–RG5 |
@@ -2083,8 +2084,9 @@ Data Room、Watchlist/R4、完整估值、Research-to-Quant、全行业、多格
 
 工程 proof 只回答可复现、权限、lineage 和确定性问题；产品 proof 回答来源覆盖、研究质量、审阅价值和发布可用性。两者不得互相代替。
 
-- shared blocker state 与 run scope 的统一缺陷先由一个最小 S0-04G 包关闭；此后不得为每个 Attempt 手工新增一条临时 allowlist 作为常态流程；
-- S1-08 在 S0-04G 后只允许一次 DELL R3 candidate-ceiling live。若通过，采用共同 transfer contract 验证 MU/NVDA；若失败，停止 SourceHunter 内的 R4/R5 修补，转为运营 Provider、受控动态页/站内搜索、licensed source 或缩小 Internal Alpha source claim 的产品决策；
+- shared blocker state 与 run scope 的统一缺陷已由最小 S0-04G 包关闭；此后不得为每个 Attempt 手工新增一条临时 allowlist 作为常态流程；
+- S1-08 唯一 DELL R3 candidate-ceiling live 已消费并失败，no-R4 规则生效。失败不是单纯“少一个 Provider”：当前 Runtime 让 landing/structured discovery 与 document fetch 共用 attempt allowance，并把本地 budget stop 写入跨 attempt document cache。P3 必须先把这一 owned defect 与运营 Provider、受控动态页/站内搜索、licensed source、Internal Alpha source claim 放在同一决策里；不得直接进入 R4/R5、增加预算或先做 MU/NVDA transfer；
+- P3 若批准零调用结构修复，其最低产品不变量是“合格 locator 后存在受保护的正文抓取机会”和“本地预算停止不跨 slot 污染文档缓存”；只有另行改变 stop-rule／产品范围并重新签发 authority，才可考虑新的 live。购买 Provider 本身不能替代这两个项目内修复；
 - S2 只冻结 provider-neutral ModelCapabilityProfile、DeepSeek profile 和 AutonomyGrant，不再用整条 full-chain 反复寻找字段级不遵循；
 - S3 承担动态研究、方法到 Runtime 激活、targeted repair 和内容质量；搜索、模型、研究内容三个 failure domain 分开评分；
 - L2–L4 表达问题在 S3/S4 处理，不回流破坏已通过的数值、Evidence 或 source 合同；新的 L1 必须留在最早责任阶段并触发一次结构处置，而不是无限增加 live attempts。

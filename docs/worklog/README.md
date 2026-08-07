@@ -1,5 +1,7 @@
 # Worklog
 
+- [723 — FIN 0.1.3 S1-08 DELL R3 终态、来源质量失败与 P3 交接](product_strategy/723_fin_0_1_3_s1_08_dell_r3_terminal_source_quality_failure_and_p3_handoff.md)
+
 - [668 — FIN 0.1.3 S2-05 DELL R1 quarantined collect-all readiness](product_strategy/668_fin_0_1_3_s2_05_dell_r1_quarantined_collect_all_readiness.md)
 - [667 — FIN 0.1.3 S2-05 Experiment A DELL exact-live R1 首错终止](product_strategy/667_fin_0_1_3_s2_05_experiment_a_dell_exact_live_r1_terminal_failure.md)
 - [666 — FIN 0.1.3 S2-05 Experiment A fresh admission authority 决策](product_strategy/666_fin_0_1_3_s2_05_experiment_a_fresh_admission_authority_decision.md)

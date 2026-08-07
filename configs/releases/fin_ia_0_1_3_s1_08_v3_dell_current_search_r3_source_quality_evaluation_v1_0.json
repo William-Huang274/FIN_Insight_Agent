@@ -1,0 +1,117 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_source_quality_evaluation_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "status": "live_execution_complete_product_source_quality_failed_project_scheduler_cache_defect_established",
+  "evaluation_digest": "d386523815aea5b5fe9fd83294dfd8c203ca7c841b5bb2a50278e15b17bfee07",
+  "source_result": {
+    "path": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_result_v1_0.json",
+    "sha256": "731885330176f1d3a428ed3cdf62315e34c345f457ba39b749d60802d9c6b1d5",
+    "git_commit_at_start": "a5b5038c8835a1c56e5c4d3f2d3ca98b0e624e85",
+    "run_id": "fin013_s1_08_dell_r3_run_539a0a59c11d7cd46cb9",
+    "attempt_id": "fin013_s1_08_dell_r3_attempt_de43fdcbef5f78f0f9ef",
+    "admission_id": "fin013_s1_08_dell_r3_admission_a3f1c96343823f83883b",
+    "admission_digest": "a3f1c96343823f83883b1d29fa356c3e171b3bbe7e0ccbd7b2ec165dd26136de",
+    "terminal_digest": "d55b36f536ff277c79d3c706cad8b12fc4a44a54c871432f003113aaa2d417b0",
+    "candidate_result_digest": "ca6d3cfe8758f3a3e0dc10dfe93eeb9d0070de410e23cb75c3d193ed41c7f589",
+    "shared_receipt_digest": "57e7f2a7ceb3835ca7ed0a86a6c034fc02b0d9d0a549cdecd93da1c1431d93b6",
+    "terminal_status": "complete",
+    "terminal_code": "dell_current_search_r3_complete_with_typed_gaps",
+    "completed_at": "2026-08-07T22:22:47Z"
+  },
+  "observed_counts": {
+    "network_calls": 15,
+    "model_calls": 0,
+    "provider_model_calls": 0,
+    "retry_calls": 0,
+    "query_attempts": 13,
+    "accepted_candidates": 0,
+    "unique_accepted_sources": 0,
+    "selected_candidates": 0,
+    "typed_gaps": 5,
+    "checkpoints": 13,
+    "adapter_receipts": 1425
+  },
+  "capture_integrity": {
+    "unique_source_request_objects": 13,
+    "unique_source_response_objects": 11,
+    "unique_source_transport_failure_objects": 2,
+    "document_request_capture_objects": 0,
+    "candidate_result_digest_recomputed": true,
+    "terminal_digest_recomputed": true,
+    "shared_admission_state": "terminal",
+    "credential_plaintext_present_in_versioned_result": false,
+    "authorization_cookie_or_raw_body_present_in_versioned_result": false
+  },
+  "quality_metrics": {
+    "evidence_roles_candidate_or_typed_gap": [
+      5,
+      5
+    ],
+    "slot_starvation_count": 0,
+    "known_navigation_noise_fetches": 0,
+    "qualified_before_fetch_locator_receipts": 229,
+    "qualified_document_yield": 0.0,
+    "qualified_document_yield_gate": 0.5,
+    "accepted_unique_source_documents": 0,
+    "source_family_diversity": 0,
+    "DELL_target_groups": 4,
+    "DELL_target_in_pool_recall": 0.0,
+    "selected_pack_required_slot_coverage": 0.0,
+    "ranking_metrics_admitted": false,
+    "planner_received_hidden_gold": false,
+    "zero_candidate_pool_makes_target_in_pool_zero_without_loading_hidden_ids": true
+  },
+  "receipt_findings": {
+    "locator_quality_pass": 229,
+    "evidence_slot_fit_unproven": 558,
+    "stale_for_current_evidence_slot": 482,
+    "slot_attempt_network_reservation_exhausted": 95,
+    "evidence_owner_own_demand_not_proven_by_customer_story": 30,
+    "source_family_not_allowed_for_evidence_slot": 15,
+    "source_provider_route_unavailable": 3,
+    "current_market_snapshot_unavailable": 1,
+    "no_qualified_candidate": 12
+  },
+  "root_cause_disposition": {
+    "primary_project_owned": "Discovery landing, structured endpoint and document-fetch operations share one per-attempt network allowance. Natural multi-route discovery can consume the allowance before any qualified document body is fetched, even though the contract separately advertises a two-document fetch ceiling.",
+    "secondary_project_owned": "_fetch_and_parse stores response-none failures in the cross-attempt document cache. Budget-exhausted document URLs from the first issuer attempt therefore poison later regulatory attempts, which reuse the cached failure instead of exercising their own available allowance.",
+    "deterministic_fixture_blind_spot": "The round-robin fake charges one network call and returns candidates directly; the document-ceiling fixture uses one landing route with enough allowance. Neither covers multi-route discovery followed by a required document fetch or forbids cross-slot caching of a local budget stop.",
+    "operational_findings_not_sufficient_as_primary_cause": [
+      "Dell and Micron investor landing transport failures",
+      "external_site_search not operational",
+      "current governed market snapshot absent"
+    ],
+    "not_established": [
+      "DeepSeek or model failure",
+      "ranking or reranker failure",
+      "absence of relevant public evidence",
+      "provider acquisition alone would fix the observed zero-document path"
+    ]
+  },
+  "gate_results": {
+    "terminal_and_capture_integrity": "pass",
+    "typed_gap_materialization": "pass",
+    "required_slot_first_opportunity_and_starvation": "pass",
+    "navigation_noise_zero_fetch": "pass",
+    "qualified_document_yield": "failed",
+    "document_fetch_after_qualified_locator": "failed",
+    "DELL_target_in_pool": "failed",
+    "required_slot_recall_at_8": "failed",
+    "selected_pack_coverage": "failed",
+    "ranking_admission": "failed"
+  },
+  "decision": {
+    "S1_08_DELL_R3_product_quality": "failed",
+    "S1_08_close": false,
+    "automatic_R4": false,
+    "additional_live_retry_authorized": false,
+    "ranking_BGE_Milvus": false,
+    "MU_NVDA_transfer": false,
+    "DeepSeek_S3": false,
+    "P3_required": true,
+    "P3_must_reconcile_owned_runtime_defect_before_external_provider_or_product_scope_choice": true
+  },
+  "current_next": "S1_08_P3_POST_R3_OWNED_SCHEDULER_CACHE_AND_PROVIDER_PRODUCT_SCOPE_DISPOSITION_DECISION",
+  "known_boundary": "R3 is immutable and no R4 is authorized. This evaluation establishes an owned scheduler/cache defect and operational route gaps, but it does not select or authorize a repair package, provider purchase, product-scope reduction or another live attempt."
+}

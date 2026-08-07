@@ -330,8 +330,8 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 
 | 阶段 | 当前事实 | 当前结论 | 不得宣称 |
 | --- | --- | --- | --- |
-| S0 | `013-S0-01–03` 已关闭；RC-P36-156 证明共享 Project OS 对未知 blocker state/run scope 可能 fail-open，现仅有 canonical-open wildcard 临时缓解 | 基线通过，新增共享治理债务 `013-S0-04G` | 通用权限治理已修复、任意 preflight pass 即有执行权 |
-| S1 | `S1-01–07` 已通过各自 scope；S1-08 DELL R2 live=`16 calls / 1 unique source / target-in-pool 0`，v3 成熟组件与关系/预算结构已完成双 archive/fresh-process independent proof | S1-08 仍未通过，当前仅 P1 deterministic engineering 独立证明，S1 overall 不关闭 | reranker/ranking 已可评、fresh 来源覆盖已通过、Agentic Search 产品可用 |
+| S0 | `013-S0-01–04G` 已关闭；typed blocker state、RunScopeRegistry v1.0 与 unknown fail-closed 已通过 clean compatibility proof | shared execution governance scoped pass | 任意 preflight pass 即可代替 exact admission/runner/source binding |
+| S1 | `S1-01–07` 已通过各自 scope；S1-08 DELL R3 live=`15 calls / 0 unique source / target-in-pool 0`，并暴露 owned scheduler/cache natural-topology defect | S1-08 仍未通过；no-R4 生效，当前只允许 P3 零调用处置 | reranker/ranking 已可评、typed gap 等于来源穷尽、Agentic Search 产品可用 |
 | S2 | `S2-01–04` 与 deterministic correction control 已证明；Experiment A 三案内容失败，S2-06D natural correction closure 失败 | 实验和模型能力边界已形成，产品级模型自主权未通过 | S2 产品通过、DeepSeek 能自主纠错、内容质量通过 |
 | S3 | `S3-01–05` minimum anchor 有结构与控制证据；29 Cell 未研究、自然 thesis support/counterevidence 不足；`S3-06–09` 未开始 | engineering anchor only，等待 S1 candidate ceiling 与 DS-A1/A2/A3 | 产品级 research、完整研报、八维质量验收通过 |
 | S4 | 只有继承自 0.1.2 的只读 Workbench/Report projection；尚未消费 0.1.3 final candidate | FIN 0.1.3 current dogfood 未开始 | 当前版本产品验收或审阅负担已通过 |
@@ -357,15 +357,16 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 2. [x] `S1-08-P2 / S1_08_V3_DELL_FRESH_LIVE_AUTHORITY_DECISION`：零调用 decision 已批准一个条件性 R3 successor，但当前不可签发；旧 R2 runner 固定绑定 v2 catalog 且 authority/result 已消费。decision 本身没有 admission、network 或 live。
 3. [x] `S1-08-P2B / S1_08_V3_DELL_R3_SUCCESSOR_ENTRYPOINT_ZERO_CALL_IMPLEMENTATION`：R3-only admission/terminal/module/runner/namespace/result 已实现；decision、R2、v3 proof/catalog/source SHA、reserve-before-DNS 与 capture-first terminal 均进入合同。working-tree focused=`7`、S1-08=`70`，正式 admission/live=`0/0`。
 4. [x] `S1-08-P2C / S1_08_V3_DELL_R3_SUCCESSOR_CLEAN_ZERO_CALL_PREFLIGHT`：clean A1 的 144 个无关 collection errors 已保留；修复后的 A2 在 clean/synced `d713eb66` 的 Git archive/fresh process 中显式执行 10 个文件并 `70 passed / 0 failed / 0 skipped`。R1=`19`、R2=`2` 受限输入不变，source/mutation/exact-once 全通过，formal admission/external/live=`0/0/0`。
-5. [ ] `S1-08-P2D / S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AUTHORITY_PROJECTION_DECISION`：只做零调用权限投影，重核 A2 proof、当前 Runtime tree、contact presence、16-call ceiling 与 no-R4 stop rule；不得在该决策内签发或执行 live。
-6. `S1-08-P3`：若 DELL candidate ceiling 仍失败，停止 live retry 并作 provider acquisition/product-scope 决策；可以选择运营 external/site-search adapter、受控动态页 fallback、licensed provider，或明确缩小 Internal Alpha source claim。不得先调 reranker。
-7. `013-S0-04G`：在任何 MU/NVDA transfer 或 S3 之前，修复 typed blocker state、RunScopeRegistry 和 unknown fail-closed；一次 DELL bounded successor 若更早执行，仍必须使用 exact runner/admission/source-SHA 直接绑定。
-8. `S1-08-P4`：DELL ceiling 通过且 S0-04G 关闭后，再做 MU/NVDA bounded transfer。三案均进入候选池后，才准入 ranking/NDCG/MRR 与 selected Evidence Pack；S1-08 关闭需要三案 currentness/diversity/reconciliation/false-promotion/typed-gap 全部可解释。
-9. `DS-A1/A2/A3`：冻结 model-family capability profile，完成 evidence-role/judgment atom 与 protected narrative 门；只对实际变化 family 做一个自然 canary。
-10. `S3-06/07`：Lead 根据真实 Search Quality Card 编译动态 DecisionSurface、发起 EvidenceRequest、执行 targeted repair；调用预算由未闭合 Evidence Slot/Cell 决定，不再把“9 次调用”当产品设计目标。
-11. `S3-08/09`：执行三案 Experiment B，比较同一 evidence/search boundary 下的模型研究质量；必须通过 L1/L2、八维 `>=24/32`、核心维度下限、paired gain 与 qualified-human acceptance。
-12. `S4-06`：在 current candidate 上完成新建/恢复 Case、检索活动、Evidence/Numeric、Workpaper、repair、LeadReview、Report、exact review 和 trace 的真实 dogfood。
-13. `S5-01`：执行 RG1–RG5、rollback/portability/known-gap 决策；只有这一步可给 FIN 0.1.3 内部收口结论。
+5. [x] `013-S0-04G`：typed blocker state、RunScopeRegistry v1.0、unknown fail-closed 与 downstream clean compatibility proof=`85/85` 已完成；RC-P36-156 closed。
+6. [x] `S1-08-P2D / S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AUTHORITY_PROJECTION_DECISION`：v1.2 clean requalification=`85/85` 后，最终 v1.1 只批准一个独立 DELL R3 Attempt；decision 内 admission/network/live=`0/0/0`。
+7. [x] `S1-08-R3 / S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION`：唯一 admission 已 exact-once 消费。terminal/capture pass，但 `15 network / 0 candidate / 5 gaps / 229 qualified locators / 0 document request`，candidate ceiling 与 target-in-pool 失败；no-R4 生效。
+8. [ ] **当前唯一下一项 `S1-08-P3 / S1_08_P3_POST_R3_OWNED_SCHEDULER_CACHE_AND_PROVIDER_PRODUCT_SCOPE_DISPOSITION_DECISION`**：先处置 discovery/document 共享 allowance 与 cross-attempt budget-stop cache poisoning，再比较运营 external/site-search adapter、受控动态页 fallback、licensed provider 或缩小 Internal Alpha source claim。不得直接修改后重跑、增加预算或先调 reranker。
+9. `S1-08-P4`：只有 P3 另行改变 stop-rule／产品范围、对应工程与新 proof 通过且新的 DELL live 被单独批准后，才可能恢复 MU/NVDA bounded transfer。三案均进入候选池后，才准入 ranking/NDCG/MRR 与 selected Evidence Pack。
+10. `DS-A1/A2/A3`：冻结 model-family capability profile，完成 evidence-role/judgment atom 与 protected narrative 门；只对实际变化 family 做一个自然 canary。
+11. `S3-06/07`：Lead 根据真实 Search Quality Card 编译动态 DecisionSurface、发起 EvidenceRequest、执行 targeted repair；调用预算由未闭合 Evidence Slot/Cell 决定，不再把“9 次调用”当产品设计目标。
+12. `S3-08/09`：执行三案 Experiment B，比较同一 evidence/search boundary 下的模型研究质量；必须通过 L1/L2、八维 `>=24/32`、核心维度下限、paired gain 与 qualified-human acceptance。
+13. `S4-06`：在 current candidate 上完成新建/恢复 Case、检索活动、Evidence/Numeric、Workpaper、repair、LeadReview、Report、exact review 和 trace 的真实 dogfood。
+14. `S5-01`：执行 RG1–RG5、rollback/portability/known-gap 决策；只有这一步可给 FIN 0.1.3 内部收口结论。
 
 ### 7B.5 止损与版本边界
 
@@ -413,6 +414,22 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 - S3 formal end-to-end 只在 SearchQualityCard、NumericTruthCard、ModelCapabilityProfile 就绪后执行；
 - 方法 registry 覆盖率、测试数、Artifact 数和页面可见性均不得作为 research outcome 替代指标。
 
+## 7D. DELL R3 后的当前再基线（2026-08-08）
+
+P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once、capture-first、typed gap 和 terminal，但产品来源质量为硬失败：`15 network / 13 query attempts / 0 candidate / 5 gaps`。它不是又一次“来源确实没有资料”的证明：adapter 在 `229` 个 locator 通过初筛后没有发出任何 document request。
+
+本次实际工程证据修正了 P2C 后的过早假设。此前 60/70/85 项 deterministic proof 证明了 fixture 范围内的 parser/date/relationship/round-robin/ceiling 和 lineage，却没有覆盖自然 adapter 的多 route discovery、正文抓取以及跨 slot document cache。真实根因为 attempt allowance 同时支付 landing、structured endpoint 和 document fetch，且本地 budget stop 被作为 document cache 结果跨 attempt 复用。运营 Provider/动态页/market snapshot 缺口仍存在，但不能替代 owned defect 的修复责任。
+
+因此执行线现在固定为：
+
+1. `P3` 只做零调用范围与根因处置，明确是否批准一次 bounded scheduler/cache repair，以及产品是否购买/接入新 Provider、启用受控动态页或缩小 Internal Alpha 来源承诺；
+2. 若 P3 不改变 no-R4 stop-rule，则 S1-08 保持 blocked，并由 Owner 选择 conditional Internal Alpha 或终止本版本来源目标；
+3. 若 P3 明确批准新 scope，先做一次结构包和自然拓扑 capture replay／mutation，不逐 URL 修补；任何新 live 都需新的 authority，不能复用 R3 admission；
+4. 在 DELL candidate ceiling 重新成立前，MU/NVDA、ranking、Experiment B、S3 formal research、S4 current dogfood 和 S5 release 均不准入；
+5. 本轮不调用 DeepSeek，所以 S2 model profile 不因 R3 增减分。模型能力与搜索工具能力继续分轨。
+
+本再基线不创建 FIN 0.1.4，也不改变 FIN 0.2 定义。问题留在 FIN 0.1.3 的最早 owner `S1-08`，但 no-R4 规则要求先做产品级 P3，而不是自动继续现场维修。
+
 ## 8. 下一步
 
 1. [x] 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。
@@ -434,10 +451,11 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 17. [x] 执行 `013-S2-05/06` Experiment A 并诚实终止：`013-S2-05` 三案 raw 均为质量失败；DELL Supervisor R2 暴露 RC-P36-148。`S2-06A/B/C` 已完成 canonical contract、统一 Runtime 与双 archive/process 独立 proof；`S2-06D` 最小 DELL/U3 natural canary 为 `1 call/1 capture/4,483 tokens/0 retry`，模型虽返回合法 envelope，却在反证为空时虚假声明 correction closed，新 guard 正确拒绝。`S2-06E` 已决定不值得且不授权正式 DELL proof；S2 deterministic repair 通过，model natural correction adherence 失败并流转 S3。下一步按依赖进入 S1 search tool/source runtime；formal score、业务晋升和 release 均未成立。
 18. [x] 完成 `013-S0-04G / FIN_0_1_3_S0_04G_TYPED_BLOCKER_STATE_AND_RUN_SCOPE_REGISTRY_MINIMUM_ZERO_CALL_IMPLEMENTATION`：typed state、RunScopeRegistry v1.0、unknown fail-closed 与 post-adoption lineage 已实现；clean archive/fresh process=`85/85`，并以 predecessor proof 复证 R3 downstream compatibility。网络／模型／Provider／正式 admission／live=`0/0/0/0/0`，RC-P36-156 关闭。
 19. [x] P2D 首个 candidate 的 transition-invariant defect 已保留；v1.2 clean requalification=`85/85` 后最终 P2D v1.1 通过。累计外部调用/admission/live=`0/0/0`。
-20. [ ] **当前唯一下一项**：以独立 Attempt 签发并执行唯一 DELL R3。R3 通过才进入 MU/NVDA common transfer 与 ranking；失败则执行 `S1-08-P3` Provider／产品来源范围决策，明确禁止 R4。
-21. [ ] 在冻结 Evidence Pack 上完成 `DS-A1/A2/A3` ModelCapabilityProfile、DeepSeek profile、AutonomyGrant 与最小 natural canary；可与 S1 transfer 准备有界并行，但不得提前进入 S3 formal run。
-22. [ ] 完成 `013-S3-06–09`：动态 Lead loop、研究方法 runtime injection/node consumption、EvidenceRequest/targeted repair、三案 Experiment B、隐藏 Gold 八维对照、paired gain 与 qualified-human 内容验收。
-23. [ ] 执行 FIN 0.1.3 current S4 Workbench dogfood，再执行 S5 RG1–RG5；只有内容合格的 current candidate 可获得 FIN 0.1.3 内部版本收口结论。
+20. [x] 以独立 Attempt 签发并执行唯一 DELL R3：`15 network / 0 model-provider-retry / 0 candidate / 5 gaps`；terminal/capture 完整但 candidate ceiling 失败，no-R4 生效。
+21. [ ] **当前唯一下一项**：执行零调用 `S1_08_P3_POST_R3_OWNED_SCHEDULER_CACHE_AND_PROVIDER_PRODUCT_SCOPE_DISPOSITION_DECISION`。先共同处置 owned scheduler/cache defect 与运营 Provider／产品来源范围；不得自动修改 Runtime 或签发新 live。
+22. [ ] 在冻结 Evidence Pack 上完成 `DS-A1/A2/A3` ModelCapabilityProfile、DeepSeek profile、AutonomyGrant 与最小 natural canary；可做零调用准备，但在 P3/S1 candidate ceiling 未解锁前不得进入 S3 formal run。
+23. [ ] 完成 `013-S3-06–09`：动态 Lead loop、研究方法 runtime injection/node consumption、EvidenceRequest/targeted repair、三案 Experiment B、隐藏 Gold 八维对照、paired gain 与 qualified-human 内容验收。
+24. [ ] 执行 FIN 0.1.3 current S4 Workbench dogfood，再执行 S5 RG1–RG5；只有内容合格的 current candidate 可获得 FIN 0.1.3 内部版本收口结论。
 
 > **2026-08-07 `013-S1-06` 已 `L4_scope_pass`**：根因审计确认 registry 有 9 个业务工具而 stdio server 只暴露 6 个；SEC handler 即使 `rerank_budget=0` 仍强制加载 Linux 默认 BGE 路径，约 56 秒后才失败。结构包已完成 server/registry parity、版本化 canonical resource profile、显式 BM25-only operational mode、可复用进程 supervisor、cold/warm/phase receipt、timeout/cancel/process-tree no-orphan 以及 typed missing-reranker failure。focused/broader=`23/53 passed`、stdio=`10 tools`；clean/synced `ab638c38` proof 全过，SEC cold/warm=`13,750/104 ms`、Exact Ledger=`1,317 ms`、market=`3 ms`，missing reranker 在 handler 前约 `1 ms` typed fail，close 后 no orphan。RC-P36-140 closed。S1-07/08、BGE/Milvus 质量、外网 current-source acquisition 与模型调用仍未开始；当前下一项仅为 `013-S1-07`。
 

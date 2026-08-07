@@ -41,4 +41,4 @@ v1.0 decision 因此不生效。修复只把断言改为“preflight 必须与 R
 - final P2D v1.1 SHA=`f5583ac3...3aa94bb`、decision digest=`847b7cf9...c7634c7`；
 - external/formal admission/live=`0/0/0`。
 
-最终 P2D artifact 为 v1.1；v1.0 保留为 superseded-unconsumed。下一项才是独立 `S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION`。
+最终 P2D artifact 为 v1.1；v1.0 保留为 superseded-unconsumed。当时下一项为独立 `S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION`；该权限现已由 worklog 723 所记录的唯一 R3 消费，不得复用。

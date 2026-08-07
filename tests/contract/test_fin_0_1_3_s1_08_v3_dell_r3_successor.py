@@ -36,6 +36,7 @@ R2_RESULT_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search
 R2_QUALITY_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_source_quality_evaluation_v1_0.json"
 RUNTIME_PATH = ROOT / "src/sec_agent/s1_08_r3_successor.py"
 RUNNER_PATH = ROOT / "scripts/releases/run_fin_ia_0_1_3_s1_08_v3_dell_current_search_r3.py"
+R3_RESULT_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_result_v1_0.json"
 PREFLIGHT_RUNNER_PATH = ROOT / (
     "scripts/releases/prepare_fin_ia_0_1_3_s1_08_v3_"
     "dell_r3_successor_clean_zero_call_preflight.py"
@@ -393,7 +394,7 @@ def test_R3_exact_once_terminal_uses_v3_candidate_contract_and_fair_scheduler(
         )
 
 
-def test_R3_runner_is_zero_call_until_explicit_main_and_cannot_reuse_R2(
+def test_R3_runner_import_is_zero_call_result_phase_aware_and_cannot_reuse_R2(
     monkeypatch,
 ) -> None:
     source = RUNNER_PATH.read_text(encoding="utf-8")
@@ -406,7 +407,9 @@ def test_R3_runner_is_zero_call_until_explicit_main_and_cannot_reuse_R2(
     assert "socket.getaddrinfo" not in source
     assert 'if __name__ == "__main__"' in source
     assert "implementation_commit=proven_source_commit" in source
-    assert not (ROOT / "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_result_v1_0.json").exists()
+    result_sha_before_import = (
+        sha256_file(R3_RESULT_PATH) if R3_RESULT_PATH.exists() else None
+    )
 
     preflight_source = PREFLIGHT_RUNNER_PATH.read_text(encoding="utf-8")
     assert '"tests/contract", "-k", "s1_08"' not in preflight_source
@@ -418,6 +421,16 @@ def test_R3_runner_is_zero_call_until_explicit_main_and_cannot_reuse_R2(
     assert spec is not None and spec.loader is not None
     runner = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(runner)
+    result_sha_after_import = (
+        sha256_file(R3_RESULT_PATH) if R3_RESULT_PATH.exists() else None
+    )
+    assert result_sha_after_import == result_sha_before_import
+    if result_sha_after_import is not None:
+        persisted = _load(R3_RESULT_PATH)
+        assert persisted["schema_version"] == "fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_result_v1_0"
+        assert persisted["status"] == "complete"
+        assert persisted["result"]["attempt_label"] == "R3"
+        assert persisted["result"]["ranking_admitted"] is False
     proven = "1" * 40
     execution = "2" * 40
 

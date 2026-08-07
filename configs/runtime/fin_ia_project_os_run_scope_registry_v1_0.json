@@ -105,6 +105,13 @@
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1"]
     },
+    "S1_08_P3_POST_R3_OWNED_SCHEDULER_CACHE_AND_PROVIDER_PRODUCT_SCOPE_DISPOSITION_DECISION": {
+      "owner_stage": "S1",
+      "operation_class": "zero_call_authority_decision",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
     "additional_S1_08_live_attempts": {
       "owner_stage": "S1",
       "operation_class": "live_search_execution",

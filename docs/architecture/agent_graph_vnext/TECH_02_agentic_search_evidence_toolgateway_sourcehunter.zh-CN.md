@@ -830,3 +830,26 @@ P2C 已在 clean/synced `d713eb6600150678618259dce9c00c052d018f52` 完成 `70 pa
 5. R3 若再次 target-in-pool 失败，SourceHunter 阶段立即停止，不创建 R4。下一项只能在运营 broad/official-domain Provider、动态页 fallback、licensed source 或缩小 Internal Alpha source claim 之间做产品决策。
 
 R3 的评价仍只到 SQ0–SQ2 与 promotion safety，不运行 DeepSeek，不计算 ranking 通过，不输出研报。`typed_gap` 也不能用来替代未运营 Provider 或未尝试 route。该边界减少的是重复 proof，不是降低 recall/currentness/diversity/false-promotion 标准。
+
+### 20.11 DELL R3 自然拓扑失败、缓存污染与 proof 盲区（2026-08-08）
+
+本节以 live 证据修正 20.10 的过早判断。20.10 所称“parser/date、relationship、slot fairness、fetch ceiling 等不再需要新的 SourceHunter 零调用修补”只对当时冻结的 deterministic fixture 成立，不能继续解释为自然运行时的 scheduler/document-fetch 不变量已经证明。
+
+唯一 DELL R3 在 clean/synced `a5b5038c8835a1c56e5c4d3f2d3ca98b0e624e85` exact-once 完成：`15 network / 0 model-provider-retry / 13 query attempts / 0 accepted / 0 selected / 5 typed gaps`。terminal、capture、shared ledger、digest 与 secret 边界通过，slot starvation=`0`；但 adapter 记录 `229` 条 `locator_quality_pass` 后，document request capture 仍为 `0`。因此 qualified-document yield=`0.0<0.5`，target-in-pool、required-slot recall、selected coverage 和 ranking admission 全部失败。
+
+代码路径显示两个项目内缺陷：
+
+1. `candidate_generation_runtime` 为一次 slot attempt 编译一个 `network_call_allowance`，`OfficialDiscoveryAdapter.prepare_attempt()` 把它作为共享计数器。随后 `_discover_landing()`、`_discover_structured_endpoint()` 和 `_fetch_and_parse()` 都通过同一 `_fetch()` 消费该计数。多 landing／robots／sitemap／feed route 可以在 locator 已经合格后耗完 allowance，使合同中的 `maximum_document_fetches=2` 只有 ceiling、没有受保护的执行机会。
+2. `_fetch_and_parse()` 对任何 `response is None` 都写入实例级 `_document_cache`。`slot_attempt_network_reservation_exhausted` 是本 attempt 的本地调度结果，不是远端文档事实；把它跨 attempt 缓存后，后续 regulatory/customer/supply slot 即使获得新 allowance，也会直接复用失败 tuple，不再执行 document request。
+
+此前 proof 未发现该问题，是因为 fake 与真实 adapter 的调用拓扑不同：round-robin fake 每次网络计数后直接返回 candidate；document-ceiling fixture 使用单 landing route 和足够 allowance。它们证明了结果排序、总预算和表面公平，却没有证明 `discovery -> qualified locator -> document fetch` 的自然序列，也没有 mutation “attempt A 的本地 budget stop 不得污染 attempt B”。以后不得用这类一跳 fake 单独声称自然 fetch ceiling 已证明。
+
+P3 若选择修复，候选合同至少必须同时覆盖以下不变量，但本节不构成实施授权：
+
+- discovery budget 与 protected document-fetch reservation 分账；当某 slot 已产生合格 locator 时，仍须在总预算内保留至少一次正文抓取机会，或以明确的 `document_fetch_not_attempted_due_global_ceiling` 失败，不能把它写成 source exhaustion；
+- `slot_attempt_network_reservation_exhausted`、local timeout-before-request、cancel-before-request 等本地停止不得进入跨 attempt document cache；只有绑定 request/response capture 的远端结果或具有明确生命周期的 canonical parse result 才可复用；
+- cache key／receipt 必须区分 canonical document identity、attempt-local stop、remote transport failure 和 parser result，且任何 cache hit 都保留 originating attempt/capture lineage；
+- 使用 R3 immutable captures 增加多 route、qualified-locator 后正文抓取、cross-slot negative-cache poisoning、allowance permutation 与总预算 mutation；fixture 必须走真实 adapter 拓扑，不能由直接返回 candidate 的 fake 代替；
+- 运营 route 缺口仍单列：Dell/Micron IR landing failure、`external_site_search` unavailable 和 current market snapshot absent 不能因修复 scheduler/cache 自动视为解决。
+
+R3 没有调用 DeepSeek，也没有进入 ranking，因此本失败不能进入 model capability ledger 或 reranker 质量归因。R3 immutable、no-R4 已生效；唯一下一 scope 为零调用 `S1_08_P3_POST_R3_OWNED_SCHEDULER_CACHE_AND_PROVIDER_PRODUCT_SCOPE_DISPOSITION_DECISION`。P3 必须同时比较 bounded owned repair、运营 Provider／动态页／licensed source 与产品 source claim；任何新 live 都需要另行改变 stop-rule 或产品范围，不能由本技术文档自动授权。

@@ -700,3 +700,5 @@ clean `ee5ebf3b...17925` 独立证明由两个 Git archive 与两个 fresh proce
 Q-H 已批准一份 DELL R2 replacement authority，但旧 R1 admission/runner 不是合法 successor：旧 output 已物化，且 authority envelope 未绑定 Q-H decision 和 independent proof。执行前必须用新 schema/namespace/result path 建立最小 successor binding，并在任何 network side effect 前用 shared ledger exact-once reserve；这属于 authority control，不是再次修改 SourceHunter 质量逻辑。
 
 R2 successor 已完成零调用实现。authority v1.0 因把 engineering proof SHA 误标为 independent proof SHA 而在测试中 fail closed，未被消费；v1.1 分离两份 SHA。successor admission 绑定 decision/proof/catalog/R1 terminal/commit，并重算 R1 terminal body；runner 把 DNS resolution 留到 shared-ledger reserve 之后，transport 只允许 Codex synthetic range 而非任意 private IP；30 秒 per-call 外再加 300 秒 overall deadline。新 contract/namespace/result path 与 R1 完全分离。
+
+clean successor proof 进一步成为 admission 的 mandatory binding，固定 Runtime/Runner SHA 并要求 fresh archive 的 53-test pass。Project OS run-scope 目前是显式 blocker-name 匹配，未知 scope 字符串可能不被自动拒绝；这是共享治理层缺口。当前 R2 通过 direct proof binding fail closed，通用 scope registry/unknown-scope policy 留给 S0/S5 统一修复，避免把 SourceHunter 阶段扩成控制面重构。

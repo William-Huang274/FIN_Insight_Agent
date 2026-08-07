@@ -1469,6 +1469,24 @@ FIN 不采用“让模型自由改写所有数字”，也不采用“模型只�
 
 跨 TECH 实施合同见 `docs/architecture/agent_graph_vnext/38_model_reasoning_numeric_authority_and_protected_narrative_contract.zh-CN.md`。
 
+### 7.10 Provider-neutral Harness、模型能力适配与渐进自主权（2026-08-07 追加）
+
+FIN 不得把每次单一 Provider/模型失败都固化成核心 Harness 分支。产品必须把以下三层分开：
+
+1. **稳定金融控制内核**：来源 capture、金融真值、entity/period/unit/currency、lineage、权限、预算、exact-once、durable terminal、Evidence/Artifact promotion、人工审核与审计。这些是金融产品责任，不因模型升级而删除。
+2. **模型能力适配层**：记录某一 provider/model/version 对 strict schema、tool use、Evidence role、numeric ref、citation、threshold discipline、correction closure、长上下文和自然叙事的实测能力。DeepSeek 特殊限制只能存在于版本化 profile/adapter，不得渗入 provider-neutral 业务对象。
+3. **渐进自主权策略**：按通过的 capability-family eval 授予模型 closed-set selection、judgment atom、protected narrative、whole-node authoring、dynamic planning/tool use 等权限。能力升级只改变 `AutonomyGrant`，不改金融控制内核。
+
+所有约束必须标注为以下一种，禁止无期限叠加：
+
+- `permanent_financial_invariant`：不可由模型能力替代；
+- `adaptive_quality_or_reliability_gate`：模型达到预注册门槛后可从 hard block 降为 shadow monitor；
+- `provider_workaround`：必须绑定模型版本、触发证据、owner、复测方法和删除条件。
+
+模型晋级必须通过同一套冻结 benchmark、capability-family canary、三案内容质量和 qualified-human paired review；降级由真实失败、Provider 漂移或版本变化触发。不得因一次漂亮输出提升全局权限，也不得因弱模型长期存在而把所有模型永久降级成盲选分类器。
+
+质量与可靠性是双门而非二选一：可靠但机械、无机制、无反方的模板报告不合格；内容丰富但事实、引用或 closure 不可靠的报告同样不得晋升。产品应保留模型的研究判断和自然叙事，把可标准化的身份、事实、证据角色候选、closure 状态和最终晋升交给可验证系统。
+
 ## 8. MVP 切片
 
 ### 8.1 B0：产品壳与任务闭环

@@ -302,7 +302,21 @@ DELL Supervisor R2 说明旧计划还缺一条统一原则：模型需要看到�
 | `S4-06` | S4 | Workbench dogfood | 展示 fact ref、source、analyst threshold、correction diff/closure 和 final artifact；用户可审 | 不回收 S1/S2/S3 根因 |
 | `S5-01` | S5 | release gate | 同时证明 truth safety、研究质量、anti-template、成本、重放、rollback 与 portability | 不在 gate 内现场补合同或降门槛 |
 
-`S2-06A` 只是文档与范围收敛。RC-P36-148 只有在 `S2-06B/C` 被 runtime 消费并独立证明后才可记 engineering repaired；只有后续 paid artifact 和 qualified-human 内容验收通过，才能说明这套混合权威没有降低报告质量。
+当前状态：`S2-06A/B/C` 已完成文档、Runtime 消费和独立 deterministic proof，RC-P36-148 的项目内 guard 可记 engineering repaired；`S2-06D` 证明 DeepSeek 自然 evidence-role/closure 未通过，`S2-06E` 已阻断 formal DELL proof。只有后续 successor atom/narrative paid artifact 和 qualified-human 内容验收通过，才能说明这套混合权威同时达到可靠性与报告质量。
+
+### 7A.6 2026-08-07 Provider-neutral Harness 与 DeepSeek 适配重排
+
+S2-06D 证明当前问题不能继续按“发现一个 DeepSeek 输出错误，就给共享 Harness 加一个字段或分支”处理。FIN 冻结稳定金融控制内核；模型差异进入 `ModelCapabilityProfile`，权限通过 `AutonomyGrant` 升降，DeepSeek workaround 必须可识别、可复测、可退役。
+
+本项不改变当前先执行 `S1-06/07/08` 的顺序。它为后续 `S3-06/07` 增加三个前置子包，不创建新产品版本或新 S-stage：
+
+| 子包 | 内容 | 通过标准 | 停止规则 |
+| --- | --- | --- | --- |
+| `DS-A1 capability profile` | 冻结 strict JSON、identity、numeric ref、evidence role、closure、threshold、narrative、tool use 的 family 级能力 | profile 绑定 model/version/contract/evidence，当前失败与允许 autonomy tier 清楚 | 不用全链发现 family 能力 |
+| `DS-A2 judgment atom` | evidence-role closed-set＋claim/mechanism/counter-thesis/gap/WWC atom；closure 本地计算 | DELL/MU/NVDA fake/mutation 与一个自然节点 canary 通过 | 不允许模型 self-attest closed，不逐字段扩 Prompt |
+| `DS-A3 protected narrative` | accepted atoms→DeepSeek 自然叙事→本地 protected render | reliability floor 与 paired 内容质量 floor 同时通过 | 质量下降则不晋升；同 family 一轮最多一次结构修订 |
+
+DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留权限；evidence-role、closure、threshold 和 corrected whole-node authoring 降级。未来 DeepSeek 或其他模型升级时，重跑同一 capability matrix 并调整 `AutonomyGrant`，不得复制旧 workaround 或修改稳定内核。
 
 ## 8. 下一步
 
@@ -324,7 +338,7 @@ DELL Supervisor R2 说明旧计划还缺一条统一原则：模型需要看到�
 16. [x] 完成 `013-S2-04`：三案共享 Benchmark Evidence Pack、blind input 和 evaluator-only hidden Gold scoring objects 已按 digest 冻结，公平性、泄漏、跨案污染、日期和数值重算检查通过。
 17. [x] 执行 `013-S2-05/06` Experiment A 并诚实终止：`013-S2-05` 三案 raw 均为质量失败；DELL Supervisor R2 暴露 RC-P36-148。`S2-06A/B/C` 已完成 canonical contract、统一 Runtime 与双 archive/process 独立 proof；`S2-06D` 最小 DELL/U3 natural canary 为 `1 call/1 capture/4,483 tokens/0 retry`，模型虽返回合法 envelope，却在反证为空时虚假声明 correction closed，新 guard 正确拒绝。`S2-06E` 已决定不值得且不授权正式 DELL proof；S2 deterministic repair 通过，model natural correction adherence 失败并流转 S3。下一步按依赖进入 S1 search tool/source runtime；formal score、业务晋升和 release 均未成立。
 18. [ ] 执行 `013-S1-06/07/08`：修复 MCP operational truth、当前外部来源 runtime 和 Agentic Search 质量门；不调用 DeepSeek 来发现确定性工具缺陷。
-19. [ ] 执行 `013-S3-06/07`：动态 Lead loop 与 EvidenceRequest/targeted repair 闭环。
+19. [ ] 执行 `013-S3-06/07`：先完成 `DS-A1/A2/A3` provider-neutral capability profile、judgment atom 与 protected narrative 门，再进入动态 Lead loop 与 EvidenceRequest/targeted repair 闭环；同一 family 不逐字段反复 live 修补。
 20. [ ] 执行 `013-S3-08/09` Experiment B：三案端到端 DeepSeek Agentic Search/Research、隐藏 Gold 八维对照和 qualified-human 内容验收。
 21. [ ] 执行 current S4 Workbench dogfood，再执行 S5 RG1–RG5；只有最终 candidate 可获得 FIN 0.1.3 内部版本收口结论。
 

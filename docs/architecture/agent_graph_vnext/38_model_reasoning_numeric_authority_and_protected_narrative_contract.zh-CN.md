@@ -2,7 +2,7 @@
 
 日期：2026-08-07
 
-状态：跨 TECH 实施合同草案。本文补齐 PRD 中“模型如何使用精确事实、Harness 如何守住金融真值、同时不把研报退化为模板拼装”的缺口。本文不是新的业务真相 owner，也不表示 Runtime 已实现或 DeepSeek 已通过产品验收。
+状态：稳定金融事实/纠错合同已 `runtime_injected + deterministic_proven`；DeepSeek 最小自然 canary 在 evidence-role/closure 失败；Provider-neutral capability profile、adaptive autonomy 和 constraint retirement 仍为 `contract_translated / runtime_not_implemented`。本文不是新的业务真相 owner，也不表示 DeepSeek 或产品已通过验收。
 
 ## 1. 为什么需要本合同
 
@@ -144,7 +144,7 @@ clean company-wide margin proof.
 
 ### 成熟度口径
 
-本文当前只到 `contract_draft`。后续必须依次证明 `runtime_injected -> deterministic_fixture_proven -> node_level_consumed -> paid_artifact_proven -> dogfood_accepted`，不得用文档完成替代代码、真实模型结果或产品验收。
+五权、`NumericFactView`、correction objective/receipt 与 deterministic guard 已在 S2-06B/C 达到 `runtime_injected + deterministic_fixture_proven + node_level_consumed`；S2-06D 只证明当前 DeepSeek 能形式遵循 envelope/numeric ref，却未通过 evidence-role/closure。新增 capability profile/adaptive autonomy 仍只到 `contract_translated`。完整能力仍须依次达到 `paid_artifact_proven -> dogfood_accepted`，不得用局部成熟度替代产品验收。
 
 ## 8. Owner 映射
 
@@ -158,3 +158,78 @@ clean company-wide margin proof.
 | closure、paired quality、anti-template 与 release gate | TECH_10 |
 
 本文不改变这些 owner，只规定它们必须共享同一合同版本和对象引用。
+
+## 9. 三层 Harness 结构与约束生命周期
+
+### 9.1 稳定金融控制内核
+
+以下能力组成 provider-neutral kernel，不接受“模型更强所以删除”的理由：source capture、financial truth、identity/time/unit/currency、lineage、permission、budget、exact-once、durable terminal、promotion、human attestation、version/supersession 和 audit。强模型可以减少失败和人工介入，但不能同时成为事实、权限和晋升的唯一裁判。
+
+### 9.2 Model Capability Adapter
+
+Provider/model/version 的差异进入 `ModelCapabilityProfile`，不得成为散落在共享 Runtime 中的 `if deepseek` 或逐字段补丁。最小字段为：
+
+- `provider / model / model_version / evaluated_at`；
+- `contract_family` 与冻结 prompt/schema 版本；
+- strict JSON/schema、identity、numeric ref、citation、evidence-role、threshold、closure、tool-use、context 和 narrative 的独立状态；
+- 每个 family 的 fixture、natural canary、样本数、pass rate、首次可信失败和适用案例；
+- latency/cost、上下文和输出容量；
+- `maximum_autonomy_tier`、禁止动作、降级触发器和复测条件。
+
+### 9.3 Adaptive Autonomy Policy
+
+统一自主权等级如下：
+
+| Tier | 模型权限 | 本地责任 |
+| --- | --- | --- |
+| `A0` | 不参与或仅生成非权威建议 | 全确定性路径/人工 |
+| `A1` | closed-set alias/enum/evidence-role 选择 | 验证、closure、render、promotion |
+| `A2` | typed judgment atom、机制、反方和 WWC | 事实/角色候选/结构/closure |
+| `A3` | 基于已接受 atom 的 protected narrative | material span render、citation、final gate |
+| `A4` | whole-node research authoring | 全量 post-node truth/quality verification |
+| `A5` | dynamic plan/tool loop | ToolGateway、budget、Evidence promotion、durable control |
+
+权限按 contract family 授予，不设一个全局“模型强/弱”标签。某模型可在 narrative 为 `A3`，在 correction closure 仍为 `A1`。升级必须由冻结 eval 证明，失败立即回落到上一稳定 tier；降级不改变业务对象或核心 Runtime。
+
+### 9.4 约束退役
+
+每条模型相关控制必须声明 `permanent_financial_invariant`、`adaptive_gate` 或 `provider_workaround`。只有后两类可以退役。退役需要：新模型/版本的独立 capability proof、三案非回归、paired 内容质量不下降、shadow 观察期无 material escape，以及可恢复 rollback。删除的是补偿性限制，不是 raw capture、truth、lineage、permission 或 promotion gate。
+
+## 10. DeepSeek 当前能力处置（基于 S2-06D）
+
+当前 DeepSeek v4 Pro 的证据不是“完全不遵循”：它通过 JSON/envelope、case identity 和 protected numeric alias；失败集中在 evidence-role semantics、correction closure 和 analyst-threshold discipline。因此禁止继续以整节点自由修正＋模型自报 `closed` 作为主协议，也禁止再按单字段扩 Prompt。
+
+当前 profile 应冻结为：
+
+- strict JSON/envelope：`natural_pass_observed`；
+- case identity：`natural_pass_observed`；
+- protected numeric ref：`natural_pass_observed`；
+- evidence-role classification：`natural_fail_support_misclassified_as_counterevidence`；
+- correction closure self-attestation：`revoked`；
+- analyst threshold discipline：`natural_fail_observed`；
+- corrected whole-node authoring：`not_authorized`；
+- formal DELL full graph：`not_authorized`。
+
+这只是当前模型版本和合同 family 的能力记录，不是 DeepSeek 永久结论，也不自动适用于 Flash、后续 Pro 或其他 Provider。
+
+## 11. DeepSeek 下一步适配：原子判断与叙事解耦
+
+下一轮 S3 不再“修 DeepSeek 的完整输出”，而按以下逻辑协议执行：
+
+1. **Evidence-role candidate compiler**：Harness 根据来源类型、claim direction、authority boundary 和目标问题编译 `supports / contradicts / qualifies / neutral / insufficient` 候选及理由边界；它不替模型决定 thesis。
+2. **Judgment Atom pass**：DeepSeek 只选择证据角色、claim stance、mechanism、gap、counter-thesis 和 WWC atom；禁止自报 correction `closed`，禁止在 atom 中自由写 material number。
+3. **Deterministic closure**：Harness 根据已验证 atom、Evidence/Gap 和 closure rule 计算 `closed / typed_unresolved / rejected`；模型没有 self-attestation authority。
+4. **Narrative pass**：只有 atom 通过后，DeepSeek 才基于 accepted atoms 和 `NumericFactView` 生成 protected narrative。叙事可以丰富，但不得改变 atom、Evidence role 或 material facts。
+5. **Targeted repair**：失败只重算对应 atom 或段落，不重写整个 Specialist/Lead/Writer 节点；原始结果、diff 和 receipt 全部保留。
+6. **Paired quality gate**：与原始候选/Gold 对比机制深度、反方、综合、密度和可读性。可靠性变好但质量下降时不晋升。
+
+逻辑上是两阶段，不强制永远两次 Provider 调用：DeepSeek 当前先采用 atom→narrative 分调用；未来模型若在组合 canary 中稳定通过，可合并为一次响应的两个受隔离区块。
+
+## 12. 避免反复修复的评测与停止规则
+
+1. Prompt/Schema/Validator 只按 `contract_family` 版本化，不为单个失败字段产生共享 Runtime 分支。
+2. 每个变化 family 先做 deterministic fixture，再做至多一次自然节点 canary；同一 family 的新失败先进入 quarantined collect-all diagnostic，不逐项 paid rerun。
+3. 一个评测周期内每个 family 最多一次结构修订；若仍失败，降低 autonomy tier 或更换模型候选，不继续扩大 Prompt。
+4. 新模型先跑 capability matrix，再决定哪些 family 可以提升；不得直接复制 DeepSeek workaround，也不得先跑 full-chain 才发现已知能力缺口。
+5. Experiment B 只在 identity、numeric ref、evidence role、closure、threshold 与 narrative 六个前置 family 达到各自门槛后启动。
+6. 正式通过同时要求 reliability floor 与 content-quality floor；任一不足都不能用另一项补偿。

@@ -71,7 +71,8 @@ Longitudinal memory and accountability:
 Cross-cutting registries:
   AgentDefinitionVersion / PromptBundleVersion / SkillVersion
   GraphOntologyVersion / WorkflowPolicyVersion / ProviderPolicyVersion
-  ModelCapability / ModelSelectionDecision
+  ModelCapabilityProfile / ModelSelectionDecision / AutonomyGrant
+  ConstraintLifecycle / ConstraintRetirementDecision
 
 Human collaboration:
   CaseRoleAssignment / ResearchAssignment / ReviewAssignment

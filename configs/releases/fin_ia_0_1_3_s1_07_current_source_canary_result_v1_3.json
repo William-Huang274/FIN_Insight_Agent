@@ -1,0 +1,283 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_07_current_source_canary_result_v1_3",
+  "status": "pass",
+  "git": {
+    "branch": "codex/layered-data-source-expansion",
+    "commit": "86779fd844f7b419dc80a5a6ab81e12cade3b46c",
+    "clean_and_synced_at_start": true
+  },
+  "authority": {
+    "scope": "fin_0_1_3.S1_07.dell_SEC_contact_identity_recovery_canary:v1",
+    "implementation_commit": "86779fd844f7b419dc80a5a6ab81e12cade3b46c",
+    "prior_result_digest": "d6375c8b24d32c3f9cc6c57da90771594f6d150d386ad13672889decdaace278",
+    "route": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199625000034/dell-20250131.htm",
+      "domain": "www.sec.gov",
+      "source_class": "official_regulatory_page",
+      "title": "Dell Technologies FY2025 Form 10-K"
+    },
+    "source_call_ceiling": 1,
+    "retry_ceiling": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "SEC_contact_identity": {
+      "configured": true,
+      "source": "runtime_env:FINSIGHT_SEC_CONTACT_EMAIL",
+      "plaintext_persisted": false
+    },
+    "run_nonce": "fin013_s1_07_dell_SEC_contact_identity_recovery_v1",
+    "admission_id": "fin013_s1_07_dell_admission_6537c75fb1c67f130319",
+    "admission_digest": "6537c75fb1c67f13031996f86fd6a60ac7c42689fd64a4ffa4075afe2dddd14e",
+    "run_id": "fin013_s1_07_dell_run_1694e8ca355c11a6cd85",
+    "attempt_id": "fin013_s1_07_dell_attempt_c224f143bd722538a433"
+  },
+  "prior_result_ref": "configs/releases/fin_ia_0_1_3_s1_07_current_source_canary_result_v1_2.json",
+  "results": {
+    "DELL": {
+      "status": "ok",
+      "error": null,
+      "snapshot_id": "websnap_8ea2c70d3a391e69",
+      "final_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199625000034/dell-20250131.htm",
+      "network_calls": 1,
+      "request_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/a8/d3/a8d3e9cbb037b8ae0e8c79d9fa033a8b9800b8569545b57480763b12a07fc466.json",
+        "digest": "a8d3e9cbb037b8ae0e8c79d9fa033a8b9800b8569545b57480763b12a07fc466",
+        "byte_size": 491,
+        "media_type": "application/json",
+        "artifact_type": "official_source_request"
+      },
+      "response_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/ee/33/ee33f8fd3b511ab9fd85e8126c98d0cbd3b136947988843fc7a4d5dae8d4ef59.json",
+        "digest": "ee33f8fd3b511ab9fd85e8126c98d0cbd3b136947988843fc7a4d5dae8d4ef59",
+        "byte_size": 5577171,
+        "media_type": "application/json",
+        "artifact_type": "official_source_response"
+      },
+      "parser_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/c7/0b/c70b1e1115427ca2746461514b84c5750e3fd65797318084eae8e9497539670f.json",
+        "digest": "c70b1e1115427ca2746461514b84c5750e3fd65797318084eae8e9497539670f",
+        "byte_size": 583327,
+        "media_type": "application/json",
+        "artifact_type": "web_parser_result"
+      },
+      "promotion_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/99/4e/994e7ffa28e698d5b370e39b44a79a0200f56c9586a886a39349a8c9b7efd1b3.json",
+        "digest": "994e7ffa28e698d5b370e39b44a79a0200f56c9586a886a39349a8c9b7efd1b3",
+        "byte_size": 373,
+        "media_type": "application/json",
+        "artifact_type": "web_evidence_promotion_receipt"
+      },
+      "parser_status": "parsed",
+      "parser_adapter": "official_source_html_text_v1",
+      "parser_text_sha256": "d789729c24c95bccdabff146e00af4d391d7591edf56c1ba4cf588a0898a1230",
+      "promotion_decision": "promote_parsed_evidence",
+      "evidence_row_count": 1,
+      "source_gaps": [],
+      "operational": {
+        "invocation_id": "mcp_c2b14ef59c3242718b50035b11565883",
+        "start_kind": "cold",
+        "worker_pid": 36116,
+        "elapsed_ms": 14027,
+        "terminal_status": "pass",
+        "phases": [
+          {
+            "phase": "resource_binding",
+            "status": "pass",
+            "elapsed_ms": 2
+          },
+          {
+            "phase": "worker_start",
+            "status": "pass",
+            "elapsed_ms": 1918
+          },
+          {
+            "phase": "handler_execution",
+            "status": "pass",
+            "elapsed_ms": 12106
+          }
+        ]
+      }
+    },
+    "MU": {
+      "status": "ok",
+      "error": null,
+      "snapshot_id": "websnap_1a1c5e628ddd5c2d",
+      "final_url": "https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550",
+      "network_calls": 1,
+      "request_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/13/23/1323e24b55f96f110738515cd1bce12aaa489fa1709fd1e1e7b6dbbede3a0549.json",
+        "digest": "1323e24b55f96f110738515cd1bce12aaa489fa1709fd1e1e7b6dbbede3a0549",
+        "byte_size": 451,
+        "media_type": "application/json",
+        "artifact_type": "official_source_request"
+      },
+      "response_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/18/f2/18f22cbd443cb4e74972aca1f9be826bae1d4157583902429cb5ab82ca4d783c.json",
+        "digest": "18f22cbd443cb4e74972aca1f9be826bae1d4157583902429cb5ab82ca4d783c",
+        "byte_size": 5716062,
+        "media_type": "application/json",
+        "artifact_type": "official_source_response"
+      },
+      "parser_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/0e/25/0e254c3213d9eaf7d91d93fb717ce448e6ea29aeb609f881132d6264a1f115bd.json",
+        "digest": "0e254c3213d9eaf7d91d93fb717ce448e6ea29aeb609f881132d6264a1f115bd",
+        "byte_size": 571459,
+        "media_type": "application/json",
+        "artifact_type": "web_parser_result"
+      },
+      "promotion_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/b1/a7/b1a7db35d40ec43a478b81e99f5488c760e09224116102490448ae20d3a4140b.json",
+        "digest": "b1a7db35d40ec43a478b81e99f5488c760e09224116102490448ae20d3a4140b",
+        "byte_size": 373,
+        "media_type": "application/json",
+        "artifact_type": "web_evidence_promotion_receipt"
+      },
+      "parser_status": "parsed",
+      "parser_adapter": "official_source_pdf_text_v1",
+      "parser_text_sha256": "dbf68b9263952e2414eef6f38329a0e45f4acf7d61cc202bc6ad8f82687475ee",
+      "promotion_decision": "promote_parsed_evidence",
+      "evidence_row_count": 1,
+      "context_row_count": 1,
+      "source_gaps": [],
+      "redirect_chain": [],
+      "operational": {
+        "invocation_id": "mcp_cd56128a837a4a12ac1621cece885baf",
+        "start_kind": "warm",
+        "worker_pid": 35832,
+        "elapsed_ms": 24825,
+        "terminal_status": "pass",
+        "phases": [
+          {
+            "phase": "resource_binding",
+            "status": "pass",
+            "elapsed_ms": 0
+          },
+          {
+            "phase": "worker_start",
+            "status": "pass",
+            "elapsed_ms": 0
+          },
+          {
+            "phase": "handler_execution",
+            "status": "pass",
+            "elapsed_ms": 24824
+          }
+        ]
+      }
+    },
+    "NVDA": {
+      "status": "ok",
+      "error": null,
+      "snapshot_id": "websnap_766e14acf01e754a",
+      "final_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/",
+      "network_calls": 1,
+      "request_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/e1/fd/e1fd4cd3be977518d2260a3645feb7dc84f913e8a84c0b3a3eed1a4d40e4020e.json",
+        "digest": "e1fd4cd3be977518d2260a3645feb7dc84f913e8a84c0b3a3eed1a4d40e4020e",
+        "byte_size": 505,
+        "media_type": "application/json",
+        "artifact_type": "official_source_request"
+      },
+      "response_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/b4/7c/b47cb0a0316a9d7885bee9037d6eced524f077a1aa23a1c1a03fde195e8cfda7.json",
+        "digest": "b47cb0a0316a9d7885bee9037d6eced524f077a1aa23a1c1a03fde195e8cfda7",
+        "byte_size": 617943,
+        "media_type": "application/json",
+        "artifact_type": "official_source_response"
+      },
+      "parser_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/80/c6/80c6274c2af539529e763fb6ace3f93f4bbb0c8df16f40d51d021a4e04e4125b.json",
+        "digest": "80c6274c2af539529e763fb6ace3f93f4bbb0c8df16f40d51d021a4e04e4125b",
+        "byte_size": 30990,
+        "media_type": "application/json",
+        "artifact_type": "web_parser_result"
+      },
+      "promotion_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/2f/5c/2f5c70a566c76d8c0dfb7b084fa9efef478229195eeea2e2dc8ed78054bd5330.json",
+        "digest": "2f5c70a566c76d8c0dfb7b084fa9efef478229195eeea2e2dc8ed78054bd5330",
+        "byte_size": 373,
+        "media_type": "application/json",
+        "artifact_type": "web_evidence_promotion_receipt"
+      },
+      "parser_status": "parsed",
+      "parser_adapter": "official_source_html_text_v1",
+      "parser_text_sha256": "b5c5ca981e8d0ed54c2c143d3729a432aa7659458abc025e82102333ef7b62c7",
+      "promotion_decision": "promote_parsed_evidence",
+      "evidence_row_count": 1,
+      "context_row_count": 1,
+      "source_gaps": [],
+      "redirect_chain": [],
+      "operational": {
+        "invocation_id": "mcp_32978cb41bd64c4b8162b0162e3192be",
+        "start_kind": "warm",
+        "worker_pid": 35832,
+        "elapsed_ms": 3117,
+        "terminal_status": "pass",
+        "phases": [
+          {
+            "phase": "resource_binding",
+            "status": "pass",
+            "elapsed_ms": 0
+          },
+          {
+            "phase": "worker_start",
+            "status": "pass",
+            "elapsed_ms": 0
+          },
+          {
+            "phase": "handler_execution",
+            "status": "pass",
+            "elapsed_ms": 3117
+          }
+        ]
+      }
+    }
+  },
+  "checks": {
+    "prior_MU_success_reused": true,
+    "prior_NVDA_success_reused": true,
+    "only_one_recovery_network_call": true,
+    "DELL_fetched": true,
+    "DELL_parsed": true,
+    "DELL_promoted": true,
+    "DELL_raw_captures_retained": true,
+    "DELL_parser_lineage_retained": true,
+    "worker_closed_no_orphan": true,
+    "no_model_provider_retry": true
+  },
+  "active_worker_pid_before_close": 36116,
+  "scope": {
+    "new_network_calls": 1,
+    "reused_successful_routes": 2,
+    "retry_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_artifact_promotions": 0
+  },
+  "transport_environment": {
+    "synthetic_dns_mode": true,
+    "SEC_contact_configured": true,
+    "SEC_contact_plaintext_persisted": false,
+    "safety_boundary": "explicit hostname allowlist plus HTTPS certificate validation remains required"
+  },
+  "known_boundary": "This successor reuses immutable MU/NVDA successes and adds one Dell SEC request with an operator-supplied runtime contact identity. It does not prove broad crawling, retrieval quality, research synthesis, model quality or release readiness.",
+  "terminal_result_digest": "90e24f397a0f40a6a10f2fc9c02308a07177a3a983c38ffbc502f1016fbcb873",
+  "admission_receipt": {
+    "schema_version": "fin_ia_shared_admission_consumption_ledger_v1_0",
+    "admission_digest": "6537c75fb1c67f13031996f86fd6a60ac7c42689fd64a4ffa4075afe2dddd14e",
+    "admission_id": "fin013_s1_07_dell_admission_6537c75fb1c67f130319",
+    "scope": "fin_0_1_3.S1_07.dell_SEC_contact_identity_recovery_canary:v1",
+    "run_id": "fin013_s1_07_dell_run_1694e8ca355c11a6cd85",
+    "attempt_id": "fin013_s1_07_dell_attempt_c224f143bd722538a433",
+    "runtime_identity": "D:\\FIN_Insight_Agent\\.codex_runtime\\fin013_s1_07_current_source_canary\\fin013_s1_07_dell_run_1694e8ca355c11a6cd85",
+    "state": "terminal",
+    "reserved_at": "2026-08-07T13:59:45Z",
+    "reservation_digest": "8c0c81be38fc4283293e74950eabb7f034bacab88d386e615a2cd3be739e96b6",
+    "terminal_status": "success",
+    "terminal_phase": "s1_07_dell_source_recovery_terminal",
+    "terminal_code": "three_case_official_source_runtime_proven",
+    "terminal_result_digest": "90e24f397a0f40a6a10f2fc9c02308a07177a3a983c38ffbc502f1016fbcb873",
+    "finalized_at": "2026-08-07T13:59:45Z",
+    "receipt_digest": "1b6a2e5f708c605368f4b69fcf034072fa98767ddd95f688d33b7af5344eb9e0"
+  }
+}

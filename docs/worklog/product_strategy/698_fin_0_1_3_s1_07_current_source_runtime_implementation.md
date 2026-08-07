@@ -78,3 +78,17 @@ Dell-only successor 使用 new commit/admission，仅执行 1 call、0 retry。S
 - 模型或普通 MCP argument 不能设置/伪造该身份。
 
 新增 missing/invalid/valid contact mutation 后 broader=`84 passed`。Dell recovery runner 已改为消费 immutable v1.2，输出新 v1.3，new commit/admission，仅允许 1 call/0 retry。MU/NVDA 不重跑。成功后才关闭 S1-07；失败不再自动扩展。
+
+## 9. Dell v1.3 exact-once 结果与 S1-07 收口
+
+用户提供的真实联系邮箱仅注入单次进程环境 `FINSIGHT_SEC_CONTACT_EMAIL`；版本化代码、文档、result JSON、admission 与普通 telemetry 均不保存明文，本机受限 raw request capture 依审计合同保留实际 User-Agent。实现提交 `86779fd8` 已 clean/synced 后，runner 消费 new admission，仅执行一次 Dell SEC official 10-K HTML 请求，未重跑 MU/NVDA。
+
+- Dell：`status=ok`，`network_calls=1`，`elapsed_ms=14,027`；
+- parser：`official_source_html_text_v1 / parsed`；
+- promotion：`promote_parsed_evidence`，`1 Evidence / 0 source gap`；
+- captures：request、response、parser、promotion lineage 均保留；
+- execution：`0 retry / 0 model / 0 provider`，worker terminal pass 且关闭无 orphan；
+- terminal：`three_case_official_source_runtime_proven`；
+- tracked result：`configs/releases/fin_ia_0_1_3_s1_07_current_source_canary_result_v1_3.json`，SHA-256=`f20b4e292ad566ab67141538dd2b84b1f8d1947ecaaec59446d96e85fc96d70d`。
+
+合并 immutable R2 的 MU official PDF 与 NVDA official IR HTML success 后，DELL/MU/NVDA 三案例均真实完成 fetch/capture/parse/promote，S1-07 记 `L4_scope_pass`。这不是 S1-08 检索质量、DeepSeek Agentic Research、报告内容质量或 release 证明。下一项严格限定为 S1-08 recall、ranking、currentness、source diversity 与 Evidence utilization 评测。

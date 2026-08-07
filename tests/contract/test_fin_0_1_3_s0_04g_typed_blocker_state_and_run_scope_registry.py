@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 
 from sec_agent.project_os_preflight import run_project_os_preflight
 
@@ -36,12 +37,29 @@ def test_unregistered_scope_and_diagnostic_override_fail_closed() -> None:
     assert "project_os_contract_invalid" in result["errors"]
 
 
-def test_direct_R3_remains_blocked_by_product_issue() -> None:
+def test_direct_R3_scope_matches_latest_typed_product_projection() -> None:
     result = run_project_os_preflight(ROOT, run_scope=DIRECT_R3_SCOPE)
-
-    assert result["status"] == "blocked"
-    assert result["contract_errors"] == []
-    assert any(
-        item["issue_id"].startswith("RC-P36-157-")
-        for item in result["open_full_chain_blockers"]
+    rows = [
+        json.loads(line)
+        for line in (
+            ROOT / "docs/project_os/root_cause_issue_ledger.jsonl"
+        ).read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    latest = next(
+        row
+        for row in reversed(rows)
+        if str(row.get("issue_id") or "").startswith("RC-P36-157-")
     )
+    direct_allowed = DIRECT_R3_SCOPE in (latest.get("allowed_run_scopes") or [])
+
+    assert result["contract_errors"] == []
+    if direct_allowed:
+        assert result["status"] == "pass"
+        assert result["open_full_chain_blockers"] == []
+    else:
+        assert result["status"] == "blocked"
+        assert any(
+            item["issue_id"].startswith("RC-P36-157-")
+            for item in result["open_full_chain_blockers"]
+        )

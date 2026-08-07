@@ -102,7 +102,7 @@ def _preflight(
         "source_commit": COMMIT,
         "project_os_preflight": {"status": "pass"},
         "predecessor_preflight": {
-            "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_0",
+            "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_1",
             "sha256": PREDECESSOR_PREFLIGHT_SHA256,
         },
         "governance_requalification": {
@@ -401,7 +401,7 @@ def test_R3_runner_is_zero_call_until_explicit_main_and_cannot_reuse_R2(
     assert "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION" in source
     assert "current_source_catalog_relationship_budget_policy_v3_0.json" in source
     assert "current_source_catalog_and_query_revision_policy_v2_0.json" not in source
-    assert "successor_clean_zero_call_preflight_v1_1.json" in source
+    assert "successor_clean_zero_call_preflight_v1_2.json" in source
     assert "PREDECESSOR_PREFLIGHT_PATH" in source
     assert "socket.getaddrinfo" not in source
     assert 'if __name__ == "__main__"' in source

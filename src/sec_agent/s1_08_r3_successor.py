@@ -30,10 +30,10 @@ TERMINAL_SCHEMA = "fin_ia_0_1_3_s1_08_dell_r3_search_terminal_v1_0"
 CONTRACT_REF = "fin_0_1_3.S1_08.DELL_current_search_R3:v1"
 TERMINAL_NAMESPACE = "fin-0.1.3/s1-08/dell-current-search-r3"
 SUCCESSOR_PREFLIGHT_SCHEMA = (
-    "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_1"
+    "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_2"
 )
 PREDECESSOR_PREFLIGHT_SHA256 = (
-    "fc8fd944bea0cba546aa567f89ac3116d4499bed9ddb43315ddbf4fe0f443c55"
+    "7ae6f46fcbeeedb673995ee554318649e3e09c57bd8514035ab3ea82a8bd2f1e"
 )
 _DECISION_SCHEMA = (
     "fin_ia_0_1_3_s1_08_v3_dell_r3_fresh_live_authority_decision_v1_0"
@@ -490,7 +490,7 @@ def _validate_successor_preflight(
         and (successor_preflight.get("project_os_preflight") or {}).get("status") == "pass"
         and predecessor.get("sha256") == PREDECESSOR_PREFLIGHT_SHA256
         and predecessor.get("schema_version")
-        == "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_0"
+        == "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_1"
         and governance.get("project_os_preflight_schema")
         == "fin_insight_project_os_full_chain_preflight_v0_2"
         and governance.get("run_scope_registry_version") == "v1_0"

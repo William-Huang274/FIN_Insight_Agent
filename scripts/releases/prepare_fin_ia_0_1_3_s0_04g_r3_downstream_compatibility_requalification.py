@@ -38,11 +38,11 @@ RUN_SCOPE = (
 DIRECT_R3_SCOPE = "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION"
 RESULT_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_"
-    "successor_clean_zero_call_preflight_v1_1.json"
+    "successor_clean_zero_call_preflight_v1_2.json"
 )
 PREDECESSOR_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_"
-    "successor_clean_zero_call_preflight_v1_0.json"
+    "successor_clean_zero_call_preflight_v1_1.json"
 )
 DECISION_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_"
@@ -73,16 +73,13 @@ R3_RESULT_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_v3_"
     "dell_current_search_r3_result_v1_0.json"
 )
-PREDECESSOR_SOURCE_COMMIT = "d713eb6600150678618259dce9c00c052d018f52"
+PREDECESSOR_SOURCE_COMMIT = "2f14684e60acf7b6def92498eb2bd68c4428d87a"
 EXPECTED_CHANGED_RUNTIME_FILES = {
-    "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json",
     "scripts/releases/prepare_fin_ia_0_1_3_s0_04g_r3_downstream_compatibility_requalification.py",
     "scripts/releases/run_fin_ia_0_1_3_s1_08_v3_dell_current_search_r3.py",
-    "src/sec_agent/project_os_preflight.py",
     "src/sec_agent/s1_08_r3_successor.py",
     "tests/contract/test_fin_0_1_3_s0_04g_typed_blocker_state_and_run_scope_registry.py",
     "tests/contract/test_fin_0_1_3_s1_08_v3_dell_r3_successor.py",
-    "tests/test_project_os_preflight.py",
 }
 PYTEST_TARGETS = (
     "tests/test_project_os_preflight.py",
@@ -103,7 +100,7 @@ REQUIRED_TEST_FRAGMENTS = (
     "test_unknown_requested_scope_fails_closed_and_override_cannot_bypass",
     "test_post_adoption_projection_requires_typed_state_registry_and_lineage",
     "test_current_S0_04G_scope_uses_typed_registry_and_passes",
-    "test_direct_R3_remains_blocked_by_product_issue",
+    "test_direct_R3_scope_matches_latest_typed_product_projection",
     "test_R3_admission_binds_decision_R2_v3_sources_and_budget_without_secret",
     "test_R3_exact_once_terminal_uses_v3_candidate_contract_and_fair_scheduler",
 )
@@ -242,7 +239,7 @@ def _worker_payload(runtime_root: Path) -> dict[str, Any]:
     _require(not network_attempts, "network_attempt_observed")
     _require(
         not (runtime_root / RESULT_PATH.relative_to(ROOT)).exists(),
-        "v1_1_result_exists_in_source_commit",
+        "v1_2_result_exists_in_source_commit",
     )
     _require(
         not (runtime_root / R3_RESULT_PATH.relative_to(ROOT)).exists(),
@@ -333,7 +330,7 @@ def build_result() -> dict[str, Any]:
     _require(not _git("status", "--porcelain"), "source_worktree_not_clean")
     head = _git("rev-parse", "HEAD")
     _require(head == _git("rev-parse", "@{upstream}"), "source_head_not_synced")
-    _require(not RESULT_PATH.exists(), "v1_1_result_already_exists")
+    _require(not RESULT_PATH.exists(), "v1_2_result_already_exists")
     _require(not R3_RESULT_PATH.exists(), "R3_result_already_exists")
     changed = {
         item
@@ -368,7 +365,7 @@ def build_result() -> dict[str, Any]:
     body = {
         "schema_version": (
             "fin_ia_0_1_3_s1_08_v3_dell_r3_"
-            "successor_clean_zero_call_preflight_v1_1"
+            "successor_clean_zero_call_preflight_v1_2"
         ),
         "recorded_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(
             timespec="seconds"
@@ -391,7 +388,7 @@ def build_result() -> dict[str, Any]:
             "path": PREDECESSOR_PATH.relative_to(ROOT).as_posix(),
             "schema_version": (
                 "fin_ia_0_1_3_s1_08_v3_dell_r3_"
-                "successor_clean_zero_call_preflight_v1_0"
+                "successor_clean_zero_call_preflight_v1_1"
             ),
             "sha256": PREDECESSOR_PREFLIGHT_SHA256,
             "source_commit": PREDECESSOR_SOURCE_COMMIT,

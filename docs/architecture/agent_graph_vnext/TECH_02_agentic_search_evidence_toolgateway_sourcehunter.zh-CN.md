@@ -702,3 +702,5 @@ Q-H 已批准一份 DELL R2 replacement authority，但旧 R1 admission/runner �
 R2 successor 已完成零调用实现。authority v1.0 因把 engineering proof SHA 误标为 independent proof SHA 而在测试中 fail closed，未被消费；v1.1 分离两份 SHA。successor admission 绑定 decision/proof/catalog/R1 terminal/commit，并重算 R1 terminal body；runner 把 DNS resolution 留到 shared-ledger reserve 之后，transport 只允许 Codex synthetic range 而非任意 private IP；30 秒 per-call 外再加 300 秒 overall deadline。新 contract/namespace/result path 与 R1 完全分离。
 
 clean successor proof 进一步成为 admission 的 mandatory binding，固定 Runtime/Runner SHA 并要求 fresh archive 的 53-test pass。Project OS run-scope 目前是显式 blocker-name 匹配，未知 scope 字符串可能不被自动拒绝；这是共享治理层缺口。当前 R2 通过 direct proof binding fail closed，通用 scope registry/unknown-scope policy 留给 S0/S5 统一修复，避免把 SourceHunter 阶段扩成控制面重构。
+
+runner 的第一次 execution probe 另发现 core API/CLI projection 形状差异：核心 preflight 提供 blocker list，CLI compact 才增加 blocker count。successor 现以核心 list 为权威，并在 count 存在时交叉验证；v1.1 clean proof 绑定修复后的 source SHA。该 probe 位于 admission 前，未消耗 authority 或产生网络副作用。

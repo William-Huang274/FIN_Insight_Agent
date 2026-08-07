@@ -376,6 +376,8 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 
 > **2026-08-08 `013-S1-08` DELL R2 successor clean preflight pass**：clean `27d31315` fresh archive=`53 passed`，Runtime/Runner SHA 已进入必需 proof artifact，R1 exists/R2 absent、外部调用/admission=0。发现 Project OS 对未知 run-scope 字符串不会天然 fail closed；本 R2 用 direct proof/source binding 补强，通用 scope registry 问题后传共享治理阶段。当前仅一份 DELL R2 eligible，不自动放行其他案例或 ranking。
 
+> **2026-08-08 `013-S1-08` R2 preflight-shape repair**：第一次 execution probe 因 runner 读取 CLI compact-only blocker count 而在 admission 前失败，外部调用=0；核心 API 实际以 blocker list 为权威。修复后 clean `e48ec1b3` fresh archive 仍=`53 passed`，v1.1 proof 重绑新 Runtime/Runner SHA，v1.0 未消费即 supersede；唯一 R2 eligibility 保持。
+
 > **2026-08-07 用户已选择 SEC contact 路线**：真实联系身份只通过运行时环境注入，不进入 Git 或结果物；SEC 域名无合法 contact 时 fail closed。新增 identity mutation 后 broader=`84 passed`。只授权 new admission 的 1-call Dell SEC v1.3 proof，复用 MU/NVDA 已成功结果；不重跑三案、不进入额外 fallback。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

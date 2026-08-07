@@ -1,0 +1,53 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_dell_r2_successor_clean_zero_call_preflight_v1_1",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "status": "pass",
+  "source_commit": "e48ec1b35c1ca68f7fa6dfb3dca6dc4d2a9d97eb",
+  "source_branch": "codex/layered-data-source-expansion",
+  "supersedes": {
+    "schema_version": "fin_ia_0_1_3_s1_08_dell_r2_successor_clean_zero_call_preflight_v1_0",
+    "reason": "The first execution probe showed the runner expected a CLI-only blocker count absent from the core preflight API shape; no admission or external call occurred."
+  },
+  "project_os_preflight": {
+    "run_scope": "S1_08_DELL_R2_successor_clean_zero_call_preflight",
+    "status": "pass",
+    "core_shape_validated": true,
+    "allow_open_blockers": false,
+    "open_full_chain_blocker_count": 0
+  },
+  "source_files": {
+    "runtime": "src/sec_agent/s1_08_r2_successor.py",
+    "runtime_sha256": "28034406efb9747c4cba47d89a140850c282f4c6c44eb9024caaf1aceb61ce9e",
+    "runner": "scripts/releases/run_fin_ia_0_1_3_s1_08_dell_current_search_r2.py",
+    "runner_sha256": "d4348fc8f7fc02c360a33b5cea1195057eab1878d4ec43e7a19761501551ebb2"
+  },
+  "authority_bindings": {
+    "Q_H_decision": "fin_ia_0_1_3_s1_08q_h_dell_r2_replacement_authority_decision_v1_1",
+    "A_to_G_independent_proof": "fin_ia_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_independent_fresh_proof_v1_0",
+    "R1_terminal_digest": "9a52845388f09a72e84bc12969bb90389964409481a360eee78c28cf9562d57b",
+    "R1_terminal_body_recomputed": true,
+    "catalog_contract": "fin_0_1_3.S1_08.current_source_catalog_candidate_generation:v2"
+  },
+  "verification": {
+    "fresh_git_archive": true,
+    "fresh_python_process": true,
+    "tests_passed": 53,
+    "compileall": "pass",
+    "R1_result_exists": true,
+    "R2_result_absent": true,
+    "core_preflight_shape_and_optional_compact_count": "pass",
+    "decision_proof_R1_preflight_source_mutations": "fail_closed",
+    "shared_reserve_before_DNS": true,
+    "external_calls": 0,
+    "admissions_issued": 0
+  },
+  "decision": {
+    "successor_clean_preflight": "pass",
+    "one_DELL_R2_issuance_and_execution_eligible": true,
+    "admission_issued": false,
+    "DELL_R2_executed": false,
+    "MU_NVDA_ranking_S3_authorized": [false, false, false, false]
+  },
+  "current_next": "ONE_DELL_R2_EXACT_LIVE_ISSUANCE_AND_EXECUTION"
+}

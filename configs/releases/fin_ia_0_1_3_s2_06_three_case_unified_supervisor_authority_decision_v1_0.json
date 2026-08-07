@@ -1,0 +1,164 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_three_case_unified_supervisor_authority_decision_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "decision_complete_issuance_blocked_by_shared_zero_call_implementation",
+  "scope": "DELL_MU_NVDA_same_protocol_case_isolated_supervised_recoverability_experiment",
+  "authority": {
+    "user_instruction": "可以，按你说的做",
+    "decision_authorized": true,
+    "implementation_authorized": false,
+    "admission_issuance_authorized": false,
+    "provider_execution_authorized": false,
+    "corrected_candidate_business_promotion_authorized": false,
+    "automatic_follow_on_authorized": false
+  },
+  "baseline_binding": {
+    "execution_git_commit": "aaf0e519aeaca55cf13472e234ca47b5addb31ca",
+    "three_case_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_05_nvda_raw_replacement_r2_and_three_case_boundary_result_v1_0.json",
+      "sha256": "2b939b61c0a1461149c8fa7de059741643cc29931e09ac5b085aeaa47bb33739",
+      "result_digest": "8e5d2ac9b140dee0405b1c78a50cb14e8f33e4f3c4ce92b8f73ed231257c5fb5"
+    },
+    "raw_mutations": 0,
+    "cases": {
+      "DELL": {
+        "raw_breakdown": {"L1": 3, "L2": 1, "L3": 23, "L4": 0},
+        "correction_rows": 27,
+        "boundary_sha256": "dc4d4ff6b77664ddbad60a0cbdff7b220631250b515e3c4b646af30d6ec69337"
+      },
+      "MU": {
+        "raw_breakdown": {"L1": 8, "L2": 2, "L3": 14, "L4": 0},
+        "correction_rows": 24,
+        "boundary_sha256": "dfb4ae1a3ff3836b96f7cd5ef5e97bc7578996db7ff9830b79d7de9e2bb7cb08"
+      },
+      "NVDA": {
+        "raw_breakdown": {"L1": 4, "L2": 1, "L3": 27, "L4": 0},
+        "correction_rows": 32,
+        "boundary_sha256": "7de99da1a3e5a1d3be09609d7198ce2e86650769471913aaa48f5d674b1d49fd"
+      }
+    }
+  },
+  "experiment_governance": {
+    "hypothesis": "A case-isolated supervisor that sees only visible evaluator findings, immutable raw outputs and the same case-local blind Evidence Pack can remove material financial, numeric and citation errors while improving counterevidence and scenario calibration without hidden-Gold leakage.",
+    "decision_target": "Measure supervised recoverability separately from autonomous raw capability; no case may be cherry-picked and no successful case can mask another case's failure.",
+    "baseline": "the three immutable S2-05 raw candidates under evaluator v1.4",
+    "ceiling": "The supervisor cannot add external evidence in Experiment A; unsupported research gaps must remain typed gaps or explicit evidence requests.",
+    "decision_label": "proceed_to_one_zero_call_shared_implementation_package_only",
+    "stop_conditions": [
+      "hidden Gold or another case's raw/corrections enter any model-visible request",
+      "a shared contract, identity, capture, auth, transport or corrected-run materialization defect is found",
+      "capacity or USD hard limits cannot contain one planner plus the bounded corrected-node closure",
+      "raw output or historical correction boundary would be rewritten"
+    ]
+  },
+  "selected_protocol": {
+    "campaign_semantics": "one frozen protocol_three physically isolated case executions_aggregate attribution only after all terminal results",
+    "supervisor_role": "produce a typed correction plan, not a replacement report and not new financial facts",
+    "supervisor_visible_inputs": [
+      "case-local immutable raw node outputs",
+      "case-local evaluator v1.4 findings with code severity node_ref path and visible offending surface",
+      "case-local frozen blind Evidence Numeric and Gap aliases",
+      "typed allowed correction actions and dependency closure"
+    ],
+    "supervisor_forbidden_inputs": [
+      "evaluator-only hidden Gold targets or expected thesis",
+      "Codex Gold narrative or score explanations",
+      "another case's raw output findings correction plan or corrected candidate",
+      "external retrieval results not present in the frozen Experiment A pack"
+    ],
+    "correction_execution": {
+      "case_qualified_correction_ids_required": true,
+      "originating_node_repair_required": true,
+      "downstream_dependency_recomputation_required": true,
+      "raw_identity_reuse_forbidden": true,
+      "corrected_run_attempt_and_capture_identity_fresh": true,
+      "deterministic_runtime_may_author_new_research": false,
+      "raw_candidate_mutation_allowed": false
+    },
+    "call_envelope": {
+      "maximum_supervisor_planner_calls_per_case": 1,
+      "maximum_corrected_graph_calls_per_case": 10,
+      "maximum_provider_calls_per_case": 11,
+      "maximum_provider_calls_campaign": 33,
+      "retry_count": 0,
+      "fallback_count": 0,
+      "provider_hopping": false,
+      "maximum_estimated_usd_per_case": "0.18",
+      "maximum_estimated_usd_campaign": "0.54",
+      "admission_time_capacity_proof_required": true
+    },
+    "failure_isolation": {
+      "shared_infrastructure_failure": "stop_campaign",
+      "case_local_model_semantic_failure": "preserve_case_terminal_and_continue_other_pre_admitted_isolated_cases",
+      "case_local_schema_or_identity_failure": "preserve_case_terminal_and_stop_if_shared_contract_cause_is_not_excluded",
+      "retry_or_silent_patch": "forbidden"
+    }
+  },
+  "acceptance_gates": {
+    "per_case": [
+      "corrected candidate has a fresh identity and complete capture lineage",
+      "evaluator v1.4 L1 equals 0 and L2 equals 0",
+      "no cross-case ID unknown numeric or citation-role failure",
+      "all prior explicit_counterevidence_surface_empty findings are repaired with case-local counterevidence or an explicit no-evidence justification",
+      "all retained scenario or valuation thresholds are evidence/time-window/source-route calibrated or remain explicitly non-factual typed requests",
+      "Verifier explicitly detects or confirms repair of every prior material finding class",
+      "hidden scoring runs only after corrected candidate freeze"
+    ],
+    "campaign": [
+      "all three cases execute under the byte-equivalent protocol family with case-local substitutions only",
+      "all three raw candidates and boundaries remain immutable",
+      "all three corrected terminal results are preserved including failures",
+      "aggregate conclusion reports autonomous raw and supervised recoverability separately"
+    ],
+    "supervised_recoverability_labels": {
+      "proven": "all three cases pass every per-case gate",
+      "partial": "at least one but not all cases pass; failed cases remain explicit",
+      "not_proven": "no case passes or a shared project-owned execution defect prevents valid measurement"
+    },
+    "formal_hidden_score_before_L1_L2_pass": false,
+    "business_promotion": false,
+    "qualified_human_acceptance": false,
+    "release_acceptance": false
+  },
+  "owned_blockers_before_issuance": [
+    {
+      "blocker": "case_scoped_typed_correction_plan_contract_absent",
+      "evidence": "current boundaries reuse CORR-001 style identifiers and do not compile one model-visible correction-plan schema"
+    },
+    {
+      "blocker": "citation_and_pack_coverage_dispositions_incomplete",
+      "evidence": "writer_cross_case_unknown_or_wrong_id_role, writer_case_pack_coverage_incomplete and specialist_assigned_pack_coverage_incomplete currently fall through to typed_manual_disposition_required"
+    },
+    {
+      "blocker": "corrected_candidate_partial_graph_runner_absent",
+      "evidence": "the repository materializes correction ledgers but has no exact-once runner that reruns affected originating nodes and deterministically recomputes every dependent downstream node"
+    },
+    {
+      "blocker": "corrected_candidate_freeze_and_posthoc_scoring_guard_absent",
+      "evidence": "raw evaluation and boundary materialization exist, but corrected-candidate identity, capture-first terminalization and hidden-score-after-freeze are not implemented as one governed path"
+    }
+  ],
+  "only_allowed_next_package": {
+    "id": "FIN-0.1.3-013-S2-06-THREE-CASE-UNIFIED-SUPERVISOR-COMPILED-CORRECTION-PLAN-AND-CORRECTED-CANDIDATE-RUNNER-ZERO-CALL-IMPLEMENTATION",
+    "maximum_implementation_packages": 1,
+    "model_provider_network_calls": [0, 0, 0],
+    "required_outputs": [
+      "single-source typed SupervisorPlan prompt schema validator fake and failure descriptors",
+      "case-qualified correction IDs and explicit owner/action for every current finding class",
+      "dependency-aware affected-node closure and fresh corrected-run identity",
+      "capture-first corrected terminal result and immutable raw bindings",
+      "DELL MU NVDA full-fake plus cross-case hidden-Gold numeric citation dependency and capacity mutations",
+      "fresh zero-call proof and a separate later admission decision"
+    ]
+  },
+  "verification": {
+    "focused_tests": "15 passed",
+    "broader_tests": "103 passed / 3201 deselected",
+    "model_provider_network_calls": [0, 0, 0],
+    "admissions_issued": 0,
+    "corrected_candidates_created": 0,
+    "raw_mutations": 0
+  },
+  "known_boundary": "This decision freezes a fair supervised-recoverability experiment and identifies the shared project-owned prerequisites. It is not the implementation, admission, Provider execution, corrected candidate, formal score, product acceptance or release proof.",
+  "decision_digest": "25a04df1b48d7553642c7ae6c1002967cba23de74cef23c7332aba1d065c6cb7"
+}

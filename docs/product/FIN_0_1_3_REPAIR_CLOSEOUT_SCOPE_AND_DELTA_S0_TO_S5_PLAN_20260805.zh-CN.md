@@ -252,6 +252,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-05` 三案例 raw campaign 已完成、全部质量失败**：NVDA R2 exact-once 完成 `10 calls/10 captures`、0 retry，R1 numeric-scale 误杀未复发。post-run evaluator v1.4 删除 cash-flow/P-E 条件清单共现造成的 2 L1＋1 L2 误报，并对三案统一补齐 citation ID-role 检查；immutable replay 最终 DELL=`3 L1/1 L2/23 L3`、MU=`8/2/14`、NVDA=`4/1/27`。三案 raw 与 deterministic supervision boundary 均已物化且 raw mutation=0；三案均 `complete_quality_fail`。`013-S2-05` raw measurement 完成，但 `013-S2-06` supervisor recoverability、corrected candidate、formal hidden score 与业务晋升仍未完成。不得 NVDA R3 或逐案重跑；下一项只可单独裁决统一三案例 supervisor 实验。
 
+> **2026-08-07 `013-S2-06` 三案例统一 Supervisor authority decision 完成、签发仍阻断**：统一实验冻结为同一协议下 DELL/MU/NVDA 三个物理隔离执行；每案 Supervisor 只能看本案 raw、visible finding 与 blind case pack，hidden/Codex Gold 和跨案结果不可见。每案最多 `1 SupervisorPlan + 10 corrected graph`、campaign 最多 33 calls、0 retry/fallback；逐案必须 `L1=0/L2=0`，关闭空反证与未校准阈值并让 Verifier 覆盖 prior material classes，三案全部通过才可称 recoverability proven。当前缺 case-qualified plan、coverage/citation owner、partial graph corrected runner 与 candidate-freeze scoring guard，故 admission/provider=0；下一项是唯一 zero-call shared implementation package，不允许先调用模型发现这些已知项目缺口。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。
@@ -279,7 +281,7 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 14. [x] 保留 `013-S3-01`–`013-S3-05` 与 R3 为 minimum engineering/control anchor：结构、exact-once、9 natural Claim、3 Lead、3 Workpaper、L1/L2 成立；0 thesis-support、0 natural counterevidence 与 29 个未研究 Cell 使其不构成产品级研究证明。
 15. [x] 完成 DELL/MU/NVDA 三份 Codex-authored Gold candidate 与交叉订正；明确它们是混合研究候选，不是当前产品或完整 MCP 已独立产出的报告。
 16. [x] 完成 `013-S2-04`：三案共享 Benchmark Evidence Pack、blind input 和 evaluator-only hidden Gold scoring objects 已按 digest 冻结，公平性、泄漏、跨案污染、日期和数值重算检查通过。
-17. [ ] 执行 `013-S2-05/06` Experiment A：`013-S2-05` 三案 raw 已全部完成且均为质量失败，v1.4 统一结果 DELL=`3/1/23`、MU=`8/2/14`、NVDA=`4/1/27`；三案 deterministic supervision boundary 已物化。`013-S2-06` 仍待一次统一 supervisor authority/correction/corrected-candidate 与最终能力边界，formal score、业务晋升和 release 均未成立。
+17. [ ] 执行 `013-S2-05/06` Experiment A：`013-S2-05` 三案 raw 已全部完成且均为质量失败，v1.4 统一结果 DELL=`3/1/23`、MU=`8/2/14`、NVDA=`4/1/27`；三案 deterministic supervision boundary 已物化。统一 Supervisor authority decision 已完成，但四项 shared implementation blocker 使 admission 保持 0；`013-S2-06` 仍待唯一 zero-call implementation、fresh proof、后续 admission/correction/corrected-candidate 与最终能力边界，formal score、业务晋升和 release 均未成立。
 18. [ ] 执行 `013-S1-06/07/08`：修复 MCP operational truth、当前外部来源 runtime 和 Agentic Search 质量门；不调用 DeepSeek 来发现确定性工具缺陷。
 19. [ ] 执行 `013-S3-06/07`：动态 Lead loop 与 EvidenceRequest/targeted repair 闭环。
 20. [ ] 执行 `013-S3-08/09` Experiment B：三案端到端 DeepSeek Agentic Search/Research、隐藏 Gold 八维对照和 qualified-human 内容验收。

@@ -1,7 +1,7 @@
 # TECH_00：Agentic Research 技术文档总索引
 
 日期：2026-07-09
-最近修改：2026-07-17
+最近修改：2026-08-07
 
 状态：技术文档拆分索引。本文只整理 PRD、P36/P37 记录和当前代码资产之间的工程边界，不表示 runtime 修复完成，不表示已运行 paid LLM、true full-chain、MCP server、source ingestion 或 parser promotion。
 
@@ -46,10 +46,12 @@ InstitutionalResearchCase
   -> ToolInvocation / Observation
   -> EvidenceCandidate / RejectedCandidate / PromotionDecision / EvidenceRecordVersion
   -> NumericFact / MetricDefinitionVersion / ModelInputSnapshot / NumericProgramRun
+  -> NumericFactView / ProtectedNarrativeDraft
   -> CellEvidencePack
   -> DomainCellJudgmentPack / JudgmentVersion / JudgmentDelta / WhatWouldChangeProgram
   -> AdjudicatedDecisionCell / CellDependencyEdge
   -> GapRecord / RepairTicket / RepairAttempt
+  -> CorrectionObjective / CorrectionClosureReceipt
   -> WorkpaperEventLedger / WorkpaperPack
   -> DecisionSurfaceAssembly / LeadReviewDecision
   -> DecisionSurfacePack
@@ -161,6 +163,7 @@ Long-running monitoring:
 | Futures / options / other derivatives | `TECH_03`, `TECH_04`, `TECH_05`, 现有 R53/S9 | TECH_03 保存 DerivativeInstrumentMaster / ObservationPIT；TECH_04 计算 curve/IV/OI/COT 等 bounded metrics；TECH_05 按 sector/cell 投影 expectation/risk/regime；R53/S9 验证 factor，不默认全任务注入 |
 | External news / public statements / policy events / social discourse | `TECH_03`, `TECH_02`, `TECH_05`, `TECH_09`, `TECH_10` | TECH_03 建模 ExternalSignalCandidate / SocialSourceSnapshot；TECH_02 取源、账号归因和 gate；TECH_05 只投影 bounded catalyst / risk / policy / narrative / user-feedback signal；TECH_09 审冲突与 provenance；TECH_10 评估舆情采样和失真 |
 | DerivedMetricRegistry / NumericProgramTrace | `TECH_04`, `TECH_09` | TECH_04 注册公式、输入资格、as-of/period/scope/lag policy 并生成 trace；TECH_09 在 artifact / Workbench / verifier 中消费 |
+| 模型研究判断 / material fact 写入 / 受保护叙事 | `TECH_04`, `TECH_05`, `TECH_06`, `TECH_08`, `TECH_09`, `TECH_10` | TECH_04 拥有 NumericFactView 与 material span；TECH_05 拥有研究判断；TECH_06 持久化 correction attempt；TECH_08 单源编译 agent 合同；TECH_09 渲染和 artifact verification；TECH_10 评 closure、paired quality 与 anti-template。跨域合同见文档 38，不创建新 TECH owner。 |
 | Domain specialists 减少人格化、增加 operator | `TECH_05`, `TECH_08` | TECH_05 定义 domain evidence operator；TECH_08 定义 subagent-as-tool 调用 |
 | Structured agent coordination / parallel version invalidation | `TECH_08`, `TECH_06`, `TECH_07`, `TECH_10` | TECH_08 定义 causal coordination envelope、input dependency manifest、pack change set 和选择性失效语义；TECH_06 执行版本决策；TECH_07 重编译 context；TECH_10 评估误停、漏停和 rebase drift |
 | Active What-Would-Change / counterfactual falsification | `TECH_01`, `TECH_05`, `TECH_06`, `TECH_09`, `TECH_10` | TECH_05 定义决定性变量、反事实测试和领域判断；TECH_01 控制 re-adjudication；TECH_06 持久化 attempts；TECH_09 独立展示；TECH_10 评估证伪质量 |

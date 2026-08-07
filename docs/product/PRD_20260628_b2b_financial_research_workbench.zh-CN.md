@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-07 | 补齐模型研究判断与金融事实写入权的产品边界：模型必须看见并分析 exact facts、选择 evidence/numeric refs、生成 thesis/机制/反方；Harness 只拥有 material number/date/entity/citation 的确定性渲染与晋升，不得代写研究。新增受保护混合叙事、correction closure 和 anti-template 内容质量门禁。 |
 | 2026-07-19 | 完成 FIN 0.1 PRD/TECH/Point 阶段复盘：当前已形成 10-cell P36 本地确定性研究纵向和可运行 Workbench Next，但 DeepSeek 实际调用、exact Human Senior Review、RG1/RG3/RG4 和 P07.5 release 尚未通过。当前功能状态见 `FIN_0_1_STAGE_REVIEW_20260719.zh-CN.md`，不得再以 2026-07-17 的 implementation-not-started scope freeze 代表当前进度。 |
 | 2026-07-17 | 纠正 `REL-PROD-001` 产品范围：P36 六条产业链改为 Anchor Case mandatory cell families；FIN 0.1 正式消费 B0+B2+B3 bounded subset+B7，必须覆盖 Dashboard/Task Center、动态 DecisionSurface、durable execution、Evidence/Numeric、Workpaper/Repair、LeadReview、Deliverable/Human Review、provenance 和 bounded same-Case explanation。 |
 | 2026-07-17 | 冻结产品发布运行模型：以纵向研究结果切片而非 TECH/Point 作为产品版本单位；采用四周产品列车、Foundation/Internal Alpha/Beta/Pilot/Production 通道和 L/R/Capability/Production Readiness 四轴状态；固定下一产品版本为 `REL-PROD-001 / FIN 0.1 Internal Alpha`。 |
@@ -1448,6 +1449,25 @@ Trace corpus
 ```
 
 这允许系统从失败任务中沉淀规则、skills、fixtures、source policies 和 eval cases，但任何会改变 runtime behavior 的 patch 都必须经过 deterministic test 和人工确认。
+
+### 7.9 模型研究判断权与金融事实写入权分离（2026-08-07 追加）
+
+FIN 不采用“让模型自由改写所有数字”，也不采用“模型只选标签、由本地模板代写研报”两个极端。正式产品原则是：
+
+> 模型可以看见、理解、比较、选择和引用受治理的精确事实；material fact 的最终数字、单位、期间、实体身份、引用和 lineage 由确定性 Harness 写入并验证。Harness 是 truth compiler，不是 report author。
+
+产品必须区分 `visibility`、`reasoning`、`citation selection`、`freeform authoring` 和 `render/promotion` 五种权限：
+
+- 模型输入必须包含语义可读的 exact value、unit、scope、period、source 和 authority，不能通过隐藏数字换取安全；
+- 模型负责证据重要性、机制、thesis、counter-thesis、冲突、不确定性、WWC 和叙事组织；
+- 模型使用 Evidence/Numeric/Gap ref 引用事实，material numeric/date/entity/citation span 通过受保护引用进入草稿；
+- Harness 只替换受保护 span、执行允许的换算/舍入、绑定 citation 和验证 final artifact，不得补写因果机制或完整结论；
+- analyst scenario/threshold 与公司披露事实分轨，方向性措辞不得未经依据变成看似精确的百分比；
+- repair 默认最小 typed patch，每个 correction 必须产生 `closed`、`typed_unresolved` 或 `rejected_new_violation` 的 closure receipt；整节点重算必须重新检查所有 material gates。
+
+这一设计必须同时通过两组门禁：事实侧要求 material ref coverage 100%、placeholder residue 0、未绑定 material span 0；研究侧继续执行 evidence-to-claim bridge、机制、反方、跨证据综合、WWC、内容密度和可读性验收。`L1=0` 但成品机械、空泛或由本地模板代写，不构成 R2。
+
+跨 TECH 实施合同见 `docs/architecture/agent_graph_vnext/38_model_reasoning_numeric_authority_and_protected_narrative_contract.zh-CN.md`。
 
 ## 8. MVP 切片
 

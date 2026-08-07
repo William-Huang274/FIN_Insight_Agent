@@ -283,6 +283,27 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 5. 三案是正式 anchor；stale/future source、冲突证据、证据缺失、quarter/annual、跨案污染、20-F/多币种/PDF redirect 作为 deterministic/adversarial fixtures。新增行业或全新正式案例只在不改变 FIN 0.1.3 范围的有界 transfer 集中执行。
 6. 任一失败 attempt 不创建 FIN 0.1.4；只有 FIN 0.1.3 完整结束或产品范围/兼容性发生实质变化时才讨论新版本。
 
+### 7A.5 2026-08-07 数值权威、纠错闭环与研究质量重排
+
+DELL Supervisor R2 说明旧计划还缺一条统一原则：模型需要看到并使用精确事实完成分析，但不能在全节点自由重写中重新制造 material number；本地 Runtime 又不能因此接管 thesis 和研报叙事。历史文档对此有 alias、judgment atom、local renderer 等局部规定，但没有统一编译到 current correction request、closure validator、artifact renderer 和内容质量门。
+
+本次只修正 FIN 0.1.3 内部执行顺序，不创建 FIN 0.1.4，也不重开已关闭的 S0/S1：
+
+| 顺序 | Owner stage | 工作包 | 完成标准 | 明确不做 |
+| --- | --- | --- | --- | --- |
+| `S2-06A` | S2 | 冻结模型可见/分析/引用/写作与本地渲染/晋升五权边界；登记 PRD、合同和阶段计划 | 本文、PRD 7.9、跨域合同 38 与 Project OS 一致 | 不修改 Runtime、不调用模型、不宣称 RC-P36-148 关闭 |
+| `S2-06B` | S2 | 一个共享零调用合同包：`NumericFactView`、`ProtectedNarrativeDraft`、完整 `CorrectionObjective`、逐项 `CorrectionClosureReceipt`；Prompt/Schema/Validator/fake/renderer 单源编译 | corrected node 看见 finding code/path/reason/required resolution/closure rule；默认最小 patch；未关闭项 fail closed | 不逐字段 live patch，不让本地代写 thesis/机制/完整段落 |
+| `S2-06C` | S2 | deterministic proof | 回放 DELL U3/U4；DELL/MU/NVDA full-fake；覆盖空反证、unknown alias、未授权数字、period/unit、placeholder residue、整节点重写 reopen 等 mutation | 不用 paid call 发现确定性问题 |
+| `S2-06D` | S2 | 合同变化后的最小自然 canary | 只对实际变化的合同 family 做一个节点级自然输出；证明 ref/closure 合同可遵循 | 不直接恢复三案 campaign，不以 canary 代替产品报告 |
+| `S2-06E` | S2 | project-level formal proof decision | 基于零调用 proof＋canary 决定是否值得再做一次 DELL supervised proof；需新的 authority | 不自动 R3，不自动启动 MU/NVDA |
+| `S1-06/07/08` | S1 | MCP、current external source runtime、Agentic Search 质量 | 工具可靠性、currentness、source diversity、accepted/rejected/gap 和 recoverability 达门 | 不把工具缺陷算到模型 |
+| `S3-06/07` | S3 | 动态 Lead 与 targeted repair 消费新 correction contract | evidence gap 能触发真实查询/修复/typed stop；每个 correction 可关闭和追溯 | Writer 不补源，Harness 不代写研究 |
+| `S3-08/09` | S3 | 三案端到端研究与正式内容验收 | L1/L2、八维质量、paired gain、qualified-human acceptance 全过；成品无模板化退化 | 不以完整调用链或 placeholder 全清替代研究质量 |
+| `S4-06` | S4 | Workbench dogfood | 展示 fact ref、source、analyst threshold、correction diff/closure 和 final artifact；用户可审 | 不回收 S1/S2/S3 根因 |
+| `S5-01` | S5 | release gate | 同时证明 truth safety、研究质量、anti-template、成本、重放、rollback 与 portability | 不在 gate 内现场补合同或降门槛 |
+
+`S2-06A` 只是文档与范围收敛。RC-P36-148 只有在 `S2-06B/C` 被 runtime 消费并独立证明后才可记 engineering repaired；只有后续 paid artifact 和 qualified-human 内容验收通过，才能说明这套混合权威没有降低报告质量。
+
 ## 8. 下一步
 
 1. [x] 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。
@@ -301,7 +322,7 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 14. [x] 保留 `013-S3-01`–`013-S3-05` 与 R3 为 minimum engineering/control anchor：结构、exact-once、9 natural Claim、3 Lead、3 Workpaper、L1/L2 成立；0 thesis-support、0 natural counterevidence 与 29 个未研究 Cell 使其不构成产品级研究证明。
 15. [x] 完成 DELL/MU/NVDA 三份 Codex-authored Gold candidate 与交叉订正；明确它们是混合研究候选，不是当前产品或完整 MCP 已独立产出的报告。
 16. [x] 完成 `013-S2-04`：三案共享 Benchmark Evidence Pack、blind input 和 evaluator-only hidden Gold scoring objects 已按 digest 冻结，公平性、泄漏、跨案污染、日期和数值重算检查通过。
-17. [ ] 执行 `013-S2-05/06` Experiment A：`013-S2-05` 三案 raw 已全部完成且均为质量失败，v1.4 统一结果 DELL=`3/1/23`、MU=`8/2/14`、NVDA=`4/1/27`；三案 deterministic supervision boundary、统一 Supervisor authority、shared zero-call implementation、clean-commit independent fresh proof 和最终 admission authority decision 已完成。DELL Supervisor R2 已在 3 calls 后暴露 RC-P36-148：correction objective 语义未传入 corrected node、closure 未验证，且整节点重写重新引入 numeric L1；R2 immutable failed，campaign 按共享缺陷停止，MU/NVDA 未启动。当前先做唯一 zero-call correction semantics/closure/numeric ownership 结构处置；formal score、业务晋升和 release 均未成立。
+17. [ ] 执行 `013-S2-05/06` Experiment A：`013-S2-05` 三案 raw 已全部完成且均为质量失败，v1.4 统一结果 DELL=`3/1/23`、MU=`8/2/14`、NVDA=`4/1/27`；DELL Supervisor R2 在 3 calls 后暴露 RC-P36-148 并停止 campaign。`S2-06A` 已把“模型可见并分析 exact facts、material span 本地确定性写入、Harness 不代写研究、correction 逐项 closure、anti-template 质量门”补入 PRD/架构/计划，但当前仅为 documented/contract_draft。下一步严格执行 `S2-06B/C` 单一零调用实现与 proof，再做 `S2-06D/E` 最小 canary 和 formal proof decision；不得自动 R3/MU/NVDA。formal score、业务晋升和 release 均未成立。
 18. [ ] 执行 `013-S1-06/07/08`：修复 MCP operational truth、当前外部来源 runtime 和 Agentic Search 质量门；不调用 DeepSeek 来发现确定性工具缺陷。
 19. [ ] 执行 `013-S3-06/07`：动态 Lead loop 与 EvidenceRequest/targeted repair 闭环。
 20. [ ] 执行 `013-S3-08/09` Experiment B：三案端到端 DeepSeek Agentic Search/Research、隐藏 Gold 八维对照和 qualified-human 内容验收。

@@ -43,6 +43,8 @@
 - [34 R59 Backend / Frontend Workbench Hardening 技术计划](34_r59_backend_frontend_workbench_hardening_technical_plan.zh-CN.md)：把当前 Java Research Gateway、Python Workbench backend、React/Vite Workbench、runtime bridge 和 run audit 复盘为企业级前后端产品化计划；定义 ResearchTask / TaskRun / Workpaper / Evidence / Review / Deliverable / Artifact / Incident 后端对象、API surface、Evidence Workbench / Workpaper Builder / Review Queue / Deliverable Studio / Admin Ops 前端信息架构、容灾容错、外部参考吸收台账和 sandbox / approval 工具隔离策略。
 - [35 R60 Eval / Observability / Incident / Fallback 技术计划](35_r60_eval_observability_incident_fallback_technical_plan.zh-CN.md)：把 eval 从“最终答案打分”升级为质量工程层；分离 Agent / data / full-chain eval 和需求 / 研发 / 测开验收，定义 EvalCase、EvalRun、TraceSpan、ModelCallMetric、TokenCostLedger、DemandAcceptanceRecord、QAExecutionPlan、FailureEvent、ReleaseGateResult 和 ReleaseReadinessReport，并把 token / cost / latency / quality 统一纳入发布门控。
 - [36 R53-R60 统一需求单与单 Agent 执行顺序计划](36_r53_r60_unified_demand_backlog_execution_plan.zh-CN.md)：把 PRD 和 R53-R60 框架文档转成单 agent 可执行 release slices；明确 R0-R49 / R50-R52 / R53-R60 的范围关系，把早期 R 系列作为 baseline dependency 或 known gap 引入 S0；定义 S0-S10 执行顺序、U0-U10 需求单、企业级 L0-L4 pass level、四类 acceptance 和第一批 S0/S1 任务，避免后续按 R 文档编号机械串行或按“能跑/有输出”误判通过。
+- [37 Agentic Research Harness 代码库审计与 TECH 拆分](37_agentic_research_harness_codebase_audit_and_technical_doc_split.zh-CN.md)：将 PRD、历史设计、runtime 资产和 stable object graph 对齐到 TECH_00-11，明确 source of truth、owner 和实现成熟度。
+- [38 模型研究判断、数值权威与受保护叙事合同](38_model_reasoning_numeric_authority_and_protected_narrative_contract.zh-CN.md)：区分模型的事实可见/分析/引用/写作权限与 Harness 的确定性渲染/晋升权限，定义受保护叙事、correction closure、anti-template 质量门和 TECH_04/05/06/08/09/10 owner 映射；当前仅为 contract draft。
 
 ## 总原则
 

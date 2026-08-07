@@ -853,3 +853,19 @@ P3 若选择修复，候选合同至少必须同时覆盖以下不变量，但�
 - 运营 route 缺口仍单列：Dell/Micron IR landing failure、`external_site_search` unavailable 和 current market snapshot absent 不能因修复 scheduler/cache 自动视为解决。
 
 R3 没有调用 DeepSeek，也没有进入 ranking，因此本失败不能进入 model capability ledger 或 reranker 质量归因。R3 immutable、no-R4 已生效；唯一下一 scope 为零调用 `S1_08_P3_POST_R3_OWNED_SCHEDULER_CACHE_AND_PROVIDER_PRODUCT_SCOPE_DISPOSITION_DECISION`。P3 必须同时比较 bounded owned repair、运营 Provider／动态页／licensed source 与产品 source claim；任何新 live 都需要另行改变 stop-rule 或产品范围，不能由本技术文档自动授权。
+
+### 20.12 P3 repair-first 决策与 v4 protected-fetch/cache 合同（2026-08-08）
+
+P3 选择先修项目自有不变量，再决定 Provider 与产品来源范围。理由不是默认公开源足够，而是当前零正文路径会污染所有外部能力判断：新 Provider 的 locator 仍会进入相同 scheduler/cache；此时采购、接入或缩减 source claim 都不能证明真实 residual ceiling。
+
+唯一获准 scope 为 `S1_08_P3A_PROTECTED_DOCUMENT_FETCH_BUDGET_AND_ATTEMPT_LOCAL_CACHE_ZERO_CALL_IMPLEMENTATION_AND_PROOF`。它必须以 successor candidate execution policy v4 表达，不得改写 v3 或 R3：
+
+1. 全局网络 ceiling 仍为 `16`。discovery/index 与 document fetch 可使用不同相位／保留语义，但每个真实请求都计入同一全局账本；
+2. locator 通过质量门且全局仍有容量时，scheduler 必须给正文抓取一个受保护机会；若全局确已耗尽，必须记录 `document_fetch_not_attempted_due_global_ceiling`，不能伪装成 source exhaustion；
+3. cancel-before-request、attempt reservation stop、local timeout-before-request 或 global stop 不进入跨 attempt document cache；它们只能是 attempt-local control receipt；
+4. cache/receipt 明确区分 captured remote success、captured remote transport failure、canonical parser result 和 attempt-local stop；cache hit 必须携带 originating attempt 与 capture lineage；
+5. proof 使用 R3 immutable request/response topology 驱动真实 adapter 路径，覆盖 landing→feed/sitemap/structured route→document、locator/allowance permutation 和 cross-slot negative-cache poisoning；一跳 fake 只能作为辅助，不能承担自然拓扑证明；
+6. DELL/MU/NVDA full-fake 与 identity/currentness/relationship/numeric/lineage mutation 同包通过；R3 artifacts 必须 byte-stable；
+7. P3A 的 network/model/provider/admission/live 均为 `0`，不得在实现包内购买 Provider、放宽门禁、增加预算或执行 replacement live。
+
+若固定 16 次上限内不能证明 protected fetch 与 attempt-local cache 两个不变量，P3A 立即停止并回到 Provider／Internal Alpha source-claim 决策。若 P3A 通过，也只建立 deterministic engineering proof；另一个 owner decision 必须复核 residual operational gaps、产品来源承诺和是否明确修改 no-R4，才能命名、签发或执行任何新 DELL Attempt。

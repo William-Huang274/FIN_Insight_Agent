@@ -1,5 +1,6 @@
 # Worklog
 
+- [724 — FIN 0.1.3 S1-08 P3 自有修复、Provider 与产品来源范围处置](product_strategy/724_fin_0_1_3_s1_08_p3_owned_repair_provider_and_product_scope_disposition.md)
 - [723 — FIN 0.1.3 S1-08 DELL R3 终态、来源质量失败与 P3 交接](product_strategy/723_fin_0_1_3_s1_08_dell_r3_terminal_source_quality_failure_and_p3_handoff.md)
 
 - [668 — FIN 0.1.3 S2-05 DELL R1 quarantined collect-all readiness](product_strategy/668_fin_0_1_3_s2_05_dell_r1_quarantined_collect_all_readiness.md)

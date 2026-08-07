@@ -1,0 +1,140 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_p3_post_r3_owned_scheduler_cache_and_provider_product_scope_disposition_decision_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08-P3",
+  "decision_scope": "S1_08_P3_POST_R3_OWNED_SCHEDULER_CACHE_AND_PROVIDER_PRODUCT_SCOPE_DISPOSITION_DECISION",
+  "decision_status": "approved_owned_zero_call_repair_and_proof_first_provider_and_product_scope_deferred_no_live",
+  "decision_source_commit": "7dd3e50900030aea0e743da8ebd82fd40b06586a",
+  "governing_issue_id": "RC-P36-157-fin-0-1-3-s1-08-operational-provider-and-candidate-coverage-insufficient",
+  "project_os_preflight": {
+    "status": "pass",
+    "run_scope": "S1_08_P3_POST_R3_OWNED_SCHEDULER_CACHE_AND_PROVIDER_PRODUCT_SCOPE_DISPOSITION_DECISION",
+    "open_full_chain_blocker_count": 0,
+    "contract_error_count": 0,
+    "network_model_provider_retry_admission_live_calls": [0, 0, 0, 0, 0, 0]
+  },
+  "immutable_R3_basis": {
+    "result_ref": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_result_v1_0.json",
+    "result_sha256": "731885330176f1d3a428ed3cdf62315e34c345f457ba39b749d60802d9c6b1d5",
+    "quality_evaluation_ref": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_source_quality_evaluation_v1_0.json",
+    "quality_evaluation_file_sha256": "b8af0d6e6a573ce2365d544972bfb74bbdf6ba8927c4a29f1d33cae8a6b6c5f2",
+    "quality_evaluation_digest": "d386523815aea5b5fe9fd83294dfd8c203ca7c841b5bb2a50278e15b17bfee07",
+    "source_commit": "a5b5038c8835a1c56e5c4d3f2d3ca98b0e624e85",
+    "terminal": "complete/dell_current_search_r3_complete_with_typed_gaps",
+    "observed": {
+      "network_model_provider_retry_admission_live_calls": [15, 0, 0, 0, 1, 1],
+      "query_attempts": 13,
+      "qualified_locator_receipts": 229,
+      "document_request_captures": 0,
+      "accepted_candidates": 0,
+      "selected_candidates": 0,
+      "unique_sources": 0,
+      "typed_gaps": 5,
+      "qualified_document_yield": 0.0,
+      "target_in_pool": 0.0,
+      "ranking_admitted": false
+    },
+    "immutability_rule": "R3 result, captures, terminal, evaluation and consumed admission are historical evidence and must not be rewritten, replayed or relabeled as a new attempt."
+  },
+  "audited_current_runtime": [
+    {
+      "path": "src/sec_agent/s1_08_candidate_generation_runtime.py",
+      "sha256": "441718f5818a4eace201af19cb7a10edbb2a373ad4603376337f43aecda15f42"
+    },
+    {
+      "path": "src/sec_agent/s1_08_official_discovery_adapter.py",
+      "sha256": "aa55bc8f60591fab12d20fc271e705908afb91df093a5a56d529f490774fc294"
+    }
+  ],
+  "decision_evidence": {
+    "primary_owned_defect": [
+      "Landing discovery, structured endpoint discovery and document fetch share one per-attempt network allowance, so a natural multi-route attempt can exhaust its allowance after qualifying locators but before fetching a document body.",
+      "Pre-request local budget stops return response=None and are stored in the cross-attempt document cache, so a later slot with its own allowance can inherit a failure that never reached the network.",
+      "The previous deterministic proof bypassed this natural route-to-document topology and did not mutate cross-slot negative-cache poisoning."
+    ],
+    "separate_operational_gaps": [
+      "Dell and Micron issuer-IR landing transport was not reliable in R3.",
+      "external_site_search is declared but not operationally configured.",
+      "A governed current market snapshot was unavailable."
+    ],
+    "causal_boundary": "Operational gaps may still limit final recall, but they cannot explain 229 qualified locator receipts followed by zero document requests. Provider purchase or source-claim reduction cannot be evaluated honestly until the owned path can fetch at least one qualified body under the fixed budget."
+  },
+  "options": [
+    {
+      "option": "owned_structural_repair_and_zero_call_proof_first",
+      "decision": "selected",
+      "reason": "It removes a proven project defect without spending network or model calls and creates a valid baseline for the later provider/product decision."
+    },
+    {
+      "option": "acquire_or_integrate_a_new_provider_before_owned_repair",
+      "decision": "deferred",
+      "reason": "A new provider would still enter the same broken document-fetch and cache path, so present evidence cannot establish necessity, sufficiency or value for money."
+    },
+    {
+      "option": "shrink_FIN_0_1_Internal_Alpha_source_claim_now",
+      "decision": "deferred",
+      "reason": "Reducing the product promise now would conceal a project-owned false gap rather than establish the true public-source ceiling."
+    },
+    {
+      "option": "increase_budget_add_retry_relax_Evidence_Gate_or_run_R4",
+      "decision": "rejected",
+      "reason": "These actions weaken the frozen stop rule or spend around a deterministic defect without establishing source quality."
+    }
+  ],
+  "selected_zero_call_package": {
+    "scope_id": "S1_08_P3A_PROTECTED_DOCUMENT_FETCH_BUDGET_AND_ATTEMPT_LOCAL_CACHE_ZERO_CALL_IMPLEMENTATION_AND_PROOF",
+    "product_version": "FIN_0_1_3",
+    "owner_stage": "S1-08",
+    "one_integrated_package": true,
+    "required_contract_successor": "fin_0_1_3.S1_08.current_source_catalog_relationship_budget_candidate_generation:v4",
+    "requirements": [
+      "Retain the global 16-network-call ceiling and reserve a protected document-fetch opportunity once a locator passes the qualified-locator gate.",
+      "Separate discovery/index requests from the document-fetch opportunity in scheduling semantics without hiding either class from the same global budget.",
+      "Never write a pre-request local cancellation, global budget stop or slot-attempt reservation stop into a cross-attempt document cache.",
+      "Represent captured remote success, captured remote failure, parser outcome and attempt-local stop as distinct typed cache or lineage states.",
+      "Replay the immutable R3 request/response topology and exercise the real adapter path instead of returning candidates directly from a fake scheduler.",
+      "Cover landing-to-feed/sitemap/structured-route-to-document flow, locator permutation, allowance permutation and cross-slot cache-poison mutations.",
+      "Run DELL, MU and NVDA full-fake regression with numeric, identity, currentness, relationship and lineage mutations.",
+      "Preserve R3 artifacts byte-for-byte and perform zero network, model, provider, admission or live calls."
+    ],
+    "acceptance": {
+      "qualified_locator_with_remaining_global_capacity_receives_document_fetch_opportunity": true,
+      "pre_request_local_stop_cross_attempt_cache_entries": 0,
+      "captured_remote_outcome_lineage_is_typed": true,
+      "R3_natural_topology_replay_pass": true,
+      "cross_slot_negative_cache_poison_mutation_pass": true,
+      "DELL_MU_NVDA_full_fake_and_mutation_pass": true,
+      "global_network_call_ceiling_unchanged": 16,
+      "quality_gates_unchanged": true,
+      "historical_R3_artifact_drift": 0,
+      "external_calls": 0
+    },
+    "proof_failure_rule": "If the protected-fetch and attempt-local-cache invariants cannot be proven under the fixed 16-call ceiling, stop S1-08 implementation and return to a provider acquisition or product source-claim decision. Do not execute live."
+  },
+  "provider_and_product_scope_disposition": {
+    "provider_acquisition": "deferred_until_P3A_proof_establishes_residual_operational_route_ceiling",
+    "controlled_dynamic_page_or_site_search": "deferred_until_P3A_proof_then_must_receive_provider_specific_capture_cost_failure_and_quality_contract",
+    "licensed_source": "deferred_no_purchase_or_integration_authorized",
+    "Internal_Alpha_source_claim": "retained_as_target_not_accepted_capability_and_not_yet_reduced",
+    "automatic_new_live_after_P3A": false,
+    "required_later_decision": "A separate owner decision must evaluate P3A proof, residual provider gaps, product source claim and whether the no-R4 stop rule is amended before any new DELL attempt can be named, admitted or executed."
+  },
+  "explicitly_not_authorized": [
+    "R3 replay or mutation",
+    "R4 or any additional DELL live attempt",
+    "network access",
+    "model or provider calls",
+    "new admission issuance",
+    "provider purchase or credential integration",
+    "budget increase, retry or Evidence Gate relaxation",
+    "ranking, BGE, Milvus or selected-pack evaluation",
+    "MU or NVDA live transfer",
+    "DeepSeek Experiment B or S3 product research",
+    "S4 Workbench product acceptance",
+    "S5 release evaluation"
+  ],
+  "product_capability_delta": "No Agentic Search or research-product capability was added. P3 only selects the next bounded repair/proof and prevents premature provider purchase or product-scope reduction.",
+  "decision_boundary": "This decision authorizes one zero-call P3A implementation-and-proof package only. It does not repair the Runtime, prove candidate quality, close S1-08, amend no-R4, purchase a provider, shrink the product claim or authorize a new live attempt.",
+  "current_next": "S1_08_P3A_PROTECTED_DOCUMENT_FETCH_BUDGET_AND_ATTEMPT_LOCAL_CACHE_ZERO_CALL_IMPLEMENTATION_AND_PROOF",
+  "decision_digest": "d3ba29f87621b34b1339e25fe94982aea01a7104c0f97b72b9d1f6421cfc8f16"
+}

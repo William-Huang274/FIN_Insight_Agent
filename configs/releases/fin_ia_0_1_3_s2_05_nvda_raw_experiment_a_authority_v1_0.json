@@ -30,7 +30,7 @@
     },
     "issuer": {
       "ref": "scripts/releases/issue_fin_ia_0_1_3_s2_05_nvda_raw_admission.py",
-      "sha256": "2b842247bc51e6bd15c1e075e9a42651d1da5be7bc4c90c1c53d214d9bd70359"
+      "sha256": "c65f257e0aae680c5dff03115bd5be61e23e64220fa033754ff03c17230da15b"
     },
     "runtime_policy": {
       "ref": "configs/runtime/fin_ia_0_1_3_s2_05_experiment_a_runtime_policy_v1_0.json",
@@ -117,5 +117,5 @@
     "automatic_rerun": false
   },
   "next_after_execution": "Preserve NVDA terminal and raw captures, evaluate with v1.3, compile a separate NVDA S2-06 boundary, then stop before any supervisor model correction or business promotion.",
-  "decision_digest": "88bfd1f91ae69acbcdea0af70fd4ce68d5dd704750f13dca5be8701964a8ff50"
+  "decision_digest": "bff21f1d678f72b946d55eacd7c1e17148bab9b9ccada6f38d52c29f4b135ab9"
 }

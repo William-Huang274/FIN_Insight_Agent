@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 
@@ -10,6 +11,8 @@ from sec_agent.retrieval_evidence_usefulness_program import canonical_digest
 ROOT = Path(__file__).resolve().parents[2]
 DECISION = ROOT / "configs/releases/fin_ia_0_1_3_s2_05_nvda_raw_experiment_a_authority_v1_0.json"
 ISSUER = ROOT / "scripts/releases/issue_fin_ia_0_1_3_s2_05_nvda_raw_admission.py"
+DELL_RESULT = ROOT / "configs/releases/fin_ia_0_1_3_s2_05_dell_layered_replacement_exact_live_result_v1_0.json"
+MU_RESULT = ROOT / "configs/releases/fin_ia_0_1_3_s2_05_mu_raw_exact_live_and_s2_06_boundary_result_v1_0.json"
 
 
 def _sha(path: Path) -> str:
@@ -63,3 +66,15 @@ def test_nvda_issuer_targets_only_nvda_and_never_reads_correction_runtime() -> N
     assert "fin013_s2_06/MU" not in source
     assert "hidden_gold_scoring_objects" not in source
     assert "DELL_or_MU_correction_raw_or_hidden_gold_read" in source
+
+
+def test_nvda_issuer_accepts_distinct_dell_and_mu_historical_result_shapes() -> None:
+    spec = importlib.util.spec_from_file_location("nvda_raw_issuer", ISSUER)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module._validate_decision(
+        json.loads(DECISION.read_text(encoding="utf-8")),
+        json.loads(DELL_RESULT.read_text(encoding="utf-8")),
+        json.loads(MU_RESULT.read_text(encoding="utf-8")),
+    )

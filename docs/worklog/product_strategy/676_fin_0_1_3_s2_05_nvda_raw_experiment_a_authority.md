@@ -20,12 +20,14 @@
 ## 零调用审计
 
 - 仓库在 `d4262a1c...5c25` clean/synced；
-- authority decision digest=`88bfd1f9...ff50`；
+- authority decision digest=`bff21f1d...5ab9`；
 - Project OS `separate_NVDA_raw_admission_authority_decision` preflight=`pass / open blockers 0`；
 - production runner preflight=`zero_call_layered_preflight_ready_admission_not_issued`；
 - credential 只确认 presence=true，未读取或保存值；
-- focused authority/MU result/S2-06=`17 passed`；S2-05/S2-06 broad=`84 passed / 3,201 deselected`；
+- focused authority/MU result/S2-06=`18 passed`；S2-05/S2-06 broad=`85 passed / 3,201 deselected`；
 - admission/model/provider/network/supervisor/business promotion=`0/0/0/0/0/0`。
+
+首次提交后的 issuer dry-run 在 Provider 调用前 fail closed：历史 DELL result 使用 `layered_evaluation + decision`，而不是 MU result 才有的 `campaign_disposition`。这是 NVDA issuer 对历史证据形状的本地适配错误，不是模型、凭据或产品数据问题。修复后 issuer 同时核验 DELL raw complete/material/non-promotable、MU campaign 中的 DELL/MU quality-fail 和 NVDA not-started；authority digest 与 issuer hash 重新冻结，原提交不作为可消费 authority。
 
 ## 下一步
 

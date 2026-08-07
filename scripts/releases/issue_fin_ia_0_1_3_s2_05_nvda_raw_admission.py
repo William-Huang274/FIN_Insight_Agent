@@ -129,7 +129,8 @@ def _validate_decision(
     authority = decision.get("authority") or {}
     fairness = decision.get("fairness_guard") or {}
     storage = decision.get("admission_storage_boundary") or {}
-    dell_campaign = dell_result.get("campaign_disposition") or {}
+    dell_evaluation = dell_result.get("layered_evaluation") or {}
+    dell_decision = dell_result.get("decision") or {}
     mu_campaign = mu_result.get("campaign_disposition") or {}
     if (
         decision.get("decision_digest") != canonical_digest(body)
@@ -153,7 +154,12 @@ def _validate_decision(
         or fairness.get("DELL_or_MU_raw_output_visible") is not False
         or fairness.get("hidden_gold_visible") is not False
         or fairness.get("model_visible_contract_changed_after_DELL_and_MU_raw") is not False
-        or dell_campaign.get("DELL_raw_measurement") != "complete_quality_fail"
+        or dell_evaluation.get("raw_chain_complete") is not True
+        or dell_evaluation.get("material_failure") is not True
+        or dell_evaluation.get("business_promotable") is not False
+        or dell_decision.get("DELL_Experiment_A_pass") is not False
+        or dell_decision.get("automatic_rerun") is not False
+        or mu_campaign.get("DELL_raw_measurement") != "complete_quality_fail"
         or mu_campaign.get("MU_raw_measurement") != "complete_quality_fail"
         or mu_campaign.get("NVDA_raw_measurement") != "not_started"
         or mu_campaign.get("automatic_next_case") is not False

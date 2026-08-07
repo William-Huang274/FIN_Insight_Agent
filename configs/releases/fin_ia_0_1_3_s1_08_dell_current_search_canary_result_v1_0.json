@@ -1,0 +1,68 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_dell_current_search_canary_result_v1_0",
+  "status": "failed",
+  "git": {
+    "branch": "codex/layered-data-source-expansion",
+    "commit": "09387ebd6a57fd1567861d3a91704ea370ff0df2",
+    "clean_and_synced_at_start": true
+  },
+  "runtime_identity": {
+    "SEC_contact_configured": true,
+    "SEC_contact_plaintext_persisted": false,
+    "synthetic_dns_mode": true
+  },
+  "market_snapshot_boundary": {
+    "provided": false,
+    "reason": "no governed as-of-2026-08-06 DELL market snapshot was bound to this canary"
+  },
+  "result": {
+    "schema_version": "fin_ia_0_1_3_s1_08_dell_current_search_canary_terminal_v1_0",
+    "contract_ref": "fin_0_1_3.S1_08.DELL_current_search_canary:v1",
+    "candidate_contract_ref": "fin_0_1_3.S1_08.current_source_catalog_candidate_generation:v1",
+    "run_id": "fin013_s1_08_dell_search_run_8f988480b011d51b7172",
+    "run_digest": "8f988480b011d51b71720cbe78d0f119b8944ef7ddb17260858a5bf78afc5b4b",
+    "attempt_id": "fin013_s1_08_dell_search_attempt_2826a701a3eee8e173cc",
+    "admission_id": "fin013_s1_08_dell_search_admission_d1b8c229b7402e195f14",
+    "admission_digest": "d1b8c229b7402e195f145e38134c66200dea7cd3054a660510414fedced06e68",
+    "case_key": "DELL",
+    "status": "failed",
+    "phase": "candidate_generation",
+    "code": "unexpected_project_failure:RemoteDisconnected",
+    "candidate_result": null,
+    "observed_counts": {
+      "model_calls": 0,
+      "provider_calls": 0,
+      "retry_calls": 0,
+      "network_calls": 19
+    },
+    "completed_at": "2026-08-07T15:42:27Z",
+    "ranking_admitted": false,
+    "terminal_digest": "9a52845388f09a72e84bc12969bb90389964409481a360eee78c28cf9562d57b",
+    "terminal_object": {
+      "object_key": "fin-0.1.3/s1-08/dell-current-search-canary/a5/9c/a59c0518ca5a7114200e14b6b6c8f22fe5343cc69243e0cb543c4ad32d0c1232.json",
+      "digest": "a59c0518ca5a7114200e14b6b6c8f22fe5343cc69243e0cb543c4ad32d0c1232",
+      "byte_size": 986,
+      "media_type": "application/json",
+      "artifact_type": "dell_current_search_canary_terminal"
+    },
+    "shared_admission_receipt": {
+      "schema_version": "fin_ia_shared_admission_consumption_ledger_v1_0",
+      "admission_digest": "d1b8c229b7402e195f145e38134c66200dea7cd3054a660510414fedced06e68",
+      "admission_id": "fin013_s1_08_dell_search_admission_d1b8c229b7402e195f14",
+      "scope": "fin_0_1_3.S1_08.DELL_current_search_canary:v1",
+      "run_id": "fin013_s1_08_dell_search_run_8f988480b011d51b7172",
+      "attempt_id": "fin013_s1_08_dell_search_attempt_2826a701a3eee8e173cc",
+      "runtime_identity": "D:\\FIN_Insight_Agent\\.codex_runtime\\fin013_s1_08_dell_current_search_canary\\fin013_s1_08_dell_search_admission_d1b8c229b7402e195f14",
+      "state": "terminal",
+      "reserved_at": "2026-08-07T15:38:55Z",
+      "reservation_digest": "072a77748ed199496b2f3b3f04f08447ab14caf6725beb93dd6cf719160cd796",
+      "terminal_status": "failed",
+      "terminal_phase": "candidate_generation",
+      "terminal_code": "unexpected_project_failure:RemoteDisconnected",
+      "terminal_result_digest": "9a52845388f09a72e84bc12969bb90389964409481a360eee78c28cf9562d57b",
+      "finalized_at": "2026-08-07T15:42:27Z",
+      "receipt_digest": "db8f1d15c61f88326da6416403ac6b5d53c6b347b37f2d085c4d642103d99b3c"
+    }
+  },
+  "known_boundary": "This exact-once canary measures DELL live candidate generation and typed gaps. It does not admit ranking, reranking, MU/NVDA, DeepSeek, S3 research, report quality, human acceptance or release readiness."
+}

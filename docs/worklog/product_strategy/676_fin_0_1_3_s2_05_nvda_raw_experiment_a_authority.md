@@ -2,7 +2,9 @@
 
 日期：2026-08-07
 
-状态：`zero-call authority compiled / admission not issued / execution pending clean commit`
+状态：`closed / repaired authority committed / admission consumed once / superseded by worklog 677`
+
+> 后续：issuer 历史结果形状修复已提交，NVDA admission 随后 exact-once 消费；R1 terminal、numeric-scale 根因与处置见 `677_fin_0_1_3_s2_05_nvda_raw_r1_terminal_and_numeric_scale_repair.md`。下文保留签发前证据与修复过程。
 
 ## 目标
 

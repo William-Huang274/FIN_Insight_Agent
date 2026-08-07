@@ -1,0 +1,98 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_nvda_raw_r1_terminal_and_numeric_scale_disposition_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "NVDA_raw_r1_terminal_failed_project_numeric_scale_false_positive_repaired_zero_call_replacement_authority_pending",
+  "case_key": "NVDA",
+  "execution": {
+    "run_id": "fin013_s2_05_exp_a_nvda_adb4f30f05c48c5fb0c9",
+    "attempt_id": "fin013_s2_05_exp_a_nvda_adb4f30f05c48c5fb0c9::attempt_1",
+    "execution_commit": "32b03a8d943a077ca5f0c9bdd3ce56d016c23b57",
+    "authority_decision_digest": "bff21f1d678f72b946d55eacd7c1e17148bab9b9ccada6f38d52c29f4b135ab9",
+    "admission_digest": "1107bed0a7b5cb9ef135cc26de8890a82f901f198bc872645eac8820ff9ff3f0",
+    "admission_file_sha256": "a8b59e44e8c9cc8b07ee5bab0e16facbbe0026d30927616fdaf0c575dd39400a",
+    "terminal_status": "terminal_failed_no_retry",
+    "terminal_phase": "lead_planning",
+    "terminal_code": "experiment_a_unbound_numeric_surface",
+    "terminal_result_digest": "9b00bf1103be2f9b12428ae6d78c005292fa4aaa344212e8c83f4e00f77a4b0f",
+    "terminal_file_sha256": "1542d2528a5846192692e7f7dab4567df58a1892ccf8a8f794f1e8cface9d50e",
+    "reservation_digest": "7e771a9c824d6b920ac33c501f7c55be3970a32c170ffdf4e69bda8e212d6754",
+    "receipt_digest": "364816439b8b82d16a4b64268c9912d15b4952028a1e0d1ea79f61c11d297a1b",
+    "provider_calls": 1,
+    "captures": 1,
+    "gateway_status": "ok",
+    "finish_reason": "stop",
+    "retry_count": 0,
+    "fallback_count": 0,
+    "supervisor_corrections": 0,
+    "business_promotions": 0,
+    "usage": {
+      "input_tokens": 3603,
+      "output_tokens": 1179,
+      "total_tokens": 4782,
+      "estimated_cost_usd": "0.0041661",
+      "latency_ms": 20551
+    }
+  },
+  "pre_execution_invocation_disposition": {
+    "symptom": "the parent runs directory was supplied where the runner requires a fresh run-specific root",
+    "provider_calls": 0,
+    "ledger_reservation_created": false,
+    "run_root_created": false,
+    "admission_consumed": false,
+    "classification": "local_cli_argument_error_before_governed_execution_not_a_model_attempt"
+  },
+  "root_cause": {
+    "observed_surface": "$5.36T",
+    "source_authority": {
+      "evidence_id": "NVDA_E13",
+      "metric": "market_cap",
+      "typed_unit": "USD_billion",
+      "typed_value": "5359",
+      "source_statement_surface": "5.359 trillion USD"
+    },
+    "execution_time_compiler_gap": "USD_billion authority generated billion renderings but not equivalent trillion-scale renderings",
+    "model_authored_unbound_financial_value": false,
+    "provider_or_transport_fault": false,
+    "runtime_false_positive": true,
+    "immutable_terminal_reclassified": false
+  },
+  "zero_call_repair": {
+    "implementation_ref": "src/sec_agent/s2_same_evidence_layered_evaluation.py",
+    "execution_time_sha256": "7d0d0d5b1344ddc22eb4613b872c2207d0c23dd6dbd919557e84cfe5b6fab862",
+    "repaired_sha256": "0d3361d87550c4d2a409475d2afc5fdc6ef9065cbb6feb5e06ebd406a71adc80",
+    "accepted_equivalent_surfaces": ["5359B", "5.359T", "5.36T", "5.4T"],
+    "immutable_lead_replay": "pass",
+    "focused_tests": "33 passed",
+    "broader_tests": "88 passed / 3201 deselected",
+    "raw_mutations": 0
+  },
+  "research_quality": {
+    "raw_chain_complete": false,
+    "hidden_scoring_eligible": false,
+    "formal_score": false,
+    "natural_lead_quality_observation": "The Lead produced six case-local mandatory-family units and assigned all case Evidence/Gap IDs, but no downstream Specialist, synthesis, Writer or Verifier output exists.",
+    "content_quality_conclusion": "not_scoreable_due_to_project_gate_false_positive_before_specialists"
+  },
+  "campaign_disposition": {
+    "DELL_raw_measurement": "complete_quality_fail",
+    "MU_raw_measurement": "complete_quality_fail",
+    "NVDA_raw_measurement": "incomplete_project_gate_false_positive",
+    "S2_05_three_case_raw_campaign_complete": false,
+    "S2_06_three_case_supervision_boundary_complete": false,
+    "automatic_replacement_or_rerun": false,
+    "supervisor_model_correction_authorized": false,
+    "business_promotion": false,
+    "replacement_authority_may_be_considered_separately": true
+  },
+  "security": {
+    "raw_capture_ref": ".codex_runtime/fin013_s2_05/runs/fin013_s2_05_exp_a_nvda_adb4f30f05c48c5fb0c9/raw_model_only/captures/01_lead_planning_b09c8d9494f9f8bbe7b6861b78a379fa61d521dda6ac6ef7fd330d6f3b2a7597.json",
+    "capture_digest": "b09c8d9494f9f8bbe7b6861b78a379fa61d521dda6ac6ef7fd330d6f3b2a7597",
+    "capture_file_sha256": "19060975e989f644da8bf8244a9a02a48bce1f23d642c2cdc340939beffe3a56",
+    "raw_capture_secret_scan": "pass",
+    "credential_value_read_or_persisted": false,
+    "raw_capture_tracking": "git_ignored_runtime_only"
+  },
+  "next_action": "COMMIT_PUSH_ZERO_CALL_REPAIR_THEN_SEPARATE_NVDA_REPLACEMENT_RAW_AUTHORITY_DECISION",
+  "known_boundary": "The project-owned false positive is repaired in code, but the consumed R1 remains terminal failed and incomplete. A new paid replacement run is not authorized by this result and would require a separate exact authority decision.",
+  "result_digest": "a4a0a8f524ca8b1ad66c8e99fe7553ec5b4bef5c6bc88899aafef3f8a19a4d56"
+}

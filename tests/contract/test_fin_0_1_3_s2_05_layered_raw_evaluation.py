@@ -124,6 +124,12 @@ def test_numeric_compiler_accepts_typed_approximate_and_lower_bound_unit_familie
     assert {"100b", "22b", "33%", "1b"} <= allowed
 
 
+def test_numeric_compiler_accepts_equivalent_trillion_surface_from_billion_authority() -> None:
+    case, _ = _case_and_policy("NVDA")
+    allowed = allowed_numeric_surfaces(case)
+    assert {"5359b", "5.359t", "5.36t", "5.4t"} <= allowed
+
+
 def test_layered_evaluation_keeps_hypothesis_as_quality_finding_not_material() -> None:
     case, policy = _case_and_policy()
     result = evaluate_raw_chain(_chain(case, policy), case_input=case, policy=policy, section_ids=SECTION_IDS)

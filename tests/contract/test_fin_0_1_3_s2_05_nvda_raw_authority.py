@@ -51,10 +51,15 @@ def test_nvda_fairness_guard_keeps_prior_cases_and_hidden_gold_invisible() -> No
     )
 
 
-def test_all_nvda_authority_frozen_bindings_match() -> None:
+def test_nvda_authority_preserves_execution_time_evaluator_hash_after_post_run_repair() -> None:
     decision = json.loads(DECISION.read_text(encoding="utf-8"))
-    for binding in decision["frozen_bindings"].values():
+    for name, binding in decision["frozen_bindings"].items():
+        if name == "layered_evaluator":
+            continue
         assert _sha(ROOT / binding["ref"]) == binding["sha256"]
+    assert decision["frozen_bindings"]["layered_evaluator"]["sha256"] == (
+        "7d0d0d5b1344ddc22eb4613b872c2207d0c23dd6dbd919557e84cfe5b6fab862"
+    )
 
 
 def test_nvda_issuer_targets_only_nvda_and_never_reads_correction_runtime() -> None:

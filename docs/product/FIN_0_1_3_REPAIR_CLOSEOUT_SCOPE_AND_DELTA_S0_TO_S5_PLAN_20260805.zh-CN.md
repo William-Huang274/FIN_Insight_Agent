@@ -246,6 +246,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-05` NVDA raw authority 已编译**：第三案继续绑定同一 blind input/runtime/DeepSeek Pro 合同；NVDA 仅见本案 `13 Evidence / 3 Numeric / 4 gaps`，前两案 raw/correction 与 hidden Gold 均不可见。一次 admission、一次 execution、最多 12 calls、0 retry/fallback；evaluator v1.3 仅 post-hoc。authority/production/Project OS 零调用预检与 84 项宽回归通过。提交推送前不签发；NVDA raw 完成后先冻结本案结果和 supervision boundary，再单独决定三案 supervisor，不自动纠错或晋升。
 
+> **2026-08-07 `013-S2-05` NVDA raw R1 terminal 与项目门禁修复**：唯一正式运行在 Lead 后以 `experiment_a_unbound_numeric_surface` 停止，`1 call/1 capture/0 retry`。原因为冻结 `5359 USD_billion` 被模型合法写成 `$5.36T`，而本地 compiler 未生成 billion→trillion 等价舍入表面；非 Provider/模型造数。修复后 immutable Lead replay 通过，宽回归 88 passed，但 R1 继续保持 terminal failed、raw chain incomplete。不得自动补跑；需先提交修复，再单独决定 replacement authority。三案 raw、supervisor recoverability 与 S2-06 仍未完成。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。
@@ -273,7 +275,7 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 14. [x] 保留 `013-S3-01`–`013-S3-05` 与 R3 为 minimum engineering/control anchor：结构、exact-once、9 natural Claim、3 Lead、3 Workpaper、L1/L2 成立；0 thesis-support、0 natural counterevidence 与 29 个未研究 Cell 使其不构成产品级研究证明。
 15. [x] 完成 DELL/MU/NVDA 三份 Codex-authored Gold candidate 与交叉订正；明确它们是混合研究候选，不是当前产品或完整 MCP 已独立产出的报告。
 16. [x] 完成 `013-S2-04`：三案共享 Benchmark Evidence Pack、blind input 和 evaluator-only hidden Gold scoring objects 已按 digest 冻结，公平性、泄漏、跨案污染、日期和数值重算检查通过。
-17. [ ] 执行 `013-S2-05/06` Experiment A：DELL、MU 已分别形成完整 hidden-scoreable raw candidate，均以内容质量失败；evaluator 已统一到 v1.3，supervision boundary v1.1。两案不自动纠错或重跑；下一步只允许单独审查 NVDA raw authority。三案 raw 完成前不向后案暴露前案 correction/hidden Gold；NVDA raw、三案 corrected 与最终能力边界仍待完成。
+17. [ ] 执行 `013-S2-05/06` Experiment A：DELL、MU 已分别形成完整 hidden-scoreable raw candidate，均以内容质量失败；NVDA R1 因项目 billion→trillion numeric-surface false positive 在 Lead 后终止，修复已零调用通过但 replacement 未授权。三案 raw 完成前不向后案暴露前案 correction/hidden Gold；NVDA replacement raw、三案 corrected 与最终能力边界仍待完成。
 18. [ ] 执行 `013-S1-06/07/08`：修复 MCP operational truth、当前外部来源 runtime 和 Agentic Search 质量门；不调用 DeepSeek 来发现确定性工具缺陷。
 19. [ ] 执行 `013-S3-06/07`：动态 Lead loop 与 EvidenceRequest/targeted repair 闭环。
 20. [ ] 执行 `013-S3-08/09` Experiment B：三案端到端 DeepSeek Agentic Search/Research、隐藏 Gold 八维对照和 qualified-human 内容验收。

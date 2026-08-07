@@ -144,6 +144,15 @@ def allowed_numeric_surfaces(case_input: Mapping[str, Any]) -> set[str]:
         for variant in variants:
             for suffix in suffixes:
                 allowed.add(_normalize(variant + suffix))
+        if unit.startswith("usd_billion") and abs(value) >= Decimal("1000"):
+            trillion = value / Decimal("1000")
+            trillion_variants = {
+                _decimal(trillion),
+                _decimal(trillion.quantize(Decimal("0.1"))),
+                _decimal(trillion.quantize(Decimal("0.01"))),
+            }
+            for variant in trillion_variants:
+                allowed.add(_normalize(variant + "T"))
     return allowed
 
 

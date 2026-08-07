@@ -812,3 +812,7 @@ R3 因此区分 `proven_source_commit` 与 `execution_commit`：前者是 clean 
 clean-preflight runner 复用既有 v3 proof 的 archive、restricted R1/R2 capture 注入和 credential-scrubbed fresh-process 组件，只新增 R3-specific compile、完整 S1-08 suite、commit/tree mutation、exact-once 和 result-absence 验证。该修复本身仍为零调用，clean proof、formal admission 与 exact-live 均未完成。
 
 clean A1 进一步证明不能用 `pytest tests/contract -k s1_08` 表示“只运行 S1-08”：pytest collection 先导入全目录，clean archive 因缺少 144 组无关历史 runtime resources 而在结果前失败。proof runner 现显式列出 10 个 S1-08 contract 文件；不得复制无关 runtime 资源、加 skip 或吞掉 collection error 来制造绿色 proof。A1 与诊断重放均保留为 proof-harness input-selection failure，未触发 formal admission 或外部调用。
+
+P2C-A2 随后在 clean/synced `d713eb6600150678618259dce9c00c052d018f52` 的 Git archive 与 fresh Python process 中通过：10 个显式文件=`70 passed / 0 failed / 0 skipped`，R1 request objects=`19`、R2 content objects=`2` 且 before/after digest 不变；compile、authority/source mutation、ancestry/Runtime-tree drift、exact-once 与 R3-result-absent 全部通过。formal admission/network/model/provider/retry/live=`0/0/0/0/0/0`。
+
+因此 clean proof 已成立，但签发权限没有自动成立。下一边界是独立零调用 `S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AUTHORITY_PROJECTION_DECISION`；它只投影下一步权限，不能在同一任务中 issuance 或 live。任何 Runtime tree 漂移都使本 proof 失效并要求重新证明。

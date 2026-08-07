@@ -1,0 +1,91 @@
+{
+  "authority_bindings": {
+    "authority_decision_digest": "45dd3a6a28e7b4e8b56537c89aff9eacfdf8e1b8d701b29b2f1e37f8fd246818",
+    "authority_decision_sha256": "5ed51f211df46d05b4f13cd9c5b8201475f437edff9af520e339d12dbe4cc2b0",
+    "catalog_digest": "0f95217bbc7ecc7aa7cbe92a086169d8ac38cdacfe5f288d787028ae628a5c2a",
+    "catalog_sha256": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851",
+    "r2_quality_evaluation_digest": "24de7bc7851f3bdcaa538d5f6129e8ae3eabbccfa12b7ce021e13959b36e04ce",
+    "r2_quality_evaluation_sha256": "b02fca13b01376161d079523f272809d156d643e693446a7271fa0eef0937cb8",
+    "r2_result_digest": "66c9587766d8e22ddecef174e6d644e70d2a704ff6d9f697a7c7058536950658",
+    "r2_result_sha256": "8e9550c842ff28dacddd54ca043bbaa49ab219342655110acf99b6e4ade31a88",
+    "v3_implementation_binding_digest": "0bcac65ef93b983fb2166135020c381eaf49c09947c289e6b25c87abd5a236a9",
+    "v3_proof_digest": "63ad614cb3ed91adc2b845dd98235b621ea2a596e2b1b296b19c2b4fb8e7c3ea",
+    "v3_proof_sha256": "272dd8581c5e1a3a231e36cfd57067c9f1a4f6281eee43067aa03a6872c9bae4"
+  },
+  "current_next": "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AUTHORITY_PROJECTION_DECISION",
+  "decision": {
+    "DELL_R3_executed": false,
+    "MU_NVDA_ranking_DeepSeek_S3_authorized": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "exact_live_scope_projected": false,
+    "formal_admission_issued": false,
+    "successor_clean_preflight": "pass"
+  },
+  "known_boundary": "This clean-archive/fresh-process proof establishes the R3 successor entrypoint, exact source and authority bindings, mutation behavior and zero-call exact-once contract only. It does not issue an admission, access a source, prove candidate quality, admit ranking, run DeepSeek, close S1-08 or authorize the next action.",
+  "next_action_authorized": false,
+  "observed_counts": {
+    "formal_admissions_issued": 0,
+    "live_runs": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "retry_calls": 0
+  },
+  "project_os_preflight": {
+    "allow_open_blockers": false,
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "S1_08_V3_DELL_R3_SUCCESSOR_CLEAN_ZERO_CALL_PREFLIGHT",
+    "status": "pass"
+  },
+  "proof_attempt_history": [
+    {
+      "attempt_id": "S1-08-V3-DELL-R3-CLEAN-PREFLIGHT-A1",
+      "disposition": "Retained as a proof-runner test-selection failure. The repair uses the ten explicit S1-08 contract files; Runtime, authority, network and formal admission behavior were not changed.",
+      "failure_code": "pytest_broad_collection_imported_unrelated_contract_resources",
+      "observed_collection_errors": 144,
+      "reproduced_invocations": 2,
+      "source_commit": "04e439bfd1e3f6e248cc6dea2b49789105d48f57",
+      "status": "failed_before_result_materialization"
+    }
+  ],
+  "recorded_at": "2026-08-08T05:02:30+08:00",
+  "result_digest": "f2fbb06b3eb2cde6a28a511fab8a465facfc46587f3e0b748041c9b7c357e530",
+  "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_0",
+  "source_branch": "codex/layered-data-source-expansion",
+  "source_commit": "d713eb6600150678618259dce9c00c052d018f52",
+  "source_files": {
+    "contract_test": "tests/contract/test_fin_0_1_3_s1_08_v3_dell_r3_successor.py",
+    "contract_test_sha256": "c699ca54c7765f36dcc7567d64278d9c00f78d4b26ac0ec52b54bb046cc41837",
+    "preflight_runner": "scripts/releases/prepare_fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight.py",
+    "preflight_runner_sha256": "8bb26482890ca013cce0610ba533716d71867ffd1d00360bd7bfd59680e1b161",
+    "runner": "scripts/releases/run_fin_ia_0_1_3_s1_08_v3_dell_current_search_r3.py",
+    "runner_sha256": "d799aff3df7383d669bf665f459234adfdc7233bb726d7456f8b9cd792e90dd5",
+    "runtime": "src/sec_agent/s1_08_r3_successor.py",
+    "runtime_sha256": "3f10f2c61cdaa9f7f3d5fdadacd47d409e908815baf52a31a32e323a8c92195e"
+  },
+  "stage": "013-S1-08-P2C",
+  "status": "pass",
+  "verification": {
+    "R3_result_absent": true,
+    "admissions_issued": 0,
+    "clean_git_archive": true,
+    "compileall": "pass",
+    "decision_R2_v3_catalog_source_and_commit_mutations": "fail_closed",
+    "distinct_disposable_roots": 1,
+    "external_calls": 0,
+    "fresh_python_process": true,
+    "proven_source_commit_ancestry_and_runtime_tree_guard": "pass",
+    "pytest_nodeids_sha256": "6ca9b0b6506831bbe7276f2fd6b4f77fee941bf8755fef6ef1fe40313a792540",
+    "restricted_R1_request_objects_injected": 19,
+    "restricted_R2_content_objects_injected": 2,
+    "restricted_inputs_unchanged": true,
+    "tests_failed": 0,
+    "tests_passed": 70,
+    "tests_skipped": 0
+  }
+}

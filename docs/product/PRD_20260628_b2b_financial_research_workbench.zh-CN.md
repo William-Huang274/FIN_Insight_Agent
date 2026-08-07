@@ -14,6 +14,7 @@
 | 日期 | 修改内容 |
 | --- | --- |
 | 2026-08-08 | 完成 FIN 0.1.3 中段 PRD／TECH／Runtime／产品实证对齐：确认当前工程控制面成熟度高于研究内容与用户验收，要求先用最小 S0-04G 关闭共享 run-scope fail-open，再给 S1-08 一次有界 DELL candidate-ceiling live；若仍失败，进入 Provider 获取或 Internal Alpha 来源范围决策，不得追加 R4。进一步明确“方法写入 registry”不等于研究能力落地，S3 必须证明方法注入、节点消费、实质性研报和 qualified-human 内容验收。 |
+| 2026-08-08 | S0-04G 已以 typed blocker state、RunScopeRegistry v1.0 和 post-adoption lineage 关闭共享 scope fail-open；clean archive/fresh process 85/85 兼容复证通过，且不放宽旧 R3 Runtime-tree drift guard。该治理通过不计为检索、Evidence、研究内容或产品能力提升；唯一下一项仅为零调用 P2D，direct R3 仍须独立签发与执行。 |
 | 2026-08-08 | 根据 FIN 0.1.3 S1-08 真实 DELL current-search 与 capture replay 完成产品反向校准：Agentic Search 必须按 provider 可运行性、目标资料进入候选池、排序、Evidence 晋升和下游利用逐层验收；target-in-pool 未通过时禁止用 NDCG/MRR 或 reranker 绿色结果掩盖上游缺口。新增 typed blocker/run-scope fail-closed、唯一网络文档收益率和阶段准入要求。 |
 | 2026-08-08 | 根据 S1-08 真实 capture bake-off 修正 SourceHunter 成熟组件边界：feedparser/Trafilatura 只能解析已捕获内容并生成 discovery/main-text/metadata candidate；第三方推断日期、sitemap lastmod、HTTP Last-Modified 不拥有金融发布日期权威。新增 relationship-aware Evidence Slot、slot round-robin 与网络唯一文档/本地快照分账要求。 |
 | 2026-08-07 | 补齐模型研究判断与金融事实写入权的产品边界：模型必须看见并分析 exact facts、选择 evidence/numeric refs、生成 thesis/机制/反方；Harness 只拥有 material number/date/entity/citation 的确定性渲染与晋升，不得代写研究。新增受保护混合叙事、correction closure 和 anti-template 内容质量门禁。 |
@@ -1490,6 +1491,8 @@ Trace corpus
 #### 7.8.1 运行权限、阻断状态与阶段边界（2026-08-08）
 
 Harness 的执行权限不能依赖自由文本 run scope 或不断扩展的描述性状态字符串。产品运行治理必须具备版本化 `RunScopeRegistry`、typed `blocker_state`、scope-to-blocker policy 和 unknown-state/unknown-scope fail-closed；一次 preflight `pass` 不能替代 exact admission、runner、source SHA、预算和结果路径绑定。
+
+当前实施基线为 `RunScopeRegistry v1_0`、adoption cutoff=`v2_191`。新 projection 必须带 state/version/owner/previous-lineage，诊断 override 不得绕过合同错误。共享治理代码改变旧 proof 所绑定的 Runtime tree 时，必须继承旧 evidence 并做一次有界 clean compatibility requalification，不能把旧 proof 继续冒充当前代码证明，也不能为了省 proof 而排除治理文件。
 
 工程失败必须保留在最早责任阶段并产生新 Attempt，而不是自动创建新产品版本。共享治理缺陷归 S0/S5；来源发现、候选池和预算缺陷归 S1；模型 family 能力和自主权归 S2；动态研究、综合和内容质量归 S3；产品审阅负担归 S4；release/rollback 归 S5。后续阶段可以消费 typed gap，但不得在 renderer、Workbench 或 release gate 现场修复上游事实与检索根因。
 

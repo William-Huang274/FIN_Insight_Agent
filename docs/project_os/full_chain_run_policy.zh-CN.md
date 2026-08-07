@@ -7,15 +7,25 @@ full-chain 是集成验收工具，不是日常 debugging 工具。
 付费 full-chain 之前必须先证明：
 
 1. deterministic / node-level tests 能覆盖的问题已经修完；
-2. Project OS root-cause blockers 不阻断本次运行范围；
+2. Project OS root-cause blockers 不阻断本次已注册运行范围；
 3. token-budget preflight 通过或用户明确批准诊断性 override；
 4. provider health preflight 通过；
 5. 需要真实检索的 case 必须启用 real evidence operators；
 6. 运行结果能写回 run audit / artifact refs / AIE / data-script audit。
 
+## Typed state 与 scope registry（v1.0）
+
+- `configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json` 是当前 canonical scope registry；未注册或标为 non-executable 的请求一律 fail-closed。
+- `v2_191` 之后的新 root-cause projection 必须写入 `blocker_state`、`run_scope_registry_version`、`owner_stage` 与 `previous_projection_sequence`；缺失、未知、版本漂移或 owner/scope 不匹配均为合同错误。
+- canonical blocker state 为 `open / mitigated_open / blocked_external / closed / superseded`；前三者开放且阻断，后两者关闭。历史自由字符串只读兼容，未知的 historical full-chain blocker 按 open 处理。
+- scope 的父级 block/allow 可覆盖注册子 scope；wildcard 只允许出现在 blocking side。
+- diagnostic override 只能用于显式 open blocker 的受控诊断，不能覆盖 registry、state、owner 或 lineage 合同错误。
+- Project OS preflight 是必要条件，不替代 exact admission、runner/source SHA、预算、result path 和 exact-once binding。
+
 ## 禁跑条件
 
-- root-cause issue ledger 存在 `full_chain_blocker=true` 且 status 为 open/active/blocked，并且该 issue 的 `blocking_run_scopes` 覆盖本次 `run_scope`。
+- root-cause issue ledger 存在开放 canonical `blocker_state`，且该 issue 的注册 `blocking_run_scopes` 覆盖本次 `run_scope`。
+- run scope 未登记、登记版本不匹配、scope non-executable，或 post-adoption projection 未满足 typed/lineage 合同。
 - 未声明 `blocking_run_scopes` / `allowed_run_scopes` 的 open `full_chain_blocker` 默认阻断所有 paid/full-chain scope。
 - broad full-chain、release eval、case expansion 不能借用单 case scope 通过。
 - token 预算超限且没有用户明确批准。

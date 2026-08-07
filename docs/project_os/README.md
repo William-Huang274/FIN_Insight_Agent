@@ -8,9 +8,9 @@
 
 FIN 0.1.1 保存第一轮 S0–S5 的内部 honest-block 工程基线。2026-08-02 用户纠正版本治理后，原 0.1.2、0.1.3、0.1.4 已合并回 FIN 0.1.2：原 0.1.3 是 FIN 0.1.2 S0 的历史 recovery/clean-environment acceptance attempts，原 0.1.4 是未执行的 S0 改进提案。当前唯一开发版本为 FIN 0.1.2，当前阶段为 S0，release qualified=false。
 
-当前已完成合并计划和只读资产审计。focused zero-call=`57 passed / 3 failed`；三项失败共同来自旧 manifest/current projection 对 mutable backlog 和 next-action 的所有权漂移。当前只等待 Owner 审核资产分类和 S0 修复建议；不以这三项失败增加产品版本号。
+当前开发版本为 FIN 0.1.3。`013-S0-04G` 已以 typed blocker state、`RunScopeRegistry v1_0` 和 unknown fail-closed 关闭 RC-P36-156，并从 clean Git archive/fresh process 以 `85/85` 复证现有 DELL R3 successor；本项外部调用与 admission 均为 0。S1-08 的真实 candidate ceiling 仍未通过，DELL R3、ranking、MU/NVDA、S3 和 release 均未因此解锁。
 
-当前下一项：`FIN-0.1.2-S0-CURRENT-BASELINE-AUDIT-OWNER-REVIEW-AND-REPAIR-AUTHORIZATION`。
+当前下一项：`S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AUTHORITY_PROJECTION_DECISION`（P2D，零调用决策；不得在同一项执行 live）。
 
 ## 文件职责
 
@@ -21,6 +21,7 @@ FIN 0.1.1 保存第一轮 S0–S5 的内部 honest-block 工程基线。2026-08-
 - `capability_status_ledger.jsonl`：机器可读能力状态主账本。
 - `root_cause_issue_ledger.jsonl`：机器可读 root-cause issue / blocker 账本。
 - `full_chain_run_policy.zh-CN.md`：full-chain / expensive eval 运行策略。
+- `../../configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json`：当前 typed blocker-state/run-scope registry；新 scope 与 post-adoption ledger projection 必须按此 fail-closed。
 - `token_budget_policy.zh-CN.md`：token 预算与信息经济策略。
 - `done_definition_l4_scope_pass.zh-CN.md`：L4-scope pass 定义。
 - `external_pattern_registry.jsonl`：外部 agent / RAG / workflow / observability 设计模式注册表。

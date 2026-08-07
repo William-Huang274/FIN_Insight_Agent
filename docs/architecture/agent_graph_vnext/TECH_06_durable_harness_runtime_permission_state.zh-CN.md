@@ -452,3 +452,11 @@ S0-04G 只允许交付以下共享能力：
 S0-04G 需要零网络、零模型、零 Provider、零正式 admission；在当前仓库和 fresh process 中证明：已注册的 P2D 零调用 scope可通过，DELL R3 issuance/live、ranking、MU/NVDA、S3 与 release 在未投影时均被明确拒绝；未知 state/scope 必须稳定 fail-closed。通过后 RC-P36-156 可关闭或降为 historical mitigation，P2D 才成为下一项。
 
 以后只在权限、成本、外部副作用或产品阶段真正变化时单独做 authority decision。普通 deterministic implementation＋clean proof 不再机械拆成多轮人工 allowlist projection。
+
+### 28.4 实施结果与兼容性边界（2026-08-08）
+
+S0-04G 已实现并通过。canonical registry 位于 `configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json`，adoption cutoff=`v2_191`；preflight schema 升为 `fin_insight_project_os_full_chain_preflight_v0_2`。迁移后的 ledger row 强制携带 typed state、registry version、owner stage 和 previous projection；未知 scope/state、non-executable namespace、owner mismatch、父级循环、lineage 断裂和 compact/core 漂移均 fail-closed，diagnostic override 不可越过合同错误。
+
+工程中确认一个重要兼容性事实：旧 P2C proof 绑定了整个 Runtime tree，因此修改共享 preflight 后不能继续直接使用旧 proof。实现没有放宽 drift guard，而是以旧 proof SHA 和 v3 implementation bindings 为 predecessor，执行一次 clean archive/fresh-process 下游 requalification。结果=`85 passed / 0 failed / 0 skipped`，R1/R2 restricted objects=`19/2` 不变，external/formal-admission/live=`0/0/0`。新 successor proof 为 v1.1；direct R3 仍受 RC-P36-157 阻断。
+
+RC-P36-156 因此可关闭；P2D 成为唯一下一项。该结果不代表 SourceHunter candidate ceiling、Evidence、模型研究、研报内容或 release 能力增加。

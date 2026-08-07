@@ -1,0 +1,76 @@
+{
+  "schema_version": "fin_ia_0_1_3_s0_04g_typed_blocker_state_and_run_scope_registry_minimum_zero_call_implementation_v1_0",
+  "recorded_at": "2026-08-08T05:52:05+08:00",
+  "stage": "013-S0-04G",
+  "status": "pass",
+  "implementation_source_commit": "2f14684e60acf7b6def92498eb2bd68c4428d87a",
+  "source_files": {
+    "run_scope_registry": "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json",
+    "run_scope_registry_sha256": "3b18247343a5eb4ff3d8e5c016f50f5c718965f4b3212072a484db3f5bb9066d",
+    "project_os_preflight": "src/sec_agent/project_os_preflight.py",
+    "project_os_preflight_sha256": "a94e61266dbee2c253025b06aa509cf826d3bf6ce987edda43451deb8fcbae78"
+  },
+  "contract": {
+    "blocker_states": [
+      "open",
+      "mitigated_open",
+      "blocked_external",
+      "closed",
+      "superseded"
+    ],
+    "run_scope_registry_version": "v1_0",
+    "adoption_sequence_after_projection": "v2_191",
+    "unknown_state": "fail_closed",
+    "unknown_scope": "fail_closed",
+    "diagnostic_override_on_contract_error": "forbidden",
+    "post_adoption_projection_fields": [
+      "blocker_state",
+      "run_scope_registry_version",
+      "owner_stage",
+      "previous_projection_sequence"
+    ],
+    "historical_rows": "read_only_exact_alias_or_unknown_full_chain_fail_closed"
+  },
+  "downstream_compatibility_proof": {
+    "path": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_1.json",
+    "sha256": "7ae6f46fcbeeedb673995ee554318649e3e09c57bd8514035ab3ea82a8bd2f1e",
+    "result_digest": "e8d48fc65dce65c44fd7830aaebd606b5ee860d24220f66f146f9c49e7a00617",
+    "predecessor_proof_sha256": "fc8fd944bea0cba546aa567f89ac3116d4499bed9ddb43315ddbf4fe0f443c55",
+    "clean_git_archive": true,
+    "fresh_python_process": true,
+    "tests_passed": 85,
+    "tests_failed": 0,
+    "tests_skipped": 0,
+    "restricted_R1_request_objects": 19,
+    "restricted_R2_content_objects": 2,
+    "inputs_unchanged": true
+  },
+  "verification": {
+    "typed_preflight_unit_tests": 12,
+    "production_scope_contract_tests": 3,
+    "carried_forward_S1_08_tests": 70,
+    "unknown_state_scope_and_owner_mutations": "fail_closed",
+    "append_only_lineage_mutation": "fail_closed",
+    "parent_child_scope_policy": "pass",
+    "compact_core_shape_consistency": "pass",
+    "previous_v3_source_bindings": "unchanged",
+    "direct_R3_remains_blocked": true
+  },
+  "decision": {
+    "RC_P36_156": "close_after_canonical_ledger_projection",
+    "only_next_scope": "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AUTHORITY_PROJECTION_DECISION",
+    "P2D_is_live": false,
+    "DELL_R3_issuance_or_execution_authorized": false,
+    "ranking_MU_NVDA_S3_release_authorized": false
+  },
+  "observed_counts": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "retry_calls": 0,
+    "formal_admissions_issued": 0,
+    "live_runs": 0
+  },
+  "result_digest": "6169c6d218bb754b56198784d79696f34af014b048ef4c63b4d4b145c8e60cab",
+  "known_boundary": "This closes the shared Project OS state/scope fail-open defect and requalifies the existing R3 successor. It does not improve source discovery, collect Evidence, execute DELL R3, admit ranking or establish research-content quality."
+}

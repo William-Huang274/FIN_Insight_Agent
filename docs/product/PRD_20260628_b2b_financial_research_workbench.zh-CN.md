@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-08 | 完成 FIN 0.1.3 中段 PRD／TECH／Runtime／产品实证对齐：确认当前工程控制面成熟度高于研究内容与用户验收，要求先用最小 S0-04G 关闭共享 run-scope fail-open，再给 S1-08 一次有界 DELL candidate-ceiling live；若仍失败，进入 Provider 获取或 Internal Alpha 来源范围决策，不得追加 R4。进一步明确“方法写入 registry”不等于研究能力落地，S3 必须证明方法注入、节点消费、实质性研报和 qualified-human 内容验收。 |
 | 2026-08-08 | 根据 FIN 0.1.3 S1-08 真实 DELL current-search 与 capture replay 完成产品反向校准：Agentic Search 必须按 provider 可运行性、目标资料进入候选池、排序、Evidence 晋升和下游利用逐层验收；target-in-pool 未通过时禁止用 NDCG/MRR 或 reranker 绿色结果掩盖上游缺口。新增 typed blocker/run-scope fail-closed、唯一网络文档收益率和阶段准入要求。 |
 | 2026-08-08 | 根据 S1-08 真实 capture bake-off 修正 SourceHunter 成熟组件边界：feedparser/Trafilatura 只能解析已捕获内容并生成 discovery/main-text/metadata candidate；第三方推断日期、sitemap lastmod、HTTP Last-Modified 不拥有金融发布日期权威。新增 relationship-aware Evidence Slot、slot round-robin 与网络唯一文档/本地快照分账要求。 |
 | 2026-08-07 | 补齐模型研究判断与金融事实写入权的产品边界：模型必须看见并分析 exact facts、选择 evidence/numeric refs、生成 thesis/机制/反方；Harness 只拥有 material number/date/entity/citation 的确定性渲染与晋升，不得代写研究。新增受保护混合叙事、correction closure 和 anti-template 内容质量门禁。 |
@@ -2044,3 +2045,45 @@ FIN 的产品重心进一步收敛为“机构研究控制与记忆系统”：
 `REL-PROD-001` 的产品功能不能由 P36 的研究主题代替。其最低范围必须同时包含 Dashboard/Task Center、ResearchCase/Objective、可审阅的动态 DecisionSurface、durable execution/activity、Agentic Search、Evidence/Numeric Workbench、Workpaper、Gap/Repair、LeadReview/WriterAdmission、HTML/Markdown deliverable、Human Review、provenance 和 bounded same-Case explanation。P36 的六条产业链只作为必选 cell families；Lead 应在本次任务中编译 10-20 个实际 cells。完整 release feature scope 见 `FIN_0_1_INTERNAL_ALPHA_FEATURE_SCOPE_MATRIX_20260717.zh-CN.md`。
 
 完整产品节奏见 `PRODUCT_20260717_release_ladder_and_cadence.zh-CN.md`；工程运行模型和 `REL-PROD-001` 执行计划见 `docs/architecture/repository/RELEASE_OPERATING_MODEL_20260717.zh-CN.md` 与 `RELEASE_FIN_IA_0_1_EXECUTION_PLAN_20260717.zh-CN.md`。
+
+## 16. FIN 0.1.3 中段产品现实与收口边界（2026-08-08）
+
+### 16.1 当前已经拥有与仍未拥有的产品能力
+
+截至本次互校准，FIN 已经拥有可复用的 Case／Run 身份、exact-once 与失败留存、受控官方来源 fetch/capture/parse/promotion、财务数值确定性控制、Evidence/Numeric/Workpaper/Report/Trace 的基础页面，以及三案例的测试和历史运行证据。它们构成可信研究平台的控制骨架。
+
+但 FIN 0.1.3 尚未形成一份由 current Agentic Search、动态研究规划、真实模型综合和人工内容验收共同产出的 reviewer-ready 研报。当前 Workbench 中可见的通用判断原子和边界说明只能证明投影链存在，不能证明产品已经实现“有实质内容的金融研究”。因此产品状态必须拆开报告：
+
+| 轴 | 当前状态 | 产品含义 |
+| --- | --- | --- |
+| 执行与审计 | scoped pass，shared run-scope 治理仍有缺口 | 能保留和复现运行，但权限控制尚未统一收口 |
+| 官方来源与数值真值 | scoped pass | 能安全取得和约束部分事实，不等于搜索覆盖完整 |
+| Agentic Search | DELL candidate ceiling 未通过 | 目标资料尚不能稳定进入候选池，ranking 不准入 |
+| 模型合同 | deterministic guard pass，DeepSeek natural closure fail | Harness 能拒绝错误，模型自主权仍需 profile 化 |
+| 研究内容 | minimum engineering anchor only | 尚无 current 三案产品级 thesis、机制、反方和 WWC 证明 |
+| Workbench 与发布 | historical projection only / blocked | 尚未完成 current candidate dogfood、human acceptance 与 RG1–RG5 |
+
+### 16.2 FIN 0.1.3 的有界产品承诺
+
+FIN 0.1.3 继续以 `REL-PROD-001 / FIN 0.1 Internal Alpha` 为唯一目标，不扩成完整数据平台或企业版。其最小纵向结果固定为：
+
+1. DELL、MU、NVDA 三个公开资料 Case 具有可解释的 current candidate pool、Evidence Pack 和 attempt-backed typed gaps；
+2. Lead 能按开放问题动态编译 DecisionSurface，而不是固定三格或固定九次调用；
+3. 研究方法必须经历 `documented -> contract_translated -> runtime_injected -> node_consumed -> paid_artifact_proven -> human_accepted`，不能因为写入方法 registry 就宣称已实现；
+4. Workpaper/Report 必须包含公司专属 thesis、经济机制、数值解释、跨 Cell 综合、反方证据、gap 和可执行 what-would-change；
+5. current Workbench 能支持 Evidence/Numeric drill-down、repair、LeadReview、exact-version human review、trace 和 bounded follow-up；
+6. 最终 candidate 通过 RG1–RG5 后，才可冻结 FIN 0.1.3 的内部收口结论。
+
+Data Room、Watchlist/R4、完整估值、Research-to-Quant、全行业、多格式企业交付、RBAC/多租户和商业实时数据继续按既有版本路线后置，不因本次审计回填到 FIN 0.1.3。
+
+### 16.3 证明预算与停止规则
+
+工程 proof 只回答可复现、权限、lineage 和确定性问题；产品 proof 回答来源覆盖、研究质量、审阅价值和发布可用性。两者不得互相代替。
+
+- shared blocker state 与 run scope 的统一缺陷先由一个最小 S0-04G 包关闭；此后不得为每个 Attempt 手工新增一条临时 allowlist 作为常态流程；
+- S1-08 在 S0-04G 后只允许一次 DELL R3 candidate-ceiling live。若通过，采用共同 transfer contract 验证 MU/NVDA；若失败，停止 SourceHunter 内的 R4/R5 修补，转为运营 Provider、受控动态页/站内搜索、licensed source 或缩小 Internal Alpha source claim 的产品决策；
+- S2 只冻结 provider-neutral ModelCapabilityProfile、DeepSeek profile 和 AutonomyGrant，不再用整条 full-chain 反复寻找字段级不遵循；
+- S3 承担动态研究、方法到 Runtime 激活、targeted repair 和内容质量；搜索、模型、研究内容三个 failure domain 分开评分；
+- L2–L4 表达问题在 S3/S4 处理，不回流破坏已通过的数值、Evidence 或 source 合同；新的 L1 必须留在最早责任阶段并触发一次结构处置，而不是无限增加 live attempts。
+
+这次重排不降低产品标准。它降低的是重复证明和逐字段修补，把节省的工程预算重新投入 Agentic Search 覆盖、金融研究综合和真实用户验收。

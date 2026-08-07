@@ -566,3 +566,17 @@ TECH_06 负责 timer、notification、delivery receipt、retry 和 durable event
 新增 fixtures：exact-version OA approval、delegation expiry、human edit classification、visible/metadata/signed manifest parity、upstream correction触发 attestation stale、withdrawal audit、raw prompt retention separation。
 
 本节状态为 `documented / contract_draft`；不表示 OA、签名或责任图 runtime 已实现。
+
+## 15. FIN 0.1.3 Current-Candidate Workbench Dogfood Boundary（2026-08-08）
+
+FIN 0.1.2 的 Workbench/Report/Trace 页面证明了投影、exact-version review 和 lineage 形状，但截图中大量“证据方向支持／详见本地绑定事实”的通用判断原子也证明：页面可打开、Artifact 数量正确和 citation chip 存在，不能代表研究底稿或交付报告有实质内容。
+
+FIN 0.1.3 S4 只接受 S3 最终 current candidate，不再用历史 fixture、minimum anchor 或手工拼装摘要作为产品验收输入。一次 dogfood 必须能在同一 Case 中完成：
+
+1. 从 Research Objective、动态 DecisionSurface 和 source/search activity 进入 Evidence/Numeric；
+2. 在 Workpaper 中看到公司专属 thesis、关键事实与推导、机制链、反方、gap、WWC 和对应 Evidence/Numeric lineage；
+3. 对 material number、claim strength、citation 或 assumption 发起 repair，并观察受影响 Cell/Artifact 的 stale/rebuild 范围；
+4. LeadReview、WriterAdmission、Report、Human Review 和 Trace 使用同一 exact Case/Artifact version；
+5. qualified reviewer 独立记录内容分、审阅负担、需要重写比例和 acceptance/return 原因。
+
+S4 可以修页面信息结构、交互、review burden、repair UX 和 audience projection；不得在 renderer 中补写模型没有形成的 thesis，或用本地超级拼装掩盖 S1/S3 缺口。当前页面薄内容归 S3 research outcome，页面如何让 reviewer 高效验证该内容才归 TECH_09/S4。

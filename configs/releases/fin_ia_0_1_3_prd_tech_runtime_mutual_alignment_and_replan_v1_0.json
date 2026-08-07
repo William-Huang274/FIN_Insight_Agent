@@ -1,8 +1,8 @@
 {
   "schema_version": "fin_ia_0_1_3_prd_tech_runtime_mutual_alignment_and_replan_v1_0",
   "recorded_at": "2026-08-08",
-  "source_commit_before_document_update": "5885f7280dd04e6ceded93d0e7ba644bd8b9b971",
-  "status": "mutual_alignment_plan_advanced_s1_08_p2c_clean_preflight_pass_exact_live_authority_projection_decision_pending",
+  "source_commit_before_document_update": "cef5323db230138ebaf95f4e984542d46ccc5f5c",
+  "status": "midstage_mutual_alignment_complete_s0_04g_precedes_r3_authority_and_live",
   "product_version": "FIN_0_1_3",
   "product_version_decision": "remain_current_no_version_jump",
   "fin_0_2_definition_changed": false,
@@ -13,7 +13,14 @@
     "admissions_authorized": 0,
     "ranking_authorized": false,
     "release_authorized": false,
-    "only_current_next_scope": "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AUTHORITY_PROJECTION_DECISION"
+    "only_current_next_scope": "FIN_0_1_3_S0_04G_TYPED_BLOCKER_STATE_AND_RUN_SCOPE_REGISTRY_MINIMUM_ZERO_CALL_IMPLEMENTATION"
+  },
+  "midstage_rebaseline": {
+    "reason": "Execution governance and proof machinery are materially more mature than live search coverage, research-content quality and current-product acceptance. Repeated manual scope projections now make RC-P36-156 a delivery blocker rather than deferred debt.",
+    "current_product_truth": "No current FIN 0.1.3 reviewer-ready report has yet been produced by live Agentic Search, dynamic research, model synthesis and qualified human content acceptance together.",
+    "next_stage_owner": "S0_04G_shared_governance",
+    "proof_budget_correction": "Use one bounded shared governance package, one final DELL R3 candidate-ceiling live, one structural revision plus one natural canary per model contract family, and one formal end-to-end only after S1/S2 join.",
+    "version_decision": "Remain FIN 0.1.3; FIN 0.2 scope is unchanged."
   },
   "audit_conclusions": [
     "The original S1-01 through S1-05 pass remains valid for local truth and governed-pack scope, but it does not close Agentic Search after S1-06 through S1-08 were added.",
@@ -21,14 +28,18 @@
     "S2 completed its capability experiments and deterministic correction controls, but DeepSeek natural correction closure failed.",
     "S3-01 through S3-05 are minimum engineering anchors, not product research or content-quality acceptance.",
     "FIN 0.1.3 S4 and S5 have not started on a current FIN 0.1.3 candidate.",
-    "The shared Project OS blocker-state and run-scope defect belongs to S0/S5 governance, not SourceHunter."
+    "The shared Project OS blocker-state and run-scope defect belongs to S0/S5 governance, not SourceHunter.",
+    "P2C clean proof passed with 70 exact S1-08 tests, but it did not change live candidate quality; RC-P36-156 must now be closed before P2D or R3.",
+    "Research methods documented in a registry are not implemented until runtime injection, node consumption, paid-artifact proof and qualified-human acceptance are established.",
+    "The current Workbench and report surfaces are historical/minimum projections with thin generic content; current-candidate product dogfood remains S4 work."
   ],
   "stage_projection": {
     "S0": {
-      "status": "baseline_closed_shared_governance_debt_open",
+      "status": "baseline_closed_shared_governance_current_blocker",
       "completed": ["013-S0-01", "013-S0-02", "013-S0-03"],
       "open": ["013-S0-04G"],
-      "open_issue": "RC-P36-156-project-os-unregistered-run-scope-string-not-fail-closed"
+      "open_issue": "RC-P36-156-project-os-unregistered-run-scope-string-not-fail-closed",
+      "current_next_scope": "FIN_0_1_3_S0_04G_TYPED_BLOCKER_STATE_AND_RUN_SCOPE_REGISTRY_MINIMUM_ZERO_CALL_IMPLEMENTATION"
     },
     "S1": {
       "status": "S1_01_to_07_scoped_pass_S1_08_live_quality_failed",
@@ -121,10 +132,11 @@
     "claim_and_workpaper_utilization"
   ],
   "issue_routing": {
-    "RC-P36-156": "S0_shared_governance_and_S5_release_reverification",
+    "RC-P36-156": "S0_04G_immediate_shared_governance_then_S5_release_reverification",
     "RC-P36-157": "S1_08_provider_locator_candidate_ceiling",
     "DeepSeek_evidence_role_closure_threshold": "S2_capability_profile_then_S3_atom_narrative",
     "dynamic_cells_cross_evidence_synthesis_content_quality": "S3_06_to_S3_09",
+    "research_method_registry_to_runtime_consumption": "S3_06_to_S3_09",
     "workbench_review_burden_and_current_candidate_projection": "S4_06",
     "release_rollback_portability": "S5_RG1_to_RG5"
   },
@@ -133,13 +145,14 @@
     "S1_08_P2_separate_DELL_fresh_live_authority_decision_complete",
     "S1_08_P2B_successor_entrypoint_implementation_complete",
     "S1_08_P2C_clean_archive_fresh_process_successor_preflight_complete",
+    "013_S0_04G_typed_blocker_state_and_versioned_run_scope_registry_minimum_zero_call_implementation",
     "S1_08_P2D_exact_live_issuance_authority_projection_decision_zero_call",
+    "S1_08_one_DELL_R3_candidate_ceiling_exact_live_no_R4",
     "S1_08_P3_provider_acquisition_or_product_source_scope_decision_if_ceiling_fails",
-    "013_S0_04G_typed_blocker_state_and_versioned_run_scope_registry_before_multicase_or_S3",
-    "S1_08_P4_MU_NVDA_bounded_transfer_then_ranking_only_after_candidate_ceiling_and_S0_04G",
+    "S1_08_P4_MU_NVDA_common_contract_transfer_then_ranking_only_if_DELL_candidate_ceiling_passes",
     "DS_A1_A2_A3_model_family_profile_judgment_atom_protected_narrative",
-    "S3_06_07_dynamic_research_and_targeted_repair",
-    "S3_08_09_three_case_experiment_B_and_content_quality_acceptance",
+    "S3_06_07_dynamic_research_method_runtime_injection_and_targeted_repair",
+    "S3_08_09_three_case_experiment_B_paid_artifact_proof_and_content_quality_acceptance",
     "S4_06_current_candidate_workbench_dogfood",
     "S5_RG1_to_RG5_release_decision"
   ],
@@ -148,6 +161,8 @@
     "Do not repeat live search after another candidate-ceiling failure without a provider or product-scope decision.",
     "Do not patch the same model contract family field by field; allow at most one structural revision and one natural canary.",
     "Do not treat typed gaps, terminal integrity, artifact count or a clean chain as research-content acceptance.",
+    "Do not create R4 after the bounded DELL R3 candidate-ceiling attempt; choose provider acquisition or a product source-scope decision.",
+    "Do not count a documented method registry entry as implemented without runtime injection, node consumption and artifact/human proof.",
     "Do not create a new product version because a proof or execution attempt fails."
   ],
   "source_refs": [
@@ -164,6 +179,7 @@
     "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_fresh_live_authority_decision_v1_0.json",
     "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_successor_entrypoint_zero_call_implementation_v1_0.json",
     "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_0.json",
-    "docs/worklog/product_strategy/719_fin_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight.md"
+    "docs/worklog/product_strategy/719_fin_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight.md",
+    "docs/worklog/product_strategy/720_fin_0_1_3_midstage_prd_tech_runtime_product_alignment_and_replan.md"
   ]
 }

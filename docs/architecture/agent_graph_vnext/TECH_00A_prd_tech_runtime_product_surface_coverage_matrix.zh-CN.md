@@ -112,8 +112,8 @@ FIN 0.1 明确 deferred：Data Room、Watchlist/R4、Research-to-Quant、全行�
 
 | Release feature | FIN 0.1.3 当前实证 | 当前判断 | 下一硬门 |
 | --- | --- | --- | --- |
-| `P001-F01-F04` Product entry/control | S0 inheritance/exact-once/truth oracle 已关闭；S3 有 12–13 Cell engineering plan；RC-P36-156 仍暴露共享 blocker-state/run-scope fail-open | `runtime/control partial` | typed blocker state＋RunScopeRegistry；current Case vertical 与动态 Lead |
-| `P001-F05-F07` Evidence/numeric | S1-01–05 truth/numeric/graph/governed pack、S1-06 MCP、S1-07 official-source runtime 各自通过；S1-08 DELL live 只有 1 unique source、target-in-pool=0，v3 仅 zero-call engineering pass | `numeric/official-source scoped pass; Agentic Search failed` | v3 clean proof、DELL live decision、provider/scope disposition、三案 candidate ceiling，之后才准入 ranking |
+| `P001-F01-F04` Product entry/control | S0 inheritance/exact-once/truth oracle 已关闭；RC-P36-156 仍暴露共享 blocker-state/run-scope fail-open，且 S1-08 每次 proof 后仍依赖手工 scope projection | `runtime/control partial; governance now blocks delivery flow` | 在任何新 live 前完成最小 S0-04G：typed blocker state＋versioned RunScopeRegistry＋unknown fail-closed |
+| `P001-F05-F07` Evidence/numeric | S1-01–05 truth/numeric/graph/governed pack、S1-06 MCP、S1-07 official-source runtime 各自通过；S1-08 DELL R2 只有 1 unique source、target-in-pool=0；v3 已在 clean archive/fresh process `70/70` 复证 | `numeric/official-source scoped pass; deterministic search repair proven; live Agentic Search still failed` | S0-04G 后做 P2D 与唯一 DELL R3；pass 才 transfer MU/NVDA，fail 立即进入 Provider／产品来源范围决策，不设 R4 |
 | `P001-F08-F10` Workpaper/repair/Lead | S2 capability experiments与 correction guard 已完成但 DeepSeek natural closure 失败；S3-01–05 minimum anchor 有结构，无产品级 thesis/counterevidence/内容验收 | `engineering anchor / product not passed` | DS-A1/A2/A3、S3-06/07 dynamic research、S3-08/09 八维内容验收 |
 | `P001-F11-F14` Deliver/review/trace/follow-up | 继承 0.1.2 的只读 Workbench/Report/Trace surface；尚未消费 FIN 0.1.3 current evidence/research candidate | `historical product projection only` | S4-06 current Case dogfood、exact review、review burden 与 bounded follow-up |
 | `P001-F15` Quality/release | 失败 attempt、capture、paired rubric 与 rollback 合同存在；0.1.3 RG1–RG5 未执行 | `release blocked` | S1/S3/S4 通过后执行 S5；RC-P36-156 shared governance 必须关闭 |
@@ -128,3 +128,39 @@ FIN 0.1 明确 deferred：Data Room、Watchlist/R4、Research-to-Quant、全行�
 - release/rollback/portability：TECH_06/09/10，S5。
 
 因此，`runtime_partial` 不能再被压缩为一个总状态。FIN 0.1.3 必须分别报告 source/search、numeric truth、model adherence、research outcome、product usability 和 release readiness；其中任一通过都不能替代其他轴。
+
+## 8. 2026-08-08 中段 PRD／TECH／Runtime／Product Evidence 再校准
+
+### 8.1 互相校验结果
+
+| PRD 承诺 | TECH 合同 | 当前 Runtime／产品证据 | 对齐结论 |
+| --- | --- | --- | --- |
+| 可控、可复现、可追责的研究纵向 | TECH_06 exact-once、capture-first、permission state | 失败留存和 clean proof 很强，但 RC-P36-156 仍需手工 allowlist projection | 控制骨架成立；shared governance 未收口，S0-04G 前移 |
+| Agentic Search 找到问题所需资料 | TECH_02 provider→candidate→ranking→promotion ladder | R2=`16 calls / 1 unique source / target-in-pool 0`；v3 只证明确定性修复 | S1-08 未通过；不得用 parser 测试或 ranking 指标替代 live candidate ceiling |
+| 模型形成金融判断而非填模板 | TECH_08 model profile；TECH_10 model/content 分层 | deterministic guard 能拒错；DeepSeek natural correction closure 失败 | S2 形成能力 profile，不再逐字段维修；研究判断回到 S3 atom＋protected narrative |
+| reviewer-ready Workpaper/Report | TECH_01/05/09 动态 Cell、方法、Workbench | 当前 FIN 0.1.3 只有 minimum anchor 和历史薄投影 | S3 必须激活研究方法并通过八维内容门；S4 只消费 current candidate dogfood |
+| Internal Alpha 可发布 | TECH_10 L/R/RG gates | 0.1.3 S4/S5 尚未开始 | release blocked，不能由工程 proof 数量替代 |
+
+### 8.2 工程反思
+
+当前仓库在 SourceHunter 的 attempt、authority、successor、preflight 和 lineage 上形成了过多串行微步骤。它们保留了不可变证据，但重复的人工 scope projection 已经证明 RC-P36-156 不再是“以后再修”的次要债务，而是当前交付瓶颈。另一方面，财务研究方法 registry 中的 thesis-path、product-to-financial bridge、customer/supplier read-through 等方法仍多停留在 documented/contract 层；registry 覆盖率不能当作 runtime consumption 或研报质量。
+
+因此后续不再以“再多一个绿色 proof”推进版本，而以六个独立成熟度轴推进：`execution governance / source-search / numeric truth / model autonomy / research outcome / product-release`。只有相应轴的实证能改变该轴状态。
+
+### 8.3 当前依赖图
+
+```text
+S0-04G shared governance
+  -> S1-08 P2D + exactly one DELL R3
+      -> pass: MU/NVDA common transfer -> ranking/Evidence Pack
+      -> fail: provider acquisition or product source-scope decision
+
+frozen same Evidence Pack -> S2 ModelCapabilityProfile/DeepSeek profile
+
+S1 search pass + S2 autonomy grant
+  -> S3 dynamic research + method-to-runtime + content quality
+  -> S4 current Workbench dogfood
+  -> S5 RG1-RG5 release decision
+```
+
+S1 与 S2 的准备工作在 S0-04G 后可以有界并行；两者只在 S3 join。不得再为了证明模型合同而阻塞确定性搜索修复，也不得在搜索失败时把工具缺口记为模型缺陷。

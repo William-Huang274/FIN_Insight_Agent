@@ -1174,4 +1174,6 @@
 - [x] FIN-0.1.3 S1-08 v3 DELL R3 clean-preflight commit-lineage repair: P2C 发现 proof artifact 提交必然推进 HEAD 的自引用；现改为 proven source commit＋execution descendant，并要求 Runtime tree 零漂移。focused=`7`、compile pass，正式 admission/live=0。
 - [x] FIN-0.1.3 S1-08 v3 DELL R3 clean-preflight explicit selector repair: clean A1 因 `pytest -k` 预导入全 contract 目录产生 144 个无关 collection error；失败保留，现显式选择 10 个 S1-08 文件，未复制无关资源或增加 skip/fallback。
 - [x] FIN-0.1.3 S1-08 v3 DELL R3 successor clean zero-call preflight: clean/synced `d713eb66` 上 Git archive/fresh process 显式执行 10 个 S1-08 文件，`70 passed / 0 failed / 0 skipped`；R1=`19`、R2=`2` 受限输入未变，source/mutation/exact-once/R3-result-absent 均通过，正式 admission/network/model/provider/retry/live=0。A1 的 144 个无关 collection errors 作为 proof-runner failure 保留。
-- [ ] FIN-0.1.3 S1-08 v3 DELL R3 exact-live issuance authority projection decision: 仅零调用重核 proof、当前 Runtime tree、contact presence、预算与 stop rule；不得在同一项签发或执行 live。
+- [x] FIN-0.1.3 midstage PRD/TECH/Runtime/Product evidence alignment and replan: 确认治理 proof 成熟度高于 search/research/product，更新 PRD、TECH_00A/02/06/09/10、主计划、机器计划与 Project OS；FIN 0.1.3/0.2 定义不变，外部/模型/admission/live=0。
+- [ ] FIN-0.1.3 S0-04G typed blocker state and versioned RunScopeRegistry minimum zero-call implementation: 当前唯一下一项；关闭 unknown state/scope fail-open，P2D/R3 前置阻断，禁止扩成 admission/SourceHunter/release 重构。
+- [ ] FIN-0.1.3 S1-08 v3 DELL R3 exact-live issuance authority projection decision: 被 S0-04G 前置；S0-04G 通过后仅零调用重核 proof、当前 Runtime tree、contact presence、预算与 stop rule，不得在同一项签发或执行 live。

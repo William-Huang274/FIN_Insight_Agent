@@ -545,4 +545,33 @@ FIN 0.1.3 的真实工程结果证明，检索、模型合同和研究内容必�
 
 ### 23.3 Current FIN 0.1.3 projection
 
-当前 S1-08 v3 为 zero-call engineering pass，最近 DELL live SQ1 terminal integrity 通过但 SQ2 target-in-pool=0，因此 SQ3 ranking 未准入。S2 deterministic correction control 已证明，但 DeepSeek natural evidence-role/closure 失败。S3 只有 minimum engineering anchor，八维产品内容验收未执行；S4/S5 未开始。故 release gate 仍为 blocked，本节不授权 live、model、ranking 或 release execution。
+当前 S1-08 v3 已在 clean archive/fresh process 以 `70 passed / 0 failed / 0 skipped` 独立证明确定性结构，最近 DELL live SQ1 terminal integrity 通过但 SQ2 target-in-pool=0，因此 SQ3 ranking 仍未准入。S2 deterministic correction control 已证明，但 DeepSeek natural evidence-role/closure 失败。S3 只有 minimum engineering anchor，八维产品内容验收未执行；S4/S5 未开始。故 release gate 仍为 blocked，本节不授权 live、model、ranking 或 release execution。
+
+## 24. FIN 0.1.3 中段质量、证明预算与阶段 Join Gate（2026-08-08）
+
+### 24.1 六轴状态，禁止单一绿色总分
+
+后续评测分别维护：`execution governance`、`source/search`、`numeric truth`、`model autonomy`、`research outcome`、`product/release`。每条证据只能提升其直接评测轴：
+
+- clean archive、exact-once、lineage mutation 只提升 execution governance；
+- candidate ceiling、currentness、recall、promotion 只提升 source/search；
+- exact fact、formula、period/unit/currency 只提升 numeric truth；
+- natural canary、correction closure、profile adherence 只提升 model autonomy；
+- thesis、机制、跨 Evidence 综合、反方、WWC 与 human rubric 只提升 research outcome；
+- current Case dogfood、review burden、exact acceptance、rollback/RG 只提升 product/release。
+
+不得把测试数、Artifact 数、typed gap 数、JSON 合法、页面渲染或 preflight pass 合成一个“全链通过”。
+
+### 24.2 证明预算
+
+1. 确定性合同改动先用 zero-call unit/mutation/full-fake；同一合同 family 最多一次结构修订。
+2. clean proof 只在环境可移植性、source lineage、权限或外部副作用值得独立证明时执行；普通文档或无 Runtime 改动不重复跑全套。
+3. natural canary 按合同 family 计，不按字段计；每个发生实质变化的 family 最多一次最小节点 canary。
+4. live search 在同一根因结构修复后最多一次 successor；再次失败进入 Provider／产品范围决策。
+5. formal end-to-end 只在 SearchQualityCard、NumericTruthCard 和 ModelCapabilityProfile 已就绪后执行；不得用 full-chain 发现本可由 mutation 暴露的确定性缺陷。
+
+### 24.3 S3 Join Gate 与研究方法激活
+
+S3 入口必须同时满足：S1 current Evidence Pack 可用、S2 已冻结当前 Provider 的 `ModelCapabilityProfile + AutonomyGrant`、material numeric truth 可重算。方法 registry 中的条目只有在 `runtime_injected`、`node_consumed`、`paid_artifact_proven` 后才能计入实现覆盖；`documented` 或 `contract_translated` 只表示设计资产。
+
+S3 出口必须同时通过 L1/L2、八维绝对质量 `>=24/32`、Q1–Q7 无低于 2、Q1/Q2/Q3/Q8 各不低于 3、paired gain 和 qualified-human content acceptance。Search 不足、模型不遵循、内容薄弱分别保留自己的 failure code；任何一类都不能被另一类分数补偿。

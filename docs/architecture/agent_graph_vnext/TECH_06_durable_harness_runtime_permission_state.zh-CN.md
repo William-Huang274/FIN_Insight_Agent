@@ -427,3 +427,28 @@ TECH_08 定义 Agent/Skill/coordination 语义，TECH_10 决定 eval/release gat
 6. usage analytics 与 compliance audit 权限隔离，普通 manager 不因绩效目的读取 raw prompt。
 
 本节状态为 `documented / contract_draft`，不表示 OIDC/SCIM/OA 或责任链 runtime 已实现。
+
+## 28. FIN 0.1.3 S0-04G：Typed Blocker State 与 Versioned RunScopeRegistry 最小合同（2026-08-08）
+
+### 28.1 触发原因
+
+RC-P36-156 已证明，当前 Project OS 以自由文本表示 blocker state 和 run scope：描述性 `open_*` 状态曾被 liveness 过滤跳过，未注册 scope 又可能在匹配前 fail-open。后续通过 canonical `open`＋`*` block＋单项 allowlist 临时缓解，但 S1-08 每推进一个 proof/decision 都要追加投影，治理本身已成为交付瓶颈并进入真实 live 权限路径。
+
+### 28.2 最小实现，不做平台重写
+
+S0-04G 只允许交付以下共享能力：
+
+- `BlockerState`：至少区分 `open / mitigated_open / blocked_external / closed / superseded`，每个状态明确是否 live；未知状态 fail-closed；
+- `RunScopeRegistryVersion`：canonical scope ID、owner stage、operation class（zero-call／network／model／admission／release）、父子关系、版本和 supersession；
+- `ScopePolicy`：block/allow 只能引用已注册 scope；未知 scope、版本漂移和 owner mismatch 全部 fail-closed；
+- ledger projection checker：同一 issue 的最新投影必须保持 append-only lineage，关闭/替代状态需引用前一记录；
+- preflight output：同时输出 canonical scope ID、registry version、匹配 blocker IDs 与拒绝原因，compact view 不能成为 core truth；
+- mutation：未知 state、未知 scope、描述性别名、wildcard/child、superseded registry、CLI/core shape drift、跨阶段 owner、closed issue replay。
+
+本包不重构 admission ledger、SourceHunter、模型合同、release workflow 或全部历史 issue；历史自由字符串通过只读 compatibility mapping 投影，不能回写改造旧失败证据。
+
+### 28.3 验收与后续权限
+
+S0-04G 需要零网络、零模型、零 Provider、零正式 admission；在当前仓库和 fresh process 中证明：已注册的 P2D 零调用 scope可通过，DELL R3 issuance/live、ranking、MU/NVDA、S3 与 release 在未投影时均被明确拒绝；未知 state/scope 必须稳定 fail-closed。通过后 RC-P36-156 可关闭或降为 historical mitigation，P2D 才成为下一项。
+
+以后只在权限、成本、外部副作用或产品阶段真正变化时单独做 authority decision。普通 deterministic implementation＋clean proof 不再机械拆成多轮人工 allowlist projection。

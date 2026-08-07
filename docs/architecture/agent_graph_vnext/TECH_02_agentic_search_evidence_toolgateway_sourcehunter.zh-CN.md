@@ -816,3 +816,17 @@ clean A1 进一步证明不能用 `pytest tests/contract -k s1_08` 表示“只�
 P2C-A2 随后在 clean/synced `d713eb6600150678618259dce9c00c052d018f52` 的 Git archive 与 fresh Python process 中通过：10 个显式文件=`70 passed / 0 failed / 0 skipped`，R1 request objects=`19`、R2 content objects=`2` 且 before/after digest 不变；compile、authority/source mutation、ancestry/Runtime-tree drift、exact-once 与 R3-result-absent 全部通过。formal admission/network/model/provider/retry/live=`0/0/0/0/0/0`。
 
 因此 clean proof 已成立，但签发权限没有自动成立。下一边界是独立零调用 `S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AUTHORITY_PROJECTION_DECISION`；它只投影下一步权限，不能在同一任务中 issuance 或 live。任何 Runtime tree 漂移都使本 proof 失效并要求重新证明。
+
+### 20.10 中段收口：Shared Governance 前置与最后一次 Candidate-Ceiling Live（2026-08-08）
+
+P2C 已在 clean/synced `d713eb6600150678618259dce9c00c052d018f52` 完成 `70 passed / 0 failed / 0 skipped`，因此 v3 的 parser/date、relationship、slot fairness、fetch ceiling、canonical accounting、successor exact-once 和 lineage 不再需要新的 SourceHunter 零调用修补。剩余未知量只有 fresh operational route 能否把 evaluator target 送进候选池。
+
+但 RC-P36-156 已证明 shared Project OS 对未知 state/scope 会 fail-open，且此前每个 successor 都依赖 append-only wildcard allowlist。该缺陷现在位于下一次真实 live 的权限路径上，所以执行顺序更正为：
+
+1. 先由 TECH_06 的最小 `013-S0-04G` 实现 typed blocker state、versioned `RunScopeRegistry` 和 unknown state/scope fail-closed；
+2. 再执行零调用 P2D，确认 P2C proof、Runtime tree、运行时联系身份仅 presence、16-call budget 与 no-R4 stop rule；
+3. P2D 通过后，才可在独立 Attempt 中签发并执行一次 DELL R3；不得在同一决策任务中 issuance/live；
+4. R3 通过 candidate ceiling 后，MU/NVDA 复用同一 provider/slot/capture/evaluator contract，只换公司身份与 source catalog，不再复制 DELL 的多轮 authority ladder；
+5. R3 若再次 target-in-pool 失败，SourceHunter 阶段立即停止，不创建 R4。下一项只能在运营 broad/official-domain Provider、动态页 fallback、licensed source 或缩小 Internal Alpha source claim 之间做产品决策。
+
+R3 的评价仍只到 SQ0–SQ2 与 promotion safety，不运行 DeepSeek，不计算 ranking 通过，不输出研报。`typed_gap` 也不能用来替代未运营 Provider 或未尝试 route。该边界减少的是重复 proof，不是降低 recall/currentness/diversity/false-promotion 标准。

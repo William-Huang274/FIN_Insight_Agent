@@ -1,0 +1,64 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_dell_current_search_canary_pre_admission_decision_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.DELL_current_search_canary:v1",
+  "status": "blocked_before_admission_runtime_sec_contact_identity_absent",
+  "implementation_commit": "a179fe4144f55a1807140276841b606d5ae246a1",
+  "bindings": [
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v1_0.json",
+      "sha256": "8488c8e48df895e4cacf8a96ac83b68371cdb975401587dfd46c837362a6cb48"
+    },
+    {
+      "ref": "src/sec_agent/s1_08_candidate_generation_runtime.py",
+      "sha256": "5b5f9fdc845db838d9bfe6a04c78e7703988148afa7b9018046ccb1a1e8f3ce9"
+    },
+    {
+      "ref": "src/sec_agent/s1_08_official_discovery_adapter.py",
+      "sha256": "6577ec7138a307c5c2ddd29bb0b50c26dbeca76ae0a8c92e00ece272c7d63de4"
+    },
+    {
+      "ref": "src/sec_agent/s1_08_live_canary.py",
+      "sha256": "86a2d312abd5f397ecc9ba3d92770d9cd3b7643206f9195e4a80716e54accc33"
+    }
+  ],
+  "preflight": {
+    "project_os_status": "pass",
+    "project_os_run_scope": "one_DELL_current_search_canary_authority_decision_after_clean_proof",
+    "project_os_sha256": "0a61ca83bc25eb68ae3c7af4a8692818f1c166f2b9f2de13380bb524c2f37da1",
+    "git_clean": true,
+    "git_synced": true,
+    "related_tests": "37 passed",
+    "runtime_sec_contact_identity_ready": false,
+    "runtime_identity_value_read_or_persisted": false
+  },
+  "intended_envelope": {
+    "case_key": "DELL",
+    "maximum_query_revisions_per_target": 2,
+    "network_call_ceiling": 24,
+    "document_ceiling_per_query": 2,
+    "retry_ceiling": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "ranking_or_reranker": false
+  },
+  "observed_execution": {
+    "admission_issued": false,
+    "shared_ledger_reserved": false,
+    "runner_started": false,
+    "network_calls": 0,
+    "source_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "candidate_results": 0
+  },
+  "decision": {
+    "label": "pre_admission_block",
+    "required_external_state": "restart Codex with a valid FINSIGHT_SEC_CONTACT_EMAIL environment value",
+    "after_state_change": "rerun the same clean preflight, issue one fresh admission, and execute exactly once",
+    "candidate_generation_reimplementation_required": false,
+    "MU_or_NVDA_authorized": false,
+    "ranking_authorized": false
+  },
+  "decision_binding_digest": "baab4facb0849e0246b057271cc0b9c0ac39feaf00f39f6eeecc51de11cde679",
+  "known_boundary": "The block proves credential-safe pre-admission behavior, not live discovery failure. No source was contacted and no admission budget was consumed."
+}

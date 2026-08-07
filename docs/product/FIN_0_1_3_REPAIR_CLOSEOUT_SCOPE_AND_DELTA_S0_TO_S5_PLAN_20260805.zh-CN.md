@@ -270,6 +270,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-06` DELL R2 successor entrypoint 工程通过**：隔离 support、issuer、runner 已绑定新 decision、v1.1、fresh proof、immutable DELL inputs 与入口 SHA；独立 `DELL_R2` authority root 和 fresh R2 identity 阻止 R1 复用，旧入口仍 fail-closed。focused=`5 passed`、broad=`143 passed`，外部调用/admission=0。提交推送后只做 clean Project OS/runner/issuer dry-run preflight；通过后必须返回用户获取 execution 指令，不得自动签发。
 
+> **2026-08-07 `013-S2-06` DELL R2 successor clean preflight 通过**：clean/synced `f1238ad9` 上 Project OS、runner 与 issuer dry-run 均通过；v1.1/immutable DELL/capacity 与 credential-presence 边界成立，authority/Run root 均未创建，外部调用/admission=0。当前必须停止并等待用户 execution 指令；之后才可签发一份 R2 admission 并 exact-once 执行，仍禁止自动 R3 和 MU/NVDA 越序。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。

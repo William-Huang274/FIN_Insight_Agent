@@ -1,0 +1,72 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_dell_r2_supervisor_successor_entrypoint_clean_preflight_result_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "clean_synced_preflight_pass_execution_instruction_pending_admission_not_issued",
+  "scope": "Project_OS_runner_preflight_and_issuer_dry_run_for_one_DELL_R2_successor_entrypoint",
+  "source_binding": {
+    "git_commit": "f1238ad9bc302692e7719497569581b595f94717",
+    "upstream_commit": "f1238ad9bc302692e7719497569581b595f94717",
+    "worktree_clean_before_preflight": true,
+    "successor_entrypoint_implementation_ref": "configs/releases/fin_ia_0_1_3_s2_06_dell_r2_supervisor_successor_entrypoint_zero_call_implementation_v1_0.json",
+    "successor_entrypoint_implementation_digest": "cfec8ca90cfbc2db29062d6d42af4dbf2512c0fdb294cddec3d4a9a2962fa0b2",
+    "replacement_authority_ref": "configs/releases/fin_ia_0_1_3_s2_06_dell_replacement_supervisor_authority_decision_v1_0.json",
+    "replacement_authority_decision_digest": "ada6960739d9f411f035d95f908d8b3cde72671fc8623ca4ec1cfc41947e7ee1"
+  },
+  "project_os_preflight": {
+    "run_scope": "successor_DELL_R2_Project_OS_runner_and_issuer_dry_run_preflight",
+    "status": "pass",
+    "allow_open_blockers": false,
+    "open_full_chain_blocker_count": 0,
+    "errors": []
+  },
+  "runner_preflight": {
+    "status": "zero_call_DELL_R2_supervisor_preflight_pass_admission_not_required",
+    "case_key": "DELL",
+    "replacement_attempt": "R2",
+    "raw_run_id": "fin013_s2_05_exp_a_dell_f9e9264951d69da5ed86",
+    "evaluation_digest": "68f89f4e33622a3dd5f65c06c7f75857c8a9833066910b723df674ed462c4af4",
+    "boundary_digest": "361bcca1f024ac2fa98869db3b4aeab1d5441c410390eb3fe33561ef7bc105e4",
+    "supervisor_plan_schema_version": "fin_ia_0_1_3_s2_06_supervisor_plan_v1_1",
+    "supervisor_request_characters": 33689,
+    "expected_provider_calls": 8,
+    "provider_call_ceiling": 11,
+    "credential_present": true,
+    "credential_value_read": false,
+    "admission_issued": false
+  },
+  "issuer_dry_run": {
+    "status": "dry_run_ready_not_issued",
+    "prospective_admission_digest": "b5578178db6cdb4229b598d6bdbb0725f79e98c43da2278f2ddcb047b4fcf730",
+    "prospective_run_id": "fin013_s2_06_supervised_dell_r2_606afbab4da2e8acd2ed",
+    "prospective_attempt_id": "fin013_s2_06_supervised_dell_r2_606afbab4da2e8acd2ed_attempt_1",
+    "credential_present": true,
+    "credential_value_persisted": false,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "provider_calls": 0,
+    "network_calls": 0
+  },
+  "postflight": {
+    "DELL_R2_authority_root_exists": false,
+    "prospective_runtime_root_exists": false,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "corrected_candidates": 0,
+    "raw_mutations": 0
+  },
+  "stage_acceptance": {
+    "successor_entrypoint_clean_synced_preflight": "pass",
+    "DELL_R2_execution_instruction": false,
+    "DELL_R2_admission": false,
+    "DELL_R2_execution": false,
+    "supervised_recoverability": "not_proven",
+    "business_promotion": false,
+    "release": false
+  },
+  "next_action": "USER_EXECUTION_INSTRUCTION_THEN_ISSUE_ONE_DELL_R2_ADMISSION_AND_EXECUTE_EXACT_ONCE",
+  "next_action_authorized_automatically": false,
+  "known_boundary": "The successor entrypoint is clean-preflighted and credential availability is confirmed without reading the value. No admission or runtime was created. A separate user execution instruction is still required before issuance and paid DeepSeek execution.",
+  "result_digest": "2aa58c0dc67378220de594aae23722618e7ff8b34adcbbd1fe325017faf73836"
+}

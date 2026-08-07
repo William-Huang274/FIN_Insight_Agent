@@ -272,6 +272,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-06` DELL R2 successor clean preflight 通过**：clean/synced `f1238ad9` 上 Project OS、runner 与 issuer dry-run 均通过；v1.1/immutable DELL/capacity 与 credential-presence 边界成立，authority/Run root 均未创建，外部调用/admission=0。当前必须停止并等待用户 execution 指令；之后才可签发一份 R2 admission 并 exact-once 执行，仍禁止自动 R3 和 MU/NVDA 越序。
 
+> **2026-08-07 `013-S2-06` DELL Supervisor R2 可信终止**：唯一 R2 admission 在 `85b3a8bb` 上 exact-once 消费，SupervisorPlan v1.1 自然通过，随后 U3/U4 corrected Specialist 共完成 2 次调用；总计 `3 calls/3 captures/13,177 tokens/USD 0.009741/0 retry`。R1 的 RC-P36-147 未复发，但新 RC-P36-148 暴露共享协议缺口：Supervisor 看得到 finding code/path，corrected node 只收到 correction ID/action/aliases，且 generic node validator 不验证 assigned correction 是否关闭；U3 仍为空反证却被接受。U4 同样未关闭反证，并把方向性中个位数重新写成无授权约 `5%`，在 `experiment_a_unbound_numeric_surface` 首错停止。该结果同时包含项目 correction semantic/closure 缺口与模型 numeric semantics 不遵循；按共享缺陷规则停止 campaign，不自动 R3/MU/NVDA。下一项只允许一个零调用结构处置，不得逐字段 live patch。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。
@@ -299,7 +301,7 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 14. [x] 保留 `013-S3-01`–`013-S3-05` 与 R3 为 minimum engineering/control anchor：结构、exact-once、9 natural Claim、3 Lead、3 Workpaper、L1/L2 成立；0 thesis-support、0 natural counterevidence 与 29 个未研究 Cell 使其不构成产品级研究证明。
 15. [x] 完成 DELL/MU/NVDA 三份 Codex-authored Gold candidate 与交叉订正；明确它们是混合研究候选，不是当前产品或完整 MCP 已独立产出的报告。
 16. [x] 完成 `013-S2-04`：三案共享 Benchmark Evidence Pack、blind input 和 evaluator-only hidden Gold scoring objects 已按 digest 冻结，公平性、泄漏、跨案污染、日期和数值重算检查通过。
-17. [ ] 执行 `013-S2-05/06` Experiment A：`013-S2-05` 三案 raw 已全部完成且均为质量失败，v1.4 统一结果 DELL=`3/1/23`、MU=`8/2/14`、NVDA=`4/1/27`；三案 deterministic supervision boundary、统一 Supervisor authority、shared zero-call implementation、clean-commit independent fresh proof 和最终 admission authority decision 已完成。当前有界 campaign 已获准但 admission 尚未签发；仍待三案 correction/corrected-candidate、L1/L2 与内容质量评估和最终能力边界，formal score、业务晋升和 release 均未成立。
+17. [ ] 执行 `013-S2-05/06` Experiment A：`013-S2-05` 三案 raw 已全部完成且均为质量失败，v1.4 统一结果 DELL=`3/1/23`、MU=`8/2/14`、NVDA=`4/1/27`；三案 deterministic supervision boundary、统一 Supervisor authority、shared zero-call implementation、clean-commit independent fresh proof 和最终 admission authority decision 已完成。DELL Supervisor R2 已在 3 calls 后暴露 RC-P36-148：correction objective 语义未传入 corrected node、closure 未验证，且整节点重写重新引入 numeric L1；R2 immutable failed，campaign 按共享缺陷停止，MU/NVDA 未启动。当前先做唯一 zero-call correction semantics/closure/numeric ownership 结构处置；formal score、业务晋升和 release 均未成立。
 18. [ ] 执行 `013-S1-06/07/08`：修复 MCP operational truth、当前外部来源 runtime 和 Agentic Search 质量门；不调用 DeepSeek 来发现确定性工具缺陷。
 19. [ ] 执行 `013-S3-06/07`：动态 Lead loop 与 EvidenceRequest/targeted repair 闭环。
 20. [ ] 执行 `013-S3-08/09` Experiment B：三案端到端 DeepSeek Agentic Search/Research、隐藏 Gold 八维对照和 qualified-human 内容验收。

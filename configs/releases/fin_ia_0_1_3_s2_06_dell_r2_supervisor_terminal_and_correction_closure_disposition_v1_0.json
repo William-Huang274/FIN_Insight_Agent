@@ -1,0 +1,94 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_dell_r2_supervisor_terminal_and_correction_closure_disposition_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "R2_immutable_terminal_failed_shared_correction_semantic_and_closure_gap_campaign_stopped",
+  "scope": "one_DELL_R2_case_local_SupervisorPlan_and_corrected_graph_exact_once_attempt",
+  "execution": {
+    "execution_git_commit": "85b3a8bb8fc1e5d8b3a2796988fdc2596e98cffd",
+    "run_id": "fin013_s2_06_supervised_dell_r2_75f564be276fdbe6e73f",
+    "attempt_id": "fin013_s2_06_supervised_dell_r2_75f564be276fdbe6e73f_attempt_1",
+    "admission_digest": "fe9f010469e1967bce831b52be7092b5e26fe1d101fa8546908a960ed2d4e238",
+    "admission_state": "terminal_exact_once_consumed",
+    "terminal_status": "terminal_failed_no_retry",
+    "terminal_phase": "specialist:U4",
+    "terminal_code": "experiment_a_unbound_numeric_surface",
+    "terminal_result_digest": "7b0d6dd3013126d31d799d80cd9b1a97a015741c3129ecfa573ad6127da2e0e9",
+    "receipt_digest": "a6eaf47ab8f1d8746f40b640633ba7924b6717f70a2a177bac5c73391b216c03",
+    "completed_provider_calls": 3,
+    "captures": 3,
+    "candidate_frozen": false,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "raw_mutations": 0,
+    "hidden_scoring_executed": false,
+    "business_promotable": false
+  },
+  "provider_result": {
+    "model": "deepseek-v4-pro",
+    "all_completed_gateway_status": "ok",
+    "all_completed_finish_reason": "stop",
+    "transport_attempts_per_call": 1,
+    "call_sequence": [
+      "supervisor_plan",
+      "specialist:U3",
+      "specialist:U4"
+    ],
+    "usage_tokens": {
+      "input": 11509,
+      "output": 1668,
+      "total": 13177
+    },
+    "estimated_cost_usd": "0.009741",
+    "latency_ms_sum": 21778,
+    "cost_method": "policy_ceiling_rates_not_provider_invoice"
+  },
+  "live_findings": {
+    "supervisor_plan_v1_1_passed": true,
+    "RC_P36_147_recurred": false,
+    "U3_requested_correction_id": "DELL-CORR-023",
+    "U3_requested_correction_meaning": "explicit_counterevidence_surface_empty",
+    "U3_returned_counterevidence_ids": 0,
+    "U3_was_accepted_by_generic_node_validator": true,
+    "U4_requested_correction_id": "DELL-CORR-024",
+    "U4_requested_correction_meaning": "explicit_counterevidence_surface_empty",
+    "U4_returned_counterevidence_ids": 0,
+    "U4_new_unbound_numeric_surface": "approximately_5_percent_AI_server_operating_margin",
+    "U4_hypothetical_thresholds_repeated_outside_what_would_change": true,
+    "first_terminal": "experiment_a_unbound_numeric_surface"
+  },
+  "root_cause": {
+    "issue_id": "RC-P36-148",
+    "classification": "shared_project_correction_semantic_loss_and_closure_validation_gap_plus_model_numeric_instruction_noncompliance",
+    "earliest_faulty_artifact": "the corrected-node request exposes correction IDs, action codes and authority aliases but omits each finding code, path and required closure semantics",
+    "evidence": [
+      "the Supervisor saw the full visible finding rows and produced a valid v1.1 plan",
+      "the corrected U3 and U4 requests exposed DELL-CORR-023/024 but not the explicit_counterevidence_surface_empty meaning",
+      "U3 returned an empty counterevidence_ids array and still passed the generic specialist validator, proving that assigned correction closure was not checked",
+      "U4 also left counterevidence_ids empty and regenerated an unsupported approximately 5 percent margin in judgment",
+      "the model-visible numeric semantics explicitly limited hypothetical thresholds to what_would_change, while U4 repeated threshold values in financial_or_valuation_link"
+    ],
+    "impact": "R2 is a valid failed supervised-recoverability measurement, but it cannot isolate model recoverability because the shared project correction protocol does not communicate or verify correction objectives.",
+    "shared_campaign_impact": "stop_before_MU_or_NVDA_and_do_not_retry_DELL",
+    "required_fix": "compile typed correction objectives with code path and closure rule into every corrected-node request; verify every assigned correction as closed or typed-unresolved before accepting a node; prevent full-node regeneration from reopening previously closed material numeric failures by restricting financial numeric prose to bound aliases and local deterministic rendering"
+  },
+  "campaign_disposition": {
+    "DELL_R2": "immutable_terminal_failed_shared_project_blocker_and_model_numeric_noncompliance",
+    "DELL_R3_authorized": false,
+    "MU_started": false,
+    "NVDA_started": false,
+    "campaign_stopped": true,
+    "automatic_retry": false,
+    "automatic_replacement": false,
+    "next_work_type": "one_shared_zero_call_structural_disposition_not_field_patch"
+  },
+  "verification": {
+    "terminal_and_shared_ledger_match": true,
+    "three_captures_preserved": true,
+    "credential_value_persisted": false,
+    "candidate_or_hidden_score_created": false,
+    "model_provider_network_calls_after_terminal": [0, 0, 0]
+  },
+  "next_action": "FIN-0.1.3-013-S2-06-CORRECTION-OBJECTIVE-SEMANTICS-CLOSURE-VERIFICATION-AND-NUMERIC-SURFACE-OWNERSHIP-ZERO-CALL-DISPOSITION",
+  "known_boundary": "R2 proves SupervisorPlan v1.1 live compliance and exact-once failure preservation. It does not prove corrected-candidate quality, supervised recoverability, MU/NVDA behavior, product acceptance or release.",
+  "result_digest": "7ef312daac570cfc0f999c655b2d85a7834945937b1cfd50be3d56cb8b027e09"
+}

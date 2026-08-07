@@ -1,5 +1,7 @@
 # Model Run Index
 
+- `2026-08-07` — FIN 0.1.3 S2-06 DELL Supervisor R2: v1.1 SupervisorPlan 通过后，U3 未关闭空反证却被 generic validator 接受，U4 又生成无授权约 `5%` 数值表面并 terminal；`3 calls / 3 captures / 13,177 tokens / USD 0.009741 / retry 0`。RC-P36-147 live-close，新增 RC-P36-148 correction semantic/closure 共享阻断；无 R3/MU/NVDA。见 `reports/model_runs/20260807_fin_0_1_3_s2_06_dell_supervisor_r2_terminal.md`。
+
 - `2026-08-07` — FIN 0.1.3 S2-05 Experiment A DELL layered replacement exact-live: successor runner 完成 `10 calls / 10 captures / 10 stop`，usage=`29,767/6,557/36,324`、估算 USD `0.0290071`、retry/fallback=`0/0`。typed schema 漂移已消失，但模型把“中个位数”利润率虚构成 `4–6%` 精度，Verifier 零 finding 接受；隐藏 Rubric 仅作 shadow 诊断=`18/32`，故 DELL Experiment A=false、business promotion=false、MU/NVDA 未启动。见 `reports/model_runs/20260807_fin_0_1_3_s2_05_dell_layered_replacement_exact_live.md`。
 
 - `2026-08-07` — FIN 0.1.3 S2-05 Experiment A DELL DeepSeek Pro exact-live R1: Lead 正常返回 6-unit JSON，但 numeric authority 混合失败后首错停止；`1 call / 1 capture / 3766 tokens / USD 0.0035378 / retry 0 / Artifact 0`。Provider 输入外假设阈值与项目 unit/suffix classifier 假阳性并存，登记 RC-P36-141；未启动 MU/NVDA。见 `reports/model_runs/20260807_fin_0_1_3_s2_05_experiment_a_dell_deepseek_pro_exact_live_r1.md`。

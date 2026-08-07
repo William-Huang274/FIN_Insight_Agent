@@ -39,6 +39,7 @@ REQUEST_CHARACTERS = {
     "MU": 28203,
     "NVDA": 35749,
 }
+EXPECTED_WORKER_TESTS = 27
 
 
 def _configure_base() -> None:
@@ -86,6 +87,34 @@ def _run_worker(runtime_root: Path, output_path: Path) -> dict[str, Any]:
     )
     base._require(output_path.exists(), "fresh_worker_output_missing")
     return base._load(output_path)
+
+
+def _worker_payload(runtime_root: Path) -> dict[str, Any]:
+    original_require = base._require
+
+    def successor_require(condition: bool, code: str) -> None:
+        if code == "unexpected_passed_test_count":
+            return
+        original_require(condition, code)
+
+    base._require = successor_require
+    try:
+        payload = base._worker_payload(runtime_root)
+    finally:
+        base._require = original_require
+    original_require(
+        payload["pytest"]["passed"] == EXPECTED_WORKER_TESTS,
+        "successor_worker_test_count_invalid",
+    )
+    original_require(
+        any(
+            "test_nonempty_case_authority_is_compiled_into_schema_prompt_and_validator"
+            in nodeid
+            for nodeid in payload["pytest"]["nodeids"]
+        ),
+        "successor_nonempty_authority_regression_missing",
+    )
+    return payload
 
 
 def _successor_result() -> dict[str, Any]:
@@ -136,7 +165,7 @@ def main() -> int:
     _configure_base()
     if args.worker:
         base._require(args.runtime_root is not None, "worker_runtime_root_required")
-        payload = base._worker_payload(args.runtime_root.resolve())
+        payload = _worker_payload(args.runtime_root.resolve())
     else:
         payload = _successor_result()
     args.output.parent.mkdir(parents=True, exist_ok=True)

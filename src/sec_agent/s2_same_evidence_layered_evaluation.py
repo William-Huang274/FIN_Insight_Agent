@@ -135,9 +135,9 @@ def allowed_numeric_surfaces(case_input: Mapping[str, Any]) -> set[str]:
         if abs(value) >= 10:
             variants.add(_decimal(value.quantize(Decimal("1"))))
         suffixes = [""]
-        if unit == "percent":
+        if unit.startswith("percent"):
             suffixes.append("%")
-        if unit == "usd_billion":
+        if unit.startswith("usd_billion"):
             suffixes.extend(["b", "B"])
         if unit in {"multiple", "ratio"}:
             suffixes.append("x")
@@ -191,8 +191,28 @@ def evaluate_raw_chain(
     if isinstance(writer, Mapping):
         for path, text in _text_surfaces(writer):
             for code in _financial_semantic_codes(text.lower(), case_input):
+                severity = (
+                    "L3"
+                    if code == "unsupported_historical_valuation_comparison"
+                    and _is_conditional_surface(path, text)
+                    else "L1"
+                )
+                if severity == "L1":
+                    semantic_codes.add(code)
+                _finding(findings, severity, code, "writer", path=path)
+
+    content_nodes: list[tuple[str, Any]] = [
+        (f"specialist[{index}]", value)
+        for index, value in enumerate(specialists or [])
+    ]
+    content_nodes.extend((("synthesis", synthesis), ("writer", writer)))
+    for node_ref, value in content_nodes:
+        if not isinstance(value, Mapping):
+            continue
+        for path, text in _text_surfaces(value):
+            for code in _financial_invariant_codes(text.lower(), case_input):
                 semantic_codes.add(code)
-                _finding(findings, "L1", code, "writer", path=path)
+                _finding(findings, "L1", code, node_ref, path=path)
 
     verifier_l1 = False
     if isinstance(verifier, Mapping) and isinstance(verifier.get("findings"), list):
@@ -209,7 +229,7 @@ def evaluate_raw_chain(
     material = any(row["severity"] == "L1" for row in findings)
     verifier_accepts = isinstance(verifier, Mapping) and verifier.get("decision") == "accept_raw_candidate"
     return {
-        "schema_version": "fin_ia_0_1_3_s2_05_layered_raw_evaluation_v1_1",
+        "schema_version": "fin_ia_0_1_3_s2_05_layered_raw_evaluation_v1_3",
         "case_key": case_input.get("case_key"),
         "raw_chain_complete": complete,
         "raw_experiment_candidate": complete,
@@ -311,6 +331,62 @@ def _financial_semantic_codes(text: str, case_input: Mapping[str, Any]) -> list[
     return codes
 
 
+def _financial_invariant_codes(text: str, case_input: Mapping[str, Any]) -> list[str]:
+    codes: list[str] = []
+    metrics = _numeric_metric_names(case_input)
+    pe_terms = ("trailing p/e", "trailing pe", "static p/e", "静态 p/e", "静态p/e")
+    single_period_terms = ("single-quarter", "single quarter", "单季")
+    basis_terms = ("based on", "basis", "基于")
+    if (
+        "trailing_pe" in metrics
+        and any(term in text for term in pe_terms)
+        and any(term in text for term in single_period_terms)
+        and any(term in text for term in basis_terms)
+    ):
+        codes.append("trailing_pe_recast_as_single_quarter_earnings_multiple")
+
+    deposit_terms = ("deposit", "prepayment", "预付款", "客户押金")
+    cash_or_refund_terms = (
+        "cash buffer", "liquidity buffer", "write-down", "writedown", "refund",
+        "现金缓冲", "流动性缓冲", "减值", "退款",
+    )
+    if (
+        "deposits_and_commitments" in metrics
+        and any(term in text for term in deposit_terms)
+        and any(term in text for term in cash_or_refund_terms)
+    ):
+        codes.append("combined_deposits_commitments_recast_as_cash_or_refundable_prepayment")
+
+    fcf_terms = ("fcf", "free cash flow", "自由现金流")
+    lost_revenue_terms = ("lost revenue", "revenue decline", "收入减少", "收入下降")
+    marginal_terms = ("every $1", "each $1", "每1美元", "每 1 美元")
+    if (
+        "adjusted_fcf_margin" in metrics
+        and any(term in text for term in fcf_terms)
+        and any(term in text for term in lost_revenue_terms)
+        and any(term in text for term in marginal_terms)
+    ):
+        codes.append("average_fcf_margin_recast_as_marginal_revenue_sensitivity")
+    return codes
+
+
+def _numeric_metric_names(case_input: Mapping[str, Any]) -> set[str]:
+    metrics = {
+        str(row.get("metric") or "")
+        for row in case_input.get("derived_numeric", [])
+        if isinstance(row, Mapping)
+    }
+    for evidence in case_input.get("evidence_items", []):
+        if not isinstance(evidence, Mapping):
+            continue
+        metrics.update(
+            str(row.get("metric") or "")
+            for row in evidence.get("numeric_facts", [])
+            if isinstance(row, Mapping)
+        )
+    return metrics
+
+
 def _directional_percent_range_tokens(text: str, case_input: Mapping[str, Any]) -> set[str]:
     input_text = json.dumps(case_input, ensure_ascii=False).lower()
     if not any(term in input_text for term in _DIRECTIONAL_PERCENT_TERMS):
@@ -323,6 +399,13 @@ def _directional_percent_range_tokens(text: str, case_input: Mapping[str, Any]) 
         tokens.add(_normalize(match.group("low")))
         tokens.add(_normalize(match.group("high") + "%"))
     return tokens
+
+
+def _is_conditional_surface(path: str, text: str) -> bool:
+    lowered = text.lower()
+    return path.endswith(_HYPOTHETICAL_PATHS) or any(
+        marker in lowered for marker in _CONDITIONAL_MARKERS
+    )
 
 
 def _text_surfaces(value: Any, path: str = "$") -> list[tuple[str, str]]:

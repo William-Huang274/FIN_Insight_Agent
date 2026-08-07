@@ -100,3 +100,46 @@ def test_release_decision_freezes_raw_first_cross_case_fairness_boundary() -> No
     assert campaign["DELL_correction_required_before_MU_raw"] is False
     assert campaign["DELL_supervisor_model_calls_before_three_case_raw_campaign_complete"] == 0
     assert decision["supervision_boundary"]["supervisor_model_repair"]["may_receive_hidden_gold"] is False
+
+
+def test_financial_semantic_invariants_return_to_originating_model_without_hidden_gold() -> None:
+    evaluation = _evaluation()
+    evaluation["findings"].extend(
+        [
+            {
+                "severity": "L1",
+                "code": "trailing_pe_recast_as_single_quarter_earnings_multiple",
+                "node_ref": "writer",
+            },
+            {
+                "severity": "L1",
+                "code": "combined_deposits_commitments_recast_as_cash_or_refundable_prepayment",
+                "node_ref": "specialist[0]",
+            },
+            {
+                "severity": "L1",
+                "code": "average_fcf_margin_recast_as_marginal_revenue_sensitivity",
+                "node_ref": "specialist[5]",
+            },
+            {
+                "severity": "L3",
+                "code": "unsupported_historical_valuation_comparison",
+                "node_ref": "writer",
+            },
+        ]
+    )
+    boundary = compile_supervision_boundary(
+        evaluation, raw_run_id="run-MU", raw_terminal_digest="b" * 64
+    )
+    by_code = {row["source_finding"]["code"]: row for row in boundary["corrections"]}
+    for code in (
+        "trailing_pe_recast_as_single_quarter_earnings_multiple",
+        "combined_deposits_commitments_recast_as_cash_or_refundable_prepayment",
+        "average_fcf_margin_recast_as_marginal_revenue_sensitivity",
+    ):
+        assert by_code[code]["primary_owner"] == "originating_model_node"
+        assert by_code[code]["deterministic_correction_allowed"] is False
+        assert by_code[code]["new_model_call_required"] is True
+        assert by_code[code]["hidden_gold_visible"] is False
+    assert by_code["unsupported_historical_valuation_comparison"]["correction_class"] == "uncalibrated_valuation_reference"
+    assert by_code["unsupported_historical_valuation_comparison"]["new_model_call_required"] is False

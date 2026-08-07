@@ -2,7 +2,9 @@
 
 日期：2026-08-07
 
-状态：`zero-call authority compiled / admission not issued / execution pending clean commit`
+状态：`closed / authority committed and consumed once / superseded by worklog 675 result`
+
+> 后续：本 authority 已在 commit `ddbaf2cd...c208` 上签发并 exact-once 消费；结果见 `675_fin_0_1_3_s2_05_mu_raw_exact_live_and_s2_06_boundary.md`。下文保留签发前事实，不改写为运行结果。
 
 ## 目标
 

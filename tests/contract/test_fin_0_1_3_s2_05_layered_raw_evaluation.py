@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 from pathlib import Path
 from typing import Any
@@ -20,9 +21,12 @@ from sec_agent.s2_same_evidence_supervision import compile_supervision_boundary
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def _case_and_policy() -> tuple[dict[str, Any], dict[str, Any]]:
+def _case_and_policy(case_key: str = "DELL") -> tuple[dict[str, Any], dict[str, Any]]:
     policy = load_runtime_policy(ROOT)
-    case = load_frozen_blind_inputs(ROOT, policy)["cases"][0]
+    case = next(
+        row for row in load_frozen_blind_inputs(ROOT, policy)["cases"]
+        if row["case_key"] == case_key
+    )
     return case, policy
 
 
@@ -103,6 +107,21 @@ def test_numeric_compiler_accepts_source_bound_suffix_unit_and_rounding() -> Non
     case, _ = _case_and_policy()
     allowed = allowed_numeric_surfaces(case)
     assert {"51.3b", "24.4b", "36.7%", "55.5%", "10.5%", "9.3%"} <= allowed
+
+
+def test_numeric_compiler_accepts_typed_approximate_and_lower_bound_unit_families() -> None:
+    case, _ = _case_and_policy()
+    case = deepcopy(case)
+    case["derived_numeric"].extend(
+        [
+            {"metric": "rpo", "unit": "USD_billion_approx", "value": "100"},
+            {"metric": "deposits", "unit": "USD_billion_approx", "value": "22"},
+            {"metric": "volume", "unit": "percent_approx", "value": "33.33"},
+            {"metric": "revenue", "unit": "USD_billion_lower_bound", "value": "1"},
+        ]
+    )
+    allowed = allowed_numeric_surfaces(case)
+    assert {"100b", "22b", "33%", "1b"} <= allowed
 
 
 def test_layered_evaluation_keeps_hypothesis_as_quality_finding_not_material() -> None:
@@ -213,6 +232,49 @@ def test_unrelated_conditional_percent_range_is_not_misattributed_to_directional
     assert all(row["code"] == "hypothetical_planning_threshold" for row in matching)
     assert all(row["severity"] == "L3" for row in matching)
     assert result["material_failure"] is False
+
+
+def test_historical_valuation_reference_is_L1_when_asserted_but_L3_when_conditional() -> None:
+    case, policy = _case_and_policy()
+    chain = _chain(case, policy)
+    chain["writer"]["sections"][3]["narrative"] = (
+        "The current P/E assumes earnings return to a historical average."
+    )
+    chain["writer"]["sections"][5]["narrative"] = (
+        "If future evidence establishes a historical average, reassess the valuation."
+    )
+    result = evaluate_raw_chain(chain, case_input=case, policy=policy, section_ids=SECTION_IDS)
+    matching = [
+        row for row in result["findings"]
+        if row["code"] == "unsupported_historical_valuation_comparison"
+    ]
+    assert {row["severity"] for row in matching} == {"L1", "L3"}
+    asserted = next(row for row in matching if row["path"] == "$.sections[3].narrative")
+    conditional = next(row for row in matching if row["path"] == "$.sections[5].narrative")
+    assert asserted["severity"] == "L1"
+    assert conditional["severity"] == "L3"
+
+
+def test_financial_invariants_reject_pe_deposit_and_fcf_semantic_recasts() -> None:
+    case, policy = _case_and_policy("MU")
+    chain = _chain(case, policy)
+    chain["specialists"][0]["judgment"] = (
+        "The combined deposits and commitments provide a cash buffer."
+    )
+    chain["specialists"][1]["financial_or_valuation_link"] = (
+        "Every $1 of lost revenue reduces FCF by $0.44 because the current FCF margin applies."
+    )
+    chain["writer"]["sections"][3]["narrative"] = (
+        "The static P/E is based on single-quarter operating margin."
+    )
+    result = evaluate_raw_chain(chain, case_input=case, policy=policy, section_ids=SECTION_IDS)
+    codes = {row["code"] for row in result["findings"]}
+    assert "combined_deposits_commitments_recast_as_cash_or_refundable_prepayment" in codes
+    assert "average_fcf_margin_recast_as_marginal_revenue_sensitivity" in codes
+    assert "trailing_pe_recast_as_single_quarter_earnings_multiple" in codes
+    assert "verifier_missed_material_financial_semantics" in codes
+    assert "verifier_missed_material_failure" in codes
+    assert result["material_failure"] is True
 
 
 def test_s2_06_boundary_separates_raw_correction_and_next_case_authority() -> None:

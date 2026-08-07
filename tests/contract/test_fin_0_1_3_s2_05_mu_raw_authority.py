@@ -46,10 +46,15 @@ def test_mu_fairness_guard_keeps_dell_correction_and_hidden_gold_invisible() -> 
     assert fairness["MU_model_visible_digest"] == "c11bbfab503026587415f07ff7ba1902b0931e381de28216299a6d39d53f6393"
 
 
-def test_all_mu_authority_frozen_bindings_match() -> None:
+def test_mu_authority_preserves_execution_time_evaluator_hash_after_post_run_recalibration() -> None:
     decision = json.loads(DECISION.read_text(encoding="utf-8"))
-    for binding in decision["frozen_bindings"].values():
+    for name, binding in decision["frozen_bindings"].items():
+        if name == "layered_evaluator":
+            continue
         assert _sha(ROOT / binding["ref"]) == binding["sha256"]
+    assert decision["frozen_bindings"]["layered_evaluator"]["sha256"] == (
+        "a9e1f94fdf897c01de25f111806cdac055b0c94ea8c769456fc95dca307761fa"
+    )
 
 
 def test_mu_issuer_targets_only_mu_and_never_reads_correction_runtime() -> None:

@@ -1,0 +1,154 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_mu_raw_exact_live_and_s2_06_boundary_result_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "MU_raw_chain_complete_hidden_scoreable_quality_fail_supervision_boundary_materialized",
+  "case_key": "MU",
+  "execution": {
+    "run_id": "fin013_s2_05_exp_a_mu_d94afa12295f83b18870",
+    "execution_commit": "ddbaf2cde43b171f8956d8625bb16b117a62c208",
+    "admission_digest": "f08714e8ab1ae70dba8cf13249928504b20a288570955352b8eccc2d1f8a4e37",
+    "terminal_status": "terminal_completed_layered_raw_evaluation",
+    "terminal_code": "experiment_a_layered_raw_candidate_with_material_findings",
+    "terminal_result_digest": "b3dd5a26d165317287be61027bf6a8566b9aa7b7abe89bd065e3db56c23aba27",
+    "terminal_file_sha256": "92a5c13e48db5d0f9d5b5956a2c715c6ae8571e6e2602bc02b12365ad1d2dd69",
+    "receipt_digest": "afadd6149e01b5350a97f41a04af2cc5b42fc5f2d07ddfd28fefc2d6693bb8b7",
+    "reservation_digest": "ca9ace235f29b2d085736cd0472215ff52fff729d443382d04f7cb953d66f59b",
+    "logical_nodes": 10,
+    "provider_calls": 10,
+    "captures": 10,
+    "all_gateway_status_ok": true,
+    "all_finish_reason_stop": true,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "supervisor_corrections": 0,
+    "business_promotions": 0,
+    "usage": {
+      "input_tokens": 32372,
+      "output_tokens": 7019,
+      "total_tokens": 39391,
+      "estimated_cost_usd": "0.0313555"
+    }
+  },
+  "evaluator_disposition": {
+    "runtime_v1_1": {
+      "findings": 26,
+      "breakdown": {"L1": 10, "L2": 2, "L3": 14},
+      "known_noise": "typed approximate/lower-bound unit families and conditional valuation references were misclassified"
+    },
+    "intermediate_v1_2": {
+      "findings": 14,
+      "breakdown": {"L1": 0, "L2": 0, "L3": 14},
+      "known_gap": "unit-family noise was removed but financial semantic invariants were still absent"
+    },
+    "final_v1_3": {
+      "findings": 22,
+      "breakdown": {"L1": 6, "L2": 2, "L3": 14},
+      "material_failure": true,
+      "classes": {
+        "trailing_pe_recast_as_single_quarter_earnings_multiple": 2,
+        "combined_deposits_commitments_recast_as_cash_or_refundable_prepayment": 3,
+        "average_fcf_margin_recast_as_marginal_revenue_sensitivity": 1,
+        "verifier_missed_material_financial_semantics": 1,
+        "verifier_missed_material_failure": 1,
+        "explicit_counterevidence_surface_empty": 6,
+        "hypothetical_planning_threshold": 6,
+        "unsupported_historical_valuation_comparison": 2
+      }
+    },
+    "DELL_v1_3_replay": {
+      "findings": 26,
+      "breakdown": {"L1": 2, "L2": 1, "L3": 23},
+      "material_failure": true,
+      "raw_mutations": 0
+    }
+  },
+  "research_quality": {
+    "strengths": [
+      "Lead produced six MU-specific units and covered all mandatory research families",
+      "the chain connected HBM product progress, memory pricing, cash flow, valuation, gaps and a counter-thesis",
+      "the Writer was readable and cited case-local Evidence and Gap IDs",
+      "price-driven DRAM/NAND profit versus weak bit growth was present in the financial analysis"
+    ],
+    "material_defects": [
+      "trailing/static P/E was described as if it were based on single-quarter margin rather than trailing earnings",
+      "the combined deposits-and-financial-commitments evidence was recast as cash buffer, refundable prepayment or write-down exposure",
+      "current average FCF margin was used as a marginal revenue-to-FCF sensitivity without a cost-behavior formula",
+      "the model Verifier accepted the candidate with zero findings"
+    ],
+    "quality_findings": [
+      "all six Specialists left counterevidence_ids empty",
+      "six scenario thresholds were not calibrated to evidence or a source route",
+      "two historical valuation references remained hypothetical and unsupported"
+    ],
+    "hidden_gold_diagnostic_only": {
+      "formal_score": false,
+      "reason": "L1/L2 did not pass and this raw candidate is not a final verifier-bound product delivery or qualified-human review packet.",
+      "target_coverage": {
+        "MU_T01_price_vs_bit_growth": "covered",
+        "MU_T02_HBM_progress_with_profit_share_gaps": "covered",
+        "MU_T03_SCA_visibility_without_revenue_or_margin_guarantee": "partial_with_material_source_scope_errors",
+        "MU_T04_downstream_tightness_upstream_supply_and_WWC": "partial"
+      },
+      "required_conflict": "partial_not_explicitly_adjudicated_as_HBM_structure_versus_memory_price_cycle",
+      "required_WWC": "partial_three_of_four_themes",
+      "strongest_counter_thesis": "substantially_present_but_mixed_with_unbound_sensitivity"
+    }
+  },
+  "supervision_boundary": {
+    "runtime_ref": ".codex_runtime/fin013_s2_06/MU/fin013_s2_05_exp_a_mu_d94afa12295f83b18870_evaluator_v1_3_supervision_v1_1.json",
+    "sha256": "4045c19319d1e3db1dfedaefadd3cbe50e4c3a65cddfa9669c89f5b4b2975185",
+    "correction_rows": 22,
+    "correction_classes": {
+      "financial_semantic_return": 3,
+      "source_scope_semantic_return": 3,
+      "research_content_return": 6,
+      "uncalibrated_scenario_finding": 6,
+      "uncalibrated_valuation_reference": 2,
+      "verifier_false_green": 2
+    },
+    "deterministic_runtime_may_write_missing_research": false,
+    "supervisor_model_correction_performed": false,
+    "corrected_candidate_created": false,
+    "hidden_gold_visible_to_correction": false
+  },
+  "campaign_disposition": {
+    "DELL_raw_measurement": "complete_quality_fail",
+    "MU_raw_measurement": "complete_quality_fail",
+    "NVDA_raw_measurement": "not_started",
+    "automatic_next_case": false,
+    "NVDA_raw_authority_may_be_considered_separately": true,
+    "DELL_or_MU_correction_required_before_NVDA_raw": false,
+    "supervisor_model_correction_before_three_case_raw_complete": false,
+    "S2_05_campaign_complete": false,
+    "S2_06_three_case_boundary_complete": false,
+    "business_promotion": false
+  },
+  "implementation": {
+    "runtime": {"ref": "src/sec_agent/s2_same_evidence_experiment_runtime.py", "sha256": "816b2961c5dfe219233e08b606d63799063ea9cb1b6b5e102735e9c5b650c9af"},
+    "layered_evaluator_v1_3": {"ref": "src/sec_agent/s2_same_evidence_layered_evaluation.py", "sha256": "7d0d0d5b1344ddc22eb4613b872c2207d0c23dd6dbd919557e84cfe5b6fab862"},
+    "supervision_compiler_v1_1": {"ref": "src/sec_agent/s2_same_evidence_supervision.py", "sha256": "46cf2ceb0f8724c0a13d11bcfb367027e3985db495ec27d27a939112d2ae8c90"},
+    "materializer": {"ref": "scripts/releases/materialize_fin_ia_0_1_3_s2_06_supervision_boundary.py", "sha256": "973147c302f2e029ab2ab9537c5f63cf12c7184ba15bd8aabba3ef7fea9393de"}
+  },
+  "security": {
+    "raw_capture_root": ".codex_runtime/fin013_s2_05/runs/fin013_s2_05_exp_a_mu_d94afa12295f83b18870/raw_model_only",
+    "raw_capture_secret_scan": "pass",
+    "credential_value_read_or_persisted": false,
+    "raw_capture_tracking": "git_ignored_runtime_only",
+    "raw_mutations": 0,
+    "capture_sha256": {
+      "01_lead": "e044a0af5ae674670ac79dbc1ca650660fa57003587e85db50d11d93313ce038",
+      "02_specialist_RU01": "fe53196dba0899497752c2564b62bc961e50fc8a765e9c3ede39e7990944a209",
+      "03_specialist_RU02": "1c84dedf8cfb63541a3ba0ff08e513b5fe7c28b49b13c411d5dc8a46ac261aac",
+      "04_specialist_RU03": "4f8690495abfee702fbb161e47cf0ac813b8fcec50f10afac2d31e0b5cf8243c",
+      "05_specialist_RU04": "116d9cd8e171259afaaa7fa460fb0d48103ec08fb64f7e76e28ee195c19db1ba",
+      "06_specialist_RU05": "38a9383791e684caec3559ff859c7ad8df1ade35233bdc9f95f5fc7cb1b3748b",
+      "07_specialist_RU06": "4eae1555ac8e1c9812a4d2a96c63d9c850f2f8bd4643a3e932f348c0acd2f91c",
+      "08_synthesis": "8044c228ce30bee916aa16339e64b851e7e9a8e6b25c83239df4d01bd38673b2",
+      "09_writer": "9bfa584655e036544346d1c02fa974f8be9980fe26e9f80ce8d18ff607ccac17",
+      "10_verifier": "fd163b8d1517746c0b3860374d2224696775188437dc81b3e51afbe83e08943c"
+    }
+  },
+  "next_action": "COMMIT_PUSH_THEN_SEPARATE_NVDA_RAW_EXPERIMENT_A_ADMISSION_AUTHORITY_DECISION",
+  "known_boundary": "This measures DeepSeek reasoning only against the frozen same-evidence pack. It does not re-prove the real-world source truth of that pack, create a corrected MU report, authorize NVDA automatically, formally score a final product, or authorize release.",
+  "result_digest": "14eaec4708defa545e5dbc8f20d74513c0380224b91f01f217b758a3d43b45c3"
+}

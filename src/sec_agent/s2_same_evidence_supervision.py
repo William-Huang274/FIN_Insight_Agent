@@ -32,6 +32,27 @@ _DISPOSITIONS: dict[str, dict[str, Any]] = {
         "deterministic_correction_allowed": False,
         "new_model_call_required": True,
     },
+    "trailing_pe_recast_as_single_quarter_earnings_multiple": {
+        "primary_owner": "originating_model_node",
+        "correction_class": "financial_semantic_return",
+        "action": "remove the invalid single-quarter basis and preserve the trailing earnings definition",
+        "deterministic_correction_allowed": False,
+        "new_model_call_required": True,
+    },
+    "combined_deposits_commitments_recast_as_cash_or_refundable_prepayment": {
+        "primary_owner": "originating_model_node",
+        "correction_class": "source_scope_semantic_return",
+        "action": "restore the combined deposits-and-commitments scope without asserting cash, refund or prepayment authority",
+        "deterministic_correction_allowed": False,
+        "new_model_call_required": True,
+    },
+    "average_fcf_margin_recast_as_marginal_revenue_sensitivity": {
+        "primary_owner": "originating_model_node",
+        "correction_class": "financial_semantic_return",
+        "action": "remove the unsupported marginal sensitivity or provide an approved cost-behavior formula",
+        "deterministic_correction_allowed": False,
+        "new_model_call_required": True,
+    },
     "explicit_counterevidence_surface_empty": {
         "primary_owner": "originating_model_node",
         "correction_class": "research_content_return",
@@ -89,6 +110,23 @@ def compile_supervision_boundary(
             "deterministic_correction_allowed": False,
             "new_model_call_required": False,
         })
+        if code == "unsupported_historical_valuation_comparison":
+            if finding.get("severity") == "L3":
+                disposition = {
+                    "primary_owner": "research_quality_review",
+                    "correction_class": "uncalibrated_valuation_reference",
+                    "action": "retain only as a hypothetical evidence request, not as a current valuation fact",
+                    "deterministic_correction_allowed": False,
+                    "new_model_call_required": False,
+                }
+            else:
+                disposition = {
+                    "primary_owner": "originating_model_node",
+                    "correction_class": "financial_semantic_return",
+                    "action": "remove the unsupported historical comparison or bind approved historical evidence",
+                    "deterministic_correction_allowed": False,
+                    "new_model_call_required": True,
+                }
         rows.append({
             "correction_id": f"CORR-{index:03d}",
             "source_finding": dict(finding),
@@ -101,7 +139,7 @@ def compile_supervision_boundary(
     scoreable = raw_evaluation.get("hidden_scoring_eligible") is True
     material = raw_evaluation.get("material_failure") is True
     return {
-        "schema_version": "fin_ia_0_1_3_s2_06_supervision_boundary_v1_0",
+        "schema_version": "fin_ia_0_1_3_s2_06_supervision_boundary_v1_1",
         "raw_binding": {
             "run_id": raw_run_id,
             "terminal_digest": raw_terminal_digest,

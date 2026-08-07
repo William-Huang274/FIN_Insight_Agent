@@ -27,6 +27,9 @@ CONTRACT_IMPLEMENTATION_REF = (
     "fin_ia_0_1_3_s2_06_supervisor_nonempty_"
     "case_authority_compiled_contract_alignment_v1_1.json"
 )
+EXPECTED_SUPERVISOR_PLAN_SPEC_SCHEMA = (
+    "fin_ia_0_1_3_s2_06_supervisor_plan_spec_v1_1"
+)
 FRESH_PROOF_REF = (
     "configs/releases/"
     "fin_ia_0_1_3_s2_06_supervisor_contract_v1_1_"
@@ -268,7 +271,15 @@ def validate_repository() -> str:
 
 
 def load_case_material(case_key: str) -> dict[str, Any]:
-    return _legacy.load_case_material(case_key)
+    material = _legacy.load_case_material(case_key)
+    if (
+        material.get("spec", {}).get("schema_version")
+        != EXPECTED_SUPERVISOR_PLAN_SPEC_SCHEMA
+    ):
+        raise SupervisorExecutionSupportError(
+            "s2_06_dell_r2_successor_contract_superseded"
+        )
+    return material
 
 
 def compile_governed_admission(

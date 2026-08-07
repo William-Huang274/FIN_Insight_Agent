@@ -1,0 +1,46 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_dell_r2_u3_u4_failure_shapes_v1_0",
+  "source_run_id": "fin013_s2_06_supervised_dell_r2_75f564be276fdbe6e73f",
+  "source_terminal_digest": "7b0d6dd3013126d31d799d80cd9b1a97a015741c3129ecfa573ad6127da2e0e9",
+  "cases": [
+    {
+      "node_ref": "specialist:U3",
+      "correction_id": "DELL-CORR-023",
+      "finding_code": "explicit_counterevidence_surface_empty",
+      "capture_digest": "7da9285d3af40074274d75718e439fa83c0c078b242de5b796ed8c7a5699a471",
+      "node_output": {
+        "case_key": "DELL",
+        "as_of": "2026-08-06",
+        "unit_id": "U3",
+        "epistemic_state": "mixed",
+        "judgment": "Memory supply constraints and rising component prices create a dual risk: order fulfillment delays and potential margin compression. Dell acknowledges memory as the primary bottleneck (DELL_E04), while Micron data confirms significant DRAM/NAND price increases (DELL_E08). Without visibility into Dell's pricing power or cost pass-through, the net impact on margins and revenue timing remains uncertain.",
+        "mechanism": "Supply constraints limit Dell's ability to convert backlog to revenue, potentially extending lead times and increasing risk of order cancellations or push-outs. Concurrently, rising memory costs could compress gross margins if Dell cannot fully pass them through to customers, especially in competitive AI server segments. The interaction of these factors may delay revenue recognition and reduce profitability per unit.",
+        "financial_or_valuation_link": "If memory constraints persist, AI server revenue recognition may be slower than order growth suggests, affecting near-term revenue and cash flow. Margin compression from higher component costs, if not offset, would reduce operating income and free cash flow, potentially lowering valuation multiples.",
+        "evidence_ids": ["DELL_E04", "DELL_E08"],
+        "counterevidence_ids": [],
+        "gap_ids": ["DELL_G01"],
+        "what_would_change": "If evidence emerges that Dell can pass through >80% of memory cost increases or that memory spot prices decline for two consecutive quarters, the margin risk would diminish. Conversely, confirmation of <80% pass-through or prolonged constraints would increase downside risk."
+      }
+    },
+    {
+      "node_ref": "specialist:U4",
+      "correction_id": "DELL-CORR-024",
+      "finding_code": "explicit_counterevidence_surface_empty",
+      "capture_digest": "afc32c165e0bd5953383218f477edb81df487e17f1eefb9e2cb3ce9d96f5e017",
+      "node_output": {
+        "case_key": "DELL",
+        "as_of": "2026-08-06",
+        "unit_id": "U4",
+        "epistemic_state": "mixed",
+        "judgment": "AI server standalone profitability is likely at the low end of mid-single-digit operating margin (~5%), consistent with management guidance, but precise margin and cash conversion cannot be independently verified from available disclosures. ISG's 10.5% operating margin is supported by higher-margin storage and services, masking AI server dilution. Operating cash flow margin of 9.3% may face pressure from AI-driven working capital needs, but current evidence is insufficient to quantify standalone AI server free cash flow conversion.",
+        "mechanism": "Mix shift toward AI-optimized servers reduces gross margin rate (per 10-K). Management targets mid-single-digit operating margin for AI servers, while Dell IP storage drives ISG profitability. Working capital dynamics (inventory, receivables, payables) are affected by AI demand nonlinearity, potentially straining cash conversion.",
+        "financial_or_valuation_link": "If AI server operating margin is below 4% or free cash flow conversion drops below 70% for two quarters, the profit thesis fails. Current ISG margin of 10.5% and OCF margin of 9.3% provide a buffer, but sustained AI growth could erode consolidated profitability and cash generation, impacting valuation multiples.",
+        "evidence_ids": ["DELL_E02", "DELL_E03", "DELL_E05"],
+        "counterevidence_ids": [],
+        "gap_ids": ["DELL_G01", "DELL_G03"],
+        "what_would_change": "If Dell discloses standalone AI server operating margin below 4% or free cash flow conversion below 70% for two consecutive quarters, the profit thesis would be invalidated."
+      }
+    }
+  ],
+  "known_boundary": "Sanitized regression fixture copied from immutable R2 provider captures. It is audit evidence only and is not a product artifact or financial fact authority."
+}

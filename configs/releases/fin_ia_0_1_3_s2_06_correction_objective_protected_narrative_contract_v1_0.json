@@ -1,0 +1,87 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_correction_objective_protected_narrative_contract_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "S2_06B_unified_zero_call_contract_engineering_pass_independent_proof_pending",
+  "scope": "compile_correction_semantics_numeric_authority_and_closure_receipts_once_for_all_corrected_nodes",
+  "predecessor_failure_binding": {
+    "issue_id": "RC-P36-148",
+    "failed_attempt": "DELL_supervisor_R2",
+    "terminal_digest": "7b0d6dd3013126d31d799d80cd9b1a97a015741c3129ecfa573ad6127da2e0e9",
+    "failed_attempt_immutable": true,
+    "automatic_replacement_authorized": false
+  },
+  "contract_alignment": {
+    "supervisor_plan_schema_version": "fin_ia_0_1_3_s2_06_supervisor_plan_v1_1",
+    "supervisor_plan_spec_schema_version": "fin_ia_0_1_3_s2_06_supervisor_plan_spec_v1_2",
+    "corrected_node_envelope_schema_version": "fin_ia_0_1_3_s2_06_corrected_node_envelope_v1_0",
+    "correction_closure_receipt_schema_version": "fin_ia_0_1_3_s2_06_correction_closure_receipt_v1_0",
+    "correction_objective_surface": "code_severity_node_path_tokens_required_resolution_closure_rule_unresolved_policy",
+    "numeric_authority_surface": "model_selects_case_local_numeric_aliases_and_local_renderer_materializes_display_surface",
+    "candidate_freeze_rule": "every_objective_has_a_valid_receipt_and_post_correction_material_failure_is_false",
+    "raw_capture_rule": "capture_before_parse_or_validation_and_preserve_rejected_output",
+    "legacy_R2_entrypoint": "superseded_and_fail_closed"
+  },
+  "implementation": {
+    "case_scoped_disposition_compiler": {
+      "ref": "src/sec_agent/s2_same_evidence_supervision.py",
+      "sha256": "b803a536b28d4c1893e10bc403561806bdd46192ab9632f92de26d8f8f7bbe72"
+    },
+    "supervisor_and_corrected_candidate_runtime": {
+      "ref": "src/sec_agent/s2_same_evidence_supervisor_runtime.py",
+      "sha256": "9cdbe9e600928f6fd858032deb8ea841bbf65c997a5fc400c385678dbecbed49"
+    },
+    "contract_and_mutation_tests": {
+      "ref": "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py",
+      "sha256": "83ad4b2e288eb21acfc3248e27d5ca50d7eac7ce7991423b6330d0815c236154"
+    },
+    "captured_failure_shape_fixture": {
+      "ref": "eval_sets/fin_0_1_3_same_evidence_v1/fixtures/dell_supervisor_r2_u3_u4_failure_shapes_v1.json",
+      "sha256": "fac1ae5c4191213b0b53680dbc18920042db8d1093da15616c26ad2dcfe344e9"
+    }
+  },
+  "verification": {
+    "focused_contract_tests": "31 passed",
+    "broader_s2_05_s2_06_tests": "152 passed / 3201 deselected",
+    "full_fake_cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "captured_R2_shape_replay": [
+      "U3_empty_counterevidence",
+      "U4_unprotected_numeric_narrative"
+    ],
+    "mutations": [
+      "false_closed_counterevidence",
+      "raw_numeric_narrative",
+      "unknown_numeric_alias",
+      "cross_case_alias",
+      "topology_change",
+      "exact_once_reuse"
+    ],
+    "model_provider_network_calls": [
+      0,
+      0,
+      0
+    ],
+    "admissions_issued": 0,
+    "raw_mutations": 0
+  },
+  "stage_acceptance": {
+    "S2_06B_unified_zero_call_contract": "engineering_pass",
+    "S2_06C_independent_replay_and_three_case_proof": false,
+    "S2_06D_minimal_natural_node_canary": false,
+    "S2_06E_formal_DELL_proof_decision": false,
+    "supervised_recoverability": "not_proven",
+    "business_promotion": false,
+    "release": false
+  },
+  "next_required_sequence": [
+    "commit_and_push_S2_06B",
+    "independent_fresh_zero_call_replay_and_three_case_proof",
+    "only_after_green_issue_one_minimal_natural_node_canary",
+    "decide_whether_one_formal_DELL_supervised_proof_is_worthwhile"
+  ],
+  "known_boundary": "This package proves deterministic contract behavior only. It does not prove DeepSeek contract adherence, authorize a formal DELL rerun, improve research content, or advance S3-S5 acceptance.",
+  "implementation_digest": "4426a015f31a0fe6dab53120d8829e74d5e3383ae75cd8a8d12558a10e617c97"
+}

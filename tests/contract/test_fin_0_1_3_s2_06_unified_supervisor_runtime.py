@@ -18,12 +18,15 @@ from sec_agent.s2_same_evidence_supervision import (
     compile_case_scoped_supervision_boundary,
 )
 from sec_agent.s2_same_evidence_supervisor_runtime import (
+    CORRECTED_NODE_ENVELOPE_SCHEMA,
     SUPERVISOR_PLAN_SCHEMA,
     S2SupervisorRuntimeError,
     assert_hidden_scoring_allowed,
     compile_capacity_proof,
     compile_corrected_admission_candidate,
+    compile_correction_objectives,
     compile_fixture_supervisor_plan,
+    compile_numeric_fact_views,
     compile_supervisor_plan_spec,
     compile_supervisor_request,
     execute_corrected_candidate,
@@ -38,8 +41,12 @@ from sec_agent.shared_admission_ledger import (
 ROOT = Path(__file__).resolve().parents[2]
 OBSERVED = "2026-08-07T12:00:00+00:00"
 IMPLEMENTATION = ROOT / (
-    "configs/releases/fin_ia_0_1_3_s2_06_supervisor_nonempty_"
-    "case_authority_compiled_contract_alignment_v1_1.json"
+    "configs/releases/fin_ia_0_1_3_s2_06_correction_objective_"
+    "protected_narrative_contract_v1_0.json"
+)
+DELL_R2_FAILURE_SHAPES = ROOT / (
+    "eval_sets/fin_0_1_3_same_evidence_v1/fixtures/"
+    "dell_supervisor_r2_u3_u4_failure_shapes_v1.json"
 )
 
 
@@ -85,6 +92,23 @@ def _evaluation() -> dict[str, Any]:
                 "path": "$.what_would_change",
                 "tokens": ["20%"],
             },
+        ],
+    }
+
+
+def _counterevidence_evaluation() -> dict[str, Any]:
+    return {
+        "raw_chain_complete": True,
+        "hidden_scoring_eligible": True,
+        "material_failure": True,
+        "findings": [
+            {
+                "severity": "L3",
+                "code": "explicit_counterevidence_surface_empty",
+                "node_ref": "specialist[0]",
+                "path": "",
+                "tokens": [],
+            }
         ],
     }
 
@@ -254,9 +278,50 @@ class FullFakeCorrectedProvider:
                 ],
             }
         else:
-            output = self._graph_output(request)
+            node_output = self._graph_output(request)
+            if self.mutation in {"captured_u3", "captured_u4"} and request.get("node_type") == "specialist_judgment":
+                fixture = json.loads(DELL_R2_FAILURE_SHAPES.read_text(encoding="utf-8"))
+                fixture_index = 0 if self.mutation == "captured_u3" else 1
+                node_output = deepcopy(fixture["cases"][fixture_index]["node_output"])
+                node_output["unit_id"] = request["context"]["research_unit"]["unit_id"]
+            if self.mutation == "unprotected_numeric" and request.get("node_type") == "specialist_judgment":
+                node_output["judgment"] += " The unsupported standalone margin is about 5%."
+            if self.mutation == "unknown_placeholder" and request.get("node_type") == "specialist_judgment":
+                node_output["judgment"] += " [NUM:derived::unknown_metric]"
+            if self.mutation == "protected_numeric" and request.get("node_type") == "specialist_judgment":
+                selected = request["context"].get("numeric_fact_views", [])
+                if selected:
+                    node_output["judgment"] += " [NUM:" + selected[0]["numeric_alias"] + "]"
+            objectives = request["context"].get("correction_objectives", [])
+            directive = request["context"]["visible_correction_directive"]
+            resolutions = []
+            for objective in objectives:
+                typed_unresolved = (
+                    objective["finding_code"] == "explicit_counterevidence_surface_empty"
+                    and not node_output.get("counterevidence_ids")
+                )
+                if self.mutation in {"claimed_closed_empty_counter", "captured_u3"}:
+                    typed_unresolved = False
+                resolutions.append(
+                    {
+                        "correction_id": objective["correction_id"],
+                        "status": "typed_unresolved" if typed_unresolved else "closed",
+                        "evidence_ids": list(directive["evidence_ids"]),
+                        "gap_ids": list(directive["gap_ids"]),
+                        "resolution_summary": (
+                            "No supported counterevidence is available in the assigned pack."
+                            if typed_unresolved
+                            else "The corrected node closes the visible objective."
+                        ),
+                    }
+                )
+            output = {
+                "schema_version": CORRECTED_NODE_ENVELOPE_SCHEMA,
+                "node_output": node_output,
+                "correction_resolutions": resolutions,
+            }
         if self.mutation == "lead_topology" and request.get("node_type") == "lead_planning":
-            output["research_units"][0]["unit_id"] = "changed_unit"
+            output["node_output"]["research_units"][0]["unit_id"] = "changed_unit"
         return {
             "status": "ok",
             "content": json.dumps(output, ensure_ascii=False),
@@ -353,6 +418,33 @@ def test_three_cases_compile_same_protocol_with_case_qualified_ids(case_index: i
     assert "expected_thesis" not in encoded
     assert "strongest_counter_thesis" not in encoded
     assert request["max_transport_attempts"] == 1
+
+
+@pytest.mark.parametrize("case_index", [0, 1, 2])
+def test_numeric_fact_views_are_semantic_exact_and_case_local(case_index: int) -> None:
+    _, case, raw = _fixture(case_index)
+    views = compile_numeric_fact_views(case)
+    aliases = compile_supervisor_plan_spec(
+        boundary=_boundary(case), case_input=case, raw_outputs=raw
+    )["case_aliases"]["numeric_aliases"]
+    assert [row["numeric_alias"] for row in views] == aliases
+    assert all(row["semantic_name"] and row["exact_value"] and row["unit"] for row in views)
+    assert all(row["display_surface"].startswith(row["exact_value"]) for row in views)
+
+
+def test_correction_objectives_preserve_code_target_resolution_and_closure_rule() -> None:
+    _, case, raw = _fixture()
+    spec = compile_supervisor_plan_spec(
+        boundary=_boundary(case), case_input=case, raw_outputs=raw
+    )
+    objectives = compile_correction_objectives(spec)
+    assert set(objectives) == {row["correction_id"] for row in spec["visible_findings"]}
+    for objective in objectives.values():
+        assert objective["finding_code"]
+        assert objective["target_node_ref"]
+        assert objective["required_resolution"]
+        assert objective["closure_rule"]
+        assert objective["unresolved_policy"]
 
 
 @pytest.mark.parametrize("case_index", [0, 1, 2])
@@ -578,6 +670,162 @@ def test_failure_terminal_preserves_every_capture_and_stops_without_retry(
     assert len(list(runtime_root.rglob("captures/*.json"))) == calls
 
 
+def test_legacy_u3_empty_counterevidence_requires_explicit_typed_unresolved_receipt(
+    tmp_path: Path,
+) -> None:
+    policy, case, raw = _fixture()
+    boundary = _boundary(case, evaluation=_counterevidence_evaluation())
+    run_id = "corrected-DELL-u3-typed-unresolved"
+    attempt_id = "attempt-DELL-u3-typed-unresolved"
+    runtime_root = tmp_path / "u3-typed-unresolved"
+    terminal = execute_corrected_candidate(
+        admission=_admission(
+            boundary=boundary,
+            case=case,
+            raw=raw,
+            corrected_run_id=run_id,
+            corrected_attempt_id=attempt_id,
+        ),
+        boundary=boundary,
+        case_input=case,
+        raw_outputs=raw,
+        policy=policy,
+        corrected_run_id=run_id,
+        corrected_attempt_id=attempt_id,
+        runtime_root=runtime_root,
+        shared_ledger=SharedAdmissionConsumptionLedger(tmp_path / "u3.sqlite3"),
+        provider_call=FullFakeCorrectedProvider(),
+        observed_at=OBSERVED,
+    )
+    assert terminal["status"] == "terminal_completed"
+    receipt = terminal["correction_closure_receipts"][0]
+    assert receipt["status"] == "typed_unresolved"
+    assert receipt["gap_ids"]
+    assert receipt["closure_rule"] == "counterevidence_nonempty_or_typed_unresolved_with_gap"
+
+
+@pytest.mark.parametrize(
+    ("mutation", "terminal_code"),
+    [
+        ("claimed_closed_empty_counter", "s2_06_counterevidence_objective_not_closed"),
+        ("unprotected_numeric", "s2_06_unprotected_numeric_narrative"),
+        ("unknown_placeholder", "s2_06_unknown_or_unselected_numeric_placeholder"),
+    ],
+)
+def test_legacy_u3_u4_failure_shapes_fail_before_node_acceptance(
+    tmp_path: Path,
+    mutation: str,
+    terminal_code: str,
+) -> None:
+    policy, case, raw = _fixture()
+    boundary = _boundary(case, evaluation=_counterevidence_evaluation())
+    run_id = "corrected-DELL-" + mutation
+    attempt_id = "attempt-DELL-" + mutation
+    terminal = execute_corrected_candidate(
+        admission=_admission(
+            boundary=boundary,
+            case=case,
+            raw=raw,
+            corrected_run_id=run_id,
+            corrected_attempt_id=attempt_id,
+        ),
+        boundary=boundary,
+        case_input=case,
+        raw_outputs=raw,
+        policy=policy,
+        corrected_run_id=run_id,
+        corrected_attempt_id=attempt_id,
+        runtime_root=tmp_path / mutation,
+        shared_ledger=SharedAdmissionConsumptionLedger(tmp_path / (mutation + ".sqlite3")),
+        provider_call=FullFakeCorrectedProvider(mutation=mutation),
+        observed_at=OBSERVED,
+    )
+    assert terminal["status"] == "terminal_failed_no_retry"
+    assert terminal["terminal_code"] == terminal_code
+    assert terminal["terminal_phase"] == "specialist:unit_0"
+    assert terminal["correction_closure_receipts"][0]["status"] == "rejected_new_violation"
+
+
+@pytest.mark.parametrize(
+    ("mutation", "terminal_code"),
+    [
+        ("captured_u3", "s2_06_counterevidence_objective_not_closed"),
+        ("captured_u4", "s2_06_unprotected_numeric_narrative"),
+    ],
+)
+def test_sanitized_immutable_dell_r2_u3_u4_capture_replay(
+    tmp_path: Path,
+    mutation: str,
+    terminal_code: str,
+) -> None:
+    fixture = json.loads(DELL_R2_FAILURE_SHAPES.read_text(encoding="utf-8"))
+    assert fixture["source_terminal_digest"] == (
+        "7b0d6dd3013126d31d799d80cd9b1a97a015741c3129ecfa573ad6127da2e0e9"
+    )
+    policy, case, raw = _fixture()
+    boundary = _boundary(case, evaluation=_counterevidence_evaluation())
+    run_id = "corrected-DELL-replay-" + mutation
+    attempt_id = "attempt-DELL-replay-" + mutation
+    terminal = execute_corrected_candidate(
+        admission=_admission(
+            boundary=boundary,
+            case=case,
+            raw=raw,
+            corrected_run_id=run_id,
+            corrected_attempt_id=attempt_id,
+        ),
+        boundary=boundary,
+        case_input=case,
+        raw_outputs=raw,
+        policy=policy,
+        corrected_run_id=run_id,
+        corrected_attempt_id=attempt_id,
+        runtime_root=tmp_path / mutation,
+        shared_ledger=SharedAdmissionConsumptionLedger(tmp_path / (mutation + ".sqlite3")),
+        provider_call=FullFakeCorrectedProvider(mutation=mutation),
+        observed_at=OBSERVED,
+    )
+    assert terminal["status"] == "terminal_failed_no_retry"
+    assert terminal["terminal_code"] == terminal_code
+    assert terminal["completed_calls"] == 2
+
+
+def test_protected_numeric_placeholder_is_locally_rendered_without_residue(
+    tmp_path: Path,
+) -> None:
+    policy, case, raw = _fixture()
+    boundary = _boundary(case, evaluation=_counterevidence_evaluation())
+    run_id = "corrected-DELL-protected-numeric"
+    attempt_id = "attempt-DELL-protected-numeric"
+    runtime_root = tmp_path / "protected-numeric"
+    terminal = execute_corrected_candidate(
+        admission=_admission(
+            boundary=boundary,
+            case=case,
+            raw=raw,
+            corrected_run_id=run_id,
+            corrected_attempt_id=attempt_id,
+        ),
+        boundary=boundary,
+        case_input=case,
+        raw_outputs=raw,
+        policy=policy,
+        corrected_run_id=run_id,
+        corrected_attempt_id=attempt_id,
+        runtime_root=runtime_root,
+        shared_ledger=SharedAdmissionConsumptionLedger(tmp_path / "protected.sqlite3"),
+        provider_call=FullFakeCorrectedProvider(mutation="protected_numeric"),
+        observed_at=OBSERVED,
+    )
+    assert terminal["status"] == "terminal_completed"
+    candidate = json.loads(
+        (runtime_root / "corrected_candidate/candidate.json").read_text(encoding="utf-8")
+    )
+    specialist = candidate["outputs"]["specialists"][0]
+    assert "[NUM:" not in specialist["judgment"]
+    assert compile_numeric_fact_views(case)[0]["display_surface"] in specialist["judgment"]
+
+
 def test_deterministic_deletion_changes_only_corrected_copy_and_reruns_downstream(
     tmp_path: Path,
 ) -> None:
@@ -650,9 +898,14 @@ def test_implementation_record_binds_runtime_and_honest_acceptance_boundary() ->
     record = json.loads(IMPLEMENTATION.read_text(encoding="utf-8"))
     body = {key: value for key, value in record.items() if key != "implementation_digest"}
     assert record["implementation_digest"] == canonical_digest(body)
-    for key in ("case_scoped_disposition_compiler", "supervisor_and_corrected_candidate_runtime"):
+    for key in (
+        "case_scoped_disposition_compiler",
+        "supervisor_and_corrected_candidate_runtime",
+        "contract_and_mutation_tests",
+        "captured_failure_shape_fixture",
+    ):
         binding = record["implementation"][key]
         assert hashlib.sha256((ROOT / binding["ref"]).read_bytes()).hexdigest() == binding["sha256"]
     assert record["verification"]["model_provider_network_calls"] == [0, 0, 0]
-    assert record["stage_acceptance"]["S2_06_shared_zero_call_contract_alignment"] == "engineering_pass"
+    assert record["stage_acceptance"]["S2_06B_unified_zero_call_contract"] == "engineering_pass"
     assert record["stage_acceptance"]["supervised_recoverability"] == "not_proven"

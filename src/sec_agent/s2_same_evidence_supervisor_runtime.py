@@ -26,11 +26,13 @@ from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger
 
 
 SUPERVISOR_PLAN_SCHEMA = "fin_ia_0_1_3_s2_06_supervisor_plan_v1_1"
-CORRECTED_CAPTURE_SCHEMA = "fin_ia_0_1_3_s2_06_corrected_capture_v1_0"
-CORRECTED_CANDIDATE_SCHEMA = "fin_ia_0_1_3_s2_06_corrected_candidate_v1_0"
-CORRECTED_TERMINAL_SCHEMA = "fin_ia_0_1_3_s2_06_corrected_terminal_v1_0"
-CORRECTED_ADMISSION_SCHEMA = "fin_ia_0_1_3_s2_06_corrected_admission_v1_0"
-CORRECTED_SCOPE = "FIN_0_1_3_S2_06_CASE_ISOLATED_CORRECTED_CANDIDATE_EXACT_ONCE"
+CORRECTED_CAPTURE_SCHEMA = "fin_ia_0_1_3_s2_06_corrected_capture_v1_1"
+CORRECTED_CANDIDATE_SCHEMA = "fin_ia_0_1_3_s2_06_corrected_candidate_v1_1"
+CORRECTED_TERMINAL_SCHEMA = "fin_ia_0_1_3_s2_06_corrected_terminal_v1_1"
+CORRECTED_ADMISSION_SCHEMA = "fin_ia_0_1_3_s2_06_corrected_admission_v1_1"
+CORRECTED_NODE_ENVELOPE_SCHEMA = "fin_ia_0_1_3_s2_06_corrected_node_envelope_v1_0"
+CORRECTION_CLOSURE_RECEIPT_SCHEMA = "fin_ia_0_1_3_s2_06_correction_closure_receipt_v1_0"
+CORRECTED_SCOPE = "FIN_0_1_3_S2_06_CASE_ISOLATED_CORRECTED_CANDIDATE_V1_1_EXACT_ONCE"
 ProviderCall = Callable[..., Mapping[str, Any]]
 
 _ACTION_CODES = {
@@ -47,11 +49,65 @@ _NODE_ORDER = {
     "verifier": 4,
 }
 _PATH_PART = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)(?:\[(\d+)\])?")
+_NUMERIC_PLACEHOLDER = re.compile(r"\[NUM:([^\]]+)\]")
+_RAW_NARRATIVE_NUMERIC = re.compile(
+    r"(?:[$€£]\s*\d+(?:[.,]\d+)*)|"
+    r"(?:\d+(?:[.,]\d+)+\s*%?)|"
+    r"(?:\d+\s*%)|"
+    r"(?:\d+(?:\.\d+)?\s*(?:USD|CNY|EUR|JPY|billion|million|trillion|bps)\b)",
+    flags=re.IGNORECASE,
+)
 _CASE_AUTHORITY_ALIAS_FIELDS = ("evidence_ids", "gap_ids")
 _CASE_AUTHORITY_PROMPT_RULE = (
     "Every node directive, including Verifier, must select at least one supplied "
     "Evidence or Gap alias; Numeric aliases alone are insufficient. "
 )
+
+_CORRECTION_OBJECTIVE_RULES: dict[str, dict[str, str]] = {
+    "explicit_counterevidence_surface_empty": {
+        "required_resolution": (
+            "Select at least one supplied counterevidence ID, or explicitly mark the "
+            "objective typed_unresolved with a supplied Gap ID."
+        ),
+        "closure_rule": "counterevidence_nonempty_or_typed_unresolved_with_gap",
+        "unresolved_policy": "typed_unresolved_requires_selected_gap",
+    },
+    "unbound_material_numeric_surface": {
+        "required_resolution": (
+            "Remove the unsupported numeric surface or express an exact supplied value "
+            "with a [NUM:<numeric_alias>] protected reference."
+        ),
+        "closure_rule": "no_unprotected_numeric_narrative_and_no_unknown_placeholder",
+        "unresolved_policy": "typed_unresolved_requires_selected_gap",
+    },
+    "directional_margin_sharpened_to_unsupported_range": {
+        "required_resolution": (
+            "Preserve the exact directional source phrase; do not convert it to a numeric point or range."
+        ),
+        "closure_rule": "offending_tokens_absent_and_no_unprotected_numeric_narrative",
+        "unresolved_policy": "typed_unresolved_requires_selected_gap",
+    },
+    "specialist_assigned_pack_coverage_incomplete": {
+        "required_resolution": "Consume every assigned Evidence and Gap ID in the corrected specialist output.",
+        "closure_rule": "existing_specialist_pack_coverage_validator_passes",
+        "unresolved_policy": "typed_unresolved_not_allowed",
+    },
+    "writer_case_pack_coverage_incomplete": {
+        "required_resolution": "Cover every case Evidence and Gap ID across the corrected writer sections.",
+        "closure_rule": "existing_writer_pack_coverage_validator_passes",
+        "unresolved_policy": "typed_unresolved_not_allowed",
+    },
+    "verifier_missed_material_failure": {
+        "required_resolution": "Recheck the corrected graph and return every remaining material finding.",
+        "closure_rule": "existing_verifier_validator_and_post_graph_evaluator_pass",
+        "unresolved_policy": "typed_unresolved_not_allowed",
+    },
+    "hypothetical_planning_threshold": {
+        "required_resolution": "Keep the threshold explicitly hypothetical and nonfactual, or remove it.",
+        "closure_rule": "retained_nonfactual_request_not_promoted_as_fact",
+        "unresolved_policy": "typed_unresolved_requires_selected_gap",
+    },
+}
 
 
 class S2SupervisorRuntimeError(RuntimeError):
@@ -81,6 +137,78 @@ def compile_case_aliases(case_input: Mapping[str, Any]) -> dict[str, list[str]]:
         "numeric_aliases": numeric_aliases,
         "gap_ids": gap_ids,
     }
+
+
+def compile_numeric_fact_views(case_input: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Expose exact, semantic facts for reasoning without granting prose authority."""
+
+    _validate_case_input(case_input)
+    rows: list[dict[str, Any]] = []
+    for numeric in case_input["derived_numeric"]:
+        alias = "derived::" + str(numeric["metric"])
+        rows.append(
+            {
+                "numeric_alias": alias,
+                "semantic_name": str(numeric["metric"]),
+                "exact_value": str(numeric["value"]),
+                "unit": str(numeric["unit"]),
+                "formula": str(numeric.get("formula") or ""),
+                "source_evidence_id": None,
+                "display_surface": f"{numeric['value']} {numeric['unit']}",
+                "authority": "derived_numeric_program",
+            }
+        )
+    for evidence in case_input["evidence_items"]:
+        for numeric in evidence.get("numeric_facts", []):
+            alias = "evidence::" + str(evidence["evidence_id"]) + "::" + str(numeric["metric"])
+            rows.append(
+                {
+                    "numeric_alias": alias,
+                    "semantic_name": str(numeric["metric"]),
+                    "exact_value": str(numeric["value"]),
+                    "unit": str(numeric["unit"]),
+                    "formula": None,
+                    "source_evidence_id": str(evidence["evidence_id"]),
+                    "display_surface": f"{numeric['value']} {numeric['unit']}",
+                    "authority": "source_bound_numeric_fact",
+                }
+            )
+    aliases = [str(row["numeric_alias"]) for row in rows]
+    if len(aliases) != len(set(aliases)):
+        raise S2SupervisorRuntimeError("s2_06_numeric_fact_view_alias_collision")
+    return rows
+
+
+def compile_correction_objectives(spec: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    """Compile complete, model-visible objectives from the same finding source."""
+
+    objectives: dict[str, dict[str, Any]] = {}
+    for finding in spec["visible_findings"]:
+        code = str(finding["code"])
+        rule = _CORRECTION_OBJECTIVE_RULES.get(
+            code,
+            {
+                "required_resolution": (
+                    "Resolve the visible finding without inventing facts, numeric precision or authority."
+                ),
+                "closure_rule": "post_graph_finding_absent_after_revalidation",
+                "unresolved_policy": "typed_unresolved_requires_selected_gap",
+            },
+        )
+        correction_id = str(finding["correction_id"])
+        objectives[correction_id] = {
+            "correction_id": correction_id,
+            "finding_code": code,
+            "severity": str(finding["severity"]),
+            "target_node_ref": str(finding["node_ref"]),
+            "target_path": str(finding.get("path") or ""),
+            "offending_tokens": list(finding.get("tokens") or []),
+            "action_code": str(finding["action_code"]),
+            "required_resolution": rule["required_resolution"],
+            "closure_rule": rule["closure_rule"],
+            "unresolved_policy": rule["unresolved_policy"],
+        }
+    return objectives
 
 
 def _case_authority_output_schema() -> dict[str, Any]:
@@ -203,7 +331,7 @@ def compile_supervisor_plan_spec(
         },
     }
     return {
-        "schema_version": "fin_ia_0_1_3_s2_06_supervisor_plan_spec_v1_1",
+        "schema_version": "fin_ia_0_1_3_s2_06_supervisor_plan_spec_v1_2",
         "case_key": case_key,
         "raw_binding": {
             "run_id": boundary["raw_binding"]["run_id"],
@@ -214,6 +342,7 @@ def compile_supervisor_plan_spec(
         "deterministic_correction_ids": deterministic_ids,
         "retained_nonfactual_request_ids": retained_ids,
         "case_aliases": aliases,
+        "numeric_fact_views": compile_numeric_fact_views(case_input),
         "output_schema": schema,
     }
 
@@ -454,6 +583,7 @@ def execute_corrected_candidate(
     spec = compile_supervisor_plan_spec(
         boundary=boundary, case_input=case_input, raw_outputs=raw_outputs
     )
+    correction_objectives = compile_correction_objectives(spec)
     _validate_corrected_admission(
         admission,
         spec=spec,
@@ -487,6 +617,7 @@ def execute_corrected_candidate(
     candidate: dict[str, Any] | None = None
     plan: dict[str, Any] | None = None
     capacity_proof: dict[str, Any] | None = None
+    closure_receipts: list[dict[str, Any]] = []
     try:
         kwargs = compile_supervisor_request(
             spec=spec,
@@ -512,6 +643,36 @@ def execute_corrected_candidate(
             raise S2SupervisorRuntimeError("s2_06_corrected_call_capacity_exceeded")
 
         _apply_deterministic_corrections(outputs, plan=plan, spec=spec)
+        for correction_id in plan["deterministic_correction_ids"]:
+            objective = correction_objectives[correction_id]
+            closure_receipts.append(
+                {
+                    "schema_version": CORRECTION_CLOSURE_RECEIPT_SCHEMA,
+                    "correction_id": correction_id,
+                    "node_ref": objective["target_node_ref"],
+                    "status": "closed",
+                    "evidence_ids": [],
+                    "gap_ids": [],
+                    "resolution_summary": "Local source-bound deletion applied to the corrected copy only.",
+                    "closure_rule": objective["closure_rule"],
+                    "validation_status": "deterministic_correction_applied",
+                }
+            )
+        for correction_id in plan["retained_nonfactual_request_ids"]:
+            objective = correction_objectives[correction_id]
+            closure_receipts.append(
+                {
+                    "schema_version": CORRECTION_CLOSURE_RECEIPT_SCHEMA,
+                    "correction_id": correction_id,
+                    "node_ref": objective["target_node_ref"],
+                    "status": "closed",
+                    "evidence_ids": [],
+                    "gap_ids": [],
+                    "resolution_summary": "Typed nonfactual request retained outside financial fact authority.",
+                    "closure_rule": objective["closure_rule"],
+                    "validation_status": "nonfactual_request_not_promoted",
+                }
+            )
         affected = list(capacity_proof["affected_nodes"])
         directives = {str(row["node_ref"]): deepcopy(dict(row)) for row in plan["node_directives"]}
         for node_ref in affected:
@@ -522,6 +683,8 @@ def execute_corrected_candidate(
                 raw_outputs=raw_outputs,
                 case_input=case_input,
                 directive=directives.get(node_ref),
+                correction_objectives=correction_objectives,
+                numeric_fact_views=spec["numeric_fact_views"],
             )
             kwargs = _corrected_node_kwargs(
                 node_type=node_type,
@@ -548,6 +711,8 @@ def execute_corrected_candidate(
                 outputs=outputs,
                 case_input=case_input,
                 policy=policy,
+                correction_contract=context,
+                closure_receipts=closure_receipts,
             )
 
         from sec_agent.s2_same_evidence_layered_evaluation import evaluate_raw_chain
@@ -555,6 +720,17 @@ def execute_corrected_candidate(
         evaluation = evaluate_raw_chain(
             outputs, case_input=case_input, policy=policy, section_ids=SECTION_IDS
         )
+        if evaluation.get("material_failure") is not False:
+            raise S2SupervisorRuntimeError("s2_06_corrected_candidate_material_findings_remain")
+        unresolved_ids = {
+            str(row["correction_id"])
+            for row in closure_receipts
+            if row["status"] not in {"closed", "typed_unresolved"}
+        }
+        expected_receipt_ids = {str(row["correction_id"]) for row in correction_objectives.values()}
+        observed_receipt_ids = {str(row["correction_id"]) for row in closure_receipts}
+        if unresolved_ids or observed_receipt_ids != expected_receipt_ids:
+            raise S2SupervisorRuntimeError("s2_06_correction_closure_incomplete")
         candidate_body = {
             "schema_version": CORRECTED_CANDIDATE_SCHEMA,
             "case_key": case_input["case_key"],
@@ -564,6 +740,7 @@ def execute_corrected_candidate(
             "supervisor_plan_digest": canonical_digest(plan),
             "outputs": outputs,
             "evaluation": evaluation,
+            "correction_closure_receipts": deepcopy(closure_receipts),
             "business_promotable": False,
             "observed_at": observed_at,
         }
@@ -579,6 +756,13 @@ def execute_corrected_candidate(
         terminal_code = getattr(exc, "code", str(exc))
 
     captured_calls = _captured_call_rows(root)
+    closure_artifact = {
+        "schema_version": "fin_ia_0_1_3_s2_06_correction_closure_ledger_v1_0",
+        "case_key": case_input["case_key"],
+        "corrected_run_id": corrected_run_id,
+        "receipts": deepcopy(closure_receipts),
+    }
+    _write_exclusive(root / "corrected_candidate" / "correction_closure_receipts.json", closure_artifact)
     usage = _usage(captured_calls, policy)
     if usage["estimated_cost_usd"] > 0.18:
         terminal_code = "s2_06_corrected_cost_ceiling_exceeded"
@@ -596,6 +780,7 @@ def execute_corrected_candidate(
         "candidate_digest": candidate.get("candidate_digest") if candidate else None,
         "supervisor_plan_digest": canonical_digest(plan) if plan else None,
         "capacity_proof": capacity_proof,
+        "correction_closure_receipts": deepcopy(closure_receipts),
         "call_results": captured_calls,
         "completed_calls": len(captured_calls),
         "usage": usage,
@@ -880,10 +1065,50 @@ def _corrected_node_kwargs(
         admission={"run_id": corrected_run_id},
         policy=policy,
     )
+    request_payload = json.loads(str(kwargs["messages"][1]["content"]))
+    objectives = list(context.get("correction_objectives") or [])
+    request_payload["required_output_contract"] = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["schema_version", "node_output", "correction_resolutions"],
+        "properties": {
+            "schema_version": {"type": "string", "const": CORRECTED_NODE_ENVELOPE_SCHEMA},
+            "node_output": request_payload["required_output_contract"],
+            "correction_resolutions": {
+                "type": "array",
+                "minItems": len(objectives),
+                "maxItems": len(objectives),
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": [
+                        "correction_id", "status", "evidence_ids", "gap_ids", "resolution_summary",
+                    ],
+                    "properties": {
+                        "correction_id": {"type": "string"},
+                        "status": {"type": "string", "enum": ["closed", "typed_unresolved"]},
+                        "evidence_ids": {"type": "array", "items": {"type": "string"}},
+                        "gap_ids": {"type": "array", "items": {"type": "string"}},
+                        "resolution_summary": {"type": "string"},
+                    },
+                },
+            },
+        },
+    }
+    kwargs["messages"][1]["content"] = json.dumps(
+        request_payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
     kwargs["messages"][0]["content"] = (
         "You are recomputing one node in a case-isolated corrected financial research graph. "
-        "Return exactly one JSON object. Use only the supplied case-local context and aliases. "
-        "Address visible correction directives, preserve unsupported gaps, and do not infer hidden targets. "
+        "Return exactly one corrected-node envelope JSON object containing node_output and one "
+        "correction resolution for every supplied objective. Use only the supplied case-local context "
+        "and aliases. Address each objective's finding code, target, required resolution and closure rule. "
+        "Use typed_unresolved only when its policy allows it and cite a selected Gap. Preserve unsupported "
+        "gaps and do not infer hidden targets. In narrative fields, never write numeric digits directly; "
+        "use [NUM:<numeric_alias>] for an exact supplied value. Do not create analyst thresholds. "
         "Node type: " + node_type
     )
     kwargs["role"] = "fin013_s2_06_corrected_" + node_type
@@ -903,6 +1128,8 @@ def _compile_corrected_node_context(
     raw_outputs: Mapping[str, Any],
     case_input: Mapping[str, Any],
     directive: Mapping[str, Any] | None,
+    correction_objectives: Mapping[str, Mapping[str, Any]],
+    numeric_fact_views: Sequence[Mapping[str, Any]],
 ) -> tuple[str, str, dict[str, Any]]:
     correction = deepcopy(dict(directive)) if directive else {
         "node_ref": node_ref,
@@ -912,16 +1139,33 @@ def _compile_corrected_node_context(
         "numeric_aliases": [],
         "gap_ids": [],
     }
+    selected_objectives = [
+        deepcopy(dict(correction_objectives[correction_id]))
+        for correction_id in correction["correction_ids"]
+    ]
+    selected_numeric = [
+        deepcopy(dict(row))
+        for row in numeric_fact_views
+        if row["numeric_alias"] in set(correction["numeric_aliases"])
+    ]
+    correction_contract = {
+        "visible_correction_directive": correction,
+        "correction_objectives": selected_objectives,
+        "numeric_fact_views": selected_numeric,
+        "protected_narrative_rule": (
+            "Write exact supplied values as [NUM:<numeric_alias>]; the Harness renders only that span."
+        ),
+    }
     if node_ref == "lead":
         return "lead_planning", "lead", {
             "case_input": deepcopy(dict(case_input)),
-            "visible_correction_directive": correction,
+            **correction_contract,
         }
     if node_ref.startswith("specialist:"):
         unit_id = node_ref.split(":", 1)[1]
         unit = next(row for row in outputs["lead"]["research_units"] if row["unit_id"] == unit_id)
         context = _compile_specialist_context(case_input, unit)
-        context["visible_correction_directive"] = correction
+        context.update(correction_contract)
         return "specialist_judgment", unit_id, context
     synthesis_context = {
         "case_identity": _case_identity(case_input),
@@ -930,7 +1174,7 @@ def _compile_corrected_node_context(
         "explicit_gaps": deepcopy(case_input["explicit_gaps"]),
         "lead_plan": deepcopy(outputs["lead"]),
         "specialist_outputs": deepcopy(outputs["specialists"]),
-        "visible_correction_directive": correction,
+        **correction_contract,
     }
     if node_ref == "synthesis":
         return "cross_cell_synthesis", "synthesis", synthesis_context
@@ -942,7 +1186,7 @@ def _compile_corrected_node_context(
         "specialist_outputs": deepcopy(outputs["specialists"]),
         "synthesis": deepcopy(outputs["synthesis"]),
         "required_section_ids": list(SECTION_IDS),
-        "visible_correction_directive": correction,
+        **correction_contract,
     }
     if node_ref == "writer":
         return "writer", "writer", writer_context
@@ -965,36 +1209,221 @@ def _validate_and_store_node(
     outputs: dict[str, Any],
     case_input: Mapping[str, Any],
     policy: Mapping[str, Any],
+    correction_contract: Mapping[str, Any],
+    closure_receipts: list[dict[str, Any]],
 ) -> None:
-    if node_ref == "lead":
-        _validate_lead(parsed, case_input=case_input, policy=policy)
-        old_ids = [str(row["unit_id"]) for row in outputs["lead"]["research_units"]]
-        new_ids = [str(row["unit_id"]) for row in parsed["research_units"]]
-        if new_ids != old_ids:
-            raise S2SupervisorRuntimeError("s2_06_corrected_lead_topology_changed")
-        outputs["lead"] = deepcopy(dict(parsed))
-    elif node_ref.startswith("specialist:"):
-        unit_id = node_ref.split(":", 1)[1]
-        unit = next(row for row in outputs["lead"]["research_units"] if row["unit_id"] == unit_id)
-        _validate_specialist(parsed, case_input=case_input, unit=unit, policy=policy)
-        index = next(index for index, row in enumerate(outputs["specialists"]) if row["unit_id"] == unit_id)
-        outputs["specialists"][index] = deepcopy(dict(parsed))
-    elif node_ref == "synthesis":
-        _validate_synthesis(parsed, case_input=case_input, specialists=outputs["specialists"])
-        outputs["synthesis"] = deepcopy(dict(parsed))
-    elif node_ref == "writer":
-        _validate_writer(parsed, case_input=case_input, specialists=outputs["specialists"])
-        outputs["writer"] = deepcopy(dict(parsed))
-    elif node_ref == "verifier":
-        _validate_verifier(
+    objectives = list(correction_contract.get("correction_objectives") or [])
+    try:
+        node_output, resolutions = _validate_corrected_node_envelope(
             parsed,
-            case_input=case_input,
-            specialists=outputs["specialists"],
-            writer=outputs["writer"],
+            node_ref=node_ref,
+            correction_contract=correction_contract,
         )
-        outputs["verifier"] = deepcopy(dict(parsed))
-    else:
-        raise S2SupervisorRuntimeError("s2_06_node_ref_invalid")
+        rendered_output = _render_protected_numeric_narrative(
+            node_output,
+            node_type=node_ref.split(":", 1)[0],
+            numeric_fact_views=correction_contract.get("numeric_fact_views") or [],
+        )
+        if node_ref == "lead":
+            _validate_lead(rendered_output, case_input=case_input, policy=policy)
+            old_ids = [str(row["unit_id"]) for row in outputs["lead"]["research_units"]]
+            new_ids = [str(row["unit_id"]) for row in rendered_output["research_units"]]
+            if new_ids != old_ids:
+                raise S2SupervisorRuntimeError("s2_06_corrected_lead_topology_changed")
+            outputs["lead"] = deepcopy(dict(rendered_output))
+        elif node_ref.startswith("specialist:"):
+            unit_id = node_ref.split(":", 1)[1]
+            unit = next(row for row in outputs["lead"]["research_units"] if row["unit_id"] == unit_id)
+            _validate_specialist(rendered_output, case_input=case_input, unit=unit, policy=policy)
+            index = next(index for index, row in enumerate(outputs["specialists"]) if row["unit_id"] == unit_id)
+            outputs["specialists"][index] = deepcopy(dict(rendered_output))
+        elif node_ref == "synthesis":
+            _validate_synthesis(rendered_output, case_input=case_input, specialists=outputs["specialists"])
+            outputs["synthesis"] = deepcopy(dict(rendered_output))
+        elif node_ref == "writer":
+            _validate_writer(rendered_output, case_input=case_input, specialists=outputs["specialists"])
+            outputs["writer"] = deepcopy(dict(rendered_output))
+        elif node_ref == "verifier":
+            _validate_verifier(
+                rendered_output,
+                case_input=case_input,
+                specialists=outputs["specialists"],
+                writer=outputs["writer"],
+            )
+            outputs["verifier"] = deepcopy(dict(rendered_output))
+        else:
+            raise S2SupervisorRuntimeError("s2_06_node_ref_invalid")
+        closure_receipts.extend(
+            _compile_closure_receipts(
+                objectives=objectives,
+                resolutions=resolutions,
+                node_ref=node_ref,
+                node_output=rendered_output,
+                validation_status="node_contract_pass",
+            )
+        )
+    except (S2SupervisorRuntimeError, S2SameEvidenceExperimentError) as exc:
+        failure_code = getattr(exc, "code", str(exc))
+        for objective in objectives:
+            closure_receipts.append(
+                {
+                    "schema_version": CORRECTION_CLOSURE_RECEIPT_SCHEMA,
+                    "correction_id": objective["correction_id"],
+                    "node_ref": node_ref,
+                    "status": "rejected_new_violation",
+                    "evidence_ids": [],
+                    "gap_ids": [],
+                    "resolution_summary": "Corrected node rejected before acceptance.",
+                    "closure_rule": objective["closure_rule"],
+                    "validation_status": failure_code,
+                }
+            )
+        raise
+
+
+def _validate_corrected_node_envelope(
+    parsed: Mapping[str, Any],
+    *,
+    node_ref: str,
+    correction_contract: Mapping[str, Any],
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    if set(parsed) != {"schema_version", "node_output", "correction_resolutions"}:
+        raise S2SupervisorRuntimeError("s2_06_corrected_node_envelope_shape_invalid")
+    if parsed.get("schema_version") != CORRECTED_NODE_ENVELOPE_SCHEMA:
+        raise S2SupervisorRuntimeError("s2_06_corrected_node_envelope_schema_invalid")
+    node_output = parsed.get("node_output")
+    resolutions = parsed.get("correction_resolutions")
+    if not isinstance(node_output, Mapping) or not isinstance(resolutions, list):
+        raise S2SupervisorRuntimeError("s2_06_corrected_node_envelope_content_invalid")
+    objectives = list(correction_contract.get("correction_objectives") or [])
+    expected_ids = [str(row["correction_id"]) for row in objectives]
+    if len(resolutions) != len(expected_ids):
+        raise S2SupervisorRuntimeError("s2_06_correction_resolution_count_invalid")
+    directive = correction_contract["visible_correction_directive"]
+    allowed_evidence = set(directive["evidence_ids"])
+    allowed_gaps = set(directive["gap_ids"])
+    by_id: dict[str, dict[str, Any]] = {}
+    for row in resolutions:
+        if not isinstance(row, Mapping) or set(row) != {
+            "correction_id", "status", "evidence_ids", "gap_ids", "resolution_summary",
+        }:
+            raise S2SupervisorRuntimeError("s2_06_correction_resolution_shape_invalid")
+        correction_id = str(row.get("correction_id") or "")
+        if correction_id in by_id or correction_id not in expected_ids:
+            raise S2SupervisorRuntimeError("s2_06_correction_resolution_binding_invalid")
+        evidence_ids = _unique_string_list(row.get("evidence_ids"), "resolution_evidence")
+        gap_ids = _unique_string_list(row.get("gap_ids"), "resolution_gap")
+        if not set(evidence_ids) <= allowed_evidence or not set(gap_ids) <= allowed_gaps:
+            raise S2SupervisorRuntimeError("s2_06_correction_resolution_unknown_authority")
+        status = str(row.get("status") or "")
+        if status not in {"closed", "typed_unresolved"}:
+            raise S2SupervisorRuntimeError("s2_06_correction_resolution_status_invalid")
+        summary = str(row.get("resolution_summary") or "").strip()
+        if not summary:
+            raise S2SupervisorRuntimeError("s2_06_correction_resolution_summary_required")
+        by_id[correction_id] = {
+            "correction_id": correction_id,
+            "status": status,
+            "evidence_ids": evidence_ids,
+            "gap_ids": gap_ids,
+            "resolution_summary": summary,
+        }
+    ordered = [by_id[correction_id] for correction_id in expected_ids]
+    for objective, resolution in zip(objectives, ordered):
+        if resolution["status"] == "typed_unresolved":
+            if objective["unresolved_policy"] == "typed_unresolved_not_allowed":
+                raise S2SupervisorRuntimeError("s2_06_typed_unresolved_not_allowed")
+            if not resolution["gap_ids"]:
+                raise S2SupervisorRuntimeError("s2_06_typed_unresolved_gap_required")
+        elif not resolution["evidence_ids"] and not resolution["gap_ids"]:
+            raise S2SupervisorRuntimeError("s2_06_closed_resolution_authority_required")
+        if (
+            objective["closure_rule"] == "counterevidence_nonempty_or_typed_unresolved_with_gap"
+            and resolution["status"] == "closed"
+            and not list(node_output.get("counterevidence_ids") or [])
+        ):
+            raise S2SupervisorRuntimeError("s2_06_counterevidence_objective_not_closed")
+    return deepcopy(dict(node_output)), ordered
+
+
+def _narrative_locations(node_output: dict[str, Any], node_type: str) -> list[tuple[dict[str, Any], str]]:
+    rows: list[tuple[dict[str, Any], str]] = []
+    if node_type == "lead":
+        for unit in node_output.get("research_units", []):
+            rows.extend((unit, field) for field in ("question", "why_material", "stop_condition") if field in unit)
+    elif node_type == "specialist":
+        rows.extend(
+            (node_output, field)
+            for field in ("judgment", "mechanism", "financial_or_valuation_link", "what_would_change")
+            if field in node_output
+        )
+    elif node_type == "synthesis":
+        rows.extend(
+            (node_output, field)
+            for field in ("thesis", "confidence", "counter_thesis", "what_would_change")
+            if field in node_output
+        )
+    elif node_type == "writer":
+        rows.extend((node_output, field) for field in ("title", "overall_boundary") if field in node_output)
+        for section in node_output.get("sections", []):
+            rows.extend((section, field) for field in ("heading", "narrative") if field in section)
+    elif node_type == "verifier":
+        for finding in node_output.get("findings", []):
+            if "explanation" in finding:
+                rows.append((finding, "explanation"))
+    return rows
+
+
+def _render_protected_numeric_narrative(
+    node_output: Mapping[str, Any],
+    *,
+    node_type: str,
+    numeric_fact_views: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    rendered = deepcopy(dict(node_output))
+    views = {str(row["numeric_alias"]): row for row in numeric_fact_views}
+    for parent, key in _narrative_locations(rendered, node_type):
+        text = str(parent[key])
+        without_placeholders = _NUMERIC_PLACEHOLDER.sub("", text)
+        if _RAW_NARRATIVE_NUMERIC.search(without_placeholders):
+            raise S2SupervisorRuntimeError("s2_06_unprotected_numeric_narrative")
+
+        def replace(match: re.Match[str]) -> str:
+            alias = match.group(1)
+            if alias not in views:
+                raise S2SupervisorRuntimeError("s2_06_unknown_or_unselected_numeric_placeholder")
+            return str(views[alias]["display_surface"])
+
+        parent[key] = _NUMERIC_PLACEHOLDER.sub(replace, text)
+        if "[NUM:" in str(parent[key]):
+            raise S2SupervisorRuntimeError("s2_06_numeric_placeholder_residue")
+    return rendered
+
+
+def _compile_closure_receipts(
+    *,
+    objectives: Sequence[Mapping[str, Any]],
+    resolutions: Sequence[Mapping[str, Any]],
+    node_ref: str,
+    node_output: Mapping[str, Any],
+    validation_status: str,
+) -> list[dict[str, Any]]:
+    output_digest = canonical_digest(node_output)
+    return [
+        {
+            "schema_version": CORRECTION_CLOSURE_RECEIPT_SCHEMA,
+            "correction_id": objective["correction_id"],
+            "node_ref": node_ref,
+            "status": resolution["status"],
+            "evidence_ids": list(resolution["evidence_ids"]),
+            "gap_ids": list(resolution["gap_ids"]),
+            "resolution_summary": resolution["resolution_summary"],
+            "closure_rule": objective["closure_rule"],
+            "validation_status": validation_status,
+            "node_output_digest": output_digest,
+        }
+        for objective, resolution in zip(objectives, resolutions)
+    ]
 
 
 def _apply_deterministic_corrections(

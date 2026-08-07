@@ -1,0 +1,54 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_independent_fresh_proof_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "status": "independent_fresh_zero_call_proof_pass",
+  "source_commit": "ee5ebf3b4773eae839f4646d21cec2f85a517925",
+  "source_branch": "codex/layered-data-source-expansion",
+  "source_engineering_proof": {
+    "path": "configs/releases/fin_ia_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_zero_call_proof_v1_0.json",
+    "sha256": "8c3a3129796c12ee4f4ff64ce13df68ed5151ee6e14f17ecc72c27af71bdedc1",
+    "canonical_proof_digest": "37fea4fbb697d0a584bcd7d44e94b36ba7e64e00b42f585c1d66defb1ed5d1d3"
+  },
+  "fresh_workers": [
+    {
+      "worker_id": "worker_a",
+      "source_form": "git_archive",
+      "fresh_process": true,
+      "tests_passed": 46,
+      "restricted_R1_request_objects_verified": 19,
+      "materialized_proof_sha256": "8c3a3129796c12ee4f4ff64ce13df68ed5151ee6e14f17ecc72c27af71bdedc1"
+    },
+    {
+      "worker_id": "worker_b",
+      "source_form": "git_archive",
+      "fresh_process": true,
+      "tests_passed": 46,
+      "restricted_R1_request_objects_verified": 19,
+      "materialized_proof_sha256": "8c3a3129796c12ee4f4ff64ce13df68ed5151ee6e14f17ecc72c27af71bdedc1"
+    }
+  ],
+  "proof_correction_observed": {
+    "initial_archive_reproduction_failed": true,
+    "failure_code": "cross_checkout_newline_instability",
+    "root_cause": "The Windows materializer emitted CRLF while the Git archive stored LF, so content was semantically equal but not byte-identical.",
+    "repair": "The materializer now writes explicit LF newlines.",
+    "repaired_source_commit": "ee5ebf3b4773eae839f4646d21cec2f85a517925",
+    "repaired_dual_archive_result": "pass"
+  },
+  "verification": {
+    "worker_proof_hashes_equal": true,
+    "worker_proof_hashes_match_repository": true,
+    "R1_restricted_raw_or_headers_emitted": false,
+    "network_model_provider_retry_admission_calls": [0, 0, 0, 0, 0]
+  },
+  "decision": {
+    "S1_08Q_A_to_G_engineering": "independently_proven",
+    "S1_08Q_H_authority_decision_eligible": true,
+    "DELL_R2_replacement_authorized": false,
+    "DELL_R2_executed": false,
+    "MU_NVDA_ranking_S3_authorized": [false, false, false, false]
+  },
+  "known_boundary": "The dual clean-archive proof establishes deterministic repair and replay portability only. It does not establish fresh source reachability, live target-in-pool, ranking quality, downstream research synthesis or report quality.",
+  "current_next": "S1_08Q_H_DELL_R2_REPLACEMENT_AUTHORITY_DECISION"
+}

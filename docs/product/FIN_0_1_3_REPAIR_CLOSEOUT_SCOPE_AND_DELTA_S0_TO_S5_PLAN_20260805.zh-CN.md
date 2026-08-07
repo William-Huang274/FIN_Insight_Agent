@@ -368,6 +368,8 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 
 > **2026-08-08 `013-S1-08Q-A..G` 零调用工程实现通过、clean 独立复证待执行**：v2 catalog/runtime 已将五类 role 编译为 Evidence Slot，声明 SEC/普通 IR/local-market 的真实 operational route；structured-IR 尚缺 feed/sitemap locator adapter、external-site-search 尚缺运营 Provider，两者明确 unavailable。抓取前按 source family/path/title/form/date/as-of/slot fit 去除 Microsoft 导航、商店和产品噪声并优先 current SEC filing，抓取后再做正文研究角色 gate。连接终止统一 typed capture，attempt 后 content-addressed checkpoint，unexpected failure 保留 formal partial result。R1 restricted objects=`19/19` digest verified、raw/header 不输出；sanitized replay 的 unpaired/noise/stale=`0/0/0`、五 role closure=`5/5`，qualified-document yield 使用 discovery＋document fetch 的真实总调用分母，为 `6/11=0.545455`。focused/related=`46 passed`、materializer byte-identical，且历史 v1 revision-one SEC widening保持不变；external calls/admission=0。当前只到 engineering pass，下一项为 clean archive/fresh-process 独立复证；不自动进入 Q-H、DELL R2 或 ranking。
 
+> **2026-08-08 `013-S1-08Q-A..G` clean 独立复证通过**：`ee5ebf3b...17925` 的两个 Git archive、两个 fresh process 各=`46 passed`，restricted R1 request objects 每边=`19/19`；重物化 proof SHA 与仓库一致。首次 archive 暴露 CRLF/LF byte portability defect，修复后从新 commit 重新双复证通过。A..G 现为 `independently proven`，但这不是 live source-quality 证明；下一项只有 Q-H replacement authority decision，不自动签发/执行 DELL R2。
+
 > **2026-08-07 用户已选择 SEC contact 路线**：真实联系身份只通过运行时环境注入，不进入 Git 或结果物；SEC 域名无合法 contact 时 fail closed。新增 identity mutation 后 broader=`84 passed`。只授权 new admission 的 1-call Dell SEC v1.3 proof，复用 MU/NVDA 已成功结果；不重跑三案、不进入额外 fallback。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

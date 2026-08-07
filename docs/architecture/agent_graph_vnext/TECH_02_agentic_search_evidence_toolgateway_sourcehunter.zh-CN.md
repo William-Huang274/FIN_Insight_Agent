@@ -802,3 +802,11 @@ R3 admission 同时绑定：authority decision raw-file SHA/canonical digest、i
 R3 candidate contract 必须等于 `fin_0_1_3.S1_08.current_source_catalog_relationship_budget_candidate_generation:v3`，不允许 runner 静默回落 v2。budget 为 `16` 次网络、每 attempt `2` 次 document fetch/`1` 份 unique accept、`4/4/5/0+3` reservation、30 秒单次/300 秒全案、0 model/provider/retry、no R4。terminal 记录 authority/proof/R2/catalog/source/preflight lineage，ranking 始终 false。
 
 focused successor=`7 passed`、全部 S1-08 contract=`70 passed`、compileall pass；fake transport 仅验证 contract/exact-once/round-robin/terminalization，没有访问外网或证明搜索质量。当前状态为 `zero_call_engineering_pass / clean_commit_preflight_pending`。下一项只能在 commit/push 后执行 `S1_08_V3_DELL_R3_SUCCESSOR_CLEAN_ZERO_CALL_PREFLIGHT`；clean proof 未通过前不得签发或 live。
+
+### 20.9 Clean-preflight commit lineage（2026-08-08）
+
+P2C 在 proof 前发现，若把 `preflight.source_commit` 强制等于未来执行时 `HEAD`，则 proof artifact 自身的提交会推进 HEAD 并让 proof 自我失效。禁止在 proof 生成后手改 commit 字段追认未证明提交。
+
+R3 因此区分 `proven_source_commit` 与 `execution_commit`：前者是 clean Git archive 实际证明的提交，并继续作为 admission/terminal 的 `implementation_commit`；后者可以包含 proof artifact、Project OS 投影和 durable docs，但必须是前者的 Git 后代。runner 同时要求两提交间 `src/`、`scripts/`、`configs/runtime/`、`pyproject.toml`、`requirements*.txt` 零漂移，且所有既有 Runtime/Runner/v3 implementation/authority SHA 继续重算。任何 Runtime tree 变化都需要新 proof，不得沿用旧 preflight。
+
+clean-preflight runner 复用既有 v3 proof 的 archive、restricted R1/R2 capture 注入和 credential-scrubbed fresh-process 组件，只新增 R3-specific compile、完整 S1-08 suite、commit/tree mutation、exact-once 和 result-absence 验证。该修复本身仍为零调用，clean proof、formal admission 与 exact-live 均未完成。

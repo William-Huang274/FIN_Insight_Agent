@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_preflight_commit_lineage_repair_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08-P2C",
+  "status": "zero_call_repaired_clean_successor_preflight_pending",
+  "source_commit_before_repair": "3083968c01f926479afd878add0a91a42b5831cb",
+  "root_cause": {
+    "code": "successor_preflight_commit_self_reference",
+    "description": "The R3 runner passed the current execution HEAD as implementation_commit while the admission required the clean preflight source_commit to equal that value. Committing the proof artifact necessarily advances HEAD, so an otherwise valid proof would invalidate itself before issuance.",
+    "owner": "S1_08_R3_successor_runner_and_preflight_lineage",
+    "model_or_provider_fault": false
+  },
+  "repair": {
+    "proven_source_commit_role": "The clean preflight source_commit remains the implementation_commit bound by the admission and terminal.",
+    "execution_commit_role": "The later clean and synced execution HEAD may advance only through proof, Project OS and durable documentation commits.",
+    "ancestry_required": true,
+    "proven_runtime_tree_must_be_unchanged": [
+      "src",
+      "scripts",
+      "configs/runtime",
+      "pyproject.toml",
+      "requirements*.txt"
+    ],
+    "runtime_runner_authority_and_dependency_SHA_still_required": true,
+    "manual_JSON_override_allowed": false
+  },
+  "superseded_implementation_artifact": {
+    "path": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_successor_entrypoint_zero_call_implementation_v1_0.json",
+    "sha256": "79810a5f4af20c39d3340b38775d3b04a43ab057bb1f7245a504bbf24418fc04",
+    "disposition": "Historical P2B engineering evidence remains immutable, but its runner SHA is not eligible for issuance after this repair. The future clean preflight must bind the repaired runner and test SHA below."
+  },
+  "source_files": [
+    {
+      "path": "src/sec_agent/s1_08_r3_successor.py",
+      "sha256": "3f10f2c61cdaa9f7f3d5fdadacd47d409e908815baf52a31a32e323a8c92195e"
+    },
+    {
+      "path": "scripts/releases/run_fin_ia_0_1_3_s1_08_v3_dell_current_search_r3.py",
+      "sha256": "d799aff3df7383d669bf665f459234adfdc7233bb726d7456f8b9cd792e90dd5"
+    },
+    {
+      "path": "tests/contract/test_fin_0_1_3_s1_08_v3_dell_r3_successor.py",
+      "sha256": "70dc13e36b4c6a9bcd895995bde4fcc6818749b83e0cd8d4793adb36dfed7371"
+    },
+    {
+      "path": "scripts/releases/prepare_fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight.py",
+      "sha256": "ee55f380dead6d4f589ce2639316a50c34f83169bfb564dd8f691ddf58fa5df4"
+    }
+  ],
+  "verification": {
+    "focused_R3_contract_tests_passed": 7,
+    "compileall": "pass",
+    "same_commit_positive_guard": "pass",
+    "runtime_tree_drift_mutation": "fail_closed",
+    "non_ancestor_execution_commit_mutation": "fail_closed",
+    "formal_admission_network_model_provider_retry_live_calls": [0, 0, 0, 0, 0, 0]
+  },
+  "decision": {
+    "R3_successor_entrypoint": "zero_call_repaired",
+    "clean_successor_preflight": false,
+    "formal_admission_issued": false,
+    "DELL_R3_executed": false,
+    "exact_live_authorized": false
+  },
+  "current_next": "COMMIT_PUSH_THEN_S1_08_V3_DELL_R3_SUCCESSOR_CLEAN_ZERO_CALL_PREFLIGHT",
+  "known_boundary": "This repair only removes the proof-artifact commit self-reference while preserving exact source, authority, ancestry and Runtime-tree bindings. It is not the clean proof, an admission, source access, candidate-quality evidence or live authority."
+}

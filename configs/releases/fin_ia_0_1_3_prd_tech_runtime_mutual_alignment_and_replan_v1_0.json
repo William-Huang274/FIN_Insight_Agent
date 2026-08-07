@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_0_1_3_prd_tech_runtime_mutual_alignment_and_replan_v1_0",
   "recorded_at": "2026-08-08",
   "source_commit_before_document_update": "5885f7280dd04e6ceded93d0e7ba644bd8b9b971",
-  "status": "mutual_alignment_plan_advanced_s1_08_p2b_successor_engineering_pass_clean_preflight_pending",
+  "status": "mutual_alignment_plan_advanced_s1_08_p2c_commit_lineage_repaired_clean_preflight_pending",
   "product_version": "FIN_0_1_3",
   "product_version_decision": "remain_current_no_version_jump",
   "fin_0_2_definition_changed": false,

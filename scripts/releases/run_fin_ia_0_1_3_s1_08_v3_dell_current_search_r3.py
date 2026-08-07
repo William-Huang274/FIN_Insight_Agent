@@ -44,6 +44,14 @@ RESEARCH_OBJECTIVE = (
     "what would change the investment judgment as of 2026-08-06."
 )
 EMAIL_RE = re.compile(r"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$", re.IGNORECASE)
+COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
+PROVEN_RUNTIME_TREE_PATHS = (
+    "src",
+    "scripts",
+    "configs/runtime",
+    "pyproject.toml",
+    "requirements*.txt",
+)
 
 
 def _git(*args: str) -> str:
@@ -74,6 +82,35 @@ def _verify_v3_implementation_bindings(proof: dict) -> dict[str, str]:
     if observed != bindings:
         raise SystemExit("S1-08 R3 v3 implementation source drift detected")
     return observed
+
+
+def _assert_proven_source_ancestry_and_runtime_tree(
+    *,
+    proven_source_commit: str,
+    execution_commit: str,
+) -> None:
+    if not COMMIT_RE.fullmatch(proven_source_commit) or not COMMIT_RE.fullmatch(
+        execution_commit
+    ):
+        raise SystemExit("S1-08 R3 requires full Git commit identities")
+    try:
+        _git("merge-base", "--is-ancestor", proven_source_commit, execution_commit)
+    except subprocess.CalledProcessError as exc:
+        raise SystemExit(
+            "S1-08 R3 execution commit must descend from the proven source commit"
+        ) from exc
+    drift = _git(
+        "diff",
+        "--name-only",
+        f"{proven_source_commit}..{execution_commit}",
+        "--",
+        *PROVEN_RUNTIME_TREE_PATHS,
+    )
+    if drift:
+        raise SystemExit(
+            "S1-08 R3 proven Runtime tree drift detected after clean preflight: "
+            + drift.replace("\n", ", ")
+        )
 
 
 def parse_args() -> argparse.Namespace:
@@ -127,6 +164,11 @@ def main() -> int:
     runtime_sha = sha256_file(RUNTIME_PATH)
     runner_sha = sha256_file(Path(__file__))
     head = _git("rev-parse", "HEAD")
+    proven_source_commit = str(successor_preflight.get("source_commit") or "")
+    _assert_proven_source_ancestry_and_runtime_tree(
+        proven_source_commit=proven_source_commit,
+        execution_commit=head,
+    )
     branch = _git("branch", "--show-current")
     started = _utc_now()
     bound_inputs = R3AuthorityInputs(
@@ -147,7 +189,7 @@ def main() -> int:
         successor_preflight=successor_preflight,
         successor_runtime_sha256=runtime_sha,
         successor_runner_sha256=runner_sha,
-        implementation_commit=head,
+        implementation_commit=proven_source_commit,
         run_nonce=f"dell-current-search-r3-{started:%Y%m%dT%H%M%SZ}-{uuid.uuid4().hex}",
         issued_at=_iso(started),
         expires_at=_iso(started + timedelta(hours=2)),
@@ -173,7 +215,7 @@ def main() -> int:
         runtime_root=runtime_root,
         shared_admission_ledger=ledger,
         transport=UrllibOfficialSourceTransport(),
-        implementation_commit=head,
+        implementation_commit=proven_source_commit,
         research_objective=RESEARCH_OBJECTIVE,
         observed_at=_iso(started),
         market_snapshot=None,
@@ -182,6 +224,7 @@ def main() -> int:
         "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_result_v1_0",
         "status": result["status"],
         "git": {"branch": branch, "commit": head, "clean_and_synced_at_start": True},
+        "proven_source_commit": proven_source_commit,
         "project_os_preflight": {
             "status": "pass",
             "run_scope": RUN_SCOPE,

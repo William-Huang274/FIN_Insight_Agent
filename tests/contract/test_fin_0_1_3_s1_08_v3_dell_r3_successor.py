@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import importlib.util
 import json
 from pathlib import Path
+import subprocess
 
 import pytest
 
@@ -377,7 +379,9 @@ def test_R3_exact_once_terminal_uses_v3_candidate_contract_and_fair_scheduler(
         )
 
 
-def test_R3_runner_is_zero_call_until_explicit_main_and_cannot_reuse_R2() -> None:
+def test_R3_runner_is_zero_call_until_explicit_main_and_cannot_reuse_R2(
+    monkeypatch,
+) -> None:
     source = RUNNER_PATH.read_text(encoding="utf-8")
     assert "fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_result_v1_0.json" in source
     assert "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION" in source
@@ -386,7 +390,54 @@ def test_R3_runner_is_zero_call_until_explicit_main_and_cannot_reuse_R2() -> Non
     assert "successor_clean_zero_call_preflight_v1_0.json" in source
     assert "socket.getaddrinfo" not in source
     assert 'if __name__ == "__main__"' in source
+    assert "implementation_commit=proven_source_commit" in source
     assert not (ROOT / "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_result_v1_0.json").exists()
+
+    spec = importlib.util.spec_from_file_location("r3_runner_contract_test", RUNNER_PATH)
+    assert spec is not None and spec.loader is not None
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+    proven = "1" * 40
+    execution = "2" * 40
+
+    def clean_runtime_tree(*args):
+        if args[0] == "merge-base":
+            return ""
+        if args[0] == "diff":
+            return ""
+        raise AssertionError(args)
+
+    monkeypatch.setattr(runner, "_git", clean_runtime_tree)
+    runner._assert_proven_source_ancestry_and_runtime_tree(
+        proven_source_commit=proven,
+        execution_commit=execution,
+    )
+
+    def drifted_runtime_tree(*args):
+        if args[0] == "merge-base":
+            return ""
+        if args[0] == "diff":
+            return "src/sec_agent/shared_admission_ledger.py"
+        raise AssertionError(args)
+
+    monkeypatch.setattr(runner, "_git", drifted_runtime_tree)
+    with pytest.raises(SystemExit, match="Runtime tree drift"):
+        runner._assert_proven_source_ancestry_and_runtime_tree(
+            proven_source_commit=proven,
+            execution_commit=execution,
+        )
+
+    def unrelated_execution_commit(*args):
+        if args[0] == "merge-base":
+            raise subprocess.CalledProcessError(1, args)
+        raise AssertionError(args)
+
+    monkeypatch.setattr(runner, "_git", unrelated_execution_commit)
+    with pytest.raises(SystemExit, match="must descend"):
+        runner._assert_proven_source_ancestry_and_runtime_tree(
+            proven_source_commit=proven,
+            execution_commit=execution,
+        )
 
     old_preflight = _load(OLD_R2_PREFLIGHT_PATH)
     assert sha256_file(OLD_R2_RUNTIME_PATH) == old_preflight["source_files"]["runtime_sha256"]

@@ -673,3 +673,22 @@ Official discovery adapter 的顺序固定为：landing/SEC submissions request 
 Evaluator-only matcher 在 candidate generation 完成后才加载 hidden target groups，并按 normalized source locator、published date 与 authority 共同计算 target-in-pool 和 selected-pack coverage；旧 market snapshot 即使 locator 同名也不能冒充 current Gold。fixture 中 `12/12` target group 进入 pool 且 selected pack coverage=`1.0` 只证明合同上限；真实 canary 未通过前，ranking/NDCG/MRR/BGE/Milvus 仍不准入。Runtime owner 为 `src/sec_agent/s1_08_candidate_generation_runtime.py` 与 `src/sec_agent/s1_08_official_discovery_adapter.py`，policy owner 为 `configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v1_0.json`。
 
 首次 DELL live canary 在 19 次网络调用、212 秒后以未包装的 `RemoteDisconnected` terminal；raw capture 保留 19 个 request、15 个 response、3 个 typed transport failure 和 13 个 parser object，但最后请求没有 failure capture，整案 partial candidate/gap 也未物化。capture 安全元数据同时证明通用 anchor scorer 会选择 Microsoft 导航/商店/Surface 链接，SEC locator 会优先 DELL 2022/2023 旧 filing。故当前缺口不是调高预算或 reranker，而是 transport exception taxonomy、source-family/path/date/currentness locator filter、partial terminalization 和 fetch 前质量筛选。下一实现必须先用 immutable capture replay 零调用证明这些结构，再另行决定 replacement canary；R1 不得重放或追认。
+
+### 20.2 质量优先 SourceHunter 与 Capture Replay 一体化合同
+
+Capture replay 不是 transport 修复后的附属测试，也不能被当作 live 检索质量证明。它是 SourceHunter 每一层质量决策的共同基线：Evidence Objective/Slot、provider route、fetch 前 locator qualification、fetch 后 content qualification、promotion、gap、预算和 terminal materialization 都必须能在同一条已捕获轨迹上解释。
+
+统一数据面分两层：
+
+- restricted exact manifest 只在 Git 中保存 content digest、脱敏 locator metadata、capture type 和 lineage ref；原始正文留在受限 content-addressed store；
+- portable sanitized fixture 保存 navigation anchor、SEC form/date、connection termination 和 partial-terminal 结构，不包含 hidden Gold、expected insight、凭据、Cookie、runtime contact 或私有推理。
+
+SourceHunter 必须先将 research question 编译为五类 Evidence Slot：issuer results、regulatory reconciliation、customer demand/deployment、supply/counterevidence、market context。每个 slot 绑定 entity role、source family、as-of window、required/optional、stop condition。query revision 必须由 missing slot 和 route failure 驱动，不得 identical retry。
+
+Discovery 核心保持 provider-neutral，并以版本化 capability 声明以下路线是否可运行：SEC submissions/form/exhibit、issuer IR results/news/events/sitemap/RSS/structured endpoint、external/site search、customer/supplier official disclosure、government/industry source。没有运营 provider 或 credential 时返回 `route_unavailable`；不得把定向官方抓取宣称为 broad Web search。
+
+fetch 前必须按 source family、path、title、entity、form、publication date、as-of fit、slot fit 和 canonical dedupe 判定；navigation/store/privacy/generic-product/footer link 不得消耗 document-fetch budget。fetch 后再按正文 entity/period/topic/source type/authority/evidence role/factual-vs-promotional 和 substantive duplicate 判定 candidate/promotion。Web 正文仍不拥有 exact numeric authority。
+
+transport 必须把 `RemoteDisconnected`、connection reset/abort 等连接终止写成 typed failure capture，并在每个 step 后原子物化 partial attempt、candidate、rejection、receipt、gap 与真实调用计数。未知项目异常可以终止整案，但不能删除先前形式化状态。
+
+统一 proof 必须同时通过：R1 全请求终态分类、已知导航噪声零 fetch、current eligible 存在时 stale filing 零选择、partial materialization 100%、三案例 full-fake/mutation、Gold/cross-case leakage=0、qualified-document yield 与 Evidence Slot coverage。DELL replacement live 的拟议 ceiling 为 16 network calls、0 model/provider/retry、每次 30 秒、全案 300 秒；是否签发仍需 clean proof 后独立决定。live target-in-pool 与 required-slot recall 未通过前，ranking/NDCG/MRR/BGE/Milvus 和 S3 继续阻断。

@@ -1,0 +1,188 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_integrated_upgrade_plan_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "status": "approved_plan_implementation_not_started",
+  "objective": "Upgrade SourceHunter for evidence quality and make immutable capture replay the shared design, regression, and admission basis rather than a separate fallback-only task.",
+  "governing_issue_ids": [
+    "RC-P36-154-fin-0-1-3-s1-08-current-candidate-pool-and-query-revision-runtime-missing",
+    "RC-P36-155-fin-0-1-3-s1-08-discovery-transport-locator-and-partial-terminalization"
+  ],
+  "baseline": {
+    "case_key": "DELL",
+    "attempt": "R1",
+    "network_calls": 19,
+    "elapsed_seconds": 212,
+    "request_captures": 19,
+    "response_captures": 15,
+    "typed_transport_failure_captures": 3,
+    "parser_captures": 13,
+    "unpaired_request_captures": 1,
+    "candidate_result_present": false,
+    "observed_quality_defects": [
+      "navigation_store_and_product_noise_reached_fetch",
+      "stale_SEC_filings_were_selected",
+      "partial_attempts_and_gaps_were_not_materialized"
+    ]
+  },
+  "principles": {
+    "quality_before_ranking": true,
+    "capture_before_parse_or_promotion": true,
+    "replay_is_part_of_each_quality_ticket": true,
+    "planner_gold_visibility": false,
+    "raw_capture_auto_promotion_allowed": false,
+    "provider_neutral_core": true,
+    "typed_gap_instead_of_fabricated_evidence": true,
+    "live_calls_authorized_by_this_plan": 0
+  },
+  "replay_corpus": {
+    "restricted_exact_manifest": {
+      "contents": "content-addressed references to immutable R1 request, response, failure and parser objects",
+      "git_policy": "digests_and_sanitized_metadata_only",
+      "access": "restricted_local_audit",
+      "forbidden": [
+        "authorization_headers",
+        "cookies",
+        "runtime_contact_plaintext",
+        "provider_private_reasoning"
+      ]
+    },
+    "portable_sanitized_fixtures": {
+      "contents": [
+        "navigation_anchor_shapes",
+        "SEC_filing_date_and_form_shapes",
+        "connection_termination_shape",
+        "partial_terminalization_shape"
+      ],
+      "hidden_gold_included": false
+    }
+  },
+  "work_packages": [
+    {
+      "id": "S1-08Q-A",
+      "name": "capture_replay_corpus_and_R1_decision_baseline",
+      "implementation": [
+        "inventory every R1 request and its terminal response, failure or missing pair",
+        "assign each observed locator a source family, evidence-slot fit, currentness and fetch decision",
+        "create restricted exact manifest plus portable sanitized fixtures"
+      ],
+      "replay_proof": "Every R1 network request has one explainable terminal classification without loading hidden Gold into the planner."
+    },
+    {
+      "id": "S1-08Q-B",
+      "name": "evidence_objective_and_slot_planner",
+      "implementation": [
+        "compile each research question into issuer results, regulatory reconciliation, customer demand, supply or counterevidence, and market context slots",
+        "bind entity role, source family, as-of window, required or optional status and stop condition",
+        "revise a query by missing slot and route rather than repeating keywords"
+      ],
+      "replay_proof": "R1 navigation requests are not justified by any slot, while legitimate issuer, regulatory and ecosystem documents retain an explicit search reason."
+    },
+    {
+      "id": "S1-08Q-C",
+      "name": "provider_neutral_multi_channel_discovery",
+      "implementation": [
+        "add structured official routes for SEC submissions, forms and exhibits",
+        "add issuer IR results, news, event, sitemap, RSS and structured endpoint discovery",
+        "define a versioned external or site-search provider interface for customer, supplier, government and industry discovery",
+        "return route_unavailable when an operational provider or credential is absent"
+      ],
+      "replay_proof": "Captured R1 routes are reproduced through a declared provider capability and source policy, not hard-coded benchmark URLs."
+    },
+    {
+      "id": "S1-08Q-D",
+      "name": "pre_fetch_locator_qualification_and_currentness",
+      "implementation": [
+        "score source family, path, title, entity, form, publication date, as-of fit and evidence-slot fit before fetch",
+        "reject navigation, store, privacy, generic product, footer and duplicate canonical links before network use",
+        "prefer the newest eligible filing or result while preserving older material only when a historical slot requires it"
+      ],
+      "replay_proof": "Known Outlook, Store, Surface and policy noise produces zero fetch decisions; stale Dell filings cannot outrank a newer eligible filing."
+    },
+    {
+      "id": "S1-08Q-E",
+      "name": "post_fetch_content_qualification_and_evidence_promotion",
+      "implementation": [
+        "classify parsed entity, period, topic, source type, authority, evidence role and factual versus promotional content",
+        "deduplicate canonical and substantively duplicate documents",
+        "separate candidate, accepted, context_only, rejected and typed_gap without granting exact numeric authority to web text"
+      ],
+      "replay_proof": "A successfully fetched page is not counted as useful unless its parsed content closes or informs a declared evidence slot."
+    },
+    {
+      "id": "S1-08Q-F",
+      "name": "typed_transport_and_partial_terminalization",
+      "implementation": [
+        "capture RemoteDisconnected, connection reset and connection abort as typed transport failures",
+        "atomically preserve partial attempts, candidates, rejections, receipts, gaps and real call counts after every step",
+        "terminate unknown project failures without discarding prior formal state"
+      ],
+      "replay_proof": "The R1 request-only terminal shape becomes a typed failure and all preceding work remains materialized."
+    },
+    {
+      "id": "S1-08Q-G",
+      "name": "integrated_replay_fake_mutation_and_efficiency_proof",
+      "implementation": [
+        "run exact capture replay, DELL MU NVDA full-fake and transport, stale-date, noise, duplication, contamination and partial-result mutations",
+        "measure qualified-document yield and evidence-slot closure per network call",
+        "prove the proposed replacement budget before any fresh network authority decision"
+      ],
+      "replay_proof": "Quality, reliability and efficiency gates pass together; a transport-only pass is insufficient."
+    },
+    {
+      "id": "S1-08Q-H",
+      "name": "replacement_authority_decision",
+      "implementation": [
+        "review clean-commit proof and remaining blockers",
+        "if admitted, issue at most one fresh DELL R2 exact-live admission",
+        "score target-in-pool and operational quality before admitting ranking or other cases"
+      ],
+      "replay_proof": "This planning contract itself authorizes no network, model, replacement, ranking or downstream research run."
+    }
+  ],
+  "acceptance_gates": {
+    "replay_and_integrity": {
+      "R1_requests_with_terminal_classification_ratio": 1.0,
+      "request_without_terminal_capture": 0,
+      "partial_result_materialization_ratio": 1.0,
+      "known_navigation_noise_fetches": 0,
+      "stale_filing_selected_when_newer_eligible_exists": 0,
+      "cross_case_or_hidden_gold_leakage": 0
+    },
+    "research_source_quality": {
+      "evidence_roles_with_candidate_or_typed_gap_ratio": 1.0,
+      "DELL_target_in_pool": 1.0,
+      "required_slot_recall_at_8": 1.0,
+      "currentness": 1.0,
+      "diversity_or_typed_exception": 1.0,
+      "reconciliation_coverage": 1.0,
+      "selected_pack_coverage": 1.0,
+      "false_promotion": 0,
+      "qualified_document_yield_min": 0.5
+    },
+    "proposed_DELL_R2_budget": {
+      "network_calls_max": 16,
+      "model_calls": 0,
+      "provider_model_calls": 0,
+      "retry_calls": 0,
+      "per_call_timeout_seconds_max": 30,
+      "overall_timeout_seconds_max": 300,
+      "note": "The call ceiling is a pre-registered quality and efficiency target; external latency is recorded independently and does not excuse missing terminal captures."
+    }
+  },
+  "stop_rules": [
+    "If no operational external or site-search provider exists, declare that route unavailable and do not claim broad Web search capability.",
+    "If replay cannot remove navigation and stale selections without hidden Gold, redesign the provider-neutral source-family classifier before live execution.",
+    "If replay passes but DELL R2 target-in-pool fails, remain in S1-08 candidate coverage and do not tune ranking or start S3.",
+    "Only after one DELL replacement passes may MU and NVDA transfer authority be decided separately.",
+    "NDCG, MRR, BGE and Milvus remain blocked until live target-in-pool and required-slot recall pass."
+  ],
+  "non_goals": [
+    "implement_runtime_in_this_planning_change",
+    "rerun_DELL_R1_or_issue_R2_admission",
+    "tune_ranking_or_vector_infrastructure",
+    "call_DeepSeek_or_generate_a_research_report",
+    "treat_capture_replay_as_live_source_quality_proof"
+  ],
+  "current_next": "S1_08Q_A_TO_G_ONE_ZERO_CALL_INTEGRATED_IMPLEMENTATION_AND_PROOF_PACKAGE"
+}

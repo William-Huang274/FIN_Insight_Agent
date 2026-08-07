@@ -1,0 +1,214 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v2_0",
+  "contract_ref": "fin_0_1_3.S1_08.current_source_catalog_candidate_generation:v2",
+  "as_of": "2026-08-06",
+  "planner_visibility": {
+    "allowed": [
+      "case identity",
+      "research objective",
+      "official source landing pages",
+      "CIK",
+      "ecosystem roles",
+      "generic evidence-slot definitions",
+      "versioned provider capability and operational state",
+      "prior attempt receipts and missing-slot reasons"
+    ],
+    "forbidden": [
+      "Gold evidence IDs",
+      "Gold target IDs",
+      "Gold expected insights",
+      "benchmark document URLs",
+      "hidden scoring objects"
+    ]
+  },
+  "budgets": {
+    "maximum_revisions_per_target": 2,
+    "maximum_candidates_per_case": 24,
+    "selected_pack_ceiling_per_case": 8,
+    "replacement_network_call_ceiling": 16,
+    "document_ceiling_per_query": 1,
+    "qualified_document_yield_min": 0.5,
+    "model_calls": 0,
+    "identical_retry_forbidden": true
+  },
+  "source_provider_capabilities": [
+    {
+      "route_id": "issuer_ir_discovery",
+      "provider_family": "official_http_capture",
+      "operational": true,
+      "source_families": ["issuer_ir_document", "customer_official_disclosure", "issuer_official_page"]
+    },
+    {
+      "route_id": "issuer_ir_structured_discovery",
+      "provider_family": "official_http_capture",
+      "operational": false,
+      "unavailable_code": "source_provider_route_unavailable",
+      "source_families": ["issuer_structured_discovery", "issuer_ir_document"]
+    },
+    {
+      "route_id": "sec_submissions_discovery",
+      "provider_family": "SEC_submissions_HTTP",
+      "operational": true,
+      "source_families": ["regulatory_index", "regulatory_filing"]
+    },
+    {
+      "route_id": "external_site_search",
+      "provider_family": "provider_neutral_external_search",
+      "operational": false,
+      "unavailable_code": "source_provider_route_unavailable",
+      "source_families": ["customer_official_disclosure", "supplier_official_disclosure", "government_or_industry_primary"]
+    },
+    {
+      "route_id": "local_market_snapshot",
+      "provider_family": "governed_local_snapshot",
+      "operational": true,
+      "source_families": ["market_context"]
+    }
+  ],
+  "evidence_role_blueprints": [
+    {
+      "slot_id": "issuer_results_and_management_commentary",
+      "role_id": "issuer_results_and_management_commentary",
+      "required": true,
+      "query_terms": ["latest quarterly financial results", "earnings call", "prepared remarks"],
+      "source_routes": ["issuer_ir_discovery", "sec_submissions_discovery"],
+      "revision_route_additions": {
+        "1": ["issuer_ir_structured_discovery"],
+        "2": ["external_site_search"]
+      },
+      "source_families": ["issuer_ir_document", "regulatory_filing"],
+      "entity_roles": ["subject"],
+      "currentness_window_days": 550,
+      "minimum_qualified_candidates": 1,
+      "stop_condition": "candidate_or_typed_gap"
+    },
+    {
+      "slot_id": "regulatory_risk_and_financial_reconciliation",
+      "role_id": "regulatory_risk_and_financial_reconciliation",
+      "required": true,
+      "query_terms": ["latest 10-Q 10-K risk factors cash flow segment"],
+      "source_routes": ["sec_submissions_discovery"],
+      "revision_route_additions": {
+        "1": ["issuer_ir_discovery"],
+        "2": ["external_site_search"]
+      },
+      "source_families": ["regulatory_filing", "issuer_ir_document"],
+      "entity_roles": ["subject"],
+      "currentness_window_days": 550,
+      "minimum_qualified_candidates": 1,
+      "stop_condition": "candidate_or_typed_gap"
+    },
+    {
+      "slot_id": "customer_demand_and_deployment_validation",
+      "role_id": "customer_demand_and_deployment_validation",
+      "required": true,
+      "query_terms": ["AI infrastructure demand capacity deployment capital expenditure"],
+      "source_routes": ["issuer_ir_discovery"],
+      "revision_route_additions": {
+        "1": ["issuer_ir_structured_discovery"],
+        "2": ["external_site_search"]
+      },
+      "source_families": ["issuer_ir_document", "customer_official_disclosure"],
+      "entity_roles": ["cloud_operator", "infrastructure_integrator"],
+      "currentness_window_days": 550,
+      "minimum_qualified_candidates": 1,
+      "stop_condition": "candidate_or_typed_gap"
+    },
+    {
+      "slot_id": "supply_chain_capacity_and_counterevidence",
+      "role_id": "supply_chain_capacity_and_counterevidence",
+      "required": true,
+      "query_terms": ["capacity supply constraint advanced packaging memory foundry counterevidence"],
+      "source_routes": ["issuer_ir_discovery"],
+      "revision_route_additions": {
+        "1": ["issuer_ir_structured_discovery"],
+        "2": ["external_site_search"]
+      },
+      "source_families": ["issuer_ir_document", "customer_official_disclosure"],
+      "entity_roles": ["memory_supplier", "foundry", "compute_platform"],
+      "currentness_window_days": 550,
+      "minimum_qualified_candidates": 1,
+      "stop_condition": "candidate_or_typed_gap"
+    },
+    {
+      "slot_id": "market_expectation_context",
+      "role_id": "market_expectation_context",
+      "required": true,
+      "query_terms": ["market price return valuation expectation as of date"],
+      "source_routes": ["local_market_snapshot"],
+      "revision_route_additions": {
+        "1": [],
+        "2": []
+      },
+      "source_families": ["market_context"],
+      "entity_roles": ["subject"],
+      "currentness_window_days": 7,
+      "minimum_qualified_candidates": 1,
+      "stop_condition": "candidate_or_typed_gap"
+    }
+  ],
+  "entities": [
+    {
+      "entity_key": "DELL",
+      "legal_name": "Dell Technologies Inc.",
+      "aliases": ["Dell", "Dell Technologies"],
+      "cik": "0001571996",
+      "ecosystem_roles": ["subject", "infrastructure_integrator"],
+      "official_landing_pages": [
+        "https://investors.delltechnologies.com/",
+        "https://data.sec.gov/submissions/CIK0001571996.json"
+      ]
+    },
+    {
+      "entity_key": "MU",
+      "legal_name": "Micron Technology, Inc.",
+      "aliases": ["Micron", "Micron Technology"],
+      "cik": "0000723125",
+      "ecosystem_roles": ["subject", "memory_supplier"],
+      "official_landing_pages": [
+        "https://investors.micron.com/",
+        "https://data.sec.gov/submissions/CIK0000723125.json"
+      ]
+    },
+    {
+      "entity_key": "NVDA",
+      "legal_name": "NVIDIA Corporation",
+      "aliases": ["NVIDIA"],
+      "cik": "0001045810",
+      "ecosystem_roles": ["subject", "compute_platform"],
+      "official_landing_pages": [
+        "https://investor.nvidia.com/",
+        "https://data.sec.gov/submissions/CIK0001045810.json"
+      ]
+    },
+    {
+      "entity_key": "MSFT",
+      "legal_name": "Microsoft Corporation",
+      "aliases": ["Microsoft", "Azure"],
+      "cik": "0000789019",
+      "ecosystem_roles": ["cloud_operator"],
+      "official_landing_pages": [
+        "https://www.microsoft.com/en-us/investor/",
+        "https://data.sec.gov/submissions/CIK0000789019.json"
+      ]
+    },
+    {
+      "entity_key": "TSMC",
+      "legal_name": "Taiwan Semiconductor Manufacturing Company Limited",
+      "aliases": ["TSMC"],
+      "cik": "0001046179",
+      "ecosystem_roles": ["foundry"],
+      "official_landing_pages": [
+        "https://investor.tsmc.com/english",
+        "https://data.sec.gov/submissions/CIK0001046179.json"
+      ]
+    }
+  ],
+  "local_sources": [
+    {
+      "source_key": "current_market_snapshot",
+      "route_id": "local_market_snapshot",
+      "authority": "non_authoritative_market_context"
+    }
+  ]
+}

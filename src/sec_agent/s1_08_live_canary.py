@@ -12,6 +12,7 @@ from sec_agent.canonical_runtime.models import canonical_digest
 from sec_agent.canonical_runtime.object_store import FileCanonicalObjectStore
 from sec_agent.official_source_attempt_program import SourceTransport
 from sec_agent.s1_08_candidate_generation_runtime import (
+    CandidateGenerationInterrupted,
     CONTRACT_REF as CANDIDATE_CONTRACT_REF,
     load_source_catalog,
     run_candidate_generation,
@@ -22,9 +23,9 @@ from sec_agent.s1_08_official_discovery_adapter import (
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger
 
 
-ADMISSION_SCHEMA = "fin_ia_0_1_3_s1_08_dell_current_search_canary_admission_v1_0"
-TERMINAL_SCHEMA = "fin_ia_0_1_3_s1_08_dell_current_search_canary_terminal_v1_0"
-CANARY_CONTRACT_REF = "fin_0_1_3.S1_08.DELL_current_search_canary:v1"
+ADMISSION_SCHEMA = "fin_ia_0_1_3_s1_08_dell_current_search_canary_admission_v2_0"
+TERMINAL_SCHEMA = "fin_ia_0_1_3_s1_08_dell_current_search_canary_terminal_v2_0"
+CANARY_CONTRACT_REF = "fin_0_1_3.S1_08.DELL_current_search_canary:v2"
 TERMINAL_NAMESPACE = "fin-0.1.3/s1-08/dell-current-search-canary"
 _EMAIL_RE = re.compile(r"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$", re.IGNORECASE)
 
@@ -60,8 +61,8 @@ class DellSearchCanaryAdmission:
         run_nonce: str,
         issued_at: str,
         expires_at: str,
-        network_call_ceiling: int = 24,
-        document_ceiling_per_query: int = 2,
+        network_call_ceiling: int = 16,
+        document_ceiling_per_query: int = 1,
     ) -> "DellSearchCanaryAdmission":
         body = {
             "schema_version": ADMISSION_SCHEMA,
@@ -98,8 +99,8 @@ class DellSearchCanaryAdmission:
             or self.implementation_commit != implementation_commit
             or self.retry_ceiling != 0
             or self.model_call_ceiling != 0
-            or not 1 <= self.network_call_ceiling <= 24
-            or not 1 <= self.document_ceiling_per_query <= 2
+            or not 1 <= self.network_call_ceiling <= 16
+            or self.document_ceiling_per_query != 1
         ):
             raise S108LiveCanaryError("s1_08_dell_canary_admission_invalid")
         observed = _time(observed_at)
@@ -198,6 +199,9 @@ def execute_dell_search_canary(
             if not candidate_result["typed_gaps"]
             else "dell_current_search_candidate_run_complete_with_typed_gaps"
         )
+    except CandidateGenerationInterrupted as exc:
+        candidate_result = dict(exc.partial_result)
+        code = exc.code
     except Exception as exc:
         code = getattr(exc, "code", f"unexpected_project_failure:{type(exc).__name__}")
     completed_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(

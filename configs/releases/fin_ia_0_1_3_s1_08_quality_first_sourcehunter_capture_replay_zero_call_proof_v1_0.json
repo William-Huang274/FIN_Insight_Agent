@@ -1,0 +1,298 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_zero_call_proof_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "status": "zero_call_engineering_pass_clean_commit_independent_proof_pending",
+  "contract_refs": {
+    "plan": "fin_ia_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_integrated_upgrade_plan_v1_0",
+    "catalog": "fin_0_1_3.S1_08.current_source_catalog_candidate_generation:v2",
+    "manifest": "fin_ia_0_1_3_s1_08_dell_r1_restricted_capture_manifest_v1_0",
+    "fixture": "fin_ia_0_1_3_s1_08_quality_first_sanitized_replay_fixture_v1_0"
+  },
+  "source_digests": {
+    "plan": "c9d2d09dbb12d23277ce61693619a75a12029eea5dfbb7df7dbbdb3be765faee",
+    "catalog": "a0d4c8318617d273e8139cca15d52f9b5a9afe03cd5fec1ff59ebc311390c219",
+    "manifest": "6241b6a37dd7b000467abcec227f958206352b0a0f08b1e0bc4787bf68e92c8c",
+    "fixture": "ceff014aaa668045b902f5f84b73bb9ee2e4e573e073028714a608fd21082852"
+  },
+  "restricted_capture_audit": {
+    "restricted_request_objects_verified": 19,
+    "raw_content_emitted": false,
+    "headers_emitted": false
+  },
+  "sanitized_replay": {
+    "schema_version": "fin_ia_0_1_3_s1_08_quality_first_capture_replay_result_v1_0",
+    "status": "pass",
+    "planner_hidden_gold_visibility": false,
+    "network_model_provider_retry_calls": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "locator_decisions": [
+      {
+        "case_id": "customer_earnings_metrics",
+        "role_id": "customer_demand_and_deployment_validation",
+        "decision": "fetch",
+        "reason_codes": [],
+        "canonical_locator_digest": "4d998299547cf34a57027b8501c0ba4ef5515ef1a35022ab2d59758602019bb6",
+        "passed": true
+      },
+      {
+        "case_id": "customer_earnings_duplicate_case",
+        "role_id": "customer_demand_and_deployment_validation",
+        "decision": "fetch",
+        "reason_codes": [],
+        "canonical_locator_digest": "4d998299547cf34a57027b8501c0ba4ef5515ef1a35022ab2d59758602019bb6",
+        "passed": true
+      },
+      {
+        "case_id": "customer_story",
+        "role_id": "customer_demand_and_deployment_validation",
+        "decision": "fetch",
+        "reason_codes": [],
+        "canonical_locator_digest": "221f7eba7b07c427c6f3f9385b2ff4a8aed080ae271fd41020f849470f8b9467",
+        "passed": true
+      },
+      {
+        "case_id": "supply_results",
+        "role_id": "supply_chain_capacity_and_counterevidence",
+        "decision": "fetch",
+        "reason_codes": [],
+        "canonical_locator_digest": "7f20a83e4fdb8e2ac27437ba6f51b2cd9fd6210bbb38a12503d86f6da183961c",
+        "passed": true
+      },
+      {
+        "case_id": "issuer_results",
+        "role_id": "issuer_results_and_management_commentary",
+        "decision": "fetch",
+        "reason_codes": [],
+        "canonical_locator_digest": "7bfd0b8074b3fdcfb833428abce590490d7c3faf76c358c7433e9bd319d128b8",
+        "passed": true
+      },
+      {
+        "case_id": "current_sec_10q",
+        "role_id": "regulatory_risk_and_financial_reconciliation",
+        "decision": "fetch",
+        "reason_codes": [],
+        "canonical_locator_digest": "f3c72440298bdd11e11bd84f26bc5b1285759f9381f00b1b266a07f9f4ad62b9",
+        "passed": true
+      },
+      {
+        "case_id": "stale_sec_2022",
+        "role_id": "regulatory_risk_and_financial_reconciliation",
+        "decision": "reject_before_fetch",
+        "reason_codes": [
+          "stale_for_current_evidence_slot"
+        ],
+        "canonical_locator_digest": "f720cc302fe1c11f9e8c01ff3db4d20c5139a17ddac5d322aca210fdd36bde00",
+        "passed": true
+      },
+      {
+        "case_id": "noise_diversity",
+        "role_id": "customer_demand_and_deployment_validation",
+        "decision": "reject_before_fetch",
+        "reason_codes": [
+          "evidence_slot_fit_unproven",
+          "navigation_or_commerce_surface",
+          "source_family_not_allowed_for_evidence_slot"
+        ],
+        "canonical_locator_digest": "29608a8c26b4815300f2951983b86713ce2fcfad2730ec6627ddad7b2841892e",
+        "passed": true
+      },
+      {
+        "case_id": "noise_governance",
+        "role_id": "customer_demand_and_deployment_validation",
+        "decision": "reject_before_fetch",
+        "reason_codes": [
+          "evidence_slot_fit_unproven",
+          "navigation_or_commerce_surface",
+          "source_family_not_allowed_for_evidence_slot"
+        ],
+        "canonical_locator_digest": "25871e426d0c9ba6df17d48e2c7d1e725c1b5fb093b8d8be7e9e84bca6bd5f3e",
+        "passed": true
+      },
+      {
+        "case_id": "noise_outlook",
+        "role_id": "customer_demand_and_deployment_validation",
+        "decision": "reject_before_fetch",
+        "reason_codes": [
+          "evidence_slot_fit_unproven",
+          "navigation_or_commerce_surface",
+          "source_family_not_allowed_for_evidence_slot"
+        ],
+        "canonical_locator_digest": "25e09fe54a090d6cecac507ad7227c95ff183f6bcca0a76fcbe339e58a827cc5",
+        "passed": true
+      },
+      {
+        "case_id": "noise_store",
+        "role_id": "customer_demand_and_deployment_validation",
+        "decision": "reject_before_fetch",
+        "reason_codes": [
+          "evidence_slot_fit_unproven",
+          "navigation_or_commerce_surface",
+          "source_family_not_allowed_for_evidence_slot"
+        ],
+        "canonical_locator_digest": "3fb10c3b46bb36f3374547edd56567ef0cd8469d8a5a8ae74eda43a2b9748dcc",
+        "passed": true
+      },
+      {
+        "case_id": "noise_surface",
+        "role_id": "customer_demand_and_deployment_validation",
+        "decision": "reject_before_fetch",
+        "reason_codes": [
+          "evidence_slot_fit_unproven",
+          "navigation_or_commerce_surface",
+          "source_family_not_allowed_for_evidence_slot"
+        ],
+        "canonical_locator_digest": "6e256ce4b38587f8a4625f65cfa1dfa0ccc3b09a125acbdc3e5fcc57f9d974aa",
+        "passed": true
+      }
+    ],
+    "terminal_replay": [
+      {
+        "request_capture_digest": "e098c3a307bed5a45103bf8dc4096539d4bcc933adfa39e8c73d40a816a6d76f",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "ecf4000ebb0e31808e443e88388dd412e74094c47fc2c407b8f630ab660dbe19",
+        "terminal_kind": "transport_failure",
+        "terminal_code": "official_source_transport_failed"
+      },
+      {
+        "request_capture_digest": "3c207a08a9708cf484f208f54a1bc5e497de920b8026da6b36a59e8e1327a1d2",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "ea3297569926f50e2c9f09ffdbd9b1a8a5366f2b0c290a0cb9d494294fa16e3b",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "2679dd6f0b0c5f249715e4dbf02989fc40ad8625a91df57cfdae5f8682779cff",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "e53540e8b34f13ef7e00379877e1818b27e6eccd540eb62e3c689d14980aae31",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "a67ae989cb1d5388ec8d9b737592daf16a7926822602301b9ed834972812cd78",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "7b0e69988a1a4679568995790845bf87f46cee7b86e02e4405a36b1754ef17e3",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "ea831a4920f3211fd4d8d8d442a93756cc4c96292a8e1eb65e88c77ab4eb5018",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "3a2e304540dce6984a4861f205a798055a219f86ca7cc431fa45503ccbad5387",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "9e2ace7271accc4185de89fbd90a3513ae74b61f13218084219b4b6177bd14d4",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "ae68d88cd608709cfb2e33d1d3a4a9cac282359847a2d9fbf6ad484958364bbd",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "c57b7cffb5429ac61653c9ea52095af3cb5e5ae74839eb5a75949c429254b109",
+        "terminal_kind": "transport_failure",
+        "terminal_code": "official_source_transport_failed"
+      },
+      {
+        "request_capture_digest": "957d032fe796e5dd55fb6b6eab14c6402018f37512f34d7cca8957f34996fe14",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "9a125a41daa4b55db8b39a1cbeb61490faa1ef6532c3f3ba5bb51316714d01fb",
+        "terminal_kind": "transport_failure",
+        "terminal_code": "official_source_transport_failed"
+      },
+      {
+        "request_capture_digest": "4e6336b4ec5c91f3cfdcdf03cc549673d047ec47312f2fb9af357fbe4e94e23b",
+        "terminal_kind": "transport_failure",
+        "terminal_code": "official_source_connection_terminated"
+      },
+      {
+        "request_capture_digest": "5fecc9be69608a6e88f4652634284375e4217d52be49792c02fe4f1b8cb3dc6d",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "7885dad5ba5724ff22764feb32043f69fc46d977e3cb27ed1eb85615e519dbfb",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      },
+      {
+        "request_capture_digest": "b75701754cfc7a395d32d6d1534c2f612d9318aa8b32fc4e10b68902f4d025c5",
+        "terminal_kind": "response",
+        "terminal_code": "200"
+      }
+    ],
+    "metrics": {
+      "R1_requests_with_terminal_classification": 19,
+      "request_without_terminal_capture": 0,
+      "known_navigation_noise_fetches": 0,
+      "stale_filing_selected_when_newer_eligible_exists": 0,
+      "evidence_roles_with_candidate_or_typed_gap": 5,
+      "qualified_document_yield": 1.0,
+      "canonical_duplicate_group_count": 1
+    },
+    "result_digest": "dd8c20d9c6d7046c9965543b36555360cd0927bdd7a9a2251ff00a65d9b3bbec"
+  },
+  "implementation": {
+    "evidence_slots": 5,
+    "provider_neutral_routes": 5,
+    "operational_routes": 3,
+    "unavailable_routes": [
+      "issuer_ir_structured_discovery",
+      "external_site_search"
+    ],
+    "typed_connection_termination": true,
+    "pre_fetch_quality_gate": true,
+    "post_fetch_content_gate": true,
+    "candidate_checkpoint_materialization": true,
+    "partial_terminal_result_materialization": true,
+    "replacement_network_call_ceiling": 16,
+    "document_ceiling_per_query": 1
+  },
+  "verification": {
+    "focused_tests_expected": 37,
+    "three_case_full_fake_and_mutation_included": true,
+    "actual_R1_request_objects_verified": 19,
+    "network_model_provider_retry_calls": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "decision": {
+    "S1_08Q_A_to_G_engineering": "pass_pending_clean_commit_independent_proof",
+    "DELL_R2_replacement_authority": false,
+    "MU_NVDA_live": false,
+    "ranking_BGE_Milvus": false,
+    "DeepSeek_S3": false
+  },
+  "known_boundary": "Replay and deterministic tests prove the repaired structure against R1 and synthetic mutations. They do not prove fresh live source reachability, target-in-pool, downstream research quality or release readiness.",
+  "current_next": "COMMIT_PUSH_THEN_INDEPENDENT_FRESH_ZERO_CALL_PROOF_ON_CLEAN_ARCHIVE",
+  "proof_digest": "8f1d7503425c717b9979df213f35c5ccb678c0a2cc650914f31e8f9b786c7931"
+}

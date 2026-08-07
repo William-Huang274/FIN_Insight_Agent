@@ -22,6 +22,12 @@ from sec_agent.s1_08_candidate_generation_runtime import (
     DiscoveryCandidate,
     DiscoveryQuery,
 )
+from sec_agent.s1_08_source_quality import (
+    canonical_locator_key,
+    infer_source_family,
+    qualify_locator,
+    qualify_parsed_content,
+)
 
 
 DISCOVERY_NAMESPACE = "fin-0.1.3/s1-08/current-source-discovery"
@@ -34,6 +40,8 @@ class _Locator:
     published_on: str
     discovery_capture_ref: str
     discovery_capture_digest: str
+    source_family: str = "issuer_official_page"
+    form_type: str = ""
 
 
 class _AnchorParser(HTMLParser):
@@ -98,6 +106,8 @@ class CaptureFirstOfficialDiscoveryAdapter:
         self.document_ceiling_per_query = int(document_ceiling_per_query)
         self.market_snapshot = dict(market_snapshot or {})
         self.receipts: list[dict[str, Any]] = []
+        self.checkpoint_refs: list[dict[str, Any]] = []
+        self.known_navigation_noise_fetches = 0
         self._landing_cache: dict[str, tuple[_Locator, ...]] = {}
         self._document_cache: dict[str, tuple[SourceResponse | None, dict[str, Any], dict[str, Any] | None]] = {}
         self._entity_by_key = {
@@ -108,6 +118,10 @@ class CaptureFirstOfficialDiscoveryAdapter:
             for row in self._entity_by_key.values()
             for url in row.get("official_landing_pages") or []
         } | {"www.sec.gov", "sec.gov"}
+        self._provider_capabilities = {
+            str(row.get("route_id") or ""): dict(row)
+            for row in self.catalog.get("source_provider_capabilities") or []
+        }
 
     @property
     def network_calls(self) -> int:
@@ -115,37 +129,90 @@ class CaptureFirstOfficialDiscoveryAdapter:
 
     def discover(self, query: DiscoveryQuery) -> tuple[DiscoveryCandidate, ...]:
         if query.case_key != self.case_key:
-            self.receipts.append(
+            self._record_receipt(
                 {"query_digest": query.query_digest, "status": "rejected", "code": "cross_case_query"}
             )
             return ()
         if "local_market_snapshot" in query.route_ids:
             return self._market_candidate(query)
+        operational_route_ids: list[str] = []
+        for route_id in query.route_ids:
+            capability = self._provider_capabilities.get(route_id)
+            if capability is not None and capability.get("operational") is not True:
+                self._record_receipt(
+                    {
+                        "query_digest": query.query_digest,
+                        "evidence_slot_id": query.evidence_slot_id,
+                        "route_id": route_id,
+                        "status": "typed_gap",
+                        "code": "source_provider_route_unavailable",
+                    }
+                )
+            else:
+                operational_route_ids.append(route_id)
         locators: list[_Locator] = []
         for entity_key in query.entity_keys:
             entity = self._entity_by_key.get(entity_key)
             if entity is None:
                 continue
-            for landing_url in self._route_landing_pages(entity, query.route_ids):
+            for landing_url in self._route_landing_pages(
+                entity, tuple(operational_route_ids)
+            ):
                 locators.extend(self._discover_landing(landing_url, query=query))
+        qualified: list[tuple[_Locator, Any]] = []
+        for locator in locators:
+            decision = qualify_locator(
+                role_id=query.role_id,
+                allowed_source_families=query.source_families,
+                url=locator.url,
+                title=locator.title,
+                published_on=locator.published_on,
+                as_of=str(self.catalog["as_of"]),
+                currentness_window_days=query.currentness_window_days,
+                form_type=locator.form_type,
+            )
+            self._record_receipt(
+                {
+                    "query_digest": query.query_digest,
+                    "evidence_slot_id": query.evidence_slot_id,
+                    "status": (
+                        "qualified_before_fetch"
+                        if decision.decision == "fetch"
+                        else "rejected_before_fetch"
+                    ),
+                    "code": (
+                        "locator_quality_pass"
+                        if not decision.reason_codes
+                        else decision.reason_codes[0]
+                    ),
+                    "reason_codes": list(decision.reason_codes),
+                    "locator_digest": canonical_digest(decision.canonical_locator),
+                    "quality_score": decision.quality_score,
+                    "source_family": locator.source_family,
+                }
+            )
+            if decision.decision == "fetch":
+                qualified.append((locator, decision))
         ranked = sorted(
-            locators,
-            key=lambda row: (-_query_score(query.query_text, row.title, row.url), row.url),
+            qualified,
+            key=lambda pair: (
+                -pair[1].quality_score,
+                pair[1].canonical_locator,
+            ),
         )
         candidates: list[DiscoveryCandidate] = []
         seen: set[str] = set()
-        for locator in ranked:
-            if locator.url in seen or len(candidates) >= self.document_ceiling_per_query:
+        for locator, decision in ranked:
+            canonical = decision.canonical_locator
+            if canonical in seen or len(candidates) >= self.document_ceiling_per_query:
                 continue
-            seen.add(locator.url)
-            if _query_score(query.query_text, locator.title, locator.url) <= 0:
-                continue
+            seen.add(canonical)
             response, attempt, parser_ref = self._fetch_and_parse(locator.url, query=query)
             if response is None or attempt.get("status") != "captured" or parser_ref is None:
                 continue
             published_on = locator.published_on or _last_modified_date(response.headers)
             if not published_on:
-                self.receipts.append(
+                self._record_receipt(
                     {
                         "query_digest": query.query_digest,
                         "status": "rejected",
@@ -155,6 +222,26 @@ class CaptureFirstOfficialDiscoveryAdapter:
                 )
                 continue
             entity_key = _entity_key_for_url(self._entity_by_key, response.final_url)
+            parsed = parse_source_document(response)
+            aliases = list(self._entity_by_key.get(entity_key, {}).get("aliases") or [])
+            content_reasons = qualify_parsed_content(
+                role_id=query.role_id,
+                title=locator.title,
+                text=str(parsed.get("text") or ""),
+                entity_aliases=aliases,
+            )
+            if content_reasons:
+                self._record_receipt(
+                    {
+                        "query_digest": query.query_digest,
+                        "evidence_slot_id": query.evidence_slot_id,
+                        "status": "rejected_after_fetch",
+                        "code": content_reasons[0],
+                        "reason_codes": list(content_reasons),
+                        "locator_digest": canonical_digest(canonical),
+                    }
+                )
+                continue
             candidates.append(
                 DiscoveryCandidate(
                     case_key=query.case_key,
@@ -175,9 +262,13 @@ class CaptureFirstOfficialDiscoveryAdapter:
                     source_capture_digest=str(attempt["response_capture"]["digest"]),
                     parser_capture_ref=str(parser_ref["object_key"]),
                     parser_capture_digest=str(parser_ref["digest"]),
+                    evidence_slot_id=query.evidence_slot_id,
+                    source_family=locator.source_family,
+                    content_quality_score=decision.quality_score,
+                    promotion_decision="accepted_candidate",
                 )
             )
-        self.receipts.append(
+        self._record_receipt(
             {
                 "query_digest": query.query_digest,
                 "status": "terminal",
@@ -187,12 +278,25 @@ class CaptureFirstOfficialDiscoveryAdapter:
         )
         return tuple(candidates)
 
+    def persist_candidate_checkpoint(self, snapshot: Mapping[str, Any]) -> None:
+        body = dict(snapshot)
+        body.pop("checkpoint_refs", None)
+        ref = self.store.put_json(
+            body,
+            namespace=DISCOVERY_NAMESPACE,
+            artifact_type="sourcehunter_candidate_checkpoint",
+        )
+        self.checkpoint_refs.append(ref)
+
+    def _record_receipt(self, receipt: Mapping[str, Any]) -> None:
+        self.receipts.append(dict(receipt))
+
     def _route_landing_pages(
         self, entity: Mapping[str, Any], route_ids: tuple[str, ...]
     ) -> tuple[str, ...]:
         pages = [str(value) for value in entity.get("official_landing_pages") or []]
         out: list[str] = []
-        if "issuer_ir_discovery" in route_ids:
+        if "issuer_ir_discovery" in route_ids or "issuer_ir_structured_discovery" in route_ids:
             out.extend(url for url in pages if "data.sec.gov/submissions" not in url)
         if "sec_submissions_discovery" in route_ids:
             out.extend(url for url in pages if "data.sec.gov/submissions" in url)
@@ -246,7 +350,7 @@ class CaptureFirstOfficialDiscoveryAdapter:
             artifact_type="official_discovery_parser_result",
         )
         if parsed.get("status") != "parsed":
-            self.receipts.append(
+            self._record_receipt(
                 {"query_digest": query.query_digest, "status": "rejected", "code": "source_parser_failed"}
             )
             result = (response, attempt, None)
@@ -265,7 +369,7 @@ class CaptureFirstOfficialDiscoveryAdapter:
                 "code": "discovery_network_call_ceiling_reached",
                 "locator_digest": canonical_digest(url),
             }
-            self.receipts.append(receipt)
+            self._record_receipt(receipt)
             return None, {
                 "status": "transport_failure",
                 "failure_code": receipt["code"],
@@ -283,7 +387,7 @@ class CaptureFirstOfficialDiscoveryAdapter:
 
     def _market_candidate(self, query: DiscoveryQuery) -> tuple[DiscoveryCandidate, ...]:
         if not self.market_snapshot:
-            self.receipts.append(
+            self._record_receipt(
                 {"query_digest": query.query_digest, "status": "typed_gap", "code": "current_market_snapshot_unavailable"}
             )
             return ()
@@ -349,6 +453,7 @@ def _html_locators(
             published_on=published,
             discovery_capture_ref=str(capture["object_key"]),
             discovery_capture_digest=str(capture["digest"]),
+            source_family=infer_source_family(url),
         )
         for url, title, published in parser.links
         if url.startswith("https://")
@@ -384,6 +489,8 @@ def _sec_submission_locators(
                 published_on=str(filing_date),
                 discovery_capture_ref=str(capture["object_key"]),
                 discovery_capture_digest=str(capture["digest"]),
+                source_family="regulatory_filing",
+                form_type=str(form),
             )
         )
     return tuple(out)

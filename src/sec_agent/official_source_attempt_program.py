@@ -4,6 +4,7 @@ import base64
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
+from http.client import RemoteDisconnected
 from io import BytesIO
 import json
 import os
@@ -219,7 +220,21 @@ class UrllibOfficialSourceTransport:
                 body=body[:byte_ceiling],
                 redirect_chain=tuple(redirect_handler.chain),
             )
-        except (URLError, TimeoutError) as exc:
+        except (
+            URLError,
+            TimeoutError,
+            RemoteDisconnected,
+            ConnectionResetError,
+            ConnectionAbortedError,
+            BrokenPipeError,
+        ) as exc:
+            if isinstance(
+                exc,
+                (RemoteDisconnected, ConnectionResetError, ConnectionAbortedError, BrokenPipeError),
+            ):
+                raise OfficialSourceAttemptError(
+                    "official_source_connection_terminated"
+                ) from exc
             raise OfficialSourceAttemptError("official_source_transport_failed") from exc
 
 

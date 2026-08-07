@@ -19,7 +19,7 @@ from sec_agent.shared_admission_ledger import (
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CATALOG_PATH = ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v1_0.json"
+CATALOG_PATH = ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v2_0.json"
 COMMIT = "a" * 40
 ISSUED = "2026-08-07T12:00:00Z"
 EXPIRES = "2026-08-07T13:00:00Z"
@@ -71,8 +71,8 @@ def _admission() -> DellSearchCanaryAdmission:
         run_nonce="test-r1",
         issued_at=ISSUED,
         expires_at=EXPIRES,
-        network_call_ceiling=24,
-        document_ceiling_per_query=2,
+        network_call_ceiling=16,
+        document_ceiling_per_query=1,
     )
 
 

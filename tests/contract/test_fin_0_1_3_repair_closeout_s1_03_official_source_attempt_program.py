@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from http.client import RemoteDisconnected
 import json
 from pathlib import Path
 import sys
@@ -16,6 +17,7 @@ from sec_agent.official_source_attempt_program import (
     OfficialSourceAttemptError,
     OfficialSourceExecutionAuthority,
     SourceResponse,
+    UrllibOfficialSourceTransport,
     compile_official_source_attempt_program,
     load_official_source_policy,
     parse_source_document,
@@ -177,6 +179,30 @@ def test_SEC_contact_identity_is_runtime_only_and_fail_closed(monkeypatch) -> No
     user_agent = _official_source_user_agent()
     assert user_agent == "FIN-Insight-Agent/0.1.3 contact=operator@example.com"
     assert _sec_contact_declared({"User-Agent": user_agent}) is True
+
+
+def test_urllib_transport_classifies_remote_disconnect(monkeypatch) -> None:
+    class _DisconnectingOpener:
+        def open(self, request, timeout):
+            raise RemoteDisconnected("remote closed without response")
+
+    monkeypatch.setattr(
+        "sec_agent.official_source_attempt_program._require_public_network_host",
+        lambda hostname: None,
+    )
+    monkeypatch.setattr(
+        "sec_agent.official_source_attempt_program.build_opener",
+        lambda handler: _DisconnectingOpener(),
+    )
+    with pytest.raises(OfficialSourceAttemptError) as exc:
+        UrllibOfficialSourceTransport().fetch(
+            url="https://investor.example.com/document",
+            headers={"User-Agent": "test"},
+            allowed_hosts={"investor.example.com"},
+            timeout_seconds=30,
+            byte_ceiling=1024,
+        )
+    assert exc.value.code == "official_source_connection_terminated"
 
 
 def test_validator_rejects_false_promotion(tmp_path: Path) -> None:

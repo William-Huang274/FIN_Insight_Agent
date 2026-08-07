@@ -38,7 +38,7 @@ CATALOG_PATH = (
     REPO_ROOT
     / "configs"
     / "runtime"
-    / "fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v1_0.json"
+    / "fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v2_0.json"
 )
 DEFAULT_OUTPUT = (
     REPO_ROOT
@@ -130,8 +130,8 @@ def main() -> int:
         run_nonce=f"dell-current-search-{started:%Y%m%dT%H%M%SZ}-{uuid.uuid4().hex}",
         issued_at=_iso(started),
         expires_at=_iso(started + timedelta(hours=2)),
-        network_call_ceiling=24,
-        document_ceiling_per_query=2,
+        network_call_ceiling=16,
+        document_ceiling_per_query=1,
     )
     runtime_root = (
         REPO_ROOT

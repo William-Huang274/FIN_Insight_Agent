@@ -24,7 +24,7 @@ from sec_agent.official_source_attempt_program import SourceResponse
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CATALOG_PATH = ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v1_0.json"
+CATALOG_PATH = ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v2_0.json"
 VISIBLE_PATH = ROOT / "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json"
 HIDDEN_PATH = ROOT / "eval_sets/fin_0_1_3_same_evidence_v1/evaluator_only/hidden_gold_scoring_objects_v1.json"
 PROOF_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_candidate_generation_query_revision_and_gold_match_zero_call_proof_v1_0.json"
@@ -359,7 +359,10 @@ class _OfficialDiscoveryTransport:
             ).encode()
             content_type = "application/json"
         elif url == "https://investors.delltechnologies.com/news/results.html":
-            body = b"<html><body>Dell quarterly financial results revenue cash flow earnings.</body></html>"
+            body = (
+                b"<html><body>Dell quarterly financial results include revenue, "
+                b"cash flow, operating performance, management commentary and earnings outlook.</body></html>"
+            )
             content_type = "text/html"
         else:
             raise AssertionError(f"unexpected URL: {url}")

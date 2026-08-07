@@ -1,0 +1,36 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06d_minimal_natural_corrected_node_canary_authority_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "one_minimal_DELL_U3_natural_canary_authorized",
+  "authority": {
+    "case_key": "DELL",
+    "node_ref": "specialist:U3",
+    "correction_ids": [
+      "DELL-CORR-023"
+    ],
+    "provider_call_ceiling": 1,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "capture_before_parse_or_validation": true,
+    "exact_once_admission_required": true,
+    "corrected_candidate_or_report_promotion": false,
+    "formal_DELL_proof_authorized": false,
+    "MU_NVDA_execution_authorized": false
+  },
+  "proof_binding": {
+    "ref": "configs/releases/fin_ia_0_1_3_s2_06c_correction_contract_independent_fresh_zero_call_proof_result_v1_0.json",
+    "sha256": "49b86bca4fcb049fa33bb772d2e9d7f8fa3e2c4390203433b226094cc0b6a256",
+    "result_digest": "e6f11b7131fe44a993a6719aa2c3cf8b7e4698237d8316c332f9812b8c81cfa2"
+  },
+  "implementation_binding": {
+    "runner_ref": "scripts/releases/run_fin_ia_0_1_3_s2_06d_minimal_natural_corrected_node_canary.py",
+    "runner_sha256": "ce2f67f8d813bf8c973f8a7dad1edf6b14356971c6ff0d97502f41b5b30fae74"
+  },
+  "acceptance_rule": {
+    "pass": "one captured provider response parses as the v1.0 corrected-node envelope, passes the Specialist contract, and yields a valid typed closure receipt for DELL-CORR-023",
+    "fail": "any transport, JSON, envelope, authority, correction-closure, narrative or node-contract failure terminates without retry",
+    "post_canary": "record terminal evidence and make a separate S2-06E zero-call decision; never auto-run a formal DELL proof"
+  },
+  "known_boundary": "This authority permits one natural corrected Specialist node only. It does not authorize a Supervisor call, full corrected graph, report, score, business promotion, MU/NVDA or release.",
+  "decision_digest": "f46518cde687a09285cc1a9a001c1f081ea6c29ac7e69490b640093ff7529d9e"
+}

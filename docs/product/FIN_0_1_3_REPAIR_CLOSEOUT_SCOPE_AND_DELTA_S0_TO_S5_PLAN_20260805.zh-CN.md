@@ -266,6 +266,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-06` Supervisor compiled-contract v1.1 工程通过**：唯一共享零调用包已把每 directive（含 Verifier）至少一条 Evidence-or-Gap 的规则统一编译到 Schema、Prompt、Validator 与三案 fixture，Numeric-only 明确不足；真实 R1 空 Verifier 形状回放与 broad `133 passed`。旧 R1 入口主动失效，外部调用/admission=0。下一步只做 clean commit 独立 fresh proof，再单独决定 DELL replacement；不得直接重跑或启动 MU/NVDA。
 
+> **2026-08-07 `013-S2-06` DELL replacement authority 有条件通过**：v1.1 已在 clean `978c7c33` 上经双 archive/双 fresh process、每 worker `27/27` 独立证明，因此允许一次 DELL R2；但 successor issuer/runner 尚未绑定，当前不可签发或执行。R2 保持 `8 expected/11 hard calls, USD≤0.18, retry/fallback=0`，不自动 R3、不授权 MU/NVDA；下一项仅实现并提交 successor governed entrypoint，再由用户单独决定是否执行。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。

@@ -1,0 +1,122 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_dell_replacement_supervisor_authority_decision_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "authority_pass_one_DELL_replacement_eligible_successor_entrypoint_required_admission_unissued_execution_not_started",
+  "scope": "one_DELL_case_local_SupervisorPlan_v1_1_replacement_measurement_after_project_invalidated_R1",
+  "authority": {
+    "user_instruction": "继续",
+    "authority_decision_authorized": true,
+    "decision_outcome": "approve_one_DELL_replacement_after_successor_entrypoint_clean_synced_preflight",
+    "replacement_reason": "R1_invalidated_by_project_owned_model_visible_contract_drift",
+    "admission_issuance_eligible_now": false,
+    "successor_entrypoint_implementation_required": true,
+    "admissions_issued_in_this_decision": 0,
+    "provider_calls_in_this_decision": 0,
+    "provider_execution_started": false,
+    "automatic_execution_from_this_decision": false,
+    "automatic_R3_if_R2_fails": false,
+    "MU_NVDA_execution_authorized": false,
+    "business_promotion": false,
+    "release_promotion": false
+  },
+  "evidence_binding": {
+    "evaluated_baseline_git_commit": "9399bb5ec5d3c048638fb3537c13b98916789a26",
+    "evaluated_baseline_git_clean_and_synced": true,
+    "R1_terminal_disposition": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_06_dell_supervisor_r1_terminal_and_contract_drift_disposition_v1_0.json",
+      "sha256": "ce8a52bcd783655180fe0d6f2ff917787868f1d6af18d4096b04c11d0cbfb74d",
+      "result_digest": "fa9973626d59cf6de77e8fec9ffb4f33b3eab5658716f599e18aad042bd32023",
+      "admission_consumed": true,
+      "candidate_frozen": false,
+      "model_fault_established": false
+    },
+    "successor_contract_implementation": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_06_supervisor_nonempty_case_authority_compiled_contract_alignment_v1_1.json",
+      "sha256": "e85eba78900a810754181413f283b58173ed49f0e5420350ea63af431412900b",
+      "implementation_digest": "5226d9a2da7e24d01b398b96673fdce541f9373d82f27b2815f405c225a36982",
+      "supervisor_plan_schema": "fin_ia_0_1_3_s2_06_supervisor_plan_v1_1"
+    },
+    "independent_fresh_proof": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_06_supervisor_contract_v1_1_independent_fresh_zero_call_proof_result_v1_0.json",
+      "sha256": "69f80503b2fc201d3635641a7e8ba938999f270f46cf44eae2fea03ca25dc173",
+      "result_digest": "f1be7598c1afe72847fce503ddcf74636c8ce4f2ff57f046993dd06d64fefb4d",
+      "source_commit": "978c7c337489b0b48d39fc3a12107f2a65f4755f",
+      "clean_archives": 2,
+      "fresh_processes": 2,
+      "tests_per_process": 27,
+      "normalized_outputs_equal": true,
+      "source_and_target_unchanged": true
+    }
+  },
+  "decision_reasoning": {
+    "why_one_replacement_is_justified": [
+      "R1 terminated on a project validator rule absent from the model-visible Prompt and Schema",
+      "the one allowed shared structural package aligned the rule without changing raw evidence or hidden Gold",
+      "two clean archives and two fresh processes independently reproduced v1.1 across DELL MU and NVDA",
+      "DELL remains the first case and its expected eight-call path stays below the frozen eleven-call ceiling"
+    ],
+    "why_execution_is_not_yet_allowed": "The old issuer and runner are intentionally bound to v1.0 and fail closed. A successor entrypoint must bind this decision, v1.1 implementation, fresh proof, clean Git and the same immutable DELL raw/evaluation/boundary before issuance.",
+    "what_remains_unproven": [
+      "DeepSeek natural compliance with SupervisorPlan v1.1",
+      "completion of the seven-node corrected DELL graph",
+      "DELL L1 and L2 closure plus material content gain",
+      "MU and NVDA supervised recovery",
+      "product acceptance and release qualification"
+    ]
+  },
+  "replacement_contract": {
+    "case_key": "DELL",
+    "R1_reuse_forbidden": true,
+    "fresh_Run_Attempt_admission_required": true,
+    "expected_provider_calls": 8,
+    "hard_provider_call_ceiling": 11,
+    "maximum_supervisor_planner_calls": 1,
+    "maximum_corrected_graph_calls": 10,
+    "maximum_supervisor_request_characters": 90000,
+    "observed_supervisor_request_characters": 33689,
+    "hard_cost_ceiling_usd": "0.18",
+    "retry_count": 0,
+    "fallback_count": 0,
+    "provider_hopping": false,
+    "live_prompt_or_schema_patch": false,
+    "raw_or_hidden_Gold_mutation": false
+  },
+  "terminal_disposition": {
+    "valid_candidate": "freeze_before_independent_L1_L2_and_content_evaluation",
+    "new_project_owned_L1_or_contract_failure": "preserve_R2_terminal_stop_without_R3_and_make_project_level_scope_or_planner_decision",
+    "case_local_model_failure_under_disclosed_contract": "preserve_terminal_no_retry_no_R3_then_decide_whether_supervised_recoverability_is_not_proven",
+    "transport_budget_security_or_identity_failure": "preserve_capture_and_terminal_stop_campaign",
+    "L2_L4_only_quality_findings": "record_and_transfer_without_field_by_field_live_patch_loop"
+  },
+  "acceptance": {
+    "DELL_R2_hard_gates": [
+      "complete capture lineage and exact-once terminal",
+      "candidate frozen before hidden evaluation",
+      "evaluator v1.4 L1 equals 0 and L2 equals 0",
+      "no cross-case unknown numeric citation-role or temporal-authority failure",
+      "prior counterevidence threshold and Verifier material classes addressed",
+      "material research-content gain retained"
+    ],
+    "supervised_recoverability_after_DELL_only": "partial_measurement_not_campaign_proof",
+    "qualified_human_acceptance": false,
+    "business_promotion": false,
+    "release_qualification": false
+  },
+  "verification": {
+    "decision_type": "zero_call",
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "corrected_candidates": 0,
+    "hidden_scores": 0,
+    "business_promotions": 0,
+    "raw_mutations": 0
+  },
+  "next_action": "IMPLEMENT_SUCCESSOR_DELL_R2_ISSUER_RUNNER_ZERO_CALL_BINDING_THEN_COMMIT_PUSH_AND_PREFLIGHT",
+  "next_action_authorized_automatically": false,
+  "known_boundary": "This decision justifies one replacement but does not yet permit issuance or execution because the successor governed entrypoint is absent. It does not validate R1, call DeepSeek, create a report, authorize MU/NVDA, or support product/release claims.",
+  "decision_digest": "ada6960739d9f411f035d95f908d8b3cde72671fc8623ca4ec1cfc41947e7ee1"
+}

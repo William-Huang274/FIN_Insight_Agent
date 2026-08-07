@@ -348,4 +348,6 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 
 > **2026-08-07 `013-S1-07` R1 exact-once canary immutable fail**：3/3 调用均在 HTTP 前被 private-network guard 拦截，因为当前执行环境把三家 IR hostname 映射为 RFC 2544 `198.18.1.52/53/54`；3 request + 3 failure captures、admission terminal 和 no-orphan 均成立，0 retry。该共同失败归类为 synthetic-DNS environment compatibility，不归因来源、parser 或 DeepSeek。只做一项有界修复：runner 自动识别“全部显式 allowlist hostname→198.18/15”并启用受控 transport mode，其他 private network 保持拒绝；随后 new commit/new admission 执行一次 R2，R1 不覆盖。
 
+> **2026-08-07 `013-S1-07` R2 partial live success**：MU official PDF 与 NVDA official IR HTML 均真实 fetch/capture/parse/promote；Dell IR PDF 单源在 30 s 内未返回并 typed `official_source_transport_failed`。不重跑两条成功路径、不扩大 timeout、不修改 parser；只新增一个 1-call Dell SEC official HTML fallback successor。若该 fallback 通过，三案合并关闭 S1-07；若失败，立即停止并保留 blocker，不进入更多轮次。
+
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

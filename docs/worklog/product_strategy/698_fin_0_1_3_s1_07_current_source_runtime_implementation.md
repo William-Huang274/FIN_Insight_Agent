@@ -40,3 +40,14 @@
 三个地址都属于 RFC 2544 benchmark network `198.18.0.0/15`，是当前 Codex 网络的 synthetic DNS 映射。因此 R1 是 guard environment-compatibility false positive，不证明来源不可用或 parser 不工作。
 
 处置保持有界：普通 runtime 仍拒绝所有 non-global destinations；只有 canary runner 确认所有显式 allowlist hostname 均解析到 `198.18/15` 时，才通过受控环境标志允许该 synthetic transit，HTTPS hostname/certificate 校验不变。新增 default-reject / explicit-mode-allow mutation，broader=`83 passed`。R1 结果保存为 `configs/releases/fin_ia_0_1_3_s1_07_current_source_canary_result_v1_0.json`；修复提交后只允许 new admission 的 R2 v1.1。
+
+## 6. R2 live partial 与最终有界 fallback
+
+修复 commit `f576ac48` clean/synced 后执行 R2 v1.1，仍为 3 calls/0 retry：
+
+- MU：official investor PDF fetch 成功，raw response capture 约 `5.7 MB`，PDF text parse、parser lineage、promotion receipt 均成功；
+- NVDA：official IR HTML fetch 成功，raw response capture 约 `618 KB`，HTML text parse、parser lineage、promotion receipt 均成功；
+- DELL：official IR PDF 在约 `31.1 s` 返回 `official_source_transport_failed`，request 与 failure capture 完整，无 parser/promotion；
+- shared worker clean close、no orphan。
+
+R2 证明 runtime 主体真实可用，也证明单一 source route 可能超时。当前不把 timeout 提高成通用补丁，不重跑成功的 MU/NVDA。最后一个有界动作是 new admission/1 call 的 Dell SEC official 10-K HTML fallback；它复用 immutable R2 的两条成功结果。若 fallback 仍失败，S1-07 停止，不进入 R4。

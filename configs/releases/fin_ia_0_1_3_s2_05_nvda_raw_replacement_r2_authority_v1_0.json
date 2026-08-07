@@ -1,0 +1,142 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_nvda_raw_replacement_r2_authority_v1_0",
+  "status": "NVDA_raw_replacement_R2_admission_and_execution_authorized_not_issued",
+  "recorded_at": "2026-08-07",
+  "user_authority": {
+    "instruction": "可以",
+    "resolved_reference": "separately review and issue one NVDA replacement authority, then execute one repaired raw exact-live",
+    "scope_expansion": false
+  },
+  "audited_repository_state": {
+    "branch": "codex/layered-data-source-expansion",
+    "head": "f68f5a5c099e8c10f486317594eac65f49e8ef81",
+    "upstream": "origin/codex/layered-data-source-expansion",
+    "ahead": 0,
+    "behind": 0,
+    "clean": true
+  },
+  "replacement_basis": {
+    "prior_run_id": "fin013_s2_05_exp_a_nvda_adb4f30f05c48c5fb0c9",
+    "prior_terminal": [
+      "terminal_failed_no_retry",
+      "lead_planning",
+      "experiment_a_unbound_numeric_surface"
+    ],
+    "prior_provider_calls": 1,
+    "prior_raw_mutations": 0,
+    "root_cause_owner": "project_numeric_surface_compiler",
+    "root_cause": "5359 USD_billion was legitimately rendered as 5.36T but the execution-time compiler lacked scale-equivalent surfaces",
+    "zero_call_repair": "compile exact, one-decimal and two-decimal trillion equivalents from the same typed USD-billion authority",
+    "immutable_lead_replay": "pass",
+    "prior_admission_reuse_forbidden": true
+  },
+  "frozen_bindings": {
+    "runtime": {
+      "ref": "src/sec_agent/s2_same_evidence_experiment_runtime.py",
+      "sha256": "816b2961c5dfe219233e08b606d63799063ea9cb1b6b5e102735e9c5b650c9af"
+    },
+    "layered_evaluator_repaired": {
+      "ref": "src/sec_agent/s2_same_evidence_layered_evaluation.py",
+      "sha256": "0d3361d87550c4d2a409475d2afc5fdc6ef9065cbb6feb5e06ebd406a71adc80"
+    },
+    "production_entrypoint": {
+      "ref": "scripts/releases/run_fin_ia_0_1_3_s2_05_experiment_a.py",
+      "sha256": "1b3bc99503cfedd53ba7880caf2325c2c662e87b3bc70c5c8fd3644e4f6f4684"
+    },
+    "replacement_issuer": {
+      "ref": "scripts/releases/issue_fin_ia_0_1_3_s2_05_nvda_raw_replacement_r2_admission.py",
+      "sha256": "767c7c92f79c112bdf30ce51904291f49c31f63cbdbb9941497789df0a3ca681"
+    },
+    "runtime_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_05_experiment_a_runtime_policy_v1_0.json",
+      "sha256": "90eba779603d9b501b70f960d77fdb93d0ca3ee27dd49785543bd8cd5269ec86"
+    },
+    "blind_input": {
+      "ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json",
+      "sha256": "689a4f957015c6b16f4d3ecdde6292450c044f9641af09537b1f0190176bdb59",
+      "canonical_digest": "55b474867594c002cd87494fc3d825b39cc60f3000adae06253f8e2256a61688"
+    },
+    "shared_admission_ledger": {
+      "ref": "src/sec_agent/shared_admission_ledger.py",
+      "sha256": "ef0611378b4aa4419f8782feceb8ddd89603e79c9d7a5753452f3ddbcb725455"
+    },
+    "NVDA_R1_disposition": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_05_nvda_raw_r1_terminal_and_numeric_scale_disposition_v1_0.json",
+      "sha256": "4cbbb8728b95d88dba09ea55e7de3e90c427a9f0b1f8fa8d28267d4a88ff7e82"
+    },
+    "DELL_layered_raw_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_05_dell_layered_replacement_exact_live_result_v1_0.json",
+      "sha256": "74d8216d94aab7cc0542aab458ff805f60173e61a0f8c09c048a33da5d148d66"
+    },
+    "MU_raw_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_05_mu_raw_exact_live_and_s2_06_boundary_result_v1_0.json",
+      "sha256": "375f97acc5d2a9b842066a4f33688d003b86e22d7c0e954d7e77fad76f8fe097"
+    }
+  },
+  "fairness_guard": {
+    "same_model_visible_contract_as_R1_DELL_and_MU": true,
+    "model_visible_contract_changed_after_R1": false,
+    "only_local_change": "typed_numeric_scale_equivalent_surface_compiler",
+    "post_hoc_evaluator_visible_to_model": false,
+    "frozen_blind_input_digest": "55b474867594c002cd87494fc3d825b39cc60f3000adae06253f8e2256a61688",
+    "NVDA_model_visible_digest": "454227271c5b6c96f95ab17413747d6cc9f395429465e6cac663bdeabdcf81c5",
+    "prior_case_raw_or_correction_visible": false,
+    "hidden_gold_visible": false,
+    "supervisor_prompt_visible": false,
+    "allowed_input_root": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json"
+  },
+  "authority": {
+    "admission_issuance_authorized": true,
+    "admission_consumption_authorized": true,
+    "exact_live_execution_authorized": true,
+    "maximum_new_admissions": 1,
+    "maximum_execution_attempts": 1,
+    "authorized_case": "NVDA",
+    "replacement_ordinal": "R2",
+    "execution_mode": "capture_first_full_chain_then_layered_evaluation",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "maximum_provider_calls": 12,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "automatic_replacement_or_rerun": false,
+    "DELL_admission_authorized": false,
+    "MU_admission_authorized": false,
+    "supervisor_correction_authorized": false,
+    "business_promotion_authorized": false
+  },
+  "admission_storage_boundary": {
+    "required_root": ".codex_runtime/fin013_s2_05/authorities/NVDA_RAW_REPLACEMENT_R2",
+    "git_ignored": true,
+    "plaintext_secret_storage_forbidden": true,
+    "maximum_expiry_hours": 4
+  },
+  "execution_preconditions": [
+    "this authority slice is committed and pushed",
+    "repository is clean and synchronized at issuance and execution",
+    "Project OS scoped preflight reports zero open blockers for NVDA replacement authority and execution",
+    "credential presence is true without reading or persisting its value",
+    "production preflight reports capture_first_full_chain_then_layered_evaluation",
+    "all frozen binding hashes remain exact",
+    "the R1 admission and runtime root remain immutable and are not reused",
+    "NVDA receives only the frozen model-visible case input"
+  ],
+  "stop_and_disposition": {
+    "immediate_stop": [
+      "transport or parse failure",
+      "capacity failure",
+      "unusable Lead topology",
+      "identity or cross-case pollution",
+      "new project-owned L1 contract failure"
+    ],
+    "continue_to_verifier": [
+      "post-Lead financial-semantic findings",
+      "post-Lead L2-L4 research-quality findings"
+    ],
+    "hidden_scoring_eligible_when": "raw_chain_complete",
+    "business_promotion": "always false in S2-05",
+    "automatic_rerun": false
+  },
+  "next_after_execution": "Preserve R2 terminal and captures. If raw completes, evaluate the immutable candidate and compile the NVDA S2-06 boundary; then stop before any supervisor model correction or business promotion. If a new L1 blocks, stop without R3.",
+  "decision_digest": "d353cc3fc10135e88e2396ebe00774f631a8f272628642ed2d004e858c4cb64b"
+}

@@ -1,0 +1,75 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06d_e_minimal_natural_canary_terminal_and_formal_proof_decision_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "S2_06D_natural_canary_failed_S2_06E_formal_DELL_proof_not_authorized",
+  "canary_identity": {
+    "case_key": "DELL",
+    "node_ref": "specialist:U3",
+    "correction_id": "DELL-CORR-023",
+    "run_id": "fin013_s2_06d_dell_u3_canary_225d23bd46624338",
+    "attempt_id": "fin013_s2_06d_dell_u3_canary_225d23bd46624338_attempt_1",
+    "admission_digest": "e8b6e2ec623e2f5f030185d8bd7fb6bdd36596eaa34ba164bb8ef03c6f2d9235",
+    "execution_git_commit": "499e933f36dc4ad2bcc724ae9209e78d6f070c81"
+  },
+  "terminal_evidence": {
+    "status": "terminal_failed_no_retry",
+    "terminal_phase": "specialist:U3",
+    "terminal_code": "s2_06_counterevidence_objective_not_closed",
+    "terminal_result_digest": "f3c41fbf95588b85674fa34605a748700c87297c35eb09fda16cd4d5398cd269",
+    "capture_ref": ".codex_runtime/fin013_s2_06/canaries/DELL_U3_v1/runs/fin013_s2_06d_dell_u3_canary_225d23bd46624338/canary/captures/01_specialist_judgment_a76c4201318e60fa755629201f2f8af0a731b02d54a2cb0f9b157430e2e7522c.json",
+    "capture_sha256": "c242ba8751fdab036077e3043c82712c76abe171db2dde8657a0cee13f5af7c0",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "finish_reason": "stop",
+    "provider_calls": 1,
+    "captures": 1,
+    "input_tokens": 3433,
+    "output_tokens": 1050,
+    "total_tokens": 4483,
+    "transport_attempt_count": 1,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "candidate_frozen": false,
+    "report_produced": false
+  },
+  "observed_behavior": {
+    "envelope_and_JSON_valid": true,
+    "case_identity_valid": true,
+    "numeric_alias_placeholders_used": true,
+    "counterevidence_ids": [],
+    "resolution_status_claimed": "closed",
+    "claimed_supporting_evidence_as_counterevidence": [
+      "DELL_E04",
+      "DELL_E08"
+    ],
+    "closure_rule_satisfied": false,
+    "additional_unreached_findings": [
+      "raw_hypothetical_percentages_remained_in_what_would_change",
+      "analyst_thresholds_remained_despite_no_threshold_instruction"
+    ],
+    "runtime_behavior": "correctly_rejected_before_node_acceptance"
+  },
+  "S2_06E_decision": {
+    "formal_DELL_supervised_proof_worthwhile_now": false,
+    "formal_DELL_supervised_proof_authorized": false,
+    "reason": "The cheapest natural node already demonstrates that DeepSeek can emit the new envelope while semantically misclassifying supporting evidence as counterevidence and falsely claiming closure. A full eight-call DELL proof would predictably spend more without testing a repaired model-facing behavior.",
+    "S2_deterministic_contract_status": "engineering_repaired_and_guard_operated_as_designed",
+    "model_natural_adherence_status": "failed_minimal_canary",
+    "next_stage": "S1_search_tool_reliability_and_source_runtime",
+    "deferred_owner": "S3_dynamic_research_and_content_quality",
+    "required_before_future_formal_proof": "replace freeform correction closure with evidence-role-aware selection or a smaller typed judgment atom, then pass a new minimal natural canary"
+  },
+  "observed_counts": {
+    "admissions_issued": 1,
+    "admissions_consumed": 1,
+    "provider_calls": 1,
+    "network_calls": 1,
+    "captures": 1,
+    "retries": 0,
+    "formal_DELL_proof_calls": 0,
+    "MU_NVDA_calls": 0,
+    "candidate_or_report_promotions": 0
+  },
+  "known_boundary": "This decision closes the current S2-06D/E experiment, not RC-P36-145 product-quality failures. It preserves the deterministic guard as successful while refusing to overclaim model recoverability or report quality.",
+  "decision_digest": "c762aab5515c636311ebdc09aba5fad025731ac9bb217e7ed27cb697c9a436cc"
+}

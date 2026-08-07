@@ -23,6 +23,14 @@ ENGINEERING_PROOF = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_"
     "mature_component_relationship_budget_zero_call_proof_v1_0.json"
 )
+R1_MANIFEST = ROOT / (
+    "configs/releases/fin_ia_0_1_3_s1_08_"
+    "dell_r1_restricted_capture_manifest_v1_0.json"
+)
+R1_OBJECT_ROOT = ROOT / (
+    ".codex_runtime/fin013_s1_08_dell_current_search_canary/"
+    "fin013_s1_08_dell_search_admission_d1b8c229b7402e195f14/adapter/objects"
+)
 RESULT = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_v3_"
     "clean_independent_zero_call_proof_result_v1_0.json"
@@ -72,9 +80,12 @@ REQUIRED_TEST_FRAGMENTS = (
     "test_v3_three_case_round_robin_full_fake_has_no_slot_starvation[DELL]",
     "test_v3_three_case_round_robin_full_fake_has_no_slot_starvation[MU]",
     "test_v3_three_case_round_robin_full_fake_has_no_slot_starvation[NVDA]",
-    "test_v3_relationship_and_date_mutations_fail_closed[missing_subject-relationship_binding_mismatch]",
-    "test_v3_relationship_and_date_mutations_fail_closed[wrong_owner-relationship_binding_mismatch]",
-    "test_v3_relationship_and_date_mutations_fail_closed[untyped_date-typed_publication_date_binding_invalid]",
+    "test_v3_relationship_and_date_mutations_fail_closed"
+    "[missing_subject-relationship_binding_mismatch]",
+    "test_v3_relationship_and_date_mutations_fail_closed"
+    "[wrong_owner-relationship_binding_mismatch]",
+    "test_v3_relationship_and_date_mutations_fail_closed"
+    "[untyped_date-typed_publication_date_binding_invalid]",
     "test_actual_immutable_dell_r2_microsoft_captures_recover_financial_dates",
     "test_document_fetch_ceiling_is_real_not_only_an_acceptance_ceiling",
     "test_nested_customer_story_is_rejected_before_document_fetch",
@@ -179,7 +190,18 @@ def _verify_engineering_proof(root: Path) -> dict[str, str]:
 
 
 def _source_capture_manifest() -> dict[str, Any]:
-    rows: dict[str, Any] = {}
+    r1_manifest = _load(R1_MANIFEST)
+    _require(len(r1_manifest.get("requests") or []) == 19, "restricted_R1_manifest_invalid")
+    r1_rows: dict[str, Any] = {}
+    for row in r1_manifest["requests"]:
+        object_digest = str(row["request_capture_digest"])
+        path = R1_OBJECT_ROOT / str(row["request_capture_object_key"])
+        _require(path.exists(), f"restricted_R1_capture_missing:{object_digest}")
+        r1_rows[object_digest] = {
+            "file_sha256": _sha256(path),
+            "bytes": path.stat().st_size,
+        }
+    r2_rows: dict[str, Any] = {}
     for object_digest, expected in R2_CAPTURES.items():
         path = _capture_path(R2_OBJECT_ROOT, object_digest)
         _require(path.exists(), f"restricted_R2_capture_missing:{object_digest}")
@@ -188,12 +210,15 @@ def _source_capture_manifest() -> dict[str, Any]:
             capture.get("body_sha256") == expected["body_sha256"],
             f"restricted_R2_body_digest_drift:{object_digest}",
         )
-        rows[object_digest] = {
+        r2_rows[object_digest] = {
             "file_sha256": _sha256(path),
             "body_sha256": capture["body_sha256"],
             "bytes": path.stat().st_size,
         }
-    return rows
+    return {
+        "R1_request_objects": r1_rows,
+        "R2_content_objects": r2_rows,
+    }
 
 
 def _extract_clean_archive(commit: str, target: Path) -> None:
@@ -214,20 +239,39 @@ def _extract_clean_archive(commit: str, target: Path) -> None:
 
 
 def _inject_restricted_captures(target: Path) -> dict[str, Any]:
-    destination_root = target / R2_OBJECT_ROOT.relative_to(ROOT)
-    rows: dict[str, Any] = {}
+    r1_manifest = _load(R1_MANIFEST)
+    r1_destination_root = target / R1_OBJECT_ROOT.relative_to(ROOT)
+    r1_rows: dict[str, Any] = {}
+    for row in r1_manifest["requests"]:
+        object_digest = str(row["request_capture_digest"])
+        object_key = str(row["request_capture_object_key"])
+        source = R1_OBJECT_ROOT / object_key
+        destination = r1_destination_root / object_key
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+        _require(_sha256(source) == _sha256(destination), f"R1_capture_copy_drift:{object_digest}")
+        r1_rows[object_digest] = {
+            "file_sha256": _sha256(destination),
+            "bytes": destination.stat().st_size,
+        }
+
+    r2_destination_root = target / R2_OBJECT_ROOT.relative_to(ROOT)
+    r2_rows: dict[str, Any] = {}
     for object_digest in R2_CAPTURES:
         source = _capture_path(R2_OBJECT_ROOT, object_digest)
-        destination = _capture_path(destination_root, object_digest)
+        destination = _capture_path(r2_destination_root, object_digest)
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
         _require(_sha256(source) == _sha256(destination), f"capture_copy_drift:{object_digest}")
-        rows[object_digest] = {
+        r2_rows[object_digest] = {
             "file_sha256": _sha256(destination),
             "body_sha256": _load(destination)["body_sha256"],
             "bytes": destination.stat().st_size,
         }
-    return rows
+    return {
+        "R1_request_objects": r1_rows,
+        "R2_content_objects": r2_rows,
+    }
 
 
 class _StablePytestResult:
@@ -298,7 +342,10 @@ def _worker_payload(runtime_root: Path) -> dict[str, Any]:
         )
         decision = parsed.publication_date
         _require(decision.date_value == expected["expected_date"], f"date_drift:{object_digest}")
-        _require(decision.date_source == expected["expected_source"], f"date_source_drift:{object_digest}")
+        _require(
+            decision.date_source == expected["expected_source"],
+            f"date_source_drift:{object_digest}",
+        )
         date_decisions[object_digest] = {
             "body_sha256": capture["body_sha256"],
             "date_value": decision.date_value,
@@ -345,6 +392,7 @@ def _worker_payload(runtime_root: Path) -> dict[str, Any]:
             "nodeids": nodeids,
         },
         "coverage": {
+            "restricted_R1_request_objects_verified": 19,
             "DELL_MU_NVDA_round_robin_full_fake": True,
             "relationship_and_date_mutations_fail_closed": True,
             "actual_R2_publication_date_adjudication": True,
@@ -428,7 +476,10 @@ def build_result() -> dict[str, Any]:
     injected_manifests: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="fin013-s1-08-v3-clean-proof-") as parent:
         parent_path = Path(parent).resolve()
-        _require(parent_path.name.startswith("fin013-s1-08-v3-clean-proof-"), "temporary_root_invalid")
+        _require(
+            parent_path.name.startswith("fin013-s1-08-v3-clean-proof-"),
+            "temporary_root_invalid",
+        )
         for ordinal in (1, 2):
             runtime_root = parent_path / f"clean-archive-{ordinal}"
             _extract_clean_archive(git_state["commit"], runtime_root)
@@ -460,10 +511,25 @@ def build_result() -> dict[str, Any]:
         "recorded_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(timespec="seconds"),
         "stage": "013-S1-08",
         "status": "pass_two_clean_archives_two_fresh_processes_zero_call_reproducible",
+        "proof_attempt_history": [
+            {
+                "attempt_id": "S1-08-V3-CLEAN-PROOF-A1",
+                "source_commit": "2cdb09ce7fd62e01ae2994248298ad1347eec690",
+                "status": "failed_before_result_materialization",
+                "worker_result": "59_passed_1_failed",
+                "failure_code": "restricted_R1_request_objects_not_injected",
+                "disposition": (
+                    "Retained as a proof-runner input-assembly failure; SourceHunter "
+                    "Runtime was not changed and no live authority was created."
+                ),
+            }
+        ],
         "source_commit": git_state,
         "source_bindings": {
             "engineering_proof_ref": ENGINEERING_PROOF.relative_to(ROOT).as_posix(),
             "engineering_proof_sha256": _sha256(ENGINEERING_PROOF),
+            "restricted_R1_manifest_ref": R1_MANIFEST.relative_to(ROOT).as_posix(),
+            "restricted_R1_manifest_sha256": _sha256(R1_MANIFEST),
             "implementation_files": implementation_bindings,
             "proof_runner_ref": Path(__file__).resolve().relative_to(ROOT).as_posix(),
             "proof_runner_sha256": _sha256(Path(__file__).resolve()),
@@ -472,8 +538,9 @@ def build_result() -> dict[str, Any]:
             "clean_git_archives": 2,
             "fresh_python_processes": 2,
             "distinct_disposable_roots": 2,
+            "restricted_R1_request_objects_injected": 19,
             "restricted_R2_captures_injected": len(R2_CAPTURES),
-            "restricted_R2_captures_byte_identical": True,
+            "restricted_inputs_byte_identical": True,
             "restricted_raw_body_or_headers_emitted": False,
             "normalized_outputs_equal": True,
             "normalized_output_sha256": hashlib.sha256(worker_bytes[0]).hexdigest(),
@@ -481,9 +548,9 @@ def build_result() -> dict[str, Any]:
             "temporary_roots_removed": True,
         },
         "source_read_only_audit": {
-            "restricted_R2_before": source_captures_before,
-            "restricted_R2_after": source_captures_after,
-            "restricted_R2_unchanged": True,
+            "restricted_inputs_before": source_captures_before,
+            "restricted_inputs_after": source_captures_after,
+            "restricted_inputs_unchanged": True,
             "repository_status_unchanged_until_result_write": True,
         },
         "acceptance_boundary": {

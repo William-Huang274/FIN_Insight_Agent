@@ -1,0 +1,142 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_r3_fresh_live_authority_decision_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "decision_scope": "S1_08_V3_DELL_FRESH_LIVE_AUTHORITY_DECISION",
+  "decision_status": "approved_successor_entrypoint_required_before_issuance",
+  "decision_source_commit": "cfdfbd4843d35780da1470baa931cffc3dc06451",
+  "project_os_preflight": {
+    "run_scope": "S1_08_V3_DELL_FRESH_LIVE_AUTHORITY_DECISION",
+    "status": "pass",
+    "allow_open_blockers": false,
+    "open_full_chain_blocker_count": 0
+  },
+  "immutable_basis": {
+    "DELL_R2_terminal": {
+      "state": "complete_consumed_product_source_quality_failed",
+      "result_ref": "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_result_v1_0.json",
+      "result_sha256": "8e9550c842ff28dacddd54ca043bbaa49ab219342655110acf99b6e4ade31a88",
+      "quality_evaluation_ref": "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_source_quality_evaluation_v1_0.json",
+      "quality_evaluation_sha256": "b02fca13b01376161d079523f272809d156d643e693446a7271fa0eef0937cb8",
+      "network_calls": 16,
+      "unique_accepted_sources": 1,
+      "target_in_pool_recall": 0.0,
+      "ranking_admitted": false
+    },
+    "post_R2_disposition": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_08_post_r2_provider_candidate_coverage_disposition_v1_0.json",
+      "sha256": "998797749348a2edcea35a7060c7fe2aa04fe50c90bebe19a7d151110611d20a",
+      "selected_package": "S1_08_POST_R2_OFFICIAL_DOMAIN_RELATIONSHIP_AWARE_LOCATOR_AND_SLOT_BUDGET_ZERO_CALL_IMPLEMENTATION"
+    },
+    "v3_engineering_proof": {
+      "state": "independently_proven",
+      "ref": "configs/releases/fin_ia_0_1_3_s1_08_v3_clean_independent_zero_call_proof_result_v1_0.json",
+      "sha256": "272dd8581c5e1a3a231e36cfd57067c9f1a4f6281eee43067aa03a6872c9bae4",
+      "proof_source_commit": "a3f15fa29f53a6e4537a04a96b9481d7a314b8ee",
+      "clean_git_archives": 2,
+      "fresh_python_processes": 2,
+      "tests_per_worker": 60,
+      "failed_per_worker": 0,
+      "normalized_outputs_equal": true
+    },
+    "v3_catalog": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_relationship_budget_policy_v3_0.json",
+      "sha256": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851",
+      "contract_ref": "fin_0_1_3.S1_08.current_source_catalog_relationship_budget_candidate_generation:v3"
+    }
+  },
+  "provider_capability_truth_at_decision": {
+    "issuer_ir_discovery": "operational_live_proven",
+    "sec_submissions_discovery": "operational_live_proven",
+    "local_market_snapshot": "operational_live_proven",
+    "official_ir_feed_discovery": "operational_replay_proven_live_unproven",
+    "official_domain_bounded_search": "operational_replay_proven_live_unproven",
+    "external_site_search": "declared_not_configured_not_operational",
+    "runtime_SEC_contact_identity": "present_value_not_read_must_be_revalidated_before_issuance"
+  },
+  "why_one_fresh_live_is_justified": [
+    "R2 established a real operational candidate-ceiling failure rather than a model, ranking or terminal-materialization failure.",
+    "The v3 package directly repairs the observed R2 parser, relationship-direction, slot-starvation, fetch-ceiling and canonical-source-accounting defects.",
+    "Two new official-domain routes are replay-proven but not live-proven; one bounded DELL successor is the minimum evidence needed to distinguish operational reachability from remaining provider coverage limits.",
+    "The decision retains the 16-call ceiling and the pre-registered source-quality gates rather than increasing budget or weakening Evidence qualification after seeing R2."
+  ],
+  "replacement_authority": {
+    "case_key": "DELL",
+    "attempt_label": "R3",
+    "maximum_fresh_admissions": 1,
+    "maximum_exact_live_executions": 1,
+    "network_calls_max": 16,
+    "maximum_document_fetches_per_attempt": 2,
+    "maximum_accepted_unique_documents_per_attempt": 1,
+    "slot_group_reservations": {
+      "issuer_and_regulatory_shared": 4,
+      "customer_demand": 4,
+      "supply_and_counterevidence": 5,
+      "market_context": 0,
+      "shared_contingency_after_first_round": 3
+    },
+    "model_calls": 0,
+    "provider_model_calls": 0,
+    "retry_calls": 0,
+    "per_call_timeout_seconds_max": 30,
+    "overall_timeout_seconds_max": 300,
+    "automatic_R4": false
+  },
+  "issuance_state": {
+    "currently_issuable": false,
+    "reason_codes": [
+      "R2_authority_runner_namespace_and_result_are_consumed_and_immutable",
+      "R2_runner_is_bound_to_v2_catalog_and_cannot_execute_v3_honestly",
+      "R3_successor_entrypoint_and_clean_preflight_do_not_yet_exist",
+      "live_run_scope_is_not_yet_Project_OS_allowlisted"
+    ],
+    "old_R2_reuse_forbidden": true,
+    "required_R3_successor": [
+      "new R3-only admission, terminal schema, contract ref, namespace and result path",
+      "exact binding to this decision, immutable R2 result and quality evaluation, v3 independent proof, v3 catalog, implementation source SHAs and a clean synced commit",
+      "v3 catalog and relationship-budget Runtime wiring; the old v2 catalog path is forbidden",
+      "shared-ledger exact-once reservation before DNS or any source network side effect",
+      "capture-first request, response, parse, rejection, partial checkpoint and terminal-result retention",
+      "fresh runtime SEC contact presence check without persisting the credential value",
+      "evaluator-only Gold access after candidate generation; planner and SourceHunter remain Gold-blind",
+      "clean-archive and fresh-process zero-call preflight before any admission can be issued"
+    ]
+  },
+  "R3_live_acceptance": {
+    "all_required_network_slots_first_opportunity_or_typed_route_unavailable": true,
+    "slot_starvation_count": 0,
+    "duplicate_network_fetches_for_same_canonical_document": 0,
+    "relationship_direction_false_promotion": 0,
+    "DELL_target_in_pool": 1.0,
+    "required_slot_recall_at_8": 1.0,
+    "currentness": 1.0,
+    "diversity_or_typed_exception": 1.0,
+    "reconciliation_coverage": 1.0,
+    "selected_pack_coverage": 1.0,
+    "false_promotion": 0,
+    "qualified_unique_document_yield_min": 0.5,
+    "all_requests_terminally_classified": true,
+    "partial_terminal_materialization_ratio": 1.0,
+    "broad_external_search_claim_allowed": false,
+    "ranking_metrics_admitted_by_this_run": false
+  },
+  "stop_rules": [
+    "If the R3 successor binding, source SHA check, clean preflight or runtime contact check fails, do not issue an admission.",
+    "R3 is exact-once with no automatic retry, relaunch, replay, patch-and-resume or R4.",
+    "If R3 exposes a deterministic successor-wiring defect before network side effects, preserve the failed attempt and repair only the R3 entrypoint boundary before requesting new authority.",
+    "If R3 reaches sources but candidate ceiling or target-in-pool still fails, preserve the terminal and move to S1-08-P3 provider-acquisition or product-source-scope decision; do not run another live search.",
+    "Do not tune ranking, BGE, Milvus or top-k while target-in-pool or required-slot recall is failed or not admitted.",
+    "Do not relabel official-domain bounded search as broad Web search; external_site_search remains unavailable until separately qualified.",
+    "MU, NVDA, ranking, Evidence promotion, DeepSeek, S3, S4, S5 and release require separate downstream decisions."
+  ],
+  "observed_calls": {
+    "network": 0,
+    "model": 0,
+    "provider": 0,
+    "retry": 0,
+    "admission": 0,
+    "live": 0
+  },
+  "decision_boundary": "This record conditionally approves at most one future DELL R3 successor. It does not create the successor, issue an admission, execute live search, prove source reachability, admit ranking or close S1-08.",
+  "current_next": "S1_08_V3_DELL_R3_SUCCESSOR_ENTRYPOINT_ZERO_CALL_IMPLEMENTATION"
+}

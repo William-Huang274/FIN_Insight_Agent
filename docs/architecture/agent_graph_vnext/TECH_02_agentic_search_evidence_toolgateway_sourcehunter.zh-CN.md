@@ -778,3 +778,15 @@ provider capability truth
 第一次 A1 复证在 commit `2cdb09ce7fd62e01ae2994248298ad1347eec690` 以 `59 passed / 1 failed` 终止，因为 proof runner 只注入两份 R2 content objects，漏掉完整合同仍要求的 19 份 R1 request objects。该失败归 proof-input assembly；修复只扩充只读输入装配，没有修改 SourceHunter Runtime，也没有覆盖或追认 A1。
 
 因此当前只把 v3 deterministic engineering 从 `engineering_pass` 提升为 `independently_proven`。以下事项仍不成立：fresh official feed/sitemap/bounded-domain reachability、DELL required target-in-pool、ranking admission、Evidence promotion、MU/NVDA transfer、DeepSeek research、内容质量或 release。下一项仅为零调用的 `S1_08_V3_DELL_FRESH_LIVE_AUTHORITY_DECISION`；它必须重新核对旧 R2 terminal、新 proof、预算、provider availability、exact-once successor 和停止规则。decision 通过也只能允许另行签发的一次 DELL successor，不能在 decision 内自动执行。
+
+### 20.7 DELL R3 fresh-live authority 与 successor 边界（2026-08-08）
+
+`S1_08_V3_DELL_FRESH_LIVE_AUTHORITY_DECISION` 的结论为 `approved_successor_entrypoint_required_before_issuance`。这是条件性权限，不是 admission：R2 已 exact-once 消费，其 runner、schema、namespace、result path 与 v2 catalog 都是不可变历史；新 v3 proof 不能挂接到旧 R2 runner 上冒充 live 证明。
+
+一次 DELL R3 值得被评估，因为 R2 首因是 operational candidate ceiling，而 v3 已独立复证针对性修复 date/relationship/scheduler/fetch/accounting，并新增两条 `replay_proven/live_unproven` 的 official feed/sitemap 与 bounded-domain route。一次 `<=16` network 的 successor 是区分“新路线真实可达”与“仍缺运营 Provider”所需的最小实验。`external_site_search` 继续 `not configured / not operational`，所以 R3 不得宣称 broad Web search。
+
+R3 successor 必须在零调用阶段建立独立 admission/terminal contract、namespace/result path，并绑定 decision、immutable R2 result/evaluation、v3 clean proof、v3 catalog、implementation source SHA 与 clean/synced commit；shared ledger 必须在 DNS/网络前 reserve，所有 request/response/parse/rejection/partial/terminal 均 capture-first。旧 R2 entrypoint、v2 catalog 和已存在 result 禁止复用。
+
+拟议 authority 保持 `1 fresh admission / 1 exact-live / 16 network / 2 fetch per attempt / 1 unique accept per attempt / 0 model-provider-retry / 30s per call / 300s overall / no R4`，slot reservation 固定为 `4/4/5/0+3`。live hard gates 继续包括 required network slot first opportunity、starvation=0、canonical duplicate fetch=0、relationship false promotion=0、target-in-pool=`1.0`、required-slot recall@8=`1.0`、currentness/diversity-or-typed-exception/reconciliation/selected coverage=`1.0`、false promotion=`0`、qualified unique-document yield `>=0.5` 和 partial terminalization=`1.0`。本 R3 仍不执行或准入 BGE/Milvus ranking。
+
+如果 successor binding、clean proof、source SHA 或 runtime SEC contact 失败，则不得签发。若 R3 运行后 candidate ceiling 或 target-in-pool 仍失败，立即停止 live retry，进入 `S1-08-P3` provider acquisition/product source-scope 决策；不能追加 R4、扩大预算、放宽 Evidence Gate 或先调 reranker。本 authority decision 本身的 network/model/provider/retry/admission/live 均为 `0`；当前下一项只是 `S1_08_V3_DELL_R3_SUCCESSOR_ENTRYPOINT_ZERO_CALL_IMPLEMENTATION`。

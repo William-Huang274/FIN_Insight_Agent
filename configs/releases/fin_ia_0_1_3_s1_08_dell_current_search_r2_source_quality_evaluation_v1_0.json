@@ -1,0 +1,98 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_dell_current_search_r2_source_quality_evaluation_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "status": "live_execution_complete_product_source_quality_failed",
+  "source_result": {
+    "path": "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_result_v1_0.json",
+    "sha256": "8e9550c842ff28dacddd54ca043bbaa49ab219342655110acf99b6e4ade31a88",
+    "git_commit_at_start": "b0e8cf0dfcc6b08ee7580eacf12f2a513b3ac790",
+    "terminal_digest": "af9a02fe911199e30c9a3bd1545bfabd05b6222983b1b12d3a4390ccc5a0c33a",
+    "terminal_status": "complete",
+    "terminal_code": "dell_current_search_r2_complete_with_typed_gaps",
+    "admission_digest": "3de480abf1cfd6db503749d76e117b83aaae047c503767c3685c8f3c379fa29f",
+    "shared_receipt_state": "terminal"
+  },
+  "observed_counts": {
+    "network_calls": 16,
+    "model_calls": 0,
+    "provider_model_calls": 0,
+    "retry_calls": 0,
+    "query_attempts": 11,
+    "accepted_candidates": 2,
+    "unique_accepted_sources": 1,
+    "selected_candidates": 2,
+    "typed_gaps": 3,
+    "checkpoints": 11
+  },
+  "accepted_candidate_summary": [
+    {
+      "roles": [
+        "issuer_results_and_management_commentary",
+        "regulatory_risk_and_financial_reconciliation"
+      ],
+      "entity": "DELL",
+      "title": "8-K filed 2026-07-06",
+      "published_on": "2026-07-06",
+      "source_family": "regulatory_filing",
+      "locator": "https://www.sec.gov/Archives/edgar/data/1571996/000119312526296224/d32716d8k.htm",
+      "content_quality_score": 55
+    }
+  ],
+  "typed_gap_roles": [
+    "customer_demand_and_deployment_validation",
+    "supply_chain_capacity_and_counterevidence",
+    "market_expectation_context"
+  ],
+  "quality_metrics": {
+    "evidence_roles_candidate_or_typed_gap": [5, 5],
+    "qualified_document_yield": 0.125,
+    "qualified_document_yield_gate": 0.5,
+    "known_navigation_noise_fetches": 0,
+    "evaluator_matched_gold_sources": 0,
+    "DELL_target_groups": 4,
+    "DELL_target_in_pool_recall": 0.0,
+    "selected_pack_required_slot_coverage": 0.0,
+    "ranking_metrics_admitted": false,
+    "planner_received_hidden_gold": false,
+    "evaluator_digest": "c7ba19a64528166d7511915860d4b8422b1bd2b81783562bf8975dd649d226bd"
+  },
+  "receipt_findings": {
+    "total_receipts": 589,
+    "evidence_slot_fit_unproven": 339,
+    "stale_for_current_evidence_slot": 88,
+    "discovered_source_published_date_unproven": 36,
+    "source_provider_route_unavailable": 6,
+    "discovery_network_call_ceiling_reached": 4,
+    "current_market_snapshot_unavailable": 3,
+    "qualified_candidates_discovered": 2
+  },
+  "gate_results": {
+    "terminal_and_capture_integrity": "pass",
+    "typed_partial_or_gap_materialization": "pass",
+    "navigation_noise_zero_fetch": "pass",
+    "qualified_document_yield": "failed",
+    "DELL_target_in_pool": "failed",
+    "required_slot_recall_at_8": "failed",
+    "selected_pack_coverage": "failed",
+    "ranking_admission": "failed"
+  },
+  "root_cause_disposition": {
+    "primary": "The operational route set remains too narrow: structured IR and external site search are unavailable, while ordinary IR discovery cannot reliably extract publication dates or role-fit evidence before the 16-call ceiling.",
+    "secondary": "One current SEC 8-K was promoted into two roles, producing two candidates but only one unique source; role closure via typed gaps did not translate into benchmark evidence coverage.",
+    "not_established": [
+      "DeepSeek or model failure",
+      "ranking or reranker failure",
+      "absence of relevant public evidence"
+    ]
+  },
+  "decision": {
+    "S1_08_DELL_R2_product_quality": "failed",
+    "S1_08_close": false,
+    "automatic_R3": false,
+    "ranking_BGE_Milvus": false,
+    "MU_NVDA_transfer": false,
+    "DeepSeek_S3": false
+  },
+  "current_next": "S1_08_POST_R2_CANDIDATE_COVERAGE_AND_PROVIDER_CAPABILITY_DISPOSITION_DECISION"
+}

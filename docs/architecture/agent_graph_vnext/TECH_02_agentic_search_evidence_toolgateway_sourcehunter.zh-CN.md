@@ -704,3 +704,5 @@ R2 successor 已完成零调用实现。authority v1.0 因把 engineering proof 
 clean successor proof 进一步成为 admission 的 mandatory binding，固定 Runtime/Runner SHA 并要求 fresh archive 的 53-test pass。Project OS run-scope 目前是显式 blocker-name 匹配，未知 scope 字符串可能不被自动拒绝；这是共享治理层缺口。当前 R2 通过 direct proof binding fail closed，通用 scope registry/unknown-scope policy 留给 S0/S5 统一修复，避免把 SourceHunter 阶段扩成控制面重构。
 
 runner 的第一次 execution probe 另发现 core API/CLI projection 形状差异：核心 preflight 提供 blocker list，CLI compact 才增加 blocker count。successor 现以核心 list 为权威，并在 count 存在时交叉验证；v1.1 clean proof 绑定修复后的 source SHA。该 probe 位于 admission 前，未消耗 authority 或产生网络副作用。
+
+DELL R2 证明控制面已能完整 terminalize，但 operational SourceHunter 质量仍未达标：16 network calls 只产生 2 个 role candidates/1 个 unique SEC source，qualified yield=0.125，三 role typed gap，Gold target-in-pool=0。大量 anchor 因 slot-fit、stale 或 publication-date unproven 被拒，且 structured IR/external search 仍 route-unavailable。后续改进应增加真实 provider/locator 能力并按 Evidence Slot 调度预算，不能靠放宽质量门、追加 retry 或先调 reranker掩盖 candidate pool 缺口。

@@ -128,7 +128,10 @@ def test_R2_admission_binds_decision_proof_R1_and_budget_without_secret() -> Non
     assert admission.overall_timeout_seconds == 300
     assert admission.r1_terminal_digest == _load(R1_PATH)["result"]["terminal_digest"]
     assert "@" not in json.dumps(admission.as_dict())
-    assert not R2_OUTPUT.exists()
+    if R2_OUTPUT.exists():
+        terminal = _load(R2_OUTPUT)
+        assert terminal["result"]["attempt_label"] == "R2"
+        assert terminal["result"]["shared_admission_receipt"]["state"] == "terminal"
 
 
 def test_R2_admission_source_or_commit_drift_fails_closed() -> None:

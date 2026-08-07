@@ -1,0 +1,73 @@
+{
+  "cases": [
+    {
+      "accepted_candidates": 6,
+      "case_key": "DELL",
+      "query_attempts": 5,
+      "result_digest": "eeffe48a62c9be424a3ba1c503d5ade2588dbb59df87600e8679881015b2f7d6",
+      "selected_candidates": 6,
+      "typed_gaps": 0
+    },
+    {
+      "accepted_candidates": 7,
+      "case_key": "MU",
+      "query_attempts": 5,
+      "result_digest": "982c6dcd46c28bb6abcfd6ff9c1787be7caf11c649c17ebdd6d3f809b9abaa71",
+      "selected_candidates": 7,
+      "typed_gaps": 0
+    },
+    {
+      "accepted_candidates": 7,
+      "case_key": "NVDA",
+      "query_attempts": 5,
+      "result_digest": "f1a9f95fbcf2a536f2a8caaa762c56722a12ca674503c61e4504ac7d794801e0",
+      "selected_candidates": 7,
+      "typed_gaps": 0
+    }
+  ],
+  "catalog_digest": "633824043caf107a9ccb47eaa030b2a2d288ad89bed86f4d41f231e6428c27dd",
+  "contract_ref": "fin_0_1_3.S1_08.current_source_catalog_candidate_generation:v1",
+  "decision": {
+    "S1_08_live_candidate_ceiling": "unproven",
+    "S1_08_ranking": "not_admitted_on_live_evidence",
+    "candidate_generation_engineering": "pass",
+    "next": "S1_08_INDEPENDENT_FRESH_ZERO_CALL_PROOF_THEN_ONE_DELL_CURRENT_SEARCH_CANARY_AUTHORITY_DECISION"
+  },
+  "evaluator_only_summary": {
+    "ranking_metrics_admitted": true,
+    "selected_pack_required_slot_coverage": 1.0,
+    "target_groups": 12,
+    "target_in_pool_recall": 1.0
+  },
+  "known_boundary": "The fixture proves contract shape, bounded revision, lineage checks and evaluator isolation. It does not prove that live discovery can find any benchmark-equivalent source, that ranking meets NDCG/MRR gates, or that downstream Agentic Research uses the evidence.",
+  "mutation_coverage": [
+    "Gold identifier or benchmark document URL in planner catalog",
+    "cross-case candidate",
+    "future candidate",
+    "missing capture-first lineage",
+    "unpromoted candidate",
+    "missing required source",
+    "identical retry",
+    "revision budget overflow",
+    "candidate order stability"
+  ],
+  "planner_gold_visibility": false,
+  "proof_digest": "3e0c73998631baebf94236811f8916dea1fd5b3df2004eaf13f7bbe28c1b8a0d",
+  "proof_mode": "evaluator_fixture_discovery_zero_network_zero_model",
+  "schema_version": "fin_ia_0_1_3_s1_08_candidate_generation_zero_call_proof_v1_0",
+  "status": "engineering_proof_pass_live_candidate_generation_unproven",
+  "verification": {
+    "benchmark_target_groups": 12,
+    "concrete_adapter_network_budget_stop_tested": true,
+    "concrete_capture_first_official_discovery_adapter_tested": true,
+    "fixture_selected_pack_required_slot_coverage": 1.0,
+    "fixture_target_in_pool_recall": 1.0,
+    "focused_tests": 14,
+    "model_provider_network_calls": [
+      0,
+      0,
+      0
+    ],
+    "ranking_or_reranker_tuning_executed": false
+  }
+}

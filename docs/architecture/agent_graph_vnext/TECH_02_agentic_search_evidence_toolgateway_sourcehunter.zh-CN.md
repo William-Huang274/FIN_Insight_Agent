@@ -661,3 +661,13 @@ S1-08 先判断必需 Gold Evidence 是否可能进入候选池，再评价排�
 预注册 hard gates 为 `target_in_pool=1.0`、`required_slot_recall@8=1.0`、`NDCG@8>=0.85`、`MRR>=0.75`、currentness/diversity-or-typed-exception/reconciliation/selected-pack-coverage=`1.0`、false promotion=`0`。每 target group 最多两次有理由的 query revision，禁止 identical retry。若任一案例 target-in-pool 不足，停止 ranking/reranker；修 candidate generation，而不是调 BGE/Milvus 或扩大 top-k。
 
 entry audit 的版本化产物只有 7 个 distinct active source URL，与 9 个 benchmark HTTP source 的 exact URL overlap 为 `0`；这是保守下界，不否定尚未证明的 equivalent authoritative source。更关键的是 current executable search 仍只有 FIN 0.1.2 合同，query revision runtime 不存在。因此 S1-08 当前为 `upstream_blocked_candidate_generation_before_ranking`。下一实现必须建立 provider-neutral current source catalog、Evidence Tool Planner revision loop、capture-first discovery/fetch/parser/candidate 分轨和 evaluator-only Gold matcher；不得把 benchmark source registry 直接注入 planner 作弊。
+
+### 20.1 current source catalog 与 candidate-generation Runtime
+
+current S1-08 catalog 只拥有 source discovery seed，不拥有答案：entity key、legal name、CIK、官方 landing pages、ecosystem roles、通用 evidence-role blueprints 和预算。Gold Evidence/target ID、expected insight、benchmark document URL 与 hidden scoring object 永远不进入 catalog、query 或 adapter input。客户/供应链扩展由 `cloud_operator / infrastructure_integrator / memory_supplier / foundry / compute_platform` 等角色生成，不通过复制 benchmark URL 生成。
+
+Planner 将 current-case research objective 编译为 issuer results、regulatory reconciliation、customer demand、supply/counterevidence 和 market context 五类 target。每类首次失败最多两次 revision；每次必须改变 terms 或 routes，并保存 trigger、changed query、attempt count 和 stop reason。`subject` 只允许 current case；relationship role 才可扩展其他实体，避免跨案例污染。
+
+Official discovery adapter 的顺序固定为：landing/SEC submissions request capture → raw response capture → locator discovery → source request/response capture → parser capture → candidate promotion。无日期、future、cross-case、unknown entity、缺任一 capture lineage、parser 失败或未晋升都不得进入 candidate pool。local market snapshot 也必须以受控本地 capture/parse receipt 进入，不能用路径占位冒充 Evidence。
+
+Evaluator-only matcher 在 candidate generation 完成后才加载 hidden target groups，并按 normalized source locator 计算 target-in-pool 与 selected-pack coverage。fixture 中 `12/12` target group 进入 pool 且 selected pack coverage=`1.0` 只证明合同上限；真实 canary 未通过前，ranking/NDCG/MRR/BGE/Milvus 仍不准入。Runtime owner 为 `src/sec_agent/s1_08_candidate_generation_runtime.py` 与 `src/sec_agent/s1_08_official_discovery_adapter.py`，policy owner 为 `configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v1_0.json`。

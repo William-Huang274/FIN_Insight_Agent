@@ -1,0 +1,446 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
+from html.parser import HTMLParser
+import json
+from pathlib import Path
+import re
+from typing import Any, Mapping
+from urllib.parse import urljoin, urlparse
+
+from sec_agent.canonical_runtime.models import canonical_digest
+from sec_agent.canonical_runtime.object_store import FileCanonicalObjectStore
+from sec_agent.official_source_attempt_program import (
+    CaptureFirstOfficialSourceClient,
+    SourceResponse,
+    SourceTransport,
+    parse_source_document,
+)
+from sec_agent.s1_08_candidate_generation_runtime import (
+    DiscoveryCandidate,
+    DiscoveryQuery,
+)
+
+
+DISCOVERY_NAMESPACE = "fin-0.1.3/s1-08/current-source-discovery"
+
+
+@dataclass(frozen=True)
+class _Locator:
+    url: str
+    title: str
+    published_on: str
+    discovery_capture_ref: str
+    discovery_capture_digest: str
+
+
+class _AnchorParser(HTMLParser):
+    def __init__(self, base_url: str) -> None:
+        super().__init__(convert_charrefs=True)
+        self.base_url = base_url
+        self._href = ""
+        self._attrs: dict[str, str] = {}
+        self._text: list[str] = []
+        self.links: list[tuple[str, str, str]] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() != "a":
+            return
+        self._attrs = {str(key).lower(): str(value or "") for key, value in attrs}
+        self._href = self._attrs.get("href", "").strip()
+        self._text = []
+
+    def handle_data(self, data: str) -> None:
+        if self._href:
+            self._text.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() != "a" or not self._href:
+            return
+        url = urljoin(self.base_url, self._href)
+        title = " ".join(" ".join(self._text).split())
+        published = (
+            self._attrs.get("data-date")
+            or self._attrs.get("data-published-on")
+            or _iso_date(title)
+        )
+        self.links.append((url, title, published))
+        self._href = ""
+        self._attrs = {}
+        self._text = []
+
+
+class CaptureFirstOfficialDiscoveryAdapter:
+    """Discovers official documents, captures them, parses them, then emits candidates."""
+
+    def __init__(
+        self,
+        *,
+        catalog: Mapping[str, Any],
+        case_key: str,
+        runtime_root: str | Path,
+        transport: SourceTransport,
+        network_call_ceiling: int,
+        document_ceiling_per_query: int = 2,
+        market_snapshot: Mapping[str, Any] | None = None,
+    ) -> None:
+        self.catalog = dict(catalog)
+        self.case_key = case_key
+        self.store = FileCanonicalObjectStore(Path(runtime_root).resolve() / "objects")
+        self.client = CaptureFirstOfficialSourceClient(
+            store=self.store,
+            transport=transport,
+            namespace=DISCOVERY_NAMESPACE,
+        )
+        self.network_call_ceiling = int(network_call_ceiling)
+        self.document_ceiling_per_query = int(document_ceiling_per_query)
+        self.market_snapshot = dict(market_snapshot or {})
+        self.receipts: list[dict[str, Any]] = []
+        self._landing_cache: dict[str, tuple[_Locator, ...]] = {}
+        self._document_cache: dict[str, tuple[SourceResponse | None, dict[str, Any], dict[str, Any] | None]] = {}
+        self._entity_by_key = {
+            str(row["entity_key"]): row for row in self.catalog.get("entities") or []
+        }
+        self._allowed_hosts = {
+            (urlparse(str(url)).hostname or "").lower()
+            for row in self._entity_by_key.values()
+            for url in row.get("official_landing_pages") or []
+        } | {"www.sec.gov", "sec.gov"}
+
+    @property
+    def network_calls(self) -> int:
+        return self.client.network_calls
+
+    def discover(self, query: DiscoveryQuery) -> tuple[DiscoveryCandidate, ...]:
+        if query.case_key != self.case_key:
+            self.receipts.append(
+                {"query_digest": query.query_digest, "status": "rejected", "code": "cross_case_query"}
+            )
+            return ()
+        if "local_market_snapshot" in query.route_ids:
+            return self._market_candidate(query)
+        locators: list[_Locator] = []
+        for entity_key in query.entity_keys:
+            entity = self._entity_by_key.get(entity_key)
+            if entity is None:
+                continue
+            for landing_url in self._route_landing_pages(entity, query.route_ids):
+                locators.extend(self._discover_landing(landing_url, query=query))
+        ranked = sorted(
+            locators,
+            key=lambda row: (-_query_score(query.query_text, row.title, row.url), row.url),
+        )
+        candidates: list[DiscoveryCandidate] = []
+        seen: set[str] = set()
+        for locator in ranked:
+            if locator.url in seen or len(candidates) >= self.document_ceiling_per_query:
+                continue
+            seen.add(locator.url)
+            if _query_score(query.query_text, locator.title, locator.url) <= 0:
+                continue
+            response, attempt, parser_ref = self._fetch_and_parse(locator.url, query=query)
+            if response is None or attempt.get("status") != "captured" or parser_ref is None:
+                continue
+            published_on = locator.published_on or _last_modified_date(response.headers)
+            if not published_on:
+                self.receipts.append(
+                    {
+                        "query_digest": query.query_digest,
+                        "status": "rejected",
+                        "code": "discovered_source_published_date_unproven",
+                        "locator_digest": canonical_digest(locator.url),
+                    }
+                )
+                continue
+            entity_key = _entity_key_for_url(self._entity_by_key, response.final_url)
+            candidates.append(
+                DiscoveryCandidate(
+                    case_key=query.case_key,
+                    target_key=query.target_key,
+                    role_id=query.role_id,
+                    entity_key=entity_key,
+                    title=locator.title or response.final_url,
+                    locator=response.final_url,
+                    published_on=published_on,
+                    authority=_authority(
+                        entity_key=entity_key,
+                        case_key=query.case_key,
+                        host=(urlparse(response.final_url).hostname or "").lower(),
+                    ),
+                    discovery_capture_ref=locator.discovery_capture_ref,
+                    discovery_capture_digest=locator.discovery_capture_digest,
+                    source_capture_ref=str(attempt["response_capture"]["object_key"]),
+                    source_capture_digest=str(attempt["response_capture"]["digest"]),
+                    parser_capture_ref=str(parser_ref["object_key"]),
+                    parser_capture_digest=str(parser_ref["digest"]),
+                )
+            )
+        self.receipts.append(
+            {
+                "query_digest": query.query_digest,
+                "status": "terminal",
+                "code": "qualified_candidates_discovered" if candidates else "no_qualified_candidate",
+                "candidate_count": len(candidates),
+            }
+        )
+        return tuple(candidates)
+
+    def _route_landing_pages(
+        self, entity: Mapping[str, Any], route_ids: tuple[str, ...]
+    ) -> tuple[str, ...]:
+        pages = [str(value) for value in entity.get("official_landing_pages") or []]
+        out: list[str] = []
+        if "issuer_ir_discovery" in route_ids:
+            out.extend(url for url in pages if "data.sec.gov/submissions" not in url)
+        if "sec_submissions_discovery" in route_ids:
+            out.extend(url for url in pages if "data.sec.gov/submissions" in url)
+        return tuple(dict.fromkeys(out))
+
+    def _discover_landing(
+        self, landing_url: str, *, query: DiscoveryQuery
+    ) -> tuple[_Locator, ...]:
+        if landing_url in self._landing_cache:
+            return self._landing_cache[landing_url]
+        response, attempt = self._fetch(
+            url=landing_url,
+            route_id=f"discovery_{canonical_digest(landing_url)[:16]}",
+            query=query,
+        )
+        if response is None or attempt.get("status") != "captured":
+            self._landing_cache[landing_url] = ()
+            return ()
+        capture = attempt["response_capture"]
+        content_type = str(response.headers.get("content-type") or "").lower()
+        if "json" in content_type or landing_url.startswith("https://data.sec.gov/submissions/"):
+            rows = _sec_submission_locators(response, capture)
+        else:
+            rows = _html_locators(response, capture)
+        self._landing_cache[landing_url] = rows
+        return rows
+
+    def _fetch_and_parse(
+        self, url: str, *, query: DiscoveryQuery
+    ) -> tuple[SourceResponse | None, dict[str, Any], dict[str, Any] | None]:
+        if url in self._document_cache:
+            return self._document_cache[url]
+        response, attempt = self._fetch(
+            url=url,
+            route_id=f"document_{canonical_digest(url)[:16]}",
+            query=query,
+        )
+        if response is None or attempt.get("status") != "captured":
+            result = (response, attempt, None)
+            self._document_cache[url] = result
+            return result
+        parsed = parse_source_document(response)
+        parser_ref = self.store.put_json(
+            {
+                "schema_version": "fin_ia_0_1_3_s1_08_parser_capture_v1_0",
+                "response_capture_ref": attempt["response_capture"]["object_key"],
+                "response_capture_digest": attempt["response_capture"]["digest"],
+                "parser": {key: value for key, value in parsed.items() if key != "text"},
+            },
+            namespace=DISCOVERY_NAMESPACE,
+            artifact_type="official_discovery_parser_result",
+        )
+        if parsed.get("status") != "parsed":
+            self.receipts.append(
+                {"query_digest": query.query_digest, "status": "rejected", "code": "source_parser_failed"}
+            )
+            result = (response, attempt, None)
+        else:
+            result = (response, attempt, parser_ref)
+        self._document_cache[url] = result
+        return result
+
+    def _fetch(
+        self, *, url: str, route_id: str, query: DiscoveryQuery
+    ) -> tuple[SourceResponse | None, dict[str, Any]]:
+        if self.network_calls >= self.network_call_ceiling:
+            receipt = {
+                "query_digest": query.query_digest,
+                "status": "stopped",
+                "code": "discovery_network_call_ceiling_reached",
+                "locator_digest": canonical_digest(url),
+            }
+            self.receipts.append(receipt)
+            return None, {
+                "status": "transport_failure",
+                "failure_code": receipt["code"],
+                "request_capture": {},
+                "response_capture": {},
+            }
+        return self.client.fetch(
+            case_key=self.case_key,
+            route_id=route_id,
+            url=url,
+            allowed_hosts=self._allowed_hosts,
+            timeout_seconds=30,
+            byte_ceiling=16_777_216,
+        )
+
+    def _market_candidate(self, query: DiscoveryQuery) -> tuple[DiscoveryCandidate, ...]:
+        if not self.market_snapshot:
+            self.receipts.append(
+                {"query_digest": query.query_digest, "status": "typed_gap", "code": "current_market_snapshot_unavailable"}
+            )
+            return ()
+        snapshot_ref = self.store.put_json(
+            {
+                "schema_version": "fin_ia_0_1_3_s1_08_local_market_snapshot_capture_v1_0",
+                "case_key": query.case_key,
+                "as_of": self.catalog["as_of"],
+                "snapshot": self.market_snapshot,
+            },
+            namespace=DISCOVERY_NAMESPACE,
+            artifact_type="local_market_snapshot",
+        )
+        parser_ref = self.store.put_json(
+            {
+                "schema_version": "fin_ia_0_1_3_s1_08_local_market_parser_capture_v1_0",
+                "snapshot_digest": snapshot_ref["digest"],
+                "status": "parsed",
+            },
+            namespace=DISCOVERY_NAMESPACE,
+            artifact_type="local_market_snapshot_parser",
+        )
+        entity_ref = self.store.put_json(
+            {
+                "schema_version": "fin_ia_0_1_3_s1_08_local_market_discovery_capture_v1_0",
+                "query_digest": query.query_digest,
+                "route_id": "local_market_snapshot",
+            },
+            namespace=DISCOVERY_NAMESPACE,
+            artifact_type="local_market_snapshot_discovery",
+        )
+        return (
+            DiscoveryCandidate(
+                case_key=query.case_key,
+                target_key=query.target_key,
+                role_id=query.role_id,
+                entity_key=query.case_key,
+                title="Current governed market snapshot",
+                locator="current_market_snapshot",
+                published_on=str(self.catalog["as_of"]),
+                authority="non_authoritative_market_context",
+                discovery_capture_ref=entity_ref["object_key"],
+                discovery_capture_digest=entity_ref["digest"],
+                source_capture_ref=snapshot_ref["object_key"],
+                source_capture_digest=snapshot_ref["digest"],
+                parser_capture_ref=parser_ref["object_key"],
+                parser_capture_digest=parser_ref["digest"],
+            ),
+        )
+
+
+def _html_locators(
+    response: SourceResponse, capture: Mapping[str, Any]
+) -> tuple[_Locator, ...]:
+    text = response.body.decode("utf-8", errors="replace")
+    parser = _AnchorParser(response.final_url)
+    parser.feed(text)
+    allowed_host = (urlparse(response.final_url).hostname or "").lower()
+    return tuple(
+        _Locator(
+            url=url,
+            title=title,
+            published_on=published,
+            discovery_capture_ref=str(capture["object_key"]),
+            discovery_capture_digest=str(capture["digest"]),
+        )
+        for url, title, published in parser.links
+        if url.startswith("https://")
+        and (urlparse(url).hostname or "").lower() == allowed_host
+    )
+
+
+def _sec_submission_locators(
+    response: SourceResponse, capture: Mapping[str, Any]
+) -> tuple[_Locator, ...]:
+    try:
+        payload = json.loads(response.body.decode("utf-8"))
+        recent = payload["filings"]["recent"]
+        ciks = re.sub(r"\D", "", str(payload["cik"])).lstrip("0")
+        rows = zip(
+            recent["accessionNumber"],
+            recent["filingDate"],
+            recent["form"],
+            recent["primaryDocument"],
+        )
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+        return ()
+    out: list[_Locator] = []
+    for accession, filing_date, form, document in rows:
+        if str(form) not in {"10-K", "10-Q", "8-K"}:
+            continue
+        compact = re.sub(r"\D", "", str(accession))
+        url = f"https://www.sec.gov/Archives/edgar/data/{ciks}/{compact}/{document}"
+        out.append(
+            _Locator(
+                url=url,
+                title=f"{form} filed {filing_date}",
+                published_on=str(filing_date),
+                discovery_capture_ref=str(capture["object_key"]),
+                discovery_capture_digest=str(capture["digest"]),
+            )
+        )
+    return tuple(out)
+
+
+def _query_score(query: str, title: str, url: str) -> int:
+    haystack = f"{title} {url}".lower()
+    terms = {
+        token
+        for token in re.findall(r"[a-zA-Z0-9-]{3,}", query.lower())
+        if token not in {"latest", "official", "current", "available", "quarter"}
+    }
+    score = sum(token in haystack for token in terms)
+    if any(term in haystack for term in ("earnings", "results", "10-q", "10-k", "financial")):
+        score += 2
+    return score
+
+
+def _entity_key_for_url(
+    entities: Mapping[str, Mapping[str, Any]], url: str
+) -> str:
+    host = (urlparse(url).hostname or "").lower()
+    if host in {"www.sec.gov", "sec.gov"}:
+        match = re.search(r"/data/(?P<cik>\d+)/", url)
+        if match:
+            cik = match.group("cik").lstrip("0")
+            for key, entity in entities.items():
+                if str(entity.get("cik") or "").lstrip("0") == cik:
+                    return key
+    for key, entity in entities.items():
+        if any((urlparse(str(page)).hostname or "").lower() == host for page in entity.get("official_landing_pages") or []):
+            return key
+    return ""
+
+
+def _authority(*, entity_key: str, case_key: str, host: str) -> str:
+    if host in {"www.sec.gov", "sec.gov"}:
+        return "regulatory_primary"
+    return "issuer_primary" if entity_key == case_key else "industry_primary"
+
+
+def _iso_date(value: str) -> str:
+    match = re.search(r"\b(20\d{2})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12]\d|3[01])\b", value)
+    return "-".join(match.groups()) if match else ""
+
+
+def _last_modified_date(headers: Mapping[str, Any]) -> str:
+    value = str(headers.get("last-modified") or "")
+    if not value:
+        return ""
+    try:
+        parsed = parsedate_to_datetime(value)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.date().isoformat()
+    except (TypeError, ValueError, OverflowError):
+        return ""
+
+
+__all__ = ["CaptureFirstOfficialDiscoveryAdapter", "DISCOVERY_NAMESPACE"]

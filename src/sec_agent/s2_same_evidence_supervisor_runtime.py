@@ -25,7 +25,7 @@ from sec_agent.s2_same_evidence_experiment_runtime import (
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger
 
 
-SUPERVISOR_PLAN_SCHEMA = "fin_ia_0_1_3_s2_06_supervisor_plan_v1_0"
+SUPERVISOR_PLAN_SCHEMA = "fin_ia_0_1_3_s2_06_supervisor_plan_v1_1"
 CORRECTED_CAPTURE_SCHEMA = "fin_ia_0_1_3_s2_06_corrected_capture_v1_0"
 CORRECTED_CANDIDATE_SCHEMA = "fin_ia_0_1_3_s2_06_corrected_candidate_v1_0"
 CORRECTED_TERMINAL_SCHEMA = "fin_ia_0_1_3_s2_06_corrected_terminal_v1_0"
@@ -47,6 +47,11 @@ _NODE_ORDER = {
     "verifier": 4,
 }
 _PATH_PART = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)(?:\[(\d+)\])?")
+_CASE_AUTHORITY_ALIAS_FIELDS = ("evidence_ids", "gap_ids")
+_CASE_AUTHORITY_PROMPT_RULE = (
+    "Every node directive, including Verifier, must select at least one supplied "
+    "Evidence or Gap alias; Numeric aliases alone are insufficient. "
+)
 
 
 class S2SupervisorRuntimeError(RuntimeError):
@@ -76,6 +81,21 @@ def compile_case_aliases(case_input: Mapping[str, Any]) -> dict[str, list[str]]:
         "numeric_aliases": numeric_aliases,
         "gap_ids": gap_ids,
     }
+
+
+def _case_authority_output_schema() -> dict[str, Any]:
+    """Compile the same non-empty authority invariant used by local validation."""
+
+    return {
+        "anyOf": [
+            {"properties": {field: {"minItems": 1}}}
+            for field in _CASE_AUTHORITY_ALIAS_FIELDS
+        ]
+    }
+
+
+def _has_case_authority(directive: Mapping[str, Any]) -> bool:
+    return any(bool(directive.get(field)) for field in _CASE_AUTHORITY_ALIAS_FIELDS)
 
 
 def compile_supervisor_plan_spec(
@@ -163,6 +183,7 @@ def compile_supervisor_plan_spec(
                 "items": {
                     "type": "object",
                     "additionalProperties": False,
+                    **_case_authority_output_schema(),
                     "required": [
                         "node_ref", "correction_ids", "action_codes",
                         "evidence_ids", "numeric_aliases", "gap_ids",
@@ -182,7 +203,7 @@ def compile_supervisor_plan_spec(
         },
     }
     return {
-        "schema_version": "fin_ia_0_1_3_s2_06_supervisor_plan_spec_v1_0",
+        "schema_version": "fin_ia_0_1_3_s2_06_supervisor_plan_spec_v1_1",
         "case_key": case_key,
         "raw_binding": {
             "run_id": boundary["raw_binding"]["run_id"],
@@ -236,7 +257,8 @@ def compile_supervisor_request(
                     "You are a case-isolated correction planner. Return one JSON object only. "
                     "Do not write a report, corrected prose, financial facts, target thesis or score. "
                     "For each required node, select only supplied case-local Evidence, Numeric and Gap aliases. "
-                    "Preserve the exact node, correction and action identifiers."
+                    + _CASE_AUTHORITY_PROMPT_RULE
+                    + "Preserve the exact node, correction and action identifiers."
                 ),
             },
             {"role": "user", "content": encoded},
@@ -320,7 +342,9 @@ def validate_supervisor_plan(plan: Mapping[str, Any], spec: Mapping[str, Any]) -
         gaps = _unique_string_list(directive.get("gap_ids"), "gap")
         if not set(evidence) <= allowed_evidence or not set(numeric) <= allowed_numeric or not set(gaps) <= allowed_gaps:
             raise S2SupervisorRuntimeError("s2_06_supervisor_cross_case_or_unknown_alias")
-        if not evidence and not gaps:
+        if not _has_case_authority(
+            {"evidence_ids": evidence, "gap_ids": gaps}
+        ):
             raise S2SupervisorRuntimeError("s2_06_supervisor_empty_case_authority")
 
 

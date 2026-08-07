@@ -18,6 +18,7 @@ from sec_agent.s2_same_evidence_supervision import (
     compile_case_scoped_supervision_boundary,
 )
 from sec_agent.s2_same_evidence_supervisor_runtime import (
+    SUPERVISOR_PLAN_SCHEMA,
     S2SupervisorRuntimeError,
     assert_hidden_scoring_allowed,
     compile_capacity_proof,
@@ -36,7 +37,10 @@ from sec_agent.shared_admission_ledger import (
 
 ROOT = Path(__file__).resolve().parents[2]
 OBSERVED = "2026-08-07T12:00:00+00:00"
-IMPLEMENTATION = ROOT / "configs/releases/fin_ia_0_1_3_s2_06_three_case_unified_supervisor_zero_call_implementation_v1_0.json"
+IMPLEMENTATION = ROOT / (
+    "configs/releases/fin_ia_0_1_3_s2_06_supervisor_nonempty_"
+    "case_authority_compiled_contract_alignment_v1_1.json"
+)
 
 
 def _fixture(case_index: int = 0, *, units: int = 6) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
@@ -226,7 +230,7 @@ class FullFakeCorrectedProvider:
         request = json.loads(kwargs["messages"][1]["content"])
         if kwargs["role"] == "fin013_s2_06_supervisor_plan":
             output = {
-                "schema_version": "fin_ia_0_1_3_s2_06_supervisor_plan_v1_0",
+                "schema_version": SUPERVISOR_PLAN_SCHEMA,
                 "case_key": request["case_key"],
                 "raw_run_id": request["raw_binding"]["run_id"],
                 "node_directives": [
@@ -349,6 +353,49 @@ def test_three_cases_compile_same_protocol_with_case_qualified_ids(case_index: i
     assert "expected_thesis" not in encoded
     assert "strongest_counter_thesis" not in encoded
     assert request["max_transport_attempts"] == 1
+
+
+@pytest.mark.parametrize("case_index", [0, 1, 2])
+def test_nonempty_case_authority_is_compiled_into_schema_prompt_and_validator(
+    case_index: int,
+) -> None:
+    policy, case, raw = _fixture(case_index)
+    boundary = _boundary(case)
+    spec = compile_supervisor_plan_spec(
+        boundary=boundary,
+        case_input=case,
+        raw_outputs=raw,
+    )
+    item_schema = spec["output_schema"]["properties"]["node_directives"]["items"]
+    assert item_schema["anyOf"] == [
+        {"properties": {"evidence_ids": {"minItems": 1}}},
+        {"properties": {"gap_ids": {"minItems": 1}}},
+    ]
+    request = compile_supervisor_request(
+        spec=spec,
+        raw_outputs=raw,
+        policy=policy,
+        corrected_run_id="compiled-authority-" + case["case_key"],
+    )
+    system_prompt = request["messages"][0]["content"]
+    assert "including Verifier" in system_prompt
+    assert "at least one supplied Evidence or Gap alias" in system_prompt
+    assert "Numeric aliases alone are insufficient" in system_prompt
+
+    captured_r1_shape = compile_fixture_supervisor_plan(spec)
+    verifier = next(
+        row
+        for row in captured_r1_shape["node_directives"]
+        if row["node_ref"] == "verifier"
+    )
+    verifier["evidence_ids"] = []
+    verifier["numeric_aliases"] = []
+    verifier["gap_ids"] = []
+    with pytest.raises(
+        S2SupervisorRuntimeError,
+        match="s2_06_supervisor_empty_case_authority",
+    ):
+        validate_supervisor_plan(captured_r1_shape, spec)
 
 
 def test_current_citation_and_coverage_findings_have_executable_owners() -> None:
@@ -607,5 +654,5 @@ def test_implementation_record_binds_runtime_and_honest_acceptance_boundary() ->
         binding = record["implementation"][key]
         assert hashlib.sha256((ROOT / binding["ref"]).read_bytes()).hexdigest() == binding["sha256"]
     assert record["verification"]["model_provider_network_calls"] == [0, 0, 0]
-    assert record["stage_acceptance"]["S2_06_shared_zero_call_implementation"] == "engineering_pass"
+    assert record["stage_acceptance"]["S2_06_shared_zero_call_contract_alignment"] == "engineering_pass"
     assert record["stage_acceptance"]["supervised_recoverability"] == "not_proven"

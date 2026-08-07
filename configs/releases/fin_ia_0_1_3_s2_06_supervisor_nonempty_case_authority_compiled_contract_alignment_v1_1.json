@@ -1,0 +1,64 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_supervisor_nonempty_case_authority_compiled_contract_alignment_v1_1",
+  "recorded_at": "2026-08-07",
+  "status": "one_shared_zero_call_contract_alignment_engineering_pass_fresh_proof_and_replacement_authority_pending",
+  "scope": "compile_every_node_nonempty_Evidence_or_Gap_authority_invariant_into_schema_prompt_validator_and_three_case_fixtures",
+  "predecessor_failure_binding": {
+    "ref": "configs/releases/fin_ia_0_1_3_s2_06_dell_supervisor_r1_terminal_and_contract_drift_disposition_v1_0.json",
+    "result_digest": "fa9973626d59cf6de77e8fec9ffb4f33b3eab5658716f599e18aad042bd32023",
+    "issue_id": "RC-P36-147",
+    "failed_attempt_immutable": true,
+    "automatic_replacement_authorized": false
+  },
+  "contract_alignment": {
+    "supervisor_plan_schema_version": "fin_ia_0_1_3_s2_06_supervisor_plan_v1_1",
+    "shared_rule": "every node directive including Verifier must select at least one supplied Evidence or Gap alias; Numeric aliases alone are insufficient",
+    "schema_surface": "node_directives.items.anyOf requires evidence_ids minItems=1 or gap_ids minItems=1",
+    "prompt_surface": "explicit same rule including Verifier and Numeric-only exclusion",
+    "validator_surface": "same Evidence-or-Gap field tuple drives the local nonempty check",
+    "positive_fixture_surface": "DELL_MU_NVDA_all_directives_have_case_authority",
+    "captured_R1_shape_replay": "empty_Verifier_Evidence_and_Gap_rejected_before_any_provider_execution"
+  },
+  "implementation": {
+    "case_scoped_disposition_compiler": {
+      "ref": "src/sec_agent/s2_same_evidence_supervision.py",
+      "sha256": "b803a536b28d4c1893e10bc403561806bdd46192ab9632f92de26d8f8f7bbe72"
+    },
+    "supervisor_and_corrected_candidate_runtime": {
+      "ref": "src/sec_agent/s2_same_evidence_supervisor_runtime.py",
+      "sha256": "6be7df51ff243fd7e208f5a26840bb0f8d00059f220559a82144f6e065d870c2"
+    },
+    "contract_and_mutation_tests": {
+      "ref": "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py",
+      "sha256": "65aac297f4fb516ee389ecab7fa03ec2037dab648e2aafcdb2d3bafecf99c274"
+    }
+  },
+  "verification": {
+    "focused_contract_tests": "20 passed",
+    "broader_s2_05_s2_06_tests": "133 passed / 3201 deselected",
+    "full_fake_cases": ["DELL", "MU", "NVDA"],
+    "captured_R1_shape_replay_cases": ["DELL", "MU", "NVDA"],
+    "cross_case_unknown_alias_and_capacity_mutations_retained": true,
+    "model_provider_network_calls": [0, 0, 0],
+    "admissions_issued": 0,
+    "corrected_paid_candidates": 0,
+    "raw_mutations": 0
+  },
+  "stage_acceptance": {
+    "S2_06_shared_zero_call_contract_alignment": "engineering_pass",
+    "independent_fresh_zero_call_proof": false,
+    "DELL_replacement_authority": false,
+    "DELL_replacement_execution": false,
+    "supervised_recoverability": "not_proven",
+    "business_promotion": false,
+    "release": false
+  },
+  "next_required_sequence": [
+    "commit_and_push_zero_call_alignment",
+    "independent_fresh_zero_call_proof_on_clean_commit",
+    "separate_DELL_replacement_authority_decision",
+    "only_if_authorized_issue_one_fresh_admission_and_execute_exact_once"
+  ],
+  "known_boundary": "This alignment closes the disclosed Prompt/Schema/Validator drift with deterministic evidence only. It does not validate R1, authorize a replacement, prove DeepSeek recoverability, produce a corrected report or allow MU/NVDA execution.",
+  "implementation_digest": "5226d9a2da7e24d01b398b96673fdce541f9373d82f27b2815f405c225a36982"
+}

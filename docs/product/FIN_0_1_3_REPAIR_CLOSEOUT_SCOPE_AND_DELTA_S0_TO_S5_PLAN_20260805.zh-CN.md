@@ -264,6 +264,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-06` DELL Supervisor R1 项目合同漂移终止**：唯一 admission exact-once 消费，SupervisorPlan transport/JSON 正常，`1 call / 1 capture / 9,795 tokens / USD 0.0072278 / 0 retry`。输出的 identity、partition、六个 directive 与 alias 均受控，但 Verifier directive 未选 Evidence/Gap。模型可见 Schema 允许空数组且 Prompt 未声明每 directive 非空，本地 Validator 却隐藏强制非空，故 RC-P36-147 归项目 Prompt/Schema/Validator 漂移，不计为模型能力失败。R1 immutable，candidate=0，MU/NVDA 未启动；只允许一个共享零调用 compiled-contract 修复包，fresh proof 后再单独决定 DELL replacement。
 
+> **2026-08-07 `013-S2-06` Supervisor compiled-contract v1.1 工程通过**：唯一共享零调用包已把每 directive（含 Verifier）至少一条 Evidence-or-Gap 的规则统一编译到 Schema、Prompt、Validator 与三案 fixture，Numeric-only 明确不足；真实 R1 空 Verifier 形状回放与 broad `133 passed`。旧 R1 入口主动失效，外部调用/admission=0。下一步只做 clean commit 独立 fresh proof，再单独决定 DELL replacement；不得直接重跑或启动 MU/NVDA。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。

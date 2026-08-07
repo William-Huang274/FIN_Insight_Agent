@@ -372,6 +372,8 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 
 > **2026-08-08 `013-S1-08Q-H` DELL R2 replacement authority decision**：scoped Project OS preflight pass 后批准最多一次 DELL R2，预算=`<=16 network / 1 doc per query / 0 model-provider-retry / no automatic R3`。旧 R1 result path 已占用，旧 admission 又不绑定 Q-H decision/independent proof，因此当前 `approved but not issuable`；下一项只实现 R2 successor admission/runner 的零调用 binding，之后才能重新 clean preflight、签发和执行。
 
+> **2026-08-08 `013-S1-08` DELL R2 successor engineering pass**：首轮 binding test 发现 Q-H v1.0 的 proof SHA 标签错误，v1.0 未消费即 supersede，v1.1 分开绑定 engineering 与 independent proof SHA。R2-only admission/terminal/namespace/result path、R1 terminal body 重算、decision/proof/catalog/commit binding、shared-ledger-before-DNS、30/300 秒预算和 exact-once 均完成；focused/related=`52 passed`，外部调用/admission=0。下一项仅为 clean-commit zero-call preflight。
+
 > **2026-08-07 用户已选择 SEC contact 路线**：真实联系身份只通过运行时环境注入，不进入 Git 或结果物；SEC 域名无合法 contact 时 fail closed。新增 identity mutation 后 broader=`84 passed`。只授权 new admission 的 1-call Dell SEC v1.3 proof，复用 MU/NVDA 已成功结果；不重跑三案、不进入额外 fallback。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

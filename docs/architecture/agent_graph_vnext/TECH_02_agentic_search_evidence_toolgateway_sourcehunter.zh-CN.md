@@ -698,3 +698,5 @@ transport 必须把 `RemoteDisconnected`、connection reset/abort 等连接终�
 clean `ee5ebf3b...17925` 独立证明由两个 Git archive 与两个 fresh process 完成，每边 `46 passed`，19 个 restricted request object 全部按 digest 复验，proof SHA 与仓库一致。首次 archive 因 Windows CRLF/Git LF 导致 byte mismatch，materializer 固定 LF 后重新双复证通过。该结果将 A..G 提升为 `independently proven`，只允许进入 Q-H authority decision；不能据此声称 live source reachability、target-in-pool、ranking 或研究内容质量通过。
 
 Q-H 已批准一份 DELL R2 replacement authority，但旧 R1 admission/runner 不是合法 successor：旧 output 已物化，且 authority envelope 未绑定 Q-H decision 和 independent proof。执行前必须用新 schema/namespace/result path 建立最小 successor binding，并在任何 network side effect 前用 shared ledger exact-once reserve；这属于 authority control，不是再次修改 SourceHunter 质量逻辑。
+
+R2 successor 已完成零调用实现。authority v1.0 因把 engineering proof SHA 误标为 independent proof SHA 而在测试中 fail closed，未被消费；v1.1 分离两份 SHA。successor admission 绑定 decision/proof/catalog/R1 terminal/commit，并重算 R1 terminal body；runner 把 DNS resolution 留到 shared-ledger reserve 之后，transport 只允许 Codex synthetic range 而非任意 private IP；30 秒 per-call 外再加 300 秒 overall deadline。新 contract/namespace/result path 与 R1 完全分离。

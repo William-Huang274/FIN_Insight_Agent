@@ -30,7 +30,10 @@ TERMINAL_SCHEMA = "fin_ia_0_1_3_s1_08_dell_r3_search_terminal_v1_0"
 CONTRACT_REF = "fin_0_1_3.S1_08.DELL_current_search_R3:v1"
 TERMINAL_NAMESPACE = "fin-0.1.3/s1-08/dell-current-search-r3"
 SUCCESSOR_PREFLIGHT_SCHEMA = (
-    "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_0"
+    "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_1"
+)
+PREDECESSOR_PREFLIGHT_SHA256 = (
+    "fc8fd944bea0cba546aa567f89ac3116d4499bed9ddb43315ddbf4fe0f443c55"
 )
 _DECISION_SCHEMA = (
     "fin_ia_0_1_3_s1_08_v3_dell_r3_fresh_live_authority_decision_v1_0"
@@ -478,11 +481,20 @@ def _validate_successor_preflight(
     sources = successor_preflight.get("source_files") or {}
     bindings = successor_preflight.get("authority_bindings") or {}
     verification = successor_preflight.get("verification") or {}
+    predecessor = successor_preflight.get("predecessor_preflight") or {}
+    governance = successor_preflight.get("governance_requalification") or {}
     valid = (
         successor_preflight.get("schema_version") == SUCCESSOR_PREFLIGHT_SCHEMA
         and successor_preflight.get("status") == "pass"
         and successor_preflight.get("source_commit") == implementation_commit
         and (successor_preflight.get("project_os_preflight") or {}).get("status") == "pass"
+        and predecessor.get("sha256") == PREDECESSOR_PREFLIGHT_SHA256
+        and predecessor.get("schema_version")
+        == "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_0"
+        and governance.get("project_os_preflight_schema")
+        == "fin_insight_project_os_full_chain_preflight_v0_2"
+        and governance.get("run_scope_registry_version") == "v1_0"
+        and governance.get("previous_R3_runtime_contract_compatible") is True
         and sources.get("runtime_sha256") == successor_runtime_sha256
         and sources.get("runner_sha256") == successor_runner_sha256
         and bindings.get("authority_decision_sha256")
@@ -621,6 +633,7 @@ __all__ = [
     "R3AuthorityInputs",
     "S108R3SuccessorError",
     "SUCCESSOR_PREFLIGHT_SCHEMA",
+    "PREDECESSOR_PREFLIGHT_SHA256",
     "TERMINAL_NAMESPACE",
     "TERMINAL_SCHEMA",
     "execute_dell_search_r3",

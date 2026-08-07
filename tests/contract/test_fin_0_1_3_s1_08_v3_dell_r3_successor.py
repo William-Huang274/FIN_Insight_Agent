@@ -16,6 +16,7 @@ from sec_agent.s1_08_r3_successor import (
     DellSearchR3Admission,
     R3AuthorityInputs,
     S108R3SuccessorError,
+    PREDECESSOR_PREFLIGHT_SHA256,
     SUCCESSOR_PREFLIGHT_SCHEMA,
     execute_dell_search_r3,
     project_os_preflight_passed,
@@ -100,6 +101,15 @@ def _preflight(
         "status": "pass",
         "source_commit": COMMIT,
         "project_os_preflight": {"status": "pass"},
+        "predecessor_preflight": {
+            "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_0",
+            "sha256": PREDECESSOR_PREFLIGHT_SHA256,
+        },
+        "governance_requalification": {
+            "project_os_preflight_schema": "fin_insight_project_os_full_chain_preflight_v0_2",
+            "run_scope_registry_version": "v1_0",
+            "previous_R3_runtime_contract_compatible": True,
+        },
         "source_files": {
             "runtime_sha256": sha256_file(RUNTIME_PATH),
             "runner_sha256": sha256_file(RUNNER_PATH),
@@ -391,7 +401,8 @@ def test_R3_runner_is_zero_call_until_explicit_main_and_cannot_reuse_R2(
     assert "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION" in source
     assert "current_source_catalog_relationship_budget_policy_v3_0.json" in source
     assert "current_source_catalog_and_query_revision_policy_v2_0.json" not in source
-    assert "successor_clean_zero_call_preflight_v1_0.json" in source
+    assert "successor_clean_zero_call_preflight_v1_1.json" in source
+    assert "PREDECESSOR_PREFLIGHT_PATH" in source
     assert "socket.getaddrinfo" not in source
     assert 'if __name__ == "__main__"' in source
     assert "implementation_commit=proven_source_commit" in source

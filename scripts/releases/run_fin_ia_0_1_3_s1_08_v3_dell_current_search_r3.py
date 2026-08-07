@@ -34,7 +34,8 @@ DECISION_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_fres
 V3_PROOF_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_v3_clean_independent_zero_call_proof_result_v1_0.json"
 R2_RESULT_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_result_v1_0.json"
 R2_QUALITY_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_source_quality_evaluation_v1_0.json"
-SUCCESSOR_PREFLIGHT_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_0.json"
+PREDECESSOR_PREFLIGHT_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_0.json"
+SUCCESSOR_PREFLIGHT_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_1.json"
 DEFAULT_OUTPUT = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_result_v1_0.json"
 RUNTIME_PATH = REPO_ROOT / "src/sec_agent/s1_08_r3_successor.py"
 RUN_SCOPE = "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION"
@@ -134,6 +135,7 @@ def main() -> int:
         R2_RESULT_PATH,
         R2_QUALITY_PATH,
         SUCCESSOR_PREFLIGHT_PATH,
+        PREDECESSOR_PREFLIGHT_PATH,
         RUNTIME_PATH,
     )
     missing = [str(path) for path in required if not path.is_file()]
@@ -155,6 +157,11 @@ def main() -> int:
     r2_result = _load(R2_RESULT_PATH)
     r2_quality = _load(R2_QUALITY_PATH)
     successor_preflight = _load(SUCCESSOR_PREFLIGHT_PATH)
+    predecessor_preflight_sha = sha256_file(PREDECESSOR_PREFLIGHT_PATH)
+    if predecessor_preflight_sha != str(
+        (successor_preflight.get("predecessor_preflight") or {}).get("sha256") or ""
+    ):
+        raise SystemExit("S1-08 R3 predecessor clean proof binding invalid")
     implementation_bindings = _verify_v3_implementation_bindings(proof)
     decision_sha = sha256_file(DECISION_PATH)
     proof_sha = sha256_file(V3_PROOF_PATH)

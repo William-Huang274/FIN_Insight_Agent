@@ -1,0 +1,144 @@
+{
+  "schema_version": "fin_insight_project_os_run_scope_registry_v1_0",
+  "registry_id": "fin_insight_project_os_run_scope_registry",
+  "registry_version": "v1_0",
+  "adoption_sequence_after_projection": "v2_191",
+  "owner_stages": [
+    "shared",
+    "repository",
+    "S0",
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5"
+  ],
+  "operation_classes": [
+    "namespace",
+    "repository_hygiene",
+    "shared_governance_implementation",
+    "zero_call_authority_decision",
+    "live_search_execution",
+    "ranking_evaluation",
+    "case_transfer",
+    "agentic_research",
+    "release_evaluation",
+    "full_chain"
+  ],
+  "blocker_states": {
+    "open": {"is_open": true},
+    "mitigated_open": {"is_open": true},
+    "blocked_external": {"is_open": true},
+    "closed": {"is_open": false},
+    "superseded": {"is_open": false}
+  },
+  "legacy_compatibility": {
+    "through_sequence_after_projection": "v2_191",
+    "unknown_full_chain_blocker_state": "open",
+    "unknown_non_blocker_state": "closed",
+    "ledger_declared_scope_refs_are_read_only": true,
+    "status_aliases": {
+      "open": "open",
+      "active": "open",
+      "blocked": "open",
+      "blocked_root_cause_unknown": "open",
+      "root_cause_repair_required": "open",
+      "closed": "closed",
+      "superseded": "superseded",
+      "remediated_L2_synthetic_same_kernel_proof_accepted": "closed"
+    }
+  },
+  "scopes": {
+    "broad_full_chain": {
+      "owner_stage": "shared",
+      "operation_class": "full_chain",
+      "parent_scope_id": null,
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S0", "S1", "S2", "S3", "S4", "S5"]
+    },
+    "repository_and_git_hygiene": {
+      "owner_stage": "repository",
+      "operation_class": "repository_hygiene",
+      "parent_scope_id": null,
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "repository", "S0", "S1", "S2", "S3", "S4", "S5"]
+    },
+    "FIN_0_1_3": {
+      "owner_stage": "shared",
+      "operation_class": "namespace",
+      "parent_scope_id": null,
+      "executable": false,
+      "allowed_projection_owner_stages": ["shared", "S0", "S1", "S2", "S3", "S4", "S5"]
+    },
+    "FIN_0_1_3_S0": {
+      "owner_stage": "S0",
+      "operation_class": "namespace",
+      "parent_scope_id": "FIN_0_1_3",
+      "executable": false,
+      "allowed_projection_owner_stages": ["shared", "S0"]
+    },
+    "FIN_0_1_3_S0_04G_TYPED_BLOCKER_STATE_AND_RUN_SCOPE_REGISTRY_MINIMUM_ZERO_CALL_IMPLEMENTATION": {
+      "owner_stage": "S0",
+      "operation_class": "shared_governance_implementation",
+      "parent_scope_id": "FIN_0_1_3_S0",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S0", "S1"]
+    },
+    "FIN_0_1_3_S1_08": {
+      "owner_stage": "S1",
+      "operation_class": "namespace",
+      "parent_scope_id": "FIN_0_1_3",
+      "executable": false,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AUTHORITY_PROJECTION_DECISION": {
+      "owner_stage": "S1",
+      "operation_class": "zero_call_authority_decision",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S0", "S1"]
+    },
+    "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION": {
+      "owner_stage": "S1",
+      "operation_class": "live_search_execution",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "additional_S1_08_live_attempts": {
+      "owner_stage": "S1",
+      "operation_class": "live_search_execution",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "FIN_0_1_3_S1_08_ranking_and_reranker_eval": {
+      "owner_stage": "S1",
+      "operation_class": "ranking_evaluation",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "FIN_0_1_3_S1_08_MU_NVDA_live": {
+      "owner_stage": "S1",
+      "operation_class": "case_transfer",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "FIN_0_1_3_S3_Experiment_B_end_to_end_agentic_research": {
+      "owner_stage": "S3",
+      "operation_class": "agentic_research",
+      "parent_scope_id": "FIN_0_1_3",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1", "S2", "S3"]
+    },
+    "release": {
+      "owner_stage": "S5",
+      "operation_class": "release_evaluation",
+      "parent_scope_id": "FIN_0_1_3",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S0", "S1", "S2", "S3", "S4", "S5"]
+    }
+  }
+}

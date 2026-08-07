@@ -30,6 +30,7 @@ from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger  
 CATALOG_PATH = REPO_ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v2_0.json"
 DECISION_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08q_h_dell_r2_replacement_authority_decision_v1_1.json"
 PROOF_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_independent_fresh_proof_v1_0.json"
+SUCCESSOR_PREFLIGHT_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_r2_successor_clean_zero_call_preflight_v1_0.json"
 R1_RESULT_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_canary_result_v1_0.json"
 DEFAULT_OUTPUT = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_result_v1_0.json"
 RUN_SCOPE = "S1_08_DELL_R2_exact_live_issuance_and_execution"
@@ -84,8 +85,11 @@ def main() -> int:
     catalog = load_source_catalog(CATALOG_PATH)
     decision = _load(DECISION_PATH)
     proof = _load(PROOF_PATH)
+    successor_preflight = _load(SUCCESSOR_PREFLIGHT_PATH)
     r1_result = _load(R1_RESULT_PATH)
     proof_sha = sha256_file(PROOF_PATH)
+    runtime_sha = sha256_file(REPO_ROOT / "src/sec_agent/s1_08_r2_successor.py")
+    runner_sha = sha256_file(Path(__file__))
     head = _git("rev-parse", "HEAD")
     branch = _git("branch", "--show-current")
     started = _utc_now()
@@ -93,6 +97,9 @@ def main() -> int:
         authority_decision=decision,
         independent_proof=proof,
         independent_proof_sha256=proof_sha,
+        successor_preflight=successor_preflight,
+        successor_runtime_sha256=runtime_sha,
+        successor_runner_sha256=runner_sha,
         r1_result=r1_result,
         catalog=catalog,
         implementation_commit=head,
@@ -113,6 +120,9 @@ def main() -> int:
         authority_decision=decision,
         independent_proof=proof,
         independent_proof_sha256=proof_sha,
+        successor_preflight=successor_preflight,
+        successor_runtime_sha256=runtime_sha,
+        successor_runner_sha256=runner_sha,
         r1_result=r1_result,
         catalog_path=CATALOG_PATH,
         runtime_root=runtime_root,

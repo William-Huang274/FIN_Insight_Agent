@@ -46,6 +46,9 @@ class DellSearchR2Admission:
     authority_decision_digest: str
     independent_proof_digest: str
     independent_proof_sha256: str
+    successor_preflight_digest: str
+    successor_runtime_sha256: str
+    successor_runner_sha256: str
     r1_terminal_digest: str
     catalog_digest: str
     implementation_commit: str
@@ -67,6 +70,9 @@ class DellSearchR2Admission:
         authority_decision: Mapping[str, Any],
         independent_proof: Mapping[str, Any],
         independent_proof_sha256: str,
+        successor_preflight: Mapping[str, Any],
+        successor_runtime_sha256: str,
+        successor_runner_sha256: str,
         r1_result: Mapping[str, Any],
         catalog: Mapping[str, Any],
         implementation_commit: str,
@@ -80,6 +86,11 @@ class DellSearchR2Admission:
             independent_proof_sha256=independent_proof_sha256,
             r1_result=r1_result,
         )
+        _validate_successor_preflight(
+            successor_preflight=successor_preflight,
+            successor_runtime_sha256=successor_runtime_sha256,
+            successor_runner_sha256=successor_runner_sha256,
+        )
         authority = authority_decision["replacement_authority"]
         body = {
             "schema_version": ADMISSION_SCHEMA,
@@ -87,6 +98,9 @@ class DellSearchR2Admission:
             "authority_decision_digest": canonical_digest(authority_decision),
             "independent_proof_digest": canonical_digest(independent_proof),
             "independent_proof_sha256": independent_proof_sha256,
+            "successor_preflight_digest": canonical_digest(successor_preflight),
+            "successor_runtime_sha256": successor_runtime_sha256,
+            "successor_runner_sha256": successor_runner_sha256,
             "r1_terminal_digest": str(r1_result["result"]["terminal_digest"]),
             "catalog_digest": canonical_digest(catalog),
             "implementation_commit": implementation_commit,
@@ -114,6 +128,9 @@ class DellSearchR2Admission:
         authority_decision: Mapping[str, Any],
         independent_proof: Mapping[str, Any],
         independent_proof_sha256: str,
+        successor_preflight: Mapping[str, Any],
+        successor_runtime_sha256: str,
+        successor_runner_sha256: str,
         r1_result: Mapping[str, Any],
         catalog: Mapping[str, Any],
         observed_at: str,
@@ -124,6 +141,11 @@ class DellSearchR2Admission:
             independent_proof=independent_proof,
             independent_proof_sha256=independent_proof_sha256,
             r1_result=r1_result,
+        )
+        _validate_successor_preflight(
+            successor_preflight=successor_preflight,
+            successor_runtime_sha256=successor_runtime_sha256,
+            successor_runner_sha256=successor_runner_sha256,
         )
         body = self.as_dict()
         body.pop("admission_id")
@@ -137,6 +159,9 @@ class DellSearchR2Admission:
             and self.authority_decision_digest == canonical_digest(authority_decision)
             and self.independent_proof_digest == canonical_digest(independent_proof)
             and self.independent_proof_sha256 == independent_proof_sha256
+            and self.successor_preflight_digest == canonical_digest(successor_preflight)
+            and self.successor_runtime_sha256 == successor_runtime_sha256
+            and self.successor_runner_sha256 == successor_runner_sha256
             and self.r1_terminal_digest == str(r1_result["result"]["terminal_digest"])
             and self.catalog_digest == canonical_digest(catalog)
             and self.implementation_commit == implementation_commit
@@ -202,6 +227,9 @@ def execute_dell_search_r2(
     authority_decision: Mapping[str, Any],
     independent_proof: Mapping[str, Any],
     independent_proof_sha256: str,
+    successor_preflight: Mapping[str, Any],
+    successor_runtime_sha256: str,
+    successor_runner_sha256: str,
     r1_result: Mapping[str, Any],
     catalog_path: str | Path,
     runtime_root: str | Path,
@@ -217,6 +245,9 @@ def execute_dell_search_r2(
         authority_decision=authority_decision,
         independent_proof=independent_proof,
         independent_proof_sha256=independent_proof_sha256,
+        successor_preflight=successor_preflight,
+        successor_runtime_sha256=successor_runtime_sha256,
+        successor_runner_sha256=successor_runner_sha256,
         r1_result=r1_result,
         catalog=catalog,
         observed_at=observed_at,
@@ -239,6 +270,7 @@ def execute_dell_search_r2(
         "admission_digest": admission.admission_digest,
         "authority_decision_digest": admission.authority_decision_digest,
         "independent_proof_digest": admission.independent_proof_digest,
+        "successor_preflight_digest": admission.successor_preflight_digest,
         "r1_terminal_digest": admission.r1_terminal_digest,
         "case_key": "DELL",
         "attempt_label": "R2",
@@ -311,6 +343,9 @@ def execute_dell_search_r2(
         "admission_digest": admission.admission_digest,
         "authority_decision_digest": admission.authority_decision_digest,
         "independent_proof_digest": admission.independent_proof_digest,
+        "successor_preflight_digest": admission.successor_preflight_digest,
+        "successor_runtime_sha256": admission.successor_runtime_sha256,
+        "successor_runner_sha256": admission.successor_runner_sha256,
         "r1_terminal_digest": admission.r1_terminal_digest,
         "case_key": "DELL",
         "status": status,
@@ -351,6 +386,28 @@ def execute_dell_search_r2(
 
 def sha256_file(path: str | Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def _validate_successor_preflight(
+    *,
+    successor_preflight: Mapping[str, Any],
+    successor_runtime_sha256: str,
+    successor_runner_sha256: str,
+) -> None:
+    sources = successor_preflight.get("source_files") or {}
+    valid = (
+        successor_preflight.get("schema_version")
+        == "fin_ia_0_1_3_s1_08_dell_r2_successor_clean_zero_call_preflight_v1_0"
+        and successor_preflight.get("status") == "pass"
+        and (successor_preflight.get("project_os_preflight") or {}).get("status") == "pass"
+        and (successor_preflight.get("verification") or {}).get("tests_passed") == 53
+        and (successor_preflight.get("verification") or {}).get("external_calls") == 0
+        and sources.get("runtime_sha256") == successor_runtime_sha256
+        and sources.get("runner_sha256") == successor_runner_sha256
+        and all(len(value) == 64 for value in (successor_runtime_sha256, successor_runner_sha256))
+    )
+    if not valid:
+        raise S108R2SuccessorError("s1_08_dell_r2_successor_preflight_invalid")
 
 
 def _validate_authority_sources(

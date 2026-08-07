@@ -28,6 +28,8 @@ DECISION_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08q_h_dell_r2_replaceme
 PROOF_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_independent_fresh_proof_v1_0.json"
 R1_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_canary_result_v1_0.json"
 R2_OUTPUT = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_result_v1_0.json"
+RUNTIME_PATH = ROOT / "src/sec_agent/s1_08_r2_successor.py"
+RUNNER_PATH = ROOT / "scripts/releases/run_fin_ia_0_1_3_s1_08_dell_current_search_r2.py"
 COMMIT = "c" * 40
 ISSUED = "2026-08-08T02:00:00Z"
 EXPIRES = "2026-08-08T03:00:00Z"
@@ -42,6 +44,9 @@ def _admission() -> DellSearchR2Admission:
         authority_decision=_load(DECISION_PATH),
         independent_proof=_load(PROOF_PATH),
         independent_proof_sha256=sha256_file(PROOF_PATH),
+        successor_preflight=_preflight(),
+        successor_runtime_sha256=sha256_file(RUNTIME_PATH),
+        successor_runner_sha256=sha256_file(RUNNER_PATH),
         r1_result=_load(R1_PATH),
         catalog=load_source_catalog(CATALOG_PATH),
         implementation_commit=COMMIT,
@@ -49,6 +54,19 @@ def _admission() -> DellSearchR2Admission:
         issued_at=ISSUED,
         expires_at=EXPIRES,
     )
+
+
+def _preflight() -> dict:
+    return {
+        "schema_version": "fin_ia_0_1_3_s1_08_dell_r2_successor_clean_zero_call_preflight_v1_0",
+        "status": "pass",
+        "project_os_preflight": {"status": "pass"},
+        "source_files": {
+            "runtime_sha256": sha256_file(RUNTIME_PATH),
+            "runner_sha256": sha256_file(RUNNER_PATH),
+        },
+        "verification": {"tests_passed": 53, "external_calls": 0},
+    }
 
 
 class _EmptyOfficialTransport:
@@ -96,6 +114,9 @@ def test_R2_admission_binds_decision_proof_R1_and_budget_without_secret() -> Non
         authority_decision=_load(DECISION_PATH),
         independent_proof=_load(PROOF_PATH),
         independent_proof_sha256=sha256_file(PROOF_PATH),
+        successor_preflight=_preflight(),
+        successor_runtime_sha256=sha256_file(RUNTIME_PATH),
+        successor_runner_sha256=sha256_file(RUNNER_PATH),
         r1_result=_load(R1_PATH),
         catalog=load_source_catalog(CATALOG_PATH),
         observed_at="2026-08-08T02:30:00Z",
@@ -116,12 +137,36 @@ def test_R2_admission_source_or_commit_drift_fails_closed() -> None:
             authority_decision=_load(DECISION_PATH),
             independent_proof=_load(PROOF_PATH),
             independent_proof_sha256=sha256_file(PROOF_PATH),
+            successor_preflight=_preflight(),
+            successor_runtime_sha256=sha256_file(RUNTIME_PATH),
+            successor_runner_sha256=sha256_file(RUNNER_PATH),
             r1_result=_load(R1_PATH),
             catalog=load_source_catalog(CATALOG_PATH),
             observed_at="2026-08-08T02:30:00Z",
             implementation_commit=COMMIT,
         )
     assert exc.value.code == "s1_08_dell_r2_admission_invalid"
+
+
+def test_R2_successor_preflight_source_drift_fails_before_issuance() -> None:
+    preflight = _preflight()
+    preflight["source_files"]["runtime_sha256"] = "0" * 64
+    with pytest.raises(S108R2SuccessorError) as exc:
+        DellSearchR2Admission.issue(
+            authority_decision=_load(DECISION_PATH),
+            independent_proof=_load(PROOF_PATH),
+            independent_proof_sha256=sha256_file(PROOF_PATH),
+            successor_preflight=preflight,
+            successor_runtime_sha256=sha256_file(RUNTIME_PATH),
+            successor_runner_sha256=sha256_file(RUNNER_PATH),
+            r1_result=_load(R1_PATH),
+            catalog=load_source_catalog(CATALOG_PATH),
+            implementation_commit=COMMIT,
+            run_nonce="drifted-preflight",
+            issued_at=ISSUED,
+            expires_at=EXPIRES,
+        )
+    assert exc.value.code == "s1_08_dell_r2_successor_preflight_invalid"
 
 
 def test_R1_terminal_body_mutation_fails_before_R2_issuance() -> None:
@@ -132,6 +177,9 @@ def test_R1_terminal_body_mutation_fails_before_R2_issuance() -> None:
             authority_decision=_load(DECISION_PATH),
             independent_proof=_load(PROOF_PATH),
             independent_proof_sha256=sha256_file(PROOF_PATH),
+            successor_preflight=_preflight(),
+            successor_runtime_sha256=sha256_file(RUNTIME_PATH),
+            successor_runner_sha256=sha256_file(RUNNER_PATH),
             r1_result=r1,
             catalog=load_source_catalog(CATALOG_PATH),
             implementation_commit=COMMIT,
@@ -153,6 +201,9 @@ def test_missing_contact_stops_before_R2_ledger_consumption(tmp_path, monkeypatc
             authority_decision=_load(DECISION_PATH),
             independent_proof=_load(PROOF_PATH),
             independent_proof_sha256=sha256_file(PROOF_PATH),
+            successor_preflight=_preflight(),
+            successor_runtime_sha256=sha256_file(RUNTIME_PATH),
+            successor_runner_sha256=sha256_file(RUNNER_PATH),
             r1_result=_load(R1_PATH),
             catalog_path=CATALOG_PATH,
             runtime_root=tmp_path / "runtime",
@@ -178,6 +229,9 @@ def test_R2_exact_once_terminal_preserves_authority_lineage(tmp_path, monkeypatc
         authority_decision=_load(DECISION_PATH),
         independent_proof=_load(PROOF_PATH),
         independent_proof_sha256=sha256_file(PROOF_PATH),
+        successor_preflight=_preflight(),
+        successor_runtime_sha256=sha256_file(RUNTIME_PATH),
+        successor_runner_sha256=sha256_file(RUNNER_PATH),
         r1_result=_load(R1_PATH),
         catalog_path=CATALOG_PATH,
         runtime_root=tmp_path / "runtime",
@@ -202,6 +256,9 @@ def test_R2_exact_once_terminal_preserves_authority_lineage(tmp_path, monkeypatc
             authority_decision=_load(DECISION_PATH),
             independent_proof=_load(PROOF_PATH),
             independent_proof_sha256=sha256_file(PROOF_PATH),
+            successor_preflight=_preflight(),
+            successor_runtime_sha256=sha256_file(RUNTIME_PATH),
+            successor_runner_sha256=sha256_file(RUNNER_PATH),
             r1_result=_load(R1_PATH),
             catalog_path=CATALOG_PATH,
             runtime_root=tmp_path / "runtime-2",

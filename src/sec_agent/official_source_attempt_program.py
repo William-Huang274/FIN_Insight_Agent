@@ -28,6 +28,7 @@ CAPTURE_SCHEMA = "fin_ia_0_1_3_official_source_capture_v1_0"
 CAPTURE_NAMESPACE = "fin-0.1.3/s1-03/official-source-captures"
 _SAFE_HEADERS = {"content-type", "content-length", "last-modified", "etag", "location"}
 _CASES = {"DELL", "MU", "NVDA"}
+_CONTACT_EMAIL_RE = re.compile(r"(?i)(?<![A-Z0-9._%+-])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?![A-Z0-9._%+-])")
 
 
 class OfficialSourceAttemptError(RuntimeError):
@@ -182,6 +183,9 @@ class UrllibOfficialSourceTransport:
         parsed = urlparse(url)
         if parsed.scheme != "https" or (parsed.hostname or "").lower() not in allowed_hosts:
             raise OfficialSourceAttemptError("official_source_url_not_allowlisted")
+        hostname = (parsed.hostname or "").lower()
+        if (hostname == "sec.gov" or hostname.endswith(".sec.gov")) and not _sec_contact_declared(headers):
+            raise OfficialSourceAttemptError("official_source_sec_contact_required")
         _require_public_network_host(parsed.hostname or "")
         redirect_handler = _RecordingRedirectHandler(allowed_hosts)
         opener = build_opener(redirect_handler)
@@ -264,7 +268,7 @@ class CaptureFirstOfficialSourceClient:
     ) -> tuple[SourceResponse | None, dict[str, Any]]:
         headers = {
             "Accept": "application/json,text/html,application/pdf;q=0.9,*/*;q=0.1",
-            "User-Agent": "FIN-Insight-Agent/0.1.3 research contact=local-operator",
+            "User-Agent": _official_source_user_agent(),
         }
         request_capture = {
             "schema_version": CAPTURE_SCHEMA,
@@ -274,6 +278,7 @@ class CaptureFirstOfficialSourceClient:
             "method": "GET",
             "url": url,
             "headers": headers,
+            "operator_contact_configured": _sec_contact_declared(headers),
             "credential_cookie_authorization_present": False,
         }
         request_ref = self._persist(request_capture, "official_source_request")
@@ -349,6 +354,21 @@ class CaptureFirstOfficialSourceClient:
             raise OfficialSourceAttemptError("official_source_capture_readback_failed")
         self.capture_refs.append(ref)
         return ref
+
+
+def _official_source_user_agent() -> str:
+    contact = str(os.environ.get("FINSIGHT_SEC_CONTACT_EMAIL") or "").strip()
+    if contact and _CONTACT_EMAIL_RE.fullmatch(contact):
+        return f"FIN-Insight-Agent/0.1.3 contact={contact}"
+    return "FIN-Insight-Agent/0.1.3 research contact=local-operator"
+
+
+def _sec_contact_declared(headers: Mapping[str, str]) -> bool:
+    user_agent = next(
+        (str(value) for key, value in headers.items() if str(key).lower() == "user-agent"),
+        "",
+    )
+    return _CONTACT_EMAIL_RE.search(user_agent) is not None
 
 
 def _require_public_network_host(hostname: str) -> None:

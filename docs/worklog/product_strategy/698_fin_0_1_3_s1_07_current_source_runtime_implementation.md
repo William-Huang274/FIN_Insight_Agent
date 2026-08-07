@@ -66,3 +66,15 @@ Dell-only successor 使用 new commit/admission，仅执行 1 call、0 retry。S
 - 模型/Provider/retry=`0/0/0`。
 
 按已冻结边界停止，不进入 R4，S1-07 不通过。下一项只能是零调用处置决策：配置可审计、非伪造的 SEC contact User-Agent，或实现 Dell IR 的 browser/CDN adapter。不能在没有合法身份配置的情况下虚构邮箱，也不能继续盲目重试或提高 timeout。
+
+## 8. 用户选择 SEC contact identity 路线
+
+用户明确提供真实联系邮箱并授权使用。隐私与审计边界：
+
+- 邮箱明文只通过进程环境变量 `FINSIGHT_SEC_CONTACT_EMAIL` 注入；
+- 不写入代码、Git 文档、版本化 config、result JSON、admission 或普通 telemetry；
+- 本机 ignored/restricted `.codex_runtime` raw request capture 保留实际 User-Agent，满足 capture-first 审计；
+- SEC 域名在缺少格式有效 contact 时 typed fail before HTTP；
+- 模型或普通 MCP argument 不能设置/伪造该身份。
+
+新增 missing/invalid/valid contact mutation 后 broader=`84 passed`。Dell recovery runner 已改为消费 immutable v1.2，输出新 v1.3，new commit/admission，仅允许 1 call/0 retry。MU/NVDA 不重跑。成功后才关闭 S1-07；失败不再自动扩展。

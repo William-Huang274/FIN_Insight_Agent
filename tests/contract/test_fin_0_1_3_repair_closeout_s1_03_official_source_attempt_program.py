@@ -21,6 +21,8 @@ from sec_agent.official_source_attempt_program import (
     parse_source_document,
     validate_official_source_attempt_program,
     _require_public_network_host,
+    _official_source_user_agent,
+    _sec_contact_declared,
 )
 from sec_agent.shared_admission_ledger import (
     SharedAdmissionConsumptionLedger,
@@ -164,6 +166,17 @@ def test_synthetic_dns_requires_explicit_runtime_mode(monkeypatch) -> None:
         _require_public_network_host("investor.example.com")
     monkeypatch.setenv("FINSIGHT_ALLOW_SYNTHETIC_DNS", "1")
     _require_public_network_host("investor.example.com")
+
+
+def test_SEC_contact_identity_is_runtime_only_and_fail_closed(monkeypatch) -> None:
+    monkeypatch.delenv("FINSIGHT_SEC_CONTACT_EMAIL", raising=False)
+    assert _sec_contact_declared({"User-Agent": _official_source_user_agent()}) is False
+    monkeypatch.setenv("FINSIGHT_SEC_CONTACT_EMAIL", "invalid-contact")
+    assert _sec_contact_declared({"User-Agent": _official_source_user_agent()}) is False
+    monkeypatch.setenv("FINSIGHT_SEC_CONTACT_EMAIL", "operator@example.com")
+    user_agent = _official_source_user_agent()
+    assert user_agent == "FIN-Insight-Agent/0.1.3 contact=operator@example.com"
+    assert _sec_contact_declared({"User-Agent": user_agent}) is True
 
 
 def test_validator_rejects_false_promotion(tmp_path: Path) -> None:

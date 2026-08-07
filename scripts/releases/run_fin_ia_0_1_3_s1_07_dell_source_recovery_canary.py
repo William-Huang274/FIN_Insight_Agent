@@ -5,6 +5,7 @@ import ipaddress
 import json
 import os
 from pathlib import Path
+import re
 import socket
 import subprocess
 import sys
@@ -21,9 +22,11 @@ from sec_agent.mcp_operational import McpToolProcessSupervisor  # noqa: E402
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger  # noqa: E402
 
 
-PRIOR = REPO_ROOT / "configs" / "releases" / "fin_ia_0_1_3_s1_07_current_source_canary_result_v1_1.json"
-OUTPUT = REPO_ROOT / "configs" / "releases" / "fin_ia_0_1_3_s1_07_current_source_canary_result_v1_2.json"
-SCOPE = "fin_0_1_3.S1_07.dell_official_source_recovery_canary:v1"
+PRIOR = REPO_ROOT / "configs" / "releases" / "fin_ia_0_1_3_s1_07_current_source_canary_result_v1_2.json"
+OUTPUT = REPO_ROOT / "configs" / "releases" / "fin_ia_0_1_3_s1_07_current_source_canary_result_v1_3.json"
+SCOPE = "fin_0_1_3.S1_07.dell_SEC_contact_identity_recovery_canary:v1"
+CONTACT_ENV = "FINSIGHT_SEC_CONTACT_EMAIL"
+CONTACT_RE = re.compile(r"(?i)[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}")
 DELL_ROUTE = {
     "url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199625000034/dell-20250131.htm",
     "domain": "www.sec.gov",
@@ -90,8 +93,11 @@ def main() -> int:
         row = prior["results"][case_key]
         if row.get("status") != "ok" or row.get("promotion_decision") != "promote_parsed_evidence":
             raise SystemExit(f"S1-07 prior {case_key} success cannot be reused")
-    if prior["results"]["DELL"].get("error") != "official_source_transport_failed":
-        raise SystemExit("S1-07 Dell recovery root cause does not match R2")
+    if prior["results"]["DELL"].get("error") != "official_source_http_403":
+        raise SystemExit("S1-07 Dell recovery root cause does not match the immutable SEC 403 result")
+    contact = str(os.environ.get(CONTACT_ENV) or "").strip()
+    if not CONTACT_RE.fullmatch(contact):
+        raise SystemExit("S1-07 Dell SEC recovery requires a valid runtime contact email")
 
     head = _git("rev-parse", "HEAD")
     branch = _git("branch", "--show-current")
@@ -105,7 +111,8 @@ def main() -> int:
         "retry_ceiling": 0,
         "model_calls": 0,
         "provider_calls": 0,
-        "run_nonce": "fin013_s1_07_dell_official_source_recovery_v1",
+        "SEC_contact_identity": {"configured": True, "source": f"runtime_env:{CONTACT_ENV}", "plaintext_persisted": False},
+        "run_nonce": "fin013_s1_07_dell_SEC_contact_identity_recovery_v1",
     }
     admission_digest = canonical_digest(authority_body)
     admission_id = f"fin013_s1_07_dell_admission_{admission_digest[:20]}"
@@ -165,7 +172,7 @@ def main() -> int:
     status = "pass" if all(checks.values()) else "fail"
     combined = {"DELL": dell, "MU": prior["results"]["MU"], "NVDA": prior["results"]["NVDA"]}
     body = {
-        "schema_version": "fin_ia_0_1_3_s1_07_current_source_canary_result_v1_2",
+        "schema_version": "fin_ia_0_1_3_s1_07_current_source_canary_result_v1_3",
         "status": status,
         "git": {"branch": branch, "commit": head, "clean_and_synced_at_start": True},
         "authority": {**authority_body, "admission_id": admission_id, "admission_digest": admission_digest, "run_id": run_id, "attempt_id": attempt_id},
@@ -174,8 +181,8 @@ def main() -> int:
         "checks": checks,
         "active_worker_pid_before_close": active_pid,
         "scope": {"new_network_calls": 1, "reused_successful_routes": 2, "retry_calls": 0, "model_calls": 0, "provider_calls": 0, "business_artifact_promotions": 0},
-        "transport_environment": {"synthetic_dns_mode": synthetic_dns_mode, "safety_boundary": "explicit hostname allowlist plus HTTPS certificate validation remains required"},
-        "known_boundary": "This successor reuses immutable MU/NVDA R2 successes and adds one Dell SEC official fallback. It does not prove broad crawling, retrieval quality, research synthesis, model quality or release readiness.",
+        "transport_environment": {"synthetic_dns_mode": synthetic_dns_mode, "SEC_contact_configured": True, "SEC_contact_plaintext_persisted": False, "safety_boundary": "explicit hostname allowlist plus HTTPS certificate validation remains required"},
+        "known_boundary": "This successor reuses immutable MU/NVDA successes and adds one Dell SEC request with an operator-supplied runtime contact identity. It does not prove broad crawling, retrieval quality, research synthesis, model quality or release readiness.",
     }
     terminal_digest = canonical_digest(body)
     receipt = ledger.finalize(

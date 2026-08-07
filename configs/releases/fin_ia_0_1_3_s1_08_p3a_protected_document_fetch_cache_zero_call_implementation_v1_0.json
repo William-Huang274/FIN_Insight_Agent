@@ -1,0 +1,85 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_p3a_protected_document_fetch_cache_zero_call_implementation_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08-P3A",
+  "status": "working_tree_zero_call_engineering_pass_clean_archive_fresh_process_proof_pending",
+  "implementation_base_commit": "d83da72551be04a1d15fbe46b73e885d38605ca8",
+  "project_os_preflight": {
+    "run_scope": "S1_08_P3A_PROTECTED_DOCUMENT_FETCH_BUDGET_AND_ATTEMPT_LOCAL_CACHE_ZERO_CALL_IMPLEMENTATION_AND_PROOF",
+    "status": "pass",
+    "open_full_chain_blocker_count": 0,
+    "contract_error_count": 0
+  },
+  "authority_binding": {
+    "P3_decision_ref": "configs/releases/fin_ia_0_1_3_s1_08_p3_post_r3_owned_scheduler_cache_and_provider_product_scope_disposition_decision_v1_0.json",
+    "P3_decision_sha256": "57e80147f657a62fd83dfef019bd5190e8a03dded90c60608484c97262970f9f",
+    "P3_decision_digest": "d3ba29f87621b34b1339e25fe94982aea01a7104c0f97b72b9d1f6421cfc8f16",
+    "authorized_scope_only": "S1_08_P3A_PROTECTED_DOCUMENT_FETCH_BUDGET_AND_ATTEMPT_LOCAL_CACHE_ZERO_CALL_IMPLEMENTATION_AND_PROOF"
+  },
+  "v4_successor": {
+    "catalog_ref": "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_protected_fetch_cache_policy_v4_0.json",
+    "catalog_sha256": "bae1f00ab8b9738d96d40e0331c50fc146ca551707eeb0733e0ae646202ef3c8",
+    "candidate_runtime_ref": "src/sec_agent/s1_08_candidate_generation_runtime_v4.py",
+    "candidate_runtime_sha256": "cdff541ff2f9e5cb9bfadd0f8d8829c5add624e1c51df99b27e46ed5bfd211c0",
+    "official_adapter_ref": "src/sec_agent/s1_08_official_discovery_adapter_v4.py",
+    "official_adapter_sha256": "bcd8f66104dd1fcf856b05a00c07f760171e281836100a28adbb0c1308906d5a",
+    "contract_test_ref": "tests/contract/test_fin_0_1_3_s1_08_p3a_protected_document_fetch_and_cache_v4.py",
+    "contract_test_sha256": "2d6813b85678ad58628d8a35ed99b9043178c10143af5ab4149cb6ae7212a780",
+    "contract_ref": "fin_0_1_3.S1_08.current_source_catalog_relationship_budget_candidate_generation:v4",
+    "global_network_call_ceiling": 16,
+    "minimum_protected_document_fetch_opportunity_per_eligible_attempt": 1,
+    "all_real_requests_share_global_ceiling": true,
+    "pre_request_local_stop_cross_attempt_cacheable": false,
+    "typed_cache_lineage_schema": "fin_ia_0_1_3_s1_08_typed_fetch_cache_lineage_v1_0"
+  },
+  "immutable_predecessor": {
+    "v3_catalog_sha256": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851",
+    "v3_candidate_runtime_sha256": "441718f5818a4eace201af19cb7a10edbb2a373ad4603376337f43aecda15f42",
+    "v3_official_adapter_sha256": "aa55bc8f60591fab12d20fc271e705908afb91df093a5a56d529f490774fc294",
+    "R3_result_sha256": "731885330176f1d3a428ed3cdf62315e34c345f457ba39b749d60802d9c6b1d5",
+    "R3_quality_evaluation_sha256": "b8af0d6e6a573ce2365d544972bfb74bbdf6ba8927c4a29f1d33cae8a6b6c5f2",
+    "byte_drift": 0
+  },
+  "implementation_behavior": {
+    "qualified_locator_with_remaining_attempt_capacity_receives_document_fetch_opportunity": true,
+    "discovery_cannot_consume_protected_document_capacity": true,
+    "pre_request_global_slot_document_cancel_or_local_timeout_stop_is_attempt_local_noncacheable": true,
+    "landing_or_structured_traversal_incomplete_after_local_stop_is_not_cross_attempt_cached": true,
+    "captured_remote_success_failure_parser_success_parser_failure_and_local_stop_are_typed_separately": true,
+    "captured_remote_failure_is_reused_without_identical_retry": true,
+    "numeric_authority_cannot_be_claimed_by_source_candidate": true,
+    "historical_v3_modules_rewritten": false
+  },
+  "verification": {
+    "focused_P3A_tests_passed": 22,
+    "legacy_S1_08_tests_passed": 70,
+    "combined_tests_passed": 92,
+    "tests_failed": 0,
+    "tests_skipped": 0,
+    "compileall": "pass",
+    "R3_immutable_capture_request_outcome_pairs": 13,
+    "R3_natural_topology": "landing_then_structured_routes_then_one_document_request",
+    "allowance_permutations": [2, 3, 4],
+    "locator_permutation_stable": true,
+    "cross_slot_negative_cache_poisoning": "rejected",
+    "DELL_MU_NVDA_full_fake": "pass_under_8_simulated_budget_calls_each",
+    "identity_currentness_relationship_numeric_lineage_mutations": "fail_closed",
+    "external_network_model_provider_retry_admission_live_calls": [0, 0, 0, 0, 0, 0]
+  },
+  "development_finding": {
+    "initial_approach": "add v4 branches to the two v3 SHA-bound modules",
+    "guard_result": "six historical R3 successor tests failed on exact source SHA drift",
+    "disposition": "restore both v3 modules byte-for-byte and implement a true successor v4 in separate modules",
+    "external_calls_or_historical_artifact_mutation": [0, 0]
+  },
+  "decision": {
+    "working_tree_engineering": "pass",
+    "clean_archive_fresh_process_proof": false,
+    "P3A_complete": false,
+    "new_live_authority": false,
+    "provider_acquisition_authorized": false,
+    "ranking_MU_NVDA_Experiment_B_S3_S4_S5_authorized": [false, false, false, false, false, false, false]
+  },
+  "known_boundary": "Working-tree tests prove the successor behavior only in the current checkout. P3A remains incomplete until this exact v4 source is committed and reproduced from a clean Git archive/fresh Python process with immutable R3 capture input hashes unchanged. Even a passing clean proof creates no live authority or product source-quality claim.",
+  "current_next": "COMMIT_PUSH_THEN_S1_08_P3A_CLEAN_ARCHIVE_FRESH_PROCESS_ZERO_CALL_PROOF"
+}

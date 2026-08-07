@@ -1,0 +1,201 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_06_mcp_operational_truth_proof_v1_0",
+  "status": "pass",
+  "git": {
+    "branch": "codex/layered-data-source-expansion",
+    "commit": "ab638c380ad366f33e16103f16a282c7011789cd",
+    "clean_at_start": true
+  },
+  "scope": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "external_network_calls": 0,
+    "local_source_handlers": [
+      "sec_search_filings",
+      "sec_query_exact_value_ledger",
+      "market_get_snapshot"
+    ],
+    "quality_claim": "operational_only_bm25_quality_deferred_to_S1_08"
+  },
+  "registry": {
+    "contract_tool_names": [
+      "industry_get_snapshot",
+      "market_get_snapshot",
+      "relationship_graph_lookup",
+      "run_inspect_artifacts",
+      "run_read_artifact",
+      "sec_milvus_semantic_search",
+      "sec_query_exact_value_ledger",
+      "sec_search_filings",
+      "web_evidence_snapshot"
+    ],
+    "server_tool_names": [
+      "industry_get_snapshot",
+      "market_get_snapshot",
+      "relationship_graph_lookup",
+      "run_inspect_artifacts",
+      "run_read_artifact",
+      "sec_milvus_semantic_search",
+      "sec_query_exact_value_ledger",
+      "sec_search_filings",
+      "web_evidence_snapshot"
+    ]
+  },
+  "results": {
+    "sec_cold": {
+      "status": "ok",
+      "error": null,
+      "row_count": 4,
+      "start_kind": "cold",
+      "worker_pid": 5180,
+      "elapsed_ms": 13750,
+      "terminal_status": "pass",
+      "phases": [
+        {
+          "phase": "resource_binding",
+          "status": "pass",
+          "elapsed_ms": 1
+        },
+        {
+          "phase": "worker_start",
+          "status": "pass",
+          "elapsed_ms": 338
+        },
+        {
+          "phase": "handler_execution",
+          "status": "pass",
+          "elapsed_ms": 13411
+        }
+      ],
+      "resource_binding_status": "pass",
+      "context_reranker": "none",
+      "context_cache_hit": false,
+      "candidate_sent_to_bge": 0
+    },
+    "sec_warm": {
+      "status": "ok",
+      "error": null,
+      "row_count": 4,
+      "start_kind": "warm",
+      "worker_pid": 5180,
+      "elapsed_ms": 104,
+      "terminal_status": "pass",
+      "phases": [
+        {
+          "phase": "resource_binding",
+          "status": "pass",
+          "elapsed_ms": 1
+        },
+        {
+          "phase": "worker_start",
+          "status": "pass",
+          "elapsed_ms": 0
+        },
+        {
+          "phase": "handler_execution",
+          "status": "pass",
+          "elapsed_ms": 103
+        }
+      ],
+      "resource_binding_status": "pass",
+      "context_reranker": "none",
+      "context_cache_hit": true,
+      "candidate_sent_to_bge": 0
+    },
+    "exact_ledger": {
+      "status": "ok",
+      "error": null,
+      "row_count": 1,
+      "start_kind": "warm",
+      "worker_pid": 5180,
+      "elapsed_ms": 1317,
+      "terminal_status": "pass",
+      "phases": [
+        {
+          "phase": "resource_binding",
+          "status": "pass",
+          "elapsed_ms": 0
+        },
+        {
+          "phase": "worker_start",
+          "status": "pass",
+          "elapsed_ms": 0
+        },
+        {
+          "phase": "handler_execution",
+          "status": "pass",
+          "elapsed_ms": 1317
+        }
+      ],
+      "resource_binding_status": "pass",
+      "context_reranker": null,
+      "context_cache_hit": null,
+      "candidate_sent_to_bge": null
+    },
+    "market": {
+      "status": "ok",
+      "error": null,
+      "row_count": 1,
+      "start_kind": "warm",
+      "worker_pid": 5180,
+      "elapsed_ms": 3,
+      "terminal_status": "pass",
+      "phases": [
+        {
+          "phase": "resource_binding",
+          "status": "pass",
+          "elapsed_ms": 1
+        },
+        {
+          "phase": "worker_start",
+          "status": "pass",
+          "elapsed_ms": 0
+        },
+        {
+          "phase": "handler_execution",
+          "status": "pass",
+          "elapsed_ms": 2
+        }
+      ],
+      "resource_binding_status": "pass",
+      "context_reranker": null,
+      "context_cache_hit": null,
+      "candidate_sent_to_bge": null
+    },
+    "missing_reranker": {
+      "status": "error",
+      "error": "mcp_resource_binding_failed",
+      "row_count": 0,
+      "start_kind": "not_started",
+      "worker_pid": 5180,
+      "elapsed_ms": 1,
+      "terminal_status": "failed",
+      "phases": [
+        {
+          "phase": "resource_binding",
+          "status": "fail",
+          "elapsed_ms": 1
+        }
+      ],
+      "resource_binding_status": "fail",
+      "context_reranker": null,
+      "context_cache_hit": null,
+      "candidate_sent_to_bge": null
+    }
+  },
+  "checks": {
+    "registry_server_parity": true,
+    "business_tool_count": true,
+    "sec_cold_success": true,
+    "sec_warm_success": true,
+    "sec_worker_reused": true,
+    "sec_cache_cold_then_warm": true,
+    "sec_bm25_only_no_bge_candidates": true,
+    "exact_ledger_success": true,
+    "market_success": true,
+    "missing_reranker_typed_failure": true,
+    "worker_closed_no_orphan": true
+  },
+  "active_worker_pid_before_close": 5180,
+  "known_boundary": "This proves local MCP registry parity, canonical resource binding, bounded process supervision, cold/warm SEC handler operation, Exact-Value Ledger and market snapshot operation. It does not prove BGE/Milvus retrieval quality, live external source acquisition, Agentic Search quality, DeepSeek behavior, product acceptance, or release readiness."
+}

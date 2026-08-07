@@ -262,6 +262,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-06` DELL issuer/runner 零调用实现就绪**：新增最小 release support、DELL admission issuer 与 exact-once runner，不修改已冻结共享 Runtime 或模型可见合同。admission 绑定 authority、implementation、clean Git、policy、DELL raw/evaluation/boundary 与 execution entrypoint SHA；存储和 shared-ledger 均在 Git 外，capture-first、0 retry/fallback。真实容量仍为 `8 calls / 33,590 chars`，focused=`21 passed`；本项 admission/provider=0。提交推送后才可运行 scoped preflight、签发一份 DELL admission 并 exact-once 执行。
 
+> **2026-08-07 `013-S2-06` DELL Supervisor R1 项目合同漂移终止**：唯一 admission exact-once 消费，SupervisorPlan transport/JSON 正常，`1 call / 1 capture / 9,795 tokens / USD 0.0072278 / 0 retry`。输出的 identity、partition、六个 directive 与 alias 均受控，但 Verifier directive 未选 Evidence/Gap。模型可见 Schema 允许空数组且 Prompt 未声明每 directive 非空，本地 Validator 却隐藏强制非空，故 RC-P36-147 归项目 Prompt/Schema/Validator 漂移，不计为模型能力失败。R1 immutable，candidate=0，MU/NVDA 未启动；只允许一个共享零调用 compiled-contract 修复包，fresh proof 后再单独决定 DELL replacement。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。

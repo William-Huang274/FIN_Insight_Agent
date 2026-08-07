@@ -1,0 +1,78 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_dell_supervisor_r1_terminal_and_contract_drift_disposition_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "R1_immutable_terminal_failed_project_prompt_schema_validator_drift_campaign_stopped",
+  "scope": "one_DELL_case_local_SupervisorPlan_exact_once_attempt_and_root_cause_disposition",
+  "execution": {
+    "execution_git_commit": "616432937dd00542af24fd8691951137179f163a",
+    "run_id": "fin013_s2_06_supervised_dell_ea2b78f0436c35380fd4",
+    "attempt_id": "fin013_s2_06_supervised_dell_ea2b78f0436c35380fd4_attempt_1",
+    "admission_digest": "a4cfdf67954535d3e0e391ef7099481ce8d6a1625f2ff54511a258b75df50ca6",
+    "admission_state": "terminal_exact_once_consumed",
+    "terminal_status": "terminal_failed_no_retry",
+    "terminal_phase": "supervisor_plan",
+    "terminal_code": "s2_06_supervisor_empty_case_authority",
+    "terminal_result_digest": "459d89b54aee6999f6e434d6fda29d09e9da519d8dc46228f0c3e6ac381caa55",
+    "receipt_digest": "d5789f15a0fd39ca1a6a5dcca630002dc97b7acafb7c75866048801bd992d7da",
+    "completed_provider_calls": 1,
+    "captures": 1,
+    "candidate_frozen": false,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "raw_mutations": 0,
+    "hidden_scoring_executed": false,
+    "business_promotable": false
+  },
+  "provider_result": {
+    "gateway_status": "ok",
+    "finish_reason": "stop",
+    "transport_attempt_count": 1,
+    "json_object_parsed": true,
+    "exact_top_level_identity_and_partition_binding": true,
+    "node_directives": 6,
+    "directives_with_nonempty_evidence_or_gap": 5,
+    "verifier_directive_evidence_ids": 0,
+    "verifier_directive_gap_ids": 0,
+    "usage_tokens": {
+      "input": 8567,
+      "output": 1228,
+      "total": 9795
+    },
+    "estimated_cost_usd": "0.0072278",
+    "capture_digest": "30a5073c212e5478362afc7dc0763ccd80585ca609cddd35cd50891409f6ed33",
+    "capture_secret_like_hits": 0
+  },
+  "root_cause": {
+    "issue_id": "RC-P36-147",
+    "classification": "project_owned_model_visible_contract_drift_not_model_instruction_failure",
+    "evidence": [
+      "the model-visible JSON schema allowed empty evidence_ids and gap_ids arrays",
+      "the system prompt said select only supplied aliases but did not require at least one Evidence or Gap alias for every directive",
+      "the local validator imposed a hidden non-empty Evidence-or-Gap rule after the response was captured",
+      "the natural output followed all explicit identity partition ordering and alias-allowlist requirements and left only the Verifier authority arrays empty"
+    ],
+    "impact": "R1 cannot measure DeepSeek supervised recoverability because the first terminal was caused by an undisclosed project validator rule.",
+    "shared_campaign_impact": "stop_before_MU_or_NVDA_and_do_not_retry_DELL",
+    "required_fix": "compile the non-empty Evidence-or-Gap invariant into the model-visible schema prompt validator fixtures and capacity proof from one contract source; replay the captured R1 plan and three-case mutations; then run a fresh proof and make a separate DELL replacement authority decision"
+  },
+  "campaign_disposition": {
+    "DELL_R1": "immutable_invalidated_by_project_contract_drift",
+    "MU_started": false,
+    "NVDA_started": false,
+    "campaign_stopped": true,
+    "automatic_retry": false,
+    "automatic_replacement": false,
+    "maximum_shared_structural_repair_packages_remaining": 1,
+    "replacement_requires_separate_authority": true
+  },
+  "verification": {
+    "terminal_and_shared_ledger_match": true,
+    "raw_capture_preserved": true,
+    "credential_value_persisted": false,
+    "candidate_or_hidden_score_created": false,
+    "model_provider_network_calls_after_terminal": [0, 0, 0]
+  },
+  "next_action": "FIN-0.1.3-013-S2-06-SUPERVISOR-NONEMPTY-CASE-AUTHORITY-COMPILED-CONTRACT-ALIGNMENT-ONE-SHARED-ZERO-CALL-REPAIR-PACKAGE",
+  "known_boundary": "R1 proves transport and broad plan-shape compliance, but it is not a valid corrected-candidate or model-quality result. The failed admission and capture remain immutable and cannot be reused.",
+  "result_digest": "fa9973626d59cf6de77e8fec9ffb4f33b3eab5658716f599e18aad042bd32023"
+}

@@ -1,0 +1,85 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_entrypoint_zero_call_implementation_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08-P2B",
+  "status": "zero_call_engineering_pass_clean_commit_preflight_pending",
+  "implementation_base_commit": "5f3654d62cc68eeabfc741579fa8a7b9a241d29c",
+  "project_os_preflight": {
+    "run_scope": "S1_08_V3_DELL_R3_SUCCESSOR_ENTRYPOINT_ZERO_CALL_IMPLEMENTATION",
+    "status": "pass",
+    "open_full_chain_blocker_count": 0
+  },
+  "authority_bindings": {
+    "authority_decision_ref": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_fresh_live_authority_decision_v1_0.json",
+    "authority_decision_sha256": "5ed51f211df46d05b4f13cd9c5b8201475f437edff9af520e339d12dbe4cc2b0",
+    "v3_independent_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_v3_clean_independent_zero_call_proof_result_v1_0.json",
+    "v3_independent_proof_sha256": "272dd8581c5e1a3a231e36cfd57067c9f1a4f6281eee43067aa03a6872c9bae4",
+    "immutable_R2_result_ref": "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_result_v1_0.json",
+    "immutable_R2_result_sha256": "8e9550c842ff28dacddd54ca043bbaa49ab219342655110acf99b6e4ade31a88",
+    "immutable_R2_quality_evaluation_ref": "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_source_quality_evaluation_v1_0.json",
+    "immutable_R2_quality_evaluation_sha256": "b02fca13b01376161d079523f272809d156d643e693446a7271fa0eef0937cb8",
+    "v3_catalog_ref": "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_relationship_budget_policy_v3_0.json",
+    "v3_catalog_sha256": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851",
+    "v3_proof_implementation_file_map_recomputed_before_admission": true
+  },
+  "runtime": {
+    "module": "src/sec_agent/s1_08_r3_successor.py",
+    "module_sha256": "3f10f2c61cdaa9f7f3d5fdadacd47d409e908815baf52a31a32e323a8c92195e",
+    "runner": "scripts/releases/run_fin_ia_0_1_3_s1_08_v3_dell_current_search_r3.py",
+    "runner_sha256": "7e4735fb8c2f5c629a9ea03923a14acc4860e946ce7218ee396b8a2242d86622",
+    "contract_test": "tests/contract/test_fin_0_1_3_s1_08_v3_dell_r3_successor.py",
+    "contract_test_sha256": "5899c23827f9a44caf6f5da7b87c7adaea3d5c251ad1b5a16243c1e22b0411f8",
+    "admission_schema": "fin_ia_0_1_3_s1_08_dell_r3_search_admission_v1_0",
+    "terminal_schema": "fin_ia_0_1_3_s1_08_dell_r3_search_terminal_v1_0",
+    "contract_ref": "fin_0_1_3.S1_08.DELL_current_search_R3:v1",
+    "candidate_contract_ref": "fin_0_1_3.S1_08.current_source_catalog_relationship_budget_candidate_generation:v3",
+    "terminal_namespace": "fin-0.1.3/s1-08/dell-current-search-r3",
+    "result_path": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_current_search_r3_result_v1_0.json"
+  },
+  "execution_controls": {
+    "old_R2_runtime_runner_or_result_reused": false,
+    "new_R3_namespace_and_result_required": true,
+    "typed_authority_inputs_single_binding": true,
+    "catalog_disk_sha_and_canonical_object_binding": true,
+    "shared_ledger_reserve_before_DNS_or_source_network": true,
+    "local_contact_and_transport_validation_before_reserve": true,
+    "network_calls_max": 16,
+    "maximum_document_fetches_per_attempt": 2,
+    "maximum_accepted_unique_documents_per_attempt": 1,
+    "slot_group_reservations": {
+      "issuer_and_regulatory_shared": 4,
+      "customer_demand": 4,
+      "supply_and_counterevidence": 5,
+      "market_context": 0,
+      "shared_contingency_after_first_round": 3
+    },
+    "model_provider_retry_calls": [0, 0, 0],
+    "per_call_timeout_seconds_max": 30,
+    "overall_timeout_seconds_max": 300,
+    "automatic_R4": false,
+    "ranking_admitted": false
+  },
+  "verification": {
+    "focused_successor_tests_passed": 7,
+    "all_S1_08_contract_tests_passed": 70,
+    "compileall": "pass",
+    "decision_R2_v3_proof_catalog_and_source_mutations": "fail_closed",
+    "catalog_byte_drift_before_ledger_reserve": "pass",
+    "missing_contact_before_ledger_reserve": "pass",
+    "non_live_transport_before_ledger_reserve": "pass",
+    "exact_once_second_execution": "rejected",
+    "v3_candidate_contract_and_round_robin_terminal": "pass",
+    "old_R2_runtime_and_runner_SHA_unchanged": true,
+    "formal_admissions_issued": 0,
+    "external_network_model_provider_retry_live_calls": [0, 0, 0, 0, 0, 0]
+  },
+  "decision": {
+    "R3_successor_engineering": "pass",
+    "clean_commit_preflight": false,
+    "admission_issued": false,
+    "DELL_R3_executed": false,
+    "MU_NVDA_ranking_DeepSeek_S3_authorized": [false, false, false, false, false]
+  },
+  "known_boundary": "This is a working-tree zero-call engineering result. It does not prove the R3 source files from a clean archive, issue an admission, access a source, establish target-in-pool, admit ranking or close S1-08.",
+  "current_next": "COMMIT_PUSH_THEN_S1_08_V3_DELL_R3_SUCCESSOR_CLEAN_ZERO_CALL_PREFLIGHT"
+}

@@ -790,3 +790,15 @@ R3 successor 必须在零调用阶段建立独立 admission/terminal contract、
 拟议 authority 保持 `1 fresh admission / 1 exact-live / 16 network / 2 fetch per attempt / 1 unique accept per attempt / 0 model-provider-retry / 30s per call / 300s overall / no R4`，slot reservation 固定为 `4/4/5/0+3`。live hard gates 继续包括 required network slot first opportunity、starvation=0、canonical duplicate fetch=0、relationship false promotion=0、target-in-pool=`1.0`、required-slot recall@8=`1.0`、currentness/diversity-or-typed-exception/reconciliation/selected coverage=`1.0`、false promotion=`0`、qualified unique-document yield `>=0.5` 和 partial terminalization=`1.0`。本 R3 仍不执行或准入 BGE/Milvus ranking。
 
 如果 successor binding、clean proof、source SHA 或 runtime SEC contact 失败，则不得签发。若 R3 运行后 candidate ceiling 或 target-in-pool 仍失败，立即停止 live retry，进入 `S1-08-P3` provider acquisition/product source-scope 决策；不能追加 R4、扩大预算、放宽 Evidence Gate 或先调 reranker。本 authority decision 本身的 network/model/provider/retry/admission/live 均为 `0`；当前下一项只是 `S1_08_V3_DELL_R3_SUCCESSOR_ENTRYPOINT_ZERO_CALL_IMPLEMENTATION`。
+
+### 20.8 R3 successor entrypoint 零调用实现（2026-08-08）
+
+R3 使用独立 `s1_08_r3_successor.py` 与 CLI runner，不修改 R2 module/runner。原因不是拒绝复用，而是 R2 source SHA 已进入 clean preflight 和 immutable terminal lineage；修改历史文件会让旧 proof 无法重算。R3 只复用未被 attempt identity 固化的稳定底层：v3 candidate Runtime、capture-first official adapter、canonical object store 和 shared admission ledger。
+
+R3 admission 同时绑定：authority decision raw-file SHA/canonical digest、immutable R2 result/evaluation SHA/digest、v3 independent proof SHA/digest、v3 catalog SHA/digest、proof 内完整 implementation-file map、未来 clean preflight digest、R3 Runtime/Runner SHA、clean commit 与 issuance window。上述 authority object/SHA 在 R3 内统一封装为 typed `R3AuthorityInputs`，issue/require/execute 不得各自重新拼装一套参数；preflight 仍必须逐项回写 canonical/file bindings。实际执行的 catalog 还必须同时通过磁盘 byte SHA 与解析后 canonical object 核验，只传一个看似合法的 SHA、修改后的 object 或漂移文件均不能签发或 reserve。
+
+执行前的纯本地检查顺序固定为 source/binding → runtime contact → shared-ledger path → live-transport type → canonical terminal store；这些条件全部通过后才 reserve。reserve 之后任何 source/candidate 异常都进入 capture-first partial/terminal 路径并 finalize shared receipt。实现初稿将 non-live transport 校验放在 reserve 后，零调用测试发现 admission 可能被无意义消费，现已前移并以 `ledger absent` 回归锁定。
+
+R3 candidate contract 必须等于 `fin_0_1_3.S1_08.current_source_catalog_relationship_budget_candidate_generation:v3`，不允许 runner 静默回落 v2。budget 为 `16` 次网络、每 attempt `2` 次 document fetch/`1` 份 unique accept、`4/4/5/0+3` reservation、30 秒单次/300 秒全案、0 model/provider/retry、no R4。terminal 记录 authority/proof/R2/catalog/source/preflight lineage，ranking 始终 false。
+
+focused successor=`7 passed`、全部 S1-08 contract=`70 passed`、compileall pass；fake transport 仅验证 contract/exact-once/round-robin/terminalization，没有访问外网或证明搜索质量。当前状态为 `zero_call_engineering_pass / clean_commit_preflight_pending`。下一项只能在 commit/push 后执行 `S1_08_V3_DELL_R3_SUCCESSOR_CLEAN_ZERO_CALL_PREFLIGHT`；clean proof 未通过前不得签发或 live。

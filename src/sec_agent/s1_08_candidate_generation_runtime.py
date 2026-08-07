@@ -13,10 +13,17 @@ CATALOG_SCHEMA = (
     "fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v2_0"
 )
 CONTRACT_REF = "fin_0_1_3.S1_08.current_source_catalog_candidate_generation:v2"
+CATALOG_SCHEMA_V3 = (
+    "fin_ia_0_1_3_s1_08_current_source_catalog_relationship_budget_policy_v3_0"
+)
+CONTRACT_REF_V3 = (
+    "fin_0_1_3.S1_08.current_source_catalog_relationship_budget_candidate_generation:v3"
+)
 _SUPPORTED_CONTRACTS = {
     "fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v1_0":
         "fin_0_1_3.S1_08.current_source_catalog_candidate_generation:v1",
     CATALOG_SCHEMA: CONTRACT_REF,
+    CATALOG_SCHEMA_V3: CONTRACT_REF_V3,
 }
 CASES = ("DELL", "MU", "NVDA")
 GOLD_TOKEN_PREFIXES = ("SRC_", "DELL_E", "MU_E", "NVDA_E", "DELL_T", "MU_T", "NVDA_T")
@@ -68,6 +75,24 @@ def load_source_catalog(path: str | Path) -> dict[str, Any]:
         or budgets.get("identical_retry_forbidden") is not True
     ):
         raise S108CandidateGenerationError("s1_08_source_catalog_budget_invalid")
+    if catalog.get("schema_version") == CATALOG_SCHEMA_V3:
+        reservations = budgets.get("slot_group_reservations") or {}
+        required_reservations = {
+            "issuer_and_regulatory_shared": 4,
+            "customer_demand": 4,
+            "supply_and_counterevidence": 5,
+            "market_context": 0,
+            "shared_contingency_after_first_round": 3,
+        }
+        if (
+            budgets.get("replacement_network_call_ceiling") != 16
+            or budgets.get("maximum_document_fetches_per_attempt") != 2
+            or budgets.get("maximum_accepted_unique_documents_per_attempt") != 1
+            or reservations != required_reservations
+            or sum(reservations.values()) != 16
+            or budgets.get("round_robin_first_attempt_required") is not True
+        ):
+            raise S108CandidateGenerationError("s1_08_v3_slot_budget_invalid")
     entities = catalog.get("entities") or []
     keys = [str(row.get("entity_key") or "") for row in entities]
     if len(keys) != len(set(keys)) or not set(CASES).issubset(keys):
@@ -76,13 +101,24 @@ def load_source_catalog(path: str | Path) -> dict[str, Any]:
         pages = entity.get("official_landing_pages") or []
         if not pages or any(not str(url).startswith("https://") for url in pages):
             raise S108CandidateGenerationError("s1_08_source_catalog_landing_page_invalid")
-    if catalog.get("schema_version") == CATALOG_SCHEMA:
+    if catalog.get("schema_version") in {CATALOG_SCHEMA, CATALOG_SCHEMA_V3}:
         capabilities = catalog.get("source_provider_capabilities") or []
         route_ids = [str(row.get("route_id") or "") for row in capabilities]
         if not route_ids or len(route_ids) != len(set(route_ids)):
             raise S108CandidateGenerationError("s1_08_source_provider_capability_invalid")
         if any("operational" not in row for row in capabilities):
             raise S108CandidateGenerationError("s1_08_source_provider_operational_state_missing")
+        if catalog.get("schema_version") == CATALOG_SCHEMA_V3 and any(
+            not {
+                "declared",
+                "configured",
+                "operational",
+                "replay_proven",
+                "live_proven",
+            }.issubset(row)
+            for row in capabilities
+        ):
+            raise S108CandidateGenerationError("s1_08_v3_provider_capability_state_missing")
     return catalog
 
 
@@ -97,9 +133,15 @@ class EvidenceSlot:
     currentness_window_days: int
     minimum_qualified_candidates: int
     stop_condition: str
+    subject_entity_mode: str = ""
+    evidence_owner_entity_mode: str = ""
+    claim_direction: str = ""
+    allowed_source_owner_roles: tuple[str, ...] = ()
+    forbidden_nested_relationships: tuple[str, ...] = ()
+    slot_budget_group: str = ""
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        body = {
             "slot_id": self.slot_id,
             "role_id": self.role_id,
             "required": self.required,
@@ -110,6 +152,22 @@ class EvidenceSlot:
             "minimum_qualified_candidates": self.minimum_qualified_candidates,
             "stop_condition": self.stop_condition,
         }
+        if self.subject_entity_mode:
+            body.update(
+                {
+                    "subject_entity_mode": self.subject_entity_mode,
+                    "evidence_owner_entity_mode": self.evidence_owner_entity_mode,
+                    "claim_direction": self.claim_direction,
+                    "allowed_source_owner_roles": list(
+                        self.allowed_source_owner_roles
+                    ),
+                    "forbidden_nested_relationships": list(
+                        self.forbidden_nested_relationships
+                    ),
+                    "slot_budget_group": self.slot_budget_group,
+                }
+            )
+        return body
 
 
 @dataclass(frozen=True)
@@ -129,9 +187,14 @@ class DiscoveryQuery:
     currentness_window_days: int = 550
     minimum_qualified_candidates: int = 1
     stop_condition: str = "candidate_or_typed_gap"
+    subject_entity: str = ""
+    claim_direction: str = ""
+    allowed_source_owner_roles: tuple[str, ...] = ()
+    forbidden_nested_relationships: tuple[str, ...] = ()
+    slot_budget_group: str = ""
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        body = {
             "case_key": self.case_key,
             "target_key": self.target_key,
             "role_id": self.role_id,
@@ -148,6 +211,21 @@ class DiscoveryQuery:
             "minimum_qualified_candidates": self.minimum_qualified_candidates,
             "stop_condition": self.stop_condition,
         }
+        if self.subject_entity:
+            body.update(
+                {
+                    "subject_entity": self.subject_entity,
+                    "claim_direction": self.claim_direction,
+                    "allowed_source_owner_roles": list(
+                        self.allowed_source_owner_roles
+                    ),
+                    "forbidden_nested_relationships": list(
+                        self.forbidden_nested_relationships
+                    ),
+                    "slot_budget_group": self.slot_budget_group,
+                }
+            )
+        return body
 
 
 @dataclass(frozen=True)
@@ -171,13 +249,21 @@ class DiscoveryCandidate:
     source_family: str = ""
     content_quality_score: int = 0
     promotion_decision: str = "accepted_candidate"
+    subject_entity: str = ""
+    evidence_owner_entity: str = ""
+    ecosystem_role: str = ""
+    claim_direction: str = ""
+    publication_date_kind: str = ""
+    publication_date_source: str = ""
+    publication_date_confidence: str = ""
+    publication_date_conflict_status: str = ""
 
     @property
     def candidate_digest(self) -> str:
         return canonical_digest(self.as_dict())
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        body = {
             "case_key": self.case_key,
             "target_key": self.target_key,
             "role_id": self.role_id,
@@ -198,6 +284,20 @@ class DiscoveryCandidate:
             "content_quality_score": self.content_quality_score,
             "promotion_decision": self.promotion_decision,
         }
+        if self.subject_entity:
+            body.update(
+                {
+                    "subject_entity": self.subject_entity,
+                    "evidence_owner_entity": self.evidence_owner_entity,
+                    "ecosystem_role": self.ecosystem_role,
+                    "claim_direction": self.claim_direction,
+                    "publication_date_kind": self.publication_date_kind,
+                    "publication_date_source": self.publication_date_source,
+                    "publication_date_confidence": self.publication_date_confidence,
+                    "publication_date_conflict_status": self.publication_date_conflict_status,
+                }
+            )
+        return body
 
 
 class DiscoveryAdapter(Protocol):
@@ -206,6 +306,9 @@ class DiscoveryAdapter(Protocol):
 
 def compile_evidence_slots(*, catalog: Mapping[str, Any]) -> tuple[EvidenceSlot, ...]:
     slots: list[EvidenceSlot] = []
+    relationship_contract_enabled = (
+        catalog.get("schema_version") == CATALOG_SCHEMA_V3
+    )
     for role in catalog.get("evidence_role_blueprints") or []:
         role_id = str(role["role_id"])
         slots.append(
@@ -228,6 +331,44 @@ def compile_evidence_slots(*, catalog: Mapping[str, Any]) -> tuple[EvidenceSlot,
                 currentness_window_days=int(role.get("currentness_window_days", 550)),
                 minimum_qualified_candidates=int(role.get("minimum_qualified_candidates", 1)),
                 stop_condition=str(role.get("stop_condition") or "candidate_or_typed_gap"),
+                subject_entity_mode=(
+                    str(role.get("subject_entity_mode") or "case_subject")
+                    if relationship_contract_enabled
+                    else ""
+                ),
+                evidence_owner_entity_mode=(
+                    str(role.get("evidence_owner_entity_mode") or "compiled_entity_key")
+                    if relationship_contract_enabled
+                    else ""
+                ),
+                claim_direction=(
+                    str(role.get("claim_direction") or "subject_self_disclosure")
+                    if relationship_contract_enabled
+                    else ""
+                ),
+                allowed_source_owner_roles=(
+                    tuple(
+                        str(value)
+                        for value in role.get("allowed_source_owner_roles")
+                        or role.get("entity_roles")
+                        or ()
+                    )
+                    if relationship_contract_enabled
+                    else ()
+                ),
+                forbidden_nested_relationships=(
+                    tuple(
+                        str(value)
+                        for value in role.get("forbidden_nested_relationships") or ()
+                    )
+                    if relationship_contract_enabled
+                    else ()
+                ),
+                slot_budget_group=(
+                    str(role.get("slot_budget_group") or "issuer_and_regulatory_shared")
+                    if relationship_contract_enabled
+                    else ""
+                ),
             )
         )
     return tuple(slots)
@@ -294,7 +435,8 @@ def compile_revision(
         )
     )
     if (
-        catalog.get("schema_version") != CATALOG_SCHEMA
+        catalog.get("schema_version")
+        not in {CATALOG_SCHEMA, CATALOG_SCHEMA_V3}
         and revision == 1
         and "sec_submissions_discovery" not in route_ids
     ):
@@ -319,6 +461,14 @@ def compile_revision(
             currentness_window_days=prior.currentness_window_days,
             minimum_qualified_candidates=prior.minimum_qualified_candidates,
             stop_condition=prior.stop_condition,
+            subject_entity_mode=("case_subject" if prior.subject_entity else ""),
+            evidence_owner_entity_mode=(
+                "compiled_entity_key" if prior.subject_entity else ""
+            ),
+            claim_direction=prior.claim_direction,
+            allowed_source_owner_roles=prior.allowed_source_owner_roles,
+            forbidden_nested_relationships=prior.forbidden_nested_relationships,
+            slot_budget_group=prior.slot_budget_group,
         ),
     )
     if query.query_digest == prior.query_digest or query.query_text == prior.query_text:
@@ -333,6 +483,13 @@ def run_candidate_generation(
     research_objective: str,
     adapter: DiscoveryAdapter,
 ) -> dict[str, Any]:
+    if catalog.get("schema_version") == CATALOG_SCHEMA_V3:
+        return _run_candidate_generation_round_robin(
+            catalog=catalog,
+            case_key=case_key,
+            research_objective=research_objective,
+            adapter=adapter,
+        )
     attempts: list[dict[str, Any]] = []
     accepted: dict[str, DiscoveryCandidate] = {}
     rejected: list[dict[str, Any]] = []
@@ -432,6 +589,250 @@ def run_candidate_generation(
     )
 
 
+def _run_candidate_generation_round_robin(
+    *,
+    catalog: Mapping[str, Any],
+    case_key: str,
+    research_objective: str,
+    adapter: DiscoveryAdapter,
+) -> dict[str, Any]:
+    attempts: list[dict[str, Any]] = []
+    accepted: dict[str, DiscoveryCandidate] = {}
+    rejected: list[dict[str, Any]] = []
+    as_of = date.fromisoformat(str(catalog["as_of"]))
+    maximum_candidates = int(catalog["budgets"]["maximum_candidates_per_case"])
+    maximum_revisions = int(catalog["budgets"]["maximum_revisions_per_target"])
+    maximum_document_fetches = int(
+        catalog["budgets"]["maximum_document_fetches_per_attempt"]
+    )
+    maximum_unique_documents = int(
+        catalog["budgets"]["maximum_accepted_unique_documents_per_attempt"]
+    )
+    initial_queries = list(
+        compile_initial_queries(
+            catalog=catalog,
+            case_key=case_key,
+            research_objective=research_objective,
+        )
+    )
+    query_by_target = {row.target_key: row for row in initial_queries}
+    completed: set[str] = set()
+    reservation_config = dict(catalog["budgets"]["slot_group_reservations"])
+    contingency = int(reservation_config.pop("shared_contingency_after_first_round"))
+    remaining = {key: int(value) for key, value in reservation_config.items()}
+    group_slot_count: dict[str, int] = {}
+    for query in initial_queries:
+        if query.slot_budget_group == "market_context":
+            continue
+        group_slot_count[query.slot_budget_group] = (
+            group_slot_count.get(query.slot_budget_group, 0) + 1
+        )
+
+    for round_index in range(maximum_revisions + 1):
+        for initial in initial_queries:
+            target_key = initial.target_key
+            if target_key in completed:
+                continue
+            query = query_by_target[target_key]
+            if query.revision != round_index:
+                continue
+            group = query.slot_budget_group
+            group_remaining = int(remaining.get(group, 0))
+            if round_index == 0 and group != "market_context":
+                divisor = max(1, group_slot_count.get(group, 1))
+                allowance = min(
+                    group_remaining,
+                    max(1, int(reservation_config.get(group, 0)) // divisor),
+                )
+            elif group_remaining > 0:
+                allowance = group_remaining
+            elif group != "market_context" and contingency > 0:
+                allowance = 1
+            else:
+                allowance = 0
+            prepare = getattr(adapter, "prepare_attempt", None)
+            if callable(prepare):
+                prepare(
+                    query=query,
+                    network_call_allowance=allowance,
+                    maximum_document_fetches=maximum_document_fetches,
+                )
+            before_network = int(getattr(adapter, "network_calls", 0))
+            try:
+                observed = list(adapter.discover(query))
+            except Exception as exc:
+                attempts.append(
+                    {
+                        "query": query.as_dict(),
+                        "round_index": round_index,
+                        "slot_budget_group": group,
+                        "network_call_allowance": allowance,
+                        "observed_count": 0,
+                        "accepted_count": 0,
+                        "stop_reason": "unexpected_adapter_failure",
+                        "failure_code": getattr(
+                            exc,
+                            "code",
+                            f"unexpected_project_failure:{type(exc).__name__}",
+                        ),
+                    }
+                )
+                partial = _build_candidate_result(
+                    catalog=catalog,
+                    case_key=case_key,
+                    attempts=attempts,
+                    accepted=accepted,
+                    rejected=rejected,
+                    adapter=adapter,
+                    terminal_status="partial_failed",
+                )
+                _persist_adapter_checkpoint(adapter, partial)
+                raise CandidateGenerationInterrupted(
+                    code=attempts[-1]["failure_code"], partial_result=partial
+                ) from exc
+            observed.sort(
+                key=lambda row: (
+                    -int(row.content_quality_score),
+                    normalize_locator(row.locator),
+                    row.entity_key,
+                    row.candidate_digest,
+                )
+            )
+            after_network = int(getattr(adapter, "network_calls", 0))
+            network_delta = after_network - before_network
+            if network_delta < 0 or network_delta > allowance:
+                raise S108CandidateGenerationError(
+                    "s1_08_slot_attempt_network_allowance_violated"
+                )
+            consumed_reserved = min(group_remaining, network_delta)
+            if group in remaining:
+                remaining[group] -= consumed_reserved
+            contingency_spent = network_delta - consumed_reserved
+            if contingency_spent:
+                if round_index == 0 or contingency_spent > contingency:
+                    raise S108CandidateGenerationError(
+                        "s1_08_contingency_used_before_first_round_closed"
+                    )
+                contingency -= contingency_spent
+
+            accepted_this_attempt = 0
+            accepted_unique_sources_this_attempt: set[tuple[str, str]] = set()
+            for candidate in observed:
+                reasons = _candidate_rejection_reasons(
+                    candidate=candidate,
+                    query=query,
+                    catalog=catalog,
+                    as_of=as_of,
+                )
+                digest = candidate.candidate_digest
+                if digest in accepted:
+                    reasons.append("duplicate_candidate")
+                source_key = (
+                    normalize_locator(candidate.locator),
+                    candidate.source_capture_digest,
+                )
+                if (
+                    source_key not in accepted_unique_sources_this_attempt
+                    and len(accepted_unique_sources_this_attempt)
+                    >= maximum_unique_documents
+                ):
+                    reasons.append("accepted_unique_document_attempt_ceiling_reached")
+                if reasons:
+                    rejected.append(
+                        {
+                            "candidate_digest": digest,
+                            "reason_codes": sorted(set(reasons)),
+                        }
+                    )
+                elif len(accepted) >= maximum_candidates:
+                    rejected.append(
+                        {
+                            "candidate_digest": digest,
+                            "reason_codes": ["candidate_case_ceiling_reached"],
+                        }
+                    )
+                else:
+                    accepted[digest] = candidate
+                    accepted_unique_sources_this_attempt.add(source_key)
+                    accepted_this_attempt += 1
+            local_terminal = query.slot_budget_group == "market_context"
+            exhausted = query.revision == maximum_revisions
+            terminal_gap = not accepted_this_attempt and (local_terminal or exhausted)
+            attempts.append(
+                {
+                    "query": query.as_dict(),
+                    "round_index": round_index,
+                    "slot_budget_group": group,
+                    "network_call_allowance": allowance,
+                    "network_calls_consumed": network_delta,
+                    "document_fetch_ceiling": maximum_document_fetches,
+                    "observed_count": len(observed),
+                    "accepted_count": accepted_this_attempt,
+                    "terminal_gap": terminal_gap,
+                    "stop_reason": (
+                        "role_candidate_found"
+                        if accepted_this_attempt
+                        else "typed_gap_no_revision"
+                        if local_terminal
+                        else "missing_role_candidate"
+                    ),
+                }
+            )
+            _persist_adapter_checkpoint(
+                adapter,
+                _build_candidate_result(
+                    catalog=catalog,
+                    case_key=case_key,
+                    attempts=attempts,
+                    accepted=accepted,
+                    rejected=rejected,
+                    adapter=adapter,
+                    terminal_status="in_progress",
+                ),
+            )
+            if accepted_this_attempt or terminal_gap:
+                completed.add(target_key)
+            else:
+                query_by_target[target_key] = compile_revision(
+                    catalog=catalog,
+                    prior=query,
+                    reason="no_qualified_candidate_for_required_role",
+                )
+
+    body = _build_candidate_result(
+        catalog=catalog,
+        case_key=case_key,
+        attempts=attempts,
+        accepted=accepted,
+        rejected=rejected,
+        adapter=adapter,
+        terminal_status="complete",
+    )
+    body["slot_budget_summary"] = {
+        "reserved_remaining": remaining,
+        "contingency_remaining": contingency,
+        "first_attempt_order": [
+            str(row["query"]["evidence_slot_id"])
+            for row in attempts
+            if row.get("round_index") == 0
+        ],
+        "slot_starvation_count": sum(
+            1
+            for query in initial_queries
+            if query.slot_budget_group != "market_context"
+            and not any(
+                str(row["query"]["target_key"]) == query.target_key
+                and int(row.get("network_call_allowance", 0)) > 0
+                for row in attempts
+            )
+        ),
+    }
+    without_digest = dict(body)
+    without_digest.pop("result_digest", None)
+    body["result_digest"] = canonical_digest(without_digest)
+    return body
+
+
 class CandidateGenerationInterrupted(RuntimeError):
     def __init__(self, *, code: str, partial_result: Mapping[str, Any]) -> None:
         self.code = code
@@ -472,20 +873,78 @@ def _build_candidate_result(
         if row.get("accepted_count", 0) == 0
         and (
             row.get("failure_code")
+            or row.get("terminal_gap") is True
             or row["query"]["revision"]
             == int(catalog["budgets"]["maximum_revisions_per_target"])
         )
     ]
     network_calls = int(getattr(adapter, "network_calls", 0))
-    qualified_documents = len(ordered)
+    unique_source_keys = {
+        (normalize_locator(row.locator), row.source_capture_digest) for row in ordered
+    }
+    unique_network_source_keys = {
+        (normalize_locator(row.locator), row.source_capture_digest)
+        for row in ordered
+        if row.locator.startswith("https://")
+    }
+    governed_local_source_keys = unique_source_keys - unique_network_source_keys
+    qualified_documents = (
+        len(unique_network_source_keys)
+        if catalog.get("schema_version") == CATALOG_SCHEMA_V3
+        else len(ordered)
+    )
     yield_ratio = qualified_documents / network_calls if network_calls else 0.0
     role_ids = {str(row["role_id"]) for row in catalog.get("evidence_role_blueprints") or []}
     roles_with_candidate = {row.role_id for row in ordered}
     roles_with_gap = {
         str(row.get("evidence_slot_id") or "").replace("slot_", "") for row in typed_gaps
     }
+    quality_metrics = {
+        "evidence_roles_total": len(role_ids),
+        "evidence_roles_with_candidate_or_typed_gap": len(
+            roles_with_candidate | (role_ids & roles_with_gap)
+        ),
+        "qualified_document_yield": round(yield_ratio, 6),
+        "known_navigation_noise_fetches": int(
+            getattr(adapter, "known_navigation_noise_fetches", 0)
+        ),
+    }
+    if catalog.get("schema_version") == CATALOG_SCHEMA_V3:
+        quality_metrics.update(
+            {
+                "accepted_unique_source_documents": len(unique_network_source_keys),
+                "governed_local_source_bindings": len(governed_local_source_keys),
+                "role_bindings_with_candidate": len(ordered),
+                "source_family_diversity": len(
+                    {row.source_family for row in ordered if row.source_family}
+                ),
+                "document_fetches_per_accepted_unique_document": (
+                    round(
+                        int(getattr(adapter, "document_fetches", 0))
+                        / len(unique_network_source_keys),
+                        6,
+                    )
+                    if unique_network_source_keys
+                    else 0.0
+                ),
+                "slot_starvation_count": sum(
+                    1
+                    for role_id in role_ids
+                    if role_id != "market_expectation_context"
+                    and not any(
+                        str(row["query"].get("role_id")) == role_id
+                        and int(row.get("network_call_allowance", 0)) > 0
+                        for row in attempts
+                    )
+                ),
+            }
+        )
     body = {
-        "schema_version": "fin_ia_0_1_3_s1_08_candidate_generation_result_v1_0",
+        "schema_version": (
+            "fin_ia_0_1_3_s1_08_candidate_generation_result_v2_0"
+            if catalog.get("schema_version") == CATALOG_SCHEMA_V3
+            else "fin_ia_0_1_3_s1_08_candidate_generation_result_v1_0"
+        ),
         "contract_ref": str(catalog.get("contract_ref") or CONTRACT_REF),
         "case_key": case_key,
         "as_of": catalog["as_of"],
@@ -496,16 +955,7 @@ def _build_candidate_result(
         "selected_candidates": [row.as_dict() for row in selected],
         "rejected_candidates": list(rejected),
         "typed_gaps": typed_gaps,
-        "quality_metrics": {
-            "evidence_roles_total": len(role_ids),
-            "evidence_roles_with_candidate_or_typed_gap": len(
-                roles_with_candidate | (role_ids & roles_with_gap)
-            ),
-            "qualified_document_yield": round(yield_ratio, 6),
-            "known_navigation_noise_fetches": int(
-                getattr(adapter, "known_navigation_noise_fetches", 0)
-            ),
-        },
+        "quality_metrics": quality_metrics,
         "observed_counts": {
             "model_calls": 0,
             "provider_calls": 0,
@@ -668,15 +1118,46 @@ def _make_query(
         "minimum_qualified_candidates": evidence_slot.minimum_qualified_candidates,
         "stop_condition": evidence_slot.stop_condition,
     }
+    if evidence_slot.subject_entity_mode:
+        body.update(
+            {
+                "subject_entity": case_key,
+                "claim_direction": evidence_slot.claim_direction,
+                "allowed_source_owner_roles": list(
+                    evidence_slot.allowed_source_owner_roles
+                ),
+                "forbidden_nested_relationships": list(
+                    evidence_slot.forbidden_nested_relationships
+                ),
+                "slot_budget_group": evidence_slot.slot_budget_group,
+            }
+        )
     return DiscoveryQuery(
         **{
             key: value
             for key, value in body.items()
-            if key not in {"route_ids", "entity_keys", "source_families"}
+            if key
+            not in {
+                "route_ids",
+                "entity_keys",
+                "source_families",
+                "allowed_source_owner_roles",
+                "forbidden_nested_relationships",
+            }
         },
         route_ids=route_ids,
         entity_keys=entity_keys,
         source_families=evidence_slot.source_families,
+        allowed_source_owner_roles=(
+            evidence_slot.allowed_source_owner_roles
+            if evidence_slot.subject_entity_mode
+            else ()
+        ),
+        forbidden_nested_relationships=(
+            evidence_slot.forbidden_nested_relationships
+            if evidence_slot.subject_entity_mode
+            else ()
+        ),
         query_digest=canonical_digest(body),
     )
 
@@ -714,12 +1195,39 @@ def _candidate_rejection_reasons(
             break
     if not candidate.promoted:
         reasons.append("candidate_not_evidence_promoted")
+    if catalog.get("schema_version") == CATALOG_SCHEMA_V3:
+        if (
+            candidate.evidence_slot_id != query.evidence_slot_id
+            or candidate.subject_entity != query.subject_entity
+            or candidate.evidence_owner_entity != candidate.entity_key
+            or candidate.claim_direction != query.claim_direction
+        ):
+            reasons.append("relationship_binding_mismatch")
+        if candidate.entity_key not in set(query.entity_keys):
+            reasons.append("evidence_owner_not_compiled_for_slot")
+        if (
+            query.allowed_source_owner_roles
+            and candidate.ecosystem_role not in set(query.allowed_source_owner_roles)
+        ):
+            reasons.append("evidence_owner_role_not_allowed_for_slot")
+        if candidate.source_family not in set(query.source_families):
+            reasons.append("source_family_not_allowed_for_evidence_slot")
+        if (
+            candidate.publication_date_kind
+            not in {"published_date", "event_date", "filing_date", "as_of_date"}
+            or not candidate.publication_date_source
+            or candidate.publication_date_confidence not in {"high", "medium"}
+            or candidate.publication_date_conflict_status != "none"
+        ):
+            reasons.append("typed_publication_date_binding_invalid")
     return reasons
 
 
 __all__ = [
     "CATALOG_SCHEMA",
+    "CATALOG_SCHEMA_V3",
     "CONTRACT_REF",
+    "CONTRACT_REF_V3",
     "DiscoveryAdapter",
     "CandidateGenerationInterrupted",
     "DiscoveryCandidate",

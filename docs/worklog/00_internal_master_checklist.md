@@ -1166,3 +1166,5 @@
 - [x] FIN-0.1.2 S0 current baseline audit owner review and focused repair authorization: Owner 已批准资产分类和 S0-04 本地零调用修复；clean-environment acceptance 保持单独权限。
 - [x] FIN-0.1.2 S0-04 current/event ownership and version-neutral runner focused repair: current projection、immutable event、attempt contract、current manifest/reference registry 已分权；current=`95 passed`、全部 S0 compatibility=`147 passed`、三案例 zero-model=`31 passed`，模型/Provider/网络=0。
 - [ ] FIN-0.1.2 S0-05 fresh clean-environment qualification: 需单独授权后才创建一个新 attempt，执行双 disposable package、语义比较、repository readback 和 RC-P36-090–096 closeout；当前 S0 尚未通过。
+- [x] FIN-0.1.3 S1-08 post-R2 mature-component/relationship/budget v3 zero-call implementation: feedparser/Trafilatura/lxml 仅消费 capture bytes；FIN 本地日期 adjudicator、关系方向、五 slot round-robin、SEC 20-F/6-K、2-fetch/1-unique ceiling 和 source/role/local 分账已实现，S1-08 contract=`60 passed`、外部调用=0。
+- [ ] FIN-0.1.3 S1-08 v3 clean independent zero-call proof: 必须从 clean archive/fresh process 复现依赖、真实 R2 两页日期、三案 full-fake/mutation 与完整 S1-08 suite；通过后才可单独决定 fresh-live authority，不自动进入 R3/ranking/S3。

@@ -723,3 +723,20 @@ R2 capture replay 进一步证明，失败不只是“少一个搜索 Provider�
 机器处置为 `configs/releases/fin_ia_0_1_3_s1_08_post_r2_provider_candidate_coverage_disposition_v1_0.json`。下一项只实现并零调用证明上述 v3 合同；R2 capture 必须能证明 Microsoft 两份官方 release/event 页的 typed 日期恢复、9 个 nested-customer 页面关系方向拒绝、supply 不再 starvation、market unavailable 零 revision 和 canonical fetch 去重。DELL/MU/NVDA 还须覆盖 20-F/6-K、feed/sitemap malformed、date conflict、cross-domain、relationship reversal 与 quota permutation mutation。通过后另行决定 fresh live；本节不授权网络、模型、ranking 或 S3。
 
 处置收尾的 Project OS negative probe 还证明，当前共享预检只把固定五种 `OPEN_BLOCKER_STATUSES` 视作开放阻断；新的描述性 `open_*` 状态会在 scope 匹配前被静默跳过。S1-08 不承担共享控制面重构，但 RC-P36-156 最新投影必须使用 canonical `open`、wildcard block 与本零调用 scope 显式 allowlist，作为临时 fail-closed。直到状态 schema 与 run-scope registry 在 S0/S5 修复，任何 fresh live 都不能只凭 Project OS 的 `pass`，仍须校验 exact runner/admission/source-SHA binding。
+
+### 20.4 v3 成熟组件采用与零调用实现结果（2026-08-08）
+
+v3 没有引入完整通用爬虫框架，而是在既有 capture-first 控制面内采用两个窄组件：`feedparser 6.0.12` 只解析已经保存的 RSS/Atom bytes；`Trafilatura 2.1.0` 只从已经保存的静态 HTML 生成正文和 metadata candidate。请求、域名 allowlist、budget、relationship direction、publication-date adjudication、candidate promotion、capture lineage 和 terminal result 仍由 FIN Runtime 所有。`Scrapy` 未进入当前调度主线；`Crawl4AI/Playwright` 仍是以后针对动态页单独准入的受预算 fallback，不能因技术文档列出就被视为现有能力。
+
+真实 DELL R2 immutable capture bake-off 使用两份 Microsoft 官方页且网络/模型/Provider/retry 均为 `0`。Trafilatura 相对 BeautifulSoup baseline 将 earnings-event 页的已知导航词命中从 `14` 降为 `0`，press-release 页从 `14` 降为 `1`；但它把 press release 的 `2026-06-30` 报告期误判为发布日期，而页面 masthead 的真实发布日期是 `2026-07-29`。因此第三方 parser 的日期永远只能是低置信 candidate：本地 adjudicator 必须识别 reporting-period context，优先 JSON-LD/OpenGraph/semantic time/release masthead/event heading，并在只有 library-inferred date、modified date或高权威冲突时 fail closed。该回放最终正确恢复 event=`2026-07-29 / official_event_heading`、release=`2026-07-29 / official_release_masthead`，同时把 `2026-06-30` 记为 rejected `reporting_period_end`。
+
+Runtime v3 同时落地：
+
+1. 官方 HTML alternate feed、RSS/Atom、robots/sitemap 与同 host URL discovery；所有 parser 均消费 capture bytes，不自行联网；
+2. SEC submissions 增加 `20-F/6-K`；
+3. relationship-aware query/candidate binding，nested customer story 在 document fetch 前拒绝；
+4. 五 slot round-robin，16 次总预算保持 `4/4/5/0 + 3 contingency`，每 attempt 最多 fetch `2`、接受 `1` 份 unique document；
+5. candidate permutation 先确定性排序，同一 canonical locator/capture 跨 role 分别记录 binding、只计一份网络文档；本地 market snapshot 单列，不能进入网络文档收益率分子；
+6. v1/v2 query 与 candidate serialization 不注入 v3 字段，历史回放保持兼容。
+
+focused v3＋既有 S1-08 回归共 `48 passed`。DELL/MU/NVDA full-fake 均先按 issuer、regulatory、customer、supply、market 顺序完成首次轮转，slot starvation=`0`；关系、日期、feed/sitemap malformed、20-F/6-K、fetch ceiling、candidate permutation 和 duplicate-role mutation 均 fail closed。该结果只把本实现提升为 `zero-call engineering pass`：official feed/sitemap 与 bounded-domain route 仍只有 replay proof，`external_site_search` 仍 unavailable，且尚未证明新的 live target-in-pool、recall、ranking 或研究内容质量。fresh live 需独立复证和新 authority；本节不授权 R3、MU/NVDA live、ranking、DeepSeek 或 S3。

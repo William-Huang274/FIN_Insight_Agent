@@ -31,11 +31,15 @@ _ROLE_TERMS: Mapping[str, tuple[str, ...]] = {
         "10-q",
         "10-k",
         "8-k",
+        "20-f",
+        "6-k",
     ),
     "regulatory_risk_and_financial_reconciliation": (
         "10-q",
         "10-k",
         "8-k",
+        "20-f",
+        "6-k",
         "risk factors",
         "cash flow",
         "segment",
@@ -144,7 +148,13 @@ def qualify_locator(
         reasons.append("source_family_not_allowed_for_evidence_slot")
     role_terms = _ROLE_TERMS.get(role_id, ())
     matched_terms = sum(term in haystack for term in role_terms)
-    if source_family == "regulatory_filing" and form_type in {"10-K", "10-Q", "8-K"}:
+    if source_family == "regulatory_filing" and form_type in {
+        "10-K",
+        "10-Q",
+        "8-K",
+        "20-F",
+        "6-K",
+    }:
         matched_terms += 2
     if matched_terms == 0:
         reasons.append("evidence_slot_fit_unproven")
@@ -206,10 +216,68 @@ def qualify_parsed_content(
     return tuple(sorted(set(reasons)))
 
 
+def qualify_relationship_direction(
+    *,
+    role_id: str,
+    url: str,
+    subject_entity: str,
+    evidence_owner_entity: str,
+    evidence_owner_roles: Sequence[str],
+    claim_direction: str,
+    allowed_source_owner_roles: Sequence[str],
+    forbidden_nested_relationships: Sequence[str],
+) -> tuple[str, ...]:
+    """Rejects locator semantics that point at the wrong economic edge.
+
+    This is deliberately evaluated before document fetch.  A page on an official
+    domain can still discuss that company's customer, supplier or partner rather
+    than the evidence owner's own demand/capacity.  Source authority therefore
+    does not establish relationship direction by itself.
+    """
+
+    reasons: list[str] = []
+    path = urlsplit(url).path.lower()
+    owner_roles = {str(value) for value in evidence_owner_roles}
+    allowed_roles = {str(value) for value in allowed_source_owner_roles}
+    forbidden = {str(value) for value in forbidden_nested_relationships}
+    if not subject_entity or not evidence_owner_entity or not claim_direction:
+        reasons.append("relationship_identity_or_direction_missing")
+    if allowed_roles and not owner_roles.intersection(allowed_roles):
+        reasons.append("evidence_owner_role_not_allowed_for_slot")
+    if role_id in {
+        "issuer_results_and_management_commentary",
+        "regulatory_risk_and_financial_reconciliation",
+    } and evidence_owner_entity != subject_entity:
+        reasons.append("subject_self_disclosure_owner_mismatch")
+    nested_customer_path = any(
+        token in path
+        for token in (
+            "/customers/",
+            "/customer-story/",
+            "/customer-stories/",
+            "/case-studies/",
+        )
+    )
+    if nested_customer_path and "evidence_owner_customer" in forbidden:
+        reasons.append("nested_customer_relationship_direction_invalid")
+    if (
+        claim_direction == "evidence_owner_own_infrastructure_demand"
+        and nested_customer_path
+    ):
+        reasons.append("evidence_owner_own_demand_not_proven_by_customer_story")
+    if (
+        claim_direction == "evidence_owner_own_supply_capacity_or_constraint"
+        and nested_customer_path
+    ):
+        reasons.append("evidence_owner_own_supply_not_proven_by_customer_story")
+    return tuple(sorted(set(reasons)))
+
+
 __all__ = [
     "LocatorQualityDecision",
     "canonical_locator_key",
     "infer_source_family",
     "qualify_locator",
     "qualify_parsed_content",
+    "qualify_relationship_direction",
 ]

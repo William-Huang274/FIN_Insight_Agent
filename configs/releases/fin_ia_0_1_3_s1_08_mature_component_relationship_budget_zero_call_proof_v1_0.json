@@ -1,0 +1,244 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_mature_component_relationship_budget_zero_call_proof_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "status": "zero_call_engineering_pass_independent_proof_and_live_authority_pending",
+  "governing_issue_id": "RC-P36-157-fin-0-1-3-s1-08-operational-provider-and-candidate-coverage-insufficient",
+  "scope": "S1_08_POST_R2_OFFICIAL_DOMAIN_RELATIONSHIP_AWARE_LOCATOR_AND_SLOT_BUDGET_ZERO_CALL_IMPLEMENTATION",
+  "governing_disposition": "configs/releases/fin_ia_0_1_3_s1_08_post_r2_provider_candidate_coverage_disposition_v1_0.json",
+  "external_call_counts": {
+    "network": 0,
+    "model": 0,
+    "provider": 0,
+    "retry": 0,
+    "admission": 0
+  },
+  "selected_mature_components": [
+    {
+      "package": "feedparser",
+      "version": "6.0.12",
+      "role": "parse immutable RSS or Atom response bytes into locator candidates",
+      "network_authority": false,
+      "evidence_promotion_authority": false
+    },
+    {
+      "package": "trafilatura",
+      "version": "2.1.0",
+      "role": "extract main-text and metadata candidates from immutable static HTML response bytes",
+      "network_authority": false,
+      "publication_date_authority": false,
+      "evidence_promotion_authority": false
+    },
+    {
+      "package": "lxml",
+      "version": "6.1.1",
+      "role": "offline HTML, sitemap, robots and structured endpoint parsing",
+      "network_authority": false,
+      "evidence_promotion_authority": false
+    }
+  ],
+  "bakeoff_decision": {
+    "adopt": [
+      "feedparser for captured feed bytes",
+      "Trafilatura for captured static-page main-text and metadata candidates",
+      "lxml for bounded same-host locator and sitemap parsing",
+      "FIN typed publication-date adjudicator over all parser candidates"
+    ],
+    "do_not_adopt_as_current_default": [
+      {
+        "component": "Scrapy",
+        "reason": "A second scheduler conflicts with the current exact-once, capture-first and Evidence-Slot reservation control plane; current need is bounded official-source discovery, not a general crawl platform."
+      },
+      {
+        "component": "Crawl4AI or Playwright",
+        "reason": "Dynamic-page fallback remains useful but requires a separate budget and fixture; the current immutable static captures do not justify making a browser the default path."
+      },
+      {
+        "component": "Trafilatura publication date",
+        "reason": "The real Microsoft press-release capture was inferred as 2026-06-30, which is the reporting-period end rather than the 2026-07-29 publication date."
+      }
+    ]
+  },
+  "immutable_dell_r2_capture_bakeoff": [
+    {
+      "object_digest": "1b16c1d89b47e5c20f1ef20ee021f1c166fb938ca94faf0d2bd87c2326c1294c",
+      "body_sha256": "94e5a8f806f03fa13a2d94107b6a32a6bfe6a10090eb41adc5f84ba3fb5f7b8a",
+      "url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+      "baseline_html_text_chars": 60792,
+      "trafilatura_main_text_chars": 58135,
+      "baseline_known_navigation_term_hits": 14,
+      "trafilatura_known_navigation_term_hits": 0,
+      "library_date_candidate": "2026-07-29",
+      "fin_date_decision": {
+        "date_value": "2026-07-29",
+        "date_kind": "event_date",
+        "date_source": "official_event_heading",
+        "date_confidence": "high",
+        "conflict_status": "none"
+      }
+    },
+    {
+      "object_digest": "7306f99976f05c7bca0574148d0c12ed6e4bac55a3f71f22237960b6973062cb",
+      "body_sha256": "9bcb8759d663b50b91245b5f2bc4f8e0362bccf9aa83fe83fceb155621aa0995",
+      "url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/press-release-webcast",
+      "baseline_html_text_chars": 26503,
+      "trafilatura_main_text_chars": 25973,
+      "baseline_known_navigation_term_hits": 14,
+      "trafilatura_known_navigation_term_hits": 1,
+      "library_date_candidate": "2026-06-30",
+      "fin_date_decision": {
+        "date_value": "2026-07-29",
+        "date_kind": "published_date",
+        "date_source": "official_release_masthead",
+        "date_confidence": "high",
+        "conflict_status": "none"
+      },
+      "rejected_date_candidate": {
+        "date_value": "2026-06-30",
+        "date_kind": "reporting_period_end",
+        "date_source": "trafilatura_inferred_date",
+        "date_confidence": "rejected"
+      }
+    }
+  ],
+  "implemented_contract": {
+    "provider_capability_state": [
+      "declared",
+      "configured",
+      "operational",
+      "replay_proven",
+      "live_proven"
+    ],
+    "official_discovery": [
+      "captured HTML alternate feed links",
+      "captured RSS or Atom entries",
+      "captured robots sitemap declarations",
+      "captured same-host sitemap indexes and URL sets",
+      "same-host HTML locator candidates",
+      "SEC 10-K, 10-Q, 8-K, 20-F and 6-K submissions"
+    ],
+    "relationship_binding": [
+      "subject_entity",
+      "evidence_owner_entity",
+      "ecosystem_role",
+      "claim_direction",
+      "allowed_source_owner_roles",
+      "forbidden_nested_relationships"
+    ],
+    "slot_budget": {
+      "global_network_ceiling": 16,
+      "issuer_and_regulatory_shared": 4,
+      "customer_demand": 4,
+      "supply_and_counterevidence": 5,
+      "market_context": 0,
+      "contingency_after_first_round": 3,
+      "maximum_document_fetches_per_attempt": 2,
+      "maximum_accepted_unique_documents_per_attempt": 1
+    },
+    "accounting": [
+      "canonical network source document",
+      "role-specific candidate binding",
+      "governed local source binding",
+      "network unique-document yield",
+      "slot starvation",
+      "source-family diversity"
+    ],
+    "historical_compatibility": "v1 and v2 query/candidate serialization omit all v3-only relationship fields"
+  },
+  "zero_call_acceptance_results": {
+    "actual_R2_capture_dates": "pass",
+    "reporting_period_rejected_as_publication_date": "pass",
+    "library_only_date_fail_closed": "pass",
+    "high_authority_date_conflict_fail_closed": "pass",
+    "feed_sitemap_robots_offline_parse": "pass",
+    "malformed_feed_fail_closed": "pass",
+    "cross_domain_feed_and_sitemap_locator_rejected": "pass",
+    "sitemap_lastmod_not_promoted_to_published_date": "pass",
+    "SEC_20F_6K_discovery": "pass",
+    "nested_customer_story_rejected_before_document_fetch": "pass",
+    "document_fetch_ceiling_is_executable": "pass",
+    "candidate_permutation_stable": "pass",
+    "candidate_unique_accept_ceiling_is_executable": "pass",
+    "canonical_source_role_binding_accounting": "pass",
+    "DELL_MU_NVDA_round_robin_full_fake": "pass",
+    "DELL_MU_NVDA_slot_starvation_count": 0,
+    "relationship_and_date_mutations_fail_closed": "pass",
+    "hidden_gold_or_cross_case_planner_leakage": 0
+  },
+  "deterministic_three_case_shape": {
+    "per_case": {
+      "network_calls": 4,
+      "query_attempts": 5,
+      "role_bindings_with_candidate": 5,
+      "accepted_unique_network_documents": 4,
+      "governed_local_source_bindings": 1,
+      "qualified_network_document_yield": 1.0,
+      "source_family_diversity": 3,
+      "typed_gaps": 0,
+      "slot_starvation_count": 0
+    },
+    "first_attempt_order": [
+      "issuer_results_and_management_commentary",
+      "regulatory_risk_and_financial_reconciliation",
+      "customer_demand_and_deployment_validation",
+      "supply_chain_capacity_and_counterevidence",
+      "market_expectation_context"
+    ]
+  },
+  "test_evidence": [
+    {
+      "scope": "new v3 plus prior focused regression",
+      "result": "48 passed",
+      "external_calls": 0
+    },
+    {
+      "scope": "all S1-08 contract tests",
+      "result": "60 passed",
+      "external_calls": 0
+    }
+  ],
+  "implementation_inputs": [
+    {
+      "path": "src/sec_agent/s1_08_candidate_generation_runtime.py",
+      "sha256": "441718f5818a4eace201af19cb7a10edbb2a373ad4603376337f43aecda15f42"
+    },
+    {
+      "path": "src/sec_agent/s1_08_official_discovery_adapter.py",
+      "sha256": "aa55bc8f60591fab12d20fc271e705908afb91df093a5a56d529f490774fc294"
+    },
+    {
+      "path": "src/sec_agent/s1_08_official_content_tools.py",
+      "sha256": "f8236bb8c7310dabc577495d52e8b03a0f038410941185b0418320153513f04a"
+    },
+    {
+      "path": "src/sec_agent/s1_08_source_quality.py",
+      "sha256": "67625114311b3a91690d6a1af982543e8533af636ad68dfe44ea8f01dd0b59c0"
+    },
+    {
+      "path": "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_relationship_budget_policy_v3_0.json",
+      "sha256": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851"
+    },
+    {
+      "path": "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py",
+      "sha256": "b2e6bc742be066c4ee906904556cb54322836247c87346c3dbcd9010324fbacc"
+    }
+  ],
+  "remaining_boundaries": [
+    "official_ir_feed_discovery and official_domain_bounded_search have replay proof but no fresh live proof",
+    "external_site_search remains declared but unconfigured and unavailable",
+    "dynamic official pages have no admitted Crawl4AI or Playwright fallback in this contract",
+    "this proof does not establish live target-in-pool, recall, ranking, Evidence promotion or research-content quality",
+    "RC-P36-156 shared Project OS status and run-scope registry defect remains owned by S0 or S5"
+  ],
+  "authority": {
+    "independent_zero_call_proof_authorized": false,
+    "fresh_live_authority_decision_authorized": false,
+    "network_calls_authorized": 0,
+    "model_calls_authorized": 0,
+    "provider_calls_authorized": 0,
+    "automatic_R3": false,
+    "ranking": false,
+    "S3": false
+  },
+  "current_next": "S1_08_V3_MATURE_COMPONENT_RELATIONSHIP_BUDGET_CLEAN_INDEPENDENT_ZERO_CALL_PROOF"
+}

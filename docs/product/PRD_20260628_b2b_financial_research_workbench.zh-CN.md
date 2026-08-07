@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-08 | 根据 S1-08 真实 capture bake-off 修正 SourceHunter 成熟组件边界：feedparser/Trafilatura 只能解析已捕获内容并生成 discovery/main-text/metadata candidate；第三方推断日期、sitemap lastmod、HTTP Last-Modified 不拥有金融发布日期权威。新增 relationship-aware Evidence Slot、slot round-robin 与网络唯一文档/本地快照分账要求。 |
 | 2026-08-07 | 补齐模型研究判断与金融事实写入权的产品边界：模型必须看见并分析 exact facts、选择 evidence/numeric refs、生成 thesis/机制/反方；Harness 只拥有 material number/date/entity/citation 的确定性渲染与晋升，不得代写研究。新增受保护混合叙事、correction closure 和 anti-template 内容质量门禁。 |
 | 2026-07-19 | 完成 FIN 0.1 PRD/TECH/Point 阶段复盘：当前已形成 10-cell P36 本地确定性研究纵向和可运行 Workbench Next，但 DeepSeek 实际调用、exact Human Senior Review、RG1/RG3/RG4 和 P07.5 release 尚未通过。当前功能状态见 `FIN_0_1_STAGE_REVIEW_20260719.zh-CN.md`，不得再以 2026-07-17 的 implementation-not-started scope freeze 代表当前进度。 |
 | 2026-07-17 | 纠正 `REL-PROD-001` 产品范围：P36 六条产业链改为 Anchor Case mandatory cell families；FIN 0.1 正式消费 B0+B2+B3 bounded subset+B7，必须覆盖 Dashboard/Task Center、动态 DecisionSurface、durable execution、Evidence/Numeric、Workpaper/Repair、LeadReview、Deliverable/Human Review、provenance 和 bounded same-Case explanation。 |
@@ -1137,8 +1138,8 @@ Evidence Orchestrator 应按 `evidence_domain` 路由到不同 domain operator�
 | --- | --- | --- | --- |
 | 官方披露 / 市场数据源 | SEC EDGAR APIs、OpenBB | SEC EDGAR APIs 作为美国公司 filing / XBRL / companyfacts 的一级官方 adapter；OpenBB 作为 market / fundamentals / provider aggregation adapter | SEC 是 authority source；OpenBB 是 connector 层，具体 authority 取决于底层 provider |
 | 事件 / 新闻发现 | RSS + feedparser、GDELT | RSS/feedparser 做轻量 issuer/news feed watch；GDELT 做全球新闻、事件热度和跨语种风险发现 | 只能做 discovery / context，不能直接晋升为 issuer fact |
-| 网页抓取 | Crawl4AI、Crawlee + Playwright | Crawl4AI 作为 SourceHunter 默认网页到 Markdown 候选；复杂 JS、登录后公开页面或交互式页面再用 Crawlee + Playwright | 必须遵守 robots / terms / fair access；动态抓取成本和失败率更高 |
-| 新闻正文抽取 | Trafilatura、news-please | Trafilatura 作为默认正文和 metadata 抽取；news-please 用于新闻站递归、RSS 和 archive 场景 | 新闻抽取结果仍需实体解析、去重、source grade 和事实边界 |
+| 网页抓取 | capture-first HTTP、Trafilatura/lxml；Crawl4AI、Crawlee + Playwright | 静态官方页先 capture，再由 Trafilatura/lxml 解析；只有静态路径证明不足的动态页才按单独预算切 Crawl4AI/Playwright | parser 不得自行联网；必须遵守 robots / terms / fair access；动态抓取成本和失败率更高 |
+| 新闻正文抽取 | Trafilatura、news-please | Trafilatura 作为正文和 metadata candidate extractor；news-please 用于新闻站递归、RSS 和 archive 候选 | 抽取结果仍需实体解析、去重、source grade 和事实边界；第三方日期推断不能直接成为 publication-date authority |
 | 文档解析主链路 | Docling、MinerU | Docling 作为 PDF / Office / 图片转结构化候选的主力；MinerU 作为复杂扫描件、复杂研报、公式/表格/OCR fallback | parser 输出必须带 page / section / table / cell lineage；高成本 OCR 不应默认全量跑 |
 | 轻量转换 | MarkItDown | 用于 Office、杂文件和快速 Markdown 转换，服务 data room intake 与粗粒度 preview | 不替代表格级 parser、财务科目选择或 numeric sanity |
 | 表格 fallback | pdfplumber、Camelot | 用于 machine-generated PDF 的表格抽取、视觉调试和单表 fallback；Camelot 适合 lattice / stream table 场景 | 只能产出 table candidates；需要 row selector、unit/period sanity 和人工/fixture 验证 |
@@ -1155,6 +1156,14 @@ Existing KB / DB / RAG / Graph route
 ```
 
 P36 的 supervisor supplement ledger 可作为 SourceHunterLoop 的输入队列，但在被上述工具链转成 runtime rows 前，只能保持 `supervisor_supplement_only`，不得写成 agent runtime 已具备能力。
+
+2026-08-08 S1-08 immutable-capture bake-off 进一步冻结以下产品规则：
+
+- 通用库负责“读懂已保存内容”，FIN 负责“这条内容能否证明当前金融命题”；不得把 parser confidence 当成 Evidence authority；
+- publication date 必须输出 `value/kind/source/confidence/capture/conflict`。报告期、URL 财季、sitemap `lastmod`、HTTP `Last-Modified` 和只有 library inference 的日期不得静默晋升为发布日期；
+- customer/supply evidence 不只检查域名和关键词，还必须绑定 `subject_entity / evidence_owner_entity / ecosystem_role / claim_direction`。客户官网里的下游客户故事不能证明该客户自身基础设施需求；
+- 网络预算必须先让 issuer、regulatory、customer、supply 各获得一次机会，再使用 contingency；一个 earlier slot 不得因连续抓取失败饿死 later slot；
+- 网络唯一文档、role binding 和本地受管 snapshot 分开计数。相同文档支持两个角色仍是一份 source，local snapshot 不能进入 `accepted network documents / network calls` 的分子。
 
 ### 7.6 已验证工具栈与 agentic tool-use 三层（2026-07-09 追加）
 

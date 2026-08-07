@@ -380,6 +380,10 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 
 > **2026-08-08 `013-S1-08` DELL R2 terminal / source-quality failed**：唯一 exact-live 完成 `16 network / 0 model-provider-retry`，终态与 partial/gap capture 完整，但 accepted=`2` 仅对应 1 份 unique DELL 8-K，customer/supply/market 三 role 为 gap。qualified yield=`0.125<0.5`，四组 DELL hidden target 的 target-in-pool 与 selected coverage 均为 0，ranking 不准入。失败归属 operational source coverage/locator，不归因 DeepSeek；不自动 R3，下一项为 S1-08 post-R2 provider/candidate coverage disposition。
 
+> **2026-08-08 `013-S1-08` post-R2 provider/candidate coverage disposition 已选定**：零调用 replay 把失败继续拆到最早责任面：16 次调用中 customer slot 独占 12 个 document fetch，supply slot 为 0；`document_ceiling_per_query=1` 实际只限制 accepted candidate，未限制 fetch；Microsoft 下游客户故事缺少关系方向约束；两个明确写出 `July 29, 2026` 的官方 release/event 页未被当前日期 parser 识别；同一 DELL 8-K 的两个 role binding 又把 unique-source yield 从真实 `1/16=0.0625` 记成 `2/16=0.125`。下一包固定为官方 IR feed/sitemap、official-domain bounded search、SEC 20-F/6-K、typed publication date、relationship-aware Evidence Slot、round-robin reservation budget 和 canonical source/role-binding 分账的一次零调用实现；全局 16 次暂不增加，`external_site_search` 在无真实 Provider 时继续 unavailable。只有 replay＋三案 mutation 通过后才另行决定 fresh live；本决定不授权 R3、MU/NVDA、ranking、DeepSeek 或 S3。
+
+> **2026-08-08 Project OS scope-policy 负向复核**：三个在 RC-P36-157 中显式禁止的 live/ranking/S3 scope 最初仍被预检误报为 `pass`。根因是共享实现只识别固定五种开放状态，描述性 `open_*` 状态在 scope 匹配前被跳过。当前以 RC-P36-156 canonical `open`＋wildcard block＋本零调用实现 allowlist 恢复即时 fail-closed；共享状态 schema/run-scope registry 仍归 S0/S5。任何后续 live 必须继续由 exact runner/admission 直接绑定，不能把一次 Project OS `pass` 当成充分权限。
+
 > **2026-08-07 用户已选择 SEC contact 路线**：真实联系身份只通过运行时环境注入，不进入 Git 或结果物；SEC 域名无合法 contact 时 fail closed。新增 identity mutation 后 broader=`84 passed`。只授权 new admission 的 1-call Dell SEC v1.3 proof，复用 MU/NVDA 已成功结果；不重跑三案、不进入额外 fallback。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

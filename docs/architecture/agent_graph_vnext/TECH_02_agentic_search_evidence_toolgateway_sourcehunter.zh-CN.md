@@ -706,3 +706,20 @@ clean successor proof 进一步成为 admission 的 mandatory binding，固定 R
 runner 的第一次 execution probe 另发现 core API/CLI projection 形状差异：核心 preflight 提供 blocker list，CLI compact 才增加 blocker count。successor 现以核心 list 为权威，并在 count 存在时交叉验证；v1.1 clean proof 绑定修复后的 source SHA。该 probe 位于 admission 前，未消耗 authority 或产生网络副作用。
 
 DELL R2 证明控制面已能完整 terminalize，但 operational SourceHunter 质量仍未达标：16 network calls 只产生 2 个 role candidates/1 个 unique SEC source，qualified yield=0.125，三 role typed gap，Gold target-in-pool=0。大量 anchor 因 slot-fit、stale 或 publication-date unproven 被拒，且 structured IR/external search 仍 route-unavailable。后续改进应增加真实 provider/locator 能力并按 Evidence Slot 调度预算，不能靠放宽质量门、追加 retry 或先调 reranker掩盖 candidate pool 缺口。
+
+### 20.3 R2 后官方域 Provider、关系方向与 Slot Budget 合同
+
+R2 capture replay 进一步证明，失败不只是“少一个搜索 Provider”。16 次调用中 3 次是 landing discovery、13 次是 document fetch；12 个 document fetch 被 customer slot 独占，supply slot 在 ceiling 前没有一次真实网络调用。`document_ceiling_per_query=1` 在当前实现中限制 accepted candidate 数，不限制 document fetch 数；因此一个未通过的 slot 可以连续扫描文档并饿死后续 slot。另有 9 个 Microsoft `/customers/story/` 页面被粗略归为 `customer_official_disclosure`，但它们描述 Microsoft 的下游客户，不等于 Microsoft 自身基础设施需求；Evidence Slot 缺少经济关系方向。
+
+下一合同版本必须同时修改 provider、metadata、slot 和 budget，不能只增加网址或调用数：
+
+1. `SearchProviderCapability` 显式区分 `declared / configured / operational / replay_proven / live_proven`。`official_ir_feed_discovery` 消费官方 HTML alternate feed、RSS/Atom、robots/sitemap 与同域结构化 locator；`official_domain_bounded_search` 只在 allowlisted 官方域内构建并查询 URL index，不得宣称 broad Web search。没有实际运营 Provider 时，`external_site_search` 继续 `route_unavailable`。
+2. SEC discovery 按实体和角色支持国内 `10-K/10-Q/8-K` 与 foreign issuer `20-F/6-K`，并可作为 customer/supply evidence owner 的官方候选路线；form 或 filing authority 仍不能绕过正文 Evidence Role gate。
+3. `EvidenceSlot` 新增 `subject_entity / evidence_owner_entity / ecosystem_role / claim_direction / allowed_source_owner_roles / forbidden_nested_relationships`。customer-demand 必须是客户自身 capex、capacity、deployment 或 infrastructure disclosure；客户的客户案例不得支撑该经济边。supply slot 同理必须绑定供应商、foundry、memory 或 compute owner 自身的 capacity/supply/constraint 叙述。
+4. publication metadata 输出 `date_value / date_kind / date_source / date_confidence / capture_ref / conflict_status`。优先 regulatory filing date、feed timestamp、JSON-LD、OpenGraph、semantic `time`、官方 release masthead 和 event/transcript heading；sitemap `lastmod`、HTTP `Last-Modified` 只能先成为 modified-date evidence。query as-of、URL 中的 fiscal period 和任意正文财务期间不得冒充 publication date，冲突必须 typed fail。
+5. 调度改为 slot round-robin 与 reservation。全局 16 次上限在下一零调用包中保持不变：issuer＋regulatory 共享 4、customer 4、supply 5、market 0、所有网络 slot 至少获得一次机会后才释放 3 次 contingency。每 attempt 独立限制 `maximum_document_fetches=2` 与 `maximum_accepted_unique_documents=1`；route/local-source unavailable 只 terminal 一次，不做无效 revision。
+6. canonical `SourceDocument` 与 role-specific binding 分离。同一 URL/capture 只抓取和物化一次，可被多个 role 引用；主效率指标为 `accepted unique canonical documents / actual network calls`，role coverage、source diversity、slot starvation 和重复 fetch 单列。R2 的两条 role candidate 因来自同一 8-K，unique-document yield 应记为 `1/16=0.0625`，不能继续用 role binding 数虚高。
+
+机器处置为 `configs/releases/fin_ia_0_1_3_s1_08_post_r2_provider_candidate_coverage_disposition_v1_0.json`。下一项只实现并零调用证明上述 v3 合同；R2 capture 必须能证明 Microsoft 两份官方 release/event 页的 typed 日期恢复、9 个 nested-customer 页面关系方向拒绝、supply 不再 starvation、market unavailable 零 revision 和 canonical fetch 去重。DELL/MU/NVDA 还须覆盖 20-F/6-K、feed/sitemap malformed、date conflict、cross-domain、relationship reversal 与 quota permutation mutation。通过后另行决定 fresh live；本节不授权网络、模型、ranking 或 S3。
+
+处置收尾的 Project OS negative probe 还证明，当前共享预检只把固定五种 `OPEN_BLOCKER_STATUSES` 视作开放阻断；新的描述性 `open_*` 状态会在 scope 匹配前被静默跳过。S1-08 不承担共享控制面重构，但 RC-P36-156 最新投影必须使用 canonical `open`、wildcard block 与本零调用 scope 显式 allowlist，作为临时 fail-closed。直到状态 schema 与 run-scope registry 在 S0/S5 修复，任何 fresh live 都不能只凭 Project OS 的 `pass`，仍须校验 exact runner/admission/source-SHA binding。

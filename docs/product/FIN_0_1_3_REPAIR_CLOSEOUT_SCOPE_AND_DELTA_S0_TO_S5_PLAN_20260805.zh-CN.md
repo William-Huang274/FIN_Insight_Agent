@@ -260,6 +260,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-06` Supervisor admission authority 通过**：四项项目内签发 blocker 和独立 fresh proof 均已关闭/通过，三案真实冻结输入均在预注册容量内，因此批准一个顺序、物理隔离的 supervised-recoverability campaign。预计 calls 为 DELL=`8`、MU=`10`、NVDA=`10`，合计 `28`，硬上限仍为 `11/case,33/campaign`，成本 `USD 0.18/case,0.54/campaign`，retry/fallback=0。每案必须 fresh Run/Attempt/runtime/admission，上一案 terminal 分类后才签下一案；共享项目缺陷停全 campaign，已排除共享原因后的 case-local 模型/内容失败无 retry、无现场 patch，但可继续其余案例完成能力分布。三案全部逐案 `L1=0/L2=0` 且有实质内容增益才可称 proven，部分通过不得平均。机器 decision=`32146a12...453e`；本项 admission/Provider/candidate/score/promotion=0，下一项仅为 DELL admission issuance 与 exact-once execution。
 
+> **2026-08-07 `013-S2-06` DELL issuer/runner 零调用实现就绪**：新增最小 release support、DELL admission issuer 与 exact-once runner，不修改已冻结共享 Runtime 或模型可见合同。admission 绑定 authority、implementation、clean Git、policy、DELL raw/evaluation/boundary 与 execution entrypoint SHA；存储和 shared-ledger 均在 Git 外，capture-first、0 retry/fallback。真实容量仍为 `8 calls / 33,590 chars`，focused=`21 passed`；本项 admission/provider=0。提交推送后才可运行 scoped preflight、签发一份 DELL admission 并 exact-once 执行。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。

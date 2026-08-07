@@ -1,0 +1,65 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_dell_supervisor_admission_runner_zero_call_implementation_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "zero_call_issuer_runner_implementation_ready_clean_commit_and_preflight_pending",
+  "scope": "one_DELL_case_local_Supervisor_admission_and_exact_once_execution_entrypoint",
+  "authority_binding": {
+    "ref": "configs/releases/fin_ia_0_1_3_s2_06_three_case_supervisor_admission_authority_decision_v1_0.json",
+    "decision_digest": "32146a12ec2a60d8d876171cdc81546450ab0788b4ba681dbebd7470fb59453e",
+    "authorized_case": "DELL",
+    "admissions_issued": 0,
+    "provider_execution_started": false
+  },
+  "implementation_bindings": {
+    "scripts/releases/fin_ia_0_1_3_s2_06_supervisor_execution_support.py": "7724593701602cf7a38cfa82c31323f521a93b89dabe52c2d9bb5ab25a2de5fe",
+    "scripts/releases/issue_fin_ia_0_1_3_s2_06_dell_supervisor_admission.py": "961c71dc655e613517904cc8db7b11118bcaf50ae4a1d331571d0213234c3a57",
+    "scripts/releases/run_fin_ia_0_1_3_s2_06_supervisor.py": "ad25acd822d484f1fda24ccf62d210ee30149c392f76929df801d0fc518ae4f6",
+    "tests/contract/test_fin_0_1_3_s2_06_dell_supervisor_admission_and_runner.py": "eefba3bd609c495bb94785878f3307cd96522daa4e72f740c98c28f799359761"
+  },
+  "frozen_DELL_binding": {
+    "raw_run_id": "fin013_s2_05_exp_a_dell_f9e9264951d69da5ed86",
+    "raw_outputs_digest": "87f68f67de68aafb29c760b8b74aa17f86e01c7a781017fe4062350e9c04552d",
+    "evaluation_digest": "68f89f4e33622a3dd5f65c06c7f75857c8a9833066910b723df674ed462c4af4",
+    "boundary_digest": "361bcca1f024ac2fa98869db3b4aeab1d5441c410390eb3fe33561ef7bc105e4",
+    "policy_sha256": "90eba779603d9b501b70f960d77fdb93d0ca3ee27dd49785543bd8cd5269ec86",
+    "findings": 27,
+    "corrections": 27,
+    "node_directives": 6,
+    "supervisor_request_characters": 33590,
+    "expected_provider_calls": 8,
+    "provider_call_ceiling": 11
+  },
+  "execution_properties": {
+    "admission_storage": ".codex_runtime/fin013_s2_06/authorities/DELL",
+    "runtime_storage": ".codex_runtime/fin013_s2_06/runs/<corrected_run_id>",
+    "shared_ledger": ".codex_runtime/fin013_s2_06/shared/supervisor_admission_ledger.sqlite",
+    "fresh_run_attempt_identity": true,
+    "admission_exact_once_across_runtime_roots": true,
+    "capture_before_parse_or_validation": true,
+    "candidate_freeze_before_hidden_scoring": true,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "provider_hopping": false,
+    "credential_value_persisted": false,
+    "issuer_runner_and_support_sha_bound_inside_admission": true,
+    "authority_runtime_policy_raw_evaluation_boundary_sha_bound_inside_admission": true
+  },
+  "verification": {
+    "focused_support_and_shared_runtime_tests": "21 passed",
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "admissions_issued": 0,
+    "corrected_candidates": 0,
+    "raw_mutations": 0
+  },
+  "next_required_sequence": [
+    "commit_and_push_clean_implementation",
+    "Project_OS_and_supervisor_zero_call_preflight",
+    "issue_exactly_one_DELL_admission",
+    "execute_exact_once_and_freeze_terminal_or_candidate",
+    "independent_post_freeze_evaluation_only_if_candidate_exists"
+  ],
+  "known_boundary": "Issuer and runner readiness is not an admission, Provider execution, corrected candidate, supervised-recoverability result or product acceptance.",
+  "implementation_digest": "e14427b3f9f303bf2e06b95b2552f4b4b33f3a4e8112d2b21970268a43997a58"
+}

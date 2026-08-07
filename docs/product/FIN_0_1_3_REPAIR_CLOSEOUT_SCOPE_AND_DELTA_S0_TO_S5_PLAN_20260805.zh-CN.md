@@ -240,6 +240,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-05/06` DELL layered raw 与监督边界已形成**：replacement successor 已完成 Lead＋6 Specialist＋Synthesis＋Writer＋Verifier 的 `10/10` raw chain；typed schema 漂移未复发，但 raw 内容因“中个位数→4–6%”虚假精度、4/6 Specialist 无反证和 Verifier false-green 而失败。path-aware evaluator v1.1 重算为 `2 L1 / 1 L2 / 23 L3`，关闭 `10-K`、跨 section OCF/P-E 和 conditional threshold 层级误报，真实 L1 保留。DELL raw 记为 `complete_quality_fail`，不扶正为自然成功。为避免三案 benchmark 污染，DELL supervisor 模型纠错延后到 MU/NVDA raw 完成之后；MU 仅可进入独立 authority decision，并必须沿用冻结 model-visible contract、不得读取 DELL correction 或 hidden Gold。
 
+> **2026-08-07 `013-S2-05` MU raw authority 已编译**：在不修改 runtime、policy、blind input 或模型可见合同的前提下，MU 专属 authority/issuer 已零调用形成。MU 仅消费自身 `11 Evidence / 3 derived numeric / 4 explicit gaps`，DELL raw/correction 与 evaluator-only hidden Gold 不可见；post-hoc evaluator v1.1 不进入 prompt。权限限一份 admission、一次 execution、最多 12 calls、retry/fallback=0；NVDA、supervisor、business promotion 和 automatic next-case 均未授权。提交推送后才可签发 Git 忽略 admission，并须重新通过 scoped execution preflight；当前尚无 admission 或 Provider 调用。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。

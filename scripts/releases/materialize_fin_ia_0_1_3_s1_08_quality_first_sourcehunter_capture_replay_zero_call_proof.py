@@ -99,6 +99,7 @@ def main() -> int:
     OUTPUT.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
+        newline="\n",
     )
     print(json.dumps({"output": str(OUTPUT), "proof_digest": payload["proof_digest"]}))
     return 0

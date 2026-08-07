@@ -1,0 +1,54 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_p3a_clean_zero_call_proof_a1_failure_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08-P3A",
+  "attempt_id": "S1-08-P3A-CLEAN-PROOF-A1",
+  "status": "failed_before_result_materialization_proof_input_assembly",
+  "source_commit": "6488af2ab7c39af4fbf29573ae2470e8ec1e6f59",
+  "source_upstream_commit": "6488af2ab7c39af4fbf29573ae2470e8ec1e6f59",
+  "source_worktree_clean_before_attempt": true,
+  "authority": {
+    "run_scope": "S1_08_P3A_PROTECTED_DOCUMENT_FETCH_BUDGET_AND_ATTEMPT_LOCAL_CACHE_ZERO_CALL_IMPLEMENTATION_AND_PROOF",
+    "network_calls_authorized": 0,
+    "model_calls_authorized": 0,
+    "provider_calls_authorized": 0,
+    "admissions_authorized": 0,
+    "live_runs_authorized": 0
+  },
+  "source_bindings": {
+    "implementation_result_ref": "configs/releases/fin_ia_0_1_3_s1_08_p3a_protected_document_fetch_cache_zero_call_implementation_v1_0.json",
+    "implementation_result_sha256": "501338ce6be8bbf8b7515e20c7b09b71a093df5e4615a6bf0b3db2b7e3cea3ae",
+    "proof_runner_ref": "scripts/releases/prepare_fin_ia_0_1_3_s1_08_p3a_clean_zero_call_proof.py",
+    "proof_runner_sha256": "f43949d1fba35d1b6d49abda1c24e6725f94480338a14c2b45e2818fe6467ed8",
+    "R3_result_sha256": "731885330176f1d3a428ed3cdf62315e34c345f457ba39b749d60802d9c6b1d5",
+    "R3_quality_evaluation_sha256": "b8af0d6e6a573ce2365d544972bfb74bbdf6ba8927c4a29f1d33cae8a6b6c5f2"
+  },
+  "observed": {
+    "clean_git_archives_started": 1,
+    "fresh_python_processes_started": 1,
+    "pytest_passed": 90,
+    "pytest_failed": 1,
+    "pytest_skipped": 1,
+    "failing_test": "test_restricted_manifest_matches_all_actual_R1_request_objects_without_emitting_raw",
+    "failure_code": "s1_08_restricted_capture_object_missing",
+    "P3A_v4_assertion_failures": 0,
+    "network_model_provider_retry_admission_live_calls": [0, 0, 0, 0, 0, 0]
+  },
+  "root_cause": {
+    "class": "clean_proof_runner_restricted_input_assembly_defect",
+    "detail": "The A1 runner injected the immutable R3 capture store only, while its declared combined S1-08 pytest target also contains historical R1 and R2 capture-replay tests. The first clean archive therefore lacked the R1 request objects required by that historical test; the R2-dependent test was skipped.",
+    "v4_runtime_defect_established": false,
+    "fixed_budget_invariant_failure_established": false,
+    "DeepSeek_or_provider_fault_established": false
+  },
+  "disposition": {
+    "attempt_immutable": true,
+    "automatic_rerun": false,
+    "runtime_patch_authorized": false,
+    "P3A_complete": false,
+    "P3B_authorized": false,
+    "R4_authorized": false,
+    "recommended_next": "Under the same P3A zero-call scope, amend only the proof runner input manifest to inject the already-governed R1 request objects and R2 content captures required by its declared legacy suite, bind those inputs by digest, then execute a new A2 clean-proof attempt. Do not change v4 Runtime or the 16-call budget."
+  },
+  "known_boundary": "A1 disproves the proof runner's input completeness, not the P3A Runtime invariants. Working-tree 92/92 remains engineering evidence only. No clean-source P3A proof, product source-quality claim, P3B authority or live authority exists."
+}

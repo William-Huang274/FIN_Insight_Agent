@@ -123,7 +123,9 @@ def run_sanitized_quality_replay(
         if row.get("expected_content_qualified") is True
     }
     useful_fetches = sum(row["case_id"] in qualified_ids for row in fetch_decisions)
-    yield_ratio = useful_fetches / len(fetch_decisions) if fetch_decisions else 0.0
+    projected_discovery_calls = int(fixture.get("projected_discovery_network_calls") or 0)
+    projected_network_calls = projected_discovery_calls + len(fetch_decisions)
+    yield_ratio = useful_fetches / projected_network_calls if projected_network_calls else 0.0
     role_outcomes = fixture.get("role_outcomes") or []
     roles_closed = sum(
         row.get("outcome") in {"candidate", "typed_gap"} for row in role_outcomes
@@ -162,6 +164,9 @@ def run_sanitized_quality_replay(
                 for row in decisions
             ),
             "evidence_roles_with_candidate_or_typed_gap": roles_closed,
+            "qualified_document_count": useful_fetches,
+            "projected_discovery_network_calls": projected_discovery_calls,
+            "projected_total_network_calls": projected_network_calls,
             "qualified_document_yield": round(yield_ratio, 6),
             "canonical_duplicate_group_count": sum(
                 len(values) > 1 for values in duplicate_groups.values()

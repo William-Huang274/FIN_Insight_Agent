@@ -11,6 +11,7 @@ from sec_agent.s1_08_candidate_generation_runtime import (
     canonical_digest,
     compile_evidence_slots,
     compile_initial_queries,
+    compile_revision,
     load_source_catalog,
     run_candidate_generation,
 )
@@ -26,6 +27,7 @@ from sec_agent.s1_08_official_discovery_adapter import CaptureFirstOfficialDisco
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v2_0.json"
+CATALOG_V1 = ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v1_0.json"
 MANIFEST = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_r1_restricted_capture_manifest_v1_0.json"
 FIXTURE = ROOT / "eval_sets/fin_0_1_3_s1_08_sourcehunter_replay/dell_r1_sanitized_quality_replay_fixture_v1_0.json"
 RUNTIME_OBJECTS = ROOT / (
@@ -87,6 +89,22 @@ def test_v2_catalog_compiles_five_executable_evidence_slots_without_gold() -> No
     assert "DELL_E" not in serialized and "DELL_T" not in serialized
 
 
+def test_v1_revision_replay_preserves_historical_SEC_widening() -> None:
+    catalog = load_source_catalog(CATALOG_V1)
+    prior = next(
+        query
+        for query in compile_initial_queries(
+            catalog=catalog,
+            case_key="DELL",
+            research_objective="Evaluate current customer demand.",
+        )
+        if query.role_id == "customer_demand_and_deployment_validation"
+    )
+    assert "sec_submissions_discovery" not in prior.route_ids
+    revised = compile_revision(catalog=catalog, prior=prior, reason="no_candidate")
+    assert "sec_submissions_discovery" in revised.route_ids
+
+
 def test_restricted_manifest_matches_all_actual_R1_request_objects_without_emitting_raw() -> None:
     manifest = load_restricted_manifest(MANIFEST)
     audit = audit_restricted_capture_store(
@@ -112,6 +130,9 @@ def test_sanitized_replay_passes_quality_transport_and_efficiency_together() -> 
     assert result["metrics"]["known_navigation_noise_fetches"] == 0
     assert result["metrics"]["stale_filing_selected_when_newer_eligible_exists"] == 0
     assert result["metrics"]["evidence_roles_with_candidate_or_typed_gap"] == 5
+    assert result["metrics"]["qualified_document_count"] == 6
+    assert result["metrics"]["projected_discovery_network_calls"] == 5
+    assert result["metrics"]["projected_total_network_calls"] == 11
     assert result["metrics"]["qualified_document_yield"] >= 0.5
     assert result["planner_hidden_gold_visibility"] is False
 

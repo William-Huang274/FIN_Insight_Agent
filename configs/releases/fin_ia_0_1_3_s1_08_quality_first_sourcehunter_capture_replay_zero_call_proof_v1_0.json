@@ -13,7 +13,7 @@
     "plan": "c9d2d09dbb12d23277ce61693619a75a12029eea5dfbb7df7dbbdb3be765faee",
     "catalog": "a0d4c8318617d273e8139cca15d52f9b5a9afe03cd5fec1ff59ebc311390c219",
     "manifest": "6241b6a37dd7b000467abcec227f958206352b0a0f08b1e0bc4787bf68e92c8c",
-    "fixture": "ceff014aaa668045b902f5f84b73bb9ee2e4e573e073028714a608fd21082852"
+    "fixture": "15caf4640b08c69d568d580fa0c2e03ddd754e924c5f28722645ab4e7b34d420"
   },
   "restricted_capture_audit": {
     "restricted_request_objects_verified": 19,
@@ -253,10 +253,13 @@
       "known_navigation_noise_fetches": 0,
       "stale_filing_selected_when_newer_eligible_exists": 0,
       "evidence_roles_with_candidate_or_typed_gap": 5,
-      "qualified_document_yield": 1.0,
+      "qualified_document_count": 6,
+      "projected_discovery_network_calls": 5,
+      "projected_total_network_calls": 11,
+      "qualified_document_yield": 0.545455,
       "canonical_duplicate_group_count": 1
     },
-    "result_digest": "dd8c20d9c6d7046c9965543b36555360cd0927bdd7a9a2251ff00a65d9b3bbec"
+    "result_digest": "a9a1a958463d7c7b15c316f9ebdd89d0d1d44be1a53205cba72f6a103460ccf7"
   },
   "implementation": {
     "evidence_slots": 5,
@@ -275,7 +278,7 @@
     "document_ceiling_per_query": 1
   },
   "verification": {
-    "focused_tests_expected": 37,
+    "focused_tests_expected": 46,
     "three_case_full_fake_and_mutation_included": true,
     "actual_R1_request_objects_verified": 19,
     "network_model_provider_retry_calls": [
@@ -294,5 +297,5 @@
   },
   "known_boundary": "Replay and deterministic tests prove the repaired structure against R1 and synthetic mutations. They do not prove fresh live source reachability, target-in-pool, downstream research quality or release readiness.",
   "current_next": "COMMIT_PUSH_THEN_INDEPENDENT_FRESH_ZERO_CALL_PROOF_ON_CLEAN_ARCHIVE",
-  "proof_digest": "8f1d7503425c717b9979df213f35c5ccb678c0a2cc650914f31e8f9b786c7931"
+  "proof_digest": "37fea4fbb697d0a584bcd7d44e94b36ba7e64e00b42f585c1d66defb1ed5d1d3"
 }

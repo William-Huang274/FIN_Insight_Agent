@@ -27,9 +27,9 @@ R1 暴露的不是四个互不相关的小 bug，而是同一个 candidate-gener
 - known navigation noise fetch=`0`；
 - stale filing selected when newer eligible exists=`0`；
 - Evidence Role candidate-or-typed-gap=`5/5`；
-- qualified-document yield 达到 `>=0.5`；
+- qualified-document yield 按真实口径把 discovery 与 document fetch 一起计入网络调用分母，达到 `6/11=0.545455 >=0.5`；
 - current successor budget=`<=16 network / 1 document per query / 0 model/provider/retry`；
-- focused tests=`37 passed`；materializer byte-identical；
+- focused/related tests=`46 passed`；materializer byte-identical；
 - live/model/provider/network/retry/admission=`0/0/0/0/0/0`。
 
 工程 proof：`configs/releases/fin_ia_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_zero_call_proof_v1_0.json`。

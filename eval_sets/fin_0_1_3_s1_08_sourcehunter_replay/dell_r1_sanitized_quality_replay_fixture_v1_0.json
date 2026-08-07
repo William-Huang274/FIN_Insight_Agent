@@ -2,6 +2,7 @@
   "schema_version": "fin_ia_0_1_3_s1_08_quality_first_sanitized_replay_fixture_v1_0",
   "as_of": "2026-08-06",
   "hidden_gold_included": false,
+  "projected_discovery_network_calls": 5,
   "quality_gates": {"qualified_document_yield_min": 0.5},
   "locator_cases": [
     {"case_id":"customer_earnings_metrics","role_id":"customer_demand_and_deployment_validation","allowed_source_families":["issuer_ir_document","customer_official_disclosure"],"url":"https://www.microsoft.com/en-us/Investor/earnings/FY-2026-Q4/metrics","title":"Microsoft FY2026 Q4 earnings metrics and capital expenditure","published_on":"2026-07-30","currentness_window_days":550,"expected_decision":"fetch","expected_content_qualified":true,"labels":["current","qualified"]},

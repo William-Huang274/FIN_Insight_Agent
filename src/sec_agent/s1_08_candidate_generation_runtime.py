@@ -293,6 +293,13 @@ def compile_revision(
             [*route_ids, *[str(value) for value in additions.get(str(revision), [])]]
         )
     )
+    if (
+        catalog.get("schema_version") != CATALOG_SCHEMA
+        and revision == 1
+        and "sec_submissions_discovery" not in route_ids
+    ):
+        # Historical v1 replay contract: revision one always widened to SEC.
+        route_ids = (*route_ids, "sec_submissions_discovery")
     query = _make_query(
         case_key=prior.case_key,
         target_key=prior.target_key,

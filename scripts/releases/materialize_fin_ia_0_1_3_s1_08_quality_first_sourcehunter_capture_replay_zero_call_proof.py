@@ -80,7 +80,7 @@ def main() -> int:
             "document_ceiling_per_query": 1,
         },
         "verification": {
-            "focused_tests_expected": 37,
+            "focused_tests_expected": 46,
             "three_case_full_fake_and_mutation_included": True,
             "actual_R1_request_objects_verified": 19,
             "network_model_provider_retry_calls": [0, 0, 0, 0],

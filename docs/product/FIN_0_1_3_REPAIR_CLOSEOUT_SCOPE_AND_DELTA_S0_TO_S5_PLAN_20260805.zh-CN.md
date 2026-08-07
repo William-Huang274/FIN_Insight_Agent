@@ -350,4 +350,6 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 
 > **2026-08-07 `013-S1-07` R2 partial live success**：MU official PDF 与 NVDA official IR HTML 均真实 fetch/capture/parse/promote；Dell IR PDF 单源在 30 s 内未返回并 typed `official_source_transport_failed`。不重跑两条成功路径、不扩大 timeout、不修改 parser；只新增一个 1-call Dell SEC official HTML fallback successor。若该 fallback 通过，三案合并关闭 S1-07；若失败，立即停止并保留 blocker，不进入更多轮次。
 
+> **2026-08-07 `013-S1-07` bounded stop**：Dell-only SEC fallback 返回 HTTP 403，capture 原文明确为 `Undeclared Automated Tool`；不是正文 parser 问题。至此 MU/NVDA=`fetch+parse+promote pass`，Dell=`IR timeout + SEC client-identity rejection`，S1-07 只能记 `2-of-3 partial`，不得进入 R4/S1-08。下一步需单独决定 SEC-compliant audited contact User-Agent 或 Dell IR browser/CDN adapter；未经该决策不再调用来源。
+
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

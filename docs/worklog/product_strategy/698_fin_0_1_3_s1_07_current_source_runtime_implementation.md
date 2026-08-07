@@ -51,3 +51,18 @@
 - shared worker clean close、no orphan。
 
 R2 证明 runtime 主体真实可用，也证明单一 source route 可能超时。当前不把 timeout 提高成通用补丁，不重跑成功的 MU/NVDA。最后一个有界动作是 new admission/1 call 的 Dell SEC official 10-K HTML fallback；它复用 immutable R2 的两条成功结果。若 fallback 仍失败，S1-07 停止，不进入 R4。
+
+## 7. Dell-only successor 与停止结论
+
+Dell-only successor 使用 new commit/admission，仅执行 1 call、0 retry。SEC official 10-K HTML 在约 `0.9 s` 返回 HTTP 403；raw response capture=`4,819 bytes`，页面标题明确为：`SEC.gov | Your Request Originates from an Undeclared Automated Tool`。这说明 fallback 到达 SEC，但当前 generic User-Agent 缺少 SEC 可接受的声明式客户端身份/联系信息；没有进入正文 parser，因此也没有 promotion。
+
+最终状态：
+
+- MU official PDF：live fetch/capture/parse/promote pass；
+- NVDA official HTML：live fetch/capture/parse/promote pass；
+- Dell IR PDF：bounded transport timeout；
+- Dell SEC HTML：HTTP 403 undeclared automated tool；
+- 所有失败和成功 capture、admission terminal、worker no-orphan 完整；
+- 模型/Provider/retry=`0/0/0`。
+
+按已冻结边界停止，不进入 R4，S1-07 不通过。下一项只能是零调用处置决策：配置可审计、非伪造的 SEC contact User-Agent，或实现 Dell IR 的 browser/CDN adapter。不能在没有合法身份配置的情况下虚构邮箱，也不能继续盲目重试或提高 timeout。

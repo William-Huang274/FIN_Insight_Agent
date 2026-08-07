@@ -1,0 +1,294 @@
+{
+  "acceptance_boundary": {
+    "DELL_replacement_authority": false,
+    "RC_P36_147_engineering_repair": "independent_fresh_proof_pass",
+    "S2_06_shared_runtime_fresh_reproducibility": "pass",
+    "business_promotion": false,
+    "corrected_candidate_live_execution": "not_run_not_proven",
+    "corrected_report_quality": "not_measured",
+    "formal_hidden_score": false,
+    "qualified_human_acceptance": false,
+    "real_frozen_input_compilation_and_capacity": "pass",
+    "release": false,
+    "supervised_recoverability": "not_proven",
+    "supervisor_natural_output": "not_run_not_proven"
+  },
+  "independent_proof": {
+    "clean_git_archives": 2,
+    "clean_worktree_byte_projection": {
+      "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json": {
+        "clean_worktree_sha256": "689a4f957015c6b16f4d3ecdde6292450c044f9641af09537b1f0190176bdb59",
+        "git_blob_sha256": "0c2a1bbcc76e795163bb2d2aa2c376283af8e7a2632d1ef7ef141a1c915e9be0",
+        "normalized_content_matches_git_blob": true,
+        "reason": "historical_frozen_policy_binds_clean_windows_CRLF_bytes"
+      }
+    },
+    "distinct_disposable_roots": 2,
+    "fresh_python_processes": 2,
+    "normalized_output_sha256": "b659addbaaed352e7167abafb5e49bca56e07be69a492419a8e059ec5c041980",
+    "normalized_outputs_equal": true,
+    "projection_files": 1,
+    "restricted_raw_inputs_injected_byte_identical": true,
+    "temporary_roots_removed": true,
+    "worker_result": {
+      "hard_boundaries": {
+        "admissions_consumed": 0,
+        "admissions_issued": 0,
+        "business_promotions": 0,
+        "corrected_paid_candidates": 0,
+        "credential_values_present_or_read": 0,
+        "external_tool_calls": 0,
+        "hidden_scores": 0,
+        "network_attempts": 0,
+        "real_model_calls": 0,
+        "real_provider_calls": 0,
+        "source_calls": 0
+      },
+      "implementation_bindings": {
+        "src/sec_agent/s2_same_evidence_supervision.py": "b803a536b28d4c1893e10bc403561806bdd46192ab9632f92de26d8f8f7bbe72",
+        "src/sec_agent/s2_same_evidence_supervisor_runtime.py": "6be7df51ff243fd7e208f5a26840bb0f8d00059f220559a82144f6e065d870c2",
+        "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py": "65aac297f4fb516ee389ecab7fa03ec2037dab648e2aafcdb2d3bafecf99c274"
+      },
+      "pytest": {
+        "failed": 0,
+        "nodeids": [
+          "tests/contract/test_fin_0_1_3_s2_06_supervision_boundary.py::test_complete_failed_raw_candidate_can_open_separate_next_case_decision_only",
+          "tests/contract/test_fin_0_1_3_s2_06_supervision_boundary.py::test_deterministic_runtime_can_repair_source_precision_but_not_missing_research",
+          "tests/contract/test_fin_0_1_3_s2_06_supervision_boundary.py::test_financial_semantic_invariants_return_to_originating_model_without_hidden_gold",
+          "tests/contract/test_fin_0_1_3_s2_06_supervision_boundary.py::test_incomplete_raw_candidate_cannot_open_next_case",
+          "tests/contract/test_fin_0_1_3_s2_06_supervision_boundary.py::test_release_decision_freezes_raw_first_cross_case_fairness_boundary",
+          "tests/contract/test_fin_0_1_3_s2_06_supervision_boundary.py::test_supervision_boundary_never_rewrites_raw_or_exposes_hidden_gold",
+          "tests/contract/test_fin_0_1_3_s2_06_supervision_boundary.py::test_supervision_boundary_requires_raw_identity_and_findings",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_authority_and_freeze_guards_fail_before_unsafe_actions",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_corrected_admission_is_exact_once_even_with_new_runtime_root",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_cross_case_alias_and_hidden_surface_mutations_fail_closed",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_current_citation_and_coverage_findings_have_executable_owners",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_dependency_closure_and_capacity_are_exact",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_deterministic_deletion_changes_only_corrected_copy_and_reruns_downstream",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_eight_unit_full_graph_is_blocked_by_frozen_capacity",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_failure_terminal_preserves_every_capture_and_stops_without_retry[lead_topology-s2_06_corrected_lead_topology_changed-2]",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_failure_terminal_preserves_every_capture_and_stops_without_retry[transport-s2_06_provider_transport_or_finish_failure-3]",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_implementation_record_binds_runtime_and_honest_acceptance_boundary",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_nonempty_case_authority_is_compiled_into_schema_prompt_and_validator[0]",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_nonempty_case_authority_is_compiled_into_schema_prompt_and_validator[1]",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_nonempty_case_authority_is_compiled_into_schema_prompt_and_validator[2]",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_three_case_full_fake_freezes_capture_first_candidate_without_raw_mutation[0]",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_three_case_full_fake_freezes_capture_first_candidate_without_raw_mutation[1]",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_three_case_full_fake_freezes_capture_first_candidate_without_raw_mutation[2]",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_three_cases_compile_same_protocol_with_case_qualified_ids[0]",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_three_cases_compile_same_protocol_with_case_qualified_ids[1]",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_three_cases_compile_same_protocol_with_case_qualified_ids[2]",
+          "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py::test_unknown_current_finding_class_fails_before_prompt"
+        ],
+        "passed": 27,
+        "skipped": 0
+      },
+      "raw_input_manifests_after": {
+        "DELL": {
+          "bytes": 249220,
+          "exists": true,
+          "files": 11,
+          "sha256": "08311efbeb23eb4fc6c7117922606797b4ca3393267f997de4bbcc92b570b4c2"
+        },
+        "MU": {
+          "bytes": 254548,
+          "exists": true,
+          "files": 11,
+          "sha256": "aecec63e90b10dda7168ea499901f5d3bbaad75eab19f3fd37773c6729b3ffb9"
+        },
+        "NVDA": {
+          "bytes": 257225,
+          "exists": true,
+          "files": 11,
+          "sha256": "111709c418e161aa1a76403612bf947c447d96469d74227a07337c31a1b70204"
+        }
+      },
+      "raw_input_manifests_before": {
+        "DELL": {
+          "bytes": 249220,
+          "exists": true,
+          "files": 11,
+          "sha256": "08311efbeb23eb4fc6c7117922606797b4ca3393267f997de4bbcc92b570b4c2"
+        },
+        "MU": {
+          "bytes": 254548,
+          "exists": true,
+          "files": 11,
+          "sha256": "aecec63e90b10dda7168ea499901f5d3bbaad75eab19f3fd37773c6729b3ffb9"
+        },
+        "NVDA": {
+          "bytes": 257225,
+          "exists": true,
+          "files": 11,
+          "sha256": "111709c418e161aa1a76403612bf947c447d96469d74227a07337c31a1b70204"
+        }
+      },
+      "raw_inputs_unchanged": true,
+      "real_frozen_input_matrix": {
+        "DELL": {
+          "corrected_graph_calls": 7,
+          "correction_count": 27,
+          "evaluation_digest": "68f89f4e33622a3dd5f65c06c7f75857c8a9833066910b723df674ed462c4af4",
+          "finding_count": 27,
+          "node_directives": 6,
+          "prospective_admission_digest": "1944a3bd1e6c009a9caf217c02f09b1fa552213f646e37a0af1af41abc0d7ddb",
+          "provider_calls": 8,
+          "provider_execution_authorized": false,
+          "raw_outputs_digest": "87f68f67de68aafb29c760b8b74aa17f86e01c7a781017fe4062350e9c04552d",
+          "raw_run_id": "fin013_s2_05_exp_a_dell_f9e9264951d69da5ed86",
+          "raw_terminal_digest": "7c9a0eb56511f5df0cf0c729637fe59365eef0c24fdf1c8c295eae82997d235d",
+          "supervisor_request_characters": 33689
+        },
+        "MU": {
+          "corrected_graph_calls": 9,
+          "correction_count": 24,
+          "evaluation_digest": "786ff716e390f16ec3e1e2f9f50970338d11d3f6d436cd338ee1154da6928e6d",
+          "finding_count": 24,
+          "node_directives": 8,
+          "prospective_admission_digest": "bb055fa35d240ce5e1eaef8f8728abef31ae0011a66e4714eea2a01f46cb28ff",
+          "provider_calls": 10,
+          "provider_execution_authorized": false,
+          "raw_outputs_digest": "b2c2b05eb5c938a258b6fc179b3068b3a81d90f58b82c9ca29cc1a6693f1bccb",
+          "raw_run_id": "fin013_s2_05_exp_a_mu_d94afa12295f83b18870",
+          "raw_terminal_digest": "b3dd5a26d165317287be61027bf6a8566b9aa7b7abe89bd065e3db56c23aba27",
+          "supervisor_request_characters": 28203
+        },
+        "NVDA": {
+          "corrected_graph_calls": 9,
+          "correction_count": 32,
+          "evaluation_digest": "746b777bd8d4b7f06f47b9ce6966d4cf03e04811c3d7d6da85c7ee29d81d8628",
+          "finding_count": 32,
+          "node_directives": 9,
+          "prospective_admission_digest": "bc2a7f9a035fa4e9d6760cb7921128c86c6a44e1ec84f619215beb20f701d7d9",
+          "provider_calls": 10,
+          "provider_execution_authorized": false,
+          "raw_outputs_digest": "dad9620c6536145b77e75ecdf635851472588d06a61cc3c529c4d38f3abf9964",
+          "raw_run_id": "fin013_s2_05_exp_a_nvda_04b01685650a1af46f43",
+          "raw_terminal_digest": "5bcc667d8a417cd8b27f55bd41aef36da870ef821986c1425d42e808ae9f802a",
+          "supervisor_request_characters": 35749
+        }
+      },
+      "schema_version": "fin_ia_0_1_3_s2_06_unified_supervisor_independent_fresh_worker_proof_v1_0",
+      "status": "pass"
+    }
+  },
+  "known_boundary": "This proof independently establishes clean-commit reproducibility of SupervisorPlan v1.1 and the disclosed non-empty Evidence-or-Gap rule. It does not authorize a replacement admission, call DeepSeek, create a corrected report, prove supervised recoverability, or permit MU/NVDA execution.",
+  "next_action": "FIN-0.1.3-013-S2-06-DELL-REPLACEMENT-SUPERVISOR-AUTHORITY-DECISION",
+  "next_action_authorized": false,
+  "observed_counts": {
+    "admissions_consumed": 0,
+    "admissions_issued": 0,
+    "external_tool_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "paid_corrected_candidates": 0,
+    "provider_calls": 0,
+    "raw_mutations": 0,
+    "source_calls": 0
+  },
+  "proof_id": "FIN-0.1.3-013-S2-06-SUPERVISOR-CONTRACT-V1.1-INDEPENDENT-FRESH-ZERO-CALL-PROOF",
+  "recorded_at": "2026-08-07T15:06:13+08:00",
+  "result_digest": "f1be7598c1afe72847fce503ddcf74636c8ce4f2ff57f046993dd06d64fefb4d",
+  "schema_version": "fin_ia_0_1_3_s2_06_supervisor_contract_v1_1_independent_fresh_zero_call_proof_result_v1_0",
+  "source_and_target_read_only_audit": {
+    "repository_status_unchanged_until_result_write": true,
+    "source_raw_after": {
+      "DELL": {
+        "run_id": "fin013_s2_05_exp_a_dell_f9e9264951d69da5ed86",
+        "terminal_result_digest": "7c9a0eb56511f5df0cf0c729637fe59365eef0c24fdf1c8c295eae82997d235d",
+        "tree": {
+          "bytes": 249220,
+          "exists": true,
+          "files": 11,
+          "sha256": "08311efbeb23eb4fc6c7117922606797b4ca3393267f997de4bbcc92b570b4c2"
+        }
+      },
+      "MU": {
+        "run_id": "fin013_s2_05_exp_a_mu_d94afa12295f83b18870",
+        "terminal_result_digest": "b3dd5a26d165317287be61027bf6a8566b9aa7b7abe89bd065e3db56c23aba27",
+        "tree": {
+          "bytes": 254548,
+          "exists": true,
+          "files": 11,
+          "sha256": "aecec63e90b10dda7168ea499901f5d3bbaad75eab19f3fd37773c6729b3ffb9"
+        }
+      },
+      "NVDA": {
+        "run_id": "fin013_s2_05_exp_a_nvda_04b01685650a1af46f43",
+        "terminal_result_digest": "5bcc667d8a417cd8b27f55bd41aef36da870ef821986c1425d42e808ae9f802a",
+        "tree": {
+          "bytes": 257225,
+          "exists": true,
+          "files": 11,
+          "sha256": "111709c418e161aa1a76403612bf947c447d96469d74227a07337c31a1b70204"
+        }
+      }
+    },
+    "source_raw_before": {
+      "DELL": {
+        "run_id": "fin013_s2_05_exp_a_dell_f9e9264951d69da5ed86",
+        "terminal_result_digest": "7c9a0eb56511f5df0cf0c729637fe59365eef0c24fdf1c8c295eae82997d235d",
+        "tree": {
+          "bytes": 249220,
+          "exists": true,
+          "files": 11,
+          "sha256": "08311efbeb23eb4fc6c7117922606797b4ca3393267f997de4bbcc92b570b4c2"
+        }
+      },
+      "MU": {
+        "run_id": "fin013_s2_05_exp_a_mu_d94afa12295f83b18870",
+        "terminal_result_digest": "b3dd5a26d165317287be61027bf6a8566b9aa7b7abe89bd065e3db56c23aba27",
+        "tree": {
+          "bytes": 254548,
+          "exists": true,
+          "files": 11,
+          "sha256": "aecec63e90b10dda7168ea499901f5d3bbaad75eab19f3fd37773c6729b3ffb9"
+        }
+      },
+      "NVDA": {
+        "run_id": "fin013_s2_05_exp_a_nvda_04b01685650a1af46f43",
+        "terminal_result_digest": "5bcc667d8a417cd8b27f55bd41aef36da870ef821986c1425d42e808ae9f802a",
+        "tree": {
+          "bytes": 257225,
+          "exists": true,
+          "files": 11,
+          "sha256": "111709c418e161aa1a76403612bf947c447d96469d74227a07337c31a1b70204"
+        }
+      }
+    },
+    "source_raw_unchanged": true,
+    "target_supervision_after": {
+      "bytes": 487080,
+      "exists": true,
+      "files": 15,
+      "sha256": "28b4acab2cab15364f167d3b657a6b5e1b628a4150e8ebb58c0dbca82ffa0bd7"
+    },
+    "target_supervision_before": {
+      "bytes": 487080,
+      "exists": true,
+      "files": 15,
+      "sha256": "28b4acab2cab15364f167d3b657a6b5e1b628a4150e8ebb58c0dbca82ffa0bd7"
+    },
+    "target_supervision_unchanged": true
+  },
+  "source_bindings": {
+    "implementation_files": {
+      "src/sec_agent/s2_same_evidence_supervision.py": "b803a536b28d4c1893e10bc403561806bdd46192ab9632f92de26d8f8f7bbe72",
+      "src/sec_agent/s2_same_evidence_supervisor_runtime.py": "6be7df51ff243fd7e208f5a26840bb0f8d00059f220559a82144f6e065d870c2",
+      "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py": "65aac297f4fb516ee389ecab7fa03ec2037dab648e2aafcdb2d3bafecf99c274"
+    },
+    "implementation_ref": "configs/releases/fin_ia_0_1_3_s2_06_supervisor_nonempty_case_authority_compiled_contract_alignment_v1_1.json",
+    "implementation_sha256": "e85eba78900a810754181413f283b58173ed49f0e5420350ea63af431412900b",
+    "successor_proof_runner_ref": "scripts/releases/prepare_fin_ia_0_1_3_s2_06_supervisor_contract_v1_1_independent_fresh_zero_call_proof.py",
+    "successor_proof_runner_sha256": "764a78d4ec6f226c9ead5361755469be11ed9d7c3c0c2cfffcfd979a54c24c5d",
+    "three_case_result_ref": "configs/releases/fin_ia_0_1_3_s2_05_nvda_raw_replacement_r2_and_three_case_boundary_result_v1_0.json",
+    "three_case_result_sha256": "2b939b61c0a1461149c8fa7de059741643cc29931e09ac5b085aeaa47bb33739"
+  },
+  "source_commit": {
+    "clean": true,
+    "commit": "978c7c337489b0b48d39fc3a12107f2a65f4755f",
+    "synced": true,
+    "upstream_commit": "978c7c337489b0b48d39fc3a12107f2a65f4755f"
+  },
+  "status": "pass_two_clean_commit_archives_two_fresh_processes_real_frozen_inputs_and_mutation_matrix_zero_call_reproducible"
+}

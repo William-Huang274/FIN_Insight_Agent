@@ -14,6 +14,7 @@ from sec_agent.s1_08_r2_successor import (
     DellSearchR2Admission,
     S108R2SuccessorError,
     execute_dell_search_r2,
+    project_os_preflight_passed,
     sha256_file,
 )
 from sec_agent.shared_admission_ledger import (
@@ -58,7 +59,7 @@ def _admission() -> DellSearchR2Admission:
 
 def _preflight() -> dict:
     return {
-        "schema_version": "fin_ia_0_1_3_s1_08_dell_r2_successor_clean_zero_call_preflight_v1_0",
+        "schema_version": "fin_ia_0_1_3_s1_08_dell_r2_successor_clean_zero_call_preflight_v1_1",
         "status": "pass",
         "project_os_preflight": {"status": "pass"},
         "source_files": {
@@ -278,4 +279,10 @@ def test_R2_runner_is_zero_call_until_explicit_main_and_uses_distinct_output() -
     assert "S1_08_DELL_R2_exact_live_issuance_and_execution" in source
     assert "socket.getaddrinfo" not in source
     assert 'if __name__ == "__main__"' in source
+    assert project_os_preflight_passed(
+        {"status": "pass", "open_full_chain_blockers": []}
+    )
+    assert not project_os_preflight_passed(
+        {"status": "pass", "open_full_chain_blockers": [{"issue_id": "blocked"}]}
+    )
     assert datetime.now(timezone.utc).tzinfo is not None

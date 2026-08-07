@@ -388,6 +388,14 @@ def sha256_file(path: str | Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def project_os_preflight_passed(preflight: Mapping[str, Any]) -> bool:
+    blockers = preflight.get("open_full_chain_blockers") or []
+    count = preflight.get("open_full_chain_blocker_count")
+    if count is None:
+        count = len(blockers)
+    return preflight.get("status") == "pass" and int(count) == 0 and not blockers
+
+
 def _validate_successor_preflight(
     *,
     successor_preflight: Mapping[str, Any],
@@ -397,7 +405,7 @@ def _validate_successor_preflight(
     sources = successor_preflight.get("source_files") or {}
     valid = (
         successor_preflight.get("schema_version")
-        == "fin_ia_0_1_3_s1_08_dell_r2_successor_clean_zero_call_preflight_v1_0"
+        == "fin_ia_0_1_3_s1_08_dell_r2_successor_clean_zero_call_preflight_v1_1"
         and successor_preflight.get("status") == "pass"
         and (successor_preflight.get("project_os_preflight") or {}).get("status") == "pass"
         and (successor_preflight.get("verification") or {}).get("tests_passed") == 53
@@ -469,5 +477,6 @@ __all__ = [
     "TERMINAL_NAMESPACE",
     "TERMINAL_SCHEMA",
     "execute_dell_search_r2",
+    "project_os_preflight_passed",
     "sha256_file",
 ]

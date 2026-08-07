@@ -22,6 +22,7 @@ from sec_agent.s1_08_candidate_generation_runtime import load_source_catalog  # 
 from sec_agent.s1_08_r2_successor import (  # noqa: E402
     DellSearchR2Admission,
     execute_dell_search_r2,
+    project_os_preflight_passed,
     sha256_file,
 )
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger  # noqa: E402
@@ -30,7 +31,7 @@ from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger  
 CATALOG_PATH = REPO_ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_and_query_revision_policy_v2_0.json"
 DECISION_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08q_h_dell_r2_replacement_authority_decision_v1_1.json"
 PROOF_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_independent_fresh_proof_v1_0.json"
-SUCCESSOR_PREFLIGHT_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_r2_successor_clean_zero_call_preflight_v1_0.json"
+SUCCESSOR_PREFLIGHT_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_r2_successor_clean_zero_call_preflight_v1_1.json"
 R1_RESULT_PATH = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_canary_result_v1_0.json"
 DEFAULT_OUTPUT = REPO_ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_result_v1_0.json"
 RUN_SCOPE = "S1_08_DELL_R2_exact_live_issuance_and_execution"
@@ -79,7 +80,7 @@ def main() -> int:
     if not EMAIL_RE.fullmatch(contact):
         raise SystemExit("S1-08 R2 requires a valid runtime SEC contact identity")
     preflight = run_project_os_preflight(REPO_ROOT, run_scope=RUN_SCOPE)
-    if preflight.get("status") != "pass" or preflight.get("open_full_chain_blocker_count") != 0:
+    if not project_os_preflight_passed(preflight):
         raise SystemExit("S1-08 R2 Project OS preflight failed")
 
     catalog = load_source_catalog(CATALOG_PATH)

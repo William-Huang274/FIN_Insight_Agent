@@ -1,0 +1,121 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_05_nvda_raw_experiment_a_authority_v1_0",
+  "status": "NVDA_raw_admission_and_execution_authorized_not_issued",
+  "recorded_at": "2026-08-07",
+  "user_authority": {
+    "instruction": "可以，按你说的做",
+    "resolved_reference": "complete the third raw Experiment A case under the unchanged blind contract, then defer all supervisor correction until the three-case raw campaign is frozen",
+    "scope_expansion": false
+  },
+  "audited_repository_state": {
+    "branch": "codex/layered-data-source-expansion",
+    "head": "d4262a1c7fff58760ddf071c54bed83764f75c25",
+    "upstream": "origin/codex/layered-data-source-expansion",
+    "ahead": 0,
+    "behind": 0,
+    "clean": true
+  },
+  "frozen_bindings": {
+    "runtime": {
+      "ref": "src/sec_agent/s2_same_evidence_experiment_runtime.py",
+      "sha256": "816b2961c5dfe219233e08b606d63799063ea9cb1b6b5e102735e9c5b650c9af"
+    },
+    "layered_evaluator": {
+      "ref": "src/sec_agent/s2_same_evidence_layered_evaluation.py",
+      "sha256": "7d0d0d5b1344ddc22eb4613b872c2207d0c23dd6dbd919557e84cfe5b6fab862"
+    },
+    "production_entrypoint": {
+      "ref": "scripts/releases/run_fin_ia_0_1_3_s2_05_experiment_a.py",
+      "sha256": "1b3bc99503cfedd53ba7880caf2325c2c662e87b3bc70c5c8fd3644e4f6f4684"
+    },
+    "issuer": {
+      "ref": "scripts/releases/issue_fin_ia_0_1_3_s2_05_nvda_raw_admission.py",
+      "sha256": "2b842247bc51e6bd15c1e075e9a42651d1da5be7bc4c90c1c53d214d9bd70359"
+    },
+    "runtime_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_05_experiment_a_runtime_policy_v1_0.json",
+      "sha256": "90eba779603d9b501b70f960d77fdb93d0ca3ee27dd49785543bd8cd5269ec86"
+    },
+    "blind_input": {
+      "ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json",
+      "sha256": "689a4f957015c6b16f4d3ecdde6292450c044f9641af09537b1f0190176bdb59",
+      "canonical_digest": "55b474867594c002cd87494fc3d825b39cc60f3000adae06253f8e2256a61688"
+    },
+    "shared_admission_ledger": {
+      "ref": "src/sec_agent/shared_admission_ledger.py",
+      "sha256": "ef0611378b4aa4419f8782feceb8ddd89603e79c9d7a5753452f3ddbcb725455"
+    },
+    "DELL_layered_raw_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_05_dell_layered_replacement_exact_live_result_v1_0.json",
+      "sha256": "74d8216d94aab7cc0542aab458ff805f60173e61a0f8c09c048a33da5d148d66"
+    },
+    "MU_raw_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_05_mu_raw_exact_live_and_s2_06_boundary_result_v1_0.json",
+      "sha256": "375f97acc5d2a9b842066a4f33688d003b86e22d7c0e954d7e77fad76f8fe097"
+    }
+  },
+  "fairness_guard": {
+    "same_model_visible_contract_as_DELL_and_MU": true,
+    "model_visible_contract_changed_after_DELL_and_MU_raw": false,
+    "post_hoc_evaluator_changed_model_visible_prompt": false,
+    "frozen_blind_input_digest": "55b474867594c002cd87494fc3d825b39cc60f3000adae06253f8e2256a61688",
+    "NVDA_model_visible_digest": "454227271c5b6c96f95ab17413747d6cc9f395429465e6cac663bdeabdcf81c5",
+    "DELL_or_MU_correction_visible": false,
+    "DELL_or_MU_raw_output_visible": false,
+    "hidden_gold_visible": false,
+    "supervisor_prompt_visible": false,
+    "allowed_input_root": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/experiment_a_blind_inputs_v1.json"
+  },
+  "authority": {
+    "admission_issuance_authorized": true,
+    "admission_consumption_authorized": true,
+    "exact_live_execution_authorized": true,
+    "maximum_new_admissions": 1,
+    "maximum_execution_attempts": 1,
+    "authorized_case": "NVDA",
+    "execution_mode": "capture_first_full_chain_then_layered_evaluation",
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "maximum_provider_calls": 12,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "automatic_next_case": false,
+    "DELL_admission_authorized": false,
+    "MU_admission_authorized": false,
+    "supervisor_correction_authorized": false,
+    "business_promotion_authorized": false
+  },
+  "admission_storage_boundary": {
+    "required_root": ".codex_runtime/fin013_s2_05/authorities/NVDA_RAW",
+    "git_ignored": true,
+    "plaintext_secret_storage_forbidden": true,
+    "maximum_expiry_hours": 4
+  },
+  "execution_preconditions": [
+    "this authority slice is committed and pushed",
+    "repository is clean and synchronized at issuance and execution",
+    "Project OS scoped preflight reports zero open blockers for NVDA authority and execution",
+    "credential presence is true without reading or persisting its value",
+    "production preflight reports capture_first_full_chain_then_layered_evaluation",
+    "all frozen binding hashes remain exact",
+    "NVDA receives only the frozen model-visible case input and no DELL or MU raw, correction, supervisor prompt or hidden Gold"
+  ],
+  "stop_and_disposition": {
+    "immediate_stop": [
+      "transport or parse failure",
+      "capacity failure",
+      "unusable Lead topology",
+      "identity or cross-case Lead pollution"
+    ],
+    "continue_to_verifier": [
+      "post-Lead schema findings",
+      "post-Lead numeric findings",
+      "post-Lead financial-semantic findings"
+    ],
+    "hidden_scoring_eligible_when": "raw_chain_complete",
+    "business_promotion": "always false in S2-05",
+    "automatic_rerun": false
+  },
+  "next_after_execution": "Preserve NVDA terminal and raw captures, evaluate with v1.3, compile a separate NVDA S2-06 boundary, then stop before any supervisor model correction or business promotion.",
+  "decision_digest": "88bfd1f91ae69acbcdea0af70fd4ce68d5dd704750f13dca5be8701964a8ff50"
+}

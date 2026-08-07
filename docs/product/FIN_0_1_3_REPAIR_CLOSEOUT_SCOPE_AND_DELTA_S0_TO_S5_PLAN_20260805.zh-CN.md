@@ -244,6 +244,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-05/06` MU raw 与 supervision boundary 已形成**：唯一 MU run 完成 `10/10 calls/captures`，全部 `ok/stop`、0 retry/fallback。模型形成比最小 S3 Anchor 更完整的 MU-specific 研究链，但把 trailing P/E 改写为单季度倍数、把 deposits＋financial commitments 改写为现金/可退款预付款、把平均 FCF margin 直接用作边际收入敏感性，且 Verifier 零 finding 接受。Evaluator 先按单位族/条件语义关闭 12 条误报，再以通用财务不变量补齐 semantic coverage；最终 MU=`6 L1/2 L2/14 L3`，DELL 同版 replay=`2/1/23`。MU raw 记为 `complete_quality_fail`；22-row correction ledger 已分出 model return、研究内容 return、未校准 scenario/reference 和 Verifier false-green。不得用 deterministic renderer 代写研究，不做 supervisor correction；下一项只可独立审查 NVDA raw authority。
 
+> **2026-08-07 `013-S2-05` NVDA raw authority 已编译**：第三案继续绑定同一 blind input/runtime/DeepSeek Pro 合同；NVDA 仅见本案 `13 Evidence / 3 Numeric / 4 gaps`，前两案 raw/correction 与 hidden Gold 均不可见。一次 admission、一次 execution、最多 12 calls、0 retry/fallback；evaluator v1.3 仅 post-hoc。authority/production/Project OS 零调用预检与 84 项宽回归通过。提交推送前不签发；NVDA raw 完成后先冻结本案结果和 supervision boundary，再单独决定三案 supervisor，不自动纠错或晋升。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。

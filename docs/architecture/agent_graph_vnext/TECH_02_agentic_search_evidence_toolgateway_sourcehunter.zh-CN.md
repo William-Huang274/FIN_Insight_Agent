@@ -764,3 +764,17 @@ provider capability truth
 5. broad external search 如果仍无运营 Provider，必须由产品 owner 选择接入 Provider、启用受控动态/商业 fallback 或缩小 Internal Alpha source claim；TECH_02 不通过放宽 Evidence Gate 或增加盲目 retry 代替该决策。
 
 更新后的执行顺序为：v3 clean independent zero-call proof；另行决定至多一次 DELL fresh-live；若 DELL ceiling 仍失败则停止并进入 provider/product-scope decision；DELL 通过后先关闭共享 RC-P36-156 typed blocker/run-scope 缺陷，再做 MU/NVDA transfer；三案候选池通过后才准入 ranking。RC-P36-156 属于共享 S0/S5 治理；在它关闭前，只有 exact runner/admission/source SHA 直接绑定的一次 DELL bounded successor 可被另行评估。本节不签发任何 live、model、ranking 或 S3 权限。
+
+### 20.6 v3 clean independent proof 结果与下一权限边界（2026-08-08）
+
+`S1_08_V3_MATURE_COMPONENT_RELATIONSHIP_BUDGET_CLEAN_INDEPENDENT_ZERO_CALL_PROOF` 已在 clean/synced commit `a3f15fa29f53a6e4537a04a96b9481d7a314b8ee` 通过。两个 Git archive、两个 disposable root 与两个 fresh Python process 分别执行完整 60 项 S1-08 合同；每边均无失败或 skip，normalized worker output 完全一致。复证显式绑定：
+
+- `feedparser 6.0.12 / Trafilatura 2.1.0 / lxml 6.1.1`；
+- R1 restricted request objects `19/19` 与 R2 Microsoft captures `2/2`，仅按 digest 只读注入，不输出 raw body/header；
+- 两份 R2 页面都裁决为 `2026-07-29`，`2026-06-30` 报告期不得成为发布日期；
+- DELL/MU/NVDA round-robin fake、关系/日期 mutation、nested-customer fetch 前拒绝和 document-fetch ceiling；
+- network/model/provider/retry/admission/live=`0/0/0/0/0/0`。
+
+第一次 A1 复证在 commit `2cdb09ce7fd62e01ae2994248298ad1347eec690` 以 `59 passed / 1 failed` 终止，因为 proof runner 只注入两份 R2 content objects，漏掉完整合同仍要求的 19 份 R1 request objects。该失败归 proof-input assembly；修复只扩充只读输入装配，没有修改 SourceHunter Runtime，也没有覆盖或追认 A1。
+
+因此当前只把 v3 deterministic engineering 从 `engineering_pass` 提升为 `independently_proven`。以下事项仍不成立：fresh official feed/sitemap/bounded-domain reachability、DELL required target-in-pool、ranking admission、Evidence promotion、MU/NVDA transfer、DeepSeek research、内容质量或 release。下一项仅为零调用的 `S1_08_V3_DELL_FRESH_LIVE_AUTHORITY_DECISION`；它必须重新核对旧 R2 terminal、新 proof、预算、provider availability、exact-once successor 和停止规则。decision 通过也只能允许另行签发的一次 DELL successor，不能在 decision 内自动执行。

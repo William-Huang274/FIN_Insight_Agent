@@ -1,0 +1,392 @@
+{
+  "acceptance_boundary": {
+    "DELL_MU_NVDA_fake_and_mutation_reproducibility": "pass",
+    "S1_08_v3_deterministic_engineering": "independently_proven",
+    "actual_R2_date_adjudication_reproducibility": "pass",
+    "business_promotion": false,
+    "fresh_live_source_reachability": "not_run_not_proven",
+    "mature_component_dependency_reproducibility": "pass",
+    "ranking_and_selected_evidence_pack": "not_admitted",
+    "release": false,
+    "research_content_quality": "not_measured",
+    "target_in_pool_and_required_slot_recall": "not_run_not_proven"
+  },
+  "independent_proof": {
+    "clean_git_archives": 2,
+    "distinct_disposable_roots": 2,
+    "fresh_python_processes": 2,
+    "normalized_output_sha256": "fc99e9cfe347fddc74ccc198166d7a05561aa9954e88195df621f96023070b70",
+    "normalized_outputs_equal": true,
+    "restricted_R1_request_objects_injected": 19,
+    "restricted_R2_captures_injected": 2,
+    "restricted_inputs_byte_identical": true,
+    "restricted_raw_body_or_headers_emitted": false,
+    "temporary_roots_removed": true,
+    "worker_result": {
+      "coverage": {
+        "DELL_MU_NVDA_round_robin_full_fake": true,
+        "actual_R2_publication_date_adjudication": true,
+        "document_fetch_ceiling": true,
+        "nested_relationship_prefetch_rejection": true,
+        "relationship_and_date_mutations_fail_closed": true,
+        "restricted_R1_request_objects_verified": 19
+      },
+      "dependency_versions": {
+        "feedparser": "6.0.12",
+        "lxml": "6.1.1",
+        "trafilatura": "2.1.0"
+      },
+      "hard_boundaries": {
+        "admissions_issued": 0,
+        "credential_values_present_or_read": 0,
+        "live_runs": 0,
+        "model_calls": 0,
+        "network_attempts": 0,
+        "provider_calls": 0,
+        "retry_calls": 0
+      },
+      "implementation_bindings": {
+        "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_relationship_budget_policy_v3_0.json": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851",
+        "src/sec_agent/s1_08_candidate_generation_runtime.py": "441718f5818a4eace201af19cb7a10edbb2a373ad4603376337f43aecda15f42",
+        "src/sec_agent/s1_08_official_content_tools.py": "f8236bb8c7310dabc577495d52e8b03a0f038410941185b0418320153513f04a",
+        "src/sec_agent/s1_08_official_discovery_adapter.py": "aa55bc8f60591fab12d20fc271e705908afb91df093a5a56d529f490774fc294",
+        "src/sec_agent/s1_08_source_quality.py": "67625114311b3a91690d6a1af982543e8533af636ad68dfe44ea8f01dd0b59c0",
+        "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py": "b2e6bc742be066c4ee906904556cb54322836247c87346c3dbcd9010324fbacc"
+      },
+      "pytest": {
+        "failed": 0,
+        "nodeids": [
+          "tests/contract/test_fin_0_1_3_s1_08_agentic_search_entry_audit.py::test_cross_case_target_and_future_source_fail_closed",
+          "tests/contract/test_fin_0_1_3_s1_08_agentic_search_entry_audit.py::test_current_exact_source_match_does_not_bypass_missing_runtime",
+          "tests/contract/test_fin_0_1_3_s1_08_agentic_search_entry_audit.py::test_entry_audit_blocks_ranking_before_candidate_ceiling",
+          "tests/contract/test_fin_0_1_3_s1_08_agentic_search_entry_audit.py::test_policy_threshold_or_gold_visibility_drift_fails_closed",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_candidate_mutations_fail_closed[cross_case-cross_case_candidate]",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_candidate_mutations_fail_closed[future-candidate_after_as_of]",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_candidate_mutations_fail_closed[lineage-capture_first_lineage_invalid]",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_candidate_mutations_fail_closed[unpromoted-candidate_not_evidence_promoted]",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_catalog_is_gold_blind_and_compiles_provider_neutral_queries",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_concrete_official_adapter_captures_discovery_fetch_and_parse",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_concrete_official_adapter_stops_at_network_ceiling",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_evaluator_only_match_detects_missing_source_without_leaking_target_ids",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_evaluator_only_match_rejects_stale_market_snapshot_equivalence",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_full_fake_is_deterministic",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_gold_identifier_in_catalog_fails_closed",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_materialized_zero_call_proof_is_digest_bound_and_honest",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_reasoned_query_revision_changes_terms_and_routes_without_retry",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_revision_budget_and_identical_reason_fail_closed",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_three_case_full_fake_reaches_candidate_ceiling_before_ranking",
+          "tests/contract/test_fin_0_1_3_s1_08_dell_current_search_r1_terminal.py::test_r1_is_immutable_terminal_and_secret_free",
+          "tests/contract/test_fin_0_1_3_s1_08_dell_current_search_r1_terminal.py::test_r1_terminal_and_shared_receipt_are_digest_bound",
+          "tests/contract/test_fin_0_1_3_s1_08_dell_r2_successor.py::test_R1_terminal_body_mutation_fails_before_R2_issuance",
+          "tests/contract/test_fin_0_1_3_s1_08_dell_r2_successor.py::test_R2_admission_binds_decision_proof_R1_and_budget_without_secret",
+          "tests/contract/test_fin_0_1_3_s1_08_dell_r2_successor.py::test_R2_admission_source_or_commit_drift_fails_closed",
+          "tests/contract/test_fin_0_1_3_s1_08_dell_r2_successor.py::test_R2_exact_once_terminal_preserves_authority_lineage",
+          "tests/contract/test_fin_0_1_3_s1_08_dell_r2_successor.py::test_R2_runner_is_zero_call_until_explicit_main_and_uses_distinct_output",
+          "tests/contract/test_fin_0_1_3_s1_08_dell_r2_successor.py::test_R2_successor_preflight_source_drift_fails_before_issuance",
+          "tests/contract/test_fin_0_1_3_s1_08_dell_r2_successor.py::test_missing_contact_stops_before_R2_ledger_consumption",
+          "tests/contract/test_fin_0_1_3_s1_08_live_canary.py::test_admission_commit_or_catalog_drift_fails_closed",
+          "tests/contract/test_fin_0_1_3_s1_08_live_canary.py::test_admission_is_digest_bound_and_secret_free",
+          "tests/contract/test_fin_0_1_3_s1_08_live_canary.py::test_exact_once_runner_materializes_typed_gap_terminal",
+          "tests/contract/test_fin_0_1_3_s1_08_live_canary.py::test_missing_runtime_sec_identity_stops_before_consumption",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_actual_immutable_dell_r2_microsoft_captures_recover_financial_dates",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_candidate_permutation_is_stable_and_unique_attempt_ceiling_is_enforced",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_conflicting_high_authority_publication_dates_fail_closed",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_document_fetch_ceiling_is_real_not_only_an_acceptance_ceiling",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_feed_sitemap_and_robots_parse_saved_bytes_without_network",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_fin_date_adjudicator_rejects_reporting_period_and_selects_release_masthead",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_low_confidence_library_date_cannot_become_financial_date_authority",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_mature_component_versions_are_pinned_to_selected_major_lines",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_nested_customer_story_is_rejected_before_document_fetch",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_same_canonical_source_bound_to_two_roles_counts_once",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_sec_submission_discovery_includes_foreign_issuer_20f_and_6k",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_v2_queries_remain_free_of_v3_relationship_contract_fields",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_v3_relationship_and_date_mutations_fail_closed[missing_subject-relationship_binding_mismatch]",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_v3_relationship_and_date_mutations_fail_closed[untyped_date-typed_publication_date_binding_invalid]",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_v3_relationship_and_date_mutations_fail_closed[wrong_owner-relationship_binding_mismatch]",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_v3_three_case_round_robin_full_fake_has_no_slot_starvation[DELL]",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_v3_three_case_round_robin_full_fake_has_no_slot_starvation[MU]",
+          "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py::test_v3_three_case_round_robin_full_fake_has_no_slot_starvation[NVDA]",
+          "tests/contract/test_fin_0_1_3_s1_08_quality_first_sourcehunter_capture_replay.py::test_adapter_rejects_navigation_before_fetch_and_keeps_current_customer_evidence",
+          "tests/contract/test_fin_0_1_3_s1_08_quality_first_sourcehunter_capture_replay.py::test_adapter_selects_current_SEC_filing_without_fetching_stale_filings",
+          "tests/contract/test_fin_0_1_3_s1_08_quality_first_sourcehunter_capture_replay.py::test_microsoft_case_and_tracking_variants_deduplicate_canonically",
+          "tests/contract/test_fin_0_1_3_s1_08_quality_first_sourcehunter_capture_replay.py::test_restricted_manifest_matches_all_actual_R1_request_objects_without_emitting_raw",
+          "tests/contract/test_fin_0_1_3_s1_08_quality_first_sourcehunter_capture_replay.py::test_sanitized_replay_passes_quality_transport_and_efficiency_together",
+          "tests/contract/test_fin_0_1_3_s1_08_quality_first_sourcehunter_capture_replay.py::test_unexpected_adapter_failure_keeps_partial_candidate_and_checkpoint",
+          "tests/contract/test_fin_0_1_3_s1_08_quality_first_sourcehunter_capture_replay.py::test_v1_revision_replay_preserves_historical_SEC_widening",
+          "tests/contract/test_fin_0_1_3_s1_08_quality_first_sourcehunter_capture_replay.py::test_v2_catalog_compiles_five_executable_evidence_slots_without_gold",
+          "tests/contract/test_fin_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_plan.py::test_plan_fuses_quality_and_replay_without_authorizing_live",
+          "tests/contract/test_fin_0_1_3_s1_08_quality_first_sourcehunter_capture_replay_plan.py::test_plan_preserves_quality_reliability_and_privacy_gates"
+        ],
+        "passed": 60,
+        "skipped": 0
+      },
+      "restricted_R2_capture_date_decisions": {
+        "1b16c1d89b47e5c20f1ef20ee021f1c166fb938ca94faf0d2bd87c2326c1294c": {
+          "body_sha256": "94e5a8f806f03fa13a2d94107b6a32a6bfe6a10090eb41adc5f84ba3fb5f7b8a",
+          "conflict_status": "none",
+          "date_confidence": "high",
+          "date_kind": "event_date",
+          "date_source": "official_event_heading",
+          "date_value": "2026-07-29",
+          "rejected_reporting_period_dates": [],
+          "rejected_reporting_period_sources": []
+        },
+        "7306f99976f05c7bca0574148d0c12ed6e4bac55a3f71f22237960b6973062cb": {
+          "body_sha256": "9bcb8759d663b50b91245b5f2bc4f8e0362bccf9aa83fe83fceb155621aa0995",
+          "conflict_status": "none",
+          "date_confidence": "high",
+          "date_kind": "published_date",
+          "date_source": "official_release_masthead",
+          "date_value": "2026-07-29",
+          "rejected_reporting_period_dates": [
+            "2026-06-30"
+          ],
+          "rejected_reporting_period_sources": [
+            "body_reporting_period",
+            "trafilatura_inferred_date"
+          ]
+        }
+      },
+      "schema_version": "fin_ia_0_1_3_s1_08_v3_clean_independent_worker_v1_0",
+      "status": "pass"
+    }
+  },
+  "known_boundary": "This dual clean-archive proof establishes deterministic S1-08 v3 reproducibility, dependency identity, immutable R2 date adjudication, and three-case fake/mutation behavior only. It does not prove fresh source reachability, target-in-pool, ranking, Evidence promotion, DeepSeek behavior, research-content quality or release readiness.",
+  "next_action": "S1_08_V3_DELL_FRESH_LIVE_AUTHORITY_DECISION",
+  "next_action_authorized": false,
+  "observed_counts": {
+    "admissions_issued": 0,
+    "live_runs": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "retry_calls": 0
+  },
+  "proof_attempt_history": [
+    {
+      "attempt_id": "S1-08-V3-CLEAN-PROOF-A1",
+      "disposition": "Retained as a proof-runner input-assembly failure; SourceHunter Runtime was not changed and no live authority was created.",
+      "failure_code": "restricted_R1_request_objects_not_injected",
+      "source_commit": "2cdb09ce7fd62e01ae2994248298ad1347eec690",
+      "status": "failed_before_result_materialization",
+      "worker_result": "59_passed_1_failed"
+    }
+  ],
+  "proof_id": "S1_08_V3_MATURE_COMPONENT_RELATIONSHIP_BUDGET_CLEAN_INDEPENDENT_ZERO_CALL_PROOF",
+  "recorded_at": "2026-08-08T03:52:06+08:00",
+  "result_digest": "45a1243f73fa6dbc02001385f606d85b6eecd57b96c90b0bf00e2f84223b5eb2",
+  "schema_version": "fin_ia_0_1_3_s1_08_v3_clean_independent_zero_call_proof_result_v1_0",
+  "source_bindings": {
+    "engineering_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_mature_component_relationship_budget_zero_call_proof_v1_0.json",
+    "engineering_proof_sha256": "e7294c44b858fe15cd00c762e3ff5cebbb703d5de8f21a265fd6cc3757275397",
+    "implementation_files": {
+      "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_relationship_budget_policy_v3_0.json": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851",
+      "src/sec_agent/s1_08_candidate_generation_runtime.py": "441718f5818a4eace201af19cb7a10edbb2a373ad4603376337f43aecda15f42",
+      "src/sec_agent/s1_08_official_content_tools.py": "f8236bb8c7310dabc577495d52e8b03a0f038410941185b0418320153513f04a",
+      "src/sec_agent/s1_08_official_discovery_adapter.py": "aa55bc8f60591fab12d20fc271e705908afb91df093a5a56d529f490774fc294",
+      "src/sec_agent/s1_08_source_quality.py": "67625114311b3a91690d6a1af982543e8533af636ad68dfe44ea8f01dd0b59c0",
+      "tests/contract/test_fin_0_1_3_s1_08_mature_component_v3_runtime.py": "b2e6bc742be066c4ee906904556cb54322836247c87346c3dbcd9010324fbacc"
+    },
+    "proof_runner_ref": "scripts/releases/prepare_fin_ia_0_1_3_s1_08_v3_clean_independent_zero_call_proof.py",
+    "proof_runner_sha256": "cdfa3f75828244996ea73cd204a2ad711cc3ce9a48caf599a152e4f691dcc9ca",
+    "restricted_R1_manifest_ref": "configs/releases/fin_ia_0_1_3_s1_08_dell_r1_restricted_capture_manifest_v1_0.json",
+    "restricted_R1_manifest_sha256": "ce133dbaa73005c12ab44525f0378cf15e0ce52d0578bfa77b48fc2f699877b7"
+  },
+  "source_commit": {
+    "branch": "codex/layered-data-source-expansion",
+    "clean": true,
+    "commit": "a3f15fa29f53a6e4537a04a96b9481d7a314b8ee",
+    "synced": true,
+    "upstream_commit": "a3f15fa29f53a6e4537a04a96b9481d7a314b8ee"
+  },
+  "source_read_only_audit": {
+    "repository_status_unchanged_until_result_write": true,
+    "restricted_inputs_after": {
+      "R1_request_objects": {
+        "2679dd6f0b0c5f249715e4dbf02989fc40ad8625a91df57cfdae5f8682779cff": {
+          "bytes": 478,
+          "file_sha256": "2679dd6f0b0c5f249715e4dbf02989fc40ad8625a91df57cfdae5f8682779cff"
+        },
+        "3a2e304540dce6984a4861f205a798055a219f86ca7cc431fa45503ccbad5387": {
+          "bytes": 490,
+          "file_sha256": "3a2e304540dce6984a4861f205a798055a219f86ca7cc431fa45503ccbad5387"
+        },
+        "3c207a08a9708cf484f208f54a1bc5e497de920b8026da6b36a59e8e1327a1d2": {
+          "bytes": 491,
+          "file_sha256": "3c207a08a9708cf484f208f54a1bc5e497de920b8026da6b36a59e8e1327a1d2"
+        },
+        "4e6336b4ec5c91f3cfdcdf03cc549673d047ec47312f2fb9af357fbe4e94e23b": {
+          "bytes": 520,
+          "file_sha256": "4e6336b4ec5c91f3cfdcdf03cc549673d047ec47312f2fb9af357fbe4e94e23b"
+        },
+        "5fecc9be69608a6e88f4652634284375e4217d52be49792c02fe4f1b8cb3dc6d": {
+          "bytes": 498,
+          "file_sha256": "5fecc9be69608a6e88f4652634284375e4217d52be49792c02fe4f1b8cb3dc6d"
+        },
+        "7885dad5ba5724ff22764feb32043f69fc46d977e3cb27ed1eb85615e519dbfb": {
+          "bytes": 492,
+          "file_sha256": "7885dad5ba5724ff22764feb32043f69fc46d977e3cb27ed1eb85615e519dbfb"
+        },
+        "7b0e69988a1a4679568995790845bf87f46cee7b86e02e4405a36b1754ef17e3": {
+          "bytes": 490,
+          "file_sha256": "7b0e69988a1a4679568995790845bf87f46cee7b86e02e4405a36b1754ef17e3"
+        },
+        "957d032fe796e5dd55fb6b6eab14c6402018f37512f34d7cca8957f34996fe14": {
+          "bytes": 467,
+          "file_sha256": "957d032fe796e5dd55fb6b6eab14c6402018f37512f34d7cca8957f34996fe14"
+        },
+        "9a125a41daa4b55db8b39a1cbeb61490faa1ef6532c3f3ba5bb51316714d01fb": {
+          "bytes": 457,
+          "file_sha256": "9a125a41daa4b55db8b39a1cbeb61490faa1ef6532c3f3ba5bb51316714d01fb"
+        },
+        "9e2ace7271accc4185de89fbd90a3513ae74b61f13218084219b4b6177bd14d4": {
+          "bytes": 483,
+          "file_sha256": "9e2ace7271accc4185de89fbd90a3513ae74b61f13218084219b4b6177bd14d4"
+        },
+        "a67ae989cb1d5388ec8d9b737592daf16a7926822602301b9ed834972812cd78": {
+          "bytes": 476,
+          "file_sha256": "a67ae989cb1d5388ec8d9b737592daf16a7926822602301b9ed834972812cd78"
+        },
+        "ae68d88cd608709cfb2e33d1d3a4a9cac282359847a2d9fbf6ad484958364bbd": {
+          "bytes": 467,
+          "file_sha256": "ae68d88cd608709cfb2e33d1d3a4a9cac282359847a2d9fbf6ad484958364bbd"
+        },
+        "b75701754cfc7a395d32d6d1534c2f612d9318aa8b32fc4e10b68902f4d025c5": {
+          "bytes": 492,
+          "file_sha256": "b75701754cfc7a395d32d6d1534c2f612d9318aa8b32fc4e10b68902f4d025c5"
+        },
+        "c57b7cffb5429ac61653c9ea52095af3cb5e5ae74839eb5a75949c429254b109": {
+          "bytes": 507,
+          "file_sha256": "c57b7cffb5429ac61653c9ea52095af3cb5e5ae74839eb5a75949c429254b109"
+        },
+        "e098c3a307bed5a45103bf8dc4096539d4bcc933adfa39e8c73d40a816a6d76f": {
+          "bytes": 460,
+          "file_sha256": "e098c3a307bed5a45103bf8dc4096539d4bcc933adfa39e8c73d40a816a6d76f"
+        },
+        "e53540e8b34f13ef7e00379877e1818b27e6eccd540eb62e3c689d14980aae31": {
+          "bytes": 476,
+          "file_sha256": "e53540e8b34f13ef7e00379877e1818b27e6eccd540eb62e3c689d14980aae31"
+        },
+        "ea3297569926f50e2c9f09ffdbd9b1a8a5366f2b0c290a0cb9d494294fa16e3b": {
+          "bytes": 450,
+          "file_sha256": "ea3297569926f50e2c9f09ffdbd9b1a8a5366f2b0c290a0cb9d494294fa16e3b"
+        },
+        "ea831a4920f3211fd4d8d8d442a93756cc4c96292a8e1eb65e88c77ab4eb5018": {
+          "bytes": 490,
+          "file_sha256": "ea831a4920f3211fd4d8d8d442a93756cc4c96292a8e1eb65e88c77ab4eb5018"
+        },
+        "ecf4000ebb0e31808e443e88388dd412e74094c47fc2c407b8f630ab660dbe19": {
+          "bytes": 448,
+          "file_sha256": "ecf4000ebb0e31808e443e88388dd412e74094c47fc2c407b8f630ab660dbe19"
+        }
+      },
+      "R2_content_objects": {
+        "1b16c1d89b47e5c20f1ef20ee021f1c166fb938ca94faf0d2bd87c2326c1294c": {
+          "body_sha256": "94e5a8f806f03fa13a2d94107b6a32a6bfe6a10090eb41adc5f84ba3fb5f7b8a",
+          "bytes": 362113,
+          "file_sha256": "1b16c1d89b47e5c20f1ef20ee021f1c166fb938ca94faf0d2bd87c2326c1294c"
+        },
+        "7306f99976f05c7bca0574148d0c12ed6e4bac55a3f71f22237960b6973062cb": {
+          "body_sha256": "9bcb8759d663b50b91245b5f2bc4f8e0362bccf9aa83fe83fceb155621aa0995",
+          "bytes": 1080928,
+          "file_sha256": "7306f99976f05c7bca0574148d0c12ed6e4bac55a3f71f22237960b6973062cb"
+        }
+      }
+    },
+    "restricted_inputs_before": {
+      "R1_request_objects": {
+        "2679dd6f0b0c5f249715e4dbf02989fc40ad8625a91df57cfdae5f8682779cff": {
+          "bytes": 478,
+          "file_sha256": "2679dd6f0b0c5f249715e4dbf02989fc40ad8625a91df57cfdae5f8682779cff"
+        },
+        "3a2e304540dce6984a4861f205a798055a219f86ca7cc431fa45503ccbad5387": {
+          "bytes": 490,
+          "file_sha256": "3a2e304540dce6984a4861f205a798055a219f86ca7cc431fa45503ccbad5387"
+        },
+        "3c207a08a9708cf484f208f54a1bc5e497de920b8026da6b36a59e8e1327a1d2": {
+          "bytes": 491,
+          "file_sha256": "3c207a08a9708cf484f208f54a1bc5e497de920b8026da6b36a59e8e1327a1d2"
+        },
+        "4e6336b4ec5c91f3cfdcdf03cc549673d047ec47312f2fb9af357fbe4e94e23b": {
+          "bytes": 520,
+          "file_sha256": "4e6336b4ec5c91f3cfdcdf03cc549673d047ec47312f2fb9af357fbe4e94e23b"
+        },
+        "5fecc9be69608a6e88f4652634284375e4217d52be49792c02fe4f1b8cb3dc6d": {
+          "bytes": 498,
+          "file_sha256": "5fecc9be69608a6e88f4652634284375e4217d52be49792c02fe4f1b8cb3dc6d"
+        },
+        "7885dad5ba5724ff22764feb32043f69fc46d977e3cb27ed1eb85615e519dbfb": {
+          "bytes": 492,
+          "file_sha256": "7885dad5ba5724ff22764feb32043f69fc46d977e3cb27ed1eb85615e519dbfb"
+        },
+        "7b0e69988a1a4679568995790845bf87f46cee7b86e02e4405a36b1754ef17e3": {
+          "bytes": 490,
+          "file_sha256": "7b0e69988a1a4679568995790845bf87f46cee7b86e02e4405a36b1754ef17e3"
+        },
+        "957d032fe796e5dd55fb6b6eab14c6402018f37512f34d7cca8957f34996fe14": {
+          "bytes": 467,
+          "file_sha256": "957d032fe796e5dd55fb6b6eab14c6402018f37512f34d7cca8957f34996fe14"
+        },
+        "9a125a41daa4b55db8b39a1cbeb61490faa1ef6532c3f3ba5bb51316714d01fb": {
+          "bytes": 457,
+          "file_sha256": "9a125a41daa4b55db8b39a1cbeb61490faa1ef6532c3f3ba5bb51316714d01fb"
+        },
+        "9e2ace7271accc4185de89fbd90a3513ae74b61f13218084219b4b6177bd14d4": {
+          "bytes": 483,
+          "file_sha256": "9e2ace7271accc4185de89fbd90a3513ae74b61f13218084219b4b6177bd14d4"
+        },
+        "a67ae989cb1d5388ec8d9b737592daf16a7926822602301b9ed834972812cd78": {
+          "bytes": 476,
+          "file_sha256": "a67ae989cb1d5388ec8d9b737592daf16a7926822602301b9ed834972812cd78"
+        },
+        "ae68d88cd608709cfb2e33d1d3a4a9cac282359847a2d9fbf6ad484958364bbd": {
+          "bytes": 467,
+          "file_sha256": "ae68d88cd608709cfb2e33d1d3a4a9cac282359847a2d9fbf6ad484958364bbd"
+        },
+        "b75701754cfc7a395d32d6d1534c2f612d9318aa8b32fc4e10b68902f4d025c5": {
+          "bytes": 492,
+          "file_sha256": "b75701754cfc7a395d32d6d1534c2f612d9318aa8b32fc4e10b68902f4d025c5"
+        },
+        "c57b7cffb5429ac61653c9ea52095af3cb5e5ae74839eb5a75949c429254b109": {
+          "bytes": 507,
+          "file_sha256": "c57b7cffb5429ac61653c9ea52095af3cb5e5ae74839eb5a75949c429254b109"
+        },
+        "e098c3a307bed5a45103bf8dc4096539d4bcc933adfa39e8c73d40a816a6d76f": {
+          "bytes": 460,
+          "file_sha256": "e098c3a307bed5a45103bf8dc4096539d4bcc933adfa39e8c73d40a816a6d76f"
+        },
+        "e53540e8b34f13ef7e00379877e1818b27e6eccd540eb62e3c689d14980aae31": {
+          "bytes": 476,
+          "file_sha256": "e53540e8b34f13ef7e00379877e1818b27e6eccd540eb62e3c689d14980aae31"
+        },
+        "ea3297569926f50e2c9f09ffdbd9b1a8a5366f2b0c290a0cb9d494294fa16e3b": {
+          "bytes": 450,
+          "file_sha256": "ea3297569926f50e2c9f09ffdbd9b1a8a5366f2b0c290a0cb9d494294fa16e3b"
+        },
+        "ea831a4920f3211fd4d8d8d442a93756cc4c96292a8e1eb65e88c77ab4eb5018": {
+          "bytes": 490,
+          "file_sha256": "ea831a4920f3211fd4d8d8d442a93756cc4c96292a8e1eb65e88c77ab4eb5018"
+        },
+        "ecf4000ebb0e31808e443e88388dd412e74094c47fc2c407b8f630ab660dbe19": {
+          "bytes": 448,
+          "file_sha256": "ecf4000ebb0e31808e443e88388dd412e74094c47fc2c407b8f630ab660dbe19"
+        }
+      },
+      "R2_content_objects": {
+        "1b16c1d89b47e5c20f1ef20ee021f1c166fb938ca94faf0d2bd87c2326c1294c": {
+          "body_sha256": "94e5a8f806f03fa13a2d94107b6a32a6bfe6a10090eb41adc5f84ba3fb5f7b8a",
+          "bytes": 362113,
+          "file_sha256": "1b16c1d89b47e5c20f1ef20ee021f1c166fb938ca94faf0d2bd87c2326c1294c"
+        },
+        "7306f99976f05c7bca0574148d0c12ed6e4bac55a3f71f22237960b6973062cb": {
+          "body_sha256": "9bcb8759d663b50b91245b5f2bc4f8e0362bccf9aa83fe83fceb155621aa0995",
+          "bytes": 1080928,
+          "file_sha256": "7306f99976f05c7bca0574148d0c12ed6e4bac55a3f71f22237960b6973062cb"
+        }
+      }
+    },
+    "restricted_inputs_unchanged": true
+  },
+  "stage": "013-S1-08",
+  "status": "pass_two_clean_archives_two_fresh_processes_zero_call_reproducible"
+}

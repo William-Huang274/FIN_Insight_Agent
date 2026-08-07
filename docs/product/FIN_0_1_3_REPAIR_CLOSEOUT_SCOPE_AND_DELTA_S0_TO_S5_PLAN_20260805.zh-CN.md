@@ -331,7 +331,7 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 | 阶段 | 当前事实 | 当前结论 | 不得宣称 |
 | --- | --- | --- | --- |
 | S0 | `013-S0-01–03` 已关闭；RC-P36-156 证明共享 Project OS 对未知 blocker state/run scope 可能 fail-open，现仅有 canonical-open wildcard 临时缓解 | 基线通过，新增共享治理债务 `013-S0-04G` | 通用权限治理已修复、任意 preflight pass 即有执行权 |
-| S1 | `S1-01–07` 已通过各自 scope；S1-08 DELL R2 live=`16 calls / 1 unique source / target-in-pool 0`，v3 成熟组件与关系/预算结构仅 zero-call engineering pass | S1-08 未通过，S1 overall 不关闭 | reranker/ranking 已可评、公开证据不存在、Agentic Search 产品可用 |
+| S1 | `S1-01–07` 已通过各自 scope；S1-08 DELL R2 live=`16 calls / 1 unique source / target-in-pool 0`，v3 成熟组件与关系/预算结构已完成双 archive/fresh-process independent proof | S1-08 仍未通过，当前仅 P1 deterministic engineering 独立证明，S1 overall 不关闭 | reranker/ranking 已可评、fresh 来源覆盖已通过、Agentic Search 产品可用 |
 | S2 | `S2-01–04` 与 deterministic correction control 已证明；Experiment A 三案内容失败，S2-06D natural correction closure 失败 | 实验和模型能力边界已形成，产品级模型自主权未通过 | S2 产品通过、DeepSeek 能自主纠错、内容质量通过 |
 | S3 | `S3-01–05` minimum anchor 有结构与控制证据；29 Cell 未研究、自然 thesis support/counterevidence 不足；`S3-06–09` 未开始 | engineering anchor only，等待 S1 candidate ceiling 与 DS-A1/A2/A3 | 产品级 research、完整研报、八维质量验收通过 |
 | S4 | 只有继承自 0.1.2 的只读 Workbench/Report projection；尚未消费 0.1.3 final candidate | FIN 0.1.3 current dogfood 未开始 | 当前版本产品验收或审阅负担已通过 |
@@ -353,8 +353,8 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 
 ### 7B.4 更新后的依赖顺序
 
-1. `S1-08-P1 / S1_08_V3_MATURE_COMPONENT_RELATIONSHIP_BUDGET_CLEAN_INDEPENDENT_ZERO_CALL_PROOF`：在 clean Git archive/fresh process 独立复证 v3 依赖、两份真实 R2 日期裁决、三案例 full-fake/mutation 与完整 S1-08 suite；零网络、零模型。
-2. `S1-08-P2`：P1 通过后才做 fresh-live authority decision。若授权，只允许一次 DELL successor，先测 route/live capability、required-slot first opportunity、target-in-pool、currentness、unique-source yield 和 selected coverage；不自动 R4。
+1. [x] `S1-08-P1 / S1_08_V3_MATURE_COMPONENT_RELATIONSHIP_BUDGET_CLEAN_INDEPENDENT_ZERO_CALL_PROOF`：已在 clean `a3f15fa2` 上由双 Git archive、双 fresh process 各执行完整 `60 passed / 0 skipped`，并复现依赖、两份真实 R2 日期、三案例 full-fake/mutation；零网络、零模型。
+2. [ ] `S1-08-P2 / S1_08_V3_DELL_FRESH_LIVE_AUTHORITY_DECISION`：这是当前下一项，仅做零调用权限判断，不在 decision 内自动 live。若另行授权，只允许一次 DELL successor，先测 route/live capability、required-slot first opportunity、target-in-pool、currentness、unique-source yield 和 selected coverage；不自动 R4。
 3. `S1-08-P3`：若 DELL candidate ceiling 仍失败，停止 live retry 并作 provider acquisition/product-scope 决策；可以选择运营 external/site-search adapter、受控动态页 fallback、licensed provider，或明确缩小 Internal Alpha source claim。不得先调 reranker。
 4. `013-S0-04G`：在任何 MU/NVDA transfer 或 S3 之前，修复 typed blocker state、RunScopeRegistry 和 unknown fail-closed；一次 DELL bounded successor 若更早执行，仍必须使用 exact runner/admission/source-SHA 直接绑定。
 5. `S1-08-P4`：DELL ceiling 通过且 S0-04G 关闭后，再做 MU/NVDA bounded transfer。三案均进入候选池后，才准入 ranking/NDCG/MRR 与 selected Evidence Pack；S1-08 关闭需要三案 currentness/diversity/reconciliation/false-promotion/typed-gap 全部可解释。
@@ -390,7 +390,7 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 15. [x] 完成 DELL/MU/NVDA 三份 Codex-authored Gold candidate 与交叉订正；明确它们是混合研究候选，不是当前产品或完整 MCP 已独立产出的报告。
 16. [x] 完成 `013-S2-04`：三案共享 Benchmark Evidence Pack、blind input 和 evaluator-only hidden Gold scoring objects 已按 digest 冻结，公平性、泄漏、跨案污染、日期和数值重算检查通过。
 17. [x] 执行 `013-S2-05/06` Experiment A 并诚实终止：`013-S2-05` 三案 raw 均为质量失败；DELL Supervisor R2 暴露 RC-P36-148。`S2-06A/B/C` 已完成 canonical contract、统一 Runtime 与双 archive/process 独立 proof；`S2-06D` 最小 DELL/U3 natural canary 为 `1 call/1 capture/4,483 tokens/0 retry`，模型虽返回合法 envelope，却在反证为空时虚假声明 correction closed，新 guard 正确拒绝。`S2-06E` 已决定不值得且不授权正式 DELL proof；S2 deterministic repair 通过，model natural correction adherence 失败并流转 S3。下一步按依赖进入 S1 search tool/source runtime；formal score、业务晋升和 release 均未成立。
-18. [ ] 执行 `013-S1-08-P1–P3`：`S1-06/07` 已分别达到 MCP/official-source scope pass；S1-08 当前仅 v3 zero-call engineering pass，DELL live candidate ceiling 仍失败。先完成 clean proof、一次独立 DELL live 决策和必要的 provider/product-scope 处置；不调用 DeepSeek 来发现确定性工具缺陷。
+18. [ ] 执行 `013-S1-08-P1–P3`：`S1-06/07` 已分别达到 MCP/official-source scope pass；P1 clean independent proof 已完成，v3 deterministic engineering=`independently_proven`，但 DELL live candidate ceiling 仍失败。当前只进入 P2 fresh-live authority decision；必要的 provider/product-scope 处置仍属于 P3，不调用 DeepSeek 来发现确定性工具缺陷。
 19. [ ] 完成 `013-S0-04G`：在任何 MU/NVDA transfer 或 S3 前关闭 typed blocker state、versioned RunScopeRegistry 和 unknown fail-closed；不得把共享治理修复塞进 SourceHunter。
 20. [ ] 完成 `013-S1-08-P4` 与 `013-S3-06/07`：先做 MU/NVDA bounded transfer，三案 candidate ceiling 通过后才评价 ranking并关闭 S1-08；随后执行 `DS-A1/A2/A3`、动态 Lead loop 与 EvidenceRequest/targeted repair，同一 family 不逐字段反复 live 修补。
 21. [ ] 执行 `013-S3-08/09` Experiment B：三案端到端 DeepSeek Agentic Search/Research、隐藏 Gold 八维对照和 qualified-human 内容验收；搜索、模型、内容三个 failure domain 分开归因。
@@ -437,6 +437,8 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 > **2026-08-08 `013-S1-08` post-R2 provider/candidate coverage disposition 已选定**：零调用 replay 把失败继续拆到最早责任面：16 次调用中 customer slot 独占 12 个 document fetch，supply slot 为 0；`document_ceiling_per_query=1` 实际只限制 accepted candidate，未限制 fetch；Microsoft 下游客户故事缺少关系方向约束；两个明确写出 `July 29, 2026` 的官方 release/event 页未被当前日期 parser 识别；同一 DELL 8-K 的两个 role binding 又把 unique-source yield 从真实 `1/16=0.0625` 记成 `2/16=0.125`。下一包固定为官方 IR feed/sitemap、official-domain bounded search、SEC 20-F/6-K、typed publication date、relationship-aware Evidence Slot、round-robin reservation budget 和 canonical source/role-binding 分账的一次零调用实现；全局 16 次暂不增加，`external_site_search` 在无真实 Provider 时继续 unavailable。只有 replay＋三案 mutation 通过后才另行决定 fresh live；本决定不授权 R3、MU/NVDA、ranking、DeepSeek 或 S3。
 
 > **2026-08-08 `013-S1-08` mature-component v3 零调用工程通过**：在不联网、不调用模型/Provider 的前提下，`feedparser 6.0.12` 与 `Trafilatura 2.1.0` 已以“消费 immutable capture、没有网络权和 promotion 权”的方式接入；FIN 本地 Runtime继续拥有日期、关系方向、预算、lineage 和 Evidence 晋升。真实 R2 两份 Microsoft capture 证明 Trafilatura 能明显减少导航词噪声，但会把 `2026-06-30` 报告期误判为 press-release 日期；typed adjudicator 已正确选择两页的 `2026-07-29`，并拒绝 reporting-period/library-only date。v3 还完成官方 feed/robots/sitemap、SEC `20-F/6-K`、nested-customer fetch 前拒绝、五 slot round-robin、每 attempt `2 fetch/1 unique accept`、source-document/role-binding 分账及本地 market 分母隔离；v1/v2 历史 serialization 保持不变。focused＋既有回归=`48 passed`，三案 fake slot starvation=`0`。当前仍只是 engineering pass：feed/sitemap/bounded-domain route 尚无 fresh live proof，broad `external_site_search` 仍 unavailable，target-in-pool/ranking/S3 均未解锁；下一步只能先做独立零调用复证，再另行决定一次 fresh live authority。
+
+> **2026-08-08 `013-S1-08-P1` v3 clean independent zero-call proof 通过**：clean/synced `a3f15fa2` 上两个 Git archive、两个 disposable root、两个 fresh Python process 各=`60 passed / 0 failed / 0 skipped`；每边只读核验 R1 request objects=`19/19`、R2 content captures=`2/2`，依赖版本和两页 `2026-07-29` 日期裁决一致，DELL/MU/NVDA fake/mutation 复现，normalized output SHA 相同。A1 在旧 commit `2cdb09ce` 因漏注入 R1 objects 为 `59/1`，已保留为 proof-input assembly failure；Runtime 未改。P1 只把 deterministic engineering 提升为 `independently_proven`，fresh reachability、target-in-pool、ranking、研究内容与 release 仍未证明。当前下一项仅为 `S1_08_V3_DELL_FRESH_LIVE_AUTHORITY_DECISION`，本 proof 没有签发或执行 live。
 
 > **2026-08-08 Project OS scope-policy 负向复核**：三个在 RC-P36-157 中显式禁止的 live/ranking/S3 scope 最初仍被预检误报为 `pass`。根因是共享实现只识别固定五种开放状态，描述性 `open_*` 状态在 scope 匹配前被跳过。当前以 RC-P36-156 canonical `open`＋wildcard block＋本零调用实现 allowlist 恢复即时 fail-closed；共享状态 schema/run-scope registry 仍归 S0/S5。任何后续 live 必须继续由 exact runner/admission 直接绑定，不能把一次 Project OS `pass` 当成充分权限。
 

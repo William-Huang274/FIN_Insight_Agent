@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_0_1_3_prd_tech_runtime_mutual_alignment_and_replan_v1_0",
   "recorded_at": "2026-08-08",
   "source_commit_before_document_update": "5885f7280dd04e6ceded93d0e7ba644bd8b9b971",
-  "status": "mutual_alignment_complete_execution_plan_rebased_no_new_execution_authority",
+  "status": "mutual_alignment_plan_advanced_s1_08_p1_independently_proven_no_live_authority",
   "product_version": "FIN_0_1_3",
   "product_version_decision": "remain_current_no_version_jump",
   "fin_0_2_definition_changed": false,
@@ -13,7 +13,7 @@
     "admissions_authorized": 0,
     "ranking_authorized": false,
     "release_authorized": false,
-    "only_current_next_scope": "S1_08_V3_MATURE_COMPONENT_RELATIONSHIP_BUDGET_CLEAN_INDEPENDENT_ZERO_CALL_PROOF"
+    "only_current_next_scope": "S1_08_V3_DELL_FRESH_LIVE_AUTHORITY_DECISION"
   },
   "audit_conclusions": [
     "The original S1-01 through S1-05 pass remains valid for local truth and governed-pack scope, but it does not close Agentic Search after S1-06 through S1-08 were added.",
@@ -42,7 +42,19 @@
         "target_in_pool_recall": 0.0,
         "ranking_admitted": false
       },
-      "latest_engineering": "v3_zero_call_engineering_pass_clean_independent_proof_pending"
+      "latest_engineering": "v3_zero_call_engineering_independently_proven",
+      "latest_independent_proof": {
+        "source_commit": "a3f15fa29f53a6e4537a04a96b9481d7a314b8ee",
+        "clean_git_archives": 2,
+        "fresh_python_processes": 2,
+        "tests_per_worker": 60,
+        "skips_per_worker": 0,
+        "restricted_R1_request_objects": 19,
+        "restricted_R2_content_captures": 2,
+        "normalized_outputs_equal": true,
+        "external_calls": 0,
+        "fresh_live_authorized": false
+      }
     },
     "S2": {
       "status": "experiment_complete_deterministic_control_pass_natural_correction_fail",
@@ -83,7 +95,7 @@
     "release_rollback_portability": "S5_RG1_to_RG5"
   },
   "execution_order": [
-    "S1_08_P1_clean_independent_zero_call_proof",
+    "S1_08_P1_clean_independent_zero_call_proof_complete",
     "S1_08_P2_separate_DELL_fresh_live_authority_decision",
     "S1_08_P3_provider_acquisition_or_product_source_scope_decision_if_ceiling_fails",
     "013_S0_04G_typed_blocker_state_and_versioned_run_scope_registry_before_multicase_or_S3",
@@ -110,6 +122,7 @@
     "docs/architecture/agent_graph_vnext/TECH_03_document_metadata_rag_knowledge_layer.zh-CN.md",
     "docs/architecture/agent_graph_vnext/TECH_10_trajectory_eval_self_improvement.zh-CN.md",
     "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_source_quality_evaluation_v1_0.json",
-    "configs/releases/fin_ia_0_1_3_s1_08_mature_component_relationship_budget_zero_call_proof_v1_0.json"
+    "configs/releases/fin_ia_0_1_3_s1_08_mature_component_relationship_budget_zero_call_proof_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_s1_08_v3_clean_independent_zero_call_proof_result_v1_0.json"
   ]
 }

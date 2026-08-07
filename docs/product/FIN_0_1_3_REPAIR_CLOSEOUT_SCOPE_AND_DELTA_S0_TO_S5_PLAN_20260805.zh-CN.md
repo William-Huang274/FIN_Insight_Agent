@@ -256,6 +256,8 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 
 > **2026-08-07 `013-S2-06` 唯一共享零调用实现包工程通过**：新增 case-qualified v1.2 correction boundary、三类 citation/coverage 明确 owner/action、单源 SupervisorPlan、依赖感知 corrected runner、fresh identity、共享 admission exact-once、capture-first terminal、candidate freeze 与 post-freeze scoring guard。本地只做 typed routing 与 source-bound 删除，不代写金融研究。三案 full-fake 最坏均为 `11 calls/case`；真实 frozen raw 容量预检为 DELL=`8 calls/33,590 chars`、MU=`10/28,104`、NVDA=`10/35,650`，均在 `11/90,000` 硬上限内。focused=`24 passed`，S2-05/06 broad=`120 passed / 3,201 deselected`，模型/Provider/network/admission/paid candidate=0。四项项目 blocker 工程关闭，但这不证明 DeepSeek 能生成合格计划或修好研究内容；下一步先 clean-commit independent fresh proof，再单独决定三案 admission。
 
+> **2026-08-07 `013-S2-06` independent fresh zero-call proof 通过**：在 clean/synced `60b66bc9...0ef` 上生成两个独立 Git archive，分别注入三案受限 raw 并由两个 fresh process 重算 current evaluator、v1.2 boundary、SupervisorPlan、容量和 mutation；两份归一化结果 digest 相同，24/24 测试通过。真实矩阵保持 DELL=`33,590 chars/6 directives/8 calls`、MU=`28,104/8/10`、NVDA=`35,650/9/10`，源 raw 与目标 supervision tree 未改写，外部调用/admission/paid candidate=0。发现 blind-input 历史 SHA 绑定 Windows CRLF、Git blob 为 LF；proof 仅以严格 normalized-content-equal 投影恢复冻结字节，记录为 S5 portability 债务，不冒充跨平台 release proof。下一项仅为三案 Supervisor admission authority decision；自然纠错、L1/L2 closure、内容增益、human acceptance 与 release 仍未成立。
+
 ### 7A.4 调用、扶正与停止规则
 
 1. 不设全局固定 9 次或 15–25 次调用上限。每案根据 DecisionSurface、material evidence gap 和工具预算预注册最大值；只有新增可信证据、关闭重要 gap、解决冲突或提高 authority 才继续。
@@ -283,7 +285,7 @@ S0 已完成的继承、状态和四层 oracle 不重跑；原 S1–S3 已完成
 14. [x] 保留 `013-S3-01`–`013-S3-05` 与 R3 为 minimum engineering/control anchor：结构、exact-once、9 natural Claim、3 Lead、3 Workpaper、L1/L2 成立；0 thesis-support、0 natural counterevidence 与 29 个未研究 Cell 使其不构成产品级研究证明。
 15. [x] 完成 DELL/MU/NVDA 三份 Codex-authored Gold candidate 与交叉订正；明确它们是混合研究候选，不是当前产品或完整 MCP 已独立产出的报告。
 16. [x] 完成 `013-S2-04`：三案共享 Benchmark Evidence Pack、blind input 和 evaluator-only hidden Gold scoring objects 已按 digest 冻结，公平性、泄漏、跨案污染、日期和数值重算检查通过。
-17. [ ] 执行 `013-S2-05/06` Experiment A：`013-S2-05` 三案 raw 已全部完成且均为质量失败，v1.4 统一结果 DELL=`3/1/23`、MU=`8/2/14`、NVDA=`4/1/27`；三案 deterministic supervision boundary 已物化。统一 Supervisor authority 与唯一 shared zero-call implementation 已完成，真实 frozen input 容量通过；当前仍待 independent fresh proof、后续独立 admission/correction/corrected-candidate 与最终能力边界，formal score、业务晋升和 release 均未成立。
+17. [ ] 执行 `013-S2-05/06` Experiment A：`013-S2-05` 三案 raw 已全部完成且均为质量失败，v1.4 统一结果 DELL=`3/1/23`、MU=`8/2/14`、NVDA=`4/1/27`；三案 deterministic supervision boundary、统一 Supervisor authority、shared zero-call implementation 与 clean-commit independent fresh proof 已完成。当前仍待独立 admission decision、三案 correction/corrected-candidate、L1/L2 与内容质量评估和最终能力边界；formal score、业务晋升和 release 均未成立。
 18. [ ] 执行 `013-S1-06/07/08`：修复 MCP operational truth、当前外部来源 runtime 和 Agentic Search 质量门；不调用 DeepSeek 来发现确定性工具缺陷。
 19. [ ] 执行 `013-S3-06/07`：动态 Lead loop 与 EvidenceRequest/targeted repair 闭环。
 20. [ ] 执行 `013-S3-08/09` Experiment B：三案端到端 DeepSeek Agentic Search/Research、隐藏 Gold 八维对照和 qualified-human 内容验收。

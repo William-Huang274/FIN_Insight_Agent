@@ -1,0 +1,101 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_three_case_unified_supervisor_zero_call_implementation_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "zero_call_shared_implementation_complete_fixture_proven_fresh_proof_and_admission_pending",
+  "scope": "case_isolated_supervisor_plan_compilation_dependency_aware_corrected_candidate_execution_and_freeze_guard",
+  "authority_binding": {
+    "ref": "configs/releases/fin_ia_0_1_3_s2_06_three_case_unified_supervisor_authority_decision_v1_0.json",
+    "decision_digest": "25a04df1b48d7553642c7ae6c1002967cba23de74cef23c7332aba1d065c6cb7",
+    "implementation_authorized_by_user_continuation": true,
+    "admission_issuance_authorized": false,
+    "provider_execution_authorized": false,
+    "hidden_scoring_authorized": false,
+    "business_promotion_authorized": false
+  },
+  "implementation": {
+    "case_scoped_disposition_compiler": {
+      "ref": "src/sec_agent/s2_same_evidence_supervision.py",
+      "sha256": "b803a536b28d4c1893e10bc403561806bdd46192ab9632f92de26d8f8f7bbe72"
+    },
+    "supervisor_and_corrected_candidate_runtime": {
+      "ref": "src/sec_agent/s2_same_evidence_supervisor_runtime.py",
+      "sha256": "ae25c0c2711857fe0674e46b8a837cd9d6be563c8a8e97258aa0a4cf1ca8b248"
+    },
+    "contract_and_mutation_tests": {
+      "ref": "tests/contract/test_fin_0_1_3_s2_06_unified_supervisor_runtime.py",
+      "sha256": "e98d4bc659f19fba8bf52e9b35774903c26168cf701315733bb8d82241659b77"
+    }
+  },
+  "closed_shared_blockers": {
+    "case_scoped_typed_correction_plan_contract_absent": "closed_by_case_qualified_v1_2_boundary_and_single_source_plan_spec",
+    "citation_and_pack_coverage_dispositions_incomplete": "closed_by_explicit_originating_node_typed_actions",
+    "corrected_candidate_partial_graph_runner_absent": "closed_by_origin_plus_downstream_closure_and_fresh_runtime_identity",
+    "corrected_candidate_freeze_and_posthoc_scoring_guard_absent": "closed_by_capture_first_terminal_candidate_digest_and_post_freeze_guard"
+  },
+  "protocol_properties": {
+    "single_source_contract_surfaces": ["prompt", "output_schema", "validator", "positive_fixture", "failure_descriptors"],
+    "supervisor_writes_report_or_financial_facts": false,
+    "deterministic_runtime_authors_research": false,
+    "case_qualified_correction_ids": true,
+    "cross_case_and_unknown_aliases_fail_closed": true,
+    "raw_outputs_mutated": false,
+    "corrected_identity_reuses_raw_identity": false,
+    "corrected_admission_shared_ledger_exact_once": true,
+    "affected_originating_nodes_rerun": true,
+    "downstream_dependency_recomputed": true,
+    "capture_first_failure_receipts_preserved": true,
+    "hidden_scoring_before_candidate_freeze": false,
+    "retry_count": 0,
+    "fallback_count": 0
+  },
+  "real_frozen_input_zero_call_capacity_precheck": {
+    "maximum_input_characters_per_call": 90000,
+    "DELL": {"supervisor_request_characters": 33590, "node_directives": 6, "provider_calls": 8, "pass": true},
+    "MU": {"supervisor_request_characters": 28104, "node_directives": 8, "provider_calls": 10, "pass": true},
+    "NVDA": {"supervisor_request_characters": 35650, "node_directives": 9, "provider_calls": 10, "pass": true},
+    "provider_call_ceiling_per_case": 11,
+    "provider_calls_started": 0
+  },
+  "verification": {
+    "focused_supervision_and_runtime_tests": "24 passed",
+    "broader_s2_05_s2_06_tests": "120 passed / 3201 deselected",
+    "full_fake_cases": ["DELL", "MU", "NVDA"],
+    "full_fake_max_path_per_case": {"supervisor_calls": 1, "corrected_graph_calls": 10, "total_calls": 11},
+    "mutations": [
+      "cross_case_evidence_alias",
+      "unknown_numeric_alias",
+      "correction_dependency_binding",
+      "hidden_target_surface",
+      "cross_case_raw_alias",
+      "eight_unit_capacity_overrun",
+      "provider_transport_failure_capture_retention",
+      "lead_topology_change",
+      "pre_freeze_scoring",
+      "unauthorized_execution",
+      "cross_runtime_exact_once_replay"
+    ],
+    "model_provider_network_calls": [0, 0, 0],
+    "admissions_issued": 0,
+    "corrected_paid_candidates": 0,
+    "raw_mutations": 0
+  },
+  "stage_acceptance": {
+    "S2_06_shared_zero_call_implementation": "engineering_pass",
+    "independent_fresh_zero_call_proof": false,
+    "supervisor_admission": false,
+    "supervisor_provider_execution": false,
+    "supervised_recoverability": "not_proven",
+    "corrected_report_quality": "not_measured",
+    "formal_hidden_score": false,
+    "qualified_human_acceptance": false,
+    "business_promotion": false,
+    "release": false
+  },
+  "next_required_sequence": [
+    "independent_fresh_zero_call_proof_on_clean_commit",
+    "separate_three_case_supervisor_admission_authority_decision",
+    "only_if_authorized_issue_case_isolated_admissions_and_execute"
+  ],
+  "known_boundary": "This package proves contract translation, case isolation, dependency closure, capture-first materialization and bounded execution with fixtures. It does not prove that DeepSeek can produce a valid plan, repair any research report, pass L1/L2, improve content quality or support product acceptance.",
+  "implementation_digest": "b6230836f9aa72d7179e1533435e4603cba86b567f661c7951ad2064542a1b74"
+}

@@ -83,6 +83,30 @@ _DISPOSITIONS: dict[str, dict[str, Any]] = {
     },
 }
 
+_V12_DISPOSITION_OVERRIDES: dict[str, dict[str, Any]] = {
+    "writer_cross_case_unknown_or_wrong_id_role": {
+        "primary_owner": "originating_model_node",
+        "correction_class": "case_local_citation_role_return",
+        "action": "return Writer with case-local evidence, unit and gap aliases only",
+        "deterministic_correction_allowed": False,
+        "new_model_call_required": True,
+    },
+    "writer_case_pack_coverage_incomplete": {
+        "primary_owner": "originating_model_node",
+        "correction_class": "case_pack_coverage_return",
+        "action": "return Writer with the complete case-local evidence and gap coverage contract",
+        "deterministic_correction_allowed": False,
+        "new_model_call_required": True,
+    },
+    "specialist_assigned_pack_coverage_incomplete": {
+        "primary_owner": "originating_model_node",
+        "correction_class": "assigned_pack_coverage_return",
+        "action": "return the affected Specialist with its assigned case-local evidence and gap aliases",
+        "deterministic_correction_allowed": False,
+        "new_model_call_required": True,
+    },
+}
+
 
 def compile_supervision_boundary(
     raw_evaluation: Mapping[str, Any],
@@ -170,3 +194,62 @@ def compile_supervision_boundary(
             "cross_case_correction_leakage_forbidden": True,
         },
     }
+
+
+def compile_case_scoped_supervision_boundary(
+    raw_evaluation: Mapping[str, Any],
+    *,
+    case_key: str,
+    raw_run_id: str,
+    raw_terminal_digest: str,
+) -> dict[str, Any]:
+    """Compile the v1.2 case-isolated boundary used by the unified protocol.
+
+    The v1.1 compiler remains unchanged for immutable historical artifacts;
+    this successor adds typed actions without rewriting those prior files.
+    """
+
+    if not case_key or not case_key.isalnum():
+        raise ValueError("s2_06_case_key_required")
+    boundary = compile_supervision_boundary(
+        raw_evaluation,
+        raw_run_id=raw_run_id,
+        raw_terminal_digest=raw_terminal_digest,
+    )
+    corrections: list[dict[str, Any]] = []
+    for index, row in enumerate(boundary["corrections"], start=1):
+        item = dict(row)
+        code = str(item.get("source_finding", {}).get("code") or "")
+        if code in _V12_DISPOSITION_OVERRIDES:
+            item.update(_V12_DISPOSITION_OVERRIDES[code])
+        action_code = _v12_action_code(item)
+        if action_code is None:
+            raise ValueError(f"s2_06_unowned_finding_class:{code}")
+        item["correction_id"] = f"{case_key}-CORR-{index:03d}"
+        item["case_key"] = case_key
+        item["action_code"] = action_code
+        corrections.append(item)
+    boundary["schema_version"] = "fin_ia_0_1_3_s2_06_supervision_boundary_v1_2"
+    boundary["case_key"] = case_key
+    boundary["corrections"] = corrections
+    boundary["raw_binding"] = {
+        **boundary["raw_binding"],
+        "case_key": case_key,
+    }
+    return boundary
+
+
+def _v12_action_code(row: Mapping[str, Any]) -> str | None:
+    code = str(row.get("source_finding", {}).get("code") or "")
+    severity = str(row.get("source_finding", {}).get("severity") or "")
+    if code == "directional_margin_sharpened_to_unsupported_range":
+        return "deterministic_source_bound_deletion"
+    if code == "hypothetical_planning_threshold":
+        return "retain_typed_nonfactual_request"
+    if code == "unsupported_historical_valuation_comparison" and severity == "L3":
+        return "retain_typed_nonfactual_request"
+    if code in {"verifier_missed_material_financial_semantics", "verifier_missed_material_failure"}:
+        return "return_to_verifier"
+    if row.get("new_model_call_required") is True and row.get("primary_owner") == "originating_model_node":
+        return "return_to_originating_node"
+    return None

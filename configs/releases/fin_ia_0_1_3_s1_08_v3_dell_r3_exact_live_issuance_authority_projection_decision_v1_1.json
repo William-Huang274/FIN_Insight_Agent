@@ -1,0 +1,112 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_r3_exact_live_issuance_authority_projection_decision_v1_1",
+  "decision_digest": "847b7cf9230d36f92f36ae9949aed7a7f1dedb5c0a37923572fd8a003c7634c7",
+  "recorded_at": "2026-08-08T06:09:37+08:00",
+  "stage": "013-S1-08-P2D",
+  "decision_scope": "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AUTHORITY_PROJECTION_DECISION",
+  "decision_status": "approved_one_separate_exact_live_attempt_not_issued",
+  "decision_source": {
+    "branch": "codex/layered-data-source-expansion",
+    "commit": "4358edcbd0f02a75dbf9508edf6f53e3575db7e1",
+    "upstream_commit": "4358edcbd0f02a75dbf9508edf6f53e3575db7e1",
+    "clean_and_synced_before_proof_materialization": true
+  },
+  "superseded_unconsumed_candidate": {
+    "ref": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_exact_live_issuance_authority_projection_decision_v1_0.json",
+    "sha256": "3fe28d74f391784b76bd491187140e56a8812619943af0e0c6154a2a146cdfd5",
+    "decision_digest": "f331c4c6d1f3d9524801d12669e5c755c5cafa812cc7dc35b455996f9af87969",
+    "reason": "pre_P2D_blocked_state_was_encoded_as_a_permanent_production_test_invariant",
+    "formal_admission_issued": false,
+    "live_executed": false
+  },
+  "project_os_preflight": {
+    "schema_version": "fin_insight_project_os_full_chain_preflight_v0_2",
+    "run_scope_registry_version": "v1_0",
+    "run_scope": "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AUTHORITY_PROJECTION_DECISION",
+    "status": "pass",
+    "open_full_chain_blocker_count": 0,
+    "contract_errors": 0
+  },
+  "immutable_basis": {
+    "S0_04G_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s0_04g_typed_blocker_state_and_run_scope_registry_minimum_zero_call_implementation_v1_0.json",
+      "sha256": "fb18617f8781be3668dcffbd0ad33589ed844cd0f52956f7ec2afa7899c15583"
+    },
+    "R3_transition_aware_requalification": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_2.json",
+      "sha256": "d3c3d6688ca568b22a454e27c11faed39a20bcf36522d592e6f90dd87bced680",
+      "result_digest": "43fdf99ede5f46b300076f517c91a3472e2e37ddb895eaf3e3b3e2c4c32aa3c3",
+      "source_commit": "4358edcbd0f02a75dbf9508edf6f53e3575db7e1",
+      "predecessor_v1_1_sha256": "7ae6f46fcbeeedb673995ee554318649e3e09c57bd8514035ab3ea82a8bd2f1e",
+      "clean_git_archive": true,
+      "fresh_python_process": true,
+      "tests_passed": 85,
+      "tests_failed": 0,
+      "tests_skipped": 0,
+      "transition_projection_consistency_tested": true
+    },
+    "conditional_R3_authority": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_fresh_live_authority_decision_v1_0.json",
+      "sha256": "5ed51f211df46d05b4f13cd9c5b8201475f437edff9af520e339d12dbe4cc2b0",
+      "old_R2_reuse_forbidden": true
+    },
+    "R3_runtime": {
+      "ref": "src/sec_agent/s1_08_r3_successor.py",
+      "sha256": "b02ac0e924875b9c7043546e83453333b308c463c3db8364a959ea3545d9b81e"
+    },
+    "R3_runner": {
+      "ref": "scripts/releases/run_fin_ia_0_1_3_s1_08_v3_dell_current_search_r3.py",
+      "sha256": "efbf908e9ed71d9d8db50551371eb9b748a17a6543c86f19a4099583636aaa7b"
+    }
+  },
+  "issuance_preconditions": {
+    "proof_source_is_decision_source": true,
+    "proof_source_to_future_evidence_commit_guarded_runtime_tree_drift_must_remain_zero": true,
+    "runtime_SEC_contact_configured": true,
+    "runtime_SEC_contact_format_valid": true,
+    "runtime_SEC_contact_value_persisted": false,
+    "R3_result_path_absent": true,
+    "formal_admission_issued_by_this_decision": false,
+    "all_preconditions_pass": true
+  },
+  "projected_exact_live_authority": {
+    "case_key": "DELL",
+    "attempt_label": "R3",
+    "future_admission_ceiling": 1,
+    "future_exact_live_execution_ceiling": 1,
+    "network_call_ceiling": 16,
+    "maximum_document_fetches_per_attempt": 2,
+    "maximum_accepted_unique_documents_per_attempt": 1,
+    "slot_group_reservations": {
+      "issuer_and_regulatory_shared": 4,
+      "customer_demand": 4,
+      "supply_and_counterevidence": 5,
+      "market_context": 0,
+      "shared_contingency_after_first_round": 3
+    },
+    "model_call_ceiling": 0,
+    "provider_model_call_ceiling": 0,
+    "retry_ceiling": 0,
+    "per_call_timeout_seconds_max": 30,
+    "overall_timeout_seconds_max": 300,
+    "automatic_R4": false,
+    "ranking_MU_NVDA_DeepSeek_S3_release_authorized": false
+  },
+  "stop_rules": [
+    "Admission and exact-live execution must occur in a later distinct Attempt.",
+    "Any proof, source, Runtime, runner, Git ancestry or guarded Runtime-tree drift invalidates issuance before reservation or network.",
+    "R3 is exact-once with zero retry, relaunch, patch-and-resume, replay or automatic R4.",
+    "If R3 candidate ceiling or target-in-pool fails, preserve the terminal and enter P3 provider acquisition or Internal Alpha source-scope decision.",
+    "Ranking, MU/NVDA transfer, DeepSeek, S3, Workbench and release remain separately blocked."
+  ],
+  "observed_counts": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "retry_calls": 0,
+    "formal_admissions_issued": 0,
+    "live_runs": 0
+  },
+  "current_next": "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION",
+  "known_boundary": "P2D v1.1 makes one later exact R3 Attempt eligible after typed ledger projection. It does not issue or consume an admission, access a source, prove candidate quality, admit ranking or close S1-08."
+}

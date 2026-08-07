@@ -4,7 +4,7 @@
 
 阶段：`013-S1-08-P2D`
 
-结论：首个零调用 P2D candidate 在投影验证时发现 transition-invariant test defect，已 `superseded_unconsumed`；没有签发 admission 或执行 live。当前先做一次 v1.2 clean requalification。
+结论：首个零调用 P2D candidate 在投影验证时发现 transition-invariant test defect，已 `superseded_unconsumed`；v1.2 clean requalification 随后以 `85/85` 通过，最终 P2D v1.1 批准后续一个独立 DELL R3 Attempt。本项没有签发 admission 或执行 live。
 
 ## 核对结果
 
@@ -30,3 +30,15 @@ v1.0 decision 因此不生效。修复只把断言改为“preflight 必须与 R
 最终 P2D 仍必须是 issuance authority projection。后续执行必须是新的独立 Attempt，重新要求 clean/synced、proof/Runtime/runner/source SHA、contact 和 result-absent 检查全部通过，并在任何 DNS/网络前完成 exact-once ledger reservation。
 
 若 R3 再次到达来源但 candidate ceiling 或 target-in-pool 失败，立即停止 live repair，进入 `S1-08-P3` Provider acquisition／Internal Alpha source-scope 决策；不允许 R4。ranking、MU/NVDA、DeepSeek、S3、Workbench 和 release 仍未授权。
+
+## 最终复证与决定
+
+- v1.2 source=`4358edcb`，predecessor v1.1 SHA=`7ae6f46f...bd2f1e`；
+- clean Git archive＋fresh Python process=`85 passed / 0 failed / 0 skipped`；
+- transition-aware production contract、旧 S1-08 exact-once、authority/source mutation 全部通过；
+- R1/R2 restricted objects=`19/2`，输入未变；
+- v1.2 proof SHA=`d3c3d668...bced680`、digest=`43fdf99e...2aa3c3`；
+- final P2D v1.1 SHA=`f5583ac3...3aa94bb`、decision digest=`847b7cf9...c7634c7`；
+- external/formal admission/live=`0/0/0`。
+
+最终 P2D artifact 为 v1.1；v1.0 保留为 superseded-unconsumed。下一项才是独立 `S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION`。

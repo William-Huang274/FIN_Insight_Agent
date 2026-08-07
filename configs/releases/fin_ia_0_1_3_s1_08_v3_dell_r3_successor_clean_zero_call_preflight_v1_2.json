@@ -1,0 +1,82 @@
+{
+  "authority_bindings": {
+    "authority_decision_digest": "45dd3a6a28e7b4e8b56537c89aff9eacfdf8e1b8d701b29b2f1e37f8fd246818",
+    "authority_decision_sha256": "5ed51f211df46d05b4f13cd9c5b8201475f437edff9af520e339d12dbe4cc2b0",
+    "catalog_digest": "0f95217bbc7ecc7aa7cbe92a086169d8ac38cdacfe5f288d787028ae628a5c2a",
+    "catalog_sha256": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851",
+    "r2_quality_evaluation_digest": "24de7bc7851f3bdcaa538d5f6129e8ae3eabbccfa12b7ce021e13959b36e04ce",
+    "r2_quality_evaluation_sha256": "b02fca13b01376161d079523f272809d156d643e693446a7271fa0eef0937cb8",
+    "r2_result_digest": "66c9587766d8e22ddecef174e6d644e70d2a704ff6d9f697a7c7058536950658",
+    "r2_result_sha256": "8e9550c842ff28dacddd54ca043bbaa49ab219342655110acf99b6e4ade31a88",
+    "v3_implementation_binding_digest": "0bcac65ef93b983fb2166135020c381eaf49c09947c289e6b25c87abd5a236a9",
+    "v3_proof_digest": "63ad614cb3ed91adc2b845dd98235b621ea2a596e2b1b296b19c2b4fb8e7c3ea",
+    "v3_proof_sha256": "272dd8581c5e1a3a231e36cfd57067c9f1a4f6281eee43067aa03a6872c9bae4"
+  },
+  "governance_requalification": {
+    "changed_runtime_files": [
+      "scripts/releases/prepare_fin_ia_0_1_3_s0_04g_r3_downstream_compatibility_requalification.py",
+      "scripts/releases/run_fin_ia_0_1_3_s1_08_v3_dell_current_search_r3.py",
+      "src/sec_agent/s1_08_r3_successor.py",
+      "tests/contract/test_fin_0_1_3_s0_04g_typed_blocker_state_and_run_scope_registry.py",
+      "tests/contract/test_fin_0_1_3_s1_08_v3_dell_r3_successor.py"
+    ],
+    "direct_R3_scope_remains_blocked": true,
+    "previous_R3_runtime_contract_compatible": true,
+    "project_os_preflight_schema": "fin_insight_project_os_full_chain_preflight_v0_2",
+    "run_scope_registry_version": "v1_0"
+  },
+  "known_boundary": "This S0-04G proof requalifies the prior R3 successor against the typed Project OS contract. It does not issue an admission, execute R3, prove candidate quality, admit ranking or change the no-R4 stop rule.",
+  "observed_counts": {
+    "formal_admissions_issued": 0,
+    "live_runs": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "retry_calls": 0
+  },
+  "predecessor_preflight": {
+    "path": "configs/releases/fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_1.json",
+    "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_1",
+    "sha256": "7ae6f46fcbeeedb673995ee554318649e3e09c57bd8514035ab3ea82a8bd2f1e",
+    "source_commit": "2f14684e60acf7b6def92498eb2bd68c4428d87a"
+  },
+  "project_os_preflight": {
+    "allow_open_blockers": false,
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "FIN_0_1_3_S0_04G_TYPED_BLOCKER_STATE_AND_RUN_SCOPE_REGISTRY_MINIMUM_ZERO_CALL_IMPLEMENTATION",
+    "run_scope_registry_version": "v1_0",
+    "schema_version": "fin_insight_project_os_full_chain_preflight_v0_2",
+    "status": "pass"
+  },
+  "recorded_at": "2026-08-08T06:09:30+08:00",
+  "result_digest": "43fdf99ede5f46b300076f517c91a3472e2e37ddb895eaf3e3b3e2c4c32aa3c3",
+  "schema_version": "fin_ia_0_1_3_s1_08_v3_dell_r3_successor_clean_zero_call_preflight_v1_2",
+  "source_branch": "codex/layered-data-source-expansion",
+  "source_commit": "4358edcbd0f02a75dbf9508edf6f53e3575db7e1",
+  "source_files": {
+    "preflight_runner": "scripts/releases/prepare_fin_ia_0_1_3_s0_04g_r3_downstream_compatibility_requalification.py",
+    "preflight_runner_sha256": "d8d6c643f67c50da8eb6419e555135c50c988f252eed8aac1d484cd10f393e29",
+    "runner": "scripts/releases/run_fin_ia_0_1_3_s1_08_v3_dell_current_search_r3.py",
+    "runner_sha256": "efbf908e9ed71d9d8db50551371eb9b748a17a6543c86f19a4099583636aaa7b",
+    "runtime": "src/sec_agent/s1_08_r3_successor.py",
+    "runtime_sha256": "b02ac0e924875b9c7043546e83453333b308c463c3db8364a959ea3545d9b81e"
+  },
+  "stage": "013-S0-04G",
+  "status": "pass",
+  "verification": {
+    "admissions_issued": 0,
+    "bounded_runtime_change_set": "pass",
+    "clean_git_archive": true,
+    "direct_R3_remains_blocked": true,
+    "external_calls": 0,
+    "fresh_python_process": true,
+    "predecessor_and_v3_source_bindings": "pass",
+    "pytest_nodeids_sha256": "b2602ff340cde2fddde0027018e035cbb408abf24423c663efc7e8f96656af7a",
+    "restricted_R1_request_objects_injected": 19,
+    "restricted_R2_content_objects_injected": 2,
+    "restricted_inputs_unchanged": true,
+    "tests_failed": 0,
+    "tests_passed": 85,
+    "tests_skipped": 0
+  }
+}

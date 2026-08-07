@@ -284,6 +284,23 @@ def test_evaluator_only_match_detects_missing_source_without_leaking_target_ids(
     )
 
 
+def test_evaluator_only_match_rejects_stale_market_snapshot_equivalence() -> None:
+    _, results, visible, hidden = _three_case_results()
+    mutated = deepcopy(results)
+    for candidate in mutated[0]["accepted_candidates"]:
+        if candidate["locator"] == "current_market_snapshot":
+            candidate["published_on"] = "2026-06-24"
+    for candidate in mutated[0]["selected_candidates"]:
+        if candidate["locator"] == "current_market_snapshot":
+            candidate["published_on"] = "2026-06-24"
+    evaluation = evaluator_only_gold_match(
+        results=mutated,
+        visible_pack=visible,
+        hidden_scoring=hidden,
+    )
+    assert evaluation["summary"]["target_in_pool_recall"] < 1.0
+
+
 def test_gold_identifier_in_catalog_fails_closed(tmp_path: Path) -> None:
     catalog = _load(CATALOG_PATH)
     catalog["entities"][0]["aliases"].append("DELL_E01")
@@ -437,4 +454,4 @@ def test_materialized_zero_call_proof_is_digest_bound_and_honest() -> None:
     assert proof["evaluator_only_summary"]["target_in_pool_recall"] == 1.0
     assert proof["decision"]["S1_08_live_candidate_ceiling"] == "unproven"
     assert proof["decision"]["S1_08_ranking"] == "not_admitted_on_live_evidence"
-    assert proof["verification"]["focused_tests"] == 14
+    assert proof["verification"]["focused_tests"] == 15

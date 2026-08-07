@@ -52,7 +52,7 @@
     "candidate order stability"
   ],
   "planner_gold_visibility": false,
-  "proof_digest": "3e0c73998631baebf94236811f8916dea1fd5b3df2004eaf13f7bbe28c1b8a0d",
+  "proof_digest": "7eb7119eab0ff8837dd9ac132c3a57eb99f8374339c8c3545d0f7c1c09b18fba",
   "proof_mode": "evaluator_fixture_discovery_zero_network_zero_model",
   "schema_version": "fin_ia_0_1_3_s1_08_candidate_generation_zero_call_proof_v1_0",
   "status": "engineering_proof_pass_live_candidate_generation_unproven",
@@ -62,12 +62,13 @@
     "concrete_capture_first_official_discovery_adapter_tested": true,
     "fixture_selected_pack_required_slot_coverage": 1.0,
     "fixture_target_in_pool_recall": 1.0,
-    "focused_tests": 14,
+    "focused_tests": 15,
     "model_provider_network_calls": [
       0,
       0,
       0
     ],
-    "ranking_or_reranker_tuning_executed": false
+    "ranking_or_reranker_tuning_executed": false,
+    "stale_market_snapshot_equivalence_rejected": true
   }
 }

@@ -158,13 +158,14 @@ def main() -> int:
             "candidate order stability"
         ],
         "verification": {
-            "focused_tests": 14,
+            "focused_tests": 15,
             "model_provider_network_calls": [0, 0, 0],
             "benchmark_target_groups": 12,
             "fixture_target_in_pool_recall": evaluation["summary"]["target_in_pool_recall"],
             "fixture_selected_pack_required_slot_coverage": evaluation["summary"]["selected_pack_required_slot_coverage"],
             "concrete_capture_first_official_discovery_adapter_tested": True,
             "concrete_adapter_network_budget_stop_tested": True,
+            "stale_market_snapshot_equivalence_rejected": True,
             "ranking_or_reranker_tuning_executed": False
         },
         "decision": {

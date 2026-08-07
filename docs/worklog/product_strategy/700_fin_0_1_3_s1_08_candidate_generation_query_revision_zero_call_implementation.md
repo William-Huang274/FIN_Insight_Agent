@@ -36,12 +36,12 @@ S1-08 entry audit 已证明当前只有 7 个 active URL、没有 FIN 0.1.3 curr
 
 ## 4. 结果
 
-- focused：`14 passed`；
+- focused：`15 passed`；
 - S1-07/S1-08 related broad：`32 passed`；
 - materializer 两次输出 byte-identical；
 - 三案 fake pool/selected：DELL=`6/6`、MU=`7/7`、NVDA=`7/7`；
 - evaluator-only：`12 target groups`，fixture target-in-pool=`1.0`，selected-pack coverage=`1.0`；
-- mutation：Gold 泄漏、跨案、未来日期、lineage 缺失、未晋升、source 缺失、identical retry、revision overflow、排序稳定性；
+- mutation：Gold 泄漏、跨案、未来日期、lineage 缺失、未晋升、source 缺失、stale market snapshot 冒充 current Gold、identical retry、revision overflow、排序稳定性；
 - model/provider/network=`0/0/0`，未调 ranking/reranker。
 
 结果：`configs/releases/fin_ia_0_1_3_s1_08_candidate_generation_query_revision_and_gold_match_zero_call_proof_v1_0.json`。

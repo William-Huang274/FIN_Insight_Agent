@@ -304,13 +304,13 @@ def evaluator_only_gold_match(
     visible_pack: Mapping[str, Any],
     hidden_scoring: Mapping[str, Any],
 ) -> dict[str, Any]:
-    source_by_locator: dict[str, str] = {}
+    source_by_locator: dict[str, dict[str, Any]] = {}
     for source in visible_pack.get("source_registry") or []:
         locator = source.get("url") or source.get("artifact_ref")
         if locator:
-            source_by_locator[normalize_locator(str(locator))] = str(source["source_id"])
+            source_by_locator[normalize_locator(str(locator))] = dict(source)
         if source.get("authority") == "non_authoritative_market_context":
-            source_by_locator["current_market_snapshot"] = str(source["source_id"])
+            source_by_locator["current_market_snapshot"] = dict(source)
     evidence_source_by_case = {
         str(case["case_key"]): {
             str(row["evidence_id"]): str(row["source_id"])
@@ -323,16 +323,12 @@ def evaluator_only_gold_match(
     for hidden_case in hidden_scoring.get("cases") or []:
         case_key = str(hidden_case["case_key"])
         result = result_by_case[case_key]
-        matched_sources = {
-            source_by_locator[normalize_locator(str(candidate.get("locator") or ""))]
-            for candidate in result.get("accepted_candidates") or []
-            if normalize_locator(str(candidate.get("locator") or "")) in source_by_locator
-        }
-        selected_sources = {
-            source_by_locator[normalize_locator(str(candidate.get("locator") or ""))]
-            for candidate in result.get("selected_candidates") or []
-            if normalize_locator(str(candidate.get("locator") or "")) in source_by_locator
-        }
+        matched_sources = _matched_gold_source_ids(
+            result.get("accepted_candidates") or [], source_by_locator
+        )
+        selected_sources = _matched_gold_source_ids(
+            result.get("selected_candidates") or [], source_by_locator
+        )
         target_rows: list[dict[str, Any]] = []
         for target in hidden_case.get("required_insights") or []:
             evidence_ids = [str(value) for value in target.get("evidence_ids") or []]
@@ -377,6 +373,27 @@ def evaluator_only_gold_match(
         "planner_received_hidden_gold": False,
     }
     return {**body, "evaluation_digest": canonical_digest(body)}
+
+
+def _matched_gold_source_ids(
+    candidates: Sequence[Mapping[str, Any]],
+    source_by_locator: Mapping[str, Mapping[str, Any]],
+) -> set[str]:
+    matched: set[str] = set()
+    for candidate in candidates:
+        locator = normalize_locator(str(candidate.get("locator") or ""))
+        source = source_by_locator.get(locator)
+        if source is None:
+            continue
+        if (
+            str(candidate.get("published_on") or "")
+            != str(source.get("published_on") or "")
+            or str(candidate.get("authority") or "")
+            != str(source.get("authority") or "")
+        ):
+            continue
+        matched.add(str(source["source_id"]))
+    return matched
 
 
 def _entities_for_role(

@@ -1,0 +1,85 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_dell_r2_supervisor_successor_entrypoint_zero_call_implementation_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "zero_call_successor_entrypoint_engineering_pass_clean_commit_and_preflight_pending",
+  "scope": "one_DELL_R2_case_local_v1_1_admission_issuer_and_exact_once_runner",
+  "authority_binding": {
+    "ref": "configs/releases/fin_ia_0_1_3_s2_06_dell_replacement_supervisor_authority_decision_v1_0.json",
+    "decision_digest": "ada6960739d9f411f035d95f908d8b3cde72671fc8623ca4ec1cfc41947e7ee1",
+    "replacement_attempt": "R2",
+    "admission_issuance_eligible_only_after_clean_synced_preflight": true,
+    "automatic_issuance": false,
+    "automatic_execution": false,
+    "automatic_R3": false,
+    "MU_NVDA_authorized": false
+  },
+  "contract_and_proof_binding": {
+    "contract_implementation_ref": "configs/releases/fin_ia_0_1_3_s2_06_supervisor_nonempty_case_authority_compiled_contract_alignment_v1_1.json",
+    "contract_implementation_digest": "5226d9a2da7e24d01b398b96673fdce541f9373d82f27b2815f405c225a36982",
+    "supervisor_plan_schema_version": "fin_ia_0_1_3_s2_06_supervisor_plan_v1_1",
+    "fresh_proof_ref": "configs/releases/fin_ia_0_1_3_s2_06_supervisor_contract_v1_1_independent_fresh_zero_call_proof_result_v1_0.json",
+    "fresh_proof_result_digest": "f1be7598c1afe72847fce503ddcf74636c8ce4f2ff57f046993dd06d64fefb4d",
+    "R1_admission_or_identity_reuse": false
+  },
+  "implementation_bindings": {
+    "scripts/releases/fin_ia_0_1_3_s2_06_dell_r2_supervisor_execution_support.py": "288342ff72af2b2334daff878c2a717c1a61c6ecf4c5e61d0ea516339fc52f64",
+    "scripts/releases/issue_fin_ia_0_1_3_s2_06_dell_r2_supervisor_admission.py": "b0b4dfc857340568f32379ccdbd3dd565bb73559f14131b00a0c81a26ed9bc77",
+    "scripts/releases/run_fin_ia_0_1_3_s2_06_dell_r2_supervisor.py": "58dd74d3ce6c97587da24af7bef1d555429f7888d376da3a82b4101a64ec2cd9",
+    "tests/contract/test_fin_0_1_3_s2_06_dell_r2_supervisor_successor_entrypoint.py": "1aea39a48a5ae5cfc755baed16bcdf16411cde5298efce6b6c509f808bae9e4b"
+  },
+  "frozen_DELL_binding": {
+    "raw_run_id": "fin013_s2_05_exp_a_dell_f9e9264951d69da5ed86",
+    "raw_outputs_digest": "87f68f67de68aafb29c760b8b74aa17f86e01c7a781017fe4062350e9c04552d",
+    "evaluation_digest": "68f89f4e33622a3dd5f65c06c7f75857c8a9833066910b723df674ed462c4af4",
+    "boundary_digest": "361bcca1f024ac2fa98869db3b4aeab1d5441c410390eb3fe33561ef7bc105e4",
+    "findings": 27,
+    "corrections": 27,
+    "node_directives": 6,
+    "supervisor_request_characters": 33689,
+    "expected_provider_calls": 8,
+    "provider_call_ceiling": 11,
+    "hard_cost_ceiling_usd": "0.18"
+  },
+  "execution_properties": {
+    "admission_storage": ".codex_runtime/fin013_s2_06/authorities/DELL_R2",
+    "runtime_storage": ".codex_runtime/fin013_s2_06/runs/<corrected_run_id>",
+    "shared_ledger": ".codex_runtime/fin013_s2_06/shared/supervisor_admission_ledger.sqlite",
+    "fresh_R2_Run_Attempt_admission_identity": true,
+    "isolated_legacy_support_module_instance": true,
+    "old_R1_entrypoint_remains_fail_closed": true,
+    "capture_before_parse_or_validation": true,
+    "candidate_freeze_before_hidden_scoring": true,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "provider_hopping": false,
+    "credential_value_persisted": false
+  },
+  "verification": {
+    "focused_successor_entrypoint_tests": "5 passed",
+    "broader_S2_05_S2_06_tests": "143 passed / 3201 deselected",
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "corrected_candidates": 0,
+    "raw_mutations": 0
+  },
+  "stage_acceptance": {
+    "DELL_R2_successor_entrypoint": "engineering_pass",
+    "clean_synced_preflight": false,
+    "DELL_R2_admission": false,
+    "DELL_R2_execution": false,
+    "supervised_recoverability": "not_proven",
+    "business_promotion": false,
+    "release": false
+  },
+  "next_required_sequence": [
+    "commit_and_push_successor_entrypoint",
+    "Project_OS_and_runner_clean_synced_zero_call_preflight",
+    "stop_and_request_separate_execution_instruction",
+    "only_if_instructed_issue_one_R2_admission_and_execute_exact_once"
+  ],
+  "known_boundary": "This package prepares a governed successor entrypoint only. It does not issue an admission, call DeepSeek, validate R1, produce a corrected report, authorize MU/NVDA, or support product/release acceptance.",
+  "implementation_digest": "cfec8ca90cfbc2db29062d6d42af4dbf2512c0fdb294cddec3d4a9a2962fa0b2"
+}

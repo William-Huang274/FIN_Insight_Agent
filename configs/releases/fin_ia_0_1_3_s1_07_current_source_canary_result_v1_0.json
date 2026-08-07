@@ -1,0 +1,277 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_07_current_source_canary_result_v1_0",
+  "status": "fail",
+  "git": {
+    "branch": "codex/layered-data-source-expansion",
+    "commit": "15d0430adc9ae071cf66dbd574ef73bc58dfc618",
+    "clean_and_synced_at_start": true
+  },
+  "authority": {
+    "scope": "fin_0_1_3.S1_07.current_source_canary:v1",
+    "implementation_commit": "15d0430adc9ae071cf66dbd574ef73bc58dfc618",
+    "routes": {
+      "DELL": {
+        "url": "https://investors.delltechnologies.com/node/19176/pdf",
+        "domain": "investors.delltechnologies.com",
+        "title": "Dell Technologies official investor material"
+      },
+      "MU": {
+        "url": "https://investors.micron.com/static-files/7a1f8c6f-1ce9-4efe-bc6e-722b6b9c4550",
+        "domain": "investors.micron.com",
+        "title": "Micron official annual investor material"
+      },
+      "NVDA": {
+        "url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/",
+        "domain": "investor.nvidia.com",
+        "title": "NVIDIA official fiscal 2026 results"
+      }
+    },
+    "source_call_ceiling": 3,
+    "retry_ceiling": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "run_nonce": "fin013_s1_07_current_source_canary_v1",
+    "admission_id": "fin013_s1_07_admission_91cddb9ca95c25a050c3",
+    "admission_digest": "91cddb9ca95c25a050c3d1810246badad9bd2faea6be6331ccf2c4dab9196b99",
+    "run_id": "fin013_s1_07_run_7667c220e82adef7952a",
+    "attempt_id": "fin013_s1_07_attempt_b460212bce91299e8462"
+  },
+  "results": {
+    "DELL": {
+      "status": "error",
+      "error": "official_source_private_network_forbidden",
+      "snapshot_id": "websnap_d357b62dfcfedf97",
+      "final_url": null,
+      "network_calls": 1,
+      "request_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/86/16/8616caaf60468f63e369f7ed7477d70a757bc443124c0507d72be54db97c3ffe.json",
+        "digest": "8616caaf60468f63e369f7ed7477d70a757bc443124c0507d72be54db97c3ffe",
+        "byte_size": 428,
+        "media_type": "application/json",
+        "artifact_type": "official_source_request"
+      },
+      "response_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/3b/79/3b793d97a7ed02462cc080c156a850ad7972905fff0ee69cf659ce22bfbea0a4.json",
+        "digest": "3b793d97a7ed02462cc080c156a850ad7972905fff0ee69cf659ce22bfbea0a4",
+        "byte_size": 524,
+        "media_type": "application/json",
+        "artifact_type": "official_source_transport_failure"
+      },
+      "parser_capture": null,
+      "promotion_capture": null,
+      "parser_status": null,
+      "parser_adapter": null,
+      "parser_text_sha256": null,
+      "promotion_decision": "reject",
+      "evidence_row_count": 0,
+      "context_row_count": 0,
+      "source_gaps": [
+        {
+          "source_family": "live_public_web_context",
+          "reason_code": "official_source_private_network_forbidden",
+          "domain": "investors.delltechnologies.com",
+          "missing": [],
+          "attempt_backed": true,
+          "attempt_status": "transport_failure",
+          "source_available": false,
+          "cannot_infer": "source content or financial claim from an unparsed, rejected, or context-only source"
+        }
+      ],
+      "redirect_chain": [],
+      "operational": {
+        "invocation_id": "mcp_de0c7f8b7c144eb1953bf938bcdbb076",
+        "start_kind": "cold",
+        "worker_pid": 47036,
+        "elapsed_ms": 449,
+        "terminal_status": "typed_failure",
+        "phases": [
+          {
+            "phase": "resource_binding",
+            "status": "pass",
+            "elapsed_ms": 0
+          },
+          {
+            "phase": "worker_start",
+            "status": "pass",
+            "elapsed_ms": 405
+          },
+          {
+            "phase": "handler_execution",
+            "status": "typed_failure",
+            "elapsed_ms": 44
+          }
+        ]
+      }
+    },
+    "MU": {
+      "status": "error",
+      "error": "official_source_private_network_forbidden",
+      "snapshot_id": "websnap_1a1c5e628ddd5c2d",
+      "final_url": null,
+      "network_calls": 1,
+      "request_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/13/23/1323e24b55f96f110738515cd1bce12aaa489fa1709fd1e1e7b6dbbede3a0549.json",
+        "digest": "1323e24b55f96f110738515cd1bce12aaa489fa1709fd1e1e7b6dbbede3a0549",
+        "byte_size": 451,
+        "media_type": "application/json",
+        "artifact_type": "official_source_request"
+      },
+      "response_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/1c/a7/1ca77322e3008c7f4e89200393cd9691ec827c22a6b60da32e8e449cddff1c19.json",
+        "digest": "1ca77322e3008c7f4e89200393cd9691ec827c22a6b60da32e8e449cddff1c19",
+        "byte_size": 522,
+        "media_type": "application/json",
+        "artifact_type": "official_source_transport_failure"
+      },
+      "parser_capture": null,
+      "promotion_capture": null,
+      "parser_status": null,
+      "parser_adapter": null,
+      "parser_text_sha256": null,
+      "promotion_decision": "reject",
+      "evidence_row_count": 0,
+      "context_row_count": 0,
+      "source_gaps": [
+        {
+          "source_family": "live_public_web_context",
+          "reason_code": "official_source_private_network_forbidden",
+          "domain": "investors.micron.com",
+          "missing": [],
+          "attempt_backed": true,
+          "attempt_status": "transport_failure",
+          "source_available": false,
+          "cannot_infer": "source content or financial claim from an unparsed, rejected, or context-only source"
+        }
+      ],
+      "redirect_chain": [],
+      "operational": {
+        "invocation_id": "mcp_6dc81ce5b840436da8d8b6c1d39f86d0",
+        "start_kind": "warm",
+        "worker_pid": 47036,
+        "elapsed_ms": 18,
+        "terminal_status": "typed_failure",
+        "phases": [
+          {
+            "phase": "resource_binding",
+            "status": "pass",
+            "elapsed_ms": 0
+          },
+          {
+            "phase": "worker_start",
+            "status": "pass",
+            "elapsed_ms": 0
+          },
+          {
+            "phase": "handler_execution",
+            "status": "typed_failure",
+            "elapsed_ms": 18
+          }
+        ]
+      }
+    },
+    "NVDA": {
+      "status": "error",
+      "error": "official_source_private_network_forbidden",
+      "snapshot_id": "websnap_766e14acf01e754a",
+      "final_url": null,
+      "network_calls": 1,
+      "request_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/e1/fd/e1fd4cd3be977518d2260a3645feb7dc84f913e8a84c0b3a3eed1a4d40e4020e.json",
+        "digest": "e1fd4cd3be977518d2260a3645feb7dc84f913e8a84c0b3a3eed1a4d40e4020e",
+        "byte_size": 505,
+        "media_type": "application/json",
+        "artifact_type": "official_source_request"
+      },
+      "response_capture": {
+        "object_key": "fin-0.1.3/s1-07/current-web-evidence/2b/41/2b41c11948eb0db987b3e6008fc12e9d21dd16b47d953fe68b51f2c33d3a1b35.json",
+        "digest": "2b41c11948eb0db987b3e6008fc12e9d21dd16b47d953fe68b51f2c33d3a1b35",
+        "byte_size": 524,
+        "media_type": "application/json",
+        "artifact_type": "official_source_transport_failure"
+      },
+      "parser_capture": null,
+      "promotion_capture": null,
+      "parser_status": null,
+      "parser_adapter": null,
+      "parser_text_sha256": null,
+      "promotion_decision": "reject",
+      "evidence_row_count": 0,
+      "context_row_count": 0,
+      "source_gaps": [
+        {
+          "source_family": "live_public_web_context",
+          "reason_code": "official_source_private_network_forbidden",
+          "domain": "investor.nvidia.com",
+          "missing": [],
+          "attempt_backed": true,
+          "attempt_status": "transport_failure",
+          "source_available": false,
+          "cannot_infer": "source content or financial claim from an unparsed, rejected, or context-only source"
+        }
+      ],
+      "redirect_chain": [],
+      "operational": {
+        "invocation_id": "mcp_a1e2f899e3124a15bf153412b2a24c86",
+        "start_kind": "warm",
+        "worker_pid": 47036,
+        "elapsed_ms": 19,
+        "terminal_status": "typed_failure",
+        "phases": [
+          {
+            "phase": "resource_binding",
+            "status": "pass",
+            "elapsed_ms": 0
+          },
+          {
+            "phase": "worker_start",
+            "status": "pass",
+            "elapsed_ms": 0
+          },
+          {
+            "phase": "handler_execution",
+            "status": "typed_failure",
+            "elapsed_ms": 19
+          }
+        ]
+      }
+    }
+  },
+  "checks": {
+    "three_routes_exactly_once": true,
+    "all_sources_fetched": false,
+    "all_sources_parsed": false,
+    "all_trusted_sources_promoted": false,
+    "all_raw_captures_retained": true,
+    "all_parser_lineage_retained": false,
+    "worker_closed_no_orphan": true,
+    "no_model_provider_retry": true
+  },
+  "active_worker_pid_before_close": 47036,
+  "scope": {
+    "network_calls": 3,
+    "retry_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "business_artifact_promotions": 0
+  },
+  "known_boundary": "This canary proves only three bounded official company-source fetch/capture/parse/promotion routes. It does not prove broad crawling, retrieval recall/ranking/diversity, research synthesis, DeepSeek quality, human acceptance or release readiness.",
+  "terminal_result_digest": "943cda77fa96e076a7de36b60c230f6d6928d30863e4c31ad5ef335f970f5b7d",
+  "admission_receipt": {
+    "schema_version": "fin_ia_shared_admission_consumption_ledger_v1_0",
+    "admission_digest": "91cddb9ca95c25a050c3d1810246badad9bd2faea6be6331ccf2c4dab9196b99",
+    "admission_id": "fin013_s1_07_admission_91cddb9ca95c25a050c3",
+    "scope": "fin_0_1_3.S1_07.current_source_canary:v1",
+    "run_id": "fin013_s1_07_run_7667c220e82adef7952a",
+    "attempt_id": "fin013_s1_07_attempt_b460212bce91299e8462",
+    "runtime_identity": "D:\\FIN_Insight_Agent\\.codex_runtime\\fin013_s1_07_current_source_canary\\fin013_s1_07_run_7667c220e82adef7952a",
+    "state": "terminal",
+    "reserved_at": "2026-08-07T09:52:38Z",
+    "reservation_digest": "6a4bb491de54bfbacb1c636a7cad456f94d9afcf33219da5e5e8f9f6c6fbf30e",
+    "terminal_status": "failed",
+    "terminal_phase": "s1_07_current_source_canary_terminal",
+    "terminal_code": "one_or_more_current_source_routes_failed",
+    "terminal_result_digest": "943cda77fa96e076a7de36b60c230f6d6928d30863e4c31ad5ef335f970f5b7d",
+    "finalized_at": "2026-08-07T09:52:38Z",
+    "receipt_digest": "233eb4833f0c35c739019663b7cf3725a9199264cacf13230c0d6b93bf9ea6f3"
+  }
+}

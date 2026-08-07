@@ -28,3 +28,15 @@
 ## 4. 边界与下一步
 
 当前只到 engineering pass。提交并推送 clean commit 后，执行一次 DELL/MU/NVDA 官方来源 exact-once canary。只有三案均完成真实 fetch、raw capture、parse 和受控 Evidence promotion，S1-07 才可 `L4_scope_pass`；任一路失败保留 capture/typed gap 并继续归属 S1-07。即使通过，也不证明 S1-08 recall/ranking/diversity、DeepSeek 研究质量或 release。
+
+## 5. R1 exact-once canary 与处置
+
+实现 commit `15d0430a` clean/synced 后执行 R1。三条 admission calls 与三条 network-attempt count 均准确，0 retry；三案均在 HTTP 前返回 `official_source_private_network_forbidden`，request/failure capture 全部存在、worker close no orphan。只读 DNS 诊断显示：
+
+- DELL=`198.18.1.52`；
+- MU=`198.18.1.53`；
+- NVDA=`198.18.1.54`。
+
+三个地址都属于 RFC 2544 benchmark network `198.18.0.0/15`，是当前 Codex 网络的 synthetic DNS 映射。因此 R1 是 guard environment-compatibility false positive，不证明来源不可用或 parser 不工作。
+
+处置保持有界：普通 runtime 仍拒绝所有 non-global destinations；只有 canary runner 确认所有显式 allowlist hostname 均解析到 `198.18/15` 时，才通过受控环境标志允许该 synthetic transit，HTTPS hostname/certificate 校验不变。新增 default-reject / explicit-mode-allow mutation，broader=`83 passed`。R1 结果保存为 `configs/releases/fin_ia_0_1_3_s1_07_current_source_canary_result_v1_0.json`；修复提交后只允许 new admission 的 R2 v1.1。

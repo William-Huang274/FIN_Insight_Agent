@@ -20,6 +20,7 @@ from sec_agent.official_source_attempt_program import (
     load_official_source_policy,
     parse_source_document,
     validate_official_source_attempt_program,
+    _require_public_network_host,
 )
 from sec_agent.shared_admission_ledger import (
     SharedAdmissionConsumptionLedger,
@@ -151,6 +152,18 @@ def test_policy_rejects_non_https_or_cross_host_route(tmp_path: Path) -> None:
     path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(OfficialSourceAttemptError, match="official_source_policy_route_not_allowlisted"):
         load_official_source_policy(path)
+
+
+def test_synthetic_dns_requires_explicit_runtime_mode(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sec_agent.official_source_attempt_program.socket.getaddrinfo",
+        lambda *args, **kwargs: [(2, 1, 6, "", ("198.18.1.52", 443))],
+    )
+    monkeypatch.delenv("FINSIGHT_ALLOW_SYNTHETIC_DNS", raising=False)
+    with pytest.raises(OfficialSourceAttemptError, match="official_source_private_network_forbidden"):
+        _require_public_network_host("investor.example.com")
+    monkeypatch.setenv("FINSIGHT_ALLOW_SYNTHETIC_DNS", "1")
+    _require_public_network_host("investor.example.com")
 
 
 def test_validator_rejects_false_promotion(tmp_path: Path) -> None:

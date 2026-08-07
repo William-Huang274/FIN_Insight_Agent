@@ -647,3 +647,5 @@ S1-03 已有 `CaptureFirstOfficialSourceClient`、官方来源 transport、HTML/
 6. timeout、body size、redirect、domain 与 source call 数均受预算约束；失败保留 attempt-backed typed gap，不以弱来源补齐。
 
 Runtime owner 为 `src/sec_agent/web_evidence_runtime.py`，复用 `src/sec_agent/official_source_attempt_program.py`。当前 deterministic/mutation/broader tests=`82 passed`，真实网络尚未执行；S1-07 只有在 clean/synced commit 上完成一次 DELL/MU/NVDA 三官方来源 exact-once canary 后才可关闭。
+
+首次 exact-once canary 发现当前 Codex 网络将三个公开 IR hostname 映射到 `198.18.0.0/15` synthetic benchmark network，通用 private-network guard 因而在 HTTP 前一致 false-positive。环境兼容只可由受控 runner 在确认所有目标均为显式 allowlist hostname、且所有解析地址均属于 `198.18.0.0/15` 时启用；不得由模型或普通 tool argument 任意打开。该模式仍要求 HTTPS hostname/certificate 验证，并继续阻断 literal IP、localhost、RFC1918、link-local、其他 private/reserved network。R1 capture 必须保留，新提交后只能新 admission 执行一次 R2。

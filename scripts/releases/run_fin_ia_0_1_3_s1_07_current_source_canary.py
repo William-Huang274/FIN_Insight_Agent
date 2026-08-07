@@ -3,6 +3,9 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import ipaddress
+import os
+import socket
 import subprocess
 import sys
 from pathlib import Path
@@ -19,7 +22,7 @@ from sec_agent.mcp_operational import McpToolProcessSupervisor  # noqa: E402
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger  # noqa: E402
 
 
-DEFAULT_OUTPUT = REPO_ROOT / "configs" / "releases" / "fin_ia_0_1_3_s1_07_current_source_canary_result_v1_0.json"
+DEFAULT_OUTPUT = REPO_ROOT / "configs" / "releases" / "fin_ia_0_1_3_s1_07_current_source_canary_result_v1_1.json"
 SCOPE = "fin_0_1_3.S1_07.current_source_canary:v1"
 ROUTES = {
     "DELL": {
@@ -83,6 +86,18 @@ def _summary(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _synthetic_dns_mode_required() -> bool:
+    network = ipaddress.ip_network("198.18.0.0/15")
+    resolved = []
+    for route in ROUTES.values():
+        addresses = {
+            ipaddress.ip_address(row[4][0])
+            for row in socket.getaddrinfo(route["domain"], 443, type=socket.SOCK_STREAM)
+        }
+        resolved.extend(addresses)
+    return bool(resolved) and all(address.version == 4 and address in network for address in resolved)
+
+
 def main() -> int:
     args = parse_args()
     if _git("status", "--porcelain"):
@@ -120,6 +135,9 @@ def main() -> int:
         runtime_identity=str(runtime_root),
         reserved_at=now,
     )
+    synthetic_dns_mode = _synthetic_dns_mode_required()
+    if synthetic_dns_mode:
+        os.environ["FINSIGHT_ALLOW_SYNTHETIC_DNS"] = "1"
     supervisor = McpToolProcessSupervisor()
     results: dict[str, dict[str, Any]] = {}
     try:
@@ -169,6 +187,11 @@ def main() -> int:
         "checks": checks,
         "active_worker_pid_before_close": active_pid,
         "scope": {"network_calls": 3, "retry_calls": 0, "model_calls": 0, "provider_calls": 0, "business_artifact_promotions": 0},
+        "transport_environment": {
+            "synthetic_dns_mode": synthetic_dns_mode,
+            "synthetic_dns_network": "198.18.0.0/15" if synthetic_dns_mode else None,
+            "safety_boundary": "explicit hostname allowlist plus HTTPS certificate validation remains required",
+        },
         "known_boundary": "This canary proves only three bounded official company-source fetch/capture/parse/promotion routes. It does not prove broad crawling, retrieval recall/ranking/diversity, research synthesis, DeepSeek quality, human acceptance or release readiness.",
     }
     terminal_digest = canonical_digest(body)

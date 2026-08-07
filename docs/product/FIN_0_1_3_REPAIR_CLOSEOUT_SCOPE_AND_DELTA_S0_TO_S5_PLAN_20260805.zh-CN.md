@@ -346,4 +346,6 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 
 > **2026-08-07 `013-S1-07` engineering implementation 已完成、clean canary 待执行**：没有新造平行 crawler，而是将 S1-03 已验证的 capture-first、allowlisted HTTPS transport、HTML/PDF/JSON parser 与 content-addressed store 接到 MCP `web_evidence_snapshot`。新增 verified company-domain gate、public-network/SSRF 防护、跨域/3-hop redirect、16 MiB/120 s 上界、raw request/response、parser/promotion capture 和 typed gap。公司官方/IR、监管/政府 parsed source 可按边界晋升；news/commerce/social 只保留 context-only；web parser 不拥有 exact numeric authority。broader=`82 passed`，model/provider/network=`0/0/0`。下一步只允许 clean/synced commit 上一次 DELL/MU/NVDA 官方来源 exact-once canary；失败留在 S1-07，不进入 S1-08。
 
+> **2026-08-07 `013-S1-07` R1 exact-once canary immutable fail**：3/3 调用均在 HTTP 前被 private-network guard 拦截，因为当前执行环境把三家 IR hostname 映射为 RFC 2544 `198.18.1.52/53/54`；3 request + 3 failure captures、admission terminal 和 no-orphan 均成立，0 retry。该共同失败归类为 synthetic-DNS environment compatibility，不归因来源、parser 或 DeepSeek。只做一项有界修复：runner 自动识别“全部显式 allowlist hostname→198.18/15”并启用受控 transport mode，其他 private network 保持拒绝；随后 new commit/new admission 执行一次 R2，R1 不覆盖。
+
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

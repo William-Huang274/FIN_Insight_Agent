@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import hashlib
 from io import BytesIO
 import json
+import os
 from pathlib import Path
 import re
 import ipaddress
@@ -365,14 +366,26 @@ def _require_public_network_host(hostname: str) -> None:
             }
         except OSError as exc:
             raise OfficialSourceAttemptError("official_source_dns_resolution_failed") from exc
-    if not candidates or any(
-        address.is_private
+    synthetic_network = ipaddress.ip_network("198.18.0.0/15")
+    allow_synthetic = str(os.environ.get("FINSIGHT_ALLOW_SYNTHETIC_DNS") or "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+    forbidden = [
+        address
+        for address in candidates
+        if address.is_private
         or address.is_loopback
         or address.is_link_local
         or address.is_multicast
         or address.is_reserved
         or address.is_unspecified
-        for address in candidates
+    ]
+    if forbidden and not (
+        allow_synthetic
+        and all(address.version == 4 and address in synthetic_network for address in forbidden)
     ):
         raise OfficialSourceAttemptError("official_source_private_network_forbidden")
 

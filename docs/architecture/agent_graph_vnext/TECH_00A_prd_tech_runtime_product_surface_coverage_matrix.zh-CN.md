@@ -105,3 +105,26 @@ FIN 0.1 明确 deferred：Data Room、Watchlist/R4、Research-to-Quant、全行�
 | `P001-F15` Quality/release | shadow Senior R2、RG2 internal fixture、RG5 rollback 和 P07.5 blocked decision 已记录 | RG1/RG3/RG4 blocked，FIN 0.1 未 release |
 
 当前 machine release source 为 `configs/releases/fin_ia_0_1_release_contract_v1_2.json`，不再以本节末尾保留的 v1.1 历史引用判断 authority。
+
+## 7. FIN 0.1.3 current implementation overlay（2026-08-08）
+
+本节 supersede 第 6 节的“当前实现”描述，但不改写旧时点证据。它只更新 FIN 0.1.3 当前成熟度，不改变 `REL-PROD-001` feature scope。
+
+| Release feature | FIN 0.1.3 当前实证 | 当前判断 | 下一硬门 |
+| --- | --- | --- | --- |
+| `P001-F01-F04` Product entry/control | S0 inheritance/exact-once/truth oracle 已关闭；S3 有 12–13 Cell engineering plan；RC-P36-156 仍暴露共享 blocker-state/run-scope fail-open | `runtime/control partial` | typed blocker state＋RunScopeRegistry；current Case vertical 与动态 Lead |
+| `P001-F05-F07` Evidence/numeric | S1-01–05 truth/numeric/graph/governed pack、S1-06 MCP、S1-07 official-source runtime 各自通过；S1-08 DELL live 只有 1 unique source、target-in-pool=0，v3 仅 zero-call engineering pass | `numeric/official-source scoped pass; Agentic Search failed` | v3 clean proof、DELL live decision、provider/scope disposition、三案 candidate ceiling，之后才准入 ranking |
+| `P001-F08-F10` Workpaper/repair/Lead | S2 capability experiments与 correction guard 已完成但 DeepSeek natural closure 失败；S3-01–05 minimum anchor 有结构，无产品级 thesis/counterevidence/内容验收 | `engineering anchor / product not passed` | DS-A1/A2/A3、S3-06/07 dynamic research、S3-08/09 八维内容验收 |
+| `P001-F11-F14` Deliver/review/trace/follow-up | 继承 0.1.2 的只读 Workbench/Report/Trace surface；尚未消费 FIN 0.1.3 current evidence/research candidate | `historical product projection only` | S4-06 current Case dogfood、exact review、review burden 与 bounded follow-up |
+| `P001-F15` Quality/release | 失败 attempt、capture、paired rubric 与 rollback 合同存在；0.1.3 RG1–RG5 未执行 | `release blocked` | S1/S3/S4 通过后执行 S5；RC-P36-156 shared governance 必须关闭 |
+
+### 7.1 Current issue ownership
+
+- provider/locator/candidate ceiling、publication date、relationship direction、slot fairness：TECH_02/03，S1-08；
+- typed blocker state/run-scope registry：TECH_06/10，共享 S0/S5；
+- model family capability/autonomy：TECH_08/10，S2；
+- dynamic DecisionSurface、targeted repair、content quality：TECH_01/05/10，S3；
+- Workbench usefulness/review burden：TECH_09，S4；
+- release/rollback/portability：TECH_06/09/10，S5。
+
+因此，`runtime_partial` 不能再被压缩为一个总状态。FIN 0.1.3 必须分别报告 source/search、numeric truth、model adherence、research outcome、product usability 和 release readiness；其中任一通过都不能替代其他轴。

@@ -566,3 +566,26 @@ Follow-up/refresh 读取 memory 时先执行：permission/license -> as-of/avail
 TECH_03 可以索引 ActorSnapshot、AccountabilityEvent、DecisionAttestation 和 ArtifactProvenanceManifest refs，供 Cell/Claim responsibility graph 与 audit package 查询；不能修改事件、批准或责任语义。Raw prompt/response、private scratchpad 和敏感 payload 仍由 TECH_06 retention policy 管理，memory index 只保存允许检索的 ref/tombstone。
 
 本节状态为 `documented / contract_draft`；现有 R57/context/method assets 不等于统一 registry 已实现。
+
+## 23. FIN 0.1.3 Candidate-Ceiling、索引时效与排序准入（2026-08-08）
+
+RAG/KB 的候选层必须先证明“应当找到的资料能进入 pool”，再证明“排序把它排到前面”。`CoverageAuditRecord` 与 `CandidateBundle` 至少新增或标准化以下字段：
+
+- `provider_capability_state` 与 exact provider/policy version；
+- `source_snapshot_as_of / indexed_at / source_revision`；
+- `required_target_group_ref`（仅 evaluator 可见）与 `target_in_pool`；
+- `required_slot_recall_before_ranking`；
+- `route_attempted / locator_found / fetch_terminal / parser_terminal / qualification_terminal`；
+- `unique_canonical_source_count / role_binding_count / local_snapshot_count`；
+- `ranking_admission_status / ranking_not_admitted_reason`；
+- `candidate_to_promotion / promotion_to_claim_utilization`。
+
+排序与索引规则：
+
+1. 旧索引规模、row 数或 lexical hit 不能证明 current coverage。FIN 0.1.3 审计中的旧 BM25 snapshot 虽有 `89,112` records，却缺 current DELL/NVDA annual，因此保持 non-authority，不能在 current source 前获得事实或排序提权。
+2. evaluator Gold 的 locator/insight/ID 不得进入 query、source catalog、index build 或 reranker feature；只在运行结束后计算 target-in-pool 和 selected coverage。
+3. target-in-pool 未过时，BGE/Milvus/NDCG/MRR 均 `not_admitted`。扩大 top-k、切 reranker 或把 historical accepted memory 混入 pool 不能修复 source acquisition 缺口。
+4. `SourceDocument`、`CandidateBinding` 和本地 snapshot 分开存储与计数；canonical document 可以被多个 role 引用，但网络收益率只计一次。
+5. rejected locator/date/relationship 与 failed route 要进入 negative/repair index，但不能因为被索引就变成 accepted Evidence；后续 reuse 仍重新检查 case/as-of/authority。
+
+当前 FIN 0.1.3 只证明 v3 zero-call candidate/runtime 合同；最近 DELL live 只有 1 个 unique SEC source、四组 hidden target target-in-pool=0。故 TECH_03 的 current ranking/vector 质量仍未准入，本节不表示主索引刷新、三案 live candidate ceiling 或 RAG 产品验收完成。

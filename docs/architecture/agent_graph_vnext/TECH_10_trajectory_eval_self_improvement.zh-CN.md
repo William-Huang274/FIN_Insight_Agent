@@ -516,3 +516,33 @@ ReleaseContract 必须声明四个独立状态轴：`release_channel`、`target_
 Internal Alpha 不要求重复完整 enterprise production qualification。企业 pilot/production 才要求真实多用户、SSO/retention、长期 worker、SLA、incident 和正式 security evidence。任何 release decision 都必须保留 `production_readiness`，不得把 Internal Alpha 的 L2/R2 结果描述为生产通过。
 
 `REL-PROD-001` 当前机器可读合同为 `configs/releases/fin_ia_0_1_release_contract_v1_1.json`，其 feature scope 为 `configs/releases/fin_ia_0_1_feature_scope_matrix_v1_0.json`。v1.1 supersede v1.0，因为旧版把 P36 Anchor Case 的六个 cell families 与产品功能范围混在一起；旧合同只保留审计。RG1/RG4 必须同时验证 Task Center、Case workspace、Evidence/Numeric、Workpaper/Repair、Deliverable/Review 和 Activity/Trace 产品 surface，不能只凭 memo 或 Case R2 判定 Internal Alpha 达到 L2。完整规则见 `docs/architecture/repository/RELEASE_OPERATING_MODEL_20260717.zh-CN.md`。
+
+## 23. FIN 0.1.3 Search / Model / Research 分层评测与失败归因（2026-08-08）
+
+FIN 0.1.3 的真实工程结果证明，检索、模型合同和研究内容必须作为三个可独立失败的 EvalSubject，不能把“完整链终止”“JSON 合法”或“报告已渲染”合并成一个绿色分数。
+
+### 23.1 Search gate ladder
+
+`SearchQualityCard` 按以下门依次出具，后门不得在前门失败时计算通过：
+
+| Gate | EvalSubject | 最低证据 | 失败 owner |
+| --- | --- | --- | --- |
+| SQ0 | Provider capability | declared/configured/operational/replay/live exact state | TECH_02/06 |
+| SQ1 | Fair route execution | required slot first opportunity、attempt/capture、budget/no starvation | TECH_02/06 |
+| SQ2 | Candidate ceiling | evaluator-only target-in-pool、required-slot recall、currentness | TECH_02/03 |
+| SQ3 | Ranking/selection | NDCG/MRR、selected coverage、diversity/reconciliation | TECH_02/03；仅 SQ2 pass 后 |
+| SQ4 | Promotion | false promotion=0、authority/date/entity/relationship/lineage | TECH_02/04 |
+| SQ5 | Research utilization | accepted Evidence 到 Claim/Workpaper 的实质利用与边界 | TECH_01/05/10 |
+
+`typed_gap` 只有在 SQ0–SQ2 的真实 attempt 或明确 external/commercial boundary 后才可记 honest closure。未运营 Provider、未尝试 route、slot starvation 或 parser rejection 必须分别归因；不能统一记成 source absence。
+
+### 23.2 Model and content gates
+
+- Model Capability Eval 按 contract family 记录 strict JSON、identity、numeric ref、evidence role、closure、threshold、tool use 和 narrative；一个 family 的通过不提升其他 family 自主权。
+- Deterministic Harness guard 通过不等于模型 natural adherence 通过；模型自然失败也不能通过在核心 Runtime 中无限增加 Provider-specific 分支修复。
+- Research Outcome Eval 必须单独评价公司/问题专属性、证据论证、Numeric 解释、因果机制、跨 Cell 综合、反方/gap、WWC 和 senior usefulness；`L1=0`、9 Artifacts 或完整调用次数不能替代八维质量和 qualified-human acceptance。
+- FailureAttributionGraph 必须把 source/tool 缺口、contract/compiler 缺口、model adherence、research method/coverage、renderer/product UX 和 release governance 分开；counterfactual replay 只能证明被改变的层。
+
+### 23.3 Current FIN 0.1.3 projection
+
+当前 S1-08 v3 为 zero-call engineering pass，最近 DELL live SQ1 terminal integrity 通过但 SQ2 target-in-pool=0，因此 SQ3 ranking 未准入。S2 deterministic correction control 已证明，但 DeepSeek natural evidence-role/closure 失败。S3 只有 minimum engineering anchor，八维产品内容验收未执行；S4/S5 未开始。故 release gate 仍为 blocked，本节不授权 live、model、ranking 或 release execution。

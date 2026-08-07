@@ -1,0 +1,115 @@
+{
+  "schema_version": "fin_ia_0_1_3_prd_tech_runtime_mutual_alignment_and_replan_v1_0",
+  "recorded_at": "2026-08-08",
+  "source_commit_before_document_update": "5885f7280dd04e6ceded93d0e7ba644bd8b9b971",
+  "status": "mutual_alignment_complete_execution_plan_rebased_no_new_execution_authority",
+  "product_version": "FIN_0_1_3",
+  "product_version_decision": "remain_current_no_version_jump",
+  "fin_0_2_definition_changed": false,
+  "authority": {
+    "network_calls_authorized": 0,
+    "model_calls_authorized": 0,
+    "provider_calls_authorized": 0,
+    "admissions_authorized": 0,
+    "ranking_authorized": false,
+    "release_authorized": false,
+    "only_current_next_scope": "S1_08_V3_MATURE_COMPONENT_RELATIONSHIP_BUDGET_CLEAN_INDEPENDENT_ZERO_CALL_PROOF"
+  },
+  "audit_conclusions": [
+    "The original S1-01 through S1-05 pass remains valid for local truth and governed-pack scope, but it does not close Agentic Search after S1-06 through S1-08 were added.",
+    "S1-08 is blocked before ranking: the latest DELL live run had one unique source and zero target-in-pool recall.",
+    "S2 completed its capability experiments and deterministic correction controls, but DeepSeek natural correction closure failed.",
+    "S3-01 through S3-05 are minimum engineering anchors, not product research or content-quality acceptance.",
+    "FIN 0.1.3 S4 and S5 have not started on a current FIN 0.1.3 candidate.",
+    "The shared Project OS blocker-state and run-scope defect belongs to S0/S5 governance, not SourceHunter."
+  ],
+  "stage_projection": {
+    "S0": {
+      "status": "baseline_closed_shared_governance_debt_open",
+      "completed": ["013-S0-01", "013-S0-02", "013-S0-03"],
+      "open": ["013-S0-04G"],
+      "open_issue": "RC-P36-156-project-os-unregistered-run-scope-string-not-fail-closed"
+    },
+    "S1": {
+      "status": "S1_01_to_07_scoped_pass_S1_08_live_quality_failed",
+      "completed": ["013-S1-01", "013-S1-02", "013-S1-03", "013-S1-04", "013-S1-05", "013-S1-06", "013-S1-07"],
+      "open": ["013-S1-08"],
+      "latest_live": {
+        "case": "DELL",
+        "network_calls": 16,
+        "unique_sources": 1,
+        "qualified_document_yield": 0.125,
+        "target_in_pool_recall": 0.0,
+        "ranking_admitted": false
+      },
+      "latest_engineering": "v3_zero_call_engineering_pass_clean_independent_proof_pending"
+    },
+    "S2": {
+      "status": "experiment_complete_deterministic_control_pass_natural_correction_fail",
+      "completed": ["013-S2-01", "013-S2-02", "013-S2-03", "013-S2-04", "013-S2-05", "013-S2-06A", "013-S2-06B", "013-S2-06C", "013-S2-06D", "013-S2-06E"],
+      "product_model_autonomy_pass": false
+    },
+    "S3": {
+      "status": "minimum_engineering_anchor_only_upstream_blocked",
+      "engineering_anchors": ["013-S3-01", "013-S3-02", "013-S3-03", "013-S3-04", "013-S3-05"],
+      "open": ["DS-A1", "DS-A2", "DS-A3", "013-S3-06", "013-S3-07", "013-S3-08", "013-S3-09"],
+      "product_research_pass": false,
+      "content_quality_pass": false
+    },
+    "S4": {
+      "status": "not_started_on_FIN_0_1_3_current_candidate",
+      "inherited_surface_only": true,
+      "open": ["S4-06"]
+    },
+    "S5": {
+      "status": "not_started_release_blocked",
+      "open": ["RG1", "RG2", "RG3", "RG4", "RG5"]
+    }
+  },
+  "search_gate_ladder": [
+    "provider_capability_truth",
+    "fair_route_and_slot_execution",
+    "target_in_pool_and_required_slot_recall",
+    "ranking_and_selected_pack_coverage",
+    "evidence_promotion",
+    "claim_and_workpaper_utilization"
+  ],
+  "issue_routing": {
+    "RC-P36-156": "S0_shared_governance_and_S5_release_reverification",
+    "RC-P36-157": "S1_08_provider_locator_candidate_ceiling",
+    "DeepSeek_evidence_role_closure_threshold": "S2_capability_profile_then_S3_atom_narrative",
+    "dynamic_cells_cross_evidence_synthesis_content_quality": "S3_06_to_S3_09",
+    "workbench_review_burden_and_current_candidate_projection": "S4_06",
+    "release_rollback_portability": "S5_RG1_to_RG5"
+  },
+  "execution_order": [
+    "S1_08_P1_clean_independent_zero_call_proof",
+    "S1_08_P2_separate_DELL_fresh_live_authority_decision",
+    "S1_08_P3_provider_acquisition_or_product_source_scope_decision_if_ceiling_fails",
+    "013_S0_04G_typed_blocker_state_and_versioned_run_scope_registry_before_multicase_or_S3",
+    "S1_08_P4_MU_NVDA_bounded_transfer_then_ranking_only_after_candidate_ceiling_and_S0_04G",
+    "DS_A1_A2_A3_model_family_profile_judgment_atom_protected_narrative",
+    "S3_06_07_dynamic_research_and_targeted_repair",
+    "S3_08_09_three_case_experiment_B_and_content_quality_acceptance",
+    "S4_06_current_candidate_workbench_dogfood",
+    "S5_RG1_to_RG5_release_decision"
+  ],
+  "stop_rules": [
+    "Do not evaluate ranking while target-in-pool is failed or not admitted.",
+    "Do not repeat live search after another candidate-ceiling failure without a provider or product-scope decision.",
+    "Do not patch the same model contract family field by field; allow at most one structural revision and one natural canary.",
+    "Do not treat typed gaps, terminal integrity, artifact count or a clean chain as research-content acceptance.",
+    "Do not create a new product version because a proof or execution attempt fails."
+  ],
+  "source_refs": [
+    "docs/product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md",
+    "docs/product/FIN_0_1_3_REPAIR_CLOSEOUT_SCOPE_AND_DELTA_S0_TO_S5_PLAN_20260805.zh-CN.md",
+    "docs/architecture/agent_graph_vnext/TECH_00A_prd_tech_runtime_product_surface_coverage_matrix.zh-CN.md",
+    "docs/architecture/agent_graph_vnext/TECH_01_agentic_research_loop_decision_surface_contract.zh-CN.md",
+    "docs/architecture/agent_graph_vnext/TECH_02_agentic_search_evidence_toolgateway_sourcehunter.zh-CN.md",
+    "docs/architecture/agent_graph_vnext/TECH_03_document_metadata_rag_knowledge_layer.zh-CN.md",
+    "docs/architecture/agent_graph_vnext/TECH_10_trajectory_eval_self_improvement.zh-CN.md",
+    "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_source_quality_evaluation_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_s1_08_mature_component_relationship_budget_zero_call_proof_v1_0.json"
+  ]
+}

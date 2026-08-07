@@ -513,3 +513,23 @@ TECH_01 拥有 `CaseRoleAssignmentVersion` 和 `ResearchAssignmentVersion` 的�
 Assignment 不授予隐含工具、数据或审批权限；实际能力仍由 TECH_06 PermissionSnapshot 决定。人员离职、角色变更或 delegation expiry 产生新 assignment version 和 unresolved-owner event，不改写历史 ActorSnapshot。
 
 本节只定义研究语义，状态仍为 `documented / contract_draft`；不表示 Case aggregate 已进入 runtime。
+
+## 20. FIN 0.1.3 Search-to-Research Admission Boundary（2026-08-08）
+
+真实 S1-08 DELL current-search 证明，能 terminalize、能返回 typed gap 或拥有固定 Cell 结构，都不等于 Agentic Research 已具备研究输入。TECH_01 的 Lead 在创建可执行 WorkUnit 前必须消费 TECH_02/03/10 共同签发的 `SearchQualityCard`，至少包含：
+
+- provider capability 的 `declared/configured/operational/replay_proven/live_proven` 状态；
+- required Evidence Slot 的 first-opportunity、attempt/capture、candidate-or-gap 与 stop reason；
+- evaluator-only target-in-pool、required-slot recall、currentness、source diversity、reconciliation、false-promotion 和 selected-pack coverage；
+- canonical source、role binding、本地 snapshot 与 accepted Evidence 的分账；
+- 未闭合 slot 的真实 owner：provider/locator/parser/date/relationship/commercial/permission 或研究判断。
+
+准入规则：
+
+1. required target 尚未进入候选池时，相关 Cell 保持 `needs_source` 或 attempt-backed `typed_gap`；Lead 不得用模型自由叙事、历史 RAG hit 或通用方法模板将其推进为 supported judgment。
+2. ranking 未准入时，Lead 不得读取虚构的 reranker winner；target-in-pool 通过后才可消费 selected Evidence Pack。
+3. 动态 DecisionSurface 的 10–20 Cell 是产品覆盖目标，不是固定调用次数。WorkUnit 数和工具预算由 material open cells、dependency/conflict、repair value 和 stop condition决定，不能把“9 次 Provider 调用”写成产品质量代理。
+4. S3 repair 只处理 judgment、cross-cell synthesis、counter-thesis、WWC 和 bounded follow-up。provider/locator/parser/candidate ceiling 退回 TECH_02/03；numeric authority 退回 TECH_04；模型 family autonomy 退回 TECH_08/10。
+5. WriterAdmission 必须同时看到 SearchQualityCard、DecisionSurfacePack、material gaps 和内容质量门；完整链无异常但证据单薄或报告模板化仍不得进入 R2。
+
+FIN 0.1.3 当前投影为：S1-08 v3 只有 zero-call engineering pass，最近 DELL live target-in-pool 为 0；S3-01–05 仅为 minimum engineering anchor，S3-06–09 尚未开始。因此本节是准入合同更新，不表示动态研究或内容质量已经通过。

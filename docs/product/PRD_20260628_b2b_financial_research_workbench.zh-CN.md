@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-08 | 根据 FIN 0.1.3 S1-08 真实 DELL current-search 与 capture replay 完成产品反向校准：Agentic Search 必须按 provider 可运行性、目标资料进入候选池、排序、Evidence 晋升和下游利用逐层验收；target-in-pool 未通过时禁止用 NDCG/MRR 或 reranker 绿色结果掩盖上游缺口。新增 typed blocker/run-scope fail-closed、唯一网络文档收益率和阶段准入要求。 |
 | 2026-08-08 | 根据 S1-08 真实 capture bake-off 修正 SourceHunter 成熟组件边界：feedparser/Trafilatura 只能解析已捕获内容并生成 discovery/main-text/metadata candidate；第三方推断日期、sitemap lastmod、HTTP Last-Modified 不拥有金融发布日期权威。新增 relationship-aware Evidence Slot、slot round-robin 与网络唯一文档/本地快照分账要求。 |
 | 2026-08-07 | 补齐模型研究判断与金融事实写入权的产品边界：模型必须看见并分析 exact facts、选择 evidence/numeric refs、生成 thesis/机制/反方；Harness 只拥有 material number/date/entity/citation 的确定性渲染与晋升，不得代写研究。新增受保护混合叙事、correction closure 和 anti-template 内容质量门禁。 |
 | 2026-07-19 | 完成 FIN 0.1 PRD/TECH/Point 阶段复盘：当前已形成 10-cell P36 本地确定性研究纵向和可运行 Workbench Next，但 DeepSeek 实际调用、exact Human Senior Review、RG1/RG3/RG4 和 P07.5 release 尚未通过。当前功能状态见 `FIN_0_1_STAGE_REVIEW_20260719.zh-CN.md`，不得再以 2026-07-17 的 implementation-not-started scope freeze 代表当前进度。 |
@@ -1302,6 +1303,32 @@ Writer only presents what has been approved.
 - repair cache reuse rate；
 - context pollution rate。
 
+#### 7.7.1 Agentic Search 分层能力与候选池先行合同（2026-08-08）
+
+一次工具调用成功、网页能解析或候选数量非零，都不能单独证明 Agentic Search 可用。产品必须按以下不可倒置的顺序建立证据：
+
+```text
+provider declared/configured
+ -> operational route
+ -> locator/source discovery
+ -> capture/fetch/parse
+ -> entity/date/relationship qualification
+ -> target enters candidate pool
+ -> ranking and selection
+ -> Evidence Gate promotion
+ -> claim/workpaper utilization
+```
+
+- `SearchProviderCapability` 必须区分 `declared / configured / operational / replay_proven / live_proven`。只有文档、接口或 adapter stub 不得显示为“可搜索”；
+- evaluator-only Gold 只用于运行后判断 target-in-pool、required-slot recall 和 selected-pack coverage，不得把 Gold URL、expected insight 或 evidence ID 暴露给 Planner；
+- 任一 required target 尚不能进入候选池时，ranking/NDCG/MRR/BGE/Milvus 评价均为 `not_admitted`，不是 0 分，也不得先调 reranker 或盲目扩大 top-k；
+- typed gap 必须引用真实 route attempt、capture 或明确的 provider/commercial/permission boundary。尚未尝试、slot 被预算饿死或 provider 根本未运营时，不能把 gap 写成“公开资料不存在”；
+- source quality 同时评价 currentness、source authority、entity/period、经济关系方向、来源多样性、reconciliation 和下游 claim utilization；只抓到 issuer 单一 filing 不能代表客户、供应链和市场证据已经覆盖；
+- 统计必须分开 `unique canonical network documents`、role bindings、本地受管 snapshot 和 accepted evidence。同一文档支持两个角色仍只是一份网络来源；
+- broad Web search、official-domain bounded search、issuer feed/sitemap 和 SEC discovery 是不同能力。没有运营 Provider 时必须明确 `route_unavailable`，不得用定向官方抓取冒充通用外部检索。
+
+Agentic Research 的 S3 准入必须消费上述 Search Quality Card。搜索层未证明当前案例的 required-slot candidate ceiling 时，Lead 只能返回 `needs_source / typed_gap / blocked`，不得通过增加模型调用、自由叙事或本地模板拼装制造产品级研报。
+
 ### 7.8 Agentic Research Harness 工程控制面（2026-07-09 追加）
 
 在 `Agentic Search / Agentic Research` 之上，FIN 需要一个统一的 `Agentic Research Harness`。它不是另一个 agent，也不是把所有节点改成更长 prompt；它是运行时控制面，负责把工具、上下文、权限、状态、trace、评测和自我迭代统一成可审计系统。
@@ -1458,6 +1485,12 @@ Trace corpus
 ```
 
 这允许系统从失败任务中沉淀规则、skills、fixtures、source policies 和 eval cases，但任何会改变 runtime behavior 的 patch 都必须经过 deterministic test 和人工确认。
+
+#### 7.8.1 运行权限、阻断状态与阶段边界（2026-08-08）
+
+Harness 的执行权限不能依赖自由文本 run scope 或不断扩展的描述性状态字符串。产品运行治理必须具备版本化 `RunScopeRegistry`、typed `blocker_state`、scope-to-blocker policy 和 unknown-state/unknown-scope fail-closed；一次 preflight `pass` 不能替代 exact admission、runner、source SHA、预算和结果路径绑定。
+
+工程失败必须保留在最早责任阶段并产生新 Attempt，而不是自动创建新产品版本。共享治理缺陷归 S0/S5；来源发现、候选池和预算缺陷归 S1；模型 family 能力和自主权归 S2；动态研究、综合和内容质量归 S3；产品审阅负担归 S4；release/rollback 归 S5。后续阶段可以消费 typed gap，但不得在 renderer、Workbench 或 release gate 现场修复上游事实与检索根因。
 
 ### 7.9 模型研究判断权与金融事实写入权分离（2026-08-07 追加）
 
@@ -1719,6 +1752,8 @@ FIN 不得把每次单一 Provider/模型失败都固化成核心 Harness 分支
 - `ArtifactConsistencyGraph` 必须能检测 memo、PPT、Excel、dashboard 之间的数字、口径、期间、引用和 source boundary 不一致；
 - Workbench 验收必须从 claim review 扩展到 decision surface matrix、document grid、numeric trace、artifact consistency review 和 repair queue；
 - `Agentic Search` 验收必须证明 Evidence Layer 能按 `EvidenceRequest` 产生候选、拒绝项、typed failure、typed gap 和 fallback ledger，而不是直接输出最终判断；
+- `Agentic Search` 必须分别给出 provider/route 状态、required slot 是否获得真实机会、target-in-pool、required-slot recall、currentness、source diversity、reconciliation、false promotion、selected-pack coverage 和下游利用；候选池硬门未过时 ranking 指标不得出具通过结论；
+- typed gap 必须可回到具体 attempt/capture/provider boundary；slot starvation、未运营 route、未尝试 locator 或 parser/date/relationship 拒绝不得合并成“无资料”；
 - `Agentic Research` 验收必须证明 Lead / specialist / Evidence Layer / Writer 之间通过 `DecisionSurfaceContract`、`DecisionSurfacePack`、`RepairTicket` 和 `WriterBrief` 交接，不能靠一次性 prompt 直出；
 - RAG / KB 输出必须带知识层级、source metadata、as-of / revision 信息和 promotion status；未过 Evidence Gate 的 RAG hit 只能作为 candidate 或 context；
 - RAG / KB 评价必须覆盖 decision-cell accepted-evidence conversion、metadata-filtered precision、exact-authority violation、context pollution 和 repair-cache reuse；
@@ -1759,6 +1794,10 @@ FIN 不得把每次单一 Provider/模型失败都固化成核心 Harness 分支
 - accountability attribution completeness；
 - approval/release exact-hash escape rate；
 - provider/model swap non-regression rate。
+- live-proven search provider coverage rate；
+- required Evidence Slot first-opportunity coverage；
+- evaluator-only target-in-pool rate；
+- selected-pack target coverage；
 
 质量指标：
 
@@ -1787,6 +1826,12 @@ FIN 不得把每次单一 Provider/模型失败都固化成核心 Harness 分支
 - exact fact authority violation rate；
 - context pollution rate；
 - repair cache reuse rate。
+- unique accepted network documents / actual network calls；
+- role-binding-to-unique-source inflation rate；
+- candidate-to-accepted-evidence conversion by source family；
+- accepted-evidence-to-claim utilization rate；
+- current eligible source miss rate；
+- slot starvation rate；
 - claim provenance coverage；
 - trace span completeness rate；
 - context governance decay rate；

@@ -740,3 +740,27 @@ Runtime v3 同时落地：
 6. v1/v2 query 与 candidate serialization 不注入 v3 字段，历史回放保持兼容。
 
 focused v3＋既有 S1-08 回归共 `48 passed`。DELL/MU/NVDA full-fake 均先按 issuer、regulatory、customer、supply、market 顺序完成首次轮转，slot starvation=`0`；关系、日期、feed/sitemap malformed、20-F/6-K、fetch ceiling、candidate permutation 和 duplicate-role mutation 均 fail closed。该结果只把本实现提升为 `zero-call engineering pass`：official feed/sitemap 与 bounded-domain route 仍只有 replay proof，`external_site_search` 仍 unavailable，且尚未证明新的 live target-in-pool、recall、ranking 或研究内容质量。fresh live 需独立复证和新 authority；本节不授权 R3、MU/NVDA live、ranking、DeepSeek 或 S3。
+
+### 20.5 PRD / TECH / Runtime 互校准后的 S1-08 关闭合同（2026-08-08）
+
+S1-08 不再被描述为“候选生成已实现、下一步直接做排序”。当前正式证明梯级为：
+
+```text
+provider capability truth
+ -> route/locator live reachability
+ -> capture/parser/date/relationship qualification
+ -> required target-in-pool
+ -> ranking/selection
+ -> Evidence promotion
+ -> downstream claim utilization
+```
+
+每层只可消费前一层的已证明结果：
+
+1. `declared/configured` route 不能进入 live coverage 分母；`replay_proven` 不能冒充外网可达；`live_proven` 必须绑定 exact provider/version/as-of/capture。
+2. target-in-pool 或 required-slot recall 未通过时，NDCG/MRR/reranker 状态是 `not_admitted`，不得以 0 分或绿色 fixture 排名替代。
+3. `typed_gap` 必须区分 `route_unavailable`、`locator_not_found`、`fetch_failed`、`parser_rejected`、`publication_date_unproven`、`relationship_direction_rejected`、`budget_exhausted_after_fair_opportunity`、`commercial_gap`。slot starvation 或未尝试 route 不得写为 source exhaustion。
+4. S1-08 产品关闭必须同时证明 DELL/MU/NVDA 三案 current required-slot candidate ceiling、来源多样性或明确例外、reconciliation、false promotion=0、selected coverage 和 canonical-source accounting。只有一个 issuer filing 的诚实 terminal 仍是失败，不是 bounded pass。
+5. broad external search 如果仍无运营 Provider，必须由产品 owner 选择接入 Provider、启用受控动态/商业 fallback 或缩小 Internal Alpha source claim；TECH_02 不通过放宽 Evidence Gate 或增加盲目 retry 代替该决策。
+
+更新后的执行顺序为：v3 clean independent zero-call proof；另行决定至多一次 DELL fresh-live；若 DELL ceiling 仍失败则停止并进入 provider/product-scope decision；DELL 通过后先关闭共享 RC-P36-156 typed blocker/run-scope 缺陷，再做 MU/NVDA transfer；三案候选池通过后才准入 ranking。RC-P36-156 属于共享 S0/S5 治理；在它关闭前，只有 exact runner/admission/source SHA 直接绑定的一次 DELL bounded successor 可被另行评估。本节不签发任何 live、model、ranking 或 S3 权限。

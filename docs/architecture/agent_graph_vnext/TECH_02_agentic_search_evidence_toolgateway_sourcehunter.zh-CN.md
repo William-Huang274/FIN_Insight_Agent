@@ -653,3 +653,11 @@ Runtime owner 为 `src/sec_agent/web_evidence_runtime.py`，复用 `src/sec_agen
 SEC official routes 另有客户端身份合同：`sec.gov` 及其子域在真实 transport 前必须从受控运行环境获得格式有效的联系邮箱，否则 typed `official_source_sec_contact_required`，不得发送未声明自动化请求。联系邮箱只能通过 `FINSIGHT_SEC_CONTACT_EMAIL` 注入，不进入版本化配置、结果 JSON、admission 或普通 telemetry；capture-first 的本机受限原始 request 仍保留真实 User-Agent 以支持审计。不得由模型参数提供或编造联系身份。
 
 最终 live proof 在 clean/synced `86779fd8` 上完成：MU official PDF、NVDA official IR HTML 和 Dell SEC official 10-K HTML 三条路径均完成真实 fetch、raw capture、parse 与 authority-gated promotion。Dell successor 仅发起 `1` 次网络请求，`14,027 ms` 完成，adapter=`official_source_html_text_v1`、Evidence=`1`、gap/retry/model/provider=`0/0/0/0`；contact 明文未进入版本化 result。S1-07 因此为 `L4_scope_pass`。这一状态只关闭 source-runtime 可执行性，不代表 S1-08 的 recall/ranking/currentness/diversity/utilization，也不代表 S3 研究综合或交付报告质量。
+
+## 20. S1-08 Agentic Search quality 与 candidate-pool-first gate
+
+S1-08 先判断必需 Gold Evidence 是否可能进入候选池，再评价排序。评估冻结于 2026-08-06 三案例 benchmark：10 source、33 Evidence、其中 32 mandatory、12 evaluator-only target groups。Planner 永远不可见 expected insight 或 evidence ID；evaluator 只在运行结束后用 digest-bound hidden objects 评分。
+
+预注册 hard gates 为 `target_in_pool=1.0`、`required_slot_recall@8=1.0`、`NDCG@8>=0.85`、`MRR>=0.75`、currentness/diversity-or-typed-exception/reconciliation/selected-pack-coverage=`1.0`、false promotion=`0`。每 target group 最多两次有理由的 query revision，禁止 identical retry。若任一案例 target-in-pool 不足，停止 ranking/reranker；修 candidate generation，而不是调 BGE/Milvus 或扩大 top-k。
+
+entry audit 的版本化产物只有 7 个 distinct active source URL，与 9 个 benchmark HTTP source 的 exact URL overlap 为 `0`；这是保守下界，不否定尚未证明的 equivalent authoritative source。更关键的是 current executable search 仍只有 FIN 0.1.2 合同，query revision runtime 不存在。因此 S1-08 当前为 `upstream_blocked_candidate_generation_before_ranking`。下一实现必须建立 provider-neutral current source catalog、Evidence Tool Planner revision loop、capture-first discovery/fetch/parser/candidate 分轨和 evaluator-only Gold matcher；不得把 benchmark source registry 直接注入 planner 作弊。

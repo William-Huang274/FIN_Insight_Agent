@@ -1,0 +1,89 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_agentic_search_quality_evaluation_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.agentic_search_quality_evaluation:v1",
+  "as_of": "2026-08-06",
+  "cases": [
+    "DELL",
+    "MU",
+    "NVDA"
+  ],
+  "benchmark": {
+    "freeze_ref": "configs/releases/fin_ia_0_1_3_s2_04_shared_benchmark_evidence_freeze_v1_0.json",
+    "visible_pack_ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json",
+    "evaluator_only_ref": "eval_sets/fin_0_1_3_same_evidence_v1/evaluator_only/hidden_gold_scoring_objects_v1.json",
+    "shared_pack_digest": "93a75f3d4863a240ea58824429fe697427edefda31a0a671dddc15f51710030d",
+    "hidden_scoring_digest": "4ec201a52eb0d796658faf9a71c22cfcb1902b73ab52d2c3af9d72ecb9a4ebab",
+    "expected_counts": {
+      "cases": 3,
+      "sources": 10,
+      "evidence_items": 33,
+      "mandatory_evidence_items": 32,
+      "target_groups": 12
+    }
+  },
+  "active_product_inputs": {
+    "governed_pack_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s1_05_retrieval_evidence_usefulness_and_s1_closeout_v1_0.json",
+    "source_runtime_ref": "configs/releases/fin_ia_0_1_3_s1_07_current_source_canary_result_v1_3.json",
+    "legacy_agentic_search_contract_ref": "fin_0_1_2.S4.T03.executable_agentic_search:v1",
+    "legacy_agentic_search_is_current_eval_candidate": false,
+    "direct_url_fetch_is_discovery": false,
+    "curated_governed_pack_is_search_output": false
+  },
+  "metrics": {
+    "target_in_pool_recall": {
+      "threshold": 1.0,
+      "hard_gate": true
+    },
+    "required_slot_recall_at_8": {
+      "threshold": 1.0,
+      "hard_gate": true
+    },
+    "ndcg_at_8": {
+      "threshold": 0.85,
+      "hard_gate": true
+    },
+    "mean_reciprocal_rank": {
+      "threshold": 0.75,
+      "hard_gate": true
+    },
+    "currentness_compliance": {
+      "threshold": 1.0,
+      "hard_gate": true
+    },
+    "source_diversity_or_typed_exception": {
+      "threshold": 1.0,
+      "hard_gate": true
+    },
+    "accepted_rejected_gap_reconciliation": {
+      "threshold": 1.0,
+      "hard_gate": true
+    },
+    "false_promotion_count": {
+      "threshold": 0,
+      "hard_gate": true
+    },
+    "selected_pack_required_slot_coverage": {
+      "threshold": 1.0,
+      "hard_gate": true,
+      "boundary": "S1 pack utilization only; downstream model/report utilization belongs to S3"
+    }
+  },
+  "query_revision": {
+    "maximum_revisions_per_target_group": 2,
+    "blind_identical_retry_forbidden": true,
+    "revision_must_record_trigger_changed_terms_routes_and_stop_reason": true,
+    "gold_expected_insight_or_evidence_ids_visible_to_planner": false
+  },
+  "baselines": [
+    "legacy_bm25_non_authority",
+    "current_governed_pack_curated_control",
+    "provider_neutral_executable_search_candidate"
+  ],
+  "stop_conditions": {
+    "candidate_pool_first": true,
+    "if_any_case_target_in_pool_below_threshold": "upstream_blocked_candidate_generation_no_reranker_tuning",
+    "if_future_or_wrong_case_candidate_promoted": "hard_stop",
+    "if_evaluator_only_content_enters_planner_input": "hard_stop_benchmark_leakage",
+    "model_provider_calls_allowed": 0
+  }
+}

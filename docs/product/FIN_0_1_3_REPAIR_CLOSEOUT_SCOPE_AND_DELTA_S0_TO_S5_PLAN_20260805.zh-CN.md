@@ -354,6 +354,8 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 
 > **2026-08-07 `013-S1-07` 最终 `L4_scope_pass`**：用户选择 runtime-only SEC contact identity；实现对 SEC 域名 missing/invalid contact fail-closed，并保持明文不进入 Git/result/admission。clean/synced `86779fd8` 上只执行一次 Dell successor：SEC official 10-K HTML 在 `14,027 ms` 内完成 fetch/capture/parse/promote，`1 Evidence / 0 gap / 0 retry / 0 model/provider`。与 R2 immutable MU PDF、NVDA IR HTML 成功结果合并，三案 official-source runtime 全部成立；result v1.3 terminal=`three_case_official_source_runtime_proven`。下一项进入 `013-S1-08`，只评测检索召回、排序、时效、来源多样性和证据利用；S1-07 不宣称 Research、DeepSeek 或报告质量通过。
 
+> **2026-08-07 `013-S1-08` entry audit 通过但 upstream blocked**：已冻结 2026-08-06 三案 Gold-slot 搜索评测合同，规模=`10 source / 33 Evidence / 32 mandatory / 12 target groups`；target-in-pool、recall@8、currentness、diversity/reconciliation/selected-pack coverage 与 false-promotion 均为 hard gate，Gold expected insight/evidence ID 不得进入 planner。当前 governed/live 合并仅 7 个 distinct URL，与 9 个 benchmark HTTP source exact overlap=`0/9`；该值是保守下界，不否定替代权威来源。现有 executable Agentic Search 仍是 FIN 0.1.2 合同且没有 query revision，因此不允许计算/调优 NDCG、MRR、BGE 或 Milvus。RC-P36-154 留在 S1-08；下一包只实现 current source catalog、candidate generation、query revision 与 evaluator-only Gold matcher，full-fake/mutation 后再决定 live canary。
+
 > **2026-08-07 用户已选择 SEC contact 路线**：真实联系身份只通过运行时环境注入，不进入 Git 或结果物；SEC 域名无合法 contact 时 fail closed。新增 identity mutation 后 broader=`84 passed`。只授权 new admission 的 1-call Dell SEC v1.3 proof，复用 MU/NVDA 已成功结果；不重跑三案、不进入额外 fallback。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

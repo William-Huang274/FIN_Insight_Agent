@@ -1,0 +1,206 @@
+{
+  "benchmark_binding": {
+    "as_of": "2026-08-06",
+    "cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "evidence_items": 33,
+    "hidden_scoring_digest": "4ec201a52eb0d796658faf9a71c22cfcb1902b73ab52d2c3af9d72ecb9a4ebab",
+    "http_sources": 9,
+    "mandatory_evidence_items": 32,
+    "shared_pack_digest": "93a75f3d4863a240ea58824429fe697427edefda31a0a671dddc15f51710030d",
+    "sources": 10,
+    "target_group_manifest": [
+      {
+        "case_key": "DELL",
+        "dimensions": [
+          "Q1",
+          "Q2"
+        ],
+        "evaluator_only_evidence_ids_digest": "537256f4e1e1f971f9d1271895efb4575571f4b5f57d272f600aacb1b5f65e24",
+        "planner_visible_gold_content": false,
+        "required_evidence_count": 2,
+        "target_id": "DELL_T01"
+      },
+      {
+        "case_key": "DELL",
+        "dimensions": [
+          "Q3",
+          "Q4"
+        ],
+        "evaluator_only_evidence_ids_digest": "dd87ada203aa196f0820af4142e02f370c10bacc68ada948586edda77f5a2d62",
+        "planner_visible_gold_content": false,
+        "required_evidence_count": 2,
+        "target_id": "DELL_T02"
+      },
+      {
+        "case_key": "DELL",
+        "dimensions": [
+          "Q5",
+          "Q6"
+        ],
+        "evaluator_only_evidence_ids_digest": "0adc742a4de73e1120794e480dabaabeac7883b96388d5c476b112b18da86be1",
+        "planner_visible_gold_content": false,
+        "required_evidence_count": 3,
+        "target_id": "DELL_T03"
+      },
+      {
+        "case_key": "DELL",
+        "dimensions": [
+          "Q3",
+          "Q7"
+        ],
+        "evaluator_only_evidence_ids_digest": "aa2879d4e8f3ed53cb4cbfd3a6a2e13c23c8b8ea7e0f7b9e191a7d4510d850cd",
+        "planner_visible_gold_content": false,
+        "required_evidence_count": 2,
+        "target_id": "DELL_T04"
+      },
+      {
+        "case_key": "MU",
+        "dimensions": [
+          "Q2",
+          "Q3",
+          "Q4"
+        ],
+        "evaluator_only_evidence_ids_digest": "7190752ea73d5d1065e86d70c9f0e906fde184a6741743bbb18b3ef302ac90d5",
+        "planner_visible_gold_content": false,
+        "required_evidence_count": 3,
+        "target_id": "MU_T01"
+      },
+      {
+        "case_key": "MU",
+        "dimensions": [
+          "Q1",
+          "Q6"
+        ],
+        "evaluator_only_evidence_ids_digest": "9f94f7b10b6958d47fd1ddd1fe2db829dcdf984a21b013f3e97e23cc28b2d70e",
+        "planner_visible_gold_content": false,
+        "required_evidence_count": 3,
+        "target_id": "MU_T02"
+      },
+      {
+        "case_key": "MU",
+        "dimensions": [
+          "Q5",
+          "Q6"
+        ],
+        "evaluator_only_evidence_ids_digest": "243751bc7a2791ec6a6845b9a37d497a1d9d1678c1d9666f3e8ccec47ffdefb7",
+        "planner_visible_gold_content": false,
+        "required_evidence_count": 1,
+        "target_id": "MU_T03"
+      },
+      {
+        "case_key": "MU",
+        "dimensions": [
+          "Q4",
+          "Q7"
+        ],
+        "evaluator_only_evidence_ids_digest": "96d4a35e6db8e57ea56a92b4824c235a00259f4afc7010e8b1231cd396f5193d",
+        "planner_visible_gold_content": false,
+        "required_evidence_count": 4,
+        "target_id": "MU_T04"
+      },
+      {
+        "case_key": "NVDA",
+        "dimensions": [
+          "Q1",
+          "Q2",
+          "Q3"
+        ],
+        "evaluator_only_evidence_ids_digest": "67f68872bcc94c7cf1ae7ce2e1375fca11fe3268bba0c2bb1345c11529a4a69b",
+        "planner_visible_gold_content": false,
+        "required_evidence_count": 4,
+        "target_id": "NVDA_T01"
+      },
+      {
+        "case_key": "NVDA",
+        "dimensions": [
+          "Q3",
+          "Q4"
+        ],
+        "evaluator_only_evidence_ids_digest": "415f772af50a0178b9a57657770b719825868665821110b7f28089501c836e26",
+        "planner_visible_gold_content": false,
+        "required_evidence_count": 2,
+        "target_id": "NVDA_T02"
+      },
+      {
+        "case_key": "NVDA",
+        "dimensions": [
+          "Q5",
+          "Q6"
+        ],
+        "evaluator_only_evidence_ids_digest": "7bd37e4e16c4cfa802a533500c8180323e57dc4c0362565aa281b26a51c55db4",
+        "planner_visible_gold_content": false,
+        "required_evidence_count": 2,
+        "target_id": "NVDA_T03"
+      },
+      {
+        "case_key": "NVDA",
+        "dimensions": [
+          "Q6",
+          "Q7"
+        ],
+        "evaluator_only_evidence_ids_digest": "4067d4fd4724403ff2a14abb3832c500943151685e0dff2aa71cd45c1b97c983",
+        "planner_visible_gold_content": false,
+        "required_evidence_count": 5,
+        "target_id": "NVDA_T04"
+      }
+    ],
+    "target_groups": 12
+  },
+  "blockers": [
+    {
+      "code": "s1_08_gold_source_candidate_ceiling_unproven",
+      "effect": "ranking_and_reranker_evaluation_not_admitted",
+      "observed": 0.0,
+      "owner": "S1_08_candidate_generation_and_current_source_catalog",
+      "required": 1.0
+    },
+    {
+      "code": "s1_08_current_provider_neutral_search_contract_missing",
+      "effect": "FIN_0_1_2_search_output_cannot_be_promoted_as_FIN_0_1_3_eval",
+      "observed": "fin_0_1_2.S4.T03.executable_agentic_search:v1",
+      "owner": "S1_08_search_runtime_contract",
+      "required": "fin_0_1_3.S1_08.agentic_search_quality_evaluation:v1"
+    },
+    {
+      "code": "s1_08_query_revision_runtime_missing",
+      "effect": "query_revision_quality_not_measurable",
+      "observed": false,
+      "owner": "S1_08_evidence_tool_planner",
+      "required": true
+    }
+  ],
+  "candidate_ceiling_audit": {
+    "active_distinct_source_urls": 7,
+    "benchmark_http_source_exact_url_match_recall": 0.0,
+    "benchmark_http_source_exact_url_matches": 0,
+    "current_provider_neutral_executable_search_contract": false,
+    "exact_match_is_conservative_lower_bound": true,
+    "governed_pack_distinct_source_urls": 6,
+    "legacy_bm25_current_authority": false,
+    "live_source_runtime_distinct_urls": 3,
+    "query_revision_runtime": false,
+    "ranking_metrics_admitted": false,
+    "semantic_alternative_source_equivalence_proven": false
+  },
+  "contract_ref": "fin_0_1_3.S1_08.agentic_search_quality_evaluation:v1",
+  "decision": {
+    "label": "upstream_blocked",
+    "model_provider_network_calls": [
+      0,
+      0,
+      0
+    ],
+    "next_bundle": "S1_08_CURRENT_SOURCE_CATALOG_CANDIDATE_GENERATION_QUERY_REVISION_AND_GOLD_SLOT_MATCH_RUNTIME",
+    "reason": "The current candidate ceiling cannot support the preregistered Gold-slot recall target, so ranking scores would be misleading.",
+    "reranker_training_or_tuning": false
+  },
+  "known_boundary": "This is an entry and candidate-ceiling audit, not a live retrieval run. Exact source URL overlap is a conservative lower bound and does not claim that alternative authoritative sources are impossible.",
+  "policy_digest": "2f512999d4643b9046d0a9c027196926d342081d4e857d93780e40f9384c7cdd",
+  "program_digest": "df15eea6da5014a603f582f2fc92bf8e6c07449b955b3498a921a1a2276e5ed0",
+  "schema_version": "fin_ia_0_1_3_s1_08_agentic_search_entry_audit_v1_0",
+  "status": "upstream_blocked_candidate_generation_before_ranking"
+}

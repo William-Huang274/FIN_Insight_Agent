@@ -1,0 +1,172 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_06_three_case_supervisor_admission_authority_decision_v1_0",
+  "recorded_at": "2026-08-07",
+  "status": "authority_pass_bounded_sequential_campaign_approved_admissions_unissued_execution_not_started",
+  "scope": "DELL_MU_NVDA_case_isolated_supervisor_corrected_candidate_measurement",
+  "authority": {
+    "user_instruction": "可以，按你说的做下一步",
+    "authority_decision_authorized": true,
+    "decision_outcome": "approve_bounded_sequential_three_case_campaign",
+    "case_admission_issuance_eligible_after_clean_synced_preflight": true,
+    "admissions_issued_in_this_decision": 0,
+    "provider_calls_in_this_decision": 0,
+    "provider_execution_started": false,
+    "automatic_execution_from_this_decision": false,
+    "automatic_business_promotion": false,
+    "automatic_release_promotion": false
+  },
+  "evidence_binding": {
+    "evaluated_baseline_git_commit": "2ab7a176a05bc5c0aba255e788711848905ae363",
+    "evaluated_baseline_git_clean_and_synced": true,
+    "predecessor_authority": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_06_three_case_unified_supervisor_authority_decision_v1_0.json",
+      "sha256": "5b4b879ac0205fa632b603832726279d537ebfd0ddc5d3b756d2b510305fe22d",
+      "decision_digest": "25a04df1b48d7553642c7ae6c1002967cba23de74cef23c7332aba1d065c6cb7"
+    },
+    "shared_implementation": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_06_three_case_unified_supervisor_zero_call_implementation_v1_0.json",
+      "sha256": "e70ec41cf2f976502dd3fb7dcc9490bdd71c3d79e346c92c025752d7ab72675e",
+      "implementation_digest": "b6230836f9aa72d7179e1533435e4603cba86b567f661c7951ad2064542a1b74",
+      "closed_owned_blockers": 4
+    },
+    "independent_fresh_proof": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_06_unified_supervisor_independent_fresh_zero_call_proof_result_v1_0.json",
+      "sha256": "22b8573172fafa0dc473f447668dc665a886bf7ed63552c73a1310e492ff9aa6",
+      "result_digest": "8b13a14cd3e124136a126e95132cf5b5e4abdc9411a3944401c1f005fa8c03b6",
+      "source_commit": "60b66bc9cdda6ac4130c1e2f44d357313bdac0ef",
+      "clean_archives": 2,
+      "fresh_processes": 2,
+      "tests_per_process": 24,
+      "normalized_outputs_equal": true,
+      "normalized_output_sha256": "7580b244b6bf1e0d2cca91550c685f42b417971bffc161f058cc79df0cc61f8f"
+    },
+    "historical_raw_candidates": {
+      "immutable": true,
+      "raw_mutations": 0,
+      "quality_breakdown": {
+        "DELL": {"L1": 3, "L2": 1, "L3": 23},
+        "MU": {"L1": 8, "L2": 2, "L3": 14},
+        "NVDA": {"L1": 4, "L2": 1, "L3": 27}
+      }
+    }
+  },
+  "authority_reasoning": {
+    "decision_label": "proceed_to_sequential_case_admission_and_exact_once_measurement",
+    "why_proceed": [
+      "all four project-owned pre-issuance blockers are closed in one shared implementation",
+      "two clean Git archives and two fresh processes reproduce the same three-case contract and mutation results",
+      "all three real frozen case inputs fit the predeclared call and request-capacity envelope",
+      "case isolation hidden-Gold exclusion exact-once capture-first and freeze-before-score controls fail closed"
+    ],
+    "what_is_still_unproven": [
+      "DeepSeek natural SupervisorPlan schema and instruction compliance",
+      "per-case correction of every L1 and L2 finding",
+      "counterevidence threshold-calibration and Verifier material-class repair",
+      "research-content material gain hidden-Gold score and qualified-human acceptance",
+      "Agentic Search current-source product workflow and release qualification"
+    ],
+    "why_not_block": "The remaining uncertainty is the exact capability this bounded paid measurement is designed to observe; no known deterministic project defect remains that should be discovered by the Provider run.",
+    "why_not_claim_pass": "Engineering reproducibility and authority do not constitute supervised recoverability or product acceptance."
+  },
+  "campaign_contract": {
+    "case_order": ["DELL", "MU", "NVDA"],
+    "physical_isolation": "one fresh Run Attempt runtime root and case-local admission per company",
+    "same_protocol_family": true,
+    "case_local_substitutions_only": true,
+    "issue_next_case_only_after_prior_terminal_classification": true,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "provider_hopping": false,
+    "expected_provider_calls": {
+      "DELL": 8,
+      "MU": 10,
+      "NVDA": 10,
+      "campaign": 28
+    },
+    "hard_provider_call_ceiling": {
+      "per_case": 11,
+      "campaign": 33
+    },
+    "hard_cost_ceiling_usd": {
+      "per_case": "0.18",
+      "campaign": "0.54"
+    },
+    "maximum_supervisor_planner_calls_per_case": 1,
+    "maximum_corrected_graph_calls_per_case": 10,
+    "maximum_supervisor_request_characters_per_case": 90000,
+    "model_visible_allowlist": [
+      "case-local immutable raw node outputs",
+      "case-local evaluator v1.4 visible findings",
+      "case-local blind Evidence Numeric and Gap aliases",
+      "typed allowed correction actions and dependency closure"
+    ],
+    "model_visible_denylist": [
+      "evaluator-only hidden Gold targets or expected thesis",
+      "Codex Gold narrative score or correction answer",
+      "another case raw findings plan or candidate",
+      "new external retrieval outside frozen Experiment A pack"
+    ]
+  },
+  "case_capacity": {
+    "DELL": {"findings": 27, "corrections": 27, "node_directives": 6, "supervisor_request_characters": 33590, "corrected_graph_calls": 7, "provider_calls": 8, "pass": true},
+    "MU": {"findings": 24, "corrections": 24, "node_directives": 8, "supervisor_request_characters": 28104, "corrected_graph_calls": 9, "provider_calls": 10, "pass": true},
+    "NVDA": {"findings": 32, "corrections": 32, "node_directives": 9, "supervisor_request_characters": 35650, "corrected_graph_calls": 9, "provider_calls": 10, "pass": true}
+  },
+  "execution_and_stop_rules": {
+    "shared_infrastructure_or_security_failure": "stop_campaign_preserve_capture_and_terminal_fix_root_cause_in_S2_06_no_automatic_replacement",
+    "case_local_model_schema_or_semantic_failure": "preserve_failed_case_without_retry_or_prompt_patch_then_continue_only_after_shared_cause_is_excluded",
+    "case_local_valid_corrected_candidate": "freeze_candidate_then_run_independent_L1_L2_and_content_evaluation",
+    "raw_or_hidden_boundary_mutation": "stop_campaign_and_invalidate_measurement",
+    "budget_or_capacity_exhaustion": "terminal_fail_without_limit_raise_retry_or_fallback",
+    "field_by_field_live_patch_loop": "forbidden",
+    "maximum_structural_repair_packages_after_campaign": 1,
+    "replacement_rule": "only an affected case may receive one separately authorized replacement when a project-owned defect invalidated the measurement"
+  },
+  "acceptance": {
+    "per_case_hard_gates": [
+      "fresh corrected identity and complete capture lineage",
+      "evaluator v1.4 L1 equals 0 and L2 equals 0",
+      "no cross-case unknown numeric or citation-role failure",
+      "all prior empty counterevidence findings are repaired or explicitly justified with case-local evidence state",
+      "retained thresholds are calibrated to evidence time window and source route or remain typed non-factual requests",
+      "Verifier covers every prior material finding class",
+      "hidden scoring starts only after immutable candidate freeze"
+    ],
+    "campaign_label": {
+      "proven": "all three cases pass every per-case hard gate and retain material content gain",
+      "partial": "one or two cases pass; no averaging or cherry-picking",
+      "not_proven": "no case passes or a shared project defect prevents valid measurement"
+    },
+    "formal_content_quality": "post-freeze hidden Gold eight-dimension evaluation remains required",
+    "qualified_human_acceptance": "required later and not granted here",
+    "business_promotion": false,
+    "release_qualification": false
+  },
+  "portability_boundary": {
+    "issue": "RC-P36-146",
+    "same_host_campaign_blocked": false,
+    "cross_platform_or_release_claim_blocked": true,
+    "required_S5_fix": "canonical JSON or normalized digest for future contracts plus clean Windows and Linux parity proof",
+    "historical_authority_rewrite_allowed": false
+  },
+  "verification": {
+    "decision_type": "zero_call",
+    "focused_authority_tests": "4 passed",
+    "combined_supervisor_boundary_runtime_proof_and_authority_tests": "35 passed",
+    "broader_S2_05_S2_06_tests": "126 passed / 3201 deselected",
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "admissions_issued": 0,
+    "admissions_consumed": 0,
+    "corrected_candidates": 0,
+    "hidden_scores": 0,
+    "business_promotions": 0,
+    "raw_mutations": 0
+  },
+  "next_action": "FIN-0.1.3-013-S2-06-DELL-SUPERVISOR-ADMISSION-ISSUANCE-AND-EXACT-ONCE-EXECUTION",
+  "next_action_authorized_automatically": false,
+  "known_boundary": "This authority approves a bounded sequential three-case supervised-recoverability measurement. It does not issue an admission, call DeepSeek, create a corrected candidate, score research quality, accept a product report or qualify a release.",
+  "decision_digest": "32146a12ec2a60d8d876171cdc81546450ab0788b4ba681dbebd7470fb59453e"
+}

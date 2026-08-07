@@ -132,6 +132,8 @@ def test_exact_once_runner_materializes_typed_gap_terminal(tmp_path: Path, monke
     assert result["candidate_result"]["typed_gaps"]
     assert result["candidate_result"]["observed_counts"]["model_calls"] == 0
     assert result["observed_counts"]["network_calls"] == len(transport.calls)
+    assert result["completed_at"].endswith("Z")
+    assert result["shared_admission_receipt"]["finalized_at"] == result["completed_at"]
     assert result["shared_admission_receipt"]["state"] == "terminal"
     assert result["terminal_object"]["object_key"]
     assert len(result["terminal_object"]["digest"]) == 64

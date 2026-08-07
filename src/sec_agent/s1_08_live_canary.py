@@ -174,6 +174,7 @@ def execute_dell_search_canary(
     phase = "candidate_generation"
     code = "unclassified_failure"
     candidate_result: dict[str, Any] | None = None
+    adapter: CaptureFirstOfficialDiscoveryAdapter | None = None
     try:
         adapter = CaptureFirstOfficialDiscoveryAdapter(
             catalog=catalog,
@@ -199,6 +200,14 @@ def execute_dell_search_canary(
         )
     except Exception as exc:
         code = getattr(exc, "code", f"unexpected_project_failure:{type(exc).__name__}")
+    completed_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace(
+        "+00:00", "Z"
+    )
+    observed_network_calls = int(
+        ((candidate_result or {}).get("observed_counts") or {}).get(
+            "network_calls", getattr(adapter, "network_calls", 0)
+        )
+    )
     body = {
         "schema_version": TERMINAL_SCHEMA,
         "contract_ref": CANARY_CONTRACT_REF,
@@ -217,11 +226,9 @@ def execute_dell_search_canary(
             "model_calls": 0,
             "provider_calls": 0,
             "retry_calls": 0,
-            "network_calls": int(
-                ((candidate_result or {}).get("observed_counts") or {}).get("network_calls", 0)
-            ),
+            "network_calls": observed_network_calls,
         },
-        "completed_at": observed_at,
+        "completed_at": completed_at,
         "ranking_admitted": False,
     }
     terminal = {**body, "terminal_digest": canonical_digest(body)}
@@ -238,7 +245,7 @@ def execute_dell_search_canary(
         terminal_phase=phase,
         terminal_code=code,
         terminal_result_digest=terminal["terminal_digest"],
-        finalized_at=observed_at,
+        finalized_at=completed_at,
     ).as_dict()
     return {**terminal, "terminal_object": terminal_ref, "shared_admission_receipt": shared_receipt}
 

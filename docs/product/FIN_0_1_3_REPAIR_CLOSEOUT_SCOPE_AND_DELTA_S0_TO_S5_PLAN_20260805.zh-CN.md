@@ -360,6 +360,8 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 
 > **2026-08-07 `013-S1-08` DELL canary pre-admission block**：exact-once runner 已在 clean/synced `a179fe41` 通过，Project OS scoped preflight pass、related=`37 passed`。但当前 Codex 进程没有 `FINSIGHT_SEC_CONTACT_EMAIL`，而 DELL source discovery 必须访问 SEC submissions；因此在 admission/ledger/network 之前 fail closed，observed=`0/0/0`，历史聊天明文未复制到命令或版本化产物。该结果不是 live search 失败。重新从带有效 runtime env 的父进程启动 Codex 后，可复用同一工程签发一份 fresh admission；MU/NVDA/ranking/S3 仍不授权。
 
+> **2026-08-07 `013-S1-08` formal runner readiness**：重启后 runtime SEC contact 已就绪；复核发现此前所谓 runner 只有模块和测试，没有正式 CLI/结果物化，现已在 S1-08 原阶段补齐，并修正 terminal 完成时间与异常网络计数。focused=`19 passed`、related=`52 passed / 1 known S0-02 historical mutable-source-SHA failure`；联系方式未进入版本化产物。下一步只允许 clean commit/push、scoped Project OS preflight 和一份 DELL exact-once admission；真实 candidate ceiling 不足仍阻断 ranking，不自动扩到 MU/NVDA 或 S3。
+
 > **2026-08-07 用户已选择 SEC contact 路线**：真实联系身份只通过运行时环境注入，不进入 Git 或结果物；SEC 域名无合法 contact 时 fail closed。新增 identity mutation 后 broader=`84 passed`。只授权 new admission 的 1-call Dell SEC v1.3 proof，复用 MU/NVDA 已成功结果；不重跑三案、不进入额外 fallback。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。

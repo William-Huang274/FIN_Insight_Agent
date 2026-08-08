@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_external_combined_live_authority_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.external_official_firecrawl_shadow_combined:v1",
+  "recorded_at": "2026-08-09",
+  "status": "approved_one_external_combined_exact_live",
+  "immutable_bindings": {
+    "implementation_git_commit": "3aa510d386c8a2e9bebe576cfa0f6986025cc9de",
+    "clean_proof_record_git_commit": "e610a24ab0b17fab63c4eb085f356986b6798410",
+    "runner_sha256": "632722d7a0c3aacb247becfe9bc5f9a5700624148c7e8e7dcff0967a98272174",
+    "runtime_module_sha256": "e732feb178cf568ef95ce3dfebd3b190aa370d9707bb5ce2b1bf8e468db5bb12",
+    "policy_sha256": "1f0b6f0cf03c3748059f68484849edf09e256af13fe2ab9c21cdfde1e75968cc",
+    "plan_sha256": "3add3a9a206eb7201629a00951def379bbeea0356dc58532cc23f8439101cc03",
+    "zero_call_proof_sha256": "15ccbd3c79f97068158b1367eb5c25a5a8744bfdd0748f947bd475e326ad040e",
+    "plan_digest": "0faca1134334b48dc6cc3013c604d417d8f6bad2363758194b3b54874e520e46",
+    "proof_digest": "64d679bc999e9609c7a1e2a68de2de2e52bd3126d9c6c9f5696590b45f7967d4",
+    "clean_independent_proof_sha256": "e87f32a788108c1b09214246d87bdf49b6cd466107a4a3a65871de71472e4437",
+    "clean_independent_proof_result_digest": "27074a282b33e0c6738ab3dba6baaede076b7512d3c4efbc2f95a0d6a4570027",
+    "clean_zero_call_preflight_digest": "e086189058a69b28069a8f6413a29f622f57dc8059f4c2e4d23635972f6b2e39"
+  },
+  "exact_live_authority": {
+    "scope": "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE",
+    "maximum_admissions": 1,
+    "maximum_executions": 1,
+    "official_network_call_ceiling": 48,
+    "firecrawl_shadow_network_call_ceiling": 24,
+    "network_call_ceiling": 72,
+    "provider_call_ceiling": 24,
+    "model_call_ceiling": 0,
+    "embedding_call_ceiling": 0,
+    "rerank_call_ceiling": 0,
+    "evidence_promotion_ceiling": 0,
+    "retry_ceiling": 0,
+    "fallback_ceiling": 0,
+    "per_call_timeout_seconds": 30,
+    "overall_timeout_seconds": 900,
+    "automatic_replacement": false
+  },
+  "capture_and_authority": {
+    "shared_exact_once_ledger_required": true,
+    "safe_request_before_network": true,
+    "raw_response_or_typed_failure_before_parse": true,
+    "partial_results_preserved": true,
+    "controlled_synthetic_dns_must_be_revalidated": true,
+    "systemic_credit_exhaustion_stops_remaining_network": true,
+    "case_slot_fair_schedule_required": true,
+    "effective_bound_query_receipt_required": true,
+    "firecrawl_candidate_only": true,
+    "provider_date_not_financial_authority": true,
+    "evidence_gate_not_executed": true,
+    "no_reranker_rescue": true
+  },
+  "decision": {
+    "fresh_combined_live_authorized": true,
+    "internal_retrieval_authorized_by_this_decision": false,
+    "next": "COMMIT_PUSH_AUTHORITY_THEN_ISSUE_ONE_FRESH_ADMISSION_AND_EXECUTE_EXACT_ONCE"
+  },
+  "verification": {
+    "clean_archives": 2,
+    "fresh_python_processes": 2,
+    "focused_tests_passed_per_archive": 14,
+    "all_S1_08_tests_passed": 277,
+    "tests_failed": 0,
+    "real_provider_network_model_document_evidence_embedding_rerank_calls": [0, 0, 0, 0, 0, 0, 0]
+  },
+  "known_boundary": "This authority permits one bounded recovery observation only. It does not establish source recall, Firecrawl quota availability, Evidence quality, internal retrieval, BGE/fusion/rerank value, downstream research quality, S1-08 acceptance or release readiness.",
+  "authority_digest": "89953376a9c3466bea3ced16b791318b3fc620d19b08de0418fbfc49213674ab"
+}

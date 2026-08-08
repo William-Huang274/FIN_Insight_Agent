@@ -583,7 +583,7 @@ ReferenceChangeLedger
 | --- | --- | --- | --- | --- |
 | `R58-D01-retrieval-intent-taxonomy` | 定义 retrieval intent schema 和 classifier contract | done | S3、P14 | 代表性 intent 集合已建；新增 intent 必须版本化。 |
 | `R58-D02-route-policy-matrix` | 定义 DB / graph / BM25 / ObjectBM25 / Milvus / web route 顺序和 budget | done | S3、P14 | 路由合同可用；仍需按 failure/gold 扩展 route quota。 |
-| `R58-D03-query-rewrite-facet-plan` | 生成 exact / lexical / semantic / graph facet queries | compiler zero-call implemented / route integration pending | S3、P14、S1-08 Query Facet | 60 route intent 已合并为 36 个共享 facet plan，覆盖 exact/lexical/semantic/graph/negative/filter；尚未完成三路效果对照、external live 或 internal adapter 接线。 |
+| `R58-D03-query-rewrite-facet-plan` | 生成 exact / lexical / semantic / graph facet queries | compiler and internal route projection zero-call implemented | S3、P14、S1-08 Query Facet、internal projection proof | 36 个中英 plan 已合并为 18 个双语 bundle，并编译为 SQL／ObjectBM25／BM25／Milvus／Graph 各 18 个 typed request；真实 route execution 与 candidate ceiling 尚未证明。 |
 | `R58-D04-hybrid-recall-rerank-policy` | candidate generation、fusion/rerank、role/source quota | upstream-blocked / not admitted | S3、P14、FIN 0.1.3 S1 progression plan | selected/dropped ledger 有，但外源与内源 candidate ceiling 尚未按统一 facet/qrels 通过；BGE/fusion/rerank 不得先调优。 |
 | `R58-D05-retrieval-execution-ledger` | 记录 candidate、rerank、selected、dropped、latency、target-in-candidates | done | S3、P14 | 后续 full-chain 必须消费该 ledger。 |
 | `R58-D06-retrieval-eval-qrels` | retrieval qrels / gold refs / negative cases | partial / expansion registered | S3、P16、DELL/MU/NVDA S1-08 matrix | 初始 qrels 偏小；需补 entity/period/relationship/source-role hard negatives，并分别测 external target-in-pool 与 internal route contribution。 |
@@ -596,7 +596,19 @@ ReferenceChangeLedger
 | `R58-D13-reference-source-ledger` | 外部参考源台账和变更台账 | done | P16 | 新增/删除/降级仍必须留痕。 |
 | `R58-D14-reference-adoption-performance-gate` | reference adoption performance profile | done | P16 | 每次采用新参考设计后都要回填项目内表现。 |
 
-FIN 0.1.3 当前实现补充：Query Facet compiler 以 evidence owner 自身披露为首要查询主体，并保留 subject、period、relationship direction、source family、date upper bound 和 no-relaxed-fallback filters。模型只可添加受控 metric／product／mechanism／synonym atoms；atom 会形成额外 lexical／semantic query，但不能改写 filters。当前 proof 为 `36 plan / 60 intent / 72 exact / 72 lexical / 36 semantic / 36 graph`，0 retrieval／embedding／rerank；因此 D03 的 compiler 已实现，D04 仍保持 upstream-blocked。
+FIN 0.1.3 当前实现补充：Query Facet compiler 以 evidence owner 自身披露为首要查询主体，并保留 subject、period、relationship direction、source family、date upper bound 和 no-relaxed-fallback filters。模型只可添加受控 metric／product／mechanism／synonym atoms；atom 会形成额外 lexical／semantic query，但不能改写 filters。源 proof 为 `36 plan / 60 intent / 72 exact / 72 lexical / 36 semantic / 36 graph`；内源 projection 又把 36 个中英 plan 合并为 18 个双语 bundle，并形成 `18 SQL + 18 ObjectBM25 + 18 BM25 + 18 Milvus + 18 Graph = 90` 个 candidate-only request。SQL 只消费 typed filters，ObjectBM25 消费 exact lookup，BM25 消费 lexical query，Milvus 消费 semantic query，Graph 只消费 typed relationship；内容路由按 evidence-owner ticker 过滤而不是按 case ticker。该 proof 的 retrieval／embedding／rerank 仍为 0，所以 D03 已达到 route-projection engineering pass，D04 继续 upstream-blocked。
+
+### 16.1 内源候选池与排序准入补充（2026-08-09）
+
+真实本地资产必须先作为各 route 的输入资格，而不是被一个总的“RAG 可用”标签覆盖：
+
+- SQL／Gold：验证 company、period、metric family、source role 的 exact candidate ceiling；没有 current-quarter 权威行时返回 typed index/corpus gap，不用旧年度静默替代。
+- ObjectBM25／BM25：分别验证结构化 object exact lookup 与文档 lexical facet；`TSM` 在当前两个 lexical index 缺失必须显式计为 index coverage gap。
+- Graph：从 evidence owner 出发，按 subject-owner direction 和 allowlisted source role 验证一跳关系；禁止把“客户的客户”或“供应商的供应商”自动扩成当前关系。
+- Milvus：先核对 collection、vector count、embedding model identity、filter fields 和本地模型 locator，再执行 semantic candidate 评测；资源不合格就是 route unavailable，不能悄悄跳过。
+- BGE／fusion／rerank：仅在前四类候选池已有目标且 qrels review provenance 明确后准入。fusion 必须比较 facet-aware round robin／受控 RRF 等候选，不默认 naive RRF；reranker 不能创造候选或改变 Evidence 权威。
+
+qrels 状态必须可机器区分 `historical_agent_authored_diagnostic`、`agent_curated_pending_owner_review` 与 `owner_reviewed`。当前阶段允许前两种用于暴露 candidate ceiling，但只有最后一种才能支撑正式“人工 qrels 通过”结论。候选池通过后仍须单独证明 selected candidate 经 Evidence Gate 进入 Claim、Workpaper 与报告，否则只是检索组件指标改善。
 
 ## 17. Acceptance Gates
 

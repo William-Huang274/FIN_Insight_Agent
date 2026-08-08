@@ -1,0 +1,129 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_query_facet_integration_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_query_facet_integration:v1",
+  "run_scope": "S1_INTERNAL_RETRIEVAL_QUERY_FACET_INTEGRATION",
+  "recorded_at": "2026-08-09",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "immutable_inputs": {
+    "query_facet_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_unified_query_facet_zero_call_proof_v1_0.json",
+    "query_facet_proof_sha256": "ec10c5096dc5b6f1c97f19bec96b16478a9b8f4ca37c6ca550d80217023ac614",
+    "query_facet_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_unified_query_facet_policy_v1_0.json",
+    "query_facet_policy_sha256": "59acbd54edf732468169bfaf8ebad9c3b81ce369df44b5a94e0f77a6c94ba4d6",
+    "progression_plan_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_1.json",
+    "progression_plan_sha256": "be54775856dc3153fd6631b923ed01c4972661b58aaa94cef2bbfad592e27c4f",
+    "external_closeout_ref": "configs/releases/fin_ia_0_1_3_s1_08_external_portfolio_honest_closeout_and_internal_handoff_v1_0.json",
+    "external_closeout_sha256": "5ae2d349b2660df1775d6ae2aa820548381b599d0cd2ffadcd8c812e4870e717",
+    "retrieval_config_ref": "configs/retrieval.yaml",
+    "retrieval_config_sha256": "1a84bb26e2b2aa7765e15d156979ae6bccd9d8e843887c3abdc7e849fd453ba4",
+    "milvus_runtime_ref": "configs/runtime/milvus_runtime_603_local_v0_1.json",
+    "milvus_runtime_sha256": "36a28febb7f297ca969be5874e0ecec2d960ff6f941e765191c384a687f608d3"
+  },
+  "projection_contract": {
+    "source_query_facet_plan_count": 36,
+    "bilingual_bundle_count": 18,
+    "physical_route_count_per_bundle": 5,
+    "physical_request_count": 90,
+    "canonical_internal_corpus_language": "en",
+    "alternate_language": "zh",
+    "alternate_language_execution_state": "retained_not_scheduled_in_this_scope"
+  },
+  "entity_ticker_projection": {
+    "DELL": "DELL",
+    "MU": "MU",
+    "NVDA": "NVDA",
+    "MSFT": "MSFT",
+    "TSMC": "TSM"
+  },
+  "physical_routes": {
+    "internal_sql_exact": {
+      "query_family": "typed_exact_filters",
+      "candidate_budget": 12,
+      "authority_boundary": "exact_company_fact_candidate_only",
+      "embedding_allowed": false,
+      "rerank_allowed": false
+    },
+    "internal_object_bm25": {
+      "query_family": "exact_lookup_queries",
+      "candidate_budget": 24,
+      "authority_boundary": "structured_object_candidate_only",
+      "embedding_allowed": false,
+      "rerank_allowed": false
+    },
+    "internal_bm25": {
+      "query_family": "lexical_queries",
+      "candidate_budget": 24,
+      "authority_boundary": "lexical_document_candidate_only",
+      "embedding_allowed": false,
+      "rerank_allowed": false
+    },
+    "internal_milvus_dense": {
+      "query_family": "semantic_queries",
+      "candidate_budget": 24,
+      "authority_boundary": "semantic_recall_supplement_candidate_only",
+      "embedding_allowed": false,
+      "rerank_allowed": false
+    },
+    "internal_relationship_graph": {
+      "query_family": "typed_graph_query",
+      "candidate_budget": 12,
+      "authority_boundary": "typed_relationship_candidate_only",
+      "embedding_allowed": false,
+      "rerank_allowed": false
+    }
+  },
+  "slot_route_filters": {
+    "issuer_results_and_management_commentary": {
+      "form_types": ["8-K", "10-Q", "10-K", "6-K", "20-F"],
+      "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+      "object_types": ["claim", "table", "metric"],
+      "metric_families": ["revenue", "gross_profit", "operating_income", "operating_cash_flow", "capital_expenditure_proxy", "business_segment_revenue"],
+      "vector_kinds": ["narrative_chunk", "table_chunk", "paraphrase_context"],
+      "graph_source_roles": ["primary_company_disclosure", "company_disclosed_product_kpi", "working_capital_liquidity"]
+    },
+    "regulatory_risk_and_financial_reconciliation": {
+      "form_types": ["10-Q", "10-K", "6-K", "20-F"],
+      "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+      "object_types": ["claim", "table", "metric"],
+      "metric_families": ["inventory", "accounts_payable", "accounts_receivable", "operating_cash_flow", "capital_expenditure_proxy", "revenue"],
+      "vector_kinds": ["narrative_chunk", "table_chunk"],
+      "graph_source_roles": ["primary_company_disclosure", "working_capital_liquidity", "capital_structure_disclosure"]
+    },
+    "customer_demand_and_deployment_validation": {
+      "form_types": ["8-K", "10-Q", "10-K", "6-K", "20-F"],
+      "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+      "object_types": ["claim", "table"],
+      "metric_families": ["capital_expenditure_proxy", "business_segment_revenue", "revenue", "operating_cash_flow"],
+      "vector_kinds": ["narrative_chunk", "relationship_context", "paraphrase_context"],
+      "graph_source_roles": ["official_customer_order_or_deployment_event", "company_disclosed_product_kpi", "working_capital_liquidity"]
+    },
+    "supply_chain_capacity_and_counterevidence": {
+      "form_types": ["8-K", "10-Q", "10-K", "6-K", "20-F"],
+      "source_tiers": ["primary_sec_filing", "company_authored_unaudited_sec_filing"],
+      "object_types": ["claim", "table"],
+      "metric_families": ["inventory", "capital_expenditure_proxy", "business_segment_revenue", "revenue", "operating_cash_flow"],
+      "vector_kinds": ["narrative_chunk", "relationship_context", "paraphrase_context"],
+      "graph_source_roles": ["supply_chain_official_relationship", "company_disclosed_product_kpi", "official_product_surface"]
+    }
+  },
+  "hard_boundaries": {
+    "use_evidence_owner_ticker_not_case_ticker_for_internal_content_routes": true,
+    "subject_and_evidence_owner_remain_distinct": true,
+    "period_and_as_of_filters_required": true,
+    "relationship_direction_required": true,
+    "allow_relaxed_identity_period_or_relationship_fallback": false,
+    "candidate_state": "candidate_only_not_evidence",
+    "execution_admitted": false,
+    "bge_fusion_rerank_admitted": false,
+    "gold_or_expected_answer_locator_may_enter_query": false
+  },
+  "zero_call_boundary": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "retrieval": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  }
+}

@@ -493,6 +493,20 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 
 机器真相为 `configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_1.json`。第 6–9 项现在是已登记的同阶段后续，不提前扩大当前 external live；但第 5 项完成后不得遗忘、跳过或直接进入 S3。尤其不能用 BGE 或 reranker 掩盖候选池根本没有目标，也不能只汇报检索离线指标而不证明下游实际消费。
 
+## 7J. 内源 Query Facet 投影通过后的候选池再基线（2026-08-09）
+
+第 6 项已完成零调用工程实现，但其含义必须严格限定。36 份中英 Query Facet 已按同一 `case × Evidence Slot × evidence owner` 合并成 18 个双语研究束，并分别投影为 SQL、ObjectBM25、BM25、Milvus、Graph 共 90 个 typed candidate request；专项测试 `11/11` 通过。它纠正了旧链路把案例 ticker 和同一 raw query 无差别发送给全部 route 的问题：研究 DELL 的 Microsoft 客户需求时，内容路由现在过滤 `MSFT`；研究 TSMC 供给时使用本地 `TSM`，同时继续保存研究主体、披露主体、关系方向、期间和截至日。中文查询只保留为 alternate lineage，当前英文 SEC 内源不重复消耗预算。
+
+这只是 `internal_query_facet_projection=true`，不是候选召回通过。当前执行顺序更新为：
+
+1. [x] route-specific Query Facet projection：18 bundle／90 request，retrieval／embedding／rerank／Evidence=`0/0/0/0`；
+2. [ ] **当前**：在真实本地 SQL／ObjectBM25／BM25／Graph 上测 candidate ceiling，并对 Milvus 与本地 BGE 资源做资格检查；按案例、Evidence Slot、披露方、期间和 hard negative 保存候选与 route contribution；
+3. [ ] qrels 先使用 `agent_curated_pending_owner_review`，明确与历史 agent-authored diagnostic qrels 分开；Owner 未复核前不得写成“人工 qrels 已通过”；
+4. [ ] 只有 target-in-pool 和 required-slot ceiling 通过后，才允许 BGE、facet-aware fusion 与 reranker 对照；旧证据显示 naive RRF 可能降低多 facet 质量，所以不得默认采用；
+5. [ ] 排序通过后，再证明 Evidence Gate、Claim、Workpaper 和报告确实使用了新增候选。
+
+本地资产预审同时暴露了真实数据边界：BM25／ObjectBM25 有 DELL、MU、NVDA、MSFT 但缺少 `TSM`；Gold SQL 有 `TSM`，但 current-quarter exact authority 可能稀疏；Milvus 有约 66 万向量，但模型 locator 仍需资格化；本地存在 BGE-M3，reranker 模型目前不存在。上述缺口必须在候选池阶段分型为 query／route／index／corpus／resource gap，不能靠调大 top-k 或提前下载 reranker 混在一起修。机器真相推进为 `configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_2.json`。
+
 ## 8. 下一步
 
 1. [x] 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。

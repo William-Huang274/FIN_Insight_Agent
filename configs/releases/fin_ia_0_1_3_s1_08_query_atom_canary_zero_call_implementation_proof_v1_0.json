@@ -34,7 +34,7 @@
     "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_deepseek_query_atom_canary_policy_v1_0.json",
     "materializer_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_08_query_atom_canary_zero_call_implementation_proof.py",
     "runtime_module_sha256_normalized": "801c19033a6f3f37cba603c9103d443ad0bca32c86e1cf0b6d8e0d6748c2775f",
-    "runner_sha256_normalized": "c2e195467cbc6b9d7a49d2d652149189b6a8f3bef69dd34ce59ae870398084d2",
+    "runner_sha256_normalized": "50ff50d27e7a94b6a23a666de9196941d18e0c8b7bc9cb895f4a28d2cbb97d97",
     "policy_sha256_normalized": "e477280c1e3ed59eb6021a464ea399b14e506b52913317f93152f00d66761215",
     "materializer_sha256_normalized": "7e72e7474666170d144d348931368f62c3a2e3b9b948b9fb50da8a3541ab6a05"
   },
@@ -67,5 +67,5 @@
     "internal_retrieval_and_BGE_rerank_backlog_preserved": true
   },
   "known_boundary": "This proof exercises the exact-once query-atom runtime only with local fake provider outputs. It does not qualify DeepSeek, prove incremental candidate recall, execute external or internal retrieval, admit BGE or reranking, promote Evidence, close S1-08 or release the product.",
-  "proof_digest": "12867a30560c2c1788f45d3318ce61a654fb43c95e6ebd151184b41c598f16c5"
+  "proof_digest": "897191599b93429dd50fc3201cbeeccea20eb1f509106883e6d0ab06f778bafc"
 }

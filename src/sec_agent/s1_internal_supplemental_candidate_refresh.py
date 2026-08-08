@@ -70,7 +70,9 @@ def execute_internal_supplemental_candidate_refresh(
 
     effective_policy = {
         **base_policy,
-        "observation_schema": OBSERVATION_SCHEMA,
+        "observation_schema": str(
+            policy.get("observation_schema") or OBSERVATION_SCHEMA
+        ),
         "contract_ref": str(policy["contract_ref"]),
     }
     result = execute_internal_candidate_inventory(

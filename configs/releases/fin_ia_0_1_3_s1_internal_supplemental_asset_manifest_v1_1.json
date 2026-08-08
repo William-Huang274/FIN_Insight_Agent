@@ -1,0 +1,164 @@
+{
+  "bm25_index_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/bm25",
+  "contract_ref": "fin_0_1_3.S1.internal_supplemental_candidate_assets:v1.1",
+  "implementation": {
+    "materializer_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_internal_supplemental_assets_v1_1.py",
+    "module_ref": "src/sec_agent/s1_internal_supplemental_assets.py",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_supplemental_asset_policy_v1_1.json"
+  },
+  "known_boundary": "Document segments preserve captured source text and are candidate-only. They are not adjudicated claims or Evidence. MU prepared remarks and the current MU 10-Q remain separate uncovered targets.",
+  "manifest_digest": "3fdffb64a055c7f295a73733aa3e0c943a9db3e00081e6bdf04f9fc48962a31f",
+  "object_bm25_index_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/object_bm25",
+  "observed_calls": {
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0
+  },
+  "private_asset_root_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2",
+  "private_file_inventory": [
+    {
+      "bytes": 575528,
+      "path": "bm25/bm25.pkl",
+      "sha256": "aa4165db41b1ea85abd01988a009b84c1f66503d20d9153ffb15deec87e62933"
+    },
+    {
+      "bytes": 277,
+      "path": "bm25/metadata.json",
+      "sha256": "eb6623045746e1c070592b0304988ae7276b4eacae6c74b7e75bd33d4a3e7b1c"
+    },
+    {
+      "bytes": 917357,
+      "path": "bm25/records.jsonl",
+      "sha256": "cbe392ac80671e955fd42b93c5a43564973d82c38bea62081e14fad57b59b1df"
+    },
+    {
+      "bytes": 917357,
+      "path": "corpus/supplemental_evidence.jsonl",
+      "sha256": "cbe392ac80671e955fd42b93c5a43564973d82c38bea62081e14fad57b59b1df"
+    },
+    {
+      "bytes": 617717,
+      "path": "object_bm25/bm25.pkl",
+      "sha256": "eb9e55ca6c91f42c291b94054d947586d6ea988f12dc85ffe4c49c7b979b9ad4"
+    },
+    {
+      "bytes": 465,
+      "path": "object_bm25/metadata.json",
+      "sha256": "0fc9e0d6c5a50474767cd0c24f794b9d25e55606771d9c0caefc9bc9063dd38d"
+    },
+    {
+      "bytes": 979530,
+      "path": "object_bm25/records.jsonl",
+      "sha256": "6a24b53f34d6aa3abdcf9d65c9d4c05d6cb4fd6313098f26ada171d2c3d230ef"
+    },
+    {
+      "bytes": 1066884,
+      "path": "object_bm25/records.slim.jsonl",
+      "sha256": "c92520d56c3811fa2759cd918b6a45f3add08b47cecb8b2d4cc76db593c833bb"
+    },
+    {
+      "bytes": 1036794,
+      "path": "object_bm25/records.slim.pkl",
+      "sha256": "13c15f45d7c1dff67c582bd09fa31f32f05a5cc0b1e0688f6a84dc7101faae42"
+    },
+    {
+      "bytes": 979530,
+      "path": "structured/supplemental_claims.jsonl",
+      "sha256": "6a24b53f34d6aa3abdcf9d65c9d4c05d6cb4fd6313098f26ada171d2c3d230ef"
+    },
+    {
+      "bytes": 0,
+      "path": "structured/supplemental_metrics.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "structured/supplemental_tables.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "project_os_preflight": {
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+    "status": "pass"
+  },
+  "record_counts": {
+    "bm25_records": 292,
+    "document_segment_objects": 292,
+    "evidence_chunks": 292,
+    "object_bm25_records": 292,
+    "source_documents": 3
+  },
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "schema_version": "fin_ia_0_1_3_s1_internal_supplemental_asset_manifest_v1_1",
+  "source_acquisition_result_digest": "bcfacc7fa42b89c3b542f576cd4d3d14adac4eb049b8fdca2f12c83a5148264f",
+  "source_bindings": [
+    {
+      "accepted_source_refs": [
+        "SRC_DELL_FY26_10K"
+      ],
+      "accession_number": "0001571996-26-000008",
+      "chunk_count": 279,
+      "equivalence_mode": "exact_canonical_url",
+      "filing_date": "2026-03-16",
+      "form_type": "10-K",
+      "parsed_capture_digest": "4643bf966f7122dc648f3560b9df58f87cca0bee5b60e2a65d34545077c29b24",
+      "parsed_capture_ref": "fin-0.1.3/s1-internal-current-source-acquisition/parsed/46/43/4643bf966f7122dc648f3560b9df58f87cca0bee5b60e2a65d34545077c29b24.json",
+      "report_date": "2026-01-30",
+      "selected_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000008/dell-20260130.htm",
+      "target_id": "DELL_FY2026_ANNUAL_REGULATORY",
+      "ticker": "DELL",
+      "uncovered_source_refs": []
+    },
+    {
+      "accepted_source_refs": [
+        "SRC_MU_Q3_FY26_RESULTS"
+      ],
+      "accession_number": "0000723125-26-000013",
+      "chunk_count": 10,
+      "equivalence_mode": "official_sec_same_event_semantic_alternative",
+      "filing_date": "2026-06-24",
+      "form_type": "8-K",
+      "parsed_capture_digest": "60e9408aa55d37aaee9b0817a035de0916457b86adddaaf1224596fc83524d87",
+      "parsed_capture_ref": "fin-0.1.3/s1-internal-current-source-acquisition/parsed/60/e9/60e9408aa55d37aaee9b0817a035de0916457b86adddaaf1224596fc83524d87.json",
+      "report_date": "2026-06-24",
+      "selected_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+      "target_id": "MU_Q3_FY2026_CURRENT_RESULTS",
+      "ticker": "MU",
+      "uncovered_source_refs": [
+        "SRC_MU_Q3_FY26_REMARKS"
+      ]
+    },
+    {
+      "accepted_source_refs": [
+        "SRC_TSMC_Q2_2026_RESULTS"
+      ],
+      "accession_number": "0001046179-26-000451",
+      "chunk_count": 3,
+      "equivalence_mode": "official_sec_same_event_semantic_alternative",
+      "filing_date": "2026-07-16",
+      "form_type": "6-K",
+      "parsed_capture_digest": "2d849df1084afe050c0d56a8c1ef1e2b078c638991b384bd3aef2f3322e5e2bd",
+      "parsed_capture_ref": "fin-0.1.3/s1-internal-current-source-acquisition/parsed/2d/84/2d849df1084afe050c0d56a8c1ef1e2b078c638991b384bd3aef2f3322e5e2bd.json",
+      "report_date": "2026-06-30",
+      "selected_url": "https://www.sec.gov/Archives/edgar/data/1046179/000104617926000451/a2q26e_withguidancexfinal.htm",
+      "target_id": "TSM_Q2_2026_CURRENT_RESULTS",
+      "ticker": "TSM",
+      "uncovered_source_refs": []
+    }
+  ],
+  "stage_boundary": {
+    "BGE_fusion_rerank_admitted": false,
+    "candidate_assets_built": true,
+    "candidate_ceiling_proven": false,
+    "evidence_or_release": false,
+    "qrels_owner_reviewed": false
+  },
+  "status": "supplemental_candidate_assets_built",
+  "uncovered_expected_source_refs": [
+    "SRC_MU_Q3_FY26_REMARKS"
+  ]
+}

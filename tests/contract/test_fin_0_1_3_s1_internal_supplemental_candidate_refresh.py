@@ -17,6 +17,10 @@ POLICY_PATH = ROOT / (
     "configs/runtime/fin_ia_0_1_3_s1_internal_"
     "supplemental_candidate_refresh_policy_v1_0.json"
 )
+POLICY_V1_1_PATH = ROOT / (
+    "configs/runtime/fin_ia_0_1_3_s1_internal_"
+    "supplemental_candidate_refresh_policy_v1_1.json"
+)
 
 
 def test_refresh_policy_binds_base_manifest_and_forbids_ranking() -> None:
@@ -41,3 +45,16 @@ def test_manifest_revalidates_all_private_files_without_promoting_evidence() -> 
     assert manifest["record_counts"]["bm25_records"] == 292
     assert manifest["observed_calls"]["embedding"] == 0
     assert manifest["stage_boundary"]["candidate_ceiling_proven"] is False
+
+
+def test_successor_refresh_binds_lineage_preserving_manifest() -> None:
+    policy = load_internal_supplemental_candidate_refresh_policy(
+        POLICY_V1_1_PATH, repo_root=ROOT
+    )
+    manifest = load_validated_supplemental_asset_manifest(
+        ROOT / policy["immutable_inputs"]["supplemental_asset_manifest_ref"],
+        repo_root=ROOT,
+    )
+    assert policy["observation_schema"].endswith("v1_5")
+    assert manifest["schema_version"].endswith("v1_1")
+    assert manifest["private_asset_root_ref"].endswith("/v2")

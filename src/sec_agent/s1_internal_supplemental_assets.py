@@ -34,6 +34,16 @@ FEDERATED_POLICY_SCHEMA = (
 FEDERATED_CONTRACT_REF = (
     "fin_0_1_3.S1.internal_supplemental_candidate_refresh:v1.4"
 )
+FEDERATED_POLICY_SCHEMA_V1_1 = (
+    "fin_ia_0_1_3_s1_internal_supplemental_candidate_refresh_policy_v1_1"
+)
+FEDERATED_CONTRACT_REF_V1_1 = (
+    "fin_0_1_3.S1.internal_supplemental_candidate_refresh:v1.5"
+)
+_FEDERATED_SCHEMA_CONTRACTS = {
+    FEDERATED_POLICY_SCHEMA: FEDERATED_CONTRACT_REF,
+    FEDERATED_POLICY_SCHEMA_V1_1: FEDERATED_CONTRACT_REF_V1_1,
+}
 
 
 class S1InternalSupplementalAssetError(RuntimeError):
@@ -122,9 +132,12 @@ def load_internal_supplemental_candidate_refresh_policy(
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     policy = _read_json(Path(path))
+    expected_contract = _FEDERATED_SCHEMA_CONTRACTS.get(
+        str(policy.get("schema_version") or "")
+    )
     if (
-        policy.get("schema_version") != FEDERATED_POLICY_SCHEMA
-        or policy.get("contract_ref") != FEDERATED_CONTRACT_REF
+        expected_contract is None
+        or policy.get("contract_ref") != expected_contract
         or policy.get("run_scope") != RUN_SCOPE
         or policy.get("binding_hash_profile")
         != "sha256_utf8_lf_normalized_v1"
@@ -574,7 +587,9 @@ __all__ = [
     "CONTRACT_REF",
     "CONTRACT_REF_V1_1",
     "FEDERATED_CONTRACT_REF",
+    "FEDERATED_CONTRACT_REF_V1_1",
     "FEDERATED_POLICY_SCHEMA",
+    "FEDERATED_POLICY_SCHEMA_V1_1",
     "FederatedReadOnlyRetriever",
     "MANIFEST_SCHEMA",
     "MANIFEST_SCHEMA_V1_1",

@@ -1137,3 +1137,9 @@ immutable Firecrawl control plan (24 intent/query identities)
 腾讯官方合同复核仍为 `SearchPro / 2025-05-08 / wsa.tencentcloudapi.com`；必填只有 `Query`，Pages 为 JSON 字符串数组并提供 title/date/url/passage/site/score，response 提供 Version/RequestId。标准版按量价 46 元／千次，因此 24-call ceiling 为 1.104 元。本 successor 不发送 Mode/Site/FromTime/ToTime/Cnt/Industry/Freshness/Deeplinks，不把 tier 参数差异混入 semantic recall 对照。
 
 runner 只读 `TENCENTCLOUD_SECRET_ID/TENCENTCLOUD_SECRET_KEY`。AuthFailure、UnauthorizedOperation、ResourceNotFound、ResourceUnavailable 或 RequestLimitExceeded 触发 systemic stop：当前 failure capture 后，其余 identity 以 no-network typed terminal 收口；禁止自动 retry。focused full-fake/mutation=`7 passed`，Provider/network/model/document/Evidence=0。当前下一项是 clean authority issuance；即使 live 所有 comparator 门通过，也只允许另行决定 SourceHunter adapter integration，不自动晋升 Evidence、ranking、Agentic Research 或 release。
+
+### 20.25 Tencent same-matrix exact-live authority
+
+clean/pushed implementation commit=`9a0040e1114f7f53943ed4a9889e99db949b9cd3`；S1-08 contract 回归=`199 passed`。唯一 admission=`fin-ia-013-s1-08-tencent-semantic-same-matrix-r1-20260808` 为 `issued_unconsumed`，绑定 runner/support/normalizer/Query-only compiler、24-query immutable control、scoring/proof/provider profile 与 Firecrawl terminal/assessment 的 SHA/digest。
+
+authority 只允许 24 条 semantic Query-only 请求，provider/network=`<=24/<=24`，retry/model/document/Evidence=`0/0/0/0`。凭据仅由 runtime environment 注入；systemic refusal 后剩余 identity 不再联网。该 authority 不允许 precise/combined lane、ranking、SourceHunter 或生产晋升，且不允许任何 automatic retry/replacement attempt。

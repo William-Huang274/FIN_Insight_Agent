@@ -35,7 +35,10 @@ ASSESSMENT_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relation
 HISTORICAL_HANDOFF_SCOPE = (
     "S1_08_DOMESTIC_PROVIDER_FRESH_CREDENTIAL_READINESS_AND_SAME_MATRIX_COMPARATOR_AUTHORITY_DECISION"
 )
-NEXT_SCOPE = "S1_08_TENCENT_RELATIONSHIP_AWARE_SEMANTIC_SAME_MATRIX_CLEAN_AUTHORITY_ISSUANCE"
+COMPLETED_TENCENT_ISSUANCE_SCOPE = (
+    "S1_08_TENCENT_RELATIONSHIP_AWARE_SEMANTIC_SAME_MATRIX_CLEAN_AUTHORITY_ISSUANCE"
+)
+NEXT_SCOPE = "S1_08_TENCENT_RELATIONSHIP_AWARE_SEMANTIC_SAME_MATRIX_EXACT_LIVE_EXECUTION"
 
 
 def _sha256(path: Path) -> str:
@@ -295,7 +298,7 @@ def test_exact_live_authority_is_digest_bound_semantic_only_and_unconsumed() -> 
     assert execution["gold_load_before_aggregate_terminal_allowed"] is False
 
 
-def test_consumed_exact_live_and_completed_handoff_are_blocked_while_tencent_issuance_is_allowed() -> None:
+def test_completed_firecrawl_and_tencent_issuance_scopes_are_blocked_while_tencent_live_is_allowed() -> None:
     from sec_agent.project_os_preflight import run_project_os_preflight
 
     preflight = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
@@ -306,6 +309,11 @@ def test_consumed_exact_live_and_completed_handoff_are_blocked_while_tencent_iss
     completed_handoff = run_project_os_preflight(ROOT, run_scope=HISTORICAL_HANDOFF_SCOPE)
     assert completed_handoff["status"] == "blocked"
     assert completed_handoff["contract_errors"] == []
+    completed_issuance = run_project_os_preflight(
+        ROOT, run_scope=COMPLETED_TENCENT_ISSUANCE_SCOPE
+    )
+    assert completed_issuance["status"] == "blocked"
+    assert completed_issuance["contract_errors"] == []
     successor = run_project_os_preflight(ROOT, run_scope=NEXT_SCOPE)
     assert successor["status"] == "pass"
     assert successor["contract_errors"] == []

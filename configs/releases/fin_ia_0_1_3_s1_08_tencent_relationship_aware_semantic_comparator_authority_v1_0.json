@@ -1,0 +1,48 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_relationship_aware_semantic_comparator_authority_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.tencent_relationship_aware_semantic_same_matrix_comparator:v1",
+  "recorded_at": "2026-08-08",
+  "status": "issued_unconsumed",
+  "authorized_scope": "S1_08_TENCENT_RELATIONSHIP_AWARE_SEMANTIC_SAME_MATRIX_EXACT_LIVE_EXECUTION",
+  "admission_id": "fin-ia-013-s1-08-tencent-semantic-same-matrix-r1-20260808",
+  "execution_contract": {
+    "selected_lane": "semantic_open_web",
+    "planned_query_count": 24,
+    "provider_call_ceiling": 24,
+    "network_call_ceiling": 24,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0,
+    "document_fetch_ceiling": 0,
+    "evidence_promotion_allowed": false,
+    "sourcehunter_integration_allowed": false,
+    "combined_46_unit_execution_allowed": false,
+    "credentials_from_environment_only": true
+  },
+  "immutable_bindings": {
+    "runner_sha256": "eb0ae435657a24ed8ff5101a72a4f053c328615f6ccca255168069d2bb6bdd5e",
+    "support_sha256": "f79983eec86510ba649ae5a24edba39353e9555631a7ac5c6459d8821b1a817c",
+    "normalizer_sha256": "df1a34bf036424255de4ea0de529c6e73e0d6cf1bcb4345ae5eccefb71039bdf",
+    "query_only_support_sha256": "4a639c57ffb38723c197013b2325a4aa7d79e4b7294415a24e82164110cc3801",
+    "runner_helpers_sha256": "29e4dede4a6828b232ed7ebff0abc2863bab3d779af55f1291c784e562d4dd57",
+    "provider_profile_sha256": "ba327e02aa7ec7896b6617e5cf8d809ba439ea9c36b75de88c7b7fcadf3356fb",
+    "control_plan_sha256": "859e71788d451fda7563855deaf119d6c1d6b3f33fcc2b69e3ae8a58a9ee3969",
+    "control_support_sha256": "3a2c119229a0ed4ab3c66f15f7abcd011fff97afc29ff87b5879b674433997e0",
+    "scoring_contract_sha256": "dd6b2d279b73379257190dd494e33655d63cfbd47c12ad07a1d5089727e5c7f3",
+    "zero_call_proof_sha256": "14939558c58983f10960199c2a66533437d5ff26e6ec460a22e2fb0a6686eebe",
+    "wire_policy_sha256": "eef7dc5eb2f006f8f3873d200684064a9fa7d9220655c69bc72d2941df642a5d",
+    "wire_projection_sha256": "5bbf4ff3e7e47400ee7eb281eb98c5c75bef38b52d1ba03a43518a49ab9787a3",
+    "credential_decision_sha256": "8b78130dbb2888a6cd9d1e27f9e95f598da50f22f36a7bf21e7a1b2153aec479",
+    "firecrawl_result_sha256": "84fbafa1b67c7c0b0d620086a3e94f1e4f9f36e439e7d2b4495aee47a3cc46f7",
+    "firecrawl_assessment_sha256": "1ba0d2a65ad7e1c72bd6c00d5c19a2f3f93649a4395e75a4cc33572ca4ea2a7c",
+    "control_plan_digest": "3d636459894758b12986bab383e287d50888ca4f61b4f57ee2566e76126d9e19",
+    "zero_call_proof_digest": "10e07ac86ce8e3ac276daafa3eaf8f3c45f6c1a4844e04cc510d15eeb2d2b108",
+    "implementation_commit": "9a0040e1114f7f53943ed4a9889e99db949b9cd3",
+    "provider_profile_digest": "dc249a8716081e3495e7376accfb48ac433aec9080d1baed90a9e3b70ed8622c"
+  },
+  "capability_boundary": {
+    "diagnostic_locator_only": true,
+    "sourcehunter_integration_authorized": false,
+    "production_capability_claim_authorized": false
+  },
+  "authority_digest": "9ea3b13d6a2b9d7032ab5ab0201caa02f8c3ee66824c8a65959d351f8a880a63"
+}

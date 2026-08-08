@@ -1344,6 +1344,22 @@ provider declared/configured
 
 Agentic Research 的 S3 准入必须消费上述 Search Quality Card。搜索层未证明当前案例的 required-slot candidate ceiling 时，Lead 只能返回 `needs_source / typed_gap / blocked`，不得通过增加模型调用、自由叙事或本地模板拼装制造产品级研报。
 
+#### 7.7.2 外源与内源统一 Query Facet、BGE 与 rerank 顺序（2026-08-08）
+
+外源 Web Search 和内源数据库／RAG 虽然执行工具不同，但都不能把用户原句直接交给所有 route。产品必须从同一个 typed Evidence intent 编译出 route-specific facet：主体与别名、证据披露方、经济关系方向、期间与截至日、来源角色／文档类型、指标／产品、exact lookup、lexical、semantic、graph、negative／forbidden expansion 和 route filter。该合同是跨 route 的公共上游，不属于某家 Provider，也不能由 BGE 或 reranker 事后补救。
+
+模型可以在受限 schema 内建议同义词、机制、产品、指标和补充 facet；本地确定性 compiler 仍拥有 entity、period、relationship direction、source role、禁止扩展、预算和最终 physical query envelope。是否接入模型辅助必须由 DELL／MU／NVDA 三路同口径比较决定：用户原句、本地确定性编译、模型 query atoms＋本地编译。只有 required-slot target-in-pool 或 facet coverage 实质提高，且错误实体／期间／方向、重复率和不稳定性没有扩大时，模型辅助才可进入 Runtime。
+
+当前 FIN 0.1.3 顺序固定为：
+
+1. 先完成 official-first 外源组合路由、immutable replay、统一 Query Facet 和一次另行授权的 combined live；
+2. 外源 S1-08 关闭后，立即把同一 Query Facet 接入内源 exact SQL／object lookup、BM25／ObjectBM25、dense／Milvus 和 relationship graph；
+3. 先用人工复核 qrels、hard negative 和三案 mutation 证明 candidate ceiling；
+4. candidate ceiling 通过后，才比较 BGE embedding、RRF／fusion 和 reranker；目标未进入候选池时这些阶段一律为 `not_admitted`；
+5. 最后证明 selected candidate 通过 Evidence Gate 并被 Claim、Workpaper 和报告实际使用。只改善 Recall／MRR／NDCG、但下游仍不使用，不构成产品完成。
+
+机器可读顺序见 `configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_0.json`。该登记防止内源检索、BGE 和 rerank 在外源工作结束后因上下文压缩丢失，但不把它们提前塞进当前 external combined live。
+
 ### 7.8 Agentic Research Harness 工程控制面（2026-07-09 追加）
 
 在 `Agentic Search / Agentic Research` 之上，FIN 需要一个统一的 `Agentic Research Harness`。它不是另一个 agent，也不是把所有节点改成更长 prompt；它是运行时控制面，负责把工具、上下文、权限、状态、trace、评测和自我迭代统一成可审计系统。

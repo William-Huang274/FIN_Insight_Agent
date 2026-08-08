@@ -44,8 +44,11 @@ COMPLETED_TENCENT_LIVE_SCOPE = (
 COMPLETED_POST_TENCENT_DECISION_SCOPE = (
     "S1_08_POST_TENCENT_SAME_MATRIX_PROVIDER_PORTFOLIO_AND_PRODUCTION_SEARCH_BOUNDARY_DECISION"
 )
-NEXT_SCOPE = (
+COMPLETED_IMPLEMENTATION_SCOPE = (
     "S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION"
+)
+CURRENT_CLEAN_PROOF_SCOPE = (
+    "S1_08_OFFICIAL_FIRST_PORTFOLIO_CLEAN_INDEPENDENT_ZERO_CALL_PROOF"
 )
 
 
@@ -306,7 +309,7 @@ def test_exact_live_authority_is_digest_bound_semantic_only_and_unconsumed() -> 
     assert execution["gold_load_before_aggregate_terminal_allowed"] is False
 
 
-def test_completed_search_scopes_are_blocked_while_portfolio_implementation_is_allowed() -> None:
+def test_completed_search_and_implementation_scopes_are_blocked_while_clean_proof_is_allowed() -> None:
     from sec_agent.project_os_preflight import run_project_os_preflight
 
     preflight = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
@@ -332,7 +335,12 @@ def test_completed_search_scopes_are_blocked_while_portfolio_implementation_is_a
     )
     assert completed_decision["status"] == "blocked"
     assert completed_decision["contract_errors"] == []
-    successor = run_project_os_preflight(ROOT, run_scope=NEXT_SCOPE)
+    completed_implementation = run_project_os_preflight(
+        ROOT, run_scope=COMPLETED_IMPLEMENTATION_SCOPE
+    )
+    assert completed_implementation["status"] == "blocked"
+    assert completed_implementation["contract_errors"] == []
+    successor = run_project_os_preflight(ROOT, run_scope=CURRENT_CLEAN_PROOF_SCOPE)
     assert successor["status"] == "pass"
     assert successor["contract_errors"] == []
 

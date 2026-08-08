@@ -210,6 +210,10 @@ QueryRewriteAndFacetPlan
 - graph query 必须说明关系类型，如 competes_with、upstream_of、deployed_by、read_through_to。
 - semantic query 只能补召回，不能覆盖 exact route。
 - query rewrite 要写入 audit，供 R60 评测 query drift。
+- 外源与内源必须消费同一个 typed facet authority，但生成不同 physical query：Web route 使用 owner／direction／period／source-family 搜索式与 provider filter；SQL／object route 使用 exact key 和 typed predicate；BM25 使用 lexical query；dense／Milvus 使用 semantic query；Graph 使用 typed relation query。禁止把同一 raw user string 无差别发送给全部 route。
+- 模型只能返回 allowlisted `query atoms`，不得拥有 entity、period、relationship direction、source-role、forbidden expansion、route filter 或预算的最终解释权。所有模型原子必须经本地 compiler 再生成 physical query；模型辅助是否启用由 raw／deterministic／model-atoms-plus-deterministic 三路 eval 决定。
+- 每个 facet plan 必须记录 `target_state`、route opportunity、candidate pool identity 和 plan digest。Gold URL／Evidence ID 只能在所有检索 terminal 后由 evaluator 加载，不能进入 planner 或 query compiler。
+- current FIN 0.1.3 先完成 external official-first combined proof，再把同一 facet contract 接入 internal exact／BM25／dense／graph；这两个验收包连续但不混成一次 live。
 
 ## 8. Hybrid Recall / Rerank / Fusion
 
@@ -565,6 +569,9 @@ ReferenceChangeLedger
 - `Document Intelligence` 要求 PDF/table/Office/webpage 解析形成 parser ledger，不允许 snippet 直接进入 ClaimCard。
 - `Retrieval Observability` 要求每次检索能复盘 query、candidate、rerank、drop、selected、latency、cost 和 gap。
 - `Workpaper Matrix` 要求检索输出能投影为 Workpaper row / gap row / trace row，让人和 agent 都能继续协作，而不是只生成 memo。
+- BGE／dense、fusion 和 rerank 是 candidate pool 下游。只有人工复核 qrels 证明 required target 能进入 pool 后才可准入；否则状态必须是 `not_admitted_upstream_candidate_ceiling`，不得用扩大 top-k、调 embedding 或 reranker 掩盖 query／route／index 缺口。
+- 内源验收必须分开四个问题：exact／metadata filter 是否找到正确对象，BM25 是否覆盖 lexical facet，dense／BGE 是否补充语义召回，Graph 是否保持经济关系方向；之后才能比较 RRF／rerank 的增量。结果至少分 DELL／MU／NVDA、Evidence Slot、source role 和 hard-negative cohort，报告 target-in-pool、Recall@K、MRR／NDCG、false promotion、稳定性、延迟与资源成本。
+- 排序通过仍不是产品完成；selected rows 必须通过 Evidence Gate，并在 Claim／Workpaper／报告中留下可见 utilization lineage。
 
 ## 16. Demand 草案
 
@@ -576,10 +583,10 @@ ReferenceChangeLedger
 | --- | --- | --- | --- | --- |
 | `R58-D01-retrieval-intent-taxonomy` | 定义 retrieval intent schema 和 classifier contract | done | S3、P14 | 代表性 intent 集合已建；新增 intent 必须版本化。 |
 | `R58-D02-route-policy-matrix` | 定义 DB / graph / BM25 / ObjectBM25 / Milvus / web route 顺序和 budget | done | S3、P14 | 路由合同可用；仍需按 failure/gold 扩展 route quota。 |
-| `R58-D03-query-rewrite-facet-plan` | 生成 exact / lexical / semantic / graph facet queries | partial | S3、P14 | 有 retrieval plan；query drift / facet 覆盖仍需 qrels 回归。 |
-| `R58-D04-hybrid-recall-rerank-policy` | candidate generation、fusion/rerank、role/source quota | partial | S3、P14 | selected/dropped ledger 有；rerank 质量未完成全量调优。 |
+| `R58-D03-query-rewrite-facet-plan` | 生成 exact / lexical / semantic / graph facet queries | partial / FIN 0.1.3 S1 registered repair | S3、P14、S1-08 SearchIntent | 外源 SearchIntent 已覆盖 owner/direction/period；内源 BM25/dense/graph 仍常复用 raw query。先做统一 facet compiler 与三路对照，再接内源 route。 |
+| `R58-D04-hybrid-recall-rerank-policy` | candidate generation、fusion/rerank、role/source quota | upstream-blocked / not admitted | S3、P14、FIN 0.1.3 S1 progression plan | selected/dropped ledger 有，但外源与内源 candidate ceiling 尚未按统一 facet/qrels 通过；BGE/fusion/rerank 不得先调优。 |
 | `R58-D05-retrieval-execution-ledger` | 记录 candidate、rerank、selected、dropped、latency、target-in-candidates | done | S3、P14 | 后续 full-chain 必须消费该 ledger。 |
-| `R58-D06-retrieval-eval-qrels` | retrieval qrels / gold refs / negative cases | partial | S3、P16 | 初始 qrels 有，但覆盖面偏小。 |
+| `R58-D06-retrieval-eval-qrels` | retrieval qrels / gold refs / negative cases | partial / expansion registered | S3、P16、DELL/MU/NVDA S1-08 matrix | 初始 qrels 偏小；需补 entity/period/relationship/source-role hard negatives，并分别测 external target-in-pool 与 internal route contribution。 |
 | `R58-D07-data-ingestion-contract` | IngestionJob、RawSourceDocument、FetchAttempt、SourceSnapshot、ParserRun | done | P14 | 代表性 source modalities 已过；不是全 crawler coverage。 |
 | `R58-D08-storage-lineage-convention` | raw/staging/processed/artifact/ObjectStore/SQL mirror 规范 | done | P14 | 新 ingestion 输出必须沿用该 lineage。 |
 | `R58-D09-parser-tool-contract` | crawler/fetcher/parser/verifier/authority mapper 工具输出合同 | done | P14、P16 | source-specific coverage 仍是数据深度任务；raw snippet 不能直接提权。 |

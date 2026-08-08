@@ -475,6 +475,24 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 
 这一步不会因配置了 Key 就把“腾讯可调用”等同于“产品检索可用”。真正的产品增量仍由 required evidence target 是否进入候选池、日期能否核验以及三案例来源覆盖决定。
 
+## 7I. Official-first 组合路由通过后的外源／内源检索连续计划（2026-08-08）
+
+最新证据纠正 7H 中“单个 Provider 通过后再谈集成”的过耦合假设，但不放宽 candidate ceiling。official-first 零调用 successor 已把 60 个关系感知 intent 分成 `36 official + 24 Firecrawl shadow`，12/12 required slot 都有 route opportunity；immutable replay 仍保留 Firecrawl `5/6`、Tencent `0/6` 和 DELL supply typed gap。新增 provider/network/model/document/Evidence=`0/0/0/0/0`，所以它是 engineering pass，不是 external search 或 S1-08 产品通过。
+
+用户已批准并要求长期保留下列顺序；所有工作仍属于 FIN 0.1.3，不创建新版本：
+
+1. [x] `S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION`：route planner、local authority replay、duplicate accounting、contamination mutation 与 SearchQualityCard working-tree proof 通过；
+2. [ ] `S1_08_OFFICIAL_FIRST_PORTFOLIO_CLEAN_INDEPENDENT_ZERO_CALL_PROOF`：clean archive／fresh process 复证，不依赖 Git 外 raw capture 才可进入下一合同；
+3. [ ] `S1_08_UNIFIED_QUERY_FACET_PLAN_ZERO_CALL_IMPLEMENTATION`：从同一 typed intent 编译 exact／lexical／semantic／graph／negative／forbidden／route filters；
+4. [ ] `S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION`：比较用户原句、本地 deterministic compiler、DeepSeek query atoms＋本地 compiler；只在召回增益且污染不扩大时启用模型辅助；
+5. [ ] `S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE`：需独立 authority，capture-first／exact-once；required target 缺失时禁止 reranker rescue；
+6. [ ] **外源关闭后立即回到内源**：把同一 Query Facet 接入 exact SQL／object、BM25／ObjectBM25、dense／Milvus 与 relationship graph，修复“同一 raw query 无差别发送给全部 route”的历史弱点；
+7. [ ] 扩大 DELL／MU／NVDA 人工 qrels、period／entity／relationship hard negatives，先证明 internal candidate ceiling；
+8. [ ] candidate ceiling 通过后才比较 BGE embedding、RRF／fusion 与 reranker；报告 Recall@K、MRR／NDCG、false promotion、稳定性、延迟和资源成本；
+9. [ ] 最后证明 selected candidate 进入 Evidence Gate、Claim、Workpaper 和报告。检索指标改善但下游未使用，不关闭 S1 或产品质量。
+
+机器真相为 `configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_0.json`。第 6–9 项现在是已登记的同阶段后续，不提前扩大当前 external live；但第 5 项完成后不得遗忘、跳过或直接进入 S3。
+
 ## 8. 下一步
 
 1. [x] 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。

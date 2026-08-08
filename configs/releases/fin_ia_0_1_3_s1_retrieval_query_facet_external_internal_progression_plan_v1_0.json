@@ -1,0 +1,119 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_0",
+  "contract_ref": "fin_0_1_3.S1.retrieval_query_facet_external_internal_progression:v1",
+  "recorded_at": "2026-08-08",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1",
+  "status": "approved_sequence_external_in_progress_internal_backlog_registered",
+  "user_decision": "Complete external official-first search and its combined proof first, then repair internal retrieval query compilation and evaluate downstream BGE and reranking without changing product version or skipping candidate-ceiling gates.",
+  "shared_query_facet_contract": {
+    "purpose": "Compile one evidence intent into route-specific physical queries without allowing any provider, model, retriever, embedder or reranker to reinterpret financial identity, period or relationship direction.",
+    "required_fields": [
+      "original_query",
+      "subject_entity_and_aliases",
+      "evidence_owner_and_aliases",
+      "relationship_direction",
+      "period_and_as_of",
+      "source_roles_and_document_types",
+      "metric_and_product_facets",
+      "exact_lookup_queries",
+      "lexical_queries",
+      "semantic_queries",
+      "graph_queries",
+      "negative_queries",
+      "forbidden_expansions",
+      "route_specific_filters",
+      "facet_plan_digest"
+    ],
+    "authority_split": {
+      "deterministic_compiler": "owns identity period relationship source-role filters forbidden expansions budgets and final physical query envelope",
+      "model_optional_atoms": "may propose synonyms mechanisms products metrics and additional facets inside an allowlisted schema",
+      "provider_or_retriever": "executes the compiled request and returns candidates only",
+      "bge_and_reranker": "may order an admitted candidate pool but cannot create missing candidates or promote Evidence"
+    }
+  },
+  "execution_sequence": [
+    {
+      "order": 1,
+      "work_item": "S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION",
+      "status": "engineering_pass_current_slice",
+      "acceptance": "60 intents route to 36 official and 24 Firecrawl shadow assignments; 12/12 required slots receive route opportunity; immutable replay preserves 5/6 Firecrawl recall, 0/6 Tencent recall, local authority and typed gaps."
+    },
+    {
+      "order": 2,
+      "work_item": "S1_08_OFFICIAL_FIRST_PORTFOLIO_CLEAN_INDEPENDENT_ZERO_CALL_PROOF",
+      "status": "pending",
+      "acceptance": "Clean archive and fresh process reproduce route plan, immutable input hashes, SearchQualityCard and mutations with no private raw capture dependency."
+    },
+    {
+      "order": 3,
+      "work_item": "S1_08_UNIFIED_QUERY_FACET_PLAN_ZERO_CALL_IMPLEMENTATION",
+      "status": "pending",
+      "acceptance": "Compile exact lexical semantic graph negative and filtered query families from the same typed evidence intent; no Gold URL or cross-case leakage."
+    },
+    {
+      "order": 4,
+      "work_item": "S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION",
+      "status": "pending",
+      "variants": [
+        "user_raw_query",
+        "deterministic_local_compiler",
+        "deepseek_query_atoms_plus_deterministic_local_compiler"
+      ],
+      "acceptance": "Compare required-slot target-in-pool, facet coverage, wrong entity-period-direction, duplicate rate, stability, cost and latency. Model assistance is admitted only when recall improves without pollution."
+    },
+    {
+      "order": 5,
+      "work_item": "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE",
+      "status": "pending_separate_authority_required",
+      "acceptance": "Capture-first exact-once combined run; all required external targets receive a real opportunity; no reranker rescue; local date and Evidence Gate remain authoritative."
+    },
+    {
+      "order": 6,
+      "work_item": "S1_INTERNAL_RETRIEVAL_QUERY_FACET_INTEGRATION",
+      "status": "registered_backlog_after_external_closeout",
+      "routes": [
+        "exact_SQL_and_object_lookup",
+        "BM25_and_ObjectBM25_lexical",
+        "dense_Milvus_semantic",
+        "relationship_graph"
+      ],
+      "acceptance": "Each route consumes its own compiled query and typed filters rather than one raw user string; DELL MU NVDA qrels include entity period relationship and hard negatives."
+    },
+    {
+      "order": 7,
+      "work_item": "S1_INTERNAL_CANDIDATE_CEILING_AND_QRELS_GATE",
+      "status": "registered_backlog_after_internal_query_integration",
+      "acceptance": "Human-reviewed qrels and mutation cases prove target-in-pool, currentness, source authority, cross-case rejection and route contribution before any downstream ranking claim."
+    },
+    {
+      "order": 8,
+      "work_item": "S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION",
+      "status": "not_admitted_until_candidate_ceiling_passes",
+      "acceptance": "Compare lexical, dense/BGE, RRF and reranker variants on the same admitted pool; report Recall@K, MRR/NDCG, false promotion, per-slot and per-case quality, stability, latency and resource cost."
+    },
+    {
+      "order": 9,
+      "work_item": "S1_TO_S3_RETRIEVAL_DOWNSTREAM_UTILIZATION_PROOF",
+      "status": "pending_after_external_and_internal_retrieval",
+      "acceptance": "Selected candidates pass Evidence Gate and are visibly used by Claims, Workpaper and report; retrieval metrics alone do not close product quality."
+    }
+  ],
+  "hard_gates": {
+    "target_absent_from_pool": "ranking_not_admitted",
+    "query_facet_pollution": "model_assisted_variant_rejected",
+    "external_search_incomplete": "internal_backlog_remains_registered_but_does_not_expand_the_current_live",
+    "internal_candidate_ceiling_incomplete": "BGE_fusion_rerank_not_admitted",
+    "retrieval_good_but_downstream_unused": "S1_to_S3_product_capability_not_closed"
+  },
+  "calls_authorized_by_this_plan": {
+    "provider": 0,
+    "network": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "evidence_promotion": 0,
+    "rerank": 0
+  },
+  "known_boundary": "This record preserves the approved order and prevents the internal retrieval and BGE/rerank work from being lost after external search. It is a progression contract, not proof that Query Facet, combined live, internal retrieval, BGE, rerank, downstream research quality or S1-08 has passed.",
+  "plan_digest": "52e337477123964c2c3e3e2e4e21d2def28f1e01f817cde33946744c56cb038a"
+}

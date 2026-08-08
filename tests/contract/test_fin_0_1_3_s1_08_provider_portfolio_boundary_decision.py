@@ -22,6 +22,9 @@ COMPLETED_SCOPE = (
 NEXT_SCOPE = (
     "S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION"
 )
+CLEAN_PROOF_SCOPE = (
+    "S1_08_OFFICIAL_FIRST_PORTFOLIO_CLEAN_INDEPENDENT_ZERO_CALL_PROOF"
+)
 
 
 def _load(path: Path) -> dict:
@@ -100,10 +103,13 @@ def test_decision_is_zero_call_and_only_authorizes_next_implementation() -> None
     ] is False
 
 
-def test_completed_decision_scope_is_blocked_and_next_scope_is_allowed() -> None:
+def test_completed_scopes_are_blocked_and_current_clean_proof_scope_is_allowed() -> None:
     completed = run_project_os_preflight(ROOT, run_scope=COMPLETED_SCOPE)
     assert completed["status"] == "blocked"
     assert completed["contract_errors"] == []
-    successor = run_project_os_preflight(ROOT, run_scope=NEXT_SCOPE)
+    implemented = run_project_os_preflight(ROOT, run_scope=NEXT_SCOPE)
+    assert implemented["status"] == "blocked"
+    assert implemented["contract_errors"] == []
+    successor = run_project_os_preflight(ROOT, run_scope=CLEAN_PROOF_SCOPE)
     assert successor["status"] == "pass"
     assert successor["contract_errors"] == []

@@ -1171,3 +1171,15 @@ EvidenceRequest / Evidence Slot
 Firecrawl 只获得 `shadow_integration_candidate_not_production_qualified` 身份：输出永远是 locator candidate，Provider date 缺失不再单独否决 locator 贡献，但任何 locator 必须在后续本地链路重新获得 canonical/date/authority。Tencent 保持 diagnostic-only；百度/阿里 live 与采购暂停。locator-route hard checks 关注 operational、intent/owner binding、marginal target-in-pool、关系/主题、域质量、成本/延迟；portfolio hard checks 才验证 raw capture、local date、source authority、Evidence receipt、selected coverage 与 downstream utilization。
 
 下一实现只做 immutable capture replay 和三案 fixture，不联网、不调用模型、不接入生产：`S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION`。
+
+### 20.28 Official-first portfolio 零调用实现与统一 Query Facet 接力
+
+`fin_0_1_3.S1_08.official_first_sourcehunter_portfolio:v1` 已实现并完成 working-tree 零调用证明。Runtime 复用 relationship-aware 60 个 canonical SearchIntent，把 `36 precise_official_domain` 编译到 SEC／issuer feed-sitemap／official-domain／capture-first official lane，把 `24 semantic_open_web` 编译到 Firecrawl discovery-only shadow；Tencent assignment=`0`。三案 12 个 external required slot 都获得至少一个 route opportunity，lane 自身仍没有金融事实、日期或 Evidence 晋升权。
+
+immutable replay 没有改写历史：Firecrawl relational target-in-pool 仍为 `5/6`，Tencent 仍为 `0/6`，DELL supply 的 Micron target 继续是 typed route gap。DELL R2 两个 role binding 复用同一 canonical SEC document，统计为 `2 bindings / 1 unique network document`；S1-03 official semantic rows 为 `9 bindings / 3 unique official documents`。本轮只重放历史 capture／parser／promotion receipt，新增 provider/network/model/document/Evidence=`0/0/0/0/0`。cross-case、wrong owner/direction、future local date、shadow promotion、missing capture mutation 全部 fail closed；Provider date 即使写成未来日期也不能覆盖 capture-backed local date。
+
+`SearchQualityCard` 现在物理分开：route opportunity、locator contribution、capture/local authority、portfolio Evidence qualification、duplicate accounting、typed route gap 与 downstream utilization。当前只达到 `portfolio runtime contract + combined zero-call replay engineering pass`；Firecrawl 没有新正文 capture，组合 live、selected-pack coverage、下游利用、ranking 和 S1-08 均未通过。
+
+下一项不是直接签 combined live，而是 `S1_08_UNIFIED_QUERY_FACET_PLAN_ZERO_CALL_IMPLEMENTATION`。它把同一 Evidence intent 编译为 exact／lexical／semantic／graph／negative／forbidden／route-filter facet，并用 DELL／MU／NVDA 比较 raw query、本地 deterministic compiler、DeepSeek query atoms＋本地 compiler。模型辅助只有在 target-in-pool／facet coverage 增益且污染不扩大时才启用。随后才另行签发 official routes＋Firecrawl shadow combined live。
+
+外源关闭后，同一 facet contract 必须立即接入内源 exact SQL／object、BM25／ObjectBM25、dense／Milvus 与 relationship graph。先扩大人工 qrels 和 candidate-ceiling proof，再准入 BGE、RRF／fusion 和 rerank；reranker 永远不能从缺失候选中“救回”目标。完整顺序由 `configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_0.json` 约束，不创建新产品版本。

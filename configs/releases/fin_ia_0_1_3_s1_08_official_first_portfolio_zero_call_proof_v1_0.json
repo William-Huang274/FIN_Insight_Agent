@@ -1,0 +1,172 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_official_first_portfolio_zero_call_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.official_first_sourcehunter_portfolio:v1",
+  "run_scope": "S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION",
+  "status": "zero_call_engineering_pass",
+  "route_plan_digest": "c5e28324999e00f4e51e66ddf5d7ef47919ea99c36452f40f29d1405dd0cba23",
+  "historical_artifacts_immutable": true,
+  "planner_hidden_gold_visibility": false,
+  "search_quality_card": {
+    "schema_version": "fin_ia_0_1_3_s1_08_search_quality_card_v1_0",
+    "route_opportunity": {
+      "required_slots_with_route_opportunity": 12,
+      "required_slots_total": 12,
+      "official_primary_assignments": 36,
+      "firecrawl_shadow_assignments": 24,
+      "tencent_assignments": 0
+    },
+    "locator_route_contribution": {
+      "firecrawl_relational_case_slot_target_in_pool": [
+        5,
+        6
+      ],
+      "tencent_relational_case_slot_target_in_pool": [
+        0,
+        6
+      ],
+      "provider_date_presence_telemetry": {
+        "firecrawl": [
+          0,
+          235
+        ],
+        "tencent": [
+          172,
+          172
+        ]
+      },
+      "provider_date_financial_authority": false
+    },
+    "capture_and_local_authority": {
+      "dell_r2_historical_qualification_bindings_replayed": 2,
+      "dell_r2_unique_canonical_documents": 1,
+      "official_r4_accepted_evidence": 11,
+      "official_r4_attempt_backed_typed_gaps": 6,
+      "official_semantic_role_bindings": 9,
+      "official_semantic_unique_canonical_documents": 3,
+      "new_document_fetches": 0,
+      "new_evidence_promotions": 0
+    },
+    "portfolio_evidence_qualification": {
+      "historical_official_qualification_replay_passed": true,
+      "firecrawl_rows_remain_candidate_only": true,
+      "firecrawl_capture_backed_qualification_observed": false,
+      "all_required_slot_target_in_pool_established": false,
+      "selected_pack_coverage_established": false,
+      "downstream_utilization_established": false,
+      "ranking_admitted": false,
+      "S1_08_closed": false
+    },
+    "duplicate_accounting": {
+      "same_dell_document_role_bindings": 2,
+      "same_dell_unique_canonical_documents": 1,
+      "one_document_is_not_counted_as_multiple_network_sources": true
+    },
+    "typed_route_gaps": [
+      {
+        "case_key": "DELL",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "code": "required_relational_target_absent_after_shadow_locator_replay",
+        "source_exhaustion_proven": false,
+        "ranking_admitted": false
+      }
+    ],
+    "mutation_results": [
+      {
+        "mutation": "provider_date_cannot_override_local_date",
+        "passed": true,
+        "observed_state": "historical_evidence_qualification_replayed",
+        "expected_reason": ""
+      },
+      {
+        "mutation": "cross_case_subject",
+        "passed": true,
+        "observed_state": "rejected",
+        "expected_reason": "cross_case_subject_binding_invalid"
+      },
+      {
+        "mutation": "wrong_relationship_direction",
+        "passed": true,
+        "observed_state": "rejected",
+        "expected_reason": "relationship_direction_mismatch"
+      },
+      {
+        "mutation": "future_local_date",
+        "passed": true,
+        "observed_state": "rejected",
+        "expected_reason": "local_publication_date_after_as_of"
+      },
+      {
+        "mutation": "shadow_promotion",
+        "passed": true,
+        "observed_state": "rejected",
+        "expected_reason": "shadow_lane_promotion_forbidden"
+      },
+      {
+        "mutation": "missing_capture",
+        "passed": true,
+        "observed_state": "rejected",
+        "expected_reason": "capture_or_parser_lineage_invalid"
+      }
+    ],
+    "quality_card_digest": "c2f48843d3c5f46c2e90e12205cab1fdcc0f2ad0042e5089e93fc654b8184f49"
+  },
+  "replayed_official_candidate_decisions": [
+    {
+      "candidate_id": "dell_r2_accepted_1",
+      "candidate_digest": "8dab57dcb032d37e6845f094efe0c0c657cb1421b443f14b085ca23c237a0a4b",
+      "state": "historical_evidence_qualification_replayed",
+      "reason_codes": [],
+      "canonical_locator_digest": "a491dad124af09a0ac09953360d5f724d255c811564a2272034a14e4c6546a3d",
+      "provider_date_treated_as_telemetry_only": true,
+      "new_evidence_promotion_created": false,
+      "decision_digest": "8e9b0afc2672db067954119b02a512521dabf53094457cc2193ab686e16bf70d"
+    },
+    {
+      "candidate_id": "dell_r2_accepted_2",
+      "candidate_digest": "e34972c3abc239b9719cb6be0e798182185a5e9d1faa12324c4414901681f98d",
+      "state": "historical_evidence_qualification_replayed",
+      "reason_codes": [],
+      "canonical_locator_digest": "a491dad124af09a0ac09953360d5f724d255c811564a2272034a14e4c6546a3d",
+      "provider_date_treated_as_telemetry_only": true,
+      "new_evidence_promotion_created": false,
+      "decision_digest": "69da9b091736083d72029652f762bddfce042f6575020eb2d356207114d72b2d"
+    }
+  ],
+  "observed_calls": {
+    "provider": 0,
+    "network": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "portfolio_runtime_contract": true,
+    "combined_zero_call_replay": true,
+    "fresh_combined_live": false,
+    "query_facet_plan": false,
+    "internal_retrieval": false,
+    "ranking": false,
+    "S1_08": false,
+    "S3": false,
+    "release": false
+  },
+  "known_boundary": "The official-first route contract and immutable replay are engineering-proven. Firecrawl remains shadow-only, Tencent remains diagnostic-only, the DELL supply target is still absent, no new document was captured or promoted, and combined live, unified Query Facet, internal retrieval, ranking, S1-08, Agentic Research and release remain unproven.",
+  "policy_digest": "e4ff22e1ff318f8712a28109ecc07a9df70069cbdfe399f8cbac6f12cc535523",
+  "input_file_sha256": {
+    "dell_r2": "8e9550c842ff28dacddd54ca043bbaa49ab219342655110acf99b6e4ade31a88",
+    "firecrawl_assessment": "1ba0d2a65ad7e1c72bd6c00d5c19a2f3f93649a4395e75a4cc33572ca4ea2a7c",
+    "firecrawl_result": "84fbafa1b67c7c0b0d620086a3e94f1e4f9f36e439e7d2b4495aee47a3cc46f7",
+    "official_source_closeout": "3b1fa9b173f900c2c42499701ec802ec66ea85a5968b3ade4951f3cfec2b1268",
+    "search_intent_policy": "be2e5f6c7fffca8f10877927b589caeb60425faf761eabec2a32850423ed5751",
+    "source_catalog": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851",
+    "tencent_assessment": "70335b4b7d68c765cb2924b1590574a3e3b5f46e9f4c0041e491f7d8828ef5d7",
+    "tencent_result": "3e6df744227946ecef6facfafdecd90d013f63cb94a7fde515e719efead3a110"
+  },
+  "decision_file_sha256": "e1159b7a9555fa8847c0406906fb08ad160180ab3ddaded60ca2ac60482bb31f",
+  "implementation": {
+    "module_ref": "src/sec_agent/s1_08_official_first_portfolio.py",
+    "script_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_08_official_first_portfolio_zero_call_proof.py",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_official_first_portfolio_policy_v1_0.json"
+  },
+  "proof_digest": "4afe7aebbe6794dcec914e8a7d2dd00c598c1799ba4aac71cad6e6eb6c2bb343"
+}

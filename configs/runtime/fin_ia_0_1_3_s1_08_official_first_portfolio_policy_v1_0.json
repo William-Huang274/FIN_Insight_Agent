@@ -1,0 +1,112 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_official_first_portfolio_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.official_first_sourcehunter_portfolio:v1",
+  "recorded_at": "2026-08-08",
+  "run_scope": "S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION",
+  "as_of_date": "2026-08-06",
+  "cases": [
+    "DELL",
+    "MU",
+    "NVDA"
+  ],
+  "external_evidence_slots": [
+    "issuer_results_and_management_commentary",
+    "regulatory_risk_and_financial_reconciliation",
+    "customer_demand_and_deployment_validation",
+    "supply_chain_capacity_and_counterevidence"
+  ],
+  "decision_binding": {
+    "decision_ref": "configs/releases/fin_ia_0_1_3_s1_08_post_tencent_provider_portfolio_and_production_search_boundary_decision_v1_0.json",
+    "decision_digest": "829a08911bcb16182b8cd0da79dc95e5c4e3911708e1c336c1eaa9e96583f798",
+    "decision_file_sha256": "e1159b7a9555fa8847c0406906fb08ad160180ab3ddaded60ca2ac60482bb31f"
+  },
+  "lanes": {
+    "official_primary_lane": {
+      "target_state": "known_primary_disclosure",
+      "route_class": "precise_official_domain",
+      "route_ids": [
+        "sec_submissions_and_filings",
+        "issuer_ir_feed_and_sitemap",
+        "official_domain_bounded_discovery",
+        "capture_first_official_document"
+      ],
+      "provider": "local_official_route_portfolio",
+      "provider_status": "historical_official_components_replay_proven_combined_portfolio_pending",
+      "output_state": "capture_backed_canonical_source_candidate",
+      "financial_authority": false,
+      "evidence_promotion_allowed": false
+    },
+    "semantic_open_web_shadow_lane": {
+      "target_state": "unknown_public_locator",
+      "route_class": "semantic_open_web",
+      "route_ids": [
+        "firecrawl_relationship_aware_semantic_shadow"
+      ],
+      "provider": "firecrawl_keyless",
+      "provider_status": "shadow_integration_candidate_not_production_qualified",
+      "output_state": "discovery_only_locator_candidate",
+      "financial_authority": false,
+      "evidence_promotion_allowed": false
+    }
+  },
+  "excluded_providers": {
+    "tencent_wsa_searchpro_standard": "diagnostic_only_not_selected",
+    "baidu_qianfan_web_search": "deferred_no_purchase_or_live_before_replay",
+    "alibaba_web_search_mcp": "deferred_no_full_raw_tool_contract_or_need_proof"
+  },
+  "local_authority_chain": [
+    "capture_first_raw_document",
+    "verified_canonical_source_identity",
+    "local_typed_publication_date",
+    "relationship_direction_binding",
+    "parser_lineage",
+    "currentness_and_as_of",
+    "evidence_gate_promotion_receipt"
+  ],
+  "immutable_replay_inputs": {
+    "firecrawl_result_ref": "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_result_v1_0.json",
+    "firecrawl_result_sha256": "84fbafa1b67c7c0b0d620086a3e94f1e4f9f36e439e7d2b4495aee47a3cc46f7",
+    "firecrawl_assessment_ref": "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_assessment_v1_0.json",
+    "firecrawl_assessment_sha256": "1ba0d2a65ad7e1c72bd6c00d5c19a2f3f93649a4395e75a4cc33572ca4ea2a7c",
+    "tencent_result_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_relationship_aware_semantic_comparator_result_v1_0.json",
+    "tencent_result_sha256": "3e6df744227946ecef6facfafdecd90d013f63cb94a7fde515e719efead3a110",
+    "tencent_assessment_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_relationship_aware_semantic_comparator_assessment_v1_0.json",
+    "tencent_assessment_sha256": "70335b4b7d68c765cb2924b1590574a3e3b5f46e9f4c0041e491f7d8828ef5d7",
+    "dell_r2_ref": "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_result_v1_0.json",
+    "dell_r2_sha256": "8e9550c842ff28dacddd54ca043bbaa49ab219342655110acf99b6e4ade31a88",
+    "official_source_closeout_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s1_01_freshness_reopen_s1_02_numeric_successor_and_s1_03_official_source_closeout_v1_0.json",
+    "official_source_closeout_sha256": "3b1fa9b173f900c2c42499701ec802ec66ea85a5968b3ade4951f3cfec2b1268",
+    "search_intent_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_relationship_aware_search_intent_policy_v1_0.json",
+    "search_intent_policy_sha256": "be2e5f6c7fffca8f10877927b589caeb60425faf761eabec2a32850423ed5751",
+    "source_catalog_ref": "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_relationship_budget_policy_v3_0.json",
+    "source_catalog_sha256": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851"
+  },
+  "search_quality_card": {
+    "separate_dimensions": [
+      "route_opportunity",
+      "locator_route_contribution",
+      "capture_and_local_authority",
+      "portfolio_evidence_qualification",
+      "duplicate_accounting",
+      "typed_route_gaps",
+      "downstream_utilization"
+    ],
+    "provider_date_is_telemetry_only": true,
+    "one_document_bound_to_multiple_roles_counts_as_one_network_document": true,
+    "ranking_admitted_only_if_all_required_targets_enter_candidate_pool": true
+  },
+  "zero_call_boundary": {
+    "provider_calls": 0,
+    "network_calls": 0,
+    "model_calls": 0,
+    "document_fetches": 0,
+    "evidence_promotions": 0
+  },
+  "stop_rules": [
+    "do_not_rerun_or_patch_tencent",
+    "do_not_purchase_or_live_test_another_provider_before_replay",
+    "do_not_rerank_missing_required_targets",
+    "do_not_promote_firecrawl_snippets_or_provider_dates",
+    "do_not_call_portfolio_production_capable_before_fresh_combined_live_and_downstream_utilization"
+  ]
+}

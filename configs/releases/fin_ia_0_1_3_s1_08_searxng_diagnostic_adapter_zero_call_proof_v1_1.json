@@ -1,0 +1,80 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_searxng_diagnostic_adapter_zero_call_proof_v1_1",
+  "contract_ref": "fin_0_1_3.S1_08.searxng_diagnostic_locator_provider:v1",
+  "source_commit": "56e39f84e56ebc388b3c766504b6b723ad7c3e35",
+  "source_worktree_clean_before_proof": true,
+  "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_searxng_diagnostic_provider_policy_v1_0.json",
+  "policy_digest": "805e1e13ccee01f476af444c55412148623f952e8f957f0f50cd5b6e903afee3",
+  "test_ref": "tests/contract/test_fin_0_1_3_s1_08_searxng_diagnostic_adapter.py",
+  "verification": {
+    "contract_test_exit_code": 0,
+    "contract_tests_passed": 15,
+    "docker_compose_config_exit_code": 0,
+    "deployment_safety_contract_proven": true,
+    "configured_metasearch_engines": [
+      "bing",
+      "brave",
+      "duckduckgo",
+      "google"
+    ],
+    "healthcheck_may_invoke_search": false,
+    "three_case_full_fake": [
+      {
+        "case_key": "DELL",
+        "status": "completed",
+        "terminal_code": "diagnostic_locators_materialized",
+        "normalized_locator_count": 1,
+        "locator_bundle_digest": "cacebe99f6e201ff7f52df2deb630b12fd5fc19b7b64225f2e7471d8945facf1",
+        "evidence_promotions": 0
+      },
+      {
+        "case_key": "MU",
+        "status": "completed",
+        "terminal_code": "diagnostic_locators_materialized",
+        "normalized_locator_count": 1,
+        "locator_bundle_digest": "b6eb0ef4c24af0d58f54bbd47e98e33c560aa930fe8179bb8c6fab88681dbf76",
+        "evidence_promotions": 0
+      },
+      {
+        "case_key": "NVDA",
+        "status": "completed",
+        "terminal_code": "diagnostic_locators_materialized",
+        "normalized_locator_count": 1,
+        "locator_bundle_digest": "0844222cb63c2db4b9c40dd37e204d9ace3f5756a8b0333f2805d1e84a8930c2",
+        "evidence_promotions": 0
+      }
+    ],
+    "query_calls": 3,
+    "fake_transport_calls": 3,
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_model_calls": 0,
+    "retry_calls": 0,
+    "capture_count": 9,
+    "expected_capture_count": 9,
+    "false_promotion_mutation_rejected": true,
+    "all_result_digests_valid": true,
+    "all_capture_readbacks_valid": true
+  },
+  "acceptance": {
+    "adapter_zero_call_engineering_pass": true,
+    "self_hosted_network_baseline_executed": false,
+    "production_search_capability_proven": false,
+    "evidence_retrieval_quality_proven": false
+  },
+  "next_boundary": {
+    "allowed": [
+      "inspect_local_docker_daemon",
+      "start_loopback_only_self_hosted_searxng",
+      "separately_authorized_bounded_three_query_diagnostic_baseline"
+    ],
+    "forbidden": [
+      "public_searxng_instance_fallback",
+      "evidence_pack_promotion",
+      "writer_consumption",
+      "production_capability_claim",
+      "automatic_paid_search_provider_selection"
+    ]
+  },
+  "proof_digest": "b4b90d3d4c9dbaf068bf1cdad582cbce3acbbe6c663754215e73a6fd4faf4fb1"
+}

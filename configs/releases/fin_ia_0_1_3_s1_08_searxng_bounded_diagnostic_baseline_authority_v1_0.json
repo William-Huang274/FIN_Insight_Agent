@@ -1,0 +1,73 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_searxng_bounded_diagnostic_baseline_authority_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.searxng_bounded_diagnostic_baseline_authority:v1",
+  "recorded_at": "2026-08-08",
+  "status": "issued_unconsumed",
+  "admission_id": "fin013-s1-08-searxng-bounded-diagnostic-baseline-r1",
+  "owner_authority": "User approved the reshaped open-source diagnostic route and bounded local SearXNG comparison in the current task; zero-call and local deployment gates now pass.",
+  "authorized_scope": "S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_BOUNDED_NETWORK_BASELINE",
+  "adapter_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_searxng_diagnostic_adapter_zero_call_proof_v1_1.json",
+  "adapter_proof_digest": "b4b90d3d4c9dbaf068bf1cdad582cbce3acbbe6c663754215e73a6fd4faf4fb1",
+  "adapter_proof_file_sha256": "474b565bfe521b506918fb96c43614c4955b49e17c3babe5925ac94f3156302b",
+  "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_searxng_diagnostic_provider_policy_v1_0.json",
+  "policy_digest": "805e1e13ccee01f476af444c55412148623f952e8f957f0f50cd5b6e903afee3",
+  "policy_file_sha256": "6bc27788fe77656508cdf16fe6e289dbcf5753a4a3f3c23e3f7fc6084bbfc9fe",
+  "runner_ref": "scripts/releases/run_fin_ia_0_1_3_s1_08_searxng_bounded_diagnostic_baseline.py",
+  "runner_sha256": "51104a2d5763ceebd3ef4a6c45ed5761f77ff3824bd95f1b12cd03c202fcde2e",
+  "execution_contract": {
+    "fin_to_searxng_query_call_ceiling": 3,
+    "configured_engine_ceiling_per_query": 4,
+    "searxng_to_upstream_http_request_count_exactly_known": false,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0,
+    "public_instance_fallback_allowed": false,
+    "downstream_document_fetch_allowed": false,
+    "evidence_promotion_allowed": false,
+    "writer_consumption_allowed": false,
+    "production_capability_claim_allowed": false
+  },
+  "queries": [
+    {
+      "query_id": "DELL-DIAGNOSTIC-Q1",
+      "case_key": "DELL",
+      "evidence_slot_id": "dell_broad_web_locator_diagnostic",
+      "query_text": "Dell AI server demand customers supply chain 2026 earnings industry",
+      "language": "en-US",
+      "time_range": "year",
+      "categories": [
+        "general",
+        "news"
+      ],
+      "result_ceiling": 20
+    },
+    {
+      "query_id": "MU-DIAGNOSTIC-Q1",
+      "case_key": "MU",
+      "evidence_slot_id": "mu_broad_web_locator_diagnostic",
+      "query_text": "Micron HBM demand customers supply capacity 2026 earnings industry",
+      "language": "en-US",
+      "time_range": "year",
+      "categories": [
+        "general",
+        "news"
+      ],
+      "result_ceiling": 20
+    },
+    {
+      "query_id": "NVDA-DIAGNOSTIC-Q1",
+      "case_key": "NVDA",
+      "evidence_slot_id": "nvda_broad_web_locator_diagnostic",
+      "query_text": "NVIDIA AI accelerator demand customers supply constraints 2026 earnings industry",
+      "language": "en-US",
+      "time_range": "year",
+      "categories": [
+        "general",
+        "news"
+      ],
+      "result_ceiling": 20
+    }
+  ],
+  "success_definition": "All three FIN-to-SearXNG query attempts reach a typed terminal state with capture-first lineage. Locator count may be zero; no result may be promoted to Evidence.",
+  "hard_boundary": "This admission measures only self-hosted metasearch locator behavior. It cannot authorize R4, ranking, downstream document fetch, DeepSeek, S3 research, Writer, release, paid provider selection or production search claims.",
+  "authority_digest": "e306e9579527179e64de746158c08a1f9ff5641581cc97773b94dc4032b9c894"
+}

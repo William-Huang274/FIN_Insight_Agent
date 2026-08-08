@@ -886,4 +886,6 @@ Owner 批准在 production Provider 决策前增加一条低成本开源诊断�
 8. 本地部署使用官方容器入口并固定 loopback exposure；Docker daemon 未运行时只允许报告 `deployment_not_operational`，不得改用任意公共实例冒充自建基线；
 9. 未来付费 broad-search API 必须消费同一 query set、normalization schema、预算和 evaluator-only target，才能比较 locator recall、required-slot coverage、currentness metadata、duplicate rate、latency、错误率与成本。
 
-当前只授权 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_ADAPTER_ZERO_CALL_IMPLEMENTATION_AND_PROOF`。有界网络 baseline 使用独立 scope；它仍不是 DELL R4、product-live、ranking 或 Evidence promotion。
+首个本地部署又补充了一个必须长期保留的控制面边界：FIN 可精确限制的是 `FIN adapter -> SearXNG` query call；SearXNG 随后对多个 engine 的 HTTP fan-out 不是 adapter 能逐请求 exact-once 的表面。因此 diagnostic profile 固定 `bing/brave/duckduckgo/google` 四个 engine，保存 engine participation/unresponsive lineage，并明确 `upstream request count exactly known=false`。容器 healthcheck 只能访问本地首页，禁止调用 `/search`；首个错误 healthcheck 至少生成 6 次 `health` 搜索，已作为失败 Attempt 保留且不计正式 baseline。默认 engine set 也不得直接使用，避免启动期 engine init 网络请求漂移。
+
+adapter v1.1 已在 clean `56e39f84` 上完成 `15 passed`、三案 full-fake、`9 captures / 0 network / 0 model / 0 promotion`，并证明非搜索式 healthcheck 合同。当前可单独签发 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_BOUNDED_NETWORK_BASELINE`，最多 3 个 FIN query、0 retry；它仍不是 DELL R4、product-live、ranking 或 Evidence promotion。

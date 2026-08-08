@@ -362,8 +362,8 @@ DeepSeek 当前只在已自然证明的 JSON/identity/numeric-ref family 保留�
 7. [x] `S1-08-R3 / S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION`：唯一 admission 已 exact-once 消费。terminal/capture pass，但 `15 network / 0 candidate / 5 gaps / 229 qualified locators / 0 document request`，candidate ceiling 与 target-in-pool 失败；no-R4 生效。
 8. [x] `S1-08-P3 / S1_08_P3_POST_R3_OWNED_SCHEDULER_CACHE_AND_PROVIDER_PRODUCT_SCOPE_DISPOSITION_DECISION`：已选择 repair-first；Provider、动态页／licensed source 与来源范围缩减 deferred，no-R4、16 次上限和质量门不变，本 decision 外部/admission/live=`0/0/0`。
 9. [x] `S1-08-P3A / S1_08_P3A_PROTECTED_DOCUMENT_FETCH_BUDGET_AND_ATTEMPT_LOCAL_CACHE_ZERO_CALL_IMPLEMENTATION_AND_PROOF`：v4 工作树 `92/92`；A1 输入装配失败保留；A2 在 clean/synced `5e9726c2` 双 archive／双 fresh process 各 `92 passed / 0 failed / 0 skipped`，R1/R2/R3=`19/2/39` 不变，外部调用为 0。P3A 只证明 protected-fetch/cache 不变量。
-10. [ ] **当前下一项 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_ADAPTER_ZERO_CALL_IMPLEMENTATION_AND_PROOF`**：实现 diagnostic-only SearXNG JSON adapter、本地容器入口、provider-neutral locator schema、capture/typed error/预算/去重与禁止 Evidence 晋升测试。它不是生产 Provider，也不授权新 DELL live。
-11. `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_BOUNDED_NETWORK_BASELINE`：仅在 adapter 零调用证明后另行执行；用预注册查询和 evaluator-only target 测量 engine participation、unresponsive engine、canonical locator coverage、duplicate/currentness metadata availability。结果只能形成诊断基线，供未来付费 API 同口径对照。
+10. [x] `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_ADAPTER_ZERO_CALL_IMPLEMENTATION_AND_PROOF`：diagnostic-only JSON adapter、本地容器、provider-neutral locator、capture/typed error/预算/去重/no-promotion 均已实现；clean v1.1=`15 passed`、三案 full-fake、`9 captures / 0 network / 0 model / 0 promotion`。首次部署 launcher 与搜索式 healthcheck 失败均保留，修复后只读本地探活通过。
+11. [ ] **当前下一项 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_BOUNDED_NETWORK_BASELINE`**：用 DELL/MU/NVDA 各一个预注册 query 测量 engine participation、unresponsive engine、canonical locator coverage、duplicate/currentness metadata availability；FIN query ceiling=`3`、configured engine ceiling/query=`4`、retry=`0`。结果只能形成诊断基线，供未来付费 API 同口径对照；SearXNG 内部 HTTP fan-out 不能伪报为 exact 3 calls。
 12. `S1-08-P3B/P4`：结合 P3A 与 diagnostic provider 对照，再由 Owner 复核生产 Provider、Internal Alpha source claim 与 no-R4。只有新的 DELL product-live 被单独批准且 candidate ceiling 通过，才可能恢复 MU/NVDA bounded transfer和 ranking。
 13. `DS-A1/A2/A3`：冻结 model-family capability profile，完成 evidence-role/judgment atom 与 protected narrative 门；只对实际变化 family 做一个自然 canary。
 14. `S3-06/07`：Lead 根据真实 Search Quality Card 编译动态 DecisionSurface、发起 EvidenceRequest、执行 targeted repair；调用预算由未闭合 Evidence Slot/Cell 决定，不再把“9 次调用”当产品设计目标。
@@ -458,11 +458,12 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 20. [x] 以独立 Attempt 签发并执行唯一 DELL R3：`15 network / 0 model-provider-retry / 0 candidate / 5 gaps`；terminal/capture 完整但 candidate ceiling 失败，no-R4 生效。
 21. [x] 完成零调用 `S1_08_P3_POST_R3_OWNED_SCHEDULER_CACHE_AND_PROVIDER_PRODUCT_SCOPE_DISPOSITION_DECISION`：选择 repair-first，Provider／产品来源范围 deferred，no-R4 与 16-call ceiling 不变。
 22. [x] `S1_08_P3A_PROTECTED_DOCUMENT_FETCH_BUDGET_AND_ATTEMPT_LOCAL_CACHE_ZERO_CALL_IMPLEMENTATION_AND_PROOF`：A2 clean proof pass，P3A independently proven，外部调用、admission 与 live 均为 0。
-23. [ ] **当前下一项**：实现并零调用证明 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_ADAPTER_ZERO_CALL_IMPLEMENTATION_AND_PROOF`；完成后另设有界 network baseline，不把 SearXNG 计为生产能力。
-24. [ ] Provider 对照后由 Owner 单独决定 production Provider／source claim／no-R4；在此之前不命名或签发新 DELL product-live。
-25. [ ] 在冻结 Evidence Pack 上完成 `DS-A1/A2/A3` ModelCapabilityProfile、DeepSeek profile、AutonomyGrant 与最小 natural canary；可做零调用准备，但在 S1 candidate ceiling 未解锁前不得进入 S3 formal run。
-26. [ ] 完成 `013-S3-06–09`：动态 Lead loop、研究方法 runtime injection/node consumption、EvidenceRequest/targeted repair、三案 Experiment B、隐藏 Gold 八维对照、paired gain 与 qualified-human 内容验收。
-27. [ ] 执行 FIN 0.1.3 current S4 Workbench dogfood，再执行 S5 RG1–RG5；只有内容合格的 current candidate 可获得 FIN 0.1.3 内部版本收口结论。
+23. [x] 实现并零调用证明 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_ADAPTER_ZERO_CALL_IMPLEMENTATION_AND_PROOF`；clean v1.1 通过，失败部署尝试保留，SearXNG 仍不计生产能力。
+24. [ ] **当前下一项**：执行一次 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_BOUNDED_NETWORK_BASELINE`，最多三个 FIN query、0 retry、0 Evidence promotion；结果只用于未来付费 API 对照。
+25. [ ] Provider 对照后由 Owner 单独决定 production Provider／source claim／no-R4；在此之前不命名或签发新 DELL product-live。
+26. [ ] 在冻结 Evidence Pack 上完成 `DS-A1/A2/A3` ModelCapabilityProfile、DeepSeek profile、AutonomyGrant 与最小 natural canary；可做零调用准备，但在 S1 candidate ceiling 未解锁前不得进入 S3 formal run。
+27. [ ] 完成 `013-S3-06–09`：动态 Lead loop、研究方法 runtime injection/node consumption、EvidenceRequest/targeted repair、三案 Experiment B、隐藏 Gold 八维对照、paired gain 与 qualified-human 内容验收。
+28. [ ] 执行 FIN 0.1.3 current S4 Workbench dogfood，再执行 S5 RG1–RG5；只有内容合格的 current candidate 可获得 FIN 0.1.3 内部版本收口结论。
 
 > **2026-08-07 `013-S1-06` 已 `L4_scope_pass`**：根因审计确认 registry 有 9 个业务工具而 stdio server 只暴露 6 个；SEC handler 即使 `rerank_budget=0` 仍强制加载 Linux 默认 BGE 路径，约 56 秒后才失败。结构包已完成 server/registry parity、版本化 canonical resource profile、显式 BM25-only operational mode、可复用进程 supervisor、cold/warm/phase receipt、timeout/cancel/process-tree no-orphan 以及 typed missing-reranker failure。focused/broader=`23/53 passed`、stdio=`10 tools`；clean/synced `ab638c38` proof 全过，SEC cold/warm=`13,750/104 ms`、Exact Ledger=`1,317 ms`、market=`3 ms`，missing reranker 在 handler 前约 `1 ms` typed fail，close 后 no orphan。RC-P36-140 closed。S1-07/08、BGE/Milvus 质量、外网 current-source acquisition 与模型调用仍未开始；当前下一项仅为 `013-S1-07`。
 

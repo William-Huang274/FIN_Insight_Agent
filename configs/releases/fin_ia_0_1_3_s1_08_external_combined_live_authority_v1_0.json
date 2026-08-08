@@ -1,0 +1,67 @@
+{
+  "authority_digest": "282f7c3810a0033efd0f22a5bfca6dd33f77d8bdc301ca0e5ca6d42cf2107de7",
+  "capture_and_authority": {
+    "evidence_gate_not_executed": true,
+    "firecrawl_candidate_only": true,
+    "no_reranker_rescue": true,
+    "partial_results_preserved": true,
+    "provider_date_not_financial_authority": true,
+    "raw_response_or_typed_failure_before_parse": true,
+    "safe_request_before_network": true,
+    "shared_exact_once_ledger_required": true
+  },
+  "contract_ref": "fin_0_1_3.S1_08.external_official_firecrawl_shadow_combined:v1",
+  "decision": {
+    "fresh_combined_live_authorized": true,
+    "internal_retrieval_authorized_by_this_decision": false,
+    "next": "ISSUE_ONE_FRESH_ADMISSION_THEN_EXECUTE_EXACT_ONCE_AND_ASSESS_EXTERNAL_CANDIDATE_QUALITY"
+  },
+  "exact_live_authority": {
+    "automatic_replacement": false,
+    "embedding_call_ceiling": 0,
+    "evidence_promotion_ceiling": 0,
+    "fallback_ceiling": 0,
+    "firecrawl_shadow_network_call_ceiling": 24,
+    "maximum_admissions": 1,
+    "maximum_executions": 1,
+    "model_call_ceiling": 0,
+    "network_call_ceiling": 72,
+    "official_network_call_ceiling": 48,
+    "overall_timeout_seconds": 900,
+    "per_call_timeout_seconds": 30,
+    "provider_call_ceiling": 24,
+    "rerank_call_ceiling": 0,
+    "retry_ceiling": 0,
+    "scope": "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE"
+  },
+  "immutable_bindings": {
+    "clean_zero_call_preflight_digest": "b7b073c391d532656b137525069218059c9ffdda0d7104a516d59bbe093bc670",
+    "implementation_git_commit": "3e6ab5cf7e8742d320041fa76fba1eb6df737b0f",
+    "plan_digest": "7497f783032b80054763ec9075a2851745bb855475094bba48f504ea10d9d39b",
+    "plan_sha256": "2f179b20288e311b7f4817f59b5ef431cacbc3bbae9aa0814ff5defcc29f2a6c",
+    "policy_sha256": "ec61816bccfaf1a649a92485f954ff6a61f1dc53d9a4cfbd6e3558710e384f49",
+    "proof_digest": "39bb8cb42512f856ef2f792096cf20ecc27617b6697249ff9908e01f77580007",
+    "runner_sha256": "3d70b4502c3eed45cf4a0d5207bf4763f530ad6da917a2397003dd957b991a2b",
+    "runtime_module_sha256": "84e1ce49788ea27d371371570d16895ba8bbe4009328c8b479ab99b2e8980d52",
+    "zero_call_proof_sha256": "4b1c43d0a75c0a716e574e5bd346bdceba17ed692aa96cf13b3de6241e71d1ac"
+  },
+  "known_boundary": "This authority permits one bounded external combined run only. It does not establish source recall, Evidence quality, internal retrieval, BGE/fusion/rerank value, downstream research quality, S1-08 acceptance or release readiness.",
+  "recorded_at": "2026-08-09",
+  "schema_version": "fin_ia_0_1_3_s1_08_external_combined_live_authority_v1_0",
+  "status": "approved_one_external_combined_exact_live",
+  "verification": {
+    "all_S1_08_tests_passed": 273,
+    "focused_tests_passed": 11,
+    "real_provider_network_model_document_evidence_embedding_rerank_calls": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "tests_failed": 0,
+    "tests_skipped": 0
+  }
+}

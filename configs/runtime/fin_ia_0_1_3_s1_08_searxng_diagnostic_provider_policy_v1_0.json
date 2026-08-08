@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_searxng_diagnostic_provider_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.searxng_diagnostic_locator_provider:v1",
+  "provider_id": "self_hosted_searxng_diagnostic_v1",
+  "provider_kind": "diagnostic_locator_provider",
+  "base_url": "http://127.0.0.1:8888",
+  "endpoint": "/search",
+  "authentication": "none",
+  "allowed_case_keys": [
+    "DELL",
+    "MU",
+    "NVDA"
+  ],
+  "query_contract": {
+    "max_query_chars": 500,
+    "allowed_categories": [
+      "general",
+      "news"
+    ],
+    "allowed_time_ranges": [
+      "",
+      "day",
+      "month",
+      "year"
+    ],
+    "required_format": "json",
+    "request_method": "GET"
+  },
+  "budgets": {
+    "query_call_ceiling": 3,
+    "result_ceiling_per_query": 20,
+    "byte_ceiling_per_response": 1000000,
+    "timeout_seconds": 20,
+    "redirect_ceiling": 2,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0
+  },
+  "capture_contract": {
+    "capture_request_before_transport": true,
+    "capture_response_before_parse": true,
+    "retain_complete_bounded_body": true,
+    "credential_cookie_authorization_present": false,
+    "content_addressed": true
+  },
+  "capability_boundary": {
+    "promotion_status": "diagnostic_locator_only",
+    "evidence_promotion_allowed": false,
+    "writer_citable": false,
+    "domain_judgment_eligible": false,
+    "financial_fact_authority": false,
+    "numeric_authority": "none",
+    "production_capability_claim_allowed": false
+  },
+  "initial_diagnostic_baseline": {
+    "case_order": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "maximum_queries": 3,
+    "maximum_network_calls": 3,
+    "retry_count": 0,
+    "public_instance_fallback_allowed": false,
+    "downstream_document_fetch_allowed": false,
+    "evidence_gate_entry_allowed": false
+  }
+}

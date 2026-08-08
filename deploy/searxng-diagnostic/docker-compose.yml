@@ -1,0 +1,30 @@
+services:
+  searxng-diagnostic:
+    image: ghcr.io/searxng/searxng:2026.7.28-c01178d03@sha256:80622959f0f3512e6623d6bdbcea9f13c8d22c8d9715c498d0ae2be1c8535930
+    platform: linux/amd64
+    container_name: fin-searxng-diagnostic
+    restart: "no"
+    ports:
+      - "127.0.0.1:8888:8080"
+    environment:
+      SEARXNG_SECRET: "${SEARXNG_SECRET:?Set an ephemeral SEARXNG_SECRET before starting the diagnostic service}"
+      SEARXNG_BASE_URL: "http://127.0.0.1:8888/"
+      SEARXNG_BIND_ADDRESS: "0.0.0.0"
+      SEARXNG_PORT: "8080"
+      SEARXNG_LIMITER: "false"
+      SEARXNG_PUBLIC_INSTANCE: "false"
+    volumes:
+      - ./settings.yml:/etc/searxng/settings.yml:ro
+      - searxng-diagnostic-cache:/var/cache/searxng
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          wget -qO- 'http://127.0.0.1:8080/search?q=health&format=json' >/dev/null || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+volumes:
+  searxng-diagnostic-cache:

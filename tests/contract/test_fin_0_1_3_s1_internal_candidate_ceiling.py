@@ -49,7 +49,7 @@ def _request(proof: dict, route: str, case: str, slot: str, owner: str) -> dict:
     )
 
 
-def test_policy_binds_historical_scopes_and_source_acquisition_is_current() -> None:
+def test_policy_binds_historical_scopes_and_supplemental_refresh_is_current() -> None:
     policy, proof = _policy_and_proof()
     assert policy["run_scope"] == RUN_SCOPE
     assert proof["physical_request_count"] == 90
@@ -58,11 +58,11 @@ def test_policy_binds_historical_scopes_and_source_acquisition_is_current() -> N
     refresh = run_project_os_preflight(
         ROOT, run_scope="S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH"
     )
-    assert refresh["status"] == "blocked"
+    assert refresh["status"] == "pass"
     current = run_project_os_preflight(
         ROOT, run_scope="S1_INTERNAL_CURRENT_OFFICIAL_SOURCE_ACQUISITION"
     )
-    assert current["status"] == "pass"
+    assert current["status"] == "blocked"
     assert (
         run_project_os_preflight(
             ROOT, run_scope="S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION"

@@ -1,0 +1,435 @@
+{
+  "admission_digest": "a0692e6059be6ab02e446752a6adf3e0d0cac6868e7698c638c1fb5aa070421d",
+  "attempt_id": "fin013_s1_internal_source_attempt_8e7698c638c1fb5aa070",
+  "capture_refs": [
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 479,
+      "digest": "61111cbe7af764b9bbe54aba118834f60e6eeaf5beddec43c0c4089eb483f3c6",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/61/11/61111cbe7af764b9bbe54aba118834f60e6eeaf5beddec43c0c4089eb483f3c6.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 211181,
+      "digest": "7c72781177dd66bfd0fc1fe8a39a8a8780fe8e2c6521f474b70700784847e3f5",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/7c/72/7c72781177dd66bfd0fc1fe8a39a8a8780fe8e2c6521f474b70700784847e3f5.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 513,
+      "digest": "f0c81f8a235ef3fd3b5c2df0ee6d920545c5a310f6793bbd58442b67e6490a33",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/f0/c8/f0c81f8a235ef3fd3b5c2df0ee6d920545c5a310f6793bbd58442b67e6490a33.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 4737685,
+      "digest": "2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/22/71/2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 476,
+      "digest": "f393366a66dec8d58407be5b00e210fce056fafe2b002750566031ac46232aaf",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/f3/93/f393366a66dec8d58407be5b00e210fce056fafe2b002750566031ac46232aaf.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 220486,
+      "digest": "61e9c587df8464dfbe64d9249a659bfab712100be2f74a8ff4c5495a789bad9f",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/61/e9/61e9c587df8464dfbe64d9249a659bfab712100be2f74a8ff4c5495a789bad9f.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 507,
+      "digest": "c0bf90745693ca0929d7708649bf2b1a931d37e75296d2304bddf9fa2a8b7c56",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/c0/bf/c0bf90745693ca0929d7708649bf2b1a931d37e75296d2304bddf9fa2a8b7c56.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 38926,
+      "digest": "3fba49bf1ff31cbe9f252499fcba04cff6c643c53bef033ade9194e382095b89",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/3f/ba/3fba49bf1ff31cbe9f252499fcba04cff6c643c53bef033ade9194e382095b89.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 521,
+      "digest": "cbe026bb0b7b4b36e91bbea4a4bd56913c7febf468b60c5b99fe3b9492333a65",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/cb/e0/cbe026bb0b7b4b36e91bbea4a4bd56913c7febf468b60c5b99fe3b9492333a65.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 389548,
+      "digest": "23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/23/c9/23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 476,
+      "digest": "81dad7ddcde4377a2706a71352fd234377716e8fab2d66783044d9f7b7b63063",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/81/da/81dad7ddcde4377a2706a71352fd234377716e8fab2d66783044d9f7b7b63063.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 218758,
+      "digest": "71b11998dca47594e3b73ceec529401dc65717627ee6028f296631561b5f7268",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/71/b1/71b11998dca47594e3b73ceec529401dc65717627ee6028f296631561b5f7268.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 512,
+      "digest": "5b2b79a481c1ff9a0e36acb427e08828b1a5b42366da9fda05820612eadfac27",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/5b/2b/5b2b79a481c1ff9a0e36acb427e08828b1a5b42366da9fda05820612eadfac27.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 24371,
+      "digest": "28ffd5e741932a04b4dfccf28df06eebf52263462c91bdf9a81c05e7444cb0a7",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/28/ff/28ffd5e741932a04b4dfccf28df06eebf52263462c91bdf9a81c05e7444cb0a7.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 522,
+      "digest": "d2197a1bbce8e0808bb2410316f959b40ee7fd79abaa1f0e47a48f0acc58dac5",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/d2/19/d2197a1bbce8e0808bb2410316f959b40ee7fd79abaa1f0e47a48f0acc58dac5.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 38205,
+      "digest": "5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/5a/9e/5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64.json"
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S1.internal_current_official_source_acquisition:v1",
+  "execution_environment_guard": {
+    "all_forbidden_addresses_controlled_synthetic": true,
+    "decision_digest": "a1034e1bd60442d8d2201c0caf0ec4d9f785c60a5859f911af1c5a7ff97fae2c",
+    "guard": "public_allowlist_plus_controlled_198_18_0_0_15_proxy_v1",
+    "host_count": 2,
+    "resolved_hosts": [
+      {
+        "address_count": 1,
+        "controlled_synthetic_range_observed": true,
+        "host": "data.sec.gov"
+      },
+      {
+        "address_count": 1,
+        "controlled_synthetic_range_observed": true,
+        "host": "www.sec.gov"
+      }
+    ],
+    "synthetic_allowance_required": true
+  },
+  "known_boundary": "This exact-once run uses typed issuer/form/period criteria and SEC submissions, not benchmark URLs, to repair a bounded local corpus. It does not close the independent broad external-search blocker.",
+  "observed_at": "2026-08-08T20:08:19Z",
+  "observed_counts": {
+    "acquired": 3,
+    "embedding_calls": 0,
+    "evidence_promotion_calls": 0,
+    "model_calls": 0,
+    "network_calls": 8,
+    "provider_calls": 0,
+    "rerank_calls": 0,
+    "retry_calls": 0,
+    "targets": 3,
+    "typed_gaps": 0
+  },
+  "policy_digest": "a030ce057d8eda71a17cc6caaba7698c66722f1bae32c6fb80a1361ff05de003",
+  "public_private_separation": {
+    "captured_source_is_business_evidence": false,
+    "credentials_authorization_headers_or_cookies_saved": false,
+    "raw_requests_responses_and_parsed_text_retained_outside_git": true,
+    "runtime_root_ref": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1"
+  },
+  "public_record_digest": "e515dd1401b6096fece8aeb01867afd4954be69b9c2f9c5e9e2a68fdf2a92fc9",
+  "result_digest": "bcfacc7fa42b89c3b542f576cd4d3d14adac4eb049b8fdca2f12c83a5148264f",
+  "run_id": "fin013_s1_internal_source_run_6752a6adf3e0d0cac686",
+  "run_scope": "S1_INTERNAL_CURRENT_OFFICIAL_SOURCE_ACQUISITION",
+  "schema_version": "fin_ia_0_1_3_s1_internal_current_source_acquisition_result_v1_0",
+  "shared_admission_receipt": {
+    "admission_digest": "a0692e6059be6ab02e446752a6adf3e0d0cac6868e7698c638c1fb5aa070421d",
+    "admission_id": "fin013_s1_internal_source_admission_a0692e6059be6ab02e44",
+    "attempt_id": "fin013_s1_internal_source_attempt_8e7698c638c1fb5aa070",
+    "finalized_at": "2026-08-08T20:08:19Z",
+    "receipt_digest": "544abb993ecaa618eb069952321af9080340781c93f0fb7f907301c79c6b2eab",
+    "reservation_digest": "bf29abf5ceb1b7248d89d14b6ca36a7665527c4d9a8f04896c15362ff9b2953b",
+    "reserved_at": "2026-08-08T20:08:19Z",
+    "run_id": "fin013_s1_internal_source_run_6752a6adf3e0d0cac686",
+    "runtime_identity": "D:\\FIN_Insight_Agent\\data\\workbench_private\\fin_0_1_3_s1_internal_current_source_acquisition\\live-r1",
+    "schema_version": "fin_ia_shared_admission_consumption_ledger_v1_0",
+    "scope": "fin_0_1_3.S1.internal_current_official_source_acquisition:v1",
+    "state": "terminal",
+    "terminal_code": "all_targets_captured_parsed_and_marker_bound",
+    "terminal_phase": "internal_current_official_source_acquisition_terminal",
+    "terminal_result_digest": "bcfacc7fa42b89c3b542f576cd4d3d14adac4eb049b8fdca2f12c83a5148264f",
+    "terminal_status": "success"
+  },
+  "source_results": [
+    {
+      "attempts": [
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 479,
+            "digest": "61111cbe7af764b9bbe54aba118834f60e6eeaf5beddec43c0c4089eb483f3c6",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/61/11/61111cbe7af764b9bbe54aba118834f60e6eeaf5beddec43c0c4089eb483f3c6.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 211181,
+            "digest": "7c72781177dd66bfd0fc1fe8a39a8a8780fe8e2c6521f474b70700784847e3f5",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/7c/72/7c72781177dd66bfd0fc1fe8a39a8a8780fe8e2c6521f474b70700784847e3f5.json"
+          },
+          "route_id": "DELL_FY2026_ANNUAL_REGULATORY:sec_submissions",
+          "status": "captured"
+        },
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 513,
+            "digest": "f0c81f8a235ef3fd3b5c2df0ee6d920545c5a310f6793bbd58442b67e6490a33",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/f0/c8/f0c81f8a235ef3fd3b5c2df0ee6d920545c5a310f6793bbd58442b67e6490a33.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 4737685,
+            "digest": "2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/22/71/2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388.json"
+          },
+          "route_id": "DELL_FY2026_ANNUAL_REGULATORY:primary_document",
+          "status": "captured"
+        }
+      ],
+      "benchmark_exact_url_used_for_discovery": false,
+      "candidate_state": "captured_source_not_evidence",
+      "expected_source_refs": [
+        "SRC_DELL_FY26_10K"
+      ],
+      "failure_code": "",
+      "result_digest": "5a768722a588e9004264cd5b8c042c2ee1319e10d6d6f3842517b1e69819f6a7",
+      "source": {
+        "accession_number": "0001571996-26-000008",
+        "filing_date": "2026-03-16",
+        "form_type": "10-K",
+        "parsed_capture_digest": "4643bf966f7122dc648f3560b9df58f87cca0bee5b60e2a65d34545077c29b24",
+        "parsed_capture_ref": "fin-0.1.3/s1-internal-current-source-acquisition/parsed/46/43/4643bf966f7122dc648f3560b9df58f87cca0bee5b60e2a65d34545077c29b24.json",
+        "parsed_text_chars": 542080,
+        "parser_adapter": "official_source_html_text_v1",
+        "parser_text_digest": "e39f4a38fc764f103dd3a8a4908e8f4e52c327f435fd2831ed32778a3f634116",
+        "primary_document": "dell-20260130.htm",
+        "report_date": "2026-01-30",
+        "response_capture_digest": "2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388",
+        "response_capture_ref": "fin-0.1.3/s1-internal-current-source-acquisition/raw/22/71/2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388.json",
+        "selected_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000008/dell-20260130.htm",
+        "selection": "primary_document"
+      },
+      "status": "captured_parsed_target_markers_pass",
+      "target_id": "DELL_FY2026_ANNUAL_REGULATORY",
+      "ticker": "DELL"
+    },
+    {
+      "attempts": [
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 476,
+            "digest": "f393366a66dec8d58407be5b00e210fce056fafe2b002750566031ac46232aaf",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/f3/93/f393366a66dec8d58407be5b00e210fce056fafe2b002750566031ac46232aaf.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 220486,
+            "digest": "61e9c587df8464dfbe64d9249a659bfab712100be2f74a8ff4c5495a789bad9f",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/61/e9/61e9c587df8464dfbe64d9249a659bfab712100be2f74a8ff4c5495a789bad9f.json"
+          },
+          "route_id": "MU_Q3_FY2026_CURRENT_RESULTS:sec_submissions",
+          "status": "captured"
+        },
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 507,
+            "digest": "c0bf90745693ca0929d7708649bf2b1a931d37e75296d2304bddf9fa2a8b7c56",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/c0/bf/c0bf90745693ca0929d7708649bf2b1a931d37e75296d2304bddf9fa2a8b7c56.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 38926,
+            "digest": "3fba49bf1ff31cbe9f252499fcba04cff6c643c53bef033ade9194e382095b89",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/3f/ba/3fba49bf1ff31cbe9f252499fcba04cff6c643c53bef033ade9194e382095b89.json"
+          },
+          "route_id": "MU_Q3_FY2026_CURRENT_RESULTS:primary_document",
+          "status": "captured"
+        },
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 521,
+            "digest": "cbe026bb0b7b4b36e91bbea4a4bd56913c7febf468b60c5b99fe3b9492333a65",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/cb/e0/cbe026bb0b7b4b36e91bbea4a4bd56913c7febf468b60c5b99fe3b9492333a65.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 389548,
+            "digest": "23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/23/c9/23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846.json"
+          },
+          "route_id": "MU_Q3_FY2026_CURRENT_RESULTS:selected_exhibit",
+          "status": "captured"
+        }
+      ],
+      "benchmark_exact_url_used_for_discovery": false,
+      "candidate_state": "captured_source_not_evidence",
+      "expected_source_refs": [
+        "SRC_MU_Q3_FY26_RESULTS",
+        "SRC_MU_Q3_FY26_REMARKS"
+      ],
+      "failure_code": "",
+      "result_digest": "fe1206a64c98657af76c138152885adc9c451af8e4ea8105124c73e5f1cd0e8a",
+      "source": {
+        "accession_number": "0000723125-26-000013",
+        "filing_date": "2026-06-24",
+        "form_type": "8-K",
+        "parsed_capture_digest": "60e9408aa55d37aaee9b0817a035de0916457b86adddaaf1224596fc83524d87",
+        "parsed_capture_ref": "fin-0.1.3/s1-internal-current-source-acquisition/parsed/60/e9/60e9408aa55d37aaee9b0817a035de0916457b86adddaaf1224596fc83524d87.json",
+        "parsed_text_chars": 17661,
+        "parser_adapter": "official_source_html_text_v1",
+        "parser_text_digest": "99f278ba6085a82a5e98c91464acdc98baf4ce2de76f979e0bf50bfb67f574c7",
+        "primary_document": "mu-20260624.htm",
+        "report_date": "2026-06-24",
+        "response_capture_digest": "23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846",
+        "response_capture_ref": "fin-0.1.3/s1-internal-current-source-acquisition/raw/23/c9/23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846.json",
+        "selected_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+        "selection": "same_accession_exhibit"
+      },
+      "status": "captured_parsed_target_markers_pass",
+      "target_id": "MU_Q3_FY2026_CURRENT_RESULTS",
+      "ticker": "MU"
+    },
+    {
+      "attempts": [
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 476,
+            "digest": "81dad7ddcde4377a2706a71352fd234377716e8fab2d66783044d9f7b7b63063",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/81/da/81dad7ddcde4377a2706a71352fd234377716e8fab2d66783044d9f7b7b63063.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 218758,
+            "digest": "71b11998dca47594e3b73ceec529401dc65717627ee6028f296631561b5f7268",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/71/b1/71b11998dca47594e3b73ceec529401dc65717627ee6028f296631561b5f7268.json"
+          },
+          "route_id": "TSM_Q2_2026_CURRENT_RESULTS:sec_submissions",
+          "status": "captured"
+        },
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 512,
+            "digest": "5b2b79a481c1ff9a0e36acb427e08828b1a5b42366da9fda05820612eadfac27",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/5b/2b/5b2b79a481c1ff9a0e36acb427e08828b1a5b42366da9fda05820612eadfac27.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 24371,
+            "digest": "28ffd5e741932a04b4dfccf28df06eebf52263462c91bdf9a81c05e7444cb0a7",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/28/ff/28ffd5e741932a04b4dfccf28df06eebf52263462c91bdf9a81c05e7444cb0a7.json"
+          },
+          "route_id": "TSM_Q2_2026_CURRENT_RESULTS:primary_document",
+          "status": "captured"
+        },
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 522,
+            "digest": "d2197a1bbce8e0808bb2410316f959b40ee7fd79abaa1f0e47a48f0acc58dac5",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/d2/19/d2197a1bbce8e0808bb2410316f959b40ee7fd79abaa1f0e47a48f0acc58dac5.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 38205,
+            "digest": "5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-internal-current-source-acquisition/raw/5a/9e/5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64.json"
+          },
+          "route_id": "TSM_Q2_2026_CURRENT_RESULTS:selected_exhibit",
+          "status": "captured"
+        }
+      ],
+      "benchmark_exact_url_used_for_discovery": false,
+      "candidate_state": "captured_source_not_evidence",
+      "expected_source_refs": [
+        "SRC_TSMC_Q2_2026_RESULTS"
+      ],
+      "failure_code": "",
+      "result_digest": "5992e53d3e51b305c82a4f3c16256049f501095399b6a050eb1e02efe5bbcc98",
+      "source": {
+        "accession_number": "0001046179-26-000451",
+        "filing_date": "2026-07-16",
+        "form_type": "6-K",
+        "parsed_capture_digest": "2d849df1084afe050c0d56a8c1ef1e2b078c638991b384bd3aef2f3322e5e2bd",
+        "parsed_capture_ref": "fin-0.1.3/s1-internal-current-source-acquisition/parsed/2d/84/2d849df1084afe050c0d56a8c1ef1e2b078c638991b384bd3aef2f3322e5e2bd.json",
+        "parsed_text_chars": 3881,
+        "parser_adapter": "official_source_html_text_v1",
+        "parser_text_digest": "2e82177fda0e8628992c4878ae1f8bf819983146e17c3ba715a836bde55c7172",
+        "primary_document": "tsm-20260716x6k.htm",
+        "report_date": "2026-06-30",
+        "response_capture_digest": "5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64",
+        "response_capture_ref": "fin-0.1.3/s1-internal-current-source-acquisition/raw/5a/9e/5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64.json",
+        "selected_url": "https://www.sec.gov/Archives/edgar/data/1046179/000104617926000451/a2q26e_withguidancexfinal.htm",
+        "selection": "same_accession_exhibit"
+      },
+      "status": "captured_parsed_target_markers_pass",
+      "target_id": "TSM_Q2_2026_CURRENT_RESULTS",
+      "ticker": "TSM"
+    }
+  ],
+  "stage_boundary": {
+    "BGE_fusion_rerank_admitted": false,
+    "candidate_ceiling_proven": false,
+    "evidence_or_release": false,
+    "generic_external_discovery_proven": false,
+    "internal_corpus_source_acquisition_proven": true
+  },
+  "status": "completed_all_targets_acquired"
+}

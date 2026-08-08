@@ -768,6 +768,11 @@ def _execute_lexical_request(
                         lineage.get("resolution_method") or ""
                     ),
                     "lineage_manifest_ref": str(lineage.get("manifest_ref") or ""),
+                    "retrieval_asset_id": str(
+                        row.get("retrieval_asset_id")
+                        or record.get("retrieval_asset_id")
+                        or ""
+                    ),
                     "preview": _clip(preview),
                     "temporal_filter_partition_ids": sorted(
                         {

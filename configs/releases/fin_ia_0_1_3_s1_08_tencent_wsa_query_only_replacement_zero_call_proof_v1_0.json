@@ -1,0 +1,50 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_query_only_replacement_zero_call_proof_v1_0",
+  "recorded_at": "2026-08-08",
+  "status": "zero_call_contract_pass",
+  "governing_issue_id": "RC-P36-157-fin-0-1-3-s1-08-operational-provider-and-candidate-coverage-insufficient",
+  "run_scope": "S1_08_PAID_BROAD_SEARCH_TENCENT_WSA_QUERY_ONLY_REPLACEMENT_DIAGNOSTIC",
+  "predecessor": {
+    "attempt_id": "fin013-s1-08-tencent-wsa-single-call-diagnostic-r1",
+    "result_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_single_call_diagnostic_result_v1_0.json",
+    "result_sha256": "2a0dcbb1866c0f6d05dd50af6da7b3907692a6cef94c261ae240a7dda740834e",
+    "result_digest": "992f10b4a9a26ebdfdf21a88258f8b0d68f5ffd17a7bb4017741e4ba59b57f2f",
+    "failure_assessment_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_single_call_diagnostic_failure_assessment_v1_0.json",
+    "failure_assessment_sha256": "8ee47be33ef166618ba5148897a36925c3cd845d1ce0854ad8f7b0d0c2ab8945"
+  },
+  "provider_profile": {
+    "ref": "configs/runtime/fin_ia_0_1_3_s1_08_tencent_wsa_candidate_provider_profile_v1_0.json",
+    "sha256": "ba327e02aa7ec7896b6617e5cf8d809ba439ea9c36b75de88c7b7fcadf3356fb",
+    "digest": "dc249a8716081e3495e7376accfb48ac433aec9080d1baed90a9e3b70ed8622c"
+  },
+  "implementation": {
+    "support_ref": "src/sec_agent/s1_08_tencent_wsa_query_only_replacement.py",
+    "support_sha256": "4a639c57ffb38723c197013b2325a4aa7d79e4b7294415a24e82164110cc3801",
+    "runner_ref": "scripts/releases/run_fin_ia_0_1_3_s1_08_tencent_wsa_query_only_replacement_diagnostic.py",
+    "runner_sha256": "29e4dede4a6828b232ed7ebff0abc2863bab3d779af55f1291c784e562d4dd57",
+    "normalizer_ref": "src/sec_agent/s1_08_tencent_wsa_candidate_diagnostic.py",
+    "normalizer_sha256": "df1a34bf036424255de4ea0de529c6e73e0d6cf1bcb4345ae5eccefb71039bdf"
+  },
+  "compiled_request_contract": {
+    "request_body_fields": ["Query"],
+    "optional_fields": [],
+    "mode_present": false,
+    "capture_before_transport": true,
+    "credential_or_signature_capture_allowed": false
+  },
+  "verification": {
+    "targeted_tests_passed": 15,
+    "targeted_tests_failed": 0,
+    "compile_pass": true,
+    "optional_field_mutations_rejected": ["Mode", "Site", "Cnt", "Freshness"],
+    "project_os_scope_registered": true,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "retry_calls": 0,
+    "model_calls": 0,
+    "document_fetches": 0,
+    "evidence_promotions": 0
+  },
+  "hard_boundary": "This proves only the successor compiler, capture, terminal, immutable predecessor bindings and registered scope without network access. It does not issue or consume a live admission and does not establish Tencent WSA availability, quality or production eligibility.",
+  "proof_digest": "5cca0a55ef1de6d3fd67e240e15556fc8804c4d4c73b80717ce9dfc1e4e19773"
+}

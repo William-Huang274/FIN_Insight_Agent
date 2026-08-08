@@ -1,0 +1,69 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_query_only_replacement_authority_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.tencent_wsa_query_only_replacement:v1",
+  "recorded_at": "2026-08-08",
+  "status": "issued_unconsumed",
+  "admission_id": "fin013-s1-08-tencent-wsa-query-only-replacement-r2",
+  "predecessor_attempt_id": "fin013-s1-08-tencent-wsa-single-call-diagnostic-r1",
+  "owner_authority": "The user supplied a newly created Tencent Cloud subaccount API key and explicitly directed the project to continue with the previously proposed Query-only replacement diagnostic.",
+  "authorized_scope": "S1_08_PAID_BROAD_SEARCH_TENCENT_WSA_QUERY_ONLY_REPLACEMENT_DIAGNOSTIC",
+  "provider_profile_ref": "configs/runtime/fin_ia_0_1_3_s1_08_tencent_wsa_candidate_provider_profile_v1_0.json",
+  "runner_ref": "scripts/releases/run_fin_ia_0_1_3_s1_08_tencent_wsa_query_only_replacement_diagnostic.py",
+  "support_ref": "src/sec_agent/s1_08_tencent_wsa_query_only_replacement.py",
+  "zero_call_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_query_only_replacement_zero_call_proof_v1_0.json",
+  "immutable_bindings": {
+    "provider_profile_sha256": "ba327e02aa7ec7896b6617e5cf8d809ba439ea9c36b75de88c7b7fcadf3356fb",
+    "provider_profile_digest": "dc249a8716081e3495e7376accfb48ac433aec9080d1baed90a9e3b70ed8622c",
+    "runner_sha256": "29e4dede4a6828b232ed7ebff0abc2863bab3d779af55f1291c784e562d4dd57",
+    "support_sha256": "4a639c57ffb38723c197013b2325a4aa7d79e4b7294415a24e82164110cc3801",
+    "normalizer_sha256": "df1a34bf036424255de4ea0de529c6e73e0d6cf1bcb4345ae5eccefb71039bdf",
+    "predecessor_result_sha256": "2a0dcbb1866c0f6d05dd50af6da7b3907692a6cef94c261ae240a7dda740834e",
+    "predecessor_assessment_sha256": "8ee47be33ef166618ba5148897a36925c3cd845d1ce0854ad8f7b0d0c2ab8945",
+    "zero_call_proof_sha256": "3ac4dfef0e44fa80c4c471bab507976d2c97bfd8bbbb00ae888840e16f8f8c67",
+    "zero_call_proof_digest": "5cca0a55ef1de6d3fd67e240e15556fc8804c4d4c73b80717ce9dfc1e4e19773"
+  },
+  "sdk_contract": {
+    "package": "tencentcloud-sdk-python",
+    "tested_version": "3.1.152",
+    "runtime_location": ".codex_runtime/tencent-wsa-sdk",
+    "repository_dependency_added": false
+  },
+  "query": {
+    "query_id": "DELL-TENCENT-WSA-QUERY-ONLY-R2-Q1",
+    "case_key": "DELL",
+    "semantic_intent_ref": "DELL-DIAGNOSTIC-Q1",
+    "query_text": "Dell AI server demand customers supply chain 2026 earnings industry",
+    "request_body_fields": ["Query"],
+    "optional_fields": [],
+    "result_ceiling": 10
+  },
+  "execution_contract": {
+    "provider_call_ceiling": 1,
+    "network_call_ceiling": 1,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0,
+    "document_fetch_ceiling": 0,
+    "maximum_documented_cost_cny": 0.08,
+    "credentials_interactive_hidden_only": true,
+    "credentials_or_signatures_may_be_persisted": false,
+    "safe_request_capture_before_transport_required": true,
+    "raw_response_or_failure_capture_before_parse_required": true,
+    "evidence_promotion_allowed": false,
+    "production_capability_claim_allowed": false
+  },
+  "diagnostic_questions": [
+    "Does the newly created subaccount API key authenticate and have CAM permission for SearchPro?",
+    "Does omitting every optional field resolve the documented/live Mode drift?",
+    "Is the WSA service resource available and does it return Pages?",
+    "For the frozen DELL semantic query, how many unique locators and publication dates are returned?"
+  ],
+  "stop_rules": {
+    "any_failure": "materialize typed terminal and stop",
+    "automatic_retry": false,
+    "automatic_third_attempt": false,
+    "automatic_three_case_comparator": false,
+    "automatic_sourcehunter_integration": false
+  },
+  "hard_boundary": "This is one replacement diagnostic for authentication, service availability, live schema and one-query locator telemetry. It does not make Tencent WSA a production provider and no returned text, date, score or number becomes Evidence or financial truth.",
+  "authority_digest": "4ffa976e26117991ef7db41434f3a406ebdc6264d8d44d5deb28a3b05ac00621"
+}

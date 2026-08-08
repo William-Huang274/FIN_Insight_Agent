@@ -24,11 +24,15 @@ from sec_agent.s1_08_external_combined_live import (  # noqa: E402
     sha256_file,
 )
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger  # noqa: E402
+from scripts.releases.run_fin_ia_0_1_3_s1_08_external_combined_live import (  # noqa: E402
+    ExternalCombinedRunnerError,
+    _synthetic_dns_decision,
+)
 
 
-DEFAULT_POLICY = ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_external_combined_live_policy_v1_0.json"
-DEFAULT_PLAN = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_plan_v1_0.json"
-DEFAULT_PROOF = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_live_zero_call_proof_v1_0.json"
+DEFAULT_POLICY = ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_external_combined_live_policy_v1_1.json"
+DEFAULT_PLAN = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_plan_v1_1.json"
+DEFAULT_PROOF = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_live_zero_call_proof_v1_1.json"
 
 
 class _UnusedTransport:
@@ -165,6 +169,23 @@ def materialize(*, policy_path: Path, plan_path: Path, proof_path: Path) -> dict
             plan=plan,
             firecrawl_call=systemic_rejection,
         )
+        credit_calls = 0
+
+        def credit_exhaustion(*_args: Any) -> tuple[int, bytes]:
+            nonlocal credit_calls
+            credit_calls += 1
+            return (
+                429,
+                b'{"success":false,"reason":"credits","retry_after_seconds":3600}',
+            )
+
+        credit = _execute_fake(
+            root=temp / "credit-exhaustion",
+            policy=policy,
+            bound_inputs=bound_inputs,
+            plan=plan,
+            firecrawl_call=credit_exhaustion,
+        )
         raw_before_parse = _execute_fake(
             root=temp / "parse-failure",
             policy=policy,
@@ -179,6 +200,21 @@ def materialize(*, policy_path: Path, plan_path: Path, proof_path: Path) -> dict
             / first_parse_failure["capture_refs"]["raw_response"]
         )
         raw_response_saved_before_parse_failure = raw_path.is_file()
+
+    synthetic_decision = _synthetic_dns_decision(
+        bound_inputs["source_catalog"],
+        resolver=lambda _host: ("198.18.1.10",),
+    )
+    forbidden_non_synthetic_failed_closed = False
+    try:
+        _synthetic_dns_decision(
+            bound_inputs["source_catalog"],
+            resolver=lambda _host: ("10.0.0.1",),
+        )
+    except ExternalCombinedRunnerError as exc:
+        forbidden_non_synthetic_failed_closed = (
+            str(exc) == "external_combined_forbidden_non_synthetic_dns_resolution"
+        )
 
     mutation_results: dict[str, str] = {}
     for name, input_key, field, value in (
@@ -195,6 +231,7 @@ def materialize(*, policy_path: Path, plan_path: Path, proof_path: Path) -> dict
         else:
             raise AssertionError(f"mutation did not fail closed: {name}")
 
+    first_six = plan["shadow_plan_rows"][:6]
     if (
         full_fake["status"] != "completed"
         or len(full_fake["official_case_results"]) != 3
@@ -205,12 +242,27 @@ def materialize(*, policy_path: Path, plan_path: Path, proof_path: Path) -> dict
         or len(systemic["firecrawl_shadow_results"]) != 24
         or raw_before_parse["status"] != "completed_with_typed_failures"
         or not raw_response_saved_before_parse_failure
+        or credit_calls != 1
+        or len(credit["firecrawl_shadow_results"]) != 24
+        or credit["firecrawl_shadow_results"][0]["terminal_code"]
+        != "firecrawl_shadow_systemic_credit_exhaustion"
+        or any(
+            row["network_call_attempted"]
+            for row in credit["firecrawl_shadow_results"][1:]
+        )
+        or len(
+            {(row["case_key"], row["evidence_slot_id"]) for row in first_six}
+        )
+        != 6
+        or {row["case_key"] for row in first_six[:3]} != {"DELL", "MU", "NVDA"}
+        or synthetic_decision["synthetic_allowance_required"] is not True
+        or not forbidden_non_synthetic_failed_closed
     ):
         raise AssertionError("external combined zero-call proof acceptance failed")
 
     _write(plan_path, plan)
     proof_body = {
-        "schema_version": "fin_ia_0_1_3_s1_08_external_combined_live_zero_call_proof_v1_0",
+        "schema_version": "fin_ia_0_1_3_s1_08_external_combined_live_zero_call_proof_v1_1",
         "contract_ref": "fin_0_1_3.S1_08.external_official_firecrawl_shadow_combined:v1",
         "run_scope": (
             "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE_"
@@ -218,6 +270,8 @@ def materialize(*, policy_path: Path, plan_path: Path, proof_path: Path) -> dict
         ),
         "status": "zero_call_engineering_pass_authority_not_yet_issued",
         "plan_digest": plan["plan_digest"],
+        "runtime_revision": plan["runtime_revision"],
+        "recovery_basis": deepcopy(dict(plan["recovery_basis"])),
         "plan_sha256": sha256_file(plan_path),
         "policy_sha256": sha256_file(policy_path),
         "source_bindings": {
@@ -237,6 +291,13 @@ def materialize(*, policy_path: Path, plan_path: Path, proof_path: Path) -> dict
             "full_fake_shadow_queries_terminalized": 24,
             "systemic_rejection_network_calls": systemic_calls,
             "systemic_rejection_shadow_identities_terminalized": 24,
+            "systemic_credit_exhaustion_network_calls": credit_calls,
+            "systemic_credit_exhaustion_shadow_identities_terminalized": 24,
+            "systemic_credit_exhaustion_remaining_network_calls": 0,
+            "first_six_shadow_case_slot_opportunities": 6,
+            "first_three_shadow_case_coverage": 3,
+            "controlled_synthetic_dns_required": True,
+            "forbidden_non_synthetic_dns_failed_closed": True,
             "raw_response_saved_before_parse_failure": True,
             "model_atoms_accepted": 0,
             "reranker_rescue": False,

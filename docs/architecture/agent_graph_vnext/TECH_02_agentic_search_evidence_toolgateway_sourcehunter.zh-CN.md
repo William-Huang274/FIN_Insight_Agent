@@ -1201,3 +1201,16 @@ immutable replay 没有改写历史：Firecrawl relational target-in-pool 仍为
 runner 使用 shared admission ledger 做 exact-once，clean/synced Git、runner/runtime/policy SHA、authority digest、request digest 全绑定；单次 call／transport attempt=`1/1`，retry/fallback=`0/0`。完整模型可见请求和最终 assistant/gateway output 在校验前 capture；凭据、Authorization/Cookie 和私有 reasoning 递归剔除。非法自然输出 terminalize 为 failed/no-retry，但 capture 仍保留且永不成为 Evidence。零调用 fake/mutation 已证明合法 atom、empty abstention、authority violation、malformed/duplicate/unknown、capture sanitization 和重复 admission；当前仅为 `implementation_pass_live_authority_pending`，不授权真实 canary、combined live、internal retrieval 或 ranking。
 
 即使自然 canary 合同通过，模型 atom 仍必须在真实候选池上显示增量才可启用；local proxy 已达 `9/9` 时，“多生成了词”本身不是产品增益。外源关闭后继续使用同一 facet authority 接线 internal exact／BM25／dense／graph，先过 qrels/candidate ceiling，再比较 BGE、RRF／fusion 与 rerank。
+
+### 20.31 External combined R1 终态与 environment／quota successor
+
+第一次 official routes＋Firecrawl shadow combined live 已 exact-once 终态化，但只能记为 `completed_with_typed_failures`，不能记作检索质量失败或产品通过。该轮没有调用 DeepSeek、embedding 或 reranker：
+
+- 公开 official host 在当前 Codex Desktop 网络环境中解析到受控 RFC 2544 synthetic range `198.18.0.0/15`。独立 official canary 已使用“先解析并验证全部地址只落在受控 range，再为本次进程临时打开握手”的协议；combined runner 漏接该协议，导致 official 请求在 HTTP 前被 SSRF guard 拒绝。这是 project runner integration defect，不是 source miss；真实私网、混合受控／非受控地址或无法验证的解析继续 fail closed。
+- Firecrawl 前 5 个请求成功，随后返回 `HTTP 429` 且响应体明确 `reason=credits`。这类结果是 provider-level systemic credit exhaustion，不是单 query 零召回。successor 在首个此类响应后停止新网络请求，但仍为全部计划 identity 生成 no-network typed terminal，保留“未观察”与“质量失败”的区别。
+- shadow dispatch 从 case-major 改为 `case × evidence-slot` 公平轮转。任何短窗口或额度中断都应优先让 DELL／MU／NVDA 和 customer／supply 获得基本观察机会，不能让一个案例抢光预算。
+- `planner_input_query` 与 `effective_dispatch_query` 是两个不同审计视图。前者解释计划输入，后者才是网络事实；binding receipt 必须保存完整 effective query、digest、facet plan 与 budget binding，不能只在 attempt 表面展示旧 query 后让 digest 承担全部追溯责任。
+
+successor 仍沿用 capture-first、exact-once、official authority 与 Firecrawl locator-only 边界。它不放宽 Evidence Gate，不允许 shadow locator 直接成为金融事实，也不允许 reranker 从零候选中“救回”目标。零调用专项及全量 S1-08 回归通过，只代表工程修复成立；必须在 clean independent proof 后另行签发唯一一次 recovery authority，才能重新观察 official candidate reachability。历史 R1、历史完整 Firecrawl 24-query 质量矩阵和新 recovery run 必须分别引用，不能拼成一条伪造的同轮成功结果。
+
+外源 closeout 后，执行顺序强制转入同一 S1 的内源检索治理：route-specific exact SQL／object、BM25／ObjectBM25、dense／Milvus 与 relationship graph → 人工 qrels 和 candidate ceiling → BGE／fusion／rerank 同池对照 → Evidence Gate、Claim、Workpaper、report 下游利用证明。embedding 与 reranker 只拥有排序权，不拥有实体、期间、关系、事实或 Evidence 晋升权。

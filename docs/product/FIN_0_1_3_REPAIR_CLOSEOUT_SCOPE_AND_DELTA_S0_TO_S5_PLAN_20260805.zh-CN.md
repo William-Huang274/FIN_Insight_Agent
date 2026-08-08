@@ -484,14 +484,14 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 1. [x] `S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION`：route planner、local authority replay、duplicate accounting、contamination mutation 与 SearchQualityCard proof 通过；
 2. [x] `S1_08_OFFICIAL_FIRST_PORTFOLIO_CLEAN_INDEPENDENT_ZERO_CALL_PROOF`：A3 在两个 clean archive／两个 fresh process 各 `45 passed`，规范化输出一致；A1/A2 失败保留；
 3. [x] `S1_08_UNIFIED_QUERY_FACET_PLAN_ZERO_CALL_IMPLEMENTATION`：60 intent 合并为 36 个共享计划，exact／lexical／semantic／graph／negative／forbidden／route filters 已生成，专项 13、S1-08 全回归 228；
-4. [ ] `S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION`：raw/local 零调用 A/B 已完成（facet coverage `0.138889→1.0`、addressability proxy `0/9→9/9`、local 污染/重复=`0/0`）；一次 DeepSeek query-atom canary 的 fake/mutation Runtime 已通过，但自然输出尚未执行，故三路整体仍未关闭。只有自然 atom 在真实候选池产生增量且污染不扩大时才启用模型辅助；
-5. [ ] `S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE`：需独立 authority，capture-first／exact-once；required target 缺失时禁止 reranker rescue；
+4. [x] `S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION`：raw/local 零调用 A/B 已完成（facet coverage `0.138889→1.0`、addressability proxy `0/9→9/9`、local 污染/重复=`0/0`）。唯一一次 DeepSeek query-atom natural canary 返回 18 个形状正确的原子，但其中一个 MU 原子绑定了不存在的 Evidence Slot；整批按合同 fail closed，未逐字段修补、未部分捞取、未 retry。当前正式基线冻结为本地确定性 compiler，模型辅助变体只有在未来独立能力决策中才能重新准入；
+5. [ ] `S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE`：R1 已 exact-once 终态化并保持 immutable，但不是产品通过。official lane 因 combined runner 漏接当前 Desktop 受控 synthetic-DNS 握手而在 HTTP 前失败；Firecrawl 前 5 个 DELL query 成功，随后 keyless credits 耗尽，旧调度又让 MU／NVDA 未被观察。R1 证明了 capture／terminal／query binding，但没有证明 external candidate reachability。零调用 successor 已补齐受控 DNS 握手、`429 reason=credits` systemic stop、case-slot 公平调度和 effective query receipt；当前为 engineering pass，仍需 clean independent proof 与另行签发的一次有界 recovery live。required target 缺失时继续禁止 reranker rescue；
 6. [ ] **外源关闭后立即回到内源**：把同一 Query Facet 接入 exact SQL／object、BM25／ObjectBM25、dense／Milvus 与 relationship graph，修复“同一 raw query 无差别发送给全部 route”的历史弱点；
 7. [ ] 扩大 DELL／MU／NVDA 人工 qrels、period／entity／relationship hard negatives，先证明 internal candidate ceiling；
 8. [ ] candidate ceiling 通过后才比较 BGE embedding、RRF／fusion 与 reranker；报告 Recall@K、MRR／NDCG、false promotion、稳定性、延迟和资源成本；
 9. [ ] 最后证明 selected candidate 进入 Evidence Gate、Claim、Workpaper 和报告。检索指标改善但下游未使用，不关闭 S1 或产品质量。
 
-机器真相为 `configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_0.json`。第 6–9 项现在是已登记的同阶段后续，不提前扩大当前 external live；但第 5 项完成后不得遗忘、跳过或直接进入 S3。
+机器真相为 `configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_1.json`。第 6–9 项现在是已登记的同阶段后续，不提前扩大当前 external live；但第 5 项完成后不得遗忘、跳过或直接进入 S3。尤其不能用 BGE 或 reranker 掩盖候选池根本没有目标，也不能只汇报检索离线指标而不证明下游实际消费。
 
 ## 8. 下一步
 

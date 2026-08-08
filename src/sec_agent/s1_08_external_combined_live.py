@@ -69,6 +69,18 @@ def load_external_combined_policy(path: str | Path) -> dict[str, Any]:
     budget = policy.get("combined_budget") or {}
     execution = policy.get("execution_contract") or {}
     boundary = policy.get("authority_boundary") or {}
+    runtime_revision = str(policy.get("runtime_revision") or "r1")
+    successor_valid = runtime_revision == "r1" or (
+        runtime_revision == "r1_environment_and_quota_recovery_v1"
+        and shadow.get("scheduling") == "case_slot_fair_round_robin_v1"
+        and shadow.get("systemic_credit_exhaustion_stop") is True
+        and execution.get("controlled_synthetic_dns_handshake") is True
+        and execution.get(
+            "systemic_firecrawl_429_credit_exhaustion_stops_remaining_shadow_network"
+        )
+        is True
+        and execution.get("effective_bound_query_preserved") is True
+    )
     valid = (
         policy.get("schema_version") == POLICY_SCHEMA
         and policy.get("contract_ref") == CONTRACT_REF
@@ -112,6 +124,7 @@ def load_external_combined_policy(path: str | Path) -> dict[str, Any]:
         ))
         and boundary.get("calls_authorized_by_policy_alone") == 0
         and boundary.get("internal_retrieval_not_authorized") is True
+        and successor_valid
     )
     if not valid:
         raise S108ExternalCombinedError("s1_08_external_combined_policy_invalid")
@@ -124,7 +137,7 @@ def load_bound_inputs(
     root = Path(repo_root)
     rows: dict[str, dict[str, Any]] = {}
     bindings = policy.get("immutable_inputs") or {}
-    for name in (
+    names = [
         "query_facet_proof",
         "query_atom_result",
         "query_facet_policy",
@@ -132,7 +145,10 @@ def load_bound_inputs(
         "progression_plan",
         "official_clean_proof",
         "firecrawl_scoring",
-    ):
+    ]
+    if policy.get("runtime_revision") == "r1_environment_and_quota_recovery_v1":
+        names.extend(("r1_result", "r1_assessment"))
+    for name in names:
         ref = str(bindings.get(f"{name}_ref") or "")
         expected = str(bindings.get(f"{name}_sha256") or "")
         path = root / ref
@@ -156,6 +172,7 @@ def compile_external_combined_plan(
     atom_result = bound_inputs["query_atom_result"]
     catalog = bound_inputs["source_catalog"]
     progression = bound_inputs["progression_plan"]
+    runtime_revision = str(policy.get("runtime_revision") or "r1")
     if (
         facet_proof.get("status") != "zero_call_engineering_pass"
         or facet_proof.get("plan_count") != 36
@@ -180,6 +197,23 @@ def compile_external_combined_plan(
         raise S108ExternalCombinedError(
             "s1_08_external_combined_catalog_identity_invalid"
         )
+    if runtime_revision == "r1_environment_and_quota_recovery_v1":
+        r1_result = bound_inputs.get("r1_result") or {}
+        r1_assessment = bound_inputs.get("r1_assessment") or {}
+        if (
+            r1_result.get("status") != "completed_with_typed_failures"
+            or r1_assessment.get("status")
+            != "terminal_valid_external_candidate_reachability_blocked"
+            or r1_assessment.get("result_digest")
+            != r1_result.get("terminal_result_digest")
+            or r1_assessment.get("stage_disposition", {}).get(
+                "r1_is_immutable_and_must_not_be_retried"
+            )
+            is not True
+        ):
+            raise S108ExternalCombinedError(
+                "s1_08_external_combined_r1_recovery_basis_invalid"
+            )
     plans = [dict(row) for row in facet_proof.get("plans") or ()]
     if len(plans) != 36 or any(row.get("accepted_model_atoms") for row in plans):
         raise S108ExternalCombinedError(
@@ -194,13 +228,16 @@ def compile_external_combined_plan(
         ),
         key=_plan_sort_key,
     )
-    shadow_plans = sorted(
-        (
-            row
-            for row in plans
-            if "external_semantic_shadow" in (row.get("eligible_external_routes") or ())
-        ),
-        key=_plan_sort_key,
+    shadow_candidates = [
+        row
+        for row in plans
+        if "external_semantic_shadow" in (row.get("eligible_external_routes") or ())
+    ]
+    shadow_plans = (
+        _case_slot_fair_shadow_order(shadow_candidates)
+        if (policy.get("lanes") or {}).get("firecrawl_shadow", {}).get("scheduling")
+        == "case_slot_fair_round_robin_v1"
+        else sorted(shadow_candidates, key=_plan_sort_key)
     )
     if len(official_plans) != 18 or len(shadow_plans) != 24:
         raise S108ExternalCombinedError(
@@ -241,6 +278,14 @@ def compile_external_combined_plan(
         "budget": deepcopy(dict(policy["combined_budget"])),
         "authority_boundary": deepcopy(dict(policy["authority_boundary"])),
     }
+    if runtime_revision != "r1":
+        body["runtime_revision"] = runtime_revision
+        body["recovery_basis"] = {
+            "r1_result_digest": bound_inputs["r1_result"]["terminal_result_digest"],
+            "r1_assessment_digest": bound_inputs["r1_assessment"][
+                "assessment_digest"
+            ],
+        }
     return {**body, "plan_digest": canonical_digest(body)}
 
 
@@ -376,6 +421,7 @@ class FacetBoundOfficialAdapter:
                     "revision": query.revision,
                     "query_facet_plan_digests": [],
                     "query_text_digest": canonical_digest(query.query_text),
+                    "bound_query": query.as_dict(),
                     "binding_state": "local_market_context_zero_network_exempt",
                 }
             )
@@ -411,6 +457,7 @@ class FacetBoundOfficialAdapter:
                 "revision": query.revision,
                 "query_facet_plan_digests": plan_digests,
                 "query_text_digest": canonical_digest(text),
+                "bound_query": bound.as_dict(),
                 "binding_state": "deterministic_external_query_facet_bound",
             }
         )
@@ -463,6 +510,14 @@ def run_official_case_lane(
         "network_calls": int(getattr(delegate, "network_calls", 0)),
         "document_fetches": int(getattr(delegate, "document_fetches", 0)),
         "bound_query_receipts": deepcopy(adapter.bound_query_receipts),
+        "query_audit_contract": {
+            "candidate_result_attempt_query_role": "planner_input_before_route_binding",
+            "bound_query_receipt_role": "effective_dispatch_query_after_route_binding",
+            "effective_dispatch_query_is_network_truth": True,
+            "effective_query_text_preserved": all(
+                bool(row.get("bound_query")) for row in adapter.bound_query_receipts
+            ),
+        },
         "capture_namespace": f"official/{case_key.lower()}",
     }
 
@@ -549,6 +604,11 @@ def execute_external_combined(
         runtime_root=root / "firecrawl-shadow",
         firecrawl_call=firecrawl_call,
         timeout_seconds=int(policy["combined_budget"]["per_call_timeout_seconds"]),
+        stop_on_credit_exhaustion=bool(
+            policy["lanes"]["firecrawl_shadow"].get(
+                "systemic_credit_exhaustion_stop"
+            )
+        ),
     )
     official_network = sum(int(row.get("network_calls") or 0) for row in official_results)
     shadow_network = sum(bool(row.get("network_call_attempted")) for row in shadow_results)
@@ -600,6 +660,8 @@ def execute_external_combined(
         "observed_at": observed_at,
         "reservation_digest": reservation.reservation_digest,
     }
+    if policy.get("runtime_revision"):
+        body["runtime_revision"] = policy["runtime_revision"]
     terminal = {**body, "terminal_result_digest": canonical_digest(body)}
     _write_json(root / "terminal-result.json", terminal)
     receipt = shared_ledger.finalize(
@@ -622,6 +684,7 @@ def _execute_shadow_lane(
     runtime_root: Path,
     firecrawl_call: FirecrawlCall,
     timeout_seconds: int,
+    stop_on_credit_exhaustion: bool = False,
 ) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     systemic_stop = ""
@@ -675,6 +738,16 @@ def _execute_shadow_lane(
                 if http_status in {401, 402, 403}:
                     systemic_stop = f"http_{http_status}"
                     code = "firecrawl_shadow_systemic_provider_rejection"
+                    failure = _safe_failure(
+                        code=code, detail=systemic_stop, http_status=http_status
+                    )
+                elif (
+                    http_status == 429
+                    and stop_on_credit_exhaustion
+                    and _is_credit_exhaustion(raw)
+                ):
+                    systemic_stop = "http_429_credit_exhausted"
+                    code = "firecrawl_shadow_systemic_credit_exhaustion"
                     failure = _safe_failure(
                         code=code, detail=systemic_stop, http_status=http_status
                     )
@@ -811,6 +884,61 @@ def _plan_sort_key(row: Mapping[str, Any]) -> tuple[str, str, str, str]:
         str(row["evidence_owner_entity_key"]),
         str(row["language"]),
     )
+
+
+def _case_slot_fair_shadow_order(
+    rows: Sequence[Mapping[str, Any]],
+) -> list[Mapping[str, Any]]:
+    slot_ids = (
+        "customer_demand_and_deployment_validation",
+        "supply_chain_capacity_and_counterevidence",
+    )
+    group_order = (
+        ("DELL", slot_ids[0]),
+        ("MU", slot_ids[1]),
+        ("NVDA", slot_ids[0]),
+        ("DELL", slot_ids[1]),
+        ("MU", slot_ids[0]),
+        ("NVDA", slot_ids[1]),
+    )
+    group_rank = {value: index for index, value in enumerate(group_order)}
+    grouped: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
+    for row in rows:
+        key = (str(row["case_key"]), str(row["evidence_slot_id"]))
+        grouped.setdefault(key, []).append(row)
+    if set(grouped) != set(group_order):
+        raise S108ExternalCombinedError(
+            "s1_08_external_combined_shadow_fair_schedule_groups_invalid"
+        )
+    primary_owner = {
+        key: min(str(row["evidence_owner_entity_key"]) for row in values)
+        for key, values in grouped.items()
+    }
+
+    def key(row: Mapping[str, Any]) -> tuple[int, int, int, int, str]:
+        group = (str(row["case_key"]), str(row["evidence_slot_id"]))
+        owner = str(row["evidence_owner_entity_key"])
+        language = str(row["language"])
+        is_primary = owner == primary_owner[group] and language == "en"
+        return (
+            0 if is_primary else 1,
+            group_rank[group],
+            0 if owner == primary_owner[group] else 1,
+            0 if language == "en" else 1,
+            owner,
+        )
+
+    return sorted(rows, key=key)
+
+
+def _is_credit_exhaustion(raw: bytes) -> bool:
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return False
+    if not isinstance(payload, Mapping):
+        return False
+    return str(payload.get("reason") or "").strip().lower() == "credits"
 
 
 def _safe_failure(*, code: str, detail: str, http_status: int = 0) -> dict[str, Any]:

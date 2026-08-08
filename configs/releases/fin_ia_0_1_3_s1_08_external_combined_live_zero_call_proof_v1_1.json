@@ -1,0 +1,72 @@
+{
+  "acceptance": {
+    "controlled_synthetic_dns_required": true,
+    "evidence_promotion": false,
+    "first_six_shadow_case_slot_opportunities": 6,
+    "first_three_shadow_case_coverage": 3,
+    "forbidden_non_synthetic_dns_failed_closed": true,
+    "full_fake_official_cases_terminalized": 3,
+    "full_fake_shadow_queries_terminalized": 24,
+    "internal_retrieval_executed": false,
+    "model_atoms_accepted": 0,
+    "official_query_facet_plans": 18,
+    "raw_response_saved_before_parse_failure": true,
+    "required_case_slot_opportunities": 12,
+    "reranker_rescue": false,
+    "shadow_query_facet_plans": 24,
+    "systemic_credit_exhaustion_network_calls": 1,
+    "systemic_credit_exhaustion_remaining_network_calls": 0,
+    "systemic_credit_exhaustion_shadow_identities_terminalized": 24,
+    "systemic_rejection_network_calls": 1,
+    "systemic_rejection_shadow_identities_terminalized": 24
+  },
+  "authority_state": "not_issued_requires_clean_commit_and_fresh_preflight",
+  "contract_ref": "fin_0_1_3.S1_08.external_official_firecrawl_shadow_combined:v1",
+  "known_boundary": "This proves the combined exact-once topology and failure semantics with local fakes. It does not establish fresh source recall, candidate quality, Evidence quality, internal retrieval, ranking, downstream research quality, S1-08 acceptance or release readiness.",
+  "mutation_results": {
+    "facet_plan_loss": "s1_08_external_combined_selected_query_variant_invalid",
+    "model_variant_activation": "s1_08_external_combined_selected_query_variant_invalid",
+    "stage_order_drift": "s1_08_external_combined_selected_query_variant_invalid"
+  },
+  "observed_real_calls": {
+    "document_fetch": 0,
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0
+  },
+  "plan_digest": "0faca1134334b48dc6cc3013c604d417d8f6bad2363758194b3b54874e520e46",
+  "plan_sha256": "3add3a9a206eb7201629a00951def379bbeea0356dc58532cc23f8439101cc03",
+  "policy_sha256": "1f0b6f0cf03c3748059f68484849edf09e256af13fe2ab9c21cdfde1e75968cc",
+  "proof_digest": "64d679bc999e9609c7a1e2a68de2de2e52bd3126d9c6c9f5696590b45f7967d4",
+  "recovery_basis": {
+    "r1_assessment_digest": "7a3796c91c4f7a4c179edddd22e710df52f7fb15cd2272343b6fc707fbc02cf4",
+    "r1_result_digest": "074fac9993746d114e83df755b7802e76442d7bc0e42e689e3d4fe0c720fb92e"
+  },
+  "run_scope": "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE_ZERO_CALL_IMPLEMENTATION_AND_AUTHORITY_DECISION",
+  "runtime_revision": "r1_environment_and_quota_recovery_v1",
+  "schema_version": "fin_ia_0_1_3_s1_08_external_combined_live_zero_call_proof_v1_1",
+  "simulated_topology_counts": {
+    "document_fetches": 3,
+    "embedding_calls": 0,
+    "evidence_promotions": 0,
+    "fallback_calls": 0,
+    "model_calls": 0,
+    "network_calls": 30,
+    "official_cases_terminalized": 3,
+    "official_network_calls": 6,
+    "rerank_calls": 0,
+    "retry_calls": 0,
+    "shadow_network_calls": 24,
+    "shadow_provider_calls": 24,
+    "shadow_queries_terminalized": 24
+  },
+  "source_bindings": {
+    "exact_live_runner_sha256": "632722d7a0c3aacb247becfe9bc5f9a5700624148c7e8e7dcff0967a98272174",
+    "materializer_sha256": "a79637b2d9364420652b0ba50317f0eb47db3a6444bff56abea21601bf267356",
+    "runtime_module_sha256": "e732feb178cf568ef95ce3dfebd3b190aa370d9707bb5ce2b1bf8e468db5bb12"
+  },
+  "status": "zero_call_engineering_pass_authority_not_yet_issued"
+}

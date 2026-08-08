@@ -28,11 +28,22 @@ from sec_agent.shared_admission_ledger import (
 
 ROOT = Path(__file__).resolve().parents[2]
 POLICY_PATH = ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_external_combined_live_policy_v1_0.json"
+SUCCESSOR_POLICY_PATH = ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_external_combined_live_policy_v1_1.json"
+ORIGINAL_PLAN_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_plan_v1_0.json"
+ORIGINAL_PROOF_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_live_zero_call_proof_v1_0.json"
 
 
 @pytest.fixture()
 def compiled() -> tuple[dict, dict, dict]:
     policy = load_external_combined_policy(POLICY_PATH)
+    inputs = load_bound_inputs(repo_root=ROOT, policy=policy)
+    plan = compile_external_combined_plan(policy=policy, bound_inputs=inputs)
+    return policy, inputs, plan
+
+
+@pytest.fixture()
+def successor_compiled() -> tuple[dict, dict, dict]:
+    policy = load_external_combined_policy(SUCCESSOR_POLICY_PATH)
     inputs = load_bound_inputs(repo_root=ROOT, policy=policy)
     plan = compile_external_combined_plan(policy=policy, bound_inputs=inputs)
     return policy, inputs, plan
@@ -123,6 +134,7 @@ def test_official_adapter_binds_facet_text_and_digest(compiled) -> None:
     assert adapter.bound_query_receipts[0]["query_facet_plan_digests"] == [
         row["plan_digest"]
     ]
+    assert adapter.bound_query_receipts[0]["bound_query"] == delegate.prepared[0].as_dict()
 
 
 def test_official_adapter_preserves_zero_network_market_context(compiled) -> None:
@@ -157,6 +169,18 @@ def test_official_adapter_preserves_zero_network_market_context(compiled) -> Non
     assert adapter.bound_query_receipts[0]["binding_state"] == (
         "local_market_context_zero_network_exempt"
     )
+    assert adapter.bound_query_receipts[0]["bound_query"] == query.as_dict()
+
+
+def test_successor_shadow_schedule_is_case_slot_fair(successor_compiled) -> None:
+    _, _, plan = successor_compiled
+    first_six = plan["shadow_plan_rows"][:6]
+    assert len(
+        {(row["case_key"], row["evidence_slot_id"]) for row in first_six}
+    ) == 6
+    assert {row["case_key"] for row in first_six[:3]} == {"DELL", "MU", "NVDA"}
+    assert all(row["language"] == "en" for row in first_six)
+    assert plan["runtime_revision"] == "r1_environment_and_quota_recovery_v1"
 
 
 class _UnusedTransport:
@@ -303,6 +327,29 @@ def test_systemic_shadow_rejection_stops_network_but_terminalizes_all(
     assert sum(row["network_call_attempted"] for row in result["firecrawl_shadow_results"]) == 1
 
 
+def test_successor_credit_exhaustion_stops_network_and_terminalizes_all(
+    tmp_path: Path, successor_compiled
+) -> None:
+    calls = 0
+
+    def exhausted(*_args) -> tuple[int, bytes]:
+        nonlocal calls
+        calls += 1
+        return 429, b'{"success":false,"reason":"credits","retry_after_seconds":3600}'
+
+    result = _execute(tmp_path, successor_compiled, firecrawl_call=exhausted)
+    assert calls == 1
+    assert len(result["firecrawl_shadow_results"]) == 24
+    assert result["firecrawl_shadow_results"][0]["terminal_code"] == (
+        "firecrawl_shadow_systemic_credit_exhaustion"
+    )
+    assert all(
+        row["terminal_code"] == "firecrawl_shadow_not_attempted_after_systemic_stop"
+        for row in result["firecrawl_shadow_results"][1:]
+    )
+    assert result["observed_counts"]["shadow_network_calls"] == 1
+
+
 def test_raw_response_is_saved_before_parse_failure(tmp_path: Path, compiled) -> None:
     def invalid_json(*_args) -> tuple[int, bytes]:
         return 200, b"not-json"
@@ -355,8 +402,8 @@ def test_authority_allows_committed_descendant_only_when_source_hashes_stay_exac
             "runner_sha256": runner.sha256_file(runner_path),
             "runtime_module_sha256": runner.sha256_file(runner.MODULE_PATH),
             "policy_sha256": runner.sha256_file(POLICY_PATH),
-            "plan_sha256": runner.sha256_file(runner.DEFAULT_PLAN),
-            "zero_call_proof_sha256": runner.sha256_file(runner.DEFAULT_PROOF),
+            "plan_sha256": runner.sha256_file(ORIGINAL_PLAN_PATH),
+            "zero_call_proof_sha256": runner.sha256_file(ORIGINAL_PROOF_PATH),
             "plan_digest": plan["plan_digest"],
         },
         "exact_live_authority": {
@@ -374,8 +421,8 @@ def test_authority_allows_committed_descendant_only_when_source_hashes_stay_exac
         authority=authority,
         execution_commit="b" * 40,
         policy_path=POLICY_PATH,
-        plan_path=runner.DEFAULT_PLAN,
-        proof_path=runner.DEFAULT_PROOF,
+        plan_path=ORIGINAL_PLAN_PATH,
+        proof_path=ORIGINAL_PROOF_PATH,
     )
     mutated = deepcopy(authority)
     mutated["immutable_bindings"]["runner_sha256"] = "0" * 64
@@ -387,6 +434,28 @@ def test_authority_allows_committed_descendant_only_when_source_hashes_stay_exac
             authority=mutated,
             execution_commit="b" * 40,
             policy_path=POLICY_PATH,
-            plan_path=runner.DEFAULT_PLAN,
-            proof_path=runner.DEFAULT_PROOF,
+            plan_path=ORIGINAL_PLAN_PATH,
+            proof_path=ORIGINAL_PROOF_PATH,
+        )
+
+
+def test_runner_allows_only_controlled_synthetic_dns_proxy(monkeypatch) -> None:
+    runner_path = ROOT / "scripts/releases/run_fin_ia_0_1_3_s1_08_external_combined_live.py"
+    spec = importlib.util.spec_from_file_location("external_combined_runner_dns_test", runner_path)
+    assert spec and spec.loader
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+    policy = load_external_combined_policy(SUCCESSOR_POLICY_PATH)
+    catalog = load_bound_inputs(repo_root=ROOT, policy=policy)["source_catalog"]
+    decision = runner._synthetic_dns_decision(
+        catalog, resolver=lambda _host: ("198.18.1.10",)
+    )
+    assert decision["synthetic_allowance_required"] is True
+    assert decision["all_forbidden_addresses_controlled_synthetic"] is True
+    with pytest.raises(
+        runner.ExternalCombinedRunnerError,
+        match="external_combined_forbidden_non_synthetic_dns_resolution",
+    ):
+        runner._synthetic_dns_decision(
+            catalog, resolver=lambda _host: ("10.0.0.1",)
         )

@@ -2,16 +2,19 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timedelta, timezone
+import ipaddress
 import json
 import math
 import os
 from pathlib import Path
 import re
+import socket
 import subprocess
 import sys
 import time
 from typing import Any, Mapping
 from urllib.error import HTTPError
+from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 import uuid
 
@@ -36,14 +39,14 @@ from sec_agent.s1_08_external_combined_live import (  # noqa: E402
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger  # noqa: E402
 
 
-DEFAULT_POLICY = ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_external_combined_live_policy_v1_0.json"
-DEFAULT_PLAN = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_plan_v1_0.json"
-DEFAULT_PROOF = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_live_zero_call_proof_v1_0.json"
-DEFAULT_AUTHORITY = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_live_authority_v1_0.json"
-DEFAULT_ADMISSION = ROOT / ".codex_runtime/fin013_s1_08/external_combined/admission.json"
-DEFAULT_RUNTIME = ROOT / ".codex_runtime/fin013_s1_08/external_combined/live-r1"
+DEFAULT_POLICY = ROOT / "configs/runtime/fin_ia_0_1_3_s1_08_external_combined_live_policy_v1_1.json"
+DEFAULT_PLAN = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_plan_v1_1.json"
+DEFAULT_PROOF = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_live_zero_call_proof_v1_1.json"
+DEFAULT_AUTHORITY = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_live_authority_v1_1.json"
+DEFAULT_ADMISSION = ROOT / ".codex_runtime/fin013_s1_08/external_combined/recovery/admission.json"
+DEFAULT_RUNTIME = ROOT / ".codex_runtime/fin013_s1_08/external_combined/live-r2"
 DEFAULT_LEDGER = ROOT / ".codex_runtime/shared_admission_consumption_ledger.json"
-DEFAULT_RESULT = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_live_result_v1_0.json"
+DEFAULT_RESULT = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_external_combined_live_result_v1_1.json"
 MODULE_PATH = ROOT / "src/sec_agent/s1_08_external_combined_live.py"
 _EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
@@ -108,6 +111,85 @@ def _iso(value: datetime) -> str:
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _resolve_host(host: str) -> tuple[str, ...]:
+    return tuple(
+        sorted(
+            {
+                str(row[4][0])
+                for row in socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)
+            }
+        )
+    )
+
+
+def _synthetic_dns_decision(
+    catalog: Mapping[str, Any], *, resolver=_resolve_host
+) -> dict[str, Any]:
+    synthetic = ipaddress.ip_network("198.18.0.0/15")
+    hosts = sorted(
+        {
+            (urlparse(str(url)).hostname or "").lower()
+            for entity in catalog.get("entities") or ()
+            for url in entity.get("official_landing_pages") or ()
+            if url
+        }
+        | {"data.sec.gov", "sec.gov", "www.sec.gov"}
+    )
+    if not hosts or any(not host for host in hosts):
+        raise ExternalCombinedRunnerError(
+            "external_combined_synthetic_dns_host_set_invalid"
+        )
+    rows: list[dict[str, Any]] = []
+    synthetic_required = False
+    for host in hosts:
+        try:
+            addresses = tuple(
+                sorted({ipaddress.ip_address(value) for value in resolver(host)}, key=str)
+            )
+        except (OSError, ValueError) as exc:
+            raise ExternalCombinedRunnerError(
+                "external_combined_synthetic_dns_resolution_invalid"
+            ) from exc
+        if not addresses:
+            raise ExternalCombinedRunnerError(
+                "external_combined_synthetic_dns_resolution_empty"
+            )
+        forbidden = tuple(
+            address
+            for address in addresses
+            if address.is_private
+            or address.is_loopback
+            or address.is_link_local
+            or address.is_multicast
+            or address.is_reserved
+            or address.is_unspecified
+        )
+        if forbidden and not all(
+            address.version == 4 and address in synthetic for address in forbidden
+        ):
+            raise ExternalCombinedRunnerError(
+                "external_combined_forbidden_non_synthetic_dns_resolution"
+            )
+        host_uses_synthetic = bool(forbidden)
+        synthetic_required = synthetic_required or host_uses_synthetic
+        rows.append(
+            {
+                "host": host,
+                "address_digests": [canonical_digest(str(value)) for value in addresses],
+                "address_count": len(addresses),
+                "controlled_synthetic_range_observed": host_uses_synthetic,
+            }
+        )
+    body = {
+        "guard": "public_allowlist_plus_controlled_198_18_0_0_15_proxy_v1",
+        "host_count": len(hosts),
+        "synthetic_allowance_required": synthetic_required,
+        "all_forbidden_addresses_controlled_synthetic": True,
+        "resolved_hosts": rows,
+    }
+    return {**body, "decision_digest": canonical_digest(body)}
 
 
 def _write_json(path: Path, value: Mapping[str, Any]) -> None:
@@ -181,6 +263,7 @@ def _preflight(
     proof = _load_json(proof_path)
     scope = EXACT_LIVE_SCOPE if exact_scope else str(policy["zero_call_run_scope"])
     project_os = run_project_os_preflight(ROOT, run_scope=scope)
+    synthetic_dns = _synthetic_dns_decision(inputs["source_catalog"])
     sec_contact_present = bool(
         _EMAIL_RE.fullmatch(str(os.environ.get("FINSIGHT_SEC_CONTACT_EMAIL") or "").strip())
     )
@@ -199,6 +282,7 @@ def _preflight(
             "zero_call_proof_sha256": sha256_file(proof_path),
         },
         "project_os_preflight": project_os,
+        "synthetic_dns_guard": synthetic_dns,
         "sec_contact_present": sec_contact_present,
         "observed_calls": {
             "provider": 0,
@@ -347,23 +431,36 @@ def execute(
             min(timeout, max(1, math.ceil(remaining))),
         )
 
-    terminal = execute_external_combined(
-        admission=admission,
-        policy=policy,
-        plan=plan,
-        catalog=inputs["source_catalog"],
-        execution_git_commit=commit,
-        runner_sha256=sha256_file(Path(__file__).resolve()),
-        runtime_module_sha256=sha256_file(MODULE_PATH),
-        policy_sha256=sha256_file(policy_path),
-        runtime_root=runtime_root,
-        shared_ledger=SharedAdmissionConsumptionLedger(ledger_path),
-        official_transport=official_transport,
-        firecrawl_call=bounded_firecrawl_call,
-        observed_at=_iso(_now()),
-    )
+    synthetic_dns = _synthetic_dns_decision(inputs["source_catalog"])
+    prior_synthetic_dns = os.environ.get("FINSIGHT_ALLOW_SYNTHETIC_DNS")
+    if synthetic_dns["synthetic_allowance_required"]:
+        os.environ["FINSIGHT_ALLOW_SYNTHETIC_DNS"] = "1"
+    else:
+        os.environ.pop("FINSIGHT_ALLOW_SYNTHETIC_DNS", None)
+    try:
+        terminal = execute_external_combined(
+            admission=admission,
+            policy=policy,
+            plan=plan,
+            catalog=inputs["source_catalog"],
+            execution_git_commit=commit,
+            runner_sha256=sha256_file(Path(__file__).resolve()),
+            runtime_module_sha256=sha256_file(MODULE_PATH),
+            policy_sha256=sha256_file(policy_path),
+            runtime_root=runtime_root,
+            shared_ledger=SharedAdmissionConsumptionLedger(ledger_path),
+            official_transport=official_transport,
+            firecrawl_call=bounded_firecrawl_call,
+            observed_at=_iso(_now()),
+        )
+    finally:
+        if prior_synthetic_dns is None:
+            os.environ.pop("FINSIGHT_ALLOW_SYNTHETIC_DNS", None)
+        else:
+            os.environ["FINSIGHT_ALLOW_SYNTHETIC_DNS"] = prior_synthetic_dns
     public = {
         **terminal,
+        "execution_environment_guard": synthetic_dns,
         "public_private_separation": {
             "raw_requests_responses_and_parser_captures_retained_outside_git": True,
             "runtime_root_ref": str(runtime_root.relative_to(ROOT)).replace("\\", "/"),

@@ -1,0 +1,73 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_exact_copy_ak_sk_r3_authority_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.tencent_wsa_exact_copy_ak_sk_r3:v1",
+  "recorded_at": "2026-08-08",
+  "status": "issued_unconsumed",
+  "admission_id": "fin013-s1-08-tencent-wsa-exact-copy-ak-sk-r3",
+  "predecessor_attempt_id": "fin013-s1-08-tencent-wsa-query-only-replacement-r2",
+  "owner_authority": "After reviewing the R2 signature failure, the user supplied a new Tencent Cloud standard AK/SK pair as exact text and explicitly requested one more bounded attempt.",
+  "credential_delivery_class": "owner_exact_text_hidden_input",
+  "credential_values_persisted": false,
+  "authorized_scope": "S1_08_PAID_BROAD_SEARCH_TENCENT_WSA_EXACT_COPY_AK_SK_R3_DIAGNOSTIC",
+  "provider_profile_ref": "configs/runtime/fin_ia_0_1_3_s1_08_tencent_wsa_candidate_provider_profile_v1_0.json",
+  "runner_ref": "scripts/releases/run_fin_ia_0_1_3_s1_08_tencent_wsa_exact_copy_ak_sk_r3_diagnostic.py",
+  "support_ref": "src/sec_agent/s1_08_tencent_wsa_exact_copy_ak_sk_r3.py",
+  "zero_call_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_exact_copy_ak_sk_r3_zero_call_proof_v1_0.json",
+  "immutable_bindings": {
+    "provider_profile_sha256": "ba327e02aa7ec7896b6617e5cf8d809ba439ea9c36b75de88c7b7fcadf3356fb",
+    "provider_profile_digest": "dc249a8716081e3495e7376accfb48ac433aec9080d1baed90a9e3b70ed8622c",
+    "runner_sha256": "9bc8034c2627c57d64ae64f93a4dbc117828d181d590ab9c897ec0021e1092e0",
+    "support_sha256": "34c8d81e3176f1ba2eacdbbf6b4e7b8135e04425b5a08b2feb28ee3c40e35bfd",
+    "query_only_support_sha256": "4a639c57ffb38723c197013b2325a4aa7d79e4b7294415a24e82164110cc3801",
+    "normalizer_sha256": "df1a34bf036424255de4ea0de529c6e73e0d6cf1bcb4345ae5eccefb71039bdf",
+    "runner_helpers_sha256": "29e4dede4a6828b232ed7ebff0abc2863bab3d779af55f1291c784e562d4dd57",
+    "predecessor_result_sha256": "835b98c3f410d1881eef2db54d61d5eb4aeca14faaaad0094d12b1f5d14c6779",
+    "predecessor_assessment_sha256": "7fc663ca5faf71e6482bd0ea9134b234294cb8174291ca50cbbc991cc47f7645",
+    "zero_call_proof_sha256": "ef5e9466461cf78c66935925bda8494c0662f7e077eec6ecdcf9eef8cba9a212",
+    "zero_call_proof_digest": "6ab3dd27c86b69200d415e970ef07beb173c504420da677354e8ea9bb6458af3"
+  },
+  "sdk_contract": {
+    "package": "tencentcloud-sdk-python",
+    "tested_version": "3.1.152",
+    "runtime_location": ".codex_runtime/tencent-wsa-sdk",
+    "repository_dependency_added": false
+  },
+  "query": {
+    "query_id": "DELL-TENCENT-WSA-EXACT-COPY-R3-Q1",
+    "case_key": "DELL",
+    "semantic_intent_ref": "DELL-DIAGNOSTIC-Q1",
+    "query_text": "Dell AI server demand customers supply chain 2026 earnings industry",
+    "request_body_fields": ["Query"],
+    "optional_fields": [],
+    "result_ceiling": 10
+  },
+  "execution_contract": {
+    "provider_call_ceiling": 1,
+    "network_call_ceiling": 1,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0,
+    "document_fetch_ceiling": 0,
+    "maximum_documented_cost_cny": 0.08,
+    "credentials_interactive_hidden_only": true,
+    "credentials_or_signatures_may_be_persisted": false,
+    "safe_request_capture_before_transport_required": true,
+    "raw_response_or_failure_capture_before_parse_required": true,
+    "evidence_promotion_allowed": false,
+    "production_capability_claim_allowed": false
+  },
+  "diagnostic_questions": [
+    "Does the exact-text standard AK/SK pair authenticate through TC3?",
+    "Does the credential have permission and service access for SearchPro?",
+    "Does the already-proven Query-only request return Pages?",
+    "For the frozen DELL semantic query, how many unique locators and publication dates are returned?"
+  ],
+  "stop_rules": {
+    "any_failure": "materialize typed terminal and stop",
+    "automatic_retry": false,
+    "automatic_fourth_attempt": false,
+    "automatic_three_case_comparator": false,
+    "automatic_sourcehunter_integration": false
+  },
+  "hard_boundary": "This is one R3 credential and service diagnostic using the already-proven Query-only request. It does not make Tencent WSA a production provider and no returned text, date, score or number becomes Evidence or financial truth.",
+  "authority_digest": "f4886b7ae60ee6866dc10859ef60226750bffee685dd4e7ac5aa20c1c5934ba5"
+}

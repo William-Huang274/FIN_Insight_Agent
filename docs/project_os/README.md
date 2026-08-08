@@ -10,7 +10,7 @@ FIN 0.1.1 保存第一轮 S0–S5 的内部 honest-block 工程基线。2026-08-
 
 当前开发版本为 FIN 0.1.3。`013-S0-04G` 已以 typed blocker state、`RunScopeRegistry v1_0` 和 unknown fail-closed 关闭 RC-P36-156，并从 clean Git archive/fresh process 以 `85/85` 复证现有 DELL R3 successor；本项外部调用与 admission 均为 0。S1-08 的真实 candidate ceiling 仍未通过，DELL R3、ranking、MU/NVDA、S3 和 release 均未因此解锁。
 
-当前下一项：Tencent WSA Query-only R2 已 exact-once 消费并以 `AuthFailure.SignatureFailure` 停止；请求只有 `Query`、0 retry，Mode 问题没有复发，但鉴权先失败，因此服务与搜索质量仍未测。第三次请求未授权；先删除已暴露 Key，再由 Owner 决定精确复制的新 AK/SK 隐藏输入，或另行审查 WSA service API Key/Bearer 路线。
+当前下一项：Owner 已在看见 Tencent WSA Query-only R2 的 `AuthFailure.SignatureFailure` 后，以直接文本提供另一组 standard AK/SK 并批准 distinct R3。R3 零调用合同与唯一 authority 已通过，仍只发 `Query`、只允许 1 call/0 retry，凭据仅 hidden input。先提交推送 clean authority，再消费一次 exact-live；任何终态都停止，不自动 R4/comparator/integration。Key 已在聊天暴露，运行后必须删除或轮换。
 
 ## 文件职责
 

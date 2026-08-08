@@ -1,0 +1,148 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_post_tencent_provider_portfolio_and_production_search_boundary_decision_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.provider_portfolio_and_production_search_boundary:v1",
+  "recorded_at": "2026-08-08",
+  "run_scope": "S1_08_POST_TENCENT_SAME_MATRIX_PROVIDER_PORTFOLIO_AND_PRODUCTION_SEARCH_BOUNDARY_DECISION",
+  "status": "official_first_portfolio_selected_discovery_only_firecrawl_shadow_implementation_pending",
+  "decision_basis": {
+    "firecrawl_same_matrix": {
+      "topical_useful": [133, 240],
+      "case_slot_target_in_pool": [5, 6],
+      "provider_date_presence": [0, 235],
+      "latency_p95_ms": 6877,
+      "assessment_sha256": "1ba0d2a65ad7e1c72bd6c00d5c19a2f3f93649a4395e75a4cc33572ca4ea2a7c"
+    },
+    "tencent_same_matrix": {
+      "topical_useful": [103, 240],
+      "case_slot_target_in_pool": [0, 6],
+      "provider_date_presence": [172, 172],
+      "latency_p95_ms": 1330,
+      "documented_cost_cny": 1.104,
+      "assessment_sha256": "70335b4b7d68c765cb2924b1590574a3e3b5f46e9f4c0041e491f7d8828ef5d7"
+    },
+    "product_finding": "No evaluated broad provider satisfies every primary-source recall, provider-date, latency and diversity gate. The PRD assigns candidate discovery to search and final source/date authority to capture-backed local adjudication, so a single-provider all-gates integration rule is over-coupled."
+  },
+  "supersession": {
+    "historical_results_and_assessments_remain_immutable": true,
+    "historical_scoring_contracts_remain_valid_for_their_declared_experiments": true,
+    "superseded_assumption": "one broad provider must independently pass locator recall provider-reported date accuracy latency diversity and primary-source authority before any role-specific integration can be considered",
+    "retained_hard_boundaries": [
+      "target-in-pool must precede ranking",
+      "search output is candidate-only",
+      "provider date never becomes financial date authority",
+      "raw response must be captured before parse",
+      "Evidence Gate alone owns promotion",
+      "Writer has no source tools",
+      "cross-case and wrong-direction evidence fail closed"
+    ]
+  },
+  "selected_portfolio": {
+    "official_primary_lane": {
+      "role": "known primary disclosure and authoritative source discovery",
+      "routes": [
+        "SEC submissions filings and CompanyFacts",
+        "issuer IR RSS Atom JSON feed and sitemap",
+        "official-domain bounded index or same-host locator",
+        "capture-first official static fetch with dynamic-page fallback only when separately budgeted"
+      ],
+      "output": "capture-backed canonical source candidate",
+      "fact_or_date_authority_before_evidence_gate": false,
+      "selected_for_next_runtime": true
+    },
+    "semantic_open_web_lane": {
+      "role": "unknown customer supply industry mechanism and counterevidence locator discovery",
+      "selected_provider": "firecrawl_keyless",
+      "provider_status": "shadow_integration_candidate_not_production_qualified",
+      "selection_reason": "same-matrix live retrieved five of six frozen customer/supply case-slot primary targets and materially outperformed Tencent target recall",
+      "output": "discovery-only locator candidate",
+      "provider_date_use": "telemetry_only",
+      "writer_citable": false,
+      "evidence_promotion_allowed": false,
+      "selected_for_next_runtime": true
+    },
+    "domestic_broad_lane": {
+      "tencent_wsa_searchpro_standard": "diagnostic_only_not_selected_zero_of_six_primary_targets",
+      "baidu_qianfan_web_search": "deferred_no_procurement_or_live_test_before_portfolio_replay",
+      "alibaba_web_search_mcp": "deferred_full_raw_tool_schema_and_portfolio_need_not_yet_proven",
+      "additional_provider_purchase_or_live_test_authorized": false
+    },
+    "document_and_parser_lane": {
+      "role": "fetch verify parse and locally adjudicate discovered source",
+      "components": [
+        "capture-first HTTP",
+        "feedparser",
+        "Trafilatura and lxml",
+        "typed publication-date adjudicator",
+        "typed canonical source equivalence",
+        "relationship-direction gate"
+      ],
+      "third_party_parser_or_provider_owns_financial_authority": false
+    },
+    "evidence_gate": {
+      "role": "sole promotion authority",
+      "required_before_writer": [
+        "canonical source identity",
+        "capture-backed publication date or typed date gap",
+        "subject evidence-owner and claim-direction binding",
+        "source authority and document-kind binding",
+        "parser lineage",
+        "currentness and as-of qualification"
+      ]
+    }
+  },
+  "role_specific_qualification": {
+    "locator_route_hard_checks": [
+      "operational and capture-first terminalization",
+      "query-intent and evidence-owner identity binding",
+      "marginal required-slot target-in-pool contribution",
+      "relationship and topical relevance",
+      "source-domain quality and noise rate",
+      "bounded cost latency and retry behavior"
+    ],
+    "locator_route_telemetry_not_authority": [
+      "provider-reported publication date",
+      "provider score",
+      "search snippet",
+      "search title"
+    ],
+    "portfolio_evidence_hard_checks": [
+      "required-slot candidate opportunity and recall",
+      "raw document capture",
+      "verified canonical source identity",
+      "local typed publication-date decision",
+      "source and relationship authority",
+      "Evidence Gate promotion receipt",
+      "selected-pack coverage and downstream utilization"
+    ],
+    "ranking_admitted_only_after_candidate_ceiling": true
+  },
+  "next_implementation": {
+    "run_scope": "S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION",
+    "requirements": [
+      "compile route choice from EvidenceRequest source family and known-versus-unknown target state",
+      "reuse immutable Firecrawl Tencent DELL R2 and official capture evidence without network",
+      "keep Firecrawl locator rows candidate-only and Tencent outside the selected route",
+      "apply local canonical source date relationship and Evidence promotion gates after locator discovery",
+      "prove DELL MU NVDA required-slot scheduling duplicate accounting contamination rejection and typed route gaps",
+      "emit a SearchQualityCard separating locator-route contribution from portfolio Evidence qualification"
+    ],
+    "external_provider_network_model_document_calls": [0, 0, 0, 0],
+    "live_or_integration_authority_granted": false
+  },
+  "stop_rules": [
+    "do not rerun or patch Tencent",
+    "do not purchase or live-test another provider before the zero-call portfolio replay",
+    "do not rerank when the required target is absent from the combined candidate pool",
+    "do not promote Firecrawl snippets or provider dates",
+    "do not call the portfolio production-capable before a fresh combined-route live proof and downstream Evidence utilization proof"
+  ],
+  "observed_calls": {
+    "provider": 0,
+    "network": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "evidence_promotion": 0
+  },
+  "known_boundary": "This decision corrects role ownership and selects the next deterministic implementation. It does not integrate Firecrawl, qualify an official route, close S1-08, produce Evidence, run Agentic Research or establish report quality or release readiness.",
+  "decision_digest": "829a08911bcb16182b8cd0da79dc95e5c4e3911708e1c336c1eaa9e96583f798"
+}

@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-08 | Firecrawl/Tencent 同矩阵实证后纠正单 Provider 全职责假设：production SourceHunter 改为 official-first、role-specific portfolio。SEC/issuer IR feed/sitemap/official-domain route 负责 known primary discovery，broad search 只负责 unknown locator；Provider 日期降为 telemetry，capture-backed 本地发布日期裁决仍是 Evidence 硬门。Firecrawl 因 target=`5/6` 只进入 discovery shadow implementation 候选，Tencent 因 `0/6` 保持 diagnostic-only；暂停继续采购/轮测 Provider，先以零调用 replay 证明组合候选、关系、日期和 Evidence Gate。历史 assessment 不改，S1-08 仍未通过。 |
 | 2026-08-08 | Firecrawl 关系感知 semantic control 已 exact-once 完成：24/24 成功、topical useful=`133/240`、六个 customer/supply case-slot target-in-pool=`5/6`，证明 evidence-owner/direction 查询和 fan-out 比旧 generic A4 更接近研究目标；但旧／新矩阵调用数与语言不同，不标作单变量 A/B。Firecrawl 因 DELL supply 目标缺失、日期字段=`0/235`、中文 exact target=0 和 p95=`6877 ms` 继续 diagnostic-only。产品验收明确拆分“query compiler live-supported”和“Provider lane qualified”；前者可通过而后者失败。下一步只在 fresh 国内凭据就绪后复用同一 24-query plan，不自动重跑 Firecrawl、加 precise lane 或用 reranker 补上游候选。 |
 | 2026-08-08 | S1-08 已完成国内凭据就绪度判断与 Firecrawl 关系感知语义控制组零调用实现：当前腾讯／百度／阿里凭据均不可安全使用，不复用聊天暴露 Key；国内 Provider 优先方向不变。为单独检验查询修复，只选择 customer/supply 的 24 个 semantic execution unit，不同时执行 22 个 precise unit。runner 强制 clean/exact-once、request/raw-response-or-failure capture-first、0 retry/model/document/Evidence，且 evaluator 只有在 24 个身份全终态后才加载 Gold。即使控制组通过也只允许同矩阵国内 Provider 对照，不建立国内能力或 SourceHunter 接入。 |
 | 2026-08-08 | S1-08 国内 Provider wire projection 已完成零调用工程证明：60 个 canonical intent 分别编译为 Tencent／Baidu／Alibaba MCP／Firecrawl 安全请求，百度 `60/60` 满足 72-unit 上限，query=`37–66 units`。检索词不再只用通用槽位标签，而按公司与研究问题加入 Azure AI capex、Dell AI-server backlog、Micron HBM、NVIDIA Blackwell、TSMC CoWoS 等实际研究主题。官方精确请求按完全相同 payload 显式合并后，每家从 36 个 intent 降为 22 个执行单元；加 24 个语义单元共 46 次 ceiling，capture 以多 consumer lineage 分别服务三案。该优化减少重复调用但不共享判断、不改 hidden target，也不授权 live。 |
@@ -1339,6 +1340,7 @@ provider declared/configured
 - source quality 同时评价 currentness、source authority、entity/period、经济关系方向、来源多样性、reconciliation 和下游 claim utilization；只抓到 issuer 单一 filing 不能代表客户、供应链和市场证据已经覆盖；
 - 统计必须分开 `unique canonical network documents`、role bindings、本地受管 snapshot 和 accepted evidence。同一文档支持两个角色仍只是一份网络来源；
 - broad Web search、official-domain bounded search、issuer feed/sitemap 和 SEC discovery 是不同能力。没有运营 Provider 时必须明确 `route_unavailable`，不得用定向官方抓取冒充通用外部检索。
+- Provider 资格必须按 route role 分账，不能要求一个 broad API 同时拥有 locator、原文、发布日期和金融事实权威。broad provider 的日期、score、title 和 snippet 只作候选 telemetry；组合链只有在原文 capture、canonical identity、本地 typed date、关系方向、source authority 与 Evidence Gate 全部通过后，才能形成 writer-allowed Evidence。
 
 Agentic Research 的 S3 准入必须消费上述 Search Quality Card。搜索层未证明当前案例的 required-slot candidate ceiling 时，Lead 只能返回 `needs_source / typed_gap / blocked`，不得通过增加模型调用、自由叙事或本地模板拼装制造产品级研报。
 

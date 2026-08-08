@@ -41,7 +41,12 @@ COMPLETED_TENCENT_ISSUANCE_SCOPE = (
 COMPLETED_TENCENT_LIVE_SCOPE = (
     "S1_08_TENCENT_RELATIONSHIP_AWARE_SEMANTIC_SAME_MATRIX_EXACT_LIVE_EXECUTION"
 )
-NEXT_SCOPE = "S1_08_POST_TENCENT_SAME_MATRIX_PROVIDER_PORTFOLIO_AND_PRODUCTION_SEARCH_BOUNDARY_DECISION"
+COMPLETED_POST_TENCENT_DECISION_SCOPE = (
+    "S1_08_POST_TENCENT_SAME_MATRIX_PROVIDER_PORTFOLIO_AND_PRODUCTION_SEARCH_BOUNDARY_DECISION"
+)
+NEXT_SCOPE = (
+    "S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION"
+)
 
 
 def _sha256(path: Path) -> str:
@@ -301,7 +306,7 @@ def test_exact_live_authority_is_digest_bound_semantic_only_and_unconsumed() -> 
     assert execution["gold_load_before_aggregate_terminal_allowed"] is False
 
 
-def test_completed_search_scopes_are_blocked_while_post_tencent_decision_is_allowed() -> None:
+def test_completed_search_scopes_are_blocked_while_portfolio_implementation_is_allowed() -> None:
     from sec_agent.project_os_preflight import run_project_os_preflight
 
     preflight = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
@@ -322,6 +327,11 @@ def test_completed_search_scopes_are_blocked_while_post_tencent_decision_is_allo
     )
     assert completed_live["status"] == "blocked"
     assert completed_live["contract_errors"] == []
+    completed_decision = run_project_os_preflight(
+        ROOT, run_scope=COMPLETED_POST_TENCENT_DECISION_SCOPE
+    )
+    assert completed_decision["status"] == "blocked"
+    assert completed_decision["contract_errors"] == []
     successor = run_project_os_preflight(ROOT, run_scope=NEXT_SCOPE)
     assert successor["status"] == "pass"
     assert successor["contract_errors"] == []

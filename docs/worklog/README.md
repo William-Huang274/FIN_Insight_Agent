@@ -1,5 +1,6 @@
 # Worklog
 
+- [751 — FIN 0.1.3 S1-08 Provider portfolio 与 production search 边界决策](product_strategy/751_fin_0_1_3_s1_08_provider_portfolio_and_production_search_boundary_decision.md)
 - [750 — FIN 0.1.3 S1-08 Tencent relationship-aware same-matrix terminal](product_strategy/750_fin_0_1_3_s1_08_tencent_relationship_aware_same_matrix_terminal.md)
 - [749 — FIN 0.1.3 S1-08 Tencent relationship-aware same-matrix clean authority](product_strategy/749_fin_0_1_3_s1_08_tencent_relationship_aware_same_matrix_clean_authority.md)
 - [748 — FIN 0.1.3 S1-08 腾讯 fresh credential 与关系感知同矩阵 comparator 零调用实现](product_strategy/748_fin_0_1_3_s1_08_tencent_fresh_credential_and_same_matrix_comparator_zero_call_implementation.md)

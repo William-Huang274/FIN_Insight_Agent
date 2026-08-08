@@ -1151,3 +1151,23 @@ authority 只允许 24 条 semantic Query-only 请求，provider/network=`<=24/<
 locator 质量没有通过：172 occurrence／126 unique URL、topical=`103/240`、case-slot frozen primary target=`0/6`；同矩阵 Firecrawl 为 `133/240`、`5/6`。腾讯 172/172 都返回 date，但 exact target=0，因此日期准确性没有可验证分母。主要 hostname 为腾讯聚合、GitHub、Sina 与 Toutiao；少量 official-domain result 是产品/support/technology 页面，不是要求的财报、业绩会或 IR release。
 
 这证明 broad semantic locator 的低延迟和 metadata 完整不能替代 primary-source precision。Tencent 继续为 diagnostic-only；禁止在当前结果后增加 reranker/document fetch 以事后改变 Provider qualification，也禁止逐 query patch 或 replacement。下一项应零调用决定 SourceHunter 的 production portfolio：官方 precise adapter 负责一手来源，broad provider 只提供补充召回；若继续供应商评测，必须复用同一矩阵与 gate。
+
+### 20.27 Official-first Provider portfolio 与 role-specific qualification
+
+同矩阵实证推翻了“一个 broad Provider 必须独立包办 locator、日期、权威和低延迟”的隐含设计。Firecrawl 找回 `5/6` frozen primary target 但不返回 date；Tencent 返回完整 date 且更快，却找回 `0/6`。PRD 原本已经把 search 定义为 candidate discovery，把原文、发布日期和 Evidence authority 留给 capture/parser/gate，因此未来资格改为按 route role 分层，历史 comparator assessment 保持 immutable。
+
+```text
+EvidenceRequest / Evidence Slot
+ -> known primary? SEC / issuer feed-sitemap / official-domain bounded route
+ -> unknown source? relationship-aware Firecrawl discovery shadow
+ -> raw locator capture
+ -> official document capture
+ -> canonical source identity + local typed publication date
+ -> relationship/source authority gate
+ -> Evidence Gate
+ -> SearchQualityCard / CellEvidencePack
+```
+
+Firecrawl 只获得 `shadow_integration_candidate_not_production_qualified` 身份：输出永远是 locator candidate，Provider date 缺失不再单独否决 locator 贡献，但任何 locator 必须在后续本地链路重新获得 canonical/date/authority。Tencent 保持 diagnostic-only；百度/阿里 live 与采购暂停。locator-route hard checks 关注 operational、intent/owner binding、marginal target-in-pool、关系/主题、域质量、成本/延迟；portfolio hard checks 才验证 raw capture、local date、source authority、Evidence receipt、selected coverage 与 downstream utilization。
+
+下一实现只做 immutable capture replay 和三案 fixture，不联网、不调用模型、不接入生产：`S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION`。

@@ -488,16 +488,7 @@ def test_clean_authority_binds_implementation_and_only_one_model_call() -> None:
         _normalized_sha256(ROOT / binding[ref_key]) == binding[hash_key]
         for ref_key, hash_key in implementation_pairs
     )
-    exact_scope = run_project_os_preflight(
-        ROOT,
-        run_scope=(
-            "S1_08_QUERY_FACET_DEEPSEEK_ATOM_CANARY_EXACT_LIVE_EXECUTION"
-        ),
-    )
-    if exact_scope["status"] == "pass":
-        assert current_hashes_match
-    else:
-        assert current_hashes_match is False
+    assert current_hashes_match
     ancestor = subprocess.run(
         [
             "git",
@@ -527,6 +518,7 @@ def test_project_os_exposes_only_latest_typed_scope() -> None:
         "S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION",
         "S1_08_QUERY_FACET_DEEPSEEK_ATOM_CANARY_EXACT_LIVE_EXECUTION",
         "S1_08_QUERY_ATOM_CANARY_WINDOWS_SAFE_ADMISSION_STORAGE_ZERO_CALL_REPAIR",
+        "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE_ZERO_CALL_IMPLEMENTATION_AND_AUTHORITY_DECISION",
     ):
         preflight = run_project_os_preflight(ROOT, run_scope=scope)
         expected = "pass" if scope in allowed else "blocked"

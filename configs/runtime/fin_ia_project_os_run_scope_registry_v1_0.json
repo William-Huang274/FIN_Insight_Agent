@@ -303,6 +303,13 @@
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1"]
     },
+    "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE_ZERO_CALL_IMPLEMENTATION_AND_AUTHORITY_DECISION": {
+      "owner_stage": "S1",
+      "operation_class": "source_runtime_zero_call_implementation",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
     "S1_INTERNAL_RETRIEVAL_QUERY_FACET_INTEGRATION": {
       "owner_stage": "S1",
       "operation_class": "source_runtime_zero_call_implementation",

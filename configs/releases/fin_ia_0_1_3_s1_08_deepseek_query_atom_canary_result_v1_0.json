@@ -1,0 +1,117 @@
+{
+  "admission_digest": "670def3f962e4cfd3894a1075cdcc1947de4241a0379f053f450deb387d0a64f",
+  "attempt_id": "fin013_s1_08_query_atom_canary_dd7ac1048e30a83fb33d::attempt_1",
+  "authority_decision_digest": "360ec6c4c7c2a83e21b9d388159c06414ec8709cfe45b2422fcbb8cd636a1b55",
+  "capture_digest": "fcff88764d4dd43ac7fcb2abd71108be06d23823457afbfa17ea3e83a505687e",
+  "contract_ref": "fin_0_1_3.S1_08.deepseek_query_atom_canary:v1",
+  "decision": {
+    "additional_query_atom_model_call_authorized": false,
+    "combined_external_live_authorized_by_this_result": false,
+    "deepseek_query_atom_variant": "reject_current_contract_no_retry_no_field_patch",
+    "external_query_baseline": "deterministic_local_compiler_only",
+    "internal_exact_BM25_dense_graph_then_qrels_then_BGE_rerank_backlog_preserved": true,
+    "internal_retrieval_authorized_by_this_result": false,
+    "next": "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE_READINESS_DECISION"
+  },
+  "exact_once_receipt_digest": "3890eb9f7738d42da0835861675b7f76be2e046c5d35f098eb51fabb15a843ee",
+  "execution_git_commit": "a54b129876cd5df0131aadeb1abdb00bcb512696",
+  "known_boundary": "This result rejects one model-assisted query variant because its typed plan binding was invalid. It does not establish fresh provider recall, document capture, Evidence quality, internal retrieval, BGE/rerank value, downstream research quality, S1-08 acceptance or release.",
+  "natural_observation": {
+    "accepted_atom_count": 0,
+    "allowed_plan_binding_count": 17,
+    "duplicate_plan_binding_count": 0,
+    "duplicate_plan_bindings": [],
+    "finish_reason": "stop",
+    "gateway_status": "ok",
+    "invalid_plan_binding_count": 1,
+    "invalid_plan_bindings": [
+      {
+        "atom_index": 9,
+        "atom_kind": "mechanism",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "MU",
+        "evidence_slot_id": "regulatory_risk_and_financial_recovery",
+        "language": "en",
+        "value": "long-term agreement prepayment"
+      }
+    ],
+    "observed_atom_count": 18,
+    "partial_atom_salvage_performed": false,
+    "provider_output_is_financial_fact_or_evidence": false,
+    "retry_or_replacement_performed": false,
+    "shape_valid_atom_count": 18,
+    "terminal_code": "s1_08_query_atom_canary_output_plan_binding_invalid",
+    "terminal_status": "terminal_failed_no_retry",
+    "usage": {
+      "input_tokens": 5235,
+      "latency_ms": 13377,
+      "output_tokens": 1298,
+      "total_tokens": 6533,
+      "transport_attempt_count": 1
+    }
+  },
+  "observed_calls": {
+    "document_fetch": 0,
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "fallback": 0,
+    "model": 1,
+    "network": 1,
+    "provider": 1,
+    "rerank": 0,
+    "retrieval": 0,
+    "retry": 0,
+    "transport_attempts": 1
+  },
+  "owning_stage": "FIN_0_1_3_S1_08",
+  "provider": {
+    "backend": "deepseek",
+    "model": "deepseek-v4-pro"
+  },
+  "provider_output_digest": "28154c1efc745e836d9a408dc982ff540227ea0553cf88ee3817b1e1d6a17562",
+  "public_private_separation": {
+    "capture_ref": "captures/01_fcff88764d4dd43ac7fcb2abd71108be06d23823457afbfa17ea3e83a505687e.json",
+    "credential_or_authorization_value_saved": false,
+    "full_model_visible_request_and_raw_gateway_response_in_git": false,
+    "private_capture_retained_outside_git": true,
+    "provider_private_reasoning_saved": false
+  },
+  "record_digest": "19116604fd62d820ec034bf6278c67ddfaf10be97e17c5c616ff330be5a9f4f6",
+  "recorded_at": "2026-08-08T16:31:02Z",
+  "request_digest": "7dbc55e0b895cb008f1155f0b22da24bf6a84945f230bb95a405e113602fd5d2",
+  "run_id": "fin013_s1_08_query_atom_canary_dd7ac1048e30a83fb33d",
+  "schema_version": "fin_ia_0_1_3_s1_08_deepseek_query_atom_canary_public_result_v1_0",
+  "stage_acceptance": {
+    "BGE_fusion_rerank": false,
+    "S1_08": false,
+    "candidate_ceiling_and_qrels": false,
+    "downstream_utilization": false,
+    "fresh_combined_external_live": false,
+    "internal_retrieval_query_facet": false,
+    "model_assisted_query_plan": false,
+    "natural_model_atom_observation": true,
+    "release": false,
+    "three_way_contract_disposition": true
+  },
+  "status": "natural_query_atom_canary_terminal_failed_model_variant_rejected",
+  "terminal_result_digest": "c938904a5907236aa10155dcd2278da2be587fef3b6874a181a7ecda9e73988b",
+  "three_way_disposition": {
+    "comparison_status": "contract_disposition_complete_no_model_assisted_query_metrics",
+    "deepseek_query_atoms_plus_deterministic_local_compiler": {
+      "accepted_atom_count": 0,
+      "runtime_admitted": false,
+      "status": "observed_but_contract_invalid_not_compared_or_activated"
+    },
+    "deterministic_local_compiler": {
+      "contamination_count": 0,
+      "duplicate_query_rate": 0.0,
+      "mean_facet_coverage": 1.0,
+      "minimum_facet_coverage": 1.0,
+      "selected_as_external_and_internal_baseline": true
+    },
+    "user_raw_query": {
+      "duplicate_query_rate": 0.916667,
+      "mean_facet_coverage": 0.138889
+    }
+  }
+}

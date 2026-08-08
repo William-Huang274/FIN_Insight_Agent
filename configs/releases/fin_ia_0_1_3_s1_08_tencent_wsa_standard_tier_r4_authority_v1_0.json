@@ -1,0 +1,89 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_standard_tier_r4_authority_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.tencent_wsa_standard_tier_r4:v1",
+  "recorded_at": "2026-08-08",
+  "status": "issued_unconsumed",
+  "admission_id": "fin013-s1-08-tencent-wsa-standard-tier-r4",
+  "predecessor_attempt_id": "fin013-s1-08-tencent-wsa-exact-copy-ak-sk-r3",
+  "owner_authority": "The user declared that Tencent WSA was switched from lite to standard and explicitly authorized one same-query recheck. If it still fails research quality, the user authorized design of a DELL/MU/NVDA bilingual Evidence-Slot comparator before any integration.",
+  "changed_variable": "provider_subscription_lite_to_standard",
+  "expected_provider_version": "standard",
+  "credential_delivery_class": "reuse_owner_exact_text_hidden_input",
+  "credential_values_persisted": false,
+  "authorized_scope": "S1_08_PAID_BROAD_SEARCH_TENCENT_WSA_STANDARD_TIER_R4_DIAGNOSTIC",
+  "provider_profile_ref": "configs/runtime/fin_ia_0_1_3_s1_08_tencent_wsa_candidate_provider_profile_v1_0.json",
+  "runner_ref": "scripts/releases/run_fin_ia_0_1_3_s1_08_tencent_wsa_standard_tier_r4_diagnostic.py",
+  "support_ref": "src/sec_agent/s1_08_tencent_wsa_standard_tier_r4.py",
+  "zero_call_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_standard_tier_r4_zero_call_proof_v1_0.json",
+  "immutable_bindings": {
+    "provider_profile_sha256": "ba327e02aa7ec7896b6617e5cf8d809ba439ea9c36b75de88c7b7fcadf3356fb",
+    "provider_profile_digest": "dc249a8716081e3495e7376accfb48ac433aec9080d1baed90a9e3b70ed8622c",
+    "runner_sha256": "33aae0b0d82739193d9ceb2aa0714962cd2a1c9a76b453981ca94bd5915df784",
+    "support_sha256": "bf4958a72151bfbd145fa840649fc9655817434f95dc8312cf8fd041f85defc5",
+    "query_only_support_sha256": "4a639c57ffb38723c197013b2325a4aa7d79e4b7294415a24e82164110cc3801",
+    "normalizer_sha256": "df1a34bf036424255de4ea0de529c6e73e0d6cf1bcb4345ae5eccefb71039bdf",
+    "runner_helpers_sha256": "29e4dede4a6828b232ed7ebff0abc2863bab3d779af55f1291c784e562d4dd57",
+    "predecessor_result_sha256": "894705e0f428a3f1f3ab326799b23756253307d4047065bccfe637b8d0d02210",
+    "predecessor_assessment_sha256": "2db56d90327c018542454bebfde234345f177f15df5fd1759457a347588deffc",
+    "zero_call_proof_sha256": "feb015ac34b1e38fa205ba7c862f387464eb2edc0469c107efff86d9db7d3e37",
+    "zero_call_proof_digest": "04445a44d2014ee8fa7539982fd79649a6620b7f982fbf27eb87d830573a6450"
+  },
+  "sdk_contract": {
+    "package": "tencentcloud-sdk-python",
+    "tested_version": "3.1.152",
+    "runtime_location": ".codex_runtime/tencent-wsa-sdk",
+    "repository_dependency_added": false
+  },
+  "query": {
+    "query_id": "DELL-TENCENT-WSA-STANDARD-TIER-R4-Q1",
+    "case_key": "DELL",
+    "semantic_intent_ref": "DELL-DIAGNOSTIC-Q1",
+    "query_text": "Dell AI server demand customers supply chain 2026 earnings industry",
+    "request_body_fields": ["Query"],
+    "optional_fields": [],
+    "result_ceiling": 10
+  },
+  "execution_contract": {
+    "provider_call_ceiling": 1,
+    "network_call_ceiling": 1,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0,
+    "document_fetch_ceiling": 0,
+    "maximum_documented_cost_cny": 0.046,
+    "same_query_as_predecessor_required": true,
+    "credentials_interactive_hidden_only": true,
+    "credentials_or_signatures_may_be_persisted": false,
+    "safe_request_capture_before_transport_required": true,
+    "raw_response_or_failure_capture_before_parse_required": true,
+    "evidence_promotion_allowed": false,
+    "production_capability_claim_allowed": false
+  },
+  "evaluation_contract": {
+    "metrics": [
+      "observed_provider_version",
+      "useful_at_10",
+      "target_in_pool",
+      "date_field_presence_and_semantics",
+      "source_domain_diversity",
+      "documented_cost_cny",
+      "latency_ms"
+    ],
+    "same_query_R3_control_required": true,
+    "reranker_or_document_fetch_allowed": false
+  },
+  "contingency": {
+    "if_standard_quality_fails": "design and zero-call prove DELL/MU/NVDA bilingual Evidence-Slot comparator",
+    "automatic_comparator_live_execution": false,
+    "sourcehunter_integration_before_comparator_pass": false
+  },
+  "stop_rules": {
+    "any_transport_failure": "materialize typed terminal and stop",
+    "provider_version_not_standard": "materialize observed result, classify tier propagation mismatch and stop",
+    "research_quality_failure": "materialize quality assessment and move only to comparator design",
+    "automatic_retry": false,
+    "automatic_fifth_attempt": false,
+    "automatic_sourcehunter_integration": false
+  },
+  "hard_boundary": "R4 isolates the declared provider subscription change. Even a good result is one-query evidence and cannot by itself establish three-case robustness or production SourceHunter eligibility.",
+  "authority_digest": "1a0887fa7059003a20b16b9f607b1a3f159cdecfce5134d37e6d1a98f9e033a7"
+}

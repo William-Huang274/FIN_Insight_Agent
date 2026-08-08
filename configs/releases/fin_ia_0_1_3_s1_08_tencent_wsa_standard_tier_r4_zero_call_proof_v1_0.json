@@ -1,0 +1,60 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_standard_tier_r4_zero_call_proof_v1_0",
+  "recorded_at": "2026-08-08",
+  "status": "zero_call_contract_pass",
+  "governing_issue_id": "RC-P36-157-fin-0-1-3-s1-08-operational-provider-and-candidate-coverage-insufficient",
+  "run_scope": "S1_08_PAID_BROAD_SEARCH_TENCENT_WSA_STANDARD_TIER_R4_DIAGNOSTIC",
+  "experiment_control": {
+    "changed_variable": "provider_subscription_lite_to_standard",
+    "expected_provider_version": "standard",
+    "same_credential_path": true,
+    "same_query": true,
+    "same_query_only_wire_shape": true,
+    "same_sdk_endpoint_normalizer_and_result_ceiling": true
+  },
+  "predecessor": {
+    "attempt_id": "fin013-s1-08-tencent-wsa-exact-copy-ak-sk-r3",
+    "result_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_exact_copy_ak_sk_r3_result_v1_0.json",
+    "result_sha256": "894705e0f428a3f1f3ab326799b23756253307d4047065bccfe637b8d0d02210",
+    "result_digest": "3f532c0ace0b5d1b5c0c7e0f1cfcb68e4b5b489ae92169bc1015d1d95ffb796d",
+    "quality_assessment_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_exact_copy_ak_sk_r3_quality_assessment_v1_0.json",
+    "quality_assessment_sha256": "2db56d90327c018542454bebfde234345f177f15df5fd1759457a347588deffc",
+    "quality_assessment_digest": "3c590bf4da38044f43cc74fa5009abcc6c4553bb60beec3c04e6209546c38ffa"
+  },
+  "provider_profile": {
+    "ref": "configs/runtime/fin_ia_0_1_3_s1_08_tencent_wsa_candidate_provider_profile_v1_0.json",
+    "sha256": "ba327e02aa7ec7896b6617e5cf8d809ba439ea9c36b75de88c7b7fcadf3356fb",
+    "digest": "dc249a8716081e3495e7376accfb48ac433aec9080d1baed90a9e3b70ed8622c"
+  },
+  "implementation": {
+    "support_ref": "src/sec_agent/s1_08_tencent_wsa_standard_tier_r4.py",
+    "support_sha256": "bf4958a72151bfbd145fa840649fc9655817434f95dc8312cf8fd041f85defc5",
+    "runner_ref": "scripts/releases/run_fin_ia_0_1_3_s1_08_tencent_wsa_standard_tier_r4_diagnostic.py",
+    "runner_sha256": "33aae0b0d82739193d9ceb2aa0714962cd2a1c9a76b453981ca94bd5915df784",
+    "query_only_support_sha256": "4a639c57ffb38723c197013b2325a4aa7d79e4b7294415a24e82164110cc3801",
+    "runner_helpers_sha256": "29e4dede4a6828b232ed7ebff0abc2863bab3d779af55f1291c784e562d4dd57",
+    "normalizer_sha256": "df1a34bf036424255de4ea0de529c6e73e0d6cf1bcb4345ae5eccefb71039bdf"
+  },
+  "compiled_request_contract": {
+    "query_text": "Dell AI server demand customers supply chain 2026 earnings industry",
+    "request_body_fields": ["Query"],
+    "optional_fields": [],
+    "capture_before_transport": true,
+    "credential_or_signature_capture_allowed": false
+  },
+  "verification": {
+    "pre_authority_targeted_tests_passed": 8,
+    "pre_authority_targeted_tests_failed": 0,
+    "compile_pass": true,
+    "project_os_scope_registered": true,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "retry_calls": 0,
+    "model_calls": 0,
+    "document_fetches": 0,
+    "evidence_promotions": 0,
+    "credential_values_persisted": false
+  },
+  "hard_boundary": "This proves only a same-query standard-tier R4 successor contract. It does not prove that the Tencent console change has propagated, does not consume a live admission, and does not authorize query rewriting, bilingual comparator execution, SourceHunter integration, Evidence or production promotion.",
+  "proof_digest": "04445a44d2014ee8fa7539982fd79649a6620b7f982fbf27eb87d830573a6450"
+}

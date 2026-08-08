@@ -1374,6 +1374,14 @@ DeepSeek variant 只通过一次单 batch 自然 query-atom canary 观察：18 �
 
 该分层不会改变已批准的外源→内源顺序。外源 combined live 完成后仍必须回到 internal exact／BM25／dense／graph，建立人工 qrels／hard negative 和 candidate ceiling，再评估 BGE／fusion／rerank，最后证明下游研究使用。
 
+#### 7.7.5 内源当前语料门禁与双时间口径（2026-08-09）
+
+内源查询必须区分两个不能互换的时间角色：`reporting fiscal period` 用于 Gold SQL／事实权威，例如 NVDA `Q1 FY2027`；`filing/publication calendar year` 用于文档、BM25、ObjectBM25 与向量索引，例如该季报在 2026 年发布。任何 route 不得继续复用一个含义模糊的 `fiscal_year` 过滤器。Graph 若没有独立 period authority，只能提供关系候选，不能单独满足 strict current target。
+
+FIN 0.1.3 首次真实 candidate ceiling 的修正后结果为：18 个研究束在 SQL／ObjectBM25／BM25／Graph 上得到 `0／360／360／196` 个候选；Milvus 只完成 collection、schema、1024 维和 ticker coverage 资格检查，没有执行 embedding。agent-curated、待 Owner 复核的 18 个 strict current qrel target 中只有 9 个进入候选池，SQL current exact 为 0。主要缺口是 MU current Q3、DELL／NVDA current regulatory document 与 TSMC/TSM lexical/object corpus，而不是查询意图仍无法表达。
+
+因此产品增加一条强制门禁：candidate pool 缺目标时，先刷新 current official corpus、Gold mart 和各索引；不得先下载 reranker、调大 top-k 或把 dense/fusion 分数当作补资料手段。刷新必须建立 successor asset 和 lineage，不原地改写历史索引；同一冻结 qrels 达到 strict current target-in-pool `18/18` 并经 Owner 复核后，才能准入 BGE-M3、facet-aware fusion 与可选 reranker。模型可建议受控 query atoms，但不拥有时间、身份、关系、来源或数据刷新权。
+
 ### 7.8 Agentic Research Harness 工程控制面（2026-07-09 追加）
 
 在 `Agentic Search / Agentic Research` 之上，FIN 需要一个统一的 `Agentic Research Harness`。它不是另一个 agent，也不是把所有节点改成更长 prompt；它是运行时控制面，负责把工具、上下文、权限、状态、trace、评测和自我迭代统一成可审计系统。

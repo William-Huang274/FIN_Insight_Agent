@@ -507,6 +507,23 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 
 本地资产预审同时暴露了真实数据边界：BM25／ObjectBM25 有 DELL、MU、NVDA、MSFT 但缺少 `TSM`；Gold SQL 有 `TSM`，但 current-quarter exact authority 可能稀疏；Milvus 有约 66 万向量，但模型 locator 仍需资格化；本地存在 BGE-M3，reranker 模型目前不存在。上述缺口必须在候选池阶段分型为 query／route／index／corpus／resource gap，不能靠调大 top-k 或提前下载 reranker 混在一起修。机器真相推进为 `configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_2.json`。
 
+## 7K. 内源 candidate ceiling 结果与 current corpus/index refresh（2026-08-09）
+
+第 7J 的 candidate ceiling 已真实执行，并纠正了一个会制造假缺口的合同问题：报告财年与文件发布年份必须分离。NVDA `Q1 FY2027` 是 reporting period 2027，但文件在 2026 发布；SQL 使用前者，文档索引使用后者。v1.0 的混用结果与 v1.1 首次 Milvus collection 未 load 结果不删除，修正后的 Attempt R2 作为新证据。
+
+R2 的 18 个 bundle 得到 `SQL 0 / ObjectBM25 360 / BM25 360 / Graph 196`，Milvus 仅资格化未执行。18 个 agent-curated strict current target 中 `9/18` 进入 pool；另外 9 个主要缺 MU current Q3、DELL／NVDA current regulatory document 和 TSM/TSMC lexical/object rows。由此第 7J 的第 2、3 项状态变更为“候选观察已完成，但 gate failed”；失败归属 S1 数据/索引新鲜度，而不是 BGE、reranker 或 DeepSeek。
+
+更新后的有界顺序为：
+
+1. [x] typed period successor、真实 local candidate observation 与 provisional qrels packet；
+2. [ ] **当前**：只做 current official corpus 与 index inventory，优先复用已保存 capture/raw source；明确每个缺失 target 是 source absent、parser absent、Gold transform absent 还是 index stale；
+3. [ ] 在新路径构建 successor Gold SQL／ObjectBM25／BM25／Graph／Milvus，不原地覆盖历史资产；
+4. [ ] 用同一 18-target qrels 重跑 candidate ceiling，达到 `18/18` 后交 Owner 复核；
+5. [ ] 复核通过后才准入 BGE-M3、facet-aware fusion 与可选 reranker；
+6. [ ] 最后执行 Evidence Gate→Claim→Workpaper→report utilization proof。
+
+机器真相推进为 `configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_3.json`。external coverage 仍为独立 release blocker；内源通过不会自动关闭外源问题。
+
 ## 8. 下一步
 
 1. [x] 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。

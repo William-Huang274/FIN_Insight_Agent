@@ -276,14 +276,18 @@ def test_materialized_proof_is_zero_call_digest_bound_and_honest() -> None:
     assert proof["stage_acceptance"]["external_product_coverage"] is False
 
 
-def test_project_os_advances_from_projection_to_candidate_ceiling_scope() -> None:
+def test_project_os_advances_past_candidate_ceiling_to_corpus_refresh_scope() -> None:
     completed = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
     assert completed["status"] == "blocked"
-    current = run_project_os_preflight(
+    candidate_ceiling = run_project_os_preflight(
         ROOT, run_scope="S1_INTERNAL_CANDIDATE_CEILING_AND_QRELS_GATE"
     )
+    assert candidate_ceiling["status"] == "blocked"
+    current = run_project_os_preflight(
+        ROOT, run_scope="S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH"
+    )
     assert current["status"] == "pass"
-    assert current["run_scope"] == "S1_INTERNAL_CANDIDATE_CEILING_AND_QRELS_GATE"
+    assert current["run_scope"] == "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH"
     ranking = run_project_os_preflight(
         ROOT, run_scope="S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION"
     )

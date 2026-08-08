@@ -1,0 +1,214 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_qrels_target_manifest_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_candidate_qrels:v1",
+  "recorded_at": "2026-08-09",
+  "review_state": "agent_curated_pending_owner_review",
+  "target_unit": "case_evidence_slot_evidence_owner_period",
+  "relevance_scale": {
+    "0": "not relevant or wrong identity, period, relationship or authority",
+    "1": "contextual or graph-only candidate without strict current-period proof",
+    "2": "directly relevant current primary-source candidate covering a material facet",
+    "3": "canonical or semantically equivalent current primary source covering the central target"
+  },
+  "strict_target_in_pool_threshold": 2,
+  "targets": [
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "expected_source_refs": ["SRC_MSFT_Q3_FY26_CALL"],
+      "target_facets": ["AI infrastructure investment", "cloud demand", "capacity expansion"],
+      "proposed_state": "strict_current_target_in_pool",
+      "selected_route_id": "internal_bm25",
+      "selected_source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+      "proposed_relevance": 2,
+      "curator_rationale": "The current Microsoft 10-Q directly records AI-infrastructure investment and growing AI usage. It is a primary-source alternative to, but not a verbatim substitute for, the earnings-call target."
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "DELL",
+      "expected_source_refs": ["SRC_DELL_Q1_FY27_EXHIBIT", "SRC_DELL_Q1_FY27_CALL"],
+      "target_facets": ["AI server orders", "AI server revenue", "current results"],
+      "proposed_state": "strict_current_target_in_pool",
+      "selected_route_id": "internal_bm25",
+      "selected_source_key": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "proposed_relevance": 3,
+      "curator_rationale": "The SEC-hosted Q1 FY2027 earnings exhibit is the canonical company-authored results document and directly states AI orders, AI server revenue and current-period results."
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "DELL",
+      "expected_source_refs": ["SRC_DELL_FY26_10K"],
+      "target_facets": ["inventory", "working capital", "cash-flow reconciliation", "risk factors"],
+      "proposed_state": "strict_current_target_absent",
+      "gap_class": "current_regulatory_document_not_in_candidate_pool",
+      "curator_rationale": "The pool contains a December 2025 FY2026 10-Q, but not the March 2026 FY2026 10-K or Q1 FY2027 10-Q needed for the current regulatory target."
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "MU",
+      "expected_source_refs": ["SRC_MU_Q3_FY26_RESULTS", "SRC_MU_Q3_FY26_REMARKS"],
+      "target_facets": ["HBM capacity", "supply tightness", "supply ramp"],
+      "proposed_state": "strict_current_target_absent",
+      "gap_class": "current_supplier_document_not_in_candidate_pool",
+      "curator_rationale": "Only Micron Q2 FY2026 material is present; the Q3 FY2026 results and prepared remarks frozen for this target are absent."
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "expected_source_refs": ["SRC_NVDA_Q1_FY27_RESULTS"],
+      "target_facets": ["platform demand", "manufacturing reliance", "supply counterevidence"],
+      "proposed_state": "strict_current_target_in_pool",
+      "selected_route_id": "internal_bm25",
+      "selected_source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+      "proposed_relevance": 2,
+      "curator_rationale": "The current Q1 FY2027 company release contains primary-source manufacturing and third-party supply reliance counterevidence, but not a complete capacity bridge."
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "expected_source_refs": ["SRC_TSMC_Q2_2026_RESULTS"],
+      "target_facets": ["CoWoS capacity", "advanced packaging", "capacity expansion"],
+      "proposed_state": "strict_current_target_absent",
+      "gap_class": "evidence_owner_absent_from_lexical_and_object_corpus",
+      "curator_rationale": "The BM25 and ObjectBM25 corpora contain no TSM records. Graph rows lack current-period proof and therefore cannot satisfy the strict target."
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "DELL",
+      "expected_source_refs": ["SRC_DELL_Q1_FY27_CALL", "SRC_DELL_Q1_FY27_EXHIBIT"],
+      "target_facets": ["AI server orders", "server revenue", "demand conversion"],
+      "proposed_state": "strict_current_target_in_pool",
+      "selected_route_id": "internal_bm25",
+      "selected_source_key": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "proposed_relevance": 3,
+      "curator_rationale": "Dell's current Q1 FY2027 results directly report AI orders and AI server revenue, providing primary downstream demand evidence for memory."
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "expected_source_refs": ["SRC_MSFT_Q3_FY26_CALL"],
+      "target_facets": ["AI infrastructure investment", "cloud demand", "capacity expansion"],
+      "proposed_state": "strict_current_target_in_pool",
+      "selected_route_id": "internal_bm25",
+      "selected_source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+      "proposed_relevance": 2,
+      "curator_rationale": "The current Microsoft 10-Q provides primary-source AI-infrastructure investment and usage evidence relevant to memory demand."
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "MU",
+      "expected_source_refs": ["SRC_MU_Q3_FY26_RESULTS", "SRC_MU_Q3_FY26_REMARKS"],
+      "target_facets": ["Q3 revenue", "gross margin", "price versus bit shipment", "HBM commentary"],
+      "proposed_state": "strict_current_target_absent",
+      "gap_class": "current_issuer_document_not_in_candidate_pool",
+      "curator_rationale": "The local pool stops at Micron Q2 FY2026 and cannot answer the frozen Q3 FY2026 issuer target."
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "MU",
+      "expected_source_refs": ["SRC_MU_Q3_FY26_RESULTS", "SRC_MU_Q3_FY26_REMARKS"],
+      "target_facets": ["inventory", "cash flow", "price-volume bridge", "supply commitments"],
+      "proposed_state": "strict_current_target_absent",
+      "gap_class": "current_regulatory_or_reconciliation_document_not_in_candidate_pool",
+      "curator_rationale": "Q2 FY2026 risk and reconciliation rows are useful history but do not meet the Q3 FY2026 current-period target."
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "expected_source_refs": ["SRC_NVDA_Q1_FY27_RESULTS"],
+      "target_facets": ["platform demand", "manufacturing reliance", "supply counterevidence"],
+      "proposed_state": "strict_current_target_in_pool",
+      "selected_route_id": "internal_bm25",
+      "selected_source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+      "proposed_relevance": 2,
+      "curator_rationale": "The current NVIDIA release supplies direct platform-demand context and supply-reliance counterevidence for the MU supply thesis."
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "expected_source_refs": ["SRC_TSMC_Q2_2026_RESULTS"],
+      "target_facets": ["CoWoS capacity", "advanced packaging", "capacity expansion"],
+      "proposed_state": "strict_current_target_absent",
+      "gap_class": "evidence_owner_absent_from_lexical_and_object_corpus",
+      "curator_rationale": "No TSM lexical or object records exist; graph-only candidates cannot establish the requested current period."
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "DELL",
+      "expected_source_refs": ["SRC_DELL_Q1_FY27_CALL", "SRC_DELL_Q1_FY27_EXHIBIT"],
+      "target_facets": ["AI server orders", "server revenue", "demand conversion"],
+      "proposed_state": "strict_current_target_in_pool",
+      "selected_route_id": "internal_bm25",
+      "selected_source_key": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "proposed_relevance": 3,
+      "curator_rationale": "Dell's current Q1 FY2027 AI order and AI server revenue disclosure is direct downstream demand validation for NVIDIA."
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "expected_source_refs": ["SRC_MSFT_Q3_FY26_CALL"],
+      "target_facets": ["AI infrastructure investment", "cloud demand", "capacity expansion"],
+      "proposed_state": "strict_current_target_in_pool",
+      "selected_route_id": "internal_bm25",
+      "selected_source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+      "proposed_relevance": 2,
+      "curator_rationale": "The current Microsoft 10-Q provides direct AI-infrastructure investment and usage evidence relevant to NVIDIA demand."
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "NVDA",
+      "expected_source_refs": ["SRC_NVDA_Q1_FY27_RESULTS"],
+      "target_facets": ["revenue", "data-center revenue", "gross margin", "current outlook"],
+      "proposed_state": "strict_current_target_in_pool",
+      "selected_route_id": "internal_bm25",
+      "selected_source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+      "proposed_relevance": 3,
+      "curator_rationale": "The SEC-hosted Q1 FY2027 company release is the canonical current results source and directly covers the central issuer target."
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "NVDA",
+      "expected_source_refs": ["SRC_NVDA_Q1_FY27_10Q"],
+      "target_facets": ["customer concentration", "purchase commitments", "cash flow", "export risk"],
+      "proposed_state": "strict_current_target_absent",
+      "gap_class": "current_regulatory_document_not_in_candidate_pool",
+      "curator_rationale": "The candidate pool contains a November 2025 FY2026 10-Q, not the May 2026 Q1 FY2027 10-Q required by the frozen target."
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "MU",
+      "expected_source_refs": ["SRC_MU_Q3_FY26_RESULTS", "SRC_MU_Q3_FY26_REMARKS"],
+      "target_facets": ["HBM capacity", "supply tightness", "supply ramp"],
+      "proposed_state": "strict_current_target_absent",
+      "gap_class": "current_supplier_document_not_in_candidate_pool",
+      "curator_rationale": "Only Micron Q2 FY2026 material is indexed; the current Q3 results and prepared remarks are absent."
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "expected_source_refs": ["SRC_TSMC_Q2_2026_RESULTS"],
+      "target_facets": ["CoWoS capacity", "advanced packaging", "capacity expansion"],
+      "proposed_state": "strict_current_target_absent",
+      "gap_class": "evidence_owner_absent_from_lexical_and_object_corpus",
+      "curator_rationale": "TSM is absent from both lexical corpora; graph rows do not expose enough period authority to count as a strict current target."
+    }
+  ]
+}

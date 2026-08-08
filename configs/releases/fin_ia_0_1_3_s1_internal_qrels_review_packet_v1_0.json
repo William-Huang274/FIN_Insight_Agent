@@ -1,0 +1,1040 @@
+{
+  "all_target_exact_sql_candidate_count": 0,
+  "candidate_observation_digest": "4e339da912b0dd02a7d5d43889f48ca826f2fa51321c43862d9090546cee0f0f",
+  "contract_ref": "fin_0_1_3.S1.internal_candidate_qrels:v1",
+  "gap_counts": {
+    "current_issuer_document_not_in_candidate_pool": 1,
+    "current_regulatory_document_not_in_candidate_pool": 2,
+    "current_regulatory_or_reconciliation_document_not_in_candidate_pool": 1,
+    "current_supplier_document_not_in_candidate_pool": 2,
+    "evidence_owner_absent_from_lexical_and_object_corpus": 3
+  },
+  "gate_decision": {
+    "BGE_fusion_rerank_admitted": false,
+    "agent_curated_candidate_ceiling_pass": false,
+    "candidate_ceiling_proven": false,
+    "owner_review_complete": false,
+    "reason": "Current strict target recall is below 1.0 and exact SQL has no current candidate. Corpus/index freshness and evidence-owner coverage must be repaired before ranking evaluation."
+  },
+  "implementation": {
+    "materializer_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_internal_qrels_review_packet.py",
+    "module_ref": "src/sec_agent/s1_internal_qrels_review.py",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_qrels_review_policy_v1_0.json"
+  },
+  "integration_proof_digest": "beb4627ce48635b73c73909242c7ae4d706484c4eb37d7d32c997f7e5a8a4c76",
+  "known_boundary": "These labels are an agent-curated review proposal applied only after candidate generation. They are not owner-reviewed qrels, Evidence, a ranking result, downstream utilization proof or release acceptance.",
+  "observed_calls": {
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0
+  },
+  "policy_digest": "e2ffcc2cefc93b0c124237378e2409dbdada169b048a9e98124dd17b36d2cf30",
+  "project_os_preflight": {
+    "registry_version": "",
+    "run_scope": "S1_INTERNAL_CANDIDATE_CEILING_AND_QRELS_GATE",
+    "status": "pass"
+  },
+  "qrels": [
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_85b437ac4c204de75c11",
+      "case_key": "DELL",
+      "curator_rationale": "The current Microsoft 10-Q directly records AI-infrastructure investment and growing AI usage. It is a primary-source alternative to, but not a verbatim substitute for, the earnings-call target.",
+      "evidence_owner_ticker": "MSFT",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "expected_source_refs": [
+        "SRC_MSFT_Q3_FY26_CALL"
+      ],
+      "gap_class": "",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 2,
+      "proposed_state": "strict_current_target_in_pool",
+      "qrel_digest": "d5cc5e9bee70a8725d578e44d2e78e447930f34c2d3f959031a8624c3de6cc3a",
+      "reporting_fiscal_years": [
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": {
+        "bundle_id": "internal_query_facet_bundle_85b437ac4c204de75c11",
+        "candidate_digest": "068f4584122ab1497b8bf13670e87e3bc8e32a5b6fef1d4a3771cae0eb9fa61a",
+        "candidate_id": "internal_candidate_068f4584122ab1497b8bf136",
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "MSFT",
+        "evidence_owner_ticker": "MSFT",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "exact_value_authority": false,
+        "fiscal_year": 2026,
+        "form_type": "10-Q",
+        "matched_query_indexes": [
+          0,
+          1
+        ],
+        "object_type": "",
+        "preview": "Productivity and Business Processes and Intelligent Cloud Metrics related to our Productivity and Business Processes and Intelligent Cloud segments assess the health of our core businesses within these segments. The metrics primarily reflect growth across our cloud services. [TAB...",
+        "published_at": "2026-04-29",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "request_digest": "ec2c3f7bea2c2fbebfe6a6530820ac887169dfb67ba5b49ee18aa85d735936b9",
+        "request_id": "internal_route_request_ec2c3f7bea2c2fbebfe6",
+        "route_id": "internal_bm25",
+        "route_rank": 3,
+        "score": 46.11944681,
+        "section": "Item 2. Management's Discussion and Analysis",
+        "source_evidence_id": "",
+        "source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+        "source_tier": "primary_sec_filing",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+        "strict_identity_filter_applied": true,
+        "strict_period_filter_applied": true,
+        "subject_entity_key": "DELL",
+        "subject_ticker": "DELL",
+        "subsection": "Productivity and Business Processes and Intelligent Cloud",
+        "ticker": "MSFT"
+      },
+      "strict_current_target_in_pool": true,
+      "target_facets": [
+        "AI infrastructure investment",
+        "cloud demand",
+        "capacity expansion"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_1d678815518868a38086",
+      "case_key": "DELL",
+      "curator_rationale": "The SEC-hosted Q1 FY2027 earnings exhibit is the canonical company-authored results document and directly states AI orders, AI server revenue and current-period results.",
+      "evidence_owner_ticker": "DELL",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "expected_source_refs": [
+        "SRC_DELL_Q1_FY27_EXHIBIT",
+        "SRC_DELL_Q1_FY27_CALL"
+      ],
+      "gap_class": "",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 3,
+      "proposed_state": "strict_current_target_in_pool",
+      "qrel_digest": "224a7cee8af4842bf00523db259f1c4b022d1c4105d33f04295e6dcaf3db01e8",
+      "reporting_fiscal_years": [
+        2027,
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": {
+        "bundle_id": "internal_query_facet_bundle_1d678815518868a38086",
+        "candidate_digest": "43cbefca8053c9a12c399d4052081d42605af4343151c70b1138f671b2262424",
+        "candidate_id": "internal_candidate_43cbefca8053c9a12c399d40",
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "DELL",
+        "evidence_owner_ticker": "DELL",
+        "evidence_slot_id": "issuer_results_and_management_commentary",
+        "exact_value_authority": false,
+        "fiscal_year": 2026,
+        "form_type": "8-K",
+        "matched_query_indexes": [
+          0,
+          1
+        ],
+        "object_type": "",
+        "preview": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provid...",
+        "published_at": "2026-05-28",
+        "relationship_direction": "subject_self_disclosure",
+        "request_digest": "0611b39fae06c14724494ab22293daabe629cdc6b9d580183aedc40568bc6105",
+        "request_id": "internal_route_request_0611b39fae06c1472449",
+        "route_id": "internal_bm25",
+        "route_rank": 1,
+        "score": 64.71882091,
+        "section": "Exhibit 99.1 Earnings Release",
+        "source_evidence_id": "",
+        "source_key": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+        "strict_identity_filter_applied": true,
+        "strict_period_filter_applied": true,
+        "subject_entity_key": "DELL",
+        "subject_ticker": "DELL",
+        "subsection": "EX-99.1",
+        "ticker": "DELL"
+      },
+      "strict_current_target_in_pool": true,
+      "target_facets": [
+        "AI server orders",
+        "AI server revenue",
+        "current results"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_96ddf73c8363e6234c24",
+      "case_key": "DELL",
+      "curator_rationale": "The pool contains a December 2025 FY2026 10-Q, but not the March 2026 FY2026 10-K or Q1 FY2027 10-Q needed for the current regulatory target.",
+      "evidence_owner_ticker": "DELL",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "expected_source_refs": [
+        "SRC_DELL_FY26_10K"
+      ],
+      "gap_class": "current_regulatory_document_not_in_candidate_pool",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 0,
+      "proposed_state": "strict_current_target_absent",
+      "qrel_digest": "48541fc6ec74bd371bba85511707a4396fe98e52c25093526e888b8e04eb2e62",
+      "reporting_fiscal_years": [
+        2027,
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": null,
+      "strict_current_target_in_pool": false,
+      "target_facets": [
+        "inventory",
+        "working capital",
+        "cash-flow reconciliation",
+        "risk factors"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_9e5597c9d5ad2c296f02",
+      "case_key": "DELL",
+      "curator_rationale": "Only Micron Q2 FY2026 material is present; the Q3 FY2026 results and prepared remarks frozen for this target are absent.",
+      "evidence_owner_ticker": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "expected_source_refs": [
+        "SRC_MU_Q3_FY26_RESULTS",
+        "SRC_MU_Q3_FY26_REMARKS"
+      ],
+      "gap_class": "current_supplier_document_not_in_candidate_pool",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 0,
+      "proposed_state": "strict_current_target_absent",
+      "qrel_digest": "f67200acd328df9c1a67a5a0f7ebd35fe9b92c86470171921c4195dd480e0488",
+      "reporting_fiscal_years": [
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": null,
+      "strict_current_target_in_pool": false,
+      "target_facets": [
+        "HBM capacity",
+        "supply tightness",
+        "supply ramp"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_f42e9fcc248272496f97",
+      "case_key": "DELL",
+      "curator_rationale": "The current Q1 FY2027 company release contains primary-source manufacturing and third-party supply reliance counterevidence, but not a complete capacity bridge.",
+      "evidence_owner_ticker": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "expected_source_refs": [
+        "SRC_NVDA_Q1_FY27_RESULTS"
+      ],
+      "gap_class": "",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 2,
+      "proposed_state": "strict_current_target_in_pool",
+      "qrel_digest": "b0bd4646a5296332dbcfe345c6a09b6e718da1287dc8c801a9cae0a2fd20fa0c",
+      "reporting_fiscal_years": [
+        2027
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 2,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": {
+        "bundle_id": "internal_query_facet_bundle_f42e9fcc248272496f97",
+        "candidate_digest": "4ed0fb56b172e84fe2089d88d75f601e583b2b5b8769099e56f1e146290899c1",
+        "candidate_id": "internal_candidate_4ed0fb56b172e84fe2089d88",
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "NVDA",
+        "evidence_owner_ticker": "NVDA",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "exact_value_authority": false,
+        "fiscal_year": 2026,
+        "form_type": "8-K",
+        "matched_query_indexes": [
+          0,
+          1
+        ],
+        "object_type": "",
+        "preview": "For further information, contact: [TABLE_START id=3 rows=4] Toshiya Hari | Mylene Mangalindan Investor Relations | Corporate Communications NVIDIA Corporation | NVIDIA Corporation toshiyah@nvidia.com | press@nvidia.com [TABLE_END] Certain statements in this press release includin...",
+        "published_at": "2026-05-20",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "request_digest": "a5fb01eee2e669416f397c386316f2953db7019ffa5bbca22631a77e98f2e663",
+        "request_id": "internal_route_request_a5fb01eee2e669416f39",
+        "route_id": "internal_bm25",
+        "route_rank": 3,
+        "score": 37.87428815,
+        "section": "Exhibit 99.1 Earnings Release",
+        "source_evidence_id": "",
+        "source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/q1fy27pr.htm",
+        "strict_identity_filter_applied": true,
+        "strict_period_filter_applied": true,
+        "subject_entity_key": "DELL",
+        "subject_ticker": "DELL",
+        "subsection": "For further information, contact",
+        "ticker": "NVDA"
+      },
+      "strict_current_target_in_pool": true,
+      "target_facets": [
+        "platform demand",
+        "manufacturing reliance",
+        "supply counterevidence"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_50ea183ead342dc72262",
+      "case_key": "DELL",
+      "curator_rationale": "The BM25 and ObjectBM25 corpora contain no TSM records. Graph rows lack current-period proof and therefore cannot satisfy the strict target.",
+      "evidence_owner_ticker": "TSM",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "expected_source_refs": [
+        "SRC_TSMC_Q2_2026_RESULTS"
+      ],
+      "gap_class": "evidence_owner_absent_from_lexical_and_object_corpus",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 0,
+      "proposed_state": "strict_current_target_absent",
+      "qrel_digest": "c8c072df214413b51d4dfa954205aee99c79eae145a29c9e5739ba58c6351af2",
+      "reporting_fiscal_years": [
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 0,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 0,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": null,
+      "strict_current_target_in_pool": false,
+      "target_facets": [
+        "CoWoS capacity",
+        "advanced packaging",
+        "capacity expansion"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_621e7891570ac2e5fec0",
+      "case_key": "MU",
+      "curator_rationale": "Dell's current Q1 FY2027 results directly report AI orders and AI server revenue, providing primary downstream demand evidence for memory.",
+      "evidence_owner_ticker": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "expected_source_refs": [
+        "SRC_DELL_Q1_FY27_CALL",
+        "SRC_DELL_Q1_FY27_EXHIBIT"
+      ],
+      "gap_class": "",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 3,
+      "proposed_state": "strict_current_target_in_pool",
+      "qrel_digest": "c05ad9e923bda6cbbd3e1402a3fb7a5348d8fdb1fa64e85081321deb6a16f5b8",
+      "reporting_fiscal_years": [
+        2027,
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": {
+        "bundle_id": "internal_query_facet_bundle_621e7891570ac2e5fec0",
+        "candidate_digest": "116204dd1a9c41592e1828b52c1210f487359d8ad6aa827f07b62b7730f3ded3",
+        "candidate_id": "internal_candidate_116204dd1a9c41592e1828b5",
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "DELL",
+        "evidence_owner_ticker": "DELL",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "exact_value_authority": false,
+        "fiscal_year": 2026,
+        "form_type": "8-K",
+        "matched_query_indexes": [
+          0,
+          1
+        ],
+        "object_type": "",
+        "preview": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provid...",
+        "published_at": "2026-05-28",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "request_digest": "dc53c8e1ee7e697148aa7971c1873a33e3d3a08d5a2b3b4c9fc5629e610135ba",
+        "request_id": "internal_route_request_dc53c8e1ee7e697148aa",
+        "route_id": "internal_bm25",
+        "route_rank": 1,
+        "score": 55.28152425,
+        "section": "Exhibit 99.1 Earnings Release",
+        "source_evidence_id": "",
+        "source_key": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+        "strict_identity_filter_applied": true,
+        "strict_period_filter_applied": true,
+        "subject_entity_key": "MU",
+        "subject_ticker": "MU",
+        "subsection": "EX-99.1",
+        "ticker": "DELL"
+      },
+      "strict_current_target_in_pool": true,
+      "target_facets": [
+        "AI server orders",
+        "server revenue",
+        "demand conversion"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_9a9f8fa72563a8a4c6a5",
+      "case_key": "MU",
+      "curator_rationale": "The current Microsoft 10-Q provides primary-source AI-infrastructure investment and usage evidence relevant to memory demand.",
+      "evidence_owner_ticker": "MSFT",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "expected_source_refs": [
+        "SRC_MSFT_Q3_FY26_CALL"
+      ],
+      "gap_class": "",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 2,
+      "proposed_state": "strict_current_target_in_pool",
+      "qrel_digest": "897ea7cf42f0f20d7646c71c109f69514cc47f32429913cf376ac0eab6a8ed98",
+      "reporting_fiscal_years": [
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": {
+        "bundle_id": "internal_query_facet_bundle_9a9f8fa72563a8a4c6a5",
+        "candidate_digest": "76daf1c45f528e26e3e22cc7cd1168b92777556e8786c2d6570968d734bed224",
+        "candidate_id": "internal_candidate_76daf1c45f528e26e3e22cc7",
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "MSFT",
+        "evidence_owner_ticker": "MSFT",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "exact_value_authority": false,
+        "fiscal_year": 2026,
+        "form_type": "10-Q",
+        "matched_query_indexes": [
+          0,
+          1
+        ],
+        "object_type": "",
+        "preview": "Productivity and Business Processes and Intelligent Cloud Metrics related to our Productivity and Business Processes and Intelligent Cloud segments assess the health of our core businesses within these segments. The metrics primarily reflect growth across our cloud services. [TAB...",
+        "published_at": "2026-04-29",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "request_digest": "9b0f7d2a82de53cbf423fdcb584bcfd53be62d6c8b0be1fbc6885cac485a8cd1",
+        "request_id": "internal_route_request_9b0f7d2a82de53cbf423",
+        "route_id": "internal_bm25",
+        "route_rank": 3,
+        "score": 46.11944681,
+        "section": "Item 2. Management's Discussion and Analysis",
+        "source_evidence_id": "",
+        "source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+        "source_tier": "primary_sec_filing",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+        "strict_identity_filter_applied": true,
+        "strict_period_filter_applied": true,
+        "subject_entity_key": "MU",
+        "subject_ticker": "MU",
+        "subsection": "Productivity and Business Processes and Intelligent Cloud",
+        "ticker": "MSFT"
+      },
+      "strict_current_target_in_pool": true,
+      "target_facets": [
+        "AI infrastructure investment",
+        "cloud demand",
+        "capacity expansion"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_4c581958c23fb86e2173",
+      "case_key": "MU",
+      "curator_rationale": "The local pool stops at Micron Q2 FY2026 and cannot answer the frozen Q3 FY2026 issuer target.",
+      "evidence_owner_ticker": "MU",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "expected_source_refs": [
+        "SRC_MU_Q3_FY26_RESULTS",
+        "SRC_MU_Q3_FY26_REMARKS"
+      ],
+      "gap_class": "current_issuer_document_not_in_candidate_pool",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 0,
+      "proposed_state": "strict_current_target_absent",
+      "qrel_digest": "e02c5ffac20408bd604319fd9e22f6a6aa2d4f02fbd647645317a1adb458409a",
+      "reporting_fiscal_years": [
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": null,
+      "strict_current_target_in_pool": false,
+      "target_facets": [
+        "Q3 revenue",
+        "gross margin",
+        "price versus bit shipment",
+        "HBM commentary"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_11d78cb3e76667f06b29",
+      "case_key": "MU",
+      "curator_rationale": "Q2 FY2026 risk and reconciliation rows are useful history but do not meet the Q3 FY2026 current-period target.",
+      "evidence_owner_ticker": "MU",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "expected_source_refs": [
+        "SRC_MU_Q3_FY26_RESULTS",
+        "SRC_MU_Q3_FY26_REMARKS"
+      ],
+      "gap_class": "current_regulatory_or_reconciliation_document_not_in_candidate_pool",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 0,
+      "proposed_state": "strict_current_target_absent",
+      "qrel_digest": "24ec44e81fa5ecc99330aeb0070c297eec0a04a3cb38bc885e8fbd16c0c40e74",
+      "reporting_fiscal_years": [
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": null,
+      "strict_current_target_in_pool": false,
+      "target_facets": [
+        "inventory",
+        "cash flow",
+        "price-volume bridge",
+        "supply commitments"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_4c55d0f25d3e0f7efb67",
+      "case_key": "MU",
+      "curator_rationale": "The current NVIDIA release supplies direct platform-demand context and supply-reliance counterevidence for the MU supply thesis.",
+      "evidence_owner_ticker": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "expected_source_refs": [
+        "SRC_NVDA_Q1_FY27_RESULTS"
+      ],
+      "gap_class": "",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 2,
+      "proposed_state": "strict_current_target_in_pool",
+      "qrel_digest": "fabf59dbf8b68c78327f05c8afe6847f974d7ba646ca5cced727dff29b34bfec",
+      "reporting_fiscal_years": [
+        2027
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 2,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": {
+        "bundle_id": "internal_query_facet_bundle_4c55d0f25d3e0f7efb67",
+        "candidate_digest": "69b7a54e63a6707a7ddb5a3a4d103188174ce4fd34fdb0f0e2d5f60c84693f08",
+        "candidate_id": "internal_candidate_69b7a54e63a6707a7ddb5a3a",
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "NVDA",
+        "evidence_owner_ticker": "NVDA",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "exact_value_authority": false,
+        "fiscal_year": 2026,
+        "form_type": "8-K",
+        "matched_query_indexes": [
+          0,
+          1
+        ],
+        "object_type": "",
+        "preview": "For further information, contact: [TABLE_START id=3 rows=4] Toshiya Hari | Mylene Mangalindan Investor Relations | Corporate Communications NVIDIA Corporation | NVIDIA Corporation toshiyah@nvidia.com | press@nvidia.com [TABLE_END] Certain statements in this press release includin...",
+        "published_at": "2026-05-20",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "request_digest": "dea3698911e2b87f4b29e0f31cbae3df8985d1dafd79a6053115797e1ad75f55",
+        "request_id": "internal_route_request_dea3698911e2b87f4b29",
+        "route_id": "internal_bm25",
+        "route_rank": 3,
+        "score": 37.87428815,
+        "section": "Exhibit 99.1 Earnings Release",
+        "source_evidence_id": "",
+        "source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/q1fy27pr.htm",
+        "strict_identity_filter_applied": true,
+        "strict_period_filter_applied": true,
+        "subject_entity_key": "MU",
+        "subject_ticker": "MU",
+        "subsection": "For further information, contact",
+        "ticker": "NVDA"
+      },
+      "strict_current_target_in_pool": true,
+      "target_facets": [
+        "platform demand",
+        "manufacturing reliance",
+        "supply counterevidence"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_c212f36a01a3adda3946",
+      "case_key": "MU",
+      "curator_rationale": "No TSM lexical or object records exist; graph-only candidates cannot establish the requested current period.",
+      "evidence_owner_ticker": "TSM",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "expected_source_refs": [
+        "SRC_TSMC_Q2_2026_RESULTS"
+      ],
+      "gap_class": "evidence_owner_absent_from_lexical_and_object_corpus",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 0,
+      "proposed_state": "strict_current_target_absent",
+      "qrel_digest": "2bf062a43fdea7cfda333d34b5cc4e1cdce55b9053fed4b39b041673bb6fda10",
+      "reporting_fiscal_years": [
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 0,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 0,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": null,
+      "strict_current_target_in_pool": false,
+      "target_facets": [
+        "CoWoS capacity",
+        "advanced packaging",
+        "capacity expansion"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_2365488414281a594f2a",
+      "case_key": "NVDA",
+      "curator_rationale": "Dell's current Q1 FY2027 AI order and AI server revenue disclosure is direct downstream demand validation for NVIDIA.",
+      "evidence_owner_ticker": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "expected_source_refs": [
+        "SRC_DELL_Q1_FY27_CALL",
+        "SRC_DELL_Q1_FY27_EXHIBIT"
+      ],
+      "gap_class": "",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 3,
+      "proposed_state": "strict_current_target_in_pool",
+      "qrel_digest": "3bb6f397d936987f201e51337e7c0db6b5c27b8fae2a972521047cfa20bd12ab",
+      "reporting_fiscal_years": [
+        2027,
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": {
+        "bundle_id": "internal_query_facet_bundle_2365488414281a594f2a",
+        "candidate_digest": "bfbc4d65d80cd5b19f4e7b921d26737473380f0778ab18f7955ac83e49cf7a90",
+        "candidate_id": "internal_candidate_bfbc4d65d80cd5b19f4e7b92",
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "DELL",
+        "evidence_owner_ticker": "DELL",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "exact_value_authority": false,
+        "fiscal_year": 2026,
+        "form_type": "8-K",
+        "matched_query_indexes": [
+          0,
+          1
+        ],
+        "object_type": "",
+        "preview": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provid...",
+        "published_at": "2026-05-28",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "request_digest": "7af9b1559b81fa8b9959567927ad59428ffaf15d0baa69c2825397df85e7fe3c",
+        "request_id": "internal_route_request_7af9b1559b81fa8b9959",
+        "route_id": "internal_bm25",
+        "route_rank": 1,
+        "score": 55.28152425,
+        "section": "Exhibit 99.1 Earnings Release",
+        "source_evidence_id": "",
+        "source_key": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+        "strict_identity_filter_applied": true,
+        "strict_period_filter_applied": true,
+        "subject_entity_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "subsection": "EX-99.1",
+        "ticker": "DELL"
+      },
+      "strict_current_target_in_pool": true,
+      "target_facets": [
+        "AI server orders",
+        "server revenue",
+        "demand conversion"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_24fdcb3ed48499b408e2",
+      "case_key": "NVDA",
+      "curator_rationale": "The current Microsoft 10-Q provides direct AI-infrastructure investment and usage evidence relevant to NVIDIA demand.",
+      "evidence_owner_ticker": "MSFT",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "expected_source_refs": [
+        "SRC_MSFT_Q3_FY26_CALL"
+      ],
+      "gap_class": "",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 2,
+      "proposed_state": "strict_current_target_in_pool",
+      "qrel_digest": "1ad318513c7f91925543eed5ab259519272d06390fc9fe66bbd5b6fa10921502",
+      "reporting_fiscal_years": [
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": {
+        "bundle_id": "internal_query_facet_bundle_24fdcb3ed48499b408e2",
+        "candidate_digest": "f17aa8d3c561a35066e54e4d28e18bc7983884529679df2aaa29ecc78e905576",
+        "candidate_id": "internal_candidate_f17aa8d3c561a35066e54e4d",
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "MSFT",
+        "evidence_owner_ticker": "MSFT",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "exact_value_authority": false,
+        "fiscal_year": 2026,
+        "form_type": "10-Q",
+        "matched_query_indexes": [
+          0,
+          1
+        ],
+        "object_type": "",
+        "preview": "Productivity and Business Processes and Intelligent Cloud Metrics related to our Productivity and Business Processes and Intelligent Cloud segments assess the health of our core businesses within these segments. The metrics primarily reflect growth across our cloud services. [TAB...",
+        "published_at": "2026-04-29",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "request_digest": "065ce988c6a2edf6cd7c69af1f2cc84e3267a8e83590e1770b2f57421fbe627e",
+        "request_id": "internal_route_request_065ce988c6a2edf6cd7c",
+        "route_id": "internal_bm25",
+        "route_rank": 3,
+        "score": 46.11944681,
+        "section": "Item 2. Management's Discussion and Analysis",
+        "source_evidence_id": "",
+        "source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+        "source_tier": "primary_sec_filing",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+        "strict_identity_filter_applied": true,
+        "strict_period_filter_applied": true,
+        "subject_entity_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "subsection": "Productivity and Business Processes and Intelligent Cloud",
+        "ticker": "MSFT"
+      },
+      "strict_current_target_in_pool": true,
+      "target_facets": [
+        "AI infrastructure investment",
+        "cloud demand",
+        "capacity expansion"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_162bb09393cce590e48d",
+      "case_key": "NVDA",
+      "curator_rationale": "The SEC-hosted Q1 FY2027 company release is the canonical current results source and directly covers the central issuer target.",
+      "evidence_owner_ticker": "NVDA",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "expected_source_refs": [
+        "SRC_NVDA_Q1_FY27_RESULTS"
+      ],
+      "gap_class": "",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 3,
+      "proposed_state": "strict_current_target_in_pool",
+      "qrel_digest": "d7d49c5a97f973496bf7775982eac9756ed06064f762bb1b59a6ba41ecb74382",
+      "reporting_fiscal_years": [
+        2027
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": {
+        "bundle_id": "internal_query_facet_bundle_162bb09393cce590e48d",
+        "candidate_digest": "0b95cc7cc4b700d71f83b38f623d8ac4708aeaff3a4dd66a24e39408c2001dcb",
+        "candidate_id": "internal_candidate_0b95cc7cc4b700d71f83b38f",
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "NVDA",
+        "evidence_owner_ticker": "NVDA",
+        "evidence_slot_id": "issuer_results_and_management_commentary",
+        "exact_value_authority": false,
+        "fiscal_year": 2026,
+        "form_type": "8-K",
+        "matched_query_indexes": [
+          0,
+          1
+        ],
+        "object_type": "",
+        "preview": "EX-99.1 2 q1fy27pr.htm EX-99.1 Document NVIDIA Announces Financial Results for First Quarter Fiscal 2027 • Record revenue of $81.6 billion, up 85% from a year ago • Record Data Center revenue of $75.2 billion, up 92% from a year ago • NVIDIA announces $80.0 billion additional sha...",
+        "published_at": "2026-05-20",
+        "relationship_direction": "subject_self_disclosure",
+        "request_digest": "aaec686420f74b9368d1917a91018ad89f37b3bebdfcbfa7343514d18e07c447",
+        "request_id": "internal_route_request_aaec686420f74b9368d1",
+        "route_id": "internal_bm25",
+        "route_rank": 5,
+        "score": 40.59405006,
+        "section": "Exhibit 99.1 Earnings Release",
+        "source_evidence_id": "",
+        "source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/q1fy27pr.htm",
+        "strict_identity_filter_applied": true,
+        "strict_period_filter_applied": true,
+        "subject_entity_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "subsection": "EX-99.1",
+        "ticker": "NVDA"
+      },
+      "strict_current_target_in_pool": true,
+      "target_facets": [
+        "revenue",
+        "data-center revenue",
+        "gross margin",
+        "current outlook"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_31e1c2e5e7b02dddadbb",
+      "case_key": "NVDA",
+      "curator_rationale": "The candidate pool contains a November 2025 FY2026 10-Q, not the May 2026 Q1 FY2027 10-Q required by the frozen target.",
+      "evidence_owner_ticker": "NVDA",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "expected_source_refs": [
+        "SRC_NVDA_Q1_FY27_10Q"
+      ],
+      "gap_class": "current_regulatory_document_not_in_candidate_pool",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 0,
+      "proposed_state": "strict_current_target_absent",
+      "qrel_digest": "d16d88d95fd199f774e4eb852d1bcdf940ebf3398ba21bc2762b85606a065fce",
+      "reporting_fiscal_years": [
+        2027
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": null,
+      "strict_current_target_in_pool": false,
+      "target_facets": [
+        "customer concentration",
+        "purchase commitments",
+        "cash flow",
+        "export risk"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_5249570c00a4da609632",
+      "case_key": "NVDA",
+      "curator_rationale": "Only Micron Q2 FY2026 material is indexed; the current Q3 results and prepared remarks are absent.",
+      "evidence_owner_ticker": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "expected_source_refs": [
+        "SRC_MU_Q3_FY26_RESULTS",
+        "SRC_MU_Q3_FY26_REMARKS"
+      ],
+      "gap_class": "current_supplier_document_not_in_candidate_pool",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 0,
+      "proposed_state": "strict_current_target_absent",
+      "qrel_digest": "b0b2c333fd1c523f0f4ec23f6a4aa247ceaef6ff7dbd8979fe88eca539b09e62",
+      "reporting_fiscal_years": [
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 24,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 24,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": null,
+      "strict_current_target_in_pool": false,
+      "target_facets": [
+        "HBM capacity",
+        "supply tightness",
+        "supply ramp"
+      ]
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "bundle_id": "internal_query_facet_bundle_e3482d22dbfa5d562b74",
+      "case_key": "NVDA",
+      "curator_rationale": "TSM is absent from both lexical corpora; graph rows do not expose enough period authority to count as a strict current target.",
+      "evidence_owner_ticker": "TSM",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "expected_source_refs": [
+        "SRC_TSMC_Q2_2026_RESULTS"
+      ],
+      "gap_class": "evidence_owner_absent_from_lexical_and_object_corpus",
+      "index_filing_calendar_years": [
+        2026
+      ],
+      "proposed_relevance": 0,
+      "proposed_state": "strict_current_target_absent",
+      "qrel_digest": "c7be1a46920ff922f2ef9a3abcd64a6f027cd751753f252d90f108ec1356283f",
+      "reporting_fiscal_years": [
+        2026
+      ],
+      "review_state": "agent_curated_pending_owner_review",
+      "route_candidate_counts": {
+        "internal_bm25": 0,
+        "internal_milvus_dense": 0,
+        "internal_object_bm25": 0,
+        "internal_relationship_graph": 12,
+        "internal_sql_exact": 0
+      },
+      "selected_candidate": null,
+      "strict_current_target_in_pool": false,
+      "target_facets": [
+        "CoWoS capacity",
+        "advanced packaging",
+        "capacity expansion"
+      ]
+    }
+  ],
+  "required_recall": 1.0,
+  "review_digest": "d4bbba3156bcfd87b83bcc05b091d8a20c01c38a5324361c56f57a0f4d11869a",
+  "review_state": "agent_curated_pending_owner_review",
+  "run_scope": "S1_INTERNAL_CANDIDATE_CEILING_AND_QRELS_GATE",
+  "schema_version": "fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_0",
+  "status": "agent_curated_candidate_ceiling_failed_owner_review_pending",
+  "strict_current_target_absent_count": 9,
+  "strict_current_target_in_pool_count": 9,
+  "strict_current_target_recall": 0.5,
+  "target_count": 18
+}

@@ -1,5 +1,13 @@
 # Internal Master Checklist
 
+## FIN 0.1.3 S1 Current Retrieval Closeout
+
+- [x] Unified Query Facet 已投影到 SQL／ObjectBM25／BM25／Milvus／Graph；v1.1 将 reporting fiscal period 与 filing/publication calendar year 分离，避免未来财年标签误杀当年发布文件。
+- [x] 真实本地 candidate inventory R2 与 agent-curated qrels proposal 已物化：strict current target-in-pool=`9/18`、Gold SQL current exact=`0/18`；历史 v1.0、v1.1 first attempt 与修正后 R2 均 immutable 保留。
+- [ ] **Current — S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH**：盘点并补齐 DELL／MU／NVDA 及 MSFT／TSM evidence-owner 的当前官方材料；生成 successor SQL／ObjectBM25／BM25／Graph／Milvus 资产，不原地改写旧索引；用同一 qrels 重跑 candidate ceiling。
+- [ ] Owner 复核 qrels，并要求 strict current target-in-pool=`18/18`；未达到前 BGE／fusion／rerank 不准入。
+- [ ] Candidate ceiling 通过后，比较 BM25/Object baseline、BGE-M3 dense、facet-aware fusion 与可选 reranker；最后证明 Evidence Gate→Claim→Workpaper→report 实际消费。外源 4/12 coverage release blocker 独立保持 open。
+
 ## FIN 0.1.3 S0 Current
 
 - [x] 2026-08-01 S0-T02 Runtime resource registry and typed environment projection: central registry covers 29 resources/323,829 bytes; seven default loader modules use resource IDs; the frozen 16-prompt `SKILL_FILES` adapter is bidirectionally checked without changing its historical hash; eight typed environment roots support diagnostic-only semantic projection. Focused=`24 passed`, related host matrix=`100 passed`, model/Provider/network=`0/0/0`.

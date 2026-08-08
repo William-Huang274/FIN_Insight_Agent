@@ -1,0 +1,119 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_3",
+  "contract_ref": "fin_0_1_3.S1.retrieval_query_facet_external_internal_progression:v1_3",
+  "recorded_at": "2026-08-09",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1",
+  "status": "internal_candidate_ceiling_failed_current_corpus_and_index_refresh_current",
+  "predecessor_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_2.json",
+  "user_decision": "Complete external retrieval first, then repair internal exact, lexical, dense and graph retrieval, including downstream BGE, fusion and reranking, without skipping candidate-ceiling evidence.",
+  "current_truth": {
+    "external_runtime_recovery": "live_pass",
+    "external_product_coverage": "failed_release_blocker_preserved",
+    "external_current_provider_round": "honestly_closed",
+    "internal_query_facet_projection": "v1_1_zero_call_engineering_pass",
+    "internal_candidate_inventory": "attempt_r2_completed",
+    "internal_agent_curated_qrels_recall": "9_of_18",
+    "internal_owner_reviewed_qrels": "pending_after_data_repair",
+    "internal_current_corpus_and_index_refresh": "current",
+    "BGE_fusion_rerank": "not_admitted",
+    "downstream_utilization": "not_proven"
+  },
+  "typed_temporal_authority": {
+    "reporting_fiscal_years": "SQL and exact financial-fact authority",
+    "index_filing_calendar_years": "ObjectBM25 BM25 and Milvus document-index filtering",
+    "example": "NVDA Q1 FY2027 is reporting fiscal year 2027 and filing publication calendar year 2026",
+    "ambiguous_fiscal_year_filter_allowed": false
+  },
+  "candidate_ceiling_observation": {
+    "attempt_id": "S1-INTERNAL-CANDIDATE-CEILING-R2",
+    "observation_ref": "configs/releases/fin_ia_0_1_3_s1_internal_candidate_inventory_observation_v1_1_attempt_r2.json",
+    "observation_digest": "4e339da912b0dd02a7d5d43889f48ca826f2fa51321c43862d9090546cee0f0f",
+    "route_candidates": {
+      "internal_sql_exact": 0,
+      "internal_object_bm25": 360,
+      "internal_bm25": 360,
+      "internal_relationship_graph": 196,
+      "internal_milvus_dense": 0
+    },
+    "milvus_status": "collection_qualified_model_locator_blocked",
+    "embedding_calls": 0,
+    "rerank_calls": 0,
+    "evidence_promotions": 0
+  },
+  "qrels_gate": {
+    "review_packet_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_0.json",
+    "review_digest": "d4bbba3156bcfd87b83bcc05b091d8a20c01c38a5324361c56f57a0f4d11869a",
+    "review_state": "agent_curated_pending_owner_review",
+    "strict_current_target_count": 18,
+    "strict_current_target_in_pool": 9,
+    "strict_current_target_recall": 0.5,
+    "required_recall": 1.0,
+    "all_target_exact_sql_candidate_count": 0,
+    "ranking_admitted": false
+  },
+  "execution_sequence": [
+    {
+      "order": 1,
+      "work_item": "S1_08_EXTERNAL_OFFICIAL_FIRST_AND_DISCOVERY_SHADOW_CLOSEOUT",
+      "status": "complete_runtime_pass_product_coverage_failed",
+      "acceptance": "Current external provider round is closed; official selected 4/12 required slots and the external release blocker remains open."
+    },
+    {
+      "order": 2,
+      "work_item": "S1_INTERNAL_RETRIEVAL_QUERY_FACET_INTEGRATION",
+      "status": "complete_v1_1_zero_call_engineering_pass",
+      "acceptance": "Route-specific requests preserve evidence-owner identity and separate reporting period from index publication year."
+    },
+    {
+      "order": 3,
+      "work_item": "S1_INTERNAL_CANDIDATE_CEILING_AND_QRELS_GATE",
+      "status": "completed_gate_failed",
+      "acceptance": "R2 candidate observation and provisional qrels show 9/18 strict current targets in pool and 0/18 current exact SQL candidates; ranking remains unadmitted."
+    },
+    {
+      "order": 4,
+      "work_item": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+      "status": "current",
+      "acceptance": "Inventory immutable local source captures first, classify source/parser/transform/index gaps, then build successor Gold SQL, ObjectBM25, BM25, Graph and Milvus assets without overwriting historical indexes."
+    },
+    {
+      "order": 5,
+      "work_item": "S1_INTERNAL_CANDIDATE_CEILING_AND_OWNER_QRELS_REPROOF",
+      "status": "blocked_until_refresh",
+      "acceptance": "Rerun the same 18 targets; require 18/18 target-in-pool and owner-reviewed qrels before ranking admission."
+    },
+    {
+      "order": 6,
+      "work_item": "S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION",
+      "status": "blocked_until_candidate_reproof",
+      "acceptance": "Compare sparse baseline, BGE-M3 dense, facet-aware fusion and optional reranker only on a complete admitted candidate pool."
+    },
+    {
+      "order": 7,
+      "work_item": "S1_TO_S3_RETRIEVAL_DOWNSTREAM_UTILIZATION_PROOF",
+      "status": "pending_after_ranking_quality",
+      "acceptance": "Selected candidates must pass Evidence Gate and be visibly consumed by Claim, Workpaper and report."
+    }
+  ],
+  "hard_gates": {
+    "candidate_target_missing": "refresh_corpus_and_index_do_not_tune_reranker",
+    "owner_review_pending": "do_not_claim_human_qrels_pass",
+    "historical_asset": "immutable_build_successor_in_new_path",
+    "milvus_model_locator_stale": "qualify_successor_config_only_after_candidate_gate",
+    "current_candidate_recall_below_one": "BGE_fusion_rerank_not_admitted",
+    "external_coverage_failed": "release_blocker_remains_independent"
+  },
+  "calls_authorized_by_this_plan": {
+    "local_asset_inventory": "read_only",
+    "local_successor_refresh_implementation": "zero_network_zero_model_until_separate_source_acquisition_authority",
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "known_boundary": "The current candidate ceiling failure is owned by internal corpus index and exact-mart freshness. Query compilation is no longer the primary blocker. No BGE reranker Evidence downstream research or release claim is authorized, and internal repair cannot erase the independent external coverage blocker.",
+  "plan_digest": "f85abdb36e9b3acd36bb2e7066028158071d916d833e15ba472e9eaf560c5269"
+}

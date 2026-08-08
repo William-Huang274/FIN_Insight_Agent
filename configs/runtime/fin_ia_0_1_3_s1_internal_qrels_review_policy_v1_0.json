@@ -1,0 +1,41 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_qrels_review_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_candidate_qrels:v1",
+  "run_scope": "S1_INTERNAL_CANDIDATE_CEILING_AND_QRELS_GATE",
+  "recorded_at": "2026-08-09",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "immutable_inputs": {
+    "candidate_observation_ref": "configs/releases/fin_ia_0_1_3_s1_internal_candidate_inventory_observation_v1_1_attempt_r2.json",
+    "candidate_observation_sha256": "40674cad1aa92a5455257a697285ba95edf64f443bc0327ad138c243532d08fe",
+    "integration_proof_ref": "configs/releases/fin_ia_0_1_3_s1_internal_query_facet_integration_zero_call_proof_v1_1.json",
+    "integration_proof_sha256": "85a8efaef65c74fddc3f676dd97d35ad021216e113b4e307e0594752a3474f13",
+    "target_manifest_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_qrels_target_manifest_v1_0.json",
+    "target_manifest_sha256": "ccbf0e5a2856f3eaa3b51fef4be1a82bc839583cfa57aaab1273d10aa5ab11ee",
+    "benchmark_evidence_pack_ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json",
+    "benchmark_evidence_pack_sha256": "5c6294599d546b18faafdfa3688a297316c497a80d0e2e78a76d723803ebd604"
+  },
+  "review_contract": {
+    "target_count": 18,
+    "target_unit": "case_evidence_slot_evidence_owner_period",
+    "strict_target_in_pool_threshold": 2,
+    "candidate_ceiling_required_recall": 1.0,
+    "owner_review_required_for_pass": true,
+    "current_review_state": "agent_curated_pending_owner_review",
+    "semantic_alternative_source_allowed": true,
+    "semantic_alternative_requires_primary_source_current_period_and_material_facet": true
+  },
+  "hard_boundaries": {
+    "qrels_loaded_after_candidate_generation": true,
+    "target_or_candidate_identity_may_enter_query": false,
+    "graph_without_period_authority_may_satisfy_strict_current_target": false,
+    "stale_period_may_satisfy_strict_current_target": false,
+    "candidate_may_be_promoted_to_evidence": false,
+    "BGE_fusion_rerank_admitted": false,
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  }
+}

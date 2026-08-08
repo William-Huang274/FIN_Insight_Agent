@@ -1224,3 +1224,11 @@ v1.1 recovery 在 clean `4334d7c4...b6a6` exact-once 完成。official 三案全
 历史 provider 证据必须独立解释：Firecrawl 完整 24-query control 是 `5/6 target-in-pool`，但 target date accuracy=0、diagnostic-only；Tencent 同矩阵是 `0/6`、diagnostic-only。不得把历史 Firecrawl locators 拼接进本次 recovery terminal，冒充同轮完整 Evidence Pack。
 
 因此关闭的是“当前 provider 轮测／recovery 重跑循环”，不是 external 产品能力。外源覆盖不足继续阻断 release；新 Provider 到位后复用同一 Query Facet、qrels 与 quality gate，不重新设计标准。当前 S1 执行权转到 internal query integration；exact、BM25、dense、graph 先证明各自 candidate ceiling，之后才能测试 BGE／fusion／rerank。
+
+### 20.33 Internal candidate ceiling、双时间角色与 ranking non-admission
+
+内源 Query Facet successor v1.1 不再把 `fiscal_year` 同时当作报告财年和文档发布时间。SQL request 使用 `reporting_fiscal_years`；ObjectBM25、BM25 与 Milvus request 使用 `index_filing_calendar_years`；bundle 同时保存两者。例如 NVDA `Q1 FY2027` 的报告财年为 2027，文件在 2026 年发布，文档索引过滤必须使用 2026。该合同为 provider-neutral 共享结构，不是 NVDA 特例。
+
+修正后的 candidate inventory Attempt R2 对 18 个 bundle 执行 72 个只读本地 route request，并保留 18 个 Milvus qualification terminal。观察为 `SQL=0 / ObjectBM25=360 / BM25=360 / Graph=196`；TSM 路径产生 6 个 lexical/object typed gap。Milvus Lite 目录、collection、required schema、1024 维与 DELL／MU／NVDA／MSFT／TSM ticker 均存在；配置中的旧 BGE snapshot locator 不存在，本机替代路径尚未通过 successor Runtime 准入，因此 semantic execution 仍为 0。
+
+qrels review packet 只是一份 `agent_curated_pending_owner_review` proposal。strict current target-in-pool=`9/18`、required=`18/18`，Gold SQL exact=`0/18`。这已经足以拒绝 ranking admission，无需等待 Owner 把失败确认第二遍。下一项是 `S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH`：先复用本地 immutable capture/raw source，盘点 current official source 是否已存在；随后在新目录构建 successor Gold SQL、ObjectBM25/BM25、Graph 与 Milvus 资产并重跑同一 candidate gate。只有候选目标齐全和 qrels Owner review 完成后，才允许 BGE-M3／facet-aware fusion／reranker evaluation。旧 v1.0 时间混用结果、v1.1 未 load collection 结果和 R2 均作为不同 Attempt 永久保留。

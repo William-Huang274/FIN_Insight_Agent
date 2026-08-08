@@ -11,8 +11,15 @@ from sec_agent.canonical_runtime.models import canonical_digest
 
 POLICY_SCHEMA = "fin_ia_0_1_3_s1_internal_query_facet_integration_policy_v1_0"
 CONTRACT_REF = "fin_0_1_3.S1.internal_query_facet_integration:v1"
+POLICY_SCHEMA_V1_1 = (
+    "fin_ia_0_1_3_s1_internal_query_facet_integration_policy_v1_1"
+)
+CONTRACT_REF_V1_1 = "fin_0_1_3.S1.internal_query_facet_integration:v1.1"
 RUN_SCOPE = "S1_INTERNAL_RETRIEVAL_QUERY_FACET_INTEGRATION"
 PROOF_SCHEMA = "fin_ia_0_1_3_s1_internal_query_facet_integration_zero_call_proof_v1_0"
+PROOF_SCHEMA_V1_1 = (
+    "fin_ia_0_1_3_s1_internal_query_facet_integration_zero_call_proof_v1_1"
+)
 CASES = ("DELL", "MU", "NVDA")
 LANGUAGES = ("en", "zh")
 SLOT_IDS = (
@@ -150,9 +157,13 @@ class InternalRouteRequest:
 
 def load_internal_query_facet_policy(path: str | Path) -> dict[str, Any]:
     policy = json.loads(Path(path).read_text(encoding="utf-8"))
+    identity = (policy.get("schema_version"), policy.get("contract_ref"))
     if (
-        policy.get("schema_version") != POLICY_SCHEMA
-        or policy.get("contract_ref") != CONTRACT_REF
+        identity
+        not in {
+            (POLICY_SCHEMA, CONTRACT_REF),
+            (POLICY_SCHEMA_V1_1, CONTRACT_REF_V1_1),
+        }
         or policy.get("run_scope") != RUN_SCOPE
         or policy.get("binding_hash_profile") != "sha256_utf8_lf_normalized_v1"
     ):
@@ -199,6 +210,30 @@ def load_internal_query_facet_policy(path: str | Path) -> dict[str, Any]:
         raise S1InternalQueryFacetError("internal_query_facet_boundary_invalid")
     if any((policy.get("zero_call_boundary") or {}).values()):
         raise S1InternalQueryFacetError("internal_query_facet_zero_call_invalid")
+    if _uses_typed_period_roles(policy):
+        if policy.get("period_filter_contract") != {
+            "reporting_period_field": "reporting_fiscal_years",
+            "document_index_period_field": "index_filing_calendar_years",
+            "document_index_year_derivation": (
+                "cap_reporting_fiscal_year_at_as_of_calendar_year_v1"
+            ),
+            "sql_period_authority": "reporting_fiscal_years",
+            "object_bm25_period_authority": "index_filing_calendar_years",
+            "bm25_period_authority": "index_filing_calendar_years",
+            "milvus_period_authority": "index_filing_calendar_years",
+            "graph_period_state": "intent_preserved_index_unverifiable",
+        }:
+            raise S1InternalQueryFacetError(
+                "internal_query_facet_period_filter_contract_invalid"
+            )
+        if (
+            hard.get("reporting_and_document_index_period_roles_separated")
+            is not True
+            or hard.get("ambiguous_fiscal_year_filter_allowed") is not False
+        ):
+            raise S1InternalQueryFacetError(
+                "internal_query_facet_period_role_boundary_invalid"
+            )
     return policy
 
 
@@ -300,15 +335,36 @@ def validate_internal_route_request(
     ):
         raise S1InternalQueryFacetError("internal_route_request_policy_mismatch")
     filters = request.typed_filters
-    if (
+    common_filter_drift = (
         filters.get("evidence_owner_ticker") != request.evidence_owner_ticker
         or filters.get("subject_ticker") != request.subject_ticker
         or filters.get("publication_date_on_or_before") != bundle.as_of_date
-        or tuple(filters.get("fiscal_years") or ()) != bundle.fiscal_years
         or filters.get("relationship_direction") != request.relationship_direction
         or filters.get("allow_relaxed_identity_period_or_relationship_fallback")
         is not False
-    ):
+    )
+    if _uses_typed_period_roles(policy):
+        expected_index_years = _index_filing_calendar_years(
+            bundle.fiscal_years, bundle.as_of_date
+        )
+        period_filter_drift = (
+            "fiscal_years" in filters
+            or tuple(filters.get("reporting_fiscal_years") or ())
+            != bundle.fiscal_years
+            or tuple(filters.get("index_filing_calendar_years") or ())
+            != expected_index_years
+            or filters.get("period_filter_contract")
+            != "reporting_vs_document_index_v1"
+        )
+        if request.route_id == "internal_milvus_dense":
+            period_filter_drift = period_filter_drift or tuple(
+                filters.get("years") or ()
+            ) != expected_index_years
+    else:
+        period_filter_drift = (
+            tuple(filters.get("fiscal_years") or ()) != bundle.fiscal_years
+        )
+    if common_filter_drift or period_filter_drift:
         raise S1InternalQueryFacetError("internal_route_request_typed_filter_drift")
     if request.route_id != "internal_sql_exact" and not request.query_texts and request.route_id != "internal_relationship_graph":
         raise S1InternalQueryFacetError("internal_route_request_query_missing")
@@ -359,9 +415,30 @@ def build_internal_query_facet_zero_call_proof(
         for request in requests
         if request.evidence_owner_entity_key == "TSMC"
     ]
+    uses_typed_period_roles = _uses_typed_period_roles(policy)
+    serialized_bundles: list[dict[str, Any]] = []
+    for bundle in bundles:
+        serialized = bundle.as_dict()
+        if uses_typed_period_roles:
+            serialized.update(
+                {
+                    "reporting_fiscal_years": list(bundle.fiscal_years),
+                    "index_filing_calendar_years": list(
+                        _index_filing_calendar_years(
+                            bundle.fiscal_years, bundle.as_of_date
+                        )
+                    ),
+                    "period_filter_contract": "reporting_vs_document_index_v1",
+                }
+            )
+        serialized_bundles.append(serialized)
     body = {
-        "schema_version": PROOF_SCHEMA,
-        "contract_ref": CONTRACT_REF,
+        "schema_version": (
+            PROOF_SCHEMA_V1_1 if uses_typed_period_roles else PROOF_SCHEMA
+        ),
+        "contract_ref": (
+            CONTRACT_REF_V1_1 if uses_typed_period_roles else CONTRACT_REF
+        ),
         "run_scope": RUN_SCOPE,
         "status": "zero_call_engineering_pass",
         "source_query_facet_plan_count": 36,
@@ -370,7 +447,7 @@ def build_internal_query_facet_zero_call_proof(
         "route_request_counts": route_counts,
         "cross_entity_request_count": len(cross_entity_requests),
         "tsmc_to_tsm_projection_request_count": len(tsmc_requests),
-        "bundles": [bundle.as_dict() for bundle in bundles],
+        "bundles": serialized_bundles,
         "requests": [request.as_dict() for request in requests],
         "quality_checks": {
             "all_source_plans_bilingually_paired": True,
@@ -378,6 +455,12 @@ def build_internal_query_facet_zero_call_proof(
             "all_content_routes_filter_on_evidence_owner_not_case_ticker": True,
             "all_requests_preserve_subject_owner_and_relationship_direction": True,
             "all_requests_preserve_period_and_as_of_filters": True,
+            "reporting_and_document_index_period_roles_separated": (
+                uses_typed_period_roles
+            ),
+            "ambiguous_fiscal_year_filter_present": False
+            if uses_typed_period_roles
+            else True,
             "tsmc_entity_projects_to_local_tsm_ticker": True,
             "cross_case_alias_or_gold_locator_leak_count": 0,
             "alternate_language_retained_but_not_scheduled": True,
@@ -398,7 +481,13 @@ def build_internal_query_facet_zero_call_proof(
         "known_boundary": (
             "This proof connects the frozen provider-neutral Query Facet to typed "
             "internal SQL, ObjectBM25, BM25, Milvus and relationship-graph request "
-            "contracts only. It performs no retrieval, embedding, reranking or Evidence "
+            + (
+                "contracts with reporting-fiscal-year and document-index-calendar-year "
+                "authority separated. "
+                if uses_typed_period_roles
+                else "contracts. "
+            )
+            + "It performs no retrieval, embedding, reranking or Evidence "
             "promotion; it does not prove target-in-pool, close the external provider "
             "coverage blocker, establish downstream research quality or release FIN 0.1.3."
         ),
@@ -550,6 +639,10 @@ def _build_route_request(
     else:
         raise S1InternalQueryFacetError("internal_query_facet_route_unknown")
 
+    uses_typed_period_roles = _uses_typed_period_roles(policy)
+    index_filing_calendar_years = _index_filing_calendar_years(
+        bundle.fiscal_years, bundle.as_of_date
+    )
     filters: dict[str, Any] = {
         "case_key": bundle.case_key,
         "subject_entity_key": bundle.subject_entity_key,
@@ -558,10 +651,19 @@ def _build_route_request(
         "evidence_owner_ticker": bundle.evidence_owner_ticker,
         "relationship_direction": bundle.relationship_direction,
         "period_terms": list(bundle.period_terms),
-        "fiscal_years": list(bundle.fiscal_years),
         "publication_date_on_or_before": bundle.as_of_date,
         "allow_relaxed_identity_period_or_relationship_fallback": False,
     }
+    if uses_typed_period_roles:
+        filters.update(
+            {
+                "reporting_fiscal_years": list(bundle.fiscal_years),
+                "index_filing_calendar_years": list(index_filing_calendar_years),
+                "period_filter_contract": "reporting_vs_document_index_v1",
+            }
+        )
+    else:
+        filters["fiscal_years"] = list(bundle.fiscal_years)
     if route_id == "internal_sql_exact":
         filters.update(
             {
@@ -586,7 +688,11 @@ def _build_route_request(
         filters.update(
             {
                 "tickers": [bundle.evidence_owner_ticker],
-                "years": list(bundle.fiscal_years),
+                "years": list(
+                    index_filing_calendar_years
+                    if uses_typed_period_roles
+                    else bundle.fiscal_years
+                ),
                 "filing_types": list(slot_policy["form_types"]),
                 "source_tiers": list(slot_policy["source_tiers"]),
                 "vector_kinds": list(slot_policy["vector_kinds"]),
@@ -717,10 +823,36 @@ def _fiscal_years(period_terms: Sequence[Any]) -> tuple[int, ...]:
     return tuple(values)
 
 
+def _uses_typed_period_roles(policy: Mapping[str, Any]) -> bool:
+    return policy.get("schema_version") == POLICY_SCHEMA_V1_1
+
+
+def _index_filing_calendar_years(
+    reporting_fiscal_years: Sequence[int], as_of_date: str
+) -> tuple[int, ...]:
+    match = _YEAR_PATTERN.search(str(as_of_date))
+    if match is None:
+        raise S1InternalQueryFacetError("internal_query_facet_as_of_year_invalid")
+    as_of_year = int(match.group(1))
+    values: list[int] = []
+    for reporting_year in reporting_fiscal_years:
+        value = min(int(reporting_year), as_of_year)
+        if value not in values:
+            values.append(value)
+    if not values:
+        raise S1InternalQueryFacetError(
+            "internal_query_facet_index_calendar_year_unmapped"
+        )
+    return tuple(values)
+
+
 __all__ = [
     "CONTRACT_REF",
+    "CONTRACT_REF_V1_1",
     "POLICY_SCHEMA",
+    "POLICY_SCHEMA_V1_1",
     "PROOF_SCHEMA",
+    "PROOF_SCHEMA_V1_1",
     "ROUTE_IDS",
     "RUN_SCOPE",
     "InternalQueryFacetBundle",

@@ -149,6 +149,11 @@ def canonical_observation_digest(value: Mapping[str, Any]) -> str:
     return canonical_digest(_without_elapsed(body))
 
 
+def milvus_lite_storage_exists(path: str | Path) -> bool:
+    target = Path(path)
+    return target.is_file() or target.is_dir()
+
+
 def _as_list(value: Any) -> list[Any]:
     if isinstance(value, (list, tuple, set)):
         return list(value)
@@ -259,7 +264,12 @@ def execute_sql_exact_request(
 ) -> dict[str, Any]:
     filters = dict(request.get("typed_filters") or {})
     ticker = str(filters.get("ticker") or request["evidence_owner_ticker"])
-    years = [int(item) for item in _as_list(filters.get("fiscal_years"))]
+    years = [
+        int(item)
+        for item in _as_list(
+            filters.get("reporting_fiscal_years", filters.get("fiscal_years"))
+        )
+    ]
     metrics = [str(item) for item in _as_list(filters.get("metric_families"))]
     budget = int(request.get("candidate_budget") or 12)
     started = time.perf_counter()
@@ -362,7 +372,14 @@ def _execute_lexical_request(
     filters = dict(request.get("typed_filters") or {})
     route_filters: dict[str, Any] = {
         "ticker": str(request["evidence_owner_ticker"]),
-        "fiscal_year": [int(item) for item in _as_list(filters.get("fiscal_years"))],
+        "fiscal_year": [
+            int(item)
+            for item in _as_list(
+                filters.get(
+                    "index_filing_calendar_years", filters.get("fiscal_years")
+                )
+            )
+        ],
         "form_type": [str(item) for item in _as_list(filters.get("form_types"))],
     }
     if object_route:
@@ -650,13 +667,16 @@ def qualify_local_assets(
         )
     milvus_check: dict[str, Any] = {
         "status": "unavailable",
-        "db_exists": milvus_db.is_file(),
+        "db_exists": milvus_lite_storage_exists(milvus_db),
+        "db_storage_kind": (
+            "directory" if milvus_db.is_dir() else "file" if milvus_db.is_file() else "absent"
+        ),
         "dependencies_exist": deps.is_dir(),
         "configured_embedding_model_exists": configured_model.is_dir(),
         "embedding_model_candidates": model_candidates,
         "semantic_execution_admitted": False,
     }
-    if milvus_db.is_file() and deps.is_dir():
+    if milvus_lite_storage_exists(milvus_db) and deps.is_dir():
         if str(deps) not in sys.path:
             sys.path.insert(0, str(deps))
         try:
@@ -680,14 +700,29 @@ def qualify_local_assets(
                 fields.get("embedding", {}).get("params", {}).get("dim") or 0
             )
             ticker_presence = {}
-            for ticker in ("DELL", "MSFT", "MU", "NVDA", "TSM"):
-                rows = client.query(
-                    collection_name=collection,
-                    filter=f'ticker == "{ticker}"',
-                    output_fields=["vector_id", "ticker", "fiscal_year", "vector_kind"],
-                    limit=1,
-                )
-                ticker_presence[ticker] = bool(rows)
+            loaded_for_qualification = False
+            try:
+                client.load_collection(collection_name=collection)
+                loaded_for_qualification = True
+                for ticker in ("DELL", "MSFT", "MU", "NVDA", "TSM"):
+                    rows = client.query(
+                        collection_name=collection,
+                        filter=f'ticker == "{ticker}"',
+                        output_fields=[
+                            "vector_id",
+                            "ticker",
+                            "fiscal_year",
+                            "vector_kind",
+                        ],
+                        limit=1,
+                    )
+                    ticker_presence[ticker] = bool(rows)
+            finally:
+                if loaded_for_qualification:
+                    try:
+                        client.release_collection(collection_name=collection)
+                    except Exception:
+                        pass
             collection_ok = (
                 collection in collections
                 and required_fields.issubset(fields)
@@ -819,7 +854,16 @@ def execute_internal_candidate_inventory(
                 "evidence_slot_id": str(bundle["evidence_slot_id"]),
                 "subject_ticker": str(bundle["subject_ticker"]),
                 "evidence_owner_ticker": str(bundle["evidence_owner_ticker"]),
-                "requested_fiscal_years": list(bundle.get("fiscal_years") or []),
+                "requested_reporting_fiscal_years": list(
+                    bundle.get("reporting_fiscal_years")
+                    or bundle.get("fiscal_years")
+                    or []
+                ),
+                "requested_index_filing_calendar_years": list(
+                    bundle.get("index_filing_calendar_years")
+                    or bundle.get("fiscal_years")
+                    or []
+                ),
                 "route_status": {
                     terminal["route_id"]: terminal["status"] for terminal in local
                 },
@@ -835,7 +879,10 @@ def execute_internal_candidate_inventory(
             }
         )
     body = {
-        "schema_version": "fin_ia_0_1_3_s1_internal_candidate_inventory_observation_v1_0",
+        "schema_version": str(
+            policy.get("observation_schema")
+            or "fin_ia_0_1_3_s1_internal_candidate_inventory_observation_v1_0"
+        ),
         "contract_ref": str(policy["contract_ref"]),
         "run_scope": RUN_SCOPE,
         "status": "completed_candidate_inventory_qrels_pending",

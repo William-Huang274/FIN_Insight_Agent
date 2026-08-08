@@ -1,0 +1,71 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_external_combined_successor_clean_independent_zero_call_proof_v1_0",
+  "proof_id": "S1_08_EXTERNAL_COMBINED_SUCCESSOR_CLEAN_INDEPENDENT_ZERO_CALL_PROOF",
+  "recorded_at": "2026-08-09",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1_08",
+  "status": "pass_two_clean_archives_two_fresh_processes_zero_call_reproducible",
+  "source_commit": {
+    "branch": "codex/layered-data-source-expansion",
+    "commit": "3aa510d386c8a2e9bebe576cfa0f6986025cc9de",
+    "upstream_commit": "3aa510d386c8a2e9bebe576cfa0f6986025cc9de",
+    "clean": true,
+    "synced": true
+  },
+  "independent_proof": {
+    "clean_git_archives": 2,
+    "distinct_disposable_roots": 2,
+    "fresh_python_processes": 2,
+    "pytest_per_archive": {
+      "passed": 14,
+      "failed": 0,
+      "test_ref": "tests/contract/test_fin_0_1_3_s1_08_external_combined_live.py"
+    },
+    "rematerialized_outputs_equal": true,
+    "rematerialized_outputs_match_committed_files": true,
+    "plan_sha256": "3add3a9a206eb7201629a00951def379bbeea0356dc58532cc23f8439101cc03",
+    "proof_sha256": "15ccbd3c79f97068158b1367eb5c25a5a8744bfdd0748f947bd475e326ad040e",
+    "temporary_roots_retained_under_ignored_runtime": true
+  },
+  "source_bindings": {
+    "configs/releases/fin_ia_0_1_3_s1_08_external_combined_plan_v1_1.json": "3add3a9a206eb7201629a00951def379bbeea0356dc58532cc23f8439101cc03",
+    "configs/releases/fin_ia_0_1_3_s1_08_external_combined_live_zero_call_proof_v1_1.json": "15ccbd3c79f97068158b1367eb5c25a5a8744bfdd0748f947bd475e326ad040e",
+    "configs/runtime/fin_ia_0_1_3_s1_08_external_combined_live_policy_v1_1.json": "1f0b6f0cf03c3748059f68484849edf09e256af13fe2ab9c21cdfde1e75968cc",
+    "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json": "263e3aaa1ecff7e325bc405c538a862608e658ecf783a5dd0a43b6b7e3150cb3",
+    "src/sec_agent/s1_08_external_combined_live.py": "e732feb178cf568ef95ce3dfebd3b190aa370d9707bb5ce2b1bf8e468db5bb12",
+    "scripts/releases/run_fin_ia_0_1_3_s1_08_external_combined_live.py": "632722d7a0c3aacb247becfe9bc5f9a5700624148c7e8e7dcff0967a98272174",
+    "scripts/releases/materialize_fin_ia_0_1_3_s1_08_external_combined_live_zero_call_proof.py": "a79637b2d9364420652b0ba50317f0eb47db3a6444bff56abea21601bf267356",
+    "tests/contract/test_fin_0_1_3_s1_08_external_combined_live.py": "32a41174dece4573beeedeb88fd07366b44e2a32b508793d481954bdaf15cda0"
+  },
+  "observed_calls": {
+    "provider": 0,
+    "network": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "evidence_promotion": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "admission": 0
+  },
+  "stage_acceptance": {
+    "external_combined_successor_engineering": true,
+    "clean_independent_proof": true,
+    "recovery_authority": false,
+    "recovery_exact_live": false,
+    "external_candidate_discovery": false,
+    "internal_retrieval_query_facet": false,
+    "candidate_ceiling_and_qrels": false,
+    "BGE_fusion_rerank": false,
+    "downstream_utilization": false,
+    "S1_08": false,
+    "release": false
+  },
+  "decision": {
+    "clean_proof_complete": true,
+    "new_live_authority": false,
+    "internal_retrieval_authority": false,
+    "next_scope": "S1_08_EXTERNAL_COMBINED_RECOVERY_AUTHORITY_DECISION"
+  },
+  "known_boundary": "This proves clean reproducibility of the external combined successor only. It does not prove fresh official reachability, Firecrawl quota availability, external candidate quality, internal retrieval, BGE/fusion/rerank, downstream utilization, S1-08 acceptance or release readiness.",
+  "result_digest": "27074a282b33e0c6738ab3dba6baaede076b7512d3c4efbc2f95a0d6a4570027"
+}

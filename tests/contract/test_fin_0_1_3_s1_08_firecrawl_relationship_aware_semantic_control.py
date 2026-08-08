@@ -32,7 +32,10 @@ A4_ASSESSMENT_PATH = ROOT / "artifacts/runtime/provider_market_scan/firecrawl_ke
 EVALUATOR_PATH = ROOT / "scripts/releases/evaluate_fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control.py"
 RESULT_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_result_v1_0.json"
 ASSESSMENT_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_assessment_v1_0.json"
-NEXT_SCOPE = "S1_08_DOMESTIC_PROVIDER_FRESH_CREDENTIAL_READINESS_AND_SAME_MATRIX_COMPARATOR_AUTHORITY_DECISION"
+HISTORICAL_HANDOFF_SCOPE = (
+    "S1_08_DOMESTIC_PROVIDER_FRESH_CREDENTIAL_READINESS_AND_SAME_MATRIX_COMPARATOR_AUTHORITY_DECISION"
+)
+NEXT_SCOPE = "S1_08_TENCENT_RELATIONSHIP_AWARE_SEMANTIC_SAME_MATRIX_CLEAN_AUTHORITY_ISSUANCE"
 
 
 def _sha256(path: Path) -> str:
@@ -292,7 +295,7 @@ def test_exact_live_authority_is_digest_bound_semantic_only_and_unconsumed() -> 
     assert execution["gold_load_before_aggregate_terminal_allowed"] is False
 
 
-def test_consumed_exact_live_scope_is_blocked_and_domestic_handoff_is_allowed() -> None:
+def test_consumed_exact_live_and_completed_handoff_are_blocked_while_tencent_issuance_is_allowed() -> None:
     from sec_agent.project_os_preflight import run_project_os_preflight
 
     preflight = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
@@ -300,9 +303,12 @@ def test_consumed_exact_live_scope_is_blocked_and_domestic_handoff_is_allowed() 
     assert preflight["contract_errors"] == []
     assert preflight["scope_resolution"]["status"] == "registered"
     assert preflight["scope_resolution"]["operation_class"] == "diagnostic_search_execution"
-    handoff = run_project_os_preflight(ROOT, run_scope=NEXT_SCOPE)
-    assert handoff["status"] == "pass"
-    assert handoff["contract_errors"] == []
+    completed_handoff = run_project_os_preflight(ROOT, run_scope=HISTORICAL_HANDOFF_SCOPE)
+    assert completed_handoff["status"] == "blocked"
+    assert completed_handoff["contract_errors"] == []
+    successor = run_project_os_preflight(ROOT, run_scope=NEXT_SCOPE)
+    assert successor["status"] == "pass"
+    assert successor["contract_errors"] == []
 
 
 def test_live_terminal_and_assessment_are_digest_bound_and_honest() -> None:

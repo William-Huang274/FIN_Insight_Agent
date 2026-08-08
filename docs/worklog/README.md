@@ -1,5 +1,10 @@
 # Worklog
 
+- [748 — FIN 0.1.3 S1-08 腾讯 fresh credential 与关系感知同矩阵 comparator 零调用实现](product_strategy/748_fin_0_1_3_s1_08_tencent_fresh_credential_and_same_matrix_comparator_zero_call_implementation.md)
+- [747 — FIN 0.1.3 S1-08 Firecrawl 关系感知 semantic control 终态与国内 Provider 接力](product_strategy/747_fin_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_terminal_and_handoff.md)
+- [746 — FIN 0.1.3 S1-08 Firecrawl semantic control exact-live authority](product_strategy/746_fin_0_1_3_s1_08_firecrawl_semantic_control_exact_live_authority.md)
+- [745 — FIN 0.1.3 S1-08 Firecrawl semantic control runner 零调用实现](product_strategy/745_fin_0_1_3_s1_08_firecrawl_semantic_control_runner_zero_call_implementation.md)
+- [744 — FIN 0.1.3 S1-08 凭据就绪度与 Firecrawl semantic control 决策](product_strategy/744_fin_0_1_3_s1_08_credential_readiness_and_firecrawl_semantic_control_decision.md)
 - [743 — FIN 0.1.3 S1-08 国内 Provider wire projection 与公平 comparator 零调用实现](product_strategy/743_fin_0_1_3_s1_08_domestic_provider_wire_projection_and_fair_comparator_zero_call_implementation.md)
 - [742 — FIN 0.1.3 S1-08 国内 Provider 输入资格与 comparator 范围决策](product_strategy/742_fin_0_1_3_s1_08_domestic_provider_input_qualification_and_comparator_scope_decision.md)
 - [741 — FIN 0.1.3 S1-08 relationship-aware SearchIntent 与 source-equivalence 零调用实现](product_strategy/741_fin_0_1_3_s1_08_relationship_aware_search_intent_and_source_equivalence_zero_call_implementation.md)

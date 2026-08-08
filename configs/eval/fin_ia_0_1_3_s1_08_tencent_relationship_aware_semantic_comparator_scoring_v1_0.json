@@ -1,0 +1,91 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_relationship_aware_semantic_comparator_scoring_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.tencent_relationship_aware_semantic_same_matrix_comparator:v1",
+  "recorded_at": "2026-08-08",
+  "visibility": "evaluator_only_load_after_all_provider_calls_terminal",
+  "control_plan_ref": "configs/runtime/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_plan_v1_0.json",
+  "visible_source_registry_ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json",
+  "same_matrix_control_assessment_ref": "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_assessment_v1_0.json",
+  "target_sources_by_case_and_slot": {
+    "DELL": {
+      "customer_demand_and_deployment_validation": ["SRC_MSFT_Q3_FY26_CALL"],
+      "supply_chain_capacity_and_counterevidence": ["SRC_MU_Q3_FY26_REMARKS"]
+    },
+    "MU": {
+      "customer_demand_and_deployment_validation": [
+        "SRC_NVDA_Q1_FY27_10Q",
+        "SRC_DELL_Q1_FY27_CALL",
+        "SRC_MSFT_Q3_FY26_CALL"
+      ],
+      "supply_chain_capacity_and_counterevidence": ["SRC_TSMC_Q2_2026_RESULTS"]
+    },
+    "NVDA": {
+      "customer_demand_and_deployment_validation": [
+        "SRC_DELL_Q1_FY27_CALL",
+        "SRC_MSFT_Q3_FY26_CALL"
+      ],
+      "supply_chain_capacity_and_counterevidence": [
+        "SRC_MU_Q3_FY26_REMARKS",
+        "SRC_TSMC_Q2_2026_RESULTS"
+      ]
+    }
+  },
+  "useful_at_10_contract": {
+    "topical_useful": "A distinct locator contains at least one evidence-owner marker and one owner-slot financial topic marker, and is not obvious support noise.",
+    "target_in_pool": "The normalized locator exactly matches a frozen case-slot source URL. Typed aliases require separately captured canonical, redirect, accession, or content identity and are not inferred from a search snippet.",
+    "support_noise_markers": [
+      "driver",
+      "firmware",
+      "support article",
+      "troubleshooting",
+      "how to fix",
+      "download",
+      "驱动",
+      "固件",
+      "故障排除",
+      "下载"
+    ],
+    "duplicate_locator_counts_once_per_query": true,
+    "topical_and_target_scores_must_be_reported_separately": true
+  },
+  "date_accuracy_contract": {
+    "provider_date_presence_reported_separately": true,
+    "accuracy_denominator": "exact frozen target matches with a provider date",
+    "expected_date_source": "visible benchmark source_registry published_on",
+    "missing_exact_target_date": "date_accuracy_not_established_fail_closed",
+    "provider_date_is_not_financial_date_authority": true
+  },
+  "historical_generic_query_baseline": {
+    "attempt_id": "firecrawl_keyless_a4_customer_supply_en_20260808",
+    "query_shape": "subject_company_plus_generic_slot_terms_without_evidence_owner_or_direction",
+    "queries": 6,
+    "terminalized": 6,
+    "credits_used": 12,
+    "exact_target_in_pool": [0, 6],
+    "terminal_sha256": "0f3339d0c4cddbc16c5c8ea540bebe035e48e534f774df255b9ad6b8fffc0962",
+    "assessment_sha256": "cc64757b8fd7f01e7b3abdae40687131428d2a3e7110f81752d94dfc7597c24f"
+  },
+  "hard_gates_for_semantic_control_qualification": {
+    "all_planned_calls_terminalized": 1.0,
+    "successful_call_rate": 1.0,
+    "minimum_topical_useful_at_10_per_query": 0.3,
+    "minimum_mean_topical_useful_at_10_per_case_language": 0.5,
+    "case_slot_target_in_pool_rate": 1.0,
+    "matched_target_date_accuracy": 1.0,
+    "minimum_independent_registrable_domains_per_case": 3,
+    "maximum_single_ecosystem_share_per_case": 0.7,
+    "maximum_total_credits": 0,
+    "maximum_p95_latency_ms": 5000,
+    "reranker_document_fetch_or_evidence_promotion": 0
+  },
+  "tencent_provider_specific_hard_gates": {
+    "observed_standard_version_rate": 1.0,
+    "maximum_documented_cost_cny": 1.104
+  },
+  "decision_rules": {
+    "all_hard_gates_pass": "separate_sourcehunter_adapter_integration_authority_decision_required",
+    "any_hard_gate_fails": "remain_diagnostic_only_and_do_not_use_reranker_to_rescue_missing_candidates",
+    "comparator_pass_is_not_sourcehunter_integration": true,
+    "comparator_pass_is_not_production_capability": true
+  }
+}

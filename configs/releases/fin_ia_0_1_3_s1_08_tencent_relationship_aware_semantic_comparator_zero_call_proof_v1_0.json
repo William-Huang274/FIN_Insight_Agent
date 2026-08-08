@@ -1,0 +1,335 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_relationship_aware_semantic_comparator_zero_call_proof_v1_0",
+  "recorded_at": "2026-08-08",
+  "status": "zero_call_same_matrix_wire_and_runner_input_binding_pass",
+  "run_scope": "S1_08_TENCENT_RELATIONSHIP_AWARE_SEMANTIC_SAME_MATRIX_RUNNER_ZERO_CALL_IMPLEMENTATION_AND_PROOF",
+  "provider_id": "tencent_wsa_searchpro_standard",
+  "control_plan": {
+    "query_count": 24,
+    "control_plan_digest": "3d636459894758b12986bab383e287d50888ca4f61b4f57ee2566e76126d9e19",
+    "query_text_parity": true,
+    "tencent_query_only_request_count": 24,
+    "precise_units_included": 0,
+    "combined_units_included": 0
+  },
+  "wire_rows": [
+    {
+      "ordinal": 1,
+      "intent_id": "search_intent::NVDA::supply_chain_capacity_and_counterevidence::MU::en::semantic_open_web",
+      "intent_digest": "b0d6c022c7d42f3fd99c3086ed1189cad77b0942972bf2ea87252d2347083ee1",
+      "query_text_digest": "b53878eec585092cdbb842a0829f391b54887f8c2c40fac2794d1f40ae985ae6",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "aa5ce3effb373bd465d110ed7a7b37a5ebd15562679aef9f454d1d3d80a9dfac",
+      "execution_unit_digest": "32c9dee0b958d30287b1de9d723189b4bfbe7e41ff87422bcda30053102a0800",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 2,
+      "intent_id": "search_intent::NVDA::customer_demand_and_deployment_validation::MSFT::en::semantic_open_web",
+      "intent_digest": "ed52d14b243dee150d311efa773e85ba97046ebe50676a9b184590cd84aa9f23",
+      "query_text_digest": "ff7c11f0e3c44e606c9c2f7f3f48aaa863001515051b8e96fed9e65a86dca85c",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "e60ddb11c350cfab19b425709bdebc13286f5ad9074859fbf4e89934ea83c29c",
+      "execution_unit_digest": "7e345f8dca4bff06f556275fd633322ea07a926a0695be1098d42e6f0b562e34",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 3,
+      "intent_id": "search_intent::MU::customer_demand_and_deployment_validation::MSFT::en::semantic_open_web",
+      "intent_digest": "cc0926b4e1f59af3138e5d838ce4d0f3d16565dbdee3b6a99d8eedbe7bbb1f14",
+      "query_text_digest": "3014041c39871102272d8781ee43e0a51e06f0df5a680141cb9927ef20c493a3",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "88e37507bb672a2419da6706ea0255c9f958f6b4467c6a0645653323a39b1a0c",
+      "execution_unit_digest": "6c9d45f139935be1298d41cce6e1701e9d8a5e3ce2ba0e01267d3fa7c378c52d",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 4,
+      "intent_id": "search_intent::DELL::customer_demand_and_deployment_validation::MSFT::en::semantic_open_web",
+      "intent_digest": "b33a8cd8c0e1f7305f0267567b167017773adc2cca8f92c2eb10222ce9f7a25f",
+      "query_text_digest": "14c4c972dc1150c34802354a154cb41eb444e1fdc2d629b26e9b86615e5310e9",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "7e69685a105a14a8fca640da9a336b33b0a888105e433ae3060ecb173d9a8dea",
+      "execution_unit_digest": "d112839771826a51afabfcb358900daa3e55d05869888424419584d114c30e01",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 5,
+      "intent_id": "search_intent::DELL::customer_demand_and_deployment_validation::MSFT::zh::semantic_open_web",
+      "intent_digest": "8cc6dae56dcff7d50d6e1d7c993fce84b0010aec0752a09466f200fb37214874",
+      "query_text_digest": "52fa34466a646861591d17d41aa40cd4870d2fe62e19ac4fd3657d59f0a72153",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "2b4ba3d0470a3d23ae684676c56f60781af62c8762356bf585229d632ef87dd8",
+      "execution_unit_digest": "42c496e501b5caf0a38eb83cb28e9fdaad0a20720ef4170f62523ddec7923bde",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 6,
+      "intent_id": "search_intent::NVDA::customer_demand_and_deployment_validation::MSFT::zh::semantic_open_web",
+      "intent_digest": "e6b2e61461533c72c16faebd35042c912c885688907eeac50b6738d3cb819bc1",
+      "query_text_digest": "de418d50c7c7b6a43a8d20f41955665dc69a888ac1fc15808451f8421985dc66",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "d088f5e99aa10bc16fd20093b061a92fc53928a0034d842286aebb66c1e3abc2",
+      "execution_unit_digest": "98371b949b7104679fe6b80ee3e9e7d9fc9c77abce4eb11dcffe005a7e0b6ed2",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 7,
+      "intent_id": "search_intent::NVDA::supply_chain_capacity_and_counterevidence::MU::zh::semantic_open_web",
+      "intent_digest": "837c9d0bbc1cbc39710003bac889ad1d71daafa59252201915dc3c9143f9a191",
+      "query_text_digest": "03fba3a86667a8dbce5af6d6b775254452bda3beed5c529fe11ef2357a9e7969",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "e479b40f75e44afce84ba99f765dce9fd7f799746175cd9f2d9a55416aa27222",
+      "execution_unit_digest": "526b745b1c2e906f7dcc156392f45ffe5ea1f3d99ae38fa904e2d70d331207df",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 8,
+      "intent_id": "search_intent::NVDA::customer_demand_and_deployment_validation::DELL::zh::semantic_open_web",
+      "intent_digest": "1034771d0a5a9019928521c8453b4ab67c4fe0e0ce01d5411718893122b23c92",
+      "query_text_digest": "663bfb4f30face7dce9f19d3452d7d4b1bc7faeaecf9941222b66810dad482c1",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "37a5314fc9e134a8a20f0bfc1a39ab2641ce6a0183fabbcad349d1a915d3da19",
+      "execution_unit_digest": "8c42a8192f898589c38919351c9ae4bd4ea9c6887e4ac5fdb0e2661704bdda71",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 9,
+      "intent_id": "search_intent::MU::customer_demand_and_deployment_validation::MSFT::zh::semantic_open_web",
+      "intent_digest": "5638eaae0c7bbdf02efcbd42306707e40b7cb55a252b95c2bdacd0a6066a8e0d",
+      "query_text_digest": "c620bcf69eb490e547dc672820b7ccff82567c2d0d4a7c694557824afac1fd85",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "8d76d1ab269d85d04e0bf30c8eadcc7a76078628b1e34c93d55b10fe509ba905",
+      "execution_unit_digest": "a8ec3490c9eab25a84979ca1114fa8e347dbcd8d620ee3208e5724bf1a71fca4",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 10,
+      "intent_id": "search_intent::DELL::supply_chain_capacity_and_counterevidence::NVDA::zh::semantic_open_web",
+      "intent_digest": "d6f4ae6b612ac6f1295b0d49d1a3b44f19eb68ec8d794768d0b44b2703ce48af",
+      "query_text_digest": "bbd01cf7b6ff0c55bdf5b19273836fdaf3083aa15bfc7d6e9ef2bd6cc118bcdf",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "f7bfe1066828500cb463efc90b313ea4ef161d1ad4b569e866fb748419ec8b64",
+      "execution_unit_digest": "87e047dc409b627f9583611e37cf20b891ccd703b8b6af747a695667028ffe70",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 11,
+      "intent_id": "search_intent::DELL::supply_chain_capacity_and_counterevidence::MU::zh::semantic_open_web",
+      "intent_digest": "a56d9fb0e5921532cd01d2a42d44d4ebd840da944bf37e82bd2e82e1d3b45417",
+      "query_text_digest": "c7d5860676d9ebb7e47368766b495c1bbdcfeea5bdf90ba06d23564fc59a21e0",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "bf7f294dad31c56c74ee0d58416b5da304be4367530350f20d28515f45e4f252",
+      "execution_unit_digest": "8605fddc6665b903fc4d9e2ee1e1cbb55b938c5250dae0c5f2d096aa0c95673c",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 12,
+      "intent_id": "search_intent::MU::supply_chain_capacity_and_counterevidence::TSMC::zh::semantic_open_web",
+      "intent_digest": "708d6e13be972ee7d66dc4f126390267d9ef8e7b11d34920f68235b25258be52",
+      "query_text_digest": "ab8c31d909b4cff6eab0739b70a1905e6aabffaf6cdd5218bfb2b4168dc98617",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "9ba2e51b8800ca8b0952ec8ad5894785ac306e1d03aaf62dc913bd624b14a717",
+      "execution_unit_digest": "cb54dd57b48546f558cdbf4f997fffb03d54a03aa25cd9c6419ab7df54953056",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 13,
+      "intent_id": "search_intent::NVDA::customer_demand_and_deployment_validation::DELL::en::semantic_open_web",
+      "intent_digest": "5db1f206d5494972ef28803d16046aad880291ca02caa8d1cda3c24d3daf2a84",
+      "query_text_digest": "e93e39b675cf0cdbe10e08ec3b84bb073ee5b5f74b870f1643a2b415737f2e05",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "56cba04c0d070de9cb7999de31b37b14c7c944220b5ff547f5dfb312113a9247",
+      "execution_unit_digest": "f1b4ca188de735481046a031e52d99c0cb90df3fe3025bb47ce4d3c9ac2d3a3f",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 14,
+      "intent_id": "search_intent::MU::supply_chain_capacity_and_counterevidence::TSMC::en::semantic_open_web",
+      "intent_digest": "3dbd409738a507e841147025ae313e387dd6dc21b452dd951bac5f2bfeab5f0c",
+      "query_text_digest": "c4fe0ab09b5c8962ad1d6a8ad6e131037c5807c8984ab57e9e3d6c35d8025650",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "d3762cd6d04d3c8137f3161d7a7683d6a0e21adce45528fc733b3f4ed70ba2b6",
+      "execution_unit_digest": "842086ea840d2a5aaa836f5167cf06f0e1691efd42f9291e1cac5fab25c4df8e",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 15,
+      "intent_id": "search_intent::MU::customer_demand_and_deployment_validation::DELL::zh::semantic_open_web",
+      "intent_digest": "03c432e9d49742d0274cc015a1792aca878d0e966677e0b629f2322548d947e9",
+      "query_text_digest": "6693d4128db7d454660cd6b347c31b65ea96db138fede7e533fe68b50e6b949d",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "aff9698dc781767b8b0f981f12e3c3fe9ff2e64be5be04a18afb74d030840d37",
+      "execution_unit_digest": "d2a11a7ebc013d315ac71cdfe92d21fb60db49c4eee61bc9032e8f19baf50f65",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 16,
+      "intent_id": "search_intent::MU::supply_chain_capacity_and_counterevidence::NVDA::zh::semantic_open_web",
+      "intent_digest": "05ef4116871108bd5a7ad39720dcda92a11f6f3d80777a7a4228aa01abfc0556",
+      "query_text_digest": "f5f19ec0c0103f83ad3758a16f06d51338de85576810378308e150e4b04bb20a",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "61fe63fd4953f7e48e5c13379b4ad9158a6af689ae0b1254884b22c8f912f29e",
+      "execution_unit_digest": "371bca4dd0d58cec33ed7ed5f78fa9b93a56c9a8b57535cfc04ff296c40b7cc5",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 17,
+      "intent_id": "search_intent::DELL::supply_chain_capacity_and_counterevidence::TSMC::zh::semantic_open_web",
+      "intent_digest": "9d6a37d827f56eccb2e4c4b62ebd7c7d377bb2c888f798dbb231827729749a4f",
+      "query_text_digest": "1c45920d5b8462582e0ce1716b6ac9e89790c67ca6b6867ea769567cf6da4d61",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "c826045a9070e371f199031caf777e024276eca6c2992df4fe14d3160a6b73d8",
+      "execution_unit_digest": "c8476a66c059814fd77e8162a639a663329a236924e3a1cfe6083b35842ea0ba",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 18,
+      "intent_id": "search_intent::DELL::supply_chain_capacity_and_counterevidence::TSMC::en::semantic_open_web",
+      "intent_digest": "33c465f32435bb119f33041af0808066d98f2e80ad8c00ac632bef197f2bcbaa",
+      "query_text_digest": "57073b5158162446e22613845c92e705e13c4c47675928feb50b5cc4312f6ae1",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "e38d0c651e0a82cde3b024ebe6e184a057c9e7f97eca7eed37da0e7ab37ea312",
+      "execution_unit_digest": "aede1e96ca44859e09348f0f1622ad7b22db781b3b7541989dae2d9fad6a8a48",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 19,
+      "intent_id": "search_intent::MU::supply_chain_capacity_and_counterevidence::NVDA::en::semantic_open_web",
+      "intent_digest": "b8fc4855d180c809a6076baeb0457263aaeefabf64d8b89b8b0a3a32b4655382",
+      "query_text_digest": "61f68d89aa65c287e280723eb116fa4c3612fd52d65cf4250f5c5673e562bfd7",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "50a9738f49b06df2779a3b4d080a24717ed4139b95e0f27af05bedc9091a1eea",
+      "execution_unit_digest": "adcf741033bf6c6accd497d9afbc4db7936a96d1b135556525e5c7625310967b",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 20,
+      "intent_id": "search_intent::MU::customer_demand_and_deployment_validation::DELL::en::semantic_open_web",
+      "intent_digest": "fa395fde2c2da1ffbd253f3b1c8090dc6009fa5a03ed95dff7c89e3b02c5cb8d",
+      "query_text_digest": "c189cdcb9a6b684e72ee2b820282c5ec668f42313be7b4ba4ca648df9ee7c0f0",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "c497093c369b5aea9a8b42989949c16d4981f555061e1cca39527167900e283b",
+      "execution_unit_digest": "515acc9e8bf64459dc86f779fb934efc5975e7c153f09e66c2538787e64a7d3b",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 21,
+      "intent_id": "search_intent::DELL::supply_chain_capacity_and_counterevidence::MU::en::semantic_open_web",
+      "intent_digest": "6d1dcbc747b0696a37d0fa4573e62766d0bdf0e973547ab2aa0a93782d0be0c0",
+      "query_text_digest": "0fcf217f8faba47745b201b0dae8fc265fe4c3c339ac18ceb710516d0b116f13",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "06328dce803ecc4efe004996baf0586d61fff5890ad5ff367d01cd1c7cc6f85a",
+      "execution_unit_digest": "25ed05554e4537d2e5ee5b728b4eea3ed2b74f9df0a83236890f2e70648b49e5",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 22,
+      "intent_id": "search_intent::NVDA::supply_chain_capacity_and_counterevidence::TSMC::en::semantic_open_web",
+      "intent_digest": "25acd481e6a85d74acd161a5ca05bfbecbac8ec4771ee5176633718884eb2279",
+      "query_text_digest": "2268d23968665273fab5566c0b723b12f5971945af65d7f223d504b5ac4501da",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "e453ea991870414214e2bfc111358cfdffc33bd2badda72b082f414a719fc329",
+      "execution_unit_digest": "b0b2ad6a50f16445871c0188f9c467a68d1df599a14c5ae7978aba235927e3ee",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 23,
+      "intent_id": "search_intent::NVDA::supply_chain_capacity_and_counterevidence::TSMC::zh::semantic_open_web",
+      "intent_digest": "94684a6e9855c31232ae1adf30633bbec43387ae0fe2869e5976b7d19052ec11",
+      "query_text_digest": "32facc102d93b6c3f89708da744a8662e10ebcfa44ec8e546b34f21f86cd9fa0",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "30b06e3794edfd0ce84f20ad1dcc433a555fb28e91913bc9a8f3fb9ff825cd90",
+      "execution_unit_digest": "16b849a2a9f017bf7563141649dc0efc729b0184411d9b0513758ccb39aa921c",
+      "send_authorized": false
+    },
+    {
+      "ordinal": 24,
+      "intent_id": "search_intent::DELL::supply_chain_capacity_and_counterevidence::NVDA::en::semantic_open_web",
+      "intent_digest": "2aa599df0f35e44f80ea7888c719e49f7543478490d2ebc47d311ae581fd9c65",
+      "query_text_digest": "0490595fb6dec5b22c60ad82c84e0fc577b435bf72f7c1acdcccfdd20f0d5231",
+      "request_body_fields": [
+        "Query"
+      ],
+      "request_payload_digest": "4c5efcd41542a7a30f34c13a268e075015eda9f7f5e9a2b223427d3b89e91cf7",
+      "execution_unit_digest": "6dac99e5369b59d95e72a4fa11b3da8209044740c620caab8324c230c66fc58f",
+      "send_authorized": false
+    }
+  ],
+  "source_bindings": {
+    "catalog_sha256": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851",
+    "intent_policy_sha256": "be2e5f6c7fffca8f10877927b589caeb60425faf761eabec2a32850423ed5751",
+    "wire_policy_sha256": "eef7dc5eb2f006f8f3873d200684064a9fa7d9220655c69bc72d2941df642a5d",
+    "wire_projection_sha256": "5bbf4ff3e7e47400ee7eb281eb98c5c75bef38b52d1ba03a43518a49ab9787a3",
+    "provider_profile_sha256": "ba327e02aa7ec7896b6617e5cf8d809ba439ea9c36b75de88c7b7fcadf3356fb",
+    "provider_profile_digest": "dc249a8716081e3495e7376accfb48ac433aec9080d1baed90a9e3b70ed8622c",
+    "control_plan_sha256": "859e71788d451fda7563855deaf119d6c1d6b3f33fcc2b69e3ae8a58a9ee3969",
+    "scoring_contract_sha256": "dd6b2d279b73379257190dd494e33655d63cfbd47c12ad07a1d5089727e5c7f3",
+    "firecrawl_result_sha256": "84fbafa1b67c7c0b0d620086a3e94f1e4f9f36e439e7d2b4495aee47a3cc46f7",
+    "firecrawl_assessment_sha256": "1ba0d2a65ad7e1c72bd6c00d5c19a2f3f93649a4395e75a4cc33572ca4ea2a7c",
+    "credential_decision_sha256": "8b78130dbb2888a6cd9d1e27f9e95f598da50f22f36a7bf21e7a1b2153aec479"
+  },
+  "credential_boundary": {
+    "required_names_present": true,
+    "values_read_back_logged_or_persisted": false,
+    "environment_only_at_live_runtime": true
+  },
+  "authority": {
+    "provider_calls": 0,
+    "network_calls": 0,
+    "model_calls": 0,
+    "document_fetches": 0,
+    "evidence_promotions": 0,
+    "live_execution_authorized": false,
+    "sourcehunter_integration_authorized": false
+  },
+  "next": "S1_08_TENCENT_RELATIONSHIP_AWARE_SEMANTIC_SAME_MATRIX_CLEAN_AUTHORITY_ISSUANCE",
+  "known_boundary": "This proof establishes exact query parity and secret-safe runner inputs only. Tencent authentication, observed tier, live candidate recall, dates, diversity, cost, latency and SourceHunter readiness remain unproven.",
+  "proof_digest": "10e07ac86ce8e3ac276daafa3eaf8f3c45f6c1a4844e04cc510d15eeb2d2b108"
+}

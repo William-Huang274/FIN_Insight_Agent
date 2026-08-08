@@ -465,6 +465,16 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 
 这一实现没有把“多一个 Provider”当产品进度，而是先修正了输入公平性和查询质量。下一轮 live 的价值在于测索引／排序能否把一手证据带入候选池，不再重复测量 query compiler 缺陷。
 
+## 7H. Firecrawl 控制终态与腾讯同矩阵接力（2026-08-08）
+
+1. [x] Firecrawl relationship-aware semantic control 已 exact-once 完成：`24/24` successful、topical useful=`133/240`、customer/supply case-slot target-in-pool=`5/6`。query compiler 获得 live support，但 Firecrawl 因 `0/235` 日期、中文 exact target=0、DELL supply 缺口和 p95=`6877 ms` 保持 diagnostic-only。
+2. [x] 新腾讯凭据已通过 presence-only 资格判断；项目不读取或保存值，也不允许复用聊天暴露的旧 AK/SK。选择 Tencent `semantic_open_web 24-query`，不执行 precise 22 或 combined 46。
+3. [x] `S1_08_TENCENT_RELATIONSHIP_AWARE_SEMANTIC_SAME_MATRIX_RUNNER_ZERO_CALL_IMPLEMENTATION_AND_PROOF`：Tencent 24 个 Query-only wire 与 Firecrawl control 的 intent/query text=`24/24 parity`；capture-first、systemic-stop terminalization、standard tier、成本与共同质量 evaluator 已实现，focused fake/mutation=`7 passed`、外部调用=0。
+4. [ ] 当前下一项是 clean authority：通过 S1-08 回归、Project OS scoped preflight、secret scan、clean commit/push 后，只签发一次 Tencent 24-query exact-live。该 live 是旧腾讯弱查询结果的 successor，不改写旧结果，也不构成对 Firecrawl 的逐调用单变量 A/B 之外的额外扩张。
+5. [ ] Tencent 若所有 candidate/date/diversity/cost/latency/standard-version 门通过，只进入独立 SourceHunter adapter integration authority 决策；若失败，保持 diagnostic-only，并转下一 Provider 或 Internal Alpha source claim 决策。两种情况都禁止 reranker rescue、正文抓取、DeepSeek 或 S3 提前执行。
+
+这一步不会因配置了 Key 就把“腾讯可调用”等同于“产品检索可用”。真正的产品增量仍由 required evidence target 是否进入候选池、日期能否核验以及三案例来源覆盖决定。
+
 ## 8. 下一步
 
 1. [x] 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。

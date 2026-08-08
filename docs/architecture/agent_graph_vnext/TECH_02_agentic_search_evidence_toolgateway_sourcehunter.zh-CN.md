@@ -1107,3 +1107,33 @@ SearchIntent(canonical, provider-neutral, complete)
 每家 combined ceiling 因此为 46 execution units，不是 60；仍不得自动执行两个 lane。合并只发生在 request bytes 完全相同且 route 相同的 precise payload，semantic 不跨案例合并。这样节约 14 次调用，同时保持每个案例的评估、typed gap 和 Evidence promotion 独立。
 
 专项 `12 passed`、全部 S1-08 contract=`181 passed`。proof 中共有 `240 unique wire digests / 184 unique payload digests / 184 execution units`，Provider／network／model／document／Evidence 均为 0。当前下一项为 `S1_08_DOMESTIC_PROVIDER_CREDENTIAL_READINESS_AND_FIRECRAWL_CONTROL_COMPARATOR_AUTHORITY_DECISION`；它只能 secret-safe 判定国内凭据和选择一个 control lane，不授权 46-call combined live、SourceHunter、ranking 或 S3。
+
+### 20.23 Firecrawl relationship-aware semantic control 终态
+
+唯一 24-query control 在 clean `db427ee4` 完成 `24/24` Provider/network、0 retry/model/document/Evidence，返回 235 raw／176 global-unique locator。共同 evaluator 得到 topical useful=`133/240`、customer/supply case-slot target-in-pool=`5/6`；命中 Microsoft、Dell、TSMC 冻结一手来源，缺 DELL supply 的 Micron prepared remarks。该结果相对旧 generic A4 的 `0/6` 强力支持 owner/direction query compiler，但同时改变 query 数、语言和 evidence-owner fan-out，不能冒充单变量 A/B。
+
+Firecrawl Provider 自身未通过：provider date=`0/235`，六个 exact target occurrence 均无日期，中文 exact target=0，四条 query useful@10<0.3，p95=`6877 ms`。因此 control 固定为 `fail_diagnostic_only`；不得 R2、逐 query patch、reranker rescue、precise lane 自动扩张或 SourceHunter integration。
+
+### 20.24 Tencent relationship-aware same-matrix successor
+
+新腾讯 AK/SK 只通过环境变量名称和 presence 进入资格判断，值不得打印、散列、写入 capture、terminal、Git 或工作日志。与历史腾讯 24-query comparator 不同，本 successor 首次消费 20.23 完全相同的 24 个 relationship-aware semantic intent/query text；旧腾讯结果保持 immutable。
+
+零调用 successor 固定：
+
+```text
+immutable Firecrawl control plan (24 intent/query identities)
+ -> recompile Tencent ProviderWireProjection
+ -> assert 24/24 query-text parity
+ -> Query-only SearchPro request
+ -> safe request capture
+ -> raw response or typed provider failure capture
+ -> per-call terminal, systemic refusal stops later network attempts
+ -> aggregate terminal for all 24 identities
+ -> evaluator-only Gold load
+ -> common useful@10/target/date/diversity/latency
+ -> Tencent Version=standard and documented CNY cost gates
+```
+
+腾讯官方合同复核仍为 `SearchPro / 2025-05-08 / wsa.tencentcloudapi.com`；必填只有 `Query`，Pages 为 JSON 字符串数组并提供 title/date/url/passage/site/score，response 提供 Version/RequestId。标准版按量价 46 元／千次，因此 24-call ceiling 为 1.104 元。本 successor 不发送 Mode/Site/FromTime/ToTime/Cnt/Industry/Freshness/Deeplinks，不把 tier 参数差异混入 semantic recall 对照。
+
+runner 只读 `TENCENTCLOUD_SECRET_ID/TENCENTCLOUD_SECRET_KEY`。AuthFailure、UnauthorizedOperation、ResourceNotFound、ResourceUnavailable 或 RequestLimitExceeded 触发 systemic stop：当前 failure capture 后，其余 identity 以 no-network typed terminal 收口；禁止自动 retry。focused full-fake/mutation=`7 passed`，Provider/network/model/document/Evidence=0。当前下一项是 clean authority issuance；即使 live 所有 comparator 门通过，也只允许另行决定 SourceHunter adapter integration，不自动晋升 Evidence、ranking、Agentic Research 或 release。

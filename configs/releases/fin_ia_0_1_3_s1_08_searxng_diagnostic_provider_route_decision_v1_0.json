@@ -1,0 +1,51 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_searxng_diagnostic_provider_route_decision_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "status": "owner_approved_diagnostic_adapter_only_zero_call_implementation_authorized",
+  "trigger": "P3A A2 independently proved the owned protected-fetch/cache invariants; the remaining uncertainty is operational broad-search candidate coverage.",
+  "owner_decision": "Build a self-hosted SearXNG adapter for low-cost multi-engine comparison and classify it only as a diagnostic provider. A production API will be evaluated later under the same contract.",
+  "official_references": [
+    "https://docs.searxng.org/",
+    "https://docs.searxng.org/dev/search_api.html",
+    "https://docs.searxng.org/admin/installation-docker",
+    "https://docs.searxng.org/admin/settings/settings_search.html",
+    "https://docs.searxng.org/admin/settings/settings_engines.html"
+  ],
+  "authorized_scope": "S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_ADAPTER_ZERO_CALL_IMPLEMENTATION_AND_PROOF",
+  "implementation_contract": {
+    "provider_kind": "diagnostic_metasearch_locator_provider",
+    "endpoint": "/search",
+    "response_format": "json",
+    "capture_first": true,
+    "provider_neutral_normalization": true,
+    "canonical_url_deduplication": true,
+    "typed_partial_and_terminal_failures": true,
+    "network_calls": 0,
+    "model_calls": 0,
+    "evidence_promotion_allowed": false,
+    "numeric_authority": "none",
+    "production_capability_claim": false
+  },
+  "deferred_scope": "S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_BOUNDED_NETWORK_BASELINE",
+  "deferred_scope_gate": "Adapter full-fake/mutation and Project OS preflight must pass; the local instance must be self-hosted and operational. Public-instance fallback is forbidden.",
+  "comparison_dimensions": [
+    "canonical_locator_recall",
+    "required_evidence_slot_coverage",
+    "currentness_metadata_availability",
+    "engine_participation_and_unresponsive_engines",
+    "canonical_duplicate_rate",
+    "latency",
+    "typed_error_rate",
+    "cost"
+  ],
+  "hard_boundaries": {
+    "new_DELL_product_live_authorized": false,
+    "R4_authorized": false,
+    "ranking_authorized": false,
+    "MU_NVDA_transfer_authorized": false,
+    "DeepSeek_or_S3_authorized": false,
+    "release_authorized": false
+  },
+  "known_boundary": "SearXNG aggregates upstream engines and can be blocked, rate-limited or captcha-gated. Adapter or diagnostic-live success does not prove a stable production provider, source truth, Evidence quality, Agentic Research quality or release readiness."
+}

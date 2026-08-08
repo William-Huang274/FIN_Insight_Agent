@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-08 | P3A A2 已在双 clean archive／双 fresh process 各 `92/92` 通过，关闭项目内 protected-fetch/cache 确定性证明。用户批准将开源 Provider 对照前移：先接入自建 SearXNG 作为 diagnostic metasearch locator provider，再用相同合同对照未来付费 API。该路线不计生产能力，不能直接晋升 Evidence/事实，也不修改 no-R4；其目的只是低成本测量不同搜索引擎能否把缺失资料送入候选入口。 |
 | 2026-08-08 | P3 选择 repair-first：先在固定 16 次网络上限内用一个零调用结构包证明 qualified locator 后的受保护正文抓取与 attempt-local cache 边界；Provider 采购、动态页／licensed source 和 Internal Alpha 来源范围缩减暂缓，避免用外采或降范围掩盖项目自有 false gap。P3A 通过后仍须独立 owner 决策才可讨论新 live；no-R4 未被修改。 |
 | 2026-08-08 | 唯一 DELL R3 current-search exact-live 已执行：控制面以 `15 network / 0 model-provider-retry` 完整 terminalize，但得到 `0 candidate / 0 source / 5 typed gaps`，产品来源质量失败。229 条 locator 通过初筛后没有发生正文抓取，根因包含项目内共享 discovery/document allowance 与跨 attempt budget-stop negative cache；既有 deterministic fixture 未覆盖该自然拓扑。no-R4 生效，下一项只能先做零调用 P3，联合处置 owned Runtime 缺陷、运营 Provider 能力和 Internal Alpha source claim；不得把本结果归因 DeepSeek、先调 ranking 或直接购买 Provider 后重跑。 |
 | 2026-08-08 | 完成 FIN 0.1.3 中段 PRD／TECH／Runtime／产品实证对齐：确认当前工程控制面成熟度高于研究内容与用户验收，要求先用最小 S0-04G 关闭共享 run-scope fail-open，再给 S1-08 一次有界 DELL candidate-ceiling live；若仍失败，进入 Provider 获取或 Internal Alpha 来源范围决策，不得追加 R4。进一步明确“方法写入 registry”不等于研究能力落地，S3 必须证明方法注入、节点消费、实质性研报和 qualified-human 内容验收。 |
@@ -2089,6 +2090,7 @@ Data Room、Watchlist/R4、完整估值、Research-to-Quant、全行业、多格
 - S1-08 唯一 DELL R3 candidate-ceiling live 已消费并失败，no-R4 规则生效。失败不是单纯“少一个 Provider”：当前 Runtime 让 landing/structured discovery 与 document fetch 共用 attempt allowance，并把本地 budget stop 写入跨 attempt document cache。P3 必须先把这一 owned defect 与运营 Provider、受控动态页/站内搜索、licensed source、Internal Alpha source claim 放在同一决策里；不得直接进入 R4/R5、增加预算或先做 MU/NVDA transfer；
 - P3 若批准零调用结构修复，其最低产品不变量是“合格 locator 后存在受保护的正文抓取机会”和“本地预算停止不跨 slot 污染文档缓存”；只有另行改变 stop-rule／产品范围并重新签发 authority，才可考虑新的 live。购买 Provider 本身不能替代这两个项目内修复；
 - P3 已批准且只批准 `S1_08_P3A_PROTECTED_DOCUMENT_FETCH_BUDGET_AND_ATTEMPT_LOCAL_CACHE_ZERO_CALL_IMPLEMENTATION_AND_PROOF`：全局 16 次上限、Evidence Gate 与 no-R4 均保持；candidate policy 以 successor v4 表达，历史 R3/v3 不改写。Provider／动态页／licensed source 与来源承诺缩减在 P3A 后再决定；P3A 即使全绿也不自动产生 live authority；
+- P3A A2 已通过。Owner 随后批准的 SearXNG 路线只前移“诊断型 Provider 对照”，不前移生产 Provider 或新 DELL product-live：adapter 输出只能是未晋升 locator candidate 与 provider/engine telemetry；原始来源仍须由 FIN capture-first fetch、qualification 与 Evidence Gate 重新处理；
 - S2 只冻结 provider-neutral ModelCapabilityProfile、DeepSeek profile 和 AutonomyGrant，不再用整条 full-chain 反复寻找字段级不遵循；
 - S3 承担动态研究、方法到 Runtime 激活、targeted repair 和内容质量；搜索、模型、研究内容三个 failure domain 分开评分；
 - L2–L4 表达问题在 S3/S4 处理，不回流破坏已通过的数值、Evidence 或 source 合同；新的 L1 必须留在最早责任阶段并触发一次结构处置，而不是无限增加 live attempts。

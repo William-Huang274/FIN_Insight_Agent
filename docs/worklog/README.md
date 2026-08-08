@@ -1,5 +1,8 @@
 # Worklog
 
+- [727 — FIN 0.1.3 S1-08 P3A A2 通过与 SearXNG 诊断路线重排](product_strategy/727_fin_0_1_3_s1_08_p3a_a2_pass_and_searxng_diagnostic_replan.md)
+- [726 — FIN 0.1.3 S1-08 P3A clean proof A1 输入装配失败](product_strategy/726_fin_0_1_3_s1_08_p3a_clean_proof_a1_input_assembly_failure.md)
+- [725 — FIN 0.1.3 S1-08 P3A protected fetch/cache v4 工程实现](product_strategy/725_fin_0_1_3_s1_08_p3a_protected_fetch_cache_v4_implementation.md)
 - [724 — FIN 0.1.3 S1-08 P3 自有修复、Provider 与产品来源范围处置](product_strategy/724_fin_0_1_3_s1_08_p3_owned_repair_provider_and_product_scope_disposition.md)
 - [723 — FIN 0.1.3 S1-08 DELL R3 终态、来源质量失败与 P3 交接](product_strategy/723_fin_0_1_3_s1_08_dell_r3_terminal_source_quality_failure_and_p3_handoff.md)
 

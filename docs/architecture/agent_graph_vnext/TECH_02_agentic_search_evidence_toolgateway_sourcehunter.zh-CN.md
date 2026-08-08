@@ -869,3 +869,21 @@ P3 选择先修项目自有不变量，再决定 Provider 与产品来源范围�
 7. P3A 的 network/model/provider/admission/live 均为 `0`，不得在实现包内购买 Provider、放宽门禁、增加预算或执行 replacement live。
 
 若固定 16 次上限内不能证明 protected fetch 与 attempt-local cache 两个不变量，P3A 立即停止并回到 Provider／Internal Alpha source-claim 决策。若 P3A 通过，也只建立 deterministic engineering proof；另一个 owner decision 必须复核 residual operational gaps、产品来源承诺和是否明确修改 no-R4，才能命名、签发或执行任何新 DELL Attempt。
+
+### 20.13 P3A A2 结果与 SearXNG diagnostic provider 合同（2026-08-08）
+
+P3A 的 runner-only A2 已在 clean/synced `5e9726c2537386d2bc06a843ec43bfc5bf5d72fd` 上通过：两个 Git archive、两个 fresh process 各 `92 passed / 0 failed / 0 skipped`；R1/R2/R3 restricted objects=`19/2/39`，输入前后 byte-stable，外部调用为 0。A1 的 `90/1/1` 继续作为输入装配失败保留。该结果关闭 protected-fetch/cache 的 deterministic proof，不证明运营搜索覆盖。
+
+Owner 批准在 production Provider 决策前增加一条低成本开源诊断路线。SearXNG 是聚合外部搜索服务的 metasearch，不是 FIN 自有 Web index，也不是金融来源权威。它在本阶段必须遵守以下合同：
+
+1. provider lifecycle 固定为 `declared -> configured -> operational -> diagnostic_replay_proven -> diagnostic_live_measured`；禁止投影为 `production_live_proven`；
+2. adapter 只接受预注册 query、language/time range/category、结果上限和调用预算；只调用固定 base origin 的 `/search?format=json`；
+3. 原始 request、response、HTTP status、content type、engine participation 与 unresponsive engine 先 capture，再解析；403 JSON-disabled、429、timeout、invalid JSON、schema drift 与 body ceiling 都形成 typed terminal/partial result；
+4. 规范化输出仅包含 canonical locator、title、snippet、可选 published date、engine list、rank/score candidate 和 capture lineage；SearXNG 的 score/date/snippet 均没有金融权威；
+5. canonical duplicate 合并时保留全部 engine/rank lineage；不得因为多 engine 命中而把一份 URL 计成多份来源；
+6. 所有 locator 初始 `promotion_status=diagnostic_locator_only`、`evidence_promotion_allowed=false`、`numeric_authority=none`。FIN 必须另行抓取原始来源并重新执行 entity/date/relationship/content/Evidence Gate；
+7. 零调用 full-fake 必须覆盖成功、空结果、重复、cross-case/query mutation、403/429、timeout、invalid JSON、oversize、redirect/origin drift 和 engine failure；
+8. 本地部署使用官方容器入口并固定 loopback exposure；Docker daemon 未运行时只允许报告 `deployment_not_operational`，不得改用任意公共实例冒充自建基线；
+9. 未来付费 broad-search API 必须消费同一 query set、normalization schema、预算和 evaluator-only target，才能比较 locator recall、required-slot coverage、currentness metadata、duplicate rate、latency、错误率与成本。
+
+当前只授权 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_ADAPTER_ZERO_CALL_IMPLEMENTATION_AND_PROOF`。有界网络 baseline 使用独立 scope；它仍不是 DELL R4、product-live、ranking 或 Evidence promotion。

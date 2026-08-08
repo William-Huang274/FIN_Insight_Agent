@@ -1,0 +1,63 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_authority_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.firecrawl_relationship_aware_semantic_control:v1",
+  "recorded_at": "2026-08-08",
+  "status": "issued_unconsumed",
+  "admission_id": "fin-ia-013-s1-08-firecrawl-semantic-control-r1-20260808",
+  "authorized_scope": "S1_08_FIRECRAWL_RELATIONSHIP_AWARE_SEMANTIC_CONTROL_EXACT_LIVE_EXECUTION",
+  "issuance_basis": {
+    "implementation_commit": "12fe18decdbbfc1b745a9023fb0c0837776cf138",
+    "implementation_commit_pushed": true,
+    "implementation_worktree_was_clean": true,
+    "authority_issuance_network_provider_model_document_evidence_calls": [0, 0, 0, 0, 0],
+    "domestic_credentials_available": false,
+    "firecrawl_keyless_control_previously_observed": true
+  },
+  "immutable_bindings": {
+    "implementation_commit": "12fe18decdbbfc1b745a9023fb0c0837776cf138",
+    "runner_sha256": "95e7679bdde0ce4c58937f35fc324e63f861ea2fea28c14b19f661a1c66d3363",
+    "support_sha256": "3a2c119229a0ed4ab3c66f15f7abcd011fff97afc29ff87b5879b674433997e0",
+    "plan_sha256": "859e71788d451fda7563855deaf119d6c1d6b3f33fcc2b69e3ae8a58a9ee3969",
+    "plan_digest": "3d636459894758b12986bab383e287d50888ca4f61b4f57ee2566e76126d9e19",
+    "scoring_contract_sha256": "81fe9359f1167c55105972408d7a7b4e1f366f56193253f823cabfe4ceaba1c8",
+    "zero_call_proof_sha256": "c9794352bb39c3c365929e68b60bf4ecf3cd40ff6d2979c2ab7c6fe38648a76c",
+    "wire_policy_sha256": "eef7dc5eb2f006f8f3873d200684064a9fa7d9220655c69bc72d2941df642a5d",
+    "wire_projection_sha256": "5bbf4ff3e7e47400ee7eb281eb98c5c75bef38b52d1ba03a43518a49ab9787a3"
+  },
+  "execution_contract": {
+    "provider": "firecrawl_keyless_search",
+    "selected_lane": "semantic_open_web",
+    "planned_execution_units": 24,
+    "provider_call_ceiling": 24,
+    "network_call_ceiling": 24,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0,
+    "document_fetch_ceiling": 0,
+    "evidence_promotion_allowed": false,
+    "sourcehunter_integration_allowed": false,
+    "ranking_or_reranker_allowed": false,
+    "precise_official_lane_allowed": false,
+    "combined_46_unit_execution_allowed": false,
+    "authorization_or_cookie_header_allowed": false,
+    "timeout_seconds_per_attempt": 30,
+    "raw_capture_before_normalization_required": true,
+    "all_planned_identities_terminalized_required": true,
+    "gold_load_before_aggregate_terminal_allowed": false
+  },
+  "stop_rules": {
+    "same_request_retry_allowed": false,
+    "systemic_http_401_402_403": "terminalize_remaining_without_network",
+    "new_l1_contract_failure": "stop_no_automatic_successor",
+    "quality_gate_failure": "remain_diagnostic_only_no_reranker_rescue",
+    "quality_gate_pass": "only_eligible_for_same_matrix_domestic_provider_comparison"
+  },
+  "capability_boundary": {
+    "classification": "one_exact_live_diagnostic_semantic_locator_control",
+    "domestic_provider_capability_established": false,
+    "sourcehunter_capability_established": false,
+    "evidence_or_financial_fact_authority": false,
+    "agentic_research_or_report_quality_established": false,
+    "release_authorized": false
+  },
+  "authority_digest": "32524327d8214b56b2850cd0eefe675ab0da4ab091bcae4d301d5b35fcabbd2f"
+}

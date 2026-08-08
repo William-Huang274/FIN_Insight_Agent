@@ -9,9 +9,11 @@ import pytest
 
 from sec_agent.canonical_runtime.models import canonical_digest
 from sec_agent.s1_08_firecrawl_semantic_control import (
+    RUN_SCOPE,
     S108FirecrawlSemanticControlError,
     build_terminal_result,
     evaluate_semantic_control,
+    load_authority,
     load_plan,
     load_scoring_contract,
     normalize_firecrawl_response,
@@ -24,6 +26,7 @@ SCORING_PATH = ROOT / "configs/eval/fin_ia_0_1_3_s1_08_firecrawl_relationship_aw
 VISIBLE_PATH = ROOT / "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json"
 DECISION_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_domestic_provider_credential_readiness_and_firecrawl_control_authority_decision_v1_0.json"
 PROOF_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_zero_call_proof_v1_0.json"
+AUTHORITY_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_authority_v1_0.json"
 A4_TERMINAL_PATH = ROOT / "artifacts/runtime/provider_market_scan/firecrawl_keyless_a4_customer_supply_en_20260808/terminal-result.json"
 A4_ASSESSMENT_PATH = ROOT / "artifacts/runtime/provider_market_scan/firecrawl_keyless_a4_customer_supply_en_20260808/assessment.json"
 EVALUATOR_PATH = ROOT / "scripts/releases/evaluate_fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control.py"
@@ -270,3 +273,27 @@ def test_evaluator_loads_gold_only_after_terminal_guard() -> None:
     visible_load = source.index("args.visible_pack.read_text")
     assert guard < scoring_load
     assert guard < visible_load
+
+
+def test_exact_live_authority_is_digest_bound_semantic_only_and_unconsumed() -> None:
+    authority = load_authority(AUTHORITY_PATH)
+    execution = authority["execution_contract"]
+    assert authority["authorized_scope"] == RUN_SCOPE
+    assert authority["status"] == "issued_unconsumed"
+    assert execution["selected_lane"] == "semantic_open_web"
+    assert execution["planned_execution_units"] == 24
+    assert execution["provider_call_ceiling"] == 24
+    assert execution["retry_ceiling"] == 0
+    assert execution["precise_official_lane_allowed"] is False
+    assert execution["combined_46_unit_execution_allowed"] is False
+    assert execution["gold_load_before_aggregate_terminal_allowed"] is False
+
+
+def test_exact_live_scope_is_registered_and_currently_allowed() -> None:
+    from sec_agent.project_os_preflight import run_project_os_preflight
+
+    preflight = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
+    assert preflight["status"] == "pass"
+    assert preflight["contract_errors"] == []
+    assert preflight["scope_resolution"]["status"] == "registered"
+    assert preflight["scope_resolution"]["operation_class"] == "diagnostic_search_execution"

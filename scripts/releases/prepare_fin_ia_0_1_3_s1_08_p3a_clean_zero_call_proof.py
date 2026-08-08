@@ -23,6 +23,19 @@ IMPLEMENTATION_RESULT = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_p3a_"
     "protected_document_fetch_cache_zero_call_implementation_v1_0.json"
 )
+R1_MANIFEST = ROOT / (
+    "configs/releases/fin_ia_0_1_3_s1_08_"
+    "dell_r1_restricted_capture_manifest_v1_0.json"
+)
+R1_OBJECT_ROOT = ROOT / (
+    ".codex_runtime/fin013_s1_08_dell_current_search_canary/"
+    "fin013_s1_08_dell_search_admission_d1b8c229b7402e195f14/adapter/objects"
+)
+R2_OBJECT_ROOT = ROOT / (
+    ".codex_runtime/fin013_s1_08_dell_current_search_r2/"
+    "fin013_s1_08_dell_r2_admission_3de480abf1cfd6db5037/adapter/objects/"
+    "fin-0.1.3/s1-08/current-source-discovery"
+)
 R3_RESULT = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_v3_"
     "dell_current_search_r3_result_v1_0.json"
@@ -38,7 +51,7 @@ R3_CAPTURE_ROOT = ROOT / (
 )
 RESULT = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_p3a_"
-    "protected_document_fetch_cache_clean_zero_call_proof_v1_0.json"
+    "protected_document_fetch_cache_clean_zero_call_proof_v1_1.json"
 )
 CURRENT_ACTION = (
     "S1_08_P3A_PROTECTED_DOCUMENT_FETCH_BUDGET_AND_ATTEMPT_LOCAL_CACHE_"
@@ -55,6 +68,18 @@ EXPECTED_DEPENDENCIES = {
 EXPECTED_R3_SHA256 = {
     R3_RESULT: "731885330176f1d3a428ed3cdf62315e34c345f457ba39b749d60802d9c6b1d5",
     R3_EVALUATION: "b8af0d6e6a573ce2365d544972bfb74bbdf6ba8927c4a29f1d33cae8a6b6c5f2",
+}
+R2_CAPTURES = {
+    "1b16c1d89b47e5c20f1ef20ee021f1c166fb938ca94faf0d2bd87c2326c1294c": {
+        "body_sha256": (
+            "94e5a8f806f03fa13a2d94107b6a32a6bfe6a10090eb41adc5f84ba3fb5f7b8a"
+        ),
+    },
+    "7306f99976f05c7bca0574148d0c12ed6e4bac55a3f71f22237960b6973062cb": {
+        "body_sha256": (
+            "9bcb8759d663b50b91245b5f2bc4f8e0362bccf9aa83fe83fceb155621aa0995"
+        ),
+    },
 }
 PYTEST_TARGETS = (
     "tests/contract/test_fin_0_1_3_s1_08_agentic_search_entry_audit.py",
@@ -120,6 +145,10 @@ def _canonical_bytes(payload: Mapping[str, Any]) -> bytes:
 
 def _canonical_digest(payload: Mapping[str, Any]) -> str:
     return hashlib.sha256(_canonical_bytes(payload)).hexdigest()
+
+
+def _capture_path(root: Path, object_digest: str) -> Path:
+    return root / object_digest[:2] / object_digest[2:4] / f"{object_digest}.json"
 
 
 def _git(*args: str) -> str:
@@ -225,6 +254,44 @@ def _r3_capture_manifest(root: Path) -> dict[str, Any]:
     return {"counts": counts, "objects": rows, "request_outcome_pairs": 13}
 
 
+def _legacy_capture_manifest(
+    *,
+    r1_object_root: Path,
+    r2_object_root: Path,
+) -> dict[str, Any]:
+    r1_manifest = _load(R1_MANIFEST)
+    _require(len(r1_manifest.get("requests") or []) == 19, "restricted_R1_manifest_invalid")
+    r1_rows: dict[str, Any] = {}
+    for row in r1_manifest["requests"]:
+        object_digest = str(row["request_capture_digest"])
+        path = r1_object_root / str(row["request_capture_object_key"])
+        _require(path.exists(), f"restricted_R1_capture_missing:{object_digest}")
+        _require(_sha256(path) == object_digest, f"restricted_R1_capture_digest_drift:{object_digest}")
+        r1_rows[object_digest] = {
+            "file_sha256": _sha256(path),
+            "bytes": path.stat().st_size,
+        }
+
+    r2_rows: dict[str, Any] = {}
+    for object_digest, expected in R2_CAPTURES.items():
+        path = _capture_path(r2_object_root, object_digest)
+        _require(path.exists(), f"restricted_R2_capture_missing:{object_digest}")
+        capture = _load(path)
+        _require(
+            capture.get("body_sha256") == expected["body_sha256"],
+            f"restricted_R2_body_digest_drift:{object_digest}",
+        )
+        r2_rows[object_digest] = {
+            "file_sha256": _sha256(path),
+            "body_sha256": capture["body_sha256"],
+            "bytes": path.stat().st_size,
+        }
+    return {
+        "R1_request_objects": r1_rows,
+        "R2_content_objects": r2_rows,
+    }
+
+
 def _extract_clean_archive(commit: str, target: Path) -> None:
     archive_path = target.parent / f"{target.name}.tar"
     with archive_path.open("wb") as handle:
@@ -242,7 +309,32 @@ def _extract_clean_archive(commit: str, target: Path) -> None:
     archive_path.unlink()
 
 
-def _inject_r3_captures(target: Path) -> dict[str, Any]:
+def _inject_restricted_captures(target: Path) -> dict[str, Any]:
+    r1_manifest = _load(R1_MANIFEST)
+    r1_destination_root = target / R1_OBJECT_ROOT.relative_to(ROOT)
+    for row in r1_manifest["requests"]:
+        object_digest = str(row["request_capture_digest"])
+        object_key = str(row["request_capture_object_key"])
+        source = R1_OBJECT_ROOT / object_key
+        destination = r1_destination_root / object_key
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+        _require(
+            _sha256(source) == _sha256(destination),
+            f"R1_capture_copy_drift:{object_digest}",
+        )
+
+    r2_destination_root = target / R2_OBJECT_ROOT.relative_to(ROOT)
+    for object_digest in R2_CAPTURES:
+        source = _capture_path(R2_OBJECT_ROOT, object_digest)
+        destination = _capture_path(r2_destination_root, object_digest)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+        _require(
+            _sha256(source) == _sha256(destination),
+            f"R2_capture_copy_drift:{object_digest}",
+        )
+
     destination_root = target / R3_CAPTURE_ROOT.relative_to(ROOT)
     for source in sorted(R3_CAPTURE_ROOT.rglob("*.json")):
         destination = destination_root / source.relative_to(R3_CAPTURE_ROOT)
@@ -252,7 +344,13 @@ def _inject_r3_captures(target: Path) -> dict[str, Any]:
             _sha256(source) == _sha256(destination),
             f"R3_capture_copy_drift:{source.name}",
         )
-    return _r3_capture_manifest(destination_root)
+    return {
+        **_legacy_capture_manifest(
+            r1_object_root=r1_destination_root,
+            r2_object_root=r2_destination_root,
+        ),
+        "R3_capture_store": _r3_capture_manifest(destination_root),
+    }
 
 
 class _StablePytestResult:
@@ -289,6 +387,10 @@ def _worker_payload(runtime_root: Path) -> dict[str, Any]:
     dependency_versions = {package: version(package) for package in EXPECTED_DEPENDENCIES}
     _require(dependency_versions == EXPECTED_DEPENDENCIES, "dependency_version_drift")
     implementation_bindings = _verify_implementation(runtime_root)
+    legacy_manifest = _legacy_capture_manifest(
+        r1_object_root=runtime_root / R1_OBJECT_ROOT.relative_to(ROOT),
+        r2_object_root=runtime_root / R2_OBJECT_ROOT.relative_to(ROOT),
+    )
     r3_manifest = _r3_capture_manifest(runtime_root / R3_CAPTURE_ROOT.relative_to(ROOT))
     _require(
         compileall.compile_dir(
@@ -317,10 +419,18 @@ def _worker_payload(runtime_root: Path) -> dict[str, Any]:
     _require(not network_attempts, "network_attempt_observed")
 
     return {
-        "schema_version": "fin_ia_0_1_3_s1_08_p3a_clean_worker_v1_0",
+        "schema_version": "fin_ia_0_1_3_s1_08_p3a_clean_worker_v1_1",
         "status": "pass",
         "dependency_versions": dependency_versions,
         "implementation_bindings": implementation_bindings,
+        "R1_restricted_request_manifest_digest": _canonical_digest(
+            {"R1_request_objects": legacy_manifest["R1_request_objects"]}
+        ),
+        "R1_restricted_request_objects": len(legacy_manifest["R1_request_objects"]),
+        "R2_restricted_content_manifest_digest": _canonical_digest(
+            {"R2_content_objects": legacy_manifest["R2_content_objects"]}
+        ),
+        "R2_restricted_content_objects": len(legacy_manifest["R2_content_objects"]),
         "R3_restricted_capture_manifest_digest": _canonical_digest(r3_manifest),
         "R3_request_outcome_pairs": r3_manifest["request_outcome_pairs"],
         "pytest": {
@@ -409,6 +519,10 @@ def _run_worker(runtime_root: Path, output_path: Path) -> dict[str, Any]:
 def build_result() -> dict[str, Any]:
     git_state = _assert_clean_synced_head()
     implementation_bindings = _verify_implementation(ROOT)
+    source_legacy_manifest_before = _legacy_capture_manifest(
+        r1_object_root=R1_OBJECT_ROOT,
+        r2_object_root=R2_OBJECT_ROOT,
+    )
     source_manifest_before = _r3_capture_manifest(R3_CAPTURE_ROOT)
     for path, expected in EXPECTED_R3_SHA256.items():
         _require(_sha256(path) == expected, f"immutable_R3_binding_drift:{path.name}")
@@ -425,7 +539,7 @@ def build_result() -> dict[str, Any]:
         for ordinal in (1, 2):
             runtime_root = parent_path / f"clean-archive-{ordinal}"
             _extract_clean_archive(git_state["commit"], runtime_root)
-            injected_manifests.append(_inject_r3_captures(runtime_root))
+            injected_manifests.append(_inject_restricted_captures(runtime_root))
             output_path = runtime_root / f"worker-result-{ordinal}.json"
             payload = _run_worker(runtime_root, output_path)
             worker_payloads.append(payload)
@@ -436,7 +550,15 @@ def build_result() -> dict[str, Any]:
             "fresh_worker_injected_inputs_differ",
         )
 
+    source_legacy_manifest_after = _legacy_capture_manifest(
+        r1_object_root=R1_OBJECT_ROOT,
+        r2_object_root=R2_OBJECT_ROOT,
+    )
     source_manifest_after = _r3_capture_manifest(R3_CAPTURE_ROOT)
+    _require(
+        source_legacy_manifest_before == source_legacy_manifest_after,
+        "source_R1_R2_captures_changed",
+    )
     _require(source_manifest_before == source_manifest_after, "source_R3_captures_changed")
     _require(
         _verify_implementation(ROOT) == implementation_bindings,
@@ -449,7 +571,7 @@ def build_result() -> dict[str, Any]:
     body = {
         "schema_version": (
             "fin_ia_0_1_3_s1_08_p3a_protected_document_fetch_cache_"
-            "clean_zero_call_proof_v1_0"
+            "clean_zero_call_proof_v1_1"
         ),
         "proof_id": CURRENT_ACTION,
         "recorded_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(
@@ -458,8 +580,21 @@ def build_result() -> dict[str, Any]:
         "stage": "013-S1-08-P3A",
         "status": (
             "pass_two_clean_archives_two_fresh_processes_"
-            "immutable_R3_replay_zero_call_reproducible"
+            "immutable_R1_R2_R3_replay_zero_call_reproducible"
         ),
+        "proof_attempt_history": [
+            {
+                "attempt_id": "S1-08-P3A-CLEAN-PROOF-A1",
+                "source_commit": "6488af2ab7c39af4fbf29573ae2470e8ec1e6f59",
+                "status": "immutable_failed",
+                "worker_result": "90_passed_1_failed_1_skipped",
+                "failure_code": "s1_08_restricted_capture_object_missing",
+                "disposition": (
+                    "Retained as a proof-runner restricted-input assembly failure; "
+                    "v4 Runtime and the fixed budget were not changed."
+                ),
+            }
+        ],
         "source_commit": git_state,
         "source_bindings": {
             "implementation_result_ref": IMPLEMENTATION_RESULT.relative_to(ROOT).as_posix(),
@@ -471,11 +606,19 @@ def build_result() -> dict[str, Any]:
             "R3_evaluation_sha256": _sha256(R3_EVALUATION),
             "proof_runner_ref": Path(__file__).resolve().relative_to(ROOT).as_posix(),
             "proof_runner_sha256": _sha256(Path(__file__).resolve()),
+            "restricted_R1_manifest_ref": R1_MANIFEST.relative_to(ROOT).as_posix(),
+            "restricted_R1_manifest_sha256": _sha256(R1_MANIFEST),
         },
         "independent_proof": {
             "clean_git_archives": 2,
             "fresh_python_processes": 2,
             "distinct_disposable_roots": 2,
+            "restricted_R1_request_objects_injected": len(
+                source_legacy_manifest_before["R1_request_objects"]
+            ),
+            "restricted_R2_content_objects_injected": len(
+                source_legacy_manifest_before["R2_content_objects"]
+            ),
             "restricted_R3_objects_injected": len(source_manifest_before["objects"]),
             "restricted_R3_request_outcome_pairs": 13,
             "restricted_inputs_byte_identical": True,
@@ -486,6 +629,12 @@ def build_result() -> dict[str, Any]:
             "temporary_roots_removed": True,
         },
         "source_read_only_audit": {
+            "restricted_R1_R2_manifest_digest_before": _canonical_digest(
+                source_legacy_manifest_before
+            ),
+            "restricted_R1_R2_manifest_digest_after": _canonical_digest(
+                source_legacy_manifest_after
+            ),
             "restricted_R3_manifest_digest_before": _canonical_digest(
                 source_manifest_before
             ),
@@ -493,6 +642,7 @@ def build_result() -> dict[str, Any]:
                 source_manifest_after
             ),
             "restricted_R3_inputs_unchanged": True,
+            "restricted_R1_R2_inputs_unchanged": True,
             "versioned_R3_artifacts_unchanged": True,
             "repository_status_unchanged_until_result_write": True,
         },

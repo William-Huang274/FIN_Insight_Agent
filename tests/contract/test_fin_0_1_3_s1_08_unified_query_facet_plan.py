@@ -53,6 +53,9 @@ PROOF_PATH = (
 QUERY_SCOPE = "S1_08_UNIFIED_QUERY_FACET_PLAN_ZERO_CALL_IMPLEMENTATION"
 CLEAN_SCOPE = "S1_08_OFFICIAL_FIRST_PORTFOLIO_CLEAN_INDEPENDENT_ZERO_CALL_PROOF"
 THREE_WAY_SCOPE = "S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION"
+ATOM_CANARY_SCOPE = (
+    "S1_08_QUERY_FACET_DEEPSEEK_ATOM_CANARY_EXACT_LIVE_EXECUTION"
+)
 
 
 def _load(path: Path) -> dict:
@@ -419,13 +422,16 @@ def test_materialized_proof_is_digest_bound_zero_call_and_honest() -> None:
     assert proof["stage_acceptance"]["internal_retrieval_integration"] is False
 
 
-def test_project_os_advances_from_query_facet_to_three_way_evaluation() -> None:
+def test_project_os_advances_through_three_way_to_atom_canary() -> None:
     completed = run_project_os_preflight(ROOT, run_scope=CLEAN_SCOPE)
     assert completed["status"] == "blocked"
     assert completed["contract_errors"] == []
     implemented = run_project_os_preflight(ROOT, run_scope=QUERY_SCOPE)
     assert implemented["status"] == "blocked"
     assert implemented["contract_errors"] == []
-    current = run_project_os_preflight(ROOT, run_scope=THREE_WAY_SCOPE)
+    evaluated = run_project_os_preflight(ROOT, run_scope=THREE_WAY_SCOPE)
+    assert evaluated["status"] == "blocked"
+    assert evaluated["contract_errors"] == []
+    current = run_project_os_preflight(ROOT, run_scope=ATOM_CANARY_SCOPE)
     assert current["status"] == "pass"
     assert current["contract_errors"] == []

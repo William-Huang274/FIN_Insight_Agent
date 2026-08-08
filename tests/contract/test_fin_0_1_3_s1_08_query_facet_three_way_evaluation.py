@@ -326,10 +326,10 @@ def test_policy_call_or_replay_authority_mutation_is_rejected(tmp_path: Path) ->
     )
 
 
-def test_project_os_keeps_only_three_way_scope_current() -> None:
+def test_project_os_closes_three_way_zero_call_scope_after_clean_authority() -> None:
     completed = run_project_os_preflight(ROOT, run_scope=COMPLETED_SCOPE)
     assert completed["status"] == "blocked"
     assert completed["contract_errors"] == []
-    current = run_project_os_preflight(ROOT, run_scope=CURRENT_SCOPE)
-    assert current["status"] == "pass"
-    assert current["contract_errors"] == []
+    prior = run_project_os_preflight(ROOT, run_scope=CURRENT_SCOPE)
+    assert prior["status"] == "blocked"
+    assert prior["contract_errors"] == []

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 from typing import Any
 
@@ -37,6 +39,7 @@ from sec_agent.shared_admission_ledger import (  # noqa: E402
     SharedAdmissionConsumptionLedger,
     SharedAdmissionLedgerError,
 )
+from sec_agent.project_os_preflight import run_project_os_preflight  # noqa: E402
 
 
 CANARY_POLICY_PATH = ROOT / (
@@ -54,6 +57,10 @@ IMPLEMENTATION_PROOF_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_query_atom_canary_"
     "zero_call_implementation_proof_v1_0.json"
 )
+AUTHORITY_PATH = ROOT / (
+    "configs/releases/fin_ia_0_1_3_s1_08_deepseek_query_atom_"
+    "canary_authority_decision_v1_0.json"
+)
 ISSUED_AT = "2026-08-08T12:00:00+00:00"
 OBSERVED_AT = "2026-08-08T12:01:00+00:00"
 EXPIRES_AT = "2026-08-08T14:00:00+00:00"
@@ -61,6 +68,12 @@ EXPIRES_AT = "2026-08-08T14:00:00+00:00"
 
 def _load(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _normalized_sha256(path: Path) -> str:
+    return hashlib.sha256(
+        path.read_bytes().replace(b"\r\n", b"\n")
+    ).hexdigest()
 
 
 @pytest.fixture(scope="module")
@@ -402,3 +415,61 @@ def test_materialized_implementation_proof_is_digest_bound_and_honest() -> None:
     assert proof["decision"][
         "internal_retrieval_and_BGE_rerank_backlog_preserved"
     ] is True
+
+
+def test_clean_authority_binds_implementation_and_only_one_model_call() -> None:
+    authority = _load(AUTHORITY_PATH)
+    body = dict(authority)
+    supplied = body.pop("decision_digest")
+    assert supplied == canonical_digest(body)
+    assert authority["status"] == (
+        "one_bounded_deepseek_query_atom_canary_authorized"
+    )
+    assert authority["run_scope"] == (
+        "S1_08_QUERY_FACET_DEEPSEEK_ATOM_CANARY_EXACT_LIVE_EXECUTION"
+    )
+    granted = authority["authority"]
+    assert granted["provider_call_ceiling"] == 1
+    assert granted["transport_attempt_ceiling"] == 1
+    assert granted["retry_count"] == 0
+    assert granted["fallback_count"] == 0
+    assert granted["automatic_runtime_activation"] is False
+    assert granted["automatic_combined_live"] is False
+    assert granted["automatic_internal_retrieval"] is False
+    assert not any(authority["calls_executed_by_this_decision"].values())
+
+    binding = authority["implementation_binding"]
+    for ref_key, hash_key in (
+        ("runner_ref", "runner_sha256_normalized"),
+        ("runtime_module_ref", "runtime_module_sha256_normalized"),
+        ("policy_ref", "policy_sha256_normalized"),
+    ):
+        assert _normalized_sha256(ROOT / binding[ref_key]) == binding[hash_key]
+    ancestor = subprocess.run(
+        [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            authority["implementation_commit"],
+            "HEAD",
+        ],
+        cwd=ROOT,
+        check=False,
+    )
+    assert ancestor.returncode == 0
+
+
+def test_project_os_switches_only_to_the_exact_canary_scope() -> None:
+    current = run_project_os_preflight(
+        ROOT,
+        run_scope=(
+            "S1_08_QUERY_FACET_DEEPSEEK_ATOM_CANARY_EXACT_LIVE_EXECUTION"
+        ),
+    )
+    assert current["status"] == "pass"
+    assert current["contract_errors"] == []
+    prior = run_project_os_preflight(
+        ROOT,
+        run_scope="S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION",
+    )
+    assert prior["status"] == "blocked"

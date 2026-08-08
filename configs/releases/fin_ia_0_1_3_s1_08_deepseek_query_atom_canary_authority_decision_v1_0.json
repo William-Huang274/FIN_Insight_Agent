@@ -1,0 +1,85 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_deepseek_query_atom_canary_authority_decision_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.deepseek_query_atom_canary:v1",
+  "recorded_at": "2026-08-09",
+  "status": "one_bounded_deepseek_query_atom_canary_authorized",
+  "run_scope": "S1_08_QUERY_FACET_DEEPSEEK_ATOM_CANARY_EXACT_LIVE_EXECUTION",
+  "implementation_commit": "cca1490f57f8b82f36b0bf677e3a4b7ff8c152d4",
+  "basis": {
+    "zero_call_implementation_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_query_atom_canary_zero_call_implementation_proof_v1_0.json",
+    "zero_call_implementation_proof_digest": "12867a30560c2c1788f45d3318ce61a654fb43c95e6ebd151184b41c598f16c5",
+    "raw_local_zero_call_AB_status": "pass_structural_addressability_not_live_recall",
+    "natural_model_atom_observed": false,
+    "historical_provider_pool_attributable_to_new_variants": false
+  },
+  "implementation_binding": {
+    "runner_ref": "scripts/releases/run_fin_ia_0_1_3_s1_08_deepseek_query_atom_canary.py",
+    "runner_sha256_normalized": "c2e195467cbc6b9d7a49d2d652149189b6a8f3bef69dd34ce59ae870398084d2",
+    "runtime_module_ref": "src/sec_agent/s1_08_query_atom_canary_runtime.py",
+    "runtime_module_sha256_normalized": "801c19033a6f3f37cba603c9103d443ad0bca32c86e1cf0b6d8e0d6748c2775f",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_deepseek_query_atom_canary_policy_v1_0.json",
+    "policy_sha256_normalized": "e477280c1e3ed59eb6021a464ea399b14e506b52913317f93152f00d66761215",
+    "request_digest": "7dbc55e0b895cb008f1155f0b22da24bf6a84945f230bb95a405e113602fd5d2",
+    "three_way_evaluation_digest": "b9eef8769d0126faf8530fc666242c342c4ed7d347b427ab11604223adb9e118",
+    "query_facet_plan_set_digest": "c58fa193c9dcd1811895dc1c0209e38076ec566d72d591a8b3a0b3e967eb6412"
+  },
+  "authority": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "visible_language": "en",
+    "visible_typed_plan_count": 18,
+    "provider_call_ceiling": 1,
+    "transport_attempt_ceiling": 1,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "maximum_output_tokens": 2200,
+    "maximum_atoms": 18,
+    "maximum_atoms_per_plan": 1,
+    "empty_atom_set_allowed": true,
+    "fresh_admission_required": true,
+    "credential_presence_required_at_admission": true,
+    "credential_value_may_be_persisted": false,
+    "full_visible_request_and_assistant_output_capture_required": true,
+    "provider_private_reasoning_may_be_persisted": false,
+    "document_fetches": 0,
+    "retrieval_calls": 0,
+    "embedding_calls": 0,
+    "rerank_calls": 0,
+    "evidence_promotions": 0,
+    "automatic_runtime_activation": false,
+    "automatic_combined_live": false,
+    "automatic_internal_retrieval": false
+  },
+  "terminal_disposition": {
+    "valid_or_empty_atom_output": "preserve_capture_compile_locally_and_materialize_three_way_evaluation_without_runtime_activation",
+    "invalid_schema_or_authority_violation": "terminal_fail_no_retry_preserve_capture_reject_model_variant",
+    "provider_or_transport_failure": "terminal_fail_no_retry_no_replacement_in_this_authority"
+  },
+  "calls_executed_by_this_decision": {
+    "provider": 0,
+    "network": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "retrieval": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "query_atom_canary_implementation": true,
+    "query_atom_canary_authority": true,
+    "natural_model_atom_observation": false,
+    "three_way_effectiveness_evaluation": false,
+    "combined_external_live": false,
+    "internal_retrieval": false,
+    "BGE_fusion_rerank": false,
+    "S1_08": false,
+    "release": false
+  },
+  "decision": {
+    "next": "issue_fresh_admission_then_execute_once",
+    "internal_retrieval_and_BGE_rerank_backlog_preserved": true
+  },
+  "known_boundary": "This decision authorizes one query-atom observation only. It does not qualify DeepSeek, activate model-assisted queries, execute external or internal retrieval, admit BGE/reranking, promote Evidence, close S1-08 or release the product.",
+  "decision_digest": "6469a67a27e521f1905deb848a5e43a9903aa918f56393e2ab4d589a705453d0"
+}

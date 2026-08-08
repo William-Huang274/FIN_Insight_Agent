@@ -635,6 +635,142 @@ def execute_internal_source_acquisition(
     return output
 
 
+def _retained_capture_inventory(runtime_path: Path) -> tuple[list[dict[str, Any]], int]:
+    object_root = runtime_path / "objects"
+    if not object_root.is_dir():
+        return [], 0
+    refs: list[dict[str, Any]] = []
+    request_count = 0
+    for path in sorted(object_root.rglob("*.json")):
+        data = path.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        try:
+            payload = json.loads(data)
+        except json.JSONDecodeError:
+            payload = {}
+        if isinstance(payload, dict) and payload.get("capture_kind") == "source_request":
+            request_count += 1
+        refs.append(
+            {
+                "object_key": path.relative_to(object_root).as_posix(),
+                "digest": digest,
+                "byte_size": len(data),
+            }
+        )
+    return refs, request_count
+
+
+def _typed_failure_code(exc: Exception) -> str:
+    supplied = str(getattr(exc, "code", "") or "").strip()
+    if supplied:
+        return supplied
+    if isinstance(exc, S1InternalSourceAcquisitionError):
+        value = str(exc).strip()
+        if value:
+            return value
+    return "internal_source_acquisition_unhandled_" + type(exc).__name__.lower()
+
+
+def execute_internal_source_acquisition_guarded(
+    *,
+    policy: Mapping[str, Any],
+    admission: Mapping[str, Any],
+    runtime_root: str | Path,
+    ledger: SharedAdmissionConsumptionLedger,
+    transport: SourceTransport,
+    observed_at: str,
+) -> dict[str, Any]:
+    """Execute once and materialize a typed terminal after any consumed failure.
+
+    A durable reservation is already consumption. If a parser, budget or unexpected
+    runtime error occurs after reservation, this wrapper keeps the raw captures,
+    finalizes the shared ledger, and returns a failure result instead of leaving the
+    admission in an ambiguous reserved state.
+    """
+
+    runtime_path = Path(runtime_root).resolve()
+    try:
+        return execute_internal_source_acquisition(
+            policy=policy,
+            admission=admission,
+            runtime_root=runtime_path,
+            ledger=ledger,
+            transport=transport,
+            observed_at=observed_at,
+        )
+    except Exception as exc:
+        try:
+            receipt = ledger.read(str(admission["admission_digest"]))
+        except Exception:
+            raise exc
+        if (
+            receipt.state != "reserved"
+            or receipt.run_id != str(admission["run_id"])
+            or receipt.attempt_id != str(admission["attempt_id"])
+        ):
+            raise exc
+        capture_refs, request_count = _retained_capture_inventory(runtime_path)
+        failure_code = _typed_failure_code(exc)
+        finalized_at = (
+            datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        )
+        body = {
+            "schema_version": RESULT_SCHEMA,
+            "contract_ref": CONTRACT_REF,
+            "run_scope": RUN_SCOPE,
+            "status": "terminal_failed",
+            "policy_digest": canonical_digest(policy),
+            "admission_digest": str(admission["admission_digest"]),
+            "run_id": str(admission["run_id"]),
+            "attempt_id": str(admission["attempt_id"]),
+            "observed_at": observed_at,
+            "finalized_at": finalized_at,
+            "source_results": [],
+            "capture_refs": capture_refs,
+            "observed_counts": {
+                "targets": len(list(policy.get("acquisition_targets") or [])),
+                "acquired": 0,
+                "typed_gaps": 0,
+                "network_calls": request_count,
+                "retry_calls": 0,
+                "model_calls": 0,
+                "provider_calls": 0,
+                "embedding_calls": 0,
+                "rerank_calls": 0,
+                "evidence_promotion_calls": 0,
+            },
+            "failure": {
+                "phase": "internal_current_official_source_acquisition_runtime",
+                "code": failure_code,
+                "raw_captures_retained": bool(capture_refs),
+            },
+            "stage_boundary": {
+                "generic_external_discovery_proven": False,
+                "internal_corpus_source_acquisition_proven": False,
+                "candidate_ceiling_proven": False,
+                "BGE_fusion_rerank_admitted": False,
+                "evidence_or_release": False,
+            },
+            "known_boundary": (
+                "The admission was consumed and the failure terminalized. Retained "
+                "captures are audit material only and are not Evidence. No retry or "
+                "automatic replacement is authorized."
+            ),
+        }
+        output = {**body, "result_digest": canonical_digest(body)}
+        ledger.finalize(
+            admission_digest=str(admission["admission_digest"]),
+            run_id=str(admission["run_id"]),
+            attempt_id=str(admission["attempt_id"]),
+            terminal_status="failed",
+            terminal_phase=str(output["failure"]["phase"]),
+            terminal_code=failure_code,
+            terminal_result_digest=output["result_digest"],
+            finalized_at=finalized_at,
+        )
+        return output
+
+
 __all__ = [
     "ADMISSION_SCHEMA",
     "CONTRACT_REF",
@@ -643,6 +779,7 @@ __all__ = [
     "RUN_SCOPE",
     "S1InternalSourceAcquisitionError",
     "execute_internal_source_acquisition",
+    "execute_internal_source_acquisition_guarded",
     "issue_internal_source_acquisition_admission",
     "load_internal_source_acquisition_policy",
     "select_same_accession_exhibit",

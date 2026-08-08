@@ -11,6 +11,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 from sec_agent.official_source_attempt_program import SourceResponse  # noqa: E402
 from sec_agent.s1_internal_current_source_acquisition import (  # noqa: E402
     execute_internal_source_acquisition,
+    execute_internal_source_acquisition_guarded,
     issue_internal_source_acquisition_admission,
     load_internal_source_acquisition_policy,
 )
@@ -187,3 +188,45 @@ def test_capture_first_sec_discovery_acquires_three_current_source_families(
         for row in result["source_results"]
     )
     assert ledger.read(admission["admission_digest"]).state == "terminal"
+
+
+class ExplodingTransport:
+    live_network = True
+
+    def fetch(self, **_: object) -> SourceResponse:
+        raise RuntimeError("fixture_unexpected_parser_boundary")
+
+
+def test_guarded_execution_terminalizes_unexpected_consumed_failure(
+    tmp_path: Path,
+) -> None:
+    policy = load_internal_source_acquisition_policy(POLICY_PATH, repo_root=ROOT)
+    admission = issue_internal_source_acquisition_admission(
+        policy=policy,
+        implementation_commit="0" * 40,
+        implementation_file_sha256="1" * 64,
+        policy_file_sha256="2" * 64,
+        issued_at="2026-08-09T00:00:00Z",
+        expires_at="2026-08-10T00:00:00Z",
+        nonce="guarded-failure",
+    )
+    ledger = SharedAdmissionConsumptionLedger(tmp_path / "shared" / "ledger.sqlite")
+    result = execute_internal_source_acquisition_guarded(
+        policy=policy,
+        admission=admission,
+        runtime_root=tmp_path / "runtime",
+        ledger=ledger,
+        transport=ExplodingTransport(),
+        observed_at="2026-08-09T01:00:00Z",
+    )
+
+    receipt = ledger.read(admission["admission_digest"])
+    assert result["status"] == "terminal_failed"
+    assert result["failure"]["code"] == (
+        "internal_source_acquisition_unhandled_runtimeerror"
+    )
+    assert result["failure"]["raw_captures_retained"] is True
+    assert result["observed_counts"]["network_calls"] == 1
+    assert receipt.state == "terminal"
+    assert receipt.terminal_status == "failed"
+    assert receipt.terminal_result_digest == result["result_digest"]

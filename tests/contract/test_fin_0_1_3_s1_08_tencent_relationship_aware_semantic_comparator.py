@@ -36,6 +36,8 @@ VISIBLE_PATH = ROOT / "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared
 FIRECRAWL_ASSESSMENT_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_assessment_v1_0.json"
 DECISION_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_tencent_fresh_credential_and_same_matrix_comparator_decision_v1_0.json"
 PROOF_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_tencent_relationship_aware_semantic_comparator_zero_call_proof_v1_0.json"
+LIVE_RESULT_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_tencent_relationship_aware_semantic_comparator_result_v1_0.json"
+LIVE_ASSESSMENT_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_tencent_relationship_aware_semantic_comparator_assessment_v1_0.json"
 
 
 def _load(path: Path) -> dict:
@@ -301,3 +303,54 @@ def test_scoring_cost_mutation_fails_closed(tmp_path: Path) -> None:
         match="s1_08_tencent_semantic_scoring_gate_invalid",
     ):
         load_scoring_contract(path)
+
+
+def test_live_terminal_and_assessment_are_digest_bound_and_honestly_failed() -> None:
+    result = _load(LIVE_RESULT_PATH)
+    result_body = dict(result)
+    result_digest = result_body.pop("result_digest")
+    assert result_digest == canonical_digest(result_body)
+    assert result["status"] == "completed"
+    assert result["admission_consumed"] is True
+    assert result["provider_versions"] == ["standard"]
+    assert result["documented_cost_cny"] == 1.104
+    assert result["observed_counts"] == {
+        "planned_queries": 24,
+        "terminalized_queries": 24,
+        "provider_calls": 24,
+        "network_calls": 24,
+        "successful_calls": 24,
+        "typed_failed_or_not_attempted_calls": 0,
+        "retry_calls": 0,
+        "model_calls": 0,
+        "document_fetches": 0,
+        "evidence_promotions": 0,
+    }
+    locators = [
+        locator
+        for row in result["call_results"]
+        for locator in (row.get("provider_projection") or {}).get("locators", [])
+    ]
+    assert len(locators) == 172
+    assert sum(bool(row.get("published_at_raw")) for row in locators) == 172
+
+    assessment = _load(LIVE_ASSESSMENT_PATH)
+    assessment_body = dict(assessment)
+    assessment_digest = assessment_body.pop("assessment_digest")
+    assert assessment_digest == canonical_digest(assessment_body)
+    assert assessment["result_digest"] == result_digest
+    assert assessment["status"] == "fail_diagnostic_only"
+    assert assessment["aggregate"]["topical_useful_count"] == 103
+    assert assessment["aggregate"]["topical_useful_denominator"] == 240
+    assert assessment["aggregate"]["case_slot_target_in_pool"] == [0, 6]
+    assert assessment["aggregate"]["matched_target_date_observations"] == 0
+    assert assessment["same_matrix_firecrawl_control"]["topical_useful"] == [
+        133,
+        240,
+    ]
+    assert assessment["same_matrix_firecrawl_control"][
+        "case_slot_target_in_pool"
+    ] == [5, 6]
+    assert assessment["sourcehunter_integration_eligible"] is False
+    assert assessment["production_capability_established"] is False
+    assert assessment["decision"] == "remain_diagnostic_only_no_reranker_rescue"

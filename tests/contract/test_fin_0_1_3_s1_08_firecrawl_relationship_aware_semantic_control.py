@@ -38,7 +38,10 @@ HISTORICAL_HANDOFF_SCOPE = (
 COMPLETED_TENCENT_ISSUANCE_SCOPE = (
     "S1_08_TENCENT_RELATIONSHIP_AWARE_SEMANTIC_SAME_MATRIX_CLEAN_AUTHORITY_ISSUANCE"
 )
-NEXT_SCOPE = "S1_08_TENCENT_RELATIONSHIP_AWARE_SEMANTIC_SAME_MATRIX_EXACT_LIVE_EXECUTION"
+COMPLETED_TENCENT_LIVE_SCOPE = (
+    "S1_08_TENCENT_RELATIONSHIP_AWARE_SEMANTIC_SAME_MATRIX_EXACT_LIVE_EXECUTION"
+)
+NEXT_SCOPE = "S1_08_POST_TENCENT_SAME_MATRIX_PROVIDER_PORTFOLIO_AND_PRODUCTION_SEARCH_BOUNDARY_DECISION"
 
 
 def _sha256(path: Path) -> str:
@@ -298,7 +301,7 @@ def test_exact_live_authority_is_digest_bound_semantic_only_and_unconsumed() -> 
     assert execution["gold_load_before_aggregate_terminal_allowed"] is False
 
 
-def test_completed_firecrawl_and_tencent_issuance_scopes_are_blocked_while_tencent_live_is_allowed() -> None:
+def test_completed_search_scopes_are_blocked_while_post_tencent_decision_is_allowed() -> None:
     from sec_agent.project_os_preflight import run_project_os_preflight
 
     preflight = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
@@ -314,6 +317,11 @@ def test_completed_firecrawl_and_tencent_issuance_scopes_are_blocked_while_tence
     )
     assert completed_issuance["status"] == "blocked"
     assert completed_issuance["contract_errors"] == []
+    completed_live = run_project_os_preflight(
+        ROOT, run_scope=COMPLETED_TENCENT_LIVE_SCOPE
+    )
+    assert completed_live["status"] == "blocked"
+    assert completed_live["contract_errors"] == []
     successor = run_project_os_preflight(ROOT, run_scope=NEXT_SCOPE)
     assert successor["status"] == "pass"
     assert successor["contract_errors"] == []

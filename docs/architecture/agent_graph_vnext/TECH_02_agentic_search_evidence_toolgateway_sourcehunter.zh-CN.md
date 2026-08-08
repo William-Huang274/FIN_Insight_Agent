@@ -1143,3 +1143,11 @@ runner 只读 `TENCENTCLOUD_SECRET_ID/TENCENTCLOUD_SECRET_KEY`。AuthFailure、U
 clean/pushed implementation commit=`9a0040e1114f7f53943ed4a9889e99db949b9cd3`；S1-08 contract 回归=`199 passed`。唯一 admission=`fin-ia-013-s1-08-tencent-semantic-same-matrix-r1-20260808` 为 `issued_unconsumed`，绑定 runner/support/normalizer/Query-only compiler、24-query immutable control、scoring/proof/provider profile 与 Firecrawl terminal/assessment 的 SHA/digest。
 
 authority 只允许 24 条 semantic Query-only 请求，provider/network=`<=24/<=24`，retry/model/document/Evidence=`0/0/0/0`。凭据仅由 runtime environment 注入；systemic refusal 后剩余 identity 不再联网。该 authority 不允许 precise/combined lane、ranking、SourceHunter 或生产晋升，且不允许任何 automatic retry/replacement attempt。
+
+### 20.26 Tencent same-matrix live terminal 与 Provider 边界
+
+唯一 live 在 clean `4545f453` 完成 24/24 standard 请求，0 retry/model/document/Evidence，成本 1.104 CNY，p95 1,330 ms。transport、entitlement、capture-first、terminalization、redaction 与成本/延迟控制均通过。
+
+locator 质量没有通过：172 occurrence／126 unique URL、topical=`103/240`、case-slot frozen primary target=`0/6`；同矩阵 Firecrawl 为 `133/240`、`5/6`。腾讯 172/172 都返回 date，但 exact target=0，因此日期准确性没有可验证分母。主要 hostname 为腾讯聚合、GitHub、Sina 与 Toutiao；少量 official-domain result 是产品/support/technology 页面，不是要求的财报、业绩会或 IR release。
+
+这证明 broad semantic locator 的低延迟和 metadata 完整不能替代 primary-source precision。Tencent 继续为 diagnostic-only；禁止在当前结果后增加 reranker/document fetch 以事后改变 Provider qualification，也禁止逐 query patch 或 replacement。下一项应零调用决定 SourceHunter 的 production portfolio：官方 precise adapter 负责一手来源，broad provider 只提供补充召回；若继续供应商评测，必须复用同一矩阵与 gate。

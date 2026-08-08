@@ -1,5 +1,6 @@
 # Worklog
 
+- [750 — FIN 0.1.3 S1-08 Tencent relationship-aware same-matrix terminal](product_strategy/750_fin_0_1_3_s1_08_tencent_relationship_aware_same_matrix_terminal.md)
 - [749 — FIN 0.1.3 S1-08 Tencent relationship-aware same-matrix clean authority](product_strategy/749_fin_0_1_3_s1_08_tencent_relationship_aware_same_matrix_clean_authority.md)
 - [748 — FIN 0.1.3 S1-08 腾讯 fresh credential 与关系感知同矩阵 comparator 零调用实现](product_strategy/748_fin_0_1_3_s1_08_tencent_fresh_credential_and_same_matrix_comparator_zero_call_implementation.md)
 - [747 — FIN 0.1.3 S1-08 Firecrawl 关系感知 semantic control 终态与国内 Provider 接力](product_strategy/747_fin_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_terminal_and_handoff.md)

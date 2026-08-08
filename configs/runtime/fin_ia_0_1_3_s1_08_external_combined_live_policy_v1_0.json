@@ -1,0 +1,91 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_external_combined_live_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.external_official_firecrawl_shadow_combined:v1",
+  "recorded_at": "2026-08-09",
+  "owner_stage": "S1_08",
+  "zero_call_run_scope": "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE_ZERO_CALL_IMPLEMENTATION_AND_AUTHORITY_DECISION",
+  "exact_live_run_scope": "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "cases": ["DELL", "MU", "NVDA"],
+  "immutable_inputs": {
+    "query_facet_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_unified_query_facet_zero_call_proof_v1_0.json",
+    "query_facet_proof_sha256": "ec10c5096dc5b6f1c97f19bec96b16478a9b8f4ca37c6ca550d80217023ac614",
+    "query_atom_result_ref": "configs/releases/fin_ia_0_1_3_s1_08_deepseek_query_atom_canary_result_v1_0.json",
+    "query_atom_result_sha256": "4a5df68357b5ed02c0e992dd2fd405bc32304e943396fd254411800ce32752f0",
+    "query_facet_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_unified_query_facet_policy_v1_0.json",
+    "query_facet_policy_sha256": "59acbd54edf732468169bfaf8ebad9c3b81ce369df44b5a94e0f77a6c94ba4d6",
+    "source_catalog_ref": "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_protected_fetch_cache_policy_v4_0.json",
+    "source_catalog_sha256": "bae1f00ab8b9738d96d40e0331c50fc146ca551707eeb0733e0ae646202ef3c8",
+    "progression_plan_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_1.json",
+    "progression_plan_sha256": "be54775856dc3153fd6631b923ed01c4972661b58aaa94cef2bbfad592e27c4f",
+    "official_clean_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_official_first_portfolio_clean_independent_zero_call_proof_v1_0.json",
+    "official_clean_proof_sha256": "6f39ca052326550fe0b29332164dfef5de3eb8eed07c7379241123c9b478ebe4",
+    "firecrawl_scoring_ref": "configs/eval/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_scoring_v1_0.json",
+    "firecrawl_scoring_sha256": "81fe9359f1167c55105972408d7a7b4e1f366f56193253f823cabfe4ceaba1c8"
+  },
+  "selected_query_variant": {
+    "variant_id": "deterministic_local_query_facet_only",
+    "model_atoms_accepted": 0,
+    "deepseek_variant_status": "rejected_no_retry_no_field_patch",
+    "official_language": "en",
+    "official_query_projection": ["first_exact_lookup", "first_lexical"],
+    "firecrawl_query_projection": "first_semantic_query"
+  },
+  "lanes": {
+    "official_primary": {
+      "adapter_contract": "current_source_catalog_relationship_budget_candidate_generation:v4",
+      "case_count": 3,
+      "query_facet_plan_count": 18,
+      "network_call_ceiling_per_case": 16,
+      "network_call_ceiling_total": 48,
+      "document_ceiling_per_query": 1,
+      "candidate_state": "captured_parsed_locally_qualified_candidate",
+      "provider_reported_date_is_authority": false,
+      "local_date_and_relationship_adjudication_required": true
+    },
+    "firecrawl_shadow": {
+      "provider_id": "firecrawl_keyless_search",
+      "endpoint": "https://api.firecrawl.dev/v2/search",
+      "query_facet_plan_count": 24,
+      "network_call_ceiling_total": 24,
+      "result_ceiling_per_query": 10,
+      "retry_ceiling": 0,
+      "candidate_state": "discovery_only_locator_candidate",
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "financial_fact_authority": false,
+      "numeric_authority": "none"
+    }
+  },
+  "combined_budget": {
+    "network_call_ceiling": 72,
+    "provider_call_ceiling": 24,
+    "model_call_ceiling": 0,
+    "embedding_call_ceiling": 0,
+    "rerank_call_ceiling": 0,
+    "evidence_promotion_ceiling": 0,
+    "retry_ceiling": 0,
+    "fallback_ceiling": 0,
+    "per_call_timeout_seconds": 30,
+    "overall_timeout_seconds": 900
+  },
+  "execution_contract": {
+    "shared_exact_once_admission_ledger": true,
+    "capture_safe_request_before_network": true,
+    "capture_raw_response_or_typed_failure_before_parse": true,
+    "terminalize_every_planned_shadow_identity": true,
+    "preserve_completed_lane_results_on_later_failure": true,
+    "systemic_firecrawl_401_402_403_stops_remaining_shadow_network": true,
+    "all_required_external_case_slots_receive_route_opportunity": true,
+    "no_reranker_rescue": true,
+    "no_automatic_replacement_live": true
+  },
+  "authority_boundary": {
+    "official_candidates_may_be_locally_qualified": true,
+    "firecrawl_results_are_candidate_locators_only": true,
+    "evidence_gate_not_executed": true,
+    "query_facet_gold_blind": true,
+    "internal_retrieval_not_authorized": true,
+    "calls_authorized_by_policy_alone": 0
+  }
+}

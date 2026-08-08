@@ -1,0 +1,2575 @@
+{
+  "authority_boundary": {
+    "calls_authorized_by_policy_alone": 0,
+    "evidence_gate_not_executed": true,
+    "firecrawl_results_are_candidate_locators_only": true,
+    "internal_retrieval_not_authorized": true,
+    "official_candidates_may_be_locally_qualified": true,
+    "query_facet_gold_blind": true
+  },
+  "budget": {
+    "embedding_call_ceiling": 0,
+    "evidence_promotion_ceiling": 0,
+    "fallback_ceiling": 0,
+    "model_call_ceiling": 0,
+    "network_call_ceiling": 72,
+    "overall_timeout_seconds": 900,
+    "per_call_timeout_seconds": 30,
+    "provider_call_ceiling": 24,
+    "rerank_call_ceiling": 0,
+    "retry_ceiling": 0
+  },
+  "cases": [
+    "DELL",
+    "MU",
+    "NVDA"
+  ],
+  "contract_ref": "fin_0_1_3.S1_08.external_official_firecrawl_shadow_combined:v1",
+  "counts": {
+    "accepted_model_atoms": 0,
+    "official_query_facet_plans": 18,
+    "required_case_slot_opportunities": 12,
+    "shadow_query_facet_plans": 24
+  },
+  "official_plan_rows": [
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "MSFT",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "exact_lookup_query": "Microsoft Q3 FY2026 customer earnings call",
+      "language": "en",
+      "lexical_query": "Microsoft Q3 FY2026 customer earnings call capital-expenditure disclosure Azure AI infrastructure data-center capital expenditure data-center capacity capacity expansion cloud deployment",
+      "plan_digest": "ee4e7de78a2b2f6fa788eea0f9d566e5cfb2942a8e7b76ae1736de99cb43a8a5",
+      "plan_id": "query_facet_plan_ee4e7de78a2b2f6fa788",
+      "preferred_domains": [
+        "data.sec.gov",
+        "www.microsoft.com"
+      ],
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "customer earnings call",
+          "capital-expenditure disclosure",
+          "deployment update"
+        ],
+        "allowed_period_terms": [
+          "Q3 FY2026",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "MSFT",
+        "evidence_owner_role": "cloud_operator",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "www.microsoft.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "DELL",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "exact_lookup_query": "Dell Technologies Q1 FY2027 earnings release",
+      "language": "en",
+      "lexical_query": "Dell Technologies Q1 FY2027 earnings release earnings call AI server orders server backlog revenue gross margin volume mix",
+      "plan_digest": "e86a077c13c554781c1c7434d49d813479cf2bccb7e8ddd1465e0aaf1e02fb84",
+      "plan_id": "query_facet_plan_e86a077c13c554781c1c",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investors.delltechnologies.com"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "earnings release",
+          "earnings call",
+          "prepared remarks"
+        ],
+        "allowed_period_terms": [
+          "Q1 FY2027",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "DELL",
+        "evidence_owner_role": "subject",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.delltechnologies.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "subject_self_disclosure",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "DELL",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "exact_lookup_query": "Dell Technologies Q1 FY2027 10-K",
+      "language": "en",
+      "lexical_query": "Dell Technologies Q1 FY2027 10-K 10-Q AI server orders server backlog inventory purchase commitments revenue recognition working capital",
+      "plan_digest": "d9b75bc32717d686756a898c2ebab2e5fe88c1064870e696acf7c33420d2d451",
+      "plan_id": "query_facet_plan_d9b75bc32717d686756a",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investors.delltechnologies.com"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "10-K",
+          "10-Q",
+          "20-F",
+          "6-K",
+          "cash-flow statement"
+        ],
+        "allowed_period_terms": [
+          "Q1 FY2027",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "regulatory_filing",
+          "issuer_ir_document"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "DELL",
+        "evidence_owner_role": "subject",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.delltechnologies.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "subject_self_disclosure",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "exact_lookup_query": "Micron Technology Q3 FY2026 supplier earnings call",
+      "language": "en",
+      "lexical_query": "Micron Technology Q3 FY2026 supplier earnings call capacity update HBM output memory capacity utilization supply ramp yield",
+      "plan_digest": "191ea075ef1b6409e843dcc619cccf93868db426111ba678ca5a04ff1a14b31f",
+      "plan_id": "query_facet_plan_191ea075ef1b6409e843",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investors.micron.com"
+      ],
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q3 FY2026",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "MU",
+        "evidence_owner_role": "memory_supplier",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.micron.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "exact_lookup_query": "NVIDIA Q1 FY2027 supplier earnings call",
+      "language": "en",
+      "lexical_query": "NVIDIA Q1 FY2027 supplier earnings call capacity update Blackwell production ramp GPU supply utilization supply ramp yield",
+      "plan_digest": "1d078abda77183ce8e134f481d056d164bc509caa8ea02644fa0e220eca474a5",
+      "plan_id": "query_facet_plan_1d078abda77183ce8e13",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investor.nvidia.com"
+      ],
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q1 FY2027",
+          "FY2027"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "NVDA",
+        "evidence_owner_role": "compute_platform",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.nvidia.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "TSMC",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "exact_lookup_query": "TSMC Q2 2026 supplier earnings call",
+      "language": "en",
+      "lexical_query": "TSMC Q2 2026 supplier earnings call capacity update CoWoS capacity advanced packaging utilization supply ramp yield",
+      "plan_digest": "32b1c9b6c3b118bf23dd26421c5698b3c456d700b2d3e4e8df0eeaf67461a21a",
+      "plan_id": "query_facet_plan_32b1c9b6c3b118bf23dd",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investor.tsmc.com"
+      ],
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q2 2026",
+          "2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "TSMC",
+        "evidence_owner_role": "foundry",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.tsmc.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "exact_lookup_query": "Dell Technologies Q1 FY2027 customer earnings call",
+      "language": "en",
+      "lexical_query": "Dell Technologies Q1 FY2027 customer earnings call capital-expenditure disclosure AI server orders server backlog capital expenditure data-center capacity capacity expansion cloud deployment",
+      "plan_digest": "143d5c5c2851fc24f335e86e1c1b2cebf2eb39c31f2829c546eba7cc35cebc85",
+      "plan_id": "query_facet_plan_143d5c5c2851fc24f335",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investors.delltechnologies.com"
+      ],
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "customer earnings call",
+          "capital-expenditure disclosure",
+          "deployment update"
+        ],
+        "allowed_period_terms": [
+          "Q1 FY2027",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "DELL",
+        "evidence_owner_role": "infrastructure_integrator",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.delltechnologies.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "MSFT",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "exact_lookup_query": "Microsoft Q3 FY2026 customer earnings call",
+      "language": "en",
+      "lexical_query": "Microsoft Q3 FY2026 customer earnings call capital-expenditure disclosure Azure AI infrastructure data-center capital expenditure data-center capacity capacity expansion cloud deployment",
+      "plan_digest": "47b1b24b05268a38c9568b87b3687bf810577ffbdf0840d21b7265a41ec434e4",
+      "plan_id": "query_facet_plan_47b1b24b05268a38c956",
+      "preferred_domains": [
+        "data.sec.gov",
+        "www.microsoft.com"
+      ],
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "customer earnings call",
+          "capital-expenditure disclosure",
+          "deployment update"
+        ],
+        "allowed_period_terms": [
+          "Q3 FY2026",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "MSFT",
+        "evidence_owner_role": "cloud_operator",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "www.microsoft.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "MU",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "exact_lookup_query": "Micron Technology Q3 FY2026 earnings release",
+      "language": "en",
+      "lexical_query": "Micron Technology Q3 FY2026 earnings release earnings call HBM output memory capacity revenue gross margin volume mix",
+      "plan_digest": "8d6d7c4db339e06bf7fff84e0433e6d4c221dcc9e60bf5641266fe24f3930f99",
+      "plan_id": "query_facet_plan_8d6d7c4db339e06bf7ff",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investors.micron.com"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "earnings release",
+          "earnings call",
+          "prepared remarks"
+        ],
+        "allowed_period_terms": [
+          "Q3 FY2026",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "MU",
+        "evidence_owner_role": "subject",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.micron.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "subject_self_disclosure",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "MU",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "exact_lookup_query": "Micron Technology Q3 FY2026 10-K",
+      "language": "en",
+      "lexical_query": "Micron Technology Q3 FY2026 10-K 10-Q HBM output memory capacity inventory purchase commitments revenue recognition working capital",
+      "plan_digest": "b0a116568aa50be5e4d11663f1a12d3a0ee47922d0fc174e54041808d2e48cde",
+      "plan_id": "query_facet_plan_b0a116568aa50be5e4d1",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investors.micron.com"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "10-K",
+          "10-Q",
+          "20-F",
+          "6-K",
+          "cash-flow statement"
+        ],
+        "allowed_period_terms": [
+          "Q3 FY2026",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "regulatory_filing",
+          "issuer_ir_document"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "MU",
+        "evidence_owner_role": "subject",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.micron.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "subject_self_disclosure",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "exact_lookup_query": "NVIDIA Q1 FY2027 supplier earnings call",
+      "language": "en",
+      "lexical_query": "NVIDIA Q1 FY2027 supplier earnings call capacity update Blackwell production ramp GPU supply utilization supply ramp yield",
+      "plan_digest": "da46b3667f567cbd8a81c048692746c95f955552772471112d520a27b5103487",
+      "plan_id": "query_facet_plan_da46b3667f567cbd8a81",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investor.nvidia.com"
+      ],
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q1 FY2027",
+          "FY2027"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "NVDA",
+        "evidence_owner_role": "compute_platform",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.nvidia.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "TSMC",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "exact_lookup_query": "TSMC Q2 2026 supplier earnings call",
+      "language": "en",
+      "lexical_query": "TSMC Q2 2026 supplier earnings call capacity update CoWoS capacity advanced packaging utilization supply ramp yield",
+      "plan_digest": "97cdd119d8ad552d34b3aa0858634ca83e95e3b2140d0b7b9bf5e2806178264b",
+      "plan_id": "query_facet_plan_97cdd119d8ad552d34b3",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investor.tsmc.com"
+      ],
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q2 2026",
+          "2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "TSMC",
+        "evidence_owner_role": "foundry",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.tsmc.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "exact_lookup_query": "Dell Technologies Q1 FY2027 customer earnings call",
+      "language": "en",
+      "lexical_query": "Dell Technologies Q1 FY2027 customer earnings call capital-expenditure disclosure AI server orders server backlog capital expenditure data-center capacity capacity expansion cloud deployment",
+      "plan_digest": "04db155fcbe99115f218d9fc98bc50072bb8cafa69d4b14d15be11a05127a8c8",
+      "plan_id": "query_facet_plan_04db155fcbe99115f218",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investors.delltechnologies.com"
+      ],
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "customer earnings call",
+          "capital-expenditure disclosure",
+          "deployment update"
+        ],
+        "allowed_period_terms": [
+          "Q1 FY2027",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "DELL",
+        "evidence_owner_role": "infrastructure_integrator",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.delltechnologies.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "NVDA"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "MSFT",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "exact_lookup_query": "Microsoft Q3 FY2026 customer earnings call",
+      "language": "en",
+      "lexical_query": "Microsoft Q3 FY2026 customer earnings call capital-expenditure disclosure Azure AI infrastructure data-center capital expenditure data-center capacity capacity expansion cloud deployment",
+      "plan_digest": "b80fdb0bee0f9245b398385649068d63d966d6d6f6a32af586199391d53eb4ca",
+      "plan_id": "query_facet_plan_b80fdb0bee0f9245b398",
+      "preferred_domains": [
+        "data.sec.gov",
+        "www.microsoft.com"
+      ],
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "customer earnings call",
+          "capital-expenditure disclosure",
+          "deployment update"
+        ],
+        "allowed_period_terms": [
+          "Q3 FY2026",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "MSFT",
+        "evidence_owner_role": "cloud_operator",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "www.microsoft.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "NVDA"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "NVDA",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "exact_lookup_query": "NVIDIA Q1 FY2027 earnings release",
+      "language": "en",
+      "lexical_query": "NVIDIA Q1 FY2027 earnings release earnings call Blackwell production ramp GPU supply revenue gross margin volume mix",
+      "plan_digest": "134ce7453e58e2a8b1dac8ba23b5be53ab4e9c6365771373091caf3ff6cc5f4c",
+      "plan_id": "query_facet_plan_134ce7453e58e2a8b1da",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investor.nvidia.com"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "earnings release",
+          "earnings call",
+          "prepared remarks"
+        ],
+        "allowed_period_terms": [
+          "Q1 FY2027",
+          "FY2027"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "NVDA",
+        "evidence_owner_role": "subject",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.nvidia.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "subject_self_disclosure",
+        "subject_entity_key": "NVDA"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "NVDA",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "exact_lookup_query": "NVIDIA Q1 FY2027 10-K",
+      "language": "en",
+      "lexical_query": "NVIDIA Q1 FY2027 10-K 10-Q Blackwell production ramp GPU supply inventory purchase commitments revenue recognition working capital",
+      "plan_digest": "78791ef65ec5399a41959e424f65321ba70b310a67fcd8c1a68f700e0b15533c",
+      "plan_id": "query_facet_plan_78791ef65ec5399a4195",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investor.nvidia.com"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "10-K",
+          "10-Q",
+          "20-F",
+          "6-K",
+          "cash-flow statement"
+        ],
+        "allowed_period_terms": [
+          "Q1 FY2027",
+          "FY2027"
+        ],
+        "allowed_source_families": [
+          "regulatory_filing",
+          "issuer_ir_document"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "NVDA",
+        "evidence_owner_role": "subject",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.nvidia.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "subject_self_disclosure",
+        "subject_entity_key": "NVDA"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "exact_lookup_query": "Micron Technology Q3 FY2026 supplier earnings call",
+      "language": "en",
+      "lexical_query": "Micron Technology Q3 FY2026 supplier earnings call capacity update HBM output memory capacity utilization supply ramp yield",
+      "plan_digest": "09fe0d90e6f65756ca09d80f2fa839a5193e0761765ec70f8fe3e2ea9ad4e180",
+      "plan_id": "query_facet_plan_09fe0d90e6f65756ca09",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investors.micron.com"
+      ],
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q3 FY2026",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "MU",
+        "evidence_owner_role": "memory_supplier",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.micron.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "NVDA"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "TSMC",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "exact_lookup_query": "TSMC Q2 2026 supplier earnings call",
+      "language": "en",
+      "lexical_query": "TSMC Q2 2026 supplier earnings call capacity update CoWoS capacity advanced packaging utilization supply ramp yield",
+      "plan_digest": "90a5ce6913383d8ac077c24a3d425f1c5c92925acc409989d45b484cb852d3ef",
+      "plan_id": "query_facet_plan_90a5ce6913383d8ac077",
+      "preferred_domains": [
+        "data.sec.gov",
+        "investor.tsmc.com"
+      ],
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q2 2026",
+          "2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "TSMC",
+        "evidence_owner_role": "foundry",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.tsmc.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "NVDA"
+      }
+    }
+  ],
+  "plan_digest": "7497f783032b80054763ec9075a2851745bb855475094bba48f504ea10d9d39b",
+  "query_variant": "deterministic_local_query_facet_only",
+  "required_case_slot_opportunities": [
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "issuer_results_and_management_commentary"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "issuer_results_and_management_commentary"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "issuer_results_and_management_commentary"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence"
+    }
+  ],
+  "schema_version": "fin_ia_0_1_3_s1_08_external_combined_plan_v1_0",
+  "shadow_plan_rows": [
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "MSFT",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "language": "en",
+      "negative_queries": [
+        "exclude_entity_alias::Micron",
+        "exclude_entity_alias::Micron Technology",
+        "exclude_entity_alias::Micron Technology, Inc.",
+        "exclude_entity_alias::MU",
+        "exclude_entity_alias::NVDA",
+        "exclude_entity_alias::NVIDIA",
+        "exclude_entity_alias::NVIDIA Corporation",
+        "exclude_entity_alias::Taiwan Semiconductor",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 1,
+      "plan_digest": "ee4e7de78a2b2f6fa788eea0f9d566e5cfb2942a8e7b76ae1736de99cb43a8a5",
+      "plan_id": "query_facet_plan_ee4e7de78a2b2f6fa788",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "request_body": {
+        "limit": 10,
+        "query": "What did Microsoft disclose for Q3 FY2026 about the evidence owner's own AI infrastructure demand, spending and deployment, especially Azure AI infrastructure, capital expenditure and capacity expansion, and what counterevidence limits the inference for Dell Technologies?",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "aad0ac447b9d3abdbf3a6cdfc8243b17346c9b8f725ff2ae20d772098a61f757",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "customer earnings call",
+          "capital-expenditure disclosure",
+          "deployment update"
+        ],
+        "allowed_period_terms": [
+          "Q3 FY2026",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "MSFT",
+        "evidence_owner_role": "cloud_operator",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "www.microsoft.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "MSFT",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "language": "zh",
+      "negative_queries": [
+        "exclude_entity_alias::Micron Technology, Inc.",
+        "exclude_entity_alias::MU",
+        "exclude_entity_alias::NVDA",
+        "exclude_entity_alias::NVIDIA",
+        "exclude_entity_alias::NVIDIA Corporation",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "exclude_entity_alias::台积电",
+        "exclude_entity_alias::美光",
+        "exclude_entity_alias::美光科技",
+        "exclude_entity_alias::英伟达",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 2,
+      "plan_digest": "429b7214464effdac2d006abbe93e8314d67a8c62420394b5b6c77b3682796cd",
+      "plan_id": "query_facet_plan_429b7214464effdac2d0",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "request_body": {
+        "limit": 10,
+        "query": "微软 在2026财年第三季度对证据披露方自身的 AI 基础设施需求、支出与部署披露了什么，尤其是Azure AI 基础设施、资本开支与容量扩张；哪些反向证据会限制对戴尔科技的推断？",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "f4476e289234df74f341b4dba2aebd86bb75ecd6c8f484e11803c31f0824c575",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "客户业绩会",
+          "资本开支披露",
+          "部署进展"
+        ],
+        "allowed_period_terms": [
+          "2026财年第三季度",
+          "2026财年"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "MSFT",
+        "evidence_owner_role": "cloud_operator",
+        "execution_admitted": false,
+        "language": "zh",
+        "preferred_domains": [
+          "data.sec.gov",
+          "www.microsoft.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "en",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Microsoft",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::NVDA",
+        "exclude_entity_alias::NVIDIA",
+        "exclude_entity_alias::NVIDIA Corporation",
+        "exclude_entity_alias::Taiwan Semiconductor",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 3,
+      "plan_digest": "191ea075ef1b6409e843dcc619cccf93868db426111ba678ca5a04ff1a14b31f",
+      "plan_id": "query_facet_plan_191ea075ef1b6409e843",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "What did Micron Technology disclose for Q3 FY2026 about the evidence owner's own supply capacity, ramp, bottleneck or counterevidence, especially HBM output, capacity and supply ramp, and what counterevidence limits the inference for Dell Technologies?",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "41178a24b6468fcffa7b97ee010c7cd72b1f5fdf63668a4027ee151d88692453",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q3 FY2026",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "MU",
+        "evidence_owner_role": "memory_supplier",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.micron.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "zh",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::NVDA",
+        "exclude_entity_alias::NVIDIA",
+        "exclude_entity_alias::NVIDIA Corporation",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "exclude_entity_alias::台积电",
+        "exclude_entity_alias::微软",
+        "exclude_entity_alias::英伟达",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 4,
+      "plan_digest": "33388f37fa02d0d174528355c29c2ac5bb2c57bd4bc90ea53551dbdafeb89c9a",
+      "plan_id": "query_facet_plan_33388f37fa02d0d17452",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "美光科技 在2026财年第三季度对证据披露方自身的供给产能、爬坡、瓶颈或反向证据披露了什么，尤其是HBM 产出、产能与供给爬坡；哪些反向证据会限制对戴尔科技的推断？",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "04603c34c63f31b31c8464cf00b21388be0336e50321e60cd0fe7f0bceec05ff",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "供应商业绩会",
+          "产能更新",
+          "技术论坛"
+        ],
+        "allowed_period_terms": [
+          "2026财年第三季度",
+          "2026财年"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "MU",
+        "evidence_owner_role": "memory_supplier",
+        "execution_admitted": false,
+        "language": "zh",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.micron.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "en",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Micron",
+        "exclude_entity_alias::Micron Technology",
+        "exclude_entity_alias::Micron Technology, Inc.",
+        "exclude_entity_alias::Microsoft",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::MU",
+        "exclude_entity_alias::Taiwan Semiconductor",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 5,
+      "plan_digest": "1d078abda77183ce8e134f481d056d164bc509caa8ea02644fa0e220eca474a5",
+      "plan_id": "query_facet_plan_1d078abda77183ce8e13",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "What did NVIDIA disclose for Q1 FY2027 about the evidence owner's own supply capacity, ramp, bottleneck or counterevidence, especially Blackwell production ramp, capacity and supply ramp, and what counterevidence limits the inference for Dell Technologies?",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "9a524d3211bbfbe84f2314cce29ce800218d1c271673d531f8f867903aa463a3",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q1 FY2027",
+          "FY2027"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "NVDA",
+        "evidence_owner_role": "compute_platform",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.nvidia.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "zh",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Micron Technology, Inc.",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::MU",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "exclude_entity_alias::台积电",
+        "exclude_entity_alias::微软",
+        "exclude_entity_alias::美光",
+        "exclude_entity_alias::美光科技",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 6,
+      "plan_digest": "ea7ce5457798ca2ea6d49ddc4161d2d5d59aec979f5ce8a3c0363ac7c48fd668",
+      "plan_id": "query_facet_plan_ea7ce5457798ca2ea6d4",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "英伟达 在2027财年第一季度对证据披露方自身的供给产能、爬坡、瓶颈或反向证据披露了什么，尤其是Blackwell 量产爬坡、产能与供给爬坡；哪些反向证据会限制对戴尔科技的推断？",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "399f41e30ec60d330475de57ea789bd85ac4d749b597e70d21472744da76ad41",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "供应商业绩会",
+          "产能更新",
+          "技术论坛"
+        ],
+        "allowed_period_terms": [
+          "2027财年第一季度",
+          "2027财年"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "NVDA",
+        "evidence_owner_role": "compute_platform",
+        "execution_admitted": false,
+        "language": "zh",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.nvidia.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "TSMC",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "en",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Micron",
+        "exclude_entity_alias::Micron Technology",
+        "exclude_entity_alias::Micron Technology, Inc.",
+        "exclude_entity_alias::Microsoft",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::MU",
+        "exclude_entity_alias::NVDA",
+        "exclude_entity_alias::NVIDIA",
+        "exclude_entity_alias::NVIDIA Corporation",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 7,
+      "plan_digest": "32b1c9b6c3b118bf23dd26421c5698b3c456d700b2d3e4e8df0eeaf67461a21a",
+      "plan_id": "query_facet_plan_32b1c9b6c3b118bf23dd",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "What did TSMC disclose for Q2 2026 about the evidence owner's own supply capacity, ramp, bottleneck or counterevidence, especially CoWoS capacity, capacity and supply ramp, and what counterevidence limits the inference for Dell Technologies?",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "59765f0f4cfe441e4db242ac9141414e725644690bd6111e828a3c92e280fe64",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q2 2026",
+          "2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "TSMC",
+        "evidence_owner_role": "foundry",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.tsmc.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "DELL",
+      "evidence_owner_entity_key": "TSMC",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "zh",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Micron Technology, Inc.",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::MU",
+        "exclude_entity_alias::NVDA",
+        "exclude_entity_alias::NVIDIA",
+        "exclude_entity_alias::NVIDIA Corporation",
+        "exclude_entity_alias::微软",
+        "exclude_entity_alias::美光",
+        "exclude_entity_alias::美光科技",
+        "exclude_entity_alias::英伟达",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 8,
+      "plan_digest": "a8066a08f7275e9161e4c5661913a7db60433917207d3d69aaf7cf13c95f97e9",
+      "plan_id": "query_facet_plan_a8066a08f7275e9161e4",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "台积电 在2026年第二季度对证据披露方自身的供给产能、爬坡、瓶颈或反向证据披露了什么，尤其是CoWoS 产能、产能与供给爬坡；哪些反向证据会限制对戴尔科技的推断？",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "5ed0cea0e4d83cceda6b50af5ee45bbe5b1a06299557a1028f5de56164272f07",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "供应商业绩会",
+          "产能更新",
+          "技术论坛"
+        ],
+        "allowed_period_terms": [
+          "2026年第二季度",
+          "2026年"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "DELL",
+        "evidence_owner_entity_key": "TSMC",
+        "evidence_owner_role": "foundry",
+        "execution_admitted": false,
+        "language": "zh",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.tsmc.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "DELL"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "language": "en",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Microsoft",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::NVDA",
+        "exclude_entity_alias::NVIDIA",
+        "exclude_entity_alias::NVIDIA Corporation",
+        "exclude_entity_alias::Taiwan Semiconductor",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 9,
+      "plan_digest": "143d5c5c2851fc24f335e86e1c1b2cebf2eb39c31f2829c546eba7cc35cebc85",
+      "plan_id": "query_facet_plan_143d5c5c2851fc24f335",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "request_body": {
+        "limit": 10,
+        "query": "What did Dell Technologies disclose for Q1 FY2027 about the evidence owner's own AI infrastructure demand, spending and deployment, especially AI server orders, capital expenditure and capacity expansion, and what counterevidence limits the inference for Micron Technology?",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "4b42c3416a2e90d5b281f55d6daa0aee7d2c993a24bcaf5ed9d4b67b3d6c445a",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "customer earnings call",
+          "capital-expenditure disclosure",
+          "deployment update"
+        ],
+        "allowed_period_terms": [
+          "Q1 FY2027",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "DELL",
+        "evidence_owner_role": "infrastructure_integrator",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.delltechnologies.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "language": "zh",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::NVDA",
+        "exclude_entity_alias::NVIDIA",
+        "exclude_entity_alias::NVIDIA Corporation",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "exclude_entity_alias::台积电",
+        "exclude_entity_alias::微软",
+        "exclude_entity_alias::英伟达",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 10,
+      "plan_digest": "a64394c773e1599259b791d077a80364c59b41543553feca659ee1d5a1da5e6b",
+      "plan_id": "query_facet_plan_a64394c773e1599259b7",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "request_body": {
+        "limit": 10,
+        "query": "戴尔科技 在2027财年第一季度对证据披露方自身的 AI 基础设施需求、支出与部署披露了什么，尤其是AI 服务器订单、资本开支与容量扩张；哪些反向证据会限制对美光科技的推断？",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "35b8361b70bcadf1321b5138edf5f9ebbe01e4efddd28a32978f32ed2d5c55ce",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "客户业绩会",
+          "资本开支披露",
+          "部署进展"
+        ],
+        "allowed_period_terms": [
+          "2027财年第一季度",
+          "2026财年"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "DELL",
+        "evidence_owner_role": "infrastructure_integrator",
+        "execution_admitted": false,
+        "language": "zh",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.delltechnologies.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "MSFT",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "language": "en",
+      "negative_queries": [
+        "exclude_entity_alias::Dell",
+        "exclude_entity_alias::Dell Technologies",
+        "exclude_entity_alias::Dell Technologies Inc.",
+        "exclude_entity_alias::NVDA",
+        "exclude_entity_alias::NVIDIA",
+        "exclude_entity_alias::NVIDIA Corporation",
+        "exclude_entity_alias::Taiwan Semiconductor",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 11,
+      "plan_digest": "47b1b24b05268a38c9568b87b3687bf810577ffbdf0840d21b7265a41ec434e4",
+      "plan_id": "query_facet_plan_47b1b24b05268a38c956",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "request_body": {
+        "limit": 10,
+        "query": "What did Microsoft disclose for Q3 FY2026 about the evidence owner's own AI infrastructure demand, spending and deployment, especially Azure AI infrastructure, capital expenditure and capacity expansion, and what counterevidence limits the inference for Micron Technology?",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "0b50214debd6579c45256854f48f1c6a2858eb6a9eac1850ac6a5c4588b6e85e",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "customer earnings call",
+          "capital-expenditure disclosure",
+          "deployment update"
+        ],
+        "allowed_period_terms": [
+          "Q3 FY2026",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "MSFT",
+        "evidence_owner_role": "cloud_operator",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "www.microsoft.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "MSFT",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "language": "zh",
+      "negative_queries": [
+        "exclude_entity_alias::DELL",
+        "exclude_entity_alias::Dell Technologies Inc.",
+        "exclude_entity_alias::NVDA",
+        "exclude_entity_alias::NVIDIA",
+        "exclude_entity_alias::NVIDIA Corporation",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "exclude_entity_alias::台积电",
+        "exclude_entity_alias::戴尔",
+        "exclude_entity_alias::戴尔科技",
+        "exclude_entity_alias::英伟达",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 12,
+      "plan_digest": "e960b90395e7a7cfa01c0e0e5d86b5229bd1d4350eba6f22510177c76c64e3a9",
+      "plan_id": "query_facet_plan_e960b90395e7a7cfa01c",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "request_body": {
+        "limit": 10,
+        "query": "微软 在2026财年第三季度对证据披露方自身的 AI 基础设施需求、支出与部署披露了什么，尤其是Azure AI 基础设施、资本开支与容量扩张；哪些反向证据会限制对美光科技的推断？",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "ce633bfc134273504b51b81f99c2ef2da9e8444b4b68c82c28f9f44badbd3e25",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "客户业绩会",
+          "资本开支披露",
+          "部署进展"
+        ],
+        "allowed_period_terms": [
+          "2026财年第三季度",
+          "2026财年"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "MSFT",
+        "evidence_owner_role": "cloud_operator",
+        "execution_admitted": false,
+        "language": "zh",
+        "preferred_domains": [
+          "data.sec.gov",
+          "www.microsoft.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "en",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Dell",
+        "exclude_entity_alias::Dell Technologies",
+        "exclude_entity_alias::Dell Technologies Inc.",
+        "exclude_entity_alias::Microsoft",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::Taiwan Semiconductor",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 13,
+      "plan_digest": "da46b3667f567cbd8a81c048692746c95f955552772471112d520a27b5103487",
+      "plan_id": "query_facet_plan_da46b3667f567cbd8a81",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "What did NVIDIA disclose for Q1 FY2027 about the evidence owner's own supply capacity, ramp, bottleneck or counterevidence, especially Blackwell production ramp, capacity and supply ramp, and what counterevidence limits the inference for Micron Technology?",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "6960161a1b8114ed2641dd9eaf7d2886ea61fa2587d4d7e6b2dcad0978d47f7d",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q1 FY2027",
+          "FY2027"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "NVDA",
+        "evidence_owner_role": "compute_platform",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.nvidia.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "zh",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::DELL",
+        "exclude_entity_alias::Dell Technologies Inc.",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "exclude_entity_alias::台积电",
+        "exclude_entity_alias::微软",
+        "exclude_entity_alias::戴尔",
+        "exclude_entity_alias::戴尔科技",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 14,
+      "plan_digest": "51785648bbe9f36a035e864577891c22fe6fce707ef3c9b2d41aa01acc81672d",
+      "plan_id": "query_facet_plan_51785648bbe9f36a035e",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "英伟达 在2027财年第一季度对证据披露方自身的供给产能、爬坡、瓶颈或反向证据披露了什么，尤其是Blackwell 量产爬坡、产能与供给爬坡；哪些反向证据会限制对美光科技的推断？",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "42302c811c0f3ac4f3ba1d4983cb2badbb4089a8a0c9c56a1939a654e9e9b91a",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "供应商业绩会",
+          "产能更新",
+          "技术论坛"
+        ],
+        "allowed_period_terms": [
+          "2027财年第一季度",
+          "2027财年"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "NVDA",
+        "evidence_owner_role": "compute_platform",
+        "execution_admitted": false,
+        "language": "zh",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.nvidia.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "TSMC",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "en",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Dell",
+        "exclude_entity_alias::Dell Technologies",
+        "exclude_entity_alias::Dell Technologies Inc.",
+        "exclude_entity_alias::Microsoft",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::NVDA",
+        "exclude_entity_alias::NVIDIA",
+        "exclude_entity_alias::NVIDIA Corporation",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 15,
+      "plan_digest": "97cdd119d8ad552d34b3aa0858634ca83e95e3b2140d0b7b9bf5e2806178264b",
+      "plan_id": "query_facet_plan_97cdd119d8ad552d34b3",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "What did TSMC disclose for Q2 2026 about the evidence owner's own supply capacity, ramp, bottleneck or counterevidence, especially CoWoS capacity, capacity and supply ramp, and what counterevidence limits the inference for Micron Technology?",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "615175a41998aa00f826f9a16c5a52ebbe485bae2c269b0599746c65581b2467",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q2 2026",
+          "2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "TSMC",
+        "evidence_owner_role": "foundry",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.tsmc.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "MU",
+      "evidence_owner_entity_key": "TSMC",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "zh",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::DELL",
+        "exclude_entity_alias::Dell Technologies Inc.",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::NVDA",
+        "exclude_entity_alias::NVIDIA",
+        "exclude_entity_alias::NVIDIA Corporation",
+        "exclude_entity_alias::微软",
+        "exclude_entity_alias::戴尔",
+        "exclude_entity_alias::戴尔科技",
+        "exclude_entity_alias::英伟达",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 16,
+      "plan_digest": "a0ef28318fcbfacd6c83bb3f9bed69123ed80deb81c1e3e3882a20f0a752b67b",
+      "plan_id": "query_facet_plan_a0ef28318fcbfacd6c83",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "台积电 在2026年第二季度对证据披露方自身的供给产能、爬坡、瓶颈或反向证据披露了什么，尤其是CoWoS 产能、产能与供给爬坡；哪些反向证据会限制对美光科技的推断？",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "0c7e8cae17edcb05b88f63547801eb37db0cf2ea91b569e39c1b2530e9e28d9c",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "供应商业绩会",
+          "产能更新",
+          "技术论坛"
+        ],
+        "allowed_period_terms": [
+          "2026年第二季度",
+          "2026年"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "MU",
+        "evidence_owner_entity_key": "TSMC",
+        "evidence_owner_role": "foundry",
+        "execution_admitted": false,
+        "language": "zh",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.tsmc.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "MU"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "language": "en",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Micron",
+        "exclude_entity_alias::Micron Technology",
+        "exclude_entity_alias::Micron Technology, Inc.",
+        "exclude_entity_alias::Microsoft",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::MU",
+        "exclude_entity_alias::Taiwan Semiconductor",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 17,
+      "plan_digest": "04db155fcbe99115f218d9fc98bc50072bb8cafa69d4b14d15be11a05127a8c8",
+      "plan_id": "query_facet_plan_04db155fcbe99115f218",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "request_body": {
+        "limit": 10,
+        "query": "What did Dell Technologies disclose for Q1 FY2027 about the evidence owner's own AI infrastructure demand, spending and deployment, especially AI server orders, capital expenditure and capacity expansion, and what counterevidence limits the inference for NVIDIA?",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "a6c9b2cba09139c2db88aa790fca5d10a05269b537d5ade3b8e0fbd4665fa74d",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "customer earnings call",
+          "capital-expenditure disclosure",
+          "deployment update"
+        ],
+        "allowed_period_terms": [
+          "Q1 FY2027",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "DELL",
+        "evidence_owner_role": "infrastructure_integrator",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.delltechnologies.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "NVDA"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "language": "zh",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Micron Technology, Inc.",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::MU",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "exclude_entity_alias::台积电",
+        "exclude_entity_alias::微软",
+        "exclude_entity_alias::美光",
+        "exclude_entity_alias::美光科技",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 18,
+      "plan_digest": "9677c8e3c6baf24d86549d9e21e268cdf08cad15ea9f0b01929f150c2c0e0db8",
+      "plan_id": "query_facet_plan_9677c8e3c6baf24d8654",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "request_body": {
+        "limit": 10,
+        "query": "戴尔科技 在2027财年第一季度对证据披露方自身的 AI 基础设施需求、支出与部署披露了什么，尤其是AI 服务器订单、资本开支与容量扩张；哪些反向证据会限制对英伟达的推断？",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "c4e352ee83754471a167e2c8aab0da737ea0ba462452869070ff18dffb48f85f",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "客户业绩会",
+          "资本开支披露",
+          "部署进展"
+        ],
+        "allowed_period_terms": [
+          "2027财年第一季度",
+          "2026财年"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "DELL",
+        "evidence_owner_role": "infrastructure_integrator",
+        "execution_admitted": false,
+        "language": "zh",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.delltechnologies.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "NVDA"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "MSFT",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "language": "en",
+      "negative_queries": [
+        "exclude_entity_alias::Dell",
+        "exclude_entity_alias::Dell Technologies",
+        "exclude_entity_alias::Dell Technologies Inc.",
+        "exclude_entity_alias::Micron",
+        "exclude_entity_alias::Micron Technology",
+        "exclude_entity_alias::Micron Technology, Inc.",
+        "exclude_entity_alias::MU",
+        "exclude_entity_alias::Taiwan Semiconductor",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 19,
+      "plan_digest": "b80fdb0bee0f9245b398385649068d63d966d6d6f6a32af586199391d53eb4ca",
+      "plan_id": "query_facet_plan_b80fdb0bee0f9245b398",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "request_body": {
+        "limit": 10,
+        "query": "What did Microsoft disclose for Q3 FY2026 about the evidence owner's own AI infrastructure demand, spending and deployment, especially Azure AI infrastructure, capital expenditure and capacity expansion, and what counterevidence limits the inference for NVIDIA?",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "8f15ca588064612e799ba1966342da66bb800d0f99f3446c8608209903fb3197",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "customer earnings call",
+          "capital-expenditure disclosure",
+          "deployment update"
+        ],
+        "allowed_period_terms": [
+          "Q3 FY2026",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "MSFT",
+        "evidence_owner_role": "cloud_operator",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "www.microsoft.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "NVDA"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "MSFT",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "language": "zh",
+      "negative_queries": [
+        "exclude_entity_alias::DELL",
+        "exclude_entity_alias::Dell Technologies Inc.",
+        "exclude_entity_alias::Micron Technology, Inc.",
+        "exclude_entity_alias::MU",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "exclude_entity_alias::台积电",
+        "exclude_entity_alias::戴尔",
+        "exclude_entity_alias::戴尔科技",
+        "exclude_entity_alias::美光",
+        "exclude_entity_alias::美光科技",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 20,
+      "plan_digest": "b538e84e6c317373725d3bbeed19810e20f8e574044210de4e020573162504a9",
+      "plan_id": "query_facet_plan_b538e84e6c317373725d",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "request_body": {
+        "limit": 10,
+        "query": "微软 在2026财年第三季度对证据披露方自身的 AI 基础设施需求、支出与部署披露了什么，尤其是Azure AI 基础设施、资本开支与容量扩张；哪些反向证据会限制对英伟达的推断？",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "5b6f6f3d5108977bcb1749db38c3f22f09b096528437d4e07d9e71b462101f13",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "客户业绩会",
+          "资本开支披露",
+          "部署进展"
+        ],
+        "allowed_period_terms": [
+          "2026财年第三季度",
+          "2026财年"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "MSFT",
+        "evidence_owner_role": "cloud_operator",
+        "execution_admitted": false,
+        "language": "zh",
+        "preferred_domains": [
+          "data.sec.gov",
+          "www.microsoft.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_infrastructure_demand",
+        "subject_entity_key": "NVDA"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "en",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Dell",
+        "exclude_entity_alias::Dell Technologies",
+        "exclude_entity_alias::Dell Technologies Inc.",
+        "exclude_entity_alias::Microsoft",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::Taiwan Semiconductor",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 21,
+      "plan_digest": "09fe0d90e6f65756ca09d80f2fa839a5193e0761765ec70f8fe3e2ea9ad4e180",
+      "plan_id": "query_facet_plan_09fe0d90e6f65756ca09",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "What did Micron Technology disclose for Q3 FY2026 about the evidence owner's own supply capacity, ramp, bottleneck or counterevidence, especially HBM output, capacity and supply ramp, and what counterevidence limits the inference for NVIDIA?",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "cf94be700246f10e41c7426bff2958b6b7e684b4ebd496951eeb9bd09744bf36",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q3 FY2026",
+          "FY2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "MU",
+        "evidence_owner_role": "memory_supplier",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.micron.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "NVDA"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "zh",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::DELL",
+        "exclude_entity_alias::Dell Technologies Inc.",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::Taiwan Semiconductor Manufacturing Company Limited",
+        "exclude_entity_alias::TSMC",
+        "exclude_entity_alias::台积电",
+        "exclude_entity_alias::微软",
+        "exclude_entity_alias::戴尔",
+        "exclude_entity_alias::戴尔科技",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 22,
+      "plan_digest": "652f9e405120554a80d72d64e0b85cc112b82b62d2a43f5e2e7dc8e596ef48d6",
+      "plan_id": "query_facet_plan_652f9e405120554a80d7",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "美光科技 在2026财年第三季度对证据披露方自身的供给产能、爬坡、瓶颈或反向证据披露了什么，尤其是HBM 产出、产能与供给爬坡；哪些反向证据会限制对英伟达的推断？",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "72ca5fb6df62ca8aae0032be8b0a65501a09c6ba78f4d47352f7604af65cca5b",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "供应商业绩会",
+          "产能更新",
+          "技术论坛"
+        ],
+        "allowed_period_terms": [
+          "2026财年第三季度",
+          "2026财年"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "MU",
+        "evidence_owner_role": "memory_supplier",
+        "execution_admitted": false,
+        "language": "zh",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investors.micron.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "NVDA"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "TSMC",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "en",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::Dell",
+        "exclude_entity_alias::Dell Technologies",
+        "exclude_entity_alias::Dell Technologies Inc.",
+        "exclude_entity_alias::Micron",
+        "exclude_entity_alias::Micron Technology",
+        "exclude_entity_alias::Micron Technology, Inc.",
+        "exclude_entity_alias::Microsoft",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::MU",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 23,
+      "plan_digest": "90a5ce6913383d8ac077c24a3d425f1c5c92925acc409989d45b484cb852d3ef",
+      "plan_id": "query_facet_plan_90a5ce6913383d8ac077",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "What did TSMC disclose for Q2 2026 about the evidence owner's own supply capacity, ramp, bottleneck or counterevidence, especially CoWoS capacity, capacity and supply ramp, and what counterevidence limits the inference for NVIDIA?",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "978615de63fd01c3657604cb0562fde23887cec4928280c5e7a5f3febdb2f068",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "supplier earnings call",
+          "capacity update",
+          "technology symposium"
+        ],
+        "allowed_period_terms": [
+          "Q2 2026",
+          "2026"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "TSMC",
+        "evidence_owner_role": "foundry",
+        "execution_admitted": false,
+        "language": "en",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.tsmc.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "NVDA"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_owner_entity_key": "TSMC",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "zh",
+      "negative_queries": [
+        "exclude_entity_alias::Azure",
+        "exclude_entity_alias::DELL",
+        "exclude_entity_alias::Dell Technologies Inc.",
+        "exclude_entity_alias::Micron Technology, Inc.",
+        "exclude_entity_alias::Microsoft Corporation",
+        "exclude_entity_alias::MSFT",
+        "exclude_entity_alias::MU",
+        "exclude_entity_alias::微软",
+        "exclude_entity_alias::戴尔",
+        "exclude_entity_alias::戴尔科技",
+        "exclude_entity_alias::美光",
+        "exclude_entity_alias::美光科技",
+        "forbid_expansion::gold_target_or_evidence_identifier",
+        "forbid_expansion::benchmark_or_expected_answer_locator",
+        "forbid_expansion::cross_case_subject_replacement",
+        "forbid_expansion::wrong_evidence_owner",
+        "forbid_expansion::nested_customer_or_supplier_of_evidence_owner",
+        "forbid_expansion::future_period_or_as_of",
+        "forbid_expansion::provider_reported_date_as_financial_authority",
+        "forbid_expansion::model_supplied_domain_or_route_override",
+        "forbid_expansion::candidate_generation_from_hidden_qrels"
+      ],
+      "ordinal": 24,
+      "plan_digest": "7221e051cda0bb9504ebf5ae8b808b64b75febdf145582b3bf13a6ea9397c484",
+      "plan_id": "query_facet_plan_7221e051cda0bb9504eb",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "request_body": {
+        "limit": 10,
+        "query": "台积电 在2026年第二季度对证据披露方自身的供给产能、爬坡、瓶颈或反向证据披露了什么，尤其是CoWoS 产能、产能与供给爬坡；哪些反向证据会限制对英伟达的推断？",
+        "sources": [
+          "web"
+        ]
+      },
+      "request_payload_digest": "5013721dedfe2897ec7a3400703a2da63ef24951875a28c43538a4cd578494ce",
+      "route_specific_filters": {
+        "allow_relaxed_identity_or_period_fallback": false,
+        "allowed_document_types": [
+          "供应商业绩会",
+          "产能更新",
+          "技术论坛"
+        ],
+        "allowed_period_terms": [
+          "2026年第二季度",
+          "2026年"
+        ],
+        "allowed_source_families": [
+          "issuer_ir_document",
+          "customer_official_disclosure",
+          "regulatory_filing"
+        ],
+        "candidate_state": "candidate_only_not_evidence",
+        "case_key": "NVDA",
+        "evidence_owner_entity_key": "TSMC",
+        "evidence_owner_role": "foundry",
+        "execution_admitted": false,
+        "language": "zh",
+        "preferred_domains": [
+          "data.sec.gov",
+          "investor.tsmc.com"
+        ],
+        "publication_date_on_or_before": "2026-08-06",
+        "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+        "subject_entity_key": "NVDA"
+      }
+    }
+  ]
+}

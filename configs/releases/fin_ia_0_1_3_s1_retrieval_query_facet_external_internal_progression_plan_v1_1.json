@@ -4,14 +4,14 @@
   "recorded_at": "2026-08-09",
   "product_version": "FIN_0_1_3",
   "owner_stage": "S1",
-  "status": "query_facet_complete_model_variant_rejected_external_combined_current_internal_backlog_registered",
+  "status": "external_combined_zero_call_engineering_pass_clean_authority_pending_internal_backlog_registered",
   "predecessor_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_0.json",
   "user_decision": "Complete external official-first search and its combined proof first, then repair internal retrieval query compilation and evaluate downstream BGE and reranking without changing product version or skipping candidate-ceiling gates.",
   "current_evidence": {
     "deterministic_local_query_facet": "engineering_and_frozen_AB_pass",
     "deepseek_query_atom_variant": "natural_observation_failed_plan_binding_rejected_no_retry",
     "selected_external_and_internal_query_baseline": "deterministic_local_compiler_only",
-    "fresh_combined_external_live": "not_started_zero_call_runtime_and_authority_pending"
+    "fresh_combined_external_live": "zero_call_runtime_proven_clean_authority_and_exact_live_pending"
   },
   "shared_query_facet_contract": {
     "purpose": "Compile one evidence intent into route-specific physical queries without allowing any provider, model, retriever, embedder or reranker to reinterpret financial identity, period or relationship direction.",
@@ -72,7 +72,7 @@
     {
       "order": 5,
       "work_item": "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE",
-      "status": "current_zero_call_runtime_and_authority_decision_pending",
+      "status": "zero_call_engineering_pass_clean_authority_pending",
       "acceptance": "Capture-first exact-once local-only combined run; all required external targets receive a real opportunity; no reranker rescue; local date and Evidence Gate remain authoritative."
     },
     {
@@ -123,5 +123,5 @@
     "rerank": 0
   },
   "known_boundary": "This record updates execution status and preserves the approved external-to-internal order. It does not authorize combined live, prove internal retrieval, admit BGE/rerank, establish downstream research quality, close S1-08 or release the product.",
-  "plan_digest": "4a0abd94356fee6b46efd4a33ad1e7ac8b305718c3dc295e01c98f8b1efd7455"
+  "plan_digest": "5048d40c858659cfdf2a3ad2dbaffefab460a3aa70d81b48fb4c31fb30cefa2f"
 }

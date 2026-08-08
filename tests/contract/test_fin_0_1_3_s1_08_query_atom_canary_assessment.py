@@ -205,7 +205,7 @@ def test_progression_keeps_external_then_internal_candidate_ceiling_then_ranking
     body = {key: value for key, value in plan.items() if key != "plan_digest"}
     assert plan["plan_digest"] == canonical_digest(body)
     rows = plan["execution_sequence"]
-    assert rows[4]["status"] == "current_zero_call_runtime_and_authority_decision_pending"
+    assert rows[4]["status"] == "zero_call_engineering_pass_clean_authority_pending"
     assert rows[5]["routes"] == [
         "exact_SQL_and_object_lookup",
         "BM25_and_ObjectBM25_lexical",

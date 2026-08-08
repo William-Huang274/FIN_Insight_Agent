@@ -1,0 +1,60 @@
+{
+  "acceptance": {
+    "evidence_promotion": false,
+    "full_fake_official_cases_terminalized": 3,
+    "full_fake_shadow_queries_terminalized": 24,
+    "internal_retrieval_executed": false,
+    "model_atoms_accepted": 0,
+    "official_query_facet_plans": 18,
+    "raw_response_saved_before_parse_failure": true,
+    "required_case_slot_opportunities": 12,
+    "reranker_rescue": false,
+    "shadow_query_facet_plans": 24,
+    "systemic_rejection_network_calls": 1,
+    "systemic_rejection_shadow_identities_terminalized": 24
+  },
+  "authority_state": "not_issued_requires_clean_commit_and_fresh_preflight",
+  "contract_ref": "fin_0_1_3.S1_08.external_official_firecrawl_shadow_combined:v1",
+  "known_boundary": "This proves the combined exact-once topology and failure semantics with local fakes. It does not establish fresh source recall, candidate quality, Evidence quality, internal retrieval, ranking, downstream research quality, S1-08 acceptance or release readiness.",
+  "mutation_results": {
+    "facet_plan_loss": "s1_08_external_combined_selected_query_variant_invalid",
+    "model_variant_activation": "s1_08_external_combined_selected_query_variant_invalid",
+    "stage_order_drift": "s1_08_external_combined_selected_query_variant_invalid"
+  },
+  "observed_real_calls": {
+    "document_fetch": 0,
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0
+  },
+  "plan_digest": "7497f783032b80054763ec9075a2851745bb855475094bba48f504ea10d9d39b",
+  "plan_sha256": "2f179b20288e311b7f4817f59b5ef431cacbc3bbae9aa0814ff5defcc29f2a6c",
+  "policy_sha256": "ec61816bccfaf1a649a92485f954ff6a61f1dc53d9a4cfbd6e3558710e384f49",
+  "proof_digest": "fceff700ca5d34709a26ec2a38f29080f09edc00f38bfec73c421f0e754876c7",
+  "run_scope": "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE_ZERO_CALL_IMPLEMENTATION_AND_AUTHORITY_DECISION",
+  "schema_version": "fin_ia_0_1_3_s1_08_external_combined_live_zero_call_proof_v1_0",
+  "simulated_topology_counts": {
+    "document_fetches": 3,
+    "embedding_calls": 0,
+    "evidence_promotions": 0,
+    "fallback_calls": 0,
+    "model_calls": 0,
+    "network_calls": 30,
+    "official_cases_terminalized": 3,
+    "official_network_calls": 6,
+    "rerank_calls": 0,
+    "retry_calls": 0,
+    "shadow_network_calls": 24,
+    "shadow_provider_calls": 24,
+    "shadow_queries_terminalized": 24
+  },
+  "source_bindings": {
+    "exact_live_runner_sha256": "c87d143590fe647ff18e0b611d94646488678e9c9a699816bd3fdf718eb0469d",
+    "materializer_sha256": "d001b6eae1fcc7daf202ffac7f9fb75263239086300cacc3ed946c8ce6b6ef65",
+    "runtime_module_sha256": "84e1ce49788ea27d371371570d16895ba8bbe4009328c8b479ab99b2e8980d52"
+  },
+  "status": "zero_call_engineering_pass_authority_not_yet_issued"
+}

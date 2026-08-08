@@ -954,3 +954,13 @@ Owner 随后将 subscription 切换 standard 并批准 R4。实验合同采用 s
 R4 在 clean `2e6fbf9f...7c17` 返回 standard 和 10 条 DELL AI-server 相关 locator，证明套餐层确实改变 topical recall；但 10 条均属于 `qq.com` 同一内容生态，冻结 DELL primary target 和 hidden target group 仍为 0，Provider date 没有一手校验。因此 Runtime 将 `topical useful@10` 与 `Evidence-eligible useful@10` 分开，前者 `10/10`、后者 `0/10`；不能把语义相关误写为金融证据可用。
 
 后续 comparator 固定 24 个 Query-only 调用：DELL/MU/NVDA × issuer results、regulatory reconciliation、customer validation、supply-chain counterevidence × EN/ZH；market context 继续由本地 governed snapshot 提供。query plan 与 evaluator-only target manifest 物理分离，Gold 只在所有 Provider 调用 terminalize 后加载。每 query 先保存 safe request，再保存完整 raw response／typed failure，0 retry、0 document fetch、0 Evidence promotion。除 useful@10 外，还计算 case-slot 中英 union target-in-pool、带 local control 的 12-group recall、exact-target date accuracy、registrable-domain/publisher concentration、cost 与 p50/p95。只有全部预注册门通过才有资格进入独立 adapter integration decision；candidate gate 不通过时 NDCG/MRR/reranker 继续 `not_admitted`。
+
+### 20.17 Bilingual comparator live 终态与 Provider admission 结论（2026-08-08）
+
+唯一 comparator 在 clean `19943317...e2dc` exact-once 完成：24/24 Query-only 调用返回 standard，0 retry/model/document/Evidence；155 个 locator，文档价 1.104 元，p50/p95/max=`754/941/1052 ms`。传输、终态物化、成本和延迟均合格。
+
+候选质量未合格：topical useful=`110/240`，Evidence-eligible=`0/240`；12 个 case-slot 的 EN/ZH union target-in-pool=`0/12`，带本地 market control 的 12 个 hidden target group recall=`0/12`。中文 case mean topical useful@10 为 DELL/MU/NVDA=`0.525/0.625/0.550`，英文为 `0.375/0.350/0.325`；语言改写改善泛相关召回，却没有召回冻结的一手目标。regulatory slot 是最明显缺口。155/155 locator 带 Provider date，但由于 exact target 命中为 0，matched-target date accuracy 没有样本，必须按硬门失败而非按 100% 日期准确处理。
+
+每案例 registrable domain=`15/20/15`、最大单域占比=`0.372549/0.490566/0.558140`，说明表面域名分散不等于一手 target coverage。官方域结果也必须匹配 case、slot、期间和文档身份后才能晋升，不能只凭 issuer domain 通过 Evidence Gate。
+
+终态固定为 `fail_diagnostic_only / remain_diagnostic_only_no_reranker_rescue`。Tencent adapter 不进入 SourceHunter，BGE/NDCG/MRR 继续 not admitted；不得追加 R5、逐 query patch、正文抓取或 reranker rescue。下一候选 broad-search Provider 必须复用同一 gold-blind comparator；全部 candidate/date/diversity/cost/latency 门通过后仍需独立 integration authority。若不引入其他 Provider，则产品层必须显式缩减 Internal Alpha source claim，而不是在 Runtime 中伪造覆盖。

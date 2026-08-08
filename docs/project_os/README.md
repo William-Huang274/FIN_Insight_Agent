@@ -10,7 +10,7 @@ FIN 0.1.1 保存第一轮 S0–S5 的内部 honest-block 工程基线。2026-08-
 
 当前开发版本为 FIN 0.1.3。`013-S0-04G` 已以 typed blocker state、`RunScopeRegistry v1_0` 和 unknown fail-closed 关闭 RC-P36-156，并从 clean Git archive/fresh process 以 `85/85` 复证现有 DELL R3 successor；本项外部调用与 admission 均为 0。S1-08 的真实 candidate ceiling 仍未通过，DELL R3、ranking、MU/NVDA、S3 和 release 均未因此解锁。
 
-当前下一项：Tencent WSA standard same-query R4 已完成，主题相关性由 lite `0/10` 提升到 `10/10`，但一手 target、可晋升 Evidence、日期权威和独立来源仍失败。三案 × 四个外部 Evidence Slot × 中英文的 24-call comparator 已完成零调用证明并签发一次 authority；先 commit/push clean head，再 exact-once 执行并 post-terminal 评分。任何硬门失败均保持 diagnostic-only，不用 reranker 补救；通过也只进入单独 adapter integration decision。
+当前下一项：Tencent WSA standard 的三案 × 四个外部 Evidence Slot × 中英文 24-call comparator 已 exact-once 完成。24/24 调用成功且成本、延迟、表面域名多样性通过，但 Evidence-eligible=`0`、case-slot target-in-pool=`0/12`、hidden target group=`0/12`，日期因零 exact target 无法验证；终态为 diagnostic-only，禁止 SourceHunter integration 和 reranker rescue。下一步只能由 Owner 选择另一 broad-search Provider 按同一 comparator 资格审查，或显式缩减 Internal Alpha source claim；不得继续 Tencent R5/query patch，也不解锁 DeepSeek、S3 或 release。
 
 ## 文件职责
 

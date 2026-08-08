@@ -51,6 +51,14 @@ AUTHORITY_PATH = (
     ROOT
     / "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_bilingual_evidence_slot_comparator_authority_v1_0.json"
 )
+LIVE_RESULT_PATH = (
+    ROOT
+    / "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_bilingual_evidence_slot_comparator_result_v1_0.json"
+)
+LIVE_ASSESSMENT_PATH = (
+    ROOT
+    / "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_bilingual_evidence_slot_comparator_assessment_v1_0.json"
+)
 
 
 def _inputs() -> tuple[dict, dict, dict, dict]:
@@ -292,9 +300,69 @@ def test_comparator_authority_is_bounded_and_non_promotable() -> None:
     assert execution["sourcehunter_integration_allowed"] is False
 
 
-def test_comparator_scope_is_registered_and_project_os_authorized() -> None:
+def test_consumed_comparator_scope_is_registered_but_no_longer_authorized() -> None:
     preflight = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
-    assert preflight["status"] == "pass"
+    assert preflight["status"] == "blocked"
     assert preflight["scope_resolution"]["status"] == "registered"
     assert preflight["scope_resolution"]["owner_stage"] == "S1"
-    assert preflight["open_full_chain_blockers"] == []
+    assert preflight["contract_errors"] == []
+    assert preflight["open_full_chain_blocker_count"] == 1
+    assert RUN_SCOPE not in preflight["open_full_chain_blockers"][0][
+        "allowed_run_scopes"
+    ]
+
+
+def test_live_comparator_terminal_and_assessment_are_immutable_and_honest() -> None:
+    result = json.loads(LIVE_RESULT_PATH.read_text(encoding="utf-8"))
+    assessment = json.loads(LIVE_ASSESSMENT_PATH.read_text(encoding="utf-8"))
+
+    result_body = dict(result)
+    result_digest = result_body.pop("result_digest")
+    assert result_digest == canonical_digest(result_body)
+    assert result["status"] == "completed"
+    assert result["admission_consumed"] is True
+    assert result["observed_counts"] == {
+        "planned_queries": 24,
+        "terminalized_queries": 24,
+        "provider_calls": 24,
+        "network_calls": 24,
+        "successful_calls": 24,
+        "typed_failed_calls": 0,
+        "retry_calls": 0,
+        "model_calls": 0,
+        "document_fetches": 0,
+        "evidence_promotions": 0,
+    }
+    assert len(result["call_results"]) == 24
+    assert {
+        row["provider_projection"]["provider_version"]
+        for row in result["call_results"]
+    } == {"standard"}
+    assert result["capability_boundary"]["ranking_or_reranker_allowed"] is False
+    assert result["capability_boundary"]["sourcehunter_integration_allowed"] is False
+
+    assessment_body = dict(assessment)
+    assessment_digest = assessment_body.pop("assessment_digest")
+    assert assessment_digest == canonical_digest(assessment_body)
+    assert assessment["result_digest"] == result_digest
+    assert assessment["status"] == "fail_diagnostic_only"
+    assert assessment["sourcehunter_integration_eligible"] is False
+    assert assessment["decision"] == "remain_diagnostic_only_no_reranker_rescue"
+    assert assessment["aggregate"][
+        "case_slot_target_in_pool_rate_across_language_union"
+    ] == 0.0
+    assert assessment["combined_product_hidden_target_match"]["summary"][
+        "target_in_pool_recall"
+    ] == 0.0
+    assert all(
+        row["mean_evidence_eligible_useful_at_10"] == 0.0
+        for row in assessment["case_language_summaries"]
+    )
+    assert assessment["aggregate"]["documented_total_cost_cny"] == 1.104
+    assert assessment["aggregate"]["latency_ms"]["p95"] == 941
+    assert assessment["hard_gate_results"][
+        "case_slot_target_in_pool_rate_across_language_union"
+    ] is False
+    assert assessment["hard_gate_results"][
+        "reranker_or_document_fetch_during_comparator"
+    ] is True

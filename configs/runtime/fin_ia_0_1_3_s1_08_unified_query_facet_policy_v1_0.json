@@ -1,0 +1,151 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_unified_query_facet_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.unified_query_facet_plan:v1",
+  "run_scope": "S1_08_UNIFIED_QUERY_FACET_PLAN_ZERO_CALL_IMPLEMENTATION",
+  "recorded_at": "2026-08-08",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "as_of_date": "2026-08-06",
+  "cases": ["DELL", "MU", "NVDA"],
+  "languages": ["en", "zh"],
+  "external_evidence_slots": [
+    "issuer_results_and_management_commentary",
+    "regulatory_risk_and_financial_reconciliation",
+    "customer_demand_and_deployment_validation",
+    "supply_chain_capacity_and_counterevidence"
+  ],
+  "immutable_inputs": {
+    "search_intent_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_relationship_aware_search_intent_policy_v1_0.json",
+    "search_intent_policy_sha256": "be2e5f6c7fffca8f10877927b589caeb60425faf761eabec2a32850423ed5751",
+    "source_catalog_ref": "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_relationship_budget_policy_v3_0.json",
+    "source_catalog_sha256": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851",
+    "model_visible_case_pack_ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json",
+    "model_visible_case_pack_sha256": "5c6294599d546b18faafdfa3688a297316c497a80d0e2e78a76d723803ebd604",
+    "progression_plan_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_0.json",
+    "progression_plan_sha256": "df76debecd67cc372b52a111f3d4914e31395228590ebe56ee611cade7bef446",
+    "clean_portfolio_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_official_first_portfolio_clean_independent_zero_call_proof_v1_0.json",
+    "clean_portfolio_proof_sha256": "6f39ca052326550fe0b29332164dfef5de3eb8eed07c7379241123c9b478ebe4"
+  },
+  "plan_contract": {
+    "unique_facet_plan_count": 36,
+    "bound_search_intent_count": 60,
+    "case_slot_count": 12,
+    "official_external_plan_count": 36,
+    "semantic_external_plan_count": 24,
+    "minimum_exact_queries_per_plan": 2,
+    "minimum_lexical_queries_per_plan": 2,
+    "minimum_semantic_queries_per_plan": 1,
+    "graph_query_count_per_plan": 1,
+    "maximum_model_atoms_per_plan": 6
+  },
+  "route_contracts": {
+    "external_official_primary": {
+      "query_families": ["exact_lookup", "lexical"],
+      "preferred_domains_required": true,
+      "candidate_state": "locator_candidate_only",
+      "execution_admitted": false
+    },
+    "external_semantic_shadow": {
+      "query_families": ["semantic", "lexical"],
+      "preferred_domains_required": false,
+      "candidate_state": "discovery_only_locator_candidate",
+      "execution_admitted": false
+    },
+    "internal_exact_object_lookup": {
+      "query_families": ["exact_lookup", "typed_filters"],
+      "candidate_state": "internal_candidate_only",
+      "execution_admitted": false
+    },
+    "internal_bm25": {
+      "query_families": ["lexical", "typed_filters"],
+      "candidate_state": "internal_candidate_only",
+      "execution_admitted": false
+    },
+    "internal_dense": {
+      "query_families": ["semantic", "typed_filters"],
+      "candidate_state": "internal_candidate_only",
+      "execution_admitted": false
+    },
+    "internal_relationship_graph": {
+      "query_families": ["graph", "typed_filters"],
+      "candidate_state": "internal_candidate_only",
+      "execution_admitted": false
+    }
+  },
+  "relationship_phrases": {
+    "subject_self_disclosure": {
+      "en": "the issuer's own disclosed results, risks and financial mechanics",
+      "zh": "发行人自身披露的业绩、风险与财务机制"
+    },
+    "evidence_owner_own_infrastructure_demand": {
+      "en": "the evidence owner's own AI infrastructure demand, spending and deployment",
+      "zh": "证据披露方自身的 AI 基础设施需求、支出与部署"
+    },
+    "evidence_owner_own_supply_capacity_or_constraint": {
+      "en": "the evidence owner's own supply capacity, ramp, bottleneck or counterevidence",
+      "zh": "证据披露方自身的供给产能、爬坡、瓶颈或反向证据"
+    }
+  },
+  "slot_facets": {
+    "issuer_results_and_management_commentary": {
+      "document_types": {"en": ["earnings release", "earnings call", "prepared remarks"], "zh": ["业绩公告", "业绩会", "管理层准备稿"]},
+      "metrics": {"en": ["revenue", "gross margin", "operating income", "free cash flow"], "zh": ["营收", "毛利率", "营业利润", "自由现金流"]},
+      "mechanisms": {"en": ["volume", "mix", "pricing", "backlog conversion"], "zh": ["销量", "产品组合", "定价", "积压订单转化"]}
+    },
+    "regulatory_risk_and_financial_reconciliation": {
+      "document_types": {"en": ["10-K", "10-Q", "20-F", "6-K", "cash-flow statement"], "zh": ["10-K", "10-Q", "20-F", "6-K", "现金流量表"]},
+      "metrics": {"en": ["inventory", "purchase commitments", "customer concentration", "cash flow"], "zh": ["存货", "采购承诺", "客户集中度", "现金流"]},
+      "mechanisms": {"en": ["revenue recognition", "working capital", "supply commitment", "risk factor"], "zh": ["收入确认", "营运资本", "供应承诺", "风险因素"]}
+    },
+    "customer_demand_and_deployment_validation": {
+      "document_types": {"en": ["customer earnings call", "capital-expenditure disclosure", "deployment update"], "zh": ["客户业绩会", "资本开支披露", "部署进展"]},
+      "metrics": {"en": ["capital expenditure", "data-center capacity", "deployment volume", "AI demand"], "zh": ["资本开支", "数据中心容量", "部署规模", "AI 需求"]},
+      "mechanisms": {"en": ["capacity expansion", "cloud deployment", "server rollout", "demand conversion"], "zh": ["容量扩张", "云端部署", "服务器上线", "需求转化"]}
+    },
+    "supply_chain_capacity_and_counterevidence": {
+      "document_types": {"en": ["supplier earnings call", "capacity update", "technology symposium"], "zh": ["供应商业绩会", "产能更新", "技术论坛"]},
+      "metrics": {"en": ["capacity", "utilization", "lead time", "capital expenditure"], "zh": ["产能", "利用率", "交付周期", "资本开支"]},
+      "mechanisms": {"en": ["supply ramp", "yield", "advanced packaging", "memory availability"], "zh": ["供给爬坡", "良率", "先进封装", "存储可得性"]}
+    }
+  },
+  "case_facets": {
+    "DELL": {"en": ["PowerEdge XE9680", "AI server backlog", "Infrastructure Solutions Group"], "zh": ["PowerEdge XE9680", "AI 服务器积压订单", "基础设施解决方案集团"]},
+    "MU": {"en": ["HBM3E", "HBM4", "DRAM", "NAND"], "zh": ["HBM3E", "HBM4", "DRAM", "NAND"]},
+    "NVDA": {"en": ["Blackwell", "GB200", "data center compute", "Spectrum-X"], "zh": ["Blackwell", "GB200", "数据中心计算", "Spectrum-X"]}
+  },
+  "owner_facets": {
+    "DELL": {"en": ["AI server orders", "server backlog", "enterprise deployment"], "zh": ["AI 服务器订单", "服务器积压订单", "企业部署"]},
+    "MU": {"en": ["HBM output", "memory capacity", "HBM sold-out status"], "zh": ["HBM 产出", "存储产能", "HBM 售罄状态"]},
+    "NVDA": {"en": ["Blackwell production ramp", "GPU supply", "platform shipments"], "zh": ["Blackwell 量产爬坡", "GPU 供给", "平台出货"]},
+    "MSFT": {"en": ["Azure AI infrastructure", "data-center capital expenditure", "cloud capacity"], "zh": ["Azure AI 基础设施", "数据中心资本开支", "云容量"]},
+    "TSMC": {"en": ["CoWoS capacity", "advanced packaging", "wafer capacity"], "zh": ["CoWoS 产能", "先进封装", "晶圆产能"]}
+  },
+  "model_atom_contract": {
+    "optional": true,
+    "called_during_this_scope": false,
+    "allowed_kinds": ["metric", "product", "mechanism", "synonym"],
+    "maximum_characters_per_atom": 64,
+    "model_may_supply_identity_period_relationship_domain_filter_or_url": false,
+    "atoms_are_untrusted_until_local_validation": true
+  },
+  "forbidden_expansions": [
+    "gold_target_or_evidence_identifier",
+    "benchmark_or_expected_answer_locator",
+    "cross_case_subject_replacement",
+    "wrong_evidence_owner",
+    "nested_customer_or_supplier_of_evidence_owner",
+    "future_period_or_as_of",
+    "provider_reported_date_as_financial_authority",
+    "model_supplied_domain_or_route_override",
+    "candidate_generation_from_hidden_qrels"
+  ],
+  "zero_call_boundary": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "evidence_promotion": 0,
+    "retrieval": 0,
+    "embedding": 0,
+    "rerank": 0
+  }
+}

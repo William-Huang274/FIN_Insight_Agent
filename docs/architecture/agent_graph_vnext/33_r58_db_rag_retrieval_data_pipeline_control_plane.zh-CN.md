@@ -583,7 +583,7 @@ ReferenceChangeLedger
 | --- | --- | --- | --- | --- |
 | `R58-D01-retrieval-intent-taxonomy` | 定义 retrieval intent schema 和 classifier contract | done | S3、P14 | 代表性 intent 集合已建；新增 intent 必须版本化。 |
 | `R58-D02-route-policy-matrix` | 定义 DB / graph / BM25 / ObjectBM25 / Milvus / web route 顺序和 budget | done | S3、P14 | 路由合同可用；仍需按 failure/gold 扩展 route quota。 |
-| `R58-D03-query-rewrite-facet-plan` | 生成 exact / lexical / semantic / graph facet queries | partial / FIN 0.1.3 S1 registered repair | S3、P14、S1-08 SearchIntent | 外源 SearchIntent 已覆盖 owner/direction/period；内源 BM25/dense/graph 仍常复用 raw query。先做统一 facet compiler 与三路对照，再接内源 route。 |
+| `R58-D03-query-rewrite-facet-plan` | 生成 exact / lexical / semantic / graph facet queries | compiler zero-call implemented / route integration pending | S3、P14、S1-08 Query Facet | 60 route intent 已合并为 36 个共享 facet plan，覆盖 exact/lexical/semantic/graph/negative/filter；尚未完成三路效果对照、external live 或 internal adapter 接线。 |
 | `R58-D04-hybrid-recall-rerank-policy` | candidate generation、fusion/rerank、role/source quota | upstream-blocked / not admitted | S3、P14、FIN 0.1.3 S1 progression plan | selected/dropped ledger 有，但外源与内源 candidate ceiling 尚未按统一 facet/qrels 通过；BGE/fusion/rerank 不得先调优。 |
 | `R58-D05-retrieval-execution-ledger` | 记录 candidate、rerank、selected、dropped、latency、target-in-candidates | done | S3、P14 | 后续 full-chain 必须消费该 ledger。 |
 | `R58-D06-retrieval-eval-qrels` | retrieval qrels / gold refs / negative cases | partial / expansion registered | S3、P16、DELL/MU/NVDA S1-08 matrix | 初始 qrels 偏小；需补 entity/period/relationship/source-role hard negatives，并分别测 external target-in-pool 与 internal route contribution。 |
@@ -595,6 +595,8 @@ ReferenceChangeLedger
 | `R58-D12-release-gate` | retrieval/data-pipeline release gate | partial | P14、P16、P21 | scope gates 通过；P21 仍阻断 broad full-chain 质量结论。 |
 | `R58-D13-reference-source-ledger` | 外部参考源台账和变更台账 | done | P16 | 新增/删除/降级仍必须留痕。 |
 | `R58-D14-reference-adoption-performance-gate` | reference adoption performance profile | done | P16 | 每次采用新参考设计后都要回填项目内表现。 |
+
+FIN 0.1.3 当前实现补充：Query Facet compiler 以 evidence owner 自身披露为首要查询主体，并保留 subject、period、relationship direction、source family、date upper bound 和 no-relaxed-fallback filters。模型只可添加受控 metric／product／mechanism／synonym atoms；atom 会形成额外 lexical／semantic query，但不能改写 filters。当前 proof 为 `36 plan / 60 intent / 72 exact / 72 lexical / 36 semantic / 36 graph`，0 retrieval／embedding／rerank；因此 D03 的 compiler 已实现，D04 仍保持 upstream-blocked。
 
 ## 17. Acceptance Gates
 

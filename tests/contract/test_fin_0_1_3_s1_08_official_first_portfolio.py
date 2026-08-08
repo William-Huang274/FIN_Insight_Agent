@@ -356,16 +356,16 @@ def test_external_then_internal_query_facet_and_rerank_sequence_is_durable() -> 
     assert not any(plan["calls_authorized_by_this_plan"].values())
 
 
-def test_current_project_os_scope_allows_only_the_query_facet_successor() -> None:
+def test_completed_official_first_scopes_are_no_longer_current() -> None:
     completed = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
     assert completed["status"] == "blocked"
     assert completed["contract_errors"] == []
     clean_proof = run_project_os_preflight(ROOT, run_scope=CLEAN_PROOF_SCOPE)
     assert clean_proof["status"] == "blocked"
     assert clean_proof["contract_errors"] == []
-    successor = run_project_os_preflight(ROOT, run_scope=QUERY_FACET_SCOPE)
-    assert successor["status"] == "pass"
-    assert successor["contract_errors"] == []
+    query_facet = run_project_os_preflight(ROOT, run_scope=QUERY_FACET_SCOPE)
+    assert query_facet["status"] == "blocked"
+    assert query_facet["contract_errors"] == []
 
 
 def test_route_plan_digest_mutation_is_rejected(compiled: tuple[dict, dict]) -> None:

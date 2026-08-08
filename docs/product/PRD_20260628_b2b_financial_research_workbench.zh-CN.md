@@ -1360,6 +1360,12 @@ Agentic Research 的 S3 准入必须消费上述 Search Quality Card。搜索层
 
 机器可读顺序见 `configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_0.json`。该登记防止内源检索、BGE 和 rerank 在外源工作结束后因上下文压缩丢失，但不把它们提前塞进当前 external combined live。
 
+#### 7.7.3 Query Facet v1 当前实现状态（2026-08-08）
+
+统一 compiler 已完成零调用工程实现：60 个外源 route intent 被合并为 36 个 `case × Evidence Slot × evidence owner × language` 计划，保留 60/60 lineage；每个计划同时给出 official/open-web、internal exact-object、BM25、dense 与 graph 的查询面，但所有 route 仍为 `execution_admitted=false`。关系型查询必须以 evidence owner 自身披露为中心，subject 产品只作连接条件；模型原子只可增加经本地验证的 metric／product／mechanism／synonym query，不得改写身份、期间、关系、来源或预算。
+
+该状态只证明 query contract 可执行和可审计。真实 target-in-pool、日期准确性、来源多样性、成本／延迟、内部 qrels、BGE／rerank 增益和下游研究利用仍未成立；下一项是三路同口径对照，不直接宣称检索质量改善。
+
 ### 7.8 Agentic Research Harness 工程控制面（2026-07-09 追加）
 
 在 `Agentic Search / Agentic Research` 之上，FIN 需要一个统一的 `Agentic Research Harness`。它不是另一个 agent，也不是把所有节点改成更长 prompt；它是运行时控制面，负责把工具、上下文、权限、状态、trace、评测和自我迭代统一成可审计系统。

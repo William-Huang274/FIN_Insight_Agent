@@ -1001,4 +1001,39 @@ customer/supply slot 应按 evidence owner 做受预算约束的 fan-out；每�
 
 Evaluator 同时拆分 `exact_locator_match` 与 `typed_source_equivalent_match`。后者只接受可审计身份：SEC accession、官方 canonical locator、已验证 redirect/canonical tag 或 byte/content identity。相同公司、相同季度、相同事件但内容不同的 press release、prepared remarks、transcript 和 filing 不自动等价。该规则用于减少 URL alias 假阴性，不能放宽 Gold target 或把近似资料伪装成目标资料。
 
-当前下一项固定为 `S1_08_PROVIDER_NEUTRAL_RELATIONSHIP_AWARE_SEARCH_INTENT_COMPILER_AND_SOURCE_EQUIVALENCE_EVALUATOR_ZERO_CALL_IMPLEMENTATION`。它只修改 query/evaluator deterministic contract，并以三案 fake/mutation 验证；network/model/Provider/Evidence promotion 均为 0。通过后才可签发 Firecrawl 完整 comparator；不得在修复前继续横测多家付费 Provider，也不得由 reranker 从 0 target candidate 中“救回”。
+当前下一项固定为 `S1_08_PROVIDER_NEUTRAL_RELATIONSHIP_AWARE_SEARCH_INTENT_COMPILER_AND_SOURCE_EQUIVALENCE_EVALUATOR_ZERO_CALL_IMPLEMENTATION`。它只修改 query/evaluator deterministic contract，并以三案 fake/mutation 验证；network/model/Provider/Evidence promotion 均为 0。通过后才可签发新的 Provider comparator；不得在修复前继续横测多家付费 Provider，也不得由 reranker 从 0 target candidate 中“救回”。本段的 implementation-pending 状态由 20.20 supersede。
+
+### 20.20 Relationship-aware SearchIntent v1 零调用实现与国内 Provider 优先顺序（2026-08-08）
+
+`fin_0_1_3.S1_08.relationship_aware_search_intent_and_source_equivalence:v1` 已以独立 successor 形式实现，没有修改历史 v1–v3 source catalog、Tencent 24-query plan 或已消费 Attempt。Runtime 从 v3 catalog 的 subject、entity role、alias、official landing、Evidence Slot 与 as-of，加上 case-scoped temporal profile，生成下列 closed object：
+
+```text
+SearchIntent =
+  case + evidence_slot
+  + subject_entity + subject_aliases
+  + evidence_owner_entity + evidence_owner_aliases + owner_role
+  + claim_direction
+  + owner_period_terms + as_of
+  + source_families
+  + language
+  + route_class + preferred_domains
+  + research_objective_digest
+  + provider_visible_query_text
+```
+
+customer/supply 不再把多个 owner 拼成一条 query。当前三案按 v3 role catalog 展开后，每案官方精确路线 12 条、语义开放网路线 8 条；合计 `36 precise_official_domain + 24 semantic_open_web = 60`。这不是擅自扩大调用预算：两个 lane 是两个独立的 query plan，当前 Provider/network authority 均为 0。旧 `3 case × 4 slot × 2 language=24` 只保留为 Tencent immutable historical contract；future comparator 若强行维持 24，就必然丢掉 counterpart fan-out，因此不得复用为 successor。
+
+provider-visible query 不复制整段 research objective，也不泄漏 Gold URL、source ID 或 target ID。它只使用一个 owner、最多两个查询别名、owner reporting period、经济方向、slot 关键词、来源提示、subject research context 和 as-of。60 条 query 全部唯一，字符数 `76–268`，平均 `163.4`，上限 300。跨实体 query 使用 `evidence_owner_own_*` 方向，例如 Microsoft 只代表微软自身 capex/deployment disclosure，Dell 仅为 research context；不得据此推断微软是 Dell 客户或建立未经证据验证的商业边。
+
+Source equivalence 与 query compiler 物理分离，只能在 raw capture/fetch 后运行。`exact_locator_match` 单列；`typed_source_equivalent_match` 只允许：
+
+1. 相同 SEC accession；
+2. capture 验证过的 canonical locator；
+3. capture 验证过的 redirect final locator；
+4. 双方已验证的内容 SHA-256 identity。
+
+上述匹配还必须同时满足 case、evidence owner、source family、document kind、published date 与 authority。相同公司／季度／事件但 press release、prepared remarks、transcript、filing 不同，必须 `no_match`。Provider date 继续只是 telemetry，不能因为 source-equivalent 就自动取得金融日期权威。
+
+三案 full-fake 使用 36 个 official reference，证明 `12 exact + 24 typed-equivalent + 0 no-match`；cross-case、wrong-direction、future date、alias collision、budget mismatch、permutation、unverified canonical、same-event different-document 与 wrong-owner mutation 均 fail closed。新增测试与既有 S1-08 全组为 `13 passed / 169 passed`，Project OS scoped preflight pass；network/provider/model/document/Evidence=`0/0/0/0/0`。
+
+采购与运营便利现在正式进入 `ProviderCapabilityProfile`，但不渗入核心 SearchIntent：人民币结算、微信／支付宝／网银充值、发票、国内账号治理、凭据轮换、延迟和支持渠道可影响候选顺序，不能改变 Evidence Gate。下一项为 `S1_08_DOMESTIC_FIRST_PROVIDER_INPUT_QUALIFICATION_AND_RELATIONSHIP_AWARE_COMPARATOR_SCOPE_DECISION`：优先审查 Tencent SearchPro successor 与百度千帆独立 Web Search 的 raw locator/schema/过滤/成本能力；阿里百炼等 model-attached search 单列 synthesized/tool lane；火山引擎在拿到 standalone raw schema 前不计能力。Firecrawl 保留免费控制，Exa 只作可选国际 semantic benchmark。该决策不复用聊天暴露的旧 Key，也不自动授权 comparator live、SourceHunter integration、ranking 或 S3。

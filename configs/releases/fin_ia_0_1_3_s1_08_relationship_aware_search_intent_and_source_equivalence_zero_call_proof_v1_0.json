@@ -1,0 +1,249 @@
+{
+  "bounded_query_plan_digest": "3905d299e5306d15389d36b4a2fee02d3032b7e43951e881a35873acf2c6351c",
+  "case_route_counts": {
+    "DELL": {
+      "precise_official_domain": 12,
+      "semantic_open_web": 8
+    },
+    "MU": {
+      "precise_official_domain": 12,
+      "semantic_open_web": 8
+    },
+    "NVDA": {
+      "precise_official_domain": 12,
+      "semantic_open_web": 8
+    }
+  },
+  "contract_ref": "fin_0_1_3.S1_08.relationship_aware_search_intent_and_source_equivalence:v1",
+  "decision": {
+    "fixed_24_query_successor": "rejected_because_counterpart_fanout_would_be_lost",
+    "historical_tencent_24_query_contract": "immutable_not_rewritten",
+    "next": "S1_08_DOMESTIC_FIRST_PROVIDER_INPUT_QUALIFICATION_AND_RELATIONSHIP_AWARE_COMPARATOR_SCOPE_DECISION",
+    "provider_comparator": "pending_separate_authority",
+    "ranking_or_reranker": "not_admitted",
+    "search_intent_compiler": "engineering_pass",
+    "sourcehunter_production_integration": "not_authorized",
+    "typed_source_equivalence_evaluator": "engineering_pass"
+  },
+  "full_fake_cases": [
+    "DELL",
+    "MU",
+    "NVDA"
+  ],
+  "full_fake_external_slot_count": 4,
+  "known_boundary": "The proof establishes deterministic relationship-aware intent compilation, separate official and semantic budgets, and strict source identity matching. It does not prove any provider's live candidate recall, date accuracy, cost, latency, document quality, Evidence promotion, Agentic Research or report quality.",
+  "mutation_coverage": [
+    "cross-case subject",
+    "wrong relationship direction",
+    "future as-of and future publication date",
+    "localized alias collision",
+    "fan-out budget mismatch",
+    "catalog and objective permutation",
+    "unverified canonical locator",
+    "same-event different-document false equivalence",
+    "wrong evidence owner identity",
+    "SEC accession normalization",
+    "verified redirect",
+    "verified content identity"
+  ],
+  "observed_calls": {
+    "document_fetch": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0
+  },
+  "policy_digest": "cd378d3b08fe6e6901d73d95a7adaf37d94b0fdd183c9942367b6fef5fdb4c5f",
+  "proof_digest": "ce7fe7f6cacb080b9020f311e1b7d382c11b1011ed0930f03faa491050c5c9f4",
+  "query_plan_counts": {
+    "combined": 60,
+    "precise_official_domain": 36,
+    "semantic_open_web": 24
+  },
+  "query_text_quality": {
+    "full_research_objective_copied_into_query": false,
+    "maximum_allowed_characters": 300,
+    "maximum_characters": 268,
+    "mean_characters": 163.45,
+    "minimum_characters": 76,
+    "one_evidence_owner_per_intent": true,
+    "unique_queries": 60
+  },
+  "research_objective_digests": {
+    "DELL": "de91d435db02b0ac8ca808a58d489ba31d2cf536e1db56139dc3564c1d1f7d64",
+    "MU": "37a9b20e563ef2e21b9bba3a6c5b35ed35b3e2a82bdc0049de590a077d5cff15",
+    "NVDA": "4cebccbe1982f2acfddea3da53835a6e022f77f09b6ca2418663bbc2fc7dcf9e"
+  },
+  "sample_intents": [
+    {
+      "as_of_date": "2026-08-06",
+      "budget_group": "customer_demand",
+      "case_key": "DELL",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "evidence_owner_aliases": [
+        "Microsoft",
+        "Azure",
+        "MSFT",
+        "Microsoft Corporation"
+      ],
+      "evidence_owner_entity_key": "MSFT",
+      "evidence_owner_role": "cloud_operator",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "intent_digest": "ae244fe59d2157fcf16769b4c7b0af27f0f2c9ef75055bf07b4b3d7a63b6c992",
+      "intent_id": "search_intent::DELL::customer_demand_and_deployment_validation::MSFT::en::precise_official_domain",
+      "language": "en",
+      "period_terms": [
+        "Q3 FY2026",
+        "FY2026"
+      ],
+      "preferred_domains": [
+        "data.sec.gov",
+        "www.microsoft.com"
+      ],
+      "query_text": "Microsoft Azure Q3 FY2026 FY2026 own AI infrastructure demand AI infrastructure capital expenditure capacity deployment demand earnings investor relations official Dell Technologies DELL research context through 2026-08-06",
+      "research_objective_digest": "de91d435db02b0ac8ca808a58d489ba31d2cf536e1db56139dc3564c1d1f7d64",
+      "route_class": "precise_official_domain",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "subject_aliases": [
+        "Dell Technologies",
+        "Dell",
+        "Dell Technologies Inc."
+      ],
+      "subject_entity_key": "DELL"
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "budget_group": "customer_demand",
+      "case_key": "MU",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "evidence_owner_aliases": [
+        "戴尔科技",
+        "戴尔",
+        "DELL",
+        "Dell Technologies Inc."
+      ],
+      "evidence_owner_entity_key": "DELL",
+      "evidence_owner_role": "infrastructure_integrator",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "intent_digest": "03c432e9d49742d0274cc015a1792aca878d0e966677e0b629f2322548d947e9",
+      "intent_id": "search_intent::MU::customer_demand_and_deployment_validation::DELL::zh::semantic_open_web",
+      "language": "zh",
+      "period_terms": [
+        "2027财年第一季度",
+        "2026财年"
+      ],
+      "preferred_domains": [
+        "data.sec.gov",
+        "investors.delltechnologies.com"
+      ],
+      "query_text": "戴尔科技 戴尔 2027财年第一季度 2026财年 自身AI基础设施需求 AI 基础设施 资本开支 容量 部署 需求 业绩披露 投资者关系 行业证据 反向证据 美光科技 MU 研究关联背景 截至 2026-08-06",
+      "research_objective_digest": "37a9b20e563ef2e21b9bba3a6c5b35ed35b3e2a82bdc0049de590a077d5cff15",
+      "route_class": "semantic_open_web",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "subject_aliases": [
+        "美光科技",
+        "美光",
+        "MU",
+        "Micron Technology, Inc."
+      ],
+      "subject_entity_key": "MU"
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "budget_group": "issuer_and_regulatory_shared",
+      "case_key": "NVDA",
+      "claim_direction": "subject_self_disclosure",
+      "evidence_owner_aliases": [
+        "NVIDIA",
+        "NVDA",
+        "NVIDIA Corporation"
+      ],
+      "evidence_owner_entity_key": "NVDA",
+      "evidence_owner_role": "subject",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "intent_digest": "db6d48a9a9f81583a1601cf68f95f6418c0c1b81ac4e0764d75328537a3c2ff7",
+      "intent_id": "search_intent::NVDA::issuer_results_and_management_commentary::NVDA::en::precise_official_domain",
+      "language": "en",
+      "period_terms": [
+        "Q1 FY2027",
+        "FY2027"
+      ],
+      "preferred_domains": [
+        "data.sec.gov",
+        "investor.nvidia.com"
+      ],
+      "query_text": "NVIDIA NVDA Q1 FY2027 FY2027 own financial disclosure financial results earnings call prepared remarks earnings investor relations official through 2026-08-06",
+      "research_objective_digest": "4cebccbe1982f2acfddea3da53835a6e022f77f09b6ca2418663bbc2fc7dcf9e",
+      "route_class": "precise_official_domain",
+      "source_families": [
+        "issuer_ir_document",
+        "regulatory_filing"
+      ],
+      "subject_aliases": [
+        "NVIDIA",
+        "NVDA",
+        "NVIDIA Corporation"
+      ],
+      "subject_entity_key": "NVDA"
+    },
+    {
+      "as_of_date": "2026-08-06",
+      "budget_group": "supply_and_counterevidence",
+      "case_key": "NVDA",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "evidence_owner_aliases": [
+        "台积电",
+        "TSMC",
+        "Taiwan Semiconductor Manufacturing Company Limited"
+      ],
+      "evidence_owner_entity_key": "TSMC",
+      "evidence_owner_role": "foundry",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "intent_digest": "073e1566212e52761050c9a7b2de987509f3de31513d6b82f0c90b6aa669a3e5",
+      "intent_id": "search_intent::NVDA::supply_chain_capacity_and_counterevidence::TSMC::zh::precise_official_domain",
+      "language": "zh",
+      "period_terms": [
+        "2026年第二季度",
+        "2026年"
+      ],
+      "preferred_domains": [
+        "data.sec.gov",
+        "investor.tsmc.com"
+      ],
+      "query_text": "台积电 TSMC 2026年第二季度 2026年 自身供给产能与约束 产能 供应约束 扩产 先进封装 存储 晶圆代工 业绩披露 投资者关系 官方 英伟达 NVDA 研究关联背景 截至 2026-08-06",
+      "research_objective_digest": "4cebccbe1982f2acfddea3da53835a6e022f77f09b6ca2418663bbc2fc7dcf9e",
+      "route_class": "precise_official_domain",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "subject_aliases": [
+        "英伟达",
+        "NVIDIA",
+        "NVDA",
+        "NVIDIA Corporation"
+      ],
+      "subject_entity_key": "NVDA"
+    }
+  ],
+  "schema_version": "fin_ia_0_1_3_s1_08_relationship_aware_search_intent_and_source_equivalence_zero_call_proof_v1_0",
+  "source_catalog_digest": "0f95217bbc7ecc7aa7cbe92a086169d8ac38cdacfe5f288d787028ae628a5c2a",
+  "source_equivalence_evaluation_digest": "9a1beaf7c7653b78ff02e1805e167991ec62488ef20c57595305cc5e61d5c9f4",
+  "source_equivalence_summary": {
+    "candidate_count": 36,
+    "exact_locator_matches": 12,
+    "no_matches": 0,
+    "reference_count": 36,
+    "typed_source_equivalent_matches": 24
+  },
+  "status": "zero_call_engineering_pass_live_provider_unproven"
+}

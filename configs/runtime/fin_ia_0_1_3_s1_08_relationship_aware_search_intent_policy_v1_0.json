@@ -1,0 +1,185 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_relationship_aware_search_intent_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.relationship_aware_search_intent_and_source_equivalence:v1",
+  "source_catalog_schema_version": "fin_ia_0_1_3_s1_08_current_source_catalog_relationship_budget_policy_v3_0",
+  "source_catalog_contract_ref": "fin_0_1_3.S1_08.current_source_catalog_relationship_budget_candidate_generation:v3",
+  "as_of_date": "2026-08-06",
+  "cases": ["DELL", "MU", "NVDA"],
+  "languages": ["en", "zh"],
+  "external_evidence_slots": [
+    "issuer_results_and_management_commentary",
+    "regulatory_risk_and_financial_reconciliation",
+    "customer_demand_and_deployment_validation",
+    "supply_chain_capacity_and_counterevidence"
+  ],
+  "route_classes": {
+    "precise_official_domain": {
+      "route_class": "precise_official_domain",
+      "domain_mode": "evidence_owner_official",
+      "query_terms": {
+        "en": ["official"],
+        "zh": ["官方"]
+      }
+    },
+    "semantic_open_web": {
+      "route_class": "semantic_open_web",
+      "domain_mode": "none",
+      "query_terms": {
+        "en": ["industry evidence", "counterevidence"],
+        "zh": ["行业证据", "反向证据"]
+      }
+    }
+  },
+  "slot_contracts": {
+    "issuer_results_and_management_commentary": {
+      "slot_id": "issuer_results_and_management_commentary",
+      "claim_direction": "subject_self_disclosure",
+      "allowed_source_owner_roles": ["subject"],
+      "source_families": ["issuer_ir_document", "regulatory_filing"],
+      "route_classes": ["precise_official_domain"],
+      "query_terms": {
+        "en": ["financial results", "earnings call", "prepared remarks"],
+        "zh": ["财务业绩", "业绩会", "管理层准备稿"]
+      }
+    },
+    "regulatory_risk_and_financial_reconciliation": {
+      "slot_id": "regulatory_risk_and_financial_reconciliation",
+      "claim_direction": "subject_self_disclosure",
+      "allowed_source_owner_roles": ["subject"],
+      "source_families": ["regulatory_filing", "issuer_ir_document"],
+      "route_classes": ["precise_official_domain"],
+      "query_terms": {
+        "en": ["10-K", "10-Q", "20-F", "6-K", "risk factors", "cash flow"],
+        "zh": ["10-K", "10-Q", "20-F", "6-K", "风险因素", "现金流"]
+      }
+    },
+    "customer_demand_and_deployment_validation": {
+      "slot_id": "customer_demand_and_deployment_validation",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "allowed_source_owner_roles": ["cloud_operator", "infrastructure_integrator"],
+      "source_families": ["issuer_ir_document", "customer_official_disclosure", "regulatory_filing"],
+      "route_classes": ["precise_official_domain", "semantic_open_web"],
+      "query_terms": {
+        "en": ["AI infrastructure", "capital expenditure", "capacity", "deployment", "demand"],
+        "zh": ["AI 基础设施", "资本开支", "容量", "部署", "需求"]
+      }
+    },
+    "supply_chain_capacity_and_counterevidence": {
+      "slot_id": "supply_chain_capacity_and_counterevidence",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "allowed_source_owner_roles": ["memory_supplier", "foundry", "compute_platform"],
+      "source_families": ["issuer_ir_document", "customer_official_disclosure", "regulatory_filing"],
+      "route_classes": ["precise_official_domain", "semantic_open_web"],
+      "query_terms": {
+        "en": ["capacity", "supply constraint", "expansion", "advanced packaging", "memory", "foundry"],
+        "zh": ["产能", "供应约束", "扩产", "先进封装", "存储", "晶圆代工"]
+      }
+    }
+  },
+  "claim_direction_terms": {
+    "subject_self_disclosure": {
+      "en": ["own financial disclosure"],
+      "zh": ["自身财务披露"]
+    },
+    "evidence_owner_own_infrastructure_demand": {
+      "en": ["own AI infrastructure demand"],
+      "zh": ["自身AI基础设施需求"]
+    },
+    "evidence_owner_own_supply_capacity_or_constraint": {
+      "en": ["own supply capacity and constraint"],
+      "zh": ["自身供给产能与约束"]
+    }
+  },
+  "source_family_terms": {
+    "en": ["earnings", "investor relations"],
+    "zh": ["业绩披露", "投资者关系"]
+  },
+  "entity_search_profiles": {
+    "DELL": {
+      "localized_aliases": {
+        "en": ["Dell Technologies", "Dell"],
+        "zh": ["戴尔科技", "戴尔"]
+      },
+      "period_terms": {
+        "en": ["Q1 FY2027", "FY2026"],
+        "zh": ["2027财年第一季度", "2026财年"]
+      }
+    },
+    "MU": {
+      "localized_aliases": {
+        "en": ["Micron Technology", "Micron"],
+        "zh": ["美光科技", "美光"]
+      },
+      "period_terms": {
+        "en": ["Q3 FY2026", "FY2026"],
+        "zh": ["2026财年第三季度", "2026财年"]
+      }
+    },
+    "NVDA": {
+      "localized_aliases": {
+        "en": ["NVIDIA"],
+        "zh": ["英伟达", "NVIDIA"]
+      },
+      "period_terms": {
+        "en": ["Q1 FY2027", "FY2027"],
+        "zh": ["2027财年第一季度", "2027财年"]
+      }
+    },
+    "MSFT": {
+      "localized_aliases": {
+        "en": ["Microsoft", "Azure"],
+        "zh": ["微软", "Azure"]
+      },
+      "period_terms": {
+        "en": ["Q3 FY2026", "FY2026"],
+        "zh": ["2026财年第三季度", "2026财年"]
+      }
+    },
+    "TSMC": {
+      "localized_aliases": {
+        "en": ["TSMC", "Taiwan Semiconductor"],
+        "zh": ["台积电", "TSMC"]
+      },
+      "period_terms": {
+        "en": ["Q2 2026", "2026"],
+        "zh": ["2026年第二季度", "2026年"]
+      }
+    }
+  },
+  "query_plan_budgets": {
+    "precise_official_domain_query_ceiling": 36,
+    "semantic_open_web_query_ceiling": 24,
+    "combined_zero_call_intent_ceiling": 60,
+    "result_ceiling_per_query": 10,
+    "identical_retry_allowed": false,
+    "provider_calls_during_compiler_proof": 0,
+    "model_calls_during_compiler_proof": 0
+  },
+  "source_equivalence_contract": {
+    "allowed_bases": [
+      "exact_locator",
+      "sec_accession",
+      "verified_canonical_locator",
+      "verified_redirect_final_locator",
+      "verified_content_identity"
+    ],
+    "required_identity_fields": [
+      "case_key",
+      "evidence_owner_entity_key",
+      "source_family",
+      "document_kind",
+      "published_on",
+      "authority"
+    ],
+    "same_event_or_period_alone_is_equivalent": false,
+    "provider_date_is_financial_date_authority": false
+  },
+  "capability_boundary": {
+    "classification": "zero_call_compiler_and_evaluator_contract",
+    "provider_calls_authorized": 0,
+    "model_calls_authorized": 0,
+    "document_fetches_authorized": 0,
+    "evidence_promotions_authorized": 0,
+    "sourcehunter_production_integration_authorized": false
+  }
+}

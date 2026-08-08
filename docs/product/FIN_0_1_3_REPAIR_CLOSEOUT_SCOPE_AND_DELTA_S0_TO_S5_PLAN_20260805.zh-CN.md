@@ -434,6 +434,17 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 
 本再基线不创建 FIN 0.1.4，也不改变 FIN 0.2 定义。问题留在 FIN 0.1.3 的最早 owner `S1-08`，但 no-R4 规则要求先做产品级 P3，而不是自动继续现场维修。
 
+## 7E. 查询编译器完成后的 S1-08 再基线（2026-08-08）
+
+本节 supersede 7B.4 的旧 SearXNG current-next、7D 的“直接等待下一付费 API”和 worklog 740 中“修复后仍跑 Firecrawl 24-query”三项计划。新证据证明 Provider 对照不能继续复用 24 条 subject＋generic-slot 查询，否则 customer/supply 的 evidence owner fan-out 会再次丢失。
+
+1. [x] `S1_08_PROVIDER_NEUTRAL_RELATIONSHIP_AWARE_SEARCH_INTENT_COMPILER_AND_SOURCE_EQUIVALENCE_EVALUATOR_ZERO_CALL_IMPLEMENTATION`：已编译 `36` 条官方精确路线和 `24` 条语义开放网路线；三案每条 customer/supply intent 只绑定一个 owner，研究主体仅作 context，不生成未经验证的客户／供应商断言。typed source-equivalence 只接受 exact locator、SEC accession、verified canonical/redirect 或 verified content identity。三案 full-fake/mutation=`13 passed`，S1-08 全组=`169 passed`，外部调用为 0。
+2. [ ] **当前下一项 `S1_08_DOMESTIC_FIRST_PROVIDER_INPUT_QUALIFICATION_AND_RELATIONSHIP_AWARE_COMPARATOR_SCOPE_DECISION`**：零调用核对国内候选的 standalone raw search 形态、认证、字段、domain/date/filter、分页、限流、人民币成本、充值／发票和凭据治理；优先 Tencent 新 successor 与百度千帆，阿里／火山只有在能力形态满足时进入对应 lane。Firecrawl 是免费控制，Exa 是可选国际 semantic benchmark，不作为主线采购前提。
+3. [ ] comparator 设计不得把 60 条意图自动全部变成一次 live。`precise_official_domain=36` 与 `semantic_open_web=24` 分别给出 ceiling、成本、Provider capability degradation 和 stop rule；Owner 看见资格审查后才决定签发哪一 lane、哪一家 Provider。旧 Tencent 24-query result 保持 immutable，不能改名重跑。
+4. [ ] 只有新的 locator comparator 在 Gold-blind、capture-first 下达到 target-in-pool、日期可核验、来源多样性、成本和延迟门，才进入独立 SourceHunter adapter integration。通过前 ranking/reranker、MU/NVDA transfer、Experiment B、S3/S4/S5 仍 blocked。
+
+本次没有把支付便利写成核心搜索逻辑。它属于 Provider procurement/operation profile：国内充值、人民币结算、发票和支持便利可以提高采用优先级，但不能降低金融证据与候选质量标准。若国内 Provider 都不能达到 candidate ceiling，再向用户提出国际 API 或 Internal Alpha source claim 调整，而不是静默改用国外服务或降低门槛。
+
 ## 8. 下一步
 
 1. [x] 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。

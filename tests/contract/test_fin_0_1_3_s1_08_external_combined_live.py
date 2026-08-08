@@ -4,6 +4,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 import json
 from pathlib import Path
+import importlib.util
 
 import pytest
 
@@ -334,3 +335,58 @@ def test_shared_ledger_rejects_duplicate_consumption(tmp_path: Path, compiled) -
     execute_external_combined(runtime_root=tmp_path / "runtime-a", **common)
     with pytest.raises(SharedAdmissionLedgerError):
         execute_external_combined(runtime_root=tmp_path / "runtime-b", **common)
+
+
+def test_authority_allows_committed_descendant_only_when_source_hashes_stay_exact(
+    monkeypatch, compiled
+) -> None:
+    _, _, plan = compiled
+    runner_path = ROOT / "scripts/releases/run_fin_ia_0_1_3_s1_08_external_combined_live.py"
+    spec = importlib.util.spec_from_file_location("external_combined_runner_test", runner_path)
+    assert spec and spec.loader
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+    monkeypatch.setattr(runner, "_git", lambda *_args: "")
+    body = {
+        "schema_version": "fin_ia_0_1_3_s1_08_external_combined_live_authority_v1_0",
+        "status": "approved_one_external_combined_exact_live",
+        "immutable_bindings": {
+            "implementation_git_commit": "a" * 40,
+            "runner_sha256": runner.sha256_file(runner_path),
+            "runtime_module_sha256": runner.sha256_file(runner.MODULE_PATH),
+            "policy_sha256": runner.sha256_file(POLICY_PATH),
+            "plan_sha256": runner.sha256_file(runner.DEFAULT_PLAN),
+            "zero_call_proof_sha256": runner.sha256_file(runner.DEFAULT_PROOF),
+            "plan_digest": plan["plan_digest"],
+        },
+        "exact_live_authority": {
+            "scope": EXACT_LIVE_SCOPE,
+            "maximum_admissions": 1,
+            "maximum_executions": 1,
+            "network_call_ceiling": 72,
+            "retry_ceiling": 0,
+            "model_call_ceiling": 0,
+            "automatic_replacement": False,
+        },
+    }
+    authority = {**body, "authority_digest": canonical_digest(body)}
+    runner._validate_authority(
+        authority=authority,
+        execution_commit="b" * 40,
+        policy_path=POLICY_PATH,
+        plan_path=runner.DEFAULT_PLAN,
+        proof_path=runner.DEFAULT_PROOF,
+    )
+    mutated = deepcopy(authority)
+    mutated["immutable_bindings"]["runner_sha256"] = "0" * 64
+    mutated_body = dict(mutated)
+    mutated_body.pop("authority_digest")
+    mutated["authority_digest"] = canonical_digest(mutated_body)
+    with pytest.raises(runner.ExternalCombinedRunnerError):
+        runner._validate_authority(
+            authority=mutated,
+            execution_commit="b" * 40,
+            policy_path=POLICY_PATH,
+            plan_path=runner.DEFAULT_PLAN,
+            proof_path=runner.DEFAULT_PROOF,
+        )

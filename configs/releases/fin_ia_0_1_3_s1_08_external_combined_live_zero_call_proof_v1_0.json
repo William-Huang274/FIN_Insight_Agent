@@ -33,7 +33,7 @@
   "plan_digest": "7497f783032b80054763ec9075a2851745bb855475094bba48f504ea10d9d39b",
   "plan_sha256": "2f179b20288e311b7f4817f59b5ef431cacbc3bbae9aa0814ff5defcc29f2a6c",
   "policy_sha256": "ec61816bccfaf1a649a92485f954ff6a61f1dc53d9a4cfbd6e3558710e384f49",
-  "proof_digest": "fceff700ca5d34709a26ec2a38f29080f09edc00f38bfec73c421f0e754876c7",
+  "proof_digest": "39bb8cb42512f856ef2f792096cf20ecc27617b6697249ff9908e01f77580007",
   "run_scope": "S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE_ZERO_CALL_IMPLEMENTATION_AND_AUTHORITY_DECISION",
   "schema_version": "fin_ia_0_1_3_s1_08_external_combined_live_zero_call_proof_v1_0",
   "simulated_topology_counts": {
@@ -52,7 +52,7 @@
     "shadow_queries_terminalized": 24
   },
   "source_bindings": {
-    "exact_live_runner_sha256": "c87d143590fe647ff18e0b611d94646488678e9c9a699816bd3fdf718eb0469d",
+    "exact_live_runner_sha256": "3d70b4502c3eed45cf4a0d5207bf4763f530ad6da917a2397003dd957b991a2b",
     "materializer_sha256": "d001b6eae1fcc7daf202ffac7f9fb75263239086300cacc3ed946c8ce6b6ef65",
     "runtime_module_sha256": "84e1ce49788ea27d371371570d16895ba8bbe4009328c8b479ab99b2e8980d52"
   },

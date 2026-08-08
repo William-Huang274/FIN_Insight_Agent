@@ -140,12 +140,20 @@ def _validate_authority(
     supplied = body.pop("authority_digest", None)
     bindings = authority.get("immutable_bindings") or {}
     approval = authority.get("exact_live_authority") or {}
+    implementation_commit = str(bindings.get("implementation_git_commit") or "")
+    implementation_is_ancestor = False
+    if implementation_commit:
+        try:
+            _git("merge-base", "--is-ancestor", implementation_commit, execution_commit)
+            implementation_is_ancestor = True
+        except subprocess.CalledProcessError:
+            implementation_is_ancestor = False
     valid = (
         authority.get("schema_version")
         == "fin_ia_0_1_3_s1_08_external_combined_live_authority_v1_0"
         and authority.get("status") == "approved_one_external_combined_exact_live"
         and supplied == canonical_digest(body)
-        and bindings.get("execution_git_commit") == execution_commit
+        and implementation_is_ancestor
         and bindings.get("runner_sha256") == sha256_file(Path(__file__).resolve())
         and bindings.get("runtime_module_sha256") == sha256_file(MODULE_PATH)
         and bindings.get("policy_sha256") == sha256_file(policy_path)

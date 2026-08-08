@@ -37,10 +37,12 @@
 
 这再次说明：统一查询合同不等于把所有 route 强行变成同一种查询。共享的是 identity、period、relationship、negative expansion 和 lineage，物理查询仍必须按 route 编译。
 
+签发前还发现 authority 生命周期不能要求“实现提交等于执行 HEAD”：authority 自身提交后 HEAD 必然前进。现改为实现提交必须是执行 HEAD 的祖先，同时 runner、Runtime、policy、plan、proof 的内容 SHA 必须逐一保持不变。这样允许把 authority 纳入版本控制，但任何执行代码漂移仍会 fail closed。
+
 ## 4. 验证
 
-- 专项 full-fake/mutation：`10 passed`；
-- 全部 S1-08 contract：`272 passed`；
+- 专项 full-fake/mutation：`11 passed`；
+- 全部 S1-08 contract：`273 passed`；
 - 三案 official terminal：`3/3`；
 - Firecrawl shadow terminal：`24/24`；
 - 系统性 403：真实模拟网络调用 `1`，terminal identity `24/24`；

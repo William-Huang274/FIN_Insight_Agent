@@ -7,6 +7,16 @@ The image is pinned to the official SearXNG Linux/amd64 package digest. JSON
 output is explicitly enabled because the default SearXNG configuration only
 guarantees HTML output.
 
+The diagnostic profile keeps only Bing, Brave, DuckDuckGo, and Google. One FIN
+adapter query can therefore fan out to as many as four upstream engine
+requests. FIN can enforce the number of calls into SearXNG, but cannot prove an
+exact upstream HTTP-request count inside SearXNG. This is one reason the route
+remains diagnostic-only.
+
+The healthcheck loads only the local homepage. It must never call `/search`,
+because a search-based healthcheck would create ungoverned periodic upstream
+queries.
+
 From the repository root in PowerShell:
 
 ```powershell

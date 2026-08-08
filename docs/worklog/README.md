@@ -1,5 +1,6 @@
 # Worklog
 
+- [728 — FIN 0.1.3 S1-08 SearXNG 诊断 adapter、部署失败证据与 fan-out 边界修复](product_strategy/728_fin_0_1_3_s1_08_searxng_diagnostic_adapter_and_deployment_boundary.md)
 - [727 — FIN 0.1.3 S1-08 P3A A2 通过与 SearXNG 诊断路线重排](product_strategy/727_fin_0_1_3_s1_08_p3a_a2_pass_and_searxng_diagnostic_replan.md)
 - [726 — FIN 0.1.3 S1-08 P3A clean proof A1 输入装配失败](product_strategy/726_fin_0_1_3_s1_08_p3a_clean_proof_a1_input_assembly_failure.md)
 - [725 — FIN 0.1.3 S1-08 P3A protected fetch/cache v4 工程实现](product_strategy/725_fin_0_1_3_s1_08_p3a_protected_fetch_cache_v4_implementation.md)

@@ -15,8 +15,13 @@ if ($LASTEXITCODE -ne 0 -or -not $dockerInfo) {
 }
 
 $secretBytes = New-Object byte[] 32
-[System.Security.Cryptography.RandomNumberGenerator]::Fill($secretBytes)
-$env:SEARXNG_SECRET = [Convert]::ToHexString($secretBytes).ToLowerInvariant()
+$random = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+try {
+    $random.GetBytes($secretBytes)
+} finally {
+    $random.Dispose()
+}
+$env:SEARXNG_SECRET = [BitConverter]::ToString($secretBytes).Replace("-", "").ToLowerInvariant()
 
 try {
     docker compose -f $composePath up -d

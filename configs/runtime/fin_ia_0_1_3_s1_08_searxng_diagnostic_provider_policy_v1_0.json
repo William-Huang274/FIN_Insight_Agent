@@ -28,12 +28,25 @@
   },
   "budgets": {
     "query_call_ceiling": 3,
+    "configured_engine_ceiling_per_query": 4,
     "result_ceiling_per_query": 20,
     "byte_ceiling_per_response": 1000000,
     "timeout_seconds": 20,
     "redirect_ceiling": 2,
     "retry_ceiling": 0,
     "model_call_ceiling": 0
+  },
+  "metasearch_fanout_contract": {
+    "configured_engines": [
+      "bing",
+      "brave",
+      "duckduckgo",
+      "google"
+    ],
+    "fin_to_searxng_query_calls_exactly_enforced": true,
+    "searxng_to_upstream_http_requests_exactly_enforced": false,
+    "unresponsive_engine_lineage_required": true,
+    "healthcheck_may_invoke_search": false
   },
   "capture_contract": {
     "capture_request_before_transport": true,

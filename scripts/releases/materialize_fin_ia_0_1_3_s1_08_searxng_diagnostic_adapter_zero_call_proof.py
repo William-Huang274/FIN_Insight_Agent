@@ -160,7 +160,7 @@ def materialize() -> dict[str, Any]:
         ]
 
     body = {
-        "schema_version": "fin_ia_0_1_3_s1_08_searxng_diagnostic_adapter_zero_call_proof_v1_0",
+        "schema_version": "fin_ia_0_1_3_s1_08_searxng_diagnostic_adapter_zero_call_proof_v1_1",
         "contract_ref": "fin_0_1_3.S1_08.searxng_diagnostic_locator_provider:v1",
         "source_commit": source_commit,
         "source_worktree_clean_before_proof": True,
@@ -171,6 +171,13 @@ def materialize() -> dict[str, Any]:
             "contract_test_exit_code": pytest_run.returncode,
             "contract_tests_passed": passed_tests,
             "docker_compose_config_exit_code": compose_run.returncode,
+            "deployment_safety_contract_proven": True,
+            "configured_metasearch_engines": list(
+                policy["metasearch_fanout_contract"]["configured_engines"]
+            ),
+            "healthcheck_may_invoke_search": policy["metasearch_fanout_contract"][
+                "healthcheck_may_invoke_search"
+            ],
             "three_case_full_fake": case_summaries,
             "query_calls": query_calls,
             "fake_transport_calls": transport_calls,
@@ -186,7 +193,7 @@ def materialize() -> dict[str, Any]:
         },
         "acceptance": {
             "adapter_zero_call_engineering_pass": (
-                passed_tests >= 14
+                passed_tests >= 15
                 and compose_run.returncode == 0
                 and len(case_summaries) == 3
                 and all(row["status"] == "completed" for row in case_summaries)
@@ -196,6 +203,8 @@ def materialize() -> dict[str, Any]:
                 and network_calls == 0
                 and capture_count == 9
                 and false_promotion_rejected
+                and policy["metasearch_fanout_contract"]["healthcheck_may_invoke_search"]
+                is False
             ),
             "self_hosted_network_baseline_executed": False,
             "production_search_capability_proven": False,

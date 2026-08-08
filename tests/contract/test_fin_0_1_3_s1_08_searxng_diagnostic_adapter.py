@@ -327,3 +327,25 @@ def test_loopback_transport_and_locator_canonicalizer_fail_closed() -> None:
         )
         == "https://example.com/a?a=1&z=2"
     )
+
+
+def test_local_deployment_has_fixed_fanout_and_non_search_healthcheck() -> None:
+    compose = (ROOT / "deploy/searxng-diagnostic/docker-compose.yml").read_text(encoding="utf-8")
+    settings = (ROOT / "deploy/searxng-diagnostic/settings.yml").read_text(encoding="utf-8")
+    launcher = (ROOT / "scripts/dev/start_searxng_diagnostic.ps1").read_text(encoding="utf-8")
+    policy = load_searxng_diagnostic_policy(POLICY)
+
+    assert '"127.0.0.1:8888:8080"' in compose
+    assert "http://127.0.0.1:8080/" in compose
+    assert "/search" not in compose
+    assert "keep_only:" in settings
+    assert all(f"- {engine}" in settings for engine in ("bing", "brave", "duckduckgo", "google"))
+    assert policy["metasearch_fanout_contract"] == {
+        "configured_engines": ["bing", "brave", "duckduckgo", "google"],
+        "fin_to_searxng_query_calls_exactly_enforced": True,
+        "searxng_to_upstream_http_requests_exactly_enforced": False,
+        "unresponsive_engine_lineage_required": True,
+        "healthcheck_may_invoke_search": False,
+    }
+    assert "RandomNumberGenerator]::Fill" not in launcher
+    assert "[Convert]::ToHexString" not in launcher

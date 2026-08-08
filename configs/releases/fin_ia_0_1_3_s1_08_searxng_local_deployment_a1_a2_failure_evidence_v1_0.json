@@ -1,0 +1,44 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_searxng_local_deployment_failure_evidence_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "source_commit": "8a2c8fa6a7142f310f0042cb09c3a4a801260b9f",
+  "attempts": [
+    {
+      "attempt_id": "fin013-s1-08-searxng-local-deployment-a1",
+      "terminal_status": "failed",
+      "terminal_phase": "local_launcher_secret_generation",
+      "terminal_code": "windows_powershell_rng_static_fill_unavailable",
+      "container_started": false,
+      "adapter_query_calls": 0,
+      "formal_case_queries": 0,
+      "model_calls": 0,
+      "production_capability_claim": false,
+      "preserved": true
+    },
+    {
+      "attempt_id": "fin013-s1-08-searxng-local-deployment-a2",
+      "terminal_status": "stopped_invalid_healthcheck_boundary",
+      "terminal_phase": "local_container_healthcheck",
+      "terminal_code": "search_endpoint_used_as_healthcheck_caused_unbudgeted_upstream_fanout",
+      "container_started": true,
+      "formal_case_queries": 0,
+      "adapter_query_calls": 0,
+      "observed_minimum_health_search_invocations": 6,
+      "observed_startup_engine_initialization_requests": 1,
+      "observed_upstream_failures": [
+        "wikidata_http_403_during_engine_init",
+        "duckduckgo_captcha",
+        "brave_http_429",
+        "startpage_captcha"
+      ],
+      "container_stopped_before_formal_baseline": true,
+      "model_calls": 0,
+      "production_capability_claim": false,
+      "preserved": true
+    }
+  ],
+  "root_cause": "The first launcher used .NET APIs unavailable in Windows PowerShell. After that repair, the compose healthcheck called the search endpoint, so local liveness checks unintentionally fanned out to upstream engines. Default-engine loading also performed a Wikidata initialization request.",
+  "required_fix": "Use Windows-PowerShell-compatible random generation, probe only the local homepage, and use a keep_only engine set so the diagnostic fanout is explicit. Recreate the container and prove no healthcheck search before authorizing the three-case baseline.",
+  "known_boundary": "The A2 observations are deployment diagnostics, not a DELL, MU, or NVDA search result. They cannot be used as Evidence and do not prove or disprove SearXNG search quality."
+}

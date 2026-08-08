@@ -21,6 +21,9 @@ from sec_agent.s1_internal_qrels_successor import (  # noqa: E402
 POLICY_PATH = ROOT / (
     "configs/runtime/fin_ia_0_1_3_s1_internal_qrels_successor_policy_v1_1.json"
 )
+POLICY_V1_2_PATH = ROOT / (
+    "configs/runtime/fin_ia_0_1_3_s1_internal_qrels_successor_policy_v1_2.json"
+)
 
 
 def _inputs() -> tuple[dict, dict]:
@@ -71,5 +74,55 @@ def test_unknown_successor_candidate_fails_closed() -> None:
     with pytest.raises(
         S1InternalQrelsSuccessorError,
         match="internal_qrels_successor_selected_candidate_missing",
+    ):
+        build_internal_qrels_successor_packet(policy=mutated, inputs=inputs)
+
+
+def test_supplemental_successor_reaches_seventeen_without_hiding_mu_10q_gap() -> None:
+    policy = load_internal_qrels_successor_policy(POLICY_V1_2_PATH, repo_root=ROOT)
+    inputs = load_bound_internal_qrels_successor_inputs(policy, repo_root=ROOT)
+    packet = build_internal_qrels_successor_packet(policy=policy, inputs=inputs)
+    assert packet["strict_current_target_in_pool_count"] == 17
+    assert packet["strict_current_target_absent_count"] == 1
+    assert packet["all_target_exact_sql_candidate_count"] == 0
+    assert "separate numeric-fact qrels suite" in packet["gate_decision"]["reason"]
+    missing = [
+        row for row in packet["qrels"] if not row["strict_current_target_in_pool"]
+    ]
+    assert [
+        (
+            missing[0]["case_key"],
+            missing[0]["evidence_slot_id"],
+            missing[0]["evidence_owner_ticker"],
+        )
+    ] == [("MU", "regulatory_risk_and_financial_reconciliation", "MU")]
+    semantic = [
+        row
+        for row in packet["qrels"]
+        if row.get("source_equivalence_mode")
+        == "official_sec_same_event_semantic_alternative"
+    ]
+    assert len(semantic) == 6
+    assert all(
+        row["selected_candidate"]["retrieval_asset_id"]
+        == "current_official_supplemental_v1_1"
+        for row in semantic
+    )
+
+
+def test_supplemental_semantic_alternative_cannot_escape_bound_manifest() -> None:
+    policy = load_internal_qrels_successor_policy(POLICY_V1_2_PATH, repo_root=ROOT)
+    inputs = load_bound_internal_qrels_successor_inputs(policy, repo_root=ROOT)
+    mutated = deepcopy(policy)
+    override = next(
+        item
+        for item in mutated["adjudication_overrides"]
+        if item["source_equivalence_mode"]
+        == "official_sec_same_event_semantic_alternative"
+    )
+    override["source_equivalence_mode"] = "unverified_same_event"
+    with pytest.raises(
+        S1InternalQrelsSuccessorError,
+        match="internal_qrels_successor_semantic_source_equivalence_invalid",
     ):
         build_internal_qrels_successor_packet(policy=mutated, inputs=inputs)

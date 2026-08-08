@@ -13,6 +13,12 @@ from sec_agent.s1_internal_candidate_ceiling import canonical_observation_digest
 RUN_SCOPE = "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH"
 POLICY_SCHEMA = "fin_ia_0_1_3_s1_internal_qrels_successor_policy_v1_1"
 RESULT_SCHEMA = "fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_1"
+POLICY_SCHEMA_V1_2 = "fin_ia_0_1_3_s1_internal_qrels_successor_policy_v1_2"
+RESULT_SCHEMA_V1_2 = "fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_2"
+_POLICY_RESULT_SCHEMAS = {
+    POLICY_SCHEMA: RESULT_SCHEMA,
+    POLICY_SCHEMA_V1_2: RESULT_SCHEMA_V1_2,
+}
 
 
 class S1InternalQrelsSuccessorError(RuntimeError):
@@ -41,8 +47,12 @@ def load_internal_qrels_successor_policy(
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     policy = _read_json(Path(path))
+    expected_result_schema = _POLICY_RESULT_SCHEMAS.get(
+        str(policy.get("schema_version") or "")
+    )
     if (
-        policy.get("schema_version") != POLICY_SCHEMA
+        expected_result_schema is None
+        or policy.get("result_schema") not in (None, expected_result_schema)
         or policy.get("run_scope") != RUN_SCOPE
         or policy.get("binding_hash_profile")
         != "sha256_utf8_lf_normalized_v1"
@@ -50,7 +60,10 @@ def load_internal_qrels_successor_policy(
         raise S1InternalQrelsSuccessorError(
             "internal_qrels_successor_policy_identity_invalid"
         )
-    for stem in ("candidate_observation", "previous_review", "benchmark_evidence_pack"):
+    stems = ["candidate_observation", "previous_review", "benchmark_evidence_pack"]
+    if policy.get("immutable_inputs", {}).get("supplemental_asset_manifest_ref"):
+        stems.append("supplemental_asset_manifest")
+    for stem in stems:
         ref = str(policy.get("immutable_inputs", {}).get(f"{stem}_ref") or "")
         supplied = str(
             policy.get("immutable_inputs", {}).get(f"{stem}_sha256") or ""
@@ -106,13 +119,16 @@ def load_bound_internal_qrels_successor_inputs(
 ) -> dict[str, dict[str, Any]]:
     root = Path(repo_root).resolve()
     refs = policy["immutable_inputs"]
+    stems = [
+        "candidate_observation",
+        "previous_review",
+        "benchmark_evidence_pack",
+    ]
+    if refs.get("supplemental_asset_manifest_ref"):
+        stems.append("supplemental_asset_manifest")
     inputs = {
         stem: _read_json(root / str(refs[f"{stem}_ref"]))
-        for stem in (
-            "candidate_observation",
-            "previous_review",
-            "benchmark_evidence_pack",
-        )
+        for stem in stems
     }
     observation = inputs["candidate_observation"]
     if observation.get("result_digest") != canonical_observation_digest(observation):
@@ -123,7 +139,61 @@ def load_bound_internal_qrels_successor_inputs(
         raise S1InternalQrelsSuccessorError(
             "internal_qrels_successor_previous_review_digest_invalid"
         )
+    if "supplemental_asset_manifest" in inputs:
+        from sec_agent.s1_internal_supplemental_assets import (
+            load_validated_supplemental_asset_manifest,
+        )
+
+        inputs["supplemental_asset_manifest"] = (
+            load_validated_supplemental_asset_manifest(
+                root / str(refs["supplemental_asset_manifest_ref"]),
+                repo_root=root,
+            )
+        )
     return inputs
+
+
+def _validate_selected_source_equivalence(
+    *,
+    selected: Mapping[str, Any],
+    expected_refs: list[str],
+    expected_urls: set[str],
+    override: Mapping[str, Any],
+    inputs: Mapping[str, Mapping[str, Any]],
+) -> tuple[str, str]:
+    selected_url = str(selected.get("source_url") or "")
+    accepted_ref = str(override.get("accepted_source_ref") or "")
+    equivalence_mode = str(override.get("source_equivalence_mode") or "")
+    if selected_url in expected_urls:
+        if accepted_ref and accepted_ref not in expected_refs:
+            raise S1InternalQrelsSuccessorError(
+                "internal_qrels_successor_accepted_source_ref_invalid"
+            )
+        return accepted_ref, equivalence_mode or "exact_canonical_url"
+    manifest = inputs.get("supplemental_asset_manifest")
+    if not manifest or accepted_ref not in expected_refs:
+        raise S1InternalQrelsSuccessorError(
+            "internal_qrels_successor_source_url_mismatch"
+        )
+    matches = [
+        item
+        for item in manifest.get("source_bindings") or []
+        if accepted_ref in (item.get("accepted_source_refs") or [])
+        and str(item.get("selected_url") or "") == selected_url
+        and str(item.get("equivalence_mode") or "") == equivalence_mode
+        and str(item.get("ticker") or "") == str(selected.get("ticker") or "")
+        and str(item.get("filing_date") or "")
+        == str(selected.get("published_at") or "")
+        and str(item.get("accession_number") or "")
+        == str(selected.get("source_accession_number") or "")
+    ]
+    if len(matches) != 1 or equivalence_mode not in {
+        "official_sec_same_event_semantic_alternative"
+    }:
+        raise S1InternalQrelsSuccessorError(
+            "internal_qrels_successor_semantic_source_equivalence_invalid"
+        )
+    return accepted_ref, equivalence_mode
 
 
 def _candidate_digest_valid(candidate: Mapping[str, Any]) -> bool:
@@ -223,10 +293,18 @@ def build_internal_qrels_successor_packet(
                 for item in expected_refs
                 if item in sources
             }
-            if str(selected.get("source_url") or "") not in expected_urls:
-                raise S1InternalQrelsSuccessorError(
-                    f"internal_qrels_successor_source_url_mismatch:{'|'.join(key)}"
+            try:
+                accepted_ref, equivalence_mode = _validate_selected_source_equivalence(
+                    selected=selected,
+                    expected_refs=expected_refs,
+                    expected_urls=expected_urls,
+                    override=override,
+                    inputs=inputs,
                 )
+            except S1InternalQrelsSuccessorError as exc:
+                raise S1InternalQrelsSuccessorError(
+                    f"{exc}:{'|'.join(key)}"
+                ) from exc
             if (
                 not str(selected.get("published_at") or "")
                 or str(selected.get("published_at")) > str(row.get("as_of_date") or "")
@@ -246,6 +324,8 @@ def build_internal_qrels_successor_packet(
                     "proposed_relevance": relevance,
                     "gap_class": "",
                     "curator_rationale": str(override["curator_rationale"]),
+                    "accepted_source_ref": accepted_ref,
+                    "source_equivalence_mode": equivalence_mode,
                     "supersedes_qrel_digest": str(old_row["qrel_digest"]),
                 }
             )
@@ -279,8 +359,23 @@ def build_internal_qrels_successor_packet(
     required_recall = float(
         policy["review_contract"]["candidate_ceiling_required_recall"]
     )
+    separate_numeric_sql = bool(
+        policy["review_contract"].get("numeric_sql_uses_separate_qrels_suite")
+    )
+    if separate_numeric_sql:
+        reason = (
+            f"Candidate generation reaches {present}/{target_count}. The remaining "
+            "current research target must be repaired before ranking admission; "
+            "exact SQL is evaluated by a separate numeric-fact qrels suite."
+        )
+    else:
+        reason = (
+            f"The newer local object index raises strict current target-in-pool "
+            f"to {present}/{target_count}, but missing current official documents "
+            "and zero current exact-SQL coverage still block ranking admission."
+        )
     body = {
-        "schema_version": RESULT_SCHEMA,
+        "schema_version": str(policy.get("result_schema") or RESULT_SCHEMA),
         "contract_ref": str(policy["contract_ref"]),
         "run_scope": RUN_SCOPE,
         "status": "agent_curated_candidate_ceiling_failed_owner_review_pending",
@@ -300,11 +395,7 @@ def build_internal_qrels_successor_packet(
             "owner_review_complete": False,
             "candidate_ceiling_proven": False,
             "BGE_fusion_rerank_admitted": False,
-            "reason": (
-                f"The newer local object index raises strict current target-in-pool "
-                f"to {present}/{target_count}, but missing current official documents "
-                "and zero current exact-SQL coverage still block ranking admission."
-            ),
+            "reason": reason,
         },
         "observed_calls": {
             "network": 0,
@@ -325,7 +416,9 @@ def build_internal_qrels_successor_packet(
 
 __all__ = [
     "POLICY_SCHEMA",
+    "POLICY_SCHEMA_V1_2",
     "RESULT_SCHEMA",
+    "RESULT_SCHEMA_V1_2",
     "RUN_SCOPE",
     "S1InternalQrelsSuccessorError",
     "build_internal_qrels_successor_packet",

@@ -1,0 +1,37 @@
+{
+  "contract_ref": "fin_0_1_3.S1.internal_current_official_source_acquisition:v1",
+  "fixture_result_digest": "682c177cff90777d3e148d4f18b3deb00d8cae4a0a074c73c51ec251dae70211",
+  "fixture_terminal_receipt_digest": "b4bfcebfb357ce7cfeae1fb4bcb8f5197e1e0e94716f0cf3182dbdfeb15dd23a",
+  "policy_digest": "a030ce057d8eda71a17cc6caaba7698c66722f1bae32c6fb80a1361ff05de003",
+  "proof_digest": "adab3706dd7ddebcfb4b94ff48ce4e64006d6ebdfd80a666f1b3a852feeb2b70",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "schema_version": "fin_ia_0_1_3_s1_internal_current_source_acquisition_zero_call_proof_v1_0",
+  "stage_acceptance": {
+    "BGE_fusion_rerank": false,
+    "candidate_ceiling": false,
+    "current_sources_acquired": false,
+    "external_product_coverage": false,
+    "live_authority": false,
+    "release": false,
+    "source_acquisition_engineering": true
+  },
+  "status": "zero_call_engineering_pass_live_authority_not_yet_issued",
+  "verification": {
+    "actual_network_calls": 0,
+    "benchmark_exact_url_used_for_discovery": false,
+    "candidate_state": "captured_source_not_evidence",
+    "capture_first_request_response": true,
+    "exact_once_terminal_receipt": true,
+    "retry_model_provider_embedding_rerank_evidence_calls": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "same_accession_exhibit_fallbacks": 2,
+    "simulated_source_calls": 8,
+    "typed_targets": 3
+  }
+}

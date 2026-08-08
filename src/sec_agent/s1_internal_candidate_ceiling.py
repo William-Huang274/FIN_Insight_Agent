@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sqlite3
 import sys
 import time
@@ -13,6 +14,8 @@ from sec_agent.canonical_runtime.models import canonical_digest
 
 
 RUN_SCOPE = "S1_INTERNAL_CANDIDATE_CEILING_AND_QRELS_GATE"
+CORPUS_REFRESH_SCOPE = "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH"
+ALLOWED_RUN_SCOPES = {RUN_SCOPE, CORPUS_REFRESH_SCOPE}
 EXECUTED_ROUTES = (
     "internal_sql_exact",
     "internal_object_bm25",
@@ -51,7 +54,7 @@ def load_internal_candidate_ceiling_policy(
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     policy = _read_json(Path(path))
-    if policy.get("run_scope") != RUN_SCOPE:
+    if policy.get("run_scope") not in ALLOWED_RUN_SCOPES:
         raise S1InternalCandidateCeilingError(
             "internal_candidate_ceiling_policy_scope_invalid"
         )
@@ -72,6 +75,20 @@ def load_internal_candidate_ceiling_policy(
         if not ref or not target.is_file() or _normalized_sha256(target) != supplied:
             raise S1InternalCandidateCeilingError(
                 f"internal_candidate_ceiling_policy_binding_invalid:{stem}"
+            )
+    for ordinal, manifest in enumerate(
+        _as_list((policy.get("local_assets") or {}).get("document_lineage_manifests"))
+    ):
+        if not isinstance(manifest, Mapping):
+            raise S1InternalCandidateCeilingError(
+                f"internal_candidate_ceiling_lineage_manifest_invalid:{ordinal}"
+            )
+        ref = str(manifest.get("path") or "")
+        supplied = str(manifest.get("sha256") or "")
+        target = root / ref
+        if not ref or not target.is_file() or _normalized_sha256(target) != supplied:
+            raise S1InternalCandidateCeilingError(
+                f"internal_candidate_ceiling_lineage_manifest_binding_invalid:{ordinal}"
             )
     if any(int(policy.get("hard_boundaries", {}).get(name, -1)) != 0 for name in (
         "network",
@@ -365,33 +382,323 @@ def _record_publication_date(record: Mapping[str, Any]) -> str:
     )
 
 
-def _execute_lexical_request(
-    request: Mapping[str, Any], *, retriever: Any, object_route: bool
+def _normalise_accession(value: Any) -> str:
+    digits = re.sub(r"\D", "", str(value or ""))
+    return digits if len(digits) == 18 else ""
+
+
+def _normalise_form_type(value: Any) -> str:
+    text = str(value or "").strip().upper().replace("_", "-")
+    compact = text.replace("-", "")
+    return {
+        "10K": "10-K",
+        "10Q": "10-Q",
+        "8K": "8-K",
+        "20F": "20-F",
+        "40F": "40-F",
+        "6K": "6-K",
+    }.get(compact, text)
+
+
+def load_document_lineage_lookup(
+    policy: Mapping[str, Any], *, repo_root: str | Path
 ) -> dict[str, Any]:
-    started = time.perf_counter()
-    filters = dict(request.get("typed_filters") or {})
-    route_filters: dict[str, Any] = {
-        "ticker": str(request["evidence_owner_ticker"]),
-        "fiscal_year": [
+    root = Path(repo_root).resolve()
+    manifests = _as_list(
+        (policy.get("local_assets") or {}).get("document_lineage_manifests")
+    )
+    documents: dict[tuple[str, str, int, str, str], dict[str, Any]] = {}
+    manifest_counts: dict[str, int] = {}
+    for manifest in manifests:
+        ref = str(manifest["path"])
+        count = 0
+        with (root / ref).open("r", encoding="utf-8") as handle:
+            for line_number, line in enumerate(handle, start=1):
+                if not line.strip():
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError as exc:
+                    raise S1InternalCandidateCeilingError(
+                        f"internal_candidate_ceiling_lineage_manifest_json_invalid:"
+                        f"{ref}:{line_number}"
+                    ) from exc
+                metadata = dict(row.get("metadata") or {})
+                ticker = str(row.get("ticker") or metadata.get("ticker") or "").upper()
+                form_type = _normalise_form_type(
+                    row.get("form_type")
+                    or row.get("source_type")
+                    or metadata.get("form_type")
+                )
+                fiscal_year = int(
+                    row.get("fiscal_year") or metadata.get("fiscal_year") or 0
+                )
+                accession = _normalise_accession(
+                    row.get("accession_number")
+                    or metadata.get("accession_number")
+                )
+                source_url = str(
+                    row.get("filing_url")
+                    or row.get("source_url")
+                    or metadata.get("filing_url")
+                    or metadata.get("source_url")
+                    or ""
+                )
+                published_at = str(
+                    row.get("filing_date")
+                    or row.get("published_at")
+                    or metadata.get("filing_date")
+                    or metadata.get("published_at")
+                    or ""
+                )
+                if not ticker or not form_type or not fiscal_year:
+                    continue
+                key = (ticker, form_type, fiscal_year, accession, source_url)
+                documents[key] = {
+                    "ticker": ticker,
+                    "form_type": form_type,
+                    "fiscal_year": fiscal_year,
+                    "accession_number": accession,
+                    "source_url": source_url,
+                    "published_at": published_at,
+                    "report_date": str(
+                        row.get("report_date")
+                        or row.get("period_end")
+                        or metadata.get("report_date")
+                        or metadata.get("period_end")
+                        or ""
+                    ),
+                    "manifest_ref": ref,
+                }
+                count += 1
+        manifest_counts[ref] = count
+    by_accession: dict[str, list[dict[str, Any]]] = {}
+    by_ticker_year_form: dict[tuple[str, int, str], list[dict[str, Any]]] = {}
+    for document in documents.values():
+        accession = str(document["accession_number"])
+        if accession:
+            by_accession.setdefault(accession, []).append(document)
+        key = (
+            str(document["ticker"]),
+            int(document["fiscal_year"]),
+            str(document["form_type"]),
+        )
+        by_ticker_year_form.setdefault(key, []).append(document)
+    return {
+        "by_accession": by_accession,
+        "by_ticker_year_form": by_ticker_year_form,
+        "manifest_counts": manifest_counts,
+        "document_count": len(documents),
+    }
+
+
+def _record_accession_candidates(record: Mapping[str, Any]) -> list[str]:
+    metadata = dict(record.get("metadata") or {})
+    values = [
+        record.get("accession_number"),
+        metadata.get("accession_number"),
+        record.get("source_evidence_id"),
+        record.get("object_id"),
+    ]
+    accessions: list[str] = []
+    for value in values:
+        direct = _normalise_accession(value)
+        if direct and direct not in accessions:
+            accessions.append(direct)
+        for match in re.findall(r"(?<!\d)\d{18}(?!\d)", str(value or "")):
+            normalised = _normalise_accession(match)
+            if normalised and normalised not in accessions:
+                accessions.append(normalised)
+    return accessions
+
+
+def resolve_document_lineage(
+    record: Mapping[str, Any], *, lookup: Mapping[str, Any] | None
+) -> dict[str, Any]:
+    if not lookup:
+        return {}
+    for accession in _record_accession_candidates(record):
+        matches = list((lookup.get("by_accession") or {}).get(accession) or [])
+        if len(matches) == 1:
+            return {**dict(matches[0]), "resolution_method": "exact_accession"}
+    ticker = str(record.get("ticker") or "").upper()
+    fiscal_year = int(record.get("fiscal_year") or 0)
+    form_type = _normalise_form_type(
+        record.get("form_type") or record.get("source_type")
+    )
+    matches = list(
+        (lookup.get("by_ticker_year_form") or {}).get(
+            (ticker, fiscal_year, form_type)
+        )
+        or []
+    )
+    if len(matches) == 1:
+        return {
+            **dict(matches[0]),
+            "resolution_method": "unique_ticker_reporting_year_form",
+        }
+    period_end = str(record.get("period_end") or "")
+    if period_end:
+        period_matches = [
+            item
+            for item in matches
+            if str(item.get("report_date") or item.get("period_end") or "")
+            == period_end
+        ]
+        if len(period_matches) == 1:
+            return {
+                **dict(period_matches[0]),
+                "resolution_method": "ticker_reporting_year_form_period_end",
+            }
+    return {}
+
+
+def _document_temporal_filter_partitions(
+    *,
+    filters: Mapping[str, Any],
+    base_filters: Mapping[str, Any],
+    temporal_filter_policy: Mapping[str, Any] | None,
+) -> list[dict[str, Any]]:
+    policy = dict(temporal_filter_policy or {})
+    mode = str(policy.get("mode") or "legacy_filing_calendar_year_v1")
+    if mode == "legacy_filing_calendar_year_v1":
+        years = [
             int(item)
             for item in _as_list(
                 filters.get(
                     "index_filing_calendar_years", filters.get("fiscal_years")
                 )
             )
-        ],
+        ]
+        route_filters = dict(base_filters)
+        if years:
+            route_filters["fiscal_year"] = years
+        return [
+            {
+                "partition_id": "legacy_filing_calendar_year",
+                "year_authority": "index_filing_calendar_years",
+                "filters": route_filters,
+            }
+        ]
+    if mode != "form_semantic_partition_v1":
+        raise S1InternalCandidateCeilingError(
+            f"internal_candidate_ceiling_temporal_filter_mode_invalid:{mode}"
+        )
+    reporting_forms = {
+        str(item).upper()
+        for item in _as_list(policy.get("reporting_period_forms"))
+    }
+    event_forms = {
+        str(item).upper()
+        for item in _as_list(policy.get("filing_calendar_event_forms"))
+    }
+    if not reporting_forms or not event_forms or reporting_forms & event_forms:
+        raise S1InternalCandidateCeilingError(
+            "internal_candidate_ceiling_temporal_form_policy_invalid"
+        )
+    requested_forms = {
+        str(item).upper() for item in _as_list(base_filters.get("form_type"))
+    }
+    unknown_forms = requested_forms - reporting_forms - event_forms
+    if unknown_forms:
+        raise S1InternalCandidateCeilingError(
+            "internal_candidate_ceiling_temporal_form_unclassified:"
+            + ",".join(sorted(unknown_forms))
+        )
+    reporting_years = [
+        int(item)
+        for item in _as_list(
+            filters.get("reporting_fiscal_years", filters.get("fiscal_years"))
+        )
+    ]
+    filing_years = [
+        int(item)
+        for item in _as_list(
+            filters.get(
+                "index_filing_calendar_years", filters.get("fiscal_years")
+            )
+        )
+    ]
+    partitions: list[dict[str, Any]] = []
+    for partition_id, authority, forms, years in (
+        (
+            "periodic_reporting_fiscal_year",
+            "reporting_fiscal_years",
+            requested_forms & reporting_forms,
+            reporting_years,
+        ),
+        (
+            "event_filing_calendar_year",
+            "index_filing_calendar_years",
+            requested_forms & event_forms,
+            filing_years,
+        ),
+    ):
+        if not forms:
+            continue
+        route_filters = {
+            **dict(base_filters),
+            "form_type": sorted(forms),
+        }
+        if years:
+            route_filters["fiscal_year"] = years
+        partitions.append(
+            {
+                "partition_id": partition_id,
+                "year_authority": authority,
+                "filters": route_filters,
+            }
+        )
+    if not partitions:
+        raise S1InternalCandidateCeilingError(
+            "internal_candidate_ceiling_temporal_filter_partitions_empty"
+        )
+    return partitions
+
+
+def _execute_lexical_request(
+    request: Mapping[str, Any],
+    *,
+    retriever: Any,
+    object_route: bool,
+    temporal_filter_policy: Mapping[str, Any] | None = None,
+    document_lineage_lookup: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    started = time.perf_counter()
+    filters = dict(request.get("typed_filters") or {})
+    base_filters: dict[str, Any] = {
+        "ticker": str(request["evidence_owner_ticker"]),
         "form_type": [str(item) for item in _as_list(filters.get("form_types"))],
     }
     if object_route:
-        route_filters["object_type"] = [
+        base_filters["object_type"] = [
             str(item) for item in _as_list(filters.get("object_types"))
         ]
-    route_filters = {key: value for key, value in route_filters.items() if value not in ([], "")}
+    base_filters = {
+        key: value for key, value in base_filters.items() if value not in ([], "")
+    }
+    filter_partitions = _document_temporal_filter_partitions(
+        filters=filters,
+        base_filters=base_filters,
+        temporal_filter_policy=temporal_filter_policy,
+    )
     budget = int(request.get("candidate_budget") or 24)
     query_texts = [str(item) for item in _as_list(request.get("query_texts"))]
+    search_lanes = [
+        {
+            "partition_id": str(partition["partition_id"]),
+            "filters": dict(partition["filters"]),
+            "query_index": query_index,
+            "query": query,
+        }
+        for partition in filter_partitions
+        for query_index, query in enumerate(query_texts)
+    ]
     query_results = [
-        retriever.search(query, top_k=budget, filters=route_filters)
-        for query in query_texts
+        retriever.search(
+            str(lane["query"]), top_k=budget, filters=dict(lane["filters"])
+        )
+        for lane in search_lanes
     ]
     key_field = "object_id" if object_route else "evidence_id"
     merged = deterministic_round_robin_dedupe(
@@ -409,7 +716,14 @@ def _execute_lexical_request(
     as_of = str(filters.get("publication_date_on_or_before") or "")
     for rank, (row, query_indexes) in enumerate(merged, start=1):
         record = dict(row.get("record") or {})
-        published_at = _record_publication_date(record)
+        lineage = (
+            resolve_document_lineage(record, lookup=document_lineage_lookup)
+            if object_route
+            else {}
+        )
+        published_at = _record_publication_date(record) or str(
+            lineage.get("published_at") or ""
+        )
         if as_of and published_at and published_at > as_of:
             future_rejected += 1
             continue
@@ -442,10 +756,30 @@ def _execute_lexical_request(
                     "section": str(row.get("section") or record.get("section") or ""),
                     "subsection": str(row.get("subsection") or record.get("subsection") or ""),
                     "published_at": published_at,
-                    "source_url": str(record.get("source_url") or ""),
+                    "source_url": str(
+                        record.get("source_url") or lineage.get("source_url") or ""
+                    ),
+                    "source_accession_number": str(
+                        record.get("accession_number")
+                        or lineage.get("accession_number")
+                        or ""
+                    ),
+                    "lineage_resolution_method": str(
+                        lineage.get("resolution_method") or ""
+                    ),
+                    "lineage_manifest_ref": str(lineage.get("manifest_ref") or ""),
                     "preview": _clip(preview),
+                    "temporal_filter_partition_ids": sorted(
+                        {
+                            str(search_lanes[index]["partition_id"])
+                            for index in query_indexes
+                        }
+                    ),
                     "strict_identity_filter_applied": True,
-                    "strict_period_filter_applied": bool(route_filters.get("fiscal_year")),
+                    "strict_period_filter_applied": any(
+                        bool(search_lanes[index]["filters"].get("fiscal_year"))
+                        for index in query_indexes
+                    ),
                     "exact_value_authority": False,
                 },
             )
@@ -461,29 +795,50 @@ def _execute_lexical_request(
                     else "internal_object_or_lexical_candidates_rejected"
                 ),
                 detail={
-                    "filters": route_filters,
+                    "filter_partitions": filter_partitions,
                     "query_count": len(query_texts),
+                    "search_lane_count": len(search_lanes),
                     "future_candidate_rejections": future_rejected,
                 },
             )
         )
     terminal = _route_terminal(request, candidates, gaps, started=started)
     terminal["query_count"] = len(query_texts)
+    terminal["search_lane_count"] = len(search_lanes)
+    terminal["temporal_filter_partitions"] = filter_partitions
     terminal["raw_query_result_count"] = sum(len(rows) for rows in query_results)
     terminal["future_candidate_rejections"] = future_rejected
     return terminal
 
 
 def execute_object_bm25_request(
-    request: Mapping[str, Any], *, retriever: Any
+    request: Mapping[str, Any],
+    *,
+    retriever: Any,
+    temporal_filter_policy: Mapping[str, Any] | None = None,
+    document_lineage_lookup: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return _execute_lexical_request(request, retriever=retriever, object_route=True)
+    return _execute_lexical_request(
+        request,
+        retriever=retriever,
+        object_route=True,
+        temporal_filter_policy=temporal_filter_policy,
+        document_lineage_lookup=document_lineage_lookup,
+    )
 
 
 def execute_bm25_request(
-    request: Mapping[str, Any], *, retriever: Any
+    request: Mapping[str, Any],
+    *,
+    retriever: Any,
+    temporal_filter_policy: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return _execute_lexical_request(request, retriever=retriever, object_route=False)
+    return _execute_lexical_request(
+        request,
+        retriever=retriever,
+        object_route=False,
+        temporal_filter_policy=temporal_filter_policy,
+    )
 
 
 def execute_graph_request(
@@ -608,7 +963,10 @@ def _route_terminal(
 
 
 def qualify_local_assets(
-    *, policy: Mapping[str, Any], repo_root: str | Path
+    *,
+    policy: Mapping[str, Any],
+    repo_root: str | Path,
+    document_lineage_lookup: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     assets = dict(policy.get("local_assets") or {})
@@ -643,6 +1001,16 @@ def qualify_local_assets(
             "support": int(connection.execute("SELECT COUNT(*) FROM research_graph_evidence_support").fetchone()[0]),
         }
     checks["relationship_graph"] = {"status": "qualified", **graph_counts}
+    lineage = (
+        dict(document_lineage_lookup)
+        if document_lineage_lookup is not None
+        else load_document_lineage_lookup(policy, repo_root=root)
+    )
+    checks["document_lineage"] = {
+        "status": "qualified" if lineage.get("document_count") else "not_configured",
+        "document_count": int(lineage.get("document_count") or 0),
+        "manifest_counts": dict(lineage.get("manifest_counts") or {}),
+    }
 
     milvus_db = Path(str(milvus_cfg.get("db_path") or ""))
     deps = Path(str(assets.get("milvus_dependencies_dir") or ""))
@@ -787,6 +1155,11 @@ def execute_internal_candidate_inventory(
     object_bm25 = object_bm25_factory(root / str(assets["object_bm25_index_dir"]))
     gold = root / str(assets["gold_sqlite"])
     graph = root / str(assets["relationship_graph_sqlite"])
+    document_lineage_lookup = load_document_lineage_lookup(policy, repo_root=root)
+    temporal_filter_policy = dict(
+        policy.get("execution_contract", {}).get("document_temporal_filter")
+        or {}
+    )
     terminals: list[dict[str, Any]] = []
     started = time.perf_counter()
     try:
@@ -796,10 +1169,17 @@ def execute_internal_candidate_inventory(
                 terminal = execute_sql_exact_request(request, database=gold)
             elif route == "internal_object_bm25":
                 terminal = execute_object_bm25_request(
-                    request, retriever=object_bm25
+                    request,
+                    retriever=object_bm25,
+                    temporal_filter_policy=temporal_filter_policy,
+                    document_lineage_lookup=document_lineage_lookup,
                 )
             elif route == "internal_bm25":
-                terminal = execute_bm25_request(request, retriever=bm25)
+                terminal = execute_bm25_request(
+                    request,
+                    retriever=bm25,
+                    temporal_filter_policy=temporal_filter_policy,
+                )
             elif route == "internal_relationship_graph":
                 terminal = execute_graph_request(request, database=graph)
             elif route == "internal_milvus_dense":
@@ -830,7 +1210,11 @@ def execute_internal_candidate_inventory(
             close = getattr(retriever, "close", None)
             if callable(close):
                 close()
-    asset_qualification = qualify_local_assets(policy=policy, repo_root=root)
+    asset_qualification = qualify_local_assets(
+        policy=policy,
+        repo_root=root,
+        document_lineage_lookup=document_lineage_lookup,
+    )
     route_counts = Counter(str(item["route_id"]) for item in terminals)
     candidate_counts = Counter()
     gap_counts = Counter()
@@ -884,7 +1268,7 @@ def execute_internal_candidate_inventory(
             or "fin_ia_0_1_3_s1_internal_candidate_inventory_observation_v1_0"
         ),
         "contract_ref": str(policy["contract_ref"]),
-        "run_scope": RUN_SCOPE,
+        "run_scope": str(policy.get("run_scope") or RUN_SCOPE),
         "status": "completed_candidate_inventory_qrels_pending",
         "integration_proof_digest": str(integration_proof["proof_digest"]),
         "resource_qualification": asset_qualification,

@@ -1,0 +1,46 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_qrels_successor_policy_v1_1",
+  "contract_ref": "fin_0_1_3.S1.internal_candidate_qrels:v1.1",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "recorded_at": "2026-08-09",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "supersedes": "configs/runtime/fin_ia_0_1_3_s1_internal_qrels_review_policy_v1_0.json",
+  "immutable_inputs": {
+    "candidate_observation_ref": "configs/releases/fin_ia_0_1_3_s1_internal_candidate_inventory_observation_v1_3_attempt_r4.json",
+    "candidate_observation_sha256": "445a748c50466888f3a6df5ac06d6117352d8a0461c952baf35bc6842ee5599d",
+    "previous_review_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_0.json",
+    "previous_review_sha256": "64ebb2bb925e889e63fc0966f25463e620fe18a4b0290e92d8fc8142db138958",
+    "benchmark_evidence_pack_ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json",
+    "benchmark_evidence_pack_sha256": "5c6294599d546b18faafdfa3688a297316c497a80d0e2e78a76d723803ebd604"
+  },
+  "review_contract": {
+    "target_count": 18,
+    "strict_target_in_pool_threshold": 2,
+    "candidate_ceiling_required_recall": 1.0,
+    "owner_review_required_for_pass": true,
+    "semantic_alternative_requires_primary_source_current_period_and_material_facet": true
+  },
+  "adjudication_overrides": [
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "NVDA",
+      "selected_route_id": "internal_object_bm25",
+      "selected_source_key": "NVDA_2027_10Q_ITEM1_BLOCK_0001_PART_02_OF_03_METRIC_TABLE_3C6CA96D",
+      "proposed_relevance": 2,
+      "curator_rationale": "The newer immutable full-source object index contains the exact NVIDIA Q1 FY2027 10-Q and retrieves a current-period operating-cash-flow object. Its SEC URL, accession and filing date are independently recovered from the bound source manifest; this is a material partial match for the regulatory and reconciliation slot."
+    }
+  ],
+  "hard_boundaries": {
+    "qrels_loaded_after_candidate_generation": true,
+    "target_or_candidate_identity_may_enter_query": false,
+    "candidate_may_be_promoted_to_evidence": false,
+    "BGE_fusion_rerank_admitted": false,
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  }
+}

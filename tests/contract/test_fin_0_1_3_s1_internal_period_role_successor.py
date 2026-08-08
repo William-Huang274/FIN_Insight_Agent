@@ -13,7 +13,9 @@ sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
 from sec_agent.canonical_runtime.models import canonical_digest  # noqa: E402
 from sec_agent.s1_internal_candidate_ceiling import (  # noqa: E402
+    S1InternalCandidateCeilingError,
     execute_bm25_request,
+    execute_object_bm25_request,
     execute_sql_exact_request,
     milvus_lite_storage_exists,
     qualify_local_assets,
@@ -134,6 +136,143 @@ def test_candidate_executors_consume_route_specific_period_authority(tmp_path: P
     execute_bm25_request(lexical.as_dict(), retriever=retriever)
     assert retriever.filters
     assert all(item["fiscal_year"] == [2026] for item in retriever.filters)
+
+
+def test_document_routes_partition_period_authority_by_form_semantics() -> None:
+    _, _, requests = _compiled()
+    lexical = _request(requests, route="internal_bm25", case="NVDA", owner="NVDA")
+
+    class Retriever:
+        def __init__(self) -> None:
+            self.filters: list[dict] = []
+
+        def search(self, query: str, *, top_k: int, filters: dict) -> list[dict]:
+            self.filters.append(filters)
+            return []
+
+    retriever = Retriever()
+    terminal = execute_bm25_request(
+        lexical.as_dict(),
+        retriever=retriever,
+        temporal_filter_policy={
+            "mode": "form_semantic_partition_v1",
+            "reporting_period_forms": ["10-K", "10-Q", "20-F", "40-F"],
+            "filing_calendar_event_forms": ["8-K", "6-K"],
+        },
+    )
+    periodic = [
+        item
+        for item in retriever.filters
+        if item["form_type"] == ["10-K", "10-Q", "20-F"]
+    ]
+    event = [
+        item for item in retriever.filters if item["form_type"] == ["6-K", "8-K"]
+    ]
+    assert len(periodic) == len(lexical.query_texts)
+    assert len(event) == len(lexical.query_texts)
+    assert all(item["fiscal_year"] == [2027] for item in periodic)
+    assert all(item["fiscal_year"] == [2026] for item in event)
+    assert terminal["search_lane_count"] == len(lexical.query_texts) * 2
+    assert {
+        item["partition_id"] for item in terminal["temporal_filter_partitions"]
+    } == {"periodic_reporting_fiscal_year", "event_filing_calendar_year"}
+
+
+def test_document_route_unknown_form_semantics_fail_closed() -> None:
+    _, _, requests = _compiled()
+    lexical = _request(requests, route="internal_bm25", case="NVDA", owner="NVDA")
+    body = lexical.as_dict()
+    body["typed_filters"]["form_types"] = ["10-Q", "PRESS-RELEASE"]
+
+    class Retriever:
+        def search(self, query: str, *, top_k: int, filters: dict) -> list[dict]:
+            raise AssertionError("unclassified forms must fail before retrieval")
+
+    with pytest.raises(
+        S1InternalCandidateCeilingError,
+        match="internal_candidate_ceiling_temporal_form_unclassified:PRESS-RELEASE",
+    ):
+        execute_bm25_request(
+            body,
+            retriever=Retriever(),
+            temporal_filter_policy={
+                "mode": "form_semantic_partition_v1",
+                "reporting_period_forms": ["10-K", "10-Q", "20-F", "40-F"],
+                "filing_calendar_event_forms": ["8-K", "6-K"],
+            },
+        )
+
+
+def test_object_candidate_recovers_bound_source_lineage() -> None:
+    _, _, requests = _compiled()
+    request = _request(
+        requests,
+        route="internal_object_bm25",
+        case="NVDA",
+        owner="NVDA",
+    )
+
+    class Retriever:
+        def search(self, query: str, *, top_k: int, filters: dict) -> list[dict]:
+            if filters["form_type"] != ["10-K", "10-Q", "20-F"]:
+                return []
+            record = {
+                "object_id": "NVDA_2027_10Q_ITEM1A_BLOCK_0001_CLAIM_A",
+                "object_type": "claim",
+                "source_evidence_id": "NVDA_2027_10Q_ITEM1A_BLOCK_0001",
+                "ticker": "NVDA",
+                "fiscal_year": 2027,
+                "form_type": "10-Q",
+                "source_type": "10-Q",
+                "source_tier": "primary_sec_filing",
+                "preview": "Export controls and purchase commitments.",
+            }
+            return [
+                {
+                    "rank": 1,
+                    "score": 4.0,
+                    "object_id": record["object_id"],
+                    "object_type": "claim",
+                    "ticker": "NVDA",
+                    "fiscal_year": 2027,
+                    "preview": record["preview"],
+                    "record": record,
+                }
+            ]
+
+    terminal = execute_object_bm25_request(
+        request.as_dict(),
+        retriever=Retriever(),
+        temporal_filter_policy={
+            "mode": "form_semantic_partition_v1",
+            "reporting_period_forms": ["10-K", "10-Q", "20-F", "40-F"],
+            "filing_calendar_event_forms": ["8-K", "6-K"],
+        },
+        document_lineage_lookup={
+            "by_accession": {},
+            "by_ticker_year_form": {
+                ("NVDA", 2027, "10-Q"): [
+                    {
+                        "ticker": "NVDA",
+                        "form_type": "10-Q",
+                        "fiscal_year": 2027,
+                        "accession_number": "000104581026000052",
+                        "source_url": "https://www.sec.gov/example/nvda-q1-fy2027",
+                        "published_at": "2026-05-20",
+                        "manifest_ref": "manifests/nvda.jsonl",
+                    }
+                ]
+            },
+        },
+    )
+    assert terminal["candidate_count"] == 1
+    candidate = terminal["candidates"][0]
+    assert candidate["published_at"] == "2026-05-20"
+    assert candidate["source_url"] == "https://www.sec.gov/example/nvda-q1-fy2027"
+    assert candidate["source_accession_number"] == "000104581026000052"
+    assert candidate["lineage_resolution_method"] == (
+        "unique_ticker_reporting_year_form"
+    )
 
 
 def test_ambiguous_period_filter_mutation_fails_closed() -> None:

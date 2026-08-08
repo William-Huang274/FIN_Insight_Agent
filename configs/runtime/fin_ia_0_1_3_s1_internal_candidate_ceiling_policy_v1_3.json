@@ -1,0 +1,130 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_candidate_ceiling_policy_v1_3",
+  "observation_schema": "fin_ia_0_1_3_s1_internal_candidate_inventory_observation_v1_3",
+  "contract_ref": "fin_0_1_3.S1.internal_candidate_ceiling_and_qrels:v1.3",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "recorded_at": "2026-08-09",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "supersedes": "configs/runtime/fin_ia_0_1_3_s1_internal_candidate_ceiling_policy_v1_2.json",
+  "correction_scope": [
+    "partition_document_year_filter_by_form_semantics",
+    "compare_current_sparse_baseline_with_newer_full_source_object_index",
+    "recover_object_candidate_date_and_url_from_immutable_source_manifests",
+    "preserve_candidate_only_qrels_gate_before_dense_ranking"
+  ],
+  "immutable_inputs": {
+    "integration_proof_ref": "configs/releases/fin_ia_0_1_3_s1_internal_query_facet_integration_zero_call_proof_v1_1.json",
+    "integration_proof_sha256": "85a8efaef65c74fddc3f676dd97d35ad021216e113b4e307e0594752a3474f13",
+    "progression_plan_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_3.json",
+    "progression_plan_sha256": "e9152e302037c1ec9a39970e18b58e09c79f0e72c8372d7421863ecf0d1ddaf7",
+    "retrieval_config_ref": "configs/retrieval.yaml",
+    "retrieval_config_sha256": "1a84bb26e2b2aa7765e15d156979ae6bccd9d8e843887c3abdc7e849fd453ba4",
+    "milvus_runtime_ref": "configs/runtime/milvus_runtime_603_local_v0_1.json",
+    "milvus_runtime_sha256": "36a28febb7f297ca969be5874e0ecec2d960ff6f941e765191c384a687f608d3"
+  },
+  "local_assets": {
+    "bm25_index_dir": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027",
+    "object_bm25_index_dir": "Z:/FIN_Insight_Agent_artifacts/tier1_tier2_full_source_v0_1/indexes/sqlite_fts/tier1_tier2_sec_full_source_mixed_objects_fy2023_2027_v0_1",
+    "gold_sqlite": "data/workbench_private/research_data/gold_fact_signal_mart_v0_1.sqlite",
+    "relationship_graph_sqlite": "data/workbench_private/research_data/research_graph_store_v0_1.sqlite",
+    "milvus_dependencies_dir": "Z:/FIN_Insight_Agent_artifacts/python_deps/milvus_lite",
+    "local_embedding_model_candidates": [
+      "D:/hf_models/BAAI__bge-m3"
+    ],
+    "document_lineage_manifests": [
+      {
+        "path": "Z:/FIN_Insight_Agent_artifacts/tier1_tier2_full_source_v0_1/manifests/tier1_sp500_us_8k_earnings_manifest_2026_2027_v0_1.jsonl",
+        "sha256": "585085a5de4da13ab1078abf195b28f55545a346c244cecc715dd5b9a53735f9"
+      },
+      {
+        "path": "Z:/FIN_Insight_Agent_artifacts/tier1_tier2_full_source_v0_1/manifests/tier1_sp500_us_interim_10q_manifest_fy2026_2027_v0_1.jsonl",
+        "sha256": "776dfcf274353036bca5af759a794453bd38589c8f0b777f48ca5ce10e3f3f63"
+      },
+      {
+        "path": "Z:/FIN_Insight_Agent_artifacts/tier1_tier2_full_source_v0_1/manifests/tier2_supply_chain_sec_8k_earnings_manifest_2026_2027_v0_1.jsonl",
+        "sha256": "888b858607961c694ae256f05cf1d7bd3ff0e0461632914c43f6a954898b53f1"
+      },
+      {
+        "path": "Z:/FIN_Insight_Agent_artifacts/tier1_tier2_full_source_v0_1/manifests/tier2_supply_chain_sec_interim_10q_manifest_fy2026_2027_v0_1.jsonl",
+        "sha256": "989c99d9e9e3f2598b3b3f608593c37453ce7731f41462d6ce3851c90e5360d5"
+      }
+    ]
+  },
+  "asset_portfolio_contract": {
+    "purpose": "read_only_candidate_ceiling_comparator_not_production_promotion",
+    "bm25_role": "historical_sparse_baseline",
+    "object_bm25_role": "newer_full_source_document_object_candidate_inventory",
+    "document_lineage_role": "candidate_date_url_and_accession_recovery_only",
+    "cross_index_candidate_count_comparison_allowed": true,
+    "cross_index_score_comparison_allowed": false,
+    "historical_assets_overwritten": false
+  },
+  "execution_contract": {
+    "canonical_bundle_count": 18,
+    "physical_request_count": 90,
+    "executed_routes": [
+      "internal_sql_exact",
+      "internal_object_bm25",
+      "internal_bm25",
+      "internal_relationship_graph"
+    ],
+    "qualification_only_routes": [
+      "internal_milvus_dense"
+    ],
+    "query_variant_merge": "deterministic_round_robin_dedupe",
+    "strict_typed_filters": true,
+    "period_authority_contract": "reporting_vs_filing_with_form_semantic_partition_v1",
+    "document_temporal_filter": {
+      "mode": "form_semantic_partition_v1",
+      "reporting_period_forms": ["10-K", "10-Q", "20-F", "40-F"],
+      "filing_calendar_event_forms": ["8-K", "6-K"]
+    },
+    "allow_period_identity_relationship_fallback": false,
+    "candidate_only_not_evidence": true
+  },
+  "qrels_contract": {
+    "current_state": "agent_curated_pending_owner_review",
+    "allowed_review_states": [
+      "historical_agent_authored_diagnostic",
+      "agent_curated_pending_owner_review",
+      "owner_reviewed"
+    ],
+    "target_identity_may_enter_query": false,
+    "candidate_ceiling_pass_requires_owner_reviewed_qrels": true,
+    "current_observation_may_only_establish": [
+      "route_execution_completeness",
+      "strict_candidate_presence",
+      "typed_period_index_corpus_or_resource_gaps",
+      "candidate_inventory_for_qrels_curation"
+    ]
+  },
+  "resource_qualification": {
+    "required_milvus_fields": [
+      "vector_id",
+      "embedding",
+      "evidence_id",
+      "ticker",
+      "fiscal_year",
+      "form_type",
+      "source_tier",
+      "vector_kind",
+      "object_type",
+      "preview"
+    ],
+    "expected_embedding_dim": 1024,
+    "milvus_lite_storage_kinds": ["file", "directory"],
+    "configured_model_must_exist_for_dense_execution": true,
+    "fallback_model_candidate_does_not_automatically_rewrite_config": true
+  },
+  "hard_boundaries": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "BGE_fusion_rerank_admitted": false,
+    "external_product_coverage_closed": false
+  }
+}

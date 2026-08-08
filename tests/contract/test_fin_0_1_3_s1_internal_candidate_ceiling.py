@@ -21,6 +21,7 @@ from sec_agent.s1_internal_candidate_ceiling import (  # noqa: E402
     execute_sql_exact_request,
     load_bound_integration_proof,
     load_internal_candidate_ceiling_policy,
+    resolve_document_lineage,
 )
 
 
@@ -79,6 +80,33 @@ def test_round_robin_dedupe_is_stable_and_does_not_let_one_query_take_budget() -
     )
     assert [item[0]["id"] for item in rows] == ["a", "c", "b"]
     assert rows[0][1] == (0, 1)
+
+
+def test_complete_record_embedded_lineage_prevents_stale_manifest_fallback() -> None:
+    lineage = resolve_document_lineage(
+        {
+            "ticker": "MU",
+            "fiscal_year": 2026,
+            "form_type": "8-K",
+            "published_at": "2026-06-24",
+            "source_url": "https://www.sec.gov/current",
+            "accession_number": "0000723125-26-000013",
+        },
+        lookup={
+            "by_accession": {},
+            "by_ticker_year_form": {
+                ("MU", 2026, "8-K"): [
+                    {
+                        "source_url": "https://www.sec.gov/stale",
+                        "published_at": "2026-03-18",
+                        "accession_number": "0000723125-26-000004",
+                    }
+                ]
+            },
+        },
+    )
+    assert lineage["source_url"] == "https://www.sec.gov/current"
+    assert lineage["resolution_method"] == "record_embedded_lineage"
 
 
 def _create_gold_db(path: Path) -> None:

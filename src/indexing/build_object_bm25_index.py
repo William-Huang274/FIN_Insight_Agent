@@ -226,6 +226,10 @@ def compact_structured_object_record(record: dict[str, Any]) -> dict[str, Any]:
         "source_type": record.get("source_type"),
         "form_type": record.get("form_type"),
         "source_tier": record.get("source_tier"),
+        "published_at": record.get("published_at"),
+        "publication_date": record.get("publication_date"),
+        "source_url": record.get("source_url"),
+        "accession_number": record.get("accession_number"),
         "period_end": record.get("period_end"),
         "period_type": record.get("period_type"),
         "duration_months": record.get("duration_months"),
@@ -308,6 +312,13 @@ def _compact_metadata(value: Any) -> dict[str, Any]:
         "period_type",
         "duration_months",
         "fiscal_period",
+        "filing_date",
+        "publication_date",
+        "published_at",
+        "source_url",
+        "accession_number",
+        "capture_digest",
+        "candidate_only_not_evidence",
     }
     return {key: value.get(key) for key in keep if value.get(key) not in (None, "", [], {})}
 

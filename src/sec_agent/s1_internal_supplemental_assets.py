@@ -14,7 +14,26 @@ from sec_agent.canonical_runtime.object_store import FileCanonicalObjectStore
 POLICY_SCHEMA = "fin_ia_0_1_3_s1_internal_supplemental_asset_policy_v1_0"
 MANIFEST_SCHEMA = "fin_ia_0_1_3_s1_internal_supplemental_asset_manifest_v1_0"
 CONTRACT_REF = "fin_0_1_3.S1.internal_supplemental_candidate_assets:v1"
+POLICY_SCHEMA_V1_1 = "fin_ia_0_1_3_s1_internal_supplemental_asset_policy_v1_1"
+MANIFEST_SCHEMA_V1_1 = (
+    "fin_ia_0_1_3_s1_internal_supplemental_asset_manifest_v1_1"
+)
+CONTRACT_REF_V1_1 = "fin_0_1_3.S1.internal_supplemental_candidate_assets:v1.1"
+_ASSET_SCHEMA_CONTRACTS = {
+    POLICY_SCHEMA: (MANIFEST_SCHEMA, CONTRACT_REF),
+    POLICY_SCHEMA_V1_1: (MANIFEST_SCHEMA_V1_1, CONTRACT_REF_V1_1),
+}
+_MANIFEST_SCHEMA_CONTRACTS = {
+    manifest_schema: contract_ref
+    for manifest_schema, contract_ref in _ASSET_SCHEMA_CONTRACTS.values()
+}
 RUN_SCOPE = "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH"
+FEDERATED_POLICY_SCHEMA = (
+    "fin_ia_0_1_3_s1_internal_supplemental_candidate_refresh_policy_v1_0"
+)
+FEDERATED_CONTRACT_REF = (
+    "fin_0_1_3.S1.internal_supplemental_candidate_refresh:v1.4"
+)
 
 
 class S1InternalSupplementalAssetError(RuntimeError):
@@ -39,9 +58,11 @@ def load_internal_supplemental_asset_policy(
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     policy = _read_json(Path(path))
+    expected = _ASSET_SCHEMA_CONTRACTS.get(str(policy.get("schema_version") or ""))
     if (
-        policy.get("schema_version") != POLICY_SCHEMA
-        or policy.get("contract_ref") != CONTRACT_REF
+        expected is None
+        or policy.get("manifest_schema") not in (None, expected[0])
+        or policy.get("contract_ref") != expected[1]
         or policy.get("run_scope") != RUN_SCOPE
         or policy.get("binding_hash_profile")
         != "sha256_utf8_lf_normalized_v1"
@@ -94,6 +115,125 @@ def load_internal_supplemental_asset_policy(
             "internal_supplemental_asset_boundary_invalid"
         )
     return policy
+
+
+def load_internal_supplemental_candidate_refresh_policy(
+    path: str | Path, *, repo_root: str | Path
+) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    policy = _read_json(Path(path))
+    if (
+        policy.get("schema_version") != FEDERATED_POLICY_SCHEMA
+        or policy.get("contract_ref") != FEDERATED_CONTRACT_REF
+        or policy.get("run_scope") != RUN_SCOPE
+        or policy.get("binding_hash_profile")
+        != "sha256_utf8_lf_normalized_v1"
+    ):
+        raise S1InternalSupplementalAssetError(
+            "internal_supplemental_candidate_refresh_policy_identity_invalid"
+        )
+    inputs = dict(policy.get("immutable_inputs") or {})
+    for stem in ("base_candidate_policy", "supplemental_asset_manifest"):
+        ref = str(inputs.get(f"{stem}_ref") or "")
+        supplied = str(inputs.get(f"{stem}_sha256") or "")
+        target = root / ref
+        if not ref or not target.is_file() or _normalized_sha256(target) != supplied:
+            raise S1InternalSupplementalAssetError(
+                f"internal_supplemental_candidate_refresh_binding_invalid:{stem}"
+            )
+    hard = dict(policy.get("hard_boundaries") or {})
+    if (
+        hard.get("cross_asset_raw_score_comparison") is not False
+        or hard.get("candidate_may_be_promoted_to_evidence") is not False
+        or hard.get("BGE_fusion_rerank_admitted") is not False
+        or any(
+            int(hard.get(name, -1)) != 0
+            for name in (
+                "network",
+                "provider",
+                "model",
+                "document_fetch",
+                "embedding",
+                "rerank",
+                "evidence_promotion",
+            )
+        )
+    ):
+        raise S1InternalSupplementalAssetError(
+            "internal_supplemental_candidate_refresh_boundary_invalid"
+        )
+    members = dict(policy.get("federated_asset_members") or {})
+    expected_sources = {
+        "internal_bm25": [
+            "base_candidate_policy.bm25_index_dir",
+            "supplemental_asset_manifest.bm25_index_ref",
+        ],
+        "internal_object_bm25": [
+            "base_candidate_policy.object_bm25_index_dir",
+            "supplemental_asset_manifest.object_bm25_index_ref",
+        ],
+    }
+    for route in ("internal_bm25", "internal_object_bm25"):
+        route_members = list(members.get(route) or [])
+        identities = [str(item.get("asset_id") or "") for item in route_members]
+        sources = [str(item.get("source") or "") for item in route_members]
+        if (
+            len(route_members) != 2
+            or len(set(identities)) != 2
+            or any(not item for item in identities)
+            or sources != expected_sources[route]
+        ):
+            raise S1InternalSupplementalAssetError(
+                f"internal_supplemental_candidate_refresh_members_invalid:{route}"
+            )
+    return policy
+
+
+def load_validated_supplemental_asset_manifest(
+    path: str | Path, *, repo_root: str | Path
+) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    manifest = _read_json(Path(path))
+    body = {
+        key: value
+        for key, value in manifest.items()
+        if key not in {"manifest_digest", "project_os_preflight", "implementation"}
+    }
+    manifest_schema = str(manifest.get("schema_version") or "")
+    if (
+        manifest_schema not in _MANIFEST_SCHEMA_CONTRACTS
+        or manifest.get("contract_ref")
+        != _MANIFEST_SCHEMA_CONTRACTS[manifest_schema]
+        or manifest.get("run_scope") != RUN_SCOPE
+        or manifest.get("status") != "supplemental_candidate_assets_built"
+        or str(manifest.get("manifest_digest") or "") != canonical_digest(body)
+        or any(int(value) != 0 for value in (manifest.get("observed_calls") or {}).values())
+        or manifest.get("stage_boundary", {}).get("candidate_assets_built") is not True
+        or manifest.get("stage_boundary", {}).get("candidate_ceiling_proven") is not False
+    ):
+        raise S1InternalSupplementalAssetError(
+            "internal_supplemental_asset_manifest_identity_invalid"
+        )
+    private_root = (root / str(manifest.get("private_asset_root_ref") or "")).resolve()
+    private_root.relative_to(root / "data" / "workbench_private")
+    inventory = list(manifest.get("private_file_inventory") or [])
+    if not inventory:
+        raise S1InternalSupplementalAssetError(
+            "internal_supplemental_asset_manifest_inventory_missing"
+        )
+    for item in inventory:
+        target = (private_root / str(item.get("path") or "")).resolve()
+        target.relative_to(private_root)
+        if (
+            not target.is_file()
+            or target.stat().st_size != int(item.get("bytes") or 0)
+            or hashlib.sha256(target.read_bytes()).hexdigest()
+            != str(item.get("sha256") or "")
+        ):
+            raise S1InternalSupplementalAssetError(
+                "internal_supplemental_asset_manifest_private_file_invalid"
+            )
+    return manifest
 
 
 def deterministic_text_chunks(
@@ -388,8 +528,8 @@ def build_internal_supplemental_assets(
     )
     file_inventory = _file_inventory(output_root)
     body = {
-        "schema_version": MANIFEST_SCHEMA,
-        "contract_ref": CONTRACT_REF,
+        "schema_version": str(policy.get("manifest_schema") or MANIFEST_SCHEMA),
+        "contract_ref": str(policy["contract_ref"]),
         "run_scope": RUN_SCOPE,
         "status": "supplemental_candidate_assets_built",
         "source_acquisition_result_digest": str(result["result_digest"]),
@@ -432,12 +572,19 @@ def build_internal_supplemental_assets(
 
 __all__ = [
     "CONTRACT_REF",
+    "CONTRACT_REF_V1_1",
+    "FEDERATED_CONTRACT_REF",
+    "FEDERATED_POLICY_SCHEMA",
     "FederatedReadOnlyRetriever",
     "MANIFEST_SCHEMA",
+    "MANIFEST_SCHEMA_V1_1",
     "POLICY_SCHEMA",
+    "POLICY_SCHEMA_V1_1",
     "RUN_SCOPE",
     "S1InternalSupplementalAssetError",
     "build_internal_supplemental_assets",
     "deterministic_text_chunks",
     "load_internal_supplemental_asset_policy",
+    "load_internal_supplemental_candidate_refresh_policy",
+    "load_validated_supplemental_asset_manifest",
 ]

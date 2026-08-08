@@ -515,6 +515,32 @@ def _record_accession_candidates(record: Mapping[str, Any]) -> list[str]:
 def resolve_document_lineage(
     record: Mapping[str, Any], *, lookup: Mapping[str, Any] | None
 ) -> dict[str, Any]:
+    metadata = dict(record.get("metadata") or {})
+    embedded_url = str(
+        record.get("source_url") or metadata.get("source_url") or ""
+    )
+    embedded_published_at = str(
+        record.get("published_at")
+        or record.get("publication_date")
+        or metadata.get("published_at")
+        or metadata.get("publication_date")
+        or metadata.get("filing_date")
+        or ""
+    )
+    embedded_accession = str(
+        record.get("accession_number")
+        or metadata.get("accession_number")
+        or ""
+    )
+    if embedded_url and embedded_published_at and embedded_accession:
+        return {
+            "source_url": embedded_url,
+            "published_at": embedded_published_at,
+            "filing_date": embedded_published_at,
+            "accession_number": embedded_accession,
+            "resolution_method": "record_embedded_lineage",
+            "manifest_ref": "",
+        }
     if not lookup:
         return {}
     for accession in _record_accession_candidates(record):

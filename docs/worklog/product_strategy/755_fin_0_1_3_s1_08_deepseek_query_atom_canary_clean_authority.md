@@ -24,3 +24,7 @@ authority、Project OS scope 迁移及历史 scope fail-closed 回归合计 S1-0
 ## 下一步
 
 Project OS 只切换到 `S1_08_QUERY_FACET_DEEPSEEK_ATOM_CANARY_EXACT_LIVE_EXECUTION`。先 issue 一份短时 fresh admission，再消费一次并保存终态；随后把自然 atom 重新编译进第三路 evaluation。combined live、内源 exact/BM25/dense/graph、qrels/candidate ceiling 与 BGE/fusion/rerank 均未授权，但仍按已登记顺序接力。
+
+## Replacement authority after portable admission repair
+
+A1 在 Provider 前暴露 Windows 文件名缺陷后，旧 authority 因 runner SHA 变化失效。portable repair 与 replacement proof 已在 clean/synced `a852bbbda3c71b441c3f8253568245f422984dc2` 上重新绑定；replacement authority digest=`360ec6c4c7c2a83e21b9d388159c06414ec8709cfe45b2422fcbb8cd636a1b55`，replacement proof digest=`897191599b93429dd50fc3201cbeeccea20eb1f509106883e6d0ab06f778bafc`。授权边界不变：只允许新 A2、一次 batch、0 retry/fallback，不复用 A1，不自动激活模型或进入 combined live。

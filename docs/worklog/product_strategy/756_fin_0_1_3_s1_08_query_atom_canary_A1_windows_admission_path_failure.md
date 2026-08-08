@@ -23,3 +23,7 @@ runner SHA 改变会使旧 implementation proof 和 authority binding 失效。�
 ## Repair reproof
 
 portable path 修复已在 clean/synced `ef47e273` 上重新执行零调用 implementation proof：合法 atom=`terminal_succeeded_exact_once`、empty abstention=`terminal_succeeded_exact_once`、非法期间 atom=`terminal_failed_no_retry`、duplicate admission blocked、private reasoning stripped；proof digest=`897191599b93429dd50fc3201cbeeccea20eb1f509106883e6d0ab06f778bafc`。S1-08 回归=`256 passed`。真实 provider/network/model=`0/0/0`。下一步只能从包含该 proof 的新 clean commit 重签 authority。
+
+## Replacement authority
+
+replacement proof 已提交并推送，随后从 clean/synced `a852bbbda3c71b441c3f8253568245f422984dc2` 重物化 authority，digest=`360ec6c4c7c2a83e21b9d388159c06414ec8709cfe45b2422fcbb8cd636a1b55`。RC-P36-158 可关闭；新的 A2 admission 仍未签发。A1 的失败证据与零 Provider 调用事实保持不变。

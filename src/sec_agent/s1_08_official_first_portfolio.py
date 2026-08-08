@@ -137,6 +137,7 @@ def load_portfolio_policy(path: str | Path) -> dict[str, Any]:
         policy.get("schema_version") != POLICY_SCHEMA
         or policy.get("contract_ref") != CONTRACT_REF
         or policy.get("run_scope") != RUN_SCOPE
+        or policy.get("binding_hash_profile") != "sha256_utf8_lf_normalized_v1"
         or tuple(policy.get("cases") or ()) != CASES
         or tuple(policy.get("external_evidence_slots") or ()) != SLOT_IDS
     ):

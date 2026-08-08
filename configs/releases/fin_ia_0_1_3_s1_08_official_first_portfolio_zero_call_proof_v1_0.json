@@ -151,16 +151,16 @@
     "release": false
   },
   "known_boundary": "The official-first route contract and immutable replay are engineering-proven. Firecrawl remains shadow-only, Tencent remains diagnostic-only, the DELL supply target is still absent, no new document was captured or promoted, and combined live, unified Query Facet, internal retrieval, ranking, S1-08, Agentic Research and release remain unproven.",
-  "policy_digest": "e4ff22e1ff318f8712a28109ecc07a9df70069cbdfe399f8cbac6f12cc535523",
+  "policy_digest": "dda02434423e6c0ae54dd4e26b6383cbbcc46d2ebb97bc61a6dcad5e6835bc77",
   "input_file_sha256": {
     "dell_r2": "8e9550c842ff28dacddd54ca043bbaa49ab219342655110acf99b6e4ade31a88",
     "firecrawl_assessment": "1ba0d2a65ad7e1c72bd6c00d5c19a2f3f93649a4395e75a4cc33572ca4ea2a7c",
     "firecrawl_result": "84fbafa1b67c7c0b0d620086a3e94f1e4f9f36e439e7d2b4495aee47a3cc46f7",
-    "official_source_closeout": "3b1fa9b173f900c2c42499701ec802ec66ea85a5968b3ade4951f3cfec2b1268",
+    "official_source_closeout": "3fc2a00333633735ef3e40ce4b05de265e340009f24f9ef8f768ef84e25a1bcf",
     "search_intent_policy": "be2e5f6c7fffca8f10877927b589caeb60425faf761eabec2a32850423ed5751",
     "source_catalog": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851",
-    "tencent_assessment": "70335b4b7d68c765cb2924b1590574a3e3b5f46e9f4c0041e491f7d8828ef5d7",
-    "tencent_result": "3e6df744227946ecef6facfafdecd90d013f63cb94a7fde515e719efead3a110"
+    "tencent_assessment": "31e1b2ae54b76bcd2189ecc8e09f8f58f5bdda8dff518420c9b191c2b8de936e",
+    "tencent_result": "9375ae94e87d5869b9025d69199d51f90564653b0a59b11a77c1a3a2d3a8c7d8"
   },
   "decision_file_sha256": "e1159b7a9555fa8847c0406906fb08ad160180ab3ddaded60ca2ac60482bb31f",
   "implementation": {
@@ -168,5 +168,5 @@
     "script_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_08_official_first_portfolio_zero_call_proof.py",
     "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_official_first_portfolio_policy_v1_0.json"
   },
-  "proof_digest": "4afe7aebbe6794dcec914e8a7d2dd00c598c1799ba4aac71cad6e6eb6c2bb343"
+  "proof_digest": "f04f36daf41f82795a80d61582f40f51178b0a75b94f42447a6e6728bbb08db8"
 }

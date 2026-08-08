@@ -29,6 +29,8 @@
 
 这轮没有把 Firecrawl 晋升为生产 Provider，也没有用既有 official Evidence 冒充 Firecrawl locator 已经完成 capture。DELL supply target 仍缺，因此 ranking 继续 blocked。
 
+clean proof A1 在第一份 Git archive 内按预期 fail closed：Tencent result／assessment 和 official closeout 的 Windows CRLF 工作树字节摘要与 Git archive LF 字节不同。内容与运行逻辑没有漂移；根因是本轮新 policy 没有声明跨平台 hash profile。处置限定在同一 S1-08：输入绑定改为 `sha256_utf8_lf_normalized_v1`，不复制本机文件进入 archive、不放宽内容摘要，也不把 A1 记成通过。
+
 ## 后续顺序
 
 1. clean archive／fresh process 复证本轮零调用实现；

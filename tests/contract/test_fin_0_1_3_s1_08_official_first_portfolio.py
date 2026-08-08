@@ -66,7 +66,8 @@ def _load(path: Path) -> dict:
 
 
 def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    normalized = path.read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(normalized).hexdigest()
 
 
 @pytest.fixture(scope="module")
@@ -87,6 +88,7 @@ def compiled() -> tuple[dict, dict]:
 
 def test_policy_is_bound_to_immutable_inputs_and_excludes_tencent() -> None:
     policy = load_portfolio_policy(PORTFOLIO_POLICY)
+    assert policy["binding_hash_profile"] == "sha256_utf8_lf_normalized_v1"
     refs = policy["immutable_replay_inputs"]
     pairs = (
         (refs["firecrawl_result_ref"], refs["firecrawl_result_sha256"]),

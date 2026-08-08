@@ -1,0 +1,1152 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_searxng_bounded_diagnostic_baseline_result_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.searxng_bounded_diagnostic_baseline_authority:v1",
+  "admission_id": "fin013-s1-08-searxng-bounded-diagnostic-baseline-r1",
+  "admission_digest": "e306e9579527179e64de746158c08a1f9ff5641581cc97773b94dc4032b9c894",
+  "admission_consumed": true,
+  "source_commit": "a5014c75e3ce9920cd83239d689aa262e04ee654",
+  "executed_at": "2026-08-08T07:55:56.152979+00:00",
+  "runtime_root": ".codex_runtime/fin013-s1-08-searxng-bounded-diagnostic-baseline-r1",
+  "provider_kind": "self_hosted_searxng_diagnostic_locator",
+  "case_results": [
+    {
+      "case_key": "DELL",
+      "query_id": "DELL-DIAGNOSTIC-Q1",
+      "elapsed_ms": 1409,
+      "result": {
+        "schema_version": "fin_ia_0_1_3_s1_08_searxng_diagnostic_query_result_v1_0",
+        "contract_ref": "fin_0_1_3.S1_08.searxng_diagnostic_locator_provider:v1",
+        "provider_kind": "self_hosted_searxng_diagnostic_locator",
+        "provider_lifecycle_state": "diagnostic_adapter_proven",
+        "query": {
+          "query_id": "DELL-DIAGNOSTIC-Q1",
+          "case_key": "DELL",
+          "evidence_slot_id": "dell_broad_web_locator_diagnostic",
+          "query_text": "Dell AI server demand customers supply chain 2026 earnings industry",
+          "language": "en-US",
+          "time_range": "year",
+          "categories": [
+            "general",
+            "news"
+          ],
+          "result_ceiling": 20,
+          "query_digest": "fa8feee8b128cb40026a7f721765767fb1e2c2db83c396ea4f67fede1d89489f"
+        },
+        "status": "completed",
+        "terminal_code": "diagnostic_locators_materialized",
+        "request_capture": {
+          "object_key": "fin-0.1.3/s1-08/searxng-diagnostic-captures/b6/a5/b6a55ea570157ac592a1364374131a988889d5d10ff46d3d2743d6e5af31d273.json",
+          "digest": "b6a55ea570157ac592a1364374131a988889d5d10ff46d3d2743d6e5af31d273",
+          "byte_size": 710,
+          "media_type": "application/json",
+          "artifact_type": "searxng_diagnostic_request"
+        },
+        "response_capture": {
+          "object_key": "fin-0.1.3/s1-08/searxng-diagnostic-captures/f2/10/f210ed24d68becd732d22fb7490f9ca5a2fb90eb1b55170f565986f6b26b3a29.json",
+          "digest": "f210ed24d68becd732d22fb7490f9ca5a2fb90eb1b55170f565986f6b26b3a29",
+          "byte_size": 14100,
+          "media_type": "application/json",
+          "artifact_type": "searxng_diagnostic_response"
+        },
+        "normalization_receipt": {
+          "object_key": "fin-0.1.3/s1-08/searxng-diagnostic-captures/f6/03/f6033391bbe3acb01d88fd43386481903a18c2b75a9a548213ba1f71ca2392fd.json",
+          "digest": "f6033391bbe3acb01d88fd43386481903a18c2b75a9a548213ba1f71ca2392fd",
+          "byte_size": 600,
+          "media_type": "application/json",
+          "artifact_type": "searxng_diagnostic_normalization_receipt"
+        },
+        "locators": [
+          {
+            "canonical_locator": "https://www.dell.com/en-us/blog/enterprise-demand-is-fueling-dell-s-ai-infrastructure-leadership/",
+            "original_locator_candidates": [
+              "https://www.dell.com/en-us/blog/enterprise-demand-is-fueling-dell-s-ai-infrastructure-leadership/"
+            ],
+            "title": "Enterprise Demand is Fueling Dell's AI Infrastructure Leadership",
+            "snippet_candidate": "Discover how enterprise AI demand is fueling Dell's leadership in AI infrastructure. Record-breaking revenue, expanded customer base, and innovative AI factories are driving real ROI and industry-wide adoption.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 1
+              }
+            ],
+            "best_rank_candidate": 1,
+            "score_candidates": [
+              "1"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "70c4973cc85c36ecf77075bc0d37dbb7737cafdc86251fe4119391676b43011c"
+          },
+          {
+            "canonical_locator": "https://businessof.tech/2026/03/02/dells-43b-ai-server-backlog-triggers-dram-shortage-repricing-downstream-hardware/",
+            "original_locator_candidates": [
+              "https://businessof.tech/2026/03/02/dells-43b-ai-server-backlog-triggers-dram-shortage-repricing-downstream-hardware/"
+            ],
+            "title": "Dell's $43B AI Server Backlog Triggers DRAM Shortage, Repricing ...",
+            "snippet_candidate": "The market is responding. Dell's 342% AI-optimized server revenue jump and $43 billion backlog are audited financials — not projection, but booked demand. This causes supply chain issues: Micron and Western Digital are sold out for 2026, and DRAM/SSD prices are up 100% quarter-over-quarter.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 2
+              }
+            ],
+            "best_rank_candidate": 2,
+            "score_candidates": [
+              "0.5"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "e52fcbd2840cd89e30be39c3d9c7305f5483cb28b910d1057b211b907fccf012"
+          },
+          {
+            "canonical_locator": "https://www.reuters.com/business/dell-forecasts-upbeat-growth-targets-strength-ai-server-sales-2025-11-25/",
+            "original_locator_candidates": [
+              "https://www.reuters.com/business/dell-forecasts-upbeat-growth-targets-strength-ai-server-sales-2025-11-25/"
+            ],
+            "title": "Dell bets on rising AI server demand to forecast higher growth",
+            "snippet_candidate": "Dell forecast fourth-quarter revenue and profit above Wall Street estimates on Tuesday, as increasing investments in data centers to support artificial intelligence boost demand for its servers ...",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 3
+              }
+            ],
+            "best_rank_candidate": 3,
+            "score_candidates": [
+              "0.333333333333"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "6bdc94b77e5a5552115c90e18e20852338a8fae4113aa6556954cc79b6304e07"
+          },
+          {
+            "canonical_locator": "https://futurumgroup.com/insights/dell-technologies-q3-fy-2026-ai-orders-backlog-and-outlook-rise/",
+            "original_locator_candidates": [
+              "https://futurumgroup.com/insights/dell-technologies-q3-fy-2026-ai-orders-backlog-and-outlook-rise/"
+            ],
+            "title": "Dell Technologies Q3 FY 2026: AI Orders, Outlook Rise - Futurum",
+            "snippet_candidate": "Futurum Research analyzes Dell's Q3 FY 2026 results, highlighting accelerating AI server demand, rack-scale deployment differentiation, and supply-chain execution amid rising memory costs.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 4
+              }
+            ],
+            "best_rank_candidate": 4,
+            "score_candidates": [
+              "0.25"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "e934c2c484891d19479c63e8584476c9e73c33a6e12244a918cbc73bd1325d46"
+          },
+          {
+            "canonical_locator": "https://www.reuters.com/business/dell-raises-annual-forecasts-ai-data-center-buildout-fuels-demand-2026-05-28/",
+            "original_locator_candidates": [
+              "https://www.reuters.com/business/dell-raises-annual-forecasts-ai-data-center-buildout-fuels-demand-2026-05-28/"
+            ],
+            "title": "Dell lifts forecasts as AI data center buildout fuels demand, shares ...",
+            "snippet_candidate": "Dell boosted its annual revenue and profit expectations on Thursday, showing data center expansion by clients is fueling demand for its AI-optimized servers that are powered by Nvidia's advanced ...",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 5
+              }
+            ],
+            "best_rank_candidate": 5,
+            "score_candidates": [
+              "0.2"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "1df8e7c89b0d69d88ac21d8b1f0f677eb41b4db781a1d555fec0c7ea81fdce5e"
+          },
+          {
+            "canonical_locator": "https://futurumgroup.com/insights/dell-q4-fy-2026-earnings-highlight-ai-optimized-server-ramp/",
+            "original_locator_candidates": [
+              "https://futurumgroup.com/insights/dell-q4-fy-2026-earnings-highlight-ai-optimized-server-ramp/"
+            ],
+            "title": "Dell Q4 FY 2026 Earnings Highlight AI-Optimized Server Ramp",
+            "snippet_candidate": "Futurum Research analyzes Dell's Q4 FY 2026 earnings, focusing on AI-optimized server scale, backlog expansion, and implications for infrastructure and client markets.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 6
+              }
+            ],
+            "best_rank_candidate": 6,
+            "score_candidates": [
+              "0.166666666667"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "87b5e8289aadce6f2cbb508d1d3a72e04a74caab0ec33a888da633b18081f566"
+          },
+          {
+            "canonical_locator": "https://www.ainvest.com/news/dell-q2-2026-earnings-call-contradictions-ai-server-revenue-storage-demand-pc-growth-outlook-2508/",
+            "original_locator_candidates": [
+              "https://www.ainvest.com/news/dell-q2-2026-earnings-call-contradictions-ai-server-revenue-storage-demand-pc-growth-outlook-2508/"
+            ],
+            "title": "Dell's Q2 2026 Earnings Call: Contradictions in AI Server Revenue ...",
+            "snippet_candidate": "- Dell reported Q2 FY2026 revenue of $29.8B (+19% YoY), driven by $8.2B in AI server shipments and $11.7B backlog. - Storage revenue fell 3% due to North American account slowdowns, while PC growth was fueled by Windows 10 end-of-life refresh demand. - Management raised full-year revenue guidance to $105-$109B, citing improved AI margins, storage seasonality, and lower OpEx in Q4 ...",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 7
+              }
+            ],
+            "best_rank_candidate": 7,
+            "score_candidates": [
+              "0.142857142857"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "9b0f4c10108bcb8e702b31904062651123672bbb2f4b9dcf3564c1274fa0dcc7"
+          },
+          {
+            "canonical_locator": "https://siliconangle.com/2026/05/28/ai-server-demand-drives-staggering-revenue-growth-dell-stock-soars/",
+            "original_locator_candidates": [
+              "https://siliconangle.com/2026/05/28/ai-server-demand-drives-staggering-revenue-growth-dell-stock-soars/"
+            ],
+            "title": "AI server demand drives staggering revenue growth for Dell and its ...",
+            "snippet_candidate": "AI server demand drives staggering revenue growth for Dell and its stock soars - SiliconANGLE SiliconANGLE Media is a recognized leader in digital media innovation, uniting breakthrough technology ...",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 8
+              }
+            ],
+            "best_rank_candidate": 8,
+            "score_candidates": [
+              "0.125"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "1d963e764739b217f73ed901165d26fb6bb058153ac285330246da2a11b87b94"
+          },
+          {
+            "canonical_locator": "https://www.forbes.com/sites/petercohan/2026/06/02/ai-server-demand-lifted-dell-and-hpe-but-margins-still-lag-the-boom/",
+            "original_locator_candidates": [
+              "https://www.forbes.com/sites/petercohan/2026/06/02/ai-server-demand-lifted-dell-and-hpe-but-margins-still-lag-the-boom/"
+            ],
+            "title": "AI Spending Surge Fuels Dell And HPE But Profitability Lags",
+            "snippet_candidate": "AI server demand lifts Dell and HPE to record quarters, but rising component costs and thin margins raise questions about how long their beat‑and‑raise streaks can last.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 9
+              }
+            ],
+            "best_rank_candidate": 9,
+            "score_candidates": [
+              "0.111111111111"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "e26af4d92e41d5687c1e1b2f5d7a8414dda2f68365ff3f2e818a5bca20c98596"
+          },
+          {
+            "canonical_locator": "https://www.thestack.technology/dell-breaks-records-says-traditional-server-demand-as-well-as-ai-surging/",
+            "original_locator_candidates": [
+              "https://www.thestack.technology/dell-breaks-records-says-traditional-server-demand-as-well-as-ai-surging/"
+            ],
+            "title": "Dell's 4,000 AI customers spend $64bn in FY26",
+            "snippet_candidate": "Demand saw the customer base for Dell's AI products tip over 4,000 during the quarter, with growth in neocloud, sovereign and enterprise customers as it recorded a record overall revenue high of $113.5 billion for the year. AI server revenue, separated out for the first time, made up almost $9 billion of Dell's $33 billion net revenue in Q4.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 10
+              }
+            ],
+            "best_rank_candidate": 10,
+            "score_candidates": [
+              "0.1"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "32a1b0cebf1c199a49449a089e335bd3df121b499bcb701af978f855381e4613"
+          }
+        ],
+        "locator_bundle_digest": "2a1bf3127f10013035cda6924989f48ef6d8956b8d579cf707cd78e0c94c0fd9",
+        "unresponsive_engines": [
+          {
+            "engine": "brave",
+            "reason": "too many requests"
+          }
+        ],
+        "rejection_codes": [],
+        "observed_counts": {
+          "upstream_raw_results": 10,
+          "normalized_locators": 10,
+          "query_calls": 1,
+          "network_calls": 1,
+          "model_calls": 0,
+          "provider_model_calls": 0,
+          "evidence_promotions": 0
+        },
+        "capability_boundary": {
+          "promotion_status": "diagnostic_locator_only",
+          "evidence_promotion_allowed": false,
+          "writer_citable": false,
+          "domain_judgment_eligible": false,
+          "financial_fact_authority": false,
+          "numeric_authority": "none",
+          "production_capability_claim_allowed": false
+        },
+        "result_digest": "c513d91ab5b4c65359c21ac727c688f54df6b442387c1a3a63bc3bd8061d2e38"
+      }
+    },
+    {
+      "case_key": "MU",
+      "query_id": "MU-DIAGNOSTIC-Q1",
+      "elapsed_ms": 1117,
+      "result": {
+        "schema_version": "fin_ia_0_1_3_s1_08_searxng_diagnostic_query_result_v1_0",
+        "contract_ref": "fin_0_1_3.S1_08.searxng_diagnostic_locator_provider:v1",
+        "provider_kind": "self_hosted_searxng_diagnostic_locator",
+        "provider_lifecycle_state": "diagnostic_adapter_proven",
+        "query": {
+          "query_id": "MU-DIAGNOSTIC-Q1",
+          "case_key": "MU",
+          "evidence_slot_id": "mu_broad_web_locator_diagnostic",
+          "query_text": "Micron HBM demand customers supply capacity 2026 earnings industry",
+          "language": "en-US",
+          "time_range": "year",
+          "categories": [
+            "general",
+            "news"
+          ],
+          "result_ceiling": 20,
+          "query_digest": "c23dea79b4242cd5363ed8797947bec85d33af96e7be481cc18ec2c668c812ff"
+        },
+        "status": "completed",
+        "terminal_code": "diagnostic_locators_materialized",
+        "request_capture": {
+          "object_key": "fin-0.1.3/s1-08/searxng-diagnostic-captures/1e/98/1e9870b8e1444eeb8a03c58625a0de192f8062c27c2be30835ac3d8178fa16ca.json",
+          "digest": "1e9870b8e1444eeb8a03c58625a0de192f8062c27c2be30835ac3d8178fa16ca",
+          "byte_size": 705,
+          "media_type": "application/json",
+          "artifact_type": "searxng_diagnostic_request"
+        },
+        "response_capture": {
+          "object_key": "fin-0.1.3/s1-08/searxng-diagnostic-captures/9d/f2/9df2a29484aca8829a51a014bc80bc1a3cd37f7b39f41c30f2e238e837b6f2ea.json",
+          "digest": "9df2a29484aca8829a51a014bc80bc1a3cd37f7b39f41c30f2e238e837b6f2ea",
+          "byte_size": 13355,
+          "media_type": "application/json",
+          "artifact_type": "searxng_diagnostic_response"
+        },
+        "normalization_receipt": {
+          "object_key": "fin-0.1.3/s1-08/searxng-diagnostic-captures/43/47/4347d95d62d7763912b73b38737d28437393622b8ab26a4dc6dc0898ad51c5c4.json",
+          "digest": "4347d95d62d7763912b73b38737d28437393622b8ab26a4dc6dc0898ad51c5c4",
+          "byte_size": 611,
+          "media_type": "application/json",
+          "artifact_type": "searxng_diagnostic_normalization_receipt"
+        },
+        "locators": [
+          {
+            "canonical_locator": "https://successknocks.com/micron-hbm-demand-2026/",
+            "original_locator_candidates": [
+              "https://successknocks.com/micron-hbm-demand-2026/"
+            ],
+            "title": "Micron HBM Demand 2026 - Success Knocks | The Business Magazine",
+            "snippet_candidate": "Dive into Micron HBM demand 2026: sold-out supply, HBM4 ramp, $20B capex boost, AI-driven growth, and why 2026 looks explosive for high-bandwidth memory.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 1
+              }
+            ],
+            "best_rank_candidate": 1,
+            "score_candidates": [
+              "1"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "5cf336830f2b80e430a59a053172007c1c37476ec2471f60e767511d88b9f3b2"
+          },
+          {
+            "canonical_locator": "https://futurumgroup.com/insights/micron-technology-q1-fy-2026-sets-records-strong-q2-outlook/",
+            "original_locator_candidates": [
+              "https://futurumgroup.com/insights/micron-technology-q1-fy-2026-sets-records-strong-q2-outlook/"
+            ],
+            "title": "Micron Technology Q1 FY 2026 Sets Records; Strong Q2 Outlook",
+            "snippet_candidate": "Futurum Research analyzes Micron's Q1 FY 2026, focusing on AI-led demand, HBM commitments, and a pulled-forward capacity roadmap, with guidance signaling continued strength into FY 2026 amid persistent industry supply tightness.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 2
+              }
+            ],
+            "best_rank_candidate": 2,
+            "score_candidates": [
+              "0.5"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "049e6867f0652061c0c5f9e1b4355a40fd03ac5ceb3e8555340771166d2a43d1"
+          },
+          {
+            "canonical_locator": "https://tech-insider.org/micron-q2-2026-earnings-ai-memory-market/",
+            "original_locator_candidates": [
+              "https://tech-insider.org/micron-q2-2026-earnings-ai-memory-market/"
+            ],
+            "title": "Micron Q2 2026: Record Revenue on AI Boom [Analysis]",
+            "snippet_candidate": "Micron Q2 FY2026 earnings smashed records with $23.86B revenue and 75% margins. Deep analysis of HBM demand, capex plans, and AI memory market impact.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 3
+              }
+            ],
+            "best_rank_candidate": 3,
+            "score_candidates": [
+              "0.333333333333"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "3eeba349c97c42d324b3ad3567fb22b23a5489da4b1a21adc70f23156bae0322"
+          },
+          {
+            "canonical_locator": "https://finance.yahoo.com/markets/stocks/articles/micron-technology-inc-q2-2026-123000098.html",
+            "original_locator_candidates": [
+              "https://finance.yahoo.com/markets/stocks/articles/micron-technology-inc-q2-2026-123000098.html"
+            ],
+            "title": "Micron Technology, Inc. Q2 2026 Earnings Call Summary",
+            "snippet_candidate": "The Singapore advanced packaging facility is scheduled to contribute meaningfully to HBM supply starting in calendar 2027, following the HBM4 12-Hi volume ramp in 2026.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 4
+              }
+            ],
+            "best_rank_candidate": 4,
+            "score_candidates": [
+              "0.25"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "24408becd68c5fc44520e842382f58d5aab69b97f5a2dab2f8bbc016df7b68ab"
+          },
+          {
+            "canonical_locator": "https://tickeron.com/blogs/micron-technology-mu-sold-out-hbm-supply-and-ai-tailwinds-point-to-strong-2026-growth-12100/",
+            "original_locator_candidates": [
+              "https://tickeron.com/blogs/micron-technology-mu-sold-out-hbm-supply-and-ai-tailwinds-point-to-strong-2026-growth-12100/"
+            ],
+            "title": "Micron Technology (MU): Sold-Out HBM Supply and AI Tailwinds Point to ...",
+            "snippet_candidate": "Consensus points to $33.5B in revenue and 81% gross margins, fueled by AI data center demand. With Micron's 2026 HBM capacity fully sold out under fixed-price contracts—including HBM4 shipments starting in Q2 calendar 2026—this setup locks in pricing and volumes, which could push EPS above the expected $32+ for fiscal 2026.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 5
+              }
+            ],
+            "best_rank_candidate": 5,
+            "score_candidates": [
+              "0.2"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "200bd62497f4b1ab506ee78aa2b4e235efa5b51b156066047b89fa09c31ae134"
+          },
+          {
+            "canonical_locator": "https://futurumgroup.com/insights/micron-q3-fy-2026-hbm-and-lpdram-drive-the-next-phase-of-ai-memory-growth/",
+            "original_locator_candidates": [
+              "https://futurumgroup.com/insights/micron-q3-fy-2026-hbm-and-lpdram-drive-the-next-phase-of-ai-memory-growth/"
+            ],
+            "title": "Micron Q3 FY 2026: HBM and LPDRAM Drive the Next Phase of AI Memory ...",
+            "snippet_candidate": "Futurum Research at The Futurum Group reviews Micron's Q3 FY 2026 earnings, focusing on AI-led memory demand, Strategic Customer Agreements, HBM supply tightness, and greenfield ramp implications for FY 2027.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 6
+              }
+            ],
+            "best_rank_candidate": 6,
+            "score_candidates": [
+              "0.166666666667"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "6ec28d5d95d2507a986e7be0cb826c397499dd56cb3e594273b8fad3b75491a4"
+          },
+          {
+            "canonical_locator": "https://investors.micron.com/static-files/9c0becf5-df56-4eec-bd67-453dda68b273",
+            "original_locator_candidates": [
+              "https://investors.micron.com/static-files/9c0becf5-df56-4eec-bd67-453dda68b273"
+            ],
+            "title": "Presentation - investors.micron.com",
+            "snippet_candidate": "Overview (1 of 3) Micron delivered an exceptional fiscal Q2, with stellar records in revenue, gross margin, EPS (earnings per share) and free cash flow. Quarterly revenue nearly tripled versus one year ago, and revenue for DRAM, NAND, HBM (high-bandwidth memory) and each business unit reached new highs.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 7
+              }
+            ],
+            "best_rank_candidate": 7,
+            "score_candidates": [
+              "0.142857142857"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "8d4f3253142881d4569daf8cc7f43bd71830dc09bc923f702d3cabb8a47d73e3"
+          },
+          {
+            "canonical_locator": "https://www.ainvest.com/news/micron-sold-hbm-2026-capacity-locks-pricing-power-margin-surge-2604/",
+            "original_locator_candidates": [
+              "https://www.ainvest.com/news/micron-sold-hbm-2026-capacity-locks-pricing-power-margin-surge-2604/"
+            ],
+            "title": "Micron's Sold-Out HBM 2026 Capacity Locks in Pricing Power and Margin Surge",
+            "snippet_candidate": "- Micron transitions from cyclical memory supplier to AI infrastructure AIIA0.00% leader, with Q1 2026 revenue hitting $13.6B and 100% YoY Cloud Memory growth. - 2026 HBM capacity sold out under binding contracts locks in premium pricing, creating structural supply tightness favoring advanced technology.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 8
+              }
+            ],
+            "best_rank_candidate": 8,
+            "score_candidates": [
+              "0.125"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "62f527135b366a8b6899d90b82d8c2df870a443bc90bb60a6907e70b253c70f8"
+          },
+          {
+            "canonical_locator": "https://investors.micron.com/static-files/530bd7ed-a8c8-4687-af4a-8c129f740e09",
+            "original_locator_candidates": [
+              "https://investors.micron.com/static-files/530bd7ed-a8c8-4687-af4a-8c129f740e09"
+            ],
+            "title": "Presentation - investors.micron.com",
+            "snippet_candidate": "We have completed agreements on price and volume for our entire calendar 2026 HBM supply, including Micron's industry-leading HBM4. We forecast an HBM TAM CAGR of approximately 40% through calendar 2028, from approximately $35 billion in 2025 to around $100 billion in 2028.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 9
+              }
+            ],
+            "best_rank_candidate": 9,
+            "score_candidates": [
+              "0.111111111111"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "7ff2668bf2487e30601f8c07db972656916677e6719a8c45ae1dd1ff80e63b0f"
+          },
+          {
+            "canonical_locator": "https://tradethepool.com/fundamental/micron-q3-fy2026-earnings-revenue-ai-boom-guidance/",
+            "original_locator_candidates": [
+              "https://tradethepool.com/fundamental/micron-q3-fy2026-earnings-revenue-ai-boom-guidance/"
+            ],
+            "title": "Micron Q3 FY2026 Earnings: Revenue, AI Boom & Guidance",
+            "snippet_candidate": "Micron Q3 FY2026 earnings: $41.5B revenue, $25.11 non-GAAP EPS, 84.9% gross margin, and $50B Q4 guidance driven by record AI memory demand.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 10
+              }
+            ],
+            "best_rank_candidate": 10,
+            "score_candidates": [
+              "0.1"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "6da6843b9d315cd265bfe1bb3fcd858e1b1573a3fd72ec30cdf78651e1bce29e"
+          }
+        ],
+        "locator_bundle_digest": "cb0014e8f4894fca6f7e92bc3248e37ebd92224507ab1aa4a77b43369d711ab7",
+        "unresponsive_engines": [
+          {
+            "engine": "brave",
+            "reason": "Suspended: too many requests"
+          }
+        ],
+        "rejection_codes": [],
+        "observed_counts": {
+          "upstream_raw_results": 10,
+          "normalized_locators": 10,
+          "query_calls": 1,
+          "network_calls": 1,
+          "model_calls": 0,
+          "provider_model_calls": 0,
+          "evidence_promotions": 0
+        },
+        "capability_boundary": {
+          "promotion_status": "diagnostic_locator_only",
+          "evidence_promotion_allowed": false,
+          "writer_citable": false,
+          "domain_judgment_eligible": false,
+          "financial_fact_authority": false,
+          "numeric_authority": "none",
+          "production_capability_claim_allowed": false
+        },
+        "result_digest": "6c12977670edf8abede0054a82d0dd611e004964366e979ce2bc7f054298aebd"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "query_id": "NVDA-DIAGNOSTIC-Q1",
+      "elapsed_ms": 1168,
+      "result": {
+        "schema_version": "fin_ia_0_1_3_s1_08_searxng_diagnostic_query_result_v1_0",
+        "contract_ref": "fin_0_1_3.S1_08.searxng_diagnostic_locator_provider:v1",
+        "provider_kind": "self_hosted_searxng_diagnostic_locator",
+        "provider_lifecycle_state": "diagnostic_adapter_proven",
+        "query": {
+          "query_id": "NVDA-DIAGNOSTIC-Q1",
+          "case_key": "NVDA",
+          "evidence_slot_id": "nvda_broad_web_locator_diagnostic",
+          "query_text": "NVIDIA AI accelerator demand customers supply constraints 2026 earnings industry",
+          "language": "en-US",
+          "time_range": "year",
+          "categories": [
+            "general",
+            "news"
+          ],
+          "result_ceiling": 20,
+          "query_digest": "987854ddf06052e5c9a66e871061ee823b129d322a78fdcc3edb952a8901b34a"
+        },
+        "status": "completed",
+        "terminal_code": "diagnostic_locators_materialized",
+        "request_capture": {
+          "object_key": "fin-0.1.3/s1-08/searxng-diagnostic-captures/33/ce/33ce56f529fc65416c2fd37b64912eb9b8e927e00f380c41ebf8117553e6101d.json",
+          "digest": "33ce56f529fc65416c2fd37b64912eb9b8e927e00f380c41ebf8117553e6101d",
+          "byte_size": 723,
+          "media_type": "application/json",
+          "artifact_type": "searxng_diagnostic_request"
+        },
+        "response_capture": {
+          "object_key": "fin-0.1.3/s1-08/searxng-diagnostic-captures/d6/2f/d62f302048f4497e4ff54765d4687b9740748ea5b79733764ee6f274ea26349a.json",
+          "digest": "d62f302048f4497e4ff54765d4687b9740748ea5b79733764ee6f274ea26349a",
+          "byte_size": 13065,
+          "media_type": "application/json",
+          "artifact_type": "searxng_diagnostic_response"
+        },
+        "normalization_receipt": {
+          "object_key": "fin-0.1.3/s1-08/searxng-diagnostic-captures/6e/ca/6ecaaa840df333a69d356dbc6b3205824673bdc3c17105516229d4123725d37e.json",
+          "digest": "6ecaaa840df333a69d356dbc6b3205824673bdc3c17105516229d4123725d37e",
+          "byte_size": 611,
+          "media_type": "application/json",
+          "artifact_type": "searxng_diagnostic_normalization_receipt"
+        },
+        "locators": [
+          {
+            "canonical_locator": "https://celadonresearch.com/research/nvidia-ai-accelerators-q1-2026",
+            "original_locator_candidates": [
+              "https://celadonresearch.com/research/nvidia-ai-accelerators-q1-2026"
+            ],
+            "title": "NVIDIA AI Accelerator Market Position: Q1 2026 Snapshot",
+            "snippet_candidate": "If NVIDIA Blackwell supply constraints persist through 2026-2027, total accelerator shipments and revenue may be suppressed despite customer demand, creating a gap between potential TAM and realized market.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 1
+              }
+            ],
+            "best_rank_candidate": 1,
+            "score_candidates": [
+              "1"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "1ac84090fe4ebd376276d1a769806e83727ab77fc176d62117b79e9744b39e76"
+          },
+          {
+            "canonical_locator": "https://www.quantumrun.com/consulting/nvidia-statistics/",
+            "original_locator_candidates": [
+              "https://www.quantumrun.com/consulting/nvidia-statistics/"
+            ],
+            "title": "Nvidia Statistics 2026: AI Chip Demand And GPU Compute Performance Metrics",
+            "snippet_candidate": "Source: NVIDIA quarterly results (Forms 8-K) Non-GAAP gross margin held at 75% in Q1 fiscal 2027, up from 71.3% a year earlier. Nvidia guided to about $91 billion in revenue for the following quarter. Nvidia Data Center Revenue and AI Chip Demand Data center is the core of Nvidia's business in 2026. The segment generated $193.7 billion for full-year fiscal 2026, up 68%, and accounts for ...",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 2
+              }
+            ],
+            "best_rank_candidate": 2,
+            "score_candidates": [
+              "0.5"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "e5b5f45cc54f05722f35ad0de10475689f5632ab42845eb4e2b414c4760c6eea"
+          },
+          {
+            "canonical_locator": "https://kga-it.com/en/blog/ai-market-nvidia-tsmc-earnings-q1-2026",
+            "original_locator_candidates": [
+              "https://kga-it.com/en/blog/ai-market-nvidia-tsmc-earnings-q1-2026"
+            ],
+            "title": "NVIDIA/TSMC/ASML Q1 2026 Earnings: AI Semiconductor Supply Chain ...",
+            "snippet_candidate": "What Q1 2026 Earnings Reveal About AI Semiconductor Reality The third week of April 2026 brought results from all three core players in the AI semiconductor supply chain — and every one of them beat market expectations. NVIDIA's data center segment revenue hit $52.1 billion, up 71% year-over-year and 9% sequentially, comfortably above the $49.8 billion consensus. Gross margin came in at 75.8 ...",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 3
+              }
+            ],
+            "best_rank_candidate": 3,
+            "score_candidates": [
+              "0.333333333333"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "bc1be6d1139fb4cdae7edf4579bd5a53587b9f0b62addd34cc8572741ab9cd72"
+          },
+          {
+            "canonical_locator": "https://voxbooster.com/blog/ai-chips-statistics-2026/",
+            "original_locator_candidates": [
+              "https://voxbooster.com/blog/ai-chips-statistics-2026/"
+            ],
+            "title": "AI Chips Statistics 2026: 55+ Data Points on Market Growth, Vendor ...",
+            "snippet_candidate": "AI chip statistics for 2026: market size, NVIDIA and AMD revenue, custom hyperscaler silicon, HBM memory demand, regional share, and supply constraints, all traced to primary sources.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 4
+              }
+            ],
+            "best_rank_candidate": 4,
+            "score_candidates": [
+              "0.25"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "7faeb7d894d1a0483faf6fb157d5615d42da45aa5663826c37f1f49720db017d"
+          },
+          {
+            "canonical_locator": "https://alphabetastock.com/nvidia-earnings-ai-chip-demand-2026/",
+            "original_locator_candidates": [
+              "https://alphabetastock.com/nvidia-earnings-ai-chip-demand-2026/"
+            ],
+            "title": "Nvidia Earnings Highlight Sustained AI Chip Demand",
+            "snippet_candidate": "What to watch Investors should monitor Blackwell production yields and customer order patterns from hyperscalers. Microsoft, Google, and Meta have all signaled continued capital expenditure growth in AI infrastructure through 2027. Any slowdown in those capex plans would pressure Nvidia's growth trajectory. Supply chain constraints on advanced packaging remain the primary risk to the current ...",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 5
+              }
+            ],
+            "best_rank_candidate": 5,
+            "score_candidates": [
+              "0.2"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "68308bd5236d5b67e157a35d4e010a109c0efa4799a23ec9f9b78d605c08f839"
+          },
+          {
+            "canonical_locator": "https://siliconanalysts.com/analysis",
+            "original_locator_candidates": [
+              "https://siliconanalysts.com/analysis"
+            ],
+            "title": "Industry Analysis - Semiconductor Market Intelligence",
+            "snippet_candidate": "Deep-dive semiconductor industry analysis covering TSMC, Nvidia, AMD, Intel, Samsung, and the AI chip supply chain. Cost analysis, market dynamics, and competitive intelligence.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 6
+              }
+            ],
+            "best_rank_candidate": 6,
+            "score_candidates": [
+              "0.166666666667"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "b7590251e778aad619e52d55f66c60af8384b463ca5f03ee9c8a8beedf56fbec"
+          },
+          {
+            "canonical_locator": "https://axis-intelligence.com/nvidia-statistics/",
+            "original_locator_candidates": [
+              "https://axis-intelligence.com/nvidia-statistics/"
+            ],
+            "title": "Nvidia Statistics 2026: $215.9B Revenue & AI Dominance Data",
+            "snippet_candidate": "Nvidia hit $215.9B revenue in FY2026 — up 65%. Full data on GPU market share (80-88%), segment breakdown, NRVI™ index, and Q1 FY2027 $81.6B quarter. Nvidia Statistics 2026 Update.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 7
+              }
+            ],
+            "best_rank_candidate": 7,
+            "score_candidates": [
+              "0.142857142857"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "b20e2ebab7c8a00b0e81bfed33324c5914896bc6aa58177d173980d1adec3cfe"
+          },
+          {
+            "canonical_locator": "https://futurumgroup.com/insights/nvidia-q4-fy-2026-earnings-highlight-durable-ai-infrastructure-demand/",
+            "original_locator_candidates": [
+              "https://futurumgroup.com/insights/nvidia-q4-fy-2026-earnings-highlight-durable-ai-infrastructure-demand/"
+            ],
+            "title": "NVIDIA Q4 FY 2026 Earnings: Durable AI Infrastructure Demand - Futurum",
+            "snippet_candidate": "NVIDIA Q4 FY 2026 earnings reflect durable AI infrastructure demand, driven by data center scale, networking growth, and agentic AI adoption.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 8
+              }
+            ],
+            "best_rank_candidate": 8,
+            "score_candidates": [
+              "0.125"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "c04c86b2ce76089dc15f33fccdfa32e838ef81b273bdb73fa634baefa50b5b78"
+          },
+          {
+            "canonical_locator": "https://daloopa.com/blog/analyst-pov/nvidia-customer-concentration-a-big-4-earnings-preview",
+            "original_locator_candidates": [
+              "https://daloopa.com/blog/analyst-pov/nvidia-customer-concentration-a-big-4-earnings-preview"
+            ],
+            "title": "NVIDIA Customer Concentration: A Big 4 Earnings Preview",
+            "snippet_candidate": "NVIDIA earnings preview: rising customer concentration (61%) and hyperscaler custom chips challenge its share as AI infrastructure spend surges.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 9
+              }
+            ],
+            "best_rank_candidate": 9,
+            "score_candidates": [
+              "0.111111111111"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "969693dcfa4b1091720c4d96e51c7edeec144cd5bd3f496c7a9cb146247e16f6"
+          },
+          {
+            "canonical_locator": "https://intellectia.ai/blog/nvidia-stock-analysis-july-2026-alphio",
+            "original_locator_candidates": [
+              "https://intellectia.ai/blog/nvidia-stock-analysis-july-2026-alphio"
+            ],
+            "title": "Nvidia Stock Analysis July 2026: AI Chip Demand & Investment Outlook",
+            "snippet_candidate": "Nvidia stock analysis July 2026: Explore NVDA's $1 trillion AI chip demand forecast, data center growth, Blackwell architecture, and investment risks for informed trading decisions.",
+            "published_on_candidate": "",
+            "source_engines": [
+              "duckduckgo"
+            ],
+            "engine_rank_candidates": [
+              {
+                "engine": "duckduckgo",
+                "rank_candidate": 10
+              }
+            ],
+            "best_rank_candidate": 10,
+            "score_candidates": [
+              "0.1"
+            ],
+            "promotion_status": "diagnostic_locator_only",
+            "evidence_promotion_allowed": false,
+            "writer_citable": false,
+            "domain_judgment_eligible": false,
+            "financial_fact_authority": false,
+            "numeric_authority": "none",
+            "locator_digest": "57935b217a8ba9efa62f35958dde21604e934592ab6a42621abe082606f9da6b"
+          }
+        ],
+        "locator_bundle_digest": "ee4368fc1741e21651cc5ab04178165d086afafa1469e951caa8c76e299df141",
+        "unresponsive_engines": [
+          {
+            "engine": "brave",
+            "reason": "Suspended: too many requests"
+          }
+        ],
+        "rejection_codes": [],
+        "observed_counts": {
+          "upstream_raw_results": 10,
+          "normalized_locators": 10,
+          "query_calls": 1,
+          "network_calls": 1,
+          "model_calls": 0,
+          "provider_model_calls": 0,
+          "evidence_promotions": 0
+        },
+        "capability_boundary": {
+          "promotion_status": "diagnostic_locator_only",
+          "evidence_promotion_allowed": false,
+          "writer_citable": false,
+          "domain_judgment_eligible": false,
+          "financial_fact_authority": false,
+          "numeric_authority": "none",
+          "production_capability_claim_allowed": false
+        },
+        "result_digest": "efc7080399f9d9d27678a12664c19138e7029f694e213fc31b766abafabf07e0"
+      }
+    }
+  ],
+  "summary": {
+    "formal_case_queries": 3,
+    "fin_to_searxng_query_calls": 3,
+    "adapter_observed_network_calls": 3,
+    "configured_metasearch_engine_ceiling_per_query": 4,
+    "searxng_to_upstream_http_request_count_exactly_known": false,
+    "model_calls": 0,
+    "retry_calls": 0,
+    "raw_locator_rows": 30,
+    "normalized_unique_locators": 30,
+    "canonical_duplicate_rows_removed": 0,
+    "engine_locator_counts": {
+      "duckduckgo": 30
+    },
+    "case_terminal_statuses": [
+      "completed",
+      "completed",
+      "completed"
+    ],
+    "evidence_promotions": 0,
+    "capture_count": 9
+  },
+  "acceptance": {
+    "bounded_diagnostic_execution_materialized": true,
+    "diagnostic_locator_recall_sufficient": null,
+    "production_search_capability_proven": false,
+    "evidence_retrieval_quality_proven": false,
+    "financial_research_quality_proven": false
+  },
+  "hard_boundary": {
+    "promotion_status": "diagnostic_locator_only",
+    "evidence_promotion_allowed": false,
+    "writer_citable": false,
+    "numeric_authority": "none",
+    "public_instance_fallback_used": false,
+    "paid_search_provider_selected": false
+  },
+  "result_digest": "3b1394c991b936a34fbd9c79db4ce94b92d3ae2f2816b3717e6b7bda9410e6aa"
+}

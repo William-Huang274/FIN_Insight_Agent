@@ -427,8 +427,8 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 
 1. [x] `P3` 已选择 repair-first：批准一次 bounded scheduler/cache 零调用 repair/proof；Provider、动态页、licensed source 与 Internal Alpha 来源承诺缩减 deferred；
 2. [x] `P3A` 已在 `16` 次上限不变时完成 v4 successor、R3 natural-topology replay、三案 fake/mutation 和 A2 双 clean proof；A1 保留，P3A 不生成 live authority；
-3. [ ] 先做 SearXNG diagnostic adapter 与有界 baseline；它只比较 locator coverage，不拥有 Evidence/事实/生产 fallback 权。未来商业 API 使用完全相同的 provider-neutral contract 对照；
-4. `P3B` 再结合 P3A 与 Provider 对照，由 Owner 复核生产来源能力、来源承诺与 no-R4；
+3. [x] 完成 SearXNG diagnostic adapter 与一次有界三案 baseline；它只比较 locator coverage，不拥有 Evidence/事实/生产 fallback 权。正式结果=`3 FIN queries / 30 unique locators / 9 captures / 0 model-retry-promotion`，但只有 DuckDuckGo 产出 locator、Brave 三案均限流、Bing 被不兼容的统一 `year` 过滤挡住、默认 Google inactive，且 `0/30` 返回发布日期；故机械诊断链通过，多引擎与 currentness 质量失败；
+4. `P3B` 不再自动进入新 SearXNG live。先等待一个候选付费 broad-search API 的完整 HTTPS/认证/响应/成本资料，再以 provider-neutral semantic query＋provider-specific capability compiler 做零调用资格审查和同案有界对照；之后由 Owner 复核生产来源能力、来源承诺与 no-R4；
 5. 在 DELL candidate ceiling 重新成立前，MU/NVDA、ranking、Experiment B、S3 formal research、S4 current dogfood 和 S5 release 均不准入；
 6. 本轮不调用 DeepSeek，所以 S2 model profile 不因 R3/P3 增减分。模型能力与搜索工具能力继续分轨。
 
@@ -459,11 +459,12 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 21. [x] 完成零调用 `S1_08_P3_POST_R3_OWNED_SCHEDULER_CACHE_AND_PROVIDER_PRODUCT_SCOPE_DISPOSITION_DECISION`：选择 repair-first，Provider／产品来源范围 deferred，no-R4 与 16-call ceiling 不变。
 22. [x] `S1_08_P3A_PROTECTED_DOCUMENT_FETCH_BUDGET_AND_ATTEMPT_LOCAL_CACHE_ZERO_CALL_IMPLEMENTATION_AND_PROOF`：A2 clean proof pass，P3A independently proven，外部调用、admission 与 live 均为 0。
 23. [x] 实现并零调用证明 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_ADAPTER_ZERO_CALL_IMPLEMENTATION_AND_PROOF`；clean v1.1 通过，失败部署尝试保留，SearXNG 仍不计生产能力。
-24. [ ] **当前下一项**：执行一次 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_BOUNDED_NETWORK_BASELINE`，最多三个 FIN query、0 retry、0 Evidence promotion；结果只用于未来付费 API 对照。
-25. [ ] Provider 对照后由 Owner 单独决定 production Provider／source claim／no-R4；在此之前不命名或签发新 DELL product-live。
-26. [ ] 在冻结 Evidence Pack 上完成 `DS-A1/A2/A3` ModelCapabilityProfile、DeepSeek profile、AutonomyGrant 与最小 natural canary；可做零调用准备，但在 S1 candidate ceiling 未解锁前不得进入 S3 formal run。
-27. [ ] 完成 `013-S3-06–09`：动态 Lead loop、研究方法 runtime injection/node consumption、EvidenceRequest/targeted repair、三案 Experiment B、隐藏 Gold 八维对照、paired gain 与 qualified-human 内容验收。
-28. [ ] 执行 FIN 0.1.3 current S4 Workbench dogfood，再执行 S5 RG1–RG5；只有内容合格的 current candidate 可获得 FIN 0.1.3 内部版本收口结论。
+24. [x] 执行一次 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_BOUNDED_NETWORK_BASELINE`：三案均 terminal materialized，FIN→SearXNG=`3`、raw/unique locator=`30/30`、capture=`9`、model/retry/Evidence promotion=`0/0/0`；只有 DuckDuckGo 贡献结果，`published date=0/30`，因此结论为 `diagnostic execution pass / multi-engine and currentness quality fail`。运行后 Windows GBK 控制台显示失败不改写已原子保存的 UTF-8 终态，admission 已消费且未重跑。
+25. [ ] **当前外部输入**：等待用户提供一个候选付费 broad-search API 的 standalone HTTPS raw HTTP/curl、认证方式、响应 JSON、分页/过滤/日期字段、限流与价格。收到后先做 `S1_08_PAID_BROAD_SEARCH_PROVIDER_INPUT_QUALIFICATION` 零调用决策，再做同三案有界 comparator；不得直接把新 API 写成生产能力。
+26. [ ] Provider 对照后由 Owner 单独决定 production Provider／source claim／no-R4；在此之前不命名或签发新 DELL product-live，也不重跑 SearXNG。
+27. [ ] 在冻结 Evidence Pack 上完成 `DS-A1/A2/A3` ModelCapabilityProfile、DeepSeek profile、AutonomyGrant 与最小 natural canary；可做零调用准备，但在 S1 candidate ceiling 未解锁前不得进入 S3 formal run。
+28. [ ] 完成 `013-S3-06–09`：动态 Lead loop、研究方法 runtime injection/node consumption、EvidenceRequest/targeted repair、三案 Experiment B、隐藏 Gold 八维对照、paired gain 与 qualified-human 内容验收。
+29. [ ] 执行 FIN 0.1.3 current S4 Workbench dogfood，再执行 S5 RG1–RG5；只有内容合格的 current candidate 可获得 FIN 0.1.3 内部版本收口结论。
 
 > **2026-08-07 `013-S1-06` 已 `L4_scope_pass`**：根因审计确认 registry 有 9 个业务工具而 stdio server 只暴露 6 个；SEC handler 即使 `rerank_budget=0` 仍强制加载 Linux 默认 BGE 路径，约 56 秒后才失败。结构包已完成 server/registry parity、版本化 canonical resource profile、显式 BM25-only operational mode、可复用进程 supervisor、cold/warm/phase receipt、timeout/cancel/process-tree no-orphan 以及 typed missing-reranker failure。focused/broader=`23/53 passed`、stdio=`10 tools`；clean/synced `ab638c38` proof 全过，SEC cold/warm=`13,750/104 ms`、Exact Ledger=`1,317 ms`、market=`3 ms`，missing reranker 在 handler 前约 `1 ms` typed fail，close 后 no orphan。RC-P36-140 closed。S1-07/08、BGE/Milvus 质量、外网 current-source acquisition 与模型调用仍未开始；当前下一项仅为 `013-S1-07`。
 

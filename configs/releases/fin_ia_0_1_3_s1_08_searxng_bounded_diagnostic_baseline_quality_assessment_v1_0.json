@@ -1,0 +1,100 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_searxng_bounded_diagnostic_baseline_quality_assessment_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "result_ref": "configs/releases/fin_ia_0_1_3_s1_08_searxng_bounded_diagnostic_baseline_result_v1_0.json",
+  "result_file_sha256": "cc42278862241ee65eabbf121bbc387d8837c8464ba32ad45023e26efcf912bf",
+  "result_digest": "3b1394c991b936a34fbd9c79db4ce94b92d3ae2f2816b3717e6b7bda9410e6aa",
+  "status": "diagnostic_execution_pass_multi_engine_and_currentness_quality_fail",
+  "observed": {
+    "case_terminal_statuses": [
+      "completed",
+      "completed",
+      "completed"
+    ],
+    "formal_case_queries": 3,
+    "fin_to_searxng_query_calls": 3,
+    "adapter_network_calls": 3,
+    "model_calls": 0,
+    "retry_calls": 0,
+    "capture_count": 9,
+    "raw_locator_rows": 30,
+    "normalized_unique_locators": 30,
+    "canonical_duplicate_rows_removed": 0,
+    "published_date_candidate_count": 0,
+    "engine_locator_counts": {
+      "duckduckgo": 30
+    },
+    "brave_unresponsive_cases": 3,
+    "brave_failure": "HTTP 429 / suspended too many requests",
+    "operational_instance_engines": [
+      "bing",
+      "duckduckgo",
+      "brave"
+    ],
+    "policy_declared_engines": [
+      "bing",
+      "brave",
+      "duckduckgo",
+      "google"
+    ],
+    "operational_categories": [
+      "general",
+      "web"
+    ],
+    "requested_categories": [
+      "general",
+      "news"
+    ],
+    "requested_time_range": "year",
+    "bing_time_range_support": false,
+    "google_default_engine_state": "inactive",
+    "official_or_tier_one_locator_counts": {
+      "DELL": {
+        "issuer_official": 1,
+        "Reuters": 2
+      },
+      "MU": {
+        "issuer_official": 2,
+        "Reuters": 0
+      },
+      "NVDA": {
+        "issuer_official": 0,
+        "Reuters": 0
+      }
+    }
+  },
+  "assessment": {
+    "capture_and_terminal_integrity": "pass",
+    "adapter_query_budget": "pass",
+    "no_promotion_boundary": "pass",
+    "broad_locator_generation": "partial_pass",
+    "multi_engine_comparison": "fail_effective_engine_count_1",
+    "currentness_metadata": "fail_0_of_30_have_date",
+    "authority_mix": "mixed_DELL_and_MU_have_some_primary_or_tier_one_NVDA_does_not",
+    "production_provider_viability": "not_proven",
+    "evidence_retrieval_quality": "not_evaluated_locator_only",
+    "financial_research_quality": "not_evaluated"
+  },
+  "root_cause_split": {
+    "owned_query_compilation_gap": [
+      "Requested news although the operational instance exposes only general and web categories.",
+      "Applied one year time_range uniformly even though Bing reports no time-range support.",
+      "Declared Google in keep_only without checking that this image marks the default Google engine inactive."
+    ],
+    "external_free_engine_boundary": [
+      "Brave returned rate-limit failures in all three cases.",
+      "DuckDuckGo was the only engine that supplied locators.",
+      "The provider returned no publication-date metadata."
+    ]
+  },
+  "disposition": {
+    "rerun_same_baseline": false,
+    "continue_patching_free_engine_urls": false,
+    "SearXNG_provider_state": "diagnostic_live_measured_not_production",
+    "next_required_input": "A candidate paid broad-search API with standalone HTTPS request example, authentication scheme, response schema, rate/cost limits and published-date/source metadata behavior.",
+    "future_comparison_contract": "Keep the same semantic case intents and locator normalization, but compile provider-specific filters only when the provider declares support. Do not require byte-identical transport parameters across unlike providers.",
+    "production_decision_deferred": true
+  },
+  "known_boundary": "The 30 locator rows are discovery candidates only. Their titles, snippets, dates and numbers cannot be cited, treated as facts or used to score report quality until FIN separately fetches and qualifies the original sources."
+}

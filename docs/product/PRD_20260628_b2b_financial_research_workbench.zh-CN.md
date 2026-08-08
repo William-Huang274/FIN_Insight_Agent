@@ -2096,3 +2096,17 @@ Data Room、Watchlist/R4、完整估值、Research-to-Quant、全行业、多格
 - L2–L4 表达问题在 S3/S4 处理，不回流破坏已通过的数值、Evidence 或 source 合同；新的 L1 必须留在最早责任阶段并触发一次结构处置，而不是无限增加 live attempts。
 
 这次重排不降低产品标准。它降低的是重复证明和逐字段修补，把节省的工程预算重新投入 Agentic Search 覆盖、金融研究综合和真实用户验收。
+
+### 16.4 Broad Web Search 的产品边界与 SearXNG 实测（2026-08-08）
+
+FIN 不把“能向一个搜索端点发请求”写成 Agentic Search 产品能力。Broad Web Search 至少分为四层：Provider 可运营性、locator 候选覆盖、FIN 对原始来源的独立抓取与 Evidence 晋升、研究内容利用。前一层通过不能替代后一层。
+
+自建 SearXNG 只作为 diagnostic provider。唯一三案 baseline 完成 `3` 次 FIN query，原子保存 `9` 份 capture，得到 `30` 条不重复 locator，模型、retry、正文抓取和 Evidence promotion 都为 `0`。但有效结果全部来自 DuckDuckGo；Brave 三案均限流，Bing 不支持本次统一 `year` 参数，镜像默认 Google inactive，运行实例没有请求中的 `news` category，且 `30` 条结果没有一条发布日期。结论只能是“诊断 transport 与 locator normalization 可用，多引擎/currentness 质量失败”，不能是生产搜索通过。
+
+后续商业或自托管 Provider 必须遵守同一产品合同，但不要求不同 Provider 使用逐字相同的 HTTP 参数：
+
+1. FIN 冻结的是 case、研究意图、Evidence Slot、结果预算和评价口径；
+2. 每个 Provider 先声明 engine/category/date/domain/pagination 等能力，FIN 再编译其支持的 transport 参数；未知或不支持的能力必须在网络调用前 typed fail 或明确降级，不能静默发送无效过滤器；
+3. 搜索返回的 title、snippet、score、date 和数字都只是候选元数据；必须重新抓取原始 URL，通过 entity/date/relationship/content/Evidence Gate 后才可成为证据；
+4. paid API 的生产资格还必须证明稳定性、发布日期元数据、来源多样性、所需 Evidence Slot 覆盖、错误率、延迟、限流、成本和数据使用条款；一次成功请求或优于 SearXNG 不等于 production-ready；
+5. 在候选付费 API 资料到位前，不继续修补免费 engine、不重跑同一 SearXNG baseline，也不因此解锁 DELL R4、ranking、S3、Workbench 或 release。

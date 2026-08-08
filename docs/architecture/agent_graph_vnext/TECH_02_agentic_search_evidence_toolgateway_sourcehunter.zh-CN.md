@@ -889,3 +889,30 @@ Owner 批准在 production Provider 决策前增加一条低成本开源诊断�
 首个本地部署又补充了一个必须长期保留的控制面边界：FIN 可精确限制的是 `FIN adapter -> SearXNG` query call；SearXNG 随后对多个 engine 的 HTTP fan-out 不是 adapter 能逐请求 exact-once 的表面。因此 diagnostic profile 固定 `bing/brave/duckduckgo/google` 四个 engine，保存 engine participation/unresponsive lineage，并明确 `upstream request count exactly known=false`。容器 healthcheck 只能访问本地首页，禁止调用 `/search`；首个错误 healthcheck 至少生成 6 次 `health` 搜索，已作为失败 Attempt 保留且不计正式 baseline。默认 engine set 也不得直接使用，避免启动期 engine init 网络请求漂移。
 
 adapter v1.1 已在 clean `56e39f84` 上完成 `15 passed`、三案 full-fake、`9 captures / 0 network / 0 model / 0 promotion`，并证明非搜索式 healthcheck 合同。当前可单独签发 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_BOUNDED_NETWORK_BASELINE`，最多 3 个 FIN query、0 retry；它仍不是 DELL R4、product-live、ranking 或 Evidence promotion。
+
+### 20.14 SearXNG 有界 baseline 结果与 Provider capability compiler（2026-08-08）
+
+唯一 baseline 已在 clean/synced `a5014c75e3ce9920cd83239d689aa262e04ee654` 上消费 admission。DELL/MU/NVDA 各一条预注册 query，FIN→SearXNG=`3`、adapter network=`3`、raw/normalized locator=`30/30`、canonical duplicate=`0`、capture=`9`、model/retry/document fetch/Evidence promotion=`0/0/0/0`，三案业务终态均已原子物化。结果与 runtime 副本 byte-identical，SHA-256=`cc42278862241ee65eabbf121bbc387d8837c8464ba32ad45023e26efcf912bf`。
+
+运行结束后的可选控制台打印因 Windows GBK 无法编码 `U+2011` 返回进程码 1；该故障发生在两个 UTF-8 result 已原子写入之后。admission 已消费且没有重跑。修复只将控制台 JSON 改为 ASCII escape，未改变运行结果，并使当前 runner SHA 与已消费 authority 不再相等，从结构上阻止误复用。
+
+质量评估为 `diagnostic_execution_pass_multi_engine_and_currentness_quality_fail`：
+
+- 30 条 locator 全部来自 DuckDuckGo，Brave 三案均以 429／too-many-requests unresponsive；
+- 运行实例实际只暴露 Bing、DuckDuckGo、Brave；镜像默认 Google 为 inactive；
+- 实际 category 为 `general/web`，而请求含 `general/news`；SearXNG 记录 invalid category；
+- 三案统一使用 `time_range=year`，但 Bing 声明不支持 time range，因而没有贡献结果；
+- `published_on_candidate` 为 `0/30`；DELL/MU 有少量 issuer/Reuters locator，NVDA 前十没有 issuer/Reuters；所有 locator 仍不可引用、不可晋升。
+
+这次失败拆成两类。项目内责任是 query compiler 没有在调用前读取 Provider operational capability，却把同一 category/time-range/engine 参数强加给不同上游；外部边界是免费 engine 的限流、inactive 状态和日期元数据缺失。前者必须进入 provider-neutral Runtime 修复，后者不能靠继续逐网址或扩大调用次数解决。
+
+后续接口冻结为“语义同源、传输按能力编译”：
+
+1. canonical `SearchIntent` 固定 case、as-of、Evidence Slot、query text、期望 currentness、domain/source preference、结果与成本预算；
+2. 每个 `ProviderCapabilityProfile` 声明支持的 category、time range、domain filter、language、pagination、published date、engine visibility、rate/cost 和响应字段；
+3. `ProviderQueryCompiler` 只生成被 profile 支持的参数。不支持的必要条件在调用前 typed fail；可选条件只能形成有记录的 degradation，不得静默删除；
+4. evaluator 比较相同语义意图、候选 normalization 和 Gold-blind target，不要求 SearXNG 与商业 API 的 query string 字节相同；
+5. healthcheck、FIN→Provider business call 和 Provider 内部 fan-out 分别记账；不能用 healthcheck 产生业务搜索，也不能把不可观测 fan-out 宣称 exact-count；
+6. 候选付费 API 先完成离线 schema/fixture/secret-safe profile，再执行同三案有界 comparator；任何 Provider 在稳定性、日期、来源多样性、required-slot coverage、错误率、延迟和成本通过前都不是 production capability。
+
+因此当前停止条件是：不重跑 SearXNG，不为免费 engine 继续加 URL 特例，不解锁 R4/ranking/S3。下一项等待候选付费 broad-search API 的 standalone HTTPS 调用、认证、JSON schema、过滤/分页、限流与价格资料；收到后先做零调用 input qualification，再决定是否发出新的 comparator authority。

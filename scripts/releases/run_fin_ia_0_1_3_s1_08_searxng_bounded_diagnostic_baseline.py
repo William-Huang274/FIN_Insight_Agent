@@ -266,7 +266,9 @@ def main() -> int:
     except DiagnosticBaselineError as exc:
         print(json.dumps({"status": "blocked", "terminal_code": exc.code}))
         return 2
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    # Windows PowerShell may expose a GBK stdout even though the result file is UTF-8.
+    # Escaping non-ASCII here keeps post-terminal display from changing the process code.
+    print(json.dumps(result, ensure_ascii=True, indent=2))
     return 0
 
 

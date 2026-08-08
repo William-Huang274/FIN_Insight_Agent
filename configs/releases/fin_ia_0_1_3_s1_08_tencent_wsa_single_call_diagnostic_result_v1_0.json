@@ -1,0 +1,54 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_single_call_diagnostic_result_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.tencent_wsa_candidate_paid_broad_search:v1",
+  "admission_id": "fin013-s1-08-tencent-wsa-single-call-diagnostic-r1",
+  "admission_consumed": true,
+  "source_commit": "0b4d2eb842100a545592c5c2457a54fd3b012a48",
+  "status": "failed",
+  "terminal_code": "tencent_wsa_single_call_typed_failure",
+  "request_capture": {
+    "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_safe_request_capture_v1_0",
+    "captured_at": "2026-08-08T08:37:45.846665+00:00",
+    "endpoint": "wsa.tencentcloudapi.com",
+    "protocol": "https",
+    "method": "POST",
+    "action": "SearchPro",
+    "version": "2025-05-08",
+    "region": "",
+    "request_body": {
+      "Query": "Dell AI server demand customers supply chain 2026 earnings industry",
+      "Mode": 0
+    },
+    "credential_fields_present": false,
+    "authorization_or_signature_present": false,
+    "capture_before_transport": true
+  },
+  "provider_projection": {},
+  "failure": {
+    "error_code": "InvalidParameter",
+    "message": "illegal Mode",
+    "request_id": "5aef7136-c1dd-4fbb-b1db-c877ae0e32ef"
+  },
+  "observed_counts": {
+    "provider_calls": 1,
+    "network_calls": 1,
+    "retry_calls": 0,
+    "model_calls": 0,
+    "document_fetches": 0,
+    "evidence_promotions": 0
+  },
+  "elapsed_ms": 276,
+  "sdk": {
+    "package": "tencentcloud-sdk-python",
+    "version": "3.1.152"
+  },
+  "capability_boundary": {
+    "promotion_status": "candidate_locator_diagnostic_only",
+    "evidence_promotion_allowed": false,
+    "writer_citable": false,
+    "financial_fact_authority": false,
+    "numeric_authority": "none",
+    "production_capability_claim_allowed": false
+  },
+  "result_digest": "992f10b4a9a26ebdfdf21a88258f8b0d68f5ffd17a7bb4017741e4ba59b57f2f"
+}

@@ -1,0 +1,52 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_single_call_diagnostic_failure_assessment_v1_0",
+  "recorded_at": "2026-08-08",
+  "stage": "013-S1-08",
+  "status": "typed_parameter_failure_no_search_quality_measurement",
+  "result_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_single_call_diagnostic_result_v1_0.json",
+  "result_sha256": "2a0dcbb1866c0f6d05dd50af6da7b3907692a6cef94c261ae240a7dda740834e",
+  "result_digest": "992f10b4a9a26ebdfdf21a88258f8b0d68f5ffd17a7bb4017741e4ba59b57f2f",
+  "observed": {
+    "provider_calls": 1,
+    "network_calls": 1,
+    "retry_calls": 0,
+    "model_calls": 0,
+    "elapsed_ms": 276,
+    "error_code": "InvalidParameter",
+    "error_message": "illegal Mode",
+    "request_id_present": true,
+    "locators": 0,
+    "published_dates": 0,
+    "credentials_persisted": false
+  },
+  "contract_comparison": {
+    "official_documented_mode_zero": "natural search result and default",
+    "sdk_serialization": "explicit integer zero is serialized as Mode=0",
+    "live_service_behavior": "explicit Mode=0 rejected as illegal Mode",
+    "documented_default_when_omitted": "natural search result",
+    "provider_documentation_or_runtime_drift_established": true,
+    "provider_search_quality_failure_established": false
+  },
+  "attribution": {
+    "credential_signature_likely_reached_business_validation": true,
+    "cam_authentication_failure_observed": false,
+    "service_open_and_resource_available_proven": false,
+    "project_query_compiler_defect": "The first-call compiler explicitly serialized a documented default optional field instead of omitting it.",
+    "external_contract_defect": "Tencent official documentation says Mode=0 is valid, while the live API rejected that exact value.",
+    "deepseek_or_model_involved": false
+  },
+  "billing_boundary": {
+    "official_documentation_says_failed_service_calls_are_not_billed": true,
+    "actual_account_charge_verified": false,
+    "expected_charge_cny": 0
+  },
+  "disposition": {
+    "r1_immutable": true,
+    "same_authority_retry_allowed": false,
+    "automatic_second_call_allowed": false,
+    "recommended_replacement": "After credential rotation and explicit owner approval, issue a new one-call Attempt that sends Query only and omits Mode plus every other optional field.",
+    "three_case_comparator_allowed": false,
+    "sourcehunter_integration_allowed": false
+  },
+  "hard_boundary": "No live Pages payload was returned, so locator recall, date coverage, source authority, currentness, latency quality, production reliability and research usefulness remain completely unmeasured."
+}

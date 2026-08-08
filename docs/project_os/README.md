@@ -10,7 +10,7 @@ FIN 0.1.1 保存第一轮 S0–S5 的内部 honest-block 工程基线。2026-08-
 
 当前开发版本为 FIN 0.1.3。`013-S0-04G` 已以 typed blocker state、`RunScopeRegistry v1_0` 和 unknown fail-closed 关闭 RC-P36-156，并从 clean Git archive/fresh process 以 `85/85` 复证现有 DELL R3 successor；本项外部调用与 admission 均为 0。S1-08 的真实 candidate ceiling 仍未通过，DELL R3、ranking、MU/NVDA、S3 和 release 均未因此解锁。
 
-当前下一项：在干净提交上 exact-once 消费 `S1_08_PAID_BROAD_SEARCH_TENCENT_WSA_SINGLE_CALL_DIAGNOSTIC`。它只允许一个固定 DELL query、一次 SearchPro、0 retry/model/document/Evidence；不得自动扩大为三案 comparator 或生产接入。
+当前下一项：等待 Owner 决定是否在轮换已暴露 AK/SK 后，另行签发一个 `Query-only` Tencent WSA replacement Attempt。R1 已因 live `illegal Mode` immutable failed；不得重用旧 authority、自动 retry、直接做三案 comparator 或生产接入。
 
 ## 文件职责
 

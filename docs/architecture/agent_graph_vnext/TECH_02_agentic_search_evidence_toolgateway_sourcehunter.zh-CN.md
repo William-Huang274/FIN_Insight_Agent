@@ -932,3 +932,7 @@ adapter v1.1 已在 clean `56e39f84` 上完成 `15 passed`、三案 full-fake、
 7. 通用 AK/SK 已在聊天明文出现，诊断后必须轮换；生产候选应改用最小权限子账号或服务 API Key。
 
 零调用实现首次发现 runner helper 引用与 wildcard S0 self-check 两个 pre-transport 缺陷；修复后 Project OS、authority/profile/runner binding、normalization、redaction 与 mutation=`19 passed`，真实 API 调用仍为 0。当前只消费已签发的 `S1_08_PAID_BROAD_SEARCH_TENCENT_WSA_SINGLE_CALL_DIAGNOSTIC`；不能在同一 authority 内追加 MU/NVDA 或 retry。
+
+R1 随后在 clean/synced `0b4d2eb842100a545592c5c2457a54fd3b012a48` exact-once 消费：`1 provider/network / 0 retry/model/document/Evidence / 276 ms`，腾讯返回 `InvalidParameter / illegal Mode` 和 RequestId，未返回 Pages。离线 SDK 证明 request wire projection 确实含显式 integer `Mode=0`；官方 SearchPro 与服务 API Key 文档却均把 0 定义为 natural/default。因此本失败同时建立 external documentation/live drift 和 project compiler 显式 optional-default 缺陷，不能归因 DELL query、DeepSeek、RAG、reranker 或搜索质量。请求已越过通用签名错误表面并到达业务参数校验，但 service resource availability 仍未证明。
+
+R1 不重试。任何 replacement 必须使用新 authority／Attempt，request body 只含 `Query`，并在轮换已暴露 AK/SK 后由 Owner 决定；仍只允许 1 call、0 retry。成功返回 Pages 前，provider quality、三案 comparator 和生产接入均无资格。

@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_query_only_replacement_result_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.tencent_wsa_query_only_replacement:v1",
+  "admission_id": "fin013-s1-08-tencent-wsa-query-only-replacement-r2",
+  "predecessor_attempt_id": "fin013-s1-08-tencent-wsa-single-call-diagnostic-r1",
+  "admission_consumed": true,
+  "source_commit": "ff25e92fbf5d0813ea4ab6f0dde1def73e881c8b",
+  "status": "failed",
+  "terminal_code": "tencent_wsa_query_only_typed_failure",
+  "request_capture": {
+    "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_query_only_safe_request_capture_v1_0",
+    "captured_at": "2026-08-08T09:05:46.519732+00:00",
+    "endpoint": "wsa.tencentcloudapi.com",
+    "protocol": "https",
+    "method": "POST",
+    "action": "SearchPro",
+    "version": "2025-05-08",
+    "region": "",
+    "request_body": {
+      "Query": "Dell AI server demand customers supply chain 2026 earnings industry"
+    },
+    "request_body_fields": [
+      "Query"
+    ],
+    "optional_fields_omitted": [
+      "Mode",
+      "Site",
+      "FromTime",
+      "ToTime",
+      "Cnt",
+      "Industry",
+      "Freshness",
+      "Deeplinks"
+    ],
+    "credential_fields_present": false,
+    "authorization_or_signature_present": false,
+    "capture_before_transport": true
+  },
+  "provider_projection": {},
+  "failure": {
+    "error_code": "AuthFailure.SignatureFailure",
+    "message": "请求签名验证失败，请检查您的签名计算是否正确。",
+    "request_id": "d0028725-9fbe-4672-97e8-c24ff36f5f42"
+  },
+  "observed_counts": {
+    "provider_calls": 1,
+    "network_calls": 1,
+    "retry_calls": 0,
+    "model_calls": 0,
+    "document_fetches": 0,
+    "evidence_promotions": 0
+  },
+  "elapsed_ms": 129,
+  "sdk": {
+    "package": "tencentcloud-sdk-python",
+    "version": "3.1.152"
+  },
+  "capability_boundary": {
+    "promotion_status": "candidate_locator_diagnostic_only",
+    "evidence_promotion_allowed": false,
+    "writer_citable": false,
+    "financial_fact_authority": false,
+    "numeric_authority": "none",
+    "production_capability_claim_allowed": false
+  },
+  "result_digest": "4901f28a4b921051fc94c7c9327090047e9a44f132ccfbefe23325ba4d5f43d1"
+}

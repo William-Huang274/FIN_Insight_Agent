@@ -463,7 +463,8 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 25. [x] **候选付费 Provider 输入资格审查**：用户提供腾讯云 WSA AK/SK；官方文档、SearchPro schema、套餐能力、错误码、按量价格与 SDK `3.1.152` 已核对。candidate-only profile、secret-safe normalizer、exact-once hidden-input runner 与注册 scope 已通过零调用验证；唯一 DELL 单调用 authority 已签发未消费。凭据不落盘且运行后必须轮换；本项不构成生产能力。
 25a. [x] **腾讯 WSA R1 immutable terminal**：clean `0b4d2eb8` 上一次 DELL SearchPro 返回 `InvalidParameter / illegal Mode`；`1 provider/network / 0 retry/model/document/Evidence / 276 ms / 0 locator`。官方文档称 `Mode=0` 合法，故登记外部文档/live drift 与项目 compiler 显式默认 optional field 的组合问题；未重试。
 25b. [x] **Query-only replacement decision/engineering/authority**：Owner 新建子账号 API Key 并明确要求继续；独立 successor 只允许 wire body=`{Query}`，任一 optional field 在 transport 前拒绝。Project OS scoped preflight=`pass`、targeted=`15 passed`、外部调用=`0`，唯一 R2 authority 已签发未消费。
-25c. [ ] **Query-only replacement exact-live**：从 clean commit 消费一次 R2，1 call/0 retry；成功或失败均 materialize terminal 并停止。只有成功返回 Pages 后才允许另行决定三案 comparator，不能自动接入 SourceHunter 或 production。
+25c. [x] **Query-only replacement exact-live terminal**：clean `ff25e92f` 上只发送 `Query`，1 provider/network、0 retry、129 ms；腾讯返回 `AuthFailure.SignatureFailure`，0 locator/date。Mode compiler 已绕开，但鉴权先失败，故 CAM、服务开通和搜索质量仍未证明；R2 immutable、未自动重试。
+25d. [ ] **Credential/auth-mode decision**：删除聊天中暴露的新 Key；Owner 另行选择“精确复制的新 AK/SK 隐藏输入”或“WSA service API Key/Bearer 零调用资格审查”。第三次请求、三案 comparator、SourceHunter integration 和 production 均未授权。
 26. [ ] Provider 对照后由 Owner 单独决定 production Provider／source claim／no-R4；在此之前不命名或签发新 DELL product-live，也不重跑 SearXNG。
 27. [ ] 在冻结 Evidence Pack 上完成 `DS-A1/A2/A3` ModelCapabilityProfile、DeepSeek profile、AutonomyGrant 与最小 natural canary；可做零调用准备，但在 S1 candidate ceiling 未解锁前不得进入 S3 formal run。
 28. [ ] 完成 `013-S3-06–09`：动态 Lead loop、研究方法 runtime injection/node consumption、EvidenceRequest/targeted repair、三案 Experiment B、隐藏 Gold 八维对照、paired gain 与 qualified-human 内容验收。

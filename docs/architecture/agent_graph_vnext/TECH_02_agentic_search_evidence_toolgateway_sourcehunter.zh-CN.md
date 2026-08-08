@@ -916,3 +916,19 @@ adapter v1.1 已在 clean `56e39f84` 上完成 `15 passed`、三案 full-fake、
 6. 候选付费 API 先完成离线 schema/fixture/secret-safe profile，再执行同三案有界 comparator；任何 Provider 在稳定性、日期、来源多样性、required-slot coverage、错误率、延迟和成本通过前都不是 production capability。
 
 因此当前停止条件是：不重跑 SearXNG，不为免费 engine 继续加 URL 特例，不解锁 R4/ranking/S3。下一项等待候选付费 broad-search API 的 standalone HTTPS 调用、认证、JSON schema、过滤/分页、限流与价格资料；收到后先做零调用 input qualification，再决定是否发出新的 comparator authority。
+
+### 20.15 腾讯云 WSA 候选 Provider 输入资格与单调用边界（2026-08-08）
+
+用户提供腾讯云 AK/SK 后，项目没有直接把“元宝搜索”接入 SourceHunter，而是先对腾讯云官方文档与 SDK 做 provider-specific capability compile。冻结结果为 `SearchPro / 2025-05-08 / wsa.tencentcloudapi.com / HTTPS / API3 AK-SK`；必填仅 `Query`，`Mode/Site/FromTime/ToTime/Cnt/Industry/Freshness/Deeplinks` 为可选且部分依赖套餐。响应的 `Pages` 是 JSON 字符串数组，另有 `Query/Version/Msg/RequestId`。首个诊断禁止发送 `Cnt/Industry/Freshness/Deeplinks`，避免在未知套餐上把 tier incompatibility 误判成搜索质量。
+
+候选 Provider profile 固定：
+
+1. provider lifecycle 只到 `candidate_documented -> secret_safe_zero_call_proven -> single_call_diagnostic_measured`，不能自动进入 production；
+2. 一个固定 DELL semantic query、`Mode=0`、一次 provider/network、0 retry/model/document/Evidence；
+3. safe request 在 transport 前保存，但不得含 SecretId、SecretKey、Authorization 或签名；raw response/error 在 parse 前保存到 `.codex_runtime`，所有错误文本再次按实际 credential value 脱敏；
+4. normalizer 只输出 canonical URL、title、raw date、passage、site、score、rank、domain 与 request lineage；所有项固定 `candidate_locator_diagnostic_only / evidence_promotion_allowed=false / numeric_authority=none`；
+5. 成功只证明鉴权、服务可用、live schema 与一条 query 的 locator/date telemetry；失败只形成 typed terminal。两者都不能自动签发三案 comparator、接入 SourceHunter 或改变 no-R4；
+6. 轻量／标准／尊享／旗舰文档按量价为 18／46／60／80 CNY/千次，因此本轮最高文档成本上限为 0.08 CNY；
+7. 通用 AK/SK 已在聊天明文出现，诊断后必须轮换；生产候选应改用最小权限子账号或服务 API Key。
+
+零调用实现首次发现 runner helper 引用与 wildcard S0 self-check 两个 pre-transport 缺陷；修复后 Project OS、authority/profile/runner binding、normalization、redaction 与 mutation=`19 passed`，真实 API 调用仍为 0。当前只消费已签发的 `S1_08_PAID_BROAD_SEARCH_TENCENT_WSA_SINGLE_CALL_DIAGNOSTIC`；不能在同一 authority 内追加 MU/NVDA 或 retry。

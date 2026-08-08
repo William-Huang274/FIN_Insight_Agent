@@ -460,7 +460,8 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 22. [x] `S1_08_P3A_PROTECTED_DOCUMENT_FETCH_BUDGET_AND_ATTEMPT_LOCAL_CACHE_ZERO_CALL_IMPLEMENTATION_AND_PROOF`：A2 clean proof pass，P3A independently proven，外部调用、admission 与 live 均为 0。
 23. [x] 实现并零调用证明 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_ADAPTER_ZERO_CALL_IMPLEMENTATION_AND_PROOF`；clean v1.1 通过，失败部署尝试保留，SearXNG 仍不计生产能力。
 24. [x] 执行一次 `S1_08_DIAGNOSTIC_BROAD_SEARCH_SEARXNG_BOUNDED_NETWORK_BASELINE`：三案均 terminal materialized，FIN→SearXNG=`3`、raw/unique locator=`30/30`、capture=`9`、model/retry/Evidence promotion=`0/0/0`；只有 DuckDuckGo 贡献结果，`published date=0/30`，因此结论为 `diagnostic execution pass / multi-engine and currentness quality fail`。运行后 Windows GBK 控制台显示失败不改写已原子保存的 UTF-8 终态，admission 已消费且未重跑。
-25. [ ] **当前外部输入**：等待用户提供一个候选付费 broad-search API 的 standalone HTTPS raw HTTP/curl、认证方式、响应 JSON、分页/过滤/日期字段、限流与价格。收到后先做 `S1_08_PAID_BROAD_SEARCH_PROVIDER_INPUT_QUALIFICATION` 零调用决策，再做同三案有界 comparator；不得直接把新 API 写成生产能力。
+25. [x] **候选付费 Provider 输入资格审查**：用户提供腾讯云 WSA AK/SK；官方文档、SearchPro schema、套餐能力、错误码、按量价格与 SDK `3.1.152` 已核对。candidate-only profile、secret-safe normalizer、exact-once hidden-input runner 与注册 scope 已通过零调用验证；唯一 DELL 单调用 authority 已签发未消费。凭据不落盘且运行后必须轮换；本项不构成生产能力。
+25a. [ ] **当前唯一外部动作**：在干净提交上消费一次腾讯 WSA DELL diagnostic，0 retry；失败即停，成功后先独立评估 locator/date/source/schema，再另行决定是否签发同三案 comparator。
 26. [ ] Provider 对照后由 Owner 单独决定 production Provider／source claim／no-R4；在此之前不命名或签发新 DELL product-live，也不重跑 SearXNG。
 27. [ ] 在冻结 Evidence Pack 上完成 `DS-A1/A2/A3` ModelCapabilityProfile、DeepSeek profile、AutonomyGrant 与最小 natural canary；可做零调用准备，但在 S1 candidate ceiling 未解锁前不得进入 S3 formal run。
 28. [ ] 完成 `013-S3-06–09`：动态 Lead loop、研究方法 runtime injection/node consumption、EvidenceRequest/targeted repair、三案 Experiment B、隐藏 Gold 八维对照、paired gain 与 qualified-human 内容验收。

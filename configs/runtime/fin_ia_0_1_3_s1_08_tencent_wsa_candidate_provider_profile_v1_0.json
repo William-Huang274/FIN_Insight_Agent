@@ -1,0 +1,101 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_candidate_profile_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.tencent_wsa_candidate_paid_broad_search:v1",
+  "provider_id": "tencent_cloud_wsa_searchpro_candidate_v1",
+  "provider_product": "Tencent Cloud Web Search API (Yuanbao search capability)",
+  "classification": "candidate_paid_broad_search_diagnostic_not_production",
+  "official_documentation": {
+    "quickstart": "https://cloud.tencent.com/document/product/1806/121802",
+    "api": "https://cloud.tencent.com/document/product/1806/121811",
+    "request_structure": "https://cloud.tencent.com/document/api/1806/121814",
+    "pricing": "https://cloud.tencent.com/document/product/1806/121798",
+    "access_modes": "https://cloud.tencent.com/document/product/1806/130616"
+  },
+  "api_contract": {
+    "endpoint": "wsa.tencentcloudapi.com",
+    "protocol": "https",
+    "method": "POST",
+    "action": "SearchPro",
+    "version": "2025-05-08",
+    "region_required": false,
+    "required_input_fields": ["Query"],
+    "optional_input_fields": [
+      "Mode",
+      "Site",
+      "FromTime",
+      "ToTime",
+      "Cnt",
+      "Industry",
+      "Freshness",
+      "Deeplinks"
+    ],
+    "response_fields": ["Query", "Pages", "Version", "Msg", "RequestId"],
+    "page_fields": [
+      "title",
+      "date",
+      "url",
+      "passage",
+      "content",
+      "site",
+      "score",
+      "images",
+      "pics",
+      "favicon",
+      "deeplinks"
+    ]
+  },
+  "authentication": {
+    "mode": "tencent_cloud_api3_ak_sk_signature",
+    "sign_method": "TC3-HMAC-SHA256",
+    "credential_source": "interactive_hidden_runtime_input_only",
+    "credential_persistence_allowed": false,
+    "credential_logging_allowed": false,
+    "authorization_capture_allowed": false
+  },
+  "tier_dependent_capabilities": {
+    "Cnt": "premium_or_flagship_only",
+    "Industry": "premium_or_flagship_only",
+    "Freshness": "flagship_only",
+    "Deeplinks": "flagship_only",
+    "content": "premium_or_flagship_only",
+    "actual_tier": "unknown_until_first_successful_response"
+  },
+  "documented_business_errors": [
+    "InternalError",
+    "InvalidParameter",
+    "RequestLimitExceeded",
+    "ResourceNotFound",
+    "ResourceUnavailable",
+    "UnauthorizedOperation"
+  ],
+  "pricing_cny_per_1000_calls": {
+    "lite": 18,
+    "standard": 46,
+    "premium": 60,
+    "flagship": 80
+  },
+  "diagnostic_budget": {
+    "provider_call_ceiling": 1,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0,
+    "result_ceiling": 10,
+    "request_timeout_seconds": 20,
+    "maximum_documented_cost_cny": 0.08,
+    "optional_filters_allowed_in_first_call": false
+  },
+  "capture_contract": {
+    "safe_request_capture_before_transport": true,
+    "raw_response_capture_before_parse": true,
+    "raw_response_local_only": true,
+    "credential_and_signature_capture_forbidden": true,
+    "terminal_result_required_on_success_or_failure": true
+  },
+  "capability_boundary": {
+    "promotion_status": "candidate_locator_diagnostic_only",
+    "evidence_promotion_allowed": false,
+    "writer_citable": false,
+    "financial_fact_authority": false,
+    "numeric_authority": "none",
+    "production_capability_claim_allowed": false
+  }
+}

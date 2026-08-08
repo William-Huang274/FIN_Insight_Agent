@@ -1,0 +1,56 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_single_call_diagnostic_authority_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.tencent_wsa_candidate_paid_broad_search:v1",
+  "recorded_at": "2026-08-08",
+  "status": "issued_unconsumed",
+  "admission_id": "fin013-s1-08-tencent-wsa-single-call-diagnostic-r1",
+  "owner_authority": "User supplied Tencent Cloud WSA AK/SK credentials and explicitly requested documentation review followed by a test. This authority limits that request to one hidden-input, zero-retry diagnostic call.",
+  "authorized_scope": "S1_08_PAID_BROAD_SEARCH_TENCENT_WSA_SINGLE_CALL_DIAGNOSTIC",
+  "provider_profile_ref": "configs/runtime/fin_ia_0_1_3_s1_08_tencent_wsa_candidate_provider_profile_v1_0.json",
+  "provider_profile_sha256": "ba327e02aa7ec7896b6617e5cf8d809ba439ea9c36b75de88c7b7fcadf3356fb",
+  "provider_profile_digest": "dc249a8716081e3495e7376accfb48ac433aec9080d1baed90a9e3b70ed8622c",
+  "runner_ref": "scripts/releases/run_fin_ia_0_1_3_s1_08_tencent_wsa_single_call_diagnostic.py",
+  "runner_sha256": "627f1e657bb999be776fe60a214cf81140b15aae3597ec8f8b952c976d852f2d",
+  "sdk_contract": {
+    "package": "tencentcloud-sdk-python",
+    "tested_version": "3.1.152",
+    "runtime_location": ".codex_runtime/tencent-wsa-sdk",
+    "repository_dependency_added": false
+  },
+  "query": {
+    "query_id": "DELL-TENCENT-WSA-DIAGNOSTIC-Q1",
+    "case_key": "DELL",
+    "semantic_intent_ref": "DELL-DIAGNOSTIC-Q1",
+    "query_text": "Dell AI server demand customers supply chain 2026 earnings industry",
+    "mode": 0,
+    "optional_filters": [],
+    "result_ceiling": 10
+  },
+  "execution_contract": {
+    "provider_call_ceiling": 1,
+    "network_call_ceiling": 1,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0,
+    "document_fetch_ceiling": 0,
+    "maximum_documented_cost_cny": 0.08,
+    "credentials_interactive_hidden_only": true,
+    "credentials_or_signatures_may_be_persisted": false,
+    "raw_response_local_capture_required": true,
+    "evidence_promotion_allowed": false,
+    "production_capability_claim_allowed": false
+  },
+  "diagnostic_questions": [
+    "Are the AK/SK signature and CAM permissions valid for SearchPro?",
+    "Is the WSA service opened and resource available?",
+    "Does the live response conform to the documented Query/Pages/Version/Msg/RequestId schema?",
+    "For one frozen DELL semantic query, how many unique locators and publication dates are returned?"
+  ],
+  "stop_rules": {
+    "any_failure": "materialize typed terminal and stop",
+    "automatic_retry": false,
+    "automatic_three_case_comparator": false,
+    "automatic_sourcehunter_integration": false
+  },
+  "hard_boundary": "This is credential, service, schema and one-query input-quality diagnosis only. Success does not make Tencent WSA a production provider and no returned text, date, score or number becomes Evidence or financial truth.",
+  "authority_digest": "30ce21ecb3899bfe3b8597adcfc16fda177f8ec91a0199aec05c3cbbc68c5450"
+}

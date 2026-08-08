@@ -31,6 +31,8 @@
 
 clean proof A1 在第一份 Git archive 内按预期 fail closed：Tencent result／assessment 和 official closeout 的 Windows CRLF 工作树字节摘要与 Git archive LF 字节不同。内容与运行逻辑没有漂移；根因是本轮新 policy 没有声明跨平台 hash profile。处置限定在同一 S1-08：输入绑定改为 `sha256_utf8_lf_normalized_v1`，不复制本机文件进入 archive、不放宽内容摘要，也不把 A1 记成通过。
 
+clean proof A2 证明上述摘要修复有效：第一份 archive 已重物化相同 proof digest，并完成 `45 passed`；随后 proof runner 从不存在的 `proof.route_plan` 读取 route opportunity，触发 `KeyError`。真实字段在 `search_quality_card.route_opportunity`，故 A2 仍记为 proof-runner failure；本次只更正 runner 的读取路径，不改 portfolio Runtime、policy、路由或验收阈值。
+
 ## 后续顺序
 
 1. clean archive／fresh process 复证本轮零调用实现；

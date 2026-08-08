@@ -225,8 +225,12 @@ def _worker_payload(runtime_root: Path) -> dict[str, Any]:
         "route_plan_digest": proof["route_plan_digest"],
         "quality_card_digest": proof["search_quality_card"]["quality_card_digest"],
         "route_opportunity": [
-            proof["route_plan"]["required_slots_with_route_opportunity"],
-            proof["route_plan"]["required_slots_total"],
+            proof["search_quality_card"]["route_opportunity"][
+                "required_slots_with_route_opportunity"
+            ],
+            proof["search_quality_card"]["route_opportunity"][
+                "required_slots_total"
+            ],
         ],
         "pytest": {
             "passed": len(nodeids),

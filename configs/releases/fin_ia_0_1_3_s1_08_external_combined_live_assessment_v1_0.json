@@ -1,0 +1,179 @@
+{
+  "assessment_digest": "7a3796c91c4f7a4c179edddd22e710df52f7fb15cd2272343b6fc707fbc02cf4",
+  "attempt_id": "fin013_s1_08_external_combined_60a1f9e2e2f8092ca564::attempt_1",
+  "capture_integrity": {
+    "firecrawl_capture_refs": 72,
+    "firecrawl_capture_refs_sha_valid": true,
+    "official_content_addressed_objects": 91,
+    "official_content_addresses_valid": true,
+    "raw_request_or_response_content_lost": false
+  },
+  "firecrawl_shadow_lane": {
+    "credit_exhaustion_failures": 19,
+    "credit_exhaustion_retry_after_seconds_range": [
+      63047,
+      63064
+    ],
+    "failed_queries": 19,
+    "http_status_counts": {
+      "200": 5,
+      "429": 19
+    },
+    "official_domain_locator_occurrences": 4,
+    "provider_published_date_occurrences": 0,
+    "remaining_queries_stopped_after_first_credit_exhaustion": false,
+    "successful_case_coverage": [
+      1,
+      3
+    ],
+    "successful_locator_occurrences": 50,
+    "successful_queries": 5,
+    "successful_queries_by_case": {
+      "DELL": 5
+    },
+    "unique_source_domains_in_successful_queries": 39
+  },
+  "known_boundary": "This assessment establishes an operational failure disposition, not external retrieval acceptance, internal candidate recall, BGE/reranker gain, Evidence promotion, report quality or release readiness.",
+  "observed_counts": {
+    "document_fetches": 0,
+    "embedding_calls": 0,
+    "evidence_promotions": 0,
+    "fallback_calls": 0,
+    "model_calls": 0,
+    "network_calls": 53,
+    "official_cases_terminalized": 3,
+    "official_network_calls": 29,
+    "rerank_calls": 0,
+    "retry_calls": 0,
+    "shadow_network_calls": 24,
+    "shadow_provider_calls": 24,
+    "shadow_queries_terminalized": 24
+  },
+  "official_lane": {
+    "case_results": [
+      {
+        "accepted_candidates": 0,
+        "bound_query_receipts": 13,
+        "case_key": "DELL",
+        "document_fetches": 0,
+        "network_calls": 9,
+        "selected_candidates": 0,
+        "status": "completed",
+        "typed_gaps": 5
+      },
+      {
+        "accepted_candidates": 0,
+        "bound_query_receipts": 13,
+        "case_key": "MU",
+        "document_fetches": 0,
+        "network_calls": 10,
+        "selected_candidates": 0,
+        "status": "completed",
+        "typed_gaps": 5
+      },
+      {
+        "accepted_candidates": 0,
+        "bound_query_receipts": 13,
+        "case_key": "NVDA",
+        "document_fetches": 0,
+        "network_calls": 10,
+        "selected_candidates": 0,
+        "status": "completed",
+        "typed_gaps": 5
+      }
+    ],
+    "failure_codes": {
+      "official_source_private_network_forbidden": 26
+    },
+    "post_run_dns_diagnostic": {
+      "all_observed_hosts_use_controlled_synthetic_range": true,
+      "diagnostic_is_not_historical_dns_capture": true,
+      "resolved_hosts": [
+        {
+          "addresses": [
+            "198.18.1.11"
+          ],
+          "all_addresses_in_controlled_synthetic_range": true,
+          "host": "data.sec.gov"
+        },
+        {
+          "addresses": [
+            "198.18.1.12"
+          ],
+          "all_addresses_in_controlled_synthetic_range": true,
+          "host": "investor.nvidia.com"
+        },
+        {
+          "addresses": [
+            "198.18.1.13"
+          ],
+          "all_addresses_in_controlled_synthetic_range": true,
+          "host": "investor.tsmc.com"
+        },
+        {
+          "addresses": [
+            "198.18.1.14"
+          ],
+          "all_addresses_in_controlled_synthetic_range": true,
+          "host": "investors.delltechnologies.com"
+        },
+        {
+          "addresses": [
+            "198.18.1.15"
+          ],
+          "all_addresses_in_controlled_synthetic_range": true,
+          "host": "investors.micron.com"
+        },
+        {
+          "addresses": [
+            "198.18.0.8"
+          ],
+          "all_addresses_in_controlled_synthetic_range": true,
+          "host": "www.microsoft.com"
+        }
+      ]
+    },
+    "request_captures": 26,
+    "response_captures": 0,
+    "transport_failure_captures": 26
+  },
+  "public_record_digest": "4306d11d8d50e77f8eef50c88f5120e960f493c95e775fd58aef324b8bcd6ed1",
+  "query_facet_binding": {
+    "attempt_budget_digests_equal_receipt_bound_digests": true,
+    "attempt_query_view_mismatch_count": 36,
+    "effective_query_text_preserved_in_receipts": false,
+    "receipt_count": 39
+  },
+  "query_variant": "deterministic_local_query_facet_only",
+  "result_digest": "074fac9993746d114e83df755b7802e76442d7bc0e42e689e3d4fe0c720fb92e",
+  "root_cause_disposition": {
+    "bound_query_telemetry_gap": "The delegate received the facet-bound query and its digest appears in attempt budget state, but the public attempt query view still shows the pre-binding query and receipts omit the effective query text.",
+    "deepseek_or_model_failure": false,
+    "firecrawl_external_constraint": "The provider explicitly reported keyless free-tier credit exhaustion; this is not evidence that the remaining MU/NVDA queries were poor.",
+    "firecrawl_project_defects": [
+      "HTTP 429 with reason=credits was not classified as a systemic stop.",
+      "Case-major scheduling spent every successful observation on DELL before MU or NVDA."
+    ],
+    "official_lane_project_defect": "The combined runner omitted the already-established controlled synthetic-DNS handshake. Public allowlisted hosts resolved through the desktop network proxy into 198.18.0.0/15 and were rejected by the SSRF guard before any HTTP response could be captured.",
+    "query_facet_quality_failure_established": false
+  },
+  "run_id": "fin013_s1_08_external_combined_60a1f9e2e2f8092ca564",
+  "schema_version": "fin_ia_0_1_3_s1_08_external_combined_live_assessment_v1_0",
+  "stage_disposition": {
+    "automatic_replacement_live_allowed": false,
+    "bounded_zero_call_successor_required": [
+      "controlled synthetic-DNS preflight and execution handshake",
+      "case-slot-fair shadow scheduling",
+      "systemic 429 credit-exhaustion stop with remaining identities terminalized",
+      "effective facet-bound query preserved as audit truth",
+      "capture replay and mutation proof"
+    ],
+    "fresh_external_recovery_authority_required_after_zero_call_proof": true,
+    "historical_firecrawl_full_matrix_remains_quality_evidence": true,
+    "internal_retrieval_backlog_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_1.json",
+    "internal_retrieval_started": false,
+    "owner_stage": "S1_08_external_candidate_discovery",
+    "r1_is_immutable_and_must_not_be_retried": true
+  },
+  "status": "terminal_valid_external_candidate_reachability_blocked"
+}

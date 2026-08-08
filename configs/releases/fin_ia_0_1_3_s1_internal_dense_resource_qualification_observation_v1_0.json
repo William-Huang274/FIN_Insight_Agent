@@ -1,0 +1,151 @@
+{
+  "candidate_observation_digest": "f474fc2a257dca40bd40e43be86b69e9999adf89e6ac1bf53188cf9587242da2",
+  "contract_ref": "fin_0_1_3.S1.internal_dense_resource_qualification:v1",
+  "execution_gate": {
+    "BGE_dense_execution_admitted": false,
+    "agent_curated_candidate_ceiling_pass": true,
+    "fusion_execution_admitted": false,
+    "owner_review_complete": false,
+    "reason": "The BGE-M3 successor locator and Milvus dependency bundle are locally qualified, but the current configured model locator is stale and the 18-row research qrels remain owner-review pending. No embedding, fusion or rerank execution is authorized by resource qualification.",
+    "rerank_execution_admitted": false
+  },
+  "implementation": {
+    "materializer_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_internal_dense_resource_qualification_v1_0.py",
+    "module_ref": "src/sec_agent/s1_internal_dense_resource_qualification.py",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_dense_resource_qualification_policy_v1_0.json"
+  },
+  "known_boundary": "This is file, dependency and lineage qualification only. It does not load BGE weights, connect to Milvus, mutate the runtime profile, download a reranker, score a candidate, or satisfy Owner qrels review.",
+  "observed_calls": {
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0
+  },
+  "policy_digest": "3763f6fa8cdda4e99c16ae829aab30f3f04b39eae54fe693ef2d4b40bac549e0",
+  "project_os_preflight": {
+    "allow_open_blockers": false,
+    "capability_count": 660,
+    "checklist_count": 6,
+    "contract_errors": [],
+    "errors": [],
+    "missing_capabilities": [],
+    "missing_files": [],
+    "next_action": "Project OS preflight passed. Continue to token budget, provider, evidence-mode, AIE, and data-script preflights.",
+    "open_full_chain_blocker_count": 0,
+    "open_full_chain_blockers": [],
+    "policy": "typed_blocker_state_and_registered_run_scope_fail_closed_v0_2",
+    "project_os_dir": "D:\\FIN_Insight_Agent\\docs\\project_os",
+    "project_root": "D:\\FIN_Insight_Agent",
+    "root_cause_issue_count": 1096,
+    "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+    "run_scope_registry": {
+      "adoption_sequence_after_projection": "v2_191",
+      "path": "configs\\runtime\\fin_ia_project_os_run_scope_registry_v1_0.json",
+      "registry_id": "fin_insight_project_os_run_scope_registry",
+      "registry_version": "v1_0",
+      "schema_version": "fin_insight_project_os_run_scope_registry_v1_0"
+    },
+    "schema_version": "fin_insight_project_os_full_chain_preflight_v0_2",
+    "scope_resolution": {
+      "canonical_scope_id": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+      "operation_class": "source_runtime_zero_call_implementation",
+      "owner_stage": "S1",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "status": "registered"
+    },
+    "status": "pass"
+  },
+  "research_qrels_review_digest": "aca52d205984d0477c1c17186afa2a28d249655419be28b75cf825dbc18716aa",
+  "resource_qualification": {
+    "bge_m3": {
+      "configured_model_exists": false,
+      "configured_model_locator": "D:/hf_cache/hub/models--BAAI--bge-m3/snapshots/5617a9f61b028005a4858fdac845db406aefb181",
+      "expected_embedding_dim": 1024,
+      "hidden_size": 1024,
+      "missing_required_files": [],
+      "qualified_successor_locator": "D:/hf_models/BAAI__bge-m3",
+      "required_files_present": true,
+      "sentence_transformers_version": "5.2.3",
+      "status": "qualified_successor_locator_not_yet_bound",
+      "torch_version": "2.10.0+cu126"
+    },
+    "deterministic_fusion": {
+      "resource_required": false,
+      "status": "available_after_ranking_admission"
+    },
+    "milvus_collection": {
+      "collection_name": "fin_ab_20260614_tier1_tier2_603_milvus_streaming_semantic_fp16_batch1024_local_rebuild_from_parquet_r1_1781435345",
+      "collection_present": true,
+      "configured_embedding_model_exists": false,
+      "db_exists": true,
+      "db_storage_kind": "directory",
+      "dependencies_exist": true,
+      "embedding_dim": 1024,
+      "embedding_model_candidates": [
+        {
+          "exists": false,
+          "hidden_size": null,
+          "is_configured": true,
+          "path": "D:/hf_cache/hub/models--BAAI--bge-m3/snapshots/5617a9f61b028005a4858fdac845db406aefb181"
+        },
+        {
+          "exists": true,
+          "hidden_size": 1024,
+          "is_configured": false,
+          "path": "D:/hf_models/BAAI__bge-m3"
+        }
+      ],
+      "field_names": [
+        "category_slug",
+        "contains_table",
+        "embedding",
+        "evidence_id",
+        "fiscal_year",
+        "form_type",
+        "intent_tags",
+        "item_code",
+        "object_type",
+        "period_type",
+        "preview",
+        "relationship_role",
+        "semantic_scope",
+        "source_tier",
+        "ticker",
+        "vector_id",
+        "vector_kind",
+        "vector_role"
+      ],
+      "required_fields_present": true,
+      "row_count": 662908,
+      "semantic_execution_admitted": false,
+      "status": "collection_qualified_model_locator_blocked",
+      "ticker_presence": {
+        "DELL": true,
+        "MSFT": true,
+        "MU": true,
+        "NVDA": true,
+        "TSM": true
+      }
+    },
+    "milvus_runtime_dependency": {
+      "default_interpreter_pymilvus_importable": false,
+      "dependencies_dir": "Z:/FIN_Insight_Agent_artifacts/python_deps/milvus_lite",
+      "pymilvus_bundle_present": true,
+      "status": "qualified_via_explicit_runtime_dependency_path"
+    },
+    "reranker": {
+      "candidate_paths": [
+        "D:/hf_models/BAAI__bge-reranker-v2-m3",
+        "D:/hf_cache/hub/models--BAAI--bge-reranker-v2-m3"
+      ],
+      "present_paths": [],
+      "status": "optional_resource_absent"
+    }
+  },
+  "result_digest": "d096a8cd146588e78982a7249cd56a37dea9c85496e8b40c54c8ae11e52764d3",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "schema_version": "fin_ia_0_1_3_s1_internal_dense_resource_qualification_observation_v1_0",
+  "status": "resources_qualified_execution_not_admitted_owner_review_pending"
+}

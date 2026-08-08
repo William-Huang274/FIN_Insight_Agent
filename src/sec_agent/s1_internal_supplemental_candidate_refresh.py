@@ -31,26 +31,55 @@ def execute_internal_supplemental_candidate_refresh(
         root / str(inputs["base_candidate_policy_ref"]), repo_root=root
     )
     proof = load_bound_integration_proof(base_policy, repo_root=root)
-    manifest = load_validated_supplemental_asset_manifest(
-        root / str(inputs["supplemental_asset_manifest_ref"]), repo_root=root
-    )
+    manifest_items = list(inputs.get("supplemental_asset_manifests") or [])
+    if manifest_items:
+        manifests = {
+            str(item["asset_key"]): load_validated_supplemental_asset_manifest(
+                root / str(item["ref"]), repo_root=root
+            )
+            for item in manifest_items
+        }
+    else:
+        manifests = {
+            "supplemental": load_validated_supplemental_asset_manifest(
+                root / str(inputs["supplemental_asset_manifest_ref"]),
+                repo_root=root,
+            )
+        }
     assets = dict(base_policy["local_assets"])
     members = dict(policy["federated_asset_members"])
 
     bm25_members = list(members["internal_bm25"])
     object_members = list(members["internal_object_bm25"])
 
+    def _bm25_path(source: str) -> Path:
+        if source == "base_candidate_policy.bm25_index_dir":
+            return root / str(assets["bm25_index_dir"])
+        parts = source.split(".")
+        if len(parts) == 3 and parts[0] == "supplemental_asset_manifests":
+            return root / str(manifests[parts[1]]["bm25_index_ref"])
+        if source == "supplemental_asset_manifest.bm25_index_ref":
+            return root / str(manifests["supplemental"]["bm25_index_ref"])
+        raise ValueError(f"unsupported internal BM25 member source: {source}")
+
+    def _object_path(source: str) -> Path:
+        if source == "base_candidate_policy.object_bm25_index_dir":
+            return root / str(assets["object_bm25_index_dir"])
+        parts = source.split(".")
+        if len(parts) == 3 and parts[0] == "supplemental_asset_manifests":
+            return root / str(manifests[parts[1]]["object_bm25_index_ref"])
+        if source == "supplemental_asset_manifest.object_bm25_index_ref":
+            return root / str(manifests["supplemental"]["object_bm25_index_ref"])
+        raise ValueError(f"unsupported internal ObjectBM25 member source: {source}")
+
     def bm25_factory(_unused_path: str | Path) -> FederatedReadOnlyRetriever:
         return FederatedReadOnlyRetriever(
             [
                 (
-                    str(bm25_members[0]["asset_id"]),
-                    BM25Retriever(root / str(assets["bm25_index_dir"])),
-                ),
-                (
-                    str(bm25_members[1]["asset_id"]),
-                    BM25Retriever(root / str(manifest["bm25_index_ref"])),
-                ),
+                    str(item["asset_id"]),
+                    BM25Retriever(_bm25_path(str(item["source"]))),
+                )
+                for item in bm25_members
             ]
         )
 
@@ -58,13 +87,10 @@ def execute_internal_supplemental_candidate_refresh(
         return FederatedReadOnlyRetriever(
             [
                 (
-                    str(object_members[0]["asset_id"]),
-                    ObjectBM25Retriever(root / str(assets["object_bm25_index_dir"])),
-                ),
-                (
-                    str(object_members[1]["asset_id"]),
-                    ObjectBM25Retriever(root / str(manifest["object_bm25_index_ref"])),
-                ),
+                    str(item["asset_id"]),
+                    ObjectBM25Retriever(_object_path(str(item["source"]))),
+                )
+                for item in object_members
             ]
         )
 
@@ -84,6 +110,27 @@ def execute_internal_supplemental_candidate_refresh(
     )
     body = dict(result)
     body.pop("result_digest", None)
+    lineage_fields = (
+        {
+            "supplemental_asset_manifest_digests": {
+                key: str(value["manifest_digest"])
+                for key, value in manifests.items()
+            },
+            "source_acquisition_result_digests": {
+                key: str(value["source_acquisition_result_digest"])
+                for key, value in manifests.items()
+            },
+        }
+        if manifest_items
+        else {
+            "supplemental_asset_manifest_digest": str(
+                manifests["supplemental"]["manifest_digest"]
+            ),
+            "source_acquisition_result_digest": str(
+                manifests["supplemental"]["source_acquisition_result_digest"]
+            ),
+        }
+    )
     body.update(
         {
             "status": (
@@ -93,12 +140,7 @@ def execute_internal_supplemental_candidate_refresh(
             "base_candidate_policy_ref": str(
                 inputs["base_candidate_policy_ref"]
             ),
-            "supplemental_asset_manifest_digest": str(
-                manifest["manifest_digest"]
-            ),
-            "source_acquisition_result_digest": str(
-                manifest["source_acquisition_result_digest"]
-            ),
+            **lineage_fields,
             "federated_asset_members": members,
             "candidate_ceiling_proven": False,
             "BGE_fusion_rerank_admitted": False,
@@ -112,12 +154,26 @@ def execute_internal_supplemental_candidate_refresh(
         }
     )
     qualification = dict(body["resource_qualification"])
-    qualification["supplemental_assets"] = {
-        "status": "qualified",
-        "manifest_digest": str(manifest["manifest_digest"]),
-        "record_counts": dict(manifest["record_counts"]),
-        "private_file_count": len(manifest["private_file_inventory"]),
-    }
+    if manifest_items:
+        qualification["supplemental_assets"] = {
+            "status": "qualified",
+            "members": {
+                key: {
+                    "manifest_digest": str(value["manifest_digest"]),
+                    "record_counts": dict(value["record_counts"]),
+                    "private_file_count": len(value["private_file_inventory"]),
+                }
+                for key, value in manifests.items()
+            },
+        }
+    else:
+        manifest = manifests["supplemental"]
+        qualification["supplemental_assets"] = {
+            "status": "qualified",
+            "manifest_digest": str(manifest["manifest_digest"]),
+            "record_counts": dict(manifest["record_counts"]),
+            "private_file_count": len(manifest["private_file_inventory"]),
+        }
     qualification["federation"] = {
         "status": "qualified_round_robin_no_cross_score_comparison",
         "members": members,

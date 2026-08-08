@@ -1382,6 +1382,14 @@ FIN 0.1.3 首次真实 candidate ceiling 的修正后结果为：18 个研究束
 
 因此产品增加一条强制门禁：candidate pool 缺目标时，先刷新 current official corpus、Gold mart 和各索引；不得先下载 reranker、调大 top-k 或把 dense/fusion 分数当作补资料手段。刷新必须建立 successor asset 和 lineage，不原地改写历史索引；同一冻结 qrels 达到 strict current target-in-pool `18/18` 并经 Owner 复核后，才能准入 BGE-M3、facet-aware fusion 与可选 reranker。模型可建议受控 query atoms，但不拥有时间、身份、关系、来源或数据刷新权。
 
+#### 7.7.6 研究 qrels、数值 qrels 与资源资格分账（2026-08-09）
+
+研究候选 qrels 与 exact numeric qrels 是两个不同的验收面。前者判断某份文档或片段能否支撑需求、供应、监管、客户和反证研究；后者逐项核对 ticker、metric、period、unit、value 和 authority。不得因为一个定性研究束没有 SQL 候选就声称数值库失败，也不得因为 annual exact 数值齐全就声称 current-quarter research source 已覆盖。
+
+FIN 0.1.3 的实测说明这种分账是必要的：R7 research target-in-pool 已达到 agent-curated `18/18`；独立 numeric suite 中，三案例 current successor mart 的 latest-available annual exact facts=`9/9`，但 DELL/MU/NVDA 六个冻结 current-quarter 产品事实=`0/6`。旧主 mart 只命中 annual `3/9`。因此产品必须把 `route bound to stale mart`、`current-quarter transform absent` 与 `exact lookup logic failed` 分成不同 typed state。评测 evidence pack 可以证明缺口，但不得反向成为自动入库来源。
+
+资源存在也不等于 ranking admission。本地 BGE-M3、Milvus collection 和依赖可以先做零 embedding 资格检查；只有 18-row research qrels 经 Owner 接受后，才允许绑定 successor model locator 并执行 sparse／dense／facet-aware fusion 对照。reranker 是可选增量层：本机缺失时不得静默下载或阻断 sparse+dense+fusion 基线；存在时也必须用 false promotion、Recall@K、MRR/NDCG、稳定性、延迟和成本证明净增益。任何 embedding、fusion 或 reranker 分数都不拥有事实权威或 Evidence 晋升权。
+
 ### 7.8 Agentic Research Harness 工程控制面（2026-07-09 追加）
 
 在 `Agentic Search / Agentic Research` 之上，FIN 需要一个统一的 `Agentic Research Harness`。它不是另一个 agent，也不是把所有节点改成更长 prompt；它是运行时控制面，负责把工具、上下文、权限、状态、trace、评测和自我迭代统一成可审计系统。

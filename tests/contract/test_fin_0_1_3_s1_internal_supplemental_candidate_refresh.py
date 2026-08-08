@@ -21,6 +21,10 @@ POLICY_V1_1_PATH = ROOT / (
     "configs/runtime/fin_ia_0_1_3_s1_internal_"
     "supplemental_candidate_refresh_policy_v1_1.json"
 )
+POLICY_V1_2_PATH = ROOT / (
+    "configs/runtime/fin_ia_0_1_3_s1_internal_"
+    "supplemental_candidate_refresh_policy_v1_2.json"
+)
 
 
 def test_refresh_policy_binds_base_manifest_and_forbids_ranking() -> None:
@@ -58,3 +62,13 @@ def test_successor_refresh_binds_lineage_preserving_manifest() -> None:
     assert policy["observation_schema"].endswith("v1_5")
     assert manifest["schema_version"].endswith("v1_1")
     assert manifest["private_asset_root_ref"].endswith("/v2")
+
+
+def test_three_asset_refresh_binds_incremental_mu_10q_manifest() -> None:
+    policy = load_internal_supplemental_candidate_refresh_policy(
+        POLICY_V1_2_PATH, repo_root=ROOT
+    )
+    assert len(policy["immutable_inputs"]["supplemental_asset_manifests"]) == 2
+    assert len(policy["federated_asset_members"]["internal_bm25"]) == 3
+    assert len(policy["federated_asset_members"]["internal_object_bm25"]) == 3
+    assert policy["hard_boundaries"]["BGE_fusion_rerank_admitted"] is False

@@ -19,9 +19,15 @@ MANIFEST_SCHEMA_V1_1 = (
     "fin_ia_0_1_3_s1_internal_supplemental_asset_manifest_v1_1"
 )
 CONTRACT_REF_V1_1 = "fin_0_1_3.S1.internal_supplemental_candidate_assets:v1.1"
+POLICY_SCHEMA_V1_2 = "fin_ia_0_1_3_s1_internal_supplemental_asset_policy_v1_2"
+MANIFEST_SCHEMA_V1_2 = (
+    "fin_ia_0_1_3_s1_internal_supplemental_asset_manifest_v1_2"
+)
+CONTRACT_REF_V1_2 = "fin_0_1_3.S1.internal_supplemental_candidate_assets:v1.2"
 _ASSET_SCHEMA_CONTRACTS = {
     POLICY_SCHEMA: (MANIFEST_SCHEMA, CONTRACT_REF),
     POLICY_SCHEMA_V1_1: (MANIFEST_SCHEMA_V1_1, CONTRACT_REF_V1_1),
+    POLICY_SCHEMA_V1_2: (MANIFEST_SCHEMA_V1_2, CONTRACT_REF_V1_2),
 }
 _MANIFEST_SCHEMA_CONTRACTS = {
     manifest_schema: contract_ref
@@ -40,9 +46,16 @@ FEDERATED_POLICY_SCHEMA_V1_1 = (
 FEDERATED_CONTRACT_REF_V1_1 = (
     "fin_0_1_3.S1.internal_supplemental_candidate_refresh:v1.5"
 )
+FEDERATED_POLICY_SCHEMA_V1_2 = (
+    "fin_ia_0_1_3_s1_internal_supplemental_candidate_refresh_policy_v1_2"
+)
+FEDERATED_CONTRACT_REF_V1_2 = (
+    "fin_0_1_3.S1.internal_supplemental_candidate_refresh:v1.6"
+)
 _FEDERATED_SCHEMA_CONTRACTS = {
     FEDERATED_POLICY_SCHEMA: FEDERATED_CONTRACT_REF,
     FEDERATED_POLICY_SCHEMA_V1_1: FEDERATED_CONTRACT_REF_V1_1,
+    FEDERATED_POLICY_SCHEMA_V1_2: FEDERATED_CONTRACT_REF_V1_2,
 }
 
 
@@ -99,7 +112,12 @@ def load_internal_supplemental_asset_policy(
             "internal_supplemental_asset_chunking_invalid"
         )
     bindings = list(policy.get("source_bindings") or [])
-    if len(bindings) != 3 or len({str(item.get("target_id")) for item in bindings}) != 3:
+    expected_documents = int(policy.get("expected_source_documents") or 3)
+    if (
+        len(bindings) != expected_documents
+        or len({str(item.get("target_id")) for item in bindings})
+        != expected_documents
+    ):
         raise S1InternalSupplementalAssetError(
             "internal_supplemental_asset_source_bindings_invalid"
         )
@@ -146,13 +164,46 @@ def load_internal_supplemental_candidate_refresh_policy(
             "internal_supplemental_candidate_refresh_policy_identity_invalid"
         )
     inputs = dict(policy.get("immutable_inputs") or {})
-    for stem in ("base_candidate_policy", "supplemental_asset_manifest"):
+    for stem in ("base_candidate_policy",):
         ref = str(inputs.get(f"{stem}_ref") or "")
         supplied = str(inputs.get(f"{stem}_sha256") or "")
         target = root / ref
         if not ref or not target.is_file() or _normalized_sha256(target) != supplied:
             raise S1InternalSupplementalAssetError(
                 f"internal_supplemental_candidate_refresh_binding_invalid:{stem}"
+            )
+    manifest_inputs = list(inputs.get("supplemental_asset_manifests") or [])
+    if manifest_inputs:
+        asset_keys = [str(item.get("asset_key") or "") for item in manifest_inputs]
+        if (
+            len(asset_keys) < 2
+            or len(set(asset_keys)) != len(asset_keys)
+            or any(not item for item in asset_keys)
+        ):
+            raise S1InternalSupplementalAssetError(
+                "internal_supplemental_candidate_refresh_manifest_set_invalid"
+            )
+        for item in manifest_inputs:
+            ref = str(item.get("ref") or "")
+            supplied = str(item.get("sha256") or "")
+            target = root / ref
+            if (
+                not ref
+                or not target.is_file()
+                or _normalized_sha256(target) != supplied
+            ):
+                raise S1InternalSupplementalAssetError(
+                    "internal_supplemental_candidate_refresh_binding_invalid:"
+                    f"manifest:{item.get('asset_key')}"
+                )
+    else:
+        ref = str(inputs.get("supplemental_asset_manifest_ref") or "")
+        supplied = str(inputs.get("supplemental_asset_manifest_sha256") or "")
+        target = root / ref
+        if not ref or not target.is_file() or _normalized_sha256(target) != supplied:
+            raise S1InternalSupplementalAssetError(
+                "internal_supplemental_candidate_refresh_binding_invalid:"
+                "supplemental_asset_manifest"
             )
     hard = dict(policy.get("hard_boundaries") or {})
     if (
@@ -176,23 +227,40 @@ def load_internal_supplemental_candidate_refresh_policy(
             "internal_supplemental_candidate_refresh_boundary_invalid"
         )
     members = dict(policy.get("federated_asset_members") or {})
-    expected_sources = {
-        "internal_bm25": [
-            "base_candidate_policy.bm25_index_dir",
-            "supplemental_asset_manifest.bm25_index_ref",
-        ],
-        "internal_object_bm25": [
-            "base_candidate_policy.object_bm25_index_dir",
-            "supplemental_asset_manifest.object_bm25_index_ref",
-        ],
-    }
+    if manifest_inputs:
+        expected_sources = {
+            "internal_bm25": ["base_candidate_policy.bm25_index_dir"]
+            + [
+                f"supplemental_asset_manifests.{item['asset_key']}.bm25_index_ref"
+                for item in manifest_inputs
+            ],
+            "internal_object_bm25": [
+                "base_candidate_policy.object_bm25_index_dir"
+            ]
+            + [
+                "supplemental_asset_manifests."
+                f"{item['asset_key']}.object_bm25_index_ref"
+                for item in manifest_inputs
+            ],
+        }
+    else:
+        expected_sources = {
+            "internal_bm25": [
+                "base_candidate_policy.bm25_index_dir",
+                "supplemental_asset_manifest.bm25_index_ref",
+            ],
+            "internal_object_bm25": [
+                "base_candidate_policy.object_bm25_index_dir",
+                "supplemental_asset_manifest.object_bm25_index_ref",
+            ],
+        }
     for route in ("internal_bm25", "internal_object_bm25"):
         route_members = list(members.get(route) or [])
         identities = [str(item.get("asset_id") or "") for item in route_members]
         sources = [str(item.get("source") or "") for item in route_members]
         if (
-            len(route_members) != 2
-            or len(set(identities)) != 2
+            len(route_members) != len(expected_sources[route])
+            or len(set(identities)) != len(route_members)
             or any(not item for item in identities)
             or sources != expected_sources[route]
         ):
@@ -348,22 +416,41 @@ class FederatedReadOnlyRetriever:
                 close()
 
 
-def _validate_public_source_result(result: Mapping[str, Any]) -> None:
+def _validate_public_source_result(
+    result: Mapping[str, Any]
+) -> list[dict[str, Any]]:
     body = dict(result)
     supplied = str(body.pop("public_record_digest", ""))
-    if (
-        supplied != canonical_digest(body)
-        or result.get("status") != "completed_all_targets_acquired"
-        or int((result.get("observed_counts") or {}).get("acquired") or 0) != 3
-        or int((result.get("observed_counts") or {}).get("network_calls") or 0) != 8
-        or result.get("stage_boundary", {}).get(
-            "internal_corpus_source_acquisition_proven"
-        )
-        is not True
-    ):
+    if supplied != canonical_digest(body):
         raise S1InternalSupplementalAssetError(
             "internal_supplemental_asset_source_result_invalid"
         )
+    if (
+        result.get("status") == "completed_all_targets_acquired"
+        and int((result.get("observed_counts") or {}).get("acquired") or 0) == 3
+        and int((result.get("observed_counts") or {}).get("network_calls") or 0)
+        == 8
+        and result.get("stage_boundary", {}).get(
+            "internal_corpus_source_acquisition_proven"
+        )
+        is True
+    ):
+        return [dict(item) for item in result.get("source_results") or []]
+    if (
+        result.get("status") == "completed_target_acquired"
+        and int((result.get("observed_counts") or {}).get("acquired") or 0) == 1
+        and int((result.get("observed_counts") or {}).get("network_calls") or 0)
+        == 1
+        and result.get("stage_boundary", {}).get(
+            "mu_10q_source_acquisition_proven"
+        )
+        is True
+        and isinstance(result.get("source_result"), Mapping)
+    ):
+        return [dict(result["source_result"])]
+    raise S1InternalSupplementalAssetError(
+        "internal_supplemental_asset_source_result_invalid"
+    )
 
 
 def _file_inventory(root: Path) -> list[dict[str, Any]]:
@@ -390,7 +477,7 @@ def build_internal_supplemental_assets(
         )
     inputs = dict(policy["immutable_inputs"])
     result = _read_json(root / str(inputs["source_acquisition_result_ref"]))
-    _validate_public_source_result(result)
+    source_results = _validate_public_source_result(result)
     benchmark = _read_json(root / str(inputs["benchmark_evidence_pack_ref"]))
     source_registry = {
         str(item.get("source_id") or ""): dict(item)
@@ -418,7 +505,11 @@ def build_internal_supplemental_assets(
     claim_rows: list[dict[str, Any]] = []
     sources: list[dict[str, Any]] = []
     uncovered: set[str] = set()
-    for source_result in result.get("source_results") or []:
+    if len(source_results) != len(bindings):
+        raise S1InternalSupplementalAssetError(
+            "internal_supplemental_asset_source_result_count_invalid"
+        )
+    for source_result in source_results:
         target_id = str(source_result.get("target_id") or "")
         binding = bindings.get(target_id)
         if binding is None:
@@ -426,6 +517,7 @@ def build_internal_supplemental_assets(
                 "internal_supplemental_asset_target_binding_missing"
             )
         source = dict(source_result.get("source") or {})
+        selected_url = str(source.get("selected_url") or source.get("source_url") or "")
         parsed = store.get_json(
             str(source["parsed_capture_ref"]),
             expected_digest=str(source["parsed_capture_digest"]),
@@ -434,7 +526,7 @@ def build_internal_supplemental_assets(
             str(parsed.get("ticker") or "") != str(binding["ticker"])
             or str(parsed.get("accession_number") or "")
             != str(source["accession_number"])
-            or str(parsed.get("source_url") or "") != str(source["selected_url"])
+            or str(parsed.get("source_url") or "") != selected_url
             or hashlib.sha256(str(parsed.get("text") or "").encode()).hexdigest()
             != str(source["parser_text_digest"])
         ):
@@ -442,7 +534,10 @@ def build_internal_supplemental_assets(
                 "internal_supplemental_asset_parsed_capture_binding_invalid"
             )
         accepted_refs = [str(item) for item in binding["accepted_source_refs"]]
-        if any(item not in source_registry for item in accepted_refs):
+        unknown_refs = [item for item in accepted_refs if item not in source_registry]
+        if unknown_refs and binding.get("accepted_source_ref_authority") != (
+            "captured_lineage_extension"
+        ):
             raise S1InternalSupplementalAssetError(
                 "internal_supplemental_asset_expected_source_unknown"
             )
@@ -470,7 +565,7 @@ def build_internal_supplemental_assets(
                 "source_tier": str(binding["source_tier"]),
                 "published_at": str(source["filing_date"]),
                 "publication_date": str(source["filing_date"]),
-                "source_url": str(source["selected_url"]),
+                "source_url": selected_url,
                 "accession_number": str(source["accession_number"]),
                 "period_end": str(source["report_date"]),
                 "metadata": {
@@ -479,7 +574,7 @@ def build_internal_supplemental_assets(
                     "source_tier": str(binding["source_tier"]),
                     "filing_date": str(source["filing_date"]),
                     "accession_number": str(source["accession_number"]),
-                    "source_url": str(source["selected_url"]),
+                    "source_url": selected_url,
                     "capture_digest": str(source["parsed_capture_digest"]),
                     "candidate_only_not_evidence": True,
                 },
@@ -513,7 +608,7 @@ def build_internal_supplemental_assets(
                 "form_type": str(source["form_type"]),
                 "filing_date": str(source["filing_date"]),
                 "report_date": str(source["report_date"]),
-                "selected_url": str(source["selected_url"]),
+                "selected_url": selected_url,
                 "parsed_capture_ref": str(source["parsed_capture_ref"]),
                 "parsed_capture_digest": str(source["parsed_capture_digest"]),
                 "accepted_source_refs": accepted_refs,
@@ -574,10 +669,12 @@ def build_internal_supplemental_assets(
             "BGE_fusion_rerank_admitted": False,
             "evidence_or_release": False,
         },
-        "known_boundary": (
-            "Document segments preserve captured source text and are candidate-only. "
-            "They are not adjudicated claims or Evidence. MU prepared remarks and the "
-            "current MU 10-Q remain separate uncovered targets."
+        "known_boundary": str(
+            policy.get("known_boundary")
+            or (
+                "Document segments preserve captured source text and are candidate-only. "
+                "They are not adjudicated claims or Evidence."
+            )
         ),
     }
     return {**body, "manifest_digest": canonical_digest(body)}
@@ -586,15 +683,20 @@ def build_internal_supplemental_assets(
 __all__ = [
     "CONTRACT_REF",
     "CONTRACT_REF_V1_1",
+    "CONTRACT_REF_V1_2",
     "FEDERATED_CONTRACT_REF",
     "FEDERATED_CONTRACT_REF_V1_1",
+    "FEDERATED_CONTRACT_REF_V1_2",
     "FEDERATED_POLICY_SCHEMA",
     "FEDERATED_POLICY_SCHEMA_V1_1",
+    "FEDERATED_POLICY_SCHEMA_V1_2",
     "FederatedReadOnlyRetriever",
     "MANIFEST_SCHEMA",
     "MANIFEST_SCHEMA_V1_1",
+    "MANIFEST_SCHEMA_V1_2",
     "POLICY_SCHEMA",
     "POLICY_SCHEMA_V1_1",
+    "POLICY_SCHEMA_V1_2",
     "RUN_SCOPE",
     "S1InternalSupplementalAssetError",
     "build_internal_supplemental_assets",

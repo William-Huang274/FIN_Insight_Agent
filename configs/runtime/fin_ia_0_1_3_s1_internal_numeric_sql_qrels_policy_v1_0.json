@@ -1,0 +1,46 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_numeric_sql_qrels_policy_v1_0",
+  "result_schema": "fin_ia_0_1_3_s1_internal_numeric_sql_qrels_observation_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_numeric_sql_qrels:v1",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "recorded_at": "2026-08-09",
+  "binding_hash_profile": "sha256_file_bytes_v1",
+  "purpose": "Separate exact numeric retrieval freshness from the 18-row qualitative research candidate qrels before any BGE, fusion or rerank evaluation.",
+  "immutable_inputs": {
+    "annual_period_authority_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s1_01_freshness_reopen_s1_02_numeric_successor_and_s1_03_official_source_closeout_v1_0.json",
+    "annual_period_authority_sha256": "3b1fa9b173f900c2c42499701ec802ec66ea85a5968b3ade4951f3cfec2b1268",
+    "annual_fact_authority_ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s1_05_retrieval_evidence_usefulness_and_s1_closeout_v1_0.json",
+    "annual_fact_authority_sha256": "6ed4ed1fef9afd0aafa91ba9ba517c723c5b190422a68071dbb5571dd54ff5a4",
+    "current_quarter_evidence_pack_ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json",
+    "current_quarter_evidence_pack_sha256": "11a0e9a4ed87687f56859a7c42c183269bbb5fb17d2e4bb66a2b54242f308b7e",
+    "candidate_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_candidate_ceiling_policy_v1_1.json",
+    "candidate_policy_sha256": "7c8ee63d9ba9497ce9c851692fb8131b26ad14687277442ebada401395fddf35"
+  },
+  "local_assets": {
+    "legacy_gold_sqlite_ref": "data/workbench_private/research_data/gold_fact_signal_mart_v0_1.sqlite",
+    "legacy_gold_sqlite_sha256": "d997d588fff4ede3f249a7a18a149fb409eaafd4f34abd990006ebd8459c0125",
+    "current_successor_gold_sqlite_ref": "data/workbench_private/fin_0_1_3_s1_01_reopen/current_three_case_gold_mart_v0_2.sqlite",
+    "current_successor_gold_sqlite_sha256": "309fbb59a0fb72954bf77e6681d86e71d843d0267e8d06dddd4625902eb45c17"
+  },
+  "qrels_contract": {
+    "annual_metrics": [
+      "revenue",
+      "gross_profit",
+      "operating_income"
+    ],
+    "annual_qrel_count": 9,
+    "current_quarter_qrel_count": 6,
+    "current_quarter_pack_is_evaluator_only_for_freshness": true,
+    "research_qrels_owner_review_is_separate": true
+  },
+  "hard_boundaries": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "benchmark_pack_may_refresh_sqlite": false,
+    "BGE_fusion_rerank_admitted": false
+  }
+}

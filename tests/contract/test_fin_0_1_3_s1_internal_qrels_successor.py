@@ -24,6 +24,9 @@ POLICY_PATH = ROOT / (
 POLICY_V1_2_PATH = ROOT / (
     "configs/runtime/fin_ia_0_1_3_s1_internal_qrels_successor_policy_v1_2.json"
 )
+POLICY_V1_3_PATH = ROOT / (
+    "configs/runtime/fin_ia_0_1_3_s1_internal_qrels_successor_policy_v1_3.json"
+)
 
 
 def _inputs() -> tuple[dict, dict]:
@@ -121,6 +124,52 @@ def test_supplemental_semantic_alternative_cannot_escape_bound_manifest() -> Non
         == "official_sec_same_event_semantic_alternative"
     )
     override["source_equivalence_mode"] = "unverified_same_event"
+    with pytest.raises(
+        S1InternalQrelsSuccessorError,
+        match="internal_qrels_successor_semantic_source_equivalence_invalid",
+    ):
+        build_internal_qrels_successor_packet(policy=mutated, inputs=inputs)
+
+
+def test_mu_10q_successor_reaches_eighteen_pending_owner_review() -> None:
+    policy = load_internal_qrels_successor_policy(POLICY_V1_3_PATH, repo_root=ROOT)
+    inputs = load_bound_internal_qrels_successor_inputs(policy, repo_root=ROOT)
+    packet = build_internal_qrels_successor_packet(policy=policy, inputs=inputs)
+    assert packet["status"] == (
+        "agent_curated_candidate_ceiling_pass_owner_review_pending"
+    )
+    assert packet["strict_current_target_in_pool_count"] == 18
+    assert packet["strict_current_target_absent_count"] == 0
+    assert packet["gate_decision"]["agent_curated_candidate_ceiling_pass"] is True
+    assert packet["gate_decision"]["owner_review_complete"] is False
+    assert packet["gate_decision"]["BGE_fusion_rerank_admitted"] is False
+    row = next(
+        item
+        for item in packet["qrels"]
+        if (
+            item["case_key"],
+            item["evidence_slot_id"],
+            item["evidence_owner_ticker"],
+        )
+        == ("MU", "regulatory_risk_and_financial_reconciliation", "MU")
+    )
+    assert row["source_equivalence_mode"] == "exact_captured_primary_source"
+    assert row["selected_candidate"]["form_type"] == "10-Q"
+    assert row["selected_candidate"]["source_accession_number"] == (
+        "0000723125-26-000015"
+    )
+    assert row["selected_candidate"]["candidate_state"] == (
+        "candidate_only_not_evidence"
+    )
+
+
+def test_captured_source_extension_cannot_escape_bound_manifest() -> None:
+    policy = load_internal_qrels_successor_policy(POLICY_V1_3_PATH, repo_root=ROOT)
+    inputs = load_bound_internal_qrels_successor_inputs(policy, repo_root=ROOT)
+    mutated = deepcopy(policy)
+    mutated["adjudication_overrides"][0]["accepted_source_ref"] = (
+        "SRC_UNBOUND_10Q"
+    )
     with pytest.raises(
         S1InternalQrelsSuccessorError,
         match="internal_qrels_successor_semantic_source_equivalence_invalid",

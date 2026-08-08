@@ -1,0 +1,123 @@
+{
+  "admission_digest": "840ab87e1ea24c238e3b707bb5e0b0a44e23c58b0e4df1cef2debb0fe25dbe7a",
+  "attempt_id": "fin013_s1_mu10q_attempt_0e4df1cef2debb0fe25d",
+  "capture_refs": [
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 503,
+      "digest": "5bd593bc8123a61f864f9e0c10ec68e8a32577f1bf375dfdd6b5c2d27c411fd3",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-mu-10q-successor/raw/5b/d5/5bd593bc8123a61f864f9e0c10ec68e8a32577f1bf375dfdd6b5c2d27c411fd3.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 2043097,
+      "digest": "90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-internal-mu-10q-successor/raw/90/79/90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d.json"
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S1.internal_mu_q3_fy2026_10q_successor_acquisition:v1",
+  "execution_environment_guard": {
+    "address_count": 1,
+    "all_non_global_addresses_controlled_synthetic": true,
+    "decision_digest": "4b03b4ebf695458810be46891c993d13517c5584d19f7a0ca3cb174c0a1048fe",
+    "guard": "public_allowlist_plus_controlled_198_18_0_0_15_proxy_v1",
+    "host": "www.sec.gov",
+    "synthetic_allowance_required": true
+  },
+  "known_boundary": "The direct SEC URL was derived from a retained submissions capture. This result is a captured candidate source, not Evidence or broad external-search acceptance.",
+  "observed_at": "2026-08-08T20:50:54Z",
+  "observed_counts": {
+    "acquired": 1,
+    "embedding_calls": 0,
+    "evidence_promotion_calls": 0,
+    "model_calls": 0,
+    "network_calls": 1,
+    "provider_calls": 0,
+    "rerank_calls": 0,
+    "retry_calls": 0,
+    "targets": 1,
+    "typed_gaps": 0
+  },
+  "policy_digest": "bc61b906a6343d8c0bf02bd3912ec6bc849f3d20653196e887479bef47e069db",
+  "public_private_separation": {
+    "captured_source_is_business_evidence": false,
+    "credentials_authorization_headers_or_cookies_saved": false,
+    "raw_requests_responses_and_parsed_text_retained_outside_git": true,
+    "runtime_root_ref": "data/workbench_private/fin_0_1_3_s1_internal_mu_10q_acquisition/live-r1"
+  },
+  "public_record_digest": "3fdb83af52c20c30f2e1e344923a9f8f95a27fc4b4e401a040c404ee0bc74fdb",
+  "result_digest": "340941ed4c598f347446a1d5d5432fe19b9732e3de13909d47a8efe53715915d",
+  "run_id": "fin013_s1_mu10q_run_707bb5e0b0a44e23c58b",
+  "run_scope": "S1_INTERNAL_MU_Q3_10Q_SUCCESSOR_ACQUISITION",
+  "schema_version": "fin_ia_0_1_3_s1_internal_mu_10q_acquisition_result_v1_0",
+  "shared_admission_receipt": {
+    "admission_digest": "840ab87e1ea24c238e3b707bb5e0b0a44e23c58b0e4df1cef2debb0fe25dbe7a",
+    "admission_id": "fin013_s1_mu10q_admission_840ab87e1ea24c238e3b",
+    "attempt_id": "fin013_s1_mu10q_attempt_0e4df1cef2debb0fe25d",
+    "finalized_at": "2026-08-08T20:50:54Z",
+    "receipt_digest": "5a67d8d01b69e43bdd598ee212d5437c04fc0f8bc0048502c42e4dff165426ad",
+    "reservation_digest": "d15c31f7937695a850b54c90e13cf87a17aabb76f736961d4d61f7f318dab57f",
+    "reserved_at": "2026-08-08T20:50:54Z",
+    "run_id": "fin013_s1_mu10q_run_707bb5e0b0a44e23c58b",
+    "runtime_identity": "D:\\FIN_Insight_Agent\\data\\workbench_private\\fin_0_1_3_s1_internal_mu_10q_acquisition\\live-r1",
+    "schema_version": "fin_ia_shared_admission_consumption_ledger_v1_0",
+    "scope": "fin_0_1_3.S1.internal_mu_q3_fy2026_10q_successor_acquisition:v1",
+    "state": "terminal",
+    "terminal_code": "mu_10q_captured_parsed_and_marker_bound",
+    "terminal_phase": "internal_mu_10q_successor_acquisition_terminal",
+    "terminal_result_digest": "340941ed4c598f347446a1d5d5432fe19b9732e3de13909d47a8efe53715915d",
+    "terminal_status": "success"
+  },
+  "source_result": {
+    "attempt": {
+      "failure_code": null,
+      "request_capture": {
+        "artifact_type": "official_source_request",
+        "byte_size": 503,
+        "digest": "5bd593bc8123a61f864f9e0c10ec68e8a32577f1bf375dfdd6b5c2d27c411fd3",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1-internal-mu-10q-successor/raw/5b/d5/5bd593bc8123a61f864f9e0c10ec68e8a32577f1bf375dfdd6b5c2d27c411fd3.json"
+      },
+      "response_capture": {
+        "artifact_type": "official_source_response",
+        "byte_size": 2043097,
+        "digest": "90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1-internal-mu-10q-successor/raw/90/79/90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d.json"
+      },
+      "route_id": "MU_Q3_FY2026_CURRENT_10Q:primary_document",
+      "status": "captured"
+    },
+    "benchmark_exact_url_used_for_discovery": false,
+    "candidate_state": "captured_source_not_evidence",
+    "failure_code": "",
+    "source": {
+      "accession_number": "0000723125-26-000015",
+      "filing_date": "2026-06-25",
+      "form_type": "10-Q",
+      "parsed_capture_digest": "67aed97c7be500d3659dc5305029d37c7fc0bd5b22c0b418386b9fda26a52a04",
+      "parsed_capture_ref": "fin-0.1.3/s1-internal-mu-10q-successor/parsed/67/ae/67aed97c7be500d3659dc5305029d37c7fc0bd5b22c0b418386b9fda26a52a04.json",
+      "parsed_text_chars": 230003,
+      "parser_adapter": "official_source_html_text_v1",
+      "parser_text_digest": "15b48f42a0766670cb9373b55f25d7918c8f47bf1e51c5dcdbe7691be247a011",
+      "primary_document": "mu-20260528.htm",
+      "report_date": "2026-05-28",
+      "response_capture_digest": "90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d",
+      "response_capture_ref": "fin-0.1.3/s1-internal-mu-10q-successor/raw/90/79/90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d.json",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm"
+    },
+    "status": "captured_parsed_target_markers_pass",
+    "target_id": "MU_Q3_FY2026_CURRENT_10Q",
+    "ticker": "MU"
+  },
+  "stage_boundary": {
+    "BGE_fusion_rerank_admitted": false,
+    "candidate_ceiling_proven": false,
+    "evidence_or_release": false,
+    "external_product_coverage_closed": false,
+    "mu_10q_source_acquisition_proven": true
+  },
+  "status": "completed_target_acquired"
+}

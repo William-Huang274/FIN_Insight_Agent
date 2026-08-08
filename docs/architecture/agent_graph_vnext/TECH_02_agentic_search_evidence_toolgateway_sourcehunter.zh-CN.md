@@ -1232,3 +1232,13 @@ v1.1 recovery 在 clean `4334d7c4...b6a6` exact-once 完成。official 三案全
 修正后的 candidate inventory Attempt R2 对 18 个 bundle 执行 72 个只读本地 route request，并保留 18 个 Milvus qualification terminal。观察为 `SQL=0 / ObjectBM25=360 / BM25=360 / Graph=196`；TSM 路径产生 6 个 lexical/object typed gap。Milvus Lite 目录、collection、required schema、1024 维与 DELL／MU／NVDA／MSFT／TSM ticker 均存在；配置中的旧 BGE snapshot locator 不存在，本机替代路径尚未通过 successor Runtime 准入，因此 semantic execution 仍为 0。
 
 qrels review packet 只是一份 `agent_curated_pending_owner_review` proposal。strict current target-in-pool=`9/18`、required=`18/18`，Gold SQL exact=`0/18`。这已经足以拒绝 ranking admission，无需等待 Owner 把失败确认第二遍。下一项是 `S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH`：先复用本地 immutable capture/raw source，盘点 current official source 是否已存在；随后在新目录构建 successor Gold SQL、ObjectBM25/BM25、Graph 与 Milvus 资产并重跑同一 candidate gate。只有候选目标齐全和 qrels Owner review 完成后，才允许 BGE-M3／facet-aware fusion／reranker evaluation。旧 v1.0 时间混用结果、v1.1 未 load collection 结果和 R2 均作为不同 Attempt 永久保留。
+
+### 20.34 R7 candidate ceiling、numeric SQL 分账与 dense resource qualification
+
+MU 10-Q successor 与三资产 sparse federation 把 research qrels 提升到 agent-curated `18/18`。该 qrels packet 仍是 Owner-review pending，不能由实现 Agent 自签。18 行中 17 行的当前候选来自 BM25，1 行来自 ObjectBM25；这只是 target presence，不是 sparse 胜过 dense 的结论。
+
+exact SQL 采用独立 15-row suite：9 行 latest-available annual facts 绑定已冻结 S1 numeric authority，6 行 current-quarter facts绑定模型可见的冻结 evidence pack但仅作 evaluator。60-row current successor mart 对 annual=`9/9`，旧 74,897-row mart=`3/9`；两者对 current quarter=`0/6`。Runtime 因此必须把 annual successor route、candidate policy 的 stale mart binding 和 current-quarter transform gap分别终态化。禁止把 evaluator pack直接写入 mart；current-quarter 修复必须回到 capture-backed primary source transform。
+
+dense resource qualification 不执行 embedding：R7 已绑定的 Milvus collection 为 1024 维且含所需字段/ticker；显式 dependency 路径含 pymilvus；`D:/hf_models/BAAI__bge-m3` 的 config、tokenizer 和权重文件完整且 hidden size=1024。现行 runtime config 指向不存在的旧 Hugging Face snapshot，所以后续 execution policy必须显式绑定 successor locator，不能静默 fallback。本机未发现 BGE reranker；该状态为 `optional_resource_absent`，不得自动下载，也不阻止 Owner 接受后先做 sparse／BGE dense／facet-aware fusion 对照。
+
+下一执行门为 Owner 接受 18 行 research qrels。接受后仍需新的 `S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION` authority 才可加载模型、连接 Milvus 或计算分数；资源资格 artifact 自身不授予执行权。current-quarter numeric refresh、downstream Evidence utilization 与 external coverage 均继续独立 open。

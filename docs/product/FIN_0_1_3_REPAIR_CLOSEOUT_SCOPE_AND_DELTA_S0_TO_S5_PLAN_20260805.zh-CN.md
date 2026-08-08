@@ -524,6 +524,21 @@ R2 的 18 个 bundle 得到 `SQL 0 / ObjectBM25 360 / BM25 360 / Graph 196`，Mi
 
 机器真相推进为 `configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_3.json`。external coverage 仍为独立 release blocker；内源通过不会自动关闭外源问题。
 
+## 7L. R7 18/18、exact-SQL 分账与 ranking 准入（2026-08-09）
+
+MU Q3 FY2026 10-Q 单文档 successor 已 exact-once 成功并形成 118 条 BM25＋118 条 ObjectBM25 增量 candidate。R7 在不改变 90-request 形状、过滤和预算的前提下达到 agent-curated research qrels `18/18`；新命中的监管/对账片段含承诺、capex、采购义务、政府补贴 clawback 与 DRAM 扩产正文，不是标题命中。Owner 仍未复核，因此 candidate ceiling 只可记为 agent-curated pass，不能自签 ranking admission。
+
+独立 exact-SQL suite 进一步把两类问题分开：
+
+1. [x] latest-available annual：三案例 60-row successor mart 对 revenue／gross profit／operating income=`9/9`；旧 74,897-row 主 mart 仅=`3/9`，证明 exact lookup 可用但候选策略仍指向陈旧资产；
+2. [ ] current-quarter：DELL Q1 FY2027、MU Q3 FY2026、NVDA Q1 FY2027 六个冻结产品事实在两套 mart 均=`0/6`，必须由 capture-backed current numeric ingestion 建 successor，禁止从 benchmark 回填；
+3. [x] BGE/Milvus 资源资格：本地 BGE-M3 必需文件和 hidden size 1024、Milvus collection/schema/ticker 与显式 pymilvus dependency 均已确认；旧 runtime model locator 仍失效；
+4. [ ] **当前 Owner gate**：复核 18-row research qrels。接受后才建立 successor model locator 和 BGE/fusion evaluation authority；退回则只修被退回 qrel/corpus，不重跑来源链；
+5. [ ] sparse／BGE dense／facet-aware fusion 同池对照；reranker 本机缺失，只有独立资源到位并证明增益才加入，不作为当前必需门；
+6. [ ] current-quarter exact mart refresh、Evidence Gate→Claim→Workpaper→report utilization proof；external `4/12` 继续作为独立 release blocker。
+
+机器真相分别为 `configs/releases/fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_3.json`、`configs/releases/fin_ia_0_1_3_s1_internal_numeric_sql_qrels_observation_v1_0.json`、`configs/releases/fin_ia_0_1_3_s1_internal_dense_resource_qualification_observation_v1_0.json` 与推进计划 `configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_4.json`。本节不创建新版本，也不把资源存在写成 ranking 已通过。
+
 ## 8. 下一步
 
 1. [x] 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。

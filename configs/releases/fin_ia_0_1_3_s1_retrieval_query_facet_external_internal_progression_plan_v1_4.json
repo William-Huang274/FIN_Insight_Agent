@@ -1,0 +1,107 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_4",
+  "contract_ref": "fin_0_1_3.S1.retrieval_query_facet_external_internal_progression:v1_4",
+  "recorded_at": "2026-08-09",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1",
+  "status": "internal_research_candidates_18_of_18_owner_review_current_numeric_current_quarter_gap_open",
+  "predecessor_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_3.json",
+  "user_decision": "Complete external retrieval first, then repair internal exact, lexical, dense and graph retrieval, including downstream BGE, fusion and reranking, without skipping candidate-ceiling evidence.",
+  "current_truth": {
+    "external_runtime_recovery": "live_pass",
+    "external_product_coverage": "failed_release_blocker_preserved",
+    "external_current_provider_round": "honestly_closed",
+    "internal_query_facet_projection": "v1_1_zero_call_engineering_pass",
+    "internal_research_candidate_inventory": "attempt_r7_completed",
+    "internal_agent_curated_qrels_recall": "18_of_18",
+    "internal_owner_reviewed_qrels": "pending_owner_accept_or_return",
+    "internal_annual_exact_sql": "current_successor_9_of_9",
+    "internal_current_quarter_exact_sql": "0_of_6_typed_refresh_gap",
+    "BGE_M3_resource": "qualified_successor_locator_not_bound",
+    "milvus_resource": "qualified_explicit_dependency_path",
+    "reranker_resource": "optional_absent",
+    "BGE_fusion_rerank_execution": "not_admitted",
+    "downstream_utilization": "not_proven"
+  },
+  "research_qrels_gate": {
+    "review_packet_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_3.json",
+    "review_digest": "aca52d205984d0477c1c17186afa2a28d249655419be28b75cf825dbc18716aa",
+    "review_state": "agent_curated_pending_owner_review",
+    "strict_current_target_count": 18,
+    "strict_current_target_in_pool": 18,
+    "strict_current_target_recall": 1.0,
+    "owner_review_complete": false,
+    "ranking_admitted": false
+  },
+  "numeric_sql_gate": {
+    "observation_ref": "configs/releases/fin_ia_0_1_3_s1_internal_numeric_sql_qrels_observation_v1_0.json",
+    "latest_available_annual_qrels": 9,
+    "current_successor_annual_exact_matches": 9,
+    "legacy_main_mart_annual_exact_matches": 3,
+    "current_quarter_qrels": 6,
+    "current_quarter_exact_matches": 0,
+    "benchmark_pack_may_refresh_sqlite": false,
+    "status": "annual_route_ready_current_quarter_refresh_blocked"
+  },
+  "dense_resource_gate": {
+    "observation_ref": "configs/releases/fin_ia_0_1_3_s1_internal_dense_resource_qualification_observation_v1_0.json",
+    "bge_m3": "qualified_successor_locator_not_bound",
+    "milvus": "qualified",
+    "reranker": "optional_resource_absent",
+    "embedding_calls": 0,
+    "rerank_calls": 0,
+    "execution_authorized": false
+  },
+  "execution_sequence": [
+    {
+      "order": 1,
+      "work_item": "S1_INTERNAL_RESEARCH_QRELS_OWNER_REVIEW",
+      "status": "current_owner_accept_or_return",
+      "acceptance": "Owner accepts or returns the 18 post-generation candidate labels. The implementation agent cannot self-sign this gate."
+    },
+    {
+      "order": 2,
+      "work_item": "S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION",
+      "status": "blocked_until_owner_qrels_acceptance",
+      "acceptance": "Bind the qualified local BGE-M3 successor locator in a new policy and compare sparse, dense and facet-aware fusion on the same pool. Optional reranker is evaluated only if a resource is separately available."
+    },
+    {
+      "order": 3,
+      "work_item": "S1_INTERNAL_CURRENT_QUARTER_NUMERIC_INGESTION_AND_EXACT_ROUTE_SUCCESSOR",
+      "status": "open_independent_of_ranking",
+      "acceptance": "Transform capture-backed primary sources into a successor exact mart and reach 6/6 current-quarter qrels. Do not ingest the evaluator pack or overwrite the historical mart."
+    },
+    {
+      "order": 4,
+      "work_item": "S1_TO_S3_RETRIEVAL_DOWNSTREAM_UTILIZATION_PROOF",
+      "status": "pending_after_ranking_and_current_numeric_refresh",
+      "acceptance": "Selected candidates and exact facts must pass Evidence Gate and be visibly consumed by Claim, Workpaper and report."
+    },
+    {
+      "order": 5,
+      "work_item": "EXTERNAL_PROVIDER_REQUALIFICATION_OR_PRODUCT_SOURCE_SCOPE_DECISION",
+      "status": "future_independent_release_blocker",
+      "acceptance": "A new Provider must reuse the frozen external matrix, or Owner must explicitly reduce the product source claim. Internal success does not close external 4/12 coverage."
+    }
+  ],
+  "hard_gates": {
+    "owner_review_pending": "no_embedding_fusion_or_rerank_execution",
+    "current_quarter_exact_missing": "capture_backed_refresh_no_benchmark_backfill",
+    "configured_BGE_locator_stale": "bind_only_in_new_post_owner_execution_policy",
+    "reranker_absent": "do_not_download_silently_and_do_not_block_sparse_dense_fusion_baseline",
+    "resource_qualified": "does_not_equal_execution_or_quality_pass",
+    "external_coverage_failed": "release_blocker_remains_independent"
+  },
+  "calls_authorized_by_this_plan": {
+    "owner_review": "human_decision_only",
+    "current_numeric_refresh_implementation": "zero_network_until_separate_source_authority_is_required",
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "known_boundary": "The plan records completed external closeout, 18/18 agent-curated internal research candidate presence, annual exact readiness, current-quarter exact gaps and dense-resource qualification. It does not self-sign Owner qrels, authorize BGE execution, refresh current-quarter facts, prove downstream use or close the external release blocker.",
+  "plan_digest": "c54c008b513ce7c44e921a40261b0f3ed5dabd049421fd81bb5b6c221ce4d809"
+}

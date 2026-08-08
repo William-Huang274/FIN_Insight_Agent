@@ -21,6 +21,9 @@ POLICY_PATH = ROOT / (
 POLICY_V1_1_PATH = ROOT / (
     "configs/runtime/fin_ia_0_1_3_s1_internal_supplemental_asset_policy_v1_1.json"
 )
+POLICY_V1_2_PATH = ROOT / (
+    "configs/runtime/fin_ia_0_1_3_s1_internal_supplemental_asset_policy_v1_2.json"
+)
 
 
 class FakeRetriever:
@@ -73,6 +76,20 @@ def test_successor_policy_preserves_lineage_in_compact_object_records() -> None:
     assert record["published_at"] == "2026-06-24"
     assert record["source_url"] == "https://www.sec.gov/example"
     assert record["accession_number"] == "0000723125-26-000013"
+
+
+def test_mu_10q_incremental_policy_is_one_source_candidate_only() -> None:
+    policy = load_internal_supplemental_asset_policy(
+        POLICY_V1_2_PATH, repo_root=ROOT
+    )
+    assert policy["expected_source_documents"] == 1
+    assert policy["source_bindings"][0]["target_id"] == (
+        "MU_Q3_FY2026_CURRENT_10Q"
+    )
+    assert policy["source_bindings"][0]["accepted_source_ref_authority"] == (
+        "captured_lineage_extension"
+    )
+    assert policy["hard_boundaries"]["embedding"] == 0
 
 
 def test_chunking_is_deterministic_bounded_and_overlapping() -> None:

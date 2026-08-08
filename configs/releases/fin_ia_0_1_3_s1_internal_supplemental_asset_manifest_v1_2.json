@@ -1,0 +1,126 @@
+{
+  "bm25_index_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v3_mu_10q/bm25",
+  "contract_ref": "fin_0_1_3.S1.internal_supplemental_candidate_assets:v1.2",
+  "implementation": {
+    "materializer_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_internal_supplemental_assets_v1_2.py",
+    "module_ref": "src/sec_agent/s1_internal_supplemental_assets.py",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_supplemental_asset_policy_v1_2.json"
+  },
+  "known_boundary": "The captured MU 10-Q is segmented into candidate-only sparse assets. It is not Evidence and does not close the separate prepared-remarks or external-search gaps.",
+  "manifest_digest": "79dedcae64a3806390586dbed0e6e366f16c6376e246b538ed353b503cadb4d7",
+  "object_bm25_index_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v3_mu_10q/object_bm25",
+  "observed_calls": {
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0
+  },
+  "private_asset_root_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v3_mu_10q",
+  "private_file_inventory": [
+    {
+      "bytes": 266176,
+      "path": "bm25/bm25.pkl",
+      "sha256": "9a2343eeb56379f3f7e5667e9014922cbbfab03c3577aa0383c61be9997a71af"
+    },
+    {
+      "bytes": 284,
+      "path": "bm25/metadata.json",
+      "sha256": "1fd58e22e708b3cfc287080727bb64e640468cb0423be4e6625fdeed0252ee50"
+    },
+    {
+      "bytes": 371612,
+      "path": "bm25/records.jsonl",
+      "sha256": "ea79c90aca8ae84e6a8c1ee457aa86ca1de40f86bf13a33cc02201fb08813dc5"
+    },
+    {
+      "bytes": 371612,
+      "path": "corpus/supplemental_evidence.jsonl",
+      "sha256": "ea79c90aca8ae84e6a8c1ee457aa86ca1de40f86bf13a33cc02201fb08813dc5"
+    },
+    {
+      "bytes": 283353,
+      "path": "object_bm25/bm25.pkl",
+      "sha256": "a868d441be310dabc8106c7f6a8a2ecc348eb3e4efa8d9955f352620231c150b"
+    },
+    {
+      "bytes": 472,
+      "path": "object_bm25/metadata.json",
+      "sha256": "090e798adc7152a900fe7f1c4593dd6850e0fa79b2f19a487e196b6565b49ac3"
+    },
+    {
+      "bytes": 396510,
+      "path": "object_bm25/records.jsonl",
+      "sha256": "722cc398b60da1c84d37f7b7d926aa3b407234a70cb020bc2f345aa24949d555"
+    },
+    {
+      "bytes": 431844,
+      "path": "object_bm25/records.slim.jsonl",
+      "sha256": "9147ec33d137ea167047b8215d343a11be63ff1e9a55573cdd6d7bc0278c5060"
+    },
+    {
+      "bytes": 419690,
+      "path": "object_bm25/records.slim.pkl",
+      "sha256": "7b5f7755f3da378ce1579197d2c9c9c2e54885685cee4a7768599dc9766e8799"
+    },
+    {
+      "bytes": 396510,
+      "path": "structured/supplemental_claims.jsonl",
+      "sha256": "722cc398b60da1c84d37f7b7d926aa3b407234a70cb020bc2f345aa24949d555"
+    },
+    {
+      "bytes": 0,
+      "path": "structured/supplemental_metrics.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "structured/supplemental_tables.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "project_os_preflight": {
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+    "status": "pass"
+  },
+  "record_counts": {
+    "bm25_records": 118,
+    "document_segment_objects": 118,
+    "evidence_chunks": 118,
+    "object_bm25_records": 118,
+    "source_documents": 1
+  },
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "schema_version": "fin_ia_0_1_3_s1_internal_supplemental_asset_manifest_v1_2",
+  "source_acquisition_result_digest": "340941ed4c598f347446a1d5d5432fe19b9732e3de13909d47a8efe53715915d",
+  "source_bindings": [
+    {
+      "accepted_source_refs": [
+        "SRC_MU_Q3_FY26_10Q_CAPTURED"
+      ],
+      "accession_number": "0000723125-26-000015",
+      "chunk_count": 118,
+      "equivalence_mode": "exact_captured_primary_source",
+      "filing_date": "2026-06-25",
+      "form_type": "10-Q",
+      "parsed_capture_digest": "67aed97c7be500d3659dc5305029d37c7fc0bd5b22c0b418386b9fda26a52a04",
+      "parsed_capture_ref": "fin-0.1.3/s1-internal-mu-10q-successor/parsed/67/ae/67aed97c7be500d3659dc5305029d37c7fc0bd5b22c0b418386b9fda26a52a04.json",
+      "report_date": "2026-05-28",
+      "selected_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+      "target_id": "MU_Q3_FY2026_CURRENT_10Q",
+      "ticker": "MU",
+      "uncovered_source_refs": []
+    }
+  ],
+  "stage_boundary": {
+    "BGE_fusion_rerank_admitted": false,
+    "candidate_assets_built": true,
+    "candidate_ceiling_proven": false,
+    "evidence_or_release": false,
+    "qrels_owner_reviewed": false
+  },
+  "status": "supplemental_candidate_assets_built",
+  "uncovered_expected_source_refs": []
+}

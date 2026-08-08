@@ -1,0 +1,34 @@
+{
+  "authorized_live_shape": {
+    "model_provider_embedding_rerank_evidence_calls": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "network_call_ceiling": 1,
+    "retry_ceiling": 0,
+    "targets": 1
+  },
+  "contract_ref": "fin_0_1_3.S1.internal_mu_q3_fy2026_10q_successor_acquisition:v1",
+  "fixture_shared_ledger_state": "terminal",
+  "fixture_terminal_result_digest": "b3c490b707099af9f62fd321dc2161f50e54f98013ffcda2c998073346b0ecdf",
+  "implementation": {
+    "module_ref": "src/sec_agent/s1_internal_mu_10q_acquisition.py",
+    "module_sha256": "c05968b7ae4ec2a1333c48be0a501997b3485788c4c96433e29d29fa807eb242",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_mu_10q_acquisition_policy_v1_0.json",
+    "policy_sha256": "043da9d206cb734c6f602daee9c0c966d731dcc0d5ab74a40eefa7dabaf5931b"
+  },
+  "known_boundary": "The proof uses a fake transport. It authorizes no live call by itself and does not prove candidate recall, ranking, Evidence or release.",
+  "live_calls_observed": 0,
+  "policy_digest": "bc61b906a6343d8c0bf02bd3912ec6bc849f3d20653196e887479bef47e069db",
+  "project_os_preflight": {
+    "run_scope": "S1_INTERNAL_MU_Q3_10Q_SUCCESSOR_ACQUISITION",
+    "status": "pass"
+  },
+  "proof_digest": "4e134f85f9ebf4b3656601768cc673b9dd78209b6241e5cb69bdbf385c5761e6",
+  "run_scope": "S1_INTERNAL_MU_Q3_10Q_SUCCESSOR_ACQUISITION",
+  "schema_version": "fin_ia_0_1_3_s1_internal_mu_10q_acquisition_zero_call_proof_v1_1",
+  "status": "zero_call_engineering_pass_live_authority_not_yet_issued"
+}

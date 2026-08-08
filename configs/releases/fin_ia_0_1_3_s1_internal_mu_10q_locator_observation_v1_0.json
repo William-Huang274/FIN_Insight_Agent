@@ -1,0 +1,41 @@
+{
+  "benchmark_exact_url_used_for_discovery": false,
+  "candidate_state": "locator_only_not_source_not_evidence",
+  "contract_ref": "fin_0_1_3.S1.internal_mu_q3_fy2026_10q_locator:v1",
+  "implementation": {
+    "materializer_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_internal_mu_10q_locator.py",
+    "module_ref": "src/sec_agent/s1_internal_mu_10q_locator.py",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_mu_10q_locator_policy_v1_0.json"
+  },
+  "locator_digest": "b64f08e97d7db87a4b55209c20e08a349ee8c228e55301707229cb969f411ecb",
+  "locator_source_capture_digest": "61e9c587df8464dfbe64d9249a659bfab712100be2f74a8ff4c5495a789bad9f",
+  "locator_source_capture_ref": "fin-0.1.3/s1-internal-current-source-acquisition/raw/61/e9/61e9c587df8464dfbe64d9249a659bfab712100be2f74a8ff4c5495a789bad9f.json",
+  "observed_calls": {
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0
+  },
+  "policy_digest": "0b989eb91776837b43b3d53f007dd75518825fc3f7708981b5b8bab19f9c03c5",
+  "project_os_preflight": {
+    "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+    "status": "pass"
+  },
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "schema_version": "fin_ia_0_1_3_s1_internal_mu_10q_locator_observation_v1_0",
+  "source_acquisition_result_digest": "bcfacc7fa42b89c3b542f576cd4d3d14adac4eb049b8fdca2f12c83a5148264f",
+  "status": "retained_capture_locator_proven",
+  "target": {
+    "accession_number": "0000723125-26-000015",
+    "cik": "0000723125",
+    "filing_date": "2026-06-25",
+    "form_type": "10-Q",
+    "primary_document": "mu-20260528.htm",
+    "report_date": "2026-05-28",
+    "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+    "target_id": "MU_Q3_FY2026_CURRENT_10Q",
+    "ticker": "MU"
+  }
+}

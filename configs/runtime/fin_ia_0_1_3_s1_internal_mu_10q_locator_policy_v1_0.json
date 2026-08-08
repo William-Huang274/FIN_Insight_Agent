@@ -1,0 +1,31 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_mu_10q_locator_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_mu_q3_fy2026_10q_locator:v1",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "recorded_at": "2026-08-09",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "immutable_inputs": {
+    "source_acquisition_result_ref": "configs/releases/fin_ia_0_1_3_s1_internal_current_source_acquisition_result_v1_0.json",
+    "source_acquisition_result_sha256": "54f263b4a3e71dea0b82e9dc133437e63c5ae7e346195465ddce585aeebadbc5"
+  },
+  "target": {
+    "target_id": "MU_Q3_FY2026_CURRENT_10Q",
+    "ticker": "MU",
+    "cik": "0000723125",
+    "form_type": "10-Q",
+    "accession_number": "0000723125-26-000015",
+    "filing_date": "2026-06-25",
+    "report_date": "2026-05-28",
+    "primary_document": "mu-20260528.htm"
+  },
+  "hard_boundaries": {
+    "retained_capture_only": true,
+    "benchmark_exact_url_used_for_discovery": false,
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  }
+}

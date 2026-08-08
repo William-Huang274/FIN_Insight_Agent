@@ -1191,3 +1191,13 @@ immutable replay 没有改写历史：Firecrawl relational target-in-pool 仍为
 关系型查询按“谁披露谁”的方向优先证据披露方自身业务词：Microsoft 使用 Azure AI infrastructure／data-center capex，Micron 使用 HBM output／memory capacity，TSMC 使用 CoWoS／advanced packaging；DELL／MU／NVDA subject 产品只作为次级连接 facet。这样避免把 Microsoft 搜索退化成 Dell 产品词，或把 TSMC 搜索退化成 NVIDIA 产品词。短词被长词包含时本地去重，避免 `capacity capacity` 一类查询噪声。
 
 模型原子接口已定义但本轮 0 调用。只允许 metric／product／mechanism／synonym，禁止 identity、period、relationship、domain、route、URL、Gold 和 hidden qrels；通过本地验证的原子只能新增额外 lexical／semantic query，不能覆盖 typed filters。cross-scope、URL、未来期间、实体别名、duplicate、over-budget 与 plan tamper 均 fail closed。当前是 compiler engineering pass，不是 query effectiveness 或 candidate-ceiling pass；下一项必须做 raw／local／DS-atoms 三路对照，之后才决定 combined live。
+
+### 20.30 三路 Query Facet A/B 与 DeepSeek query-atom canary Runtime
+
+冻结 replay 先完成不调用模型的 A/B：raw objective 平均 facet coverage=`0.138889`、重复率=`0.916667`；local compiler 平均／最小 coverage=`1.0/1.0`、跨案污染=`0`、重复率=`0`。英文 target-addressability proxy 为 raw `0/9`、local `9/9`；该 proxy 只检查 frozen target 所需 owner／period／document/source-role token 是否可表达，不执行 Provider candidate generation。历史 Firecrawl `24 pools / 176 unique locators / 5 of 6 target-in-pool` 保持 immutable，且明确不归因给 raw/local/model variant。
+
+第三路使用 `fin_0_1_3.S1_08.deepseek_query_atom_canary:v1`：只把 18 个英文 `case × slot × owner` plan 交给一次 DeepSeek Pro batch；最多 18 atoms、每 plan 1 个，允许 `atoms=[]`。Provider 输出 envelope 必须只有 `schema_version/atoms`，atom 只能包含 plan key、language、allowlisted kind 与最多 64 字符 value。输出经 `ModelQueryAtomCandidate` validator 后重新调用本地 `compile_query_facet_plans()`；entity、period、relationship、source family、route filters、negative/forbidden 和预算不能被模型覆盖。
+
+runner 使用 shared admission ledger 做 exact-once，clean/synced Git、runner/runtime/policy SHA、authority digest、request digest 全绑定；单次 call／transport attempt=`1/1`，retry/fallback=`0/0`。完整模型可见请求和最终 assistant/gateway output 在校验前 capture；凭据、Authorization/Cookie 和私有 reasoning 递归剔除。非法自然输出 terminalize 为 failed/no-retry，但 capture 仍保留且永不成为 Evidence。零调用 fake/mutation 已证明合法 atom、empty abstention、authority violation、malformed/duplicate/unknown、capture sanitization 和重复 admission；当前仅为 `implementation_pass_live_authority_pending`，不授权真实 canary、combined live、internal retrieval 或 ranking。
+
+即使自然 canary 合同通过，模型 atom 仍必须在真实候选池上显示增量才可启用；local proxy 已达 `9/9` 时，“多生成了词”本身不是产品增益。外源关闭后继续使用同一 facet authority 接线 internal exact／BM25／dense／graph，先过 qrels/candidate ceiling，再比较 BGE、RRF／fusion 与 rerank。

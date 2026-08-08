@@ -1,0 +1,71 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_query_atom_canary_zero_call_implementation_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.deepseek_query_atom_canary:v1",
+  "run_scope": "S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION",
+  "status": "zero_call_implementation_pass_live_authority_pending",
+  "three_way_zero_call_evaluation_digest": "b9eef8769d0126faf8530fc666242c342c4ed7d347b427ab11604223adb9e118",
+  "request_contract": {
+    "request_digest": "7dbc55e0b895cb008f1155f0b22da24bf6a84945f230bb95a405e113602fd5d2",
+    "visible_plan_count": 18,
+    "visible_language": "en",
+    "maximum_atoms": 18,
+    "maximum_atoms_per_plan": 1,
+    "hidden_target_or_URL_leak_count": 0
+  },
+  "fake_runtime_proof": {
+    "valid_atom_terminal": "terminal_succeeded_exact_once",
+    "valid_atom_count": 1,
+    "empty_abstention_terminal": "terminal_succeeded_exact_once",
+    "empty_atom_count": 0,
+    "invalid_authority_atom_terminal": "terminal_failed_no_retry",
+    "invalid_authority_atom_code": "s1_08_query_atom_canary_local_atom_validation_failed:s1_08_query_facet_model_atom_authority_violation",
+    "duplicate_admission_blocked": true,
+    "private_reasoning_stripped_from_capture": true,
+    "full_visible_request_captured": true,
+    "assistant_content_captured_before_validation": true,
+    "credential_or_authorization_value_saved": false,
+    "business_evidence_or_fact_authority": false,
+    "retry_count": 0,
+    "runtime_activation": false
+  },
+  "implementation_binding": {
+    "runtime_module_ref": "src/sec_agent/s1_08_query_atom_canary_runtime.py",
+    "runner_ref": "scripts/releases/run_fin_ia_0_1_3_s1_08_deepseek_query_atom_canary.py",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_deepseek_query_atom_canary_policy_v1_0.json",
+    "materializer_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_08_query_atom_canary_zero_call_implementation_proof.py",
+    "runtime_module_sha256_normalized": "801c19033a6f3f37cba603c9103d443ad0bca32c86e1cf0b6d8e0d6748c2775f",
+    "runner_sha256_normalized": "c2e195467cbc6b9d7a49d2d652149189b6a8f3bef69dd34ce59ae870398084d2",
+    "policy_sha256_normalized": "e477280c1e3ed59eb6021a464ea399b14e506b52913317f93152f00d66761215",
+    "materializer_sha256_normalized": "7e72e7474666170d144d348931368f62c3a2e3b9b948b9fb50da8a3541ab6a05"
+  },
+  "observed_calls": {
+    "real_provider": 0,
+    "network": 0,
+    "natural_model": 0,
+    "document_fetch": 0,
+    "retrieval": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "fake_provider_invocations": 3
+  },
+  "stage_acceptance": {
+    "raw_vs_local_zero_call_A_B": true,
+    "query_atom_canary_implementation": true,
+    "natural_model_atom_observation": false,
+    "three_way_effectiveness_evaluation": false,
+    "combined_external_live": false,
+    "internal_retrieval": false,
+    "BGE_fusion_rerank": false,
+    "S1_08": false,
+    "release": false
+  },
+  "decision": {
+    "next": "bounded_deepseek_query_atom_canary_clean_authority_decision",
+    "provider_call_authorized_by_this_proof": false,
+    "automatic_runtime_activation": false,
+    "internal_retrieval_and_BGE_rerank_backlog_preserved": true
+  },
+  "known_boundary": "This proof exercises the exact-once query-atom runtime only with local fake provider outputs. It does not qualify DeepSeek, prove incremental candidate recall, execute external or internal retrieval, admit BGE or reranking, promote Evidence, close S1-08 or release the product.",
+  "proof_digest": "12867a30560c2c1788f45d3318ce61a654fb43c95e6ebd151184b41c598f16c5"
+}

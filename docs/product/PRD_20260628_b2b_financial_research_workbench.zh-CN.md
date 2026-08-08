@@ -1366,6 +1366,14 @@ Agentic Research 的 S3 准入必须消费上述 Search Quality Card。搜索层
 
 该状态只证明 query contract 可执行和可审计。真实 target-in-pool、日期准确性、来源多样性、成本／延迟、内部 qrels、BGE／rerank 增益和下游研究利用仍未成立；下一项是三路同口径对照，不直接宣称检索质量改善。
 
+#### 7.7.4 Query Facet 三路对照的分阶段证据与模型准入（2026-08-08）
+
+三路对照必须区分“查询结构代理”“自然模型合同遵循”和“真实候选召回”，不能用其中一层代替另一层。冻结 replay 的第一阶段已经得到：用户原句平均 facet coverage=`0.138889`、重复率=`0.916667`；本地 deterministic compiler 平均／最小 coverage=`1.0/1.0`、跨案污染=`0`、重复率=`0`。英文 target-addressability 代理从 raw `0/9` 提升到 local `9/9`，但该指标只表示目标所需 owner／period／source-role 词可被查询表达，不是 Provider 真实 candidate generation。历史 Firecrawl `5/6` target-in-pool 也不得归因给新三路 variant。
+
+DeepSeek variant 只通过一次单 batch 自然 query-atom canary 观察：18 个英文 typed plan、最多 18 atom、每计划最多 1 个，也允许空集合。模型不得输出最终 query、URL/domain、identity/alias、period/date、relationship、source family、provider/route/filter/budget、Gold/qrel、金融事实或结论；所有 atom 必须经本地 compiler，且只能增加 lexical／semantic facet。一次 natural output 只证明合同遵循和 atom 候选，不自动启用 Runtime。模型辅助必须在后续同计划真实 candidate pool 上产生增量 target-in-pool／有用候选，且不增加污染、重复、不稳定性、成本或延迟失控；否则 external combined live 使用 local-only variant。
+
+该分层不会改变已批准的外源→内源顺序。外源 combined live 完成后仍必须回到 internal exact／BM25／dense／graph，建立人工 qrels／hard negative 和 candidate ceiling，再评估 BGE／fusion／rerank，最后证明下游研究使用。
+
 ### 7.8 Agentic Research Harness 工程控制面（2026-07-09 追加）
 
 在 `Agentic Search / Agentic Research` 之上，FIN 需要一个统一的 `Agentic Research Harness`。它不是另一个 agent，也不是把所有节点改成更长 prompt；它是运行时控制面，负责把工具、上下文、权限、状态、trace、评测和自我迭代统一成可审计系统。

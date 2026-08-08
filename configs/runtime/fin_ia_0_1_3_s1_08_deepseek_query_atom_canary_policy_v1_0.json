@@ -1,0 +1,100 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_deepseek_query_atom_canary_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.deepseek_query_atom_canary:v1",
+  "run_scope": "S1_08_QUERY_FACET_DEEPSEEK_ATOM_CANARY_EXACT_LIVE_EXECUTION",
+  "recorded_at": "2026-08-08",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "immutable_inputs": {
+    "three_way_zero_call_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_query_facet_three_way_zero_call_proof_v1_0.json",
+    "three_way_zero_call_proof_sha256": "0730d076aeb3fd97fca9585182a83b4bed0672088239b589616f197aa1dd5499",
+    "query_facet_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_unified_query_facet_zero_call_proof_v1_0.json",
+    "query_facet_proof_sha256": "ec10c5096dc5b6f1c97f19bec96b16478a9b8f4ca37c6ca550d80217023ac614",
+    "query_facet_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_unified_query_facet_policy_v1_0.json",
+    "query_facet_policy_sha256": "59acbd54edf732468169bfaf8ebad9c3b81ce369df44b5a94e0f77a6c94ba4d6",
+    "model_visible_case_pack_ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json",
+    "model_visible_case_pack_sha256": "5c6294599d546b18faafdfa3688a297316c497a80d0e2e78a76d723803ebd604",
+    "search_intent_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_relationship_aware_search_intent_policy_v1_0.json",
+    "search_intent_policy_sha256": "be2e5f6c7fffca8f10877927b589caeb60425faf761eabec2a32850423ed5751",
+    "source_catalog_ref": "configs/runtime/fin_ia_0_1_3_s1_08_current_source_catalog_relationship_budget_policy_v3_0.json",
+    "source_catalog_sha256": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851"
+  },
+  "provider": {
+    "backend": "deepseek",
+    "model": "deepseek-v4-pro",
+    "base_url": "https://api.deepseek.com/beta",
+    "chat_completions_path": "/chat/completions",
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "response_format": {
+      "type": "json_object"
+    },
+    "temperature": 0.0,
+    "thinking_enabled": false
+  },
+  "selection_contract": {
+    "language": "en",
+    "expected_plan_count": 18,
+    "maximum_atoms": 18,
+    "maximum_atoms_per_plan": 1,
+    "allowed_atom_kinds": [
+      "metric",
+      "product",
+      "mechanism",
+      "synonym"
+    ],
+    "maximum_characters_per_atom": 64,
+    "empty_atom_set_allowed": true,
+    "model_may_abstain_when_local_facets_are_sufficient": true,
+    "model_may_emit_final_query": false,
+    "model_may_emit_identity_period_relationship_domain_route_url_gold_or_hidden_qrel": false
+  },
+  "visibility_contract": {
+    "visible": [
+      "case research objective",
+      "typed case slot owner and relationship direction",
+      "existing local document metric product and mechanism facets"
+    ],
+    "not_visible": [
+      "Gold source IDs or URLs",
+      "historical provider candidates or passages",
+      "target-in-pool labels",
+      "hidden qrels",
+      "final physical query",
+      "provider or route selection"
+    ]
+  },
+  "execution_budget": {
+    "maximum_provider_calls": 1,
+    "maximum_transport_attempts": 1,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "maximum_output_tokens": 2200,
+    "timeout_seconds": 180,
+    "document_fetches": 0,
+    "evidence_promotions": 0,
+    "retrieval_calls": 0,
+    "embedding_calls": 0,
+    "rerank_calls": 0
+  },
+  "capture_contract": {
+    "full_model_visible_request_saved_before_validation": true,
+    "full_assistant_content_and_gateway_result_saved_before_validation": true,
+    "api_key_authorization_cookie_saved": false,
+    "provider_private_reasoning_required_or_saved": false,
+    "capture_is_business_evidence": false,
+    "accepted_atoms_are_candidates_not_financial_facts": true
+  },
+  "activation_contract": {
+    "fixture_output_may_qualify_model": false,
+    "natural_output_required": true,
+    "incremental_addressability_gain_required": true,
+    "pollution_or_duplicate_increase_allowed": false,
+    "fresh_provider_query_proof_required_before_runtime_activation": true,
+    "automatic_combined_live_or_internal_activation": false
+  },
+  "calls_authorized_by_policy_alone": {
+    "provider": 0,
+    "network": 0,
+    "model": 0
+  },
+  "known_boundary": "This policy specifies one bounded natural query-atom canary but authorizes no call by itself. A clean implementation, zero-call authority decision, fresh admission and exact-once execution are still required."
+}

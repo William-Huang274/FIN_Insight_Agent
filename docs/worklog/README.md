@@ -1,5 +1,6 @@
 # Worklog
 
+- [754 — FIN 0.1.3 S1-08 Query Facet 三路对照 A/B 与查询原子 canary 实现](product_strategy/754_fin_0_1_3_s1_08_query_facet_three_way_AB_and_query_atom_canary_implementation.md)
 - [753 — FIN 0.1.3 S1-08 统一 Query Facet 零调用实现](product_strategy/753_fin_0_1_3_s1_08_unified_query_facet_zero_call_implementation.md)
 - [752 — FIN 0.1.3 S1-08 official-first 组合路由与外源／内源检索接力](product_strategy/752_fin_0_1_3_s1_08_official_first_portfolio_and_retrieval_progression.md)
 - [751 — FIN 0.1.3 S1-08 Provider portfolio 与 production search 边界决策](product_strategy/751_fin_0_1_3_s1_08_provider_portfolio_and_production_search_boundary_decision.md)

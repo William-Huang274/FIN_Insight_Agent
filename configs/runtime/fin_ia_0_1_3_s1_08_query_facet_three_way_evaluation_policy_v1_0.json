@@ -1,0 +1,116 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_query_facet_three_way_evaluation_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.query_facet_three_way_evaluation:v1",
+  "run_scope": "S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION",
+  "recorded_at": "2026-08-08",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "as_of_date": "2026-08-06",
+  "cases": [
+    "DELL",
+    "MU",
+    "NVDA"
+  ],
+  "languages": [
+    "en",
+    "zh"
+  ],
+  "variants": [
+    "user_raw_query",
+    "deterministic_local_compiler",
+    "deepseek_query_atoms_plus_deterministic_local_compiler"
+  ],
+  "immutable_inputs": {
+    "query_facet_proof_ref": "configs/releases/fin_ia_0_1_3_s1_08_unified_query_facet_zero_call_proof_v1_0.json",
+    "query_facet_proof_sha256": "ec10c5096dc5b6f1c97f19bec96b16478a9b8f4ca37c6ca550d80217023ac614",
+    "query_facet_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_unified_query_facet_policy_v1_0.json",
+    "query_facet_policy_sha256": "59acbd54edf732468169bfaf8ebad9c3b81ce369df44b5a94e0f77a6c94ba4d6",
+    "model_visible_case_pack_ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json",
+    "model_visible_case_pack_sha256": "5c6294599d546b18faafdfa3688a297316c497a80d0e2e78a76d723803ebd604",
+    "firecrawl_result_ref": "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_result_v1_0.json",
+    "firecrawl_result_sha256": "84fbafa1b67c7c0b0d620086a3e94f1e4f9f36e439e7d2b4495aee47a3cc46f7",
+    "firecrawl_assessment_ref": "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_assessment_v1_0.json",
+    "firecrawl_assessment_sha256": "1ba0d2a65ad7e1c72bd6c00d5c19a2f3f93649a4395e75a4cc33572ca4ea2a7c",
+    "firecrawl_scoring_ref": "configs/eval/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_scoring_v1_0.json",
+    "firecrawl_scoring_sha256": "81fe9359f1167c55105972408d7a7b4e1f366f56193253f823cabfe4ceaba1c8",
+    "progression_plan_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_0.json",
+    "progression_plan_sha256": "df76debecd67cc372b52a111f3d4914e31395228590ebe56ee611cade7bef446"
+  },
+  "variant_contracts": {
+    "user_raw_query": {
+      "source": "verbatim_case_research_objective",
+      "translation_or_owner_period_injection_allowed": false,
+      "purpose": "Measure how much route-specific meaning is absent when the broad user objective is sent without decomposition."
+    },
+    "deterministic_local_compiler": {
+      "query_families": [
+        "exact_lookup_queries",
+        "lexical_queries",
+        "semantic_queries"
+      ],
+      "typed_filter_authority": "local_only",
+      "purpose": "Measure the shared compiler without model help."
+    },
+    "deepseek_query_atoms_plus_deterministic_local_compiler": {
+      "natural_atom_result_required": true,
+      "model_may_emit_final_query_URL_identity_period_relationship_domain_route_or_gold": false,
+      "typed_filter_authority": "local_only",
+      "activation_state": "not_called_not_admitted",
+      "purpose": "Measure only the incremental value of bounded atoms after local compilation."
+    }
+  },
+  "facet_groups": [
+    "evidence_owner",
+    "subject",
+    "period",
+    "document_type",
+    "metric",
+    "product",
+    "mechanism",
+    "relationship_direction"
+  ],
+  "replay_contract": {
+    "scope": "24 historical Firecrawl semantic query pools plus evaluator-only source registry",
+    "historical_pool_is_variant_neutral": false,
+    "historical_pool_use": "selection_and_addressability_proxy_only",
+    "historical_target_in_pool_may_be_attributed_to_new_variant": false,
+    "target_owner_route_opportunity_levels": [
+      "direct_case_slot_owner",
+      "global_canonical_document_owner_route"
+    ],
+    "cross_case_canonical_document_reuse_allowed": true,
+    "cross_case_role_binding_must_remain_explicit": true,
+    "candidate_generation_or_live_recall_proven": false
+  },
+  "source_owner_entity_map": {
+    "Dell Technologies": "DELL",
+    "U.S. SEC / Dell Technologies": "DELL",
+    "Micron Technology": "MU",
+    "NVIDIA": "NVDA",
+    "U.S. SEC / NVIDIA": "NVDA",
+    "Microsoft": "MSFT",
+    "TSMC": "TSMC"
+  },
+  "decision_thresholds": {
+    "minimum_local_mean_facet_coverage": 0.95,
+    "minimum_local_coverage_gain_over_raw": 0.35,
+    "maximum_wrong_entity_period_direction_or_secret_leak_count": 0,
+    "maximum_duplicate_query_rate": 0.0,
+    "required_deterministic_permutation_stability": 1.0,
+    "model_atom_incremental_addressability_gain_required": true,
+    "model_atom_pollution_increase_allowed": false,
+    "model_atom_duplicate_rate_increase_allowed": false,
+    "natural_model_observation_required_before_model_variant_decision": true,
+    "fresh_provider_live_required_before_runtime_activation": true
+  },
+  "calls_authorized_by_this_policy": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "evidence_promotion": 0,
+    "retrieval": 0,
+    "embedding": 0,
+    "rerank": 0
+  },
+  "known_boundary": "This policy authorizes a zero-call evaluator and replay proxy only. It does not authorize a DeepSeek canary, fresh external search, internal retrieval, BGE, fusion, reranking, Evidence promotion, downstream research, S1-08 acceptance or release."
+}

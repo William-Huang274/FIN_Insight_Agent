@@ -1,0 +1,3067 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_query_facet_three_way_zero_call_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.query_facet_three_way_evaluation:v1",
+  "run_scope": "S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION",
+  "status": "zero_call_A_B_pass_model_atom_observation_pending",
+  "plan_count": 36,
+  "variant_summary": {
+    "user_raw_query": {
+      "status": "evaluated",
+      "plan_count": 36,
+      "query_count": 36,
+      "mean_facet_coverage": 0.138889,
+      "minimum_facet_coverage": 0.0,
+      "contamination_count": 0,
+      "duplicate_query_rate": 0.916667,
+      "accepted_model_atom_count": 0,
+      "model_variant_observed": false
+    },
+    "deterministic_local_compiler": {
+      "status": "evaluated",
+      "plan_count": 36,
+      "query_count": 180,
+      "mean_facet_coverage": 1.0,
+      "minimum_facet_coverage": 1.0,
+      "contamination_count": 0,
+      "duplicate_query_rate": 0.0,
+      "accepted_model_atom_count": 0,
+      "model_variant_observed": false
+    },
+    "deepseek_query_atoms_plus_deterministic_local_compiler": {
+      "status": "not_observed_no_natural_model_atoms",
+      "plan_count": 0,
+      "query_count": 0,
+      "mean_facet_coverage": null,
+      "minimum_facet_coverage": null,
+      "contamination_count": null,
+      "duplicate_query_rate": null,
+      "accepted_model_atom_count": 0,
+      "model_variant_observed": false
+    }
+  },
+  "target_route_opportunity": {
+    "target_source_rows": [
+      {
+        "case_key": "DELL",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_MSFT_Q3_FY26_CALL",
+        "source_owner_entity_key": "MSFT",
+        "direct_case_slot_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "DELL",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "source_id": "SRC_MU_Q3_FY26_REMARKS",
+        "source_owner_entity_key": "MU",
+        "direct_case_slot_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_DELL_Q1_FY27_CALL",
+        "source_owner_entity_key": "DELL",
+        "direct_case_slot_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_MSFT_Q3_FY26_CALL",
+        "source_owner_entity_key": "MSFT",
+        "direct_case_slot_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_NVDA_Q1_FY27_10Q",
+        "source_owner_entity_key": "NVDA",
+        "direct_case_slot_owner_route": false,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "source_id": "SRC_TSMC_Q2_2026_RESULTS",
+        "source_owner_entity_key": "TSMC",
+        "direct_case_slot_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "NVDA",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_DELL_Q1_FY27_CALL",
+        "source_owner_entity_key": "DELL",
+        "direct_case_slot_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "NVDA",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_MSFT_Q3_FY26_CALL",
+        "source_owner_entity_key": "MSFT",
+        "direct_case_slot_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "NVDA",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "source_id": "SRC_MU_Q3_FY26_REMARKS",
+        "source_owner_entity_key": "MU",
+        "direct_case_slot_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "NVDA",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "source_id": "SRC_TSMC_Q2_2026_RESULTS",
+        "source_owner_entity_key": "TSMC",
+        "direct_case_slot_owner_route": true,
+        "global_canonical_document_owner_route": true
+      }
+    ],
+    "target_source_direct_opportunity": [
+      9,
+      10
+    ],
+    "slot_direct_opportunity": [
+      6,
+      6
+    ],
+    "global_document_owner_opportunity": [
+      10,
+      10
+    ],
+    "slot_rows": [
+      {
+        "case_key": "DELL",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "acceptable_target_count": 1,
+        "direct_acceptable_target_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "DELL",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "acceptable_target_count": 1,
+        "direct_acceptable_target_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "acceptable_target_count": 3,
+        "direct_acceptable_target_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "acceptable_target_count": 1,
+        "direct_acceptable_target_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "NVDA",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "acceptable_target_count": 2,
+        "direct_acceptable_target_owner_route": true,
+        "global_canonical_document_owner_route": true
+      },
+      {
+        "case_key": "NVDA",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "acceptable_target_count": 2,
+        "direct_acceptable_target_owner_route": true,
+        "global_canonical_document_owner_route": true
+      }
+    ],
+    "missing_direct_alternatives": [
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_NVDA_Q1_FY27_10Q",
+        "source_owner_entity_key": "NVDA"
+      }
+    ],
+    "interpretation": "Target sources within a case-slot are acceptable alternatives under the frozen scoring contract. Every semantic slot has at least one direct acceptable owner route. A document obtained by another case's owner route may be reused only through an explicit case-slot role binding."
+  },
+  "english_target_addressability_proxy": {
+    "language": "en",
+    "proxy_definition": "Owner and typed period must be present, plus at least one title or case-source topic token. This measures locator addressability against frozen evaluator metadata, not provider candidate generation.",
+    "direct_target_rows": [
+      {
+        "case_key": "DELL",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_MSFT_Q3_FY26_CALL",
+        "source_owner_entity_key": "MSFT",
+        "status": "direct_plan_evaluated",
+        "variants": {
+          "user_raw_query": {
+            "status": "evaluated",
+            "addressable": false,
+            "score": 0.0,
+            "owner_match": false,
+            "period_match": false,
+            "title_token_overlap": [],
+            "topic_token_overlap": []
+          },
+          "deterministic_local_compiler": {
+            "status": "evaluated",
+            "addressable": true,
+            "score": 1.0,
+            "owner_match": true,
+            "period_match": true,
+            "title_token_overlap": [
+              "call",
+              "earnings",
+              "fy2026",
+              "q3"
+            ],
+            "topic_token_overlap": [
+              "capacity",
+              "demand"
+            ]
+          },
+          "deepseek_query_atoms_plus_deterministic_local_compiler": {
+            "status": "not_observed_no_natural_model_atoms"
+          }
+        }
+      },
+      {
+        "case_key": "DELL",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "source_id": "SRC_MU_Q3_FY26_REMARKS",
+        "source_owner_entity_key": "MU",
+        "status": "direct_plan_evaluated",
+        "variants": {
+          "user_raw_query": {
+            "status": "evaluated",
+            "addressable": false,
+            "score": 0.0,
+            "owner_match": false,
+            "period_match": false,
+            "title_token_overlap": [],
+            "topic_token_overlap": []
+          },
+          "deterministic_local_compiler": {
+            "status": "evaluated",
+            "addressable": true,
+            "score": 1.0,
+            "owner_match": true,
+            "period_match": true,
+            "title_token_overlap": [
+              "fy2026",
+              "q3"
+            ],
+            "topic_token_overlap": [
+              "memory",
+              "supply"
+            ]
+          },
+          "deepseek_query_atoms_plus_deterministic_local_compiler": {
+            "status": "not_observed_no_natural_model_atoms"
+          }
+        }
+      },
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_DELL_Q1_FY27_CALL",
+        "source_owner_entity_key": "DELL",
+        "status": "direct_plan_evaluated",
+        "variants": {
+          "user_raw_query": {
+            "status": "evaluated",
+            "addressable": false,
+            "score": 0.0,
+            "owner_match": false,
+            "period_match": false,
+            "title_token_overlap": [],
+            "topic_token_overlap": []
+          },
+          "deterministic_local_compiler": {
+            "status": "evaluated",
+            "addressable": true,
+            "score": 1.0,
+            "owner_match": true,
+            "period_match": true,
+            "title_token_overlap": [
+              "call",
+              "earnings",
+              "fy2027",
+              "q1"
+            ],
+            "topic_token_overlap": [
+              "demand"
+            ]
+          },
+          "deepseek_query_atoms_plus_deterministic_local_compiler": {
+            "status": "not_observed_no_natural_model_atoms"
+          }
+        }
+      },
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_MSFT_Q3_FY26_CALL",
+        "source_owner_entity_key": "MSFT",
+        "status": "direct_plan_evaluated",
+        "variants": {
+          "user_raw_query": {
+            "status": "evaluated",
+            "addressable": false,
+            "score": 0.0,
+            "owner_match": false,
+            "period_match": false,
+            "title_token_overlap": [],
+            "topic_token_overlap": []
+          },
+          "deterministic_local_compiler": {
+            "status": "evaluated",
+            "addressable": true,
+            "score": 1.0,
+            "owner_match": true,
+            "period_match": true,
+            "title_token_overlap": [
+              "call",
+              "earnings",
+              "fy2026",
+              "q3"
+            ],
+            "topic_token_overlap": [
+              "capacity"
+            ]
+          },
+          "deepseek_query_atoms_plus_deterministic_local_compiler": {
+            "status": "not_observed_no_natural_model_atoms"
+          }
+        }
+      },
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_NVDA_Q1_FY27_10Q",
+        "source_owner_entity_key": "NVDA",
+        "status": "no_direct_case_slot_owner_plan_global_reuse_only",
+        "variants": {}
+      },
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "source_id": "SRC_TSMC_Q2_2026_RESULTS",
+        "source_owner_entity_key": "TSMC",
+        "status": "direct_plan_evaluated",
+        "variants": {
+          "user_raw_query": {
+            "status": "evaluated",
+            "addressable": false,
+            "score": 0.0,
+            "owner_match": false,
+            "period_match": false,
+            "title_token_overlap": [],
+            "topic_token_overlap": []
+          },
+          "deterministic_local_compiler": {
+            "status": "evaluated",
+            "addressable": true,
+            "score": 1.0,
+            "owner_match": true,
+            "period_match": true,
+            "title_token_overlap": [
+              "2026",
+              "q2"
+            ],
+            "topic_token_overlap": [
+              "advanced",
+              "capacity",
+              "packaging",
+              "supply"
+            ]
+          },
+          "deepseek_query_atoms_plus_deterministic_local_compiler": {
+            "status": "not_observed_no_natural_model_atoms"
+          }
+        }
+      },
+      {
+        "case_key": "NVDA",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_DELL_Q1_FY27_CALL",
+        "source_owner_entity_key": "DELL",
+        "status": "direct_plan_evaluated",
+        "variants": {
+          "user_raw_query": {
+            "status": "evaluated",
+            "addressable": false,
+            "score": 0.0,
+            "owner_match": false,
+            "period_match": false,
+            "title_token_overlap": [],
+            "topic_token_overlap": []
+          },
+          "deterministic_local_compiler": {
+            "status": "evaluated",
+            "addressable": true,
+            "score": 1.0,
+            "owner_match": true,
+            "period_match": true,
+            "title_token_overlap": [
+              "call",
+              "earnings",
+              "fy2027",
+              "q1"
+            ],
+            "topic_token_overlap": [
+              "demand",
+              "deployment",
+              "orders"
+            ]
+          },
+          "deepseek_query_atoms_plus_deterministic_local_compiler": {
+            "status": "not_observed_no_natural_model_atoms"
+          }
+        }
+      },
+      {
+        "case_key": "NVDA",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "source_id": "SRC_MSFT_Q3_FY26_CALL",
+        "source_owner_entity_key": "MSFT",
+        "status": "direct_plan_evaluated",
+        "variants": {
+          "user_raw_query": {
+            "status": "evaluated",
+            "addressable": false,
+            "score": 0.0,
+            "owner_match": false,
+            "period_match": false,
+            "title_token_overlap": [],
+            "topic_token_overlap": []
+          },
+          "deterministic_local_compiler": {
+            "status": "evaluated",
+            "addressable": true,
+            "score": 1.0,
+            "owner_match": true,
+            "period_match": true,
+            "title_token_overlap": [
+              "call",
+              "earnings",
+              "fy2026",
+              "q3"
+            ],
+            "topic_token_overlap": [
+              "capacity",
+              "demand"
+            ]
+          },
+          "deepseek_query_atoms_plus_deterministic_local_compiler": {
+            "status": "not_observed_no_natural_model_atoms"
+          }
+        }
+      },
+      {
+        "case_key": "NVDA",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "source_id": "SRC_MU_Q3_FY26_REMARKS",
+        "source_owner_entity_key": "MU",
+        "status": "direct_plan_evaluated",
+        "variants": {
+          "user_raw_query": {
+            "status": "evaluated",
+            "addressable": false,
+            "score": 0.0,
+            "owner_match": false,
+            "period_match": false,
+            "title_token_overlap": [],
+            "topic_token_overlap": []
+          },
+          "deterministic_local_compiler": {
+            "status": "evaluated",
+            "addressable": true,
+            "score": 1.0,
+            "owner_match": true,
+            "period_match": true,
+            "title_token_overlap": [
+              "fy2026",
+              "q3"
+            ],
+            "topic_token_overlap": [
+              "hbm",
+              "supply"
+            ]
+          },
+          "deepseek_query_atoms_plus_deterministic_local_compiler": {
+            "status": "not_observed_no_natural_model_atoms"
+          }
+        }
+      },
+      {
+        "case_key": "NVDA",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "source_id": "SRC_TSMC_Q2_2026_RESULTS",
+        "source_owner_entity_key": "TSMC",
+        "status": "direct_plan_evaluated",
+        "variants": {
+          "user_raw_query": {
+            "status": "evaluated",
+            "addressable": false,
+            "score": 0.0,
+            "owner_match": false,
+            "period_match": false,
+            "title_token_overlap": [],
+            "topic_token_overlap": []
+          },
+          "deterministic_local_compiler": {
+            "status": "evaluated",
+            "addressable": true,
+            "score": 1.0,
+            "owner_match": true,
+            "period_match": true,
+            "title_token_overlap": [
+              "2026",
+              "q2"
+            ],
+            "topic_token_overlap": [
+              "advanced",
+              "capacity",
+              "packaging"
+            ]
+          },
+          "deepseek_query_atoms_plus_deterministic_local_compiler": {
+            "status": "not_observed_no_natural_model_atoms"
+          }
+        }
+      }
+    ],
+    "variant_summary": {
+      "user_raw_query": {
+        "status": "evaluated",
+        "addressable": [
+          0,
+          9
+        ],
+        "mean_score": 0.0
+      },
+      "deterministic_local_compiler": {
+        "status": "evaluated",
+        "addressable": [
+          9,
+          9
+        ],
+        "mean_score": 1.0
+      },
+      "deepseek_query_atoms_plus_deterministic_local_compiler": {
+        "status": "not_observed_no_natural_model_atoms",
+        "addressable": null,
+        "mean_score": null
+      }
+    }
+  },
+  "historical_capture_replay": {
+    "generator": "historical_relationship_aware_semantic_queries_not_the_new_variants",
+    "query_pools": 24,
+    "unique_locators": 176,
+    "case_slot_target_in_pool": [
+      5,
+      6
+    ],
+    "case_slot_target_in_pool_rate": 0.833333,
+    "credits_used": 48,
+    "observed_cash_cost": {
+      "currency": "USD",
+      "amount": 0.0,
+      "basis": "keyless_control_no_payment_instrument_or_api_key_used",
+      "credits_are_not_treated_as_zero_economic_cost": true
+    },
+    "latency_ms": {
+      "p50": 4006,
+      "p95": 6877,
+      "maximum": 9140,
+      "whole_run": 108539
+    },
+    "attributable_to_user_raw_query": false,
+    "attributable_to_deterministic_local_compiler": false,
+    "attributable_to_model_atoms": false,
+    "use": "frozen_capture_shape_and_addressability_proxy_only"
+  },
+  "per_plan": [
+    {
+      "plan_key": [
+        "DELL",
+        "customer_demand_and_deployment_validation",
+        "MSFT",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_ee4e7de78a2b2f6fa788",
+      "base_plan_digest": "ee4e7de78a2b2f6fa788eea0f9d566e5cfb2942a8e7b76ae1736de99cb43a8a5",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "868eef079970adf8139e2d5d93c07acd22ee77ac8fe133f90487abaa78a2a50f",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "d5bcc6433a9c937fa4bc4972218ef354081a70ab271f2869c5c0d322df692be4",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "DELL",
+        "customer_demand_and_deployment_validation",
+        "MSFT",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_429b7214464effdac2d0",
+      "base_plan_digest": "429b7214464effdac2d006abbe93e8314d67a8c62420394b5b6c77b3682796cd",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "868eef079970adf8139e2d5d93c07acd22ee77ac8fe133f90487abaa78a2a50f",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "6d33428394e12921460ea1e1621d1cf5bf72a4d9f0bafd9048149fd913223b82",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "DELL",
+        "issuer_results_and_management_commentary",
+        "DELL",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_e86a077c13c554781c1c",
+      "base_plan_digest": "e86a077c13c554781c1c7434d49d813479cf2bccb7e8ddd1465e0aaf1e02fb84",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.25,
+            "covered": [
+              "evidence_owner",
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "868eef079970adf8139e2d5d93c07acd22ee77ac8fe133f90487abaa78a2a50f",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "daff3b977946a2ec51607ba1f5419ac86c493aa7b58d64df457e73eee1d392ab",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "DELL",
+        "issuer_results_and_management_commentary",
+        "DELL",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_86b1f035519459678de0",
+      "base_plan_digest": "86b1f035519459678de04ca14447c29a3d13964bf1751f5d2e9217b247c77cef",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.25,
+            "covered": [
+              "evidence_owner",
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "868eef079970adf8139e2d5d93c07acd22ee77ac8fe133f90487abaa78a2a50f",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "f1b90c6e5cee8f24097f36f2fb319956aa3910599cfee8b4a2c72a2cb4a15625",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "DELL",
+        "regulatory_risk_and_financial_reconciliation",
+        "DELL",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_d9b75bc32717d686756a",
+      "base_plan_digest": "d9b75bc32717d686756a898c2ebab2e5fe88c1064870e696acf7c33420d2d451",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.25,
+            "covered": [
+              "evidence_owner",
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "868eef079970adf8139e2d5d93c07acd22ee77ac8fe133f90487abaa78a2a50f",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "a5719f9e2daac29f01ca4fd07f0aea854361e83e33f663bd275b706946903c6d",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "DELL",
+        "regulatory_risk_and_financial_reconciliation",
+        "DELL",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_9cf22c88b5c7e9f705ff",
+      "base_plan_digest": "9cf22c88b5c7e9f705ff2a7a58441d5e7c992ff2f9c5970f63d2a3109dd91b9b",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.25,
+            "covered": [
+              "evidence_owner",
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "868eef079970adf8139e2d5d93c07acd22ee77ac8fe133f90487abaa78a2a50f",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "9dd17680bcbe0ae8228501b5a57da6b8a78d5113cfb59a8e2213ed8067852fad",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "DELL",
+        "supply_chain_capacity_and_counterevidence",
+        "MU",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_191ea075ef1b6409e843",
+      "base_plan_digest": "191ea075ef1b6409e843dcc619cccf93868db426111ba678ca5a04ff1a14b31f",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "868eef079970adf8139e2d5d93c07acd22ee77ac8fe133f90487abaa78a2a50f",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "ad06b89b6664eb4a911d2d682c9d68e764a962bbfd69ab99895cfbc9ccfd21b2",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "DELL",
+        "supply_chain_capacity_and_counterevidence",
+        "MU",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_33388f37fa02d0d17452",
+      "base_plan_digest": "33388f37fa02d0d174528355c29c2ac5bb2c57bd4bc90ea53551dbdafeb89c9a",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "868eef079970adf8139e2d5d93c07acd22ee77ac8fe133f90487abaa78a2a50f",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "50f11de5765101bf73b72d644f637a8e4ba9b6375ea291ed1510e0287c4ea246",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "DELL",
+        "supply_chain_capacity_and_counterevidence",
+        "NVDA",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_1d078abda77183ce8e13",
+      "base_plan_digest": "1d078abda77183ce8e134f481d056d164bc509caa8ea02644fa0e220eca474a5",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "868eef079970adf8139e2d5d93c07acd22ee77ac8fe133f90487abaa78a2a50f",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "33400fc730b4d59e2f3b574e4e58ad7c8c221d9a5a5860850286bbda26a73798",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "DELL",
+        "supply_chain_capacity_and_counterevidence",
+        "NVDA",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_ea7ce5457798ca2ea6d4",
+      "base_plan_digest": "ea7ce5457798ca2ea6d49ddc4161d2d5d59aec979f5ce8a3c0363ac7c48fd668",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "868eef079970adf8139e2d5d93c07acd22ee77ac8fe133f90487abaa78a2a50f",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8119bbddd4212601d1b3ce73367b87ab81ce5b0287077baa237fa1a5e542fa59",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "DELL",
+        "supply_chain_capacity_and_counterevidence",
+        "TSMC",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_32b1c9b6c3b118bf23dd",
+      "base_plan_digest": "32b1c9b6c3b118bf23dd26421c5698b3c456d700b2d3e4e8df0eeaf67461a21a",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "868eef079970adf8139e2d5d93c07acd22ee77ac8fe133f90487abaa78a2a50f",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "63eadfae3509ea7faa5167362e8506a3f8a81569d6a9ba9c0b16aefd1ad52362",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "DELL",
+        "supply_chain_capacity_and_counterevidence",
+        "TSMC",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_a8066a08f7275e9161e4",
+      "base_plan_digest": "a8066a08f7275e9161e4c5661913a7db60433917207d3d69aaf7cf13c95f97e9",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "868eef079970adf8139e2d5d93c07acd22ee77ac8fe133f90487abaa78a2a50f",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "deaccd953935abbce76385a88ffedf5e864a5b363efe3d6474e894d310489fd9",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "MU",
+        "customer_demand_and_deployment_validation",
+        "DELL",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_143d5c5c2851fc24f335",
+      "base_plan_digest": "143d5c5c2851fc24f335e86e1c1b2cebf2eb39c31f2829c546eba7cc35cebc85",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3dcbfc993971cecda3725072e02fc7d7c98b22ee0a5e9924e6e756de21877c2d",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "00dcc37a57ac4ec79e63cbe5ddaaeb89bef3a9ecf731e6e922113d7e52c9ed60",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "MU",
+        "customer_demand_and_deployment_validation",
+        "DELL",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_a64394c773e1599259b7",
+      "base_plan_digest": "a64394c773e1599259b791d077a80364c59b41543553feca659ee1d5a1da5e6b",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.0,
+            "covered": [],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3dcbfc993971cecda3725072e02fc7d7c98b22ee0a5e9924e6e756de21877c2d",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "d26e7eadfc8011599bf3a870977d6f65f0dfc9bb38c5ec178c3f9ea5a2a696a6",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "MU",
+        "customer_demand_and_deployment_validation",
+        "MSFT",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_47b1b24b05268a38c956",
+      "base_plan_digest": "47b1b24b05268a38c9568b87b3687bf810577ffbdf0840d21b7265a41ec434e4",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3dcbfc993971cecda3725072e02fc7d7c98b22ee0a5e9924e6e756de21877c2d",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3ba4119c48202e7a8905306146a2327c0e27da375f575af510eb3107d4e3da9d",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "MU",
+        "customer_demand_and_deployment_validation",
+        "MSFT",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_e960b90395e7a7cfa01c",
+      "base_plan_digest": "e960b90395e7a7cfa01c0e0e5d86b5229bd1d4350eba6f22510177c76c64e3a9",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.0,
+            "covered": [],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3dcbfc993971cecda3725072e02fc7d7c98b22ee0a5e9924e6e756de21877c2d",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "79f7f4f79192a3a4238c8778a22bb14e54b268c83687d9168e6a4063f1dcf0ee",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "MU",
+        "issuer_results_and_management_commentary",
+        "MU",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_8d6d7c4db339e06bf7ff",
+      "base_plan_digest": "8d6d7c4db339e06bf7fff84e0433e6d4c221dcc9e60bf5641266fe24f3930f99",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.25,
+            "covered": [
+              "evidence_owner",
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3dcbfc993971cecda3725072e02fc7d7c98b22ee0a5e9924e6e756de21877c2d",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "535280b2706254c75338b96f9246fd172b1928b21270a7b9b6b272b3b20b3d11",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "MU",
+        "issuer_results_and_management_commentary",
+        "MU",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_358a93872d5d94ead5e1",
+      "base_plan_digest": "358a93872d5d94ead5e1250075f97e6dc1e89a31d8a0dadf0ada977c641d2b33",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.0,
+            "covered": [],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3dcbfc993971cecda3725072e02fc7d7c98b22ee0a5e9924e6e756de21877c2d",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "5bf4421cbda8486c7e5a429cd78ac96050ec0aba40ca0d8d8ff2adf2593b8a3a",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "MU",
+        "regulatory_risk_and_financial_reconciliation",
+        "MU",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_b0a116568aa50be5e4d1",
+      "base_plan_digest": "b0a116568aa50be5e4d11663f1a12d3a0ee47922d0fc174e54041808d2e48cde",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.25,
+            "covered": [
+              "evidence_owner",
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3dcbfc993971cecda3725072e02fc7d7c98b22ee0a5e9924e6e756de21877c2d",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "5e2d11e1526c65973547aebdabbca2417f3808676c6aa6a3f09b8eed775fd85f",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "MU",
+        "regulatory_risk_and_financial_reconciliation",
+        "MU",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_ded7af508cfff3dc8882",
+      "base_plan_digest": "ded7af508cfff3dc88827a07a068fbd45a267bcb76d6fd2c76853b4adb88f71f",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.0,
+            "covered": [],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3dcbfc993971cecda3725072e02fc7d7c98b22ee0a5e9924e6e756de21877c2d",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "45eaa6c04478f929df1b86580e323963eef4decfada2acfa6b5678ebe1bd25f8",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "MU",
+        "supply_chain_capacity_and_counterevidence",
+        "NVDA",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_da46b3667f567cbd8a81",
+      "base_plan_digest": "da46b3667f567cbd8a81c048692746c95f955552772471112d520a27b5103487",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3dcbfc993971cecda3725072e02fc7d7c98b22ee0a5e9924e6e756de21877c2d",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "f04c1b77b22b2b6fc74bd4cb699c4df131735ce86272841d9e500b29aa8e5464",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "MU",
+        "supply_chain_capacity_and_counterevidence",
+        "NVDA",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_51785648bbe9f36a035e",
+      "base_plan_digest": "51785648bbe9f36a035e864577891c22fe6fce707ef3c9b2d41aa01acc81672d",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.0,
+            "covered": [],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3dcbfc993971cecda3725072e02fc7d7c98b22ee0a5e9924e6e756de21877c2d",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "98c9f9bbc1c14b9739f9bfa0800a7f684acfde6d7af62fbd0d1daaf98edf5473",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "MU",
+        "supply_chain_capacity_and_counterevidence",
+        "TSMC",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_97cdd119d8ad552d34b3",
+      "base_plan_digest": "97cdd119d8ad552d34b3aa0858634ca83e95e3b2140d0b7b9bf5e2806178264b",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3dcbfc993971cecda3725072e02fc7d7c98b22ee0a5e9924e6e756de21877c2d",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "e51e89afed411537f9c0c0a903c95764bb3ae24726ec8165868df93a6ffc9e8d",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "MU",
+        "supply_chain_capacity_and_counterevidence",
+        "TSMC",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_a0ef28318fcbfacd6c83",
+      "base_plan_digest": "a0ef28318fcbfacd6c83bb3f9bed69123ed80deb81c1e3e3882a20f0a752b67b",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.0,
+            "covered": [],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "3dcbfc993971cecda3725072e02fc7d7c98b22ee0a5e9924e6e756de21877c2d",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8fca9272e8ab7953d6a2c44eba5fc7af1691c16042d48fac11756a2656c75727",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "NVDA",
+        "customer_demand_and_deployment_validation",
+        "DELL",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_04db155fcbe99115f218",
+      "base_plan_digest": "04db155fcbe99115f218d9fc98bc50072bb8cafa69d4b14d15be11a05127a8c8",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8c0b22a293142dae6d1d3592543550dab2511179b26f634174b244c5d4238bc9",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "14e07b0ff9cd6af6b4bdeb01c937effcc80944cb48c7dc1b6f3faa9e8fee2a7f",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "NVDA",
+        "customer_demand_and_deployment_validation",
+        "DELL",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_9677c8e3c6baf24d8654",
+      "base_plan_digest": "9677c8e3c6baf24d86549d9e21e268cdf08cad15ea9f0b01929f150c2c0e0db8",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8c0b22a293142dae6d1d3592543550dab2511179b26f634174b244c5d4238bc9",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "c5b835193a63c744383d2116868f2979a9ce61c0179a3a8b495ff49dd1dd8a11",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "NVDA",
+        "customer_demand_and_deployment_validation",
+        "MSFT",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_b80fdb0bee0f9245b398",
+      "base_plan_digest": "b80fdb0bee0f9245b398385649068d63d966d6d6f6a32af586199391d53eb4ca",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8c0b22a293142dae6d1d3592543550dab2511179b26f634174b244c5d4238bc9",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "add584499f87afc3a4fa85aac49673e004a21697b69cdaab893604a7030eae67",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "NVDA",
+        "customer_demand_and_deployment_validation",
+        "MSFT",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_b538e84e6c317373725d",
+      "base_plan_digest": "b538e84e6c317373725d3bbeed19810e20f8e574044210de4e020573162504a9",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8c0b22a293142dae6d1d3592543550dab2511179b26f634174b244c5d4238bc9",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "005d3e13c9c6e19b6050b28b3a9ba8a1ac3f62c7ba00a7dacedd4845a98e9628",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "NVDA",
+        "issuer_results_and_management_commentary",
+        "NVDA",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_134ce7453e58e2a8b1da",
+      "base_plan_digest": "134ce7453e58e2a8b1dac8ba23b5be53ab4e9c6365771373091caf3ff6cc5f4c",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.25,
+            "covered": [
+              "evidence_owner",
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8c0b22a293142dae6d1d3592543550dab2511179b26f634174b244c5d4238bc9",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "ef8c7b5be9a48645b7fc304a97d5468e62e90d9feb4a43892be3bf281f892ac7",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "NVDA",
+        "issuer_results_and_management_commentary",
+        "NVDA",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_047a6a6cd506599d8759",
+      "base_plan_digest": "047a6a6cd506599d8759ac95e30003b9820a2538e33ea028285fb0e289c8b384",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.25,
+            "covered": [
+              "evidence_owner",
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8c0b22a293142dae6d1d3592543550dab2511179b26f634174b244c5d4238bc9",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "80983ed2e0b0ad27c15ffae441a418b6e461f2262e787224d92822685cde0559",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "NVDA",
+        "regulatory_risk_and_financial_reconciliation",
+        "NVDA",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_78791ef65ec5399a4195",
+      "base_plan_digest": "78791ef65ec5399a41959e424f65321ba70b310a67fcd8c1a68f700e0b15533c",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.25,
+            "covered": [
+              "evidence_owner",
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8c0b22a293142dae6d1d3592543550dab2511179b26f634174b244c5d4238bc9",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "9bcd8e651cfc657d0646bc217d903132db2d0ff8e781014c78d8a70357338ecd",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "NVDA",
+        "regulatory_risk_and_financial_reconciliation",
+        "NVDA",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_8f85843d4df3543622ce",
+      "base_plan_digest": "8f85843d4df3543622ce50ae2874f1de2c1e25eeaf8a3854969a694350c49df1",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.25,
+            "covered": [
+              "evidence_owner",
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8c0b22a293142dae6d1d3592543550dab2511179b26f634174b244c5d4238bc9",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "84c70880aa565a0a96c87185a8d8ae819a6198fd86c52a86df6de65bfc863d33",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "NVDA",
+        "supply_chain_capacity_and_counterevidence",
+        "MU",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_09fe0d90e6f65756ca09",
+      "base_plan_digest": "09fe0d90e6f65756ca09d80f2fa839a5193e0761765ec70f8fe3e2ea9ad4e180",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8c0b22a293142dae6d1d3592543550dab2511179b26f634174b244c5d4238bc9",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "2066da31a0f5e88c39d21857a3472259de7d7833f463000845288b2b42e76e48",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "NVDA",
+        "supply_chain_capacity_and_counterevidence",
+        "MU",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_652f9e405120554a80d7",
+      "base_plan_digest": "652f9e405120554a80d72d64e0b85cc112b82b62d2a43f5e2e7dc8e596ef48d6",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8c0b22a293142dae6d1d3592543550dab2511179b26f634174b244c5d4238bc9",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "86cff800deda5a968f0d315ae70c5324bc8441b30d21106199d33520136e7299",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "NVDA",
+        "supply_chain_capacity_and_counterevidence",
+        "TSMC",
+        "en"
+      ],
+      "base_plan_id": "query_facet_plan_90a5ce6913383d8ac077",
+      "base_plan_digest": "90a5ce6913383d8ac077c24a3d425f1c5c92925acc409989d45b484cb852d3ef",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8c0b22a293142dae6d1d3592543550dab2511179b26f634174b244c5d4238bc9",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "c63d6d9da76872882f8d149083d819c51f69cbbfbc238e18a334d31a4db169ab",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    },
+    {
+      "plan_key": [
+        "NVDA",
+        "supply_chain_capacity_and_counterevidence",
+        "TSMC",
+        "zh"
+      ],
+      "base_plan_id": "query_facet_plan_7221e051cda0bb9504eb",
+      "base_plan_digest": "7221e051cda0bb9504ebf5ae8b808b64b75febdf145582b3bf13a6ea9397c484",
+      "variants": {
+        "user_raw_query": {
+          "status": "evaluated",
+          "query_count": 1,
+          "facet_coverage": {
+            "score": 0.125,
+            "covered": [
+              "subject"
+            ],
+            "missing": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction"
+            ]
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "8c0b22a293142dae6d1d3592543550dab2511179b26f634174b244c5d4238bc9",
+          "accepted_model_atom_count": 0
+        },
+        "deterministic_local_compiler": {
+          "status": "evaluated",
+          "query_count": 5,
+          "facet_coverage": {
+            "score": 1.0,
+            "covered": [
+              "document_type",
+              "evidence_owner",
+              "mechanism",
+              "metric",
+              "period",
+              "product",
+              "relationship_direction",
+              "subject"
+            ],
+            "missing": []
+          },
+          "contamination_count": 0,
+          "contamination_codes": [],
+          "duplicate_query_rate": 0.0,
+          "query_digest": "63fec584597c1bf7ee580d8a4b058fa76b50dd0f032213e206b596da380c88e5",
+          "accepted_model_atom_count": 0
+        },
+        "deepseek_query_atoms_plus_deterministic_local_compiler": {
+          "status": "not_observed_no_natural_model_atoms",
+          "query_count": 0,
+          "facet_coverage": null,
+          "contamination_count": null,
+          "duplicate_query_rate": null,
+          "query_digest": null
+        }
+      }
+    }
+  ],
+  "quality_gates": {
+    "deterministic_local_structure_pass": true,
+    "raw_query_not_misrepresented_as_compiled": true,
+    "historical_target_in_pool_attributed_to_new_variant": false,
+    "all_six_semantic_slots_have_direct_acceptable_target_owner_route": true,
+    "all_target_documents_have_global_owner_route": true,
+    "model_variant_observed": false,
+    "model_variant_runtime_admitted": false,
+    "deterministic_permutation_stability": 1.0,
+    "fresh_provider_recall_proven": false
+  },
+  "decision": {
+    "deterministic_local_compiler": "retain_as_external_and_internal_query_baseline",
+    "deepseek_query_atoms": {
+      "status": "pending_natural_atom_observation",
+      "runtime_admitted": false,
+      "reason": "No natural DeepSeek atom result exists. Fixture atoms cannot establish model value or compliance."
+    },
+    "next": "bounded_deepseek_query_atom_canary_authority_decision",
+    "combined_external_live_authorized": false,
+    "internal_retrieval_authorized": false,
+    "BGE_fusion_rerank_authorized": false
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "evidence_promotion": 0,
+    "retrieval": 0,
+    "embedding": 0,
+    "rerank": 0
+  },
+  "stage_acceptance": {
+    "query_facet_A_B_zero_call_evaluation": true,
+    "natural_model_atom_variant": false,
+    "three_way_effectiveness_evaluation": false,
+    "fresh_combined_external_live": false,
+    "internal_retrieval_query_facet": false,
+    "candidate_ceiling_and_qrels": false,
+    "BGE_fusion_rerank": false,
+    "downstream_utilization": false,
+    "S1_08": false,
+    "release": false
+  },
+  "known_boundary": "The frozen Firecrawl pools were generated by historical relationship-aware queries and are not variant-neutral. Their observed five-of-six slot target-in-pool result is retained as historical evidence only. This proof measures query structure and an English target-addressability proxy; it does not prove that a new query would generate the same candidates, fresh provider recall, internal retrieval quality, BGE/rerank value, Evidence promotion, downstream research quality, S1-08 acceptance or release.",
+  "policy_digest": "67a1e0c94d353427d9d8d4c7976ef2cb7ebdbd5d0d0b9e16212d9cd5a39fedbf",
+  "input_file_sha256": {
+    "firecrawl_assessment": "1ba0d2a65ad7e1c72bd6c00d5c19a2f3f93649a4395e75a4cc33572ca4ea2a7c",
+    "firecrawl_result": "84fbafa1b67c7c0b0d620086a3e94f1e4f9f36e439e7d2b4495aee47a3cc46f7",
+    "firecrawl_scoring": "81fe9359f1167c55105972408d7a7b4e1f366f56193253f823cabfe4ceaba1c8",
+    "model_visible_case_pack": "5c6294599d546b18faafdfa3688a297316c497a80d0e2e78a76d723803ebd604",
+    "progression_plan": "df76debecd67cc372b52a111f3d4914e31395228590ebe56ee611cade7bef446",
+    "query_facet_policy": "59acbd54edf732468169bfaf8ebad9c3b81ce369df44b5a94e0f77a6c94ba4d6",
+    "query_facet_proof": "ec10c5096dc5b6f1c97f19bec96b16478a9b8f4ca37c6ca550d80217023ac614"
+  },
+  "deterministic_recompilation": {
+    "normal_plan_set_digest": "c58fa193c9dcd1811895dc1c0209e38076ec566d72d591a8b3a0b3e967eb6412",
+    "reversed_input_plan_set_digest": "c58fa193c9dcd1811895dc1c0209e38076ec566d72d591a8b3a0b3e967eb6412",
+    "byte_equal": true
+  },
+  "implementation": {
+    "module_ref": "src/sec_agent/s1_08_query_facet_three_way_evaluation.py",
+    "materializer_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_08_query_facet_three_way_zero_call_proof.py",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_08_query_facet_three_way_evaluation_policy_v1_0.json",
+    "natural_model_atoms_supplied": 0
+  },
+  "evaluation_digest": "b9eef8769d0126faf8530fc666242c342c4ed7d347b427ab11604223adb9e118"
+}

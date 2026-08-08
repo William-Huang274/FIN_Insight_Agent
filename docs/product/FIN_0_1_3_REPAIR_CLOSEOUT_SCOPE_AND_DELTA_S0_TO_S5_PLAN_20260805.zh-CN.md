@@ -484,7 +484,7 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 1. [x] `S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION`：route planner、local authority replay、duplicate accounting、contamination mutation 与 SearchQualityCard proof 通过；
 2. [x] `S1_08_OFFICIAL_FIRST_PORTFOLIO_CLEAN_INDEPENDENT_ZERO_CALL_PROOF`：A3 在两个 clean archive／两个 fresh process 各 `45 passed`，规范化输出一致；A1/A2 失败保留；
 3. [x] `S1_08_UNIFIED_QUERY_FACET_PLAN_ZERO_CALL_IMPLEMENTATION`：60 intent 合并为 36 个共享计划，exact／lexical／semantic／graph／negative／forbidden／route filters 已生成，专项 13、S1-08 全回归 228；
-4. [ ] `S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION`：比较用户原句、本地 deterministic compiler、DeepSeek query atoms＋本地 compiler；只在召回增益且污染不扩大时启用模型辅助；
+4. [ ] `S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION`：raw/local 零调用 A/B 已完成（facet coverage `0.138889→1.0`、addressability proxy `0/9→9/9`、local 污染/重复=`0/0`）；一次 DeepSeek query-atom canary 的 fake/mutation Runtime 已通过，但自然输出尚未执行，故三路整体仍未关闭。只有自然 atom 在真实候选池产生增量且污染不扩大时才启用模型辅助；
 5. [ ] `S1_08_OFFICIAL_ROUTES_PLUS_FIRECRAWL_SHADOW_COMBINED_LIVE`：需独立 authority，capture-first／exact-once；required target 缺失时禁止 reranker rescue；
 6. [ ] **外源关闭后立即回到内源**：把同一 Query Facet 接入 exact SQL／object、BM25／ObjectBM25、dense／Milvus 与 relationship graph，修复“同一 raw query 无差别发送给全部 route”的历史弱点；
 7. [ ] 扩大 DELL／MU／NVDA 人工 qrels、period／entity／relationship hard negatives，先证明 internal candidate ceiling；

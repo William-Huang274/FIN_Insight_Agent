@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import subprocess
@@ -61,6 +62,10 @@ AUTHORITY_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_08_deepseek_query_atom_"
     "canary_authority_decision_v1_0.json"
 )
+RUNNER_PATH = ROOT / (
+    "scripts/releases/run_fin_ia_0_1_3_s1_08_"
+    "deepseek_query_atom_canary.py"
+)
 ISSUED_AT = "2026-08-08T12:00:00+00:00"
 OBSERVED_AT = "2026-08-08T12:01:00+00:00"
 EXPIRES_AT = "2026-08-08T14:00:00+00:00"
@@ -74,6 +79,17 @@ def _normalized_sha256(path: Path) -> str:
     return hashlib.sha256(
         path.read_bytes().replace(b"\r\n", b"\n")
     ).hexdigest()
+
+
+def _runner_module() -> Any:
+    spec = importlib.util.spec_from_file_location(
+        "fin013_query_atom_runner_test",
+        RUNNER_PATH,
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 @pytest.fixture(scope="module")
@@ -210,6 +226,30 @@ def test_request_is_18_plan_bounded_and_contains_no_hidden_targets(
     assert "http://" not in serialized
     assert "https://" not in serialized
     assert "target-in-pool labels" in serialized
+
+
+def test_admission_storage_uses_windows_safe_run_id_not_logical_id(
+    tmp_path: Path,
+) -> None:
+    runner = _runner_module()
+    run_id = "fin013_s1_08_query_atom_canary_" + "a" * 20
+    path = runner.admission_storage_path(
+        {
+            "admission_id": "admission::" + run_id,
+            "run_id": run_id,
+        },
+        authority_root=tmp_path,
+    )
+    assert path == tmp_path / f"{run_id}.json"
+    assert ":" not in path.name
+    with pytest.raises(runner.QueryAtomRunnerError) as exc_info:
+        runner.admission_storage_path(
+            {"run_id": "unsafe:run"},
+            authority_root=tmp_path,
+        )
+    assert str(exc_info.value) == (
+        "s1_08_query_atom_runner_admission_storage_identity_invalid"
+    )
 
 
 def test_valid_atom_is_locally_compiled_without_authority_drift(
@@ -439,12 +479,25 @@ def test_clean_authority_binds_implementation_and_only_one_model_call() -> None:
     assert not any(authority["calls_executed_by_this_decision"].values())
 
     binding = authority["implementation_binding"]
-    for ref_key, hash_key in (
+    implementation_pairs = (
         ("runner_ref", "runner_sha256_normalized"),
         ("runtime_module_ref", "runtime_module_sha256_normalized"),
         ("policy_ref", "policy_sha256_normalized"),
-    ):
-        assert _normalized_sha256(ROOT / binding[ref_key]) == binding[hash_key]
+    )
+    current_hashes_match = all(
+        _normalized_sha256(ROOT / binding[ref_key]) == binding[hash_key]
+        for ref_key, hash_key in implementation_pairs
+    )
+    exact_scope = run_project_os_preflight(
+        ROOT,
+        run_scope=(
+            "S1_08_QUERY_FACET_DEEPSEEK_ATOM_CANARY_EXACT_LIVE_EXECUTION"
+        ),
+    )
+    if exact_scope["status"] == "pass":
+        assert current_hashes_match
+    else:
+        assert current_hashes_match is False
     ancestor = subprocess.run(
         [
             "git",
@@ -459,17 +512,23 @@ def test_clean_authority_binds_implementation_and_only_one_model_call() -> None:
     assert ancestor.returncode == 0
 
 
-def test_project_os_switches_only_to_the_exact_canary_scope() -> None:
-    current = run_project_os_preflight(
-        ROOT,
-        run_scope=(
-            "S1_08_QUERY_FACET_DEEPSEEK_ATOM_CANARY_EXACT_LIVE_EXECUTION"
-        ),
+def test_project_os_exposes_only_latest_typed_scope() -> None:
+    latest = json.loads(
+        [
+            line
+            for line in (
+                ROOT / "docs/project_os/root_cause_issue_ledger.jsonl"
+            ).read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ][-1]
     )
-    assert current["status"] == "pass"
-    assert current["contract_errors"] == []
-    prior = run_project_os_preflight(
-        ROOT,
-        run_scope="S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION",
-    )
-    assert prior["status"] == "blocked"
+    allowed = set(latest["allowed_run_scopes"])
+    for scope in (
+        "S1_08_QUERY_FACET_THREE_WAY_DELL_MU_NVDA_EVALUATION",
+        "S1_08_QUERY_FACET_DEEPSEEK_ATOM_CANARY_EXACT_LIVE_EXECUTION",
+        "S1_08_QUERY_ATOM_CANARY_WINDOWS_SAFE_ADMISSION_STORAGE_ZERO_CALL_REPAIR",
+    ):
+        preflight = run_project_os_preflight(ROOT, run_scope=scope)
+        expected = "pass" if scope in allowed else "blocked"
+        assert preflight["status"] == expected
+        assert preflight["contract_errors"] == []

@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 from typing import Any, Mapping
@@ -230,6 +231,20 @@ def _credential_present(policy: Mapping[str, Any]) -> bool:
     return bool(os.environ.get(env_name, "").strip())
 
 
+def admission_storage_path(
+    admission: Mapping[str, Any], *, authority_root: Path = AUTHORITY_ROOT
+) -> Path:
+    run_id = str(admission.get("run_id") or "")
+    if re.fullmatch(
+        r"fin013_s1_08_query_atom_canary_[0-9a-f]{20}",
+        run_id,
+    ) is None:
+        raise QueryAtomRunnerError(
+            "s1_08_query_atom_runner_admission_storage_identity_invalid"
+        )
+    return authority_root / f"{run_id}.json"
+
+
 def compile_admission(
     *, head: str, material: Mapping[str, Any], issued_at: str, expires_at: str
 ) -> dict[str, Any]:
@@ -299,7 +314,7 @@ def main() -> int:
             .replace("+00:00", "Z"),
         )
         AUTHORITY_ROOT.mkdir(parents=True, exist_ok=True)
-        path = AUTHORITY_ROOT / f"{admission['admission_id']}.json"
+        path = admission_storage_path(admission)
         with path.open("x", encoding="utf-8") as handle:
             handle.write(
                 json.dumps(

@@ -137,10 +137,11 @@ def test_consumed_r4_scope_is_registered_but_no_longer_current_authority() -> No
     assert result["scope_resolution"]["status"] == "registered"
     assert result["scope_resolution"]["owner_stage"] == "S1"
     assert result["contract_errors"] == []
-    assert result["open_full_chain_blocker_count"] == 1
-    assert RUN_SCOPE not in result["open_full_chain_blockers"][0][
-        "allowed_run_scopes"
-    ]
+    assert result["open_full_chain_blocker_count"] >= 1
+    assert all(
+        RUN_SCOPE not in blocker["allowed_run_scopes"]
+        for blocker in result["open_full_chain_blockers"]
+    )
 
 
 def test_r4_authority_contains_no_credential_material() -> None:

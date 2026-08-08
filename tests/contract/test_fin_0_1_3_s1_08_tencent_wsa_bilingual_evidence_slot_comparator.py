@@ -306,10 +306,11 @@ def test_consumed_comparator_scope_is_registered_but_no_longer_authorized() -> N
     assert preflight["scope_resolution"]["status"] == "registered"
     assert preflight["scope_resolution"]["owner_stage"] == "S1"
     assert preflight["contract_errors"] == []
-    assert preflight["open_full_chain_blocker_count"] == 1
-    assert RUN_SCOPE not in preflight["open_full_chain_blockers"][0][
-        "allowed_run_scopes"
-    ]
+    assert preflight["open_full_chain_blocker_count"] >= 1
+    assert all(
+        RUN_SCOPE not in blocker["allowed_run_scopes"]
+        for blocker in preflight["open_full_chain_blockers"]
+    )
 
 
 def test_live_comparator_terminal_and_assessment_are_immutable_and_honest() -> None:

@@ -1,0 +1,186 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_domestic_provider_wire_projection_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.domestic_provider_wire_projection_and_fair_comparator:v1",
+  "canonical_search_intent_contract_ref": "fin_0_1_3.S1_08.relationship_aware_search_intent_and_source_equivalence:v1",
+  "as_of_date": "2026-08-06",
+  "search_window_start_date": "2025-01-01",
+  "common_comparator_query_unit_ceiling": 72,
+  "query_unit_rule": {
+    "ascii": 1,
+    "non_ascii": 2
+  },
+  "compact_entity_terms": {
+    "DELL": {"en": "DELL", "zh": "戴尔"},
+    "MU": {"en": "Micron", "zh": "美光"},
+    "NVDA": {"en": "NVDA", "zh": "英伟达"},
+    "MSFT": {"en": "MSFT", "zh": "微软"},
+    "TSMC": {"en": "TSMC", "zh": "台积电"}
+  },
+  "compact_period_terms": {
+    "DELL": {"en": "Q1 FY2027", "zh": "Q1 FY2027"},
+    "MU": {"en": "Q3 FY2026", "zh": "Q3 FY2026"},
+    "NVDA": {"en": "Q1 FY2027", "zh": "Q1 FY2027"},
+    "MSFT": {"en": "Q3 FY2026", "zh": "Q3 FY2026"},
+    "TSMC": {"en": "Q2 2026", "zh": "Q2 2026"}
+  },
+  "entity_slot_topic_terms": {
+    "DELL": {
+      "issuer_results_and_management_commentary": {
+        "en": ["AI", "server", "backlog", "margin"],
+        "zh": ["AI服务器", "订单积压", "利润率"]
+      },
+      "regulatory_risk_and_financial_reconciliation": {
+        "en": ["AI", "server", "risk", "cashflow"],
+        "zh": ["AI服务器", "风险", "现金流"]
+      },
+      "customer_demand_and_deployment_validation": {
+        "en": ["AI", "server", "backlog", "demand"],
+        "zh": ["AI服务器", "订单积压", "需求"]
+      }
+    },
+    "MU": {
+      "issuer_results_and_management_commentary": {
+        "en": ["HBM", "revenue", "margin", "outlook"],
+        "zh": ["HBM收入", "利润率", "展望"]
+      },
+      "regulatory_risk_and_financial_reconciliation": {
+        "en": ["HBM", "risk", "cashflow"],
+        "zh": ["HBM", "风险", "现金流"]
+      },
+      "supply_chain_capacity_and_counterevidence": {
+        "en": ["HBM", "capacity", "supply", "outlook"],
+        "zh": ["HBM产能", "供给", "展望"]
+      }
+    },
+    "NVDA": {
+      "issuer_results_and_management_commentary": {
+        "en": ["Blackwell", "datacenter", "revenue", "margin"],
+        "zh": ["Blackwell", "数据中心", "收入", "利润率"]
+      },
+      "regulatory_risk_and_financial_reconciliation": {
+        "en": ["Blackwell", "risk", "cashflow"],
+        "zh": ["Blackwell", "风险", "现金流"]
+      },
+      "supply_chain_capacity_and_counterevidence": {
+        "en": ["Blackwell", "supply", "constraint", "outlook"],
+        "zh": ["Blackwell供给", "约束", "展望"]
+      }
+    },
+    "MSFT": {
+      "customer_demand_and_deployment_validation": {
+        "en": ["Azure", "AI", "capex", "datacenter", "capacity"],
+        "zh": ["Azure", "AI资本开支", "数据中心", "产能"]
+      }
+    },
+    "TSMC": {
+      "supply_chain_capacity_and_counterevidence": {
+        "en": ["CoWoS", "advanced", "packaging", "capacity"],
+        "zh": ["CoWoS先进封装", "产能"]
+      }
+    }
+  },
+  "slot_source_terms": {
+    "issuer_results_and_management_commentary": {
+      "en": ["earnings"],
+      "zh": ["业绩"]
+    },
+    "regulatory_risk_and_financial_reconciliation": {
+      "en": ["SEC", "filing"],
+      "zh": ["SEC", "财报"]
+    },
+    "customer_demand_and_deployment_validation": {
+      "en": ["earnings"],
+      "zh": ["业绩"]
+    },
+    "supply_chain_capacity_and_counterevidence": {
+      "en": ["earnings"],
+      "zh": ["业绩"]
+    }
+  },
+  "route_suffix_terms": {
+    "precise_official_domain": {"en": [], "zh": []},
+    "semantic_open_web": {"en": [], "zh": []}
+  },
+  "official_site_priority": {
+    "issuer_results_and_management_commentary": "issuer_ir",
+    "regulatory_risk_and_financial_reconciliation": "regulatory",
+    "customer_demand_and_deployment_validation": "issuer_ir",
+    "supply_chain_capacity_and_counterevidence": "issuer_ir"
+  },
+  "providers": {
+    "tencent_wsa_searchpro_standard": {
+      "capability_class": "standalone_raw_search_api",
+      "endpoint": "https://wsa.tencentcloudapi.com",
+      "transport": "tencent_cloud_api_3_tc3",
+      "wire_schema_status": "official_contract_observed",
+      "query_field": "Query",
+      "published_query_unit_limit": null,
+      "result_ceiling": 10,
+      "official_site_strategy": "single_slot_priority",
+      "date_filter_strategy": "unix_seconds_utc",
+      "credential_state": "fresh_unexposed_secret_required",
+      "admission_eligible_after_zero_call_proof": true
+    },
+    "baidu_qianfan_web_search_v2": {
+      "capability_class": "standalone_raw_search_api",
+      "endpoint": "https://qianfan.baidubce.com/v2/ai_search/web_search",
+      "transport": "https_json_bearer",
+      "wire_schema_status": "official_contract_observed",
+      "query_field": "messages[0].content",
+      "published_query_unit_limit": 72,
+      "result_ceiling": 10,
+      "official_site_strategy": "all_preferred_domains",
+      "date_filter_strategy": "iso_page_time_range",
+      "credential_state": "api_key_required_not_configured",
+      "admission_eligible_after_zero_call_proof": true
+    },
+    "alibaba_bailian_web_search_mcp": {
+      "capability_class": "standalone_mcp_search_tool_returning_pages",
+      "endpoint": "https://dashscope.aliyuncs.com/api/v1/mcps/WebSearch/mcp",
+      "transport": "streamable_http_mcp",
+      "wire_schema_status": "tool_name_and_query_count_example_observed_full_schema_capture_required",
+      "query_field": "query",
+      "published_query_unit_limit": null,
+      "result_ceiling": 10,
+      "official_site_strategy": "none_observed",
+      "date_filter_strategy": "none_observed",
+      "credential_state": "model_studio_api_key_required_not_configured",
+      "admission_eligible_after_zero_call_proof": false
+    },
+    "firecrawl_keyless_search": {
+      "capability_class": "standalone_search_control",
+      "endpoint": "https://api.firecrawl.dev/v2/search",
+      "transport": "https_json",
+      "wire_schema_status": "official_contract_observed",
+      "query_field": "query",
+      "published_query_unit_limit": null,
+      "result_ceiling": 10,
+      "official_site_strategy": "all_preferred_domains",
+      "date_filter_strategy": "none_used_in_baseline",
+      "credential_state": "keyless_control_observed",
+      "admission_eligible_after_zero_call_proof": true
+    }
+  },
+  "plan_budgets": {
+    "precise_official_domain_query_ceiling_per_provider": 36,
+    "semantic_open_web_query_ceiling_per_provider": 24,
+    "combined_intent_identity_ceiling": 60,
+    "precise_execution_unit_ceiling_per_provider": 22,
+    "semantic_execution_unit_ceiling_per_provider": 24,
+    "combined_execution_unit_ceiling_per_provider": 46,
+    "exact_payload_coalescing_allowed": true,
+    "automatic_combined_live_execution_allowed": false,
+    "identical_retry_allowed": false,
+    "provider_calls_during_projection_proof": 0,
+    "model_calls_during_projection_proof": 0
+  },
+  "capability_boundary": {
+    "classification": "zero_call_provider_wire_projection_contract",
+    "provider_calls_authorized": 0,
+    "network_calls_authorized": 0,
+    "model_calls_authorized": 0,
+    "document_fetches_authorized": 0,
+    "evidence_promotions_authorized": 0,
+    "sourcehunter_integration_authorized": false
+  }
+}

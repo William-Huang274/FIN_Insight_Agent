@@ -1,5 +1,7 @@
 # Worklog
 
+- [743 — FIN 0.1.3 S1-08 国内 Provider wire projection 与公平 comparator 零调用实现](product_strategy/743_fin_0_1_3_s1_08_domestic_provider_wire_projection_and_fair_comparator_zero_call_implementation.md)
+- [742 — FIN 0.1.3 S1-08 国内 Provider 输入资格与 comparator 范围决策](product_strategy/742_fin_0_1_3_s1_08_domestic_provider_input_qualification_and_comparator_scope_decision.md)
 - [741 — FIN 0.1.3 S1-08 relationship-aware SearchIntent 与 source-equivalence 零调用实现](product_strategy/741_fin_0_1_3_s1_08_relationship_aware_search_intent_and_source_equivalence_zero_call_implementation.md)
 - [740 — FIN 0.1.3 S1-08 Web Search Provider 调研、Firecrawl 试跑与查询编译器处置](product_strategy/740_fin_0_1_3_s1_08_web_search_provider_market_scan_firecrawl_trial_and_query_compiler_disposition.md)
 - [729 — FIN 0.1.3 S1-08 SearXNG v1.1 clean proof 与三案诊断 authority](product_strategy/729_fin_0_1_3_s1_08_searxng_v1_1_proof_and_baseline_authority.md)

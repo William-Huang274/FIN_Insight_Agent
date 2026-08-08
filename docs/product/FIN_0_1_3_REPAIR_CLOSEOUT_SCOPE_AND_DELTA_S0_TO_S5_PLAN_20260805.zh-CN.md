@@ -445,6 +445,26 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 
 本次没有把支付便利写成核心搜索逻辑。它属于 Provider procurement/operation profile：国内充值、人民币结算、发票和支持便利可以提高采用优先级，但不能降低金融证据与候选质量标准。若国内 Provider 都不能达到 candidate ceiling，再向用户提出国际 API 或 Internal Alpha source claim 调整，而不是静默改用国外服务或降低门槛。
 
+## 7F. 国内 Provider 输入资格后的 S1-08 再基线（2026-08-08）
+
+1. [x] `S1_08_DOMESTIC_FIRST_PROVIDER_INPUT_QUALIFICATION_AND_RELATIONSHIP_AWARE_COMPARATOR_SCOPE_DECISION`：Tencent SearchPro 与百度千帆 `baidu_search_v2` 均确认为 standalone raw-search API；阿里 Web Search MCP 单列为可返回 `pages` 的国内语义工具；Firecrawl 保留无密钥控制，Exa 仅作可选国际 benchmark。network/provider/model/document/Evidence=`0/0/0/0/0`。
+2. [x] 暴露新的项目输入边界：百度明文限制 query 为 72 units、中文按 2 计；当前 canonical 60-query 加权范围=`122–268`，直接兼容=`0/60`。这不回滚 SearchIntent，而要求 provider wire projection 把 domain/date 移入结构化字段并生成 digest-bound 短查询。
+3. [ ] **当前下一项 `S1_08_DOMESTIC_PROVIDER_WIRE_PROJECTION_AND_FAIR_COMPARATOR_CONTRACT_ZERO_CALL_IMPLEMENTATION`**：实现 canonical intent 到 Tencent／Baidu／Alibaba MCP／Firecrawl wire object 的薄适配；百度投影必须 `<=72 units` 且保留 owner、period、claim direction、source family；三案 fake/mutation 必须证明无跨案污染、无 Gold 泄漏、semantic lane query parity 和 36/24 独立预算。
+4. [ ] 零调用 proof 通过后才决定具体 live：优先使用新建且未暴露的国内 Provider 凭据；没有国内 Key 时可单独运行 Firecrawl control，但不能宣称国内主线完成。任何 live 都必须另有 provider-specific admission、capture-first、0 retry 与停止规则，不自动执行 60 次。
+
+本次保持 FIN 0.1.3 与 S1-08 归属，不新建版本。字面 query 因公开 transport limit 可由 adapter 压缩，但 canonical intent identity、hidden target、评估口径与金融门禁不变；因此仍是同一研究矩阵，而不是为某家供应商改标准答案。
+
+## 7G. wire projection 完成后的 S1-08 再基线（2026-08-08）
+
+1. [x] `S1_08_DOMESTIC_PROVIDER_WIRE_PROJECTION_AND_FAIR_COMPARATOR_CONTRACT_ZERO_CALL_IMPLEMENTATION`：四家 profile 共 240 个 intent-bound wire object；百度 query units=`37–66`、兼容=`60/60`；semantic 24 intent 在四家逐字 parity；Alibaba MCP 在完整 schema capture 前保持 non-admissible。
+2. [x] 查询质量人工复核：首版机械标签已替换为实体／槽位相关研究词（Azure AI capex、AI-server backlog、HBM、Blackwell、CoWoS 等）；完整 direction/source family 保留在 wire metadata，不靠冗长边界词占用搜索 query。
+3. [x] exact-payload coalescing：60 个 logical intent 保持独立；每家执行计划为 `22 precise + 24 semantic=46 units`，相对逐 intent 调用少 14 次。共享 capture 必须列出 consumer intent IDs/digests，并按案例分别评估，不允许静默跨案晋升。
+4. [x] 专项=`12 passed`，S1-08 全组=`181 passed`；network/provider/model/document/Evidence=`0/0/0/0/0`。
+5. [ ] **当前下一项 `S1_08_DOMESTIC_PROVIDER_CREDENTIAL_READINESS_AND_FIRECRAWL_CONTROL_COMPARATOR_AUTHORITY_DECISION`**：secret-safe 检查 Tencent/Baidu fresh credential readiness；国内 Key 不可用时，只决定是否先用 Firecrawl 执行一个 control lane。必须在 `22 precise` 与 `24 semantic` 中明确选择，不能自动签 46 次，更不能复用聊天暴露 Key。
+6. [ ] 某一 lane authority 通过后，另行建立 exact-once runner、capture-first terminal 与 evaluator-only Gold；比较 useful@10、target-in-pool、date accuracy、publisher diversity、cost、p50/p95。candidate gate 失败仍禁止 reranker rescue 或 SourceHunter integration。
+
+这一实现没有把“多一个 Provider”当产品进度，而是先修正了输入公平性和查询质量。下一轮 live 的价值在于测索引／排序能否把一手证据带入候选池，不再重复测量 query compiler 缺陷。
+
 ## 8. 下一步
 
 1. [x] 将 FIN 0.1.2 S4-T08 记为 `audit_complete_product_closeout_blocked`。

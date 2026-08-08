@@ -184,6 +184,20 @@
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1"]
     },
+    "S1_08_DOMESTIC_PROVIDER_WIRE_PROJECTION_AND_FAIR_COMPARATOR_CONTRACT_ZERO_CALL_IMPLEMENTATION": {
+      "owner_stage": "S1",
+      "operation_class": "source_runtime_zero_call_implementation",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "S1_08_DOMESTIC_PROVIDER_CREDENTIAL_READINESS_AND_FIRECRAWL_CONTROL_COMPARATOR_AUTHORITY_DECISION": {
+      "owner_stage": "S1",
+      "operation_class": "zero_call_authority_decision",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
     "additional_S1_08_live_attempts": {
       "owner_stage": "S1",
       "operation_class": "live_search_execution",

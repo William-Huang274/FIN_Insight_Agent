@@ -1,0 +1,119 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_domestic_first_provider_input_qualification_and_comparator_scope_decision_v1_0",
+  "decision_id": "fin-ia-0-1-3-s1-08-domestic-first-provider-input-qualification-and-comparator-scope-decision-v1-0",
+  "recorded_at": "2026-08-08",
+  "source_commit": "352fc278ff0ab25b751e3b09a7ef209d684b64e7",
+  "run_scope": "S1_08_DOMESTIC_FIRST_PROVIDER_INPUT_QUALIFICATION_AND_RELATIONSHIP_AWARE_COMPARATOR_SCOPE_DECISION",
+  "status": "pass_next_zero_call_wire_projection_required",
+  "authority": {
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "document_fetches": 0,
+    "evidence_promotions": 0,
+    "live_comparator_authorized": false,
+    "sourcehunter_integration_authorized": false
+  },
+  "canonical_plan_observation": {
+    "precise_official_domain_intents": 36,
+    "semantic_open_web_intents": 24,
+    "combined_intents": 60,
+    "ordinary_character_range": [76, 268],
+    "baidu_weighted_query_unit_rule": "ASCII=1; non-ASCII=2, matching the documented statement that one Chinese character consumes two units",
+    "baidu_weighted_query_unit_range": [122, 268],
+    "canonical_queries_fitting_baidu_72_unit_limit": [0, 60],
+    "finding": "The canonical SearchIntent contract is semantically suitable but cannot be sent verbatim to every domestic provider. Provider wire projection is required and must not change the canonical intent or evaluator target."
+  },
+  "provider_profiles": [
+    {
+      "provider_id": "tencent_wsa_searchpro_standard",
+      "jurisdiction_priority": "domestic_primary_candidate",
+      "capability_class": "standalone_raw_search_api",
+      "endpoint": "https://wsa.tencentcloudapi.com",
+      "action_version": "SearchPro / 2025-05-08",
+      "authentication": "Tencent Cloud API 3.0 TC3 with fresh SecretId/SecretKey; plaintext credentials forbidden",
+      "request_capabilities": ["query", "single_site_filter", "from_time", "to_time"],
+      "response_capabilities": ["url", "title", "date", "passage", "site", "score", "request_id", "service_version"],
+      "published_query_limit": null,
+      "billing_observation": "CNY 46 per 1,000 standard calls; personal users can purchase standard resource packages",
+      "input_qualification": "provisional_pass_no_published_query_limit",
+      "operational_qualification": "blocked_fresh_unexposed_credential_required",
+      "historical_quality": "Old 24-query subject-plus-generic-slot comparator remains diagnostic-only and is not evidence against the corrected successor until the new matrix is consumed.",
+      "official_refs": [
+        "https://cloud.tencent.com/document/product/1806/121811",
+        "https://cloud.tencent.com/document/product/1806/121798"
+      ]
+    },
+    {
+      "provider_id": "baidu_qianfan_web_search_v2",
+      "jurisdiction_priority": "domestic_primary_candidate",
+      "capability_class": "standalone_raw_search_api",
+      "endpoint": "https://qianfan.baidubce.com/v2/ai_search/web_search",
+      "authentication": "Bearer API Key; plaintext credentials forbidden",
+      "request_capabilities": ["single_turn_query", "web_top_k_up_to_50", "site_filter_up_to_100", "exact_date_range", "recency_filter", "block_websites"],
+      "response_capabilities": ["url", "title", "date", "snippet", "content_excerpt", "website", "request_id"],
+      "published_query_limit": "72 units; one Chinese character consumes two units; over-limit input is truncated",
+      "billing_observation": "1,500 free calls per month distributed daily, then CNY 0.036 per call; CNY postpaid",
+      "input_qualification": "fail_verbatim_zero_of_60_canonical_queries_fit",
+      "operational_qualification": "wire_projection_and_api_key_required",
+      "required_project_fix": "Compile a deterministic <=72-unit query while preserving owner, period, claim direction and source family; move site and date constraints to structured request fields.",
+      "official_refs": [
+        "https://cloud.baidu.com/doc/qianfan-api/s/Wmbq4z7e5",
+        "https://cloud.baidu.com/doc/qianfan/s/1mh4sv6c4"
+      ]
+    },
+    {
+      "provider_id": "alibaba_bailian_web_search_mcp",
+      "jurisdiction_priority": "domestic_secondary_semantic_candidate",
+      "capability_class": "standalone_mcp_search_tool_returning_pages",
+      "endpoint": "https://dashscope.aliyuncs.com/api/v1/mcps/WebSearch/mcp",
+      "authentication": "General-purpose Model Studio API Key; plaintext credentials forbidden",
+      "response_capabilities": ["status", "pages", "title", "source", "publication_time"],
+      "billing_observation": "2,000 free calls, then CNY 29 per 1,000 calls",
+      "input_qualification": "conditional_tool_schema_capture_required",
+      "operational_qualification": "not_authorized_not_configured",
+      "known_boundary": "The MCP search tool is distinct from model-attached web search and from the synthesized Qwen Web Search Agent. Only raw pages may enter a future locator comparator.",
+      "official_refs": [
+        "https://help.aliyun.com/en/model-studio/web-search-mcp"
+      ]
+    },
+    {
+      "provider_id": "firecrawl_keyless_search",
+      "jurisdiction_priority": "free_control_not_domestic_procurement_target",
+      "capability_class": "standalone_search_control",
+      "input_qualification": "ready_for_separate_semantic_control_after_wire_contract",
+      "operational_qualification": "previous_capture_first_trials_valid_no_production_admission",
+      "known_boundary": "Firecrawl is a control for attribution and recall, not a substitute for the domestic-first procurement goal."
+    },
+    {
+      "provider_id": "exa",
+      "jurisdiction_priority": "optional_international_benchmark",
+      "capability_class": "semantic_open_web_search",
+      "input_qualification": "not_required_for_domestic_first_mainline",
+      "operational_qualification": "not_configured_no_key"
+    }
+  ],
+  "decision": {
+    "canonical_contract": "SearchIntent v1 remains provider-neutral and unchanged.",
+    "comparison_unit": "The same 60 canonical intent identities and hidden targets are used across providers; literal wire text may differ only through a digest-bound provider projector required by a published transport limit.",
+    "semantic_lane_fairness": "The 24 semantic intents use the same compact query text across compared providers wherever transport limits permit; no domain filter is silently added to one provider.",
+    "precise_lane_fairness": "The 36 precise intents may use provider-native site/date fields because filter capability is itself part of the measured product; the canonical intent and target remain identical.",
+    "next_scope": "S1_08_DOMESTIC_PROVIDER_WIRE_PROJECTION_AND_FAIR_COMPARATOR_CONTRACT_ZERO_CALL_IMPLEMENTATION",
+    "next_scope_requirements": [
+      "Implement a provider wire request object that references canonical intent_id and digest.",
+      "Implement Baidu <=72 weighted-unit projection with no loss of owner, period, claim direction or source-family atoms.",
+      "Move domains and dates into typed structured fields instead of wasting query text.",
+      "Freeze Tencent, Baidu, Alibaba-MCP and Firecrawl capability profiles without provider-specific branches in core SearchIntent.",
+      "Prove deterministic projection, no cross-case contamination, no target leakage, semantic-lane query parity and separate 36/24 ceilings.",
+      "Do not call a provider, reuse an exposed credential, fetch a document, tune ranking or promote Evidence."
+    ]
+  },
+  "stop_rules": [
+    "No provider call before the wire projection proof and a fresh provider-specific admission.",
+    "Do not execute all 60 intents as one automatic run.",
+    "Do not compare synthesized answers with raw locator results under useful_at_10.",
+    "Do not claim Tencent or Baidu live quality from documentation-only qualification.",
+    "Do not request an international paid API while an eligible domestic comparator has not yet been tested, unless the user changes the procurement constraint."
+  ],
+  "known_boundary": "This decision qualifies product shapes and exposes a Baidu input incompatibility. It does not prove live recall, date accuracy, source diversity, cost, latency, credential validity, SourceHunter integration, Agentic Research or release readiness."
+}

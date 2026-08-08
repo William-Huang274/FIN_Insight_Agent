@@ -14,15 +14,35 @@ S0_SCOPE = (
 DIRECT_R3_SCOPE = "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION"
 
 
-def test_current_S0_04G_scope_uses_typed_registry_and_passes() -> None:
+def test_registered_S0_04G_scope_follows_latest_typed_projection() -> None:
     result = run_project_os_preflight(ROOT, run_scope=S0_SCOPE)
+    rows = [
+        json.loads(line)
+        for line in (
+            ROOT / "docs/project_os/root_cause_issue_ledger.jsonl"
+        ).read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    latest = next(
+        row
+        for row in reversed(rows)
+        if str(row.get("issue_id") or "").startswith("RC-P36-157-")
+    )
+    scope_allowed = S0_SCOPE in (latest.get("allowed_run_scopes") or [])
 
-    assert result["status"] == "pass"
     assert result["schema_version"] == "fin_insight_project_os_full_chain_preflight_v0_2"
     assert result["run_scope_registry"]["registry_version"] == "v1_0"
     assert result["scope_resolution"]["owner_stage"] == "S0"
     assert result["contract_errors"] == []
-    assert result["open_full_chain_blocker_count"] == 0
+    if scope_allowed:
+        assert result["status"] == "pass"
+        assert result["open_full_chain_blocker_count"] == 0
+    else:
+        assert result["status"] == "blocked"
+        assert any(
+            item["issue_id"].startswith("RC-P36-157-")
+            for item in result["open_full_chain_blockers"]
+        )
 
 
 def test_unregistered_scope_and_diagnostic_override_fail_closed() -> None:

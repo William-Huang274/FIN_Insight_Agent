@@ -1037,3 +1037,47 @@ Source equivalence 与 query compiler 物理分离，只能在 raw capture/fetch
 三案 full-fake 使用 36 个 official reference，证明 `12 exact + 24 typed-equivalent + 0 no-match`；cross-case、wrong-direction、future date、alias collision、budget mismatch、permutation、unverified canonical、same-event different-document 与 wrong-owner mutation 均 fail closed。新增测试与既有 S1-08 全组为 `13 passed / 169 passed`，Project OS scoped preflight pass；network/provider/model/document/Evidence=`0/0/0/0/0`。
 
 采购与运营便利现在正式进入 `ProviderCapabilityProfile`，但不渗入核心 SearchIntent：人民币结算、微信／支付宝／网银充值、发票、国内账号治理、凭据轮换、延迟和支持渠道可影响候选顺序，不能改变 Evidence Gate。下一项为 `S1_08_DOMESTIC_FIRST_PROVIDER_INPUT_QUALIFICATION_AND_RELATIONSHIP_AWARE_COMPARATOR_SCOPE_DECISION`：优先审查 Tencent SearchPro successor 与百度千帆独立 Web Search 的 raw locator/schema/过滤/成本能力；阿里百炼等 model-attached search 单列 synthesized/tool lane；火山引擎在拿到 standalone raw schema 前不计能力。Firecrawl 保留免费控制，Exa 只作可选国际 semantic benchmark。该决策不复用聊天暴露的旧 Key，也不自动授权 comparator live、SourceHunter integration、ranking 或 S3。
+
+### 20.21 国内 Provider 输入资格与 wire projection 边界（2026-08-08）
+
+官方合同复核确认 Tencent SearchPro 与百度千帆 `baidu_search_v2` 都能返回 raw locator candidate。Tencent `SearchPro/2025-05-08` 的请求字段包含 `Query/Site/FromTime/ToTime`，响应包含 `url/title/date/passage/site/score/RequestId/Version`；标准版公开价格为 46 元／千次，官方未披露 query 长度上限。百度 endpoint 为 `POST https://qianfan.baidubce.com/v2/ai_search/web_search`，支持网页 top-k 50、最多 100 个站点、明确日期范围和 recency，返回 `url/title/date/snippet/content/website/request_id`；每月 1,500 次免费，后付费目录价 0.036 元／次。
+
+资格审查同时发现百度输入为硬边界：query 最多 72 个计量字符，中文按 2 计，超出后只取前 72。SearchIntent v1 的 60 条 canonical query 普通字符为 `76–268`，按该规则为 `122–268`，直接满足上限=`0/60`。不得让 Provider 静默截断，否则 evidence owner、period、claim direction 或 source family 可能丢失，之后的 target-in-pool 横评没有意义。
+
+Runtime 因此新增但尚待实现的分层：
+
+```text
+SearchIntent(canonical, provider-neutral, complete)
+ -> ProviderWireProjection(intent_ref + intent_digest + compact query + typed filters)
+ -> provider request capture
+ -> common CandidateBundle normalizer
+ -> common hidden-target evaluator
+```
+
+`ProviderWireProjection` 只能做 transport compilation。百度 adapter 应将 preferred domain 与 date range 放入结构化字段，把 query 压缩至 72 weighted units，同时保留唯一 owner、期间、claim direction 和 source family；核心 SearchIntent 不因百度当前限制而缩短。Tencent 可接受 canonical 或同一 compact comparison query，但不得复用已在聊天暴露的 AK/SK。语义开放网 24-intent lane 在 transport 允许时保持逐字 query parity；官方精确 36-intent lane允许使用 provider-native site/date field，因为过滤能力本身是被测 capability，但 canonical intent 与 hidden target 不变。
+
+阿里百炼 Web Search MCP 已与模型内置联网搜索分账：MCP endpoint 可作为返回 `pages` 的 search tool，前 2,000 次免费、之后 29 元／千次；只有 raw page locator 可以进入 comparator，千问联网检索 Agent 或 model-attached synthesized answer 不能按 useful@10 混评。Firecrawl 仍为无密钥控制，Exa 仅为可选国际 semantic benchmark。
+
+零调用资格终态为 `pass_next_zero_call_wire_projection_required`。当前下一项固定为 `S1_08_DOMESTIC_PROVIDER_WIRE_PROJECTION_AND_FAIR_COMPARATOR_CONTRACT_ZERO_CALL_IMPLEMENTATION`；它不调用 Provider／模型／网络，不抓正文、不晋升 Evidence、不接 SourceHunter。proof 通过后仍需 provider-specific fresh credential、admission 与独立 36/24 live 选择，禁止把 60 intents 自动合并运行。
+
+### 20.22 ProviderWireProjection v1 与 exact-payload execution unit（2026-08-08）
+
+`fin_0_1_3.S1_08.domestic_provider_wire_projection_and_fair_comparator:v1` 已实现。每个 wire object 显式保存 canonical `intent_id/digest`、owner、claim direction、source families、route、compact query、structured filter mode、safe request body、payload digest、wire digest 与 `send_authorized=false`。核心 SearchIntent 未改，Provider profile 只拥有传输字段。
+
+人工质量复核拒绝了第一版虽满足 72 units 但偏机器标签的短查询。正式 projector 使用实体／槽位相关主题：Microsoft=`Azure AI capex datacenter capacity`、Dell=`AI server backlog/demand`、Micron=`HBM revenue/capacity/outlook`、NVIDIA=`Blackwell datacenter/supply constraint`、TSMC=`CoWoS advanced packaging capacity`；issuer 与 regulatory 分别加 earnings 或 SEC filing。direction/source family 的完整枚举保留在 wire metadata，query 只放有召回价值的词。
+
+四家均编译 60 个 logical wire object，query units=`37–66`，百度 `60/60` 通过明文 72-unit 上限；旧 canonical 长 query 仍为 `0/60` 直接兼容。24 条 semantic intent 在四家逐 intent query bytes 相同且不带 hidden domain/date filter。precise lane 使用公开原生字段：Tencent=`Site + FromTime/ToTime` 且不发送 `Mode/Cnt`；Baidu=`site[] + page_time range`；Firecrawl=`includeDomains` 且不 scrape；Alibaba MCP 仅保存 provisional `query/count`，完整 tool schema capture 前 admission 不合格。
+
+进一步发现 36 个 precise intent 中存在三案共享的相同官方查询。Runtime 不再为凑 identity 数量重复发送，而按 `provider + route + exact request_payload_digest` 合并：
+
+```text
+60 canonical intent identities
+ -> 36 precise wire identities + 24 semantic wire identities
+ -> 22 precise execution units + 24 semantic execution units
+ -> each capture lists 1..N consumer intent ids/digests
+ -> per-consumer hidden-target evaluation and lineage
+```
+
+每家 combined ceiling 因此为 46 execution units，不是 60；仍不得自动执行两个 lane。合并只发生在 request bytes 完全相同且 route 相同的 precise payload，semantic 不跨案例合并。这样节约 14 次调用，同时保持每个案例的评估、typed gap 和 Evidence promotion 独立。
+
+专项 `12 passed`、全部 S1-08 contract=`181 passed`。proof 中共有 `240 unique wire digests / 184 unique payload digests / 184 execution units`，Provider／network／model／document／Evidence 均为 0。当前下一项为 `S1_08_DOMESTIC_PROVIDER_CREDENTIAL_READINESS_AND_FIRECRAWL_CONTROL_COMPARATOR_AUTHORITY_DECISION`；它只能 secret-safe 判定国内凭据和选择一个 control lane，不授权 46-call combined live、SourceHunter、ranking 或 S3。

@@ -522,3 +522,5 @@ P2D 已通过且唯一 R3 已消费。R3 的控制面按预期完成 exact-once�
 > **2026-08-07 用户已选择 SEC contact 路线**：真实联系身份只通过运行时环境注入，不进入 Git 或结果物；SEC 域名无合法 contact 时 fail closed。新增 identity mutation 后 broader=`84 passed`。只授权 new admission 的 1-call Dell SEC v1.3 proof，复用 MU/NVDA 已成功结果；不重跑三案、不进入额外 fallback。
 
 > **2026-08-06 S5 交接发现**：仓库中存在早先已被合并/放弃的 47 个 `FIN 0.1.3` 命名 config/runtime/test 资产，0.1.2 active-suite 仍有 7 个相关引用。它们必须保留为历史证据，但不能自动成为本轮新 0.1.3 authority。`013-S0-01` 必须先签发 canonical delta namespace/inheritance successor，再开始其他实现。
+
+> **2026-08-08 `013-S1-08` Tencent standard R4 与三案中英 comparator**：standard same-query R4=`1 call / 0 retry / 971 ms / 0.046 CNY`，`Version=standard`；topical useful=`10/10`，但 Evidence-eligible useful=`0/10`、DELL target group=`0/4`、有效独立来源生态=`1`，故不接入。下一步不再做单 query R5，而是 exact-once 消费已签发的 `3 case × 4 external Evidence Slot × 2 language=24` comparator，0 retry/model/document/Evidence，成本上限 1.104 元。查询生成阶段看不到 Gold；全部调用 terminal 后才计算 topical/Evidence useful@10、target-in-pool、hidden target recall、日期准确率、来源多样性、成本和延迟。任何门失败都保持 diagnostic-only，禁止 reranker rescue；通过也只允许后续独立 integration decision。

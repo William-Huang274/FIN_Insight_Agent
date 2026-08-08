@@ -1,0 +1,88 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_bilingual_evidence_slot_comparator_zero_call_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.tencent_wsa_bilingual_evidence_slot_comparator:v1",
+  "recorded_at": "2026-08-08",
+  "status": "zero_call_query_matrix_evaluator_and_capture_runtime_engineering_pass",
+  "run_scope": "S1_08_PAID_BROAD_SEARCH_TENCENT_WSA_BILINGUAL_EVIDENCE_SLOT_COMPARATOR",
+  "trigger": {
+    "R4_result_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_standard_tier_r4_result_v1_0.json",
+    "R4_result_sha256": "57bd03a86ebf74fc0f31e05c8d71ee08aecc3513da20a90022e521932a3a4ce6",
+    "R4_result_digest": "a2dd29bcf368d01af4aea766f404b12002c8e35a9b6b69a6a376773267a5ad00",
+    "R4_assessment_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_standard_tier_r4_quality_assessment_v1_0.json",
+    "R4_assessment_sha256": "093bade35e98ee4b2acdde72ee4ccfd3cdffa8b645744e2de6f15464de493fc3",
+    "R4_assessment_digest": "8679fc48100e3eface32f1ead58c0042d1fbba801bac93dc465294d96984ba7a",
+    "R4_disposition": "topical_recall_improved_but_primary_target_date_and_diversity_gates_failed"
+  },
+  "query_matrix": {
+    "ref": "configs/runtime/fin_ia_0_1_3_s1_08_tencent_wsa_bilingual_evidence_slot_query_plan_v1_0.json",
+    "sha256": "2deb303108502525b2ba1ba744b94b9224e14c1c04d08a6e44ac5c6d4ffc6589",
+    "digest": "d46dc68ccd1fb2bea1a1a9cbb957c8b44044a7222b44f24569e895c64c473d1c",
+    "cases": 3,
+    "external_evidence_slots_per_case": 4,
+    "languages": 2,
+    "query_count": 24,
+    "query_only": true,
+    "gold_or_benchmark_url_visible_to_query_compiler": false,
+    "market_context_remains_governed_local": true
+  },
+  "evaluator": {
+    "scoring_contract_ref": "configs/eval/fin_ia_0_1_3_s1_08_tencent_wsa_bilingual_evidence_slot_scoring_contract_v1_0.json",
+    "scoring_contract_sha256": "1ed7bdeed19f47d6ce9fe527e9944629cd2fe8b1c9011b2e52a43b3dbfa56a8b",
+    "scoring_contract_digest": "fa537701ea72567abde4333f1643ad59e19616d8442f31c6d98f86ed4b0f4317",
+    "visible_pack_sha256": "11a0e9a4ed87687f56859a7c42c183269bbb5fb17d2e4bb66a2b54242f308b7e",
+    "hidden_scoring_sha256": "e6711c404822db5c06011cb47170dd23fbac11e4005387160eaf091f4f25e056",
+    "gold_load_phase": "after_all_provider_calls_terminalized",
+    "separate_metrics": [
+      "topical useful@10",
+      "Evidence-eligible useful@10",
+      "case-slot target-in-pool",
+      "combined hidden target-group recall",
+      "provider date presence",
+      "matched-target date accuracy",
+      "source diversity and concentration",
+      "cost",
+      "latency"
+    ],
+    "reranker_or_document_fetch_before_candidate_gate": false
+  },
+  "runtime": {
+    "support_ref": "src/sec_agent/s1_08_tencent_wsa_bilingual_evidence_slot_comparator.py",
+    "support_sha256": "c5e80b700296d7436b94541b80d0e70f8739040c6f161a2101c7e03fa3f88da5",
+    "runner_ref": "scripts/releases/run_fin_ia_0_1_3_s1_08_tencent_wsa_bilingual_evidence_slot_comparator.py",
+    "runner_sha256": "408bd70e80481d4c4786e5c46bf62b57511921c7f8ae58301b611d2689f6bca5",
+    "evaluator_ref": "scripts/releases/evaluate_fin_ia_0_1_3_s1_08_tencent_wsa_bilingual_evidence_slot_comparator.py",
+    "evaluator_sha256": "537c0221b6e453d4050beb5a4084f730b7d73fa428d9b146e5a9a3ef71883b4b",
+    "test_ref": "tests/contract/test_fin_0_1_3_s1_08_tencent_wsa_bilingual_evidence_slot_comparator.py",
+    "test_sha256": "857e12e98a25f462e33f98b590c8a56e4f32339e46fab8847518ba3e4aca9f3d",
+    "capture_first_per_query": true,
+    "raw_response_or_typed_failure_local_capture_per_query": true,
+    "partial_failure_terminalization": true,
+    "credentials_interactive_hidden_only": true,
+    "credentials_persisted": false
+  },
+  "verification": {
+    "focused_and_R4_related_tests_passed": 18,
+    "focused_and_R4_related_tests_failed": 0,
+    "compile_pass": true,
+    "fake_three_case_bilingual_all_gates_pass": true,
+    "gold_identifier_query_mutation_fails_closed": true,
+    "missing_both_languages_for_one_case_slot_blocks_integration": true,
+    "R4_assessment_digest_and_non_promotion_boundary_verified": true,
+    "provider_network_retry_model_document_evidence_calls": [0, 0, 0, 0, 0, 0]
+  },
+  "proposed_live_budget": {
+    "fresh_admissions": 1,
+    "provider_calls": 24,
+    "network_calls": 24,
+    "retry_calls": 0,
+    "model_calls": 0,
+    "document_fetches": 0,
+    "evidence_promotions": 0,
+    "documented_standard_cost_cny_per_call": 0.046,
+    "maximum_documented_cost_cny": 1.104,
+    "timeout_seconds_per_call": 20,
+    "overall_timeout_seconds": 600
+  },
+  "known_boundary": "This proof establishes only the gold-blind query matrix, post-terminal evaluator, capture-first runner shape and deterministic gates. It does not establish live Tencent transfer quality, primary-source recall, date accuracy, three-case robustness, SourceHunter integration, Evidence, Agentic Research or release.",
+  "proof_digest": "c9a7bbe25ca8f048a629b039657f6d880cacb9b9dedf8bd7cfc9670831bad625"
+}

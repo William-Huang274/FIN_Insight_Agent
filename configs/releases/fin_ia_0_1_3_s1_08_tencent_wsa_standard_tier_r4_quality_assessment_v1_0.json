@@ -1,0 +1,116 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_standard_tier_r4_quality_assessment_v1_0",
+  "recorded_at": "2026-08-08",
+  "status": "standard_tier_topical_recall_pass_primary_source_quality_fail",
+  "governing_issue_id": "RC-P36-157-fin-0-1-3-s1-08-operational-provider-and-candidate-coverage-insufficient",
+  "attempt_id": "fin013-s1-08-tencent-wsa-standard-tier-r4",
+  "result_ref": "configs/releases/fin_ia_0_1_3_s1_08_tencent_wsa_standard_tier_r4_result_v1_0.json",
+  "result_sha256": "57bd03a86ebf74fc0f31e05c8d71ee08aecc3513da20a90022e521932a3a4ce6",
+  "result_digest": "a2dd29bcf368d01af4aea766f404b12002c8e35a9b6b69a6a376773267a5ad00",
+  "experiment_control": {
+    "changed_variable": "provider_subscription_lite_to_standard",
+    "same_credential_path_as_R3": true,
+    "same_query_as_R3": true,
+    "same_query_only_wire_contract_as_R3": true,
+    "same_sdk_endpoint_normalizer_and_top_10_ceiling_as_R3": true,
+    "automatic_retry_performed": false,
+    "document_fetch_or_reranker_used": false
+  },
+  "observed": {
+    "source_commit": "2e6fbf9f24b76247eb115e5434493517c17dd2f9",
+    "provider_version": "standard",
+    "provider_calls": 1,
+    "network_calls": 1,
+    "retry_calls": 0,
+    "model_calls": 0,
+    "document_fetches": 0,
+    "evidence_promotions": 0,
+    "elapsed_ms": 971,
+    "raw_pages": 10,
+    "unique_locators": 10,
+    "provider_date_fields_present": 10,
+    "documented_call_cost_cny": 0.046,
+    "credentials_persisted": false
+  },
+  "research_quality_assessment": {
+    "frozen_intent": "Dell AI server demand, customers, supply chain, 2026 earnings and industry evidence",
+    "topical_useful_at_10": {
+      "count": 10,
+      "rate": 1.0,
+      "definition": "case-and-topic relevant locator, before source authority, date verification or Evidence promotion",
+      "R3_lite_control_count": 0,
+      "assessment": "pass"
+    },
+    "evidence_eligible_useful_at_10": {
+      "count": 0,
+      "rate": 0.0,
+      "definition": "topical locator that is also an independently identified primary or frozen evaluator target with verified date semantics",
+      "assessment": "fail"
+    },
+    "target_in_pool": {
+      "DELL_subject_primary_targets_found": 0,
+      "DELL_subject_primary_targets_required": 3,
+      "DELL_web_target_sources_found": 0,
+      "DELL_web_target_sources_required": 5,
+      "DELL_hidden_target_groups_satisfied": 0,
+      "DELL_hidden_target_groups_total": 4,
+      "assessment": "fail"
+    },
+    "date_quality": {
+      "provider_field_presence_count": 10,
+      "provider_field_presence_rate": 1.0,
+      "gold_or_primary_dates_verified_count": 0,
+      "unverified_provider_dates_count": 10,
+      "accepted_financial_publication_date_authority_count": 0,
+      "accuracy_rate": null,
+      "assessment": "not_established_fail_closed"
+    },
+    "source_diversity": {
+      "hostname_count": 2,
+      "registrable_domain_count": 1,
+      "registrable_domains": ["qq.com"],
+      "independent_publisher_ecosystem_count": 1,
+      "tencent_ecosystem_locator_count": 10,
+      "issuer_regulatory_or_industry_primary_locator_count": 0,
+      "assessment": "fail_single_ecosystem_secondary_concentration"
+    },
+    "evidence_slot_coverage": {
+      "issuer_results_or_demand_topic_present": true,
+      "official_issuer_results_present": false,
+      "regulatory_reconciliation_present": false,
+      "named_customer_primary_validation_present": false,
+      "supply_chain_primary_or_counterevidence_present": false,
+      "assessment": "fail"
+    },
+    "overall": "fail_for_sourcehunter_integration"
+  },
+  "interpretation": {
+    "standard_tier_improved_semantic_recall": true,
+    "standard_tier_established_primary_source_discovery": false,
+    "standard_tier_established_date_accuracy": false,
+    "standard_tier_established_three_case_transfer": false,
+    "reason": "Standard changed the frozen DELL query from zero topical hits to ten topical hits, but every locator remained inside one Tencent content ecosystem and none matched the preregistered primary-source pool. A reranker cannot create missing primary sources, independent publishers or verified dates."
+  },
+  "stage_and_promotion_boundary": {
+    "authentication_transport_and_standard_version": true,
+    "single_query_topical_recall": true,
+    "primary_source_candidate_quality": false,
+    "three_case_bilingual_comparator": false,
+    "sourcehunter_integration_allowed": false,
+    "evidence_promotion_allowed": false,
+    "production_provider_allowed": false,
+    "S1_08_passed": false,
+    "ranking_or_reranker_admitted": false,
+    "S3_product_research_unlocked": false,
+    "release_unlocked": false
+  },
+  "disposition": {
+    "attempt_immutable": true,
+    "authority_consumed": true,
+    "automatic_R5_or_same_query_retry": false,
+    "next": "design_and_zero_call_prove_DELL_MU_NVDA_bilingual_Evidence_Slot_comparator_then_issue_a_separate_bounded_live_authority",
+    "integration_gate": "Comparator must pass preregistered topical usefulness, target-in-pool, verified date, independent-source diversity, cost and latency gates before any SourceHunter adapter promotion.",
+    "reranker_before_candidate_gate": false
+  },
+  "assessment_digest": "8679fc48100e3eface32f1ead58c0042d1fbba801bac93dc465294d96984ba7a"
+}

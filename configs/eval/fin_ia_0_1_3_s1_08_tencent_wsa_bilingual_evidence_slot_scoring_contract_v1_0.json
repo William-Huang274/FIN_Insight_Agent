@@ -1,0 +1,127 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_bilingual_evidence_slot_scoring_contract_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.tencent_wsa_bilingual_evidence_slot_comparator:v1",
+  "recorded_at": "2026-08-08",
+  "visibility": "evaluator_only_load_after_provider_terminal",
+  "query_plan_ref": "configs/runtime/fin_ia_0_1_3_s1_08_tencent_wsa_bilingual_evidence_slot_query_plan_v1_0.json",
+  "visible_benchmark_ref": "eval_sets/fin_0_1_3_same_evidence_v1/model_visible/shared_benchmark_evidence_pack_v1.json",
+  "hidden_scoring_ref": "eval_sets/fin_0_1_3_same_evidence_v1/evaluator_only/hidden_gold_scoring_objects_v1.json",
+  "provider_result_limit_per_query": 10,
+  "target_sources_by_case_and_slot": {
+    "DELL": {
+      "issuer_results_and_management_commentary": [
+        "SRC_DELL_Q1_FY27_CALL",
+        "SRC_DELL_Q1_FY27_EXHIBIT"
+      ],
+      "regulatory_risk_and_financial_reconciliation": [
+        "SRC_DELL_FY26_10K"
+      ],
+      "customer_demand_and_deployment_validation": [
+        "SRC_MSFT_Q3_FY26_CALL"
+      ],
+      "supply_chain_capacity_and_counterevidence": [
+        "SRC_MU_Q3_FY26_REMARKS"
+      ]
+    },
+    "MU": {
+      "issuer_results_and_management_commentary": [
+        "SRC_MU_Q3_FY26_RESULTS",
+        "SRC_MU_Q3_FY26_REMARKS"
+      ],
+      "regulatory_risk_and_financial_reconciliation": [
+        "SRC_MU_Q3_FY26_RESULTS",
+        "SRC_MU_Q3_FY26_REMARKS"
+      ],
+      "customer_demand_and_deployment_validation": [
+        "SRC_NVDA_Q1_FY27_10Q",
+        "SRC_DELL_Q1_FY27_CALL",
+        "SRC_MSFT_Q3_FY26_CALL"
+      ],
+      "supply_chain_capacity_and_counterevidence": [
+        "SRC_TSMC_Q2_2026_RESULTS"
+      ]
+    },
+    "NVDA": {
+      "issuer_results_and_management_commentary": [
+        "SRC_NVDA_Q1_FY27_RESULTS",
+        "SRC_NVDA_Q1_FY27_10Q"
+      ],
+      "regulatory_risk_and_financial_reconciliation": [
+        "SRC_NVDA_Q1_FY27_10Q"
+      ],
+      "customer_demand_and_deployment_validation": [
+        "SRC_DELL_Q1_FY27_CALL",
+        "SRC_MSFT_Q3_FY26_CALL"
+      ],
+      "supply_chain_capacity_and_counterevidence": [
+        "SRC_MU_Q3_FY26_REMARKS",
+        "SRC_TSMC_Q2_2026_RESULTS"
+      ]
+    }
+  },
+  "useful_at_10_contract": {
+    "topical_useful": "Result text contains a case marker and at least one marker from the requested Evidence Slot, is not obvious support/troubleshooting noise, and has a valid distinct locator.",
+    "evidence_eligible_useful": "Topical-useful result also matches a frozen evaluator source identity and its returned date agrees with the frozen source publication date.",
+    "support_noise_markers": [
+      "driver",
+      "firmware",
+      "support article",
+      "troubleshooting",
+      "how to fix",
+      "download",
+      "驱动",
+      "固件",
+      "故障排除",
+      "下载"
+    ],
+    "duplicate_locator_counts_once_per_query": true,
+    "topic_and_authority_scores_must_be_reported_separately": true
+  },
+  "date_accuracy_contract": {
+    "provider_date_presence_reported_separately": true,
+    "accuracy_denominator": "exact frozen target matches with a provider date",
+    "expected_date_source": "visible benchmark source_registry published_on",
+    "non_target_provider_dates": "unverified_not_financial_date_authority",
+    "report_period_may_not_substitute_for_publication_date": true
+  },
+  "source_diversity_contract": {
+    "report": [
+      "unique hostnames",
+      "unique registrable domains",
+      "independent publisher ecosystems",
+      "largest ecosystem share",
+      "frozen primary target domains found"
+    ],
+    "subdomains_of_one_registrable_domain_count_as_one_ecosystem": true,
+    "syndicated_copies_do_not_create_independent_source_diversity": true
+  },
+  "cost_and_latency_contract": {
+    "documented_standard_cost_cny_per_call": 0.046,
+    "maximum_calls": 24,
+    "maximum_documented_total_cost_cny": 1.104,
+    "latency_unit": "milliseconds",
+    "report": ["per_query", "p50", "p95", "maximum", "whole_run"]
+  },
+  "hard_gates_before_sourcehunter_integration": {
+    "all_calls_terminalized": 1.0,
+    "observed_standard_version_rate": 1.0,
+    "minimum_topical_useful_at_10_per_query": 0.3,
+    "minimum_mean_topical_useful_at_10_per_case_language": 0.5,
+    "case_slot_target_in_pool_rate_across_language_union": 1.0,
+    "combined_product_hidden_target_group_recall_with_local_market_control": 1.0,
+    "matched_target_date_accuracy": 1.0,
+    "minimum_independent_registrable_domains_per_case": 3,
+    "maximum_single_ecosystem_share_per_case": 0.7,
+    "maximum_documented_total_cost_cny": 1.104,
+    "maximum_p95_latency_ms": 5000,
+    "evidence_promotion_during_comparator": 0,
+    "reranker_or_document_fetch_during_comparator": 0
+  },
+  "decision_rules": {
+    "all_hard_gates_pass": "eligible_for_separate_SourceHunter_adapter_integration_decision_not_automatic_integration",
+    "any_hard_gate_fails": "remain_diagnostic_only_and_do_not_use_reranker_to_rescue_missing_candidates",
+    "target_in_pool_fails": "provider_or_query_coverage_failure_before_ranking",
+    "dates_unverifiable": "date_accuracy_not_established_fail_closed",
+    "one_language_dominates": "retain_bilingual_routing_or_case_specific_language_policy_subject_to_other_gates"
+  }
+}

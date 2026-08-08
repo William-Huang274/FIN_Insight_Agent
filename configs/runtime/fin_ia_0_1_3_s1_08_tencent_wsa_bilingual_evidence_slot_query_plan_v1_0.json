@@ -1,0 +1,282 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_tencent_wsa_bilingual_evidence_slot_query_plan_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.tencent_wsa_bilingual_evidence_slot_comparator:v1",
+  "recorded_at": "2026-08-08",
+  "status": "frozen_gold_blind_query_plan",
+  "provider_id": "tencent_cloud_wsa_searchpro_candidate_v1",
+  "provider_expected_version": "standard",
+  "cases": ["DELL", "MU", "NVDA"],
+  "languages": ["en", "zh"],
+  "external_evidence_slots": [
+    "issuer_results_and_management_commentary",
+    "regulatory_risk_and_financial_reconciliation",
+    "customer_demand_and_deployment_validation",
+    "supply_chain_capacity_and_counterevidence"
+  ],
+  "excluded_local_slot": {
+    "slot_id": "market_expectation_context",
+    "reason": "This slot is supplied by the governed local market snapshot and is not a broad-Web provider responsibility."
+  },
+  "wire_contract": {
+    "action": "SearchPro",
+    "request_body_fields": ["Query"],
+    "optional_fields": [],
+    "result_ceiling_per_query": 10,
+    "gold_or_expected_url_visible_to_query_compiler": false,
+    "identical_retry_allowed": false
+  },
+  "query_rows": [
+    {
+      "query_id": "DELL-ISSUER-EN",
+      "case_key": "DELL",
+      "slot_id": "issuer_results_and_management_commentary",
+      "language": "en",
+      "query_text": "Dell Technologies latest quarterly earnings results AI-optimized server orders revenue backlog margin 2026 investor relations",
+      "case_markers": ["dell"],
+      "slot_markers": ["earnings", "results", "server", "orders", "revenue", "backlog", "margin"]
+    },
+    {
+      "query_id": "DELL-ISSUER-ZH",
+      "case_key": "DELL",
+      "slot_id": "issuer_results_and_management_commentary",
+      "language": "zh",
+      "query_text": "戴尔科技 2026 最新季度财报 AI优化服务器 订单 收入 积压 利润率 投资者关系",
+      "case_markers": ["戴尔", "dell"],
+      "slot_markers": ["财报", "业绩", "服务器", "订单", "收入", "积压", "利润率"]
+    },
+    {
+      "query_id": "DELL-REGULATORY-EN",
+      "case_key": "DELL",
+      "slot_id": "regulatory_risk_and_financial_reconciliation",
+      "language": "en",
+      "query_text": "Dell Technologies 2026 10-K 10-Q AI server supply commitments inventory working capital risk SEC filing",
+      "case_markers": ["dell"],
+      "slot_markers": ["10-k", "10-q", "sec", "filing", "inventory", "working capital", "risk"]
+    },
+    {
+      "query_id": "DELL-REGULATORY-ZH",
+      "case_key": "DELL",
+      "slot_id": "regulatory_risk_and_financial_reconciliation",
+      "language": "zh",
+      "query_text": "戴尔科技 2026 10-K 10-Q AI服务器 供应承诺 库存 营运资本 风险 SEC 文件",
+      "case_markers": ["戴尔", "dell"],
+      "slot_markers": ["10-k", "10-q", "sec", "文件", "库存", "营运资本", "风险"]
+    },
+    {
+      "query_id": "DELL-CUSTOMER-EN",
+      "case_key": "DELL",
+      "slot_id": "customer_demand_and_deployment_validation",
+      "language": "en",
+      "query_text": "Dell AI Factory customers deployments enterprise sovereign AI infrastructure 2026 customer official announcement",
+      "case_markers": ["dell"],
+      "slot_markers": ["customer", "deployment", "enterprise", "sovereign", "infrastructure", "ai factory"]
+    },
+    {
+      "query_id": "DELL-CUSTOMER-ZH",
+      "case_key": "DELL",
+      "slot_id": "customer_demand_and_deployment_validation",
+      "language": "zh",
+      "query_text": "戴尔 AI 工厂 客户 部署 企业 主权 AI 基础设施 2026 客户 官方公告",
+      "case_markers": ["戴尔", "dell"],
+      "slot_markers": ["客户", "部署", "企业", "主权", "基础设施", "ai 工厂"]
+    },
+    {
+      "query_id": "DELL-SUPPLY-EN",
+      "case_key": "DELL",
+      "slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "en",
+      "query_text": "Dell AI server supply chain GPU memory networking constraints margin counterevidence 2026 official",
+      "case_markers": ["dell"],
+      "slot_markers": ["supply", "gpu", "memory", "networking", "constraint", "margin", "counterevidence"]
+    },
+    {
+      "query_id": "DELL-SUPPLY-ZH",
+      "case_key": "DELL",
+      "slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "zh",
+      "query_text": "戴尔 AI 服务器 供应链 GPU 内存 网络 约束 利润率 反证 2026 官方",
+      "case_markers": ["戴尔", "dell"],
+      "slot_markers": ["供应", "gpu", "内存", "网络", "约束", "利润率", "反证"]
+    },
+    {
+      "query_id": "MU-ISSUER-EN",
+      "case_key": "MU",
+      "slot_id": "issuer_results_and_management_commentary",
+      "language": "en",
+      "query_text": "Micron Technology latest quarterly financial results HBM DRAM NAND pricing bit growth gross margin 2026 investor relations",
+      "case_markers": ["micron"],
+      "slot_markers": ["results", "hbm", "dram", "nand", "pricing", "bit growth", "gross margin"]
+    },
+    {
+      "query_id": "MU-ISSUER-ZH",
+      "case_key": "MU",
+      "slot_id": "issuer_results_and_management_commentary",
+      "language": "zh",
+      "query_text": "美光科技 2026 最新季度财报 HBM DRAM NAND 价格 位元增长 毛利率 投资者关系",
+      "case_markers": ["美光", "micron"],
+      "slot_markers": ["财报", "业绩", "hbm", "dram", "nand", "价格", "毛利率"]
+    },
+    {
+      "query_id": "MU-REGULATORY-EN",
+      "case_key": "MU",
+      "slot_id": "regulatory_risk_and_financial_reconciliation",
+      "language": "en",
+      "query_text": "Micron 2026 10-K 10-Q HBM supply agreements RPO customer deposits capex inventory risk SEC filing",
+      "case_markers": ["micron"],
+      "slot_markers": ["10-k", "10-q", "sec", "rpo", "deposit", "capex", "inventory", "risk"]
+    },
+    {
+      "query_id": "MU-REGULATORY-ZH",
+      "case_key": "MU",
+      "slot_id": "regulatory_risk_and_financial_reconciliation",
+      "language": "zh",
+      "query_text": "美光科技 2026 10-K 10-Q HBM 供应协议 RPO 客户预付款 资本开支 库存 风险 SEC 文件",
+      "case_markers": ["美光", "micron"],
+      "slot_markers": ["10-k", "10-q", "sec", "rpo", "预付款", "资本开支", "库存", "风险"]
+    },
+    {
+      "query_id": "MU-CUSTOMER-EN",
+      "case_key": "MU",
+      "slot_id": "customer_demand_and_deployment_validation",
+      "language": "en",
+      "query_text": "Micron HBM4 customer qualification AI accelerator deployment demand 2026 customer official announcement",
+      "case_markers": ["micron", "hbm"],
+      "slot_markers": ["customer", "qualification", "accelerator", "deployment", "demand", "hbm4"]
+    },
+    {
+      "query_id": "MU-CUSTOMER-ZH",
+      "case_key": "MU",
+      "slot_id": "customer_demand_and_deployment_validation",
+      "language": "zh",
+      "query_text": "美光 HBM4 客户认证 AI 加速器 部署 需求 2026 客户 官方公告",
+      "case_markers": ["美光", "micron", "hbm"],
+      "slot_markers": ["客户", "认证", "加速器", "部署", "需求", "hbm4"]
+    },
+    {
+      "query_id": "MU-SUPPLY-EN",
+      "case_key": "MU",
+      "slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "en",
+      "query_text": "Micron HBM capacity advanced packaging wafer capex DRAM NAND supply response counterevidence 2026 official",
+      "case_markers": ["micron", "hbm"],
+      "slot_markers": ["capacity", "packaging", "wafer", "capex", "dram", "nand", "supply", "counterevidence"]
+    },
+    {
+      "query_id": "MU-SUPPLY-ZH",
+      "case_key": "MU",
+      "slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "zh",
+      "query_text": "美光 HBM 产能 先进封装 晶圆 资本开支 DRAM NAND 供给响应 反证 2026 官方",
+      "case_markers": ["美光", "micron", "hbm"],
+      "slot_markers": ["产能", "封装", "晶圆", "资本开支", "dram", "nand", "供给", "反证"]
+    },
+    {
+      "query_id": "NVDA-ISSUER-EN",
+      "case_key": "NVDA",
+      "slot_id": "issuer_results_and_management_commentary",
+      "language": "en",
+      "query_text": "NVIDIA latest quarterly financial results data center networking gross margin cash flow 2026 investor relations",
+      "case_markers": ["nvidia"],
+      "slot_markers": ["results", "data center", "networking", "gross margin", "cash flow", "revenue"]
+    },
+    {
+      "query_id": "NVDA-ISSUER-ZH",
+      "case_key": "NVDA",
+      "slot_id": "issuer_results_and_management_commentary",
+      "language": "zh",
+      "query_text": "英伟达 2026 最新季度财报 数据中心 网络业务 毛利率 现金流 投资者关系",
+      "case_markers": ["英伟达", "nvidia"],
+      "slot_markers": ["财报", "业绩", "数据中心", "网络", "毛利率", "现金流", "收入"]
+    },
+    {
+      "query_id": "NVDA-REGULATORY-EN",
+      "case_key": "NVDA",
+      "slot_id": "regulatory_risk_and_financial_reconciliation",
+      "language": "en",
+      "query_text": "NVIDIA 2026 10-K 10-Q customer concentration supply commitments inventory export controls SEC filing",
+      "case_markers": ["nvidia"],
+      "slot_markers": ["10-k", "10-q", "sec", "customer concentration", "commitments", "inventory", "export"]
+    },
+    {
+      "query_id": "NVDA-REGULATORY-ZH",
+      "case_key": "NVDA",
+      "slot_id": "regulatory_risk_and_financial_reconciliation",
+      "language": "zh",
+      "query_text": "英伟达 2026 10-K 10-Q 客户集中 供应承诺 库存 出口管制 SEC 文件",
+      "case_markers": ["英伟达", "nvidia"],
+      "slot_markers": ["10-k", "10-q", "sec", "客户集中", "供应承诺", "库存", "出口"]
+    },
+    {
+      "query_id": "NVDA-CUSTOMER-EN",
+      "case_key": "NVDA",
+      "slot_id": "customer_demand_and_deployment_validation",
+      "language": "en",
+      "query_text": "NVIDIA AI infrastructure cloud customer deployment utilization ROI capex 2026 customer official source",
+      "case_markers": ["nvidia"],
+      "slot_markers": ["customer", "deployment", "utilization", "roi", "capex", "cloud", "infrastructure"]
+    },
+    {
+      "query_id": "NVDA-CUSTOMER-ZH",
+      "case_key": "NVDA",
+      "slot_id": "customer_demand_and_deployment_validation",
+      "language": "zh",
+      "query_text": "英伟达 AI 基础设施 云客户 部署 利用率 投资回报 资本开支 2026 客户 官方来源",
+      "case_markers": ["英伟达", "nvidia"],
+      "slot_markers": ["客户", "部署", "利用率", "投资回报", "资本开支", "云", "基础设施"]
+    },
+    {
+      "query_id": "NVDA-SUPPLY-EN",
+      "case_key": "NVDA",
+      "slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "en",
+      "query_text": "NVIDIA CoWoS foundry HBM supply commitments Rubin transition export controls custom ASIC counterevidence 2026 official",
+      "case_markers": ["nvidia"],
+      "slot_markers": ["cowos", "foundry", "hbm", "supply", "rubin", "export", "asic", "counterevidence"]
+    },
+    {
+      "query_id": "NVDA-SUPPLY-ZH",
+      "case_key": "NVDA",
+      "slot_id": "supply_chain_capacity_and_counterevidence",
+      "language": "zh",
+      "query_text": "英伟达 CoWoS 晶圆代工 HBM 供应承诺 Rubin 换代 出口管制 自研 ASIC 反证 2026 官方",
+      "case_markers": ["英伟达", "nvidia"],
+      "slot_markers": ["cowos", "晶圆", "hbm", "供应", "rubin", "出口", "asic", "反证"]
+    }
+  ],
+  "budget": {
+    "query_count": 24,
+    "provider_call_ceiling": 24,
+    "network_call_ceiling": 24,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0,
+    "document_fetch_ceiling": 0,
+    "documented_standard_cost_cny_per_call": 0.046,
+    "maximum_documented_cost_cny": 1.104,
+    "timeout_seconds_per_call": 20,
+    "overall_timeout_seconds": 600
+  },
+  "blindness_contract": {
+    "query_plan_may_use": [
+      "case identity and aliases",
+      "generic Evidence Slot semantics",
+      "as-of year",
+      "generic financial and industry mechanism terms"
+    ],
+    "query_plan_may_not_use": [
+      "Gold evidence IDs",
+      "Gold target IDs",
+      "benchmark URLs",
+      "exact hidden expected insights",
+      "prior provider result URLs"
+    ],
+    "evaluator_load_phase": "after_all_provider_calls_terminalized"
+  },
+  "capability_boundary": {
+    "classification": "diagnostic_comparator_not_production",
+    "sourcehunter_integration_allowed_before_pass": false,
+    "evidence_promotion_allowed": false,
+    "writer_citable": false,
+    "financial_fact_authority": false,
+    "ranking_or_reranker_allowed": false
+  }
+}

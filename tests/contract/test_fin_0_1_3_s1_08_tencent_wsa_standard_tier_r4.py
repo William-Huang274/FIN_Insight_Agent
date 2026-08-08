@@ -131,12 +131,16 @@ def test_r4_authority_is_distinct_standard_tier_and_non_promotable() -> None:
     assert authority["execution_contract"]["evidence_promotion_allowed"] is False
 
 
-def test_r4_scope_is_registered_and_authorized_before_consumption() -> None:
+def test_consumed_r4_scope_is_registered_but_no_longer_current_authority() -> None:
     result = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
-    assert result["status"] == "pass"
+    assert result["status"] == "blocked"
     assert result["scope_resolution"]["status"] == "registered"
     assert result["scope_resolution"]["owner_stage"] == "S1"
     assert result["contract_errors"] == []
+    assert result["open_full_chain_blocker_count"] == 1
+    assert RUN_SCOPE not in result["open_full_chain_blockers"][0][
+        "allowed_run_scopes"
+    ]
 
 
 def test_r4_authority_contains_no_credential_material() -> None:

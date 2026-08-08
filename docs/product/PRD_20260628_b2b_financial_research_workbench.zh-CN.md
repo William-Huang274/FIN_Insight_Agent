@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-08 | Tencent WSA standard same-query R4 证明套餐升级可把 DELL topical useful 从 `0/10` 提升到 `10/10`，但一手 target、日期权威和独立来源仍为失败，故新增“主题相关 useful@10”和“Evidence-eligible useful@10”分账。付费 broad-search Provider 必须先通过 DELL/MU/NVDA × 四个外部 Evidence Slot × 中英查询的盲搜后评测，对照 target-in-pool、日期准确性、来源多样性、成本和延迟；候选池失败时禁止依赖 reranker 补救，全部门通过也只进入独立接入决策。 |
 | 2026-08-08 | P3A A2 已在双 clean archive／双 fresh process 各 `92/92` 通过，关闭项目内 protected-fetch/cache 确定性证明。用户批准将开源 Provider 对照前移：先接入自建 SearXNG 作为 diagnostic metasearch locator provider，再用相同合同对照未来付费 API。该路线不计生产能力，不能直接晋升 Evidence/事实，也不修改 no-R4；其目的只是低成本测量不同搜索引擎能否把缺失资料送入候选入口。 |
 | 2026-08-08 | P3 选择 repair-first：先在固定 16 次网络上限内用一个零调用结构包证明 qualified locator 后的受保护正文抓取与 attempt-local cache 边界；Provider 采购、动态页／licensed source 和 Internal Alpha 来源范围缩减暂缓，避免用外采或降范围掩盖项目自有 false gap。P3A 通过后仍须独立 owner 决策才可讨论新 live；no-R4 未被修改。 |
 | 2026-08-08 | 唯一 DELL R3 current-search exact-live 已执行：控制面以 `15 network / 0 model-provider-retry` 完整 terminalize，但得到 `0 candidate / 0 source / 5 typed gaps`，产品来源质量失败。229 条 locator 通过初筛后没有发生正文抓取，根因包含项目内共享 discovery/document allowance 与跨 attempt budget-stop negative cache；既有 deterministic fixture 未覆盖该自然拓扑。no-R4 生效，下一项只能先做零调用 P3，联合处置 owned Runtime 缺陷、运营 Provider 能力和 Internal Alpha source claim；不得把本结果归因 DeepSeek、先调 ranking 或直接购买 Provider 后重跑。 |

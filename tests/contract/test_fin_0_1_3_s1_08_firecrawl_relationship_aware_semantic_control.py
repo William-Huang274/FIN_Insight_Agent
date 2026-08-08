@@ -30,6 +30,9 @@ AUTHORITY_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relations
 A4_TERMINAL_PATH = ROOT / "artifacts/runtime/provider_market_scan/firecrawl_keyless_a4_customer_supply_en_20260808/terminal-result.json"
 A4_ASSESSMENT_PATH = ROOT / "artifacts/runtime/provider_market_scan/firecrawl_keyless_a4_customer_supply_en_20260808/assessment.json"
 EVALUATOR_PATH = ROOT / "scripts/releases/evaluate_fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control.py"
+RESULT_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_result_v1_0.json"
+ASSESSMENT_PATH = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_assessment_v1_0.json"
+NEXT_SCOPE = "S1_08_DOMESTIC_PROVIDER_FRESH_CREDENTIAL_READINESS_AND_SAME_MATRIX_COMPARATOR_AUTHORITY_DECISION"
 
 
 def _sha256(path: Path) -> str:
@@ -289,11 +292,57 @@ def test_exact_live_authority_is_digest_bound_semantic_only_and_unconsumed() -> 
     assert execution["gold_load_before_aggregate_terminal_allowed"] is False
 
 
-def test_exact_live_scope_is_registered_and_currently_allowed() -> None:
+def test_consumed_exact_live_scope_is_blocked_and_domestic_handoff_is_allowed() -> None:
     from sec_agent.project_os_preflight import run_project_os_preflight
 
     preflight = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
-    assert preflight["status"] == "pass"
+    assert preflight["status"] == "blocked"
     assert preflight["contract_errors"] == []
     assert preflight["scope_resolution"]["status"] == "registered"
     assert preflight["scope_resolution"]["operation_class"] == "diagnostic_search_execution"
+    handoff = run_project_os_preflight(ROOT, run_scope=NEXT_SCOPE)
+    assert handoff["status"] == "pass"
+    assert handoff["contract_errors"] == []
+
+
+def test_live_terminal_and_assessment_are_digest_bound_and_honest() -> None:
+    result = json.loads(RESULT_PATH.read_text(encoding="utf-8"))
+    result_body = dict(result)
+    result_digest = result_body.pop("result_digest")
+    assert result_digest == canonical_digest(result_body)
+    assert result["status"] == "completed"
+    assert result["admission_consumed"] is True
+    assert result["observed_counts"] == {
+        "planned_queries": 24,
+        "terminalized_queries": 24,
+        "provider_calls": 24,
+        "network_calls": 24,
+        "successful_calls": 24,
+        "typed_failed_or_not_attempted_calls": 0,
+        "retry_calls": 0,
+        "model_calls": 0,
+        "document_fetches": 0,
+        "evidence_promotions": 0,
+    }
+    assert result["credits_used"] == 48
+    assert result["capability_boundary"]["sourcehunter_integration_allowed"] is False
+    assert result["capability_boundary"]["domestic_provider_capability_established"] is False
+
+    assessment = json.loads(ASSESSMENT_PATH.read_text(encoding="utf-8"))
+    assessment_body = dict(assessment)
+    assessment_digest = assessment_body.pop("assessment_digest")
+    assert assessment_digest == canonical_digest(assessment_body)
+    assert assessment["result_digest"] == result_digest
+    assert assessment["status"] == "fail_diagnostic_only"
+    assert assessment["semantic_control_lane_qualified"] is False
+    assert assessment["sourcehunter_integration_eligible"] is False
+    assert assessment["aggregate"]["topical_useful_count"] == 133
+    assert assessment["aggregate"]["topical_useful_denominator"] == 240
+    assert assessment["aggregate"]["case_slot_target_in_pool"] == [5, 6]
+    assert assessment["aggregate"]["matched_target_date_observations"] == 6
+    assert assessment["aggregate"]["matched_target_date_accuracy"] == 0.0
+    assert assessment["aggregate"]["credits_used"] == 48
+    assert assessment["aggregate"]["latency_ms"]["p95"] == 6877
+    assert assessment["hard_gate_results"]["case_slot_target_in_pool_rate"] is False
+    assert assessment["hard_gate_results"]["matched_target_date_accuracy"] is False
+    assert assessment["decision"] == "remain_diagnostic_only_no_reranker_rescue"

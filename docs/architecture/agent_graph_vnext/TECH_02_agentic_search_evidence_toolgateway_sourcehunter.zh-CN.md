@@ -35,6 +35,13 @@ proof-bound query identity
 
 搜索响应在本阶段始终只是 locator candidate。即使控制组所有门通过，也不能自动进入正文抓取、Evidence、reranker、SourceHunter production 或 Agentic Research；它只证明该查询矩阵值得交给国内 Provider 做同合同对照。
 
+该控制组的 live 结果为：24/24 terminal success、topical `133/240`、六个 case-slot exact target `5/6`。这使 relationship-aware compiler 获得 live support，但 Firecrawl lane 因 `0/235` 日期、DELL supply exact miss、中文 exact miss 和 p95 6.877 秒未通过。技术状态必须保留两条独立结论：
+
+- `query_compiler_live_supported=true`；
+- `provider_lane_qualified=false`。
+
+不得因为 Provider 总门失败而回滚正确的 SearchIntent 修复，也不得因为 target recall 大幅改善而忽略日期、语言和延迟缺口。国内 Provider 后续复用相同 plan/evaluator；只有 transport adapter 和 credential 不同。
+
 ## 2. 2026-07-10 边界修订：orchestration and promotion, not parsing implementation
 
 TECH_02 拥有：

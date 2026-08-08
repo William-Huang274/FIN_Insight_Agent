@@ -1,0 +1,61 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_external_portfolio_honest_closeout_and_internal_handoff_v1_0",
+  "contract_ref": "fin_0_1_3.S1.retrieval_query_facet_external_internal_progression:v1_1",
+  "recorded_at": "2026-08-09",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1",
+  "status": "current_external_provider_round_closed_honest_product_gap_internal_handoff_approved",
+  "immutable_bindings": {
+    "recovery_result_ref": "configs/releases/fin_ia_0_1_3_s1_08_external_combined_live_result_v1_1.json",
+    "recovery_result_sha256": "be0e9029ca0756b2d30eaa33a594f2e3ca3225b19d61b18c1a711964ffa58367",
+    "recovery_terminal_digest": "959c95ed83ba7ad6cc0d31a0733558a2a04dd0a8b333521ca7d94d0f8d2c402f",
+    "recovery_assessment_ref": "configs/releases/fin_ia_0_1_3_s1_08_external_combined_recovery_assessment_v1_0.json",
+    "recovery_assessment_sha256": "a05784f92af1aacf26a4a07a88158a34fa77deb5f2a6c5631598a9efbde5ea5b",
+    "recovery_assessment_digest": "387ee50cd689511709b25066883df6e3e2ec13315d0b25f253e35627df6e7358",
+    "historical_firecrawl_assessment_sha256": "1ba0d2a65ad7e1c72bd6c00d5c19a2f3f93649a4395e75a4cc33572ca4ea2a7c",
+    "historical_tencent_assessment_sha256": "70335b4b7d68c765cb2924b1590574a3e3b5f46e9f4c0041e491f7d8828ef5d7",
+    "progression_plan_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_1.json"
+  },
+  "external_result": {
+    "combined_runtime_recovery_live_pass": true,
+    "official_cases_completed": [3, 3],
+    "official_required_slot_coverage": [4, 12],
+    "official_hidden_target_groups_in_pool": [0, 12],
+    "official_source_family_diversity": 1,
+    "firecrawl_current_credit_stop": [1, 1],
+    "firecrawl_current_queries_unattempted_after_stop": 23,
+    "historical_firecrawl_target_in_pool": [5, 6],
+    "historical_firecrawl_date_accuracy": 0.0,
+    "historical_tencent_target_in_pool": [0, 6],
+    "production_external_provider_qualified": false,
+    "external_product_capability_accepted": false
+  },
+  "decision": {
+    "additional_automatic_external_live": false,
+    "wait_for_firecrawl_quota_then_retry": false,
+    "external_release_blocker_preserved": true,
+    "external_provider_requalification_required_before_release": true,
+    "internal_query_facet_integration_authorized": true,
+    "current_next_scope": "S1_INTERNAL_RETRIEVAL_QUERY_FACET_INTEGRATION",
+    "internal_routes": [
+      "exact_SQL_and_object_lookup",
+      "BM25_and_ObjectBM25_lexical",
+      "dense_Milvus_semantic",
+      "relationship_graph"
+    ],
+    "internal_candidate_ceiling_required_before_ranking": true,
+    "BGE_fusion_rerank_authorized_now": false,
+    "downstream_utilization_authorized_now": false
+  },
+  "calls_authorized_by_this_decision": {
+    "provider": 0,
+    "network": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "evidence_promotion": 0,
+    "embedding": 0,
+    "rerank": 0
+  },
+  "known_boundary": "Closing the current external provider round is not external product acceptance. The release blocker remains until an official-plus-broad portfolio proves required target coverage, typed dates and authority. Internal work begins next because all currently eligible external observations are exhausted, not because the external gap is waived.",
+  "decision_digest": "c85f4893deaa8c216af42b404bbf520e6f3b9e8d44362bc5872c6665ba79fde9"
+}

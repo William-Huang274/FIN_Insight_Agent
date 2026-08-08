@@ -1214,3 +1214,13 @@ runner 使用 shared admission ledger 做 exact-once，clean/synced Git、runner
 successor 仍沿用 capture-first、exact-once、official authority 与 Firecrawl locator-only 边界。它不放宽 Evidence Gate，不允许 shadow locator 直接成为金融事实，也不允许 reranker 从零候选中“救回”目标。零调用专项及全量 S1-08 回归通过，只代表工程修复成立；必须在 clean independent proof 后另行签发唯一一次 recovery authority，才能重新观察 official candidate reachability。历史 R1、历史完整 Firecrawl 24-query 质量矩阵和新 recovery run 必须分别引用，不能拼成一条伪造的同轮成功结果。
 
 外源 closeout 后，执行顺序强制转入同一 S1 的内源检索治理：route-specific exact SQL／object、BM25／ObjectBM25、dense／Milvus 与 relationship graph → 人工 qrels 和 candidate ceiling → BGE／fusion／rerank 同池对照 → Evidence Gate、Claim、Workpaper、report 下游利用证明。embedding 与 reranker 只拥有排序权，不拥有实体、期间、关系、事实或 Evidence 晋升权。
+
+### 20.32 Recovery exact-live 与 external honest closeout
+
+v1.1 recovery 在 clean `4334d7c4...b6a6` exact-once 完成。official 三案全部 terminal completed，network/document=`34/7`；R1 的 synthetic-DNS pre-HTTP 拒绝未复发。Firecrawl 首次调用仍返回 `429 reason=credits`，successor 随即停止后续网络并为 23 个 identity 生成 no-network typed terminal。总 network=`35`，model／embedding／rerank／Evidence／retry／fallback=`0`。official content-addressed objects=`108/108`、shadow capture refs=`49/49`，33 个 effective-query receipt 与 attempt budget digest 一致。
+
+产品候选质量没有通过：三案 12 个非 market external required slots 只覆盖 4 个；分别是 DELL／MU／NVDA regulatory filing 与 NVDA 的 MU supply filing。全部 4 个 candidate 的 typed date、identity、relationship 和 capture lineage 成立，但 unique documents=3、source family 只有 regulatory filing；issuer results、customer 和多数 supply slots 仍为 typed gap。evaluator-only 12 个 target group 的 target-in-pool 与 selected coverage 均为 0，ranking 继续不准入。
+
+历史 provider 证据必须独立解释：Firecrawl 完整 24-query control 是 `5/6 target-in-pool`，但 target date accuracy=0、diagnostic-only；Tencent 同矩阵是 `0/6`、diagnostic-only。不得把历史 Firecrawl locators 拼接进本次 recovery terminal，冒充同轮完整 Evidence Pack。
+
+因此关闭的是“当前 provider 轮测／recovery 重跑循环”，不是 external 产品能力。外源覆盖不足继续阻断 release；新 Provider 到位后复用同一 Query Facet、qrels 与 quality gate，不重新设计标准。当前 S1 执行权转到 internal query integration；exact、BM25、dense、graph 先证明各自 candidate ceiling，之后才能测试 BGE／fusion／rerank。

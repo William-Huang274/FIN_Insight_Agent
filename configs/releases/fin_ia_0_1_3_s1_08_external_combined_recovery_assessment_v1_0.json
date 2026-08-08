@@ -1,0 +1,298 @@
+{
+  "assessment_digest": "387ee50cd689511709b25066883df6e3e2ec13315d0b25f253e35627df6e7358",
+  "attempt_id": "fin013_s1_08_external_combined_a390cb600758c7512074::attempt_1",
+  "capture_integrity": {
+    "firecrawl_capture_refs": 49,
+    "firecrawl_capture_refs_sha_valid": true,
+    "official_content_addressed_objects": 108,
+    "official_content_addresses_valid": true,
+    "raw_request_or_response_content_lost": false
+  },
+  "evaluator_only_candidate_ceiling": {
+    "cases": [
+      {
+        "case_key": "DELL",
+        "matched_source_count": 0,
+        "selected_pack_required_slot_coverage": 0.0,
+        "target_groups": [
+          {
+            "required_evidence_count": 2,
+            "target_digest": "857e0304d0bfb48e20e8d362e7d3c334e5197a94275d6ca07f1b5be907c5266d",
+            "target_in_pool": false,
+            "target_in_selected_pack": false
+          },
+          {
+            "required_evidence_count": 2,
+            "target_digest": "491a9b0b4e61c4c85501d4600aaa1883492c88c7cfb602f3415ac0dede8a56f5",
+            "target_in_pool": false,
+            "target_in_selected_pack": false
+          },
+          {
+            "required_evidence_count": 3,
+            "target_digest": "bc21798f2e23d5081d738710f7e9c8721bea75c623d0013e84d00163ec322ed9",
+            "target_in_pool": false,
+            "target_in_selected_pack": false
+          },
+          {
+            "required_evidence_count": 2,
+            "target_digest": "6f17dd024c71ea302ef86751a82b8ce1408df03a8e6794e227145c83d352605c",
+            "target_in_pool": false,
+            "target_in_selected_pack": false
+          }
+        ],
+        "target_in_pool_recall": 0.0
+      },
+      {
+        "case_key": "MU",
+        "matched_source_count": 0,
+        "selected_pack_required_slot_coverage": 0.0,
+        "target_groups": [
+          {
+            "required_evidence_count": 3,
+            "target_digest": "fc3e7f5c8b01e896ee316be54778808fff71267a76639a40e3168b7f654fc455",
+            "target_in_pool": false,
+            "target_in_selected_pack": false
+          },
+          {
+            "required_evidence_count": 3,
+            "target_digest": "6921ae7ff215671fc00c3c06289e28b0ffab6d67919f4c3397b02651bf8de56d",
+            "target_in_pool": false,
+            "target_in_selected_pack": false
+          },
+          {
+            "required_evidence_count": 1,
+            "target_digest": "fc3f2c1d8344c46a935f0d9e0534cf99b92e46540730b803a230d61fecc3989e",
+            "target_in_pool": false,
+            "target_in_selected_pack": false
+          },
+          {
+            "required_evidence_count": 4,
+            "target_digest": "e6ed906eb0164b630ad5ecf750d371d041bafd7592857a6c3efa0beb8d425ff1",
+            "target_in_pool": false,
+            "target_in_selected_pack": false
+          }
+        ],
+        "target_in_pool_recall": 0.0
+      },
+      {
+        "case_key": "NVDA",
+        "matched_source_count": 0,
+        "selected_pack_required_slot_coverage": 0.0,
+        "target_groups": [
+          {
+            "required_evidence_count": 4,
+            "target_digest": "75109f453a9db2ff973f43ac53aa56174a540676826ecc08aa467c518ecaf3f9",
+            "target_in_pool": false,
+            "target_in_selected_pack": false
+          },
+          {
+            "required_evidence_count": 2,
+            "target_digest": "75573d755f0715c4499677e7cf5af0a7b8c838a065ea302c9a67053c1947abb9",
+            "target_in_pool": false,
+            "target_in_selected_pack": false
+          },
+          {
+            "required_evidence_count": 2,
+            "target_digest": "ec98e557e915303fece19e504c3ea1e7854e6effb2b7c32ea49391d24dcba6b1",
+            "target_in_pool": false,
+            "target_in_selected_pack": false
+          },
+          {
+            "required_evidence_count": 5,
+            "target_digest": "c2dcb680ae9bed6034a6c8278618bfc5386c21440c7f1fb70fb22c8c7547edbf",
+            "target_in_pool": false,
+            "target_in_selected_pack": false
+          }
+        ],
+        "target_in_pool_recall": 0.0
+      }
+    ],
+    "contract_ref": "fin_0_1_3.S1_08.current_source_catalog_candidate_generation:v2",
+    "evaluation_digest": "c02107c105cff9b3deb2076792986780564f3f85c995bbe1513b420ea43bf4aa",
+    "planner_received_hidden_gold": false,
+    "schema_version": "fin_ia_0_1_3_s1_08_evaluator_only_candidate_match_v1_0",
+    "summary": {
+      "ranking_metrics_admitted": false,
+      "selected_pack_required_slot_coverage": 0.0,
+      "target_groups": 12,
+      "target_in_pool_recall": 0.0
+    }
+  },
+  "hard_gate_results": {
+    "capture_integrity": true,
+    "external_portfolio_product_acceptance": false,
+    "hidden_target_in_pool_recall": false,
+    "required_external_slot_coverage": false,
+    "runtime_recovery": true,
+    "source_family_diversity": false
+  },
+  "historical_provider_evidence": {
+    "evidence_is_separate_from_recovery_run": true,
+    "firecrawl_relationship_aware_control": {
+      "assessment_digest": "89ed8366d978fdcd7db6de1c043951502c54a25e78d6c904645ab87694a43289",
+      "case_slot_target_in_pool": [
+        5,
+        6
+      ],
+      "decision": "remain_diagnostic_only_no_reranker_rescue",
+      "matched_target_date_accuracy": 0.0,
+      "status": "fail_diagnostic_only"
+    },
+    "production_provider_qualified": false,
+    "tencent_same_matrix_control": {
+      "assessment_digest": "82fbdd3006e10e98c5830f6500ae7c00075030275ba6eb22a3a52d48c857e040",
+      "case_slot_target_in_pool": [
+        0,
+        6
+      ],
+      "decision": "remain_diagnostic_only_no_reranker_rescue",
+      "status": "fail_diagnostic_only"
+    }
+  },
+  "known_boundary": "The recovery live closes the project-owned environment and quota-stop proof, not external product coverage. Starting internal retrieval is a work-sequence handoff, not a waiver of the external release blocker. BGE/fusion/rerank remain forbidden until the internal candidate ceiling passes.",
+  "observed_counts": {
+    "document_fetches": 7,
+    "embedding_calls": 0,
+    "evidence_promotions": 0,
+    "fallback_calls": 0,
+    "model_calls": 0,
+    "network_calls": 35,
+    "official_cases_terminalized": 3,
+    "official_network_calls": 34,
+    "rerank_calls": 0,
+    "retry_calls": 0,
+    "shadow_network_calls": 1,
+    "shadow_provider_calls": 1,
+    "shadow_queries_terminalized": 24
+  },
+  "official_candidate_quality": {
+    "all_selected_dates_current_and_typed": true,
+    "all_selected_identity_relationship_and_lineage_valid": true,
+    "required_external_roles": [
+      "issuer_results_and_management_commentary",
+      "regulatory_risk_and_financial_reconciliation",
+      "customer_demand_and_deployment_validation",
+      "supply_chain_capacity_and_counterevidence"
+    ],
+    "required_external_slot_coverage": 0.333333,
+    "required_external_slots": 12,
+    "selected_candidates": [
+      {
+        "authority": "regulatory_primary",
+        "case_key": "DELL",
+        "evidence_owner_entity": "DELL",
+        "locator_digest": "a491dad124af09a0ac09953360d5f724d255c811564a2272034a14e4c6546a3d",
+        "publication_date_confidence": "high",
+        "publication_date_kind": "filing_date",
+        "published_on": "2026-07-06",
+        "role_id": "regulatory_risk_and_financial_reconciliation",
+        "source_family": "regulatory_filing"
+      },
+      {
+        "authority": "regulatory_primary",
+        "case_key": "MU",
+        "evidence_owner_entity": "MU",
+        "locator_digest": "dc1651ff8e64ed793ab4309cc69b59b7bba8d194dd2ff207832ddbcd16c050b6",
+        "publication_date_confidence": "high",
+        "publication_date_kind": "filing_date",
+        "published_on": "2026-06-24",
+        "role_id": "regulatory_risk_and_financial_reconciliation",
+        "source_family": "regulatory_filing"
+      },
+      {
+        "authority": "regulatory_primary",
+        "case_key": "NVDA",
+        "evidence_owner_entity": "NVDA",
+        "locator_digest": "1fbe538f814234534d61730a973dc41f69a449fb30d61dd22277f3090b22b837",
+        "publication_date_confidence": "high",
+        "publication_date_kind": "filing_date",
+        "published_on": "2026-06-30",
+        "role_id": "regulatory_risk_and_financial_reconciliation",
+        "source_family": "regulatory_filing"
+      },
+      {
+        "authority": "regulatory_primary",
+        "case_key": "NVDA",
+        "evidence_owner_entity": "MU",
+        "locator_digest": "dc1651ff8e64ed793ab4309cc69b59b7bba8d194dd2ff207832ddbcd16c050b6",
+        "publication_date_confidence": "high",
+        "publication_date_kind": "filing_date",
+        "published_on": "2026-06-24",
+        "role_id": "supply_chain_capacity_and_counterevidence",
+        "source_family": "regulatory_filing"
+      }
+    ],
+    "selected_required_roles_by_case": {
+      "DELL": [
+        "regulatory_risk_and_financial_reconciliation"
+      ],
+      "MU": [
+        "regulatory_risk_and_financial_reconciliation"
+      ],
+      "NVDA": [
+        "regulatory_risk_and_financial_reconciliation",
+        "supply_chain_capacity_and_counterevidence"
+      ]
+    },
+    "selected_required_slots": 4,
+    "selected_role_occurrences": {
+      "regulatory_risk_and_financial_reconciliation": 3,
+      "supply_chain_capacity_and_counterevidence": 1
+    },
+    "source_domain_diversity": 1,
+    "source_family_diversity": 1,
+    "unique_selected_source_documents": 3
+  },
+  "public_record_digest": "e912e3fa4add8093d7f0d6304897ce6cf239b181b53e12a9212cccc504a0f4eb",
+  "query_variant": "deterministic_local_query_facet_only",
+  "result_digest": "959c95ed83ba7ad6cc0d31a0733558a2a04dd0a8b333521ca7d94d0f8d2c402f",
+  "root_cause_disposition": {
+    "combined_runtime_environment_defect_live_recurrence": false,
+    "deepseek_or_model_failure": false,
+    "firecrawl_credit_constraint_live_recurrence": true,
+    "official_source_discovery_and_slot_fit_coverage_insufficient": true,
+    "query_facet_contract_failure": false,
+    "reranker_can_repair_missing_target": false
+  },
+  "run_id": "fin013_s1_08_external_combined_a390cb600758c7512074",
+  "runtime_recovery": {
+    "controlled_synthetic_dns_handshake_live_proven": true,
+    "official_cases_completed": [
+      3,
+      3
+    ],
+    "official_failure_codes": {
+      "official_source_transport_failed": 6
+    },
+    "pass": true,
+    "query_facet_binding": {
+      "attempt_budget_digests_equal_receipt_bound_digests": true,
+      "attempt_query_view_mismatch_count": 30,
+      "effective_query_text_preserved_in_receipts": true,
+      "receipt_count": 33
+    },
+    "shadow_systemic_stop": {
+      "attempted_network_queries": 1,
+      "credit_exhaustion_terminals": 1,
+      "first_six_case_slot_coverage": 6,
+      "first_three_case_coverage": 3,
+      "remaining_queries_stopped_after_first_credit_exhaustion": true,
+      "systemic_credit_stop_valid": true,
+      "unattempted_after_systemic_stop": 23
+    }
+  },
+  "schema_version": "fin_ia_0_1_3_s1_08_external_combined_recovery_assessment_v1_0",
+  "stage_disposition": {
+    "automatic_additional_external_live_allowed": false,
+    "current_provider_round": "complete_honest_partial_external_product_gap_preserved",
+    "external_product_capability_accepted": false,
+    "external_release_blocker_preserved": true,
+    "internal_retrieval_backlog_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_1.json",
+    "internal_retrieval_may_start_after_closeout_projection": true,
+    "internal_retrieval_started": false,
+    "next_scope": "S1_INTERNAL_RETRIEVAL_QUERY_FACET_INTEGRATION",
+    "owner_stage": "S1_08_external_candidate_discovery",
+    "recovery_run_is_immutable": true
+  },
+  "status": "runtime_recovery_live_pass_external_candidate_ceiling_failed"
+}

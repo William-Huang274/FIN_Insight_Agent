@@ -964,3 +964,41 @@ R4 在 clean `2e6fbf9f...7c17` 返回 standard 和 10 条 DELL AI-server 相关 
 每案例 registrable domain=`15/20/15`、最大单域占比=`0.372549/0.490566/0.558140`，说明表面域名分散不等于一手 target coverage。官方域结果也必须匹配 case、slot、期间和文档身份后才能晋升，不能只凭 issuer domain 通过 Evidence Gate。
 
 终态固定为 `fail_diagnostic_only / remain_diagnostic_only_no_reranker_rescue`。Tencent adapter 不进入 SourceHunter，BGE/NDCG/MRR 继续 not admitted；不得追加 R5、逐 query patch、正文抓取或 reranker rescue。下一候选 broad-search Provider 必须复用同一 gold-blind comparator；全部 candidate/date/diversity/cost/latency 门通过后仍需独立 integration authority。若不引入其他 Provider，则产品层必须显式缩减 Internal Alpha source claim，而不是在 Runtime 中伪造覆盖。
+
+### 20.18 Provider 市场扫描、Firecrawl keyless 试跑与双检索路线（2026-08-08）
+
+对 Brave、Tavily、Exa、Valyu、You.com、Parallel、Linkup、DataForSEO、Serper、Perplexity Search、Kagi、Firecrawl 以及 SearXNG/DDGS/Crawl4AI/Jina 的官方能力做横向审查后，TECH_02 不再把“broad Web search”视为单一同质能力。至少要区分：
+
+1. `precise_serp_or_official_domain`：已知证据 owner、官方域或 filing 身份时，以 official-domain、SEC/IR、Serper/DataForSEO 类 raw SERP 找到精确 locator；
+2. `semantic_open_web_discovery`：事前不知道 URL 时，以 Exa、Brave、Perplexity Search、You Search、Firecrawl broad search 等发现行业、机制和反证材料；
+3. `document_fetch_and_extract`：Crawl4AI、Trafilatura、Playwright、Firecrawl scrape 只消费已存在 locator，不得冒充 broad index；
+4. `synthesized_finance_research`：Finance/deep-research API 只能作为 benchmark、source suggestion 或 supervisor supplement，不得绕过 FIN 的 Evidence Gate、研究轨迹和内容质量评价。
+
+Firecrawl keyless 形成三组有效 capture-first diagnostic：issuer/regulatory A2=`6/6 terminal, exact target 3/6, 12 credits`；三个 miss 的 official-domain A3=`3/3 exact target, 6 credits`；customer/supply A4=`6/6 terminal, exact target 0/6, 12 credits`。A2 provider date field 为 0，再次证明 search response date 只能做候选 telemetry。任何 provider date 都必须在 document capture 后交 typed date adjudicator；不得因搜索结果显示日期就获得 financial publication-date authority。
+
+最初 A1 批量探索在 response 返回后因 Windows console encoding 失败，且未先原子保存 raw response，因此整组 `invalid_not_counted`。这个失败不归 Firecrawl，也不能凭 stdout 记忆重建；它验证 capture-first 必须早于 console/display。
+
+当前选择顺序为：先以 Firecrawl keyless 作为无需新凭据的 baseline；关系查询修复后执行一份完整 comparator；若需要第二家 Provider，Exa 优先补 semantic discovery，Serper/DataForSEO 随后提供 raw SERP control，Brave 用于独立索引多样性。该顺序只是采购/试验路线，不等于任何 adapter 已获 production admission。
+
+### 20.19 Relationship-aware SearchIntent 与 typed source-equivalence 缺口（2026-08-08）
+
+A4 的 0/6 不能只归因 Provider。当前 `compile_initial_queries()` 已从 `EvidenceSlot.entity_roles` 计算 `entity_keys`，但 provider-visible `query_text` 仍只由 `case_key + research_objective + generic role query_terms` 组成。结果是本地过滤器知道 customer/supplier evidence owner 可能是 Microsoft、TSMC、Micron、Dell 或 NVIDIA，外部搜索却只看见 subject company 和通用的 customer/supply 词。正式 bilingual plan 的 customer/supply query 也保留了相同弱点。
+
+下一版本合同必须新增 `SearchIntent`：
+
+```text
+SearchIntent =
+  subject_entity
+  + evidence_owner_entity and aliases
+  + relationship / claim direction
+  + period and as-of
+  + source family / form
+  + language
+  + route class
+```
+
+customer/supply slot 应按 evidence owner 做受预算约束的 fan-out；每条 query 只表达一个可归因关系，不把多个 counterpart 拼成一条长字符串。provider adapter 只负责编译能力字段与发送，不得重新解释经济关系。
+
+Evaluator 同时拆分 `exact_locator_match` 与 `typed_source_equivalent_match`。后者只接受可审计身份：SEC accession、官方 canonical locator、已验证 redirect/canonical tag 或 byte/content identity。相同公司、相同季度、相同事件但内容不同的 press release、prepared remarks、transcript 和 filing 不自动等价。该规则用于减少 URL alias 假阴性，不能放宽 Gold target 或把近似资料伪装成目标资料。
+
+当前下一项固定为 `S1_08_PROVIDER_NEUTRAL_RELATIONSHIP_AWARE_SEARCH_INTENT_COMPILER_AND_SOURCE_EQUIVALENCE_EVALUATOR_ZERO_CALL_IMPLEMENTATION`。它只修改 query/evaluator deterministic contract，并以三案 fake/mutation 验证；network/model/Provider/Evidence promotion 均为 0。通过后才可签发 Firecrawl 完整 comparator；不得在修复前继续横测多家付费 Provider，也不得由 reranker 从 0 target candidate 中“救回”。

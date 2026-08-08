@@ -92,3 +92,7 @@ docs/interview/
 # Durable release evidence belongs under /reports/release_evidence/ instead.
 /.codex_runtime/
 /output/
+
+# Capture-first provider diagnostics: preserve raw responses locally for audit,
+# but commit only redacted assessments, digests, and bounded worklogs.
+/artifacts/runtime/

@@ -1,0 +1,180 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_web_search_provider_market_scan_firecrawl_keyless_trial_and_query_compiler_disposition_v1_0",
+  "recorded_at": "2026-08-08",
+  "source_commit": "18969bcf383ce3b2a5b10f3494d8aef3f5ff3054",
+  "status": "market_scan_complete_firecrawl_promising_query_compiler_repair_required_before_full_comparator",
+  "scope": {
+    "stage": "013-S1-08",
+    "network_trials": "bounded provider diagnostics only",
+    "model_calls": 0,
+    "document_fetches": 0,
+    "evidence_promotions": 0,
+    "sourcehunter_integration_allowed": false,
+    "production_claim_allowed": false
+  },
+  "provider_landscape": [
+    {
+      "provider": "Firecrawl Search",
+      "class": "search_plus_optional_scrape",
+      "best_role": "immediate keyless baseline and official-domain lane",
+      "current_disposition": "promising_diagnostic_candidate",
+      "official_refs": [
+        "https://docs.firecrawl.dev/api-reference/endpoint/search",
+        "https://www.firecrawl.dev/pricing",
+        "https://www.firecrawl.dev/blog/firecrawl-keyless-launch"
+      ]
+    },
+    {
+      "provider": "Exa",
+      "class": "semantic_web_search",
+      "best_role": "open-web semantic and financial-report discovery lane",
+      "current_disposition": "first_new_api_key_recommendation_after_compiler_proof",
+      "official_refs": [
+        "https://exa.ai/docs/reference/search",
+        "https://exa.ai/docs/reference/contents-retrieval",
+        "https://exa.ai/pricing?tab=api"
+      ]
+    },
+    {
+      "provider": "Serper or DataForSEO",
+      "class": "raw_serp_control",
+      "best_role": "exact official-target recall control lane",
+      "current_disposition": "second_comparator_family",
+      "official_refs": [
+        "https://serper.dev/",
+        "https://dataforseo.com/apis/serp-api/pricing"
+      ]
+    },
+    {
+      "provider": "Brave Search API",
+      "class": "independent_search_index",
+      "best_role": "index-diversity and fallback lane",
+      "current_disposition": "shortlist_after_first_two_lanes",
+      "official_refs": [
+        "https://api-dashboard.search.brave.com/app/documentation/web-search/get-started",
+        "https://api-dashboard.search.brave.com/documentation/pricing"
+      ]
+    },
+    {
+      "provider": "Perplexity Search API or You.com Search API",
+      "class": "raw_search_api",
+      "best_role": "alternative raw-result comparator with domain and freshness controls",
+      "current_disposition": "shortlist_not_yet_trialed",
+      "official_refs": [
+        "https://docs.perplexity.ai/docs/search/quickstart",
+        "https://you.com/docs/api-reference/search/v1-search"
+      ]
+    },
+    {
+      "provider": "Valyu",
+      "class": "web_and_finance_source_search",
+      "best_role": "later licensed finance-source lane",
+      "current_disposition": "defer_until_public_web_lanes_are_measured",
+      "official_refs": [
+        "https://docs.valyu.ai/api-reference/endpoint/search",
+        "https://docs.valyu.ai/pricing"
+      ]
+    },
+    {
+      "provider": "You.com Finance Research API",
+      "class": "synthesized_finance_research",
+      "best_role": "external benchmark or source suggester",
+      "current_disposition": "must_not_replace_core_sourcehunter_or_fin_research_loop",
+      "official_refs": [
+        "https://you.com/docs/guides/finance-research",
+        "https://you.com/docs/api-reference/finance-research/v1-finance_research?explorer=true"
+      ]
+    },
+    {
+      "provider": "SearXNG or DDGS",
+      "class": "open_source_metasearch_or_scraped_engine_aggregator",
+      "best_role": "diagnostic only",
+      "current_disposition": "not_production_source_capability",
+      "official_refs": [
+        "https://docs.searxng.org/",
+        "https://github.com/deedy5/duckduckgo_search"
+      ]
+    }
+  ],
+  "firecrawl_trials": {
+    "invalid_exploratory_attempt": {
+      "attempt_id": "firecrawl_keyless_a1_20260808",
+      "status": "invalid_not_counted",
+      "reason": "Windows console encoding failed after response receipt and the responses were not atomically captured before display",
+      "retry_or_reinterpretation_allowed": false
+    },
+    "issuer_and_regulatory_lane": {
+      "attempt_id": "firecrawl_keyless_a2_20260808",
+      "queries": 6,
+      "successful": 6,
+      "credits_used": 12,
+      "p50_latency_ms": 2564,
+      "maximum_latency_ms": 2685,
+      "exact_target_in_pool": [3, 6],
+      "provider_date_fields": 0,
+      "terminal_sha256": "4016c0644ad3060a22e1d1611578c60a7adf142d5e5a5ffe8384f62d684a9bcc",
+      "assessment_sha256": "9150fd338da0f1d733190f555d79b9ce9bd025524a647aa32e9c4f77cb877190",
+      "capture_root": "artifacts/runtime/provider_market_scan/firecrawl_keyless_a2_20260808"
+    },
+    "official_domain_lane": {
+      "attempt_id": "firecrawl_keyless_a3_official_domain_20260808",
+      "queries": 3,
+      "successful": 3,
+      "credits_used": 6,
+      "exact_target_in_pool": [3, 3],
+      "terminal_sha256": "98c543ce15b8014553fdf539bc3bcfe828519686db11a8b1ac0e3253bfbb5089",
+      "assessment_sha256": "f6c2ca99c1e6fbdea029389826c315001242e227b200d37442c5807d6fcb814b",
+      "capture_root": "artifacts/runtime/provider_market_scan/firecrawl_keyless_a3_official_domain_20260808"
+    },
+    "customer_and_supply_generic_lane": {
+      "attempt_id": "firecrawl_keyless_a4_customer_supply_en_20260808",
+      "queries": 6,
+      "successful": 6,
+      "credits_used": 12,
+      "exact_target_in_pool": [0, 6],
+      "terminal_sha256": "0f3339d0c4cddbc16c5c8ea540bebe035e48e534f774df255b9ad6b8fffc0962",
+      "assessment_sha256": "cc64757b8fd7f01e7b3abdae40687131428d2a3e7110f81752d94dfc7597c24f",
+      "capture_root": "artifacts/runtime/provider_market_scan/firecrawl_keyless_a4_customer_supply_en_20260808"
+    }
+  },
+  "project_owned_finding": {
+    "code_surface": "src/sec_agent/s1_08_candidate_generation_runtime.py::compile_initial_queries",
+    "observed_behavior": "entity_keys are computed from Evidence Slot roles but query_text contains only case_key, research_objective, and generic role query_terms",
+    "impact": "customer and supply-chain searches remain single-subject generic queries even when the evaluator targets official disclosures by Microsoft, TSMC, Micron, Dell, or NVIDIA as counterpart evidence owners",
+    "formal_comparator_impact": "the frozen bilingual plan also names only the subject company and generic slot concepts for customer and supply queries",
+    "provider_fault_established": false,
+    "deepseek_fault_established": false
+  },
+  "architecture_decision": {
+    "retrieval_lanes": [
+      "precise SERP or official-domain lane for known official targets",
+      "semantic open-web discovery lane for unknown but relevant materials"
+    ],
+    "crawler_boundary": "Crawl4AI, Trafilatura, Playwright, and scrape endpoints operate after a locator exists and do not replace broad candidate discovery",
+    "synthesized_research_boundary": "deep-research APIs may be benchmark or source-suggestion lanes but may not replace FIN's Evidence Gate, research loop, or content-quality evaluation",
+    "date_authority": "provider date fields are candidate telemetry only; publication date becomes authoritative only after capture-first local verification",
+    "source_equivalence": "URL aliases may match only through a typed canonical identity such as SEC accession, official canonical locator, or verified content identity; same event is not automatically same source"
+  },
+  "verification": {
+    "json_parse": "pass",
+    "root_cause_jsonl_rows_parsed": 1051,
+    "external_pattern_jsonl_rows_parsed": 143,
+    "capture_digest_checks": 6,
+    "focused_project_os_tests": "15 passed",
+    "new_zero_call_scope_preflight": "pass",
+    "additional_live_scope_preflight": "blocked",
+    "credential_like_added_text_scan": "pass",
+    "git_diff_check": "pass"
+  },
+  "decision": {
+    "firecrawl_full_comparator_authorized": false,
+    "other_paid_provider_trial_authorized": false,
+    "source_claim_reduction_selected": false,
+    "next_action": "S1_08_PROVIDER_NEUTRAL_RELATIONSHIP_AWARE_SEARCH_INTENT_COMPILER_AND_SOURCE_EQUIVALENCE_EVALUATOR_ZERO_CALL_IMPLEMENTATION",
+    "after_next_action": [
+      "run deterministic and mutation proof for DELL, MU, and NVDA without network",
+      "execute one provider-neutral 24-query Firecrawl keyless comparator using the repaired plan",
+      "if a second provider is still needed, request Exa first for semantic complement and Serper or DataForSEO second as an exact-SERP control"
+    ]
+  }
+}

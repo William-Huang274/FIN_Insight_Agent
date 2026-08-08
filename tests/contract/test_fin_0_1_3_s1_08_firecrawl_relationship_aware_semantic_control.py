@@ -47,9 +47,6 @@ COMPLETED_POST_TENCENT_DECISION_SCOPE = (
 COMPLETED_IMPLEMENTATION_SCOPE = (
     "S1_08_OFFICIAL_FIRST_SOURCEHUNTER_PORTFOLIO_AND_DISCOVERY_SHADOW_ZERO_CALL_IMPLEMENTATION"
 )
-CURRENT_CLEAN_PROOF_SCOPE = (
-    "S1_08_OFFICIAL_FIRST_PORTFOLIO_CLEAN_INDEPENDENT_ZERO_CALL_PROOF"
-)
 
 
 def _sha256(path: Path) -> str:
@@ -309,7 +306,7 @@ def test_exact_live_authority_is_digest_bound_semantic_only_and_unconsumed() -> 
     assert execution["gold_load_before_aggregate_terminal_allowed"] is False
 
 
-def test_completed_search_and_implementation_scopes_are_blocked_while_clean_proof_is_allowed() -> None:
+def test_completed_search_and_implementation_scopes_are_blocked() -> None:
     from sec_agent.project_os_preflight import run_project_os_preflight
 
     preflight = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
@@ -340,9 +337,6 @@ def test_completed_search_and_implementation_scopes_are_blocked_while_clean_proo
     )
     assert completed_implementation["status"] == "blocked"
     assert completed_implementation["contract_errors"] == []
-    successor = run_project_os_preflight(ROOT, run_scope=CURRENT_CLEAN_PROOF_SCOPE)
-    assert successor["status"] == "pass"
-    assert successor["contract_errors"] == []
 
 
 def test_live_terminal_and_assessment_are_digest_bound_and_honest() -> None:

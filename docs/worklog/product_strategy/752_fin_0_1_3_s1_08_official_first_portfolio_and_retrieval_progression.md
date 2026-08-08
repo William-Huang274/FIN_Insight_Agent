@@ -33,6 +33,8 @@ clean proof A1 在第一份 Git archive 内按预期 fail closed：Tencent resul
 
 clean proof A2 证明上述摘要修复有效：第一份 archive 已重物化相同 proof digest，并完成 `45 passed`；随后 proof runner 从不存在的 `proof.route_plan` 读取 route opportunity，触发 `KeyError`。真实字段在 `search_quality_card.route_opportunity`，故 A2 仍记为 proof-runner failure；本次只更正 runner 的读取路径，不改 portfolio Runtime、policy、路由或验收阈值。
 
+clean proof A3 在 clean／synced `5599219361dd0dd742a308f8230c57c26fa427f4` 正式通过：两个 Git archive、两个 fresh Python process 各完成 `45 passed / 0 failed / 0 skipped`，重物化 proof digest=`f04f36da...8db8`，规范化 worker 输出 SHA=`060daf30...b53f` 完全一致；network/model/provider/document/Evidence/admission=`0/0/0/0/0/0`。A1/A2 保持 failed，不改写。official-first 零调用 Runtime 至此 independently proven；下一 scope 前移到 unified Query Facet，尚不授权 combined live。
+
 ## 后续顺序
 
 1. clean archive／fresh process 复证本轮零调用实现；

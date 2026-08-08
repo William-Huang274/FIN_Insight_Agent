@@ -55,10 +55,12 @@ TENCENT_ASSESSMENT = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_tencent_relatio
 DELL_R2 = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_dell_current_search_r2_result_v1_0.json"
 OFFICIAL_CLOSEOUT = ROOT / "configs/releases/fin_ia_0_1_3_repair_closeout_s1_01_freshness_reopen_s1_02_numeric_successor_and_s1_03_official_source_closeout_v1_0.json"
 PROOF = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_official_first_portfolio_zero_call_proof_v1_0.json"
+CLEAN_PROOF = ROOT / "configs/releases/fin_ia_0_1_3_s1_08_official_first_portfolio_clean_independent_zero_call_proof_v1_0.json"
 PROGRESSION_PLAN = ROOT / "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_0.json"
 CLEAN_PROOF_SCOPE = (
     "S1_08_OFFICIAL_FIRST_PORTFOLIO_CLEAN_INDEPENDENT_ZERO_CALL_PROOF"
 )
+QUERY_FACET_SCOPE = "S1_08_UNIFIED_QUERY_FACET_PLAN_ZERO_CALL_IMPLEMENTATION"
 
 
 def _load(path: Path) -> dict:
@@ -303,6 +305,30 @@ def test_materialized_proof_is_digest_bound_and_honest() -> None:
     }
 
 
+def test_clean_independent_proof_is_digest_bound_and_honest() -> None:
+    proof = _load(CLEAN_PROOF)
+    body = dict(proof)
+    supplied = body.pop("result_digest")
+    assert supplied == canonical_digest(body)
+    assert proof["status"] == (
+        "pass_two_clean_archives_two_fresh_processes_zero_call_reproducible"
+    )
+    assert proof["source_commit"] == {
+        "branch": "codex/layered-data-source-expansion",
+        "clean": True,
+        "commit": "5599219361dd0dd742a308f8230c57c26fa427f4",
+        "synced": True,
+        "upstream_commit": "5599219361dd0dd742a308f8230c57c26fa427f4",
+    }
+    independent = proof["independent_proof"]
+    assert independent["clean_git_archives"] == 2
+    assert independent["fresh_python_processes"] == 2
+    assert independent["normalized_outputs_equal"] is True
+    assert independent["worker_result"]["pytest"]["passed"] == 45
+    assert not any(proof["observed_calls"].values())
+    assert proof["decision"]["next_scope"] == QUERY_FACET_SCOPE
+
+
 def test_external_then_internal_query_facet_and_rerank_sequence_is_durable() -> None:
     plan = _load(PROGRESSION_PLAN)
     scope_registry = _load(
@@ -330,11 +356,14 @@ def test_external_then_internal_query_facet_and_rerank_sequence_is_durable() -> 
     assert not any(plan["calls_authorized_by_this_plan"].values())
 
 
-def test_current_project_os_scope_allows_only_the_clean_zero_call_successor() -> None:
+def test_current_project_os_scope_allows_only_the_query_facet_successor() -> None:
     completed = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
     assert completed["status"] == "blocked"
     assert completed["contract_errors"] == []
-    successor = run_project_os_preflight(ROOT, run_scope=CLEAN_PROOF_SCOPE)
+    clean_proof = run_project_os_preflight(ROOT, run_scope=CLEAN_PROOF_SCOPE)
+    assert clean_proof["status"] == "blocked"
+    assert clean_proof["contract_errors"] == []
+    successor = run_project_os_preflight(ROOT, run_scope=QUERY_FACET_SCOPE)
     assert successor["status"] == "pass"
     assert successor["contract_errors"] == []
 

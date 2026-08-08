@@ -1,0 +1,130 @@
+{
+  "decision": {
+    "clean_proof_complete": true,
+    "internal_ranking_authority": false,
+    "new_live_authority": false,
+    "next_scope": "S1_08_UNIFIED_QUERY_FACET_PLAN_ZERO_CALL_IMPLEMENTATION"
+  },
+  "independent_proof": {
+    "clean_git_archives": 2,
+    "distinct_disposable_roots": 2,
+    "fresh_python_processes": 2,
+    "normalized_output_sha256": "060daf301103e5f4063e5c31132b1fa9dbd2ff67875d907a7292cfec1c06b53f",
+    "normalized_outputs_equal": true,
+    "temporary_roots_removed": true,
+    "worker_result": {
+      "hard_boundaries": {
+        "admissions_issued": 0,
+        "credential_values_present_or_read": 0,
+        "document_fetches": 0,
+        "evidence_promotions": 0,
+        "model_calls": 0,
+        "network_attempts": 0,
+        "provider_calls": 0
+      },
+      "preflight_scope": "S1_08_OFFICIAL_FIRST_PORTFOLIO_CLEAN_INDEPENDENT_ZERO_CALL_PROOF",
+      "proof_digest": "f04f36daf41f82795a80d61582f40f51178b0a75b94f42447a6e6728bbb08db8",
+      "pytest": {
+        "failed": 0,
+        "nodeids": [
+          "tests/contract/test_fin_0_1_3_s0_04g_typed_blocker_state_and_run_scope_registry.py::test_direct_R3_scope_matches_latest_typed_product_projection",
+          "tests/contract/test_fin_0_1_3_s0_04g_typed_blocker_state_and_run_scope_registry.py::test_registered_S0_04G_scope_follows_latest_typed_projection",
+          "tests/contract/test_fin_0_1_3_s0_04g_typed_blocker_state_and_run_scope_registry.py::test_unregistered_scope_and_diagnostic_override_fail_closed",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_candidate_mutations_fail_closed[cross_case-cross_case_candidate]",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_candidate_mutations_fail_closed[future-candidate_after_as_of]",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_candidate_mutations_fail_closed[lineage-capture_first_lineage_invalid]",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_candidate_mutations_fail_closed[unpromoted-candidate_not_evidence_promoted]",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_catalog_is_gold_blind_and_compiles_provider_neutral_queries",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_concrete_official_adapter_captures_discovery_fetch_and_parse",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_concrete_official_adapter_stops_at_network_ceiling",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_evaluator_only_match_detects_missing_source_without_leaking_target_ids",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_evaluator_only_match_rejects_stale_market_snapshot_equivalence",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_full_fake_is_deterministic",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_gold_identifier_in_catalog_fails_closed",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_materialized_zero_call_proof_is_digest_bound_and_honest",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_reasoned_query_revision_changes_terms_and_routes_without_retry",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_revision_budget_and_identical_reason_fail_closed",
+          "tests/contract/test_fin_0_1_3_s1_08_candidate_generation_runtime.py::test_three_case_full_fake_reaches_candidate_ceiling_before_ranking",
+          "tests/contract/test_fin_0_1_3_s1_08_official_first_portfolio.py::test_current_project_os_scope_allows_only_the_clean_zero_call_successor",
+          "tests/contract/test_fin_0_1_3_s1_08_official_first_portfolio.py::test_external_then_internal_query_facet_and_rerank_sequence_is_durable",
+          "tests/contract/test_fin_0_1_3_s1_08_official_first_portfolio.py::test_materialized_proof_is_digest_bound_and_honest",
+          "tests/contract/test_fin_0_1_3_s1_08_official_first_portfolio.py::test_policy_is_bound_to_immutable_inputs_and_excludes_tencent",
+          "tests/contract/test_fin_0_1_3_s1_08_official_first_portfolio.py::test_portfolio_replay_separates_locator_recall_from_evidence_qualification",
+          "tests/contract/test_fin_0_1_3_s1_08_official_first_portfolio.py::test_provider_date_cannot_override_local_date_and_mutations_fail_closed",
+          "tests/contract/test_fin_0_1_3_s1_08_official_first_portfolio.py::test_route_plan_digest_mutation_is_rejected",
+          "tests/contract/test_fin_0_1_3_s1_08_official_first_portfolio.py::test_route_plan_gives_every_slot_an_opportunity_without_granting_authority",
+          "tests/contract/test_fin_0_1_3_s1_08_official_first_portfolio.py::test_shadow_candidate_without_capture_stays_candidate_only",
+          "tests/contract/test_fin_0_1_3_s1_08_provider_portfolio_boundary_decision.py::test_completed_scopes_are_blocked_and_current_clean_proof_scope_is_allowed",
+          "tests/contract/test_fin_0_1_3_s1_08_provider_portfolio_boundary_decision.py::test_decision_is_digest_bound_and_does_not_rewrite_history",
+          "tests/contract/test_fin_0_1_3_s1_08_provider_portfolio_boundary_decision.py::test_decision_is_zero_call_and_only_authorizes_next_implementation",
+          "tests/contract/test_fin_0_1_3_s1_08_provider_portfolio_boundary_decision.py::test_portfolio_assigns_search_and_financial_authority_to_different_layers",
+          "tests/contract/test_fin_0_1_3_s1_08_provider_portfolio_boundary_decision.py::test_provider_date_is_telemetry_but_local_date_is_portfolio_hard_gate",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_alias_collision_fails_before_compilation",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_compiler_fans_out_by_counterpart_and_separates_route_budgets",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_cross_case_wrong_direction_future_and_budget_mutations_fail_closed",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_input_permutation_does_not_change_intents_or_plan_digest",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_materialized_proof_is_digest_bound_and_does_not_claim_live_search",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_provider_visible_queries_bind_owner_subject_direction_period_and_language",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_same_event_unverified_alias_wrong_identity_and_future_date_do_not_match",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_sec_accession_equivalence_is_typed_and_identity_bound",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_three_case_full_fake_source_equivalence_is_deterministic",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_typed_source_equivalence_accepts_only_auditable_bases[candidate0-exact_locator_match-exact_locator]",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_typed_source_equivalence_accepts_only_auditable_bases[candidate1-typed_source_equivalent_match-verified_canonical_locator]",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_typed_source_equivalence_accepts_only_auditable_bases[candidate2-typed_source_equivalent_match-verified_redirect_final_locator]",
+          "tests/contract/test_fin_0_1_3_s1_08_relationship_aware_search_intent_compiler.py::test_typed_source_equivalence_accepts_only_auditable_bases[candidate3-typed_source_equivalent_match-verified_content_identity]"
+        ],
+        "passed": 45,
+        "skipped": 0
+      },
+      "quality_card_digest": "c2f48843d3c5f46c2e90e12205cab1fdcc0f2ad0042e5089e93fc654b8184f49",
+      "route_opportunity": [
+        12,
+        12
+      ],
+      "route_plan_digest": "c5e28324999e00f4e51e66ddf5d7ef47919ea99c36452f40f29d1405dd0cba23",
+      "schema_version": "fin_ia_0_1_3_s1_08_official_first_clean_worker_v1_0",
+      "status": "pass"
+    }
+  },
+  "known_boundary": "This proof establishes clean reproducibility of the official-first zero-call portfolio only. It does not prove a fresh source run, query facet quality, internal candidate recall, BGE/rerank value, downstream research quality, S1-08 acceptance, or release readiness.",
+  "observed_calls": {
+    "admission": 0,
+    "document_fetch": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0
+  },
+  "proof_id": "S1_08_OFFICIAL_FIRST_PORTFOLIO_CLEAN_INDEPENDENT_ZERO_CALL_PROOF",
+  "recorded_at": "2026-08-08T23:01:23+08:00",
+  "result_digest": "739c3a013bacaf6e56ed29b4737f555c51d73970b73b672e22ea1aceab137be8",
+  "schema_version": "fin_ia_0_1_3_s1_08_official_first_portfolio_clean_independent_zero_call_proof_v1_0",
+  "source_bindings": {
+    "configs/releases/fin_ia_0_1_3_s1_08_official_first_portfolio_zero_call_proof_v1_0.json": "1ef564303c72ac637135c1c7cd6a7e6fbdb01b61ba008c067632029c7e0f1d46",
+    "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_0.json": "df76debecd67cc372b52a111f3d4914e31395228590ebe56ee611cade7bef446",
+    "configs/runtime/fin_ia_0_1_3_s1_08_official_first_portfolio_policy_v1_0.json": "fc98c5c318caae496bedfaab8a0c2f9725f439646af00ffbe393634b821b05ef",
+    "scripts/releases/materialize_fin_ia_0_1_3_s1_08_official_first_portfolio_zero_call_proof.py": "5eebc5f5315f5df92e151f68b59992129ae7e69d08ec9b46f1b1ce06d1a920b2",
+    "scripts/releases/prepare_fin_ia_0_1_3_s1_08_official_first_portfolio_clean_zero_call_proof.py": "2bb8ebb4222a216ee3a4aaf8b1b74a3a6fae5d08d14bd870b81197ccd41cd5b4",
+    "src/sec_agent/s1_08_official_first_portfolio.py": "f10111236db7170a72c8f6b242f26dc7128f45317950bd00cff1e572ad39a0ba"
+  },
+  "source_commit": {
+    "branch": "codex/layered-data-source-expansion",
+    "clean": true,
+    "commit": "5599219361dd0dd742a308f8230c57c26fa427f4",
+    "synced": true,
+    "upstream_commit": "5599219361dd0dd742a308f8230c57c26fa427f4"
+  },
+  "stage": "FIN-0.1.3-S1-08",
+  "stage_acceptance": {
+    "BGE_fusion_and_rerank": "not_admitted",
+    "S1_08": false,
+    "candidate_ceiling_and_qrels": "not_proven",
+    "downstream_research_utilization": "not_proven",
+    "fresh_combined_external_live": "not_run_not_proven",
+    "internal_retrieval_query_facet": "registered_backlog",
+    "official_first_portfolio_runtime": "independently_proven",
+    "release": false,
+    "unified_query_facet_plan": "not_implemented"
+  },
+  "status": "pass_two_clean_archives_two_fresh_processes_zero_call_reproducible"
+}

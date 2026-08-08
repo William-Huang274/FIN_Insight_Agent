@@ -16,6 +16,25 @@ P36 的检索问题不是单纯 reranker 问题，而是：
 
 TECH_02 的目标是把“查资料”改成 cell-level agentic search：从 `DecisionSurfaceCell` 的 evidence slot 出发，经过工具规划、候选召回、source acquisition、parser / numeric 接口、Evidence Gate，最后生成 `EvidenceResponse`。它定义的是从 cell 到 evidence 的可执行合同。
 
+### 1.1 2026-08-08 relationship-aware semantic control
+
+Provider-neutral `SearchIntent` 与 Provider wire request 已分层。研究合同保留 subject、evidence owner、关系方向、期间、来源族和语言；adapter 只负责把它压缩成各服务可接受的请求，不得丢失这些原子，也不得把 Gold URL 塞进 query。
+
+在国内 Provider 凭据暂不可安全使用时，Firecrawl 只作为查询编译质量控制组：固定执行 customer/supply 的 24 个 `semantic_open_web` 单元，不与 22 个 `precise_official_domain` 单元合并。其 exact-once runtime 顺序固定为：
+
+```text
+proof-bound query identity
+ -> safe request capture
+ -> one network attempt
+ -> raw response or typed failure atomic capture
+ -> per-call terminal
+ -> 24 identities aggregate terminal
+ -> evaluator-only target/source registry load
+ -> useful@10 / target-in-pool / date / diversity / credits / latency
+```
+
+搜索响应在本阶段始终只是 locator candidate。即使控制组所有门通过，也不能自动进入正文抓取、Evidence、reranker、SourceHunter production 或 Agentic Research；它只证明该查询矩阵值得交给国内 Provider 做同合同对照。
+
 ## 2. 2026-07-10 边界修订：orchestration and promotion, not parsing implementation
 
 TECH_02 拥有：

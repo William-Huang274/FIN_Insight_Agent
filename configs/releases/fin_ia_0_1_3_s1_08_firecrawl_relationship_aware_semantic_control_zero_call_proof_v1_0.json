@@ -1,0 +1,54 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_zero_call_proof_v1_0",
+  "recorded_at": "2026-08-08",
+  "status": "zero_call_runner_input_and_replay_binding_pass",
+  "run_scope": "S1_08_FIRECRAWL_RELATIONSHIP_AWARE_SEMANTIC_CONTROL_EXACT_ONCE_RUNNER_ZERO_CALL_IMPLEMENTATION",
+  "plan": {
+    "query_count": 24,
+    "unique_intent_ids": 24,
+    "unique_execution_unit_digests": 24,
+    "cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "slots": [
+      "customer_demand_and_deployment_validation",
+      "supply_chain_capacity_and_counterevidence"
+    ],
+    "languages": [
+      "en",
+      "zh"
+    ],
+    "plan_digest": "3d636459894758b12986bab383e287d50888ca4f61b4f57ee2566e76126d9e19"
+  },
+  "historical_capture_replay_binding": {
+    "attempt_id": "firecrawl_keyless_a4_customer_supply_en_20260808",
+    "terminal_sha256": "0f3339d0c4cddbc16c5c8ea540bebe035e48e534f774df255b9ad6b8fffc0962",
+    "assessment_sha256": "cc64757b8fd7f01e7b3abdae40687131428d2a3e7110f81752d94dfc7597c24f",
+    "observed_exact_target_in_pool": [
+      0,
+      6
+    ],
+    "interpretation": "The old generic-query capture is immutable predecessor evidence, not a result that may be overwritten or reinterpreted as the repaired compiler output."
+  },
+  "source_bindings": {
+    "catalog_sha256": "90b2adf15d6e25c10a4f918b0ba8f5894684aaf6a0f478eec55a941d815ba851",
+    "intent_policy_sha256": "be2e5f6c7fffca8f10877927b589caeb60425faf761eabec2a32850423ed5751",
+    "wire_policy_sha256": "eef7dc5eb2f006f8f3873d200684064a9fa7d9220655c69bc72d2941df642a5d",
+    "visible_objectives_sha256": "11a0e9a4ed87687f56859a7c42c183269bbb5fb17d2e4bb66a2b54242f308b7e",
+    "scoring_contract_sha256": "81fe9359f1167c55105972408d7a7b4e1f366f56193253f823cabfe4ceaba1c8",
+    "plan_sha256": "859e71788d451fda7563855deaf119d6c1d6b3f33fcc2b69e3ae8a58a9ee3969"
+  },
+  "authority": {
+    "provider_calls": 0,
+    "network_calls": 0,
+    "model_calls": 0,
+    "document_fetches": 0,
+    "evidence_promotions": 0,
+    "live_execution_authorized": false,
+    "sourcehunter_integration_authorized": false
+  },
+  "next": "S1_08_FIRECRAWL_RELATIONSHIP_AWARE_SEMANTIC_CONTROL_EXACT_LIVE_AUTHORITY_ISSUANCE",
+  "known_boundary": "This proof freezes runner input and predecessor replay identity only. Live Firecrawl recall, dates, diversity, credits, latency, domestic provider capability, SourceHunter, research quality and release remain unproven."
+}

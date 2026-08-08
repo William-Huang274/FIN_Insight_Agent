@@ -1,0 +1,938 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_08_firecrawl_relationship_aware_semantic_control_plan_v1_0",
+  "contract_ref": "fin_0_1_3.S1_08.firecrawl_relationship_aware_semantic_control:v1",
+  "recorded_at": "2026-08-08",
+  "status": "frozen_gold_blind_semantic_control_plan",
+  "provider_id": "firecrawl_keyless_search",
+  "endpoint": "https://api.firecrawl.dev/v2/search",
+  "query_rows": [
+    {
+      "ordinal": 1,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::NVDA::supply_chain_capacity_and_counterevidence::MU::en::semantic_open_web",
+      "intent_digest": "b0d6c022c7d42f3fd99c3086ed1189cad77b0942972bf2ea87252d2347083ee1",
+      "execution_unit_digest": "6518f4f6a37548b639fcb2ecd03f8a900392720aead24adc84ff7dcfd22d69f8",
+      "request_payload_digest": "0136738b5b3cbdb374df58c8f19d293babac4590ee30d461c034043fee15d42b",
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "NVDA",
+      "evidence_owner_entity_key": "MU",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "en",
+      "query_text": "Micron Q3 FY2026 HBM capacity supply outlook earnings NVDA",
+      "owner_markers": [
+        "Micron",
+        "Micron Technology"
+      ],
+      "topic_markers": [
+        "HBM",
+        "capacity",
+        "supply",
+        "outlook"
+      ],
+      "request_body": {
+        "query": "Micron Q3 FY2026 HBM capacity supply outlook earnings NVDA",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 2,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::NVDA::customer_demand_and_deployment_validation::MSFT::en::semantic_open_web",
+      "intent_digest": "ed52d14b243dee150d311efa773e85ba97046ebe50676a9b184590cd84aa9f23",
+      "execution_unit_digest": "31477dcbba0761bb8b44cc7a9474d4988fa58ff475cdd50d05078e7d5ea28142",
+      "request_payload_digest": "07ca2cc16fb2ae93e0315fa013256c9cbd6c5f9c6a3aa00fda6b12faf69a9c17",
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "subject_entity_key": "NVDA",
+      "evidence_owner_entity_key": "MSFT",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "en",
+      "query_text": "MSFT Q3 FY2026 Azure AI capex datacenter capacity earnings NVDA",
+      "owner_markers": [
+        "MSFT",
+        "Microsoft",
+        "Azure"
+      ],
+      "topic_markers": [
+        "Azure",
+        "AI",
+        "capex",
+        "datacenter",
+        "capacity"
+      ],
+      "request_body": {
+        "query": "MSFT Q3 FY2026 Azure AI capex datacenter capacity earnings NVDA",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 3,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::MU::customer_demand_and_deployment_validation::MSFT::en::semantic_open_web",
+      "intent_digest": "cc0926b4e1f59af3138e5d838ce4d0f3d16565dbdee3b6a99d8eedbe7bbb1f14",
+      "execution_unit_digest": "e0abc76eddefa8f36f7036d9d8984fa356cdd5ff5065090ed21ba1c7c7f9eb5e",
+      "request_payload_digest": "096050b3316145e8f1ec184fb91239067759c25c998018f7b9f678980915c819",
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "subject_entity_key": "MU",
+      "evidence_owner_entity_key": "MSFT",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "en",
+      "query_text": "MSFT Q3 FY2026 Azure AI capex datacenter capacity earnings Micron",
+      "owner_markers": [
+        "MSFT",
+        "Microsoft",
+        "Azure"
+      ],
+      "topic_markers": [
+        "Azure",
+        "AI",
+        "capex",
+        "datacenter",
+        "capacity"
+      ],
+      "request_body": {
+        "query": "MSFT Q3 FY2026 Azure AI capex datacenter capacity earnings Micron",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 4,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::DELL::customer_demand_and_deployment_validation::MSFT::en::semantic_open_web",
+      "intent_digest": "b33a8cd8c0e1f7305f0267567b167017773adc2cca8f92c2eb10222ce9f7a25f",
+      "execution_unit_digest": "cd5e41095262dfd4f68af7f57989a7e7e350fc1ca2347126fe4fde01c8af05cd",
+      "request_payload_digest": "0e54edb6339db53b610fac0bb6351b9fd0895463ee33dce5b4f4dc965577ff0b",
+      "case_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "subject_entity_key": "DELL",
+      "evidence_owner_entity_key": "MSFT",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "en",
+      "query_text": "MSFT Q3 FY2026 Azure AI capex datacenter capacity earnings DELL",
+      "owner_markers": [
+        "MSFT",
+        "Microsoft",
+        "Azure"
+      ],
+      "topic_markers": [
+        "Azure",
+        "AI",
+        "capex",
+        "datacenter",
+        "capacity"
+      ],
+      "request_body": {
+        "query": "MSFT Q3 FY2026 Azure AI capex datacenter capacity earnings DELL",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 5,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::DELL::customer_demand_and_deployment_validation::MSFT::zh::semantic_open_web",
+      "intent_digest": "8cc6dae56dcff7d50d6e1d7c993fce84b0010aec0752a09466f200fb37214874",
+      "execution_unit_digest": "f1a67704020e8fb5525353d2f45c2d422e25bf3c9197a51bc405c2d2b33a39db",
+      "request_payload_digest": "1a799b0e337f9da47020195d890ad4572c7375804612689a11d4795bb43447dc",
+      "case_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "subject_entity_key": "DELL",
+      "evidence_owner_entity_key": "MSFT",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "zh",
+      "query_text": "微软 Q3 FY2026 Azure AI资本开支 数据中心 产能 业绩 戴尔",
+      "owner_markers": [
+        "微软",
+        "Azure"
+      ],
+      "topic_markers": [
+        "Azure",
+        "AI资本开支",
+        "数据中心",
+        "产能"
+      ],
+      "request_body": {
+        "query": "微软 Q3 FY2026 Azure AI资本开支 数据中心 产能 业绩 戴尔",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 6,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::NVDA::customer_demand_and_deployment_validation::MSFT::zh::semantic_open_web",
+      "intent_digest": "e6b2e61461533c72c16faebd35042c912c885688907eeac50b6738d3cb819bc1",
+      "execution_unit_digest": "c73ef1a3fa36a011e5f0f84d5d49f66039644b00d153e1a6821904361b9fc724",
+      "request_payload_digest": "26735aaeb354feda8e066f0f976df7ad60701369f000a192e22b1a79905c6049",
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "subject_entity_key": "NVDA",
+      "evidence_owner_entity_key": "MSFT",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "zh",
+      "query_text": "微软 Q3 FY2026 Azure AI资本开支 数据中心 产能 业绩 英伟达",
+      "owner_markers": [
+        "微软",
+        "Azure"
+      ],
+      "topic_markers": [
+        "Azure",
+        "AI资本开支",
+        "数据中心",
+        "产能"
+      ],
+      "request_body": {
+        "query": "微软 Q3 FY2026 Azure AI资本开支 数据中心 产能 业绩 英伟达",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 7,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::NVDA::supply_chain_capacity_and_counterevidence::MU::zh::semantic_open_web",
+      "intent_digest": "837c9d0bbc1cbc39710003bac889ad1d71daafa59252201915dc3c9143f9a191",
+      "execution_unit_digest": "d5ca5ab916424d87fabaf7d8c0497f87ca068454fd45a3b099ac20c513ed128d",
+      "request_payload_digest": "2e2adc833f3e38c7a4c216c883d7caeee3c52348c82d26dd6924121428ce237e",
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "NVDA",
+      "evidence_owner_entity_key": "MU",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "zh",
+      "query_text": "美光 Q3 FY2026 HBM产能 供给 展望 业绩 英伟达",
+      "owner_markers": [
+        "美光",
+        "美光科技"
+      ],
+      "topic_markers": [
+        "HBM产能",
+        "供给",
+        "展望"
+      ],
+      "request_body": {
+        "query": "美光 Q3 FY2026 HBM产能 供给 展望 业绩 英伟达",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 8,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::NVDA::customer_demand_and_deployment_validation::DELL::zh::semantic_open_web",
+      "intent_digest": "1034771d0a5a9019928521c8453b4ab67c4fe0e0ce01d5411718893122b23c92",
+      "execution_unit_digest": "d65163ef4932c6e88c49dabbab0131c1f45c2ed67670edc28feabffa333ab9e4",
+      "request_payload_digest": "304692fcfb7dc8dba4bb673b274e4cd44290b351b1c4a97dd5d0a2dde082da8c",
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "subject_entity_key": "NVDA",
+      "evidence_owner_entity_key": "DELL",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "zh",
+      "query_text": "戴尔 Q1 FY2027 AI服务器 订单积压 需求 业绩 英伟达",
+      "owner_markers": [
+        "戴尔",
+        "戴尔科技"
+      ],
+      "topic_markers": [
+        "AI服务器",
+        "订单积压",
+        "需求"
+      ],
+      "request_body": {
+        "query": "戴尔 Q1 FY2027 AI服务器 订单积压 需求 业绩 英伟达",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 9,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::MU::customer_demand_and_deployment_validation::MSFT::zh::semantic_open_web",
+      "intent_digest": "5638eaae0c7bbdf02efcbd42306707e40b7cb55a252b95c2bdacd0a6066a8e0d",
+      "execution_unit_digest": "3afa412d7b24b93d32e505d76bbd4ae92f013450a1bd859098c68cc6e1064978",
+      "request_payload_digest": "3146f70ceddb2901ac6755bf14af09dd0515e19b0c5bdac1fb4f578b1f25c279",
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "subject_entity_key": "MU",
+      "evidence_owner_entity_key": "MSFT",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "zh",
+      "query_text": "微软 Q3 FY2026 Azure AI资本开支 数据中心 产能 业绩 美光",
+      "owner_markers": [
+        "微软",
+        "Azure"
+      ],
+      "topic_markers": [
+        "Azure",
+        "AI资本开支",
+        "数据中心",
+        "产能"
+      ],
+      "request_body": {
+        "query": "微软 Q3 FY2026 Azure AI资本开支 数据中心 产能 业绩 美光",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 10,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::DELL::supply_chain_capacity_and_counterevidence::NVDA::zh::semantic_open_web",
+      "intent_digest": "d6f4ae6b612ac6f1295b0d49d1a3b44f19eb68ec8d794768d0b44b2703ce48af",
+      "execution_unit_digest": "67bcdbc5639677789265f69486c7f823a65fa5c5b9b6c3291236940a9a9d77df",
+      "request_payload_digest": "4c3036d19e86495e991607b4791d53ffa8ca0f0f0e14e9d4689b8fa99c617cf7",
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "DELL",
+      "evidence_owner_entity_key": "NVDA",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "zh",
+      "query_text": "英伟达 Q1 FY2027 Blackwell供给 约束 展望 业绩 戴尔",
+      "owner_markers": [
+        "英伟达",
+        "NVIDIA"
+      ],
+      "topic_markers": [
+        "Blackwell供给",
+        "约束",
+        "展望"
+      ],
+      "request_body": {
+        "query": "英伟达 Q1 FY2027 Blackwell供给 约束 展望 业绩 戴尔",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 11,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::DELL::supply_chain_capacity_and_counterevidence::MU::zh::semantic_open_web",
+      "intent_digest": "a56d9fb0e5921532cd01d2a42d44d4ebd840da944bf37e82bd2e82e1d3b45417",
+      "execution_unit_digest": "fcc41f11dfead1e38590545d04c7b4afe1f4b073c954c921c85871b7d2c7b636",
+      "request_payload_digest": "74b0e1b693ef7cff1c5f31f94826f53c4fff416e7fc2833477f4863e0ea3dbbc",
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "DELL",
+      "evidence_owner_entity_key": "MU",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "zh",
+      "query_text": "美光 Q3 FY2026 HBM产能 供给 展望 业绩 戴尔",
+      "owner_markers": [
+        "美光",
+        "美光科技"
+      ],
+      "topic_markers": [
+        "HBM产能",
+        "供给",
+        "展望"
+      ],
+      "request_body": {
+        "query": "美光 Q3 FY2026 HBM产能 供给 展望 业绩 戴尔",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 12,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::MU::supply_chain_capacity_and_counterevidence::TSMC::zh::semantic_open_web",
+      "intent_digest": "708d6e13be972ee7d66dc4f126390267d9ef8e7b11d34920f68235b25258be52",
+      "execution_unit_digest": "e6e29f51abba3e0dc97bc6424acb0b706a5931492dc9dc4483124fc2072da416",
+      "request_payload_digest": "7be4be195ffd1340f59400f3daeaae9dcc1245c9f6c1e437ec90b4c6da7e4949",
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "MU",
+      "evidence_owner_entity_key": "TSMC",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "zh",
+      "query_text": "台积电 Q2 2026 CoWoS先进封装 产能 业绩 美光",
+      "owner_markers": [
+        "台积电",
+        "TSMC"
+      ],
+      "topic_markers": [
+        "CoWoS先进封装",
+        "产能"
+      ],
+      "request_body": {
+        "query": "台积电 Q2 2026 CoWoS先进封装 产能 业绩 美光",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 13,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::NVDA::customer_demand_and_deployment_validation::DELL::en::semantic_open_web",
+      "intent_digest": "5db1f206d5494972ef28803d16046aad880291ca02caa8d1cda3c24d3daf2a84",
+      "execution_unit_digest": "7df27011342273c3026c1140bd36fef42fad830648091da7f03a91c949865baf",
+      "request_payload_digest": "7fd175bad5e3e133a21807de80e6340876d52a1c46e8106a45da54c4af9525e8",
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "subject_entity_key": "NVDA",
+      "evidence_owner_entity_key": "DELL",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "en",
+      "query_text": "DELL Q1 FY2027 AI server backlog demand earnings NVDA",
+      "owner_markers": [
+        "DELL",
+        "Dell Technologies",
+        "Dell"
+      ],
+      "topic_markers": [
+        "AI",
+        "server",
+        "backlog",
+        "demand"
+      ],
+      "request_body": {
+        "query": "DELL Q1 FY2027 AI server backlog demand earnings NVDA",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 14,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::MU::supply_chain_capacity_and_counterevidence::TSMC::en::semantic_open_web",
+      "intent_digest": "3dbd409738a507e841147025ae313e387dd6dc21b452dd951bac5f2bfeab5f0c",
+      "execution_unit_digest": "2a9048ec976fe40d3fdf6819600c54e665dde187ac505f50028907e7b03a6718",
+      "request_payload_digest": "82d13dc3ded485a873da61502a297e13b2c745fbcb2336dcf404155fca32df63",
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "MU",
+      "evidence_owner_entity_key": "TSMC",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "en",
+      "query_text": "TSMC Q2 2026 CoWoS advanced packaging capacity earnings Micron",
+      "owner_markers": [
+        "TSMC",
+        "Taiwan Semiconductor"
+      ],
+      "topic_markers": [
+        "CoWoS",
+        "advanced",
+        "packaging",
+        "capacity"
+      ],
+      "request_body": {
+        "query": "TSMC Q2 2026 CoWoS advanced packaging capacity earnings Micron",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 15,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::MU::customer_demand_and_deployment_validation::DELL::zh::semantic_open_web",
+      "intent_digest": "03c432e9d49742d0274cc015a1792aca878d0e966677e0b629f2322548d947e9",
+      "execution_unit_digest": "f4373fc62675b52378a4afeb65bdac2ef7205244843752ef4740330ad181a39a",
+      "request_payload_digest": "863e991f056eb8ba77cde9bd1765875a5395583df4835996e8178b368f2c1786",
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "subject_entity_key": "MU",
+      "evidence_owner_entity_key": "DELL",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "zh",
+      "query_text": "戴尔 Q1 FY2027 AI服务器 订单积压 需求 业绩 美光",
+      "owner_markers": [
+        "戴尔",
+        "戴尔科技"
+      ],
+      "topic_markers": [
+        "AI服务器",
+        "订单积压",
+        "需求"
+      ],
+      "request_body": {
+        "query": "戴尔 Q1 FY2027 AI服务器 订单积压 需求 业绩 美光",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 16,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::MU::supply_chain_capacity_and_counterevidence::NVDA::zh::semantic_open_web",
+      "intent_digest": "05ef4116871108bd5a7ad39720dcda92a11f6f3d80777a7a4228aa01abfc0556",
+      "execution_unit_digest": "56b7a49a6470389d0b7e9e880660502c92310bade4bb8d6a3c1ed3f5cca0d68c",
+      "request_payload_digest": "87e702c1954e6401e250137ae2321e81d9ecb5ec1f36d4c0005c71f586b6ba5f",
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "MU",
+      "evidence_owner_entity_key": "NVDA",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "zh",
+      "query_text": "英伟达 Q1 FY2027 Blackwell供给 约束 展望 业绩 美光",
+      "owner_markers": [
+        "英伟达",
+        "NVIDIA"
+      ],
+      "topic_markers": [
+        "Blackwell供给",
+        "约束",
+        "展望"
+      ],
+      "request_body": {
+        "query": "英伟达 Q1 FY2027 Blackwell供给 约束 展望 业绩 美光",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 17,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::DELL::supply_chain_capacity_and_counterevidence::TSMC::zh::semantic_open_web",
+      "intent_digest": "9d6a37d827f56eccb2e4c4b62ebd7c7d377bb2c888f798dbb231827729749a4f",
+      "execution_unit_digest": "cf773256c5c8a05a57f8dcb36d39866363031def46103bca05edb7bb75cba253",
+      "request_payload_digest": "ae6f139243b059bc7a12bd4d7dab91fcfafd13ef6c9df32978e53cd912a64741",
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "DELL",
+      "evidence_owner_entity_key": "TSMC",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "zh",
+      "query_text": "台积电 Q2 2026 CoWoS先进封装 产能 业绩 戴尔",
+      "owner_markers": [
+        "台积电",
+        "TSMC"
+      ],
+      "topic_markers": [
+        "CoWoS先进封装",
+        "产能"
+      ],
+      "request_body": {
+        "query": "台积电 Q2 2026 CoWoS先进封装 产能 业绩 戴尔",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 18,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::DELL::supply_chain_capacity_and_counterevidence::TSMC::en::semantic_open_web",
+      "intent_digest": "33c465f32435bb119f33041af0808066d98f2e80ad8c00ac632bef197f2bcbaa",
+      "execution_unit_digest": "2e1c0d6958c01f553e858dd04e5f9e8da5d584b48af533f105721beecef7f27b",
+      "request_payload_digest": "c89b056911bb804b0f75807248ca2b2bce76eb559d09fead659da37e88bb542e",
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "DELL",
+      "evidence_owner_entity_key": "TSMC",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "en",
+      "query_text": "TSMC Q2 2026 CoWoS advanced packaging capacity earnings DELL",
+      "owner_markers": [
+        "TSMC",
+        "Taiwan Semiconductor"
+      ],
+      "topic_markers": [
+        "CoWoS",
+        "advanced",
+        "packaging",
+        "capacity"
+      ],
+      "request_body": {
+        "query": "TSMC Q2 2026 CoWoS advanced packaging capacity earnings DELL",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 19,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::MU::supply_chain_capacity_and_counterevidence::NVDA::en::semantic_open_web",
+      "intent_digest": "b8fc4855d180c809a6076baeb0457263aaeefabf64d8b89b8b0a3a32b4655382",
+      "execution_unit_digest": "607de16b2a2fb97040de856807125970fa1b21e2e2cc17a2eaccde7496348c49",
+      "request_payload_digest": "ddbf97e70b120647b90288bedc2f4e126e7153d49b6c6738561445354c67c1ab",
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "MU",
+      "evidence_owner_entity_key": "NVDA",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "en",
+      "query_text": "NVDA Q1 FY2027 Blackwell supply constraint outlook earnings Micron",
+      "owner_markers": [
+        "NVDA",
+        "NVIDIA"
+      ],
+      "topic_markers": [
+        "Blackwell",
+        "supply",
+        "constraint",
+        "outlook"
+      ],
+      "request_body": {
+        "query": "NVDA Q1 FY2027 Blackwell supply constraint outlook earnings Micron",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 20,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::MU::customer_demand_and_deployment_validation::DELL::en::semantic_open_web",
+      "intent_digest": "fa395fde2c2da1ffbd253f3b1c8090dc6009fa5a03ed95dff7c89e3b02c5cb8d",
+      "execution_unit_digest": "e8b262245b7f681f4a0af671e0613e99cca02ce2e2f47bc7bdb60ed3b6c25738",
+      "request_payload_digest": "ecad8a43e0e4ffc0bbb46f815e34a9c2a5c579f6f43144482e4f3d10ec724a66",
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "subject_entity_key": "MU",
+      "evidence_owner_entity_key": "DELL",
+      "claim_direction": "evidence_owner_own_infrastructure_demand",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "en",
+      "query_text": "DELL Q1 FY2027 AI server backlog demand earnings Micron",
+      "owner_markers": [
+        "DELL",
+        "Dell Technologies",
+        "Dell"
+      ],
+      "topic_markers": [
+        "AI",
+        "server",
+        "backlog",
+        "demand"
+      ],
+      "request_body": {
+        "query": "DELL Q1 FY2027 AI server backlog demand earnings Micron",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 21,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::DELL::supply_chain_capacity_and_counterevidence::MU::en::semantic_open_web",
+      "intent_digest": "6d1dcbc747b0696a37d0fa4573e62766d0bdf0e973547ab2aa0a93782d0be0c0",
+      "execution_unit_digest": "0ad11c2943af6d25de1182487923c2bd800a5aba067cffb485dc16699ec9c00b",
+      "request_payload_digest": "ece1d4d368c08a5d3ff816de25441c88ea657c901993088a190cbf5bd8f09a1c",
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "DELL",
+      "evidence_owner_entity_key": "MU",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "en",
+      "query_text": "Micron Q3 FY2026 HBM capacity supply outlook earnings DELL",
+      "owner_markers": [
+        "Micron",
+        "Micron Technology"
+      ],
+      "topic_markers": [
+        "HBM",
+        "capacity",
+        "supply",
+        "outlook"
+      ],
+      "request_body": {
+        "query": "Micron Q3 FY2026 HBM capacity supply outlook earnings DELL",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 22,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::NVDA::supply_chain_capacity_and_counterevidence::TSMC::en::semantic_open_web",
+      "intent_digest": "25acd481e6a85d74acd161a5ca05bfbecbac8ec4771ee5176633718884eb2279",
+      "execution_unit_digest": "7c5da2ed32c8a93bc0b5adaebb524e32a406229fbcc01cb0962a6df755cbc4d4",
+      "request_payload_digest": "f6be20764da98314d5c460f4158ceaf7b67d25c0611804ddfc43bb773ec02cb3",
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "NVDA",
+      "evidence_owner_entity_key": "TSMC",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "en",
+      "query_text": "TSMC Q2 2026 CoWoS advanced packaging capacity earnings NVDA",
+      "owner_markers": [
+        "TSMC",
+        "Taiwan Semiconductor"
+      ],
+      "topic_markers": [
+        "CoWoS",
+        "advanced",
+        "packaging",
+        "capacity"
+      ],
+      "request_body": {
+        "query": "TSMC Q2 2026 CoWoS advanced packaging capacity earnings NVDA",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 23,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::NVDA::supply_chain_capacity_and_counterevidence::TSMC::zh::semantic_open_web",
+      "intent_digest": "94684a6e9855c31232ae1adf30633bbec43387ae0fe2869e5976b7d19052ec11",
+      "execution_unit_digest": "6ed37114eeea07e9ba0ce5b7e7a436a3fb6c83d8ba09fca3775a4f479b891768",
+      "request_payload_digest": "f7b50af2dd334dc69cf68ff48e18683b9aad03506f6a850ae5206cf8a044ad51",
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "NVDA",
+      "evidence_owner_entity_key": "TSMC",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "zh",
+      "query_text": "台积电 Q2 2026 CoWoS先进封装 产能 业绩 英伟达",
+      "owner_markers": [
+        "台积电",
+        "TSMC"
+      ],
+      "topic_markers": [
+        "CoWoS先进封装",
+        "产能"
+      ],
+      "request_body": {
+        "query": "台积电 Q2 2026 CoWoS先进封装 产能 业绩 英伟达",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    },
+    {
+      "ordinal": 24,
+      "provider_id": "firecrawl_keyless_search",
+      "route_class": "semantic_open_web",
+      "intent_id": "search_intent::DELL::supply_chain_capacity_and_counterevidence::NVDA::en::semantic_open_web",
+      "intent_digest": "2aa599df0f35e44f80ea7888c719e49f7543478490d2ebc47d311ae581fd9c65",
+      "execution_unit_digest": "e19f13b6cd362a5140f58e369a6247a17eb60921ae384b67db8fd78f537e1499",
+      "request_payload_digest": "f919684db039902a11b0c8d2723926d86fd1018816b2e0cbd381e1008f24878b",
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "subject_entity_key": "DELL",
+      "evidence_owner_entity_key": "NVDA",
+      "claim_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "source_families": [
+        "issuer_ir_document",
+        "customer_official_disclosure",
+        "regulatory_filing"
+      ],
+      "language": "en",
+      "query_text": "NVDA Q1 FY2027 Blackwell supply constraint outlook earnings DELL",
+      "owner_markers": [
+        "NVDA",
+        "NVIDIA"
+      ],
+      "topic_markers": [
+        "Blackwell",
+        "supply",
+        "constraint",
+        "outlook"
+      ],
+      "request_body": {
+        "query": "NVDA Q1 FY2027 Blackwell supply constraint outlook earnings DELL",
+        "limit": 10,
+        "sources": [
+          "web"
+        ]
+      }
+    }
+  ],
+  "execution_budget": {
+    "planned_queries": 24,
+    "provider_call_ceiling": 24,
+    "network_call_ceiling": 24,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0,
+    "document_fetch_ceiling": 0,
+    "evidence_promotion_ceiling": 0,
+    "result_ceiling_per_query": 10,
+    "combined_precise_and_semantic_run_allowed": false
+  },
+  "capability_boundary": {
+    "classification": "diagnostic_semantic_search_control_not_production",
+    "gold_visible_to_query_compiler": false,
+    "sourcehunter_integration_allowed": false,
+    "ranking_or_reranker_allowed": false,
+    "evidence_promotion_allowed": false,
+    "domestic_provider_capability_established": false
+  },
+  "plan_digest": "3d636459894758b12986bab383e287d50888ca4f61b4f57ee2566e76126d9e19"
+}

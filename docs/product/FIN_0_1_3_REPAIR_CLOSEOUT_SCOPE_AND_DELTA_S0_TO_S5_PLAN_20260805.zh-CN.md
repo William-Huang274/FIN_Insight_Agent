@@ -724,7 +724,7 @@ R2 的排序结果仍对 qrels v1.3 有效，但产品解释必须更新：dense
 更新后的唯一顺序为：
 
 1. [x] `S0_S1_FINANCIAL_RESEARCH_GENERALIZATION_CONTRACT`：冻结 provider-neutral 金融内核、9 类 Evidence Slot、稳定插件接口、AI compute Industry Pack、DELL／MU／NVDA case profile 和三个 blind held-out archetype；只做零调用合同与 mutation proof；
-2. [ ] `S0_S1_DELL_FINANCIAL_SOURCE_OBJECT_AND_EVIDENCE_PACK_VERTICAL_SLICE`：从 DELL 真实 research question 出发，逐 facet 审查 current source inventory、document hierarchy、Q&A／table／child-parent chunk、typed query lane、candidate selection、multi-candidate Pack 和 residual gaps；允许修通用内核／AI Pack／DELL config，但不得调用模型或先建 dense；
+2. [x] `S0_S1_DELL_FINANCIAL_SOURCE_OBJECT_AND_EVIDENCE_PACK_VERTICAL_SLICE`：从 DELL 真实 research question 出发，逐 facet 审查 current source inventory、document hierarchy、Q&A／table／child-parent chunk、typed query lane、candidate selection、multi-candidate Pack 和 residual gaps；结果为 `engineering_pass_product_pack_incomplete`：`23 lanes / 265 candidate rows / 23 of 23 reviewed targets / 15 parent sources / 0 contract rejection`，全部未覆盖 required facet 已显式成为 typed residual gap，未调用模型、未建 dense、未晋升 Evidence；
 3. [ ] `S0_S1_MU_NVDA_CORE_UNCHANGED_TRANSFER`：锁定第 2 项的核心 module／plugin digest；MU／NVDA 只能改 Pack／case config／source data。任何 ticker-specific core patch 都记为 transfer failure；
 4. [ ] `S0_S1_THREE_HELD_OUT_GENERALIZATION_PROOF`：在 proof 前才选择一个美国非半导体、一个 non-US 20-F／6-K、一个披露稀疏案例；不写入 Gold URL，覆盖 alias／period／currency／PDF／relationship／stale／zero-result mutation；
 5. [ ] `S1_SPARSE_DENSE_REBUILD_DECISION`：只对上述纵切证明值得保留的 Source／Section／Q&A／Table／claim objects 建 successor sparse/dense；旧 410 specs 不删除，但不得自动执行；
@@ -737,6 +737,7 @@ R2 的排序结果仍对 qrels v1.3 有效，但产品解释必须更新：dense
 第一项机器合同与零调用证明分别为：
 
 - `configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json`
-- `configs/releases/fin_ia_0_1_3_s0_s1_financial_research_generalization_zero_call_proof_v1_0.json`
+- `configs/releases/fin_ia_0_1_3_s0_s1_financial_research_generalization_zero_call_proof_v1_1.json`
+- `configs/releases/fin_ia_0_1_3_s1_dell_financial_source_object_vertical_result_r3_v1_0.json`
 
-当前状态严格为第一项通过；DELL 纵切尚未开始，不能宣称新的 RAG、Evidence Pack、跨案例泛化或研报能力。
+当前状态严格为前两项通过：通用合同与 DELL 本地纵切工程成立，但 DELL Candidate Pack 因 residual gaps 仍不完整且从未晋升为 Evidence。下一项只做 MU／NVDA core-unchanged transfer；不能宣称 sparse／dense、外源补源、跨案例泛化、DeepSeek 研究或研报质量通过。

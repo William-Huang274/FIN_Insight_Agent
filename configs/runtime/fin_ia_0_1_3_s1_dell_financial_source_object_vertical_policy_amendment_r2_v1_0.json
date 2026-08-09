@@ -1,0 +1,116 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_financial_source_object_vertical_policy_amendment_v1_0",
+  "contract_ref": "fin_0_1_3.S1.dell_financial_source_object_vertical:v2",
+  "recorded_at": "2026-08-09",
+  "base_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_dell_financial_source_object_vertical_policy_v1_0.json",
+  "base_policy_sha256": "027d1bfd71dd27ba642b594b30ebaaab8832e9591b7e5c56f35f807ea1592853",
+  "binding_patches": [
+    {
+      "qualification_id": "dell-op-summary",
+      "additional_facet_ids": [
+        "accelerated_compute_or_ai_infrastructure_revenue"
+      ]
+    },
+    {
+      "qualification_id": "dell-demand-order-conversion",
+      "additional_facet_ids": [
+        "ai_infrastructure_orders_or_backlog"
+      ]
+    },
+    {
+      "qualification_id": "nvda-capacity-dependency",
+      "additional_facet_ids": [
+        "foundry_or_component_dependency"
+      ]
+    },
+    {
+      "qualification_id": "dell-cash-capex",
+      "additional_facet_ids": [
+        "capex_to_free_cash_flow"
+      ]
+    },
+    {
+      "qualification_id": "dell-relationship-self",
+      "replacement_source_excerpt": "announces financial results for its fiscal 2027 first quarter",
+      "replacement_target_excerpt": "announces financial results for its fiscal 2027 first quarter"
+    },
+    {
+      "qualification_id": "dell-relationship-msft-boundary",
+      "additional_facet_ids": [
+        "customer_demand_readthrough"
+      ]
+    },
+    {
+      "qualification_id": "nvda-regulatory-event",
+      "additional_facet_ids": [
+        "export_control"
+      ]
+    }
+  ],
+  "appended_residual_gaps": [
+    {
+      "gap_id": "dell-gap-demand-pull-forward-digestion",
+      "slot_id": "demand_volume_quality",
+      "facet_id": "pull_forward_or_digestion",
+      "gap_code": "commercial_data_gap",
+      "attempted_lane_ids": [
+        "dell_demand_nonlinearity_object",
+        "dell_demand_concentration_parent"
+      ],
+      "business_reason_zh": "现有材料说明订单到交付可能非线性，也披露客户集中和取消风险，但没有量化本季是否存在提前采购或后续消化。",
+      "supplement_direction_zh": "后续定向查找订单取消、交付节奏、客户库存和管理层关于 pull-forward 或 digestion 的明确表述。"
+    },
+    {
+      "gap_id": "dell-gap-price-volume-mix-bridge",
+      "slot_id": "pricing_mix_value_capture",
+      "facet_id": "price_volume_mix_bridge",
+      "gap_code": "formula_input_missing",
+      "attempted_lane_ids": [
+        "dell_pricing_mix_margin_object",
+        "dell_pricing_profit_bridge_parent"
+      ],
+      "business_reason_zh": "公司披露 AI 服务器 mix 压低毛利率，但没有把收入变化拆成价格、台数和配置组合三部分。",
+      "supplement_direction_zh": "需要产品 ASP、出货量或可复算的配置桥；否则保持不可推断。"
+    },
+    {
+      "gap_id": "dell-gap-capacity-release-timing",
+      "slot_id": "capacity_inputs_execution",
+      "facet_id": "capacity_release_timing",
+      "gap_code": "relationship_allocation_unproven",
+      "attempted_lane_ids": [
+        "mu_capacity_ramp_parent",
+        "nvda_capacity_dependency_object",
+        "tsm_capacity_ramp_parent"
+      ],
+      "business_reason_zh": "供应链资料能证明产品或制程在爬坡，但没有说明新增容量何时释放、其中多少分配给 Dell。",
+      "supplement_direction_zh": "后续只接受供应商官方产能时间表、Dell 自述或可验证的分配证据。"
+    },
+    {
+      "gap_id": "dell-gap-supplier-capacity-readthrough",
+      "slot_id": "relationship_attribution",
+      "facet_id": "supplier_capacity_readthrough",
+      "gap_code": "relationship_allocation_unproven",
+      "attempted_lane_ids": [
+        "mu_capacity_ramp_parent",
+        "nvda_capacity_dependency_object",
+        "tsm_capacity_ramp_parent"
+      ],
+      "business_reason_zh": "MU、NVIDIA 和 TSMC 的自述可作行业供给背景，但现有来源没有把容量或供货份额明确归属到 Dell。",
+      "supplement_direction_zh": "后续保留行业 read-through 与 Dell 特定供给归因的边界，不能用行业增长替代 Dell 分配证据。"
+    },
+    {
+      "gap_id": "dell-gap-observable-quarterly-threshold",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "observable_quarterly_threshold",
+      "gap_code": "threshold_not_observable",
+      "attempted_lane_ids": [
+        "dell_counter_monitor_parent",
+        "dell_counter_concentration_parent",
+        "nvda_counter_export_object"
+      ],
+      "business_reason_zh": "资料给出可持续跟踪的订单、收入、利润、现金和监管风险，但没有替研究者定义可操作的季度失效阈值。",
+      "supplement_direction_zh": "由后续研究方法层基于基准值和用户风险偏好冻结阈值，并保持与公司披露分离。"
+    }
+  ],
+  "correction_reason_zh": "R1 证明召回主链有效，但暴露一处审阅摘录过严以及行业 Pack 扩展 facet 未被完整映射。R2 仅修正事实标签和显式 residual gap，不改变查询、候选池、检索预算或核心合同。"
+}

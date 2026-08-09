@@ -32,7 +32,7 @@ CONTRACT_PATH = (
 )
 PROOF_PATH = (
     ROOT
-    / "configs/releases/fin_ia_0_1_3_s0_s1_financial_research_generalization_zero_call_proof_v1_0.json"
+    / "configs/releases/fin_ia_0_1_3_s0_s1_financial_research_generalization_zero_call_proof_v1_1.json"
 )
 MATERIALIZER_PATH = (
     ROOT

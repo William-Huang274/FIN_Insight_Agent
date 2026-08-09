@@ -1,0 +1,93 @@
+{
+  "checks": {
+    "case_facet_outside_pack_fails_closed": true,
+    "contract_valid": true,
+    "each_case_has_eight_required_and_one_optional_slots": true,
+    "industry_authority_relaxation_fails_closed": true,
+    "one_identical_core_fingerprint": true,
+    "synthetic_multi_candidate_pack_shape_passes_without_evidence_promotion": true,
+    "three_cases_compile": true,
+    "three_held_out_archetypes_are_blind": true
+  },
+  "compiled_cases": {
+    "DELL": {
+      "compiled_digest": "b222351ac2910362127eca10d8eea59a1393aa0904b0598d220a8f14e7c09633",
+      "core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+      "fixture_evaluation_status": "candidate_complete_pending_evidence_gate",
+      "fixture_evidence_promotion_admitted": false,
+      "optional_slot_count": 1,
+      "relationship_count": 4,
+      "required_slot_count": 8
+    },
+    "MU": {
+      "compiled_digest": "aba8e91ff9229563ff078ebf9691f70d710dd2f4d8d11f6f705c669137ee9aa8",
+      "core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+      "fixture_evaluation_status": "candidate_complete_pending_evidence_gate",
+      "fixture_evidence_promotion_admitted": false,
+      "optional_slot_count": 1,
+      "relationship_count": 4,
+      "required_slot_count": 8
+    },
+    "NVDA": {
+      "compiled_digest": "f3f52d54bd8cafabd897b26c8dd0348b00bb9447c4ad92c05e93a97f1516a70d",
+      "core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+      "fixture_evaluation_status": "candidate_complete_pending_evidence_gate",
+      "fixture_evidence_promotion_admitted": false,
+      "optional_slot_count": 1,
+      "relationship_count": 4,
+      "required_slot_count": 8
+    }
+  },
+  "contract_ref": "fin_0_1_3.S0_S1.financial_research_generalization:v1",
+  "held_out_archetypes": [
+    {
+      "answer_or_gold_locator_embedded": false,
+      "archetype_id": "heldout-us-non-semiconductor",
+      "identity_selected": false
+    },
+    {
+      "answer_or_gold_locator_embedded": false,
+      "archetype_id": "heldout-non-us-primary-disclosure",
+      "identity_selected": false
+    },
+    {
+      "answer_or_gold_locator_embedded": false,
+      "archetype_id": "heldout-sparse-disclosure",
+      "identity_selected": false
+    }
+  ],
+  "immutable_inputs": {
+    "contract_ref": "configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json",
+    "contract_sha256": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+    "module_ref": "src/sec_agent/financial_research_generalization_contract.py",
+    "module_sha256": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e"
+  },
+  "known_boundary": "The proof freezes and validates the generic kernel, slot library, plugin interfaces, one industry pack, three case configurations and blind held-out archetypes. Synthetic candidate rows prove contract behavior only; they are not source observations, Evidence, a DELL vertical slice, transfer proof, index admission, external supplement, model research or product acceptance.",
+  "mutation_errors": {
+    "case_facet_outside_pack": "case_profile_facet_outside_industry_pack",
+    "industry_authority_relaxation": "industry_pack_authority_violation"
+  },
+  "observed_calls": {
+    "document_fetch": 0,
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0,
+    "retrieval": 0
+  },
+  "proof_digest": "1afcbd9f1ed757da2b9cc2abc9536c409b07f3fe627d25d9f74f4e7efaa8de0a",
+  "recorded_at": "2026-08-09",
+  "schema_version": "fin_ia_0_1_3_s0_s1_financial_research_generalization_zero_call_proof_v1_0",
+  "stage_boundary": {
+    "contract_frozen": true,
+    "dell_vertical_slice_complete": false,
+    "external_residual_supplement_complete": false,
+    "held_out_generalization_complete": false,
+    "model_research_synthesis_complete": false,
+    "mu_nvda_transfer_complete": false,
+    "sparse_dense_rebuild_admitted": false
+  },
+  "status": "pass"
+}

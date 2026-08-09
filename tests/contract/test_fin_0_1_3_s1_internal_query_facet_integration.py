@@ -276,7 +276,7 @@ def test_materialized_proof_is_zero_call_digest_bound_and_honest() -> None:
     assert proof["stage_acceptance"]["external_product_coverage"] is False
 
 
-def test_project_os_holds_index_refresh_until_financial_object_vertical_passes() -> None:
+def test_project_os_holds_index_refresh_after_dell_vertical_and_allows_transfer() -> None:
     completed = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
     assert completed["status"] == "blocked"
     candidate_ceiling = run_project_os_preflight(
@@ -298,7 +298,12 @@ def test_project_os_holds_index_refresh_until_financial_object_vertical_passes()
         ROOT,
         run_scope="S1_DELL_FINANCIAL_SOURCE_OBJECT_AND_EVIDENCE_PACK_VERTICAL_SLICE",
     )
-    assert dell_vertical["status"] == "pass"
+    assert dell_vertical["status"] == "blocked"
+    transfer = run_project_os_preflight(
+        ROOT,
+        run_scope="S1_MU_NVDA_CORE_UNCHANGED_TRANSFER",
+    )
+    assert transfer["status"] == "pass"
     current = run_project_os_preflight(
         ROOT, run_scope="S1_INTERNAL_CURRENT_OFFICIAL_SOURCE_ACQUISITION"
     )

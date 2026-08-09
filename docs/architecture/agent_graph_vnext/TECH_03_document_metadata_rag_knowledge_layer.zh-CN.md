@@ -655,3 +655,25 @@ evaluator 的最高输出只能是 `candidate_complete_pending_evidence_gate`。
 5. 任何新案例需要修改核心 ticker 条件时，generalization gate 失败，问题回到 Pack／ontology／plugin 设计，不得静默放行。
 
 机器合同：`configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json`。当前状态仅为 `contract_frozen_zero_call`，不表示 DELL 纵切、MU／NVDA 迁移、留出泛化、索引重建、外源补源、DeepSeek 研究或产品验收完成。
+
+### 24.7 DELL 真实纵切后的 source/object 修正（2026-08-09）
+
+DELL 纵切证明，金融 RAG 不能把一个检索命中等同于一个独立、完整、可引用的事实。当前正确对象边界为：
+
+1. `SourceDocument` 持有 issuer、accession、URL、发布日期、报告期和原始正文 digest；
+2. `Section/Table/Q&A` 持有局部语义，但必须保留 parent source 与表头／问题／回答上下文；
+3. `Claim/Metric` 只用于精确定位和排序，不能独自承担 source authority；
+4. `CandidateBundle` 将 parent source、child object、period binding、relationship direction、facet 与局限合并后，才进入 Pack evaluator；
+5. 公开结果只保存 preview、capture/source ref 与 digest，完整 source 正文留在受限原始资产，不在每个 lane 重复物化。
+
+真实 DELL 资料暴露四项当前对象缺陷：Q1 summary 被误标成 non-GAAP disclaimer；结果表错误继承 `Capital Return` subsection；metric child 只保留 `2026 | 16,132` 而丢失“DELL FY2027 Q1／AI-optimized server revenue”完整列语境；SQLite object store 缺少 direct object-id lookup。它们属于下一次 sparse／dense 入库前的对象重建输入，不能靠提高 top-k 或 rerank 权重掩盖。
+
+期间权威必须同时保存三层，禁止互相覆盖：
+
+- research as-of：本次研究允许看见资料的截止日；
+- source reporting period：披露方自己的财年／季度；
+- relationship valid-as-of：客户、供应商或行业 read-through 在何时可用于本案。
+
+例如 Microsoft FY2026 的 AI 投入只能作为 Microsoft 自身需求 read-through；它不自动成为 Dell FY2027 Q1 的订单或收入。MU、NVIDIA、TSMC 的供给自述同理：可以证明行业供给机制，除非有明确分配证据，否则不能写成“向 Dell 供应了多少”。source diversity 也按经济披露主体／canonical source 计数，同一文档绑定多个 role 不增加独立来源数。
+
+DELL R3 的 `23/23` 只代表预审 candidate 被当前本地检索召回；它不是 Evidence acceptance。required facet 若现有来源无法覆盖，必须以 typed residual gap 终态化。当前 gap 包括 AI server ASP／台数／产品利润与 price-volume-mix bridge、HBM／先进封装／容量释放、AI 营运资金归因、Dell 特定供应分配、pull-forward/digestion 和可观察失效阈值。只有这些 gap 才允许在后续阶段编译为外源补源请求；在 MU／NVDA transfer 和 held-out proof 前仍不得自动重建 dense 或调用模型。

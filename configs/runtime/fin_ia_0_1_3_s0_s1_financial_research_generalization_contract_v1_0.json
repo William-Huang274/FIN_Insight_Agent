@@ -351,7 +351,7 @@
           "evidence_owner_aliases": ["NVIDIA", "NVDA"],
           "evidence_owner_role": "supplier_capacity_readthrough",
           "direction": "evidence_owner_own_supply_capacity_or_constraint",
-          "allowed_slot_ids": ["capacity_inputs_execution", "relationship_attribution", "counterevidence_and_what_would_change"]
+          "allowed_slot_ids": ["capacity_inputs_execution", "relationship_attribution", "regulatory_policy_exposure", "counterevidence_and_what_would_change"]
         },
         {
           "relationship_id": "dell-input-owner-foundry",

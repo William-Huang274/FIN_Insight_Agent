@@ -1,0 +1,72 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_supplemental_dense_execution_policy_v1_0",
+  "implementation_proof_schema": "fin_ia_0_1_3_s1_internal_supplemental_dense_execution_implementation_proof_v1_0",
+  "terminal_result_schema": "fin_ia_0_1_3_s1_internal_supplemental_dense_execution_result_v1_0",
+  "presence_result_schema": "fin_ia_0_1_3_s1_internal_supplemental_dense_real_presence_proof_v1_0",
+  "authority_schema": "fin_ia_0_1_3_s1_internal_supplemental_dense_build_authority_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_supplemental_dense_execution:v1",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "recorded_at": "2026-08-09",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "attempt_id": "20260809_s1_supplemental_dense_bge_m3_milvus_incremental_build_r1",
+  "immutable_inputs": {
+    "build_contract_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_supplemental_dense_index_policy_v1_0.json",
+    "build_contract_policy_sha256": "e19ac9fb56a3df7514603571eb52ba170825b71332f6f6934a2dc8a8cc444de4",
+    "zero_call_proof_ref": "configs/releases/fin_ia_0_1_3_s1_internal_supplemental_dense_index_zero_call_proof_v1_0.json",
+    "zero_call_proof_sha256": "5cbdeff916acaea04298ea6116f94a03f76b6ef7a017abd9f489ec396fa4a99a"
+  },
+  "resource_bindings": {
+    "embedding_model": "D:/hf_models/BAAI__bge-m3",
+    "expected_embedding_dim": 1024,
+    "normalize_embeddings": true,
+    "embedding_batch_size": 32,
+    "model_micro_batch_size": 8,
+    "device_policy": "cuda_if_available_else_cpu",
+    "milvus_dependencies_dir": "Z:/FIN_Insight_Agent_artifacts/python_deps/milvus_lite"
+  },
+  "private_execution": {
+    "working_root": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_dense/attempt_r1_building",
+    "final_root": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_dense/v1",
+    "milvus_db_filename": "milvus_lite.db",
+    "collection_name": "fin_ia_0_1_3_s1_internal_supplemental_dense_v1",
+    "preserve_failed_working_root": true,
+    "rename_working_root_only_after_terminal_count": true
+  },
+  "public_outputs": {
+    "implementation_proof_ref": "configs/releases/fin_ia_0_1_3_s1_internal_supplemental_dense_execution_implementation_proof_v1_0.json",
+    "authority_ref": "configs/releases/fin_ia_0_1_3_s1_internal_supplemental_dense_build_authority_v1_0.json",
+    "terminal_result_ref": "configs/releases/fin_ia_0_1_3_s1_internal_supplemental_dense_execution_result_v1_0.json",
+    "presence_result_ref": "configs/releases/fin_ia_0_1_3_s1_internal_supplemental_dense_real_presence_proof_v1_0.json"
+  },
+  "execution_ceiling": {
+    "maximum_executions": 1,
+    "automatic_retry": false,
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "embedding_model_loads": 1,
+    "embedding_vectors": 410,
+    "embedding_batches": 13,
+    "embedding_model_micro_batches": 52,
+    "milvus_database_creates": 1,
+    "milvus_collection_creates": 1,
+    "milvus_inserted_vectors": 410,
+    "milvus_insert_batches": 13,
+    "post_build_metadata_queries": 20,
+    "post_build_collection_stats_reads": 1,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "publication_contract": {
+    "historical_collection_write_count": 0,
+    "expected_terminal_entity_count": 410,
+    "working_or_final_target_must_not_preexist": true,
+    "failure_result_is_immutable": true,
+    "failed_private_working_root_is_preserved": true,
+    "presence_proof_is_read_only_and_post_success_only": true,
+    "ranking_successor_is_not_automatically_authorized": true
+  },
+  "known_boundary": "This policy defines one local BGE-M3 and Milvus Lite incremental build plus a read-only physical-presence proof. It requires a clean commit-bound authority before execution and does not authorize ranking, reranking, Evidence, current-quarter SQL refresh, external search, product acceptance or release."
+}

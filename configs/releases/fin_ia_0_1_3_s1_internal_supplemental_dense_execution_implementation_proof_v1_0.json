@@ -1,0 +1,75 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_supplemental_dense_execution_implementation_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_supplemental_dense_execution:v1",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "recorded_at": "2026-08-09",
+  "status": "terminal_succeeded_full_fake_execution_adapter_proof",
+  "project_os_preflight": {
+    "status": "pass",
+    "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+    "open_full_chain_blocker_count": 0
+  },
+  "policy_digest": "0191268587db8fe1744fdf1f67e655cbe50d362dcc9af48e5ec2f35bd68b0a15",
+  "vector_spec_terminal_digest": "63cd6fad6f6be5ee3a1a82ce3a35840174b183a12087a1597bc1cbfc07b301cd",
+  "fake_execution": {
+    "embedding_batch_count": 13,
+    "embedding_vector_count": 410,
+    "insert_batch_count": 13,
+    "inserted_vector_count": 410,
+    "terminal_count": 410
+  },
+  "milvus_adapter": {
+    "fixed_schema_fields": [
+      "vector_id",
+      "embedding",
+      "evidence_id",
+      "ticker",
+      "fiscal_year",
+      "form_type",
+      "source_tier",
+      "item_code",
+      "category_slug",
+      "period_type",
+      "contains_table",
+      "vector_kind",
+      "vector_role",
+      "semantic_scope",
+      "intent_tags",
+      "relationship_role",
+      "object_type",
+      "preview"
+    ],
+    "dynamic_lineage_preserved": true,
+    "stored_vector_text": false,
+    "terminal_entity_count": 410,
+    "writer_calls": {
+      "database_create": 1,
+      "collection_create": 1,
+      "insert_batches": 13,
+      "inserted_vectors": 410,
+      "flush": 2,
+      "count": 1
+    },
+    "working_target_created": false,
+    "final_target_created": false
+  },
+  "execution_gate": {
+    "implementation_full_fake_passed": true,
+    "real_build_authorized": false,
+    "clean_commit_and_separate_authority_required": true
+  },
+  "observed_real_calls": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "real_embedding": 0,
+    "milvus_read": 0,
+    "milvus_write": 0,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "known_boundary": "The real BGE and Milvus adapters are exercised only through fake dependencies. No private target is created and no execution authority is granted.",
+  "proof_digest": "2e9cb6fd6166debde2da334aa4aceb679a490d63b357e8d1d81dbf23b640d30f"
+}

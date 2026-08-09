@@ -469,8 +469,9 @@ def execute_index_build_plan(
             batches += 1
             embedded += len(vectors)
             inserted += acknowledged
+        terminal_count = int(writer.count())
         _require(
-            int(writer.count()) == len(specs),
+            terminal_count == len(specs),
             "supplemental_dense_terminal_count_mismatch",
         )
         writer.finalize()
@@ -478,11 +479,11 @@ def execute_index_build_plan(
         writer.abort()
         raise
     return {
-        "fake_embedding_batch_count": batches,
-        "fake_embedding_vector_count": embedded,
-        "fake_insert_batch_count": batches,
-        "fake_inserted_vector_count": inserted,
-        "terminal_count": int(writer.count()),
+        "embedding_batch_count": batches,
+        "embedding_vector_count": embedded,
+        "insert_batch_count": batches,
+        "inserted_vector_count": inserted,
+        "terminal_count": terminal_count,
     }
 
 
@@ -770,6 +771,13 @@ def materialize_supplemental_dense_index_zero_call_proof(
         repo_root=root,
         historical_runtime=historical_runtime,
     )
+    fake_execution = {
+        "fake_embedding_batch_count": fake_execution["embedding_batch_count"],
+        "fake_embedding_vector_count": fake_execution["embedding_vector_count"],
+        "fake_insert_batch_count": fake_execution["insert_batch_count"],
+        "fake_inserted_vector_count": fake_execution["inserted_vector_count"],
+        "terminal_count": fake_execution["terminal_count"],
+    }
     ticker_counts: dict[str, int] = {}
     form_counts: dict[str, int] = {}
     for spec in specs:

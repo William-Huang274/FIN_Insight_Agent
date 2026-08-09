@@ -1,5 +1,6 @@
 # Worklog
 
+- [773 — FIN 0.1.3 S1 supplemental dense 真实 runner full-fake 与资源指纹](product_strategy/773_fin_0_1_3_s1_supplemental_dense_real_runner_full_fake_and_resource_fingerprint.md)
 - [772 — FIN 0.1.3 S1 supplemental dense 零调用合同与 10/10 presence projection](product_strategy/772_fin_0_1_3_s1_supplemental_dense_zero_call_contract_and_presence_projection.md)
 - [771 — FIN 0.1.3 S1 Owner qrels、BGE/fusion R2 与 dense index 诊断](product_strategy/771_fin_0_1_3_s1_owner_qrels_bge_fusion_r2_and_dense_index_diagnostic.md)
 - [757 — FIN 0.1.3 S1-08 DeepSeek query-atom A2 终态与 local-only 处置](product_strategy/757_fin_0_1_3_s1_08_deepseek_query_atom_A2_terminal_and_local_only_disposition.md)

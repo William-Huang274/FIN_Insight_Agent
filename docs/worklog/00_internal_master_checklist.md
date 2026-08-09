@@ -4,7 +4,7 @@
 
 - [x] Unified Query Facet 已投影到 SQL／ObjectBM25／BM25／Milvus／Graph；v1.1 将 reporting fiscal period 与 filing/publication calendar year 分离，避免未来财年标签误杀当年发布文件。
 - [x] 真实本地 candidate inventory R2 与 agent-curated qrels proposal 已物化：strict current target-in-pool=`9/18`、Gold SQL current exact=`0/18`；历史 v1.0、v1.1 first attempt 与修正后 R2 均 immutable 保留。
-- [ ] **Current — S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH**：sparse current corpus 已达 18/18；supplemental dense 零调用合同已对 410 条 capture-backed rows、10/10 presence projection 与 8 类 mutation 通过。真实 incremental BGE/Milvus successor 尚未执行，旧 662,908-vector collection 禁止改写。
+- [ ] **Current — S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH**：sparse current corpus 已达 18/18；supplemental dense 零调用合同已对 410 条 capture-backed rows、10/10 presence projection 与 8 类 mutation 通过；真实 runner full-fake 也已精确终态 410 并绑定外部 BGE/Milvus 指纹。真实 incremental successor 尚未签 authority／执行，旧 662,908-vector collection 禁止改写。
 - [x] Owner 已接受 qrels 18/18、0 行改写；candidate ceiling 与 review provenance 已完成。
 - [ ] 已完成一次有效 sparse/BGE/fusion R2：sparse 16/18、dense 3/18、fusion 14/18，fusion 未采用。待 supplemental dense 实建与 presence 复证后再决定唯一 same-matrix successor；reranker absent，不静默下载。Evidence Gate→Claim→Workpaper→report 利用、current-quarter exact 0/6 与外源 4/12 blocker 均独立未完成。
 

@@ -687,3 +687,34 @@ DELL R3 的 `23/23` 只代表预审 candidate 被当前本地检索召回；它�
 迁移暴露的共同对象重建要求为：publication date 与 reported period 分离；document segment 拆成带父节、表头、单位和期间的 table／metric／claim；补齐 current regulatory parent；关系对象区分行业 read-through 与 company-specific allocation。索引重建必须覆盖这些对象语义，不能只把现有粗片段重新向量化。
 
 真正的新案例扩展必须走外部 profile registry／overlay：运行时把 profile 校验后投影给冻结 compiler，profile 不得新增 kernel authority、放宽 Industry Pack 或携带 Gold URL。若留出案例仍要求编辑冻结合同中的 ticker 列表，说明 extension interface 不成立，必须在 S1 修复后重做留出验证。
+
+### 24.9 留出案例后的 CandidateBundle v2 要求（2026-08-09）
+
+ORCL／ASML／ANET 的 Gold-blind 候选与业务复核表明，仅保存 child object 的文本、父 ID 和一个归一化数值单位不足以支撑金融研究。特别是 ASML 20-F 中，父表明确使用欧元，child metric 却标记为 `usd_millions`；另有经营现金流 child 错连到 remuneration 父段。此类对象若直接进入 dense index，会把解析错误放大为高置信召回。
+
+下一版检索单位必须是不可拆散的 `FinancialCandidateBundleV2`：
+
+```text
+source authority
+  + child object
+  + parent block / section
+  + table identity and header
+  + row / column / footnote path
+  + publication date
+  + reported period
+  + research as-of
+  + currency / unit provenance
+  + relationship direction
+```
+
+约束如下：
+
+1. child 可以用于精确定位和排序，但 evaluator 与 Evidence Gate 必须同时看到 parent semantic context；
+2. table／metric 没有表头、行列路径或单位来源时，只能返回 `object_context_gap`，不得当作可引用数值；
+3. parent、table header、child 和 case profile 对 currency／unit 有冲突时，Candidate 阶段以 `currency_unit_conflict` fail closed，禁止通过默认 USD 或渲染层覆盖；
+4. parent-child lineage 不能由相似文本推断，必须来自 parser 生成的稳定 object path 和 source digest；
+5. `source_absent_gap` 与 `retrieval_quality_gap`／`object_context_gap` 分开。前者表示截至期没有合格源；后两者表示源已存在但对象化、查询或排序还不足；
+6. 行业 read-through 与 company-specific attribution 必须是不同 relationship role，前者不能补齐后者的 required facet；
+7. alias、多语言、ADR／local ticker 和 PDF-only 只通过 case-neutral resolver／parser plugin 扩展，不进入金融内核的 ticker 分支。
+
+索引准入因此改成两道门：先对 DELL／MU／NVDA 和 ORCL／ASML／ANET 证明 bundle 语义、currency／unit、parent path 与 typed gap；再决定哪些 Source／Section／Table／Q&A／Claim／Metric 对象进入 sparse／dense。当前 held-out 结果状态为 `held_out_generalization_blocked_before_index_rebuild`，不能以 required Slot 均有候选或 top-k 数量代替该准入门。

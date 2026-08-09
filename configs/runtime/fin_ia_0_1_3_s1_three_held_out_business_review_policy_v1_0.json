@@ -1,0 +1,523 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_business_review_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.three_held_out_business_review:v1",
+  "run_scope": "S1_THREE_HELD_OUT_BUSINESS_RELEVANCE_REVIEW",
+  "recorded_at": "2026-08-10T00:35:00+08:00",
+  "review_attempt_id": "S1-THREE-HELD-OUT-BUSINESS-REVIEW-R1",
+  "selection_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_three_held_out_profile_selection_policy_v1_0.json",
+  "candidate_result_ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_candidate_generation_result_v1_0.json",
+  "candidate_result_digest": "14c944646a4967baf3187c8d1beafe6a1f23996a140e12dbd46f3ff4616cf201",
+  "expected_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+  "locked_artifacts": [
+    {
+      "artifact_id": "held_out_selection_policy",
+      "path": "configs/runtime/fin_ia_0_1_3_s1_three_held_out_profile_selection_policy_v1_0.json",
+      "normalized_sha256": "9076d7b37466e5f98ed26b710905ea421ada13e90c0291e8611fb263c7574cba",
+      "role": "pre-retrieval identity and archetype freeze"
+    },
+    {
+      "artifact_id": "held_out_candidate_policy",
+      "path": "configs/runtime/fin_ia_0_1_3_s1_three_held_out_candidate_generation_policy_v1_0.json",
+      "normalized_sha256": "02daa05e946a18e283815671588221a5d2f8e7e21e68837ae989ce918bad092c",
+      "role": "Gold-blind typed query and local asset plan"
+    },
+    {
+      "artifact_id": "held_out_candidate_result",
+      "path": "configs/releases/fin_ia_0_1_3_s1_three_held_out_candidate_generation_result_v1_0.json",
+      "normalized_sha256": "8ac4ad23ecedfbb0a4a36ee65db23c6a19cf511e45f2b0ceeca25183af99d271",
+      "role": "immutable pre-review candidate set"
+    },
+    {
+      "artifact_id": "financial_research_core",
+      "path": "src/sec_agent/financial_research_generalization_contract.py",
+      "normalized_sha256": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e",
+      "role": "frozen kernel and held-out archetype contract"
+    }
+  ],
+  "case_reviews": [
+    {
+      "case_key": "ORCL",
+      "lane_reviews": [
+        {
+          "lane_id": "orcl_operating",
+          "verdict": "strong",
+          "useful_candidate_refs": [
+            "8K_EARNINGS::ORCL::000119312526100148::ORCLEX991HTM::BLOCK_0002::CHUNK_0001",
+            "ORCL_2026_10Q_ITEM2_BLOCK_0008_PART_02_OF_03",
+            "8K_EARNINGS::ORCL::000119312526100148::ORCLEX991HTM::BLOCK_0010::PART_02_OF_03"
+          ],
+          "business_answer_zh": "能回答 FY2026 Q3 的总收入增量、云收入分项及 Q4 增长指引，能看出 OCI／Cloud 是增长主轴。",
+          "limitation_zh": "仍没有 FY2026 Q4 实绩和全年 10-K，因此只能形成 Q3 后的阶段性判断。"
+        },
+        {
+          "lane_id": "orcl_demand",
+          "verdict": "partial",
+          "useful_candidate_refs": ["ORCL_2026_10Q_ITEM2_BLOCK_0010_PART_07_OF_07_CLAIM_4C9A3DD2"],
+          "business_answer_zh": "能确认 RPO 增长与期内若干大型云合同有关。",
+          "limitation_zh": "不能拆出订单转收入节奏、真实消耗量、客户集中、提前采购或容量约束程度。"
+        },
+        {
+          "lane_id": "orcl_pricing_mix",
+          "verdict": "partial",
+          "useful_candidate_refs": ["ORCL_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_02_CLAIM_2C950B15"],
+          "business_answer_zh": "只能看出新增云与软件支持合同带来季节性收入累积。",
+          "limitation_zh": "没有 OCI 价格、用量、单位经济性和 AI 基础设施折旧对利润率的桥接。"
+        },
+        {
+          "lane_id": "orcl_capacity",
+          "verdict": "partial",
+          "useful_candidate_refs": ["ORCL_2026_10Q_ITEM1_BLOCK_0018_CHUNK_0001"],
+          "business_answer_zh": "能看到与数据中心相关的新增租赁承诺和融资担保，说明扩容具有真实资本承诺。",
+          "limitation_zh": "没有投产容量、GPU 分配、电力、土地、利用率和爬坡时间，无法从承诺推导可交付容量。"
+        },
+        {
+          "lane_id": "orcl_cash",
+          "verdict": "strong",
+          "useful_candidate_refs": [
+            "ORCL_2026_10Q_ITEM2_BLOCK_0010_PART_05_OF_07_TABLE_A48E3EF5",
+            "8K_EARNINGS::ORCL::000119312526100148::ORCLEX991HTM::BLOCK_0009::CHUNK_0001_METRIC_TABLE_A8F615E5"
+          ],
+          "business_answer_zh": "能回答经营现金流、债务融资和部分资金用途，足以显示 AI／云扩张的融资与现金压力边界。",
+          "limitation_zh": "候选没有完整、同口径地给出 FY2026 全年资本开支与自由现金流桥接。"
+        },
+        {
+          "lane_id": "orcl_relationship_self",
+          "verdict": "partial",
+          "useful_candidate_refs": ["ORCL_2026_10Q_ITEM2_BLOCK_0003_CHUNK_0001"],
+          "business_answer_zh": "能确认 Oracle 自己披露的 Cloud and Software 业务占比及业务边界。",
+          "limitation_zh": "不能由此把 Oracle 的云增长具体归因到 NVIDIA 加速器供给或某一客户。"
+        },
+        {
+          "lane_id": "orcl_relationship_nvda_capacity",
+          "verdict": "off_target",
+          "useful_candidate_refs": [],
+          "business_answer_zh": "候选只说明 NVIDIA 客户体系中的一般 AI 云需求。",
+          "limitation_zh": "没有 Oracle 名称、供货量、分配量或交付时间，不能作为 Oracle 容量证据。"
+        },
+        {
+          "lane_id": "orcl_relationship_nvda_boundary",
+          "verdict": "off_target",
+          "useful_candidate_refs": [],
+          "business_answer_zh": "候选能描述 NVIDIA 自己的 CSP 风险和 AI 云需求环境。",
+          "limitation_zh": "完全没有建立 NVIDIA→Oracle 的公司特定经济关系，只能保留为未归因行业背景。"
+        },
+        {
+          "lane_id": "orcl_regulatory",
+          "verdict": "off_target",
+          "useful_candidate_refs": [],
+          "business_answer_zh": "当前期候选没有形成可用的 Oracle 云／AI 政策事件。",
+          "limitation_zh": "排在前面的当前期结果是分部会计文本；真正相关的数据隐私和跨境风险只存在于不在冻结期间内的旧 10-K。"
+        },
+        {
+          "lane_id": "orcl_counter",
+          "verdict": "off_target",
+          "useful_candidate_refs": [],
+          "business_answer_zh": "当前期结果主要是业务定义、指引或通用前瞻声明。",
+          "limitation_zh": "没有足够强的容量过剩、客户取消、融资压力等反证，也没有可观察的失效阈值。"
+        },
+        {
+          "lane_id": "orcl_capital_valuation",
+          "verdict": "partial",
+          "useful_candidate_refs": ["ORCL_2026_10Q_ITEM1_BLOCK_0020_CHUNK_0001_CLAIM_3F860750"],
+          "business_answer_zh": "能确认回购节奏受资本开支、收购、分红和偿债需求约束。",
+          "limitation_zh": "没有 point-in-time 股价、估值基准、同业和情景敏感性。"
+        }
+      ],
+      "mutation_reviews": [
+        {
+          "mutation_id": "same-name entity",
+          "outcome": "pass",
+          "evidence_zh": "所有 lane 同时绑定实体 key 和 ticker，错误 ticker 变异测试会关闭；本轮 wrong-ticker candidate 为 0。"
+        },
+        {
+          "mutation_id": "fiscal-calendar mismatch",
+          "outcome": "pass",
+          "evidence_zh": "Q3 10-Q／8-K 没有被冒充成 FY2026 Q4，当前期被明确终结为 typed_current_source_gap。"
+        },
+        {
+          "mutation_id": "competitor pollution",
+          "outcome": "pass",
+          "evidence_zh": "主体和关系 lane 分别锁定 ORCL 或 NVDA，候选未混入其他 ticker；NVDA 内容也没有被自动归因给 Oracle。"
+        }
+      ],
+      "blockers": [
+        {
+          "code": "orcl_fy2026_q4_or_annual_source_absent",
+          "owning_layer": "source_currentness",
+          "affected_lane_ids": ["orcl_operating", "orcl_demand", "orcl_capacity", "orcl_cash"],
+          "business_impact_zh": "截至日要求的 Q4／全年实绩不存在，报告只能停在 Q3 和 Q4 指引，无法形成完整年度判断。",
+          "required_next_action_zh": "补入 Oracle FY2026 Q4 业绩材料与 10-K，保留 Q3 作为历史比较而非当前答案。",
+          "blocks_sparse_dense_rebuild": true
+        },
+        {
+          "code": "orcl_ai_capacity_and_supplier_attribution_unproven",
+          "owning_layer": "relationship_attribution",
+          "affected_lane_ids": ["orcl_relationship_nvda_capacity", "orcl_relationship_nvda_boundary", "orcl_capacity"],
+          "business_impact_zh": "可以看到 Oracle 扩容和 NVIDIA 行业需求，却不能证明 NVIDIA 向 Oracle 分配了多少、何时交付。",
+          "required_next_action_zh": "把关系证据分为 readthrough 与 company-specific attribution；后者缺失时必须保持 typed gap。",
+          "blocks_sparse_dense_rebuild": false
+        }
+      ],
+      "current_period_answer_zh": "本地库支持 Oracle FY2026 Q3 的云增长、RPO、融资和现金流，但缺 FY2026 Q4／全年；当前结论只能是阶段性更新，不能是 FY2026 完整研报。",
+      "product_readiness_zh": "主体检索已具业务价值，当前期覆盖和供应关系归因未达产品验收。"
+    },
+    {
+      "case_key": "ASML",
+      "lane_reviews": [
+        {
+          "lane_id": "asml_operating",
+          "verdict": "usable_with_parent_context",
+          "useful_candidate_refs": [
+            "ASML_2025_20F_ITEM7_BLOCK_0009_PART_03_OF_03_TABLE_2771DDA0",
+            "ASML_2025_20F_ITEM7_BLOCK_0014_PART_01_OF_02_TABLE_776C192A"
+          ],
+          "business_answer_zh": "展开父段后能看到 2025 销售增长、服务收入、EUV／EXE 交付和 2030 收入／毛利区间。",
+          "limitation_zh": "子对象本身只剩表头或脚注；若只给模型子对象，会丢失几乎全部经营含义。"
+        },
+        {
+          "lane_id": "asml_demand",
+          "verdict": "partial",
+          "useful_candidate_refs": [
+            "ASML_2025_20F_ITEM7_BLOCK_0035_PART_01_OF_02",
+            "ASML_2025_20F_ITEM7_BLOCK_0008_CHUNK_0001",
+            "ASML_2025_20F_ITEM7_BLOCK_0016_PART_08_OF_16"
+          ],
+          "business_answer_zh": "能回答客户对长期 AI 需求更有信心、NXE:3800E 被客户接受，以及客户集中风险。",
+          "limitation_zh": "候选没有净订单、积压和 2026 Q2 客户扩产数据，无法判断订单持续性。"
+        },
+        {
+          "lane_id": "asml_pricing_mix",
+          "verdict": "usable_with_parent_context",
+          "useful_candidate_refs": ["ASML_2025_20F_ITEM7_BLOCK_0010_CHUNK_0001_TABLE_F8F6141A"],
+          "business_answer_zh": "父段可恢复 EXE／NXE 系统销量和 field upgrade 等产品 mix 信息。",
+          "limitation_zh": "候选子对象只显示“NXE field upgrades”，没有 ASP、数量与毛利桥，直接消费会成为无意义碎片。"
+        },
+        {
+          "lane_id": "asml_capacity",
+          "verdict": "strong",
+          "useful_candidate_refs": [
+            "ASML_2025_20F_ITEM7_BLOCK_0016_PART_10_OF_16",
+            "ASML_2025_20F_ITEM1_BLOCK_0009_CHUNK_0001"
+          ],
+          "business_answer_zh": "能看到单一来源供应商依赖、高量产工业化风险、High-NA 四台确认收入及产品爬坡。",
+          "limitation_zh": "没有 2026 Q2 的 cycle time、产能利用和客户验收更新。"
+        },
+        {
+          "lane_id": "asml_cash",
+          "verdict": "parser_unsafe",
+          "useful_candidate_refs": [],
+          "business_answer_zh": "父 20-F 的现金流表实际以欧元百万列示，且包含经营现金流、库存、应收和资本开支。",
+          "limitation_zh": "子 metric 把欧元表标成 usd_millions，并有候选把薪酬段错误关联为经营现金流；在单位和父子 lineage 修复前不可晋升。"
+        },
+        {
+          "lane_id": "asml_relationship_self",
+          "verdict": "partial",
+          "useful_candidate_refs": ["ASML_2025_20F_ITEM1_BLOCK_0012_CHUNK_0001"],
+          "business_answer_zh": "能确认 AI 是先进逻辑／DRAM 需求驱动，并描述 ASML 自身的客户和产品角色。",
+          "limitation_zh": "不能把某家晶圆厂资本开支直接归因成 ASML 订单或收入。"
+        },
+        {
+          "lane_id": "asml_relationship_tsm_demand",
+          "verdict": "partial",
+          "useful_candidate_refs": ["SUPP::TSM::000104617926000451::CHUNK_0001"],
+          "business_answer_zh": "TSMC Q2 2026 官方材料确认先进制程需求强、2nm 加速爬坡。",
+          "limitation_zh": "材料没有 ASML 订单或设备金额，只能作为客户自身需求 readthrough。"
+        },
+        {
+          "lane_id": "asml_relationship_tsm_boundary",
+          "verdict": "strong",
+          "useful_candidate_refs": ["SUPP::TSM::000104617926000451::CHUNK_0001"],
+          "business_answer_zh": "能清楚建立“TSMC 自身先进制程需求”这一方向。",
+          "limitation_zh": "正因为没有 ASML 名称和采购量，必须明确写成客户侧读穿而不是 ASML 公司归因。"
+        },
+        {
+          "lane_id": "asml_regulatory",
+          "verdict": "strong",
+          "useful_candidate_refs": [
+            "ASML_2025_20F_ITEM1_BLOCK_0011_PART_01_OF_03",
+            "ASML_2025_20F_ITEM1_BLOCK_0010_CHUNK_0001"
+          ],
+          "business_answer_zh": "能回答荷兰出口管制扩围、中国稀土限制及 ASML 的应对。",
+          "limitation_zh": "缺 2026 Q2 新变化和对订单／收入的最新量化影响。"
+        },
+        {
+          "lane_id": "asml_counter",
+          "verdict": "partial",
+          "useful_candidate_refs": ["ASML_2025_20F_ITEM7_BLOCK_0016_PART_02_OF_16"],
+          "business_answer_zh": "能找到工业化、供应链、地缘和合规风险框架。",
+          "limitation_zh": "排序混入大量 ESG 与治理文本，未形成“哪一项指标在何时会推翻判断”的可执行反证。"
+        },
+        {
+          "lane_id": "asml_capital_valuation",
+          "verdict": "usable_with_parent_context",
+          "useful_candidate_refs": ["ASML_2025_20F_ITEM8_BLOCK_0037_PART_09_OF_11_TABLE_E0DB2A6F"],
+          "business_answer_zh": "父表能恢复累计分红与回购的现金回报。",
+          "limitation_zh": "没有截至日价格、估值倍数、同业或情景敏感性。"
+        }
+      ],
+      "mutation_reviews": [
+        {
+          "mutation_id": "ADR versus local ticker",
+          "outcome": "not_proven",
+          "evidence_zh": "profile 同时声明 ASML 和 ASML.AS，但本轮检索直接使用规范 ticker ASML，没有经过真实别名解析入口。"
+        },
+        {
+          "mutation_id": "multilingual alias",
+          "outcome": "not_proven",
+          "evidence_zh": "本轮没有中文／荷兰文用户别名进入实体解析器，不能仅凭英文查询宣称通过。"
+        },
+        {
+          "mutation_id": "PDF-only source",
+          "outcome": "not_proven",
+          "evidence_zh": "本地只验证了解析后的 20-F JSONL，没有 2026 Q2 issuer IR PDF／6-K 的 capture→parse→candidate 路径。"
+        },
+        {
+          "mutation_id": "currency mismatch",
+          "outcome": "fail",
+          "evidence_zh": "ASML 现金流父表明确为欧元百万，子 metric 却标成 usd_millions，且错误候选未在候选阶段 fail closed。"
+        }
+      ],
+      "blockers": [
+        {
+          "code": "asml_q2_2026_6k_or_ir_pdf_absent",
+          "owning_layer": "source_currentness",
+          "affected_lane_ids": ["asml_operating", "asml_demand", "asml_pricing_mix", "asml_capacity", "asml_cash"],
+          "business_impact_zh": "只能用 FY2025 年报回答截至 2026-08-06 的问题，无法反映 2026 Q2 订单、交付、毛利与出口限制变化。",
+          "required_next_action_zh": "接入 ASML 2026 Q2 官方 IR PDF／6-K，并保留原始捕获、发布日期和报告期。",
+          "blocks_sparse_dense_rebuild": true
+        },
+        {
+          "code": "foreign_issuer_currency_semantics_corrupt",
+          "owning_layer": "financial_object_parser",
+          "affected_lane_ids": ["asml_cash", "asml_pricing_mix"],
+          "business_impact_zh": "欧元现金流可被错误呈现成美元，属于会改变金融结论的 L1 错误。",
+          "required_next_action_zh": "单位必须从表头／source context 继承并与 issuer reporting currency 校验；不一致时拒绝 metric 而不是猜测。",
+          "blocks_sparse_dense_rebuild": true
+        },
+        {
+          "code": "table_child_without_parent_semantics",
+          "owning_layer": "financial_object_boundary",
+          "affected_lane_ids": ["asml_operating", "asml_pricing_mix", "asml_cash", "asml_capital_valuation"],
+          "business_impact_zh": "检索前十中大量对象只剩表头、脚注或一个单元格，模型看到后无法还原业务意义。",
+          "required_next_action_zh": "检索与排序单元改为 child object＋parent block＋表头／行列路径，评分和交付都保留同一 bundle。",
+          "blocks_sparse_dense_rebuild": true
+        }
+      ],
+      "current_period_answer_zh": "FY2025 年报可以回答 ASML 的 EUV／High-NA、AI 长期需求、供应链和出口风险，但 2026 Q2 资料缺失，且现金流单位对象不可信。",
+      "product_readiness_zh": "非美发行人接口能跑，但 PDF/currentness、父子表语义和币种控制尚未泛化通过。"
+    },
+    {
+      "case_key": "ANET",
+      "lane_reviews": [
+        {
+          "lane_id": "anet_operating",
+          "verdict": "partial",
+          "useful_candidate_refs": [
+            "8K_EARNINGS::ANET::000159653226000074::EX991Q126EARNINGSRELEASEHTM::BLOCK_0002::CHUNK_0001",
+            "8K_EARNINGS::ANET::000159653226000074::EX991Q126EARNINGSRELEASEHTM::BLOCK_0001::CHUNK_0001"
+          ],
+          "business_answer_zh": "能回答 2026 Q1 收入、增长、现金流和 Q2 指引。",
+          "limitation_zh": "冻结问题需要 2026 Q2 实绩；排序前两名还是风险页，说明经营结果并未稳定排在前面。"
+        },
+        {
+          "lane_id": "anet_demand",
+          "verdict": "strong",
+          "useful_candidate_refs": [
+            "ANET_2025_10K_ITEM1_BLOCK_0007_CHUNK_0001_CLAIM_89773973",
+            "ANET_2025_10K_ITEM1A_BLOCK_0002_CHUNK_0001_CLAIM_9BDF8E23"
+          ],
+          "business_answer_zh": "能回答 Cloud and AI Titans 客户群、订单时点波动、客户资本开支变化和需求可见度风险。",
+          "limitation_zh": "没有当前 Q2 订单／积压，也没有把 AI Ethernet 部署量化。"
+        },
+        {
+          "lane_id": "anet_pricing_mix",
+          "verdict": "strong",
+          "useful_candidate_refs": ["ANET_2025_10K_ITEM7_BLOCK_0005_PART_01_OF_04_CLAIM_9D346CC6"],
+          "business_answer_zh": "能回答大客户折价、产品／服务 mix、竞争定价和制造成本如何影响毛利。",
+          "limitation_zh": "没有 ASP、出货量和 AI 平台独立毛利。"
+        },
+        {
+          "lane_id": "anet_capacity",
+          "verdict": "strong",
+          "useful_candidate_refs": [
+            "ANET_2025_10K_ITEM1A_BLOCK_0025_PART_01_OF_02",
+            "ANET_2025_10K_ITEM1A_BLOCK_0026_CHUNK_0001"
+          ],
+          "business_answer_zh": "能回答第三方制造、单一来源组件、库存错配和新产品量产爬坡风险。",
+          "limitation_zh": "没有当前交期、组件分配和新平台实际 ramp 进度。"
+        },
+        {
+          "lane_id": "anet_cash",
+          "verdict": "strong",
+          "useful_candidate_refs": ["ANET_2025_10K_ITEM7_BLOCK_0006_CHUNK_0001_METRIC_SENT_15FE7F2E"],
+          "business_answer_zh": "能准确返回 FY2025 经营现金流 44 亿美元及现金流表候选。",
+          "limitation_zh": "缺 Q2 2026 现金流、库存和应收变化。"
+        },
+        {
+          "lane_id": "anet_relationship_self",
+          "verdict": "strong",
+          "useful_candidate_refs": [
+            "ANET_2025_10K_ITEM1_BLOCK_0004_PART_01_OF_02",
+            "ANET_2025_10K_ITEM1A_BLOCK_0009_PART_02_OF_02"
+          ],
+          "business_answer_zh": "能回答 Arista 自身的 AI Ethernet 用例、分布式集群需求以及新品试用／验收周期。",
+          "limitation_zh": "仍不能从产品描述推导某个大客户的采购量。"
+        },
+        {
+          "lane_id": "anet_relationship_msft_demand",
+          "verdict": "partial",
+          "useful_candidate_refs": [
+            "MSFT_2025_10K_ITEM1A_BLOCK_0016_CHUNK_0001_CLAIM_55240D6A",
+            "MSFT_2025_10K_ITEM1_BLOCK_0006_CHUNK_0001_CLAIM_CE912E7A"
+          ],
+          "business_answer_zh": "能确认 Microsoft 持续投入数据中心、网络和 AI 基础设施。",
+          "limitation_zh": "Microsoft 没有在候选中披露 Arista 采购额，不能把全部投入归因给 ANET。"
+        },
+        {
+          "lane_id": "anet_relationship_msft_boundary",
+          "verdict": "strong",
+          "useful_candidate_refs": ["MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6"],
+          "business_answer_zh": "能确认 Microsoft AI 基建投入正在压低云毛利，说明需求真实且资本密集。",
+          "limitation_zh": "该事实只属于 Microsoft；没有证据时必须阻止下游写成 Arista 收入。"
+        },
+        {
+          "lane_id": "anet_relationship_nvda_capacity",
+          "verdict": "off_target",
+          "useful_candidate_refs": [],
+          "business_answer_zh": "候选主要是 NVIDIA 分部定义和财务表。",
+          "limitation_zh": "没有 AI Ethernet 生态部署、Arista 名称或平台供需机制，无法回答 ANET 新平台爬坡。"
+        },
+        {
+          "lane_id": "anet_relationship_nvda_boundary",
+          "verdict": "off_target",
+          "useful_candidate_refs": [],
+          "business_answer_zh": "候选能描述 NVIDIA 自己的平台发布和风险。",
+          "limitation_zh": "不能建立 NVIDIA→Arista 的公司特定经济关系。"
+        },
+        {
+          "lane_id": "anet_regulatory",
+          "verdict": "strong",
+          "useful_candidate_refs": [
+            "ANET_2025_10K_ITEM1A_BLOCK_0032_PART_02_OF_02",
+            "ANET_2025_10K_ITEM1A_BLOCK_0035_PART_03_OF_04"
+          ],
+          "business_answer_zh": "能回答中美贸易反制、半导体与超级计算出口限制以及对材料和供应链的影响。",
+          "limitation_zh": "没有当前 Q2 的新增政策变化和财务量化。"
+        },
+        {
+          "lane_id": "anet_counter",
+          "verdict": "strong",
+          "useful_candidate_refs": [
+            "ANET_2025_10K_ITEM1A_BLOCK_0002_CHUNK_0001",
+            "ANET_2025_10K_ITEM1A_BLOCK_0004_PART_03_OF_03"
+          ],
+          "business_answer_zh": "能找到大客户集中、Broadcom 单一来源、客户推迟资本开支和供应链中断等实质反证。",
+          "limitation_zh": "缺少由系统编译出的可观察失效阈值和监控时间。"
+        },
+        {
+          "lane_id": "anet_capital_valuation",
+          "verdict": "strong",
+          "useful_candidate_refs": ["ANET_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_05_TABLE_A776EF33"],
+          "business_answer_zh": "能回答回购计划和历史回购活动。",
+          "limitation_zh": "没有 point-in-time 股价、估值倍数和情景敏感性。"
+        }
+      ],
+      "mutation_reviews": [
+        {
+          "mutation_id": "missing official source",
+          "outcome": "pass",
+          "evidence_zh": "Q2 官方源缺失时仍完整物化其余候选，并将 currentness 终结为 typed_current_source_gap。"
+        },
+        {
+          "mutation_id": "relationship reversal",
+          "outcome": "pass",
+          "evidence_zh": "MSFT／NVDA lane 使用 evidence-owner 自身披露方向；反转成 subject_self_disclosure 的变异测试会关闭。"
+        },
+        {
+          "mutation_id": "stale-only candidate",
+          "outcome": "pass",
+          "evidence_zh": "2026 Q1 和 FY2025 候选没有被冒充为 Q2 实绩，当前期状态仍为 gap。"
+        },
+        {
+          "mutation_id": "zero-result route",
+          "outcome": "pass",
+          "evidence_zh": "零结果 fake retriever 被确定性终结为 completed_typed_zero_result，且不制造候选。"
+        }
+      ],
+      "blockers": [
+        {
+          "code": "anet_q2_2026_official_results_absent",
+          "owning_layer": "source_currentness",
+          "affected_lane_ids": ["anet_operating", "anet_demand", "anet_pricing_mix", "anet_capacity", "anet_cash"],
+          "business_impact_zh": "报告只能回答 FY2025 和 2026 Q1，不能验证 Q2 实绩是否兑现 Q1 指引。",
+          "required_next_action_zh": "补入 ANET 2026 Q2 10-Q／8-K／业绩材料，并保持旧候选只用于历史对比。",
+          "blocks_sparse_dense_rebuild": true
+        },
+        {
+          "code": "anet_counterparty_demand_not_company_attribution",
+          "owning_layer": "relationship_attribution",
+          "affected_lane_ids": ["anet_relationship_msft_demand", "anet_relationship_msft_boundary", "anet_relationship_nvda_capacity", "anet_relationship_nvda_boundary"],
+          "business_impact_zh": "能证明 hyperscaler 和加速计算生态需求，却不能证明 Arista 获得的订单份额。",
+          "required_next_action_zh": "在 Evidence Pack 中单列 readthrough、company-specific attribution 与 attribution gap，禁止自动拼接成公司收入。",
+          "blocks_sparse_dense_rebuild": false
+        }
+      ],
+      "current_period_answer_zh": "FY2025 和 2026 Q1 足以说明 Arista 的 AI Ethernet、客户集中、毛利和供应链机制，但缺 2026 Q2 实绩与客户归因。",
+      "product_readiness_zh": "稀疏披露案例的主体研究价值最好，但当前期和关系归因仍未达到正式研报标准。"
+    }
+  ],
+  "cross_case_findings": [
+    {
+      "code": "current_source_coverage_precedes_index_rebuild",
+      "owning_layer": "source_inventory_and_ingestion",
+      "affected_lane_ids": [],
+      "business_impact_zh": "三案都缺冻结截至日要求的最终季度／年度官方源；在旧语料上重建向量会让召回更快，但不会让答案更新。",
+      "required_next_action_zh": "先补齐 ORCL FY2026 Q4／10-K、ASML 2026 Q2 6-K／IR PDF、ANET 2026 Q2 10-Q／8-K，再决定哪些对象进入新索引。",
+      "blocks_sparse_dense_rebuild": true
+    },
+    {
+      "code": "retrieval_unit_must_be_source_object_bundle",
+      "owning_layer": "financial_object_and_retrieval_contract",
+      "affected_lane_ids": [],
+      "business_impact_zh": "ASML 证明单独索引 child metric/table 会把完整财务表切成表头、脚注和孤立数值，降低研报可解释性。",
+      "required_next_action_zh": "统一候选单元为 source document→parent block→child object bundle；排序可用 child，交付必须带 parent 和表头／行列路径。",
+      "blocks_sparse_dense_rebuild": true
+    },
+    {
+      "code": "currency_and_unit_authority_not_fail_closed",
+      "owning_layer": "financial_object_parser_and_numeric_authority",
+      "affected_lane_ids": [],
+      "business_impact_zh": "ASML 欧元现金流被标为美元，证明当前对象不能安全承载非美发行人的权威数字。",
+      "required_next_action_zh": "单位与币种从源表头和 issuer reporting currency 双重绑定；冲突时拒绝 child metric，仅保留原始父表候选。",
+      "blocks_sparse_dense_rebuild": true
+    },
+    {
+      "code": "relationship_readthrough_requires_separate_product_surface",
+      "owning_layer": "relationship_evidence_contract",
+      "affected_lane_ids": [],
+      "business_impact_zh": "三案都能检到交易对手自己的需求，但这不等于被研究公司的订单、份额或收入。",
+      "required_next_action_zh": "Evidence Pack 固定分开 counterparty readthrough、company-specific attribution 和 residual attribution gap。",
+      "blocks_sparse_dense_rebuild": false
+    },
+    {
+      "code": "typed_gap_taxonomy_missing_retrieval_quality",
+      "owning_layer": "financial_research_kernel_contract",
+      "affected_lane_ids": [],
+      "business_impact_zh": "当前 gap 只能写 source_missing、parser_gap 等，不能准确表达“源存在但候选排序／对象上下文不足”。",
+      "required_next_action_zh": "以版本化、provider-neutral 的方式增加 retrieval_quality_gap／object_context_gap，而不是错误套用 source_missing。",
+      "blocks_sparse_dense_rebuild": true
+    }
+  ],
+  "hard_boundaries": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "additional_retrieval": 0,
+    "candidate_set_must_remain_frozen": true,
+    "core_modification_allowed": false,
+    "index_rebuild_allowed": false
+  }
+}

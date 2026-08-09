@@ -1,0 +1,550 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_candidate_generation_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.three_held_out_candidate_generation:v1",
+  "run_scope": "S1_THREE_HELD_OUT_GOLD_BLIND_LOCAL_CANDIDATE_GENERATION",
+  "recorded_at": "2026-08-09T23:55:00+08:00",
+  "attempt_id": "S1-THREE-HELD-OUT-CANDIDATE-GENERATION-R1",
+  "selection_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_three_held_out_profile_selection_policy_v1_0.json",
+  "selection_policy_sha256": "9076d7b37466e5f98ed26b710905ea421ada13e90c0291e8611fb263c7574cba",
+  "expected_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+  "locked_artifacts": [
+    {
+      "artifact_id": "held_out_selection_policy",
+      "path": "configs/runtime/fin_ia_0_1_3_s1_three_held_out_profile_selection_policy_v1_0.json",
+      "normalized_sha256": "9076d7b37466e5f98ed26b710905ea421ada13e90c0291e8611fb263c7574cba",
+      "role": "identity, profile, question and archetype selection frozen before candidate inspection"
+    },
+    {
+      "artifact_id": "held_out_profile_registry",
+      "path": "src/sec_agent/financial_research_held_out_profile_registry.py",
+      "normalized_sha256": "b2b64a733c4a50f317154ef2b0e5411d6190c75b74455fb734d22603fdf01cfe",
+      "role": "external profile and industry overlay compiler boundary"
+    },
+    {
+      "artifact_id": "financial_research_core",
+      "path": "src/sec_agent/financial_research_generalization_contract.py",
+      "normalized_sha256": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e",
+      "role": "provider-neutral kernel, slot library, plugin interfaces and candidate evaluator"
+    },
+    {
+      "artifact_id": "dell_proven_source_object_executor",
+      "path": "src/sec_agent/financial_research_source_object_vertical.py",
+      "normalized_sha256": "379d1804ea5f6ab02efe3271b0f4a701b343a14b7473d7ddb412b0ee729d14d8",
+      "role": "known-case source-object retrieval semantics"
+    }
+  ],
+  "case_plans": [
+    {
+      "case_key": "ORCL",
+      "assets": [
+        {
+          "asset_id": "us_parent_sparse",
+          "retriever_kind": "parent_bm25",
+          "index_ref": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027",
+          "source_records_ref": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027/records.jsonl"
+        },
+        {
+          "asset_id": "financial_objects",
+          "retriever_kind": "object_bm25",
+          "index_ref": "Z:/FIN_Insight_Agent_artifacts/tier1_tier2_full_source_v0_1/indexes/sqlite_fts/tier1_tier2_sec_full_source_mixed_objects_fy2023_2027_v0_1",
+          "source_records_ref": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027/records.jsonl"
+        }
+      ],
+      "query_lanes": [
+        {
+          "lane_id": "orcl_operating",
+          "asset_id": "us_parent_sparse",
+          "slot_id": "operating_performance",
+          "facet_focus": ["reported_revenue", "reported_profitability", "segment_or_product_performance", "management_outlook", "cloud_and_ai_service_revenue"],
+          "evidence_owner_entity_key": "ORACLE_CORPORATION",
+          "evidence_owner_ticker": "ORCL",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["cloud services revenue operating income guidance fiscal 2026", "OCI cloud infrastructure revenue growth remaining performance obligations"],
+          "filters": {"ticker": "ORCL", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "orcl_demand",
+          "asset_id": "financial_objects",
+          "slot_id": "demand_volume_quality",
+          "facet_focus": ["order_backlog_rpo_or_volume", "deployment_or_utilization", "durability_or_pull_forward", "customer_breadth_or_concentration", "ai_workload_consumption", "capacity_constrained_demand"],
+          "evidence_owner_entity_key": "ORACLE_CORPORATION",
+          "evidence_owner_ticker": "ORCL",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["remaining performance obligations AI cloud contracts consumption capacity constrained demand", "cloud customer concentration backlog conversion deployment"],
+          "filters": {"ticker": "ORCL", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "orcl_pricing_mix",
+          "asset_id": "financial_objects",
+          "slot_id": "pricing_mix_value_capture",
+          "facet_focus": ["price_or_asp", "volume_or_units", "mix_or_product_attribution", "margin_or_unit_economics", "profit_capture_bridge", "cloud_service_mix", "ai_infrastructure_depreciation_margin_bridge"],
+          "evidence_owner_entity_key": "ORACLE_CORPORATION",
+          "evidence_owner_ticker": "ORCL",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["cloud services license support mix gross margin depreciation data center", "cloud revenue growth operating margin capital intensity"],
+          "filters": {"ticker": "ORCL", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "orcl_capacity",
+          "asset_id": "us_parent_sparse",
+          "slot_id": "capacity_inputs_execution",
+          "facet_focus": ["capacity_or_supply", "utilization_or_yield", "bottleneck_or_lead_time", "ramp_timing", "supplier_commitment_or_dependency", "data_center_capex_capacity", "power_land_or_accelerator_constraint"],
+          "evidence_owner_entity_key": "ORACLE_CORPORATION",
+          "evidence_owner_ticker": "ORCL",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["capital expenditures data centers power GPU supply cloud capacity ramp", "purchase commitments data center capacity construction lead time"],
+          "filters": {"ticker": "ORCL", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "orcl_cash",
+          "asset_id": "financial_objects",
+          "slot_id": "cash_conversion_balance_sheet",
+          "facet_focus": ["operating_cash_flow", "capital_expenditure", "working_capital", "inventory", "receivables_payables_or_obligations"],
+          "evidence_owner_entity_key": "ORACLE_CORPORATION",
+          "evidence_owner_ticker": "ORCL",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["operating cash flow capital expenditures accounts receivable obligations debt", "cash flow data center capital expenditure working capital"],
+          "filters": {"ticker": "ORCL", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "orcl_relationship_self",
+          "asset_id": "us_parent_sparse",
+          "slot_id": "relationship_attribution",
+          "facet_focus": ["evidence_owner_self_disclosure", "economic_relationship_direction", "company_specific_attribution_or_boundary"],
+          "evidence_owner_entity_key": "ORACLE_CORPORATION",
+          "evidence_owner_ticker": "ORCL",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["cloud infrastructure supplier accelerator customer contracts attribution", "Oracle cloud demand supplier dependency company specific"],
+          "filters": {"ticker": "ORCL", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "orcl_relationship_nvda_capacity",
+          "asset_id": "financial_objects",
+          "slot_id": "capacity_inputs_execution",
+          "facet_focus": ["capacity_or_supply", "supplier_commitment_or_dependency", "power_land_or_accelerator_constraint"],
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "relationship_direction": "evidence_owner_own_accelerator_capacity_or_constraint",
+          "query_texts": ["cloud service provider GPU supply capacity Blackwell systems constraints", "accelerator supply demand cloud service providers deployment"],
+          "filters": {"ticker": "NVDA", "fiscal_year": [2026, 2027]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "orcl_relationship_nvda_boundary",
+          "asset_id": "financial_objects",
+          "slot_id": "relationship_attribution",
+          "facet_focus": ["evidence_owner_self_disclosure", "economic_relationship_direction", "company_specific_attribution_or_boundary"],
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "relationship_direction": "evidence_owner_own_accelerator_capacity_or_constraint",
+          "query_texts": ["cloud service providers infrastructure partners accelerator demand attribution", "NVIDIA supplier statement Oracle cloud boundary"],
+          "filters": {"ticker": "NVDA", "fiscal_year": [2026, 2027]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "orcl_regulatory",
+          "asset_id": "us_parent_sparse",
+          "slot_id": "regulatory_policy_exposure",
+          "facet_focus": ["policy_or_regulatory_event", "affected_scope", "financial_or_operating_consequence", "mitigation_or_uncertainty"],
+          "evidence_owner_entity_key": "ORACLE_CORPORATION",
+          "evidence_owner_ticker": "ORCL",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["export controls data privacy cloud regulation government restrictions financial consequence", "AI regulation cloud services compliance uncertainty"],
+          "filters": {"ticker": "ORCL", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "orcl_counter",
+          "asset_id": "us_parent_sparse",
+          "slot_id": "counterevidence_and_what_would_change",
+          "facet_focus": ["strongest_counterevidence", "impact_mechanism", "observable_invalidation_threshold", "monitoring_metric_and_timing"],
+          "evidence_owner_entity_key": "ORACLE_CORPORATION",
+          "evidence_owner_ticker": "ORCL",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["risk capacity constraints customer concentration debt capital expenditures cloud demand", "what could adversely affect cloud growth margins cash flow"],
+          "filters": {"ticker": "ORCL", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "orcl_capital_valuation",
+          "asset_id": "financial_objects",
+          "slot_id": "capital_allocation_and_valuation",
+          "facet_focus": ["capital_structure_or_returns", "valuation_basis", "scenario_or_sensitivity", "price_in_boundary"],
+          "evidence_owner_entity_key": "ORACLE_CORPORATION",
+          "evidence_owner_ticker": "ORCL",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["share repurchases dividends debt capital allocation", "interest expense debt maturity capital returns"],
+          "filters": {"ticker": "ORCL", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 10
+        }
+      ],
+      "currentness_requirement": {
+        "required_period_end_on_or_after": "2026-05-31",
+        "accepted_form_types": ["10-K", "8-K", "earnings_release"],
+        "missing_current_source_is_typed_gap": true
+      }
+    },
+    {
+      "case_key": "ASML",
+      "assets": [
+        {
+          "asset_id": "tier2_parent_sparse",
+          "retriever_kind": "parent_bm25",
+          "index_ref": "data/indexes/staging/bm25/tier2_supply_chain_sec_annual_fy2023_2025_v0_1",
+          "source_records_ref": "data/indexes/staging/bm25/tier2_supply_chain_sec_annual_fy2023_2025_v0_1/records.jsonl"
+        },
+        {
+          "asset_id": "financial_objects",
+          "retriever_kind": "object_bm25",
+          "index_ref": "Z:/FIN_Insight_Agent_artifacts/tier1_tier2_full_source_v0_1/indexes/sqlite_fts/tier1_tier2_sec_full_source_mixed_objects_fy2023_2027_v0_1",
+          "source_records_ref": "data/indexes/staging/bm25/tier2_supply_chain_sec_annual_fy2023_2025_v0_1/records.jsonl"
+        },
+        {
+          "asset_id": "current_tsm_parent_sparse",
+          "retriever_kind": "parent_bm25",
+          "index_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/bm25",
+          "source_records_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/bm25/records.jsonl"
+        }
+      ],
+      "query_lanes": [
+        {
+          "lane_id": "asml_operating",
+          "asset_id": "financial_objects",
+          "slot_id": "operating_performance",
+          "facet_focus": ["reported_revenue", "reported_profitability", "segment_or_product_performance", "management_outlook", "euv_or_high_na_system_revenue"],
+          "evidence_owner_entity_key": "ASML_HOLDING",
+          "evidence_owner_ticker": "ASML",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["net sales gross margin EUV High NA systems installed base 2025", "EUV systems revenue service revenue outlook"],
+          "filters": {"ticker": "ASML", "fiscal_year": [2025]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "asml_demand",
+          "asset_id": "tier2_parent_sparse",
+          "slot_id": "demand_volume_quality",
+          "facet_focus": ["order_backlog_rpo_or_volume", "deployment_or_utilization", "durability_or_pull_forward", "customer_breadth_or_concentration", "net_bookings_and_backlog", "customer_fab_ramp_demand"],
+          "evidence_owner_entity_key": "ASML_HOLDING",
+          "evidence_owner_ticker": "ASML",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["net bookings backlog EUV customer demand fab capacity 2025", "order intake backlog customer concentration cycle demand"],
+          "filters": {"ticker": "ASML", "fiscal_year": [2025], "form_type": ["20-F"]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "asml_pricing_mix",
+          "asset_id": "financial_objects",
+          "slot_id": "pricing_mix_value_capture",
+          "facet_focus": ["price_or_asp", "volume_or_units", "mix_or_product_attribution", "margin_or_unit_economics", "profit_capture_bridge", "system_asp_and_product_mix", "euv_mix_margin_bridge"],
+          "evidence_owner_entity_key": "ASML_HOLDING",
+          "evidence_owner_ticker": "ASML",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["systems sold average selling price EUV mix gross margin", "High NA system price product mix margin bridge"],
+          "filters": {"ticker": "ASML", "fiscal_year": [2025]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "asml_capacity",
+          "asset_id": "tier2_parent_sparse",
+          "slot_id": "capacity_inputs_execution",
+          "facet_focus": ["capacity_or_supply", "utilization_or_yield", "bottleneck_or_lead_time", "ramp_timing", "supplier_commitment_or_dependency", "high_na_ramp_and_customer_acceptance", "manufacturing_capacity_and_cycle_time"],
+          "evidence_owner_entity_key": "ASML_HOLDING",
+          "evidence_owner_ticker": "ASML",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["High NA ramp customer acceptance manufacturing capacity cycle time suppliers", "EUV capacity lead time supply chain constraints production ramp"],
+          "filters": {"ticker": "ASML", "fiscal_year": [2025], "form_type": ["20-F"]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "asml_cash",
+          "asset_id": "financial_objects",
+          "slot_id": "cash_conversion_balance_sheet",
+          "facet_focus": ["operating_cash_flow", "capital_expenditure", "working_capital", "inventory", "receivables_payables_or_obligations"],
+          "evidence_owner_entity_key": "ASML_HOLDING",
+          "evidence_owner_ticker": "ASML",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["cash flows from operating activities capital expenditures inventory receivables EUR", "working capital customer advances inventory cash conversion"],
+          "filters": {"ticker": "ASML", "fiscal_year": [2025]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "asml_relationship_self",
+          "asset_id": "tier2_parent_sparse",
+          "slot_id": "relationship_attribution",
+          "facet_focus": ["evidence_owner_self_disclosure", "economic_relationship_direction", "company_specific_attribution_or_boundary"],
+          "evidence_owner_entity_key": "ASML_HOLDING",
+          "evidence_owner_ticker": "ASML",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["customers foundry logic memory demand EUV attribution", "customer capacity investment ASML systems relationship boundary"],
+          "filters": {"ticker": "ASML", "fiscal_year": [2025], "form_type": ["20-F"]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "asml_relationship_tsm_demand",
+          "asset_id": "current_tsm_parent_sparse",
+          "slot_id": "demand_volume_quality",
+          "facet_focus": ["deployment_or_utilization", "customer_fab_ramp_demand"],
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_ticker": "TSM",
+          "relationship_direction": "evidence_owner_own_foundry_capacity_demand",
+          "query_texts": ["capital budget advanced process capacity expansion 2026", "leading edge demand capacity ramp advanced technologies"],
+          "filters": {"ticker": "TSM", "fiscal_year": [2026], "form_type": ["6-K"]},
+          "candidate_budget": 8
+        },
+        {
+          "lane_id": "asml_relationship_tsm_boundary",
+          "asset_id": "current_tsm_parent_sparse",
+          "slot_id": "relationship_attribution",
+          "facet_focus": ["evidence_owner_self_disclosure", "economic_relationship_direction", "company_specific_attribution_or_boundary"],
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_ticker": "TSM",
+          "relationship_direction": "evidence_owner_own_foundry_capacity_demand",
+          "query_texts": ["TSMC own capacity capital budget customer demand attribution boundary", "foundry expansion disclosure equipment supplier inference boundary"],
+          "filters": {"ticker": "TSM", "fiscal_year": [2026], "form_type": ["6-K"]},
+          "candidate_budget": 8
+        },
+        {
+          "lane_id": "asml_regulatory",
+          "asset_id": "tier2_parent_sparse",
+          "slot_id": "regulatory_policy_exposure",
+          "facet_focus": ["policy_or_regulatory_event", "affected_scope", "financial_or_operating_consequence", "mitigation_or_uncertainty", "export_control_and_china_exposure"],
+          "evidence_owner_entity_key": "ASML_HOLDING",
+          "evidence_owner_ticker": "ASML",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["export controls China sales licenses DUV EUV financial consequences", "government restrictions export license mitigation uncertainty"],
+          "filters": {"ticker": "ASML", "fiscal_year": [2025], "form_type": ["20-F"]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "asml_counter",
+          "asset_id": "tier2_parent_sparse",
+          "slot_id": "counterevidence_and_what_would_change",
+          "facet_focus": ["strongest_counterevidence", "impact_mechanism", "observable_invalidation_threshold", "monitoring_metric_and_timing"],
+          "evidence_owner_entity_key": "ASML_HOLDING",
+          "evidence_owner_ticker": "ASML",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["risk bookings cancellation customer capex digestion export controls supply chain", "adverse demand cycle backlog margin High NA delays"],
+          "filters": {"ticker": "ASML", "fiscal_year": [2025], "form_type": ["20-F"]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "asml_capital_valuation",
+          "asset_id": "financial_objects",
+          "slot_id": "capital_allocation_and_valuation",
+          "facet_focus": ["capital_structure_or_returns", "valuation_basis", "scenario_or_sensitivity", "price_in_boundary"],
+          "evidence_owner_entity_key": "ASML_HOLDING",
+          "evidence_owner_ticker": "ASML",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["share buyback dividend capital return cash EUR", "capital allocation repurchase program dividend"],
+          "filters": {"ticker": "ASML", "fiscal_year": [2025]},
+          "candidate_budget": 10
+        }
+      ],
+      "currentness_requirement": {
+        "required_period_end_on_or_after": "2026-06-30",
+        "accepted_form_types": ["6-K", "earnings_release"],
+        "missing_current_source_is_typed_gap": true
+      }
+    },
+    {
+      "case_key": "ANET",
+      "assets": [
+        {
+          "asset_id": "us_parent_sparse",
+          "retriever_kind": "parent_bm25",
+          "index_ref": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027",
+          "source_records_ref": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027/records.jsonl"
+        },
+        {
+          "asset_id": "financial_objects",
+          "retriever_kind": "object_bm25",
+          "index_ref": "Z:/FIN_Insight_Agent_artifacts/tier1_tier2_full_source_v0_1/indexes/sqlite_fts/tier1_tier2_sec_full_source_mixed_objects_fy2023_2027_v0_1",
+          "source_records_ref": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027/records.jsonl"
+        }
+      ],
+      "query_lanes": [
+        {
+          "lane_id": "anet_operating",
+          "asset_id": "us_parent_sparse",
+          "slot_id": "operating_performance",
+          "facet_focus": ["reported_revenue", "reported_profitability", "segment_or_product_performance", "management_outlook", "cloud_and_ai_networking_revenue_exposure"],
+          "evidence_owner_entity_key": "ARISTA_NETWORKS",
+          "evidence_owner_ticker": "ANET",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["revenue gross margin cloud AI networking guidance 2026", "product service revenue AI networking exposure"],
+          "filters": {"ticker": "ANET", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "anet_demand",
+          "asset_id": "financial_objects",
+          "slot_id": "demand_volume_quality",
+          "facet_focus": ["order_backlog_rpo_or_volume", "deployment_or_utilization", "durability_or_pull_forward", "customer_breadth_or_concentration", "large_customer_concentration", "ai_cluster_ethernet_deployment"],
+          "evidence_owner_entity_key": "ARISTA_NETWORKS",
+          "evidence_owner_ticker": "ANET",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["large cloud customer concentration AI Ethernet deployment demand", "backlog orders customer capex digestion network deployment"],
+          "filters": {"ticker": "ANET", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "anet_pricing_mix",
+          "asset_id": "financial_objects",
+          "slot_id": "pricing_mix_value_capture",
+          "facet_focus": ["price_or_asp", "volume_or_units", "mix_or_product_attribution", "margin_or_unit_economics", "profit_capture_bridge", "product_service_and_platform_mix"],
+          "evidence_owner_entity_key": "ARISTA_NETWORKS",
+          "evidence_owner_ticker": "ANET",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["product service revenue mix gross margin pricing", "platform mix units margin manufacturing cost"],
+          "filters": {"ticker": "ANET", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "anet_capacity",
+          "asset_id": "us_parent_sparse",
+          "slot_id": "capacity_inputs_execution",
+          "facet_focus": ["capacity_or_supply", "utilization_or_yield", "bottleneck_or_lead_time", "ramp_timing", "supplier_commitment_or_dependency", "new_platform_ramp", "component_supply_and_lead_time"],
+          "evidence_owner_entity_key": "ARISTA_NETWORKS",
+          "evidence_owner_ticker": "ANET",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["component supply lead times new platform ramp inventory manufacturing", "supplier dependency product introduction capacity constraints"],
+          "filters": {"ticker": "ANET", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "anet_cash",
+          "asset_id": "financial_objects",
+          "slot_id": "cash_conversion_balance_sheet",
+          "facet_focus": ["operating_cash_flow", "capital_expenditure", "working_capital", "inventory", "receivables_payables_or_obligations"],
+          "evidence_owner_entity_key": "ARISTA_NETWORKS",
+          "evidence_owner_ticker": "ANET",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["cash flows operating activities inventory receivables purchase commitments", "working capital inventory accounts receivable cash conversion"],
+          "filters": {"ticker": "ANET", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "anet_relationship_self",
+          "asset_id": "us_parent_sparse",
+          "slot_id": "relationship_attribution",
+          "facet_focus": ["evidence_owner_self_disclosure", "economic_relationship_direction", "company_specific_attribution_or_boundary"],
+          "evidence_owner_entity_key": "ARISTA_NETWORKS",
+          "evidence_owner_ticker": "ANET",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["large cloud customers AI Ethernet demand attribution", "customer network investment Arista specific boundary"],
+          "filters": {"ticker": "ANET", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "anet_relationship_msft_demand",
+          "asset_id": "financial_objects",
+          "slot_id": "demand_volume_quality",
+          "facet_focus": ["deployment_or_utilization", "large_customer_concentration", "ai_cluster_ethernet_deployment"],
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_ticker": "MSFT",
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "query_texts": ["AI infrastructure demand data center network capacity capital expenditures", "Azure AI demand network deployment capacity constraints"],
+          "filters": {"ticker": "MSFT", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "anet_relationship_msft_boundary",
+          "asset_id": "financial_objects",
+          "slot_id": "relationship_attribution",
+          "facet_focus": ["evidence_owner_self_disclosure", "economic_relationship_direction", "company_specific_attribution_or_boundary"],
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_ticker": "MSFT",
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "query_texts": ["Microsoft own AI infrastructure demand supplier attribution boundary", "cloud network capacity disclosure company specific limitation"],
+          "filters": {"ticker": "MSFT", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "anet_relationship_nvda_capacity",
+          "asset_id": "financial_objects",
+          "slot_id": "capacity_inputs_execution",
+          "facet_focus": ["capacity_or_supply", "supplier_commitment_or_dependency", "new_platform_ramp"],
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "relationship_direction": "evidence_owner_own_platform_demand_or_constraint",
+          "query_texts": ["AI networking Ethernet platform demand Blackwell systems deployment", "networking revenue platform ramp supply constraint"],
+          "filters": {"ticker": "NVDA", "fiscal_year": [2026, 2027]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "anet_relationship_nvda_boundary",
+          "asset_id": "financial_objects",
+          "slot_id": "relationship_attribution",
+          "facet_focus": ["evidence_owner_self_disclosure", "economic_relationship_direction", "company_specific_attribution_or_boundary"],
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "relationship_direction": "evidence_owner_own_platform_demand_or_constraint",
+          "query_texts": ["NVIDIA own networking platform demand supplier attribution boundary", "Ethernet ecosystem disclosure Arista specific limitation"],
+          "filters": {"ticker": "NVDA", "fiscal_year": [2026, 2027]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "anet_regulatory",
+          "asset_id": "us_parent_sparse",
+          "slot_id": "regulatory_policy_exposure",
+          "facet_focus": ["policy_or_regulatory_event", "affected_scope", "financial_or_operating_consequence", "mitigation_or_uncertainty"],
+          "evidence_owner_entity_key": "ARISTA_NETWORKS",
+          "evidence_owner_ticker": "ANET",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["export controls tariffs supply chain regulation financial impact", "trade restrictions networking products compliance uncertainty"],
+          "filters": {"ticker": "ANET", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "anet_counter",
+          "asset_id": "us_parent_sparse",
+          "slot_id": "counterevidence_and_what_would_change",
+          "facet_focus": ["strongest_counterevidence", "impact_mechanism", "observable_invalidation_threshold", "monitoring_metric_and_timing"],
+          "evidence_owner_entity_key": "ARISTA_NETWORKS",
+          "evidence_owner_ticker": "ANET",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["risk customer concentration cloud capex digestion competition component supply", "adverse customer technology roadmap demand volatility margins"],
+          "filters": {"ticker": "ANET", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 12
+        },
+        {
+          "lane_id": "anet_capital_valuation",
+          "asset_id": "financial_objects",
+          "slot_id": "capital_allocation_and_valuation",
+          "facet_focus": ["capital_structure_or_returns", "valuation_basis", "scenario_or_sensitivity", "price_in_boundary"],
+          "evidence_owner_entity_key": "ARISTA_NETWORKS",
+          "evidence_owner_ticker": "ANET",
+          "relationship_direction": "subject_self_disclosure",
+          "query_texts": ["share repurchases cash investments capital allocation", "stock repurchase capital return cash balance"],
+          "filters": {"ticker": "ANET", "fiscal_year": [2025, 2026]},
+          "candidate_budget": 10
+        }
+      ],
+      "currentness_requirement": {
+        "required_period_end_on_or_after": "2026-06-30",
+        "accepted_form_types": ["10-Q", "8-K", "earnings_release"],
+        "missing_current_source_is_typed_gap": true
+      }
+    }
+  ],
+  "hard_boundaries": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "selection_must_remain_frozen": true,
+    "candidate_generation_before_review": true,
+    "answer_or_target_locator_allowed": false,
+    "core_modification_allowed": false,
+    "sparse_dense_rebuild_allowed": false,
+    "external_supplement_allowed": false
+  }
+}

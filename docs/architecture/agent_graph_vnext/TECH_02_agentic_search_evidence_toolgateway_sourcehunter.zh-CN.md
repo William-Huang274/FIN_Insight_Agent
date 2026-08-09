@@ -1281,3 +1281,5 @@ successor 使用独立 Git-ignored Milvus Lite DB 与独立 collection；旧 662
 当前 fake proof 为 13 batches／410 vectors，8 类 mutation 全部拒绝，真实 embedding 和 Milvus read/write 均为 0。它只给 clean incremental-build authority 提供工程依据；真实构建、10/10 metadata presence 和 same-matrix ranking 必须保持三个独立终态。
 
 真实 runner 将 32-row 原子事务与 8-row model micro-batch 分开：前者维持 13 个 deterministic insert acknowledgements，后者把 410 条长 segment 拆为预期 52 个 GPU micro-batches，降低显存风险但不改变向量语义合同。clean authority 除 Git SHA 外还必须绑定 BGE 权重和 pymilvus package 指纹；否则外部模型目录漂移不会反映在 Git clean 状态中。成功后对历史与 supplemental 两库执行 10×2 次 metadata-only presence query；该 proof 与 ranking search 分离。
+
+实现提交 `6f2e11ad...b03` 已把 terminal count 收敛为一次 collection-stats read，并把 micro-batch 从硬编码改为按实际输入累计；full-fake digest=`2e9cb6fd...0d30f`。R1 authority=`fc8e7c44...65109` 已在 clean/synced 状态签发，但必须作为独立提交推送后才能消费。authority 的 issued 状态不是实建成功；真实 build、presence proof 与 same-matrix ranking 仍是三个独立步骤。

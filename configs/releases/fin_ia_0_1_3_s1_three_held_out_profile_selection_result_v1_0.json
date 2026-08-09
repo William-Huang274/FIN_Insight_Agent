@@ -1,0 +1,164 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_profile_selection_result_v1_0",
+  "contract_ref": "fin_0_1_3.S1.three_held_out_profile_selection:v1",
+  "run_scope": "S1_THREE_HELD_OUT_FINANCIAL_RESEARCH_GENERALIZATION_PROOF",
+  "recorded_at": "2026-08-09T23:20:00+08:00",
+  "selection_attempt_id": "S1-THREE-HELD-OUT-PROFILE-SELECTION-R1",
+  "status": "held_out_identity_and_profile_freeze_pass",
+  "expected_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+  "locked_artifacts_before": {
+    "generalization_contract": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+    "generalization_core_module": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e",
+    "source_object_vertical_executor": "379d1804ea5f6ab02efe3271b0f4a701b343a14b7473d7ddb412b0ee729d14d8",
+    "known_case_transfer_result": "4a6beac4f5835701ab866bacc50ea660d39303435821ae8081a29380899c75b5"
+  },
+  "locked_artifacts_after": {
+    "generalization_contract": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+    "generalization_core_module": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e",
+    "source_object_vertical_executor": "379d1804ea5f6ab02efe3271b0f4a701b343a14b7473d7ddb412b0ee729d14d8",
+    "known_case_transfer_result": "4a6beac4f5835701ab866bacc50ea660d39303435821ae8081a29380899c75b5"
+  },
+  "case_selections": [
+    {
+      "archetype_id": "heldout-us-non-semiconductor",
+      "case_key": "ORCL",
+      "subject_entity_key": "ORACLE_CORPORATION",
+      "industry_pack_ref": "industry-hyperscale-cloud-infrastructure:v1",
+      "as_of_date": "2026-08-06",
+      "accepted_period_ids": [
+        "ORCL_FY2026",
+        "ORCL_FY2026_Q4",
+        "AS_OF_2026_08_06"
+      ],
+      "required_source_shapes": [
+        "10-K",
+        "10-Q",
+        "earnings material",
+        "market PIT"
+      ],
+      "required_mutations": [
+        "same-name entity",
+        "fiscal-calendar mismatch",
+        "competitor pollution"
+      ],
+      "research_questions_zh": [
+        "Oracle 当前 OCI、云收入与 RPO 能否证明 AI 基础设施需求已经从签约转成可持续消费和确认收入？",
+        "数据中心资本开支、折旧、电力与加速器约束如何影响容量释放、利润率和自由现金流？",
+        "哪些客户集中、融资承诺、交付延迟或竞争证据会推翻增长与利润捕获判断？"
+      ],
+      "compiled_case_digest": "e5b4d0308f79f979355152137bc2ac469d7304e7c7e93ff0d65cbde0485fa5d5",
+      "compiled_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+      "required_slot_count": 8,
+      "optional_slot_count": 1,
+      "candidate_or_gold_inspection_count": 0
+    },
+    {
+      "archetype_id": "heldout-non-us-primary-disclosure",
+      "case_key": "ASML",
+      "subject_entity_key": "ASML_HOLDING",
+      "industry_pack_ref": "industry-semiconductor-equipment:v1",
+      "as_of_date": "2026-08-06",
+      "accepted_period_ids": [
+        "ASML_FY2026_Q2",
+        "ASML_FY2025",
+        "AS_OF_2026_08_06"
+      ],
+      "required_source_shapes": [
+        "20-F",
+        "6-K",
+        "issuer IR PDF",
+        "local currency statement"
+      ],
+      "required_mutations": [
+        "ADR versus local ticker",
+        "multilingual alias",
+        "PDF-only source",
+        "currency mismatch"
+      ],
+      "research_questions_zh": [
+        "EUV／High-NA 的 bookings、backlog、系统出货和客户验收如何转化为收入，订单是否受晶圆厂扩产节奏支持？",
+        "系统数量、ASP、产品 mix、installed-base service 与制造周期如何共同决定收入和毛利？",
+        "出口管制、中国收入、客户资本开支消化、欧元现金流与 High-NA 爬坡中，什么会改变判断？"
+      ],
+      "compiled_case_digest": "00eecf4df6db47d2eb3eabebfb790d675f83a8ebf2ed026f27fbbe1201300cc2",
+      "compiled_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+      "required_slot_count": 8,
+      "optional_slot_count": 1,
+      "candidate_or_gold_inspection_count": 0
+    },
+    {
+      "archetype_id": "heldout-sparse-disclosure",
+      "case_key": "ANET",
+      "subject_entity_key": "ARISTA_NETWORKS",
+      "industry_pack_ref": "industry-data-center-networking:v1",
+      "as_of_date": "2026-08-06",
+      "accepted_period_ids": [
+        "ANET_FY2026_Q2",
+        "ANET_FY2025",
+        "AS_OF_2026_08_06"
+      ],
+      "required_source_shapes": [
+        "sparse issuer filing",
+        "official relationship context",
+        "typed commercial gap"
+      ],
+      "required_mutations": [
+        "missing official source",
+        "relationship reversal",
+        "stale-only candidate",
+        "zero-result route"
+      ],
+      "research_questions_zh": [
+        "Arista 的大型云客户和 AI cluster Ethernet 部署是否形成可持续订单与收入，还是存在集中和提前采购风险？",
+        "产品／服务／平台 mix、新平台爬坡、组件供给和交期如何影响利润率与现金转换？",
+        "客户资本开支消化、Ethernet 竞争替代、出口或供应限制中，哪些官方可观察指标会改变判断？"
+      ],
+      "compiled_case_digest": "922761146631ba1ca60053505442e52bea6955f655a1b18e92c2e2fedc6ac3db",
+      "compiled_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+      "required_slot_count": 8,
+      "optional_slot_count": 1,
+      "candidate_or_gold_inspection_count": 0
+    }
+  ],
+  "pre_freeze_observation_boundary": {
+    "initial_selection_announced_before_repository_presence_probe": true,
+    "initial_selection_rejected_due_base_contract_identity_exposure": true,
+    "final_replacement_identities_selected_before_case_specific_candidate_inspection": true,
+    "repository_presence_probe_observed_only_preexisting_msft_sec_metadata": true,
+    "candidate_results_inspected": false,
+    "qrels_or_gold_inspected": false
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "retrieval": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "identity_and_profile_selection_frozen": true,
+    "external_profile_overlay_compiles": true,
+    "locked_core_unchanged": true,
+    "candidate_inspection_started": false,
+    "held_out_generalization_complete": false,
+    "sparse_dense_rebuild_admitted": false,
+    "external_supplement_admitted": false,
+    "model_synthesis_admitted": false
+  },
+  "known_boundary": "This freezes identities, questions, source shapes, mutations, industry-pack overlays and CaseResearchProfiles before retrieval. It does not establish local corpus presence, candidate quality, Evidence completeness, index admission, external supplement, model synthesis or report acceptance.",
+  "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_three_held_out_profile_selection_policy_v1_0.json",
+  "policy_sha256": "9076d7b37466e5f98ed26b710905ea421ada13e90c0291e8611fb263c7574cba",
+  "implementation": {
+    "module_ref": "src/sec_agent/financial_research_held_out_profile_registry.py",
+    "module_sha256": "b2b64a733c4a50f317154ef2b0e5411d6190c75b74455fb734d22603fdf01cfe",
+    "materializer_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_three_held_out_profile_selection.py"
+  },
+  "project_os_preflight": {
+    "status": "pass",
+    "run_scope": "S1_THREE_HELD_OUT_FINANCIAL_RESEARCH_GENERALIZATION_PROOF",
+    "open_full_chain_blocker_count": 0
+  },
+  "result_digest": "c25f6ba9a9a129c3eb6b3d9c7f8fd3e9a627de46c4c67fb04962323ace401792"
+}

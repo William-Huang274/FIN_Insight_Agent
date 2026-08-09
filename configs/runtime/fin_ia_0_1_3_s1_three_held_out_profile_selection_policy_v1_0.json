@@ -1,0 +1,351 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_profile_selection_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.three_held_out_profile_selection:v1",
+  "run_scope": "S1_THREE_HELD_OUT_FINANCIAL_RESEARCH_GENERALIZATION_PROOF",
+  "recorded_at": "2026-08-09T23:20:00+08:00",
+  "selection_attempt_id": "S1-THREE-HELD-OUT-PROFILE-SELECTION-R1",
+  "generalization_contract_ref": "configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json",
+  "generalization_contract_sha256": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+  "expected_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+  "locked_artifacts": [
+    {
+      "artifact_id": "generalization_contract",
+      "path": "configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json",
+      "normalized_sha256": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+      "role": "frozen financial kernel, slot library, plugin and base industry contract"
+    },
+    {
+      "artifact_id": "generalization_core_module",
+      "path": "src/sec_agent/financial_research_generalization_contract.py",
+      "normalized_sha256": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e",
+      "role": "frozen external-profile compiler and candidate evaluator"
+    },
+    {
+      "artifact_id": "source_object_vertical_executor",
+      "path": "src/sec_agent/financial_research_source_object_vertical.py",
+      "normalized_sha256": "379d1804ea5f6ab02efe3271b0f4a701b343a14b7473d7ddb412b0ee729d14d8",
+      "role": "DELL-proven local source-object executor"
+    },
+    {
+      "artifact_id": "known_case_transfer_result",
+      "path": "configs/releases/fin_ia_0_1_3_s1_mu_nvda_core_unchanged_transfer_result_v1_0.json",
+      "normalized_sha256": "4a6beac4f5835701ab866bacc50ea660d39303435821ae8081a29380899c75b5",
+      "role": "immutable DELL-MU-NVDA known-case transfer reference"
+    }
+  ],
+  "industry_pack_overlays": [
+    {
+      "pack_ref": "industry-hyperscale-cloud-infrastructure:v1",
+      "industry_family": "hyperscale_cloud_infrastructure",
+      "required_slot_ids": [
+        "operating_performance",
+        "demand_volume_quality",
+        "pricing_mix_value_capture",
+        "capacity_inputs_execution",
+        "cash_conversion_balance_sheet",
+        "relationship_attribution",
+        "regulatory_policy_exposure",
+        "counterevidence_and_what_would_change"
+      ],
+      "optional_slot_ids": ["capital_allocation_and_valuation"],
+      "slot_extensions": [
+        {
+          "slot_id": "operating_performance",
+          "available_facets": ["cloud_and_ai_service_revenue", "cloud_growth_and_backlog_conversion"],
+          "default_required_facets": ["cloud_and_ai_service_revenue"],
+          "query_atoms": ["cloud infrastructure revenue", "AI workloads", "remaining performance obligations"],
+          "mechanism_axes": ["capacity to consumed cloud revenue", "backlog to recognized revenue"],
+          "source_role_preferences": ["issuer earnings material", "10-K", "10-Q"],
+          "forbidden_substitutions": ["RPO as current revenue", "industry AI demand as issuer cloud revenue"]
+        },
+        {
+          "slot_id": "demand_volume_quality",
+          "available_facets": ["ai_workload_consumption", "capacity_constrained_demand", "cloud_customer_concentration"],
+          "default_required_facets": ["ai_workload_consumption"],
+          "query_atoms": ["AI consumption", "cloud capacity constraint", "RPO"],
+          "mechanism_axes": ["bookings to deployment", "deployment to consumption"],
+          "source_role_preferences": ["issuer prepared remarks", "customer primary disclosure"],
+          "forbidden_substitutions": ["capex as consumed demand", "bookings as revenue"]
+        },
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "available_facets": ["cloud_service_mix", "ai_infrastructure_depreciation_margin_bridge"],
+          "default_required_facets": ["cloud_service_mix"],
+          "query_atoms": ["cloud mix", "depreciation", "gross margin"],
+          "mechanism_axes": ["service mix to margin", "capital intensity to profit capture"],
+          "source_role_preferences": ["issuer financial statements", "earnings call"],
+          "forbidden_substitutions": ["company margin as cloud product margin"]
+        },
+        {
+          "slot_id": "capacity_inputs_execution",
+          "available_facets": ["data_center_capex_capacity", "power_land_or_accelerator_constraint"],
+          "default_required_facets": ["data_center_capex_capacity"],
+          "query_atoms": ["data center capex", "power", "accelerator supply", "capacity"],
+          "mechanism_axes": ["capex to available capacity", "capacity to revenue lag"],
+          "source_role_preferences": ["issuer cash flow", "prepared remarks", "supplier primary disclosure"],
+          "forbidden_substitutions": ["capex as commissioned capacity", "supplier ramp as issuer allocation"]
+        }
+      ],
+      "may_override_kernel_dimensions": false,
+      "may_relax_identity_period_lineage_or_authority": false,
+      "may_embed_case_urls_or_gold_targets": false
+    },
+    {
+      "pack_ref": "industry-semiconductor-equipment:v1",
+      "industry_family": "semiconductor_equipment",
+      "required_slot_ids": [
+        "operating_performance",
+        "demand_volume_quality",
+        "pricing_mix_value_capture",
+        "capacity_inputs_execution",
+        "cash_conversion_balance_sheet",
+        "relationship_attribution",
+        "regulatory_policy_exposure",
+        "counterevidence_and_what_would_change"
+      ],
+      "optional_slot_ids": ["capital_allocation_and_valuation"],
+      "slot_extensions": [
+        {
+          "slot_id": "operating_performance",
+          "available_facets": ["euv_or_high_na_system_revenue", "installed_base_service_revenue"],
+          "default_required_facets": ["euv_or_high_na_system_revenue"],
+          "query_atoms": ["EUV", "High NA", "installed base management"],
+          "mechanism_axes": ["system shipment to revenue recognition", "installed base to recurring service"],
+          "source_role_preferences": ["issuer quarterly release", "20-F", "6-K"],
+          "forbidden_substitutions": ["customer capex as equipment revenue", "bookings as recognized revenue"]
+        },
+        {
+          "slot_id": "demand_volume_quality",
+          "available_facets": ["net_bookings_and_backlog", "customer_fab_ramp_demand"],
+          "default_required_facets": ["net_bookings_and_backlog"],
+          "query_atoms": ["net bookings", "backlog", "fab ramp"],
+          "mechanism_axes": ["customer capex to bookings", "bookings to shipment"],
+          "source_role_preferences": ["issuer results", "customer foundry disclosure"],
+          "forbidden_substitutions": ["customer capex as supplier booking attribution"]
+        },
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "available_facets": ["system_asp_and_product_mix", "euv_mix_margin_bridge"],
+          "default_required_facets": ["system_asp_and_product_mix"],
+          "query_atoms": ["systems sold", "average selling price", "EUV mix", "gross margin"],
+          "mechanism_axes": ["system count and ASP to revenue", "mix to gross margin"],
+          "source_role_preferences": ["issuer results tables", "annual report"],
+          "forbidden_substitutions": ["revenue growth as unit growth"]
+        },
+        {
+          "slot_id": "capacity_inputs_execution",
+          "available_facets": ["manufacturing_capacity_and_cycle_time", "high_na_ramp_and_customer_acceptance"],
+          "default_required_facets": ["high_na_ramp_and_customer_acceptance"],
+          "query_atoms": ["capacity", "cycle time", "High NA ramp", "customer acceptance"],
+          "mechanism_axes": ["manufacturing capacity to shipment", "acceptance to revenue timing"],
+          "source_role_preferences": ["issuer annual report", "quarterly release", "supplier disclosure"],
+          "forbidden_substitutions": ["industry wafer capacity as equipment output"]
+        },
+        {
+          "slot_id": "regulatory_policy_exposure",
+          "available_facets": ["export_control_and_china_exposure"],
+          "default_required_facets": ["export_control_and_china_exposure"],
+          "query_atoms": ["export controls", "China sales", "license"],
+          "mechanism_axes": ["policy scope to shipment and service revenue"],
+          "source_role_preferences": ["government rule", "20-F", "issuer release"],
+          "forbidden_substitutions": ["policy headline as quantified financial impact"]
+        }
+      ],
+      "may_override_kernel_dimensions": false,
+      "may_relax_identity_period_lineage_or_authority": false,
+      "may_embed_case_urls_or_gold_targets": false
+    },
+    {
+      "pack_ref": "industry-data-center-networking:v1",
+      "industry_family": "data_center_networking",
+      "required_slot_ids": [
+        "operating_performance",
+        "demand_volume_quality",
+        "pricing_mix_value_capture",
+        "capacity_inputs_execution",
+        "cash_conversion_balance_sheet",
+        "relationship_attribution",
+        "regulatory_policy_exposure",
+        "counterevidence_and_what_would_change"
+      ],
+      "optional_slot_ids": ["capital_allocation_and_valuation"],
+      "slot_extensions": [
+        {
+          "slot_id": "operating_performance",
+          "available_facets": ["cloud_and_ai_networking_revenue_exposure"],
+          "default_required_facets": ["cloud_and_ai_networking_revenue_exposure"],
+          "query_atoms": ["AI networking", "cloud titan", "data center switching"],
+          "mechanism_axes": ["AI cluster buildout to networking revenue"],
+          "source_role_preferences": ["issuer earnings material", "10-K", "10-Q"],
+          "forbidden_substitutions": ["hyperscaler capex as issuer revenue"]
+        },
+        {
+          "slot_id": "demand_volume_quality",
+          "available_facets": ["large_customer_concentration", "ai_cluster_ethernet_deployment"],
+          "default_required_facets": ["large_customer_concentration"],
+          "query_atoms": ["large cloud customer", "AI cluster", "Ethernet deployment"],
+          "mechanism_axes": ["customer deployment to order durability", "concentration to volatility"],
+          "source_role_preferences": ["issuer filing", "customer primary disclosure"],
+          "forbidden_substitutions": ["customer capex as supplier order", "pipeline as shipment"]
+        },
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "available_facets": ["product_service_and_platform_mix"],
+          "default_required_facets": ["product_service_and_platform_mix"],
+          "query_atoms": ["product mix", "service revenue", "gross margin"],
+          "mechanism_axes": ["platform mix to margin"],
+          "source_role_preferences": ["issuer results", "financial statements"],
+          "forbidden_substitutions": ["company gross margin as product-level margin"]
+        },
+        {
+          "slot_id": "capacity_inputs_execution",
+          "available_facets": ["component_supply_and_lead_time", "new_platform_ramp"],
+          "default_required_facets": ["new_platform_ramp"],
+          "query_atoms": ["component supply", "lead time", "new platform ramp"],
+          "mechanism_axes": ["component availability to shipments", "qualification to revenue ramp"],
+          "source_role_preferences": ["issuer filing", "supplier primary disclosure"],
+          "forbidden_substitutions": ["supplier capacity as company allocation"]
+        }
+      ],
+      "may_override_kernel_dimensions": false,
+      "may_relax_identity_period_lineage_or_authority": false,
+      "may_embed_case_urls_or_gold_targets": false
+    }
+  ],
+  "selections": [
+    {
+      "archetype_id": "heldout-us-non-semiconductor",
+      "profile": {
+        "case_key": "ORCL",
+        "subject_entity_key": "ORACLE_CORPORATION",
+        "subject_aliases": ["Oracle Corporation", "Oracle", "ORCL"],
+        "industry_pack_ref": "industry-hyperscale-cloud-infrastructure:v1",
+        "as_of_date": "2026-08-06",
+        "accepted_period_ids": ["ORCL_FY2026", "ORCL_FY2026_Q4", "AS_OF_2026_08_06"],
+        "required_slot_ids": [],
+        "optional_slot_ids": [],
+        "required_facet_additions": {
+          "demand_volume_quality": ["capacity_constrained_demand"],
+          "pricing_mix_value_capture": ["ai_infrastructure_depreciation_margin_bridge"],
+          "capacity_inputs_execution": ["power_land_or_accelerator_constraint"]
+        },
+        "relationships": [
+          {
+            "relationship_id": "orcl-input-owner-nvidia",
+            "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+            "evidence_owner_aliases": ["NVIDIA", "NVDA"],
+            "evidence_owner_role": "accelerator_supplier_readthrough",
+            "direction": "evidence_owner_own_accelerator_capacity_or_constraint",
+            "allowed_slot_ids": ["capacity_inputs_execution", "relationship_attribution", "counterevidence_and_what_would_change"]
+          }
+        ]
+      },
+      "research_questions_zh": [
+        "Oracle 当前 OCI、云收入与 RPO 能否证明 AI 基础设施需求已经从签约转成可持续消费和确认收入？",
+        "数据中心资本开支、折旧、电力与加速器约束如何影响容量释放、利润率和自由现金流？",
+        "哪些客户集中、融资承诺、交付延迟或竞争证据会推翻增长与利润捕获判断？"
+      ],
+      "identity_selected_before_candidate_inspection": true,
+      "answer_or_gold_locator_embedded": false
+    },
+    {
+      "archetype_id": "heldout-non-us-primary-disclosure",
+      "profile": {
+        "case_key": "ASML",
+        "subject_entity_key": "ASML_HOLDING",
+        "subject_aliases": ["ASML Holding", "ASML", "ASML.AS"],
+        "industry_pack_ref": "industry-semiconductor-equipment:v1",
+        "as_of_date": "2026-08-06",
+        "accepted_period_ids": ["ASML_FY2026_Q2", "ASML_FY2025", "AS_OF_2026_08_06"],
+        "required_slot_ids": [],
+        "optional_slot_ids": [],
+        "required_facet_additions": {
+          "demand_volume_quality": ["customer_fab_ramp_demand"],
+          "pricing_mix_value_capture": ["euv_mix_margin_bridge"],
+          "capacity_inputs_execution": ["manufacturing_capacity_and_cycle_time"]
+        },
+        "relationships": [
+          {
+            "relationship_id": "asml-demand-owner-tsmc",
+            "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+            "evidence_owner_aliases": ["TSMC", "TSM"],
+            "evidence_owner_role": "foundry_customer_demand_readthrough",
+            "direction": "evidence_owner_own_foundry_capacity_demand",
+            "allowed_slot_ids": ["demand_volume_quality", "relationship_attribution", "counterevidence_and_what_would_change"]
+          }
+        ]
+      },
+      "research_questions_zh": [
+        "EUV／High-NA 的 bookings、backlog、系统出货和客户验收如何转化为收入，订单是否受晶圆厂扩产节奏支持？",
+        "系统数量、ASP、产品 mix、installed-base service 与制造周期如何共同决定收入和毛利？",
+        "出口管制、中国收入、客户资本开支消化、欧元现金流与 High-NA 爬坡中，什么会改变判断？"
+      ],
+      "identity_selected_before_candidate_inspection": true,
+      "answer_or_gold_locator_embedded": false
+    },
+    {
+      "archetype_id": "heldout-sparse-disclosure",
+      "profile": {
+        "case_key": "ANET",
+        "subject_entity_key": "ARISTA_NETWORKS",
+        "subject_aliases": ["Arista Networks", "Arista", "ANET"],
+        "industry_pack_ref": "industry-data-center-networking:v1",
+        "as_of_date": "2026-08-06",
+        "accepted_period_ids": ["ANET_FY2026_Q2", "ANET_FY2025", "AS_OF_2026_08_06"],
+        "required_slot_ids": [],
+        "optional_slot_ids": [],
+        "required_facet_additions": {
+          "demand_volume_quality": ["ai_cluster_ethernet_deployment"],
+          "capacity_inputs_execution": ["component_supply_and_lead_time"]
+        },
+        "relationships": [
+          {
+            "relationship_id": "anet-demand-owner-microsoft",
+            "evidence_owner_entity_key": "MICROSOFT",
+            "evidence_owner_aliases": ["Microsoft", "MSFT"],
+            "evidence_owner_role": "cloud_customer_demand_readthrough",
+            "direction": "evidence_owner_own_infrastructure_demand",
+            "allowed_slot_ids": ["demand_volume_quality", "relationship_attribution", "counterevidence_and_what_would_change"]
+          },
+          {
+            "relationship_id": "anet-platform-owner-nvidia",
+            "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+            "evidence_owner_aliases": ["NVIDIA", "NVDA"],
+            "evidence_owner_role": "accelerated_compute_ecosystem_readthrough",
+            "direction": "evidence_owner_own_platform_demand_or_constraint",
+            "allowed_slot_ids": ["demand_volume_quality", "capacity_inputs_execution", "relationship_attribution"]
+          }
+        ]
+      },
+      "research_questions_zh": [
+        "Arista 的大型云客户和 AI cluster Ethernet 部署是否形成可持续订单与收入，还是存在集中和提前采购风险？",
+        "产品／服务／平台 mix、新平台爬坡、组件供给和交期如何影响利润率与现金转换？",
+        "客户资本开支消化、Ethernet 竞争替代、出口或供应限制中，哪些官方可观察指标会改变判断？"
+      ],
+      "identity_selected_before_candidate_inspection": true,
+      "answer_or_gold_locator_embedded": false
+    }
+  ],
+  "pre_freeze_observation_boundary": {
+    "initial_selection_announced_before_repository_presence_probe": true,
+    "initial_selection_rejected_due_base_contract_identity_exposure": true,
+    "final_replacement_identities_selected_before_case_specific_candidate_inspection": true,
+    "repository_presence_probe_observed_only_preexisting_msft_sec_metadata": true,
+    "candidate_results_inspected": false,
+    "qrels_or_gold_inspected": false
+  },
+  "hard_boundaries": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "retrieval": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "core_modification_allowed": false,
+    "candidate_inspection_before_freeze_allowed": false,
+    "target_or_gold_locator_allowed": false,
+    "sparse_dense_rebuild_allowed": false,
+    "external_supplement_allowed": false
+  }
+}

@@ -1,0 +1,992 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_result_v1_0",
+  "contract_ref": "fin_0_1_3.S1.three_held_out_current_source_reparse_and_object_migration:v1.4",
+  "run_scope": "S1_THREE_HELD_OUT_CURRENT_SOURCE_TABLE_PRESERVING_REPARSE_AND_OBJECT_MIGRATION",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "S1-THREE-HELD-OUT-CURRENT-SOURCE-REPARSE-R5",
+  "status": "source_object_migration_pass_index_rebuild_admitted",
+  "locked_artifacts_before": {
+    "generalization_contract": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+    "generalization_core": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e",
+    "held_out_profiles": "9076d7b37466e5f98ed26b710905ea421ada13e90c0291e8611fb263c7574cba",
+    "held_out_current_source_result": "91e4e0a19eb320c4d64f39d72b7e80ff3f4656b56598485e07fde35c409b3b32",
+    "asml_exhibit_result": "e01d506ea273c13e36b56178a447418aece82da83d6ac97326ef5006116d4f00",
+    "superseded_r4_result": "2fb77722713528ad73beead0452a31ff059a632ed9cda97e703f7189e4fed292",
+    "reparse_executor": "5544fb628287d8f5363245aa28d036d8103d62e3fcbfa39f0316b04896f8ab59",
+    "candidate_bundle_v2": "6fb1c6c10b463059423bb3012f72b959371db554466538a0c1abca741eea4cee",
+    "structured_extractor": "85396eba33b96127e830a9d04d5a6996fefcc70b448c455577d2349b3b986e0c",
+    "sec_html_parser": "2adeddab6a3724f41f6f21120d37b317d8be8d7fd211107418359a55f9ae032b",
+    "evidence_schema": "165e7330174a7342cf6c6b2e9046f167960abdd0b1556ed2e9f0aae63bd1b730"
+  },
+  "locked_artifacts_after": {
+    "generalization_contract": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+    "generalization_core": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e",
+    "held_out_profiles": "9076d7b37466e5f98ed26b710905ea421ada13e90c0291e8611fb263c7574cba",
+    "held_out_current_source_result": "91e4e0a19eb320c4d64f39d72b7e80ff3f4656b56598485e07fde35c409b3b32",
+    "asml_exhibit_result": "e01d506ea273c13e36b56178a447418aece82da83d6ac97326ef5006116d4f00",
+    "superseded_r4_result": "2fb77722713528ad73beead0452a31ff059a632ed9cda97e703f7189e4fed292",
+    "reparse_executor": "5544fb628287d8f5363245aa28d036d8103d62e3fcbfa39f0316b04896f8ab59",
+    "candidate_bundle_v2": "6fb1c6c10b463059423bb3012f72b959371db554466538a0c1abca741eea4cee",
+    "structured_extractor": "85396eba33b96127e830a9d04d5a6996fefcc70b448c455577d2349b3b986e0c",
+    "sec_html_parser": "2adeddab6a3724f41f6f21120d37b317d8be8d7fd211107418359a55f9ae032b",
+    "evidence_schema": "165e7330174a7342cf6c6b2e9046f167960abdd0b1556ed2e9f0aae63bd1b730"
+  },
+  "case_results": [
+    {
+      "case_key": "ORCL",
+      "source_identity": {
+        "subject_entity_key": "ORACLE_CORPORATION",
+        "ticker": "ORCL",
+        "form_type": "10-K",
+        "publication_date": "2026-06-22",
+        "reporting_period_end": "2026-05-31",
+        "reporting_currency": "USD",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1341439/000119312526277521/orcl-20260531.htm",
+        "body_sha256": "6cd094af28aa16098cad795bf785be1866d69e59605aed1d6aef75a911a5766b"
+      },
+      "parser_route": {
+        "parser_family": "html_table_preserving",
+        "terminal_state": "parser_ready",
+        "gap_code": null,
+        "suffix": ".htm",
+        "actual_content_type": "text/html",
+        "directory_declared_type": "",
+        "body_signature": "html",
+        "finding_codes": []
+      },
+      "finding_counts": {
+        "currency_unit_authority_missing": 2,
+        "navigation_or_table_title_numeric_noise": 23,
+        "numeric_cell_parse_invalid": 29,
+        "table_cell_lineage_mismatch": 16,
+        "table_cell_period_missing": 169,
+        "table_cell_unit_missing": 67,
+        "table_row_or_column_label_missing": 75
+      },
+      "projected_slot_ids": [
+        "capacity_inputs_execution",
+        "capital_allocation_and_valuation",
+        "cash_conversion_balance_sheet",
+        "counterevidence_and_what_would_change",
+        "demand_volume_quality",
+        "operating_performance",
+        "pricing_mix_value_capture",
+        "relationship_attribution"
+      ],
+      "public_bundle_examples": [
+        {
+          "bundle_id": "financial_candidate_bundle_v2_529892d9aef866775042e8ba",
+          "slot_id": "capacity_inputs_execution",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "Unpaid capital expenditures",
+            "row_label": "Unpaid capital expenditures",
+            "column_label": "Year Ended May 31, 2026",
+            "raw_value": "$ 5,279",
+            "value": 5279.0,
+            "unit": "usd_millions",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "37",
+            "table_header": "Year Ended May 31, (in millions)  |  2026  |  2025  |  2024 Cash flows from operating activities: Net income  |  $  |  17,087  |  $  |  12,443 ",
+            "row_label": "Unpaid capital expenditures",
+            "column_label": "Year Ended May 31, 2026",
+            "cell_key": "unpaid_capital_expenditures__year_ended_may_31_2026",
+            "context_digest": "1f913f240a7555a7ae11caacd89eebdefd89bfce14084d5f7a4191e6e793acf6"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "USD",
+            "source_currency": "USD",
+            "child_currency": "USD",
+            "scale": "millions",
+            "canonical_unit": "usd_millions",
+            "provenance": [
+              "held_out_profile_and_issuer_10k",
+              "parent_table_marker",
+              "child_metric_unit"
+            ],
+            "status": "source_and_child_consistent"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_f3630b8b312fecc03d50a91c",
+          "slot_id": "capital_allocation_and_valuation",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "$ 2,000 , 2.30 %, due March 2028",
+            "row_label": "$ 2,000 , 2.30 %, due March 2028",
+            "column_label": "Effective Interest Rate 2026",
+            "raw_value": "2.36 %",
+            "value": 2.36,
+            "unit": "percent",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "45",
+            "table_header": "May 31, 2026  |  2025 (Amounts in millions)  |  Date of Issuance  |  Amount  |  Effective Interest Rate  |  Amount  |  Effective Interest Rate Fixed-rate senior notes: € 750 , 3.125 %, due July 2025 (1)  |  July 2013 ",
+            "row_label": "$ 2,000 , 2.30 %, due March 2028",
+            "column_label": "Effective Interest Rate 2026",
+            "cell_key": "2_000_2_30_due_march_2028__effective_interest_rate_2026",
+            "context_digest": "c2290a69b69f6b9d90c8459c76ca4a17f5a6a36a85c726f3c899f829bf12c377"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "USD",
+            "source_currency": "",
+            "child_currency": "",
+            "scale": "",
+            "canonical_unit": "percent",
+            "provenance": [
+              "held_out_profile_and_issuer_10k",
+              "parent_table_no_currency_marker",
+              "child_non_monetary_unit"
+            ],
+            "status": "non_monetary_dimension_preserved"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_f4d845690eee71c35b92b58c",
+          "slot_id": "cash_conversion_balance_sheet",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "Cash paid for income taxes",
+            "row_label": "Cash paid for income taxes",
+            "column_label": "Year Ended May 31, 2026",
+            "raw_value": "$ 3,704",
+            "value": 3704.0,
+            "unit": "usd_millions",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "37",
+            "table_header": "Year Ended May 31, (in millions)  |  2026  |  2025  |  2024 Cash flows from operating activities: Net income  |  $  |  17,087  |  $  |  12,443 ",
+            "row_label": "Cash paid for income taxes",
+            "column_label": "Year Ended May 31, 2026",
+            "cell_key": "cash_paid_for_income_taxes__year_ended_may_31_2026",
+            "context_digest": "1f913f240a7555a7ae11caacd89eebdefd89bfce14084d5f7a4191e6e793acf6"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "USD",
+            "source_currency": "USD",
+            "child_currency": "USD",
+            "scale": "millions",
+            "canonical_unit": "usd_millions",
+            "provenance": [
+              "held_out_profile_and_issuer_10k",
+              "parent_table_marker",
+              "child_metric_unit"
+            ],
+            "status": "source_and_child_consistent"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_4996e2fde76b066b3e686f91",
+          "slot_id": "counterevidence_and_what_would_change",
+          "object_type": "claim",
+          "object_summary": {
+            "claim_type": "risk",
+            "claim_text": "Despite our efforts, these protections may be limited."
+          },
+          "table_path": null,
+          "currency_unit_authority": null,
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_fb9dec60228d5ed20b540031",
+          "slot_id": "demand_volume_quality",
+          "object_type": "claim",
+          "object_summary": {
+            "claim_type": "demand",
+            "claim_text": "The volumes and amounts of customer contracts that we book and total revenues that we recognize are impacted by a variety of seasonal factors and the timing of booking of large contracts."
+          },
+          "table_path": null,
+          "currency_unit_authority": null,
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_27a97585a1ed1b3181e98161",
+          "slot_id": "operating_performance",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "Non-operating income (expenses), net",
+            "row_label": "Non-operating income (expenses), net",
+            "column_label": "Year Ended May 31, 2026",
+            "raw_value": "3,547",
+            "value": 3547.0,
+            "unit": "usd_millions",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "72",
+            "table_header": "Year Ended May 31, (in millions)  |  2026  |  2025  |  2024 Total margin for operating segments  |  $  |  38,018  |  $  |  33,841 ",
+            "row_label": "Non-operating income (expenses), net",
+            "column_label": "Year Ended May 31, 2026",
+            "cell_key": "non_operating_income_expenses_net__year_ended_may_31_2026",
+            "context_digest": "24a96850ee9eb3ce714736bcf0f9a5e463079e92610c1d62de2a8533e739bd4c"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "USD",
+            "source_currency": "USD",
+            "child_currency": "USD",
+            "scale": "millions",
+            "canonical_unit": "usd_millions",
+            "provenance": [
+              "held_out_profile_and_issuer_10k",
+              "parent_table_marker",
+              "child_metric_unit"
+            ],
+            "status": "source_and_child_consistent"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_efaefcd9e34a10e70980ad8c",
+          "slot_id": "pricing_mix_value_capture",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "% of Total Revenues",
+            "row_label": "% of Total Revenues",
+            "column_label": "2026",
+            "raw_value": "15%",
+            "value": 15.0,
+            "unit": "percent",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "15",
+            "table_header": "Year Ended May 31, Percent Change (Dollars in millions)  |  2026  |  Actual  |  Constant  |  2025 Research and development (1)  |  $  |  7,467  |  3% ",
+            "row_label": "% of Total Revenues",
+            "column_label": "2026",
+            "cell_key": "of_total_revenues__2026",
+            "context_digest": "1b983001989ec45df6d9a50e2c6c8f46f857cc972f3a5a31caffd001b6579323"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "USD",
+            "source_currency": "USD",
+            "child_currency": "",
+            "scale": "",
+            "canonical_unit": "percent",
+            "provenance": [
+              "held_out_profile_and_issuer_10k",
+              "parent_table_marker",
+              "child_non_monetary_unit"
+            ],
+            "status": "non_monetary_dimension_preserved"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_ff907caaeee181e64715365d",
+          "slot_id": "relationship_attribution",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "Increase in deferred revenues from customer prepayments with significant financing component",
+            "row_label": "Increase in deferred revenues from customer prepayments with significant financing component",
+            "column_label": "Year Ended May 31, 2026",
+            "raw_value": "4,592",
+            "value": 4592.0,
+            "unit": "usd_millions",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "37",
+            "table_header": "Year Ended May 31, (in millions)  |  2026  |  2025  |  2024 Cash flows from operating activities: Net income  |  $  |  17,087  |  $  |  12,443 ",
+            "row_label": "Increase in deferred revenues from customer prepayments with significant financing component",
+            "column_label": "Year Ended May 31, 2026",
+            "cell_key": "increase_in_deferred_revenues_from_customer_prepayments_with_significant_financi__year_ended_may_31_2026",
+            "context_digest": "1f913f240a7555a7ae11caacd89eebdefd89bfce14084d5f7a4191e6e793acf6"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "USD",
+            "source_currency": "USD",
+            "child_currency": "USD",
+            "scale": "millions",
+            "canonical_unit": "usd_millions",
+            "provenance": [
+              "held_out_profile_and_issuer_10k",
+              "parent_table_marker",
+              "child_metric_unit"
+            ],
+            "status": "source_and_child_consistent"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        }
+      ],
+      "private_artifacts": {
+        "parent": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/orcl/parent/1e/79/1e794d24b7301bf74b70552ff71a87595ceefafb3f706bae31fe5420780be054.json",
+          "digest": "1e794d24b7301bf74b70552ff71a87595ceefafb3f706bae31fe5420780be054",
+          "byte_size": 436365,
+          "media_type": "application/json",
+          "artifact_type": "current_source_parent_candidate_not_evidence"
+        },
+        "tables": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/orcl/tables/79/4b/794b7595bc177b9d8e9a7e33ffa1c6486b2dc7815dca5e5b0932a93422f9744c.json",
+          "digest": "794b7595bc177b9d8e9a7e33ffa1c6486b2dc7815dca5e5b0932a93422f9744c",
+          "byte_size": 697838,
+          "media_type": "application/json",
+          "artifact_type": "current_source_table_candidates_not_evidence"
+        },
+        "admitted_metrics": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/orcl/admitted-metrics/ac/82/ac825128ca4822f5a375516e2e0529bc1baa0b058d9718cb4f1debe89e8119f4.json",
+          "digest": "ac825128ca4822f5a375516e2e0529bc1baa0b058d9718cb4f1debe89e8119f4",
+          "byte_size": 1789584,
+          "media_type": "application/json",
+          "artifact_type": "current_source_metric_candidates_not_evidence"
+        },
+        "metric_rejects": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/orcl/metric-rejects/83/24/8324e49e426e712d4006de079322cc9375c9d821d9170a6212e8320f8310a090.json",
+          "digest": "8324e49e426e712d4006de079322cc9375c9d821d9170a6212e8320f8310a090",
+          "byte_size": 65049,
+          "media_type": "application/json",
+          "artifact_type": "current_source_metric_typed_rejects"
+        },
+        "claims": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/orcl/claims/02/f8/02f8ba44b659ab2858b779f6c2eb895e7eaa31401635e0110842ca81f1ef7e4b.json",
+          "digest": "02f8ba44b659ab2858b779f6c2eb895e7eaa31401635e0110842ca81f1ef7e4b",
+          "byte_size": 1067210,
+          "media_type": "application/json",
+          "artifact_type": "current_source_claim_candidates_not_evidence"
+        },
+        "candidate_bundles": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/orcl/bundles/47/d2/47d242ecad3d581e9105a3915a78b3b6bd4e584efc36fa92cce78a76d584f358.json",
+          "digest": "47d242ecad3d581e9105a3915a78b3b6bd4e584efc36fa92cce78a76d584f358",
+          "byte_size": 53151,
+          "media_type": "application/json",
+          "artifact_type": "current_source_candidate_bundle_v2_not_evidence"
+        }
+      },
+      "observed_counts": {
+        "source_bytes": 6873937,
+        "table_preserved_text_chars": 429819,
+        "tables": 87,
+        "all_metrics": 1538,
+        "raw_table_metrics": 1485,
+        "admitted_table_metrics": 1249,
+        "rejected_table_metrics": 236,
+        "claims": 993,
+        "bundle_candidates_selected": 29,
+        "bundle_projected": 27,
+        "bundle_rejected": 2,
+        "unsafe_numeric_bundle_admissions": 0,
+        "projected_slots": 8
+      },
+      "stage_acceptance": {
+        "capture_integrity": true,
+        "table_preserving_reparse": true,
+        "candidate_bundle_v2": true,
+        "source_object_migration": true
+      },
+      "candidate_state": "source_objects_and_bundles_not_evidence"
+    },
+    {
+      "case_key": "ASML",
+      "source_identity": {
+        "subject_entity_key": "ASML_HOLDING",
+        "ticker": "ASML",
+        "form_type": "6-K",
+        "publication_date": "2026-07-15",
+        "reporting_period_end": "2026-06-28",
+        "reporting_currency": "EUR",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/937966/000162828026048235/pressreleasefinancialresul.htm",
+        "body_sha256": "71232ad9d36778a8fd45344c950aba28a45ef5993517b9634a2457fcb56e256c"
+      },
+      "parser_route": {
+        "parser_family": "html_table_preserving",
+        "terminal_state": "parser_ready",
+        "gap_code": null,
+        "suffix": ".htm",
+        "actual_content_type": "text/html",
+        "directory_declared_type": "text.gif",
+        "body_signature": "html",
+        "finding_codes": [
+          "directory_mime_differs_from_actual_response_mime",
+          "directory_mime_is_advisory_not_parser_authority"
+        ]
+      },
+      "finding_counts": {},
+      "projected_slot_ids": [
+        "cash_conversion_balance_sheet",
+        "counterevidence_and_what_would_change",
+        "demand_volume_quality",
+        "operating_performance",
+        "pricing_mix_value_capture"
+      ],
+      "public_bundle_examples": [
+        {
+          "bundle_id": "financial_candidate_bundle_v2_e89bfd169286c4b1aeed28dd",
+          "slot_id": "cash_conversion_balance_sheet",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "End-quarter cash and cash equivalents and short-term investments",
+            "row_label": "End-quarter cash and cash equivalents and short-term investments",
+            "column_label": "Q2 2026",
+            "raw_value": "7,582",
+            "value": 7582.0,
+            "unit": "eur_millions",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "1",
+            "table_header": "(Figures in millions of euros unless otherwise indicated)  |  Q1 2026  |  Q2 2026 Total net sales  |  8,767  |  9,326 ...of which Installed Base Management sales 1  |  2,488  |  2,762 New lithography systems sold (units)  |  67 ",
+            "row_label": "End-quarter cash and cash equivalents and short-term investments",
+            "column_label": "Q2 2026",
+            "cell_key": "end_quarter_cash_and_cash_equivalents_and_short_term_investments__q2_2026",
+            "context_digest": "77978c95bd394ed3dc7b8ec681e260e0727cf5378b4563e2f4ad078672570ccf"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "EUR",
+            "source_currency": "EUR",
+            "child_currency": "EUR",
+            "scale": "millions",
+            "canonical_unit": "eur_millions",
+            "provenance": [
+              "held_out_profile_and_issuer_6k_exhibit",
+              "parent_table_marker",
+              "child_metric_unit"
+            ],
+            "status": "source_and_child_consistent"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_e64d04de9f6eb8fa770b4105",
+          "slot_id": "counterevidence_and_what_would_change",
+          "object_type": "claim",
+          "object_summary": {
+            "claim_type": "risk",
+            "claim_text": "You can generally identify these statements by the use of words like “may”, “expect”, “will”, “could”, “should”, “project”, “believe”, “anticipate”, “expect”, “plan”, “estimate”, “forecast”, “guide”, “potential”, “intend”, “continue”, “target”, “future”, “progress”, “goal”, “model”, “opportunity”, “commitment” and vari"
+          },
+          "table_path": null,
+          "currency_unit_authority": null,
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_f87778e8fd270af62793a820",
+          "slot_id": "demand_volume_quality",
+          "object_type": "claim",
+          "object_summary": {
+            "claim_type": "demand",
+            "claim_text": "\"Ongoing AI-related investments and continued progress in AI technologies are driving demand for advanced Logic and Memory chips, further strengthening the semiconductor industry's growth outlook."
+          },
+          "table_path": null,
+          "currency_unit_authority": null,
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_68774dfbf4c8220981eb37bc",
+          "slot_id": "operating_performance",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "...of which Installed Base Management sales 1",
+            "row_label": "...of which Installed Base Management sales 1",
+            "column_label": "Q2 2026",
+            "raw_value": "2,762",
+            "value": 2762.0,
+            "unit": "eur_millions",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "1",
+            "table_header": "(Figures in millions of euros unless otherwise indicated)  |  Q1 2026  |  Q2 2026 Total net sales  |  8,767  |  9,326 ...of which Installed Base Management sales 1  |  2,488  |  2,762 New lithography systems sold (units)  |  67 ",
+            "row_label": "...of which Installed Base Management sales 1",
+            "column_label": "Q2 2026",
+            "cell_key": "of_which_installed_base_management_sales_1__q2_2026",
+            "context_digest": "77978c95bd394ed3dc7b8ec681e260e0727cf5378b4563e2f4ad078672570ccf"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "EUR",
+            "source_currency": "EUR",
+            "child_currency": "EUR",
+            "scale": "millions",
+            "canonical_unit": "eur_millions",
+            "provenance": [
+              "held_out_profile_and_issuer_6k_exhibit",
+              "parent_table_marker",
+              "child_metric_unit"
+            ],
+            "status": "source_and_child_consistent"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_b641dfceb809e766350e1d51",
+          "slot_id": "pricing_mix_value_capture",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "New lithography systems sold (units)",
+            "row_label": "New lithography systems sold (units)",
+            "column_label": "Q2 2026",
+            "raw_value": "86",
+            "value": 86.0,
+            "unit": "count",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "1",
+            "table_header": "(Figures in millions of euros unless otherwise indicated)  |  Q1 2026  |  Q2 2026 Total net sales  |  8,767  |  9,326 ...of which Installed Base Management sales 1  |  2,488  |  2,762 New lithography systems sold (units)  |  67 ",
+            "row_label": "New lithography systems sold (units)",
+            "column_label": "Q2 2026",
+            "cell_key": "new_lithography_systems_sold_units__q2_2026",
+            "context_digest": "77978c95bd394ed3dc7b8ec681e260e0727cf5378b4563e2f4ad078672570ccf"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "EUR",
+            "source_currency": "EUR",
+            "child_currency": "",
+            "scale": "",
+            "canonical_unit": "count",
+            "provenance": [
+              "held_out_profile_and_issuer_6k_exhibit",
+              "parent_table_marker",
+              "child_non_monetary_unit"
+            ],
+            "status": "non_monetary_dimension_preserved"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        }
+      ],
+      "private_artifacts": {
+        "parent": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/asml/parent/5e/3f/5e3f525a728cda8f46b6b574ce6caa5d5f9acdb701d473e3a90675f7eee1b248.json",
+          "digest": "5e3f525a728cda8f46b6b574ce6caa5d5f9acdb701d473e3a90675f7eee1b248",
+          "byte_size": 13871,
+          "media_type": "application/json",
+          "artifact_type": "current_source_parent_candidate_not_evidence"
+        },
+        "tables": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/asml/tables/85/d8/85d88e0f7cd2a7a6fc671a16db10a791018c8d9fa33aa646501abd2aaf077898.json",
+          "digest": "85d88e0f7cd2a7a6fc671a16db10a791018c8d9fa33aa646501abd2aaf077898",
+          "byte_size": 9471,
+          "media_type": "application/json",
+          "artifact_type": "current_source_table_candidates_not_evidence"
+        },
+        "admitted_metrics": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/asml/admitted-metrics/01/de/01de340245cbb557c7fc4db00d84a021b5d9c835b3692796993f5a28340da270.json",
+          "digest": "01de340245cbb557c7fc4db00d84a021b5d9c835b3692796993f5a28340da270",
+          "byte_size": 22237,
+          "media_type": "application/json",
+          "artifact_type": "current_source_metric_candidates_not_evidence"
+        },
+        "metric_rejects": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/asml/metric-rejects/4f/53/4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945.json",
+          "digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "byte_size": 2,
+          "media_type": "application/json",
+          "artifact_type": "current_source_metric_typed_rejects"
+        },
+        "claims": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/asml/claims/78/8f/788f05c8d60bcd51df62a2c48fdefb92a2b52081826374b980a3359db7444c11.json",
+          "digest": "788f05c8d60bcd51df62a2c48fdefb92a2b52081826374b980a3359db7444c11",
+          "byte_size": 15322,
+          "media_type": "application/json",
+          "artifact_type": "current_source_claim_candidates_not_evidence"
+        },
+        "candidate_bundles": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/asml/bundles/8b/2e/8b2e5444f3b570a9c7bca4c9a1a8d065a208907ae8293cd4b7a99c54334beca2.json",
+          "digest": "8b2e5444f3b570a9c7bca4c9a1a8d065a208907ae8293cd4b7a99c54334beca2",
+          "byte_size": 26365,
+          "media_type": "application/json",
+          "artifact_type": "current_source_candidate_bundle_v2_not_evidence"
+        }
+      },
+      "observed_counts": {
+        "source_bytes": 43745,
+        "table_preserved_text_chars": 12438,
+        "tables": 2,
+        "all_metrics": 42,
+        "raw_table_metrics": 16,
+        "admitted_table_metrics": 16,
+        "rejected_table_metrics": 0,
+        "claims": 15,
+        "bundle_candidates_selected": 13,
+        "bundle_projected": 13,
+        "bundle_rejected": 0,
+        "unsafe_numeric_bundle_admissions": 0,
+        "projected_slots": 5
+      },
+      "stage_acceptance": {
+        "capture_integrity": true,
+        "table_preserving_reparse": true,
+        "candidate_bundle_v2": true,
+        "source_object_migration": true
+      },
+      "candidate_state": "source_objects_and_bundles_not_evidence"
+    },
+    {
+      "case_key": "ANET",
+      "source_identity": {
+        "subject_entity_key": "ARISTA_NETWORKS",
+        "ticker": "ANET",
+        "form_type": "10-Q",
+        "publication_date": "2026-08-05",
+        "reporting_period_end": "2026-06-30",
+        "reporting_currency": "USD",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1596532/000159653226000175/anet-20260630.htm",
+        "body_sha256": "ef779da6a72b571c20f9f6f91c4d1acb009e85d2ae2f6fd39d284e9283811361"
+      },
+      "parser_route": {
+        "parser_family": "html_table_preserving",
+        "terminal_state": "parser_ready",
+        "gap_code": null,
+        "suffix": ".htm",
+        "actual_content_type": "text/html",
+        "directory_declared_type": "",
+        "body_signature": "html",
+        "finding_codes": []
+      },
+      "finding_counts": {
+        "currency_unit_authority_missing": 1,
+        "navigation_or_table_title_numeric_noise": 10,
+        "table_cell_lineage_mismatch": 4,
+        "table_cell_period_missing": 211,
+        "table_cell_unit_missing": 17,
+        "table_row_or_column_label_missing": 167
+      },
+      "projected_slot_ids": [
+        "capacity_inputs_execution",
+        "capital_allocation_and_valuation",
+        "cash_conversion_balance_sheet",
+        "counterevidence_and_what_would_change",
+        "demand_volume_quality",
+        "operating_performance",
+        "pricing_mix_value_capture"
+      ],
+      "public_bundle_examples": [
+        {
+          "bundle_id": "financial_candidate_bundle_v2_4deacc13f90f871e2ec85a38",
+          "slot_id": "capacity_inputs_execution",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "Property and equipment, gross",
+            "row_label": "Property and equipment, gross",
+            "column_label": "June 30, 2026",
+            "raw_value": "577.2",
+            "value": 577.2,
+            "unit": "usd_millions",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "24",
+            "table_header": "June 30, 2026  |  December 31, 2025 Land  |  $  |  47.3  |  $  |  47.3 Equipment and machinery  |  207.5  |  188.3 Computer hardware and software ",
+            "row_label": "Property and equipment, gross",
+            "column_label": "June 30, 2026",
+            "cell_key": "property_and_equipment_gross__june_30_2026",
+            "context_digest": "72d6dc8bea279e0281b2f9b4f2035b7a6b528c0a002453ad8ecb0b268affaf02"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "USD",
+            "source_currency": "USD",
+            "child_currency": "USD",
+            "scale": "millions",
+            "canonical_unit": "usd_millions",
+            "provenance": [
+              "held_out_profile_and_issuer_10q",
+              "parent_table_marker",
+              "child_metric_unit"
+            ],
+            "status": "source_and_child_consistent"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_ced1c0959276e4395901fd2b",
+          "slot_id": "capital_allocation_and_valuation",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "Total debt securities",
+            "row_label": "Total debt securities",
+            "column_label": "2026",
+            "raw_value": "$ 11,053.1",
+            "value": 11053.1,
+            "unit": "usd_millions",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "21",
+            "table_header": "June 30, 2026 Fair Value Due in 1 year or less  |  $  |  4,365.2 Due in 1 to 3 years  |  6,687.9 Total debt securities  |  $  |  11,053.1",
+            "row_label": "Total debt securities",
+            "column_label": "2026",
+            "cell_key": "total_debt_securities__2026",
+            "context_digest": "c39b6b762802c0cb0d80b90237ca9f5107210847ba03fdec4cc65a3bbd75273c"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "USD",
+            "source_currency": "USD",
+            "child_currency": "USD",
+            "scale": "millions",
+            "canonical_unit": "usd_millions",
+            "provenance": [
+              "held_out_profile_and_issuer_10q",
+              "parent_table_marker",
+              "child_metric_unit"
+            ],
+            "status": "source_and_child_consistent"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_ee1afe17bcf460ea9d91c4c0",
+          "slot_id": "cash_conversion_balance_sheet",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "Net increase (decrease) in cash, cash equivalents and restricted cash",
+            "row_label": "Net increase (decrease) in cash, cash equivalents and restricted cash",
+            "column_label": "Six Months Ended June 30, 2026",
+            "raw_value": "$ 326.3",
+            "value": 326.3,
+            "unit": "usd_millions",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "43",
+            "table_header": "Six Months Ended June 30, 2026  |  2025 Cash provided by operating activities  |  $  |  2,776.5  |  $  |  1,841.8 Cash used in investing activities  |  (2,445.1)  |  (1,391.0) Cash used in financing activities ",
+            "row_label": "Net increase (decrease) in cash, cash equivalents and restricted cash",
+            "column_label": "Six Months Ended June 30, 2026",
+            "cell_key": "net_increase_decrease_in_cash_cash_equivalents_and_restricted_cash__six_months_ended_june_30_2026",
+            "context_digest": "151604a8e8a02b95110600aadfe18a00a7e59c7d313514a9e370146337427119"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "USD",
+            "source_currency": "USD",
+            "child_currency": "USD",
+            "scale": "millions",
+            "canonical_unit": "usd_millions",
+            "provenance": [
+              "held_out_profile_and_issuer_10q",
+              "parent_table_marker",
+              "child_metric_unit"
+            ],
+            "status": "source_and_child_consistent"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_4fe19e6868b49533d2225d34",
+          "slot_id": "counterevidence_and_what_would_change",
+          "object_type": "claim",
+          "object_summary": {
+            "claim_type": "risk",
+            "claim_text": "The expense of and time associated with defending and resolving such audits may be significant."
+          },
+          "table_path": null,
+          "currency_unit_authority": null,
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_0a1dc0b756bfaca4b2535d01",
+          "slot_id": "demand_volume_quality",
+          "object_type": "claim",
+          "object_summary": {
+            "claim_type": "demand",
+            "claim_text": "the reduction in future demand for our products by our customers or increased difficulty in adding new customers"
+          },
+          "table_path": null,
+          "currency_unit_authority": null,
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_adbea55865c01d9a2143cdc7",
+          "slot_id": "operating_performance",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "Net income",
+            "row_label": "Net income",
+            "column_label": "Six Months Ended June 30, 2026",
+            "raw_value": "$ 2,235.8",
+            "value": 2235.8,
+            "unit": "usd_millions",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "14",
+            "table_header": "Three Months Ended June 30,  |  Six Months Ended June 30, 2026  |  2025  |  2026  |  2025 Net income  |  $  |  1,212.9  |  $ ",
+            "row_label": "Net income",
+            "column_label": "Six Months Ended June 30, 2026",
+            "cell_key": "net_income__six_months_ended_june_30_2026",
+            "context_digest": "87b10b1f1b8e1452a3cdb720eef31163006d41b7fce1d267cb9af04f4d27120b"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "USD",
+            "source_currency": "USD",
+            "child_currency": "USD",
+            "scale": "millions",
+            "canonical_unit": "usd_millions",
+            "provenance": [
+              "held_out_profile_and_issuer_10q",
+              "parent_table_marker",
+              "child_metric_unit"
+            ],
+            "status": "source_and_child_consistent"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        },
+        {
+          "bundle_id": "financial_candidate_bundle_v2_3d50b5bf89a4d6a46d9f4d15",
+          "slot_id": "pricing_mix_value_capture",
+          "object_type": "metric",
+          "object_summary": {
+            "metric_name": "Gross margin",
+            "row_label": "Gross margin",
+            "column_label": "Three Months Ended June 30, 2026",
+            "raw_value": "62.9 %",
+            "value": 62.9,
+            "unit": "percent",
+            "period": "2026"
+          },
+          "table_path": {
+            "table_id": "38",
+            "table_header": "Three Months Ended June 30,  |  Six Months Ended June 30, 2026  |  2025  |  Change in  |  2026  |  2025  |  Change in $  |  $ ",
+            "row_label": "Gross margin",
+            "column_label": "Three Months Ended June 30, 2026",
+            "cell_key": "gross_margin__three_months_ended_june_30_2026",
+            "context_digest": "eee5a50eaa27c671ca82b70d541b5119e4125b56249045851c17e92ed0e4d110"
+          },
+          "currency_unit_authority": {
+            "expected_currency": "USD",
+            "source_currency": "USD",
+            "child_currency": "",
+            "scale": "",
+            "canonical_unit": "percent",
+            "provenance": [
+              "held_out_profile_and_issuer_10q",
+              "parent_table_marker",
+              "child_non_monetary_unit"
+            ],
+            "status": "non_monetary_dimension_preserved"
+          },
+          "candidate_state": "bundle_candidate_only_not_evidence"
+        }
+      ],
+      "private_artifacts": {
+        "parent": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/anet/parent/b2/c0/b2c0674092b04ddb218c77bbb152795a8fa3aa5041eb4204ee0a2fedf782ae13.json",
+          "digest": "b2c0674092b04ddb218c77bbb152795a8fa3aa5041eb4204ee0a2fedf782ae13",
+          "byte_size": 283721,
+          "media_type": "application/json",
+          "artifact_type": "current_source_parent_candidate_not_evidence"
+        },
+        "tables": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/anet/tables/cd/1e/cd1e8cd424d3acf52bbec92b0e521345c0d5d95d8a5fe56df88b6ca90640f87a.json",
+          "digest": "cd1e8cd424d3acf52bbec92b0e521345c0d5d95d8a5fe56df88b6ca90640f87a",
+          "byte_size": 332677,
+          "media_type": "application/json",
+          "artifact_type": "current_source_table_candidates_not_evidence"
+        },
+        "admitted_metrics": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/anet/admitted-metrics/02/09/0209ee78e235f049491dfdd5913aee71efe6a0cab76abd128d15694887478b86.json",
+          "digest": "0209ee78e235f049491dfdd5913aee71efe6a0cab76abd128d15694887478b86",
+          "byte_size": 686877,
+          "media_type": "application/json",
+          "artifact_type": "current_source_metric_candidates_not_evidence"
+        },
+        "metric_rejects": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/anet/metric-rejects/ed/73/ed73b8183f49393b7258c07c9b64f8fb3ebaf7c794a13e76e22fd287acc0f459.json",
+          "digest": "ed73b8183f49393b7258c07c9b64f8fb3ebaf7c794a13e76e22fd287acc0f459",
+          "byte_size": 67709,
+          "media_type": "application/json",
+          "artifact_type": "current_source_metric_typed_rejects"
+        },
+        "claims": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/anet/claims/f2/2d/f22d1db0cec3e6cfe0ec8575372c999e2c5e11eb5813efb20b5d8fd9f47e7dc6.json",
+          "digest": "f22d1db0cec3e6cfe0ec8575372c999e2c5e11eb5813efb20b5d8fd9f47e7dc6",
+          "byte_size": 929106,
+          "media_type": "application/json",
+          "artifact_type": "current_source_claim_candidates_not_evidence"
+        },
+        "candidate_bundles": {
+          "object_key": "fin-0.1.3/s1-three-held-out-current-source-reparse/anet/bundles/6b/87/6b87dbfa59490e2f1547751b5305f647dd15752a5fc83b80ad4d2a689a4878ae.json",
+          "digest": "6b87dbfa59490e2f1547751b5305f647dd15752a5fc83b80ad4d2a689a4878ae",
+          "byte_size": 52965,
+          "media_type": "application/json",
+          "artifact_type": "current_source_candidate_bundle_v2_not_evidence"
+        }
+      },
+      "observed_counts": {
+        "source_bytes": 1427433,
+        "table_preserved_text_chars": 279940,
+        "tables": 43,
+        "all_metrics": 770,
+        "raw_table_metrics": 708,
+        "admitted_table_metrics": 470,
+        "rejected_table_metrics": 238,
+        "claims": 867,
+        "bundle_candidates_selected": 28,
+        "bundle_projected": 27,
+        "bundle_rejected": 1,
+        "unsafe_numeric_bundle_admissions": 0,
+        "projected_slots": 7
+      },
+      "stage_acceptance": {
+        "capture_integrity": true,
+        "table_preserving_reparse": true,
+        "candidate_bundle_v2": true,
+        "source_object_migration": true
+      },
+      "candidate_state": "source_objects_and_bundles_not_evidence"
+    }
+  ],
+  "mutation_results": [
+    {
+      "mutation_id": "cross_case_identity",
+      "passed": true
+    },
+    {
+      "mutation_id": "currency_conflict",
+      "passed": true
+    },
+    {
+      "mutation_id": "directory_mime_mismatch_html_signature",
+      "passed": true
+    },
+    {
+      "mutation_id": "header_and_contact_numeric_noise",
+      "passed": true
+    },
+    {
+      "mutation_id": "malformed_numeric_cell",
+      "passed": true
+    },
+    {
+      "mutation_id": "pdf_layout_gap_fail_closed",
+      "passed": true
+    },
+    {
+      "mutation_id": "table_cell_key_mismatch",
+      "passed": true
+    },
+    {
+      "mutation_id": "table_context_does_not_route_metric",
+      "passed": true
+    },
+    {
+      "mutation_id": "table_id_mismatch",
+      "passed": true
+    }
+  ],
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "capture_integrity": true,
+    "table_preserving_reparse": true,
+    "three_case_source_object_migration": true,
+    "candidate_bundle_v2_current_source_projection": true,
+    "mutation_gate": true,
+    "held_out_product_generalization": false,
+    "sparse_dense_rebuild_admitted": true,
+    "external_residual_supplement_admitted": false,
+    "model_research_admitted": false
+  },
+  "decision_zh": "ORCL、ASML、ANET 已使用同一张表保真解析、对象准入和 CandidateBundleV2 合同完成迁移。缺少 table／row／column／period／unit 的对象被保留为 typed reject，不会进入待重建索引。这只准入下一步 sparse／dense 重建，不代表 Evidence Pack、外源补源、DeepSeek 研究或最终产品验收通过。",
+  "known_boundary": "All source bytes were read from immutable capture-first stores. Output objects and bundles remain candidate-only audit material; no network, model, embedding, rerank, Evidence promotion or index build occurred.",
+  "result_digest": "47b7337d9958ddf7600a20f6a2170a6b21797d7fdbc6c56f87fac74e058d84c1"
+}

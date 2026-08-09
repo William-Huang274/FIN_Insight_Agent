@@ -1,0 +1,48 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_failure_v1_0",
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_sparse_dense_manifest:v1",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "20260810_s1_six_case_candidate_bundle_sparse_dense_manifest_zero_call_r2",
+  "status": "failed_pre_materialization_metric_period_role_missing",
+  "failure_phase": "candidate_bundle_index_spec_validation",
+  "failure_code": "candidate_bundle_index_metric_period_role_invalid",
+  "input_refs": [
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r4_result_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r4_clean_independent_proof_v1_0.json"
+  ],
+  "business_failure": {
+    "held_out_metric_specs": 48,
+    "missing_period_role": 13,
+    "missing_by_case": {
+      "ORCL": 0,
+      "ASML": 10,
+      "ANET": 3
+    },
+    "examples": [
+      "ASML Q2 sales/profit/system-unit flows do not distinguish qtd from end-quarter cash instant",
+      "ANET customer-relationship carrying amounts/useful life and total debt securities do not declare instant role"
+    ],
+    "meaning": "Year and unit are correct, but a financial index must not make the model infer whether a number is a period flow or point-in-time stock."
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "real_embedding": 0,
+    "milvus_read": 0,
+    "milvus_write": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "private_manifest_written": false,
+    "fake_sparse_build": false,
+    "fake_dense_build": false,
+    "real_index_build": false,
+    "successor_same_scope_allowed": true
+  },
+  "decision_zh": "R2 已正确改绑 R4，但索引前 48 条 Metric 全量业务审计发现 13 条 period_role 为空。按 PRD 期间语义硬门，本 Attempt 失败并停止；下一步只允许在通用 parser 中补齐季度流量与期末／账面值时点规则，生成新的 source-object successor，再重新 clean proof 和 manifest。",
+  "known_boundary": "This is an upstream period-role completeness defect detected before any private manifest or physical index was written. It is not a BGE, Milvus, DeepSeek, ranking or external-search failure.",
+  "result_digest": "a336e1a9bbeb879cc21079ca425bcb5e3f1780487d8fd611c6c9365e12181a52"
+}

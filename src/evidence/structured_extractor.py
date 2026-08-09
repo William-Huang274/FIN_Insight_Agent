@@ -477,9 +477,17 @@ def _period_role_for_table_cell_parts(
     context_before: str | None,
     context_after: str | None,
 ) -> str | None:
-    role = _period_role_from_text(column_label)
-    if role:
-        return role
+    # A row can state the economic time role more precisely than a compact
+    # period column.  For example, "End-quarter cash" is an instant even when
+    # it sits under a "Q2 2026" column, while sales under the same column are
+    # quarter-to-date.  Preserve that distinction before consulting the
+    # column shorthand.
+    row_role = _period_role_from_text(row_label)
+    if row_role:
+        return row_role
+    column_role = _period_role_from_text(column_label)
+    if column_role:
+        return column_role
     context_role = _period_role_for_texts(
         row_label,
         active_group,
@@ -534,6 +542,8 @@ def _period_role_from_text(value: Any) -> str | None:
             r"quarter\s+ended",
             r"for\s+the\s+quarter",
             r"\bquarterly\b",
+            r"\b(?:q[1-4]\s*(?:fy\s*)?(?:19|20)\d{2}|(?:19|20)\d{2}\s*q[1-4])\b",
+            r"\b(?:first|second|third|fourth)\s+(?:fiscal\s+)?quarter(?:\s+of)?\s+(?:19|20)\d{2}\b",
         ),
         "annual": (
             r"year\s+ended",
@@ -543,7 +553,14 @@ def _period_role_from_text(value: Any) -> str | None:
         ),
         "instant": (
             rf"as\s+of\s+{MONTH_PATTERN}",
+            rf"^{MONTH_PATTERN}\s+\d{{1,2}},\s+(?:19|20)\d{{2}}$",
             r"\bat\s+(?:the\s+)?(?:period|quarter|year)[-\s]?end\b",
+            r"\bend[-\s]?quarter\b",
+            r"\bquarter[-\s]?end\b",
+            r"\b(?:ending|closing)\s+balance\b",
+            r"\b(?:gross|net)\s+carrying\s+amount\b",
+            r"\baccumulated\s+(?:amortization|depreciation)\b",
+            r"\b(?:weighted[-\s]?average\s+)?remaining\s+useful\s+lives?\b",
         ),
     }
     matches = {
@@ -1054,7 +1071,7 @@ def _table_data_start_index(rows: list[list[str]], header_index: int | None) -> 
     if (
         next_index < len(rows)
         and _header_has_period_role(rows[header_index])
-        and _is_year_header_row(rows[next_index])
+        and _is_pure_year_header_row(rows[next_index])
     ):
         return next_index + 1
     if next_index < len(rows) and _is_column_descriptor_row(rows[next_index]):
@@ -1186,8 +1203,28 @@ def _header_has_period_role(row: list[str]) -> bool:
 
 
 def _is_year_header_row(row: list[str]) -> bool:
-    years = [_extract_period(cell) for cell in row if str(cell or "").strip()]
-    return len(years) >= 2 and len(years) == len([cell for cell in row if str(cell or "").strip()])
+    cells = [
+        str(cell or "").strip()
+        for cell in row
+        if str(cell or "").strip()
+        and not _is_table_unit_row([str(cell or "").strip()])
+    ]
+    periods = [_extract_period(cell) for cell in cells]
+    return (
+        sum(bool(period) for period in periods) >= 2
+        and all(period or _is_change_column(cell) for cell, period in zip(cells, periods, strict=True))
+    )
+
+
+def _is_pure_year_header_row(row: list[str]) -> bool:
+    cells = [
+        str(cell or "").strip()
+        for cell in row
+        if str(cell or "").strip()
+        and not _is_table_unit_row([str(cell or "").strip()])
+    ]
+    periods = [_extract_period(cell) for cell in cells]
+    return len(cells) >= 2 and all(periods)
 
 
 def _expanded_logical_column_labels(

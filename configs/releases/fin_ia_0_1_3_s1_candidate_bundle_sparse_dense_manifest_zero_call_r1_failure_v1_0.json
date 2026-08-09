@@ -1,0 +1,43 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_failure_v1_0",
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_sparse_dense_manifest:v1",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "20260809_s1_six_case_candidate_bundle_sparse_dense_manifest_zero_call_r1",
+  "status": "failed_pre_materialization_upstream_metric_unit_mismatch",
+  "failure_phase": "candidate_bundle_index_spec_validation",
+  "failure_code": "candidate_bundle_index_metric_period_or_unit_invalid",
+  "superseded_input_refs": [
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_result_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_clean_independent_proof_v1_0.json"
+  ],
+  "business_failure": {
+    "case_key": "ORCL",
+    "metric_name": "Total Operating Margin",
+    "raw_value": "20,606",
+    "metric_period": "2026",
+    "observed_metric_unit": "usd",
+    "canonical_unit": "usd_millions",
+    "meaning": "The table explicitly reports dollars in millions, so the reproducible R1 object could not safely enter sparse or dense indexing."
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "real_embedding": 0,
+    "milvus_read": 0,
+    "milvus_write": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "private_manifest_written": false,
+    "fake_sparse_build": false,
+    "fake_dense_build": false,
+    "real_index_build": false,
+    "successor_same_scope_allowed": true
+  },
+  "decision_zh": "R1 manifest 没有降低单位门禁，也没有生成私有清单。上游 R1 对象把 Oracle 明确以百万美元披露的 Operating Margin 标为裸 usd，因此本 Attempt 失败并保留；R2 只能改绑已 clean-proven 的表格语义坐标 R4，再从头编译六案。",
+  "known_boundary": "This failure is an upstream table-coordinate input defect detected by the manifest gate. It is not a BGE, Milvus, DeepSeek, ranking or external-search failure.",
+  "result_digest": "8c607aaf931692b5e10eb8bfe21452b3c84f6db6a13f08e14756f98f8ff20fed"
+}

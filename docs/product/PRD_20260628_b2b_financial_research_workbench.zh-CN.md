@@ -2262,4 +2262,8 @@ ORCL、ASML、ANET 的当前官方源已证明同一通用 parser／CandidateBun
 4. parser 修复必须按通用表格结构表达，禁止为 ORCL／ANET 等 ticker 添加核心条件；MU／NVDA／DELL 与其他表形 mutation 必须保持通过；
 5. index manifest 只消费审过的 CandidateBundle。Evidence 晋升、完整研究内容、外源补源和报告验收继续作为后续独立门。
 
-这项更正不改变既定大顺序，也不增加产品版本：仍在 FIN 0.1.3 的 S1 修复对象与索引入口。R4 已由两个 clean Git archive／fresh process 完全复现，现只准入 sparse／dense manifest 重定基；真实 build 仍需 Ubuntu WSL 独立 authority。索引和本地 Evidence Pack 完成后，以真实 residual gaps 驱动外源补源，最后才评估 DeepSeek 的动态研究和综合质量。
+期间角色不能只靠表单类型兜底。季度结果表中的 `Q2 2026` 对销售、利润、毛利率和销量通常表示 `qtd`，但同列的 `End-quarter cash` 是 `instant`；`June 30, 2026` 这样的独立日期列也是时点，而 `Six Months Ended June 30, 2026` 是 `ytd`。产品门必须按“行的经济语义优先于紧凑列标签、完整期间组优先于裸年份”编译，禁止把 flow 和 stock 混进同一检索口径。
+
+任何 parser successor 在满足数量门后，还必须与前一已审基线做入选业务对象等价审计，至少比较公司、行、列、数值、单位、期间和 source lineage。总数相同不能掩盖 headline sales 消失、四个季度／半年 margin 压成三个错列候选，或完整 `Year Ended` 引用坐标退化。差异必须逐项解释并由新 Attempt 复证，不能交给 dense 或模型“补语义”。
+
+这项更正不改变既定大顺序，也不增加产品版本：仍在 FIN 0.1.3 的 S1 修复对象与索引入口。R4 已由两个 clean Git archive／fresh process 完全复现；manifest 审计随后又发现期间角色缺口并推动 R8 working-tree successor。R8 在 48 条入选留出 Metric 上实现业务 identity 与 R4 等价、`period_role` 缺失为 0，待新的 clean proof 后才可取代 R4 成为 manifest 输入；真实 build 仍需 Ubuntu WSL 独立 authority。索引和本地 Evidence Pack 完成后，以真实 residual gaps 驱动外源补源，最后才评估 DeepSeek 的动态研究和综合质量。

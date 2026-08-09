@@ -1,0 +1,39 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_business_audit_failure_v1_0",
+  "contract_ref": "fin_0_1_3.S1.three_held_out_current_source_reparse_and_object_migration:v1.4",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "S1-THREE-HELD-OUT-CURRENT-SOURCE-REPARSE-R5",
+  "status": "failed_post_materialization_business_object_regression",
+  "failure_phase": "cross_attempt_business_object_diff_audit",
+  "failure_code": "asml_total_net_sales_rows_skipped_as_false_year_header",
+  "source_result_ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r5_result_v1_0.json",
+  "source_result_digest": "47b7337d9958ddf7600a20f6a2170a6b21797d7fdbc6c56f87fac74e058d84c1",
+  "business_failure": {
+    "r4_asml_admitted_table_metrics": 18,
+    "r5_asml_admitted_table_metrics": 16,
+    "missing_business_objects": [
+      "ASML Total net sales Q1 2026 EUR 8,767 million",
+      "ASML Total net sales Q2 2026 EUR 9,326 million"
+    ],
+    "root_cause": "The pre-existing year-header predicate counted non-empty cells rather than requiring every cell to contain a year. Once Q1/Q2 shorthand became a recognized period role, the first sales data row was incorrectly skipped as a second year-header row.",
+    "meaning": "The new flow-versus-stock labels were directionally correct, but an index cannot be rebuilt from a successor that silently loses the issuer's headline quarterly sales rows."
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "r5_result_preserved": true,
+    "r5_product_semantic_acceptance": false,
+    "sparse_dense_manifest_rebaseline": false,
+    "real_index_build": false,
+    "successor_same_scope_allowed": true
+  },
+  "decision_zh": "R5 的期间角色补齐本身有效，但跨 Attempt 业务对象差异审计发现 ASML 两条核心季度销售额被旧的纯年份表头判断误跳过，因此 R5 不得作为索引输入。保留 R5 结果，下一 Attempt 只修正通用纯年份表头判定并重跑同一三案例。",
+  "known_boundary": "This is a local table-structure regression found after zero-call materialization. It is not a source, BGE, Milvus, DeepSeek, rerank or external-search failure.",
+  "result_digest": "6d2525053ac0211a4813705bd4be95c844b1210aa8a8ec912e0b20692aa49355"
+}

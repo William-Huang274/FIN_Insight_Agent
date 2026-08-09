@@ -1,0 +1,162 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.three_held_out_current_source_reparse_and_object_migration:v1.7",
+  "run_scope": "S1_THREE_HELD_OUT_CURRENT_SOURCE_TABLE_PRESERVING_REPARSE_AND_OBJECT_MIGRATION",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "S1-THREE-HELD-OUT-CURRENT-SOURCE-REPARSE-R8",
+  "locked_artifacts": [
+    {
+      "artifact_id": "generalization_contract",
+      "path": "configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json",
+      "normalized_sha256": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+      "role": "frozen provider-neutral financial kernel, slot library and plugin boundary"
+    },
+    {
+      "artifact_id": "generalization_core",
+      "path": "src/sec_agent/financial_research_generalization_contract.py",
+      "normalized_sha256": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e",
+      "role": "frozen core implementation whose fingerprint must remain unchanged"
+    },
+    {
+      "artifact_id": "held_out_profiles",
+      "path": "configs/runtime/fin_ia_0_1_3_s1_three_held_out_profile_selection_policy_v1_0.json",
+      "normalized_sha256": "9076d7b37466e5f98ed26b710905ea421ada13e90c0291e8611fb263c7574cba",
+      "role": "pre-candidate held-out identity, as-of and industry-pack authority"
+    },
+    {
+      "artifact_id": "held_out_current_source_result",
+      "path": "configs/releases/fin_ia_0_1_3_s1_held_out_current_source_acquisition_result_v1_0.json",
+      "normalized_sha256": "91e4e0a19eb320c4d64f39d72b7e80ff3f4656b56598485e07fde35c409b3b32",
+      "role": "immutable ORCL and ANET capture-first current official sources"
+    },
+    {
+      "artifact_id": "asml_exhibit_result",
+      "path": "configs/releases/fin_ia_0_1_3_s1_asml_current_exhibit_successor_result_v1_0.json",
+      "normalized_sha256": "e01d506ea273c13e36b56178a447418aece82da83d6ac97326ef5006116d4f00",
+      "role": "immutable ASML detailed current exhibit capture"
+    },
+    {
+      "artifact_id": "superseded_r7_result",
+      "path": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r7_result_v1_0.json",
+      "normalized_sha256": "bb183eff8905b53492107464c797ca8c0ea2809a847282d6968f625b4f29cac0",
+      "role": "immutable R7 evidence superseded after seven ORCL annual candidates lost their full Year Ended source coordinate"
+    },
+    {
+      "artifact_id": "reparse_executor",
+      "path": "src/sec_agent/financial_research_current_source_reparse.py",
+      "normalized_sha256": "5544fb628287d8f5363245aa28d036d8103d62e3fcbfa39f0316b04896f8ab59",
+      "role": "shared capture-first reparse, typed admission, projection and mutation executor"
+    },
+    {
+      "artifact_id": "candidate_bundle_v2",
+      "path": "src/sec_agent/financial_research_candidate_bundle_v2.py",
+      "normalized_sha256": "6fb1c6c10b463059423bb3012f72b959371db554466538a0c1abca741eea4cee",
+      "role": "child-parent-table projection with non-monetary duration authority preserved"
+    },
+    {
+      "artifact_id": "structured_extractor",
+      "path": "src/evidence/structured_extractor.py",
+      "normalized_sha256": "e8284d92633ffe47580de12a07f49846a80374c86904281000ea7b5b54aa2d68",
+      "role": "table coordinates, generalized flow-versus-stock roles, pure/grouped year headers and unit-prefixed annual group authority"
+    },
+    {
+      "artifact_id": "sec_html_parser",
+      "path": "src/ingestion/parse_sec_filing.py",
+      "normalized_sha256": "2adeddab6a3724f41f6f21120d37b317d8be8d7fd211107418359a55f9ae032b",
+      "role": "in-memory table-preserving SEC HTML parser"
+    },
+    {
+      "artifact_id": "evidence_schema",
+      "path": "src/evidence/schema.py",
+      "normalized_sha256": "165e7330174a7342cf6c6b2e9046f167960abdd0b1556ed2e9f0aae63bd1b730",
+      "role": "provider-neutral source object schema including FPI 6-K"
+    }
+  ],
+  "source_bindings": [
+    {
+      "case_key": "ORCL",
+      "subject_entity_key": "ORACLE_CORPORATION",
+      "ticker": "ORCL",
+      "company_name": "Oracle Corporation",
+      "industry_pack_ref": "industry-hyperscale-cloud-infrastructure:v1",
+      "source_result_artifact_id": "held_out_current_source_result",
+      "source_result_selector": "held_out_case_source",
+      "source_type": "10-K",
+      "source_tier": "primary_sec_filing",
+      "evidence_type": "filing_disclosure",
+      "fiscal_year": 2026,
+      "fiscal_period": "FY",
+      "reporting_period_end": "2026-05-31",
+      "publication_date": "2026-06-22",
+      "research_as_of": "2026-08-06",
+      "reporting_currency": "USD",
+      "reporting_currency_authority": "held_out_profile_and_issuer_10k"
+    },
+    {
+      "case_key": "ASML",
+      "subject_entity_key": "ASML_HOLDING",
+      "ticker": "ASML",
+      "company_name": "ASML Holding N.V.",
+      "industry_pack_ref": "industry-semiconductor-equipment:v1",
+      "source_result_artifact_id": "asml_exhibit_result",
+      "source_result_selector": "selected_detailed_source",
+      "source_type": "6-K",
+      "source_tier": "primary_sec_filing",
+      "evidence_type": "company_authored_disclosure",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q2",
+      "reporting_period_end": "2026-06-28",
+      "publication_date": "2026-07-15",
+      "research_as_of": "2026-08-06",
+      "reporting_currency": "EUR",
+      "reporting_currency_authority": "held_out_profile_and_issuer_6k_exhibit"
+    },
+    {
+      "case_key": "ANET",
+      "subject_entity_key": "ARISTA_NETWORKS",
+      "ticker": "ANET",
+      "company_name": "Arista Networks, Inc.",
+      "industry_pack_ref": "industry-data-center-networking:v1",
+      "source_result_artifact_id": "held_out_current_source_result",
+      "source_result_selector": "held_out_case_source",
+      "source_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "evidence_type": "filing_disclosure",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q2",
+      "reporting_period_end": "2026-06-30",
+      "publication_date": "2026-08-05",
+      "research_as_of": "2026-08-06",
+      "reporting_currency": "USD",
+      "reporting_currency_authority": "held_out_profile_and_issuer_10q"
+    }
+  ],
+  "candidate_ceiling_per_slot": 4,
+  "minimum_admitted_table_metrics_per_case": 10,
+  "minimum_projected_bundles_per_case": 8,
+  "minimum_projected_slots_per_case": 3,
+  "required_mutations": [
+    "directory_mime_mismatch_html_signature",
+    "pdf_layout_gap_fail_closed",
+    "table_id_mismatch",
+    "table_cell_key_mismatch",
+    "currency_conflict",
+    "malformed_numeric_cell",
+    "cross_case_identity",
+    "header_and_contact_numeric_noise",
+    "table_context_does_not_route_metric"
+  ],
+  "hard_boundaries": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "source_captures_immutable": true,
+    "ticker_specific_parser_branch_allowed": false,
+    "directory_mime_is_parser_authority": false,
+    "index_build_allowed_during_reparse": false,
+    "unsafe_object_coercion_allowed": false
+  }
+}

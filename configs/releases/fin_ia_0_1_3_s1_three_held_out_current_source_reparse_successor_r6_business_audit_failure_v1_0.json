@@ -1,0 +1,37 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_business_audit_failure_v1_0",
+  "contract_ref": "fin_0_1_3.S1.three_held_out_current_source_reparse_and_object_migration:v1.5",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "S1-THREE-HELD-OUT-CURRENT-SOURCE-REPARSE-R6",
+  "status": "failed_post_materialization_business_semantic_regression",
+  "failure_phase": "selected_candidate_business_coordinate_audit",
+  "failure_code": "anet_grouped_period_coordinates_and_bare_date_role_invalid",
+  "source_result_ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r6_result_v1_0.json",
+  "source_result_digest": "bad516c988fa4c5063424d40704144bd018d1ed3ae69ae1e1198191ec2fd7c9d",
+  "business_failure": {
+    "expected_anet_selected_metric_specs": 19,
+    "observed_anet_selected_metric_specs": 18,
+    "grouped_margin_error": "Four ANET gross-margin observations (quarter/current, quarter/prior, half-year/current, half-year/prior) collapsed into three candidates with labels such as 2025 2026; the 62.4% half-year current value was not eligible.",
+    "cash_role_error": "ANET cash and cash equivalents at June 30, 2026 was labelled qtd although a bare balance-sheet date denotes an instant.",
+    "root_cause": "The same year-row predicate served both pure second-header skipping and grouped year-plus-change expansion. Tightening it for the first use disabled the second. Separately, bare date columns lacked an explicit instant rule.",
+    "meaning": "All values still came from the right filing, but period coordinates no longer told a researcher which margin was quarterly versus half-year and whether cash was a stock. Those objects cannot enter an index."
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "r6_result_preserved": true,
+    "r6_product_semantic_acceptance": false,
+    "sparse_dense_manifest_rebaseline": false,
+    "real_index_build": false,
+    "successor_same_scope_allowed": true
+  },
+  "decision_zh": "R6 恢复了 ASML 销售额并补齐期间角色，但 ANET 分组季度／半年毛利率坐标和裸日期现金角色仍不正确，因此不得进入索引。下一 Attempt 只拆分纯年份表头与分组年份表头判定，并把独立日期列判为时点。",
+  "known_boundary": "This is a local table-coordinate semantic defect found before any sparse/dense build. It is not a source, BGE, Milvus, DeepSeek, rerank or external-search failure.",
+  "result_digest": "8d81d4505151a195132473c978f1307f08aa1f12ca4749fb7430dc630cd855d9"
+}

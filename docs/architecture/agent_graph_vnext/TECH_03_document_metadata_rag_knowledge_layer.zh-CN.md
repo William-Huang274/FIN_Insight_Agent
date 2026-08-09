@@ -747,6 +747,12 @@ R1 clean proof 后的 manifest 逐条审计证明，“可复现”不能替代�
 4. `currency_unit_authority`：表内显式单位优先于邻近叙述；含 `except` 的混合尺度表继续交给逐行规则，不能取第一个单位短路；
 5. descriptor＋period 混合表头采用 exact logical cardinality；descriptor-only rollforward 由相邻 balance rows 推导交易期间；压缩期间行按冻结的 ordered candidate periods 绑定；任何不唯一情况 typed reject。
 
+`period_role` 编译必须采用分层优先级：先识别行级明确经济语义（例如 `End-quarter`、carrying amount、remaining useful life），再识别完整列级期间，最后才使用 form/duration fallback。`Q1–Q4 + year` 只为没有时点标记的指标提供 `qtd`；独立自然日期列为 `instant`；`three/six/nine months ended` 分别编译为 `qtd/ytd`。因此同一张季度摘要表可以同时安全承载 flow 与 stock。
+
+表头识别必须区分 `pure year row` 与 `grouped year/change row`。前者只在去除独立单位单元格后全部为年份时才允许跳过；后者允许年份与 Change 描述符组合，并须与上层 `Three Months Ended／Six Months Ended／Year Ended` 做笛卡尔坐标展开。单位前缀不得阻断 period group 恢复，普通数据行中的两个大数也不得被当成年份表头。
+
+每次 parser 变更后的索引准入不能只比较 object count 或 digest。实现必须对冻结入选集执行 business-coordinate diff（case、row、column、raw value、unit、period、period role、lineage）；任何消失、新增或坐标退化先形成失败记录。只有差异为零或每一项有明确、审过的合法解释，才可更新 manifest binding。
+
 本轮 R2、R3、R4 分别关闭非货币维度／表内币种、descriptor 列错位、rollforward／压缩行错期。三次均是同一 S1 owner 下的新零调用 Attempt，不是新产品版本。旧 R1 result/proof 保持不可变，但不能再授权索引；新的 sparse／dense manifest 必须绑定 R4 result 与其 clean proof，并对 `metric_period_missing`、`metric_unit_mismatch` fail closed。
 
-R4 result=`924c656e32e5e279c12883a6374f53b7e424d5e3046c2ed18e6a4d2f11878ffc`，ORCL／ASML／ANET projected bundles=`27／13／27`、Slots=`8／5／7`，unsafe numeric admission=`0`。两个 clean Git archive／fresh process 已从提交 `25286d10...a4da` 完全复现，proof=`0d8531aa...36e4`；A1 tarfile 兼容失败与 A2 reporter 字段失败均单独保留。该结果仍为 Candidate，不是 Evidence，只准入 zero-call manifest 重定基，不得随 proof 签发真实 BGE／Milvus build。
+R4 result=`924c656e32e5e279c12883a6374f53b7e424d5e3046c2ed18e6a4d2f11878ffc`，两个 clean Git archive／fresh process 已从提交 `25286d10...a4da` 完全复现，proof=`0d8531aa...36e4`；A1 tarfile 兼容失败与 A2 reporter 字段失败均单独保留。manifest 的新增 period-role 门又使 R4 的下游授权失效：R5–R7 分别保留销售额丢失、分组毛利率／现金角色错误、年度组标签退化的失败证据。R8 working-tree result=`6ca7ce22...f86b1` 已使 48 条入选对象与 R4 业务 identity 等价并将缺失 period role 降为 0；在 R8 clean proof 前仍不得改绑 manifest 或签发真实 BGE／Milvus build。所有结果仍是 Candidate，不是 Evidence。

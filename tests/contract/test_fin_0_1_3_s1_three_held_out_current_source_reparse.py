@@ -24,15 +24,15 @@ pytestmark = pytest.mark.fast_contract
 ROOT = Path(__file__).resolve().parents[2]
 POLICY_PATH = ROOT / (
     "configs/runtime/fin_ia_0_1_3_s1_three_held_out_"
-    "current_source_reparse_successor_r4_policy_v1_0.json"
+    "current_source_reparse_successor_r8_policy_v1_0.json"
 )
 RESULT_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_three_held_out_"
-    "current_source_reparse_successor_r4_result_v1_0.json"
+    "current_source_reparse_successor_r8_result_v1_0.json"
 )
 PROOF_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_three_held_out_"
-    "current_source_reparse_successor_r4_clean_independent_proof_v1_0.json"
+    "current_source_reparse_successor_r8_clean_independent_proof_v1_0.json"
 )
 
 
@@ -40,12 +40,13 @@ def _asml_extraction():
     html = """
     <html><body>
       <table>
-        <tr><th>Figures in millions of euros unless otherwise indicated</th><th>Q1 2026</th><th>Q2 2026</th></tr>
+        <tr><th>(Figures in millions of euros unless otherwise indicated)</th><th>Q1 2026</th><th>Q2 2026</th></tr>
         <tr><td>Total net sales</td><td>8,767</td><td>9,326</td></tr>
         <tr><td>New lithography systems sold (units)</td><td>67</td><td>86</td></tr>
         <tr><td>Gross margin (%)</td><td>53.0</td><td>54.0</td></tr>
         <tr><td>Net income</td><td>2,757</td><td>2,918</td></tr>
         <tr><td>Earnings per ordinary share</td><td>6.00</td><td>6.41</td></tr>
+        <tr><td>End-quarter cash and cash equivalents and short-term investments</td><td>8,376</td><td>7,582</td></tr>
       </table>
       <table>
         <tr><td>Investor Relations</td><td>+31 40 268 3000</td></tr>
@@ -156,6 +157,16 @@ def test_eur_quarter_table_preserves_headers_units_and_exact_cell_lineage() -> N
     assert metrics[("New lithography systems sold (units)", "Q2 2026")].unit == "count"
     assert metrics[("Gross margin (%)", "Q2 2026")].unit == "percent"
     assert metrics[("Earnings per ordinary share", "Q2 2026")].unit == "eur_per_share"
+    assert metrics[("Total net sales", "Q2 2026")].period_role == "qtd"
+    assert (
+        metrics[
+            (
+                "End-quarter cash and cash equivalents and short-term investments",
+                "Q2 2026",
+            )
+        ].period_role
+        == "instant"
+    )
     sales = metrics[("Total net sales", "Q2 2026")]
     assert sales.metadata["source_table_id"] == table.table_id
     assert sales.metadata["table_cell_key"]
@@ -311,6 +322,15 @@ def test_useful_life_dimension_overrides_table_currency_scale() -> None:
         and "Useful Lives" in str(row.column_label)
     )
     assert useful_life.unit == "years"
+    assert useful_life.period_role == "instant"
+    carrying_amounts = [
+        row
+        for row in metrics
+        if row.row_label == "Customer relationships"
+        and "Carrying Amount" in str(row.column_label)
+    ]
+    assert carrying_amounts
+    assert all(row.period_role == "instant" for row in carrying_amounts)
 
     lane = {
         "lane_id": "anet_useful_life_fixture",
@@ -465,6 +485,105 @@ def test_descriptor_only_equity_header_uses_rollforward_balance_period() -> None
         ("17,087", "2026"),
     }
     assert all(row.unit == "usd_millions" for row in net_income)
+
+
+def test_bare_date_columns_are_instant_not_quarter_flows() -> None:
+    html = """
+    <html><body><table>
+      <tr><th>June 30, 2026</th><th>December 31, 2025</th></tr>
+      <tr><td>Cash and cash equivalents</td><td>2,115</td><td>1,808</td></tr>
+    </table></body></html>
+    """
+    evidence = EvidenceObject(
+        evidence_id="BARE_DATE_INSTANT_FIXTURE",
+        source_type="10-Q",
+        source_tier="primary_sec_filing",
+        ticker="FIX",
+        fiscal_year=2026,
+        period_end="2026-06-30",
+        fiscal_period="Q2",
+        evidence_type="filing_disclosure",
+        text=extract_sec_html_text_content(html),
+        metadata={"form_type": "10-Q", "reporting_currency": "USD"},
+    )
+    rows = [
+        row
+        for row in extract_structured_objects(evidence).metrics
+        if row.row_label == "Cash and cash equivalents"
+    ]
+    assert {(row.column_label, row.period_role) for row in rows} == {
+        ("June 30, 2026", "instant"),
+        ("December 31, 2025", "instant"),
+    }
+
+
+def test_grouped_quarter_and_ytd_columns_survive_change_columns() -> None:
+    html = """
+    <html><body><table>
+      <tr><th>Three Months Ended June 30,</th><th>Six Months Ended June 30,</th></tr>
+      <tr><th>2026</th><th>2025</th><th>Change in</th><th>2026</th><th>2025</th><th>Change in</th></tr>
+      <tr><td>Gross margin</td><td>62.9</td><td>%</td><td>65.2</td><td>%</td><td>62.4</td><td>%</td><td>64.5</td><td>%</td></tr>
+    </table></body></html>
+    """
+    evidence = EvidenceObject(
+        evidence_id="GROUPED_PERIOD_ROLE_FIXTURE",
+        source_type="10-Q",
+        source_tier="primary_sec_filing",
+        ticker="FIX",
+        fiscal_year=2026,
+        period_end="2026-06-30",
+        fiscal_period="Q2",
+        evidence_type="filing_disclosure",
+        text=extract_sec_html_text_content(html),
+        metadata={"form_type": "10-Q", "reporting_currency": "USD"},
+    )
+    rows = [
+        row
+        for row in extract_structured_objects(evidence).metrics
+        if row.row_label == "Gross margin"
+    ]
+    assert {
+        (row.raw_value, row.column_label, row.period_role) for row in rows
+    } == {
+        ("62.9 %", "Three Months Ended June 30, 2026", "qtd"),
+        ("65.2 %", "Three Months Ended June 30, 2025", "qtd"),
+        ("62.4 %", "Six Months Ended June 30, 2026", "ytd"),
+        ("64.5 %", "Six Months Ended June 30, 2025", "ytd"),
+    }
+
+
+def test_unit_prefixed_annual_year_header_keeps_full_period_coordinate() -> None:
+    html = """
+    <html><body><table>
+      <tr><th>Year Ended May 31,</th></tr>
+      <tr><th>(in millions)</th><th>2026</th><th>2025</th><th>2024</th></tr>
+      <tr><td>Unpaid capital expenditures</td><td>$</td><td>5,279</td><td>$</td><td>2,970</td><td>$</td><td>1,637</td></tr>
+    </table></body></html>
+    """
+    evidence = EvidenceObject(
+        evidence_id="UNIT_PREFIXED_YEAR_HEADER_FIXTURE",
+        source_type="10-K",
+        source_tier="primary_sec_filing",
+        ticker="FIX",
+        fiscal_year=2026,
+        period_end="2026-05-31",
+        fiscal_period="FY",
+        evidence_type="filing_disclosure",
+        text=extract_sec_html_text_content(html),
+        metadata={"form_type": "10-K", "reporting_currency": "USD"},
+    )
+    rows = [
+        row
+        for row in extract_structured_objects(evidence).metrics
+        if row.row_label == "Unpaid capital expenditures"
+    ]
+    assert {
+        (row.raw_value, row.column_label, row.period_role) for row in rows
+    } == {
+        ("$ 5,279", "Year Ended May 31, 2026", "annual"),
+        ("$ 2,970", "Year Ended May 31, 2025", "annual"),
+        ("$ 1,637", "Year Ended May 31, 2024", "annual"),
+    }
 
 
 @pytest.mark.parametrize(

@@ -1,0 +1,42 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_business_audit_failure_v1_0",
+  "contract_ref": "fin_0_1_3.S1.three_held_out_current_source_reparse_and_object_migration:v1.6",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "S1-THREE-HELD-OUT-CURRENT-SOURCE-REPARSE-R7",
+  "status": "failed_post_materialization_lineage_coordinate_degradation",
+  "failure_phase": "cross_attempt_selected_candidate_coordinate_audit",
+  "failure_code": "orcl_unit_prefixed_annual_group_label_lost",
+  "source_result_ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r7_result_v1_0.json",
+  "source_result_digest": "a02ba5dcfeaff73665c5697bebf0f82d0e04fd474bfe026add396afd92546c50",
+  "business_failure": {
+    "held_out_selected_metric_specs": 48,
+    "missing_period_roles": 0,
+    "degraded_orcl_selected_coordinates": 7,
+    "examples": [
+      "Unpaid capital expenditures: Year Ended May 31, 2026 became 2026",
+      "Cash paid for income taxes: Year Ended May 31, 2026 became 2026",
+      "Basic EPS: Year Ended May 31, 2026 became 2026"
+    ],
+    "root_cause": "The grouped-year predicate correctly handled year-plus-change rows but rejected a legitimate leading table-unit cell before the annual years, so the period group label was not recombined.",
+    "meaning": "The values and annual role remained correct, but citation coordinates lost the source's explicit Year Ended May 31 boundary. Indexing that weaker lineage would make later audit and exact citation less reliable."
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "r7_result_preserved": true,
+    "r7_candidate_values_and_roles_complete": true,
+    "r7_lineage_coordinate_acceptance": false,
+    "sparse_dense_manifest_rebaseline": false,
+    "real_index_build": false,
+    "successor_same_scope_allowed": true
+  },
+  "decision_zh": "R7 已恢复 48 条候选及全部期间角色，但 ORCL 七条年报候选丢失完整年度列坐标。下一 Attempt 只让分组年份判定忽略独立单位单元格，并用同一 48 条业务对象做逐项等价审计。",
+  "known_boundary": "This is a local lineage-coordinate completeness defect found before any sparse/dense build. It is not a source, BGE, Milvus, DeepSeek, rerank or external-search failure.",
+  "result_digest": "d2eb4a966ea570b2fa0948fc0de9935a7d2058bd116ef853a6ee248bfc1b3ec1"
+}

@@ -1,0 +1,257 @@
+{
+  "admission_digest": "48e6d633653b53c554cb8fafc4915b7b83117b44be955bdfc03b950d97fad206",
+  "attempt_id": "fin013_s1_asml_exhibit_attempt_be955bdfc03b950d97fa",
+  "bound_source_lineage": {
+    "accession_base_url": "https://www.sec.gov/Archives/edgar/data/937966/000162828026048235/",
+    "accession_compact": "000162828026048235",
+    "accession_number": "0001628280-26-048235",
+    "index_url": "https://www.sec.gov/Archives/edgar/data/937966/000162828026048235/index.json",
+    "primary_document": "form6-kquarterlyfilings.htm",
+    "source_capture_digest": "9a36e097eb987531bb1ed80655744f0ff9aca286021c5415a6ecd24d0cbd69ab",
+    "source_result_digest": "65cd6601f00d331ce2ae105268b095a8cc1cc28cfb01674f00756c707bfacea2"
+  },
+  "candidate_inventory": [
+    {
+      "exhibit_number": 9,
+      "name": "pressreleasefinancialresul.htm",
+      "score": 44,
+      "size": 43745,
+      "type": "text.gif",
+      "url": "https://www.sec.gov/Archives/edgar/data/937966/000162828026048235/pressreleasefinancialresul.htm"
+    },
+    {
+      "exhibit_number": 9,
+      "name": "financialstatementsusgaa.htm",
+      "score": 28,
+      "size": 27506,
+      "type": "text.gif",
+      "url": "https://www.sec.gov/Archives/edgar/data/937966/000162828026048235/financialstatementsusgaa.htm"
+    }
+  ],
+  "capture_refs": [
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 484,
+      "digest": "d008ac05d48720269a3d9b63eab24873635740a49a8c3a26c72e45420163a4e3",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/d0/08/d008ac05d48720269a3d9b63eab24873635740a49a8c3a26c72e45420163a4e3.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 11360,
+      "digest": "91b8b5ed6bc56222128ecf2a4cc850a289e420085f4e02bae2338adcbb29ab41",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/91/b8/91b8b5ed6bc56222128ecf2a4cc850a289e420085f4e02bae2338adcbb29ab41.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 503,
+      "digest": "5f2215dc740fa4217c12dd1b969733d2e286a97e96bfacb626e259ab07c7ee3f",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/5f/22/5f2215dc740fa4217c12dd1b969733d2e286a97e96bfacb626e259ab07c7ee3f.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 59173,
+      "digest": "2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/20/36/2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7.json"
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S1.asml_same_accession_current_exhibit_successor:v1",
+  "document_results": [
+    {
+      "assessment": {
+        "assessment_digest": "b0a27679eedddccd8dcb0c0457b0184e17571bac71b8e630abd332a447a73eea",
+        "detailed_results_pass": true,
+        "facet_hit_count": 7,
+        "facet_hits": [
+          "bookings_or_backlog",
+          "euv_or_high_na",
+          "systems_or_units",
+          "installed_base",
+          "gross_margin",
+          "cash_or_working_capital",
+          "outlook"
+        ],
+        "facet_misses": [],
+        "identity_pass": true,
+        "minimum_facet_hits": 4,
+        "period_pass": true,
+        "text_chars": 12303,
+        "text_digest": "6a91b951dda23d97ea6b278f8efdeaae60afa8a57612e5f83fec6c24f1de75f4"
+      },
+      "attempt": {
+        "failure_code": null,
+        "request_capture": {
+          "artifact_type": "official_source_request",
+          "byte_size": 503,
+          "digest": "5f2215dc740fa4217c12dd1b969733d2e286a97e96bfacb626e259ab07c7ee3f",
+          "media_type": "application/json",
+          "object_key": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/5f/22/5f2215dc740fa4217c12dd1b969733d2e286a97e96bfacb626e259ab07c7ee3f.json"
+        },
+        "response_capture": {
+          "artifact_type": "official_source_response",
+          "byte_size": 59173,
+          "digest": "2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7",
+          "media_type": "application/json",
+          "object_key": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/20/36/2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7.json"
+        },
+        "route_id": "ASML:exhibit_candidate_1",
+        "status": "captured"
+      },
+      "candidate": {
+        "exhibit_number": 9,
+        "name": "pressreleasefinancialresul.htm",
+        "score": 44,
+        "size": 43745,
+        "type": "text.gif",
+        "url": "https://www.sec.gov/Archives/edgar/data/937966/000162828026048235/pressreleasefinancialresul.htm"
+      },
+      "parsed_capture_digest": "9ec1e30eb4fdc2db35f9d2b4e8a57afe6d0c9d1994a3804dae219f7dcf810a52",
+      "parsed_capture_ref": "fin-0.1.3/s1-asml-current-exhibit-successor/parsed/9e/c1/9ec1e30eb4fdc2db35f9d2b4e8a57afe6d0c9d1994a3804dae219f7dcf810a52.json",
+      "parsed_text_chars": 12303,
+      "parsed_text_digest": "6a91b951dda23d97ea6b278f8efdeaae60afa8a57612e5f83fec6c24f1de75f4",
+      "parser_adapter": "official_source_html_text_v1",
+      "response_capture_digest": "2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7",
+      "response_capture_ref": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/20/36/2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7.json"
+    }
+  ],
+  "execution_environment_guard": {
+    "address_count": 1,
+    "all_forbidden_addresses_controlled_synthetic": true,
+    "decision_digest": "2091a9b9c8963f4c7f0db0b0a16557dc1042abd9c5691bf02c08c21d999a6924",
+    "guard": "public_allowlist_plus_controlled_198_18_0_0_15_proxy_v1",
+    "host": "www.sec.gov",
+    "synthetic_allowance_required": true
+  },
+  "failure_code": "",
+  "index_attempt": {
+    "failure_code": null,
+    "request_capture": {
+      "artifact_type": "official_source_request",
+      "byte_size": 484,
+      "digest": "d008ac05d48720269a3d9b63eab24873635740a49a8c3a26c72e45420163a4e3",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/d0/08/d008ac05d48720269a3d9b63eab24873635740a49a8c3a26c72e45420163a4e3.json"
+    },
+    "response_capture": {
+      "artifact_type": "official_source_response",
+      "byte_size": 11360,
+      "digest": "91b8b5ed6bc56222128ecf2a4cc850a289e420085f4e02bae2338adcbb29ab41",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/91/b8/91b8b5ed6bc56222128ecf2a4cc850a289e420085f4e02bae2338adcbb29ab41.json"
+    },
+    "route_id": "ASML:same_accession_index",
+    "status": "captured"
+  },
+  "known_boundary": "This same-accession source successor does not retry the three-case live, promote Evidence, build indexes, use broad web search or call a model.",
+  "observed_at": "2026-08-09T14:43:40Z",
+  "observed_counts": {
+    "detailed_documents_acquired": 1,
+    "documents_attempted": 1,
+    "embedding_calls": 0,
+    "evidence_promotion_calls": 0,
+    "index_candidates": 2,
+    "model_calls": 0,
+    "network_calls": 2,
+    "provider_calls": 0,
+    "rerank_calls": 0,
+    "retry_calls": 0
+  },
+  "policy_digest": "1200d21a719c2f3f6e4c9ff7945db77fb1df4ae120088b3c8c0bbaf10516dd41",
+  "public_private_separation": {
+    "captured_document_is_business_evidence": false,
+    "credentials_authorization_headers_or_cookies_saved": false,
+    "raw_requests_responses_and_parsed_text_retained_outside_git": true,
+    "runtime_root_ref": "data/workbench_private/fin_0_1_3_s1_asml_current_exhibit_successor/live-r1"
+  },
+  "public_record_digest": "3b534dbc78b9a0ddfc514049756b19c71199cf2eacc33256fe44cc78288f4382",
+  "result_digest": "631ba5c0a094dbd884870d13d043bb51930d3012238ff59099a0d319f3a1552f",
+  "run_id": "fin013_s1_asml_exhibit_run_8fafc4915b7b83117b44",
+  "run_scope": "S1_THREE_HELD_OUT_EXACT_OFFICIAL_CURRENT_SOURCE_DISCOVERY_CAPTURE_AND_BUNDLE_V2_REPROOF",
+  "schema_version": "fin_ia_0_1_3_s1_asml_current_exhibit_successor_result_v1_0",
+  "selected_detailed_source": {
+    "assessment": {
+      "assessment_digest": "b0a27679eedddccd8dcb0c0457b0184e17571bac71b8e630abd332a447a73eea",
+      "detailed_results_pass": true,
+      "facet_hit_count": 7,
+      "facet_hits": [
+        "bookings_or_backlog",
+        "euv_or_high_na",
+        "systems_or_units",
+        "installed_base",
+        "gross_margin",
+        "cash_or_working_capital",
+        "outlook"
+      ],
+      "facet_misses": [],
+      "identity_pass": true,
+      "minimum_facet_hits": 4,
+      "period_pass": true,
+      "text_chars": 12303,
+      "text_digest": "6a91b951dda23d97ea6b278f8efdeaae60afa8a57612e5f83fec6c24f1de75f4"
+    },
+    "attempt": {
+      "failure_code": null,
+      "request_capture": {
+        "artifact_type": "official_source_request",
+        "byte_size": 503,
+        "digest": "5f2215dc740fa4217c12dd1b969733d2e286a97e96bfacb626e259ab07c7ee3f",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/5f/22/5f2215dc740fa4217c12dd1b969733d2e286a97e96bfacb626e259ab07c7ee3f.json"
+      },
+      "response_capture": {
+        "artifact_type": "official_source_response",
+        "byte_size": 59173,
+        "digest": "2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/20/36/2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7.json"
+      },
+      "route_id": "ASML:exhibit_candidate_1",
+      "status": "captured"
+    },
+    "candidate": {
+      "exhibit_number": 9,
+      "name": "pressreleasefinancialresul.htm",
+      "score": 44,
+      "size": 43745,
+      "type": "text.gif",
+      "url": "https://www.sec.gov/Archives/edgar/data/937966/000162828026048235/pressreleasefinancialresul.htm"
+    },
+    "parsed_capture_digest": "9ec1e30eb4fdc2db35f9d2b4e8a57afe6d0c9d1994a3804dae219f7dcf810a52",
+    "parsed_capture_ref": "fin-0.1.3/s1-asml-current-exhibit-successor/parsed/9e/c1/9ec1e30eb4fdc2db35f9d2b4e8a57afe6d0c9d1994a3804dae219f7dcf810a52.json",
+    "parsed_text_chars": 12303,
+    "parsed_text_digest": "6a91b951dda23d97ea6b278f8efdeaae60afa8a57612e5f83fec6c24f1de75f4",
+    "parser_adapter": "official_source_html_text_v1",
+    "response_capture_digest": "2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7",
+    "response_capture_ref": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/20/36/2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7.json"
+  },
+  "shared_admission_receipt": {
+    "admission_digest": "48e6d633653b53c554cb8fafc4915b7b83117b44be955bdfc03b950d97fad206",
+    "admission_id": "fin013_s1_asml_exhibit_admission_48e6d633653b53c554cb",
+    "attempt_id": "fin013_s1_asml_exhibit_attempt_be955bdfc03b950d97fa",
+    "finalized_at": "2026-08-09T14:43:40Z",
+    "receipt_digest": "9f8398885c72fbd74d25c2b2a206653bd1212a849da995c05d3b53cb4d5ed05d",
+    "reservation_digest": "0b621a2d25edf4503383dc108568cdc022050cfd4ac63df1bdaa4e13eb87f3e3",
+    "reserved_at": "2026-08-09T14:43:40Z",
+    "run_id": "fin013_s1_asml_exhibit_run_8fafc4915b7b83117b44",
+    "runtime_identity": "D:\\FIN_Insight_Agent\\data\\workbench_private\\fin_0_1_3_s1_asml_current_exhibit_successor\\live-r1",
+    "schema_version": "fin_ia_shared_admission_consumption_ledger_v1_0",
+    "scope": "fin_0_1_3.S1.asml_same_accession_current_exhibit_successor:v1",
+    "state": "terminal",
+    "terminal_code": "detailed_exhibit_captured",
+    "terminal_phase": "asml_same_accession_current_exhibit_terminal",
+    "terminal_result_digest": "631ba5c0a094dbd884870d13d043bb51930d3012238ff59099a0d319f3a1552f",
+    "terminal_status": "success"
+  },
+  "stage_acceptance": {
+    "asml_detailed_current_source_capture": true,
+    "external_residual_supplement_admitted": false,
+    "held_out_product_generalization": false,
+    "model_research_admitted": false,
+    "sparse_dense_rebuild_admitted": false,
+    "three_case_table_preserving_reparse": false
+  },
+  "status": "completed_detailed_exhibit_acquired"
+}

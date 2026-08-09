@@ -1,0 +1,360 @@
+{
+  "admission_digest": "0ebf5d5804368f521b2b9f0beb969ed6d091d66f4681310c7afa7052c832354d",
+  "attempt_id": "fin013_s1_heldout_source_attempt_4681310c7afa7052c832",
+  "capture_refs": [
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 454,
+      "digest": "b792d11062ce2a44c9d297ab54316b5bfb77b0c52b834ae3d75dffa4e5d63538",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/b7/92/b792d11062ce2a44c9d297ab54316b5bfb77b0c52b834ae3d75dffa4e5d63538.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 212152,
+      "digest": "47e0ec971bac0f1dc8b4dd2d4e0b7ca7f1371a820846d03c320a71b7ca61cbcf",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/47/e0/47e0ec971bac0f1dc8b4dd2d4e0b7ca7f1371a820846d03c320a71b7ca61cbcf.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 488,
+      "digest": "c6093456774a75e8046103b36cdd5769861dcd4acbb0729d9cd8f86377a0b0f8",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/c6/09/c6093456774a75e8046103b36cdd5769861dcd4acbb0729d9cd8f86377a0b0f8.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 9166064,
+      "digest": "3bf5b66633cb844e013681f3894f7ded0915a80b560237c848a3c842f931ade4",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/3b/f5/3bf5b66633cb844e013681f3894f7ded0915a80b560237c848a3c842f931ade4.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 454,
+      "digest": "31763c8b6d84c61aa6dfb066e5ce97eca74be8c49d6319eb575a42ea0e67d7c2",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/31/76/31763c8b6d84c61aa6dfb066e5ce97eca74be8c49d6319eb575a42ea0e67d7c2.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 129995,
+      "digest": "598490f1800ab708c5dd94e7acdcb279e7b17e2b529f07f69ad1957b1c0457e2",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/59/84/598490f1800ab708c5dd94e7acdcb279e7b17e2b529f07f69ad1957b1c0457e2.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 497,
+      "digest": "5c849d4e308e37eac8da24e24f43d2229ef29622b25c090a762b5f51ad6c9c9e",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/5c/84/5c849d4e308e37eac8da24e24f43d2229ef29622b25c090a762b5f51ad6c9c9e.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 16060,
+      "digest": "9a36e097eb987531bb1ed80655744f0ff9aca286021c5415a6ecd24d0cbd69ab",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/9a/36/9a36e097eb987531bb1ed80655744f0ff9aca286021c5415a6ecd24d0cbd69ab.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 454,
+      "digest": "b3e1ceb0f91868f191997265f3ec6d4190da79bd2574e732dcdc210e5b5abd48",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/b3/e1/b3e1ceb0f91868f191997265f3ec6d4190da79bd2574e732dcdc210e5b5abd48.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 210956,
+      "digest": "e62ed8e5369d96b25e11a24db106fbceefe72fb94447ad00a4db46feb69de587",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/e6/2e/e62ed8e5369d96b25e11a24db106fbceefe72fb94447ad00a4db46feb69de587.json"
+    },
+    {
+      "artifact_type": "official_source_request",
+      "byte_size": 488,
+      "digest": "768e7f5e5ae3ddcada29c5b3ad242b313f15888ecc7a49611b629f33a381579c",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/76/8e/768e7f5e5ae3ddcada29c5b3ad242b313f15888ecc7a49611b629f33a381579c.json"
+    },
+    {
+      "artifact_type": "official_source_response",
+      "byte_size": 1904056,
+      "digest": "fd327ed8e589888a4d00a1447e9a5fa5c7133e0ac31b0be44cb30d1a16a757cf",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/fd/32/fd327ed8e589888a4d00a1447e9a5fa5c7133e0ac31b0be44cb30d1a16a757cf.json"
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S1.held_out_current_official_source_acquisition:v1",
+  "execution_environment_guard": {
+    "all_forbidden_addresses_controlled_synthetic": true,
+    "decision_digest": "a1034e1bd60442d8d2201c0caf0ec4d9f785c60a5859f911af1c5a7ff97fae2c",
+    "guard": "public_allowlist_plus_controlled_198_18_0_0_15_proxy_v1",
+    "host_count": 2,
+    "resolved_hosts": [
+      {
+        "address_count": 1,
+        "controlled_synthetic_range_observed": true,
+        "host": "data.sec.gov"
+      },
+      {
+        "address_count": 1,
+        "controlled_synthetic_range_observed": true,
+        "host": "www.sec.gov"
+      }
+    ],
+    "synthetic_allowance_required": true
+  },
+  "known_boundary": "Official SEC sources were selected from issuer identity, form and date criteria. Captured source is not Evidence; parsing, bundle-v2 reproof and held-out acceptance remain separate.",
+  "observed_at": "2026-08-09T14:25:21Z",
+  "observed_counts": {
+    "acquired": 3,
+    "embedding_calls": 0,
+    "evidence_promotion_calls": 0,
+    "model_calls": 0,
+    "network_calls": 6,
+    "provider_calls": 0,
+    "rerank_calls": 0,
+    "retry_calls": 0,
+    "targets": 3,
+    "typed_gaps": 0
+  },
+  "policy_digest": "3cbfda21f76d0872bf8199e558bbcd9339fd7787dc04b0d052f3e5e1a86c3900",
+  "public_private_separation": {
+    "captured_source_is_business_evidence": false,
+    "credentials_authorization_headers_or_cookies_saved": false,
+    "raw_requests_responses_and_parsed_text_retained_outside_git": true,
+    "runtime_root_ref": "data/workbench_private/fin_0_1_3_s1_held_out_current_source_acquisition/live-r1"
+  },
+  "public_record_digest": "6df6772f6b47d6795e254b1c9e099ea04d4c3766489946f56ef7eed9dc3411e2",
+  "result_digest": "65cd6601f00d331ce2ae105268b095a8cc1cc28cfb01674f00756c707bfacea2",
+  "run_id": "fin013_s1_heldout_source_run_9f0beb969ed6d091d66f",
+  "run_scope": "S1_THREE_HELD_OUT_EXACT_OFFICIAL_CURRENT_SOURCE_DISCOVERY_CAPTURE_AND_BUNDLE_V2_REPROOF",
+  "schema_version": "fin_ia_0_1_3_s1_held_out_current_source_acquisition_result_v1_0",
+  "shared_admission_receipt": {
+    "admission_digest": "0ebf5d5804368f521b2b9f0beb969ed6d091d66f4681310c7afa7052c832354d",
+    "admission_id": "fin013_s1_heldout_source_admission_0ebf5d5804368f521b2b",
+    "attempt_id": "fin013_s1_heldout_source_attempt_4681310c7afa7052c832",
+    "finalized_at": "2026-08-09T14:25:21Z",
+    "receipt_digest": "36ae35d122cdba6494d29b9a5b7ef4edae1c4a6a82bc6d5f648b9ff03ae5cc8d",
+    "reservation_digest": "12a26fa4899ce673e6073e9a754571e0415cab812061772db3bc466074407b47",
+    "reserved_at": "2026-08-09T14:25:21Z",
+    "run_id": "fin013_s1_heldout_source_run_9f0beb969ed6d091d66f",
+    "runtime_identity": "D:\\FIN_Insight_Agent\\data\\workbench_private\\fin_0_1_3_s1_held_out_current_source_acquisition\\live-r1",
+    "schema_version": "fin_ia_shared_admission_consumption_ledger_v1_0",
+    "scope": "fin_0_1_3.S1.held_out_current_official_source_acquisition:v1",
+    "state": "terminal",
+    "terminal_code": "all_targets_captured",
+    "terminal_phase": "held_out_current_official_source_acquisition_terminal",
+    "terminal_result_digest": "65cd6601f00d331ce2ae105268b095a8cc1cc28cfb01674f00756c707bfacea2",
+    "terminal_status": "success"
+  },
+  "source_results": [
+    {
+      "attempts": [
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 454,
+            "digest": "b792d11062ce2a44c9d297ab54316b5bfb77b0c52b834ae3d75dffa4e5d63538",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/b7/92/b792d11062ce2a44c9d297ab54316b5bfb77b0c52b834ae3d75dffa4e5d63538.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 212152,
+            "digest": "47e0ec971bac0f1dc8b4dd2d4e0b7ca7f1371a820846d03c320a71b7ca61cbcf",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/47/e0/47e0ec971bac0f1dc8b4dd2d4e0b7ca7f1371a820846d03c320a71b7ca61cbcf.json"
+          },
+          "route_id": "ORCL:sec_submissions",
+          "status": "captured"
+        },
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 488,
+            "digest": "c6093456774a75e8046103b36cdd5769861dcd4acbb0729d9cd8f86377a0b0f8",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/c6/09/c6093456774a75e8046103b36cdd5769861dcd4acbb0729d9cd8f86377a0b0f8.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 9166064,
+            "digest": "3bf5b66633cb844e013681f3894f7ded0915a80b560237c848a3c842f931ade4",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/3b/f5/3bf5b66633cb844e013681f3894f7ded0915a80b560237c848a3c842f931ade4.json"
+          },
+          "route_id": "ORCL:primary_document",
+          "status": "captured"
+        }
+      ],
+      "candidate_state": "captured_source_not_evidence",
+      "case_key": "ORCL",
+      "exact_accession_or_final_url_seeded": false,
+      "failure_code": "",
+      "result_digest": "38fdfc63ca3ab86e8fae985bfd8176eed8cfa2d0d281443f6f1cd317942bf752",
+      "source": {
+        "accession_number": "0001193125-26-277521",
+        "candidate_count": 1,
+        "filing_date": "2026-06-22",
+        "form_type": "10-K",
+        "parsed_capture_digest": "4b370334a7257a04e629a0c1cc81d182c20137105ce76e2276d548ad73c72ce4",
+        "parsed_capture_ref": "fin-0.1.3/s1-held-out-current-source-acquisition/parsed/4b/37/4b370334a7257a04e629a0c1cc81d182c20137105ce76e2276d548ad73c72ce4.json",
+        "parsed_text_chars": 461795,
+        "parser_adapter": "official_source_html_text_v1",
+        "parser_text_digest": "892c292a4f872ef3bf99d33d64104595685e1ab21cf2453ef1cf91858334b8cb",
+        "primary_document": "orcl-20260531.htm",
+        "report_date": "2026-05-31",
+        "response_capture_digest": "3bf5b66633cb844e013681f3894f7ded0915a80b560237c848a3c842f931ade4",
+        "response_capture_ref": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/3b/f5/3bf5b66633cb844e013681f3894f7ded0915a80b560237c848a3c842f931ade4.json",
+        "selected_url": "https://www.sec.gov/Archives/edgar/data/1341439/000119312526277521/orcl-20260531.htm",
+        "selection": "primary_document"
+      },
+      "status": "captured_parsed_current_markers_pass"
+    },
+    {
+      "attempts": [
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 454,
+            "digest": "31763c8b6d84c61aa6dfb066e5ce97eca74be8c49d6319eb575a42ea0e67d7c2",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/31/76/31763c8b6d84c61aa6dfb066e5ce97eca74be8c49d6319eb575a42ea0e67d7c2.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 129995,
+            "digest": "598490f1800ab708c5dd94e7acdcb279e7b17e2b529f07f69ad1957b1c0457e2",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/59/84/598490f1800ab708c5dd94e7acdcb279e7b17e2b529f07f69ad1957b1c0457e2.json"
+          },
+          "route_id": "ASML:sec_submissions",
+          "status": "captured"
+        },
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 497,
+            "digest": "5c849d4e308e37eac8da24e24f43d2229ef29622b25c090a762b5f51ad6c9c9e",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/5c/84/5c849d4e308e37eac8da24e24f43d2229ef29622b25c090a762b5f51ad6c9c9e.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 16060,
+            "digest": "9a36e097eb987531bb1ed80655744f0ff9aca286021c5415a6ecd24d0cbd69ab",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/9a/36/9a36e097eb987531bb1ed80655744f0ff9aca286021c5415a6ecd24d0cbd69ab.json"
+          },
+          "route_id": "ASML:primary_document",
+          "status": "captured"
+        }
+      ],
+      "candidate_state": "captured_source_not_evidence",
+      "case_key": "ASML",
+      "exact_accession_or_final_url_seeded": false,
+      "failure_code": "",
+      "result_digest": "3e580734eda61a4af28d70167d8ba0733eb8cc819dbfe557fe49e5ca8072da1b",
+      "source": {
+        "accession_number": "0001628280-26-048235",
+        "candidate_count": 1,
+        "filing_date": "2026-07-15",
+        "form_type": "6-K",
+        "parsed_capture_digest": "172e00a56ca920746ff4d4b09c41eb0a5121308a8193977e771746e7bb216dd2",
+        "parsed_capture_ref": "fin-0.1.3/s1-held-out-current-source-acquisition/parsed/17/2e/172e00a56ca920746ff4d4b09c41eb0a5121308a8193977e771746e7bb216dd2.json",
+        "parsed_text_chars": 2263,
+        "parser_adapter": "official_source_html_text_v1",
+        "parser_text_digest": "e3448f47a81280540a89c1feb3fab5a19169e1eda0123ebdccd6d308ac56e672",
+        "primary_document": "form6-kquarterlyfilings.htm",
+        "report_date": "2026-06-28",
+        "response_capture_digest": "9a36e097eb987531bb1ed80655744f0ff9aca286021c5415a6ecd24d0cbd69ab",
+        "response_capture_ref": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/9a/36/9a36e097eb987531bb1ed80655744f0ff9aca286021c5415a6ecd24d0cbd69ab.json",
+        "selected_url": "https://www.sec.gov/Archives/edgar/data/937966/000162828026048235/form6-kquarterlyfilings.htm",
+        "selection": "primary_document"
+      },
+      "status": "captured_parsed_current_markers_pass"
+    },
+    {
+      "attempts": [
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 454,
+            "digest": "b3e1ceb0f91868f191997265f3ec6d4190da79bd2574e732dcdc210e5b5abd48",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/b3/e1/b3e1ceb0f91868f191997265f3ec6d4190da79bd2574e732dcdc210e5b5abd48.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 210956,
+            "digest": "e62ed8e5369d96b25e11a24db106fbceefe72fb94447ad00a4db46feb69de587",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/e6/2e/e62ed8e5369d96b25e11a24db106fbceefe72fb94447ad00a4db46feb69de587.json"
+          },
+          "route_id": "ANET:sec_submissions",
+          "status": "captured"
+        },
+        {
+          "failure_code": null,
+          "request_capture": {
+            "artifact_type": "official_source_request",
+            "byte_size": 488,
+            "digest": "768e7f5e5ae3ddcada29c5b3ad242b313f15888ecc7a49611b629f33a381579c",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/76/8e/768e7f5e5ae3ddcada29c5b3ad242b313f15888ecc7a49611b629f33a381579c.json"
+          },
+          "response_capture": {
+            "artifact_type": "official_source_response",
+            "byte_size": 1904056,
+            "digest": "fd327ed8e589888a4d00a1447e9a5fa5c7133e0ac31b0be44cb30d1a16a757cf",
+            "media_type": "application/json",
+            "object_key": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/fd/32/fd327ed8e589888a4d00a1447e9a5fa5c7133e0ac31b0be44cb30d1a16a757cf.json"
+          },
+          "route_id": "ANET:primary_document",
+          "status": "captured"
+        }
+      ],
+      "candidate_state": "captured_source_not_evidence",
+      "case_key": "ANET",
+      "exact_accession_or_final_url_seeded": false,
+      "failure_code": "",
+      "result_digest": "3bbd8ef7954733ac116eb72a5f141e58b5b570ba8840a0ba2b5d68ea7a48f3c1",
+      "source": {
+        "accession_number": "0001596532-26-000175",
+        "candidate_count": 2,
+        "filing_date": "2026-08-05",
+        "form_type": "10-Q",
+        "parsed_capture_digest": "46a0cfca03a0ea38fd85117c960f5f4196a8ab78d59ab68d4a270244a8bbf734",
+        "parsed_capture_ref": "fin-0.1.3/s1-held-out-current-source-acquisition/parsed/46/a0/46a0cfca03a0ea38fd85117c960f5f4196a8ab78d59ab68d4a270244a8bbf734.json",
+        "parsed_text_chars": 289288,
+        "parser_adapter": "official_source_html_text_v1",
+        "parser_text_digest": "32f5f995d68ca61c8f499328ba2f90be2d9aedcc3438069132cd037c3f9cafb0",
+        "primary_document": "anet-20260630.htm",
+        "report_date": "2026-06-30",
+        "response_capture_digest": "fd327ed8e589888a4d00a1447e9a5fa5c7133e0ac31b0be44cb30d1a16a757cf",
+        "response_capture_ref": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/fd/32/fd327ed8e589888a4d00a1447e9a5fa5c7133e0ac31b0be44cb30d1a16a757cf.json",
+        "selected_url": "https://www.sec.gov/Archives/edgar/data/1596532/000159653226000175/anet-20260630.htm",
+        "selection": "primary_document"
+      },
+      "status": "captured_parsed_current_markers_pass"
+    }
+  ],
+  "stage_acceptance": {
+    "current_source_reparse": false,
+    "external_residual_supplement_admitted": false,
+    "held_out_current_source_capture": true,
+    "held_out_product_generalization": false,
+    "model_research_admitted": false,
+    "sparse_dense_rebuild_admitted": false
+  },
+  "status": "completed_all_targets_acquired"
+}

@@ -4,7 +4,7 @@
 
 阶段：S1／CandidateBundle-only sparse／dense manifest 前置对象审计
 
-状态：R8 working-tree 零调用通过；clean independent proof 待执行
+状态：R8 working-tree 零调用及 clean independent proof 均通过；manifest 重绑待执行
 
 ## 1. 为什么没有直接构建索引
 
@@ -33,4 +33,6 @@ ANET admitted table metrics 从 R4 的 470 变为 471，是通用表头修复后
 
 ## 4. 下一步边界
 
-先提交并推送 R8，再从两个 clean Git archive、两个 fresh process、三份 exact digest-bound capture 做独立复现。只有 clean proof 通过，manifest 才能改绑 R8，执行 93 条六案例 spec、15 类 mutation 与 fake sparse／fake dense 物化。真实 BGE／Milvus build、ranking、Evidence Pack、外源 residual supplement、DeepSeek 动态研究和报告验收仍未授权。
+R8 已由提交 `7e49846cd2562e08ae3780088380a83df391bb41` 推送，并从两个 clean Git archive、两个 fresh process、三份 exact digest-bound capture 完成独立复现。两次均通过 Project OS preflight、逐字节重现 source result=`6ca7ce22...f86b1`，proof=`e1565f9d...13342`，所有 network／Provider／model／embedding／rerank／Evidence 调用均为 0。
+
+下一步只允许把 manifest 改绑 R8 clean result/proof，执行 93 条六案例 spec、15 类 mutation 与 fake sparse／fake dense 物化。真实 BGE／Milvus build、ranking、Evidence Pack、外源 residual supplement、DeepSeek 动态研究和报告验收仍未授权。

@@ -2266,4 +2266,4 @@ ORCL、ASML、ANET 的当前官方源已证明同一通用 parser／CandidateBun
 
 任何 parser successor 在满足数量门后，还必须与前一已审基线做入选业务对象等价审计，至少比较公司、行、列、数值、单位、期间和 source lineage。总数相同不能掩盖 headline sales 消失、四个季度／半年 margin 压成三个错列候选，或完整 `Year Ended` 引用坐标退化。差异必须逐项解释并由新 Attempt 复证，不能交给 dense 或模型“补语义”。
 
-这项更正不改变既定大顺序，也不增加产品版本：仍在 FIN 0.1.3 的 S1 修复对象与索引入口。R4 已由两个 clean Git archive／fresh process 完全复现；manifest 审计随后又发现期间角色缺口并推动 R8 working-tree successor。R8 在 48 条入选留出 Metric 上实现业务 identity 与 R4 等价、`period_role` 缺失为 0，待新的 clean proof 后才可取代 R4 成为 manifest 输入；真实 build 仍需 Ubuntu WSL 独立 authority。索引和本地 Evidence Pack 完成后，以真实 residual gaps 驱动外源补源，最后才评估 DeepSeek 的动态研究和综合质量。
+这项更正不改变既定大顺序，也不增加产品版本：仍在 FIN 0.1.3 的 S1 修复对象与索引入口。R4 已由两个 clean Git archive／fresh process 完全复现；manifest 审计随后又发现期间角色缺口并推动 R8 successor。R8 在 48 条入选留出 Metric 上实现业务 identity 与 R4 等价、`period_role` 缺失为 0，并已从提交 `7e49846c...bb41` 的两个 clean archive／fresh process 完全复现，proof=`e1565f9d...13342`。因此 R8 现可取代 R4 成为零调用 manifest 输入；真实 build 仍需 Ubuntu WSL 独立 authority。索引和本地 Evidence Pack 完成后，以真实 residual gaps 驱动外源补源，最后才评估 DeepSeek 的动态研究和综合质量。

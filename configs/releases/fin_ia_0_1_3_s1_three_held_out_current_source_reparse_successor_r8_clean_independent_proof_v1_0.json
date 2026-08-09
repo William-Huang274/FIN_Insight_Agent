@@ -1,0 +1,165 @@
+{
+  "attempt_id": "S1-THREE-HELD-OUT-CURRENT-SOURCE-REPARSE-R8-CLEAN-PROOF-A1",
+  "capture_manifest": [
+    {
+      "bytes": 9166064,
+      "case_key": "ORCL",
+      "response_capture_digest": "3bf5b66633cb844e013681f3894f7ded0915a80b560237c848a3c842f931ade4",
+      "response_capture_ref": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/3b/f5/3bf5b66633cb844e013681f3894f7ded0915a80b560237c848a3c842f931ade4.json"
+    },
+    {
+      "bytes": 59173,
+      "case_key": "ASML",
+      "response_capture_digest": "2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7",
+      "response_capture_ref": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/20/36/2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7.json"
+    },
+    {
+      "bytes": 1904056,
+      "case_key": "ANET",
+      "response_capture_digest": "fd327ed8e589888a4d00a1447e9a5fa5c7133e0ac31b0be44cb30d1a16a757cf",
+      "response_capture_ref": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/fd/32/fd327ed8e589888a4d00a1447e9a5fa5c7133e0ac31b0be44cb30d1a16a757cf.json"
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S1.three_held_out_current_source_reparse_successor_r8_clean_independent_proof:v1",
+  "decision_zh": "两个独立 Git archive 在两个 fresh process 中仅注入三份 digest-bound 原始响应，均逐字节重现 R8 result。R5-R7 失败继续保留；下一步只准入把 CandidateBundle-only manifest 改绑到 R8，不准入真实 BGE、Milvus、ranking、Evidence、外源补源或 DeepSeek。",
+  "known_boundary": "This proof establishes clean reproducibility of the R8 flow-stock and business-coordinate successor only. It does not establish a physical index, ranking quality, Evidence Pack completeness, external coverage, model synthesis, report quality or release readiness.",
+  "observed_calls_each_run": {
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0
+  },
+  "predecessor_failure_refs": [
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r5_business_audit_failure_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r6_business_audit_failure_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r7_business_audit_failure_v1_0.json"
+  ],
+  "preparer_sha256": "adcddc77333d61129aa740cde2744eb98887a8a976d00341e28b5d70d9c090d3",
+  "proof_method": {
+    "archive_shared_code_directory": false,
+    "capture_copy_mode": "three_exact_publicly_referenced_response_capture_objects_only",
+    "capture_digest_verification": true,
+    "credential_environment_scrubbed": true,
+    "fresh_python_processes": 2,
+    "git_archives": 2,
+    "project_os_preflight_each_archive": true,
+    "socket_network_blocked": true
+  },
+  "proof_runs": [
+    {
+      "case_admitted_table_metrics": [
+        1249,
+        18,
+        471
+      ],
+      "case_bundle_counts": [
+        27,
+        13,
+        27
+      ],
+      "case_slot_counts": [
+        8,
+        5,
+        7
+      ],
+      "case_typed_rejects": [
+        236,
+        0,
+        238
+      ],
+      "matches_committed_result": true,
+      "mutations_passed": [
+        9,
+        9
+      ],
+      "observed_calls": {
+        "embedding": 0,
+        "evidence_promotion": 0,
+        "model": 0,
+        "network": 0,
+        "provider": 0,
+        "rerank": 0
+      },
+      "preflight": "pass",
+      "preflight_scope": "S1_THREE_HELD_OUT_CURRENT_SOURCE_TABLE_PRESERVING_REPARSE_AND_OBJECT_MIGRATION",
+      "result_digest": "6ca7ce22b86d5dbe347d02b3195fd6db50ff43488884cb830f1e44c8beff86b1",
+      "run_id": "archive-a",
+      "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_r8_clean_worker_v1_0",
+      "status": "pass"
+    },
+    {
+      "case_admitted_table_metrics": [
+        1249,
+        18,
+        471
+      ],
+      "case_bundle_counts": [
+        27,
+        13,
+        27
+      ],
+      "case_slot_counts": [
+        8,
+        5,
+        7
+      ],
+      "case_typed_rejects": [
+        236,
+        0,
+        238
+      ],
+      "matches_committed_result": true,
+      "mutations_passed": [
+        9,
+        9
+      ],
+      "observed_calls": {
+        "embedding": 0,
+        "evidence_promotion": 0,
+        "model": 0,
+        "network": 0,
+        "provider": 0,
+        "rerank": 0
+      },
+      "preflight": "pass",
+      "preflight_scope": "S1_THREE_HELD_OUT_CURRENT_SOURCE_TABLE_PRESERVING_REPARSE_AND_OBJECT_MIGRATION",
+      "result_digest": "6ca7ce22b86d5dbe347d02b3195fd6db50ff43488884cb830f1e44c8beff86b1",
+      "run_id": "archive-b",
+      "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_r8_clean_worker_v1_0",
+      "status": "pass"
+    }
+  ],
+  "recorded_at": "2026-08-10",
+  "result_digest": "e1565f9d5be1dcf48b90781c6a651cca7dfb1f208565ac679e9e9393fd713342",
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r8_clean_independent_proof_v1_0",
+  "source_bindings": {
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r8_result_v1_0.json": "2c2177f0526652864211c13e4726e909fc87b205cc385594ae3a31a5f1d45b2e",
+    "configs/runtime/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r8_policy_v1_0.json": "0e80b9f32d727684b6d34244125a6ce773f7882d38f5a750376b890d89cd92ff",
+    "src/evidence/structured_extractor.py": "e8284d92633ffe47580de12a07f49846a80374c86904281000ea7b5b54aa2d68",
+    "src/sec_agent/financial_research_candidate_bundle_v2.py": "6fb1c6c10b463059423bb3012f72b959371db554466538a0c1abca741eea4cee",
+    "src/sec_agent/financial_research_current_source_reparse.py": "5544fb628287d8f5363245aa28d036d8103d62e3fcbfa39f0316b04896f8ab59"
+  },
+  "source_commit": "7e49846cd2562e08ae3780088380a83df391bb41",
+  "source_git_state": {
+    "archive_excludes_untracked_files": true,
+    "branch": "codex/layered-data-source-expansion",
+    "commit": "7e49846cd2562e08ae3780088380a83df391bb41",
+    "tracked_clean": true,
+    "upstream_commit": "7e49846cd2562e08ae3780088380a83df391bb41"
+  },
+  "source_result_digest": "6ca7ce22b86d5dbe347d02b3195fd6db50ff43488884cb830f1e44c8beff86b1",
+  "source_result_ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r8_result_v1_0.json",
+  "stage_acceptance": {
+    "candidate_bundle_only_sparse_dense_manifest_rebaseline_admitted": true,
+    "clean_independent_reproof": true,
+    "external_residual_supplement": false,
+    "flow_stock_and_business_coordinate_engineering": true,
+    "held_out_product_generalization": false,
+    "model_research_synthesis": false,
+    "ranking": false,
+    "real_embedding_or_index_build": false,
+    "release": false
+  }
+}

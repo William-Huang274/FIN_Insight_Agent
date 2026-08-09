@@ -2279,3 +2279,5 @@ manifest R4 working-tree 已绑定上述 R9 clean input，保持 93 个六案主
 物理索引必须把同一份业务审过 manifest 同时用于 sparse 与 dense，禁止 ObjectBM25、BGE/Milvus 各自选择不同对象。FIN 0.1.3 当前 physical-index contract 固定消费六案 93 个 CandidateBundle spec，自动叙事 19 条继续 quarantine；ObjectBM25 输出必须可由现有 retriever 读取，dense 必须在 close/reopen 后逐项核对同一 `(vector_id, case, spec digest)`。Linux 建库采用 working root、私有 receipt 和同文件系统 rename；任何失败保留 working root、写 typed terminal result、0 automatic retry。
 
 Linux 环境资格与 full-fake 已通过：Ubuntu-22.04 独立 CPU runtime 绑定 BGE-M3 五个本地模型文件、pymilvus/milvus-lite 完整 package tree、59-row pip freeze 和 fresh targets；真实 ObjectBM25 序列化与 fake dense 均完整接收 93 条、12 批，七类物理层 mutation fail closed，proof=`99b7f66e...cfdc`。这只准入 clean-commit-bound exact-once authority；BGE 尚未加载、Milvus 尚未写入。即使未来 physical build 成功，`retrieval_quality` 和 `workbench_integration` 仍为 false，必须另做同矩阵查询与 Windows→WSL 调用接线证明。
+
+上述实现已从 clean/synced `566d5223...477e` 签发唯一 R1 authority=`0ca08fec...4260`。签发器再次核对 Linux 包树、BGE bytes、manifest、磁盘和 fresh targets，仍未加载模型或写索引。执行前必须先提交 authority，worker 再做一次 environment identity requalification；任何签发后漂移在模型加载前终止，且不得自动 R2。

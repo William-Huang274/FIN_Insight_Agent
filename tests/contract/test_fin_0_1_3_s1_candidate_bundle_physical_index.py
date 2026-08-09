@@ -34,6 +34,10 @@ PROOF_PATH = ROOT / (
     "configs/releases/"
     "fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_0.json"
 )
+AUTHORITY_PATH = ROOT / (
+    "configs/releases/"
+    "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_authority_v1_0.json"
+)
 
 
 def _policy() -> dict:
@@ -219,3 +223,25 @@ def test_authority_validation_requires_exact_digest_and_fresh_target() -> None:
     authority["private_target"]["final_root_absent"] = False
     with pytest.raises(CandidateBundlePhysicalIndexError):
         validate_build_authority(authority, policy=policy)
+
+
+def test_materialized_authority_binds_clean_environment_and_one_r1() -> None:
+    authority = json.loads(AUTHORITY_PATH.read_text(encoding="utf-8"))
+    validated = validate_build_authority(
+        authority,
+        policy=_policy(),
+        repo_root=ROOT,
+    )
+    assert validated["status"] == "issued_unconsumed"
+    assert validated["implementation"]["commit"] == (
+        "566d5223dca1d6d28dc802cd4bfa4fa6cc1a477e"
+    )
+    assert validated["maximum_executions"] == 1
+    assert validated["automatic_retry"] is False
+    assert validated["manifest_binding"]["spec_count"] == 93
+    assert validated["environment_qualification"]["packages"]["torch"] == "2.10.0+cpu"
+    assert validated["environment_qualification"]["milvus_manifest_source"][
+        "commit_primitive"
+    ] == "os.rename"
+    assert validated["private_target"]["working_root_absent"] is True
+    assert validated["private_target"]["final_root_absent"] is True

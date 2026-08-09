@@ -774,3 +774,5 @@ ObjectBM25 与 BGE-M3／Milvus 必须消费同一 93-spec manifest，且发布�
 独立 runtime 当前绑定 Python `3.10.12`、Torch `2.10.0+cpu`、Transformers `5.2.0`、SentenceTransformers `5.2.3`、pymilvus `3.0.0`、milvus-lite `3.0`、rank-bm25 `0.2.2`、pip-freeze digest=`8c47414e...af00`。BGE 五文件 digest 与既有 authority 一致；milvus manifest source=`os.rename`／`59b45341...fcd6`，所以 Windows 仍禁止。full-fake proof=`99b7f66e...cfdc` 已证明 real sparse serialization、fake dense 93/93 和七类 fail-closed mutation，真实模型／Milvus调用为 0。
 
 `physical index present`、`retrieval quality` 与 `product integration` 是三个不同状态。前者成功后仍须单独执行同 Query Facet／qrels 矩阵的 sparse、dense、fusion 对照；Windows Workbench 若不能稳定调用 WSL store，也不能标记 integrated。Evidence promotion、residual-gap external supplement、DeepSeek research 和 report acceptance 均继续在后续 gate。
+
+clean/synced implementation=`566d5223...477e` 的 R1 authority=`0ca08fec...4260` 已签发未消费。authority 除 Git bindings 外还绑定当前 package-tree fingerprints、pip freeze、BGE model files、Milvus manifest source、fresh Linux targets 与 disk floor。worker 在执行前必须重新计算 `environment_identity` 并与 authority 相等；disk free 只检查 floor、不要求字节恒等。该 requalification 仍为 0 model load／0 index write，失败则在创建 working root 前终止。

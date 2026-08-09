@@ -1,0 +1,146 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_8",
+  "contract_ref": "fin_0_1_3.S1.retrieval_query_facet_external_internal_progression:v1_8",
+  "recorded_at": "2026-08-09",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1",
+  "status": "linux_milvus_qualified_qrels_business_semantic_review_current",
+  "predecessor_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_7.json",
+  "user_decision": "Use the installed Ubuntu WSL environment for bounded Milvus qualification; future retrieval reports must explain row-level business reasons rather than only aggregate metrics; after local retrieval and tools are stable, external search must return as the typed gap-filling source layer.",
+  "current_truth": {
+    "external_product_coverage": "4_of_12_failed_release_blocker_preserved",
+    "internal_research_candidate_inventory": "18_of_18_ranking_relevance_owner_accepted",
+    "qrels_business_semantic_quality": "requalification_required_before_next_formal_ranking_successor",
+    "internal_annual_exact_sql": "9_of_9",
+    "internal_current_quarter_exact_sql": "0_of_6_typed_refresh_gap",
+    "ranking_attempt_r2": "valid_against_qrels_v1_3_sparse_16_of_18_dense_3_of_18_fusion_14_of_18_sparse_retained",
+    "dense_failure_attribution": "8_index_freshness_3_top10_1_rank16_6_top24_semantic_miss",
+    "historical_dense_unique_selected_targets": "5_of_10",
+    "supplemental_dense_r1": "terminal_failed_no_retry_after_410_embeddings_and_410_insert_acknowledgements",
+    "supplemental_dense_r1_failure": "milvus_lite_3_0_windows_manifest_os_rename_existing_target_winerror_183",
+    "ubuntu_wsl": "ubuntu_22_04_wsl2_x86_64_gpu_visible_linux_root_has_911gb_free",
+    "ubuntu_milvus_lite_canary": "same_3_0_os_rename_source_one_insert_double_flush_close_reopen_count_and_query_passed_on_linux_filesystem",
+    "ubuntu_canary_bootstrap": "four_pre_storage_probes_preserved_three_dependency_or_import_gaps_one_cross_shell_path_expansion_then_r5_passed",
+    "supplemental_dense_final_collection": "absent",
+    "supplemental_dense_real_presence": "not_run_build_failed",
+    "reranker_resource": "optional_absent_not_executed",
+    "downstream_utilization": "not_proven"
+  },
+  "reporting_contract": {
+    "aggregate_metrics_without_row_level_reason": "diagnostic_only",
+    "required_fields": [
+      "case_key",
+      "evidence_slot_id",
+      "evidence_owner_ticker",
+      "target_business_summary",
+      "target_source_and_index_presence",
+      "selected_target_rank",
+      "top_candidate_business_summary",
+      "error_class",
+      "earliest_owning_layer",
+      "recommended_repair"
+    ],
+    "error_classes": [
+      "source_not_acquired",
+      "target_absent_from_index",
+      "correct_owner_wrong_section",
+      "generic_context_crowded_specific_evidence",
+      "wrong_owner",
+      "wrong_period",
+      "cross_case",
+      "parser_or_lineage_error",
+      "target_ranked_outside_window",
+      "qrel_business_semantic_defect"
+    ],
+    "current_examples": [
+      "DELL_MSFT_demand_target_present_but_generic_Microsoft_overview_crowded_specific_cloud_metrics",
+      "NVDA_regulatory_cash_flow_target_ranked_16",
+      "DELL_issuer_sparse_target_ranked_12_behind_same_company_legal_and_risk_sections",
+      "NVDA_supply_qrels_for_DELL_and_MU_start_with_contact_or_disclaimer_content_and_require_re_review"
+    ]
+  },
+  "retrieval_topology": {
+    "mode": "local_first_external_gap_filling",
+    "sequence": [
+      "internal_exact_object_bm25_dense_graph",
+      "typed_residual_gap_by_evidence_slot",
+      "external_official_or_broad_supplement",
+      "capture_parse_identity_date_relationship_gate",
+      "unified_candidate_and_evidence_lineage",
+      "downstream_research_utilization"
+    ],
+    "external_is_optional_for_release": false,
+    "external_may_masquerade_as_internal": false
+  },
+  "execution_sequence": [
+    {
+      "order": 1,
+      "work_item": "S1_SUPPLEMENTAL_DENSE_R1_IMMUTABLE_FAILURE_CLOSEOUT",
+      "status": "complete",
+      "acceptance": "R1 remains failed and immutable; its Windows working root is not reused or promoted."
+    },
+    {
+      "order": 2,
+      "work_item": "S1_MILVUS_LITE_UBUNTU_WSL_PORTABILITY_QUALIFICATION",
+      "status": "complete_dependency_only",
+      "acceptance": "In a Linux-filesystem isolated environment, fingerprint pymilvus and milvus_lite and prove one synthetic row through create, insert, double flush, close, reopen, count and metadata query with zero BGE and no historical write."
+    },
+    {
+      "order": 3,
+      "work_item": "S1_QRELS_BUSINESS_SEMANTIC_REVIEW_AND_ROW_LEVEL_ERROR_ATTRIBUTION",
+      "status": "row_level_attribution_complete_qrel_requalification_current",
+      "acceptance": "Every target must contain business content for its Evidence Slot; contact, disclaimer, page-header or generic-document targets are expanded, replaced or returned before a new formal ranking matrix."
+    },
+    {
+      "order": 4,
+      "work_item": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+      "status": "blocked_until_qrel_requalification_linux_bge_runtime_proof_and_fresh_authority",
+      "acceptance": "Only after Linux dependency qualification and a new execution-environment fingerprint, issue a fresh Attempt and build all 410 source-derived BGE-M3 vectors with zero retry and no R1-state reuse."
+    },
+    {
+      "order": 5,
+      "work_item": "S1_DENSE_SELECTED_TARGET_PHYSICAL_PRESENCE_GATE",
+      "status": "blocked_until_replacement_build_success",
+      "acceptance": "Read-only metadata proof establishes 410 terminal entities and requalified target identities across historical and supplemental collections."
+    },
+    {
+      "order": 6,
+      "work_item": "S1_INTERNAL_SPARSE_DENSE_FUSION_BUSINESS_EXPLAINED_SUCCESSOR",
+      "status": "blocked_until_presence_and_qrels_semantic_review",
+      "acceptance": "Run one frozen matrix and publish metrics plus row-level business failure reasons; retain sparse if dense or fusion remains worse."
+    },
+    {
+      "order": 7,
+      "work_item": "S1_INTERNAL_CURRENT_QUARTER_EXACT_GRAPH_AND_TOOL_COMPLETION",
+      "status": "open_local_tooling",
+      "acceptance": "Reach current-quarter exact 6/6 from primary captures and close remaining typed local route/tool gaps without evaluator backfill."
+    },
+    {
+      "order": 8,
+      "work_item": "S1_EXTERNAL_TYPED_GAP_FILLING_REQUALIFICATION",
+      "status": "required_after_local_tooling_external_4_of_12_open",
+      "acceptance": "Use the local residual Evidence Slot gaps and the same DELL/MU/NVDA Query Facets to requalify official and broad external providers; fetched documents must pass capture, date, identity, relationship and Evidence gates."
+    },
+    {
+      "order": 9,
+      "work_item": "S1_TO_S3_RETRIEVAL_DOWNSTREAM_UTILIZATION_AND_CONTENT_QUALITY_PROOF",
+      "status": "pending_after_local_and_external_retrieval_gates",
+      "acceptance": "Evidence, Claim, Workpaper and report visibly consume the unified local plus external evidence pack and pass research-content quality evaluation."
+    }
+  ],
+  "calls_authorized_by_this_plan": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "bge_model_load": 0,
+    "synthetic_milvus_canary_vectors": 1,
+    "supplemental_build": 0,
+    "historical_milvus_write": 0,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "known_boundary": "The current authorization covers one synthetic Ubuntu WSL Milvus persistence canary and zero-call semantic audit only. It does not authorize a 410-vector replacement build, new ranking, external provider live, Evidence promotion, product acceptance or release.",
+  "plan_digest": "b7ec4f1f4fdaf7091ef08ff6b79f9b5132845d74a8db938f44ca20800d1e11a7"
+}

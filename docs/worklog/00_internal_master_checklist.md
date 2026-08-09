@@ -2,6 +2,10 @@
 
 ## FIN 0.1.3 S1 Current Retrieval Closeout
 
+- [x] Ubuntu-22.04 WSL2 的同版本 `pymilvus 3.0.0 + milvus-lite 3.0` 1-vector canary 已完成 insert／double flush／close／reopen／count／metadata query；与 Windows R1 使用相同 manifest SHA 和 `os.rename`，因此 Windows `WinError 183` 已定位为平台文件替换语义。该结果仅使 Linux path eligible，不授权 410 build。
+- [x] R2 业务语义错误审计已物化：dense `3/18` 拆为 8 个 index missing、3 个 top10、1 个 rank16、6 个 top24 miss；top10 wrong-owner／wrong-period／cross-case=`0/0/0`。至少两条 NVDA supply qrel 以联系人／免责声明开头，必须在新 ranking 前做 Evidence-content requalification。
+- [ ] **Current — S1_QRELS_BUSINESS_SEMANTIC_REQUALIFICATION_AND_LINUX_PRODUCTION_BINDING**：审完 18 行业务内容，补齐 WSL BGE/GPU 与 `pymilvus + milvus-lite + Python/WSL + Linux DB path` authority binding 后，才可签一个 fresh 410-vector build；Windows R1 不重试、不复用。
+- [ ] 本地 exact／object／BM25／dense／graph 与工具闭合后，必须以逐 Evidence Slot residual gaps 回到 external `4/12` 补源；外源不是被取消或永久后传，统一 Evidence Pack 后才做下游内容质量证明。
 - [x] Unified Query Facet 已投影到 SQL／ObjectBM25／BM25／Milvus／Graph；v1.1 将 reporting fiscal period 与 filing/publication calendar year 分离，避免未来财年标签误杀当年发布文件。
 - [x] 真实本地 candidate inventory R2 与 agent-curated qrels proposal 已物化：strict current target-in-pool=`9/18`、Gold SQL current exact=`0/18`；历史 v1.0、v1.1 first attempt 与修正后 R2 均 immutable 保留。
 - [ ] **Current — S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH**：sparse current corpus 已达 18/18；supplemental dense R1 完成 BGE 410 vectors 和 Milvus 410 insert acknowledgements，但在本机 milvus-lite 3.0 的 Windows manifest `os.rename` flush 上 terminal failed（digest=`9ae78bf2...8a3`），working root 保留、final/presence absent、no retry。下一步仅为完整 milvus_lite 指纹＋1-vector 双 flush/reopen 零 BGE资格审查；R2/ranking 未授权，旧 662,908-vector collection 禁止改写。

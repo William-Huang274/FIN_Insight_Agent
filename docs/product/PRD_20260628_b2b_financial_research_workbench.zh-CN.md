@@ -2194,3 +2194,19 @@ FIN 的内源检索不能用单一“RAG 通过”概括。产品验收必须至
 4. `research utilization pass`：进入 Evidence、Claim、Workpaper 和报告并形成有质量的分析。
 
 前一层不能冒充后一层。跨 collection 只允许基于 rank 的确定性联邦与 canonical evidence identity 去重，不允许直接比较不同 collection 的 raw similarity score。任何 partial insert、维度错误、重复身份、lineage 缺失或目标路径碰撞都必须在发布 runtime manifest 前失败；旧 collection 永远只读。
+
+### 16.7 检索错误的业务语义归因与“本地优先、外源补源”闭环（2026-08-09）
+
+检索验收与用户汇报不得只给 Recall、MRR、`16/18` 或 `3/18` 等总分。每个失败行至少要同时说明：研究问题与证据角色、正确目标实际包含的业务内容、前排候选实际包含的内容、为何不足或错误、最早责任层、修复动作。最低错误类型包括：`source_not_acquired`、`target_absent_from_index`、`correct_owner_wrong_section`、`generic_context_crowded_specific_evidence`、`wrong_owner`、`wrong_period`、`cross_case`、`parser_or_lineage_error`、`target_ranked_outside_window` 和 `qrel_business_semantic_defect`。没有逐行语义解释的聚合分数只能作为诊断指标，不能支撑产品采用。
+
+本轮 R2 已建立以下具体边界：dense 的 `3/18` 不是 15 行都搜到了别家公司。8 行是 current 目标根本未进入旧 Milvus；其余失败主要是在正确公司和时期内，通用公司介绍、风险段落或宽泛业绩内容挤掉了更具体的需求、供应、现金流或承诺片段。例如 DELL／MSFT 需求目标存在于索引，但 Microsoft 的通用公司与 AI 概览排在前面；NVDA 监管／财务目标为经营现金流行，dense 只排到第 16；sparse 对 DELL 当前业绩目标把同一公司 8-K 的法律／风险段落排在正式业绩段之前，使目标落到第 12。后续报告必须按这种业务语义说明错误，不得把它们统称为“模型差”。
+
+Owner 对 qrels 的接受只代表其可进入排序评测，不自动代表目标片段已达到 Evidence 或研报内容质量。当前至少两条 NVDA supply qrel 的 selected preview 落在联系人／免责声明开头，另有若干 Microsoft／TSMC 目标只是较宽的公司或业绩材料。下一次正式 ranking successor 前必须增加业务语义复核：目标片段应直接承载 demand、deployment、capacity、financial reconciliation、risk 或 counterevidence 内容；只因公司、时期和文件正确而业务内容过弱的片段必须退回、扩邻或重新标注。旧 R2 保持对 v1.3 标签集有效，但不得冒充产品级金融相关性证明。
+
+外源检索的产品角色冻结为 `local-first gap-filling`，不是可被永久后传的独立附属功能：
+
+1. internal SQL／object／BM25／dense／graph 先执行并生成逐 Evidence Slot 的 selected candidate 或 typed residual gap；
+2. SourceHunter 只消费这些残余缺口、官方优先要求或 currentness 缺口，使用同一 Query Facet、身份、期间、关系方向和预算；
+3. 外源返回仍是 candidate，必须 capture-first、重新解析并通过本地日期、身份、关系和 Evidence Gate；
+4. 外源补回的资料与本地候选在统一 lineage 下合并，但报告必须显示来源于 internal 还是 supplement，不能把外源能力伪装成本地库能力；
+5. 本地检索与工具链稳定后，必须回到当前 external `4/12` blocker，用本地残余缺口驱动同一 DELL／MU／NVDA 矩阵复验；在该补源闭环完成前，不得宣称 S1 或产品研报资料面完成。

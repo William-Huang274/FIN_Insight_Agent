@@ -213,7 +213,10 @@ QueryRewriteAndFacetPlan
 - 外源与内源必须消费同一个 typed facet authority，但生成不同 physical query：Web route 使用 owner／direction／period／source-family 搜索式与 provider filter；SQL／object route 使用 exact key 和 typed predicate；BM25 使用 lexical query；dense／Milvus 使用 semantic query；Graph 使用 typed relation query。禁止把同一 raw user string 无差别发送给全部 route。
 - 模型只能返回 allowlisted `query atoms`，不得拥有 entity、period、relationship direction、source-role、forbidden expansion、route filter 或预算的最终解释权。所有模型原子必须经本地 compiler 再生成 physical query；模型辅助是否启用由 raw／deterministic／model-atoms-plus-deterministic 三路 eval 决定。
 - 每个 facet plan 必须记录 `target_state`、route opportunity、candidate pool identity 和 plan digest。Gold URL／Evidence ID 只能在所有检索 terminal 后由 evaluator 加载，不能进入 planner 或 query compiler。
-- current FIN 0.1.3 先完成 external official-first combined proof，再把同一 facet contract 接入 internal exact／BM25／dense／graph；这两个验收包连续但不混成一次 live。
+- FIN 0.1.3 已完成的 external official-first／Provider comparator 结果保持不可变；新证据已把剩余执行顺序修订为先闭合 internal exact／BM25／dense／graph 与工具调用，再让同一 facet contract 携带逐 slot residual gap 返回 external supplement。两个验收包连续但不混成一次 live。
+- 稳态产品拓扑为 `internal-first -> typed residual gap -> external supplement -> unified Evidence Gate`。internal 稳定后必须用其真实残余缺口重开 external `4/12` blocker；外源不是永久 deferred 的旁路，也不得在 internal 未执行前无差别全网搜索。
+- 每个 retrieval eval 除聚合指标外必须物化逐 qrel 业务语义错误：target 讲了什么、top candidates 讲了什么、是 source/index 缺失、正确公司错误章节、通用内容挤占、身份／期间污染、窗口外排名，还是 qrel 本身业务含义不足。没有 row-level error attribution 的 Recall/MRR/NDCG 只能 diagnostic，不能驱动 BGE／fusion／reranker 采用。
+- `owner_reviewed` qrels 仍需区分 `ranking_relevance_accepted` 与 `evidence_content_accepted`。联系人、免责声明、目录或仅有新闻稿页头的 candidate 不得因为 issuer／period 正确就作为 demand、capacity、financial reconciliation 或 counterevidence 的产品 Gold。
 
 ## 8. Hybrid Recall / Rerank / Fusion
 

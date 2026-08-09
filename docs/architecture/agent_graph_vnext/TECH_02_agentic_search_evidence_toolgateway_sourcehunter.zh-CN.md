@@ -277,6 +277,27 @@ SourceHunter 只在内部 KB/RAG/DB 不足、官方源优先策略要求、或 s
 - commercial-data gap 被低质量网页强行替代；
 - 未经 ToolRegistry / permission gate 登记的自由浏览。
 
+### 7.1 Local-first gap-filling，而不是 local-only 或无限兜底
+
+SourceHunter 的标准入口必须是内源检索产生的 typed residual gap，而不是 writer 临时发现“内容不够”后自由上网。每个 Evidence Slot 先执行 internal exact／object／BM25／dense／graph；若结果为 source missing、currentness missing、authority insufficient、relationship counterparty missing 或 official-first required，Tool Planner 才将原 Query Facet 投影到外源 route。外源不是另一套 query truth：subject、evidence owner、direction、reporting period、publication as-of、source family、negative entity 和预算全部继承同一 facet authority。
+
+外源补源完成后，返回对象必须带 `origin_lane=external_supplement`、触发它的 `residual_gap_id`、request/response capture、canonical URL、typed publication date、entity/relationship binding 和 promotion status。它与本地候选可以在 Evidence Gate 后共同服务研究，但不得被写回成“原本已存在于本地知识库”。当前 FIN 0.1.3 的执行顺序为：先稳定本地候选、索引、排序和工具调用，再用残余缺口回到 external `4/12` 矩阵；外源补源关闭后才进入完整 Evidence→Claim→Workpaper→Report 产品验收。
+
+### 7.2 检索评测的业务语义错误账本
+
+每次 external 或 internal retrieval eval 必须在聚合指标之外生成逐 qrel 的语义错误记录，至少包含：`case_key`、`evidence_slot_id`、`evidence_owner_ticker`、target 业务摘要、target index/source presence、selected rank、top candidates 业务摘要、error class、earliest owning layer 和 recommended repair。允许的核心错误类为：
+
+- `source_not_acquired`：公开资料或本地 capture 尚未取得；
+- `target_absent_from_index`：资料已存在，但尚未进入该索引；
+- `correct_owner_wrong_section`：公司和时期正确，但命中联系人、免责声明、目录、宽泛风险或无关表格；
+- `generic_context_crowded_specific_evidence`：通用介绍挤掉需求、产能、承诺或财务机制片段；
+- `wrong_owner`、`wrong_period`、`cross_case`：身份／期间硬错误；
+- `parser_or_lineage_error`：正文、发布日期、accession 或 chunk 绑定错误；
+- `target_ranked_outside_window`：正确目标存在但落在消费窗口之外；
+- `qrel_business_semantic_defect`：评测目标本身只因文件正确而被选中，实际内容不足以代表该 Evidence Slot。
+
+只有聚合分数而没有上述逐行解释的报告不得用于 Provider、embedding、fusion、reranker 或产品能力采用。Owner 接受 ranking label 也不替代 Evidence-content review；下一次同矩阵复评前，任何联系人／免责声明式 target 必须扩邻、替换或退回 typed gap。
+
 ## 8. Evidence Gate Promotion Contract
 
 Evidence Gate 是 promotion 的唯一入口。它不是一个纯 LLM 判断器，也不是纯规则表；第一版应采用规则优先、agent 辅助、必要时人工复核的混合机制。

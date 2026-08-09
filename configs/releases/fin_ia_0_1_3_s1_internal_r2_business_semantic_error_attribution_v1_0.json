@@ -1,0 +1,127 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_r2_business_semantic_error_attribution_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_r2_business_semantic_error_attribution:v1_0",
+  "recorded_at": "2026-08-09",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1",
+  "status": "diagnostic_complete_qrels_business_semantic_requalification_required",
+  "source_attempt_ref": "configs/releases/fin_ia_0_1_3_s1_internal_bge_fusion_evaluation_attempt_r2.json",
+  "source_qrels_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_3.json",
+  "aggregate_result": {
+    "qrel_rows": 18,
+    "sparse_recall_at_10": "16/18",
+    "dense_recall_at_10": "3/18",
+    "fusion_recall_at_10": "14/18",
+    "adopted_candidate": "sparse_rrf",
+    "dense_error_attribution": {
+      "target_absent_from_index": 8,
+      "target_in_top_10": 3,
+      "target_at_rank_16": 1,
+      "target_present_but_not_in_top_24": 6
+    },
+    "dense_top_10_hard_identity_errors": {
+      "wrong_evidence_owner": 0,
+      "wrong_reporting_period": 0,
+      "cross_case_binding": 0
+    }
+  },
+  "business_semantic_examples": [
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "route": "dense_bilingual_rrf",
+      "observed_rank": null,
+      "what_the_target_means": "Microsoft Intelligent Cloud and Azure metrics that can substantiate enterprise AI infrastructure demand relevant to DELL.",
+      "what_ranked_ahead": "A generic Microsoft company and AI overview rather than the specific cloud-demand metrics.",
+      "error_class": "generic_context_crowded_specific_evidence",
+      "earliest_owner": "S1_dense_chunk_semantics_and_ranking",
+      "recommended_repair": "Keep owner and period filters; refresh the missing current vectors and improve section-aware chunk representation before considering fusion or reranking."
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "NVDA",
+      "route": "dense_bilingual_rrf",
+      "observed_rank": 16,
+      "what_the_target_means": "The operating-cash-flow row used to reconcile reported performance with cash generation.",
+      "what_ranked_ahead": "Broader recent-development, objectives and challenge narratives with weaker reconciliation specificity.",
+      "error_class": "target_ranked_outside_window",
+      "earliest_owner": "S1_dense_chunk_semantics_and_ranking",
+      "recommended_repair": "Preserve the exact numeric route and add typed financial-table or reconciliation facets; do not solve this by raising top-k alone."
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "DELL",
+      "route": "sparse_rrf",
+      "observed_rank": 12,
+      "what_the_target_means": "The current earnings-results section and management commentary.",
+      "what_ranked_ahead": "Same-company 8-K legal, risk and generic financial paragraphs.",
+      "error_class": "correct_owner_wrong_section",
+      "earliest_owner": "S1_sparse_section_and_query_matching",
+      "recommended_repair": "Add source-family and section-role features while keeping the same identity and period gates."
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "MU",
+      "route": "sparse_rrf",
+      "observed_rank": 14,
+      "what_the_target_means": "A strategic customer deposit or commitment passage tied to capacity, funding and financial reconciliation.",
+      "what_ranked_ahead": "Broad manufacturing risk, unaudited labels and generic finance chunks.",
+      "error_class": "generic_context_crowded_specific_evidence",
+      "earliest_owner": "S1_sparse_section_and_query_matching",
+      "recommended_repair": "Strengthen commitment, deposit and counterparty facets and explicitly downweight boilerplate."
+    }
+  ],
+  "qrels_business_semantic_findings": [
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "selected_source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+      "observed_preview_start": "For further information, contact: Toshiya Hari | Mylene Mangalindan ... Certain statements...",
+      "finding": "The file, owner and period are relevant, but the selected chunk begins with contacts and disclaimer text rather than direct capacity or counterevidence content.",
+      "error_class": "qrel_business_semantic_defect",
+      "required_disposition": "expand_neighbor_replace_or_return_typed_gap"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "selected_source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+      "observed_preview_start": "For further information, contact: Toshiya Hari | Mylene Mangalindan ... Certain statements...",
+      "finding": "The same weak chunk was reused for a second case even though its visible content does not directly establish MU supply capacity or counterevidence.",
+      "error_class": "qrel_business_semantic_defect",
+      "required_disposition": "expand_neighbor_replace_or_return_typed_gap"
+    }
+  ],
+  "reporting_contract": {
+    "required_per_row_fields": [
+      "case_key",
+      "evidence_slot_id",
+      "evidence_owner_ticker",
+      "target_business_summary",
+      "target_source_and_index_presence",
+      "selected_rank",
+      "top_candidate_business_summaries",
+      "error_class",
+      "earliest_owning_layer",
+      "recommended_repair"
+    ],
+    "aggregate_only_adoption_allowed": false,
+    "ranking_relevance_accepted_equals_evidence_content_accepted": false
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "known_boundary": "This audit reinterprets preserved R2 and qrels artifacts; it does not rewrite qrels, rerun retrieval, promote Evidence or prove report quality. R2 metrics remain valid against qrels v1.3 while product-level semantic acceptance remains open.",
+  "result_digest": "cc041bf71060f07b477b5438829dabf17f6c9a2e31f4fce793a041f290336b78"
+}

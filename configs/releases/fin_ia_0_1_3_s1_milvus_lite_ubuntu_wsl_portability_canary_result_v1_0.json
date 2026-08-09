@@ -1,0 +1,103 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_milvus_lite_ubuntu_wsl_portability_canary_result_v1_0",
+  "contract_ref": "fin_0_1_3.S1.milvus_lite_portability_canary:v1",
+  "recorded_at": "2026-08-09T07:00:32.515566+00:00",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1",
+  "status": "terminal_succeeded_dependency_qualification_only",
+  "attempt_id": "20260809_s1_milvus_lite_ubuntu_wsl_portability_r5",
+  "runner": {
+    "ref": "scripts/engineering/run_fin_ia_0_1_3_s1_milvus_lite_portability_canary.py",
+    "normalized_sha256": "5ba2f3d6cfe2a9fd85e63ba07f95910f41baadea567e4765d92b535440776664"
+  },
+  "pre_storage_qualification_probes": [
+    {
+      "probe_id": "r1",
+      "entered_milvus": false,
+      "terminal_reason": "project_import_dependency_missing:pydantic",
+      "disposition": "install_repository_declared_dependencies_then_use_new_probe"
+    },
+    {
+      "probe_id": "r2",
+      "entered_milvus": false,
+      "terminal_reason": "project_import_dependency_missing:rank_bm25",
+      "disposition": "add_direct_runtime_dependency_to_pyproject_and_use_new_probe"
+    },
+    {
+      "probe_id": "r3",
+      "entered_milvus": false,
+      "terminal_reason": "project_import_dependency_missing:beautifulsoup4",
+      "disposition": "add_direct_runtime_dependency_to_pyproject_and_use_new_probe"
+    },
+    {
+      "probe_id": "r4",
+      "entered_milvus": false,
+      "terminal_reason": "windows_to_wsl_shell_variable_expanded_to_empty_path",
+      "safety_gate": "canary_database_preexists_guard_rejected_repository_root",
+      "disposition": "use_literal_absolute_linux_paths_and_use_new_probe"
+    }
+  ],
+  "environment": {
+    "distribution": "Ubuntu-22.04",
+    "runtime": "WSL2",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "architecture": "x86_64",
+    "python": "3.10.12",
+    "database_path": "/home/william/.cache/fin_insight/milvus_linux_canary_runs/v3_0_r5/milvus_lite.db",
+    "filesystem_role": "linux_root_filesystem_not_windows_mounted_drive"
+  },
+  "dependency_fingerprints": {
+    "pymilvus": {
+      "version": "3.0.0",
+      "file_count": 88,
+      "total_bytes": 2073201,
+      "tree_sha256": "1c066bc2e94e70bff09a90da1314875aa32bb7dd2010c64a5269aa81c07f2756"
+    },
+    "milvus_lite": {
+      "version": "3.0",
+      "file_count": 112,
+      "total_bytes": 732033,
+      "tree_sha256": "4aa02af673ee39d69f5c4891e2d2232f0e457dcb3c3ddd523a282a77f6f2bf5e"
+    },
+    "manifest_source": {
+      "bytes": 14646,
+      "sha256": "59b45341edf6531e68736d37d7f93aba5355d8daa06b11ad120289b3e234fcd6",
+      "commit_primitive": "os.rename"
+    }
+  },
+  "observed_calls": {
+    "database_create": 1,
+    "collection_create": 1,
+    "insert_batches": 1,
+    "inserted_vectors": 1,
+    "flush": 2,
+    "count": 1,
+    "network": 0,
+    "provider": 0,
+    "llm": 0,
+    "bge_model_load": 0,
+    "embedding_vectors": 0,
+    "historical_milvus_write": 0,
+    "evidence_promotion": 0
+  },
+  "verification": {
+    "insert_acknowledged": 1,
+    "count_before_close": 1,
+    "double_flush_proven": true,
+    "close_reopen_proven": true,
+    "collection_exists_after_reopen": true,
+    "count_after_reopen": 1,
+    "metadata_query_rows": 1,
+    "metadata_query_identity": "FIN013_S1_MILVUS_PORTABILITY_CANARY::narrative_chunk",
+    "same_manifest_source_as_windows_r1": true,
+    "platform_attribution": "milvus_lite_3_0_os_rename_overwrite_succeeds_on_linux_and_failed_on_windows"
+  },
+  "decision": {
+    "windows_milvus_lite_3_0_path_eligible": false,
+    "ubuntu_wsl_linux_filesystem_path_eligible_for_fresh_authority_decision": true,
+    "automatic_410_vector_build_authorized": false,
+    "automatic_ranking_authorized": false
+  },
+  "known_boundary": "This one-row synthetic canary qualifies Milvus Lite persistence on the Ubuntu WSL Linux filesystem only. It does not prove GPU/BGE accessibility from the isolated environment, the 410-vector replacement build, physical target presence, retrieval quality, external gap filling, Evidence, report quality or release.",
+  "result_digest": "dba81444074764b384adb71ccd4e32aef5d310357b918c882bcba3c885ed8130"
+}

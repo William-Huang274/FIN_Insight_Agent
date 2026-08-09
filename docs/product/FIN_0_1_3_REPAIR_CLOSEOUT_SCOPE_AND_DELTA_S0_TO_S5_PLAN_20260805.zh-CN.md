@@ -677,3 +677,23 @@ Owner 已接受 18/18 research qrels，local ranking 得到一次真实执行资
 7. current-quarter exact 0/6、external official 4/12 和 downstream content-quality proof 继续分账，不塞进本次 index build。
 
 本项仍为 FIN 0.1.3 S1 原地修复，不创建 FIN 0.1.4，也不把 S1 根因传给 S3。
+
+## 7O. Ubuntu Milvus、业务语义错误账本与外源补源重排（2026-08-09）
+
+用户补充确认本机已有 Ubuntu／WSL，可用于判断 supplemental dense R1 是 Windows portability 问题还是项目 Writer 本身的问题；同时要求此后检索汇报不仅给总分，还必须说明每条失败在金融业务上“搜到了什么、为什么不对”。另确认外源检索不是取消项，而是在本地检索和工具链稳定后，由本地真实残余缺口驱动的补源层。
+
+本轮只允许一个 1-vector、零 BGE、零网络、零模型的 Linux 可移植性 canary，完整执行 create／insert／double flush／close／reopen／count／metadata query，并同时递归绑定 `pymilvus` 与实际执行持久化的 `milvus-lite` 包。首个环境启动若在进入 Milvus 前失败，必须单独保留为 dependency-bootstrap attempt，不能覆盖后伪装成数据库成功或失败。
+
+R2 的排序结果仍对 qrels v1.3 有效，但产品解释必须更新：dense `3/18` 中 8 行是目标未进入旧索引，另外多为同公司同期间内通用材料挤掉具体证据，并非简单的“搜到别家公司”。同时至少两条 NVDA supply 目标预览从联系人／免责声明开始，说明 Owner 接受 ranking label 不等于 Evidence-content 通过。下一次正式 ranking successor 前先执行 qrels 业务语义复核；旧标签不删除、不静默改写，问题行只允许扩邻、替换或退回 typed gap，并保留 supersession lineage。
+
+更新后的 S1 顺序为：
+
+1. 完成 Ubuntu／WSL Milvus 1-vector portability qualification，并记录 dependency bootstrap 与真正 storage path 的不同终态；
+2. 物化逐 qrel 业务语义错误账本，先复核联系人、免责声明、页头、泛化章节等弱 Gold；
+3. 在 Linux runtime、完整依赖指纹和 fresh authority 成立后，才允许一个新的 410-vector immutable replacement build；
+4. 只读证明 410 entities 与 requalified target physical presence 后，运行一次 unchanged-matrix sparse／dense／fusion successor，并逐行解释失败；
+5. 补齐 current-quarter exact SQL、graph 和本地工具调用，形成逐 Evidence Slot residual gaps；
+6. 用这些 gap 回到 external official／broad supplement，沿用同一 Query Facet，重新关闭 external `4/12` blocker；
+7. 本地＋外源 Evidence Pack 统一通过 Evidence Gate 后，才进入 Claim／Workpaper／Report 的研究内容质量证明。
+
+这次重排既不创建新版本，也不把 external 永久后传。Milvus Linux canary 通过只证明嵌入式存储可用，不代表 410 构建、dense 质量、外源补源、研报质量或 S1 通过。

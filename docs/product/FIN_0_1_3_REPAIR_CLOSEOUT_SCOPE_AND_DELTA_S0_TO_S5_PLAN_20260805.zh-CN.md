@@ -697,3 +697,22 @@ R2 的排序结果仍对 qrels v1.3 有效，但产品解释必须更新：dense
 7. 本地＋外源 Evidence Pack 统一通过 Evidence Gate 后，才进入 Claim／Workpaper／Report 的研究内容质量证明。
 
 这次重排既不创建新版本，也不把 external 永久后传。Milvus Linux canary 通过只证明嵌入式存储可用，不代表 410 构建、dense 质量、外源补源、研报质量或 S1 通过。
+
+## 7P. 18-row qrel 全文复核后的 Owner gate（2026-08-09）
+
+18 行 accepted qrels 已逐条读取完整正文、target facets 与同 bundle 冻结候选。结果不是“又有一批 qrel 作废”：`18/18` 仍满足 candidate-level ranking relevance；但只有 `4/18` 单候选完整覆盖目标 facets，`14/18` 只覆盖部分业务面。后续研报必须由多个本地候选、外源补源和 Evidence Gate 共同补齐，不能把 `18/18 target-in-pool` 解释为资料充分。
+
+上一轮对两条 NVDA supply 的判断被精确修正：截断 preview 的确先显示联系人和免责声明，但完整 chunk 后半部明确写到第三方制造、组装、封装和测试依赖。因此问题属于切块精度与模板噪声，不是内容完全不存在。冻结候选池已有更干净的同源 child claim。类似地，三条 MSFT demand 宽段落后半部确有 AI 基础设施投入和 AI 使用增长，但同池判断原子能更直接代表目标。当前提出 5 个 candidate identity replacement，另外 13 行保持不变。
+
+第一次准备签发该复核包时又发现：R7 中 NVDA child claim 的正文和 accession 虽正确，URL 却继承母 8-K，而不是实际承载正文的 Exhibit 99.1。该投影缺陷留在 S1 原地修复；R8 只把相应 candidate URL／lineage 改为 `q1fy27pr.htm / exact_accession_exhibit`，候选数量、rank 和 typed gaps 均未变化。今后 child-claim replacement 必须同时通过内容和可点击来源血缘，母 filing URL 不得代替实际被引附件。
+
+接续顺序改为：
+
+1. Owner 只确认或退回上述 5 个替换，不重复审核 13 个不变标签；
+2. 确认后物化 qrels v1.4 successor，并继续禁止 Evidence promotion；
+3. 完成 WSL BGE/GPU、Python、`pymilvus`、`milvus-lite` 与 Linux DB path 的完整 production binding；
+4. 再决定并执行唯一 fresh 410-vector immutable build 与只读 10/10 presence proof；
+5. presence 成功后另行决定 unchanged-matrix ranking，不自动从本包进入 ranking；
+6. current-quarter exact、graph／tool、external `4/12` 和下游研报质量仍按既定顺序分账。
+
+本项是 FIN 0.1.3 S1 的 Gold／evaluation target 质量修复，不创建新版本、不重跑旧 R2，也不把完整 Evidence Slot 的资料充分性责任错误压到单条 qrel 上。

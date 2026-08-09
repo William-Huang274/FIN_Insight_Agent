@@ -444,6 +444,11 @@ def load_document_lineage_lookup(
                     or metadata.get("source_url")
                     or ""
                 )
+                exhibit_url = str(
+                    row.get("exhibit_url")
+                    or metadata.get("exhibit_url")
+                    or ""
+                )
                 published_at = str(
                     row.get("filing_date")
                     or row.get("published_at")
@@ -460,6 +465,7 @@ def load_document_lineage_lookup(
                     "fiscal_year": fiscal_year,
                     "accession_number": accession,
                     "source_url": source_url,
+                    "exhibit_url": exhibit_url,
                     "published_at": published_at,
                     "report_date": str(
                         row.get("report_date")
@@ -546,7 +552,19 @@ def resolve_document_lineage(
     for accession in _record_accession_candidates(record):
         matches = list((lookup.get("by_accession") or {}).get(accession) or [])
         if len(matches) == 1:
-            return {**dict(matches[0]), "resolution_method": "exact_accession"}
+            match = dict(matches[0])
+            if (
+                str(record.get("source_evidence_id") or "").startswith(
+                    "8K_EARNINGS::"
+                )
+                and str(match.get("exhibit_url") or "")
+            ):
+                match["source_url"] = str(match["exhibit_url"])
+                return {
+                    **match,
+                    "resolution_method": "exact_accession_exhibit",
+                }
+            return {**match, "resolution_method": "exact_accession"}
     ticker = str(record.get("ticker") or "").upper()
     fiscal_year = int(record.get("fiscal_year") or 0)
     form_type = _normalise_form_type(
@@ -783,7 +801,7 @@ def _execute_lexical_request(
                     "subsection": str(row.get("subsection") or record.get("subsection") or ""),
                     "published_at": published_at,
                     "source_url": str(
-                        record.get("source_url") or lineage.get("source_url") or ""
+                        lineage.get("source_url") or record.get("source_url") or ""
                     ),
                     "source_accession_number": str(
                         record.get("accession_number")

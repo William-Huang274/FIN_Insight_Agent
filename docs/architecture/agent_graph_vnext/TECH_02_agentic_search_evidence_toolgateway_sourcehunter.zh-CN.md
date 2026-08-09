@@ -296,7 +296,7 @@ SourceHunter 的标准入口必须是内源检索产生的 typed residual gap，
 - `target_ranked_outside_window`：正确目标存在但落在消费窗口之外；
 - `qrel_business_semantic_defect`：评测目标本身只因文件正确而被选中，实际内容不足以代表该 Evidence Slot。
 
-只有聚合分数而没有上述逐行解释的报告不得用于 Provider、embedding、fusion、reranker 或产品能力采用。Owner 接受 ranking label 也不替代 Evidence-content review；下一次同矩阵复评前，任何联系人／免责声明式 target 必须扩邻、替换或退回 typed gap。
+只有聚合分数而没有上述逐行解释的报告不得用于 Provider、embedding、fusion、reranker 或产品能力采用。Owner 接受 ranking label 也不替代 Evidence-content review；下一次同矩阵复评前，任何联系人／免责声明式 target 必须读取完整正文再判定。若正文后部存在直接业务内容，则记录为 `relevant_but_low_precision` 并优先选择同池 child claim；若全文仍无实质内容，才扩邻、替换或退回 typed gap。不得仅凭截断 preview 宣告 qrel 无效。
 
 ## 8. Evidence Gate Promotion Contract
 
@@ -1306,3 +1306,13 @@ successor 使用独立 Git-ignored Milvus Lite DB 与独立 collection；旧 662
 实现提交 `6f2e11ad...b03` 已把 terminal count 收敛为一次 collection-stats read，并把 micro-batch 从硬编码改为按实际输入累计；full-fake digest=`2e9cb6fd...0d30f`。R1 authority=`fc8e7c44...65109` 已在 clean/synced 状态签发，但必须作为独立提交推送后才能消费。authority 的 issued 状态不是实建成功；真实 build、presence proof 与 same-matrix ranking 仍是三个独立步骤。
 
 R1 证明 BGE 与 corpus 路径完成 `1 load / 13 outer batches / 52 micro-batches / 410 vectors`，Milvus 也确认 `13 inserts / 410 rows`；失败发生在 terminal count 的 flush。安装的 `milvus-lite 3.0` 在 `storage/manifest.py` 使用 `os.rename(tmp_path, target_path)`，Windows 对已存在 target 返回 `WinError 183`；[官方 main 当前源码](https://github.com/milvus-io/milvus-lite/blob/main/milvus_lite/storage/manifest.py) 已改为 `os.replace`。因此 R1 归类为 storage dependency portability failure，不是 embedding、corpus 或语义质量失败。旧 authority 只绑定 pymilvus metadata/init 而未绑定实际执行的 milvus_lite package，这是独立的项目合同缺口；replacement 之前必须补全递归 package fingerprint，并用隔离 1-vector create/insert/double-flush/close/reopen/count/query canary 资格审查，不能直接修改外部依赖后复用 R1。
+
+### 20.37 Qrel 全文内容复核与 successor identity gate
+
+`fin_0_1_3.S1.internal_qrels_content_requalification:v1_0` 在 candidate generation 终态之后读取 qrels v1.3、Owner acceptance、冻结候选池和上一轮语义审计。它不执行检索或 embedding，而是为 18 行分别物化 `covered_facets`、`uncovered_facets`、业务原因、切块精度风险与候选处置。验证器要求两组 facet 无交集且完整分割 target facets；`ranking_label_valid` 不能自动设置 `candidate_may_be_promoted_to_evidence`。
+
+全文复核得到 `18 valid / 4 complete / 14 partial`。其中 3 条 MSFT demand 的宽段落可由同一 10-Q 的 AI 基础设施投入判断原子替换，2 条 NVDA supply 的联系人／安全港宽段落可由同一 8-K Exhibit 99.1 的第三方制造依赖判断原子替换。五个替代项都必须已存在于对应 bundle 的冻结 candidate pool，并继续通过 owner、period、candidate-only、strict filter、accession、manifest 和实际被引文档 URL 校验；禁止注入标准答案 URL 或运行后新造 target。
+
+R7 首次候选复核暴露了来源投影缺陷：结构化 child claim 的正文来自 Exhibit 99.1，但检索记录继承了母 8-K URL。`DocumentLineageLookup` 现在同时保存 filing URL 与 exhibit URL，并对 `8K_EARNINGS::*` 的 accession match 输出 `exact_accession_exhibit`；candidate 投影优先采用该 manifest-bound URL。R8 证明候选数量、rank 和 typed gaps 不变，仅 NVDA 相关 candidate digest／URL 因血缘纠正而变化。qrel replacement validator 对任何退回母 8-K 的变体 fail closed。
+
+历史 qrels v1.3、Owner acceptance 和 R2 指标保持不可变。新的 packet 只允许输出 `successor_owner_review_pending`，不直接物化 qrels v1.4；Owner 只需重新确认 5 个变更 identity，另外 13 行沿用既有接受。确认之后仍要先完成 Linux BGE／Milvus production binding 与真实 410 physical presence，不能把 qrel 复核通过直接当成 ranking 或产品内容质量通过。

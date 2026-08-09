@@ -1,0 +1,760 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_qrels_content_requalification_packet_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_qrels_content_requalification:v1_0",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "recorded_at": "2026-08-09",
+  "status": "agent_curated_content_requalified_successor_owner_review_pending",
+  "project_os_preflight": {
+    "status": "pass",
+    "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+    "open_full_chain_blocker_count": 0
+  },
+  "source_qrels": {
+    "ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_3.json",
+    "review_digest": "aca52d205984d0477c1c17186afa2a28d249655419be28b75cf825dbc18716aa",
+    "owner_decision_digest": "6549686220698cf50a44afe2255769a964582f6098bf06a87452b3b98755c48c",
+    "preserved_immutable": true,
+    "existing_r2_metrics_remain_valid_against_v1_3": true
+  },
+  "content_requalification_summary": {
+    "reviewed_row_count": 18,
+    "ranking_label_valid_count": 18,
+    "retain_current_candidate_count": 13,
+    "replacement_proposal_count": 5,
+    "complete_slot_facet_coverage_count": 4,
+    "material_partial_slot_coverage_count": 14,
+    "typed_gap_count": 0,
+    "prior_preview_only_finding_corrected_count": 2
+  },
+  "important_correction": {
+    "prior_conclusion": "Two NVIDIA rows were initially classified as qrel business-semantic defects from truncated previews.",
+    "full_text_finding": "The full chunk does contain explicit third-party manufacturing, assembly, packaging and test reliance; it is relevant at grade 2 but front-loads contacts and safe-harbor boilerplate.",
+    "disposition": "Retain historical qrels and R2 metrics; propose a cleaner frozen claim-object target whose URL is bound to SEC Exhibit 99.1 for the successor instead of returning a typed gap."
+  },
+  "row_reviews": [
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "bundle_id": "internal_query_facet_bundle_85b437ac4c204de75c11",
+      "source_qrel_digest": "4f0d168d6f1bde974b8a3ba1490a5a7988a89fb3dd503a28c8199dc30b105c71",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "replace_with_frozen_candidate",
+      "content_profile_id": "msft_ai_infra_partial_replace",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "AI infrastructure investment",
+        "cloud demand"
+      ],
+      "uncovered_facets": [
+        "capacity expansion"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 5,
+        "source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+        "candidate_id": "internal_candidate_f5d17ce42cf02e849f5af6b7",
+        "preview": "Productivity and Business Processes and Intelligent Cloud Metrics related to our Productivity and Business Processes and Intelligent Cloud segments assess the health of our core businesses within these segments. The metrics primarily reflect growth across our cloud services. [TAB..."
+      },
+      "recommended_candidate": {
+        "route_id": "internal_object_bm25",
+        "route_rank": 2,
+        "source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6",
+        "candidate_id": "internal_candidate_bee3413dfb431f5b47b5e2bb",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+        "source_accession_number": "000119312526191507",
+        "lineage_resolution_method": "unique_ticker_reporting_year_form",
+        "preview": "Microsoft Cloud gross margin percentage decreased to 66% driven by continued investments in AI infrastructure and growing AI product usage, offset in part by efficiency gains in Azure and Microsoft 365 Commercial cloud."
+      },
+      "content_precision_risk": "broad_chunk_hides_direct_claim_after_metric_definitions",
+      "business_reason_zh": "当前微软整段正文后半部确实写明 AI 基础设施投入、AI 产品使用增长以及微软云和 Azure 增长，因此不是错公司或无关材料；但候选预览先展示指标定义，容易让排序器把宽泛云业务内容当成需求证据。",
+      "replacement_reason_zh": "冻结候选池已有同一 10-Q 的干净判断原子，直接写明微软云毛利受 AI 基础设施持续投入和 AI 产品使用增长影响；替换后保留同公司、同期间和同来源，同时提高目标的业务精度。",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": true,
+      "content_review_digest": "b88a9ede5e12b0a08072baf7b29f8f3d94e8e4b3bd50f09be10c16323c7a762a"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "DELL",
+      "bundle_id": "internal_query_facet_bundle_1d678815518868a38086",
+      "source_qrel_digest": "4691b19da6e5d357a4e35746c7ff64381bfd9fbc5f67631a31166c384a28a0be",
+      "source_relevance_grade": 3,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "dell_issuer_results_complete",
+      "slot_coverage_state": "complete_slot_facet_coverage",
+      "covered_facets": [
+        "AI server orders",
+        "AI server revenue",
+        "current results"
+      ],
+      "uncovered_facets": [],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 3,
+        "source_key": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+        "candidate_id": "internal_candidate_243e0cd6ba0ea100ff9678ec",
+        "preview": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provid..."
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "none_material",
+      "business_reason_zh": "DELL 当期业绩稿直接披露 244 亿美元 AI 订单、161 亿美元 AI 服务器收入、438 亿美元总收入及管理层评论，完整回答发行人当期业绩目标。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "d55daf9000f9c6d3b9c900ecbbfbc9677df8a78fdea0d8c639da6485a37708ce"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "DELL",
+      "bundle_id": "internal_query_facet_bundle_96ddf73c8363e6234c24",
+      "source_qrel_digest": "41619169e8626ab5eecb79bc364d0bb55caabb3035bc02d046065f45b0fab475",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "dell_regulatory_complete",
+      "slot_coverage_state": "complete_slot_facet_coverage",
+      "covered_facets": [
+        "inventory",
+        "working capital",
+        "cash-flow reconciliation",
+        "risk factors"
+      ],
+      "uncovered_facets": [],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 3,
+        "source_key": "SUPP::DELL::000157199626000008::CHUNK_0059",
+        "candidate_id": "internal_candidate_32c06e2b5fe513af312746a9",
+        "preview": "small number of larger customers and cloud service providers. If we are not successful in continuing to expand sales to a broader base of customers, our ability to maintain growth in this area may be limited. Sales of AI to large customers may also cause fluctuations in our resul..."
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "none_material",
+      "business_reason_zh": "DELL 10-K 该段明确说明大额 AI 订单会增加关键零部件采购和营运资金占用，并带来现金流、库存取消、付款期限及毛利波动风险，四个目标面均有直接文本。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "83f2f58ec4c8ca8ba65fdf93330c41ee0f8bb2abe7634171c5a137ed7e04ed38"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "MU",
+      "bundle_id": "internal_query_facet_bundle_9e5597c9d5ad2c296f02",
+      "source_qrel_digest": "8bf49d34e2169fac5a26ee9de3ec9af42dc6f2d9ac4b6f66f191dcd1a102ce10",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "mu_supply_ramp_partial",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "supply ramp"
+      ],
+      "uncovered_facets": [
+        "HBM capacity",
+        "supply tightness"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 7,
+        "source_key": "SUPP::MU::000072312526000013::CHUNK_0003",
+        "candidate_id": "internal_candidate_18b62761cc05bfbbe94c6fe2",
+        "preview": "2027. • Qualification samples of 256GB DDR5 RDIMMs, built on 1-gamma DRAM technology and advanced 3D die stacking, has shipped to key server ecosystem enablers. • Our LP5X SOCAMM2 products are in high-volume production, and we have expanded our LP5X SOCAMM2 offerings across multi..."
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "direct_product_ramp_but_not_hbm_capacity_bridge",
+      "business_reason_zh": "MU 段落直接写到 DDR5 送样、SOCAMM2 和 SSD 高量产以及多类产品爬坡，可作为供应放量证据；但没有给出 HBM 产能或供需紧张度，不能冒充完整 HBM 供给桥。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "2f4f5be4f86800c9a6acb1bafd7d2f911c130eeec64f75aec6dfe874e02eeaf5"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "bundle_id": "internal_query_facet_bundle_f42e9fcc248272496f97",
+      "source_qrel_digest": "6b38786e9379b67499277544a949a2fb25b5d69d3b77ae0706b218bb8f7304b6",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "replace_with_frozen_candidate",
+      "content_profile_id": "nvda_supply_reliance_partial_replace",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "manufacturing reliance",
+        "supply counterevidence"
+      ],
+      "uncovered_facets": [
+        "platform demand"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 2,
+        "source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+        "candidate_id": "internal_candidate_c922e4acad2920743ede9754",
+        "preview": "For further information, contact: [TABLE_START id=3 rows=4] Toshiya Hari | Mylene Mangalindan Investor Relations | Corporate Communications NVIDIA Corporation | NVIDIA Corporation toshiyah@nvidia.com | press@nvidia.com [TABLE_END] Certain statements in this press release includin..."
+      },
+      "recommended_candidate": {
+        "route_id": "internal_object_bm25",
+        "route_rank": 3,
+        "source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001_CLAIM_EBFEA572",
+        "candidate_id": "internal_candidate_8ea32018de0951a20914bb9b",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/q1fy27pr.htm",
+        "source_accession_number": "000104581026000051",
+        "lineage_resolution_method": "exact_accession_exhibit",
+        "preview": "Important factors that could cause actual results to differ materially include: global economic and political conditions; NVIDIA’s reliance on third parties to manufacture, assemble, package and test NVIDIA’s products; the impact of technological development and competition; deve..."
+      },
+      "content_precision_risk": "contacts_and_safe_harbor_frontload_direct_supply_risk",
+      "business_reason_zh": "完整正文后半部明确写到 NVIDIA 依赖第三方制造、组装、封装和测试，因而该候选在二级相关性上成立；问题是前面先放联系人和大段安全港文字，预览和向量表示都被模板噪声稀释。",
+      "replacement_reason_zh": "冻结候选池已有从同一段抽出的第三方制造依赖判断原子，业务含义一致但去除了联系人和大部分模板噪声，适合作为新的 ranking target。",
+      "prior_finding_disposition": "superseded_preview_only_defect_chunk_relevant_but_low_precision",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": true,
+      "content_review_digest": "7aafa05b29786f90c517846bcbee9342dafd346a91724618036b739dd757c18c"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "bundle_id": "internal_query_facet_bundle_50ea183ead342dc72262",
+      "source_qrel_digest": "6c5c73e3f9da98815081f1ed30bbd6a00df6ee72bf19c60e26b73642d72a2958",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "tsm_leading_edge_ramp_partial",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "capacity expansion"
+      ],
+      "uncovered_facets": [
+        "CoWoS capacity",
+        "advanced packaging"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 2,
+        "source_key": "SUPP::TSM::000104617926000451::CHUNK_0001",
+        "candidate_id": "internal_candidate_7091973a197ca4bc952c4a79",
+        "preview": "EX-99.1 2 a2q26e_withguidancexfinal.htm EX-99.1 Document TSMC Reports Second Quarter EPS of NT$27.25 HSINCHU, Taiwan, R.O.C., Jul. 16, 2026 -- TSMC (TWSE: 2330, NYSE: TSM) today announced consolidated revenue of NT$1,270.38 billion, net income of NT$706.56 billion, and diluted ea..."
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "leading_edge_node_ramp_is_only_a_capacity_proxy",
+      "business_reason_zh": "TSM 当期稿披露先进制程占比、2 纳米收入贡献、强劲先进制程需求及 2 纳米陡峭爬坡，能证明先进产能扩张方向；但没有 CoWoS 数量或先进封装扩产数据，只能算部分供给信号。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "8395b68ea5bfad4f77ca75d30a84918538e9b1633e233742875df0a3ae77c21a"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "DELL",
+      "bundle_id": "internal_query_facet_bundle_621e7891570ac2e5fec0",
+      "source_qrel_digest": "d4b9b7bc78589b799986a74ef743afb89a3ac5ced0ae751cc4fea6e613289548",
+      "source_relevance_grade": 3,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "dell_downstream_demand_complete",
+      "slot_coverage_state": "complete_slot_facet_coverage",
+      "covered_facets": [
+        "AI server orders",
+        "server revenue",
+        "demand conversion"
+      ],
+      "uncovered_facets": [],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 3,
+        "source_key": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+        "candidate_id": "internal_candidate_2e3e6caef96bb580fa8d676b",
+        "preview": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provid..."
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "none_material",
+      "business_reason_zh": "DELL 同时披露 AI 订单与已经确认的 AI 服务器收入，直接展示下游需求从订单转成收入，适合作为 MU 或 NVDA 的客户侧需求验证。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "63ed0df644ad3285ea5fd2da4baf13df9bce85abdd62915719a15163fb4d7db0"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "bundle_id": "internal_query_facet_bundle_9a9f8fa72563a8a4c6a5",
+      "source_qrel_digest": "87ebac0b44fd98298f95fade39efd021282c0be59e74bffce494c378347669b1",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "replace_with_frozen_candidate",
+      "content_profile_id": "msft_ai_infra_partial_replace",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "AI infrastructure investment",
+        "cloud demand"
+      ],
+      "uncovered_facets": [
+        "capacity expansion"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 5,
+        "source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+        "candidate_id": "internal_candidate_dd12d59652ac90017595ceb9",
+        "preview": "Productivity and Business Processes and Intelligent Cloud Metrics related to our Productivity and Business Processes and Intelligent Cloud segments assess the health of our core businesses within these segments. The metrics primarily reflect growth across our cloud services. [TAB..."
+      },
+      "recommended_candidate": {
+        "route_id": "internal_object_bm25",
+        "route_rank": 2,
+        "source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6",
+        "candidate_id": "internal_candidate_481481d1b25414743db868bb",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+        "source_accession_number": "000119312526191507",
+        "lineage_resolution_method": "unique_ticker_reporting_year_form",
+        "preview": "Microsoft Cloud gross margin percentage decreased to 66% driven by continued investments in AI infrastructure and growing AI product usage, offset in part by efficiency gains in Azure and Microsoft 365 Commercial cloud."
+      },
+      "content_precision_risk": "broad_chunk_hides_direct_claim_after_metric_definitions",
+      "business_reason_zh": "当前微软整段正文后半部确实写明 AI 基础设施投入、AI 产品使用增长以及微软云和 Azure 增长，因此不是错公司或无关材料；但候选预览先展示指标定义，容易让排序器把宽泛云业务内容当成需求证据。",
+      "replacement_reason_zh": "冻结候选池已有同一 10-Q 的干净判断原子，直接写明微软云毛利受 AI 基础设施持续投入和 AI 产品使用增长影响；替换后保留同公司、同期间和同来源，同时提高目标的业务精度。",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": true,
+      "content_review_digest": "6b3f07cc08a8109be8487ea10ad8a1dd88abd3287b918c2268638e0029d6237b"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "MU",
+      "bundle_id": "internal_query_facet_bundle_4c581958c23fb86e2173",
+      "source_qrel_digest": "f2ece4aa8aa080375649912981f5d6f3dc2c8f23fbc06a07628f4fa53ccf3daa",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "mu_issuer_results_partial",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "Q3 revenue",
+        "gross margin"
+      ],
+      "uncovered_facets": [
+        "price versus bit shipment",
+        "HBM commentary"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 7,
+        "source_key": "SUPP::MU::000072312526000013::CHUNK_0001",
+        "candidate_id": "internal_candidate_8db97f4bc3a7d32f92b1943e",
+        "preview": "EX-99.1 2 a2026q3ex991-pressrelease.htm EX-99.1 - PRESS RELEASE Document Exhibit 99.1 FOR IMMEDIATE RELEASE Contacts: Satya Kumar Mark Plungy Investor Relations Media Relations satyakumar@micron.com mplungy@micron.com (408) 450-6199 (408) 203-2910 MICRON TECHNOLOGY, INC. REPORTS ..."
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "results_release_lacks_price_bit_and_hbm_bridge",
+      "business_reason_zh": "MU 业绩稿直接给出 Q3 收入、毛利率、经营现金流和管理层需求评论，能支持当期业绩；但所选段落没有价格对比出货量的拆解，也没有 HBM 细化评论。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "39dd70d5522a31731ea8de21ef146815c541a7a68e14388e610707d4e4396509"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "MU",
+      "bundle_id": "internal_query_facet_bundle_11d78cb3e76667f06b29",
+      "source_qrel_digest": "5ae091fd82c13484be2c9f7e053b75ddf390c591e5fbcf062a6b4a9e4f94026c",
+      "source_relevance_grade": 3,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "mu_regulatory_commitment_partial",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "cash flow",
+        "supply commitments"
+      ],
+      "uncovered_facets": [
+        "inventory",
+        "price-volume bridge"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 7,
+        "source_key": "SUPP::MU::000072312526000015::CHUNK_0053",
+        "candidate_id": "internal_candidate_06c66480e3411f1d3e8b4b1f",
+        "preview": "deposits and related financial commitments. In connection with these strategic customer agreements, we expect to receive cash deposits and related financial commitments of $22 billion for agreements concluded to date. Approximately $18 billion of these commitments will be in the ..."
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "direct_commitment_and_funding_but_not_full_reconciliation",
+      "business_reason_zh": "MU 10-Q 直接披露 220 亿美元客户承诺、其中约 180 亿美元现金存款，以及资本开支、采购义务和新增 DRAM 产能需求，能回答承诺和资金面；但没有库存变化和价格量桥。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "aa2620fae2c0f1dcbfe6074694628a3cbfb8826159e8166eadf26f3588986ad8"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "bundle_id": "internal_query_facet_bundle_4c55d0f25d3e0f7efb67",
+      "source_qrel_digest": "f0736950e160394129d125fcc77d6bd80a856f272dee0a88d630a6a6a5c50423",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "replace_with_frozen_candidate",
+      "content_profile_id": "nvda_supply_reliance_partial_replace",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "manufacturing reliance",
+        "supply counterevidence"
+      ],
+      "uncovered_facets": [
+        "platform demand"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 2,
+        "source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+        "candidate_id": "internal_candidate_242f56d26e35323f81529321",
+        "preview": "For further information, contact: [TABLE_START id=3 rows=4] Toshiya Hari | Mylene Mangalindan Investor Relations | Corporate Communications NVIDIA Corporation | NVIDIA Corporation toshiyah@nvidia.com | press@nvidia.com [TABLE_END] Certain statements in this press release includin..."
+      },
+      "recommended_candidate": {
+        "route_id": "internal_object_bm25",
+        "route_rank": 3,
+        "source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001_CLAIM_EBFEA572",
+        "candidate_id": "internal_candidate_359237a94a4237bc28eeba26",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/q1fy27pr.htm",
+        "source_accession_number": "000104581026000051",
+        "lineage_resolution_method": "exact_accession_exhibit",
+        "preview": "Important factors that could cause actual results to differ materially include: global economic and political conditions; NVIDIA’s reliance on third parties to manufacture, assemble, package and test NVIDIA’s products; the impact of technological development and competition; deve..."
+      },
+      "content_precision_risk": "contacts_and_safe_harbor_frontload_direct_supply_risk",
+      "business_reason_zh": "完整正文后半部明确写到 NVIDIA 依赖第三方制造、组装、封装和测试，因而该候选在二级相关性上成立；问题是前面先放联系人和大段安全港文字，预览和向量表示都被模板噪声稀释。",
+      "replacement_reason_zh": "冻结候选池已有从同一段抽出的第三方制造依赖判断原子，业务含义一致但去除了联系人和大部分模板噪声，适合作为新的 ranking target。",
+      "prior_finding_disposition": "superseded_preview_only_defect_chunk_relevant_but_low_precision",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": true,
+      "content_review_digest": "98f447133faecedb569da3a214c7880a641fc7f2f86f15d38f72bc99ba1f8e46"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "bundle_id": "internal_query_facet_bundle_c212f36a01a3adda3946",
+      "source_qrel_digest": "f0fbc86ae0b2fb6201f5a333d4936c8a379f1fb6bef8d5be452301ed5e124ee5",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "tsm_leading_edge_ramp_partial",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "capacity expansion"
+      ],
+      "uncovered_facets": [
+        "CoWoS capacity",
+        "advanced packaging"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 2,
+        "source_key": "SUPP::TSM::000104617926000451::CHUNK_0001",
+        "candidate_id": "internal_candidate_2babfe6215bcf58bdd79e71d",
+        "preview": "EX-99.1 2 a2q26e_withguidancexfinal.htm EX-99.1 Document TSMC Reports Second Quarter EPS of NT$27.25 HSINCHU, Taiwan, R.O.C., Jul. 16, 2026 -- TSMC (TWSE: 2330, NYSE: TSM) today announced consolidated revenue of NT$1,270.38 billion, net income of NT$706.56 billion, and diluted ea..."
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "leading_edge_node_ramp_is_only_a_capacity_proxy",
+      "business_reason_zh": "TSM 当期稿披露先进制程占比、2 纳米收入贡献、强劲先进制程需求及 2 纳米陡峭爬坡，能证明先进产能扩张方向；但没有 CoWoS 数量或先进封装扩产数据，只能算部分供给信号。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "20ed4c30ebfa25ff63aead4aad8b3510160df49840e1dd175c03aa2e21f9ff64"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "DELL",
+      "bundle_id": "internal_query_facet_bundle_2365488414281a594f2a",
+      "source_qrel_digest": "219359a6c02cb4f3a6aa2379608084b6af6509744ad40edd9bb79acdf1c8c573",
+      "source_relevance_grade": 3,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "dell_downstream_demand_complete",
+      "slot_coverage_state": "complete_slot_facet_coverage",
+      "covered_facets": [
+        "AI server orders",
+        "server revenue",
+        "demand conversion"
+      ],
+      "uncovered_facets": [],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 3,
+        "source_key": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+        "candidate_id": "internal_candidate_c7d2d546c678e1f23ddb7de7",
+        "preview": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provid..."
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "none_material",
+      "business_reason_zh": "DELL 同时披露 AI 订单与已经确认的 AI 服务器收入，直接展示下游需求从订单转成收入，适合作为 MU 或 NVDA 的客户侧需求验证。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "d5a68c07e065bcccaab88368d98fd065b20967e9f8440705f2a4be88fa69145b"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "bundle_id": "internal_query_facet_bundle_24fdcb3ed48499b408e2",
+      "source_qrel_digest": "dfd6955074ea715ab4401bad413a3a07b59a5f61fe35ab1a638499a1a7383ba6",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "replace_with_frozen_candidate",
+      "content_profile_id": "msft_ai_infra_partial_replace",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "AI infrastructure investment",
+        "cloud demand"
+      ],
+      "uncovered_facets": [
+        "capacity expansion"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 5,
+        "source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+        "candidate_id": "internal_candidate_8aa774cd4d4771c0aa573a5d",
+        "preview": "Productivity and Business Processes and Intelligent Cloud Metrics related to our Productivity and Business Processes and Intelligent Cloud segments assess the health of our core businesses within these segments. The metrics primarily reflect growth across our cloud services. [TAB..."
+      },
+      "recommended_candidate": {
+        "route_id": "internal_object_bm25",
+        "route_rank": 2,
+        "source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6",
+        "candidate_id": "internal_candidate_4f0844698f9d664e17e9948e",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+        "source_accession_number": "000119312526191507",
+        "lineage_resolution_method": "unique_ticker_reporting_year_form",
+        "preview": "Microsoft Cloud gross margin percentage decreased to 66% driven by continued investments in AI infrastructure and growing AI product usage, offset in part by efficiency gains in Azure and Microsoft 365 Commercial cloud."
+      },
+      "content_precision_risk": "broad_chunk_hides_direct_claim_after_metric_definitions",
+      "business_reason_zh": "当前微软整段正文后半部确实写明 AI 基础设施投入、AI 产品使用增长以及微软云和 Azure 增长，因此不是错公司或无关材料；但候选预览先展示指标定义，容易让排序器把宽泛云业务内容当成需求证据。",
+      "replacement_reason_zh": "冻结候选池已有同一 10-Q 的干净判断原子，直接写明微软云毛利受 AI 基础设施持续投入和 AI 产品使用增长影响；替换后保留同公司、同期间和同来源，同时提高目标的业务精度。",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": true,
+      "content_review_digest": "a6c53ff21db7c70592c18f61f1f7e4c62174ab20430244336a5aa62893083710"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "NVDA",
+      "bundle_id": "internal_query_facet_bundle_162bb09393cce590e48d",
+      "source_qrel_digest": "4a8eb8e68b3d97d494deb9a6dbd6c04d1f6b7e5e54a7fbc3bd8793511d0bf6e2",
+      "source_relevance_grade": 3,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "nvda_issuer_results_partial",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "revenue",
+        "data-center revenue",
+        "gross margin"
+      ],
+      "uncovered_facets": [
+        "current outlook"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 5,
+        "source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+        "candidate_id": "internal_candidate_afa74c86a827a09bc2f73cea",
+        "preview": "EX-99.1 2 q1fy27pr.htm EX-99.1 Document NVIDIA Announces Financial Results for First Quarter Fiscal 2027 • Record revenue of $81.6 billion, up 85% from a year ago • Record Data Center revenue of $75.2 billion, up 92% from a year ago • NVIDIA announces $80.0 billion additional sha..."
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "results_part_one_excludes_outlook_part_two",
+      "business_reason_zh": "NVIDIA 当期稿第一部分直接给出收入、数据中心收入和毛利率，并有管理层需求评论；正式展望位于下一分块，因此这个候选不能单独代表完整 outlook。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "cac61dec9d9fdc2a25f90efe85575ff7a23d8d8bf3210b83b3b6dcdc46673c46"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "NVDA",
+      "bundle_id": "internal_query_facet_bundle_31e1c2e5e7b02dddadbb",
+      "source_qrel_digest": "bcaae3c12827125a094048c06c2d8dcad39e0a0eae7b67cc4de4c8676cc156f1",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "nvda_cashflow_single_facet_partial",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "cash flow"
+      ],
+      "uncovered_facets": [
+        "customer concentration",
+        "purchase commitments",
+        "export risk"
+      ],
+      "current_candidate": {
+        "route_id": "internal_object_bm25",
+        "route_rank": 10,
+        "source_key": "NVDA_2027_10Q_ITEM1_BLOCK_0001_PART_02_OF_03_METRIC_TABLE_3C6CA96D",
+        "candidate_id": "internal_candidate_b32cd917a30c692082a10ab3",
+        "preview": "Net cash provided by operating activities | 2026 | 50,344 | usd_millions"
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "exact_cashflow_metric_only",
+      "business_reason_zh": "该对象精确给出 NVIDIA 当期经营活动现金流，适合验证现金生成；它没有客户集中度、采购承诺和出口管制风险，所以只能作为单一财务核对点，不能代表整组监管风险。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "79d099c94952eb3e92979e41889d9339e8e524fa707c4e901c498441e1024521"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "MU",
+      "bundle_id": "internal_query_facet_bundle_5249570c00a4da609632",
+      "source_qrel_digest": "f3598a7ef46e2e46de76b62143fd3f41a3416cb7fe004731a77aab9ef605b83a",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "mu_supply_ramp_partial",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "supply ramp"
+      ],
+      "uncovered_facets": [
+        "HBM capacity",
+        "supply tightness"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 7,
+        "source_key": "SUPP::MU::000072312526000013::CHUNK_0003",
+        "candidate_id": "internal_candidate_2a01635909947eccca658586",
+        "preview": "2027. • Qualification samples of 256GB DDR5 RDIMMs, built on 1-gamma DRAM technology and advanced 3D die stacking, has shipped to key server ecosystem enablers. • Our LP5X SOCAMM2 products are in high-volume production, and we have expanded our LP5X SOCAMM2 offerings across multi..."
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "direct_product_ramp_but_not_hbm_capacity_bridge",
+      "business_reason_zh": "MU 段落直接写到 DDR5 送样、SOCAMM2 和 SSD 高量产以及多类产品爬坡，可作为供应放量证据；但没有给出 HBM 产能或供需紧张度，不能冒充完整 HBM 供给桥。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "297152ee16acf3b395c90cde4cf0e3ea6e27f359f8a3b79cbb1e42bec45b4d39"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "bundle_id": "internal_query_facet_bundle_e3482d22dbfa5d562b74",
+      "source_qrel_digest": "199eeb43a47c1e1a3e242f22b9868af6f39136860501f79627dff1dccf55b91b",
+      "source_relevance_grade": 2,
+      "ranking_label_valid": true,
+      "ranking_label_disposition": "retain_current_candidate",
+      "content_profile_id": "tsm_leading_edge_ramp_partial",
+      "slot_coverage_state": "material_partial_slot_coverage",
+      "covered_facets": [
+        "capacity expansion"
+      ],
+      "uncovered_facets": [
+        "CoWoS capacity",
+        "advanced packaging"
+      ],
+      "current_candidate": {
+        "route_id": "internal_bm25",
+        "route_rank": 2,
+        "source_key": "SUPP::TSM::000104617926000451::CHUNK_0001",
+        "candidate_id": "internal_candidate_313ffb4a4b4e8db3402f4512",
+        "preview": "EX-99.1 2 a2q26e_withguidancexfinal.htm EX-99.1 Document TSMC Reports Second Quarter EPS of NT$27.25 HSINCHU, Taiwan, R.O.C., Jul. 16, 2026 -- TSMC (TWSE: 2330, NYSE: TSM) today announced consolidated revenue of NT$1,270.38 billion, net income of NT$706.56 billion, and diluted ea..."
+      },
+      "recommended_candidate": null,
+      "content_precision_risk": "leading_edge_node_ramp_is_only_a_capacity_proxy",
+      "business_reason_zh": "TSM 当期稿披露先进制程占比、2 纳米收入贡献、强劲先进制程需求及 2 纳米陡峭爬坡，能证明先进产能扩张方向；但没有 CoWoS 数量或先进封装扩产数据，只能算部分供给信号。",
+      "replacement_reason_zh": "",
+      "prior_finding_disposition": "not_applicable",
+      "candidate_may_be_promoted_to_evidence": false,
+      "owner_reconfirmation_required": false,
+      "content_review_digest": "f670e94bf7d03d9c7d78ebcbcaa134ee7b7c36340b59499baba23794f0d27ed2"
+    }
+  ],
+  "successor_gate": {
+    "successor_qrels_v1_4_materialization_admitted": false,
+    "owner_reconfirmation_required": true,
+    "owner_reconfirmation_row_count": 5,
+    "unchanged_row_acceptance_preserved_count": 13,
+    "replacement_scope": [
+      {
+        "case_key": "DELL",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "evidence_owner_ticker": "MSFT",
+        "recommended_source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6"
+      },
+      {
+        "case_key": "DELL",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "evidence_owner_ticker": "NVDA",
+        "recommended_source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001_CLAIM_EBFEA572"
+      },
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "evidence_owner_ticker": "MSFT",
+        "recommended_source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6"
+      },
+      {
+        "case_key": "MU",
+        "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+        "evidence_owner_ticker": "NVDA",
+        "recommended_source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001_CLAIM_EBFEA572"
+      },
+      {
+        "case_key": "NVDA",
+        "evidence_slot_id": "customer_demand_and_deployment_validation",
+        "evidence_owner_ticker": "MSFT",
+        "recommended_source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6"
+      }
+    ],
+    "reason": "Five candidate identities have cleaner, already frozen child-claim alternatives. Owner confirmation is required before qrels v1.4 or a new ranking attempt; the other thirteen identities remain accepted."
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "preserved_boundaries": {
+    "candidate_promoted_to_evidence": false,
+    "index_build_executed": false,
+    "ranking_executed": false,
+    "ranking_quality_improved": false,
+    "current_quarter_exact_sql": "0_of_6_open",
+    "external_official_required_slot_coverage": "4_of_12_open_release_blocker",
+    "downstream_utilization_proven": false,
+    "product_acceptance": false,
+    "release": "not_qualified"
+  },
+  "known_boundary": "This zero-call requalification judges whether each frozen candidate is a valid ranking label and how much of its business slot it covers. It does not promote any candidate to Evidence, rewrite qrels v1.3, execute ranking or index build, prove report usefulness, or accept FIN 0.1.3.",
+  "implementation": {
+    "module_ref": "src/sec_agent/s1_internal_qrels_content_requalification.py",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_qrels_content_requalification_policy_v1_0.json",
+    "materializer_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_internal_qrels_content_requalification_v1_0.py"
+  },
+  "review_digest": "801afc6eb8d76eeb8aba8bff2c5672fcd01bf98c370646c6ee59f15cc0f366ae"
+}

@@ -217,6 +217,8 @@ QueryRewriteAndFacetPlan
 - 稳态产品拓扑为 `internal-first -> typed residual gap -> external supplement -> unified Evidence Gate`。internal 稳定后必须用其真实残余缺口重开 external `4/12` blocker；外源不是永久 deferred 的旁路，也不得在 internal 未执行前无差别全网搜索。
 - 每个 retrieval eval 除聚合指标外必须物化逐 qrel 业务语义错误：target 讲了什么、top candidates 讲了什么、是 source/index 缺失、正确公司错误章节、通用内容挤占、身份／期间污染、窗口外排名，还是 qrel 本身业务含义不足。没有 row-level error attribution 的 Recall/MRR/NDCG 只能 diagnostic，不能驱动 BGE／fusion／reranker 采用。
 - `owner_reviewed` qrels 仍需区分 `ranking_relevance_accepted` 与 `evidence_content_accepted`。联系人、免责声明、目录或仅有新闻稿页头的 candidate 不得因为 issuer／period 正确就作为 demand、capacity、financial reconciliation 或 counterevidence 的产品 Gold。
+- preview 只用于定位，不能独自承担全文语义判决。若完整 chunk 在模板文字之后确有直接业务内容，应记录为“candidate-level 相关但 chunk precision 低”，并优先切换到冻结候选池中的同源 child claim；只有全文无实质内容时才判无关或 typed gap。任何 candidate identity 变更都需保留旧 qrel／指标并由 Owner 重新确认。
+- child claim 的“同源”必须同时绑定 accession、manifest 和实际承载正文的可点击文档。8-K／6-K 附件对象不得只继承母 filing URL；若 claim 文本来自 Exhibit 99.1，candidate citation 必须解析到该附件，内容正确但 URL 落错文档时一律 fail closed。
 
 ## 8. Hybrid Recall / Rerank / Fusion
 

@@ -1,0 +1,323 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_qrels_content_requalification_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_qrels_content_requalification:v1_0",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "immutable_inputs": {
+    "source_qrels_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_3.json",
+    "source_qrels_sha256": "f78c0e4da5f0167d8e9f80cab20b4095135502b8f468a830c115f9226700e49d",
+    "owner_acceptance_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_owner_acceptance_v1_0.json",
+    "owner_acceptance_sha256": "2e6076fe5a06a5039760f0bc9ff48906d59e7cc08aa2a9bae27f127fa31c6de8",
+    "candidate_observation_ref": "configs/releases/fin_ia_0_1_3_s1_internal_candidate_inventory_observation_v1_6_attempt_r8.json",
+    "candidate_observation_sha256": "4098979403d3026dc57a4d9d685d57f49503c29f91bd303b900f54a91442161f",
+    "prior_semantic_audit_ref": "configs/releases/fin_ia_0_1_3_s1_internal_r2_business_semantic_error_attribution_v1_0.json",
+    "prior_semantic_audit_sha256": "9d29c277a8ae09151668247cc0ec214e83e5ee62547e0676c73e459131f36eb7"
+  },
+  "review_contract": {
+    "expected_row_count": 18,
+    "expected_profile_count": 11,
+    "expected_retain_count": 13,
+    "expected_replacement_count": 5,
+    "expected_complete_coverage_count": 4,
+    "expected_partial_coverage_count": 14,
+    "expected_prior_finding_correction_count": 2,
+    "ranking_relevance_is_candidate_level_not_full_slot_coverage": true,
+    "owner_confirmation_required_for_changed_candidate_identity": true,
+    "replacement_lineage_must_resolve_to_cited_document": true
+  },
+  "hard_boundaries": {
+    "source_qrels_v1_3_immutable": true,
+    "qrels_loaded_after_candidate_generation": true,
+    "owner_acceptance_does_not_equal_evidence_acceptance": true,
+    "candidate_may_be_promoted_to_evidence": false,
+    "ranking_or_index_build_admitted": false,
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "content_profiles": {
+    "msft_ai_infra_partial_replace": {
+      "ranking_label_disposition": "replace_with_frozen_candidate",
+      "covered_facets": [
+        "AI infrastructure investment",
+        "cloud demand"
+      ],
+      "uncovered_facets": [
+        "capacity expansion"
+      ],
+      "content_precision_risk": "broad_chunk_hides_direct_claim_after_metric_definitions",
+      "business_reason_zh": "当前微软整段正文后半部确实写明 AI 基础设施投入、AI 产品使用增长以及微软云和 Azure 增长，因此不是错公司或无关材料；但候选预览先展示指标定义，容易让排序器把宽泛云业务内容当成需求证据。",
+      "recommended_route_id": "internal_object_bm25",
+      "recommended_source_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6",
+      "replacement_reason_zh": "冻结候选池已有同一 10-Q 的干净判断原子，直接写明微软云毛利受 AI 基础设施持续投入和 AI 产品使用增长影响；替换后保留同公司、同期间和同来源，同时提高目标的业务精度。"
+    },
+    "dell_issuer_results_complete": {
+      "ranking_label_disposition": "retain_current_candidate",
+      "covered_facets": [
+        "AI server orders",
+        "AI server revenue",
+        "current results"
+      ],
+      "uncovered_facets": [],
+      "content_precision_risk": "none_material",
+      "business_reason_zh": "DELL 当期业绩稿直接披露 244 亿美元 AI 订单、161 亿美元 AI 服务器收入、438 亿美元总收入及管理层评论，完整回答发行人当期业绩目标。",
+      "recommended_route_id": "",
+      "recommended_source_key": "",
+      "replacement_reason_zh": ""
+    },
+    "dell_regulatory_complete": {
+      "ranking_label_disposition": "retain_current_candidate",
+      "covered_facets": [
+        "inventory",
+        "working capital",
+        "cash-flow reconciliation",
+        "risk factors"
+      ],
+      "uncovered_facets": [],
+      "content_precision_risk": "none_material",
+      "business_reason_zh": "DELL 10-K 该段明确说明大额 AI 订单会增加关键零部件采购和营运资金占用，并带来现金流、库存取消、付款期限及毛利波动风险，四个目标面均有直接文本。",
+      "recommended_route_id": "",
+      "recommended_source_key": "",
+      "replacement_reason_zh": ""
+    },
+    "mu_supply_ramp_partial": {
+      "ranking_label_disposition": "retain_current_candidate",
+      "covered_facets": [
+        "supply ramp"
+      ],
+      "uncovered_facets": [
+        "HBM capacity",
+        "supply tightness"
+      ],
+      "content_precision_risk": "direct_product_ramp_but_not_hbm_capacity_bridge",
+      "business_reason_zh": "MU 段落直接写到 DDR5 送样、SOCAMM2 和 SSD 高量产以及多类产品爬坡，可作为供应放量证据；但没有给出 HBM 产能或供需紧张度，不能冒充完整 HBM 供给桥。",
+      "recommended_route_id": "",
+      "recommended_source_key": "",
+      "replacement_reason_zh": ""
+    },
+    "nvda_supply_reliance_partial_replace": {
+      "ranking_label_disposition": "replace_with_frozen_candidate",
+      "covered_facets": [
+        "manufacturing reliance",
+        "supply counterevidence"
+      ],
+      "uncovered_facets": [
+        "platform demand"
+      ],
+      "content_precision_risk": "contacts_and_safe_harbor_frontload_direct_supply_risk",
+      "business_reason_zh": "完整正文后半部明确写到 NVIDIA 依赖第三方制造、组装、封装和测试，因而该候选在二级相关性上成立；问题是前面先放联系人和大段安全港文字，预览和向量表示都被模板噪声稀释。",
+      "recommended_route_id": "internal_object_bm25",
+      "recommended_source_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001_CLAIM_EBFEA572",
+      "replacement_reason_zh": "冻结候选池已有从同一段抽出的第三方制造依赖判断原子，业务含义一致但去除了联系人和大部分模板噪声，适合作为新的 ranking target。",
+      "prior_finding_disposition": "superseded_preview_only_defect_chunk_relevant_but_low_precision"
+    },
+    "tsm_leading_edge_ramp_partial": {
+      "ranking_label_disposition": "retain_current_candidate",
+      "covered_facets": [
+        "capacity expansion"
+      ],
+      "uncovered_facets": [
+        "CoWoS capacity",
+        "advanced packaging"
+      ],
+      "content_precision_risk": "leading_edge_node_ramp_is_only_a_capacity_proxy",
+      "business_reason_zh": "TSM 当期稿披露先进制程占比、2 纳米收入贡献、强劲先进制程需求及 2 纳米陡峭爬坡，能证明先进产能扩张方向；但没有 CoWoS 数量或先进封装扩产数据，只能算部分供给信号。",
+      "recommended_route_id": "",
+      "recommended_source_key": "",
+      "replacement_reason_zh": ""
+    },
+    "dell_downstream_demand_complete": {
+      "ranking_label_disposition": "retain_current_candidate",
+      "covered_facets": [
+        "AI server orders",
+        "server revenue",
+        "demand conversion"
+      ],
+      "uncovered_facets": [],
+      "content_precision_risk": "none_material",
+      "business_reason_zh": "DELL 同时披露 AI 订单与已经确认的 AI 服务器收入，直接展示下游需求从订单转成收入，适合作为 MU 或 NVDA 的客户侧需求验证。",
+      "recommended_route_id": "",
+      "recommended_source_key": "",
+      "replacement_reason_zh": ""
+    },
+    "mu_issuer_results_partial": {
+      "ranking_label_disposition": "retain_current_candidate",
+      "covered_facets": [
+        "Q3 revenue",
+        "gross margin"
+      ],
+      "uncovered_facets": [
+        "price versus bit shipment",
+        "HBM commentary"
+      ],
+      "content_precision_risk": "results_release_lacks_price_bit_and_hbm_bridge",
+      "business_reason_zh": "MU 业绩稿直接给出 Q3 收入、毛利率、经营现金流和管理层需求评论，能支持当期业绩；但所选段落没有价格对比出货量的拆解，也没有 HBM 细化评论。",
+      "recommended_route_id": "",
+      "recommended_source_key": "",
+      "replacement_reason_zh": ""
+    },
+    "mu_regulatory_commitment_partial": {
+      "ranking_label_disposition": "retain_current_candidate",
+      "covered_facets": [
+        "cash flow",
+        "supply commitments"
+      ],
+      "uncovered_facets": [
+        "inventory",
+        "price-volume bridge"
+      ],
+      "content_precision_risk": "direct_commitment_and_funding_but_not_full_reconciliation",
+      "business_reason_zh": "MU 10-Q 直接披露 220 亿美元客户承诺、其中约 180 亿美元现金存款，以及资本开支、采购义务和新增 DRAM 产能需求，能回答承诺和资金面；但没有库存变化和价格量桥。",
+      "recommended_route_id": "",
+      "recommended_source_key": "",
+      "replacement_reason_zh": ""
+    },
+    "nvda_issuer_results_partial": {
+      "ranking_label_disposition": "retain_current_candidate",
+      "covered_facets": [
+        "revenue",
+        "data-center revenue",
+        "gross margin"
+      ],
+      "uncovered_facets": [
+        "current outlook"
+      ],
+      "content_precision_risk": "results_part_one_excludes_outlook_part_two",
+      "business_reason_zh": "NVIDIA 当期稿第一部分直接给出收入、数据中心收入和毛利率，并有管理层需求评论；正式展望位于下一分块，因此这个候选不能单独代表完整 outlook。",
+      "recommended_route_id": "",
+      "recommended_source_key": "",
+      "replacement_reason_zh": ""
+    },
+    "nvda_cashflow_single_facet_partial": {
+      "ranking_label_disposition": "retain_current_candidate",
+      "covered_facets": [
+        "cash flow"
+      ],
+      "uncovered_facets": [
+        "customer concentration",
+        "purchase commitments",
+        "export risk"
+      ],
+      "content_precision_risk": "exact_cashflow_metric_only",
+      "business_reason_zh": "该对象精确给出 NVIDIA 当期经营活动现金流，适合验证现金生成；它没有客户集中度、采购承诺和出口管制风险，所以只能作为单一财务核对点，不能代表整组监管风险。",
+      "recommended_route_id": "",
+      "recommended_source_key": "",
+      "replacement_reason_zh": ""
+    }
+  },
+  "assignments": [
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "profile_id": "msft_ai_infra_partial_replace"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "DELL",
+      "profile_id": "dell_issuer_results_complete"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "DELL",
+      "profile_id": "dell_regulatory_complete"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "MU",
+      "profile_id": "mu_supply_ramp_partial"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "profile_id": "nvda_supply_reliance_partial_replace"
+    },
+    {
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "profile_id": "tsm_leading_edge_ramp_partial"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "DELL",
+      "profile_id": "dell_downstream_demand_complete"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "profile_id": "msft_ai_infra_partial_replace"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "MU",
+      "profile_id": "mu_issuer_results_partial"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "MU",
+      "profile_id": "mu_regulatory_commitment_partial"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "profile_id": "nvda_supply_reliance_partial_replace"
+    },
+    {
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "profile_id": "tsm_leading_edge_ramp_partial"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "DELL",
+      "profile_id": "dell_downstream_demand_complete"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "profile_id": "msft_ai_infra_partial_replace"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "NVDA",
+      "profile_id": "nvda_issuer_results_partial"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "NVDA",
+      "profile_id": "nvda_cashflow_single_facet_partial"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "MU",
+      "profile_id": "mu_supply_ramp_partial"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "profile_id": "tsm_leading_edge_ramp_partial"
+    }
+  ],
+  "known_boundary": "This zero-call requalification judges whether each frozen candidate is a valid ranking label and how much of its business slot it covers. It does not promote any candidate to Evidence, rewrite qrels v1.3, execute ranking or index build, prove report usefulness, or accept FIN 0.1.3."
+}

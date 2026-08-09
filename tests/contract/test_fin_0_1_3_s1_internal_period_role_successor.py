@@ -275,6 +275,82 @@ def test_object_candidate_recovers_bound_source_lineage() -> None:
     )
 
 
+def test_earnings_release_child_object_uses_exhibit_url_not_parent_8k() -> None:
+    _, _, requests = _compiled()
+    request = _request(
+        requests,
+        route="internal_object_bm25",
+        case="DELL",
+        owner="NVDA",
+    )
+
+    source_id = (
+        "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::"
+        "BLOCK_0003::CHUNK_0001"
+    )
+
+    class Retriever:
+        def search(self, query: str, *, top_k: int, filters: dict) -> list[dict]:
+            if set(filters["form_type"]) != {"8-K", "6-K"}:
+                return []
+            record = {
+                "object_id": f"{source_id}_CLAIM_TEST",
+                "object_type": "claim",
+                "source_evidence_id": source_id,
+                "ticker": "NVDA",
+                "fiscal_year": 2026,
+                "form_type": "8-K",
+                "source_type": "8-K",
+                "source_url": "https://www.sec.gov/example/parent-8k.htm",
+                "preview": "Third-party manufacturing reliance.",
+            }
+            return [
+                {
+                    "rank": 1,
+                    "score": 4.0,
+                    "object_id": record["object_id"],
+                    "object_type": "claim",
+                    "ticker": "NVDA",
+                    "fiscal_year": 2026,
+                    "preview": record["preview"],
+                    "record": record,
+                }
+            ]
+
+    terminal = execute_object_bm25_request(
+        request.as_dict(),
+        retriever=Retriever(),
+        temporal_filter_policy={
+            "mode": "form_semantic_partition_v1",
+            "reporting_period_forms": ["10-K", "10-Q", "20-F", "40-F"],
+            "filing_calendar_event_forms": ["8-K", "6-K"],
+        },
+        document_lineage_lookup={
+            "by_accession": {
+                "000104581026000051": [
+                    {
+                        "ticker": "NVDA",
+                        "form_type": "8-K",
+                        "fiscal_year": 2026,
+                        "accession_number": "000104581026000051",
+                        "source_url": "https://www.sec.gov/example/parent-8k.htm",
+                        "exhibit_url": "https://www.sec.gov/example/exhibit-99-1.htm",
+                        "published_at": "2026-05-20",
+                        "manifest_ref": "manifests/nvda-8k.jsonl",
+                    }
+                ]
+            },
+            "by_ticker_year_form": {},
+        },
+    )
+
+    candidate = terminal["candidates"][0]
+    assert candidate["source_url"] == (
+        "https://www.sec.gov/example/exhibit-99-1.htm"
+    )
+    assert candidate["lineage_resolution_method"] == "exact_accession_exhibit"
+
+
 def test_ambiguous_period_filter_mutation_fails_closed() -> None:
     policy, bundles, requests = _compiled()
     original = _request(requests, route="internal_bm25", case="NVDA", owner="NVDA")

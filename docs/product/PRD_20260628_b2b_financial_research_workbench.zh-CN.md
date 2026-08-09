@@ -2210,3 +2210,13 @@ Owner 对 qrels 的接受只代表其可进入排序评测，不自动代表目�
 3. 外源返回仍是 candidate，必须 capture-first、重新解析并通过本地日期、身份、关系和 Evidence Gate；
 4. 外源补回的资料与本地候选在统一 lineage 下合并，但报告必须显示来源于 internal 还是 supplement，不能把外源能力伪装成本地库能力；
 5. 本地检索与工具链稳定后，必须回到当前 external `4/12` blocker，用本地残余缺口驱动同一 DELL／MU／NVDA 矩阵复验；在该补源闭环完成前，不得宣称 S1 或产品研报资料面完成。
+
+### 16.8 Candidate-level qrel 与完整 Evidence Slot 的分层验收（2026-08-09）
+
+排序 qrel 判断的是“这个候选是否对当前研究问题具有足够相关性”，不是“单个候选是否独自回答该 Evidence Slot 的全部问题”。因此 qrel 内容复核必须同时输出两个互不替代的结果：`ranking_label_valid` 与 `slot_facet_coverage`。前者允许一个直接覆盖关键子问题的二级相关候选进入排序评测；后者必须逐项列出已覆盖和未覆盖的业务面，并由多个候选、内外源补采与 Evidence Gate 共同补齐。禁止因为候选只覆盖部分 facet 就把相关材料误判为无关，也禁止因为 qrel 相关就宣称完整研报资料已经具备。
+
+FIN 0.1.3 对 18 行 accepted qrels 的全文复核确认：`18/18` 仍是有效排序标签，但只有 `4/18` 的单个候选覆盖该行全部目标面，`14/18` 为实质相关但部分覆盖。典型例子包括：MU 产品量产段能证明 supply ramp，却没有 HBM 产能和紧张度；TSM 先进制程占比和 2nm ramp 能作为产能扩张信号，却没有 CoWoS 数量；NVDA 经营现金流对象只回答 cash flow，不回答客户集中、采购承诺和出口风险。此类边界必须在产品报告中显式保留，不能由 Writer 补写成完整结论。
+
+内容复核还必须读取完整候选正文，不能只凭截断 preview 定性。两条 NVDA supply 行的 preview 虽从联系人和安全港开始，全文后半部确实包含第三方制造、组装、封装和测试依赖，因此应归类为“相关但切块低精度”，而不是“事实不存在”。若冻结候选池已有同来源、同期间、同业务含义的干净 child claim，应优先提出 candidate-identity successor；原 qrels 与历史指标保持不可变，只有变更行需要 Owner 重新确认。当前共提出 `5` 条此类替换（3 条 MSFT demand、2 条 NVDA supply），在确认前不得生成 qrels v1.4、重建正式评测目标或启动新 ranking。
+
+“同来源”不仅要求 issuer、accession 和正文相符，还要求最终 citation URL 能直接打开承载该 claim 的真实文档。8-K 附件中的 child claim 不得只继承母 filing URL；必须解析到 Exhibit 99.1／6-K 附件等实际被引文件，并保留 manifest 与解析方法。内容正确但链接落在不含该句的母文档时，replacement 必须 fail closed，不能交给 Owner 签发。

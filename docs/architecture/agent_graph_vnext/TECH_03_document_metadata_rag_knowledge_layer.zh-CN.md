@@ -776,3 +776,18 @@ ObjectBM25 与 BGE-M3／Milvus 必须消费同一 93-spec manifest，且发布�
 `physical index present`、`retrieval quality` 与 `product integration` 是三个不同状态。前者成功后仍须单独执行同 Query Facet／qrels 矩阵的 sparse、dense、fusion 对照；Windows Workbench 若不能稳定调用 WSL store，也不能标记 integrated。Evidence promotion、residual-gap external supplement、DeepSeek research 和 report acceptance 均继续在后续 gate。
 
 clean/synced implementation=`566d5223...477e` 的 R1 authority=`0ca08fec...4260` 已签发未消费。authority 除 Git bindings 外还绑定当前 package-tree fingerprints、pip freeze、BGE model files、Milvus manifest source、fresh Linux targets 与 disk floor。worker 在执行前必须重新计算 `environment_identity` 并与 authority 相等；disk free 只检查 floor、不要求字节恒等。该 requalification 仍为 0 model load／0 index write，失败则在创建 working root 前终止。
+
+### 24.14 Milvus directory-store artifact 与 terminal publication 更正（2026-08-10）
+
+唯一 R1 证明当前 `milvus-lite==3.0` 的 URI 不是单文件 SQLite 语义：`milvus_lite.db` 是包含 `collections/<name>/manifest.json`、Parquet data、FLAT index、WAL 和 schema 的目录。R1 已完成 93 个 BGE 向量、12 批 insert，并在 close/reopen 后到达 publisher；但 publisher 的 `database_path.is_file()` 错误地把目录 store 判为缺失。该 Attempt 保持 `terminal_failed`，working root 不可复用。
+
+后续物理发布合同必须新增 provider-neutral `PhysicalStoreArtifact`：
+
+- `artifact_kind=file|directory` 由已指纹化 backend profile 声明，禁止从 `.db` 后缀推断；
+- directory artifact 递归生成 canonical tree manifest，拒绝 symlink／越界路径，逐文件记录相对路径、字节和 SHA256，并绑定 tree digest；
+- backend-level integrity 至少绑定 collection manifest version／current sequence、数据文件、index 文件、close-reopen count 与完整 identity digest；
+- private receipt 同时记录 sparse metadata、dense artifact manifest、全部 writer counters 和最后 verified phase snapshot；失败 envelope 使用同一计数结构，不能丢失 flush／count／reopen／metadata-query；
+- 原子发布的单位仍是整个 fresh working root，通过同一 Linux filesystem 的 rename 进入 fresh final root。目录 store 内部文件不得单独复制或从失败 root 晋升；
+- fake 必须覆盖 file／directory 两种 artifact 和类型错配；真实 successor 前只允许独立 1-vector micro-canary 验证 directory close／reopen／count／metadata／tree digest／rename，不加载 BGE、不写 93 条业务对象。
+
+上述更正属于 S1 Harness/存储发布层，不改变 CandidateBundle、金融时间／单位权威、Query Facet 或 Evidence 合同。更强模型不会消除该要求；它也不是 DeepSeek 适配问题。R2 只有在实现、mutation、micro-canary 和 clean proof 后才能另行签发。

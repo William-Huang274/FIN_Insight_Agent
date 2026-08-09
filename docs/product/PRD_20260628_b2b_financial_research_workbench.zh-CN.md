@@ -2281,3 +2281,7 @@ manifest R4 working-tree 已绑定上述 R9 clean input，保持 93 个六案主
 Linux 环境资格与 full-fake 已通过：Ubuntu-22.04 独立 CPU runtime 绑定 BGE-M3 五个本地模型文件、pymilvus/milvus-lite 完整 package tree、59-row pip freeze 和 fresh targets；真实 ObjectBM25 序列化与 fake dense 均完整接收 93 条、12 批，七类物理层 mutation fail closed，proof=`99b7f66e...cfdc`。这只准入 clean-commit-bound exact-once authority；BGE 尚未加载、Milvus 尚未写入。即使未来 physical build 成功，`retrieval_quality` 和 `workbench_integration` 仍为 false，必须另做同矩阵查询与 Windows→WSL 调用接线证明。
 
 上述实现已从 clean/synced `566d5223...477e` 签发唯一 R1 authority=`0ca08fec...4260`。签发器再次核对 Linux 包树、BGE bytes、manifest、磁盘和 fresh targets，仍未加载模型或写索引。执行前必须先提交 authority，worker 再做一次 environment identity requalification；任何签发后漂移在模型加载前终止，且不得自动 R2。
+
+R1 已按唯一 authority 执行并在物理发布门失败。BGE-M3 成功生成 93 个向量，Milvus 也形成包含 93 行 Parquet 与 FLAT index 的目录型 store；失败并非模型、语料或向量生成问题，而是产品发布器把 `milvus_lite.db` 错当成单个文件。由于 receipt 与 final publication 没有完成，产品仍不得显示“本地向量索引可用”，失败 working root 也不得作为降级索引接入。
+
+物理索引的产品合同必须与后端文件布局解耦：可接受的 artifact 可以是 file 或 directory，但都必须有可重算的内容清单、row／identity 校验、完整调用与阶段收据，以及 working-root 到 final-root 的同文件系统原子发布。下一轮只修这一 S1 结构边界并做零模型 micro-canary；R1 保持失败，R2 需 fresh authority。不得因底层数据“看起来已经在磁盘上”绕过终态，也不得把此失败归咎于 DeepSeek 或以增加模型调用解决。

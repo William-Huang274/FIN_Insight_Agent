@@ -1,0 +1,46 @@
+{
+  "attempt_id": "20260810_s1_candidate_bundle_object_bm25_bge_m3_milvus_linux_r1",
+  "authority_digest": "0ca08fecf6d759fbea23b83b5efee0052ac9072302fbe8475a43c37dc2dd4260",
+  "automatic_retry": false,
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_physical_sparse_dense_index:v1",
+  "failure": {
+    "error_code": "candidate_bundle_physical_dense_database_missing",
+    "error_type": "CandidateBundlePhysicalIndexError",
+    "phase": "build_bge_m3_milvus"
+  },
+  "implementation_commit": "566d5223dca1d6d28dc802cd4bfa4fa6cc1a477e",
+  "known_boundary": "This immutable failure consumes R1. The failed working root is preserved and no automatic retry or replacement attempt is authorized.",
+  "observed_calls": {
+    "document_fetch": 0,
+    "embedding_batches": 12,
+    "embedding_model_loads": 1,
+    "embedding_vectors": 93,
+    "evidence_promotion": 0,
+    "llm_model": 0,
+    "milvus_collection_creates": 1,
+    "milvus_database_creates": 1,
+    "milvus_insert_batches": 12,
+    "milvus_inserted_vectors": 93,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0,
+    "vector_search": 0
+  },
+  "private_state": {
+    "final_root": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1/v1",
+    "final_root_exists": false,
+    "working_root": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1/attempt_r1_building",
+    "working_root_exists": true
+  },
+  "recorded_at": "2026-08-10",
+  "result_digest": "3d26e82ab103a404a01ed2af759bc09063b5cc13c604e6b5d9080f64e3830af5",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_result_v1_0",
+  "stage_acceptance": {
+    "physical_dense_index": false,
+    "physical_sparse_index": false,
+    "release": false,
+    "retrieval_quality": false
+  },
+  "status": "terminal_failed_physical_sparse_dense_build_no_retry"
+}

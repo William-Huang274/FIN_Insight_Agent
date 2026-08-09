@@ -38,6 +38,10 @@ AUTHORITY_PATH = ROOT / (
     "configs/releases/"
     "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_authority_v1_0.json"
 )
+RESULT_PATH = ROOT / (
+    "configs/releases/"
+    "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_result_v1_0.json"
+)
 
 
 def _policy() -> dict:
@@ -245,3 +249,24 @@ def test_materialized_authority_binds_clean_environment_and_one_r1() -> None:
     ] == "os.rename"
     assert validated["private_target"]["working_root_absent"] is True
     assert validated["private_target"]["final_root_absent"] is True
+
+
+def test_materialized_r1_failure_is_consumed_and_not_product_index_success() -> None:
+    result = json.loads(RESULT_PATH.read_text(encoding="utf-8"))
+    body = {key: value for key, value in result.items() if key != "result_digest"}
+    assert result["result_digest"] == canonical_digest(body)
+    assert result["status"] == "terminal_failed_physical_sparse_dense_build_no_retry"
+    assert result["automatic_retry"] is False
+    assert result["failure"] == {
+        "error_code": "candidate_bundle_physical_dense_database_missing",
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "phase": "build_bge_m3_milvus",
+    }
+    assert result["observed_calls"]["embedding_model_loads"] == 1
+    assert result["observed_calls"]["embedding_vectors"] == 93
+    assert result["observed_calls"]["milvus_inserted_vectors"] == 93
+    assert result["private_state"]["working_root_exists"] is True
+    assert result["private_state"]["final_root_exists"] is False
+    assert result["stage_acceptance"]["physical_sparse_index"] is False
+    assert result["stage_acceptance"]["physical_dense_index"] is False
+    assert result["stage_acceptance"]["retrieval_quality"] is False

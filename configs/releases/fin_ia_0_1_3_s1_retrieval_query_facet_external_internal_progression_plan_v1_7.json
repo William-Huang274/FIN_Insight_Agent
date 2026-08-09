@@ -1,0 +1,72 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_7",
+  "contract_ref": "fin_0_1_3.S1.retrieval_query_facet_external_internal_progression:v1_7",
+  "recorded_at": "2026-08-09",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1",
+  "status": "supplemental_dense_r1_terminal_failed_windows_manifest_replace_disposition_current",
+  "predecessor_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_6.json",
+  "user_decision": "Complete external retrieval first, then repair internal exact, lexical, dense and graph retrieval, including downstream BGE, fusion and reranking, without skipping candidate-ceiling evidence.",
+  "current_truth": {
+    "external_product_coverage": "4_of_12_failed_release_blocker_preserved",
+    "internal_research_candidate_inventory": "18_of_18_owner_accepted",
+    "internal_annual_exact_sql": "9_of_9",
+    "internal_current_quarter_exact_sql": "0_of_6_typed_refresh_gap",
+    "ranking_attempt_r2": "valid_sparse_16_of_18_dense_3_of_18_fusion_14_of_18_sparse_retained",
+    "historical_dense_unique_selected_targets": "5_of_10",
+    "supplemental_dense_r1": "terminal_failed_no_retry_after_410_embeddings_and_410_insert_acknowledgements",
+    "supplemental_dense_r1_failure": "milvus_lite_3_0_windows_manifest_os_rename_existing_target_winerror_183",
+    "supplemental_dense_final_collection": "absent",
+    "supplemental_dense_real_presence": "not_run_build_failed",
+    "reranker_resource": "optional_absent_not_executed",
+    "downstream_utilization": "not_proven"
+  },
+  "immutable_r1": {
+    "attempt_id": "20260809_s1_supplemental_dense_bge_m3_milvus_incremental_build_r1",
+    "result_ref": "configs/releases/fin_ia_0_1_3_s1_internal_supplemental_dense_execution_result_v1_0.json",
+    "result_digest": "9ae78bf2096b3ee5ddaa731093c8bf05dbf0df99193ab35345788f93313d08a3",
+    "model_loads": 1,
+    "outer_embedding_batches": 13,
+    "model_micro_batches": 52,
+    "embedding_vectors": 410,
+    "milvus_insert_batches": 13,
+    "milvus_inserted_vectors": 410,
+    "working_root_preserved": true,
+    "final_root_exists": false,
+    "automatic_retry": false
+  },
+  "root_cause_disposition": {
+    "local_dependency": "milvus-lite 3.0",
+    "local_manifest_commit_primitive": "os.rename",
+    "official_main_manifest_commit_primitive": "os.replace",
+    "official_main_ref": "https://github.com/milvus-io/milvus-lite/blob/main/milvus_lite/storage/manifest.py",
+    "authority_fingerprint_gap": "milvus_lite_runtime_package_not_bound",
+    "model_or_corpus_fault_established": false,
+    "project_runtime_portability_fault_established": true
+  },
+  "execution_sequence": [
+    {"order": 1, "work_item": "S1_SUPPLEMENTAL_DENSE_R1_IMMUTABLE_FAILURE_CLOSEOUT", "status": "current", "acceptance": "Commit terminal result and exact local/upstream source diagnosis without mutating the preserved working root or claiming a collection."},
+    {"order": 2, "work_item": "S1_MILVUS_LITE_WINDOWS_SUCCESSOR_ZERO_CALL_QUALIFICATION", "status": "pending_no_real_build_authority", "acceptance": "Bind the complete milvus_lite package fingerprint and prove an isolated 1-vector create, insert, double-flush, close, reopen, count and metadata query path on Windows without BGE, historical writes or network."},
+    {"order": 3, "work_item": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD", "status": "blocked_until_owner_approved_fresh_authority", "acceptance": "Only after qualification, issue a fresh Attempt and build exactly 410 BGE-M3 vectors with zero retry and no reuse of R1 private state."},
+    {"order": 4, "work_item": "S1_DENSE_SELECTED_TARGET_PHYSICAL_PRESENCE_GATE", "status": "blocked_until_replacement_build_success", "acceptance": "Read-only metadata proof must establish 410 terminal entities and 10/10 unique Owner-selected target identities across historical and supplemental collections."},
+    {"order": 5, "work_item": "S1_INTERNAL_DENSE_FUSION_SAME_MATRIX_SUCCESSOR", "status": "blocked_until_real_10_of_10_and_separate_authority", "acceptance": "At most one unchanged-qrels/query/filter/budget/weight comparison; retain sparse if dense or fusion remains worse."},
+    {"order": 6, "work_item": "S1_INTERNAL_QUERY_OR_RERANKER_EXPERIMENT", "status": "conditional_not_current_gate", "acceptance": "Open only after post-refresh ranking evidence; no Gold-tuned weights or silent reranker download."},
+    {"order": 7, "work_item": "S1_INTERNAL_CURRENT_QUARTER_NUMERIC_INGESTION_AND_EXACT_ROUTE_SUCCESSOR", "status": "open_independent_0_of_6", "acceptance": "Reach 6/6 from capture-backed primary facts without evaluator backfill."},
+    {"order": 8, "work_item": "S1_TO_S3_RETRIEVAL_DOWNSTREAM_UTILIZATION_AND_CONTENT_QUALITY_PROOF", "status": "pending_after_internal_retrieval_gates", "acceptance": "Evidence, Claim, Workpaper and report must visibly consume retrieved material and pass research-content quality evaluation."},
+    {"order": 9, "work_item": "EXTERNAL_PROVIDER_REQUALIFICATION_OR_PRODUCT_SOURCE_SCOPE_DECISION", "status": "future_independent_release_blocker_4_of_12", "acceptance": "Reuse the frozen external matrix or explicitly reduce the product source claim."}
+  ],
+  "calls_authorized_by_this_plan": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "bge_model_load": 0,
+    "supplemental_build": 0,
+    "historical_milvus_write": 0,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "known_boundary": "R1 is terminal and cannot be retried or reclassified as a partial success. This plan authorizes only failure closeout and a bounded dependency-qualification design; no replacement build, ranking, Evidence, external provider work, product acceptance or release is authorized.",
+  "plan_digest": "424da22b8984dd3fd3c4e585d507eedfbfff1a55b7d04bc89080e8dc91b7415c"
+}

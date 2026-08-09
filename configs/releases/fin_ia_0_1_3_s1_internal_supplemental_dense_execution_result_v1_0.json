@@ -1,0 +1,46 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_supplemental_dense_execution_result_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_supplemental_dense_execution:v1",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "recorded_at": "2026-08-09",
+  "attempt_id": "20260809_s1_supplemental_dense_bge_m3_milvus_incremental_build_r1",
+  "status": "terminal_failed_real_incremental_dense_build_no_retry",
+  "automatic_retry": false,
+  "authority_digest": "fc8e7c44c5769d903d34235586f8240999ae54b0ac4e6223cf077ec04d665109",
+  "implementation_commit": "6f2e11adc884b4f15c98f292970c3fd51b170b03",
+  "failure": {
+    "phase": "create_and_populate_working_milvus",
+    "error_type": "MilvusException",
+    "error_code": "<MilvusException: (code=1, message=[WinError 183] 当文件已存在时，无法创建该文件。: 'D:\\\\FIN_Insight_Agent\\\\data\\\\workbench_private\\\\fin_0_1_3_s1_internal_supplemental_dense\\\\attempt_r1_building\\\\milvus_lite.db\\\\collections\\\\fin_ia_0_1_3_s1_internal_supplemental_dense_v1\\\\manifest.json.tmp' -> 'D:\\\\FIN_Insight_Agent\\\\data\\\\workbench_private\\\\fin_0_1_3_s1_internal_supplemental_dense\\\\attempt_r1_building\\\\milvus_lite.db\\\\collections\\\\fin_ia_0_1_3_s1_internal_supplemental_dense_v1\\\\manifest.json')>"
+  },
+  "private_state": {
+    "working_root_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_dense/attempt_r1_building",
+    "working_root_exists": true,
+    "final_root_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_dense/v1",
+    "final_root_exists": false
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "embedding_model_loads": 1,
+    "embedding_batches": 13,
+    "embedding_model_micro_batches": 52,
+    "embedding_vectors": 410,
+    "milvus_database_creates": 1,
+    "milvus_collection_creates": 1,
+    "milvus_insert_batches": 13,
+    "milvus_inserted_vectors": 410,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "execution_gate": {
+    "real_incremental_build_passed": false,
+    "presence_reproof_required": false,
+    "ranking_successor_authorized": false
+  },
+  "known_boundary": "Failure is immutable and no automatic retry or replacement attempt is authorized.",
+  "result_digest": "9ae78bf2096b3ee5ddaa731093c8bf05dbf0df99193ab35345788f93313d08a3"
+}

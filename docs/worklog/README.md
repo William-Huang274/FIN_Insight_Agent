@@ -1,5 +1,6 @@
 # Worklog
 
+- [775 — FIN 0.1.3 S1 supplemental dense R1 Windows manifest terminal failure](product_strategy/775_fin_0_1_3_s1_supplemental_dense_r1_windows_manifest_terminal_failure.md)
 - [774 — FIN 0.1.3 S1 supplemental dense R1 clean authority](product_strategy/774_fin_0_1_3_s1_supplemental_dense_r1_clean_authority.md)
 - [773 — FIN 0.1.3 S1 supplemental dense 真实 runner full-fake 与资源指纹](product_strategy/773_fin_0_1_3_s1_supplemental_dense_real_runner_full_fake_and_resource_fingerprint.md)
 - [772 — FIN 0.1.3 S1 supplemental dense 零调用合同与 10/10 presence projection](product_strategy/772_fin_0_1_3_s1_supplemental_dense_zero_call_contract_and_presence_projection.md)

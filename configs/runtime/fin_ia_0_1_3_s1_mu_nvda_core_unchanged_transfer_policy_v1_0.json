@@ -1,0 +1,2922 @@
+{
+  "case_policies": [
+    {
+      "assets": [
+        {
+          "asset_id": "base_parent_sparse",
+          "index_ref": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027",
+          "retriever_kind": "parent_bm25",
+          "source_records_ref": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027/records.jsonl"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "index_ref": "Z:/FIN_Insight_Agent_artifacts/tier1_tier2_full_source_v0_1/indexes/sqlite_fts/tier1_tier2_sec_full_source_mixed_objects_fy2023_2027_v0_1",
+          "retriever_kind": "object_bm25",
+          "source_records_ref": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027/records.jsonl"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "index_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/bm25",
+          "retriever_kind": "parent_bm25",
+          "source_records_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/bm25/records.jsonl"
+        },
+        {
+          "asset_id": "current_mu_10q_parent_sparse",
+          "index_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v3_mu_10q/bm25",
+          "retriever_kind": "parent_bm25",
+          "source_records_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v3_mu_10q/bm25/records.jsonl"
+        }
+      ],
+      "case_key": "MU",
+      "contract_ref": "fin_0_1_3.S1.mu_financial_source_object_transfer:v1",
+      "declared_residual_gaps": [
+        {
+          "attempted_lane_ids": [
+            "mu_operating_summary",
+            "mu_operating_segments"
+          ],
+          "business_reason_zh": "CMBU 同时包含多类云和数据中心内存，不能把整段收入等同 HBM/AI 收入。",
+          "facet_id": "accelerated_compute_or_ai_infrastructure_revenue",
+          "gap_code": "metric_not_disclosed",
+          "gap_id": "mu-gap-ai-revenue",
+          "slot_id": "operating_performance",
+          "supplement_direction_zh": "需要产品级 HBM/AI 收入或可审计分拆。"
+        },
+        {
+          "attempted_lane_ids": [
+            "mu_demand_durability",
+            "mu_demand_dell_readthrough",
+            "mu_demand_msft_deployment"
+          ],
+          "business_reason_zh": "客户协议披露押金和价格带，但未披露 Micron 订单量、backlog 或 RPO。",
+          "facet_id": "order_backlog_rpo_or_volume",
+          "gap_code": "commercial_data_gap",
+          "gap_id": "mu-gap-order-volume",
+          "slot_id": "demand_volume_quality",
+          "supplement_direction_zh": "优先补充公司 prepared remarks、合同义务注释或合格商业数据。"
+        },
+        {
+          "attempted_lane_ids": [
+            "mu_demand_durability",
+            "mu_demand_concentration"
+          ],
+          "business_reason_zh": "当前资料没有把需求拆成真实部署、抢购、提前备货和消化。",
+          "facet_id": "pull_forward_or_digestion",
+          "gap_code": "commercial_data_gap",
+          "gap_id": "mu-gap-pull-forward",
+          "slot_id": "demand_volume_quality",
+          "supplement_direction_zh": "补充客户库存、交付节奏和渠道消化数据。"
+        },
+        {
+          "attempted_lane_ids": [
+            "mu_capacity_constraint",
+            "mu_capacity_hbm_ramp",
+            "mu_capacity_release"
+          ],
+          "business_reason_zh": "仅有供需约束和爬坡计划，没有当前 HBM/DRAM 利用率或良率。",
+          "facet_id": "utilization_or_yield",
+          "gap_code": "commercial_data_gap",
+          "gap_id": "mu-gap-utilization-yield",
+          "slot_id": "capacity_inputs_execution",
+          "supplement_direction_zh": "补充晶圆利用率、良率或合格供应链数据。"
+        },
+        {
+          "attempted_lane_ids": [
+            "mu_capacity_hbm_ramp",
+            "mu_capacity_tsm_context"
+          ],
+          "business_reason_zh": "没有供应商对 Micron 设备、封装或材料承诺的公司特定披露。",
+          "facet_id": "supplier_commitment_or_dependency",
+          "gap_code": "relationship_allocation_unproven",
+          "gap_id": "mu-gap-supplier-commitment",
+          "slot_id": "capacity_inputs_execution",
+          "supplement_direction_zh": "补充设备、封装与材料供应商的官方分配/承诺。"
+        },
+        {
+          "attempted_lane_ids": [
+            "mu_capacity_tsm_context"
+          ],
+          "business_reason_zh": "TSMC 行业扩张不能证明 Micron 的组件或制造依赖。",
+          "facet_id": "foundry_or_component_dependency",
+          "gap_code": "relationship_allocation_unproven",
+          "gap_id": "mu-gap-foundry-component",
+          "slot_id": "capacity_inputs_execution",
+          "supplement_direction_zh": "建立 Micron 实际设备、材料和封装关系图后再检索。"
+        },
+        {
+          "attempted_lane_ids": [
+            "mu_capacity_hbm_ramp",
+            "mu_capacity_release"
+          ],
+          "business_reason_zh": "没有 HBM die size、stack yield 或封装良率。",
+          "facet_id": "yield_or_die_size",
+          "gap_code": "commercial_data_gap",
+          "gap_id": "mu-gap-yield-die",
+          "slot_id": "capacity_inputs_execution",
+          "supplement_direction_zh": "需要技术披露或合格行业数据。"
+        },
+        {
+          "attempted_lane_ids": [
+            "mu_capacity_hbm_ramp",
+            "mu_capacity_tsm_context"
+          ],
+          "business_reason_zh": "3D die stacking 产品存在不等于先进封装容量和可分配产能已披露。",
+          "facet_id": "advanced_packaging_capacity",
+          "gap_code": "commercial_data_gap",
+          "gap_id": "mu-gap-advanced-packaging",
+          "slot_id": "capacity_inputs_execution",
+          "supplement_direction_zh": "补充封装供应商容量、交期与客户分配。"
+        },
+        {
+          "attempted_lane_ids": [
+            "mu_counter_execution",
+            "mu_counter_customer",
+            "mu_counter_monitor"
+          ],
+          "business_reason_zh": "风险机制和季度指标已找到，但材料没有给出何种幅度会推翻判断。",
+          "facet_id": "observable_invalidation_threshold",
+          "gap_code": "threshold_not_observable",
+          "gap_id": "mu-gap-invalidation",
+          "slot_id": "counterevidence_and_what_would_change",
+          "supplement_direction_zh": "由研究方法层基于证据分布冻结阈值，不得让模型随意编数。"
+        },
+        {
+          "attempted_lane_ids": [
+            "mu_counter_monitor"
+          ],
+          "business_reason_zh": "季度监控面存在，但阈值尚未由历史分布或 analyst rubric 校准。",
+          "facet_id": "observable_quarterly_threshold",
+          "gap_code": "threshold_not_observable",
+          "gap_id": "mu-gap-quarterly-threshold",
+          "slot_id": "counterevidence_and_what_would_change",
+          "supplement_direction_zh": "在 S3 内容质量阶段冻结可复算阈值。"
+        },
+        {
+          "attempted_lane_ids": [
+            "mu_capital_return"
+          ],
+          "business_reason_zh": "本地官方资料没有 as-of 市场价格和估值基准。",
+          "facet_id": "valuation_basis",
+          "gap_code": "market_data_gap",
+          "gap_id": "mu-gap-valuation-basis",
+          "slot_id": "capital_allocation_and_valuation",
+          "supplement_direction_zh": "外源补充 PIT 市场数据后再计算。"
+        },
+        {
+          "attempted_lane_ids": [
+            "mu_capital_return"
+          ],
+          "business_reason_zh": "尚未冻结周期化毛利、产能释放和估值情景输入。",
+          "facet_id": "scenario_or_sensitivity",
+          "gap_code": "formula_input_missing",
+          "gap_id": "mu-gap-valuation-scenario",
+          "slot_id": "capital_allocation_and_valuation",
+          "supplement_direction_zh": "由 Numeric Program 和用户假设层生成情景。"
+        },
+        {
+          "attempted_lane_ids": [
+            "mu_capital_return"
+          ],
+          "business_reason_zh": "缺少截至日股价、共识和历史倍数。",
+          "facet_id": "price_in_boundary",
+          "gap_code": "market_data_gap",
+          "gap_id": "mu-gap-price-in",
+          "slot_id": "capital_allocation_and_valuation",
+          "supplement_direction_zh": "外源补充 PIT 市场与共识数据，保持许可边界。"
+        }
+      ],
+      "hierarchy_findings": [
+        {
+          "affected_ref": "SUPP::MU::000072312526000013::CHUNK_0001",
+          "business_effect_zh": "8-K parent 的 period_end 仍等于发布日期，真实季度结束日只在正文，三层期间可能被误读。",
+          "code": "source_period_metadata_conflation",
+          "finding_id": "mu-hierarchy-current-8k-period",
+          "required_object_boundary_zh": "SourceDocument 必须分别保存 filing/publication date 与 reported period end。"
+        },
+        {
+          "affected_ref": "SUPP::MU::000072312526000015::CHUNK_0047",
+          "business_effect_zh": "当前 10-Q supplemental object 仍是整段 DOCUMENT_SEGMENT，ASP、bit shipment 与 margin 没被拆成可单独绑定对象。",
+          "code": "document_segment_not_financial_object",
+          "finding_id": "mu-hierarchy-10q-document-segment",
+          "required_object_boundary_zh": "重建时应拆成 table/metric/claim，并保留列、期间、单位和父节。"
+        },
+        {
+          "affected_ref": "MU:DELL-MSFT-NVDA-TSM",
+          "business_effect_zh": "可看到上下游各自披露，但没有公司特定订单或供应分配对象。",
+          "code": "relationship_object_missing_allocation",
+          "finding_id": "mu-hierarchy-cross-company-allocation",
+          "required_object_boundary_zh": "关系对象必须区分经济方向、公司特定归因与 allocation gap。"
+        }
+      ],
+      "query_lanes": [
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "reported_revenue",
+            "reported_profitability",
+            "management_outlook"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_operating_summary",
+          "query_texts": [
+            "fiscal Q3 2026 revenue net income operating cash flow stronger outlook Q4"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "operating_performance"
+        },
+        {
+          "asset_id": "current_mu_10q_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "segment_or_product_performance"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_operating_segments",
+          "query_texts": [
+            "Cloud Memory Business Unit CMBU revenue gross margin operating income quarter ended May 28 2026"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "operating_performance"
+        },
+        {
+          "asset_id": "current_mu_10q_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "durability_or_pull_forward"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_demand_durability",
+          "query_texts": [
+            "strategic customer agreements price bands durability predictability financial performance"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "demand_volume_quality"
+        },
+        {
+          "asset_id": "current_mu_10q_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "customer_breadth_or_concentration"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_demand_concentration",
+          "query_texts": [
+            "top customers data center products disruptions delays build-out data centers revenue"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "demand_volume_quality"
+        },
+        {
+          "asset_id": "base_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "DELL_TECHNOLOGIES",
+          "evidence_owner_ticker": "DELL",
+          "facet_focus": [
+            "ai_infrastructure_orders_or_backlog"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "DELL"
+          },
+          "lane_id": "mu_demand_dell_readthrough",
+          "query_texts": [
+            "booked AI optimized server orders revenue fiscal 2027 first quarter"
+          ],
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "demand_volume_quality"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_ticker": "MSFT",
+          "facet_focus": [
+            "deployment_or_utilization",
+            "hyperscaler_capex_and_deployment"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "MSFT"
+          },
+          "lane_id": "mu_demand_msft_deployment",
+          "query_texts": [
+            "continued investments AI infrastructure growing AI product usage Microsoft Cloud gross margin"
+          ],
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "demand_volume_quality"
+        },
+        {
+          "asset_id": "current_mu_10q_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "price_or_asp",
+            "volume_or_units",
+            "mix_or_product_attribution",
+            "margin_or_unit_economics",
+            "profit_capture_bridge",
+            "price_volume_mix_bridge",
+            "memory_price_bit_mix"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_pricing_pvm",
+          "query_texts": [
+            "DRAM NAND average selling prices bit shipments favorable mix manufacturing cost reductions gross margins"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "pricing_mix_value_capture"
+        },
+        {
+          "asset_id": "current_mu_10q_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "capacity_or_supply",
+            "bottleneck_or_lead_time"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_capacity_constraint",
+          "query_texts": [
+            "AI data center demand memory storage greater than ability industry increase supply allocation"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capacity_inputs_execution"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "ramp_timing",
+            "high_bandwidth_memory_supply"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_capacity_hbm_ramp",
+          "query_texts": [
+            "HBM4 high-volume shipments lead customer platform HBM4E volume production calendar 2027"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capacity_inputs_execution"
+        },
+        {
+          "asset_id": "current_mu_10q_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "capacity_release_timing"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_capacity_release",
+          "query_texts": [
+            "Tongluo wafer fabrication facility meaningful product shipments mid-calendar 2027 DRAM HBM capacity"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capacity_inputs_execution"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_ticker": "TSM",
+          "facet_focus": [
+            "capacity_or_supply"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "6-K"
+            ],
+            "ticker": "TSM"
+          },
+          "lane_id": "mu_capacity_tsm_context",
+          "query_texts": [
+            "strong demand leading-edge process technologies steep ramp-up 2-nanometer"
+          ],
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "capacity_inputs_execution"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "operating_cash_flow",
+            "working_capital",
+            "inventory",
+            "receivables_payables_or_obligations"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_cash_working_capital",
+          "query_texts": [
+            "net cash provided operating activities receivables inventories accounts payable accrued expenses"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "cash_conversion_balance_sheet"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "capital_expenditure",
+            "capex_to_free_cash_flow"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_cash_capex_fcf",
+          "query_texts": [
+            "investments capital expenditures net adjusted free cash flow third quarter 2026"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "cash_conversion_balance_sheet"
+        },
+        {
+          "asset_id": "current_mu_10q_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "customer_deposit_or_rpo_classification"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_cash_customer_deposit",
+          "query_texts": [
+            "strategic customer agreements cash deposits related financial commitments 22 billion 18 billion"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "cash_conversion_balance_sheet"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "evidence_owner_self_disclosure"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_relationship_self",
+          "query_texts": [
+            "Micron record fiscal Q3 financial results stronger outlook"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "relationship_attribution"
+        },
+        {
+          "asset_id": "base_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "DELL_TECHNOLOGIES",
+          "evidence_owner_ticker": "DELL",
+          "facet_focus": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "customer_demand_readthrough"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "DELL"
+          },
+          "lane_id": "mu_relationship_dell",
+          "query_texts": [
+            "booked AI optimized server orders revenue fiscal 2027 first quarter"
+          ],
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "relationship_attribution"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_ticker": "MSFT",
+          "facet_focus": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "customer_demand_readthrough"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "MSFT"
+          },
+          "lane_id": "mu_relationship_msft",
+          "query_texts": [
+            "continued investments AI infrastructure growing AI product usage Microsoft Cloud gross margin"
+          ],
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "relationship_attribution"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "supplier_capacity_readthrough"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "mu_relationship_nvda",
+          "query_texts": [
+            "reliance third parties manufacture assemble package test products"
+          ],
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "relationship_attribution"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_ticker": "TSM",
+          "facet_focus": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "supplier_capacity_readthrough"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "6-K"
+            ],
+            "ticker": "TSM"
+          },
+          "lane_id": "mu_relationship_tsm",
+          "query_texts": [
+            "strong demand leading-edge process technologies steep ramp-up 2-nanometer"
+          ],
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "relationship_attribution"
+        },
+        {
+          "asset_id": "current_mu_10q_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "policy_or_regulatory_event",
+            "affected_scope",
+            "financial_or_operating_consequence",
+            "mitigation_or_uncertainty",
+            "export_control"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_regulatory_export",
+          "query_texts": [
+            "export controls AI applications restrict sales China equipment components raw materials tariffs"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "regulatory_policy_exposure"
+        },
+        {
+          "asset_id": "current_mu_10q_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "strongest_counterevidence",
+            "impact_mechanism"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_counter_execution",
+          "query_texts": [
+            "underutilization lower wafer output delay ramping emerging technologies supply chain disruptions"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "counterevidence_and_what_would_change"
+        },
+        {
+          "asset_id": "current_mu_10q_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "strongest_counterevidence",
+            "impact_mechanism"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_counter_customer",
+          "query_texts": [
+            "top customers delay build-out data centers energy water capital future revenue"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "counterevidence_and_what_would_change"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "monitoring_metric_and_timing"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_counter_monitor",
+          "query_texts": [
+            "fiscal Q3 highlights revenue gross margin operating cash flow Q4 outlook"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "counterevidence_and_what_would_change"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "capital_structure_or_returns"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "mu_capital_return",
+          "query_texts": [
+            "Board declared quarterly dividend 0.15 per share July 2026"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capital_allocation_and_valuation"
+        }
+      ],
+      "result_ref": "configs/releases/fin_ia_0_1_3_s1_mu_financial_source_object_transfer_result_v1_0.json",
+      "reviewed_candidate_bindings": [
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "Q3 FY26 收入、净利润、经营现金流与 Q4 展望位于同一公司业绩稿。",
+          "candidate_role": "management_commentary",
+          "content_limitation_zh": "公司业绩稿含管理层口径和非 GAAP 指标，精确数值仍需表格与 Numeric Program 复核。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "reported_revenue",
+            "reported_profitability",
+            "management_outlook"
+          ],
+          "lane_id": "mu_operating_summary",
+          "polarity": "neutral",
+          "qualification_id": "mu-op-summary",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "operating_performance",
+          "source_excerpt": "Revenue of $41.46 billion",
+          "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0001",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "Revenue of $41.46 billion",
+          "target_id": "SUPP::MU::000072312526000013::CHUNK_0001"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "10-Q 同表披露 CMBU、CDBU、MCBU、AEBU 的收入、毛利与经营利润，可观察业务单元贡献。",
+          "candidate_role": "reported_fact",
+          "content_limitation_zh": "CMBU 同时包含超大规模云内存和 HBM，不能把全部 CMBU 收入直接视为 HBM 或 AI 收入。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "segment_or_product_performance"
+          ],
+          "lane_id": "mu_operating_segments",
+          "polarity": "neutral",
+          "qualification_id": "mu-op-segments",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "operating_performance",
+          "source_excerpt": "Revenue $ 13,769",
+          "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0040",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "Revenue $ 13,769",
+          "target_id": "SUPP::MU::000072312526000015::CHUNK_0040"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "管理层把带价格区间的长期客户协议与业绩耐久性联系起来。",
+          "candidate_role": "management_commentary",
+          "content_limitation_zh": "这是公司对协议效果的判断，不等于订单、交付或客户部署已全部锁定。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "durability_or_pull_forward"
+          ],
+          "lane_id": "mu_demand_durability",
+          "polarity": "support",
+          "qualification_id": "mu-demand-durability",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "demand_volume_quality",
+          "source_excerpt": "significantly enhance the durability and predictability of our financial performance",
+          "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0046",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "significantly enhance the durability and predictability of our financial performance",
+          "target_id": "SUPP::MU::000072312526000015::CHUNK_0046"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "10-Q 明确提示头部客户关系和数据中心建设延期可能影响未来收入。",
+          "candidate_role": "counterevidence",
+          "content_limitation_zh": "该段未披露客户名单、份额或已取消订单规模。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "customer_breadth_or_concentration"
+          ],
+          "lane_id": "mu_demand_concentration",
+          "polarity": "counter",
+          "qualification_id": "mu-demand-concentration",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "demand_volume_quality",
+          "source_excerpt": "our relationship with any of our top customers",
+          "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0086",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "our relationship with any of our top customers",
+          "target_id": "SUPP::MU::000072312526000015::CHUNK_0086"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "Dell 自身 AI 服务器订单提供下游基础设施需求旁证。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "Dell 没有披露这些订单对应的 Micron 内存金额，不能做公司特定归因。",
+          "evidence_owner_entity_key": "DELL_TECHNOLOGIES",
+          "evidence_owner_ticker": "DELL",
+          "facet_ids": [
+            "ai_infrastructure_orders_or_backlog"
+          ],
+          "lane_id": "mu_demand_dell_readthrough",
+          "polarity": "support",
+          "qualification_id": "mu-demand-dell",
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "demand_volume_quality",
+          "source_excerpt": "booked $24.4 billion in AI orders and recognized $16.1 billion of AI server revenue",
+          "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+          "source_reporting_period_id": "DELL_FY2027_Q1",
+          "target_excerpt": "booked $24.4 billion in AI orders and recognized $16.1 billion of AI server revenue",
+          "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "微软自身 AI 基础设施投入与使用增长验证超大规模客户的部署方向。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "微软没有披露 Micron 采购额、内存配置或部署利用率。",
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_ticker": "MSFT",
+          "facet_ids": [
+            "deployment_or_utilization",
+            "hyperscaler_capex_and_deployment"
+          ],
+          "lane_id": "mu_demand_msft_deployment",
+          "polarity": "support",
+          "qualification_id": "mu-demand-msft",
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "demand_volume_quality",
+          "source_excerpt": "continued investments in AI infrastructure and growing AI product usage",
+          "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+          "source_reporting_period_id": "MSFT_FY2026_Q3",
+          "target_excerpt": "continued investments in AI infrastructure and growing AI product usage",
+          "target_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "10-Q 直接拆出 DRAM/NAND ASP 与 bit shipment 变化，并将毛利改善联系到 ASP、mix 与制造成本。",
+          "candidate_role": "reported_fact",
+          "content_limitation_zh": "区间表述不能替代产品级精确价格、HBM 单价或单位经济性。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "price_or_asp",
+            "volume_or_units",
+            "mix_or_product_attribution",
+            "margin_or_unit_economics",
+            "profit_capture_bridge",
+            "price_volume_mix_bridge",
+            "memory_price_bit_mix"
+          ],
+          "lane_id": "mu_pricing_pvm",
+          "polarity": "neutral",
+          "qualification_id": "mu-pricing-pvm",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "pricing_mix_value_capture",
+          "source_excerpt": "low-60% range increase in average selling prices and a low-single-digit percentage range increase in bit shipments",
+          "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0047",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "low-60% range increase in average selling prices and a low-single-digit percentage range increase in bit shipments",
+          "target_id": "SUPP::MU::000072312526000015::CHUNK_0047"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "公司披露 AI 数据中心需求增长快于行业增供，已经触发供应分配。",
+          "candidate_role": "management_commentary",
+          "content_limitation_zh": "该段没有产线利用率、良率或各客户分配量。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "capacity_or_supply",
+            "bottleneck_or_lead_time"
+          ],
+          "lane_id": "mu_capacity_constraint",
+          "polarity": "support",
+          "qualification_id": "mu-capacity-constraint",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capacity_inputs_execution",
+          "source_excerpt": "accelerated demand for memory and storage at a rate greater than our ability and the industry’s ability to increase supply",
+          "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0045",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "accelerated demand for memory and storage at a rate greater than our ability and the industry’s ability to increase supply",
+          "target_id": "SUPP::MU::000072312526000015::CHUNK_0045"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "HBM4 已进入 lead-customer platform 的高量出货，HBM4E 预计 2027 年量产。",
+          "candidate_role": "management_commentary",
+          "content_limitation_zh": "没有披露总产能、良率、封装瓶颈或各客户分配。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "ramp_timing",
+            "high_bandwidth_memory_supply"
+          ],
+          "lane_id": "mu_capacity_hbm_ramp",
+          "polarity": "support",
+          "qualification_id": "mu-capacity-hbm-ramp",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capacity_inputs_execution",
+          "source_excerpt": "HBM4, built on 1-beta DRAM technology, is in high-volume shipments",
+          "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0002",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "HBM4, built on 1-beta DRAM technology, is in high-volume shipments",
+          "target_id": "SUPP::MU::000072312526000013::CHUNK_0002"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "Tongluo 现有厂的有意义出货时间给出一个可监控的新增产能释放窗口。",
+          "candidate_role": "management_commentary",
+          "content_limitation_zh": "这是公司计划，不是已实现产能，也未拆分 DRAM 与 HBM 数量。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "capacity_release_timing"
+          ],
+          "lane_id": "mu_capacity_release",
+          "polarity": "neutral",
+          "qualification_id": "mu-capacity-release",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capacity_inputs_execution",
+          "source_excerpt": "support meaningful product shipments from the existing fab beginning in mid-calendar 2027",
+          "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0056",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "support meaningful product shipments from the existing fab beginning in mid-calendar 2027",
+          "target_id": "SUPP::MU::000072312526000015::CHUNK_0056"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "TSMC 的先进制程爬坡提供 AI 半导体制造扩张的独立行业上下文。",
+          "candidate_role": "industry_context",
+          "content_limitation_zh": "TSMC 不是此处已证明的 Micron 供应商，该来源不能证明 Micron 的产能或分配。",
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_ticker": "TSM",
+          "facet_ids": [
+            "capacity_or_supply"
+          ],
+          "lane_id": "mu_capacity_tsm_context",
+          "polarity": "support",
+          "qualification_id": "mu-capacity-tsm-context",
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "capacity_inputs_execution",
+          "source_excerpt": "steep ramp-up of our 2-nanometer technology",
+          "source_record_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+          "source_reporting_period_id": "TSM_2026_Q2",
+          "target_excerpt": "steep ramp-up of our 2-nanometer technology",
+          "target_id": "SUPP::TSM::000104617926000451::CHUNK_0001"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "现金流表显示九个月经营现金流以及应收、存货、应付等营运资金变动。",
+          "candidate_role": "numeric_trace_candidate",
+          "content_limitation_zh": "表格不能单独把营运资金吸收归因于 HBM 或 AI 客户。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "operating_cash_flow",
+            "working_capital",
+            "inventory",
+            "receivables_payables_or_obligations"
+          ],
+          "lane_id": "mu_cash_working_capital",
+          "polarity": "neutral",
+          "qualification_id": "mu-cash-working-capital",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "cash_conversion_balance_sheet",
+          "source_excerpt": "Net cash provided by operating activities 45,702",
+          "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0006",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "Net cash provided by operating activities 45,702",
+          "target_id": "SUPP::MU::000072312526000013::CHUNK_0006"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "Q3 资本开支与 adjusted free cash flow 同时披露，可观察投入与现金产出的关系。",
+          "candidate_role": "numeric_trace_candidate",
+          "content_limitation_zh": "adjusted free cash flow 为公司非 GAAP 口径，需保留公式边界。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "capital_expenditure",
+            "capex_to_free_cash_flow"
+          ],
+          "lane_id": "mu_cash_capex_fcf",
+          "polarity": "neutral",
+          "qualification_id": "mu-cash-capex-fcf",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "cash_conversion_balance_sheet",
+          "source_excerpt": "investments in capital expenditures, net (2) were $7.1 billion and adjusted free cash flow (2) was $18.3 billion",
+          "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0002",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "investments in capital expenditures, net (2) were $7.1 billion and adjusted free cash flow (2) was $18.3 billion",
+          "target_id": "SUPP::MU::000072312526000013::CHUNK_0002"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "10-Q 将战略客户协议的 220 亿美元承诺与约 180 亿美元现金押金明确区分。",
+          "candidate_role": "reported_fact",
+          "content_limitation_zh": "押金不是已确认收入或 RPO，不能直接当成订单价值。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "customer_deposit_or_rpo_classification"
+          ],
+          "lane_id": "mu_cash_customer_deposit",
+          "polarity": "neutral",
+          "qualification_id": "mu-cash-customer-deposit",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "cash_conversion_balance_sheet",
+          "source_excerpt": "Approximately $18 billion of these commitments will be in the form of cash deposits",
+          "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0053",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "Approximately $18 billion of these commitments will be in the form of cash deposits",
+          "target_id": "SUPP::MU::000072312526000015::CHUNK_0053"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "Micron 自身披露锚定本案主体与报告期。",
+          "candidate_role": "relationship_candidate",
+          "content_limitation_zh": "自述不能替代客户或供应商对关系和分配的确认。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "evidence_owner_self_disclosure"
+          ],
+          "lane_id": "mu_relationship_self",
+          "polarity": "neutral",
+          "qualification_id": "mu-relationship-self",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "relationship_attribution",
+          "source_excerpt": "Micron’s record fiscal Q3 financial results",
+          "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0001",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "Micron’s record fiscal Q3 financial results",
+          "target_id": "SUPP::MU::000072312526000013::CHUNK_0001"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "Dell 仅证明自身下游 AI 系统需求，关系方向从客户需求端指向行业 read-through。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "没有 Dell→Micron 的采购额或份额，边界必须保持未归因。",
+          "evidence_owner_entity_key": "DELL_TECHNOLOGIES",
+          "evidence_owner_ticker": "DELL",
+          "facet_ids": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "customer_demand_readthrough"
+          ],
+          "lane_id": "mu_relationship_dell",
+          "polarity": "neutral",
+          "qualification_id": "mu-relationship-dell",
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "relationship_attribution",
+          "source_excerpt": "booked $24.4 billion in AI orders and recognized $16.1 billion of AI server revenue",
+          "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+          "source_reporting_period_id": "DELL_FY2027_Q1",
+          "target_excerpt": "booked $24.4 billion in AI orders and recognized $16.1 billion of AI server revenue",
+          "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "微软仅证明自身云端部署需求，提供客户侧 read-through。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "没有 Microsoft→Micron 的直接采购或分配数据。",
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_ticker": "MSFT",
+          "facet_ids": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "customer_demand_readthrough"
+          ],
+          "lane_id": "mu_relationship_msft",
+          "polarity": "neutral",
+          "qualification_id": "mu-relationship-msft",
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "relationship_attribution",
+          "source_excerpt": "continued investments in AI infrastructure and growing AI product usage",
+          "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+          "source_reporting_period_id": "MSFT_FY2026_Q3",
+          "target_excerpt": "continued investments in AI infrastructure and growing AI product usage",
+          "target_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "NVIDIA 自身披露平台制造依赖，为 HBM/封装链提供上游约束 read-through。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "没有披露对 Micron 的 HBM 采购量或供应份额。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "supplier_capacity_readthrough"
+          ],
+          "lane_id": "mu_relationship_nvda",
+          "polarity": "neutral",
+          "qualification_id": "mu-relationship-nvda",
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "relationship_attribution",
+          "source_excerpt": "reliance on third parties to manufacture, assemble, package and test",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+          "source_reporting_period_id": "NVDA_FY2027_Q1",
+          "target_excerpt": "reliance on third parties to manufacture, assemble, package and test",
+          "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001_CLAIM_EBFEA572"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "TSMC 自身制造扩张用于验证行业供应链方向。",
+          "candidate_role": "industry_context",
+          "content_limitation_zh": "TSMC 并未在该材料中确认与 Micron 的公司特定供应关系。",
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_ticker": "TSM",
+          "facet_ids": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "supplier_capacity_readthrough"
+          ],
+          "lane_id": "mu_relationship_tsm",
+          "polarity": "neutral",
+          "qualification_id": "mu-relationship-tsm",
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "relationship_attribution",
+          "source_excerpt": "steep ramp-up of our 2-nanometer technology",
+          "source_record_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+          "source_reporting_period_id": "TSM_2026_Q2",
+          "target_excerpt": "steep ramp-up of our 2-nanometer technology",
+          "target_id": "SUPP::TSM::000104617926000451::CHUNK_0001"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "10-Q 明确说明 AI 相关出口管制可能限制对华销售并限制设备、组件和原材料取得。",
+          "candidate_role": "counterevidence",
+          "content_limitation_zh": "风险披露没有给出已实现损失或最终政策范围。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "policy_or_regulatory_event",
+            "affected_scope",
+            "financial_or_operating_consequence",
+            "mitigation_or_uncertainty",
+            "export_control"
+          ],
+          "lane_id": "mu_regulatory_export",
+          "polarity": "counter",
+          "qualification_id": "mu-regulatory-export",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "regulatory_policy_exposure",
+          "source_excerpt": "new and proposed export controls associated with products, including those that support or enable AI applications",
+          "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0106",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "new and proposed export controls associated with products, including those that support or enable AI applications",
+          "target_id": "SUPP::MU::000072312526000015::CHUNK_0106"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "新节点爬坡延迟会造成利用率不足和单位制造成本上升，直接挑战供给兑现。",
+          "candidate_role": "counterevidence",
+          "content_limitation_zh": "属于风险机制，不代表当前已发生同等幅度的失效。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "strongest_counterevidence",
+            "impact_mechanism"
+          ],
+          "lane_id": "mu_counter_execution",
+          "polarity": "counter",
+          "qualification_id": "mu-counter-execution",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "counterevidence_and_what_would_change",
+          "source_excerpt": "delay in ramping production, which have in the past and could in the future lead to underutilization",
+          "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0064",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "delay in ramping production, which have in the past and could in the future lead to underutilization",
+          "target_id": "SUPP::MU::000072312526000015::CHUNK_0064"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "数据中心建设的电力、水和资本瓶颈可将最终部署延期传导至 Micron 收入。",
+          "candidate_role": "counterevidence",
+          "content_limitation_zh": "没有量化触发阈值和时间窗口。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "strongest_counterevidence",
+            "impact_mechanism"
+          ],
+          "lane_id": "mu_counter_customer",
+          "polarity": "counter",
+          "qualification_id": "mu-counter-customer",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "counterevidence_and_what_would_change",
+          "source_excerpt": "delays in the build-out of data centers, could impact our future revenue and financial performance",
+          "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0086",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "delays in the build-out of data centers, could impact our future revenue and financial performance",
+          "target_id": "SUPP::MU::000072312526000015::CHUNK_0086"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "季度收入、毛利、现金流、ASP/bit shipment 与后续展望可作为持续监控面。",
+          "candidate_role": "reported_fact",
+          "content_limitation_zh": "当前材料没有预先冻结的失效阈值。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "monitoring_metric_and_timing"
+          ],
+          "lane_id": "mu_counter_monitor",
+          "polarity": "neutral",
+          "qualification_id": "mu-counter-monitor",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "counterevidence_and_what_would_change",
+          "source_excerpt": "Fiscal Q3 2026 highlights",
+          "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0001",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "Fiscal Q3 2026 highlights",
+          "target_id": "SUPP::MU::000072312526000013::CHUNK_0001"
+        },
+        {
+          "analysis_period_id": "MU_FY2026_Q3",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "季度股息可进入资本回报事实层。",
+          "candidate_role": "reported_fact",
+          "content_limitation_zh": "没有市场时点价格、估值倍数或情景敏感度，且估值 slot 当前为可选。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "capital_structure_or_returns"
+          ],
+          "lane_id": "mu_capital_return",
+          "polarity": "neutral",
+          "qualification_id": "mu-capital-return",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capital_allocation_and_valuation",
+          "source_excerpt": "declared a quarterly dividend of $0.15 per share",
+          "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0002",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "declared a quarterly dividend of $0.15 per share",
+          "target_id": "SUPP::MU::000072312526000013::CHUNK_0002"
+        }
+      ]
+    },
+    {
+      "assets": [
+        {
+          "asset_id": "base_parent_sparse",
+          "index_ref": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027",
+          "retriever_kind": "parent_bm25",
+          "source_records_ref": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027/records.jsonl"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "index_ref": "Z:/FIN_Insight_Agent_artifacts/tier1_tier2_full_source_v0_1/indexes/sqlite_fts/tier1_tier2_sec_full_source_mixed_objects_fy2023_2027_v0_1",
+          "retriever_kind": "object_bm25",
+          "source_records_ref": "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027/records.jsonl"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "index_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/bm25",
+          "retriever_kind": "parent_bm25",
+          "source_records_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/bm25/records.jsonl"
+        }
+      ],
+      "case_key": "NVDA",
+      "contract_ref": "fin_0_1_3.S1.nvda_financial_source_object_transfer:v1",
+      "declared_residual_gaps": [
+        {
+          "attempted_lane_ids": [
+            "nvda_demand_acceleration",
+            "nvda_demand_dell_readthrough"
+          ],
+          "business_reason_zh": "NVIDIA 未披露订单、backlog 或 RPO；Dell 订单不能替代 NVIDIA 公司口径。",
+          "facet_id": "order_backlog_rpo_or_volume",
+          "gap_code": "commercial_data_gap",
+          "gap_id": "nvda-gap-order-volume",
+          "slot_id": "demand_volume_quality",
+          "supplement_direction_zh": "补充合格供应链订单或客户部署数据。"
+        },
+        {
+          "attempted_lane_ids": [
+            "nvda_pricing_mix_margin"
+          ],
+          "business_reason_zh": "公司未披露 GPU/系统 ASP。",
+          "facet_id": "price_or_asp",
+          "gap_code": "metric_not_disclosed",
+          "gap_id": "nvda-gap-asp",
+          "slot_id": "pricing_mix_value_capture",
+          "supplement_direction_zh": "仅在取得可靠产品价格和 mix 数据后计算。"
+        },
+        {
+          "attempted_lane_ids": [
+            "nvda_pricing_mix_margin"
+          ],
+          "business_reason_zh": "公司未披露 GPU/系统出货单位。",
+          "facet_id": "volume_or_units",
+          "gap_code": "metric_not_disclosed",
+          "gap_id": "nvda-gap-units",
+          "slot_id": "pricing_mix_value_capture",
+          "supplement_direction_zh": "补充合格行业 shipment 数据。"
+        },
+        {
+          "attempted_lane_ids": [
+            "nvda_pricing_mix_margin"
+          ],
+          "business_reason_zh": "ASP 与单位缺失，无法拆出 price-volume-mix。",
+          "facet_id": "price_volume_mix_bridge",
+          "gap_code": "formula_input_missing",
+          "gap_id": "nvda-gap-pvm",
+          "slot_id": "pricing_mix_value_capture",
+          "supplement_direction_zh": "待 ASP/units/mix 输入齐全后由 Numeric Program 重算。"
+        },
+        {
+          "attempted_lane_ids": [
+            "nvda_capacity_dependency",
+            "nvda_capacity_mu_hbm",
+            "nvda_capacity_tsm"
+          ],
+          "business_reason_zh": "现有资料没有 NVIDIA 可用晶圆、封装或 HBM 良率/利用率。",
+          "facet_id": "utilization_or_yield",
+          "gap_code": "commercial_data_gap",
+          "gap_id": "nvda-gap-utilization-yield",
+          "slot_id": "capacity_inputs_execution",
+          "supplement_direction_zh": "补充供应链容量与良率数据。"
+        },
+        {
+          "attempted_lane_ids": [
+            "nvda_capacity_mu_hbm",
+            "nvda_capacity_tsm"
+          ],
+          "business_reason_zh": "供应商总体爬坡不等于 NVIDIA 可获得产能的释放时间。",
+          "facet_id": "capacity_release_timing",
+          "gap_code": "relationship_allocation_unproven",
+          "gap_id": "nvda-gap-capacity-release",
+          "slot_id": "capacity_inputs_execution",
+          "supplement_direction_zh": "需要供应商或公司对分配与交期的公司特定披露。"
+        },
+        {
+          "attempted_lane_ids": [
+            "nvda_capacity_dependency",
+            "nvda_capacity_tsm"
+          ],
+          "business_reason_zh": "当前 TSM 来源没有 CoWoS/先进封装容量。",
+          "facet_id": "advanced_packaging_capacity",
+          "gap_code": "commercial_data_gap",
+          "gap_id": "nvda-gap-advanced-packaging",
+          "slot_id": "capacity_inputs_execution",
+          "supplement_direction_zh": "补充封装产能、交期与客户分配。"
+        },
+        {
+          "attempted_lane_ids": [
+            "nvda_cash_current"
+          ],
+          "business_reason_zh": "有 OCF 和资产购买，但当前 candidate 还未由 Numeric Program 统一计算 FCF。",
+          "facet_id": "capex_to_free_cash_flow",
+          "gap_code": "formula_input_missing",
+          "gap_id": "nvda-gap-capex-fcf",
+          "slot_id": "cash_conversion_balance_sheet",
+          "supplement_direction_zh": "Evidence promotion 后按冻结公式计算。"
+        },
+        {
+          "attempted_lane_ids": [
+            "nvda_counter_export",
+            "nvda_counter_architecture",
+            "nvda_counter_monitor"
+          ],
+          "business_reason_zh": "已找到政策和架构风险，但未冻结推翻判断的定量阈值。",
+          "facet_id": "observable_invalidation_threshold",
+          "gap_code": "threshold_not_observable",
+          "gap_id": "nvda-gap-invalidation",
+          "slot_id": "counterevidence_and_what_would_change",
+          "supplement_direction_zh": "在 S3 内容质量阶段用历史分布和 analyst rubric 校准。"
+        },
+        {
+          "attempted_lane_ids": [
+            "nvda_counter_monitor"
+          ],
+          "business_reason_zh": "季度监控面存在但阈值未校准。",
+          "facet_id": "observable_quarterly_threshold",
+          "gap_code": "threshold_not_observable",
+          "gap_id": "nvda-gap-quarterly-threshold",
+          "slot_id": "counterevidence_and_what_would_change",
+          "supplement_direction_zh": "冻结收入、毛利、供应和地域暴露的可复算阈值。"
+        },
+        {
+          "attempted_lane_ids": [
+            "nvda_capital_return"
+          ],
+          "business_reason_zh": "本地官方资料没有 as-of 市价和估值基准。",
+          "facet_id": "valuation_basis",
+          "gap_code": "market_data_gap",
+          "gap_id": "nvda-gap-valuation-basis",
+          "slot_id": "capital_allocation_and_valuation",
+          "supplement_direction_zh": "外源补充 PIT 市场数据。"
+        },
+        {
+          "attempted_lane_ids": [
+            "nvda_capital_return"
+          ],
+          "business_reason_zh": "未冻结增长、毛利、政策和供应情景输入。",
+          "facet_id": "scenario_or_sensitivity",
+          "gap_code": "formula_input_missing",
+          "gap_id": "nvda-gap-valuation-scenario",
+          "slot_id": "capital_allocation_and_valuation",
+          "supplement_direction_zh": "由 Numeric Program 与用户假设层生成。"
+        },
+        {
+          "attempted_lane_ids": [
+            "nvda_capital_return"
+          ],
+          "business_reason_zh": "缺少截至日股价、共识与历史倍数。",
+          "facet_id": "price_in_boundary",
+          "gap_code": "market_data_gap",
+          "gap_id": "nvda-gap-price-in",
+          "slot_id": "capital_allocation_and_valuation",
+          "supplement_direction_zh": "外源补充 PIT 市场和许可内共识数据。"
+        }
+      ],
+      "hierarchy_findings": [
+        {
+          "affected_ref": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+          "business_effect_zh": "Q1 FY27 earnings parent 的 period_end 为发布日期 2026-05-20，而真实季度结束日 2026-04-26 仅在 metadata.reported_period_end。",
+          "code": "source_period_metadata_conflation",
+          "finding_id": "nvda-hierarchy-q1-8k-period",
+          "required_object_boundary_zh": "SourceDocument 必须把 filing/publication 与 reported period 分离。"
+        },
+        {
+          "affected_ref": "NVDA_FY2027_Q1_10Q",
+          "business_effect_zh": "当前本地 corpus 有 Q1 FY27 8-K，但供应、集中度、政策和承诺仍依赖 FY26 Q3 10-Q。",
+          "code": "current_regulatory_parent_missing",
+          "finding_id": "nvda-hierarchy-current-10q-gap",
+          "required_object_boundary_zh": "索引重建前应补齐 Q1 FY27 10-Q parent 和 objects，再复核 currentness。"
+        },
+        {
+          "affected_ref": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03",
+          "business_effect_zh": "部分 metric child 仅写 2026，不能单独区分季度、截至日或年度。",
+          "code": "metric_object_period_label_ambiguous",
+          "finding_id": "nvda-hierarchy-metric-column-context",
+          "required_object_boundary_zh": "Metric 必须绑定完整表头、期间类型、单位与父表。"
+        }
+      ],
+      "query_lanes": [
+        {
+          "asset_id": "base_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "reported_revenue",
+            "reported_profitability",
+            "segment_or_product_performance",
+            "accelerated_compute_or_ai_infrastructure_revenue"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_operating_summary",
+          "query_texts": [
+            "first quarter fiscal 2027 record revenue Data Center revenue gross margin operating income"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "operating_performance"
+        },
+        {
+          "asset_id": "base_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "management_outlook"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_operating_outlook",
+          "query_texts": [
+            "second quarter fiscal 2027 revenue expected 91.0 billion gross margins outlook China"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "operating_performance"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "durability_or_pull_forward"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_demand_acceleration",
+          "query_texts": [
+            "buildout AI factories infrastructure expansion accelerating extraordinary speed"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "demand_volume_quality"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "customer_breadth_or_concentration",
+            "customer_concentration"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_demand_concentration",
+          "query_texts": [
+            "four direct customers sales greater 10 percent 22 15 13 11 Compute Networking"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "demand_volume_quality"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "pull_forward_or_digestion"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_demand_transition",
+          "query_texts": [
+            "qualification time customers anticipating product transitions channel inventory prior architectures revenue volatility"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "demand_volume_quality"
+        },
+        {
+          "asset_id": "base_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "DELL_TECHNOLOGIES",
+          "evidence_owner_ticker": "DELL",
+          "facet_focus": [
+            "ai_infrastructure_orders_or_backlog"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "DELL"
+          },
+          "lane_id": "nvda_demand_dell_readthrough",
+          "query_texts": [
+            "booked AI optimized server orders revenue fiscal 2027 first quarter"
+          ],
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "demand_volume_quality"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_ticker": "MSFT",
+          "facet_focus": [
+            "deployment_or_utilization"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "MSFT"
+          },
+          "lane_id": "nvda_demand_msft_deployment",
+          "query_texts": [
+            "continued investments AI infrastructure growing AI product usage Microsoft Cloud gross margin"
+          ],
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "demand_volume_quality"
+        },
+        {
+          "asset_id": "base_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "mix_or_product_attribution",
+            "margin_or_unit_economics",
+            "profit_capture_bridge"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_pricing_mix_margin",
+          "query_texts": [
+            "Data Center compute networking revenue gross margin operating income first quarter fiscal 2027"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "pricing_mix_value_capture"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "bottleneck_or_lead_time",
+            "supplier_commitment_or_dependency",
+            "foundry_or_component_dependency"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_capacity_dependency",
+          "query_texts": [
+            "reliance third parties manufacture assemble package test products supply"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capacity_inputs_execution"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "architecture_or_product_ramp"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_capacity_architecture",
+          "query_texts": [
+            "qualification time customers anticipating product transitions channel inventory architectures"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capacity_inputs_execution"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "ramp_timing",
+            "high_bandwidth_memory_supply"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "nvda_capacity_mu_hbm",
+          "query_texts": [
+            "HBM4 high-volume shipments lead customer platform HBM4E volume production calendar 2027"
+          ],
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "capacity_inputs_execution"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_ticker": "TSM",
+          "facet_focus": [
+            "capacity_or_supply"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "6-K"
+            ],
+            "ticker": "TSM"
+          },
+          "lane_id": "nvda_capacity_tsm",
+          "query_texts": [
+            "strong demand leading-edge process technologies steep ramp-up 2-nanometer"
+          ],
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "capacity_inputs_execution"
+        },
+        {
+          "asset_id": "base_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "operating_cash_flow",
+            "capital_expenditure",
+            "working_capital",
+            "inventory",
+            "receivables_payables_or_obligations"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_cash_current",
+          "query_texts": [
+            "net cash provided operating activities accounts receivable inventories accounts payable purchases property equipment"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "cash_conversion_balance_sheet"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "inventory_purchase_commitments"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_cash_inventory_commitment",
+          "query_texts": [
+            "4.5 billion H20 excess inventory purchase obligations gross margin charge"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "cash_conversion_balance_sheet"
+        },
+        {
+          "asset_id": "base_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "evidence_owner_self_disclosure"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_relationship_self",
+          "query_texts": [
+            "NVIDIA financial results first quarter fiscal 2027 record revenue"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "relationship_attribution"
+        },
+        {
+          "asset_id": "base_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "DELL_TECHNOLOGIES",
+          "evidence_owner_ticker": "DELL",
+          "facet_focus": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "customer_demand_readthrough"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "DELL"
+          },
+          "lane_id": "nvda_relationship_dell",
+          "query_texts": [
+            "booked AI optimized server orders revenue fiscal 2027 first quarter"
+          ],
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "relationship_attribution"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_ticker": "MSFT",
+          "facet_focus": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "customer_demand_readthrough"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "MSFT"
+          },
+          "lane_id": "nvda_relationship_msft",
+          "query_texts": [
+            "continued investments AI infrastructure growing AI product usage Microsoft Cloud gross margin"
+          ],
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "relationship_attribution"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_focus": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "supplier_capacity_readthrough"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "MU"
+          },
+          "lane_id": "nvda_relationship_mu",
+          "query_texts": [
+            "HBM4 high-volume shipments lead customer platform HBM4E volume production calendar 2027"
+          ],
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "relationship_attribution"
+        },
+        {
+          "asset_id": "current_official_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_ticker": "TSM",
+          "facet_focus": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "supplier_capacity_readthrough"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "6-K"
+            ],
+            "ticker": "TSM"
+          },
+          "lane_id": "nvda_relationship_tsm",
+          "query_texts": [
+            "strong demand leading-edge process technologies steep ramp-up 2-nanometer"
+          ],
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "relationship_attribution"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "policy_or_regulatory_event",
+            "affected_scope",
+            "financial_or_operating_consequence",
+            "mitigation_or_uncertainty",
+            "export_control"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_regulatory_export",
+          "query_texts": [
+            "export controls disrupt supply chain distribution channels ability serve demand markets outside China"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "regulatory_policy_exposure"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "geographic_revenue_exclusion"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_regulatory_geography",
+          "query_texts": [
+            "effectively foreclosed China data center compute market competitors ecosystems"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "regulatory_policy_exposure"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "inventory_or_purchase_loss"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_regulatory_inventory_loss",
+          "query_texts": [
+            "4.5 billion H20 excess inventory purchase obligations gross margin charge"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "regulatory_policy_exposure"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "strongest_counterevidence",
+            "impact_mechanism"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_counter_export",
+          "query_texts": [
+            "export controls China data center market supply chain demand networking products"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "counterevidence_and_what_would_change"
+        },
+        {
+          "asset_id": "base_financial_objects",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "architecture_transition"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "10-Q"
+            ],
+            "object_type": [
+              "claim"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_counter_architecture",
+          "query_texts": [
+            "qualification time product transitions channel inventory prior architectures revenue volatility"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "counterevidence_and_what_would_change"
+        },
+        {
+          "asset_id": "base_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "monitoring_metric_and_timing"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_counter_monitor",
+          "query_texts": [
+            "first quarter fiscal 2027 revenue Data Center revenue gross margin second quarter outlook"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "counterevidence_and_what_would_change"
+        },
+        {
+          "asset_id": "base_parent_sparse",
+          "candidate_budget": 12,
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_focus": [
+            "capital_structure_or_returns"
+          ],
+          "filters": {
+            "fiscal_year": [
+              2026
+            ],
+            "form_type": [
+              "8-K"
+            ],
+            "ticker": "NVDA"
+          },
+          "lane_id": "nvda_capital_return",
+          "query_texts": [
+            "returned shareholders shares repurchased dividends additional 80 billion authorization"
+          ],
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capital_allocation_and_valuation"
+        }
+      ],
+      "result_ref": "configs/releases/fin_ia_0_1_3_s1_nvda_financial_source_object_transfer_result_v1_0.json",
+      "reviewed_candidate_bindings": [
+        {
+          "analysis_period_id": "NVDA_FY2027_Q1",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "Q1 FY27 总收入、Data Center 收入、毛利率和经营利润形成当前经营表现锚点。",
+          "candidate_role": "management_commentary",
+          "content_limitation_zh": "公司业绩稿未审计且同时含 GAAP/Non-GAAP 表，精确数值需保留口径。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "reported_revenue",
+            "reported_profitability",
+            "segment_or_product_performance",
+            "accelerated_compute_or_ai_infrastructure_revenue"
+          ],
+          "lane_id": "nvda_operating_summary",
+          "polarity": "neutral",
+          "qualification_id": "nvda-op-summary",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "operating_performance",
+          "source_excerpt": "Record revenue of $81.6 billion",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+          "source_reporting_period_id": "NVDA_FY2027_Q1",
+          "target_excerpt": "Record revenue of $81.6 billion",
+          "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2027_Q1",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "Q2 FY27 收入与毛利展望提供下一期监控锚点。",
+          "candidate_role": "management_commentary",
+          "content_limitation_zh": "展望明确不假设中国数据中心计算收入，不能与实际结果混用。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "management_outlook"
+          ],
+          "lane_id": "nvda_operating_outlook",
+          "polarity": "neutral",
+          "qualification_id": "nvda-op-outlook",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "operating_performance",
+          "source_excerpt": "Revenue is expected to be $91.0 billion",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02",
+          "source_reporting_period_id": "NVDA_FY2027_Q1",
+          "target_excerpt": "Revenue is expected to be $91.0 billion",
+          "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2027_Q1",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "管理层称 AI factory 建设加速，提供需求方向信号。",
+          "candidate_role": "management_commentary",
+          "content_limitation_zh": "管理层表述不能单独证明真实部署耐久性或排除提前采购。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "durability_or_pull_forward"
+          ],
+          "lane_id": "nvda_demand_acceleration",
+          "polarity": "support",
+          "qualification_id": "nvda-demand-acceleration",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "demand_volume_quality",
+          "source_excerpt": "The buildout of AI factories",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+          "source_reporting_period_id": "NVDA_FY2027_Q1",
+          "target_excerpt": "The buildout of AI factories",
+          "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02_CLAIM_5C919112"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2026",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "最新已入库 10-Q 披露四个直接客户分别占 22%、15%、13% 和 11%，集中度显著。",
+          "candidate_role": "reported_fact",
+          "content_limitation_zh": "该来源早于 Q1 FY27，且匿名客户无法直接映射到最终部署方。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "customer_breadth_or_concentration",
+            "customer_concentration"
+          ],
+          "lane_id": "nvda_demand_concentration",
+          "polarity": "neutral",
+          "qualification_id": "nvda-demand-concentration",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "demand_volume_quality",
+          "source_excerpt": "four direct customers with sales greater than 10% of total revenue",
+          "source_record_id": "NVDA_2026_10Q_ITEM2_BLOCK_0006_CHUNK_0001",
+          "source_reporting_period_id": "NVDA_FY2026_Q3",
+          "target_excerpt": "four direct customers with sales greater than 10% of total revenue",
+          "target_id": "NVDA_2026_10Q_ITEM2_BLOCK_0006_CHUNK_0001_CLAIM_432B0DD8"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2026",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "客户等待新架构和渠道削减旧架构库存会制造需求时点波动。",
+          "candidate_role": "counterevidence",
+          "content_limitation_zh": "风险机制不是当前 pull-forward 数量的直接测量。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "pull_forward_or_digestion"
+          ],
+          "lane_id": "nvda_demand_transition",
+          "polarity": "counter",
+          "qualification_id": "nvda-demand-transition",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "demand_volume_quality",
+          "source_excerpt": "customers anticipating product transitions",
+          "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0001_PART_02_OF_03",
+          "source_reporting_period_id": "NVDA_FY2026_Q3",
+          "target_excerpt": "customers anticipating product transitions",
+          "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0001_PART_02_OF_03_CLAIM_51A80B1C"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "Dell AI 服务器订单为平台下游系统需求提供独立旁证。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "订单无法拆出 NVIDIA GPU 金额或交付节奏。",
+          "evidence_owner_entity_key": "DELL_TECHNOLOGIES",
+          "evidence_owner_ticker": "DELL",
+          "facet_ids": [
+            "ai_infrastructure_orders_or_backlog"
+          ],
+          "lane_id": "nvda_demand_dell_readthrough",
+          "polarity": "support",
+          "qualification_id": "nvda-demand-dell",
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "demand_volume_quality",
+          "source_excerpt": "booked $24.4 billion in AI orders and recognized $16.1 billion of AI server revenue",
+          "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+          "source_reporting_period_id": "DELL_FY2027_Q1",
+          "target_excerpt": "booked $24.4 billion in AI orders and recognized $16.1 billion of AI server revenue",
+          "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "微软披露自身 AI 基础设施投入与产品使用增长，可验证真实部署方向。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "没有披露 NVIDIA 采购量或 GPU 利用率。",
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_ticker": "MSFT",
+          "facet_ids": [
+            "deployment_or_utilization"
+          ],
+          "lane_id": "nvda_demand_msft_deployment",
+          "polarity": "support",
+          "qualification_id": "nvda-demand-msft",
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "demand_volume_quality",
+          "source_excerpt": "continued investments in AI infrastructure and growing AI product usage",
+          "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+          "source_reporting_period_id": "MSFT_FY2026_Q3",
+          "target_excerpt": "continued investments in AI infrastructure and growing AI product usage",
+          "target_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2027_Q1",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "Data Center 收入、计算/网络子市场和毛利/经营利润共同显示产品 mix 与利润捕获。",
+          "candidate_role": "reported_fact",
+          "content_limitation_zh": "没有 ASP、出货单位或可复算 price-volume-mix 桥。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "mix_or_product_attribution",
+            "margin_or_unit_economics",
+            "profit_capture_bridge"
+          ],
+          "lane_id": "nvda_pricing_mix_margin",
+          "polarity": "neutral",
+          "qualification_id": "nvda-pricing-mix-margin",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "pricing_mix_value_capture",
+          "source_excerpt": "Record Data Center revenue of $75.2 billion",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+          "source_reporting_period_id": "NVDA_FY2027_Q1",
+          "target_excerpt": "Record Data Center revenue of $75.2 billion",
+          "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2027_Q1",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "NVIDIA 自述晶圆制造、组装、封装和测试依赖第三方，供应执行并非完全自主。",
+          "candidate_role": "counterevidence",
+          "content_limitation_zh": "前瞻性风险段没有当前供应商分配、利用率或交期。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "bottleneck_or_lead_time",
+            "supplier_commitment_or_dependency",
+            "foundry_or_component_dependency"
+          ],
+          "lane_id": "nvda_capacity_dependency",
+          "polarity": "counter",
+          "qualification_id": "nvda-capacity-dependency",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capacity_inputs_execution",
+          "source_excerpt": "reliance on third parties to manufacture, assemble, package and test",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+          "source_reporting_period_id": "NVDA_FY2027_Q1",
+          "target_excerpt": "reliance on third parties to manufacture, assemble, package and test",
+          "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001_CLAIM_EBFEA572"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2026",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "新产品资格认证和架构切换是明确的量产/收入爬坡风险。",
+          "candidate_role": "counterevidence",
+          "content_limitation_zh": "旧一季 10-Q 没有 Rubin 当前量产时间表。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "architecture_or_product_ramp"
+          ],
+          "lane_id": "nvda_capacity_architecture",
+          "polarity": "counter",
+          "qualification_id": "nvda-capacity-architecture",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capacity_inputs_execution",
+          "source_excerpt": "Qualification time for new products",
+          "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0001_PART_02_OF_03",
+          "source_reporting_period_id": "NVDA_FY2026_Q3",
+          "target_excerpt": "Qualification time for new products",
+          "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0001_PART_02_OF_03_CLAIM_51A80B1C"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "Micron HBM4 高量出货与 HBM4E 2027 量产预期提供内存供应 read-through。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "lead customer 未命名，不能直接认定全部对应 NVIDIA 或量化分配。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "ramp_timing",
+            "high_bandwidth_memory_supply"
+          ],
+          "lane_id": "nvda_capacity_mu_hbm",
+          "polarity": "support",
+          "qualification_id": "nvda-capacity-mu-hbm",
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "capacity_inputs_execution",
+          "source_excerpt": "HBM4, built on 1-beta DRAM technology, is in high-volume shipments",
+          "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0002",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "HBM4, built on 1-beta DRAM technology, is in high-volume shipments",
+          "target_id": "SUPP::MU::000072312526000013::CHUNK_0002"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "TSMC 的先进制程扩张提供制造侧容量方向。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "该段没有 NVIDIA 分配、先进封装容量或当前 Blackwell/Rubin 节点对应。",
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_ticker": "TSM",
+          "facet_ids": [
+            "capacity_or_supply"
+          ],
+          "lane_id": "nvda_capacity_tsm",
+          "polarity": "support",
+          "qualification_id": "nvda-capacity-tsm",
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "capacity_inputs_execution",
+          "source_excerpt": "steep ramp-up of our 2-nanometer technology",
+          "source_record_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+          "source_reporting_period_id": "TSM_2026_Q2",
+          "target_excerpt": "steep ramp-up of our 2-nanometer technology",
+          "target_id": "SUPP::TSM::000104617926000451::CHUNK_0001"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2027_Q1",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "Q1 FY27 现金流与资产负债表覆盖经营现金流、资本开支及主要营运资金科目。",
+          "candidate_role": "numeric_trace_candidate",
+          "content_limitation_zh": "表格不证明这些变动全部由 AI 业务造成，也不自动构成自由现金流口径。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "operating_cash_flow",
+            "capital_expenditure",
+            "working_capital",
+            "inventory",
+            "receivables_payables_or_obligations"
+          ],
+          "lane_id": "nvda_cash_current",
+          "polarity": "neutral",
+          "qualification_id": "nvda-cash-current",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "cash_conversion_balance_sheet",
+          "source_excerpt": "Net cash provided by operating activities",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03",
+          "source_reporting_period_id": "NVDA_FY2027_Q1",
+          "target_excerpt": "Net cash provided by operating activities",
+          "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2026",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "H20 库存与采购义务损失把政策风险传导到资产负债与毛利。",
+          "candidate_role": "reported_fact",
+          "content_limitation_zh": "来源早于 Q1 FY27，当前余额需要更新的 10-Q。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "inventory_purchase_commitments"
+          ],
+          "lane_id": "nvda_cash_inventory_commitment",
+          "polarity": "counter",
+          "qualification_id": "nvda-cash-inventory-commitment",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "cash_conversion_balance_sheet",
+          "source_excerpt": "$4.5 billion charge associated with H20 excess inventory and purchase obligations",
+          "source_record_id": "NVDA_2026_10Q_ITEM2_BLOCK_0008_PART_01_OF_03",
+          "source_reporting_period_id": "NVDA_FY2026_Q3",
+          "target_excerpt": "$4.5 billion charge associated with H20 excess inventory and purchase obligations",
+          "target_id": "NVDA_2026_10Q_ITEM2_BLOCK_0008_PART_01_OF_03_CLAIM_51EB9B34"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2027_Q1",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "NVIDIA 自身业绩稿锚定本案身份和 Q1 FY27。",
+          "candidate_role": "relationship_candidate",
+          "content_limitation_zh": "自述不能替代客户和供应商对分配关系的确认。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "evidence_owner_self_disclosure"
+          ],
+          "lane_id": "nvda_relationship_self",
+          "polarity": "neutral",
+          "qualification_id": "nvda-relationship-self",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "relationship_attribution",
+          "source_excerpt": "NVIDIA Announces Financial Results for First Quarter Fiscal 2027",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+          "source_reporting_period_id": "NVDA_FY2027_Q1",
+          "target_excerpt": "NVIDIA Announces Financial Results for First Quarter Fiscal 2027",
+          "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "Dell 只证明自身系统需求，关系方向是客户侧 read-through。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "没有 Dell→NVIDIA 的 GPU 采购额或订单分配。",
+          "evidence_owner_entity_key": "DELL_TECHNOLOGIES",
+          "evidence_owner_ticker": "DELL",
+          "facet_ids": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "customer_demand_readthrough"
+          ],
+          "lane_id": "nvda_relationship_dell",
+          "polarity": "neutral",
+          "qualification_id": "nvda-relationship-dell",
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "relationship_attribution",
+          "source_excerpt": "booked $24.4 billion in AI orders and recognized $16.1 billion of AI server revenue",
+          "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+          "source_reporting_period_id": "DELL_FY2027_Q1",
+          "target_excerpt": "booked $24.4 billion in AI orders and recognized $16.1 billion of AI server revenue",
+          "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "微软只证明自身基础设施投入，关系方向是客户部署 read-through。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "没有 Microsoft→NVIDIA 的采购额或利用率。",
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_ticker": "MSFT",
+          "facet_ids": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "customer_demand_readthrough"
+          ],
+          "lane_id": "nvda_relationship_msft",
+          "polarity": "neutral",
+          "qualification_id": "nvda-relationship-msft",
+          "relationship_direction": "evidence_owner_own_infrastructure_demand",
+          "slot_id": "relationship_attribution",
+          "source_excerpt": "continued investments in AI infrastructure and growing AI product usage",
+          "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+          "source_reporting_period_id": "MSFT_FY2026_Q3",
+          "target_excerpt": "continued investments in AI infrastructure and growing AI product usage",
+          "target_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "Micron HBM4 量产提供供应商侧 read-through。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "lead customer 未命名，不能直接写成 NVIDIA 已获特定分配。",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_ticker": "MU",
+          "facet_ids": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "supplier_capacity_readthrough"
+          ],
+          "lane_id": "nvda_relationship_mu",
+          "polarity": "neutral",
+          "qualification_id": "nvda-relationship-mu",
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "relationship_attribution",
+          "source_excerpt": "HBM4, built on 1-beta DRAM technology, is in high-volume shipments",
+          "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0002",
+          "source_reporting_period_id": "MU_FY2026_Q3",
+          "target_excerpt": "HBM4, built on 1-beta DRAM technology, is in high-volume shipments",
+          "target_id": "SUPP::MU::000072312526000013::CHUNK_0002"
+        },
+        {
+          "analysis_period_id": "AS_OF_2026_08_06",
+          "authority_tier": "counterparty_primary",
+          "business_meaning_zh": "TSMC 制程扩张提供制造供应侧 read-through。",
+          "candidate_role": "counterparty_readthrough",
+          "content_limitation_zh": "没有当前 NVIDIA 分配或 CoWoS 容量。",
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_ticker": "TSM",
+          "facet_ids": [
+            "economic_relationship_direction",
+            "company_specific_attribution_or_boundary",
+            "supplier_capacity_readthrough"
+          ],
+          "lane_id": "nvda_relationship_tsm",
+          "polarity": "neutral",
+          "qualification_id": "nvda-relationship-tsm",
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "slot_id": "relationship_attribution",
+          "source_excerpt": "steep ramp-up of our 2-nanometer technology",
+          "source_record_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+          "source_reporting_period_id": "TSM_2026_Q2",
+          "target_excerpt": "steep ramp-up of our 2-nanometer technology",
+          "target_id": "SUPP::TSM::000104617926000451::CHUNK_0001"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2026",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "NVIDIA 明确披露出口管制会扰乱供应链、渠道和市场需求。",
+          "candidate_role": "counterevidence",
+          "content_limitation_zh": "风险范围可能变化，且来源早于 Q1 FY27。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "policy_or_regulatory_event",
+            "affected_scope",
+            "financial_or_operating_consequence",
+            "mitigation_or_uncertainty",
+            "export_control"
+          ],
+          "lane_id": "nvda_regulatory_export",
+          "polarity": "counter",
+          "qualification_id": "nvda-regulatory-export",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "regulatory_policy_exposure",
+          "source_excerpt": "Export controls have and could in the future disrupt our supply chain and distribution channels",
+          "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_02_OF_07",
+          "source_reporting_period_id": "NVDA_FY2026_Q3",
+          "target_excerpt": "Export controls have and could in the future disrupt our supply chain and distribution channels",
+          "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_02_OF_07_CLAIM_A1D38D90"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2026",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "公司明确说明中国数据中心计算市场已被实质排除。",
+          "candidate_role": "reported_fact",
+          "content_limitation_zh": "该陈述是风险披露，不提供 Q1 FY27 中国收入精确桥。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "geographic_revenue_exclusion"
+          ],
+          "lane_id": "nvda_regulatory_geography",
+          "polarity": "counter",
+          "qualification_id": "nvda-regulatory-geography",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "regulatory_policy_exposure",
+          "source_excerpt": "effectively been foreclosed from competing in China's data center",
+          "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_03_OF_07",
+          "source_reporting_period_id": "NVDA_FY2026_Q3",
+          "target_excerpt": "effectively been foreclosed from competing in China's data center",
+          "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_03_OF_07_CLAIM_C93DDDB0"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2026",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "H20 45 亿美元费用是政策冲击的已实现财务后果。",
+          "candidate_role": "reported_fact",
+          "content_limitation_zh": "这是历史已确认损失，不等同未来每季损失。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "inventory_or_purchase_loss"
+          ],
+          "lane_id": "nvda_regulatory_inventory_loss",
+          "polarity": "counter",
+          "qualification_id": "nvda-regulatory-loss",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "regulatory_policy_exposure",
+          "source_excerpt": "$4.5 billion charge associated with H20 excess inventory and purchase obligations",
+          "source_record_id": "NVDA_2026_10Q_ITEM2_BLOCK_0008_PART_01_OF_03",
+          "source_reporting_period_id": "NVDA_FY2026_Q3",
+          "target_excerpt": "$4.5 billion charge associated with H20 excess inventory and purchase obligations",
+          "target_id": "NVDA_2026_10Q_ITEM2_BLOCK_0008_PART_01_OF_03_CLAIM_51EB9B34"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2026",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "出口管制通过市场排除、库存损失和生态竞争削弱增长判断。",
+          "candidate_role": "counterevidence",
+          "content_limitation_zh": "政策路径仍不确定。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "strongest_counterevidence",
+            "impact_mechanism"
+          ],
+          "lane_id": "nvda_counter_export",
+          "polarity": "counter",
+          "qualification_id": "nvda-counter-export",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "counterevidence_and_what_would_change",
+          "source_excerpt": "Export controls have and could in the future disrupt our supply chain and distribution channels",
+          "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_02_OF_07",
+          "source_reporting_period_id": "NVDA_FY2026_Q3",
+          "target_excerpt": "Export controls have and could in the future disrupt our supply chain and distribution channels",
+          "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_02_OF_07_CLAIM_A1D38D90"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2026",
+          "authority_tier": "regulatory_filing",
+          "business_meaning_zh": "架构切换、资格认证和渠道去旧库存会制造收入波动。",
+          "candidate_role": "counterevidence",
+          "content_limitation_zh": "没有 Rubin 当前交付时间表和客户迁移比例。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "architecture_transition"
+          ],
+          "lane_id": "nvda_counter_architecture",
+          "polarity": "counter",
+          "qualification_id": "nvda-counter-architecture",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "counterevidence_and_what_would_change",
+          "source_excerpt": "Qualification time for new products",
+          "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0001_PART_02_OF_03",
+          "source_reporting_period_id": "NVDA_FY2026_Q3",
+          "target_excerpt": "Qualification time for new products",
+          "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0001_PART_02_OF_03_CLAIM_51A80B1C"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2027_Q1",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "季度收入、Data Center 收入、毛利和下一季展望构成持续监控面。",
+          "candidate_role": "reported_fact",
+          "content_limitation_zh": "当前没有预先校准的失效阈值。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "monitoring_metric_and_timing"
+          ],
+          "lane_id": "nvda_counter_monitor",
+          "polarity": "neutral",
+          "qualification_id": "nvda-counter-monitor",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "counterevidence_and_what_would_change",
+          "source_excerpt": "Q1 Fiscal 2027 Summary",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+          "source_reporting_period_id": "NVDA_FY2027_Q1",
+          "target_excerpt": "Q1 Fiscal 2027 Summary",
+          "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02"
+        },
+        {
+          "analysis_period_id": "NVDA_FY2027_Q1",
+          "authority_tier": "primary_issuer",
+          "business_meaning_zh": "Q1 回购与分红及新增 800 亿美元授权进入资本回报事实层。",
+          "candidate_role": "reported_fact",
+          "content_limitation_zh": "缺少 PIT 市价、估值倍数和情景敏感度。",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_ticker": "NVDA",
+          "facet_ids": [
+            "capital_structure_or_returns"
+          ],
+          "lane_id": "nvda_capital_return",
+          "polarity": "neutral",
+          "qualification_id": "nvda-capital-return",
+          "relationship_direction": "subject_self_disclosure",
+          "slot_id": "capital_allocation_and_valuation",
+          "source_excerpt": "returned a record level of approximately $20.0 billion to shareholders",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+          "source_reporting_period_id": "NVDA_FY2027_Q1",
+          "target_excerpt": "returned a record level of approximately $20.0 billion to shareholders",
+          "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02"
+        }
+      ]
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S1.mu_nvda_core_unchanged_transfer:v1",
+  "dell_vertical_reference": {
+    "compiled_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+    "result_digest": "31c3f7c98eb40850087837ed7307af0552772b9ae5acf1f2ddbb520d3f574df7",
+    "result_ref": "configs/releases/fin_ia_0_1_3_s1_dell_financial_source_object_vertical_result_r3_v1_0.json"
+  },
+  "expected_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+  "generalization_contract_ref": "configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json",
+  "generalization_contract_sha256": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+  "hard_boundaries": {
+    "core_modification_allowed": false,
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "qrels_loaded_after_candidate_generation": true,
+    "rerank": 0
+  },
+  "locked_artifacts": [
+    {
+      "artifact_id": "generalization_core_module",
+      "normalized_sha256": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e",
+      "path": "src/sec_agent/financial_research_generalization_contract.py",
+      "role": "provider-neutral financial research kernel and evaluator"
+    },
+    {
+      "artifact_id": "source_object_vertical_executor",
+      "normalized_sha256": "379d1804ea5f6ab02efe3271b0f4a701b343a14b7473d7ddb412b0ee729d14d8",
+      "path": "src/sec_agent/financial_research_source_object_vertical.py",
+      "role": "frozen DELL-proven local retrieval executor"
+    },
+    {
+      "artifact_id": "generalization_contract",
+      "normalized_sha256": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+      "path": "configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json",
+      "role": "frozen slot, plugin, industry pack and case profile contract"
+    }
+  ],
+  "recorded_at": "2026-08-09T22:40:00+08:00",
+  "run_scope": "S1_MU_NVDA_CORE_UNCHANGED_TRANSFER",
+  "schema_version": "fin_ia_0_1_3_s1_mu_nvda_core_unchanged_transfer_policy_v1_0"
+}

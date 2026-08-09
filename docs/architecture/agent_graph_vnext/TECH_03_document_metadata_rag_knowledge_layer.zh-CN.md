@@ -677,3 +677,13 @@ DELL 纵切证明，金融 RAG 不能把一个检索命中等同于一个独立�
 例如 Microsoft FY2026 的 AI 投入只能作为 Microsoft 自身需求 read-through；它不自动成为 Dell FY2027 Q1 的订单或收入。MU、NVIDIA、TSMC 的供给自述同理：可以证明行业供给机制，除非有明确分配证据，否则不能写成“向 Dell 供应了多少”。source diversity 也按经济披露主体／canonical source 计数，同一文档绑定多个 role 不增加独立来源数。
 
 DELL R3 的 `23/23` 只代表预审 candidate 被当前本地检索召回；它不是 Evidence acceptance。required facet 若现有来源无法覆盖，必须以 typed residual gap 终态化。当前 gap 包括 AI server ASP／台数／产品利润与 price-volume-mix bridge、HBM／先进封装／容量释放、AI 营运资金归因、Dell 特定供应分配、pull-forward/digestion 和可观察失效阈值。只有这些 gap 才允许在后续阶段编译为外源补源请求；在 MU／NVDA transfer 和 held-out proof 前仍不得自动重建 dense 或调用模型。
+
+### 24.8 MU／NVDA core-unchanged transfer 与 profile extension boundary（2026-08-09）
+
+迁移 wrapper 在执行前后重算通用合同、核心模块与 DELL executor SHA，并独立核对 DELL reference digest。MU／NVDA 只能提供 Case profile、typed query lanes、reviewed candidate bindings、source inventory 和 residual gaps；任一 locked SHA 变化、跨案污染、wrong period、关系反转、目标遗漏、candidate rejection、漏报 gap 或重复 gap 都使迁移失败。
+
+真实本地结果为 MU=`24 lanes / 256 rows / 24 of 24 qualified / 16 parents / 13 gaps`，NVDA=`26 lanes / 262 rows / 26 of 26 qualified / 13 parents / 13 gaps`，两案 contract rejection 均为 `0`，network／model／embedding／rerank／Evidence promotion 均为 `0`。这使已有三案的 case transfer 工程门通过，但并未改变任何 Candidate 的 Evidence 状态。
+
+迁移暴露的共同对象重建要求为：publication date 与 reported period 分离；document segment 拆成带父节、表头、单位和期间的 table／metric／claim；补齐 current regulatory parent；关系对象区分行业 read-through 与 company-specific allocation。索引重建必须覆盖这些对象语义，不能只把现有粗片段重新向量化。
+
+真正的新案例扩展必须走外部 profile registry／overlay：运行时把 profile 校验后投影给冻结 compiler，profile 不得新增 kernel authority、放宽 Industry Pack 或携带 Gold URL。若留出案例仍要求编辑冻结合同中的 ticker 列表，说明 extension interface 不成立，必须在 S1 修复后重做留出验证。

@@ -1,5 +1,9 @@
 # Worklog
 
+- [781 — FIN 0.1.3 MU／NVDA 不改核心迁移与业务缺口](product_strategy/781_fin_0_1_3_mu_nvda_core_unchanged_transfer_and_business_gaps.md)
+- [780 — FIN 0.1.3 DELL 金融 source/object 纵切与本地 Candidate Pack](product_strategy/780_fin_0_1_3_dell_financial_source_object_vertical_and_local_pack.md)
+- [779 — FIN 0.1.3 金融研究泛化合同与零调用证明](product_strategy/779_fin_0_1_3_financial_research_generalization_contract_and_zero_call_proof.md)
+- [778 — FIN 0.1.3 三案例检索尸检与 RAG 重定基](product_strategy/778_fin_0_1_3_three_case_retrieval_autopsy_and_rag_rebaseline.md)
 - [775 — FIN 0.1.3 S1 supplemental dense R1 Windows manifest terminal failure](product_strategy/775_fin_0_1_3_s1_supplemental_dense_r1_windows_manifest_terminal_failure.md)
 - [774 — FIN 0.1.3 S1 supplemental dense R1 clean authority](product_strategy/774_fin_0_1_3_s1_supplemental_dense_r1_clean_authority.md)
 - [773 — FIN 0.1.3 S1 supplemental dense 真实 runner full-fake 与资源指纹](product_strategy/773_fin_0_1_3_s1_supplemental_dense_real_runner_full_fake_and_resource_fingerprint.md)

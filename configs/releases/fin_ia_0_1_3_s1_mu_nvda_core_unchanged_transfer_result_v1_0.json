@@ -1,0 +1,149 @@
+{
+  "attempt_id": "S1-MU-NVDA-CORE-UNCHANGED-TRANSFER-R1",
+  "case_summaries": [
+    {
+      "candidate_contract_rejection_count": 0,
+      "case_key": "MU",
+      "compiled_case_digest": "aba8e91ff9229563ff078ebf9691f70d710dd2f4d8d11f6f705c669137ee9aa8",
+      "compiled_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+      "observed_calls": {
+        "embedding": 0,
+        "evidence_promotion": 0,
+        "model": 0,
+        "network": 0,
+        "provider": 0,
+        "rerank": 0
+      },
+      "observed_counts": {
+        "candidate_contract_rejections": 0,
+        "declared_residual_gaps": 13,
+        "qualified_candidates": 24,
+        "query_lanes": 24,
+        "retrieved_candidate_rows": 256,
+        "reviewed_candidate_bindings": 24,
+        "reviewed_candidate_misses": 0,
+        "source_records": 16
+      },
+      "qualification_failure_count": 0,
+      "raw_executor_schema": "fin_ia_0_1_3_s1_dell_financial_source_object_vertical_result_v1_0",
+      "raw_executor_status": "engineering_pass_product_pack_incomplete",
+      "redundant_declared_gaps": [],
+      "result_digest": "5cbd0456ce15491a217005ad32a8ca55fee199df763284ba22ff5ea816e9fdfb",
+      "result_ref": "configs/releases/fin_ia_0_1_3_s1_mu_financial_source_object_transfer_result_v1_0.json",
+      "slot_statuses": {
+        "capacity_inputs_execution": "terminal_with_declared_gaps",
+        "capital_allocation_and_valuation": "terminal_with_declared_gaps",
+        "cash_conversion_balance_sheet": "candidate_complete_pending_evidence_gate",
+        "counterevidence_and_what_would_change": "terminal_with_declared_gaps",
+        "demand_volume_quality": "terminal_with_declared_gaps",
+        "operating_performance": "terminal_with_declared_gaps",
+        "pricing_mix_value_capture": "candidate_complete_pending_evidence_gate",
+        "regulatory_policy_exposure": "candidate_complete_pending_evidence_gate",
+        "relationship_attribution": "candidate_complete_pending_evidence_gate"
+      },
+      "transfer_acceptance": "pass",
+      "undeclared_missing_facets": []
+    },
+    {
+      "candidate_contract_rejection_count": 0,
+      "case_key": "NVDA",
+      "compiled_case_digest": "f3f52d54bd8cafabd897b26c8dd0348b00bb9447c4ad92c05e93a97f1516a70d",
+      "compiled_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+      "observed_calls": {
+        "embedding": 0,
+        "evidence_promotion": 0,
+        "model": 0,
+        "network": 0,
+        "provider": 0,
+        "rerank": 0
+      },
+      "observed_counts": {
+        "candidate_contract_rejections": 0,
+        "declared_residual_gaps": 13,
+        "qualified_candidates": 26,
+        "query_lanes": 26,
+        "retrieved_candidate_rows": 262,
+        "reviewed_candidate_bindings": 26,
+        "reviewed_candidate_misses": 0,
+        "source_records": 13
+      },
+      "qualification_failure_count": 0,
+      "raw_executor_schema": "fin_ia_0_1_3_s1_dell_financial_source_object_vertical_result_v1_0",
+      "raw_executor_status": "engineering_pass_product_pack_incomplete",
+      "redundant_declared_gaps": [],
+      "result_digest": "bb0bf8561e197101495685eca7dfabed086ffabc6ea758049405e8e5fba0e6a0",
+      "result_ref": "configs/releases/fin_ia_0_1_3_s1_nvda_financial_source_object_transfer_result_v1_0.json",
+      "slot_statuses": {
+        "capacity_inputs_execution": "terminal_with_declared_gaps",
+        "capital_allocation_and_valuation": "terminal_with_declared_gaps",
+        "cash_conversion_balance_sheet": "terminal_with_declared_gaps",
+        "counterevidence_and_what_would_change": "terminal_with_declared_gaps",
+        "demand_volume_quality": "terminal_with_declared_gaps",
+        "operating_performance": "candidate_complete_pending_evidence_gate",
+        "pricing_mix_value_capture": "terminal_with_declared_gaps",
+        "regulatory_policy_exposure": "candidate_complete_pending_evidence_gate",
+        "relationship_attribution": "candidate_complete_pending_evidence_gate"
+      },
+      "transfer_acceptance": "pass",
+      "undeclared_missing_facets": []
+    }
+  ],
+  "compatibility_finding": {
+    "blocking": false,
+    "code": "legacy_dell_vertical_executor_namespace",
+    "meaning": "The frozen executor retains a DELL-named internal run scope and raw result schema. Transfer acceptance is case-neutral and is computed by this wrapper; the legacy labels must be renamed only in a later versioned contract change."
+  },
+  "contract_ref": "fin_0_1_3.S1.mu_nvda_core_unchanged_transfer:v1",
+  "dell_reference": {
+    "compiled_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+    "result_digest": "31c3f7c98eb40850087837ed7307af0552772b9ae5acf1f2ddbb520d3f574df7",
+    "result_ref": "configs/releases/fin_ia_0_1_3_s1_dell_financial_source_object_vertical_result_r3_v1_0.json"
+  },
+  "expected_core_fingerprint": "94af69dcc875ba285afca587d36622dfa859b092c7a2bf686141c5e43308b458",
+  "implementation": {
+    "materializer_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_mu_nvda_core_unchanged_transfer.py",
+    "module_ref": "src/sec_agent/financial_research_core_unchanged_transfer.py",
+    "module_sha256": "099223f3b5596a8fa74eba9b1a6b5cbd074b729825eab5a4ca742959a635473c",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_mu_nvda_core_unchanged_transfer_policy_v1_0.json"
+  },
+  "known_boundary": "This is a real-local, zero-network, zero-model transfer proof. Qualified rows remain candidates rather than Evidence. Passing transfer admits held-out identity tests only; it does not admit index rebuild, external supplement, Evidence promotion, or model synthesis.",
+  "locked_artifacts_after": {
+    "generalization_contract": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+    "generalization_core_module": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e",
+    "source_object_vertical_executor": "379d1804ea5f6ab02efe3271b0f4a701b343a14b7473d7ddb412b0ee729d14d8"
+  },
+  "locked_artifacts_before": {
+    "generalization_contract": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+    "generalization_core_module": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e",
+    "source_object_vertical_executor": "379d1804ea5f6ab02efe3271b0f4a701b343a14b7473d7ddb412b0ee729d14d8"
+  },
+  "observed_calls": {
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0
+  },
+  "policy_sha256": "f345b3677c51dc34f91e97c5787f9c215f7a5c3a36e27b9936cf43705aa8b71d",
+  "project_os_preflight": {
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "S1_MU_NVDA_CORE_UNCHANGED_TRANSFER",
+    "status": "pass"
+  },
+  "recorded_at": "2026-08-09T22:40:00+08:00",
+  "result_digest": "a5e6382654d66a796c932df644d90371fe671ab2ecfa8c07a352e142a03a6276",
+  "run_scope": "S1_MU_NVDA_CORE_UNCHANGED_TRANSFER",
+  "schema_version": "fin_ia_0_1_3_s1_mu_nvda_core_unchanged_transfer_result_v1_0",
+  "stage_acceptance": {
+    "external_supplement_admitted": false,
+    "held_out_generalization_admitted": true,
+    "locked_core_unchanged": true,
+    "model_synthesis_admitted": false,
+    "mu_transfer_pass": true,
+    "nvda_transfer_pass": true,
+    "sparse_dense_rebuild_admitted": false,
+    "ticker_specific_core_branch_added": false
+  },
+  "status": "engineering_pass_core_unchanged_transfer"
+}

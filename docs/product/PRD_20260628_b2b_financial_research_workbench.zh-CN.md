@@ -2235,3 +2235,11 @@ FIN 0.1.3 对 18 行 accepted qrels 的全文复核确认：`18/18` 仍是有效
 FIN 0.1.3 的采用顺序固定为：先冻结上述合同；再做 DELL 完整纵切；MU／NVDA 必须在核心文件字节不变的情况下只改行业／案例配置完成迁移；随后用一个美国非半导体、一个 non-US 20-F／6-K、一个披露稀疏 archetype 做留出验证。留出案例的真实身份和答案在其 proof 前不得写进核心合同。只有迁移和留出测试通过后，才允许根据已证明的对象形状重建 sparse／dense。
 
 本合同不把 `capital_allocation_and_valuation` 提前变成 FIN 0.1.3 的新增硬门。该 Slot 已进入通用库，但仍按本 PRD 16.2 的版本边界保持 optional；本轮 DELL／MU／NVDA 的必需门聚焦事实、经济机制、归因、现金转换、监管、反证、typed gap 和可追溯性。
+
+### 16.10 MU／NVDA 不改核心迁移后的产品边界（2026-08-09）
+
+MU 与 NVDA 已在通用 core fingerprint、通用 source/object executor 和插件实现逐字节不变的前提下完成真实本地迁移。MU=`24/24`、NVDA=`26/26` 预审目标进入合格候选，且均无 candidate contract rejection。这证明当前内核可以表达已有三案的公司、期间、关系和研究面差异，但不等于三个案例的 Evidence Pack 已完整。
+
+迁移同时把“命中”与“能写研报”进一步分开：MU 仍缺产品级 HBM／AI 收入、订单／backlog、利用率／良率和供应分配；NVDA 仍缺公司自身订单、ASP／单位／price-volume-mix、公司特定供应容量及 current Q1 FY2027 10-Q。客户押金不能冒充收入，Dell 订单不能冒充 NVIDIA 订单，供应商总体扩产不能冒充公司特定 allocation。上述缺口必须保留为 typed residual gap，并在本地 Pack 完成后才可成为外源补源请求。
+
+新增公司不得要求修改 `FinancialResearchKernel`。Case identity 应通过外部 `CaseResearchProfile` 注册；若每加入一个 ticker 都需要改核心合同文件或增加 ticker 条件，留出泛化门即失败。冻结 executor 仍含 DELL 命名属于非阻断兼容债，后续只能用版本化合同统一重命名，不得为本次迁移改写已冻结 proof。

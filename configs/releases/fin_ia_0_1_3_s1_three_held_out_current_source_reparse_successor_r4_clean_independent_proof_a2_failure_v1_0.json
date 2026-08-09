@@ -1,0 +1,33 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r4_clean_independent_proof_failure_v1_0",
+  "contract_ref": "fin_0_1_3.S1.three_held_out_current_source_reparse_successor_r4_clean_independent_proof:v1",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "S1-THREE-HELD-OUT-CURRENT-SOURCE-REPARSE-R4-CLEAN-PROOF-A2",
+  "status": "failed_post_reproduction_worker_report_schema_mismatch",
+  "source_commit": "25286d109c8ee070fef48e79eee3402d8403a4da",
+  "failure_phase": "clean_worker_public_summary_projection",
+  "failure_code": "observed_counts_projected_bundles_key_missing",
+  "archive_workers_started": 1,
+  "response_capture_objects_copied": 3,
+  "r4_exact_reproduction_completed": true,
+  "reproduced_result_digest": "924c656e32e5e279c12883a6374f53b7e424d5e3046c2ed18e6a4d2f11878ffc",
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "real_index_write": 0
+  },
+  "stage_acceptance": {
+    "single_archive_exact_reproduction_observed": true,
+    "clean_independent_reproof": false,
+    "r4_result_changed": false,
+    "successor_same_scope_allowed": true,
+    "real_index_build": false
+  },
+  "decision_zh": "A2 在第一个 clean archive 中已逐字节重现 R4 result，随后 proof reporter 读取旧摘要字段 projected_bundles 而失败。保留本结果；A3 只把摘要映射改为 bundle_projected／rejected_table_metrics，不修改 parser、policy、R4 result 或质量门，并重新从第一份 archive 开始完成双进程证明。",
+  "known_boundary": "One exact clean reproduction is useful diagnostic evidence but does not satisfy the required two-archive terminal proof. It authorizes only a same-scope zero-call reporter successor.",
+  "result_digest": "31ae3cc0342aacad18d8c8773275a38b75f93e312a888651230cfa13d3475b4d"
+}

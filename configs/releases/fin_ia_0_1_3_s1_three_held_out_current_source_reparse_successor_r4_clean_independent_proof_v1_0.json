@@ -1,0 +1,164 @@
+{
+  "attempt_id": "S1-THREE-HELD-OUT-CURRENT-SOURCE-REPARSE-R4-CLEAN-PROOF-A3",
+  "capture_manifest": [
+    {
+      "bytes": 9166064,
+      "case_key": "ORCL",
+      "response_capture_digest": "3bf5b66633cb844e013681f3894f7ded0915a80b560237c848a3c842f931ade4",
+      "response_capture_ref": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/3b/f5/3bf5b66633cb844e013681f3894f7ded0915a80b560237c848a3c842f931ade4.json"
+    },
+    {
+      "bytes": 59173,
+      "case_key": "ASML",
+      "response_capture_digest": "2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7",
+      "response_capture_ref": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/20/36/2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7.json"
+    },
+    {
+      "bytes": 1904056,
+      "case_key": "ANET",
+      "response_capture_digest": "fd327ed8e589888a4d00a1447e9a5fa5c7133e0ac31b0be44cb30d1a16a757cf",
+      "response_capture_ref": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/fd/32/fd327ed8e589888a4d00a1447e9a5fa5c7133e0ac31b0be44cb30d1a16a757cf.json"
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S1.three_held_out_current_source_reparse_successor_r4_clean_independent_proof:v1",
+  "decision_zh": "两个独立 Git archive 在两个 fresh process 中仅注入三份 digest-bound 原始响应，均逐字节重现 R4 result。旧 R1 可复现事实继续保留，但索引授权正式改由 R4；下一步只准入 CandidateBundle-only manifest 重定基，不准入真实 BGE、Milvus、ranking、Evidence、外源补源或 DeepSeek。",
+  "known_boundary": "This proof establishes clean reproducibility of the R4 table-coordinate successor only. It does not establish a physical index, ranking quality, Evidence Pack completeness, external coverage, model synthesis, report quality or release readiness.",
+  "observed_calls_each_run": {
+    "embedding": 0,
+    "evidence_promotion": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0
+  },
+  "predecessor_failure_refs": [
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r4_clean_independent_proof_a1_failure_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r4_clean_independent_proof_a2_failure_v1_0.json"
+  ],
+  "preparer_sha256": "87bbdd37edd4191ceb6de58c0033d32c43e019ba33aa4087d952c535cbdf4523",
+  "proof_method": {
+    "archive_shared_code_directory": false,
+    "capture_copy_mode": "three_exact_publicly_referenced_response_capture_objects_only",
+    "capture_digest_verification": true,
+    "credential_environment_scrubbed": true,
+    "fresh_python_processes": 2,
+    "git_archives": 2,
+    "project_os_preflight_each_archive": true,
+    "socket_network_blocked": true
+  },
+  "proof_runs": [
+    {
+      "case_admitted_table_metrics": [
+        1249,
+        18,
+        470
+      ],
+      "case_bundle_counts": [
+        27,
+        13,
+        27
+      ],
+      "case_slot_counts": [
+        8,
+        5,
+        7
+      ],
+      "case_typed_rejects": [
+        236,
+        0,
+        238
+      ],
+      "matches_committed_result": true,
+      "mutations_passed": [
+        9,
+        9
+      ],
+      "observed_calls": {
+        "embedding": 0,
+        "evidence_promotion": 0,
+        "model": 0,
+        "network": 0,
+        "provider": 0,
+        "rerank": 0
+      },
+      "preflight": "pass",
+      "preflight_scope": "S1_THREE_HELD_OUT_CURRENT_SOURCE_TABLE_PRESERVING_REPARSE_AND_OBJECT_MIGRATION",
+      "result_digest": "924c656e32e5e279c12883a6374f53b7e424d5e3046c2ed18e6a4d2f11878ffc",
+      "run_id": "archive-a",
+      "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_r4_clean_worker_v1_0",
+      "status": "pass"
+    },
+    {
+      "case_admitted_table_metrics": [
+        1249,
+        18,
+        470
+      ],
+      "case_bundle_counts": [
+        27,
+        13,
+        27
+      ],
+      "case_slot_counts": [
+        8,
+        5,
+        7
+      ],
+      "case_typed_rejects": [
+        236,
+        0,
+        238
+      ],
+      "matches_committed_result": true,
+      "mutations_passed": [
+        9,
+        9
+      ],
+      "observed_calls": {
+        "embedding": 0,
+        "evidence_promotion": 0,
+        "model": 0,
+        "network": 0,
+        "provider": 0,
+        "rerank": 0
+      },
+      "preflight": "pass",
+      "preflight_scope": "S1_THREE_HELD_OUT_CURRENT_SOURCE_TABLE_PRESERVING_REPARSE_AND_OBJECT_MIGRATION",
+      "result_digest": "924c656e32e5e279c12883a6374f53b7e424d5e3046c2ed18e6a4d2f11878ffc",
+      "run_id": "archive-b",
+      "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_r4_clean_worker_v1_0",
+      "status": "pass"
+    }
+  ],
+  "recorded_at": "2026-08-10",
+  "result_digest": "0d8531aa4d98c8882061da69f9c6354ed701c55402c936601d48999aa94736e4",
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r4_clean_independent_proof_v1_0",
+  "source_bindings": {
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r4_result_v1_0.json": "2fb77722713528ad73beead0452a31ff059a632ed9cda97e703f7189e4fed292",
+    "configs/runtime/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r4_policy_v1_0.json": "87dd1bb12ff398dbf6a1d9fa4d9e5cedc3ac54c8b75f1b4a1db4844bafcf59da",
+    "src/evidence/structured_extractor.py": "9a380c943ba72d3ffdac7fdb88e1f28f7cca3aa0558896b15eb82c3dcbd8bd7c",
+    "src/sec_agent/financial_research_candidate_bundle_v2.py": "6fb1c6c10b463059423bb3012f72b959371db554466538a0c1abca741eea4cee",
+    "src/sec_agent/financial_research_current_source_reparse.py": "5544fb628287d8f5363245aa28d036d8103d62e3fcbfa39f0316b04896f8ab59"
+  },
+  "source_commit": "25286d109c8ee070fef48e79eee3402d8403a4da",
+  "source_git_state": {
+    "archive_excludes_untracked_files": true,
+    "branch": "codex/layered-data-source-expansion",
+    "commit": "25286d109c8ee070fef48e79eee3402d8403a4da",
+    "tracked_clean": true,
+    "upstream_commit": "25286d109c8ee070fef48e79eee3402d8403a4da"
+  },
+  "source_result_digest": "924c656e32e5e279c12883a6374f53b7e424d5e3046c2ed18e6a4d2f11878ffc",
+  "source_result_ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r4_result_v1_0.json",
+  "stage_acceptance": {
+    "candidate_bundle_only_sparse_dense_manifest_rebaseline_admitted": true,
+    "clean_independent_reproof": true,
+    "external_residual_supplement": false,
+    "held_out_product_generalization": false,
+    "model_research_synthesis": false,
+    "ranking": false,
+    "real_embedding_or_index_build": false,
+    "release": false,
+    "table_semantic_coordinate_engineering": true
+  }
+}

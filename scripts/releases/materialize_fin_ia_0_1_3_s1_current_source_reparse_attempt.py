@@ -19,7 +19,9 @@ from sec_agent.financial_research_current_source_reparse import (  # noqa: E402
 from sec_agent.project_os_preflight import run_project_os_preflight  # noqa: E402
 
 
-PREFLIGHT_RUN_SCOPE = "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD"
+PREFLIGHT_RUN_SCOPE = (
+    "S1_THREE_HELD_OUT_CURRENT_SOURCE_TABLE_PRESERVING_REPARSE_AND_OBJECT_MIGRATION"
+)
 
 
 def _repo_path(value: str) -> Path:

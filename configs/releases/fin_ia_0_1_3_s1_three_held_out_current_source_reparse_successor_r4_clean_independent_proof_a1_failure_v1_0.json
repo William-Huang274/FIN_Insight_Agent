@@ -1,0 +1,30 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r4_clean_independent_proof_failure_v1_0",
+  "contract_ref": "fin_0_1_3.S1.three_held_out_current_source_reparse_successor_r4_clean_independent_proof:v1",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "S1-THREE-HELD-OUT-CURRENT-SOURCE-REPARSE-R4-CLEAN-PROOF-A1",
+  "status": "failed_pre_worker_orchestrator_incompatible_tarfile_extractall_filter",
+  "source_commit": "25286d109c8ee070fef48e79eee3402d8403a4da",
+  "failure_phase": "clean_archive_extract",
+  "failure_code": "python_tarfile_extractall_filter_keyword_unsupported",
+  "archive_workers_started": 0,
+  "response_capture_objects_copied": 0,
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "real_index_write": 0
+  },
+  "stage_acceptance": {
+    "clean_independent_reproof": false,
+    "r4_result_changed": false,
+    "successor_same_scope_allowed": true,
+    "real_index_build": false
+  },
+  "decision_zh": "A1 在第一个 Git archive 的兼容提取阶段失败，尚未复制 capture 或启动业务 worker；失败属于本机 Python tarfile API 兼容性。保留本结果，以 A2 改用逐成员路径校验后的兼容 extractall，不修改 R4 parser、policy、result 或质量门。",
+  "known_boundary": "This failure does not test or invalidate the committed R4 result. It authorizes only a same-scope zero-call proof-orchestrator compatibility successor.",
+  "result_digest": "593eb29771ecf742e4bdb7cf64dd787b0874cd059a029df063e6b25ba460c820"
+}

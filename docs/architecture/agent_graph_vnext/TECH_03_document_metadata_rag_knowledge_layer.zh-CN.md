@@ -749,4 +749,4 @@ R1 clean proof 后的 manifest 逐条审计证明，“可复现”不能替代�
 
 本轮 R2、R3、R4 分别关闭非货币维度／表内币种、descriptor 列错位、rollforward／压缩行错期。三次均是同一 S1 owner 下的新零调用 Attempt，不是新产品版本。旧 R1 result/proof 保持不可变，但不能再授权索引；新的 sparse／dense manifest 必须绑定 R4 result 与其 clean proof，并对 `metric_period_missing`、`metric_unit_mismatch` fail closed。
 
-R4 working-tree result=`924c656e32e5e279c12883a6374f53b7e424d5e3046c2ed18e6a4d2f11878ffc`，ORCL／ASML／ANET projected bundles=`27／13／27`、Slots=`8／5／7`，unsafe numeric admission=`0`。该结果仍为 Candidate，不是 Evidence；两个 clean Git archive／fresh process 完全复现前，不得签发真实 BGE／Milvus build。
+R4 result=`924c656e32e5e279c12883a6374f53b7e424d5e3046c2ed18e6a4d2f11878ffc`，ORCL／ASML／ANET projected bundles=`27／13／27`、Slots=`8／5／7`，unsafe numeric admission=`0`。两个 clean Git archive／fresh process 已从提交 `25286d10...a4da` 完全复现，proof=`0d8531aa...36e4`；A1 tarfile 兼容失败与 A2 reporter 字段失败均单独保留。该结果仍为 Candidate，不是 Evidence，只准入 zero-call manifest 重定基，不得随 proof 签发真实 BGE／Milvus build。

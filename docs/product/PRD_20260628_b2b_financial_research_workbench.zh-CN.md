@@ -2262,4 +2262,4 @@ ORCL、ASML、ANET 的当前官方源已证明同一通用 parser／CandidateBun
 4. parser 修复必须按通用表格结构表达，禁止为 ORCL／ANET 等 ticker 添加核心条件；MU／NVDA／DELL 与其他表形 mutation 必须保持通过；
 5. index manifest 只消费审过的 CandidateBundle。Evidence 晋升、完整研究内容、外源补源和报告验收继续作为后续独立门。
 
-这项更正不改变既定大顺序，也不增加产品版本：仍在 FIN 0.1.3 的 S1 修复对象与索引入口。R4 clean proof 通过后才重定基 sparse／dense manifest；真实 build 仍需 Ubuntu WSL 独立 authority。索引和本地 Evidence Pack 完成后，以真实 residual gaps 驱动外源补源，最后才评估 DeepSeek 的动态研究和综合质量。
+这项更正不改变既定大顺序，也不增加产品版本：仍在 FIN 0.1.3 的 S1 修复对象与索引入口。R4 已由两个 clean Git archive／fresh process 完全复现，现只准入 sparse／dense manifest 重定基；真实 build 仍需 Ubuntu WSL 独立 authority。索引和本地 Evidence Pack 完成后，以真实 residual gaps 驱动外源补源，最后才评估 DeepSeek 的动态研究和综合质量。

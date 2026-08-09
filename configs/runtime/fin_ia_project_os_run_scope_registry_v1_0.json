@@ -345,6 +345,41 @@
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1"]
     },
+    "S1_FINANCIAL_RESEARCH_GENERALIZATION_CONTRACT_ZERO_CALL_IMPLEMENTATION": {
+      "owner_stage": "S1",
+      "operation_class": "source_runtime_zero_call_implementation",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "S1_DELL_FINANCIAL_SOURCE_OBJECT_AND_EVIDENCE_PACK_VERTICAL_SLICE": {
+      "owner_stage": "S1",
+      "operation_class": "source_runtime_zero_call_implementation",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "S1_MU_NVDA_CORE_UNCHANGED_TRANSFER": {
+      "owner_stage": "S1",
+      "operation_class": "case_transfer",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "S1_THREE_HELD_OUT_FINANCIAL_RESEARCH_GENERALIZATION_PROOF": {
+      "owner_stage": "S1",
+      "operation_class": "case_transfer",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "S1_RESIDUAL_GAP_EXTERNAL_SUPPLEMENT": {
+      "owner_stage": "S1",
+      "operation_class": "live_search_execution",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
     "S1_INTERNAL_CURRENT_OFFICIAL_SOURCE_ACQUISITION": {
       "owner_stage": "S1",
       "operation_class": "live_search_execution",

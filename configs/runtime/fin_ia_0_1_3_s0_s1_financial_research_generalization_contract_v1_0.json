@@ -1,0 +1,512 @@
+{
+  "schema_version": "fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0",
+  "contract_ref": "fin_0_1_3.S0_S1.financial_research_generalization:v1",
+  "recorded_at": "2026-08-09",
+  "status": "contract_frozen_zero_call",
+  "kernel": {
+    "required_dimensions": [
+      "research_subject",
+      "evidence_owner",
+      "relationship_direction",
+      "reporting_period_and_as_of",
+      "source_authority",
+      "candidate_or_evidence_state",
+      "citation_and_lineage",
+      "facet_coverage",
+      "conflict_and_typed_gap"
+    ],
+    "candidate_evidence_boundary": "retrieval and pack evaluation return candidates only; Evidence Gate and reviewer own promotion",
+    "missing_information_policy": "every uncovered required facet remains an explicit typed residual gap and may drive bounded supplement",
+    "source_diversity_counting_unit": "unique canonical source family; duplicate role bindings do not increase diversity",
+    "model_authority": {
+      "may_propose_query_atoms": true,
+      "may_propose_follow_up_facets": true,
+      "may_change_identity": false,
+      "may_change_period": false,
+      "may_change_relationship_direction": false,
+      "may_change_source_authority": false,
+      "may_change_budget": false,
+      "may_promote_candidate_to_evidence": false
+    },
+    "reserved_case_tokens": ["DELL", "MU", "NVDA", "MSFT", "TSMC"],
+    "reserved_industry_tokens": ["HBM", "CoWoS", "Blackwell", "PowerEdge", "Rubin"]
+  },
+  "slot_library": [
+    {
+      "slot_id": "operating_performance",
+      "purpose": "Establish current reported performance and management outlook before mechanism inference.",
+      "required_facets": [
+        "reported_revenue",
+        "reported_profitability",
+        "segment_or_product_performance",
+        "management_outlook"
+      ],
+      "optional_facets": ["guidance_bridge", "historical_comparison"],
+      "minimum_independent_source_families": 1,
+      "coverage_authority_tiers": ["primary_issuer", "regulatory_filing"],
+      "allowed_candidate_roles": ["reported_fact", "management_commentary", "numeric_trace_candidate"],
+      "legacy_family_refs": ["issuer_results_and_management_commentary"],
+      "typed_gap_codes": ["source_missing", "currentness_missing", "parser_gap", "metric_not_disclosed"]
+    },
+    {
+      "slot_id": "demand_volume_quality",
+      "purpose": "Separate durable end demand and real deployment from pull-forward, inventory loading or unsupported attribution.",
+      "required_facets": [
+        "order_backlog_rpo_or_volume",
+        "deployment_or_utilization",
+        "durability_or_pull_forward",
+        "customer_breadth_or_concentration"
+      ],
+      "optional_facets": ["cancellation_or_digestion", "channel_or_inventory_signal"],
+      "minimum_independent_source_families": 2,
+      "coverage_authority_tiers": ["primary_issuer", "regulatory_filing", "counterparty_primary", "official_industry_context"],
+      "allowed_candidate_roles": ["reported_fact", "management_commentary", "counterparty_readthrough", "industry_context", "counterevidence"],
+      "legacy_family_refs": ["customer_demand_and_deployment_validation"],
+      "typed_gap_codes": ["source_missing", "relationship_attribution_unproven", "commercial_data_gap", "currentness_missing", "parser_gap"]
+    },
+    {
+      "slot_id": "pricing_mix_value_capture",
+      "purpose": "Explain price, volume and mix separately and connect them to margin and profit capture without invented attribution.",
+      "required_facets": [
+        "price_or_asp",
+        "volume_or_units",
+        "mix_or_product_attribution",
+        "margin_or_unit_economics",
+        "profit_capture_bridge"
+      ],
+      "optional_facets": ["incremental_margin", "competitive_pricing_pressure"],
+      "minimum_independent_source_families": 1,
+      "coverage_authority_tiers": ["primary_issuer", "regulatory_filing", "numeric_program"],
+      "allowed_candidate_roles": ["reported_fact", "management_commentary", "numeric_trace_candidate", "counterevidence"],
+      "legacy_family_refs": ["issuer_results_and_management_commentary"],
+      "typed_gap_codes": ["metric_not_disclosed", "formula_input_missing", "product_attribution_unproven", "commercial_data_gap", "parser_gap"]
+    },
+    {
+      "slot_id": "capacity_inputs_execution",
+      "purpose": "Establish the inputs, bottlenecks, capacity, yield and ramp timing that govern execution.",
+      "required_facets": [
+        "capacity_or_supply",
+        "utilization_or_yield",
+        "bottleneck_or_lead_time",
+        "ramp_timing",
+        "supplier_commitment_or_dependency"
+      ],
+      "optional_facets": ["allocation", "substitution_or_second_source"],
+      "minimum_independent_source_families": 2,
+      "coverage_authority_tiers": ["primary_issuer", "regulatory_filing", "counterparty_primary", "official_industry_context"],
+      "allowed_candidate_roles": ["reported_fact", "management_commentary", "counterparty_readthrough", "industry_context", "counterevidence"],
+      "legacy_family_refs": ["supply_chain_capacity_and_counterevidence"],
+      "typed_gap_codes": ["source_missing", "relationship_allocation_unproven", "commercial_data_gap", "currentness_missing", "parser_gap"]
+    },
+    {
+      "slot_id": "cash_conversion_balance_sheet",
+      "purpose": "Connect accounting profit to cash conversion, working capital, inventory, receivables, capital expenditure and obligations.",
+      "required_facets": [
+        "operating_cash_flow",
+        "capital_expenditure",
+        "working_capital",
+        "inventory",
+        "receivables_payables_or_obligations"
+      ],
+      "optional_facets": ["free_cash_flow", "deposit_or_commitment_classification"],
+      "minimum_independent_source_families": 1,
+      "coverage_authority_tiers": ["regulatory_filing", "primary_issuer", "numeric_program"],
+      "allowed_candidate_roles": ["reported_fact", "numeric_trace_candidate", "management_commentary", "counterevidence"],
+      "legacy_family_refs": ["regulatory_risk_and_financial_reconciliation"],
+      "typed_gap_codes": ["metric_not_disclosed", "statement_scope_missing", "formula_input_missing", "parser_gap"]
+    },
+    {
+      "slot_id": "relationship_attribution",
+      "purpose": "Distinguish industry corroboration from company-specific customer, supplier, product and revenue attribution.",
+      "required_facets": [
+        "evidence_owner_self_disclosure",
+        "economic_relationship_direction",
+        "company_specific_attribution_or_boundary"
+      ],
+      "optional_facets": ["allocation_or_share", "relationship_period_validity"],
+      "minimum_independent_source_families": 1,
+      "coverage_authority_tiers": ["primary_issuer", "regulatory_filing", "counterparty_primary", "official_industry_context"],
+      "allowed_candidate_roles": ["reported_fact", "counterparty_readthrough", "relationship_candidate", "industry_context", "counterevidence"],
+      "legacy_family_refs": ["customer_demand_and_deployment_validation", "supply_chain_capacity_and_counterevidence"],
+      "typed_gap_codes": ["relationship_attribution_unproven", "relationship_allocation_unproven", "period_binding_missing", "source_missing"]
+    },
+    {
+      "slot_id": "regulatory_policy_exposure",
+      "purpose": "Connect regulatory or policy exposure to affected products, geographies, accounting consequences and mitigations.",
+      "required_facets": [
+        "policy_or_regulatory_event",
+        "affected_scope",
+        "financial_or_operating_consequence",
+        "mitigation_or_uncertainty"
+      ],
+      "optional_facets": ["effective_date", "license_or_approval_state"],
+      "minimum_independent_source_families": 1,
+      "coverage_authority_tiers": ["government_or_regulator", "regulatory_filing", "primary_issuer"],
+      "allowed_candidate_roles": ["official_policy", "reported_fact", "management_commentary", "counterevidence"],
+      "legacy_family_refs": ["regulatory_risk_and_financial_reconciliation"],
+      "typed_gap_codes": ["official_policy_missing", "financial_consequence_unproven", "currentness_missing", "source_missing"]
+    },
+    {
+      "slot_id": "capital_allocation_and_valuation",
+      "purpose": "Provide reproducible capital allocation, valuation, price-in and sensitivity context when the report type activates it.",
+      "required_facets": [
+        "capital_structure_or_returns",
+        "valuation_basis",
+        "scenario_or_sensitivity",
+        "price_in_boundary"
+      ],
+      "optional_facets": ["peer_set", "licensed_consensus_gap"],
+      "minimum_independent_source_families": 1,
+      "coverage_authority_tiers": ["regulatory_filing", "primary_issuer", "market_pit", "numeric_program", "user_assumption"],
+      "allowed_candidate_roles": ["reported_fact", "market_context", "numeric_trace_candidate", "assumption", "counterevidence"],
+      "legacy_family_refs": [],
+      "typed_gap_codes": ["market_data_gap", "licensed_consensus_gap", "formula_input_missing", "peer_set_missing"]
+    },
+    {
+      "slot_id": "counterevidence_and_what_would_change",
+      "purpose": "Make the strongest disconfirming evidence, impact mechanism, monitoring threshold and unresolved conflict explicit.",
+      "required_facets": [
+        "strongest_counterevidence",
+        "impact_mechanism",
+        "observable_invalidation_threshold",
+        "monitoring_metric_and_timing"
+      ],
+      "optional_facets": ["conflict_resolution", "alternative_thesis"],
+      "minimum_independent_source_families": 2,
+      "coverage_authority_tiers": ["primary_issuer", "regulatory_filing", "counterparty_primary", "government_or_regulator", "official_industry_context", "market_pit"],
+      "allowed_candidate_roles": ["counterevidence", "reported_fact", "management_commentary", "counterparty_readthrough", "official_policy", "industry_context", "market_context"],
+      "legacy_family_refs": ["regulatory_risk_and_financial_reconciliation", "supply_chain_capacity_and_counterevidence"],
+      "typed_gap_codes": ["counterevidence_missing", "threshold_not_observable", "source_missing", "commercial_data_gap", "unresolved_conflict"]
+    }
+  ],
+  "plugin_interfaces": [
+    {
+      "interface_name": "SourceAdapter",
+      "method": "discover",
+      "input_contract": "SearchIntent",
+      "output_contract": "SourceLocator",
+      "authority_boundary": "returns locator candidates only; local source authority, date and relationship adjudication remain authoritative"
+    },
+    {
+      "interface_name": "ParserAdapter",
+      "method": "parse",
+      "input_contract": "RawCaptureRef",
+      "output_contract": "FinancialDocumentObject",
+      "authority_boundary": "parses immutable captures; cannot change source identity, publication authority or Evidence state"
+    },
+    {
+      "interface_name": "CandidateRetriever",
+      "method": "search",
+      "input_contract": "TypedRetrievalRequest",
+      "output_contract": "FinancialCandidate",
+      "authority_boundary": "returns typed candidates under identity, period, relationship and budget authority; never accepted Evidence"
+    },
+    {
+      "interface_name": "EvidencePackEvaluator",
+      "method": "evaluate",
+      "input_contract": "CandidatePackInput",
+      "output_contract": "CandidatePackEvaluation",
+      "authority_boundary": "evaluates multi-candidate coverage, diversity, conflicts and gaps; Evidence Gate remains promotion authority"
+    }
+  ],
+  "industry_packs": [
+    {
+      "pack_ref": "industry-ai-compute-infrastructure:v1",
+      "industry_family": "ai_compute_infrastructure",
+      "required_slot_ids": [
+        "operating_performance",
+        "demand_volume_quality",
+        "pricing_mix_value_capture",
+        "capacity_inputs_execution",
+        "cash_conversion_balance_sheet",
+        "relationship_attribution",
+        "regulatory_policy_exposure",
+        "counterevidence_and_what_would_change"
+      ],
+      "optional_slot_ids": ["capital_allocation_and_valuation"],
+      "slot_extensions": [
+        {
+          "slot_id": "operating_performance",
+          "available_facets": ["accelerated_compute_or_ai_infrastructure_revenue", "platform_or_system_revenue", "industry_chain_segment_performance"],
+          "default_required_facets": ["accelerated_compute_or_ai_infrastructure_revenue"],
+          "query_atoms": ["AI infrastructure revenue", "data center", "AI systems"],
+          "mechanism_axes": ["recognized revenue versus orders", "platform mix"],
+          "source_role_preferences": ["issuer earnings release", "prepared remarks", "regulatory filing"],
+          "forbidden_substitutions": ["industry demand as company revenue", "backlog as recognized revenue"]
+        },
+        {
+          "slot_id": "demand_volume_quality",
+          "available_facets": ["ai_infrastructure_orders_or_backlog", "hyperscaler_capex_and_deployment", "order_conversion", "pull_forward_or_digestion", "customer_concentration"],
+          "default_required_facets": ["ai_infrastructure_orders_or_backlog", "pull_forward_or_digestion"],
+          "query_atoms": ["AI infrastructure orders", "deployment", "capacity constraint", "digestion"],
+          "mechanism_axes": ["orders to deployment", "deployment to recognized demand"],
+          "source_role_preferences": ["issuer prepared remarks", "customer primary disclosure", "regulatory filing"],
+          "forbidden_substitutions": ["hyperscaler capex as issuer order attribution", "pipeline as revenue"]
+        },
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "available_facets": ["ai_system_or_accelerator_mix", "memory_price_bit_mix", "ai_system_margin", "platform_value_capture", "price_volume_mix_bridge"],
+          "default_required_facets": ["price_volume_mix_bridge"],
+          "query_atoms": ["pricing", "bit shipment", "product mix", "operating margin"],
+          "mechanism_axes": ["price versus volume", "mix to margin", "system economics"],
+          "source_role_preferences": ["issuer earnings material", "regulatory filing", "numeric program"],
+          "forbidden_substitutions": ["revenue growth as volume growth", "gross margin as product margin"]
+        },
+        {
+          "slot_id": "capacity_inputs_execution",
+          "available_facets": ["advanced_packaging_capacity", "high_bandwidth_memory_supply", "yield_or_die_size", "foundry_or_component_dependency", "architecture_or_product_ramp", "capacity_release_timing"],
+          "default_required_facets": ["foundry_or_component_dependency", "capacity_release_timing"],
+          "query_atoms": ["advanced packaging", "HBM", "yield", "ramp", "lead time"],
+          "mechanism_axes": ["input constraint to shipment", "yield and packaging to capacity"],
+          "source_role_preferences": ["supplier primary disclosure", "issuer filing", "industry official source"],
+          "forbidden_substitutions": ["supplier aggregate capacity as subject allocation", "capital expenditure as immediate output"]
+        },
+        {
+          "slot_id": "cash_conversion_balance_sheet",
+          "available_facets": ["ai_working_capital_absorption", "inventory_purchase_commitments", "customer_deposit_or_rpo_classification", "capex_to_free_cash_flow"],
+          "default_required_facets": ["capex_to_free_cash_flow"],
+          "query_atoms": ["working capital", "inventory", "purchase commitments", "customer deposits"],
+          "mechanism_axes": ["growth to working capital", "commitments to cash conversion"],
+          "source_role_preferences": ["cash flow statement", "balance sheet notes", "prepared remarks"],
+          "forbidden_substitutions": ["customer deposit as free cash flow", "commitment as current cash"]
+        },
+        {
+          "slot_id": "relationship_attribution",
+          "available_facets": ["customer_demand_readthrough", "supplier_capacity_readthrough", "company_specific_order_attribution", "company_specific_supply_allocation"],
+          "default_required_facets": ["customer_demand_readthrough", "supplier_capacity_readthrough"],
+          "query_atoms": ["customer deployment", "supplier capacity", "platform qualification"],
+          "mechanism_axes": ["counterparty disclosure to bounded readthrough"],
+          "source_role_preferences": ["counterparty primary disclosure", "issuer primary disclosure"],
+          "forbidden_substitutions": ["industry corroboration as company attribution", "relationship graph as exact allocation"]
+        },
+        {
+          "slot_id": "regulatory_policy_exposure",
+          "available_facets": ["export_control", "geographic_revenue_exclusion", "license_constraint", "inventory_or_purchase_loss"],
+          "default_required_facets": ["export_control"],
+          "query_atoms": ["export controls", "license", "geographic restriction"],
+          "mechanism_axes": ["policy to product scope to financial effect"],
+          "source_role_preferences": ["government rule", "regulatory filing", "issuer earnings material"],
+          "forbidden_substitutions": ["news summary as final legal authority"]
+        },
+        {
+          "slot_id": "capital_allocation_and_valuation",
+          "available_facets": ["ai_growth_price_in", "cycle_normalized_margin", "public_assumption_scenario"],
+          "default_required_facets": [],
+          "query_atoms": ["valuation", "price in", "scenario"],
+          "mechanism_axes": ["fundamental expectation versus market expectation"],
+          "source_role_preferences": ["market PIT", "numeric program", "issuer filing"],
+          "forbidden_substitutions": ["model assumption as consensus", "current multiple as target price"]
+        },
+        {
+          "slot_id": "counterevidence_and_what_would_change",
+          "available_facets": ["demand_digestion", "margin_dilution", "capacity_release", "architecture_transition", "policy_shock", "observable_quarterly_threshold"],
+          "default_required_facets": ["observable_quarterly_threshold"],
+          "query_atoms": ["digestion", "margin pressure", "capacity release", "transition risk"],
+          "mechanism_axes": ["counterevidence to impact to observable threshold"],
+          "source_role_preferences": ["issuer filing", "counterparty primary disclosure", "government source"],
+          "forbidden_substitutions": ["generic risk language as strongest counterevidence", "unobservable what-would-change"]
+        }
+      ],
+      "may_override_kernel_dimensions": false,
+      "may_relax_identity_period_lineage_or_authority": false,
+      "may_embed_case_urls_or_gold_targets": false
+    }
+  ],
+  "case_profiles": [
+    {
+      "case_key": "DELL",
+      "subject_entity_key": "DELL_TECHNOLOGIES",
+      "subject_aliases": ["Dell Technologies", "DELL"],
+      "industry_pack_ref": "industry-ai-compute-infrastructure:v1",
+      "as_of_date": "2026-08-06",
+      "accepted_period_ids": ["DELL_FY2027_Q1", "DELL_FY2026", "AS_OF_2026_08_06"],
+      "required_slot_ids": [],
+      "optional_slot_ids": [],
+      "required_facet_additions": {
+        "demand_volume_quality": ["order_conversion"],
+        "pricing_mix_value_capture": ["ai_system_margin"],
+        "cash_conversion_balance_sheet": ["ai_working_capital_absorption"],
+        "capacity_inputs_execution": ["high_bandwidth_memory_supply", "advanced_packaging_capacity"]
+      },
+      "relationships": [
+        {
+          "relationship_id": "dell-demand-owner-msft",
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_aliases": ["Microsoft", "MSFT"],
+          "evidence_owner_role": "customer_demand_readthrough",
+          "direction": "evidence_owner_own_infrastructure_demand",
+          "allowed_slot_ids": ["demand_volume_quality", "relationship_attribution", "counterevidence_and_what_would_change"]
+        },
+        {
+          "relationship_id": "dell-input-owner-memory",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_aliases": ["Micron", "MU"],
+          "evidence_owner_role": "supplier_capacity_readthrough",
+          "direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "allowed_slot_ids": ["capacity_inputs_execution", "relationship_attribution", "counterevidence_and_what_would_change"]
+        },
+        {
+          "relationship_id": "dell-input-owner-accelerator",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_aliases": ["NVIDIA", "NVDA"],
+          "evidence_owner_role": "supplier_capacity_readthrough",
+          "direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "allowed_slot_ids": ["capacity_inputs_execution", "relationship_attribution", "counterevidence_and_what_would_change"]
+        },
+        {
+          "relationship_id": "dell-input-owner-foundry",
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_aliases": ["TSMC", "TSM"],
+          "evidence_owner_role": "supplier_capacity_readthrough",
+          "direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "allowed_slot_ids": ["capacity_inputs_execution", "relationship_attribution", "counterevidence_and_what_would_change"]
+        }
+      ]
+    },
+    {
+      "case_key": "MU",
+      "subject_entity_key": "MICRON_TECHNOLOGY",
+      "subject_aliases": ["Micron Technology", "Micron", "MU"],
+      "industry_pack_ref": "industry-ai-compute-infrastructure:v1",
+      "as_of_date": "2026-08-06",
+      "accepted_period_ids": ["MU_FY2026_Q3", "MU_FY2025", "AS_OF_2026_08_06"],
+      "required_slot_ids": [],
+      "optional_slot_ids": [],
+      "required_facet_additions": {
+        "pricing_mix_value_capture": ["memory_price_bit_mix"],
+        "capacity_inputs_execution": ["high_bandwidth_memory_supply", "yield_or_die_size", "advanced_packaging_capacity"],
+        "cash_conversion_balance_sheet": ["customer_deposit_or_rpo_classification"],
+        "demand_volume_quality": ["hyperscaler_capex_and_deployment"]
+      },
+      "relationships": [
+        {
+          "relationship_id": "mu-demand-owner-dell",
+          "evidence_owner_entity_key": "DELL_TECHNOLOGIES",
+          "evidence_owner_aliases": ["Dell Technologies", "DELL"],
+          "evidence_owner_role": "customer_demand_readthrough",
+          "direction": "evidence_owner_own_infrastructure_demand",
+          "allowed_slot_ids": ["demand_volume_quality", "relationship_attribution", "counterevidence_and_what_would_change"]
+        },
+        {
+          "relationship_id": "mu-demand-owner-msft",
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_aliases": ["Microsoft", "MSFT"],
+          "evidence_owner_role": "customer_demand_readthrough",
+          "direction": "evidence_owner_own_infrastructure_demand",
+          "allowed_slot_ids": ["demand_volume_quality", "relationship_attribution", "counterevidence_and_what_would_change"]
+        },
+        {
+          "relationship_id": "mu-platform-owner-nvidia",
+          "evidence_owner_entity_key": "NVIDIA_CORPORATION",
+          "evidence_owner_aliases": ["NVIDIA", "NVDA"],
+          "evidence_owner_role": "platform_demand_and_supply_readthrough",
+          "direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "allowed_slot_ids": ["demand_volume_quality", "capacity_inputs_execution", "relationship_attribution"]
+        },
+        {
+          "relationship_id": "mu-input-owner-foundry",
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_aliases": ["TSMC", "TSM"],
+          "evidence_owner_role": "supplier_capacity_readthrough",
+          "direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "allowed_slot_ids": ["capacity_inputs_execution", "relationship_attribution", "counterevidence_and_what_would_change"]
+        }
+      ]
+    },
+    {
+      "case_key": "NVDA",
+      "subject_entity_key": "NVIDIA_CORPORATION",
+      "subject_aliases": ["NVIDIA", "NVDA"],
+      "industry_pack_ref": "industry-ai-compute-infrastructure:v1",
+      "as_of_date": "2026-08-06",
+      "accepted_period_ids": ["NVDA_FY2027_Q1", "NVDA_FY2026", "AS_OF_2026_08_06"],
+      "required_slot_ids": [],
+      "optional_slot_ids": [],
+      "required_facet_additions": {
+        "demand_volume_quality": ["customer_concentration"],
+        "capacity_inputs_execution": ["architecture_or_product_ramp", "high_bandwidth_memory_supply", "advanced_packaging_capacity"],
+        "cash_conversion_balance_sheet": ["inventory_purchase_commitments"],
+        "regulatory_policy_exposure": ["geographic_revenue_exclusion", "inventory_or_purchase_loss"],
+        "counterevidence_and_what_would_change": ["architecture_transition"]
+      },
+      "relationships": [
+        {
+          "relationship_id": "nvda-demand-owner-dell",
+          "evidence_owner_entity_key": "DELL_TECHNOLOGIES",
+          "evidence_owner_aliases": ["Dell Technologies", "DELL"],
+          "evidence_owner_role": "customer_demand_readthrough",
+          "direction": "evidence_owner_own_infrastructure_demand",
+          "allowed_slot_ids": ["demand_volume_quality", "relationship_attribution", "counterevidence_and_what_would_change"]
+        },
+        {
+          "relationship_id": "nvda-demand-owner-msft",
+          "evidence_owner_entity_key": "MICROSOFT",
+          "evidence_owner_aliases": ["Microsoft", "MSFT"],
+          "evidence_owner_role": "customer_demand_readthrough",
+          "direction": "evidence_owner_own_infrastructure_demand",
+          "allowed_slot_ids": ["demand_volume_quality", "relationship_attribution", "counterevidence_and_what_would_change"]
+        },
+        {
+          "relationship_id": "nvda-input-owner-memory",
+          "evidence_owner_entity_key": "MICRON_TECHNOLOGY",
+          "evidence_owner_aliases": ["Micron", "MU"],
+          "evidence_owner_role": "supplier_capacity_readthrough",
+          "direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "allowed_slot_ids": ["capacity_inputs_execution", "relationship_attribution", "counterevidence_and_what_would_change"]
+        },
+        {
+          "relationship_id": "nvda-input-owner-foundry",
+          "evidence_owner_entity_key": "TAIWAN_SEMICONDUCTOR_MANUFACTURING",
+          "evidence_owner_aliases": ["TSMC", "TSM"],
+          "evidence_owner_role": "supplier_capacity_readthrough",
+          "direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "allowed_slot_ids": ["capacity_inputs_execution", "relationship_attribution", "counterevidence_and_what_would_change"]
+        }
+      ]
+    }
+  ],
+  "held_out_archetypes": [
+    {
+      "archetype_id": "heldout-us-non-semiconductor",
+      "purpose": "Prove a US issuer with different operating metrics can reuse the kernel while selecting another industry pack.",
+      "required_source_shapes": ["10-K", "10-Q", "earnings material", "market PIT"],
+      "required_mutations": ["same-name entity", "fiscal-calendar mismatch", "competitor pollution"],
+      "identity_selected": false,
+      "answer_or_gold_locator_embedded": false
+    },
+    {
+      "archetype_id": "heldout-non-us-primary-disclosure",
+      "purpose": "Prove non-US filing, currency, calendar and issuer-IR adapters do not require a core branch.",
+      "required_source_shapes": ["20-F", "6-K", "issuer IR PDF", "local currency statement"],
+      "required_mutations": ["ADR versus local ticker", "multilingual alias", "PDF-only source", "currency mismatch"],
+      "identity_selected": false,
+      "answer_or_gold_locator_embedded": false
+    },
+    {
+      "archetype_id": "heldout-sparse-disclosure",
+      "purpose": "Prove the product terminalizes honest gaps instead of fabricating completeness when primary disclosure is thin.",
+      "required_source_shapes": ["sparse issuer filing", "official relationship context", "typed commercial gap"],
+      "required_mutations": ["missing official source", "relationship reversal", "stale-only candidate", "zero-result route"],
+      "identity_selected": false,
+      "answer_or_gold_locator_embedded": false
+    }
+  ],
+  "execution_order": [
+    "freeze_contract",
+    "dell_vertical_slice",
+    "mu_nvda_core_unchanged_transfer",
+    "three_held_out_generalization_proof",
+    "sparse_dense_rebuild_decision",
+    "residual_gap_external_supplement",
+    "model_dynamic_follow_up_and_synthesis"
+  ],
+  "stage_boundary": {
+    "contract_frozen": true,
+    "dell_vertical_slice_complete": false,
+    "mu_nvda_transfer_complete": false,
+    "held_out_generalization_complete": false,
+    "sparse_dense_rebuild_admitted": false,
+    "external_residual_supplement_complete": false,
+    "model_research_synthesis_complete": false
+  }
+}

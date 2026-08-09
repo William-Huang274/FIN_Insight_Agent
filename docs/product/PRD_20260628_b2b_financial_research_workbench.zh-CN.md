@@ -2220,3 +2220,18 @@ FIN 0.1.3 对 18 行 accepted qrels 的全文复核确认：`18/18` 仍是有效
 内容复核还必须读取完整候选正文，不能只凭截断 preview 定性。两条 NVDA supply 行的 preview 虽从联系人和安全港开始，全文后半部确实包含第三方制造、组装、封装和测试依赖，因此应归类为“相关但切块低精度”，而不是“事实不存在”。若冻结候选池已有同来源、同期间、同业务含义的干净 child claim，应优先提出 candidate-identity successor；原 qrels 与历史指标保持不可变，只有变更行需要 Owner 重新确认。当前共提出 `5` 条此类替换（3 条 MSFT demand、2 条 NVDA supply），在确认前不得生成 qrels v1.4、重建正式评测目标或启动新 ranking。
 
 “同来源”不仅要求 issuer、accession 和正文相符，还要求最终 citation URL 能直接打开承载该 claim 的真实文档。8-K 附件中的 child claim 不得只继承母 filing URL；必须解析到 Exhibit 99.1／6-K 附件等实际被引文件，并保留 manifest 与解析方法。内容正确但链接落在不含该句的母文档时，replacement 必须 fail closed，不能交给 Owner 签发。
+
+### 16.9 通用金融研究内核、行业 Pack 与案例配置边界（2026-08-09）
+
+三案例检索尸检进一步证明，FIN 不能把 DELL／MU／NVDA 的当前问题继续固化成三套 ticker 特判，也不能用一个过宽的四槽查询模板冒充可泛化的金融研究。FIN 0.1.3 采用四层产品结构：
+
+1. `FinancialResearchKernel` 只拥有主体、证据披露方、关系方向、期间／截至日、来源权威、candidate／Evidence 状态、引用／lineage、facet 覆盖、冲突和 typed gap 等长期金融控制面；
+2. `Evidence Slot Library` 提供经营表现、需求／数量质量、价格／数量／mix 与价值捕获、产能／投入／执行、现金转换／资产负债表、关系归因、监管政策、资本／估值、反证／what-would-change 等可组合研究问题；
+3. `Industry Pack` 只增加行业 metric、mechanism、query atoms、source role、常见误用和可选择 facet，不能放宽身份、期间、关系、lineage、来源权威或 Evidence 晋升；
+4. `CaseResearchProfile` 只实例化公司别名、财年、截至日、客户／供应商等关系端点和从行业 Pack 中选择的 case-specific facets；不得要求修改核心代码，也不得包含标准答案 URL 或 Gold target。
+
+模型可提出查询原子和后续追问 facet，但本地 compiler 继续持有身份、期间、关系方向、来源权威、预算和 Evidence promotion。检索、parser、Provider 和向量库通过稳定插件接口接入；更换模型、Provider 或索引实现不得改变金融内核。模型能力增强时可以扩大 AutonomyGrant，不能删除引用、事实权威、PIT、冲突、gap 和审阅骨架。
+
+FIN 0.1.3 的采用顺序固定为：先冻结上述合同；再做 DELL 完整纵切；MU／NVDA 必须在核心文件字节不变的情况下只改行业／案例配置完成迁移；随后用一个美国非半导体、一个 non-US 20-F／6-K、一个披露稀疏 archetype 做留出验证。留出案例的真实身份和答案在其 proof 前不得写进核心合同。只有迁移和留出测试通过后，才允许根据已证明的对象形状重建 sparse／dense。
+
+本合同不把 `capital_allocation_and_valuation` 提前变成 FIN 0.1.3 的新增硬门。该 Slot 已进入通用库，但仍按本 PRD 16.2 的版本边界保持 optional；本轮 DELL／MU／NVDA 的必需门聚焦事实、经济机制、归因、现金转换、监管、反证、typed gap 和可追溯性。

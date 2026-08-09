@@ -276,7 +276,7 @@ def test_materialized_proof_is_zero_call_digest_bound_and_honest() -> None:
     assert proof["stage_acceptance"]["external_product_coverage"] is False
 
 
-def test_project_os_advances_to_refresh_after_completed_ranking_scope() -> None:
+def test_project_os_holds_index_refresh_until_financial_object_vertical_passes() -> None:
     completed = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
     assert completed["status"] == "blocked"
     candidate_ceiling = run_project_os_preflight(
@@ -286,7 +286,19 @@ def test_project_os_advances_to_refresh_after_completed_ranking_scope() -> None:
     refresh = run_project_os_preflight(
         ROOT, run_scope="S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH"
     )
-    assert refresh["status"] == "pass"
+    assert refresh["status"] == "blocked"
+    assert {
+        row["issue_id"] for row in refresh["open_full_chain_blockers"]
+    } == {
+        "RC-P36-157-fin-0-1-3-s1-08-operational-provider-and-candidate-coverage-insufficient",
+        "RC-P36-160-fin-0-1-3-s1-internal-current-corpus-index-and-gold-mart-freshness-insufficient",
+        "RC-P36-162-fin-0-1-3-s1-milvus-lite-windows-manifest-atomic-replace-and-fingerprint-gap",
+    }
+    dell_vertical = run_project_os_preflight(
+        ROOT,
+        run_scope="S1_DELL_FINANCIAL_SOURCE_OBJECT_AND_EVIDENCE_PACK_VERTICAL_SLICE",
+    )
+    assert dell_vertical["status"] == "pass"
     current = run_project_os_preflight(
         ROOT, run_scope="S1_INTERNAL_CURRENT_OFFICIAL_SOURCE_ACQUISITION"
     )
@@ -295,7 +307,13 @@ def test_project_os_advances_to_refresh_after_completed_ranking_scope() -> None:
         ROOT, run_scope="S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION"
     )
     assert ranking["status"] == "blocked"
-    assert ranking["open_full_chain_blocker_count"] == 2
+    assert {
+        row["issue_id"] for row in ranking["open_full_chain_blockers"]
+    } == {
+        "RC-P36-157-fin-0-1-3-s1-08-operational-provider-and-candidate-coverage-insufficient",
+        "RC-P36-160-fin-0-1-3-s1-internal-current-corpus-index-and-gold-mart-freshness-insufficient",
+        "RC-P36-162-fin-0-1-3-s1-milvus-lite-windows-manifest-atomic-replace-and-fingerprint-gap",
+    }
     assert ranking["scope_resolution"]["operation_class"] == (
         "ranking_evaluation"
     )

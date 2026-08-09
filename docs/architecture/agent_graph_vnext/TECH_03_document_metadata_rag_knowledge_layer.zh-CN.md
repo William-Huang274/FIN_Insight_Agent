@@ -589,3 +589,69 @@ RAG/KB 的候选层必须先证明“应当找到的资料能进入 pool”，�
 5. rejected locator/date/relationship 与 failed route 要进入 negative/repair index，但不能因为被索引就变成 accepted Evidence；后续 reuse 仍重新检查 case/as-of/authority。
 
 当前 FIN 0.1.3 只证明 v3 zero-call candidate/runtime 合同；最近 DELL live 只有 1 个 unique SEC source、四组 hidden target target-in-pool=0。故 TECH_03 的 current ranking/vector 质量仍未准入，本节不表示主索引刷新、三案 live candidate ceiling 或 RAG 产品验收完成。
+
+## 24. FIN 0.1.3 金融研究内核、Evidence Slot 库与插件边界（2026-08-09）
+
+### 24.1 为什么需要本节
+
+三案例尸检确认，当前系统的问题不是单纯缺一个 embedding 或 reranker，而是此前把 source family、粗 Evidence Slot、query 和单候选 qrel 混成了近似同一个对象。结果是：候选排名看似可用，但多 facet 研究问题仍无法组成 Evidence Pack；同时 DELL／MU／NVDA 的别名、产品和关系细节开始渗入共享查询代码。继续逐案加条件会形成不可维护的案例迷宫。
+
+本节不替换 TECH_03 既有 Source／Structure／Candidate／Memory 分层，也不新建第二套 DecisionSurface。它冻结上层金融语义如何复用这些对象，并与已有 `CellCompositionEngine`、`QueryFacetPlan`、`CandidateBundle` 和 Evidence Gate 对齐。
+
+### 24.2 四层组合
+
+| 层 | 可拥有 | 禁止拥有 |
+| --- | --- | --- |
+| `FinancialResearchKernel` | subject、evidence owner、relationship direction、period/as-of、source authority、candidate/evidence boundary、citation/lineage、coverage/conflict/gap | ticker、产品名、行业指标、Provider 特判、Gold locator |
+| `Evidence Slot Library` | 通用问题、required/optional facets、最低独立来源族、允许 candidate role、typed gap code | 单案例答案、固定 URL、模型生成事实 |
+| `FinancialResearchIndustryPack` | 行业 facet、metric、mechanism、query atoms、source role preference、forbidden substitution | 改写核心身份／期间／lineage／authority、直接 Evidence promotion |
+| `CaseResearchProfile` | 公司别名、财年／截至日、关系端点、从 Pack 中选取的 facets | 新造 Pack 外 facet、核心代码分支、Gold target 或标准答案 URL |
+
+现有四个外源 Evidence Slot 继续作为 source-discovery family，不再等同完整研究问题。它们分别映射到多个新 Slot：issuer results 可服务 operating performance、pricing/mix 和 cash conversion；customer demand 可服务 demand quality 与 relationship attribution；supply 可服务 capacity、relationship 和 counterevidence；regulatory 可服务 cash、policy 与 counterevidence。映射必须保留原始 family lineage。
+
+### 24.3 稳定插件接口
+
+第一版接口只冻结输入／输出和 authority，不指定实现：
+
+```text
+SourceAdapter.discover(SearchIntent) -> SourceLocator[]
+ParserAdapter.parse(RawCaptureRef) -> FinancialDocumentObject[]
+CandidateRetriever.search(TypedRetrievalRequest) -> FinancialCandidate[]
+EvidencePackEvaluator.evaluate(CandidatePackInput) -> CandidatePackEvaluation
+```
+
+- `SourceAdapter` 只发现 locator；Provider 日期、snippet 和 score 不具事实权威。
+- `ParserAdapter` 只解析已保存的 raw capture，不得修改 source identity、发布日期权威或 Evidence 状态。
+- `CandidateRetriever` 只返回经过 typed identity／period／relationship filter 的 candidate；SQL、sparse、dense、graph 均实现同一接口但各自只消费适合的 query lane。
+- `EvidencePackEvaluator` 聚合多个 candidate 的 facet 覆盖、canonical source diversity、冲突和 residual gap；它不能晋升 Evidence。
+
+### 24.4 多候选 Evidence Pack evaluator
+
+一个 qrel 或一个 chunk 只证明候选相关。Slot 完整性必须对多个候选取覆盖并同时检查：
+
+1. case 与 subject 一致；
+2. evidence owner 和 relationship direction 已由 Case profile 授权；
+3. reporting period／as-of 合法；
+4. facet 在通用 Slot 或选定 Industry Pack 内；
+5. citation 与 raw/parser lineage 完整；
+6. source diversity 按 canonical source family 计数，同文档多 role binding 不增益；
+7. support／counter 对同一 semantic claim 冲突时保持 unresolved；
+8. 未覆盖 facet 生成 typed residual gap；声明 gap 只能使执行终态化，不能把 incomplete Pack 变 complete。
+
+evaluator 的最高输出只能是 `candidate_complete_pending_evidence_gate`。Evidence Gate、NumericProgram、reviewer 和后续 Judgment 继续拥有事实晋升、数值权威与研究结论。
+
+### 24.5 Chunk／object 与索引重建关系
+
+新合同先定义“研究要找什么”，再决定“什么对象值得入库”。DELL 纵切将逐 facet 检查现有 SourceDocument、Section、Q&A、Table、child claim、parent context 和 template filtering 是否够用；只有能改善真实 Evidence Pack coverage 的对象形状才进入下一版 sparse／dense。不得先把 410 个旧形状片段向量化，再用后端排序掩盖 source／chunk 缺口。
+
+### 24.6 泛化证明
+
+泛化不是“同一函数跑了三个 ticker”。最低证明顺序为：
+
+1. DELL 作为开发纵切，允许修改通用内核、Industry Pack 和 DELL case config；
+2. MU／NVDA transfer 期间，通用内核与插件实现 digest 必须不变，只允许 Pack／case config 和来源数据变化；
+3. 三个 evaluator-blind 留出 archetype 覆盖美国非半导体、non-US 20-F／6-K／本币／PDF、披露稀疏与 honest-gap；
+4. mutation 覆盖别名、财年／公历错位、同名实体、关系反转、跨案／未来期污染、多语言、PDF-only、重复 role binding、旧期和零结果；
+5. 任何新案例需要修改核心 ticker 条件时，generalization gate 失败，问题回到 Pack／ontology／plugin 设计，不得静默放行。
+
+机器合同：`configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json`。当前状态仅为 `contract_frozen_zero_call`，不表示 DELL 纵切、MU／NVDA 迁移、留出泛化、索引重建、外源补源、DeepSeek 研究或产品验收完成。

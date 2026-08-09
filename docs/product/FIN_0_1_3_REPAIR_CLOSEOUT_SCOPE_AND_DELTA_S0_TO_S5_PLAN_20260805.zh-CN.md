@@ -716,3 +716,27 @@ R2 的排序结果仍对 qrels v1.3 有效，但产品解释必须更新：dense
 6. current-quarter exact、graph／tool、external `4/12` 和下游研报质量仍按既定顺序分账。
 
 本项是 FIN 0.1.3 S1 的 Gold／evaluation target 质量修复，不创建新版本、不重跑旧 R2，也不把完整 Evidence Slot 的资料充分性责任错误压到单条 qrel 上。
+
+## 7Q. 三案例尸检后的金融研究泛化纵切（2026-08-09）
+
+三案例 A／B／external replay／C 证明，直接继续 410-vector build 会把已有 source／chunk／query 形状固化，而不会自然得到完整 Evidence Pack。原 7P 的 5 个 qrel successor 和既有 410 specs 保留为历史资产，但不再是当前立即执行项；它们必须等新的金融对象与 Pack evaluator 证明后再决定是否复用、扩邻或重建。
+
+更新后的唯一顺序为：
+
+1. [x] `S0_S1_FINANCIAL_RESEARCH_GENERALIZATION_CONTRACT`：冻结 provider-neutral 金融内核、9 类 Evidence Slot、稳定插件接口、AI compute Industry Pack、DELL／MU／NVDA case profile 和三个 blind held-out archetype；只做零调用合同与 mutation proof；
+2. [ ] `S0_S1_DELL_FINANCIAL_SOURCE_OBJECT_AND_EVIDENCE_PACK_VERTICAL_SLICE`：从 DELL 真实 research question 出发，逐 facet 审查 current source inventory、document hierarchy、Q&A／table／child-parent chunk、typed query lane、candidate selection、multi-candidate Pack 和 residual gaps；允许修通用内核／AI Pack／DELL config，但不得调用模型或先建 dense；
+3. [ ] `S0_S1_MU_NVDA_CORE_UNCHANGED_TRANSFER`：锁定第 2 项的核心 module／plugin digest；MU／NVDA 只能改 Pack／case config／source data。任何 ticker-specific core patch 都记为 transfer failure；
+4. [ ] `S0_S1_THREE_HELD_OUT_GENERALIZATION_PROOF`：在 proof 前才选择一个美国非半导体、一个 non-US 20-F／6-K、一个披露稀疏案例；不写入 Gold URL，覆盖 alias／period／currency／PDF／relationship／stale／zero-result mutation；
+5. [ ] `S1_SPARSE_DENSE_REBUILD_DECISION`：只对上述纵切证明值得保留的 Source／Section／Q&A／Table／claim objects 建 successor sparse/dense；旧 410 specs 不删除，但不得自动执行；
+6. [ ] `S1_RESIDUAL_GAP_EXTERNAL_SUPPLEMENT`：先完成本地 Candidate Pack，才把真实 residual facets 投影到 official-first／broad discovery；外源 capture 后回到同一 evaluator 与 Evidence Gate；
+7. [ ] `S2_S3_MODEL_DYNAMIC_FOLLOW_UP_AND_RESEARCH_SYNTHESIS`：在同一已治理 Evidence Pack 上让 DeepSeek 提出 bounded follow-up atoms、动态关闭 gaps、形成机制／反证／WWC，并与 Codex reference 和 qualified-human rubric 比较研究内容质量；
+8. [ ] 完成 Workbench／S5 产品验收；不能用 contract pass、retrieval 指标、9 Artifacts 或页面可打开替代。
+
+止损边界：第 1 项不调用网络、Provider、模型、retrieval、embedding、rerank 或 Evidence promotion；第 2 项先允许自然暴露 DELL 全链问题，不因单个 facet 缺失逐次 live。第 3 项若需要改核心，先记录原因并回到通用边界一次性处置。第 4 项通过前不准第 5 项；本地 Pack 未形成前不准用外源把缺口混成另一套 truth；DeepSeek 最后进入，避免把 S0／S1 产品缺陷算成模型能力。
+
+第一项机器合同与零调用证明分别为：
+
+- `configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json`
+- `configs/releases/fin_ia_0_1_3_s0_s1_financial_research_generalization_zero_call_proof_v1_0.json`
+
+当前状态严格为第一项通过；DELL 纵切尚未开始，不能宣称新的 RAG、Evidence Pack、跨案例泛化或研报能力。

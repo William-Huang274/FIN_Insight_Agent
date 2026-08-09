@@ -12,6 +12,7 @@ SourceType = Literal[
     "10-Q",
     "20-F",
     "40-F",
+    "6-K",
     "8-K",
     "annual_report",
     "business_report",

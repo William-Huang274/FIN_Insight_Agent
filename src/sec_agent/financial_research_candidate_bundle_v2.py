@@ -295,18 +295,27 @@ def project_candidate_bundle_v2(
             str(parent.get("text") or ""),
             row_label=row_label,
             raw_value=raw_value,
+            expected_table_id=str(child.get("metadata", {}).get("source_table_id") or ""),
         )
         if not row_label or not column_label or table is None:
             codes.append("table_semantic_path_missing")
         else:
+            expected_cell_key = str(
+                child.get("metadata", {}).get("table_cell_key")
+                or child.get("metadata", {}).get("cell_key")
+                or ""
+            )
+            computed_source_cell_key = _source_cell_key(row_label, column_label)
             table_path = TableSemanticPath(
                 table_id=table["table_id"],
                 table_header=table["header"],
                 row_label=row_label,
                 column_label=column_label,
-                cell_key=_cell_key(row_label, column_label),
+                cell_key=expected_cell_key or _cell_key(row_label, column_label),
                 context_digest=hashlib.sha256(table["text"].encode("utf-8")).hexdigest(),
             )
+            if expected_cell_key and expected_cell_key != computed_source_cell_key:
+                codes.append("table_cell_key_mismatch")
             unit_authority, unit_codes = _reconcile_currency_unit(
                 table_text=table["text"],
                 child_unit=str(child.get("unit") or ""),
@@ -327,6 +336,7 @@ def project_candidate_bundle_v2(
                     "child_object_identity_mismatch",
                     "parent_child_lineage_mismatch",
                     "table_semantic_path_missing",
+                    "table_cell_key_mismatch",
                     "currency_unit_conflict",
                     "currency_unit_authority_missing",
                     "numeric_cell_parse_invalid",
@@ -463,7 +473,7 @@ def _execute_case(case: BundleCaseInput, *, repo_root: Path) -> dict[str, Any]:
         if row["terminal_state"] == "bundle_projected"
         and row.get("bundle", {}).get("object_type") == "metric"
         and row.get("bundle", {}).get("currency_unit_authority", {}).get("status")
-        != "source_and_child_consistent"
+        not in {"source_and_child_consistent", "non_monetary_dimension_preserved"}
     )
     public_projections = [_public_projection(row) for row in projections]
     body = {
@@ -601,6 +611,7 @@ def _find_parent_table_context(
     *,
     row_label: str,
     raw_value: str,
+    expected_table_id: str = "",
 ) -> dict[str, str] | None:
     if not text or not row_label:
         return None
@@ -612,6 +623,8 @@ def _find_parent_table_context(
     row_norm = _normalise(row_label)
     raw_norm = _normalise(raw_value)
     for match in pattern.finditer(text):
+        if expected_table_id and match.group("id") != expected_table_id:
+            continue
         body = " ".join(match.group("body").split())
         body_norm = _normalise(body)
         score = 0
@@ -640,6 +653,48 @@ def _reconcile_currency_unit(
     source_currency = next(iter(source_codes)) if len(source_codes) == 1 else ""
     child_currency = _currency_from_unit(child_unit)
     scale = _scale_from_unit_or_text(child_unit, table_text)
+    normalized_unit = child_unit.strip().casefold()
+    if normalized_unit in {"count", "percent"}:
+        return (
+            CurrencyUnitAuthority(
+                expected_currency=expected_currency,
+                source_currency=source_currency,
+                child_currency="",
+                scale="",
+                canonical_unit=normalized_unit,
+                provenance=(
+                    expected_currency_authority,
+                    "parent_table_marker" if source_currency else "parent_table_no_currency_marker",
+                    "child_non_monetary_unit",
+                ),
+                status="non_monetary_dimension_preserved",
+            ),
+            [],
+        )
+    if normalized_unit == "per_share" or normalized_unit.endswith("_per_share"):
+        codes: list[str] = []
+        if child_currency and child_currency != expected_currency:
+            codes.append("currency_unit_conflict")
+        if source_currency and source_currency != expected_currency:
+            codes.append("currency_unit_conflict")
+        if source_currency and child_currency and source_currency != child_currency:
+            codes.append("currency_unit_conflict")
+        codes = list(dict.fromkeys(codes))
+        if codes:
+            return None, codes
+        canonical_currency = child_currency or source_currency or expected_currency
+        return (
+            CurrencyUnitAuthority(
+                expected_currency=expected_currency,
+                source_currency=source_currency,
+                child_currency=child_currency,
+                scale="per_share",
+                canonical_unit=f"{canonical_currency.lower()}_per_share",
+                provenance=(expected_currency_authority, "parent_table_marker", "child_per_share_unit"),
+                status="source_and_child_consistent",
+            ),
+            [],
+        )
     codes: list[str] = []
     if len(source_codes) != 1 or not source_currency:
         codes.append("currency_unit_authority_missing")
@@ -759,6 +814,14 @@ def _normalise(value: str) -> str:
 def _cell_key(row_label: str, column_label: str) -> str:
     raw = f"{_normalise(row_label)}::{_normalise(column_label)}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:20]
+
+
+def _source_cell_key(row_label: str, column_label: str) -> str:
+    def safe(value: str) -> str:
+        cleaned = re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
+        return cleaned[:80] or "cell"
+
+    return f"{safe(row_label)}__{safe(column_label)}"
 
 
 def _resolve(root: Path, value: str) -> Path:

@@ -2243,3 +2243,11 @@ MU 与 NVDA 已在通用 core fingerprint、通用 source/object executor 和插
 迁移同时把“命中”与“能写研报”进一步分开：MU 仍缺产品级 HBM／AI 收入、订单／backlog、利用率／良率和供应分配；NVDA 仍缺公司自身订单、ASP／单位／price-volume-mix、公司特定供应容量及 current Q1 FY2027 10-Q。客户押金不能冒充收入，Dell 订单不能冒充 NVIDIA 订单，供应商总体扩产不能冒充公司特定 allocation。上述缺口必须保留为 typed residual gap，并在本地 Pack 完成后才可成为外源补源请求。
 
 新增公司不得要求修改 `FinancialResearchKernel`。Case identity 应通过外部 `CaseResearchProfile` 注册；若每加入一个 ticker 都需要改核心合同文件或增加 ticker 条件，留出泛化门即失败。冻结 executor 仍含 DELL 命名属于非阻断兼容债，后续只能用版本化合同统一重命名，不得为本次迁移改写已冻结 proof。
+
+### 16.11 留出案例对象形状通过后的产品准入边界（2026-08-09）
+
+ORCL、ASML、ANET 的当前官方源已证明同一通用 parser／CandidateBundleV2 可覆盖 10-K、non-US 6-K exhibit 与 10-Q，无需向金融内核加入 ticker 特判。产品验收同时要求机器门和人工业务语义门：数量、digest 与 mutation 全通过，但若债务利率被分进现金、市场化证券回款被分进债务、无形资产被冒充客户关系证据，仍必须退回本阶段。
+
+索引准入对象不是“所有成功解析出来的文本”。下一版 sparse／dense manifest 只能包含身份、期间、来源、父子表路径、单元格、币种／单位和 Evidence Slot 语义完整的选定 CandidateBundle；自动生成但研究含量弱的安全港、联系人、导航、模板与法律套话保留在 candidate／negative／repair 层。这样既避免为当前模型能力做 ticker 专用补丁，也避免未来模型升级后仍背负被污染的索引骨架。
+
+本轮只建立 `object-shape generalization engineering pass`，不宣称 Evidence Pack 或研报泛化完成。执行顺序保持：clean independent proof → sparse/dense manifest 重定基与 Ubuntu WSL 构建 → 同矩阵检索评测 → 用真实 residual gaps 做 external supplement → DeepSeek 动态追问与研究综合 → qualified-human report acceptance。

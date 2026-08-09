@@ -19,6 +19,10 @@ from .section_splitter import (
 def extract_sec_html_text(html_path: str | Path) -> str:
     path = Path(html_path)
     html = path.read_text(encoding="utf-8", errors="ignore")
+    return extract_sec_html_text_content(html)
+
+
+def extract_sec_html_text_content(html: str) -> str:
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
         soup = BeautifulSoup(html, "lxml")

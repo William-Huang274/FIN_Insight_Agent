@@ -105,6 +105,7 @@ def extract_tables(evidence: EvidenceObject) -> list[TableObject]:
             form_type=evidence.metadata.get("form_type") or evidence.source_type,
             period_type=evidence.period_type or evidence.metadata.get("period_type"),
             duration_months=evidence.duration_months or evidence.metadata.get("duration_months"),
+            reporting_currency=evidence.metadata.get("reporting_currency"),
         )
         object_id = _object_id(evidence.evidence_id, "TABLE", table_index)
         tables.append(
@@ -136,6 +137,7 @@ def extract_tables(evidence: EvidenceObject) -> list[TableObject]:
                     "item_code": evidence.metadata.get("item_code"),
                     "form_type": evidence.metadata.get("form_type") or evidence.source_type,
                     "source_tier": evidence.source_tier,
+                    "reporting_currency": evidence.metadata.get("reporting_currency"),
                 },
             )
         )
@@ -200,6 +202,8 @@ def extract_table_metrics(evidence: EvidenceObject, table: TableObject) -> list[
                     confidence=0.82 if cell.get("cell_kind") == "period_value" else 0.64,
                     metadata={
                         "table_object_id": table.object_id,
+                        "source_table_id": table.table_id,
+                        "table_cell_key": cell.get("cell_key"),
                         "row_index": row_index,
                         "column_index": cell.get("column_index"),
                         "logical_column_index": cell.get("logical_column_index"),
@@ -753,7 +757,11 @@ def _infer_table_title(context_before: str | None) -> str | None:
 
 def _extract_periods(text: str) -> list[str]:
     periods = []
-    for match in YEAR_PATTERN.finditer(text):
+    pattern = re.compile(
+        rf"\bQ[1-4]\s+(?:20\d{{2}}|19\d{{2}})\b|{YEAR_PATTERN.pattern}",
+        re.IGNORECASE,
+    )
+    for match in pattern.finditer(text):
         value = match.group(0)
         if value not in periods:
             periods.append(value)
@@ -806,6 +814,8 @@ def _row_numeric_cells(row: list[str], header: list[str], table: TableObject) ->
     numeric_values = []
     for logical_index, cell in enumerate(logical_values):
         raw = str(cell["raw_value"])
+        if not _looks_like_numeric_table_cell(raw):
+            continue
         value, parsed_unit = _parse_number(raw)
         if value is None or _is_standalone_year(raw):
             continue
@@ -819,7 +829,11 @@ def _row_numeric_cells(row: list[str], header: list[str], table: TableObject) ->
         period = _period_for_column_label(column_label)
         if period is None and not _is_change_column(column_label):
             periods = table.candidate_periods
-            period = periods[logical_index] if logical_index < len(periods) else None
+            period = (
+                _extract_period(periods[logical_index]) or periods[logical_index]
+                if logical_index < len(periods)
+                else None
+            )
         numeric_values.append(
             {
                 "raw_value": raw,
@@ -853,12 +867,18 @@ def _table_cells(
     form_type: str | None = None,
     period_type: str | None = None,
     duration_months: int | None = None,
+    reporting_currency: str | None = None,
 ) -> list[dict[str, Any]]:
     header_index = _table_header_index(rows)
     header = rows[header_index] if header_index is not None else []
     data_start = _table_data_start_index(rows, header_index)
     data_rows = rows[data_start:]
-    table_unit = _infer_table_unit_from_values(rows=rows, context_before=context_before, context_after=context_after)
+    table_unit = _infer_table_unit_from_values(
+        rows=rows,
+        context_before=context_before,
+        context_after=context_after,
+        reporting_currency=reporting_currency,
+    )
     table_unit_context = _table_unit_context(rows=rows, context_before=context_before, context_after=context_after)
     cells = []
     active_group: str | None = None
@@ -876,6 +896,8 @@ def _table_cells(
         expanded_labels = _logical_column_labels_for_rows(rows, header_index, candidate_periods, len(logical_values))
         for logical_index, cell in enumerate(logical_values):
             raw = str(cell["raw_value"])
+            if not _looks_like_numeric_table_cell(raw):
+                continue
             value, parsed_unit = _parse_number(raw)
             if value is None or _is_standalone_year(raw):
                 continue
@@ -888,7 +910,7 @@ def _table_cells(
             )
             period = _period_for_column_label(column_label)
             if period is None and not _is_change_column(column_label) and logical_index < len(candidate_periods):
-                period = candidate_periods[logical_index]
+                period = _extract_period(candidate_periods[logical_index]) or candidate_periods[logical_index]
             unit = _infer_cell_unit(raw, column_label, table_unit, row_label=row_label, table_context=table_unit_context) or parsed_unit
             period_role = _period_role_for_table_cell_parts(
                 form_type=form_type,
@@ -970,6 +992,8 @@ def _table_data_start_index(rows: list[list[str]], header_index: int | None) -> 
         and _is_year_header_row(rows[next_index])
     ):
         return next_index + 1
+    if next_index < len(rows) and _is_column_descriptor_row(rows[next_index]):
+        return next_index + 1
     return next_index
 
 
@@ -982,19 +1006,81 @@ def _logical_column_labels_for_rows(
     if header_index is None or not logical_count:
         return []
     header = rows[header_index]
-    expanded = _expanded_logical_column_labels(header, candidate_periods, logical_count)
-    if expanded:
-        return expanded
+    next_index = header_index + 1
+    if next_index < len(rows):
+        grouped = _expanded_year_group_descriptor_labels(
+            header,
+            rows[next_index],
+            logical_count,
+        )
+        if grouped:
+            return grouped
     if header_index > 0:
         grouped = _expanded_period_group_year_labels(rows[header_index - 1], header, logical_count)
         if grouped:
             return grouped
-    next_index = header_index + 1
+    expanded = _expanded_logical_column_labels(header, candidate_periods, logical_count)
+    if expanded:
+        return expanded
     if next_index < len(rows):
         grouped = _expanded_period_group_year_labels(header, rows[next_index], logical_count)
         if grouped:
             return grouped
     return []
+
+
+def _is_column_descriptor_row(row: list[str]) -> bool:
+    labels = [str(cell or "").strip().casefold() for cell in row if str(cell or "").strip()]
+    if len(labels) < 2:
+        return False
+    descriptor_markers = (
+        "amount",
+        "interest rate",
+        "date of issuance",
+        "percentage",
+        "percent",
+        "units",
+        "shares",
+    )
+    return sum(any(marker in label for marker in descriptor_markers) for label in labels) >= 2
+
+
+def _expanded_year_group_descriptor_labels(
+    year_header: list[str],
+    descriptor_row: list[str],
+    logical_count: int,
+) -> list[str]:
+    """Combine grouped years with a following row of repeated subcolumns.
+
+    SEC debt tables commonly use ``2026 | 2025`` above
+    ``Date of Issuance | Amount | Rate | Amount | Rate``.  Treating the two
+    physical header rows independently assigns years from bond maturity text
+    to cells.  This helper preserves the actual two-dimensional coordinate.
+    """
+    years = [_extract_period(cell) for cell in year_header]
+    years = [year for year in years if year]
+    if len(years) < 2 or not _is_column_descriptor_row(descriptor_row):
+        return []
+    descriptors = [
+        str(cell or "").strip()
+        for cell in descriptor_row
+        if str(cell or "").strip() and not _is_table_unit_row([str(cell or "").strip()])
+    ]
+    if len(descriptors) != logical_count:
+        return []
+    leading = len(descriptors) % len(years)
+    repeated_count = len(descriptors) - leading
+    if repeated_count <= 0 or repeated_count % len(years) != 0:
+        return []
+    span = repeated_count // len(years)
+    if span < 1:
+        return []
+    labels = descriptors[:leading]
+    offset = leading
+    for year_index, year in enumerate(years):
+        group = descriptors[offset + year_index * span : offset + (year_index + 1) * span]
+        labels.extend(f"{label} {year}" for label in group)
+    return labels if len(labels) == logical_count else []
 
 
 def _expanded_period_group_year_labels(
@@ -1042,6 +1128,12 @@ def _expanded_logical_column_labels(
     labels = [str(item or "").strip() for item in header if str(item or "").strip()]
     if labels and _is_table_unit_row([labels[0]]):
         labels = labels[1:]
+    elif len(labels) == logical_count + 1 and not _extract_period(labels[0]):
+        labels = labels[1:]
+    if len(labels) == logical_count and all(
+        _extract_period(label) or _is_change_column(label) for label in labels
+    ):
+        return labels
     change_positions = [index for index, label in enumerate(labels) if _is_change_column(label)]
     if not change_positions or len(candidate_periods) < 2:
         return []
@@ -1059,8 +1151,7 @@ def _expanded_logical_column_labels(
 def _period_for_column_label(column_label: str | None) -> str | None:
     if not column_label or _is_change_column(column_label):
         return None
-    periods = _extract_periods(column_label)
-    return periods[0] if len(periods) == 1 else None
+    return _extract_period(column_label)
 
 
 def _is_change_column(column_label: str | None) -> bool:
@@ -1147,6 +1238,7 @@ def _infer_table_unit(table: TableObject) -> str | None:
         rows=table.rows,
         context_before=" ".join(value for value in [table.title, table.text_before] if value),
         context_after=table.text_after,
+        reporting_currency=table.metadata.get("reporting_currency"),
     )
 
 
@@ -1155,18 +1247,26 @@ def _infer_table_unit_from_values(
     rows: list[list[str]],
     context_before: str | None,
     context_after: str | None,
+    reporting_currency: str | None = None,
 ) -> str | None:
     context = _table_unit_context(rows=rows, context_before=context_before, context_after=context_after)
-    if "dollars in billions" in context or "in billions" in context:
-        return "usd_billions"
-    if "dollars in millions" in context or "in millions" in context:
-        return "usd_millions"
+    currencies = _currency_codes_from_text(context)
+    if len(currencies) > 1:
+        return None
+    explicit_currency = next(iter(currencies), "")
+    currency = explicit_currency or str(reporting_currency or "").strip().lower()
+    if currency and not re.fullmatch(r"[a-z]{3}", currency):
+        currency = ""
+    if "in billions" in context:
+        return f"{currency or 'usd'}_billions"
+    if "in millions" in context:
+        return f"{currency or 'usd'}_millions"
     if "in thousands" in context:
-        return "usd_thousands"
-    if "dollars" in context:
-        return "usd"
+        return f"{currency or 'usd'}_thousands"
     if "percentage" in context or "percent" in context:
         return "percent"
+    if explicit_currency:
+        return explicit_currency
     return None
 
 
@@ -1189,12 +1289,61 @@ def _infer_cell_unit(
     table_context: str | None = None,
 ) -> str | None:
     lower_label = (column_label or "").lower()
-    if "%" in raw_value or "%" in lower_label or "percent" in lower_label:
+    lower_row = (row_label or "").lower()
+    if (
+        "%" in raw_value
+        or "%" in lower_label
+        or "percent" in lower_label
+        or "interest rate" in lower_label
+    ):
         return "percent"
+    if re.search(r"\b(?:units?|systems? sold)\b", lower_row):
+        return "count"
     effective_table_unit = _mixed_bank_table_row_unit(row_label, table_unit, table_context)
+    if re.search(r"\bper\s+(?:(?:basic|diluted|ordinary)\s+)?share\b", lower_row) or re.search(r"\beps\b", lower_row):
+        currency = str(effective_table_unit or "").split("_", 1)[0]
+        return f"{currency}_per_share" if re.fullmatch(r"[a-z]{3}", currency) else "per_share"
     if "$" in raw_value:
-        return effective_table_unit or "usd"
+        return effective_table_unit or _row_currency_unit(lower_row, table_context) or "usd"
+    if "amount" in lower_label:
+        row_unit = _row_currency_unit(lower_row, table_context)
+        if row_unit:
+            return row_unit
+    if "%" in lower_row or "margin (%)" in lower_row:
+        return "percent"
     return effective_table_unit
+
+
+def _row_currency_unit(row_label: str | None, table_context: str | None) -> str | None:
+    currencies = _currency_codes_from_text(str(row_label or ""))
+    if len(currencies) != 1:
+        return None
+    currency = next(iter(currencies))
+    context = str(table_context or "").casefold()
+    if "in billions" in context:
+        return f"{currency}_billions"
+    if "in millions" in context or "amounts in millions" in context:
+        return f"{currency}_millions"
+    if "in thousands" in context:
+        return f"{currency}_thousands"
+    return currency
+
+
+def _currency_codes_from_text(text: str) -> set[str]:
+    lower = str(text or "").casefold()
+    pairs = {
+        "usd": ("$", " usd", "u.s. dollar", "us dollar", "dollars in"),
+        "eur": ("€", " eur", "euro"),
+        "gbp": ("£", " gbp", "pound sterling"),
+        "chf": (" chf", "swiss franc"),
+        "cny": (" cny", " rmb", "renminbi"),
+        "jpy": (" jpy", "yen"),
+        "twd": (" twd", "nt$", "new taiwan dollar"),
+        "krw": ("₩", " krw", "won"),
+    }
+    return {
+        code for code, markers in pairs.items() if any(marker in lower for marker in markers)
+    }
 
 
 def _mixed_bank_table_row_unit(row_label: str | None, table_unit: str | None, table_context: str | None) -> str | None:
@@ -1300,6 +1449,16 @@ def _looks_like_header(value: str) -> bool:
     return (
         lower in {"year ended", "gross margin:", "net sales:", "operating income"}
         or lower.startswith("table of contents")
+        or any(
+            marker in lower
+            for marker in (
+                "statements of operations",
+                "statements of cash flows",
+                "statements of stockholders",
+                "balance sheets as of",
+                "financial statements for",
+            )
+        )
         or _is_standalone_year(value)
         or _is_table_unit_row([value])
     )
@@ -1309,12 +1468,23 @@ def _is_table_unit_row(row: list[str]) -> bool:
     text = " ".join(row).lower()
     compact = re.sub(r"\s+", " ", text).strip()
     unit_only = re.fullmatch(
-        r"\(?\s*(?:dollars\s+)?in\s+(?:billions|millions|thousands)(?:,\s*except[^)]*)?\s*\)?",
+        r"\(?\s*(?:(?:figures|amounts)\s+)?(?:dollars\s+)?in\s+(?:billions|millions|thousands)(?:\s+of\s+(?:euros?|dollars?|pounds?|[a-z]{3}))?(?:,?\s*(?:except|unless)[^)]*)?\s*\)?",
         compact,
     )
     return bool(text) and (
         bool(unit_only)
         or compact in {"$", "%", "except percentages"}
+    )
+
+
+def _looks_like_numeric_table_cell(value: str) -> bool:
+    compact = re.sub(r"\s+", " ", str(value or "").strip())
+    return bool(
+        re.fullmatch(
+            r"(?:[$€£]\s*)?\(?-?\d[\d,]*(?:\.\d+)?\)?\s*(?:%|million|billion)?",
+            compact,
+            re.IGNORECASE,
+        )
     )
 
 

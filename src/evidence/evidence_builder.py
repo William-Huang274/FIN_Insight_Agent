@@ -120,6 +120,8 @@ def _evidence_type_for_chunk(chunk: SecFilingChunk) -> str:
     form = str(chunk.form_type or chunk.source_type or "").upper()
     if form == "8-K":
         return EIGHT_K_EVIDENCE_TYPE_BY_ITEM.get(chunk.item_code, "company_authored_disclosure")
+    if form == "6-K":
+        return "company_authored_disclosure"
     if form == "10-Q":
         return QUARTERLY_EVIDENCE_TYPE_BY_ITEM.get(chunk.item_code, "filing_disclosure")
     return EVIDENCE_TYPE_BY_ITEM.get(chunk.item_code, "filing_disclosure")

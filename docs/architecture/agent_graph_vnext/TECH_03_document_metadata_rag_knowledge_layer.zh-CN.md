@@ -726,3 +726,13 @@ source authority
 该结果的含义不是“旧对象已经修好”，而是 v2 能识别并隔离旧对象缺陷。ASML 的三个 currency conflict、五个 invalid numeric cell、两个 unit-authority gap 和一个 table-path gap 都没有被默认币种或 renderer 覆盖。后续 current source 必须 capture-first，并由带 parent table marker／row／column／currency provenance 的 parser 投影；旧 child 只保留为失败证据。
 
 当前 gate 仍为 `sparse_dense_rebuild_admitted=false`。原因是 ORCL／ASML／ANET 的截至期资料尚未进入本地 source inventory，且 PDF／多语言／ADR-local ticker mutation 尚未用新来源完成。只有这部分完成并经同一六案 gate 复证，才允许冻结新的 sparse／dense object manifest。
+
+### 24.11 Current-source table reparse 与索引对象准入（2026-08-09）
+
+ORCL FY2026 10-K、ASML Q2 2026 6-K exhibit 与 ANET Q2 2026 10-Q 已从不可变 response capture 使用同一 table-preserving parser 重建。该过程不读取目录声明的 MIME 作为唯一权威，而是联合 URL 后缀、实际 HTTP content-type 与正文签名；PDF 在没有 layout-preserving adapter 时必须返回 typed parser gap，禁止伪装成 HTML 成功。
+
+多层财务表头必须编译为真实二维坐标。例如 Oracle 债务表的 `2026／2025 × Amount／Effective Interest Rate` 不能退化为一串年份，也不能因证券名称中含百分号而把 amount cell 标成 percent。Metric 的 Slot 路由只允许使用本行 label；父表 title、active group 和整表 context 可作为检索上下文，但不得替单元格决定经营、现金、资本、风险或关系语义。
+
+本轮最终零调用结果为 ORCL `1,132 admitted／353 typed reject／27 bundles／8 Slots`，ASML `18／0／13／5`，ANET `470／238／27／7`，unsafe numeric admission=`0`，9 类 mutation 全通过。人工复核纠正了“债务利率→现金／风险”“有价证券到期回款→债务”“Customer relationships 无形资产→客户关系证据”和父期间污染 current-row 排序等问题。机器数量门与人工业务语义门必须同时通过。
+
+该结果只准入下一次 sparse／dense **manifest 重定基**，不准许直接把全部 source objects 写入索引。特别是自动 narrative claims 仍可能包含安全港或法律套话；主索引只能消费显式选中的 CandidateBundle，未选对象留在 candidate／repair 层。clean archive 独立复证完成前，不得签发真实 embedding／Milvus build；索引完成也不等于 Evidence、研报质量或产品泛化通过。

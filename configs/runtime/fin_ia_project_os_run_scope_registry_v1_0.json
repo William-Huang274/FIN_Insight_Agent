@@ -394,6 +394,13 @@
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1"]
     },
+    "S1_THREE_HELD_OUT_CURRENT_SOURCE_TABLE_PRESERVING_REPARSE_AND_OBJECT_MIGRATION": {
+      "owner_stage": "S1",
+      "operation_class": "source_runtime_zero_call_implementation",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
     "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD": {
       "owner_stage": "S1",
       "operation_class": "source_runtime_zero_call_implementation",

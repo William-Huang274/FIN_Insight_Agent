@@ -1,0 +1,145 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_policy_v1_0",
+  "result_schema": "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_sparse_dense_manifest:v1",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "20260810_s1_six_case_candidate_bundle_sparse_dense_manifest_zero_call_r4",
+  "predecessor_failure_refs": [
+    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r1_failure_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r2_failure_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r3_business_audit_failure_v1_0.json"
+  ],
+  "locked_artifacts": [
+    {
+      "artifact_id": "dell_policy",
+      "path": "configs/runtime/fin_ia_0_1_3_s1_dell_financial_source_object_vertical_policy_v1_0.json",
+      "normalized_sha256": "027d1bfd71dd27ba642b594b30ebaaab8832e9591b7e5c56f35f807ea1592853"
+    },
+    {
+      "artifact_id": "known_transfer_policy",
+      "path": "configs/runtime/fin_ia_0_1_3_s1_mu_nvda_core_unchanged_transfer_policy_v1_0.json",
+      "normalized_sha256": "f345b3677c51dc34f91e97c5787f9c215f7a5c3a36e27b9936cf43705aa8b71d"
+    },
+    {
+      "artifact_id": "dell_result",
+      "path": "configs/releases/fin_ia_0_1_3_s1_dell_financial_source_object_vertical_result_r3_v1_0.json",
+      "normalized_sha256": "eea565f267ae97db7ef889f9115b2b68230cd7cd3e92bc8269f544187accfdbf"
+    },
+    {
+      "artifact_id": "mu_result",
+      "path": "configs/releases/fin_ia_0_1_3_s1_mu_financial_source_object_transfer_result_v1_0.json",
+      "normalized_sha256": "3b6c9214940ae5760f11f10f233f68c0afccb1bdd822f3241eb2b6e170b30f43"
+    },
+    {
+      "artifact_id": "nvda_result",
+      "path": "configs/releases/fin_ia_0_1_3_s1_nvda_financial_source_object_transfer_result_v1_0.json",
+      "normalized_sha256": "045cd6f1c05a17efd190984d0677036336b56e268b6bfcf2e9556b02359a34a9"
+    },
+    {
+      "artifact_id": "bundle_v2_result",
+      "path": "configs/releases/fin_ia_0_1_3_s1_financial_candidate_bundle_v2_result_v1_0.json",
+      "normalized_sha256": "49e40ac6364244a80b135bdc6ad4bda7c66337c42120872e32abc1c58a77f4aa"
+    },
+    {
+      "artifact_id": "held_out_reparse_result",
+      "path": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r9_result_v1_0.json",
+      "normalized_sha256": "58d2b51841ad7798551b3808b296a9aac39deae46c6d6b8ab0257290da5843cc"
+    },
+    {
+      "artifact_id": "held_out_clean_proof",
+      "path": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r9_clean_independent_proof_v1_0.json",
+      "normalized_sha256": "6961c64eb574e3b01d12dd3d4f943247be75a86e23f51a36267ab5c5db89fd61"
+    },
+    {
+      "artifact_id": "ubuntu_milvus_canary",
+      "path": "configs/releases/fin_ia_0_1_3_s1_milvus_lite_ubuntu_wsl_portability_canary_result_v1_0.json",
+      "normalized_sha256": "f2ab30c12ae8bff16f1d4dc9d844c0b691b1cf7cea5170ecbbcda08ebc448320"
+    }
+  ],
+  "private_object_inputs": {
+    "held_out_reparse_runtime_root_ref": "data/workbench_private/fin_0_1_3_s1_three_held_out_current_source_reparse/zero-call-r9",
+    "objects_are_digest_bound_by_public_reparse_result": true,
+    "raw_source_text_may_enter_public_proof": false
+  },
+  "selection_contract": {
+    "expected_case_order": [
+      "DELL",
+      "MU",
+      "NVDA",
+      "ORCL",
+      "ASML",
+      "ANET"
+    ],
+    "expected_primary_spec_count": 93,
+    "expected_primary_specs_by_case": {
+      "DELL": 15,
+      "MU": 16,
+      "NVDA": 14,
+      "ORCL": 19,
+      "ASML": 10,
+      "ANET": 19
+    },
+    "known_cases_require_reviewed_qualification": true,
+    "held_out_metrics_require_complete_table_authority": true,
+    "held_out_metrics_require_period_role": true,
+    "automatic_narrative_claims_enter_primary_index": false,
+    "expected_narrative_review_queue_count": 19,
+    "source_annotations_may_enter_vector_text": false,
+    "candidate_state": "bundle_candidate_only_not_evidence"
+  },
+  "index_contract": {
+    "shared_manifest_for_sparse_and_dense": true,
+    "sparse_kind": "object_bm25",
+    "dense_kind": "bge_m3_milvus",
+    "embedding_model": "D:/hf_models/BAAI__bge-m3",
+    "embedding_dimension": 1024,
+    "fake_batch_size": 32,
+    "historical_indexes_read_only": true,
+    "real_collection_name": "fin_ia_0_1_3_s1_candidate_bundle_dense_v1",
+    "real_sparse_index_name": "fin_ia_0_1_3_s1_candidate_bundle_object_bm25_v1"
+  },
+  "future_real_build_platform": {
+    "qualification_artifact_id": "ubuntu_milvus_canary",
+    "required_os": "linux",
+    "required_distribution": "Ubuntu-22.04",
+    "required_filesystem_role": "linux_root_filesystem_not_windows_mounted_drive",
+    "private_target_prefix": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1",
+    "windows_milvus_lite_eligible": false,
+    "real_build_authorized": false,
+    "fresh_exact_once_authority_required": true
+  },
+  "required_mutations": [
+    "duplicate_candidate_identity",
+    "missing_bundle_binding",
+    "source_digest_drift",
+    "child_digest_drift",
+    "metric_table_path_missing",
+    "metric_currency_authority_missing",
+    "metric_period_missing",
+    "metric_period_role_missing",
+    "metric_unit_mismatch",
+    "cross_case_identity",
+    "future_publication",
+    "automatic_narrative_infiltration",
+    "vector_text_drift",
+    "sparse_partial_insert",
+    "dense_partial_insert"
+  ],
+  "hard_boundaries": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "real_embedding": 0,
+    "milvus_read": 0,
+    "milvus_write": 0,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "may_write_real_sparse_index": false,
+    "may_write_real_dense_index": false,
+    "may_promote_candidate_to_evidence": false,
+    "may_call_deepseek": false
+  },
+  "known_boundary": "This policy compiles and fake-writes a six-case CandidateBundle-only sparse/dense manifest. It does not load BGE, write Milvus or BM25, evaluate ranking, promote Evidence, run external supplement, call DeepSeek or accept release."
+}

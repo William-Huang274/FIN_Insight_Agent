@@ -6,6 +6,7 @@ from datetime import date
 import hashlib
 import json
 from pathlib import Path
+import re
 from typing import Any, Mapping, Sequence
 
 from sec_agent.canonical_runtime.models import canonical_digest
@@ -19,10 +20,17 @@ RUN_SCOPE = "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD"
 EXPECTED_CASE_KEYS = ("DELL", "MU", "NVDA", "ORCL", "ASML", "ANET")
 KNOWN_CASE_KEYS = ("DELL", "MU", "NVDA")
 HELD_OUT_CASE_KEYS = ("ORCL", "ASML", "ANET")
-EXPECTED_PREDECESSOR_FAILURE_REFS = (
-    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r1_failure_v1_0.json",
-    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r2_failure_v1_0.json",
-)
+ATTEMPT_PREDECESSOR_FAILURE_REFS = {
+    "20260810_s1_six_case_candidate_bundle_sparse_dense_manifest_zero_call_r3": (
+        "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r1_failure_v1_0.json",
+        "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r2_failure_v1_0.json",
+    ),
+    "20260810_s1_six_case_candidate_bundle_sparse_dense_manifest_zero_call_r4": (
+        "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r1_failure_v1_0.json",
+        "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r2_failure_v1_0.json",
+        "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r3_business_audit_failure_v1_0.json",
+    ),
+}
 EXPECTED_MUTATIONS = (
     "duplicate_candidate_identity",
     "missing_bundle_binding",
@@ -134,11 +142,11 @@ def load_candidate_bundle_index_policy(
             == str(artifact.get("normalized_sha256") or ""),
             "candidate_bundle_index_locked_artifact_digest_mismatch",
         )
+    attempt_id = str(policy.get("attempt_id") or "")
     _require(
-        policy.get("attempt_id")
-        == "20260810_s1_six_case_candidate_bundle_sparse_dense_manifest_zero_call_r3"
+        attempt_id in ATTEMPT_PREDECESSOR_FAILURE_REFS
         and tuple(policy.get("predecessor_failure_refs") or ())
-        == EXPECTED_PREDECESSOR_FAILURE_REFS,
+        == ATTEMPT_PREDECESSOR_FAILURE_REFS[attempt_id],
         "candidate_bundle_index_attempt_lineage_invalid",
     )
     held_out_result = _read_json(
@@ -164,9 +172,14 @@ def load_candidate_bundle_index_policy(
         "candidate_bundle_index_held_out_clean_proof_binding_invalid",
     )
     private_inputs = dict(policy.get("private_object_inputs") or {})
+    result_attempt_match = re.search(
+        r"successor_(r\d+)_result_v1_0\.json$",
+        held_out_result_path,
+    )
     _require(
-        str(private_inputs.get("held_out_reparse_runtime_root_ref") or "").endswith(
-            "/zero-call-r8"
+        result_attempt_match is not None
+        and str(private_inputs.get("held_out_reparse_runtime_root_ref") or "").endswith(
+            "/zero-call-" + result_attempt_match.group(1)
         )
         and private_inputs.get("objects_are_digest_bound_by_public_reparse_result")
         is True

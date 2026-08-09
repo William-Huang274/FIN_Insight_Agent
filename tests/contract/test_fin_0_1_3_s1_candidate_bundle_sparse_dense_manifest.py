@@ -25,12 +25,25 @@ from sec_agent.s1_candidate_bundle_index_manifest import (  # noqa: E402
 
 POLICY_PATH = ROOT / (
     "configs/runtime/"
-    "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_policy_v1_0.json"
+    "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_r4_policy_v1_0.json"
 )
 RESULT_PATH = ROOT / (
     "configs/releases/"
     "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_"
+    "r4_zero_call_proof_v1_0.json"
+)
+R3_RESULT_PATH = ROOT / (
+    "configs/releases/"
+    "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_"
     "zero_call_proof_v1_0.json"
+)
+R3_RUNTIME_ROOT = ROOT / (
+    "data/workbench_private/"
+    "fin_0_1_3_s1_candidate_bundle_sparse_dense_manifest/zero-call-r3"
+)
+R4_RUNTIME_ROOT = ROOT / (
+    "data/workbench_private/"
+    "fin_0_1_3_s1_candidate_bundle_sparse_dense_manifest/zero-call-r4"
 )
 
 
@@ -38,25 +51,34 @@ def _policy() -> dict:
     return load_candidate_bundle_index_policy(POLICY_PATH, repo_root=ROOT)
 
 
-def test_policy_binds_r8_result_clean_proof_and_attempt_lineage() -> None:
+def _private_manifest(result_path: Path, runtime_root: Path) -> dict:
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    ref = result["private_manifest"]
+    path = runtime_root / "objects" / Path(ref["object_key"])
+    assert __import__("hashlib").sha256(path.read_bytes()).hexdigest() == ref["digest"]
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_policy_binds_r9_result_clean_proof_and_attempt_lineage() -> None:
     policy = _policy()
     artifacts = {
         row["artifact_id"]: row for row in policy["locked_artifacts"]
     }
-    assert policy["attempt_id"].endswith("_r3")
+    assert policy["attempt_id"].endswith("_r4")
     assert policy["predecessor_failure_refs"] == [
         "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r1_failure_v1_0.json",
         "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r2_failure_v1_0.json",
+        "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r3_business_audit_failure_v1_0.json",
     ]
     assert artifacts["held_out_reparse_result"]["path"].endswith(
-        "successor_r8_result_v1_0.json"
+        "successor_r9_result_v1_0.json"
     )
     assert artifacts["held_out_clean_proof"]["path"].endswith(
-        "successor_r8_clean_independent_proof_v1_0.json"
+        "successor_r9_clean_independent_proof_v1_0.json"
     )
     assert policy["private_object_inputs"][
         "held_out_reparse_runtime_root_ref"
-    ].endswith("/zero-call-r8")
+    ].endswith("/zero-call-r9")
 
 
 def test_manifest_uses_six_case_selected_candidate_bundles_without_answer_labels() -> None:
@@ -131,6 +153,67 @@ def test_fake_sparse_and_dense_build_terminalize_the_same_manifest() -> None:
         match="candidate_bundle_index_dense_partial_insert",
     ):
         execute_fake_sparse_dense_build(specs, policy=policy, dense_partial=True)
+
+
+def test_r4_manifest_preserves_known_cases_and_only_carries_reviewed_role_changes() -> None:
+    if not RESULT_PATH.exists():
+        pytest.skip("R4 manifest result not materialized")
+    r3 = _private_manifest(R3_RESULT_PATH, R3_RUNTIME_ROOT)
+    r4 = _private_manifest(RESULT_PATH, R4_RUNTIME_ROOT)
+    known = {"DELL", "MU", "NVDA"}
+    known_identity = lambda rows: {
+        (
+            row["case_key"],
+            row["target_id"],
+            row["object_type"],
+            tuple(row["slot_ids"]),
+            row["vector_text_sha256"],
+        )
+        for row in rows
+        if row["case_key"] in known
+    }
+    assert known_identity(r3["specs"]) == known_identity(r4["specs"])
+    held_out = [
+        row for row in r4["specs"] if row["case_key"] not in known
+    ]
+    assert len(held_out) == 48
+    assert Counter(row["metric_period_role"] for row in held_out) == {
+        "instant": 18,
+        "qtd": 10,
+        "ytd": 8,
+        "annual": 12,
+    }
+    role_by_coordinate = {
+        (
+            row["case_key"],
+            row["table_path"]["row_label"],
+            row["table_path"]["column_label"],
+        ): row["metric_period_role"]
+        for row in held_out
+    }
+    assert role_by_coordinate[
+        (
+            "ORCL",
+            "$ 1,250 , 5.50 %, due September 2064",
+            "Amount 2026",
+        )
+    ] == "instant"
+    assert role_by_coordinate[
+        (
+            "ORCL",
+            "Cash and cash equivalents at beginning of period",
+            "Year Ended May 31, 2026",
+        )
+    ] == "instant"
+    assert role_by_coordinate[
+        ("ORCL", "Cash, cash equivalents and trade receivables, net", "2026")
+    ] == "instant"
+    assert role_by_coordinate[
+        ("ORCL", "Total deferred revenues", "2026")
+    ] == "instant"
+    assert r3["summary"]["quarantine_digest"] == r4["summary"][
+        "quarantine_digest"
+    ]
 
 
 def test_automatic_claim_and_lineage_mutations_fail_closed() -> None:

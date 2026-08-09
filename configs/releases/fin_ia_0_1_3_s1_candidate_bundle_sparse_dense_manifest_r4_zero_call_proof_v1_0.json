@@ -1,0 +1,265 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_sparse_dense_manifest:v1",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "20260810_s1_six_case_candidate_bundle_sparse_dense_manifest_zero_call_r4",
+  "status": "terminal_succeeded_zero_call_candidate_bundle_index_manifest",
+  "selection_summary": {
+    "primary_spec_count": 93,
+    "primary_specs_by_case": {
+      "ANET": 19,
+      "ASML": 10,
+      "DELL": 15,
+      "MU": 16,
+      "NVDA": 14,
+      "ORCL": 19
+    },
+    "primary_specs_by_quality_tier": {
+      "strict_structured_metric_candidate": 48,
+      "reviewed_financial_candidate": 45
+    },
+    "primary_specs_by_object_type": {
+      "metric": 48,
+      "claim": 16,
+      "source_segment": 29
+    },
+    "narrative_review_queue_count": 19,
+    "narrative_review_queue_by_case": {
+      "ANET": 8,
+      "ASML": 3,
+      "ORCL": 8
+    },
+    "qrels_or_gold_selection_inputs": 0,
+    "manifest_spec_digest": "af1f2439bc78a22dc00f27e55594c01ac73bfd2c11fa7a8c57f6546549b14df9",
+    "quarantine_digest": "b46931d5bd63817060723c607461e4635979a01f964d9b94a4885b5f23fbcc04"
+  },
+  "private_manifest": {
+    "object_key": "fin-0.1.3/s1-candidate-bundle-sparse-dense-manifest/v1/75/70/75702f7f5d64a14f39f87ec692bd69941d75efde67e0e85ce77427f2620d4068.json",
+    "digest": "75702f7f5d64a14f39f87ec692bd69941d75efde67e0e85ce77427f2620d4068",
+    "byte_size": 275875,
+    "media_type": "application/json",
+    "artifact_type": "candidate_bundle_sparse_dense_private_manifest_not_evidence",
+    "manifest_digest": "4468c5206b289670de53d9a07d4460bb239ec38d0edbba8e65ca0e557e26709e"
+  },
+  "public_examples": [
+    {
+      "case_key": "DELL",
+      "vector_id": "cbidx_2d806e55e6ae76f5d9819427e9629168",
+      "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_03_OF_07_CLAIM_E759C368",
+      "object_type": "claim",
+      "quality_tier": "reviewed_financial_candidate",
+      "selection_basis": "reviewed_candidate_qualification",
+      "slot_ids": [
+        "regulatory_policy_exposure"
+      ],
+      "bundle_ids": [
+        "financial_candidate_bundle_v2_599311608d347f3f9d140171"
+      ],
+      "source_locator": "https://www.sec.gov/Archives/edgar/data/1045810/000104581025000230/nvda-20251026.htm",
+      "source_reporting_period_end": "2025-10-26",
+      "vector_text_sha256": "d4fb06ed233bbc2b3c09e902611064738b28c9ec83c9327024591b0fb588c25a",
+      "candidate_state": "bundle_candidate_only_not_evidence"
+    },
+    {
+      "case_key": "MU",
+      "vector_id": "cbidx_0363115d41bf4bca725f3d37da93124b",
+      "target_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6",
+      "object_type": "claim",
+      "quality_tier": "reviewed_financial_candidate",
+      "selection_basis": "reviewed_candidate_qualification",
+      "slot_ids": [
+        "demand_volume_quality",
+        "relationship_attribution"
+      ],
+      "bundle_ids": [
+        "financial_candidate_bundle_v2_d25cbe6e47fc08e3db7419eb",
+        "financial_candidate_bundle_v2_e23cc0e191734a4bd7bbec44"
+      ],
+      "source_locator": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+      "source_reporting_period_end": "2026-03-31",
+      "vector_text_sha256": "2caadd150285d79391a65ca8c079a435f9bd8dce1f5e40a98185bd79b6a2318d",
+      "candidate_state": "bundle_candidate_only_not_evidence"
+    },
+    {
+      "case_key": "NVDA",
+      "vector_id": "cbidx_1251ceec31f38e2801663e1afae1022e",
+      "target_id": "NVDA_2026_10Q_ITEM2_BLOCK_0006_CHUNK_0001_CLAIM_432B0DD8",
+      "object_type": "claim",
+      "quality_tier": "reviewed_financial_candidate",
+      "selection_basis": "reviewed_candidate_qualification",
+      "slot_ids": [
+        "demand_volume_quality"
+      ],
+      "bundle_ids": [
+        "financial_candidate_bundle_v2_e56f5716dfa4ff754a4aa067"
+      ],
+      "source_locator": "https://www.sec.gov/Archives/edgar/data/1045810/000104581025000230/nvda-20251026.htm",
+      "source_reporting_period_end": "2025-10-26",
+      "vector_text_sha256": "584e9c808d6a1058ec94bd332df51e0c0d501f5407573d3cb4c138d03257839b",
+      "candidate_state": "bundle_candidate_only_not_evidence"
+    },
+    {
+      "case_key": "ORCL",
+      "vector_id": "cbidx_07589d76d66978ea628878a7bc81a177",
+      "target_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_0192315B",
+      "object_type": "metric",
+      "quality_tier": "strict_structured_metric_candidate",
+      "selection_basis": "strict_structured_metric_policy",
+      "slot_ids": [
+        "capital_allocation_and_valuation"
+      ],
+      "bundle_ids": [
+        "financial_candidate_bundle_v2_f3630b8b312fecc03d50a91c"
+      ],
+      "source_locator": "https://www.sec.gov/Archives/edgar/data/1341439/000119312526277521/orcl-20260531.htm",
+      "source_reporting_period_end": "2026-05-31",
+      "vector_text_sha256": "921d3c7516132bb7704c90b1b1a06bcbbcab28a615a809856851268356f13832",
+      "candidate_state": "bundle_candidate_only_not_evidence"
+    },
+    {
+      "case_key": "ASML",
+      "vector_id": "cbidx_018399016aa70bb3e0c62830edce966d",
+      "target_id": "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_DDBFED7F",
+      "object_type": "metric",
+      "quality_tier": "strict_structured_metric_candidate",
+      "selection_basis": "strict_structured_metric_policy",
+      "slot_ids": [
+        "operating_performance"
+      ],
+      "bundle_ids": [
+        "financial_candidate_bundle_v2_1681cf243512297a9daf66c4"
+      ],
+      "source_locator": "https://www.sec.gov/Archives/edgar/data/937966/000162828026048235/pressreleasefinancialresul.htm",
+      "source_reporting_period_end": "2026-06-28",
+      "vector_text_sha256": "16f455515b3d9480b2b1de14a87986eb67218f164503540d2a7a3d8520067251",
+      "candidate_state": "bundle_candidate_only_not_evidence"
+    },
+    {
+      "case_key": "ANET",
+      "vector_id": "cbidx_155e915a6043af17852ab5c66a04941b",
+      "target_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_6633E64F",
+      "object_type": "metric",
+      "quality_tier": "strict_structured_metric_candidate",
+      "selection_basis": "strict_structured_metric_policy",
+      "slot_ids": [
+        "capacity_inputs_execution"
+      ],
+      "bundle_ids": [
+        "financial_candidate_bundle_v2_a939b4407fe236db8c61a9c5"
+      ],
+      "source_locator": "https://www.sec.gov/Archives/edgar/data/1596532/000159653226000175/anet-20260630.htm",
+      "source_reporting_period_end": "2026-06-30",
+      "vector_text_sha256": "d164aade66681e54684ca39939b68ae91062a55c4b61d507c33c07a48c799c12",
+      "candidate_state": "bundle_candidate_only_not_evidence"
+    }
+  ],
+  "fake_build": {
+    "batch_count_each": 3,
+    "sparse_inserted_specs": 93,
+    "dense_inserted_specs": 93,
+    "fake_embedding_vectors": 93,
+    "fake_embedding_dimension": 1024,
+    "terminal_count_each": 93
+  },
+  "mutation_proof": {
+    "scenario_count": 15,
+    "rows": [
+      {
+        "scenario": "duplicate_candidate_identity",
+        "observed_code": "candidate_bundle_index_identity_or_count_invalid"
+      },
+      {
+        "scenario": "missing_bundle_binding",
+        "observed_code": "candidate_bundle_index_case_or_bundle_binding_invalid"
+      },
+      {
+        "scenario": "source_digest_drift",
+        "observed_code": "candidate_bundle_index_source_or_child_lineage_invalid"
+      },
+      {
+        "scenario": "child_digest_drift",
+        "observed_code": "candidate_bundle_index_source_or_child_lineage_invalid"
+      },
+      {
+        "scenario": "metric_table_path_missing",
+        "observed_code": "candidate_bundle_index_metric_authority_invalid"
+      },
+      {
+        "scenario": "metric_currency_authority_missing",
+        "observed_code": "candidate_bundle_index_metric_authority_invalid"
+      },
+      {
+        "scenario": "metric_period_missing",
+        "observed_code": "candidate_bundle_index_metric_period_invalid"
+      },
+      {
+        "scenario": "metric_period_role_missing",
+        "observed_code": "candidate_bundle_index_metric_period_role_invalid"
+      },
+      {
+        "scenario": "metric_unit_mismatch",
+        "observed_code": "candidate_bundle_index_metric_unit_invalid"
+      },
+      {
+        "scenario": "cross_case_identity",
+        "observed_code": "candidate_bundle_index_case_count_invalid"
+      },
+      {
+        "scenario": "future_publication",
+        "observed_code": "candidate_bundle_index_temporal_binding_invalid"
+      },
+      {
+        "scenario": "automatic_narrative_infiltration",
+        "observed_code": "candidate_bundle_index_automatic_narrative_admission_forbidden"
+      },
+      {
+        "scenario": "vector_text_drift",
+        "observed_code": "candidate_bundle_index_spec_digest_invalid"
+      },
+      {
+        "scenario": "sparse_partial_insert",
+        "observed_code": "candidate_bundle_index_sparse_partial_insert"
+      },
+      {
+        "scenario": "dense_partial_insert",
+        "observed_code": "candidate_bundle_index_dense_partial_insert"
+      }
+    ],
+    "all_failed_closed": true
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "real_embedding": 0,
+    "milvus_read": 0,
+    "milvus_write": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "execution_gate": {
+    "candidate_bundle_only_manifest": true,
+    "sparse_fake_build": true,
+    "dense_fake_build": true,
+    "clean_independent_reproof_required": true,
+    "ubuntu_real_build_authorized": false,
+    "ranking_authorized": false
+  },
+  "stage_acceptance": {
+    "six_case_manifest_engineering": true,
+    "automatic_narrative_claims_excluded": true,
+    "held_out_narrative_quality": false,
+    "physical_sparse_index": false,
+    "physical_dense_index": false,
+    "retrieval_quality": false,
+    "evidence_pack": false,
+    "external_residual_supplement": false,
+    "deepseek_research": false,
+    "release": false
+  },
+  "decision_zh": "六案主索引清单已重定基为 93 个选定 CandidateBundle：DELL/MU/NVDA 只取人工资格化目标，ORCL/ASML/ANET 只取带完整表格、期间和币种单元血缘的结构化 metric。19 条自动叙事 claim 进入复核队列而非主索引。当前只完成零调用 fake sparse/dense，真实 Ubuntu BGE/Milvus 构建仍需 clean independent proof 和独立 authority。",
+  "known_boundary": "This result proves a qrels-free CandidateBundle-only manifest and fake sparse/dense terminalization. It does not create a physical index, prove ranking, promote Evidence, close external coverage, call DeepSeek, establish held-out narrative quality or accept release.",
+  "proof_digest": "d84b7ef21bac98d90567c70300fd45b55daac74089ae45b813d70c994c98e7a1"
+}

@@ -32,6 +32,11 @@ RESULT_PATH = ROOT / (
     "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_"
     "r4_zero_call_proof_v1_0.json"
 )
+PROOF_PATH = ROOT / (
+    "configs/releases/"
+    "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_"
+    "r4_clean_independent_proof_v1_0.json"
+)
 R3_RESULT_PATH = ROOT / (
     "configs/releases/"
     "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_"
@@ -288,3 +293,36 @@ def test_committed_zero_call_result_is_digest_bound() -> None:
         match="candidate_bundle_index_zero_call_proof_invalid",
     ):
         validate_candidate_bundle_index_zero_call_proof(mutated)
+
+
+def test_r4_clean_proof_reexecutes_r9_and_manifest_without_calls() -> None:
+    if not PROOF_PATH.exists():
+        pytest.skip("R4 clean independent proof not materialized")
+    payload = json.loads(PROOF_PATH.read_text(encoding="utf-8"))
+    body = dict(payload)
+    digest = body.pop("result_digest")
+    from sec_agent.canonical_runtime.models import canonical_digest
+
+    assert canonical_digest(body) == digest
+    assert payload["source_commit"] == "0db3c40a832aea46c2576ba48abe0ec599b4ff37"
+    assert payload["source_result_digest"] == (
+        "d84b7ef21bac98d90567c70300fd45b55daac74089ae45b813d70c994c98e7a1"
+    )
+    assert payload["upstream_reparse_result_digest"] == (
+        "caee03a519403b3dbcf6b15bd3cf9969482596771a09e8277bc094cb016c7f3e"
+    )
+    assert len(payload["proof_runs"]) == 2
+    for run in payload["proof_runs"]:
+        assert run["matches_committed_result"] is True
+        assert run["selection_summary"]["primary_spec_count"] == 93
+        assert run["fake_build"]["terminal_count_each"] == 93
+        assert run["manifest_mutations_passed"] == [15, 15]
+        assert all(
+            value == 0
+            for layer in run["observed_calls"].values()
+            for value in layer.values()
+        )
+    acceptance = payload["stage_acceptance"]
+    assert acceptance["clean_independent_reproof"] is True
+    assert acceptance["ubuntu_real_build_authority_decision_admitted"] is True
+    assert acceptance["real_embedding_or_index_build"] is False

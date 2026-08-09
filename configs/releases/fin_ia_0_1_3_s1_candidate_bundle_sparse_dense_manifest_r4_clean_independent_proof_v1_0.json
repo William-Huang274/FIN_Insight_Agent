@@ -1,0 +1,274 @@
+{
+  "attempt_id": "S1-CANDIDATE-BUNDLE-SPARSE-DENSE-MANIFEST-R4-CLEAN-PROOF-A1",
+  "capture_manifest": [
+    {
+      "bytes": 9166064,
+      "case_key": "ORCL",
+      "response_capture_digest": "3bf5b66633cb844e013681f3894f7ded0915a80b560237c848a3c842f931ade4",
+      "response_capture_ref": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/3b/f5/3bf5b66633cb844e013681f3894f7ded0915a80b560237c848a3c842f931ade4.json"
+    },
+    {
+      "bytes": 59173,
+      "case_key": "ASML",
+      "response_capture_digest": "2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7",
+      "response_capture_ref": "fin-0.1.3/s1-asml-current-exhibit-successor/raw/20/36/2036be815c421c490a326828c8455bdf7d00cde08504197273fef821b670c7e7.json"
+    },
+    {
+      "bytes": 1904056,
+      "case_key": "ANET",
+      "response_capture_digest": "fd327ed8e589888a4d00a1447e9a5fa5c7133e0ac31b0be44cb30d1a16a757cf",
+      "response_capture_ref": "fin-0.1.3/s1-held-out-current-source-acquisition/raw/fd/32/fd327ed8e589888a4d00a1447e9a5fa5c7133e0ac31b0be44cb30d1a16a757cf.json"
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_sparse_dense_manifest_r4_clean_independent_proof:v1",
+  "decision_zh": "两个独立 Git archive 在两个 fresh process 中仅注入三份 digest-bound 原始响应，均先逐字节重现 R9，再逐字节重现 manifest R4 的 93 specs、19 条叙事隔离、15 mutations 与 fake sparse/dense。R1-R3 失败继续保留；下一步只准入 Ubuntu 真实 build 的独立 authority decision，不自动执行 BGE 或 Milvus。",
+  "known_boundary": "This proof establishes clean reproducibility of the R9-to-manifest-R4 zero-call chain only. It does not create a physical sparse/dense index, prove ranking, promote Evidence, close external coverage, call DeepSeek, establish report quality or accept release.",
+  "observed_calls_each_run": {
+    "document_fetch": 0,
+    "evidence_promotion": 0,
+    "milvus_read": 0,
+    "milvus_write": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "real_embedding": 0,
+    "rerank": 0
+  },
+  "predecessor_failure_refs": [
+    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r1_failure_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r2_failure_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r3_business_audit_failure_v1_0.json"
+  ],
+  "preparer_sha256": "07ea49c043c11245394dbdce5e81e45907247434ad866a8253dd6b5851ea71dd",
+  "proof_method": {
+    "archive_shared_code_directory": false,
+    "capture_copy_mode": "three_exact_publicly_referenced_response_capture_objects_only",
+    "capture_digest_verification": true,
+    "credential_environment_scrubbed": true,
+    "fresh_python_processes": 2,
+    "git_archives": 2,
+    "manifest_materialized_each_archive": true,
+    "project_os_preflight_scopes_each_archive": [
+      "S1_THREE_HELD_OUT_CURRENT_SOURCE_TABLE_PRESERVING_REPARSE_AND_OBJECT_MIGRATION",
+      "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD"
+    ],
+    "socket_network_blocked": true,
+    "upstream_reparse_reexecuted_each_archive": true
+  },
+  "proof_runs": [
+    {
+      "case_bundle_counts": [
+        27,
+        13,
+        27
+      ],
+      "case_slot_counts": [
+        8,
+        5,
+        7
+      ],
+      "fake_build": {
+        "batch_count_each": 3,
+        "dense_inserted_specs": 93,
+        "fake_embedding_dimension": 1024,
+        "fake_embedding_vectors": 93,
+        "sparse_inserted_specs": 93,
+        "terminal_count_each": 93
+      },
+      "manifest_mutations_passed": [
+        15,
+        15
+      ],
+      "matches_committed_result": true,
+      "observed_calls": {
+        "manifest": {
+          "document_fetch": 0,
+          "evidence_promotion": 0,
+          "milvus_read": 0,
+          "milvus_write": 0,
+          "model": 0,
+          "network": 0,
+          "provider": 0,
+          "real_embedding": 0,
+          "rerank": 0
+        },
+        "reparse": {
+          "embedding": 0,
+          "evidence_promotion": 0,
+          "model": 0,
+          "network": 0,
+          "provider": 0,
+          "rerank": 0
+        }
+      },
+      "preflight_scopes": [
+        "S1_THREE_HELD_OUT_CURRENT_SOURCE_TABLE_PRESERVING_REPARSE_AND_OBJECT_MIGRATION",
+        "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD"
+      ],
+      "preflights": [
+        "pass",
+        "pass"
+      ],
+      "reparse_result_digest": "caee03a519403b3dbcf6b15bd3cf9969482596771a09e8277bc094cb016c7f3e",
+      "result_digest": "d84b7ef21bac98d90567c70300fd45b55daac74089ae45b813d70c994c98e7a1",
+      "run_id": "archive-a",
+      "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_manifest_r4_clean_worker_v1_0",
+      "selection_summary": {
+        "manifest_spec_digest": "af1f2439bc78a22dc00f27e55594c01ac73bfd2c11fa7a8c57f6546549b14df9",
+        "narrative_review_queue_by_case": {
+          "ANET": 8,
+          "ASML": 3,
+          "ORCL": 8
+        },
+        "narrative_review_queue_count": 19,
+        "primary_spec_count": 93,
+        "primary_specs_by_case": {
+          "ANET": 19,
+          "ASML": 10,
+          "DELL": 15,
+          "MU": 16,
+          "NVDA": 14,
+          "ORCL": 19
+        },
+        "primary_specs_by_object_type": {
+          "claim": 16,
+          "metric": 48,
+          "source_segment": 29
+        },
+        "primary_specs_by_quality_tier": {
+          "reviewed_financial_candidate": 45,
+          "strict_structured_metric_candidate": 48
+        },
+        "qrels_or_gold_selection_inputs": 0,
+        "quarantine_digest": "b46931d5bd63817060723c607461e4635979a01f964d9b94a4885b5f23fbcc04"
+      },
+      "status": "pass"
+    },
+    {
+      "case_bundle_counts": [
+        27,
+        13,
+        27
+      ],
+      "case_slot_counts": [
+        8,
+        5,
+        7
+      ],
+      "fake_build": {
+        "batch_count_each": 3,
+        "dense_inserted_specs": 93,
+        "fake_embedding_dimension": 1024,
+        "fake_embedding_vectors": 93,
+        "sparse_inserted_specs": 93,
+        "terminal_count_each": 93
+      },
+      "manifest_mutations_passed": [
+        15,
+        15
+      ],
+      "matches_committed_result": true,
+      "observed_calls": {
+        "manifest": {
+          "document_fetch": 0,
+          "evidence_promotion": 0,
+          "milvus_read": 0,
+          "milvus_write": 0,
+          "model": 0,
+          "network": 0,
+          "provider": 0,
+          "real_embedding": 0,
+          "rerank": 0
+        },
+        "reparse": {
+          "embedding": 0,
+          "evidence_promotion": 0,
+          "model": 0,
+          "network": 0,
+          "provider": 0,
+          "rerank": 0
+        }
+      },
+      "preflight_scopes": [
+        "S1_THREE_HELD_OUT_CURRENT_SOURCE_TABLE_PRESERVING_REPARSE_AND_OBJECT_MIGRATION",
+        "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD"
+      ],
+      "preflights": [
+        "pass",
+        "pass"
+      ],
+      "reparse_result_digest": "caee03a519403b3dbcf6b15bd3cf9969482596771a09e8277bc094cb016c7f3e",
+      "result_digest": "d84b7ef21bac98d90567c70300fd45b55daac74089ae45b813d70c994c98e7a1",
+      "run_id": "archive-b",
+      "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_manifest_r4_clean_worker_v1_0",
+      "selection_summary": {
+        "manifest_spec_digest": "af1f2439bc78a22dc00f27e55594c01ac73bfd2c11fa7a8c57f6546549b14df9",
+        "narrative_review_queue_by_case": {
+          "ANET": 8,
+          "ASML": 3,
+          "ORCL": 8
+        },
+        "narrative_review_queue_count": 19,
+        "primary_spec_count": 93,
+        "primary_specs_by_case": {
+          "ANET": 19,
+          "ASML": 10,
+          "DELL": 15,
+          "MU": 16,
+          "NVDA": 14,
+          "ORCL": 19
+        },
+        "primary_specs_by_object_type": {
+          "claim": 16,
+          "metric": 48,
+          "source_segment": 29
+        },
+        "primary_specs_by_quality_tier": {
+          "reviewed_financial_candidate": 45,
+          "strict_structured_metric_candidate": 48
+        },
+        "qrels_or_gold_selection_inputs": 0,
+        "quarantine_digest": "b46931d5bd63817060723c607461e4635979a01f964d9b94a4885b5f23fbcc04"
+      },
+      "status": "pass"
+    }
+  ],
+  "recorded_at": "2026-08-10",
+  "result_digest": "47cdb6e826bef6ed73ede4dff291b2656bf4aed4e3b8a39d804969bf9f796beb",
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_r4_clean_independent_proof_v1_0",
+  "source_bindings": {
+    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_r4_zero_call_proof_v1_0.json": "4289cb44f88014cce3e23502dcc7ec337efb41162695f512fe2230a8e7fa5fcf",
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r9_clean_independent_proof_v1_0.json": "6961c64eb574e3b01d12dd3d4f943247be75a86e23f51a36267ab5c5db89fd61",
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r9_result_v1_0.json": "58d2b51841ad7798551b3808b296a9aac39deae46c6d6b8ab0257290da5843cc",
+    "configs/runtime/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_r4_policy_v1_0.json": "aa64b1c5799ffa1a5d5f981c48278077743b7b5ea0b4b2984049dc79e97a1e3b",
+    "configs/runtime/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r9_policy_v1_0.json": "1f00e52d83c9d7a71692c25740c06ef56135fc3f38ab3079558edb802465a631",
+    "src/evidence/structured_extractor.py": "d656652803ca55d2b007594692efbce0c61f589367257e72a5947b88f398d5d7",
+    "src/sec_agent/financial_research_candidate_bundle_v2.py": "6fb1c6c10b463059423bb3012f72b959371db554466538a0c1abca741eea4cee",
+    "src/sec_agent/financial_research_current_source_reparse.py": "5544fb628287d8f5363245aa28d036d8103d62e3fcbfa39f0316b04896f8ab59",
+    "src/sec_agent/s1_candidate_bundle_index_manifest.py": "bb1b45ca92f238162acaaf6e196db89e8509023260a31aa32a1083c89f3c37fc"
+  },
+  "source_commit": "0db3c40a832aea46c2576ba48abe0ec599b4ff37",
+  "source_git_state": {
+    "archive_excludes_untracked_files": true,
+    "branch": "codex/layered-data-source-expansion",
+    "commit": "0db3c40a832aea46c2576ba48abe0ec599b4ff37",
+    "tracked_clean": true,
+    "upstream_commit": "0db3c40a832aea46c2576ba48abe0ec599b4ff37"
+  },
+  "source_result_digest": "d84b7ef21bac98d90567c70300fd45b55daac74089ae45b813d70c994c98e7a1",
+  "source_result_ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_r4_zero_call_proof_v1_0.json",
+  "stage_acceptance": {
+    "clean_independent_reproof": true,
+    "external_residual_supplement": false,
+    "full_business_period_role_audit": true,
+    "held_out_product_generalization": false,
+    "model_research_synthesis": false,
+    "ranking": false,
+    "real_embedding_or_index_build": false,
+    "release": false,
+    "six_case_manifest_engineering": true,
+    "ubuntu_real_build_authority_decision_admitted": true
+  },
+  "upstream_reparse_result_digest": "caee03a519403b3dbcf6b15bd3cf9969482596771a09e8277bc094cb016c7f3e",
+  "upstream_reparse_result_ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r9_result_v1_0.json"
+}

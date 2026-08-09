@@ -762,3 +762,5 @@ R8-bound manifest R3 虽完成 93-spec、19 narrative quarantine、15 mutations 
 R9 result=`caee03a5...7f3e` 已在不改变 48 条业务 identity 的前提下只修正上述四个角色，分布=`18 instant／10 qtd／8 ytd／12 annual`；无 ticker 分支，9 source-object mutations 与四类新增 presentation-axis fixture 均通过。两个 clean archive／fresh process 已从提交 `aff1cc46...514e` 完全复现，proof=`5d46ca9d...0a7c`；R9 现可供 manifest R4 零调用重绑，但仍不是 physical index 或 Evidence。
 
 manifest R4 working-tree result=`d84b7ef2...e7a1`：同一 manifest 同时驱动 fake ObjectBM25 与 fake BGE-M3/Milvus，93 specs／19 narrative quarantine／15 mutations 均通过；known-case 45 个 vector-text digest 不变，held-out roles=`18/10/8/12 instant/qtd/ytd/annual`。clean proof 必须在每个 archive 内先从 capture 重建 R9 私有对象，再重建 manifest，禁止直接信任主工作区私有 CAS。通过后只准入独立 real-build authority decision。
+
+上述 clean proof 已从提交 `0db3c40a...ff37` 的两个 archive 完成：R9=`caee03a5...7f3e`、manifest R4=`d84b7ef2...e7a1` 均逐字节一致，proof=`47cdb6e8...6beb`。real-build executor 仍须另行绑定 Linux root filesystem、BGE-M3 模型 digest、Milvus 版本／collection、93-spec manifest digest、exact-once target、资源预算与 terminal receipts；proof 未加载模型或写索引。

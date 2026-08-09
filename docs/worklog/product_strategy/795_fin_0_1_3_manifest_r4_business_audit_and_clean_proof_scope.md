@@ -4,7 +4,7 @@
 
 阶段：S1／CandidateBundle-only sparse／dense manifest
 
-状态：R4 working-tree 零调用及业务审计通过；clean independent proof 待执行
+状态：R4 working-tree 零调用、业务审计与 clean independent proof 均通过；Ubuntu real-build authority decision 待执行
 
 ## 1. R4 输入与结果
 
@@ -21,3 +21,5 @@ DELL／MU／NVDA 的 45 个 target／type／slot／vector-text digest 与失败 
 ## 3. clean-proof 与下一步
 
 先提交并推送 R4。clean proof 必须在两个 Git archive／fresh process 中只复制三份 exact capture，先重跑 R9 并逐字节匹配 committed R9 result，再物化 R4 并逐字节匹配 committed manifest result。两层 Project OS preflight 与全部调用 0 同时成立后，才允许单独做 Ubuntu WSL 真实 BGE／Milvus build authority decision；proof 本身不执行真实 build。
+
+R4 已由提交 `0db3c40a832aea46c2576ba48abe0ec599b4ff37` 推送。两个 clean archive 均按上述顺序逐字节重现 R9=`caee03a5...7f3e` 与 manifest R4=`d84b7ef2...e7a1`，proof=`47cdb6e8...6beb`；93 specs、19 quarantine、15 mutations 与 fake writers 完全一致，all calls=`0`。下一步只准入 Ubuntu real-build authority decision，不自动执行。

@@ -2273,3 +2273,5 @@ ORCL、ASML、ANET 的当前官方源已证明同一通用 parser／CandidateBun
 R9 已保持 48 条入选 Metric 的 case／row／column／raw value／unit／period 不变，只将四个已确认余额改为 instant，最终为 `18 instant／10 qtd／8 ytd／12 annual`；并已从提交 `aff1cc46...514e` 的两个 clean archive／fresh process 完全复现，proof=`5d46ca9d...0a7c`。因此只准入 manifest R4 零调用重绑与业务审计，仍不得直接授权真实索引。
 
 manifest R4 working-tree 已绑定上述 R9 clean input，保持 93 个六案主 spec 与 19 条叙事隔离；known-case 45 个对象逐项不变，留出 48 个 Metric 的角色分布与业务审计一致，15 类 mutation 与 fake sparse／dense 完整物化通过。R4 仍须在 committed clean archive 中从三份原始 capture 先重建 R9、再重建 manifest；通过后也只进入独立 Ubuntu build authority，而不是自动宣称检索质量通过。
+
+该 clean proof 已从提交 `0db3c40a...ff37` 的两个 archive 完成，proof=`47cdb6e8...6beb`；每个 archive 都重新执行 R9 与 manifest R4，而非复制主工作区 CAS。产品现在只获得“可签发一次 Ubuntu real-build authority decision”的资格；物理索引、召回和排序仍未成立。

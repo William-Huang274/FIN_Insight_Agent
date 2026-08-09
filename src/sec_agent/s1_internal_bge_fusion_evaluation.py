@@ -20,7 +20,19 @@ from sec_agent.s1_internal_qrels_owner_acceptance import (
 RUN_SCOPE = "S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION"
 POLICY_SCHEMA = "fin_ia_0_1_3_s1_internal_bge_fusion_evaluation_policy_v1_0"
 RESULT_SCHEMA = "fin_ia_0_1_3_s1_internal_bge_fusion_evaluation_result_v1_0"
+POLICY_SCHEMA_V1_1 = (
+    "fin_ia_0_1_3_s1_internal_bge_fusion_evaluation_policy_v1_1"
+)
+RESULT_SCHEMA_V1_1 = (
+    "fin_ia_0_1_3_s1_internal_bge_fusion_evaluation_result_v1_1"
+)
 EVENT_FORMS = {"8-K", "6-K"}
+VECTOR_KIND_SUFFIXES = {
+    "narrative_chunk",
+    "table_chunk",
+    "paraphrase_context",
+    "relationship_context",
+}
 
 
 class S1InternalBGEFusionEvaluationError(RuntimeError):
@@ -53,16 +65,23 @@ def load_internal_bge_fusion_evaluation_policy(
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     policy = _read_json(Path(path))
+    schema_pair = (
+        policy.get("schema_version"),
+        policy.get("result_schema"),
+    )
     _require(
-        policy.get("schema_version") == POLICY_SCHEMA
-        and policy.get("result_schema") == RESULT_SCHEMA
+        schema_pair
+        in {
+            (POLICY_SCHEMA, RESULT_SCHEMA),
+            (POLICY_SCHEMA_V1_1, RESULT_SCHEMA_V1_1),
+        }
         and policy.get("run_scope") == RUN_SCOPE
         and policy.get("binding_hash_profile")
         == "sha256_utf8_lf_normalized_v1",
         "internal_bge_fusion_policy_identity_invalid",
     )
     immutable = dict(policy.get("immutable_inputs") or {})
-    stems = (
+    stems = [
         "owner_qrels_acceptance",
         "research_qrels",
         "sparse_candidate_observation",
@@ -70,7 +89,9 @@ def load_internal_bge_fusion_evaluation_policy(
         "query_facet_policy",
         "dense_resource_qualification",
         "milvus_runtime",
-    )
+    ]
+    if policy.get("schema_version") == POLICY_SCHEMA_V1_1:
+        stems.extend(("invalidated_attempt_r1", "post_run_identity_audit"))
     for stem in stems:
         ref = str(immutable.get(f"{stem}_ref") or "")
         supplied = str(immutable.get(f"{stem}_sha256") or "")
@@ -92,6 +113,27 @@ def load_internal_bge_fusion_evaluation_policy(
         == "reporting_fiscal_years",
         "internal_bge_fusion_candidate_contract_invalid",
     )
+    if policy.get("schema_version") == POLICY_SCHEMA_V1_1:
+        identity = dict(candidate.get("identity_canonicalization") or {})
+        replacement = dict(policy.get("replacement_authority") or {})
+        _require(
+            identity.get("vector_base_rule")
+            == "strip_only_final_known_vector_kind_suffix"
+            and set(identity.get("known_vector_kind_suffixes") or [])
+            == VECTOR_KIND_SUFFIXES
+            and identity.get("namespace_prefix_is_never_evidence_identity") is True
+            and identity.get("cross_document_merge_forbidden") is True,
+            "internal_bge_fusion_identity_contract_invalid",
+        )
+        _require(
+            replacement.get("invalidated_attempt_id")
+            == "20260809_three_case_s1_internal_ranking_bge_m3_sparse_dense_facet_fusion_owner_qrels_v1_r1"
+            and replacement.get("maximum_replacement_executions") == 1
+            and replacement.get("automatic_retry") is False
+            and replacement.get("reason")
+            == "candidate_identity_namespace_prefix_collapse",
+            "internal_bge_fusion_replacement_authority_invalid",
+        )
     ranking = dict(policy.get("ranking_contract") or {})
     expected_slots = {
         "issuer_results_and_management_commentary",
@@ -130,6 +172,19 @@ def load_internal_bge_fusion_evaluation_policy(
     return policy
 
 
+def _base_vector_evidence_id(candidate: Mapping[str, Any]) -> str:
+    vector_id = str(candidate.get("vector_id") or "").strip()
+    if not vector_id or "::" not in vector_id:
+        return vector_id
+    prefix, suffix = vector_id.rsplit("::", 1)
+    declared_kind = str(candidate.get("vector_kind") or "").strip()
+    if suffix in VECTOR_KIND_SUFFIXES or (
+        declared_kind in VECTOR_KIND_SUFFIXES and suffix == declared_kind
+    ):
+        return prefix
+    return vector_id
+
+
 def _candidate_aliases(candidate: Mapping[str, Any]) -> set[str]:
     aliases = {
         str(candidate.get(key) or "").strip()
@@ -141,9 +196,9 @@ def _candidate_aliases(candidate: Mapping[str, Any]) -> set[str]:
             "vector_id",
         )
     }
-    vector_id = str(candidate.get("vector_id") or "")
-    if "::" in vector_id:
-        aliases.add(vector_id.split("::", 1)[0])
+    vector_base = _base_vector_evidence_id(candidate)
+    if vector_base:
+        aliases.add(vector_base)
     return {item for item in aliases if item}
 
 
@@ -155,7 +210,7 @@ def _candidate_key(candidate: Mapping[str, Any]) -> str:
         or str(candidate.get("evidence_id") or "").strip()
         or str(candidate.get("source_key") or "").strip()
         or str(candidate.get("candidate_id") or "").strip()
-        or str(candidate.get("vector_id") or "").split("::", 1)[0]
+        or _base_vector_evidence_id(candidate)
     )
     return preferred or min(aliases)
 
@@ -260,9 +315,10 @@ def merge_ranked_lanes(
             ),
         )
         metadata = _metadata_record(candidates[0])
+        canonical_keys = sorted({_candidate_key(member) for member in members})
         metadata.update(
             {
-                "candidate_key": min(aliases),
+                "candidate_key": canonical_keys[0],
                 "aliases": aliases,
                 "route_ranks": dict(sorted(lane_ranks.items())),
                 "score": round(score, 12),
@@ -401,13 +457,32 @@ def _validate_bound_inputs(
         "internal_bge_fusion_resource_qualification_invalid",
     )
     runtime = _read_json(repo_root / str(refs["milvus_runtime_ref"]))
-    return {
+    out = {
         "owner": owner,
         "observation": observation,
         "query_proof": query_proof,
         "resource": resource,
         "runtime": runtime,
     }
+    if policy.get("schema_version") == POLICY_SCHEMA_V1_1:
+        invalidated = _read_json(
+            repo_root / str(refs["invalidated_attempt_r1_ref"])
+        )
+        audit = _read_json(repo_root / str(refs["post_run_identity_audit_ref"]))
+        _require(
+            _digest_valid(invalidated, "result_digest")
+            and invalidated.get("attempt_id")
+            == (policy.get("replacement_authority") or {}).get(
+                "invalidated_attempt_id"
+            )
+            and _digest_valid(audit, "audit_digest")
+            and audit.get("status")
+            == "attempt_invalidated_for_adoption_identity_canonicalization_defect"
+            and (audit.get("disposition") or {}).get("replacement_eligible") is True,
+            "internal_bge_fusion_replacement_audit_invalid",
+        )
+        out.update({"invalidated_attempt_r1": invalidated, "identity_audit": audit})
+    return out
 
 
 def _sparse_lanes_by_bundle(
@@ -674,6 +749,11 @@ def execute_internal_bge_fusion_evaluation(
     root = Path(repo_root).resolve()
     started = time.perf_counter()
     progress = progress or (lambda _: None)
+    if execution_kind == "local_real_embedding":
+        _require(
+            policy.get("schema_version") == POLICY_SCHEMA_V1_1,
+            "internal_bge_fusion_r1_policy_invalidated_for_real_execution",
+        )
     preflight = run_project_os_preflight(root, run_scope=RUN_SCOPE)
     _require(preflight.get("status") == "pass", "internal_bge_fusion_preflight_blocked")
     inputs = _validate_bound_inputs(policy=policy, repo_root=root)
@@ -847,7 +927,7 @@ def execute_internal_bge_fusion_evaluation(
     adopt = all(adoption_checks.values())
     elapsed = round((time.perf_counter() - started) * 1000, 3)
     body: dict[str, Any] = {
-        "schema_version": RESULT_SCHEMA,
+        "schema_version": str(policy["result_schema"]),
         "contract_ref": str(policy["contract_ref"]),
         "run_scope": RUN_SCOPE,
         "attempt_id": str(policy["attempt_id"]),
@@ -863,12 +943,32 @@ def execute_internal_bge_fusion_evaluation(
         "policy_digest": canonical_digest(policy),
         "owner_qrels_decision_digest": str(inputs["owner"]["decision_digest"]),
         "research_qrels_review_digest": str(qrels["review_digest"]),
+        "supersession": (
+            {
+                "invalidated_attempt_id": policy["replacement_authority"][
+                    "invalidated_attempt_id"
+                ],
+                "post_run_identity_audit_digest": inputs["identity_audit"][
+                    "audit_digest"
+                ],
+            }
+            if policy.get("schema_version") == POLICY_SCHEMA_V1_1
+            else None
+        ),
         "candidate_generation": {
             "status": "terminal_before_qrels_load",
             "digest": candidate_generation_digest,
             "qrels_loaded_after_candidate_generation": True,
             "bundle_count": len(ordered_bundle_ids),
             "candidate_budget_per_bundle": budget,
+            "identity_canonicalization": (
+                dict(candidate_contract["identity_canonicalization"])
+                if policy.get("schema_version") == POLICY_SCHEMA_V1_1
+                else {
+                    "historical_policy": "v1_0",
+                    "runtime_algorithm": "final_known_vector_kind_suffix_only",
+                }
+            ),
             "preserved_sparse_typed_gaps": sparse_typed_gaps,
             "rankings": candidate_generation,
         },
@@ -932,7 +1032,7 @@ def validate_internal_bge_fusion_evaluation_result(
     body = dict(value)
     supplied = str(body.pop("result_digest", ""))
     _require(
-        value.get("schema_version") == RESULT_SCHEMA
+        value.get("schema_version") in {RESULT_SCHEMA, RESULT_SCHEMA_V1_1}
         and supplied == canonical_digest(body),
         "internal_bge_fusion_result_digest_invalid",
     )
@@ -969,7 +1069,9 @@ def validate_internal_bge_fusion_evaluation_result(
 
 __all__ = [
     "POLICY_SCHEMA",
+    "POLICY_SCHEMA_V1_1",
     "RESULT_SCHEMA",
+    "RESULT_SCHEMA_V1_1",
     "RUN_SCOPE",
     "S1InternalBGEFusionEvaluationError",
     "execute_internal_bge_fusion_evaluation",

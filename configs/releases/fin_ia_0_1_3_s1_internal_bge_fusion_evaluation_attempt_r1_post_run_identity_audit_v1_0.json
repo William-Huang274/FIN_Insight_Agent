@@ -1,0 +1,273 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_bge_fusion_evaluation_post_run_identity_audit_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_bge_fusion_evaluation.post_run_identity_audit:v1",
+  "recorded_at": "2026-08-09",
+  "status": "attempt_invalidated_for_adoption_identity_canonicalization_defect",
+  "source_attempt": {
+    "attempt_id": "20260809_three_case_s1_internal_ranking_bge_m3_sparse_dense_facet_fusion_owner_qrels_v1_r1",
+    "execution_commit": "7135159999216c9b82c3fc62582365bd6fb91b5a",
+    "result_ref": "configs/releases/fin_ia_0_1_3_s1_internal_bge_fusion_evaluation_attempt_r1.json",
+    "result_sha256": "8a92b4351b087e5f95655036aead338c8cfd153fded544a0d1dae276b055cd60",
+    "result_digest": "5ccbd8ad5cc21a7ee9e8edbbcd29ae1334d06b0d5a11630eae019d7ca1d8e9d2",
+    "terminal_execution_status": "terminal_succeeded_local_ranking_evaluation"
+  },
+  "defect": {
+    "code_location": "src/sec_agent/s1_internal_bge_fusion_evaluation.py:_candidate_aliases",
+    "old_rule": "split_vector_id_at_first_double_colon",
+    "required_rule": "strip_only_final_known_vector_kind_suffix",
+    "impact": "Distinct namespaced evidence blocks were coalesced before RRF. R1 dense and fusion metrics are invalid for adoption and must not be interpreted as BGE-M3 model quality.",
+    "collision_record_count": 18,
+    "collapsed_namespace_prefixes": [
+      "8K_EARNINGS"
+    ],
+    "collision_records": [
+      {
+        "approach": "dense_rankings",
+        "bundle_id": "internal_query_facet_bundle_1d678815518868a38086",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 7,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0002::CHUNK_0001",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0004::PART_01_OF_02",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0004::PART_02_OF_02"
+        ]
+      },
+      {
+        "approach": "dense_rankings",
+        "bundle_id": "internal_query_facet_bundle_2365488414281a594f2a",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 7,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0002::CHUNK_0001",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_02_OF_02",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0004::PART_02_OF_02"
+        ]
+      },
+      {
+        "approach": "dense_rankings",
+        "bundle_id": "internal_query_facet_bundle_24fdcb3ed48499b408e2",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 3,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0002::PART_03_OF_03",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0003::PART_02_OF_03"
+        ]
+      },
+      {
+        "approach": "dense_rankings",
+        "bundle_id": "internal_query_facet_bundle_4c581958c23fb86e2173",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 5,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_01_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_03_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0003::CHUNK_0001",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0005::CHUNK_0001"
+        ]
+      },
+      {
+        "approach": "dense_rankings",
+        "bundle_id": "internal_query_facet_bundle_5249570c00a4da609632",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 3,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_01_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_03_OF_03"
+        ]
+      },
+      {
+        "approach": "dense_rankings",
+        "bundle_id": "internal_query_facet_bundle_621e7891570ac2e5fec0",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 5,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0002::CHUNK_0001",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_02_OF_02",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0004::PART_02_OF_02"
+        ]
+      },
+      {
+        "approach": "dense_rankings",
+        "bundle_id": "internal_query_facet_bundle_85b437ac4c204de75c11",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 3,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0002::PART_01_OF_03",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0002::PART_03_OF_03"
+        ]
+      },
+      {
+        "approach": "dense_rankings",
+        "bundle_id": "internal_query_facet_bundle_9a9f8fa72563a8a4c6a5",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 3,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0002::PART_03_OF_03",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0003::PART_02_OF_03"
+        ]
+      },
+      {
+        "approach": "dense_rankings",
+        "bundle_id": "internal_query_facet_bundle_9e5597c9d5ad2c296f02",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 3,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_01_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_03_OF_03"
+        ]
+      },
+      {
+        "approach": "fusion_rankings",
+        "bundle_id": "internal_query_facet_bundle_1d678815518868a38086",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 16,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0002::CHUNK_0001",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02_TABLE_034FA287",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0004::PART_01_OF_02"
+        ]
+      },
+      {
+        "approach": "fusion_rankings",
+        "bundle_id": "internal_query_facet_bundle_2365488414281a594f2a",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 12,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001_CLAIM_BE0E1453",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0002::CHUNK_0001",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02_TABLE_CB9704F0"
+        ]
+      },
+      {
+        "approach": "fusion_rankings",
+        "bundle_id": "internal_query_facet_bundle_24fdcb3ed48499b408e2",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 10,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001_CLAIM_8F47AF7A",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001_CLAIM_9337A296",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001_CLAIM_C0F3358C",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001_TABLE_A1952C70"
+        ]
+      },
+      {
+        "approach": "fusion_rankings",
+        "bundle_id": "internal_query_facet_bundle_4c581958c23fb86e2173",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 10,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_01_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_01_OF_03_TABLE_DF35A509",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03_TABLE_7A9312CE",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_03_OF_03"
+        ]
+      },
+      {
+        "approach": "fusion_rankings",
+        "bundle_id": "internal_query_facet_bundle_5249570c00a4da609632",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 5,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_01_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_01_OF_03_TABLE_DF35A509",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03_TABLE_7A9312CE",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_03_OF_03"
+        ]
+      },
+      {
+        "approach": "fusion_rankings",
+        "bundle_id": "internal_query_facet_bundle_621e7891570ac2e5fec0",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 9,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001_CLAIM_BE0E1453",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0002::CHUNK_0001",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02_TABLE_CB9704F0"
+        ]
+      },
+      {
+        "approach": "fusion_rankings",
+        "bundle_id": "internal_query_facet_bundle_85b437ac4c204de75c11",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 10,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001_CLAIM_8F47AF7A",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001_CLAIM_9337A296",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001_CLAIM_C0F3358C",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001_TABLE_A1952C70"
+        ]
+      },
+      {
+        "approach": "fusion_rankings",
+        "bundle_id": "internal_query_facet_bundle_9a9f8fa72563a8a4c6a5",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 10,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001_CLAIM_8F47AF7A",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001_CLAIM_9337A296",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001_CLAIM_C0F3358C",
+          "8K_EARNINGS::MSFT::000119312526191457::MSFTEX991HTM::BLOCK_0001::CHUNK_0001_TABLE_A1952C70"
+        ]
+      },
+      {
+        "approach": "fusion_rankings",
+        "bundle_id": "internal_query_facet_bundle_9e5597c9d5ad2c296f02",
+        "collapsed_candidate_key": "8K_EARNINGS",
+        "distinct_namespaced_evidence_identities": 5,
+        "sample_evidence_identities": [
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_01_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_01_OF_03_TABLE_DF35A509",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03_TABLE_7A9312CE",
+          "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_03_OF_03"
+        ]
+      }
+    ]
+  },
+  "disposition": {
+    "r1_artifact_immutable": true,
+    "r1_metrics_valid_for_adoption": false,
+    "automatic_retry_occurred": false,
+    "replacement_eligible": true,
+    "maximum_replacement_executions": 1,
+    "replacement_preconditions": [
+      "final_known_vector_kind_suffix_only_implementation",
+      "namespaced_multi_block_non_merge_mutation_pass",
+      "same_evidence_vector_kind_coalescing_pass",
+      "clean_synced_commit",
+      "project_os_preflight_pass"
+    ]
+  },
+  "preserved_boundaries": {
+    "current_quarter_exact_sql": "0_of_6_open",
+    "external_official_required_slot_coverage": "4_of_12_open_release_blocker",
+    "reranker": "optional_resource_absent_not_executed",
+    "evidence_promotion": false,
+    "downstream_utilization": false,
+    "release": "not_qualified"
+  },
+  "audit_digest": "72b104df8e1bfebd887536b9baeb06565a44574fec6d72a05888267cfb05b8be"
+}

@@ -4,7 +4,7 @@
 
 阶段：S1／CandidateBundle-only sparse／dense manifest
 
-状态：R3 工程物化保留；业务验收失败；R9 working-tree 全量复跑与 48-Metric 业务审计通过，clean proof 待执行
+状态：R3 工程物化保留；业务验收失败；R9 全量复跑、48-Metric 业务审计与 clean independent proof 均通过
 
 ## 1. R3 实际证明了什么
 
@@ -35,3 +35,7 @@ R9 若仍出现新的时间坐标 L1，不进入 R10 逐词补丁；应停止并
 R9 result=`caee03a5...7f3e`。ORCL／ASML／ANET 的 admitted metrics=`1249／18／471`、projected bundles=`27／13／27`、Slots=`8／5／7`，9 mutations 全通过，所有真实调用为 0。对 R8 与 R9 的 48 条入选 Metric 做完整 identity diff：case／row／column／raw value／unit／period 均 `0` 差异；role 仅有上述四条 ORCL 余额从 annual 更正为 instant。R9 role 分布=`18 instant／10 qtd／8 ytd／12 annual`，无缺失。
 
 当前只记 working-tree business semantics pass。下一步必须先提交推送，再从两个 clean Git archive／fresh process、三份 exact capture 重现 R9；通过后才可进入 manifest R4。
+
+## 6. R9 clean independent proof
+
+R9 已由提交 `aff1cc463bb1e8d3cd9adb5f23a5367c1839514e` 推送。两个 clean Git archive／fresh process 各只注入三份 exact digest-bound response capture，均通过 Project OS preflight 并逐字节重现 source result=`caee03a5...7f3e`；proof=`5d46ca9d...0a7c`，all calls=`0`。R9 现可作为 manifest R4 的唯一 held-out source-object 输入；仍不授权真实 BGE／Milvus。

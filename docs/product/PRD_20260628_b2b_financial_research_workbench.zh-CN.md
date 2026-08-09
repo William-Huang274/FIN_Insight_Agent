@@ -2270,4 +2270,4 @@ ORCL、ASML、ANET 的当前官方源已证明同一通用 parser／CandidateBun
 
 产品门由“period role 非空”提升为“period role 与财务 presentation axis 一致”：期初／期末余额、资产负债表和债务明细的 comparative as-of 列必须为 instant；收入、利润、现金流变动等 duration 列才可为 qtd／ytd／annual。行级经济语义、列级明确期间和表级 as-of／duration axis 必须在本地确定性编译，10-K form 只能作为最后 fallback。R9 仍是同一 S1 successor，不是新产品版本；若 R9 再出现新时间坐标 L1，应升级版本化时间坐标 schema，而不是继续逐词修补。真实 build 仍需 Ubuntu WSL 独立 authority。索引和本地 Evidence Pack 完成后，以真实 residual gaps 驱动外源补源，最后才评估 DeepSeek 的动态研究和综合质量。
 
-R9 working-tree 已保持 48 条入选 Metric 的 case／row／column／raw value／unit／period 不变，只将四个已确认余额改为 instant，最终为 `18 instant／10 qtd／8 ytd／12 annual`。该结果仍需 committed clean proof；working-tree 通过不得直接授权 manifest R4 或真实索引。
+R9 已保持 48 条入选 Metric 的 case／row／column／raw value／unit／period 不变，只将四个已确认余额改为 instant，最终为 `18 instant／10 qtd／8 ytd／12 annual`；并已从提交 `aff1cc46...514e` 的两个 clean archive／fresh process 完全复现，proof=`5d46ca9d...0a7c`。因此只准入 manifest R4 零调用重绑与业务审计，仍不得直接授权真实索引。

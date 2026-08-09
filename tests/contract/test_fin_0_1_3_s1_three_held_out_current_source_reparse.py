@@ -897,9 +897,9 @@ def test_clean_independent_proof_reproduces_committed_result_without_calls() -> 
     body = dict(payload)
     digest = body.pop("result_digest")
     assert canonical_digest(body) == digest
-    assert payload["source_commit"] == "7e49846cd2562e08ae3780088380a83df391bb41"
+    assert payload["source_commit"] == "aff1cc463bb1e8d3cd9adb5f23a5367c1839514e"
     assert payload["source_result_digest"] == (
-        "6ca7ce22b86d5dbe347d02b3195fd6db50ff43488884cb830f1e44c8beff86b1"
+        "caee03a519403b3dbcf6b15bd3cf9969482596771a09e8277bc094cb016c7f3e"
     )
     assert len(payload["proof_runs"]) == 2
     assert all(row["matches_committed_result"] for row in payload["proof_runs"])

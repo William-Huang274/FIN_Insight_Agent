@@ -1,0 +1,126 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_bge_fusion_evaluation_policy_v1_0",
+  "result_schema": "fin_ia_0_1_3_s1_internal_bge_fusion_evaluation_result_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_bge_fusion_evaluation:v1",
+  "run_scope": "S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION",
+  "recorded_at": "2026-08-09",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "attempt_id": "20260809_three_case_s1_internal_ranking_bge_m3_sparse_dense_facet_fusion_owner_qrels_v1_r1",
+  "immutable_inputs": {
+    "owner_qrels_acceptance_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_owner_acceptance_v1_0.json",
+    "owner_qrels_acceptance_sha256": "2e6076fe5a06a5039760f0bc9ff48906d59e7cc08aa2a9bae27f127fa31c6de8",
+    "research_qrels_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_3.json",
+    "research_qrels_sha256": "f78c0e4da5f0167d8e9f80cab20b4095135502b8f468a830c115f9226700e49d",
+    "sparse_candidate_observation_ref": "configs/releases/fin_ia_0_1_3_s1_internal_candidate_inventory_observation_v1_6_attempt_r7.json",
+    "sparse_candidate_observation_sha256": "e406c25ee3e967a06e5bc587f056ef2e78416a10f15a850931a7c6add48bc804",
+    "query_facet_proof_ref": "configs/releases/fin_ia_0_1_3_s1_internal_query_facet_integration_zero_call_proof_v1_2.json",
+    "query_facet_proof_sha256": "d8d7b3784ece0f83d270380623088c58304653fffdcf7471f9aaed503aadbc23",
+    "query_facet_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_query_facet_integration_policy_v1_2.json",
+    "query_facet_policy_sha256": "3fda1fb7a3aba3adaaf5f61d444d54aa368dd657dd0aee95cadb7d3ac69a4dd5",
+    "dense_resource_qualification_ref": "configs/releases/fin_ia_0_1_3_s1_internal_dense_resource_qualification_observation_v1_0.json",
+    "dense_resource_qualification_sha256": "87d2ed86c9e02836b2770b564aa23df2303e9f6505faf46ef8cabc06b6c5f638",
+    "milvus_runtime_ref": "configs/runtime/milvus_runtime_603_local_v0_1.json",
+    "milvus_runtime_sha256": "36a28febb7f297ca969be5874e0ecec2d960ff6f941e765191c384a687f608d3"
+  },
+  "resource_bindings": {
+    "embedding_model": "D:/hf_models/BAAI__bge-m3",
+    "expected_embedding_dim": 1024,
+    "milvus_dependencies_dir": "Z:/FIN_Insight_Agent_artifacts/python_deps/milvus_lite",
+    "device_policy": "cuda_if_available_else_cpu",
+    "normalize_embeddings": true,
+    "embedding_batch_size": 36,
+    "reranker": "optional_resource_absent_not_executed"
+  },
+  "candidate_contract": {
+    "bundle_count": 18,
+    "sparse_routes": ["internal_bm25", "internal_object_bm25"],
+    "dense_route": "internal_milvus_dense",
+    "candidate_budget_per_bundle": 24,
+    "dense_languages": ["en", "zh"],
+    "qrels_loaded_after_candidate_generation": true,
+    "target_identity_may_enter_query_or_retrieval": false,
+    "candidate_state": "candidate_only_not_evidence",
+    "milvus_fiscal_year_field_authority": "reporting_fiscal_years",
+    "strict_ticker_form_source_tier_vector_kind_filters": true
+  },
+  "ranking_contract": {
+    "rrf_k": 60,
+    "sparse_baseline_weights": {
+      "internal_bm25": 1.0,
+      "internal_object_bm25": 1.0
+    },
+    "dense_baseline_weights": {
+      "dense_en": 1.0,
+      "dense_zh": 0.85
+    },
+    "facet_aware_route_weights": {
+      "issuer_results_and_management_commentary": {
+        "internal_bm25": 1.0,
+        "internal_object_bm25": 1.15,
+        "dense_en": 0.95,
+        "dense_zh": 0.75
+      },
+      "regulatory_risk_and_financial_reconciliation": {
+        "internal_bm25": 1.0,
+        "internal_object_bm25": 1.2,
+        "dense_en": 1.0,
+        "dense_zh": 0.75
+      },
+      "customer_demand_and_deployment_validation": {
+        "internal_bm25": 1.0,
+        "internal_object_bm25": 0.85,
+        "dense_en": 1.15,
+        "dense_zh": 0.85
+      },
+      "supply_chain_capacity_and_counterevidence": {
+        "internal_bm25": 1.0,
+        "internal_object_bm25": 0.85,
+        "dense_en": 1.15,
+        "dense_zh": 0.85
+      }
+    },
+    "tie_breaker": "canonical_candidate_identity_ascending",
+    "route_order_must_not_change_output": true
+  },
+  "evaluation_contract": {
+    "relevance_unit": "owner_accepted_selected_candidate_or_same_bound_evidence_identity",
+    "metrics": ["recall_at_1", "recall_at_5", "recall_at_10", "recall_at_24", "mrr_at_10", "ndcg_at_10"],
+    "false_promotion_checks": ["wrong_evidence_owner_ticker", "wrong_reporting_period", "cross_case_binding"],
+    "cohorts": ["case_key", "evidence_slot_id"],
+    "stability_checks": ["route_input_order_reversal", "candidate_input_order_reversal"],
+    "round_digits": 8
+  },
+  "experiment_governance": {
+    "hypothesis": "BGE-M3 adds semantically useful current candidates and facet-aware fusion preserves or improves sparse selected-target retrieval without identity or period pollution.",
+    "decision_target": "Adopt fusion only if recall_at_10 is not below sparse, mrr_at_10 is no more than 0.02 below sparse, false promotions are zero and deterministic stability passes.",
+    "candidate_ceiling": "owner_reviewed_sparse_target_in_pool_18_of_18",
+    "baselines": ["sparse_rrf", "dense_bilingual_rrf"],
+    "leakage_guard": "qrels_are_loaded_only_after_sparse_dense_and_fusion_candidate_generation_terminal_digest",
+    "stop_conditions": [
+      "model_or_milvus_resource_drift",
+      "embedding_dimension_mismatch",
+      "typed_filter_failure",
+      "fusion_degrades_recall_at_10_or_false_promotes"
+    ],
+    "efficiency_gate": {
+      "maximum_embedding_vectors": 36,
+      "maximum_milvus_searches": 36,
+      "maximum_wall_time_seconds": 900
+    },
+    "decision_label_before_run": "proceed"
+  },
+  "hard_boundaries": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "maximum_embedding_vectors": 36,
+    "maximum_milvus_searches": 36,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "may_download_model_or_reranker": false,
+    "may_mutate_milvus_or_sparse_assets": false,
+    "may_promote_candidate_to_evidence": false,
+    "may_close_current_quarter_sql_or_external_release_blocker": false
+  }
+}

@@ -50,7 +50,7 @@ def _request(proof: dict, route: str, case: str, slot: str, owner: str) -> dict:
     )
 
 
-def test_policy_binds_historical_scopes_and_supplemental_refresh_is_current() -> None:
+def test_policy_binds_historical_scopes_and_owner_accepted_ranking_is_current() -> None:
     policy, proof = _policy_and_proof()
     assert policy["run_scope"] == RUN_SCOPE
     assert proof["physical_request_count"] == 90
@@ -68,7 +68,7 @@ def test_policy_binds_historical_scopes_and_supplemental_refresh_is_current() ->
         run_project_os_preflight(
             ROOT, run_scope="S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION"
         )["status"]
-        == "blocked"
+        == "pass"
     )
 
 

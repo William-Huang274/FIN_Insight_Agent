@@ -15,10 +15,17 @@ POLICY_SCHEMA_V1_1 = (
     "fin_ia_0_1_3_s1_internal_query_facet_integration_policy_v1_1"
 )
 CONTRACT_REF_V1_1 = "fin_0_1_3.S1.internal_query_facet_integration:v1.1"
+POLICY_SCHEMA_V1_2 = (
+    "fin_ia_0_1_3_s1_internal_query_facet_integration_policy_v1_2"
+)
+CONTRACT_REF_V1_2 = "fin_0_1_3.S1.internal_query_facet_integration:v1.2"
 RUN_SCOPE = "S1_INTERNAL_RETRIEVAL_QUERY_FACET_INTEGRATION"
 PROOF_SCHEMA = "fin_ia_0_1_3_s1_internal_query_facet_integration_zero_call_proof_v1_0"
 PROOF_SCHEMA_V1_1 = (
     "fin_ia_0_1_3_s1_internal_query_facet_integration_zero_call_proof_v1_1"
+)
+PROOF_SCHEMA_V1_2 = (
+    "fin_ia_0_1_3_s1_internal_query_facet_integration_zero_call_proof_v1_2"
 )
 CASES = ("DELL", "MU", "NVDA")
 LANGUAGES = ("en", "zh")
@@ -163,6 +170,7 @@ def load_internal_query_facet_policy(path: str | Path) -> dict[str, Any]:
         not in {
             (POLICY_SCHEMA, CONTRACT_REF),
             (POLICY_SCHEMA_V1_1, CONTRACT_REF_V1_1),
+            (POLICY_SCHEMA_V1_2, CONTRACT_REF_V1_2),
         }
         or policy.get("run_scope") != RUN_SCOPE
         or policy.get("binding_hash_profile") != "sha256_utf8_lf_normalized_v1"
@@ -211,6 +219,11 @@ def load_internal_query_facet_policy(path: str | Path) -> dict[str, Any]:
     if any((policy.get("zero_call_boundary") or {}).values()):
         raise S1InternalQueryFacetError("internal_query_facet_zero_call_invalid")
     if _uses_typed_period_roles(policy):
+        expected_milvus_period_authority = (
+            "reporting_fiscal_years"
+            if _uses_milvus_reporting_fiscal_years(policy)
+            else "index_filing_calendar_years"
+        )
         if policy.get("period_filter_contract") != {
             "reporting_period_field": "reporting_fiscal_years",
             "document_index_period_field": "index_filing_calendar_years",
@@ -220,7 +233,7 @@ def load_internal_query_facet_policy(path: str | Path) -> dict[str, Any]:
             "sql_period_authority": "reporting_fiscal_years",
             "object_bm25_period_authority": "index_filing_calendar_years",
             "bm25_period_authority": "index_filing_calendar_years",
-            "milvus_period_authority": "index_filing_calendar_years",
+            "milvus_period_authority": expected_milvus_period_authority,
             "graph_period_state": "intent_preserved_index_unverifiable",
         }:
             raise S1InternalQueryFacetError(
@@ -359,7 +372,11 @@ def validate_internal_route_request(
         if request.route_id == "internal_milvus_dense":
             period_filter_drift = period_filter_drift or tuple(
                 filters.get("years") or ()
-            ) != expected_index_years
+            ) != (
+                bundle.fiscal_years
+                if _uses_milvus_reporting_fiscal_years(policy)
+                else expected_index_years
+            )
     else:
         period_filter_drift = (
             tuple(filters.get("fiscal_years") or ()) != bundle.fiscal_years
@@ -434,10 +451,18 @@ def build_internal_query_facet_zero_call_proof(
         serialized_bundles.append(serialized)
     body = {
         "schema_version": (
-            PROOF_SCHEMA_V1_1 if uses_typed_period_roles else PROOF_SCHEMA
+            PROOF_SCHEMA_V1_2
+            if _uses_milvus_reporting_fiscal_years(policy)
+            else PROOF_SCHEMA_V1_1
+            if uses_typed_period_roles
+            else PROOF_SCHEMA
         ),
         "contract_ref": (
-            CONTRACT_REF_V1_1 if uses_typed_period_roles else CONTRACT_REF
+            CONTRACT_REF_V1_2
+            if _uses_milvus_reporting_fiscal_years(policy)
+            else CONTRACT_REF_V1_1
+            if uses_typed_period_roles
+            else CONTRACT_REF
         ),
         "run_scope": RUN_SCOPE,
         "status": "zero_call_engineering_pass",
@@ -689,7 +714,9 @@ def _build_route_request(
             {
                 "tickers": [bundle.evidence_owner_ticker],
                 "years": list(
-                    index_filing_calendar_years
+                    bundle.fiscal_years
+                    if _uses_milvus_reporting_fiscal_years(policy)
+                    else index_filing_calendar_years
                     if uses_typed_period_roles
                     else bundle.fiscal_years
                 ),
@@ -824,7 +851,14 @@ def _fiscal_years(period_terms: Sequence[Any]) -> tuple[int, ...]:
 
 
 def _uses_typed_period_roles(policy: Mapping[str, Any]) -> bool:
-    return policy.get("schema_version") == POLICY_SCHEMA_V1_1
+    return policy.get("schema_version") in {
+        POLICY_SCHEMA_V1_1,
+        POLICY_SCHEMA_V1_2,
+    }
+
+
+def _uses_milvus_reporting_fiscal_years(policy: Mapping[str, Any]) -> bool:
+    return policy.get("schema_version") == POLICY_SCHEMA_V1_2
 
 
 def _index_filing_calendar_years(
@@ -849,10 +883,13 @@ def _index_filing_calendar_years(
 __all__ = [
     "CONTRACT_REF",
     "CONTRACT_REF_V1_1",
+    "CONTRACT_REF_V1_2",
     "POLICY_SCHEMA",
     "POLICY_SCHEMA_V1_1",
+    "POLICY_SCHEMA_V1_2",
     "PROOF_SCHEMA",
     "PROOF_SCHEMA_V1_1",
+    "PROOF_SCHEMA_V1_2",
     "ROUTE_IDS",
     "RUN_SCOPE",
     "InternalQueryFacetBundle",

@@ -1,0 +1,57 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_three_held_out_current_source_reparse_clean_independent_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1.three_held_out_current_source_reparse_clean_independent_proof:v1",
+  "recorded_at": "2026-08-09",
+  "source_commit": "340c2314623f85969942b6b63940342dc744c165",
+  "source_result_ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_result_v1_0.json",
+  "source_result_digest": "a2184a963597a4f2bc355faf1f911796ed12af8abe8f5e2f11c83b80f942603c",
+  "proof_method": {
+    "git_archives": 2,
+    "fresh_python_processes": 2,
+    "archive_shared_code_directory": false,
+    "capture_copy_mode": "three_exact_publicly_referenced_response_capture_objects_only",
+    "capture_digest_verification": true,
+    "project_os_preflight_each_archive": true
+  },
+  "proof_runs": [
+    {
+      "run_id": "archive-a",
+      "preflight": "pass",
+      "matches_committed_result": true,
+      "result_digest": "a2184a963597a4f2bc355faf1f911796ed12af8abe8f5e2f11c83b80f942603c",
+      "case_bundle_counts": [27, 13, 27],
+      "case_slot_counts": [8, 5, 7],
+      "mutations_passed": [9, 9]
+    },
+    {
+      "run_id": "archive-b",
+      "preflight": "pass",
+      "matches_committed_result": true,
+      "result_digest": "a2184a963597a4f2bc355faf1f911796ed12af8abe8f5e2f11c83b80f942603c",
+      "case_bundle_counts": [27, 13, 27],
+      "case_slot_counts": [8, 5, 7],
+      "mutations_passed": [9, 9]
+    }
+  ],
+  "observed_calls_each_run": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "clean_independent_reproof": true,
+    "object_shape_generalization_engineering": true,
+    "candidate_bundle_only_sparse_dense_manifest_rebaseline_admitted": true,
+    "real_embedding_or_index_build": false,
+    "held_out_product_generalization": false,
+    "external_residual_supplement": false,
+    "model_research_synthesis": false,
+    "release": false
+  },
+  "decision_zh": "两个独立 Git archive 在 fresh process 中仅复制并校验公开结果引用的三份不可变 response capture，均重现已提交 result digest。对象形状工程门可关闭，下一步只准入 CandidateBundle-only sparse/dense manifest 重定基；真实 embedding、Milvus 写入、ranking、Evidence、外源补源与 DeepSeek 仍需后续独立合同和权限。",
+  "known_boundary": "The proof establishes deterministic source-object migration from immutable captures. It does not qualify all automatic claims for indexing and does not prove retrieval ranking, Evidence Pack completeness, report quality or release.",
+  "result_digest": "7c8403307e2c5997aa6ffa5a1772be8a9c7ddb805e8d1f9d70b94efd0e898676"
+}

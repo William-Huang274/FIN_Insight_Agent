@@ -1,5 +1,6 @@
 # Worklog
 
+- [790 — FIN 0.1.3 三个留出案例 current-source clean independent reproof](product_strategy/790_fin_0_1_3_three_held_out_current_source_clean_independent_reproof.md)
 - [789 — FIN 0.1.3 三个留出案例 current-source 表格复原与对象迁移](product_strategy/789_fin_0_1_3_three_held_out_current_source_table_reparse_and_object_migration.md)
 - [782 — FIN 0.1.3 三个留出案例身份、问题与 Industry Pack 冻结](product_strategy/782_fin_0_1_3_three_held_out_identity_profile_and_industry_pack_freeze.md)
 - [781 — FIN 0.1.3 MU／NVDA 不改核心迁移与业务缺口](product_strategy/781_fin_0_1_3_mu_nvda_core_unchanged_transfer_and_business_gaps.md)

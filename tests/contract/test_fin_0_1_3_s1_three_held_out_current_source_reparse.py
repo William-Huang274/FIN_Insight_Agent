@@ -9,6 +9,7 @@ from evidence.schema import EvidenceObject
 from evidence.structured_objects import MetricObject
 from evidence.structured_extractor import extract_structured_objects
 from ingestion.parse_sec_filing import extract_sec_html_text_content
+from sec_agent.canonical_runtime.models import canonical_digest
 from sec_agent.financial_research_candidate_bundle_v2 import project_candidate_bundle_v2
 from sec_agent.financial_research_current_source_reparse import (
     classify_financial_object_slot,
@@ -28,6 +29,10 @@ POLICY_PATH = ROOT / (
 RESULT_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_three_held_out_"
     "current_source_reparse_result_v1_0.json"
+)
+PROOF_PATH = ROOT / (
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_"
+    "current_source_reparse_clean_independent_proof_v1_0.json"
 )
 
 
@@ -342,3 +347,23 @@ def test_materialized_result_is_digest_valid_and_only_admits_next_index_step() -
         ]
         assert metric_examples
         assert all(row["object_summary"]["period"] == "2026" for row in metric_examples)
+
+
+def test_clean_independent_proof_reproduces_committed_result_without_calls() -> None:
+    if not PROOF_PATH.exists():
+        pytest.skip("clean independent proof not materialized")
+    payload = json.loads(PROOF_PATH.read_text(encoding="utf-8"))
+    body = dict(payload)
+    digest = body.pop("result_digest")
+    assert canonical_digest(body) == digest
+    assert payload["source_commit"] == "340c2314623f85969942b6b63940342dc744c165"
+    assert payload["source_result_digest"] == (
+        "a2184a963597a4f2bc355faf1f911796ed12af8abe8f5e2f11c83b80f942603c"
+    )
+    assert len(payload["proof_runs"]) == 2
+    assert all(row["matches_committed_result"] for row in payload["proof_runs"])
+    assert set(payload["observed_calls_each_run"].values()) == {0}
+    acceptance = payload["stage_acceptance"]
+    assert acceptance["candidate_bundle_only_sparse_dense_manifest_rebaseline_admitted"] is True
+    assert acceptance["real_embedding_or_index_build"] is False
+    assert acceptance["held_out_product_generalization"] is False

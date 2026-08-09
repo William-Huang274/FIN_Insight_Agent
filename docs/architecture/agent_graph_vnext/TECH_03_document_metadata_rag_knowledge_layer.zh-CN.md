@@ -718,3 +718,11 @@ source authority
 7. alias、多语言、ADR／local ticker 和 PDF-only 只通过 case-neutral resolver／parser plugin 扩展，不进入金融内核的 ticker 分支。
 
 索引准入因此改成两道门：先对 DELL／MU／NVDA 和 ORCL／ASML／ANET 证明 bundle 语义、currency／unit、parent path 与 typed gap；再决定哪些 Source／Section／Table／Q&A／Claim／Metric 对象进入 sparse／dense。当前 held-out 结果状态为 `held_out_generalization_blocked_before_index_rebuild`，不能以 required Slot 均有候选或 top-k 数量代替该准入门。
+
+### 24.10 CandidateBundle v2 六案投影结果（2026-08-09）
+
+版本化 successor 已在不修改 v1 kernel／executor／result 的条件下，对 DELL／MU／NVDA／ORCL／ASML／ANET 共 1,179 条真实候选执行投影。DELL／MU／NVDA 分别为 `265/265`、`256/256`、`262/262` bundle；ORCL 为 `113 bundle + 17 typed rejection`，ASML 为 `104 + 8`，ANET 为 `139 + 15`。所有候选均终态，unsafe numeric admission 为 0。
+
+该结果的含义不是“旧对象已经修好”，而是 v2 能识别并隔离旧对象缺陷。ASML 的三个 currency conflict、五个 invalid numeric cell、两个 unit-authority gap 和一个 table-path gap 都没有被默认币种或 renderer 覆盖。后续 current source 必须 capture-first，并由带 parent table marker／row／column／currency provenance 的 parser 投影；旧 child 只保留为失败证据。
+
+当前 gate 仍为 `sparse_dense_rebuild_admitted=false`。原因是 ORCL／ASML／ANET 的截至期资料尚未进入本地 source inventory，且 PDF／多语言／ADR-local ticker mutation 尚未用新来源完成。只有这部分完成并经同一六案 gate 复证，才允许冻结新的 sparse／dense object manifest。

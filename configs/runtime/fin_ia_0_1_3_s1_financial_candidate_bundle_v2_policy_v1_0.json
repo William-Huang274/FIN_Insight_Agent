@@ -1,0 +1,112 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_financial_candidate_bundle_v2_policy_v1_0",
+  "contract_ref": "fin01.3.s1.financial_candidate_bundle_v2:1.0",
+  "run_scope": "S1_FINANCIAL_CANDIDATE_BUNDLE_V2_SUCCESSOR",
+  "recorded_at": "2026-08-09",
+  "attempt_id": "S1-FINANCIAL-CANDIDATE-BUNDLE-V2-R1",
+  "locked_artifacts": [
+    {
+      "artifact_id": "financial_research_generalization_contract",
+      "path": "configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json",
+      "normalized_sha256": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+      "role": "immutable_v1_financial_kernel"
+    },
+    {
+      "artifact_id": "financial_research_generalization_module",
+      "path": "src/sec_agent/financial_research_generalization_contract.py",
+      "normalized_sha256": "18290d1eea5e19e854689ccda0d2b28ca65de5e412f555af030594464f99762e",
+      "role": "immutable_v1_financial_kernel_implementation"
+    },
+    {
+      "artifact_id": "source_object_vertical_executor",
+      "path": "src/sec_agent/financial_research_source_object_vertical.py",
+      "normalized_sha256": "379d1804ea5f6ab02efe3271b0f4a701b343a14b7473d7ddb412b0ee729d14d8",
+      "role": "immutable_v1_candidate_executor"
+    },
+    {
+      "artifact_id": "held_out_business_review",
+      "path": "configs/releases/fin_ia_0_1_3_s1_three_held_out_business_review_result_v1_0.json",
+      "normalized_sha256": "84c99ef9f4f9c39274d00029a11ef8247a9b4ceb729a5fb0d1a0c24a9f056862",
+      "role": "immutable_failure_evidence"
+    }
+  ],
+  "case_inputs": [
+    {
+      "case_key": "DELL",
+      "policy_kind": "dell_amended_vertical",
+      "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_dell_financial_source_object_vertical_policy_amendment_r2_v1_0.json",
+      "policy_sha256": "dee09b1fbec242ac2014cdcd6758b95708379407cb0b95d9c606c7b4f7fdbb39",
+      "result_ref": "configs/releases/fin_ia_0_1_3_s1_dell_financial_source_object_vertical_result_r3_v1_0.json",
+      "result_sha256": "eea565f267ae97db7ef889f9115b2b68230cd7cd3e92bc8269f544187accfdbf",
+      "reporting_currency": "USD",
+      "reporting_currency_authority": "case_profile_issuer_reporting_currency"
+    },
+    {
+      "case_key": "MU",
+      "policy_kind": "known_case_transfer",
+      "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_mu_nvda_core_unchanged_transfer_policy_v1_0.json",
+      "policy_sha256": "f345b3677c51dc34f91e97c5787f9c215f7a5c3a36e27b9936cf43705aa8b71d",
+      "result_ref": "configs/releases/fin_ia_0_1_3_s1_mu_financial_source_object_transfer_result_v1_0.json",
+      "result_sha256": "3b6c9214940ae5760f11f10f233f68c0afccb1bdd822f3241eb2b6e170b30f43",
+      "reporting_currency": "USD",
+      "reporting_currency_authority": "case_profile_issuer_reporting_currency"
+    },
+    {
+      "case_key": "NVDA",
+      "policy_kind": "known_case_transfer",
+      "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_mu_nvda_core_unchanged_transfer_policy_v1_0.json",
+      "policy_sha256": "f345b3677c51dc34f91e97c5787f9c215f7a5c3a36e27b9936cf43705aa8b71d",
+      "result_ref": "configs/releases/fin_ia_0_1_3_s1_nvda_financial_source_object_transfer_result_v1_0.json",
+      "result_sha256": "045cd6f1c05a17efd190984d0677036336b56e268b6bfcf2e9556b02359a34a9",
+      "reporting_currency": "USD",
+      "reporting_currency_authority": "case_profile_issuer_reporting_currency"
+    },
+    {
+      "case_key": "ORCL",
+      "policy_kind": "held_out_candidate",
+      "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_three_held_out_candidate_generation_policy_v1_0.json",
+      "policy_sha256": "02daa05e946a18e283815671588221a5d2f8e7e21e68837ae989ce918bad092c",
+      "result_ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_candidate_generation_result_v1_0.json",
+      "result_sha256": "8ac4ad23ecedfbb0a4a36ee65db23c6a19cf511e45f2b0ceeca25183af99d271",
+      "reporting_currency": "USD",
+      "reporting_currency_authority": "held_out_case_profile_issuer_reporting_currency"
+    },
+    {
+      "case_key": "ASML",
+      "policy_kind": "held_out_candidate",
+      "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_three_held_out_candidate_generation_policy_v1_0.json",
+      "policy_sha256": "02daa05e946a18e283815671588221a5d2f8e7e21e68837ae989ce918bad092c",
+      "result_ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_candidate_generation_result_v1_0.json",
+      "result_sha256": "8ac4ad23ecedfbb0a4a36ee65db23c6a19cf511e45f2b0ceeca25183af99d271",
+      "reporting_currency": "EUR",
+      "reporting_currency_authority": "held_out_case_profile_issuer_reporting_currency"
+    },
+    {
+      "case_key": "ANET",
+      "policy_kind": "held_out_candidate",
+      "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_three_held_out_candidate_generation_policy_v1_0.json",
+      "policy_sha256": "02daa05e946a18e283815671588221a5d2f8e7e21e68837ae989ce918bad092c",
+      "result_ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_candidate_generation_result_v1_0.json",
+      "result_sha256": "8ac4ad23ecedfbb0a4a36ee65db23c6a19cf511e45f2b0ceeca25183af99d271",
+      "reporting_currency": "USD",
+      "reporting_currency_authority": "held_out_case_profile_issuer_reporting_currency"
+    }
+  ],
+  "typed_gap_codes": [
+    "source_absent_gap",
+    "retrieval_quality_gap",
+    "object_context_gap"
+  ],
+  "hard_boundaries": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "historical_results_immutable": true,
+    "ticker_specific_branch_allowed": false,
+    "unsafe_unit_override_allowed": false,
+    "sparse_dense_rebuild_allowed": false
+  }
+}

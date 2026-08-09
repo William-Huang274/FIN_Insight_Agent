@@ -452,6 +452,8 @@ def _period_role_for_ixbrl_context(context: dict[str, Any], evidence: EvidenceOb
 
 
 def _period_role_for_table_cell(table: TableObject, column_label: str | None, row_label: str | None) -> str | None:
+    header_index = _table_header_index(table.rows)
+    data_start = _table_data_start_index(table.rows, header_index)
     return _period_role_for_table_cell_parts(
         form_type=table.form_type or table.source_type,
         period_type=table.period_type,
@@ -460,6 +462,7 @@ def _period_role_for_table_cell(table: TableObject, column_label: str | None, ro
         row_label=row_label,
         active_group=None,
         title=table.title,
+        table_header_context=_table_header_context(table.rows, data_start),
         context_before=table.text_before,
         context_after=table.text_after,
     )
@@ -474,6 +477,7 @@ def _period_role_for_table_cell_parts(
     row_label: str | None,
     active_group: str | None,
     title: str | None,
+    table_header_context: str | None,
     context_before: str | None,
     context_after: str | None,
 ) -> str | None:
@@ -482,12 +486,15 @@ def _period_role_for_table_cell_parts(
     # it sits under a "Q2 2026" column, while sales under the same column are
     # quarter-to-date.  Preserve that distinction before consulting the
     # column shorthand.
-    row_role = _period_role_from_text(row_label)
+    row_role = _period_role_from_financial_row(row_label)
     if row_role:
         return row_role
     column_role = _period_role_from_text(column_label)
     if column_role:
         return column_role
+    table_role = _period_role_from_table_header(table_header_context)
+    if table_role:
+        return table_role
     context_role = _period_role_for_texts(
         row_label,
         active_group,
@@ -499,6 +506,58 @@ def _period_role_for_table_cell_parts(
         duration_months=duration_months,
     )
     return context_role
+
+
+def _table_header_context(rows: list[list[str]], data_start: int) -> str:
+    return " | ".join(
+        str(cell or "").strip()
+        for row in rows[:data_start]
+        for cell in row
+        if str(cell or "").strip()
+    )
+
+
+def _period_role_from_financial_row(value: Any) -> str | None:
+    explicit = _period_role_from_text(value)
+    if explicit:
+        return explicit
+    text = re.sub(r"\s+", " ", str(value or "").lower()).strip()
+    if not text:
+        return None
+    # These labels identify a balance or exposure at a point in time even
+    # when the surrounding filing presents the column beneath a fiscal-year
+    # heading.  Keep the patterns economic and provider-neutral: a change,
+    # payment, proceeds or other movement remains a duration flow.
+    if re.search(r"\b(?:at\s+)?(?:beginning|end)\s+of\s+(?:the\s+)?period\b", text):
+        return "instant"
+    if re.fullmatch(
+        r"cash(?:\s+and\s+cash equivalents|,\s*cash equivalents)?"
+        r"(?:\s+and\s+trade receivables,?\s*net)?",
+        text,
+    ):
+        return "instant"
+    return None
+
+
+def _period_role_from_table_header(value: Any) -> str | None:
+    text = re.sub(r"\s+", " ", str(value or "").lower()).strip()
+    if not text:
+        return None
+    explicit = _period_role_from_text(text)
+    if explicit:
+        return explicit
+    # Comparative balance-sheet and debt-detail tables commonly render
+    # ``May 31, 2026 | 2025`` or ``May 31, (in millions) | 2026 | 2025``
+    # without the words "as of".  A leading calendar date plus year columns,
+    # with no duration marker, is still an instant presentation axis.
+    leading_date = re.search(
+        rf"^(?:as\s+of\s+)?{MONTH_PATTERN}\s+\d{{1,2}}(?:,\s*(?:19|20)\d{{2}})?\b",
+        text,
+        flags=re.I,
+    )
+    if leading_date and re.search(r"\b(?:19|20)\d{2}\b", text):
+        return "instant"
+    return None
 
 
 def _period_role_for_texts(
@@ -969,6 +1028,7 @@ def _table_cells(
                 row_label=row_label,
                 active_group=active_group,
                 title=_infer_table_title(context_before),
+                table_header_context=_table_header_context(rows, data_start),
                 context_before=context_before,
                 context_after=context_after,
             )

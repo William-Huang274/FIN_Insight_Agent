@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 import json
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from evidence.structured_objects import MetricObject
 from evidence.structured_extractor import extract_structured_objects
 from ingestion.parse_sec_filing import extract_sec_html_text_content
 from sec_agent.canonical_runtime.models import canonical_digest
+from sec_agent.canonical_runtime.object_store import FileCanonicalObjectStore
 from sec_agent.financial_research_candidate_bundle_v2 import project_candidate_bundle_v2
 from sec_agent.financial_research_current_source_reparse import (
     classify_financial_object_slot,
@@ -24,16 +26,68 @@ pytestmark = pytest.mark.fast_contract
 ROOT = Path(__file__).resolve().parents[2]
 POLICY_PATH = ROOT / (
     "configs/runtime/fin_ia_0_1_3_s1_three_held_out_"
-    "current_source_reparse_successor_r8_policy_v1_0.json"
+    "current_source_reparse_successor_r9_policy_v1_0.json"
 )
 RESULT_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_three_held_out_"
-    "current_source_reparse_successor_r8_result_v1_0.json"
+    "current_source_reparse_successor_r9_result_v1_0.json"
 )
 PROOF_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_three_held_out_"
-    "current_source_reparse_successor_r8_clean_independent_proof_v1_0.json"
+    "current_source_reparse_successor_r9_clean_independent_proof_v1_0.json"
 )
+R8_RESULT_PATH = ROOT / (
+    "configs/releases/fin_ia_0_1_3_s1_three_held_out_"
+    "current_source_reparse_successor_r8_result_v1_0.json"
+)
+R8_RUNTIME_ROOT = ROOT / (
+    "data/workbench_private/fin_0_1_3_s1_three_held_out_"
+    "current_source_reparse/zero-call-r8"
+)
+R9_RUNTIME_ROOT = ROOT / (
+    "data/workbench_private/fin_0_1_3_s1_three_held_out_"
+    "current_source_reparse/zero-call-r9"
+)
+
+
+def _selected_metric_business_rows(
+    result_path: Path,
+    runtime_root: Path,
+) -> list[dict]:
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    store = FileCanonicalObjectStore(runtime_root / "objects")
+    rows = []
+    for case_result in result["case_results"]:
+        private = case_result["private_artifacts"]
+        metrics = store.get_json(
+            private["admitted_metrics"]["object_key"],
+            expected_digest=private["admitted_metrics"]["digest"],
+        )
+        projections = store.get_json(
+            private["candidate_bundles"]["object_key"],
+            expected_digest=private["candidate_bundles"]["digest"],
+        )
+        metric_index = {row["object_id"]: row for row in metrics}
+        for projection in projections:
+            bundle = projection.get("bundle") or {}
+            if (
+                projection.get("terminal_state") != "bundle_projected"
+                or bundle.get("object_type") != "metric"
+            ):
+                continue
+            metric = metric_index[bundle["target_id"]]
+            rows.append(
+                {
+                    "case_key": case_result["case_key"],
+                    "row_label": metric["row_label"],
+                    "column_label": metric["column_label"],
+                    "raw_value": metric["raw_value"],
+                    "unit": metric["unit"],
+                    "period": metric["period"],
+                    "period_role": metric["period_role"],
+                }
+            )
+    return rows
 
 
 def _asml_extraction():
@@ -586,6 +640,125 @@ def test_unit_prefixed_annual_year_header_keeps_full_period_coordinate() -> None
     }
 
 
+def test_as_of_debt_table_amount_and_rate_are_instant_not_annual() -> None:
+    html = """
+    <html><body><table>
+      <tr><th>May 31, 2026</th><th>2025</th></tr>
+      <tr><th>Date of Issuance</th><th>Amount</th><th>Effective Interest Rate</th><th>Amount</th><th>Effective Interest Rate</th></tr>
+      <tr><td>$ 1,250, 5.50%, due September 2064</td><td>September 2024</td><td>$</td><td>1,250</td><td>5.50</td><td>%</td><td>$</td><td>1,250</td><td>5.50</td><td>%</td></tr>
+    </table></body></html>
+    """
+    evidence = EvidenceObject(
+        evidence_id="AS_OF_DEBT_ROLE_FIXTURE",
+        source_type="10-K",
+        source_tier="primary_sec_filing",
+        ticker="FIX",
+        fiscal_year=2026,
+        period_end="2026-05-31",
+        fiscal_period="FY",
+        evidence_type="filing_disclosure",
+        text=extract_sec_html_text_content(html),
+        metadata={"form_type": "10-K", "reporting_currency": "USD"},
+    )
+    rows = [
+        row
+        for row in extract_structured_objects(evidence).metrics
+        if row.row_label.startswith("$ 1,250")
+    ]
+    assert rows
+    assert all(row.period_role == "instant" for row in rows)
+
+
+def test_beginning_balance_overrides_annual_cash_flow_column() -> None:
+    html = """
+    <html><body><table>
+      <tr><th>Year Ended May 31,</th></tr>
+      <tr><th>(in millions)</th><th>2026</th><th>2025</th></tr>
+      <tr><td>Net income</td><td>$</td><td>17,087</td><td>$</td><td>12,443</td></tr>
+      <tr><td>Cash and cash equivalents at beginning of period</td><td>$</td><td>10,786</td><td>$</td><td>9,765</td></tr>
+    </table></body></html>
+    """
+    evidence = EvidenceObject(
+        evidence_id="BEGINNING_BALANCE_ROLE_FIXTURE",
+        source_type="10-K",
+        source_tier="primary_sec_filing",
+        ticker="FIX",
+        fiscal_year=2026,
+        period_end="2026-05-31",
+        fiscal_period="FY",
+        evidence_type="filing_disclosure",
+        text=extract_sec_html_text_content(html),
+        metadata={"form_type": "10-K", "reporting_currency": "USD"},
+    )
+    rows = extract_structured_objects(evidence).metrics
+    assert {
+        (row.row_label, row.period_role)
+        for row in rows
+        if row.period == "2026"
+    } == {
+        ("Net income", "annual"),
+        ("Cash and cash equivalents at beginning of period", "instant"),
+    }
+
+
+def test_balance_exposure_row_overrides_duration_table_context() -> None:
+    html = """
+    <html><body><table>
+      <tr><th>Year Ended May 31,</th><th>2026</th><th>2025</th></tr>
+      <tr><td>Total revenues</td><td>$</td><td>67,374</td><td>$</td><td>57,399</td></tr>
+      <tr><td>Cash, cash equivalents and trade receivables, net</td><td>$</td><td>52,000</td><td>$</td><td>31,000</td></tr>
+    </table></body></html>
+    """
+    evidence = EvidenceObject(
+        evidence_id="BALANCE_EXPOSURE_ROLE_FIXTURE",
+        source_type="10-K",
+        source_tier="primary_sec_filing",
+        ticker="FIX",
+        fiscal_year=2026,
+        period_end="2026-05-31",
+        fiscal_period="FY",
+        evidence_type="filing_disclosure",
+        text=extract_sec_html_text_content(html),
+        metadata={"form_type": "10-K", "reporting_currency": "USD"},
+    )
+    rows = extract_structured_objects(evidence).metrics
+    roles = {
+        row.row_label: row.period_role
+        for row in rows
+        if row.period == "2026"
+    }
+    assert roles["Total revenues"] == "annual"
+    assert roles["Cash, cash equivalents and trade receivables, net"] == "instant"
+
+
+def test_date_axis_balance_table_is_instant_without_as_of_words() -> None:
+    html = """
+    <html><body><table>
+      <tr><th>May 31, (in millions)</th><th>2026</th><th>2025</th></tr>
+      <tr><td>Total deferred revenues</td><td>$</td><td>10,900</td><td>$</td><td>9,300</td></tr>
+    </table></body></html>
+    """
+    evidence = EvidenceObject(
+        evidence_id="DATE_AXIS_BALANCE_ROLE_FIXTURE",
+        source_type="10-K",
+        source_tier="primary_sec_filing",
+        ticker="FIX",
+        fiscal_year=2026,
+        period_end="2026-05-31",
+        fiscal_period="FY",
+        evidence_type="filing_disclosure",
+        text=extract_sec_html_text_content(html),
+        metadata={"form_type": "10-K", "reporting_currency": "USD"},
+    )
+    rows = [
+        row
+        for row in extract_structured_objects(evidence).metrics
+        if row.row_label == "Total deferred revenues"
+    ]
+    assert rows
+    assert all(row.period_role == "instant" for row in rows)
+
+
 @pytest.mark.parametrize(
     ("row_label", "metric_name", "expected_slot"),
     (
@@ -659,6 +832,62 @@ def test_materialized_result_is_digest_valid_and_only_admits_next_index_step() -
         ]
         assert metric_examples
         assert all(row["object_summary"]["period"] == "2026" for row in metric_examples)
+
+
+def test_r9_preserves_all_48_business_identities_and_only_corrects_four_stock_roles() -> None:
+    if not RESULT_PATH.exists():
+        pytest.skip("R9 current-source reparse result not materialized")
+    r8 = _selected_metric_business_rows(R8_RESULT_PATH, R8_RUNTIME_ROOT)
+    r9 = _selected_metric_business_rows(RESULT_PATH, R9_RUNTIME_ROOT)
+    identity_fields = (
+        "case_key",
+        "row_label",
+        "column_label",
+        "raw_value",
+        "unit",
+        "period",
+    )
+    r8_index = {
+        tuple(row[field] for field in identity_fields): row["period_role"]
+        for row in r8
+    }
+    r9_index = {
+        tuple(row[field] for field in identity_fields): row["period_role"]
+        for row in r9
+    }
+    assert len(r8_index) == len(r9_index) == 48
+    assert set(r8_index) == set(r9_index)
+    changes = {
+        key: (r8_index[key], r9_index[key])
+        for key in r8_index
+        if r8_index[key] != r9_index[key]
+    }
+    assert {
+        (key[0], key[1], key[2]): roles for key, roles in changes.items()
+    } == {
+        (
+            "ORCL",
+            "$ 1,250 , 5.50 %, due September 2064",
+            "Amount 2026",
+        ): ("annual", "instant"),
+        (
+            "ORCL",
+            "Cash and cash equivalents at beginning of period",
+            "Year Ended May 31, 2026",
+        ): ("annual", "instant"),
+        (
+            "ORCL",
+            "Cash, cash equivalents and trade receivables, net",
+            "2026",
+        ): ("annual", "instant"),
+        ("ORCL", "Total deferred revenues", "2026"): ("annual", "instant"),
+    }
+    assert Counter(r9_index.values()) == {
+        "instant": 18,
+        "qtd": 10,
+        "ytd": 8,
+        "annual": 12,
+    }
 
 
 def test_clean_independent_proof_reproduces_committed_result_without_calls() -> None:

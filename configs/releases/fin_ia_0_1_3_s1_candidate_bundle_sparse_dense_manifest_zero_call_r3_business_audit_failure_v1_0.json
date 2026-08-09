@@ -1,0 +1,48 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_business_audit_failure_v1_0",
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_sparse_dense_manifest:v1",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "20260810_s1_six_case_candidate_bundle_sparse_dense_manifest_zero_call_r3",
+  "status": "failed_post_materialization_financial_period_role_audit",
+  "failure_phase": "full_manifest_business_semantic_audit",
+  "failure_code": "orcl_balance_and_duration_period_role_collision",
+  "source_result_ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_proof_v1_0.json",
+  "source_result_digest": "2b826a977742949caf9827d27f1e84fe6c9ae26f79076ec3a4e918e12c653a88",
+  "source_result_normalized_sha256": "d9ed39669c717eac9b6794e42ff6673d443f911d16c6dc608db67ff3c704d1d9",
+  "business_failure": {
+    "primary_specs_materialized": 93,
+    "held_out_metric_specs_reviewed": 48,
+    "confirmed_period_role_defects": 4,
+    "affected_case": "ORCL",
+    "examples": [
+      "A senior-note Amount under the May 31 comparative debt table was marked annual although it is an outstanding balance at the reporting date.",
+      "Cash and cash equivalents at beginning of period was marked annual although the row denotes a point-in-time opening balance.",
+      "Cash, cash equivalents and trade receivables, net in a market-risk exposure row was marked annual although it is a balance exposure.",
+      "Total deferred revenues under the May 31 comparative balance table was marked annual although it is an ending balance."
+    ],
+    "root_cause": "R8 made period_role complete but still fell back from a bare fiscal-year column to the 10-K annual duration before recognizing the table's comparative as-of axis or a row-level opening/balance exposure.",
+    "meaning": "A complete enum is not enough: mixing balances with annual flows would let retrieval and the model compare stock and flow numbers as if they shared the same time basis."
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0,
+    "document_fetch": 0,
+    "real_embedding": 0,
+    "milvus_read": 0,
+    "milvus_write": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "r3_result_preserved": true,
+    "r3_engineering_terminalization": true,
+    "r3_business_semantic_acceptance": false,
+    "r3_downstream_index_authority": false,
+    "real_index_build": false,
+    "successor_same_scope_allowed": true
+  },
+  "decision_zh": "R3 的 93 对象与 15 mutation 工程证明保留，但逐条业务审计发现四个 ORCL 时点余额被误标年度流量，因此撤销其下游 authority。下一 Attempt 只增加通用的财务行语义和表级 presentation-axis 判定，重跑三案对象、clean proof 与六案 manifest；若再出现新的时间坐标 L1，则停止字段补丁并升级时间坐标 schema。",
+  "known_boundary": "This is a deterministic financial-time-semantics defect found after fake materialization and before any real embedding or index write. It is not a BGE, Milvus, DeepSeek, ranking, source or external-search failure.",
+  "result_digest": "e60f01b1385f9e4065649111ee4ed0a97f599e493858d5709c89282dea4b9ea3"
+}

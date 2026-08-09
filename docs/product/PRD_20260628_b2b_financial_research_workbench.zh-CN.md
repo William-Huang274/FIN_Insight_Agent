@@ -2266,4 +2266,8 @@ ORCL、ASML、ANET 的当前官方源已证明同一通用 parser／CandidateBun
 
 任何 parser successor 在满足数量门后，还必须与前一已审基线做入选业务对象等价审计，至少比较公司、行、列、数值、单位、期间和 source lineage。总数相同不能掩盖 headline sales 消失、四个季度／半年 margin 压成三个错列候选，或完整 `Year Ended` 引用坐标退化。差异必须逐项解释并由新 Attempt 复证，不能交给 dense 或模型“补语义”。
 
-这项更正不改变既定大顺序，也不增加产品版本：仍在 FIN 0.1.3 的 S1 修复对象与索引入口。R4 已由两个 clean Git archive／fresh process 完全复现；manifest 审计随后又发现期间角色缺口并推动 R8 successor。R8 在 48 条入选留出 Metric 上实现业务 identity 与 R4 等价、`period_role` 缺失为 0，并已从提交 `7e49846c...bb41` 的两个 clean archive／fresh process 完全复现，proof=`e1565f9d...13342`。因此 R8 现可取代 R4 成为零调用 manifest 输入；真实 build 仍需 Ubuntu WSL 独立 authority。索引和本地 Evidence Pack 完成后，以真实 residual gaps 驱动外源补源，最后才评估 DeepSeek 的动态研究和综合质量。
+这项更正不改变既定大顺序，也不增加产品版本：仍在 FIN 0.1.3 的 S1 修复对象与索引入口。R8 在 48 条入选留出 Metric 上实现业务 identity 与 R4 等价、`period_role` 缺失为 0，并已从提交 `7e49846c...bb41` 的两个 clean archive／fresh process 完全复现，proof=`e1565f9d...13342`。但后续 manifest R3 的逐条业务审计又发现四个 ORCL 时点余额被错误标成 `annual`，因此 R8 的可复现事实继续保留、下游索引 authority 撤销。
+
+产品门由“period role 非空”提升为“period role 与财务 presentation axis 一致”：期初／期末余额、资产负债表和债务明细的 comparative as-of 列必须为 instant；收入、利润、现金流变动等 duration 列才可为 qtd／ytd／annual。行级经济语义、列级明确期间和表级 as-of／duration axis 必须在本地确定性编译，10-K form 只能作为最后 fallback。R9 仍是同一 S1 successor，不是新产品版本；若 R9 再出现新时间坐标 L1，应升级版本化时间坐标 schema，而不是继续逐词修补。真实 build 仍需 Ubuntu WSL 独立 authority。索引和本地 Evidence Pack 完成后，以真实 residual gaps 驱动外源补源，最后才评估 DeepSeek 的动态研究和综合质量。
+
+R9 working-tree 已保持 48 条入选 Metric 的 case／row／column／raw value／unit／period 不变，只将四个已确认余额改为 instant，最终为 `18 instant／10 qtd／8 ytd／12 annual`。该结果仍需 committed clean proof；working-tree 通过不得直接授权 manifest R4 或真实索引。

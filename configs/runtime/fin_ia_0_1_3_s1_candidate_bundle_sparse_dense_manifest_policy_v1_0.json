@@ -4,8 +4,11 @@
   "contract_ref": "fin_0_1_3.S1.candidate_bundle_sparse_dense_manifest:v1",
   "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
   "recorded_at": "2026-08-10",
-  "attempt_id": "20260810_s1_six_case_candidate_bundle_sparse_dense_manifest_zero_call_r2",
-  "predecessor_failure_ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r1_failure_v1_0.json",
+  "attempt_id": "20260810_s1_six_case_candidate_bundle_sparse_dense_manifest_zero_call_r3",
+  "predecessor_failure_refs": [
+    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r1_failure_v1_0.json",
+    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_zero_call_r2_failure_v1_0.json"
+  ],
   "locked_artifacts": [
     {
       "artifact_id": "dell_policy",
@@ -39,13 +42,13 @@
     },
     {
       "artifact_id": "held_out_reparse_result",
-      "path": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r4_result_v1_0.json",
-      "normalized_sha256": "2fb77722713528ad73beead0452a31ff059a632ed9cda97e703f7189e4fed292"
+      "path": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r8_result_v1_0.json",
+      "normalized_sha256": "2c2177f0526652864211c13e4726e909fc87b205cc385594ae3a31a5f1d45b2e"
     },
     {
       "artifact_id": "held_out_clean_proof",
-      "path": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r4_clean_independent_proof_v1_0.json",
-      "normalized_sha256": "d7d3b1ff3a407b7e4efe82828c79fdc013be90a23cefda82cc5a512f3a3cab7f"
+      "path": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r8_clean_independent_proof_v1_0.json",
+      "normalized_sha256": "dcf4490146654c0fa665a3777999f10dad2683fd39c219f7aaac65747564df7c"
     },
     {
       "artifact_id": "ubuntu_milvus_canary",
@@ -54,7 +57,7 @@
     }
   ],
   "private_object_inputs": {
-    "held_out_reparse_runtime_root_ref": "data/workbench_private/fin_0_1_3_s1_three_held_out_current_source_reparse/zero-call-r4",
+    "held_out_reparse_runtime_root_ref": "data/workbench_private/fin_0_1_3_s1_three_held_out_current_source_reparse/zero-call-r8",
     "objects_are_digest_bound_by_public_reparse_result": true,
     "raw_source_text_may_enter_public_proof": false
   },

@@ -1,0 +1,37 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_asml_current_exhibit_successor_zero_call_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1.asml_same_accession_current_exhibit_successor:v1",
+  "run_scope": "S1_THREE_HELD_OUT_EXACT_OFFICIAL_CURRENT_SOURCE_DISCOVERY_CAPTURE_AND_BUNDLE_V2_REPROOF",
+  "status": "zero_call_engineering_pass_live_authority_not_yet_issued",
+  "policy_digest": "1200d21a719c2f3f6e4c9ff7945db77fb1df4ae120088b3c8c0bbaf10516dd41",
+  "fixture_result_digest": "b4913f028d43fa6cbc21013509b1d1856fb3d94ff43085ef16dddf083ffc4336",
+  "fixture_terminal_receipt_digest": "a6b24f6838269ea5443e2f65048f10e00804a7b075c14c39e975f328ed80bf0d",
+  "verification": {
+    "index_from_bound_accession": true,
+    "primary_and_xbrl_excluded": true,
+    "candidate_document_ceiling": 2,
+    "simulated_calls": 3,
+    "actual_network_calls": 0,
+    "headline_only_first_candidate_rejected": true,
+    "detailed_second_candidate_accepted": true,
+    "capture_first": true,
+    "exact_once_terminal": true,
+    "retry_model_provider_embedding_rerank_evidence_calls": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "stage_acceptance": {
+    "asml_exhibit_successor_engineering": true,
+    "live_authority": false,
+    "asml_detailed_current_source_capture": false,
+    "three_case_reparse": false,
+    "sparse_dense_rebuild_admitted": false
+  },
+  "known_boundary": "Fixture proof does not establish that the live accession index contains a qualifying detailed exhibit.",
+  "proof_digest": "ba514c52460da1a5b760980e87cefa49026714fdb7d85771ee8539893d0c00f4"
+}

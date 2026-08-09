@@ -1,0 +1,33 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_asml_current_exhibit_successor_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.asml_same_accession_current_exhibit_successor:v1",
+  "run_scope": "S1_THREE_HELD_OUT_EXACT_OFFICIAL_CURRENT_SOURCE_DISCOVERY_CAPTURE_AND_BUNDLE_V2_REPROOF",
+  "recorded_at": "2026-08-09",
+  "source_case_key": "ASML",
+  "immutable_source_result": {
+    "path": "configs/releases/fin_ia_0_1_3_s1_held_out_current_source_acquisition_result_v1_0.json",
+    "normalized_sha256": "91e4e0a19eb320c4d64f39d72b7e80ff3f4656b56598485e07fde35c409b3b32"
+  },
+  "thin_primary_char_ceiling": 5000,
+  "minimum_detailed_facet_hits": 4,
+  "budgets": {
+    "network_call_ceiling": 3,
+    "candidate_document_ceiling": 2,
+    "timeout_seconds_per_route": 30,
+    "byte_ceiling_per_response": 20971520,
+    "retry_ceiling": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "embedding_calls": 0,
+    "rerank_calls": 0
+  },
+  "hard_boundaries": {
+    "accession_must_derive_from_bound_capture": true,
+    "final_exhibit_url_seeded": false,
+    "broad_web_search_used": false,
+    "captured_document_is_evidence": false,
+    "ORCL_or_ANET_network_revisit": false,
+    "automatic_retry": false,
+    "index_rebuild_admitted": false
+  }
+}

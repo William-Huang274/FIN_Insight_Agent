@@ -2251,3 +2251,15 @@ ORCL、ASML、ANET 的当前官方源已证明同一通用 parser／CandidateBun
 索引准入对象不是“所有成功解析出来的文本”。下一版 sparse／dense manifest 只能包含身份、期间、来源、父子表路径、单元格、币种／单位和 Evidence Slot 语义完整的选定 CandidateBundle；自动生成但研究含量弱的安全港、联系人、导航、模板与法律套话保留在 candidate／negative／repair 层。这样既避免为当前模型能力做 ticker 专用补丁，也避免未来模型升级后仍背负被污染的索引骨架。
 
 本轮只建立 `object-shape generalization engineering pass`，不宣称 Evidence Pack 或研报泛化完成。执行顺序保持：clean independent proof → sparse/dense manifest 重定基与 Ubuntu WSL 构建 → 同矩阵检索评测 → 用真实 residual gaps 做 external supplement → DeepSeek 动态追问与研究综合 → qualified-human report acceptance。
+
+### 16.12 财务 Metric 的期间／单位产品门与 clean-proof 更正规则（2026-08-10）
+
+对留出案例的索引前业务审计发现，数量门、mutation 和 clean reproducibility 全通过，仍可能稳定复现错误的金融坐标。例如无形资产剩余年限被当作美元、2025 的权益滚存交易被绑定为 2026、固定资产金额落到 Useful Life 列。用户最终看到的会是“数字看起来精确、事实其实错位”的高风险报告，因此 FIN 把以下要求提升为索引准入硬门：
+
+1. 每个拟入主索引的 Metric 必须带可验证的 `period／period_role／unit／row／column／table／source lineage`；
+2. period 缺失、unit 与 canonical authority 不一致、descriptor／period 坐标不唯一或 rollforward 年份无法推导时，候选必须隔离，不能交给 dense、reranker 或模型猜测；
+3. clean proof 只证明结果可复现。若后续人工业务审计发现已复现结果存在 L1 财务语义错误，历史 proof 继续保留，但其下游授权必须撤销并改绑 successor，而不是删除失败证据或降低门槛；
+4. parser 修复必须按通用表格结构表达，禁止为 ORCL／ANET 等 ticker 添加核心条件；MU／NVDA／DELL 与其他表形 mutation 必须保持通过；
+5. index manifest 只消费审过的 CandidateBundle。Evidence 晋升、完整研究内容、外源补源和报告验收继续作为后续独立门。
+
+这项更正不改变既定大顺序，也不增加产品版本：仍在 FIN 0.1.3 的 S1 修复对象与索引入口。R4 clean proof 通过后才重定基 sparse／dense manifest；真实 build 仍需 Ubuntu WSL 独立 authority。索引和本地 Evidence Pack 完成后，以真实 residual gaps 驱动外源补源，最后才评估 DeepSeek 的动态研究和综合质量。

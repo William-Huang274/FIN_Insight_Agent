@@ -24,15 +24,15 @@ pytestmark = pytest.mark.fast_contract
 ROOT = Path(__file__).resolve().parents[2]
 POLICY_PATH = ROOT / (
     "configs/runtime/fin_ia_0_1_3_s1_three_held_out_"
-    "current_source_reparse_policy_v1_0.json"
+    "current_source_reparse_successor_r4_policy_v1_0.json"
 )
 RESULT_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_three_held_out_"
-    "current_source_reparse_result_v1_0.json"
+    "current_source_reparse_successor_r4_result_v1_0.json"
 )
 PROOF_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s1_three_held_out_"
-    "current_source_reparse_clean_independent_proof_v1_0.json"
+    "current_source_reparse_successor_r4_clean_independent_proof_v1_0.json"
 )
 
 
@@ -272,6 +272,199 @@ def test_non_monetary_dimensions_are_not_coerced_to_currency() -> None:
         authority = result["bundle"]["currency_unit_authority"]
         assert authority["canonical_unit"] == expected_unit
         assert authority["status"] == "non_monetary_dimension_preserved"
+
+
+def test_useful_life_dimension_overrides_table_currency_scale() -> None:
+    html = """
+    <html><body><p>Acquisition-related intangible assets were as follows
+    (in millions, except years):</p>
+    <table>
+      <tr><th>June 30, 2026</th><th>December 31, 2025</th></tr>
+      <tr><th>Weighted-Average Remaining Useful Lives (in years)</th>
+          <th>Gross Carrying Amount</th><th>Accumulated Amortization</th>
+          <th>Net Carrying Amount</th><th>Gross Carrying Amount</th>
+          <th>Accumulated Amortization</th><th>Net Carrying Amount</th></tr>
+      <tr><td>Developed technology</td><td>3.6</td><td>$</td><td>241.1</td>
+          <td>$</td><td>(152.8)</td><td>$</td><td>88.3</td><td>$</td>
+          <td>241.1</td><td>$</td><td>(139.0)</td><td>$</td><td>102.1</td></tr>
+      <tr><td>Customer relationships</td><td>5.7</td><td>224.3</td><td>(64.4)</td>
+          <td>159.9</td><td>224.3</td><td>(48.9)</td><td>175.4</td></tr>
+    </table></body></html>
+    """
+    evidence = EvidenceObject(
+        evidence_id="ANET_USEFUL_LIFE_FIXTURE",
+        source_type="10-Q",
+        source_tier="primary_sec_filing",
+        ticker="ANET",
+        fiscal_year=2026,
+        period_end="2026-06-30",
+        fiscal_period="Q2",
+        evidence_type="filing_disclosure",
+        text=extract_sec_html_text_content(html),
+        metadata={"form_type": "10-Q", "reporting_currency": "USD"},
+    )
+    metrics = extract_structured_objects(evidence).metrics
+    useful_life = next(
+        row
+        for row in metrics
+        if row.row_label == "Customer relationships"
+        and "Useful Lives" in str(row.column_label)
+    )
+    assert useful_life.unit == "years"
+
+    lane = {
+        "lane_id": "anet_useful_life_fixture",
+        "slot_id": "capital_allocation_and_valuation",
+        "asset_id": "current_financial_objects",
+        "evidence_owner_entity_key": "ARISTA_NETWORKS",
+        "evidence_owner_ticker": "ANET",
+        "relationship_direction": "subject_self_disclosure",
+    }
+    result = project_candidate_bundle_v2(
+        case_key="ANET",
+        research_as_of="2026-08-06",
+        reporting_currency="USD",
+        reporting_currency_authority="fixture_profile",
+        lane=lane,
+        candidate={
+            "asset_id": "current_financial_objects",
+            "target_id": useful_life.object_id,
+            "source_record_id": evidence.evidence_id,
+            "object_type": "metric",
+            "ticker": "ANET",
+        },
+        parent=evidence.model_dump(mode="json"),
+        child=useful_life.model_dump(mode="json"),
+    )
+    assert result["terminal_state"] == "bundle_projected"
+    authority = result["bundle"]["currency_unit_authority"]
+    assert authority["canonical_unit"] == "years"
+    assert authority["status"] == "non_monetary_dimension_preserved"
+
+
+def test_table_header_currency_scale_overrides_surrounding_fx_example() -> None:
+    html = """
+    <html><body>
+    <p>The constant-currency example translates EUR 1.00 at an exchange rate.</p>
+    <table>
+      <tr><th>Year Ended May 31,</th></tr>
+      <tr><th>Percent Change</th></tr>
+      <tr><th>(Dollars in millions)</th><th>2026</th><th>Actual</th><th>Constant</th><th>2025</th></tr>
+      <tr><td>Total Operating Margin</td><td>$</td><td>20,606</td><td>17%</td>
+          <td>13%</td><td>$</td><td>17,678</td></tr>
+      <tr><td>Total Operating Margin %</td><td>31%</td><td>31%</td></tr>
+    </table></body></html>
+    """
+    evidence = EvidenceObject(
+        evidence_id="ORCL_HEADER_CURRENCY_FIXTURE",
+        source_type="10-K",
+        source_tier="primary_sec_filing",
+        ticker="ORCL",
+        fiscal_year=2026,
+        period_end="2026-05-31",
+        fiscal_period="FY",
+        evidence_type="filing_disclosure",
+        text=extract_sec_html_text_content(html),
+        metadata={"form_type": "10-K", "reporting_currency": "USD"},
+    )
+    metric = next(
+        row
+        for row in extract_structured_objects(evidence).metrics
+        if row.row_label == "Total Operating Margin" and row.raw_value in {"20,606", "$ 20,606"}
+    )
+    assert metric.unit == "usd_millions"
+    margin_rates = [
+        row
+        for row in extract_structured_objects(evidence).metrics
+        if row.row_label == "Total Operating Margin %"
+    ]
+    assert {(row.raw_value, row.column_label, row.period) for row in margin_rates} == {
+        ("31%", "2026", "2026"),
+        ("31%", "2025", "2025"),
+    }
+
+
+def test_descriptor_plus_period_header_does_not_shift_amount_coordinates() -> None:
+    html = """
+    <html><body><p>Property, plant and equipment, net consisted of the following:</p>
+    <table>
+      <tr><th>Estimated</th><th>May 31,</th></tr>
+      <tr><th>(Dollars in millions)</th><th>Useful Life</th><th>2026</th><th>2025</th></tr>
+      <tr><td>Computer, network, machinery and equipment</td><td>1 - 6 years (1)</td>
+          <td>$</td><td>59,634</td><td>$</td><td>30,345</td></tr>
+      <tr><td>Buildings and improvements</td><td>1 - 40 years</td>
+          <td>21,263</td><td>10,881</td></tr>
+    </table></body></html>
+    """
+    evidence = EvidenceObject(
+        evidence_id="ORCL_MIXED_DESCRIPTOR_FIXTURE",
+        source_type="10-K",
+        source_tier="primary_sec_filing",
+        ticker="ORCL",
+        fiscal_year=2026,
+        period_end="2026-05-31",
+        fiscal_period="FY",
+        evidence_type="filing_disclosure",
+        text=extract_sec_html_text_content(html),
+        metadata={"form_type": "10-K", "reporting_currency": "USD"},
+    )
+    metrics = [
+        row
+        for row in extract_structured_objects(evidence).metrics
+        if row.row_label == "Computer, network, machinery and equipment"
+    ]
+    coordinates = {
+        row.raw_value: (row.column_label, row.period, row.unit) for row in metrics
+    }
+    assert coordinates["$ 59,634"] == ("2026", "2026", "usd_millions")
+    assert coordinates["$ 30,345"] == ("2025", "2025", "usd_millions")
+    assert not any(row.unit == "years" for row in metrics)
+
+
+def test_descriptor_only_equity_header_uses_rollforward_balance_period() -> None:
+    html = """
+    <html><body><p>Stockholders' equity</p><table>
+      <tr><th>Preferred and Common Stock and Additional Paid in Capital</th>
+          <th>Accumulated Other</th><th>Total</th></tr>
+      <tr><th>(in millions, except per share data)</th><th>Preferred Stock Shares</th>
+          <th>Common Stock Shares</th><th>Amount</th><th>Accumulated Deficit</th>
+          <th>Comprehensive Loss</th><th>Noncontrolling Interests</th>
+          <th>Stockholders' Equity</th></tr>
+      <tr><td>Balances as of May 31, 2024</td><td>—</td><td>2,755</td>
+          <td>32,764</td><td>(22,628)</td><td>(1,432)</td><td>535</td><td>9,239</td></tr>
+      <tr><td>Net income</td><td>—</td><td>—</td><td>—</td><td>12,443</td>
+          <td>—</td><td>184</td><td>12,627</td></tr>
+      <tr><td>Balances as of May 31, 2025</td><td>—</td><td>2,807</td>
+          <td>37,107</td><td>(15,481)</td><td>(1,175)</td><td>518</td><td>20,969</td></tr>
+      <tr><td>Net income</td><td>—</td><td>—</td><td>—</td><td>17,087</td>
+          <td>—</td><td>222</td><td>17,309</td></tr>
+      <tr><td>Balances as of May 31, 2026</td><td>—</td><td>2,880</td>
+          <td>48,197</td><td>(4,309)</td><td>(1,380)</td><td>548</td><td>43,056</td></tr>
+    </table></body></html>
+    """
+    evidence = EvidenceObject(
+        evidence_id="ORCL_EQUITY_ROLLFORWARD_FIXTURE",
+        source_type="10-K",
+        source_tier="primary_sec_filing",
+        ticker="ORCL",
+        fiscal_year=2026,
+        period_end="2026-05-31",
+        fiscal_period="FY",
+        evidence_type="filing_disclosure",
+        text=extract_sec_html_text_content(html),
+        metadata={"form_type": "10-K", "reporting_currency": "USD"},
+    )
+    net_income = [
+        row
+        for row in extract_structured_objects(evidence).metrics
+        if row.row_label == "Net income"
+        and row.column_label == "Accumulated Deficit"
+    ]
+    assert {(row.raw_value, row.period) for row in net_income} == {
+        ("12,443", "2025"),
+        ("17,087", "2026"),
+    }
+    assert all(row.unit == "usd_millions" for row in net_income)
 
 
 @pytest.mark.parametrize(

@@ -736,3 +736,17 @@ ORCL FY2026 10-K、ASML Q2 2026 6-K exhibit 与 ANET Q2 2026 10-Q 已从不可�
 本轮最终零调用结果为 ORCL `1,132 admitted／353 typed reject／27 bundles／8 Slots`，ASML `18／0／13／5`，ANET `470／238／27／7`，unsafe numeric admission=`0`，9 类 mutation 全通过。人工复核纠正了“债务利率→现金／风险”“有价证券到期回款→债务”“Customer relationships 无形资产→客户关系证据”和父期间污染 current-row 排序等问题。机器数量门与人工业务语义门必须同时通过。
 
 该结果只准入下一次 sparse／dense **manifest 重定基**，不准许直接把全部 source objects 写入索引。特别是自动 narrative claims 仍可能包含安全港或法律套话；主索引只能消费显式选中的 CandidateBundle，未选对象留在 candidate／repair 层。clean archive 独立复证完成前，不得签发真实 embedding／Milvus build；索引完成也不等于 Evidence、研报质量或产品泛化通过。
+
+### 24.12 表格语义坐标必须成为索引准入字段（2026-08-10）
+
+R1 clean proof 后的 manifest 逐条审计证明，“可复现”不能替代“业务坐标正确”。同一个数值只有同时绑定行语义、列语义、期间和单位，才是可索引的金融 Metric。以下信息不得在 parser、CandidateBundle 和 index spec 之间丢失：
+
+1. `metric_period` 与 `period_role`：年度、季度、时点、rollforward transaction 或 useful-life descriptor 必须明确；
+2. `metric_unit`：货币及规模、percent、count、years／months／days、basis points、ratio 必须保持为不同维度；
+3. `row_label`、`column_label` 与 `table_header`：索引文本可压缩，但验证器必须能重建原始二维坐标；
+4. `currency_unit_authority`：表内显式单位优先于邻近叙述；含 `except` 的混合尺度表继续交给逐行规则，不能取第一个单位短路；
+5. descriptor＋period 混合表头采用 exact logical cardinality；descriptor-only rollforward 由相邻 balance rows 推导交易期间；压缩期间行按冻结的 ordered candidate periods 绑定；任何不唯一情况 typed reject。
+
+本轮 R2、R3、R4 分别关闭非货币维度／表内币种、descriptor 列错位、rollforward／压缩行错期。三次均是同一 S1 owner 下的新零调用 Attempt，不是新产品版本。旧 R1 result/proof 保持不可变，但不能再授权索引；新的 sparse／dense manifest 必须绑定 R4 result 与其 clean proof，并对 `metric_period_missing`、`metric_unit_mismatch` fail closed。
+
+R4 working-tree result=`924c656e32e5e279c12883a6374f53b7e424d5e3046c2ed18e6a4d2f11878ffc`，ORCL／ASML／ANET projected bundles=`27／13／27`、Slots=`8／5／7`，unsafe numeric admission=`0`。该结果仍为 Candidate，不是 Evidence；两个 clean Git archive／fresh process 完全复现前，不得签发真实 BGE／Milvus build。

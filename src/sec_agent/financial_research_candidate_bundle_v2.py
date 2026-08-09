@@ -654,7 +654,15 @@ def _reconcile_currency_unit(
     child_currency = _currency_from_unit(child_unit)
     scale = _scale_from_unit_or_text(child_unit, table_text)
     normalized_unit = child_unit.strip().casefold()
-    if normalized_unit in {"count", "percent"}:
+    if normalized_unit in {
+        "count",
+        "percent",
+        "years",
+        "months",
+        "days",
+        "basis_points",
+        "ratio",
+    }:
         return (
             CurrencyUnitAuthority(
                 expected_currency=expected_currency,

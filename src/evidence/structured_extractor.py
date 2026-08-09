@@ -161,7 +161,12 @@ def extract_table_metrics(evidence: EvidenceObject, table: TableObject) -> list[
             continue
         if not row_label or _looks_like_header(row_label):
             continue
-        numeric_cells = _row_numeric_cells(row, header, table)
+        numeric_cells = _row_numeric_cells(
+            row,
+            header,
+            table,
+            row_index=row_index,
+        )
         if not numeric_cells:
             continue
         metric_name = _infer_table_metric_name(row_label, active_group, table.title)
@@ -791,12 +796,28 @@ def _table_header_index(rows: list[list[str]]) -> int | None:
             continue
         if len(_extract_periods(" ".join(row))) >= 2:
             return index
+        if (
+            len(row) > 2
+            and _is_table_unit_row([row[0]])
+            and sum(bool(str(cell or "").strip()) for cell in row[1:]) >= 2
+        ):
+            # Equity rollforwards often have descriptor-only columns beneath a
+            # unit marker and encode the year in balance rows, not the header.
+            # This is still a real header; treating the first data row as the
+            # coordinate source shifts values onto arbitrary candidate years.
+            return index
         if len(row) > 1 and _looks_like_header(row[0]) and any(_numeric_column_hint(cell) for cell in row[1:]):
             return index
     return None
 
 
-def _row_numeric_cells(row: list[str], header: list[str], table: TableObject) -> list[dict[str, Any]]:
+def _row_numeric_cells(
+    row: list[str],
+    header: list[str],
+    table: TableObject,
+    *,
+    row_index: int | None = None,
+) -> list[dict[str, Any]]:
     table_unit = _infer_table_unit(table)
     table_unit_context = _table_unit_context(
         rows=table.rows,
@@ -810,6 +831,10 @@ def _row_numeric_cells(row: list[str], header: list[str], table: TableObject) ->
         header_index,
         table.candidate_periods,
         len(logical_values),
+    )
+    rollforward_period = _rollforward_period_for_row(
+        table.rows,
+        None if row_index is None else row_index - 1,
     )
     numeric_values = []
     for logical_index, cell in enumerate(logical_values):
@@ -828,12 +853,15 @@ def _row_numeric_cells(row: list[str], header: list[str], table: TableObject) ->
         )
         period = _period_for_column_label(column_label)
         if period is None and not _is_change_column(column_label):
-            periods = table.candidate_periods
-            period = (
-                _extract_period(periods[logical_index]) or periods[logical_index]
-                if logical_index < len(periods)
-                else None
-            )
+            if rollforward_period:
+                period = rollforward_period
+            else:
+                periods = table.candidate_periods
+                period = (
+                    _extract_period(periods[logical_index]) or periods[logical_index]
+                    if logical_index < len(periods)
+                    else None
+                )
         numeric_values.append(
             {
                 "raw_value": raw,
@@ -894,6 +922,7 @@ def _table_cells(
             continue
         logical_values = _logical_value_cells(row)
         expanded_labels = _logical_column_labels_for_rows(rows, header_index, candidate_periods, len(logical_values))
+        rollforward_period = _rollforward_period_for_row(rows, row_index - 1)
         for logical_index, cell in enumerate(logical_values):
             raw = str(cell["raw_value"])
             if not _looks_like_numeric_table_cell(raw):
@@ -909,8 +938,11 @@ def _table_cells(
                 expanded_labels=expanded_labels,
             )
             period = _period_for_column_label(column_label)
-            if period is None and not _is_change_column(column_label) and logical_index < len(candidate_periods):
-                period = _extract_period(candidate_periods[logical_index]) or candidate_periods[logical_index]
+            if period is None and not _is_change_column(column_label):
+                if rollforward_period:
+                    period = rollforward_period
+                elif logical_index < len(candidate_periods):
+                    period = _extract_period(candidate_periods[logical_index]) or candidate_periods[logical_index]
             unit = _infer_cell_unit(raw, column_label, table_unit, row_label=row_label, table_context=table_unit_context) or parsed_unit
             period_role = _period_role_for_table_cell_parts(
                 form_type=form_type,
@@ -962,6 +994,39 @@ def _logical_value_cells(row: list[str]) -> list[dict[str, Any]]:
             cells.append({"raw_value": raw, "column_index": source_col})
         index += 1
     return cells
+
+
+def _rollforward_period_for_row(
+    rows: list[list[str]],
+    physical_row_index: int | None,
+) -> str | None:
+    if physical_row_index is None or not 0 <= physical_row_index < len(rows):
+        return None
+    balance_rows: list[tuple[int, str]] = []
+    for index, candidate in enumerate(rows):
+        label = str(candidate[0] if candidate else "").strip()
+        if not re.search(r"\bbalances?\s+(?:as|at)\s+of\b", label, re.IGNORECASE):
+            continue
+        period = _extract_period(label)
+        if period:
+            balance_rows.append((index, period))
+    if len(balance_rows) < 2:
+        return None
+    own = next(
+        (period for index, period in balance_rows if index == physical_row_index),
+        None,
+    )
+    if own:
+        return own
+    previous = [index for index, _ in balance_rows if index < physical_row_index]
+    following = [
+        (index, period)
+        for index, period in balance_rows
+        if index > physical_row_index
+    ]
+    if previous and following:
+        return min(following, key=lambda item: item[0])[1]
+    return None
 
 
 def _logical_column_label(
@@ -1026,6 +1091,13 @@ def _logical_column_labels_for_rows(
         grouped = _expanded_period_group_year_labels(header, rows[next_index], logical_count)
         if grouped:
             return grouped
+    if len(candidate_periods) == logical_count:
+        # Summary/ratio rows in a wider table often omit the intervening
+        # Actual/Constant change columns and carry only one value per period.
+        # Bind that compressed row directly to the table's ordered periods
+        # instead of falling back to physical header positions such as the
+        # table-unit cell.
+        return list(candidate_periods)
     return []
 
 
@@ -1130,9 +1202,13 @@ def _expanded_logical_column_labels(
         labels = labels[1:]
     elif len(labels) == logical_count + 1 and not _extract_period(labels[0]):
         labels = labels[1:]
-    if len(labels) == logical_count and all(
-        _extract_period(label) or _is_change_column(label) for label in labels
-    ):
+    # A leading descriptor column (for example ``Useful Life``) is a real
+    # logical coordinate, even though it is neither a period nor a change
+    # column.  Once the optional table-unit cell has been removed, an exact
+    # header/value cardinality match is the strongest available coordinate
+    # signal.  Rejecting that match used to shift every following amount one
+    # column to the left in mixed descriptor + period tables.
+    if len(labels) == logical_count:
         return labels
     change_positions = [index for index, label in enumerate(labels) if _is_change_column(label)]
     if not change_positions or len(candidate_periods) < 2:
@@ -1249,6 +1325,19 @@ def _infer_table_unit_from_values(
     context_after: str | None,
     reporting_currency: str | None = None,
 ) -> str | None:
+    # A scale/currency declaration inside the table header is more authoritative
+    # than nearby narrative.  The surrounding paragraph may discuss constant-
+    # currency conversion (and therefore mention both USD and EUR) while the
+    # table itself is still explicitly reported in dollars.  Treating all nearby
+    # text as one flat currency bag previously downgraded those rows to bare USD.
+    header_index = _table_header_index(rows)
+    header_row_count = header_index + 1 if header_index is not None else min(3, len(rows))
+    header_context = " ".join(
+        " ".join(row) for row in rows[:header_row_count]
+    ).casefold()
+    explicit_header_unit = _explicit_scaled_currency_unit(header_context)
+    if explicit_header_unit:
+        return explicit_header_unit
     context = _table_unit_context(rows=rows, context_before=context_before, context_after=context_after)
     currencies = _currency_codes_from_text(context)
     if len(currencies) > 1:
@@ -1268,6 +1357,50 @@ def _infer_table_unit_from_values(
     if explicit_currency:
         return explicit_currency
     return None
+
+
+def _explicit_scaled_currency_unit(text: str) -> str | None:
+    normalized = " ".join(str(text or "").casefold().split())
+    if (
+        "except" in normalized
+        and sum(
+            marker in normalized
+            for marker in ("in billions", "in millions", "in thousands")
+        )
+        > 1
+    ):
+        # Mixed-scale tables (common in bank filings) deliberately declare a
+        # default and row-level exceptions.  Their existing row-aware unit
+        # resolver must see the full context instead of being short-circuited
+        # by the first explicit phrase.
+        return None
+    currencies = {
+        "usd": ("dollar", "dollars", "usd"),
+        "eur": ("euro", "euros", "eur"),
+        "gbp": ("pound", "pounds", "gbp"),
+        "chf": ("swiss franc", "chf"),
+        "cny": ("renminbi", "rmb", "cny"),
+        "jpy": ("yen", "jpy"),
+    }
+    scales = {
+        "billions": "billions",
+        "billion": "billions",
+        "millions": "millions",
+        "million": "millions",
+        "thousands": "thousands",
+        "thousand": "thousands",
+    }
+    matched_units: set[str] = set()
+    for currency, markers in currencies.items():
+        for marker in markers:
+            for scale_marker, scale in scales.items():
+                if re.search(
+                    rf"(?:{re.escape(marker)}.{{0,28}}(?:in|of)\s+{scale_marker}\b|"
+                    rf"\b{scale_marker}\s+(?:of\s+)?{re.escape(marker)})",
+                    normalized,
+                ):
+                    matched_units.add(f"{currency}_{scale}")
+    return next(iter(matched_units)) if len(matched_units) == 1 else None
 
 
 def _table_unit_context(
@@ -1290,6 +1423,19 @@ def _infer_cell_unit(
 ) -> str | None:
     lower_label = (column_label or "").lower()
     lower_row = (row_label or "").lower()
+    dimension_text = f"{lower_label} {lower_row}"
+    if any(
+        marker in dimension_text
+        for marker in (
+            "useful life",
+            "useful lives",
+            "remaining life",
+            "remaining lives",
+            "(in years)",
+            " in years",
+        )
+    ):
+        return "years"
     if (
         "%" in raw_value
         or "%" in lower_label

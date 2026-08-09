@@ -18,6 +18,7 @@
     "repository_hygiene",
     "shared_governance_implementation",
     "source_runtime_zero_call_implementation",
+    "local_index_build_execution",
     "diagnostic_search_execution",
     "zero_call_authority_decision",
     "live_search_execution",
@@ -403,7 +404,7 @@
     },
     "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD": {
       "owner_stage": "S1",
-      "operation_class": "source_runtime_zero_call_implementation",
+      "operation_class": "local_index_build_execution",
       "parent_scope_id": "FIN_0_1_3_S1_08",
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1"]

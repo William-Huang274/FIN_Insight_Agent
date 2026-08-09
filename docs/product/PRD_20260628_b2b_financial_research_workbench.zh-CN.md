@@ -2275,3 +2275,7 @@ R9 已保持 48 条入选 Metric 的 case／row／column／raw value／unit／pe
 manifest R4 working-tree 已绑定上述 R9 clean input，保持 93 个六案主 spec 与 19 条叙事隔离；known-case 45 个对象逐项不变，留出 48 个 Metric 的角色分布与业务审计一致，15 类 mutation 与 fake sparse／dense 完整物化通过。R4 仍须在 committed clean archive 中从三份原始 capture 先重建 R9、再重建 manifest；通过后也只进入独立 Ubuntu build authority，而不是自动宣称检索质量通过。
 
 该 clean proof 已从提交 `0db3c40a...ff37` 的两个 archive 完成，proof=`47cdb6e8...6beb`；每个 archive 都重新执行 R9 与 manifest R4，而非复制主工作区 CAS。产品现在只获得“可签发一次 Ubuntu real-build authority decision”的资格；物理索引、召回和排序仍未成立。
+
+物理索引必须把同一份业务审过 manifest 同时用于 sparse 与 dense，禁止 ObjectBM25、BGE/Milvus 各自选择不同对象。FIN 0.1.3 当前 physical-index contract 固定消费六案 93 个 CandidateBundle spec，自动叙事 19 条继续 quarantine；ObjectBM25 输出必须可由现有 retriever 读取，dense 必须在 close/reopen 后逐项核对同一 `(vector_id, case, spec digest)`。Linux 建库采用 working root、私有 receipt 和同文件系统 rename；任何失败保留 working root、写 typed terminal result、0 automatic retry。
+
+Linux 环境资格与 full-fake 已通过：Ubuntu-22.04 独立 CPU runtime 绑定 BGE-M3 五个本地模型文件、pymilvus/milvus-lite 完整 package tree、59-row pip freeze 和 fresh targets；真实 ObjectBM25 序列化与 fake dense 均完整接收 93 条、12 批，七类物理层 mutation fail closed，proof=`99b7f66e...cfdc`。这只准入 clean-commit-bound exact-once authority；BGE 尚未加载、Milvus 尚未写入。即使未来 physical build 成功，`retrieval_quality` 和 `workbench_integration` 仍为 false，必须另做同矩阵查询与 Windows→WSL 调用接线证明。

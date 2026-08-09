@@ -764,3 +764,13 @@ R9 result=`caee03a5...7f3e` 已在不改变 48 条业务 identity 的前提下�
 manifest R4 working-tree result=`d84b7ef2...e7a1`：同一 manifest 同时驱动 fake ObjectBM25 与 fake BGE-M3/Milvus，93 specs／19 narrative quarantine／15 mutations 均通过；known-case 45 个 vector-text digest 不变，held-out roles=`18/10/8/12 instant/qtd/ytd/annual`。clean proof 必须在每个 archive 内先从 capture 重建 R9 私有对象，再重建 manifest，禁止直接信任主工作区私有 CAS。通过后只准入独立 real-build authority decision。
 
 上述 clean proof 已从提交 `0db3c40a...ff37` 的两个 archive 完成：R9=`caee03a5...7f3e`、manifest R4=`d84b7ef2...e7a1` 均逐字节一致，proof=`47cdb6e8...6beb`。real-build executor 仍须另行绑定 Linux root filesystem、BGE-M3 模型 digest、Milvus 版本／collection、93-spec manifest digest、exact-once target、资源预算与 terminal receipts；proof 未加载模型或写索引。
+
+### 24.13 共享物理索引发布合同（2026-08-10）
+
+ObjectBM25 与 BGE-M3／Milvus 必须消费同一 93-spec manifest，且发布前后分别比较 spec population 与 `(vector_id, case_key, spec_digest)` identity digest。sparse record 使用 `object_id=vector_id`、`ticker=research case`、`source_evidence_id=source record`、`search_text=vector_text`，保留 slot／facet／source locator／Candidate state；这样现有 `ObjectBM25Retriever` 无需 ticker 分支即可读取。dense metadata 保存同一 identity、slot/facet JSON、期间、来源和 vector-text digest，不能在 index writer 中改写业务对象。
+
+真实 executor 仅允许 Ubuntu-22.04 WSL2 的 Linux root filesystem。固定流程为 fresh working root → ObjectBM25 atomic files → offline local BGE-M3 → 12 个至多 8-row batches → fresh Milvus Lite DB/FLAT COSINE collection → double flush/count → close/reopen → one metadata identity query → private receipt → same-filesystem rename。历史库只读；失败 working root 不删除；任何 terminal failure 消费 R1 且不得自动 retry。
+
+独立 runtime 当前绑定 Python `3.10.12`、Torch `2.10.0+cpu`、Transformers `5.2.0`、SentenceTransformers `5.2.3`、pymilvus `3.0.0`、milvus-lite `3.0`、rank-bm25 `0.2.2`、pip-freeze digest=`8c47414e...af00`。BGE 五文件 digest 与既有 authority 一致；milvus manifest source=`os.rename`／`59b45341...fcd6`，所以 Windows 仍禁止。full-fake proof=`99b7f66e...cfdc` 已证明 real sparse serialization、fake dense 93/93 和七类 fail-closed mutation，真实模型／Milvus调用为 0。
+
+`physical index present`、`retrieval quality` 与 `product integration` 是三个不同状态。前者成功后仍须单独执行同 Query Facet／qrels 矩阵的 sparse、dense、fusion 对照；Windows Workbench 若不能稳定调用 WSL store，也不能标记 integrated。Evidence promotion、residual-gap external supplement、DeepSeek research 和 report acceptance 均继续在后续 gate。

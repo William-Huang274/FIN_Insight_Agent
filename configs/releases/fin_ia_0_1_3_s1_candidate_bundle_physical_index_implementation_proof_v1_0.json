@@ -1,0 +1,146 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_physical_sparse_dense_index:v1",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "20260810_s1_candidate_bundle_physical_index_full_fake_r1",
+  "status": "terminal_succeeded_full_fake_physical_index_implementation",
+  "policy_digest": "b2da1fe559ba58a4e0ff5d6270c30e9b8b1a53d166e72d9691964dc3ce5d94c4",
+  "source_bindings": {
+    "configs/runtime/fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_policy_v1_0.json": "9f1d1b0f38eb1c33dae8bd1d55081684a396d540ef1441260478837174ee4f48",
+    "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json": "a61d06ab7b06147bfcc65a653330ff8e36e4abda4e44e44b120835cf8c7f2e98",
+    "src/sec_agent/s1_candidate_bundle_physical_index.py": "abcbca04cbae43ee681e7ac344cb3d9cbf7a57a5b0614c321b3db30a64f9ff6f",
+    "scripts/releases/materialize_fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_0.py": "5eaa33b47a2913c38d0fa1c264d542cbdf79bd95bce865a644f8d0877fb6e982",
+    "scripts/releases/run_fin_ia_0_1_3_s1_candidate_bundle_physical_index_r1.py": "ced6c374b57c66cbce5ca365285406b9b98f88af74296bfb3368db4964f7ffc3",
+    "scripts/releases/issue_fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_authority_v1_0.py": "71abff879d16e12390089ea1d8f73a47d4ff3bb1e86bb5ca72f593e9d33cfb1c"
+  },
+  "manifest_binding": {
+    "spec_count": 93,
+    "spec_digest": "af1f2439bc78a22dc00f27e55594c01ac73bfd2c11fa7a8c57f6546549b14df9",
+    "specs_by_case": {
+      "DELL": 15,
+      "MU": 16,
+      "NVDA": 14,
+      "ORCL": 19,
+      "ASML": 10,
+      "ANET": 19
+    },
+    "candidate_state": "candidate_only_not_evidence"
+  },
+  "full_fake": {
+    "sparse": {
+      "schema_version": "fin_ia_candidate_bundle_object_bm25_metadata_v1_0",
+      "index_name": "fin_ia_0_1_3_s1_candidate_bundle_object_bm25_v1",
+      "index_type": "rank_bm25",
+      "records": 93,
+      "record_file": "records.slim.jsonl",
+      "record_digest": "1e24445c798d544c515e87fa8960fe93e41665f225be878c020cd7e1477fc0d1",
+      "tokenized_corpus_digest": "7cf7d8db6b26f47a7e76afd396947bba463f38b43b0ceba218fc79c3e478b38c",
+      "vector_identity_digest": "9893140c354b67adfff69ac114211bb8d85999bcc6808f09f149d643e212a2a0",
+      "candidate_state": "candidate_only_not_evidence",
+      "files": {
+        "records.slim.jsonl": {
+          "bytes": 176665,
+          "sha256": "45c5c228b88529189786349e1144cd067fdedd236b35f83da8fa439f2888c65a"
+        },
+        "bm25.pkl": {
+          "bytes": 60412,
+          "sha256": "e6d3a23d5abeb9129499fb5763a3f5eb3a2c94267fe871e14906699f5566211a"
+        },
+        "metadata.json": {
+          "bytes": 560,
+          "sha256": "782564b6196a57ba6918c7b11097eb51aa05113f8d7d494540deb192e03a92a3"
+        }
+      }
+    },
+    "dense": {
+      "terminal_count": 93,
+      "batch_count": 12,
+      "identity_digest": "c0f984be31e116bdde6f3f1e3d7d1e69ad42a3d1645b8ab157e7c4a113f0bdba",
+      "writer_calls": {
+        "database_create": 1,
+        "collection_create": 1,
+        "insert_batches": 12,
+        "inserted_vectors": 93,
+        "flush": 2,
+        "count": 2,
+        "metadata_query": 1,
+        "reopen": 1
+      },
+      "embedding_calls": 12,
+      "embedding_vectors": 93
+    },
+    "shared_identity_digest": "c0f984be31e116bdde6f3f1e3d7d1e69ad42a3d1645b8ab157e7c4a113f0bdba"
+  },
+  "mutation_proof": {
+    "scenario_count": 7,
+    "all_failed_closed": true,
+    "rows": [
+      {
+        "scenario": "duplicate_vector_identity",
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_spec_integrity_invalid"
+      },
+      {
+        "scenario": "vector_text_digest_drift",
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_spec_integrity_invalid"
+      },
+      {
+        "scenario": "candidate_evidence_infiltration",
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_spec_integrity_invalid"
+      },
+      {
+        "scenario": "cross_case_population_drift",
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_private_manifest_population_invalid"
+      },
+      {
+        "scenario": "dense_partial_acknowledgement",
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_dense_terminal_identity_mismatch"
+      },
+      {
+        "scenario": "authority_digest_drift",
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_authority_invalid"
+      },
+      {
+        "scenario": "sparse_target_preexists",
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_sparse_target_preexists"
+      }
+    ]
+  },
+  "observed_real_calls": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "embedding_model_loads": 0,
+    "embedding_vectors": 0,
+    "milvus_read": 0,
+    "milvus_write": 0,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "shared_sparse_dense_population": true,
+    "object_bm25_serialization": true,
+    "dense_batch_and_terminal_identity": true,
+    "typed_failure_mutations": true,
+    "clean_commit_authority_issuance": true,
+    "real_embedding_or_index_build": false,
+    "retrieval_quality": false,
+    "workbench_integration": false,
+    "evidence_pack": false,
+    "external_residual_supplement": false,
+    "deepseek_research": false,
+    "release": false
+  },
+  "decision_zh": "同一 93 对象清单已通过真实 ObjectBM25 序列化路径和 fake 1024 维 dense/Milvus 12 批完整性验证；七类污染、部分写入和权限突变全部 fail closed。下一步只能先把实现提交并推送，再从干净 commit 签发一次 Ubuntu R1 authority。",
+  "known_boundary": "This proof uses real sparse serialization and fake embeddings/Milvus only. It does not load BGE-M3, write a real collection, search, rank, promote Evidence, integrate the Workbench, supplement externally, call DeepSeek or accept release.",
+  "proof_digest": "99b7f66e47c09b308f52b2fe7e22187dd55c0c5667f961f8554cdc7a5a43cfdc"
+}

@@ -1,0 +1,154 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_policy_v1_0",
+  "implementation_proof_schema": "fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_0",
+  "authority_schema": "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_authority_v1_0",
+  "terminal_result_schema": "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_result_v1_0",
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_physical_sparse_dense_index:v1",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "20260810_s1_candidate_bundle_object_bm25_bge_m3_milvus_linux_r1",
+  "immutable_inputs": {
+    "manifest_result_ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_r4_zero_call_proof_v1_0.json",
+    "manifest_result_sha256": "4289cb44f88014cce3e23502dcc7ec337efb41162695f512fe2230a8e7fa5fcf",
+    "manifest_result_digest": "d84b7ef21bac98d90567c70300fd45b55daac74089ae45b813d70c994c98e7a1",
+    "manifest_clean_proof_ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_r4_clean_independent_proof_v1_0.json",
+    "manifest_clean_proof_sha256": "d39942c679b18f954532f5c385b0bfc9159adc9cfb91d05fca61537aa91f8379",
+    "manifest_clean_proof_digest": "47cdb6e826bef6ed73ede4dff291b2656bf4aed4e3b8a39d804969bf9f796beb",
+    "private_manifest_root_ref": "data/workbench_private/fin_0_1_3_s1_candidate_bundle_sparse_dense_manifest/zero-call-r4/objects",
+    "private_manifest_object_key": "fin-0.1.3/s1-candidate-bundle-sparse-dense-manifest/v1/75/70/75702f7f5d64a14f39f87ec692bd69941d75efde67e0e85ce77427f2620d4068.json",
+    "private_manifest_file_sha256": "75702f7f5d64a14f39f87ec692bd69941d75efde67e0e85ce77427f2620d4068",
+    "private_manifest_digest": "4468c5206b289670de53d9a07d4460bb239ec38d0edbba8e65ca0e557e26709e",
+    "manifest_spec_digest": "af1f2439bc78a22dc00f27e55594c01ac73bfd2c11fa7a8c57f6546549b14df9",
+    "expected_spec_count": 93,
+    "expected_specs_by_case": {
+      "DELL": 15,
+      "MU": 16,
+      "NVDA": 14,
+      "ORCL": 19,
+      "ASML": 10,
+      "ANET": 19
+    }
+  },
+  "runtime_contract": {
+    "distribution": "Ubuntu-22.04",
+    "runtime": "WSL2",
+    "filesystem_role": "linux_root_filesystem_not_windows_mounted_drive",
+    "python_executable": "/home/william/.cache/fin_insight/candidate_bundle_build_env_v1/bin/python",
+    "repository_root": "/mnt/d/FIN_Insight_Agent",
+    "embedding_model_windows_ref": "D:/hf_models/BAAI__bge-m3",
+    "embedding_model_linux_ref": "/mnt/d/hf_models/BAAI__bge-m3",
+    "embedding_model": "BAAI/bge-m3-local",
+    "embedding_dimension": 1024,
+    "embedding_device": "cpu",
+    "normalize_embeddings": true,
+    "embedding_batch_size": 8,
+    "offline_environment": {
+      "HF_HUB_OFFLINE": "1",
+      "TRANSFORMERS_OFFLINE": "1",
+      "HF_DATASETS_OFFLINE": "1"
+    },
+    "required_packages": {
+      "torch": "2.10.0+cpu",
+      "transformers": "5.2.0",
+      "sentence-transformers": "5.2.3",
+      "pymilvus": "3.0.0",
+      "milvus-lite": "3.0",
+      "rank-bm25": "0.2.2",
+      "numpy": "2.2.6",
+      "scikit-learn": "1.7.2"
+    },
+    "required_model_files": [
+      {
+        "path": "config.json",
+        "bytes": 687,
+        "sha256": "26159e7ad065073448460117eb24b7a4572f6f4e78eadff65dc0a11c052449fa"
+      },
+      {
+        "path": "modules.json",
+        "bytes": 349,
+        "sha256": "84e40c8e006c9b1d6c122e02cba9b02458120b5fb0c87b746c41e0207cf642cf"
+      },
+      {
+        "path": "tokenizer.json",
+        "bytes": 17098108,
+        "sha256": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08"
+      },
+      {
+        "path": "pytorch_model.bin",
+        "bytes": 2271145830,
+        "sha256": "b5e0ce3470abf5ef3831aa1bd5553b486803e83251590ab7ff35a117cf6aad38"
+      },
+      {
+        "path": "1_Pooling/config.json",
+        "bytes": 191,
+        "sha256": "e54c164a07274f2eb45bb724f54a79d1efcc90c41573887cd9a29aeee0597352"
+      }
+    ]
+  },
+  "index_contract": {
+    "shared_manifest_for_sparse_and_dense": true,
+    "sparse_kind": "object_bm25",
+    "dense_kind": "bge_m3_milvus_lite",
+    "sparse_index_name": "fin_ia_0_1_3_s1_candidate_bundle_object_bm25_v1",
+    "dense_collection_name": "fin_ia_0_1_3_s1_candidate_bundle_dense_v1",
+    "dense_metric_type": "COSINE",
+    "dense_index_type": "FLAT",
+    "candidate_state": "candidate_only_not_evidence",
+    "historical_indexes_read_only": true
+  },
+  "private_target": {
+    "target_prefix": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1",
+    "working_root": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1/attempt_r1_building",
+    "final_root": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1/v1",
+    "sparse_subdir": "object_bm25",
+    "dense_subdir": "bge_m3_milvus",
+    "milvus_db_filename": "milvus_lite.db",
+    "preserve_failed_working_root": true,
+    "publish_by_same_filesystem_rename": true,
+    "working_and_final_must_not_preexist": true
+  },
+  "execution_ceiling": {
+    "maximum_executions": 1,
+    "automatic_retry": false,
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "embedding_model_loads": 1,
+    "embedding_vectors": 93,
+    "embedding_batches": 12,
+    "sparse_records": 93,
+    "sparse_index_writes": 1,
+    "milvus_database_creates": 1,
+    "milvus_collection_creates": 1,
+    "milvus_insert_batches": 12,
+    "milvus_inserted_vectors": 93,
+    "milvus_flushes": 2,
+    "milvus_count_reads": 2,
+    "milvus_metadata_queries": 1,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "public_outputs": {
+    "implementation_proof_ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_0.json",
+    "authority_ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_authority_v1_0.json",
+    "terminal_result_ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_result_v1_0.json"
+  },
+  "stage_boundaries": {
+    "may_read_candidate_manifest": true,
+    "may_build_sparse_index": true,
+    "may_load_local_embedding_model_after_authority": true,
+    "may_build_fresh_dense_index_after_authority": true,
+    "may_write_historical_index": false,
+    "may_search_vectors": false,
+    "may_rerank": false,
+    "may_promote_evidence": false,
+    "may_run_external_supplement": false,
+    "may_call_deepseek": false,
+    "may_claim_retrieval_quality": false,
+    "may_claim_workbench_integration": false,
+    "may_accept_release": false
+  },
+  "known_boundary": "This policy builds one fresh Linux ObjectBM25 and BGE-M3/Milvus Lite index from the same 93 CandidateBundle specs. Physical build success proves index integrity only; it does not prove ranking, Windows Workbench integration, Evidence, external residual supplement, DeepSeek research quality or release."
+}

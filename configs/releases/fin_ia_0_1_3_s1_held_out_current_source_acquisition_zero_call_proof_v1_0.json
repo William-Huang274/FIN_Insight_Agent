@@ -1,0 +1,35 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_held_out_current_source_acquisition_zero_call_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1.held_out_current_official_source_acquisition:v1",
+  "run_scope": "S1_THREE_HELD_OUT_EXACT_OFFICIAL_CURRENT_SOURCE_DISCOVERY_CAPTURE_AND_BUNDLE_V2_REPROOF",
+  "status": "zero_call_engineering_pass_live_authority_not_yet_issued",
+  "policy_digest": "3cbfda21f76d0872bf8199e558bbcd9339fd7787dc04b0d052f3e5e1a86c3900",
+  "fixture_result_digest": "5f65736552edb5b8014c95748d993fd12b65805964f26a886d2978ae453cf52a",
+  "fixture_terminal_receipt_digest": "01712b78a54d7b623537f94d974450a13feae27a6b7dd13a1c4df005fe12923b",
+  "verification": {
+    "typed_targets": 3,
+    "simulated_source_calls": 7,
+    "actual_network_calls": 0,
+    "model_provider_embedding_rerank_evidence_calls": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "capture_first_request_response": true,
+    "same_accession_exhibit_fallbacks": 1,
+    "exact_accession_or_final_url_seeded": false,
+    "exact_once_terminal_receipt": true
+  },
+  "stage_acceptance": {
+    "source_acquisition_engineering": true,
+    "live_authority": false,
+    "current_sources_acquired": false,
+    "current_source_reparse": false,
+    "held_out_product_generalization": false,
+    "sparse_dense_rebuild_admitted": false
+  },
+  "known_boundary": "Fixture proof establishes deterministic selection, capture-first retention and terminalization only. It does not claim that any 2026 source is available or accepted.",
+  "proof_digest": "38be2a288681cb4273ab962bf248f454bb359747e1ee0037644a2ae9c8838254"
+}

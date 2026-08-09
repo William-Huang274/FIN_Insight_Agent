@@ -373,6 +373,41 @@
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1"]
     },
+    "S1_FINANCIAL_CANDIDATE_BUNDLE_V2_SUCCESSOR": {
+      "owner_stage": "S1",
+      "operation_class": "source_runtime_zero_call_implementation",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "S1_THREE_HELD_OUT_GENERALIZATION_REPROOF": {
+      "owner_stage": "S1",
+      "operation_class": "case_transfer",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "S1_THREE_HELD_OUT_EXACT_OFFICIAL_CURRENT_SOURCE_DISCOVERY_CAPTURE_AND_BUNDLE_V2_REPROOF": {
+      "owner_stage": "S1",
+      "operation_class": "live_search_execution",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD": {
+      "owner_stage": "S1",
+      "operation_class": "source_runtime_zero_call_implementation",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "S1_INTERNAL_SPARSE_DENSE_FUSION_BUSINESS_EXPLAINED_SUCCESSOR": {
+      "owner_stage": "S1",
+      "operation_class": "ranking_evaluation",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
     "S1_RESIDUAL_GAP_EXTERNAL_SUPPLEMENT": {
       "owner_stage": "S1",
       "operation_class": "live_search_execution",

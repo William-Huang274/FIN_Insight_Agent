@@ -1,0 +1,96 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_held_out_current_source_acquisition_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.held_out_current_official_source_acquisition:v1",
+  "run_scope": "S1_THREE_HELD_OUT_EXACT_OFFICIAL_CURRENT_SOURCE_DISCOVERY_CAPTURE_AND_BUNDLE_V2_REPROOF",
+  "recorded_at": "2026-08-09",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "purpose": "Acquire the minimum current official SEC disclosures required to re-evaluate the three frozen held-out cases without seeding exact accession numbers or final document URLs.",
+  "immutable_inputs": [
+    {
+      "artifact_id": "held_out_profile_selection",
+      "path": "configs/releases/fin_ia_0_1_3_s1_three_held_out_profile_selection_result_v1_0.json",
+      "normalized_sha256": "8a8d3a8007b926f8e5c3cce1969a83d95b91709810a482b4ce1452c8000c9b01"
+    },
+    {
+      "artifact_id": "candidate_bundle_v2_fail_closed_reproof",
+      "path": "configs/releases/fin_ia_0_1_3_s1_financial_candidate_bundle_v2_result_v1_0.json",
+      "normalized_sha256": "49e40ac6364244a80b135bdc6ad4bda7c66337c42120872e32abc1c58a77f4aa"
+    }
+  ],
+  "budgets": {
+    "network_call_ceiling": 9,
+    "timeout_seconds_per_route": 30,
+    "byte_ceiling_per_response": 20971520,
+    "retry_ceiling": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "embedding_calls": 0,
+    "rerank_calls": 0
+  },
+  "acquisition_targets": [
+    {
+      "case_key": "ORCL",
+      "subject_entity_key": "ORACLE_CORPORATION",
+      "cik": "0001341439",
+      "reporting_currency": "USD",
+      "submission_url": "https://data.sec.gov/submissions/CIK0001341439.json",
+      "accepted_form_types": ["10-K"],
+      "filing_date_not_before": "2026-06-01",
+      "filing_date_not_after": "2026-08-06",
+      "report_date_not_before": "2026-05-31",
+      "as_of_date": "2026-08-06",
+      "allow_one_same_accession_exhibit": false,
+      "marker_groups": [
+        ["oracle corporation", "oracle"],
+        ["fiscal 2026", "year ended may 31, 2026"],
+        ["cloud services", "remaining performance obligations", "capital expenditures"]
+      ]
+    },
+    {
+      "case_key": "ASML",
+      "subject_entity_key": "ASML_HOLDING",
+      "cik": "0000937966",
+      "reporting_currency": "EUR",
+      "submission_url": "https://data.sec.gov/submissions/CIK0000937966.json",
+      "accepted_form_types": ["6-K"],
+      "filing_date_not_before": "2026-07-01",
+      "filing_date_not_after": "2026-08-06",
+      "report_date_not_before": "2026-06-01",
+      "as_of_date": "2026-08-06",
+      "allow_one_same_accession_exhibit": true,
+      "marker_groups": [
+        ["asml holding", "asml"],
+        ["second quarter", "q2", "quarterly period ended june 30", "three months ended june 30"],
+        ["2026"],
+        ["euv", "high na", "bookings", "gross margin"]
+      ]
+    },
+    {
+      "case_key": "ANET",
+      "subject_entity_key": "ARISTA_NETWORKS",
+      "cik": "0001596532",
+      "reporting_currency": "USD",
+      "submission_url": "https://data.sec.gov/submissions/CIK0001596532.json",
+      "accepted_form_types": ["10-Q", "8-K"],
+      "filing_date_not_before": "2026-08-01",
+      "filing_date_not_after": "2026-08-06",
+      "report_date_not_before": "2026-06-30",
+      "as_of_date": "2026-08-06",
+      "allow_one_same_accession_exhibit": true,
+      "marker_groups": [
+        ["arista networks", "arista"],
+        ["second quarter", "q2", "quarterly period ended june 30", "three months ended june 30"],
+        ["2026"],
+        ["revenue", "gross margin", "ethernet", "ai"]
+      ]
+    }
+  ],
+  "hard_boundaries": {
+    "exact_accession_or_final_url_seeded": false,
+    "captured_source_is_evidence": false,
+    "broad_web_search_used": false,
+    "index_rebuild_admitted": false,
+    "automatic_retry": false,
+    "historical_v1_or_v2_result_rewritten": false
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_5",
+  "contract_ref": "fin_0_1_3.S1.retrieval_query_facet_external_internal_progression:v1_5",
+  "recorded_at": "2026-08-09",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1",
+  "status": "owner_qrels_accepted_sparse_retained_dense_index_refresh_current",
+  "predecessor_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_4.json",
+  "user_decision": "Complete external retrieval first, then repair internal exact, lexical, dense and graph retrieval, including downstream BGE, fusion and reranking, without skipping candidate-ceiling evidence.",
+  "current_truth": {
+    "external_runtime_recovery": "live_pass",
+    "external_product_coverage": "4_of_12_failed_release_blocker_preserved",
+    "external_hidden_target_in_pool": "0_of_12",
+    "internal_query_facet_projection": "v1_1_zero_call_engineering_pass",
+    "internal_research_candidate_inventory": "attempt_r7_18_of_18",
+    "internal_owner_reviewed_qrels": "18_of_18_accepted_zero_row_modification",
+    "internal_annual_exact_sql": "current_successor_9_of_9",
+    "internal_current_quarter_exact_sql": "0_of_6_typed_refresh_gap",
+    "ranking_attempt_r1": "invalid_identity_namespace_collapse_preserved",
+    "ranking_attempt_r2": "valid_terminal_sparse_retained_fusion_rejected",
+    "dense_unique_selected_targets_in_index": "5_of_10",
+    "reranker_resource": "optional_absent_not_executed",
+    "downstream_utilization": "not_proven"
+  },
+  "research_qrels_gate": {
+    "review_packet_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_3.json",
+    "review_digest": "aca52d205984d0477c1c17186afa2a28d249655419be28b75cf825dbc18716aa",
+    "owner_decision_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_owner_acceptance_v1_0.json",
+    "owner_decision_digest": "6549686220698cf50a44afe2255769a964582f6098bf06a87452b3b98755c48c",
+    "review_state": "owner_accepted",
+    "strict_current_target_count": 18,
+    "strict_current_target_in_pool": 18,
+    "owner_accepted_rows": 18,
+    "owner_returned_rows": 0,
+    "row_modifications": 0
+  },
+  "ranking_gate": {
+    "valid_result_ref": "configs/releases/fin_ia_0_1_3_s1_internal_bge_fusion_evaluation_attempt_r2.json",
+    "valid_result_digest": "980954131ee198eab6051ed420b58a0daa7475505fa8acc48cc5c1d2811b37ba",
+    "invalidated_r1_audit_ref": "configs/releases/fin_ia_0_1_3_s1_internal_bge_fusion_evaluation_attempt_r1_post_run_identity_audit_v1_0.json",
+    "sparse": {
+      "recall_at_10": 0.88888889,
+      "mrr_at_10": 0.51111111,
+      "recall_at_24": 1.0
+    },
+    "dense": {
+      "recall_at_10": 0.16666667,
+      "mrr_at_10": 0.16666667,
+      "recall_at_24": 0.22222222
+    },
+    "fusion": {
+      "recall_at_10": 0.77777778,
+      "mrr_at_10": 0.28201058,
+      "recall_at_24": 0.94444444
+    },
+    "fusion_adopted": false,
+    "production_candidate_baseline": "sparse_rrf"
+  },
+  "dense_index_diagnostic": {
+    "ref": "configs/releases/fin_ia_0_1_3_s1_internal_dense_index_diagnostic_v1_0.json",
+    "digest": "092b86a288255e2c65ea42f4981cebf7036955e549bc676e2de541059706ee34",
+    "unique_selected_targets": 10,
+    "unique_selected_targets_present": 5,
+    "unique_selected_targets_absent": 5,
+    "row_weighted_classification": {
+      "dense_index_freshness_gap": 8,
+      "retrieved_top10": 3,
+      "semantic_retrieval_top10_gap": 1,
+      "semantic_retrieval_top24_gap": 6
+    },
+    "identity_collision_regression": "pass_zero",
+    "interpretation": "Both immutable index freshness and semantic query or ranking gaps exist; the result is not a pure BGE model-quality diagnosis."
+  },
+  "numeric_sql_gate": {
+    "observation_ref": "configs/releases/fin_ia_0_1_3_s1_internal_numeric_sql_qrels_observation_v1_0.json",
+    "latest_available_annual_qrels": 9,
+    "current_successor_annual_exact_matches": 9,
+    "current_quarter_qrels": 6,
+    "current_quarter_exact_matches": 0,
+    "benchmark_pack_may_refresh_sqlite": false,
+    "status": "annual_route_ready_current_quarter_refresh_blocked"
+  },
+  "execution_sequence": [
+    {
+      "order": 1,
+      "work_item": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REFRESH",
+      "status": "current_zero_network_design_and_implementation",
+      "acceptance": "Build a new capture-backed supplemental dense collection with complete evidence identity and lineage. Do not overwrite or rebuild the 662,908-vector historical collection."
+    },
+    {
+      "order": 2,
+      "work_item": "S1_DENSE_SELECTED_TARGET_PHYSICAL_PRESENCE_GATE",
+      "status": "pending_after_supplemental_dense_build",
+      "acceptance": "All 10 unique Owner-selected target identities must be physically present across the federated historical and supplemental dense collections before another ranking-quality run."
+    },
+    {
+      "order": 3,
+      "work_item": "S1_INTERNAL_DENSE_FUSION_SAME_MATRIX_SUCCESSOR",
+      "status": "blocked_until_10_of_10_presence_and_separate_execution_authority",
+      "acceptance": "Run at most one unchanged-qrels/query/filter/budget/weight comparison. Do not tune fusion against Gold. Retain sparse if dense or fusion remains worse."
+    },
+    {
+      "order": 4,
+      "work_item": "S1_INTERNAL_QUERY_OR_RERANKER_EXPERIMENT",
+      "status": "conditional_not_current_gate",
+      "acceptance": "Open only if post-refresh dense or fusion still underperforms. Reranker requires explicit local resource, license and execution admission; no silent download."
+    },
+    {
+      "order": 5,
+      "work_item": "S1_INTERNAL_CURRENT_QUARTER_NUMERIC_INGESTION_AND_EXACT_ROUTE_SUCCESSOR",
+      "status": "open_independent_of_ranking",
+      "acceptance": "Transform capture-backed primary sources into a successor exact mart and reach 6/6 current-quarter qrels without using the evaluator pack as ingestion input."
+    },
+    {
+      "order": 6,
+      "work_item": "S1_TO_S3_RETRIEVAL_DOWNSTREAM_UTILIZATION_PROOF",
+      "status": "pending_after_internal_retrieval_gates",
+      "acceptance": "Selected candidates and exact facts must pass Evidence Gate and be visibly consumed by Claim, Workpaper and report with research-content quality evaluation."
+    },
+    {
+      "order": 7,
+      "work_item": "EXTERNAL_PROVIDER_REQUALIFICATION_OR_PRODUCT_SOURCE_SCOPE_DECISION",
+      "status": "future_independent_release_blocker",
+      "acceptance": "A new Provider must reuse the frozen external matrix, or Owner must explicitly reduce the product source claim. Internal success does not close external 4/12 coverage."
+    }
+  ],
+  "hard_gates": {
+    "missing_dense_target": "repair_capture_backed_index_freshness_before_ranking",
+    "gold_weight_tuning": "forbidden",
+    "historical_dense_index_overwrite": "forbidden",
+    "reranker_absent": "typed_optional_gap_no_silent_download",
+    "embedding_or_reranker_authority": "ranking_only_no_identity_period_fact_or_evidence_authority",
+    "current_quarter_exact_missing": "capture_backed_refresh_no_benchmark_backfill",
+    "external_coverage_failed": "release_blocker_remains_independent"
+  },
+  "calls_authorized_by_this_plan": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "embedding": 0,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "known_boundary": "This plan records a valid R2 ranking result and the next S1 repair boundary. It does not authorize an incremental embedding run, another ranking run, a reranker download, current-quarter ingestion, downstream Evidence use, external provider live work or release.",
+  "plan_digest": "9888c28c5dc5d5585cd33b103ad7d2db785d32b67d7ffd65e2678d519e34fc17"
+}

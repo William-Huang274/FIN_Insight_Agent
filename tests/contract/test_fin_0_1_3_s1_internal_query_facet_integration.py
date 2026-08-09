@@ -276,7 +276,7 @@ def test_materialized_proof_is_zero_call_digest_bound_and_honest() -> None:
     assert proof["stage_acceptance"]["external_product_coverage"] is False
 
 
-def test_project_os_advances_through_owner_accepted_ranking_scope() -> None:
+def test_project_os_advances_to_refresh_after_completed_ranking_scope() -> None:
     completed = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
     assert completed["status"] == "blocked"
     candidate_ceiling = run_project_os_preflight(
@@ -294,7 +294,8 @@ def test_project_os_advances_through_owner_accepted_ranking_scope() -> None:
     ranking = run_project_os_preflight(
         ROOT, run_scope="S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION"
     )
-    assert ranking["status"] == "pass"
+    assert ranking["status"] == "blocked"
+    assert ranking["open_full_chain_blocker_count"] == 2
     assert ranking["scope_resolution"]["operation_class"] == (
         "ranking_evaluation"
     )

@@ -643,3 +643,21 @@ MU Q3 FY2026 10-Q 单文档 successor 已 exact-once 成功并形成 118 条 BM2
 > **2026-08-08 `013-S1-08` Tencent same-matrix terminal**：24/24 standard、0 retry/model/document/Evidence、1.104 元、p95 1,330 ms；但 topical=`103/240`、六个 case-slot frozen primary target=`0/6`，显著弱于同矩阵 Firecrawl 的 `133/240` 与 `5/6`。172/172 provider date 因无 exact target 不能验证准确性，主要结果来自聚合/社区站点。Tencent 保持 diagnostic-only，不接 SourceHunter、不做 reranker rescue/query patch/replacement。下一项只做 provider portfolio 与 production search 边界决策，S1-08 与后续阶段继续 blocked。
 
 > **2026-08-08 `013-S1-08` Provider portfolio boundary selected**：纠正单一 broad Provider 全职责门槛，选择 official-first、role-specific portfolio。SEC/IR/feed/sitemap/official-domain 负责 known primary；Firecrawl 仅作为 discovery shadow 候选；Tencent 维持 diagnostic-only；Provider date 只作 telemetry，本地 capture-backed date 与 Evidence Gate 不放宽。暂停新 Provider 采购/live，下一项先完成组合 route planner、immutable replay、三案 mutation 和 SearchQualityCard 的零调用实现。S1-08、ranking、S3/S4/S5 仍 blocked。
+
+## 7M. Owner qrels 接受、R2 ranking 结果与 dense refresh 接力（2026-08-09）
+
+Owner 已接受 18/18 research qrels，local ranking 得到一次真实执行资格。R1 因 namespaced evidence identity 在首个 `::` 被错误截断而失效，失败结果和 18 条 collision 审计保持不可变；修复只收窄 identity canonicalization，未改变 qrels、queries、filters、budgets 或 fusion weights。
+
+有效 R2 的 sparse／dense／fusion Recall@10 分别为 `16/18、3/18、14/18`，MRR@10 分别为 `0.51111111、0.16666667、0.28201058`。fusion 低于 sparse，故当前保留 sparse，不准入 fusion。后续 read-only 诊断证明 10 个唯一目标只有 5 个进入旧 Milvus；18 行里 8 行是 index freshness gap，另有 7 行属于已在索引但语义排序未达到 top10／top24。
+
+下一顺序据此重新冻结：
+
+1. 只从 capture-backed supplemental current documents 建立 immutable dense successor，并与历史 662,908-vector collection 联邦；禁止覆盖旧索引；
+2. 先达到 selected target physical presence=`10/10 unique`，否则不得再跑 dense/fusion；
+3. presence gate 通过后只做一次 same-matrix ranking successor，不按 Gold 调权重；
+4. 若 dense/fusion 仍弱，sparse 继续作为候选基线；query formulation 和 reranker 另立实验，reranker 不静默下载；
+5. 独立完成 current-quarter exact SQL `0/6` refresh；
+6. 之后才做 Evidence→Claim→Workpaper→Report 的下游利用和内容质量证明；
+7. external official `4/12` 仍是独立 release blocker，只有新 Provider 按冻结矩阵通过或 Owner 明确缩减产品来源承诺才能关闭。
+
+这里没有新建产品版本，也没有把 S1 的缺口传给 S2/S3。dense index freshness 和 semantic retrieval 都留在 S1；研究综合与最终报告质量仍由 S3/S4 承担。

@@ -1242,3 +1242,30 @@ exact SQL 采用独立 15-row suite：9 行 latest-available annual facts 绑定
 dense resource qualification 不执行 embedding：R7 已绑定的 Milvus collection 为 1024 维且含所需字段/ticker；显式 dependency 路径含 pymilvus；`D:/hf_models/BAAI__bge-m3` 的 config、tokenizer 和权重文件完整且 hidden size=1024。现行 runtime config 指向不存在的旧 Hugging Face snapshot，所以后续 execution policy必须显式绑定 successor locator，不能静默 fallback。本机未发现 BGE reranker；该状态为 `optional_resource_absent`，不得自动下载，也不阻止 Owner 接受后先做 sparse／BGE dense／facet-aware fusion 对照。
 
 下一执行门为 Owner 接受 18 行 research qrels。接受后仍需新的 `S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION` authority 才可加载模型、连接 Milvus 或计算分数；资源资格 artifact 自身不授予执行权。current-quarter numeric refresh、downstream Evidence utilization 与 external coverage 均继续独立 open。
+
+### 20.35 Owner qrels、identity-safe ranking R2 与 dense-index freshness 分账
+
+Owner 已对 qrels v1.3 的 18 行候选标签全部接受，0 行改写；该接受只建立 evaluation relevance，不产生 Evidence。ranking Runtime 必须在 qrels load 前完成 candidate generation，并保持 entity、reporting fiscal period、filing calendar、relationship、case、budget 与 route filters 不可被 BGE 或 fusion 改写。
+
+R1 真实 local embedding／Milvus execution 后发现 candidate identity canonicalization 错误：实现用首个 `::` 拆分 vector ID，导致 namespaced SEC／supplemental evidence blocks 在 RRF 前被合并。R1 保持 immutable，但所有指标失效。successor 只允许移除最后一个已声明 vector-kind suffix；namespace prefix 永远不是 evidence identity。mutation 必须证明同 evidence 的多 vector-kind 可合并、不同 namespaced evidence 不合并。
+
+identity-safe R2 的有效指标为：
+
+| lane | Recall@10 | MRR@10 | Recall@24 |
+| --- | ---: | ---: | ---: |
+| sparse RRF | 0.88888889 | 0.51111111 | 1.0 |
+| BGE bilingual dense RRF | 0.16666667 | 0.16666667 | 0.22222222 |
+| facet-aware fusion | 0.77777778 | 0.28201058 | 0.94444444 |
+
+fusion 的 Recall@10 和 MRR@10 均低于 sparse，故 Runtime 不采用 fusion。read-only metadata diagnostic 将 dense failure 分为：`8/18` index freshness gap、`3/18` top10 hit、`1/18` top10 miss but top24 hit、`6/18` top24 miss；10 个 unique targets 只有 `5/10` 在现有 662,908-vector collection 中。
+
+successor 技术边界固定为：
+
+1. 从已保存的 current capture／parsed assets 建 immutable supplemental dense collection，保留 source evidence ID、vector kind、ticker、reporting period、form、URL、capture ref 与 digest；
+2. 历史 collection 只读，不覆盖、不 in-place rebuild；跨 collection 使用候选 identity 和 route-level rank federation，不直接比较不可校准 raw score；
+3. 先执行 metadata presence gate=`10/10 unique`，未通过时禁止新 dense/fusion quality run；
+4. presence 通过后最多做一次冻结查询／qrels／filter／budget／weight 的 same-matrix successor；若仍下降，继续保留 sparse，并把 query formulation 与 reranker 拆成新实验；
+5. 不允许基于 Gold 反复调 fusion 权重；reranker absence 必须 typed 记录，不静默下载；
+6. embedding、fusion、reranker 没有事实、身份、期间、数值或 Evidence 晋升权。
+
+该工作仍属 S1。current-quarter exact mart、external Provider coverage 与 S3 downstream utilization 不得被合并为 ranking repair。

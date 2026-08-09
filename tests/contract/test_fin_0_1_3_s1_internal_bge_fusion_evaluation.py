@@ -11,6 +11,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
+import sec_agent.s1_internal_bge_fusion_evaluation as evaluation_module  # noqa: E402
 from sec_agent.s1_internal_bge_fusion_evaluation import (  # noqa: E402
     RESULT_SCHEMA_V1_1,
     S1InternalBGEFusionEvaluationError,
@@ -215,7 +216,22 @@ class _FakeClient:
         self.loaded = False
 
 
-def test_full_fake_executes_36_embeddings_and_searches_then_loads_qrels() -> None:
+def _admit_historical_fake_execution(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        evaluation_module,
+        "run_project_os_preflight",
+        lambda *_args, **_kwargs: {
+            "status": "pass",
+            "run_scope": "S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION",
+            "open_full_chain_blocker_count": 0,
+        },
+    )
+
+
+def test_full_fake_executes_36_embeddings_and_searches_then_loads_qrels(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _admit_historical_fake_execution(monkeypatch)
     policy = load_internal_bge_fusion_evaluation_policy(
         POLICY_PATH, repo_root=ROOT
     )
@@ -247,7 +263,10 @@ def test_full_fake_executes_36_embeddings_and_searches_then_loads_qrels() -> Non
     )
 
 
-def test_successor_full_fake_binds_r1_invalidation_and_identity_fix() -> None:
+def test_successor_full_fake_binds_r1_invalidation_and_identity_fix(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _admit_historical_fake_execution(monkeypatch)
     policy = load_internal_bge_fusion_evaluation_policy(
         SUCCESSOR_POLICY_PATH, repo_root=ROOT
     )
@@ -265,7 +284,10 @@ def test_successor_full_fake_binds_r1_invalidation_and_identity_fix() -> None:
     ] is True
 
 
-def test_result_boundary_mutation_fails_closed() -> None:
+def test_result_boundary_mutation_fails_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _admit_historical_fake_execution(monkeypatch)
     policy = load_internal_bge_fusion_evaluation_policy(
         POLICY_PATH, repo_root=ROOT
     )

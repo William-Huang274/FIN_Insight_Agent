@@ -2166,3 +2166,18 @@ FIN 不把“能向一个搜索端点发请求”写成 Agentic Search 产品能
 3. 搜索返回的 title、snippet、score、date 和数字都只是候选元数据；必须重新抓取原始 URL，通过 entity/date/relationship/content/Evidence Gate 后才可成为证据；
 4. paid API 的生产资格还必须证明稳定性、发布日期元数据、来源多样性、所需 Evidence Slot 覆盖、错误率、延迟、限流、成本和数据使用条款；一次成功请求或优于 SearXNG 不等于 production-ready；
 5. 在候选付费 API 资料到位前，不继续修补免费 engine、不重跑同一 SearXNG baseline，也不因此解锁 DELL R4、ranking、S3、Workbench 或 release。
+
+### 16.5 内源检索排序与索引新鲜度产品门禁（2026-08-09）
+
+FIN 的内源检索不能用单一“RAG 通过”概括。产品验收必须至少分开四层：候选是否存在、目标是否进入对应索引、排序是否把目标送入可消费窗口、下游研究是否真正使用并正确引用。只有后一层成立，才形成用户可见的研究价值。
+
+三案例 18 行 Owner qrels 的本轮实测表明：sparse RRF Recall@10=`16/18`，BGE dense=`3/18`，facet fusion=`14/18`；fusion 低于 sparse，因此当前不准入。后续只读诊断又确认 10 个唯一 selected targets 只有 `5/10` 存在于旧 Milvus。由此冻结以下产品规则：
+
+1. 缺失于索引的目标属于 corpus/index freshness，不得归因 embedding 模型，也不得由 fusion 或 reranker“救回”；
+2. dense refresh 必须来自 capture-backed、身份／期间／来源血缘完整的 current documents，使用 immutable successor 或 federated collection，不覆盖历史索引；
+3. 只有 selected-target physical presence 达到 `10/10 unique`，才允许一次同矩阵 dense/fusion 复评；不得针对 18 行 qrels 反复调权重制造通过；
+4. reranker 只重排已进入候选池的内容，需独立的模型资源、许可证、成本与质量准入，不是 dense refresh 的默认依赖；
+5. sparse 作为当前生产候选基线不等于内源检索产品完成。current-quarter exact SQL、graph、Evidence 晋升和 report utilization 仍需各自证明；
+6. 内源成功不能关闭 broad external search 的 `4/12` release blocker，也不能替代 current 研报内容验收。
+
+用户可见的最终验收仍以 Evidence→Claim→Workpaper→Report 的事实可追溯性、机制分析、反方证据、what-would-change 和人工可用性为准；离线 retrieval 指标只是必要条件，不是产品成果。

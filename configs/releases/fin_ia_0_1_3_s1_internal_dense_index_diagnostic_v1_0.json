@@ -1,0 +1,306 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_dense_index_diagnostic_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_dense_index_diagnostic:v1",
+  "recorded_at": "2026-08-09",
+  "status": "terminal_succeeded_read_only_dense_index_diagnostic",
+  "source_attempt": {
+    "attempt_id": "20260809_three_case_s1_internal_ranking_bge_m3_sparse_dense_facet_fusion_owner_qrels_v2_r2",
+    "result_digest": "980954131ee198eab6051ed420b58a0daa7475505fa8acc48cc5c1d2811b37ba"
+  },
+  "identity_collision_regression": {
+    "collision_count": 0,
+    "status": "pass"
+  },
+  "row_weighted_classification_counts": {
+    "dense_index_freshness_gap": 8,
+    "retrieved_top10": 3,
+    "semantic_retrieval_top10_gap": 1,
+    "semantic_retrieval_top24_gap": 6
+  },
+  "unique_selected_target_count": 10,
+  "unique_selected_targets_present_in_milvus": 5,
+  "unique_selected_targets_absent_from_milvus": 5,
+  "rows": [
+    {
+      "bundle_id": "internal_query_facet_bundle_85b437ac4c204de75c11",
+      "case_key": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "selected_aliases": [
+        "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04"
+      ],
+      "selected_retrieval_asset_id": "historical_sparse_baseline",
+      "present_in_milvus": true,
+      "matching_vector_count_capped_64": 4,
+      "dense_selected_target_rank": null,
+      "classification": "semantic_retrieval_top24_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_1d678815518868a38086",
+      "case_key": "DELL",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "DELL",
+      "selected_aliases": [
+        "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001"
+      ],
+      "selected_retrieval_asset_id": "historical_sparse_baseline",
+      "present_in_milvus": true,
+      "matching_vector_count_capped_64": 3,
+      "dense_selected_target_rank": 1,
+      "classification": "retrieved_top10"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_96ddf73c8363e6234c24",
+      "case_key": "DELL",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "DELL",
+      "selected_aliases": [
+        "SUPP::DELL::000157199626000008::CHUNK_0059"
+      ],
+      "selected_retrieval_asset_id": "current_official_supplemental_v1_1",
+      "present_in_milvus": false,
+      "matching_vector_count_capped_64": 0,
+      "dense_selected_target_rank": null,
+      "classification": "dense_index_freshness_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_9e5597c9d5ad2c296f02",
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "MU",
+      "selected_aliases": [
+        "SUPP::MU::000072312526000013::CHUNK_0003"
+      ],
+      "selected_retrieval_asset_id": "current_official_supplemental_v1_1",
+      "present_in_milvus": false,
+      "matching_vector_count_capped_64": 0,
+      "dense_selected_target_rank": null,
+      "classification": "dense_index_freshness_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_f42e9fcc248272496f97",
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "selected_aliases": [
+        "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001"
+      ],
+      "selected_retrieval_asset_id": "historical_sparse_baseline",
+      "present_in_milvus": true,
+      "matching_vector_count_capped_64": 4,
+      "dense_selected_target_rank": null,
+      "classification": "semantic_retrieval_top24_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_50ea183ead342dc72262",
+      "case_key": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "selected_aliases": [
+        "SUPP::TSM::000104617926000451::CHUNK_0001"
+      ],
+      "selected_retrieval_asset_id": "current_official_supplemental_v1_1",
+      "present_in_milvus": false,
+      "matching_vector_count_capped_64": 0,
+      "dense_selected_target_rank": null,
+      "classification": "dense_index_freshness_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_621e7891570ac2e5fec0",
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "DELL",
+      "selected_aliases": [
+        "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001"
+      ],
+      "selected_retrieval_asset_id": "historical_sparse_baseline",
+      "present_in_milvus": true,
+      "matching_vector_count_capped_64": 3,
+      "dense_selected_target_rank": 1,
+      "classification": "retrieved_top10"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_9a9f8fa72563a8a4c6a5",
+      "case_key": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "selected_aliases": [
+        "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04"
+      ],
+      "selected_retrieval_asset_id": "historical_sparse_baseline",
+      "present_in_milvus": true,
+      "matching_vector_count_capped_64": 4,
+      "dense_selected_target_rank": null,
+      "classification": "semantic_retrieval_top24_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_4c581958c23fb86e2173",
+      "case_key": "MU",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "MU",
+      "selected_aliases": [
+        "SUPP::MU::000072312526000013::CHUNK_0001"
+      ],
+      "selected_retrieval_asset_id": "current_official_supplemental_v1_1",
+      "present_in_milvus": false,
+      "matching_vector_count_capped_64": 0,
+      "dense_selected_target_rank": null,
+      "classification": "dense_index_freshness_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_11d78cb3e76667f06b29",
+      "case_key": "MU",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "MU",
+      "selected_aliases": [
+        "SUPP::MU::000072312526000015::CHUNK_0053"
+      ],
+      "selected_retrieval_asset_id": "current_mu_10q_supplemental_v1_2",
+      "present_in_milvus": false,
+      "matching_vector_count_capped_64": 0,
+      "dense_selected_target_rank": null,
+      "classification": "dense_index_freshness_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_4c55d0f25d3e0f7efb67",
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "selected_aliases": [
+        "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001"
+      ],
+      "selected_retrieval_asset_id": "historical_sparse_baseline",
+      "present_in_milvus": true,
+      "matching_vector_count_capped_64": 4,
+      "dense_selected_target_rank": null,
+      "classification": "semantic_retrieval_top24_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_c212f36a01a3adda3946",
+      "case_key": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "selected_aliases": [
+        "SUPP::TSM::000104617926000451::CHUNK_0001"
+      ],
+      "selected_retrieval_asset_id": "current_official_supplemental_v1_1",
+      "present_in_milvus": false,
+      "matching_vector_count_capped_64": 0,
+      "dense_selected_target_rank": null,
+      "classification": "dense_index_freshness_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_2365488414281a594f2a",
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "DELL",
+      "selected_aliases": [
+        "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001"
+      ],
+      "selected_retrieval_asset_id": "historical_sparse_baseline",
+      "present_in_milvus": true,
+      "matching_vector_count_capped_64": 3,
+      "dense_selected_target_rank": 1,
+      "classification": "retrieved_top10"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_24fdcb3ed48499b408e2",
+      "case_key": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "selected_aliases": [
+        "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04"
+      ],
+      "selected_retrieval_asset_id": "historical_sparse_baseline",
+      "present_in_milvus": true,
+      "matching_vector_count_capped_64": 4,
+      "dense_selected_target_rank": null,
+      "classification": "semantic_retrieval_top24_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_162bb09393cce590e48d",
+      "case_key": "NVDA",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "NVDA",
+      "selected_aliases": [
+        "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02"
+      ],
+      "selected_retrieval_asset_id": "historical_sparse_baseline",
+      "present_in_milvus": true,
+      "matching_vector_count_capped_64": 4,
+      "dense_selected_target_rank": null,
+      "classification": "semantic_retrieval_top24_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_31e1c2e5e7b02dddadbb",
+      "case_key": "NVDA",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "NVDA",
+      "selected_aliases": [
+        "NVDA_2027_10Q_ITEM1_BLOCK_0001_PART_02_OF_03",
+        "NVDA_2027_10Q_ITEM1_BLOCK_0001_PART_02_OF_03_METRIC_TABLE_3C6CA96D"
+      ],
+      "selected_retrieval_asset_id": "current_full_object_baseline",
+      "present_in_milvus": true,
+      "matching_vector_count_capped_64": 3,
+      "dense_selected_target_rank": 16,
+      "classification": "semantic_retrieval_top10_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_5249570c00a4da609632",
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "MU",
+      "selected_aliases": [
+        "SUPP::MU::000072312526000013::CHUNK_0003"
+      ],
+      "selected_retrieval_asset_id": "current_official_supplemental_v1_1",
+      "present_in_milvus": false,
+      "matching_vector_count_capped_64": 0,
+      "dense_selected_target_rank": null,
+      "classification": "dense_index_freshness_gap"
+    },
+    {
+      "bundle_id": "internal_query_facet_bundle_e3482d22dbfa5d562b74",
+      "case_key": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "selected_aliases": [
+        "SUPP::TSM::000104617926000451::CHUNK_0001"
+      ],
+      "selected_retrieval_asset_id": "current_official_supplemental_v1_1",
+      "present_in_milvus": false,
+      "matching_vector_count_capped_64": 0,
+      "dense_selected_target_rank": null,
+      "classification": "dense_index_freshness_gap"
+    }
+  ],
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "embedding": 0,
+    "milvus_metadata_queries": 10,
+    "milvus_vector_searches": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "disposition": {
+    "fusion_adopted": false,
+    "production_candidate_baseline": "sparse_rrf",
+    "dense_index_refresh_required": true,
+    "semantic_query_or_ranking_gap_present": true,
+    "reranker_evaluation_possible": false,
+    "reranker_reason": "optional_local_resource_absent"
+  },
+  "preserved_boundaries": {
+    "candidates_promoted_to_evidence": false,
+    "current_quarter_exact_sql": "0_of_6_open",
+    "external_official_required_slot_coverage": "4_of_12_open_release_blocker",
+    "downstream_utilization_proven": false,
+    "product_acceptance": false,
+    "release": "not_qualified"
+  },
+  "known_boundary": "This diagnostic separates index absence from top-24 semantic retrieval misses. It does not refresh Milvus, tune queries or fusion weights, download a reranker, promote Evidence, or change product acceptance.",
+  "diagnostic_digest": "092b86a288255e2c65ea42f4981cebf7036955e549bc676e2de541059706ee34"
+}

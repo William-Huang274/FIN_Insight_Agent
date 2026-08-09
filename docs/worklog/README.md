@@ -1,5 +1,6 @@
 # Worklog
 
+- [771 — FIN 0.1.3 S1 Owner qrels、BGE/fusion R2 与 dense index 诊断](product_strategy/771_fin_0_1_3_s1_owner_qrels_bge_fusion_r2_and_dense_index_diagnostic.md)
 - [757 — FIN 0.1.3 S1-08 DeepSeek query-atom A2 终态与 local-only 处置](product_strategy/757_fin_0_1_3_s1_08_deepseek_query_atom_A2_terminal_and_local_only_disposition.md)
 - [756 — FIN 0.1.3 S1-08 query-atom canary A1 Windows admission path failure](product_strategy/756_fin_0_1_3_s1_08_query_atom_canary_A1_windows_admission_path_failure.md)
 - [755 — FIN 0.1.3 S1-08 DeepSeek query-atom canary clean authority](product_strategy/755_fin_0_1_3_s1_08_deepseek_query_atom_canary_clean_authority.md)

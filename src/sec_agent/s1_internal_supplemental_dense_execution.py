@@ -550,6 +550,12 @@ def materialize_execution_implementation_proof(
     specs, _ = compile_supplemental_vector_specs(build_policy, repo_root=root)
     resources = dict(policy["resource_bindings"])
     private = dict(policy["private_execution"])
+    working = (root / str(private["working_root"])).resolve()
+    final = (root / str(private["final_root"])).resolve()
+    target_state_before = {
+        "working": working.exists(),
+        "final": final.exists(),
+    }
     dimension = int(resources["expected_embedding_dim"])
     writer = MilvusIndexWriter(
         uri="fake://supplemental-dense",
@@ -571,11 +577,10 @@ def materialize_execution_implementation_proof(
         "supplemental_dense_execution_schema_field_drift",
     )
     writer.close()
-    working = (root / str(private["working_root"])).resolve()
-    final = (root / str(private["final_root"])).resolve()
     _require(
-        not working.exists() and not final.exists(),
-        "supplemental_dense_execution_target_preexists",
+        working.exists() is target_state_before["working"]
+        and final.exists() is target_state_before["final"],
+        "supplemental_dense_execution_full_fake_modified_private_target",
     )
     body: dict[str, Any] = {
         "schema_version": IMPLEMENTATION_PROOF_SCHEMA,

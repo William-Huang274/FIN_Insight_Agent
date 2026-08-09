@@ -93,3 +93,9 @@ Owner 之前接受 18 行，表示这些行可作为 ranking relevance label；�
 8. 最后做 Evidence→Claim→Workpaper→Report 研究内容质量证明。
 
 当前不应直接跑 410，因为 production authority 还没有绑定完整 Linux Runtime／BGE／Milvus Lite 指纹，qrels 内容复核也未完成。
+
+## 8. 提交后验证发现的可重复性修复
+
+第一次 clean/synced 合同复验先暴露 Project OS 新投影的 lineage／scope 写法错误：RC-P36-160 的 `previous_projection_sequence` 必须指向该 issue 自己的 `v2_268`，新 RC-P36-163 必须从 `null` 起步，且未注册的下游 scope 不得写入 blocker。修正后 scoped preflight=`pass`。
+
+随后 full-fake 进入 `target_preexists`：原因不是 Writer 回归，而是 Windows R1 working root 按审计要求已经保留，旧 implementation-proof materializer 却把“生产路径必须不存在”误当成“fake 没有写生产路径”。本轮将判断改为执行前后路径状态必须完全不变；它既能在首次构建前证明 fake 不创建目标，也能在失败现场保留后重复执行，不删除或改写 R1。proof body 和 410-row fake contract 不变。

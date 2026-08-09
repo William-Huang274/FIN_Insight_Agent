@@ -1,0 +1,59 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_6",
+  "contract_ref": "fin_0_1_3.S1.retrieval_query_facet_external_internal_progression:v1_6",
+  "recorded_at": "2026-08-09",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1",
+  "status": "supplemental_dense_zero_call_pass_real_incremental_build_authority_current",
+  "predecessor_ref": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_5.json",
+  "user_decision": "Complete external retrieval first, then repair internal exact, lexical, dense and graph retrieval, including downstream BGE, fusion and reranking, without skipping candidate-ceiling evidence.",
+  "current_truth": {
+    "external_product_coverage": "4_of_12_failed_release_blocker_preserved",
+    "internal_research_candidate_inventory": "18_of_18_owner_accepted",
+    "internal_annual_exact_sql": "9_of_9",
+    "internal_current_quarter_exact_sql": "0_of_6_typed_refresh_gap",
+    "ranking_attempt_r2": "valid_sparse_16_of_18_dense_3_of_18_fusion_14_of_18_sparse_retained",
+    "historical_dense_unique_selected_targets": "5_of_10",
+    "supplemental_dense_zero_call_contract": "pass_410_of_410_specs_8_of_8_mutations",
+    "supplemental_dense_real_build": "not_executed",
+    "federated_presence_projection": "10_of_10_unique_18_of_18_rows_after_real_build",
+    "reranker_resource": "optional_absent_not_executed",
+    "downstream_utilization": "not_proven"
+  },
+  "supplemental_dense_gate": {
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_supplemental_dense_index_policy_v1_0.json",
+    "proof_ref": "configs/releases/fin_ia_0_1_3_s1_internal_supplemental_dense_index_zero_call_proof_v1_0.json",
+    "proof_digest": "289e775832d93002791da557341b0bd39f7ec231d112f4175bd3571fb4071940",
+    "source_documents": 4,
+    "vector_specs": 410,
+    "vector_spec_terminal_digest": "63cd6fad6f6be5ee3a1a82ce3a35840174b183a12087a1597bc1cbfc07b301cd",
+    "qrels_loaded_after_vector_spec_terminal_digest": true,
+    "fake_batches": 13,
+    "mutation_scenarios_passed": 8,
+    "historical_collection_writes": 0,
+    "real_embedding_or_milvus_writes": 0
+  },
+  "execution_sequence": [
+    {"order": 1, "work_item": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_ZERO_CALL_CONTRACT", "status": "pass_complete", "acceptance": "All 410 capture-backed rows compile before qrels load; fake build terminalizes exactly and all declared mutations fail closed."},
+    {"order": 2, "work_item": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REAL_BUILD", "status": "current_clean_commit_and_separate_authority_required", "acceptance": "Build exactly 410 BGE-M3 vectors in a new Milvus Lite DB and collection with zero historical writes, retries, network, provider, LLM, rerank or Evidence calls."},
+    {"order": 3, "work_item": "S1_DENSE_SELECTED_TARGET_PHYSICAL_PRESENCE_GATE", "status": "blocked_until_real_build", "acceptance": "Read-only metadata proof must establish 410 terminal entities and 10/10 unique Owner-selected target identities across historical and supplemental collections."},
+    {"order": 4, "work_item": "S1_INTERNAL_DENSE_FUSION_SAME_MATRIX_SUCCESSOR", "status": "blocked_until_real_10_of_10_and_separate_authority", "acceptance": "At most one unchanged-qrels/query/filter/budget/weight comparison; retain sparse if dense or fusion remains worse."},
+    {"order": 5, "work_item": "S1_INTERNAL_QUERY_OR_RERANKER_EXPERIMENT", "status": "conditional_not_current_gate", "acceptance": "Open only after post-refresh ranking evidence; no Gold-tuned weights or silent reranker download."},
+    {"order": 6, "work_item": "S1_INTERNAL_CURRENT_QUARTER_NUMERIC_INGESTION_AND_EXACT_ROUTE_SUCCESSOR", "status": "open_independent_0_of_6", "acceptance": "Reach 6/6 from capture-backed primary facts without evaluator backfill."},
+    {"order": 7, "work_item": "S1_TO_S3_RETRIEVAL_DOWNSTREAM_UTILIZATION_AND_CONTENT_QUALITY_PROOF", "status": "pending_after_internal_retrieval_gates", "acceptance": "Evidence, Claim, Workpaper and report must visibly consume retrieved material and pass research-content quality evaluation."},
+    {"order": 8, "work_item": "EXTERNAL_PROVIDER_REQUALIFICATION_OR_PRODUCT_SOURCE_SCOPE_DECISION", "status": "future_independent_release_blocker_4_of_12", "acceptance": "Reuse the frozen external matrix or explicitly reduce the product source claim."}
+  ],
+  "calls_authorized_by_this_plan": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "embedding": 0,
+    "milvus_write": 0,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "known_boundary": "This plan records the zero-call supplemental dense contract and next authority boundary. It does not itself authorize the 410-vector build, another ranking run, current-quarter ingestion, Evidence use, external provider work, product acceptance or release.",
+  "plan_digest": "0af833f057c2686814117c4d32b7c7539ebee6ca5959a687d3eb6b393625044c"
+}

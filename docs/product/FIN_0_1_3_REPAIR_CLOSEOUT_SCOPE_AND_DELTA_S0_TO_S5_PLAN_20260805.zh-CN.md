@@ -661,3 +661,19 @@ Owner 已接受 18/18 research qrels，local ranking 得到一次真实执行资
 7. external official `4/12` 仍是独立 release blocker，只有新 Provider 按冻结矩阵通过或 Owner 明确缩减产品来源承诺才能关闭。
 
 这里没有新建产品版本，也没有把 S1 的缺口传给 S2/S3。dense index freshness 和 semantic retrieval 都留在 S1；研究综合与最终报告质量仍由 S3/S4 承担。
+
+## 7N. Supplemental dense 零调用通过后的执行接力（2026-08-09）
+
+两份 current supplemental manifests 已在 qrels 不可见的编译阶段产生全量 410 条 vector specs。零调用 full-fake 证明 13 个 batch 可精确终态 410，旧库写入 0，8 类 mutation 全部 fail closed；历史 5 个已存在 unique targets 与 supplemental 5 个缺失 targets 合并后，presence projection 为 `10/10 unique、18/18 rows`。
+
+下一顺序冻结为：
+
+1. clean commit/push 当前 policy、compiler、proof、tests 与文档；
+2. 单独签发一次 `S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH` incremental-build authority，精确绑定 clean commit、410-vector terminal digest、本地 BGE locator、1024 维、新 DB 路径和新 collection；
+3. 只执行一次本地 embedding＋new Milvus build，0 network/provider/LLM/document/rerank/Evidence、0 retry，不覆盖旧库；
+4. 真实构建后只读复证 exact entity count=410、lineage 和 federated selected-target presence=10/10；
+5. presence 通过仍不自动运行 ranking；另行签发一次 unchanged-matrix successor 后才可判断 Dense/Fusion 是否改善；
+6. 如果 Dense/Fusion 仍低于 sparse，继续保留 sparse，把 query-semantic 与可选 reranker 分成后续受控实验，禁止围绕 Gold 反复调权；
+7. current-quarter exact 0/6、external official 4/12 和 downstream content-quality proof 继续分账，不塞进本次 index build。
+
+本项仍为 FIN 0.1.3 S1 原地修复，不创建 FIN 0.1.4，也不把 S1 根因传给 S3。

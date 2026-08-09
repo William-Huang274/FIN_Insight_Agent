@@ -1,0 +1,117 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_supplemental_dense_index_policy_v1_0",
+  "result_schema": "fin_ia_0_1_3_s1_internal_supplemental_dense_index_zero_call_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_supplemental_dense_index:v1",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "recorded_at": "2026-08-09",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "immutable_inputs": {
+    "supplemental_asset_manifests": [
+      {
+        "asset_key": "current_official_v1_1",
+        "ref": "configs/releases/fin_ia_0_1_3_s1_internal_supplemental_asset_manifest_v1_1.json",
+        "sha256": "6dd6d9e8d5f5e0080cfbc0cbdb00bc338c0ffb69478f7abdd68db4a8527360f0",
+        "expected_evidence_rows": 292
+      },
+      {
+        "asset_key": "current_mu_10q_v1_2",
+        "ref": "configs/releases/fin_ia_0_1_3_s1_internal_supplemental_asset_manifest_v1_2.json",
+        "sha256": "67e35ba3f3f82a2b51f25fc32a1f35e4ef0eb42aa132bb9118001ef2c98469df",
+        "expected_evidence_rows": 118
+      }
+    ],
+    "research_qrels_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_3.json",
+    "research_qrels_sha256": "f78c0e4da5f0167d8e9f80cab20b4095135502b8f468a830c115f9226700e49d",
+    "owner_qrels_acceptance_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_owner_acceptance_v1_0.json",
+    "owner_qrels_acceptance_sha256": "2e6076fe5a06a5039760f0bc9ff48906d59e7cc08aa2a9bae27f127fa31c6de8",
+    "dense_index_diagnostic_ref": "configs/releases/fin_ia_0_1_3_s1_internal_dense_index_diagnostic_v1_0.json",
+    "dense_index_diagnostic_sha256": "9c25a779395ea5e4471df6719485303d19fe90e53bcd09dd82abb3d4adadd0e1",
+    "historical_milvus_runtime_ref": "configs/runtime/milvus_runtime_603_local_v0_1.json",
+    "historical_milvus_runtime_sha256": "36a28febb7f297ca969be5874e0ecec2d960ff6f941e765191c384a687f608d3"
+  },
+  "source_contract": {
+    "expected_manifest_count": 2,
+    "expected_source_document_count": 4,
+    "expected_vector_spec_count": 410,
+    "maximum_source_text_chars": 2200,
+    "source_rows_must_be_capture_backed": true,
+    "source_rows_must_remain_candidate_only": true,
+    "qrels_may_shape_source_row_inclusion": false,
+    "qrels_loaded_only_after_vector_spec_terminal_digest": true
+  },
+  "vector_contract": {
+    "vector_kind": "narrative_chunk",
+    "vector_role": "supplemental_current_candidate",
+    "vector_id_rule": "exact_source_evidence_id",
+    "embedding_model": "D:/hf_models/BAAI__bge-m3",
+    "expected_embedding_dim": 1024,
+    "normalize_embeddings": true,
+    "embedding_batch_size": 32,
+    "milvus_dependencies_dir": "Z:/FIN_Insight_Agent_artifacts/python_deps/milvus_lite",
+    "required_lineage_fields": [
+      "evidence_id",
+      "ticker",
+      "fiscal_year",
+      "form_type",
+      "source_tier",
+      "source_url",
+      "publication_date",
+      "accession_number",
+      "capture_digest",
+      "source_manifest_ref",
+      "source_manifest_digest"
+    ]
+  },
+  "successor_target": {
+    "private_output_root": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_dense/v1",
+    "milvus_db_filename": "milvus_lite.db",
+    "collection_name": "fin_ia_0_1_3_s1_internal_supplemental_dense_v1",
+    "historical_collection_is_read_only": true,
+    "overwrite_existing_target": false,
+    "publish_manifest_only_after_exact_count_verification": true
+  },
+  "federation_contract": {
+    "members": [
+      "historical_662908_vector_collection",
+      "supplemental_current_410_vector_collection"
+    ],
+    "merge_mode": "rank_only_rrf",
+    "rrf_k": 60,
+    "raw_score_cross_collection_comparison_allowed": false,
+    "dedupe_key": "canonical_evidence_identity",
+    "tie_breaker": "canonical_evidence_identity_ascending"
+  },
+  "presence_gate": {
+    "owner_selected_unique_target_count": 10,
+    "historical_present_unique_target_count": 5,
+    "supplemental_required_unique_target_count": 5,
+    "federated_required_unique_target_count": 10,
+    "row_weighted_required_target_count": 18
+  },
+  "mutation_contract": [
+    "duplicate_evidence_identity",
+    "missing_capture_digest",
+    "cross_manifest_source_mismatch",
+    "owner_selected_target_absent",
+    "historical_or_existing_target_collision",
+    "embedding_dimension_mismatch",
+    "partial_insert_acknowledgement",
+    "raw_score_federation"
+  ],
+  "hard_boundaries": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "real_embedding": 0,
+    "milvus_read": 0,
+    "milvus_write": 0,
+    "rerank": 0,
+    "evidence_promotion": 0,
+    "may_write_successor_index": false,
+    "may_mutate_historical_index": false,
+    "may_promote_candidate_to_evidence": false,
+    "may_close_current_quarter_sql_or_external_release_blocker": false
+  },
+  "known_boundary": "This policy proves the immutable supplemental dense build contract with fake embedding and fake index writes only. It does not load BGE, write Milvus, improve semantic ranking, promote Evidence, close the current-quarter SQL gap, close external 4/12 coverage, accept the product or qualify release."
+}

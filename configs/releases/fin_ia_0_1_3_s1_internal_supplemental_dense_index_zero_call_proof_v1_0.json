@@ -1,0 +1,132 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_internal_supplemental_dense_index_zero_call_proof_v1_0",
+  "contract_ref": "fin_0_1_3.S1.internal_supplemental_dense_index:v1",
+  "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+  "recorded_at": "2026-08-09",
+  "status": "terminal_succeeded_zero_call_supplemental_dense_build_proof",
+  "project_os_preflight": {
+    "status": "pass",
+    "run_scope": "S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH",
+    "open_full_chain_blocker_count": 0
+  },
+  "policy_digest": "d4aed4f1ad1ded07903927a96891463c3f5be8de41f4fabc8398e818aaf8afc5",
+  "source_inventory": {
+    "manifest_count": 2,
+    "source_document_count": 4,
+    "vector_spec_count": 410,
+    "unique_evidence_identity_count": 410,
+    "ticker_counts": {
+      "DELL": 279,
+      "MU": 128,
+      "TSM": 3
+    },
+    "form_type_counts": {
+      "10-K": 279,
+      "10-Q": 118,
+      "6-K": 3,
+      "8-K": 10
+    },
+    "manifests": [
+      {
+        "asset_key": "current_official_v1_1",
+        "manifest_ref": "configs/releases/fin_ia_0_1_3_s1_internal_supplemental_asset_manifest_v1_1.json",
+        "manifest_digest": "3fdffb64a055c7f295a73733aa3e0c943a9db3e00081e6bdf04f9fc48962a31f",
+        "source_document_count": 3,
+        "vector_spec_count": 292
+      },
+      {
+        "asset_key": "current_mu_10q_v1_2",
+        "manifest_ref": "configs/releases/fin_ia_0_1_3_s1_internal_supplemental_asset_manifest_v1_2.json",
+        "manifest_digest": "79dedcae64a3806390586dbed0e6e366f16c6376e246b538ed353b503cadb4d7",
+        "source_document_count": 1,
+        "vector_spec_count": 118
+      }
+    ],
+    "vector_spec_terminal_digest": "63cd6fad6f6be5ee3a1a82ce3a35840174b183a12087a1597bc1cbfc07b301cd",
+    "qrels_loaded_after_vector_spec_terminal_digest": true
+  },
+  "target_isolation": {
+    "private_output_root": "D:/FIN_Insight_Agent/data/workbench_private/fin_0_1_3_s1_internal_supplemental_dense/v1",
+    "target_db_path": "D:/FIN_Insight_Agent/data/workbench_private/fin_0_1_3_s1_internal_supplemental_dense/v1/milvus_lite.db",
+    "target_collection_name": "fin_ia_0_1_3_s1_internal_supplemental_dense_v1",
+    "historical_db_path": "Z:/FIN_Insight_Agent_artifacts/milvus/20260614_tier1_tier2_603_milvus_streaming_semantic_fp16_batch1024_local_rebuild_from_parquet_r1/milvus_lite.db",
+    "historical_collection_name": "fin_ab_20260614_tier1_tier2_603_milvus_streaming_semantic_fp16_batch1024_local_rebuild_from_parquet_r1_1781435345",
+    "target_exists_at_proof": false,
+    "historical_target_isolated": true
+  },
+  "federated_presence_gate": {
+    "owner_selected_unique_target_count": 10,
+    "historical_present_unique_target_count": 5,
+    "supplemental_present_unique_target_count": 5,
+    "missing_unique_target_count": 0,
+    "row_weighted_target_count": 18,
+    "row_weighted_satisfied_count": 18,
+    "status": "pass_10_of_10_unique_and_18_of_18_rows_present_after_successor_build"
+  },
+  "fake_execution": {
+    "fake_embedding_batch_count": 13,
+    "fake_embedding_vector_count": 410,
+    "fake_insert_batch_count": 13,
+    "fake_inserted_vector_count": 410,
+    "terminal_count": 410,
+    "published_only_after_exact_count": true,
+    "historical_collection_write_count": 0
+  },
+  "mutation_proof": {
+    "scenario_count": 8,
+    "all_failed_closed": true,
+    "outcomes": {
+      "duplicate_evidence_identity": "supplemental_dense_duplicate_or_missing_evidence_identity",
+      "missing_capture_digest": "supplemental_dense_vector_identity_or_lineage_invalid",
+      "cross_manifest_source_mismatch": "supplemental_dense_vector_identity_or_lineage_invalid",
+      "owner_selected_target_absent": "supplemental_dense_owner_selected_target_absent",
+      "historical_or_existing_target_collision": "supplemental_dense_historical_or_existing_target_collision",
+      "embedding_dimension_mismatch": "supplemental_dense_embedding_dimension_mismatch",
+      "partial_insert_acknowledgement": "supplemental_dense_partial_insert_acknowledgement",
+      "raw_score_federation": "supplemental_dense_raw_score_federation_forbidden"
+    }
+  },
+  "federation_contract": {
+    "members": [
+      "historical_662908_vector_collection",
+      "supplemental_current_410_vector_collection"
+    ],
+    "merge_mode": "rank_only_rrf",
+    "rrf_k": 60,
+    "raw_score_cross_collection_comparison_allowed": false,
+    "dedupe_key": "canonical_evidence_identity",
+    "tie_breaker": "canonical_evidence_identity_ascending"
+  },
+  "execution_gate": {
+    "zero_call_contract_passed": true,
+    "real_embedding_build_admitted": false,
+    "reason": "A separate fresh execution authority is required before one immutable 410-vector BGE/Milvus build."
+  },
+  "observed_real_calls": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "real_embedding": 0,
+    "milvus_read": 0,
+    "milvus_write": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "preserved_boundaries": {
+    "candidate_promoted_to_evidence": false,
+    "semantic_ranking_quality_improved": false,
+    "current_quarter_exact_sql": "0_of_6_open",
+    "external_official_required_slot_coverage": "4_of_12_open_release_blocker",
+    "downstream_utilization_proven": false,
+    "product_acceptance": false,
+    "release": "not_qualified"
+  },
+  "known_boundary": "This policy proves the immutable supplemental dense build contract with fake embedding and fake index writes only. It does not load BGE, write Milvus, improve semantic ranking, promote Evidence, close the current-quarter SQL gap, close external 4/12 coverage, accept the product or qualify release.",
+  "implementation": {
+    "module_ref": "src/sec_agent/s1_internal_supplemental_dense_index.py",
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s1_internal_supplemental_dense_index_policy_v1_0.json",
+    "materializer_ref": "scripts/releases/materialize_fin_ia_0_1_3_s1_internal_supplemental_dense_index_zero_call_proof_v1_0.py"
+  },
+  "proof_digest": "289e775832d93002791da557341b0bd39f7ec231d112f4175bd3571fb4071940"
+}

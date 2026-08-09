@@ -1269,3 +1269,13 @@ successor 技术边界固定为：
 6. embedding、fusion、reranker 没有事实、身份、期间、数值或 Evidence 晋升权。
 
 该工作仍属 S1。current-quarter exact mart、external Provider coverage 与 S3 downstream utilization 不得被合并为 ranking repair。
+
+### 20.36 Supplemental dense 零调用编译合同与原子发布边界
+
+`fin_0_1_3.S1.internal_supplemental_dense_index:v1` 将两份 validated supplemental manifests 编译为 410 条 `narrative_chunk` specs。`vector_id` 必须逐字等于 source `evidence_id`；每条同时保留 ticker、fiscal year、form、source tier、URL、publication date、accession、capture digest、manifest ref/digest、source text digest 与 vector-text digest。embedding view 只增加 typed header 并规范空白，不做模型摘要，也不将 segment 晋升为 claim 或 Evidence。
+
+编译顺序是硬合同：先验证 manifest private inventory 和全部 410 source rows，生成 vector-spec terminal digest；之后才读取 Owner qrels、acceptance 和旧库 diagnostic。这样 5 个 missing selected identities 只能用于 post-build presence gate，不能决定要嵌入哪些行。
+
+successor 使用独立 Git-ignored Milvus Lite DB 与独立 collection；旧 662,908-vector runtime 只读。构建器必须先校验全部规格，再按固定 batch 生成 1024 维向量；每批 insert acknowledgement 必须精确相等，terminal entity count 必须为 410，之后才能发布 runtime manifest。失败路径 abort，禁止发布部分结果。历史与 supplemental 搜索结果按 collection 内 rank 做 RRF，使用 canonical evidence identity 去重；raw score 跨库比较 fail closed。
+
+当前 fake proof 为 13 batches／410 vectors，8 类 mutation 全部拒绝，真实 embedding 和 Milvus read/write 均为 0。它只给 clean incremental-build authority 提供工程依据；真实构建、10/10 metadata presence 和 same-matrix ranking 必须保持三个独立终态。

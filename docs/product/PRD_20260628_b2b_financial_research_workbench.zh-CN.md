@@ -2181,3 +2181,16 @@ FIN 的内源检索不能用单一“RAG 通过”概括。产品验收必须至
 6. 内源成功不能关闭 broad external search 的 `4/12` release blocker，也不能替代 current 研报内容验收。
 
 用户可见的最终验收仍以 Evidence→Claim→Workpaper→Report 的事实可追溯性、机制分析、反方证据、what-would-change 和人工可用性为准；离线 retrieval 指标只是必要条件，不是产品成果。
+
+### 16.6 Supplemental dense 构建的全量语料与防泄漏要求（2026-08-09）
+
+索引新鲜度修复不得只把评测选中的目标片段塞入向量库。每次 supplemental build 必须先由 capture-backed source manifest 机械确定完整语料边界，再生成全部 vector specs；qrels、Gold 或人工选择只能在 vector-spec terminal digest 之后加载，用于验收而不能影响入库集合。
+
+本轮可执行边界为 4 份官方文件、410 条 source-derived segments。零调用证明显示 410/410 身份唯一，5 个旧库缺失目标自然包含于全量语料；构建成功后可使 federated physical presence 从 `5/10` 达到 `10/10`。产品仍必须区分：
+
+1. `vector spec pass`：身份、来源、期间、URL、accession、capture digest 和 candidate-only 状态完整；
+2. `physical presence pass`：目标真实存在于历史＋successor collection；
+3. `ranking pass`：冻结查询下进入 top-k，且没有跨案／期间污染；
+4. `research utilization pass`：进入 Evidence、Claim、Workpaper 和报告并形成有质量的分析。
+
+前一层不能冒充后一层。跨 collection 只允许基于 rank 的确定性联邦与 canonical evidence identity 去重，不允许直接比较不同 collection 的 raw similarity score。任何 partial insert、维度错误、重复身份、lineage 缺失或目标路径碰撞都必须在发布 runtime manifest 前失败；旧 collection 永远只读。

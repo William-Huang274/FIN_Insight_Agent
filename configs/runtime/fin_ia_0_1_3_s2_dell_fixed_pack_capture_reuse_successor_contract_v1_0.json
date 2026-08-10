@@ -1,0 +1,243 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_fixed_pack_capture_reuse_successor_contract_v1_0",
+  "contract_ref": "fin_0_1_3.S2.dell_fixed_pack_capture_reuse_successor:v1",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "case_key": "DELL",
+  "recorded_at": "2026-08-10",
+  "purpose": "Resume the failed DELL fixed-pack canary without rerunning five usable nodes, while adding model-visible presentation aliases and deterministic formula traces.",
+  "predecessor": {
+    "public_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_fixed_pack_dell_canary_result_v1_0.json",
+      "sha256": "980ba195ec0bbf4a2c998492e27f750bf6db04b894181f67731ba10bf6049ebc",
+      "result_digest": "10223068d27217a26ba831acb7d48df6fd95f509027297e8af4fff31756d7aa2"
+    },
+    "private_terminal": {
+      "ref": "data/workbench_private/fin_0_1_3_s2_fixed_pack_research/live/attempts/fin013_s2_fixed_pack_dell_524560d1ab0599b829bf/terminal_with_receipt.json",
+      "sha256": "f0be189122e69c1f2c4e2ba11d50a452724fe6f98ca744a08b51d44545f01f9e",
+      "terminal_digest": "2ae7ebf162a1b600a3bc2818982ed8b6968f281a0ca914ce5250aa4bad47ab58"
+    },
+    "run_id": "fin013_s2_fixed_pack_dell_524560d1ab0599b829bf",
+    "attempt_id": "fin013_s2_fixed_pack_dell_524560d1ab0599b829bf::attempt_1",
+    "case_input_digest": "f1f1945e5808001bea377fc7903b8b751a1f9c02cb1d6b7dae53e67e4853496d",
+    "source_pack_digest": "554e7db12bcb98f0a03f420f9d4b7cbaf7422a87bdef6f83699068d0b863f181",
+    "usable_node_order": [
+      "direct_baseline",
+      "research_lead",
+      "specialist::demand_authenticity_and_sustainability",
+      "specialist::product_and_technology_position",
+      "specialist::supply_capacity_and_competition"
+    ],
+    "failed_node": "specialist::financial_transmission_profit_and_cash",
+    "expected_provider_attempts": 6,
+    "expected_usable_nodes": 5
+  },
+  "successor_node_order": [
+    "specialist::financial_transmission_profit_and_cash",
+    "specialist::capital_allocation_valuation_and_price_in",
+    "specialist::counter_thesis_risk_and_what_would_change",
+    "cross_unit_synthesis",
+    "draft_writer",
+    "red_team_critic",
+    "final_writer",
+    "verifier"
+  ],
+  "numeric_authority": {
+    "source_numeric_facts": [
+      {
+        "numeric_ref": "NUM:DELL:FY2027_Q1:TOTAL_REVENUE",
+        "semantic_name_zh": "Dell Q1 FY2027 总收入",
+        "exact_value": "43842",
+        "unit": "USD_million",
+        "period_id": "DELL_FY2027_Q1",
+        "evidence_aliases": ["E002"],
+        "source_material_alias": "M013",
+        "source_token": "43,842"
+      },
+      {
+        "numeric_ref": "NUM:DELL:FY2027_Q1:AI_SERVER_REVENUE",
+        "semantic_name_zh": "Dell Q1 FY2027 AI-optimized server revenue",
+        "exact_value": "16132",
+        "unit": "USD_million",
+        "period_id": "DELL_FY2027_Q1",
+        "evidence_aliases": ["E002"],
+        "source_material_alias": "M013",
+        "source_token": "16,132"
+      },
+      {
+        "numeric_ref": "NUM:DELL:FY2027_Q1:ISG_REVENUE",
+        "semantic_name_zh": "Dell Q1 FY2027 ISG revenue",
+        "exact_value": "29009",
+        "unit": "USD_million",
+        "period_id": "DELL_FY2027_Q1",
+        "evidence_aliases": ["E002"],
+        "source_material_alias": "M013",
+        "source_token": "29,009"
+      },
+      {
+        "numeric_ref": "NUM:DELL:FY2027_Q1:ISG_OPERATING_INCOME",
+        "semantic_name_zh": "Dell Q1 FY2027 ISG operating income",
+        "exact_value": "3055",
+        "unit": "USD_million",
+        "period_id": "DELL_FY2027_Q1",
+        "evidence_aliases": ["E002"],
+        "source_material_alias": "M013",
+        "source_token": "3,055"
+      },
+      {
+        "numeric_ref": "NUM:DELL:FY2027_Q1:OPERATING_CASH_FLOW",
+        "semantic_name_zh": "Dell Q1 FY2027 operating cash flow",
+        "exact_value": "4081",
+        "unit": "USD_million",
+        "period_id": "DELL_FY2027_Q1",
+        "evidence_aliases": ["E004", "E005"],
+        "source_material_alias": "M005",
+        "source_token": "4,081"
+      },
+      {
+        "numeric_ref": "NUM:DELL:FY2027_Q1:CAPEX_AND_CAPITALIZED_SOFTWARE",
+        "semantic_name_zh": "Dell Q1 FY2027 capex and capitalized software costs",
+        "exact_value": "-963",
+        "unit": "USD_million",
+        "period_id": "DELL_FY2027_Q1",
+        "evidence_aliases": ["E004", "E005"],
+        "source_material_alias": "M005",
+        "source_token": "(963)"
+      },
+      {
+        "numeric_ref": "NUM:DELL:FY2027_Q1:FREE_CASH_FLOW",
+        "semantic_name_zh": "Dell Q1 FY2027 free cash flow",
+        "exact_value": "3118",
+        "unit": "USD_million",
+        "period_id": "DELL_FY2027_Q1",
+        "evidence_aliases": ["E005"],
+        "source_material_alias": "M005",
+        "source_token": "3,118"
+      },
+      {
+        "numeric_ref": "NUM:DELL:FY2027_Q1:ADJUSTED_FREE_CASH_FLOW",
+        "semantic_name_zh": "Dell Q1 FY2027 adjusted free cash flow",
+        "exact_value": "3165",
+        "unit": "USD_million",
+        "period_id": "DELL_FY2027_Q1",
+        "evidence_aliases": ["E002", "E005"],
+        "source_material_alias": "M005",
+        "source_token": "3,165"
+      },
+      {
+        "numeric_ref": "NUM:DELL:FY2027_Q1:NET_INCOME",
+        "semantic_name_zh": "Dell Q1 FY2027 net income",
+        "exact_value": "3438",
+        "unit": "USD_million",
+        "period_id": "DELL_FY2027_Q1",
+        "evidence_aliases": ["E002", "E004"],
+        "source_material_alias": "M013",
+        "source_token": "3,438"
+      },
+      {
+        "numeric_ref": "NUM:DELL:FY2027_Q1:AI_ORDERS",
+        "semantic_name_zh": "Dell Q1 FY2027 AI orders booked",
+        "exact_value": "24.4",
+        "unit": "USD_billion",
+        "period_id": "DELL_FY2027_Q1",
+        "evidence_aliases": ["E001"],
+        "source_material_alias": "M010",
+        "source_token": "$24.4 billion"
+      },
+      {
+        "numeric_ref": "NUM:DELL:FY2027_GUIDANCE:AI_SERVER_REVENUE",
+        "semantic_name_zh": "Dell FY2027 AI server revenue guidance",
+        "exact_value": "60",
+        "unit": "USD_billion",
+        "period_id": "DELL_FY2027_GUIDANCE",
+        "evidence_aliases": ["E001", "E002"],
+        "source_material_alias": "M013",
+        "source_token": "$60 billion"
+      },
+      {
+        "numeric_ref": "NUM:DELL:FY2027_GUIDANCE:TOTAL_REVENUE_MIDPOINT",
+        "semantic_name_zh": "Dell FY2027 total revenue guidance midpoint",
+        "exact_value": "167",
+        "unit": "USD_billion",
+        "period_id": "DELL_FY2027_GUIDANCE",
+        "evidence_aliases": ["E001", "E002"],
+        "source_material_alias": "M010",
+        "source_token": "$167 billion"
+      },
+      {
+        "numeric_ref": "NUM:DELL:FY2027_Q1:SHAREHOLDER_RETURNS",
+        "semantic_name_zh": "Dell Q1 FY2027 shareholder returns",
+        "exact_value": "2.1",
+        "unit": "USD_billion",
+        "period_id": "DELL_FY2027_Q1",
+        "evidence_aliases": ["E001", "E002"],
+        "source_material_alias": "M013",
+        "source_token": "$2.1 billion"
+      }
+    ],
+    "formula_programs": [
+      {
+        "formula_ref": "FORM:DELL:FY2027_Q1:AI_SERVER_REVENUE_SHARE_OF_ISG",
+        "semantic_name_zh": "AI server revenue as share of ISG revenue",
+        "operation": "ratio_percent",
+        "input_numeric_refs": [
+          "NUM:DELL:FY2027_Q1:AI_SERVER_REVENUE",
+          "NUM:DELL:FY2027_Q1:ISG_REVENUE"
+        ],
+        "required_same_period": true,
+        "display_decimals": 1,
+        "expected_display_value": "55.6"
+      },
+      {
+        "formula_ref": "FORM:DELL:FY2027_Q1:ISG_OPERATING_MARGIN",
+        "semantic_name_zh": "ISG operating margin",
+        "operation": "ratio_percent",
+        "input_numeric_refs": [
+          "NUM:DELL:FY2027_Q1:ISG_OPERATING_INCOME",
+          "NUM:DELL:FY2027_Q1:ISG_REVENUE"
+        ],
+        "required_same_period": true,
+        "display_decimals": 1,
+        "expected_display_value": "10.5"
+      },
+      {
+        "formula_ref": "FORM:DELL:FY2027_Q1:FCF_TO_OPERATING_CASH_FLOW",
+        "semantic_name_zh": "free cash flow as share of operating cash flow",
+        "operation": "ratio_percent",
+        "input_numeric_refs": [
+          "NUM:DELL:FY2027_Q1:FREE_CASH_FLOW",
+          "NUM:DELL:FY2027_Q1:OPERATING_CASH_FLOW"
+        ],
+        "required_same_period": true,
+        "display_decimals": 1,
+        "expected_display_value": "76.4"
+      },
+      {
+        "formula_ref": "FORM:DELL:FY2027_Q1:ADJUSTED_FCF_TO_OPERATING_CASH_FLOW",
+        "semantic_name_zh": "adjusted free cash flow as share of operating cash flow",
+        "operation": "ratio_percent",
+        "input_numeric_refs": [
+          "NUM:DELL:FY2027_Q1:ADJUSTED_FREE_CASH_FLOW",
+          "NUM:DELL:FY2027_Q1:OPERATING_CASH_FLOW"
+        ],
+        "required_same_period": true,
+        "display_decimals": 1,
+        "expected_display_value": "77.6"
+      }
+    ]
+  },
+  "execution_boundary": {
+    "imported_usable_nodes": 5,
+    "predecessor_provider_attempts": 6,
+    "successor_provider_calls": 8,
+    "combined_provider_attempt_ceiling": 14,
+    "logical_node_count": 13,
+    "retry_count": 0,
+    "fallback_count": 0,
+    "semantic_retry": false,
+    "business_artifact_promotion": false,
+    "paired_baseline_same_input_proven": false,
+    "paired_baseline_required_later": true
+  },
+  "known_boundary": "The successor can complete the Agent chain and prove lineage, but the imported direct baseline used the predecessor input without numeric authority. It is diagnostic only and cannot support a strict same-input paired acceptance for the augmented successor input."
+}

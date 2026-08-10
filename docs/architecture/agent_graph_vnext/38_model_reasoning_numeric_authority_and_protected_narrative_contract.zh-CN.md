@@ -233,3 +233,25 @@ Provider/model/version 的差异进入 `ModelCapabilityProfile`，不得成为�
 4. 新模型先跑 capability matrix，再决定哪些 family 可以提升；不得直接复制 DeepSeek workaround，也不得先跑 full-chain 才发现已知能力缺口。
 5. Experiment B 只在 identity、numeric ref、evidence role、closure、threshold 与 narrative 六个前置 family 达到各自门槛后启动。
 6. 正式通过同时要求 reliability floor 与 content-quality floor；任一不足都不能用另一项补偿。
+
+## 13. PresentationAlias、NumericProgramTrace 与 bounded successor
+
+### 13.1 数字权威不是“禁止模型写数字”
+
+模型仍可读、比较、解释并引用精确数字。Runtime 为每个 source NumericFact 编译三类可选表面：
+
+- `NUM:*`：来源原值及 identity／period／unit／source locator；
+- `PRES:*`：只允许 `multiply/divide/quantize/format` 的等价展示，保存 operand、rounding mode、precision 和 rendered surface；
+- `FORM:*`：预注册公式，保存 ordered inputs、同实体/期间/口径门禁、运算与结果表面。
+
+最终 point 中出现 material number 时，必须同时给出 Evidence alias 和覆盖该文本表面的 `NUM/PRES/FORM` ref。Verifier 按 ref 的允许表面匹配，不用模糊字符串或“数值看起来合理”放行。未知值、错期间、跨单位公式、未授权舍入和自由 arithmetic 仍为 L1。普通定性文字不受本地模板控制。
+
+### 13.2 跨 Attempt 复用的最小安全合同
+
+Provider transport failure 后，bounded successor 只能复用已成功且内容、capture、request、terminal lineage 均 digest-bound 的节点输出。旧失败 capture 只作审计证据，不能进入 prior outputs。successor admission 必须绑定 predecessor Run/Attempt/terminal/import bundle、新 model-visible digest、剩余 node order、代码 SHA 和累计容量；新 runner 从逻辑失败节点继续，但实际 provider call index 从 1 重新计数，并同时保留 logical node index。这样用户能区分“本次新增 8 次调用”和“整个案例累计 14 次 provider attempts／13 个逻辑节点”。
+
+successor 不修改旧 terminal，不消费旧 admission，不自动重试，不拥有业务晋升权。任何新 failure 都形成新的 capture-first terminal，并立即停止。
+
+### 13.3 paired 公平性
+
+只要 numeric authority、Prompt、schema 或其他模型可见输入发生变化，旧 baseline 就不能与新 Agent candidate 构成 strict same-input pair。可以继续完成 bounded successor 来评估恢复链和内容，但 paired assessment 必须标记 `eligible=false`；后续若独立审计表明 candidate 值得比较，才单独签发一次相同增强输入的 direct baseline。Evidence Pack 相同不等于 model-visible input 相同。

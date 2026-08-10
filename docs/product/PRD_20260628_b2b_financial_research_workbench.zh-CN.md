@@ -1574,6 +1574,19 @@ FIN 不采用“让模型自由改写所有数字”，也不采用“模型只�
 
 跨 TECH 实施合同见 `docs/architecture/agent_graph_vnext/38_model_reasoning_numeric_authority_and_protected_narrative_contract.zh-CN.md`。
 
+#### 7.9.1 数字展示别名、公式引用与跨 Attempt 续跑（2026-08-10 追加）
+
+模型在自然中文研报中把 `USD million/billion` 换算成“亿美元”，或计算收入占比、利润率、现金转化率，不应一律视为幻觉，也不能只凭数值看似合理就放行。Harness 必须把两类权威分开：
+
+- `PresentationAlias` 只执行 source-bound 的等价单位、尺度和格式转换，保留原始 NumericFact、实体、期间、单位、操作数和舍入规则；
+- `NumericProgramTrace` 只执行预注册公式，逐项绑定输入 Numeric refs、同期间/同口径约束、运算符、精度、结果和可展示表面；
+- 模型可以在判断中引用 source Evidence、presentation ref 和 formula ref，但不得自由生成未绑定 material arithmetic；Verifier 必须检查“文本数值—ref—程序结果”一致；
+- 本地 renderer 只写入已获权表面，不替模型生成 thesis、机制或结论。
+
+exact-once Attempt 在 Provider transport failure 后可以有新的 bounded successor，但必须满足：旧 Attempt 和失败 capture 永不改写；只导入逐字节/digest 验证过的 usable outputs；失败节点不得冒充可用输出；新 admission 只授权剩余节点；旧＋新调用、token 和费用累计计入同一 case ceiling；新 Attempt 独立 terminal，禁止把它称为自动 retry。
+
+若 successor 改变了模型可见合同（例如新增数字权威），旧 direct baseline 与新 Agent chain 即使使用同一 Evidence Pack，也不是 strict same-input pair。此类运行可以证明恢复链路和候选质量，但正式 paired gain 必须另用相同增强输入生成基线；不得为了节省一次调用而把旧基线冒充公平对照。
+
 ### 7.10 Provider-neutral Harness、模型能力适配与渐进自主权（2026-08-07 追加）
 
 FIN 不得把每次单一 Provider/模型失败都固化成核心 Harness 分支。产品必须把以下三层分开：

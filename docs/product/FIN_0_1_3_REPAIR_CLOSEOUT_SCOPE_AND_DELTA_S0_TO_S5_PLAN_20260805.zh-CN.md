@@ -304,6 +304,20 @@ DELL Supervisor R2 说明旧计划还缺一条统一原则：模型需要看到�
 
 当前状态：`S2-06A/B/C` 已完成文档、Runtime 消费和独立 deterministic proof，RC-P36-148 的项目内 guard 可记 engineering repaired；`S2-06D` 证明 DeepSeek 自然 evidence-role/closure 未通过，`S2-06E` 已阻断 formal DELL proof。只有后续 successor atom/narrative paid artifact 和 qualified-human 内容验收通过，才能说明这套混合权威同时达到可靠性与报告质量。
 
+#### 7A.5.1 2026-08-10 DELL fixed-pack transport successor 与数字表面闭环
+
+新的 DELL fixed-pack canary R1 在第 6 次 Provider 调用发生 `RemoteDisconnected`。前 5 个节点均有完整不可变 request/response capture；失败节点也有 capture，但没有可晋升输出。相邻请求大小近似，当前证据不足以认定容量故障或模型推理失败。direct baseline 的 11 个 numeric finding 又主要来自合法中文尺度转换和一项可复算比例缺少本地权威 trace。故本轮保持 S2，不重跑前 5 节点，也不创建新产品版本：
+
+| 子项 | 当前实现 | 通过含义 | 不得宣称 |
+| --- | --- | --- | --- |
+| `S2-fixed-pack-successor-A` | digest-bound 导入 5 个 usable outputs；失败 capture 永不导入；新 admission 只含节点 6–13 | 跨 Attempt lineage、exact-once 和 8-call ceiling 可验证 | 旧 Attempt 变成功、自动 retry |
+| `S2-fixed-pack-successor-B` | 13 个 source numeric facts、中文/英文 presentation aliases、4 个 deterministic formula traces | 合法单位转换和公式可以被引用、复算和逐项验证 | Harness 代写分析、放宽未知数字 |
+| `S2-fixed-pack-successor-C` | predecessor 6 attempts＋successor 最多 8 attempts 统一计入 14-attempt/累计 token-cost ceiling | 恢复路径不隐去已花成本 | 把 13 logical nodes 误报为 13 provider attempts |
+| `S2-fixed-pack-successor-D` | 两个断网、去凭据 fresh worker 读取同一 immutable captures 并完成 8-node fake chain | 确定性恢复链工程通过 | DeepSeek 内容质量或产品验收通过 |
+| `S2-fixed-pack-successor-E` | clean proof 后最多一次 DELL successor exact-live，0 retry/fallback/promotion | 暴露完整 raw candidate 并审计 | 自动启动其余五案、S3/S4/S5 |
+
+由于新增 numeric authority 改变了 Agent 的 model-visible digest，R1 中已成功的 direct baseline 只能作为诊断参考，不能成为 strict same-input paired baseline。successor 成功后先做独立 L1/L2 与八维内容审计；若值得继续，另行授权一次“相同增强输入”的 direct baseline，之后才能做正式 paired gain。该披露是公平性约束，不是追加 8-node live 的隐含第 9 次调用。
+
 ### 7A.6 2026-08-07 Provider-neutral Harness 与 DeepSeek 适配重排
 
 S2-06D 证明当前问题不能继续按“发现一个 DeepSeek 输出错误，就给共享 Harness 加一个字段或分支”处理。FIN 冻结稳定金融控制内核；模型差异进入 `ModelCapabilityProfile`，权限通过 `AutonomyGrant` 升降，DeepSeek workaround 必须可识别、可复测、可退役。

@@ -226,7 +226,7 @@ def validate_case_admission(
 
 
 def _compact_case_input(case_input: Mapping[str, Any]) -> dict[str, Any]:
-    return {
+    value = {
         "case_key": case_input["case_key"],
         "issuer": deepcopy(case_input["issuer"]),
         "research_as_of": case_input["research_as_of"],
@@ -239,14 +239,32 @@ def _compact_case_input(case_input: Mapping[str, Any]) -> dict[str, Any]:
         "model_rules": deepcopy(case_input["model_rules"]),
         "model_visible_digest": case_input["model_visible_digest"],
     }
+    for key in (
+        "base_model_visible_digest",
+        "successor_contract_ref",
+        "numeric_authority",
+        "successor_boundary",
+    ):
+        if key in case_input:
+            value[key] = deepcopy(case_input[key])
+    return value
 
 
 def _common_system(case_input: Mapping[str, Any]) -> str:
+    numeric_rule = ""
+    if case_input.get("numeric_authority"):
+        numeric_rule = (
+            "任何 material number 都必须在同一判断的 numeric_refs 中引用当前 Numeric authority："
+            "原始披露数字引用 NUM ref，换算展示引用 PRES ref，派生比例引用 FORM ref。"
+            "前序节点是只读历史上下文，其数字不得原样复制而不重新绑定当前 ref。"
+        )
     return (
         "你是受证据边界约束的机构级金融研究员。只能使用用户消息中的冻结 Evidence Pack，"
         "不得调用工具、联网或补入外部知识。精确数字可以读取、分析和引用，但必须绑定同一条"
         "Evidence alias；不得改变主体、期间、币种、单位或关系方向。明确区分事实、有限推断、"
-        "假设与证据缺口。输出有效 JSON 对象，不要 Markdown 代码围栏。研究主体为 "
+        "假设与证据缺口。输出有效 JSON 对象，不要 Markdown 代码围栏。"
+        + numeric_rule
+        + "研究主体为 "
         + str(case_input["case_key"])
         + "。"
     )
@@ -256,7 +274,8 @@ def _report_schema_instruction() -> str:
     return (
         "返回 {\"sections\":[{\"section_id\":字符串,\"points\":[{\"text\":中文分析,"
         "\"epistemic_status\":\"fact|bounded_inference|hypothesis|gap\","
-        "\"evidence_aliases\":[\"E001\"],\"gap_aliases\":[\"G001\"]}]}],"
+        "\"evidence_aliases\":[\"E001\"],\"gap_aliases\":[\"G001\"],"
+        "\"numeric_refs\":[\"NUM/PRES/FORM ref\"]}]}],"
         "\"overall_confidence\":\"high|medium|low\",\"limitations\":[字符串]}。"
         "每个实质判断都必须列 evidence_aliases；缺证据时写 gap，不得补造。"
     )
@@ -293,6 +312,7 @@ def build_node_request(
             "{\"family\":字符串,\"findings\":[{\"text\":中文机制分析,"
             "\"epistemic_status\":\"fact|bounded_inference|hypothesis|gap\","
             "\"evidence_aliases\":[字符串],\"gap_aliases\":[字符串],"
+            "\"numeric_refs\":[字符串],"
             "\"counterevidence\":字符串,\"confidence\":\"high|medium|low\"}],"
             "\"unresolved\":[字符串]}。不要写通用模板话。"
         )
@@ -307,7 +327,8 @@ def build_node_request(
             "综合六个研究家族，解释需求、产品、供给、竞争、利润、现金、估值和反证之间"
             "的经济机制，不要简单拼接。返回 {\"cross_mechanism_findings\":[{\"text\":字符串,"
             "\"epistemic_status\":字符串,\"evidence_aliases\":[字符串],"
-            "\"gap_aliases\":[字符串]}],\"thesis\":字符串,\"antithesis\":字符串,"
+            "\"gap_aliases\":[字符串],\"numeric_refs\":[字符串]}],"
+            "\"thesis\":字符串,\"antithesis\":字符串,"
             "\"unresolved_conflicts\":[字符串]}。"
         )
         context = {
@@ -335,7 +356,8 @@ def build_node_request(
         task = (
             "以反方和事实审计员身份批评初稿。返回 {\"issues\":[{\"severity\":"
             "\"L1|L2|L3|L4\",\"text\":字符串,\"affected_section\":字符串,"
-            "\"evidence_aliases\":[字符串]}],\"missing_counter_thesis\":[字符串],"
+            "\"evidence_aliases\":[字符串],\"numeric_refs\":[字符串]}],"
+            "\"missing_counter_thesis\":[字符串],"
             "\"rewrite_instructions\":[字符串]}。不得声称自己拥有最终验证权。"
         )
         context = {
@@ -358,7 +380,8 @@ def build_node_request(
         task = (
             "只审查最终报告与冻结输入是否一致。返回 {\"claim_checks\":[{\"text\":"
             "字符串,\"status\":\"supported|bounded|unsupported|contradicted\","
-            "\"evidence_aliases\":[字符串],\"reason\":字符串}],"
+            "\"evidence_aliases\":[字符串],\"numeric_refs\":[字符串],"
+            "\"reason\":字符串}],"
             "\"identity_period_unit_findings\":[字符串],\"unknown_aliases\":[字符串],"
             "\"verdict\":\"pass|pass_with_findings|fail\"}。这是建议，不是晋升权威。"
         )
@@ -435,7 +458,7 @@ def _atomic_json(path: Path, value: Mapping[str, Any]) -> None:
     temp.replace(path)
 
 
-def _perform_call(
+def perform_node_call(
     *,
     call_index: int,
     node_key: str,
@@ -443,6 +466,7 @@ def _perform_call(
     provider_call: ProviderCall,
     captures_root: Path,
     observed_at: str,
+    logical_node_index: int | None = None,
 ) -> tuple[
     dict[str, Any],
     dict[str, Any] | str,
@@ -478,6 +502,8 @@ def _perform_call(
         "provider_response": deepcopy(response),
         "observed_at": observed_at,
     }
+    if logical_node_index is not None:
+        capture_body["logical_node_index"] = logical_node_index
     capture = {**capture_body, "capture_digest": canonical_digest(capture_body)}
     _atomic_json(call_root / "capture.json", capture)
     status = str(response.get("status") or "")
@@ -515,6 +541,8 @@ def _perform_call(
         "output_tokens": int(response.get("output_tokens") or 0),
         "total_tokens": int(response.get("total_tokens") or 0),
     }
+    if logical_node_index is not None:
+        receipt["logical_node_index"] = logical_node_index
     return receipt, output, findings, fatal_code
 
 
@@ -533,6 +561,68 @@ def _collect_point_rows(value: Any) -> list[dict[str, Any]]:
 
 def _normalize_numeric(token: str) -> str:
     return token.strip().strip("()").replace(",", "").lstrip("+")
+
+
+def _numeric_reference_index(case_input: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    numeric = dict(case_input.get("numeric_authority") or {})
+    index: dict[str, dict[str, Any]] = {}
+    for fact in numeric.get("source_numeric_facts") or ():
+        row = dict(fact)
+        source_tokens = [
+            _normalize_numeric(value)
+            for value in _NUMERIC.findall(str(row.get("source_token") or ""))
+        ]
+        index[str(row.get("numeric_ref") or "")] = {
+            "ref_type": "source_numeric_fact",
+            "numeric_tokens": source_tokens,
+            "evidence_aliases": list(row.get("evidence_aliases") or ()),
+        }
+        for surface in row.get("display_surfaces") or ():
+            surface_row = dict(surface)
+            index[str(surface_row.get("presentation_ref") or "")] = {
+                "ref_type": "presentation_alias",
+                "numeric_tokens": [
+                    _normalize_numeric(str(surface_row.get("numeric_token") or ""))
+                ],
+                "evidence_aliases": list(row.get("evidence_aliases") or ()),
+            }
+    for formula in numeric.get("formula_traces") or ():
+        row = dict(formula)
+        index[str(row.get("formula_ref") or "")] = {
+            "ref_type": "deterministic_formula",
+            "numeric_tokens": [
+                _normalize_numeric(str(surface.get("numeric_token") or ""))
+                for surface in row.get("display_surfaces") or ()
+            ],
+            "evidence_aliases": list(row.get("evidence_aliases") or ()),
+        }
+    return {key: value for key, value in index.items() if key}
+
+
+def _material_numeric_tokens(text: str) -> list[str]:
+    values: list[str] = []
+    currency_markers = ("$", "USD", "美元", "亿元", "亿", "million", "billion", "倍", "基点")
+    for match in _NUMERIC.finditer(text):
+        raw = match.group(0)
+        normalized = _normalize_numeric(raw)
+        plain = normalized.rstrip("%")
+        try:
+            number = float(plain)
+        except ValueError:
+            continue
+        if plain.isdigit() and len(plain) == 4 and 1900 <= int(plain) <= 2100:
+            continue
+        context = text[max(0, match.start() - 12) : match.end() + 12]
+        material = (
+            "%" in raw
+            or "," in raw
+            or "." in raw
+            or abs(number) >= 100
+            or any(marker in context for marker in currency_markers)
+        )
+        if material:
+            values.append(normalized)
+    return values
 
 
 def evaluate_final_output(
@@ -568,13 +658,19 @@ def evaluate_final_output(
         )
     known_aliases = set(evidence)
     known_gaps = {str(row["gap_alias"]) for row in case_input.get("residual_gaps") or ()}
+    numeric_index = _numeric_reference_index(case_input)
     cited_gaps: set[str] = set()
     for point in _collect_point_rows(final_output):
         text = str(point.get("text") or "")
         aliases = [str(value) for value in point.get("evidence_aliases") or ()]
         gap_aliases = [str(value) for value in point.get("gap_aliases") or ()]
+        numeric_refs = [str(value) for value in point.get("numeric_refs") or ()]
         cited_gaps.update(gap_aliases)
-        unknown = (set(aliases) - known_aliases) | (set(gap_aliases) - known_gaps)
+        unknown = (
+            (set(aliases) - known_aliases)
+            | (set(gap_aliases) - known_gaps)
+            | (set(numeric_refs) - set(numeric_index))
+        )
         if unknown:
             findings.append(
                 {
@@ -592,32 +688,73 @@ def evaluate_final_output(
                     "text": text[:240],
                 }
             )
-        allowed_surface = ""
-        for alias in aliases:
-            item = evidence.get(alias) or {}
-            allowed_surface += json.dumps(item, ensure_ascii=False)
-            material_alias = str(item.get("source_material_alias") or "")
-            if material_alias in materials:
-                allowed_surface += str(materials[material_alias].get("source_text") or "")
-        allowed_numeric = {
-            _normalize_numeric(token) for token in _NUMERIC.findall(allowed_surface)
-        }
-        unsupported = sorted(
-            {
-                token
-                for token in (_normalize_numeric(raw) for raw in _NUMERIC.findall(text))
-                if token and token not in allowed_numeric
+        if numeric_index:
+            authorized_numeric: set[str] = set()
+            for ref in numeric_refs:
+                authority = numeric_index.get(ref) or {}
+                authority_evidence = set(authority.get("evidence_aliases") or ())
+                if authority and authority_evidence and not (
+                    authority_evidence & set(aliases)
+                ):
+                    findings.append(
+                        {
+                            "level": "L2",
+                            "code": "final_report_numeric_ref_evidence_binding_missing",
+                            "numeric_ref": ref,
+                            "text": text[:240],
+                        }
+                    )
+                authorized_numeric.update(
+                    str(value)
+                    for value in authority.get("numeric_tokens") or ()
+                    if str(value)
+                )
+            material_tokens = set(_material_numeric_tokens(text))
+            unsupported = sorted(material_tokens - authorized_numeric)
+            if unsupported:
+                findings.append(
+                    {
+                        "level": "L1",
+                        "code": (
+                            "final_report_material_numeric_ref_missing"
+                            if not numeric_refs
+                            else "final_report_numeric_surface_not_authorized_by_refs"
+                        ),
+                        "numeric_tokens": unsupported,
+                        "text": text[:240],
+                    }
+                )
+        else:
+            allowed_surface = ""
+            for alias in aliases:
+                item = evidence.get(alias) or {}
+                allowed_surface += json.dumps(item, ensure_ascii=False)
+                material_alias = str(item.get("source_material_alias") or "")
+                if material_alias in materials:
+                    allowed_surface += str(
+                        materials[material_alias].get("source_text") or ""
+                    )
+            allowed_numeric = {
+                _normalize_numeric(token) for token in _NUMERIC.findall(allowed_surface)
             }
-        )
-        if unsupported:
-            findings.append(
+            unsupported = sorted(
                 {
-                    "level": "L1",
-                    "code": "final_report_numeric_surface_not_in_cited_evidence",
-                    "numeric_tokens": unsupported,
-                    "text": text[:240],
+                    token
+                    for token in (
+                        _normalize_numeric(raw) for raw in _NUMERIC.findall(text)
+                    )
+                    if token and token not in allowed_numeric
                 }
             )
+            if unsupported:
+                findings.append(
+                    {
+                        "level": "L1",
+                        "code": "final_report_numeric_surface_not_in_cited_evidence",
+                        "numeric_tokens": unsupported,
+                        "text": text[:240],
+                    }
+                )
     if known_gaps and not cited_gaps:
         findings.append(
             {
@@ -694,7 +831,7 @@ def execute_case(
                 prior_outputs=outputs,
                 profile=profile,
             )
-            receipt, output, node_findings, fatal_code = _perform_call(
+            receipt, output, node_findings, fatal_code = perform_node_call(
                 call_index=call_index,
                 node_key=node_key,
                 request=request,
@@ -821,5 +958,6 @@ __all__ = [
     "evaluate_final_output",
     "execute_case",
     "issue_case_admission",
+    "perform_node_call",
     "validate_case_admission",
 ]

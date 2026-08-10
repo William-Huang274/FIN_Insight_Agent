@@ -12,6 +12,7 @@ from urllib.parse import urlsplit
 from sec_agent.canonical_runtime.models import canonical_digest
 from sec_agent.canonical_runtime.object_store import FileCanonicalObjectStore
 from sec_agent.official_source_attempt_program import (
+    CAPTURE_SCHEMA_SAFE_FAILURE_V1_1,
     CaptureFirstOfficialSourceClient,
     SourceResponse,
     SourceTransport,
@@ -229,21 +230,23 @@ def _extract_fragment(
     before: int,
     after: int,
     code: str,
+    max_anchor_span: int = 1600,
 ) -> str:
-    matches: list[re.Match[str]] = []
-    for pattern in required_patterns:
-        match = re.search(pattern, text, flags=re.IGNORECASE | re.DOTALL)
-        _require(match is not None, code)
-        matches.append(match)
-    start = max(0, min(match.start() for match in matches) - before)
-    end = min(len(text), max(match.end() for match in matches) + after)
+    anchor_start, anchor_end = _smallest_regex_window(
+        text,
+        required_patterns=required_patterns,
+        max_anchor_span=max_anchor_span,
+        missing_code=code,
+    )
+    start = max(0, anchor_start - before)
+    end = min(len(text), anchor_end + after)
     while start > 0 and text[start - 1] not in ".!?\n":
         start -= 1
-        if min(match.start() for match in matches) - start > before * 2:
+        if anchor_start - start > before * 2:
             break
     while end < len(text) and text[end - 1] not in ".!?\n":
         end += 1
-        if end - max(match.end() for match in matches) > after * 2:
+        if end - anchor_end > after * 2:
             break
     excerpt = re.sub(r"\s+", " ", text[start:end]).strip()
     _require(
@@ -251,6 +254,58 @@ def _extract_fragment(
         "dell_targeted_source_fragment_size_invalid",
     )
     return excerpt
+
+
+def _smallest_regex_window(
+    text: str,
+    *,
+    required_patterns: Sequence[str],
+    max_anchor_span: int,
+    missing_code: str,
+) -> tuple[int, int]:
+    """Return the smallest deterministic window containing every regex family.
+
+    Searching only the first occurrence of each phrase can join an unrelated
+    glossary or earlier discussion to the actual disclosure.  This selector
+    considers every occurrence while keeping the accepted span bounded.
+    """
+
+    _require(
+        bool(required_patterns) and 0 < max_anchor_span <= 4000,
+        "dell_targeted_source_fragment_window_policy_invalid",
+    )
+    occurrences: list[tuple[int, int, int]] = []
+    for pattern_index, pattern in enumerate(required_patterns):
+        matches = list(re.finditer(pattern, text, flags=re.IGNORECASE | re.DOTALL))
+        _require(bool(matches), missing_code)
+        occurrences.extend(
+            (match.start(), match.end(), pattern_index) for match in matches
+        )
+    occurrences.sort(key=lambda row: (row[0], row[1], row[2]))
+    counts: dict[int, int] = {}
+    left = 0
+    best: tuple[int, int, int] | None = None
+    for right, occurrence in enumerate(occurrences):
+        counts[occurrence[2]] = counts.get(occurrence[2], 0) + 1
+        while len(counts) == len(required_patterns):
+            window = occurrences[left : right + 1]
+            start = window[0][0]
+            end = max(row[1] for row in window)
+            candidate = (end - start, start, end)
+            if candidate[0] <= max_anchor_span and (
+                best is None or candidate < best
+            ):
+                best = candidate
+            removed = occurrences[left]
+            counts[removed[2]] -= 1
+            if counts[removed[2]] == 0:
+                del counts[removed[2]]
+            left += 1
+    _require(
+        best is not None,
+        "dell_targeted_source_fragment_anchor_span_invalid",
+    )
+    return best[1], best[2]
 
 
 def _slot_bindings(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -354,6 +409,7 @@ def _compile_local_supplements(
             required_patterns=[str(value) for value in spec["required_patterns"]],
             before=int(spec.get("excerpt_before") or 100),
             after=int(spec.get("excerpt_after") or 500),
+            max_anchor_span=int(spec.get("max_anchor_span") or 1600),
             code=(
                 "dell_targeted_source_local_anchor_missing:"
                 + str(spec["source_record_id"])
@@ -396,6 +452,13 @@ def _find_nasdaq_row(payload: Any, target_date: str) -> dict[str, Any] | None:
     return None
 
 
+def _valid_market_close(value: Any) -> bool:
+    """Validate a captured USD close without comparing it to a preloaded answer."""
+
+    token = str(value or "").strip()
+    return re.fullmatch(r"\$?(?:0|[1-9]\d{0,2}(?:,\d{3})*|[1-9]\d*)(?:\.\d+)?", token) is not None
+
+
 def _compile_external_route(
     *,
     route: Mapping[str, Any],
@@ -406,6 +469,8 @@ def _compile_external_route(
         "route_id": str(route["route_id"]),
         "status": str(attempt.get("status") or ""),
         "failure_code": str(attempt.get("failure_code") or ""),
+        "failure_phase": str(attempt.get("failure_phase") or ""),
+        "safe_cause_class": str(attempt.get("safe_cause_class") or ""),
         "request_capture": deepcopy(dict(attempt.get("request_capture") or {})),
         "response_capture": deepcopy(dict(attempt.get("response_capture") or {})),
         "fragments_expected": (
@@ -429,7 +494,7 @@ def _compile_external_route(
             return [], [], public_attempt
         market = dict(route["market_point"])
         row = _find_nasdaq_row(payload, str(market["provider_date_value"]))
-        if row is None or str(row.get("close") or "") != str(market["close_token"]):
+        if row is None or not _valid_market_close(row.get("close")):
             public_attempt["status"] = "anchor_failure"
             public_attempt["failure_code"] = "nasdaq_historical_target_row_missing"
             return [], [], public_attempt
@@ -467,6 +532,7 @@ def _compile_external_route(
                     ],
                     before=int(fragment.get("excerpt_before") or 120),
                     after=int(fragment.get("excerpt_after") or 500),
+                    max_anchor_span=int(fragment.get("max_anchor_span") or 1600),
                     code=(
                         "dell_targeted_source_external_anchor_missing:"
                         + str(fragment["target_id"])
@@ -738,6 +804,7 @@ def execute_dell_targeted_source_supplement(
         store=store,
         transport=transport,
         namespace=PRIVATE_NAMESPACE,
+        capture_schema=CAPTURE_SCHEMA_SAFE_FAILURE_V1_1,
     )
     local_records = _load_local_records(policy=policy, repo_root=root)
     local_materials, local_evidence = _compile_local_supplements(

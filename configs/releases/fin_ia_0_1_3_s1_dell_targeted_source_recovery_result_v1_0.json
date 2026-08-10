@@ -1,0 +1,171 @@
+{
+  "authority_decision": {
+    "blocking_gates": [
+      "market_point_in_time_executable_exact_date_request_unproven"
+    ],
+    "deepseek_or_report_comparison_authorized": false,
+    "new_source_authority_issued": false,
+    "status": "not_ready"
+  },
+  "case_key": "DELL",
+  "contract_ref": "fin_0_1_3.S1.dell_targeted_source_recovery:v1",
+  "historical_result_digest": "0c590dc1ca8c9be512b30100c94d9b63a5e0a2d0bfcf2b05355715d32534c73a",
+  "market_point_in_time_contract": {
+    "captured_close_must_be_parseable": true,
+    "exact_live_row_materialized": false,
+    "expected_close_value_bound": false,
+    "identity_fields_bound": [
+      "ticker",
+      "target_date",
+      "currency",
+      "source_lineage"
+    ],
+    "status": "answer_leakage_removed_but_route_not_yet_proven"
+  },
+  "observed_counts": {
+    "authority_blocking_gates": 1,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "retries": 0,
+    "route_families_qualified": 3,
+    "tsmc_fragments_recovered": 1
+  },
+  "policy_digest": "a6de5d5c33bd5c8377b535d732bff1cce07f22ef22817e975f9f13472668663d",
+  "recorded_at": "2026-08-10T15:45:00Z",
+  "research_as_of": "2026-08-06",
+  "result_digest": "5de25dedcc697b6fde80312e9ed6ad98907acf0e20848e9200f3a2a6025e5b65",
+  "route_qualification": [
+    {
+      "business_need": "Bind Dell management's Q1 FY27 demand, backlog, supply-securing and AI-server profitability statements from the issuer transcript.",
+      "equivalent_candidates": [
+        {
+          "content_coverage": "orders_revenue_and_guidance_partial_not_transcript_margin_equivalent",
+          "route_kind": "issuer_earnings_release",
+          "url": "https://investors.delltechnologies.com/news-releases/news-release-details/dell-technologies-delivers-first-quarter-fiscal-2027-financial"
+        },
+        {
+          "content_coverage": "official_document_discovery_only",
+          "route_kind": "issuer_quarterly_results_locator",
+          "url": "https://investors.delltechnologies.com/financial-information/quarterly-results"
+        }
+      ],
+      "live_capture_materialized": false,
+      "primary_candidate": {
+        "content_coverage": "full_candidate",
+        "official_locator": "https://investors.delltechnologies.com/events/event-details/dell-technologies-fiscal-year-2027-first-quarter-results",
+        "route_kind": "issuer_direct_transcript",
+        "url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759"
+      },
+      "qualification_status": "official_direct_document_and_locator_qualified_for_one_capture",
+      "route_family": "dell_issuer_transcript"
+    },
+    {
+      "business_need": "Bind Micron's Q3 FY26 DRAM/NAND tightness and HBM packaging capacity timing as bounded supplier read-through.",
+      "equivalent_candidates": [
+        {
+          "content_coverage": "supplier_outlook_candidate_requires_anchor_adjudication",
+          "route_kind": "issuer_prepared_remarks",
+          "url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe"
+        },
+        {
+          "content_coverage": "official_document_discovery_only",
+          "route_kind": "issuer_events_locator",
+          "url": "https://investors.micron.com/events-and-presentations"
+        }
+      ],
+      "live_capture_materialized": false,
+      "primary_candidate": {
+        "content_coverage": "full_candidate",
+        "official_locator": "https://investors.micron.com/events/event-details/microns-third-quarter-2026-financial-call",
+        "route_kind": "issuer_earnings_deck",
+        "url": "https://investors.micron.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356"
+      },
+      "qualification_status": "official_document_and_locator_qualified_for_one_capture",
+      "route_family": "micron_supplier_disclosure"
+    },
+    {
+      "business_need": "Acquire the DELL close for the exact research as-of date from captured source content without preloading the expected price.",
+      "live_capture_materialized": false,
+      "primary_candidate": {
+        "content_coverage": "historical_lookup_surface_discovered_exact_as_of_request_shape_unproven",
+        "route_kind": "issuer_ir_historical_price_widget_with_lseg_lineage",
+        "url": "https://delltechnologies.gcs-web.com/stock-information"
+      },
+      "qualification_status": "issuer_ir_lseg_widget_discovered_exact_date_capture_unproven",
+      "rejected_or_deferred_candidates": [
+        {
+          "reason": "prior generic transport failure and no successfully captured exact-date row",
+          "route_kind": "nasdaq_historical_json",
+          "url": "https://api.nasdaq.com/api/quote/DELL/historical"
+        },
+        {
+          "reason": "forbidden answer leakage; source content must provide the close",
+          "route_kind": "preloaded_expected_close"
+        }
+      ],
+      "route_family": "market_point_in_time"
+    }
+  ],
+  "safe_transport_failure_contract": {
+    "capture_schema": "fin_ia_0_1_3_official_source_capture_v1_1",
+    "credential_cookie_authorization_persisted": false,
+    "raw_exception_text_persisted": false,
+    "status": "zero_call_fault_injection_proven",
+    "typed_safe_cause_matrix": [
+      {
+        "failure_code": "official_source_transport_timeout",
+        "failure_phase": "connect_or_read",
+        "safe_cause_class": "timeout"
+      },
+      {
+        "failure_code": "official_source_dns_resolution_failed",
+        "failure_phase": "dns_resolution",
+        "safe_cause_class": "dns_resolution_failure"
+      },
+      {
+        "failure_code": "official_source_tls_handshake_failed",
+        "failure_phase": "tls_handshake",
+        "safe_cause_class": "tls_handshake_failure"
+      },
+      {
+        "failure_code": "official_source_connection_refused",
+        "failure_phase": "connect",
+        "safe_cause_class": "connection_refused"
+      },
+      {
+        "failure_code": "official_source_connection_terminated",
+        "failure_phase": "response_transport",
+        "safe_cause_class": "connection_terminated"
+      },
+      {
+        "failure_code": "official_source_transport_failed",
+        "failure_phase": "transport",
+        "safe_cause_class": "unknown_transport_failure"
+      }
+    ]
+  },
+  "schema_version": "fin_ia_0_1_3_s1_dell_targeted_source_recovery_result_v1_0",
+  "status": "zero_call_recovery_proof_passed_authority_not_ready",
+  "tsmc_capture_replay": {
+    "body_sha256": "ada32e7c243f0dcf34ff8d2eb9e65b866941e809a2bf54f6519481e867c78afc",
+    "capture_digest": "39805472768ede6729a8c4dd168e22d5653ec5eb7560c1c55f394787c891352d",
+    "character_ceiling_increased": false,
+    "configured_max_anchor_span": 1600,
+    "excerpt_chars": 912,
+    "excerpt_sha256": "5aabd75eba67b930f292a8fda82a26bc28f8023dd9c5ad2578344e2c24aa5d3e",
+    "fragment_character_ceiling": 4000,
+    "legacy_first_occurrence_anchor_span": 18170,
+    "parsed_text_chars": 65259,
+    "parsed_text_sha256": "a7b15d59b633ee85e0534a0ee6a526aeb0f07c62704a7d9f925cf1e73ed1fa74",
+    "parser_adapter": "official_source_pdf_text_v1",
+    "raw_source_text_publicly_materialized": false,
+    "required_pattern_occurrence_counts": {
+      "CoWoS": 4,
+      "enough capacity": 3,
+      "main supply": 1
+    },
+    "selected_coherent_anchor_span": 233,
+    "status": "captured_parsed_and_coherently_adjudicated"
+  }
+}

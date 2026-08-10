@@ -17,6 +17,7 @@ from sec_agent.s1_dell_targeted_source_supplement import (  # noqa: E402
     CONTRACT_REF,
     RUN_SCOPE,
     DellTargetedSourceSupplementError,
+    _extract_fragment,
     execute_dell_targeted_source_supplement,
     load_dell_targeted_source_policy,
     validate_dell_targeted_source_authority,
@@ -78,6 +79,7 @@ def _responses(
     policy: Mapping[str, Any],
     *,
     omit_dell_margin: bool = False,
+    market_close: str = "$437.65",
 ) -> dict[str, SourceResponse]:
     by_id = {row["route_id"]: row for row in policy["external_routes"]}
     dell = (
@@ -108,7 +110,7 @@ def _responses(
                 "rows": [
                     {
                         "date": "08/06/2026",
-                        "close": "$437.65",
+                        "close": market_close,
                         "volume": "6,094,432",
                         "open": "$450.55",
                         "high": "$455.8699",
@@ -253,6 +255,70 @@ def test_missing_required_issuer_fragment_retains_gap_and_blocks_model_live_gate
     gaps = {row["gap_id"]: row for row in pack["residual_gaps"]}
     assert "dell-gap-ai-system-margin" in gaps
     assert "dell-gap-valuation-basis" not in gaps
+
+
+def test_fragment_selector_uses_coherent_later_window_not_first_occurrences() -> None:
+    text = (
+        "Earlier mature-node discussion promised enough capacity. "
+        + ("unrelated material " * 300)
+        + "For advanced packaging, very large reticle size CoWoS lets us give "
+        "enough capacity to customers. Today the main supply remains large-sized CoWoS."
+    )
+    excerpt = _extract_fragment(
+        text,
+        required_patterns=["CoWoS", "main supply", "enough capacity"],
+        before=80,
+        after=120,
+        max_anchor_span=500,
+        code="fixture_anchor_missing",
+    )
+    assert "main supply remains" in excerpt
+    assert "Earlier mature-node" not in excerpt
+
+
+def test_fragment_selector_rejects_remote_anchor_join() -> None:
+    text = "CoWoS " + ("unrelated " * 500) + "main supply enough capacity"
+    try:
+        _extract_fragment(
+            text,
+            required_patterns=["CoWoS", "main supply", "enough capacity"],
+            before=50,
+            after=50,
+            max_anchor_span=400,
+            code="fixture_anchor_missing",
+        )
+    except DellTargetedSourceSupplementError as exc:
+        assert exc.code == "dell_targeted_source_fragment_anchor_span_invalid"
+    else:
+        raise AssertionError("remote statements must not be stitched together")
+
+
+def test_market_close_comes_from_capture_not_preloaded_policy_answer(
+    tmp_path: Path,
+) -> None:
+    policy = load_dell_targeted_source_policy(POLICY_PATH, repo_root=ROOT)
+    transport = FakeTransport(_responses(policy, market_close="$412.34"))
+    result = execute_dell_targeted_source_supplement(
+        policy=policy,
+        repo_root=ROOT,
+        runtime_root=tmp_path / "runtime-market",
+        transport=transport,
+        observed_at="2026-08-10T10:00:00Z",
+        execution_commit="fixture",
+    )
+    pack = _load_dell_pack(result, tmp_path / "runtime-market")
+    evidence = next(
+        row
+        for row in pack["evidence_items"]
+        if row["target_id"] == "NASDAQ::DELL::HISTORICAL::2026-08-06"
+    )
+    material = next(
+        row
+        for row in pack["source_materials"]
+        if row["material_ref"] == evidence["source_material_ref"]
+    )
+    assert '"close": "$412.34"' in material["source_text"]
+    assert '"close": "$437.65"' not in material["source_text"]
 
 
 def test_local_corpus_binding_mutation_fails_closed() -> None:

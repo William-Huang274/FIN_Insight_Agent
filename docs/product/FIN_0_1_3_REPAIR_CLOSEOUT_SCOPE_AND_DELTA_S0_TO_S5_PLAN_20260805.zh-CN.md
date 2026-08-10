@@ -807,3 +807,17 @@ DELL fixed-pack successor 已完成 13 个逻辑节点并形成有实质内容�
 这不是把已关闭的六案 broad-search live 重跑一遍，也不是为 DELL 手工拼一篇标准答案。Source successor 仍产出可复用 Evidence Pack；模型负责判断与叙事，Harness 只拥有来源、身份、期间、数值、公式、gap 和晋升边界。MU／NVDA、动态 Agentic Research、Workbench 与 S5 release 不因本次 DELL 比较自动解锁。
 
 > **2026-08-10 terminal disposition**：第 4、5 项未进入。Dell issuer 法说与 Nasdaq PIT 是完整报告输入的 hard gate；用只有本地 read-through 的 20-item Pack 跑 DeepSeek，会把“来源缺失”混进“模型分析能力”比较，结论无效。后续先零网络复用已保存 TSMC capture，把错误的单片三锚点改为同源多片／Evidence group；另行对 Dell／Micron／Nasdaq transport 做安全原因 envelope 与替代官方路线决策。不得仅把 4,000 字符上限调大，也不得自动重发 source authority。
+
+## 7U. DELL 定向补源根因勘误、零网络恢复与新 authority 停点（2026-08-10）
+
+7T 的“TSMC 应拆成同源多片”判断已被真实 capture replay 纠正。原文的 CoWoS 问答本身连贯；真正缺陷是 selector 分别取三个 pattern 的第一次出现，误拿前文成熟制程的 `enough capacity`。新 selector 枚举全部命中并选择最小覆盖窗口：旧跨度=`18,170`、新跨度=`233`、excerpt=`912`，4,000 字符上限未改变。RC-P36-173 按这一新证据关闭，不再实施错误的多片拼装。
+
+本轮同时完成：
+
+1. [x] official-source capture v1.1 安全失败 envelope：timeout／DNS／TLS／connection refused／connection terminated／unknown transport 分型，raw exception 和凭据不落盘；目标 DELL 路径已接入，其他 consumer 仍需后续迁移。
+2. [x] PIT parser 删除 `close_token` 比较；fixture 使用不同收盘值仍只按 capture 日期行通过，证明价格来自来源而非标准答案。
+3. [x] Dell Q1 FY27 transcript、event page、quarterly results locator 资格化；issuer release 只作订单／收入／指引的部分替代，不能冒充 transcript 的全部利润表述。
+4. [x] Micron Q3 FY26 deck、prepared remarks 与 events locator 资格化为一次捕获候选；仍未发生新的产品网络调用。
+5. [ ] DELL 2026-08-06 PIT 可执行路线：Dell IR/LSEG 页面存在 Historical Price Lookup，但项目网络读取超时／403，Q4 文档显示底层历史价格接口可能要求站点配置或 API key；精确日期请求及响应尚未资格化。
+
+因此 recovery result=`5de25ded...5e5b65`，状态为 `zero_call_recovery_proof_passed_authority_not_ready`；当前唯一 authority blocker 是 PIT 可执行精确日期请求，不再把 Dell transcript 的“尚未 live”错误地设为 authority 前置条件。下一步只能二选一：取得可审计的市场数据 API／站点公开请求合同后补齐 PIT adapter，或明确将 point-in-time 估值保留为 typed gap 并重新定义本轮报告比较范围。未经这项产品选择，不签发 source authority、不运行 enriched DeepSeek、不进入 S3/S4/S5。

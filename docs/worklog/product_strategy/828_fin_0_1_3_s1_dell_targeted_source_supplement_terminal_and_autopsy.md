@@ -31,3 +31,7 @@
 - 第 4 步 enriched input compile、第 5 步 DeepSeek report comparison 均未进入；这不是 DeepSeek 失败，也不是新报告质量结论。
 
 公开终态：`configs/releases/fin_ia_0_1_3_s1_dell_targeted_source_supplement_result_v1_0.json`。
+
+## 2026-08-10 后续勘误
+
+零网络读取同一 TSMC capture 后确认，上文“两个不同问答段／应拆为多 fragment”的归因不成立。`CoWoS` 有 4 次、`enough capacity` 有 3 次、`main supply` 有 1 次；旧 selector 只取各自第一次出现，才形成 18,170 字符跨度。同一 CoWoS 问答中三类锚点的最小连贯跨度仅 233 字符。修复改为枚举全部 occurrence 并选择 bounded 最小覆盖窗口，最终 excerpt 912 字符、4,000 上限不变。历史 exact-live 终态不改写；根因由后续 worklog 829 和 RC-P36-173 新 projection supersede。

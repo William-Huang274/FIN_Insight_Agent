@@ -12,6 +12,7 @@ from pathlib import Path
 import re
 import ipaddress
 import socket
+import ssl
 from typing import Any, Mapping, Protocol, Sequence
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
@@ -26,6 +27,7 @@ POLICY_SCHEMA = "fin_ia_0_1_3_official_source_attempt_policy_v1_0"
 RESULT_SCHEMA = "fin_ia_0_1_3_official_source_attempt_program_v1_0"
 CONTRACT_REF = "fin_0_1_3.S1.official_source_attempt_and_typed_gap:v1"
 CAPTURE_SCHEMA = "fin_ia_0_1_3_official_source_capture_v1_0"
+CAPTURE_SCHEMA_SAFE_FAILURE_V1_1 = "fin_ia_0_1_3_official_source_capture_v1_1"
 CAPTURE_NAMESPACE = "fin-0.1.3/s1-03/official-source-captures"
 _SAFE_HEADERS = {"content-type", "content-length", "last-modified", "etag", "location"}
 _CASES = {"DELL", "MU", "NVDA"}
@@ -33,9 +35,71 @@ _CONTACT_EMAIL_RE = re.compile(r"(?i)(?<![A-Z0-9._%+-])[A-Z0-9._%+-]+@[A-Z0-9.-]
 
 
 class OfficialSourceAttemptError(RuntimeError):
-    def __init__(self, code: str) -> None:
+    def __init__(
+        self,
+        code: str,
+        *,
+        failure_phase: str | None = None,
+        safe_cause_class: str | None = None,
+    ) -> None:
         self.code = code
+        inferred_phase, inferred_cause = _safe_failure_classification(code)
+        self.failure_phase = failure_phase or inferred_phase
+        self.safe_cause_class = safe_cause_class or inferred_cause
         super().__init__(code)
+
+    def safe_failure_envelope(self) -> dict[str, str]:
+        return {
+            "failure_phase": self.failure_phase,
+            "safe_cause_class": self.safe_cause_class,
+        }
+
+
+def _safe_failure_classification(code: str) -> tuple[str, str]:
+    if code == "official_source_dns_resolution_failed":
+        return "dns_resolution", "dns_resolution_failure"
+    if code == "official_source_connection_terminated":
+        return "response_transport", "connection_terminated"
+    if code == "official_source_transport_timeout":
+        return "connect_or_read", "timeout"
+    if code == "official_source_tls_handshake_failed":
+        return "tls_handshake", "tls_handshake_failure"
+    if code == "official_source_connection_refused":
+        return "connect", "connection_refused"
+    if code in {
+        "official_source_url_not_allowlisted",
+        "official_source_redirect_not_allowlisted",
+        "official_source_redirect_ceiling_exceeded",
+        "official_source_private_network_forbidden",
+        "official_source_sec_contact_required",
+    }:
+        return "preflight_or_redirect", "policy_rejection"
+    if code == "official_source_body_ceiling_exceeded":
+        return "response_read", "response_budget_exceeded"
+    return "transport", "unknown_transport_failure"
+
+
+def _typed_transport_error(exc: BaseException) -> OfficialSourceAttemptError:
+    reason = exc.reason if isinstance(exc, URLError) else exc
+    if isinstance(reason, (TimeoutError, socket.timeout)):
+        return OfficialSourceAttemptError("official_source_transport_timeout")
+    if isinstance(reason, ssl.SSLError):
+        return OfficialSourceAttemptError("official_source_tls_handshake_failed")
+    if isinstance(reason, socket.gaierror):
+        return OfficialSourceAttemptError("official_source_dns_resolution_failed")
+    if isinstance(reason, ConnectionRefusedError):
+        return OfficialSourceAttemptError("official_source_connection_refused")
+    if isinstance(
+        reason,
+        (
+            RemoteDisconnected,
+            ConnectionResetError,
+            ConnectionAbortedError,
+            BrokenPipeError,
+        ),
+    ):
+        return OfficialSourceAttemptError("official_source_connection_terminated")
+    return OfficialSourceAttemptError("official_source_transport_failed")
 
 
 @dataclass(frozen=True)
@@ -228,14 +292,7 @@ class UrllibOfficialSourceTransport:
             ConnectionAbortedError,
             BrokenPipeError,
         ) as exc:
-            if isinstance(
-                exc,
-                (RemoteDisconnected, ConnectionResetError, ConnectionAbortedError, BrokenPipeError),
-            ):
-                raise OfficialSourceAttemptError(
-                    "official_source_connection_terminated"
-                ) from exc
-            raise OfficialSourceAttemptError("official_source_transport_failed") from exc
+            raise _typed_transport_error(exc) from exc
 
 
 def load_official_source_policy(path: str | Path) -> dict[str, Any]:
@@ -264,10 +321,14 @@ class CaptureFirstOfficialSourceClient:
         store: FileCanonicalObjectStore,
         transport: SourceTransport,
         namespace: str = CAPTURE_NAMESPACE,
+        capture_schema: str = CAPTURE_SCHEMA,
     ) -> None:
+        if capture_schema not in {CAPTURE_SCHEMA, CAPTURE_SCHEMA_SAFE_FAILURE_V1_1}:
+            raise OfficialSourceAttemptError("official_source_capture_schema_invalid")
         self.store = store
         self.transport = transport
         self.namespace = namespace
+        self.capture_schema = capture_schema
         self.capture_refs: list[dict[str, Any]] = []
         self.network_calls = 0
 
@@ -286,7 +347,7 @@ class CaptureFirstOfficialSourceClient:
             "User-Agent": _official_source_user_agent(),
         }
         request_capture = {
-            "schema_version": CAPTURE_SCHEMA,
+            "schema_version": self.capture_schema,
             "capture_kind": "source_request",
             "case_key": case_key,
             "route_id": route_id,
@@ -308,7 +369,7 @@ class CaptureFirstOfficialSourceClient:
             )
         except OfficialSourceAttemptError as exc:
             failure = {
-                "schema_version": CAPTURE_SCHEMA,
+                "schema_version": self.capture_schema,
                 "capture_kind": "source_transport_failure",
                 "case_key": case_key,
                 "route_id": route_id,
@@ -318,16 +379,22 @@ class CaptureFirstOfficialSourceClient:
                 "capture_before_parse": True,
                 "credential_cookie_authorization_present": False,
             }
+            if self.capture_schema == CAPTURE_SCHEMA_SAFE_FAILURE_V1_1:
+                failure.update(exc.safe_failure_envelope())
+                failure["safe_failure_envelope_version"] = "v1"
             failure_ref = self._persist(failure, "official_source_transport_failure")
-            return None, {
+            public_failure = {
                 "route_id": route_id,
                 "status": "transport_failure",
                 "failure_code": exc.code,
                 "request_capture": request_ref,
                 "response_capture": failure_ref,
             }
+            if self.capture_schema == CAPTURE_SCHEMA_SAFE_FAILURE_V1_1:
+                public_failure.update(exc.safe_failure_envelope())
+            return None, public_failure
         response_capture = {
-            "schema_version": CAPTURE_SCHEMA,
+            "schema_version": self.capture_schema,
             "capture_kind": "source_response",
             "case_key": case_key,
             "route_id": route_id,

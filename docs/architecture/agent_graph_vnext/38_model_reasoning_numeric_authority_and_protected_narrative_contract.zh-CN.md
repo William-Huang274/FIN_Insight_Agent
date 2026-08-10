@@ -276,3 +276,18 @@ Source supplement 不得直接改 Writer 文本。它只允许向不可变 base 
 6. 新数字先进入 `NumericFactView／NumericProgramTrace`，市场价格与 EPS 等 derived multiple 由本地公式计算；模型可解释倍数，但不能自由改变 operand 或把单点倍数写成目标价。
 
 同结构报告比较的因变量是研究判断质量，而不是网页数或 token 数。至少比较 evidence utilization、机制桥、反方、WWC 可执行性、估值边界、重复率和决策密度；新增材料若没有转化为更好的判断，应判为 `source_increment_not_utilized`，不能因 Pack 更大自动晋升。
+
+### 13.6 多命中窗口、safe transport envelope 与 PIT 反答案泄漏合同
+
+`SourceMaterial` 摘录不得对每个 required regex 只执行一次 `search()`。实现必须对每个 pattern 收集全部 occurrence，按起止位置排序，用确定性最小覆盖窗口选择同时包含全部 pattern family 的候选；tie-break 固定为 `(span, start, end)`。窗口先受 `max_anchor_span<=4000` 约束，再扩展 bounded before/after 和句子边界，最终 excerpt 仍受 4,000 字符硬上限。缺 pattern 与 pattern 存在但无法形成连贯窗口使用不同 typed code。DELL TSMC immutable capture 的旧 first-hit span=`18,170`，新 coherent span=`233`、最终 excerpt=`912`，证明修复无需增加容量。
+
+official-source capture v1.1 为失败增加白名单字段：
+
+- `failure_phase`：`dns_resolution／tls_handshake／connect／connect_or_read／response_transport／transport` 等有限枚举；
+- `safe_cause_class`：`dns_resolution_failure／tls_handshake_failure／connection_refused／timeout／connection_terminated／unknown_transport_failure`；
+- 原 `failure_code`、request/response ref 与 digest 继续保留；
+- raw exception message、解析 IP、credential、Authorization、Cookie 永不进入 capture。
+
+旧 v1.0 capture 保持不可变，不能反向补写原因；目标 DELL source successor 已显式采用 v1.1。其他 official-source consumer 迁移前，RC-P36-168 只可记为目标路径已修复、全局仍需迁移，不能宣称所有历史 transport 已可归因。
+
+PIT parser 的 acceptance contract 不再比较预置 `close_token`。合同输入只允许 `ticker／provider_date_value／currency／source lineage`；parser 从 capture 中选中精确日期行并校验 close 是可解析数值，随后才生成 NumericFact。测试必须使用与历史预置值不同的 capture close，证明运行时没有标准答案泄漏。路线资格状态机固定为 `discovered locator -> executable candidate + parser proof -> fresh authority -> captured/adjudicated or typed terminal -> Pack promotion decision`，严禁把 locator discovery、authority issuance 与 live success混为一谈。

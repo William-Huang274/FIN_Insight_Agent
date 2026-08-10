@@ -6,7 +6,9 @@
 
 ## 当前恢复锚点
 
-FIN 0.1.1 保存第一轮 S0–S5 的内部 honest-block 工程基线。2026-08-02 用户纠正版本治理后，原 0.1.2、0.1.3、0.1.4 已合并回 FIN 0.1.2：原 0.1.3 是 FIN 0.1.2 S0 的历史 recovery/clean-environment acceptance attempts，原 0.1.4 是未执行的 S0 改进提案。当前唯一开发版本为 FIN 0.1.2，当前阶段为 S0，release qualified=false。
+最新恢复锚点（2026-08-10）：FIN 0.1.3 S1 DELL targeted-source recovery 已完成零网络证明。TSMC 同源窗口 selector、目标路径 safe transport envelope 和 PIT expected-value leakage 已修；Dell/Micron 官方文档已形成一次捕获候选。当前唯一 authority 前置 blocker 是 DELL 2026-08-06 精确市场价格路线尚不可执行，故未签发新 source authority，未编译 enriched Pack，未调用 DeepSeek。恢复时先读 `current_context_pack.zh-CN.md` 顶部、worklog 829、capability `v2_351` 与 root projections `v2_393–v2_396`。
+
+FIN 0.1.1 保存第一轮 S0–S5 的内部 honest-block 工程基线。2026-08-02 用户纠正版本治理后，原 0.1.2、0.1.3、0.1.4 曾合并回 FIN 0.1.2：原 0.1.3 是 FIN 0.1.2 S0 的历史 recovery/clean-environment acceptance attempts，原 0.1.4 是未执行的 S0 改进提案。此段只保留为历史版本治理记录；当前开发版本与阶段以其后的 FIN 0.1.3 锚点及本页顶部最新恢复锚点为准。
 
 当前开发版本为 FIN 0.1.3。`013-S0-04G` 已以 typed blocker state、`RunScopeRegistry v1_0` 和 unknown fail-closed 关闭 RC-P36-156，并从 clean Git archive/fresh process 以 `85/85` 复证现有 DELL R3 successor；本项外部调用与 admission 均为 0。S1-08 的真实 candidate ceiling 仍未通过，DELL R3、ranking、MU/NVDA、S3 和 release 均未因此解锁。
 

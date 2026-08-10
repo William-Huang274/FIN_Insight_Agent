@@ -4,7 +4,10 @@ from copy import deepcopy
 from http.client import RemoteDisconnected
 import json
 from pathlib import Path
+import socket
+import ssl
 import sys
+from urllib.error import URLError
 
 import pytest
 
@@ -13,7 +16,10 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
 from sec_agent.canonical_runtime.models import canonical_digest
+from sec_agent.canonical_runtime.object_store import FileCanonicalObjectStore
 from sec_agent.official_source_attempt_program import (
+    CAPTURE_SCHEMA_SAFE_FAILURE_V1_1,
+    CaptureFirstOfficialSourceClient,
     OfficialSourceAttemptError,
     OfficialSourceExecutionAuthority,
     SourceResponse,
@@ -203,6 +209,98 @@ def test_urllib_transport_classifies_remote_disconnect(monkeypatch) -> None:
             byte_ceiling=1024,
         )
     assert exc.value.code == "official_source_connection_terminated"
+
+
+@pytest.mark.parametrize(
+    ("failure", "expected_code", "expected_cause"),
+    [
+        (URLError(TimeoutError()), "official_source_transport_timeout", "timeout"),
+        (
+            URLError(ssl.SSLError("fixture")),
+            "official_source_tls_handshake_failed",
+            "tls_handshake_failure",
+        ),
+        (
+            URLError(socket.gaierror(-2, "fixture")),
+            "official_source_dns_resolution_failed",
+            "dns_resolution_failure",
+        ),
+        (
+            URLError(ConnectionRefusedError()),
+            "official_source_connection_refused",
+            "connection_refused",
+        ),
+    ],
+)
+def test_urllib_transport_exposes_only_typed_safe_cause(
+    monkeypatch, failure, expected_code, expected_cause
+) -> None:
+    class _FailingOpener:
+        def open(self, request, timeout):
+            del request, timeout
+            raise failure
+
+    monkeypatch.setattr(
+        "sec_agent.official_source_attempt_program._require_public_network_host",
+        lambda hostname: None,
+    )
+    monkeypatch.setattr(
+        "sec_agent.official_source_attempt_program.build_opener",
+        lambda handler: _FailingOpener(),
+    )
+    with pytest.raises(OfficialSourceAttemptError) as exc:
+        UrllibOfficialSourceTransport().fetch(
+            url="https://investor.example.com/document",
+            headers={"User-Agent": "test"},
+            allowed_hosts={"investor.example.com"},
+            timeout_seconds=30,
+            byte_ceiling=1024,
+        )
+    assert exc.value.code == expected_code
+    assert exc.value.safe_cause_class == expected_cause
+    assert "fixture" not in json.dumps(exc.value.safe_failure_envelope())
+
+
+def test_capture_v1_1_persists_safe_failure_envelope_without_raw_exception(
+    tmp_path: Path,
+) -> None:
+    class _TlsFailureTransport:
+        live_network = False
+
+        def fetch(self, **kwargs):
+            del kwargs
+            raise OfficialSourceAttemptError(
+                "official_source_tls_handshake_failed"
+            ) from ssl.SSLError("private upstream diagnostic")
+
+    store = FileCanonicalObjectStore(tmp_path / "objects")
+    client = CaptureFirstOfficialSourceClient(
+        store=store,
+        transport=_TlsFailureTransport(),
+        namespace="safe-failure-test",
+        capture_schema=CAPTURE_SCHEMA_SAFE_FAILURE_V1_1,
+    )
+    response, attempt = client.fetch(
+        case_key="DELL",
+        route_id="issuer_transcript",
+        url="https://investor.example.com/document",
+        allowed_hosts={"investor.example.com"},
+        timeout_seconds=30,
+        byte_ceiling=1024,
+    )
+    assert response is None
+    assert attempt["failure_phase"] == "tls_handshake"
+    assert attempt["safe_cause_class"] == "tls_handshake_failure"
+    capture = store.get_json(
+        attempt["response_capture"]["object_key"],
+        expected_digest=attempt["response_capture"]["digest"],
+    )
+    assert capture["schema_version"] == CAPTURE_SCHEMA_SAFE_FAILURE_V1_1
+    assert capture["safe_failure_envelope_version"] == "v1"
+    serialized = json.dumps(capture, sort_keys=True)
+    assert "private upstream diagnostic" not in serialized
+    assert "Authorization" not in serialized
+    assert "Cookie" not in serialized
 
 
 def test_validator_rejects_false_promotion(tmp_path: Path) -> None:

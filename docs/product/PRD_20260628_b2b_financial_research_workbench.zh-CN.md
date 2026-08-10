@@ -2344,3 +2344,17 @@ DELL 固定 Pack 的实测进一步纠正了“资料不足就继续 broad searc
 7. 补源验收不以“新增多少网页”为成功标准，而以新增信息是否转化为更清楚的需求持续性、利润捕获、供给约束、反方、WWC 与估值边界判断为准；若只增加引用数量而没有提高判断密度，补源不得晋升。
 
 本规则不把完整估值、目标价或商业数据库前移为 FIN 0.1.3 的新增发布承诺。当前只允许一次 DELL 定向 source successor 和一次新 Pack 的研究比较；失败保留 capture／typed gap，不自动追加搜索或模型重跑。
+
+### 16.16 同源连贯摘录、市场事实反泄漏与补源权限门（2026-08-10）
+
+真实 TSMC capture 对 16.15 作出进一步纠正：来源正文并未把 `CoWoS`、`enough capacity` 与 `main supply` 分散在两个无法合并的陈述中。旧 selector 只取每个正则的第一次出现，误用了前文关于成熟制程的 `enough capacity`，把相距 18,170 字符的无关命中拼在一起；同一 CoWoS 问答中实际存在仅 233 字符的完整锚点窗口。产品不得把“第一次命中”当作“最相关命中”，也不得把 selector 缺陷误诊为来源缺失或模型失败。
+
+新增以下产品门：
+
+1. 同一文档的多关键词摘录必须枚举全部命中，选择覆盖全部 required pattern 的最小连贯窗口，并同时受 `max_anchor_span` 与最终 fragment 字符上限约束；找不到连贯窗口时 fail closed。不得通过扩大字符上限把远距离陈述强行拼接。
+2. 只有语义上确实独立的来源陈述才可编译为多个 same-source fragments／Evidence group，并必须显式标注不可跨片推导。不能因 selector 实现较弱就自动拆片。
+3. 市场 point-in-time 合同只能预绑定 ticker、目标日期、币种、来源和 lineage；收盘价必须来自捕获行。任何 `expected close`、Gold price 或先验答案都不得进入请求、parser acceptance 或 Validator。捕获值只需满足身份、日期和数值格式，并继续接受数值审计。
+4. 网络失败 capture 使用 provider-neutral 安全 envelope，至少保存 phase、outer code 和白名单 cause class（timeout、DNS、TLS、connection refused、connection terminated、unknown transport）；不得保存 raw exception、解析后的私网地址、Authorization、Cookie 或凭据。
+5. “可签发一次补源权限”与“补源 live 已成功”是两个不同状态。权限前要求可执行候选路线、解析合同、预算和零调用 proof；权限消费后才判断来源是否真正返回并能晋升。不得要求先 live 成功才签 authority，也不得只因找到网页就声称 live 成功。
+
+当前零网络结果为：TSMC saved capture 已恢复一个连贯 fragment；Dell Q1 FY27 官方 transcript 及其 event／quarterly locator 已达到“一次捕获候选”资格；Micron deck／prepared remarks 也有官方候选；但 DELL 2026-08-06 PIT 仅发现 Dell IR 的 LSEG 历史价格组件，精确日期请求形状与可捕获响应尚未证明。因而当前不签发新 source authority，不编译 enriched Pack，也不运行 DeepSeek 报告比较。该停点表示市场数据路线未就绪，不表示 TSMC、Dell 法说内容或模型能力失败。

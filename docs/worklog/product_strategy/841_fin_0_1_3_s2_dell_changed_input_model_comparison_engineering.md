@@ -24,4 +24,3 @@
 ## 验证和下一步
 
 focused＋adjacent contract tests=`17 passed`，compile 与 `git diff --check` 通过。下一步先提交并推送当前工程包，再用两个 clean Git archive worker 只补水合两份 digest-bound private Pack，执行零模型 proof。只有 proof、Project OS、凭据存在性和容量同时通过，才签发一次 exact-once DeepSeek Pro authority；任何新 L1 或 terminal failure 都保留 capture 并停止，不自动 replacement。
-

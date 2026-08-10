@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from decimal import Decimal
+import hashlib
 import json
 from pathlib import Path
 from typing import Any, Mapping
@@ -67,6 +68,16 @@ def _resolve(root: Path, ref: str) -> Path:
     return path.resolve() if path.is_absolute() else (root / path).resolve()
 
 
+def _normalized_text_sha256(path: Path) -> str:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise S2DellChangedInputComparisonError(
+            "changed_input_comparison_bound_text_unreadable"
+        ) from exc
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 def load_changed_input_comparison_contract(
     path: str | Path,
     *,
@@ -113,7 +124,8 @@ def load_changed_input_comparison_contract(
         bound_path = _resolve(root, str(binding.get("ref") or ""))
         _require(
             bound_path.is_file()
-            and file_sha256(bound_path) == str(binding.get("sha256") or ""),
+            and _normalized_text_sha256(bound_path)
+            == str(binding.get("sha256") or ""),
             f"changed_input_comparison_binding_drift:{name}",
         )
         expected_result = str(binding.get("expected_result_digest") or "")

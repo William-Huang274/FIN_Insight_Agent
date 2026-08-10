@@ -1,0 +1,103 @@
+{
+  "admission_digest": "7d992ce04ee6db092b532a6dce39186a8ec11a62172fd4c60681ef8026e1901a",
+  "attempt_id": "fin013_s2_fixed_pack_dell_524560d1ab0599b829bf::attempt_1",
+  "authority_digest": "709e0d228a4ffc764c43bf1dfd2511b0d98c0c4d2b46de1a5faf4a4984fd89f0",
+  "business_artifact_promoted": false,
+  "call_receipts": [
+    {
+      "call_id": "call_01_direct_baseline",
+      "capture_digest": "68fb164a9e33b3afb4bcbf0256437f45299143745bd7860afc9e2fb0a54bea4b",
+      "finish_reason": "stop",
+      "node_key": "direct_baseline",
+      "request_digest": "6d71d0e26fb49a48a2dd582e60be602ad9cd1e3b16ca764d522bd8400af85457",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_02_research_lead",
+      "capture_digest": "9b7fb3cd84b87f8cf8307bf6b4ee02f3c54975e6ee46e8f6e7b93b15e0557f73",
+      "finish_reason": "stop",
+      "node_key": "research_lead",
+      "request_digest": "0c2d9fd23b0efc6604cfbd2c00e52f9e37e4ca32dc3fc7fc24dc35602191ef7f",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_03_specialist__demand_authenticity_and_sustainability",
+      "capture_digest": "3fdb8fc8ed35858929d827137f5aef8defd3b0541c6f9e823943553a6ff56e8f",
+      "finish_reason": "stop",
+      "node_key": "specialist::demand_authenticity_and_sustainability",
+      "request_digest": "99b99a4241bd7ba898d3e1bd0ee8ce3b4d34ff29f826797afd930db2ac9c091e",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_04_specialist__product_and_technology_position",
+      "capture_digest": "a514bd5f7c5ab585454403b67720150abdefe518877a72897b32cdae17576003",
+      "finish_reason": "stop",
+      "node_key": "specialist::product_and_technology_position",
+      "request_digest": "be6700b9571ebfd0877f1883f4f1697939f4f554eab72c22147db9be15e8e56b",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_05_specialist__supply_capacity_and_competition",
+      "capture_digest": "320231964efd66478113cf51d28da9a6ab0115b34b7c4ef40446a5d6acc40ce2",
+      "finish_reason": "stop",
+      "node_key": "specialist::supply_capacity_and_competition",
+      "request_digest": "51b26b0cb16281811f309d39af1dc12251310e8ebfcc970d1a896e1f5503adda",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_06_specialist__financial_transmission_profit_and_cash",
+      "capture_digest": "acabf71072eee9f2382e68d92c4146d5cce433ebb3c846e812ee833eb9789efe",
+      "finish_reason": null,
+      "node_key": "specialist::financial_transmission_profit_and_cash",
+      "request_digest": "dcf455a28c9875539ffa17b1a07e6e9141d7d5e94e17241649926740740ae29e",
+      "status": "provider_error"
+    }
+  ],
+  "case_input_digest": "f1f1945e5808001bea377fc7903b8b751a1f9c02cb1d6b7dae53e67e4853496d",
+  "case_key": "DELL",
+  "finding_summary": {
+    "L1": 1,
+    "L2": 0,
+    "L3": 0,
+    "L4": 0,
+    "codes": [
+      "fixed_pack_runtime_provider_failure:specialist::financial_transmission_profit_and_cash:provider_error"
+    ]
+  },
+  "known_boundary": "This is a raw fixed-pack canary result. Content quality requires separate L1/L2 and Q1-Q8 assessment; dynamic research and product release remain false.",
+  "observed_counts": {
+    "estimated_usd": 0.0738093,
+    "fallbacks": 0,
+    "findings": 1,
+    "input_tokens": 105548,
+    "model_calls": 6,
+    "network_tool_calls": 0,
+    "output_tokens": 6165,
+    "provider_calls": 6,
+    "retries": 0,
+    "total_tokens": 111713
+  },
+  "private_terminal": {
+    "ref": "data/workbench_private/fin_0_1_3_s2_fixed_pack_research/live/attempts/fin013_s2_fixed_pack_dell_524560d1ab0599b829bf/terminal_with_receipt.json",
+    "sha256": "f0be189122e69c1f2c4e2ba11d50a452724fe6f98ca744a08b51d44545f01f9e",
+    "terminal_digest": "2ae7ebf162a1b600a3bc2818982ed8b6968f281a0ca914ce5250aa4bad47ab58"
+  },
+  "qualified_human_acceptance_required": true,
+  "raw_model_output_public": false,
+  "raw_model_output_stored_private": true,
+  "recorded_at": "2026-08-10T08:23:34Z",
+  "result_digest": "10223068d27217a26ba831acb7d48df6fd95f509027297e8af4fff31756d7aa2",
+  "run_id": "fin013_s2_fixed_pack_dell_524560d1ab0599b829bf",
+  "run_scope": "FIN_0_1_3_S2_FIXED_PACK_DELL_CANARY",
+  "same_input_pair_proven": true,
+  "schema_version": "fin_ia_0_1_3_s2_fixed_pack_dell_canary_result_v1_0",
+  "source_pack_digest": "554e7db12bcb98f0a03f420f9d4b7cbaf7422a87bdef6f83699068d0b863f181",
+  "status": "failed",
+  "terminal_code": "fixed_pack_runtime_provider_failure:specialist::financial_transmission_profit_and_cash:provider_error",
+  "terminal_phase": "specialist::financial_transmission_profit_and_cash",
+  "usage": {
+    "input_tokens": 105548,
+    "output_tokens": 6165,
+    "total_tokens": 111713
+  }
+}

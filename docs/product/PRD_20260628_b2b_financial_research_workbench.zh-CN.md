@@ -2358,3 +2358,16 @@ DELL 固定 Pack 的实测进一步纠正了“资料不足就继续 broad searc
 5. “可签发一次补源权限”与“补源 live 已成功”是两个不同状态。权限前要求可执行候选路线、解析合同、预算和零调用 proof；权限消费后才判断来源是否真正返回并能晋升。不得要求先 live 成功才签 authority，也不得只因找到网页就声称 live 成功。
 
 当前零网络结果为：TSMC saved capture 已恢复一个连贯 fragment；Dell Q1 FY27 官方 transcript 及其 event／quarterly locator 已达到“一次捕获候选”资格；Micron deck／prepared remarks 也有官方候选；但 DELL 2026-08-06 PIT 仅发现 Dell IR 的 LSEG 历史价格组件，精确日期请求形状与可捕获响应尚未证明。因而当前不签发新 source authority，不编译 enriched Pack，也不运行 DeepSeek 报告比较。该停点表示市场数据路线未就绪，不表示 TSMC、Dell 法说内容或模型能力失败。
+
+### 16.17 核心研究门与估值输入门分离（2026-08-10）
+
+Owner 已选择接入可审计的行情 API，16.16 的“等待 PIT 路线或保留 typed gap”二选一因此结束。但工程实现进一步纠正了一个产品语义：一条精确日期收盘价只能表示 `valuation_input_ready`，不能表示完整估值、目标价或投资建议已经就绪。为避免一个可选市场字段否定整份基本面研究，也避免把单点价格夸大成估值能力，DELL enriched successor 必须同时报告以下独立状态：
+
+1. `core_research_ready`：不可变 predecessor Pack 有效、Dell issuer transcript 所需片段完成裁决、TSMC saved capture 的连贯片段完成裁决。该门控制新 Evidence Pack 是否可进入模型输入编译。
+2. `supplier_context_ready`：Micron 官方披露所需片段完成裁决。它提高供应判断质量，但 counterparty read-through 不得改写为 Dell 特定 allocation 或因果事实。
+3. `valuation_input_ready`：Alpha Vantage 在 research as-of 的 `TIME_SERIES_DAILY` 原始未复权收盘行经 capture-first、ticker/date/currency/unit 校验后形成 PIT NumericFact。产品表面可兼容显示 `valuation_ready`，但其合同别名必须明确指向“估值输入就绪”。
+4. AKShare／东方财富只作为 shadow diagnostic。它可提示同日数值不一致，但不得晋升 Evidence、覆盖主来源或单独关闭 Gap。
+5. 若行情失败而 `core_research_ready=true`，研究链可以继续；估值段必须保留 typed gap，禁止输出倍数、目标价或“便宜／昂贵”结论。若行情成功，只关闭精确 PIT 输入缺口；历史区间、同业可比、情景敏感度等缺口继续保留。
+6. API key 只从受限环境变量进入 transport 内存。request capture 保存参数形状与 credential source，不保存 key；URL、redirect、exception、公开 result 和 Git 均不得包含 key。若 Provider response 回显凭据，原始 body 不落盘并形成 typed secret rejection。
+
+这一分门不会降低来源真实性、身份、日期、数字和引用门槛。它只纠正“估值输入缺失是否应该杀死全部研究”的阶段边界。当前状态为 provider-neutral 适配器、双门、shadow 不晋升和正负 mutation 已完成本地实现与定向测试；fresh clean proof、一次 exact-live、enriched Pack 和同结构 DeepSeek 内容增量比较仍须依次完成，不能在文档中提前记为产品通过。

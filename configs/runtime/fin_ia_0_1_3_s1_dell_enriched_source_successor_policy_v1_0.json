@@ -1,0 +1,123 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_dell_enriched_source_successor_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.dell_enriched_source_successor:v1",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "purpose": "Build one capture-first DELL enriched Evidence Pack from the immutable targeted-source predecessor, the saved TSMC capture, two bounded official-source routes and a provider-neutral exact-date market input without allowing valuation availability to erase otherwise valid core research.",
+  "immutable_bindings": {
+    "historical_source_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s1_dell_targeted_source_supplement_policy_v1_0.json",
+      "sha256": "3d80d44d06b834cbb2d48af335a5c27f737eb3f862f8df04e297539c52a25bd9"
+    },
+    "historical_source_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_dell_targeted_source_supplement_result_v1_0.json",
+      "sha256": "9f13705980d212bfe449431fd115b04b01942fa0725f3b2f342a03b4004ccc62",
+      "expected_result_digest": "0c590dc1ca8c9be512b30100c94d9b63a5e0a2d0bfcf2b05355715d32534c73a"
+    },
+    "recovery_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s1_dell_targeted_source_recovery_policy_v1_0.json",
+      "sha256": "a8ff6badd5dfaebac7a0ba8cc32571f46733adb7fcb1a7da461f1195f79cdcaf"
+    },
+    "recovery_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_dell_targeted_source_recovery_result_v1_0.json",
+      "sha256": "908f447c748a73f70070ec7cc0b8ab33e46540336f0a99bdb098e172f4f35187",
+      "expected_result_digest": "5de25dedcc697b6fde80312e9ed6ad98907acf0e20848e9200f3a2a6025e5b65"
+    },
+    "predecessor_dell_pack": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_targeted_source_supplement/live/attempts/fin013_s1_dell_targeted_source_e7d77ba0d1824fc2a6e4/objects/fin-0.1.3/s1/dell-targeted-source-supplement/packs/dell/v1/8d/16/8d164f187de0da8a6c9214e81b06c7854467a167e521850fd0f6fad7131d5aa1.json",
+      "sha256": "8d164f187de0da8a6c9214e81b06c7854467a167e521850fd0f6fad7131d5aa1",
+      "expected_pack_payload_digest": "d2ec0d8700b93b5bf3728425eda5e411c22bc63e138e3c3bec8e754e87cbebcd"
+    }
+  },
+  "official_route_ids": [
+    "dell_q1_fy27_earnings_transcript",
+    "micron_q3_fy26_earnings_slides"
+  ],
+  "saved_capture_route_id": "tsmc_q1_2026_earnings_transcript",
+  "market_request": {
+    "ticker": "DELL",
+    "exchange": "NYSE",
+    "exact_date": "2026-08-06",
+    "currency": "USD",
+    "price_basis": "raw_as_traded_close",
+    "primary_provider": "alpha_vantage_time_series_daily",
+    "shadow_provider": "akshare_eastmoney_us_hist_shadow",
+    "shadow_dependency_version": "1.18.84",
+    "target_id": "MARKET::DELL::RAW_CLOSE::2026-08-06",
+    "evidence_owner_ticker": "DELL",
+    "publication_date": "2026-08-06",
+    "relationship_directions": ["market_point_in_time_to_subject"],
+    "slot_bindings": [
+      {
+        "slot_id": "capital_allocation_and_valuation",
+        "facet_ids": ["valuation_basis", "market_point_in_time"],
+        "business_meaning_zh": "为研究截至日的估值计算提供未复权收盘价输入。",
+        "claim_boundary_zh": "单个收盘价只是估值输入，不等于估值区间、目标价或投资建议。"
+      }
+    ]
+  },
+  "gate_contract": {
+    "core_research_ready_requires": [
+      "predecessor_pack_valid",
+      "dell_issuer_transcript_all_fragments_adjudicated",
+      "tsmc_saved_capture_fragment_adjudicated"
+    ],
+    "supplier_context_ready_requires": [
+      "micron_supplier_disclosure_all_fragments_adjudicated"
+    ],
+    "valuation_input_ready_requires": [
+      "alpha_vantage_exact_date_raw_close_numeric_fact_adjudicated"
+    ],
+    "valuation_ready_display_alias": "valuation_input_ready",
+    "valuation_input_does_not_authorize": [
+      "relative_multiple",
+      "historical_range",
+      "fair_value",
+      "target_price",
+      "recommendation"
+    ],
+    "core_research_may_proceed_when_valuation_input_missing": true,
+    "shadow_provider_may_promote": false
+  },
+  "gap_disposition": {
+    "remove_when_satisfied": [
+      {
+        "gap_id": "dell-gap-ai-system-margin",
+        "requires_target_ids": [
+          "SUPPLEMENT::DELL::ISSUER::Q1FY27::AI_SERVER_PROFITABILITY"
+        ]
+      },
+      {
+        "gap_id": "dell-gap-valuation-basis",
+        "requires_target_ids": [
+          "MARKET::DELL::RAW_CLOSE::2026-08-06"
+        ]
+      }
+    ],
+    "never_remove_from_single_close": [
+      "dell-gap-price-in-boundary",
+      "dell-gap-scenario-sensitivity"
+    ]
+  },
+  "budget": {
+    "official_source_network_calls": 2,
+    "primary_market_provider_invocations": 1,
+    "shadow_market_provider_invocations": 1,
+    "maximum_live_network_invocations": 4,
+    "timeout_seconds_per_route": 35,
+    "market_response_byte_ceiling": 2000000,
+    "model_calls": 0,
+    "retries": 0
+  },
+  "acceptance": {
+    "capture_first": true,
+    "credential_value_never_captured": true,
+    "predecessor_attempt_immutable": true,
+    "saved_tsmc_capture_reused_without_network": true,
+    "core_and_valuation_gates_reported_separately": true,
+    "counterparty_claim_boundary_preserved": true,
+    "business_artifact_promotion": false
+  }
+}

@@ -821,3 +821,15 @@ DELL fixed-pack successor 已完成 13 个逻辑节点并形成有实质内容�
 5. [ ] DELL 2026-08-06 PIT 可执行路线：Dell IR/LSEG 页面存在 Historical Price Lookup，但项目网络读取超时／403，Q4 文档显示底层历史价格接口可能要求站点配置或 API key；精确日期请求及响应尚未资格化。
 
 因此 recovery result=`5de25ded...5e5b65`，状态为 `zero_call_recovery_proof_passed_authority_not_ready`；当前唯一 authority blocker 是 PIT 可执行精确日期请求，不再把 Dell transcript 的“尚未 live”错误地设为 authority 前置条件。下一步只能二选一：取得可审计的市场数据 API／站点公开请求合同后补齐 PIT adapter，或明确将 point-in-time 估值保留为 typed gap 并重新定义本轮报告比较范围。未经这项产品选择，不签发 source authority、不运行 enriched DeepSeek、不进入 S3/S4/S5。
+
+## 7V. DELL 双门、Alpha Vantage PIT 与 enriched report 比较（2026-08-10）
+
+Owner 已提供 Alpha Vantage credential 并批准原 1–5 顺序。该决定结束 7U 的二选一，但不恢复“PIT 失败就否定整份研究”的旧硬门。单个收盘价只代表估值输入，不代表估值分析完成；因此新执行计划如下：
+
+1. [x] `S1_CORE_RESEARCH_AND_VALUATION_INPUT_GATE_REBASELINE`：冻结 `core_research_ready`、`supplier_context_ready`、`valuation_input_ready` 三个独立状态；兼容展示字段 `valuation_ready` 只能等价于 valuation input。行情失败时 core research 可继续，估值 typed gap 必须保留。
+2. [x] `S1_PROVIDER_NEUTRAL_MARKET_ADAPTER_ZERO_CALL_IMPLEMENTATION`：实现 Alpha Vantage primary、AKShare/Eastmoney non-promoting shadow、secret-free capture、exact ticker/date/raw-close NumericFact 和 failure envelope。定向测试已覆盖 success、身份／日期／数值 mutation、rate limit、secret echo、shadow 不晋升与双门真值组合；这不是 fresh proof 或 live 能力。
+3. [ ] `S1_FRESH_PROOF_AUTHORITY_AND_ONE_EXACT_LIVE`：在 clean/synced commit 上由两个 fresh Git archive worker 复证；随后只签发一次 authority，最多执行 Dell transcript、Micron deck、Alpha primary、AKShare shadow 各一次，0 retry／model。TSMC 直接复用 immutable capture，不再联网。
+4. [ ] `S1_ENRICHED_DELL_EVIDENCE_PACK`：若 Dell＋TSMC 使 core 门通过，编译 predecessor `20` 项＋真实新增来源的 changed Pack。Alpha 成功只关闭 PIT valuation-basis gap；相对估值、历史区间和情景敏感度不因单点价格消失。Micron／TSMC 继续是 bounded supplier context。
+5. [ ] `S2_S3_CHANGED_INPUT_COMPILE_AND_ONE_DEEPSEEK_COMPARISON`：从 changed Pack 完整重编译 Specialist、Lead、Writer、compact Verifier，不复用旧模型节点。使用同一报告结构与质量 rubric 比较需求、利润、供给、竞争、反方、WWC、估值边界、证据利用和决策密度。该实验是 information-increment comparison，不得包装成 strict same-input model gain。
+
+若第 3 项中 `core_research_ready=false`，停止在 S1 并返回来源业务问题，不进入 DeepSeek。若只有 `valuation_input_ready=false`，允许继续第 4–5 项，但报告不得输出估值倍数或目标价。若第 5 项只增加引用数而没有提高判断质量，记录 `source_increment_not_utilized`，不自动追加搜索、行情调用或模型重跑。

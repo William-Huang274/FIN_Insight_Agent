@@ -291,3 +291,30 @@ official-source capture v1.1 为失败增加白名单字段：
 旧 v1.0 capture 保持不可变，不能反向补写原因；目标 DELL source successor 已显式采用 v1.1。其他 official-source consumer 迁移前，RC-P36-168 只可记为目标路径已修复、全局仍需迁移，不能宣称所有历史 transport 已可归因。
 
 PIT parser 的 acceptance contract 不再比较预置 `close_token`。合同输入只允许 `ticker／provider_date_value／currency／source lineage`；parser 从 capture 中选中精确日期行并校验 close 是可解析数值，随后才生成 NumericFact。测试必须使用与历史预置值不同的 capture close，证明运行时没有标准答案泄漏。路线资格状态机固定为 `discovered locator -> executable candidate + parser proof -> fresh authority -> captured/adjudicated or typed terminal -> Pack promotion decision`，严禁把 locator discovery、authority issuance 与 live success混为一谈。
+
+### 13.7 Provider-neutral 行情适配器、双门与 shadow 合同
+
+市场数据接入不得把 Alpha Vantage、AKShare 或任何未来 Provider 的响应形状扩散到 Evidence Pack 和 Writer。稳定内核只接受 `MarketPointRequest(case, ticker, exchange, exact_date, currency, price_basis)`，Provider profile 负责 transport 与响应解析；成功后统一生成 `MarketPointInTimeNumericFact`。当前 Alpha Vantage profile 固定使用 `TIME_SERIES_DAILY + outputsize=compact + datatype=json`，读取精确日期的 `4. close`，并明确其语义为 raw as-traded close，而不是 adjusted close、实时行情或估值结论。
+
+capture-first 顺序固定为：
+
+1. 保存不含 secret 的 request shape；
+2. transport 在内存中注入环境变量凭据；
+3. 保存受限 response capture 后再 parse；
+4. 校验 Provider symbol、精确日期、正数 Decimal、币种、单位、价格口径与 source coordinate；
+5. 生成 digest-bound NumericFact，再编译为 Evidence Pack 的 `object_type=metric` 与 `structured_metric`；
+6. 任一 identity/date/field/rate-limit/transport/secret-echo 异常形成 typed failure，不用预置答案补齐。
+
+request、safe endpoint、公开 route result 和 telemetry 不得出现 `apikey` 值。由于 Alpha Vantage 以 query parameter 传 key，真实 URL 只能存在于 transport 调用栈；capture URL 必须删除该参数。若 response body 包含当前 credential bytes，只保存 body digest／长度与 `market_data_response_contains_credential`，不保存 body。
+
+双门在 Runtime 中独立计算：
+
+- `core_research_ready = predecessor_valid && Dell issuer fragments complete && TSMC replay complete`；
+- `supplier_context_ready = Micron fragments complete`；
+- `valuation_input_ready = Alpha exact-date NumericFact accepted`；
+- `successor_pack_ready_for_model_input = core_research_ready`，不再与单个行情 Provider 成败做逻辑与；
+- 兼容字段 `valuation_ready` 只能是 `valuation_input_ready` 的展示别名，禁止下游把它解释为 fair value／target price ready。
+
+AKShare profile 是 non-promoting shadow：它使用未复权 exact-date row 与 primary 做诊断比较，任何输出都标记 `diagnostic_shadow_only_never_authoritative`，不进入 Pack 的 `numeric_facts`。该依赖可被替换或移除而不改变核心合同；未来更强或商业行情 Provider 只需增加 profile，不得改 Writer、Evidence Gate 或报告 schema。
+
+当前零调用定向测试覆盖 primary success、wrong symbol、missing date、negative close、rate limit、secret echo、shadow non-promotion，以及 `core=true/valuation=false`、`core=false/valuation=true`、两门同时通过和单点收盘价不得关闭历史相对估值／情景敏感度 Gap。fresh Git archive proof 与真实 live 尚未发生，因此这里记录的是实现合同和 fixture evidence，不是生产行情能力。

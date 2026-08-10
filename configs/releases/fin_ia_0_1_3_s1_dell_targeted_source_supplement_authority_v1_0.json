@@ -1,0 +1,46 @@
+{
+  "admission_id": "admission::fin013_s1_dell_targeted_source_e7d77ba0d1824fc2a6e4",
+  "attempt_id": "fin013_s1_dell_targeted_source_e7d77ba0d1824fc2a6e4::attempt_1",
+  "authority_digest": "e9b3819562ef02590efd3669cec3e41cd1ab6175c85ea02ffa60f6e42f0a1d46",
+  "automatic_execution": false,
+  "automatic_retry": false,
+  "budget": {
+    "fallbacks": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "retries": 0,
+    "source_network_calls": 4,
+    "timeout_seconds_per_route": 45
+  },
+  "business_artifact_promotion": false,
+  "clean_proof_digest": "823685fc0946bd22f1d183fa83a103dc9f234199f1fa52233e1e24b60cd99f8d",
+  "contract_ref": "fin_0_1_3.S1.dell_targeted_source_supplement:v1",
+  "evidence_promotion_mode": "local_deterministic_adjudication_only",
+  "expires_at": "2026-08-11T11:35:08Z",
+  "file_bindings": {
+    "configs/releases/fin_ia_0_1_3_s1_dell_targeted_source_supplement_clean_proof_v1_0.json": "4605ba3fab99ae92f6584a0ca709f1ba398489d0d039ea5d535ed198ce44f673",
+    "configs/runtime/fin_ia_0_1_3_s1_dell_targeted_source_supplement_policy_v1_0.json": "3d80d44d06b834cbb2d48af335a5c27f737eb3f862f8df04e297539c52a25bd9",
+    "scripts/releases/run_fin_ia_0_1_3_s1_dell_targeted_source_supplement.py": "c58973590697ad446671f5f1614cf98ea1ab884964d9c57bfb3b641709d375c9",
+    "src/sec_agent/canonical_runtime/object_store.py": "91452ec6024788bd63d9c123a1dedecb9972515746d3a2ca0e8843f355f48a17",
+    "src/sec_agent/official_source_attempt_program.py": "1959be5f024fa91f25497ac05e4b3f784571135de0b4b8c926da9e7ca69b2c71",
+    "src/sec_agent/s1_dell_targeted_source_supplement.py": "7307ac1003643c2adf0e94f640e0ff75aba7b04aa9a2435f783f9b3e30e7c9db",
+    "src/sec_agent/shared_admission_ledger.py": "ef0611378b4aa4419f8782feceb8ddd89603e79c9d7a5753452f3ddbcb725455"
+  },
+  "implementation_commit": "49b33afb559d1de85885051876ef51f80c780caf",
+  "issued_at": "2026-08-10T11:35:08Z",
+  "known_boundary": "This admission authorizes exactly four public official source attempts, capture-first parsing and deterministic Evidence Pack materialization. It authorizes no model call, retry, recommendation, product promotion or release.",
+  "maximum_executions": 1,
+  "model_calls_allowed": 0,
+  "policy_digest": "3de3320cd0bae18241a2e3be3a1fb217f8e51aefbe99d51592a05c21c56cadfd",
+  "project_os_preflight": {
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "FIN_0_1_3_S1_DELL_TARGETED_SOURCE_SUPPLEMENT_EXACT_ONCE",
+    "status": "pass"
+  },
+  "run_id": "fin013_s1_dell_targeted_source_e7d77ba0d1824fc2a6e4",
+  "run_scope": "FIN_0_1_3_S1_DELL_TARGETED_SOURCE_SUPPLEMENT_EXACT_ONCE",
+  "schema_version": "fin_ia_0_1_3_s1_dell_targeted_source_supplement_authority_v1_0",
+  "status": "issued_unconsumed",
+  "synthetic_dns_proxy_allowance": "host_allowlisted_https_only_for_desktop_proxy_range_198.18.0.0/15",
+  "user_authority": "annotation_1_owner_approved_targeted_source_supplement_then_one_report_comparison"
+}

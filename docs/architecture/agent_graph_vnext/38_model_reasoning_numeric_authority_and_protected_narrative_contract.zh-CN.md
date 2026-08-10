@@ -396,3 +396,9 @@ Node view 使用同一 fact/formula parity digest，并各自保存字符容量 
 R1 因 proof reader 从错误结果层级读取 summary 字段而失败，已作为 proof-harness failure 保留。R2 只修复读取路径，没有改变业务 compiler；最终 model/provider/network/source/retry 均为 0。由此工程门从 `working_tree pass` 前进到 `clean independent pass`，但模型门没有自动打开。
 
 下一步必须先做单独零调用 authority decision，冻结一个最小自然节点输入、输出合同、评分项、失败边界、调用预算与 stop rule。该 canary 只回答“模型能否自然使用新的 bounded numeric view 并返回引用过的判断原子”，不能代替 DELL 全链、研究内容八维验收、Owner acceptance 或 release；canary 失败也不得重新演变成逐数字扩充核心 Harness。
+
+#### 13.10.6 最小自然 canary 的单变量设计（2026-08-11）
+
+零调用决策选择 DELL demand-authenticity atom，不选择完整 Writer、三节点并行或 Flash／Pro A/B。输入固定为 E022 issuer support、E018 competitor digestion read-through 和 E023 issuer pull-forward boundary；模型必须自然使用 `$16.1 billion`、`customer count surpassed 5,000` 及 orders／backlog 至少一项，并声明相应 NUM refs。E018/E023 只能形成 bounded counterevidence／boundary，不能改写为 Dell 当前量化事实。
+
+输出仅含 support、counterevidence、boundary 三个 atom 和 refs；未知字段、未知 ref、未绑定 material number、free arithmetic、valuation surface、证据角色错置、无边界强结论或截断都 terminal fail。未来 live 上限固定为一调用、零 retry／fallback／tool、capture-before-parse；但当前只允许实现 runner 和双 clean proof，不能把选型决策当作 live admission。

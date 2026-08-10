@@ -2446,3 +2446,9 @@ changed-input DELL exact-live 证明，补源已经能转化为更好的需求�
 后续 canary 必须满足：输入只包含已冻结 bounded Evidence／numeric view；模型只返回研究判断原子、明确 `NUM／FORM／Evidence` refs 与边界，不允许生成整份报告；最多一次调用、零 retry／fallback／tool；任何未绑定 material number、错实体／期间／单位、ref 不存在、结构不完整或截断都 terminal fail。通过只说明新合同在一个自然节点可被当前模型使用，是否执行 DELL 全链仍须另行做零调用成本／价值／风险决策。
 
 这条边界同时防止两个错误：不能因 clean proof 就跳过模型行为验证，也不能因一个自然 canary 失败就继续把 DeepSeek 特例写进 provider-neutral 核心 Runtime。若失败属于模型自主面，应缩小该 profile 的授权或保留本地确定性表面；若只是 S3 内容质量，则流转到 WWC／机制／密度任务，不重开 S2 数字编译。
+
+#### 16.20.3 自然 canary 选型与用户价值边界（2026-08-11）
+
+产品不直接重跑整份 DELL 报告，而选择一个可被业务解释的需求真实性判断。E022 的订单、AI 服务器收入、backlog 和客户广度证明当前需求指标真实存在；E018 的同业订单消化和 E023 的提前备货只提供 pull-forward／持续性边界。模型必须同时表达“当前指标受到支持”和“长期转化仍未证明”，而不是只通过 JSON 格式测试。
+
+该 canary 定向覆盖此前漏编的 `$16.1B` 和超过 5,000 客户展示，但这些值只属于冻结测试输入，不成为核心 Runtime 的 DELL 白名单。正式产品规则仍是任何案例由 selected Evidence 共编 NUM／FORM。当前只批准零调用 runner、validator、fake／mutation 和 clean proof；通过后才允许另行决定一次 DeepSeek Pro live，且 live 结果仍不能自动触发 DELL 全链或产品晋升。

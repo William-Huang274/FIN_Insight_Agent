@@ -2309,3 +2309,9 @@ FIN 的本地检索输出必须先经过独立内容准入，不能把 `Slot lab
 有用材料也不能越过其披露边界。Microsoft、Micron、TSMC 等第三方资料可以证明行业需求、供应能力或机制背景，但在没有公司特定绑定时只能标记为 `bounded_context_evidence`，不得被 Writer 改写为 Dell／NVIDIA 已取得特定订单、产能分配或客户承诺。每条准入材料必须附可直接交给 Writer 的 citation boundary；每条拒绝项必须从 prompt surface 排除。数值 Evidence 必须绑定父表、行列、期间、单位、币种、披露主体和 source lineage；模型可以分析这些数字，但不能改写 authoritative value。
 
 六份 Pack 当前共有 126 个 raw facet gaps，它们是研究覆盖账，不是搜索调用清单。外源补源必须先按“是否影响投资判断、是否有可能从权威公开来源取得、能否覆盖多个相邻 facet、时效与成本”做确定性优先级编译；每个案例只形成少量 SearchIntent。issuer／counterparty／regulator 官方来源优先，broad search 只负责找 locator；搜索摘要、Provider 日期和排名不能直接成为 Evidence，必须重新抓取原文、做 as-of／日期裁决并经过同一 Evidence Gate。权威材料不存在时，产品必须保留 typed gap，而不是扩大调用或让模型补写。
+
+### 16.14 外源补源必须从决策缺口出发（FIN 0.1.3 工程回写，2026-08-10）
+
+外源搜索不得把 Evidence Pack 的每个缺失字段机械转换成一次联网请求。系统必须先把缺口按投资决策问题、公开可得性、期间、来源类型和 Evidence Slot 聚合为有界 SearchIntent；市场 point-in-time、估值公式、用户风险阈值和不可公开证明的商业分配应交给其本地数值／研究方法所有者或保留 typed gap。
+
+研究主体、证据披露主体和经济关系方向必须分别建模。例如研究 DELL 的 HBM 供给时，可以抓取 Micron／TSMC 官方披露作为供应侧背景，但不得把供应商自述或搜索服务商 snippet 改写成 DELL 获得特定 allocation 的事实。Broad Web Search 只负责定位候选 URL；只有重新 capture 的官方文档经本地日期、身份、数值、内容和 Evidence Gate 后才能晋升。公开资料不存在时，产品必须诚实显示缺口。

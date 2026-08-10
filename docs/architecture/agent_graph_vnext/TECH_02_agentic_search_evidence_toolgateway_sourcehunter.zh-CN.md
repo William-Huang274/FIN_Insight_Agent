@@ -1316,3 +1316,11 @@ R1 证明 BGE 与 corpus 路径完成 `1 load / 13 outer batches / 52 micro-batc
 R7 首次候选复核暴露了来源投影缺陷：结构化 child claim 的正文来自 Exhibit 99.1，但检索记录继承了母 8-K URL。`DocumentLineageLookup` 现在同时保存 filing URL 与 exhibit URL，并对 `8K_EARNINGS::*` 的 accession match 输出 `exact_accession_exhibit`；candidate 投影优先采用该 manifest-bound URL。R8 证明候选数量、rank 和 typed gaps 不变，仅 NVDA 相关 candidate digest／URL 因血缘纠正而变化。qrel replacement validator 对任何退回母 8-K 的变体 fail closed。
 
 历史 qrels v1.3、Owner acceptance 和 R2 指标保持不可变。新的 packet 只允许输出 `successor_owner_review_pending`，不直接物化 qrels v1.4；Owner 只需重新确认 5 个变更 identity，另外 13 行沿用既有接受。确认之后仍要先完成 Linux BGE／Milvus production binding 与真实 410 physical presence，不能把 qrel 复核通过直接当成 ranking 或产品内容质量通过。
+
+## FIN 0.1.3 residual-gap official-first supplement contract（2026-08-10）
+
+SourceHunter 的正式输入不是 raw missing-field list，而是 provider-neutral SearchIntent。编译器必须显式绑定 `research_subject`、`evidence_owner_entity_keys`、`relationship_direction`、period、source families、query atoms、allowed official hosts 和 selected typed gaps。`research_subject` 与 `evidence_owner` 不得合并；host allowlist 由证据主体注册表校验，避免既把供应商官网误拒绝，也避免把任意 Web 域放入金融权威面。
+
+执行顺序固定为 capture 官方发现入口 → 必要时用 Broad Provider 在受限官方域内定位 URL → capture 官方文档 → 本地解析和重新裁决。Provider 的 snippet、摘要、发布日期与排序分数均没有 Evidence authority。Live 预算、exact-once identity、capture-first、retry=0 和 partial typed terminal result 必须先于网络签发；搜索不到不得触发后端 reranker 或模型生成事实。
+
+当前六案计划将 126 个 raw facets 编译成 12 个业务意图：每案 2 个，覆盖 88 个相互关联的高价值 facet，另 38 个明确后传。这个计数是研究规划，不是请求数；正式 live ceiling 为 6 个 discovery fetch、12 个 locator call、12 个 official-document fetch，合计不超过 30。

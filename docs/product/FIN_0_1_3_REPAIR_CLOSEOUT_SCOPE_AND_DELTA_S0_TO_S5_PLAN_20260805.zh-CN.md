@@ -1,7 +1,7 @@
 # FIN 0.1.3 修复收口版范围与差量 S0–S5 计划
 
-日期：2026-08-05；最近互校准：2026-08-08
-状态：`FIN_0_1_3_active / S0_04G_current_next / S1_01_to_07_closed_S1_08_clean_deterministic_proof_pass_live_candidate_ceiling_pending / S2_experiment_complete_natural_correction_failed / S3_minimum_anchor_only_not_product_pass / S4_not_started_in_FIN_0_1_3 / S5_not_started / release_blocked / FIN_0_2_definition_unchanged`
+日期：2026-08-05；最近互校准：2026-08-10
+状态：`FIN_0_1_3_active / S1_five_step_1_to_3_terminal / S1_step_4_priority_compiled_external_live_pending / S2_S3_fixed_pack_then_dynamic_research_pending / S4_S5_pending / release_blocked / FIN_0_2_definition_unchanged`
 
 > **2026-08-06 用户新增硬要求**：FIN 0.1.3 必须把研究内容输出质量作为 release-blocking 考核，不得再将 L3 的通用 Claim、弱综合、机械 Writer 或不可执行 WWC 降级为 nonblocking finding。八维绝对质量＋paired gain＋qualified human content acceptance 的正式标准见 `docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md`。
 
@@ -757,3 +757,11 @@ R1 的业务事实是：前三个已知案例在 93-object population 中各有 
 第 3 项现已 terminal succeeded，结果 digest=`52cd20fa...56da`。DELL／MU／NVDA 分别保留 `15／16／14` 条 Evidence，其中第三方客户、供应商与行业材料只允许作 bounded context；ORCL／ASML／ANET 分别保留 `13／12／14` 条结构化直接 Evidence，并拒绝 `14／1／13` 条安全但业务不相关、模板化或截断内容。任何数值进入 Pack 都必须保持表格父节点、行列、期间、单位、币种与来源 lineage；derived arithmetic 只能由确定性程序计算。
 
 第 4 项不得把 `126` 当成网络调用数量。它先做零调用优先级编译，把相邻 facet 合并为案例级研究意图，优先寻找能够改变判断的订单／需求质量、价格数量 mix、产能与交付、现金转换、监管影响、反证与 WWC；商业上通常不存在公开权威数据的精确客户 allocation、单位／ASP 或内部良率应允许继续留作 typed gap。只有编译后的小规模 SearchIntent 才可进入 fresh authority；Provider snippet、搜索排名和旧 capture 都不能直接晋升 Evidence。
+
+## 7S. residual-gap 优先级编译终态与 official-first live 边界（2026-08-10）
+
+第 4 项的零调用前半段已完成：`126` 个 raw facets 全部得到处置，按六家公司各 2 个业务问题编译为 `12` 个 SearchIntent；`88` 个相邻且公开来源可能取得的 facets 被组合进这些意图，`38` 个继续作为 typed deferred。后者主要属于市场 point-in-time／估值数值程序、S3 研究阈值、公式输入和公开资料难以证明的公司特定 attribution，不会被静默遗忘，也不会浪费成 broad-search 请求。
+
+本轮第一次测试暴露并修正了关系型来源边界：研究 DELL／NVDA 的供应问题时，证据披露主体可以是 Micron／TSMC，因此 `research subject`、`evidence owner` 与 `relationship direction` 必须分别建模。Owner→official-host registry 只允许相应主体的官方域；供应商自我披露仍只能证明其自身供给背景，不能被改写为 DELL／NVDA 获得特定 allocation。
+
+下一项仍属于 FIN 0.1.3 S1，不创建新版本：在 clean commit 上签发唯一 exact-once live，最多 `6 discovery + 12 locator + 12 official document = 30 network`、retry=0、model／embedding／rerank=0。Tencent 等 broad provider 仅定位受限官方 URL，snippet 和 provider date 没有 Evidence authority；原文 capture 后必须本地解析、日期裁决和 Evidence Gate。公开材料不存在即保留 typed gap。完成本项后才进入 frozen-pack DeepSeek 分析，随后另测动态 Agentic Research。

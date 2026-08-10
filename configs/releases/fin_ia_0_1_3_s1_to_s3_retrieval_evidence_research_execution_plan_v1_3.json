@@ -1,0 +1,80 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_to_s3_retrieval_evidence_research_execution_plan_v1_3",
+  "contract_ref": "fin_0_1_3.S1_to_S3.retrieval_evidence_research_execution:v1.3",
+  "recorded_at": "2026-08-10",
+  "product_version": "FIN_0_1_3",
+  "status": "steps_1_to_3_terminal_step_4_priority_compiled_live_authority_pending",
+  "supersedes": "configs/releases/fin_ia_0_1_3_s1_to_s3_retrieval_evidence_research_execution_plan_v1_2.json",
+  "supersession_reason": "v1.2 remains the immutable pre-priority-compilation plan. v1.3 binds the twelve-intent provider-neutral residual plan and separates the research subject from the entity that can authoritatively disclose relationship-side evidence.",
+  "user_decision": "Execute steps 1-5 in order without requesting approval at every substep; preserve exact-once authorities and stop at a newly established L1 blocker rather than silently expanding or retrying.",
+  "current_truth": {
+    "physical_index_r2": "terminal_succeeded_93_shared_object_bm25_and_bge_m3_milvus_objects",
+    "retrieval_r1": "terminal_succeeded_result_dfc2e69a444db1b011d0cf61d02b592f84e7c6da6524accfc3abc6e56bc3914a",
+    "retrieval_route_disposition": "object_bm25_primary_bge_shadow_fusion_not_global_default_no_reranker",
+    "local_evidence_pack_r1": "terminal_succeeded_result_52cd20faabe60591dca408a3c571ea1835b8e8ac635402b3d47c681b5cdc56da",
+    "local_content_gate": "84_evidence_items_28_rejections_126_raw_facet_gaps_all_112_candidate_and_narrative_items_adjudicated",
+    "external_priority_plan": "terminal_zero_call_12_intents_88_selected_facets_38_typed_deferred_digest_e1eb54f75d9d6b17f6222c2f245713bec7c6f3b9fb3cc9d9cf90108b70081c19",
+    "external_live": "not_started_network_authority_not_issued",
+    "deepseek_fixed_pack_and_dynamic_research": "blocked_until_governed_local_plus_external_pack"
+  },
+  "execution_sequence": [
+    {
+      "order": 1,
+      "owner_stage": "S1",
+      "work_item": "PHYSICAL_INDEX_FILE_OR_DIRECTORY_REPAIR_AND_FRESH_R2",
+      "status": "terminal_succeeded"
+    },
+    {
+      "order": 2,
+      "owner_stage": "S1",
+      "work_item": "SIX_CASE_REAL_SPARSE_DENSE_FUSION_RETRIEVAL_EVALUATION",
+      "status": "terminal_succeeded_business_disposition_recorded",
+      "decision": "ObjectBM25 is primary; BGE-M3 remains shadow expansion; fixed fusion is not a global default and no reranker is admitted."
+    },
+    {
+      "order": 3,
+      "owner_stage": "S1_to_S3",
+      "work_item": "SIX_CASE_EVIDENCE_PACK_ASSEMBLY_AND_BUSINESS_AUDIT",
+      "status": "terminal_succeeded_reviewed_local_packs_with_declared_gaps",
+      "result_digest": "52cd20faabe60591dca408a3c571ea1835b8e8ac635402b3d47c681b5cdc56da"
+    },
+    {
+      "order": 4,
+      "owner_stage": "S1",
+      "work_item": "OFFICIAL_FIRST_EXTERNAL_RESIDUAL_GAP_SUPPLEMENT",
+      "status": "priority_compilation_terminal_network_authority_pending",
+      "priority_plan_digest": "e1eb54f75d9d6b17f6222c2f245713bec7c6f3b9fb3cc9d9cf90108b70081c19",
+      "priority_shape": {
+        "raw_facets": 126,
+        "selected_research_intents": 12,
+        "selected_facets_grouped_into_intents": 88,
+        "typed_deferred_facets": 38,
+        "intents_per_case": 2
+      },
+      "route_order": [
+        "captured_official_discovery_root",
+        "official_domain_locator_provider_fallback",
+        "captured_official_document",
+        "local_parse_and_readjudication"
+      ],
+      "business_boundary": "The subject company and authoritative evidence owner are separate dimensions. DELL and NVDA supplier constraints may be supported only by captured Micron or TSMC official disclosures, not by rewriting provider snippets or supplier statements as issuer-specific allocation facts.",
+      "live_ceiling": {
+        "official_discovery_fetch": 6,
+        "locator_provider_calls": 12,
+        "official_document_fetch": 12,
+        "total_network_calls": 30,
+        "retry": 0,
+        "model_embedding_rerank": 0
+      }
+    },
+    {
+      "order": 5,
+      "owner_stage": "S2_to_S3",
+      "work_item": "DEEPSEEK_FIXED_PACK_ANALYSIS_THEN_DYNAMIC_AGENTIC_RESEARCH",
+      "status": "blocked_until_step_4_governed_pack",
+      "acceptance": "First measure analysis and synthesis on the same frozen Pack; then separately measure planning, query/tool use, residual-gap handling, economic mechanisms, counterevidence, what-would-change and final report quality."
+    }
+  ],
+  "known_boundary": "Priority compilation is not external retrieval success, Evidence promotion, DeepSeek research or report acceptance. Provider snippets and provider dates remain non-authoritative, and an unavailable public source remains a typed gap.",
+  "plan_digest": "a64ff9e24cee400f05f3217b9f78c2bfb4e0e050df4d8b46d37fea017c76db29"
+}

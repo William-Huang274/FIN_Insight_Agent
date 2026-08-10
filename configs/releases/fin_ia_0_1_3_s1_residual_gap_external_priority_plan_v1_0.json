@@ -1,0 +1,1219 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_residual_gap_external_priority_plan_v1_0",
+  "contract_ref": "fin_0_1_3.S1.residual_gap_official_first_external_supplement:v1",
+  "run_scope": "S1_RESIDUAL_GAP_EXTERNAL_SUPPLEMENT",
+  "recorded_at": "2026-08-10",
+  "status": "zero_call_priority_plan_ready_network_authority_not_issued",
+  "as_of_date": "2026-08-06",
+  "local_evidence_pack_result_digest": "52cd20faabe60591dca408a3c571ea1835b8e8ac635402b3d47c681b5cdc56da",
+  "local_pack_payload_digests": {
+    "DELL": "554e7db12bcb98f0a03f420f9d4b7cbaf7422a87bdef6f83699068d0b863f181",
+    "MU": "1c2b787a955bb145fef6acd4e1ebf70566f472259006c06891b3fd9dde0f2964",
+    "NVDA": "9372a57bb60bbb573a8b53fd7dda2a45d70caaf89298456982714ea84ecaf066",
+    "ORCL": "fab997d54e67c13ebae8d3dee9647678c9beebccd1693a22861cd9a844ad58b7",
+    "ASML": "2f975a03b5a646c1da54bb63ad0ee8f3ec977e5848c06ff71075f02e92f1c683",
+    "ANET": "49422886291e495d736066c790d7344052bc3b4796c48b4351226b345408ccf3"
+  },
+  "raw_gap_count": 126,
+  "selected_gap_count": 88,
+  "deferred_gap_count": 38,
+  "selected_intents": [
+    {
+      "intent_key": "issuer_demand_margin_cash",
+      "case_key": "DELL",
+      "decision_surface": "AI server demand durability, value capture and cash absorption",
+      "priority": "P0",
+      "public_obtainability": "possible_issuer_official",
+      "subject_aliases": [
+        "Dell Technologies",
+        "DELL"
+      ],
+      "evidence_owner_entity_keys": [
+        "DELL"
+      ],
+      "evidence_owner_aliases": [
+        "Dell Technologies"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "source_families": [
+        "issuer_earnings_release",
+        "issuer_earnings_call",
+        "prepared_remarks"
+      ],
+      "selected_gap_ids": [
+        "dell-gap-ai-working-capital",
+        "dell-gap-demand-pull-forward-digestion",
+        "dell-gap-ai-system-margin",
+        "dell-gap-pricing-asp",
+        "dell-gap-price-volume-mix-bridge",
+        "dell-gap-pricing-units"
+      ],
+      "selected_facets": [
+        "ai_system_margin",
+        "ai_working_capital_absorption",
+        "price_or_asp",
+        "price_volume_mix_bridge",
+        "pull_forward_or_digestion",
+        "volume_or_units"
+      ],
+      "official_discovery_roots": [
+        "https://investors.delltechnologies.com/"
+      ],
+      "allowed_document_hosts": [
+        "investors.delltechnologies.com"
+      ],
+      "official_domain_query": {
+        "en": "Dell Technologies Dell Technologies FY2027 Q1 FY2026 earnings release earnings call prepared remarks AI server backlog orders pull-forward ISG margin working capital price volume mix site:investors.delltechnologies.com",
+        "zh": "Dell Technologies Dell Technologies 2027财年第一季度 2026财年 业绩公告 业绩会 管理层准备稿 AI服务器积压订单 订单 需求前置 ISG利润率 营运资本 价格销量组合 site:investors.delltechnologies.com"
+      },
+      "semantic_locator_query": {
+        "en": "Dell Technologies Dell Technologies FY2027 Q1 FY2026 earnings release earnings call prepared remarks AI server backlog orders pull-forward ISG margin working capital price volume mix",
+        "zh": "Dell Technologies Dell Technologies 2027财年第一季度 2026财年 业绩公告 业绩会 管理层准备稿 AI服务器积压订单 订单 需求前置 ISG利润率 营运资本 价格销量组合"
+      },
+      "provider_role": "locator_only",
+      "provider_date_authority": false,
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "identical_retry_allowed": false,
+      "intent_id": "residual_search_intent::DELL::issuer_demand_margin_cash::c6f8b5ec03d8ec7a",
+      "intent_digest": "c6f8b5ec03d8ec7abe43db441122efc28b9e410d1f50abf947adf34d5ff740e8"
+    },
+    {
+      "intent_key": "supplier_hbm_packaging_capacity",
+      "case_key": "DELL",
+      "decision_surface": "HBM and advanced-packaging capacity available to AI systems",
+      "priority": "P0",
+      "public_obtainability": "possible_supplier_official_bounded_context",
+      "subject_aliases": [
+        "Dell Technologies",
+        "DELL"
+      ],
+      "evidence_owner_entity_keys": [
+        "MU",
+        "TSMC"
+      ],
+      "evidence_owner_aliases": [
+        "Micron",
+        "TSMC"
+      ],
+      "relationship_direction": "evidence_owner_own_supply_capacity_not_dell_allocation",
+      "source_families": [
+        "supplier_earnings_release",
+        "supplier_earnings_call",
+        "capacity_update"
+      ],
+      "selected_gap_ids": [
+        "dell-gap-advanced-packaging",
+        "dell-gap-capacity-release-timing",
+        "dell-gap-hbm-supply",
+        "dell-gap-capacity-utilization-yield",
+        "dell-gap-supplier-capacity-readthrough"
+      ],
+      "selected_facets": [
+        "advanced_packaging_capacity",
+        "capacity_release_timing",
+        "high_bandwidth_memory_supply",
+        "supplier_capacity_readthrough",
+        "utilization_or_yield"
+      ],
+      "official_discovery_roots": [
+        "https://investors.delltechnologies.com/"
+      ],
+      "allowed_document_hosts": [
+        "investor.tsmc.com",
+        "investors.micron.com"
+      ],
+      "official_domain_query": {
+        "en": "Dell Technologies Micron TSMC FY2027 Q1 FY2026 earnings call capacity update technology symposium HBM supply CoWoS advanced packaging capacity ramp yield lead time site:investor.tsmc.com OR site:investors.micron.com",
+        "zh": "Dell Technologies Micron TSMC 2027财年第一季度 2026财年 业绩会 产能更新 技术论坛 HBM供应 CoWoS 先进封装 产能爬坡 良率 交期 site:investor.tsmc.com OR site:investors.micron.com"
+      },
+      "semantic_locator_query": {
+        "en": "Dell Technologies Micron TSMC FY2027 Q1 FY2026 earnings call capacity update technology symposium HBM supply CoWoS advanced packaging capacity ramp yield lead time",
+        "zh": "Dell Technologies Micron TSMC 2027财年第一季度 2026财年 业绩会 产能更新 技术论坛 HBM供应 CoWoS 先进封装 产能爬坡 良率 交期"
+      },
+      "provider_role": "locator_only",
+      "provider_date_authority": false,
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "identical_retry_allowed": false,
+      "intent_id": "residual_search_intent::DELL::supplier_hbm_packaging_capacity::eb2799fa6a6a1080",
+      "intent_digest": "eb2799fa6a6a1080622ecf42774573a18173821f8d5310caacedb15b634bc461"
+    },
+    {
+      "intent_key": "issuer_hbm_demand_revenue",
+      "case_key": "MU",
+      "decision_surface": "HBM demand durability, orders and AI revenue attribution",
+      "priority": "P0",
+      "public_obtainability": "possible_issuer_official",
+      "subject_aliases": [
+        "Micron Technology",
+        "Micron",
+        "MU"
+      ],
+      "evidence_owner_entity_keys": [
+        "MU"
+      ],
+      "evidence_owner_aliases": [
+        "Micron Technology",
+        "Micron"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "source_families": [
+        "issuer_earnings_release",
+        "issuer_earnings_call",
+        "prepared_remarks"
+      ],
+      "selected_gap_ids": [
+        "mu-gap-order-volume",
+        "mu-gap-pull-forward",
+        "mu-gap-ai-revenue"
+      ],
+      "selected_facets": [
+        "accelerated_compute_or_ai_infrastructure_revenue",
+        "order_backlog_rpo_or_volume",
+        "pull_forward_or_digestion"
+      ],
+      "official_discovery_roots": [
+        "https://investors.micron.com/"
+      ],
+      "allowed_document_hosts": [
+        "investors.micron.com"
+      ],
+      "official_domain_query": {
+        "en": "Micron Technology Micron Technology Micron FY2026 Q3 2026 earnings release earnings call prepared remarks HBM revenue AI revenue sold out orders customer inventory digestion site:investors.micron.com",
+        "zh": "Micron Technology Micron Technology Micron 2026财年第三季度 2026年 业绩公告 业绩会 管理层准备稿 HBM收入 AI收入 售罄 订单 客户库存 消化 site:investors.micron.com"
+      },
+      "semantic_locator_query": {
+        "en": "Micron Technology Micron Technology Micron FY2026 Q3 2026 earnings release earnings call prepared remarks HBM revenue AI revenue sold out orders customer inventory digestion",
+        "zh": "Micron Technology Micron Technology Micron 2026财年第三季度 2026年 业绩公告 业绩会 管理层准备稿 HBM收入 AI收入 售罄 订单 客户库存 消化"
+      },
+      "provider_role": "locator_only",
+      "provider_date_authority": false,
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "identical_retry_allowed": false,
+      "intent_id": "residual_search_intent::MU::issuer_hbm_demand_revenue::0fe88aa7ff09bf68",
+      "intent_digest": "0fe88aa7ff09bf682359ea2f02e4f4e8955bfc0481108377d113d27840cad64c"
+    },
+    {
+      "intent_key": "issuer_hbm_execution",
+      "case_key": "MU",
+      "decision_surface": "HBM capacity, packaging, yield and execution bottlenecks",
+      "priority": "P0",
+      "public_obtainability": "possible_issuer_official",
+      "subject_aliases": [
+        "Micron Technology",
+        "Micron",
+        "MU"
+      ],
+      "evidence_owner_entity_keys": [
+        "MU"
+      ],
+      "evidence_owner_aliases": [
+        "Micron Technology",
+        "Micron"
+      ],
+      "relationship_direction": "subject_self_disclosure_and_bounded_supplier_context",
+      "source_families": [
+        "issuer_earnings_call",
+        "technology_update",
+        "regulatory_filing"
+      ],
+      "selected_gap_ids": [
+        "mu-gap-advanced-packaging",
+        "mu-gap-foundry-component",
+        "mu-gap-supplier-commitment",
+        "mu-gap-utilization-yield",
+        "mu-gap-yield-die"
+      ],
+      "selected_facets": [
+        "advanced_packaging_capacity",
+        "foundry_or_component_dependency",
+        "supplier_commitment_or_dependency",
+        "utilization_or_yield",
+        "yield_or_die_size"
+      ],
+      "official_discovery_roots": [
+        "https://investors.micron.com/"
+      ],
+      "allowed_document_hosts": [
+        "investors.micron.com"
+      ],
+      "official_domain_query": {
+        "en": "Micron Technology Micron Technology Micron FY2026 Q3 2026 earnings call technology update 10-Q HBM capacity advanced packaging yield die size utilization supplier dependency site:investors.micron.com",
+        "zh": "Micron Technology Micron Technology Micron 2026财年第三季度 2026年 业绩会 技术更新 10-Q HBM产能 先进封装 良率 芯片面积 利用率 供应依赖 site:investors.micron.com"
+      },
+      "semantic_locator_query": {
+        "en": "Micron Technology Micron Technology Micron FY2026 Q3 2026 earnings call technology update 10-Q HBM capacity advanced packaging yield die size utilization supplier dependency",
+        "zh": "Micron Technology Micron Technology Micron 2026财年第三季度 2026年 业绩会 技术更新 10-Q HBM产能 先进封装 良率 芯片面积 利用率 供应依赖"
+      },
+      "provider_role": "locator_only",
+      "provider_date_authority": false,
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "identical_retry_allowed": false,
+      "intent_id": "residual_search_intent::MU::issuer_hbm_execution::e0611949eb628fcc",
+      "intent_digest": "e0611949eb628fcc2407faafd36648150e7f4ea9b8894c6ce3845d3ead866ac6"
+    },
+    {
+      "intent_key": "issuer_demand_product_economics",
+      "case_key": "NVDA",
+      "decision_surface": "platform demand, shipments, pricing and mix",
+      "priority": "P0",
+      "public_obtainability": "possible_issuer_official",
+      "subject_aliases": [
+        "NVIDIA",
+        "NVDA"
+      ],
+      "evidence_owner_entity_keys": [
+        "NVDA"
+      ],
+      "evidence_owner_aliases": [
+        "NVIDIA"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "source_families": [
+        "issuer_earnings_release",
+        "issuer_earnings_call",
+        "prepared_remarks"
+      ],
+      "selected_gap_ids": [
+        "nvda-gap-order-volume",
+        "nvda-gap-asp",
+        "nvda-gap-pvm",
+        "nvda-gap-units"
+      ],
+      "selected_facets": [
+        "order_backlog_rpo_or_volume",
+        "price_or_asp",
+        "price_volume_mix_bridge",
+        "volume_or_units"
+      ],
+      "official_discovery_roots": [
+        "https://investor.nvidia.com/"
+      ],
+      "allowed_document_hosts": [
+        "investor.nvidia.com"
+      ],
+      "official_domain_query": {
+        "en": "NVIDIA NVIDIA FY2027 Q1 2026 earnings release earnings call prepared remarks Blackwell orders shipments average selling price product mix price volume mix site:investor.nvidia.com",
+        "zh": "NVIDIA NVIDIA 2027财年第一季度 2026年 业绩公告 业绩会 管理层准备稿 Blackwell订单 出货 平均售价 产品组合 价格销量组合 site:investor.nvidia.com"
+      },
+      "semantic_locator_query": {
+        "en": "NVIDIA NVIDIA FY2027 Q1 2026 earnings release earnings call prepared remarks Blackwell orders shipments average selling price product mix price volume mix",
+        "zh": "NVIDIA NVIDIA 2027财年第一季度 2026年 业绩公告 业绩会 管理层准备稿 Blackwell订单 出货 平均售价 产品组合 价格销量组合"
+      },
+      "provider_role": "locator_only",
+      "provider_date_authority": false,
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "identical_retry_allowed": false,
+      "intent_id": "residual_search_intent::NVDA::issuer_demand_product_economics::5988730ac57b1b38",
+      "intent_digest": "5988730ac57b1b3838c8b5f4d1df12d6e80a4e6c53578fce2957ae1332fa948d"
+    },
+    {
+      "intent_key": "supplier_packaging_hbm_capacity",
+      "case_key": "NVDA",
+      "decision_surface": "foundry, advanced-packaging and HBM capacity release",
+      "priority": "P0",
+      "public_obtainability": "possible_supplier_official_bounded_context",
+      "subject_aliases": [
+        "NVIDIA",
+        "NVDA"
+      ],
+      "evidence_owner_entity_keys": [
+        "TSMC",
+        "MU"
+      ],
+      "evidence_owner_aliases": [
+        "TSMC",
+        "Micron"
+      ],
+      "relationship_direction": "evidence_owner_own_supply_capacity_not_nvda_allocation",
+      "source_families": [
+        "supplier_earnings_call",
+        "capacity_update",
+        "technology_symposium"
+      ],
+      "selected_gap_ids": [
+        "nvda-gap-advanced-packaging",
+        "nvda-gap-capacity-release",
+        "nvda-gap-utilization-yield"
+      ],
+      "selected_facets": [
+        "advanced_packaging_capacity",
+        "capacity_release_timing",
+        "utilization_or_yield"
+      ],
+      "official_discovery_roots": [
+        "https://investor.nvidia.com/"
+      ],
+      "allowed_document_hosts": [
+        "investor.tsmc.com",
+        "investors.micron.com"
+      ],
+      "official_domain_query": {
+        "en": "NVIDIA TSMC Micron FY2027 Q1 2026 earnings call capacity update technology symposium CoWoS capacity advanced packaging HBM supply capacity release yield utilization site:investor.tsmc.com OR site:investors.micron.com",
+        "zh": "NVIDIA TSMC Micron 2027财年第一季度 2026年 业绩会 产能更新 技术论坛 CoWoS产能 先进封装 HBM供应 产能释放 良率 利用率 site:investor.tsmc.com OR site:investors.micron.com"
+      },
+      "semantic_locator_query": {
+        "en": "NVIDIA TSMC Micron FY2027 Q1 2026 earnings call capacity update technology symposium CoWoS capacity advanced packaging HBM supply capacity release yield utilization",
+        "zh": "NVIDIA TSMC Micron 2027财年第一季度 2026年 业绩会 产能更新 技术论坛 CoWoS产能 先进封装 HBM供应 产能释放 良率 利用率"
+      },
+      "provider_role": "locator_only",
+      "provider_date_authority": false,
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "identical_retry_allowed": false,
+      "intent_id": "residual_search_intent::NVDA::supplier_packaging_hbm_capacity::73b645cd0b127d68",
+      "intent_digest": "73b645cd0b127d6870edb02a71d21ad889812179b05ca9dacd916f3f992d240a"
+    },
+    {
+      "intent_key": "issuer_capacity_and_policy",
+      "case_key": "ORCL",
+      "decision_surface": "data-center capacity ramp, execution constraints and policy exposure",
+      "priority": "P0",
+      "public_obtainability": "possible_issuer_or_regulator_official",
+      "subject_aliases": [
+        "Oracle Corporation",
+        "Oracle",
+        "ORCL"
+      ],
+      "evidence_owner_entity_keys": [
+        "ORCL"
+      ],
+      "evidence_owner_aliases": [
+        "Oracle Corporation",
+        "Oracle"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "source_families": [
+        "issuer_earnings_call",
+        "regulatory_filing",
+        "official_policy"
+      ],
+      "selected_gap_ids": [
+        "orcl-gap-capacity_inputs_execution-bottleneck_or_lead_time",
+        "orcl-gap-capacity_inputs_execution-capacity_or_supply",
+        "orcl-gap-capacity_inputs_execution-ramp_timing",
+        "orcl-gap-capacity_inputs_execution-supplier_commitment_or_dependency",
+        "orcl-gap-capacity_inputs_execution-utilization_or_yield",
+        "orcl-gap-regulatory_policy_exposure-affected_scope",
+        "orcl-gap-regulatory_policy_exposure-financial_or_operating_consequence",
+        "orcl-gap-regulatory_policy_exposure-mitigation_or_uncertainty",
+        "orcl-gap-regulatory_policy_exposure-policy_or_regulatory_event"
+      ],
+      "selected_facets": [
+        "affected_scope",
+        "bottleneck_or_lead_time",
+        "capacity_or_supply",
+        "financial_or_operating_consequence",
+        "mitigation_or_uncertainty",
+        "policy_or_regulatory_event",
+        "ramp_timing",
+        "supplier_commitment_or_dependency",
+        "utilization_or_yield"
+      ],
+      "official_discovery_roots": [
+        "https://investor.oracle.com/"
+      ],
+      "allowed_document_hosts": [
+        "investor.oracle.com"
+      ],
+      "official_domain_query": {
+        "en": "Oracle Corporation Oracle Corporation Oracle FY2026 quarter ended May 31 2026 earnings call 10-K official policy data center capacity capex power lead time utilization AI regulation mitigation site:investor.oracle.com",
+        "zh": "Oracle Corporation Oracle Corporation Oracle 2026财年 截至2026年5月31日 业绩会 10-K 正式监管文件 数据中心容量 资本开支 电力 交付周期 利用率 AI监管 缓解措施 site:investor.oracle.com"
+      },
+      "semantic_locator_query": {
+        "en": "Oracle Corporation Oracle Corporation Oracle FY2026 quarter ended May 31 2026 earnings call 10-K official policy data center capacity capex power lead time utilization AI regulation mitigation",
+        "zh": "Oracle Corporation Oracle Corporation Oracle 2026财年 截至2026年5月31日 业绩会 10-K 正式监管文件 数据中心容量 资本开支 电力 交付周期 利用率 AI监管 缓解措施"
+      },
+      "provider_role": "locator_only",
+      "provider_date_authority": false,
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "identical_retry_allowed": false,
+      "intent_id": "residual_search_intent::ORCL::issuer_capacity_and_policy::19450c109fcb7667",
+      "intent_digest": "19450c109fcb76673d142db1c922c65a6cfc2cf6b9b17ab2035899141ad64c0f"
+    },
+    {
+      "intent_key": "issuer_cloud_demand_value",
+      "case_key": "ORCL",
+      "decision_surface": "OCI demand, RPO conversion, product growth and value capture",
+      "priority": "P0",
+      "public_obtainability": "likely_issuer_official",
+      "subject_aliases": [
+        "Oracle Corporation",
+        "Oracle",
+        "ORCL"
+      ],
+      "evidence_owner_entity_keys": [
+        "ORCL"
+      ],
+      "evidence_owner_aliases": [
+        "Oracle Corporation",
+        "Oracle"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "source_families": [
+        "issuer_earnings_release",
+        "issuer_earnings_call",
+        "prepared_remarks"
+      ],
+      "selected_gap_ids": [
+        "orcl-gap-demand_volume_quality-customer_breadth_or_concentration",
+        "orcl-gap-demand_volume_quality-deployment_or_utilization",
+        "orcl-gap-demand_volume_quality-order_backlog_rpo_or_volume",
+        "orcl-gap-operating_performance-management_outlook",
+        "orcl-gap-operating_performance-segment_or_product_performance",
+        "orcl-gap-pricing_mix_value_capture-mix_or_product_attribution",
+        "orcl-gap-pricing_mix_value_capture-price_or_asp",
+        "orcl-gap-pricing_mix_value_capture-profit_capture_bridge",
+        "orcl-gap-pricing_mix_value_capture-volume_or_units",
+        "orcl-gap-relationship_attribution-company_specific_attribution_or_boundary"
+      ],
+      "selected_facets": [
+        "company_specific_attribution_or_boundary",
+        "customer_breadth_or_concentration",
+        "deployment_or_utilization",
+        "management_outlook",
+        "mix_or_product_attribution",
+        "order_backlog_rpo_or_volume",
+        "price_or_asp",
+        "profit_capture_bridge",
+        "segment_or_product_performance",
+        "volume_or_units"
+      ],
+      "official_discovery_roots": [
+        "https://investor.oracle.com/"
+      ],
+      "allowed_document_hosts": [
+        "investor.oracle.com"
+      ],
+      "official_domain_query": {
+        "en": "Oracle Corporation Oracle Corporation Oracle FY2026 quarter ended May 31 2026 earnings release earnings call prepared remarks OCI revenue RPO cloud demand customer commitments guidance margin product mix site:investor.oracle.com",
+        "zh": "Oracle Corporation Oracle Corporation Oracle 2026财年 截至2026年5月31日 业绩公告 业绩会 管理层准备稿 OCI收入 剩余履约义务 云需求 客户承诺 指引 利润率 产品组合 site:investor.oracle.com"
+      },
+      "semantic_locator_query": {
+        "en": "Oracle Corporation Oracle Corporation Oracle FY2026 quarter ended May 31 2026 earnings release earnings call prepared remarks OCI revenue RPO cloud demand customer commitments guidance margin product mix",
+        "zh": "Oracle Corporation Oracle Corporation Oracle 2026财年 截至2026年5月31日 业绩公告 业绩会 管理层准备稿 OCI收入 剩余履约义务 云需求 客户承诺 指引 利润率 产品组合"
+      },
+      "provider_role": "locator_only",
+      "provider_date_authority": false,
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "identical_retry_allowed": false,
+      "intent_id": "residual_search_intent::ORCL::issuer_cloud_demand_value::5c658354cc80ac34",
+      "intent_digest": "5c658354cc80ac34b40d47dba92b0f3c77d65ecad9b5d8e09224a0db6f021d0d"
+    },
+    {
+      "intent_key": "issuer_execution_cash_policy",
+      "case_key": "ASML",
+      "decision_surface": "capacity execution, cash conversion and export-control counterevidence",
+      "priority": "P0",
+      "public_obtainability": "possible_issuer_official",
+      "subject_aliases": [
+        "ASML Holding",
+        "ASML"
+      ],
+      "evidence_owner_entity_keys": [
+        "ASML"
+      ],
+      "evidence_owner_aliases": [
+        "ASML Holding",
+        "ASML"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "source_families": [
+        "issuer_results_release",
+        "annual_or_interim_report",
+        "official_policy"
+      ],
+      "selected_gap_ids": [
+        "asml-gap-capacity_inputs_execution-bottleneck_or_lead_time",
+        "asml-gap-capacity_inputs_execution-capacity_or_supply",
+        "asml-gap-capacity_inputs_execution-ramp_timing",
+        "asml-gap-capacity_inputs_execution-supplier_commitment_or_dependency",
+        "asml-gap-capacity_inputs_execution-utilization_or_yield",
+        "asml-gap-cash_conversion_balance_sheet-capital_expenditure",
+        "asml-gap-cash_conversion_balance_sheet-inventory",
+        "asml-gap-cash_conversion_balance_sheet-operating_cash_flow",
+        "asml-gap-cash_conversion_balance_sheet-receivables_payables_or_obligations",
+        "asml-gap-cash_conversion_balance_sheet-working_capital",
+        "asml-gap-counterevidence_and_what_would_change-impact_mechanism",
+        "asml-gap-counterevidence_and_what_would_change-strongest_counterevidence",
+        "asml-gap-regulatory_policy_exposure-affected_scope",
+        "asml-gap-regulatory_policy_exposure-financial_or_operating_consequence",
+        "asml-gap-regulatory_policy_exposure-mitigation_or_uncertainty",
+        "asml-gap-regulatory_policy_exposure-policy_or_regulatory_event"
+      ],
+      "selected_facets": [
+        "affected_scope",
+        "bottleneck_or_lead_time",
+        "capacity_or_supply",
+        "capital_expenditure",
+        "financial_or_operating_consequence",
+        "impact_mechanism",
+        "inventory",
+        "mitigation_or_uncertainty",
+        "operating_cash_flow",
+        "policy_or_regulatory_event",
+        "ramp_timing",
+        "receivables_payables_or_obligations",
+        "strongest_counterevidence",
+        "supplier_commitment_or_dependency",
+        "utilization_or_yield",
+        "working_capital"
+      ],
+      "official_discovery_roots": [
+        "https://www.asml.com/en/investors"
+      ],
+      "allowed_document_hosts": [
+        "asml.com",
+        "www.asml.com"
+      ],
+      "official_domain_query": {
+        "en": "ASML Holding ASML Holding ASML Q2 2026 2026 quarterly results interim report export control update capacity lead time High NA ramp utilization capex cash flow export controls mitigation site:asml.com OR site:www.asml.com",
+        "zh": "ASML Holding ASML Holding ASML 2026年第二季度 2026年 季度业绩 中期报告 出口管制更新 产能 交付周期 High-NA爬坡 利用率 资本开支 现金流 出口管制 缓解措施 site:asml.com OR site:www.asml.com"
+      },
+      "semantic_locator_query": {
+        "en": "ASML Holding ASML Holding ASML Q2 2026 2026 quarterly results interim report export control update capacity lead time High NA ramp utilization capex cash flow export controls mitigation",
+        "zh": "ASML Holding ASML Holding ASML 2026年第二季度 2026年 季度业绩 中期报告 出口管制更新 产能 交付周期 High-NA爬坡 利用率 资本开支 现金流 出口管制 缓解措施"
+      },
+      "provider_role": "locator_only",
+      "provider_date_authority": false,
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "identical_retry_allowed": false,
+      "intent_id": "residual_search_intent::ASML::issuer_execution_cash_policy::805efabb365fd7cf",
+      "intent_digest": "805efabb365fd7cfcebae6d2887d8eb0594b888033747a3f092c3e9cb7b8a46e"
+    },
+    {
+      "intent_key": "issuer_orders_product_economics",
+      "case_key": "ASML",
+      "decision_surface": "bookings, backlog, product mix, system volume and outlook",
+      "priority": "P0",
+      "public_obtainability": "likely_issuer_official",
+      "subject_aliases": [
+        "ASML Holding",
+        "ASML"
+      ],
+      "evidence_owner_entity_keys": [
+        "ASML"
+      ],
+      "evidence_owner_aliases": [
+        "ASML Holding",
+        "ASML"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "source_families": [
+        "issuer_results_release",
+        "presentation",
+        "earnings_call"
+      ],
+      "selected_gap_ids": [
+        "asml-gap-demand_volume_quality-customer_breadth_or_concentration",
+        "asml-gap-demand_volume_quality-deployment_or_utilization",
+        "asml-gap-demand_volume_quality-order_backlog_rpo_or_volume",
+        "asml-gap-operating_performance-management_outlook",
+        "asml-gap-pricing_mix_value_capture-price_or_asp",
+        "asml-gap-pricing_mix_value_capture-profit_capture_bridge"
+      ],
+      "selected_facets": [
+        "customer_breadth_or_concentration",
+        "deployment_or_utilization",
+        "management_outlook",
+        "order_backlog_rpo_or_volume",
+        "price_or_asp",
+        "profit_capture_bridge"
+      ],
+      "official_discovery_roots": [
+        "https://www.asml.com/en/investors"
+      ],
+      "allowed_document_hosts": [
+        "asml.com",
+        "www.asml.com"
+      ],
+      "official_domain_query": {
+        "en": "ASML Holding ASML Holding ASML Q2 2026 2026 quarterly results presentation earnings call net bookings backlog EUV High NA system sales average selling price guidance site:asml.com OR site:www.asml.com",
+        "zh": "ASML Holding ASML Holding ASML 2026年第二季度 2026年 季度业绩 演示材料 业绩会 净订单 积压订单 EUV High-NA 系统销量 平均售价 指引 site:asml.com OR site:www.asml.com"
+      },
+      "semantic_locator_query": {
+        "en": "ASML Holding ASML Holding ASML Q2 2026 2026 quarterly results presentation earnings call net bookings backlog EUV High NA system sales average selling price guidance",
+        "zh": "ASML Holding ASML Holding ASML 2026年第二季度 2026年 季度业绩 演示材料 业绩会 净订单 积压订单 EUV High-NA 系统销量 平均售价 指引"
+      },
+      "provider_role": "locator_only",
+      "provider_date_authority": false,
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "identical_retry_allowed": false,
+      "intent_id": "residual_search_intent::ASML::issuer_orders_product_economics::43d7e3c3ff782307",
+      "intent_digest": "43d7e3c3ff782307a737ed1f773103c7d6265024a92259fbee1eb492f2821c0c"
+    },
+    {
+      "intent_key": "issuer_ai_networking_demand_value",
+      "case_key": "ANET",
+      "decision_surface": "AI networking demand, customer concentration, product mix and value capture",
+      "priority": "P0",
+      "public_obtainability": "likely_issuer_official",
+      "subject_aliases": [
+        "Arista Networks",
+        "ANET"
+      ],
+      "evidence_owner_entity_keys": [
+        "ANET"
+      ],
+      "evidence_owner_aliases": [
+        "Arista Networks",
+        "Arista"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "source_families": [
+        "issuer_earnings_release",
+        "earnings_call",
+        "prepared_remarks"
+      ],
+      "selected_gap_ids": [
+        "anet-gap-demand_volume_quality-customer_breadth_or_concentration",
+        "anet-gap-demand_volume_quality-deployment_or_utilization",
+        "anet-gap-demand_volume_quality-order_backlog_rpo_or_volume",
+        "anet-gap-operating_performance-management_outlook",
+        "anet-gap-operating_performance-segment_or_product_performance",
+        "anet-gap-pricing_mix_value_capture-mix_or_product_attribution",
+        "anet-gap-pricing_mix_value_capture-price_or_asp",
+        "anet-gap-pricing_mix_value_capture-profit_capture_bridge",
+        "anet-gap-pricing_mix_value_capture-volume_or_units"
+      ],
+      "selected_facets": [
+        "customer_breadth_or_concentration",
+        "deployment_or_utilization",
+        "management_outlook",
+        "mix_or_product_attribution",
+        "order_backlog_rpo_or_volume",
+        "price_or_asp",
+        "profit_capture_bridge",
+        "segment_or_product_performance",
+        "volume_or_units"
+      ],
+      "official_discovery_roots": [
+        "https://investors.arista.com/"
+      ],
+      "allowed_document_hosts": [
+        "investors.arista.com"
+      ],
+      "official_domain_query": {
+        "en": "Arista Networks Arista Networks Arista Q2 2026 2026 earnings release earnings call prepared remarks AI networking revenue Ethernet AI orders customer concentration deployment product mix guidance margin site:investors.arista.com",
+        "zh": "Arista Networks Arista Networks Arista 2026年第二季度 2026年 业绩公告 业绩会 管理层准备稿 AI网络收入 以太网AI 订单 客户集中度 部署 产品组合 指引 利润率 site:investors.arista.com"
+      },
+      "semantic_locator_query": {
+        "en": "Arista Networks Arista Networks Arista Q2 2026 2026 earnings release earnings call prepared remarks AI networking revenue Ethernet AI orders customer concentration deployment product mix guidance margin",
+        "zh": "Arista Networks Arista Networks Arista 2026年第二季度 2026年 业绩公告 业绩会 管理层准备稿 AI网络收入 以太网AI 订单 客户集中度 部署 产品组合 指引 利润率"
+      },
+      "provider_role": "locator_only",
+      "provider_date_authority": false,
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "identical_retry_allowed": false,
+      "intent_id": "residual_search_intent::ANET::issuer_ai_networking_demand_value::19156d4e5f3846a8",
+      "intent_digest": "19156d4e5f3846a8cba757a6bdfe2d6e444a13058bc9d547eacf6c7bedb26fee"
+    },
+    {
+      "intent_key": "issuer_supply_cash_mitigation",
+      "case_key": "ANET",
+      "decision_surface": "component supply, platform ramp, cash conversion and policy mitigation",
+      "priority": "P0",
+      "public_obtainability": "possible_issuer_official",
+      "subject_aliases": [
+        "Arista Networks",
+        "ANET"
+      ],
+      "evidence_owner_entity_keys": [
+        "ANET"
+      ],
+      "evidence_owner_aliases": [
+        "Arista Networks",
+        "Arista"
+      ],
+      "relationship_direction": "subject_self_disclosure",
+      "source_families": [
+        "issuer_earnings_call",
+        "regulatory_filing",
+        "prepared_remarks"
+      ],
+      "selected_gap_ids": [
+        "anet-gap-capacity_inputs_execution-bottleneck_or_lead_time",
+        "anet-gap-capacity_inputs_execution-capacity_or_supply",
+        "anet-gap-capacity_inputs_execution-ramp_timing",
+        "anet-gap-capacity_inputs_execution-supplier_commitment_or_dependency",
+        "anet-gap-capacity_inputs_execution-utilization_or_yield",
+        "anet-gap-cash_conversion_balance_sheet-capital_expenditure",
+        "anet-gap-cash_conversion_balance_sheet-inventory",
+        "anet-gap-cash_conversion_balance_sheet-receivables_payables_or_obligations",
+        "anet-gap-regulatory_policy_exposure-mitigation_or_uncertainty",
+        "anet-gap-relationship_attribution-company_specific_attribution_or_boundary",
+        "anet-gap-relationship_attribution-economic_relationship_direction",
+        "anet-gap-relationship_attribution-evidence_owner_self_disclosure"
+      ],
+      "selected_facets": [
+        "bottleneck_or_lead_time",
+        "capacity_or_supply",
+        "capital_expenditure",
+        "company_specific_attribution_or_boundary",
+        "economic_relationship_direction",
+        "evidence_owner_self_disclosure",
+        "inventory",
+        "mitigation_or_uncertainty",
+        "ramp_timing",
+        "receivables_payables_or_obligations",
+        "supplier_commitment_or_dependency",
+        "utilization_or_yield"
+      ],
+      "official_discovery_roots": [
+        "https://investors.arista.com/"
+      ],
+      "allowed_document_hosts": [
+        "investors.arista.com"
+      ],
+      "official_domain_query": {
+        "en": "Arista Networks Arista Networks Arista Q2 2026 2026 earnings call 10-Q prepared remarks component supply lead time capacity platform ramp inventory receivables capex trade controls mitigation site:investors.arista.com",
+        "zh": "Arista Networks Arista Networks Arista 2026年第二季度 2026年 业绩会 10-Q 管理层准备稿 组件供应 交付周期 产能 平台爬坡 存货 应收账款 资本开支 贸易管制 缓解措施 site:investors.arista.com"
+      },
+      "semantic_locator_query": {
+        "en": "Arista Networks Arista Networks Arista Q2 2026 2026 earnings call 10-Q prepared remarks component supply lead time capacity platform ramp inventory receivables capex trade controls mitigation",
+        "zh": "Arista Networks Arista Networks Arista 2026年第二季度 2026年 业绩会 10-Q 管理层准备稿 组件供应 交付周期 产能 平台爬坡 存货 应收账款 资本开支 贸易管制 缓解措施"
+      },
+      "provider_role": "locator_only",
+      "provider_date_authority": false,
+      "evidence_promotion_allowed": false,
+      "writer_citable": false,
+      "identical_retry_allowed": false,
+      "intent_id": "residual_search_intent::ANET::issuer_supply_cash_mitigation::46196424fee1da7d",
+      "intent_digest": "46196424fee1da7d1fc9ae1aa5fa81625be50b456460423c1d10e2d9230b4f2d"
+    }
+  ],
+  "deferred_gap_dispositions": [
+    {
+      "gap_id": "anet-gap-capital_allocation_and_valuation-capital_structure_or_returns",
+      "case_key": "ANET",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "capital_structure_or_returns",
+      "gap_code": "formula_input_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "anet-gap-capital_allocation_and_valuation-price_in_boundary",
+      "case_key": "ANET",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "price_in_boundary",
+      "gap_code": "market_data_gap",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "anet-gap-capital_allocation_and_valuation-scenario_or_sensitivity",
+      "case_key": "ANET",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "scenario_or_sensitivity",
+      "gap_code": "formula_input_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "anet-gap-capital_allocation_and_valuation-valuation_basis",
+      "case_key": "ANET",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "valuation_basis",
+      "gap_code": "market_data_gap",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "anet-gap-counterevidence_and_what_would_change-monitoring_metric_and_timing",
+      "case_key": "ANET",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "monitoring_metric_and_timing",
+      "gap_code": "source_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "s3_analysis_method_and_user_risk_preference_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "anet-gap-counterevidence_and_what_would_change-observable_invalidation_threshold",
+      "case_key": "ANET",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "observable_invalidation_threshold",
+      "gap_code": "threshold_not_observable",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "s3_analysis_method_and_user_risk_preference_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "asml-gap-capital_allocation_and_valuation-capital_structure_or_returns",
+      "case_key": "ASML",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "capital_structure_or_returns",
+      "gap_code": "formula_input_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "asml-gap-capital_allocation_and_valuation-price_in_boundary",
+      "case_key": "ASML",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "price_in_boundary",
+      "gap_code": "market_data_gap",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "asml-gap-capital_allocation_and_valuation-scenario_or_sensitivity",
+      "case_key": "ASML",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "scenario_or_sensitivity",
+      "gap_code": "formula_input_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "asml-gap-capital_allocation_and_valuation-valuation_basis",
+      "case_key": "ASML",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "valuation_basis",
+      "gap_code": "market_data_gap",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "asml-gap-counterevidence_and_what_would_change-monitoring_metric_and_timing",
+      "case_key": "ASML",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "monitoring_metric_and_timing",
+      "gap_code": "source_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "s3_analysis_method_and_user_risk_preference_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "asml-gap-counterevidence_and_what_would_change-observable_invalidation_threshold",
+      "case_key": "ASML",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "observable_invalidation_threshold",
+      "gap_code": "threshold_not_observable",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "s3_analysis_method_and_user_risk_preference_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "asml-gap-relationship_attribution-company_specific_attribution_or_boundary",
+      "case_key": "ASML",
+      "slot_id": "relationship_attribution",
+      "facet_id": "company_specific_attribution_or_boundary",
+      "gap_code": "relationship_attribution_unproven",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "low_public_obtainability_preserve_company_specific_boundary",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "asml-gap-relationship_attribution-economic_relationship_direction",
+      "case_key": "ASML",
+      "slot_id": "relationship_attribution",
+      "facet_id": "economic_relationship_direction",
+      "gap_code": "relationship_attribution_unproven",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "low_public_obtainability_preserve_company_specific_boundary",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "asml-gap-relationship_attribution-evidence_owner_self_disclosure",
+      "case_key": "ASML",
+      "slot_id": "relationship_attribution",
+      "facet_id": "evidence_owner_self_disclosure",
+      "gap_code": "source_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "deferred_by_two_intent_per_case_budget",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "dell-gap-invalidation-threshold",
+      "case_key": "DELL",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "observable_invalidation_threshold",
+      "gap_code": "threshold_not_observable",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "s3_analysis_method_and_user_risk_preference_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "dell-gap-observable-quarterly-threshold",
+      "case_key": "DELL",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "observable_quarterly_threshold",
+      "gap_code": "threshold_not_observable",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "s3_analysis_method_and_user_risk_preference_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "dell-gap-price-in-boundary",
+      "case_key": "DELL",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "price_in_boundary",
+      "gap_code": "market_data_gap",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "dell-gap-scenario-sensitivity",
+      "case_key": "DELL",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "scenario_or_sensitivity",
+      "gap_code": "formula_input_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "dell-gap-valuation-basis",
+      "case_key": "DELL",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "valuation_basis",
+      "gap_code": "market_data_gap",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "mu-gap-invalidation",
+      "case_key": "MU",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "observable_invalidation_threshold",
+      "gap_code": "threshold_not_observable",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "s3_analysis_method_and_user_risk_preference_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "mu-gap-price-in",
+      "case_key": "MU",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "price_in_boundary",
+      "gap_code": "market_data_gap",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "mu-gap-quarterly-threshold",
+      "case_key": "MU",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "observable_quarterly_threshold",
+      "gap_code": "threshold_not_observable",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "s3_analysis_method_and_user_risk_preference_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "mu-gap-valuation-basis",
+      "case_key": "MU",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "valuation_basis",
+      "gap_code": "market_data_gap",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "mu-gap-valuation-scenario",
+      "case_key": "MU",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "scenario_or_sensitivity",
+      "gap_code": "formula_input_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "nvda-gap-capex-fcf",
+      "case_key": "NVDA",
+      "slot_id": "cash_conversion_balance_sheet",
+      "facet_id": "capex_to_free_cash_flow",
+      "gap_code": "formula_input_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "numeric_program_after_authoritative_inputs_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "nvda-gap-invalidation",
+      "case_key": "NVDA",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "observable_invalidation_threshold",
+      "gap_code": "threshold_not_observable",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "s3_analysis_method_and_user_risk_preference_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "nvda-gap-price-in",
+      "case_key": "NVDA",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "price_in_boundary",
+      "gap_code": "market_data_gap",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "nvda-gap-quarterly-threshold",
+      "case_key": "NVDA",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "observable_quarterly_threshold",
+      "gap_code": "threshold_not_observable",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "s3_analysis_method_and_user_risk_preference_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "nvda-gap-valuation-basis",
+      "case_key": "NVDA",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "valuation_basis",
+      "gap_code": "market_data_gap",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "nvda-gap-valuation-scenario",
+      "case_key": "NVDA",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "scenario_or_sensitivity",
+      "gap_code": "formula_input_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "orcl-gap-capital_allocation_and_valuation-capital_structure_or_returns",
+      "case_key": "ORCL",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "capital_structure_or_returns",
+      "gap_code": "formula_input_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "orcl-gap-capital_allocation_and_valuation-price_in_boundary",
+      "case_key": "ORCL",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "price_in_boundary",
+      "gap_code": "market_data_gap",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "orcl-gap-capital_allocation_and_valuation-scenario_or_sensitivity",
+      "case_key": "ORCL",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "scenario_or_sensitivity",
+      "gap_code": "formula_input_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "orcl-gap-capital_allocation_and_valuation-valuation_basis",
+      "case_key": "ORCL",
+      "slot_id": "capital_allocation_and_valuation",
+      "facet_id": "valuation_basis",
+      "gap_code": "market_data_gap",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "local_market_pit_or_numeric_program_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "orcl-gap-cash_conversion_balance_sheet-inventory",
+      "case_key": "ORCL",
+      "slot_id": "cash_conversion_balance_sheet",
+      "facet_id": "inventory",
+      "gap_code": "metric_not_disclosed",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "lower_priority_or_low_public_obtainability_under_case_budget",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "orcl-gap-counterevidence_and_what_would_change-monitoring_metric_and_timing",
+      "case_key": "ORCL",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "monitoring_metric_and_timing",
+      "gap_code": "source_missing",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "s3_analysis_method_and_user_risk_preference_owned",
+      "evidence_state": "typed_gap"
+    },
+    {
+      "gap_id": "orcl-gap-counterevidence_and_what_would_change-observable_invalidation_threshold",
+      "case_key": "ORCL",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "observable_invalidation_threshold",
+      "gap_code": "threshold_not_observable",
+      "disposition": "deferred_typed_gap_not_searched_this_attempt",
+      "defer_reason": "s3_analysis_method_and_user_risk_preference_owned",
+      "evidence_state": "typed_gap"
+    }
+  ],
+  "budget": {
+    "selected_intent_count": 12,
+    "selected_intents_per_case": 2,
+    "official_discovery_fetch_ceiling": 6,
+    "locator_provider_call_ceiling": 12,
+    "official_document_fetch_ceiling": 12,
+    "total_network_call_ceiling": 30,
+    "result_ceiling_per_locator_query": 10,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0,
+    "embedding_call_ceiling": 0,
+    "rerank_call_ceiling": 0,
+    "automatic_retry": false
+  },
+  "routing_contract": {
+    "order": [
+      "captured_official_discovery_root",
+      "official_domain_locator_provider_fallback",
+      "captured_official_document",
+      "local_parse_and_readjudication"
+    ],
+    "official_discovery_and_document_are_financial_source_candidates": true,
+    "broad_provider_is_locator_only": true,
+    "provider_snippet_is_evidence": false,
+    "provider_reported_date_is_financial_date_authority": false,
+    "captured_document_requires_local_date_and_content_gate": true,
+    "unavailable_public_source_preserves_typed_gap": true,
+    "market_pit_and_numeric_program_are_not_web_search": true
+  },
+  "stage_acceptance": {
+    "all_raw_gaps_dispositioned": true,
+    "two_intents_per_case": true,
+    "official_first": true,
+    "broad_provider_locator_only": true,
+    "provider_snippet_evidence_allowed": false,
+    "network_authority_issued": false,
+    "external_capture_complete": false,
+    "external_evidence_readjudicated": false,
+    "deepseek_research": false,
+    "release": false
+  },
+  "known_boundary": "This zero-call plan reduces 126 raw facets to 12 bounded research intents. It does not authorize network or provider calls, treat provider snippets as Evidence, claim that public data exists, or close the local typed gaps.",
+  "plan_digest": "e1eb54f75d9d6b17f6222c2f245713bec7c6f3b9fb3cc9d9cf90108b70081c19"
+}

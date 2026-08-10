@@ -1,0 +1,58 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.physical_store_artifact_microcanary:v1",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "20260810_s1_physical_store_artifact_directory_microcanary_r1",
+  "runtime": {
+    "distribution": "Ubuntu-22.04",
+    "python_executable": "/home/william/.cache/fin_insight/candidate_bundle_build_env_v1/bin/python",
+    "repository_root": "/mnt/d/FIN_Insight_Agent",
+    "required_packages": {
+      "pymilvus": "3.0.0",
+      "milvus-lite": "3.0"
+    }
+  },
+  "store_contract": {
+    "profile_id": "pymilvus-3.0_milvus-lite-3.0_directory-store",
+    "artifact_kind": "directory",
+    "collection_name": "fin_ia_0_1_3_s1_physical_store_microcanary_v1",
+    "metric_type": "COSINE",
+    "index_type": "FLAT",
+    "embedding_dimension": 4,
+    "expected_count": 1
+  },
+  "private_target": {
+    "target_prefix": "/home/william/.cache/fin_insight/physical_store_artifact_microcanary",
+    "working_root": "/home/william/.cache/fin_insight/physical_store_artifact_microcanary/attempt_r1_building",
+    "final_root": "/home/william/.cache/fin_insight/physical_store_artifact_microcanary/v1",
+    "store_relative_path": "milvus_lite.db",
+    "preserve_failed_working_root": true,
+    "publish_by_same_filesystem_rename": true
+  },
+  "execution_ceiling": {
+    "maximum_executions": 1,
+    "automatic_retry": false,
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "embedding_model_loads": 0,
+    "synthetic_vectors": 1,
+    "milvus_database_creates": 1,
+    "milvus_collection_creates": 1,
+    "milvus_insert_batches": 1,
+    "milvus_inserted_vectors": 1,
+    "milvus_flushes": 2,
+    "milvus_count_reads": 2,
+    "milvus_metadata_queries": 1,
+    "milvus_reopens": 1,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "public_outputs": {
+    "authority_ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_authority_v1_0.json",
+    "result_ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_result_v1_0.json"
+  },
+  "known_boundary": "This one-vector synthetic run proves directory artifact validation, close/reopen identity, complete counters and whole-root publication only. It loads no embedding model and contains no business fact or Evidence."
+}

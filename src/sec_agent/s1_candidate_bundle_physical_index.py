@@ -19,20 +19,46 @@ from typing import Any, Callable, Mapping, Sequence
 
 
 POLICY_SCHEMA = "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_policy_v1_0"
+POLICY_SCHEMA_V1_1 = (
+    "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_policy_v1_1"
+)
 IMPLEMENTATION_PROOF_SCHEMA = (
     "fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_0"
+)
+IMPLEMENTATION_PROOF_SCHEMA_V1_1 = (
+    "fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_1"
 )
 AUTHORITY_SCHEMA = (
     "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_authority_v1_0"
 )
+AUTHORITY_SCHEMA_V1_1 = (
+    "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_authority_v1_1"
+)
 TERMINAL_RESULT_SCHEMA = (
     "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_result_v1_0"
+)
+TERMINAL_RESULT_SCHEMA_V1_1 = (
+    "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_result_v1_1"
 )
 PRIVATE_MANIFEST_SCHEMA = (
     "fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_private_manifest_v1_0"
 )
 RUN_SCOPE = "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD"
 EXPECTED_CASE_KEYS = ("DELL", "MU", "NVDA", "ORCL", "ASML", "ANET")
+POLICY_IDENTITIES = {
+    POLICY_SCHEMA: {
+        "implementation_proof_schema": IMPLEMENTATION_PROOF_SCHEMA,
+        "authority_schema": AUTHORITY_SCHEMA,
+        "terminal_result_schema": TERMINAL_RESULT_SCHEMA,
+        "contract_ref": "fin_0_1_3.S1.candidate_bundle_physical_sparse_dense_index:v1",
+    },
+    POLICY_SCHEMA_V1_1: {
+        "implementation_proof_schema": IMPLEMENTATION_PROOF_SCHEMA_V1_1,
+        "authority_schema": AUTHORITY_SCHEMA_V1_1,
+        "terminal_result_schema": TERMINAL_RESULT_SCHEMA_V1_1,
+        "contract_ref": "fin_0_1_3.S1.candidate_bundle_physical_sparse_dense_index:v1.1",
+    },
+}
 
 
 class CandidateBundlePhysicalIndexError(RuntimeError):
@@ -67,6 +93,166 @@ def file_sha256(path: str | Path) -> str:
 
 def normalized_sha256(path: str | Path) -> str:
     return hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def canonical_tree_manifest(path: str | Path) -> dict[str, Any]:
+    root = Path(path)
+    _require(
+        root.exists() and root.is_dir() and not root.is_symlink(),
+        "candidate_bundle_physical_directory_artifact_invalid",
+    )
+    entries: list[dict[str, Any]] = []
+    for child in sorted(
+        root.rglob("*"), key=lambda value: value.relative_to(root).as_posix()
+    ):
+        relative = child.relative_to(root).as_posix()
+        _require(
+            not child.is_symlink(),
+            "candidate_bundle_physical_directory_artifact_symlink_forbidden",
+        )
+        if child.is_dir():
+            entries.append({"kind": "directory", "relative_path": relative})
+        elif child.is_file():
+            entries.append(
+                {
+                    "kind": "file",
+                    "relative_path": relative,
+                    "bytes": child.stat().st_size,
+                    "sha256": file_sha256(child),
+                }
+            )
+        else:
+            raise CandidateBundlePhysicalIndexError(
+                "candidate_bundle_physical_directory_artifact_special_file_forbidden"
+            )
+    file_rows = [item for item in entries if item["kind"] == "file"]
+    _require(file_rows, "candidate_bundle_physical_directory_artifact_empty")
+    body = {
+        "schema_version": "fin_ia_canonical_directory_tree_manifest_v1_0",
+        "entries": entries,
+        "directory_count": sum(item["kind"] == "directory" for item in entries),
+        "file_count": len(file_rows),
+        "total_bytes": sum(int(item["bytes"]) for item in file_rows),
+    }
+    return {**body, "tree_digest": canonical_digest(body)}
+
+
+def inspect_physical_store_artifact(
+    path: str | Path,
+    *,
+    contract: Mapping[str, Any],
+    expected_count: int,
+    embedding_dimension: int,
+) -> dict[str, Any]:
+    target = Path(path)
+    expected_kind = str(contract.get("artifact_kind") or "")
+    _require(
+        expected_kind in {"file", "directory"} and target.exists(),
+        "candidate_bundle_physical_store_artifact_missing",
+    )
+    observed_kind = (
+        "directory" if target.is_dir() else "file" if target.is_file() else "special"
+    )
+    _require(
+        observed_kind == expected_kind and not target.is_symlink(),
+        "candidate_bundle_physical_store_artifact_kind_mismatch",
+    )
+    if observed_kind == "file":
+        body = {
+            "schema_version": "fin_ia_physical_store_artifact_v1_0",
+            "artifact_kind": "file",
+            "artifact_name": target.name,
+            "file_count": 1,
+            "total_bytes": target.stat().st_size,
+            "sha256": file_sha256(target),
+            "collection_validation": None,
+        }
+        return {**body, "artifact_digest": canonical_digest(body)}
+
+    tree = canonical_tree_manifest(target)
+    collection_name = str(contract.get("collection_name") or "")
+    collection_root = target / "collections" / collection_name
+    manifest_path = collection_root / "manifest.json"
+    schema_path = collection_root / "schema.json"
+    _require(
+        bool(collection_name) and manifest_path.is_file() and schema_path.is_file(),
+        "candidate_bundle_physical_store_collection_manifest_missing",
+    )
+    manifest = _read_json(manifest_path)
+    schema = _read_json(schema_path)
+    partitions = dict(manifest.get("partitions") or {})
+    data_paths: list[str] = []
+    index_paths: list[str] = []
+    for partition_name, partition_value in sorted(partitions.items()):
+        partition_path = Path(str(partition_name))
+        _require(
+            bool(str(partition_name))
+            and not partition_path.is_absolute()
+            and ".." not in partition_path.parts
+            and len(partition_path.parts) == 1,
+            "candidate_bundle_physical_store_manifest_path_escape",
+        )
+        partition = dict(partition_value or {})
+        for relative_value in partition.get("data_files") or []:
+            relative = Path(str(relative_value))
+            _require(
+                not relative.is_absolute() and ".." not in relative.parts,
+                "candidate_bundle_physical_store_manifest_path_escape",
+            )
+            absolute = collection_root / "partitions" / partition_path / relative
+            _require(
+                absolute.is_file() and not absolute.is_symlink(),
+                "candidate_bundle_physical_store_manifest_data_missing",
+            )
+            data_paths.append(absolute.relative_to(target).as_posix())
+        index_root = collection_root / "partitions" / partition_path / "indexes"
+        if index_root.is_dir():
+            index_paths.extend(
+                item.relative_to(target).as_posix()
+                for item in sorted(index_root.rglob("*.idx"))
+                if item.is_file() and not item.is_symlink()
+            )
+    fields = {
+        str(item.get("name") or ""): dict(item)
+        for item in schema.get("fields") or []
+        if isinstance(item, Mapping)
+    }
+    embedding = dict(fields.get("embedding") or {})
+    vector_index = dict((manifest.get("index_specs") or {}).get("embedding") or {})
+    _require(
+        schema.get("collection_name") == collection_name
+        and int(manifest.get("current_seq") or 0) == int(expected_count)
+        and int(embedding.get("dim") or 0) == int(embedding_dimension)
+        and vector_index.get("field_name") == "embedding"
+        and vector_index.get("metric_type") == contract.get("metric_type")
+        and vector_index.get("index_type") == contract.get("index_type")
+        and bool(data_paths)
+        and bool(index_paths),
+        "candidate_bundle_physical_store_collection_invariant_invalid",
+    )
+    collection_validation = {
+        "collection_name": collection_name,
+        "current_seq": int(manifest["current_seq"]),
+        "embedding_dimension": int(embedding["dim"]),
+        "metric_type": vector_index["metric_type"],
+        "index_type": vector_index["index_type"],
+        "data_paths": data_paths,
+        "index_paths": index_paths,
+        "manifest_sha256": file_sha256(manifest_path),
+        "schema_sha256": file_sha256(schema_path),
+    }
+    body = {
+        "schema_version": "fin_ia_physical_store_artifact_v1_0",
+        "artifact_kind": "directory",
+        "artifact_name": target.name,
+        "file_count": tree["file_count"],
+        "directory_count": tree["directory_count"],
+        "total_bytes": tree["total_bytes"],
+        "tree_digest": tree["tree_digest"],
+        "tree_manifest": tree,
+        "collection_validation": collection_validation,
+    }
+    return {**body, "artifact_digest": canonical_digest(body)}
 
 
 def _read_json(path: str | Path) -> dict[str, Any]:
@@ -105,13 +291,14 @@ def load_physical_index_policy(
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     policy = _read_json(path)
+    identity = POLICY_IDENTITIES.get(str(policy.get("schema_version") or ""))
     _require(
-        policy.get("schema_version") == POLICY_SCHEMA
-        and policy.get("implementation_proof_schema") == IMPLEMENTATION_PROOF_SCHEMA
-        and policy.get("authority_schema") == AUTHORITY_SCHEMA
-        and policy.get("terminal_result_schema") == TERMINAL_RESULT_SCHEMA
-        and policy.get("contract_ref")
-        == "fin_0_1_3.S1.candidate_bundle_physical_sparse_dense_index:v1"
+        identity is not None
+        and policy.get("implementation_proof_schema")
+        == identity["implementation_proof_schema"]
+        and policy.get("authority_schema") == identity["authority_schema"]
+        and policy.get("terminal_result_schema") == identity["terminal_result_schema"]
+        and policy.get("contract_ref") == identity["contract_ref"]
         and policy.get("run_scope") == RUN_SCOPE,
         "candidate_bundle_physical_policy_identity_invalid",
     )
@@ -189,6 +376,21 @@ def load_physical_index_policy(
         and index.get("historical_indexes_read_only") is True,
         "candidate_bundle_physical_index_contract_invalid",
     )
+    if policy.get("schema_version") == POLICY_SCHEMA_V1_1:
+        artifact = dict(index.get("physical_store_artifact") or {})
+        _require(
+            artifact.get("profile_id")
+            == "pymilvus-3.0_milvus-lite-3.0_directory-store"
+            and artifact.get("artifact_kind") == "directory"
+            and re.fullmatch(
+                r"[A-Za-z0-9_]+", str(artifact.get("collection_name") or "")
+            )
+            is not None
+            and artifact.get("collection_name") == index.get("dense_collection_name")
+            and artifact.get("metric_type") == index.get("dense_metric_type")
+            and artifact.get("index_type") == index.get("dense_index_type"),
+            "candidate_bundle_physical_store_profile_invalid",
+        )
     target = dict(policy.get("private_target") or {})
     prefix = str(target.get("target_prefix") or "")
     working = str(target.get("working_root") or "")
@@ -212,7 +414,11 @@ def load_physical_index_policy(
         and int(ceiling.get("sparse_records") or 0) == expected_count
         and int(ceiling.get("milvus_inserted_vectors") or 0) == expected_count
         and int(ceiling.get("embedding_batches") or 0) == expected_batches
-        and int(ceiling.get("milvus_insert_batches") or 0) == expected_batches,
+        and int(ceiling.get("milvus_insert_batches") or 0) == expected_batches
+        and (
+            policy.get("schema_version") != POLICY_SCHEMA_V1_1
+            or int(ceiling.get("milvus_reopens") or 0) == 1
+        ),
         "candidate_bundle_physical_execution_ceiling_invalid",
     )
     for key in (
@@ -859,6 +1065,9 @@ def inspect_bound_linux_environment(policy: Mapping[str, Any]) -> dict[str, Any]
         commit_primitive = "unknown"
     import torch
 
+    store_profile = dict(
+        policy.get("index_contract", {}).get("physical_store_artifact") or {}
+    )
     result = {
         "platform": platform.platform(),
         "python": platform.python_version(),
@@ -876,6 +1085,7 @@ def inspect_bound_linux_environment(policy: Mapping[str, Any]) -> dict[str, Any]
         "model_root": model_root.as_posix(),
         "model_files": model_files,
         "embedding_device": "cpu",
+        "physical_store_profile": store_profile or None,
         "torch_cuda_available_but_not_authorized": bool(torch.cuda.is_available()),
         "target": {
             "working_root": working.as_posix(),
@@ -944,6 +1154,7 @@ def environment_identity(snapshot: Mapping[str, Any]) -> dict[str, Any]:
         "model_root": snapshot.get("model_root"),
         "model_files": snapshot.get("model_files"),
         "embedding_device": snapshot.get("embedding_device"),
+        "physical_store_profile": snapshot.get("physical_store_profile"),
         "target": {
             "working_root": target.get("working_root"),
             "working_root_absent": target.get("working_root_absent"),
@@ -951,6 +1162,34 @@ def environment_identity(snapshot: Mapping[str, Any]) -> dict[str, Any]:
             "final_root_absent": target.get("final_root_absent"),
             "filesystem_anchor": target.get("filesystem_anchor"),
         },
+    }
+
+
+def complete_observed_calls(
+    *,
+    embedder: Any | None,
+    writer: Any | None,
+) -> dict[str, int]:
+    writer_calls = dict(getattr(writer, "calls", {}) or {})
+    return {
+        "network": 0,
+        "provider": 0,
+        "llm_model": 0,
+        "document_fetch": 0,
+        "embedding_model_loads": int(embedder is not None),
+        "embedding_batches": int(getattr(embedder, "calls", 0)),
+        "embedding_vectors": int(getattr(embedder, "vectors", 0)),
+        "milvus_database_creates": int(writer_calls.get("database_create", 0)),
+        "milvus_collection_creates": int(writer_calls.get("collection_create", 0)),
+        "milvus_insert_batches": int(writer_calls.get("insert_batches", 0)),
+        "milvus_inserted_vectors": int(writer_calls.get("inserted_vectors", 0)),
+        "milvus_flushes": int(writer_calls.get("flush", 0)),
+        "milvus_count_reads": int(writer_calls.get("count", 0)),
+        "milvus_metadata_queries": int(writer_calls.get("metadata_query", 0)),
+        "milvus_reopens": int(writer_calls.get("reopen", 0)),
+        "vector_search": 0,
+        "rerank": 0,
+        "evidence_promotion": 0,
     }
 
 
@@ -968,7 +1207,7 @@ def validate_build_authority(
     runtime = dict(policy["runtime_contract"])
     expected_target = dict(policy["private_target"])
     _require(
-        authority.get("schema_version") == AUTHORITY_SCHEMA
+        authority.get("schema_version") == policy.get("authority_schema")
         and authority.get("status") == "issued_unconsumed"
         and authority.get("run_scope") == RUN_SCOPE
         and authority.get("attempt_id") == policy.get("attempt_id")
@@ -990,6 +1229,8 @@ def validate_build_authority(
         and environment.get("packages") == runtime["required_packages"]
         and environment.get("model_files") == runtime["required_model_files"]
         and environment.get("embedding_device") == runtime["embedding_device"]
+        and environment.get("physical_store_profile")
+        == (policy.get("index_contract", {}).get("physical_store_artifact") or None)
         and all(
             int(value) == 0
             for value in dict(environment.get("observed_calls") or {}).values()
@@ -1043,6 +1284,17 @@ def materialize_terminal_result(
     started = time.perf_counter()
     embedder: Any | None = None
     writer: Any | None = None
+    phase_history: list[dict[str, Any]] = []
+
+    def record_verified_phase(name: str, snapshot: Mapping[str, Any]) -> None:
+        phase_history.append(
+            {
+                "phase": name,
+                "snapshot": dict(snapshot),
+                "snapshot_digest": canonical_digest(snapshot),
+            }
+        )
+
     try:
         phase = "requalify_bound_linux_environment"
         current_environment = inspect_bound_linux_environment(policy)
@@ -1051,18 +1303,48 @@ def materialize_terminal_result(
             == environment_identity(authority["environment_qualification"]),
             "candidate_bundle_physical_environment_drift_after_authority",
         )
+        record_verified_phase(
+            phase,
+            {
+                "environment_identity_digest": canonical_digest(
+                    environment_identity(current_environment)
+                )
+            },
+        )
         phase = "validate_fresh_targets"
         _require(
             not working.exists() and not final.exists(),
             "candidate_bundle_physical_target_preexists",
         )
+        record_verified_phase(
+            phase,
+            {
+                "working_root_absent": True,
+                "final_root_absent": True,
+            },
+        )
+        phase = "load_bound_private_manifest"
         _manifest, specs = load_bound_private_manifest(policy, repo_root=root)
+        record_verified_phase(
+            "load_bound_private_manifest",
+            {
+                "spec_count": len(specs),
+                "spec_digest": canonical_digest(specs),
+            },
+        )
         working.parent.mkdir(parents=True, exist_ok=True)
         working.mkdir()
         phase = "build_object_bm25"
         sparse = build_object_bm25_from_specs(
             specs,
             output_dir=working / str(targets["sparse_subdir"]),
+        )
+        record_verified_phase(
+            phase,
+            {
+                "records": int(sparse["records"]),
+                "vector_identity_digest": sparse["vector_identity_digest"],
+            },
         )
         phase = "load_local_bge_m3"
         runtime = dict(policy["runtime_contract"])
@@ -1085,26 +1367,63 @@ def materialize_terminal_result(
             writer=writer,
         )
         writer.close()
-        _require(
-            database_path.is_file(),
-            "candidate_bundle_physical_dense_database_missing",
+        record_verified_phase(
+            phase,
+            {
+                "terminal_count": int(dense["terminal_count"]),
+                "identity_digest": dense["identity_digest"],
+                "writer_calls": dense["writer_calls"],
+            },
+        )
+        artifact_contract = dict(
+            policy.get("index_contract", {}).get("physical_store_artifact") or {}
+        )
+        phase = "validate_physical_store_artifact"
+        if artifact_contract:
+            store_artifact = inspect_physical_store_artifact(
+                database_path,
+                contract=artifact_contract,
+                expected_count=len(specs),
+                embedding_dimension=int(runtime["embedding_dimension"]),
+            )
+        else:
+            _require(
+                database_path.is_file(),
+                "candidate_bundle_physical_dense_database_missing",
+            )
+            store_artifact = inspect_physical_store_artifact(
+                database_path,
+                contract={"artifact_kind": "file"},
+                expected_count=len(specs),
+                embedding_dimension=int(runtime["embedding_dimension"]),
+            )
+        record_verified_phase(
+            "validate_physical_store_artifact",
+            {
+                "artifact_kind": store_artifact["artifact_kind"],
+                "artifact_digest": store_artifact["artifact_digest"],
+                "total_bytes": store_artifact["total_bytes"],
+            },
         )
         phase = "write_private_receipt"
         private_receipt_body = {
-            "schema_version": "fin_ia_candidate_bundle_physical_private_receipt_v1_0",
+            "schema_version": (
+                "fin_ia_candidate_bundle_physical_private_receipt_v1_1"
+                if policy.get("schema_version") == POLICY_SCHEMA_V1_1
+                else "fin_ia_candidate_bundle_physical_private_receipt_v1_0"
+            ),
             "attempt_id": str(policy["attempt_id"]),
             "manifest_spec_digest": str(
                 policy["immutable_inputs"]["manifest_spec_digest"]
             ),
             "sparse": sparse,
             "dense": dense,
-            "database": {
+            "physical_store_artifact": {
                 "relative_path": (
                     Path(str(targets["dense_subdir"]))
                     / str(targets["milvus_db_filename"])
                 ).as_posix(),
-                "bytes": database_path.stat().st_size,
-                "sha256": file_sha256(database_path),
+                **store_artifact,
             },
             "candidate_state": "candidate_only_not_evidence",
         }
@@ -1113,6 +1432,10 @@ def materialize_terminal_result(
             "receipt_digest": canonical_digest(private_receipt_body),
         }
         _write_json_atomic(working / "build_receipt.json", private_receipt)
+        record_verified_phase(
+            phase,
+            {"private_receipt_digest": private_receipt["receipt_digest"]},
+        )
         phase = "publish_linux_root"
         working.rename(final)
         final_database = (
@@ -1120,13 +1443,39 @@ def materialize_terminal_result(
             / str(targets["dense_subdir"])
             / str(targets["milvus_db_filename"])
         )
-        _require(
-            final_database.is_file(),
-            "candidate_bundle_physical_published_database_missing",
+        if artifact_contract:
+            published_store_artifact = inspect_physical_store_artifact(
+                final_database,
+                contract=artifact_contract,
+                expected_count=len(specs),
+                embedding_dimension=int(runtime["embedding_dimension"]),
+            )
+            _require(
+                published_store_artifact["artifact_digest"]
+                == store_artifact["artifact_digest"],
+                "candidate_bundle_physical_published_artifact_digest_mismatch",
+            )
+        else:
+            _require(
+                final_database.is_file(),
+                "candidate_bundle_physical_published_database_missing",
+            )
+            published_store_artifact = inspect_physical_store_artifact(
+                final_database,
+                contract={"artifact_kind": "file"},
+                expected_count=len(specs),
+                embedding_dimension=int(runtime["embedding_dimension"]),
+            )
+        record_verified_phase(
+            phase,
+            {
+                "final_root": final.as_posix(),
+                "artifact_digest": published_store_artifact["artifact_digest"],
+            },
         )
         elapsed_ms = round((time.perf_counter() - started) * 1000, 3)
         body = {
-            "schema_version": TERMINAL_RESULT_SCHEMA,
+            "schema_version": policy["terminal_result_schema"],
             "contract_ref": policy["contract_ref"],
             "run_scope": RUN_SCOPE,
             "recorded_at": policy["recorded_at"],
@@ -1152,28 +1501,16 @@ def materialize_terminal_result(
                 "dense": dense,
                 "private_final_root": final.as_posix(),
                 "private_receipt_digest": private_receipt["receipt_digest"],
-                "milvus_database_bytes": final_database.stat().st_size,
-                "milvus_database_sha256": file_sha256(final_database),
+                "physical_store_artifact": published_store_artifact,
             },
-            "observed_calls": {
-                "network": 0,
-                "provider": 0,
-                "llm_model": 0,
-                "document_fetch": 0,
-                "embedding_model_loads": 1,
-                "embedding_batches": int(embedder.calls),
-                "embedding_vectors": int(embedder.vectors),
-                "milvus_database_creates": int(writer.calls["database_create"]),
-                "milvus_collection_creates": int(writer.calls["collection_create"]),
-                "milvus_insert_batches": int(writer.calls["insert_batches"]),
-                "milvus_inserted_vectors": int(writer.calls["inserted_vectors"]),
-                "milvus_flushes": int(writer.calls["flush"]),
-                "milvus_count_reads": int(writer.calls["count"]),
-                "milvus_metadata_queries": int(writer.calls["metadata_query"]),
-                "vector_search": 0,
-                "rerank": 0,
-                "evidence_promotion": 0,
+            "phase_receipt": {
+                "last_verified_phase": phase_history[-1]["phase"],
+                "verified_phases": phase_history,
             },
+            "observed_calls": complete_observed_calls(
+                embedder=embedder,
+                writer=writer,
+            ),
             "stage_acceptance": {
                 "physical_sparse_index": True,
                 "physical_dense_index": True,
@@ -1201,7 +1538,7 @@ def materialize_terminal_result(
             except Exception:
                 pass
         body = {
-            "schema_version": TERMINAL_RESULT_SCHEMA,
+            "schema_version": policy["terminal_result_schema"],
             "contract_ref": policy["contract_ref"],
             "run_scope": RUN_SCOPE,
             "recorded_at": policy["recorded_at"],
@@ -1214,6 +1551,9 @@ def materialize_terminal_result(
                 "phase": phase,
                 "error_type": type(exc).__name__,
                 "error_code": getattr(exc, "code", str(exc)),
+                "last_verified_phase": (
+                    phase_history[-1]["phase"] if phase_history else None
+                ),
             },
             "private_state": {
                 "working_root": working.as_posix(),
@@ -1221,39 +1561,31 @@ def materialize_terminal_result(
                 "final_root": final.as_posix(),
                 "final_root_exists": final.exists(),
             },
-            "observed_calls": {
-                "network": 0,
-                "provider": 0,
-                "llm_model": 0,
-                "document_fetch": 0,
-                "embedding_model_loads": int(embedder is not None),
-                "embedding_batches": int(getattr(embedder, "calls", 0)),
-                "embedding_vectors": int(getattr(embedder, "vectors", 0)),
-                "milvus_database_creates": int(
-                    getattr(writer, "calls", {}).get("database_create", 0)
+            "phase_receipt": {
+                "last_verified_phase": (
+                    phase_history[-1]["phase"] if phase_history else None
                 ),
-                "milvus_collection_creates": int(
-                    getattr(writer, "calls", {}).get("collection_create", 0)
-                ),
-                "milvus_insert_batches": int(
-                    getattr(writer, "calls", {}).get("insert_batches", 0)
-                ),
-                "milvus_inserted_vectors": int(
-                    getattr(writer, "calls", {}).get("inserted_vectors", 0)
-                ),
-                "vector_search": 0,
-                "rerank": 0,
-                "evidence_promotion": 0,
+                "verified_phases": phase_history,
             },
+            "observed_calls": complete_observed_calls(
+                embedder=embedder,
+                writer=writer,
+            ),
             "stage_acceptance": {
                 "physical_sparse_index": False,
                 "physical_dense_index": False,
+                "shared_population_integrity": False,
                 "retrieval_quality": False,
+                "workbench_integration": False,
+                "evidence_pack": False,
+                "external_residual_supplement": False,
+                "deepseek_research": False,
                 "release": False,
             },
             "known_boundary": (
-                "This immutable failure consumes R1. The failed working root is preserved "
-                "and no automatic retry or replacement attempt is authorized."
+                "This immutable failure consumes the current exact-once attempt. The failed "
+                "working root is preserved and no automatic retry or replacement attempt is "
+                "authorized."
             ),
         }
         result = {**body, "result_digest": canonical_digest(body)}
@@ -1263,20 +1595,28 @@ def materialize_terminal_result(
 
 __all__ = [
     "AUTHORITY_SCHEMA",
+    "AUTHORITY_SCHEMA_V1_1",
     "CandidateBundlePhysicalIndexError",
     "FakeEmbedder",
     "FakeMilvusWriter",
     "IMPLEMENTATION_PROOF_SCHEMA",
+    "IMPLEMENTATION_PROOF_SCHEMA_V1_1",
+    "MilvusCandidateBundleWriter",
     "POLICY_SCHEMA",
+    "POLICY_SCHEMA_V1_1",
     "RUN_SCOPE",
     "TERMINAL_RESULT_SCHEMA",
+    "TERMINAL_RESULT_SCHEMA_V1_1",
     "build_object_bm25_from_specs",
     "canonical_digest",
+    "canonical_tree_manifest",
+    "complete_observed_calls",
     "execute_dense_build",
     "execute_fake_physical_index_proof",
     "file_sha256",
     "environment_identity",
     "inspect_bound_linux_environment",
+    "inspect_physical_store_artifact",
     "load_bound_private_manifest",
     "load_physical_index_policy",
     "materialize_terminal_result",

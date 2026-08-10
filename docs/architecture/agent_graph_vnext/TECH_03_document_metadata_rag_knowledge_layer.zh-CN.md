@@ -791,3 +791,7 @@ clean/synced implementation=`566d5223...477e` 的 R1 authority=`0ca08fec...4260`
 - fake 必须覆盖 file／directory 两种 artifact 和类型错配；真实 successor 前只允许独立 1-vector micro-canary 验证 directory close／reopen／count／metadata／tree digest／rename，不加载 BGE、不写 93 条业务对象。
 
 上述更正属于 S1 Harness/存储发布层，不改变 CandidateBundle、金融时间／单位权威、Query Facet 或 Evidence 合同。更强模型不会消除该要求；它也不是 DeepSeek 适配问题。R2 只有在实现、mutation、micro-canary 和 clean proof 后才能另行签发。
+
+v1.1 working-tree 已把该要求落到 Runtime：`inspect_physical_store_artifact()` 由 policy-bound profile 接收 `file|directory`；directory tree 按相对 POSIX 路径排序并绑定每个文件 SHA256，拒绝 symlink、特殊文件和 `..` manifest path；Milvus profile 继续核对 collection、`current_seq`、embedding dim、COSINE／FLAT、data 和 index。executor 在 private receipt 前检查一次，whole-root rename 后再检查一次并要求相同 artifact digest。`complete_observed_calls()` 被 success／failure 共用，phase receipt 保存最后已验证状态。
+
+零调用 proof=`76253596...0c95`：93 shared specs／12 fake dense batches、file 控制组、directory fixture 和 11 类 mutation 通过，其中 manifest 文件路径与 partition 名称越界分别 fail closed。Windows 对 symlink 建立无权限时该单测可 skip；真实 Ubuntu microcanary 必须自然创建 symlink mutation 并证明 fail closed，随后才写入唯一 synthetic vector。microcanary 与 R2 使用不同 policy、Attempt、working/final root 和 authority；任一失败均 0 retry，且 R1 failed root 永不进入 successor。

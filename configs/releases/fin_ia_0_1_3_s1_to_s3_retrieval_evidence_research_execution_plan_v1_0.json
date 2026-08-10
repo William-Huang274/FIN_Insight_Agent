@@ -1,0 +1,92 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_to_s3_retrieval_evidence_research_execution_plan_v1_0",
+  "contract_ref": "fin_0_1_3.S1_to_S3.retrieval_evidence_research_execution:v1",
+  "recorded_at": "2026-08-10",
+  "product_version": "FIN_0_1_3",
+  "status": "step_1_physical_store_repair_working_tree_pass_microcanary_next",
+  "supersedes_for_current_execution": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_8.json",
+  "user_decision": "Execute steps 1-5 in order without requesting approval at every substep; preserve exact-once authorities and stop at a newly established L1 blocker rather than silently expanding or retrying.",
+  "current_truth": {
+    "candidate_manifest": "six_cases_93_specs_45_reviewed_known_plus_48_strict_held_out_metrics_19_automatic_narratives_quarantined",
+    "physical_index_r1": "terminal_failed_directory_store_misclassified_as_missing_no_retry",
+    "physical_store_contract_v1_1": "working_tree_zero_call_pass_file_and_directory_provider_neutral",
+    "physical_store_v1_1_proof_digest": "76253596341428bd8decffa0b8fafef957c94a01a6c7a34c05e9ab6d50560c95",
+    "real_microcanary": "not_run_authority_not_issued",
+    "physical_index_r2": "not_authorized_not_run",
+    "retrieval_evaluation": "not_run_on_new_93_object_indexes",
+    "evidence_packs": "not_built_from_new_retrieval",
+    "external_residual_supplement": "not_run_against_new_local_gaps",
+    "deepseek_fixed_pack_and_dynamic_research": "not_run"
+  },
+  "execution_sequence": [
+    {
+      "order": 1,
+      "owner_stage": "S1",
+      "work_item": "PHYSICAL_INDEX_FILE_OR_DIRECTORY_REPAIR_AND_FRESH_R2",
+      "status": "implementation_and_full_fake_pass_microcanary_clean_proof_r2_pending",
+      "acceptance": "A synthetic one-vector directory microcanary and a fresh 93-object R2 each close, reopen, bind identities, generate a canonical artifact receipt and publish a whole fresh root. R1 remains immutable.",
+      "stop_rule": "Any new backend/storage L1 consumes its attempt and stops step 1; no automatic R3. Retrieval quality is not inferred from build success."
+    },
+    {
+      "order": 2,
+      "owner_stage": "S1",
+      "work_item": "SIX_CASE_REAL_SPARSE_DENSE_FUSION_RETRIEVAL_EVALUATION",
+      "status": "blocked_until_step_1",
+      "acceptance": "DELL, MU, NVDA, ORCL, ASML and ANET run the same typed Query Facet matrix through exact, ObjectBM25, BGE-M3 and fusion. Every miss is explained in business language with the wrong or missing company, period, relation, section and content; aggregate scores alone are insufficient.",
+      "stop_rule": "Candidate ceiling is measured before fusion or reranking. If dense/fusion does not beat the sparse baseline on a declared use case, retain or restrict it instead of tuning to manufacture a pass."
+    },
+    {
+      "order": 3,
+      "owner_stage": "S1_to_S3",
+      "work_item": "SIX_CASE_EVIDENCE_PACK_ASSEMBLY_AND_BUSINESS_AUDIT",
+      "status": "blocked_until_step_2",
+      "acceptance": "Build fact, mechanism, counterevidence and typed-gap layers with exact source/date/identity/period/relationship lineage. Audit DELL first, transfer without core changes to MU/NVDA and then held-out cases.",
+      "stop_rule": "Candidate presence is not Evidence. A present candidate that cannot support the research claim remains a typed gap and is not repaired by Writer prose."
+    },
+    {
+      "order": 4,
+      "owner_stage": "S1",
+      "work_item": "OFFICIAL_FIRST_EXTERNAL_RESIDUAL_GAP_SUPPLEMENT",
+      "status": "blocked_until_step_3_real_residual_gaps",
+      "acceptance": "Only unresolved Evidence Slots trigger external search. Official SEC/issuer/industry routes lead; broad providers are locator shadows. Every fetched source is recaptured and locally rechecked for identity, date, relation direction and Evidence eligibility.",
+      "stop_rule": "Do not rerun broad search for slots already satisfied locally and do not let a reranker promote 0/10 useful candidates. Missing official content remains a typed gap."
+    },
+    {
+      "order": 5,
+      "owner_stage": "S2_to_S3",
+      "work_item": "DEEPSEEK_FIXED_PACK_ANALYSIS_THEN_DYNAMIC_AGENTIC_RESEARCH",
+      "status": "blocked_until_step_4",
+      "acceptance": "First compare DeepSeek and the reference analysis on the same frozen Evidence Pack, then separately test dynamic planning/tool use. Evaluate company-specific thesis, mechanisms, counterevidence, what-would-change, source use and report usefulness, not only schema compliance.",
+      "stop_rule": "A weak fixed-pack report is a model/prompt synthesis issue; a good fixed-pack report but weak tool run is planner/orchestration; missing candidates or weak packs stay upstream. Do not hide these causes behind one overall score."
+    }
+  ],
+  "experiment_governance": {
+    "primary_hypothesis": "A financial-object-first local retrieval and Evidence pipeline, supplemented only for typed residual gaps, can produce materially stronger research inputs than the prior nine-call harness path.",
+    "baselines": [
+      "current ObjectBM25 behavior",
+      "prior three-case qrels sparse 16_of_18 dense 3_of_18 fusion 14_of_18",
+      "Codex-supervised fixed Evidence Pack reference",
+      "DeepSeek fixed-pack analysis before tool autonomy"
+    ],
+    "leakage_controls": [
+      "candidate generation before qrels or answer inspection",
+      "no gold URLs embedded in query or router",
+      "held-out ORCL ASML ANET cannot change core code during transfer",
+      "automatic narrative candidates stay quarantined until reviewed"
+    ],
+    "efficiency": "Use zero-call replay and fixtures for contract changes; one natural canary per changed model contract family; one formal exact-live per clean candidate. Do not pay for field-by-field live repair.",
+    "reporting": "Every numeric metric is accompanied by concrete business examples of success and failure."
+  },
+  "current_authority_boundary": {
+    "zero_call_implementation_and_tests": true,
+    "one_synthetic_microcanary_after_clean_authority": true,
+    "fresh_r2_after_microcanary_clean_proof_and_separate_authority": true,
+    "retrieval_search_before_r2_success": false,
+    "evidence_promotion_before_retrieval_audit": false,
+    "external_calls_before_real_residual_gaps": false,
+    "deepseek_calls_before_fixed_pack": false,
+    "automatic_retry": false
+  },
+  "known_boundary": "This plan preserves the approved five-step direction but does not make later-stage results true in advance. Each stage must materialize its own evidence and can stop the sequence on a genuine owning-stage L1 blocker.",
+  "plan_digest": "965ea275ddd014206f9dcf20f73ef8f5cc1edf63056a220cb1d6e29d9b2cf2a0"
+}

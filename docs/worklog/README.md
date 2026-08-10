@@ -1,5 +1,7 @@
 # Worklog
 
+- [799 — FIN 0.1.3 PhysicalStoreArtifact v1.1 实现与五步执行门](product_strategy/799_fin_0_1_3_physical_store_artifact_v1_1_implementation_and_five_step_execution_gate.md)
+- [798 — FIN 0.1.3 CandidateBundle physical-index R1 directory-store failure](product_strategy/798_fin_0_1_3_candidate_bundle_physical_index_r1_directory_store_failure.md)
 - [790 — FIN 0.1.3 三个留出案例 current-source clean independent reproof](product_strategy/790_fin_0_1_3_three_held_out_current_source_clean_independent_reproof.md)
 - [789 — FIN 0.1.3 三个留出案例 current-source 表格复原与对象迁移](product_strategy/789_fin_0_1_3_three_held_out_current_source_table_reparse_and_object_migration.md)
 - [782 — FIN 0.1.3 三个留出案例身份、问题与 Industry Pack 冻结](product_strategy/782_fin_0_1_3_three_held_out_identity_profile_and_industry_pack_freeze.md)

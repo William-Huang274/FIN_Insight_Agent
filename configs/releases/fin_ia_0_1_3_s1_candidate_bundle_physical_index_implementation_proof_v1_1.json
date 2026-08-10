@@ -1,0 +1,291 @@
+{
+  "attempt_id": "20260810_s1_candidate_bundle_physical_index_v1_1_full_fake_r1",
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_physical_sparse_dense_index:v1.1",
+  "decision_zh": "v1.1 已在零调用路径同时证明文件型控制组和目录型 Milvus store；目录树、collection manifest、数据文件、索引文件、维度与 current_seq 均被绑定，成功和失败计数同形。下一步必须在 clean commit 上签发并执行一次无 BGE、无业务数据的一向量 microcanary。",
+  "full_fake": {
+    "dense": {
+      "batch_count": 12,
+      "embedding_calls": 12,
+      "embedding_vectors": 93,
+      "identity_digest": "c0f984be31e116bdde6f3f1e3d7d1e69ad42a3d1645b8ab157e7c4a113f0bdba",
+      "terminal_count": 93,
+      "writer_calls": {
+        "collection_create": 1,
+        "count": 2,
+        "database_create": 1,
+        "flush": 2,
+        "insert_batches": 12,
+        "inserted_vectors": 93,
+        "metadata_query": 1,
+        "reopen": 1
+      }
+    },
+    "shared_identity_digest": "c0f984be31e116bdde6f3f1e3d7d1e69ad42a3d1645b8ab157e7c4a113f0bdba",
+    "sparse": {
+      "candidate_state": "candidate_only_not_evidence",
+      "files": {
+        "bm25.pkl": {
+          "bytes": 60412,
+          "sha256": "e6d3a23d5abeb9129499fb5763a3f5eb3a2c94267fe871e14906699f5566211a"
+        },
+        "metadata.json": {
+          "bytes": 560,
+          "sha256": "782564b6196a57ba6918c7b11097eb51aa05113f8d7d494540deb192e03a92a3"
+        },
+        "records.slim.jsonl": {
+          "bytes": 176665,
+          "sha256": "45c5c228b88529189786349e1144cd067fdedd236b35f83da8fa439f2888c65a"
+        }
+      },
+      "index_name": "fin_ia_0_1_3_s1_candidate_bundle_object_bm25_v1",
+      "index_type": "rank_bm25",
+      "record_digest": "1e24445c798d544c515e87fa8960fe93e41665f225be878c020cd7e1477fc0d1",
+      "record_file": "records.slim.jsonl",
+      "records": 93,
+      "schema_version": "fin_ia_candidate_bundle_object_bm25_metadata_v1_0",
+      "tokenized_corpus_digest": "7cf7d8db6b26f47a7e76afd396947bba463f38b43b0ceba218fc79c3e478b38c",
+      "vector_identity_digest": "9893140c354b67adfff69ac114211bb8d85999bcc6808f09f149d643e212a2a0"
+    }
+  },
+  "known_boundary": "This is a zero-call implementation proof. It does not write a real Milvus store, load BGE-M3, build the 93-vector index, search, rank, promote Evidence or accept release.",
+  "manifest_binding": {
+    "candidate_state": "candidate_only_not_evidence",
+    "spec_count": 93,
+    "spec_digest": "af1f2439bc78a22dc00f27e55594c01ac73bfd2c11fa7a8c57f6546549b14df9",
+    "specs_by_case": {
+      "ANET": 19,
+      "ASML": 10,
+      "DELL": 15,
+      "MU": 16,
+      "NVDA": 14,
+      "ORCL": 19
+    }
+  },
+  "mutation_proof": {
+    "all_failed_closed": true,
+    "rows": [
+      {
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_spec_integrity_invalid",
+        "scenario": "duplicate_vector_identity"
+      },
+      {
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_spec_integrity_invalid",
+        "scenario": "vector_text_digest_drift"
+      },
+      {
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_spec_integrity_invalid",
+        "scenario": "candidate_evidence_infiltration"
+      },
+      {
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_private_manifest_population_invalid",
+        "scenario": "cross_case_population_drift"
+      },
+      {
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_dense_terminal_identity_mismatch",
+        "scenario": "dense_partial_acknowledgement"
+      },
+      {
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_authority_invalid",
+        "scenario": "authority_digest_drift"
+      },
+      {
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_sparse_target_preexists",
+        "scenario": "sparse_target_preexists"
+      },
+      {
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_store_artifact_kind_mismatch",
+        "scenario": "directory_declared_as_file"
+      },
+      {
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_store_collection_invariant_invalid",
+        "scenario": "directory_index_missing"
+      },
+      {
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_store_manifest_path_escape",
+        "scenario": "directory_manifest_path_escape"
+      },
+      {
+        "error_type": "CandidateBundlePhysicalIndexError",
+        "observed_code": "candidate_bundle_physical_store_manifest_path_escape",
+        "scenario": "directory_partition_name_escape"
+      }
+    ],
+    "scenario_count": 11
+  },
+  "observed_real_calls": {
+    "document_fetch": 0,
+    "embedding_model_loads": 0,
+    "embedding_vectors": 0,
+    "evidence_promotion": 0,
+    "llm_model": 0,
+    "milvus_read": 0,
+    "milvus_write": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0,
+    "vector_search": 0
+  },
+  "policy_digest": "092ea9925e95a35febb37d481d9be8f0e9de5e1d8a3f0f2a36445e78c7fc926c",
+  "proof_digest": "76253596341428bd8decffa0b8fafef957c94a01a6c7a34c05e9ab6d50560c95",
+  "recorded_at": "2026-08-10",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_1",
+  "source_bindings": {
+    "configs/runtime/fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_policy_v1_1.json": "64f68e3fc557da03faa81c3a6dcca938cb0ea70ddc92898372855b227d30685b",
+    "configs/runtime/fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_policy_v1_0.json": "8952ae4716de866c7faa0ba843027c9dbba0392823478f59e7a8f65db468f7b4",
+    "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json": "a61d06ab7b06147bfcc65a653330ff8e36e4abda4e44e44b120835cf8c7f2e98",
+    "scripts/releases/issue_fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_authority_v1_1.py": "df2308c3da813e8c17eeb28e497ca5c0209e492281256adca708f24c3e49625e",
+    "scripts/releases/issue_fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_authority_v1_0.py": "3ab60cc3a204da42e6c76a853707babc2cb9fd35ef8085046d6c1e109eebdcd3",
+    "scripts/releases/materialize_fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_1.py": "3cc0429da9bb40466a54fc6a645e403ae54b0f309885b22aaa067c9639dbeed9",
+    "scripts/releases/prepare_fin_ia_0_1_3_s1_candidate_bundle_physical_index_v1_1_clean_proof.py": "8508c530eaf4840290c0a4be0641c37fc47acdca2f630eacbb871e3c74ee025a",
+    "scripts/releases/run_fin_ia_0_1_3_s1_candidate_bundle_physical_index_r2.py": "0eaf613b013c6933eee85c9f678fc47ba1b3dda692599ea34e10184bdeb14993",
+    "scripts/releases/run_fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_r1.py": "200eedd0b82e72d90303f5071ece0f6ccd9e3bfa12d8129474fcb89aecae6be8",
+    "src/sec_agent/s1_candidate_bundle_physical_index.py": "9a513f01c88540ba6ecd8d5f053da4ebffc61009a7f4c9cc5340223f7ad06b45",
+    "tests/contract/test_fin_0_1_3_s1_candidate_bundle_physical_index.py": "5a09446a78c47dec12d26e84bbf659a27612c01c250cf1f4f71105597703cb0e"
+  },
+  "stage_acceptance": {
+    "clean_independent_proof": false,
+    "complete_success_failure_call_shape": true,
+    "directory_tree_and_collection_manifest": true,
+    "evidence": false,
+    "isolated_real_microcanary": false,
+    "provider_neutral_file_or_directory_store": true,
+    "r2_authority": false,
+    "real_business_index": false,
+    "release": false,
+    "retrieval_quality": false,
+    "shared_sparse_dense_population": true
+  },
+  "status": "terminal_succeeded_file_or_directory_store_full_fake",
+  "store_artifact_proof": {
+    "complete_failure_counter_keys": [
+      "document_fetch",
+      "embedding_batches",
+      "embedding_model_loads",
+      "embedding_vectors",
+      "evidence_promotion",
+      "llm_model",
+      "milvus_collection_creates",
+      "milvus_count_reads",
+      "milvus_database_creates",
+      "milvus_flushes",
+      "milvus_insert_batches",
+      "milvus_inserted_vectors",
+      "milvus_metadata_queries",
+      "milvus_reopens",
+      "network",
+      "provider",
+      "rerank",
+      "vector_search"
+    ],
+    "directory": {
+      "artifact_digest": "a7118a056a55975b608d6bca184986ac4991433f24bb47ca3487d3f9cf642085",
+      "artifact_kind": "directory",
+      "artifact_name": "milvus_lite.db",
+      "collection_validation": {
+        "collection_name": "fin_ia_0_1_3_s1_candidate_bundle_dense_v2",
+        "current_seq": 93,
+        "data_paths": [
+          "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default/data/data_000001_000093.parquet"
+        ],
+        "embedding_dimension": 1024,
+        "index_paths": [
+          "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default/indexes/data_000001_000093.embedding.flat.idx"
+        ],
+        "index_type": "FLAT",
+        "manifest_sha256": "8f77f97216a0b2947bc7eac54f4dc366f0a2d4f062d8ab26c01e53c2c10ac6bd",
+        "metric_type": "COSINE",
+        "schema_sha256": "86aaae094d513c6e8f0eb6952fe77c324daa912dd15f513c427e30d64e7de29c"
+      },
+      "directory_count": 6,
+      "file_count": 5,
+      "schema_version": "fin_ia_physical_store_artifact_v1_0",
+      "total_bytes": 346,
+      "tree_digest": "2508310eb53637e3acd75e8e9630c3f348dca76858e9ea3c865b95a5e66ef264",
+      "tree_manifest": {
+        "directory_count": 6,
+        "entries": [
+          {
+            "bytes": 0,
+            "kind": "file",
+            "relative_path": "LOCK",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2"
+          },
+          {
+            "bytes": 206,
+            "kind": "file",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/manifest.json",
+            "sha256": "8f77f97216a0b2947bc7eac54f4dc366f0a2d4f062d8ab26c01e53c2c10ac6bd"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default/data"
+          },
+          {
+            "bytes": 15,
+            "kind": "file",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default/data/data_000001_000093.parquet",
+            "sha256": "9df63a39c3eda4aa6991135bbcfac24cb04ff28a49f7c0e0e772783b23103144"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default/indexes"
+          },
+          {
+            "bytes": 13,
+            "kind": "file",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default/indexes/data_000001_000093.embedding.flat.idx",
+            "sha256": "8bc9ab8a51cdbfbdacf30672bf6d00811ecafd04077fd36d6093f30607e10e8b"
+          },
+          {
+            "bytes": 112,
+            "kind": "file",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/schema.json",
+            "sha256": "86aaae094d513c6e8f0eb6952fe77c324daa912dd15f513c427e30d64e7de29c"
+          }
+        ],
+        "file_count": 5,
+        "schema_version": "fin_ia_canonical_directory_tree_manifest_v1_0",
+        "total_bytes": 346,
+        "tree_digest": "2508310eb53637e3acd75e8e9630c3f348dca76858e9ea3c865b95a5e66ef264"
+      }
+    },
+    "directory_digest_deterministic": true,
+    "file_provider_neutral_control": {
+      "artifact_digest": "007585ac21bb6516d7b8faad51a2233b27d505417add40c0e15271ba0adb96cf",
+      "artifact_kind": "file",
+      "artifact_name": "file-positive.db",
+      "collection_validation": null,
+      "file_count": 1,
+      "schema_version": "fin_ia_physical_store_artifact_v1_0",
+      "sha256": "c7e9d49972fa86a6ceeb5e1aff51dc4079b9ad7ac8c9cb24d320b2a2a61ed95a",
+      "total_bytes": 34
+    }
+  }
+}

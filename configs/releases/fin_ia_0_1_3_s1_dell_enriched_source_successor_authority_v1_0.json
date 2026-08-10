@@ -1,0 +1,50 @@
+{
+  "admission_id": "admission::fin013_s1_dell_enriched_source_63e4726a49b86c47985b",
+  "attempt_id": "fin013_s1_dell_enriched_source_63e4726a49b86c47985b::attempt_1",
+  "authority_digest": "d0999e5857ae463ca539716c4cd4a650b6da425ff82d1f79ff9316bbaab4dcd8",
+  "automatic_execution": false,
+  "automatic_retry": false,
+  "budget": {
+    "market_response_byte_ceiling": 2000000,
+    "maximum_live_network_invocations": 4,
+    "model_calls": 0,
+    "official_source_network_calls": 2,
+    "primary_market_provider_invocations": 1,
+    "retries": 0,
+    "shadow_market_provider_invocations": 1,
+    "timeout_seconds_per_route": 35
+  },
+  "business_artifact_promotion": false,
+  "clean_proof_digest": "7f129623c3fc395c09afdc2a874ea28cfd063be476db375c9f1b52efc45f513c",
+  "contract_ref": "fin_0_1_3.S1.dell_enriched_source_successor:v1",
+  "expires_at": "2026-08-11T13:32:00Z",
+  "file_bindings": {
+    "configs/releases/fin_ia_0_1_3_s1_dell_enriched_source_successor_clean_proof_v1_0.json": "aac31fceb6944d63cbdcf06bea7f005403fb5a3bcea71c24025727972b3343c7",
+    "configs/runtime/fin_ia_0_1_3_s1_dell_enriched_source_successor_policy_v1_0.json": "71f39a77b86d99d4493034fea00074d949ea5a255b3cd8b1b0626058817be71a",
+    "scripts/releases/run_fin_ia_0_1_3_s1_dell_enriched_source_successor.py": "e936b539d7ef3ab4458f0174d5a913478644cbb320504d3881d8e43c06a65631",
+    "src/sec_agent/canonical_runtime/object_store.py": "91452ec6024788bd63d9c123a1dedecb9972515746d3a2ca0e8843f355f48a17",
+    "src/sec_agent/market_data_adapter.py": "c345d9990c80b722cd36a0751b0e1be7a8e1529b1dfcfabbc46677214aa42b41",
+    "src/sec_agent/official_source_attempt_program.py": "4d9186e5484182a497e6f80606a1eacbbe288d640dfb42ced8612adcf26d4d65",
+    "src/sec_agent/s1_dell_enriched_source_successor.py": "0b169614d5baab01bf216acbfd5c7a888491a3002604600c75fed839905c49c7",
+    "src/sec_agent/s1_dell_targeted_source_recovery.py": "2dd06f8d16975785c0ff3a93f1440bda15970f1af6909c5546fa5573e27f76df",
+    "src/sec_agent/s1_dell_targeted_source_supplement.py": "ca26b9b64946ed70876ad8c04dd1e0ceb7dcf4f2ddd0a2bd1ecaee8af3b8e100",
+    "src/sec_agent/shared_admission_ledger.py": "ef0611378b4aa4419f8782feceb8ddd89603e79c9d7a5753452f3ddbcb725455"
+  },
+  "implementation_commit": "5ca74e4c00c5a21ad087167343955a3c6648068a",
+  "issued_at": "2026-08-10T13:32:00Z",
+  "known_boundary": "This admission authorizes exactly two official-source attempts, one Alpha Vantage primary invocation and one non-promoting AKShare shadow invocation. It authorizes no retry, model call, valuation conclusion, recommendation, business promotion or release.",
+  "maximum_executions": 1,
+  "model_calls_allowed": 0,
+  "policy_digest": "9f442ef06927c7911a5dc0cdd509badc0ab3d5b0ed32a418bd40b9886925a5a4",
+  "project_os_preflight": {
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "FIN_0_1_3_S1_DELL_ENRICHED_SOURCE_SUCCESSOR_EXACT_ONCE",
+    "status": "pass"
+  },
+  "run_id": "fin013_s1_dell_enriched_source_63e4726a49b86c47985b",
+  "run_scope": "FIN_0_1_3_S1_DELL_ENRICHED_SOURCE_SUCCESSOR_EXACT_ONCE",
+  "schema_version": "fin_ia_0_1_3_s1_dell_enriched_source_successor_authority_v1_0",
+  "status": "issued_unconsumed",
+  "synthetic_dns_proxy_allowance": "host_allowlisted_https_only_for_desktop_proxy_range_198.18.0.0/15",
+  "user_authority": "annotation_1_owner_approved_steps_1_to_5_with_alpha_vantage_primary_and_akshare_shadow"
+}

@@ -1,0 +1,50 @@
+{
+  "contract_ref": "fin_0_1_3.S1.dell_enriched_source_successor:v1",
+  "credential_capture_mutation_rejected": true,
+  "fresh_worker_count": 2,
+  "gate_mutations": {
+    "both_true": true,
+    "core_false_valuation_true": true,
+    "core_true_valuation_false": true
+  },
+  "implementation_commit": "09998350e4042174ead8d26ffbb476f6da3a6df2",
+  "known_boundary": "Two fresh Git archive workers proved deterministic gate separation, saved capture reuse, exact-date market parsing, secret rejection, gap disposition and successor pack materialization. No live network or model call occurred.",
+  "observed_counts": {
+    "evidence_items_after": 27,
+    "evidence_items_before": 20,
+    "market_network_invocations": 0,
+    "market_provider_invocations": 2,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_evidence_items": 7,
+    "new_source_materials": 7,
+    "official_source_network_calls": 0,
+    "residual_gaps_after": 14,
+    "residual_gaps_before": 16,
+    "retries": 0
+  },
+  "policy_digest": "9f442ef06927c7911a5dc0cdd509badc0ab3d5b0ed32a418bd40b9886925a5a4",
+  "private_input_hydration": {
+    "mode": "hardlink_or_copy_of_sha256_bound_ignored_inputs",
+    "predecessor_pack_sha256": "8d164f187de0da8a6c9214e81b06c7854467a167e521850fd0f6fad7131d5aa1",
+    "tsmc_capture_sha256": "39805472768ede6729a8c4dd168e22d5653ec5eb7560c1c55f394787c891352d"
+  },
+  "proof_digest": "7f129623c3fc395c09afdc2a874ea28cfd063be476db375c9f1b52efc45f513c",
+  "recorded_at": "2026-08-10",
+  "schema_version": "fin_ia_0_1_3_s1_dell_enriched_source_successor_clean_proof_v1_0",
+  "stage_acceptance": {
+    "business_artifact_promoted": false,
+    "capture_first": true,
+    "core_and_valuation_gates_reported_separately": true,
+    "counterparty_claim_boundary_preserved": true,
+    "credential_value_never_captured": true,
+    "deepseek_exact_live_authorized": false,
+    "predecessor_attempt_immutable": true,
+    "saved_tsmc_capture_reused_without_network": true,
+    "shadow_provider_promoted": false
+  },
+  "status": "clean_independent_dell_enriched_successor_zero_call_proof_passed",
+  "successor_pack_payload_digest": "89f1a48341bc149730a455891dd0d11457040cebd26e86804892b468386307d4",
+  "worker_result_digest": "e3f116f1eda362ecbf19eab04c61af3f12928d4857360d082efc3924fcf9c9a6",
+  "workers_byte_equivalent": true
+}

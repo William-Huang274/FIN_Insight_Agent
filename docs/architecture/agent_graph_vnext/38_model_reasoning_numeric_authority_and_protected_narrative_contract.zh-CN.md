@@ -255,3 +255,9 @@ successor 不修改旧 terminal，不消费旧 admission，不自动重试，不
 ### 13.3 paired 公平性
 
 只要 numeric authority、Prompt、schema 或其他模型可见输入发生变化，旧 baseline 就不能与新 Agent candidate 构成 strict same-input pair。可以继续完成 bounded successor 来评估恢复链和内容，但 paired assessment 必须标记 `eligible=false`；后续若独立审计表明 candidate 值得比较，才单独签发一次相同增强输入的 direct baseline。Evidence Pack 相同不等于 model-visible input 相同。
+
+### 13.4 2026-08-10 exact-live 对合同的纠正
+
+DELL successor 证明，把 `NUM` 和语义重复的 `PRES` 同时交给模型选择，会让可靠性依赖模型是否记得第二个展示 ID；当前 DeepSeek 能稳定使用 source `NUM` 和 4 个 `FORM`，却没有选择任何 `PRES`，导致合法中文尺度换算被重复判错。后续稳定合同改为：模型引用事实/公式 authority（`NUM/FORM`）并写分析意图；Harness 根据该 authority 的封闭 presentation program 校验或渲染等价表面。模型仍能看见、分析和引用数字，本地层只控制展示，不替模型生成 thesis。完整 source numeric inventory 与 token boundary（例如不得从 `FY27` 抽取尾数 `7`）是该门禁的必要前置。
+
+同一次 live 还证明 Verifier 不应重抄整份长报告。Verifier 输入必须是 compact `claim_id + evidence/numeric/gap refs + bounded text span`，输出只返回 claim-ID verdict、finding code 和必要的短 reason；原 claim 由 Harness 通过 ID 连接。任何 `finish_reason=length`、截断 JSON 或缺失 required claim verdict 都是 `verification_incomplete` 的 hard stop，而不是普通可后传的 parse-quality finding。该纠正只改变审计表面和终态分类，不降低事实、引用或内容质量门槛。

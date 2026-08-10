@@ -320,6 +320,8 @@ DELL Supervisor R2 说明旧计划还缺一条统一原则：模型需要看到�
 
 当前进度：clean/synced implementation=`e9090819` 上两个 fresh process 已完成 proof；两者逐字节一致，累计读取 10 个 immutable imports、生成 `16` 个 successor request/response captures，真实 Provider/model/network=`0`，proof=`a9aef287...789c`。下一步只允许签发一次 8-call successor authority；proof 不等于 DeepSeek 成功或内容通过。
 
+> **2026-08-10 successor exact-live 终态**：唯一 admission 已消费；5 个旧成功节点被复用，逻辑节点 6–13 的 8 次 DeepSeek Pro 调用全部取得响应，0 retry/fallback/tool，累计=`14 provider attempts / 13 logical outputs`。Final Writer 形成 `8 sections / 33 points / 14 limitations` 的 DELL-specific 报告，Red Team 后明显减少无来源精确数字并补足反方；但 Verifier 在 `4,000 output tokens` 以 `finish_reason=length` 截断 JSON，故没有有效 VerificationResult，raw candidate 不晋升。公开 `12 L1 / 2 L2` 不能解释成 14 个事实错误：11 条为重复 numeric-surface 命中（含 `FY27` tokenizer 假阳性和模型未选冗余 PRES ID），1 条为 TSMC `77%` authority inventory 漏编，1 条为 E001/E002 精确数值 binding，另 1 条为 Verifier parse。下一步只允许零调用结构处置：`NUM/FORM -> deterministic presentation render`、完整 source numeric inventory、tokenization 修复、compact claim-ID Verifier 和 length hard-incomplete；不自动重跑。因果越界、WWC 与重复度归 S3，PIT 估值资料不足归 S1，不回收进本次 S2 successor。
+
 ### 7A.6 2026-08-07 Provider-neutral Harness 与 DeepSeek 适配重排
 
 S2-06D 证明当前问题不能继续按“发现一个 DeepSeek 输出错误，就给共享 Harness 加一个字段或分支”处理。FIN 冻结稳定金融控制内核；模型差异进入 `ModelCapabilityProfile`，权限通过 `AutonomyGrant` 升降，DeepSeek workaround 必须可识别、可复测、可退役。

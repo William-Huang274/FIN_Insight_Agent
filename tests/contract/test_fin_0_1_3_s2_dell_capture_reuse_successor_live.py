@@ -55,6 +55,9 @@ PROOF_PATH = ROOT / (
 AUTHORITY_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s2_dell_capture_reuse_successor_authority_v1_0.json"
 )
+RESULT_PATH = ROOT / (
+    "configs/releases/fin_ia_0_1_3_s2_dell_capture_reuse_successor_result_v1_0.json"
+)
 HASH = "1" * 64
 GIT = "2" * 40
 NOW = "2026-08-10T10:00:00Z"
@@ -312,3 +315,43 @@ def test_public_result_excludes_raw_outputs_and_finding_text(material, tmp_path)
     assert result["finding_summary"]["codes"] == ["fixture_finding"]
     assert result["predecessor"]["imported_node_count"] == 5
     assert result["same_input_pair_proven"] is False
+
+
+def test_committed_live_result_preserves_successor_boundary_without_raw_output() -> None:
+    result = json.loads(RESULT_PATH.read_text(encoding="utf-8"))
+    serialized = json.dumps(result, ensure_ascii=False)
+
+    assert result["schema_version"] == (
+        "fin_ia_0_1_3_s2_dell_capture_reuse_successor_result_v1_0"
+    )
+    assert result["status"] == "completed_with_findings"
+    assert result["terminal_phase"] == "verifier"
+    assert result["result_digest"] == (
+        "f341db71242b6dd4174c46e072f43b95e5ecd3707f26f995e586971846b2822f"
+    )
+    assert result["predecessor"]["imported_node_count"] == 5
+    assert result["predecessor"]["failed_capture_promoted"] is False
+    assert result["observed_counts"]["successor_provider_calls"] == 8
+    assert result["observed_counts"]["combined_provider_attempts"] == 14
+    assert result["observed_counts"]["logical_outputs_present"] == 13
+    assert len(result["successor_call_receipts"]) == 8
+    assert result["successor_call_receipts"][-1]["node_key"] == "verifier"
+    assert result["successor_call_receipts"][-1]["finish_reason"] == "length"
+    assert result["finding_summary"] == {
+        "L1": 12,
+        "L2": 2,
+        "L3": 0,
+        "L4": 0,
+        "codes": [
+            "final_report_material_numeric_ref_missing",
+            "final_report_numeric_ref_evidence_binding_missing",
+            "final_report_numeric_surface_not_authorized_by_refs",
+            "model_output_json_parse_failed",
+        ],
+    }
+    assert result["business_artifact_promoted"] is False
+    assert result["paired_assessment_eligible"] is False
+    assert result["raw_model_output_public"] is False
+    assert result["raw_model_output_stored_private"] is True
+    assert "raw_outputs" not in result
+    assert "应收账款" not in serialized

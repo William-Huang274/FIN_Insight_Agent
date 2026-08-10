@@ -1,0 +1,164 @@
+{
+  "admission_digest": "1ff0a458a8a0078276a09c295a3111b36d48836888432e73e5dc9999dbbcdeb8",
+  "attempt_id": "fin013_s2_fixed_pack_dell_successor_f63f66ff0998aa146c7a::attempt_1",
+  "authority_digest": "f53b343f8ca02ffc70aaf6c075ea06d77eaec412e7ab0d764dea4efe96d09ae0",
+  "base_case_input_digest": "f1f1945e5808001bea377fc7903b8b751a1f9c02cb1d6b7dae53e67e4853496d",
+  "business_artifact_promoted": false,
+  "case_key": "DELL",
+  "cumulative_usage": {
+    "estimated_usd": 0.2084369,
+    "input_tokens": 270892,
+    "model_calls": 14,
+    "output_tokens": 27001,
+    "provider_attempts": 14,
+    "total_tokens": 297893
+  },
+  "finding_summary": {
+    "L1": 12,
+    "L2": 2,
+    "L3": 0,
+    "L4": 0,
+    "codes": [
+      "final_report_material_numeric_ref_missing",
+      "final_report_numeric_ref_evidence_binding_missing",
+      "final_report_numeric_surface_not_authorized_by_refs",
+      "model_output_json_parse_failed"
+    ]
+  },
+  "known_boundary": "This result preserves the five imported outputs and eight successor calls. It is a raw candidate, not a promoted report. Content quality needs an independent audit; strict paired acceptance still requires a separate direct baseline that sees the same augmented input.",
+  "numeric_authority_digest": "d2b6e2404dd0d3778a72759ab325e4f4d10ee4b06d34b6a5d916dc09b924aa3b",
+  "observed_counts": {
+    "combined_provider_attempts": 14,
+    "fallbacks": 0,
+    "findings": 14,
+    "imported_usable_nodes": 5,
+    "logical_outputs_present": 13,
+    "network_tool_calls": 0,
+    "retries": 0,
+    "successor_model_calls": 8,
+    "successor_provider_calls": 8
+  },
+  "paired_assessment_eligible": false,
+  "paired_baseline_required_later": true,
+  "predecessor": {
+    "attempt_id": "fin013_s2_fixed_pack_dell_524560d1ab0599b829bf::attempt_1",
+    "failed_capture_promoted": false,
+    "failed_node": "specialist::financial_transmission_profit_and_cash",
+    "import_bundle_digest": "cb7ed2fb5956a110c87ba1d706e53a2410da2e03bd63b5e1e03f14e907111182",
+    "imported_node_count": 5,
+    "run_id": "fin013_s2_fixed_pack_dell_524560d1ab0599b829bf",
+    "terminal_digest": "2ae7ebf162a1b600a3bc2818982ed8b6968f281a0ca914ce5250aa4bad47ab58",
+    "usage": {
+      "estimated_usd": 0.0738093,
+      "fallbacks": 0,
+      "input_tokens": 105548,
+      "model_calls": 6,
+      "output_tokens": 6165,
+      "provider_calls": 6,
+      "retries": 0,
+      "total_tokens": 111713
+    }
+  },
+  "private_terminal": {
+    "ref": "data/workbench_private/fin_0_1_3_s2_fixed_pack_capture_reuse_successor/live/attempts/fin013_s2_fixed_pack_dell_successor_f63f66ff0998aa146c7a/terminal_with_receipt.json",
+    "sha256": "ec447ea123f354412204552359686aa9601b237c99808c77663774c0b973a873",
+    "terminal_digest": "9b9815ac73a060549c084e3f97125f4447cecd622ab1f04fb8b8891eb0aa900c"
+  },
+  "qualified_human_acceptance_required": true,
+  "raw_model_output_public": false,
+  "raw_model_output_stored_private": true,
+  "recorded_at": "2026-08-10T09:07:40Z",
+  "result_digest": "f341db71242b6dd4174c46e072f43b95e5ecd3707f26f995e586971846b2822f",
+  "run_id": "fin013_s2_fixed_pack_dell_successor_f63f66ff0998aa146c7a",
+  "run_scope": "FIN_0_1_3_S2_FIXED_PACK_DELL_CAPTURE_REUSE_SUCCESSOR",
+  "same_evidence_pack_proven": true,
+  "same_input_pair_proven": false,
+  "schema_version": "fin_ia_0_1_3_s2_dell_capture_reuse_successor_result_v1_0",
+  "source_pack_digest": "554e7db12bcb98f0a03f420f9d4b7cbaf7422a87bdef6f83699068d0b863f181",
+  "status": "completed_with_findings",
+  "successor_call_receipts": [
+    {
+      "call_id": "call_01_specialist__financial_transmission_profit_and_cash",
+      "capture_digest": "c23bef2e6af9b0b57a24c28f7c03257971132107b8774028b09c1c1d89476c32",
+      "finish_reason": "stop",
+      "logical_node_index": 6,
+      "node_key": "specialist::financial_transmission_profit_and_cash",
+      "request_digest": "a596a5c553b456a7540b1d8bf4be95211bf7b2fd354dc98ad861d600854f1783",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_02_specialist__capital_allocation_valuation_and_price_in",
+      "capture_digest": "d74e44b0788ad14060d6df7c7a5e7222c5f38d547734481d8e2c9038aa3d5fd0",
+      "finish_reason": "stop",
+      "logical_node_index": 7,
+      "node_key": "specialist::capital_allocation_valuation_and_price_in",
+      "request_digest": "9340a4b93cd564e5f090087e1f966b1105d1bfea59d59aa43a46b400799ab3f5",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_03_specialist__counter_thesis_risk_and_what_would_change",
+      "capture_digest": "d3b2d2066c01ca0fa036d24521f41cecef928607a812247910726e389202de57",
+      "finish_reason": "stop",
+      "logical_node_index": 8,
+      "node_key": "specialist::counter_thesis_risk_and_what_would_change",
+      "request_digest": "ae1311660ed14b36728342bd4b8835b4091cafacbb2233f095032658c111c9d1",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_04_cross_unit_synthesis",
+      "capture_digest": "85b9b4224fddb324e27682034b63f6cac4578994641c1c1338c3973951afea3e",
+      "finish_reason": "stop",
+      "logical_node_index": 9,
+      "node_key": "cross_unit_synthesis",
+      "request_digest": "d1d2c498dd5833ed8d5d166653e8483bb718880997f6073574461bc9ec7f5df6",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_05_draft_writer",
+      "capture_digest": "62f4dae03464b578a23802ed69918e7c3003029f0fde79e7301417c5f7697a52",
+      "finish_reason": "stop",
+      "logical_node_index": 10,
+      "node_key": "draft_writer",
+      "request_digest": "a5ac5992c8480f2a1b55fa73bfc398c812aca9d5b191bd2e0dfd91b13acb50f1",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_06_red_team_critic",
+      "capture_digest": "be30126d4eaf9cc68228d281728b2bcac5b6bac0239271846b975a74017461ee",
+      "finish_reason": "stop",
+      "logical_node_index": 11,
+      "node_key": "red_team_critic",
+      "request_digest": "ad9390ba88b6e0eb05769425295b2f306cc71130d81cf212aece63f3dc2fd31e",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_07_final_writer",
+      "capture_digest": "e2fdc9247ddd5a36d9289e4e542527622adc6f2580b6b61eb10d5426dea6f5a0",
+      "finish_reason": "stop",
+      "logical_node_index": 12,
+      "node_key": "final_writer",
+      "request_digest": "e16f3de8ca4caa677a9b91dc86ecf98c75d60e7ad06f8b19173889730f0b2b7f",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_08_verifier",
+      "capture_digest": "30ae67a0779fbc844f178f0e31dc168aeb2e473b1fae70bf40f412c7112e7980",
+      "finish_reason": "length",
+      "logical_node_index": 13,
+      "node_key": "verifier",
+      "request_digest": "2362cf6605d9a185362d78de4f910246c60aca8a4d8fa2495afead01dd2f184b",
+      "status": "ok"
+    }
+  ],
+  "successor_case_input_digest": "0dc96c3a16d38e7375f6f1206ec3274ee81b9dbbecf08325b778cdabeec11844",
+  "successor_usage": {
+    "estimated_usd": 0.1346276,
+    "input_tokens": 165344,
+    "model_calls": 8,
+    "output_tokens": 20836,
+    "provider_calls": 8,
+    "total_tokens": 186180
+  },
+  "terminal_code": "fixed_pack_capture_reuse_successor_completed_raw_candidate_not_promoted",
+  "terminal_phase": "verifier"
+}

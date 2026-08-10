@@ -94,15 +94,15 @@ def _authority(material: dict, proof: dict) -> dict:
     )
 
 
-def test_registered_scope_is_now_blocked_by_observed_canary_failures() -> None:
+def test_registered_scope_tracks_current_numeric_and_verifier_blockers() -> None:
     preflight = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
     assert preflight["status"] == "blocked"
     blockers = {
         row["issue_id"] for row in preflight["open_full_chain_blockers"]
     }
     assert blockers == {
-        "RC-P36-169-fin-0-1-3-s2-fixed-pack-provider-remote-disconnect-and-resume-boundary",
         "RC-P36-170-fin-0-1-3-s2-fixed-pack-numeric-presentation-alias-and-formula-lineage-gap",
+        "RC-P36-171-fin-0-1-3-s2-fixed-pack-verifier-output-capacity-and-incomplete-terminal-classification",
     }
 
 

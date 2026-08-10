@@ -767,3 +767,5 @@ R1 的业务事实是：前三个已知案例在 93-object population 中各有 
 下一项仍属于 FIN 0.1.3 S1，不创建新版本：在 clean commit 上签发唯一 exact-once live，最多 `6 discovery + 12 locator + 12 official document = 30 network`、retry=0、model／embedding／rerank=0。Tencent 等 broad provider 仅定位受限官方 URL，snippet 和 provider date 没有 Evidence authority；原文 capture 后必须本地解析、日期裁决和 Evidence Gate。公开材料不存在即保留 typed gap。完成本项后才进入 frozen-pack DeepSeek 分析，随后另测动态 Agentic Research。
 
 Live runner 的 zero-call engineering 已通过：六案 fake transport 模拟 `6 discovery + 2 locator + 8 official documents = 16` 个网络动作，12／12 intents 均形成待重裁决 Candidate；off-domain、future-date、Provider systemic stop、budget／binding drift 和 exact-once mutation 均 fail closed，相关 current-slice 回归=`48 passed`。真实 network、credential read、Evidence 和模型仍为 0。当前下一项是 clean commit／push 后的 fresh preflight 与一次 authority issuance，不是直接把 fake Candidate 当作外源能力通过。
+
+clean/synced `ef01fa41...e6dd` fresh preflight 已 pass，且唯一 24 小时 authority 已签发未消费。它只允许一次 `6 discovery + <=12 locator + <=12 official document` 的受限 observation；0 retry／model／embedding／rerank／Evidence。签发本身没有读取凭据或访问网络。下一项为一次 exact-once live；无论完整、部分或 typed failure，均先保留 capture 与 terminal，之后才做本地重裁决。

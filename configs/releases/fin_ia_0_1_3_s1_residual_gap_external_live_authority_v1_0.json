@@ -1,0 +1,53 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_residual_gap_external_live_authority_v1_0",
+  "contract_ref": "fin_0_1_3.S1.residual_gap_official_first_external_supplement:v1",
+  "run_scope": "S1_RESIDUAL_GAP_EXTERNAL_SUPPLEMENT",
+  "status": "issued_unconsumed",
+  "issued_at": "2026-08-10T07:27:40Z",
+  "expires_at": "2026-08-11T07:27:40Z",
+  "implementation_commit": "ef01fa4100cfacbb59bc1778a1547bb299dae6dd",
+  "admission_id": "fin013-s1-residual-external-admission-33a611a244bcaf407843",
+  "run_id": "fin013-s1-residual-external-run-a291e153dbf715d557a4",
+  "attempt_id": "fin013-s1-residual-external-attempt-6092e1ebb79f479d9c27",
+  "maximum_executions": 1,
+  "automatic_retry": false,
+  "evidence_promotion_allowed": false,
+  "model_calls_allowed": 0,
+  "priority_plan_digest": "e1eb54f75d9d6b17f6222c2f245713bec7c6f3b9fb3cc9d9cf90108b70081c19",
+  "local_evidence_pack_result_digest": "52cd20faabe60591dca408a3c571ea1835b8e8ac635402b3d47c681b5cdc56da",
+  "budget": {
+    "selected_intent_count": 12,
+    "selected_intents_per_case": 2,
+    "official_discovery_fetch_ceiling": 6,
+    "locator_provider_call_ceiling": 12,
+    "official_document_fetch_ceiling": 12,
+    "total_network_call_ceiling": 30,
+    "result_ceiling_per_locator_query": 10,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0,
+    "embedding_call_ceiling": 0,
+    "rerank_call_ceiling": 0,
+    "automatic_retry": false
+  },
+  "file_bindings": {
+    "scripts/releases/run_fin_ia_0_1_3_s1_residual_gap_external_live.py": "42976f087d4493a8e1f0a70f7f8bbbbf8fb5e6fa973ac3adb18180380962d4db",
+    "src/sec_agent/s1_residual_gap_external_live.py": "dc1af80f61decb8ebeca2819dcb8cf2ceaefec395e613fade243888df91772f9",
+    "src/sec_agent/s1_residual_gap_external_supplement.py": "9714c53465219ecf8959a276a0968c92a66cbd33cd3cbc66b9b4659a45ec2e99",
+    "src/sec_agent/s1_residual_gap_tencent_locator.py": "124be3a9a63f50ac5f415918655516a8d5099cfcdb8d4f1403c4741f82df71b0",
+    "src/sec_agent/official_source_attempt_program.py": "1959be5f024fa91f25497ac05e4b3f784571135de0b4b8c926da9e7ca69b2c71",
+    "src/sec_agent/s1_08_official_content_tools.py": "f8236bb8c7310dabc577495d52e8b03a0f038410941185b0418320153513f04a",
+    "src/sec_agent/s1_08_tencent_wsa_candidate_diagnostic.py": "df1a34bf036424255de4ea0de529c6e73e0d6cf1bcb4345ae5eccefb71039bdf",
+    "configs/runtime/fin_ia_0_1_3_s1_residual_gap_external_supplement_policy_v1_0.json": "cd636e3f997e389e11111dcd6fba1b1f0549115fa648c87ea2d1ddcc8d9b5ca4",
+    "configs/releases/fin_ia_0_1_3_s1_residual_gap_external_priority_plan_v1_0.json": "5251ada4a05d5b45331e29b88b7238502c72d20b78d9e032a46b7c3084a88126",
+    "configs/runtime/fin_ia_0_1_3_s1_residual_gap_tencent_locator_profile_v1_0.json": "5ae73122bbd1f34f5aefc8c0f31f68f8d3085da1ad819d92f82a9e07ba71eeac"
+  },
+  "preflight_digest": "0b4177a5f446201f9737a1f284e2bcd465a771626ee8245150feaae13477cdf8",
+  "provider_profile_digest": "e21c809925911493763212f0b31d98ce4396fdad17ce0777616d1d4787304a3f",
+  "stop_rules": [
+    "no automatic retry or replacement admission",
+    "systemic provider rejection stops later provider calls but preserves official work",
+    "provider snippets and dates never become Evidence authority",
+    "all captured documents require later local readjudication"
+  ],
+  "authority_digest": "06f004648c3557dd72490204c4c278c97f178155ac568f7c574be4ff744ca82d"
+}

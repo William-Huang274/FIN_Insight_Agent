@@ -2400,3 +2400,19 @@ Dell／Micron managed-reader live 证明，最小覆盖窗口本身正确，也�
 当前唯一 live 已按此门停止：只接受 Dell pricing/profitability 与 Micron HBM packaging 三条 Evidence，不把被错误 selector 拒绝的 orders/backlog 或 memory tightness 自动补入，也不进入 DeepSeek 报告比较。
 
 Owner 随后批准在同一 S1 边界内继续零网络修复。successor 不修改历史 v1 policy／result，而是采用新的 `literal_phrase_groups_v1` 合同：金额、backlog、供需方向和时间范围分别作为短 literal anchor，由最小窗口负责组合；任意 `required_patterns` regex surface 在读取正文前静态拒绝。两个 clean Git archive／fresh process 已对两份 immutable Reader capture 独立重放并获得相同结果，随后 clean/synced materializer 持久化同 digest Pack：Dell `3/3`、Micron `2/2` fragments，Pack 由 `22→27 Evidence／15→14 gaps`，三门 `core／supplier／valuation-input=true`，网络／模型／retry=`0/0/0`，proof=`b8a9b04d...74bd04`、result=`251e414d...b85315`。现在只允许签发一次 changed-input DeepSeek comparison；corrected Pack 不能直接写成报告质量通过。
+
+### 16.20 Selected Evidence 与 Numeric Authority 必须共编（2026-08-10）
+
+changed-input DELL exact-live 证明，补源已经能转化为更好的需求、利润、供应、竞争和反方判断；Final Writer 使用 `24/27` 条 Evidence，并把同输入 direct baseline 的 8 条本地 L1 降为 2。但它同时暴露了一个不能继续靠手工补表解决的产品矛盾：模型能在 Evidence 原文中读到准确数字，NumericFactView 却未必含有对应 ref。模型引用真实原文数字时仍会被交付门拒绝；若放宽门禁，又会失去数字期间、单位和 lineage 控制。
+
+因此新增以下产品规则：
+
+1. Evidence Pack 每次改变后，模型输入编译器必须从最终 selected Evidence 同步产生 `MaterialNumericCandidateInventory`；不得由另一份静态手工清单猜测哪些新数字可能进入报告。
+2. 每个候选必须在进入 Writer 前被确定性裁决为三类之一：`authorized NumericFact／Formula input`、`non-material descriptive token`、`not_authorized_for_output`。第三类可供模型理解上下文时，必须显式标记不可写，或在 narrative view 中遮蔽；不得保持“可见但合同未定义”的模糊状态。
+3. 官方来源自己的精度与舍入表面必须绑定到同一 stable NumericFact。例如 `$16.132B` 的精确事实可以同时授权来源表述 `$16.1B`，但 receipt 必须保存 source surface、rounding mode、precision 和 stable target lineage；不能靠模型自由近似。
+4. 模型若输出未绑定的 material number，仍为 L1；“数字确实在某段 source text 中”只能改变根因分类，不能绕过 Numeric authority。反过来，Harness inventory 漏编也必须记为项目缺陷，不能全部归咎模型。
+5. model Verifier 负责事实支持、边界和引用语义；确定性 gate 继续负责数字、身份、期间、单位、ref 和 lineage。只有两者都通过才允许 promotion。Verifier 全 pass 不得覆盖本地 L1，且本地 gate 的失败不得被降级为普通写作 finding。
+6. 新资料是否成功，以八维内容审计判断：需求真实性、利润传导、供应执行、竞争、反方、WWC、证据利用和决策密度。Evidence 利用率高但机制错误仍不通过；交付 L1 失败也不能抹掉已经观察到的研究质量增益，两种结论必须分开记录。
+7. 单点 PIT price 继续只代表 `valuation_input_ready`。本次真实报告正确保留历史区间、forward earnings、同业和情景敏感度 Gap，不能把一枚收盘价包装为 valuation-ready。
+
+本次业务审计结论为 `source_increment materially utilized／research quality improved／delivery gate failed`。下一步属于 S2 的零调用 numeric co-compilation 处置，不授权自动 DELL 重跑；WWC 和内容密度进入 S3，残余估值与 Dell 特定供应缺口留在 S1／后续 source work。

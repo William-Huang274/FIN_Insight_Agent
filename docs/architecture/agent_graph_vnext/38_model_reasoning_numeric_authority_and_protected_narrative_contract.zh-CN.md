@@ -340,3 +340,18 @@ Reader JSON parser 只把被保存的 `data.content` 转成待匹配文本；目
 failure 必须区分：`anchor_missing`、`pattern_occurrence_unbounded`、`multi_anchor_window_too_wide` 与 `final_excerpt_too_large`。Dell／Micron live 已证明这四者业务含义不同：原文 anchor 全部存在且真实距离很短，但 policy pattern 自身贪婪跨越长文，属于本地 compiler defect。修复只能零网络回放 immutable Reader captures，并加入重复主题词、文档尾部同名词和顺序变换 mutation；不得更改历史 result、扩大 span 或自动发起新的 source call。
 
 当前 successor 将 v2 输入面收窄为 `literal_phrase_groups_v1`：每组包含一个语义原子及少量等价 literal，compiler 先做合同数量／长度检查，再在 whitespace-normalized、case-folded 正文中枚举全部 occurrence，并把位置映射回原始文本；滑动窗口选择覆盖每个 group 的最小原文 span。v2 不接受 `required_patterns`，因此无界 regex 无法重新进入该链。selector receipt 保存每组命中的 literal、原文 start/end、occurrence count、最小窗口和最终 excerpt 长度，但不把整份原始正文写入公开 result。两个 clean Git archive／fresh process 已独立重放真实 captures，并得到 byte-equivalent corrected Pack digest=`5ba1091d...5e9984`；Dell 三片段窗口为 `310／219／90` 字符，Micron 两片段为 `139／219` 字符，五条均在原上限内，network/model/retry=`0/0/0`。
+
+### 13.10 Evidence-driven NumericFact co-compilation 与 layered verification
+
+changed-input live 暴露了静态 NumericFact inventory 的扩展上限。新 Pack 中 SMCI `97.8%` 与 Dell `over 5,000 customers` 都存在于 cited Evidence，但未进入 NumericFactView；Dell `$16.1B` 又是同一 `$16.132B` 精确事实的官方 rounded surface。模型能正确理解并引用这些内容，但本地交付门无法绑定。该失败不是取消数字门的理由，而是要求 Numeric authority 与 Evidence selection 使用同一编译源。
+
+稳定数据流调整为：
+
+1. `SelectedEvidence[]` 先经 source-type parser 产生带 source coordinate 的 `NumericCandidate[]`，保留原字符串、Decimal 候选、单位、币种、期间、实体、上下文窗口和 materiality hint；
+2. deterministic adjudicator 将候选分为 `authorized_fact／authorized_formula_operand／descriptive_nonmaterial／forbidden_or_ambiguous`，并保存 decision code；无法确定实体、期间或单位的候选不能进入 NumericFactView；
+3. stable target resolver 以 `target_id + source_record_id + period/unit` 去重；同一 target 的精确值、来源 rounded surface、单位换算与格式展示由一个 presentation program 编译，而不是生成互相独立的手工 alias；
+4. Provider view 只暴露当前节点可用的 `NUM/FORM` 和明确的 `DO_NOT_OUTPUT` 候选。若出于研究理解需要保留原文，禁止输出状态必须与对应 text span 同位置可见，不能藏在全局 prompt 尾部；
+5. final local guard 先按 claim 的 explicit refs 匹配 material numeric surface，再核对 Evidence lineage；source text 中存在但无 authority 仍 fail closed，并将 finding 分成 `inventory_omission` 与 `model_unbound_output`，允许同时成立；
+6. compact model Verifier 与 deterministic guard 是串联关系，不是互相覆盖。Verifier 返回 pass 只说明它没有发现语义支持问题；数字、身份、期间、单位和 lineage 必须由本地 gate 独立通过。
+
+本轮 direct baseline 有 8 条 L1，Red Team／Final Writer 后只剩 2 条，说明模型链具有实质控制增益；compact Verifier 30/30 pass 却漏掉三枚未绑定 surface，说明 Verifier 不具备单独晋升权。后续测试必须覆盖新增 Evidence 自动出现未知数字、同 target 多精度表面、百分比／客户数／日期 token、cross-case、错期间、source 数字可见但不可输出，以及 Verifier false-pass 后本地门仍阻断。完成零调用 co-compilation proof 前不得再发 DELL paid rerun。

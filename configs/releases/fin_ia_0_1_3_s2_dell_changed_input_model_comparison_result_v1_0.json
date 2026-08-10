@@ -1,0 +1,166 @@
+{
+  "admission_digest": "ff1a8529110d7f00bd46c2d381c0200f0d8764b6b8a1b3f528767423f2f11643",
+  "assessment_status": "pending_post_terminal_business_content_comparison",
+  "attempt_id": "fin013_s2_fixed_pack_dell_415d700ca9f9a7e51103::attempt_1",
+  "authority_digest": "f45ca449b240387cd040228b5e8ee76ac4f62956f27a8721caad74b903cb5c15",
+  "business_artifact_promoted": false,
+  "call_receipts": [
+    {
+      "call_id": "call_01_direct_baseline",
+      "capture_digest": "132dc48ced9890c2f4ac28902cd3c6d9c7e54c90425f9af58c86d210c29b8309",
+      "finish_reason": "stop",
+      "node_key": "direct_baseline",
+      "request_digest": "082c14f1ed52d5582b3bdf4f597bed8e91398ca37af7a42301ca873bcf8b2fe7",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_02_research_lead",
+      "capture_digest": "74c0fd2b567365148ea9dea9bff6a8b84bdb1c097cf5575000f41f14c2eed1c0",
+      "finish_reason": "stop",
+      "node_key": "research_lead",
+      "request_digest": "ffa516f6ae23b4f20ec15b2ee24400359e11f039a3a117971d3aaf6204bbc61e",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_03_specialist__demand_authenticity_and_sustainability",
+      "capture_digest": "558c569f0c5f67fc852be7defd286660b28f6f689ecc5adda32ee8280fb470da",
+      "finish_reason": "stop",
+      "node_key": "specialist::demand_authenticity_and_sustainability",
+      "request_digest": "3ad636bef8071672ab0f2ed1f08256e3ee57a9ac15fdcef742bb16808f7e97f8",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_04_specialist__product_and_technology_position",
+      "capture_digest": "dcaf08b3ee63e2c9cb28b7c1b191bfb9fea927785e7420ac686c1e4d984ed1d1",
+      "finish_reason": "stop",
+      "node_key": "specialist::product_and_technology_position",
+      "request_digest": "0a110d66e336cf27cb36a20cfb7dee80311ffb23200f0480806833c602db0916",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_05_specialist__supply_capacity_and_competition",
+      "capture_digest": "3a90abc0c2747c5e40d0195cd0038f8411004dfdf6430de06eb29499822ff9eb",
+      "finish_reason": "stop",
+      "node_key": "specialist::supply_capacity_and_competition",
+      "request_digest": "ba9ec67532a66bd839e473f9fee113e35d4a25984c273b63839e0ff0b3346b7f",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_06_specialist__financial_transmission_profit_and_cash",
+      "capture_digest": "1de77a98e8da3594898cccd77210110c3ae5af48add14522244d028940b30aef",
+      "finish_reason": "stop",
+      "node_key": "specialist::financial_transmission_profit_and_cash",
+      "request_digest": "50da6ca834ed6889466cbcfbf34ca2d319c90d100829c3833fad881c77e7baea",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_07_specialist__capital_allocation_valuation_and_price_in",
+      "capture_digest": "1ce50d96ae4f75eab085480ebc01f5587e384704f0bebf84fcc79da718509ae3",
+      "finish_reason": "stop",
+      "node_key": "specialist::capital_allocation_valuation_and_price_in",
+      "request_digest": "cac89cfc0360f11f6d205757dbd4f6ff45723cf467b7ca5c519e470d534f0fc6",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_08_specialist__counter_thesis_risk_and_what_would_change",
+      "capture_digest": "7b09b17d1b3861142f285dd35f61af26ed11827dce9117c0e6ad3490a587f561",
+      "finish_reason": "stop",
+      "node_key": "specialist::counter_thesis_risk_and_what_would_change",
+      "request_digest": "633f22acd20d1ce2fb331358514ef4268eb6c28f6ad449586bb9ec14c1931c4d",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_09_cross_unit_synthesis",
+      "capture_digest": "164f7b6141d450e527cd79bb800da5f015acacbba9fb1bf53812244b18b8d5af",
+      "finish_reason": "stop",
+      "node_key": "cross_unit_synthesis",
+      "request_digest": "45d462c4a649526fce7a3b38626e843e0b29957c1d7a54329731628137141160",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_10_draft_writer",
+      "capture_digest": "4ed9829622a2014e2f38bc2cf1546be7b9d6cedc8415cae4590706d005c74fbe",
+      "finish_reason": "stop",
+      "node_key": "draft_writer",
+      "request_digest": "ca18b242dbc31f2041516ebedffac4f37c9e3b93790e8e3940e1f544597873e9",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_11_red_team_critic",
+      "capture_digest": "a6d684c8172c0e7f04cff49b5575895c39e7395ba3ba00e10031486cb0125fe8",
+      "finish_reason": "stop",
+      "node_key": "red_team_critic",
+      "request_digest": "457432de7ab93097911399a04250235b445723458b0f88aeb93360329cc2b11f",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_12_final_writer",
+      "capture_digest": "bcf53826c2d67cdd1cccb2444c32cd6a82cea33073fb77d1d25f4109f1eef7f0",
+      "finish_reason": "stop",
+      "node_key": "final_writer",
+      "request_digest": "70056bc1fb54a78c65542fe2d3f83849ea751cdeb31f2bbfc1ae2bfdfa57882c",
+      "status": "ok"
+    },
+    {
+      "call_id": "call_13_verifier",
+      "capture_digest": "2d59aee97f452a728e325973c4e01fea104effdc60e5a36515a917272761f502",
+      "finish_reason": "stop",
+      "node_key": "verifier",
+      "request_digest": "33befdd694adf090124d41d75a94fe5b198da377723bf65949051b9c2d76f000",
+      "status": "ok"
+    }
+  ],
+  "case_input_digest": "063fbad04d757ab38239690dbf3bc90aa5f9fff50b6a9214e30453674085f6a2",
+  "case_key": "DELL",
+  "comparison_type": "changed_input_information_increment_not_model_ab",
+  "finding_summary": {
+    "L1": 2,
+    "L2": 0,
+    "L3": 0,
+    "L4": 0,
+    "codes": [
+      "final_report_material_numeric_ref_missing",
+      "final_report_numeric_surface_not_authorized_by_refs"
+    ]
+  },
+  "fresh_model_nodes": 13,
+  "internal_direct_and_agent_same_input": true,
+  "known_boundary": "This result preserves a raw changed-input candidate. A separate business content audit must determine whether source increment improved judgment; no delivery, Owner acceptance or release is authorized.",
+  "observed_counts": {
+    "estimated_usd": 0.2943542,
+    "fallbacks": 0,
+    "findings": 2,
+    "input_tokens": 416493,
+    "model_calls": 13,
+    "network_tool_calls": 0,
+    "output_tokens": 26152,
+    "provider_calls": 13,
+    "retries": 0,
+    "total_tokens": 442645
+  },
+  "old_model_nodes_reused": 0,
+  "prior_model_result_digest": "f341db71242b6dd4174c46e072f43b95e5ecd3707f26f995e586971846b2822f",
+  "prior_report_same_input": false,
+  "private_terminal": {
+    "ref": "data/workbench_private/fin_0_1_3_s2_dell_changed_input_model_comparison/live/attempts/fin013_s2_fixed_pack_dell_415d700ca9f9a7e51103/terminal_with_receipt.json",
+    "sha256": "bbedc7b250bc84433a748c8ba8d612fcf1fa80eb8c535697ccc198e3ac0ca00d",
+    "terminal_digest": "985e9f405b63191c26704463a30c5695a8728152df47c1129ff991995c253e0f"
+  },
+  "raw_model_output_public": false,
+  "raw_model_output_stored_private": true,
+  "recorded_at": "2026-08-10T15:08:14Z",
+  "result_digest": "c3ffde4ee31379a4145483d7c99e95a115ac8fad920620dfc4ba8eb7cce0f610",
+  "run_id": "fin013_s2_fixed_pack_dell_415d700ca9f9a7e51103",
+  "run_scope": "FIN_0_1_3_S2_DELL_FIXED_PACK_MODEL_COMPARISON",
+  "schema_version": "fin_ia_0_1_3_s2_dell_changed_input_model_comparison_result_v1_0",
+  "source_pack_digest": "5ba1091ddc71d0c8543f186e4331bf2caae7d10e365af0a0f7510a056b5e9984",
+  "status": "completed_with_findings",
+  "terminal_code": "fixed_pack_chain_completed_raw_candidate_not_promoted",
+  "terminal_phase": "verifier",
+  "usage": {
+    "estimated_usd": 0.2943542,
+    "input_tokens": 416493,
+    "output_tokens": 26152,
+    "total_tokens": 442645
+  }
+}

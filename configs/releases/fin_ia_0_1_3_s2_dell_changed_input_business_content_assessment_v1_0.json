@@ -1,0 +1,163 @@
+{
+  "assessment_digest": "2115b25a28ed19f9bc053011503157702652f9297540a40c6ec523daee84f627",
+  "assessment_status": "completed_research_quality_improved_delivery_gate_failed",
+  "business_artifact_promoted": false,
+  "case_key": "DELL",
+  "comparison_basis": {
+    "comparison_type": "changed_input_information_increment_with_same_current_input_direct_control",
+    "current_agent_result_digest": "c3ffde4ee31379a4145483d7c99e95a115ac8fad920620dfc4ba8eb7cce0f610",
+    "current_agent_result_sha256": "b4298c5ed74365d171dd988ced02092361fc872614e70ed7e7b1c5478aa786aa",
+    "current_source_pack_digest": "5ba1091ddc71d0c8543f186e4331bf2caae7d10e365af0a0f7510a056b5e9984",
+    "prior_agent_result_digest": "f341db71242b6dd4174c46e072f43b95e5ecd3707f26f995e586971846b2822f",
+    "prior_agent_result_sha256": "52588d5cf48b0e7b6e7df4e930fd284f708b76446339f6675ab51bab9a40c136",
+    "strict_same_input_pair": false,
+    "warning": "The prior Agent report saw the smaller predecessor Pack, so old-versus-current is an information-increment comparison rather than a strict paired model evaluation. The current direct baseline and Agent chain do share the current input and are used only to observe the chain's control effect."
+  },
+  "content_shape": {
+    "current_agent": {
+      "evidence_items_used": 24,
+      "evidence_items_visible": 27,
+      "limitations": 10,
+      "points": 30,
+      "sections": 8
+    },
+    "current_direct_baseline": {
+      "evidence_items_used": 26,
+      "evidence_items_visible": 27,
+      "local_L1_findings": 8,
+      "limitations": 5,
+      "points": 42,
+      "sections": 8
+    },
+    "prior_agent": {
+      "evidence_items_visible": 15,
+      "gaps_visible": 16,
+      "limitations": 14,
+      "points": 33,
+      "sections": 8,
+      "source_materials_visible": 15
+    },
+    "current_input": {
+      "evidence_items_visible": 27,
+      "gaps_visible": 14,
+      "source_materials_visible": 27
+    }
+  },
+  "dimensions": [
+    {
+      "dimension": "demand_authenticity_and_sustainability",
+      "verdict": "improved",
+      "business_observation": "The report now distinguishes genuine demand evidence from timing risk: Dell management says demand exceeds supply and backlog is increasing, while memory uncertainty may make customers lock infrastructure early and HPE order digestion provides independent counterevidence.",
+      "remaining_gap": "Dell still does not disclose cancellations, delivery-cycle distribution or a quantified pull-forward share."
+    },
+    {
+      "dimension": "profit_transmission_and_cash",
+      "verdict": "improved",
+      "business_observation": "The report connects AI mix to ISG's 10.5% operating margin and uses management's mid-single-digit AI-server operating-margin target to explain why strong revenue does not automatically imply equally strong profit growth.",
+      "remaining_gap": "AI-specific gross margin, unit economics and working-capital attribution remain unavailable."
+    },
+    {
+      "dimension": "supply_capacity_and_execution",
+      "verdict": "materially_improved",
+      "business_observation": "Micron's memory tightness beyond 2027, HBM packaging timing in the first half of 2027 and TSMC/CoWoS expansion now support a concrete supply mechanism instead of a generic shortage statement.",
+      "remaining_gap": "Supplier read-through does not establish Dell's own allocation, delivery timing, volume or yield."
+    },
+    {
+      "dimension": "competition_and_positioning",
+      "verdict": "improved_with_L1_contract_findings",
+      "business_observation": "SMCI shipment and growth evidence plus HPE digestion evidence make the competitive discussion more specific and two-sided.",
+      "remaining_gap": "The final text used the factual 97.8% growth and more-than-5,000-customer figures without compiled numeric refs, so the useful business content cannot yet pass the delivery contract."
+    },
+    {
+      "dimension": "counterevidence_and_risk",
+      "verdict": "improved",
+      "business_observation": "The final report includes pull-forward, customer concentration, competitive pricing, cancellation, export-control and working-capital risks rather than presenting AI demand as a one-direction thesis.",
+      "remaining_gap": "Several risks remain hypotheses because Dell-specific exposure and attribution are not quantified."
+    },
+    {
+      "dimension": "what_would_change",
+      "verdict": "flat",
+      "business_observation": "The report names orders, backlog conversion, margin, supply and export-control variables to monitor.",
+      "remaining_gap": "It still does not provide frozen, source-supported invalidation thresholds or decision rules."
+    },
+    {
+      "dimension": "evidence_utilization",
+      "verdict": "improved",
+      "business_observation": "The Agent final used 24 of 27 visible Evidence items. Ten of the eleven newly added aliases appeared at least once, including Dell issuer, Micron, TSMC, HPE, SMCI and Microsoft material.",
+      "remaining_gap": "High utilization does not by itself prove correct causal interpretation; E024 was not used and supplier/customer read-through remains bounded."
+    },
+    {
+      "dimension": "decision_density",
+      "verdict": "mixed_modest_improvement",
+      "business_observation": "The Agent chain reduced the same-input direct baseline from 42 to 30 points and converted a broad source dump into a smaller set of demand, margin, supply and risk judgments.",
+      "remaining_gap": "Executive points remain overloaded and several supply, cash-flow and risk statements repeat across sections."
+    },
+    {
+      "dimension": "valuation_boundary",
+      "verdict": "honest_but_not_ready",
+      "business_observation": "The accepted 2026-08-06 raw close of USD 437.65 per share is treated only as a point-in-time market input; the report does not invent a fair value, target price or recommendation.",
+      "remaining_gap": "Historical range, forward earnings, peers and scenario sensitivity are still missing, so valuation_ready remains false."
+    }
+  ],
+  "exact_live": {
+    "estimated_usd": 0.2943542,
+    "fresh_model_nodes": 13,
+    "input_tokens": 416493,
+    "model": "deepseek-v4-pro",
+    "network_tool_calls": 0,
+    "output_tokens": 26152,
+    "provider_calls": 13,
+    "retries": 0,
+    "run_id": "fin013_s2_fixed_pack_dell_415d700ca9f9a7e51103",
+    "total_tokens": 442645
+  },
+  "layered_control_observation": {
+    "agent_final_L1_findings": 2,
+    "current_direct_baseline_L1_findings": 8,
+    "model_verifier_claims_checked": 30,
+    "model_verifier_verdict": "pass",
+    "red_team_issues": 10,
+    "red_team_missing_counter_thesis_items": 5,
+    "verdict": "agent_chain_added_material_control_value_but_model_verifier_is_not_a_sufficient_promotion_gate",
+    "explanation": "Red Team and Final Writer removed most unsupported or poorly bounded numeric and causal surfaces. The compact Verifier completed without truncation, but it passed all claims while the deterministic numeric guard still found two L1 issues; product promotion therefore correctly remained blocked."
+  },
+  "L1_disposition": [
+    {
+      "numeric_tokens": [
+        "16.1"
+      ],
+      "classification": "project_owned_numeric_presentation_surface_gap",
+      "business_truth": "Dell's official transcript states USD 16.1 billion of AI server revenue and the current NumericFact represents the more precise USD 16.132 billion value.",
+      "root_cause": "The source-rounded 16.1 surface was not compiled as an authorized presentation of the stable AI-server-revenue NumericFact.",
+      "model_fault": false
+    },
+    {
+      "numeric_tokens": [
+        "97.8%",
+        "5000"
+      ],
+      "classification": "source_fact_visible_but_numeric_authority_inventory_and_model_ref_contract_both_incomplete",
+      "business_truth": "Both figures occur in cited current Evidence: SMCI AI GPU product growth and Dell management's customer-count statement.",
+      "root_cause": "The selected Evidence exposed material numbers that were not co-compiled into NumericFactView, and the model nevertheless emitted them without an authorized NUM ref.",
+      "model_fault": true
+    }
+  ],
+  "product_disposition": {
+    "content_quality_increment": "material_positive",
+    "delivery_gate": "failed_L1",
+    "owner_acceptance_eligible": false,
+    "paired_acceptance_eligible": false,
+    "release_eligible": false,
+    "rerun_authorized": false,
+    "source_increment_not_utilized": false,
+    "terminal_label": "research_quality_improved_but_raw_candidate_not_deliverable"
+  },
+  "recorded_at": "2026-08-10T15:19:33Z",
+  "schema_version": "fin_ia_0_1_3_s2_dell_changed_input_business_content_assessment_v1_0",
+  "stage_ownership": {
+    "S1": "The bounded-anchor retrieval repair and corrected Pack utilization are proven for this DELL comparison; residual valuation and Dell-specific allocation gaps remain source work, not S2 Writer defects.",
+    "S2": "Co-compile material numeric candidates from every selected Evidence item, include source-rounded presentation aliases, and keep deterministic numeric promotion checks after model verification.",
+    "S3": "Carry forward executable WWC thresholds, evidence-to-mechanism bridges and decision-density work; do not reopen S1 parsing or rerun this report for those quality findings."
+  },
+  "current_next": "ZERO_CALL_SELECTED_EVIDENCE_NUMERIC_CANDIDATE_INVENTORY_AND_PRESENTATION_COCOMPILATION_DISPOSITION_NO_AUTOMATIC_DELL_RERUN"
+}

@@ -94,7 +94,7 @@ def _authority(material: dict, proof: dict) -> dict:
     )
 
 
-def test_registered_scope_tracks_current_numeric_and_verifier_blockers() -> None:
+def test_registered_scope_tracks_current_numeric_blocker() -> None:
     preflight = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
     assert preflight["status"] == "blocked"
     blockers = {
@@ -102,7 +102,6 @@ def test_registered_scope_tracks_current_numeric_and_verifier_blockers() -> None
     }
     assert blockers == {
         "RC-P36-170-fin-0-1-3-s2-fixed-pack-numeric-presentation-alias-and-formula-lineage-gap",
-        "RC-P36-171-fin-0-1-3-s2-fixed-pack-verifier-output-capacity-and-incomplete-terminal-classification",
     }
 
 

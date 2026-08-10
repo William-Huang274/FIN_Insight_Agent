@@ -1,0 +1,111 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S2.selected_evidence_numeric_natural_node_canary:v1",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "zero_call_run_scope": "FIN_0_1_3_S2_SELECTED_EVIDENCE_NUMERIC_NATURAL_NODE_CANARY_ZERO_CALL",
+  "live_run_scope_reserved_not_registered_or_authorized": "FIN_0_1_3_S2_SELECTED_EVIDENCE_NUMERIC_NATURAL_NODE_CANARY_LIVE",
+  "immutable_bindings": {
+    "authority_decision": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_zero_call_authority_decision_v1_0.json",
+      "sha256": "38be5ab7740f6575db8e48e63180879c53896396197f32f82f03cdbad4a15ded",
+      "expected_decision_digest": "e63d284235180735ab55c49a6be21d62121c3c2dcf6828ceab12755139bd0939"
+    },
+    "cocompilation_clean_proof": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_candidate_cocompilation_clean_independent_proof_v1_0.json",
+      "sha256": "85254037c54cdd171c197caa11208201e43c4ea1067a3cd2ed6b6ec0c3e5af84",
+      "expected_result_digest": "cdca2fda2cef915177b58c8c42a26ebd24ca8bd92785990a818c36eca14787cb"
+    },
+    "cocompilation_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_selected_evidence_numeric_candidate_cocompilation_policy_v1_0.json",
+      "sha256": "a63ed0d90b3c6dd96a385a1202d3b9ee4e39d11b4563ee467ebc20396ea1e102"
+    },
+    "dell_changed_input_contract": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_dell_changed_input_model_comparison_contract_v1_0.json",
+      "sha256": "aacdcb9f7407ff1df35f613d901c8c089c8a46891dc33151dd9f96af426c6ff6"
+    },
+    "provider_profile": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_deepseek_v4_pro_fixed_pack_profile_v1_0.json",
+      "sha256": "d0fc499e36678369081d27619404ea3de776a8349addf29192b0fb895f34c9ac"
+    }
+  },
+  "canary": {
+    "case_key": "DELL",
+    "node_id": "dell_demand_authenticity_numeric_view_atom_canary_v1",
+    "research_question_zh": "Dell 当前披露是否支持 AI 服务器需求真实存在，以及这些证据是否足以证明需求可持续转化？",
+    "evidence_aliases": ["E022", "E018", "E023"],
+    "evidence_roles": {
+      "E022": "issuer_direct_source",
+      "E018": "counterparty_or_ecosystem_readthrough",
+      "E023": "issuer_direct_source"
+    },
+    "required_numeric_refs": [
+      "NUM:DELL:AI_SERVER_REVENUE:C4947C75D942",
+      "NUM:DELL:CUSTOMER_COUNT:8C7F5A41CBF9"
+    ],
+    "required_one_of_numeric_refs": [
+      "NUM:DELL:AI_ORDERS:66F359E8F5E4",
+      "NUM:DELL:AI_BACKLOG:A82BF565C064"
+    ],
+    "required_presentations": [
+      "$16.1 billion",
+      "customer count surpassed 5,000"
+    ],
+    "required_one_of_presentations": ["$24.4 billion", "$51.3 billion"]
+  },
+  "expected_cocompilation_bindings": {
+    "result_digest": "0dc1740e43636a807060d6f5bf0c066487a3743ca87ad2a5418b9e788ee02864",
+    "transaction_digest": "f57becedee3db9c31a4b28a02bdc7bd093fe798cb2c3e27515ea156c572c676d",
+    "candidate_inventory_digest": "565cf59cc2165a9920afb79da9b55946a8165c844df1debdd54f4e654f5d8ae3",
+    "presentation_program_digest": "8739568c66a61a73a2d9efaaeda538e2986145768658bb00c1f2842ee00f9315",
+    "node_views_digest": "7e9a9b84c5ddd08f8fb46cd6c085338540ad7b223f41d725caff8f1882fe0154"
+  },
+  "output_contract": {
+    "schema_version": "fin_ia_0_1_3_s2_demand_authenticity_numeric_view_atom_canary_output_v1_0",
+    "top_level_fields": [
+      "schema_version",
+      "case_key",
+      "node_id",
+      "judgment",
+      "support_atom",
+      "counterevidence_atom",
+      "boundary_atom",
+      "used_numeric_refs"
+    ],
+    "judgment_enum": ["supported_with_limits", "mixed", "cannot_infer", "contradicted"],
+    "atom_fields": ["text", "epistemic_state", "evidence_refs", "numeric_refs"],
+    "epistemic_state_enum": ["fact_supported", "bounded_inference", "cannot_infer"],
+    "maximum_atom_text_characters": 600,
+    "maximum_total_output_characters": 5000,
+    "boundary_required_topic_groups_minimum": 2,
+    "boundary_topic_groups": {
+      "durability": ["durable", "durability", "sustainability", "sustainable", "持续", "可持续"],
+      "conversion": ["conversion", "convert", "转化", "兑现"],
+      "concentration": ["concentration", "concentrated", "集中"],
+      "margin": ["margin", "profit", "利润", "毛利"]
+    },
+    "insufficiency_markers": ["not enough", "does not prove", "cannot infer", "insufficient", "不足以", "不能证明", "无法推断"]
+  },
+  "request_budget": {
+    "maximum_compiled_request_characters": 24000,
+    "maximum_output_tokens": 1800,
+    "provider_calls_maximum_if_later_authorized": 1,
+    "model_calls_maximum_if_later_authorized": 1,
+    "source_calls": 0,
+    "network_tool_calls": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "hard_boundaries": {
+    "capture_before_parse_or_validation": true,
+    "exact_once_admission": true,
+    "finish_reason": "stop",
+    "raw_source_text_in_model_input": false,
+    "complete_report_or_recommendation": false,
+    "free_arithmetic": false,
+    "valuation_or_target_price": false,
+    "business_artifact_promotion": false,
+    "live_authority_issued_by_this_policy": false,
+    "automatic_rerun": false
+  }
+}

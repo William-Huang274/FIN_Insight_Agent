@@ -2452,3 +2452,9 @@ changed-input DELL exact-live 证明，补源已经能转化为更好的需求�
 产品不直接重跑整份 DELL 报告，而选择一个可被业务解释的需求真实性判断。E022 的订单、AI 服务器收入、backlog 和客户广度证明当前需求指标真实存在；E018 的同业订单消化和 E023 的提前备货只提供 pull-forward／持续性边界。模型必须同时表达“当前指标受到支持”和“长期转化仍未证明”，而不是只通过 JSON 格式测试。
 
 该 canary 定向覆盖此前漏编的 `$16.1B` 和超过 5,000 客户展示，但这些值只属于冻结测试输入，不成为核心 Runtime 的 DELL 白名单。正式产品规则仍是任何案例由 selected Evidence 共编 NUM／FORM。当前只批准零调用 runner、validator、fake／mutation 和 clean proof；通过后才允许另行决定一次 DeepSeek Pro live，且 live 结果仍不能自动触发 DELL 全链或产品晋升。
+
+#### 16.20.4 Canary 工程验收与金融数字误杀边界（2026-08-11）
+
+canary 输入已经从前序 clean-proven transaction 机械编译：只含 E022／E018／E023、四个对应 NUM 和 bounded annotated context，请求大小为 11,838 字符，低于 24,000 上限。Runtime 必须在解析前保存完整 request／response capture，以共享 ledger exact-once 消费 admission；transport、`finish_reason=length`、invalid JSON、错角色、错 ref、错单位、未绑定金额和缺少持续性边界均形成 terminal failure。公开 terminal 只含 capture ref／digest 和 typed code，不携带 raw model content，也不晋升业务 Artifact。
+
+实现测试还揭示：全案 numeric inventory 内含日期、表序号等 context-only 裸数字，若直接做 substring literal guard，正常写 `FY2027 Q1` 也会因命中 `2027／3／7` 被误杀。产品规则因此明确为两层：candidate literal 分支只检查当前 selected Evidence 中具备金额、百分比或数量语义的 material surface；独立金额／百分比／数量 scanner 仍扫描全部输出。该调整不是放宽数字权威：授权 presentation 仍须带 NUM，错单位和任意新增金额仍 hard fail。当前仅达到 working-tree engineering pass；双 clean proof 和另行 live authority 决策前，不得宣称 DeepSeek 自然遵循或 S2 完成。

@@ -402,3 +402,11 @@ R1 因 proof reader 从错误结果层级读取 summary 字段而失败，已作
 零调用决策选择 DELL demand-authenticity atom，不选择完整 Writer、三节点并行或 Flash／Pro A/B。输入固定为 E022 issuer support、E018 competitor digestion read-through 和 E023 issuer pull-forward boundary；模型必须自然使用 `$16.1 billion`、`customer count surpassed 5,000` 及 orders／backlog 至少一项，并声明相应 NUM refs。E018/E023 只能形成 bounded counterevidence／boundary，不能改写为 Dell 当前量化事实。
 
 输出仅含 support、counterevidence、boundary 三个 atom 和 refs；未知字段、未知 ref、未绑定 material number、free arithmetic、valuation surface、证据角色错置、无边界强结论或截断都 terminal fail。未来 live 上限固定为一调用、零 retry／fallback／tool、capture-before-parse；但当前只允许实现 runner 和双 clean proof，不能把选型决策当作 live admission。
+
+#### 13.10.7 Canary Runtime 的 scoped literal guard 与 exact-once 终态合同（2026-08-11）
+
+最小 canary 复用共编结果 digest、transaction digest、candidate inventory、presentation program 和 node views 五重绑定，不重建平行事实清单。编译器只投影三条 selected Evidence 的 bounded annotated contexts 和四个授权 NUM；完整 SourceMaterial 与 raw `source_text` 继续只在 private audit 层。provider request 保存自身 digest 和 24,000 字符 capacity receipt。
+
+执行顺序固定为 `validate admission -> shared ledger reserve -> request capture -> provider invocation -> full response capture -> finish/JSON/contract validation -> local numeric guard -> terminal -> ledger finalize`。reserve 视为消费；崩溃后同一 admission 不能换 attempt root 重试。失败 capture 必须保留 provider status、finish reason、usage 和 visible content；公开 terminal 只引用 capture，不复制内容。fixture admission 仅用于 fake／mutation，不能转换成 live authority；live scope 在独立决策前不得注册。
+
+共享 inventory 的 `context_only_do_not_output` 还包含 `2027`、表列号和产品序号等裸 token。把这些 token 对任意 prose 做无边界 substring 匹配，会将 fiscal period 和普通句子错误标为金融数字越权。canary 的本地 guard 因而先按 selected Evidence 限域，再只把 currency／percent／typed count surface 送入 candidate-literal 检查；同时保留独立全输出 money／percent／count scanner。前者防 parser noise 误杀，后者继续拒绝 `$17.2 billion`、错单位和无 ref 数字。不得把该 scoped filter 扩展为“忽略所有 context-only 数字”，也不得让 semantic Verifier 覆盖 local gate。

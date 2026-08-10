@@ -1,0 +1,88 @@
+{
+  "acceptance": {
+    "all_material_numeric_surfaces_deterministically_bound": true,
+    "compact_verifier_claim_coverage_fail_closed": true,
+    "fiscal_year_numeric_false_positive_closed": true,
+    "historical_raw_outputs_immutable": true,
+    "length_or_invalid_json_is_hard_incomplete": true,
+    "new_live_or_promotion_authority": false,
+    "numeric_ref_lineage_materialized_locally": true,
+    "selected_captured_source_excerpts_visible_to_verifier": true
+  },
+  "compact_verifier": {
+    "claim_count": 33,
+    "compact_request_characters": 75845,
+    "historical_finish_reason": "length",
+    "historical_terminal_classification": "verification_incomplete_finish_reason_length",
+    "old_request_characters": 51516,
+    "selected_evidence_count": 15,
+    "selected_formula_count": 4,
+    "selected_gap_count": 14,
+    "selected_numeric_fact_count": 12,
+    "selected_source_material_count": 15,
+    "selection_diagnostics": {
+      "unknown_evidence_aliases": [],
+      "unknown_gap_aliases": [],
+      "unknown_numeric_refs": []
+    },
+    "shape_complete_fixture_characters": 3076,
+    "shape_complete_fixture_findings": 0
+  },
+  "credential_environment_scrubbed": true,
+  "current_next": "S1_TARGETED_DELL_EVIDENCE_SLOT_SUPPLEMENT",
+  "execution_git_commit": "18e9e5ffd3c4d0857815f40e70b1d777a00c8efb",
+  "fresh_archive_worker_count": 2,
+  "git_archive_sha256": "519c312798cf16c986ce12bd90f7937c57ffabc9fb14e9fd7d55d1301b45c2dc",
+  "known_boundary": "This proves the S2 numeric and Verifier structure against the saved DELL candidate in two clean archives. It does not add S1 source coverage, repair S3 causal/WWC quality, or authorize a model run.",
+  "numeric_replay": {
+    "deterministically_bound_surface_count": 36,
+    "fiscal_year_7_false_positive_count": 0,
+    "legacy": {
+      "codes": {
+        "final_report_material_numeric_ref_missing": 1,
+        "final_report_numeric_surface_not_authorized_by_refs": 1
+      },
+      "levels": {
+        "L1": 2
+      },
+      "total": 2
+    },
+    "legacy_numeric_fact_count": 13,
+    "material_surface_receipt_count": 36,
+    "repaired": {
+      "codes": {},
+      "levels": {},
+      "total": 0
+    },
+    "repaired_numeric_fact_count": 14,
+    "tsmc_77_binding": {
+      "authority_evidence_aliases": [
+        "E015"
+      ],
+      "binding_mode": "deterministic_unique_source_surface",
+      "claim_id": "CLM:DELL:016",
+      "matched_numeric_refs": [
+        "NUM:DELL:READTHROUGH:TSMC_2026_Q2:ADVANCED_TECH_WAFER_REVENUE_SHARE"
+      ],
+      "numeric_token": "77%",
+      "status": "deterministically_bound"
+    }
+  },
+  "observed_counts_across_workers": {
+    "business_promotions": 0,
+    "fallbacks": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "retries": 0
+  },
+  "owner_stage": "S2",
+  "product_version": "FIN_0_1_3",
+  "proof_digest": "48968cda86bdd213bc381876a4d47b6c36ffd77d28a0424df9083082158117b3",
+  "recorded_at": "2026-08-10",
+  "schema_version": "fin_ia_0_1_3_s2_numeric_presentation_compact_verifier_clean_independent_proof_v1_0",
+  "socket_and_dns_blocked_in_workers": true,
+  "status": "clean_independent_zero_call_proof_passed",
+  "worker_replay_proof_digest": "f4d04d04315d015c78878dcae39ea1cc97cd8e7dccef7bdf2db4dab2329b36e6",
+  "workers_byte_equivalent": true
+}

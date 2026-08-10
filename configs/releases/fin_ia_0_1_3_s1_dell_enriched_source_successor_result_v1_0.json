@@ -1,0 +1,175 @@
+{
+  "attempt_id": "fin013_s1_dell_enriched_source_63e4726a49b86c47985b::attempt_1",
+  "contract_ref": "fin_0_1_3.S1.dell_enriched_source_successor:v1",
+  "gate_status": {
+    "core_research_ready": false,
+    "successor_pack_ready_for_model_input": false,
+    "supplier_context_ready": false,
+    "valuation_input_ready": true,
+    "valuation_ready": true
+  },
+  "known_boundary": "This source result may authorize compilation of a changed Evidence Pack only when core_research_ready is true. It does not prove report quality, valuation, model gain, target price, recommendation or release readiness.",
+  "observed_counts": {
+    "evidence_items_after": 22,
+    "evidence_items_before": 20,
+    "market_network_invocations": 2,
+    "market_provider_invocations": 2,
+    "model_calls": 0,
+    "new_evidence_items": 2,
+    "new_source_materials": 2,
+    "official_source_network_calls": 2,
+    "residual_gaps_after": 15,
+    "residual_gaps_before": 16,
+    "retries": 0
+  },
+  "policy_digest": "9f442ef06927c7911a5dc0cdd509badc0ab3d5b0ed32a418bd40b9886925a5a4",
+  "predecessor_pack_payload_digest": "d2ec0d8700b93b5bf3728425eda5e411c22bc63e138e3c3bec8e754e87cbebcd",
+  "recorded_at": "2026-08-10T13:32:53Z",
+  "research_as_of": "2026-08-06",
+  "result_digest": "2f69c44eb3095f8cf12973def4210525cc641f9aa9e3738dff5a9bd91c84ae79",
+  "route_results": [
+    {
+      "capture_reused": true,
+      "failure_code": "",
+      "failure_phase": "",
+      "fragments_expected": 1,
+      "fragments_materialized": 1,
+      "historical_capture_kind": "source_response",
+      "new_network_call": false,
+      "request_capture": {},
+      "required_for_core_research_gate": true,
+      "response_capture": {
+        "body_sha256": "ada32e7c243f0dcf34ff8d2eb9e65b866941e809a2bf54f6519481e867c78afc",
+        "digest": "39805472768ede6729a8c4dd168e22d5653ec5eb7560c1c55f394787c891352d",
+        "object_key": "data/workbench_private/fin_0_1_3_s1_dell_targeted_source_supplement/live/attempts/fin013_s1_dell_targeted_source_e7d77ba0d1824fc2a6e4/objects/fin-0.1.3/s1/dell-targeted-source-supplement/39/80/39805472768ede6729a8c4dd168e22d5653ec5eb7560c1c55f394787c891352d.json"
+      },
+      "route_id": "tsmc_q1_2026_earnings_transcript",
+      "safe_cause_class": "",
+      "status": "captured_parsed_and_adjudicated"
+    },
+    {
+      "capture_reused": false,
+      "failure_code": "official_source_transport_timeout",
+      "failure_phase": "connect_or_read",
+      "fragments_expected": 3,
+      "fragments_materialized": 0,
+      "new_network_call": true,
+      "request_capture": {
+        "artifact_type": "official_source_request",
+        "byte_size": 503,
+        "digest": "49f0db138e242108c45a6ec07efa04a737093ecb00d199d04b44c29cd2aff78d",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-enriched-source-successor/official/49/f0/49f0db138e242108c45a6ec07efa04a737093ecb00d199d04b44c29cd2aff78d.json"
+      },
+      "required_for_core_research_gate": true,
+      "required_for_supplier_context_gate": false,
+      "response_capture": {
+        "artifact_type": "official_source_transport_failure",
+        "byte_size": 640,
+        "digest": "0977051fbfef2c3e8e0f9af03b62fb157026d39cbdaa3d414dd1a679562515f5",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-enriched-source-successor/official/09/77/0977051fbfef2c3e8e0f9af03b62fb157026d39cbdaa3d414dd1a679562515f5.json"
+      },
+      "route_id": "dell_q1_fy27_earnings_transcript",
+      "safe_cause_class": "timeout",
+      "status": "transport_failure"
+    },
+    {
+      "capture_reused": false,
+      "failure_code": "official_source_transport_timeout",
+      "failure_phase": "connect_or_read",
+      "fragments_expected": 2,
+      "fragments_materialized": 0,
+      "new_network_call": true,
+      "request_capture": {
+        "artifact_type": "official_source_request",
+        "byte_size": 491,
+        "digest": "80c4ceb79638d20d9a5d6ad9a51065cf93e810240f6f333a80902f482f82bcfe",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-enriched-source-successor/official/80/c4/80c4ceb79638d20d9a5d6ad9a51065cf93e810240f6f333a80902f482f82bcfe.json"
+      },
+      "required_for_core_research_gate": false,
+      "required_for_supplier_context_gate": true,
+      "response_capture": {
+        "artifact_type": "official_source_transport_failure",
+        "byte_size": 638,
+        "digest": "188d273e7c00d69170f204d5ff4dd224f03afe9a7f6d028b0fb1740c2082794a",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-enriched-source-successor/official/18/8d/188d273e7c00d69170f204d5ff4dd224f03afe9a7f6d028b0fb1740c2082794a.json"
+      },
+      "route_id": "micron_q3_fy26_earnings_slides",
+      "safe_cause_class": "timeout",
+      "status": "transport_failure"
+    },
+    {
+      "authoritative_for_pack": true,
+      "failure_code": "",
+      "numeric_fact_digest": "1fc4555f707df91830631c7e01c5d7b9bc63928cb4fcc9df9f655e3869c62219",
+      "provider_id": "alpha_vantage_time_series_daily",
+      "request_capture": {
+        "artifact_type": "market_data_request",
+        "byte_size": 484,
+        "digest": "ad5b23b092430f85f00a25593006266f3560ff442a43b7e6918156a88373cc7b",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-enriched-source-successor/market/ad/5b/ad5b23b092430f85f00a25593006266f3560ff442a43b7e6918156a88373cc7b.json"
+      },
+      "response_capture": {
+        "artifact_type": "market_data_response",
+        "byte_size": 29199,
+        "digest": "ed492c65bbf02333904db9f8655709ac301b9f42e6addc9a855e37d9dd5aa5c6",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-enriched-source-successor/market/ed/49/ed492c65bbf02333904db9f8655709ac301b9f42e6addc9a855e37d9dd5aa5c6.json"
+      },
+      "status": "captured_parsed_and_adjudicated"
+    },
+    {
+      "authoritative_for_pack": false,
+      "failure_code": "market_data_shadow_transport_failed",
+      "provider_id": "akshare_eastmoney_us_hist_shadow",
+      "request_capture": {
+        "artifact_type": "market_data_request",
+        "byte_size": 463,
+        "digest": "32389655d38f149f7743267e7778f69451b0e5bc7e6af4270e6a1efb2bcfe541",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-enriched-source-successor/market/32/38/32389655d38f149f7743267e7778f69451b0e5bc7e6af4270e6a1efb2bcfe541.json"
+      },
+      "response_capture": {
+        "artifact_type": "market_data_failure",
+        "byte_size": 552,
+        "digest": "ca5ea35016e851c6ec069cf19b70d9e7d738879a8ee252b85db25f091810a5d5",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-enriched-source-successor/market/ca/5e/ca5ea35016e851c6ec069cf19b70d9e7d738879a8ee252b85db25f091810a5d5.json"
+      },
+      "status": "typed_failure"
+    }
+  ],
+  "run_scope": "FIN_0_1_3_S1_DELL_ENRICHED_SOURCE_SUCCESSOR_EXACT_ONCE",
+  "schema_version": "fin_ia_0_1_3_s1_dell_enriched_source_successor_result_v1_0",
+  "shadow_comparison": {
+    "absolute_difference_usd": null,
+    "equal_to_cent": null,
+    "shadow_may_promote": false,
+    "status": "comparison_unavailable"
+  },
+  "source_commit": "5ca74e4c00c5a21ad087167343955a3c6648068a",
+  "stage_acceptance": {
+    "business_artifact_promoted": false,
+    "capture_first": true,
+    "core_and_valuation_gates_reported_separately": true,
+    "counterparty_claim_boundary_preserved": true,
+    "credential_value_never_captured": true,
+    "deepseek_exact_live_authorized": false,
+    "predecessor_attempt_immutable": true,
+    "saved_tsmc_capture_reused_without_network": true,
+    "shadow_provider_promoted": false
+  },
+  "status": "terminal_completed_core_research_not_ready",
+  "successor_pack_artifact": {
+    "artifact_type": "dell_enriched_capture_first_evidence_pack",
+    "byte_size": 122692,
+    "digest": "9011bb6c08a79dff2922ec5a8b44e3aa172f9eae306f9cce68f2f4e8d13d142d",
+    "media_type": "application/json",
+    "object_key": "fin-0.1.3/s1/dell-enriched-source-successor/pack/90/11/9011bb6c08a79dff2922ec5a8b44e3aa172f9eae306f9cce68f2f4e8d13d142d.json"
+  },
+  "successor_pack_payload_digest": "bafa587403f25aa76520a1da4567828116d6cce4a4c20d67162ad528cd27fe01"
+}

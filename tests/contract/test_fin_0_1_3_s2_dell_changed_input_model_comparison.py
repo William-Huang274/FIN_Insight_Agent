@@ -12,6 +12,7 @@ from sec_agent.s2_dell_changed_input_model_comparison import (
     compile_changed_input_case,
     load_changed_input_comparison_contract,
     rebind_numeric_declaration,
+    validate_changed_input_clean_proof,
 )
 from sec_agent.s2_fixed_pack_live import load_dell_fixed_pack_material
 
@@ -20,6 +21,10 @@ ROOT = Path(__file__).resolve().parents[2]
 CONTRACT_PATH = ROOT / (
     "configs/runtime/"
     "fin_ia_0_1_3_s2_dell_changed_input_model_comparison_contract_v1_0.json"
+)
+PROOF_PATH = ROOT / (
+    "configs/releases/"
+    "fin_ia_0_1_3_s2_dell_changed_input_model_comparison_clean_proof_v1_0.json"
 )
 
 
@@ -121,3 +126,10 @@ def test_contract_rejects_boundary_drift(tmp_path: Path) -> None:
         match="changed_input_comparison_contract_identity_or_boundary_invalid",
     ):
         load_changed_input_comparison_contract(path, repo_root=ROOT)
+
+
+def test_clean_proof_is_digest_bound_and_zero_call() -> None:
+    proof = json.loads(PROOF_PATH.read_text(encoding="utf-8"))
+    validate_changed_input_clean_proof(proof)
+    assert proof["case_input_digest"] != proof["historical_case_input_digest"]
+    assert proof["maximum_request_characters"] == 135111

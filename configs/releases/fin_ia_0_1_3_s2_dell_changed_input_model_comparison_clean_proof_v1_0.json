@@ -1,0 +1,64 @@
+{
+  "case_input_digest": "063fbad04d757ab38239690dbf3bc90aa5f9fff50b6a9214e30453674085f6a2",
+  "contract_ref": "fin_0_1_3.S2.dell_changed_input_model_comparison:v1",
+  "credential_environment_scrubbed": true,
+  "fresh_worker_count": 2,
+  "historical_case_input_digest": "f1f1945e5808001bea377fc7903b8b751a1f9c02cb1d6b7dae53e67e4853496d",
+  "implementation_commit": "dd65574f4c66c7d90068c57dc4992232ae6c4548",
+  "known_boundary": "Two clean Git archive workers proved fresh thirteen-node wiring, current-Pack visibility, capacity, capture-first persistence and stable numeric rebinding. No real model or source call occurred and report quality remains unproven.",
+  "maximum_request_characters": 135111,
+  "mutations": {
+    "all_request_sizes_within_profile_capacity": true,
+    "all_thirteen_nodes_use_corrected_input_digest": true,
+    "historical_model_input_digest_absent": true,
+    "information_increment_visible_before_verifier": true,
+    "numeric_authority_rebound_to_current_aliases": true,
+    "terminal_preserves_no_promotion_boundary": true
+  },
+  "numeric_authority_digest": "2abef2bfd0a0cfc0ae6fdb5cedb45a6b1a5fd011105ef50d53f37c852cb96735",
+  "observed_counts": {
+    "fallbacks": 0,
+    "fixture_provider_calls_per_worker": 13,
+    "model_calls": 0,
+    "network_calls": 0,
+    "real_provider_calls": 0,
+    "request_captures_per_worker": 13,
+    "response_captures_per_worker": 13,
+    "retries": 0
+  },
+  "private_input_hydration": {
+    "input_count_per_worker": 2,
+    "mode": "sha256_bound_ignored_pack_artifacts_only",
+    "refs": [
+      "data/workbench_private/fin_0_1_3_s1_dell_bounded_semantic_anchor_replay/corrected_pack/objects/fin-0.1.3/s1/dell-bounded-semantic-anchor-replay/pack/82/10/8210887f7e06c4fb8397594ba965a8c737525c4b53be52a3cac1cf279e697387.json",
+      "data/workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects/fin-0.1.3/s1-six-case-local-evidence-pack/dell/v1/da/86/da86bdf8649438da03f3da65f962c0deb744a6cd4593bc93f031e495c8b42e4b.json"
+    ]
+  },
+  "proof_digest": "dfe271b14252478d1aac679ae26dd2cdf2d16a84e82958ae86b7c5f37af01df2",
+  "recorded_at": "2026-08-10",
+  "request_characters": {
+    "cross_unit_synthesis": 62505,
+    "direct_baseline": 133865,
+    "draft_writer": 62866,
+    "final_writer": 61123,
+    "red_team_critic": 60886,
+    "research_lead": 133711,
+    "specialist::capital_allocation_valuation_and_price_in": 135111,
+    "specialist::counter_thesis_risk_and_what_would_change": 135111,
+    "specialist::demand_authenticity_and_sustainability": 135102,
+    "specialist::financial_transmission_profit_and_cash": 135102,
+    "specialist::product_and_technology_position": 135081,
+    "specialist::supply_capacity_and_competition": 135081,
+    "verifier": 6912
+  },
+  "run_scope": "FIN_0_1_3_S2_DELL_FIXED_PACK_MODEL_COMPARISON",
+  "schema_version": "fin_ia_0_1_3_s2_dell_changed_input_model_comparison_clean_proof_v1_0",
+  "socket_and_dns_blocked_in_workers": true,
+  "source_pack_digest": "5ba1091ddc71d0c8543f186e4331bf2caae7d10e365af0a0f7510a056b5e9984",
+  "status": "clean_independent_changed_input_thirteen_node_proof_passed",
+  "terminal_code": "fixed_pack_chain_completed",
+  "terminal_digest": "c71f7478133db023a26f303e81ff39c22c84a526f4bd1871e89c08ad0cbbaff5",
+  "terminal_status": "completed",
+  "worker_digest": "9c8d26504d5fb4ddb6e1f7cae92be4aba1366386067094263b319695e46a92fa",
+  "workers_byte_equivalent": true
+}

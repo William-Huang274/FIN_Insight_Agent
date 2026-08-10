@@ -274,6 +274,39 @@ def test_exact_once_admission_cannot_be_reused(inputs, tmp_path) -> None:
     assert exc.value.code.startswith("shared_admission_already_consumed")
 
 
+def test_cumulative_budget_failure_is_captured_before_stop(inputs, tmp_path) -> None:
+    profile, cases = inputs
+    case_input = cases[0]
+    admission = _admission(case_input, profile, "budget-stop")
+
+    def oversized_provider(request: dict) -> dict:
+        response = fake_provider(request)
+        response["input_tokens"] = 600_000
+        response["total_tokens"] = 600_050
+        return response
+
+    runtime_root = tmp_path / "budget"
+    terminal = execute_case(
+        admission=admission,
+        case_input=case_input,
+        profile=profile,
+        execution_git_commit=GIT,
+        runner_sha256=HASH,
+        contract_sha256=HASH,
+        profile_sha256=HASH,
+        runtime_root=runtime_root,
+        shared_ledger=SharedAdmissionConsumptionLedger(tmp_path / "budget.sqlite"),
+        provider_call=oversized_provider,
+        observed_at=ISSUED,
+    )
+    assert terminal["status"] == "failed"
+    assert terminal["terminal_code"] == (
+        "fixed_pack_runtime_cumulative_budget_exceeded_after_capture"
+    )
+    assert terminal["observed_counts"]["provider_calls"] == 1
+    assert len(list(runtime_root.glob("raw_model_only/calls/*/capture.json"))) == 1
+
+
 def test_admission_mutations_fail_closed(inputs) -> None:
     profile, cases = inputs
     case_input = cases[0]

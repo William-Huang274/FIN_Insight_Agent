@@ -681,6 +681,13 @@ def execute_case(
     try:
         for call_index, node_key in enumerate(NODE_ORDER, start=1):
             active_node = node_key
+            maximum_calls = int(
+                profile["capacity"]["provider_calls_per_case"]["maximum"]
+            )
+            if call_index > maximum_calls:
+                raise S2FixedPackRuntimeError(
+                    "fixed_pack_runtime_provider_call_ceiling_exceeded"
+                )
             request = build_node_request(
                 node_key=node_key,
                 case_input=case_input,
@@ -700,6 +707,28 @@ def execute_case(
             findings.extend(node_findings)
             if fatal_code:
                 raise S2FixedPackRuntimeError(fatal_code)
+            input_tokens = sum(int(row.get("input_tokens") or 0) for row in calls)
+            output_tokens = sum(int(row.get("output_tokens") or 0) for row in calls)
+            total_tokens = sum(int(row.get("total_tokens") or 0) for row in calls)
+            estimated_usd = (
+                input_tokens
+                * float(profile["capacity"]["input_usd_per_million_tokens"])
+                + output_tokens
+                * float(profile["capacity"]["output_usd_per_million_tokens"])
+            ) / 1_000_000
+            if (
+                input_tokens
+                > int(profile["capacity"]["maximum_input_tokens_per_case"])
+                or output_tokens
+                > int(profile["capacity"]["maximum_output_tokens_per_case"])
+                or total_tokens
+                > int(profile["capacity"]["maximum_total_tokens_per_case"])
+                or estimated_usd
+                > float(profile["capacity"]["maximum_estimated_usd_per_case"])
+            ):
+                raise S2FixedPackRuntimeError(
+                    "fixed_pack_runtime_cumulative_budget_exceeded_after_capture"
+                )
         findings.extend(
             evaluate_final_output(
                 final_output=outputs.get("final_writer"),
@@ -740,6 +769,19 @@ def execute_case(
             "retries": 0,
             "fallbacks": 0,
             "findings": len(findings),
+            "input_tokens": sum(int(row.get("input_tokens") or 0) for row in calls),
+            "output_tokens": sum(int(row.get("output_tokens") or 0) for row in calls),
+            "total_tokens": sum(int(row.get("total_tokens") or 0) for row in calls),
+            "estimated_usd": round(
+                (
+                    sum(int(row.get("input_tokens") or 0) for row in calls)
+                    * float(profile["capacity"]["input_usd_per_million_tokens"])
+                    + sum(int(row.get("output_tokens") or 0) for row in calls)
+                    * float(profile["capacity"]["output_usd_per_million_tokens"])
+                )
+                / 1_000_000,
+                8,
+            ),
         },
         "findings": findings,
         "raw_outputs": outputs,

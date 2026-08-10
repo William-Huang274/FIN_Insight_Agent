@@ -87,11 +87,39 @@
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S0", "S1"]
     },
+    "FIN_0_1_3_S2": {
+      "owner_stage": "S2",
+      "operation_class": "namespace",
+      "parent_scope_id": "FIN_0_1_3",
+      "executable": false,
+      "allowed_projection_owner_stages": ["shared", "S2", "S3"]
+    },
+    "FIN_0_1_3_S2_FIXED_PACK_DELL_CANARY": {
+      "owner_stage": "S2",
+      "operation_class": "agentic_research",
+      "parent_scope_id": "FIN_0_1_3_S2",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S2", "S3"]
+    },
+    "FIN_0_1_3_S2_05_EXPERIMENT_A_DEEPSEEK_SAME_EVIDENCE": {
+      "owner_stage": "S2",
+      "operation_class": "agentic_research",
+      "parent_scope_id": "FIN_0_1_3_S2",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1", "S2", "S3"]
+    },
     "FIN_0_1_3_S1_08": {
       "owner_stage": "S1",
       "operation_class": "namespace",
       "parent_scope_id": "FIN_0_1_3",
       "executable": false,
+      "allowed_projection_owner_stages": ["shared", "S1"]
+    },
+    "additional_external_live_attempts": {
+      "owner_stage": "S1",
+      "operation_class": "live_search_execution",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1"]
     },
     "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AUTHORITY_PROJECTION_DECISION": {

@@ -34,7 +34,7 @@ from sec_agent.s2_fixed_pack_research_runtime import (  # noqa: E402
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger  # noqa: E402
 
 
-PROOF_SCHEMA = "fin_ia_0_1_3_s2_fixed_pack_clean_independent_proof_v1_0"
+PROOF_SCHEMA = "fin_ia_0_1_3_s2_fixed_pack_clean_independent_proof_v1_1"
 CONTRACT_PATH = ROOT / (
     "configs/runtime/fin_ia_0_1_3_s2_fixed_pack_research_contract_v1_0.json"
 )
@@ -43,7 +43,7 @@ PROFILE_PATH = ROOT / (
 )
 RUNTIME_PATH = ROOT / "src/sec_agent/s2_fixed_pack_research_runtime.py"
 DEFAULT_OUTPUT = ROOT / (
-    "configs/releases/fin_ia_0_1_3_s2_fixed_pack_successor_clean_independent_proof_v1_0.json"
+    "configs/releases/fin_ia_0_1_3_s2_fixed_pack_successor_clean_independent_proof_v1_1.json"
 )
 OBSERVED_AT = "2026-08-10T10:00:00Z"
 EXPIRES_AT = "2026-08-10T14:00:00Z"

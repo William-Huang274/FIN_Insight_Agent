@@ -332,3 +332,9 @@ AKShare profile 是 non-promoting shadow：它使用未复权 exact-date row 与
 - Reader timeout／connection／invalid payload 使用 provider-neutral typed failure，任何失败先保存 request／terminal capture，0 retry。
 
 Reader JSON parser 只把被保存的 `data.content` 转成待匹配文本；目标片段仍由本地 required-pattern、最小覆盖窗口、身份／期间／角色和 Gap disposition 确定性编译。中介不能贡献 NumericFact、估值、推荐或未在官方原文中出现的判断。该 profile 通过 fake、timeout、anchor missing、cross-origin、URL mismatch 和 authority-escalation mutation 后，仍须 clean archive proof 与 fresh exact-once authority；fixture 或匿名诊断成功不构成 Evidence promotion。
+
+### 13.9 长文档语义 anchor compiler 与贪婪 regex 防线
+
+`_smallest_regex_window` 的输入不得是任意手写 regex。每个 pattern 先编译为短语义原子并经过静态检查：跨行模式下拒绝无界贪婪 `.*`、`.+` 和等价结构；限制单 occurrence 最大长度；对需要表达顺序的词组优先拆成多个 anchor，由 window selector 负责组合，而不是让单一 regex 跨越任意正文。
+
+failure 必须区分：`anchor_missing`、`pattern_occurrence_unbounded`、`multi_anchor_window_too_wide` 与 `final_excerpt_too_large`。Dell／Micron live 已证明这四者业务含义不同：原文 anchor 全部存在且真实距离很短，但 policy pattern 自身贪婪跨越长文，属于本地 compiler defect。修复只能零网络回放 immutable Reader captures，并加入重复主题词、文档尾部同名词和顺序变换 mutation；不得更改历史 result、扩大 span 或自动发起新的 source call。

@@ -843,7 +843,9 @@ Owner 已提供 Alpha Vantage credential 并批准原 1–5 顺序。该决定�
 1. [x] `S1_TIMEOUT_CAPTURE_ZERO_NETWORK_AUTOPSY`：两组 request/failure capture digest-bound；均未得到 HTTP status／body、parser 未到达，失败不是 DeepSeek 或内容 anchor。
 2. [x] `S1_EQUIVALENT_OFFICIAL_ROUTE_AND_TRANSPORT_QUALIFICATION`：Dell Q1 FY27 transcript exact official file 保留；Micron 改为能覆盖目标断言的 Q3 FY26 Prepared Remarks exact official file。独立 direct diagnostic 仍无 HTTP bytes；Jina Reader 只作为 exact-URL retrieval intermediary 资格化。
 3. [x] `S1_CAPTURE_REPLAY_MUTATION_AND_SUCCESSOR_ENGINEERING`：successor 只追加 Dell 3 个 direct fragments、Micron 2 个 bounded supplier fragments；复用 predecessor 22 Evidence、TSMC 和 Alpha NumericFact。fake success 为 `22→27 Evidence／15→14 gaps`，33 项 focused＋adjacent 回归通过；Reader 权威升级、cross-origin、URL mismatch、timeout 与 anchor gap 均 fail closed。当前仅 working-tree engineering pass。
-4. [ ] `S1_CLEAN_PROOF_FRESH_AUTHORITY_AND_ONE_TWO_ROUTE_LIVE`：从 clean/synced commit 运行两个 Git archive worker；通过后签发一份 24 小时 authority，仅允许 Dell／Micron 两个 exact official URL 经 managed reader 各一次，0 retry／model／promotion。
+4. [x] `S1_CLEAN_PROOF_FRESH_AUTHORITY_AND_ONE_TWO_ROUTE_LIVE`（terminal core false）：两个 clean worker 通过、fresh authority exact-once 消费；两路 transport/content capture 成功，但 Dell／Micron 各一组 required pattern 被本地无界贪婪 regex 错误拒绝。Pack=`22→25 Evidence／15→14 gaps`，core/supplier/valuation-input=`false/false/true`，0 retry／model。
 5. [ ] `S2_S3_CHANGED_PACK_COMPILE_AND_ONE_DEEPSEEK_REPORT_COMPARISON`：只有 live `core_research_ready=true` 才执行。changed Pack 必须从头编译全部模型节点和 compact Verifier；比较研究判断、机制、反方、WWC、证据利用和决策密度，不把新增网页数当质量提升。
 
 Managed reader 不改变来源权威：官方 URL 是事实来源，Reader 是有记录的传输中介；完整 Reader 原始响应先 capture，再由本地 parser／Evidence Gate 晋升。若第 4 项仍不能取得 Dell 三片段，停止在 S1，不自动 R2；若 Dell 成功而 Micron 失败，core 可以继续但 supplier gap 必须保留。无论结果如何，Jina 匿名可达性都不能被包装为生产 SLA 或 release readiness。
+
+> **Terminal disposition**：第 5 项 blocked，未运行 DeepSeek。新证据表明官方来源和 managed-reader 路径已经可用，阻断属于本地 required-pattern compiler：真实 Dell／Micron 锚点分别在约 297／91 字符内，但 `.*` 贪婪产生 52,102／12,615 字符假 span。后续若继续，只允许先做零网络 semantic-anchor compiler 处置和本次 capture replay；不得直接重发 source authority、调大 span 或把失败归因模型。

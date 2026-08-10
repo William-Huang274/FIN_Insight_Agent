@@ -1,0 +1,120 @@
+{
+  "attempt_id": "fin013_s1_dell_official_recovery_93f80e015a85e086ee57::attempt_1",
+  "contract_ref": "fin_0_1_3.S1.dell_official_source_recovery_successor:v1",
+  "gate_status": {
+    "core_research_ready": false,
+    "successor_pack_ready_for_model_input": false,
+    "supplier_context_ready": false,
+    "valuation_input_ready": true,
+    "valuation_ready": true
+  },
+  "known_boundary": "Core readiness authorizes only compilation of a changed fixed Evidence Pack. It does not prove report quality, fair value, target price, recommendation, Owner acceptance or release readiness.",
+  "observed_counts": {
+    "evidence_items_after": 25,
+    "evidence_items_before": 22,
+    "model_calls": 0,
+    "new_evidence_items": 3,
+    "new_source_materials": 3,
+    "official_source_network_calls": 2,
+    "residual_gaps_after": 14,
+    "residual_gaps_before": 15,
+    "retries": 0,
+    "reused_numeric_facts": 1
+  },
+  "policy_digest": "7683e419b594b00b597fbf2abf540c613bd7a800f41c2f253eb8033701f23c7f",
+  "predecessor_pack_payload_digest": "bafa587403f25aa76520a1da4567828116d6cce4a4c20d67162ad528cd27fe01",
+  "predecessor_source_result_digest": "2f69c44eb3095f8cf12973def4210525cc641f9aa9e3738dff5a9bd91c84ae79",
+  "recorded_at": "2026-08-10T14:17:00Z",
+  "research_as_of": "2026-08-06",
+  "result_digest": "9be7ec13c20b97dd9a2d58a936078fb3135008110fc33bf413a15d2a9fe18920",
+  "route_results": [
+    {
+      "capture_reused": false,
+      "failure_code": "dell_targeted_source_fragment_anchor_span_invalid",
+      "failure_phase": "",
+      "fragments_expected": 3,
+      "fragments_materialized": 2,
+      "new_network_call": true,
+      "official_locator": "https://investors.delltechnologies.com/events/event-details/dell-technologies-fiscal-year-2027-first-quarter-results",
+      "official_origin_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "request_capture": {
+        "artifact_type": "official_source_request",
+        "byte_size": 754,
+        "digest": "0352d380d4cc9bb4c5f01a5a394d19c494b4773c62674c82f5b2399be308a85f",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-official-source-recovery-successor/official/03/52/0352d380d4cc9bb4c5f01a5a394d19c494b4773c62674c82f5b2399be308a85f.json"
+      },
+      "response_capture": {
+        "artifact_type": "official_source_response",
+        "byte_size": 78064,
+        "digest": "66987c3c202b90b5b66d68cc951cc988b380bf15a19cb7dbb1b9fc3889cb4ecb",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-official-source-recovery-successor/official/66/98/66987c3c202b90b5b66d68cc951cc988b380bf15a19cb7dbb1b9fc3889cb4ecb.json"
+      },
+      "retrieval_intermediary": "jina_reader",
+      "retrieval_intermediary_is_financial_authority": false,
+      "route_id": "dell_q1_fy27_earnings_transcript",
+      "safe_cause_class": "",
+      "status": "anchor_failure"
+    },
+    {
+      "capture_reused": false,
+      "failure_code": "dell_targeted_source_fragment_anchor_span_invalid",
+      "failure_phase": "",
+      "fragments_expected": 2,
+      "fragments_materialized": 1,
+      "new_network_call": true,
+      "official_locator": "https://investors.micron.com/events/event-details/microns-third-quarter-2026-financial-call",
+      "official_origin_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "request_capture": {
+        "artifact_type": "official_source_request",
+        "byte_size": 743,
+        "digest": "3f8a9fa592832b43769c5e4533c8a0c957a3d354a64a5b025db00b436cadd319",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-official-source-recovery-successor/official/3f/8a/3f8a9fa592832b43769c5e4533c8a0c957a3d354a64a5b025db00b436cadd319.json"
+      },
+      "response_capture": {
+        "artifact_type": "official_source_response",
+        "byte_size": 38591,
+        "digest": "bf343558294cabeff1e05f131d7dd5c5bafb3e8b24c3d3514c9b78a5c2adac93",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-official-source-recovery-successor/official/bf/34/bf343558294cabeff1e05f131d7dd5c5bafb3e8b24c3d3514c9b78a5c2adac93.json"
+      },
+      "retrieval_intermediary": "jina_reader",
+      "retrieval_intermediary_is_financial_authority": false,
+      "route_id": "micron_q3_fy26_prepared_remarks",
+      "safe_cause_class": "",
+      "status": "anchor_failure"
+    }
+  ],
+  "run_scope": "FIN_0_1_3_S1_DELL_ENRICHED_SOURCE_SUCCESSOR_EXACT_ONCE",
+  "schema_version": "fin_ia_0_1_3_s1_dell_official_source_recovery_successor_result_v1_0",
+  "source_commit": "7663afb20f0d1a05cb89f6c33974687edee937d4",
+  "stage_acceptance": {
+    "business_artifact_promoted": false,
+    "capture_first": true,
+    "deepseek_exact_live_authorized": false,
+    "intermediary_raw_response_preserved_before_parse": true,
+    "managed_reader_promoted_as_financial_authority": false,
+    "official_origin_identity_round_trip_required": true,
+    "predecessor_attempt_immutable": true,
+    "successful_tsmc_and_alpha_inputs_reused_without_network": true,
+    "timeout_capture_replay_passed": true
+  },
+  "status": "terminal_completed_core_research_not_ready",
+  "successor_pack_artifact": {
+    "artifact_type": "dell_official_source_recovered_evidence_pack",
+    "byte_size": 136272,
+    "digest": "8a5bacdc97ac5331f2bbf516fc1c6f161479e289f3d98128017f1cff9fa32197",
+    "media_type": "application/json",
+    "object_key": "fin-0.1.3/s1/dell-official-source-recovery-successor/pack/8a/5b/8a5bacdc97ac5331f2bbf516fc1c6f161479e289f3d98128017f1cff9fa32197.json"
+  },
+  "successor_pack_payload_digest": "0335e5cec217c199f3e5312ee9fad7f57b0901678d3cb75339d22c965e1e861d",
+  "timeout_autopsy": {
+    "capture_pairs_replayed": 2,
+    "earliest_failure_phase": "connect_or_read",
+    "http_response_observed": false,
+    "parser_reached": false,
+    "safe_cause_class": "timeout"
+  }
+}

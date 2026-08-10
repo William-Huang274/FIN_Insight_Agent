@@ -2385,3 +2385,16 @@ Dell 与 Micron 的两份 exact official URL 已在旧 live 中于 HTTP 状态�
 5. 已成功且 digest-bound 的 TSMC 与 Alpha Vantage 输入继续零网络复用；新 authority 只允许 Dell／Micron 两个缺失来源各一次，0 retry／model。`core_research_ready=false` 时必须停留 S1；只有该门为 true 才能编译 changed Pack 并运行一次报告比较。
 
 当前 Jina Reader 只被资格化为上述 retrieval-only profile，而不是 FIN 的默认广搜 Provider、长期生产 SLA 或金融数据供应商。未来替换为企业代理、CDN mirror 或其他 Reader 时，只需替换 transport profile；Evidence Pack、Writer 和金融真实性门不得随之改变。
+
+### 16.19 Required-pattern 必须由有界语义原子组成（2026-08-10）
+
+Dell／Micron managed-reader live 证明，最小覆盖窗口本身正确，也会被单个错误 regex 破坏。若 pattern 在 `DOTALL` 下包含无界贪婪 `.*`，一次 match 可以从真实短句延伸到文档末尾；随后 window 看到的是虚假长 span，而不是来源语句的真实距离。本次 Dell 三个业务事实实际相距约 297 字符、Micron 两句约 91 字符，却分别被观察为 52,102 与 12,615 字符并 fail closed。
+
+产品规则补充如下：
+
+1. required-pattern compiler 禁止在跨行模式下使用无界贪婪 `.*`／`.+`；关系词应拆为独立短 anchor，或使用有明确字符上限的 reluctant pattern。
+2. fragment acceptance 先验证每个 regex occurrence 自身长度，再计算多 anchor 最小覆盖窗口；单个 pattern 异常跨越文档时必须报 `pattern_unbounded_span`，不能与“业务语句真实分散”共用一个 failure code。
+3. 不得通过增加 `max_anchor_span` 让错误 regex 通过。必须用 immutable raw capture 回放证明语义原子、窗口和最终 excerpt 都对应同一连贯披露。
+4. fixture 文本中的紧邻短语不足以证明真实文档安全；clean proof 必须增加长文档中重复 `demand／supply` 词和尾部干扰项的 mutation。
+
+当前唯一 live 已按此门停止：只接受 Dell pricing/profitability 与 Micron HBM packaging 三条 Evidence，不把被错误 selector 拒绝的 orders/backlog 或 memory tightness 自动补入，也不进入 DeepSeek 报告比较。

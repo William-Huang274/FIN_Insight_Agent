@@ -15,9 +15,12 @@ from sec_agent.s2_fixed_pack_capture_reuse_successor import (
 )
 from sec_agent.s2_fixed_pack_research_runtime import (
     NODE_ORDER,
+    build_compact_verifier_projection,
     build_node_request,
     evaluate_final_output,
     perform_node_call,
+    resolve_final_output_numeric_surfaces,
+    validate_compact_verifier_output,
 )
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger
 
@@ -517,6 +520,20 @@ def execute_successor_case(
             )
             if fatal_code:
                 raise S2FixedPackSuccessorRuntimeError(fatal_code)
+            if node_key == "verifier":
+                projection = build_compact_verifier_projection(
+                    case_input=case_input,
+                    final_report=outputs.get("final_writer"),
+                )
+                verifier_findings = validate_compact_verifier_output(
+                    verifier_output=output,
+                    projection=projection,
+                )
+                findings.extend(verifier_findings)
+                if verifier_findings:
+                    raise S2FixedPackSuccessorRuntimeError(
+                        "verification_incomplete_contract_invalid"
+                    )
         findings.extend(
             evaluate_final_output(
                 final_output=outputs.get("final_writer"), case_input=case_input
@@ -556,6 +573,10 @@ def execute_successor_case(
             8,
         ),
     }
+    numeric_surface_receipts = resolve_final_output_numeric_surfaces(
+        final_output=outputs.get("final_writer"),
+        case_input=case_input,
+    )
     terminal_body = {
         "schema_version": TERMINAL_SCHEMA,
         "scope": SCOPE,
@@ -601,6 +622,7 @@ def execute_successor_case(
         "successor_usage": successor_usage,
         "cumulative_usage": cumulative_usage,
         "findings": findings,
+        "numeric_surface_receipts": numeric_surface_receipts,
         "raw_outputs": outputs,
         "direct_baseline_input_digest": case_input["base_model_visible_digest"],
         "agent_chain_input_digest": case_input["model_visible_digest"],

@@ -35,6 +35,9 @@ from sec_agent.s2_fixed_pack_research import (  # noqa: E402
     load_fixed_pack_profile,
     load_frozen_local_packs,
 )
+from sec_agent.s2_fixed_pack_research_runtime import (  # noqa: E402
+    COMPACT_VERIFIER_OUTPUT_SCHEMA,
+)
 from sec_agent.shared_admission_ledger import (  # noqa: E402
     SharedAdmissionConsumptionLedger,
 )
@@ -130,17 +133,16 @@ def _fixture_content(node_key: str) -> dict[str, Any]:
         }
     if node_key == "verifier":
         return {
+            "schema_version": COMPACT_VERIFIER_OUTPUT_SCHEMA,
             "claim_checks": [
                 {
-                    "text": "有限判断",
+                    "claim_id": "CLM:DELL:001",
                     "status": "bounded",
-                    "evidence_aliases": ["E002"],
-                    "numeric_refs": [],
+                    "finding_codes": [],
                     "reason": "事实与公式引用受控。",
                 }
             ],
-            "identity_period_unit_findings": [],
-            "unknown_aliases": [],
+            "global_finding_codes": [],
             "verdict": "pass_with_findings",
         }
     raise RuntimeError("unknown_successor_fixture_node:" + node_key)

@@ -1,0 +1,60 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_numeric_presentation_compact_verifier_repair_policy_v1_0",
+  "policy_ref": "fin_0_1_3.S2.dell_numeric_presentation_compact_verifier_repair:v1",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "recorded_at": "2026-08-10",
+  "base_successor_contract": {
+    "ref": "configs/runtime/fin_ia_0_1_3_s2_dell_fixed_pack_capture_reuse_successor_contract_v1_0.json",
+    "sha256": "0d7945c19db2ca61104de4ebd67730bce9aa02b2845e5fccdb86ae5015d4d9f8"
+  },
+  "numeric_authority_additions": [
+    {
+      "numeric_ref": "NUM:DELL:READTHROUGH:TSMC_2026_Q2:ADVANCED_TECH_WAFER_REVENUE_SHARE",
+      "semantic_name_zh": "TSMC Q2 2026 先进制程晶圆收入占比",
+      "exact_value": "77",
+      "unit": "percent",
+      "period_id": "TSMC_2026_Q2",
+      "evidence_aliases": ["E015"],
+      "source_material_alias": "M002",
+      "source_token": "77%",
+      "relationship_boundary": "TSMC own advanced-node read-through only; no Dell allocation or CoWoS capacity attribution"
+    }
+  ],
+  "numeric_surface_additions": [
+    {
+      "numeric_ref": "NUM:DELL:FY2027_Q1:CAPEX_AND_CAPITALIZED_SOFTWARE",
+      "presentation_suffix": "ZH_YI_USD_ABSOLUTE_MAGNITUDE",
+      "operation": "absolute_magnitude_then_divide",
+      "operand": "100",
+      "expected_numeric_token": "9.63",
+      "rendered": "9.63 亿美元",
+      "semantic_boundary": "May describe the positive expenditure magnitude only; may not reverse the cash-flow sign or call it an inflow."
+    }
+  ],
+  "numeric_presentation_rules": {
+    "model_selects": ["NUM", "FORM"],
+    "presentation_refs_optional": true,
+    "num_ref_authorizes_linked_deterministic_surfaces": true,
+    "formula_ref_authorizes_declared_formula_surface": true,
+    "free_arithmetic": "forbidden_fail_closed",
+    "fiscal_period_labels_are_not_material_numeric_tokens": true
+  },
+  "verifier_projection": {
+    "input_schema": "fin_ia_0_1_3_s2_compact_verifier_input_projection_v1_0",
+    "output_schema": "fin_ia_0_1_3_s2_compact_verifier_output_v1_0",
+    "select_only_claim_referenced_evidence_materials_gaps_and_numeric_authority": true,
+    "captured_source_excerpt_required_for_selected_source_materials": true,
+    "maximum_source_excerpt_characters": 2400,
+    "claim_text_echo_forbidden": true,
+    "claim_id_exact_coverage_required": true,
+    "maximum_reason_characters": 120
+  },
+  "terminalization": {
+    "finish_reason_length": "verification_incomplete_hard_failure",
+    "invalid_or_truncated_json": "verification_incomplete_hard_failure",
+    "missing_duplicate_or_unknown_claim_id": "verification_incomplete_hard_failure",
+    "promotion_authority": false
+  },
+  "known_boundary": "This policy repairs S2 presentation authorization and Verifier completeness. It does not add source coverage, repair causal overreach or WWC quality, or authorize a new model run."
+}

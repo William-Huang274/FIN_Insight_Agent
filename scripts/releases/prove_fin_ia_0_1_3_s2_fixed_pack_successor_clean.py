@@ -27,6 +27,7 @@ from sec_agent.s2_fixed_pack_research import (  # noqa: E402
     load_frozen_local_packs,
 )
 from sec_agent.s2_fixed_pack_research_runtime import (  # noqa: E402
+    COMPACT_VERIFIER_OUTPUT_SCHEMA,
     NODE_ORDER,
     execute_case,
     issue_case_admission,
@@ -69,7 +70,7 @@ def _fixture_report() -> dict[str, Any]:
     }
 
 
-def _fixture_content(node_key: str) -> dict[str, Any]:
+def _fixture_content(node_key: str, case_key: str) -> dict[str, Any]:
     if node_key in {"direct_baseline", "draft_writer", "final_writer"}:
         return _fixture_report()
     if node_key == "research_lead":
@@ -124,16 +125,16 @@ def _fixture_content(node_key: str) -> dict[str, Any]:
         }
     if node_key == "verifier":
         return {
+            "schema_version": COMPACT_VERIFIER_OUTPUT_SCHEMA,
             "claim_checks": [
                 {
-                    "text": "有限判断",
+                    "claim_id": f"CLM:{case_key}:001",
                     "status": "bounded",
-                    "evidence_aliases": ["E001"],
+                    "finding_codes": [],
                     "reason": "存在引用但仍有缺口。",
                 }
             ],
-            "identity_period_unit_findings": [],
-            "unknown_aliases": [],
+            "global_finding_codes": [],
             "verdict": "pass_with_findings",
         }
     raise RuntimeError("unknown_fixture_node:" + node_key)
@@ -141,9 +142,12 @@ def _fixture_content(node_key: str) -> dict[str, Any]:
 
 def fixture_provider(request: Mapping[str, Any]) -> dict[str, Any]:
     node_key = str(request.get("node_key") or "")
+    case_key = str(request.get("case_key") or "")
     return {
         "status": "ok",
-        "content": json.dumps(_fixture_content(node_key), ensure_ascii=False),
+        "content": json.dumps(
+            _fixture_content(node_key, case_key), ensure_ascii=False
+        ),
         "finish_reason": "stop",
         "input_tokens": 100,
         "output_tokens": 50,

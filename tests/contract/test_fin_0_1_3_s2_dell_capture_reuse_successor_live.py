@@ -205,7 +205,9 @@ def test_committed_clean_proof_is_valid_and_bound_to_real_predecessor() -> None:
     assert proof["terminal"]["same_input_pair_proven"] is False
 
 
-def test_issued_authority_is_current_bound_and_unconsumed(material) -> None:
+def test_historical_issued_authority_fails_closed_after_runtime_contract_change(
+    material,
+) -> None:
     proof = json.loads(PROOF_PATH.read_text(encoding="utf-8"))
     authority = json.loads(AUTHORITY_PATH.read_text(encoding="utf-8"))
     assert authority["status"] == "issued_unconsumed"
@@ -215,15 +217,17 @@ def test_issued_authority_is_current_bound_and_unconsumed(material) -> None:
     assert authority["authority_digest"] == (
         "f53b343f8ca02ffc70aaf6c075ea06d77eaec412e7ab0d764dea4efe96d09ae0"
     )
-    validate_successor_authority(
-        authority,
-        clean_proof=proof,
-        case_input=material["successor"],
-        predecessor_bundle=material["predecessor"],
-        profile=material["profile"],
-        repo_root=ROOT,
-        observed_at=authority["recorded_at"],
-    )
+    with pytest.raises(S2FixedPackSuccessorLiveError) as exc:
+        validate_successor_authority(
+            authority,
+            clean_proof=proof,
+            case_input=material["successor"],
+            predecessor_bundle=material["predecessor"],
+            profile=material["profile"],
+            repo_root=ROOT,
+            observed_at=authority["recorded_at"],
+        )
+    assert exc.value.code == "fixed_pack_successor_live_implementation_binding_drift"
 
 
 def test_authority_mutation_fails_closed(material) -> None:

@@ -41,7 +41,27 @@ NODE_ORDER = (
 ProviderCall = Callable[[Mapping[str, Any]], Mapping[str, Any]]
 _DIGEST = re.compile(r"[0-9a-f]{64}")
 _GIT_COMMIT = re.compile(r"[0-9a-f]{40}")
-_NUMERIC = re.compile(r"(?<![A-Za-z])\(?[-+]?\d[\d,]*(?:\.\d+)?%?\)?")
+_NUMERIC = re.compile(r"(?<![A-Za-z0-9])\(?[-+]?\d[\d,]*(?:\.\d+)?%?\)?")
+COMPACT_VERIFIER_INPUT_SCHEMA = (
+    "fin_ia_0_1_3_s2_compact_verifier_input_projection_v1_0"
+)
+COMPACT_VERIFIER_OUTPUT_SCHEMA = (
+    "fin_ia_0_1_3_s2_compact_verifier_output_v1_0"
+)
+_VERIFIER_STATUSES = {"supported", "bounded", "unsupported", "contradicted"}
+_VERIFIER_VERDICTS = {"pass", "pass_with_findings", "fail"}
+_VERIFIER_FINDING_CODES = {
+    "evidence_mismatch",
+    "boundary_overreach",
+    "identity_mismatch",
+    "period_mismatch",
+    "unit_mismatch",
+    "numeric_mismatch",
+    "causal_overreach",
+    "gap_not_preserved",
+    "contradicted_by_evidence",
+}
+_MAX_VERIFIER_REASON_CHARACTERS = 120
 
 
 class S2FixedPackRuntimeError(RuntimeError):
@@ -255,7 +275,8 @@ def _common_system(case_input: Mapping[str, Any]) -> str:
     if case_input.get("numeric_authority"):
         numeric_rule = (
             "任何 material number 都必须在同一判断的 numeric_refs 中引用当前 Numeric authority："
-            "原始披露数字引用 NUM ref，换算展示引用 PRES ref，派生比例引用 FORM ref。"
+            "原始披露数字及其本地可复算展示引用 NUM ref，派生比例引用 FORM ref；"
+            "无需为同一 NUM 冗余选择 PRES ref，Harness 会从 NUM 确定性解析获准展示面。"
             "前序节点是只读历史上下文，其数字不得原样复制而不重新绑定当前 ref。"
         )
     return (
@@ -279,6 +300,342 @@ def _report_schema_instruction() -> str:
         "\"overall_confidence\":\"high|medium|low\",\"limitations\":[字符串]}。"
         "每个实质判断都必须列 evidence_aliases；缺证据时写 gap，不得补造。"
     )
+
+
+def _claim_rows(final_report: Any, *, case_key: str) -> list[dict[str, Any]]:
+    if not isinstance(final_report, dict):
+        return []
+    rows: list[dict[str, Any]] = []
+    for section_index, section in enumerate(final_report.get("sections") or (), start=1):
+        if not isinstance(section, dict):
+            continue
+        section_id = str(section.get("section_id") or f"section_{section_index:02d}")
+        for point_index, point in enumerate(section.get("points") or (), start=1):
+            if not isinstance(point, dict) or not str(point.get("text") or "").strip():
+                continue
+            rows.append(
+                {
+                    "claim_id": f"CLM:{case_key}:{len(rows) + 1:03d}",
+                    "section_id": section_id,
+                    "point_index": point_index,
+                    "text": str(point.get("text") or ""),
+                    "epistemic_status": str(point.get("epistemic_status") or ""),
+                    "evidence_aliases": [
+                        str(value) for value in point.get("evidence_aliases") or ()
+                    ],
+                    "gap_aliases": [
+                        str(value) for value in point.get("gap_aliases") or ()
+                    ],
+                    "numeric_refs": [
+                        str(value) for value in point.get("numeric_refs") or ()
+                    ],
+                }
+            )
+    return rows
+
+
+def _bounded_verifier_source_view(
+    material: Mapping[str, Any],
+    *,
+    bound_evidence: list[dict[str, Any]],
+    bound_numeric_facts: list[dict[str, Any]],
+) -> dict[str, Any]:
+    source_text = str(material.get("source_text") or "")
+    anchors: list[str] = []
+    anchors.extend(
+        str(row.get("source_token") or "")
+        for row in bound_numeric_facts
+        if str(row.get("source_token") or "")
+    )
+    anchors.extend(
+        str(row.get("claim_text") or "")
+        for row in bound_evidence
+        if str(row.get("claim_text") or "")
+    )
+    spans: list[tuple[int, int]] = []
+    for anchor in anchors:
+        position = source_text.find(anchor)
+        if position < 0 and len(anchor) > 96:
+            position = source_text.find(anchor[:96])
+        if position >= 0:
+            spans.append(
+                (
+                    max(0, position - 220),
+                    min(len(source_text), position + min(len(anchor), 900) + 220),
+                )
+            )
+    if not spans:
+        spans = [(0, min(len(source_text), 900))]
+    spans.sort()
+    merged: list[tuple[int, int]] = []
+    for start, end in spans:
+        if merged and start <= merged[-1][1] + 80:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+        else:
+            merged.append((start, end))
+    excerpt = "\n[…captured source window…]\n".join(
+        source_text[start:end] for start, end in merged
+    )
+    maximum = 2400
+    if len(excerpt) > maximum:
+        excerpt = excerpt[:maximum]
+    return {
+        "source_material_alias": str(material.get("source_material_alias") or ""),
+        "source_record_id": str(material.get("source_record_id") or ""),
+        "source_text_digest": str(material.get("source_text_digest") or ""),
+        "source_url": str(material.get("source_url") or ""),
+        "source_type": str(material.get("source_type") or ""),
+        "source_tier": str(material.get("source_tier") or ""),
+        "evidence_owner_ticker": str(material.get("evidence_owner_ticker") or ""),
+        "publication_date": str(material.get("publication_date") or ""),
+        "period_end": str(material.get("period_end") or ""),
+        "captured_source_excerpt": excerpt,
+        "source_text_characters": len(source_text),
+        "excerpt_characters": len(excerpt),
+        "excerpt_complete": len(excerpt) == len(source_text),
+        "excerpt_strategy": "claim_and_numeric_anchor_windows_fail_closed_to_chunk_head",
+    }
+
+
+def build_compact_verifier_projection(
+    *,
+    case_input: Mapping[str, Any],
+    final_report: Any,
+) -> dict[str, Any]:
+    """Select only the claims and frozen authority required by the Verifier."""
+
+    case_key = str(case_input.get("case_key") or "")
+    claims = _claim_rows(final_report, case_key=case_key)
+    evidence_index = {
+        str(row.get("evidence_alias") or ""): deepcopy(dict(row))
+        for row in case_input.get("evidence_items") or ()
+    }
+    material_index = {
+        str(row.get("source_material_alias") or ""): deepcopy(dict(row))
+        for row in case_input.get("source_materials") or ()
+    }
+    gap_index = {
+        str(row.get("gap_alias") or ""): deepcopy(dict(row))
+        for row in case_input.get("residual_gaps") or ()
+    }
+    numeric_reference_index = _numeric_reference_index(case_input)
+    referenced_evidence_set = {
+        alias for row in claims for alias in row["evidence_aliases"]
+    }
+    referenced_gaps = sorted({alias for row in claims for alias in row["gap_aliases"]})
+    referenced_numeric = sorted(
+        {ref for row in claims for ref in row["numeric_refs"]}
+    )
+    for ref in referenced_numeric:
+        referenced_evidence_set.update(
+            str(alias)
+            for alias in (numeric_reference_index.get(ref) or {}).get(
+                "evidence_aliases"
+            )
+            or ()
+        )
+    referenced_evidence = sorted(referenced_evidence_set)
+    selected_evidence = [
+        evidence_index[alias]
+        for alias in referenced_evidence
+        if alias in evidence_index
+    ]
+    selected_material_aliases = sorted(
+        {
+            str(row.get("source_material_alias") or "")
+            for row in selected_evidence
+            if str(row.get("source_material_alias") or "")
+        }
+    )
+    numeric = deepcopy(dict(case_input.get("numeric_authority") or {}))
+    selected_fact_refs = set(referenced_numeric)
+    formula_rows: list[dict[str, Any]] = []
+    for formula in numeric.get("formula_traces") or ():
+        row = deepcopy(dict(formula))
+        if str(row.get("formula_ref") or "") in referenced_numeric:
+            formula_rows.append(row)
+            selected_fact_refs.update(
+                str(value) for value in row.get("input_numeric_refs") or ()
+            )
+    fact_rows = [
+        deepcopy(dict(row))
+        for row in numeric.get("source_numeric_facts") or ()
+        if str(row.get("numeric_ref") or "") in selected_fact_refs
+        or any(
+            str(surface.get("presentation_ref") or "") in referenced_numeric
+            for surface in row.get("display_surfaces") or ()
+        )
+    ]
+    body = {
+        "schema_version": COMPACT_VERIFIER_INPUT_SCHEMA,
+        "case_identity": {
+            "case_key": case_key,
+            "issuer": deepcopy(dict(case_input.get("issuer") or {})),
+            "research_as_of": str(case_input.get("research_as_of") or ""),
+        },
+        "claims": claims,
+        "expected_claim_ids": [row["claim_id"] for row in claims],
+        "selected_evidence": selected_evidence,
+        "selected_source_materials": [
+            _bounded_verifier_source_view(
+                material_index[alias],
+                bound_evidence=[
+                    row
+                    for row in selected_evidence
+                    if str(row.get("source_material_alias") or "") == alias
+                ],
+                bound_numeric_facts=[
+                    row
+                    for row in fact_rows
+                    if str(row.get("source_material_alias") or "") == alias
+                ],
+            )
+            for alias in selected_material_aliases
+            if alias in material_index
+        ],
+        "selected_gaps": [
+            gap_index[alias] for alias in referenced_gaps if alias in gap_index
+        ],
+        "selected_numeric_authority": {
+            "source_numeric_facts": fact_rows,
+            "formula_traces": formula_rows,
+        },
+        "selection_diagnostics": {
+            "unknown_evidence_aliases": sorted(
+                set(referenced_evidence) - set(evidence_index)
+            ),
+            "unknown_gap_aliases": sorted(set(referenced_gaps) - set(gap_index)),
+            "unknown_numeric_refs": sorted(
+                set(referenced_numeric) - set(numeric_reference_index)
+            ),
+        },
+        "output_contract": {
+            "schema_version": COMPACT_VERIFIER_OUTPUT_SCHEMA,
+            "claim_id_exact_coverage_required": True,
+            "claim_text_echo_forbidden": True,
+            "allowed_statuses": sorted(_VERIFIER_STATUSES),
+            "allowed_finding_codes": sorted(_VERIFIER_FINDING_CODES),
+            "maximum_reason_characters": _MAX_VERIFIER_REASON_CHARACTERS,
+            "allowed_verdicts": sorted(_VERIFIER_VERDICTS),
+        },
+    }
+    return {**body, "projection_digest": canonical_digest(body)}
+
+
+def validate_compact_verifier_output(
+    *,
+    verifier_output: Any,
+    projection: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Return hard-incomplete findings; an empty list means shape-complete only."""
+
+    findings: list[dict[str, Any]] = []
+    if not isinstance(verifier_output, dict):
+        return [
+            {
+                "level": "L1",
+                "code": "verification_incomplete_output_not_object",
+                "disposition": "terminal_failure_no_promotion",
+            }
+        ]
+    if verifier_output.get("schema_version") != COMPACT_VERIFIER_OUTPUT_SCHEMA:
+        findings.append(
+            {
+                "level": "L1",
+                "code": "verification_incomplete_schema_mismatch",
+                "disposition": "terminal_failure_no_promotion",
+            }
+        )
+    expected = [str(value) for value in projection.get("expected_claim_ids") or ()]
+    checks = verifier_output.get("claim_checks")
+    if not isinstance(checks, list):
+        checks = []
+        findings.append(
+            {
+                "level": "L1",
+                "code": "verification_incomplete_claim_checks_missing",
+                "disposition": "terminal_failure_no_promotion",
+            }
+        )
+    observed_ids: list[str] = []
+    for row in checks:
+        if not isinstance(row, dict):
+            findings.append(
+                {
+                    "level": "L1",
+                    "code": "verification_incomplete_claim_check_invalid",
+                    "disposition": "terminal_failure_no_promotion",
+                }
+            )
+            continue
+        claim_id = str(row.get("claim_id") or "")
+        observed_ids.append(claim_id)
+        status = str(row.get("status") or "")
+        codes = row.get("finding_codes")
+        reason = str(row.get("reason") or "")
+        if status not in _VERIFIER_STATUSES:
+            findings.append(
+                {
+                    "level": "L1",
+                    "code": "verification_incomplete_status_invalid",
+                    "claim_id": claim_id,
+                    "disposition": "terminal_failure_no_promotion",
+                }
+            )
+        if not isinstance(codes, list) or any(
+            str(code) not in _VERIFIER_FINDING_CODES for code in codes
+        ):
+            findings.append(
+                {
+                    "level": "L1",
+                    "code": "verification_incomplete_finding_code_invalid",
+                    "claim_id": claim_id,
+                    "disposition": "terminal_failure_no_promotion",
+                }
+            )
+        if not reason or len(reason) > _MAX_VERIFIER_REASON_CHARACTERS:
+            findings.append(
+                {
+                    "level": "L1",
+                    "code": "verification_incomplete_reason_length_invalid",
+                    "claim_id": claim_id,
+                    "disposition": "terminal_failure_no_promotion",
+                }
+            )
+    if (
+        observed_ids != expected
+        or len(observed_ids) != len(set(observed_ids))
+        or set(observed_ids) != set(expected)
+    ):
+        findings.append(
+            {
+                "level": "L1",
+                "code": "verification_incomplete_claim_coverage_invalid",
+                "missing_claim_ids": sorted(set(expected) - set(observed_ids)),
+                "unknown_claim_ids": sorted(set(observed_ids) - set(expected)),
+                "disposition": "terminal_failure_no_promotion",
+            }
+        )
+    global_codes = verifier_output.get("global_finding_codes")
+    if not isinstance(global_codes, list) or any(
+        str(code) not in _VERIFIER_FINDING_CODES for code in global_codes
+    ):
+        findings.append(
+            {
+                "level": "L1",
+                "code": "verification_incomplete_global_finding_invalid",
+                "disposition": "terminal_failure_no_promotion",
+            }
+        )
+    if str(verifier_output.get("verdict") or "") not in _VERIFIER_VERDICTS:
+        findings.append(
+            {
+                "level": "L1",
+                "code": "verification_incomplete_verdict_invalid",
+                "disposition": "terminal_failure_no_promotion",
+            }
+        )
+    return findings
 
 
 def build_node_request(
@@ -378,17 +735,21 @@ def build_node_request(
         node_type = node_key
     elif node_key == "verifier":
         task = (
-            "只审查最终报告与冻结输入是否一致。返回 {\"claim_checks\":[{\"text\":"
-            "字符串,\"status\":\"supported|bounded|unsupported|contradicted\","
-            "\"evidence_aliases\":[字符串],\"numeric_refs\":[字符串],"
-            "\"reason\":字符串}],"
-            "\"identity_period_unit_findings\":[字符串],\"unknown_aliases\":[字符串],"
-            "\"verdict\":\"pass|pass_with_findings|fail\"}。这是建议，不是晋升权威。"
+            "只审查 compact projection 中每个 claim 与所选冻结原文、Evidence、Gap 和 Numeric authority 是否一致。"
+            "不得重抄 claim text，不得新增 claim，不得省略或改变 claim 顺序。返回 "
+            f"{{\"schema_version\":\"{COMPACT_VERIFIER_OUTPUT_SCHEMA}\","
+            "\"claim_checks\":[{\"claim_id\":\"CLM:CASE:001\","
+            "\"status\":\"supported|bounded|unsupported|contradicted\","
+            "\"finding_codes\":[\"允许枚举值\"],\"reason\":\"不超过120字符的短原因\"}],"
+            "\"global_finding_codes\":[\"允许枚举值\"],"
+            "\"verdict\":\"pass|pass_with_findings|fail\"}}。"
+            "finding_codes 只能使用 projection.output_contract.allowed_finding_codes；"
+            "没有 finding 时返回空数组。这是审查建议，不是晋升权威。"
         )
-        context = {
-            "case_input": compact,
-            "final_report": deepcopy(prior_outputs.get("final_writer")),
-        }
+        context = build_compact_verifier_projection(
+            case_input=case_input,
+            final_report=prior_outputs.get("final_writer"),
+        )
         node_type = node_key
     else:
         raise S2FixedPackRuntimeError("fixed_pack_runtime_node_unknown")
@@ -515,17 +876,39 @@ def perform_node_call(
         fatal_code = f"fixed_pack_runtime_provider_failure:{node_key}:{status}"
     elif not content.strip():
         fatal_code = f"fixed_pack_runtime_empty_output:{node_key}"
+    elif node_key == "verifier" and str(response.get("finish_reason") or "").lower() == "length":
+        fatal_code = "verification_incomplete_finish_reason_length"
+        findings.append(
+            {
+                "level": "L1",
+                "code": fatal_code,
+                "node_key": node_key,
+                "disposition": "raw_capture_preserved_terminal_failure_no_promotion",
+            }
+        )
     else:
         parsed, parse_finding = _parse_json_object(content)
         if parse_finding:
+            is_verifier = node_key == "verifier"
+            finding_code = (
+                "verification_incomplete_invalid_json"
+                if is_verifier
+                else parse_finding
+            )
             findings.append(
                 {
-                    "level": "L2",
-                    "code": parse_finding,
+                    "level": "L1" if is_verifier else "L2",
+                    "code": finding_code,
                     "node_key": node_key,
-                    "disposition": "raw_text_preserved_chain_continues_no_promotion",
+                    "disposition": (
+                        "raw_capture_preserved_terminal_failure_no_promotion"
+                        if is_verifier
+                        else "raw_text_preserved_chain_continues_no_promotion"
+                    ),
                 }
             )
+            if is_verifier:
+                fatal_code = finding_code
     output: dict[str, Any] | str = parsed if parsed is not None else content
     receipt = {
         "call_id": call_id,
@@ -572,15 +955,22 @@ def _numeric_reference_index(case_input: Mapping[str, Any]) -> dict[str, dict[st
             _normalize_numeric(value)
             for value in _NUMERIC.findall(str(row.get("source_token") or ""))
         ]
+        linked_surface_tokens = [
+            _normalize_numeric(str(surface.get("numeric_token") or ""))
+            for surface in row.get("display_surfaces") or ()
+            if str(surface.get("numeric_token") or "")
+        ]
         index[str(row.get("numeric_ref") or "")] = {
             "ref_type": "source_numeric_fact",
-            "numeric_tokens": source_tokens,
+            "canonical_ref": str(row.get("numeric_ref") or ""),
+            "numeric_tokens": sorted(set(source_tokens + linked_surface_tokens)),
             "evidence_aliases": list(row.get("evidence_aliases") or ()),
         }
         for surface in row.get("display_surfaces") or ():
             surface_row = dict(surface)
             index[str(surface_row.get("presentation_ref") or "")] = {
                 "ref_type": "presentation_alias",
+                "canonical_ref": str(row.get("numeric_ref") or ""),
                 "numeric_tokens": [
                     _normalize_numeric(str(surface_row.get("numeric_token") or ""))
                 ],
@@ -590,6 +980,7 @@ def _numeric_reference_index(case_input: Mapping[str, Any]) -> dict[str, dict[st
         row = dict(formula)
         index[str(row.get("formula_ref") or "")] = {
             "ref_type": "deterministic_formula",
+            "canonical_ref": str(row.get("formula_ref") or ""),
             "numeric_tokens": [
                 _normalize_numeric(str(surface.get("numeric_token") or ""))
                 for surface in row.get("display_surfaces") or ()
@@ -597,6 +988,75 @@ def _numeric_reference_index(case_input: Mapping[str, Any]) -> dict[str, dict[st
             "evidence_aliases": list(row.get("evidence_aliases") or ()),
         }
     return {key: value for key, value in index.items() if key}
+
+
+def resolve_final_output_numeric_surfaces(
+    *,
+    final_output: Any,
+    case_input: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Materialize deterministic token-to-authority receipts for report points."""
+
+    if not isinstance(final_output, dict):
+        return []
+    index = _numeric_reference_index(case_input)
+    receipts: list[dict[str, Any]] = []
+    for claim in _claim_rows(
+        final_output, case_key=str(case_input.get("case_key") or "")
+    ):
+        refs = [str(value) for value in claim.get("numeric_refs") or ()]
+        for token in sorted(set(_material_numeric_tokens(str(claim.get("text") or "")))):
+            explicit_refs = sorted(
+                ref
+                for ref in refs
+                if token in set((index.get(ref) or {}).get("numeric_tokens") or ())
+            )
+            matched_refs = explicit_refs
+            binding_mode = "explicit_numeric_ref"
+            if not matched_refs:
+                claim_evidence = set(claim.get("evidence_aliases") or ())
+                canonical_candidates = sorted(
+                    {
+                        str(authority.get("canonical_ref") or ref)
+                        for ref, authority in index.items()
+                        if authority.get("ref_type")
+                        in {"source_numeric_fact", "presentation_alias"}
+                        and token in set(authority.get("numeric_tokens") or ())
+                        and claim_evidence
+                        & set(authority.get("evidence_aliases") or ())
+                    }
+                )
+                if len(canonical_candidates) == 1:
+                    matched_refs = canonical_candidates
+                    binding_mode = "deterministic_unique_source_surface"
+                elif canonical_candidates:
+                    binding_mode = "ambiguous_source_surface"
+                else:
+                    binding_mode = "unbound"
+            receipts.append(
+                {
+                    "claim_id": claim["claim_id"],
+                    "numeric_token": token,
+                    "matched_numeric_refs": matched_refs,
+                    "authority_evidence_aliases": sorted(
+                        {
+                            str(alias)
+                            for ref in matched_refs
+                            for alias in (index.get(ref) or {}).get(
+                                "evidence_aliases"
+                            )
+                            or ()
+                        }
+                    ),
+                    "binding_mode": binding_mode,
+                    "status": (
+                        "deterministically_bound"
+                        if matched_refs
+                        else "unbound_material_numeric_surface"
+                    ),
+                }
+            )
+    return receipts
 
 
 def _material_numeric_tokens(text: str) -> list[str]:
@@ -659,8 +1119,20 @@ def evaluate_final_output(
     known_aliases = set(evidence)
     known_gaps = {str(row["gap_alias"]) for row in case_input.get("residual_gaps") or ()}
     numeric_index = _numeric_reference_index(case_input)
+    numeric_receipts = resolve_final_output_numeric_surfaces(
+        final_output=final_output,
+        case_input=case_input,
+    )
+    receipt_index: dict[str, dict[str, dict[str, Any]]] = {}
+    for receipt in numeric_receipts:
+        receipt_index.setdefault(str(receipt["claim_id"]), {})[
+            str(receipt["numeric_token"])
+        ] = receipt
     cited_gaps: set[str] = set()
-    for point in _collect_point_rows(final_output):
+    for point in _claim_rows(
+        final_output,
+        case_key=str(case_input.get("case_key") or ""),
+    ):
         text = str(point.get("text") or "")
         aliases = [str(value) for value in point.get("evidence_aliases") or ()]
         gap_aliases = [str(value) for value in point.get("gap_aliases") or ()]
@@ -692,25 +1164,22 @@ def evaluate_final_output(
             authorized_numeric: set[str] = set()
             for ref in numeric_refs:
                 authority = numeric_index.get(ref) or {}
-                authority_evidence = set(authority.get("evidence_aliases") or ())
-                if authority and authority_evidence and not (
-                    authority_evidence & set(aliases)
-                ):
-                    findings.append(
-                        {
-                            "level": "L2",
-                            "code": "final_report_numeric_ref_evidence_binding_missing",
-                            "numeric_ref": ref,
-                            "text": text[:240],
-                        }
-                    )
                 authorized_numeric.update(
                     str(value)
                     for value in authority.get("numeric_tokens") or ()
                     if str(value)
                 )
             material_tokens = set(_material_numeric_tokens(text))
-            unsupported = sorted(material_tokens - authorized_numeric)
+            unsupported = sorted(
+                token
+                for token in material_tokens - authorized_numeric
+                if not (
+                    receipt_index.get(str(point.get("claim_id") or ""), {})
+                    .get(token, {})
+                    .get("status")
+                    == "deterministically_bound"
+                )
+            )
             if unsupported:
                 findings.append(
                     {
@@ -844,6 +1313,20 @@ def execute_case(
             findings.extend(node_findings)
             if fatal_code:
                 raise S2FixedPackRuntimeError(fatal_code)
+            if node_key == "verifier":
+                projection = build_compact_verifier_projection(
+                    case_input=case_input,
+                    final_report=outputs.get("final_writer"),
+                )
+                verifier_findings = validate_compact_verifier_output(
+                    verifier_output=output,
+                    projection=projection,
+                )
+                findings.extend(verifier_findings)
+                if verifier_findings:
+                    raise S2FixedPackRuntimeError(
+                        "verification_incomplete_contract_invalid"
+                    )
             input_tokens = sum(int(row.get("input_tokens") or 0) for row in calls)
             output_tokens = sum(int(row.get("output_tokens") or 0) for row in calls)
             total_tokens = sum(int(row.get("total_tokens") or 0) for row in calls)
@@ -887,6 +1370,10 @@ def execute_case(
             }
         )
 
+    numeric_surface_receipts = resolve_final_output_numeric_surfaces(
+        final_output=outputs.get("final_writer"),
+        case_input=case_input,
+    )
     terminal_body = {
         "schema_version": TERMINAL_SCHEMA,
         "scope": SCOPE,
@@ -921,6 +1408,7 @@ def execute_case(
             ),
         },
         "findings": findings,
+        "numeric_surface_receipts": numeric_surface_receipts,
         "raw_outputs": outputs,
         "direct_baseline_input_digest": case_input["model_visible_digest"],
         "agent_chain_input_digest": case_input["model_visible_digest"],
@@ -951,13 +1439,18 @@ def execute_case(
 
 
 __all__ = [
+    "COMPACT_VERIFIER_INPUT_SCHEMA",
+    "COMPACT_VERIFIER_OUTPUT_SCHEMA",
     "NODE_ORDER",
     "S2FixedPackRuntimeError",
     "SPECIALIST_FAMILIES",
+    "build_compact_verifier_projection",
     "build_node_request",
     "evaluate_final_output",
     "execute_case",
     "issue_case_admission",
     "perform_node_call",
+    "resolve_final_output_numeric_surfaces",
     "validate_case_admission",
+    "validate_compact_verifier_output",
 ]

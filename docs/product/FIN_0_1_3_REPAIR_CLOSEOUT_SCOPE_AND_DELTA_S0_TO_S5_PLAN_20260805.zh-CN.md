@@ -308,6 +308,8 @@ DELL Supervisor R2 说明旧计划还缺一条统一原则：模型需要看到�
 
 > **2026-08-11 `S2-06D` clean R1 portability failure**：第一 clean worker 在任何 fake Provider 调用前因 CRLF working-tree raw SHA 与 LF Git-archive raw SHA 不同而停止。R1 独立保留，外部调用为 0。修复只统一文本 binding 的 universal-newline digest，并增加 CRLF/LF parity；不改 Evidence、NUM、角色、输出 schema 或金融门。提交后以 R2 重跑双 archive，不增加 live 预算。
 
+> **2026-08-11 `S2-06D` clean R2 pass**：两个 clean archive／fresh process 对 exact canary compiler、capture-first fixture runtime、shared-ledger exact-once、success／transport／truncation／invalid JSON 和 8 类角色／ref／数字／边界 mutation 形成 byte-equivalent 输出；proof=`86ee3944...3402`，真实 model/provider/network/source/retry=`0/0/0/0/0`。当前只进入一次 live canary 的零调用 value-cost-risk 决策，不自动签 admission、调用 DeepSeek 或恢复 13-call DELL。
+
 #### 7A.5.1 2026-08-10 DELL fixed-pack transport successor 与数字表面闭环
 
 新的 DELL fixed-pack canary R1 在第 6 次 Provider 调用发生 `RemoteDisconnected`。前 5 个节点均有完整不可变 request/response capture；失败节点也有 capture，但没有可晋升输出。相邻请求大小近似，当前证据不足以认定容量故障或模型推理失败。direct baseline 的 11 个 numeric finding 又主要来自合法中文尺度转换和一项可复算比例缺少本地权威 trace。故本轮保持 S2，不重跑前 5 节点，也不创建新产品版本：

@@ -1,0 +1,100 @@
+{
+  "attempt_id": "20260811_s2_selected_evidence_numeric_natural_node_canary_clean_proof_r2",
+  "clean_git_archives": 2,
+  "compiled_canary": {
+    "compiled_input_digest": "cee0aa92b7a118059ff79ceba86c2cafad7ee37f084cbd36f14b785af637b063",
+    "evidence_aliases": [
+      "E022",
+      "E018",
+      "E023"
+    ],
+    "numeric_refs": [
+      "NUM:DELL:AI_SERVER_REVENUE:C4947C75D942",
+      "NUM:DELL:CUSTOMER_COUNT:8C7F5A41CBF9",
+      "NUM:DELL:AI_ORDERS:66F359E8F5E4",
+      "NUM:DELL:AI_BACKLOG:A82BF565C064"
+    ],
+    "raw_source_text_in_model_input": false,
+    "request_characters": 11838,
+    "request_digest": "6f28084df556249011fcb4c146261d4546a93ff4bab1add1e45158f074615879"
+  },
+  "contract_ref": "fin_0_1_3.S2.selected_evidence_numeric_natural_node_canary:v1",
+  "credential_environment_variables_present_each_worker": 0,
+  "current_next": "SEPARATE_ZERO_CALL_ONE_CALL_LIVE_CANARY_VALUE_COST_RISK_AUTHORITY_DECISION",
+  "fresh_python_processes": 2,
+  "fresh_worker_count": 2,
+  "implementation_commit": "685d3e47e3e86e988a85ec55aa87898d2a7d5c4b",
+  "implementation_result_digest": "9d257c4a153dd8cafa219449bfb4029cc6345948a3c926eb46793d93cfbe4a71",
+  "known_boundary": "This proof establishes clean committed reproducibility of the bounded canary compiler, fixture runtime and local gates. It does not register live scope, issue a live admission, call DeepSeek, prove natural research quality, rerun Dell, grant Owner acceptance or authorize release.",
+  "mutations": {
+    "competitor_readthrough_as_direct_support_fails_closed": true,
+    "counterevidence_omission_fails_closed": true,
+    "missing_durability_boundary_fails_closed": true,
+    "unbound_material_money_fails_local_guard": true,
+    "unit_mutation_fails_closed": true,
+    "unknown_numeric_ref_fails_closed": true,
+    "unknown_top_level_field_fails_closed": true,
+    "valid_fy2027_prose_passes": true
+  },
+  "normalized_worker_output_sha256": "06567db72331bdfe1ae8baa9308d5cd9e6bce81cd5198e59729067af00eb985f",
+  "observed_calls": {
+    "fixture_provider_invocations_per_worker": 4,
+    "fixture_provider_invocations_total": 8,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "retries": 0,
+    "source_calls": 0
+  },
+  "private_artifact_injections": [
+    {
+      "bytes": 149544,
+      "kind": "corrected_dell_pack",
+      "relative_path": "data/workbench_private/fin_0_1_3_s1_dell_bounded_semantic_anchor_replay/corrected_pack/objects/fin-0.1.3/s1/dell-bounded-semantic-anchor-replay/pack/82/10/8210887f7e06c4fb8397594ba965a8c737525c4b53be52a3cac1cf279e697387.json",
+      "sha256": "8210887f7e06c4fb8397594ba965a8c737525c4b53be52a3cac1cf279e697387"
+    },
+    {
+      "bytes": 87530,
+      "kind": "historical_dell_pack",
+      "relative_path": "data/workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects/fin-0.1.3/s1-six-case-local-evidence-pack/dell/v1/da/86/da86bdf8649438da03f3da65f962c0deb744a6cd4593bc93f031e495c8b42e4b.json",
+      "sha256": "da86bdf8649438da03f3da65f962c0deb744a6cd4593bc93f031e495c8b42e4b"
+    }
+  ],
+  "private_artifacts_persisted_to_repository": false,
+  "recorded_at": "2026-08-11",
+  "result_digest": "86ee394477e05fce580e7ef107c3f21d4087c94fe0ebbaaad9cecadbf7343402",
+  "runtime_outcomes": {
+    "business_artifact_promotion": false,
+    "full_transport_response_capture_preserved": true,
+    "invalid_json": "natural_node_canary_output_json_invalid",
+    "length": "natural_node_canary_incomplete_finish_reason_length",
+    "same_admission_second_consumption_rejected": true,
+    "success": "natural_node_canary_completed_no_promotion",
+    "transport": "natural_node_canary_provider_failure:provider_error"
+  },
+  "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_clean_independent_proof_v1_0",
+  "stage_acceptance": {
+    "canary_clean_proof": true,
+    "canary_runner_implementation": true,
+    "canary_selection_and_contract": true,
+    "dell_delivery_pass": false,
+    "fake_and_mutation_suite": true,
+    "natural_model_canary": false,
+    "owner_acceptance": false,
+    "release": false
+  },
+  "status": "pass_two_clean_archives_two_fresh_processes_zero_external_call_reproducible",
+  "temporary_roots_removed": true,
+  "worker_process_receipts": [
+    {
+      "stderr_empty": true,
+      "stdout_sha256": "0868f1d09374c81093e02824fd8f9c694bb255f8237178adcee21d2f361a4b0c"
+    },
+    {
+      "stderr_empty": true,
+      "stdout_sha256": "0868f1d09374c81093e02824fd8f9c694bb255f8237178adcee21d2f361a4b0c"
+    }
+  ],
+  "worker_result_digest": "9efeb51dd04727730f5f0774803b95635aa6893b37592ae8d7333e052b141a78",
+  "workers_byte_equivalent": true
+}

@@ -10,7 +10,7 @@
     "candidate_manifest": "six_cases_93_specs_45_reviewed_known_plus_48_strict_held_out_metrics_19_automatic_narratives_quarantined",
     "physical_index_r1": "terminal_failed_directory_store_misclassified_as_missing_no_retry",
     "physical_store_contract_v1_1": "working_tree_zero_call_pass_file_and_directory_provider_neutral",
-    "physical_store_v1_1_proof_digest": "76253596341428bd8decffa0b8fafef957c94a01a6c7a34c05e9ab6d50560c95",
+    "physical_store_v1_1_proof_digest": "d1ff6e70d8f524ac80669f71b891728373a64902e986418d641c35d041c40dba",
     "real_microcanary": "not_run_authority_not_issued",
     "physical_index_r2": "not_authorized_not_run",
     "retrieval_evaluation": "not_run_on_new_93_object_indexes",
@@ -88,5 +88,5 @@
     "automatic_retry": false
   },
   "known_boundary": "This plan preserves the approved five-step direction but does not make later-stage results true in advance. Each stage must materialize its own evidence and can stop the sequence on a genuine owning-stage L1 blocker.",
-  "plan_digest": "965ea275ddd014206f9dcf20f73ef8f5cc1edf63056a220cb1d6e29d9b2cf2a0"
+  "plan_digest": "879d314e8968c752f0fd06b6443c119bcf774a993d96dd508c2b8b6c3da5fed9"
 }

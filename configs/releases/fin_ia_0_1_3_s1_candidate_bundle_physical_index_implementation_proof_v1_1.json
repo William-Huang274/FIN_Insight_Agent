@@ -136,7 +136,7 @@
     "vector_search": 0
   },
   "policy_digest": "092ea9925e95a35febb37d481d9be8f0e9de5e1d8a3f0f2a36445e78c7fc926c",
-  "proof_digest": "76253596341428bd8decffa0b8fafef957c94a01a6c7a34c05e9ab6d50560c95",
+  "proof_digest": "d1ff6e70d8f524ac80669f71b891728373a64902e986418d641c35d041c40dba",
   "recorded_at": "2026-08-10",
   "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
   "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_1",
@@ -145,7 +145,7 @@
     "configs/runtime/fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_policy_v1_0.json": "8952ae4716de866c7faa0ba843027c9dbba0392823478f59e7a8f65db468f7b4",
     "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json": "a61d06ab7b06147bfcc65a653330ff8e36e4abda4e44e44b120835cf8c7f2e98",
     "scripts/releases/issue_fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_authority_v1_1.py": "df2308c3da813e8c17eeb28e497ca5c0209e492281256adca708f24c3e49625e",
-    "scripts/releases/issue_fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_authority_v1_0.py": "3ab60cc3a204da42e6c76a853707babc2cb9fd35ef8085046d6c1e109eebdcd3",
+    "scripts/releases/issue_fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_authority_v1_0.py": "488cfc5bc3d65aab17355cb8efca8ca0b032f4571bd1f122405bf2485c80d563",
     "scripts/releases/materialize_fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_1.py": "3cc0429da9bb40466a54fc6a645e403ae54b0f309885b22aaa067c9639dbeed9",
     "scripts/releases/prepare_fin_ia_0_1_3_s1_candidate_bundle_physical_index_v1_1_clean_proof.py": "8508c530eaf4840290c0a4be0641c37fc47acdca2f630eacbb871e3c74ee025a",
     "scripts/releases/run_fin_ia_0_1_3_s1_candidate_bundle_physical_index_r2.py": "0eaf613b013c6933eee85c9f678fc47ba1b3dda692599ea34e10184bdeb14993",

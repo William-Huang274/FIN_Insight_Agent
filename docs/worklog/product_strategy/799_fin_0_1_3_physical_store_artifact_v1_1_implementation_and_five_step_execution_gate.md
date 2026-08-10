@@ -25,7 +25,7 @@ R1 不是向量生成失败。93 个 BGE-M3 向量和 93 个 Milvus insert ackno
 
 旧 v1／R1 schema 仍可读取；新实现不是把核心 Runtime 改成 Milvus 专用。后端 profile 才声明当前 pymilvus 3.0／milvus-lite 3.0 为 directory store，未来单文件或其他后端不需要改金融研究控制面。
 
-working-tree full-fake 结果：同一 93-spec manifest 仍为 DELL／MU／NVDA／ORCL／ASML／ANET=`15／16／14／19／10／19`；ObjectBM25 和 fake dense 完整终态；file 控制组与 directory store 均通过；类型错配、缺 index、manifest 文件路径／partition 名称越界、部分写入、跨案和 Evidence 污染等 11 类 mutation 均 fail closed。proof=`76253596...0c95`。真实 network／provider／LLM／BGE／Milvus 调用均为 0。
+working-tree full-fake 结果：同一 93-spec manifest 仍为 DELL／MU／NVDA／ORCL／ASML／ANET=`15／16／14／19／10／19`；ObjectBM25 和 fake dense 完整终态；file 控制组与 directory store 均通过；类型错配、缺 index、manifest 文件路径／partition 名称越界、部分写入、跨案和 Evidence 污染等 11 类 mutation 均 fail closed。修复 Windows issuer bootstrap 后重新绑定的 proof=`d1ff6e70...0dba`。真实 network／provider／LLM／BGE／Milvus 调用均为 0。
 
 ## 实验治理（在真实 microcanary 与 R2 前冻结）
 
@@ -59,8 +59,10 @@ working-tree full-fake 结果：同一 93-spec manifest 仍为 DELL／MU／NVDA�
 4. 只对真实 typed residual gaps 做 official-first 外源补源；
 5. 先让 DeepSeek 消费固定 Evidence Pack 测分析综合，再单独测动态工具研究。
 
-正式计划：`configs/releases/fin_ia_0_1_3_s1_to_s3_retrieval_evidence_research_execution_plan_v1_0.json`，digest=`965ea275...f2a0`。
+正式计划：`configs/releases/fin_ia_0_1_3_s1_to_s3_retrieval_evidence_research_execution_plan_v1_0.json`，digest=`879d314e...fed9`。
 
 ## 当前边界与下一步
 
 当前只证明 working-tree engineering。下一步必须先提交并推送实现；随后从 clean commit 签发一次 synthetic microcanary authority、执行一次并保留终态。microcanary 通过后还需 clean archive 复证，之后才签发 fresh R2。物理 build 成功不等于检索质量；第 2 步必须另行实测。
+
+首次从 clean commit 调用 microcanary issuer 时，在 authority 写出前因 Windows 未显式加入 `scripts/releases` 模块路径而退出；authority／result 均未生成，WSL／Milvus／向量调用均为 0，因此没有消费 microcanary Attempt。该问题属于同一签发工具的 bootstrap 缺陷，原地补齐显式模块路径并重新生成 source-bound 零调用 proof；不得把这次 pre-authority 退出计作一次真实 microcanary，也不得绕过 clean/synced gate。

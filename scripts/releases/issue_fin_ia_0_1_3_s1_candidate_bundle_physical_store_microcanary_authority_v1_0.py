@@ -8,7 +8,11 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path[:0] = [str(ROOT), str(ROOT / "src")]
+sys.path[:0] = [
+    str(ROOT),
+    str(ROOT / "src"),
+    str(ROOT / "scripts" / "releases"),
+]
 
 from sec_agent.project_os_preflight import run_project_os_preflight  # noqa: E402
 from sec_agent.s1_candidate_bundle_physical_index import (  # noqa: E402

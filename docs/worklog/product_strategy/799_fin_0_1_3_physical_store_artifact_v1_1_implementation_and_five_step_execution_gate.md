@@ -59,7 +59,7 @@ working-tree full-fake 结果：同一 93-spec manifest 仍为 DELL／MU／NVDA�
 4. 只对真实 typed residual gaps 做 official-first 外源补源；
 5. 先让 DeepSeek 消费固定 Evidence Pack 测分析综合，再单独测动态工具研究。
 
-正式计划随执行状态更新：`configs/releases/fin_ia_0_1_3_s1_to_s3_retrieval_evidence_research_execution_plan_v1_0.json`，digest=`9137b59a...1012`；microcanary 与 clean A2 已通过，additional microcanary=false；clean A1 失败保留，fresh R2 authority 已签发未消费。
+正式计划随执行状态更新：`configs/releases/fin_ia_0_1_3_s1_to_s3_retrieval_evidence_research_execution_plan_v1_0.json`，digest=`8d170d67...91e5`；microcanary 与 clean A2 已通过，clean A1 失败保留；fresh R2 已 exact-once terminal succeeded。五步线第 1 步完成，第 2 步六案业务解释型检索评估 current。
 
 ## 当前边界与下一步
 

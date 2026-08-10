@@ -1,5 +1,7 @@
 # Model Run Index
 
+- `2026-08-10` — FIN 0.1.3 CandidateBundle BGE-M3／Milvus R2：唯一 fresh R2 将六案 93 specs 同时发布为 ObjectBM25 93 records 与 BGE-M3／Milvus 93 vectors；close/reopen、93 count、目录 manifest/data/index、whole-root digest 均通过，0 retry。只关闭物理发布与 shared population，不代表检索／Evidence／研报质量。见 `reports/model_runs/20260810_fin_0_1_3_candidate_bundle_bge_m3_milvus_r2.md`。
+
 - `2026-08-10` — FIN 0.1.3 CandidateBundle BGE-M3／Milvus R1：本地 CPU BGE-M3 完成六案 93 specs／12 batches，Milvus 收到 93 insert acknowledgements，但在 receipt／publish 前因 directory store 被误判为缺失而 terminal failed、0 retry。属于 Harness 物理发布合同失败，不是召回或模型质量结果。见 `reports/model_runs/20260810_fin_0_1_3_candidate_bundle_bge_m3_milvus_r1.md`。
 
 - `2026-08-09` — FIN 0.1.3 S1 three-case internal ranking BGE-M3 / sparse / fusion R2: R1 因 namespaced evidence identity collapse 失效并保留；修复后唯一 R2 完成 local CUDA BGE-M3 `36 vectors` 与 Milvus `36 searches`。Sparse／dense／fusion Recall@10=`0.8889/0.1667/0.7778`，MRR@10=`0.5111/0.1667/0.2820`，fusion 不准入。只读诊断进一步证明 10 个唯一目标只有 5 个存在于旧 dense index；需先做 immutable supplemental dense refresh，不能调权重或用 reranker 掩盖缺失候选。见 `reports/model_runs/20260809_three_case_s1_internal_ranking_bge_m3_sparse_dense_facet_fusion_owner_qrels_v2_r2.md`。

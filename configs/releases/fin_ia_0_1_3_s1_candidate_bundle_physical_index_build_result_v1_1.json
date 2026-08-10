@@ -1,0 +1,276 @@
+{
+  "attempt_id": "20260810_s1_candidate_bundle_object_bm25_bge_m3_milvus_linux_r2",
+  "authority_digest": "a8889058d76a7fd0813ec722d4032356f83e750b0cb5a2696f142ec6ab6a08fd",
+  "automatic_retry": false,
+  "build": {
+    "dense": {
+      "batch_count": 12,
+      "embedding_calls": 12,
+      "embedding_vectors": 93,
+      "identity_digest": "c0f984be31e116bdde6f3f1e3d7d1e69ad42a3d1645b8ab157e7c4a113f0bdba",
+      "terminal_count": 93,
+      "writer_calls": {
+        "collection_create": 1,
+        "count": 2,
+        "database_create": 1,
+        "flush": 2,
+        "insert_batches": 12,
+        "inserted_vectors": 93,
+        "metadata_query": 1,
+        "reopen": 1
+      }
+    },
+    "physical_store_artifact": {
+      "artifact_digest": "aebe67d0c143e23c1bf3dd2887443caf338d44226af37699bfd3defd03d63f35",
+      "artifact_kind": "directory",
+      "artifact_name": "milvus_lite.db",
+      "collection_validation": {
+        "collection_name": "fin_ia_0_1_3_s1_candidate_bundle_dense_v2",
+        "current_seq": 93,
+        "data_paths": [
+          "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default/data/data_000001_000093.parquet"
+        ],
+        "embedding_dimension": 1024,
+        "index_paths": [
+          "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default/indexes/data_000001_000093.embedding.flat.idx"
+        ],
+        "index_type": "FLAT",
+        "manifest_sha256": "a94512e59d14b9a61e2b2793cd5db6d63ef91348f8a3d742a65f856c6dd9f575",
+        "metric_type": "COSINE",
+        "schema_sha256": "c3be7ddaa1f8dc8ffd121f10d920246b60e1c3fa0661bfec0a935f5743640530"
+      },
+      "directory_count": 7,
+      "file_count": 6,
+      "schema_version": "fin_ia_physical_store_artifact_v1_0",
+      "total_bytes": 1011008,
+      "tree_digest": "f51c74ec0dacd462a73d5f6d4823c9e9bb76c6dd46215ee60a5c352f86c614e5",
+      "tree_manifest": {
+        "directory_count": 7,
+        "entries": [
+          {
+            "bytes": 0,
+            "kind": "file",
+            "relative_path": "LOCK",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2"
+          },
+          {
+            "bytes": 457,
+            "kind": "file",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/manifest.json",
+            "sha256": "a94512e59d14b9a61e2b2793cd5db6d63ef91348f8a3d742a65f856c6dd9f575"
+          },
+          {
+            "bytes": 410,
+            "kind": "file",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/manifest.json.prev",
+            "sha256": "877f4ecf1704d6c848452f18e8f9a7e33217b73dc0d208e8546c084af9744745"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default/data"
+          },
+          {
+            "bytes": 625086,
+            "kind": "file",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default/data/data_000001_000093.parquet",
+            "sha256": "6a74ba0973f72e5ead1808b5eaeb31fae241f1bcf20034b1f2ebad110216d0d3"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default/indexes"
+          },
+          {
+            "bytes": 381056,
+            "kind": "file",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/partitions/_default/indexes/data_000001_000093.embedding.flat.idx",
+            "sha256": "58bf2453a29d5f4e89820be9cd8b585223619828e78ff91c2678ab6f2c651033"
+          },
+          {
+            "bytes": 3999,
+            "kind": "file",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/schema.json",
+            "sha256": "c3be7ddaa1f8dc8ffd121f10d920246b60e1c3fa0661bfec0a935f5743640530"
+          },
+          {
+            "kind": "directory",
+            "relative_path": "collections/fin_ia_0_1_3_s1_candidate_bundle_dense_v2/wal"
+          }
+        ],
+        "file_count": 6,
+        "schema_version": "fin_ia_canonical_directory_tree_manifest_v1_0",
+        "total_bytes": 1011008,
+        "tree_digest": "f51c74ec0dacd462a73d5f6d4823c9e9bb76c6dd46215ee60a5c352f86c614e5"
+      }
+    },
+    "private_final_root": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1/v2",
+    "private_receipt_digest": "d69156582cc3b3d3bd9566b59af0c81a5598bc5bb2aa9165f760d0249f47f3f0",
+    "sparse": {
+      "candidate_state": "candidate_only_not_evidence",
+      "files": {
+        "bm25.pkl": {
+          "bytes": 60412,
+          "sha256": "e6d3a23d5abeb9129499fb5763a3f5eb3a2c94267fe871e14906699f5566211a"
+        },
+        "metadata.json": {
+          "bytes": 560,
+          "sha256": "782564b6196a57ba6918c7b11097eb51aa05113f8d7d494540deb192e03a92a3"
+        },
+        "records.slim.jsonl": {
+          "bytes": 176665,
+          "sha256": "45c5c228b88529189786349e1144cd067fdedd236b35f83da8fa439f2888c65a"
+        }
+      },
+      "index_name": "fin_ia_0_1_3_s1_candidate_bundle_object_bm25_v1",
+      "index_type": "rank_bm25",
+      "record_digest": "1e24445c798d544c515e87fa8960fe93e41665f225be878c020cd7e1477fc0d1",
+      "record_file": "records.slim.jsonl",
+      "records": 93,
+      "schema_version": "fin_ia_candidate_bundle_object_bm25_metadata_v1_0",
+      "tokenized_corpus_digest": "7cf7d8db6b26f47a7e76afd396947bba463f38b43b0ceba218fc79c3e478b38c",
+      "vector_identity_digest": "9893140c354b67adfff69ac114211bb8d85999bcc6808f09f149d643e212a2a0"
+    }
+  },
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_physical_sparse_dense_index:v1.1",
+  "implementation_commit": "afc627f5aef90c9652bae3d21a5be5b7aaa0892b",
+  "known_boundary": "Physical ObjectBM25 and BGE-M3/Milvus indexes contain the same 93 CandidateBundle objects. No vector search, ranking, Evidence promotion, external supplement, DeepSeek call, Workbench integration or release is proven.",
+  "manifest_spec_digest": "af1f2439bc78a22dc00f27e55594c01ac73bfd2c11fa7a8c57f6546549b14df9",
+  "observed_calls": {
+    "document_fetch": 0,
+    "embedding_batches": 12,
+    "embedding_model_loads": 1,
+    "embedding_vectors": 93,
+    "evidence_promotion": 0,
+    "llm_model": 0,
+    "milvus_collection_creates": 1,
+    "milvus_count_reads": 2,
+    "milvus_database_creates": 1,
+    "milvus_flushes": 2,
+    "milvus_insert_batches": 12,
+    "milvus_inserted_vectors": 93,
+    "milvus_metadata_queries": 1,
+    "milvus_reopens": 1,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0,
+    "vector_search": 0
+  },
+  "phase_receipt": {
+    "last_verified_phase": "publish_linux_root",
+    "verified_phases": [
+      {
+        "phase": "requalify_bound_linux_environment",
+        "snapshot": {
+          "environment_identity_digest": "e156beabdaa86eda398133c80472f11c016d49e9f843aea2c74a1b8a3efea65e"
+        },
+        "snapshot_digest": "ccbd028b8d086289c062072824f6fc3927e4f87b6bfc9a47b58af630e501257c"
+      },
+      {
+        "phase": "validate_fresh_targets",
+        "snapshot": {
+          "final_root_absent": true,
+          "working_root_absent": true
+        },
+        "snapshot_digest": "e7dbad40e3a8fb46f2953f1adc264634419224e6b5e63fb3a0f3a64045bdef1e"
+      },
+      {
+        "phase": "load_bound_private_manifest",
+        "snapshot": {
+          "spec_count": 93,
+          "spec_digest": "af1f2439bc78a22dc00f27e55594c01ac73bfd2c11fa7a8c57f6546549b14df9"
+        },
+        "snapshot_digest": "6e219a89ab8fb7adff5e6c7a20c85e157de5ce06b6f40b49f9bbbdde61d04779"
+      },
+      {
+        "phase": "build_object_bm25",
+        "snapshot": {
+          "records": 93,
+          "vector_identity_digest": "9893140c354b67adfff69ac114211bb8d85999bcc6808f09f149d643e212a2a0"
+        },
+        "snapshot_digest": "58ae9653eedbff9c04dc476411cc73bbe3ca160b2fc94404acfc6056b5636daa"
+      },
+      {
+        "phase": "build_bge_m3_milvus",
+        "snapshot": {
+          "identity_digest": "c0f984be31e116bdde6f3f1e3d7d1e69ad42a3d1645b8ab157e7c4a113f0bdba",
+          "terminal_count": 93,
+          "writer_calls": {
+            "collection_create": 1,
+            "count": 2,
+            "database_create": 1,
+            "flush": 2,
+            "insert_batches": 12,
+            "inserted_vectors": 93,
+            "metadata_query": 1,
+            "reopen": 1
+          }
+        },
+        "snapshot_digest": "233fd41e29587a40e62401499246749e9bfd345b3c929469bb43f13de953fea7"
+      },
+      {
+        "phase": "validate_physical_store_artifact",
+        "snapshot": {
+          "artifact_digest": "aebe67d0c143e23c1bf3dd2887443caf338d44226af37699bfd3defd03d63f35",
+          "artifact_kind": "directory",
+          "total_bytes": 1011008
+        },
+        "snapshot_digest": "9f313a512d7effe435809a0737bd80ed39707e207f0e4e0537ee92204fbc8640"
+      },
+      {
+        "phase": "write_private_receipt",
+        "snapshot": {
+          "private_receipt_digest": "d69156582cc3b3d3bd9566b59af0c81a5598bc5bb2aa9165f760d0249f47f3f0"
+        },
+        "snapshot_digest": "91c2fc08199b63da679f82b08aae906fe6e515a5a3e7b891dfaf13b72e4db7eb"
+      },
+      {
+        "phase": "publish_linux_root",
+        "snapshot": {
+          "artifact_digest": "aebe67d0c143e23c1bf3dd2887443caf338d44226af37699bfd3defd03d63f35",
+          "final_root": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1/v2"
+        },
+        "snapshot_digest": "4f0642303d985ddedd3b834b0110d473753438a06ff68c2d7b9cf0c02f7c718f"
+      }
+    ]
+  },
+  "recorded_at": "2026-08-10",
+  "resource": {
+    "embedding_device": "cpu",
+    "embedding_dimension": 1024,
+    "embedding_model": "BAAI/bge-m3-local",
+    "embedding_ms": 48849.692,
+    "environment_identity_digest": "e156beabdaa86eda398133c80472f11c016d49e9f843aea2c74a1b8a3efea65e",
+    "model_load_ms": 3911.37,
+    "wall_time_ms": 103088.753
+  },
+  "result_digest": "6b239d7b2642efd51edc5f89587b28ab544a0e4a27d3a94a264a4c32975c1ce7",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_result_v1_1",
+  "stage_acceptance": {
+    "deepseek_research": false,
+    "evidence_pack": false,
+    "external_residual_supplement": false,
+    "physical_dense_index": true,
+    "physical_sparse_index": true,
+    "release": false,
+    "retrieval_quality": false,
+    "shared_population_integrity": true,
+    "workbench_integration": false
+  },
+  "status": "terminal_succeeded_physical_sparse_dense_build"
+}

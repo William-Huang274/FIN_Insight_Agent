@@ -3,7 +3,7 @@
   "contract_ref": "fin_0_1_3.S1_to_S3.retrieval_evidence_research_execution:v1",
   "recorded_at": "2026-08-10",
   "product_version": "FIN_0_1_3",
-  "status": "step_1_r2_authority_issued_unconsumed",
+  "status": "step_1_terminal_succeeded_step_2_six_case_retrieval_evaluation_current",
   "supersedes_for_current_execution": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_8.json",
   "user_decision": "Execute steps 1-5 in order without requesting approval at every substep; preserve exact-once authorities and stop at a newly established L1 blocker rather than silently expanding or retrying.",
   "current_truth": {
@@ -13,8 +13,8 @@
     "physical_store_v1_1_proof_digest": "898a9aae9957d82a7546c65bafc1e3aa7296df4c2003a45ecb5b9e3d6875768f",
     "real_microcanary": "terminal_succeeded_directory_store_publication_result_b7042cebaf191cabd05eae9c8dc92188cd702c4d350fa67b6bf626efaf514e77",
     "clean_reproduction": "a1_preserved_failed_a2_terminal_succeeded_two_clean_archives_proof_095e24ab9f1eda6a91d98ec1120aae950c74cfa69878799626f6be11c05ef9a9",
-    "physical_index_r2": "authorized_unconsumed_not_run",
-    "physical_index_r2_authority": "issued_unconsumed_a8889058d76a7fd0813ec722d4032356f83e750b0cb5a2696f142ec6ab6a08fd",
+    "physical_index_r2": "terminal_succeeded_result_6b239d7b2642efd51edc5f89587b28ab544a0e4a27d3a94a264a4c32975c1ce7_artifact_aebe67d0c143e23c1bf3dd2887443caf338d44226af37699bfd3defd03d63f35",
+    "physical_index_r2_authority": "consumed_a8889058d76a7fd0813ec722d4032356f83e750b0cb5a2696f142ec6ab6a08fd",
     "retrieval_evaluation": "not_run_on_new_93_object_indexes",
     "evidence_packs": "not_built_from_new_retrieval",
     "external_residual_supplement": "not_run_against_new_local_gaps",
@@ -25,7 +25,7 @@
       "order": 1,
       "owner_stage": "S1",
       "work_item": "PHYSICAL_INDEX_FILE_OR_DIRECTORY_REPAIR_AND_FRESH_R2",
-      "status": "r2_authority_issued_unconsumed",
+      "status": "terminal_succeeded_physical_sparse_dense_shared_population",
       "acceptance": "A synthetic one-vector directory microcanary and a fresh 93-object R2 each close, reopen, bind identities, generate a canonical artifact receipt and publish a whole fresh root. R1 remains immutable.",
       "stop_rule": "Any new backend/storage L1 consumes its attempt and stops step 1; no automatic R3. Retrieval quality is not inferred from build success."
     },
@@ -33,7 +33,7 @@
       "order": 2,
       "owner_stage": "S1",
       "work_item": "SIX_CASE_REAL_SPARSE_DENSE_FUSION_RETRIEVAL_EVALUATION",
-      "status": "blocked_until_step_1",
+      "status": "current_not_yet_executed",
       "acceptance": "DELL, MU, NVDA, ORCL, ASML and ANET run the same typed Query Facet matrix through exact, ObjectBM25, BGE-M3 and fusion. Every miss is explained in business language with the wrong or missing company, period, relation, section and content; aggregate scores alone are insufficient.",
       "stop_rule": "Candidate ceiling is measured before fusion or reranking. If dense/fusion does not beat the sparse baseline on a declared use case, retain or restrict it instead of tuning to manufacture a pass."
     },
@@ -85,12 +85,14 @@
     "synthetic_microcanary_consumed_successfully": true,
     "additional_synthetic_microcanary_execution": false,
     "fresh_r2_after_microcanary_clean_proof_and_separate_authority": true,
+    "fresh_r2_consumed_successfully": true,
     "retrieval_search_before_r2_success": false,
+    "retrieval_search_after_r2_success": true,
     "evidence_promotion_before_retrieval_audit": false,
     "external_calls_before_real_residual_gaps": false,
     "deepseek_calls_before_fixed_pack": false,
     "automatic_retry": false
   },
   "known_boundary": "This plan preserves the approved five-step direction but does not make later-stage results true in advance. Each stage must materialize its own evidence and can stop the sequence on a genuine owning-stage L1 blocker.",
-  "plan_digest": "9137b59ae79c39025aefd9f0f81ca3fba0b76103c3b12d38f1dcc8c4ae8f1012"
+  "plan_digest": "8d170d676cd3a80fe88a049bfbf2678f2dd4805f63f63f19c8e4d14e8aa391e5"
 }

@@ -2293,3 +2293,5 @@ v1.1 working-tree 实现现已完成：核心合同同时支持 file 和 directo
 synthetic microcanary 已实际通过并只证明目录发布能力：Ubuntu 中 1 个非业务 4 维向量完成 close／reopen identity、manifest／data／index tree digest、symlink 拒绝与 whole-root rename，result=`b7042ceb...4e77`；没有加载 BGE，也没有公司数据、检索或 Evidence。产品 UI 仍不得把它显示为“业务索引可用”。下一项是 two-clean-archive reproduction，之后才允许 fresh 93-object R2。
 
 two-clean-archive successor A2 已 terminal succeeded（A1 的时间字段误比较保持失败）：两份 clean Git archive 均重现同一实现 proof、同一文件 SHA、相同 `16 passed／1 skipped`、11 mutations 和 0-call receipt，并只读复核 microcanary。clean proof=`095e24ab...f9a9`，因此产品门现在只允许签发一次 fresh 93-object R2；仍不得声称业务索引、召回或研报能力已通过。
+
+fresh R2 现已 exact-once terminal succeeded：六案 93 个 CandidateBundle 对象成功发布到同一 ObjectBM25 与 BGE-M3／Milvus population，目录 store 在 close/reopen 与 whole-root publication 后保持内容摘要一致。这只完成“可搜索资料底座”，不等于“搜得准”或“能写好研报”。产品验收继续要求六案真实检索逐条说明公司、期间、关系、章节与内容错误，再生成 Evidence Pack；外源只补真实 residual gaps，DeepSeek 必须先在固定 Evidence Pack 上证明分析质量。

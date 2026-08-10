@@ -1,0 +1,178 @@
+{
+  "contract_ref": "fin_0_1_3.S1.dell_bounded_semantic_anchor_replay:v1",
+  "corrected_pack_payload_digest": "5ba1091ddc71d0c8543f186e4331bf2caae7d10e365af0a0f7510a056b5e9984",
+  "fresh_worker_count": 2,
+  "gate_status": {
+    "core_research_ready": true,
+    "successor_pack_ready_for_model_input": true,
+    "supplier_context_ready": true,
+    "valuation_input_ready": true,
+    "valuation_ready": true
+  },
+  "implementation_commit": "0ac314f2f96db3a262505bca75012cd7a88a5b76",
+  "known_boundary": "Two clean Git archive workers replayed the same immutable long-document captures and produced the same core-ready corrected Pack. No source, network or model call occurred; report quality remains unproven.",
+  "mutations": {
+    "actual_long_captures_replayed_without_network": true,
+    "historical_failed_result_preserved": true,
+    "legacy_unbounded_regex_surface_rejected_statically": true,
+    "long_document_duplicate_and_tail_noise_selects_local_cluster": true,
+    "missing_anchor_is_typed_separately": true,
+    "oversized_final_excerpt_is_typed_separately": true,
+    "wide_business_window_is_typed_separately": true
+  },
+  "observed_counts": {
+    "evidence_items_after": 27,
+    "evidence_items_before": 22,
+    "immutable_response_captures_replayed": 2,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_evidence_items": 5,
+    "new_source_materials": 5,
+    "residual_gaps_after": 14,
+    "residual_gaps_before": 15,
+    "retries": 0,
+    "reused_numeric_facts": 1
+  },
+  "policy_digest": "5e6e161948e1a73672416b9e1e3353824bebb7bc8cc6f2010b026851463df6b6",
+  "private_input_hydration": {
+    "input_count": 3,
+    "input_digests": [
+      {
+        "ref": "data/workbench_private/fin_0_1_3_s1_dell_enriched_source_successor/live/attempts/fin013_s1_dell_enriched_source_63e4726a49b86c47985b/objects/fin-0.1.3/s1/dell-enriched-source-successor/pack/90/11/9011bb6c08a79dff2922ec5a8b44e3aa172f9eae306f9cce68f2f4e8d13d142d.json",
+        "sha256": "9011bb6c08a79dff2922ec5a8b44e3aa172f9eae306f9cce68f2f4e8d13d142d"
+      },
+      {
+        "ref": "data/workbench_private/fin_0_1_3_s1_dell_official_source_recovery/live/attempts/fin013_s1_dell_official_recovery_93f80e015a85e086ee57/objects/fin-0.1.3/s1/dell-official-source-recovery-successor/official/66/98/66987c3c202b90b5b66d68cc951cc988b380bf15a19cb7dbb1b9fc3889cb4ecb.json",
+        "sha256": "66987c3c202b90b5b66d68cc951cc988b380bf15a19cb7dbb1b9fc3889cb4ecb"
+      },
+      {
+        "ref": "data/workbench_private/fin_0_1_3_s1_dell_official_source_recovery/live/attempts/fin013_s1_dell_official_recovery_93f80e015a85e086ee57/objects/fin-0.1.3/s1/dell-official-source-recovery-successor/official/bf/34/bf343558294cabeff1e05f131d7dd5c5bafb3e8b24c3d3514c9b78a5c2adac93.json",
+        "sha256": "bf343558294cabeff1e05f131d7dd5c5bafb3e8b24c3d3514c9b78a5c2adac93"
+      }
+    ],
+    "mode": "hardlink_or_copy_of_sha256_bound_ignored_inputs",
+    "worker_manifests_equal": true
+  },
+  "proof_digest": "b8a9b04d6ac4b349b40e6fc635b881da0bdcf0a0ca6162a373dc9a91af74bd04",
+  "recorded_at": "2026-08-10",
+  "route_results": [
+    {
+      "body_bytes": 57670,
+      "capture_digest": "66987c3c202b90b5b66d68cc951cc988b380bf15a19cb7dbb1b9fc3889cb4ecb",
+      "capture_ref": "data/workbench_private/fin_0_1_3_s1_dell_official_source_recovery/live/attempts/fin013_s1_dell_official_recovery_93f80e015a85e086ee57/objects/fin-0.1.3/s1/dell-official-source-recovery-successor/official/66/98/66987c3c202b90b5b66d68cc951cc988b380bf15a19cb7dbb1b9fc3889cb4ecb.json",
+      "capture_reused": true,
+      "failure_code": "",
+      "fragment_results": [
+        {
+          "anchor_window_chars": 310,
+          "excerpt_chars": 1008,
+          "failure_code": "",
+          "fragment_id": "demand_backlog_supply",
+          "selected_anchor_groups": [
+            "ai_orders",
+            "ai_backlog",
+            "demand_supply"
+          ],
+          "status": "materialized",
+          "target_id": "SUPPLEMENT::DELL::ISSUER::Q1FY27::DEMAND_BACKLOG_SUPPLY"
+        },
+        {
+          "anchor_window_chars": 219,
+          "excerpt_chars": 814,
+          "failure_code": "",
+          "fragment_id": "proactive_supply_securing",
+          "selected_anchor_groups": [
+            "memory_uncertainty",
+            "proactive_securing",
+            "pricing_margin_discipline"
+          ],
+          "status": "materialized",
+          "target_id": "SUPPLEMENT::DELL::ISSUER::Q1FY27::PROACTIVE_SUPPLY_SECURING"
+        },
+        {
+          "anchor_window_chars": 90,
+          "excerpt_chars": 746,
+          "failure_code": "",
+          "fragment_id": "ai_server_profitability",
+          "selected_anchor_groups": [
+            "ai_server_profitability",
+            "operating_income_target"
+          ],
+          "status": "materialized",
+          "target_id": "SUPPLEMENT::DELL::ISSUER::Q1FY27::AI_SERVER_PROFITABILITY"
+        }
+      ],
+      "fragments_expected": 3,
+      "fragments_materialized": 3,
+      "new_network_call": false,
+      "official_locator": "https://investors.delltechnologies.com/events/event-details/dell-technologies-fiscal-year-2027-first-quarter-results",
+      "official_origin_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "origin_url_echo": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "response_body_sha256": "2c613d69b150f8353ff952287d2481fa94837aaa50fbe9ec0086fa8b6530b7f5",
+      "retrieval_intermediary": "jina_reader",
+      "route_id": "dell_q1_fy27_earnings_transcript",
+      "source_text_chars": 55765,
+      "status": "capture_replayed_and_all_fragments_adjudicated"
+    },
+    {
+      "body_bytes": 28082,
+      "capture_digest": "bf343558294cabeff1e05f131d7dd5c5bafb3e8b24c3d3514c9b78a5c2adac93",
+      "capture_ref": "data/workbench_private/fin_0_1_3_s1_dell_official_source_recovery/live/attempts/fin013_s1_dell_official_recovery_93f80e015a85e086ee57/objects/fin-0.1.3/s1/dell-official-source-recovery-successor/official/bf/34/bf343558294cabeff1e05f131d7dd5c5bafb3e8b24c3d3514c9b78a5c2adac93.json",
+      "capture_reused": true,
+      "failure_code": "",
+      "fragment_results": [
+        {
+          "anchor_window_chars": 139,
+          "excerpt_chars": 742,
+          "failure_code": "",
+          "fragment_id": "memory_supply_tight_beyond_2027",
+          "selected_anchor_groups": [
+            "memory_industry_demand",
+            "demand_exceeds_supply",
+            "tightness_horizon"
+          ],
+          "status": "materialized",
+          "target_id": "SUPPLEMENT::DELL::SUPPLIER::MU::SUPPLY_TIGHT_BEYOND_2027"
+        },
+        {
+          "anchor_window_chars": 219,
+          "excerpt_chars": 746,
+          "failure_code": "",
+          "fragment_id": "hbm_packaging_h1_2027",
+          "selected_anchor_groups": [
+            "singapore_site",
+            "advanced_packaging",
+            "hbm_packaging_capacity",
+            "capacity_timing"
+          ],
+          "status": "materialized",
+          "target_id": "SUPPLEMENT::DELL::SUPPLIER::MU::HBM_PACKAGING_H1_2027"
+        }
+      ],
+      "fragments_expected": 2,
+      "fragments_materialized": 2,
+      "new_network_call": false,
+      "official_locator": "https://investors.micron.com/events/event-details/microns-third-quarter-2026-financial-call",
+      "official_origin_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "origin_url_echo": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "response_body_sha256": "2992c77b415e5f226ed81906797ccb768d152b895d8482b7576379aa125bb178",
+      "retrieval_intermediary": "jina_reader",
+      "route_id": "micron_q3_fy26_prepared_remarks",
+      "source_text_chars": 26784,
+      "status": "capture_replayed_and_all_fragments_adjudicated"
+    }
+  ],
+  "schema_version": "fin_ia_0_1_3_s1_dell_bounded_semantic_anchor_replay_clean_proof_v1_0",
+  "stage_acceptance": {
+    "arbitrary_regex_allowed": false,
+    "bounded_literal_anchor_compiler": true,
+    "business_artifact_promoted": false,
+    "deepseek_comparison_eligible": true,
+    "historical_source_result_immutable": true,
+    "long_document_mutation_required": true,
+    "source_refetch_performed": false
+  },
+  "status": "clean_independent_bounded_semantic_anchor_replay_passed",
+  "worker_result_digest": "b9d99ce963fd25160ca09f959f60f7ac08fd60c95ae9b0b655846708107d852b",
+  "workers_byte_equivalent": true
+}

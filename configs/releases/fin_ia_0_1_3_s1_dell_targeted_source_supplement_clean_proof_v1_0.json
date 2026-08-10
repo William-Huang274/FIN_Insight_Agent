@@ -1,0 +1,42 @@
+{
+  "dell_pack_payload_digest": "abb9d3e51dbd486c4b2b4d3460f8fc8d8ac009e853ed4449a356202e597f3202",
+  "fresh_worker_count": 2,
+  "implementation_commit": "ac85fa92398230e6e69722ab3c73509555486011",
+  "known_boundary": "Two fresh Git archive workers proved deterministic local selection, fixture parsing, gap disposition and successor pack materialization. No network, provider or model call occurred.",
+  "observed_counts": {
+    "dell_evidence_items_after": 27,
+    "dell_evidence_items_before": 15,
+    "dell_residual_gaps_after": 14,
+    "dell_residual_gaps_before": 16,
+    "external_source_fragments_adjudicated": 7,
+    "external_source_fragments_expected": 7,
+    "local_source_records_adjudicated": 5,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_dell_evidence_items": 12,
+    "provider_calls": 0,
+    "retries": 0
+  },
+  "policy_digest": "3de3320cd0bae18241a2e3be3a1fb217f8e51aefbe99d51592a05c21c56cadfd",
+  "private_input_hydration": {
+    "base_pack_result_digest": "52cd20faabe60591dca408a3c571ea1835b8e8ac635402b3d47c681b5cdc56da",
+    "local_corpus_sha256": "64b838f96f33d332c2f9a77517ad24fc190e4d5caf31da76928f8f3880255ed9",
+    "mode": "hardlink_or_copy_of_sha256_bound_ignored_inputs"
+  },
+  "proof_digest": "823685fc0946bd22f1d183fa83a103dc9f234199f1fa52233e1e24b60cd99f8d",
+  "recorded_at": "2026-08-10",
+  "schema_version": "fin_ia_0_1_3_s1_dell_targeted_source_supplement_clean_proof_v1_0",
+  "stage_acceptance": {
+    "all_planned_external_fragments_adjudicated": true,
+    "all_required_routes_adjudicated": true,
+    "business_artifact_promoted": false,
+    "capture_first": true,
+    "counterparty_claim_boundaries_preserved": true,
+    "deepseek_exact_live_authorized": false,
+    "market_point_in_time_source_bound": true,
+    "successor_pack_ready_for_zero_call_input_compilation": true
+  },
+  "status": "clean_independent_dell_targeted_source_zero_call_proof_passed",
+  "worker_result_digest": "5cc4ee5417301315f10c34a49d3fc9109212197944d70788f35fb5a1f71b57a9",
+  "workers_byte_equivalent": true
+}

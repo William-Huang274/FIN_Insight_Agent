@@ -2462,3 +2462,5 @@ canary 输入已经从前序 clean-proven transaction 机械编译：只含 E022
 第一次 clean archive 进一步证明，所有 Git 管理的 UTF-8 JSON／文本权威绑定必须对 CRLF／LF 归一化后计算 digest；否则相同语义文件会因 Windows checkout 与 `git archive` 的换行差异被误判漂移。二进制 PDF、capture bytes 和 private Pack 仍使用 raw-byte SHA。该失败发生在 worker 业务编译前，必须以新 attempt 复证，不能把 R1 追认为成功或据此放宽绑定。
 
 R2 已从修复后的 clean/synced commit 建立两个独立 archive／fresh process，并逐字节复现 compiled input、provider request、fixture success/failure terminal、完整 transport capture、exact-once receipt 和负向 mutation。真实外部调用为 0，private Pack 只注入临时 archive 且随根目录删除。产品状态因此前进到“可以单独判断是否签发一次自然 live canary”，仍不等于模型自然遵循、DELL 报告通过或 S2 关闭。
+
+零调用 value-cost-risk 决策选择一次 DeepSeek Pro 单节点 live path：它只回答当前 formal profile 是否能自然使用新 numeric view，不比较模型、不生成完整报告。future budget 为 `1 provider/model call`、`1,800 output tokens`、最多 `USD 0.02`、零 source/tool/retry/fallback/promotion。决策只允许实现独立 live scope、live admission validator、presence-only credential preflight 和 no-retry adapter，并在 clean/synced 状态签一份 fresh admission；不能把 fixture admission 改标为 live，也不能在 admission 写入后自动执行。

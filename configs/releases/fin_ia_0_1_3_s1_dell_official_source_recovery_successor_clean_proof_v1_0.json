@@ -1,0 +1,79 @@
+{
+  "contract_ref": "fin_0_1_3.S1.dell_official_source_recovery_successor:v1",
+  "fresh_worker_count": 2,
+  "gate_status": {
+    "core_research_ready": true,
+    "successor_pack_ready_for_model_input": true,
+    "supplier_context_ready": true,
+    "valuation_input_ready": true,
+    "valuation_ready": true
+  },
+  "implementation_commit": "83f8c3d25f552c72decea5706a73d45b18e9601a",
+  "known_boundary": "Two fresh Git archive workers proved timeout-capture replay, managed-reader capture lineage, origin isolation, anchor handling, partial-result retention, successful TSMC/Alpha reuse and successor Pack materialization. No network or model call occurred.",
+  "mutations": {
+    "cross_origin_pollution_rejected": true,
+    "dell_timeout_closes_core_but_preserves_supplier_and_valuation": true,
+    "managed_reader_metadata_preserved": true,
+    "micron_anchor_gap_does_not_false_close_core": true,
+    "successful_tsmc_and_alpha_reused_without_network": true
+  },
+  "observed_counts": {
+    "evidence_items_after": 27,
+    "evidence_items_before": 22,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_evidence_items": 5,
+    "new_source_materials": 5,
+    "official_source_network_calls": 0,
+    "residual_gaps_after": 14,
+    "residual_gaps_before": 15,
+    "retries": 0,
+    "reused_numeric_facts": 1
+  },
+  "policy_digest": "7683e419b594b00b597fbf2abf540c613bd7a800f41c2f253eb8033701f23c7f",
+  "private_input_hydration": {
+    "input_count": 5,
+    "input_digests": [
+      {
+        "ref": "data/workbench_private/fin_0_1_3_s1_dell_enriched_source_successor/live/attempts/fin013_s1_dell_enriched_source_63e4726a49b86c47985b/objects/fin-0.1.3/s1/dell-enriched-source-successor/pack/90/11/9011bb6c08a79dff2922ec5a8b44e3aa172f9eae306f9cce68f2f4e8d13d142d.json",
+        "sha256": "9011bb6c08a79dff2922ec5a8b44e3aa172f9eae306f9cce68f2f4e8d13d142d"
+      },
+      {
+        "ref": "data/workbench_private/fin_0_1_3_s1_dell_enriched_source_successor/live/attempts/fin013_s1_dell_enriched_source_63e4726a49b86c47985b/objects/fin-0.1.3/s1/dell-enriched-source-successor/official/49/f0/49f0db138e242108c45a6ec07efa04a737093ecb00d199d04b44c29cd2aff78d.json",
+        "sha256": "49f0db138e242108c45a6ec07efa04a737093ecb00d199d04b44c29cd2aff78d"
+      },
+      {
+        "ref": "data/workbench_private/fin_0_1_3_s1_dell_enriched_source_successor/live/attempts/fin013_s1_dell_enriched_source_63e4726a49b86c47985b/objects/fin-0.1.3/s1/dell-enriched-source-successor/official/09/77/0977051fbfef2c3e8e0f9af03b62fb157026d39cbdaa3d414dd1a679562515f5.json",
+        "sha256": "0977051fbfef2c3e8e0f9af03b62fb157026d39cbdaa3d414dd1a679562515f5"
+      },
+      {
+        "ref": "data/workbench_private/fin_0_1_3_s1_dell_enriched_source_successor/live/attempts/fin013_s1_dell_enriched_source_63e4726a49b86c47985b/objects/fin-0.1.3/s1/dell-enriched-source-successor/official/80/c4/80c4ceb79638d20d9a5d6ad9a51065cf93e810240f6f333a80902f482f82bcfe.json",
+        "sha256": "80c4ceb79638d20d9a5d6ad9a51065cf93e810240f6f333a80902f482f82bcfe"
+      },
+      {
+        "ref": "data/workbench_private/fin_0_1_3_s1_dell_enriched_source_successor/live/attempts/fin013_s1_dell_enriched_source_63e4726a49b86c47985b/objects/fin-0.1.3/s1/dell-enriched-source-successor/official/18/8d/188d273e7c00d69170f204d5ff4dd224f03afe9a7f6d028b0fb1740c2082794a.json",
+        "sha256": "188d273e7c00d69170f204d5ff4dd224f03afe9a7f6d028b0fb1740c2082794a"
+      }
+    ],
+    "mode": "hardlink_or_copy_of_sha256_bound_ignored_inputs",
+    "worker_manifests_equal": true
+  },
+  "proof_digest": "11f324abd624be5078b5597e43172a7cebe6c6e8778de5e9ab81871ae6264dca",
+  "recorded_at": "2026-08-10",
+  "schema_version": "fin_ia_0_1_3_s1_dell_official_source_recovery_successor_clean_proof_v1_0",
+  "stage_acceptance": {
+    "business_artifact_promoted": false,
+    "capture_first": true,
+    "deepseek_exact_live_authorized": false,
+    "intermediary_raw_response_preserved_before_parse": true,
+    "managed_reader_promoted_as_financial_authority": false,
+    "official_origin_identity_round_trip_required": true,
+    "predecessor_attempt_immutable": true,
+    "successful_tsmc_and_alpha_inputs_reused_without_network": true,
+    "timeout_capture_replay_passed": true
+  },
+  "status": "clean_independent_dell_official_source_recovery_zero_call_proof_passed",
+  "successor_pack_payload_digest": "450ed312c245f63bd0e018ea834efebf50cbd361d180e518c41bef3abf6745cd",
+  "worker_result_digest": "ae56abf4758dd221846b58b0321200ae47ea7aa0e1dbecb99d2b9b53cbff65fc",
+  "workers_byte_equivalent": true
+}

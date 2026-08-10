@@ -378,3 +378,13 @@ Harness 的确定性 renderer 只写入已授权事实表面，不生成机制�
 DELL／MU／NVDA 用于叙事、表格、供应商／客户 read-through 和 PIT 输入；ORCL／ASML／ANET 用于 `source_materials=[]` 的 structured metric、USD／EUR、货币／非货币单位和期间隔离。mutation 必须覆盖同数不同义、精确＋官方舍入、错实体／期间／币种、table child 缺 parent、slot 外数字、日期／规则号／产品型号、count qualifier、range／H1／beyond-year、cross-case、排序稳定、Writer 越过 DO_NOT_OUTPUT、公式 lineage、PIT 不越权估值，以及 Verifier false-pass。
 
 处置工件只达到 `decision_complete_implementation_pending`。下一项 `FIN-0.1.3-S2-SELECTED-EVIDENCE-NUMERIC-CANDIDATE-COCOMPILATION-MINIMUM-ZERO-CALL-IMPLEMENTATION` 依次实现 pure schema/compiler、source-aware adapters、deterministic adjudicator、node views／renderer／guard、六案 fake／capture replay／mutation 和双 clean proof；不得在此之前自动重跑 DELL。
+
+#### 13.10.4 实现后的编译不变量与已知迁移边界（2026-08-11）
+
+当前 pure compiler 已实现为单事务：`SelectedEvidence -> CandidateInventory -> StableFactPresentationProgram -> BoundedNodeViews -> LocalDeliveryGuard`，并由共同 transaction digest 绑定。structured metric 直接继承 table path／parent unit／period；显式表格只选择命中 row rule 的单元；叙事 parser 发现金额、百分比、count、range、temporal 和 qualitative band 后，必须通过 Slot／Facet、金融微句、实体、期间和 output boundary 裁决。日期、Form／Rule、RTX／HBM／GB／3D 等产品或技术 token 只可进入 forbidden/context 状态。
+
+叙事关联使用两层 span：默认用非数字逗号、句号、分号和 bullet 切分 micro-clause，防止 `revenue 43.8B, cash flow 4.1B` 串义；只有 policy 显式 `allow_cross_comma_context` 的高特异规则可回看 major span。相对期间 parser 在 fact identity 前处理显式季度、九个月、prior quarter 和 same period last year。`increased 3%` 与 `increased to 85%` 分开，前者不能成为 margin level。
+
+Node view 使用同一 fact/formula parity digest，并各自保存字符容量 receipt；完整 raw source 不进入 successor model input，只保留 private audit digest set。Delivery guard 先验证 used refs，再只接受这些 refs 的 exact rendered presentation；context-only literal、错单位表面和 PIT→target-price 越权即使 semantic Verifier pass 也 hard fail。
+
+六案 working-tree replay 与 mutation 已通过，且测试真实抓出并修正上述串义、期间折叠和 guard 误杀；这比只断言 schema 完整更强，但仍不是 clean-source proof。当前叙事 exact coordinate 有一部分由通用迁移 adapter 从已选正文恢复；未来 S1 `FinancialSourceObject` 应在 selection 时直接保存 numeric coordinates，让 S2 只做权威裁决和展示编译。该长期迁移不应在本 S2 修复中重开 S1。

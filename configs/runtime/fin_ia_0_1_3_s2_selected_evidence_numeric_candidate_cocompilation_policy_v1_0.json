@@ -1,0 +1,234 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_candidate_cocompilation_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S2.selected_evidence_numeric_candidate_cocompilation:v1",
+  "provider_neutral": true,
+  "case_specific_value_whitelists": false,
+  "full_source_regex_all_promotion": false,
+  "candidate_limits": {
+    "context_window_chars": 220,
+    "max_candidates_per_evidence": 64,
+    "max_bounded_context_chars_per_evidence": 1800
+  },
+  "node_view_hard_char_limits": {
+    "research_view": 80000,
+    "writer_view": 55000,
+    "verifier_view": 30000
+  },
+  "adjudication_statuses": [
+    "authorized_fact",
+    "authorized_formula_operand",
+    "descriptive_nonmaterial",
+    "context_only_do_not_output",
+    "forbidden_or_ambiguous"
+  ],
+  "semantic_metric_rules": [
+    {
+      "semantic_metric_key": "ai_orders",
+      "context_patterns": ["AI(?:-optimized)?\\s+orders?", "orders?\\s+booked", "booked[^.]{0,60}AI\\s+orders?"],
+      "compatible_facets": ["ai_orders", "ai_infrastructure_orders_or_backlog", "order_backlog_rpo_or_volume", "order_conversion"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "ai_server_revenue",
+      "context_patterns": ["AI(?:-optimized)?\\s+(?:server|systems?)\\s+revenue", "revenue[^.]{0,40}AI(?:-optimized)?\\s+servers?"],
+      "compatible_facets": ["accelerated_compute_or_ai_infrastructure_revenue", "segment_or_product_performance", "reported_revenue", "profit_capture_bridge", "ai_orders", "ai_backlog", "order_conversion", "ai_infrastructure_orders_or_backlog", "customer_demand_readthrough"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "ai_backlog",
+      "context_patterns": ["AI\\s+backlog", "backlog[^.]{0,50}AI", "record[^.]{0,20}backlog"],
+      "compatible_facets": ["ai_backlog", "ai_infrastructure_orders_or_backlog", "order_backlog_rpo_or_volume", "order_conversion"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "customer_count",
+      "context_patterns": ["customer\\s+count", "customers?[^.]{0,30}(?:surpassed|exceeded|more than|over)", "(?:surpassed|exceeded|more than|over)[^.]{0,20}customers?"],
+      "compatible_facets": ["customer_count", "customer_breadth_or_concentration", "durability_or_pull_forward"],
+      "value_kinds": ["count_scalar"]
+    },
+    {
+      "semantic_metric_key": "ai_gpu_product_revenue",
+      "context_patterns": ["sales[^.]{0,80}AI\\s+GPU", "AI\\s+GPU[^.]{0,80}(?:sales|revenue)"],
+      "compatible_facets": ["competitor_performance", "segment_or_product_performance", "mix_or_product_attribution", "competitive_intensity_or_share", "competitor_ai_gpu_growth", "competitor_asp_mix", "ai_server_competitor_scale"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "ai_gpu_product_revenue_growth",
+      "context_patterns": ["AI\\s+GPU.{0,160}?year-over-year", "year-over-year.{0,160}?AI\\s+GPU"],
+      "compatible_facets": ["competitor_performance", "segment_or_product_performance", "mix_or_product_attribution", "competitive_intensity_or_share", "competitor_ai_gpu_growth", "competitor_asp_mix", "competitor_margin_readthrough", "ai_server_competitor_scale"],
+      "value_kinds": ["percentage_scalar"]
+    },
+    {
+      "semantic_metric_key": "advanced_technology_revenue_share",
+      "allow_cross_comma_context": true,
+      "context_patterns": ["advanced technolog(?:y|ies)[^.]{0,100}(?:accounted for|share)[^.]{0,30}\\d[\\d,.]*\\s*%", "advanced technolog(?:y|ies)[^.]{0,100}\\d[\\d,.]*\\s*%[^.]{0,40}wafer revenue"],
+      "compatible_facets": ["capacity_or_supply", "ramp_timing", "supplier_commitment_or_dependency"],
+      "value_kinds": ["percentage_scalar"]
+    },
+    {
+      "semantic_metric_key": "operating_margin_target",
+      "context_patterns": ["operating\\s+(?:income\\s+)?(?:margin|rate)", "profitability[^.]{0,80}(?:margin|rate|target)"],
+      "compatible_facets": ["ai_system_margin", "ai_server_profitability_target", "margin_or_unit_economics", "profit_capture_bridge"],
+      "value_kinds": ["percentage_scalar", "numeric_range", "qualitative_numeric_band"]
+    },
+    {
+      "semantic_metric_key": "capacity_release_timing",
+      "context_patterns": ["capacity[^.]{0,100}(?:first half|second half|begin|release|ramp)", "(?:first half|second half)[^.]{0,100}capacity"],
+      "compatible_facets": ["capacity_release_timing", "ramp_timing", "capacity_or_supply"],
+      "value_kinds": ["temporal_range_or_boundary"]
+    },
+    {
+      "semantic_metric_key": "supply_tightness_horizon",
+      "context_patterns": ["(?:supply|demand)[^.]{0,100}(?:tight|constraint)[^.]{0,100}(?:through|beyond|into)", "(?:through|beyond|into)[^.]{0,100}(?:tight|constraint)"],
+      "compatible_facets": ["supply_tightness_horizon", "memory_supply_constraint", "bottleneck_or_lead_time", "capacity_or_supply"],
+      "value_kinds": ["temporal_range_or_boundary"]
+    },
+    {
+      "semantic_metric_key": "shareholder_returns",
+      "context_patterns": ["returned[^.]{0,80}shareholders", "share repurchases and dividends", "capital return"],
+      "compatible_facets": ["capital_structure_or_returns"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "total_revenue_guidance",
+      "proximity_priority": 20,
+      "context_patterns": ["(?:full-year|FY\\d{2,4})[^.]{0,60}(?:revenue|revenue outlook)", "revenue outlook[^.]{0,80}(?:midpoint|full-year)"],
+      "compatible_facets": ["management_outlook", "reported_revenue"],
+      "value_kinds": ["monetary_scalar", "numeric_range"]
+    },
+    {
+      "semantic_metric_key": "ai_server_revenue_guidance",
+      "proximity_priority": 20,
+      "context_patterns": ["(?:full-year|FY\\d{2,4})[^.]{0,80}AI(?:-optimized)?\\s+(?:server|systems?)\\s+revenue", "AI(?:-optimized)?\\s+(?:server|systems?)\\s+revenue[^.]{0,80}(?:expected|expectations?|guidance|outlook)"],
+      "compatible_facets": ["management_outlook", "accelerated_compute_or_ai_infrastructure_revenue"],
+      "value_kinds": ["monetary_scalar", "numeric_range"]
+    },
+    {
+      "semantic_metric_key": "working_capital_amount",
+      "context_patterns": ["working capital", "accounts receivable", "accounts payable", "inventor(?:y|ies)"],
+      "compatible_facets": ["working_capital", "inventory", "receivables_payables_or_obligations"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "reported_revenue",
+      "required_scales": ["billion", "million"],
+      "max_proximity_chars": 150,
+      "context_patterns": ["(?:record |total |net )?revenue(?: of| was| increased|\\s*[:|])", "fiscal[^.]{0,30}revenue"],
+      "compatible_facets": ["reported_revenue", "segment_or_product_performance", "monitoring_metric_and_timing"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "gaap_net_income",
+      "required_scales": ["billion", "million"],
+      "context_patterns": ["(?<!Non-)GAAP net income", "net income(?: of| was|\\s*[:|])"],
+      "compatible_facets": ["reported_profitability", "monitoring_metric_and_timing"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "non_gaap_net_income",
+      "proximity_priority": 15,
+      "required_scales": ["billion", "million"],
+      "context_patterns": ["Non-GAAP net income"],
+      "compatible_facets": ["reported_profitability", "monitoring_metric_and_timing"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "operating_cash_flow",
+      "required_scales": ["billion", "million"],
+      "max_proximity_chars": 150,
+      "context_patterns": ["operating cash flow", "cash (?:provided by|from) operating activities"],
+      "compatible_facets": ["operating_cash_flow", "reported_profitability", "monitoring_metric_and_timing", "capex_to_free_cash_flow"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "capital_expenditures",
+      "required_scales": ["billion", "million"],
+      "context_patterns": ["capital expenditures?[^.]{0,45}(?:were|was|of)\\s*(?:US\\$|USD|EUR|\\$|€)\\s*\\d[\\d,.]*", "capital expenditures?", "capex"],
+      "compatible_facets": ["capital_expenditure", "capital_structure_or_returns", "capex_to_free_cash_flow"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "adjusted_free_cash_flow",
+      "required_scales": ["billion", "million"],
+      "context_patterns": ["adjusted free cash flow[^.]{0,35}(?:were|was|of)\\s*(?:US\\$|USD|EUR|\\$|€)\\s*\\d[\\d,.]*", "adjusted free cash flow"],
+      "compatible_facets": ["capex_to_free_cash_flow", "operating_cash_flow"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "average_selling_price_change",
+      "context_patterns": ["average selling prices?", "\\bASP\\b"],
+      "compatible_facets": ["price_or_asp", "price_volume_mix_bridge", "memory_price_bit_mix", "margin_or_unit_economics"],
+      "value_kinds": ["percentage_scalar", "qualitative_numeric_band", "numeric_range"]
+    },
+    {
+      "semantic_metric_key": "bit_shipment_change",
+      "context_patterns": ["bit shipments?", "shipment volume"],
+      "compatible_facets": ["volume_or_units", "price_volume_mix_bridge", "memory_price_bit_mix"],
+      "value_kinds": ["percentage_scalar", "qualitative_numeric_band", "numeric_range"]
+    },
+    {
+      "semantic_metric_key": "product_revenue_growth",
+      "context_patterns": ["sales of (?:DRAM|NAND)[^.]{0,50}(?:increased|decreased)", "(?:DRAM|NAND)[^.]{0,50}revenue"],
+      "compatible_facets": ["mix_or_product_attribution", "price_volume_mix_bridge", "memory_price_bit_mix", "segment_or_product_performance"],
+      "value_kinds": ["percentage_scalar"]
+    },
+    {
+      "semantic_metric_key": "gross_margin",
+      "max_proximity_chars": 150,
+      "context_patterns": ["gross margin[^.]{0,260}(?:improved|increased|decreased)[^.]{0,220}\\d[\\d,.]*\\s*%", "gross margin"],
+      "compatible_facets": ["reported_profitability", "margin_or_unit_economics", "profit_capture_bridge", "memory_price_bit_mix"],
+      "value_kinds": ["percentage_scalar", "qualitative_numeric_band"]
+    },
+    {
+      "semantic_metric_key": "hbm_volume_production_timing",
+      "allow_cross_comma_context": true,
+      "context_patterns": ["HBM[^.]{0,100}(?:volume production|high-volume shipments?)", "(?:volume production|high-volume shipments?)[^.]{0,100}HBM"],
+      "compatible_facets": ["ramp_timing", "high_bandwidth_memory_supply", "capacity_release_timing"],
+      "value_kinds": ["temporal_range_or_boundary"]
+    },
+    {
+      "semantic_metric_key": "customer_agreement_commitments",
+      "context_patterns": ["cash deposits and related financial commitments[^.]{0,50}", "financial commitments[^.]{0,50}agreements"],
+      "compatible_facets": ["customer_deposit_or_rpo_classification"],
+      "value_kinds": ["monetary_scalar"]
+    },
+    {
+      "semantic_metric_key": "customer_cash_deposits",
+      "context_patterns": ["commitments[^.]{0,50}cash deposits", "cash deposits[^.]{0,50}commitments"],
+      "compatible_facets": ["customer_deposit_or_rpo_classification"],
+      "value_kinds": ["monetary_scalar"]
+    }
+  ],
+  "table_row_rules": [
+    {"semantic_metric_key": "ai_server_revenue", "row_patterns": ["^AI-optimized servers?$"], "compatible_facets": ["segment_or_product_performance", "profit_capture_bridge", "accelerated_compute_or_ai_infrastructure_revenue"]},
+    {"semantic_metric_key": "isg_revenue", "row_patterns": ["^Total ISG net revenue$"], "compatible_facets": ["segment_or_product_performance", "profit_capture_bridge"]},
+    {"semantic_metric_key": "isg_operating_income", "row_patterns": ["^ISG operating income$"], "compatible_facets": ["segment_or_product_performance", "profit_capture_bridge", "reported_profitability"]},
+    {"semantic_metric_key": "total_revenue", "row_patterns": ["^(?:Revenue|Net revenue|Total net revenue|Total revenues?)$"], "compatible_facets": ["reported_revenue", "segment_or_product_performance"]},
+    {"semantic_metric_key": "net_income", "row_patterns": ["^Net income$"], "compatible_facets": ["reported_profitability", "profit_capture_bridge", "operating_cash_flow"]},
+    {"semantic_metric_key": "operating_cash_flow", "row_patterns": ["^(?:Cash flow from operations|Change in cash from operating activities|Net cash provided by operating activities)$"], "compatible_facets": ["operating_cash_flow", "working_capital", "reported_profitability", "capex_to_free_cash_flow"]},
+    {"semantic_metric_key": "capital_expenditures", "row_patterns": ["^Capital expenditures(?: and capitalized software development costs, net(?: \\(a\\))?)?$"], "compatible_facets": ["capital_structure_or_returns", "operating_cash_flow", "working_capital", "capital_expenditure", "capex_to_free_cash_flow"]},
+    {"semantic_metric_key": "free_cash_flow", "row_patterns": ["^Free cash flow$"], "compatible_facets": ["operating_cash_flow", "working_capital", "reported_profitability", "capex_to_free_cash_flow"]},
+    {"semantic_metric_key": "adjusted_free_cash_flow", "row_patterns": ["^Adjusted free cash flow$"], "compatible_facets": ["operating_cash_flow", "working_capital", "reported_profitability", "capex_to_free_cash_flow"]},
+    {"semantic_metric_key": "accounts_receivable", "row_patterns": ["^Accounts receivable"], "compatible_facets": ["receivables_payables_or_obligations", "working_capital"]},
+    {"semantic_metric_key": "inventory", "row_patterns": ["^Inventor(?:y|ies)$"], "compatible_facets": ["inventory", "working_capital"]},
+    {"semantic_metric_key": "accounts_payable", "row_patterns": ["^Accounts payable$"], "compatible_facets": ["receivables_payables_or_obligations", "working_capital"]},
+    {"semantic_metric_key": "gross_margin", "row_patterns": ["^Gross margin(?: \\(\\%\\))?$"], "compatible_facets": ["reported_profitability", "margin_or_unit_economics", "profit_capture_bridge"]},
+    {"semantic_metric_key": "gross_profit", "row_patterns": ["^Gross profit$"], "compatible_facets": ["reported_profitability", "profit_capture_bridge"]}
+  ],
+  "formula_specs": [
+    {"semantic_metric_key": "ai_server_revenue_share_of_isg", "operation": "ratio_percent", "numerator": "ai_server_revenue", "denominator": "isg_revenue"},
+    {"semantic_metric_key": "isg_operating_margin", "operation": "ratio_percent", "numerator": "isg_operating_income", "denominator": "isg_revenue"},
+    {"semantic_metric_key": "free_cash_flow_share_of_operating_cash_flow", "operation": "ratio_percent", "numerator": "free_cash_flow", "denominator": "operating_cash_flow"},
+    {"semantic_metric_key": "adjusted_free_cash_flow_share_of_operating_cash_flow", "operation": "ratio_percent", "numerator": "adjusted_free_cash_flow", "denominator": "operating_cash_flow"}
+  ],
+  "hard_boundaries": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "automatic_rerun": false,
+    "source_presence_bypasses_authority": false,
+    "semantic_verifier_can_override_local_guard": false,
+    "market_pit_authorizes_valuation_or_recommendation": false
+  }
+}

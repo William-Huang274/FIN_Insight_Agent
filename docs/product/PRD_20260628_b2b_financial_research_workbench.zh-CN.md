@@ -2426,3 +2426,15 @@ changed-input DELL exact-live 证明，补源已经能转化为更好的需求�
 5. 验收必须覆盖 DELL／MU／NVDA，以及无 SourceMaterial 正文、主要由 structured metrics 构成的 ORCL／ASML／ANET held-out Pack；尤其要证明 ASML EUR／台数、ANET 三个月／六个月和 ORCL 全公司／AI 归因不会混淆。
 
 本项只达到 `decision_complete／runtime_not_implemented`。下一项为 `FIN-0.1.3-S2-SELECTED-EVIDENCE-NUMERIC-CANDIDATE-COCOMPILATION-MINIMUM-ZERO-CALL-IMPLEMENTATION`；完成六案 fake／capture replay／mutation 和 clean proof 前，不授权自然模型 canary、DELL paid rerun、Owner acceptance 或 release。
+
+#### 16.20.1 工程实现后的产品规则校正（2026-08-11）
+
+实现与六案回放进一步证明，候选发现与事实晋升之间还必须有“金融微句”和“相对期间”两层语义边界。普通字符窗口会把同一句中的收入、现金流和股东回报串错；同一比较句中的本季、上季和去年同期若没有先编译期间，也会在 stable identity 阶段被误判成冲突。因此产品验收新增以下要求：
+
+1. 叙事数字必须先绑定到标点／bullet 切分后的最小金融微句；只有明确声明可跨逗号且 pattern 覆盖目标数字的规则，才能读取更大句段。不得用扩大 proximity 代替语义绑定。
+2. `prior quarter／same period last year／first nine months` 和显式季度必须在 stable-fact 去重前转成独立期间。不同期间的真实比较值不是冲突。
+3. “毛利率提高 3%”与“毛利率提高至 85%”是不同 value kind；变化量不能晋升为水平值。无法区分时保持 context-only，不猜。
+4. 最终 guard 以 cited `NUM／FORM` 的精确 presentation 为准。别处存在同字面 context-only 数字不能误杀合法展示，但单位、币种或语义变体仍必须 fail closed；semantic Verifier 无覆盖权。
+5. 每类节点的编译视图必须有显式容量 receipt。当前硬上限为 Research `80k`、Writer `55k`、Verifier `30k` 字符；上限是防止请求失控的产品门，不是鼓励填满预算。
+
+当前 working-tree 已在 DELL／MU／NVDA＋ORCL／ASML／ANET 上通过上述规则和 mutation，未调用模型。它仍只算 engineering pass；两个 clean archive／fresh process 逐字节复证前，不得把它写成产品通过。长期上，S1 金融对象应直接持久化 selected numeric coordinates；当前 S2 叙事 adapter 是通用、fail-closed 的迁移层，不是永久让下游重复解析全文的理由。

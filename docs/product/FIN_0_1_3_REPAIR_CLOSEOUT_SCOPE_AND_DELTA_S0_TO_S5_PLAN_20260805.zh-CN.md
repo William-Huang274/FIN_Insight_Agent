@@ -869,10 +869,10 @@ Owner 已批准 7W terminal 后的有界处置，不授权重新抓取来源。�
 本段继续留在 FIN 0.1.3 S2，不新建版本、不重开 S1 parser，也不吸收 S3 的 WWC／机制／内容密度任务。执行顺序冻结为：
 
 1. [x] `S2_ZERO_CALL_ROOT_CAUSE_AND_CONTRACT_DISPOSITION`：确认当前 authority 来自旧 `source_numeric_facts` 手工表重绑定，再追加单点 repair／market fact；拒绝 DELL 三数字白名单和 raw-text regex-all；选择 provider-neutral source-aware candidate discovery、target-aware deterministic adjudication 和 bounded model views。
-2. [ ] `S2_MATERIAL_NUMERIC_CANDIDATE_SCHEMA_AND_PURE_COMPILER`：从最终 selected Evidence 同事务生成 `MaterialNumericCandidateInventory`；覆盖金额、百分比、计数、倍数、区间、时间边界和定性数字带，保存坐标、实体、指标、期间、单位、币种、Slot／Facet、关系方向与 output boundary。
-3. [ ] `S2_SOURCE_AWARE_ADAPTERS_STABLE_FACT_AND_PRESENTATION_PROGRAM`：实现 structured metric、table cell、bounded narrative、temporal／range 和 PIT adapter；同一经济事实的 exact、source-rounded、converted 与 formula surface 归并，不手工维护重复 alias。
-4. [ ] `S2_NODE_VIEWS_RENDERER_AND_LOCAL_GUARD`：完整 raw capture 只留 private audit；Lead／Specialist、Writer、Verifier 使用不同 bounded view；Harness 只渲染事实，不代写研究；semantic pass 后仍执行 deterministic L1 gate。
-5. [ ] `S2_SIX_CASE_FAKE_CAPTURE_REPLAY_MUTATION_AND_CLEAN_PROOF`：DELL／MU／NVDA 加 ORCL／ASML／ANET 全部通过，并覆盖同数不同义、错期间／币种、slot 外数字、日期／型号、范围、count、cross-case、公式、PIT 越权和 Verifier false-pass；两个 clean worker 必须 byte-equivalent。
+2. [x] `S2_MATERIAL_NUMERIC_CANDIDATE_SCHEMA_AND_PURE_COMPILER`：从最终 selected Evidence 同事务生成 `MaterialNumericCandidateInventory`；覆盖金额、百分比、计数、倍数、区间、时间边界和定性数字带，保存坐标、实体、指标、期间、单位、币种、Slot／Facet、关系方向与 output boundary。
+3. [x] `S2_SOURCE_AWARE_ADAPTERS_STABLE_FACT_AND_PRESENTATION_PROGRAM`：已实现 structured metric、table cell、bounded narrative、temporal／range 和 PIT adapter；同一经济事实的 exact、source-rounded 与 formula surface 归并，不维护 DELL 数值白名单。工程中新增 micro-clause 与 relative-period 不变量，防止现金流串成收入和比较期互相冲突。
+4. [x] `S2_NODE_VIEWS_RENDERER_AND_LOCAL_GUARD`：完整 raw capture 只留 private audit；Research、Writer、Verifier 使用 digest-aligned bounded view 和 `80k／55k／30k` 容量 receipt；semantic pass 后本地 gate 仍会拒绝 context-only、错单位和 PIT 越权。
+5. [ ] `S2_SIX_CASE_FAKE_CAPTURE_REPLAY_MUTATION_AND_CLEAN_PROOF`（deterministic replay／mutation 已完成，clean proof 待执行）：DELL／MU／NVDA 加 ORCL／ASML／ANET working-tree 全部通过，focused＋adjacent=`37 passed`；两个 clean Git archive／fresh process 尚未运行，因此本项不得勾选完成。
 6. [ ] `S2_MINIMAL_NATURAL_CANARY_AND_FORMAL_RERUN_DECISION`：只在第 5 项通过且另行签发 authority 后，最多做一次最小自然节点 canary；它只决定是否值得重新运行 DELL，不自动授权 paid report、paired／Owner 或其他案例。
 
-当前处置 artifact=`configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_candidate_cocompilation_zero_call_disposition_v1_0.json`，状态=`decision_complete_implementation_pending`。current next=`FIN-0.1.3-S2-SELECTED-EVIDENCE-NUMERIC-CANDIDATE-COCOMPILATION-MINIMUM-ZERO-CALL-IMPLEMENTATION`。
+上一项 `FIN-0.1.3-S2-SELECTED-EVIDENCE-NUMERIC-CANDIDATE-COCOMPILATION-MINIMUM-ZERO-CALL-IMPLEMENTATION` 已达到 working-tree engineering pass。当前 implementation artifact=`configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_candidate_cocompilation_minimum_zero_call_implementation_v1_0.json`，状态=`working_tree_engineering_pass_clean_independent_proof_pending`。current next=`COMMIT_PUSH_IMPLEMENTATION -> TWO_CLEAN_ARCHIVE_FRESH_PROCESS_ZERO_CALL_PROOF`；自然 canary 和 DELL rerun 均未授权。

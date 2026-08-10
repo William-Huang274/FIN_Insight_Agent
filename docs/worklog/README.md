@@ -1,5 +1,6 @@
 # Worklog
 
+- [804 — FIN 0.1.3 CandidateBundle physical-index R2 authority](product_strategy/804_fin_0_1_3_candidate_bundle_physical_index_r2_authority.md)
 - [803 — FIN 0.1.3 physical-index clean proof A2 terminal success](product_strategy/803_fin_0_1_3_physical_index_clean_proof_a2_terminal_success.md)
 - [802 — FIN 0.1.3 physical-index clean proof A1 volatile-duration failure](product_strategy/802_fin_0_1_3_physical_index_clean_proof_a1_volatile_duration_failure.md)
 - [801 — FIN 0.1.3 目录型物理存储 microcanary terminal success](product_strategy/801_fin_0_1_3_physical_store_directory_microcanary_terminal_success.md)

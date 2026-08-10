@@ -1,0 +1,236 @@
+{
+  "attempt_id": "20260810_s1_candidate_bundle_object_bm25_bge_m3_milvus_linux_r2",
+  "authority_digest": "a8889058d76a7fd0813ec722d4032356f83e750b0cb5a2696f142ec6ab6a08fd",
+  "automatic_retry": false,
+  "decision_id": "FIN-0.1.3-S1-CANDIDATE-BUNDLE-PHYSICAL-INDEX-R2-AUTHORITY",
+  "environment_qualification": {
+    "distribution_fingerprints": {
+      "milvus-lite": {
+        "distribution": "milvus-lite",
+        "file_count": 112,
+        "total_bytes": 732091,
+        "tree_sha256": "bb68e0277aa68da1930d2114c5a5d8884be489c47d6e6796b11c865fb29bc41e",
+        "version": "3.0"
+      },
+      "pymilvus": {
+        "distribution": "pymilvus",
+        "file_count": 88,
+        "total_bytes": 2073201,
+        "tree_sha256": "1c066bc2e94e70bff09a90da1314875aa32bb7dd2010c64a5269aa81c07f2756",
+        "version": "3.0.0"
+      },
+      "sentence-transformers": {
+        "distribution": "sentence-transformers",
+        "file_count": 179,
+        "total_bytes": 1780720,
+        "tree_sha256": "b013b28af474f9e4b9963bba8925d1c6586c35afde2835c54a8220e03cc04c12",
+        "version": "5.2.3"
+      },
+      "transformers": {
+        "distribution": "transformers",
+        "file_count": 2130,
+        "total_bytes": 43985892,
+        "tree_sha256": "89d0689ddd4b9dc8c9d7a336a6a125a097f0d4ab850fca22aac007b7e696af30",
+        "version": "5.2.0"
+      }
+    },
+    "embedding_device": "cpu",
+    "milvus_manifest_source": {
+      "bytes": 14646,
+      "commit_primitive": "os.rename",
+      "path": "/home/william/.cache/fin_insight/candidate_bundle_build_env_v1/lib/python3.10/site-packages/milvus_lite/storage/manifest.py",
+      "sha256": "59b45341edf6531e68736d37d7f93aba5355d8daa06b11ad120289b3e234fcd6"
+    },
+    "model_files": [
+      {
+        "bytes": 687,
+        "path": "config.json",
+        "sha256": "26159e7ad065073448460117eb24b7a4572f6f4e78eadff65dc0a11c052449fa"
+      },
+      {
+        "bytes": 349,
+        "path": "modules.json",
+        "sha256": "84e40c8e006c9b1d6c122e02cba9b02458120b5fb0c87b746c41e0207cf642cf"
+      },
+      {
+        "bytes": 17098108,
+        "path": "tokenizer.json",
+        "sha256": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08"
+      },
+      {
+        "bytes": 2271145830,
+        "path": "pytorch_model.bin",
+        "sha256": "b5e0ce3470abf5ef3831aa1bd5553b486803e83251590ab7ff35a117cf6aad38"
+      },
+      {
+        "bytes": 191,
+        "path": "1_Pooling/config.json",
+        "sha256": "e54c164a07274f2eb45bb724f54a79d1efcc90c41573887cd9a29aeee0597352"
+      }
+    ],
+    "model_root": "/mnt/d/hf_models/BAAI__bge-m3",
+    "observed_calls": {
+      "embedding_model_loads": 0,
+      "embedding_vectors": 0,
+      "llm_model": 0,
+      "milvus_read": 0,
+      "milvus_write": 0,
+      "network": 0,
+      "provider": 0
+    },
+    "packages": {
+      "milvus-lite": "3.0",
+      "numpy": "2.2.6",
+      "pymilvus": "3.0.0",
+      "rank-bm25": "0.2.2",
+      "scikit-learn": "1.7.2",
+      "sentence-transformers": "5.2.3",
+      "torch": "2.10.0+cpu",
+      "transformers": "5.2.0"
+    },
+    "physical_store_profile": {
+      "artifact_kind": "directory",
+      "canonical_tree_manifest": true,
+      "collection_name": "fin_ia_0_1_3_s1_candidate_bundle_dense_v2",
+      "index_type": "FLAT",
+      "metric_type": "COSINE",
+      "profile_id": "pymilvus-3.0_milvus-lite-3.0_directory-store",
+      "reject_symlinks_and_path_escape": true,
+      "require_collection_manifest_schema_data_and_index": true
+    },
+    "pip_freeze_line_count": 59,
+    "pip_freeze_sha256": "8c47414ee05527b0f0d1207b0c3538c612f7842f0c4436c8fed1335c1847af00",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "python_executable": "/home/william/.cache/fin_insight/candidate_bundle_build_env_v1/bin/python",
+    "qualified": true,
+    "target": {
+      "disk_free_bytes": 975227232256,
+      "filesystem_anchor": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1",
+      "final_root": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1/v2",
+      "final_root_absent": true,
+      "working_root": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1/attempt_r2_building",
+      "working_root_absent": true
+    },
+    "torch_cuda_available_but_not_authorized": false
+  },
+  "execution_ceiling": {
+    "automatic_retry": false,
+    "document_fetch": 0,
+    "embedding_batches": 12,
+    "embedding_model_loads": 1,
+    "embedding_vectors": 93,
+    "evidence_promotion": 0,
+    "llm_model": 0,
+    "maximum_executions": 1,
+    "milvus_collection_creates": 1,
+    "milvus_count_reads": 2,
+    "milvus_database_creates": 1,
+    "milvus_flushes": 2,
+    "milvus_insert_batches": 12,
+    "milvus_inserted_vectors": 93,
+    "milvus_metadata_queries": 1,
+    "milvus_reopens": 1,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0,
+    "sparse_index_writes": 1,
+    "sparse_records": 93,
+    "vector_search": 0
+  },
+  "implementation": {
+    "ahead": 0,
+    "behind": 0,
+    "bindings": [
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_policy_v1_1.json",
+        "sha256": "64f68e3fc557da03faa81c3a6dcca938cb0ea70ddc92898372855b227d30685b"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json",
+        "sha256": "a61d06ab7b06147bfcc65a653330ff8e36e4abda4e44e44b120835cf8c7f2e98"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_1.json",
+        "sha256": "a6fdc4479a741884e274711fc2765751aa14fc62204ef7cd0c62c156ec58a3a5"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_result_v1_0.json",
+        "sha256": "41e6c91d03592db9b074822f999d8ea4287949d1cd3b177edcf2f093a69a54bf"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_physical_index_v1_1_clean_proof.json",
+        "sha256": "a00e0176f045f9c63d396074af4cfaacf29f49b393d10c6c44b5515143b24602"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_r4_zero_call_proof_v1_0.json",
+        "sha256": "4289cb44f88014cce3e23502dcc7ec337efb41162695f512fe2230a8e7fa5fcf"
+      },
+      {
+        "ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_sparse_dense_manifest_r4_clean_independent_proof_v1_0.json",
+        "sha256": "d39942c679b18f954532f5c385b0bfc9159adc9cfb91d05fca61537aa91f8379"
+      },
+      {
+        "ref": "src/sec_agent/s1_candidate_bundle_physical_index.py",
+        "sha256": "9a513f01c88540ba6ecd8d5f053da4ebffc61009a7f4c9cc5340223f7ad06b45"
+      },
+      {
+        "ref": "scripts/releases/run_fin_ia_0_1_3_s1_candidate_bundle_physical_index_r2.py",
+        "sha256": "0eaf613b013c6933eee85c9f678fc47ba1b3dda692599ea34e10184bdeb14993"
+      },
+      {
+        "ref": "scripts/releases/issue_fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_authority_v1_1.py",
+        "sha256": "df2308c3da813e8c17eeb28e497ca5c0209e492281256adca708f24c3e49625e"
+      }
+    ],
+    "branch": "codex/layered-data-source-expansion",
+    "clean": true,
+    "clean_proof_digest": "095e24ab9f1eda6a91d98ec1120aae950c74cfa69878799626f6be11c05ef9a9",
+    "commit": "afc627f5aef90c9652bae3d21a5be5b7aaa0892b",
+    "implementation_proof_digest": "898a9aae9957d82a7546c65bafc1e3aa7296df4c2003a45ecb5b9e3d6875768f",
+    "microcanary_result_digest": "b7042cebaf191cabd05eae9c8dc92188cd702c4d350fa67b6bf626efaf514e77",
+    "synced": true,
+    "upstream": "origin/codex/layered-data-source-expansion"
+  },
+  "known_boundary": "This successor fixes file-or-directory publication and complete terminal observability. A successful physical build proves index integrity only; it does not prove ranking, Windows Workbench integration, Evidence, external residual supplement, DeepSeek research quality or release.",
+  "manifest_binding": {
+    "candidate_state": "candidate_only_not_evidence",
+    "private_manifest_file_sha256": "75702f7f5d64a14f39f87ec692bd69941d75efde67e0e85ce77427f2620d4068",
+    "spec_count": 93,
+    "spec_digest": "af1f2439bc78a22dc00f27e55594c01ac73bfd2c11fa7a8c57f6546549b14df9"
+  },
+  "maximum_executions": 1,
+  "policy_digest": "092ea9925e95a35febb37d481d9be8f0e9de5e1d8a3f0f2a36445e78c7fc926c",
+  "preserved_boundaries": {
+    "may_accept_release": false,
+    "may_build_fresh_dense_index_after_authority": true,
+    "may_build_sparse_index": true,
+    "may_call_deepseek": false,
+    "may_claim_retrieval_quality": false,
+    "may_claim_workbench_integration": false,
+    "may_load_local_embedding_model_after_authority": true,
+    "may_promote_evidence": false,
+    "may_read_candidate_manifest": true,
+    "may_rerank": false,
+    "may_run_external_supplement": false,
+    "may_search_vectors": false,
+    "may_write_historical_index": false
+  },
+  "private_target": {
+    "disk_free_bytes": 975227232256,
+    "final_root": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1/v2",
+    "final_root_absent": true,
+    "working_root": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1/attempt_r2_building",
+    "working_root_absent": true
+  },
+  "project_os_preflight": {
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+    "status": "pass"
+  },
+  "recorded_at": "2026-08-10",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_authority_v1_1",
+  "status": "issued_unconsumed",
+  "user_authority": "User approved steps 1-5; this authority remains exact-once and limited to fresh R2 after the directory-store repair proof."
+}

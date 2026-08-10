@@ -3,7 +3,7 @@
   "contract_ref": "fin_0_1_3.S1_to_S3.retrieval_evidence_research_execution:v1",
   "recorded_at": "2026-08-10",
   "product_version": "FIN_0_1_3",
-  "status": "step_1_directory_microcanary_and_clean_a2_pass_r2_pending",
+  "status": "step_1_r2_authority_issued_unconsumed",
   "supersedes_for_current_execution": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_8.json",
   "user_decision": "Execute steps 1-5 in order without requesting approval at every substep; preserve exact-once authorities and stop at a newly established L1 blocker rather than silently expanding or retrying.",
   "current_truth": {
@@ -13,7 +13,8 @@
     "physical_store_v1_1_proof_digest": "898a9aae9957d82a7546c65bafc1e3aa7296df4c2003a45ecb5b9e3d6875768f",
     "real_microcanary": "terminal_succeeded_directory_store_publication_result_b7042cebaf191cabd05eae9c8dc92188cd702c4d350fa67b6bf626efaf514e77",
     "clean_reproduction": "a1_preserved_failed_a2_terminal_succeeded_two_clean_archives_proof_095e24ab9f1eda6a91d98ec1120aae950c74cfa69878799626f6be11c05ef9a9",
-    "physical_index_r2": "not_authorized_not_run",
+    "physical_index_r2": "authorized_unconsumed_not_run",
+    "physical_index_r2_authority": "issued_unconsumed_a8889058d76a7fd0813ec722d4032356f83e750b0cb5a2696f142ec6ab6a08fd",
     "retrieval_evaluation": "not_run_on_new_93_object_indexes",
     "evidence_packs": "not_built_from_new_retrieval",
     "external_residual_supplement": "not_run_against_new_local_gaps",
@@ -24,7 +25,7 @@
       "order": 1,
       "owner_stage": "S1",
       "work_item": "PHYSICAL_INDEX_FILE_OR_DIRECTORY_REPAIR_AND_FRESH_R2",
-      "status": "implementation_microcanary_and_clean_a2_pass_r2_pending",
+      "status": "r2_authority_issued_unconsumed",
       "acceptance": "A synthetic one-vector directory microcanary and a fresh 93-object R2 each close, reopen, bind identities, generate a canonical artifact receipt and publish a whole fresh root. R1 remains immutable.",
       "stop_rule": "Any new backend/storage L1 consumes its attempt and stops step 1; no automatic R3. Retrieval quality is not inferred from build success."
     },
@@ -91,5 +92,5 @@
     "automatic_retry": false
   },
   "known_boundary": "This plan preserves the approved five-step direction but does not make later-stage results true in advance. Each stage must materialize its own evidence and can stop the sequence on a genuine owning-stage L1 blocker.",
-  "plan_digest": "d994d69921ae167a0bc5ad54a36cc41c592842a79df8388798f115ce68b264fa"
+  "plan_digest": "9137b59ae79c39025aefd9f0f81ca3fba0b76103c3b12d38f1dcc8c4ae8f1012"
 }

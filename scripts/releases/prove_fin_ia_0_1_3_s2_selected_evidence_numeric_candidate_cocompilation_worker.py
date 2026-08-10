@@ -103,6 +103,7 @@ def _summary(pack: Mapping[str, Any], result: Mapping[str, Any]) -> dict[str, An
         status = str(row["adjudication_status"])
         statuses[status] = statuses.get(status, 0) + 1
     program = result["presentation_program"]
+    program_summary = program["summary"]
     capacity = result["node_views"]["capacity_receipt"]
     return {
         "source_pack_digest": str(pack["pack_payload_digest"]),
@@ -114,12 +115,12 @@ def _summary(pack: Mapping[str, Any], result: Mapping[str, Any]) -> dict[str, An
         "context_only": statuses.get("context_only_do_not_output", 0),
         "forbidden": statuses.get("forbidden_or_ambiguous", 0),
         "ambiguity_downgraded": int(
-            result["candidate_inventory"]["ambiguity_downgrade_count"]
+            result["candidate_inventory"]["summary"]["ambiguity_downgraded_count"]
         ),
-        "stable_facts": len(program["stable_numeric_facts"]),
-        "presentation_receipts": len(program["presentation_receipts"]),
-        "formula_traces": len(program["formula_traces"]),
-        "conflicts": len(program["conflicts"]),
+        "stable_facts": int(program_summary["stable_fact_count"]),
+        "presentation_receipts": int(program_summary["presentation_receipt_count"]),
+        "formula_traces": int(program_summary["formula_trace_count"]),
+        "conflicts": int(program_summary["conflict_count"]),
         "view_chars": [
             int(capacity["view_char_counts"][key])
             for key in ("research_view", "writer_view", "verifier_view")

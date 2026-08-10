@@ -1,0 +1,23 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_candidate_cocompilation_clean_proof_failure_v1_0",
+  "attempt_id": "20260811_s2_selected_evidence_numeric_cocompilation_clean_proof_r1",
+  "recorded_at": "2026-08-11",
+  "status": "terminal_failed_proof_harness_only",
+  "implementation_commit": "acbf4d9219398c7b9d044277345ad311fff8fed9",
+  "failed_phase": "clean_archive_worker_case_summary_materialization",
+  "failure_code": "clean_proof_harness_result_field_path_invalid",
+  "failure_detail": "The proof worker read ambiguity_downgraded_count and presentation_receipt_count from incorrect result locations. The S2 runtime had already emitted both values under typed summary objects.",
+  "scope": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "business_runtime_changed": false,
+    "private_input_persisted_to_repository": false
+  },
+  "impact": "No clean worker completed, so the attempt proves neither reproducibility nor product failure. The previously passing implementation tests remain valid.",
+  "disposition": "Preserve R1, correct only the proof reader, commit and push the correction, then issue a new clean proof attempt against the new immutable commit.",
+  "successor_attempt": "20260811_s2_selected_evidence_numeric_cocompilation_clean_proof_r2",
+  "result_digest": "62e9f9f02ecffc8d0138737d38127d3866ebed0f7fe8e6b5032213e1b19cd0fd"
+}

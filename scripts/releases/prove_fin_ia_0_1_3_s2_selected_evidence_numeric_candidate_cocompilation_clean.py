@@ -306,6 +306,7 @@ def main() -> int:
     observed_calls = dict(workers[0]["observed_calls"])
     body = {
         "schema_version": PROOF_SCHEMA,
+        "attempt_id": "20260811_s2_selected_evidence_numeric_cocompilation_clean_proof_r2",
         "contract_ref": "fin_0_1_3.S2.selected_evidence_numeric_candidate_cocompilation:v1",
         "status": "pass_two_clean_archives_two_fresh_processes_zero_call_reproducible",
         "recorded_at": "2026-08-11",

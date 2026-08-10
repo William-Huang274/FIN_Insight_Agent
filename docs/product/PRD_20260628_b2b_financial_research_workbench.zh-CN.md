@@ -2371,3 +2371,17 @@ Owner 已选择接入可审计的行情 API，16.16 的“等待 PIT 路线或�
 6. API key 只从受限环境变量进入 transport 内存。request capture 保存参数形状与 credential source，不保存 key；URL、redirect、exception、公开 result 和 Git 均不得包含 key。若 Provider response 回显凭据，原始 body 不落盘并形成 typed secret rejection。
 
 这一分门不会降低来源真实性、身份、日期、数字和引用门槛。它只纠正“估值输入缺失是否应该杀死全部研究”的阶段边界。当前状态为 provider-neutral 适配器、双门、shadow 不晋升和正负 mutation 已完成本地实现与定向测试；fresh clean proof、一次 exact-live、enriched Pack 和同结构 DeepSeek 内容增量比较仍须依次完成，不能在文档中提前记为产品通过。
+
+### 16.18 官方来源与检索传输中介必须分权（2026-08-10）
+
+Dell 与 Micron 的两份 exact official URL 已在旧 live 中于 HTTP 状态出现前 timeout；同一机器上的独立诊断又证明 TCP／TLS 很快建立、普通 direct HTTP 仍长期无响应。产品不能把这一环境／CDN 传输现象误写成“官方资料不存在”，也不能因为某个 Reader 能返回正文，就把 Reader 升格为事实来源。
+
+为此新增以下产品规则：
+
+1. `official origin` 继续拥有公司身份、披露内容、发布日期和数字权威；`retrieval intermediary` 只拥有把 exact URL 转换为可捕获响应的传输权限。
+2. 中介必须回显原始官方 URL，任何换域、URL 漂移、空正文、非成功状态或 origin identity 不一致都 fail closed。搜索结果、Reader 标题、摘要和推断日期不能替代官方 locator 或原文。
+3. 系统先保存中介的完整原始响应，再由本地 parser、日期裁决和 Evidence Gate 提取片段。Evidence lineage 必须同时记录官方 URL、中介名称、response digest、parser adapter 和 `origin_direct_response_bytes_preserved` 状态。
+4. 中介不得成为 financial／numeric authority，不得生成缺失数字、改写单位或关闭与其正文无关的 Gap。若未直接保存 origin bytes，产品表面必须诚实显示“官方文档经检索中介取得”，不能伪装为 direct-origin capture。
+5. 已成功且 digest-bound 的 TSMC 与 Alpha Vantage 输入继续零网络复用；新 authority 只允许 Dell／Micron 两个缺失来源各一次，0 retry／model。`core_research_ready=false` 时必须停留 S1；只有该门为 true 才能编译 changed Pack 并运行一次报告比较。
+
+当前 Jina Reader 只被资格化为上述 retrieval-only profile，而不是 FIN 的默认广搜 Provider、长期生产 SLA 或金融数据供应商。未来替换为企业代理、CDN mirror 或其他 Reader 时，只需替换 transport profile；Evidence Pack、Writer 和金融真实性门不得随之改变。

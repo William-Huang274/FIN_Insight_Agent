@@ -30,6 +30,14 @@ CAPTURE_SCHEMA = "fin_ia_0_1_3_official_source_capture_v1_0"
 CAPTURE_SCHEMA_SAFE_FAILURE_V1_1 = "fin_ia_0_1_3_official_source_capture_v1_1"
 CAPTURE_NAMESPACE = "fin-0.1.3/s1-03/official-source-captures"
 _SAFE_HEADERS = {"content-type", "content-length", "last-modified", "etag", "location"}
+_SAFE_TRANSPORT_METADATA_KEYS = {
+    "transport_mode",
+    "retrieval_intermediary",
+    "retrieval_intermediary_endpoint",
+    "origin_url_echo",
+    "origin_direct_response_bytes_preserved",
+    "intermediary_raw_response_preserved",
+}
 _CASES = {"DELL", "MU", "NVDA"}
 _CONTACT_EMAIL_RE = re.compile(r"(?i)(?<![A-Z0-9._%+-])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?![A-Z0-9._%+-])")
 
@@ -76,6 +84,13 @@ def _safe_failure_classification(code: str) -> tuple[str, str]:
         return "preflight_or_redirect", "policy_rejection"
     if code == "official_source_body_ceiling_exceeded":
         return "response_read", "response_budget_exceeded"
+    if code in {
+        "official_source_reader_http_failure",
+        "official_source_reader_response_invalid",
+        "official_source_reader_original_url_mismatch",
+        "official_source_reader_empty_content",
+    }:
+        return "retrieval_intermediary_response", "managed_reader_response_invalid"
     return "transport", "unknown_transport_failure"
 
 
@@ -186,6 +201,7 @@ class SourceResponse:
     headers: Mapping[str, str]
     body: bytes
     redirect_chain: tuple[Mapping[str, Any], ...] = ()
+    transport_metadata: Mapping[str, Any] | None = None
 
 
 class SourceTransport(Protocol):
@@ -235,6 +251,12 @@ class _RecordingRedirectHandler(HTTPRedirectHandler):
 
 class UrllibOfficialSourceTransport:
     live_network = True
+    capture_metadata = {
+        "transport_mode": "direct_origin_https",
+        "retrieval_intermediary": None,
+        "origin_direct_response_bytes_preserved": True,
+        "intermediary_raw_response_preserved": False,
+    }
 
     def fetch(
         self,
@@ -293,6 +315,108 @@ class UrllibOfficialSourceTransport:
             BrokenPipeError,
         ) as exc:
             raise _typed_transport_error(exc) from exc
+
+
+class JinaReaderOfficialSourceTransport:
+    """Fetch an allow-listed official URL through Jina Reader without changing authority.
+
+    The returned body is the *raw Reader JSON response*.  Capture-first therefore
+    preserves exactly what the intermediary returned before local parsing.  The
+    official URL remains the fact source; Jina is recorded only as retrieval
+    transport and never becomes financial or numeric authority.
+    """
+
+    live_network = True
+    provider_id = "jina_reader"
+    endpoint = "https://r.jina.ai/"
+    capture_metadata = {
+        "transport_mode": "managed_reader_exact_url",
+        "retrieval_intermediary": provider_id,
+        "retrieval_intermediary_endpoint": endpoint,
+        "origin_direct_response_bytes_preserved": False,
+        "intermediary_raw_response_preserved": True,
+    }
+
+    def fetch(
+        self,
+        *,
+        url: str,
+        headers: Mapping[str, str],
+        allowed_hosts: set[str],
+        timeout_seconds: int,
+        byte_ceiling: int,
+    ) -> SourceResponse:
+        parsed = urlparse(url)
+        if parsed.scheme != "https" or (parsed.hostname or "").lower() not in allowed_hosts:
+            raise OfficialSourceAttemptError("official_source_url_not_allowlisted")
+        _require_public_network_host(parsed.hostname or "")
+        _require_public_network_host("r.jina.ai")
+        reader_url = self.endpoint + url
+        try:
+            import requests
+
+            response = requests.get(
+                reader_url,
+                headers={
+                    "Accept": "application/json",
+                    "User-Agent": str(headers.get("User-Agent") or _official_source_user_agent()),
+                    "X-Retain-Images": "none",
+                },
+                timeout=(min(10, timeout_seconds), timeout_seconds),
+                allow_redirects=True,
+            )
+        except Exception as exc:
+            if isinstance(exc, requests.Timeout):
+                raise OfficialSourceAttemptError(
+                    "official_source_transport_timeout"
+                ) from exc
+            if isinstance(exc, requests.ConnectionError):
+                raise OfficialSourceAttemptError(
+                    "official_source_connection_terminated"
+                ) from exc
+            if isinstance(exc, requests.RequestException):
+                raise _typed_transport_error(exc) from exc
+            raise OfficialSourceAttemptError("official_source_transport_failed") from exc
+        chain = tuple(
+            {
+                "status_code": int(item.status_code),
+                "from_url": str(item.url),
+                "to_url": str(item.headers.get("Location") or response.url),
+                "location": str(item.headers.get("Location") or ""),
+            }
+            for item in response.history
+        )
+        if len(chain) > 2 or urlparse(str(response.url)).hostname != "r.jina.ai":
+            raise OfficialSourceAttemptError("official_source_redirect_not_allowlisted")
+        if int(response.status_code) != 200:
+            raise OfficialSourceAttemptError("official_source_reader_http_failure")
+        body = bytes(response.content)
+        if len(body) > byte_ceiling:
+            raise OfficialSourceAttemptError("official_source_body_ceiling_exceeded")
+        try:
+            payload = json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise OfficialSourceAttemptError("official_source_reader_response_invalid") from exc
+        data = payload.get("data") if isinstance(payload, dict) else None
+        echoed_url = str(data.get("url") or "") if isinstance(data, dict) else ""
+        content = str(data.get("content") or "") if isinstance(data, dict) else ""
+        if payload.get("code") != 200 or not isinstance(data, dict):
+            raise OfficialSourceAttemptError("official_source_reader_response_invalid")
+        if echoed_url.rstrip("/") != url.rstrip("/"):
+            raise OfficialSourceAttemptError("official_source_reader_original_url_mismatch")
+        if len(content.strip()) < 200:
+            raise OfficialSourceAttemptError("official_source_reader_empty_content")
+        return SourceResponse(
+            status_code=200,
+            final_url=url,
+            headers={"content-type": "application/json; charset=utf-8"},
+            body=body,
+            redirect_chain=chain,
+            transport_metadata={
+                **self.capture_metadata,
+                "origin_url_echo": echoed_url,
+            },
+        )
 
 
 def load_official_source_policy(path: str | Path) -> dict[str, Any]:
@@ -356,6 +480,9 @@ class CaptureFirstOfficialSourceClient:
             "headers": headers,
             "operator_contact_configured": _sec_contact_declared(headers),
             "credential_cookie_authorization_present": False,
+            "transport_metadata": _safe_transport_metadata(
+                getattr(self.transport, "capture_metadata", None)
+            ),
         }
         request_ref = self._persist(request_capture, "official_source_request")
         self.network_calls += int(bool(self.transport.live_network))
@@ -409,6 +536,10 @@ class CaptureFirstOfficialSourceClient:
             "body_bytes": len(response.body),
             "capture_before_parse": True,
             "credential_cookie_authorization_present": False,
+            "transport_metadata": _safe_transport_metadata(
+                response.transport_metadata
+                or getattr(self.transport, "capture_metadata", None)
+            ),
         }
         response_ref = self._persist(response_capture, "official_source_response")
         final = urlparse(response.final_url)
@@ -436,6 +567,17 @@ class CaptureFirstOfficialSourceClient:
             raise OfficialSourceAttemptError("official_source_capture_readback_failed")
         self.capture_refs.append(ref)
         return ref
+
+
+def _safe_transport_metadata(value: Mapping[str, Any] | None) -> dict[str, Any]:
+    if not value:
+        return {}
+    return {
+        str(key): raw
+        for key, raw in value.items()
+        if str(key) in _SAFE_TRANSPORT_METADATA_KEYS
+        and (raw is None or isinstance(raw, (str, bool, int, float)))
+    }
 
 
 def _official_source_user_agent() -> str:

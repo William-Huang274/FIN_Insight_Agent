@@ -318,3 +318,17 @@ request、safe endpoint、公开 route result 和 telemetry 不得出现 `apikey
 AKShare profile 是 non-promoting shadow：它使用未复权 exact-date row 与 primary 做诊断比较，任何输出都标记 `diagnostic_shadow_only_never_authoritative`，不进入 Pack 的 `numeric_facts`。该依赖可被替换或移除而不改变核心合同；未来更强或商业行情 Provider 只需增加 profile，不得改 Writer、Evidence Gate 或报告 schema。
 
 当前零调用定向测试覆盖 primary success、wrong symbol、missing date、negative close、rate limit、secret echo、shadow non-promotion，以及 `core=true/valuation=false`、`core=false/valuation=true`、两门同时通过和单点收盘价不得关闭历史相对估值／情景敏感度 Gap。fresh Git archive proof 与真实 live 尚未发生，因此这里记录的是实现合同和 fixture evidence，不是生产行情能力。
+
+### 13.8 Exact-official URL 的 managed-reader transport profile
+
+当 exact official URL 已通过公司／文档身份资格审查，但 direct-origin transport 在 HTTP response 前稳定 timeout 时，Runtime 可以使用独立 managed-reader profile；这不是将来源权威委托给 Reader。稳定合同为：
+
+- 输入仅为 allowlisted `https` official URL、origin host、byte ceiling 与 timeout；Reader endpoint 不得由模型自由选择；
+- Reader endpoint 固定在 provider profile，本轮为 `https://r.jina.ai/<official-url>`，并请求 JSON；
+- capture-first 保存完整 Reader JSON bytes、digest、长度、safe headers、redirect chain 与 transport metadata，然后才解析 `data.content`；
+- `data.url` 必须与请求的 official URL 在去除末尾 `/` 后严格一致，Reader HTTP／payload code 必须成功，正文必须超过最小长度；
+- `SourceResponse.final_url` 仍为 official URL，因此既有 official allowlist 与 Evidence compiler 不会把 Reader 域误当成来源域；
+- lineage 显式写入 `retrieval_intermediary=jina_reader`、`origin_direct_response_bytes_preserved=false`、`intermediary_raw_response_preserved=true`；
+- Reader timeout／connection／invalid payload 使用 provider-neutral typed failure，任何失败先保存 request／terminal capture，0 retry。
+
+Reader JSON parser 只把被保存的 `data.content` 转成待匹配文本；目标片段仍由本地 required-pattern、最小覆盖窗口、身份／期间／角色和 Gap disposition 确定性编译。中介不能贡献 NumericFact、估值、推荐或未在官方原文中出现的判断。该 profile 通过 fake、timeout、anchor missing、cross-origin、URL mismatch 和 authority-escalation mutation 后，仍须 clean archive proof 与 fresh exact-once authority；fixture 或匿名诊断成功不构成 Evidence promotion。

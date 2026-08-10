@@ -833,3 +833,17 @@ Owner 已提供 Alpha Vantage credential 并批准原 1–5 顺序。该决定�
 5. [ ] `S2_S3_CHANGED_INPUT_COMPILE_AND_ONE_DEEPSEEK_COMPARISON`：从 changed Pack 完整重编译 Specialist、Lead、Writer、compact Verifier，不复用旧模型节点。使用同一报告结构与质量 rubric 比较需求、利润、供给、竞争、反方、WWC、估值边界、证据利用和决策密度。该实验是 information-increment comparison，不得包装成 strict same-input model gain。
 
 若第 3 项中 `core_research_ready=false`，停止在 S1 并返回来源业务问题，不进入 DeepSeek。若只有 `valuation_input_ready=false`，允许继续第 4–5 项，但报告不得输出估值倍数或目标价。若第 5 项只增加引用数而没有提高判断质量，记录 `source_increment_not_utilized`，不自动追加搜索、行情调用或模型重跑。
+
+## 7W. Dell／Micron timeout 恢复、managed-reader 边界与唯一 source successor（2026-08-10）
+
+7V 的唯一 source live 已真实完成：Alpha PIT 与 TSMC replay 成立，但 Dell／Micron 均在 `connect_or_read / timeout` 终止，`core_research_ready=false`，所以第 4–5 项没有进入。后续不重新执行已经成功的行情与 TSMC，也不直接重跑四路 predecessor。
+
+本轮顺序重定基为：
+
+1. [x] `S1_TIMEOUT_CAPTURE_ZERO_NETWORK_AUTOPSY`：两组 request/failure capture digest-bound；均未得到 HTTP status／body、parser 未到达，失败不是 DeepSeek 或内容 anchor。
+2. [x] `S1_EQUIVALENT_OFFICIAL_ROUTE_AND_TRANSPORT_QUALIFICATION`：Dell Q1 FY27 transcript exact official file 保留；Micron 改为能覆盖目标断言的 Q3 FY26 Prepared Remarks exact official file。独立 direct diagnostic 仍无 HTTP bytes；Jina Reader 只作为 exact-URL retrieval intermediary 资格化。
+3. [x] `S1_CAPTURE_REPLAY_MUTATION_AND_SUCCESSOR_ENGINEERING`：successor 只追加 Dell 3 个 direct fragments、Micron 2 个 bounded supplier fragments；复用 predecessor 22 Evidence、TSMC 和 Alpha NumericFact。fake success 为 `22→27 Evidence／15→14 gaps`，33 项 focused＋adjacent 回归通过；Reader 权威升级、cross-origin、URL mismatch、timeout 与 anchor gap 均 fail closed。当前仅 working-tree engineering pass。
+4. [ ] `S1_CLEAN_PROOF_FRESH_AUTHORITY_AND_ONE_TWO_ROUTE_LIVE`：从 clean/synced commit 运行两个 Git archive worker；通过后签发一份 24 小时 authority，仅允许 Dell／Micron 两个 exact official URL 经 managed reader 各一次，0 retry／model／promotion。
+5. [ ] `S2_S3_CHANGED_PACK_COMPILE_AND_ONE_DEEPSEEK_REPORT_COMPARISON`：只有 live `core_research_ready=true` 才执行。changed Pack 必须从头编译全部模型节点和 compact Verifier；比较研究判断、机制、反方、WWC、证据利用和决策密度，不把新增网页数当质量提升。
+
+Managed reader 不改变来源权威：官方 URL 是事实来源，Reader 是有记录的传输中介；完整 Reader 原始响应先 capture，再由本地 parser／Evidence Gate 晋升。若第 4 项仍不能取得 Dell 三片段，停止在 S1，不自动 R2；若 Dell 成功而 Micron 失败，core 可以继续但 supplier gap 必须保留。无论结果如何，Jina 匿名可达性都不能被包装为生产 SLA 或 release readiness。

@@ -543,6 +543,11 @@ def _compile_external_route(
                 public_attempt["failure_code"] = exc.code
                 continue
             spec = {**route, **dict(fragment)}
+            transport_metadata = dict(response_capture.get("transport_metadata") or {})
+            managed_reader = (
+                transport_metadata.get("transport_mode")
+                == "managed_reader_exact_url"
+            )
             material, item = _compile_material_and_evidence(
                 spec=spec,
                 source_record_id=(
@@ -554,12 +559,25 @@ def _compile_external_route(
                 source_tier=str(route["source_tier"]),
                 period_end=str(route.get("period_end") or ""),
                 source_lineage={
-                    "lineage_kind": "capture_first_official_document_exact_excerpt",
+                    "lineage_kind": (
+                        "capture_first_managed_reader_of_official_document_exact_excerpt"
+                        if managed_reader
+                        else "capture_first_official_document_exact_excerpt"
+                    ),
                     "response_capture_ref": response_capture["object_key"],
                     "response_capture_digest": response_capture["digest"],
                     "response_body_sha256": response_capture.get("body_sha256"),
                     "parsed_text_sha256": parsed.get("text_sha256"),
                     "parser_adapter": parsed.get("adapter"),
+                    "retrieval_intermediary": transport_metadata.get(
+                        "retrieval_intermediary"
+                    ),
+                    "origin_direct_response_bytes_preserved": transport_metadata.get(
+                        "origin_direct_response_bytes_preserved"
+                    ),
+                    "intermediary_raw_response_preserved": transport_metadata.get(
+                        "intermediary_raw_response_preserved"
+                    ),
                     "selection_rule_id": str(fragment["target_id"]),
                 },
             )

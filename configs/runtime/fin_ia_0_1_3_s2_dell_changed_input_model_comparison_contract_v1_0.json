@@ -1,0 +1,75 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_dell_changed_input_model_comparison_contract_v1_0",
+  "contract_ref": "fin_0_1_3.S2.dell_changed_input_model_comparison:v1",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "run_scope": "FIN_0_1_3_S2_DELL_FIXED_PACK_MODEL_COMPARISON",
+  "case_key": "DELL",
+  "recorded_at": "2026-08-10",
+  "purpose": "Compile the corrected 27-Evidence Dell Pack into one fresh thirteen-node DeepSeek comparison input without reusing any historical model node.",
+  "immutable_bindings": {
+    "fixed_pack_contract": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_fixed_pack_research_contract_v1_0.json",
+      "sha256": "4041134629c67c9a8a952e1e25297f6692edf059f473230e530b1d02370f790d"
+    },
+    "provider_profile": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_deepseek_v4_pro_fixed_pack_profile_v1_0.json",
+      "sha256": "d0fc499e36678369081d27619404ea3de776a8349addf29192b0fb895f34c9ac"
+    },
+    "historical_numeric_contract": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_dell_fixed_pack_capture_reuse_successor_contract_v1_0.json",
+      "sha256": "0d7945c19db2ca61104de4ebd67730bce9aa02b2845e5fccdb86ae5015d4d9f8"
+    },
+    "numeric_verifier_repair_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_dell_numeric_presentation_compact_verifier_repair_policy_v1_0.json",
+      "sha256": "d438ea097e53ab63cb587540d9da27336e9e2aad9f3b8a56373cec02d18654cb"
+    },
+    "corrected_pack_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_dell_bounded_semantic_anchor_replay_result_v1_0.json",
+      "sha256": "be921312dce3401308c4b1db93b0b91e0dab642edaff864f6be71e421b8dbe91",
+      "expected_result_digest": "251e414dd0bc333d048f3ddc9237b83e82347d3c012bb1eef2bb559944b85315"
+    },
+    "prior_model_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_dell_capture_reuse_successor_result_v1_0.json",
+      "sha256": "52588d5cf48b0e7b6e7df4e930fd284f708b76446339f6675ab51bab9a40c136",
+      "expected_result_digest": "f341db71242b6dd4174c46e072f43b95e5ecd3707f26f995e586971846b2822f"
+    }
+  },
+  "corrected_pack_private_root": "data/workbench_private/fin_0_1_3_s1_dell_bounded_semantic_anchor_replay/corrected_pack/objects",
+  "numeric_binding_policy": {
+    "historical_aliases_are_not_authority": true,
+    "stable_evidence_identity": "target_id",
+    "stable_material_identity": "source_record_id",
+    "current_aliases_compiled_locally": true,
+    "market_close_authority": "point_in_time_input_only",
+    "market_close_does_not_authorize": [
+      "valuation_multiple",
+      "fair_value",
+      "target_price",
+      "recommendation"
+    ]
+  },
+  "comparison_rubric": [
+    "demand_mechanism",
+    "profit_transmission",
+    "supply_constraints",
+    "competition",
+    "counterevidence",
+    "what_would_change",
+    "evidence_utilization",
+    "decision_density"
+  ],
+  "execution_boundary": {
+    "fresh_model_nodes": 13,
+    "provider_calls_maximum": 13,
+    "model_calls_maximum": 13,
+    "source_calls": 0,
+    "network_tool_calls": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "old_model_node_reuse": false,
+    "business_artifact_promotion": false
+  },
+  "stop_rule": "If the fresh run has a new L1 or terminal failure, preserve captures and stop. Do not reopen S1 or issue an automatic replacement run.",
+  "known_boundary": "This is a changed-input information-increment comparison. It is not a same-input model capability A/B and cannot alone authorize product delivery, Owner acceptance or release."
+}

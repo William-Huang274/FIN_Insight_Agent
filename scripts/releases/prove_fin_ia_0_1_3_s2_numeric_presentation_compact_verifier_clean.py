@@ -122,16 +122,21 @@ def _run_archive_worker(
     _copy_private_inputs(checkout)
     blocker_root = worker_root / "socket_blocker"
     _write_socket_blocker(blocker_root)
-    subprocess.run(
+    completed = subprocess.run(
         [sys.executable, str(checkout / REPLAY_SCRIPT)],
         cwd=checkout,
         env=_clean_environment(checkout=checkout, blocker_root=blocker_root),
-        check=True,
+        check=False,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.PIPE,
         text=True,
         encoding="utf-8",
     )
+    if completed.returncode != 0:
+        raise RuntimeError(
+            "compact_verifier_archive_worker_failed:"
+            + str(completed.stderr or "")[-6000:]
+        )
     return json.loads((checkout / REPLAY_RESULT).read_text(encoding="utf-8"))
 
 

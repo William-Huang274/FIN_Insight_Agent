@@ -6,15 +6,19 @@ from pathlib import Path
 
 import pytest
 
+from sec_agent.s1_six_case_local_evidence_pack import file_sha256
 from sec_agent.s2_dell_changed_input_model_comparison import (
     NUMERIC_AUTHORITY_SCHEMA,
     S2DellChangedInputComparisonError,
     compile_changed_input_case,
+    issue_changed_input_model_authority,
     load_changed_input_comparison_contract,
     rebind_numeric_declaration,
     validate_changed_input_clean_proof,
+    validate_changed_input_model_authority,
 )
 from sec_agent.s2_fixed_pack_live import load_dell_fixed_pack_material
+from sec_agent.s2_fixed_pack_research_runtime import issue_case_admission
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -133,3 +137,52 @@ def test_clean_proof_is_digest_bound_and_zero_call() -> None:
     validate_changed_input_clean_proof(proof)
     assert proof["case_input_digest"] != proof["historical_case_input_digest"]
     assert proof["maximum_request_characters"] == 135111
+
+
+def test_changed_input_authority_is_exact_once_and_fresh_only() -> None:
+    material = _material()
+    case_input = material["case_input"]
+    profile = material["profile"]
+    proof = json.loads(PROOF_PATH.read_text(encoding="utf-8"))
+    admission = issue_case_admission(
+        case_input=case_input,
+        profile=profile,
+        execution_git_commit="a" * 40,
+        runner_sha256="b" * 64,
+        contract_sha256="c" * 64,
+        profile_sha256="d" * 64,
+        issued_at="2026-08-10T20:00:00Z",
+        expires_at="2026-08-11T20:00:00Z",
+        run_nonce="authority-fixture",
+        credential_present=True,
+        execution_mode="live",
+    )
+    authority = issue_changed_input_model_authority(
+        admission=admission,
+        clean_proof=proof,
+        implementation_commit="a" * 40,
+        implementation_bindings=[
+            {
+                "ref": CONTRACT_PATH.relative_to(ROOT).as_posix(),
+                "sha256": file_sha256(CONTRACT_PATH),
+            }
+        ],
+        project_os_preflight={
+            "status": "pass",
+            "run_scope": "FIN_0_1_3_S2_DELL_FIXED_PACK_MODEL_COMPARISON",
+            "open_full_chain_blocker_count": 0,
+        },
+        user_authority="fixture authority",
+        recorded_at="2026-08-10T20:00:00Z",
+    )
+    validate_changed_input_model_authority(
+        authority,
+        clean_proof=proof,
+        case_input=case_input,
+        profile=profile,
+        repo_root=ROOT,
+        observed_at="2026-08-10T21:00:00Z",
+    )
+    assert authority["execution_ceiling"]["provider_calls"] == 13
+    assert authority["execution_ceiling"]["old_model_nodes_reused"] == 0
+    assert authority["automatic_replacement"] is False

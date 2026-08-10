@@ -52,6 +52,9 @@ RUNTIME_PATH = ROOT / "src/sec_agent/s2_fixed_pack_capture_reuse_successor_runti
 PROOF_PATH = ROOT / (
     "configs/releases/fin_ia_0_1_3_s2_dell_capture_reuse_successor_clean_independent_proof_v1_0.json"
 )
+AUTHORITY_PATH = ROOT / (
+    "configs/releases/fin_ia_0_1_3_s2_dell_capture_reuse_successor_authority_v1_0.json"
+)
 HASH = "1" * 64
 GIT = "2" * 40
 NOW = "2026-08-10T10:00:00Z"
@@ -197,6 +200,27 @@ def test_committed_clean_proof_is_valid_and_bound_to_real_predecessor() -> None:
         "2ae7ebf162a1b600a3bc2818982ed8b6968f281a0ca914ce5250aa4bad47ab58"
     )
     assert proof["terminal"]["same_input_pair_proven"] is False
+
+
+def test_issued_authority_is_current_bound_and_unconsumed(material) -> None:
+    proof = json.loads(PROOF_PATH.read_text(encoding="utf-8"))
+    authority = json.loads(AUTHORITY_PATH.read_text(encoding="utf-8"))
+    assert authority["status"] == "issued_unconsumed"
+    assert authority["implementation_commit"] == (
+        "e08dbc9a46e9e1c05eaa53187270d1ccb9273b49"
+    )
+    assert authority["authority_digest"] == (
+        "f53b343f8ca02ffc70aaf6c075ea06d77eaec412e7ab0d764dea4efe96d09ae0"
+    )
+    validate_successor_authority(
+        authority,
+        clean_proof=proof,
+        case_input=material["successor"],
+        predecessor_bundle=material["predecessor"],
+        profile=material["profile"],
+        repo_root=ROOT,
+        observed_at=authority["recorded_at"],
+    )
 
 
 def test_authority_mutation_fails_closed(material) -> None:

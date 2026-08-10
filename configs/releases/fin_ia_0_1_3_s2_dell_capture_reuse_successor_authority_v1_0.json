@@ -1,0 +1,224 @@
+{
+  "admission": {
+    "admission_digest": "1ff0a458a8a0078276a09c295a3111b36d48836888432e73e5dc9999dbbcdeb8",
+    "admission_id": "admission::fin013_s2_fixed_pack_dell_successor_f63f66ff0998aa146c7a",
+    "attempt_id": "fin013_s2_fixed_pack_dell_successor_f63f66ff0998aa146c7a::attempt_1",
+    "base_case_input_digest": "f1f1945e5808001bea377fc7903b8b751a1f9c02cb1d6b7dae53e67e4853496d",
+    "base_contract_sha256": "4041134629c67c9a8a952e1e25297f6692edf059f473230e530b1d02370f790d",
+    "capacity": {
+      "combined_provider_attempts_maximum": 14,
+      "cumulative_profile_capacity": {
+        "fallback_count": 0,
+        "input_usd_per_million_tokens": 0.6,
+        "maximum_estimated_usd_campaign": 4.5,
+        "maximum_estimated_usd_per_case": 0.75,
+        "maximum_input_tokens_per_case": 500000,
+        "maximum_output_tokens_per_case": 66000,
+        "maximum_total_tokens_per_case": 566000,
+        "output_usd_per_million_tokens": 1.7,
+        "provider_calls_campaign_maximum": 90,
+        "provider_calls_per_case": {
+          "maximum": 15,
+          "minimum": 13
+        },
+        "retry_count": 0,
+        "specialist_units_per_case": {
+          "maximum": 8,
+          "minimum": 6
+        }
+      },
+      "fallback_count": 0,
+      "logical_node_count": 13,
+      "predecessor_observed": {
+        "estimated_usd": 0.0738093,
+        "fallbacks": 0,
+        "input_tokens": 105548,
+        "model_calls": 6,
+        "output_tokens": 6165,
+        "provider_calls": 6,
+        "retries": 0,
+        "total_tokens": 111713
+      },
+      "remaining_successor_budget": {
+        "maximum_estimated_usd": 0.6761907,
+        "maximum_input_tokens": 394452,
+        "maximum_output_tokens": 59835,
+        "maximum_total_tokens": 454287
+      },
+      "retry_count": 0,
+      "successor_provider_calls_maximum": 8
+    },
+    "case_key": "DELL",
+    "credential_present": true,
+    "execution_git_commit": "e08dbc9a46e9e1c05eaa53187270d1ccb9273b49",
+    "execution_mode": "live",
+    "expires_at": "2026-08-10T13:05:15Z",
+    "issued_at": "2026-08-10T09:05:15Z",
+    "numeric_authority_digest": "d2b6e2404dd0d3778a72759ab325e4f4d10ee4b06d34b6a5d916dc09b924aa3b",
+    "paired_baseline_same_input_proven": false,
+    "predecessor": {
+      "attempt_id": "fin013_s2_fixed_pack_dell_524560d1ab0599b829bf::attempt_1",
+      "failed_attempt_evidence": {
+        "call_id": "call_06_specialist__financial_transmission_profit_and_cash",
+        "capture_digest": "acabf71072eee9f2382e68d92c4146d5cce433ebb3c846e812ee833eb9789efe",
+        "capture_file_sha256": "193b957b71e66b73df198f68930a2829990864c6ce0d951ebc20cc4415939b86",
+        "capture_ref": "raw_model_only/calls/call_06_specialist__financial_transmission_profit_and_cash/capture.json",
+        "node_key": "specialist::financial_transmission_profit_and_cash",
+        "promoted_as_usable_output": false,
+        "status": "provider_error"
+      },
+      "import_bundle_digest": "cb7ed2fb5956a110c87ba1d706e53a2410da2e03bd63b5e1e03f14e907111182",
+      "imported_outputs": [
+        {
+          "capture_digest": "68fb164a9e33b3afb4bcbf0256437f45299143745bd7860afc9e2fb0a54bea4b",
+          "capture_file_sha256": "d60abb789f52cc7a78eea19e0767e1b4e662451dbcf977d0ba4fb86f7105be54",
+          "node_key": "direct_baseline",
+          "output_digest": "3504cae1a9843f83c494029d4266543e681ac2f7effca70499d5a63d2fb7babd",
+          "predecessor_call_id": "call_01_direct_baseline"
+        },
+        {
+          "capture_digest": "9b7fb3cd84b87f8cf8307bf6b4ee02f3c54975e6ee46e8f6e7b93b15e0557f73",
+          "capture_file_sha256": "c27b00071ec4f89ec6f370edc3b2ae62b2ad22543373b48d4f7714cd14a05551",
+          "node_key": "research_lead",
+          "output_digest": "4212ae939abe113419b067f5f3639528379e73ba3379e8a5a633213fe3831033",
+          "predecessor_call_id": "call_02_research_lead"
+        },
+        {
+          "capture_digest": "3fdb8fc8ed35858929d827137f5aef8defd3b0541c6f9e823943553a6ff56e8f",
+          "capture_file_sha256": "58a2bb7a6b06ac2e63a8ff0be44b477fd99bb39d40e99c066289d1ba45c7bdc2",
+          "node_key": "specialist::demand_authenticity_and_sustainability",
+          "output_digest": "aed0ef6fbb7b1a5519965e8595749b333f95dd2bc10e58e43778fa7ba43f3092",
+          "predecessor_call_id": "call_03_specialist__demand_authenticity_and_sustainability"
+        },
+        {
+          "capture_digest": "a514bd5f7c5ab585454403b67720150abdefe518877a72897b32cdae17576003",
+          "capture_file_sha256": "eb34d413c8e3bdab78aed47a9db344ec0671d5bcfca25a18db8691be43ffb4a2",
+          "node_key": "specialist::product_and_technology_position",
+          "output_digest": "de691aaca474f7dfeb34a55d0b4f817988fc4826652e64b6c356456d444d6929",
+          "predecessor_call_id": "call_04_specialist__product_and_technology_position"
+        },
+        {
+          "capture_digest": "320231964efd66478113cf51d28da9a6ab0115b34b7c4ef40446a5d6acc40ce2",
+          "capture_file_sha256": "4db5f5bfbc3a6c06b7463fce39e2f814a5ade7c8443c925a97ee1f069d596284",
+          "node_key": "specialist::supply_capacity_and_competition",
+          "output_digest": "143aa9b663377da3cd46cbf24a6686a1d695bc10198d80dc4f2a8f33d18c05e8",
+          "predecessor_call_id": "call_05_specialist__supply_capacity_and_competition"
+        }
+      ],
+      "run_id": "fin013_s2_fixed_pack_dell_524560d1ab0599b829bf",
+      "terminal_digest": "2ae7ebf162a1b600a3bc2818982ed8b6968f281a0ca914ce5250aa4bad47ab58"
+    },
+    "profile_sha256": "d0fc499e36678369081d27619404ea3de776a8349addf29192b0fb895f34c9ac",
+    "promotion_authority": false,
+    "provider": {
+      "base_url": "https://api.deepseek.com/beta",
+      "chat_completions_path": "/chat/completions",
+      "model": "deepseek-v4-pro",
+      "model_tier": "pro_not_flash",
+      "name": "deepseek"
+    },
+    "run_id": "fin013_s2_fixed_pack_dell_successor_f63f66ff0998aa146c7a",
+    "run_nonce_digest": "0dfd1d4ddfa7aba886f3e0aac7650188418af766605b396ce0981d74cd81ec2c",
+    "runner_sha256": "9cbcbb4b7c35b36c58f1ff550071827ffe3f86774c9d25c5f3bf7456cc1b0e06",
+    "runtime_identity": "fin013_s2_fixed_pack_dell_successor_f63f66ff0998aa146c7a::runtime_1",
+    "runtime_sha256": "dd468b7499713698e4ff6f3108c1428916c557faff59da83bdd2265e21427d9c",
+    "schema_version": "fin_ia_0_1_3_s2_fixed_pack_capture_reuse_successor_admission_v1_0",
+    "scope": "FIN_0_1_3_S2_FIXED_PACK_DELL_CAPTURE_REUSE_SUCCESSOR",
+    "semantic_retry": false,
+    "source_pack_digest": "554e7db12bcb98f0a03f420f9d4b7cbaf7422a87bdef6f83699068d0b863f181",
+    "state": "issued_unconsumed",
+    "successor_case_input_digest": "0dc96c3a16d38e7375f6f1206ec3274ee81b9dbbecf08325b778cdabeec11844",
+    "successor_contract_sha256": "0d7945c19db2ca61104de4ebd67730bce9aa02b2845e5fccdb86ae5015d4d9f8",
+    "successor_node_order": [
+      "specialist::financial_transmission_profit_and_cash",
+      "specialist::capital_allocation_valuation_and_price_in",
+      "specialist::counter_thesis_risk_and_what_would_change",
+      "cross_unit_synthesis",
+      "draft_writer",
+      "red_team_critic",
+      "final_writer",
+      "verifier"
+    ]
+  },
+  "authority_digest": "f53b343f8ca02ffc70aaf6c075ea06d77eaec412e7ab0d764dea4efe96d09ae0",
+  "automatic_execution": false,
+  "case_key": "DELL",
+  "clean_proof_digest": "a9aef287b10204a5ed2f62d25953f3184f1ff41b1d306be650b706c33210789c",
+  "decision_id": "FIN-0.1.3-S2-DELL-CAPTURE-REUSE-SUCCESSOR-R1-AUTHORITY",
+  "execution_ceiling": {
+    "business_promotions": 0,
+    "cases": 1,
+    "combined_provider_attempts": 14,
+    "fallbacks": 0,
+    "logical_node_outputs": 13,
+    "network_tool_calls": 0,
+    "predecessor_imported_usable_nodes": 5,
+    "retries": 0,
+    "successor_model_calls": 8,
+    "successor_provider_calls": 8
+  },
+  "implementation_bindings": [
+    {
+      "ref": "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json",
+      "sha256": "f42fb7206bc4d4dadba7ca49dd2ff6e31324f3ffa92acbcd38acef9c45685a49"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_fixed_pack_research_contract_v1_0.json",
+      "sha256": "4041134629c67c9a8a952e1e25297f6692edf059f473230e530b1d02370f790d"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_dell_fixed_pack_capture_reuse_successor_contract_v1_0.json",
+      "sha256": "0d7945c19db2ca61104de4ebd67730bce9aa02b2845e5fccdb86ae5015d4d9f8"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_deepseek_v4_pro_fixed_pack_profile_v1_0.json",
+      "sha256": "d0fc499e36678369081d27619404ea3de776a8349addf29192b0fb895f34c9ac"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_dell_capture_reuse_successor_clean_independent_proof_v1_0.json",
+      "sha256": "72514deed60f13c86040ab0e23fb011d1834825bb8317cd1420a0a7441f24a3e"
+    },
+    {
+      "ref": "src/sec_agent/s2_fixed_pack_research.py",
+      "sha256": "c5ad3afba93ce31a77db5eb6188cd2add410bd282d2fbab3f85b3288a68acaa3"
+    },
+    {
+      "ref": "src/sec_agent/s2_fixed_pack_research_runtime.py",
+      "sha256": "f5545b9ab50c06ad43c55417a209618bb067cf0c8692d52ab275b388417315ea"
+    },
+    {
+      "ref": "src/sec_agent/s2_fixed_pack_capture_reuse_successor.py",
+      "sha256": "3151f5703ad46ccc265beeb2de0101c0bb4f2fd9dbc616de3bac56d171fd6d62"
+    },
+    {
+      "ref": "src/sec_agent/s2_fixed_pack_capture_reuse_successor_runtime.py",
+      "sha256": "dd468b7499713698e4ff6f3108c1428916c557faff59da83bdd2265e21427d9c"
+    },
+    {
+      "ref": "src/sec_agent/s2_fixed_pack_capture_reuse_successor_live.py",
+      "sha256": "c45a1a9df26e80948166e53b2adb16f4b1e895c3ceb97aa4346829b1ef3116ab"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_3_s2_dell_capture_reuse_successor.py",
+      "sha256": "9cbcbb4b7c35b36c58f1ff550071827ffe3f86774c9d25c5f3bf7456cc1b0e06"
+    },
+    {
+      "ref": "scripts/releases/issue_fin_ia_0_1_3_s2_dell_capture_reuse_successor_authority.py",
+      "sha256": "3a960b91bc36afe498998bfeb2eb338ad81840522bc85024f8bbf470b6c060a9"
+    }
+  ],
+  "implementation_commit": "e08dbc9a46e9e1c05eaa53187270d1ccb9273b49",
+  "known_boundary": "This authority imports five immutable predecessor outputs and permits only the remaining eight DeepSeek nodes. It is not a semantic retry, does not authorize other cases or product promotion, and cannot establish strict same-input paired acceptance because the imported direct baseline did not see the augmented numeric authority.",
+  "maximum_executions": 1,
+  "project_os_preflight": {
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "FIN_0_1_3_S2_FIXED_PACK_DELL_CAPTURE_REUSE_SUCCESSOR",
+    "status": "pass"
+  },
+  "recorded_at": "2026-08-10T09:05:15Z",
+  "run_scope": "FIN_0_1_3_S2_FIXED_PACK_DELL_CAPTURE_REUSE_SUCCESSOR",
+  "same_input_paired_acceptance_authorized": false,
+  "schema_version": "fin_ia_0_1_3_s2_dell_capture_reuse_successor_authority_v1_0",
+  "status": "issued_unconsumed",
+  "user_authority": "User authorized the frozen sequence: reuse the five immutable successful captures, authorize only the remaining eight calls, bind deterministic numeric aliases and formula traces, then run one successor exact-live."
+}

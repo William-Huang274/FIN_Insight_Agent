@@ -1,0 +1,225 @@
+{
+  "attempt_id": "20260810_s1_physical_store_artifact_directory_microcanary_r1",
+  "authority_digest": "6c08008d44fe753d86e6ba5478a2cf97c60fba0c49cb31ea29659b67c08b7340",
+  "automatic_retry": false,
+  "contract_ref": "fin_0_1_3.S1.physical_store_artifact_microcanary:v1",
+  "implementation_commit": "90d8ac715e81d1270b29fce799afa8de58badd83",
+  "known_boundary": "This one-vector synthetic run proves directory artifact validation, close/reopen identity, complete counters and whole-root publication only. It loads no embedding model and contains no business fact or Evidence.",
+  "mutation_proof": {
+    "symlink_rejection": {
+      "failed_closed": true,
+      "observed_code": "candidate_bundle_physical_directory_artifact_symlink_forbidden",
+      "scenario": "directory_tree_symlink"
+    }
+  },
+  "observed_calls": {
+    "document_fetch": 0,
+    "embedding_batches": 0,
+    "embedding_model_loads": 0,
+    "embedding_vectors": 0,
+    "evidence_promotion": 0,
+    "llm_model": 0,
+    "milvus_collection_creates": 1,
+    "milvus_count_reads": 2,
+    "milvus_database_creates": 1,
+    "milvus_flushes": 2,
+    "milvus_insert_batches": 1,
+    "milvus_inserted_vectors": 1,
+    "milvus_metadata_queries": 1,
+    "milvus_reopens": 1,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0,
+    "synthetic_vectors": 1,
+    "vector_search": 0
+  },
+  "phase_receipt": {
+    "last_verified_phase": "publish_whole_root",
+    "verified_phases": [
+      {
+        "phase": "requalify_environment",
+        "snapshot": {
+          "environment_digest": "5e2f65f0549318d86e8d17f42d8575493672025003ac09711cbf759b0ec32e5f"
+        },
+        "snapshot_digest": "2840e122c6cdbf006d4fe77811c6b7429ea5b817c6d0bc66bd71557265d1f030"
+      },
+      {
+        "phase": "prove_symlink_rejection",
+        "snapshot": {
+          "failed_closed": true,
+          "observed_code": "candidate_bundle_physical_directory_artifact_symlink_forbidden",
+          "scenario": "directory_tree_symlink"
+        },
+        "snapshot_digest": "6749e5c2ed31a82e9baeb4a8307cb436bb61a37b2877e59309d8ec6ec7e432e5"
+      },
+      {
+        "phase": "validate_fresh_targets",
+        "snapshot": {
+          "final_root_absent": true,
+          "working_root_created": true
+        },
+        "snapshot_digest": "0f4e50fc490829887dbe684106492696e196e70b6f6b028ec4f3209f6ba77f32"
+      },
+      {
+        "phase": "write_close_reopen_synthetic_vector",
+        "snapshot": {
+          "acknowledged": 1,
+          "count_before_close": 1,
+          "identity_digest": "39988aecd1f8a5d19e3b21c5740bbc05b37e9d1dd5c3706ca7f1a559941a37ca",
+          "writer_calls": {
+            "collection_create": 1,
+            "count": 2,
+            "database_create": 1,
+            "flush": 2,
+            "insert_batches": 1,
+            "inserted_vectors": 1,
+            "metadata_query": 1,
+            "reopen": 1
+          }
+        },
+        "snapshot_digest": "94b5fbfc83f94a247c45c0ed90da6cc9a6d8c5e0d90509f3094e0ec81531299c"
+      },
+      {
+        "phase": "validate_directory_artifact",
+        "snapshot": {
+          "artifact_digest": "6fd72c7836f7062a5b6bfac8c40c2bded2bc51b8e48130e0796bc9a211b103ea",
+          "artifact_kind": "directory",
+          "total_bytes": 11132
+        },
+        "snapshot_digest": "3f4275f99b2326cd3a2d2f11632b93b6b92079fca2e8ca468f17f2e964cb21ad"
+      },
+      {
+        "phase": "write_receipt",
+        "snapshot": {
+          "receipt_digest": "5c7b3e2643bf524c8b8a200f8e0610155a6238985eb5db18d435ba098ffdae3a"
+        },
+        "snapshot_digest": "14d73b809cb5794ae5c7632bc855bf04f52d7a90c840dc6e9e086500eaede7b5"
+      },
+      {
+        "phase": "publish_whole_root",
+        "snapshot": {
+          "artifact_digest": "6fd72c7836f7062a5b6bfac8c40c2bded2bc51b8e48130e0796bc9a211b103ea",
+          "final_root": "/home/william/.cache/fin_insight/physical_store_artifact_microcanary/v1"
+        },
+        "snapshot_digest": "152ccd6eee98ed532ce61c92472047ce65bd89e5cf37f96856fc986ed4e0a7da"
+      }
+    ]
+  },
+  "physical_store_artifact": {
+    "artifact_digest": "6fd72c7836f7062a5b6bfac8c40c2bded2bc51b8e48130e0796bc9a211b103ea",
+    "artifact_kind": "directory",
+    "artifact_name": "milvus_lite.db",
+    "collection_validation": {
+      "collection_name": "fin_ia_0_1_3_s1_physical_store_microcanary_v1",
+      "current_seq": 1,
+      "data_paths": [
+        "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1/partitions/_default/data/data_000001_000001.parquet"
+      ],
+      "embedding_dimension": 4,
+      "index_paths": [
+        "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1/partitions/_default/indexes/data_000001_000001.embedding.flat.idx"
+      ],
+      "index_type": "FLAT",
+      "manifest_sha256": "7c2ac9a2964b14228fbe57f548f9bb44412c48ce4c5174dc7ca5cc06cabf5a4f",
+      "metric_type": "COSINE",
+      "schema_sha256": "5f3ae0ed2531489a7ee4595448e5efafb54d298f9a1e6874923b0d33279805fb"
+    },
+    "directory_count": 7,
+    "file_count": 6,
+    "schema_version": "fin_ia_physical_store_artifact_v1_0",
+    "total_bytes": 11132,
+    "tree_digest": "57c88d9165a2a1f50147e9f831a7ba0dcc86b841bfd6b7872ad373bd9797b0da",
+    "tree_manifest": {
+      "directory_count": 7,
+      "entries": [
+        {
+          "bytes": 0,
+          "kind": "file",
+          "relative_path": "LOCK",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "kind": "directory",
+          "relative_path": "collections"
+        },
+        {
+          "kind": "directory",
+          "relative_path": "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1"
+        },
+        {
+          "bytes": 456,
+          "kind": "file",
+          "relative_path": "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1/manifest.json",
+          "sha256": "7c2ac9a2964b14228fbe57f548f9bb44412c48ce4c5174dc7ca5cc06cabf5a4f"
+        },
+        {
+          "bytes": 410,
+          "kind": "file",
+          "relative_path": "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1/manifest.json.prev",
+          "sha256": "877f4ecf1704d6c848452f18e8f9a7e33217b73dc0d208e8546c084af9744745"
+        },
+        {
+          "kind": "directory",
+          "relative_path": "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1/partitions"
+        },
+        {
+          "kind": "directory",
+          "relative_path": "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1/partitions/_default"
+        },
+        {
+          "kind": "directory",
+          "relative_path": "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1/partitions/_default/data"
+        },
+        {
+          "bytes": 6122,
+          "kind": "file",
+          "relative_path": "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1/partitions/_default/data/data_000001_000001.parquet",
+          "sha256": "54690ac94474aecf311ddc345d8dc0d87180cdf9d57b3429acf190968e619a50"
+        },
+        {
+          "kind": "directory",
+          "relative_path": "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1/partitions/_default/indexes"
+        },
+        {
+          "bytes": 144,
+          "kind": "file",
+          "relative_path": "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1/partitions/_default/indexes/data_000001_000001.embedding.flat.idx",
+          "sha256": "7c913015d9be0a1e79ffd611387de319fda6eebe2a2f1f1885b8c94b45887061"
+        },
+        {
+          "bytes": 4000,
+          "kind": "file",
+          "relative_path": "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1/schema.json",
+          "sha256": "5f3ae0ed2531489a7ee4595448e5efafb54d298f9a1e6874923b0d33279805fb"
+        },
+        {
+          "kind": "directory",
+          "relative_path": "collections/fin_ia_0_1_3_s1_physical_store_microcanary_v1/wal"
+        }
+      ],
+      "file_count": 6,
+      "schema_version": "fin_ia_canonical_directory_tree_manifest_v1_0",
+      "total_bytes": 11132,
+      "tree_digest": "57c88d9165a2a1f50147e9f831a7ba0dcc86b841bfd6b7872ad373bd9797b0da"
+    }
+  },
+  "private_final_root": "/home/william/.cache/fin_insight/physical_store_artifact_microcanary/v1",
+  "private_receipt_digest": "5c7b3e2643bf524c8b8a200f8e0610155a6238985eb5db18d435ba098ffdae3a",
+  "recorded_at": "2026-08-10",
+  "result_digest": "b7042cebaf191cabd05eae9c8dc92188cd702c4d350fa67b6bf626efaf514e77",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_result_v1_0",
+  "stage_acceptance": {
+    "business_index": false,
+    "close_reopen_identity": true,
+    "complete_call_receipt": true,
+    "directory_artifact_contract": true,
+    "directory_symlink_rejection": true,
+    "evidence": false,
+    "release": false,
+    "retrieval_quality": false,
+    "whole_root_atomic_publication": true
+  },
+  "status": "terminal_succeeded_directory_store_publication_microcanary",
+  "wall_time_ms": 3386.478
+}

@@ -1,5 +1,6 @@
 # Worklog
 
+- [801 — FIN 0.1.3 目录型物理存储 microcanary terminal success](product_strategy/801_fin_0_1_3_physical_store_directory_microcanary_terminal_success.md)
 - [800 — FIN 0.1.3 目录型物理存储 microcanary authority](product_strategy/800_fin_0_1_3_physical_store_directory_microcanary_authority.md)
 - [799 — FIN 0.1.3 PhysicalStoreArtifact v1.1 实现与五步执行门](product_strategy/799_fin_0_1_3_physical_store_artifact_v1_1_implementation_and_five_step_execution_gate.md)
 - [798 — FIN 0.1.3 CandidateBundle physical-index R1 directory-store failure](product_strategy/798_fin_0_1_3_candidate_bundle_physical_index_r1_directory_store_failure.md)

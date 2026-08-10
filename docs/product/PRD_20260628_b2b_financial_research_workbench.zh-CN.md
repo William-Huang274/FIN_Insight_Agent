@@ -2289,3 +2289,5 @@ R1 已按唯一 authority 执行并在物理发布门失败。BGE-M3 成功生�
 v1.1 working-tree 实现现已完成：核心合同同时支持 file 和 directory，不从 `.db` 后缀猜形态；Milvus 3.0 profile 明确声明 directory，并绑定 canonical tree、collection manifest／schema、data／index files、`current_seq`、维度和 metric/index type。发布前后 artifact digest 必须一致，成功与失败 terminal 使用同一完整 counter／phase receipt。93-spec full-fake、file 控制组、directory fixture 与 11 类 mutation 已通过；Windows issuer 的 pre-authority bootstrap 缺陷修复并重新绑定后，proof=`d1ff6e70...0dba`。真实 microcanary、R2、查询和 Evidence 仍为 false。
 
 后续产品执行线冻结为五步但不预支结果：先完成 synthetic microcanary／clean proof／fresh R2；再以六案同矩阵解释 sparse／dense／fusion 的具体业务命中和错误；然后生成可审 Evidence Pack；只按 typed residual gaps 外源补源；最后把固定包分析能力和动态工具研究能力分开评估。此顺序避免再次把“索引存在”“召回排序”“Evidence 可用”和“模型会写研报”混成一个总门。
+
+synthetic microcanary 已实际通过并只证明目录发布能力：Ubuntu 中 1 个非业务 4 维向量完成 close／reopen identity、manifest／data／index tree digest、symlink 拒绝与 whole-root rename，result=`b7042ceb...4e77`；没有加载 BGE，也没有公司数据、检索或 Evidence。产品 UI 仍不得把它显示为“业务索引可用”。下一项是 two-clean-archive reproduction，之后才允许 fresh 93-object R2。

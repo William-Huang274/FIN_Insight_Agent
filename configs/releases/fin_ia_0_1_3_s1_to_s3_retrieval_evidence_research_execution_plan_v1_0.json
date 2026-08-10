@@ -3,15 +3,15 @@
   "contract_ref": "fin_0_1_3.S1_to_S3.retrieval_evidence_research_execution:v1",
   "recorded_at": "2026-08-10",
   "product_version": "FIN_0_1_3",
-  "status": "step_1_physical_store_repair_working_tree_pass_microcanary_next",
+  "status": "step_1_directory_microcanary_pass_clean_proof_and_r2_pending",
   "supersedes_for_current_execution": "configs/releases/fin_ia_0_1_3_s1_retrieval_query_facet_external_internal_progression_plan_v1_8.json",
   "user_decision": "Execute steps 1-5 in order without requesting approval at every substep; preserve exact-once authorities and stop at a newly established L1 blocker rather than silently expanding or retrying.",
   "current_truth": {
     "candidate_manifest": "six_cases_93_specs_45_reviewed_known_plus_48_strict_held_out_metrics_19_automatic_narratives_quarantined",
     "physical_index_r1": "terminal_failed_directory_store_misclassified_as_missing_no_retry",
-    "physical_store_contract_v1_1": "working_tree_zero_call_pass_file_and_directory_provider_neutral",
+    "physical_store_contract_v1_1": "clean_committed_zero_call_and_real_synthetic_directory_microcanary_pass",
     "physical_store_v1_1_proof_digest": "d1ff6e70d8f524ac80669f71b891728373a64902e986418d641c35d041c40dba",
-    "real_microcanary": "not_run_authority_not_issued",
+    "real_microcanary": "terminal_succeeded_directory_store_publication_result_b7042cebaf191cabd05eae9c8dc92188cd702c4d350fa67b6bf626efaf514e77",
     "physical_index_r2": "not_authorized_not_run",
     "retrieval_evaluation": "not_run_on_new_93_object_indexes",
     "evidence_packs": "not_built_from_new_retrieval",
@@ -23,7 +23,7 @@
       "order": 1,
       "owner_stage": "S1",
       "work_item": "PHYSICAL_INDEX_FILE_OR_DIRECTORY_REPAIR_AND_FRESH_R2",
-      "status": "implementation_and_full_fake_pass_microcanary_clean_proof_r2_pending",
+      "status": "implementation_and_microcanary_pass_clean_proof_and_r2_pending",
       "acceptance": "A synthetic one-vector directory microcanary and a fresh 93-object R2 each close, reopen, bind identities, generate a canonical artifact receipt and publish a whole fresh root. R1 remains immutable.",
       "stop_rule": "Any new backend/storage L1 consumes its attempt and stops step 1; no automatic R3. Retrieval quality is not inferred from build success."
     },
@@ -80,6 +80,8 @@
   "current_authority_boundary": {
     "zero_call_implementation_and_tests": true,
     "one_synthetic_microcanary_after_clean_authority": true,
+    "synthetic_microcanary_consumed_successfully": true,
+    "additional_synthetic_microcanary_execution": false,
     "fresh_r2_after_microcanary_clean_proof_and_separate_authority": true,
     "retrieval_search_before_r2_success": false,
     "evidence_promotion_before_retrieval_audit": false,
@@ -88,5 +90,5 @@
     "automatic_retry": false
   },
   "known_boundary": "This plan preserves the approved five-step direction but does not make later-stage results true in advance. Each stage must materialize its own evidence and can stop the sequence on a genuine owning-stage L1 blocker.",
-  "plan_digest": "879d314e8968c752f0fd06b6443c119bcf774a993d96dd508c2b8b6c3da5fed9"
+  "plan_digest": "899e01e6bbeb789b46df272623025c16d5da5c1e5268ed132142c4dc68ae6a25"
 }

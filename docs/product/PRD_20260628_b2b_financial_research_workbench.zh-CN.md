@@ -2438,3 +2438,11 @@ changed-input DELL exact-live 证明，补源已经能转化为更好的需求�
 5. 每类节点的编译视图必须有显式容量 receipt。当前硬上限为 Research `80k`、Writer `55k`、Verifier `30k` 字符；上限是防止请求失控的产品门，不是鼓励填满预算。
 
 当前 working-tree 已在 DELL／MU／NVDA＋ORCL／ASML／ANET 上通过上述规则和 mutation，未调用模型。它仍只算 engineering pass；两个 clean archive／fresh process 逐字节复证前，不得把它写成产品通过。长期上，S1 金融对象应直接持久化 selected numeric coordinates；当前 S2 叙事 adapter 是通用、fail-closed 的迁移层，不是永久让下游重复解析全文的理由。
+
+#### 16.20.2 Clean proof 后的产品状态与最小自然 canary 边界（2026-08-11）
+
+双 clean archive／fresh process 已逐字节复现六案 candidate、stable fact、presentation、formula、bounded view、DELL successor 和本地 guard mutation；model/provider/network/source/retry 均为 0。R1 的 proof-reader 字段路径失败独立保留，R2 只修证明读取层后通过。产品因此获得“可以单独评估一次最小自然节点 canary 是否值得签发”的资格，不等于自然模型、DELL 报告或产品交付已经通过。
+
+后续 canary 必须满足：输入只包含已冻结 bounded Evidence／numeric view；模型只返回研究判断原子、明确 `NUM／FORM／Evidence` refs 与边界，不允许生成整份报告；最多一次调用、零 retry／fallback／tool；任何未绑定 material number、错实体／期间／单位、ref 不存在、结构不完整或截断都 terminal fail。通过只说明新合同在一个自然节点可被当前模型使用，是否执行 DELL 全链仍须另行做零调用成本／价值／风险决策。
+
+这条边界同时防止两个错误：不能因 clean proof 就跳过模型行为验证，也不能因一个自然 canary 失败就继续把 DeepSeek 特例写进 provider-neutral 核心 Runtime。若失败属于模型自主面，应缩小该 profile 的授权或保留本地确定性表面；若只是 S3 内容质量，则流转到 WWC／机制／密度任务，不重开 S2 数字编译。

@@ -388,3 +388,11 @@ DELL／MU／NVDA 用于叙事、表格、供应商／客户 read-through 和 PIT
 Node view 使用同一 fact/formula parity digest，并各自保存字符容量 receipt；完整 raw source 不进入 successor model input，只保留 private audit digest set。Delivery guard 先验证 used refs，再只接受这些 refs 的 exact rendered presentation；context-only literal、错单位表面和 PIT→target-price 越权即使 semantic Verifier pass 也 hard fail。
 
 六案 working-tree replay 与 mutation 已通过，且测试真实抓出并修正上述串义、期间折叠和 guard 误杀；这比只断言 schema 完整更强，但仍不是 clean-source proof。当前叙事 exact coordinate 有一部分由通用迁移 adapter 从已选正文恢复；未来 S1 `FinancialSourceObject` 应在 selection 时直接保存 numeric coordinates，让 S2 只做权威裁决和展示编译。该长期迁移不应在本 S2 修复中重开 S1。
+
+#### 13.10.5 Clean-source reproducibility 与下一道模型门（2026-08-11）
+
+双 clean proof 已完成。两个独立 Git archive／fresh Python process 注入相同、临时且 digest-bound 的六案 Pack，重新执行 S2 共编、DELL successor 和负向 mutation，worker 输出逐字节相同；原始 Pack 只存在于临时目录，不进入 Git，临时目录在 proof 物化前删除。该形态刻意不重做 S1：它证明 S2 对冻结 Evidence Pack 的可重复性，不重复宣称上游资料选择已经再次验收。
+
+R1 因 proof reader 从错误结果层级读取 summary 字段而失败，已作为 proof-harness failure 保留。R2 只修复读取路径，没有改变业务 compiler；最终 model/provider/network/source/retry 均为 0。由此工程门从 `working_tree pass` 前进到 `clean independent pass`，但模型门没有自动打开。
+
+下一步必须先做单独零调用 authority decision，冻结一个最小自然节点输入、输出合同、评分项、失败边界、调用预算与 stop rule。该 canary 只回答“模型能否自然使用新的 bounded numeric view 并返回引用过的判断原子”，不能代替 DELL 全链、研究内容八维验收、Owner acceptance 或 release；canary 失败也不得重新演变成逐数字扩充核心 Harness。

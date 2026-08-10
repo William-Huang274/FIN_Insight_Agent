@@ -1,0 +1,178 @@
+{
+  "attempt_id": "20260811_s2_selected_evidence_numeric_cocompilation_clean_proof_r2",
+  "case_matrix": {
+    "ANET": {
+      "ambiguity_downgraded": 0,
+      "authorized": 11,
+      "candidates": 11,
+      "conflicts": 0,
+      "context_only": 0,
+      "forbidden": 0,
+      "formula_traces": 0,
+      "presentation_receipts": 11,
+      "result_digest": "5e5b571e7b6c6765bbe54c98f3f540ba6166f0ccdea875b16b3d5503178544c2",
+      "source_pack_digest": "49422886291e495d736066c790d7344052bc3b4796c48b4351226b345408ccf3",
+      "stable_facts": 11,
+      "transaction_digest": "ae6baa8b31f5931ffc5325470545658d24be77442c6129d6909adb85f05c9a55",
+      "view_chars": [
+        16559,
+        18147,
+        8001
+      ]
+    },
+    "ASML": {
+      "ambiguity_downgraded": 0,
+      "authorized": 10,
+      "candidates": 10,
+      "conflicts": 0,
+      "context_only": 0,
+      "forbidden": 0,
+      "formula_traces": 0,
+      "presentation_receipts": 10,
+      "result_digest": "2ea944c8c04c29157967c421b0aeca690156ee00227fd69cf9e2105d5a63ec21",
+      "source_pack_digest": "2f975a03b5a646c1da54bb63ad0ee8f3ec977e5848c06ff71075f02e92f1c683",
+      "stable_facts": 10,
+      "transaction_digest": "6343321bf3f54950096195b4668a4d5faecc9c3289e86c7c84bc8799b9294395",
+      "view_chars": [
+        14318,
+        15542,
+        7197
+      ]
+    },
+    "DELL": {
+      "ambiguity_downgraded": 24,
+      "authorized": 31,
+      "candidates": 323,
+      "conflicts": 0,
+      "context_only": 275,
+      "forbidden": 17,
+      "formula_traces": 4,
+      "presentation_receipts": 31,
+      "result_digest": "0dc1740e43636a807060d6f5bf0c066487a3743ca87ad2a5418b9e788ee02864",
+      "source_pack_digest": "5ba1091ddc71d0c8543f186e4331bf2caae7d10e365af0a0f7510a056b5e9984",
+      "stable_facts": 25,
+      "transaction_digest": "f57becedee3db9c31a4b28a02bdc7bd093fe798cb2c3e27515ea156c572c676d",
+      "view_chars": [
+        73692,
+        44825,
+        20177
+      ]
+    },
+    "MU": {
+      "ambiguity_downgraded": 13,
+      "authorized": 32,
+      "candidates": 503,
+      "conflicts": 0,
+      "context_only": 393,
+      "forbidden": 78,
+      "formula_traces": 0,
+      "presentation_receipts": 32,
+      "result_digest": "fe2bb02c9595e841d14e308cdf077f8627d60e3cc5bd5e9f7d9d294a49345088",
+      "source_pack_digest": "1c2b787a955bb145fef6acd4e1ebf70566f472259006c06891b3fd9dde0f2964",
+      "stable_facts": 31,
+      "transaction_digest": "ab08985ba130f73a5ff5bd50a39d777deca9765054ffd55d363171ce254a5c02",
+      "view_chars": [
+        57900,
+        36259,
+        20536
+      ]
+    },
+    "NVDA": {
+      "ambiguity_downgraded": 0,
+      "authorized": 24,
+      "candidates": 403,
+      "conflicts": 0,
+      "context_only": 363,
+      "forbidden": 16,
+      "formula_traces": 0,
+      "presentation_receipts": 24,
+      "result_digest": "84839ed8c02918a4a2fa816406d3596e24ae16a77b71bd1a68cff9d99dbb2854",
+      "source_pack_digest": "9372a57bb60bbb573a8b53fd7dda2a45d70caaf89298456982714ea84ecaf066",
+      "stable_facts": 18,
+      "transaction_digest": "27a0acae5838daa6d28858d6ec48e914501880db366178199e7a25f60f17b8dd",
+      "view_chars": [
+        47396,
+        28092,
+        13538
+      ]
+    },
+    "ORCL": {
+      "ambiguity_downgraded": 0,
+      "authorized": 11,
+      "candidates": 11,
+      "conflicts": 0,
+      "context_only": 0,
+      "forbidden": 0,
+      "formula_traces": 0,
+      "presentation_receipts": 11,
+      "result_digest": "2238ff980277f587e484d371519495faa5aae7fc9d86e18294ea1801b6b16713",
+      "source_pack_digest": "fab997d54e67c13ebae8d3dee9647678c9beebccd1693a22861cd9a844ad58b7",
+      "stable_facts": 11,
+      "transaction_digest": "0f58b1b37016d28bbf394a28f88acedfaa7f23e59bbd2622f1ac71d2c373dd54",
+      "view_chars": [
+        16562,
+        18178,
+        8208
+      ]
+    }
+  },
+  "clean_git_archives": 2,
+  "contract_ref": "fin_0_1_3.S2.selected_evidence_numeric_candidate_cocompilation:v1",
+  "credential_environment_variables_present_each_worker": 0,
+  "current_next": "SEPARATE_ZERO_CALL_NATURAL_NODE_CANARY_AUTHORITY_DECISION_NO_AUTOMATIC_MODEL_CALL",
+  "fresh_python_processes": 2,
+  "fresh_worker_count": 2,
+  "implementation_commit": "73efd2c8323bf1bec2737137fbc89b97d6b5b836",
+  "implementation_result_digest": "6f6bed7d67dde7b9c679fd1af2c2402340ea7c996cd0cb33eed48d7961c64f25",
+  "known_boundary": "This proof establishes clean-source reproducibility of the S2 selected-Evidence numeric co-compilation runtime against six immutable, ephemeral S1 Pack payloads. It does not re-accept S1, test a natural model response, prove report-quality improvement, authorize a DELL rerun, or establish product/release acceptance.",
+  "mutations": {
+    "bound_presentation_passes_local_guard": true,
+    "candidate_order_is_digest_stable": true,
+    "context_only_surface_hard_fails_after_semantic_pass": true,
+    "cross_case_identity_fails_closed": true,
+    "missing_structured_parent_fails_closed": true,
+    "pit_close_cannot_authorize_target_price": true,
+    "unit_mutation_hard_fails_after_semantic_pass": true
+  },
+  "normalized_worker_output_sha256": "1029b27a67534ca407656981c1e757dde7c7cd857cc0cf7c896c0051a4e84018",
+  "observed_calls": {
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "retries": 0,
+    "source_calls": 0
+  },
+  "private_input_bundle": {
+    "digest": "ba55234d365b70d629f26bf1adff0d5b9a4fbe424457cc6bc7e6808afc34ff50",
+    "injected_bytes": 587727,
+    "injected_sha256": "00ad989f6e34d1d9458766989dd1413abd95d9d4541c0a83a630a7bc19ca1d0f",
+    "persisted_to_repository": false,
+    "worker_injections_byte_identical": true
+  },
+  "recorded_at": "2026-08-11",
+  "result_digest": "cdca2fda2cef915177b58c8c42a26ebd24ca8bd92785990a818c36eca14787cb",
+  "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_candidate_cocompilation_clean_independent_proof_v1_0",
+  "stage_acceptance": {
+    "clean_independent_proof": true,
+    "dell_delivery_pass": false,
+    "mutation_suite": true,
+    "natural_model_canary": false,
+    "owner_acceptance": false,
+    "release": false,
+    "runtime_implementation": true,
+    "six_case_deterministic_replay": true,
+    "successor_input_compilation": true
+  },
+  "status": "pass_two_clean_archives_two_fresh_processes_zero_call_reproducible",
+  "successor": {
+    "known_raw_sentence_absent": true,
+    "model_input_digest": "b6a7b524e84eac2ac44ac3080860871eabd5c85112b62486fa451ef21aebca38",
+    "raw_source_content_in_model_input": false,
+    "raw_source_material_count": 27,
+    "source_text_field_absent": true,
+    "successor_digest": "fe2353dcb234b0b7b446864128ff56c66e3196dc7a134410c47f1aeaa24ae0af"
+  },
+  "temporary_roots_removed": true,
+  "worker_result_digest": "21e19367d0c04c1d72e62155aaf0fc75a6370ebd6faacf306da1b7587df0563e",
+  "workers_byte_equivalent": true
+}

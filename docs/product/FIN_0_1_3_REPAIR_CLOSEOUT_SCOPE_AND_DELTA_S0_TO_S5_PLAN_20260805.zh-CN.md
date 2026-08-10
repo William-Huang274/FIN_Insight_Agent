@@ -857,7 +857,7 @@ Owner 已批准 7W terminal 后的有界处置，不授权重新抓取来源。�
 1. [x] `S1_BOUNDED_LITERAL_ANCHOR_COMPILER_ENGINEERING`：新增 provider-neutral literal phrase group compiler，四类 failure 分离；successor policy 静态拒绝旧 `required_patterns` surface，不修改 v1 policy／result。
 2. [x] `S1_IMMUTABLE_READER_CAPTURE_LONG_DOCUMENT_REPLAY`（working-tree）：直接重放 Dell `55,765` 字符与 Micron `26,784` 字符正文，Dell `3/3`、Micron `2/2` fragments 全部 materialize；Pack=`22→27 Evidence／15→14 gaps`，core/supplier/valuation-input=`true/true/true`，network/model/retry=`0/0/0`。
 3. [x] `S1_LONG_DOCUMENT_MUTATION_ENGINEERING`：覆盖重复 demand/supply、尾部同名词、顺序打乱、anchor 缺失、真实宽窗口和最终 excerpt 过大；旧无界 regex 在 source inspection 前 fail closed。
-4. [ ] `S1_TWO_CLEAN_ARCHIVE_PROOF_AND_CORRECTED_PACK_MATERIALIZATION`：双 clean archive proof 已通过，implementation=`0ac314f2...a5b76`、proof=`b8a9b04d...74bd04`，两个 fresh process 结果 byte-equivalent；corrected Pack digest=`5ba1091d...5e9984`。尚需在提交 proof 后持久化 corrected Pack 和公开零调用 result，完成前本项不勾选。
+4. [x] `S1_TWO_CLEAN_ARCHIVE_PROOF_AND_CORRECTED_PACK_MATERIALIZATION`：双 clean archive proof 已通过，implementation=`0ac314f2...a5b76`、proof=`b8a9b04d...74bd04`，两个 fresh process 结果 byte-equivalent；corrected Pack digest=`5ba1091d...5e9984`。clean/synced `c4fa68c1...14bba` 已零网络持久化同 digest Pack，公开 result=`251e414d...b85315`，core/supplier/valuation-input 继续为 `true/true/true`。
 5. [ ] `S2_S3_ONE_CHANGED_INPUT_DEEPSEEK_REPORT_COMPARISON`：仅第 4 项保持 core=true 才签发。模型必须消费 corrected Pack，从头编译节点输入；比较新增 Dell demand/backlog 与 Micron memory-tightness 是否真正改善机制、反方、WWC、证据利用和决策密度。只增加引用数不算通过，且本实验不授权新的 source call。
 
 本段不是新版本或新 S 阶段，只是 7W 在 S1 内的根因修复以及原第 5 项的条件恢复。若 clean proof 与 working-tree 不一致，停在 S1；若模型比较只暴露 L2–L4 内容质量问题，按 S2/S3 归属记录，不回头扩大 S1 parser。

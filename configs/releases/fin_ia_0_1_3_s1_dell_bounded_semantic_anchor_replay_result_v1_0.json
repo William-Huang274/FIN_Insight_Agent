@@ -1,0 +1,159 @@
+{
+  "clean_proof_digest": "b8a9b04d6ac4b349b40e6fc635b881da0bdcf0a0ca6162a373dc9a91af74bd04",
+  "contract_ref": "fin_0_1_3.S1.dell_bounded_semantic_anchor_replay:v1",
+  "corrected_pack_artifact": {
+    "artifact_type": "dell_bounded_semantic_anchor_corrected_evidence_pack",
+    "byte_size": 149544,
+    "digest": "8210887f7e06c4fb8397594ba965a8c737525c4b53be52a3cac1cf279e697387",
+    "media_type": "application/json",
+    "object_key": "fin-0.1.3/s1/dell-bounded-semantic-anchor-replay/pack/82/10/8210887f7e06c4fb8397594ba965a8c737525c4b53be52a3cac1cf279e697387.json"
+  },
+  "corrected_pack_payload_digest": "5ba1091ddc71d0c8543f186e4331bf2caae7d10e365af0a0f7510a056b5e9984",
+  "gate_status": {
+    "core_research_ready": true,
+    "successor_pack_ready_for_model_input": true,
+    "supplier_context_ready": true,
+    "valuation_input_ready": true,
+    "valuation_ready": true
+  },
+  "historical_failed_result_digest": "9be7ec13c20b97dd9a2d58a936078fb3135008110fc33bf413a15d2a9fe18920",
+  "known_boundary": "A core-ready corrected Evidence Pack permits a separately authorized changed-input model comparison. It is not itself a report-quality, valuation, recommendation, Owner-acceptance or release pass.",
+  "observed_counts": {
+    "evidence_items_after": 27,
+    "evidence_items_before": 22,
+    "immutable_response_captures_replayed": 2,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_evidence_items": 5,
+    "new_source_materials": 5,
+    "residual_gaps_after": 14,
+    "residual_gaps_before": 15,
+    "retries": 0,
+    "reused_numeric_facts": 1
+  },
+  "policy_digest": "5e6e161948e1a73672416b9e1e3353824bebb7bc8cc6f2010b026851463df6b6",
+  "predecessor_pack_payload_digest": "bafa587403f25aa76520a1da4567828116d6cce4a4c20d67162ad528cd27fe01",
+  "recorded_at": "2026-08-10T21:00:00Z",
+  "research_as_of": "2026-08-06",
+  "result_digest": "251e414dd0bc333d048f3ddc9237b83e82347d3c012bb1eef2bb559944b85315",
+  "route_results": [
+    {
+      "body_bytes": 57670,
+      "capture_digest": "66987c3c202b90b5b66d68cc951cc988b380bf15a19cb7dbb1b9fc3889cb4ecb",
+      "capture_ref": "data/workbench_private/fin_0_1_3_s1_dell_official_source_recovery/live/attempts/fin013_s1_dell_official_recovery_93f80e015a85e086ee57/objects/fin-0.1.3/s1/dell-official-source-recovery-successor/official/66/98/66987c3c202b90b5b66d68cc951cc988b380bf15a19cb7dbb1b9fc3889cb4ecb.json",
+      "capture_reused": true,
+      "failure_code": "",
+      "fragment_results": [
+        {
+          "anchor_window_chars": 310,
+          "excerpt_chars": 1008,
+          "failure_code": "",
+          "fragment_id": "demand_backlog_supply",
+          "selected_anchor_groups": [
+            "ai_orders",
+            "ai_backlog",
+            "demand_supply"
+          ],
+          "status": "materialized",
+          "target_id": "SUPPLEMENT::DELL::ISSUER::Q1FY27::DEMAND_BACKLOG_SUPPLY"
+        },
+        {
+          "anchor_window_chars": 219,
+          "excerpt_chars": 814,
+          "failure_code": "",
+          "fragment_id": "proactive_supply_securing",
+          "selected_anchor_groups": [
+            "memory_uncertainty",
+            "proactive_securing",
+            "pricing_margin_discipline"
+          ],
+          "status": "materialized",
+          "target_id": "SUPPLEMENT::DELL::ISSUER::Q1FY27::PROACTIVE_SUPPLY_SECURING"
+        },
+        {
+          "anchor_window_chars": 90,
+          "excerpt_chars": 746,
+          "failure_code": "",
+          "fragment_id": "ai_server_profitability",
+          "selected_anchor_groups": [
+            "ai_server_profitability",
+            "operating_income_target"
+          ],
+          "status": "materialized",
+          "target_id": "SUPPLEMENT::DELL::ISSUER::Q1FY27::AI_SERVER_PROFITABILITY"
+        }
+      ],
+      "fragments_expected": 3,
+      "fragments_materialized": 3,
+      "new_network_call": false,
+      "official_locator": "https://investors.delltechnologies.com/events/event-details/dell-technologies-fiscal-year-2027-first-quarter-results",
+      "official_origin_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "origin_url_echo": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "response_body_sha256": "2c613d69b150f8353ff952287d2481fa94837aaa50fbe9ec0086fa8b6530b7f5",
+      "retrieval_intermediary": "jina_reader",
+      "route_id": "dell_q1_fy27_earnings_transcript",
+      "source_text_chars": 55765,
+      "status": "capture_replayed_and_all_fragments_adjudicated"
+    },
+    {
+      "body_bytes": 28082,
+      "capture_digest": "bf343558294cabeff1e05f131d7dd5c5bafb3e8b24c3d3514c9b78a5c2adac93",
+      "capture_ref": "data/workbench_private/fin_0_1_3_s1_dell_official_source_recovery/live/attempts/fin013_s1_dell_official_recovery_93f80e015a85e086ee57/objects/fin-0.1.3/s1/dell-official-source-recovery-successor/official/bf/34/bf343558294cabeff1e05f131d7dd5c5bafb3e8b24c3d3514c9b78a5c2adac93.json",
+      "capture_reused": true,
+      "failure_code": "",
+      "fragment_results": [
+        {
+          "anchor_window_chars": 139,
+          "excerpt_chars": 742,
+          "failure_code": "",
+          "fragment_id": "memory_supply_tight_beyond_2027",
+          "selected_anchor_groups": [
+            "memory_industry_demand",
+            "demand_exceeds_supply",
+            "tightness_horizon"
+          ],
+          "status": "materialized",
+          "target_id": "SUPPLEMENT::DELL::SUPPLIER::MU::SUPPLY_TIGHT_BEYOND_2027"
+        },
+        {
+          "anchor_window_chars": 219,
+          "excerpt_chars": 746,
+          "failure_code": "",
+          "fragment_id": "hbm_packaging_h1_2027",
+          "selected_anchor_groups": [
+            "singapore_site",
+            "advanced_packaging",
+            "hbm_packaging_capacity",
+            "capacity_timing"
+          ],
+          "status": "materialized",
+          "target_id": "SUPPLEMENT::DELL::SUPPLIER::MU::HBM_PACKAGING_H1_2027"
+        }
+      ],
+      "fragments_expected": 2,
+      "fragments_materialized": 2,
+      "new_network_call": false,
+      "official_locator": "https://investors.micron.com/events/event-details/microns-third-quarter-2026-financial-call",
+      "official_origin_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "origin_url_echo": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "response_body_sha256": "2992c77b415e5f226ed81906797ccb768d152b895d8482b7576379aa125bb178",
+      "retrieval_intermediary": "jina_reader",
+      "route_id": "micron_q3_fy26_prepared_remarks",
+      "source_text_chars": 26784,
+      "status": "capture_replayed_and_all_fragments_adjudicated"
+    }
+  ],
+  "run_scope": "FIN_0_1_3_S1_DELL_BOUNDED_SEMANTIC_ANCHOR_CAPTURE_REPLAY",
+  "schema_version": "fin_ia_0_1_3_s1_dell_bounded_semantic_anchor_replay_result_v1_0",
+  "source_commit": "c4fa68c1cf5d60bd84ebe5bc4d1d161321514bba",
+  "stage_acceptance": {
+    "arbitrary_regex_allowed": false,
+    "bounded_literal_anchor_compiler": true,
+    "business_artifact_promoted": false,
+    "deepseek_comparison_eligible": true,
+    "historical_source_result_immutable": true,
+    "long_document_mutation_required": true,
+    "source_refetch_performed": false
+  },
+  "status": "zero_network_replay_core_supplier_and_valuation_input_ready"
+}

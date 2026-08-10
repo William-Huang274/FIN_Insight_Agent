@@ -108,6 +108,13 @@
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S2", "S3"]
     },
+    "FIN_0_1_3_S2_DELL_FIXED_PACK_MODEL_COMPARISON": {
+      "owner_stage": "S2",
+      "operation_class": "agentic_research",
+      "parent_scope_id": "FIN_0_1_3_S2",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1", "S2", "S3"]
+    },
     "FIN_0_1_3_S2_05_EXPERIMENT_A_DEEPSEEK_SAME_EVIDENCE": {
       "owner_stage": "S2",
       "operation_class": "agentic_research",

@@ -10,8 +10,9 @@
     "candidate_manifest": "six_cases_93_specs_45_reviewed_known_plus_48_strict_held_out_metrics_19_automatic_narratives_quarantined",
     "physical_index_r1": "terminal_failed_directory_store_misclassified_as_missing_no_retry",
     "physical_store_contract_v1_1": "clean_committed_zero_call_and_real_synthetic_directory_microcanary_pass",
-    "physical_store_v1_1_proof_digest": "d1ff6e70d8f524ac80669f71b891728373a64902e986418d641c35d041c40dba",
+    "physical_store_v1_1_proof_digest": "898a9aae9957d82a7546c65bafc1e3aa7296df4c2003a45ecb5b9e3d6875768f",
     "real_microcanary": "terminal_succeeded_directory_store_publication_result_b7042cebaf191cabd05eae9c8dc92188cd702c4d350fa67b6bf626efaf514e77",
+    "clean_reproduction": "a1_failed_on_volatile_pytest_duration_comparator_a2_normalized_comparator_pending_clean_commit",
     "physical_index_r2": "not_authorized_not_run",
     "retrieval_evaluation": "not_run_on_new_93_object_indexes",
     "evidence_packs": "not_built_from_new_retrieval",
@@ -23,7 +24,7 @@
       "order": 1,
       "owner_stage": "S1",
       "work_item": "PHYSICAL_INDEX_FILE_OR_DIRECTORY_REPAIR_AND_FRESH_R2",
-      "status": "implementation_and_microcanary_pass_clean_proof_and_r2_pending",
+      "status": "implementation_and_microcanary_pass_clean_proof_a1_preserved_a2_and_r2_pending",
       "acceptance": "A synthetic one-vector directory microcanary and a fresh 93-object R2 each close, reopen, bind identities, generate a canonical artifact receipt and publish a whole fresh root. R1 remains immutable.",
       "stop_rule": "Any new backend/storage L1 consumes its attempt and stops step 1; no automatic R3. Retrieval quality is not inferred from build success."
     },
@@ -90,5 +91,5 @@
     "automatic_retry": false
   },
   "known_boundary": "This plan preserves the approved five-step direction but does not make later-stage results true in advance. Each stage must materialize its own evidence and can stop the sequence on a genuine owning-stage L1 blocker.",
-  "plan_digest": "899e01e6bbeb789b46df272623025c16d5da5c1e5268ed132142c4dc68ae6a25"
+  "plan_digest": "4f334da93799e1eaec2611dbb00a018111ab20161c1cbbc0a991aab65fd922f1"
 }

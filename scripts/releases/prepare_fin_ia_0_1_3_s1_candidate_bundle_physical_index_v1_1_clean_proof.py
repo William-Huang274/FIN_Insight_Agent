@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -191,10 +192,19 @@ def _run_archive(archive_root: Path) -> dict[str, Any]:
         timeout=180,
     )
     regenerated = _read(committed_output)
+    terminal_line = tests.stdout.strip().splitlines()[-1]
+    counts_match = re.search(
+        r"(?P<passed>\d+) passed(?:, (?P<skipped>\d+) skipped)?",
+        terminal_line,
+    )
+    _require(counts_match is not None, "physical_index_v1_1_pytest_summary_invalid")
     return {
         "proof_digest": regenerated["proof_digest"],
         "proof_file_sha256": normalized_sha256(committed_output),
-        "test_terminal_line": tests.stdout.strip().splitlines()[-1],
+        "pytest_counts": {
+            "passed": int(counts_match.group("passed")),
+            "skipped": int(counts_match.group("skipped") or 0),
+        },
         "mutation_count": regenerated["mutation_proof"]["scenario_count"],
         "directory_artifact_digest": regenerated["store_artifact_proof"]["directory"][
             "artifact_digest"
@@ -285,7 +295,7 @@ def main() -> int:
         "contract_ref": policy["contract_ref"],
         "run_scope": policy["run_scope"],
         "recorded_at": policy["recorded_at"],
-        "attempt_id": "20260810_s1_candidate_bundle_physical_index_v1_1_clean_proof_a1",
+        "attempt_id": "20260810_s1_candidate_bundle_physical_index_v1_1_clean_proof_a2",
         "status": "terminal_succeeded_two_clean_archive_reproduction",
         "source_git_state": git_state,
         "source_bindings": {

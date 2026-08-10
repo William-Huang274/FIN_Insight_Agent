@@ -1,0 +1,52 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_physical_index_v1_1_clean_proof_failure_v1_0",
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_physical_sparse_dense_index:v1.1",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "20260810_s1_candidate_bundle_physical_index_v1_1_clean_proof_a1",
+  "status": "terminal_failed_clean_archive_reproduction_comparator_no_retry",
+  "automatic_retry": false,
+  "source_commit": "3d39ef433cb40ed378a4d89d809901c1e0aeadad",
+  "evidence_class": "post_failure_reconstruction_from_terminal_and_zero_call_difference_diagnostic",
+  "failure": {
+    "phase": "compare_two_clean_archive_results",
+    "error_type": "CandidateBundlePhysicalCleanProofError",
+    "error_code": "physical_index_v1_1_clean_archive_mismatch",
+    "formal_output_was_materialized_by_a1_runner": false
+  },
+  "diagnostic": {
+    "same_proof_digest": true,
+    "same_proof_file_sha256": true,
+    "same_mutation_count": true,
+    "same_directory_artifact_digest": true,
+    "same_observed_real_calls": true,
+    "only_different_field": "test_terminal_line",
+    "observed_values": [
+      "16 passed, 1 skipped in 1.44s",
+      "16 passed, 1 skipped in 1.57s"
+    ],
+    "root_cause": "pytest wall-clock duration was compared as proof identity instead of normalized pass and skip counts"
+  },
+  "observed_calls": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "embedding_model_loads": 0,
+    "embedding_vectors": 0,
+    "milvus_write": 0,
+    "vector_search": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stage_acceptance": {
+    "two_clean_archive_reproduction": false,
+    "directory_microcanary_remains_valid": true,
+    "r2_authority_issuance": false,
+    "r2_execution": false,
+    "retrieval_quality": false,
+    "evidence": false,
+    "release": false
+  },
+  "known_boundary": "A1 is consumed as a failed zero-call proof attempt. It did not rerun or mutate the published microcanary. A2 requires a committed comparator that excludes wall-clock duration from semantic identity.",
+  "result_digest": "8b3115e6e8287d0cbb70f4f9fa8c79cf6525400f565c12244ea72d760d1e2672"
+}

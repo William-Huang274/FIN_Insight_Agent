@@ -1,5 +1,6 @@
 # Worklog
 
+- [802 — FIN 0.1.3 physical-index clean proof A1 volatile-duration failure](product_strategy/802_fin_0_1_3_physical_index_clean_proof_a1_volatile_duration_failure.md)
 - [801 — FIN 0.1.3 目录型物理存储 microcanary terminal success](product_strategy/801_fin_0_1_3_physical_store_directory_microcanary_terminal_success.md)
 - [800 — FIN 0.1.3 目录型物理存储 microcanary authority](product_strategy/800_fin_0_1_3_physical_store_directory_microcanary_authority.md)
 - [799 — FIN 0.1.3 PhysicalStoreArtifact v1.1 实现与五步执行门](product_strategy/799_fin_0_1_3_physical_store_artifact_v1_1_implementation_and_five_step_execution_gate.md)

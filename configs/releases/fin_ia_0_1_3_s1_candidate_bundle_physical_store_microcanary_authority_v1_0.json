@@ -1,0 +1,98 @@
+{
+  "attempt_id": "20260810_s1_physical_store_artifact_directory_microcanary_r1",
+  "authority_digest": "6c08008d44fe753d86e6ba5478a2cf97c60fba0c49cb31ea29659b67c08b7340",
+  "automatic_retry": false,
+  "decision_id": "FIN-0.1.3-S1-PHYSICAL-STORE-DIRECTORY-MICROCANARY-R1-AUTHORITY",
+  "environment": {
+    "observed_calls": {
+      "embedding_model_loads": 0,
+      "llm_model": 0,
+      "milvus_write": 0,
+      "network": 0,
+      "provider": 0
+    },
+    "packages": {
+      "milvus-lite": "3.0",
+      "pymilvus": "3.0.0"
+    },
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "profile_id": "pymilvus-3.0_milvus-lite-3.0_directory-store",
+    "python": "3.10.12",
+    "python_executable": "/home/william/.cache/fin_insight/candidate_bundle_build_env_v1/bin/python",
+    "target": {
+      "disk_free_bytes": 975227633664,
+      "final_root": "/home/william/.cache/fin_insight/physical_store_artifact_microcanary/v1",
+      "final_root_absent": true,
+      "working_root": "/home/william/.cache/fin_insight/physical_store_artifact_microcanary/attempt_r1_building",
+      "working_root_absent": true
+    }
+  },
+  "execution_ceiling": {
+    "automatic_retry": false,
+    "embedding_model_loads": 0,
+    "evidence_promotion": 0,
+    "llm_model": 0,
+    "maximum_executions": 1,
+    "milvus_collection_creates": 1,
+    "milvus_count_reads": 2,
+    "milvus_database_creates": 1,
+    "milvus_flushes": 2,
+    "milvus_insert_batches": 1,
+    "milvus_inserted_vectors": 1,
+    "milvus_metadata_queries": 1,
+    "milvus_reopens": 1,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0,
+    "synthetic_vectors": 1,
+    "vector_search": 0
+  },
+  "implementation": {
+    "ahead": 0,
+    "behind": 0,
+    "bindings": [
+      {
+        "ref": "configs/runtime/fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_policy_v1_0.json",
+        "sha256": "8952ae4716de866c7faa0ba843027c9dbba0392823478f59e7a8f65db468f7b4"
+      },
+      {
+        "ref": "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json",
+        "sha256": "a61d06ab7b06147bfcc65a653330ff8e36e4abda4e44e44b120835cf8c7f2e98"
+      },
+      {
+        "ref": "src/sec_agent/s1_candidate_bundle_physical_index.py",
+        "sha256": "9a513f01c88540ba6ecd8d5f053da4ebffc61009a7f4c9cc5340223f7ad06b45"
+      },
+      {
+        "ref": "scripts/releases/run_fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_r1.py",
+        "sha256": "200eedd0b82e72d90303f5071ece0f6ccd9e3bfa12d8129474fcb89aecae6be8"
+      },
+      {
+        "ref": "scripts/releases/issue_fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_authority_v1_0.py",
+        "sha256": "488cfc5bc3d65aab17355cb8efca8ca0b032f4571bd1f122405bf2485c80d563"
+      },
+      {
+        "ref": "tests/contract/test_fin_0_1_3_s1_candidate_bundle_physical_index.py",
+        "sha256": "5a09446a78c47dec12d26e84bbf659a27612c01c250cf1f4f71105597703cb0e"
+      }
+    ],
+    "branch": "codex/layered-data-source-expansion",
+    "clean": true,
+    "commit": "90d8ac715e81d1270b29fce799afa8de58badd83",
+    "synced": true,
+    "upstream": "origin/codex/layered-data-source-expansion"
+  },
+  "known_boundary": "This one-vector synthetic run proves directory artifact validation, close/reopen identity, complete counters and whole-root publication only. It loads no embedding model and contains no business fact or Evidence.",
+  "maximum_executions": 1,
+  "policy_digest": "e74acc5f9e2d6244f9f9fe0133adc8251066d725e63c093a2fe449f4ff4ecfe1",
+  "project_os_preflight": {
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+    "status": "pass"
+  },
+  "recorded_at": "2026-08-10",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_authority_v1_0",
+  "status": "issued_unconsumed",
+  "user_authority": "User approved steps 1-5; this sub-authority is limited to one synthetic local directory-store publication microcanary."
+}

@@ -39,6 +39,13 @@ PRIVATE_ATTEMPT_ROOT = Path(
     "data/workbench_private/fin_0_1_3_s2_fixed_pack_capture_reuse_successor/"
     "live/attempts/fin013_s2_fixed_pack_dell_successor_f63f66ff0998aa146c7a"
 )
+BASE_CONTRACT = Path(
+    "configs/runtime/fin_ia_0_1_3_s2_fixed_pack_research_contract_v1_0.json"
+)
+SUCCESSOR_CONTRACT = Path(
+    "configs/runtime/"
+    "fin_ia_0_1_3_s2_dell_fixed_pack_capture_reuse_successor_contract_v1_0.json"
+)
 DEFAULT_OUTPUT = ROOT / (
     "configs/releases/fin_ia_0_1_3_s2_numeric_presentation_compact_verifier_"
     "clean_independent_proof_v1_0.json"
@@ -108,6 +115,26 @@ def _copy_private_inputs(checkout: Path) -> None:
         destination = checkout / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(source, destination)
+    base_contract = json.loads((ROOT / BASE_CONTRACT).read_text(encoding="utf-8"))
+    successor_contract = json.loads(
+        (ROOT / SUCCESSOR_CONTRACT).read_text(encoding="utf-8")
+    )
+    exact_bound_refs = {
+        BASE_CONTRACT,
+        SUCCESSOR_CONTRACT,
+        *(
+            Path(str(row["ref"]))
+            for row in base_contract.get("immutable_inputs", {}).values()
+        ),
+        Path(
+            str(successor_contract["predecessor"]["public_result"]["ref"])
+        ),
+    }
+    for relative in exact_bound_refs:
+        source = ROOT / relative
+        destination = checkout / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
 
 
 def _run_archive_worker(

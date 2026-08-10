@@ -1,0 +1,46 @@
+{
+  "admission_id": "admission::fin013_s1_dell_official_recovery_93f80e015a85e086ee57",
+  "attempt_id": "fin013_s1_dell_official_recovery_93f80e015a85e086ee57::attempt_1",
+  "authority_digest": "76be7744478f3c0e50896965fe8c9a03f53f3dafd183e34a2edac7ec6135140d",
+  "automatic_execution": false,
+  "automatic_retry": false,
+  "budget": {
+    "maximum_live_network_invocations": 2,
+    "model_calls": 0,
+    "official_source_network_calls": 2,
+    "retries": 0,
+    "timeout_seconds_per_route": 45
+  },
+  "business_artifact_promotion": false,
+  "clean_proof_digest": "11f324abd624be5078b5597e43172a7cebe6c6e8778de5e9ab81871ae6264dca",
+  "contract_ref": "fin_0_1_3.S1.dell_official_source_recovery_successor:v1",
+  "evidence_promotion_mode": "local_deterministic_adjudication_only",
+  "expires_at": "2026-08-11T14:15:29Z",
+  "file_bindings": {
+    "configs/releases/fin_ia_0_1_3_s1_dell_official_source_recovery_successor_clean_proof_v1_0.json": "ff0cf87289cceb66a7ce402328b607998c1e457dc56a3670b7f0648fb22fb62a",
+    "configs/runtime/fin_ia_0_1_3_s1_dell_official_source_recovery_successor_policy_v1_0.json": "13bab484c972f52a5d7c77dfd85f3b4d812c0df1d0cff959491935d421bf18cc",
+    "scripts/releases/run_fin_ia_0_1_3_s1_dell_official_source_recovery.py": "15fac4b8d66702b5dfb302b12f7950dccbae58c4ab3de335947bbe3e24d6e920",
+    "src/sec_agent/canonical_runtime/object_store.py": "91452ec6024788bd63d9c123a1dedecb9972515746d3a2ca0e8843f355f48a17",
+    "src/sec_agent/official_source_attempt_program.py": "d2cd7d8f3dd71ccb645c1ac10a325f45d98ff73f73a23e079a1aa32c331ee772",
+    "src/sec_agent/s1_dell_official_source_recovery_successor.py": "14752c625d3c7712c7614480c91fb73f9b22ab169c47f41002ee207c7521706d",
+    "src/sec_agent/s1_dell_targeted_source_supplement.py": "7253893f2b8cfa57d81eb83c3e51db612febaaf405262a9011a2ea66056482db",
+    "src/sec_agent/shared_admission_ledger.py": "ef0611378b4aa4419f8782feceb8ddd89603e79c9d7a5753452f3ddbcb725455"
+  },
+  "implementation_commit": "7663afb20f0d1a05cb89f6c33974687edee937d4",
+  "issued_at": "2026-08-10T14:15:29Z",
+  "known_boundary": "This admission authorizes exactly two capture-first managed-reader retrievals of exact official URLs. It authorizes no retry, model call, recommendation, business artifact promotion or release decision.",
+  "maximum_executions": 1,
+  "model_calls_allowed": 0,
+  "policy_digest": "7683e419b594b00b597fbf2abf540c613bd7a800f41c2f253eb8033701f23c7f",
+  "project_os_preflight": {
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "FIN_0_1_3_S1_DELL_ENRICHED_SOURCE_SUCCESSOR_EXACT_ONCE",
+    "status": "pass"
+  },
+  "run_id": "fin013_s1_dell_official_recovery_93f80e015a85e086ee57",
+  "run_scope": "FIN_0_1_3_S1_DELL_ENRICHED_SOURCE_SUCCESSOR_EXACT_ONCE",
+  "schema_version": "fin_ia_0_1_3_s1_dell_official_source_recovery_successor_authority_v1_0",
+  "status": "issued_unconsumed",
+  "synthetic_dns_proxy_allowance": "host_allowlisted_https_only_for_desktop_proxy_range_198.18.0.0/15",
+  "user_authority": "annotation_1_owner_approved_timeout_replay_then_one_fresh_source_live_and_only_if_core_ready_one_changed_pack_report_comparison"
+}

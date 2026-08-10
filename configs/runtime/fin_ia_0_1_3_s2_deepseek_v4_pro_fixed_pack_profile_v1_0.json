@@ -1,0 +1,51 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_model_capability_profile_v1_0",
+  "profile_ref": "fin_0_1_3.model_profile.deepseek_v4_pro.fixed_pack_research:v1",
+  "provider": "deepseek",
+  "model": "deepseek-v4-pro",
+  "model_tier": "pro_not_flash",
+  "base_url": "https://api.deepseek.com/beta",
+  "chat_completions_path": "/chat/completions",
+  "api_key_env": "DEEPSEEK_API_KEY",
+  "temperature": 0.0,
+  "stream": false,
+  "enable_thinking": false,
+  "max_transport_attempts": 1,
+  "timeout_seconds_per_call": 300,
+  "maximum_input_characters_per_call": 180000,
+  "maximum_output_tokens": {
+    "direct_baseline": 7000,
+    "research_lead": 3000,
+    "specialist": 3500,
+    "cross_unit_synthesis": 4500,
+    "draft_writer": 7500,
+    "red_team_critic": 3500,
+    "final_writer": 8000,
+    "verifier": 4000
+  },
+  "capacity": {
+    "specialist_units_per_case": {"minimum": 6, "maximum": 8},
+    "provider_calls_per_case": {"minimum": 13, "maximum": 15},
+    "provider_calls_campaign_maximum": 90,
+    "maximum_input_tokens_per_case": 500000,
+    "maximum_output_tokens_per_case": 66000,
+    "maximum_total_tokens_per_case": 566000,
+    "maximum_estimated_usd_per_case": 0.75,
+    "maximum_estimated_usd_campaign": 4.5,
+    "input_usd_per_million_tokens": 0.6,
+    "output_usd_per_million_tokens": 1.7,
+    "retry_count": 0,
+    "fallback_count": 0
+  },
+  "capability_boundary": {
+    "json_object": "natural_pass_observed_but_not_assumed",
+    "case_identity": "natural_pass_observed_but_locally_verified",
+    "evidence_role_semantics": "natural_failure_observed_requires_local_boundary_check",
+    "numeric_visibility_and_reasoning": "authorized",
+    "authoritative_numeric_rewrite": "not_authorized",
+    "correction_closure_self_attestation": "revoked",
+    "dynamic_tool_loop": "not_in_this_profile",
+    "maximum_autonomy_tier": "A4_whole_node_fixed_pack_only"
+  },
+  "known_boundary": "This is a provider adapter for one fixed-pack research experiment. No DeepSeek-specific branch belongs in the provider-neutral financial control kernel."
+}

@@ -1,0 +1,130 @@
+{
+  "case_order": [
+    "DELL",
+    "MU",
+    "NVDA",
+    "ORCL",
+    "ASML",
+    "ANET"
+  ],
+  "case_summaries": [
+    {
+      "case_key": "DELL",
+      "evidence_items": 15,
+      "input_density_class": "raw_source_text_and_review_boundaries",
+      "model_visible_digest": "f1f1945e5808001bea377fc7903b8b751a1f9c02cb1d6b7dae53e67e4853496d",
+      "residual_gaps": 16,
+      "serialized_characters": 77516,
+      "source_materials": 15,
+      "source_pack_digest": "554e7db12bcb98f0a03f420f9d4b7cbaf7422a87bdef6f83699068d0b863f181"
+    },
+    {
+      "case_key": "MU",
+      "evidence_items": 16,
+      "input_density_class": "raw_source_text_and_review_boundaries",
+      "model_visible_digest": "9307eabb2ac135415e81076182bbbd948849079ba0facf05b4de0256621e20ef",
+      "residual_gaps": 13,
+      "serialized_characters": 69526,
+      "source_materials": 16,
+      "source_pack_digest": "1c2b787a955bb145fef6acd4e1ebf70566f472259006c06891b3fd9dde0f2964"
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_items": 14,
+      "input_density_class": "raw_source_text_and_review_boundaries",
+      "model_visible_digest": "e610c32f5998a8ace1cc60d41c3e6a3ae50cc9a85c03116635638f12024a88ec",
+      "residual_gaps": 13,
+      "serialized_characters": 82024,
+      "source_materials": 13,
+      "source_pack_digest": "9372a57bb60bbb573a8b53fd7dda2a45d70caaf89298456982714ea84ecaf066"
+    },
+    {
+      "case_key": "ORCL",
+      "evidence_items": 13,
+      "input_density_class": "reviewed_structured_metrics_and_claims_without_raw_source_text",
+      "model_visible_digest": "00d5ef41664fc1f56881928efb1cd98aa4fc3d08d1b2542bb9806224ced5d498",
+      "residual_gaps": 26,
+      "serialized_characters": 34056,
+      "source_materials": 0,
+      "source_pack_digest": "fab997d54e67c13ebae8d3dee9647678c9beebccd1693a22861cd9a844ad58b7"
+    },
+    {
+      "case_key": "ASML",
+      "evidence_items": 12,
+      "input_density_class": "reviewed_structured_metrics_and_claims_without_raw_source_text",
+      "model_visible_digest": "6251653a190f8479aa7236d8f99343346d5f8e30e4b7cb851e03fb33289d4e3f",
+      "residual_gaps": 31,
+      "serialized_characters": 34472,
+      "source_materials": 0,
+      "source_pack_digest": "2f975a03b5a646c1da54bb63ad0ee8f3ec977e5848c06ff71075f02e92f1c683"
+    },
+    {
+      "case_key": "ANET",
+      "evidence_items": 14,
+      "input_density_class": "reviewed_structured_metrics_and_claims_without_raw_source_text",
+      "model_visible_digest": "d50470f9bf31406cbdad5db59f810ea7f4be41dfa7d71524ce8f1ce190f971a5",
+      "residual_gaps": 27,
+      "serialized_characters": 35787,
+      "source_materials": 0,
+      "source_pack_digest": "49422886291e495d736066c790d7344052bc3b4796c48b4351226b345408ccf3"
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S2.fixed_evidence_pack_research:v1",
+  "input_artifacts": {
+    "ANET": {
+      "artifact_type": "fixed_pack_model_visible_input",
+      "byte_size": 48538,
+      "digest": "91f8dede138e146e8ad4da28e4ab1caabba112d79d7e30a5573446e3c5a5aad0",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s2-fixed-pack-input/anet/v1/91/f8/91f8dede138e146e8ad4da28e4ab1caabba112d79d7e30a5573446e3c5a5aad0.json"
+    },
+    "ASML": {
+      "artifact_type": "fixed_pack_model_visible_input",
+      "byte_size": 46540,
+      "digest": "a88b54f634ef80f96c2a866495a60116ca244498665fd3fd50d97de17df7d0ce",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s2-fixed-pack-input/asml/v1/a8/8b/a88b54f634ef80f96c2a866495a60116ca244498665fd3fd50d97de17df7d0ce.json"
+    },
+    "DELL": {
+      "artifact_type": "fixed_pack_model_visible_input",
+      "byte_size": 89499,
+      "digest": "88d80c7bcf3504122f8af20f9d1dbd8234e6d6eafb81d7ae244df3e25054ff08",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s2-fixed-pack-input/dell/v1/88/d8/88d80c7bcf3504122f8af20f9d1dbd8234e6d6eafb81d7ae244df3e25054ff08.json"
+    },
+    "MU": {
+      "artifact_type": "fixed_pack_model_visible_input",
+      "byte_size": 80882,
+      "digest": "8263e9d2888b330417947cb0585b8f82d6513d759d80c36b738e4ba21c3e68db",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s2-fixed-pack-input/mu/v1/82/63/8263e9d2888b330417947cb0585b8f82d6513d759d80c36b738e4ba21c3e68db.json"
+    },
+    "NVDA": {
+      "artifact_type": "fixed_pack_model_visible_input",
+      "byte_size": 92704,
+      "digest": "59c485735e4916015b4cd652efd5666c0ac5569f3c1ed25fa9c4a11efac4c7db",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s2-fixed-pack-input/nvda/v1/59/c4/59c485735e4916015b4cd652efd5666c0ac5569f3c1ed25fa9c4a11efac4c7db.json"
+    },
+    "ORCL": {
+      "artifact_type": "fixed_pack_model_visible_input",
+      "byte_size": 46357,
+      "digest": "4f591323d10077f2002ec9a966dd61d7ecf7979b7e41bf1fdcd1682fbb09b259",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s2-fixed-pack-input/orcl/v1/4f/59/4f591323d10077f2002ec9a966dd61d7ecf7979b7e41bf1fdcd1682fbb09b259.json"
+    }
+  },
+  "known_boundary": "Compilation proves immutable, case-bound, model-visible inputs only; it does not prove model output quality or dynamic research.",
+  "observed_counts": {
+    "cases": 6,
+    "evidence_items": 84,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "residual_gaps": 126,
+    "source_materials": 44
+  },
+  "result_digest": "f0a840f8db83954b590dafddbf2988dea27a0058a787400e9b2fdf074bae2b47",
+  "schema_version": "fin_ia_0_1_3_s2_fixed_pack_input_compilation_result_v1_0",
+  "status": "six_case_model_visible_inputs_compiled_zero_call"
+}

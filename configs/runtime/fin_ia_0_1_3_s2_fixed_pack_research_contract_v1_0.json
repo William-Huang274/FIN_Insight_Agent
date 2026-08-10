@@ -1,0 +1,151 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_fixed_pack_research_contract_v1_0",
+  "contract_ref": "fin_0_1_3.S2.fixed_evidence_pack_research:v1",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2_to_S3",
+  "recorded_at": "2026-08-10",
+  "purpose": "Compare a direct model baseline with a multi-node research candidate on the same six immutable Evidence Packs before any dynamic tool research.",
+  "case_order": ["DELL", "MU", "NVDA", "ORCL", "ASML", "ANET"],
+  "immutable_inputs": {
+    "local_evidence_pack_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_six_case_local_evidence_pack_result_v1_0.json",
+      "sha256": "1da1d1e21d7b3b3211bb0008b5ac00c8b9bca8c2af17712354095ab4708117a0",
+      "expected_result_digest": "52cd20faabe60591dca408a3c571ea1835b8e8ac635402b3d47c681b5cdc56da"
+    },
+    "external_readjudication_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_residual_gap_external_readjudication_v1_0.json",
+      "sha256": "e81e50d79e1e449a6c499df8cfb170d284f4484338f58b01b0ba7787996d3d5a",
+      "expected_result_digest": "494a0f01fb979883d454a2d0140e3070be6cdbe7832ec081a060e478f00f41c9"
+    },
+    "held_out_profile_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_profile_selection_result_v1_0.json",
+      "sha256": "8a8d3a8007b926f8e5c3cce1969a83d95b91709810a482b4ce1452c8000c9b01",
+      "expected_result_digest": "c25f6ba9a9a129c3eb6b3d9c7f8fd3e9a627de46c4c67fb04962323ace401792"
+    },
+    "quality_rubric": {
+      "ref": "docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md",
+      "sha256": "af66c46d3468740e46d0424301da12961af29202d847b55f1dbe2f54f0642cb1"
+    },
+    "quality_gate_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_repair_closeout_s3_research_quality_gate_policy_v1_0.json",
+      "sha256": "2b151aa54767827490a1eec1ad2de38bdf742c393201911ac11f2803c965750c"
+    }
+  },
+  "private_pack_root": "data/workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects",
+  "private_input_root": "data/workbench_private/fin_0_1_3_s2_fixed_pack_research/zero-call-r1/objects",
+  "cases": {
+    "DELL": {
+      "issuer": {"ticker": "DELL", "legal_name": "Dell Technologies Inc.", "cik": "0001571996"},
+      "as_of": "2026-08-06",
+      "research_objective_zh": "评估 Dell AI 基础设施业务的需求真实性与持续性、利润和现金价值捕获、供应与客户风险、市场预期及可证伪条件。",
+      "research_questions_zh": [
+        "AI 服务器订单、收入和 backlog 是否证明需求能够持续转化，而不是短期拉货？",
+        "AI 基础设施增长如何传导到 ISG 利润、现金流和营运资金？",
+        "客户集中、GPU/HBM/先进封装供给、竞争与政策中，什么会改变当前判断？"
+      ]
+    },
+    "MU": {
+      "issuer": {"ticker": "MU", "legal_name": "Micron Technology, Inc.", "cik": "0000723125"},
+      "as_of": "2026-08-06",
+      "research_objective_zh": "评估 Micron HBM 与数据中心内存增长的结构性和周期性来源、价格/出货/利润/现金传导、长期协议质量、供给响应和市场预期。",
+      "research_questions_zh": [
+        "HBM 与数据中心内存增长中哪些是结构性需求，哪些仍受存储周期驱动？",
+        "价格、bit shipment、mix、成本和产能爬坡如何传导到利润与现金？",
+        "客户协议、竞争供给、库存与资本开支中，什么会改变当前判断？"
+      ]
+    },
+    "NVDA": {
+      "issuer": {"ticker": "NVDA", "legal_name": "NVIDIA Corporation", "cik": "0001045810"},
+      "as_of": "2026-08-06",
+      "research_objective_zh": "评估 NVIDIA AI 基础设施需求与平台价值、利润和现金捕获、客户及供应集中、生态与政策风险、市场预期及可证伪条件。",
+      "research_questions_zh": [
+        "AI 基础设施需求和平台价值是否能够持续，而不只是客户资本开支前置？",
+        "产品迭代、供应约束、客户集中与生态投资如何影响利润和现金捕获？",
+        "出口管制、替代架构、客户 ROI 与库存风险中，什么会改变当前判断？"
+      ]
+    },
+    "ORCL": {
+      "issuer": {"ticker": "ORCL", "legal_name": "Oracle Corporation", "cik": "0001341439"},
+      "as_of": "2026-08-06",
+      "research_objective_zh": "评估 Oracle AI 云基础设施需求从签约到消费和收入确认的质量，以及资本强度、利润、现金与反证边界。",
+      "research_questions_zh": [
+        "Oracle 当前 OCI、云收入与 RPO 能否证明 AI 基础设施需求已经从签约转成可持续消费和确认收入？",
+        "数据中心资本开支、折旧、电力与加速器约束如何影响容量释放、利润率和自由现金流？",
+        "哪些客户集中、融资承诺、交付延迟或竞争证据会推翻增长与利润捕获判断？"
+      ]
+    },
+    "ASML": {
+      "issuer": {"ticker": "ASML", "legal_name": "ASML Holding N.V.", "cik": "0000937966"},
+      "as_of": "2026-08-06",
+      "research_objective_zh": "评估 ASML 订单、出货、产品组合、服务收入、制造周期与政策风险如何共同决定收入、利润和判断边界。",
+      "research_questions_zh": [
+        "EUV／High-NA 的 bookings、backlog、系统出货和客户验收如何转化为收入，订单是否受晶圆厂扩产节奏支持？",
+        "系统数量、ASP、产品 mix、installed-base service 与制造周期如何共同决定收入和毛利？",
+        "出口管制、中国收入、客户资本开支消化、欧元现金流与 High-NA 爬坡中，什么会改变判断？"
+      ]
+    },
+    "ANET": {
+      "issuer": {"ticker": "ANET", "legal_name": "Arista Networks, Inc.", "cik": "0001596532"},
+      "as_of": "2026-08-06",
+      "research_objective_zh": "评估 Arista AI 网络需求、客户集中、产品与平台组合、供给、利润现金和可证伪风险。",
+      "research_questions_zh": [
+        "Arista 的大型云客户和 AI cluster Ethernet 部署是否形成可持续订单与收入，还是存在集中和提前采购风险？",
+        "产品／服务／平台 mix、新平台爬坡、组件供给和交期如何影响利润率与现金转换？",
+        "客户资本开支消化、Ethernet 竞争替代、出口或供应限制中，哪些官方可观察指标会改变判断？"
+      ]
+    }
+  },
+  "mandatory_research_families": [
+    "demand_authenticity_and_sustainability",
+    "product_and_technology_position",
+    "supply_capacity_and_competition",
+    "financial_transmission_profit_and_cash",
+    "capital_allocation_valuation_and_price_in",
+    "counter_thesis_risk_and_what_would_change"
+  ],
+  "report_section_order": [
+    "executive_thesis",
+    "demand_and_revenue_quality",
+    "product_competition_and_positioning",
+    "supply_capacity_and_execution",
+    "profit_cash_and_balance_sheet",
+    "valuation_and_price_in_boundary",
+    "counter_thesis_risks_and_gaps",
+    "what_would_change"
+  ],
+  "node_sequence": [
+    "direct_baseline",
+    "research_lead",
+    "specialist_dynamic_6_to_8",
+    "cross_unit_synthesis",
+    "draft_writer",
+    "red_team_critic",
+    "final_writer",
+    "verifier"
+  ],
+  "authority_boundary": {
+    "tools_and_network": "forbidden",
+    "external_provider_snippets_visible": false,
+    "rejected_pack_items_visible": false,
+    "all_residual_gaps_visible": true,
+    "model_may_read_exact_source_numbers": true,
+    "model_may_analyze_and_quote_source_bound_numbers": true,
+    "model_may_change_authoritative_fact": false,
+    "model_may_invent_source_or_alias": false,
+    "model_self_verification_is_promotion_authority": false,
+    "raw_capture_before_parse": true,
+    "automatic_retry": false,
+    "business_artifact_promotion": false,
+    "qualified_human_acceptance_required_later": true
+  },
+  "acceptance": {
+    "L1_financial_truth_and_L2_evidence_authority_before_content_scoring": true,
+    "eight_dimension_rubric_applies": true,
+    "direct_baseline_and_agent_same_input_digest_required": true,
+    "case_averaging_for_primary_cases_forbidden": true,
+    "primary_release_cases": ["DELL", "MU", "NVDA"],
+    "held_out_cases_are_generalization_diagnostics": ["ORCL", "ASML", "ANET"],
+    "call_count_is_quality_proxy": false
+  },
+  "known_boundary": "This contract measures model analysis and orchestration on six frozen Evidence Packs. It does not prove dynamic search/tool use, close external gaps, authorize product promotion, or replace qualified-human content acceptance."
+}

@@ -2291,3 +2291,5 @@ v1.1 working-tree 实现现已完成：核心合同同时支持 file 和 directo
 后续产品执行线冻结为五步但不预支结果：先完成 synthetic microcanary／clean proof／fresh R2；再以六案同矩阵解释 sparse／dense／fusion 的具体业务命中和错误；然后生成可审 Evidence Pack；只按 typed residual gaps 外源补源；最后把固定包分析能力和动态工具研究能力分开评估。此顺序避免再次把“索引存在”“召回排序”“Evidence 可用”和“模型会写研报”混成一个总门。
 
 synthetic microcanary 已实际通过并只证明目录发布能力：Ubuntu 中 1 个非业务 4 维向量完成 close／reopen identity、manifest／data／index tree digest、symlink 拒绝与 whole-root rename，result=`b7042ceb...4e77`；没有加载 BGE，也没有公司数据、检索或 Evidence。产品 UI 仍不得把它显示为“业务索引可用”。下一项是 two-clean-archive reproduction，之后才允许 fresh 93-object R2。
+
+two-clean-archive successor A2 已 terminal succeeded（A1 的时间字段误比较保持失败）：两份 clean Git archive 均重现同一实现 proof、同一文件 SHA、相同 `16 passed／1 skipped`、11 mutations 和 0-call receipt，并只读复核 microcanary。clean proof=`095e24ab...f9a9`，因此产品门现在只允许签发一次 fresh 93-object R2；仍不得声称业务索引、召回或研报能力已通过。

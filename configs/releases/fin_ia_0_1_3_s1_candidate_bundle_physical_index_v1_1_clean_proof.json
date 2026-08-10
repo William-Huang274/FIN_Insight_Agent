@@ -1,0 +1,125 @@
+{
+  "attempt_id": "20260810_s1_candidate_bundle_physical_index_v1_1_clean_proof_a2",
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_physical_sparse_dense_index:v1.1",
+  "decision_zh": "两个 clean archive 均逐字重现 v1.1 零调用 proof，且已发布的一向量目录型 microcanary 在 WSL 中只读复核通过。现在只允许另行签发一次 fresh R2；不得复用 R1 目录或把物理索引成功等同于检索质量。",
+  "implementation_proof_digest": "898a9aae9957d82a7546c65bafc1e3aa7296df4c2003a45ecb5b9e3d6875768f",
+  "known_boundary": "This proof admits a separate exact-once R2 authority decision only. It does not execute the 93-vector build, search, rank, promote Evidence, supplement externally, call DeepSeek or accept release.",
+  "microcanary_result_digest": "b7042cebaf191cabd05eae9c8dc92188cd702c4d350fa67b6bf626efaf514e77",
+  "observed_calls_each_archive": {
+    "document_fetch": 0,
+    "embedding_model_loads": 0,
+    "embedding_vectors": 0,
+    "evidence_promotion": 0,
+    "llm_model": 0,
+    "milvus_read": 0,
+    "milvus_write": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0,
+    "vector_search": 0
+  },
+  "private_manifest_copy": {
+    "bytes": 275875,
+    "relative_ref": "data/workbench_private/fin_0_1_3_s1_candidate_bundle_sparse_dense_manifest/zero-call-r4/objects/fin-0.1.3/s1-candidate-bundle-sparse-dense-manifest/v1/75/70/75702f7f5d64a14f39f87ec692bd69941d75efde67e0e85ce77427f2620d4068.json",
+    "sha256": "75702f7f5d64a14f39f87ec692bd69941d75efde67e0e85ce77427f2620d4068"
+  },
+  "proof_digest": "095e24ab9f1eda6a91d98ec1120aae950c74cfa69878799626f6be11c05ef9a9",
+  "proof_runs": [
+    {
+      "directory_artifact_digest": "a7118a056a55975b608d6bca184986ac4991433f24bb47ca3487d3f9cf642085",
+      "mutation_count": 11,
+      "observed_real_calls": {
+        "document_fetch": 0,
+        "embedding_model_loads": 0,
+        "embedding_vectors": 0,
+        "evidence_promotion": 0,
+        "llm_model": 0,
+        "milvus_read": 0,
+        "milvus_write": 0,
+        "network": 0,
+        "provider": 0,
+        "rerank": 0,
+        "vector_search": 0
+      },
+      "proof_digest": "898a9aae9957d82a7546c65bafc1e3aa7296df4c2003a45ecb5b9e3d6875768f",
+      "proof_file_sha256": "a6fdc4479a741884e274711fc2765751aa14fc62204ef7cd0c62c156ec58a3a5",
+      "pytest_counts": {
+        "passed": 16,
+        "skipped": 1
+      },
+      "run_id": "clean-archive-1"
+    },
+    {
+      "directory_artifact_digest": "a7118a056a55975b608d6bca184986ac4991433f24bb47ca3487d3f9cf642085",
+      "mutation_count": 11,
+      "observed_real_calls": {
+        "document_fetch": 0,
+        "embedding_model_loads": 0,
+        "embedding_vectors": 0,
+        "evidence_promotion": 0,
+        "llm_model": 0,
+        "milvus_read": 0,
+        "milvus_write": 0,
+        "network": 0,
+        "provider": 0,
+        "rerank": 0,
+        "vector_search": 0
+      },
+      "proof_digest": "898a9aae9957d82a7546c65bafc1e3aa7296df4c2003a45ecb5b9e3d6875768f",
+      "proof_file_sha256": "a6fdc4479a741884e274711fc2765751aa14fc62204ef7cd0c62c156ec58a3a5",
+      "pytest_counts": {
+        "passed": 16,
+        "skipped": 1
+      },
+      "run_id": "clean-archive-2"
+    }
+  ],
+  "published_microcanary_reverification": {
+    "artifact_digest": "6fd72c7836f7062a5b6bfac8c40c2bded2bc51b8e48130e0796bc9a211b103ea",
+    "final_root_present": true,
+    "observed_calls": {
+      "embedding_model_loads": 0,
+      "llm_model": 0,
+      "milvus_write": 0,
+      "network": 0,
+      "provider": 0,
+      "vector_search": 0
+    },
+    "receipt_digest": "5c7b3e2643bf524c8b8a200f8e0610155a6238985eb5db18d435ba098ffdae3a",
+    "result_digest": "b7042cebaf191cabd05eae9c8dc92188cd702c4d350fa67b6bf626efaf514e77",
+    "status": "published_microcanary_reverified_read_only",
+    "working_root_absent": true
+  },
+  "recorded_at": "2026-08-10",
+  "run_scope": "S1_IMMUTABLE_SUPPLEMENTAL_DENSE_INDEX_REPLACEMENT_BUILD",
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_physical_index_v1_1_clean_proof",
+  "source_bindings": {
+    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_1.json": "a6fdc4479a741884e274711fc2765751aa14fc62204ef7cd0c62c156ec58a3a5",
+    "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_result_v1_0.json": "41e6c91d03592db9b074822f999d8ea4287949d1cd3b177edcf2f093a69a54bf",
+    "configs/runtime/fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_policy_v1_1.json": "64f68e3fc557da03faa81c3a6dcca938cb0ea70ddc92898372855b227d30685b",
+    "configs/runtime/fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_policy_v1_0.json": "8952ae4716de866c7faa0ba843027c9dbba0392823478f59e7a8f65db468f7b4",
+    "scripts/releases/materialize_fin_ia_0_1_3_s1_candidate_bundle_physical_index_implementation_proof_v1_1.py": "3cc0429da9bb40466a54fc6a645e403ae54b0f309885b22aaa067c9639dbeed9",
+    "scripts/releases/run_fin_ia_0_1_3_s1_candidate_bundle_physical_store_microcanary_r1.py": "200eedd0b82e72d90303f5071ece0f6ccd9e3bfa12d8129474fcb89aecae6be8",
+    "src/sec_agent/s1_candidate_bundle_physical_index.py": "9a513f01c88540ba6ecd8d5f053da4ebffc61009a7f4c9cc5340223f7ad06b45",
+    "tests/contract/test_fin_0_1_3_s1_candidate_bundle_physical_index.py": "5a09446a78c47dec12d26e84bbf659a27612c01c250cf1f4f71105597703cb0e"
+  },
+  "source_git_state": {
+    "branch": "codex/layered-data-source-expansion",
+    "clean": true,
+    "commit": "c0a4d3f31f9f83d5d44126b15b46983501eae11b",
+    "synced": true,
+    "upstream_commit": "c0a4d3f31f9f83d5d44126b15b46983501eae11b"
+  },
+  "stage_acceptance": {
+    "deepseek": false,
+    "directory_microcanary_published_and_reverified": true,
+    "evidence": false,
+    "external_supplement": false,
+    "r2_authority_issuance": true,
+    "r2_execution": false,
+    "release": false,
+    "retrieval_quality": false,
+    "two_clean_archive_reproduction": true
+  },
+  "status": "terminal_succeeded_two_clean_archive_reproduction"
+}

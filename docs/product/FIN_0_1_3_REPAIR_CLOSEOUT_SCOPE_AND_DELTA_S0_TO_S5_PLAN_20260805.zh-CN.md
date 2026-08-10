@@ -791,3 +791,17 @@ clean/synced `ef01fa41...e6dd` fresh preflight 已 pass，且唯一 24 小时 au
 该唯一 live 已 terminal：`17` 次网络动作，`0` retry/model/embedding/rerank/Evidence；12 个意图全部终态，但没有一条直接达到待重裁决 ready，只有 ANET 的 2 个通用 Financial Info 页面实例带 publication-date/content gap，其余 10 个为 typed gap。业务上不是“完全没搜到字”，而是搜到的页面大多不回答问题：DELL 的转载／登录页、MU 的错误新闻列表、NVDA 的 Annual Meeting／驱动页、ORCL 的通用 Financials、ANET 的脚本导航壳；ASML 的正确 Q2 2026 results URL 则未成功抓到正文。第 4 项因此仍需完成一次本地 readjudication 才能终态；不得把 provider snippet 或 generic IR page 当 Evidence，也不得自动再开 live。
 
 本地 readjudication 已 terminal，digest=`494a0f01...f41c9`：12/12 意图均被拒绝新增，ANET 两页完整正文读回后确认是脚本/导航壳且日期不明；`Evidence 84→84`、`residual gaps 126→126`。第 4 项按“执行与审计闭环通过、外源候选质量失败、0 新增”关闭，不再扩大。第 5 项现在只允许先做 fixed-pack DeepSeek analysis；模型看见现有 Evidence 和 gaps，但不联网、不读取 provider snippet，也不替外源缺口背锅。
+
+## 7T. DELL 固定 Pack 实测后的 S2 收敛与 S1 定向补源接力（2026-08-10）
+
+DELL fixed-pack successor 已完成 13 个逻辑节点并形成有实质内容的 8 章草稿，但旧 Verifier 在 4,000 output tokens 截断、数字展示合同重复要求模型选择 `PRES`、numeric inventory 漏收 TSMC 77%、tokenizer 又把 `FY27` 尾数当数字。上述问题已在 S2 原地一次性结构修复：模型继续引用 `NUM/FORM`，Harness 确定性接受授权展示；Verifier 改为 compact claim-ID verdict；`finish_reason=length`、截断 JSON 或 claim 覆盖不完整均 hard stop。历史 Final Writer 回放得到 36/36 material surface 绑定、0 numeric finding；两个 clean Git archive worker 逐字节一致，proof=`48968cda...8117b3`。这只关闭结构缺陷，不代表旧报告已通过。
+
+内容审计同时证明下一阻塞回到 S1：旧 Pack 能写出 DELL-specific 判断，却缺 point-in-time 估值基础、产品利润口径，并遗漏本地 corpus 已有的客户、竞争与供应 read-through。更新后的执行顺序为：
+
+1. [x] `S2_NUMERIC_PRESENTATION_AND_COMPACT_VERIFIER_ZERO_CALL_REPAIR`：保存旧 raw，完成 replay／mutation／clean proof，不执行模型。
+2. [ ] `S1_DELL_TARGETED_SOURCE_SUPPLEMENT`：先 exact-select 本地 HPE／SMCI／MSFT／MU 五条官方材料，再 exact-once 抓取 Dell 法说、Micron 演示稿、TSMC 法说和 DELL point-in-time 市场行；总网络上限 4、0 retry、0 model。
+3. [ ] `S1_DELL_SUCCESSOR_EVIDENCE_PACK`：只有 source anchor 实际出现才关闭对应 gap；客户／竞争／供应材料保持 bounded read-through，市场价格保持独立 PIT 角色。目标形状是 DELL Evidence `15→27`、gap `16→14`，但数量不是通过标准。
+4. [ ] `S2_ENRICHED_DELL_INPUT_COMPILE_AND_ZERO_CALL_PROOF`：重新编译完整新输入、数字权威、公式和 compact Verifier 容量；Evidence Pack 已改变，因此不复用旧 13 节点输出。
+5. [ ] `S2_S3_ONE_ENRICHED_DELL_EXACT_LIVE_AND_CONTENT_DELTA_REVIEW`：只有第 2–4 项全部通过才签发一次完整 DeepSeek 链；比较需求、利润、供应、竞争、反方、WWC、估值边界和信息密度是否实质改善。L2–L4 问题按 rubric 记录；新 L1 停止，不自动再开下一轮。
+
+这不是把已关闭的六案 broad-search live 重跑一遍，也不是为 DELL 手工拼一篇标准答案。Source successor 仍产出可复用 Evidence Pack；模型负责判断与叙事，Harness 只拥有来源、身份、期间、数值、公式、gap 和晋升边界。MU／NVDA、动态 Agentic Research、Workbench 与 S5 release 不因本次 DELL 比较自动解锁。

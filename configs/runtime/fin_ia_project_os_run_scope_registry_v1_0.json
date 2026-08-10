@@ -458,6 +458,13 @@
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1"]
     },
+    "FIN_0_1_3_S1_DELL_TARGETED_SOURCE_SUPPLEMENT_EXACT_ONCE": {
+      "owner_stage": "S1",
+      "operation_class": "live_search_execution",
+      "parent_scope_id": "FIN_0_1_3_S1_08",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1", "S2", "S3"]
+    },
     "S1_INTERNAL_CURRENT_OFFICIAL_SOURCE_ACQUISITION": {
       "owner_stage": "S1",
       "operation_class": "live_search_execution",

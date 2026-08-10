@@ -1,0 +1,393 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_dell_targeted_source_supplement_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.dell_targeted_source_supplement:v1",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S1",
+  "recorded_at": "2026-08-10",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "purpose": "Add a bounded set of decision-relevant issuer, customer, competitor, supplier and market point-in-time evidence to the immutable DELL local pack before one same-structure report comparison.",
+  "base_pack_result": {
+    "ref": "configs/releases/fin_ia_0_1_3_s1_six_case_local_evidence_pack_result_v1_0.json",
+    "sha256": "1da1d1e21d7b3b3211bb0008b5ac00c8b9bca8c2af17712354095ab4708117a0",
+    "expected_result_digest": "52cd20faabe60591dca408a3c571ea1835b8e8ac635402b3d47c681b5cdc56da"
+  },
+  "base_pack_artifact_root": "data/workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects",
+  "local_corpus": {
+    "ref": "data/indexes/bm25/sector_depth_full238_us_v0_3_mixed_with_8k_fy2023_2027/records.jsonl",
+    "sha256": "64b838f96f33d332c2f9a77517ad24fc190e4d5caf31da76928f8f3880255ed9"
+  },
+  "local_source_adjudications": [
+    {
+      "source_record_id": "HPE_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001",
+      "target_id": "SUPPLEMENT::DELL::COMPETITOR::HPE::PRIOR_ORDER_DIGESTION",
+      "evidence_owner_ticker": "HPE",
+      "publication_date": "2026-03-10",
+      "relationship_directions": ["competitor_self_disclosure_to_dell_demand_readthrough"],
+      "required_patterns": ["taking longer to work through prior orders", "uneven demand"],
+      "excerpt_before": 80,
+      "excerpt_after": 360,
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": ["pull_forward_or_digestion", "competitor_demand_readthrough"],
+          "business_meaning_zh": "HPE 披露客户消化既有订单和需求不均，可作为企业硬件订单消化风险的独立反证。",
+          "claim_boundary_zh": "只能说明 HPE 所见行业/客户行为，不能证明 Dell 已发生同等程度的订单消化。"
+        },
+        {
+          "slot_id": "counterevidence_and_what_would_change",
+          "facet_ids": ["demand_digestion_counterevidence"],
+          "business_meaning_zh": "若 Dell 后续也出现交付放缓或订单消化，当前需求持续性判断应下调。",
+          "claim_boundary_zh": "这是竞争对手 read-through，不是 Dell 特定事实或量化阈值。"
+        }
+      ]
+    },
+    {
+      "source_record_id": "HPE_2026_10Q_ITEM2_BLOCK_0005_CHUNK_0001",
+      "target_id": "SUPPLEMENT::DELL::COMPETITOR::HPE::MEMORY_SUPPLY_AND_AI_ACCEPTANCE",
+      "evidence_owner_ticker": "HPE",
+      "publication_date": "2026-03-10",
+      "relationship_directions": ["competitor_self_disclosure_to_dell_supply_readthrough"],
+      "required_patterns": ["worldwide shortage in memory components", "longer customer acceptance timelines on AI-related orders"],
+      "excerpt_before": 100,
+      "excerpt_after": 520,
+      "slot_bindings": [
+        {
+          "slot_id": "capacity_inputs_execution",
+          "facet_ids": ["memory_supply_constraint", "customer_acceptance_timing"],
+          "business_meaning_zh": "HPE 同期披露内存短缺、提前备货和 AI 订单验收时间拉长，说明供给与交付节奏可能同时影响服务器收入兑现。",
+          "claim_boundary_zh": "不能据此推断 Dell 的库存、成本或交付周期数值。"
+        },
+        {
+          "slot_id": "cash_conversion_balance_sheet",
+          "facet_ids": ["competitor_inventory_readthrough"],
+          "business_meaning_zh": "同业为保供而增加库存，提示 AI 服务器增长可能吸收营运资金。",
+          "claim_boundary_zh": "只能作为机制反证，不能量化归因 Dell 的 AI 营运资金。"
+        }
+      ]
+    },
+    {
+      "source_record_id": "SMCI_2026_10Q_ITEM2_BLOCK_0006_PART_02_OF_06",
+      "target_id": "SUPPLEMENT::DELL::COMPETITOR::SMCI::AI_GPU_GROWTH_ASP_AND_MARGIN",
+      "evidence_owner_ticker": "SMCI",
+      "publication_date": "2026-05-11",
+      "relationship_directions": ["competitor_self_disclosure_to_dell_competition_readthrough"],
+      "required_patterns": ["97\\.8% year-over-year", "higher average selling price", "gross margin"],
+      "excerpt_before": 120,
+      "excerpt_after": 700,
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": ["competitor_ai_gpu_growth", "competitor_asp_mix", "competitor_margin_readthrough"],
+          "business_meaning_zh": "SMCI 的 AI GPU 产品增长、较高 ASP 和毛利变化为 Dell 的竞争与价值捕获提供同业基准。",
+          "claim_boundary_zh": "SMCI 的销售、ASP 与毛利均不可归属于 Dell，也不能替代 Dell 自身台数或价格桥。"
+        },
+        {
+          "slot_id": "product_and_technology_position",
+          "facet_ids": ["ai_server_competitor_scale"],
+          "business_meaning_zh": "竞争对手大规模出货液冷和风冷 AI GPU 服务器，说明市场增长同时伴随激烈竞争。",
+          "claim_boundary_zh": "不证明 Dell 丢失或获得份额。"
+        }
+      ]
+    },
+    {
+      "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0011_CHUNK_0001",
+      "target_id": "SUPPLEMENT::DELL::CUSTOMER_ECOSYSTEM::MSFT::AI_CAPEX_CONTINUATION",
+      "evidence_owner_ticker": "MSFT",
+      "publication_date": "2026-04-29",
+      "relationship_directions": ["customer_ecosystem_self_disclosure_to_dell_demand_readthrough"],
+      "required_patterns": ["continue to invest in capital expenditures", "AI infrastructure and training"],
+      "excerpt_before": 80,
+      "excerpt_after": 280,
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": ["customer_ai_capex_commitment", "cloud_ai_infrastructure_demand_readthrough"],
+          "business_meaning_zh": "大型云客户继续投资 AI 基础设施，为服务器需求提供客户侧方向性佐证。",
+          "claim_boundary_zh": "Microsoft 未说明这些资本开支中有多少采购自 Dell，不能作为 Dell 订单或份额证据。"
+        }
+      ]
+    },
+    {
+      "source_record_id": "MU_2026_10Q_ITEM2_BLOCK_0009_CHUNK_0001",
+      "target_id": "SUPPLEMENT::DELL::SUPPLIER::MU::HBM_PACKAGING_CAPACITY_2027",
+      "evidence_owner_ticker": "MU",
+      "publication_date": "2026-03-19",
+      "relationship_directions": ["memory_supplier_self_disclosure_to_dell_supply_readthrough"],
+      "required_patterns": ["HBM advanced packaging facility", "beginning in calendar 2027"],
+      "excerpt_before": 100,
+      "excerpt_after": 260,
+      "slot_bindings": [
+        {
+          "slot_id": "capacity_inputs_execution",
+          "facet_ids": ["high_bandwidth_memory_supply", "advanced_packaging_capacity", "capacity_release_timing"],
+          "business_meaning_zh": "Micron 官方文件给出 HBM 先进封装扩产和 2027 年开始释放容量的时间边界。",
+          "claim_boundary_zh": "只证明 Micron 自身扩产计划，不证明容量份额分配给 Dell，也不证明良率或实际释放量。"
+        },
+        {
+          "slot_id": "relationship_attribution",
+          "facet_ids": ["supplier_capacity_readthrough"],
+          "business_meaning_zh": "HBM 供应商扩产可用于解释服务器供给环境。",
+          "claim_boundary_zh": "供应商行业 read-through 与 Dell 特定供给归因必须分离。"
+        }
+      ]
+    }
+  ],
+  "external_routes": [
+    {
+      "route_id": "dell_q1_fy27_earnings_transcript",
+      "url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "allowed_hosts": ["investors.delltechnologies.com"],
+      "byte_ceiling": 8388608,
+      "source_type": "earnings_call_transcript",
+      "source_tier": "primary_company_ir",
+      "evidence_owner_ticker": "DELL",
+      "publication_date": "2026-05-28",
+      "period_end": "2026-05-01",
+      "relationship_directions": ["subject_self_disclosure"],
+      "required_for_model_live_gate": true,
+      "fragments": [
+        {
+          "fragment_id": "demand_backlog_supply",
+          "target_id": "SUPPLEMENT::DELL::ISSUER::Q1FY27::DEMAND_BACKLOG_SUPPLY",
+          "required_patterns": ["24\\.4 billion.*AI orders", "51\\.3 billion.*backlog", "demand.*exceed.*supply"],
+          "excerpt_before": 120,
+          "excerpt_after": 420,
+          "slot_bindings": [
+            {
+              "slot_id": "demand_volume_quality",
+              "facet_ids": ["ai_orders", "ai_backlog", "demand_exceeds_supply", "customer_count"],
+              "business_meaning_zh": "Dell 法说把 AI 订单、收入、backlog、客户数和供给约束放在同一管理层解释中，可用于判断订单到收入的转化基础。",
+              "claim_boundary_zh": "backlog 与订单不是无条件收入承诺，仍不能推断取消率或未来季度线性兑现。"
+            }
+          ]
+        },
+        {
+          "fragment_id": "proactive_supply_securing",
+          "target_id": "SUPPLEMENT::DELL::ISSUER::Q1FY27::PROACTIVE_SUPPLY_SECURING",
+          "required_patterns": ["memory uncertainty", "proactively secur", "pricing.*margin discipline"],
+          "excerpt_before": 140,
+          "excerpt_after": 420,
+          "slot_bindings": [
+            {
+              "slot_id": "demand_volume_quality",
+              "facet_ids": ["pull_forward_or_digestion", "supply_securing_behavior"],
+              "business_meaning_zh": "Dell 明确说明内存不确定性推动客户提前锁定基础设施，证明订单时点受到保供行为影响。",
+              "claim_boundary_zh": "这提示潜在 pull-forward，但没有量化提前采购规模或后续消化。"
+            },
+            {
+              "slot_id": "pricing_mix_value_capture",
+              "facet_ids": ["pricing_discipline"],
+              "business_meaning_zh": "管理层将供给分配与价格、利润纪律绑定，可用于判断增长并非完全不计利润。",
+              "claim_boundary_zh": "没有披露 AI 服务器 ASP 或可复算价格桥。"
+            }
+          ]
+        },
+        {
+          "fragment_id": "ai_server_profitability",
+          "target_id": "SUPPLEMENT::DELL::ISSUER::Q1FY27::AI_SERVER_PROFITABILITY",
+          "required_patterns": ["AI server profitability", "mid-single-digit operating income rate target"],
+          "excerpt_before": 160,
+          "excerpt_after": 380,
+          "slot_bindings": [
+            {
+              "slot_id": "pricing_mix_value_capture",
+              "facet_ids": ["ai_system_margin", "ai_server_profitability_target"],
+              "business_meaning_zh": "Dell 管理层明确给出 AI 服务器盈利水平与中个位数经营利润率目标，可关闭“完全没有产品利润口径”的缺口。",
+              "claim_boundary_zh": "这是管理层目标/口径，不是分部审计利润，也不能替代实际季度产品利润桥。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "route_id": "micron_q3_fy26_earnings_slides",
+      "url": "https://investors.micron.com/static-files/2354ecda-77a0-4ddd-8462-a631eb491356",
+      "allowed_hosts": ["investors.micron.com"],
+      "byte_ceiling": 8388608,
+      "source_type": "earnings_presentation",
+      "source_tier": "primary_company_ir",
+      "evidence_owner_ticker": "MU",
+      "publication_date": "2026-06-24",
+      "period_end": "2026-05-28",
+      "relationship_directions": ["memory_supplier_self_disclosure_to_dell_supply_readthrough"],
+      "required_for_model_live_gate": false,
+      "fragments": [
+        {
+          "fragment_id": "memory_supply_tight_beyond_2027",
+          "target_id": "SUPPLEMENT::DELL::SUPPLIER::MU::SUPPLY_TIGHT_BEYOND_2027",
+          "required_patterns": ["supply-demand.*tight.*beyond 2027", "DRAM", "NAND"],
+          "excerpt_before": 100,
+          "excerpt_after": 340,
+          "slot_bindings": [
+            {
+              "slot_id": "capacity_inputs_execution",
+              "facet_ids": ["memory_supply_constraint", "supply_tightness_horizon"],
+              "business_meaning_zh": "Micron 对 DRAM/NAND 供需紧张延续到 2027 年后的判断，为 Dell 所述内存约束提供供应商侧交叉验证。",
+              "claim_boundary_zh": "不证明 Dell 的采购价格、供货份额或缺货持续时间。"
+            }
+          ]
+        },
+        {
+          "fragment_id": "hbm_packaging_h1_2027",
+          "target_id": "SUPPLEMENT::DELL::SUPPLIER::MU::HBM_PACKAGING_H1_2027",
+          "required_patterns": ["advanced packaging facility", "HBM packaging capacity", "first half.*2027"],
+          "excerpt_before": 120,
+          "excerpt_after": 320,
+          "slot_bindings": [
+            {
+              "slot_id": "capacity_inputs_execution",
+              "facet_ids": ["high_bandwidth_memory_supply", "advanced_packaging_capacity", "capacity_release_timing"],
+              "business_meaning_zh": "Micron 演示稿把 HBM 封装扩产时间进一步收窄到 2027 年上半年。",
+              "claim_boundary_zh": "仍不证明实际良率、可销售产出或 Dell 分配。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "route_id": "tsmc_q1_2026_earnings_transcript",
+      "url": "https://investor.tsmc.com/schinese/encrypt/files/encrypt_file/reports/2026-04/3cef85204275f94fd111485cfdf4adb3c0263c45/TSMC%201Q26%20Transcript.pdf",
+      "allowed_hosts": ["investor.tsmc.com"],
+      "byte_ceiling": 8388608,
+      "source_type": "earnings_call_transcript",
+      "source_tier": "primary_company_ir",
+      "evidence_owner_ticker": "TSM",
+      "publication_date": "2026-04-16",
+      "period_end": "2026-03-31",
+      "relationship_directions": ["advanced_packaging_supplier_self_disclosure_to_dell_supply_readthrough"],
+      "required_for_model_live_gate": false,
+      "fragments": [
+        {
+          "fragment_id": "cowos_capacity",
+          "target_id": "SUPPLEMENT::DELL::SUPPLIER::TSM::COWOS_CAPACITY",
+          "required_patterns": ["CoWoS", "main supply", "enough capacity"],
+          "excerpt_before": 180,
+          "excerpt_after": 420,
+          "slot_bindings": [
+            {
+              "slot_id": "capacity_inputs_execution",
+              "facet_ids": ["advanced_packaging_capacity", "cowos_supply"],
+              "business_meaning_zh": "TSMC 官方法说确认 CoWoS 供给地位及扩充容量努力，补足原 pack 只有先进制程、没有先进封装的缺口。",
+              "claim_boundary_zh": "不披露 Dell 特定 CoWoS 数量、分配、利用率或良率。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "route_id": "nasdaq_dell_historical_2026_08_06",
+      "url": "https://api.nasdaq.com/api/quote/DELL/historical?assetclass=stocks&fromdate=2026-08-01&limit=50&todate=2026-08-09",
+      "allowed_hosts": ["api.nasdaq.com"],
+      "byte_ceiling": 1048576,
+      "source_type": "market_historical_json",
+      "source_tier": "independent_market_data",
+      "evidence_owner_ticker": "DELL",
+      "publication_date": "2026-08-06",
+      "period_end": "2026-08-06",
+      "relationship_directions": ["market_point_in_time_to_subject"],
+      "evidence_role": "independent_market_point_in_time",
+      "required_for_model_live_gate": true,
+      "extractor": "nasdaq_historical_json",
+      "market_point": {
+        "target_id": "NASDAQ::DELL::HISTORICAL::2026-08-06",
+        "source_record_id": "NASDAQ::DELL::HISTORICAL::2026-08-06",
+        "provider_date_value": "08/06/2026",
+        "close_token": "$437.65",
+        "publication_date": "2026-08-06",
+        "period_end": "2026-08-06",
+        "evidence_owner_ticker": "DELL",
+        "relationship_directions": ["market_point_in_time_to_subject"],
+        "evidence_role": "independent_market_point_in_time",
+        "slot_bindings": [
+          {
+            "slot_id": "capital_allocation_and_valuation",
+            "facet_ids": ["price_in_boundary", "valuation_basis", "market_point_in_time"],
+            "business_meaning_zh": "2026-08-06 的 DELL 收盘价可与同一 as-of 前已披露的 FY27 EPS 指引通过本地公式形成前瞻估值时点。",
+            "claim_boundary_zh": "单个收盘价和前瞻倍数不能证明历史相对便宜、目标价、未来回报或交易建议。"
+          }
+        ]
+      }
+    }
+  ],
+  "gap_disposition": {
+    "remove_gaps": [
+      {
+        "gap_id": "dell-gap-ai-system-margin",
+        "requires_target_ids": ["SUPPLEMENT::DELL::ISSUER::Q1FY27::AI_SERVER_PROFITABILITY"]
+      },
+      {
+        "gap_id": "dell-gap-valuation-basis",
+        "requires_target_ids": ["NASDAQ::DELL::HISTORICAL::2026-08-06"]
+      }
+    ],
+    "replace_gaps": [
+      {
+        "gap_id": "dell-gap-advanced-packaging",
+        "slot_id": "capacity_inputs_execution",
+        "facet_id": "dell_specific_advanced_packaging_allocation",
+        "gap_code": "relationship_allocation_unproven",
+        "business_reason_zh": "Micron 和 TSMC 已证明 HBM/CoWoS 扩产方向与时间，但没有披露 Dell 特定的先进封装容量分配。",
+        "supplement_direction_zh": "只有 Dell 自述、供应商明确客户归属或可验证商业数据才能关闭 Dell 分配缺口。"
+      },
+      {
+        "gap_id": "dell-gap-capacity-release-timing",
+        "slot_id": "capacity_inputs_execution",
+        "facet_id": "capacity_release_to_dell_timing",
+        "gap_code": "relationship_allocation_unproven",
+        "business_reason_zh": "供应商已给出 2027 年 HBM 封装扩产窗口，但尚不能映射到 Dell 的交付节奏。",
+        "supplement_direction_zh": "后续只接受 Dell 交付指引、供应协议或可验证的 Dell 特定容量时间表。"
+      },
+      {
+        "gap_id": "dell-gap-hbm-supply",
+        "slot_id": "capacity_inputs_execution",
+        "facet_id": "dell_specific_hbm_supply_allocation",
+        "gap_code": "relationship_allocation_unproven",
+        "business_reason_zh": "HBM 供需紧张和扩产时间已被供应商证据覆盖，但 Dell 可获得的具体 HBM 数量、价格和份额仍未知。",
+        "supplement_direction_zh": "保持行业供给环境与 Dell 特定分配分离。"
+      },
+      {
+        "gap_id": "dell-gap-price-in-boundary",
+        "slot_id": "capital_allocation_and_valuation",
+        "facet_id": "relative_valuation_and_price_in_interpretation",
+        "gap_code": "market_data_gap",
+        "business_reason_zh": "当前收盘价和前瞻 EPS 可形成单点估值，但没有历史区间、同业可比或情景分布，不能判断市场已计入多少增长。",
+        "supplement_direction_zh": "后续由市场数据层提供同口径历史/同业区间，且估值判断与事实层分离。"
+      },
+      {
+        "gap_id": "dell-gap-demand-pull-forward-digestion",
+        "slot_id": "demand_volume_quality",
+        "facet_id": "dell_order_timing_and_future_digestion_quantification",
+        "gap_code": "commercial_data_gap",
+        "business_reason_zh": "Dell 已说明内存不确定性推动客户提前锁定供给，HPE 也披露既有订单消化，但尚未量化 Dell 的 pull-forward 规模或后续消化。",
+        "supplement_direction_zh": "跟踪 Dell 订单、backlog 转化、取消、交付和客户验收节奏。"
+      },
+      {
+        "gap_id": "dell-gap-supplier-capacity-readthrough",
+        "slot_id": "relationship_attribution",
+        "facet_id": "supplier_capacity_to_dell_attribution",
+        "gap_code": "relationship_allocation_unproven",
+        "business_reason_zh": "供应商官方材料已改善行业供给解释，但仍不能把 MU/TSMC 容量自动归属到 Dell。",
+        "supplement_direction_zh": "保留供应商 read-through；只有明确关系证据才能升级为 Dell 特定归因。"
+      }
+    ]
+  },
+  "budget": {
+    "source_network_calls": 4,
+    "timeout_seconds_per_route": 45,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "acceptance": {
+    "all_local_records_exactly_bound": true,
+    "all_four_external_routes_attempted_exactly_once": true,
+    "raw_request_and_response_captured_before_parse": true,
+    "all_planned_external_fragments_required_for_model_live_gate": true,
+    "counterparty_evidence_remains_bounded_readthrough": true,
+    "market_price_requires_deterministic_formula_for_valuation": true,
+    "failed_route_becomes_typed_gap_not_fabricated_evidence": true
+  },
+  "known_boundary": "This S1 policy improves DELL evidence coverage; it does not authorize DeepSeek, recommendation, target price, supplier allocation attribution, product promotion or release."
+}

@@ -261,3 +261,18 @@ successor 不修改旧 terminal，不消费旧 admission，不自动重试，不
 DELL successor 证明，把 `NUM` 和语义重复的 `PRES` 同时交给模型选择，会让可靠性依赖模型是否记得第二个展示 ID；当前 DeepSeek 能稳定使用 source `NUM` 和 4 个 `FORM`，却没有选择任何 `PRES`，导致合法中文尺度换算被重复判错。后续稳定合同改为：模型引用事实/公式 authority（`NUM/FORM`）并写分析意图；Harness 根据该 authority 的封闭 presentation program 校验或渲染等价表面。模型仍能看见、分析和引用数字，本地层只控制展示，不替模型生成 thesis。完整 source numeric inventory 与 token boundary（例如不得从 `FY27` 抽取尾数 `7`）是该门禁的必要前置。
 
 同一次 live 还证明 Verifier 不应重抄整份长报告。Verifier 输入必须是 compact `claim_id + evidence/numeric/gap refs + bounded text span`，输出只返回 claim-ID verdict、finding code 和必要的短 reason；原 claim 由 Harness 通过 ID 连接。任何 `finish_reason=length`、截断 JSON 或缺失 required claim verdict 都是 `verification_incomplete` 的 hard stop，而不是普通可后传的 parse-quality finding。该纠正只改变审计表面和终态分类，不降低事实、引用或内容质量门槛。
+
+### 13.5 Evidence Pack 改变后的定向补源与完整链重编译
+
+Source supplement 不得直接改 Writer 文本。它只允许向不可变 base Pack 追加 capture-backed `SourceMaterial` 与 `EvidenceItem`，并按 Evidence target 的实际存在条件更新 `Gap`：完整关闭、收窄为更具体的 attribution／allocation gap，或原样保留。每个新增对象必须携带 `research_subject`、`evidence_owner`、`evidence_role`、`relationship_direction`、publication/period、source capture 和 citation boundary。
+
+技术路径固定为：
+
+1. exact local object selection 优先，选择规则与 corpus SHA 绑定；
+2. 已知官方 URL 使用 allowlisted HTTPS、capture-first、parse-after-capture，一次失败即 typed gap；
+3. issuer direct evidence、counterparty bounded context 与 independent market PIT 分开计数和授权；
+4. 原始正文只在受限 object store，公开 result 只保存 ref、digest、状态与计数；
+5. `Evidence Pack digest` 改变后，所有 Specialist、Lead、Writer 和 Verifier 输入必须从头编译。旧节点输出只能作为历史 baseline，不能在新 Pack 上复用；
+6. 新数字先进入 `NumericFactView／NumericProgramTrace`，市场价格与 EPS 等 derived multiple 由本地公式计算；模型可解释倍数，但不能自由改变 operand 或把单点倍数写成目标价。
+
+同结构报告比较的因变量是研究判断质量，而不是网页数或 token 数。至少比较 evidence utilization、机制桥、反方、WWC 可执行性、估值边界、重复率和决策密度；新增材料若没有转化为更好的判断，应判为 `source_increment_not_utilized`，不能因 Pack 更大自动晋升。

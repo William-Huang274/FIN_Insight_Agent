@@ -14,6 +14,12 @@ S0_SCOPE = (
 DIRECT_R3_SCOPE = "S1_08_V3_DELL_R3_EXACT_LIVE_ISSUANCE_AND_EXECUTION"
 
 
+def _issue_explicitly_blocks_scope(issue: dict[str, object], scope: str) -> bool:
+    blocking = set(issue.get("blocking_run_scopes") or [])
+    allowed = set(issue.get("allowed_run_scopes") or [])
+    return ("*" in blocking or scope in blocking) and scope not in allowed
+
+
 def test_registered_S0_04G_scope_follows_latest_typed_projection() -> None:
     result = run_project_os_preflight(ROOT, run_scope=S0_SCOPE)
     rows = [
@@ -28,21 +34,21 @@ def test_registered_S0_04G_scope_follows_latest_typed_projection() -> None:
         for row in reversed(rows)
         if str(row.get("issue_id") or "").startswith("RC-P36-157-")
     )
-    scope_allowed = S0_SCOPE in (latest.get("allowed_run_scopes") or [])
+    scope_blocked = _issue_explicitly_blocks_scope(latest, S0_SCOPE)
 
     assert result["schema_version"] == "fin_insight_project_os_full_chain_preflight_v0_2"
     assert result["run_scope_registry"]["registry_version"] == "v1_0"
     assert result["scope_resolution"]["owner_stage"] == "S0"
     assert result["contract_errors"] == []
-    if scope_allowed:
-        assert result["status"] == "pass"
-        assert result["open_full_chain_blocker_count"] == 0
-    else:
+    if scope_blocked:
         assert result["status"] == "blocked"
         assert any(
             item["issue_id"].startswith("RC-P36-157-")
             for item in result["open_full_chain_blockers"]
         )
+    else:
+        assert result["status"] == "pass"
+        assert result["open_full_chain_blocker_count"] == 0
 
 
 def test_unregistered_scope_and_diagnostic_override_fail_closed() -> None:
@@ -71,15 +77,15 @@ def test_direct_R3_scope_matches_latest_typed_product_projection() -> None:
         for row in reversed(rows)
         if str(row.get("issue_id") or "").startswith("RC-P36-157-")
     )
-    direct_allowed = DIRECT_R3_SCOPE in (latest.get("allowed_run_scopes") or [])
+    direct_blocked = _issue_explicitly_blocks_scope(latest, DIRECT_R3_SCOPE)
 
     assert result["contract_errors"] == []
-    if direct_allowed:
-        assert result["status"] == "pass"
-        assert result["open_full_chain_blockers"] == []
-    else:
+    if direct_blocked:
         assert result["status"] == "blocked"
         assert any(
             item["issue_id"].startswith("RC-P36-157-")
             for item in result["open_full_chain_blockers"]
         )
+    else:
+        assert result["status"] == "pass"
+        assert result["open_full_chain_blockers"] == []

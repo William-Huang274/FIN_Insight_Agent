@@ -2328,3 +2328,19 @@ FIN 的本地检索输出必须先经过独立内容准入，不能把 `Slot lab
 外源搜索不得把 Evidence Pack 的每个缺失字段机械转换成一次联网请求。系统必须先把缺口按投资决策问题、公开可得性、期间、来源类型和 Evidence Slot 聚合为有界 SearchIntent；市场 point-in-time、估值公式、用户风险阈值和不可公开证明的商业分配应交给其本地数值／研究方法所有者或保留 typed gap。
 
 研究主体、证据披露主体和经济关系方向必须分别建模。例如研究 DELL 的 HBM 供给时，可以抓取 Micron／TSMC 官方披露作为供应侧背景，但不得把供应商自述或搜索服务商 snippet 改写成 DELL 获得特定 allocation 的事实。Broad Web Search 只负责定位候选 URL；只有重新 capture 的官方文档经本地日期、身份、数值、内容和 Evidence Gate 后才能晋升。公开资料不存在时，产品必须诚实显示缺口。
+
+### 16.15 定向补源、证据所有权与信息增量验收（2026-08-10）
+
+DELL 固定 Pack 的实测进一步纠正了“资料不足就继续 broad search”的粗粒度处理。当前本地官方语料已经包含 HPE 的订单消化与内存短缺、Supermicro 的 AI GPU 服务器增长和毛利变化、Microsoft 的 AI 基础设施投入以及 Micron 的 HBM 封装扩产；旧 DELL Pack 没有充分消费这些材料，根因同时包含查询编译、证据披露主体和信息选择，而不只是外部 Provider 召回不足。
+
+产品因此增加以下补源与验收规则：
+
+1. 补源从“哪项事实可能改变投资判断”开始，优先覆盖需求真实性、价格／利润捕获、供应执行、竞争／反证和 point-in-time 估值基础；不能按缺失字段数量机械扩大搜索。
+2. 本地已捕获官方材料先按 exact source object 重裁决；只有本地仍缺的 issuer／market source 才进入有界网络路径。Broad Search 负责发现未知 locator，不是已知官方 URL 的必经前置。
+3. `research subject`、`evidence owner`、`evidence role` 与 `relationship direction` 必须分别保存。客户、竞争对手和供应商自述只形成 bounded read-through，不能被改写为 DELL 特定订单、份额、成本、allocation 或因果事实。
+4. 市场价格使用独立 `market_point_in_time` 角色，必须与 research as-of、来源行和本地公式绑定；单点价格＋EPS 只能形成单点倍数，不能自动生成目标价、历史相对便宜或投资建议。
+5. Gap 只能在所需 Evidence target 实际 materialize 后关闭；若只补到行业方向，原 gap 必须收窄为 DELL 特定 attribution／allocation／量化缺口，而不是静默消失。
+6. 补源后的报告使用相同角色结构和质量 rubric，但因为模型可见 Evidence Pack 已改变，必须从完整链重新编译，不能复用旧 Specialist／Writer 输出冒充同输入比较。
+7. 补源验收不以“新增多少网页”为成功标准，而以新增信息是否转化为更清楚的需求持续性、利润捕获、供给约束、反方、WWC 与估值边界判断为准；若只增加引用数量而没有提高判断密度，补源不得晋升。
+
+本规则不把完整估值、目标价或商业数据库前移为 FIN 0.1.3 的新增发布承诺。当前只允许一次 DELL 定向 source successor 和一次新 Pack 的研究比较；失败保留 capture／typed gap，不自动追加搜索或模型重跑。

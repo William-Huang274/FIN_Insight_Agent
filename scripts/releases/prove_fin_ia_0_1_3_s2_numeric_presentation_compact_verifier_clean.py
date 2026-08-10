@@ -129,6 +129,9 @@ def _copy_private_inputs(checkout: Path) -> None:
         Path(
             str(successor_contract["predecessor"]["public_result"]["ref"])
         ),
+        Path(
+            str(successor_contract["predecessor"]["private_terminal"]["ref"])
+        ),
     }
     for relative in exact_bound_refs:
         source = ROOT / relative

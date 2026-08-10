@@ -1,0 +1,115 @@
+{
+  "acceptance": {
+    "business_promotion_forbidden": true,
+    "cumulative_predecessor_and_successor_budget_accounted": true,
+    "failed_predecessor_capture_not_promoted": true,
+    "five_usable_predecessor_outputs_digest_bound": true,
+    "logical_thirteen_node_chain_materialized": true,
+    "numeric_display_aliases_and_formula_traces_bound": true,
+    "only_eight_successor_nodes_executed": true
+  },
+  "base_case_input_digest": "f1f1945e5808001bea377fc7903b8b751a1f9c02cb1d6b7dae53e67e4853496d",
+  "base_contract_sha256": "4041134629c67c9a8a952e1e25297f6692edf059f473230e530b1d02370f790d",
+  "credential_environment_scrubbed": true,
+  "current_next": "ONE_DELL_EIGHT_NODE_CAPTURE_REUSE_SUCCESSOR_AUTHORITY_DECISION",
+  "execution_git_commit": "e9090819996be2714a563f1b5b5da6087ca7d199",
+  "failed_predecessor_node": {
+    "call_id": "call_06_specialist__financial_transmission_profit_and_cash",
+    "capture_digest": "acabf71072eee9f2382e68d92c4146d5cce433ebb3c846e812ee833eb9789efe",
+    "capture_file_sha256": "193b957b71e66b73df198f68930a2829990864c6ce0d951ebc20cc4415939b86",
+    "capture_ref": "raw_model_only/calls/call_06_specialist__financial_transmission_profit_and_cash/capture.json",
+    "node_key": "specialist::financial_transmission_profit_and_cash",
+    "promoted_as_usable_output": false,
+    "status": "provider_error"
+  },
+  "fresh_worker_count": 2,
+  "known_boundary": "This proves deterministic capture reuse, numeric authority, exact-once successor wiring and eight-node fixture completion. It makes no claim about DeepSeek output quality. The imported direct baseline did not see the successor numeric authority, so strict same-input paired acceptance remains pending a separate baseline call after this bounded live.",
+  "numeric_authority_digest": "d2b6e2404dd0d3778a72759ab325e4f4d10ee4b06d34b6a5d916dc09b924aa3b",
+  "observed_counts_across_workers": {
+    "fallbacks": 0,
+    "fixture_provider_calls": 16,
+    "model_calls": 0,
+    "network_calls": 0,
+    "predecessor_imports_read_only": 10,
+    "real_provider_calls": 0,
+    "request_captures": 16,
+    "response_captures": 16,
+    "retries": 0
+  },
+  "owner_stage": "S2",
+  "predecessor_import_bundle_digest": "cb7ed2fb5956a110c87ba1d706e53a2410da2e03bd63b5e1e03f14e907111182",
+  "predecessor_imported_nodes": [
+    {
+      "capture_digest": "68fb164a9e33b3afb4bcbf0256437f45299143745bd7860afc9e2fb0a54bea4b",
+      "capture_file_sha256": "d60abb789f52cc7a78eea19e0767e1b4e662451dbcf977d0ba4fb86f7105be54",
+      "node_key": "direct_baseline",
+      "output_digest": "3504cae1a9843f83c494029d4266543e681ac2f7effca70499d5a63d2fb7babd"
+    },
+    {
+      "capture_digest": "9b7fb3cd84b87f8cf8307bf6b4ee02f3c54975e6ee46e8f6e7b93b15e0557f73",
+      "capture_file_sha256": "c27b00071ec4f89ec6f370edc3b2ae62b2ad22543373b48d4f7714cd14a05551",
+      "node_key": "research_lead",
+      "output_digest": "4212ae939abe113419b067f5f3639528379e73ba3379e8a5a633213fe3831033"
+    },
+    {
+      "capture_digest": "3fdb8fc8ed35858929d827137f5aef8defd3b0541c6f9e823943553a6ff56e8f",
+      "capture_file_sha256": "58a2bb7a6b06ac2e63a8ff0be44b477fd99bb39d40e99c066289d1ba45c7bdc2",
+      "node_key": "specialist::demand_authenticity_and_sustainability",
+      "output_digest": "aed0ef6fbb7b1a5519965e8595749b333f95dd2bc10e58e43778fa7ba43f3092"
+    },
+    {
+      "capture_digest": "a514bd5f7c5ab585454403b67720150abdefe518877a72897b32cdae17576003",
+      "capture_file_sha256": "eb34d413c8e3bdab78aed47a9db344ec0671d5bcfca25a18db8691be43ffb4a2",
+      "node_key": "specialist::product_and_technology_position",
+      "output_digest": "de691aaca474f7dfeb34a55d0b4f817988fc4826652e64b6c356456d444d6929"
+    },
+    {
+      "capture_digest": "320231964efd66478113cf51d28da9a6ab0115b34b7c4ef40446a5d6acc40ce2",
+      "capture_file_sha256": "4db5f5bfbc3a6c06b7463fce39e2f814a5ade7c8443c925a97ee1f069d596284",
+      "node_key": "specialist::supply_capacity_and_competition",
+      "output_digest": "143aa9b663377da3cd46cbf24a6686a1d695bc10198d80dc4f2a8f33d18c05e8"
+    }
+  ],
+  "predecessor_terminal_digest": "2ae7ebf162a1b600a3bc2818982ed8b6968f281a0ca914ce5250aa4bad47ab58",
+  "product_version": "FIN_0_1_3",
+  "profile_sha256": "d0fc499e36678369081d27619404ea3de776a8349addf29192b0fb895f34c9ac",
+  "proof_digest": "a9aef287b10204a5ed2f62d25953f3184f1ff41b1d306be650b706c33210789c",
+  "runner_sha256": "0ce1a07a096829cc39eea858239ccdff694509ae31aefe57661c1bf63beae540",
+  "runtime_sha256": "dd468b7499713698e4ff6f3108c1428916c557faff59da83bdd2265e21427d9c",
+  "schema_version": "fin_ia_0_1_3_s2_dell_capture_reuse_successor_clean_independent_proof_v1_0",
+  "socket_blocked_in_workers": true,
+  "status": "clean_independent_dell_capture_reuse_successor_zero_call_proof_passed",
+  "successor_case_input_digest": "0dc96c3a16d38e7375f6f1206ec3274ee81b9dbbecf08325b778cdabeec11844",
+  "successor_contract_sha256": "0d7945c19db2ca61104de4ebd67730bce9aa02b2845e5fccdb86ae5015d4d9f8",
+  "terminal": {
+    "business_artifact_promoted": false,
+    "logical_node_indices": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ],
+    "observed_counts": {
+      "combined_provider_attempts": 14,
+      "fallbacks": 0,
+      "findings": 0,
+      "imported_usable_nodes": 5,
+      "logical_outputs_present": 13,
+      "network_tool_calls": 0,
+      "retries": 0,
+      "successor_model_calls": 8,
+      "successor_provider_calls": 8
+    },
+    "same_evidence_pack_proven": true,
+    "same_input_pair_proven": false,
+    "status": "completed",
+    "terminal_code": "fixed_pack_capture_reuse_successor_completed",
+    "terminal_digest": "800da3350a9eb74957ebaaca0cd8619c40981b15ca40a995cc9e166b4a03218c"
+  },
+  "worker_digest": "4064d04bf0c801dca234e1bcedb3eab778a7566b0f1fd289d889c05b150ac381",
+  "workers_byte_equivalent": true
+}

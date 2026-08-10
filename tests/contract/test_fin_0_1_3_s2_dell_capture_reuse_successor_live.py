@@ -49,6 +49,9 @@ PROFILE_PATH = ROOT / (
     "configs/runtime/fin_ia_0_1_3_s2_deepseek_v4_pro_fixed_pack_profile_v1_0.json"
 )
 RUNTIME_PATH = ROOT / "src/sec_agent/s2_fixed_pack_capture_reuse_successor_runtime.py"
+PROOF_PATH = ROOT / (
+    "configs/releases/fin_ia_0_1_3_s2_dell_capture_reuse_successor_clean_independent_proof_v1_0.json"
+)
 HASH = "1" * 64
 GIT = "2" * 40
 NOW = "2026-08-10T10:00:00Z"
@@ -179,6 +182,21 @@ def test_clean_proof_and_authority_bind_only_eight_new_calls(material) -> None:
         repo_root=ROOT,
         observed_at=NOW,
     )
+
+
+def test_committed_clean_proof_is_valid_and_bound_to_real_predecessor() -> None:
+    proof = json.loads(PROOF_PATH.read_text(encoding="utf-8"))
+    validate_clean_proof(proof)
+    assert proof["execution_git_commit"] == (
+        "e9090819996be2714a563f1b5b5da6087ca7d199"
+    )
+    assert proof["proof_digest"] == (
+        "a9aef287b10204a5ed2f62d25953f3184f1ff41b1d306be650b706c33210789c"
+    )
+    assert proof["predecessor_terminal_digest"] == (
+        "2ae7ebf162a1b600a3bc2818982ed8b6968f281a0ca914ce5250aa4bad47ab58"
+    )
+    assert proof["terminal"]["same_input_pair_proven"] is False
 
 
 def test_authority_mutation_fails_closed(material) -> None:

@@ -318,6 +318,8 @@ DELL Supervisor R2 说明旧计划还缺一条统一原则：模型需要看到�
 
 由于新增 numeric authority 改变了 Agent 的 model-visible digest，R1 中已成功的 direct baseline 只能作为诊断参考，不能成为 strict same-input paired baseline。successor 成功后先做独立 L1/L2 与八维内容审计；若值得继续，另行授权一次“相同增强输入”的 direct baseline，之后才能做正式 paired gain。该披露是公平性约束，不是追加 8-node live 的隐含第 9 次调用。
 
+当前进度：clean/synced implementation=`e9090819` 上两个 fresh process 已完成 proof；两者逐字节一致，累计读取 10 个 immutable imports、生成 `16` 个 successor request/response captures，真实 Provider/model/network=`0`，proof=`a9aef287...789c`。下一步只允许签发一次 8-call successor authority；proof 不等于 DeepSeek 成功或内容通过。
+
 ### 7A.6 2026-08-07 Provider-neutral Harness 与 DeepSeek 适配重排
 
 S2-06D 证明当前问题不能继续按“发现一个 DeepSeek 输出错误，就给共享 Harness 加一个字段或分支”处理。FIN 冻结稳定金融控制内核；模型差异进入 `ModelCapabilityProfile`，权限通过 `AutonomyGrant` 升降，DeepSeek workaround 必须可识别、可复测、可退役。

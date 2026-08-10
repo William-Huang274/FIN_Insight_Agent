@@ -1,0 +1,442 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_six_case_local_evidence_pack_policy_v1_0",
+  "result_schema": "fin_ia_0_1_3_s1_six_case_local_evidence_pack_result_v1_0",
+  "pack_schema": "fin_ia_0_1_3_s1_local_evidence_pack_v1_0",
+  "contract_ref": "fin_0_1_3.S1.candidate_to_local_evidence_pack:v1",
+  "run_scope": "S1_SIX_CASE_DELL_FIRST_LOCAL_EVIDENCE_CONTENT_GATE_ZERO_CALL",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "20260810_s1_six_case_local_evidence_pack_zero_call_r1",
+  "materialization_order": ["DELL", "MU", "NVDA", "ORCL", "ASML", "ANET"],
+  "immutable_inputs": {
+    "candidate_manifest": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_candidate_bundle_sparse_dense_manifest/zero-call-r4/objects/fin-0.1.3/s1-candidate-bundle-sparse-dense-manifest/v1/75/70/75702f7f5d64a14f39f87ec692bd69941d75efde67e0e85ce77427f2620d4068.json",
+      "sha256": "75702f7f5d64a14f39f87ec692bd69941d75efde67e0e85ce77427f2620d4068"
+    },
+    "retrieval_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_retrieval_evaluation_result_v1_0.json",
+      "sha256": "42e845317afcb2bf57a459274edf0d7f88b756fb05d8005923b0759ed78be2e0"
+    },
+    "generalization_contract": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json",
+      "sha256": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363"
+    },
+    "dell_vertical_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_dell_financial_source_object_vertical_result_r3_v1_0.json",
+      "sha256": "b523645844686936edbe9165e8002d5f871f9ff66cab6eeaa58954ca5288529f"
+    },
+    "mu_transfer_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_mu_financial_source_object_transfer_result_v1_0.json",
+      "sha256": "3b6c9214940ae5760f11f10f233f68c0afccb1bdd822f3241eb2b6e170b30f43"
+    },
+    "nvda_transfer_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_nvda_financial_source_object_transfer_result_v1_0.json",
+      "sha256": "045cd6f1c05a17efd190984d0677036336b56e268b6bfcf2e9556b02359a34a9"
+    },
+    "held_out_reparse_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_three_held_out_current_source_reparse_successor_r9_result_v1_0.json",
+      "sha256": "58d2b51841ad7798551b3808b296a9aac39deae46c6d6b8ab0257290da5843cc"
+    }
+  },
+  "expected_digests": {
+    "candidate_manifest": "4468c5206b289670de53d9a07d4460bb239ec38d0edbba8e65ca0e557e26709e",
+    "retrieval_result": "dfc2e69a444db1b011d0cf61d02b592f84e7c6da6524accfc3abc6e56bc3914a"
+  },
+  "known_case_source_record_refs": [
+    "data/indexes/bm25/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027/records.jsonl",
+    "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/bm25/records.jsonl",
+    "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v3_mu_10q/bm25/records.jsonl"
+  ],
+  "known_case_bindings": {
+    "DELL": {
+      "result_input": "dell_vertical_result",
+      "expected_manifest_candidates": 15
+    },
+    "MU": {
+      "result_input": "mu_transfer_result",
+      "expected_manifest_candidates": 16
+    },
+    "NVDA": {
+      "result_input": "nvda_transfer_result",
+      "expected_manifest_candidates": 14
+    }
+  },
+  "held_out_private_object_root": "data/workbench_private/fin_0_1_3_s1_three_held_out_current_source_reparse/zero-call-r9/objects",
+  "held_out_decisions": {
+    "ORCL": {
+      "research_as_of": "2026-08-06",
+      "accepted_metrics": {
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_072413BD": {
+          "slot_bindings": [{"slot_id": "cash_conversion_balance_sheet", "facet_ids": ["cash_tax_context"]}],
+          "claim_boundary_zh": "只说明现金税款，不等于营运资金、自由现金流或云业务税负。"
+        },
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_0B7FA057": {
+          "slot_bindings": [{"slot_id": "operating_performance", "facet_ids": ["reported_revenue"]}],
+          "claim_boundary_zh": "只证明 Oracle 全公司收入，不自动等于云收入或 AI 收入。"
+        },
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_0C3F0B88": {
+          "slot_bindings": [{"slot_id": "cash_conversion_balance_sheet", "facet_ids": ["cash_balance_context"]}],
+          "claim_boundary_zh": "这是期初现金余额，不是经营现金流或期末净现金。"
+        },
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_0F9EABA5": {
+          "slot_bindings": [{"slot_id": "cash_conversion_balance_sheet", "facet_ids": ["operating_cash_flow"]}],
+          "claim_boundary_zh": "经营现金流不能单独证明自由现金流，仍需资本开支口径。"
+        },
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_1841B14A": {
+          "slot_bindings": [{"slot_id": "cash_conversion_balance_sheet", "facet_ids": ["receivables_payables_or_obligations"]}],
+          "claim_boundary_zh": "未付资本开支是付款义务，不是已支付资本开支或已投产容量。"
+        },
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_1C3BFC11": {
+          "slot_bindings": [{"slot_id": "capacity_inputs_execution", "facet_ids": ["capacity_asset_base"]}],
+          "claim_boundary_zh": "净固定资产只说明资产基数，不证明数据中心可用容量、利用率或交付进度。"
+        },
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_2716E677": {
+          "slot_bindings": [{"slot_id": "capacity_inputs_execution", "facet_ids": ["capacity_asset_base"]}],
+          "claim_boundary_zh": "建筑及改良资产不能直接换算为云容量或 GPU 部署量。"
+        },
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_2DF8E76E": {
+          "slot_bindings": [{"slot_id": "demand_volume_quality", "facet_ids": ["deferred_revenue_balance"]}],
+          "claim_boundary_zh": "递延收入余额不是 RPO、订单或新增签约量，不能混用。"
+        },
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_442F4960": {
+          "slot_bindings": [{"slot_id": "cash_conversion_balance_sheet", "facet_ids": ["capital_expenditure"]}],
+          "claim_boundary_zh": "括号代表现金流出；资本开支不能自动等同已投产云容量。"
+        },
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_468FFDAA": {
+          "slot_bindings": [
+            {"slot_id": "cash_conversion_balance_sheet", "facet_ids": ["working_capital"]},
+            {"slot_id": "relationship_attribution", "facet_ids": ["evidence_owner_self_disclosure", "economic_relationship_direction"]}
+          ],
+          "claim_boundary_zh": "客户预付款融资只证明客户向 Oracle 提供预付款；不披露客户身份或 AI/云归属。"
+        },
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_7634E977": {
+          "slot_bindings": [
+            {"slot_id": "operating_performance", "facet_ids": ["reported_profitability"]},
+            {"slot_id": "pricing_mix_value_capture", "facet_ids": ["margin_or_unit_economics"]}
+          ],
+          "claim_boundary_zh": "公司总经营利润不能拆成云、AI 或单一产品利润桥。"
+        }
+      },
+      "rejected_metric_groups": [
+        {
+          "reason_code": "debt_detail_not_valuation_basis",
+          "business_reason_zh": "单笔债券金额或利率是资本结构明细，不能替代估值基础、市场价格或情景分析。",
+          "target_ids": [
+            "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_0192315B",
+            "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_01A43D71"
+          ]
+        },
+        {
+          "reason_code": "expense_ratio_not_pricing_mix",
+          "business_reason_zh": "研发或管理费用占收入比例不能回答产品价格、销量、产品 mix 或利润捕获桥。",
+          "target_ids": [
+            "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_01782B2B",
+            "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_74BCFC5A"
+          ]
+        },
+        {
+          "reason_code": "general_statement_row_not_slot_answer",
+          "business_reason_zh": "非经营收入和销售费用是真实财务行，但不能回答本案要求的经营表现或云需求问题。",
+          "target_ids": [
+            "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_08F79659",
+            "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_090F45E4"
+          ]
+        },
+        {
+          "reason_code": "eps_not_pricing_mix",
+          "business_reason_zh": "每股收益不能替代产品价格、销量或 mix 证据。",
+          "target_ids": ["CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_959F043B"]
+        },
+        {
+          "reason_code": "hypothetical_sensitivity_not_actual_balance",
+          "business_reason_zh": "该负数是外汇敏感性假设影响，不是实际现金、应收账款余额。",
+          "target_ids": ["CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_1065F757"]
+        }
+      ],
+      "accepted_claims": {
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_CLAIM_02852A56": {
+          "facet_ids": ["strongest_counterevidence", "impact_mechanism"],
+          "business_meaning_zh": "Oracle 明确提示 AI 产品若不能按预期运行，会伤害声誉、收入和盈利。",
+          "claim_boundary_zh": "这是风险机制披露，不是已经发生损失或概率估计。"
+        },
+        "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_CLAIM_01E1EDB8": {
+          "facet_ids": ["durability_or_pull_forward"],
+          "business_meaning_zh": "大额合同签署时点和季节性会使订单与收入确认波动。",
+          "claim_boundary_zh": "不能据此量化拉货、RPO 或某一季度的云订单。"
+        }
+      },
+      "rejected_claim_groups": [
+        {
+          "reason_code": "truncated_or_heading_only_claim",
+          "business_reason_zh": "文本是截断句、标题或引导句，缺少完整可引用命题。",
+          "target_ids": [
+            "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_CLAIM_01DD19F0",
+            "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_CLAIM_0328BF33",
+            "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_CLAIM_041951CB",
+            "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_CLAIM_003C065A"
+          ]
+        },
+        {
+          "reason_code": "generic_boilerplate_not_decision_relevant",
+          "business_reason_zh": "句子过于泛化，无法回答 Oracle 当前需求或可执行反证。",
+          "target_ids": [
+            "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_CLAIM_001C882B",
+            "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_CLAIM_046B713A"
+          ]
+        }
+      ]
+    },
+    "ASML": {
+      "research_as_of": "2026-08-06",
+      "accepted_metrics": {
+        "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_3D897504": {
+          "facet_ids": ["segment_or_product_performance"],
+          "claim_boundary_zh": "Installed Base Management 销售不等于新机销售或 EUV/High-NA 收入。"
+        },
+        "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_56938B50": {
+          "facet_ids": ["volume_or_units", "mix_or_product_attribution"],
+          "claim_boundary_zh": "Q1 新系统台数是比较基准，不提供机型、ASP 或 Q2 订单。"
+        },
+        "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_579B3604": {
+          "facet_ids": ["cash_balance_context"],
+          "claim_boundary_zh": "期末现金与短期投资不等于经营现金流或自由现金流。"
+        },
+        "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_61B6924C": {
+          "facet_ids": ["volume_or_units", "mix_or_product_attribution"],
+          "claim_boundary_zh": "新系统总台数未拆分 EUV、High-NA、DUV，也不提供 ASP。"
+        },
+        "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_8523ABBF": {
+          "facet_ids": ["reported_revenue"],
+          "claim_boundary_zh": "总销售额不能自动归因于 AI、EUV 或某一客户。"
+        },
+        "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_B72E2A0F": {
+          "facet_ids": ["cash_balance_context"],
+          "claim_boundary_zh": "Q1 现金仅用于环比背景，不等于现金生成能力。"
+        },
+        "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_C54F95EF": {
+          "facet_ids": ["margin_or_unit_economics"],
+          "claim_boundary_zh": "总毛利率没有拆出价格、销量和产品组合贡献。"
+        },
+        "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_DDBFED7F": {
+          "facet_ids": ["reported_profitability"],
+          "claim_boundary_zh": "净利润是公司整体口径，不能归因于 AI 或具体光刻机。"
+        },
+        "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_E2741493": {
+          "facet_ids": ["volume_or_units", "mix_or_product_attribution"],
+          "claim_boundary_zh": "二手系统台数只说明新旧系统 mix 的一部分，不提供 ASP。"
+        },
+        "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_F795607D": {
+          "facet_ids": ["reported_profitability"],
+          "claim_boundary_zh": "毛利润是公司整体口径，不是单台设备利润或产品利润桥。"
+        }
+      },
+      "rejected_metric_groups": [],
+      "accepted_claims": {
+        "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_CLAIM_50B6502D": {
+          "facet_ids": ["durability_or_pull_forward"],
+          "business_meaning_zh": "ASML 表示客户承诺提高了长期需求可见度。",
+          "claim_boundary_zh": "没有披露承诺金额、订单转化率或取消条件。"
+        },
+        "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_CLAIM_08336098": {
+          "facet_ids": ["industry_ai_demand_direction"],
+          "business_meaning_zh": "管理层认为 AI 投资推动先进逻辑与存储芯片需求。",
+          "claim_boundary_zh": "这是行业方向陈述，不是 ASML 订单、出货或利用率数据。"
+        }
+      },
+      "rejected_claim_groups": [
+        {
+          "reason_code": "safe_harbor_word_list_not_risk_evidence",
+          "business_reason_zh": "前瞻性陈述提示词清单不构成具体反证或经营风险。",
+          "target_ids": ["CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_CLAIM_3029A13D"]
+        }
+      ]
+    },
+    "ANET": {
+      "research_as_of": "2026-08-06",
+      "accepted_metrics": {
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_03205426": {
+          "facet_ids": ["reported_profitability"],
+          "claim_boundary_zh": "净利润是公司整体口径，不能单独归因 AI 网络。"
+        },
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_080C11AD": {
+          "facet_ids": ["reported_revenue"],
+          "claim_boundary_zh": "总收入未拆出 AI 集群、客户或具体交换机平台。"
+        },
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_0CA8004C": {
+          "facet_ids": ["reported_profitability"],
+          "claim_boundary_zh": "收入成本可解释整体利润，但不是单一产品成本。"
+        },
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_0E78C65A": {
+          "facet_ids": ["cash_balance_context"],
+          "claim_boundary_zh": "现金净增减不是经营现金流，也不能单独说明现金转换。"
+        },
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_22551BBB": {
+          "facet_ids": ["marketable_security_maturity_context"],
+          "claim_boundary_zh": "有价证券到期回款属于投资活动背景，不是主营业务现金生成。"
+        },
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_2F69C942": {
+          "facet_ids": ["operating_cash_flow"],
+          "claim_boundary_zh": "经营现金流仍需结合资本开支和营运资金解释。"
+        },
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_3303E5D0": {
+          "facet_ids": ["cash_balance_context"],
+          "claim_boundary_zh": "现金余额不等于自由现金流或净现金。"
+        },
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_3D33B6BF": {
+          "facet_ids": ["margin_or_unit_economics"],
+          "claim_boundary_zh": "季度总毛利率未拆出产品、客户或 AI 网络贡献。"
+        },
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_B331DA06": {
+          "facet_ids": ["margin_comparison_context"],
+          "claim_boundary_zh": "上年同期季度毛利率仅用于比较，不是当前毛利率。"
+        },
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_BD9F43EE": {
+          "facet_ids": ["margin_comparison_context"],
+          "claim_boundary_zh": "上年同期半年毛利率仅用于比较，不是当前毛利率。"
+        },
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_EAC6A529": {
+          "facet_ids": ["margin_or_unit_economics"],
+          "claim_boundary_zh": "半年总毛利率未拆出产品、客户或 AI 网络贡献。"
+        }
+      },
+      "rejected_metric_groups": [
+        {
+          "reason_code": "generic_ppe_not_supply_capacity",
+          "business_reason_zh": "土地、设备、在建工程和固定资产是真实资产行，但不证明交换机供应、产能爬坡、交期或利用率。",
+          "target_ids": [
+            "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_25F477A2",
+            "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_5DDB6397",
+            "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_6633E64F",
+            "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_A722642C"
+          ]
+        },
+        {
+          "reason_code": "marketable_securities_not_company_debt",
+          "business_reason_zh": "表中的 debt securities 是公司持有的有价证券，不是 Arista 的负债或估值依据。",
+          "target_ids": ["CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_5337CFA3"]
+        },
+        {
+          "reason_code": "acquired_intangible_not_valuation_basis",
+          "business_reason_zh": "客户关系无形资产的账面价值和摊销年限不能替代公司估值、市场价格或资本回报。",
+          "target_ids": [
+            "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_7534298F",
+            "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_EEA87AE1",
+            "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_EF642833"
+          ]
+        }
+      ],
+      "accepted_claims": {
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_029CBC47": {
+          "facet_ids": ["durability_or_pull_forward"],
+          "business_meaning_zh": "复杂且较长的客户决策周期会影响订单时点和收入可见度。",
+          "claim_boundary_zh": "没有披露订单规模、取消率或当前销售周期天数。"
+        },
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_02E03B49": {
+          "slot_bindings": [
+            {"slot_id": "cash_conversion_balance_sheet", "facet_ids": ["working_capital"]},
+            {"slot_id": "demand_volume_quality", "facet_ids": ["customer_payment_terms_context"]}
+          ],
+          "business_meaning_zh": "部分大型客户获得延长付款条件，会影响需求质量和现金回收。",
+          "claim_boundary_zh": "没有量化客户集中度、应收余额或坏账损失。"
+        },
+        "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_01F1B2F2": {
+          "slot_bindings": [
+            {"slot_id": "regulatory_policy_exposure", "facet_ids": ["policy_or_regulatory_event", "affected_scope", "financial_or_operating_consequence"]},
+            {"slot_id": "counterevidence_and_what_would_change", "facet_ids": ["strongest_counterevidence", "impact_mechanism"]}
+          ],
+          "business_meaning_zh": "贸易管制、制裁和关税变化可能限制 Arista 产品进出口。",
+          "claim_boundary_zh": "没有量化收入、成本或供应损失，也没有具体缓解措施。"
+        }
+      },
+      "rejected_claim_groups": [
+        {
+          "reason_code": "truncated_claim_not_citable",
+          "business_reason_zh": "句子被截断，不能作为完整反证或需求命题。",
+          "target_ids": [
+            "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_00CCC508",
+            "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_0126DD12"
+          ]
+        },
+        {
+          "reason_code": "generic_operational_risk_not_decision_relevant",
+          "business_reason_zh": "销售系统更新和审计成本风险过于泛化，不能回答当前 AI 网络需求或核心反证。",
+          "target_ids": [
+            "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_0185A3EE",
+            "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_01000E1E"
+          ]
+        },
+        {
+          "reason_code": "ip_remedy_clause_not_demand_evidence",
+          "business_reason_zh": "知识产权侵权后的维修、替换或退款条款不证明当前客户需求。",
+          "target_ids": ["CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_03394B8C"]
+        }
+      ]
+    }
+  },
+  "facet_gap_codes": {
+    "reported_revenue": "metric_not_disclosed",
+    "reported_profitability": "metric_not_disclosed",
+    "segment_or_product_performance": "metric_not_disclosed",
+    "management_outlook": "currentness_missing",
+    "order_backlog_rpo_or_volume": "commercial_data_gap",
+    "deployment_or_utilization": "commercial_data_gap",
+    "durability_or_pull_forward": "commercial_data_gap",
+    "customer_breadth_or_concentration": "commercial_data_gap",
+    "price_or_asp": "metric_not_disclosed",
+    "volume_or_units": "metric_not_disclosed",
+    "mix_or_product_attribution": "product_attribution_unproven",
+    "margin_or_unit_economics": "metric_not_disclosed",
+    "profit_capture_bridge": "formula_input_missing",
+    "capacity_or_supply": "source_missing",
+    "utilization_or_yield": "commercial_data_gap",
+    "bottleneck_or_lead_time": "source_missing",
+    "ramp_timing": "currentness_missing",
+    "supplier_commitment_or_dependency": "relationship_allocation_unproven",
+    "operating_cash_flow": "metric_not_disclosed",
+    "capital_expenditure": "metric_not_disclosed",
+    "working_capital": "metric_not_disclosed",
+    "inventory": "metric_not_disclosed",
+    "receivables_payables_or_obligations": "statement_scope_missing",
+    "evidence_owner_self_disclosure": "source_missing",
+    "economic_relationship_direction": "relationship_attribution_unproven",
+    "company_specific_attribution_or_boundary": "relationship_attribution_unproven",
+    "policy_or_regulatory_event": "official_policy_missing",
+    "affected_scope": "source_missing",
+    "financial_or_operating_consequence": "financial_consequence_unproven",
+    "mitigation_or_uncertainty": "source_missing",
+    "capital_structure_or_returns": "formula_input_missing",
+    "valuation_basis": "market_data_gap",
+    "scenario_or_sensitivity": "formula_input_missing",
+    "price_in_boundary": "market_data_gap",
+    "strongest_counterevidence": "counterevidence_missing",
+    "impact_mechanism": "counterevidence_missing",
+    "observable_invalidation_threshold": "threshold_not_observable",
+    "monitoring_metric_and_timing": "source_missing"
+  },
+  "facet_supplement_directions_zh": {
+    "management_outlook": "补充最新业绩指引或管理层 prepared remarks。",
+    "order_backlog_rpo_or_volume": "寻找公司订单、backlog、RPO 或合格商业订单数据。",
+    "deployment_or_utilization": "寻找客户部署、实际使用量或利用率一手披露。",
+    "customer_breadth_or_concentration": "补充客户集中度、客户结构或实名客户侧披露。",
+    "price_or_asp": "补充产品级价格、ASP 或可复核定价数据。",
+    "volume_or_units": "补充产品出货台数、晶圆/系统数量或等价业务单位。",
+    "profit_capture_bridge": "补齐价格、销量、mix 与成本输入后由本地程序重算。",
+    "capacity_or_supply": "寻找实际投产、产能、供应量或交付能力披露。",
+    "utilization_or_yield": "寻找利用率、良率、周期时间或产线效率证据。",
+    "supplier_commitment_or_dependency": "补充供应商承诺、分配或采购依赖的一手关系证据。",
+    "inventory": "补充库存余额及与当前业务的归属解释。",
+    "company_specific_attribution_or_boundary": "补充具名交易对手或明确禁止归因的边界证据。",
+    "policy_or_regulatory_event": "补充适用的正式监管文件或公司具体披露。",
+    "observable_invalidation_threshold": "由分析阶段基于可观测指标设定明确失效阈值。",
+    "monitoring_metric_and_timing": "确定需要持续跟踪的指标、来源和更新时间。",
+    "valuation_basis": "补充 PIT 市价、股份数、净现金及可复算估值输入。"
+  },
+  "execution_ceiling": {
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "embedding": 0,
+    "rerank": 0,
+    "automatic_retry": false
+  },
+  "known_boundary": "Retrieval rank and slot labels are not Evidence authority. This policy adjudicates all 93 indexed candidates and 19 quarantined narrative claims, preserves exact source content and typed metric lineage, blocks rejected surfaces, and leaves incomplete business questions as explicit residual gaps."
+}

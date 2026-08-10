@@ -1,0 +1,60 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_to_s3_retrieval_evidence_research_execution_plan_v1_2",
+  "contract_ref": "fin_0_1_3.S1_to_S3.retrieval_evidence_research_execution:v1.2",
+  "recorded_at": "2026-08-10",
+  "product_version": "FIN_0_1_3",
+  "status": "steps_1_to_3_terminal_step_4_prioritized_residual_supplement_current",
+  "supersedes": "configs/releases/fin_ia_0_1_3_s1_to_s3_retrieval_evidence_research_execution_plan_v1_1.json",
+  "supersession_reason": "v1.1 remains the immutable pre-Step-3 plan. v1.2 records the terminal six-case local Evidence Pack result and narrows external supplement to a bounded set of decision-relevant residual gaps.",
+  "user_decision": "Execute steps 1-5 in order without requesting approval at every substep; preserve exact-once authorities and stop at a newly established L1 blocker rather than silently expanding or retrying.",
+  "current_truth": {
+    "physical_index_r2": "terminal_succeeded_93_shared_object_bm25_and_bge_m3_milvus_objects",
+    "retrieval_r1": "terminal_succeeded_result_dfc2e69a444db1b011d0cf61d02b592f84e7c6da6524accfc3abc6e56bc3914a",
+    "retrieval_route_disposition": "object_bm25_primary_bge_shadow_fusion_not_global_default_no_reranker",
+    "local_evidence_pack_r1": "terminal_succeeded_result_52cd20faabe60591dca408a3c571ea1835b8e8ac635402b3d47c681b5cdc56da",
+    "local_content_gate": "84_evidence_items_28_rejections_126_raw_facet_gaps_all_112_candidate_and_narrative_items_adjudicated",
+    "local_pack_boundary": "reviewed_local_evidence_not_complete_investment_report",
+    "external_residual_supplement": "current_zero_call_priority_compilation_then_official_first_bounded_capture",
+    "deepseek_fixed_pack_and_dynamic_research": "blocked_until_governed_local_plus_external_pack"
+  },
+  "execution_sequence": [
+    {
+      "order": 1,
+      "owner_stage": "S1",
+      "work_item": "PHYSICAL_INDEX_FILE_OR_DIRECTORY_REPAIR_AND_FRESH_R2",
+      "status": "terminal_succeeded"
+    },
+    {
+      "order": 2,
+      "owner_stage": "S1",
+      "work_item": "SIX_CASE_REAL_SPARSE_DENSE_FUSION_RETRIEVAL_EVALUATION",
+      "status": "terminal_succeeded_business_disposition_recorded",
+      "decision": "ObjectBM25 is the primary Candidate route; BGE-M3 is shadow expansion; fusion is not the global default. No reranker or result-driven weight tuning."
+    },
+    {
+      "order": 3,
+      "owner_stage": "S1_to_S3",
+      "work_item": "SIX_CASE_EVIDENCE_PACK_ASSEMBLY_AND_BUSINESS_AUDIT",
+      "status": "terminal_succeeded_reviewed_local_packs_with_declared_gaps",
+      "result_digest": "52cd20faabe60591dca408a3c571ea1835b8e8ac635402b3d47c681b5cdc56da",
+      "decision": "All 93 manifest candidates and 19 narrative-queue items were read and adjudicated. Candidate Slot labels are hints only; content-not-decision-relevant items are rejected, bounded context cannot be rewritten as issuer-specific fact, and numeric Evidence retains table, period, unit, currency and source lineage."
+    },
+    {
+      "order": 4,
+      "owner_stage": "S1",
+      "work_item": "OFFICIAL_FIRST_EXTERNAL_RESIDUAL_GAP_SUPPLEMENT",
+      "status": "current_priority_plan_pending_network_authority",
+      "acceptance": "Compile the 126 raw facet gaps into a small, explicit set of high-decision-value and source-obtainable SearchIntents. Official issuer, counterparty and regulator routes lead; a broad provider may locate URLs only. Every selected document is recaptured, date-checked and re-adjudicated locally before Evidence promotion.",
+      "stop_rule": "Do not mechanically search all raw gaps, do not use provider snippets as Evidence, do not retry an exhausted provider, and preserve an honest typed gap when authoritative material is unavailable."
+    },
+    {
+      "order": 5,
+      "owner_stage": "S2_to_S3",
+      "work_item": "DEEPSEEK_FIXED_PACK_ANALYSIS_THEN_DYNAMIC_AGENTIC_RESEARCH",
+      "status": "blocked_until_step_4_governed_pack",
+      "acceptance": "First score financial analysis and synthesis on the same frozen Evidence Pack; then separately score dynamic planning, query/tool use, residual-gap handling, mechanisms, counterevidence, what-would-change and report quality."
+    }
+  ],
+  "known_boundary": "Steps 1-3 establish a searchable local corpus and reviewed local Evidence Packs. They do not establish full external coverage, DeepSeek analysis quality, a complete investment report or release acceptance. The 126 count is a raw facet inventory, not a network-call target.",
+  "plan_digest": "61afd0578595b5ef309b11b5c8b0ce01b1faa8397746c7b6caa8f8877bef23fb"
+}

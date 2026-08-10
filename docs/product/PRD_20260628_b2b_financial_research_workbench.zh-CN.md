@@ -2301,3 +2301,11 @@ fresh R2 现已 exact-once terminal succeeded：六案 93 个 CandidateBundle �
 六案真实 R1 已进一步证明，`slot metadata 命中` 与 `内容可用于研究` 必须是两个产品门。ObjectBM25／BGE-M3／fusion 对 16 个上游可用 Owner targets 的 Recall@10 分别为 `1.0／0.875／1.0`，但留出案例存在“ANET Land→capacity”“ORCL 债券利率→valuation”等标签命中而内容不回答问题的情况。产品默认 Candidate route 因此暂定为 ObjectBM25；BGE-M3 只作 shadow／候选扩展，1:1 fusion 的微小 aggregate MRR 增益不足以成为全局默认，reranker 也不得用于掩盖缺源或弱对象。下一门必须逐条读取候选正文，区分 source fact、bounded mechanism、counterevidence 与 typed gap；只有通过 Evidence Gate 的内容才可供模型引用。
 
 面向业务解释时，检索结果必须从同一冻结 Candidate spec 回接 `evidence_owner_ticker`、经济关系方向、来源类型、发布日期和 source record，而不能靠 target ID 前缀猜“谁在披露谁”。这让“查 Dell 客户需求却排进 Dell 自己的收入”“查供应约束却排进另一交易对手”“主题相近但期间错误”成为可审计的不同错误。该辅助 join 只解释候选，不改变 rank、不晋升 Evidence，也不触发模型或网络调用。
+
+### 16.13 本地 Evidence Pack 的内容准入与外源缺口预算（2026-08-10）
+
+FIN 的本地检索输出必须先经过独立内容准入，不能把 `Slot label`、top-k、向量相似度或结构化数值安全性直接等同于 Evidence。六案 R1 已对 93 个索引候选和 19 条自动叙事逐项审查：84 条可在明确边界内进入本地 Pack，28 条因不回答研究问题、模板化、截断或角色错误被拒绝。典型拒绝包括把 ORCL 债券利率／金额当作估值依据、把汇率敏感度当作实际现金余额、把 ANET 土地和设备当作网络供给能力、把 marketable securities 当作公司债务。检索系统必须让这些“看起来精确”的错误在模型写作前消失。
+
+有用材料也不能越过其披露边界。Microsoft、Micron、TSMC 等第三方资料可以证明行业需求、供应能力或机制背景，但在没有公司特定绑定时只能标记为 `bounded_context_evidence`，不得被 Writer 改写为 Dell／NVIDIA 已取得特定订单、产能分配或客户承诺。每条准入材料必须附可直接交给 Writer 的 citation boundary；每条拒绝项必须从 prompt surface 排除。数值 Evidence 必须绑定父表、行列、期间、单位、币种、披露主体和 source lineage；模型可以分析这些数字，但不能改写 authoritative value。
+
+六份 Pack 当前共有 126 个 raw facet gaps，它们是研究覆盖账，不是搜索调用清单。外源补源必须先按“是否影响投资判断、是否有可能从权威公开来源取得、能否覆盖多个相邻 facet、时效与成本”做确定性优先级编译；每个案例只形成少量 SearchIntent。issuer／counterparty／regulator 官方来源优先，broad search 只负责找 locator；搜索摘要、Provider 日期和排名不能直接成为 Evidence，必须重新抓取原文、做 as-of／日期裁决并经过同一 Evidence Gate。权威材料不存在时，产品必须保留 typed gap，而不是扩大调用或让模型补写。

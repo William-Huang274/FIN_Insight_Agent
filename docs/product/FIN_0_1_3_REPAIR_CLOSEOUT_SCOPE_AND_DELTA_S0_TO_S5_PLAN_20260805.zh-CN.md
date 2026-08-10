@@ -748,8 +748,12 @@ R2 的排序结果仍对 qrels v1.3 有效，但产品解释必须更新：dense
 
 1. [x] `PHYSICAL_INDEX_FILE_OR_DIRECTORY_REPAIR_AND_FRESH_R2`：ObjectBM25 与 BGE-M3／Milvus 共享 93 个对象并完成 close/reopen、目录摘要与 whole-root publication；
 2. [x] `SIX_CASE_REAL_SPARSE_DENSE_FUSION_RETRIEVAL_EVALUATION`：唯一 R1 terminal succeeded。ObjectBM25 保留主候选路，BGE 仅 shadow，fixed fusion 不作全局默认，不启用 reranker；
-3. [ ] `SIX_CASE_EVIDENCE_PACK_ASSEMBLY_AND_BUSINESS_AUDIT`：当前项。先 DELL，逐候选读取正文并区分 source fact、bounded mechanism、counterevidence、部分覆盖与 typed gap；再在 core 不变下迁移其余五案，形成六份本地 Pack 与 residual-gap manifest；
-4. [ ] `OFFICIAL_FIRST_EXTERNAL_RESIDUAL_GAP_SUPPLEMENT`：只搜索第 3 项确认的真实缺口；官方路由负责权威来源，broad provider 只定位，所有返回重新 capture、日期裁决和 Evidence Gate；
+3. [x] `SIX_CASE_EVIDENCE_PACK_ASSEMBLY_AND_BUSINESS_AUDIT`：唯一零调用 R1 已按 DELL-first 顺序审完 93 个 manifest candidates 与 19 条 narrative queue，并以同一 core 迁移六案；形成六份 content-addressed 私有 Pack、84 条有边界 Evidence、28 条拒绝项和 126 个 raw facet gaps；
+4. [ ] `OFFICIAL_FIRST_EXTERNAL_RESIDUAL_GAP_SUPPLEMENT`：当前项。先把 126 个理论 facet 缺口编译成少量“影响投资判断且存在可取得权威来源”的 SearchIntent，再按官方路由优先、broad provider 只定位执行；所有返回重新 capture、日期裁决和 Evidence Gate；
 5. [ ] `DEEPSEEK_FIXED_PACK_ANALYSIS_THEN_DYNAMIC_AGENTIC_RESEARCH`：先用同一冻结 Pack 测分析综合，再单独测模型自主规划、工具调用和动态补洞，最终按研究内容质量和事实可靠性双门验收。
 
 R1 的业务事实是：前三个已知案例在 93-object population 中各有 `8/8` Slot 候选，但留出案例只有 ORCL `5/8`、ASML `3/8`、ANET `4/8`。而且“有候选”仍可能是 ANET 土地／设备或 ORCL 债券利率这类结构安全却不回答研究问题的内容。第 3 项因此不是把 top-k 拼成报告，而是审查每份材料究竟能证明什么；不合格内容留在候选／拒绝账本，不交给模型自由补写。该项完成前，外源调用、DeepSeek 研究和发布均保持 false。
+
+第 3 项现已 terminal succeeded，结果 digest=`52cd20fa...56da`。DELL／MU／NVDA 分别保留 `15／16／14` 条 Evidence，其中第三方客户、供应商与行业材料只允许作 bounded context；ORCL／ASML／ANET 分别保留 `13／12／14` 条结构化直接 Evidence，并拒绝 `14／1／13` 条安全但业务不相关、模板化或截断内容。任何数值进入 Pack 都必须保持表格父节点、行列、期间、单位、币种与来源 lineage；derived arithmetic 只能由确定性程序计算。
+
+第 4 项不得把 `126` 当成网络调用数量。它先做零调用优先级编译，把相邻 facet 合并为案例级研究意图，优先寻找能够改变判断的订单／需求质量、价格数量 mix、产能与交付、现金转换、监管影响、反证与 WWC；商业上通常不存在公开权威数据的精确客户 allocation、单位／ASP 或内部良率应允许继续留作 typed gap。只有编译后的小规模 SearchIntent 才可进入 fresh authority；Provider snippet、搜索排名和旧 capture 都不能直接晋升 Evidence。

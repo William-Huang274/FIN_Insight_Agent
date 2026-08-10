@@ -825,3 +825,13 @@ R1 同时暴露了 metadata 与业务正文之间的新边界。`ANET Land／Equ
 2. `evidence_eligibility`：正文是否明确支持一个有边界的事实／机制／反证，且 identity、date、period、table、unit、currency 与 lineage 均可回溯。
 
 Evidence Pack builder 不得把 Slot metadata 当成正文真值，也不得让 Writer 修补缺失内容。安全但不回答问题的结构化 Metric 必须记为 `content_not_decision_relevant`；相关但只覆盖部分 facet 的资料保留窄边界；不存在或仍缺的 facet 物化 typed residual gap。执行顺序为 DELL 首案逐项审计，随后在 core fingerprint 不变的前提下迁移 MU、NVDA、ORCL、ASML、ANET，最后才把真实 residual gaps 投影给 external supplement。
+
+### 24.16 六案 Candidate→Evidence 内容门与 Pack 物化结果（2026-08-10）
+
+`fin_0_1_3.S1.candidate_to_local_evidence_pack:v1` 已按唯一零调用 attempt 完成。Runtime 同时消费 immutable 93-spec manifest、六案检索 R1、通用研究合同、三案 reviewed vertical 结果和留出案例 R9 source reparse；所有绑定输入先做 SHA256 校验。known cases 的完整 source text 写入 Git-ignored content-addressed Pack，held-out Metric 则重新验证 child content digest、父表、行列、期间、单位和币种后才可准入。公开 result 只保存 pack ref／digest／byte size，不泄漏私有正文。
+
+内容门不信任候选自带 Slot。原始 `candidate_slot_id` 保留供审计，但 `adjudicated_slot_id` 由正文和结构化坐标重新决定；例如 ORCL capital expenditure 即使上游误挂到 `capacity_inputs_execution`，也只能在 Evidence Gate 重新归到 `cash_conversion_balance_sheet:capital_expenditure`。若候选只在主题上相似，却不能支持问题，处置为 `content_not_decision_relevant`，不得靠 Writer、reranker 或模型解释升级。19 条 narrative queue 也全部读取；safe-harbor、联系人、截断和泛化套话继续 quarantine。
+
+终态为 112 个输入全部裁决、84 条 Evidence、28 条拒绝、126 个 raw residual facets，result=`52cd20fa...56da`。每条 Evidence 都有 writer-citable boundary；第三方关系材料强制 `bounded_context_evidence`，禁止转换为本案 issuer 的订单／allocation；每个拒绝项都通过 prompt-surface exclusion。数值只允许 source-visible typed value，任何 derived value 必须记录确定性程序和 operand lineage。
+
+`126` 不是 downstream query budget。下一层先对 residual facet 做 priority compiler：按 case、decision surface、source owner、source type、period、language、相邻 facet coverage 和 public-obtainability 合并为少量 SearchIntent；official routes 为 document authority，broad provider 为 locator-only。外部返回必须 capture-first、as-of 裁决、parse 后回到同一内容门。找不到时保留 gap，不得把 Provider snippet 或旧资料拼成 Evidence。
